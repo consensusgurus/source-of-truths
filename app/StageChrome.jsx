@@ -52,6 +52,8 @@ import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import DailyRunRail from './DailyRunRail';
 import GateLanding from './GateLanding';
 import { markPageEntry } from '@/lib/finish-beat';
+import { withRef, myRefCode } from '@/lib/referrals';
+import { drawingIsLive, DRAWING } from '@/lib/drawing';
 
 // A FIGURE THAT IS A PLAIN COUNT ROLLS; anything else swaps (motion pass,
 // 2026-09-16). "3", "+62", "#37" and "3/5" roll digit by digit through
@@ -219,6 +221,38 @@ export default function StageChrome({
   useState(() => { markPageEntry(); return 0; });
   const started = useStarted(gameKey, num);
   const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
+  // SHARE FOR CREDIT (owner, 2026-10-23): the page itself, stamped with the
+  // player's referral code, from the cap, so it is there before, during and
+  // after the game. A new player who finishes from it earns the sharer a
+  // drawing ticket (lib/referrals.js, lib/drawing.js).
+  const [shareMsg, setShareMsg] = useState('');
+  const shareTimer = useRef(null);
+  const shareCredit = () => {
+    let url = '';
+    try {
+      url = window.location.origin + window.location.pathname;
+      const p = new URLSearchParams(window.location.search).get('p');
+      if (p) url += `?p=${encodeURIComponent(p)}`;
+    } catch (e) { return; }
+    url = withRef(url);
+    const named = !!myRefCode();
+    const live = drawingIsLive();
+    const say = (m) => {
+      setShareMsg(m);
+      clearTimeout(shareTimer.current);
+      shareTimer.current = setTimeout(() => setShareMsg(''), 4200);
+    };
+    const after = named
+      ? (live ? `Link copied. New players from it earn you ${DRAWING.prizeLabel} drawing tickets.` : 'Link copied.')
+      : (live ? `Link copied. Pick a name to earn ${DRAWING.prizeLabel} drawing tickets from it.` : 'Link copied.');
+    let touch = false;
+    try { touch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) { touch = false; }
+    if (touch && navigator.share) {
+      navigator.share({ url, title: typeof document !== 'undefined' ? document.title : undefined }).catch(() => {});
+      return;
+    }
+    try { navigator.clipboard.writeText(url).then(() => say(after), () => say(url)); } catch (e) { say(url); }
+  };
   // THE LEADER AND THE LEADERBOARD ARE HIDDEN UNTIL ASKED FOR on a daily (owner,
   // 2026-10-13), and each choice is remembered site-wide. On a daily the
   // rankings panel's open state IS the leaderboard preference, shared with the
@@ -365,6 +399,17 @@ export default function StageChrome({
           </svg>
           <span>Rankings</span>
         </button>
+        <span className="stg-shw">
+          <button type="button" className="stg-cx stg-shr" onClick={shareCredit} title="Share this puzzle. New players from your link earn you drawing tickets.">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+              strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 3v12" /><path d="M7 8l5-5 5 5" /><path d="M5 13v7h14v-7" />
+            </svg>
+            <span className="stg-shl">Share for credit</span>
+            <span className="stg-shs">Share</span>
+          </button>
+          {shareMsg ? <span className="stg-shm" role="status">{shareMsg}</span> : null}
+        </span>
         <button
           type="button"
           className={'stg-cx stg-theme' + (hint ? ' hint' : '')}
@@ -588,6 +633,12 @@ const CSS = `
   letter-spacing:.11em;text-transform:uppercase;color:var(--stg-ink2,#aab5c7);border:1px solid var(--stg-line);
   border-radius:99px;padding:5px 11px;background:none;cursor:pointer;text-decoration:none;}
 .stg-rank{margin-left:auto;}
+.stg-shw{position:relative;display:inline-flex;}
+.stg-shr{color:var(--stg-acc-ink,var(--stg-acc));border-color:var(--stg-acc-ink,var(--stg-acc));}
+.stg-shs{display:none;}
+.stg-shm{position:absolute;top:calc(100% + 8px);right:0;z-index:60;width:max-content;max-width:240px;padding:8px 11px;border-radius:10px;
+  background:var(--stg-ink,#e9edf4);color:var(--stg-ground,#0b0f1a);font-size:12px;font-weight:700;line-height:1.35;
+  letter-spacing:0;text-transform:none;box-shadow:0 8px 24px rgba(0,0,0,.25);}
 /* The brand is a LINK, not a chip: no pill, no border, because it is the one
    control on this line that is not part of the game. The rule to its right is
    what separates the site from the sitting. */
@@ -684,5 +735,8 @@ const CSS = `
 @media(max-width:640px){
   .stg-rank{padding:5px 8px;}
   .stg-rank span{display:none;}
+  .stg-shl{display:none;}
+  .stg-shs{display:inline;}
+  .stg-shr{padding:5px 9px;}
 }
 `;

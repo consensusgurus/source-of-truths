@@ -254,13 +254,22 @@ export default function StageStick({
             </a>
           ) : null}
           {chal ? (
-            <button type="button" className={'sst-chal ' + (run ? 'ol ' : '') + on(run ? 5 : 4)} onClick={chal.onSend}>
-              <span className="tx">
-                <b>{chal.title}</b>
-                <i>{chalSub}</i>
-              </span>
-              <span className="ar" aria-hidden="true">{chal.copied ? '✓' : '→'}</span>
-            </button>
+            // SHARE WITH A MEME sits on the Challenge row (owner, 2026-10-23),
+            // a square beside it, so the stack still never runs past four rows.
+            <div className={'sst-crow ' + on(run ? 5 : 4)}>
+              <button type="button" className={'sst-chal ' + (run ? 'ol' : '')} onClick={chal.onSend}>
+                <span className="tx">
+                  <b>{chal.title}</b>
+                  <i>{chalSub}</i>
+                </span>
+                <span className="ar" aria-hidden="true">{chal.copied ? '✓' : '→'}</span>
+              </button>
+              {chal.onMeme ? (
+                <button type="button" className={'sst-meme ' + (run ? 'ol' : '')} onClick={chal.onMeme} aria-label="Share with a meme GIF">
+                  <b>GIF</b><i>Share</i>
+                </button>
+              ) : null}
+            </div>
           ) : null}
           {run && allHref ? (
             <div className={'sst-row ' + on(5) + (similar ? '' : ' one')}>
@@ -424,6 +433,15 @@ const CSS = `
 .sst-chal b{font-size:17px;font-weight:800;line-height:1.2;}
 .sst-chal i{font-style:normal;font-size:12.5px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sst-chal .ar{flex:none;font-size:22px;font-weight:800;}
+.sst-crow{display:flex;gap:10px;}
+.sst-crow .sst-chal{flex:1;min-width:0;}
+.sst-meme{flex:none;width:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;border-radius:14px;
+  background:var(--sst-ink);color:var(--sst-bg);font:inherit;cursor:pointer;}
+.sst-meme b{font-size:17px;font-weight:800;line-height:1;letter-spacing:.02em;}
+.sst-meme i{font-style:normal;font-size:11.5px;font-weight:800;}
+.sst-meme.ol{background:transparent;color:var(--sst-ink);border:2px solid var(--sst-ink);}
+.sst-meme:hover{filter:brightness(1.08);}
+.sst-meme:focus-visible{outline:2px solid var(--sst-ink);outline-offset:3px;}
 .sst-run{position:relative;display:flex;flex-direction:column;gap:9px;padding:12px 16px 12px 18px;border-radius:16px;overflow:hidden;
   background:var(--sst-ink);color:var(--sst-bg);text-decoration:none;box-shadow:0 10px 26px rgba(0,0,0,.22);}
 .sst-run::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;pointer-events:none;transform:skewX(-18deg);

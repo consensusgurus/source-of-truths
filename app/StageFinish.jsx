@@ -60,6 +60,7 @@ import { readChallenge, encodeChallenge, challengeFig, challengeResult, ymdCompa
 import { metricDef } from '@/lib/challenge-metric';
 import { newCid, withCid, recordSend, reportTake } from '@/lib/challenge-client';
 import TicketDoor from './TicketDoor';
+import MemeShare from './MemeShare';
 import AddToHome from './AddToHome';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 // Where this finish puts the player in each of their groups (2026-09-17).
@@ -1101,6 +1102,7 @@ export default function StageFinish({
   const [run, setRun] = useState(null);
   const [chal, setChal] = useState(null);
   const [chalMsg, setChalMsg] = useState('');
+  const [memeOpen, setMemeOpen] = useState(false);
   // The board number on screen, kept even when this browser holds no save for
   // it, so the challenge can still be built off the board row.
   const [curN, setCurN] = useState(null);
@@ -1643,8 +1645,10 @@ export default function StageFinish({
   // The button only ever COPIES the link (a phone hands it to the share sheet
   // and the label never changes), so it says Copied, never Sent: nothing was sent.
   const chalCopied = chalMsg.startsWith('Link copied');
-  const sendChallenge = () => {
-    if (!mine) return;
+  // The challenge link, minted and recorded. Shared by the Send button and the
+  // meme sheet (source 'meme'), so a GIF share earns the same credit.
+  const challengeLink = (source = 'endcard') => {
+    if (!mine) return withRef(window.location.origin + window.location.pathname);
     let onArchive = false;
     try { onArchive = /[?&]p=\d+/.test(window.location.search); } catch (e) { /* treat as today's */ }
     const who = savedIdentity().username || 'A friend';
@@ -1654,7 +1658,12 @@ export default function StageFinish({
     // share sheet still opens inside the tap; the row is written alongside it.
     const cid = newCid();
     const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=3`, cid)); // v: bump when the card changes, a phone caches a link's preview by its URL
-    recordSend({ cid, gameKey: me.key, num: mine.n, day: d ? etTodayISO() : null, fig: mine, source: 'endcard' });
+    recordSend({ cid, gameKey: me.key, num: mine.n, day: d ? etTodayISO() : null, fig: mine, source });
+    return url;
+  };
+  const sendChallenge = () => {
+    if (!mine) return;
+    const url = challengeLink('endcard');
     // THE LINK GOES ALONE (owner, 2026-10-07). Its card says the whole
     // sentence, so any text sent beside it would say it twice.
     const copied = () => { setChalMsg('Link copied. Paste it to a friend.'); };
@@ -1677,6 +1686,23 @@ export default function StageFinish({
       return <>{lead}<b style={{ display: 'block', fontWeight: 800 }}>{chalCredit ? `New players = ${DRAWING.prizeLabel} drawing tickets.` : `Pick a name to earn ${DRAWING.prizeLabel} tickets.`}</b></>;
     })(),
   } : null;
+  // SHARE WITH A MEME (owner, 2026-10-23): the GIF sheet, on the full-colour
+  // ending and the page after it. Same figure and link as the challenge.
+  const memeCtx = canChallenge && me ? (() => {
+    const blank = isBlankMiss(mine);
+    const fig = blank ? '' : challengeFig(mine, me.key);
+    let dLab = '';
+    try { dLab = new Date(`${etTodayISO()}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); } catch (e) { dLab = ''; }
+    const rk = board && board.myRank != null && board.field ? `#${board.myRank} of ${board.field}` : '';
+    return {
+      gameKey: me.key, game: me.name, cat: me.cat, hue: categoryAccentInkLight(me.cat),
+      fig, timed: !!(mine.won && mine.t != null && mine.m == null && /^\d+:\d\d/.test(fig)),
+      won: !!mine.won, pb: isPb,
+      line1: [me.name, curN != null && /[?&]p=\d+/.test(typeof window !== 'undefined' ? window.location.search : '') ? `No. ${curN}` : dLab, rk].filter(Boolean).join(' · '),
+      route: String(me.href || `/${me.key}`).replace(/^\//, ''),
+    };
+  })() : null;
+  const openMeme = memeCtx ? () => setMemeOpen(true) : null;
   const playedN = new Set([...played, ...(me ? [me.key] : [])]).size;
   const smallDoors = [];
   if (anotherOpt) {
@@ -1696,6 +1722,9 @@ export default function StageFinish({
     ? { k: 'all', nm: mainOpt.label, sb: mainOpt.sub, href: mainOpt.href, onClick: mainOpt.onClick }
     : { k: 'all', nm: 'All daily puzzles', sb: `${playedN} of ${LIVE().length} played today`, btn: true,
       onClick: () => setDailyOpen((v) => !v), expanded: dailyOpen, controls: 'stf-daily' });
+  if (openMeme) {
+    smallDoors.push({ k: 'meme', ic: 'share', nm: 'Share with a meme', sb: 'A GIF of your result, plus your link', btn: true, onClick: openMeme });
+  }
   // Share, and anything this card does not know, as doors too: every tile the same shape.
   secOpts.forEach((o, i) => smallDoors.push({
     k: o.kind === 'gold' ? 'share' : `more${i}`, ic: o.kind === 'gold' ? 'share' : 'more',
@@ -1856,7 +1885,7 @@ export default function StageFinish({
     const chalRow = canChallenge ? {
       title: duel ? `Challenge ${chal.name} back` : 'Challenge a friend',
       lead: isBlankMiss(mine) ? 'Dare them to crack it' : `Beat ${challengeFig(mine, me.key)}`,
-      draw: chalDraw, msg: chalMsg, copied: chalCopied, onSend: sendChallenge,
+      draw: chalDraw, msg: chalMsg, copied: chalCopied, onSend: sendChallenge, onMeme: openMeme,
     } : null;
     const simSec = primaryDoor && primaryDoor.key ? typicalSeconds(primaryDoor.key) : null;
     const similar = primaryDoor ? {
@@ -2011,6 +2040,7 @@ export default function StageFinish({
     <div className={'stf' + (outcome ? ' stf-' + outcome : '') + (tone === 'lost' ? ' stf-miss' : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
+      <MemeShare open={memeOpen} onClose={() => setMemeOpen(false)} ctx={memeCtx} getLink={challengeLink} />
       {stickProps ? (
         <StageStick {...stickProps} onLeave={leaveStick} />
       ) : flood ? (
