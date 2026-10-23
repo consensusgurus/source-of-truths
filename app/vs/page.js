@@ -20,11 +20,14 @@ function read(searchParams) {
   const c = decodeChallenge(raw);
   const cidRaw = String(one(searchParams && searchParams.c)).toLowerCase();
   const cid = /^[a-z0-9]{6,16}$/.test(cidRaw) ? cidRaw : null;
-  return { key, raw, g, c, run, cid };
+  // m=1: the link was shared beside the meme GIF, which already carries the
+  // detail, so its preview is the bare Accept the challenge button.
+  const meme = one(searchParams && searchParams.m) === '1';
+  return { key, raw, g, c, run, cid, meme };
 }
 
 export function generateMetadata({ searchParams }) {
-  const { key, raw, g, c, run } = read(searchParams);
+  const { key, raw, g, c, run, meme } = read(searchParams);
   const base = { robots: { index: false, follow: true } };
   if (!g || !c) return { ...base, title: 'A challenge on Mind Loft', description: 'Free daily puzzles. No sign-up to play.' };
   const fig = challengeFig(c, key);
@@ -34,11 +37,11 @@ export function generateMetadata({ searchParams }) {
   const description = run
     ? `${g.name} on Mind Loft${c.x ? `: ${c.x}` : ''}. Same run, free, no sign-up to play.`
     : `${g.name} No. ${c.n} on Mind Loft. Same board, free, no sign-up to play.`;
-  const img = `/vs/card?g=${encodeURIComponent(key)}&vs=${encodeURIComponent(raw)}`;
-  // THE PREVIEW SAYS ONE THING (owner, 2026-10-23): a message bubble prints
-  // the og title under the card, so it reads Accept the challenge and nothing
-  // else. The tab title keeps the full sentence.
-  const share = 'Accept the challenge';
+  const img = `/vs/card?g=${encodeURIComponent(key)}&vs=${encodeURIComponent(raw)}${meme ? '&m=1' : ''}`;
+  // TWO PREVIEWS, NO REPEATS (owner, 2026-10-23). Beside the GIF the link says
+  // only Accept the challenge, since the GIF carries the detail. Sent on its
+  // own, the link carries the full sentence in its card and its title.
+  const share = meme ? 'Accept the challenge' : title;
   return {
     ...base, title, description,
     openGraph: { title: share, description, images: [{ url: img, width: 1200, height: 630 }], siteName: 'Mind Loft', type: 'website' },

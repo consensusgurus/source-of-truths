@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og';
 import React from 'react';
 import { stageFonts, glyphURI, markURI, clamp, size, T, Row, Col } from '@/lib/og-stage-card';
 import { categoryAccentInkLight } from '@/lib/category-ramp';
+import { metricDef, metricLine } from '@/lib/challenge-metric';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { decodeChallenge, challengeFig, mmssOf, RUN_CHALLENGES, isBlankMiss } from '@/lib/challenge';
 
@@ -38,15 +39,46 @@ function card({ hue, glyph, line, cta }) {
     Col([
       ...(glyph ? [h('img', { key: 'g', src: glyph, width: 72, height: 72, style: { marginBottom: '22px' } })] : []),
       T(line, { key: 'l', fontSize: 34, fontWeight: 700, color: MUTE, letterSpacing: '-0.4px', marginBottom: '28px', textAlign: 'center' }),
-      Row([
-        T(cta, { key: 't', fontSize: 64, fontWeight: 800, letterSpacing: '-1.5px' }),
-        // The arrow is drawn, not typed: Manrope's latin subset has no U+2192,
-        // and a missing glyph makes Satori fetch a font over the network.
-        h('img', { key: 'a', src: ARROW, width: 54, height: 54, style: { marginLeft: '24px' } }),
-      ], { key: 'pill', alignItems: 'center', background: hue, color: '#ffffff', borderRadius: '999px', padding: '30px 64px 34px', boxShadow: '0 10px 30px rgba(16,24,40,.18)' }),
+      pill(hue, cta, 64, 54),
     ], { key: 'mid', flex: 1, alignItems: 'center', justifyContent: 'center' }),
     T('mindloftdaily.com', { key: 'u', fontSize: 24, fontWeight: 700, color: MUTE, justifyContent: 'center' }),
   ], { width: '1200px', height: '630px', background: GROUND, color: INK, fontFamily: 'Manrope', padding: '56px 90px 60px', alignItems: 'center' });
+}
+
+function pill(hue, cta, fs, ar) {
+  const h = React.createElement;
+  return Row([
+    T(cta, { key: 't', fontSize: fs, fontWeight: 800, letterSpacing: '-1.5px' }),
+    h('img', { key: 'a', src: ARROW, width: ar, height: ar, style: { marginLeft: '24px' } }),
+  ], { key: 'pill', alignItems: 'center', background: hue, color: '#ffffff', borderRadius: '999px', padding: '30px 64px 34px', boxShadow: '0 10px 30px rgba(16,24,40,.18)' });
+}
+
+// BESIDE THE GIF: the whole image is the button (owner, 2026-10-23). The GIF
+// above it already says who scored what, so this says one thing, edge to edge.
+// Kept inside a 90px inset because a bubble rounds its corners.
+function buttonOnly(hue) {
+  const h = React.createElement;
+  return Row([
+    T('Accept the challenge', { key: 't', fontSize: 82, fontWeight: 800, letterSpacing: '-2.5px', lineHeight: 1, whiteSpace: 'nowrap', flexShrink: 0 }),
+    h('img', { key: 'a', src: ARROW, width: 76, height: 76, style: { marginLeft: '26px', flexShrink: 0 } }),
+  ], { width: '1200px', height: '630px', background: hue, color: '#ffffff', fontFamily: 'Manrope', alignItems: 'center', justifyContent: 'center', padding: '0 90px' });
+}
+
+// SENT ON ITS OWN: the link is the whole message, so it carries the detail.
+function detailed({ hue, glyph, line, sub }) {
+  const h = React.createElement;
+  return Col([
+    Row([
+      h('img', { key: 'm', src: markURI(hue, INK), width: 40, height: 40 }),
+      T('Mind Loft', { key: 'w', fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px', marginLeft: '10px' }),
+      ...(glyph ? [h('img', { key: 'g', src: glyph, width: 48, height: 48, style: { marginLeft: 'auto' } })] : []),
+    ], { key: 'brand', alignItems: 'center', width: '100%' }),
+    Col([
+      T(line, { key: 'l', fontSize: line.length <= 30 ? 70 : line.length <= 42 ? 60 : 50, fontWeight: 800, letterSpacing: '-2px', lineHeight: 1.06, textAlign: 'center', justifyContent: 'center' }),
+      T(sub, { key: 's', fontSize: 34, fontWeight: 700, color: MUTE, marginTop: '14px', marginBottom: '30px' }),
+      pill(hue, 'Accept the challenge', 52, 44),
+    ], { key: 'mid', flex: 1, alignItems: 'center', justifyContent: 'center' }),
+  ], { width: '1200px', height: '630px', background: GROUND, color: INK, fontFamily: 'Manrope', padding: '52px 90px 60px', alignItems: 'center' });
 }
 
 export async function GET(req) {
@@ -60,12 +92,17 @@ export async function GET(req) {
   if (!g || !c) {
     return new ImageResponse(card({ hue, glyph: null, line: 'Free daily puzzles. No sign-up to play.', cta: 'Play free' }), opts);
   }
+  if (u.searchParams.get('m') === '1') return new ImageResponse(buttonOnly(hue), opts);
   const name = clamp(c.name, 20);
   const fig = challengeFig(c, key);
   const blank = !run && isBlankMiss(c);
-  // One short line, the target. "Beat Gator85's 0:20 on Chomp."
-  const line = blank ? `${name} could not crack ${g.name}. Can you?`
-    : fig ? `Beat ${name}\u2019s ${clamp(fig, 18)} on ${g.name}` : `Take on ${name} at ${g.name}`;
-  const glyph = run ? null : glyphURI(key, hue, 72);
-  return new ImageResponse(card({ hue, glyph, line, cta: 'Accept the challenge' }), opts);
+  const byMetric = !run && c.m != null && !!metricDef(key);
+  const line = blank ? `${name} could not crack ${g.name}.`
+    : run ? (c.o ? `${name} scored ${c.s}/${c.o} on ${run.the}.` : `${name} scored ${c.s} on ${run.the}.`)
+    : byMetric ? metricLine(key, name, g.name, fig)
+    : c.won && c.t != null ? `${name} solved ${g.name} in ${clamp(fig, 18)}.`
+    : c.won ? `${name} solved ${g.name}: ${clamp(fig, 18)}.` : `${name} scored ${clamp(fig, 18)} on ${g.name}.`;
+  const sub = blank ? 'Can you?' : 'Can you beat that?';
+  const glyph = run ? null : glyphURI(key, hue, 48);
+  return new ImageResponse(detailed({ hue, glyph, line, sub }), opts);
 }

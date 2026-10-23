@@ -80,7 +80,7 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
   const linkRef = useRef(null);
   const k = key && order.includes(key) ? key : order[0];
   const caption = ctx && k ? memeCaption(k, ctx) : '';
-  const line2 = ctx ? `Can you beat that? mindloftdaily.com/${ctx.route}` : '';
+  const line2 = ctx ? `mindloftdaily.com/${ctx.route}` : ''; // the link beside it says Accept the challenge
 
   useEffect(() => { if (!open) { setNote(''); linkRef.current = null; } }, [open]);
 
@@ -107,12 +107,15 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
 
   const link = () => { if (!linkRef.current) linkRef.current = getLink('meme'); return linkRef.current; };
   const fname = `mind-loft-${ctx.gameKey}.gif`;
-  const copyLink = (msg) => {
-    const url = link();
+  // Beside the GIF the link previews as the bare button (m=1); Copy link keeps
+  // the plain link, whose preview carries the whole sentence.
+  const memeLink = () => { const u = link(); return u + (u.includes('?') ? '&' : '?') + 'm=1'; };
+  const copyLink = (msg, withGif) => {
+    const url = withGif ? memeLink() : link();
     try { navigator.clipboard.writeText(url).then(() => setNote(msg || 'Link copied.'), () => setNote(url)); } catch (e) { setNote(url); }
   };
   const share = () => {
-    const url = link();
+    const url = memeLink();
     if (blob) {
       const file = new File([blob], fname, { type: 'image/gif' });
       let canFiles = false;
@@ -123,10 +126,11 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
       }
       // A desktop has no GIF share sheet: save the GIF, put the link on the clipboard.
       download(blob, fname);
-      copyLink('GIF saved and link copied. Drop both into a message.');
+      copyLink('GIF saved and link copied. Drop both into a message.', true);
       return;
     }
-    if (isTouch() && navigator.share) { navigator.share({ url }).catch(() => {}); return; }
+    // No GIF made: the link goes alone, so it carries the detail.
+    if (isTouch() && navigator.share) { navigator.share({ url: link() }).catch(() => {}); return; }
     copyLink();
   };
 
