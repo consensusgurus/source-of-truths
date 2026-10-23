@@ -12,6 +12,7 @@ import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { DRAWING, formatTickets } from '@/lib/drawing';
 import { TICKET_PATH } from '../TicketDoor';
 import MindLoftMark from '../MindLoftMark';
+import TicketTree from '../TicketTree';
 
 const gameOf = (key) => DAILY_GAME_MAP[key] || RUN_CHALLENGES[key] || null;
 const gameName = (key) => { const g = gameOf(key); return g ? g.name : key; };
@@ -97,6 +98,7 @@ const CSS = `
 .stage-page[data-stage-theme=light] .chx-go{background:#2a1f04;}
 @keyframes chxRise{0%{transform:translateY(10px);opacity:0}100%{transform:translateY(0);opacity:1}}
 @media (prefers-reduced-motion:reduce){.chx-r{animation:none}}
+.chx-chain{margin:16px 0 4px}.chx-chain p{margin:6px 0 12px;font-size:13.5px;line-height:1.55;color:var(--stg-ink2,var(--stg-ink))}.chx-chain a{color:var(--stg-acc-ink,var(--stg-acc));font-weight:800}
 @media (max-width:480px){.chx-fg b{font-size:19px}.chx-tk b{font-size:18px}}
 `;
 
@@ -140,8 +142,16 @@ export default function ChallengesClient() {
             <div>
               <small>The {DRAWING.prizeLabel} drawing · drawn {DRAWING.drawLabel}</small>
               <b>{named ? `${formatTickets(n)} ticket${n === 1 ? '' : 's'} in the drum` : 'Pick a name to earn tickets'}</b>
-              <span>{named ? 'Each new friend who finishes a game from your link adds two.' : 'Your challenges still work; a name is what turns new friends into tickets.'}</span>
+              <span>{named ? 'Each new friend who finishes a game from your link adds two, and everyone they bring in adds a quarter.' : 'Your challenges still work; a name is what turns new friends into tickets.'}</span>
             </div>
+          </div>
+        ) : null}
+
+        {live ? (
+          <div className="chx-chain">
+            <div className="chx-eb">Friends of friends count too</div>
+            <p>Two tickets for every new friend you bring in, then a quarter for every player they bring in, and every player those people bring in, as far as it goes. <a href="/quizzes/community#drawing">See your own tree</a>.</p>
+            <TicketTree example />
           </div>
         ) : null}
 

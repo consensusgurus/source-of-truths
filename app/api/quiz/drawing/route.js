@@ -6,6 +6,7 @@
 //   ?limit=N    holders returned (default 25, max 100)
 //   ?anonId=    the viewer's browser id (falls back to the sot_vid cookie)
 //   ?email=     lets a second device recognise the viewer
+//   ?tree=1     also return the viewer's ticket tree (friends, their friends...)
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
@@ -13,7 +14,7 @@ import { findQuizIdentity } from '@/lib/quiz-identity';
 import { ensureRefCode } from '@/lib/referrals-server';
 import { refShareUrl } from '@/lib/referrals';
 import { DRAWING, drawingIsLive, drawingHasEnded, drawingDaysLeft, formatOdds } from '@/lib/drawing';
-import { drawingField } from '@/lib/drawing-server';
+import { drawingField, ticketTree } from '@/lib/drawing-server';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -62,6 +63,7 @@ export async function GET(request) {
       (searchParams.get('anonId') || '').trim().slice(0, 64) ||
       request.cookies.get('sot_vid')?.value || '';
     const email = (searchParams.get('email') || '').trim().slice(0, 120) || null;
+    const wantTree = searchParams.get('tree') === '1';
 
     const field = await drawingField(supabaseAdmin);
     const total = field.total;
@@ -101,6 +103,9 @@ export async function GET(request) {
           friends: mine ? mine.friends : 0,
           friendEmails: mine ? (mine.friendEmails || 0) : 0,
           friendTickets: mine ? (mine.friendTickets || 0) : 0,
+          indirect: mine ? (mine.indirect || 0) : 0,
+          indirectTickets: mine ? (mine.indirectTickets || 0) : 0,
+          tree: wantTree ? ticketTree(field, user.id) : undefined,
           group: mine ? (mine.groupTicket || 0) : 0,
           play: mine && mine.play ? {
             streak: mine.play.streak, winDay: mine.play.winDay, winGame: mine.play.winGame,

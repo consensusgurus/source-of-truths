@@ -9,8 +9,9 @@
 // all figures from /api/quiz/drawing.
 
 import { useEffect, useState, useCallback } from 'react';
-import { Copy, Check, Ticket } from 'lucide-react';
+import { Copy, Check, Ticket, GitFork } from 'lucide-react';
 import { DRAWING, DRAWING_COPY, drawingIsLive, drawingDaysLeft, ticketLabel, formatTickets } from '@/lib/drawing';
+import TicketTree from '../../TicketTree';
 
 const FONT = "'Manrope', system-ui, -apple-system, sans-serif";
 
@@ -30,6 +31,10 @@ export default function DrawingBoard() {
   const [now, setNow] = useState(0);
   const [data, setData] = useState(null);
   const [copied, setCopied] = useState(false);
+  // The viewer's ticket tree, fetched only when they ask for it.
+  const [treeOpen, setTreeOpen] = useState(false);
+  const [tree, setTree] = useState(null);
+  const [treeBusy, setTreeBusy] = useState(false);
 
   // The clock is read after mount, never during render (hydration).
   useEffect(() => {
@@ -62,6 +67,24 @@ export default function DrawingBoard() {
       setTimeout(() => setCopied(false), 1800);
     } catch { /* the link is selectable */ }
   }, [me]);
+
+  const openTree = useCallback(() => {
+    setTreeOpen((v) => !v);
+    if (tree || treeBusy) return;
+    setTreeBusy(true);
+    const qs = new URLSearchParams({ limit: '1', tree: '1' });
+    try {
+      const anon = localStorage.getItem('sot_quiz_anon') || '';
+      if (anon) qs.set('anonId', anon);
+      const id = JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null');
+      if (id && id.email) qs.set('email', id.email);
+    } catch { /* private mode */ }
+    fetch(`/api/quiz/drawing?${qs}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { setTree(d && d.me && d.me.tree ? d.me.tree : { kids: [], levels: [], people: 0 }); })
+      .catch(() => setTree({ kids: [], levels: [], people: 0 }))
+      .finally(() => setTreeBusy(false));
+  }, [tree, treeBusy]);
 
   if (!live) return null;
 
@@ -104,13 +127,21 @@ export default function DrawingBoard() {
         <h3 className="drb-h3">How to earn tickets</h3>
         <div className="drb-steps">
           <div><b className="n">+{formatTickets(DRAWING.friendTickets)}</b><b>Bring in a new player</b><span>A friend who has never played finishes any game from your link. No limit, and {formatTickets(DRAWING.friendEmail)} more when they add an email.</span></div>
+          <div><b className="n">+{formatTickets(DRAWING.indirect)}</b><b>Friends of friends</b><span>Every new player your friends bring in, and everyone those players bring in, as far down the line as it goes. No limit.</span></div>
           <div><b className="n">+{formatTickets(DRAWING.play.streak)}</b><b>Keep a {DRAWING.play.streakDays}-day streak</b><span>Play at least one daily {DRAWING.play.streakDays} days in a row. Every {DRAWING.play.streakDays} more days earns another.</span></div>
           <div><b className="n">+{formatTickets(DRAWING.play.winDay)}</b><b>Win the day</b><span>Finish #1 on the day&apos;s combined leaderboard.</span></div>
           <div><b className="n">+{formatTickets(DRAWING.play.winGame)}</b><b>Win a game</b><span>Finish #1 on any single daily&apos;s leaderboard, against at least one other registered player. Up to {formatTickets(DRAWING.play.winGameCap)} tickets this way.</span></div>
           <div><b className="n">+{formatTickets(DRAWING.play.email)}</b><b>Add your email</b><span>An email on your account. Already have one? It counts too.</span></div>
           <div><b className="n">+{formatTickets(DRAWING.group)}</b><b>Create a group</b><span>Start a group that at least one other player joins. Once per player.</span></div>
         </div>
-        <p className="drb-cap"><b>You need an email on your account to earn tickets</b>, and they count from the moment you add it. Streaks and wins top out at {DRAWING.play.cap} per person; friends, email and your group sit outside that cap. Wins count once the day is over.</p>
+        <div className="drb-chain">
+          <div className="drb-chain-tx">
+            <h4>How a chain adds up</h4>
+            <p>You bring in three friends: two tickets each. When they bring in their own friends, every one of those is a quarter ticket for you, and so is everyone those people bring in, all the way down. Here is one tree.</p>
+          </div>
+          <TicketTree example />
+        </div>
+        <p className="drb-cap"><b>You need an email on your account to earn tickets</b>, and they count from the moment you add it. Streaks and wins top out at {DRAWING.play.cap} per person; friends, friends of friends, email and your group sit outside that cap. Wins count once the day is over.</p>
       </div>
 
       {me ? (
@@ -136,9 +167,17 @@ export default function DrawingBoard() {
             </div>
           </div>
           <p className="drb-brk">
-            From friends <b>{formatTickets(me.friendTickets || 0)}</b>
+            From friends <b>{formatTickets(me.friendTickets || 0)}</b>{me.indirect ? <> · Friends of friends <b>{formatTickets(me.indirectTickets || 0)}</b> ({me.indirect})</> : null}
             {me.play ? <> · Streaks <b>{formatTickets(me.play.streak)}</b> · Wins <b>{formatTickets(me.play.winDay + me.play.winGame)}</b>{me.play.raw > me.play.counted ? <> (capped at {me.playCap})</> : null} · Email <b>{formatTickets(me.play.email)}</b></> : null}{me.group ? <> · Group <b>{formatTickets(me.group)}</b></> : null}
           </p>
+          <button type="button" className="drb-treeb" onClick={openTree} aria-expanded={treeOpen}>
+            <GitFork size={15} strokeWidth={2.4} aria-hidden="true" />{treeOpen ? 'Hide your ticket tree' : 'See your ticket tree'}
+          </button>
+          {treeOpen ? (
+            <div className="drb-tree">
+              {tree ? <TicketTree tree={tree} rootName={me.username} /> : <p className="drb-none">Drawing your tree...</p>}
+            </div>
+          ) : null}
           {!me.eligible ? (
             <p className="drb-warn">Add an email to your account to start earning tickets. Only tickets earned after you add it count, so the sooner the better.</p>
           ) : null}
@@ -279,6 +318,13 @@ const CSS = `
 .drb-cap b{color:var(--stg-ink)}
 .drb-brk{margin:12px 0 0;font-size:13px;line-height:1.5;color:var(--stg-mute);font-weight:600}
 .drb-brk b{color:var(--stg-ink);font-weight:800}
+.drb-chain{margin-top:16px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;padding:16px;border-radius:12px;border:1px solid rgba(232,180,58,.5);background:rgba(232,180,58,.07)}
+.drb-chain-tx{flex:1 1 220px;min-width:0}
+.drb-chain-tx h4{margin:0;font-size:15.5px;font-weight:800}
+.drb-chain-tx p{margin:6px 0 0;font-size:13.5px;line-height:1.55;color:var(--stg-ink2)}
+.drb-chain .ttr{flex:999 1 360px;min-width:0}
+.drb-treeb{margin-top:14px;height:40px;display:inline-flex;align-items:center;gap:7px;padding:0 14px;border-radius:10px;border:1px solid rgba(232,180,58,.6);background:rgba(232,180,58,.13);color:var(--stg-ink);font-family:inherit;font-weight:800;font-size:13.5px;cursor:pointer}
+.drb-tree{margin-top:12px}
 .drb-legal{margin:14px 0 0;font-size:12px;line-height:1.6;color:var(--stg-mute)}
 @media(max-width:560px){
   .drb-hin,.drb-me,.drb-board,.drb-feed,.drb-how{padding:16px}
