@@ -52,8 +52,7 @@ import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import DailyRunRail from './DailyRunRail';
 import GateLanding from './GateLanding';
 import { markPageEntry } from '@/lib/finish-beat';
-import { withRef, myRefCode } from '@/lib/referrals';
-import { drawingIsLive, DRAWING } from '@/lib/drawing';
+import { shareForCredit } from '@/lib/share-credit';
 
 // A FIGURE THAT IS A PLAIN COUNT ROLLS; anything else swaps (motion pass,
 // 2026-09-16). "3", "+62", "#37" and "3/5" roll digit by digit through
@@ -227,32 +226,11 @@ export default function StageChrome({
   // drawing ticket (lib/referrals.js, lib/drawing.js).
   const [shareMsg, setShareMsg] = useState('');
   const shareTimer = useRef(null);
-  const shareCredit = () => {
-    let url = '';
-    try {
-      url = window.location.origin + window.location.pathname;
-      const p = new URLSearchParams(window.location.search).get('p');
-      if (p) url += `?p=${encodeURIComponent(p)}`;
-    } catch (e) { return; }
-    url = withRef(url);
-    const named = !!myRefCode();
-    const live = drawingIsLive();
-    const say = (m) => {
-      setShareMsg(m);
-      clearTimeout(shareTimer.current);
-      shareTimer.current = setTimeout(() => setShareMsg(''), 4200);
-    };
-    const after = named
-      ? (live ? `Link copied. New players from it earn you ${DRAWING.prizeLabel} drawing tickets.` : 'Link copied.')
-      : (live ? `Link copied. Pick a name to earn ${DRAWING.prizeLabel} drawing tickets from it.` : 'Link copied.');
-    let touch = false;
-    try { touch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) { touch = false; }
-    if (touch && navigator.share) {
-      navigator.share({ url, title: typeof document !== 'undefined' ? document.title : undefined }).catch(() => {});
-      return;
-    }
-    try { navigator.clipboard.writeText(url).then(() => say(after), () => say(url)); } catch (e) { say(url); }
-  };
+  const shareCredit = () => shareForCredit((m) => {
+    setShareMsg(m);
+    clearTimeout(shareTimer.current);
+    shareTimer.current = setTimeout(() => setShareMsg(''), 4200);
+  });
   // THE LEADER AND THE LEADERBOARD ARE HIDDEN UNTIL ASKED FOR on a daily (owner,
   // 2026-10-13), and each choice is remembered site-wide. On a daily the
   // rankings panel's open state IS the leaderboard preference, shared with the

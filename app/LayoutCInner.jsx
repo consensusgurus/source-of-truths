@@ -37,6 +37,7 @@ import useGroupStanding from './groups/groupStanding';
 import StageLadder from './StageLadder';
 import MindLoftMark from './MindLoftMark';
 import { LightOffer } from './ThemePop';
+import { shareForCredit } from '@/lib/share-credit';
 import { SNAP_KEY } from '@/lib/home-snapshot';
 import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import { sharedGet } from './sharedGet';
@@ -83,8 +84,12 @@ html.lc-on .lc-host .stg-cap,html.lc-on .lc-host .stg-strip,html.lc-on .lc-host 
    column's Board tab, so on a desktop frame it must not also open inline. */
 html.lc-on .lc-host .stg-panel{display:none !important;}
 html.lc-on .stage-tail{display:none !important;}
-html.lc-on .lc-host .stg-fg{position:relative;padding-right:240px;}
-.lc-sub-btn{position:absolute;right:20px;top:50%;transform:translateY(-50%);height:30px;padding:0 12px;border-radius:999px;
+html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
+.lc-subs{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:8px;}
+.lc-shw{position:relative;display:inline-flex;}
+.lc-shr{display:inline-flex;align-items:center;gap:6px;color:var(--stg-acc-ink,var(--stg-acc)) !important;border-color:var(--stg-acc-ink,var(--stg-acc)) !important;}
+.lc-shm{position:absolute;top:calc(100% + 8px);right:0;z-index:95;width:max-content;max-width:260px;padding:8px 11px;border-radius:10px;background:var(--stg-ink,#e9edf4);color:var(--stg-ground,#0b0f1a);font:700 12px/1.35 Manrope,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:normal;}
+.lc-sub-btn{height:30px;padding:0 12px;border-radius:999px;
   border:1px solid var(--stg-line,rgba(255,255,255,.16));background:transparent;color:var(--stg-ink2,var(--stg-ink));
   font:700 12px Manrope,system-ui,sans-serif;letter-spacing:0;text-transform:none;cursor:pointer;white-space:nowrap;}
 .lc-sub-btn:hover{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-ink);}
@@ -199,6 +204,8 @@ export default function LayoutCInner({ gameKey }) {
   const [host, setHost] = useState(null);
   const [fgEl, setFgEl] = useState(null);
   const [focus, setFocus] = useState(false);
+  const [shareMsg, setShareMsg] = useState('');
+  const shareTimer = useRef(null);
   const [tab, setTab] = useState('board');
   const [statusRaw, setStatusRaw] = useState(null);
   const [me, setMe] = useState(null);
@@ -515,10 +522,25 @@ export default function LayoutCInner({ gameKey }) {
     mo.cells = cells;
   });
 
+  // SHARE FOR CREDIT sits beside the menus toggle (owner, 2026-10-23), which
+  // shows in every mode, so it is there before, during and after the game.
   const subBtn = (
-    <button type="button" className="lc-sub-btn" onClick={() => setFocus((v) => !v)}>
-      {focus ? 'Show menus & leaderboard' : 'Hide menus & leaderboard'}
-    </button>
+    <div className="lc-subs">
+      <span className="lc-shw">
+        <button type="button" className="lc-sub-btn lc-shr" onClick={() => shareForCredit((m) => {
+          setShareMsg(m); clearTimeout(shareTimer.current); shareTimer.current = setTimeout(() => setShareMsg(''), 4200);
+        })} title="Share this puzzle. New players from your link earn you drawing tickets.">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 3v12" /><path d="M7 8l5-5 5 5" /><path d="M5 13v7h14v-7" />
+          </svg>
+          Share for credit
+        </button>
+        {shareMsg ? <span className="lc-shm" role="status">{shareMsg}</span> : null}
+      </span>
+      <button type="button" className="lc-sub-btn" onClick={() => setFocus((v) => !v)}>
+        {focus ? 'Show menus & leaderboard' : 'Hide menus & leaderboard'}
+      </button>
+    </div>
   );
 
   const frame = focus ? null : (
