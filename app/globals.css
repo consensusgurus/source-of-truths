@@ -438,6 +438,16 @@ body:has(.stage-page)::before { background: #0b0f1a; }
 html:has(.kd),
 body:has(.kd) { background: #fff6e0 !important; }
 body:has(.kd)::before { background: #fff6e0; }
+/* AN ENDING CURTAIN OWNS THE TOP OF THE SCREEN (owner, 2026-10-23: a black bar
+   across the top of a Four finish opened from X). The band above sits at
+   z-index 10000, over the full-screen endings (.sst StageStick, .stf-flood
+   StageFinish, both z-index 9000), so wherever the browser reports a top
+   safe-area inset (X's and other in-app browsers, the installed app) the
+   stage's near-black strip cut across the curtain's colour. The curtains
+   start at top:0 and pad their own content by the inset, so the band just
+   steps aside while one is up. */
+body:has(.sst)::before,
+body:has(.stf-flood)::before { display: none; }
 /* --stg-ground is defined ON .stage-page, so html cannot read it: the register
    has to be named here instead. */
 /* A FINISHED BOARD IS A RESULT, NOT A BOARD (owner, 2026-08-31). Once a daily
