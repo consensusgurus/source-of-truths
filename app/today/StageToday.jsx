@@ -3008,12 +3008,32 @@ export default function StageToday() {
       .map((x) => x[0]);
     const big = ord.find((c) => !runFull(c)) || null;
     const rest = ord.filter((c) => c !== big);
+    // POLYMATH ON THE PHONE (owner, 2026-10-23): a tile in the strip like the
+    // other runs, wherever one of its three gauntlets shows. A tap opens all
+    // three legs below the strip, each with its games and its own way in, and
+    // once all three are finished the tile carries today's title and score.
+    const poly = polyRun && list.some((c) => polyRun.legs.some((l) => l.id === c.id)) ? polyRun : null;
+    const polyFin = poly ? runFull(poly) : false;
+    const polyOn = !!poly && deckOpen === poly.id;
+    const tiles = poly ? (polyFin ? [...rest, poly] : [poly, ...rest]) : rest;
     return (
       <div className="sty-rnm">
         {big ? runCard(big, cat, 'Most played today') : null}
-        {rest.length ? (
-          <div className={'sty-rics' + (rest.length <= 2 ? ' few' : '')}>
-            {rest.map((c) => {
+        {tiles.length ? (
+          <div className={'sty-rics' + (tiles.length <= 2 ? ' few' : '')}>
+            {tiles.map((c) => {
+              if (c.poly) {
+                return (
+                  <button key={c.id} type="button" className={'sty-ric sty-ricp' + (polyFin ? ' done' : '') + (polyOn ? ' on' : '')}
+                    aria-expanded={polyOn} aria-controls={'pmd-' + c.id} style={runLook(c, cat)}
+                    onClick={() => setDeckOpen((v) => (v === c.id ? null : c.id))}>
+                    <span className="sq">{c.name}</span>
+                    {tiles.length <= 2 ? <span className="ds">{c.blurb}</span> : null}
+                    <span className="l1">{polyStatus(polyFin)}</span>
+                    <span className="l2">{polyPips(c)}</span>
+                  </button>
+                );
+              }
               const st = runStat[c.id];
               const done = runFull(c);
               const ranked = done && st && st.rank;
@@ -3030,6 +3050,7 @@ export default function StageToday() {
             })}
           </div>
         ) : null}
+        {polyOn ? <div id={'pmd-' + poly.id} className="sty-pmd">{deckDrawer(poly, cat, 0, 0)}</div> : null}
       </div>
     );
   };
@@ -5845,6 +5866,13 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   .sty-ric .ds{font-size:11.5px;font-weight:600;line-height:1.3;color:var(--stg-ink2);
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:-2px 0 2px;}
   .sty-ric:only-child .ds{-webkit-line-clamp:2;}
+  /* Polymath's strip tile is a toggle, not a link (owner, 2026-10-23). */
+  .sty-ric.sty-ricp{font:inherit;text-align:left;cursor:pointer;border-radius:8px;}
+  .sty-ric.sty-ricp.on{border-color:var(--ph);background:color-mix(in srgb,var(--ph) 8%,var(--stg-surf));}
+  .sty-ric.sty-ricp .l2{display:flex;}
+  .sty-pmd .sty-dkd{display:block;margin:0;}
+  .sty-pmd .sty-dkc{display:none;}
+  .sty-pmd .sty-dkg{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
 
 /* THE LEDGER (owner, 2026-10-14): desktop category panes and My Puzzles. */
