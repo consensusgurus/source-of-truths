@@ -3026,7 +3026,8 @@ export default function StageToday() {
                     onClick={() => setDeckOpen((v) => (v === c.id ? null : c.id))}>
                     <span className="sq">{c.name}</span>
                     {tiles.length <= 2 ? <span className="ds">{c.blurb}</span> : null}
-                    <span className="l1">{polyStatus(polyFin)}</span>
+                    <span className="l1">{polyStand ? `#${polyStand.rank} of ${fmtN(polyStand.players)}` : polyStatus(polyFin)}</span>
+                    {polyStand && polyStand.grank && runGrp ? <span className="l2">{`#${polyStand.grank} of ${polyStand.gfield} ${runGrp.name}`}</span> : null}
                   </button>
                 );
               }
@@ -3128,6 +3129,25 @@ export default function StageToday() {
     return { id: 'polymath', poly: true, name: 'Polymath', blurb: 'Trivia, Math and English Gauntlets. One title for all three.',
       legs, games: legs.flatMap((c) => c.games), n: legs.reduce((t, c) => t + c.n, 0) };
   }, [circuits]);
+  const [polyStand, setPolyStand] = useState(null);
+  const polyFinNow = !!polyRun && polyRun.legs.every((x) => runFull(x));
+  const polyAsked = useRef('');
+  useEffect(() => {
+    if (!polyFinNow) return;
+    const code = runGrp ? runGrp.code : '';
+    if (polyAsked.current === day + '|' + code) return;
+    polyAsked.current = day + '|' + code;
+    const qs = identityQs();
+    fetch(`/api/quiz/polymath?fresh=1${qs ? '&' + qs : ''}${code ? '&group=' + encodeURIComponent(code) : ''}`, { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!d || !d.me) return;
+        const g = d.group || null;
+        setPolyStand(d.me.rank ? { rank: d.me.rank, players: d.field || 0, grank: g && g.rank ? g.rank : null, gfield: g ? g.field : 0 } : null);
+      })
+      .catch(() => {});
+  }, [polyFinNow, day, runGrp && runGrp.code]); // eslint-disable-line react-hooks/exhaustive-deps
+  const polyTitle = () => (polyLocal && polyLocal.tier ? `${polyLocal.tier.name} \u00b7 ${polyLocal.score}` : '3 runs');
   const polyStatus = (fin) => {
     const t = polyLocal && polyLocal.tier;
     if (t) return `${t.name} \u00b7 ${polyLocal.score}`;
@@ -3143,15 +3163,32 @@ export default function StageToday() {
   // YOUR STANDING AND YOUR GROUP'S, in place of the per-game pips (owner,
   // 2026-10-23). A run ranks only once every game is played, so an unfinished
   // run shows a dash and how far along it is.
-  const runFigs = (c) => {
+  // ONE LINE, the game tiles' own shape (owner, 2026-10-23: no tile may grow
+  // the row): the group's place first under its name, then the site place.
+  const runFigs = (c, stIn) => {
     const fin = runFull(c);
-    const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+    const st = stIn !== undefined ? stIn
+      : (runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null));
     const me = fin && st && st.rank ? st : null;
-    return (
-      <span className="sty-dkfs">
-        <span className="sty-dkf"><i>You</i><b>{me ? <>#{me.rank}<small> of {fmtN(me.players)}</small></> : '\u2013'}</b></span>
-        {runGrp ? <span className="sty-dkf"><i>{runGrp.name}</i><b>{fin && st && st.grank ? <>#{st.grank}<small> of {st.gfield}</small></> : '\u2013'}</b></span> : null}
-        {!me ? <span className="sty-dks">{fin ? 'Finished' : c.n ? `${c.n} of ${c.games.length} played` : `${c.games.length} games`}</span> : null}
+    if (!me) {
+      const k = c.poly ? c.legs.filter((x) => runFull(x)).length : 0;
+      return <span className="sty-dks">{fin ? 'Finished' : c.poly ? (k ? `${k} of 3 runs` : '3 runs') : c.n ? `${c.n} of ${c.games.length} played` : `${c.games.length} games`}</span>;
+    }
+    const gn = runGrp ? runGrp.name : null;
+    return gn && st.grank ? (
+      <span className="sty-gres sty-gres2 sty-rgres" title={`${gn}: #${st.grank} of ${st.gfield} \u00b7 site: #${me.rank} of ${me.players}`}>
+        <span className="sty-grl">{gn}</span>
+        <span className="sty-grk">#{st.grank}</span>
+        <span className="sty-grf">of {st.gfield}</span>
+        <span className="sty-gsep" aria-hidden="true">&middot;</span>
+        <span className="sty-grk">#{me.rank}</span>
+        <span className="sty-grf">of {fmtN(me.players)}</span>
+      </span>
+    ) : (
+      <span className="sty-gres sty-rgres">
+        <span className="sty-grl">You:</span>
+        <span className="sty-grk">#{me.rank}</span>
+        <span className="sty-grf">of {fmtN(me.players)}</span>
       </span>
     );
   };
@@ -3179,8 +3216,8 @@ export default function StageToday() {
           aria-expanded={on} aria-controls={'dkd-' + c.id} data-fk={'dk:' + c.id}
           style={{ ...runLook(c, cat), '--i': i }}
           onClick={() => setDeckOpen((v) => (v === c.id ? null : c.id))}>
-          <span className="sty-dkn"><b>{c.name}</b><em>3 runs</em></span>
-          <span className="sty-dkl"><span className="sty-dks">{polyStatus(fin)}</span></span>
+          <span className="sty-dkn"><b>{c.name}</b><em>{polyTitle()}</em></span>
+          <span className="sty-dkl">{runFigs(c, polyStand)}</span>
         </button>
       );
     }
@@ -3306,7 +3343,7 @@ export default function StageToday() {
           <span className="ic"><span className="sty-rstk" aria-hidden="true" /></span>
           <span className="nm"><b>{c.name}</b><span className="tg">3 runs · {c.blurb}</span></span>
           <span className="td"><span className="mu">One title for all three</span></span>
-          <span className="yu"><i>{polyStatus(fin)}</i></span>
+          <span className="yu">{runFigs(c, polyStand)}<i>{polyLocal && polyLocal.tier ? polyTitle() : ''}</i></span>
           <a className="ct" href={withTq('/polymath')} onClick={(e) => e.stopPropagation()}>{fin ? 'Results' : 'Open'}</a>
           <span className="sty-rchev" aria-hidden="true">{on ? '\u2212' : '+'}</span>
         </div>,
@@ -6010,6 +6047,10 @@ html[data-stage-color=full] .sty-g.done .sty-gi{color:var(--cci, var(--cc));opac
 .sty-dkf b{font-size:13.5px;font-weight:800;color:var(--stg-ink);}
 .sty-dkf b small{font-size:10.5px;font-weight:600;color:var(--stg-mute);}
 .sty-dkfs .sty-dks{padding-bottom:1px;}
+.sty-dkl .sty-rgres{margin-top:0;min-width:0;}
+html[data-stage-color=full] .sty-deck:not(.done) .sty-rgres .sty-grl,
+html[data-stage-color=full] .sty-deck:not(.done) .sty-rgres .sty-grk,
+html[data-stage-color=full] .sty-deck:not(.done) .sty-rgres .sty-grf{color:${RAMP_INK};}
 .sty-dkd{grid-column:1/-1;position:relative;margin:4px 0 2px;border:1.5px solid var(--ph);border-radius:10px;padding:11px 12px 12px;
   background:color-mix(in srgb,var(--ph) 8%,var(--stg-surf));}
 .sty-dkc{position:absolute;top:-8px;left:var(--dkx);width:13px;height:13px;transform:rotate(45deg);

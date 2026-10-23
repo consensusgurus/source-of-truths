@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase-server';
+import { groupByCode, membersOf } from '@/lib/groups';
 import { GET as combinedGET } from '../daily-combined/route';
 import { POLY_LEGS, legPoints, polyScore, tierFor, legTitle } from '@/lib/polymath';
 
@@ -110,6 +112,23 @@ export async function GET(request) {
       myRank = full.filter((r) => r.score > myScore || (r.score === myScore && r.time < myTime)).length + 1;
     }
   }
+  // THE GROUP'S POLYMATH (owner, 2026-10-23): ?group=<code> also places the
+  // viewer among that group's members who finished all three runs, in the same
+  // order as the site board. A bad code or a failed read just leaves it out.
+  let grp = null;
+  const groupCode = (searchParams.get('group') || '').trim();
+  if (groupCode) {
+    try {
+      const g = await groupByCode(supabaseAdmin, groupCode);
+      if (g) {
+        const keys = new Set((await membersOf(supabaseAdmin, g.id)).map((m) => m.userKey));
+        const rows = full.filter((r) => keys.has(r.userKey));
+        let gr = 0, prevK = null, mineRank = null;
+        rows.forEach((r, i) => { const k = `${r.score}|${r.time}`; if (k !== prevK) { gr = i + 1; prevK = k; } if (meKey && r.userKey === meKey) mineRank = gr; });
+        grp = { code: g.code, name: g.name, field: rows.length, rank: mineRank };
+      }
+    } catch (e) { grp = null; }
+  }
   const started = new Set();
   boards.forEach((d) => { for (const r of (d && d.overallAll) || []) started.add(r.userKey); });
 
@@ -119,6 +138,7 @@ export async function GET(request) {
     board: full.slice(0, BOARD_MAX).map((r) => ({ rank: r.rank, username: r.username, userKey: r.userKey, score: r.score, points: r.points, time: r.time, tier: r.tier })),
     field: full.length,
     started: started.size,
+    group: grp,
     me: {
       userKey: meKey,
       legs,
