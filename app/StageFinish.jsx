@@ -72,6 +72,7 @@ import { fmtMetric } from '@/lib/challenge-metric';
 import { typicalSeconds } from '@/lib/game-medians';
 import { categoryHrefForGame } from '@/lib/puzzle-categories';
 import { DISPLAY_CIRCUITS, circuitKeysFor, circuitName, runHref } from '@/lib/circuits';
+import { themeParam } from '@/lib/share-palette';
 
 // ── THE FLOOD ──────────────────────────────────────────────────────────────
 // THE CURTAIN ARRIVES AT FULL SIZE (owner, 2026-08-31). The band was already
@@ -1658,7 +1659,7 @@ export default function StageFinish({
     // c= is the return leg's id (lib/challenge-client.js), minted here so the
     // share sheet still opens inside the tap; the row is written alongside it.
     const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=5`, cid)); // v: bump when the card changes, a phone caches a link's preview by its URL
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=6${themeParam()}`, cid)); // v: bump when the card changes, a phone caches a link's preview by its URL
     recordSend({ cid, gameKey: me.key, num: mine.n, day: d ? etTodayISO() : null, fig: mine, source });
     return url;
   };

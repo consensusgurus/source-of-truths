@@ -1,9 +1,10 @@
 import { ImageResponse } from 'next/og';
 import React from 'react';
-import { stageFonts, glyphURI, markURI, clamp, size, T, Row, Col } from '@/lib/og-stage-card';
-import { categoryAccentInkLight } from '@/lib/category-ramp';
+import { stageFonts, clamp, size, T, Row, Col } from '@/lib/og-stage-card';
+import { sharePalette, markSvg } from '@/lib/share-palette';
 import { metricDef, metricLine } from '@/lib/challenge-metric';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
+import { circuitById } from '@/lib/circuits';
 import { decodeChallenge, challengeFig, mmssOf, RUN_CHALLENGES, isBlankMiss } from '@/lib/challenge';
 
 // THE CHALLENGE LINK'S PREVIEW (owner, 2026-10-07): what a messaging app draws
@@ -24,61 +25,57 @@ export const runtime = 'nodejs';
 // SAFE ZONE: iMessage rounds the bubble's corners and wraps the image at about
 // 2:1 or it drops to a thumbnail, so the card stays 1200x630 and every mark sits
 // well inside a 90px inset.
-const GROUND = '#f4f6f9';
-const INK = '#0b0d12';
-const MUTE = '#5f6774';
-const ARROW = 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="54" height="54" viewBox="0 0 24 24" fill="none"><path d="M4 12h15M13 6l6 6-6 6" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>').toString('base64');
+const svgURI = (svg) => 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');
+const arrowURI = (col) => svgURI('<svg xmlns="http://www.w3.org/2000/svg" width="54" height="54" viewBox="0 0 24 24" fill="none"><path d="M4 12h15M13 6l6 6-6 6" stroke="' + col + '" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>');
 
-function card({ hue, glyph, line, cta }) {
-  const h = React.createElement;
-  return Col([
-    Row([
-      h('img', { key: 'm', src: markURI(hue, INK), width: 44, height: 44 }),
-      T('Mind Loft', { key: 'w', fontSize: 26, fontWeight: 800, letterSpacing: '-0.5px', marginLeft: '10px' }),
-    ], { key: 'brand', alignItems: 'center' }),
-    Col([
-      ...(glyph ? [h('img', { key: 'g', src: glyph, width: 72, height: 72, style: { marginBottom: '22px' } })] : []),
-      T(line, { key: 'l', fontSize: 34, fontWeight: 700, color: MUTE, letterSpacing: '-0.4px', marginBottom: '28px', textAlign: 'center' }),
-      pill(hue, cta, 64, 54),
-    ], { key: 'mid', flex: 1, alignItems: 'center', justifyContent: 'center' }),
-    T('mindloftdaily.com', { key: 'u', fontSize: 24, fontWeight: 700, color: MUTE, justifyContent: 'center' }),
-  ], { width: '1200px', height: '630px', background: GROUND, color: INK, fontFamily: 'Manrope', padding: '56px 90px 60px', alignItems: 'center' });
-}
+// TWO SETS, LIGHT AND DARK (owner, 2026-10-23), from lib/share-palette, the
+// same one the GIF draws with, so the card always matches the GIF beside it.
+// The arrow is drawn, not typed: Manrope's latin subset has no U+2192, and a
+// missing glyph makes Satori fetch a font over the network.
 
-function pill(hue, cta, fs, ar) {
+function pill(p, cta, fs, ar) {
   const h = React.createElement;
   return Row([
     T(cta, { key: 't', fontSize: fs, fontWeight: 800, letterSpacing: '-1.5px' }),
-    h('img', { key: 'a', src: ARROW, width: ar, height: ar, style: { marginLeft: '24px' } }),
-  ], { key: 'pill', alignItems: 'center', background: hue, color: '#ffffff', borderRadius: '999px', padding: '30px 64px 34px', boxShadow: '0 10px 30px rgba(16,24,40,.18)' });
+    h('img', { key: 'a', src: arrowURI(p.onFill), width: ar, height: ar, style: { marginLeft: '24px' } }),
+  ], { key: 'pill', alignItems: 'center', background: p.fill, color: p.onFill, borderRadius: '999px', padding: '26px 60px 30px' });
 }
 
-// BESIDE THE GIF: the whole image is the button (owner, 2026-10-23). The GIF
-// above it already says who scored what, so this says one thing, edge to edge.
-// Kept inside a 90px inset because a bubble rounds its corners.
-function buttonOnly(hue) {
+// The Mind Loft row: mark and name on the left, the address on the right
+// (where the game glyph used to sit, now given to the name and description).
+function brandRow(p) {
+  const h = React.createElement;
+  return Row([
+    h('img', { key: 'm', src: svgURI(markSvg(p.ink, p.fill)), width: 40, height: 40 }),
+    T('Mind Loft', { key: 'w', fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px', marginLeft: '10px' }),
+    T('mindloftdaily.com', { key: 'u', fontSize: 22, fontWeight: 700, color: p.mute, marginLeft: 'auto' }),
+  ], { key: 'brand', alignItems: 'center', width: '100%' });
+}
+
+// BESIDE THE GIF: the whole image is the button. The GIF carries the detail.
+function buttonOnly(p) {
   const h = React.createElement;
   return Row([
     T('Accept the challenge', { key: 't', fontSize: 82, fontWeight: 800, letterSpacing: '-2.5px', lineHeight: 1, whiteSpace: 'nowrap', flexShrink: 0 }),
-    h('img', { key: 'a', src: ARROW, width: 76, height: 76, style: { marginLeft: '26px', flexShrink: 0 } }),
-  ], { width: '1200px', height: '630px', background: hue, color: '#ffffff', fontFamily: 'Manrope', alignItems: 'center', justifyContent: 'center', padding: '0 90px' });
+    h('img', { key: 'a', src: arrowURI(p.onFill), width: 76, height: 76, style: { marginLeft: '26px', flexShrink: 0 } }),
+  ], { width: '1200px', height: '630px', background: p.fill, color: p.onFill, fontFamily: 'Manrope', alignItems: 'center', justifyContent: 'center', padding: '0 90px' });
 }
 
-// SENT ON ITS OWN: the link is the whole message, so it carries the detail.
-function detailed({ hue, glyph, line, sub }) {
-  const h = React.createElement;
+// SENT ON ITS OWN: the link is the whole message, so it carries the result,
+// the game's name and its long description, and the button.
+function detailed(p, { line, name, desc }) {
+  const big = line.length <= 30 ? 64 : line.length <= 42 ? 56 : 48;
   return Col([
-    Row([
-      h('img', { key: 'm', src: markURI(hue, INK), width: 40, height: 40 }),
-      T('Mind Loft', { key: 'w', fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px', marginLeft: '10px' }),
-      ...(glyph ? [h('img', { key: 'g', src: glyph, width: 48, height: 48, style: { marginLeft: 'auto' } })] : []),
-    ], { key: 'brand', alignItems: 'center', width: '100%' }),
+    brandRow(p),
     Col([
-      T(line, { key: 'l', fontSize: line.length <= 30 ? 70 : line.length <= 42 ? 60 : 50, fontWeight: 800, letterSpacing: '-2px', lineHeight: 1.06, textAlign: 'center', justifyContent: 'center' }),
-      T(sub, { key: 's', fontSize: 34, fontWeight: 700, color: MUTE, marginTop: '14px', marginBottom: '30px' }),
-      pill(hue, 'Accept the challenge', 52, 44),
+      T(line, { key: 'l', fontSize: big, fontWeight: 800, letterSpacing: '-2px', lineHeight: 1.06, textAlign: 'center', justifyContent: 'center' }),
+      Col([
+        T(name, { key: 'n', fontSize: 32, fontWeight: 800, color: p.ink, justifyContent: 'center' }),
+        ...(desc ? [T(desc, { key: 'd', fontSize: 28, fontWeight: 600, color: p.mute, textAlign: 'center', justifyContent: 'center', marginTop: '4px', lineHeight: 1.25 })] : []),
+      ], { key: 'gm', alignItems: 'center', marginTop: '22px', marginBottom: '30px', maxWidth: '960px' }),
+      pill(p, 'Accept the challenge', 46, 40),
     ], { key: 'mid', flex: 1, alignItems: 'center', justifyContent: 'center' }),
-  ], { width: '1200px', height: '630px', background: GROUND, color: INK, fontFamily: 'Manrope', padding: '52px 90px 60px', alignItems: 'center' });
+  ], { width: '1200px', height: '630px', background: p.ground, color: p.ink, fontFamily: 'Manrope', padding: '50px 90px 56px', alignItems: 'center' });
 }
 
 export async function GET(req) {
@@ -87,12 +84,12 @@ export async function GET(req) {
   const run = RUN_CHALLENGES[key] || null;
   const g = DAILY_GAME_MAP[key] || run;
   const c = decodeChallenge(u.searchParams.get('vs') || '');
-  const hue = categoryAccentInkLight(g && g.cat ? g.cat : 'Word');
+  const p = sharePalette(g && g.cat ? g.cat : 'Word', u.searchParams.get('t') === 'd');
   const opts = { width: size.width, height: size.height, fonts: stageFonts() };
   if (!g || !c) {
-    return new ImageResponse(card({ hue, glyph: null, line: 'Free daily puzzles. No sign-up to play.', cta: 'Play free' }), opts);
+    return new ImageResponse(detailed(p, { line: 'Free daily puzzles.', name: 'Mind Loft', desc: 'No sign-up to play.' }), opts);
   }
-  if (u.searchParams.get('m') === '1') return new ImageResponse(buttonOnly(hue), opts);
+  if (u.searchParams.get('m') === '1') return new ImageResponse(buttonOnly(p), opts);
   const name = clamp(c.name, 20);
   const fig = challengeFig(c, key);
   const blank = !run && isBlankMiss(c);
@@ -102,7 +99,6 @@ export async function GET(req) {
     : byMetric ? metricLine(key, name, g.name, fig)
     : c.won && c.t != null ? `${name} solved ${g.name} in ${clamp(fig, 18)}.`
     : c.won ? `${name} solved ${g.name}: ${clamp(fig, 18)}.` : `${name} scored ${clamp(fig, 18)} on ${g.name}.`;
-  const sub = blank ? 'Can you?' : 'Can you beat that?';
-  const glyph = run ? null : glyphURI(key, hue, 48);
-  return new ImageResponse(detailed({ hue, glyph, line, sub }), opts);
+  const desc = run ? ((circuitById(key) || {}).blurb || '') : (g.tagLong || g.tag || '');
+  return new ImageResponse(detailed(p, { line, name: g.name, desc }), opts);
 }

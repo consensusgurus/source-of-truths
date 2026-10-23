@@ -66,6 +66,7 @@ import { RunChallengeButton, RunChallengeLine } from '../RunChallenge';
 import RunScorecard, { boardRows } from './RunScorecard';
 import RunNextSlot from './RunNextSlot';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
+import { themeParam } from '@/lib/share-palette';
 
 const PAINT_MS = 1250;     // one bank owns the screen for this long (980 before the rank line)
 const COUNT_MS = 560;      // its number, its ladder block and its segment
@@ -899,7 +900,7 @@ function GeChallenge({ gameKey, challenge }) {
     const rankX = challenge.status || (titleFor(gameKey, score) || {}).name || '';
     const raw = encodeChallenge({ name: who, t: tt, s: score, o, n: challenge.n, won: false, d, x: rankX });
     const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=5`, cid));
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=6${themeParam()}`, cid));
     recordSend({ cid, gameKey, num: challenge.n, day, fig: { s: score, o, t: tt, won: false, x: rankX }, source: 'run' });
     const copy = () => { try { navigator.clipboard.writeText(url).then(() => setMsg('Link copied. Paste it to a friend.'), () => setMsg(url)); } catch (e) { setMsg(url); } };
     let touch = false;

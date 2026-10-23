@@ -12,6 +12,7 @@ import { drawingIsLive, DRAWING } from '@/lib/drawing';
 import { newCid, withCid, recordSend, reportTake } from '@/lib/challenge-client';
 import TicketDoor from './TicketDoor';
 import { titleFor } from '@/lib/run-titles';
+import { themeParam } from '@/lib/share-palette';
 
 // A QUESTIONS-RIGHT RUN SHARES ITS COUNT, NEVER ITS DENOMINATOR (owner,
 // 2026-10-15): "61 right", not "61 of 180". Scores on a one-life run sit far
@@ -87,7 +88,7 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, won = f
     const tt = t != null ? t : (blank && !o ? 0 : null);
     const raw = encodeChallenge({ name: who, t: tt, s: score, o, n, won: !!won, d, x: rank });
     const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=5`, cid));
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=6${themeParam()}`, cid));
     recordSend({ cid, gameKey, num: n, day: d ? etToday() : null, fig: { s: score, o, t: tt, won: !!won, x: rank }, source: 'run' });
     const copied = () => { setMsg('Link copied. Paste it to a friend.'); };
     const copy = () => { try { navigator.clipboard.writeText(url).then(copied, () => setMsg(url)); } catch (e) { setMsg(url); } };

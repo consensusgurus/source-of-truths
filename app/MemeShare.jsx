@@ -15,7 +15,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import GameGlyph from './GameGlyph';
+import { DAILY_GAME_MAP } from '@/lib/daily-games';
+import { sharePalette, markSvg, isDarkPage } from '@/lib/share-palette';
 import { MEMES, memeOrder, memeCaption } from '@/lib/meme-share';
 import { buildMemeGif } from '@/lib/meme-gif';
 
@@ -30,14 +31,16 @@ const CSS = `
 .msh-hd small{display:block;font-size:11.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#5b6475;}
 .msh-hd b{font-size:18px;font-weight:800;}
 .msh-x{background:#eef1f6;border:0;border-radius:99px;padding:7px 14px;font:inherit;font-size:13px;font-weight:800;color:#0b0d12;cursor:pointer;}
-.msh-card{border-radius:14px;overflow:hidden;background:#000;}
-.msh-cap{padding:12px 14px;text-align:center;font-size:17px;line-height:1.2;font-weight:800;text-transform:uppercase;color:#fff;}
+.msh-card{border-radius:14px;overflow:hidden;background:#000;border:1px solid #d6dbe4;}
+.msh-cap{padding:12px 14px;text-align:center;font-size:17px;line-height:1.2;font-weight:800;text-transform:uppercase;}
 .msh-card img{display:block;width:100%;height:auto;background:#111;}
-.msh-strip{display:flex;align-items:center;gap:10px;padding:9px 12px;color:#fff;}
-.msh-strip .tx{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1;}
-.msh-strip b{font-size:13.5px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.msh-strip i{font-style:normal;font-size:12px;font-weight:700;}
-.msh-strip .gl{flex:none;width:34px;height:34px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;}
+.msh-strip{display:flex;flex-direction:column;gap:3px;padding:10px 14px 11px;}
+.msh-strip>b{font-size:15px;font-weight:800;}
+.msh-strip .ds{font-size:12.5px;font-weight:600;line-height:1.35;}
+.msh-strip .ft{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:11.5px;}
+.msh-strip .mk{width:16px;height:16px;flex:none;display:block;background:none;}
+.msh-strip .br{font-weight:800;font-size:12px;}
+.msh-strip .ft i{font-style:normal;font-weight:700;margin-left:auto;}
 .msh-sl{margin:14px 0 7px;font-size:11.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#5b6475;}
 .msh-chips{display:flex;gap:8px;overflow-x:auto;padding-right:24px;scrollbar-width:none;-ms-overflow-style:none;
   -webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent);}
@@ -80,7 +83,16 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
   const linkRef = useRef(null);
   const k = key && order.includes(key) ? key : order[0];
   const caption = ctx && k ? memeCaption(k, ctx) : '';
-  const line2 = ctx ? `mindloftdaily.com/${ctx.route}` : ''; // the link beside it says Accept the challenge
+  // THE STRIP NAMES THE GAME (owner, 2026-10-23): its name and long description
+  // under the clip, then the Mind Loft row. No stats there: the caption carries
+  // the result. Colours come from the reader's register, light or dark.
+  const [dark, setDark] = useState(false);
+  useEffect(() => { if (open) setDark(isDarkPage()); }, [open]);
+  const pal = ctx ? sharePalette(ctx.cat, dark) : null;
+  const gm = ctx ? DAILY_GAME_MAP[ctx.gameKey] : null;
+  const gName = ctx ? ctx.game : '';
+  const gDesc = gm ? (gm.tagLong || gm.tag || '') : '';
+  const siteUrl = ctx ? `mindloftdaily.com/${ctx.route}` : '';
 
   useEffect(() => { if (!open) { setNote(''); linkRef.current = null; } }, [open]);
 
@@ -89,12 +101,12 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
     if (!open || !ctx || !k) return undefined;
     let live = true;
     setBlob(null); setBusy(true);
-    buildMemeGif({ src: MEMES[k].src, top: caption, line1: ctx.line1, line2, hue: ctx.hue })
+    buildMemeGif({ src: MEMES[k].src, top: caption, name: gName, desc: gDesc, url: siteUrl, pal })
       .then((b) => { if (live) { setBlob(b); setBusy(false); } })
       .catch(() => { if (live) { setBusy(false); setNote('Could not make the GIF here. The link still works.'); } });
     return () => { live = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, k, caption, ctx && ctx.line1, ctx && ctx.hue]);
+  }, [open, k, caption, gName, gDesc, siteUrl, pal && pal.fill, dark]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -144,11 +156,16 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
           <button type="button" className="msh-x" onClick={onClose}>Close</button>
         </div>
         <div className="msh-card">
-          <div className="msh-cap">{caption}</div>
+          <div className="msh-cap" style={{ background: pal.ground, color: pal.ink }}>{caption}</div>
           <img src={MEMES[k].src} alt={`${MEMES[k].name} reaction GIF`} />
-          <div className="msh-strip" style={{ background: ctx.hue }}>
-            <span className="gl" style={{ color: ctx.hue }}><GameGlyph gameKey={ctx.gameKey} size={26} /></span>
-            <span className="tx"><b>{ctx.line1}</b><i>{line2}</i></span>
+          <div className="msh-strip" style={{ background: pal.fill, color: pal.onFill }}>
+            <b>{gName}</b>
+            {gDesc ? <span className="ds">{gDesc}</span> : null}
+            <span className="ft">
+              <img className="mk" alt="" src={'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markSvg(pal.onFill, pal.onFill))} />
+              <b className="br">Mind Loft</b>
+              <i>{siteUrl}</i>
+            </span>
           </div>
         </div>
         <div className="msh-sl">Or pick another</div>
@@ -162,7 +179,7 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
           <button type="button" className="msh-ob" onClick={() => copyLink()}>Copy link</button>
           <button type="button" className="msh-ob" disabled={!blob} onClick={() => { if (blob) { download(blob, fname); setNote('GIF saved.'); } }}>Save GIF</button>
         </div>
-        <button type="button" className="msh-go" style={{ background: ctx.hue }} disabled={busy} onClick={share}>
+        <button type="button" className="msh-go" style={{ background: pal.fill, color: pal.onFill }} disabled={busy} onClick={share}>
           {busy ? 'Making your GIF…' : 'Share the GIF'}
         </button>
         <div className="msh-note" role="status">{note || 'Each new player who finishes from your link earns you a drawing ticket.'}</div>

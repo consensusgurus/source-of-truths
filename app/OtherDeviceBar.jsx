@@ -18,6 +18,7 @@ import { newCid, withCid, recordSend } from '@/lib/challenge-client';
 import { withRef } from '@/lib/referrals';
 import { savedIdentity } from '@/lib/saved-identity';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
+import { themeParam } from '@/lib/share-palette';
 
 const CSS = `
 .odb{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 14px;padding:10px 16px;
@@ -87,7 +88,7 @@ export default function OtherDeviceBar({ gameKey }) {
     const d = ymdCompact(etTodayISO());
     const raw = encodeChallenge({ ...mine, name: who, d });
     const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=5`, cid));
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=6${themeParam()}`, cid));
     recordSend({ cid, gameKey, num: res.num, day: etTodayISO(), fig: mine, source });
     return url;
   };
