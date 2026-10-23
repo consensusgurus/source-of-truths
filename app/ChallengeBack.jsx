@@ -115,15 +115,15 @@ const CSS = `
 .cbk-tt{flex:1;min-width:0;}
 .cbk-tt b{display:block;font-size:18px;font-weight:800;letter-spacing:-.01em;color:#f5d27a;}
 .cbk-tt i{display:block;font-style:normal;font-size:13px;font-weight:600;color:#c9b98a;margin-top:3px;}
-.cbk-tn{flex:none;position:relative;width:72px;text-align:center;border-left:1px solid rgba(201,151,31,.4);padding-left:18px;}
-.cbk-tn b{display:block;font-size:32px;font-weight:800;line-height:1;color:#f5d27a;}
+.cbk-tn{flex:none;position:relative;min-width:72px;text-align:center;border-left:1px solid rgba(201,151,31,.4);padding-left:18px;}
+.cbk-tn b{display:block;font-size:32px;font-weight:800;line-height:1;color:#f5d27a;white-space:nowrap;font-variant-numeric:tabular-nums;}
 .cbk-tn b.pop{animation:cbkPop .5s ease-out both;}
 .cbk-tn em{position:absolute;left:18px;right:0;top:-8px;font-style:normal;font-size:13px;font-weight:800;color:var(--stg-good,#6ee7b7);animation:cbkPlus 1.1s ease-out both;}
 .cbk-tn i{display:block;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.12em;color:#c9b98a;margin-top:3px;}
 .stage-page[data-stage-theme=light] .cbk-tx{background:#fff8e6;}
 .stage-page[data-stage-theme=light] .cbk-tt b,.stage-page[data-stage-theme=light] .cbk-tn b{color:#2a1f04;}
 .stage-page[data-stage-theme=light] .cbk-tt i,.stage-page[data-stage-theme=light] .cbk-tn i{color:#5f4a12;}
-@media (max-width:640px){.cbk{border-radius:0;border-left:0;border-right:0;margin:0}.cbk-bd{padding:14px 16px}.cbk-tx{padding:12px 14px;gap:12px}.cbk-tk{width:60px;height:44px}.cbk-tk svg{width:60px;height:44px}.cbk-tt b{font-size:15px}.cbk-tn{width:52px;padding-left:12px}.cbk-tn b{font-size:26px}}
+@media (max-width:640px){.cbk{border-radius:0;border-left:0;border-right:0;margin:0}.cbk-bd{padding:14px 16px}.cbk-tx{padding:12px 14px;gap:12px}.cbk-tk{width:60px;height:44px}.cbk-tk svg{width:60px;height:44px}.cbk-tt b{font-size:15px}.cbk-tn{min-width:52px;padding-left:12px}.cbk-tn b{font-size:24px}}
 @keyframes cbkIn{0%{transform:translateY(-16px);opacity:0}100%{transform:translateY(0);opacity:1}}
 @keyframes cbkBar{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
 @keyframes cbkV{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
