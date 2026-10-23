@@ -78,6 +78,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { circuitGamesFor, circuitName, circuitSlotFor, rampFor, runHref } from '@/lib/circuits';
 import { T } from '@/lib/theme';
+import { gameActive } from '@/lib/game-active';
 
 const STORE = 'sot_gauntlet_nudge';
 const ID = 'gauntlet';
@@ -114,6 +115,7 @@ export default function GauntletPop({ ready = false, unplayed = false, day = '' 
       // A browser that refuses storage (private mode, blocked cookies) gets
       // the prompt once per page load rather than never: the read failing is
       // not evidence it has been seen.
+      if (gameActive()) return;
       try { if (localStorage.getItem(STORE) === now.day) return; } catch (e) {}
       try { localStorage.setItem(STORE, now.day); } catch (e) {}
       fired.current = true;

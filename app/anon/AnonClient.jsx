@@ -66,6 +66,8 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import DailyRules from '../DailyRules';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
+import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import RunDoorPop from '../circuits/RunDoorPop';
 
 const COLORS = {
   ink: T.ink,
@@ -250,6 +252,8 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   // Still resolved in an effect: the server cannot know what is stored.
   const [stageTheme] = useStageTheme();
   const STAGE = isStage('anon', searchParams);
+  const EMBED = useRunEmbed();
+  useRunHelp(EMBED, () => setShowHelp(true));
   // THE ACCENT AS A VARIABLE. It is only ever used as a CSS colour, so
   // every call site below themes itself and none of them had to be found.
   // The literals are published on the root element instead.
@@ -384,6 +388,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
 
   const postResult = useCallback((g2, count) => {
     abandon.markFlushed();
+    if (EMBED) EMBED.onResult({ key: 'anon', score: count, total: TOTAL, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     try { setStats(recordStat(PUZZLE.num, { s: count, t: TOTAL, g: 0, won: count === TOTAL })); } catch (e) {}
     try {
@@ -397,7 +402,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
         .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
         .catch(() => {});
     } catch (e) {}
-  }, [abandon, PUZZLE, TOTAL, identity]);
+  }, [abandon, PUZZLE, TOTAL, identity, EMBED]);
 
   function start() {
     setG((c) => (c.t0 ? c : { ...c, t0: Date.now(), fill: c.fill || new Array(N).fill('') }));
@@ -848,13 +853,14 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
+      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
+      data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="anon" name="Anon" collapsed={!!g.t0} loft={LOFT} />
       )}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="anon" quizId={PUZZLE.quizId}
           progress={N ? filledCount / N : 0}
           name="Anon"
@@ -1099,7 +1105,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && !study.active && (
+          {LOFT && !playing && !study.active && !EMBED && (
             <LoftFinish
               name="Anon"
               catRank={catRank}
@@ -1147,7 +1153,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
             "Show overview and more" control it replaces ever did. */}
         {/* The strip in the cap answers what this opens, without being pressed. */}
         {!STAGE && <GamePanel self="anon" name="Anon" onShow={() => setShowChrome(true)} />}
-          <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0', maxWidth: 640 }}>
+          <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', margin: '30px auto 0', maxWidth: 640 }}>
             {LOFT && (
               <div className={STAGE ? undefined : 'loft-report'}>
                 <ReportIssue self="anon" name="Anon" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
@@ -1190,6 +1196,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           padding on .an-wrap until 2026-08-15, which a Loft page zeroes with
           !important, so the rail sat on top of the end of the passage and the
           last row of the bank. */}
+      <RunDoorPop id="crossed" game="anon" ready={hydrated && playing && !g.t0 && isTodays && !EMBED} self="Anon" />
       {railUp && (
         <div className="an-input" ref={rail.ref}>
           <div className="an-inputin">

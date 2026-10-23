@@ -36,6 +36,7 @@ import { circuitById } from '@/lib/circuits';
 import { fetchDayStatus, etToday } from '../useDayStats';
 import GameGlyph from '../GameGlyph';
 import { T } from '@/lib/theme';
+import { gameActive } from '@/lib/game-active';
 
 // 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
 const WAIT_MS = 10000;
@@ -176,7 +177,7 @@ export default function GauntletMorePop({ circuitId = 'gauntlet', ready = false,
         }
       }
       timer = setTimeout(() => {
-        if (!alive || fired.current) return;
+        if (!alive || fired.current || gameActive()) return;
         fired.current = true;
         if (!force) {
           try {

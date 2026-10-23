@@ -11,24 +11,29 @@ import { PUZZLES as P_emcee } from '../emcee/puzzles';
 import { PUZZLES as P_encore } from '../encore/puzzles';
 import { PUZZLES as P_arcos } from '../arcos/puzzles';
 import { PUZZLES as P_glyph } from '../glyph/puzzles';
+import { PUZZLES as P_anon } from '../anon/puzzles';
 
 // CROSSED, the run (owner, 2026-10-20): mindloftdaily.com/crossed.
 // Each bank is resolved HERE and only today's puzzle ships, exactly as each
 // game's own page ships it. The clients are handed a one-puzzle list, which is
 // today's by construction. The order is the owner's: Emcee, Encore, Arcos,
 // Glyph (lib/circuits circuitKeysFor('crossed', day)).
-const BANKS = { emcee: P_emcee, encore: P_encore, arcos: P_arcos, glyph: P_glyph };
+const BANKS = { emcee: P_emcee, encore: P_encore, arcos: P_arcos, glyph: P_glyph, anon: P_anon };
+const COUNT_WORD = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'];
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ searchParams }) {
   const s = String((searchParams && searchParams.s) || '');
   const t = String((searchParams && searchParams.t) || '');
-  const ok = /^\d{1,2}(-\d{1,2}){3}$/.test(s);
+  const ok = /^\d{1,2}(-\d{1,2}){3,4}$/.test(s);
   const d = String((searchParams && searchParams.d) || '');
   const img = ok ? `/crossed/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/crossed/card';
-  const title = 'Crossed Up: Four Daily Crosswords in One Run | Mind Loft';
-  const description = 'A free daily crossword run: the mini, a nine by nine, three acrostics and a no-clue code grid. Solve all four fast to rank from Monday solver to In Pen.';
+  const n = circuitKeysFor(CROSSED_RUN_ID, etTodayServer()).length || 5;
+  const title = `Crossed Up: ${COUNT_WORD[n] || n} Daily Crosswords in One Run | Mind Loft`;
+  const description = n >= 5
+    ? 'A free daily crossword run: the mini, a nine by nine, three acrostics, a no-clue code grid and a hidden quote. Solve all five fast to rank from Monday solver to In Pen.'
+    : 'A free daily crossword run: the mini, a nine by nine, three acrostics and a no-clue code grid. Solve all four fast to rank from Monday solver to In Pen.';
   return {
     title, description,
     alternates: { canonical: '/crossed' },
@@ -59,7 +64,7 @@ export default async function CrossedPage() {
       key, name: g.name || key, tag: g.tag || '', color: g.colorNavy || '#93c5fd',
       path: g.href || `/${key}`, num: p.num, quizId: p.quizId, sunday: !!p.sunday,
       form: f.form || g.name || key, chip: f.chip || g.tag || '', phrase: f.phrase || g.name || key,
-      weight: crossedWeight(key), puzzle: p,
+      weight: crossedWeight(key, today), puzzle: p,
     });
   }
   const d = new Date(`${today}T12:00:00Z`);
@@ -67,7 +72,7 @@ export default async function CrossedPage() {
   const dateShort = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
   const jsonLd = {
     '@context': 'https://schema.org', '@type': 'Game', name: 'Crossed Up', url: `${SITE_URL}/crossed`,
-    description: 'A free daily run of four crosswords from Mind Loft: Emcee, Encore, Arcos and Glyph, ending in a rank from Monday solver to Solves in Pen.',
+    description: 'A free daily run of crosswords from Mind Loft: Emcee, Encore, Arcos, Glyph and Anon, ending in a rank from Monday solver to Solves in Pen.',
     gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
     image: `${SITE_URL}/crossed/card`,
     publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
@@ -77,7 +82,7 @@ export default async function CrossedPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(runBreadcrumbJsonLd('crossed')) }} />
       <Suspense fallback={null}>
-        <CrossedClient dateLabel={dateLabel} dateShort={dateShort} sections={sections} clocks={clocks} />
+        <CrossedClient day={today} dateLabel={dateLabel} dateShort={dateShort} sections={sections} clocks={clocks} />
       </Suspense>
       <StageTail run="crossed" theme="dark" />
     </>

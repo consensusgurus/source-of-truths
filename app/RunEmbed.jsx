@@ -52,7 +52,7 @@ export function useRunHelp(embed, open) {
   }, [seq]);
 }
 
-const FULL_ONLY = new Set(['emcee', 'encore']);
+const FULL_ONLY = new Set(['emcee', 'encore', 'anon']);
 
 // Returns the beat's handle (or null). The caller owns it: the beat's overlays
 // sit on document.body, so they must go the moment this embed leaves the page,

@@ -42,6 +42,7 @@
 // switch, so no ref is threaded through any cap and it takes no props.
 import { useEffect, useRef, useState } from 'react';
 import { useThemePop, writeStageTheme, useStageTheme, LIGHT_OFFER_KEY } from '@/lib/stage-theme';
+import { gameActive } from '@/lib/game-active';
 
 // The four caps that draw a switch: StageChrome (every daily), StageToday (the
 // home), CircuitFrame (the circuit pages), StatHubClient (the Stat Hub). A
@@ -186,7 +187,7 @@ function LightOfferRetired({ gameKey, num, home = false }) {
     };
     if (begun()) { setState('gone'); return undefined; }
     const show = setTimeout(() => {
-      if (begun()) { setState('gone'); return; }
+      if (begun() || gameActive()) { setState('gone'); return; }
       try { if (document.querySelector('.ent-door, .prm-scrim, .gpp-scrim')) return; } catch (e) {}
       setState((s) => (s === 'wait' ? 'open' : s));
     }, 1200);

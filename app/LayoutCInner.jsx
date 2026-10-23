@@ -538,7 +538,7 @@ export default function LayoutCInner({ gameKey }) {
               {!who ? <a className="sty-keep" href="/?signup=1">Keep stats, play with friends</a> : null}
               {who ? <div className="sty-who"><b>{who}</b><i>player</i></div> : null}
               {who && grp && Array.isArray(grp.groups) ? grp.groups.map((g) => (
-                <Link key={g.code} className="sty-fca" href="/#sty-group">
+                <Link key={g.code} className="sty-fca" href={`/groups/${g.code}`}>
                   <b>{g.rank ? '#' + g.rank : '–'}{typeof g.members === 'number' && g.members ? <i> of {g.members}</i> : null}</b>
                   <i>{g.name}</i>
                 </Link>

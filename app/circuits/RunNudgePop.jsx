@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { T } from '@/lib/theme';
 import { RUN_DOORS, runDoneToday } from './RunDoorPop';
+import { gameActive } from '@/lib/game-active';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -45,7 +46,7 @@ export default function RunNudgePop({ target = 'gauntlet', chain = null, ready =
   useEffect(() => {
     if (!ready || fired.current) return undefined;
     const fire = () => {
-      if (fired.current) return;
+      if (fired.current || gameActive()) return;
       fired.current = true;
       const n = nextFrom(0);
       if (n < 0) return;

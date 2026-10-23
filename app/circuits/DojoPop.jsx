@@ -29,6 +29,7 @@ import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { circuitKeysFor, SUDOKU_POOL } from '@/lib/circuits';
 import { isNewerVisitor } from '@/lib/visitor';
 import { RUN_DOOR_CSS, runDoneToday } from './RunDoorPop';
+import { gameActive } from '@/lib/game-active';
 
 export const DOJO_POP_STORE = 'sot_dojo_pop';
 // 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
@@ -68,7 +69,7 @@ export default function DojoPop({ ready = false, self = '' }) {
       fn();
     };
     const t = setTimeout(() => whenClear(() => {
-      if (!alive || fired.current) return;
+      if (!alive || fired.current || gameActive()) return;
       try {
         const q = new URLSearchParams(window.location.search);
         if (q.get('circuit') || q.get('five') === '1') return;

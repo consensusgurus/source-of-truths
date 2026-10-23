@@ -44,6 +44,7 @@ import { readRunParam } from '@/lib/circuits';
 import { readStageTheme } from '@/lib/stage-theme';
 import { afterGameConcludes, trackPostGame } from '@/lib/post-game-gate';
 import { drawingIsLive } from '@/lib/drawing';
+import { gameActive } from '@/lib/game-active';
 
 // ONCE A WEEK (owner, 2026-10-04, same day it shipped as once ever): at most one
 // thank-you pop-up per browser per seven days, whichever version. LAST_KEY holds
@@ -189,7 +190,7 @@ export default function ThanksPop() {
       if (sessionStorage.getItem(SHOWN_KEY)) return undefined;
     } catch (e) { return undefined; }
     const t = setTimeout(() => {
-      if (blockedHere() || anotherModalOpen()) return;
+      if (blockedHere() || anotherModalOpen() || gameActive()) return;
       show('return');
     }, RETURN_WAIT_MS);
     return () => clearTimeout(t);
@@ -210,7 +211,7 @@ export default function ThanksPop() {
       // Never mid-game, and only after ten quiet seconds (lib/post-game-gate.js).
       if (cancel) cancel();
       cancel = afterGameConcludes(() => {
-        if (blockedHere() || anotherModalOpen()) return;
+        if (blockedHere() || anotherModalOpen() || gameActive()) return;
         try { if (shownThisWeek() || sessionStorage.getItem(SHOWN_KEY)) return; } catch (e) { return; }
         show('done');
       });

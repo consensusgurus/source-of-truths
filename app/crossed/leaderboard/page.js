@@ -5,7 +5,7 @@ import PriceCheckBoard from '../../pricecheck/leaderboard/PriceCheckBoard';
 
 export const metadata = {
   title: 'Crossed Up Leaderboard | Mind Loft',
-  description: "Today's Crossed Up board, every crowned day, and the all-time champions. Four crosswords, scored mostly on speed, out of 100.",
+  description: "Today's Crossed Up board, every crowned day, and the all-time champions. Five crosswords, scored mostly on speed, out of 100.",
   alternates: { canonical: '/crossed/leaderboard' },
   openGraph: {
     title: 'Crossed Up Leaderboard | Mind Loft',
@@ -25,6 +25,6 @@ function etLabel() {
 
 export default function CrossedLeaderboardPage() {
   return <PriceCheckBoard dateLabel={etLabel()} circuit="crossed" name="Crossed Up" path="/crossed"
-    emptyLine="Nobody has finished all four today yet. Yours would be the first rank on the board."
-    rankedLine="Ranked on the four puzzle scores, a fifth for solving and four fifths for speed" max={100} />;
+    emptyLine="Nobody has finished every grid today yet. Yours would be the first rank on the board."
+    rankedLine="Ranked on the puzzle scores, a fifth for solving and four fifths for speed" max={100} />;
 }

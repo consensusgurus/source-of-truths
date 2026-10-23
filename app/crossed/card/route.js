@@ -95,7 +95,7 @@ function invite() {
     d({ flexDirection: 'column', flex: 1 },
       eyebrow('Mind Loft · Crossed Up · Daily run'),
       d({ fontSize: 64, fontWeight: 800, lineHeight: 1.04, letterSpacing: -2, marginTop: 36 }, 'Which day could you solve?'),
-      d({ fontSize: 22, fontWeight: 700, color: '#cbd5e1', marginTop: 18 }, 'Four crosswords: the mini, the big one, three acrostics, a clueless grid. Fast enough and you solve in pen.'),
+      d({ fontSize: 22, fontWeight: 700, color: '#cbd5e1', marginTop: 18 }, 'Five crosswords: the mini, the big one, three acrostics, a clueless grid and a hidden quote. Fast enough and you solve in pen.'),
       cta()),
     d({ width: 400, flexDirection: 'column', justifyContent: 'center', gap: 10 },
       ...rising.map((x, i) => d({ alignItems: 'center', gap: 14 },
@@ -107,7 +107,7 @@ export async function GET(req) {
   try {
     const q = new URL(req.url).searchParams;
     const s = q.get('s') || '';
-    const parts = /^\d{1,2}(-\d{1,2}){3}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(40, Number(x)))) : null;
+    const parts = /^\d{1,2}(-\d{1,2}){3,4}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(40, Number(x)))) : null;
     const tRaw = q.get('t');
     const tq = tRaw == null || tRaw === '' ? NaN : Number(tRaw);
     const tot = Number.isFinite(tq) && tq >= 0 && tq <= CROSSED_MAX ? Math.round(tq) : null;

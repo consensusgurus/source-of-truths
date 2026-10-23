@@ -30,6 +30,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { T } from '@/lib/theme';
+import { gameActive } from '@/lib/game-active';
 
 // 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
 const WAIT_MS = 10000;
@@ -180,7 +181,7 @@ export default function RunDoorPop({ id = 'pricecheck', ready = false, self = ''
   useEffect(() => {
     if (!D || !ready || fired.current) return undefined;
     const t = setTimeout(() => {
-      if (fired.current || !shouldOffer(id, game)) return;
+      if (fired.current || gameActive() || !shouldOffer(id, game)) return;
       fired.current = true;
       try { localStorage.setItem(doorKey(id, game), etToday()); } catch (e) {}
       setOpen(true);

@@ -24,6 +24,7 @@
 
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import { gameActive } from '@/lib/game-active';
 
 const KEY = 'sot_groups_pop';
 // First session a NAMED reader was seen in, and this session's verdict.
@@ -87,6 +88,7 @@ export default function GroupsPop() {
           return;
         }
         if (!force) { try { localStorage.setItem(KEY, new Date().toISOString().slice(0, 10)); } catch (e) {} }
+        if (gameActive()) return;
         setMail(savedEmail());
         setOpen(true);
       };

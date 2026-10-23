@@ -25,6 +25,7 @@ import { DRAWING, DRAWING_COPY, drawingIsLive } from '@/lib/drawing';
 import { DAILY_GAMES } from '@/lib/daily-games';
 import { useStageTheme } from '@/lib/stage-theme';
 import { ensureMyRefCode } from '@/lib/referrals';
+import { gameActive, isRunPath } from '@/lib/game-active';
 
 const KEY = 'sot_email_ticket_until';
 const HIDE_MS = 3 * 24 * 60 * 60 * 1000;
@@ -36,7 +37,7 @@ const PLAY_PATHS = new Set(DAILY_GAMES.map((g) => g.href));
 
 function onPlayRoute(path) {
   if (!path) return false;
-  if (PLAY_PATHS.has(path)) return true;
+  if (PLAY_PATHS.has(path) || isRunPath(path)) return true;
   return /^\/(quiz|kids|vs)\//.test(path) || /^\/circuits\/[^/]+\/run/.test(path);
 }
 function identity() {
@@ -89,6 +90,7 @@ export default function EmailTicketPop() {
     const t = setInterval(() => {
       if (!drawingIsLive() || hasEmail() || hiddenNow()) return;
       if (document.visibilityState === 'hidden' || otherDialogOpen()) return;
+      if (gameActive()) return;
       const now = Date.now();
       if (now - arrived.current < SETTLE_MS) return;
       if (onPlayRoute(path)) {

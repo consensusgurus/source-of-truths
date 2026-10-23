@@ -28,6 +28,7 @@ import { T } from '@/lib/theme';
 import { RUN_DOORS, runDoneToday } from './RunDoorPop';
 import { circuitKeysFor } from '@/lib/circuits';
 import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
+import { gameActive } from '@/lib/game-active';
 
 export const RUN_ORDER = ['gauntlet', 'triviaencore', 'english', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'crossed', 'room'];
 export const RUNS_POP_STORE = 'sot_runs_pop';
@@ -192,7 +193,7 @@ export default function MoreRunsPop({ self, ready = false, delay = 3500, fireOnL
   useEffect(() => {
     if (!ready || fired.current) return undefined;
     const fire = () => {
-      if (fired.current) return;
+      if (fired.current || gameActive()) return;
       fired.current = true;
       try {
         if (localStorage.getItem(RUNS_POP_STORE)) return;

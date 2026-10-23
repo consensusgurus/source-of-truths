@@ -44,6 +44,7 @@ import { RAMP_INK, RAMP_INK_LIGHT, categoryColor, categoryColorLight, categoryAc
 import GameGlyph from './GameGlyph';
 import { fetchDayStatus, etToday } from './useDayStats';
 import { seenBeforeToday } from '@/lib/visitor';
+import { gameActive } from '@/lib/game-active';
 
 const KEY = (k) => `sot_premiere_${k}`;
 
@@ -128,6 +129,7 @@ export default function PremierePop() {
         if (!alive) return;
         if (arrivalBusy() && Date.now() - started < 15000) { timers.push(setTimeout(tick, 300)); return; }
         if (Date.now() - started >= 15000 && arrivalBusy()) return;
+        if (gameActive()) return;
         if (!force) for (const k of [runCand.id, ...runCand.keys, ...open.map((p) => p.key)]) { try { localStorage.setItem(KEY(k), today); } catch (e) {} }
         setRun(runCand);
       };
@@ -159,6 +161,7 @@ export default function PremierePop() {
         if (!alive) return;
         if (arrivalBusy() && Date.now() - started < 15000) { timers.push(setTimeout(tick, 300)); return; }
         if (Date.now() - started >= 15000 && arrivalBusy()) return;
+        if (gameActive()) return;
         // Stamp every open premiere, not just the ones on the card, so an
         // older launch left off it never turns up on a later visit.
         if (!force) for (const k of open.map((p) => p.key)) { try { localStorage.setItem(KEY(k), today); } catch (e) {} }

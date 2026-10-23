@@ -2465,7 +2465,9 @@ export default function StageToday() {
   // the names arrive. One read per pane, once, and only on a wide screen.
   const [wide, setWide] = useState(false);
   const [mid, setMid] = useState(false);
-  useEffect(() => { setListRuns(mid && viewOf(paneOn) === 'list'); });
+  // The run tiles carry your standing and your group's too (owner, 2026-10-23),
+  // so a desktop asks in tile view as well as list view.
+  useEffect(() => { setListRuns(mid); });
   useEffect(() => {
     const a = window.matchMedia('(min-width: 1100px)');
     const b = window.matchMedia('(min-width: 901px)');
@@ -2979,11 +2981,6 @@ export default function StageToday() {
         {/* THE GAMES INSIDE THE RUN (owner, 2026-10-18): numbered, in play order,
             the ones you have played lit. Desktop Circuits pane only; the phone
             keeps its compact runs block. */}
-        <span className="gms" aria-label={'Games in ' + c.name}>
-          {c.games.map((g, i) => (
-            <span key={g.key} className={'gm' + (done.has(g.key) ? ' on' : '')} style={{ '--gc': hueFor(g.cat) }}><i>{i + 1}</i>{g.name}</span>
-          ))}
-        </span>
         <span className="st">
           <span>{left}</span>
           {gtxt ? <span className="gr">{gtxt}</span> : null}
@@ -3030,7 +3027,6 @@ export default function StageToday() {
                     <span className="sq">{c.name}</span>
                     {tiles.length <= 2 ? <span className="ds">{c.blurb}</span> : null}
                     <span className="l1">{polyStatus(polyFin)}</span>
-                    <span className="l2">{polyPips(c)}</span>
                   </button>
                 );
               }
@@ -3144,6 +3140,21 @@ export default function StageToday() {
       {c.legs.map((x) => <i key={x.id} className={runFull(x) ? 'on' : ''} />)}
     </span>
   );
+  // YOUR STANDING AND YOUR GROUP'S, in place of the per-game pips (owner,
+  // 2026-10-23). A run ranks only once every game is played, so an unfinished
+  // run shows a dash and how far along it is.
+  const runFigs = (c) => {
+    const fin = runFull(c);
+    const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+    const me = fin && st && st.rank ? st : null;
+    return (
+      <span className="sty-dkfs">
+        <span className="sty-dkf"><i>You</i><b>{me ? <>#{me.rank}<small> of {fmtN(me.players)}</small></> : '\u2013'}</b></span>
+        {runGrp ? <span className="sty-dkf"><i>{runGrp.name}</i><b>{fin && st && st.grank ? <>#{st.grank}<small> of {st.gfield}</small></> : '\u2013'}</b></span> : null}
+        {!me ? <span className="sty-dks">{fin ? 'Finished' : c.n ? `${c.n} of ${c.games.length} played` : `${c.games.length} games`}</span> : null}
+      </span>
+    );
+  };
   const deckRuns = (cat) => {
     const sk = skillOfId(cat);
     const list = PILL_CIRCUITS.filter((id) => !SHELF_ONLY.has(id)).map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
@@ -3169,7 +3180,7 @@ export default function StageToday() {
           style={{ ...runLook(c, cat), '--i': i }}
           onClick={() => setDeckOpen((v) => (v === c.id ? null : c.id))}>
           <span className="sty-dkn"><b>{c.name}</b><em>3 runs</em></span>
-          <span className="sty-dkl">{polyPips(c)}<span className="sty-dks">{polyStatus(fin)}</span></span>
+          <span className="sty-dkl"><span className="sty-dks">{polyStatus(fin)}</span></span>
         </button>
       );
     }
@@ -3181,12 +3192,7 @@ export default function StageToday() {
         style={{ ...runLook(c, cat), '--i': i }}
         onClick={() => setDeckOpen((v) => (v === c.id ? null : c.id))}>
         <span className="sty-dkn"><b>{c.name}</b><em>Run</em></span>
-        <span className="sty-dkl">
-          <span className="sty-dkp" aria-label={`${c.n} of ${c.games.length} played`}>
-            {c.games.map((g) => <i key={g.key} className={done.has(g.key) ? 'on' : ''} />)}
-          </span>
-          <span className="sty-dks">{st ? `You: #${st.rank} of ${st.field}` : fin ? 'Finished' : `${c.games.length} games`}</span>
-        </span>
+        <span className="sty-dkl">{runFigs(c)}</span>
       </button>
     );
   };
@@ -3300,7 +3306,7 @@ export default function StageToday() {
           <span className="ic"><span className="sty-rstk" aria-hidden="true" /></span>
           <span className="nm"><b>{c.name}</b><span className="tg">3 runs · {c.blurb}</span></span>
           <span className="td"><span className="mu">One title for all three</span></span>
-          <span className="yu">{polyPips(c)}<i>{polyStatus(fin)}</i></span>
+          <span className="yu"><i>{polyStatus(fin)}</i></span>
           <a className="ct" href={withTq('/polymath')} onClick={(e) => e.stopPropagation()}>{fin ? 'Results' : 'Open'}</a>
           <span className="sty-rchev" aria-hidden="true">{on ? '\u2212' : '+'}</span>
         </div>,
@@ -3324,12 +3330,7 @@ export default function StageToday() {
             : st && st.players ? <><b>{fmtN(st.players)}</b> {st.players === 1 ? 'player' : 'players'} today</>
             : <span className="mu">Open. Be first.</span>}
         </span>
-        <span className="yu">
-          <span className="sty-dkp" aria-label={`${c.n} of ${c.games.length} played`}>
-            {c.games.map((g) => <i key={g.key} className={done.has(g.key) ? 'on' : ''} />)}
-          </span>
-          <i>{sd ? `You: #${sd.rank} of ${sd.field}` : fin ? 'Finished' : c.n ? `${c.n} of ${c.games.length} played` : 'Not started'}</i>
-        </span>
+        <span className="yu">{runFigs(c)}</span>
         <a className="ct" href={withTq(circuitEntryHref(c.id))} onClick={(e) => e.stopPropagation()}>{fin ? 'Results' : c.n ? 'Continue' : 'Play run'}</a>
         <span className="sty-rchev" aria-hidden="true">{on ? '\u2212' : '+'}</span>
       </div>,
@@ -3437,8 +3438,8 @@ export default function StageToday() {
               dash until they have a rank in it today. Tapping one opens that
               group in the pane below. On a phone the row slides sideways. */}
           {who && grp && Array.isArray(grp.groups) ? grp.groups.map((g) => (
-            <a key={g.code} className="sty-fc sty-fca sty-fg" href="#sty-board"
-              onClick={(e) => { e.preventDefault(); pickGroup(g.code); setLbScope(g.code); goPane(BOARD_ID, 'sty-board'); }}>
+            <a key={g.code} className="sty-fc sty-fca sty-fg" href={withTq(`/groups/${g.code}`)}
+              onClick={() => { pickGroup(g.code); }}>
               <b>{g.rank ? '#' + g.rank : '\u2013'}{typeof g.members === 'number' && g.members ? <i> of {g.members}</i> : null}</b>
               <i>{g.name}</i>
             </a>
@@ -6003,6 +6004,12 @@ html[data-stage-color=full] .sty-g.done .sty-gi{color:var(--cci, var(--cc));opac
 .sty-dkp i{width:11px;height:4px;border-radius:2px;background:color-mix(in srgb,var(--ph) 28%,transparent);}
 .sty-dkp i.on{background:var(--ph);}
 .sty-dks{font-size:11.5px;font-weight:600;color:var(--stg-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-dkfs{display:flex;align-items:flex-end;gap:12px;min-width:0;}
+.sty-dkf{display:flex;flex-direction:column;flex:none;min-width:0;line-height:1.15;}
+.sty-dkf i{font-style:normal;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-dkf b{font-size:13.5px;font-weight:800;color:var(--stg-ink);}
+.sty-dkf b small{font-size:10.5px;font-weight:600;color:var(--stg-mute);}
+.sty-dkfs .sty-dks{padding-bottom:1px;}
 .sty-dkd{grid-column:1/-1;position:relative;margin:4px 0 2px;border:1.5px solid var(--ph);border-radius:10px;padding:11px 12px 12px;
   background:color-mix(in srgb,var(--ph) 8%,var(--stg-surf));}
 .sty-dkc{position:absolute;top:-8px;left:var(--dkx);width:13px;height:13px;transform:rotate(45deg);
@@ -6045,7 +6052,10 @@ html[data-stage-color=full] .sty-g.done .sty-gi{color:var(--cci, var(--cc));opac
    stacked edges stay in the deep step so the deck still reads as a stack. */
 html[data-stage-color=full] .sty-deck:not(.done){background:var(--phf);border-color:var(--phf);color:${RAMP_INK};}
 html[data-stage-color=full] .sty-deck:not(.done) .sty-dkn em,
-html[data-stage-color=full] .sty-deck:not(.done) .sty-dks{color:${RAMP_INK};}
+html[data-stage-color=full] .sty-deck:not(.done) .sty-dks,
+html[data-stage-color=full] .sty-deck:not(.done) .sty-dkf i,
+html[data-stage-color=full] .sty-deck:not(.done) .sty-dkf b,
+html[data-stage-color=full] .sty-deck:not(.done) .sty-dkf b small{color:${RAMP_INK};}
 html[data-stage-color=full] .sty-deck:not(.done) .sty-dkp i{background:color-mix(in srgb, ${RAMP_INK} 22%, transparent);}
 html[data-stage-color=full] .sty-deck:not(.done) .sty-dkp i.on{background:${RAMP_INK};}
 html[data-stage-color=full] .sty-deck:not(.done):hover{border-color:${RAMP_INK};}

@@ -49,6 +49,7 @@ import { X } from 'lucide-react';
 import { liveDailyKeys } from '@/lib/daily-games';
 import { DOOR_PARAM, DOOR_VALUE, DOOR_STORE } from '@/lib/trivia-door';
 import { T } from '@/lib/theme';
+import { gameActive } from '@/lib/game-active';
 
 // 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
 const WAIT_MS = 10000;
@@ -127,7 +128,7 @@ export default function TriviaDoorPop({ ready = false, onOpenChange }) {
     try { armed = localStorage.getItem(DOOR_STORE) === 'armed'; } catch (e) {}
     if (!armed) return undefined;
     const t = setTimeout(() => {
-      if (fired.current) return;
+      if (fired.current || gameActive()) return;
       fired.current = true;
       try { localStorage.setItem(DOOR_STORE, 'shown'); } catch (e) {}
       setCount(liveDailyKeys().length);

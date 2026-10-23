@@ -10131,3 +10131,25 @@ daily end card (`StageFinish`), every run (`RunChallengeButton`) and Polymath.
   (first group from `useGroupStanding`), sharing `/g/<code>` with the referral code on it.
 - Do not add animations back or re-split the terms into their own lines: the owner called the old
   card too noisy.
+
+## NO POP-UP MID GAME, EVER: `lib/game-active.js` (owner rule, 2026-10-23)
+
+"GET RID OF ANY AND ALL MID PUZZLE / GAME POP-UPS." Every pop-up on the site asks
+`gameActive()` at the moment it would open and stays shut when it says yes. It is
+read fresh each time, so a timer armed before a game started still cannot land on it.
+Playing means: a run page (any run's `path`, or `/circuits/<id>/run`) whose
+`sot_run_*` save for today is in phase `playing`, the gap between two of its puzzles
+included; a daily's page from its first move (the `sot_<key>_day` breadcrumb) until
+it is done, or a started archive board (`?p=N`); any `/quiz/`, `/kids/` or `/vs/`
+page before its finish card. A finish card on screen (`.stf, .loft-back,
+.dec-backdrop`) always means over. `lib/post-game-gate.js` checks it too, and
+TrophyPop holds an unlock until no game is in play. **A new pop-up calls
+`gameActive()` before it opens. No exceptions.**
+
+## Crossed Up is five crosswords from 2026-10-24 (owner, 2026-10-23)
+
+Anon joined as the FINAL puzzle. `lib/crossed.js`: `CROSSED_ANON_FROM`, the five-way
+weights (Emcee 12, Encore 20, Arcos 22, Glyph 22, Anon 24; Arcos and Glyph still
+above Encore) and `CROSSED_WEIGHT_BEFORE` for the four-game days, chosen by
+`crossedWeight(key, iso)`. The circuit carries a `before` roster through 2026-10-23,
+so no crowned day re-scores. AnonClient reads `useRunEmbed` like the other four.

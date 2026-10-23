@@ -1,8 +1,9 @@
 'use client';
 
-// CROSSED: four crosswords as one run (owner, 2026-10-20).
+// CROSSED: five crosswords as one run (owner, 2026-10-20; Anon joined as the
+// final puzzle 2026-10-24).
 //
-// Emcee, Encore, Arcos, then Glyph (lib/crossed.js), back to back on one page,
+// Emcee, Encore, Arcos, Glyph, then Anon (lib/crossed.js), back to back on one page,
 // then a rank: the run total decides which day's newspaper crossword you are
 // ready for, Monday up to Saturday, and at the top "Solves in Pen". It is the
 // Dojo's machinery (app/dojo/DojoClient.jsx) with a crossword roster, and
@@ -43,7 +44,9 @@ const CLIENTS = {
   encore: dynamic(() => import('../encore/EncoreClient'), { ssr: false, loading: () => null }),
   arcos: dynamic(() => import('../arcos/ArcosClient'), { ssr: false, loading: () => null }),
   glyph: dynamic(() => import('../glyph/GlyphClient'), { ssr: false, loading: () => null }),
+  anon: dynamic(() => import('../anon/AnonClient'), { ssr: false, loading: () => null }),
 };
+const COUNT_WORD = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'];
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -98,11 +101,12 @@ function Shape({ sec }) {
 // itself into the squares in pencil. Pressing it inks the letters in pen.
 const ENTRY = 'CROSSED#UP';
 
-export default function CrossedClient({ dateLabel, dateShort, sections = [], clocks: clocksIn = null }) {
+export default function CrossedClient({ day = null, dateLabel, dateShort, sections = [], clocks: clocksIn = null }) {
   // The day's clocks come from the server (lib/crossed-clocks.js); the seed covers a
   // page served before they could be measured.
   const CLK = clocksIn || CROSSED_CLOCK;
   const N = sections.length;
+  const NW = COUNT_WORD[N] || String(N);
   const STORE = `sot_run_crossed_${etToday()}`;
   const [r, setR] = useState(() => freshRun());
   const rRef = useRef(r);
@@ -158,7 +162,7 @@ export default function CrossedClient({ dateLabel, dateShort, sections = [], clo
   const board = useCircuitBoard(CROSSED_RUN_ID, hydrated && done);
 
   const counted = useMemo(() => sections.map((sec) => r.results[sec.key] || banked[sec.key] || null), [sections, banked, r.results]);
-  const parts = counted.map((c, i) => (c ? crossedGridPoints(sections[i].key, c.score, c.total, c.secs, CLK) : 0));
+  const parts = counted.map((c, i) => (c ? crossedGridPoints(sections[i].key, c.score, c.total, c.secs, CLK, day) : 0));
   const total = Math.round(parts.reduce((a, b) => a + b, 0));
   const allBanked = N > 0 && sections.every((s) => banked[s.key]);
 
@@ -209,12 +213,12 @@ export default function CrossedClient({ dateLabel, dateShort, sections = [], clo
 
   function shareText() {
     const per = sections.map((s, i) => `${s.name} ${counted[i] ? Math.round(parts[i]) : '-'}`).join(' · ');
-    const code = sections.length === 4 ? sections.map((s, i) => Math.round(parts[i])).join('-') : '';
+    const code = sections.length >= 4 && sections.length <= 5 ? sections.map((s, i) => Math.round(parts[i])).join('-') : '';
     const link = `mindloftdaily.com/crossed${code ? `?s=${code}&t=${total}&d=${etToday()}` : ''}`;
     return `Crossed Up · ${dateShort} · ${total}/${CROSSED_MAX}\n${belt[1]}.${tier > 0 ? `\nNext up: ${B[tier - 1][1]}, ${Math.max(1, B[tier - 1][0] - total)} short.` : ''}\n${per}\n${withRef(link)}`;
   }
   function copyShare() {
-    const text = done ? shareText() : `Crossed Up: four crosswords in one sitting, and speed is most of the score. Rank from Monday solver up to Solves in Pen.\n${withRef('mindloftdaily.com/crossed')}`;
+    const text = done ? shareText() : `Crossed Up: ${NW.toLowerCase()} crosswords in one sitting, and speed is most of the score. Rank from Monday solver up to Solves in Pen.\n${withRef('mindloftdaily.com/crossed')}`;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
@@ -239,10 +243,10 @@ export default function CrossedClient({ dateLabel, dateShort, sections = [], clo
       {hydrated && r.phase === 'idle' && (
         <section className={`pre${leaving ? ' leave' : ''}`}>
           <h1 className="title fade">{'Crossed Up'.split(' ').map((w, i) => <span key={i} style={{ animationDelay: `${i * 0.09}s` }}>{w}</span>)}</h1>
-          <p className="lede fade">Four crosswords in one sitting: <b>the mini</b>, <b>the big nine by nine</b>, <b>three acrostics</b>, then <b>a grid with no clues</b>. Finishing counts a fifth, <b>speed</b> counts the rest. <span className="lede-x">Your score says which day of the week you solve like.</span></p>
+          <p className="lede fade">{NW} crosswords in one sitting: {sections.map((s, i) => <React.Fragment key={s.key}>{i === 0 ? '' : i === N - 1 ? ', then ' : ', '}<b>{s.phrase}</b></React.Fragment>)}. Finishing counts a fifth, <b>speed</b> counts the rest. <span className="lede-x">Your score says which day of the week you solve like.</span></p>
 
           <button type="button" className={`xw fade${leaving ? ' go' : ''}`} onClick={start} aria-label={allBanked ? 'See your rank' : 'Pick up the pencil'}>
-            <span className="xw-clue"><b>1 Across</b> {allBanked ? 'All four filled in today' : 'Four grids in one sitting'} <em>(7, 2)</em></span>
+            <span className="xw-clue"><b>1 Across</b> {allBanked ? `All ${NW.toLowerCase()} filled in today` : `${NW} grids in one sitting`} <em>(7, 2)</em></span>
             <span className="xw-row">
               {ENTRY.split('').map((ch, i) => (ch === '#'
                 ? <i key={i} className="xw-c blk" />
@@ -503,7 +507,7 @@ function Grading({ sections, counted, parts, total, dateLabel, dateShort, animat
 // board rows with the same scorer and the same day's clocks the board itself
 // ranks on; your own row uses the figures on the sheet above, so the two
 // cannot disagree. It invents nothing: a row with no per-form data draws no bars.
-function CrossedBoard({ sections, parts, total, board, clocks }) {
+function CrossedBoard({ sections, parts, total, board, clocks, day = null }) {
   const data = board && board.data;
   const state = board && board.state;
   const rows = data && Array.isArray(data.overall) ? data.overall.filter((x) => Number.isFinite(Number(x.total))) : [];
@@ -514,7 +518,7 @@ function CrossedBoard({ sections, parts, total, board, clocks }) {
   const ahead = meRank && fieldN && fieldN >= 2 ? Math.max(0, Math.round(((fieldN - meRank) / fieldN) * 100)) : null;
   const shareOf = (key, p) => {
     if (!p || p.abandoned) return 0;
-    return crossedGridPoints(key, p.score, p.total, p.timeElapsed, clocks || CROSSED_CLOCK);
+    return crossedGridPoints(key, p.score, p.total, p.timeElapsed, clocks || CROSSED_CLOCK, day);
   };
   const rankName = (pts) => B[crossedTierOf(pts)][1];
   const top = rows.slice(0, 3);

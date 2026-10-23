@@ -17,6 +17,7 @@ import { usePathname } from 'next/navigation';
 import { X, ExternalLink } from 'lucide-react';
 import MoreRunsPop from '../circuits/MoreRuns';
 import { PRICE_GAMES, fmtCents } from '@/lib/price-games';
+import { gameActive } from '@/lib/game-active';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -109,6 +110,7 @@ export function PriceCheckItemsGlobal() {
     const left = s.due - Date.now();
     if (left < -STALE_MS) { writeStamp({ ...s, shown: true }); return; }
     timer.current = setTimeout(() => {
+      if (gameActive()) { timer.current = setTimeout(() => arm(), 2000); return; }
       const now = readStamp();
       if (!now || now.shown) return;
       writeStamp({ ...now, shown: true });

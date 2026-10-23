@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { Trophy, X } from 'lucide-react';
 import { TROPHY_BY_ID, TROPHY_TIERS } from '@/lib/trophy-defs';
 import { T } from '@/lib/theme';
+import { gameActive } from '@/lib/game-active';
 
 export const TROPHY_EVENT = 'sot:trophies';
 const SEEN_KEY = 'sot_trophies_seen';
@@ -47,6 +48,16 @@ function caseHref() {
 
 export default function TrophyPop() {
   const [queue, setQueue] = useState([]);
+  // NEVER MID GAME (owner, 2026-10-23): an unlock earned between two puzzles
+  // of a run waits, held, until no game is in play.
+  const [held, setHeld] = useState(false);
+  useEffect(() => {
+    if (!queue.length) { setHeld(false); return undefined; }
+    const check = () => setHeld(gameActive());
+    check();
+    const t = setInterval(check, 1000);
+    return () => clearInterval(t);
+  }, [queue.length]);
 
   useEffect(() => {
     const onIds = (ev) => {
@@ -68,12 +79,12 @@ export default function TrophyPop() {
 
   // Auto-advance the queue.
   useEffect(() => {
-    if (!queue.length) return undefined;
+    if (!queue.length || held) return undefined;
     const t = setTimeout(() => setQueue((q) => q.slice(1)), 6000);
     return () => clearTimeout(t);
-  }, [queue]);
+  }, [queue, held]);
 
-  if (!queue.length) return null;
+  if (!queue.length || held) return null;
   const t = TROPHY_BY_ID[queue[0]];
   if (!t) return null;
   const tier = TROPHY_TIERS[t.tier] || TROPHY_TIERS.bronze;
