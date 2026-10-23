@@ -899,7 +899,7 @@ function GeChallenge({ gameKey, challenge }) {
     const rankX = challenge.status || (titleFor(gameKey, score) || {}).name || '';
     const raw = encodeChallenge({ name: who, t: tt, s: score, o, n: challenge.n, won: false, d, x: rankX });
     const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=3`, cid));
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=4`, cid));
     recordSend({ cid, gameKey, num: challenge.n, day, fig: { s: score, o, t: tt, won: false, x: rankX }, source: 'run' });
     const copy = () => { try { navigator.clipboard.writeText(url).then(() => setMsg('Link copied. Paste it to a friend.'), () => setMsg(url)); } catch (e) { setMsg(url); } };
     let touch = false;

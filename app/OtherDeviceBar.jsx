@@ -87,7 +87,7 @@ export default function OtherDeviceBar({ gameKey }) {
     const d = ymdCompact(etTodayISO());
     const raw = encodeChallenge({ ...mine, name: who, d });
     const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=3`, cid));
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=4`, cid));
     recordSend({ cid, gameKey, num: res.num, day: etTodayISO(), fig: mine, source });
     return url;
   };

@@ -35,10 +35,14 @@ export function generateMetadata({ searchParams }) {
     ? `${g.name} on Mind Loft${c.x ? `: ${c.x}` : ''}. Same run, free, no sign-up to play.`
     : `${g.name} No. ${c.n} on Mind Loft. Same board, free, no sign-up to play.`;
   const img = `/vs/card?g=${encodeURIComponent(key)}&vs=${encodeURIComponent(raw)}`;
+  // THE PREVIEW SAYS ONE THING (owner, 2026-10-23): a message bubble prints
+  // the og title under the card, so it reads Accept the challenge and nothing
+  // else. The tab title keeps the full sentence.
+  const share = 'Accept the challenge';
   return {
     ...base, title, description,
-    openGraph: { title, description, images: [{ url: img, width: 1200, height: 630 }], siteName: 'Mind Loft', type: 'website' },
-    twitter: { card: 'summary_large_image', title, description, images: [img] },
+    openGraph: { title: share, description, images: [{ url: img, width: 1200, height: 630 }], siteName: 'Mind Loft', type: 'website' },
+    twitter: { card: 'summary_large_image', title: share, description, images: [img] },
   };
 }
 

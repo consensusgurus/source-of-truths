@@ -87,7 +87,7 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, won = f
     const tt = t != null ? t : (blank && !o ? 0 : null);
     const raw = encodeChallenge({ name: who, t: tt, s: score, o, n, won: !!won, d, x: rank });
     const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=3`, cid));
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=4`, cid));
     recordSend({ cid, gameKey, num: n, day: d ? etToday() : null, fig: { s: score, o, t: tt, won: !!won, x: rank }, source: 'run' });
     const copied = () => { setMsg('Link copied. Paste it to a friend.'); };
     const copy = () => { try { navigator.clipboard.writeText(url).then(copied, () => setMsg(url)); } catch (e) { setMsg(url); } };

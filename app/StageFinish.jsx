@@ -1103,6 +1103,7 @@ export default function StageFinish({
   const [chal, setChal] = useState(null);
   const [chalMsg, setChalMsg] = useState('');
   const [memeOpen, setMemeOpen] = useState(false);
+  const memeCtxRef = useRef(null);
   // The board number on screen, kept even when this browser holds no save for
   // it, so the challenge can still be built off the board row.
   const [curN, setCurN] = useState(null);
@@ -1657,12 +1658,16 @@ export default function StageFinish({
     // c= is the return leg's id (lib/challenge-client.js), minted here so the
     // share sheet still opens inside the tap; the row is written alongside it.
     const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=3`, cid)); // v: bump when the card changes, a phone caches a link's preview by its URL
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=4`, cid)); // v: bump when the card changes, a phone caches a link's preview by its URL
     recordSend({ cid, gameKey: me.key, num: mine.n, day: d ? etTodayISO() : null, fig: mine, source });
     return url;
   };
   const sendChallenge = () => {
     if (!mine) return;
+    // THE CHALLENGE SENDS THE GIF TOO (owner, 2026-10-23): Send link opens the
+    // meme sheet, whose share carries the GIF and the link together. Only a
+    // board with no meme context falls back to the bare link.
+    if (memeCtxRef.current) { setMemeOpen(true); return; }
     const url = challengeLink('endcard');
     // THE LINK GOES ALONE (owner, 2026-10-07). Its card says the whole
     // sentence, so any text sent beside it would say it twice.
@@ -1703,6 +1708,7 @@ export default function StageFinish({
     };
   })() : null;
   const openMeme = memeCtx ? () => setMemeOpen(true) : null;
+  memeCtxRef.current = memeCtx;
   const playedN = new Set([...played, ...(me ? [me.key] : [])]).size;
   const smallDoors = [];
   if (anotherOpt) {
