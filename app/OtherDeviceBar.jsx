@@ -44,11 +44,7 @@ export default function OtherDeviceBar({ gameKey }) {
   useEffect(() => {
     if (!gameKey) return undefined;
     let live = true;
-    try {
-      if (/[?&]p=\d+/.test(window.location.search)) return undefined;
-      const day = JSON.parse(localStorage.getItem(`sot_${gameKey}_day`) || 'null');
-      if (day && day.d === etTodayISO() && day.done) return undefined;
-    } catch (e) { /* no storage: ask the server */ }
+    try { if (/[?&]p=\d+/.test(window.location.search)) return undefined; } catch (e) { /* ask the server */ }
     const id = dailyMeIdentity();
     if (!id.anonId && !id.email) return undefined;
     fetchDailyMe(dailyMeQuery({ ...id, game: gameKey }))
@@ -57,6 +53,15 @@ export default function OtherDeviceBar({ gameKey }) {
         const pg = d.perGame && d.perGame[gameKey];
         const g = (d.games || []).find((x) => x.key === gameKey);
         if (!pg || pg.abandoned || !g) return;
+        // THIS DEVICE HOLDS THE FINISHED BOARD ITSELF when today's save exists
+        // and is no longer in play: its own end card does the job. The
+        // sot_<key>_day marker is NOT proof, since the slate syncs it onto every
+        // device from the server.
+        try {
+          const raw = localStorage.getItem(`sot_${gameKey}_${g.num}`);
+          const sv = raw ? JSON.parse(raw) : null;
+          if (sv && sv.status && sv.status !== 'playing') return;
+        } catch (e) { /* unreadable save: show the bar */ }
         setRes({ ...pg, num: g.num });
       })
       .catch(() => {});
