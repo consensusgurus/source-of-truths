@@ -85,7 +85,7 @@ html.lc-on .lc-host .stg-cap,html.lc-on .lc-host .stg-strip,html.lc-on .lc-host 
 html.lc-on .lc-host .stg-panel{display:none !important;}
 html.lc-on .stage-tail{display:none !important;}
 html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
-.lc-subs{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:8px;}
+.lc-subs,.stg-fg>.lc-subs{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:row;align-items:center;gap:8px;}
 .lc-shw{position:relative;display:inline-flex;}
 .lc-shr{display:inline-flex;align-items:center;gap:6px;color:var(--stg-acc-ink,var(--stg-acc)) !important;border-color:var(--stg-acc-ink,var(--stg-acc)) !important;}
 .lc-shm{position:absolute;top:calc(100% + 8px);right:0;z-index:95;width:max-content;max-width:260px;padding:8px 11px;border-radius:10px;background:var(--stg-ink,#e9edf4);color:var(--stg-ground,#0b0f1a);font:700 12px/1.35 Manrope,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:normal;}
