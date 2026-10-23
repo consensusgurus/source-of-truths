@@ -35,6 +35,7 @@
 //     lib/category-ramp.js for why the brand blue does not belong here.
 import React, { useEffect, useRef, useState } from 'react';
 import ChallengeStrip from './ChallengeStrip';
+import OtherDeviceBar from './OtherDeviceBar';
 import MindLoftMark from './MindLoftMark';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
 import ThemePop, { LightOffer } from './ThemePop';
@@ -426,6 +427,7 @@ export default function StageChrome({
       {gameKey ? <DailyRunRail gameKey={gameKey} /> : null}
       {gameKey ? <GateLanding /> : null}
       {gameKey ? <ChallengeStrip gameKey={gameKey} num={num} /> : null}
+      {gameKey ? <OtherDeviceBar gameKey={gameKey} /> : null}
 
       {dailyStrip ? (
         // THE DAILY STRIP IS TWO CONTROLS (owner, 2026-10-13): the leader and the

@@ -189,6 +189,8 @@ export async function GET(request) {
           points: Math.round(mine.points * 10) / 10,
           score: mine.score,
           total: mine.total,
+          // The clock, for the other-device share bar (app/OtherDeviceBar.jsx).
+          time: mine.timeElapsed ?? null,
           abandoned: !!mine.abandoned,
         };
       }
@@ -243,6 +245,8 @@ export async function GET(request) {
           points: Math.round(mine.points * 10) / 10,
           score: mine.score,
           total: mine.total,
+          // The clock, for the other-device share bar (app/OtherDeviceBar.jsx).
+          time: mine.timeElapsed ?? null,
           abandoned: !!mine.abandoned,
         };
       }
