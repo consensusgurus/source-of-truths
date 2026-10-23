@@ -143,7 +143,7 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
           <div className="msh-cap">{caption}</div>
           <img src={MEMES[k].src} alt={`${MEMES[k].name} reaction GIF`} />
           <div className="msh-strip" style={{ background: ctx.hue }}>
-            <span className="gl"><GameGlyph gameKey={ctx.gameKey} size={26} /></span>
+            <span className="gl" style={{ color: ctx.hue }}><GameGlyph gameKey={ctx.gameKey} size={26} /></span>
             <span className="tx"><b>{ctx.line1}</b><i>{line2}</i></span>
           </div>
         </div>
