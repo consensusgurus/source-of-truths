@@ -6019,6 +6019,14 @@ html[data-stage-color=full] .sty-g.done .sty-gi{color:var(--cci, var(--cc));opac
   html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct .sty-ixgr .dk{fill:color-mix(in srgb, ${RAMP_INK} 12%, transparent);}
   html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct .sty-ixgr .fl{stroke:${RAMP_INK};}
   html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct .sty-ixgg{color:${RAMP_INK};}
+  /* THE SORT PILL ON A FILLED BAR (owner report, 2026-10-23): it rides over the
+     open bar, which full color fills with the category hue, so its unpicked
+     words took the register's grey and vanished on the light fill. It wears
+     the bar's own ink instead, in both registers. */
+  html[data-stage-color=full] .sty-ix.mpk > .sty-ixn.pk:not(.re):has(> .sty-ixb.ct.on) > .sty-sortm{
+    background:transparent;border-color:color-mix(in srgb, ${RAMP_INK} 35%, transparent);}
+  html[data-stage-color=full] .sty-ix.mpk > .sty-ixn.pk:not(.re):has(> .sty-ixb.ct.on) > .sty-sortm button{color:${RAMP_INK};}
+  html[data-stage-color=full] .sty-ix.mpk > .sty-ixn.pk:not(.re):has(> .sty-ixb.ct.on) > .sty-sortm button[aria-pressed="true"]{background:${RAMP_INK};color:#fff;}
 }
 
 
