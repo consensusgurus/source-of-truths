@@ -52,13 +52,19 @@ function brandRow(p) {
   ], { key: 'brand', alignItems: 'center', width: '100%' });
 }
 
-// BESIDE THE GIF: the whole image is the button. The GIF carries the detail.
-function buttonOnly(p) {
+// BESIDE THE GIF: the puzzle's name and long description over a big Accept
+// the challenge, on the category fill (owner, 2026-10-23). The GIF carries the
+// result and the Mind Loft row, so this card carries the game and the action.
+function buttonOnly(p, { name, desc }) {
   const h = React.createElement;
-  return Row([
-    T('Accept the challenge', { key: 't', fontSize: 82, fontWeight: 800, letterSpacing: '-2.5px', lineHeight: 1, whiteSpace: 'nowrap', flexShrink: 0 }),
-    h('img', { key: 'a', src: arrowURI(p.onFill), width: 76, height: 76, style: { marginLeft: '26px', flexShrink: 0 } }),
-  ], { width: '1200px', height: '630px', background: p.fill, color: p.onFill, fontFamily: 'Manrope', alignItems: 'center', justifyContent: 'center', padding: '0 90px' });
+  return Col([
+    T(name, { key: 'n', fontSize: 52, fontWeight: 800, letterSpacing: '-1.5px', lineHeight: 1.05 }),
+    ...(desc ? [T(desc, { key: 'd', fontSize: 32, fontWeight: 600, lineHeight: 1.3, marginTop: '10px', maxWidth: '1000px' })] : []),
+    Row([
+      T('Accept the challenge', { key: 't', fontSize: 78, fontWeight: 800, letterSpacing: '-2.5px', lineHeight: 1, whiteSpace: 'nowrap', flexShrink: 0 }),
+      h('img', { key: 'a', src: arrowURI(p.onFill), width: 72, height: 72, style: { marginLeft: '26px', flexShrink: 0 } }),
+    ], { key: 'cta', alignItems: 'center', marginTop: '48px' }),
+  ], { width: '1200px', height: '630px', background: p.fill, color: p.onFill, fontFamily: 'Manrope', justifyContent: 'center', padding: '0 96px' });
 }
 
 // SENT ON ITS OWN: the link is the whole message, so it carries the result,
@@ -89,7 +95,6 @@ export async function GET(req) {
   if (!g || !c) {
     return new ImageResponse(detailed(p, { line: 'Free daily puzzles.', name: 'Mind Loft', desc: 'No sign-up to play.' }), opts);
   }
-  if (u.searchParams.get('m') === '1') return new ImageResponse(buttonOnly(p), opts);
   const name = clamp(c.name, 20);
   const fig = challengeFig(c, key);
   const blank = !run && isBlankMiss(c);
@@ -100,5 +105,6 @@ export async function GET(req) {
     : c.won && c.t != null ? `${name} solved ${g.name} in ${clamp(fig, 18)}.`
     : c.won ? `${name} solved ${g.name}: ${clamp(fig, 18)}.` : `${name} scored ${clamp(fig, 18)} on ${g.name}.`;
   const desc = run ? ((circuitById(key) || {}).blurb || '') : (g.tagLong || g.tag || '');
+  if (u.searchParams.get('m') === '1') return new ImageResponse(buttonOnly(p, { name: g.name, desc }), opts);
   return new ImageResponse(detailed(p, { line, name: g.name, desc }), opts);
 }

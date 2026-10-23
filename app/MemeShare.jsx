@@ -15,7 +15,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { sharePalette, markSvg, isDarkPage } from '@/lib/share-palette';
 import { MEMES, memeOrder, memeCaption } from '@/lib/meme-share';
 import { buildMemeGif } from '@/lib/meme-gif';
@@ -34,13 +33,10 @@ const CSS = `
 .msh-card{border-radius:14px;overflow:hidden;background:#000;border:1px solid #d6dbe4;}
 .msh-cap{padding:12px 14px;text-align:center;font-size:17px;line-height:1.2;font-weight:800;text-transform:uppercase;}
 .msh-card img{display:block;width:100%;height:auto;background:#111;}
-.msh-strip{display:flex;flex-direction:column;gap:3px;padding:10px 14px 11px;}
-.msh-strip>b{font-size:15px;font-weight:800;}
-.msh-strip .ds{font-size:12.5px;font-weight:600;line-height:1.35;}
-.msh-strip .ft{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:11.5px;}
+.msh-strip{display:flex;align-items:center;gap:6px;padding:9px 14px;background:#000;color:#fff;font-size:12px;}
 .msh-strip .mk{width:16px;height:16px;flex:none;display:block;background:none;}
-.msh-strip .br{font-weight:800;font-size:12px;}
-.msh-strip .ft i{font-style:normal;font-weight:700;margin-left:auto;}
+.msh-strip .br{font-weight:800;}
+.msh-strip i{font-style:normal;font-weight:700;margin-left:auto;}
 .msh-sl{margin:14px 0 7px;font-size:11.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#5b6475;}
 .msh-chips{display:flex;gap:8px;overflow-x:auto;padding-right:24px;scrollbar-width:none;-ms-overflow-style:none;
   -webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent);}
@@ -83,15 +79,12 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
   const linkRef = useRef(null);
   const k = key && order.includes(key) ? key : order[0];
   const caption = ctx && k ? memeCaption(k, ctx) : '';
-  // THE STRIP NAMES THE GAME (owner, 2026-10-23): its name and long description
-  // under the clip, then the Mind Loft row. No stats there: the caption carries
-  // the result. Colours come from the reader's register, light or dark.
+  // The caption takes the reader's register, light or dark; the strip under
+  // the clip is a black bar with the Mind Loft row (owner, 2026-10-23). The
+  // puzzle's name and description are on the link card beside the GIF.
   const [dark, setDark] = useState(false);
   useEffect(() => { if (open) setDark(isDarkPage()); }, [open]);
   const pal = ctx ? sharePalette(ctx.cat, dark) : null;
-  const gm = ctx ? DAILY_GAME_MAP[ctx.gameKey] : null;
-  const gName = ctx ? ctx.game : '';
-  const gDesc = gm ? (gm.tagLong || gm.tag || '') : '';
   const siteUrl = ctx ? `mindloftdaily.com/${ctx.route}` : '';
 
   useEffect(() => { if (!open) { setNote(''); linkRef.current = null; } }, [open]);
@@ -101,12 +94,12 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
     if (!open || !ctx || !k) return undefined;
     let live = true;
     setBlob(null); setBusy(true);
-    buildMemeGif({ src: MEMES[k].src, top: caption, name: gName, desc: gDesc, url: siteUrl, pal })
+    buildMemeGif({ src: MEMES[k].src, top: caption, url: siteUrl, pal })
       .then((b) => { if (live) { setBlob(b); setBusy(false); } })
       .catch(() => { if (live) { setBusy(false); setNote('Could not make the GIF here. The link still works.'); } });
     return () => { live = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, k, caption, gName, gDesc, siteUrl, pal && pal.fill, dark]);
+  }, [open, k, caption, siteUrl, dark]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -158,14 +151,10 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
         <div className="msh-card">
           <div className="msh-cap" style={{ background: pal.ground, color: pal.ink }}>{caption}</div>
           <img src={MEMES[k].src} alt={`${MEMES[k].name} reaction GIF`} />
-          <div className="msh-strip" style={{ background: pal.fill, color: pal.onFill }}>
-            <b>{gName}</b>
-            {gDesc ? <span className="ds">{gDesc}</span> : null}
-            <span className="ft">
-              <img className="mk" alt="" src={'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markSvg(pal.onFill, pal.onFill))} />
-              <b className="br">Mind Loft</b>
-              <i>{siteUrl}</i>
-            </span>
+          <div className="msh-strip">
+            <img className="mk" alt="" src={'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markSvg('#ffffff', '#ffffff'))} />
+            <b className="br">Mind Loft</b>
+            <i>{siteUrl}</i>
           </div>
         </div>
         <div className="msh-sl">Or pick another</div>
