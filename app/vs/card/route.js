@@ -33,14 +33,6 @@ const arrowURI = (col) => svgURI('<svg xmlns="http://www.w3.org/2000/svg" width=
 // The arrow is drawn, not typed: Manrope's latin subset has no U+2192, and a
 // missing glyph makes Satori fetch a font over the network.
 
-function pill(p, cta, fs, ar) {
-  const h = React.createElement;
-  return Row([
-    T(cta, { key: 't', fontSize: fs, fontWeight: 800, letterSpacing: '-1.5px' }),
-    h('img', { key: 'a', src: arrowURI(p.onFill), width: ar, height: ar, style: { marginLeft: '24px' } }),
-  ], { key: 'pill', alignItems: 'center', background: p.fill, color: p.onFill, borderRadius: '999px', padding: '26px 60px 30px' });
-}
-
 // The Mind Loft row: mark and name on the left, the address on the right
 // (where the game glyph used to sit, now given to the name and description).
 function brandRow(p) {
@@ -67,21 +59,23 @@ function buttonOnly(p, { name, desc }) {
   ], { width: '1200px', height: '630px', background: p.fill, color: p.onFill, fontFamily: 'Manrope', justifyContent: 'center', padding: '0 96px' });
 }
 
-// SENT ON ITS OWN: the link is the whole message, so it carries the result,
-// the game's name and its long description, and the button.
-function detailed(p, { line, name, desc }) {
-  const big = line.length <= 30 ? 64 : line.length <= 42 ? 56 : 48;
+// SENT ON ITS OWN (owner, 2026-10-23): the link is the whole message, so the
+// puzzle is the headline. The result sits small above it, the name and long
+// description large, and a full-width button runs across the foot.
+function detailed(p, { line, name, desc, cta = 'Accept the challenge' }) {
+  const h = React.createElement;
   return Col([
     brandRow(p),
     Col([
-      T(line, { key: 'l', fontSize: big, fontWeight: 800, letterSpacing: '-2px', lineHeight: 1.06, textAlign: 'center', justifyContent: 'center' }),
-      Col([
-        T(name, { key: 'n', fontSize: 32, fontWeight: 800, color: p.ink, justifyContent: 'center' }),
-        ...(desc ? [T(desc, { key: 'd', fontSize: 28, fontWeight: 600, color: p.mute, textAlign: 'center', justifyContent: 'center', marginTop: '4px', lineHeight: 1.25 })] : []),
-      ], { key: 'gm', alignItems: 'center', marginTop: '22px', marginBottom: '30px', maxWidth: '960px' }),
-      pill(p, 'Accept the challenge', 46, 40),
-    ], { key: 'mid', flex: 1, alignItems: 'center', justifyContent: 'center' }),
-  ], { width: '1200px', height: '630px', background: p.ground, color: p.ink, fontFamily: 'Manrope', padding: '50px 90px 56px', alignItems: 'center' });
+      T(line, { key: 'l', fontSize: 30, fontWeight: 700, color: p.mute, letterSpacing: '-0.4px' }),
+      T(name, { key: 'n', fontSize: 84, fontWeight: 800, letterSpacing: '-3px', lineHeight: 1, marginTop: '10px' }),
+      ...(desc ? [T(desc, { key: 'd', fontSize: 36, fontWeight: 600, lineHeight: 1.25, marginTop: '12px', maxWidth: '1020px' })] : []),
+    ], { key: 'mid', flex: 1, justifyContent: 'center', width: '100%' }),
+    Row([
+      T(cta, { key: 't', fontSize: 50, fontWeight: 800, letterSpacing: '-1.5px' }),
+      h('img', { key: 'a', src: arrowURI(p.onFill), width: 46, height: 46, style: { marginLeft: '22px' } }),
+    ], { key: 'btn', width: '100%', alignItems: 'center', justifyContent: 'center', background: p.fill, color: p.onFill, borderRadius: '24px', padding: '26px 0 30px' }),
+  ], { width: '1200px', height: '630px', background: p.ground, color: p.ink, fontFamily: 'Manrope', padding: '44px 90px 56px' });
 }
 
 export async function GET(req) {
@@ -93,7 +87,7 @@ export async function GET(req) {
   const p = sharePalette(g && g.cat ? g.cat : 'Word', u.searchParams.get('t') === 'd');
   const opts = { width: size.width, height: size.height, fonts: stageFonts() };
   if (!g || !c) {
-    return new ImageResponse(detailed(p, { line: 'Free daily puzzles.', name: 'Mind Loft', desc: 'No sign-up to play.' }), opts);
+    return new ImageResponse(detailed(p, { line: 'Free daily puzzles', name: 'Mind Loft', desc: 'A new set of puzzles every day. No sign-up to play.', cta: 'Play free' }), opts);
   }
   const name = clamp(c.name, 20);
   const fig = challengeFig(c, key);

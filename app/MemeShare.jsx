@@ -31,7 +31,7 @@ const CSS = `
 .msh-hd b{font-size:18px;font-weight:800;}
 .msh-x{background:#eef1f6;border:0;border-radius:99px;padding:7px 14px;font:inherit;font-size:13px;font-weight:800;color:#0b0d12;cursor:pointer;}
 .msh-card{border-radius:14px;overflow:hidden;background:#000;border:1px solid #d6dbe4;}
-.msh-cap{padding:12px 14px;text-align:center;font-size:17px;line-height:1.2;font-weight:800;text-transform:uppercase;}
+.msh-cap{padding:12px 14px;text-align:center;font-size:17px;line-height:1.2;font-weight:800;text-transform:uppercase;background:#000;color:#fff;}
 .msh-card img{display:block;width:100%;height:auto;background:#111;}
 .msh-strip{display:flex;align-items:center;gap:6px;padding:9px 14px;background:#000;color:#fff;font-size:12px;}
 .msh-strip .mk{width:16px;height:16px;flex:none;display:block;background:none;}
@@ -149,7 +149,7 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
           <button type="button" className="msh-x" onClick={onClose}>Close</button>
         </div>
         <div className="msh-card">
-          <div className="msh-cap" style={{ background: pal.ground, color: pal.ink }}>{caption}</div>
+          <div className="msh-cap">{caption}</div>
           <img src={MEMES[k].src} alt={`${MEMES[k].name} reaction GIF`} />
           <div className="msh-strip">
             <img className="mk" alt="" src={'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markSvg('#ffffff', '#ffffff'))} />
