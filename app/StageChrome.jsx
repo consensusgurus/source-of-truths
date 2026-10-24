@@ -38,6 +38,7 @@ import ChallengeStrip from './ChallengeStrip';
 import OtherDeviceBar from './OtherDeviceBar';
 import MindLoftMark from './MindLoftMark';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
+import { isSudokuLook, useSudokuFlip, FlipGlyph } from './sudokuLook';
 import ThemePop, { LightOffer } from './ThemePop';
 // The stage swaps LoftCap out, and LoftCap was carrying the whole .loft-*
 // sheet that LoftFinish depends on, so the end card rendered unstyled.
@@ -248,6 +249,10 @@ export default function StageChrome({
   // The switch reads the SAME store the page root reads, so the glyph and the
   // ground can never disagree about which register is showing.
   const [theme, setTheme] = useStageTheme();
+  // On a sudoku daily the look icon FLIPS the page between the pastel stage and
+  // plain white (app/sudokuLook.js) instead of opening the page-look menu.
+  const sdk = isSudokuLook(gameKey);
+  const sdkFlip = useSudokuFlip();
   // A ?theme= review override travels back to the home too, or the trip out
   // and the trip back disagree about the register.
   const tq = useThemeQs();
@@ -391,13 +396,13 @@ export default function StageChrome({
         </span>
         <button
           type="button"
-          className={'stg-cx stg-theme' + (hint ? ' hint' : '')}
-          data-look="" onClick={(e) => openLook(e.currentTarget)}
-          aria-haspopup="dialog"
-          aria-label="Page look: light or dark, and how much color"
-          title="Page look"
+          className={'stg-cx stg-theme' + (hint && !sdk ? ' hint' : '')}
+          data-look={sdk ? undefined : ''} onClick={(e) => (sdk ? sdkFlip.flip() : openLook(e.currentTarget))}
+          aria-haspopup={sdk ? undefined : 'dialog'}
+          aria-label={sdk ? (sdkFlip.look === 'plain' ? 'Switch to colour' : 'Switch to plain white') : 'Page look: light or dark, and how much color'}
+          title={sdk ? (sdkFlip.look === 'plain' ? 'Colour' : 'Plain') : 'Page look'}
         >
-          {theme === 'light' ? (
+          {sdk ? <FlipGlyph size={13} /> : theme === 'light' ? (
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
               strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
               <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
@@ -409,7 +414,7 @@ export default function StageChrome({
               <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4" />
             </svg>
           )}
-          {intro ? (
+          {intro && !sdk ? (
             <span className="stg-tlab">{intro === 'light' ? 'Light mode' : 'Dark mode'}</span>
           ) : null}
         </button>

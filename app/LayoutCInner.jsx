@@ -31,6 +31,7 @@ import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight }
 import { gameStatsShort } from '@/lib/daily-row-stats';
 import { savedIdentity } from '@/lib/saved-identity';
 import { useStageTheme, openLook } from '@/lib/stage-theme';
+import { isSudokuLook, useSudokuFlip, FlipGlyph } from './sudokuLook';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
 import useDayStats, { etToday } from './useDayStats';
 import useGroupStanding from './groups/groupStanding';
@@ -220,6 +221,8 @@ export default function LayoutCInner({ gameKey }) {
   const [ixLens, setIxLens] = useState('skill');
   const capRef = useRef(null);
   const [theme, setTheme] = useStageTheme();
+  const sdk = isSudokuLook(gameKey);
+  const sdkFlip = useSudokuFlip();
   const light = theme === 'light';
   const stats = useDayStats();
   // Groups standing is a 5-10s server read for a side rail, so it waits until
@@ -577,10 +580,11 @@ export default function LayoutCInner({ gameKey }) {
               ) : null}
             </div>
             <button type="button" className="sty-cx sty-tg"
-              data-look="" onClick={(e) => openLook(e.currentTarget)}
-          aria-haspopup="dialog"
-              aria-label="Page look: light or dark, and how much color" title="Page look">
-              {light ? (
+              data-look={sdk ? undefined : ''} onClick={(e) => (sdk ? sdkFlip.flip() : openLook(e.currentTarget))}
+              aria-haspopup={sdk ? undefined : 'dialog'}
+              aria-label={sdk ? (sdkFlip.look === 'plain' ? 'Switch to colour' : 'Switch to plain white') : 'Page look: light or dark, and how much color'}
+              title={sdk ? (sdkFlip.look === 'plain' ? 'Colour' : 'Plain') : 'Page look'}>
+              {sdk ? <FlipGlyph size={14} /> : light ? (
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
                   <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
                 </svg>

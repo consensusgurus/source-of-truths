@@ -50,6 +50,7 @@ import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
+import { useSudokuStage } from '../sudokuLook';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import LoftFinish from '../LoftFinish';
@@ -305,6 +306,8 @@ export default function WindowClient({ puzzles = [], forceNum = null }) {
   // Inside the Enter the Dojo run (app/RunEmbed.jsx) the page furniture drops
   // away and the board sits on the run's dark ground; the game is unchanged.
   const EMBED = useRunEmbed();
+  // The sudoku stage look (app/sudokuLook.js): pastel and ink, or plain white.
+  const SDK = useSudokuStage(STAGE && !EMBED);
   useRunHelp(EMBED, () => setShowHelp(true));
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
@@ -821,9 +824,10 @@ export default function WindowClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
-      data-stage-pin={STAGE && EMBED ? '' : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : (SDK ? 'light' : stageTheme)) : undefined}
+      data-stage-pin={STAGE && (EMBED || SDK) ? '' : undefined}
+      data-gstage={SDK ? SDK.look : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), ...(SDK ? SDK.vars : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="window" name="Window" collapsed={started} loft={LOFT} />

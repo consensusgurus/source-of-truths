@@ -51,6 +51,7 @@ import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
+import { useSudokuStage } from '../sudokuLook';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import LoftFinish from '../LoftFinish';
@@ -306,6 +307,8 @@ export default function RimClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('rim');
   const STAGE = isStage('rim', searchParams);
+  // The sudoku stage look (app/sudokuLook.js): pastel and ink, or plain white.
+  const SDK = useSudokuStage(STAGE);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('rim');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('rim');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -849,8 +852,10 @@ export default function RimClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      data-stage-theme={STAGE ? (SDK ? 'light' : stageTheme) : undefined}
+      data-stage-pin={SDK ? '' : undefined}
+      data-gstage={SDK ? SDK.look : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), ...(SDK ? SDK.vars : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="rim" name="Rim" collapsed={started} loft={LOFT} />

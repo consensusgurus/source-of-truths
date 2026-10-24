@@ -4336,6 +4336,28 @@ match background", "it needs to use the pastel colors", counter "clock and stand
   `rampFor(circuitSlotFor(<run>, <key>))`, with the clock and the question count below (no live standing
   on a daily yet). Wired by `scripts/wire-gauntlet-stage.mjs`; a new gauntlet daily gets the same block.
 
+## EVERY SUDOKU DAILY WEARS THE GAUNTLET STAGE LOOK (owner, 2026-10-23)
+
+"Take what we did with gauntlet and the color flipping button, and apply the same to our sudoku
+puzzles": the eighteen `SUDOKU_POOL` dailies open on the Sudoku PASTEL (`categoryColor('Sudoku')`)
+with the one dark ink (`RAMP_INK`), whatever the site's light/dark setting, and the cap's look icon
+FLIPS to Plain (white ground, black type) instead of opening the page-look menu.
+
+- **One module, `app/sudokuLook.js`.** `useSudokuStage(STAGE && !EMBED)` returns `{ look, vars }` or
+  null; the client pins its root to the light token set (`data-stage-theme='light'` +
+  `data-stage-pin`) and spreads `vars` over the root's inline style. `isSudokuLook(gameKey)` +
+  `useSudokuFlip()` turn the cap icon (StageChrome AND LayoutCInner) into the flip.
+- **One switch with the gauntlet stage**: the store is `useStageLook` from GauntletScreens
+  (`sot_gstage_look1`), so flipping either flips both.
+- **Entries are the deep periwinkle (#3949ab), givens the ink**, highlights the ink at 12%; the
+  right/wrong/warn marks are deepened to clear 3:1 on the pastel.
+- **The ending stays the pastel**: `--gs-fin` / `--gs-finink` feed the iris (`accentOf` in
+  lib/finish-beat.js reads `--gs-fin` first) and the curtain (`.stage-page[data-gstage] .stf` in
+  globals.css). The root takes the page colour via `holdRootPaint`, past the light register's own
+  `!important` ground.
+- **Embedded in Enter the Dojo none of it applies**: the run owns its look. A new sudoku daily joins
+  by being in `SUDOKU_POOL` and copying the four lines every other sudoku client carries.
+
 ## Aorb is the A-OR-B CROWD GAME, two picks a pair, and it plays FULL SCREEN (launched 2026-10-23)
 
 Route `/aorb`, key `aorb`, Crowd Psychology, skill Reading People, `miss: null`, no Sunday Edition (no
