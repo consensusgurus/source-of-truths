@@ -196,16 +196,7 @@ export function GauntletCover({ sections = [] }) {
     </>
   );
 }
-// One line per quiz (owner, 2026-10-24): the subtitle only when it adds
-// something. "Sci" over "Science" or "Sport" over "Sports" says it twice, so
-// the subtitle drops when one name starts the other. Deep keeps its day's
-// subject, since that is the one thing a player needs before starting it.
-const fold = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-function bandLine(name, line) {
-  const a = fold(name), b = fold(line);
-  if (!b || a.startsWith(b) || b.startsWith(a)) return '';
-  return line;
-}
+// One line per quiz, name then subject (owner, 2026-10-24).
 export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes' }) {
   const first = sections[0];
   const pal = useStagePalette(gateColour(sections));
@@ -236,7 +227,7 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
           {sections.map((s, i) => (
             <div key={s.key} className="gsx-band" style={{ background: pal.fill(rampFor(slotOf(s, i))), animationDelay: `${0.15 + i * 0.07}s` }}>
               <span className="gsx-bn">{i + 1}</span>
-              <span className="gsx-bt"><b>{s.name}</b>{(() => { const l = bandLine(s.name, lineFor ? lineFor(s) : ''); return l ? <i>{l}</i> : null; })()}</span>
+              <span className="gsx-bt"><b>{s.name}</b>{lineFor && lineFor(s) ? <i>{lineFor(s)}</i> : null}</span>
               <span className="gsx-bq">{s.questions.length} Qs</span>
             </div>
           ))}
@@ -479,6 +470,13 @@ const CSS = `
   .gsx-gate .gsx-band{min-height:42px;padding:2px 16px;gap:12px}
   .gsx-gate .gsx-bt b{font-size:18px}
   .gsx-gate .gsx-go{min-height:56px;font-size:19px}
+  /* Fill the screen (owner, 2026-10-24): the lineup takes whatever height the
+     phone leaves, each band growing equally, so nothing sits empty below. */
+  .gsx-gate .gsx-col{min-height:100%;min-height:100dvh}
+  .gsx-gate .gsx-bands{flex:1 1 auto}
+  .gsx-gate .gsx-band{flex:1 1 0;min-height:42px}
+  .gsx-gate .gsx-bt b{font-size:clamp(18px,2.6vh,22px)}
+  .gsx-gate .gsx-bt i{font-size:clamp(13px,1.9vh,16px)}
 }
 .gsx-bq{font-size:13px;font-weight:800;white-space:nowrap}
 .gsx-gowrap{display:flex;flex-direction:column;gap:10px}
