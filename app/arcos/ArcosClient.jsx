@@ -54,6 +54,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import WordStage, { usePhoneStage } from '../WordStage';
 
 const COLORS = { cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted, good: T.successDeep || '#047857' };
 const ARM_MIN_MS = 400;
@@ -191,6 +192,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
   useEffect(() => {
     try {
       setStandalone(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
@@ -777,6 +779,83 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && !EMBED && (() => {
+        // The phone stage (owner, 2026-10-24): one clue at a time. Back and Next
+        // walk every clue of the three acrostics in order, then the finale once
+        // it is open; the dots jump straight to an acrostic.
+        const stops = [];
+        PUZZLE.rounds.forEach((rd, r) => rd.rows.forEach((_, i) => stops.push([r, i])));
+        if (finaleOpen) stops.push([3, 0]);
+        const at = Math.max(0, stops.findIndex(([r, i]) => r === g.round && (r === 3 || i === sel)));
+        const goStop = (k) => {
+          if (busy) return;
+          const [r, i] = stops[((k % stops.length) + stops.length) % stops.length];
+          setG((cur) => ({ ...cur, round: r }));
+          if (r < 3) setSel(i);
+          setArmRow(false);
+        };
+        const SUBS = { front: 'first letters spell a word', back: 'last letters spell a word', diag: 'letter N of row N spells a word' };
+        const pips = [0, 1, 2, 3].map((r) => ({
+          done: r === 3 ? g.finale : rs[r].complete, cur: g.round === r,
+          onClick: () => goRound(r), label: r === 3 ? 'The finale' : `Acrostic ${r + 1}`,
+        }));
+        const foot = `${roundsDone} of 3 acrostics · ${score} of ${TOTAL} points`;
+        const giveUp = { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); finish(g); } else { setArmReveal(Date.now()); } } };
+        const nav = { onBack: () => goStop(at - 1), onNext: () => goStop(at + 1), pips };
+        if (atFinale) {
+          const typedF = g.typed.fin || '';
+          const shaking = shakingK('fin');
+          const combo = (
+            <div className="wst-combo" aria-label="The three hidden words">
+              {PUZZLE.rounds.map((rd, r) => <div key={r}>{PUZZLE.side === 'post' ? <>{rd.word} <i>+ ?</i></> : <><i>? +</i> {rd.word}</>}</div>)}
+            </div>
+          );
+          const action = (
+            <>
+              <div key={shaking ? 'm' + fx.n : 'a'} className={'wst-line1' + (g.finale ? ' ok' : '') + (shaking ? ' wst-slots bad' : '')}>{g.finale ? finWord : typedF}</div>
+              {g.tries.length > 0 && <div className="wst-tries">{g.tries.map((t, i) => <s key={i}>{t}</s>)}</div>}
+            </>
+          );
+          return (
+            <WordStage label="Arcos" eyebrow="The finale · one word goes with all three"
+              spine={combo} slots={[]} action={action}
+              note={toast || `${triesLeft} ${triesLeft === 1 ? 'try' : 'tries'} left. Type a word, then Enter.`}
+              rowKey="fin" nav={nav} onKey={onKey} enter foot={foot} frac={roundsDone / 3} giveUp={giveUp} />
+          );
+        }
+        const round = PUZZLE.rounds[g.round];
+        const row = round.rows[sel];
+        const done = !!g.solved[curKey];
+        const sp = spineAt(round.kind, row.a, sel);
+        const typedR = done ? row.a : (g.typed[curKey] || '');
+        const stSlots = [row.a.split('').map((ch, j) => {
+          const letter = typedR[j] || '';
+          const ghost = !letter && j === sp && g.hint === curKey;
+          return { ch: letter || (ghost ? row.a[sp] : ''), spine: j === sp, ghost, cur: !done && j === typedR.length };
+        })];
+        const spineEl = (
+          <div className="wst-spine" aria-label="The hidden word so far">
+            {round.word.split('').map((ch, i) => {
+              const on = !!g.solved[keyOf(g.round, i)];
+              return <span key={i} className={(on ? 'f' : '') + (i === sel ? ' now' : '')}>{on ? ch : ''}</span>;
+            })}
+          </div>
+        );
+        const action = !done ? (
+          <div className="wst-acts">
+            {hintOk && !g.hintUsed && <button type="button" className="wst-act" onClick={useHint}>Free hint</button>}
+            <button type="button" className={'wst-act' + (armRow ? ' on' : '')} onClick={showRow}>{armRow ? 'Tap again to show it' : 'Show this answer · costs a point'}</button>
+          </div>
+        ) : null;
+        return (
+          <WordStage label="Arcos" eyebrow={`Acrostic ${g.round + 1} of 3 · ${SUBS[round.kind]}`}
+            spine={spineEl} clue={row.c} slots={stSlots}
+            rowState={done ? (g.shown[curKey] ? 'ok shown' : 'ok') : (shakingK(curKey) ? 'bad' : null)}
+            rowKey={curKey} slotsKey={shakingK(curKey) ? 'm' + fx.n : 'a'}
+            note={toast || null} action={action} nav={nav} onKey={onKey}
+            foot={foot} frac={roundsDone / 3} giveUp={giveUp} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && <DailyChrome slug="arcos" name="Arcos" collapsed={started} loft={LOFT} />}
       {LOFT && !EMBED && (

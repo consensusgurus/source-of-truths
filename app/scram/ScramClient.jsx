@@ -49,6 +49,7 @@ import useRailClearance from '../useRailClearance';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import WordStage, { usePhoneStage } from '../WordStage';
 
 const COLORS = { cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted, good: T.successDeep || '#047857' };
 const ARM_MIN_MS = 400;
@@ -161,6 +162,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
   useEffect(() => {
     try {
       setStandalone(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
@@ -557,6 +559,22 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        let si = 0;
+        const stSlots = groups.map((grp) => grp.split('').map(() => {
+          const idx = si++;
+          return { ch: typed[idx] || '', cur: !curSolved && idx === typed.length };
+        }));
+        return (
+          <WordStage label="Scram" eyebrow={`${PUZZLE.theme} · ${sel + 1} of ${N}`}
+            scramble={word.s} scrambleKind="text" slots={stSlots}
+            rowState={curSolved ? 'ok' : (shaking ? 'bad' : null)} rowKey={sel} slotsKey={shaking ? 'm' + fx.n : 'a'}
+            nav={{ onBack: () => go(sel - 1), onNext: skip, nextLabel: 'Skip', pips: PUZZLE.words.map((_, i) => ({ done: !!g.solved[i], cur: i === sel, onClick: () => go(i), label: `Answer ${i + 1}${g.solved[i] ? ', solved' : ''}` })) }}
+            live={(ch) => left[ch] || 0} onKey={onKey}
+            foot={`${solvedCount} of ${N} solved`} frac={solvedCount / N}
+            giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); finish(g); } else { setArmReveal(Date.now()); } } }} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && <DailyChrome slug="scram" name="Scram" collapsed={started} loft={LOFT} />}
       {LOFT && (

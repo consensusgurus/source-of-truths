@@ -48,6 +48,7 @@ import useRailClearance from '../useRailClearance';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import WordStage, { usePhoneStage } from '../WordStage';
 
 const COLORS = {
   cream: T.surface,
@@ -201,6 +202,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false); // effect-set so SSR/hydration match
+  const phoneStage = usePhoneStage();
   const [kbdOpen, setKbdOpen] = useState(false); // desktop: on-screen keyboard collapsed by default
   useEffect(() => {
     try {
@@ -509,7 +511,8 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
     let still = false;
     try { still = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
     const canFly = !still && typeof Element !== 'undefined' && Element.prototype.animate
-      && document.visibilityState === 'visible';
+      && document.visibilityState === 'visible'
+      && !(window.matchMedia && window.matchMedia('(max-width: 899px)').matches); // the phone stage covers both ends of the flight
     if (!canFly) { land(); return undefined; }
     const clones = [];
     // The flip runs first (80ms a cell); the flight leaves once the row has
@@ -676,6 +679,47 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        // The phone stage (owner, 2026-10-24): one word at a time, Back and Next
+        // walk the five words and the finale in order, wrapping.
+        const stops = [...PUZZLE.words.map((_, i) => i), 'final'];
+        const at = Math.max(0, stops.indexOf(sel));
+        const goStop = (k) => { const nx = stops[((k % stops.length) + stops.length) % stops.length]; setSel(nx); setTyped(''); };
+        const isFin = sel === 'final';
+        const w = isFin ? null : PUZZLE.words[sel];
+        const solvedW = !isFin && !!g.solved[sel];
+        const missed = fx.missRow === sel && Date.now() - fx.missAt < 900;
+        const ansLen = isFin ? PUZZLE.final.length : w.answer.length;
+        const stSlots = [Array.from({ length: ansLen }, (_, j) => ({
+          ch: solvedW ? w.answer[j] : (typed[j] || ''),
+          mark: !isFin && w.marks.includes(j),
+          cur: !solvedW && j === typed.length,
+        }))];
+        const live = isFin ? null : (ch) => {
+          if (solvedW) return 0;
+          let n = 0; for (const c of w.scramble) if (c === ch) n++;
+          for (const c of typed) if (c === ch) n--;
+          return n;
+        };
+        const collected = isFin ? (
+          <div className="wst-tiles" style={{ gap: 5, flexWrap: 'wrap', '--wst-sn': Math.max(bank.length, 9) }} aria-label="Your collected letters">
+            {bank.map((b, i) => <span key={i} style={{ borderRadius: '50%', aspectRatio: '1', opacity: g.solved[b.wi] ? 1 : 0.35 }}>{g.solved[b.wi] ? b.ch : '?'}</span>)}
+          </div>
+        ) : null;
+        return (
+          <WordStage label="Garble"
+            eyebrow={isFin ? 'The finale · your collected letters' : `Word ${sel + 1} of ${PUZZLE.words.length} · dotted letters build the finale`}
+            spine={collected} clue={isFin ? `\u201c${PUZZLE.clue}\u201d` : null}
+            scramble={isFin ? null : w.scramble} scrambleKind="tiles" slots={stSlots}
+            rowState={solvedW ? 'ok' : (missed ? 'bad' : null)} rowKey={String(sel)} slotsKey={missed ? 'm' + fx.miss : 'a'}
+            note={toast || null}
+            nav={{ onBack: () => goStop(at - 1), onNext: () => goStop(at + 1), pips: stops.map((s2, i) => ({ done: s2 === 'final' ? g.finalSolved : !!g.solved[s2], cur: i === at, onClick: () => goStop(i), label: s2 === 'final' ? 'The finale' : `Word ${i + 1}${g.solved[s2] ? ', solved' : ''}` })) }}
+            live={live} onKey={onKey} enter
+            foot={isFin ? `Misses ${g.misses}` : `Clue for the finale: ${PUZZLE.clue}`}
+            frac={solvedCount / PUZZLE.words.length}
+            giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); endGame(false); } else { setArmReveal(Date.now()); } } }} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
