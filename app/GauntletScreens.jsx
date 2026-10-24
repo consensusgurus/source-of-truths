@@ -62,8 +62,8 @@ export function stagePalette(pastel, look) {
 // theme-color tag's content changes or a CSS variable on <html> changes: the
 // switch flipped the page and left the bars on the old colour (owner,
 // 2026-10-23). So every change swaps in a FRESH theme-color tag, writes the
-// colour straight onto <html> and <body>, and nudges the scroll by a pixel so
-// the browser samples the edges again. The page's own tags and backgrounds are
+// colour straight onto <html> and <body>, and lays a fresh 12px band of the
+// colour along both edges for Safari to sample (see below). The page's own tags and backgrounds are
 // saved on the first hold and put back when the last stage screen unmounts.
 const chrome = { stack: [], saved: null };
 function paintChrome() {
@@ -93,38 +93,25 @@ function paintChrome() {
     if (body) body.style.backgroundColor = chrome.saved.body;
     chrome.saved = null;
   }
-  // Fresh fixed strips on both edges. iOS 26 Safari tints its bars from what
-  // sits under them and does not re-read an element whose colour merely
-  // changed, so each change inserts NEW nodes; the old ones are removed.
+  // Fixed bands on both edges, and THEY are what tints Safari's bars. iOS 26
+  // Safari samples the fixed element under each edge (WebKit
+  // LocalFrameView::fixedContainerEdges) and, when that element is the size of
+  // the viewport (every stage screen is position:fixed inset:0), it KEEPS the
+  // colour it already had: that is why the bars froze on the first colour.
+  // A full-width band that is not viewport-sized is read fresh, but only if it
+  // is taller than 10px (thinner boxes are skipped) and covers the hit point
+  // 4px in from the edge. Re-inserting the nodes is what makes Safari look
+  // again (adding a fixed element schedules a new sample).
   document.querySelectorAll('[data-gsx-edge]').forEach((n) => n.parentNode && n.parentNode.removeChild(n));
   if (top && body) {
     ['top', 'bottom'].forEach((side) => {
       const d = document.createElement('div');
       d.setAttribute('data-gsx-edge', side);
       d.setAttribute('aria-hidden', 'true');
-      d.style.cssText = `position:fixed;left:0;right:0;${side}:0;height:2px;background:${top.color};z-index:2147483000;pointer-events:none`;
+      d.style.cssText = `position:fixed;left:0;right:0;${side}:0;height:12px;background:${top.color};z-index:2147483000;pointer-events:none`;
       body.appendChild(d);
     });
   }
-  // Safari re-reads its bar colour when the PAGE scrolls, and the stage sits in
-  // a fixed layer, so the page under it may not move at all. Make sure it can
-  // scroll a few pixels, scroll it there and back over a few frames, then put
-  // its height back. Nothing visible moves: the stage covers the page.
-  try {
-    if (!body) return;
-    const oldMin = body.style.minHeight;
-    body.style.minHeight = `calc(100vh + ${window.innerHeight + 40}px)`;
-    const y = window.scrollY;
-    const to = y > 20 ? y - 12 : y + 12;
-    let n = 0;
-    const step = () => {
-      n += 1;
-      window.scrollTo(0, n % 2 ? to : y);
-      if (n < 4) setTimeout(step, 60);
-      else setTimeout(() => { window.scrollTo(0, y); body.style.minHeight = oldMin; }, 80);
-    };
-    requestAnimationFrame(step);
-  } catch (e) {}
 }
 export function useStageChrome(color) {
   useEffect(() => {
