@@ -58,22 +58,61 @@ export function stagePalette(pastel, look) {
 }
 // Paints <html>/<body> and the browser's theme-color so Safari's top and
 // bottom bars match the stage, and puts both back on unmount.
+// Safari (iOS 26 included) does not reliably re-tint its bars when an existing
+// theme-color tag's content changes or a CSS variable on <html> changes: the
+// switch flipped the page and left the bars on the old colour (owner,
+// 2026-10-23). So every change swaps in a FRESH theme-color tag, writes the
+// colour straight onto <html> and <body>, and nudges the scroll by a pixel so
+// the browser samples the edges again. The page's own tags and backgrounds are
+// saved on the first hold and put back when the last stage screen unmounts.
+const chrome = { stack: [], saved: null };
+function paintChrome() {
+  if (typeof document === 'undefined') return;
+  const html = document.documentElement;
+  const body = document.body;
+  const top = chrome.stack[chrome.stack.length - 1];
+  if (top && !chrome.saved) {
+    chrome.saved = {
+      metas: Array.from(document.querySelectorAll('meta[name="theme-color"]')),
+      html: html.style.backgroundColor,
+      body: body ? body.style.backgroundColor : '',
+    };
+  }
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.parentNode && m.parentNode.removeChild(m));
+  if (top) {
+    const m = document.createElement('meta');
+    m.setAttribute('name', 'theme-color');
+    m.setAttribute('content', top.color);
+    m.setAttribute('data-gsx', '');
+    document.head.appendChild(m);
+    html.style.backgroundColor = top.color;
+    if (body) body.style.backgroundColor = top.color;
+  } else if (chrome.saved) {
+    chrome.saved.metas.forEach((m) => document.head.appendChild(m));
+    html.style.backgroundColor = chrome.saved.html;
+    if (body) body.style.backgroundColor = chrome.saved.body;
+    chrome.saved = null;
+  }
+  try {
+    requestAnimationFrame(() => {
+      const y = window.scrollY;
+      window.scrollTo(0, y + 1);
+      requestAnimationFrame(() => window.scrollTo(0, y));
+    });
+  } catch (e) {}
+}
 export function useStageChrome(color) {
   useEffect(() => {
     if (!color || typeof document === 'undefined') return undefined;
     const release = holdRootPaint(color);
-    let meta = document.querySelector('meta[name="theme-color"]');
-    const made = !meta;
-    if (!meta) { meta = document.createElement('meta'); meta.setAttribute('name', 'theme-color'); document.head.appendChild(meta); }
-    const prev = meta.getAttribute('content');
-    const metas = Array.from(document.querySelectorAll('meta[name="theme-color"]'));
-    const prevs = metas.map((m) => [m, m.getAttribute('content'), m.getAttribute('media')]);
-    metas.forEach((m) => { m.setAttribute('content', color); m.removeAttribute('media'); });
+    const h = { color };
+    chrome.stack.push(h);
+    paintChrome();
     return () => {
       release();
-      prevs.forEach(([m, c, md]) => { if (c != null) m.setAttribute('content', c); if (md != null) m.setAttribute('media', md); });
-      if (made && meta.parentNode) meta.parentNode.removeChild(meta);
-      void prev;
+      const i = chrome.stack.indexOf(h);
+      if (i >= 0) chrome.stack.splice(i, 1);
+      paintChrome();
     };
   }, [color]);
 }
