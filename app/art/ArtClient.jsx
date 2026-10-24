@@ -21,6 +21,8 @@
 // board break by time, so a quick death at 12 beats a slow one.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import GauntletStage from '../GauntletStage';
+import { rampFor as gstRamp, circuitSlotFor as gstSlot } from '@/lib/circuits';
 import { useHoverStale } from '@/lib/hover-armed';
 import { useSearchParams } from 'next/navigation';
 import { X, Smartphone, Trophy } from 'lucide-react';
@@ -552,6 +554,24 @@ export default function ArtClient({ puzzles = [], questionsByNum = {}, forceNum 
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
+      {/* THE GAUNTLET STAGE (owner, 2026-10-23): while a question is up it plays full screen on
+          this game's pastel step of the Trivia Gauntlet ladder, the question and answers only, with the
+          clock in one quiet line below. The board further down still renders under it and keeps every rule. */}
+      {STAGE && started && playing && question ? (
+        <GauntletStage
+          bg={gstRamp(gstSlot('gauntlet', 'art'))}
+          qKey={g.i}
+          label={`Question ${g.i + 1} of ${TOTAL_Q}`}
+          question={question.line ? <><blockquote>&ldquo;{question.line}&rdquo;</blockquote><h2>{question.ask}</h2></> : <h2>{question.q}</h2>}
+          choices={question.choices.map((c) => (typeof c === 'number' ? c.toLocaleString('en-US') : c))}
+          onPick={answer}
+          lockIdx={lock && g.lastRight != null ? question.correct : null}
+          disabled={lock}
+          frac={remainFrac}
+          hot={remainFrac < 0.25}
+          footer={<>{Math.ceil(remainMs / 1000)}s &middot; {g.i + 1} of {TOTAL_Q}</>}
+        />
+      ) : null}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
           the page wrapper so the bands run full bleed; nothing here is pinned. */}

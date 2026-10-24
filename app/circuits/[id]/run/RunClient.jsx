@@ -68,6 +68,7 @@ import { isChallengeableRun } from '@/lib/challenge';
 import RunBackLink from '../../RunBackLink';
 import PolymathMeter from '../../PolymathMeter';
 import { POLY_IDS } from '@/lib/polymath';
+import GauntletStage from '../../../GauntletStage';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -1019,6 +1020,30 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     // and its ink outright, which the stylesheet does explicitly.
     <div className="rn" style={{ minHeight: '100vh', background: T.ground, position: 'relative', overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      {/* THE GAUNTLET STAGE (owner, 2026-10-23): while a question is up it
+          plays full screen on the bank's pastel ladder step, question and
+          answers only, with the clock and standing in one quiet line below.
+          The play blocks further down still render beneath it and keep every
+          rule; this only draws over them. */}
+      {TOWERS && r.phase === 'playing' && question && sec ? (
+        <GauntletStage
+          bg={rampFor(sec.slot != null ? sec.slot : r.si)}
+          qKey={`${r.si}:${r.i}`}
+          label={`${sec.name}, question ${r.i + 1} of ${sec.questions.length}`}
+          question={MATH_RUN_GAMES.includes(sec.key)
+            ? <h2>{String(question.q).split('?').map((p, i) => (i === 0 ? <React.Fragment key="h">{mathText(p)}</React.Fragment> : [<span key={i} style={{ borderBottom: '3px solid currentColor', padding: '0 .3em' }}>?</span>, <React.Fragment key={'p' + i}>{mathText(p)}</React.Fragment>]))}</h2>
+            : question.line
+              ? <><blockquote>&ldquo;{question.line}&rdquo;</blockquote><h2>{question.ask}</h2></>
+              : <h2>{mathText(question.q)}</h2>}
+          choices={question.choices.map((c) => (typeof c === 'number' ? c.toLocaleString('en-US') : mathText(c)))}
+          onPick={(k) => answer(k)}
+          lockIdx={lock ? question.correct : null}
+          disabled={lock}
+          frac={remainFrac}
+          hot={remainFrac < 0.25}
+          footer={<>{Math.ceil(remainMs / 1000)}s &middot; {sec.name} {r.i + 1} of {sec.questions.length}{liveStand ? <> &middot; if you stopped here #{liveStand.pos} of {liveStand.field.toLocaleString()}</> : null}</>}
+        />
+      ) : null}
       {isChallengeableRun(circuitId) && !done ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}
       {/* EVERY OTHER RUN ON ONE CARD (owner, 2026-10-09): the first time a
           browser finishes any of the five runs, one pop-up lists every other

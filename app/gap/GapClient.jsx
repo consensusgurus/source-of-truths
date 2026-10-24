@@ -12,6 +12,8 @@
 // into every line and proves exactly one makes it true.
 
 import { mathText } from '@/app/MathText';
+import GauntletStage from '../GauntletStage';
+import { rampFor as gstRamp, circuitSlotFor as gstSlot } from '@/lib/circuits';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useHoverStale } from '@/lib/hover-armed';
 import { useSearchParams } from 'next/navigation';
@@ -567,6 +569,24 @@ export default function GapClient({ puzzles = [], problemsByNum = {}, forceNum =
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
+      {/* THE GAUNTLET STAGE (owner, 2026-10-23): while a problem is up it plays full screen on
+          this game's pastel step of the Math Gauntlet ladder, the problem and answers only, with the
+          clock in one quiet line below. The board further down still renders under it and keeps every rule. */}
+      {STAGE && started && playing && problem ? (
+        <GauntletStage
+          bg={gstRamp(gstSlot('math', 'gap'))}
+          qKey={g.i}
+          label={`Problem ${g.i + 1} of ${TOTAL_Q}`}
+          question={<h2>{lineOf(problem.q)}</h2>}
+          choices={problem.choices.map((c) => (typeof c === 'number' ? c.toLocaleString('en-US') : c))}
+          onPick={answer}
+          lockIdx={lock && g.lastRight != null ? problem.correct : null}
+          disabled={lock}
+          frac={remainFrac}
+          hot={remainFrac < 0.25}
+          footer={<>{Math.ceil(remainMs / 1000)}s &middot; {g.i + 1} of {TOTAL_Q}</>}
+        />
+      ) : null}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
           the page wrapper so the bands run full bleed; nothing here is pinned. */}

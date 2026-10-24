@@ -4318,6 +4318,24 @@ day... the first puzzle in read the room... A or B, or A or B or C, or A or B or
 - Client `app/herd/HerdClient.jsx` is built off OutwitClient's frame (class prefix `hd-`); a pick on any question
   but the last moves straight on. Wired by `scripts/wire-herd.mjs`; tiles `scripts/gen-herd-tile.py`.
 
+## EVERY GAUNTLET QUESTION PLAYS ON THE GAUNTLET STAGE (owner, 2026-10-23)
+
+Owner, 2026-10-23, after Aorb's play screen: "I want all gauntlet questions to look just like this. A
+counter can run below, but otherwise this simple." Then: "each color category of the gauntlet itself will
+match background", "it needs to use the pastel colors", counter "clock and standing but subtly".
+
+- `app/GauntletStage.jsx` draws one full-viewport stage: the question, the answers as cards, and one quiet
+  line below (a thin clock bar plus text). Ground = the bank's PASTEL ladder step (`rampFor` in
+  `lib/circuits.js`), and every element is `RAMP_INK`, never white. It only draws: the host keeps timing,
+  scoring, keys 1 to 4 and what a wrong answer does, and the old board still renders underneath it.
+- The runs (`app/circuits/[id]/run/RunClient.jsx`, TOWERS circuits: Trivia Gauntlet, Trivia Encore, Math,
+  English) draw it from `rampFor(sec.slot)`, with the clock, the section count and "if you stopped here
+  #N of M" below.
+- The twenty gauntlet dailies (Streak, Atlas, Sport, Biz, Quotes, Script, Sci, Art, History, Deep; Gram,
+  Vocab, Spell, Origin, Idiom; Gap, Series, Back, Blitz, Blitzed) draw it from
+  `rampFor(circuitSlotFor(<run>, <key>))`, with the clock and the question count below (no live standing
+  on a daily yet). Wired by `scripts/wire-gauntlet-stage.mjs`; a new gauntlet daily gets the same block.
+
 ## Aorb is the A-OR-B CROWD GAME, two picks a pair, and it plays FULL SCREEN (launched 2026-10-23)
 
 Route `/aorb`, key `aorb`, Crowd Psychology, skill Reading People, `miss: null`, no Sunday Edition (no
