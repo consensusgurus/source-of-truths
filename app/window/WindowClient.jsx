@@ -793,7 +793,7 @@ export default function WindowClient({ puzzles = [], forceNum = null }) {
     if (onX) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 13%, var(--stg-cell))' : COLORS.winTint;
     if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-ink) 18%, var(--stg-cell))' : '#f3f5f8';
     if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 34%, var(--stg-cell))' : COLORS.accentTint;
-    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick;
+    if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick})`;
     return {
       background: bg,
       boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,

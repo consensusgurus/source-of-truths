@@ -841,7 +841,7 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
     if (STAGE) {
       if (peer) bg = `color-mix(in srgb, var(--stg-ink) 12%, ${tint})`;
       if (sameVal) bg = `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 24%, ${tint})`;
-      if (isSel) bg = `color-mix(in srgb, var(--stg-acc) 40%, ${tint})`;
+      if (isSel) bg = `var(--stg-sel, ${`color-mix(in srgb, var(--stg-acc) 40%, ${tint})`})`;
     }
     let wash = null;
     if (!STAGE) {

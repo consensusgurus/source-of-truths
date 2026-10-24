@@ -857,7 +857,7 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
     // is, exactly as Suds paints them, so the ink stays legible in either
     // register. The Loft values are kept as the non-stage branch.
     if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 34%, var(--stg-cell))' : '#dcedef';
-    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : '#bde0e4';
+    if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : '#bde0e4'})`;
     return {
       background: bg,
       boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,

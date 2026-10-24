@@ -41,6 +41,9 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import { DOJO_RUN_ID, DOJO_BELTS, DOJO_CLOCK, DOJO_MAX, dojoTierOf, dojoGridPoints, dojoAcc, dojoSpeed } from '@/lib/dojo';
 import RunBackLink from '../circuits/RunBackLink';
 import DyeCurtain from './DyeCurtain';
+import { GauntletGate, GauntletEndStage } from '../GauntletScreens';
+import { usePhoneStage } from '../WordStage';
+import useSudokuPastel from '../SudokuPastel';
 
 const CLIENTS = {
   sixes: dynamic(() => import('../sixes/SixesClient'), { ssr: false, loading: () => null }),
@@ -137,6 +140,11 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   const flipBoard = () => setBoardTheme((cur) => { const next = cur === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('sot_dojo_board2', JSON.stringify({ t: next, day: etToday() })); } catch (e) {} return next; });
   const doneAtLoad = useRef(null);
   const [settled, setSettled] = useState(false);
+  // THE PHONE DOJO (owner, 2026-10-24): on a phone the entrance and the
+  // ending are the gauntlet stage's screens, and the grids play on the pastel
+  // sudoku register. Desktop keeps the doors, the scrolls and the dye curtain.
+  const phone = usePhoneStage();
+  const [endOpen, setEndOpen] = useState(true);
 
   useEffect(() => { rRef.current = r; }, [r]);
   const commit = useCallback((next) => {
@@ -163,6 +171,9 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
 
   const done = r.phase === 'done';
   const playing = r.phase === 'playing';
+  useSudokuPastel(hydrated && playing);
+  // The stage ending counts as settled for the more-runs card that follows it.
+  useEffect(() => { if (hydrated && done && phone && endOpen) setSettled(true); }, [hydrated, done, phone, endOpen]);
   const board = useCircuitBoard(DOJO_RUN_ID, hydrated && done);
 
   const counted = useMemo(() => sections.map((sec) => r.results[sec.key] || banked[sec.key] || null), [sections, banked, r.results]);
@@ -170,7 +181,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   const total = Math.round(parts.reduce((a, b) => a + b, 0));
   const allBanked = N > 0 && sections.every((s) => banked[s.key]);
 
-  function start() {
+  function start(now = false) {
     setLeaving(true);
     setTimeout(() => {
       setLeaving(false);
@@ -178,7 +189,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
       if (allBanked) { commit({ ...cur, phase: 'done', t0: cur.t0 || Date.now(), tEnd: Date.now() }); return; }
       commit({ ...cur, phase: 'playing', si: 0, t0: cur.t0 || Date.now() });
       try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
-    }, 980);
+    }, now === true ? 0 : 980);
   }
 
   // A grid reports its filed result. The finished board holds for a beat so
@@ -245,7 +256,21 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
         {!playing && <a className="dj-lb" href="/dojo/leaderboard">Leaderboard</a>}
       </div>
 
-      {hydrated && r.phase === 'idle' && (
+      {hydrated && r.phase === 'idle' && phone && (
+        <GauntletGate
+          circuitName="Enter the Dojo"
+          dateLabel={dateShort}
+          sections={sections.map((s, i) => ({ ...s, slot: i, questions: [] }))}
+          lineFor={(s) => (s.form && s.form !== s.name ? s.form : (s.chip || ''))}
+          bandNote={(s) => (banked[s.key] ? 'Done' : `${s.weight} pts`)}
+          headline={<>{(NUMS[N - 1] || String(N))} Forms.<br />One Belt.</>}
+          rule="Solving counts half, speed the other half."
+          lineup={'Today\u2019s forms:'}
+          startLabel={allBanked ? 'See your belt' : 'Step onto the mat'}
+          onStart={() => start(true)}
+        />
+      )}
+      {hydrated && r.phase === 'idle' && !phone && (
         <section className={`pre${leaving ? ' leave' : ''}`}>
           <h1 className="title fade">{'Enter the Dojo'.split(' ').map((w, i) => <span key={i} style={{ animationDelay: `${i * 0.09}s` }}>{w}</span>)}</h1>
           <p className="lede fade">Three sudokus in one sitting: <b>a six by six warm-up</b>, <b>the classic nine by nine</b>, then <b>{(variant && variant.phrase) || 'a variant'}</b>. Solving counts half, <b>speed</b> counts the other half. <span className="lede-x">Your score decides the belt you tie on.</span></p>
@@ -309,7 +334,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
                 <span aria-hidden="true">?</span> How to play
               </button>
             )}
-            {!between && Game && !banked[sec.key] && (
+            {!between && Game && !banked[sec.key] && !phone && (
               <button type="button" className="dj-tg" onClick={flipBoard} aria-pressed={boardTheme === 'light'} title={boardTheme === 'light' ? 'Switch the board to dark' : 'Switch the board to light'}>
                 <span aria-hidden="true">{boardTheme === 'light' ? '\u263E' : '\u2600'}</span> {boardTheme === 'light' ? 'Dark board' : 'Light board'}
               </button>
@@ -344,9 +369,28 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
       )}
 
       <RunChallengeCapture gameKey={DOJO_RUN_ID} />
-      {hydrated && done && (
+      {hydrated && done && phone && endOpen && (
+        <GauntletEndStage
+          circuitName="Enter the Dojo"
+          dateLabel={dateShort}
+          sections={sections.map((s, i) => ({ ...s, slot: i }))}
+          results={sections.map((s, i) => ({ key: s.key, score: counted[i] ? Math.round(parts[i]) : '\u2013' }))}
+          score={total}
+          unitWord="points"
+          colLabel="Form"
+          title={{ name: belt[1], colour: '#a5b4fc', line: tier > 0 ? `${Math.max(1, B[tier - 1][0] - total)} points short of ${B[tier - 1][1]}` : 'Top of the ladder' }}
+          rank={board.data && board.data.me && Number.isFinite(board.data.me.rank) ? board.data.me.rank : null}
+          fieldSize={board.data ? (board.data.uniquePlayers || (Array.isArray(board.data.overall) ? board.data.overall.length : null)) : null}
+          challenge={<RunChallengeButton gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} status={belt[1]} door />}
+          onShare={copyShare}
+          copied={copied}
+          onDetails={() => { setEndOpen(false); setSettled(true); }}
+          sweep={doneAtLoad.current === false}
+        />
+      )}
+      {hydrated && done && !(phone && endOpen) && (
         <Grading key="grading" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel} dateShort={dateShort}
-          animate={doneAtLoad.current === false} board={board} clocks={CLK} onShare={copyShare} copied={copied}
+          animate={doneAtLoad.current === false && !phone} board={board} clocks={CLK} onShare={copyShare} copied={copied}
           onSettled={() => setSettled(true)} />
       )}
       <MoreRunsPop self="dojo" ready={settled && doneAtLoad.current === false} delay={2500} fireOnLeave />
@@ -807,4 +851,8 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 }
 @media(max-width:600px){.wall{gap:8px;padding:18px 8px 14px}.sc-body{padding:10px 5px;min-height:140px}.sc-n{font-size:17px}.sc-c{display:none}.sc-f{font-size:9.5px}.sc-k{font-size:8px;letter-spacing:.08em}.sc-bkx{display:none}.title{font-size:44px}.lede{font-size:14px}.pre-row .sub2{font-size:11.5px;max-width:200px}.facts{gap:5px}.fact{padding:7px}.fact b{font-size:16px}.fact span{font-size:9.5px}.dj-sechd b{font-size:16px}.door-frame{height:110px}.bt{width:240px}}
 @media(prefers-reduced-motion:reduce){.dj *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition:none !important}}
+@media(max-width:899px){
+html[data-stage-pastel] .dj{--dj-ground:#a5b4fc !important;--dj-panel:#b4c0fd !important;--dj-surf:rgba(8,34,46,.07) !important;--dj-line:rgba(8,34,46,.2) !important;--dj-ink:#08222e !important;--dj-mute:#23404f !important;--dj-cta:#08222e !important;--dj-cta-ink:#a5b4fc !important;--dj-gold:#7c4a03 !important;--dj-good:#065f46 !important;--dj-bad:#9f1239 !important}
+html[data-stage-pastel] .dj-host.lt{background:transparent}
+}
 `;

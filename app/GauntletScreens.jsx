@@ -197,7 +197,7 @@ export function GauntletCover({ sections = [] }) {
   );
 }
 // One line per quiz, name then subject (owner, 2026-10-24).
-export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes' }) {
+export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes', headline = null, bandNote = null, lineup = 'Today\u2019s lineup:', startLabel = null }) {
   const first = sections[0];
   const pal = useStagePalette(gateColour(sections));
   const word = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][sections.length] || String(sections.length);
@@ -214,10 +214,10 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
           <TopBar pal={pal} />
           {banner ? <div className="gsx-banner">{banner}</div> : null}
           <div className="gsx-eye gsx-eye1">{circuitName} · {dateLabel}</div>
-          <h1 className="gsx-h1">{word} {unit.charAt(0).toUpperCase() + unit.slice(1)}.<br />One Life in Each.</h1>
-          <p className="gsx-lede">{rule} Today&rsquo;s lineup:</p>
+          <h1 className="gsx-h1">{headline || <>{word} {unit.charAt(0).toUpperCase() + unit.slice(1)}.<br />One Life in Each.</>}</h1>
+          <p className="gsx-lede">{rule} {lineup}</p>
           <div className="gsx-gowrap gsx-wide">
-            <button type="button" className="gsx-go" onClick={onStart}>Start with {first ? first.name : 'the run'}</button>
+            <button type="button" className="gsx-go" onClick={onStart}>{startLabel || `Start with ${first ? first.name : 'the run'}`}</button>
             {fieldLine ? <div className="gsx-fine">{fieldLine}</div> : null}
           </div>
         </div>
@@ -228,12 +228,12 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
             <div key={s.key} className="gsx-band" style={{ background: pal.fill(rampFor(slotOf(s, i))), animationDelay: `${0.15 + i * 0.07}s` }}>
               <span className="gsx-bn">{i + 1}</span>
               <span className="gsx-bt"><b>{s.name}</b>{lineFor && lineFor(s) ? <i>{lineFor(s)}</i> : null}</span>
-              <span className="gsx-bq">{s.questions.length} Qs</span>
+              <span className="gsx-bq">{bandNote ? bandNote(s) : `${s.questions.length} Qs`}</span>
             </div>
           ))}
         </div>
         <div className="gsx-gowrap gsx-narrow">
-          <button type="button" className="gsx-go" onClick={onStart}>Start with {first ? first.name : 'the run'}</button>
+          <button type="button" className="gsx-go" onClick={onStart}>{startLabel || `Start with ${first ? first.name : 'the run'}`}</button>
           {fieldLine ? <div className="gsx-fine">{fieldLine}</div> : null}
         </div>
       </div>
@@ -339,7 +339,7 @@ export function GauntletEndStage({
   circuitName, dateLabel, sections = [], results = [], score = 0, title = null,
   rank = null, fieldSize = null, avg = null, top = null, leaderScore = null,
   challenge = null, polymath = null, similar = null, onShare, copied = false,
-  onDetails, sweep = true, unitWord = 'right',
+  onDetails, sweep = true, unitWord = 'right', colLabel = 'Quiz', extra = null,
 }) {
   const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const anim = sweep && !reduce;
@@ -400,13 +400,14 @@ export function GauntletEndStage({
               </div>
             ) : null}
             <div className="gsx-rise gsx-tray" style={d('2.4s')}>
+              {extra}
               {challenge}
               {polymath ? <div className="gsx-poly">{polymath}</div> : null}
             </div>
           </div>
           <div className="gsx-eright">
             <div className="gsx-rise gsx-table" style={d('2.25s')}>
-              <div className="gsx-tr gsx-th"><span>Quiz</span><span>You</span><span>Field</span><span>Best</span></div>
+              <div className="gsx-tr gsx-th"><span>{colLabel}</span><span>You</span><span>Field</span><span>Best</span></div>
               {rows.map((x) => (
                 <div key={x.key} className="gsx-tr gsx-row" style={{ background: pal.fill(x.bg) }}>
                   <span><b>{x.name}</b></span><span><b>{x.you}</b></span><span>{x.field}</span><span>{x.best}</span>

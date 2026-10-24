@@ -796,7 +796,7 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
     if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-ink) 18%, var(--stg-cell))' : '#f3f5f8';
     if (knight) bg = STAGE ? 'color-mix(in srgb, var(--stg-ink) 27%, var(--stg-cell))' : COLORS.knightTint;
     if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 34%, var(--stg-cell))' : COLORS.accentTint;
-    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick;
+    if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick})`;
     return {
       background: bg,
       boxShadow: isSel

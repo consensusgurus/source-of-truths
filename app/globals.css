@@ -690,6 +690,67 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   --stg-acc-tint: color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 12%, transparent);
 }
 
+/* THE PASTEL REGISTER (owner, 2026-10-24): the sudokus on a phone play on the
+   gauntlet stage's look, the periwinkle Sudoku pastel and one dark ink. Set by
+   app/SudokuPastel.jsx while a sudoku is on screen under 900px wide, and it
+   stands down by itself whenever a finish card is up, so the ending keeps its
+   own colours. !important because both registers above set these on the same
+   element, and the :not(#sot-x) lifts the html rule over the register's own. */
+@media (max-width: 899px) {
+  html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
+  html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #a5b4fc !important; }
+  html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
+    --stg-brand: #08222e !important;
+    --stg-ground: #a5b4fc !important;
+    --stg-raise: #c3cdfe !important;
+    --stg-panel: #b4c0fd !important;
+    --stg-surf: rgba(8, 34, 46, 0.07) !important;
+    --stg-surf2: rgba(8, 34, 46, 0.13) !important;
+    --stg-line: rgba(8, 34, 46, 0.2) !important;
+    --stg-line2: rgba(8, 34, 46, 0.34) !important;
+    --stg-line3: #08222e !important;
+    --stg-cell: #9cabee !important;
+    --stg-cell-line: rgba(8, 34, 46, 0.3) !important;
+    --stg-cell-dot: rgba(8, 34, 46, 0.6) !important;
+    --stg-cell-dot2: rgba(8, 34, 46, 0.9) !important;
+    --stg-cell-given: #08222e !important;
+    --stg-tint-mix: 100% !important;
+    --stg-dk: 100% !important;
+    --stg-ink: #08222e !important;
+    --stg-ink2: #1d3a4a !important;
+    --stg-mute: #23404f !important;
+    --stg-mute2: #2c4757 !important;
+    --stg-dim: #2c4757 !important;
+    --stg-onramp: #a5b4fc !important;
+    --stg-chip: rgba(8, 34, 46, 0.1) !important;
+    --stg-b1: rgba(8, 34, 46, 0.06) !important;
+    --stg-b2: rgba(8, 34, 46, 0.1) !important;
+    --stg-b3: rgba(8, 34, 46, 0.15) !important;
+    --stg-b4: rgba(8, 34, 46, 0.22) !important;
+    --stg-good: #065f46 !important;
+    --stg-up: #065f46 !important;
+    --stg-cool: #1e3a8a !important;
+    --stg-warn: #7c4a03 !important;
+    --stg-bad: #9f1239 !important;
+    --stg-dn: #9f1239 !important;
+    --stg-fieldink: 8, 34, 46 !important;
+    --stg-acc: #08222e !important;
+    --stg-acc-ink: #08222e !important;
+    --stg-acc-tint: rgba(8, 34, 46, 0.14) !important;
+    --stg-sel: #08222e;
+    background: #a5b4fc !important;
+    color: #08222e;
+  }
+  /* Region boards (Quilt, Cages) wear the full pastels here. Periwinkle is
+     the ground, so a periwinkle region takes amber instead, and the region
+     ink (cage sums, labels) is the one dark ink rather than the pastel. */
+  html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="#a5b4fc var(--stg-dk"] { --hue: #fbbf24 !important; }
+  html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--hue-ink"] { --hue-ink: #08222e !important; }
+  /* The selected square is inked solid, so whatever it holds turns pastel. */
+  html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
+  html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: #a5b4fc !important; }
+}
+
 /* THE FIRST-LOAD DEMONSTRATION of the light switch (useThemeIntro in
    lib/stage-theme.js). The register flips under the reader once, so the class
    is on the root ONLY while it plays: transitioning every element of a stage

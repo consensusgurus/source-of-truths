@@ -760,7 +760,7 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
     let bg = STAGE ? 'var(--stg-cell)' : T.white;
     if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-ink) 18%, var(--stg-cell))' : '#f3f5f8';
     if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 34%, var(--stg-cell))' : '#ffe9d8';
-    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : '#ffd9bd';
+    if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : '#ffd9bd'})`;
     return {
       background: bg,
       boxShadow: isSel ? `inset 0 0 0 2.5px ${STAGE ? STAGE_C_INK : COLORS.accent}` : undefined,

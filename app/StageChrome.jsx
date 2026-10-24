@@ -54,6 +54,8 @@ import DailyRunRail from './DailyRunRail';
 import GateLanding from './GateLanding';
 import { markPageEntry } from '@/lib/finish-beat';
 import { shareForCredit } from '@/lib/share-credit';
+import useSudokuPastel from './SudokuPastel';
+import { SUDOKU_POOL } from '@/lib/circuits';
 
 // A FIGURE THAT IS A PLAIN COUNT ROLLS; anything else swaps (motion pass,
 // 2026-09-16). "3", "+62", "#37" and "3/5" roll digit by digit through
@@ -219,6 +221,8 @@ export default function StageChrome({
   // pageAge): marked once, on this mount's first render, so a board opened
   // already finished by a client-side link goes straight to its end card.
   useState(() => { markPageEntry(); return 0; });
+  // Sudokus play on the pastel stage on a phone (owner, 2026-10-24); see SudokuPastel.jsx.
+  useSudokuPastel(SUDOKU_POOL.includes(gameKey));
   const started = useStarted(gameKey, num);
   const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
   // SHARE FOR CREDIT (owner, 2026-10-23): the page itself, stamped with the

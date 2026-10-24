@@ -803,7 +803,7 @@ export default function QuiltClient({ puzzles = [], forceNum = null }) {
     let bg = tint;
     if (peer) bg = STAGE ? `color-mix(in srgb, var(--stg-ink) 12%, ${tint})` : '#e9edf3';
     if (sameVal) bg = STAGE ? `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 24%, ${tint})` : '#fbe3f7';
-    if (isSel) bg = STAGE ? `color-mix(in srgb, var(--stg-acc) 40%, ${tint})` : '#f6cdef';
+    if (isSel) bg = `var(--stg-sel, ${STAGE ? `color-mix(in srgb, var(--stg-acc) 40%, ${tint})` : '#f6cdef'})`;
     // A wall goes wherever the neighbour is in a different region. The last row
     // and column are the grid's own outer border, so they are left alone.
     const wallR = c !== 8 && REG[idx + 1] !== b;
