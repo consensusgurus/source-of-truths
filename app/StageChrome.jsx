@@ -331,6 +331,34 @@ export default function StageChrome({
     <div className="stg-top">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
+      {pastel.on ? (
+        // THE SIMPLE HEADER ON A PHONE SUDOKU (owner, 2026-10-24): the gauntlet
+        // entry card's top bar, the mark and name on the left, All Puzzles and
+        // the look switch on the right, then the game's name. No rankings,
+        // share or leader strip; the board and its figures are the page.
+        <>
+          <div className="stg-sim">
+            <a className="stg-simlogo" href={homeTo} aria-label="Mind Loft home">
+              <MindLoftMark size={26} ink="var(--stg-ink,#08222e)" accent="var(--stg-ink,#08222e)" title="Mind Loft" />
+              <span>Mind Loft</span>
+            </a>
+            <span className="stg-simr">
+              <a className="stg-simback" href={homeTo}><span aria-hidden="true">&larr;</span> All Puzzles</a>
+              <button type="button" className="stg-simlook" onClick={pastel.flip}
+                aria-label={pastel.look === 'plain' ? 'Switch to colour' : 'Switch to plain white'}
+                title={pastel.look === 'plain' ? 'Colour' : 'Plain'}>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" />
+                </svg>
+              </button>
+            </span>
+          </div>
+          <div className="stg-simt">
+            <h1>{name}</h1>
+            <i>{dateLabel || ''}{sunday ? <>{dateLabel ? ' · ' : ''}{sunday}</> : null}</i>
+          </div>
+        </>
+      ) : (
       <div className="stg-cap">
         {/* THE BRAND IS THE WAY OUT, and it is the only one (owner, 2026-08-31).
             The Home glyph and a wordmark would be two controls doing one job,
@@ -430,9 +458,10 @@ export default function StageChrome({
         <ThemePop />
         <LightOffer gameKey={gameKey} num={num} />
       </div>
+      )}
 
       <LoftSheet />
-      <div className="stg-prog"><span style={{ width: pct + '%' }} /></div>
+      {pastel.on ? null : <div className="stg-prog"><span style={{ width: pct + '%' }} /></div>}
       {/* A DAILY RUN (?run=a,b,c, lib/daily-run.js). Renders nothing unless the
           page was opened inside one. */}
       {gameKey ? <DailyRunRail gameKey={gameKey} /> : null}
@@ -440,7 +469,7 @@ export default function StageChrome({
       {gameKey ? <ChallengeStrip gameKey={gameKey} num={num} /> : null}
       {gameKey ? <OtherDeviceBar gameKey={gameKey} /> : null}
 
-      {dailyStrip ? (
+      {pastel.on ? null : dailyStrip ? (
         // THE DAILY STRIP IS TWO CONTROLS (owner, 2026-10-13): the leader and the
         // leaderboard, each hidden until asked for and remembered once shown.
         // It renders from first paint whatever the board fetch does, so it also
@@ -566,7 +595,7 @@ export default function StageChrome({
           bar an inch under the cap's own. It lives on where it earns its keep:
           the run's own GauntletLadder, and the home, where a rung is a whole
           game rather than one square of one. */}
-      {panel ? (
+      {panel && !pastel.on ? (
         <div className="stg-panel" id="stg-rankings" role="region" aria-label="Rankings">
           <div className="stg-pin">
             {/* The panel's dark styling has to follow the REGISTER, not the stage. It
@@ -592,6 +621,14 @@ const MONO = "'Manrope',ui-monospace,'SFMono-Regular',monospace";
 const CSS = `
 .stg-top{background:var(--stg-ground,#0b0f1a);font-family:${SANS};color:var(--stg-ink,#e9edf4);}
 
+.stg-sim{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:max(12px, env(safe-area-inset-top)) 14px 0;color:var(--stg-ink,#08222e);}
+.stg-simlogo{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;font-weight:800;font-size:16px;letter-spacing:-.01em;}
+.stg-simr{display:inline-flex;align-items:center;gap:8px;}
+.stg-simback{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:2px solid var(--stg-ink,#08222e);color:inherit;text-decoration:none;font-weight:800;font-size:14px;box-sizing:border-box;}
+.stg-simlook{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--stg-ink,#08222e);background:transparent;color:inherit;cursor:pointer;padding:0;flex:none;}
+.stg-simt{padding:14px 14px 2px;color:var(--stg-ink,#08222e);}
+.stg-simt h1{margin:0;font:inherit;font-size:30px;line-height:1.05;font-weight:800;letter-spacing:-.02em;}
+.stg-simt i{display:block;font-style:normal;margin-top:4px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
 .stg-cap{display:flex;align-items:center;gap:16px;padding:12px 20px;position:relative;}
 .stg-id{display:flex;flex-direction:column;gap:1px;min-width:0;}
 .stg-id i{font-family:${MONO};font-style:normal;font-size:9.5px;letter-spacing:.15em;
