@@ -52,6 +52,8 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import DailyRules from '../DailyRules';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { usePhoneStage } from '../WordStage';
+import BracketStage from './BracketStage';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted,
@@ -395,6 +397,27 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
     setArmGive(true);
     setTimeout(() => setArmGive(false), 3500);
   }
+  // PHONE STAGE (owner, 2026-10-24). The stage plays the sheet one matchup at a
+  // time; when the final is picked it locks the sheet (the result posts then and
+  // the done state is saved, so a reload never asks again), plays its reveal,
+  // and only then hands the done state to the page so the usual finish runs.
+  const phoneStage = usePhoneStage();
+  const lockedRef = useRef(null);
+  function lockSheet() {
+    if (lockedRef.current || !playing) return;
+    const g2 = { ...g, status: 'done', tEnd: Date.now(), t0: g.t0 || Date.now() };
+    let s = 0;
+    for (let r = 0; r < ROUNDS; r++) { const w = N / Math.pow(2, r + 1); for (let m = 0; m < w; m++) if (g2.picks[idOf(r, m)] === TRUE[idOf(r, m)]) s += Math.pow(2, r); }
+    lockedRef.current = g2;
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(g2)); } catch (e) {}
+    try { if (isTodays) localStorage.setItem('sot_bracket_day', JSON.stringify({ d: etToday(), done: true })); } catch (e) {}
+    postResult(g2, s);
+  }
+  function finishSheet() {
+    const g2 = lockedRef.current; if (!g2) return;
+    lockedRef.current = null;
+    setG(g2); setEndClosed(false);
+  }
   function resetGame() { try { localStorage.removeItem(STORE_KEY); } catch (e) {} setG(freshState(MATCHES)); setEndClosed(false); }
 
   const champion = PUZZLE.items[TRUE[MATCHES - 1]];
@@ -642,6 +665,12 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && playing && (
+        <BracketStage bg={gameColor('bracket')} items={PUZZLE.items} metric={PUZZLE.metric} rounds={ROUNDS}
+          picks={g.picks} truth={TRUE} idOf={idOf} kidsOf={kidsOf} onPick={pick}
+          onLock={lockSheet} onDone={finishSheet} onHelp={() => setShowHelp(true)}
+          giveUp={{ armed: armGive, onPress: giveTap }} elapsed={elapsed} />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -884,7 +913,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60 }}>{toast}</div>
       )}
       {showHelp && (
-        <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 460, background: STAGE ? 'var(--stg-raise,#0e131f)' : COLORS.cream, borderRadius: 12, border: STAGE ? '1px solid var(--stg-line)' : `2px solid ${COLORS.ink}`, padding: '20px 22px', fontFamily: SANS, maxHeight: '86vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
               <div style={{ fontSize: 21, fontWeight: 800, color: INK }}>How to play</div>
