@@ -108,16 +108,20 @@ function paintChrome() {
       const d = document.createElement('div');
       d.setAttribute('data-gsx-edge', side);
       d.setAttribute('aria-hidden', 'true');
-      d.style.cssText = `position:fixed;left:0;right:0;${side}:0;height:12px;background:${top.color};z-index:2147483000;pointer-events:none`;
+      d.style.cssText = `position:fixed;left:0;right:0;${side}:0;height:12px;background:${top[side] || top.color};z-index:2147483000;pointer-events:none`;
       body.appendChild(d);
     });
   }
 }
-export function useStageChrome(color) {
+// `edges` lets an animation tint the two bars apart for a moment (the end
+// sweep runs a different colour along the top and the bottom of the screen).
+export function useStageChrome(color, edges) {
+  const eTop = edges && edges.top;
+  const eBot = edges && edges.bottom;
   useEffect(() => {
     if (!color || typeof document === 'undefined') return undefined;
     const release = holdRootPaint(color);
-    const h = { color };
+    const h = { color, top: eTop || color, bottom: eBot || color };
     chrome.stack.push(h);
     paintChrome();
     return () => {
@@ -126,12 +130,12 @@ export function useStageChrome(color) {
       if (i >= 0) chrome.stack.splice(i, 1);
       paintChrome();
     };
-  }, [color]);
+  }, [color, eTop, eBot]);
 }
-function useStagePalette(pastel) {
+function useStagePalette(pastel, edges) {
   const [look, setLook] = useStageLook();
   const p = stagePalette(pastel, look);
-  useStageChrome(p.bg);
+  useStageChrome(p.bg, edges);
   return {
     ...p, look,
     plain: look === 'plain',
@@ -318,7 +322,22 @@ export function GauntletEndStage({
   const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const anim = sweep && !reduce;
   const shown = useCountUp(score, anim ? 1500 : 200, !reduce);
-  const pal = useStagePalette((title && title.colour) || '#7dd3fc');
+  // While the sweep runs, Safari's bars take the colours under them: the
+  // first quiz's stripe along the top, the last quiz's along the bottom.
+  const [sweeping, setSweeping] = useState(anim && sections.length > 0);
+  useEffect(() => {
+    if (!sweeping) return undefined;
+    const t = setTimeout(() => setSweeping(false), 1500 + Math.max(0, sections.length - 1) * 60);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const [lookNow] = useStageLook();
+  const plainNow = lookNow === 'plain';
+  const sweepEdges = sweeping && !plainNow ? {
+    top: rampFor(slotOf(sections[0], 0)),
+    bottom: rampFor(slotOf(sections[sections.length - 1], sections.length - 1)),
+  } : null;
+  const pal = useStagePalette((title && title.colour) || '#7dd3fc', sweepEdges);
   const bg = pal.bg;
   const d = (s) => ({ animationDelay: anim ? s : `${Math.max(0, parseFloat(s) - 1.4)}s` });
   const byKey = Object.fromEntries(results.filter(Boolean).map((x) => [x.key, x]));
