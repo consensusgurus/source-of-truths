@@ -60,7 +60,7 @@ import { readChallenge, encodeChallenge, challengeFig, challengeResult, ymdCompa
 import { metricDef } from '@/lib/challenge-metric';
 import { newCid, withCid, recordSend, reportTake } from '@/lib/challenge-client';
 import TicketDoor from './TicketDoor';
-import MemeShare from './MemeShare';
+import MemeShare, { MemePeek } from './MemeShare';
 import AddToHome from './AddToHome';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 // Where this finish puts the player in each of their groups (2026-09-17).
@@ -2180,6 +2180,12 @@ export default function StageFinish({
           ) : null}
           {setDoors.map((d) => door(d))}
           {smallDoors.map((d, i) => door({ ...d, cls: (smallDoors.length % 2 === 1 && i === smallDoors.length - 1) ? 'wide' : '' }))}
+          {/* THE GIF, ON SHOW (owner, 2026-10-24): the meme the sheet opens on,
+              big and full width under the share doors. The full-colour card
+              above stays clean; this is the page after it. Tap to share. */}
+          {openMeme ? (
+            <div style={{ gridColumn: '1 / -1' }}><MemePeek ctx={memeCtx} onOpen={openMeme} /></div>
+          ) : null}
           <div className="stf-drawer" id="stf-daily" hidden={!dailyOpen}>
             {/* THE GAMES, ORGANIZED AS THE OLD CARD HAD THEM (owner,
                 2026-10-01): more of this category first, then every category,

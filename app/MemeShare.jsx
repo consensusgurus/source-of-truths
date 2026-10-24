@@ -55,6 +55,39 @@ const CSS = `
 .msh-ob:focus-visible,.msh-go:focus-visible,.msh-chip:focus-visible,.msh-x:focus-visible{outline:2px solid #0b0d12;outline-offset:2px;}
 `;
 
+// THE GIF ON SHOW (owner, 2026-10-24): the GIF the sheet would open on, full
+// width and prominent on the page after the full-colour ending, under the share
+// doors. Full frame, never cropped (burned-in text stays). A tap opens the
+// sheet. The full-colour card itself stays clean: no GIF there.
+const PEEK_CSS = `
+.msh-peek{display:block;width:100%;margin:4px 0 0;padding:0;border:0;background:#000;border-radius:16px;overflow:hidden;cursor:pointer;
+  color:#fff;font-family:Manrope,system-ui,sans-serif;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.18);}
+.msh-peek .cap{display:block;padding:12px 14px;font-size:17px;line-height:1.2;font-weight:800;text-transform:uppercase;}
+.msh-peek img{display:block;width:100%;height:auto;max-height:min(440px,62vh);object-fit:contain;background:#000;}
+.msh-peek .ft{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;font-size:15px;font-weight:800;}
+.msh-peek:hover{filter:brightness(1.06);}
+.msh-peek:focus-visible{outline:2px solid currentColor;outline-offset:3px;}
+`;
+
+export function MemePeek({ ctx, onOpen }) {
+  const [dark, setDark] = useState(false);
+  useEffect(() => { setDark(isDarkPage()); }, []);
+  if (!ctx) return null;
+  const k = memeOrder(ctx)[0];
+  if (!k || !MEMES[k]) return null;
+  const pal = sharePalette(ctx.cat, dark);
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: PEEK_CSS }} />
+      <button type="button" className="msh-peek" onClick={onOpen} aria-label={`Share with a meme: ${MEMES[k].name}`}>
+        <span className="cap">{memeCaption(k, ctx)}</span>
+        <img src={MEMES[k].src} alt={`${MEMES[k].name} reaction GIF`} loading="lazy" />
+        <span className="ft" style={{ background: pal.fill, color: pal.onFill }}>Share this GIF <span aria-hidden="true">→</span></span>
+      </button>
+    </>
+  );
+}
+
 function isTouch() {
   try { return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) { return false; }
 }
