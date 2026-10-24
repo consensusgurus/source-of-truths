@@ -69,7 +69,7 @@ import RunBackLink from '../../RunBackLink';
 import PolymathMeter from '../../PolymathMeter';
 import { POLY_IDS } from '@/lib/polymath';
 import GauntletStage from '../../../GauntletStage';
-import { GauntletGate, GauntletBetween, GauntletEndStage } from '../../../GauntletScreens';
+import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover } from '../../../GauntletScreens';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -1051,6 +1051,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       {/* ENTRY, BETWEEN AND END on the same stage (owner, 2026-10-23, from the
           approved mockups): full screen, the bank's pastel step, dark ink. They
           only draw; every rule stays in this file. See GauntletScreens.jsx. */}
+      {TOWERS && !hydrated ? <GauntletCover sections={sections} /> : null}
       {TOWERS && hydrated && r.phase === 'idle' ? (
         <GauntletGate
           circuitName={circuitName}

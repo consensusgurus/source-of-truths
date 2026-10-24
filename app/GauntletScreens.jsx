@@ -24,7 +24,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { RAMP_INK } from '@/lib/category-ramp';
-import { rampFor } from '@/lib/circuits';
+import { rampFor, LADDER_RAMP } from '@/lib/circuits';
 import MindLoftMark from './MindLoftMark';
 import { holdRootPaint } from '@/lib/root-paint';
 import { holdThemeColor } from '@/lib/theme-color-hold';
@@ -174,9 +174,31 @@ function TopBar({ pal, back = '/', backLabel = 'All Puzzles' }) {
 }
 
 // ── ENTRY ────────────────────────────────────────────────────────────────
+// The entry's ground is a ramp colour NO quiz in today's lineup wears (owner,
+// 2026-10-24: on the first quiz's colour its band vanished into the page).
+// If every step is taken, the second quiz's colour.
+export function gateColour(sections = []) {
+  const used = new Set(sections.map((s, i) => rampFor(slotOf(s, i))));
+  const free = LADDER_RAMP.find((c) => !used.has(c));
+  if (free) return free;
+  return rampFor(slotOf(sections[1], 1));
+}
+// What the run page paints before it has read its save (owner, 2026-10-24:
+// the old load screen showed for a second). Just the entry's ground, full
+// screen, so the page opens on the colour the entry is about to use. A tiny
+// inline script turns it white at once for a reader on the Plain look.
+export function GauntletCover({ sections = [] }) {
+  const c = gateColour(sections);
+  return (
+    <>
+      <div id="gsx-cover" aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 90, background: c }} />
+      <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('${LOOK_KEY}')==='plain'){var e=document.getElementById('gsx-cover');if(e)e.style.background='#ffffff'}}catch(e){}` }} />
+    </>
+  );
+}
 export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes' }) {
   const first = sections[0];
-  const pal = useStagePalette(rampFor(slotOf(first, 0)));
+  const pal = useStagePalette(gateColour(sections));
   const word = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][sections.length] || String(sections.length);
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Enter' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); onStart && onStart(); } };
