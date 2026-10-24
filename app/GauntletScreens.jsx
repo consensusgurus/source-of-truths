@@ -27,6 +27,7 @@ import { RAMP_INK } from '@/lib/category-ramp';
 import { rampFor } from '@/lib/circuits';
 import MindLoftMark from './MindLoftMark';
 import { holdRootPaint } from '@/lib/root-paint';
+import { holdThemeColor } from '@/lib/theme-color-hold';
 
 // THE STAGE'S OWN LOOK (owner, 2026-10-23): the gauntlet stages always open on
 // the pastel ground with dark ink, whatever the site's light/dark setting is.
@@ -73,22 +74,18 @@ function paintChrome() {
   const top = chrome.stack[chrome.stack.length - 1];
   if (top && !chrome.saved) {
     chrome.saved = {
-      metas: Array.from(document.querySelectorAll('meta[name="theme-color"]')),
       html: html.style.backgroundColor,
       body: body ? body.style.backgroundColor : '',
     };
   }
-  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.parentNode && m.parentNode.removeChild(m));
+  // The page's own theme-color tags never leave <head> (lib/theme-color-hold.js):
+  // removing Next's tags crashed the next client navigation.
+  if (chrome.release) { chrome.release(); chrome.release = null; }
   if (top) {
-    const m = document.createElement('meta');
-    m.setAttribute('name', 'theme-color');
-    m.setAttribute('content', top.color);
-    m.setAttribute('data-gsx', '');
-    document.head.appendChild(m);
+    chrome.release = holdThemeColor(top.color);
     html.style.backgroundColor = top.color;
     if (body) body.style.backgroundColor = top.color;
   } else if (chrome.saved) {
-    chrome.saved.metas.forEach((m) => document.head.appendChild(m));
     html.style.backgroundColor = chrome.saved.html;
     if (body) body.style.backgroundColor = chrome.saved.body;
     chrome.saved = null;

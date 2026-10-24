@@ -41,6 +41,8 @@ const CSS = `
 .msh-chips{display:flex;gap:8px;overflow-x:auto;padding-right:24px;scrollbar-width:none;-ms-overflow-style:none;
   -webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent);}
 .msh-chips::-webkit-scrollbar{display:none;}
+/* A mouse cannot swipe a hidden-scrollbar row, so on a fine pointer the chips WRAP and every GIF is on show (owner report, 2026-10-23). */
+@media (hover:hover) and (pointer:fine){.msh-chips{flex-wrap:wrap;overflow:visible;padding-right:0;-webkit-mask-image:none;mask-image:none;}}
 .msh-chip{flex:none;height:36px;padding:0 13px;border-radius:99px;border:1.5px solid #d6dbe4;background:#fff;color:#0b0d12;
   font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .msh-chip.on{background:#0b0d12;border-color:#0b0d12;color:#fff;}

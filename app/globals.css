@@ -907,19 +907,3 @@ html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::
 html[data-sot-paint],
 html[data-sot-paint] body { background: var(--sot-root-paint) !important; }
 html[data-sot-paint] { scrollbar-color: var(--sot-root-paint) var(--sot-root-paint); }
-
-/* THE SUDOKU STAGE LOOK'S ENDING (app/sudokuLook.js, owner 2026-10-23). On a
-   sudoku page the accent is the ink, so the ending would flood black; inside
-   the finish it takes the page's finale colour (the pastel, or white on Plain)
-   with the ink on it, as the gauntlet stage's ending does. */
-.stage-page[data-gstage] .stf,
-.stage-page[data-gstage] .stf-flood,
-.stage-page[data-gstage] .lsh {
-  --stg-acc: var(--gs-fin);
-  --stg-acc-ink: var(--gs-finink);
-  --stg-onramp: var(--gs-finink);
-}
-/* ...and the root behind it takes the page colour, past the light register's
-   own !important ground (the rule near the top keyed on data-stage-theme). */
-html[data-sot-paint]:has(.stage-page[data-gstage][data-stage-theme]),
-html[data-sot-paint]:has(.stage-page[data-gstage][data-stage-theme]) body { background: var(--sot-root-paint) !important; }
