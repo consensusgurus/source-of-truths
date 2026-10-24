@@ -106,12 +106,24 @@ function paintChrome() {
       body.appendChild(d);
     });
   }
+  // Safari re-reads its bar colour when the PAGE scrolls, and the stage sits in
+  // a fixed layer, so the page under it may not move at all. Make sure it can
+  // scroll a few pixels, scroll it there and back over a few frames, then put
+  // its height back. Nothing visible moves: the stage covers the page.
   try {
-    requestAnimationFrame(() => {
-      const y = window.scrollY;
-      window.scrollTo(0, y + 1);
-      requestAnimationFrame(() => window.scrollTo(0, y));
-    });
+    if (!body) return;
+    const oldMin = body.style.minHeight;
+    body.style.minHeight = `calc(100vh + ${window.innerHeight + 40}px)`;
+    const y = window.scrollY;
+    const to = y > 20 ? y - 12 : y + 12;
+    let n = 0;
+    const step = () => {
+      n += 1;
+      window.scrollTo(0, n % 2 ? to : y);
+      if (n < 4) setTimeout(step, 60);
+      else setTimeout(() => { window.scrollTo(0, y); body.style.minHeight = oldMin; }, 80);
+    };
+    requestAnimationFrame(step);
   } catch (e) {}
 }
 export function useStageChrome(color) {
