@@ -164,10 +164,10 @@ function TopBar({ pal, back = '/', backLabel = 'All Puzzles' }) {
         <span>Mind Loft</span>
       </a>
       <span className="gsx-tr2">
-        <ThemeButton pal={pal} />
         <a className="gsx-back" href={back}>
           <span aria-hidden="true">&larr;</span> {backLabel}
         </a>
+        <ThemeButton pal={pal} />
       </span>
     </div>
   );
