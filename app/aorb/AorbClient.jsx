@@ -886,22 +886,24 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
             .ab-face.ab-go{justify-content:center;}
           }
           .ab-stage{position:fixed;inset:0;z-index:85;background:var(--stg-acc, #6d28d9);color:var(--stg-onramp, #fff);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:${SANS};-webkit-tap-highlight-color:transparent;}
+          .ab-stage, .ab-stage .ab-opt, .ab-stage .ab-name, .ab-stage .ab-name span, .ab-stage .ab-pill, .ab-stage .ab-pct, .ab-stage .ab-tag, .ab-stage .ab-q, .ab-stage .ab-hint, .ab-stage .ab-note, .ab-stage .ab-k, .ab-stage .ab-big, .ab-stage .ab-mid, .ab-stage .ab-eyebrow{color:var(--stg-onramp, #fff) !important;opacity:1;}
+          .ab-stage .ab-pill.on, .ab-stage .ab-tag-on, .ab-stage .ab-go{color:var(--stg-acc, #6d28d9) !important;}
           .ab-col{position:relative;z-index:2;width:100%;max-width:560px;box-sizing:border-box;padding:28px 16px;display:flex;flex-direction:column;justify-content:center;gap:30px;min-height:100%;}
           .ab-qwrap{text-align:center;}
           .ab-q{margin:0;font-size:36px;line-height:1.1;font-weight:800;letter-spacing:-0.02em;color:inherit;}
           .ab-eyebrow{display:block;margin-bottom:10px;font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;opacity:.85;}
           .ab-hint{margin:14px 0 0;text-align:center;font-size:15px;line-height:1.4;font-weight:700;opacity:.92;}
           .ab-opts{display:flex;flex-direction:column;gap:12px;}
-          .ab-opt{position:relative;overflow:visible;box-sizing:border-box;min-height:124px;border-radius:18px;padding:16px;display:flex;align-items:center;gap:12px;background:color-mix(in srgb, currentColor 10%, transparent);border:2px solid color-mix(in srgb, currentColor 28%, transparent);}
+          .ab-opt{position:relative;overflow:visible;box-sizing:border-box;min-height:124px;border-radius:18px;padding:16px;display:flex;align-items:center;gap:12px;background:color-mix(in srgb, currentColor 8%, transparent);border:2px solid currentColor;}
           .ab-opt.ab-win{border-color:currentColor;animation:abGlow 1s ease-out .6s 2;}
-          .ab-opt.ab-lose{border-color:color-mix(in srgb, currentColor 16%, transparent);}
+          .ab-opt.ab-lose{border-color:color-mix(in srgb, currentColor 35%, transparent);}
           .ab-fill{position:absolute;left:0;top:0;bottom:0;border-radius:16px;background:color-mix(in srgb, currentColor 22%, transparent);pointer-events:none;}
           .ab-name{position:relative;z-index:1;flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;font-size:23px;line-height:1.15;font-weight:800;}
           .ab-tags{display:flex;gap:6px;flex-wrap:wrap;}
           .ab-tag{font-size:12px;font-weight:800;border:1.5px solid currentColor;border-radius:999px;padding:3px 9px;}
           .ab-tag-on{background:var(--stg-onramp, #fff);color:var(--stg-acc, #6d28d9);border-color:var(--stg-onramp, #fff);}
           .ab-pills{position:relative;z-index:1;display:flex;flex-direction:column;gap:8px;flex:none;}
-          .ab-pill{width:88px;min-height:44px;border-radius:999px;font-family:${SANS};font-size:14px;font-weight:800;cursor:pointer;background:transparent;color:inherit;border:2px solid color-mix(in srgb, currentColor 55%, transparent);transition:background .15s,color .15s;}
+          .ab-pill{width:88px;min-height:44px;border-radius:999px;font-family:${SANS};font-size:14px;font-weight:800;cursor:pointer;background:transparent;color:inherit;border:2px solid currentColor;transition:background .15s,color .15s;}
           .ab-pill.on{background:var(--stg-onramp, #fff);color:var(--stg-acc, #6d28d9);border-color:var(--stg-onramp, #fff);}
           .ab-pill:focus-visible{outline:3px solid currentColor;outline-offset:2px;}
           .ab-pct{position:relative;z-index:1;flex:none;min-width:100px;text-align:right;font-size:46px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums;}
@@ -1056,7 +1058,7 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome="won"
               challengeMetric={result ? score : null}
-              title={`Score ${score}`}
+              title={score >= 95 ? 'Mind Reader' : score >= 80 ? 'The Host' : score >= 60 ? 'Life of the Party' : score >= 40 ? 'Plus-One' : score >= 20 ? 'Wallflower' : 'Wrong Party'}
               detail={result ? `Read the room ${result.read}${result.bonus ? ` \u00b7 +${result.bonus} surprise` : ''}` : ''}
               iq={iq}
               board={dailyBoard}
