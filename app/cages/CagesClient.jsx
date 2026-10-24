@@ -945,7 +945,7 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
           .cg-cell{display:flex;align-items:center;justify-content:center;font-family:${MONO};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;}
           .cg-user{font-weight:500;color:var(--stg-acc-ink, ${COLORS.accent});}
           .cg-notes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;padding:2px;box-sizing:border-box;}
-          .cg-note{display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:9px;line-height:1;color:#8a93a3;}
+          .cg-note{display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:9px;line-height:1;color:var(--stg-ink2, #8a93a3);}
           /* the cage outline sits INSIDE the cell, inset from the solid sudoku
              rules, so the two line systems read as two systems rather than one
              muddled one. It is a sibling rather than a border on the cell

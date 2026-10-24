@@ -746,6 +746,12 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
      ink (cage sums, labels) is the one dark ink rather than the pastel. */
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="#a5b4fc var(--stg-dk"] { --hue: #fbbf24 !important; }
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--hue-ink"] { --hue-ink: #08222e !important; }
+  /* Pencil notes (owner report, 2026-10-24: hard to see on the periwinkle):
+     every sudoku's note is a class ending in -note; here they take the one dark
+     ink at full weight, whatever colour the client wrote for the dark stage.
+     Placed before the selected-square rule so a note in that square still
+     turns pastel. Applies to the plain look too. */
+  html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [class$="-note"] { color: var(--stg-ink) !important; font-weight: 700 !important; }
   /* The selected square is inked solid, so whatever it holds turns pastel. */
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: #a5b4fc !important; }
