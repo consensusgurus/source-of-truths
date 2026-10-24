@@ -570,16 +570,30 @@ function Verdict({ sections, counted, parts, total, dateLabel, dateShort, animat
 }
 
 // ─── THE MORNING AFTER ──────────────────────────────────────────────────────
-// Yesterday's room is closed now, so the read it gives back is final. Shown
-// once on the pregame (and on today's verdict) until dismissed.
+// The player's last room is closed now, so the read it gives back is final.
+// Shown on EVERY load of the pregame and the verdict (owner, 2026-10-23: "Read
+// the Room also needs to show prior day results upon load"), for the most
+// recent earlier day this browser finished, looking back up to two weeks. The
+// close button hides it for this visit only.
+function lastRoomDay() {
+  const t = new Date(`${etToday()}T12:00:00Z`);
+  for (let k = 1; k <= 14; k++) {
+    t.setUTCDate(t.getUTCDate() - 1);
+    const day = t.toISOString().slice(0, 10);
+    try {
+      const run = JSON.parse(localStorage.getItem(storeOf(day)) || 'null');
+      if (run && run.phase === 'done' && run.rooms && run.finishRead != null) return { day, run };
+    } catch (e) { return null; }
+  }
+  return null;
+}
 function Morning() {
   const [m, setM] = useState(null);
   useEffect(() => {
-    const day = etYesterday();
+    const last = lastRoomDay();
+    if (!last) return undefined;
+    const { day, run } = last;
     const key = storeOf(day);
-    let run = null;
-    try { run = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) {}
-    if (!run || run.phase !== 'done' || !run.rooms || run.finishRead == null || run.morningSeen) return undefined;
     let alive = true;
     (async () => {
       const keys = Object.keys(run.rooms);
@@ -608,10 +622,7 @@ function Morning() {
     return () => { alive = false; };
   }, []);
   if (!m) return null;
-  const close = () => {
-    try { const run = JSON.parse(localStorage.getItem(m.key) || 'null'); if (run) localStorage.setItem(m.key, JSON.stringify({ ...run, morningSeen: true })); } catch (e) {}
-    setM(null);
-  };
+  const close = () => setM(null);
   const ti = roomTierOf(m.to), was = roomTierOf(m.from);
   const L = ROOM_LADDER[ti];
   const dir = ti < was ? `Up ${was - ti}` : ti > was ? `Down ${ti - was}` : 'Held';
@@ -619,9 +630,9 @@ function Morning() {
   return (
     <section className="rr-morn">
       <button type="button" className="rr-morn-x" onClick={close} aria-label="Dismiss">&times;</button>
-      <div className="rr-eb">Yesterday&rsquo;s room</div>
+      <div className="rr-eb">{m.day === etYesterday() ? <>Yesterday&rsquo;s room</> : <>Your last room &middot; {new Date(`${m.day}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' })}</>}</div>
       <h2>The room settled.</h2>
-      <p>The doors closed at midnight. {m.to === m.from ? <>Your read held at <b>{m.to}</b>.</> : <>Your read went from <b>{m.from} to {m.to}</b>.</>}</p>
+      <p>The doors closed at midnight{m.day === etYesterday() ? '' : ' that night'}. {m.to === m.from ? <>Your read held at <b>{m.to}</b>.</> : <>Your read went from <b>{m.from} to {m.to}</b>.</>}</p>
       <div className={`rr-morn-tier${ti === 0 ? ' top' : ''}`}>
         <span><b>{L[1]}</b><small>Settled · {m.to} of 100</small></span>
         <em>{dir === 'Held' ? 'Held' : `${dir} ${Math.abs(was - ti) === 1 ? 'place' : 'places'}`}</em>

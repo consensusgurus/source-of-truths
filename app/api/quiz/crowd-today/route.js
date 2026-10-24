@@ -5,10 +5,12 @@ import { PUZZLES as P_OUTWIT } from '@/app/outwit/puzzles';
 import { PUZZLES as P_OUTRANK } from '@/app/outrank/puzzles';
 import { PUZZLES as P_FEUD } from '@/app/feud/puzzles';
 import { PUZZLES as P_HERD } from '@/app/herd/puzzles';
+import { PUZZLES as P_AORB } from '@/app/aorb/puzzles';
 import { scoreOutwitField, HOUSE_CUTOFF as OUTWIT_CUTOFF } from '@/lib/outwit-score';
 import { scoreOutrankField, HOUSE_CUTOFF as OUTRANK_CUTOFF } from '@/lib/outrank-score';
 import { scoreFeudField, HOUSE_CUTOFF as FEUD_CUTOFF } from '@/lib/feud-score';
 import { scoreHerdField, HOUSE_CUTOFF as HERD_CUTOFF } from '@/lib/herd-score';
+import { scoreAorbField, HOUSE_CUTOFF as AORB_CUTOFF } from '@/lib/aorb-score';
 
 // GET /api/quiz/crowd-today?game=outwit|outrank|feud&anonId=..&email=..
 //
@@ -44,6 +46,7 @@ const GAMES = {
   outrank: { puzzles: P_OUTRANK, table: 'outrank_picks' },
   feud: { puzzles: P_FEUD, table: 'feud_picks' },
   herd: { puzzles: P_HERD, table: 'outwit_picks' },
+  aorb: { puzzles: P_AORB, table: 'outwit_picks' },
 };
 
 // How many rows a group shows. The panel is a compact strip, not the game's
@@ -211,6 +214,23 @@ function herdGroups(puzzle, pool, mine) {
   return { groups, field: realCount, houseActive: useHouse, headline: `${points} of ${puzzle.prompts.length} with the herd` };
 }
 
+// ── AORB: ten pairs, each the split the player's crowd call was paid on ─────
+function aorbGroups(puzzle, pool, mine) {
+  const { detailFor, useHouse, realCount } = scoreAorbField(puzzle, pool, { houseCutoff: AORB_CUTOFF });
+  const d = detailFor(mine);
+  const groups = puzzle.prompts.map((pr, i) => {
+    const r = d.per[i];
+    const a = (mine.answers && mine.answers[i]) || [];
+    const pct = r.view ? r.view.pct : [50, 50];
+    const rows = pr.options.map((opt, oi) => ({
+      label: opt, pct: pct[oi], you: a[1] === oi,
+      tag: a[1] === oi ? (a[0] === oi ? 'your pick and call' : 'your call') : (a[0] === oi ? 'your pick' : null),
+    }));
+    return { q: pr.q, note: `+${r.read}${r.bonus ? ' +1' : ''}`, text: null, rows };
+  });
+  return { groups, field: realCount, houseActive: useHouse, headline: `Read the room ${d.read}${d.bonus ? `, +${d.bonus} surprise` : ''}` };
+}
+
 // ── OUTWIT: five prompts, each a distribution the player was aiming at ───────
 function outwitGroups(puzzle, pool, mine) {
   const { contexts, useHouse, realCount } = scoreOutwitField(puzzle, pool, { houseCutoff: OUTWIT_CUTOFF });
@@ -303,6 +323,7 @@ export async function GET(request) {
 
     const built = game === 'feud' ? feudGroups(puzzle, pool, mine)
       : game === 'herd' ? herdGroups(puzzle, pool, mine)
+      : game === 'aorb' ? aorbGroups(puzzle, pool, mine)
       : game === 'outrank' ? outrankGroups(puzzle, pool, mine)
         : outwitGroups(puzzle, pool, mine);
     if (!built) return NextResponse.json({ ok: true, game, played: false });

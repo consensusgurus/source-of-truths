@@ -189,5 +189,10 @@
       "junkyard"
     ],
     "why": "solver-generated, no authored text; their verifiers recompute every board"
+  },
+  "aorb": {
+    "through": "2026-11-27",
+    "on": "2026-10-23",
+    "note": "launch bank read pair by pair by a separate reader from the lane authors (day one is the owner's own list); 5 pairs replaced: two reflex picks, three brand pairs outside the brand lane"
   }
 }

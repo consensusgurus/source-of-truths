@@ -4318,6 +4318,42 @@ day... the first puzzle in read the room... A or B, or A or B or C, or A or B or
 - Client `app/herd/HerdClient.jsx` is built off OutwitClient's frame (class prefix `hd-`); a pick on any question
   but the last moves straight on. Wired by `scripts/wire-herd.mjs`; tiles `scripts/gen-herd-tile.py`.
 
+## Aorb is the A-OR-B CROWD GAME, two picks a pair, and it plays FULL SCREEN (launched 2026-10-23)
+
+Route `/aorb`, key `aorb`, Crowd Psychology, skill Reading People, `miss: null`, no Sunday Edition (no
+`sunday` field). Owner, 2026-10-23: "pick better / more attractive / better value, ten daily, try to match
+the crowd. Everyone has to pick both: personal, crowd."
+
+- **The game.** Ten A-or-B pairs a day. On each the player taps **Me** (their own pick) and **Crowd** (the
+  side they think most players picked as their own). The CROWD READ pays the leave-one-out share of
+  players whose own pick sits on the side called (call the 72 side, earn 72), averaged over ten and
+  rounded. The SURPRISE BONUS pays +1 on a pair when the player's own pick is more popular among own
+  picks than among crowd calls (both leave-one-out). Day score = read + bonus, posted capped at 100.
+  `lib/aorb-score.js` is the one rule for every surface; rank is total, then unrounded read, then earliest.
+- **House crowd**: 50 votes per pair as counts [A, B], an authored estimate; it counts as both a pick and a
+  call on the same side, so the house alone never pays a bonus. In the pool while at most 10 real players
+  are in (`HOUSE_CUTOFF`). An "early read" note shows while fewer than 50 real players are in (owner).
+- **No table of its own**: ballots go in `outwit_picks` under `aorb-M-D-YY`, answers as ten `[me, call]`
+  pairs. Wired into `/api/quiz/daily-me` (ADAPTIVE), `/api/quiz/crowd-today` (aorbGroups) and
+  `/api/quiz/daily-combined` (scoreAorbLive). `/api/aorb` also takes a PEEK (`{ quizId, peek: { i, me,
+  call } }`) that stores nothing and returns one pair's split: each pair is revealed as it is answered.
+- **The stage (owner, 2026-10-23)**: play is a FIXED full-viewport overlay in the category colour
+  (`--stg-acc` ground, `--stg-onramp` ink), phone and desktop, showing ONLY the question and the two
+  answers. Each reveal plays a run-end light show (sweep, fills, count-up, burst on the crowd's side) and
+  waits for a tap; never auto-advance. A first-time player gets one hint line on pair one only
+  (`sot_aorb_hint_seen`). A player who played an EARLIER Aorb first sees their last room SETTLED (final
+  score vs score at finish, rank, best read, biggest miss) before today's first pair (owner: only if they
+  played one before). Aorb is not in Read the Room.
+- **The bank**: `scripts/aorb-pool.mjs` (437 pairs written 2026-10-23 in lanes people, brand, movie, tv,
+  book, food, travel, life, sports, music, misc, each with an ESTIMATED split) dealt by
+  `scripts/gen-aorb.mjs --until <date> --write` (append-only). Owner rules: exactly ONE "Who is more
+  attractive?" pair a day about famous adults, never first; only TWO brand pairs; movies and books in the
+  mix (two or three media pairs); nothing an instant reflex (dog or cat was rejected), so no house leader
+  past 36 of 50. Day one (2026-10-23) is the owner's own list, pinned in the generator. Bank to
+  2026-11-27; brands and everyday lanes run out first, so write more of those before extending.
+  `scripts/verify-aorb.mjs` checks the bank and the scorer. Wired by `scripts/wire-aorb.mjs`; tiles by
+  `scripts/gen-aorb-tile.py`.
+
 ## Scour is the THEMED WORD SEARCH, 15x15 every day (launched 2026-10-15)
 
 Route `/scour`, key `scour`, Word, legacy hue sky #0369a1. Owner, 2026-10-15: "make even the normal day

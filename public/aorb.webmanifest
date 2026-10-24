@@ -1,0 +1,16 @@
+{
+  "id": "/aorb",
+  "name": "Aorb: Daily A or B Game",
+  "short_name": "Aorb",
+  "description": "Ten A or B pairs. Your pick, then the crowd call. From Mind Loft.",
+  "start_url": "/aorb?src=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fa",
+  "theme_color": "#f7f8fa",
+  "icons": [
+    { "src": "/aorb-icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/aorb-icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/aorb-icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
