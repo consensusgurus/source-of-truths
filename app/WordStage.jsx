@@ -12,7 +12,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { RAMP_INK } from '@/lib/category-ramp';
-import { useStageLook, stagePalette, useStageChrome, LookButton } from './GauntletScreens';
+import { useStageLook, stagePalette, useStageChrome } from './GauntletScreens';
+import StageTopBar from './StageTopBar';
 
 export const WORD_STAGE_BG = '#7dd3fc'; // the Word step of the pastel ramp
 
@@ -49,8 +50,8 @@ export default function WordStage({
   return (
     <div className="wst" role="dialog" aria-label={label} style={{ '--wst-bg': pal.bg, '--wst-ink': pal.ink, '--wst-n': Math.max(n, 4), '--wst-sn': Math.max(sn, 5) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <LookButton look={look} onFlip={() => setLook(look === 'plain' ? 'color' : 'plain')} className="wst-look" />
       <div className="wst-col">
+        <StageTopBar look={look} onFlip={() => setLook(look === 'plain' ? 'color' : 'plain')} ink={pal.ink} />
         <div className="wst-top" key={rowKey}>
           {eyebrow ? <div className="wst-eb">{eyebrow}</div> : null}
           {spine}
@@ -124,7 +125,7 @@ const CSS = `
 .wst{position:fixed;inset:0;z-index:85;background:var(--wst-bg);color:var(--wst-ink);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
 .wst *{color:var(--wst-ink);}
 .wst-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--wst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
-.wst-col{width:100%;max-width:520px;box-sizing:border-box;padding:max(60px, calc(env(safe-area-inset-top) + 56px)) 10px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px;min-height:100%;}
+.wst-col{width:100%;max-width:520px;box-sizing:border-box;padding:max(12px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px;min-height:100%;}
 .wst-top{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;animation:wstRise .35s ease-out both;}
 .wst-eb{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;max-width:100%;}
 .wst-clue{margin:0;text-align:center;font-size:clamp(23px,7.4vw,30px);line-height:1.18;font-weight:800;letter-spacing:-.02em;}
@@ -183,6 +184,6 @@ const CSS = `
 @keyframes wstRise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
 @keyframes wstPop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:none}}
 @keyframes wstShake{0%,100%{transform:none}20%{transform:translateX(-8px)}50%{transform:translateX(7px)}80%{transform:translateX(-3px)}}
-@media(max-height:700px){.wst-col{gap:10px;padding-top:56px}.wst-top{gap:14px}.wst-k{height:44px}.wst-kb{gap:5px}}
+@media(max-height:700px){.wst-col{gap:10px}.wst-top{gap:14px}.wst-k{height:44px}.wst-kb{gap:5px}}
 @media (prefers-reduced-motion: reduce){.wst-top,.wst-slots.ok .wst-s,.wst-slots.bad{animation:none}}
 `;

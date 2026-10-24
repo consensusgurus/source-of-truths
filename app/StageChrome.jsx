@@ -37,6 +37,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import ChallengeStrip from './ChallengeStrip';
 import OtherDeviceBar from './OtherDeviceBar';
 import MindLoftMark from './MindLoftMark';
+import StageTopBar from './StageTopBar';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
 import ThemePop, { LightOffer } from './ThemePop';
 // The stage swaps LoftCap out, and LoftCap was carrying the whole .loft-*
@@ -338,20 +339,7 @@ export default function StageChrome({
         // share or leader strip; the board and its figures are the page.
         <>
           <div className="stg-sim">
-            <a className="stg-simlogo" href={homeTo} aria-label="Mind Loft home">
-              <MindLoftMark size={26} ink="var(--stg-ink,#08222e)" accent="var(--stg-ink,#08222e)" title="Mind Loft" />
-              <span>Mind Loft</span>
-            </a>
-            <span className="stg-simr">
-              <a className="stg-simback" href={homeTo}><span aria-hidden="true">&larr;</span> All Puzzles</a>
-              <button type="button" className="stg-simlook" onClick={pastel.flip}
-                aria-label={pastel.look === 'plain' ? 'Switch to colour' : 'Switch to plain white'}
-                title={pastel.look === 'plain' ? 'Colour' : 'Plain'}>
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
-                  <circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" />
-                </svg>
-              </button>
-            </span>
+            <StageTopBar look={pastel.look} onFlip={pastel.flip} href={homeTo} ink="var(--stg-ink,#08222e)" />
           </div>
           <div className="stg-simt">
             <h1>{name}</h1>
@@ -621,11 +609,7 @@ const MONO = "'Manrope',ui-monospace,'SFMono-Regular',monospace";
 const CSS = `
 .stg-top{background:var(--stg-ground,#0b0f1a);font-family:${SANS};color:var(--stg-ink,#e9edf4);}
 
-.stg-sim{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:max(12px, env(safe-area-inset-top)) 14px 0;color:var(--stg-ink,#08222e);}
-.stg-simlogo{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;font-weight:800;font-size:16px;letter-spacing:-.01em;}
-.stg-simr{display:inline-flex;align-items:center;gap:8px;}
-.stg-simback{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:2px solid var(--stg-ink,#08222e);color:inherit;text-decoration:none;font-weight:800;font-size:14px;box-sizing:border-box;}
-.stg-simlook{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--stg-ink,#08222e);background:transparent;color:inherit;cursor:pointer;padding:0;flex:none;}
+.stg-sim{padding:max(12px, env(safe-area-inset-top)) 14px 0;}
 .stg-simt{padding:14px 14px 2px;color:var(--stg-ink,#08222e);}
 .stg-simt h1{margin:0;font:inherit;font-size:30px;line-height:1.05;font-weight:800;letter-spacing:-.02em;}
 .stg-simt i{display:block;font-style:normal;margin-top:4px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
