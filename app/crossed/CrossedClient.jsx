@@ -229,7 +229,7 @@ export default function CrossedClient({ day = null, dateLabel, dateShort, sectio
   const Game = sec ? CLIENTS[sec.key] : null;
   
   return (
-    <div className="stage-page dj" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--dj-ground)', color: 'var(--dj-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
+    <div className="stage-page dj" data-sot-wait="" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--dj-ground)', color: 'var(--dj-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className={`dj-cap${done ? ' vf' : ''}`}>
         {done && <RunBackLink />}

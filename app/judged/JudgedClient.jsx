@@ -189,7 +189,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   const Game = sec ? CLIENTS[sec.key] : null;
 
   return (
-    <div className="stage-page ls" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--ls-ground)', color: 'var(--ls-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
+    <div className="stage-page ls" data-sot-wait="" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--ls-ground)', color: 'var(--ls-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="ls-cap">
         {done && <RunBackLink />}

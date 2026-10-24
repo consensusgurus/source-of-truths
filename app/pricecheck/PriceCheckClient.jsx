@@ -200,7 +200,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   const secBanked = sec ? banked[sec.key] : null;
 
   return (
-    <div className="stage-page pc" data-stage-theme={theme} style={{ ...VARS, minHeight: '100vh', background: 'var(--pc-ground)', color: 'var(--pc-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
+    <div className="stage-page pc" data-sot-wait="" data-stage-theme={theme} style={{ ...VARS, minHeight: '100vh', background: 'var(--pc-ground)', color: 'var(--pc-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {done ? null : <ChallengeStrip gameKey="pricecheck" num={runToken()} run />}
       <div className="pc-cap">

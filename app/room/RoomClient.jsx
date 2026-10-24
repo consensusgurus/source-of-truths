@@ -289,7 +289,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
   const runSoFar = Math.round(parts.slice(0, r.si + (secDone ? 1 : 0)).reduce((a, b) => a + b, 0));
 
   return (
-    <div className="stage-page rr" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--rr-ground)', color: 'var(--rr-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
+    <div className="stage-page rr" data-sot-wait="" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--rr-ground)', color: 'var(--rr-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className={`rr-cap${done ? ' vf' : playing ? ' pl' : ''}`}>
         <Link href="/" className="rr-home">Mind Loft</Link>

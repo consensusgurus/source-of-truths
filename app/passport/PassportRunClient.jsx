@@ -593,7 +593,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   );
 
   return (
-    <div className="stage-page pp-root pr-root" data-stage-theme="dark"
+    <div className="stage-page pp-root pr-root" data-sot-wait="" data-stage-theme="dark"
       style={{ ...VARS, minHeight: '100vh', background: 'var(--stg-ground,#0b0f1a)', color: 'var(--stg-ink,#e9edf4)', position: 'relative', overflowX: 'hidden', fontFamily: SANS }}>
       <style dangerouslySetInnerHTML={{ __html: PP_CSS + LAUNCH_CSS + ENDING_CSS + RUN_CSS }} />
       {playing ? <ChallengeStrip gameKey="passport" num={PUZZLE.num} /> : null}

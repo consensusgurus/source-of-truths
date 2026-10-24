@@ -12,6 +12,7 @@ import EmailTicketPop from './EmailTicketPop';
 import { PriceCheckItemsGlobal } from './pricecheck/ItemsPop';
 import ChunkReload from './ChunkReload';
 import LookSheet from './LookSheet';
+import HydrationMark from './HydrationMark';
 import { getAllSources } from '@/lib/sources';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
@@ -155,6 +156,10 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         {children}
+        {/* Holds the gate and board invisible until the page has read its
+            own state (app/HydrationMark.jsx, rule in globals.css). */}
+        <HydrationMark />
+        <noscript><style>{'.stage-page .stg-gate,.stage-page .stg-board,[data-sot-wait] > *{visibility:visible !important}'}</style></noscript>
         <VisitorBeacon />
         <ResultQueue />
         <DailyStartPing />

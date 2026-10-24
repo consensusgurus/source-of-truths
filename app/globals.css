@@ -907,3 +907,16 @@ html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::
 html[data-sot-paint],
 html[data-sot-paint] body { background: var(--sot-root-paint) !important; }
 html[data-sot-paint] { scrollbar-color: var(--sot-root-paint) var(--sot-root-paint); }
+
+/* THE PAGE WAITS FOR ITS OWN STATE (owner, 2026-10-24). Until the client has
+   read its saved state (app/HydrationMark.jsx stamps html[data-sot-hyd]), the
+   gate and the board are invisible, so nobody sees the server's default screen
+   (a fresh gate, the full how-to) flash before their real one. The animation
+   is a fallback: it shows them after 3s if the stamp never lands. */
+@keyframes sot-hyd-show { to { visibility: visible; } }
+html:not([data-sot-hyd]) .stage-page .stg-gate,
+html:not([data-sot-hyd]) .stage-page .stg-board,
+html:not([data-sot-hyd]) [data-sot-wait] > * {
+  visibility: hidden;
+  animation: sot-hyd-show 0s linear 3s forwards;
+}

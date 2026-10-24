@@ -1826,7 +1826,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
   );
 
   return (
-    <div className="stage-page pp-root" data-stage-theme="dark"
+    <div className="stage-page pp-root" data-sot-wait="" data-stage-theme="dark"
       style={{ ...VARS, minHeight: '100vh', background: 'var(--stg-ground,#0b0f1a)', color: 'var(--stg-ink,#e9edf4)', position: 'relative', overflowX: 'hidden', fontFamily: SANS }}>
       <style dangerouslySetInnerHTML={{ __html: CSS + LAUNCH_CSS + ENDING_CSS }} />
       {playing ? <ChallengeStrip gameKey="passport" num={PUZZLE.num} /> : null}

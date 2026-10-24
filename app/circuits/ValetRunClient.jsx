@@ -437,7 +437,7 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
   };
 
   return (
-    <div className="stage-page vr" style={{ ...STAGE_ACC, minHeight: '100vh', background: T.ground, position: 'relative', overflowX: 'hidden' }}>
+    <div className="stage-page vr" data-sot-wait="" style={{ ...STAGE_ACC, minHeight: '100vh', background: T.ground, position: 'relative', overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
       {/* THE ONLY CHROME, as on the trivia run: what you are in, the date,
