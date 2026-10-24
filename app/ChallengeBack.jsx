@@ -105,7 +105,9 @@ const CSS = `
 .cbk-go:hover{filter:brightness(1.08);}
 .cbk-g3{text-align:center;font-size:13px;font-weight:700;color:var(--stg-mute,#aab5c7);text-decoration:underline;text-underline-offset:3px;}
 .cbk-u{font-size:12px;word-break:break-all;color:var(--stg-mute,#aab5c7);}
-.cbk-g2{display:flex;align-items:center;justify-content:center;min-height:44px;border:1.5px solid var(--stg-line2,rgba(255,255,255,.2));border-radius:12px;
+.cbk-two{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cbk-two.one{grid-template-columns:1fr;}
+.cbk-g2{display:flex;align-items:center;justify-content:center;text-align:center;padding:0 8px;min-height:44px;border:1.5px solid var(--stg-line2,rgba(255,255,255,.2));border-radius:12px;
   color:var(--stg-ink,#e9edf4);font-size:13.5px;font-weight:800;text-decoration:none;}
 .cbk-g2:hover{border-color:var(--stg-ink2,#aab5c7);}
 .cbk-tx{order:3;flex:1 1 100%;display:flex;align-items:center;gap:18px;border:1.5px dashed #c9971f;border-radius:14px;padding:12px 20px;
@@ -123,7 +125,7 @@ const CSS = `
 .stage-page[data-stage-theme=light] .cbk-tx{background:#fff8e6;}
 .stage-page[data-stage-theme=light] .cbk-tt b,.stage-page[data-stage-theme=light] .cbk-tn b{color:#2a1f04;}
 .stage-page[data-stage-theme=light] .cbk-tt i,.stage-page[data-stage-theme=light] .cbk-tn i{color:#5f4a12;}
-@media (max-width:640px){.cbk{border-radius:0;border-left:0;border-right:0;margin:0}.cbk-bd{padding:14px 16px}.cbk-tx{padding:12px 14px;gap:12px}.cbk-tk{width:60px;height:44px}.cbk-tk svg{width:60px;height:44px}.cbk-tt b{font-size:15px}.cbk-tn{min-width:52px;padding-left:12px}.cbk-tn b{font-size:24px}}
+@media (max-width:640px){.cbk{border-radius:0;border-left:0;border-right:0;margin:0}.cbk-bd{padding:14px 16px;gap:14px}.cbk-l,.cbk-r{flex:1 1 100%;min-width:0}.cbk-v{align-self:stretch;text-align:center}.cbk-tx{padding:12px 14px;gap:12px}.cbk-tk{width:60px;height:44px}.cbk-tk svg{width:60px;height:44px}.cbk-tt b{font-size:15px}.cbk-tn{min-width:52px;padding-left:12px}.cbk-tn b{font-size:24px}}
 @keyframes cbkIn{0%{transform:translateY(-16px);opacity:0}100%{transform:translateY(0);opacity:1}}
 @keyframes cbkBar{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
 @keyframes cbkV{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
@@ -250,8 +252,10 @@ export function ChallengeBack() {
             </button>
           ) : null}
           {sent && sent !== 'Link copied' ? <div className="cbk-u">{sent}</div> : null}
-          {sim ? <a className="cbk-g3" href={sim.href || `/${sim.key}`} onClick={() => markSeen([take.id])}>Or play {sim.name} yourself first</a> : null}
-          <a className="cbk-g2" href="/challenges">See all your challenges</a>
+          <div className={'cbk-two' + (sim ? '' : ' one')}>
+            {sim ? <a className="cbk-g2" href={sim.href || `/${sim.key}`} onClick={() => markSeen([take.id])}>Play {sim.name} first</a> : null}
+            <a className="cbk-g2" href="/challenges">All challenges</a>
+          </div>
         </div>
       </div>
     </section>
