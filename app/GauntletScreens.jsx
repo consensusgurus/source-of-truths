@@ -34,25 +34,8 @@ import { holdThemeColor } from '@/lib/theme-color-hold';
 // The button on the stage is a separate switch with its own key: Plain is a
 // white page with black type and nothing coloured. The phone's top and bottom
 // bars are painted to match whichever look is on.
-const LOOK_KEY = 'sot_gstage_look1';
-const lookSubs = new Set();
-function readLook() {
-  try { return localStorage.getItem(LOOK_KEY) === 'plain' ? 'plain' : 'color'; } catch (e) { return 'color'; }
-}
-export function useStageLook() {
-  const [look, setLook] = useState('color');
-  useEffect(() => {
-    setLook(readLook());
-    const f = (v) => setLook(v);
-    lookSubs.add(f);
-    return () => { lookSubs.delete(f); };
-  }, []);
-  const write = (v) => {
-    try { localStorage.setItem(LOOK_KEY, v); } catch (e) {}
-    for (const f of lookSubs) f(v);
-  };
-  return [look, write];
-}
+import { LOOK_KEY, useStageLook } from '@/lib/stage-look';
+export { useStageLook };
 export const PLAIN = { bg: '#ffffff', ink: '#111111' };
 export function stagePalette(pastel, look) {
   return look === 'plain' ? { ...PLAIN } : { bg: pastel, ink: INK };
@@ -197,7 +180,7 @@ export function GauntletCover({ sections = [] }) {
   );
 }
 // One line per quiz, name then subject (owner, 2026-10-24).
-export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes', headline = null, bandNote = null, lineup = 'Today\u2019s lineup:', startLabel = null }) {
+export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes', headline = null, bandNote = null, lineup = 'Today\u2019s lineup:', startLabel = null, centerpiece = null }) {
   const first = sections[0];
   const pal = useStagePalette(gateColour(sections));
   const word = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][sections.length] || String(sections.length);
@@ -207,7 +190,7 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
     return () => window.removeEventListener('keydown', onKey);
   }, [onStart]);
   return (
-    <div key={pal.look} className="gsx gsx-gate" role="dialog" aria-label={`${circuitName}, start`} style={pal.vars}>
+    <div key={pal.look} className={`gsx gsx-gate${centerpiece ? ' gsx-cp' : ''}`} role="dialog" aria-label={`${circuitName}, start`} style={pal.vars}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="gsx-col gsx-split">
         <div className="gsx-head gsx-rise">
@@ -221,6 +204,9 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
             {fieldLine ? <div className="gsx-fine">{fieldLine}</div> : null}
           </div>
         </div>
+        {/* A run can put its own picture between the title and the lineup (the
+            Dojo's doors, owner 2026-10-24); the lineup then stays compact. */}
+        {centerpiece ? <div className="gsx-piece">{centerpiece}</div> : null}
         {/* The whole lineup starts the run too (owner, 2026-10-24). */}
         <div className="gsx-bands gsx-bgo" role="button" tabIndex={0} aria-label={`Start with ${first ? first.name : 'the run'}`} onClick={onStart}
           onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault(); onStart && onStart(); } }}>
@@ -478,6 +464,11 @@ const CSS = `
   .gsx-gate .gsx-band{flex:1 1 0;min-height:42px}
   .gsx-gate .gsx-bt b{font-size:clamp(18px,2.6vh,22px)}
   .gsx-gate .gsx-bt i{font-size:clamp(13px,1.9vh,16px)}
+  .gsx-gate.gsx-cp .gsx-bands{flex:0 0 auto}
+  .gsx-gate.gsx-cp .gsx-band{flex:0 0 auto;min-height:46px}
+  .gsx-gate.gsx-cp .gsx-bt b{font-size:17px}
+  .gsx-gate.gsx-cp .gsx-bt i{font-size:13px}
+  .gsx-piece{flex:1 1 auto;min-height:160px;display:flex}
 }
 .gsx-bq{font-size:13px;font-weight:800;white-space:nowrap}
 .gsx-gowrap{display:flex;flex-direction:column;gap:10px}

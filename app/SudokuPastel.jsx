@@ -18,20 +18,30 @@
 
 import { useEffect } from 'react';
 import { usePhoneStage } from './WordStage';
+import { useStageLook } from '@/lib/stage-look';
 
 let holders = 0;
 function hold() {
   holders += 1;
-  if (holders === 1 && typeof document !== 'undefined') document.documentElement.setAttribute('data-stage-pastel', '');
+  if (holders === 1 && typeof document !== 'undefined') document.documentElement.setAttribute('data-stage-pastel', document.documentElement.getAttribute('data-stage-pastel') || 'color');
   return () => {
     holders = Math.max(0, holders - 1);
     if (holders === 0 && typeof document !== 'undefined') document.documentElement.removeAttribute('data-stage-pastel');
   };
 }
 
+// The stage's own look switch applies here too (owner, 2026-10-24): 'color'
+// is the periwinkle pastel, 'plain' is a white page with black type. Returns
+// whether the register is on, the look, and the switch, so a cap can draw the
+// same circle button the gauntlet stage carries.
 export default function useSudokuPastel(active) {
   const phone = usePhoneStage();
   const on = !!active && phone;
+  const [look, setLook] = useStageLook();
   useEffect(() => (on ? hold() : undefined), [on]);
-  return on;
+  useEffect(() => {
+    if (!on || typeof document === 'undefined') return;
+    document.documentElement.setAttribute('data-stage-pastel', look === 'plain' ? 'plain' : 'color');
+  }, [on, look]);
+  return { on, look, flip: () => setLook(look === 'plain' ? 'color' : 'plain') };
 }

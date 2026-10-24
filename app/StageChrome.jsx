@@ -222,7 +222,7 @@ export default function StageChrome({
   // already finished by a client-side link goes straight to its end card.
   useState(() => { markPageEntry(); return 0; });
   // Sudokus play on the pastel stage on a phone (owner, 2026-10-24); see SudokuPastel.jsx.
-  useSudokuPastel(SUDOKU_POOL.includes(gameKey));
+  const pastel = useSudokuPastel(SUDOKU_POOL.includes(gameKey));
   const started = useStarted(gameKey, num);
   const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
   // SHARE FOR CREDIT (owner, 2026-10-23): the page itself, stamped with the
@@ -396,11 +396,17 @@ export default function StageChrome({
         <button
           type="button"
           className={'stg-cx stg-theme' + (hint ? ' hint' : '')}
-          data-look="" onClick={(e) => openLook(e.currentTarget)}
-          aria-haspopup="dialog"
-          aria-label="Page look: light or dark, and how much color"
-          title="Page look"
+          data-look="" onClick={(e) => (pastel.on ? pastel.flip() : openLook(e.currentTarget))}
+          aria-haspopup={pastel.on ? undefined : 'dialog'}
+          aria-label={pastel.on ? (pastel.look === 'plain' ? 'Switch to colour' : 'Switch to plain white') : 'Page look: light or dark, and how much color'}
+          title={pastel.on ? (pastel.look === 'plain' ? 'Colour' : 'Plain') : 'Page look'}
         >
+          {pastel.on ? (
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+              <circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" />
+            </svg>
+          ) : null}
+          {pastel.on ? null : (<>
           {theme === 'light' ? (
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
               strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
@@ -416,6 +422,7 @@ export default function StageChrome({
           {intro ? (
             <span className="stg-tlab">{intro === 'light' ? 'Light mode' : 'Dark mode'}</span>
           ) : null}
+                  </>)}
         </button>
         {/* THE EXPLICIT POINTER at the switch above, first visit only. It is
             the cap's LAST CHILD on purpose: it reads its own parent to find

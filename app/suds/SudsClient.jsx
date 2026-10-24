@@ -271,6 +271,8 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
   // Inside the Enter the Dojo run (app/RunEmbed.jsx) the page furniture drops
   // away and the board sits on the run's dark ground; the game is unchanged.
   const EMBED = useRunEmbed();
+  // A run that deals the grids back to back starts each one on its own (owner, 2026-10-24: one click per puzzle, no start page).
+  useEffect(() => { if (EMBED && EMBED.autostart && preStart) startGame(); }, [EMBED, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   useRunHelp(EMBED, () => setShowHelp(true));
   const STAGE = isStage('suds', searchParams);
   // THE ACCENT AS A VARIABLE. It is only ever used as a CSS colour, so

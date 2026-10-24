@@ -749,6 +749,48 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   /* The selected square is inked solid, so whatever it holds turns pastel. */
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: #a5b4fc !important; }
+  /* PLAIN, the stage's other look: a white page and black type, nothing coloured.
+     Region boards lose their pastels and keep only their heavy walls. */
+  html[data-stage-pastel='plain']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
+  html[data-stage-pastel='plain']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #ffffff !important; }
+  html[data-stage-pastel='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
+    --stg-brand: #111111 !important;
+    --stg-ground: #ffffff !important;
+    --stg-raise: #ffffff !important;
+    --stg-panel: #f4f4f4 !important;
+    --stg-surf: rgba(17, 17, 17, 0.04) !important;
+    --stg-surf2: rgba(17, 17, 17, 0.09) !important;
+    --stg-line: rgba(17, 17, 17, 0.18) !important;
+    --stg-line2: rgba(17, 17, 17, 0.32) !important;
+    --stg-line3: #111111 !important;
+    --stg-cell: #ffffff !important;
+    --stg-cell-line: rgba(17, 17, 17, 0.28) !important;
+    --stg-cell-dot: rgba(17, 17, 17, 0.6) !important;
+    --stg-cell-dot2: rgba(17, 17, 17, 0.9) !important;
+    --stg-cell-given: #111111 !important;
+    --stg-tint-mix: 0% !important;
+    --stg-ink: #111111 !important;
+    --stg-ink2: #333333 !important;
+    --stg-mute: #444444 !important;
+    --stg-mute2: #555555 !important;
+    --stg-dim: #555555 !important;
+    --stg-onramp: #ffffff !important;
+    --stg-chip: rgba(17, 17, 17, 0.08) !important;
+    --stg-b1: rgba(17, 17, 17, 0.05) !important;
+    --stg-b2: rgba(17, 17, 17, 0.09) !important;
+    --stg-b3: rgba(17, 17, 17, 0.14) !important;
+    --stg-b4: rgba(17, 17, 17, 0.2) !important;
+    --stg-acc: #111111 !important;
+    --stg-acc-ink: #111111 !important;
+    --stg-acc-tint: rgba(17, 17, 17, 0.12) !important;
+    --stg-sel: #111111;
+    --stg-fieldink: 17, 17, 17 !important;
+    background: #ffffff !important;
+    color: #111111;
+  }
+  html[data-stage-pastel='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
+  html[data-stage-pastel='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: #ffffff !important; }
+  html[data-stage-pastel='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--hue-ink"] { --hue-ink: #111111 !important; }
 }
 
 /* THE FIRST-LOAD DEMONSTRATION of the light switch (useThemeIntro in

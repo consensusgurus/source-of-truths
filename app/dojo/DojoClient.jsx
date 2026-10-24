@@ -41,7 +41,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import { DOJO_RUN_ID, DOJO_BELTS, DOJO_CLOCK, DOJO_MAX, dojoTierOf, dojoGridPoints, dojoAcc, dojoSpeed } from '@/lib/dojo';
 import RunBackLink from '../circuits/RunBackLink';
 import DyeCurtain from './DyeCurtain';
-import { GauntletGate, GauntletEndStage } from '../GauntletScreens';
+import { GauntletGate, GauntletEndStage, LookButton } from '../GauntletScreens';
 import { usePhoneStage } from '../WordStage';
 import useSudokuPastel from '../SudokuPastel';
 
@@ -171,7 +171,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
 
   const done = r.phase === 'done';
   const playing = r.phase === 'playing';
-  useSudokuPastel(hydrated && playing);
+  const pastel = useSudokuPastel(hydrated && playing);
   // The stage ending counts as settled for the more-runs card that follows it.
   useEffect(() => { if (hydrated && done && phone && endOpen) setSettled(true); }, [hydrated, done, phone, endOpen]);
   const board = useCircuitBoard(DOJO_RUN_ID, hydrated && done);
@@ -265,9 +265,10 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           bandNote={(s) => (banked[s.key] ? 'Done' : `${s.weight} pts`)}
           headline={<>{(NUMS[N - 1] || String(N))} Forms.<br />One Belt.</>}
           rule="Solving counts half, speed the other half."
-          lineup={'Today\u2019s forms:'}
-          startLabel={allBanked ? 'See your belt' : 'Step onto the mat'}
-          onStart={() => start(true)}
+          startLabel={leaving ? 'Opening\u2026' : (allBanked ? 'See your belt' : 'Step onto the mat')}
+          lineup="Tap the doors to step onto the mat."
+          centerpiece={<PhoneDoors open={leaving} sign={leaving ? `Form One \u00B7 ${sections[0] ? sections[0].name : ''}` : (allBanked ? 'All three done today' : 'The mat is ready')} onOpen={() => { if (!leaving) start(); }} />}
+          onStart={() => { if (!leaving) start(); }}
         />
       )}
       {hydrated && r.phase === 'idle' && !phone && (
@@ -339,11 +340,12 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
                 <span aria-hidden="true">{boardTheme === 'light' ? '\u263E' : '\u2600'}</span> {boardTheme === 'light' ? 'Dark board' : 'Light board'}
               </button>
             )}
+            {phone && pastel.on ? <LookButton look={pastel.look} onFlip={pastel.flip} className="dj-look" /> : null}
             <span className="dj-run">Run total {Math.round(runSoFar + (between ? parts[r.si] : 0))}</span>
           </div>
           {!between && Game && !banked[sec.key] && (
             <div className={`dj-host${boardTheme === 'light' ? ' lt' : ''}`}>
-              <RunEmbed onResult={onSectionDone} theme={boardTheme} help={helpSeq}>
+              <RunEmbed onResult={onSectionDone} theme={boardTheme} help={helpSeq} autostart={phone}>
                 <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
               </RunEmbed>
             </div>
@@ -395,6 +397,23 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
       )}
       <MoreRunsPop self="dojo" ready={settled && doneAtLoad.current === false} delay={2500} fireOnLeave />
     </div>
+  );
+}
+
+// THE PHONE DOORS (owner, 2026-10-24): the Dojo's paper doors on the gauntlet
+// entry screen, each panel's lattice drawn as a 3x3 sudoku box. A tap slides
+// them apart and the first grid starts by itself (RunEmbed autostart).
+const DOOR_L = [5, 0, 8, 0, 2, 0, 9, 0, 4];
+const DOOR_R = [0, 3, 0, 7, 0, 1, 0, 6, 0];
+function PhoneDoors({ open, sign, onOpen }) {
+  return (
+    <button type="button" className={`pd${open ? ' open' : ''}`} onClick={onOpen} aria-label="Open the doors and start">
+      <span className="pd-f">
+        <span className="pd-p l">{DOOR_L.map((d, i) => <span key={i}>{d || ''}</span>)}<i /></span>
+        <span className="pd-p r">{DOOR_R.map((d, i) => <span key={i}>{d || ''}</span>)}<i /></span>
+      </span>
+      <span className="pd-sign">{sign}</span>
+    </button>
   );
 }
 
@@ -855,4 +874,15 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 html[data-stage-pastel] .dj{--dj-ground:#a5b4fc !important;--dj-panel:#b4c0fd !important;--dj-surf:rgba(8,34,46,.07) !important;--dj-line:rgba(8,34,46,.2) !important;--dj-ink:#08222e !important;--dj-mute:#23404f !important;--dj-cta:#08222e !important;--dj-cta-ink:#a5b4fc !important;--dj-gold:#7c4a03 !important;--dj-good:#065f46 !important;--dj-bad:#9f1239 !important}
 html[data-stage-pastel] .dj-host.lt{background:transparent}
 }
+.pd{position:relative;flex:1 1 auto;width:100%;min-height:160px;border:2px solid #08222e;border-radius:18px;overflow:hidden;background:#3a2416;padding:0;cursor:pointer;display:block}
+.pd-f{position:absolute;inset:10px;border-radius:8px;overflow:hidden;background:radial-gradient(ellipse at 50% 55%,#fff6dc 0%,#f2d38a 40%,#a3702f 100%)}
+.pd-p{position:absolute;top:0;bottom:0;width:50%;background:#efe6d0;box-shadow:inset 0 0 0 4px #4a2f1b;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:4px;box-sizing:border-box;transition:transform .85s cubic-bezier(.65,0,.35,1)}
+.pd-p.l{left:0}.pd-p.r{right:0}
+.pd-p span{border:1.5px solid #4a2f1b;display:flex;align-items:center;justify-content:center;font:800 22px ${SANS};color:#4a2f1b}
+.pd-p i{position:absolute;top:50%;width:6px;height:30px;margin-top:-15px;border-radius:3px;background:#2a1a0f}
+.pd-p.l i{right:10px}.pd-p.r i{left:10px}
+.pd.open .pd-p.l{transform:translateX(-100%)}.pd.open .pd-p.r{transform:translateX(100%)}
+.pd-sign{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);font:800 10px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:#f6efdc;background:rgba(36,22,13,.85);padding:4px 9px;border-radius:5px;white-space:nowrap;z-index:2}
+@media(prefers-reduced-motion:reduce){.pd-p{transition:none}}
+.dj-look{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:18px;border:2px solid var(--dj-ink);background:transparent;color:var(--dj-ink);cursor:pointer;padding:0;margin-left:auto}
 `;

@@ -73,7 +73,7 @@ function playRunBeat(host, res) {
   } catch (e) { return null; }
 }
 
-export default function RunEmbed({ onResult, theme, help = 0, children }) {
+export default function RunEmbed({ onResult, theme, help = 0, autostart = false, children }) {
   const hostRef = useRef(null);
   const beatRef = useRef(null);
   const stopBeat = () => {
@@ -91,6 +91,8 @@ export default function RunEmbed({ onResult, theme, help = 0, children }) {
   const value = useMemo(() => ({
     theme: theme === 'light' ? 'light' : 'dark',
     help,
+    // The run deals its grids straight in: the client skips its own start page.
+    autostart: !!autostart,
     onResult: (res) => {
       setTimeout(() => {
         stopBeat();
@@ -104,7 +106,7 @@ export default function RunEmbed({ onResult, theme, help = 0, children }) {
         try { onResult && onResult(res ? { ...res, beatMs } : res); } catch (e) {}
       }, 0);
     },
-  }), [onResult, theme, help]);
+  }), [onResult, theme, help, autostart]);
   return (
     <RunEmbedContext.Provider value={value}>
       <div ref={hostRef} style={{ display: 'contents' }}>{children}</div>
