@@ -93,6 +93,19 @@ function paintChrome() {
     if (body) body.style.backgroundColor = chrome.saved.body;
     chrome.saved = null;
   }
+  // Fresh fixed strips on both edges. iOS 26 Safari tints its bars from what
+  // sits under them and does not re-read an element whose colour merely
+  // changed, so each change inserts NEW nodes; the old ones are removed.
+  document.querySelectorAll('[data-gsx-edge]').forEach((n) => n.parentNode && n.parentNode.removeChild(n));
+  if (top && body) {
+    ['top', 'bottom'].forEach((side) => {
+      const d = document.createElement('div');
+      d.setAttribute('data-gsx-edge', side);
+      d.setAttribute('aria-hidden', 'true');
+      d.style.cssText = `position:fixed;left:0;right:0;${side}:0;height:2px;background:${top.color};z-index:2147483000;pointer-events:none`;
+      body.appendChild(d);
+    });
+  }
   try {
     requestAnimationFrame(() => {
       const y = window.scrollY;
@@ -171,7 +184,7 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
     return () => window.removeEventListener('keydown', onKey);
   }, [onStart]);
   return (
-    <div className="gsx gsx-gate" role="dialog" aria-label={`${circuitName}, start`} style={pal.vars}>
+    <div key={pal.look} className="gsx gsx-gate" role="dialog" aria-label={`${circuitName}, start`} style={pal.vars}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="gsx-col gsx-split">
         <div className="gsx-head gsx-rise">
@@ -224,7 +237,7 @@ export function GauntletBetween({ circuitName, sections = [], results = [], last
   const doneKeys = new Set(results.map((x) => x && x.key));
   const missed = lastMiss && !lastMiss.cleared;
   return (
-    <div className="gsx gsx-between" role="dialog" aria-label={`Up next, ${upNext ? upNext.name : ''}`} style={{ ...pal.vars, background: prev.bg }}>
+    <div key={pal.look} className="gsx gsx-between" role="dialog" aria-label={`Up next, ${upNext ? upNext.name : ''}`} style={{ ...pal.vars, background: prev.bg }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="gsx-wipe" style={{ background: pal.bg }}>
         <div className="gsx-col gsx-bcol">
@@ -319,7 +332,7 @@ export function GauntletEndStage({
   const avgTotal = avg ? Math.round(sections.reduce((t, s) => t + (Number(avg[s.key]) || 0), 0)) : null;
   const ahead = rank && fieldSize && fieldSize >= 2 ? Math.max(0, Math.round(((fieldSize - rank) / fieldSize) * 100)) : null;
   return (
-    <div className="gsx gsx-end" role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
+    <div key={pal.look} className="gsx gsx-end" role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {anim ? (
         <div className="gsx-show" aria-hidden="true">

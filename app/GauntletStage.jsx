@@ -30,7 +30,7 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   const pal = look === 'plain' ? stagePalette(bg || '#7dd3fc', 'plain') : { bg: bg || '#7dd3fc', ink };
   useStageChrome(pal.bg);
   return (
-    <div className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink }}>
+    <div key={look} className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <LookButton look={look} onFlip={() => setLook(look === 'plain' ? 'color' : 'plain')} className="gst-look" />
       <div className="gst-col" key={qKey}>
