@@ -196,6 +196,16 @@ export function GauntletCover({ sections = [] }) {
     </>
   );
 }
+// One line per quiz (owner, 2026-10-24): the subtitle only when it adds
+// something. "Sci" over "Science" or "Sport" over "Sports" says it twice, so
+// the subtitle drops when one name starts the other. Deep keeps its day's
+// subject, since that is the one thing a player needs before starting it.
+const fold = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+function bandLine(name, line) {
+  const a = fold(name), b = fold(line);
+  if (!b || a.startsWith(b) || b.startsWith(a)) return '';
+  return line;
+}
 export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes' }) {
   const first = sections[0];
   const pal = useStagePalette(gateColour(sections));
@@ -212,7 +222,7 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
         <div className="gsx-head gsx-rise">
           <TopBar pal={pal} />
           {banner ? <div className="gsx-banner">{banner}</div> : null}
-          <div className="gsx-eye">{circuitName} · {dateLabel}</div>
+          <div className="gsx-eye gsx-eye1">{circuitName} · {dateLabel}</div>
           <h1 className="gsx-h1">{word} {unit.charAt(0).toUpperCase() + unit.slice(1)}.<br />One Life in Each.</h1>
           <p className="gsx-lede">{rule} Today&rsquo;s lineup:</p>
           <div className="gsx-gowrap gsx-wide">
@@ -220,11 +230,13 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
             {fieldLine ? <div className="gsx-fine">{fieldLine}</div> : null}
           </div>
         </div>
-        <div className="gsx-bands">
+        {/* The whole lineup starts the run too (owner, 2026-10-24). */}
+        <div className="gsx-bands gsx-bgo" role="button" tabIndex={0} aria-label={`Start with ${first ? first.name : 'the run'}`} onClick={onStart}
+          onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault(); onStart && onStart(); } }}>
           {sections.map((s, i) => (
             <div key={s.key} className="gsx-band" style={{ background: pal.fill(rampFor(slotOf(s, i))), animationDelay: `${0.15 + i * 0.07}s` }}>
               <span className="gsx-bn">{i + 1}</span>
-              <span className="gsx-bt"><b>{s.name}</b><i>{lineFor ? lineFor(s) : ''}</i></span>
+              <span className="gsx-bt"><b>{s.name}</b>{(() => { const l = bandLine(s.name, lineFor ? lineFor(s) : ''); return l ? <i>{l}</i> : null; })()}</span>
               <span className="gsx-bq">{s.questions.length} Qs</span>
             </div>
           ))}
@@ -451,9 +463,23 @@ const CSS = `
 .gsx-band{color:${INK};display:flex;align-items:center;gap:14px;min-height:54px;padding:4px 18px;border-top:2px solid ${INK};animation:gsxSlide .55s cubic-bezier(.2,.8,.2,1) both}
 .gsx-band:first-child{border-top:0}
 .gsx-bn{width:20px;font-size:15px;font-weight:800;opacity:.6}
-.gsx-bt{flex:1;display:flex;flex-direction:column;line-height:1.15;min-width:0}
-.gsx-bt b{font-size:19px;font-weight:800}
-.gsx-bt i{font-style:normal;font-size:12px;font-weight:700;opacity:.75}
+.gsx-bt{flex:1;display:flex;align-items:baseline;gap:10px;line-height:1.15;min-width:0;white-space:nowrap;overflow:hidden}
+.gsx-bt b{font-size:19px;font-weight:800;flex:none}
+.gsx-bt i{font-style:normal;font-size:14px;font-weight:700;opacity:.75;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.gsx-bgo{cursor:pointer}
+.gsx-bgo:hover .gsx-band{filter:brightness(1.04)}
+.gsx-bgo:focus-visible{outline:3px solid var(--gsx-ink);outline-offset:3px}
+.gsx-eye1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:899px){
+  .gsx-gate .gsx-col{gap:12px;padding-top:14px;padding-bottom:18px}
+  .gsx-gate .gsx-head{gap:8px}
+  .gsx-gate .gsx-eye1{font-size:clamp(11px,3.3vw,13px);letter-spacing:.03em}
+  .gsx-gate .gsx-h1{font-size:30px}
+  .gsx-gate .gsx-lede{font-size:14px}
+  .gsx-gate .gsx-band{min-height:42px;padding:2px 16px;gap:12px}
+  .gsx-gate .gsx-bt b{font-size:18px}
+  .gsx-gate .gsx-go{min-height:56px;font-size:19px}
+}
 .gsx-bq{font-size:13px;font-weight:800;white-space:nowrap}
 .gsx-gowrap{display:flex;flex-direction:column;gap:10px}
 .gsx-wide{display:none}
@@ -548,7 +574,7 @@ const CSS = `
   .gsx-title b{font-size:30px}
   .gsx-tr{min-height:44px;font-size:17px}
 }
-@media(max-width:400px){.gsx-h1{font-size:32px}.gsx-pop{font-size:64px}.gsx-score span{font-size:80px}}
+@media(max-width:400px){.gsx-h1{font-size:32px}.gsx-gate .gsx-h1{font-size:28px}.gsx-pop{font-size:64px}.gsx-score span{font-size:80px}}
 
 .gsx-theme{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--gsx-ink);background:transparent;color:var(--gsx-ink);cursor:pointer;padding:0;flex:none}
 .gsx-theme:hover{background:color-mix(in srgb, var(--gsx-ink) 12%, transparent)}
