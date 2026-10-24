@@ -21,17 +21,18 @@
 
 import React from 'react';
 import { RAMP_INK } from '@/lib/category-ramp';
-import { useStageTheme } from '@/lib/stage-theme';
-import { stagePalette } from './GauntletScreens';
+import { useStageLook, stagePalette, useStageChrome, LookButton } from './GauntletScreens';
 
 export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choices = [], onPick, lockIdx = null, disabled = false, frac = null, hot = false, footer = null, label = 'Question' }) {
-  // Dark register (owner, 2026-10-23): the colours flip, black ground and the
-  // pastel as the ink, the same rule as the entry, handover and end screens.
-  const [theme] = useStageTheme();
-  const pal = theme === 'dark' ? stagePalette(bg || '#7dd3fc', 'dark') : { bg: bg || '#7dd3fc', ink };
+  // The stage's own look switch (owner, 2026-10-23): pastel by default, Plain
+  // is white with black type. Separate from the site's light/dark setting.
+  const [look, setLook] = useStageLook();
+  const pal = look === 'plain' ? stagePalette(bg || '#7dd3fc', 'plain') : { bg: bg || '#7dd3fc', ink };
+  useStageChrome(pal.bg);
   return (
     <div className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <LookButton look={look} onFlip={() => setLook(look === 'plain' ? 'color' : 'plain')} className="gst-look" />
       <div className="gst-col" key={qKey}>
         <div className="gst-q">{question}</div>
         <div className={`gst-ch${choices.length > 2 ? ' many' : ''}`}>
@@ -58,6 +59,8 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
 const CSS = `
 .gst{position:fixed;inset:0;z-index:85;background:var(--gst-bg);color:var(--gst-ink);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
 .gst *{color:var(--gst-ink);}
+.gst-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--gst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
+.gst-look:hover{opacity:1}
 .gst-col{width:100%;max-width:600px;box-sizing:border-box;padding:28px 16px 22px;display:flex;flex-direction:column;justify-content:center;gap:28px;min-height:100%;}
 .gst-q{text-align:center;font-size:30px;line-height:1.18;font-weight:800;letter-spacing:-0.02em;animation:gstRise .45s ease-out both;}
 .gst-q h2{margin:0;font:inherit;letter-spacing:inherit;}

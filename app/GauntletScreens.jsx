@@ -26,33 +26,79 @@ import React, { useEffect, useRef, useState } from 'react';
 import { RAMP_INK } from '@/lib/category-ramp';
 import { rampFor } from '@/lib/circuits';
 import MindLoftMark from './MindLoftMark';
-import { useStageTheme } from '@/lib/stage-theme';
+import { holdRootPaint } from '@/lib/root-paint';
 
-// THE REGISTER (owner, 2026-10-23: "should also have the light dark button,
-// but it flips colors with black"). Light: the pastel ground with dark ink.
-// Dark: a near-black ground with the pastel as the ink. Coloured fills (the
-// lineup bands, the table rows, the cards that wear a quiz's colour) keep
-// their pastel and their dark ink in both registers.
-export const STAGE_DARK = '#0b0f1a';
-export function stagePalette(pastel, theme) {
-  return theme === 'dark' ? { bg: STAGE_DARK, ink: pastel } : { bg: pastel, ink: INK };
+// THE STAGE'S OWN LOOK (owner, 2026-10-23): the gauntlet stages always open on
+// the pastel ground with dark ink, whatever the site's light/dark setting is.
+// The button on the stage is a separate switch with its own key: Plain is a
+// white page with black type and nothing coloured. The phone's top and bottom
+// bars are painted to match whichever look is on.
+const LOOK_KEY = 'sot_gstage_look1';
+const lookSubs = new Set();
+function readLook() {
+  try { return localStorage.getItem(LOOK_KEY) === 'plain' ? 'plain' : 'color'; } catch (e) { return 'color'; }
+}
+export function useStageLook() {
+  const [look, setLook] = useState('color');
+  useEffect(() => {
+    setLook(readLook());
+    const f = (v) => setLook(v);
+    lookSubs.add(f);
+    return () => { lookSubs.delete(f); };
+  }, []);
+  const write = (v) => {
+    try { localStorage.setItem(LOOK_KEY, v); } catch (e) {}
+    for (const f of lookSubs) f(v);
+  };
+  return [look, write];
+}
+export const PLAIN = { bg: '#ffffff', ink: '#111111' };
+export function stagePalette(pastel, look) {
+  return look === 'plain' ? { ...PLAIN } : { bg: pastel, ink: INK };
+}
+// Paints <html>/<body> and the browser's theme-color so Safari's top and
+// bottom bars match the stage, and puts both back on unmount.
+export function useStageChrome(color) {
+  useEffect(() => {
+    if (!color || typeof document === 'undefined') return undefined;
+    const release = holdRootPaint(color);
+    let meta = document.querySelector('meta[name="theme-color"]');
+    const made = !meta;
+    if (!meta) { meta = document.createElement('meta'); meta.setAttribute('name', 'theme-color'); document.head.appendChild(meta); }
+    const prev = meta.getAttribute('content');
+    const metas = Array.from(document.querySelectorAll('meta[name="theme-color"]'));
+    const prevs = metas.map((m) => [m, m.getAttribute('content'), m.getAttribute('media')]);
+    metas.forEach((m) => { m.setAttribute('content', color); m.removeAttribute('media'); });
+    return () => {
+      release();
+      prevs.forEach(([m, c, md]) => { if (c != null) m.setAttribute('content', c); if (md != null) m.setAttribute('media', md); });
+      if (made && meta.parentNode) meta.parentNode.removeChild(meta);
+      void prev;
+    };
+  }, [color]);
 }
 function useStagePalette(pastel) {
-  const [theme, setTheme] = useStageTheme();
-  const p = stagePalette(pastel, theme);
-  return { ...p, theme, flip: () => setTheme(theme === 'dark' ? 'light' : 'dark'), vars: { '--gsx-bg': p.bg, '--gsx-ink': p.ink } };
+  const [look, setLook] = useStageLook();
+  const p = stagePalette(pastel, look);
+  useStageChrome(p.bg);
+  return {
+    ...p, look,
+    plain: look === 'plain',
+    fill: (c) => (look === 'plain' ? PLAIN.bg : c),
+    flip: () => setLook(look === 'plain' ? 'color' : 'plain'),
+    vars: { '--gsx-bg': p.bg, '--gsx-ink': p.ink, '--gsx-tray': look === 'plain' ? PLAIN.ink : INK },
+  };
 }
-function ThemeButton({ pal }) {
-  const dark = pal.theme === 'dark';
+export function LookButton({ look, onFlip, className = 'gsx-theme' }) {
+  const plain = look === 'plain';
   return (
-    <button type="button" className="gsx-theme" onClick={pal.flip} aria-label={dark ? 'Switch to light' : 'Switch to dark'} title={dark ? 'Light' : 'Dark'}>
-      {dark ? (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" /></svg>
-      ) : (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></svg>
-      )}
+    <button type="button" className={className} onClick={onFlip} aria-label={plain ? 'Switch to colour' : 'Switch to plain white'} title={plain ? 'Colour' : 'Plain'}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
     </button>
   );
+}
+function ThemeButton({ pal }) {
+  return <LookButton look={pal.look} onFlip={pal.flip} />;
 }
 
 const INK = RAMP_INK;
@@ -102,7 +148,7 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
         </div>
         <div className="gsx-bands">
           {sections.map((s, i) => (
-            <div key={s.key} className="gsx-band" style={{ background: rampFor(slotOf(s, i)), animationDelay: `${0.15 + i * 0.07}s` }}>
+            <div key={s.key} className="gsx-band" style={{ background: pal.fill(rampFor(slotOf(s, i))), animationDelay: `${0.15 + i * 0.07}s` }}>
               <span className="gsx-bn">{i + 1}</span>
               <span className="gsx-bt"><b>{s.name}</b><i>{lineFor ? lineFor(s) : ''}</i></span>
               <span className="gsx-bq">{s.questions.length} Qs</span>
@@ -135,7 +181,7 @@ export function GauntletBetween({ circuitName, sections = [], results = [], last
   const secs = useCountdown(dwellMs, held, resetKey);
   const fromBg = lastSec ? rampFor(slotOf(lastSec, sections.indexOf(lastSec))) : rampFor(0);
   const pal = useStagePalette(upNext ? rampFor(slotOf(upNext, upIdx)) : fromBg);
-  const prev = stagePalette(fromBg, pal.theme);
+  const prev = stagePalette(fromBg, pal.look);
   const doneKeys = new Set(results.map((x) => x && x.key));
   const missed = lastMiss && !lastMiss.cleared;
   return (
@@ -166,7 +212,7 @@ export function GauntletBetween({ circuitName, sections = [], results = [], last
           </div>
           <div className="gsx-rise gsx-low" style={{ animationDelay: '.75s' }}>
             {last ? (
-              <div className="gsx-last" style={{ background: fromBg }}>
+              <div className="gsx-last" style={{ background: pal.fill(fromBg) }}>
                 <span className="gsx-lt">
                   <b>{lastSec ? lastSec.name : 'That quiz'} {missed ? `ended on question ${last.score + 1}` : 'run clean, no misses'}</b>
                   {missed && lastMiss.q ? <span>The one that got you: {mathText(lastMiss.q)}</span> : null}
@@ -238,7 +284,7 @@ export function GauntletEndStage({
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {anim ? (
         <div className="gsx-show" aria-hidden="true">
-          {sections.map((s, i) => <span key={s.key} style={{ background: rampFor(slotOf(s, i)), animationDelay: `${i * 0.06}s` }} />)}
+          {sections.map((s, i) => <span key={s.key} style={{ background: pal.fill(rampFor(slotOf(s, i))), animationDelay: `${i * 0.06}s` }} />)}
         </div>
       ) : null}
       <div className="gsx-col gsx-ecol">
@@ -270,7 +316,7 @@ export function GauntletEndStage({
             <div className="gsx-rise gsx-table" style={d('2.25s')}>
               <div className="gsx-tr gsx-th"><span>Quiz</span><span>You</span><span>Field</span><span>Best</span></div>
               {rows.map((x) => (
-                <div key={x.key} className="gsx-tr gsx-row" style={{ background: x.bg }}>
+                <div key={x.key} className="gsx-tr gsx-row" style={{ background: pal.fill(x.bg) }}>
                   <span><b>{x.name}</b></span><span><b>{x.you}</b></span><span>{x.field}</span><span>{x.best}</span>
                 </div>
               ))}
@@ -279,7 +325,7 @@ export function GauntletEndStage({
               </div>
             </div>
             {similar && similar.href ? (
-              <a className="gsx-rise gsx-next" href={similar.href} style={d('2.5s')}>
+              <a className="gsx-rise gsx-next" href={similar.href} style={{ ...d('2.5s'), background: pal.fill('#6ee7b7') }}>
                 <span><i>One Quick Play Next</i><b>{similar.name}</b></span>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </a>
@@ -360,7 +406,7 @@ const CSS = `
 .gsx-title b{font-size:26px;font-weight:800;letter-spacing:-.01em}
 .gsx-title span{font-size:14px;font-weight:600;color:var(--gsx-bg);opacity:.85}
 .gsx-rank{text-align:center;font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
-.gsx-tray{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:18px;background:${INK};color:#e9edf4;border:2px solid var(--gsx-ink)}
+.gsx-tray{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:18px;background:var(--gsx-tray);color:#e9edf4;border:2px solid var(--gsx-ink)}
 .gsx-tray:empty{display:none}
 .gsx-tray a:not([class]){color:#7dd3fc}
 .gsx-poly{margin:0}
@@ -369,9 +415,10 @@ const CSS = `
 .gsx-tr>span:not(:first-child){text-align:right}
 .gsx-th{min-height:34px;border-top:0;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
 .gsx-row{color:${INK};border-top-color:rgba(8,34,46,.35)}
+.gsx-band{border-top-color:${INK}}
 .gsx-tt{min-height:42px;border-top:2px solid var(--gsx-ink);font-size:16px;font-weight:800}
 .gsx .gsx-next{color:${INK}}
-.gsx-next{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:2px solid var(--gsx-ink);background:#6ee7b7;text-decoration:none}
+.gsx-next{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:2px solid var(--gsx-ink);text-decoration:none}
 .gsx-next>span{flex:1;display:flex;flex-direction:column;gap:2px}
 .gsx-next i{font-style:normal;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;opacity:.75}
 .gsx-next b{font-size:19px;font-weight:800}
