@@ -69,6 +69,7 @@ import RunBackLink from '../../RunBackLink';
 import PolymathMeter from '../../PolymathMeter';
 import { POLY_IDS } from '@/lib/polymath';
 import GauntletStage from '../../../GauntletStage';
+import { GauntletGate, GauntletBetween, GauntletEndStage } from '../../../GauntletScreens';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -247,6 +248,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const [nextOpen, setNextOpen] = useState(false);
   const [boardOpen, setBoardOpen] = useState(false);
   const curtainOnce = useRef(false);
+  // The full-screen end stage (owner, 2026-10-23). "See full details" closes it
+  // onto the done card underneath for the rest of this visit.
+  const [endOpen, setEndOpen] = useState(true);
   const doneAtLoad = useRef(null);
   // FIRST GAUNTLET EVER on this browser (owner, 2026-10-06): no earlier day's
   // run save finished, and the once-ever offer not yet shown. Read once, at
@@ -1044,7 +1048,70 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           footer={<>{Math.ceil(remainMs / 1000)}s &middot; {sec.name} {r.i + 1} of {sec.questions.length}{liveStand ? <> &middot; if you stopped here #{liveStand.pos} of {liveStand.field.toLocaleString()}</> : null}</>}
         />
       ) : null}
-      {isChallengeableRun(circuitId) && !done ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}
+      {/* ENTRY, BETWEEN AND END on the same stage (owner, 2026-10-23, from the
+          approved mockups): full screen, the bank's pastel step, dark ink. They
+          only draw; every rule stays in this file. See GauntletScreens.jsx. */}
+      {TOWERS && hydrated && r.phase === 'idle' ? (
+        <GauntletGate
+          circuitName={circuitName}
+          dateLabel={dateLabel}
+          sections={sections}
+          lineFor={lineFor}
+          onStart={startRun}
+          unit={MATHRUN ? 'games' : 'quizzes'}
+          rule={MATHRUN ? 'A wrong answer ends that game and the next one starts.' : 'A wrong answer ends that quiz and the next one starts.'}
+          fieldLine={fieldOn && field.started >= FIELD_FLOOR
+            ? `${fieldToday.toLocaleString()} played today${leaderScore != null ? ` \u00B7 the leader has ${leaderScore} ${scoreWord}` : ''}`
+            : null}
+          banner={isChallengeableRun(circuitId) ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}
+        />
+      ) : null}
+      {TOWERS && hydrated && r.phase === 'verdict' && last && upNext ? (
+        <GauntletBetween
+          circuitName={circuitName}
+          sections={sections}
+          results={r.results}
+          lastSec={lastSec}
+          last={last}
+          lastMiss={lastMiss}
+          upNext={upNext}
+          upIdx={upIdx}
+          lineFor={lineFor}
+          stand={!r.practice && liveStand ? liveStand : null}
+          dwellMs={VERDICT_MS}
+          held={hold}
+          resetKey={`${r.si}:${resumes}`}
+          onGo={() => { setHold(false); nextSection(); }}
+          onHold={() => { if (hold) setResumes((k) => k + 1); setHold(!hold); }}
+          leaveHref={`/circuits/${circuitId}`}
+          mathText={mathText}
+        />
+      ) : null}
+      {TOWERS && hydrated && done && !curtain && endOpen ? (
+        <GauntletEndStage
+          circuitName={circuitName}
+          dateLabel={dateLabel}
+          sections={sections}
+          results={r.results}
+          score={cleared}
+          title={!r.practice ? titleFor(circuitId, cleared) : null}
+          rank={boardQ.data && boardQ.data.me && Number.isFinite(boardQ.data.me.rank) ? boardQ.data.me.rank : null}
+          fieldSize={(boardQ.data && boardQ.data.overallField) || null}
+          avg={field && field.avg ? field.avg : null}
+          top={field && field.top ? field.top : null}
+          leaderScore={rightUnit ? leaderScore : null}
+          challenge={isChallengeableRun(circuitId) && !r.practice
+            ? <RunChallengeButton gameKey={circuitId} score={cleared} total={askable} n={runToken()} t={runSecs > 0 ? Math.round(runSecs) : null} door />
+            : null}
+          polymath={POLY_IDS.includes(circuitId) && !r.practice ? <PolymathMeter circuitId={circuitId} right={cleared} /> : null}
+          similar={similarRun}
+          onShare={shareRun}
+          copied={copied}
+          onDetails={() => setEndOpen(false)}
+          sweep={!curtainOnce.current}
+        />
+      ) : null}
+      {isChallengeableRun(circuitId) && !done && !(TOWERS && hydrated && r.phase === 'idle') ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}
       {/* EVERY OTHER RUN ON ONE CARD (owner, 2026-10-09): the first time a
           browser finishes any of the five runs, one pop-up lists every other
           run not done today. It replaced the one-at-a-time RunNudgePop chain.

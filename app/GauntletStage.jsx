@@ -21,10 +21,16 @@
 
 import React from 'react';
 import { RAMP_INK } from '@/lib/category-ramp';
+import { useStageTheme } from '@/lib/stage-theme';
+import { stagePalette } from './GauntletScreens';
 
 export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choices = [], onPick, lockIdx = null, disabled = false, frac = null, hot = false, footer = null, label = 'Question' }) {
+  // Dark register (owner, 2026-10-23): the colours flip, black ground and the
+  // pastel as the ink, the same rule as the entry, handover and end screens.
+  const [theme] = useStageTheme();
+  const pal = theme === 'dark' ? stagePalette(bg || '#7dd3fc', 'dark') : { bg: bg || '#7dd3fc', ink };
   return (
-    <div className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': bg || '#7dd3fc', '--gst-ink': ink }}>
+    <div className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="gst-col" key={qKey}>
         <div className="gst-q">{question}</div>
