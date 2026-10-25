@@ -3609,6 +3609,16 @@ export default function StageToday() {
             </button>
           </span>
         </div>
+        {/* ONE CARD, TABS ON TOP (owner, 2026-10-25): the Categories / Skills
+            switch heads the rankings bar instead of sitting alone further down.
+            Categories first. The switch only shows on the hub, never in a pane. */}
+        <div className="sty-mrk">
+        {mph && !picked ? (
+          <div className="mph-seg mrk-seg" role="group" aria-label="Group puzzles by">
+            <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
+            <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
+          </div>
+        ) : null}
         <div className={'sty-mst' + (who ? '' : ' guest')}>
           <a href="#sty-board" onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
             <b>{who && stats.dayRank ? '#' + stats.dayRank : '\u2013'}</b><i>Day</i>
@@ -3617,7 +3627,7 @@ export default function StageToday() {
             <b>{who && mGroup && mGroup.rank ? '#' + mGroup.rank : '\u2013'}</b><i>Group</i>
           </a>
           <a href={withTq('/quizzes/hub')}>
-            <b>{who && rank ? '#' + rank : '\u2013'}</b><i>All time</i>
+            <b>{who && rank ? '#' + rank : '\u2013'}</b><i>All Time</i>
           </a>
           <a className="tk" href="/quizzes/community#drawing" title={`Your tickets for the ${DRAWING.prizeLabel} drawing`}>
             <b>{who && mTix.count != null ? formatTickets(mTix.count) : who ? '\u2013' : '0'}</b><i>Tickets</i>
@@ -3626,19 +3636,7 @@ export default function StageToday() {
             <a className="join" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Pick a name to keep a rank and earn tickets</a>
           )}
         </div>
-        {mDraw ? (
-          <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
-            <span><b>{DRAWING.prizeLabel} drawing</b> &middot; through {DRAWING.endLabel}</span>
-            <u>Ways to earn</u>
-          </a>
-        ) : null}
-        <a className="sty-mprog" href="/" onClick={(e) => {
-          e.preventDefault(); setPicked(false); setPane(ALL_ID);
-          try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (er) {}
-        }}>
-          <span><b>{fmtShort(day)}</b><em>{mPlayed} of {DAILY_GAMES.length} played today</em></span>
-          <i><s style={{ width: Math.round((mPlayed / Math.max(1, DAILY_GAMES.length)) * 100) + '%' }} /></i>
-        </a>
+        </div>
       </div>
 
       <div className="sty-wrap" ref={wrapRef}>
@@ -3721,13 +3719,9 @@ export default function StageToday() {
           <div className="sty-mph">
             {!picked ? (
               <>
-                <div className="mph-seg" role="group" aria-label="Group puzzles by">
-                  <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
-                  <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
-                </div>
                 <div className="mph-duo">
-                  <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}>All puzzles<em>{alphaDone} of {alpha.length}</em></button>
-                  <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}>My puzzles<em>{pinned.length ? `${pinned.length} starred` : 'Star any puzzle'}</em></button>
+                  <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}>All Puzzles<em>{alphaDone} of {alpha.length}</em></button>
+                  <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}>My Puzzles<em>{pinned.length ? `${pinned.length} starred` : 'Star any puzzle'}</em></button>
                 </div>
                 <div className="mph-grid">
                   {lensCats.map(({ cat, games }) => {
@@ -3741,7 +3735,15 @@ export default function StageToday() {
                     );
                   })}
                 </div>
-                <div className="mph-lab">Everything else</div>
+                {/* COMPLETION STATUS sits under the last two tiles (owner, 2026-10-25). */}
+                <a className="sty-mprog" href="/" onClick={(e) => {
+                  e.preventDefault(); setPicked(false); setPane(ALL_ID);
+                  try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (er) {}
+                }}>
+                  <span><b>{fmtShort(day)}</b><em>{mPlayed} of {DAILY_GAMES.length} played today</em></span>
+                  <i><s style={{ width: Math.round((mPlayed / Math.max(1, DAILY_GAMES.length)) * 100) + '%' }} /></i>
+                </a>
+                <div className="mph-lab">Everything Else</div>
                 <div className="mph-list">
                   <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<span>&rarr;</span></button>
                   <button type="button" onClick={() => goPane(QUIZ_ID)}>Quizzes<span>&rarr;</span></button>
@@ -3753,6 +3755,13 @@ export default function StageToday() {
                   <a href="/kids">Kids<span>&rarr;</span></a>
                   <a href={withTq('/lists')}>Top 10 Lists<span>&rarr;</span></a>
                 </div>
+                {/* THE DRAWING CLOSES THE PAGE (owner, 2026-10-25). */}
+                {mDraw ? (
+                  <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
+                    <span><b>{DRAWING.prizeLabel} Drawing</b> &middot; through {DRAWING.endLabel}</span>
+                    <u>Ways to Earn</u>
+                  </a>
+                ) : null}
               </>
             ) : (() => {
               const isAll = paneOn === ALL_ID;
@@ -4342,8 +4351,8 @@ export default function StageToday() {
         {/* The observer sits on the WRAPPER, which keeps the toggle's box on a
             phone, so the lazy reads still fire while the tail is folded. */}
         <div ref={footRef}>
-          <button type="button" className="sty-tailbtn" aria-expanded={tailOpen} aria-controls="sty-about" onClick={() => setTailOpen((v) => !v)}>
-            <span>{tailOpen ? 'Hide' : 'About Mind Loft and site links'}</span>
+          <button type="button" className={'sty-tailbtn' + (mph && !picked ? ' snug' : '')} aria-expanded={tailOpen} aria-controls="sty-about" onClick={() => setTailOpen((v) => !v)}>
+            <span>{tailOpen ? 'Hide' : 'About Mind Loft and Site Links'}</span>
             <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
           </button>
           <div className={'sty-tail' + (tailOpen ? ' on' : '')}><HomeAbout /></div>
@@ -6435,7 +6444,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .mph-g .st{position:absolute;top:6px;right:6px;width:24px;height:24px;display:grid;place-items:center;border:0;background:transparent;color:inherit;opacity:.45;padding:0;}
   .mph-g .st.on{opacity:1;color:inherit;}
   /* A pane is its own page: only the top bar stays above it. */
-  .mph-pane .sty-mst,.mph-pane .sty-mdraw,.mph-pane .sty-mprog,.mph-pane .mph-back{display:none !important;}
+  .mph-pane .sty-mrk,.mph-pane .sty-mst,.mph-pane .sty-mdraw,.mph-pane .sty-mprog,.mph-pane .mph-back{display:none !important;}
   .sty-mback{border:2px solid var(--stg-ink);background:transparent;color:var(--stg-ink);border-radius:999px;padding:6px 13px 7px;font:inherit;font-weight:800;font-size:13px;line-height:1.26;cursor:pointer;}
   /* The recoloured page: the ground is the category, so tiles go white. */
   .mph-tint .sty-mph .mph-band{background:transparent;border:0;padding:4px 2px 2px;}
@@ -6457,6 +6466,18 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
     padding:11px 12px 12px;font:inherit;font-weight:800;font-size:14px;line-height:1.26;text-align:left;cursor:pointer;}
   .sty-tailbtn svg{flex:none;transition:transform .18s ease;}
   .sty-tailbtn[aria-expanded="true"]{margin-bottom:14px;}
+  /* The hub column ends with an 18px margin and the wrap adds a 22px gap;
+     pull the toggle up to the column's own 10px rhythm. */
+  .sty-tailbtn.snug{margin-top:-30px;}
+  /* The rankings card with the Categories / Skills tabs on top. */
+  .sty-mrk{border:var(--mb);border-radius:14px;overflow:hidden;}
+  .sty-mrk .sty-mst{border:0;border-radius:0;}
+  .sty-mrk .mrk-seg{border:0;border-bottom:var(--mb);border-radius:0;padding:0;}
+  .sty-mrk .mrk-seg button{border-radius:0;padding:9px 0 10px;font-size:13px;}
+  .sty-mrk .mrk-seg button + button{border-left:1.5px solid var(--mln);}
+  /* Moved out of the top block, these still need its tokens. */
+  .sty-mph{--mi:var(--stg-ink);--mb:2px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
+  .sty-mph .sty-mprog{margin-top:4px;}
   .sty-tailbtn[aria-expanded="true"] svg{transform:rotate(180deg);}
   .sty-tail:not(.on){display:none;}
 }
