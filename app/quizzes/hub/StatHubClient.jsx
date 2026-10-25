@@ -1,4 +1,5 @@
 'use client';
+import { cycleSiteLook } from '@/lib/stage-look';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Flame, Share2, Download, UserPlus, Play, X, Check, Star, Swords, ChevronDown, Crown, Target } from 'lucide-react';
@@ -995,7 +996,7 @@ export default function StatHubClient() {
           <button
             type="button"
             className="hubchip hub-tg"
-            data-look="" onClick={(e) => openLook(e.currentTarget)}
+            data-look="" onClick={(e) => cycleSiteLook()}
           aria-haspopup="dialog"
             aria-label="Page look: light or dark, and how much color"
             title="Page look"

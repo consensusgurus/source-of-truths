@@ -22,6 +22,7 @@
 // inherits the register's --stg-* tokens, which are undefined outside it.
 // The finish flood is position:fixed at z 9000 and covers all of this on its own.
 
+import { cycleSiteLook } from '@/lib/stage-look';
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
@@ -577,7 +578,7 @@ export default function LayoutCInner({ gameKey }) {
               ) : null}
             </div>
             <button type="button" className="sty-cx sty-tg"
-              data-look="" onClick={(e) => openLook(e.currentTarget)}
+              data-look="" onClick={(e) => cycleSiteLook()}
           aria-haspopup="dialog"
               aria-label="Page look: light or dark, and how much color" title="Page look">
               {light ? (

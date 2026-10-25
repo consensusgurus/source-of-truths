@@ -17,7 +17,8 @@
 // and puzzle steps below (owner, 2026-10-18), which end on a game or a run.
 // The button at the foot just closes the door onto the home as it is.
 //
-// ALWAYS DARK, whatever the reader's register (the door itself). The owner asked for the dark
+// WHITE, matching the default page, with the lighter category tones (owner,
+// 2026-10-25; it was always dark before). Originally: ALWAYS DARK, whatever the reader's register (the door itself). The owner asked for the dark
 // version for everyone, so every colour here is a literal on the near-black
 // ground and the dark ramp, and none of it reads the stage tokens.
 //
@@ -558,29 +559,29 @@ const CSS2 = `
   animation:ent-up .4s cubic-bezier(.2,.7,.2,1) both}
 @media (min-width:761px){.ent-stp{padding-left:48px;padding-right:48px}}
 .ent-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.ent-back{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:#a7b1c4;font:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:6px 2px;border-radius:6px}
-.ent-back:hover{color:#eef2f9}
+.ent-back{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:#3d5260;font:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:6px 2px;border-radius:6px}
+.ent-back:hover{color:#08222e}
 .ent-dots{display:flex;align-items:center;gap:6px}
-.ent-dots i{width:22px;height:4px;border-radius:2px;background:rgba(255,255,255,.12)}
-.ent-dots i.on{background:#7dd3fc}
+.ent-dots i{width:22px;height:4px;border-radius:2px;background:rgba(8,34,46,0.192)}
+.ent-dots i.on{background:#08222e}
 .ent-hd{display:flex;flex-direction:column;gap:10px}
-.ent-skchip{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--c);letter-spacing:.01em}
+.ent-skchip{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:#08222e;letter-spacing:.01em}
 .ent-skchip::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c)}
-.ent-h2{margin:0;font-size:clamp(26px,3.6vw,40px);line-height:1.1;font-weight:800;letter-spacing:-.03em;text-wrap:balance;color:#eef2f9;outline:none}
-.ent-lede{margin:0;font-size:15px;color:#a7b1c4;line-height:1.5;max-width:60ch}
-.ent-sun{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;padding:18px;border-radius:12px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.11)}
-.ent-sun h3{margin:0 0 6px;font-size:16px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;color:#eef2f9}
+.ent-h2{margin:0;font-size:clamp(26px,3.6vw,40px);line-height:1.1;font-weight:800;letter-spacing:-.03em;text-wrap:balance;color:#08222e;outline:none}
+.ent-lede{margin:0;font-size:15px;color:#3d5260;line-height:1.5;max-width:60ch}
+.ent-sun{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;padding:18px;border-radius:12px;background:rgba(8,34,46,0.072);border:1px solid rgba(8,34,46,0.17600000000000002)}
+.ent-sun h3{margin:0 0 6px;font-size:16px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;color:#08222e}
 .ent-pill{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:#e8b43a;color:${RAMP_INK};padding:3px 7px;border-radius:4px}
-.ent-sun p{margin:0;font-size:13.5px;line-height:1.55;color:#a7b1c4}
-.ent-sun p b{color:#eef2f9;font-weight:700}
+.ent-sun p{margin:0;font-size:13.5px;line-height:1.55;color:#3d5260}
+.ent-sun p b{color:#08222e;font-weight:700}
 .ent-pick{display:flex;flex-direction:column;gap:8px}
-.ent-pick button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:11px 13px;border-radius:10px;border:1.5px solid rgba(255,255,255,.14);background:transparent;cursor:pointer;font:inherit;color:#eef2f9}
+.ent-pick button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:11px 13px;border-radius:10px;border:1.5px solid rgba(8,34,46,0.22400000000000003);background:transparent;cursor:pointer;font:inherit;color:#08222e}
 .ent-pick button b{font-size:14.5px;font-weight:800}
-.ent-pick button span{font-size:12.5px;color:#a7b1c4;font-weight:600}
-.ent-pick button[aria-pressed="true"]{border-color:#7dd3fc;background:rgba(125,211,252,.08)}
-.ent-pick .ent-why{font-size:12.5px;color:#8b95a8;line-height:1.5;margin:2px 2px 0}
+.ent-pick button span{font-size:12.5px;color:#3d5260;font-weight:600}
+.ent-pick button[aria-pressed="true"]{border-color:#08222e;background:#e3f3fd}
+.ent-pick .ent-why{font-size:12.5px;color:#4f6270;line-height:1.5;margin:2px 2px 0}
 .ent-lvs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.ent-lv{display:flex;flex-direction:column;gap:10px;text-align:left;padding:16px;border-radius:10px;border:0;background:var(--c);color:${RAMP_INK};cursor:pointer;min-height:156px;font:inherit;transition:transform .18s ease,box-shadow .18s ease}
+.ent-lv{display:flex;flex-direction:column;gap:10px;text-align:left;padding:16px;border-radius:10px;border:0;background:color-mix(in srgb, var(--c) 60%, #ffffff);border:2px solid #08222e;color:${RAMP_INK};cursor:pointer;min-height:156px;font:inherit;transition:transform .18s ease,box-shadow .18s ease}
 .ent-lv:hover{transform:translateY(-3px);box-shadow:0 12px 26px -14px rgba(0,0,0,.7)}
 .ent-meter{display:flex;gap:4px}
 .ent-meter i{width:16px;height:6px;border-radius:3px;background:rgba(8,34,46,.2)}
@@ -590,15 +591,15 @@ const CSS2 = `
 .ent-lct{margin-top:auto;display:flex;justify-content:space-between;font-size:12.5px;font-weight:800}
 .ent-lct em{font-style:normal;transition:transform .18s ease}
 .ent-lv:hover .ent-lct em{transform:translateX(3px)}
-.ent-fine{font-size:12.5px;color:#8b95a8;line-height:1.5;margin:0}
+.ent-fine{font-size:12.5px;color:#4f6270;line-height:1.5;margin:0}
 .ent-tierbar{display:flex;flex-wrap:wrap;gap:6px}
-.ent-tierbar button{border:1px solid rgba(255,255,255,.14);background:transparent;border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:700;color:#a7b1c4;cursor:pointer}
-.ent-tierbar button[aria-pressed="true"]{background:#eef2f9;color:#0b0f1a;border-color:#eef2f9}
-.ent-monbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;padding:11px 14px;border-radius:10px;background:rgba(232,180,58,.1);border:1px solid rgba(232,180,58,.35);font-size:13.5px;font-weight:600;color:#f3d48a}
-.ent-monbar button{border:0;background:transparent;color:#eef2f9;font:inherit;font-weight:800;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.ent-tierbar button{border:1px solid rgba(8,34,46,0.22400000000000003);background:transparent;border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:700;color:#3d5260;cursor:pointer}
+.ent-tierbar button[aria-pressed="true"]{background:#08222e;color:#ffffff;border-color:#08222e}
+.ent-monbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;padding:11px 14px;border-radius:10px;background:rgba(232,180,58,.1);border:1px solid rgba(232,180,58,.35);font-size:13.5px;font-weight:600;color:#7c4a03}
+.ent-monbar button{border:0;background:transparent;color:#08222e;font:inherit;font-weight:800;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .ent-gts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:0}
 .ent-gts li{display:flex;min-width:0;animation:ent-up .45s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i) * .03s)}
-.ent-gt{flex:1;min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:12px;row-gap:3px;text-align:left;padding:14px;border-radius:10px;border:0;background:var(--c);color:${RAMP_INK};cursor:pointer;font:inherit;transition:transform .18s ease,box-shadow .18s ease}
+.ent-gt{flex:1;min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:12px;row-gap:3px;text-align:left;padding:14px;border-radius:10px;border:0;background:color-mix(in srgb, var(--c) 60%, #ffffff);border:2px solid #08222e;color:${RAMP_INK};cursor:pointer;font:inherit;transition:transform .18s ease,box-shadow .18s ease}
 .ent-gt:hover{transform:translateY(-3px);box-shadow:0 12px 26px -14px rgba(0,0,0,.7)}
 .ent-disc{grid-row:1 / span 2;width:42px;height:42px;border-radius:10px;background:rgba(8,34,46,.1);display:grid;place-items:center}
 .ent-disc svg{width:26px;height:26px}
@@ -611,11 +612,11 @@ const CSS2 = `
 .ent-gcat{min-width:0;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:800}
 .ent-gcl{text-transform:none;letter-spacing:0;font-size:12px;font-weight:700}
 .ent-chip{margin-left:auto;flex:none;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 6px;border-radius:4px;background:${RAMP_INK};color:var(--c)}
-.ent-more{border:1px dashed rgba(255,255,255,.18);border-radius:10px;padding:12px 14px;font-size:13px;color:#a7b1c4;font-weight:600;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
-.ent-more button,.ent-link{border:0;background:transparent;color:#7dd3fc;font:inherit;font-weight:800;cursor:pointer;font-size:13.5px;padding:4px 0}
-.ent-empty{padding:24px;border-radius:12px;background:rgba(255,255,255,.045);color:#a7b1c4;font-size:14px;line-height:1.5}
+.ent-more{border:1px dashed rgba(8,34,46,0.288);border-radius:10px;padding:12px 14px;font-size:13px;color:#3d5260;font-weight:600;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.ent-more button,.ent-link{border:0;background:transparent;color:#0369a1;font:inherit;font-weight:800;cursor:pointer;font-size:13.5px;padding:4px 0}
+.ent-empty{padding:24px;border-radius:12px;background:rgba(8,34,46,0.072);color:#3d5260;font-size:14px;line-height:1.5}
 .ent-tail{display:flex;justify-content:center;padding-top:4px}
-.ent-back:focus-visible,.ent-lv:focus-visible,.ent-gt:focus-visible,.ent-pick button:focus-visible,.ent-tierbar button:focus-visible,.ent-more button:focus-visible,.ent-link:focus-visible,.ent-monbar button:focus-visible{outline:3px solid #eef2f9;outline-offset:3px}
+.ent-back:focus-visible,.ent-lv:focus-visible,.ent-gt:focus-visible,.ent-pick button:focus-visible,.ent-tierbar button:focus-visible,.ent-more button:focus-visible,.ent-link:focus-visible,.ent-monbar button:focus-visible{outline:3px solid #08222e;outline-offset:3px}
 @media (min-width:1000px){.ent-gts{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:760px){
   .ent-stp{gap:16px}
@@ -633,21 +634,21 @@ const CSS2 = `
 
 const INK = RAMP_INK;
 const CSS = `
-.ent-door{position:fixed;inset:0;z-index:6000;background:#0b0f1a;color:#eef2f9;font-family:'Manrope',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.ent-door{position:fixed;inset:0;z-index:6000;background:#ffffff;color:#08222e;font-family:'Manrope',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
 .ent-pg{position:absolute;inset:0;box-sizing:border-box;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,3.4vh,34px);
   padding:max(28px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.ent-ask{margin:0;font-size:clamp(30px,4.2vw,50px);line-height:1.1;font-weight:800;letter-spacing:-0.03em;text-align:center;text-wrap:balance;max-width:900px;color:#eef2f9}
+.ent-ask{margin:0;font-size:clamp(30px,4.2vw,50px);line-height:1.1;font-weight:800;letter-spacing:-0.03em;text-align:center;text-wrap:balance;max-width:900px;color:#08222e}
 .ent-foot{display:flex;flex-direction:column;align-items:center;gap:14px}
-.ent-h{margin:0;font-size:clamp(17px,1.7vw,21px);font-weight:700;color:#a7b1c4;text-align:center;letter-spacing:-0.01em}
-.ent-bn{white-space:nowrap;color:#eef2f9}
+.ent-h{margin:0;font-size:clamp(17px,1.7vw,21px);font-weight:700;color:#3d5260;text-align:center;letter-spacing:-0.01em}
+.ent-bn{white-space:nowrap;color:#08222e}
 .ent-mk{display:inline-block;width:1em;height:1em;vertical-align:-0.14em;margin-right:.16em}
-.ent-loft{color:#7dd3fc}
+.ent-loft{color:#0369a1}
 .ent-tiles{width:100%;max-width:960px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:0}
 .ent-tiles li{display:flex;min-width:0}
 .ent-tile{flex:1;min-width:0;min-height:128px;display:flex;flex-direction:column;justify-content:space-between;gap:16px;text-align:left;padding:16px 16px 14px;border:0;border-radius:10px;cursor:pointer;
-  font:inherit;background:var(--c);color:${INK};transition:transform .18s ease,box-shadow .18s ease}
+  font:inherit;background:color-mix(in srgb, var(--c) 60%, #ffffff);border:2px solid #08222e;color:${INK};transition:transform .18s ease,box-shadow .18s ease}
 .ent-tile:hover{transform:translateY(-3px);box-shadow:0 12px 26px -14px rgba(0,0,0,.7)}
-.ent-tile:focus-visible{outline:3px solid #eef2f9;outline-offset:3px}
+.ent-tile:focus-visible{outline:3px solid #08222e;outline-offset:3px}
 .ent-sk{font-size:19px;font-weight:800;letter-spacing:-0.015em;line-height:1.15}
 .ent-meta{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;font-weight:700}
 .ent-meta b{font-weight:800;font-variant-numeric:tabular-nums}
@@ -655,9 +656,9 @@ const CSS = `
 .ent-go{transition:transform .18s ease}
 .ent-tile:hover .ent-go{transform:translateX(3px)}
 .ent-go-all{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:16px 28px;border:0;border-radius:999px;cursor:pointer;font:inherit;font-weight:700;font-size:16px;
-  background:#7dd3fc;color:${INK};transition:background .18s ease}
-.ent-go-all:hover{background:#bae6fd}
-.ent-go-all:focus-visible{outline:3px solid #eef2f9;outline-offset:3px}
+  background:#08222e;color:#ffffff;transition:background .18s ease}
+.ent-go-all:hover{background:#1d3a4a}
+.ent-go-all:focus-visible{outline:3px solid #08222e;outline-offset:3px}
 /* ONE ENTRANCE, NOT TWO (owner, 2026-10-17). The page sits under the curtain, so
    the lift used to uncover it fully drawn and then the rise below played it in again.
    It stays invisible until the rise starts; reduced motion lands on 'page' directly. */
@@ -669,16 +670,16 @@ const CSS = `
 @keyframes ent-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes ent-mk{from{opacity:0;transform:translateX(-.6em) scale(.7)}to{opacity:1;transform:none}}
 
-.ent-cur{position:absolute;inset:0;z-index:2;background:#0b0f1a;overflow:hidden;cursor:pointer}
+.ent-cur{position:absolute;inset:0;z-index:2;background:#ffffff;overflow:hidden;cursor:pointer}
 .ent-bands{position:absolute;inset:0;display:flex}
-.ent-bands span{flex:1;background:var(--c);transform:translateY(101%)}
-.ent-wipe{position:absolute;inset:0;background:#0b0f1a;transform:scaleX(0);transform-origin:left}
+.ent-bands span{flex:1;background:color-mix(in srgb, var(--c) 60%, #ffffff);transform:translateY(101%)}
+.ent-wipe{position:absolute;inset:0;background:#ffffff;transform:scaleX(0);transform-origin:left}
 .ent-say{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:0 20px}
 .ent-word{display:flex;align-items:center;gap:14px;font-size:clamp(32px,6vw,54px);font-weight:800;letter-spacing:-0.035em;opacity:0}
-.ent-lines{display:flex;flex-direction:column;gap:8px;font-size:clamp(18px,2.5vw,23px);font-weight:600;color:#a7b1c4}
+.ent-lines{display:flex;flex-direction:column;gap:8px;font-size:clamp(18px,2.5vw,23px);font-weight:600;color:#3d5260}
 .ent-lines span{opacity:0}
 .ent-ladder{position:absolute;left:0;right:0;bottom:0;height:6px;display:flex;opacity:0}
-.ent-ladder i{flex:1;background:var(--c);opacity:.25}
+.ent-ladder i{flex:1;background:var(--c);opacity:.5}
 .ent-cur.run .ent-bands span{animation:ent-rise .55s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i) * .06s)}
 .ent-cur.run .ent-wipe{animation:ent-wipe .5s cubic-bezier(.7,0,.2,1) 1.15s forwards}
 .ent-cur.run .ent-word{animation:ent-stamp .5s cubic-bezier(.2,.9,.25,1.2) 1.6s forwards}

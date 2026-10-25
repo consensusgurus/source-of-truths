@@ -30,6 +30,7 @@
 // Data comes from fetchDayStatus, the same call the existing home makes, so
 // this surface adds no new endpoint and cannot disagree with the other one
 // about what has been played.
+import { cycleSiteLook } from '@/lib/stage-look';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys, dailyScoreText } from '@/lib/daily-games';
 
@@ -3549,7 +3550,7 @@ export default function StageToday() {
         <button
           type="button"
           className={'sty-cx sty-tg' + (hint ? ' hint' : '')}
-          data-look="" onClick={(e) => openLook(e.currentTarget)}
+          data-look="" onClick={(e) => cycleSiteLook()}
           aria-haspopup="dialog"
           aria-label="Page look: light or dark, and how much color"
           title="Page look"
@@ -3596,8 +3597,8 @@ export default function StageToday() {
             ) : (
               <a className="sty-mpill" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Join</a>
             )}
-            <button type="button" className="sty-mlook" data-look="" onClick={(e) => openLook(e.currentTarget)}
-              aria-haspopup="dialog" aria-label="Page look: light or dark, and how much color" title="Page look">
+            <button type="button" className="sty-mlook" data-look="" onClick={(e) => cycleSiteLook()}
+              aria-label="Change the look" title="Change the look">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
             </button>
           </span>

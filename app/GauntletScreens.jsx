@@ -34,13 +34,15 @@ import { holdThemeColor } from '@/lib/theme-color-hold';
 // The button on the stage is a separate switch with its own key: Plain is a
 // white page with black type and nothing coloured. The phone's top and bottom
 // bars are painted to match whichever look is on.
-import { LOOK_KEY, useStageLook, nextLook, LOOK_NAMES } from '@/lib/stage-look';
+import { LOOK_KEY, useStageLook, nextLook, LOOK_NAMES, isDarkLook } from '@/lib/stage-look';
 export { useStageLook };
 export const PLAIN = { bg: '#ffffff', ink: '#111111' };
 export const DARK = { bg: '#0b0f1a', ink: '#e9edf4', fill: '#1a2130' };
 export function stagePalette(pastel, look) {
   if (look === 'plain') return { ...PLAIN };
   if (look === 'dark') return { bg: DARK.bg, ink: DARK.ink };
+  // Black with color: the near-black page, the colour on the tiles, deepened so light type reads on it.
+  if (look === 'darktint') return { bg: DARK.bg, ink: DARK.ink, tile: `color-mix(in srgb, ${softGround(pastel)} 34%, ${DARK.bg})` };
   // FOUR LOOKS (owner, 2026-10-25): 'tint' is a white page with the colour on
   // the tiles and cards (`tile`); 'color' keeps the coloured page.
   if (look === 'tint') return { bg: '#ffffff', ink: INK, tile: softGround(pastel) };
@@ -125,9 +127,9 @@ function useStagePalette(pastel, edges) {
   return {
     ...p, look,
     plain: look === 'plain',
-    fill: (c) => (look === 'plain' ? PLAIN.bg : look === 'dark' ? DARK.fill : softGround(c)),
+    fill: (c) => (look === 'plain' ? PLAIN.bg : look === 'dark' ? DARK.fill : look === 'darktint' ? `color-mix(in srgb, ${softGround(c)} 34%, ${DARK.bg})` : softGround(c)),
     flip: () => setLook(nextLook(look)),
-    vars: { '--gsx-bg': p.bg, '--gsx-ink': p.ink, '--gsx-tray': look === 'plain' ? PLAIN.ink : look === 'dark' ? '#1e2636' : INK },
+    vars: { '--gsx-bg': p.bg, '--gsx-ink': p.ink, '--gsx-tray': look === 'plain' ? PLAIN.ink : isDarkLook(look) ? '#1e2636' : INK },
   };
 }
 export function LookButton({ look, onFlip, className = 'gsx-theme' }) {
@@ -187,7 +189,7 @@ export function GauntletCover({ sections = [] }) {
   return (
     <>
       <div id="gsx-cover" aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 90, background: softGround(c) }} />
-      <script dangerouslySetInnerHTML={{ __html: `try{var L=localStorage.getItem('${LOOK_KEY}');if(L==='plain'||L==='dark'||L==='tint'){var e=document.getElementById('gsx-cover');if(e)e.style.background=localStorage.getItem('${LOOK_KEY}')==='dark'?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
+      <script dangerouslySetInnerHTML={{ __html: `try{var L=localStorage.getItem('${LOOK_KEY}');if(L==='plain'||L==='dark'||L==='tint'||L==='darktint'||(!L&&localStorage.getItem('sot_theme2')==='dark')){var e=document.getElementById('gsx-cover');if(e)e.style.background=(L==='dark'||L==='darktint'||!L)?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
     </>
   );
 }

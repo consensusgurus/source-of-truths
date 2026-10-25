@@ -33,6 +33,7 @@
 //   * ONE COLOUR. The stage is near-black plus this game's category step and
 //     nothing else. That includes the primary button: see ctaFor in
 //     lib/category-ramp.js for why the brand blue does not belong here.
+import { cycleLook } from '@/lib/stage-look';
 import React, { useEffect, useRef, useState } from 'react';
 import ChallengeStrip from './ChallengeStrip';
 import OtherDeviceBar from './OtherDeviceBar';
@@ -420,9 +421,8 @@ export default function StageChrome({
         <button
           type="button"
           className={'stg-cx stg-theme' + (hint ? ' hint' : '')}
-          data-look="" onClick={(e) => (pastel.on ? pastel.flip() : openLook(e.currentTarget))}
-          aria-haspopup={pastel.on ? undefined : 'dialog'}
-          aria-label={pastel.on ? 'Change the look' : 'Page look: light or dark, and how much color'}
+          data-look="" onClick={() => cycleLook()}
+                    aria-label="Change the look"
           title={pastel.on ? 'Change the look' : 'Page look'}
         >
           {pastel.on ? (

@@ -684,7 +684,7 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
         const n = CELLS + 2;
         const CSS_T = `
 .tai-wrap{--tai-w:min(62px, calc((100vw - 28px - ${COLS - 1} * 10px) / ${COLS}));--tai-h:calc(var(--tai-w) * 1.39);--tai-off:calc(var(--tai-w) * .48);display:flex;flex-direction:column;gap:16px;}
-.tai-pc{box-sizing:border-box;width:var(--tai-w);height:var(--tai-h);border-radius:8px;background:#fff;border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:var(--pst-ink) !important;padding:0;font-size:calc(var(--tai-w) * .31);transition:transform .12s;}
+.tai-pc{box-sizing:border-box;width:var(--tai-w);height:var(--tai-h);border-radius:8px;background:#fff;border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:#16181d !important;padding:0;font-size:calc(var(--tai-w) * .31);transition:transform .12s;}
 .tai-pc i{font-style:normal;font-size:calc(var(--tai-w) * .26);margin-top:3px;color:inherit !important;}
 .tai-pc.red{color:#b4232c !important;}
 .tai-pc.bur{justify-content:flex-start;padding-top:6px;}

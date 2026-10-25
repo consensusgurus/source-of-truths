@@ -4,6 +4,7 @@
 // Stat Hub's pattern exactly: the root writes data-stage-theme from the shared
 // store in lib/stage-theme, so the light switch here and the one on every game
 // page are the same setting.
+import { cycleSiteLook } from '@/lib/stage-look';
 import React from 'react';
 import Link from 'next/link';
 import { useStageTheme, openLook } from '@/lib/stage-theme';
@@ -168,7 +169,7 @@ export default function GroupsShell({ eyebrow, children, links = DEFAULT_LINKS }
         <nav className="grp-capnav">
           <Link href="/quizzes/hub" className="grp-chip">Stat Hub</Link>
           <button type="button" className="grp-chip grp-tg"
-            data-look="" onClick={(e) => openLook(e.currentTarget)}
+            data-look="" onClick={(e) => cycleSiteLook()}
           aria-haspopup="dialog"
             aria-label="Page look: light or dark, and how much color"
             title="Page look">

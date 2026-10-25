@@ -618,7 +618,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
         const CSS_C = `
 .crb-wrap{--crb-w:min(54px, calc((100vw - 28px - 5 * 6px) / 6));display:flex;flex-direction:column;gap:16px;}
 .crb-row{display:grid;grid-template-columns:repeat(${hand.cards.length},var(--crb-w));justify-content:space-between;padding-top:12px;}
-.crb-pc{box-sizing:border-box;width:var(--crb-w);height:calc(var(--crb-w) * 1.52);border-radius:8px;background:#fff;border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:var(--pst-ink) !important;padding:0;font-size:calc(var(--crb-w) * .37);transition:transform .14s,opacity .14s;}
+.crb-pc{box-sizing:border-box;width:var(--crb-w);height:calc(var(--crb-w) * 1.52);border-radius:8px;background:#fff;border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:#16181d !important;padding:0;font-size:calc(var(--crb-w) * .37);transition:transform .14s,opacity .14s;}
 .crb-pc i{font-style:normal;font-size:calc(var(--crb-w) * .31);margin-top:3px;color:inherit !important;}
 .crb-pc.red{color:#b4232c !important;}
 .crb-pc.held{transform:translateY(-12px);background:var(--pst-ink);color:var(--pst-bg) !important;}

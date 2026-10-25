@@ -11,7 +11,6 @@ import ThanksPop from './ThanksPop';
 import EmailTicketPop from './EmailTicketPop';
 import { PriceCheckItemsGlobal } from './pricecheck/ItemsPop';
 import ChunkReload from './ChunkReload';
-import LookSheet from './LookSheet';
 import HydrationMark from './HydrationMark';
 import { getAllSources } from '@/lib/sources';
 import { T } from '@/lib/theme';
@@ -141,7 +140,7 @@ export default function RootLayout({ children }) {
             cap height is the reader's last measured one (LayoutCInner keeps
             it), so even that does not move. Blocking and inline for the same
             reason as the register stamp above. */}
-        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var M=" + PASTEL_ROUTES + ",p=location.pathname.replace(/\\/+$/,'')||'/',g=M[p];if(!g||!window.matchMedia('(max-width: 899px)').matches)return;var d=document.documentElement,l=window.localStorage.getItem('sot_gstage_look1');if(l!=='plain'&&l!=='dark'&&l!=='tint')l='color';d.setAttribute('data-stage-pastel',l);d.setAttribute('data-stage-boot','light');d.style.setProperty('--sp-g',g)}catch(e){}})();" }} />
+        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var M=" + PASTEL_ROUTES + ",p=location.pathname.replace(/\\/+$/,'')||'/',g=M[p];if(!g||!window.matchMedia('(max-width: 899px)').matches)return;var d=document.documentElement,l=window.localStorage.getItem('sot_gstage_look1');if(['color','tint','plain','darktint','dark'].indexOf(l)<0)l=window.localStorage.getItem('sot_theme2')==='dark'?'dark':'color';d.setAttribute('data-stage-pastel',l);d.setAttribute('data-stage-boot','light');d.style.setProperty('--sp-g',g)}catch(e){}})();" }} />
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{var R=" + LC_ROUTES + ",p=location.pathname.replace(/\\/+$/,'')||'/';if(R.indexOf(p)<0)return;var q=null;try{q=new URLSearchParams(location.search).get('layout')}catch(e){}var w=window.innerWidth;if(q==='off'||!(w>=1280||(q==='c'&&w>=1100)))return;var d=document.documentElement;d.classList.add('lc-pre');var h=parseInt(window.localStorage.getItem('sot_lc_hh'),10);if(h>30&&h<200)d.style.setProperty('--lc-hh',h+'px')}catch(e){}})();" }} />
         <script
           type="application/ld+json"
@@ -191,10 +190,6 @@ export default function RootLayout({ children }) {
             on an actual unlock. Anything added back here needs the owner's word
             first. */}
         <TrophyPop />
-        {/* The page look sheet (lib/stage-theme.js openLook): register and
-            colour level, opened from any cap's light glyph. Renders nothing
-            until opened. */}
-        <LookSheet />
         {/* Owner-approved (2026-10-04): the thank-you + share pop-up. Once on
             return for existing players (with share credit), once after a
             finished game for everyone. Never inside a run. app/ThanksPop.jsx. */}

@@ -746,6 +746,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-acc-ink: #08222e !important;
     --stg-acc-tint: rgba(8, 34, 46, 0.14) !important;
     --stg-sel: #08222e;
+    --stg-feed-soft: color-mix(in srgb, var(--sp-g, #c9d2fd) 55%, #ffffff);
     background: var(--sp-g, #c9d2fd) !important;
     color: #08222e;
   }
@@ -761,6 +762,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-surf2: var(--sp-g, #c9d2fd) !important;
     --stg-cell: var(--sp-g, #c9d2fd) !important;
     --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 70%, #ffffff) !important;
+    --stg-feed-soft: var(--sp-g, #c9d2fd);
     background: #ffffff !important;
   }
   /* Region boards (Quilt, Cages) wear the full pastels here. Periwinkle is
@@ -816,6 +818,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-acc-tint: rgba(17, 17, 17, 0.12) !important;
     --stg-sel: #111111;
     --stg-fieldink: 17, 17, 17 !important;
+    --stg-feed-soft: #cfd3d8;
     background: #ffffff !important;
     color: #111111;
   }
@@ -825,9 +828,9 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   /* BLACK AND WHITE, the third look (owner, 2026-10-24): a near-black page and
      light type, like the site's dark mode but with no colour at all. Region
      boards keep only their walls, as on Plain. */
-  html[data-stage-pastel='dark']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
-  html[data-stage-pastel='dark']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #0b0f1a !important; }
-  html[data-stage-pastel='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
+  html[data-stage-pastel^='dark']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
+  html[data-stage-pastel^='dark']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #0b0f1a !important; }
+  html[data-stage-pastel^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
     --stg-brand: #e9edf4 !important;
     --stg-ground: #0b0f1a !important;
     --stg-raise: #121826 !important;
@@ -860,12 +863,23 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-acc-tint: rgba(233, 237, 244, 0.14) !important;
     --stg-sel: #e9edf4;
     --stg-fieldink: 233, 237, 244 !important;
+    --stg-feed-soft: #2c3444;
     background: #0b0f1a !important;
     color: #e9edf4;
   }
-  html[data-stage-pastel='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
-  html[data-stage-pastel='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: #0b0f1a !important; }
-  html[data-stage-pastel='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--hue-ink"] { --hue-ink: #e9edf4 !important; }
+  html[data-stage-pastel^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
+  html[data-stage-pastel^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: #0b0f1a !important; }
+  html[data-stage-pastel^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--hue-ink"] { --hue-ink: #e9edf4 !important; }
+  /* BLACK WITH COLOR (owner, 2026-10-25): the dark look, with the category's
+     colour deepened onto the squares, chips and panels so light type reads. */
+  html[data-stage-pastel='darktint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
+    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 22%, #0b0f1a) !important;
+    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 26%, #0b0f1a) !important;
+    --stg-surf2: color-mix(in srgb, var(--sp-g, #c9d2fd) 36%, #0b0f1a) !important;
+    --stg-cell: color-mix(in srgb, var(--sp-g, #c9d2fd) 30%, #0b0f1a) !important;
+    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 30%, #0b0f1a) !important;
+    --stg-feed-soft: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #0b0f1a);
+  }
 }
 
 /* THE FIRST-LOAD DEMONSTRATION of the light switch (useThemeIntro in

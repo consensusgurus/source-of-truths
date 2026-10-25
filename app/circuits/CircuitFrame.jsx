@@ -25,6 +25,7 @@
 // Both registers are published as --stg-acc-dk / --stg-acc-lt and globals.css
 // picks one, exactly as every daily client does: an inline style beats a
 // stylesheet, so a root setting --stg-acc directly could never be re-themed.
+import { cycleSiteLook } from '@/lib/stage-look';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
 import ThemePop from '../ThemePop';
 import { categoryColor, categoryColorLight, categoryOnrampLight, categoryAccentInkLight } from '@/lib/category-ramp';
@@ -83,7 +84,7 @@ export default function CircuitFrame({ cat = null, label = 'Runs', progress = nu
         <button
           type="button"
           className={`cfr-cx cfr-tg${hint ? ' hint' : ''}`}
-          data-look="" onClick={(e) => openLook(e.currentTarget)}
+          data-look="" onClick={(e) => cycleSiteLook()}
           aria-haspopup="dialog"
           aria-label="Page look: light or dark, and how much color"
           title="Page look"

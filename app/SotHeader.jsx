@@ -20,6 +20,7 @@
 // here. Nothing else about it needs the client, and the ranking itself is
 // untouched by this: GridironTable is still a server component rendered as a
 // child of RankingsStage, so the board is still in the server HTML.
+import { cycleSiteLook } from '@/lib/stage-look';
 import Link from 'next/link';
 import { useStageTheme, useThemeHint, openLook } from '@/lib/stage-theme';
 
@@ -48,7 +49,7 @@ export default function SotHeader({ active }) {
         <button
           type="button"
           className={'stg-cx soth-th' + (hint ? ' hint' : '')}
-          data-look="" onClick={(e) => openLook(e.currentTarget)}
+          data-look="" onClick={(e) => cycleSiteLook()}
           aria-haspopup="dialog"
           aria-label="Page look: light or dark, and how much color"
           title="Page look"

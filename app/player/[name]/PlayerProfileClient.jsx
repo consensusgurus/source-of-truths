@@ -8,6 +8,7 @@
 // ProfileShared rather than an edit to it.
 //
 // Data is unchanged: /api/quiz/player?username=<name>.
+import { cycleSiteLook } from '@/lib/stage-look';
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { QUIZZES } from '@/lib/quizzes';
@@ -115,7 +116,7 @@ export default function PlayerProfileClient({ name }) {
           type="button"
           className="pf-cx"
           style={found && prof.rank ? undefined : { marginLeft: 'auto' }}
-          data-look="" onClick={(e) => openLook(e.currentTarget)}
+          data-look="" onClick={(e) => cycleSiteLook()}
           aria-haspopup="dialog"
           aria-label="Page look: light or dark, and how much color"
           title="Page look"
