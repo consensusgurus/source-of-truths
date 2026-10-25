@@ -10207,3 +10207,23 @@ weights (Emcee 12, Encore 20, Arcos 22, Glyph 22, Anon 24; Arcos and Glyph still
 above Encore) and `CROSSED_WEIGHT_BEFORE` for the four-game days, chosen by
 `crossedWeight(key, iso)`. The circuit carries a `before` roster through 2026-10-23,
 so no crowned day re-scores. AnonClient reads `useRunEmbed` like the other four.
+
+## End-card headlines and par (owner rule, 2026-10-25)
+
+Every daily's end-card headline comes from `lib/end-verdict.js`, never a hand-written string:
+`endGrade(score, total, top?)` (Solved! / Great job! / Good job! / Good effort), `endSolved(won)`,
+`endStreak(depth, total)` for the one-life gauntlets ("14 in a row!", "Flawless!", never "of 25"),
+`endEfficiency(won, finalScore)` for the move-budget games (Perfect! / Solved! / Good job!), and
+`ARCADE_RUN` ("Good run!"), which StageFinish upgrades to "Personal best!" on a PB. No headline
+starts with "Not"; a miss reads "Good effort", and in-board sublines read "Not yet ...".
+
+**Par appears only in instructions** (rules panel props, the start-gate how-to-play paragraph,
+the SEO prose). Never in stat tiles, meters, Sunday chips, done lines, the LoftFinish `detail`,
+the old end card, or share text. Detail lines carry the raw measure (moves, trades, rows, points,
+cells, apples). The ending compares against the FIELD instead: `/api/quiz/board` returns
+`guessMid` (median guesses_used over runs that scored, 5+ runs), printed as "Typical player 14
+moves" for games whose `CHALLENGE_METRIC` entry carries `field: 'guesses'`; and the self track
+adds a "Typical player" marker from the median of `scoreDist`. A miss on a SCORED game goes to the
+score track (average / best / typical / today), never the "0 of your last 7 solved" strip; a
+solve-only miss with zero solves shows the field's solve share instead. A new daily follows all
+of this from launch.
