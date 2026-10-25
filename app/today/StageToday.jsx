@@ -3742,7 +3742,7 @@ export default function StageToday() {
                     const rc = rampCat(cat);
                     const nd = games.filter((g) => done.has(g.key)).length;
                     return (
-                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat), { below: '.sty-mtop', label: 'b', target: '.mph-htx .t > span' })}>
+                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat), { below: '.sty-mtop', label: 'b', target: '.mph-htx .t > span', toTop: true })}>
                         <b>{catLabel(cat)}</b>
                         <em>{ixLens === 'cat' ? `${games.length} ${games.length === 1 ? 'game' : 'games'}${nd ? ` \u00b7 ${nd} played` : ''}` : `${nd} of ${games.length}`}</em>
                       </button>
@@ -6406,7 +6406,9 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .stage-page .sty-cap,.stage-page .sty-rhome,.stage-page .sty-pins{display:none !important;}
   .dbn{display:none !important;}
   .sty-mtop a{color:var(--mi);text-decoration:none;}
-  .sty-mtb{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  /* One height for the home row and every pane row (owner, 2026-10-25), so
+     opening or leaving a pane never moves anything under the header. */
+  .sty-mtb{display:flex;align-items:center;justify-content:space-between;gap:10px;height:42px;box-sizing:border-box;}
   .sty-mlogo{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:17px;letter-spacing:-.01em;}
   .sty-mtbr{display:inline-flex;align-items:center;gap:8px;min-width:0;}
   .sty-mpill{display:inline-block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:var(--mb);border-radius:999px;padding:6px 13px 7px;font-weight:800;font-size:13px;line-height:1.26;}

@@ -1160,3 +1160,10 @@ html:not([data-sot-hyd]) [data-sot-wait] > * {
     --stg-slot-on-ink: #0b0f1a;
   }
 }
+
+/* THE LANDING (owner, 2026-10-25): see app/layout.js. The colour the tile flood
+   left the last page in holds for a beat and fades, so the new page's header
+   comes up through it rather than appearing in one frame. */
+html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;pointer-events:none;background:var(--sot-land);animation:sotLand .34s cubic-bezier(.3,0,.2,1) .06s forwards;}
+@keyframes sotLand{to{opacity:0;visibility:hidden;}}
+@media (prefers-reduced-motion: reduce){html[data-sot-land]::after{display:none;}}
