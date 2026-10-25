@@ -75,6 +75,8 @@ import HomeInvite from '../groups/HomeInvite';
 // home. This is the form they open. See app/ChooseNamePop.jsx.
 import ChooseNamePop, { openChooseName } from '../ChooseNamePop';
 import { ChallengeBack, ChallengeRail, CapTickets } from '../ChallengeBack';
+import { useMyTickets } from '../TicketDoor';
+import { DRAWING, drawingIsLive, formatTickets } from '@/lib/drawing';
 import MindLoftMark from '../MindLoftMark';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
 import RollNum from '../RollNum';
@@ -145,6 +147,12 @@ function identityQs() {
   return p.toString();
 }
 
+function fmtShort(ymd) {
+  if (!ymd) return '';
+  const [y, m, d] = ymd.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
 function fmtDate(ymd) {
   if (!ymd) return '';
   const [y, m, d] = ymd.split('-').map(Number);
@@ -874,6 +882,9 @@ export default function StageToday() {
   // cap and that one cannot disagree. Name resolves after mount because it
   // reads localStorage.
   const stats = useDayStats();
+  const mTix = useMyTickets();
+  const [mDraw, setMDraw] = useState(false);
+  useEffect(() => { setMDraw(drawingIsLive()); }, []);
   const [who, setWho] = useState('');
   useEffect(() => { setWho(savedIdentity().username || ''); }, []);
   // The viewer's groups today. undefined while reading, null for no groups.
@@ -3423,6 +3434,8 @@ export default function StageToday() {
     ...skillCats.filter((c) => ixLens === 'skill' || paneOn === c.cat).map(paneSection),
   ];
 
+  const mGroup = grp && Array.isArray(grp.groups) && grp.groups.length ? grp.groups[0] : null;
+  const mPlayed = DAILY_GAMES.reduce((n, g) => n + (done.has(g.key) ? 1 : 0), 0);
   return (
     <div className="sty stage-page" data-stage-theme={stageTheme} ref={snapRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -3528,6 +3541,61 @@ export default function StageToday() {
             the switch and measure itself against it. */}
         <ThemePop />
         <LightOffer home />
+      </div>
+
+      {/* THE PHONE TOP (owner, 2026-10-24, option A of "Phone home, option A in
+          full"): the simple top bar, then day, group and all-time rank and
+          tickets in one row, the drawing as one outlined line, and the date with
+          today's progress as one status line. Every piece is a link. Phone only:
+          above 900px it draws nothing and the cap above stays as it was. */}
+      <div className="sty-mtop">
+        <div className="sty-mtb">
+          <a className="sty-mlogo" href="/" aria-label="Mind Loft home">
+            <MindLoftMark size={24} ink="var(--stg-ink)" accent="var(--stg-ink)" />
+            <span>Mind Loft</span>
+          </a>
+          <span className="sty-mtbr">
+            {who ? (
+              <a className="sty-mpill" href={withTq('/player/' + encodeURIComponent(who))}>{who}</a>
+            ) : (
+              <a className="sty-mpill" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Join</a>
+            )}
+            <button type="button" className="sty-mlook" data-look="" onClick={(e) => openLook(e.currentTarget)}
+              aria-haspopup="dialog" aria-label="Page look: light or dark, and how much color" title="Page look">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
+            </button>
+          </span>
+        </div>
+        <div className={'sty-mst' + (who ? '' : ' guest')}>
+          <a href="#sty-board" onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
+            <b>{who && stats.dayRank ? '#' + stats.dayRank : '\u2013'}</b><i>Day</i>
+          </a>
+          <a href={who && mGroup ? withTq('/groups/' + mGroup.code) : '/groups'} onClick={() => { if (who && mGroup) pickGroup(mGroup.code); }}>
+            <b>{who && mGroup && mGroup.rank ? '#' + mGroup.rank : '\u2013'}</b><i>Group</i>
+          </a>
+          <a href={withTq('/quizzes/hub')}>
+            <b>{who && rank ? '#' + rank : '\u2013'}</b><i>All time</i>
+          </a>
+          <a className="tk" href="/quizzes/community#drawing" title={`Your tickets for the ${DRAWING.prizeLabel} drawing`}>
+            <b>{who && mTix.count != null ? formatTickets(mTix.count) : who ? '\u2013' : '0'}</b><i>Tickets</i>
+          </a>
+          {who ? null : (
+            <a className="join" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Pick a name to keep a rank and earn tickets</a>
+          )}
+        </div>
+        {mDraw ? (
+          <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
+            <span><b>{DRAWING.prizeLabel} drawing</b> &middot; through {DRAWING.endLabel}</span>
+            <u>Ways to earn</u>
+          </a>
+        ) : null}
+        <a className="sty-mprog" href="/" onClick={(e) => {
+          e.preventDefault(); setPicked(false); setPane(ALL_ID);
+          try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (er) {}
+        }}>
+          <span><b>{fmtShort(day)}</b><em>{mPlayed} of {DAILY_GAMES.length} played today</em></span>
+          <i><s style={{ width: Math.round((mPlayed / Math.max(1, DAILY_GAMES.length)) * 100) + '%' }} /></i>
+        </a>
       </div>
 
       <div className="sty-wrap" ref={wrapRef}>
@@ -6110,4 +6178,67 @@ html[data-stage-color=full] .sty-deck:not(.done) .sty-dkp i.on{background:${RAMP
 html[data-stage-color=full] .sty-deck:not(.done):hover{border-color:${RAMP_INK};}
 html[data-stage-color=full] .sty-deck.on:not(.done){box-shadow:inset 0 0 0 2px ${RAMP_INK},3px -3px 0 -1.5px var(--stg-ground,var(--stg-bg,#fff)),3px -3px 0 0 color-mix(in srgb,var(--ph) 55%,transparent),6px -6px 0 -1.5px var(--stg-ground,var(--stg-bg,#fff)),6px -6px 0 0 color-mix(in srgb,var(--ph) 30%,transparent);}
 html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srgb, var(--phf) 22%, var(--stg-surf));}
+/* PHONE HOME, OPTION A (owner, 2026-10-24). Desktop draws none of it. */
+.sty-mtop{display:none;}
+@media (max-width:900px){
+  .sty-mtop{display:flex;flex-direction:column;gap:10px;padding:max(12px, env(safe-area-inset-top)) 16px 4px;--mi:var(--stg-ink);--mb:2px solid var(--stg-ink);}
+  .stage-page .sty-cap,.stage-page .sty-rhome,.stage-page .sty-pins{display:none !important;}
+  .sty-mtop a{color:var(--mi);text-decoration:none;}
+  .sty-mtb{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .sty-mlogo{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.01em;}
+  .sty-mtbr{display:inline-flex;align-items:center;gap:8px;min-width:0;}
+  .sty-mpill{display:inline-block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:var(--mb);border-radius:999px;padding:6px 13px 7px;font-weight:800;font-size:13px;line-height:1.26;}
+  .sty-mlook{width:34px;height:34px;border-radius:50%;border:var(--mb);background:transparent;color:var(--mi);display:inline-grid;place-items:center;padding:0;cursor:pointer;}
+  .sty-mst{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;}
+  .sty-mst > a{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:var(--mb);border-radius:12px;padding:8px 10px 9px;min-width:0;}
+  .sty-mst > a::after{content:"\\203A";position:absolute;top:4px;right:8px;font-size:14px;line-height:1;opacity:.55;}
+  .sty-mst > a b{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.26;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+  .sty-mst > a i{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.75;line-height:1.3;}
+  .sty-mst > a.tk{background:#fdd97c;border-color:#fdd97c;color:#08222e;}
+  .sty-mst > a.tk i{opacity:.8;}
+  .sty-mst.guest > a:not(.join):not(.tk) b{opacity:.45;}
+  .sty-mst > a.join{grid-column:1 / -1;flex-direction:row;align-items:center;justify-content:center;font-weight:800;font-size:13.5px;padding:10px 12px;}
+  .sty-mst > a.join::after{position:static;margin-left:6px;opacity:1;}
+  .sty-mdraw{display:flex;align-items:center;justify-content:space-between;gap:10px;border:var(--mb);border-radius:12px;padding:9px 12px 10px;font-size:12.5px;line-height:1.3;}
+  .sty-mdraw span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sty-mdraw u{flex:none;font-weight:800;text-underline-offset:3px;}
+  .sty-mprog{display:flex;flex-direction:column;gap:6px;padding:2px 2px 0;}
+  .sty-mprog > span{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:14px;line-height:1.3;}
+  .sty-mprog > span b{font-weight:800;}
+  .sty-mprog > span em{font-style:normal;font-variant-numeric:tabular-nums;opacity:.8;}
+  .sty-mprog > i{display:block;height:8px;border-radius:999px;border:2px solid var(--stg-ink);overflow:hidden;box-sizing:content-box;}
+  .sty-mprog > i s{display:block;height:100%;background:var(--stg-ink);text-decoration:none;}
+  .dbn{display:none !important;}
+
+  /* The index: soft fills, no icons, ink borders. Colour stays on dark. */
+  .sty-ixn:not(.re) .sty-ixb{border:2px solid var(--stg-ink);border-radius:14px;background:transparent;color:var(--stg-ink);}
+  .sty-ixn:not(.re) .sty-ixb > .sty-ixg,.sty-ixn:not(.re) .sty-ixb > i{display:none !important;}
+  .sty-ixn:not(.re) .sty-ixb:not(.on){grid-template-columns:minmax(0,1fr);}
+  .sty-ixn:not(.re) .sty-ixb:not(.on) > span,.sty-ixn:not(.re) .sty-ixb:not(.on) > .sty-ixct{grid-column:1 !important;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on{grid-template-columns:minmax(0,1fr) auto;}
+  .sty-ixn.pk:not(.re) .sty-ixb.on > span{grid-column:1 !important;}
+  .sty-ixn.pk:not(.re) .sty-ixb.ct.on{background:color-mix(in srgb, var(--cfull) 60%, #fff);border:2px solid color-mix(in srgb, var(--cfull) 60%, #fff);color:#08222e;}
+  [data-stage-theme=light] .sty-ixn.pk:not(.re) .sty-ixb.ct.on{border-color:#08222e;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re):has(> .sty-ixb.ct.on) > .sty-sortm{background:transparent;border-color:rgba(8,34,46,.35);}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re):has(> .sty-ixb.ct.on) > .sty-sortm button{color:#08222e;}
+  .sty-ix.mpk > .sty-ixn.pk:not(.re):has(> .sty-ixb.ct.on) > .sty-sortm button[aria-pressed="true"]{background:#08222e;color:#fff;}
+  .sty-ixn.pk:not(.re) .sty-ixb.ct.on .sty-ixbk{color:#08222e !important;}
+  .sty-ixn:not(.re) .sty-ixb.ct,
+  html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct{background:color-mix(in srgb, var(--cfull) 60%, #fff);border-color:color-mix(in srgb, var(--cfull) 60%, #fff);color:#08222e;}
+  [data-stage-theme=light] .sty-ixn:not(.re) .sty-ixb.ct{border-color:#08222e;}
+  .sty-ixn:not(.re) .sty-ixb.ct .sty-ixct,.sty-ixn:not(.re) .sty-ixb.ct .sty-ixbk,.sty-ixn:not(.re) .sty-ixb.ct > b,.sty-ixn:not(.re) .sty-ixb.ct > b em{color:#08222e !important;}
+  .sty-ixn:not(.re) .sty-ixb.cmp{box-shadow:none;}
+
+  /* An opened pane: its runs first as outlined rows, then soft puzzle tiles. */
+  .sty-skc .sty-rbig,.sty-skc .sty-ric{border:2px solid var(--stg-ink);border-radius:14px;}
+  .sty-skc .sty-games .sty-g{background:color-mix(in srgb, var(--cfull) 60%, #fff);border:2px solid color-mix(in srgb, var(--cfull) 60%, #fff);border-radius:14px;color:#08222e;opacity:1;}
+  [data-stage-theme=light] .sty-skc .sty-games .sty-g{border-color:#08222e;}
+  .sty-skc .sty-games .sty-g *{color:#08222e;}
+  .sty-skc .sty-games .sty-gn svg{display:none;}
+  .sty-skc .sty-games .sty-g.done,.sty-skc .sty-games .sty-g.grp{background:#fff;border-color:#08222e;}
+  .stage-page:not([data-stage-theme=light]) .sty-skc .sty-games .sty-g.done,
+  .stage-page:not([data-stage-theme=light]) .sty-skc .sty-games .sty-g.grp{background:#1a2130;border-color:color-mix(in srgb, var(--cfull) 60%, #fff);}
+  .stage-page:not([data-stage-theme=light]) .sty-skc .sty-games .sty-g.done *,
+  .stage-page:not([data-stage-theme=light]) .sty-skc .sty-games .sty-g.grp *{color:#e9edf4;}
+}
 `;
