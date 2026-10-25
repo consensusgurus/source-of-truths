@@ -665,7 +665,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     // figure a fixed 124px and centres it, so two long words ("quizzes",
     // "questions") sit shoulder to shoulder and read as one.
     return [
-      { v: `${N}`, k: GAUNT ? 'categories' : MATHRUN ? 'games' : 'quizzes' },
+      { v: `${N}`, k: GAUNT ? 'categories' : circuitId === 'math' ? 'games' : 'quizzes' },
       { v: '1', k: 'life each' },
     ];
   })();
