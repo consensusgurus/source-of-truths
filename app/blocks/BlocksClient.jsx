@@ -292,29 +292,22 @@ function MiniShape({ k, light, cell = 7 }) {
 // Phone stage layout for Blocks, scoped under blk- and read off the PlayStage
 // palette (--pst-ink / --pst-bg / --pst-tint), so every look recolours it.
 const STAGE_CSS = `
-.blk-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.blk-box{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;min-width:76px}
-.blk-mini{display:grid;grid-template-columns:repeat(4,12px);grid-auto-rows:12px;gap:2px;padding:8px;border:2px solid var(--pst-ink);border-radius:10px}
+.blk-hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.blk-box{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.blk-mini{display:grid;grid-template-columns:repeat(4,9px);grid-auto-rows:9px;gap:2px;padding:6px;border:2px solid var(--pst-ink);border-radius:9px}
+.blk-pause{min-height:40px;padding:0 14px;font-size:13px}
 .blk-mini i{border-radius:2px}
 .blk-mini i.p{background:var(--pst-ink)}
-.blk-score{text-align:center}
-.blk-score b{display:block;font-size:44px;line-height:1;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.blk-score{display:flex;align-items:baseline;gap:6px}
+.blk-score b{font-size:34px;line-height:1;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .blk-score span{font-size:13px;font-weight:800;opacity:.75}
 .blk-well{align-self:center;padding:5px;border:2px solid var(--pst-ink);border-radius:14px;background:color-mix(in srgb, var(--pst-ink) 6%, transparent)}
 .blk-paused{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:16px;background:color-mix(in srgb, var(--pst-bg) 88%, transparent);border-radius:9px;z-index:4}
 .blk-paused b{font-size:24px;font-weight:800}
 .blk-paused span{font-size:13px;font-weight:700;opacity:.8}
-.blk-bot{display:flex;flex-direction:column;gap:12px}
-.blk-pad{align-self:center;display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(2,56px);gap:6px}
+.blk-bot{display:flex;flex-direction:column;gap:10px}
+.blk-pad{align-self:stretch;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:56px;gap:8px}
 .blk-pad button{border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-.blk-pad .rot{grid-column:2;grid-row:1}
-.blk-pad .lft{grid-column:1;grid-row:2}
-.blk-pad .dwn{grid-column:2;grid-row:2}
-.blk-pad .rgt{grid-column:3;grid-row:2}
-.blk-how{text-align:center;font-size:12px;font-weight:700;opacity:.8}
-.blk-acts{display:flex;gap:8px;justify-content:center}
-.blk-acts .pst-tb{touch-action:none}
-.blk-acts .blk-dim{opacity:.45}
 .blk-foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
 .blk-bar{display:block;height:6px;border-radius:3px;background:color-mix(in srgb, var(--pst-ink) 18%, transparent);overflow:hidden;flex:1;margin:0 12px}
 .blk-bar i{display:block;height:100%;background:var(--pst-ink);transition:width .25s}
@@ -868,14 +861,15 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     const stg = stageOnRef.current;
     if (!cvs || (!stg && !box)) return;
     const phone = typeof window !== 'undefined' && window.innerWidth <= 640;
-    // On the phone stage the well sits between the Hold / score / Next row and
-    // the pad, pills and foot, so it gets the screen less those (about 450px
-    // of chrome) and the width less the stage gutters and its own frame.
+    // On the phone stage the well sits between one slim score / Pause / Next
+    // row and a single row of four pad keys (owner, 2026-10-25: the well needs
+    // the room), so it gets the screen less about 290px of chrome and the
+    // width less the stage gutters and its own frame.
     const fw = stg
-      ? Math.max(120, Math.min(380, (typeof window !== 'undefined' ? window.innerWidth : 390) - 28 - 14))
+      ? Math.max(120, Math.min(460, (typeof window !== 'undefined' ? window.innerWidth : 390) - 28 - 14))
       : Math.max(120, box.clientWidth - (phone ? 0 : 146));
-    const fh = stg ? stableVH() - 450 : stableVH() - (phone ? 310 : 300);
-    const cell = Math.max(14, Math.min(34, Math.floor(Math.min(fw / COLS, fh / ROWS))));
+    const fh = stg ? stableVH() - 290 : stableVH() - (phone ? 310 : 300);
+    const cell = Math.max(14, Math.min(stg ? 40 : 34, Math.floor(Math.min(fw / COLS, fh / ROWS))));
     cellRef.current = cell;
     const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
     cvs.width = COLS * cell * dpr; cvs.height = ROWS * cell * dpr;
@@ -1127,7 +1121,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       else if (k === 'ArrowUp' || k === 'x' || k === 'X') act('cw');
       else if (k === 'z' || k === 'Z') act('ccw');
       else if (k === ' ') act('drop');
-      else if (k === 'c' || k === 'C') act('hold');
+      // No Hold (owner, 2026-10-25): it is not part of Blocks.
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -1265,7 +1259,6 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       sub="Nine shapes: the seven you know, plus a corner and a plus. "
       steps={[
         <>Move with <b>&larr; &rarr;</b>, rotate with <b>&uarr;</b>, and hard drop with <b>space</b> on a keyboard or a <b>flick down the well</b> on a phone.</>,
-        <><b>Hold</b> a shape with <b>C</b> to save it for the gap it fits.</>,
         <>Complete a row to clear it, and clear on <b>consecutive shapes</b> to build a combo.</>,
         ...(TIER ? [<>Bigger clears pay more. One shape clearing <b>1 row</b> scores <b>1 point</b>, <b>2 rows</b> score <b>3</b>, <b>3 rows</b> score <b>4</b>, and <b>4 rows</b> score <b>6</b>.</>] : []),
         ...(BONUS ? [<>Clear <b>four rows with one shape</b> and it counts as <b>five</b>: a bonus row on top.</>] : []),
@@ -1310,10 +1303,12 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       top={(
         <>
           <style dangerouslySetInnerHTML={{ __html: STAGE_CSS }} />
+          {/* ONE SLIM ROW above the well (owner, 2026-10-25): the score, Pause,
+              and Next. No Hold, and nothing else, so the well gets the room. */}
           <div className="blk-hd">
-            <div className="blk-box">Hold<StageMini k={g.hold} /></div>
             <div className="blk-score" aria-live="polite"><b>{nf(rowsCleared)}</b><span>{UNIT}{rowsCleared === 1 ? '' : 's'}</span></div>
-            <div className="blk-box">Next<StageMini k={SEQ[g.idx]} /></div>
+            <button type="button" className={'pst-tb blk-pause' + (paused ? ' on' : '')} onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'}>{paused ? 'Resume' : 'Pause'}</button>
+            <div className="blk-box"><span>Next</span><StageMini k={SEQ[g.idx]} /></div>
           </div>
           <div className="blk-well">{wellEl}</div>
         </>
@@ -1321,15 +1316,10 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       bottom={(
         <div className="blk-bot">
           <div className="blk-pad">
-            <button type="button" className="rot" {...tapProps('cw')} aria-label="Rotate">&#8635;</button>
             <button type="button" className="lft" {...holdProps('left')} aria-label="Move left">&#9664;</button>
+            <button type="button" className="rot" {...tapProps('cw')} aria-label="Rotate">&#8635;</button>
             <button type="button" className="dwn" {...holdProps('down')} aria-label="Soft drop">&#9660;</button>
             <button type="button" className="rgt" {...holdProps('right')} aria-label="Move right">&#9654;</button>
-          </div>
-          <div className="blk-how">Flick down the well to drop &middot; swipe to move, tap to rotate</div>
-          <div className="blk-acts">
-            <button type="button" className={'pst-tb' + (g.held ? ' blk-dim' : '')} {...tapProps('hold')} aria-label={g.held ? 'Hold, already used for this shape' : 'Hold this shape'}>Hold</button>
-            <button type="button" className={'pst-tb' + (paused ? ' on' : '')} onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'}>{paused ? 'Resume' : 'Pause'}</button>
           </div>
           <div className="blk-foot">
             <span>Best today {nf(bestToday)}</span>
@@ -1426,16 +1416,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
               <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: '#94a3b8' }}>
                 Next <span style={{ marginLeft: 4 }}><MiniShape k={SEQ[g.idx]} light={LIGHT} /></span>
               </span>
-              {/* Hold sits up here rather than in the thumb zone: it is used a
-                  fraction as often as move and rotate, and the dock below is
-                  worth more to the two hands actually playing. */}
-              <button
-                {...tapProps('hold')}
-                style={{ marginLeft: 'auto', border: `1px solid ${COLORS.line}`, background: g.held ? 'var(--stg-surf, #f1f5f9)' : 'var(--stg-surf, #fff)', color: g.held ? '#94a3b8' : COLORS.faded, borderRadius: 7, padding: '5px 10px', fontSize: 10.5, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer', touchAction: 'none' }}
-              >
-                Hold{g.hold ? <span style={{ marginLeft: 6, opacity: g.held ? 0.45 : 1 }}><MiniShape k={g.hold} light={LIGHT} cell={6} /></span> : null}
-              </button>
-              <button onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'} style={{ border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, background: STAGE ? SURF : '#fff', color: FADED, borderRadius: 7, width: 30, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <button onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'} style={{ marginLeft: 'auto', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, background: STAGE ? SURF : '#fff', color: FADED, borderRadius: 7, width: 30, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 {paused ? <Play size={14} /> : <Pause size={14} />}
               </button>
               <button onClick={() => setShowHelp(true)} aria-label="How to play" style={{ border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, background: STAGE ? SURF : '#fff', color: FADED, borderRadius: 7, width: 30, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
@@ -1505,7 +1486,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
               </div>
             </div>
             <div className="bl-keys" style={{ display: touchOnly ? 'none' : 'block', textAlign: 'center', marginTop: 9, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.03em', color: '#9aa2b1' }}>
-              &larr; &rarr; move &middot; &darr; soft drop &middot; &uarr; / Z rotate &middot; space hard drop &middot; C hold &middot; P pause
+              &larr; &rarr; move &middot; &darr; soft drop &middot; &uarr; / Z rotate &middot; space hard drop &middot; P pause
             </div>
             <div className="bl-touchhint" style={{ display: touchOnly ? 'block' : 'none', textAlign: 'center', marginTop: 8, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.03em', color: '#9aa2b1' }}>
               Flick down the well to hard drop &middot; or swipe to move and tap to rotate &middot; hold an arrow to repeat
