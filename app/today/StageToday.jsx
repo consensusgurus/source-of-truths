@@ -3434,10 +3434,22 @@ export default function StageToday() {
     ...skillCats.filter((c) => ixLens === 'skill' || paneOn === c.cat).map(paneSection),
   ];
 
+  // THE PHONE HOME'S OWN PIECES (owner, 2026-10-24, option A in full).
+  const mph = !picked || paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID || !!paneCat(paneOn);
+  const mTone = (cat) => ({ '--mc': categoryColor(cat), '--md': categoryAccentInkLight(cat) });
+  const mRunsFor = (cat) => {
+    const sk = skillOfId(cat);
+    return PILL_CIRCUITS.map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
+      || (sk ? c.games.some((g) => hasSkill(g.key, sk.id)) || (PILL_EXTRA[c.id] || []).includes(sk.pane)
+        : c.games.some((g) => g.cat === cat) || (PILL_EXTRA[c.id] || []).includes(cat))));
+  };
+  const mTop = () => { try { requestAnimationFrame(() => window.scrollTo(0, 0)); } catch (e) {} };
+  const mOpen = (id) => { pickPane(id); mTop(); };
+  const mBack = () => { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (e) {} mTop(); };
   const mGroup = grp && Array.isArray(grp.groups) && grp.groups.length ? grp.groups[0] : null;
   const mPlayed = DAILY_GAMES.reduce((n, g) => n + (done.has(g.key) ? 1 : 0), 0);
   return (
-    <div className="sty stage-page" data-stage-theme={stageTheme} ref={snapRef}>
+    <div className={'sty stage-page' + (mph ? ' mph-on' : '')} data-stage-theme={stageTheme} ref={snapRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {/* THE ENTRY DOOR: first visit then weekly, always dark, replaced the daily arrival. See app/EntryDoor.jsx. */}
       {/* A SKILL TILE OPENS THAT SKILL'S PANE (owner, 2026-10-18), and shows the
@@ -3668,6 +3680,126 @@ export default function StageToday() {
         {/* THE RUNS LEAD THE PHONE'S HOME TOO (owner, 2026-10-13), above the
             category tiles, the same block All Puzzles opens with. Phone only:
             the block draws nothing above 900px. */}
+        {/* THE PHONE HOME, OPTION A IN FULL (owner, 2026-10-24): its own clean
+            render of the index and of every games pane, so nothing of the old
+            tile system leaks in. Light tints with an outline in the category's
+            colour, the same tile for a run as for a puzzle. Draws nothing above
+            900px; the old index takes over again for the info panes (Runs,
+            Quizzes, Leaderboards, Tests, Most Appreciated). */}
+        {mph ? (
+          <div className="sty-mph">
+            {!picked ? (
+              <>
+                <div className="mph-seg" role="group" aria-label="Group puzzles by">
+                  <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
+                  <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
+                </div>
+                <div className="mph-duo">
+                  <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}>All puzzles<em>{alphaDone} of {alpha.length}</em></button>
+                  <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}>My puzzles<em>{pinned.length ? `${pinned.length} starred` : 'Star any puzzle'}</em></button>
+                </div>
+                <div className="mph-grid">
+                  {lensCats.map(({ cat, games }) => {
+                    const rc = rampCat(cat);
+                    const runs = ixLens === 'cat' ? mRunsFor(cat).map((c) => c.name) : [];
+                    return (
+                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={() => mOpen(cat)}>
+                        <b>{catLabel(cat)}</b>
+                        <em>{games.filter((g) => done.has(g.key)).length} of {games.length}</em>
+                        {runs.length ? <small>Runs: {runs.join(', ')}</small> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="mph-lab">Everything else</div>
+                <div className="mph-list">
+                  <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<span>&rarr;</span></button>
+                  <button type="button" onClick={() => goPane(QUIZ_ID)}>Quizzes<span>&rarr;</span></button>
+                  <button type="button" onClick={() => goPane(BOARD_ID)}>Leaderboards + Stats<span>&rarr;</span></button>
+                  <a href={withTq('/archive')}>Puzzle Archive<span>&rarr;</span></a>
+                  <button type="button" onClick={() => goPane(COMM_ID)}>Most Appreciated<span>&rarr;</span></button>
+                  <button type="button" onClick={() => goPane(IQ_ID)}>IQ Tests<span>&rarr;</span></button>
+                  <button type="button" onClick={() => goPane(EXAM_ID)}>School Tests<span>&rarr;</span></button>
+                  <a href="/kids">Kids<span>&rarr;</span></a>
+                  <a href={withTq('/lists')}>Top 10 Lists<span>&rarr;</span></a>
+                </div>
+              </>
+            ) : (() => {
+              const isAll = paneOn === ALL_ID;
+              const isMine = paneOn === MINE_ID;
+              const isRuns = paneOn === CIRC_ID;
+              const pc = !isAll && !isMine && !isRuns ? paneCat(paneOn) : null;
+              const games = isAll ? alpha : isMine ? pinned : pc ? pc.games : [];
+              const sorted = isMine ? [...games].sort((a, b) => a.name.localeCompare(b.name)) : sortGames(games);
+              const runs = isMine ? pinnedCircs : isRuns ? [...circuits].sort((a, b) => runFull(a) - runFull(b)) : mRunsFor(isAll ? null : paneOn);
+              const nDone = games.filter((g) => done.has(g.key)).length;
+              const s = pc ? skillOfId(paneOn) : null;
+              const title = isAll ? 'All puzzles' : isMine ? 'My puzzles' : isRuns ? 'Runs' : catLabel(paneOn);
+              const backTo = isAll || isMine || isRuns ? 'Home' : ixLens === 'skill' ? 'All skills' : 'All categories';
+              const mainTone = pc ? mTone(rampCat(paneOn)) : null;
+              return (
+                <>
+                  <button type="button" className="mph-back" onClick={mBack}>&larr; {backTo}</button>
+                  <div className={'mph-band' + (pc ? '' : ' plain')} style={mainTone || undefined}>
+                    <b>{title}</b>
+                    <em>{isRuns ? `${runs.filter(runFull).length} of ${runs.length} finished today` : `${nDone} of ${games.length} played today`}</em>
+                    {s ? <small>{s.what}.</small> : null}
+                  </div>
+                  {runs.length && !isRuns ? <div className="mph-lab">Runs</div> : null}
+                  {runs.map((c) => {
+                    const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+                    const fin = runFull(c);
+                    const line = !st ? null : fin && st.rank ? `Played · #${st.rank} of ${fmtN(st.players)}` : `${fmtN(st.players)} played today`;
+                    return (
+                      <a key={c.id} className={'mph-run' + (fin ? ' done' : '')} href={withTq(circuitEntryHref(c.id))} style={mTone(pc ? rampCat(paneOn) : pillCat(c, null))}>
+                        <span className="tx">
+                          <i>Run</i>
+                          <b>{c.name}</b>
+                          {c.blurb ? <em>{c.blurb}</em> : null}
+                          {line ? <small>{line}</small> : null}
+                        </span>
+                        <span className="go">{fin ? 'Board' : 'Play'}</span>
+                      </a>
+                    );
+                  })}
+                  {games.length ? (
+                    <div className="mph-srt" role="group" aria-label="Sort puzzles">
+                      <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}>Popular</button>
+                      <button type="button" aria-pressed={sortBy === 'diff'} onClick={() => pickSort('diff')}>Easy to hard</button>
+                      <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A to Z</button>
+                    </div>
+                  ) : null}
+                  {games.length ? <div className="mph-lab">Puzzles</div> : null}
+                  {isMine && !games.length ? (
+                    <p className="mph-note">{who ? 'Nothing starred yet. Tap the star on any puzzle and it shows up here.' : 'Pick a name, then star any puzzle and it shows up here.'}</p>
+                  ) : null}
+                  <div className="mph-gg">
+                    {sorted.map((g) => {
+                      const isDone = done.has(g.key);
+                      const r = standBy[g.key];
+                      const on = !!(favorites && favorites.includes(g.key));
+                      return (
+                        <a key={g.key} className={'mph-g' + (isDone ? ' done' : '')} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`} style={mTone(g.cat)}>
+                          <b>{g.name}</b>
+                          <em>{g.tag}</em>
+                          <small>{isDone ? (r ? `You #${r.rank} of ${r.field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>
+                          {canPin ? (
+                            <button type="button" className={'st' + (on ? ' on' : '')} aria-label={on ? `Unstar ${g.name}` : `Star ${g.name}`}
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(g.key); }}>
+                              <svg viewBox="0 0 24 24" width="13" height="13" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M12 4l2.4 5 5.6.8-4 3.9 1 5.5-5-2.7-5 2.7 1-5.5-4-3.9 5.6-.8z" />
+                              </svg>
+                            </button>
+                          ) : null}
+                        </a>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        ) : null}
         {!picked ? <div className="sty-rhome">{circPills(null, true)}</div> : null}
         <div ref={ixRef} className={(ix ? 'sty-ix' : 'sty-ixw') + (picked ? ' mpk' : ' msel') + (ix && gamePane ? ' rl' : '')}>
         {ixNav}
@@ -6178,67 +6310,87 @@ html[data-stage-color=full] .sty-deck:not(.done) .sty-dkp i.on{background:${RAMP
 html[data-stage-color=full] .sty-deck:not(.done):hover{border-color:${RAMP_INK};}
 html[data-stage-color=full] .sty-deck.on:not(.done){box-shadow:inset 0 0 0 2px ${RAMP_INK},3px -3px 0 -1.5px var(--stg-ground,var(--stg-bg,#fff)),3px -3px 0 0 color-mix(in srgb,var(--ph) 55%,transparent),6px -6px 0 -1.5px var(--stg-ground,var(--stg-bg,#fff)),6px -6px 0 0 color-mix(in srgb,var(--ph) 30%,transparent);}
 html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srgb, var(--phf) 22%, var(--stg-surf));}
-/* PHONE HOME, OPTION A (owner, 2026-10-24). Desktop draws none of it. */
-.sty-mtop{display:none;}
+/* PHONE HOME, OPTION A IN FULL (owner, 2026-10-24). Desktop draws none of it. */
+.sty-mtop,.sty-mph{display:none;}
 @media (max-width:900px){
-  .sty-mtop{display:flex;flex-direction:column;gap:10px;padding:max(12px, env(safe-area-inset-top)) 16px 4px;--mi:var(--stg-ink);--mb:2px solid var(--stg-ink);}
+  .sty-mtop{display:flex;flex-direction:column;gap:12px;padding:max(12px, env(safe-area-inset-top)) 16px 2px;--mi:var(--stg-ink);--mb:2px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
   .stage-page .sty-cap,.stage-page .sty-rhome,.stage-page .sty-pins{display:none !important;}
+  .dbn{display:none !important;}
   .sty-mtop a{color:var(--mi);text-decoration:none;}
   .sty-mtb{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-  .sty-mlogo{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.01em;}
+  .sty-mlogo{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:17px;letter-spacing:-.01em;}
   .sty-mtbr{display:inline-flex;align-items:center;gap:8px;min-width:0;}
   .sty-mpill{display:inline-block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:var(--mb);border-radius:999px;padding:6px 13px 7px;font-weight:800;font-size:13px;line-height:1.26;}
   .sty-mlook{width:34px;height:34px;border-radius:50%;border:var(--mb);background:transparent;color:var(--mi);display:inline-grid;place-items:center;padding:0;cursor:pointer;}
-  .sty-mst{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;}
-  .sty-mst > a{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:var(--mb);border-radius:12px;padding:8px 10px 9px;min-width:0;}
-  .sty-mst > a::after{content:"\\203A";position:absolute;top:4px;right:8px;font-size:14px;line-height:1;opacity:.55;}
-  .sty-mst > a b{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.26;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
-  .sty-mst > a i{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.75;line-height:1.3;}
-  .sty-mst > a.tk{background:#fdd97c;border-color:#fdd97c;color:#08222e;}
-  .sty-mst > a.tk i{opacity:.8;}
+  .sty-mst{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:var(--mb);border-radius:14px;overflow:hidden;}
+  .sty-mst > a{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 6px 9px;min-width:0;border-left:1.5px solid var(--mln);}
+  .sty-mst > a:first-child{border-left:0;}
+  .sty-mst > a::after{content:"";position:absolute;right:6px;top:8px;width:5px;height:5px;border-top:1.5px solid currentColor;border-right:1.5px solid currentColor;transform:rotate(45deg);opacity:.5;}
+  .sty-mst > a b{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.26;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+  .sty-mst > a i{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;line-height:1.3;}
+  .sty-mst > a.tk{background:#fde7ad;color:#08222e;}
+  .stage-page:not([data-stage-theme=light]) .sty-mst > a.tk{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--mi);}
   .sty-mst.guest > a:not(.join):not(.tk) b{opacity:.45;}
-  .sty-mst > a.join{grid-column:1 / -1;flex-direction:row;align-items:center;justify-content:center;font-weight:800;font-size:13.5px;padding:10px 12px;}
-  .sty-mst > a.join::after{position:static;margin-left:6px;opacity:1;}
-  .sty-mdraw{display:flex;align-items:center;justify-content:space-between;gap:10px;border:var(--mb);border-radius:12px;padding:9px 12px 10px;font-size:12.5px;line-height:1.3;}
+  .sty-mst > a.join{grid-column:1 / -1;border-left:0;border-top:1.5px solid var(--mln);flex-direction:row;justify-content:center;font-weight:800;font-size:13px;padding:10px;}
+  .sty-mst > a.join::after{display:none;}
+  .sty-mdraw{display:flex;align-items:center;justify-content:space-between;gap:10px;border:var(--mb);border-radius:12px;padding:8px 11px 9px;font-size:12.5px;line-height:1.3;}
   .sty-mdraw span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sty-mdraw u{flex:none;font-weight:800;text-underline-offset:3px;}
-  .sty-mprog{display:flex;flex-direction:column;gap:6px;padding:2px 2px 0;}
-  .sty-mprog > span{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:14px;line-height:1.3;}
+  .sty-mprog{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;}
+  .sty-mprog > span{display:flex;align-items:baseline;justify-content:space-between;gap:10px;line-height:1.3;}
   .sty-mprog > span b{font-weight:800;}
-  .sty-mprog > span em{font-style:normal;font-variant-numeric:tabular-nums;opacity:.8;}
-  .sty-mprog > i{display:block;height:8px;border-radius:999px;border:2px solid var(--stg-ink);overflow:hidden;box-sizing:content-box;}
+  .sty-mprog > span em{font-style:normal;font-variant-numeric:tabular-nums;}
+  .sty-mprog > i{display:block;height:6px;border-radius:3px;background:var(--mln);overflow:hidden;}
   .sty-mprog > i s{display:block;height:100%;background:var(--stg-ink);text-decoration:none;}
-  .dbn{display:none !important;}
 
-  /* The index: soft fills, no icons, ink borders. Colour stays on dark. */
-  .sty-ixn:not(.re) .sty-ixb{border:2px solid var(--stg-ink);border-radius:14px;background:transparent;color:var(--stg-ink);}
-  .sty-ixn:not(.re) .sty-ixb > .sty-ixg,.sty-ixn:not(.re) .sty-ixb > i{display:none !important;}
-  .sty-ixn:not(.re) .sty-ixb:not(.on){grid-template-columns:minmax(0,1fr);}
-  .sty-ixn:not(.re) .sty-ixb:not(.on) > span,.sty-ixn:not(.re) .sty-ixb:not(.on) > .sty-ixct{grid-column:1 !important;}
-  .sty-ixn.pk:not(.re) .sty-ixb.on{grid-template-columns:minmax(0,1fr) auto;}
-  .sty-ixn.pk:not(.re) .sty-ixb.on > span{grid-column:1 !important;}
-  .sty-ixn.pk:not(.re) .sty-ixb.ct.on{background:color-mix(in srgb, var(--cfull) 60%, #fff);border:2px solid color-mix(in srgb, var(--cfull) 60%, #fff);color:#08222e;}
-  [data-stage-theme=light] .sty-ixn.pk:not(.re) .sty-ixb.ct.on{border-color:#08222e;}
-  .sty-ix.mpk > .sty-ixn.pk:not(.re):has(> .sty-ixb.ct.on) > .sty-sortm{background:transparent;border-color:rgba(8,34,46,.35);}
-  .sty-ix.mpk > .sty-ixn.pk:not(.re):has(> .sty-ixb.ct.on) > .sty-sortm button{color:#08222e;}
-  .sty-ix.mpk > .sty-ixn.pk:not(.re):has(> .sty-ixb.ct.on) > .sty-sortm button[aria-pressed="true"]{background:#08222e;color:#fff;}
-  .sty-ixn.pk:not(.re) .sty-ixb.ct.on .sty-ixbk{color:#08222e !important;}
-  .sty-ixn:not(.re) .sty-ixb.ct,
-  html[data-stage-color=full] .sty-ixn:not(.re) .sty-ixb.ct{background:color-mix(in srgb, var(--cfull) 60%, #fff);border-color:color-mix(in srgb, var(--cfull) 60%, #fff);color:#08222e;}
-  [data-stage-theme=light] .sty-ixn:not(.re) .sty-ixb.ct{border-color:#08222e;}
-  .sty-ixn:not(.re) .sty-ixb.ct .sty-ixct,.sty-ixn:not(.re) .sty-ixb.ct .sty-ixbk,.sty-ixn:not(.re) .sty-ixb.ct > b,.sty-ixn:not(.re) .sty-ixb.ct > b em{color:#08222e !important;}
-  .sty-ixn:not(.re) .sty-ixb.cmp{box-shadow:none;}
-
-  /* An opened pane: its runs first as outlined rows, then soft puzzle tiles. */
-  .sty-skc .sty-rbig,.sty-skc .sty-ric{border:2px solid var(--stg-ink);border-radius:14px;}
-  .sty-skc .sty-games .sty-g{background:color-mix(in srgb, var(--cfull) 60%, #fff);border:2px solid color-mix(in srgb, var(--cfull) 60%, #fff);border-radius:14px;color:#08222e;opacity:1;}
-  [data-stage-theme=light] .sty-skc .sty-games .sty-g{border-color:#08222e;}
-  .sty-skc .sty-games .sty-g *{color:#08222e;}
-  .sty-skc .sty-games .sty-gn svg{display:none;}
-  .sty-skc .sty-games .sty-g.done,.sty-skc .sty-games .sty-g.grp{background:#fff;border-color:#08222e;}
-  .stage-page:not([data-stage-theme=light]) .sty-skc .sty-games .sty-g.done,
-  .stage-page:not([data-stage-theme=light]) .sty-skc .sty-games .sty-g.grp{background:#1a2130;border-color:color-mix(in srgb, var(--cfull) 60%, #fff);}
-  .stage-page:not([data-stage-theme=light]) .sty-skc .sty-games .sty-g.done *,
-  .stage-page:not([data-stage-theme=light]) .sty-skc .sty-games .sty-g.grp *{color:#e9edf4;}
+  /* The phone's own index and panes replace the old index whenever they are up. */
+  .stage-page.mph-on .sty-ix,.stage-page.mph-on .sty-ixw{display:none !important;}
+  .sty-mph{display:flex;flex-direction:column;gap:10px;margin:2px 0 18px;color:var(--stg-ink);
+    --mink:#08222e;--mline:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
+  .sty-mph :where(button){font:inherit;cursor:pointer;}
+  .sty-mph :where(a){text-decoration:none;color:inherit;}
+  .mph-seg{display:flex;border:2px solid var(--stg-ink);border-radius:999px;padding:3px;}
+  .mph-seg button{flex:1;border:0;background:transparent;color:var(--stg-ink);border-radius:999px;padding:7px 0 8px;font-weight:800;font-size:12.5px;line-height:1.26;}
+  .mph-seg button[aria-pressed="true"],.mph-srt button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground, var(--stg-bg, #fff));}
+  .mph-duo{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .mph-big{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border:2px solid var(--stg-ink);border-radius:14px;background:transparent;color:var(--stg-ink);padding:10px 12px;font-weight:800;font-size:14.5px;line-height:1.26;}
+  .mph-big em,.mph-t em,.mph-g em,.mph-run em,.mph-band em{font-style:normal;font-weight:600;font-size:12px;line-height:1.35;}
+  /* THE TONE (owner, 2026-10-24): every fill is the lighter intensity, the
+     category step taken 40% toward white, with dark ink, in both registers. */
+  .sty-mph .mph-t,.sty-mph .mph-g,.sty-mph .mph-run,.sty-mph .mph-band{background:color-mix(in srgb, var(--mc) 60%, #fff);border:2px solid var(--mink);color:var(--mink);}
+  .stage-page:not([data-stage-theme=light]) .mph-t,.stage-page:not([data-stage-theme=light]) .mph-g,
+  .stage-page:not([data-stage-theme=light]) .mph-run,.stage-page:not([data-stage-theme=light]) .mph-band{border-color:color-mix(in srgb, var(--mc) 60%, #fff);}
+  .mph-grid,.mph-gg{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .mph-t{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border-radius:14px;padding:10px 12px 11px;}
+  .mph-t b{font-size:14px;font-weight:800;line-height:1.26;}
+  .mph-t small{font-size:10.5px;font-weight:700;line-height:1.3;margin-top:4px;}
+  .mph-lab{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-top:6px;}
+  .mph-list{display:flex;flex-direction:column;border:2px solid var(--stg-ink);border-radius:14px;overflow:hidden;}
+  .mph-list > *{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;border-top:1.5px solid var(--mline);background:transparent;color:var(--stg-ink);padding:11px 12px 12px;font-weight:700;font-size:14px;line-height:1.26;text-align:left;}
+  .mph-list > :first-child{border-top:0;}
+  .mph-back{align-self:flex-start;border:0;background:transparent;color:var(--stg-ink);font-weight:800;font-size:13px;padding:2px 0;}
+  .mph-band{display:flex;flex-direction:column;gap:2px;border-radius:16px;padding:12px 14px 13px;}
+  .mph-band.plain{background:transparent;border-color:var(--stg-ink);color:var(--stg-ink);}
+  .mph-band b{font-size:20px;font-weight:800;line-height:1.26;}
+  .mph-band small{font-size:12px;font-weight:600;line-height:1.35;margin-top:2px;opacity:.85;}
+  .mph-run{display:flex;align-items:center;gap:10px;border-radius:14px;padding:11px 12px 12px;}
+  .mph-run .tx{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .mph-run em{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .mph-run i{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
+  .mph-run b{font-size:16px;font-weight:800;line-height:1.26;}
+  .mph-run small,.mph-g small{font-size:11.5px;font-weight:800;line-height:1.3;margin-top:3px;}
+  .mph-run .go{flex:none;border-radius:11px;padding:9px 14px 10px;font-weight:800;font-size:13px;background:var(--mink);color:#fff;}
+  .sty-mph .mph-run.done,.sty-mph .mph-g.done{background:#fff;}
+  .stage-page:not([data-stage-theme=light]) .sty-mph .mph-run.done,.stage-page:not([data-stage-theme=light]) .sty-mph .mph-g.done{background:#1a2130;color:#e9edf4;}
+  .stage-page:not([data-stage-theme=light]) .mph-run.done .go{color:#e9edf4;}
+  .mph-run.done .go{background:transparent;color:inherit;border:2px solid currentColor;padding:7px 12px 8px;}
+  .mph-srt{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+  .mph-srt button{border:2px solid var(--stg-ink);background:transparent;color:var(--stg-ink);border-radius:999px;padding:5px 11px 6px;font-size:12px;font-weight:800;line-height:1.26;}
+  .mph-g{position:relative;display:flex;flex-direction:column;gap:1px;border-radius:12px;padding:9px 10px 10px;min-width:0;}
+  .mph-g b{font-size:14.5px;font-weight:800;line-height:1.26;padding-right:18px;}
+  .mph-g em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mph-g .st{position:absolute;top:6px;right:6px;width:24px;height:24px;display:grid;place-items:center;border:0;background:transparent;color:inherit;opacity:.45;padding:0;}
+  .mph-g .st.on{opacity:1;color:#c48a00;}
+  .mph-note{margin:0;font-size:13px;font-weight:600;line-height:1.45;opacity:.85;}
 }
 `;
