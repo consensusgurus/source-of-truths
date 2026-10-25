@@ -82,7 +82,7 @@ import MindLoftMark from '../MindLoftMark';
 import { useStageChrome } from '../GauntletScreens';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
 import RollNum from '../RollNum';
-import { floodNav } from '@/lib/tile-flood';
+import { floodNav, floodIn } from '@/lib/tile-flood';
 import useFlip from '../useFlip';
 // THE FOOTER IS SHARED (2026-08-31). It used to be drawn here, because this
 // was the only stage surface that needed one; the circuit pages needed the
@@ -3704,7 +3704,7 @@ export default function StageToday() {
                     const rc = rampCat(cat);
                     const nd = games.filter((g) => done.has(g.key)).length;
                     return (
-                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={() => mOpen(cat)}>
+                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat))}>
                         <b>{catLabel(cat)}</b>
                         <em>{ixLens === 'cat' ? `${games.length} ${games.length === 1 ? 'game' : 'games'}${nd ? ` \u00b7 ${nd} played` : ''}` : `${nd} of ${games.length}`}</em>
                       </button>
@@ -3778,7 +3778,26 @@ export default function StageToday() {
                     {s ? <small>{s.what}.</small> : null}
                   </div>
                   {runs.length && !isRuns ? <div className="mph-lab">Runs</div> : null}
-                  {runs.map((c) => {
+                  {/* RUNS AS A COMPACT STRIP (owner, 2026-10-25): inside a category,
+                      skill, All or My pane the runs are small chips in at most two
+                      rows that scroll sideways, not five full cards. The Runs pane
+                      itself keeps the full cards. */}
+                  {runs.length && !isRuns ? (
+                    <div className={'mph-runs' + (runs.length > 3 ? ' two' : '')}>
+                      {runs.map((c) => {
+                        const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+                        const fin = runFull(c);
+                        const line = fin ? (st && st.rank ? `#${st.rank} of ${fmtN(st.players)}` : 'Played') : 'Play';
+                        return (
+                          <a key={c.id} className={'mph-run mph-rc' + (fin ? ' done' : '')} href={withTq(circuitEntryHref(c.id))} title={c.blurb || c.name} style={mTone(pc ? rampCat(paneOn) : pillCat(c, null))}>
+                            <b>{c.name}</b>
+                            <small>{line}</small>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                  {isRuns ? runs.map((c) => {
                     const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
                     const fin = runFull(c);
                     const line = !st ? null : fin && st.rank ? `Played · #${st.rank} of ${fmtN(st.players)}` : `${fmtN(st.players)} played today`;
@@ -3793,7 +3812,7 @@ export default function StageToday() {
                         <span className="go">{fin ? 'Board' : 'Play'}</span>
                       </a>
                     );
-                  })}
+                  }) : null}
                   {games.length ? (
                     <div className="mph-srt" role="group" aria-label="Sort puzzles">
                       <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}>Popular</button>
@@ -6464,6 +6483,14 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-tailbtn.snug{margin-top:-30px;}
   /* The drawing under the ranks: the Tickets cell's soft gold, not a loud blue. */
   .sty-mph .sty-mdraw{background:#fde7ad;color:#08222e;}
+  /* Compact run chips: at most two rows, sideways scroll past that. */
+  .mph-runs{display:grid;grid-auto-flow:column;grid-auto-columns:max-content;grid-template-rows:auto;gap:8px;
+    overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:0 14px 2px;scroll-padding:0 14px;}
+  .mph-runs.two{grid-template-rows:auto auto;}
+  .mph-runs::-webkit-scrollbar{display:none;}
+  .sty-mph .mph-run.mph-rc{display:flex;flex-direction:column;align-items:flex-start;gap:0;border-radius:12px;padding:7px 12px 8px;min-width:0;}
+  .sty-mph .mph-run.mph-rc b{font-size:14px;line-height:1.26;white-space:nowrap;}
+  .sty-mph .mph-run.mph-rc small{margin-top:1px;font-size:11px;}
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */
   .sty-mph{--mi:var(--stg-ink);--mb:2px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
