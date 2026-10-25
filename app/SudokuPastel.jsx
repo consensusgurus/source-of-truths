@@ -25,7 +25,7 @@ import { softGround } from '@/lib/category-ramp';
 let holders = 0;
 function hold() {
   holders += 1;
-  if (holders === 1 && typeof document !== 'undefined') document.documentElement.setAttribute('data-stage-pastel', document.documentElement.getAttribute('data-stage-pastel') || 'color');
+  if (holders === 1 && typeof document !== 'undefined') document.documentElement.setAttribute('data-stage-pastel', document.documentElement.getAttribute('data-stage-pastel') || 'tint');
   return () => {
     holders = Math.max(0, holders - 1);
     if (holders === 0 && typeof document !== 'undefined') document.documentElement.removeAttribute('data-stage-pastel');

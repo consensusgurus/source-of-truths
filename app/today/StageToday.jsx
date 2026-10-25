@@ -3590,25 +3590,57 @@ export default function StageToday() {
           today's progress as one status line. Every piece is a link. Phone only:
           above 900px it draws nothing and the cap above stays as it was. */}
       <div className="sty-mtop">
-        <div className="sty-mtb">
-          <a className="sty-mlogo" href="/" aria-label="Mind Loft home" onClick={(e) => { if (picked) { e.preventDefault(); mBack(); } }}>
-            <MindLoftMark size={24} ink="var(--stg-ink)" accent="var(--stg-brand,#38bdf8)" />
-            <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
-          </a>
-          <span className="sty-mtbr">
-            {mPane ? (
-              <button type="button" className="sty-mback" onClick={mBack}>&larr; {mBackTo}</button>
-            ) : who ? (
-              <a className="sty-mpill" href={withTq('/player/' + encodeURIComponent(who))}>{who}</a>
-            ) : (
-              <a className="sty-mpill" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Join</a>
-            )}
-            <button type="button" className="sty-mlook" data-look="" onClick={(e) => cycleSiteLook()}
-              aria-label="Change the look" title="Change the look">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
-            </button>
-          </span>
-        </div>
+        {/* THE PANE HEADER (owner, 2026-10-25): inside a category, skill, All,
+            My or Runs pane the top bar IS the pane's title. The back button
+            carries the site name and goes home; the title and today's count sit
+            beside it, so the big band below is gone. */}
+        {mPane ? (() => {
+          const isAll = paneOn === ALL_ID;
+          const isMine = paneOn === MINE_ID;
+          const isRuns = paneOn === CIRC_ID;
+          const pc = !isAll && !isMine && !isRuns ? paneCat(paneOn) : null;
+          const games = isAll ? alpha : isMine ? pinned : pc ? pc.games : [];
+          const nDone = games.filter((g) => done.has(g.key)).length;
+          const title = isAll ? 'All Puzzles' : isMine ? 'My Puzzles' : isRuns ? 'Runs' : catLabel(paneOn);
+          const sub = isRuns ? `${circuits.filter(runFull).length} of ${circuits.length} finished` : `${nDone} of ${games.length} played`;
+          return (
+            <div className="sty-mtb pane">
+              <button type="button" className="mph-hback" onClick={mBack} aria-label="Back to Mind Loft home">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+                <MindLoftMark size={18} ink="var(--stg-ink)" accent="var(--stg-brand,#38bdf8)" />
+                <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
+              </button>
+              <span className="mph-htx" style={pc ? mTone(rampCat(paneOn)) : undefined}>
+                <span className="t">{pc ? <i className="dot" aria-hidden="true" /> : null}<span>{title}</span></span>
+                <em>{sub}</em>
+              </span>
+          <button type="button" className="sty-mlook" data-look="" onClick={(e) => cycleSiteLook()}
+            aria-label="Change the look" title="Change the look">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
+          </button>
+            </div>
+          );
+        })() : (
+          <div className="sty-mtb">
+            <a className="sty-mlogo" href="/" aria-label="Mind Loft home" onClick={(e) => { if (picked) { e.preventDefault(); mBack(); } }}>
+              <MindLoftMark size={24} ink="var(--stg-ink)" accent="var(--stg-brand,#38bdf8)" />
+              <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
+            </a>
+            <span className="sty-mtbr">
+              {mPane ? (
+                <button type="button" className="sty-mback" onClick={mBack}>&larr; {mBackTo}</button>
+              ) : who ? (
+                <a className="sty-mpill" href={withTq('/player/' + encodeURIComponent(who))}>{who}</a>
+              ) : (
+                <a className="sty-mpill" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Join</a>
+              )}
+              <button type="button" className="sty-mlook" data-look="" onClick={(e) => cycleSiteLook()}
+                aria-label="Change the look" title="Change the look">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
+              </button>
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="sty-wrap" ref={wrapRef}>
@@ -3704,7 +3736,7 @@ export default function StageToday() {
                     const rc = rampCat(cat);
                     const nd = games.filter((g) => done.has(g.key)).length;
                     return (
-                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat))}>
+                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat), { below: '.sty-mtop' })}>
                         <b>{catLabel(cat)}</b>
                         <em>{ixLens === 'cat' ? `${games.length} ${games.length === 1 ? 'game' : 'games'}${nd ? ` \u00b7 ${nd} played` : ''}` : `${nd} of ${games.length}`}</em>
                       </button>
@@ -3772,26 +3804,23 @@ export default function StageToday() {
               return (
                 <>
                   <button type="button" className="mph-back" onClick={mBack}>&larr; {backTo}</button>
-                  <div className={'mph-band' + (pc ? '' : ' plain')} style={mainTone || undefined}>
-                    <b>{title}</b>
-                    <em>{isRuns ? `${runs.filter(runFull).length} of ${runs.length} finished today` : `${nDone} of ${games.length} played today`}</em>
-                    {s ? <small>{s.what}.</small> : null}
-                  </div>
+                  {/* The title and count live in the header now (owner, 2026-10-25). */}
+                  {s ? <p className="mph-note">{s.what}.</p> : null}
                   {runs.length && !isRuns ? <div className="mph-lab">Runs</div> : null}
                   {/* RUNS AS A COMPACT STRIP (owner, 2026-10-25): inside a category,
                       skill, All or My pane the runs are small chips in at most two
                       rows that scroll sideways, not five full cards. The Runs pane
                       itself keeps the full cards. */}
                   {runs.length && !isRuns ? (
-                    <div className={'mph-runs' + (runs.length > 3 ? ' two' : '')}>
+                    <div className="mph-runs">
                       {runs.map((c) => {
                         const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
                         const fin = runFull(c);
-                        const line = fin ? (st && st.rank ? `#${st.rank} of ${fmtN(st.players)}` : 'Played') : 'Play';
+                        const line = fin ? (st && st.rank ? `Played · #${st.rank} of ${fmtN(st.players)}` : 'Played') : st ? `${fmtN(st.players)} played today` : null;
                         return (
                           <a key={c.id} className={'mph-run mph-rc' + (fin ? ' done' : '')} href={withTq(circuitEntryHref(c.id))} title={c.blurb || c.name} style={mTone(pc ? rampCat(paneOn) : pillCat(c, null))}>
-                            <b>{c.name}</b>
-                            <small>{line}</small>
+                            <span className="tx"><b>{c.name}</b>{line ? <small>{line}</small> : null}</span>
+                            <span className="go">{fin ? 'Board' : 'Play'}</span>
                           </a>
                         );
                       })}
@@ -3815,6 +3844,7 @@ export default function StageToday() {
                   }) : null}
                   {games.length ? (
                     <div className="mph-srt" role="group" aria-label="Sort puzzles">
+                      <span className="lb">Sort:</span>
                       <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}>Popular</button>
                       <button type="button" aria-pressed={sortBy === 'diff'} onClick={() => pickSort('diff')}>Easy to hard</button>
                       <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A to Z</button>
@@ -6483,14 +6513,27 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-tailbtn.snug{margin-top:-30px;}
   /* The drawing under the ranks: the Tickets cell's soft gold, not a loud blue. */
   .sty-mph .sty-mdraw{background:#fde7ad;color:#08222e;}
-  /* Compact run chips: at most two rows, sideways scroll past that. */
-  .mph-runs{display:grid;grid-auto-flow:column;grid-auto-columns:max-content;grid-template-rows:auto;gap:8px;
-    overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:0 14px 2px;scroll-padding:0 14px;}
-  .mph-runs.two{grid-template-rows:auto auto;}
-  .mph-runs::-webkit-scrollbar{display:none;}
-  .sty-mph .mph-run.mph-rc{display:flex;flex-direction:column;align-items:flex-start;gap:0;border-radius:12px;padding:7px 12px 8px;min-width:0;}
-  .sty-mph .mph-run.mph-rc b{font-size:14px;line-height:1.26;white-space:nowrap;}
-  .sty-mph .mph-run.mph-rc small{margin-top:1px;font-size:11px;}
+  /* Runs inside a pane: full-width rows, all one size, play count beside the name. */
+  .mph-runs{display:flex;flex-direction:column;gap:8px;}
+  .sty-mph .mph-run.mph-rc{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:10px;border-radius:12px;padding:8px 10px 8px 14px;min-height:52px;box-sizing:border-box;}
+  .sty-mph .mph-run.mph-rc .tx{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .sty-mph .mph-run.mph-rc b{font-size:15px;line-height:1.26;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sty-mph .mph-run.mph-rc small{margin-top:1px;font-size:11.5px;}
+  .sty-mph .mph-run.mph-rc .go{padding:7px 14px 8px;font-size:13px;}
+  /* The pane header: back to home with the site name, then the pane's title. */
+  .sty-mtb.pane{justify-content:flex-start;gap:10px;}
+  .mph-hback{flex:none;height:40px;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;border:var(--mb);border-radius:999px;background:transparent;color:var(--mi);padding:0 12px 0 8px;font:inherit;font-weight:800;font-size:14px;line-height:1;white-space:nowrap;cursor:pointer;}
+  .mph-htx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;color:var(--mi);}
+  .mph-htx .t{display:flex;align-items:center;gap:7px;min-width:0;font-size:19px;font-weight:800;line-height:1.15;}
+  .mph-htx .t > span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mph-htx .dot{flex:none;width:11px;height:11px;border-radius:50%;background:color-mix(in srgb, var(--mc) 60%, #fff);}
+  .mph-htx em{font-style:normal;font-size:12px;font-weight:600;line-height:1.3;opacity:.85;white-space:nowrap;}
+  .sty-mtb.pane .sty-mlook{flex:none;width:40px;height:40px;}
+  .mph-pane .sld-host{display:none !important;}
+  /* Sort row: a label and three buttons sharing the width. */
+  .sty-mph .mph-srt{flex-wrap:nowrap;align-items:center;gap:6px;}
+  .sty-mph .mph-srt .lb{flex:none;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-right:2px;}
+  .sty-mph .mph-srt button{flex:1 1 0;min-width:0;padding:8px 6px 9px;font-size:12.5px;white-space:nowrap;}
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */
   .sty-mph{--mi:var(--stg-ink);--mb:2px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}

@@ -189,7 +189,7 @@ export function GauntletCover({ sections = [] }) {
   return (
     <>
       <div id="gsx-cover" aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 90, background: softGround(c) }} />
-      <script dangerouslySetInnerHTML={{ __html: `try{var L=localStorage.getItem('${LOOK_KEY}');if(L==='plain'||L==='dark'||L==='tint'||L==='darktint'||(!L&&localStorage.getItem('sot_theme2')==='dark')){var e=document.getElementById('gsx-cover');if(e)e.style.background=(L==='dark'||L==='darktint'||!L)?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
+      <script dangerouslySetInnerHTML={{ __html: `try{var L=localStorage.getItem('${LOOK_KEY}');if(L!=='color'){var D=L==='dark'||L==='darktint'||(!L&&localStorage.getItem('sot_theme2')==='dark');var e=document.getElementById('gsx-cover');if(e)e.style.background=D?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
     </>
   );
 }
