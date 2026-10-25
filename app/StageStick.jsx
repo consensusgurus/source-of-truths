@@ -567,8 +567,8 @@ const CSS = `
 .sst-tbl td{padding:9px 6px;border-top:1px solid var(--sst-rule);}
 .sst-tbl tr:first-child td{border-top:0;}
 .sst-tbl .p{width:48px;font-weight:800;}
-.sst-tbl .w{font-weight:700;max-width:0;width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.sst-tbl .st{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.sst-tbl .w{font-weight:700;max-width:0;width:40%;min-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-tbl .st{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;font-size:13.5px;line-height:1.25;}
 .sst-tbl tr.me td{background:var(--sst-wash);border-top-color:transparent;}
 .sst-tbl tr.me td:first-child{border-radius:10px 0 0 10px;}
 .sst-tbl tr.me td:last-child{border-radius:0 10px 10px 0;}
@@ -661,12 +661,17 @@ const CSS = `
 .sst-cover.go .sst-cin{opacity:0;}
 /* The in-page ending: hidden under the cover, revealed when it pulls back. */
 .sst-page{color:var(--sst-ink);width:100%;max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:4px 0 28px;
-  visibility:hidden;}
+  visibility:hidden;container-type:inline-size;}
 .sst-page.in{visibility:visible;}
 .sst-band{background:var(--sst-bg);border-radius:22px;padding:22px 26px;}
-.sst-band .sst-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start;padding:0;}
-.sst-page .sst-cards{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start;}
-.sst-page .sst-cards > section:nth-child(n+3){grid-column:1 / -1;}
+.sst-band .sst-hero{padding:0;}
+.sst-page .sst-cards{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start;}
+/* Two columns only where the game column is wide enough to hold them. */
+@container (min-width:700px){
+  .sst-band .sst-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start;}
+  .sst-page .sst-cards{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+  .sst-page .sst-cards > section:nth-child(n+3){grid-column:1 / -1;}
+}
 .sst-page .sst-tiles,.sst-page .sst-cats{flex-wrap:wrap;overflow:visible;margin:0;padding:0;}
 .sst-page .sst-gif .msh-peek img{max-height:300px;}
 .sst-page:not(.in) .sst-b{opacity:0;}
