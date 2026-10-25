@@ -129,7 +129,7 @@ export default function RootLayout({ children }) {
             does, so the two can never disagree about what was asked for, and
             writeStageTheme keeps the attribute in step from here on, or a
             reader who switches TO light would stay suppressed in dark. */}
-        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var d=document.documentElement,q=null;try{q=new URLSearchParams(window.location.search).get('theme')}catch(e){}var t=(q==='light'||q==='dark')?q:window.localStorage.getItem('sot_theme2');if(t!=='light'&&t!=='dark')t='light';d.setAttribute('data-stage-boot',t);var c=null;try{c=new URLSearchParams(window.location.search).get('color')}catch(e){}if(c!=='balanced'&&c!=='full')c=window.localStorage.getItem('sot_color1');if(c!=='full')c='balanced';d.setAttribute('data-stage-color',c)}catch(e){}})();" }} />
+        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var d=document.documentElement,q=null;try{q=new URLSearchParams(window.location.search).get('theme')}catch(e){}var t=(q==='light'||q==='dark')?q:window.localStorage.getItem('sot_theme2');if(t!=='light'&&t!=='dark')t='light';d.setAttribute('data-stage-boot',t);var c=null;try{c=new URLSearchParams(window.location.search).get('color')}catch(e){}if(c!=='balanced'&&c!=='full'&&c!=='mono')c=window.localStorage.getItem('sot_color1');if(c!=='full'&&c!=='mono')c='balanced';d.setAttribute('data-stage-color',c)}catch(e){}})();" }} />
         {/* LAYOUT C RESERVES ITS SPACE BEFORE FIRST PAINT (owner, 2026-10-10:
             moving from the home page to a game page jittered). The desktop
             frame (app/LayoutC.jsx) is client-only and loads after the board

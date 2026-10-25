@@ -84,10 +84,10 @@ export const RUN_DOORS = {
   // 2026-10-13; Herd from 2026-10-17): a player loading any crowd game is
   // offered the run that plays them all, unless it is already open or finished today.
   crossed: {
-    href: '/crossed', name: 'Crossed Up', eyebrow: 'Daily run \u00b7 Four crosswords', once: 'game', everyone: true, from: '2026-10-20',
-    body: 'Emcee, Encore, Arcos and Glyph back to back on one page: the mini, the big one, the acrostics and the grid with no clues. Finish fast and your time says which day of the week you solve like, Monday up to In Pen.',
-    go: 'Run all four', accent: '#93c5fd',
-    tags: [['Emcee', '#e879f9'], ['Encore', '#86a9ff'], ['Arcos', '#93c5fd'], ['Glyph', '#94a3b8']],
+    href: '/crossed', name: 'Crossed Up', eyebrow: 'Daily run \u00b7 Five crosswords', once: 'game', everyone: true, from: '2026-10-20',
+    body: 'Emcee, Encore, Arcos, Glyph and Anon back to back on one page: the mini, the big one, the acrostics, the grid with no clues and the passage. Finish fast and your time says which day of the week you solve like, Monday up to In Pen.',
+    go: 'Run all five', accent: '#93c5fd',
+    tags: [['Emcee', '#e879f9'], ['Encore', '#86a9ff'], ['Arcos', '#93c5fd'], ['Glyph', '#94a3b8'], ['Anon', '#a5b4fc']],
   },
   room: {
     href: '/room', name: 'Read the Room', eyebrow: 'Daily run · Four crowd games',

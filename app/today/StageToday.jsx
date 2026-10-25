@@ -4959,6 +4959,7 @@ html:not([data-stage-boot=dark]) [data-stage-theme=light] .sty-g .sty-star:not(.
 .sty-cathead b{font-family:${MONO};font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
 .sty-cathead b i{font-style:normal;color:var(--stg-mute);}
 .sty-games{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));}
+html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1);}
 /* A grid track's automatic minimum is MIN-CONTENT, and .sty-gt is nowrap, so a
    long tagline widens its own track and pushes the ladder off a phone instead
    of ellipsing inside it. Measured: the ladder ran 426px wide at 390. The floor
@@ -6383,6 +6384,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-t,.sty-mph .mph-g,.sty-mph .mph-run,.sty-mph .mph-band{background:color-mix(in srgb, var(--mc) 60%, #fff);border:2px solid var(--mink);color:var(--mink);}
   .stage-page:not([data-stage-theme=light]) .mph-t,.stage-page:not([data-stage-theme=light]) .mph-g,
   .stage-page:not([data-stage-theme=light]) .mph-run,.stage-page:not([data-stage-theme=light]) .mph-band{border-color:color-mix(in srgb, var(--mc) 60%, #fff);}
+  /* WHITE AND BLACK, BLACK AND WHITE (owner, 2026-10-25): the two no-colour
+     looks take every tile to white or near-black, shades of grey only. */
+  html[data-stage-color=mono] .stage-page[data-stage-theme=light] .sty-mph :is(.mph-t,.mph-g,.mph-run,.mph-band):not(.done){background:#ffffff;border-color:#111111;color:#111111;}
+  html[data-stage-color=mono] .stage-page:not([data-stage-theme=light]) .sty-mph :is(.mph-t,.mph-g,.mph-run,.mph-band):not(.done){background:#1a2130;border-color:#5a6475;color:#e9edf4;}
+  html[data-stage-color=mono] .sty-mph .mph-g b .dot{background:#8a93a3;}
   .mph-grid,.mph-gg{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .mph-t{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border-radius:14px;padding:10px 12px 11px;}
   .mph-t b{font-size:14px;font-weight:800;line-height:1.26;}
