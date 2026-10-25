@@ -19,6 +19,7 @@
 import { useEffect } from 'react';
 import { usePhoneStage } from './WordStage';
 import { useStageLook, nextLook } from '@/lib/stage-look';
+import { forceStageTheme } from '@/lib/stage-theme';
 
 let holders = 0;
 function hold() {
@@ -34,11 +35,26 @@ function hold() {
 // is the periwinkle pastel, 'plain' is a white page with black type. Returns
 // whether the register is on, the look, and the switch, so a cap can draw the
 // same circle button the gauntlet stage carries.
-export default function useSudokuPastel(active) {
+// `ground` is the page colour for the colour look: the Sudoku periwinkle by
+// default, a game's own category pastel when another family uses the register
+// (the End Game titles, 2026-10-24).
+export default function useSudokuPastel(active, ground) {
   const phone = usePhoneStage();
   const on = !!active && phone;
+  useEffect(() => {
+    if (!on || typeof document === 'undefined' || !ground) return undefined;
+    const r = document.documentElement;
+    r.style.setProperty('--sp-g', ground);
+    return () => { r.style.removeProperty('--sp-g'); };
+  }, [on, ground]);
   const [look, setLook] = useStageLook();
   useEffect(() => (on ? hold() : undefined), [on]);
+  // The page under the stage look stays in the light register (lib/stage-theme.js).
+  useEffect(() => {
+    if (!on) return undefined;
+    forceStageTheme('light');
+    return () => forceStageTheme(null);
+  }, [on]);
   useEffect(() => {
     if (!on || typeof document === 'undefined') return;
     document.documentElement.setAttribute('data-stage-pastel', look);

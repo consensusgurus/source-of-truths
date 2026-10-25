@@ -223,7 +223,9 @@ export default function StageChrome({
   // already finished by a client-side link goes straight to its end card.
   useState(() => { markPageEntry(); return 0; });
   // Sudokus play on the pastel stage on a phone (owner, 2026-10-24); see SudokuPastel.jsx.
-  const pastel = useSudokuPastel(SUDOKU_POOL.includes(gameKey));
+  // ...and the End Game titles too, on their own gold (owner, 2026-10-24).
+  const endGame = !!gameKey && gameCategory(gameKey) === 'End Game';
+  const pastel = useSudokuPastel(SUDOKU_POOL.includes(gameKey) || endGame, endGame ? gameColor(gameKey) : null);
   const started = useStarted(gameKey, num);
   const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
   // SHARE FOR CREDIT (owner, 2026-10-23): the page itself, stamped with the

@@ -982,7 +982,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
                                 // report, 2026-10-06). Flat on the stage; the Loft keeps
                                 // its gloss over a solid base layer.
                                 background: STAGE
-                                  ? (v === 1 ? 'var(--stg-acc, #e8b43a)' : 'var(--fr-foe)')
+                                  ? (v === 1 ? 'var(--stg-you, var(--stg-acc, #e8b43a))' : 'var(--fr-foe)')
                                   : v === 1
                                     ? `radial-gradient(circle at 34% 30%, ${RED}, ${RED_DARK}), ${RED}`
                                     : `radial-gradient(circle at 34% 30%, ${YELLOW}, ${YELLOW_DARK}), ${YELLOW}`,
@@ -1003,7 +1003,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
 
             <div className="fr-legrow" style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px 16px' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 12, fontWeight: 700, color: FADED, flexWrap: 'wrap' }}>
-                <span className="fr-leg"><i style={{ background: 'var(--stg-acc, #e8b43a)', border: '2px solid var(--fr-you-rim)' }} />You</span>
+                <span className="fr-leg"><i style={{ background: 'var(--stg-you, var(--stg-acc, #e8b43a))', border: '2px solid var(--fr-you-rim)' }} />You</span>
                 <span className="fr-leg"><i style={{ background: 'var(--fr-foe)', border: '2px solid var(--fr-foe-rim)' }} />Engine</span>
                 <span className="fr-leg"><i style={{ background: 'var(--fr-foe)', border: '2px solid var(--fr-foe-rim)' }}><span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--fr-mark)' }} /></i>Last drop</span>
               </span>

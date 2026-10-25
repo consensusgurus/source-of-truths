@@ -696,7 +696,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
   const SIZE = PAD * 2 + U * (N - 1);
   const at = (i) => ({ x: PAD + (i % N) * U, y: PAD + ((i / N) | 0) * U });
   const P_GRID = STAGE ? 'var(--yo-grid)' : GRID;
-  const P_YOU = STAGE ? 'var(--stg-acc, #e8b43a)' : STONE_YOU;
+  const P_YOU = STAGE ? 'var(--stg-you-dk, var(--stg-acc, #e8b43a))' : STONE_YOU;
   const P_YOU_RIM = STAGE ? 'var(--yo-you-rim)' : 'rgba(0,0,0,0.35)';
   const P_FOE = STAGE ? 'var(--yo-wst)' : STONE_FOE;
   const P_FOE_RIM = STAGE ? 'var(--yo-wst-rim)' : STONE_FOE_EDGE;
@@ -903,7 +903,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
                 <div className="yo-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
                   <span style={{ fontSize: 14, fontWeight: 700, color: INK }}>To win: {needText(PUZZLE.komi)}.</span>
                   <span style={{ display: 'flex', gap: 6 }}>
-                    <span className="yo-chip"><i style={{ background: 'var(--stg-acc, #e8b43a)', border: '2px solid var(--yo-you-rim)' }} />You <b>{view.area.black}</b></span>
+                    <span className="yo-chip"><i style={{ background: 'var(--stg-you-dk, var(--stg-acc, #e8b43a))', border: '2px solid var(--yo-you-rim)' }} />You <b>{view.area.black}</b></span>
                     <span className="yo-chip"><i style={{ background: 'var(--yo-wst)', border: '2px solid var(--yo-wst-rim)' }} />White <b>{view.area.white}</b></span>
                   </span>
                 </div>
@@ -919,7 +919,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
                 </div>
 
                 <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: '6px 14px', flexWrap: 'wrap', fontSize: 12, fontWeight: 700, color: FADED }}>
-                  <span className="yo-leg"><span style={{ width: 10, height: 10, borderRadius: 2, boxSizing: 'border-box', background: 'var(--stg-acc, #e8b43a)', border: '1.5px solid var(--yo-you-rim)' }} />Your territory</span>
+                  <span className="yo-leg"><span style={{ width: 10, height: 10, borderRadius: 2, boxSizing: 'border-box', background: 'var(--stg-you-dk, var(--stg-acc, #e8b43a))', border: '1.5px solid var(--yo-you-rim)' }} />Your territory</span>
                   <span className="yo-leg"><span style={{ width: 10, height: 10, borderRadius: 2, boxSizing: 'border-box', background: 'var(--yo-wst)', border: '1.5px solid var(--yo-wst-rim)' }} />White&rsquo;s territory</span>
                   <span className="yo-leg"><span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yo-dot)' }} />Open point</span>
                 </div>

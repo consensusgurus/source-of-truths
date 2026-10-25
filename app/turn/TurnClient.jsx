@@ -749,7 +749,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
               // flat game-local colours, one per register, ringed so either
               // reads on the square; the Loft keeps its gloss over a solid base.
               background: STAGE
-                ? (v === 1 ? 'var(--stg-acc, #e8b43a)' : 'var(--tn-eng)')
+                ? (v === 1 ? 'var(--stg-you-lt, var(--stg-acc, #e8b43a))' : 'var(--tn-eng)')
                 : v === 1
                   ? `radial-gradient(circle at 34% 30%, ${DISC_YOU_HI}, ${DISC_YOU} 62%), ${DISC_YOU}`
                   : `radial-gradient(circle at 34% 30%, ${DISC_FOE_HI}, ${DISC_FOE} 62%), ${DISC_FOE}`,
@@ -974,7 +974,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
                 <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 7 }}>
                   <span className="tn-k">Discs now</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-                    <span className="tn-chip"><i style={{ background: 'var(--stg-acc, #e8b43a)' }} />You &middot; {view.score.mine}</span>
+                    <span className="tn-chip"><i style={{ background: 'var(--stg-you-lt, var(--stg-acc, #e8b43a))' }} />You &middot; {view.score.mine}</span>
                     <span className="tn-chip"><i style={{ background: 'var(--tn-eng)' }} />Engine &middot; {view.score.theirs}</span>
                     <span className="tn-note tn-rule" style={{ fontSize: 12.5 }}>Most discs at the end wins. A tie is not a win.</span>
                   </div>

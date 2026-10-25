@@ -693,6 +693,15 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
     if (!mobileUi) { try { inputRef.current && inputRef.current.focus(); } catch (e) {} }
   }
 
+  // PHONE: tapping a suggestion or Guess used to blur the input, so the
+  // keyboard dropped, the viewport grew, then the next tap on the box raised
+  // the keyboard again and keepMapInView slid the page back. That round trip
+  // on every guess was the jump between prompts. Holding focus on the input
+  // through the tap keeps the keyboard up and the page still.
+  function keepFocus(e) {
+    if (inputRef.current && document.activeElement === inputRef.current) e.preventDefault();
+  }
+
   function submitTyped() {
     if (!playing) return;
     // a highlighted suggestion wins; else an exact name/alias; else the top
@@ -847,7 +856,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
     const lastI = guesses.length - 1;
     return (
       <div className="pg-mapwrap" style={{ position: 'relative', marginTop: 12 }}>
-        <div className="pg-eye" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: ACC_DEEP_INK, marginBottom: 8 }}>
+        <div className="pg-eye" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: ACC_DEEP_INK, marginBottom: 8, lineHeight: '15px', minHeight: narrow ? 30 : undefined }}>
           {rings.length >= 2 ? 'The secret city is where your rings cross' : 'Each guess draws a ring at its distance'}
         </div>
         <svg className="pg-map" viewBox={vb} preserveAspectRatio="xMidYMid meet" role="img"
@@ -1090,6 +1099,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
                           key={`${c.name}|${c.country}`}
                           className={i === sugIdx ? 'on' : ''}
                           onMouseEnter={() => setSugIdx(i)}
+                          onMouseDown={keepFocus}
                           onClick={() => commitGuess(c)}
                         >
                           <MapPin size={14} style={{ color: FADED, flex: '0 0 auto' }} />
@@ -1099,7 +1109,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
                     </div>
                   )}
                 </div>
-                <button className="pg-go" onClick={submitTyped}>Guess</button>
+                <button className="pg-go" onMouseDown={keepFocus} onClick={submitTyped}>Guess</button>
               </div>
             </div>
           )}

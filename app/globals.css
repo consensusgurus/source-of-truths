@@ -698,18 +698,24 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
    element, and the :not(#sot-x) lifts the html rule over the register's own. */
 @media (max-width: 899px) {
   html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
-  html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #a5b4fc !important; }
+  html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: var(--sp-g, #a5b4fc) !important; }
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
     --stg-brand: #08222e !important;
-    --stg-ground: #a5b4fc !important;
-    --stg-raise: #c3cdfe !important;
-    --stg-panel: #b4c0fd !important;
+    /* END GAME PIECES (owner, 2026-10-24). The boards keep their own light
+       surfaces in every look, so the player's pieces take fixed colours that
+       read against them and against the engine's dark pieces in all three. */
+    --stg-you: #e8b43a;
+    --stg-you-lt: #ffffff;
+    --stg-you-dk: #111111;
+    --stg-ground: var(--sp-g, #a5b4fc) !important;
+    --stg-raise: color-mix(in srgb, var(--sp-g, #a5b4fc) 60%, #ffffff) !important;
+    --stg-panel: color-mix(in srgb, var(--sp-g, #a5b4fc) 80%, #ffffff) !important;
     --stg-surf: rgba(8, 34, 46, 0.07) !important;
     --stg-surf2: rgba(8, 34, 46, 0.13) !important;
     --stg-line: rgba(8, 34, 46, 0.2) !important;
     --stg-line2: rgba(8, 34, 46, 0.34) !important;
     --stg-line3: #08222e !important;
-    --stg-cell: #9cabee !important;
+    --stg-cell: color-mix(in srgb, var(--sp-g, #a5b4fc) 88%, #08222e) !important;
     --stg-cell-line: rgba(8, 34, 46, 0.3) !important;
     --stg-cell-dot: rgba(8, 34, 46, 0.6) !important;
     --stg-cell-dot2: rgba(8, 34, 46, 0.9) !important;
@@ -721,7 +727,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-mute: #23404f !important;
     --stg-mute2: #2c4757 !important;
     --stg-dim: #2c4757 !important;
-    --stg-onramp: #a5b4fc !important;
+    --stg-onramp: var(--sp-g, #a5b4fc) !important;
     --stg-chip: rgba(8, 34, 46, 0.1) !important;
     --stg-b1: rgba(8, 34, 46, 0.06) !important;
     --stg-b2: rgba(8, 34, 46, 0.1) !important;
@@ -738,7 +744,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-acc-ink: #08222e !important;
     --stg-acc-tint: rgba(8, 34, 46, 0.14) !important;
     --stg-sel: #08222e;
-    background: #a5b4fc !important;
+    background: var(--sp-g, #a5b4fc) !important;
     color: #08222e;
   }
   /* Region boards (Quilt, Cages) wear the full pastels here. Periwinkle is
@@ -751,10 +757,12 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
      ink at full weight, whatever colour the client wrote for the dark stage.
      Placed before the selected-square rule so a note in that square still
      turns pastel. Applies to the plain look too. */
+  /* A key chip's piece dot is ringed in the stage ink, so a dark piece still reads on the dark look's chips. */
+  html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.ck-chip, .tn-chip, .yo-chip, .fr-leg) i { box-shadow: 0 0 0 2px var(--stg-ink) !important; }
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [class$="-note"] { color: var(--stg-ink) !important; font-weight: 700 !important; }
   /* The selected square is inked solid, so whatever it holds turns pastel. */
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
-  html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: #a5b4fc !important; }
+  html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: var(--sp-g, #a5b4fc) !important; }
   /* PLAIN, the stage's other look: a white page and black type, nothing coloured.
      Region boards lose their pastels and keep only their heavy walls. */
   html[data-stage-pastel='plain']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
