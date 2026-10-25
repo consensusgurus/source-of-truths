@@ -1016,6 +1016,10 @@ export default function StageFinish({
   // for review, ?stick=0 turns it off. Not on a quiz, not on the retry ending.
   const [stick, setStick] = useState(false);
   const [fromStick, setFromStick] = useState(false);
+  // BACK TO BOARD (owner, 2026-10-25): the ending steps aside for the board
+  // itself, and the older card under it stays hidden. One pill brings the
+  // ending back.
+  const [boardView, setBoardView] = useState(false);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const q = window.location.search;
@@ -1663,7 +1667,7 @@ export default function StageFinish({
     // c= is the return leg's id (lib/challenge-client.js), minted here so the
     // share sheet still opens inside the tap; the row is written alongside it.
     const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=7${themeParam()}`, cid)); // v: bump when the card changes, a phone caches a link's preview by its URL
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=6${themeParam()}`, cid)); // v: bump when the card changes, a phone caches a link's preview by its URL
     recordSend({ cid, gameKey: me.key, num: mine.n, day: d ? etTodayISO() : null, fig: mine, source });
     return url;
   };
@@ -1761,6 +1765,17 @@ export default function StageFinish({
 
   // ── THE STICKY ENDING'S FIGURES (owner, 2026-10-18) ──────────────────────
   // Plain code, no hooks, so the retry branch below runs the same hooks.
+  const backToBoard = () => {
+    setStick(false); setBoardView(true); setHandoffOff(true);
+    try {
+      const go = () => {
+        const b = document.querySelector('.stage-page');
+        const y = b ? Math.max(0, b.getBoundingClientRect().top + window.scrollY) : 0;
+        window.scrollTo({ top: y, behavior: 'auto' });
+      };
+      requestAnimationFrame(() => requestAnimationFrame(go));
+    } catch (e) {}
+  };
   const leaveStick = () => { setStick(false); setFromStick(true); setFlood(true); setFloodDone(false); setHandoffOff(true); };
   const stickProps = (() => {
     if (!stickOn || !me) return null;
@@ -2048,6 +2063,17 @@ export default function StageFinish({
   // Placed AFTER every hook above AND after the challenge door is built (moved
   // 2026-10-15 so the retry ending carries the door too), so the two endings run the same hooks in
   // the same order on every render.
+  if (boardView && !isRetry) {
+    return (
+      <div className="stf stf-bv">
+        <style dangerouslySetInnerHTML={{ __html: BV_CSS }} />
+        <button type="button" className="stf-bv-b" onClick={() => { setBoardView(false); setStick(true); }}>
+          Show results
+        </button>
+      </div>
+    );
+  }
+
   if (isRetry) {
     return (
       <div className={'stf stf-rtwrap stf-miss' + (outcome ? ' stf-' + outcome : '')}>
@@ -2118,7 +2144,7 @@ export default function StageFinish({
 
       <MemeShare open={memeOpen} onClose={() => setMemeOpen(false)} ctx={memeCtx} getLink={challengeLink} />
       {stickProps ? (
-        <StageStick {...stickProps} onLeave={leaveStick} />
+        <StageStick {...stickProps} onLeave={leaveStick} onBack={backToBoard} />
       ) : flood ? (
         <CurtainFlood title={title} detail={detail} iq={iq} board={board}
           gameRank={gameRank} streak={streak} ready={ready} bandRef={bandRef}
@@ -2508,7 +2534,7 @@ const CSS = `
 .stf-fwdt .stf-setchip.ok{background:none;color:var(--stg-mute);border:1px solid var(--stg-line);}
 .stf-o.on{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
 
-.stf-curtain{background:var(--stg-acc);color:var(--stg-onramp,#08222e);
+.stf-curtain{--stg-onramp:#08222e;background:var(--sp-g,color-mix(in srgb,var(--stg-acc) 60%,#ffffff));color:#08222e;
   margin:0 calc(50% - 50vw);padding:30px calc(50vw - 50% + 4px) 26px;}
 .stf-cin{max-width:720px;margin:0 auto;}
 .stf-ctop{display:flex;align-items:flex-end;gap:22px;}
@@ -2729,7 +2755,8 @@ const CSS = `
 /* Below the safe-area strip (z-index 10000, status-bar chrome) and above
    everything else on a stage page, whose own chrome caps at 5. */
 .stf-flood{position:fixed;inset:0;z-index:9000;cursor:pointer;box-sizing:border-box;
-  background:var(--stg-acc);color:var(--stg-onramp,#08222e);
+  /* The soft step, as the one-page ending (owner, 2026-10-25). */
+  --stg-onramp:#08222e;background:var(--sp-g,color-mix(in srgb,var(--stg-acc) 60%,#ffffff));color:#08222e;
   display:flex;align-items:flex-start;justify-content:center;overflow-x:hidden;overflow-y:auto;
   overscroll-behavior:contain;
   padding:clamp(40px,9vh,110px) max(24px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));
@@ -2954,6 +2981,7 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
 /* THE BAND, GRADED (owner, 2026-10-07): a miss takes a rose band. A personal
    best no longer turns gold (owner, 2026-10-20); it keeps the category colour. */
 .stf-miss .stf-curtain,.stf-flood.t-lost{background:var(--stg-raise);color:var(--stg-ink);}
+.stf-miss .stf-curtain,.stf-flood.t-lost{--stg-onramp:inherit;}
 .stf-miss .stf-curtain{border-bottom:1px solid var(--stg-line);}
 /* THE MISS BAND HAS TO READ AS A BAND IN DARK (owner, 2026-10-07). Raise is
    #0e131f against a #0b0f1a page, so the band vanished and everything dimmed on
@@ -3079,4 +3107,16 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
   .stf-bcat > span:not(.stf-rack){white-space:nowrap;}
 }
 
+`;
+
+// The one pill on the board view, floating at the foot of the screen so it is
+// in reach wherever the board sits.
+const BV_CSS = `
+.stf-bv{position:fixed;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));z-index:60;display:flex;justify-content:center;pointer-events:none;}
+.stf-bv-b{pointer-events:auto;min-height:46px;padding:0 22px;border:0;border-radius:99px;cursor:pointer;
+  font-family:Manrope,ui-sans-serif,system-ui,sans-serif;font-size:15px;font-weight:800;
+  background:var(--stg-ink,#08222e);color:var(--stg-ground,#ffffff);box-shadow:0 8px 24px rgba(8,34,46,.28);}
+.stf-bv-b:focus-visible{outline:2px solid var(--stg-ink,#08222e);outline-offset:3px;}
+/* The client's own Hide game board would leave only this pill and no board. */
+body:has(.stf-bv) .stf-hideboard{display:none !important;}
 `;

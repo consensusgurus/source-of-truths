@@ -4,7 +4,7 @@
 //
 // Six words interlock in a 5x5 lattice (Sundays: eight words in 7x7). Every
 // letter the answer needs is already on the board, scrambled. Tap two tiles to
-// trade them. Filled = right letter on the right square (it locks); dashed =
+// trade them. Solid = right letter on the right square (it locks); tinted =
 // that letter belongs somewhere else in a word crossing that square; plain =
 // it belongs to a different word entirely. The budget is the proven
 // minimum number of trades (par) plus five; solve at par for a perfect 10, and
@@ -615,13 +615,13 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
         // surrendered the colour it is naming explains nothing. Both are the
         // same values the tiles use, read from COLORS, so the key cannot drift
         // away from the board.
-        { label: 'Filled: right letter, right square. It locks.', style: { background: COLORS.home, border: `1.5px solid ${COLORS.home}`, color: COLORS.homeInk } },
-        { label: 'Dashed: belongs elsewhere in a word crossing that square', style: { background: COLORS.near, border: `2px dashed ${STAGE ? 'var(--stg-ink, #08222e)' : COLORS.nearInk}`, color: COLORS.nearInk } },
+        { label: 'Solid: right letter, right square. It locks.', style: STAGE ? { background: 'var(--stg-slot-line2)', border: '1.5px solid var(--stg-slot-line2)', color: 'var(--stg-slot-on-ink)' } : { background: COLORS.home, border: `1.5px solid ${COLORS.home}`, color: COLORS.homeInk } },
+        { label: 'Tinted: belongs elsewhere in a word crossing that square', style: STAGE ? { background: 'var(--stg-slot-fill)', border: '1.5px solid var(--stg-slot-line2)', color: 'var(--stg-ink)' } : { background: COLORS.near, border: `1.5px solid ${COLORS.nearInk}`, color: COLORS.nearInk } },
         { label: 'Plain: belongs to a different word', tone: 'grey' },
       ]}
       steps={[
         <>Words run along every <b>row and column</b> of tiles. Tap one tile, then another, and they <b>trade places</b>.</>,
-        <>The tiles re-read after every trade. A <b>filled</b> tile is home and locks in place; a <b>dashed</b> one belongs somewhere else in a word through that square; a <b>plain</b> one belongs to a different word.</>,
+        <>The tiles re-read after every trade. A <b>solid</b> tile is home and locks in place; a <b>tinted</b> one belongs somewhere else in a word through that square; a <b>plain</b> one belongs to a different word.</>,
         <>Your budget is <b>par + 5</b> trades. Par is the proven minimum for today&rsquo;s board, so a perfect game has no slack at all.</>,
         <>One free <b>hint</b>, on your first ever play, makes a correct trade at no cost.</>,
         <><b>Give up</b> ends the run now and scores 0. The board stays as you left it; the answer is not shown.</>,
@@ -672,6 +672,9 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           .bt-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
           .bt-tile{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;border-radius:8px;font-family:${SANS};font-weight:900;text-transform:uppercase;transition:background 0.15s, transform 0.1s;}
           .bt-tile.play{cursor:pointer;}
+          .bt-quit{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border:0;background:transparent;cursor:pointer;
+            font-family:${SANS};font-weight:700;font-size:13px;color:var(--stg-mute, ${COLORS.faded});text-decoration:underline;text-underline-offset:3px;}
+          .bt-quit:hover{color:var(--stg-ink, #0b1220);}
           .bt-tile.sel{outline:3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:-1px;transform:scale(1.05);z-index:2;}
           .bt-tool{font-family:${SANS};font-weight:800;font-size:12.5px;border:1.5px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.35)'};background:${STAGE ? 'var(--stg-surf2)' : 'var(--white)'};color:${INK};border-radius:8px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
         ` }} />
@@ -741,8 +744,16 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
                 const idx = IDX[r * S + c];
                 const col = tileColors[idx];
                 const isSel = sel === idx;
-                const bg = col === 2 ? COLORS.home : col === 1 ? COLORS.near : T.white;
-                const ink = col === 2 ? COLORS.homeInk : col === 1 ? COLORS.nearInk : COLORS.ink;
+                // THE OUTLINED SLOTS (owner, 2026-10-25, as Anon): home is the
+                // solid square, near is tinted with a firm outline, plain is an
+                // outlined white box. No dashes. Fill and outline both change,
+                // and they change in lightness, so every look reads the same.
+                const bg = STAGE
+                  ? (col === 2 ? 'var(--stg-slot-line2)' : col === 1 ? 'var(--stg-slot-fill)' : 'var(--stg-slot)')
+                  : (col === 2 ? COLORS.home : col === 1 ? COLORS.near : T.white);
+                const ink = STAGE
+                  ? (col === 2 ? 'var(--stg-slot-on-ink)' : 'var(--stg-ink)')
+                  : (col === 2 ? COLORS.homeInk : col === 1 ? COLORS.nearInk : COLORS.ink);
                 const canPlay = playing && col !== 2;
                 return (
                   <div
@@ -753,11 +764,11 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
                     style={{
                       background: bg,
                       color: ink,
-                      // THREE STATES IN EVERY LOOK (owner, 2026-10-25): filled, dashed, plain.
-                      // Never colour alone, so the five page looks all read the same way.
-                      border: col === 2 ? `2px solid ${COLORS.home}` : col === 1 ? `2.5px dashed ${STAGE ? 'var(--stg-ink, #08222e)' : COLORS.nearInk}` : `2px solid ${STAGE ? 'var(--stg-line2, rgba(28,30,36,0.35))' : 'rgba(28,30,36,0.35)'}`,
+                      border: STAGE
+                        ? (col === 2 ? '2px solid var(--stg-slot-line2)' : col === 1 ? '2px solid var(--stg-slot-line2)' : '1.5px solid var(--stg-slot-line)')
+                        : (col === 2 ? `2px solid ${COLORS.home}` : col === 1 ? `2px solid ${COLORS.nearInk}` : '2px solid rgba(28,30,36,0.35)'),
                       fontSize: S === 7 ? 'clamp(13px, 3.4vw, 24px)' : 'clamp(16px, 4.6vw, 30px)',
-                      boxShadow: col === 2 ? 'none' : '0 1.5px 0 rgba(28,30,36,0.18)',
+                      boxShadow: 'none',
                     }}
                   >
                     {cells[idx]}
@@ -781,17 +792,22 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
             bare row of faded text has nothing to sit on, and the card is
             meant to hold the whole game. */}
         {started && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(28,30,36,0.10)', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: sel !== null ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})` }}>
+          // THE FOOT OF THE BOARD (owner, 2026-10-25): the instruction as one
+          // centred line, and Give up as a quiet link under it, so neither
+          // competes with the board.
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, marginTop: 14, textAlign: 'center' }}>
+            <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, lineHeight: 1.4, color: sel !== null ? 'var(--stg-ink, #0b1220)' : `var(--stg-mute, ${COLORS.faded})` }}>
               {sel !== null
-                ? 'Now tap the tile to trade it with. Tap it again to put it back.'
-                : 'Tap two tiles to trade them. Filled tiles are locked.'}
+                ? 'Now tap the tile to trade it with, or tap it again to put it back.'
+                : 'Tap two tiles to trade them. Solid tiles are locked.'}
             </span>
-            <button type="button" className="bt-tool" onClick={tapGiveUp}
-              title={armGive ? 'Ends the run now, scored 0' : 'End the run now. Scores 0; the answer is not shown.'}
-              style={{ marginLeft: 'auto', ...(armGive ? { borderColor: 'var(--stg-warn, #b45309)', color: 'var(--stg-warn, #b45309)' } : null) }}>
-              <Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}
-            </button>
+            {playing && (
+              <button type="button" className="bt-quit" onClick={tapGiveUp}
+                title={armGive ? 'Ends the run now, scored 0' : 'End the run now. Scores 0; the answer is not shown.'}
+                style={armGive ? { color: 'var(--stg-warn, #b45309)' } : undefined}>
+                <Flag size={13} /> {armGive ? 'Tap again to give up' : 'Give up'}
+              </button>
+            )}
           </div>
         )}
         </div>
@@ -990,7 +1006,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Barter</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Barter is a free daily word puzzle from Mind Loft. Six words interlock in a lattice, and every letter the answer needs is already on the board, just in the wrong places. Tap two tiles to trade them: a filled tile means a letter has found its home, a dashed tile means it belongs somewhere else in one of the words crossing that square, and grey means it belongs to a different word entirely.
+          Barter is a free daily word puzzle from Mind Loft. Six words interlock in a lattice, and every letter the answer needs is already on the board, just in the wrong places. Tap two tiles to trade them: a solid tile means a letter has found its home, a tinted tile means it belongs somewhere else in one of the words crossing that square, and a plain tile means it belongs to a different word entirely.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           The catch is the budget. Every board&rsquo;s par is the proven minimum number of trades, computed exactly, and you get par plus five. Careless trades are the whole game: a good player reads the faded tiles across both crossing words before touching anything, and the best trades home two tiles at once. Solve at par for a perfect score.

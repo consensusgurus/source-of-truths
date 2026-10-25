@@ -279,6 +279,19 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
+  // THE OUTLINED SLOTS (owner, 2026-10-25, option A): every square is a box
+  // with a firm outline, a filled square is tinted, the square you are on is
+  // solid, and the keys are neutral so they never read as board. The tokens
+  // come from globals.css and follow every look.
+  const SLOT = STAGE ? 'var(--stg-slot)' : T.white;
+  const SLOT_L = STAGE ? 'var(--stg-slot-line)' : 'rgba(28,30,36,0.35)';
+  const SLOT_L2 = STAGE ? 'var(--stg-slot-line2)' : ACC_INK;
+  const SLOT_F = STAGE ? 'var(--stg-slot-fill)' : ACC_SOFT;
+  const SLOT_ON_INK = STAGE ? 'var(--stg-slot-on-ink)' : ON_ACC;
+  const SLOT_BAND = STAGE ? 'var(--stg-slot-band)' : ACC_SOFT;
+  const KEY = STAGE ? 'var(--stg-key)' : 'var(--white)';
+  const KEY_L = STAGE ? 'var(--stg-key-line)' : '#b9bfcb';
+  const KEY_FN = STAGE ? 'var(--stg-key-fn)' : ACC_SOFT;
   const panelStyle = { background: SURF, border: '1px solid ' + (STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.12)'), borderRadius: 12 };
   const prevPuzzle = puzzles.find((x) => x.num === PUZZLE.num - 1) || null;
   // Focus mode: while the puzzle is live the leaderboard / share / other-games
@@ -703,6 +716,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   const cellCls = (n, small) => {
     const c = ['an-cell'];
     if (small) c.push('bk');
+    if (shownFill[n]) c.push('fl');
     if (owner[n] === curAnswer) c.push('mine');
     if (n === cur) c.push('on');
     if (!playing && shownFill === sol && fill[n] !== sol[n]) c.push('miss');
@@ -825,11 +839,14 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   // The extra under the spine column (stacked layout only): the answer you are
   // in, and Give up.
   const studyNote = won ? 'Here is the finished passage.' : 'Here is the full passage. Your misses are marked in red.';
-  const giveUpBtn = playing ? <button className="an-btn" onClick={giveUp}><Flag size={15} />Give up</button> : null;
+  // GIVE UP SITS AT THE FOOT OF THE BOARD (owner, 2026-10-25), a quiet link
+  // rather than a button competing with the board.
+  const giveUpBtn = playing ? <button type="button" className="an-quit" onClick={giveUp}><Flag size={13} />Give up</button> : null;
+  const giveUpFoot = giveUpBtn ? <div className="an-foot">{giveUpBtn}</div> : null;
   const sideExtra = (
     <>
       <YouAreIn />
-      {giveUpBtn && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 14 }}>{giveUpBtn}</div>}
+      {split && giveUpFoot}
     </>
   );
 
@@ -895,21 +912,26 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-cardlab b{color:${INK};font-weight:800;}
           .an-quote{display:flex;flex-wrap:wrap;gap:9px 13px;}
           .an-word{display:flex;gap:2px;}
-          .an-cell{border:0;border-bottom:2px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};border-radius:4px 4px 0 0;background:transparent;
+          .an-foot{display:flex;justify-content:center;margin:2px 0 14px;}
+          .an-quit{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border:0;background:transparent;cursor:pointer;
+            font-family:${SANS};font-weight:700;font-size:13px;color:${FADED};text-decoration:underline;text-underline-offset:3px;}
+          .an-quit:hover{color:${INK};}
+          .an-cell{border:1.5px solid ${SLOT_L};border-radius:4px;background:${SLOT};
             display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-size:16px;box-sizing:border-box;
             color:${INK};cursor:pointer;flex:none;transition:background 90ms,border-color 90ms;}
-          .an-cell.bk{background:${STAGE ? 'var(--stg-cell)' : '#eef1f5'};font-size:14px;}
-          .an-cell.mine{background:${ACC_SOFT};border-bottom-color:${ACC_INK};}
-          .an-cell.on{background:${ACC};border-bottom-color:${ACC_INK};color:${ON_ACC};}
-          .an-cell.miss{background:${STAGE ? 'repeating-linear-gradient(45deg, color-mix(in srgb, var(--stg-ink) 22%, transparent) 0 2px, transparent 2px 7px), color-mix(in srgb, var(--stg-bad) 16%, var(--stg-cell))' : '#fee2e2'};border-bottom-style:dashed;border-bottom-color:${STAGE ? 'var(--stg-bad)' : '#dc2626'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};font-weight:800;}
+          .an-cell.bk{font-size:14px;}
+          .an-cell.fl{background:${SLOT_F};border-color:${SLOT_L2};}
+          .an-cell.mine{border-color:${SLOT_L2};}
+          .an-cell.on{background:${SLOT_L2};border-color:${SLOT_L2};color:${SLOT_ON_INK};}
+          .an-cell.miss{background:${STAGE ? 'repeating-linear-gradient(45deg, color-mix(in srgb, var(--stg-ink) 22%, transparent) 0 2px, transparent 2px 7px), color-mix(in srgb, var(--stg-bad) 16%, var(--stg-cell))' : '#fee2e2'};border-style:solid;border-color:${STAGE ? 'var(--stg-bad)' : '#dc2626'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};font-weight:800;}
           .an-punc{align-self:center;color:var(--stg-mute, #6b7280);font-weight:800;width:7px;text-align:center;}
           .an-sig{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.12)'};}
           .an-sigdash{width:18px;height:2px;background:${FADED};flex:none;}
           .an-siglab{font-family:${MONO};font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:${FADED};}
           .an-spine{display:flex;gap:4px;align-items:center;flex-wrap:wrap;}
-          .an-spine i{width:26px;height:32px;box-sizing:border-box;border-radius:5px;background:${ACC_SOFT};border:1.5px solid ${ACC_INK};
-            display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:17px;color:${ACC_INK};}
-          .an-spine i.blank{color:${FADED};background:transparent;}
+          .an-spine i{width:26px;height:32px;box-sizing:border-box;border-radius:5px;background:${SLOT_F};border:1.5px solid ${SLOT_L2};
+            display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:17px;color:${INK};}
+          .an-spine i.blank{color:transparent;background:${SLOT};border-color:${SLOT_L};}
           .an-sigrow{display:flex;align-items:center;gap:8px;margin:0 0 12px;}
           .an-sigrow .an-spine i{width:24px;height:30px;font-size:16px;}
           .an-banks{display:grid;grid-template-columns:1fr 1fr;gap:14px 28px;}
@@ -921,10 +943,10 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-bhead{font-family:${MONO};font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:${FADED};
             margin:0 0 8px;padding:0 4px;display:flex;justify-content:space-between;gap:10px;}
           .an-spinecol{position:relative;}
-          .an-spinecol::before{content:'';position:absolute;left:18px;top:6px;bottom:10px;width:2px;background:${ACC};}
+          .an-spinecol::before{content:'';position:absolute;left:18px;top:6px;bottom:10px;width:2px;background:${SLOT_L};}
           .an-row{position:relative;display:flex;align-items:center;gap:8px;min-height:34px;border-radius:8px;padding:3px 6px;margin-bottom:3px;}
-          .an-row.on{background:${ACC_SOFT};box-shadow:inset 3px 0 0 ${ACC_INK};}
-          .an-tag{width:26px;height:28px;box-sizing:border-box;border-radius:5px;border:1.5px solid ${ACC_INK};background:${STAGE ? 'var(--stg-ground)' : T.white};color:${ACC_INK};
+          .an-row.on{background:${SLOT_BAND};box-shadow:inset 4px 0 0 ${SLOT_L2};}
+          .an-tag{width:26px;height:28px;box-sizing:border-box;border-radius:5px;border:1.5px solid ${SLOT_L2};background:${SLOT};color:${INK};
             display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none;position:relative;z-index:1;}
           .an-tag.blank{color:${FADED};}
           .an-rowhead{width:96px;flex:none;display:flex;flex-direction:column;gap:1px;min-width:0;}
@@ -933,34 +955,35 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-len{font-family:${MONO};font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${FADED};}
           .an-ok{margin-left:auto;flex:none;display:inline-flex;color:var(--stg-good, ${COLORS.green});}
           .an-boxes{display:flex;gap:2px;flex-wrap:wrap;min-width:0;}
-          .an-you{margin-top:14px;border-radius:12px;border-left:4px solid ${ACC_INK};background:${ACC_SOFT};padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+          .an-you{margin-top:14px;border-radius:12px;border-left:4px solid ${SLOT_L2};background:${SLOT_BAND};padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
           .an-youhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-family:${MONO};font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:${FADED};}
           .an-youcells{display:flex;gap:4px;flex-wrap:wrap;}
-          .an-youcells span{width:34px;height:40px;box-sizing:border-box;border-radius:5px 5px 0 0;border-bottom:2px solid ${ACC_INK};background:${STAGE ? 'var(--stg-cell)' : T.white};color:${INK};
+          .an-youcells span{width:34px;height:40px;box-sizing:border-box;border-radius:5px;border:1.5px solid ${SLOT_L2};background:${SLOT};color:${INK};
             display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;cursor:pointer;}
-          .an-youcells span.on{background:${ACC};color:${ON_ACC};}
+          .an-youcells span.on{background:${SLOT_L2};color:${SLOT_ON_INK};}
           .an-youtx{font-size:12.5px;line-height:1.45;font-weight:600;color:var(--stg-ink2, #374151);}
           .an-seg{display:flex;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.25)'};border-radius:10px;overflow:hidden;margin-bottom:12px;}
           .an-dock{margin:6px 0 0;padding:4px 0 2px;display:flex;flex-direction:column;gap:8px;}
           .an-dockhead{display:flex;align-items:center;gap:8px;}
           .an-segd{display:flex;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};border-radius:10px;overflow:hidden;}
           .an-segd button{min-height:44px;border:0;background:transparent;color:${STAGE ? 'var(--stg-ink2)' : '#374151'};font-family:${SANS};font-weight:800;font-size:13px;padding:0 16px;cursor:pointer;}
-          .an-segd button.on{background:${ACC};color:${ON_ACC};}
+          .an-segd button.on{background:${SLOT_L2};color:${SLOT_ON_INK};}
           .an-nav{margin-left:auto;display:flex;gap:6px;}
           .an-nav button{display:flex;align-items:center;justify-content:center;padding:0;width:44px;height:44px;border-radius:10px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};background:transparent;color:${INK};cursor:pointer;font-weight:800;font-size:20px;line-height:1;}
           .an-topclue{display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:0 2px;}
           .an-topclue .an-cat,.an-dockclue .an-cat{font-size:12px;font-weight:800;}
-          .an-dockrow{display:flex;align-items:center;gap:10px;border-radius:10px;background:${ACC_SOFT};box-shadow:inset 3px 0 0 ${ACC_INK};padding:6px 10px;min-width:0;}
+          .an-dockrow{display:flex;align-items:center;gap:10px;border-radius:10px;background:${SLOT_BAND};box-shadow:inset 4px 0 0 ${SLOT_L2};padding:6px 10px;min-width:0;}
           .an-dockclue{display:flex;align-items:center;gap:8px;flex:none;}
           .an-dockclue .an-rowhead{width:74px;}
           .an-dockbody{display:flex;gap:3px;overflow-x:auto;padding-bottom:2px;min-width:0;}
-          .an-dcell{width:26px;height:32px;box-sizing:border-box;border-radius:4px 4px 0 0;background:${STAGE ? 'var(--stg-cell)' : T.white};border-bottom:2px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};display:flex;align-items:center;
+          .an-dcell{width:26px;height:32px;box-sizing:border-box;border-radius:4px;background:${SLOT};border:1.5px solid ${SLOT_L};display:flex;align-items:center;
             justify-content:center;font-weight:800;font-size:16px;color:${INK};flex:none;cursor:pointer;}
-          .an-dcell.mine{border-bottom-color:${ACC_INK};}
-          .an-dcell.on{background:${ACC};border-bottom-color:${ACC_INK};color:${ON_ACC};}
+          .an-dcell.mine{border-color:${SLOT_L2};}
+          .an-dcell.fl{background:${SLOT_F};border-color:${SLOT_L2};}
+          .an-dcell.on{background:${SLOT_L2};border-color:${SLOT_L2};color:${SLOT_ON_INK};}
           .an-dcell.gap{background:none;border:0;width:7px;cursor:default;}
           .an-seg button{flex:1;border:0;background:transparent;min-height:44px;padding:0;font-family:${SANS};font-weight:800;font-size:13.5px;color:${STAGE ? 'var(--stg-ink2)' : '#4b5563'};cursor:pointer;}
-          .an-seg button.on{background:${ACC};color:${ON_ACC};}
+          .an-seg button.on{background:${SLOT_L2};color:${SLOT_ON_INK};}
           .an-input{position:fixed;left:0;right:0;bottom:0;z-index:40;background:${STAGE ? 'var(--stg-raise,#0e131f)' : '#e5e8ef'};
             border-top:1px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(20,22,28,0.14)'};box-shadow:0 -4px 16px rgba(20,22,28,0.12);
             padding:4px 10px calc(6px + env(safe-area-inset-bottom));}
@@ -968,10 +991,10 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-input .an-kb{background:none;border-radius:0;padding:8px 0 4px;}
           .an-kb{display:flex;flex-direction:column;gap:6px;background:${STAGE ? 'var(--stg-raise,#0e131f)' : '#e5e8ef'};border-radius:0 0 10px 10px;padding:7px 4px 9px;}
           .an-kr{display:flex;gap:4px;justify-content:center;}
-          .an-kr button{flex:1;max-width:34px;height:44px;border:0;border-bottom:2px solid ${STAGE ? 'var(--stg-cell-line)' : '#b9bfcb'};border-radius:6px;background:${STAGE ? 'var(--stg-cell)' : 'var(--white)'};color:${INK};font-family:${SANS};
+          .an-kr button{flex:1;max-width:34px;height:44px;border:0;border-bottom:2px solid ${KEY_L};border-radius:6px;background:${KEY};color:${INK};font-family:${SANS};
             touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
             font-weight:800;font-size:15px;cursor:pointer;padding:0;}
-          .an-kr button.wide{max-width:52px;font-size:11px;letter-spacing:0.08em;background:${ACC_SOFT};color:${ACC_INK};}
+          .an-kr button.wide{max-width:52px;font-size:11px;letter-spacing:0.08em;background:${KEY_FN};color:${INK};}
           .an-kr button.del{display:flex;align-items:center;justify-content:center;}
           .an-kr button:active{background:${STAGE ? 'var(--stg-line2,rgba(255,255,255,0.17))' : '#cfd6e2'};}
         ` }} />
@@ -1051,7 +1074,6 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
                 <div className="an-sigrow">
                   <span className="an-siglab">Signed</span>
                   {signature}
-                  {giveUpBtn && <span style={{ marginLeft: 'auto' }}>{giveUpBtn}</span>}
                 </div>
               )}
 
@@ -1095,6 +1117,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
                 </>
               )}
 
+              {!split && giveUpFoot}
               {(split || narrow) && <StudyBar hold={study} note={studyNote} />}
 
             </>
@@ -1219,7 +1242,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
                   {(view === 'b' ? passageAround(cur) : A[curAnswer].c).map((n, i) => (
                     n < 0
                       ? <div key={`g${i}`} className="an-dcell gap" />
-                      : <div key={n} className={`an-dcell${n === cur ? ' on' : (owner[n] === curAnswer ? ' mine' : '')}`} onClick={() => focusCell(n)}>{fill[n] || ''}</div>
+                      : <div key={n} className={`an-dcell${n === cur ? ' on' : (fill[n] ? ' fl' : (owner[n] === curAnswer ? ' mine' : ''))}`} onClick={() => focusCell(n)}>{fill[n] || ''}</div>
                   ))}
                 </div>
               </div>
