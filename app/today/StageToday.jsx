@@ -43,7 +43,7 @@ const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => LIVE_KEYS.has(g.key));
 import { DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
 import GameGlyph from '../GameGlyph';
 import CircuitArt from '../CircuitArt';
-import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
+import { softGround, RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
 import PolymathRunCard from './PolymathRunCard';
 import { POLY_LEGS, localPolymath } from '@/lib/polymath';
 import { SKILLS, SKILL_MAP, hasSkill } from '@/lib/daily-skills';
@@ -78,7 +78,7 @@ import { ChallengeBack, ChallengeRail, CapTickets } from '../ChallengeBack';
 import { useMyTickets } from '../TicketDoor';
 import { DRAWING, drawingIsLive, formatTickets } from '@/lib/drawing';
 import MindLoftMark from '../MindLoftMark';
-import { holdRootPaint } from '@/lib/root-paint';
+import { useStageChrome } from '../GauntletScreens';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
 import RollNum from '../RollNum';
 import useFlip from '../useFlip';
@@ -869,6 +869,14 @@ function BalancedPills({ children }) {
       {rows > 1 ? lines.map((ln, i) => <div key={i} className="sty-cprow">{ln}</div>) : items}
     </div>
   );
+}
+
+// A hex blend: `p` of a into b. For colours that must be plain hex (theme-color).
+function mixHex(a, b, p) {
+  const h = (x) => parseInt(x.slice(1), 16);
+  const A = h(a); const B = h(b);
+  const c = (sh) => Math.round(((A >> sh) & 255) * p + ((B >> sh) & 255) * (1 - p)).toString(16).padStart(2, '0');
+  return '#' + c(16) + c(8) + c(0);
 }
 
 export default function StageToday() {
@@ -3453,8 +3461,10 @@ export default function StageToday() {
   const mPane = runsMq && picked && mph;
   const mBackTo = paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID ? 'Home' : ixLens === 'skill' ? 'All skills' : 'All categories';
   const mTintCat = mPane && paneCat(paneOn) ? rampCat(paneOn) : null;
-  const mTintBg = mTintCat ? (light ? `color-mix(in srgb, ${categoryColor(mTintCat)} 60%, #fff)` : `color-mix(in srgb, ${categoryColor(mTintCat)} 22%, #0b0f1a)`) : null;
-  useEffect(() => (mTintBg ? holdRootPaint(mTintBg) : undefined), [mTintBg]);
+  // A real hex, not color-mix: the browser bar colour (theme-color) takes only a plain colour.
+  const mTintBg = mTintCat ? (light ? softGround(categoryColor(mTintCat)) : mixHex(categoryColor(mTintCat), '#0b0f1a', 0.22)) : null;
+  // The same hold the play stages use, so Safari's top and bottom bars take the colour too.
+  useStageChrome(mTintBg);
   const mGroup = grp && Array.isArray(grp.groups) && grp.groups.length ? grp.groups[0] : null;
   const mPlayed = DAILY_GAMES.reduce((n, g) => n + (done.has(g.key) ? 1 : 0), 0);
   return (

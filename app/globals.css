@@ -1068,10 +1068,10 @@ html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::
    the flood is up, the root and its scrollbar take the overlay's colour, so the
    reserved gutter on the right is never a dark strip beside a full-colour
    screen. Last in the file so it wins over html:has(.stage-page). */
-html[data-sot-paint],
-html[data-sot-paint] body { background: var(--sot-root-paint) !important; }
+html[data-sot-paint]:not(#sot-x),
+html[data-sot-paint]:not(#sot-x) body { background: var(--sot-root-paint) !important; }
 html[data-sot-paint] { scrollbar-color: var(--sot-root-paint) var(--sot-root-paint); }
-html[data-sot-paint] body::before { background: var(--sot-root-paint) !important; }
+html[data-sot-paint]:not(#sot-x) body::before { background: var(--sot-root-paint) !important; }
 
 /* THE PAGE WAITS FOR ITS OWN STATE (owner, 2026-10-24). Until the client has
    read its saved state (app/HydrationMark.jsx stamps html[data-sot-hyd]), the
