@@ -47,6 +47,7 @@ import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import LoftFinish from '../LoftFinish';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
@@ -299,6 +300,8 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
   const allTime = useGameAllTime({ game: 'niche', active: LOFT && !playing });
   const dayStats = useDayStats();
   const catRank = useCategoryRank({ self: 'niche', active: LOFT && !playing });
+  const phoneStage = usePhoneStage();
+  const stageInRef = useRef(null);
 
   useEffect(() => {
     if (!armEnd) return undefined;
@@ -627,6 +630,128 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        // The phone stage (owner, 2026-10-25): the grid, the selected cell's two
+        // conditions, the type-ahead and End and score, all wired to the
+        // handlers below (submitPick, endNow, setSel). Gone the moment it ends.
+        const WD = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const wday = PUZZLE.live ? WD[new Date(`${PUZZLE.live}T12:00:00Z`).getUTCDay()] : '';
+        const q2 = query.trim();
+        const pickCell = (i) => {
+          if (!playing || picks[i]) return;
+          setSel(i); setQuery(''); setHot(0);
+          setTimeout(() => { try { stageInRef.current && stageInRef.current.focus({ preventScroll: true }); } catch (e) {} }, 30);
+        };
+        const takeHot = () => { const m = suggestions[hot]; if (m && !usedNames.has(m.t)) submitPick(m); };
+        const grid = (
+          <>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .nch-g{display:grid;gap:6px;}
+              .nch-ch,.nch-rh{font-size:11px;font-weight:800;line-height:1.2;display:flex;}
+              .nch-ch{align-items:flex-end;justify-content:center;text-align:center;padding:0 2px 4px;}
+              .nch-rh{align-items:center;justify-content:flex-start;text-align:left;border-left:4px solid var(--pst-ink);padding:0 0 0 8px;}
+              .nch-c{aspect-ratio:1;border-radius:13px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px;min-width:0;overflow:hidden;}
+              .nch-c b{font-size:15px;font-weight:800;text-align:center;line-height:1.1;overflow-wrap:anywhere;}
+              .nch-c i{font-style:normal;font-size:11px;font-weight:800;opacity:.85;}
+              .nch-g.g4 .nch-c{border-radius:11px;}
+              .nch-g.g4 .nch-c b{font-size:12px;}
+              .nch-g.g4 .nch-c i{font-size:10px;}
+              .nch-g.g4 .nch-ch,.nch-g.g4 .nch-rh{font-size:10px;}
+              .pst button.nch-c.f{background:var(--pst-ink);color:var(--pst-bg);}
+              .nch-c.sel{border-style:dashed;border-width:3px;background:transparent;}
+              .nch-c.sel i{opacity:.7;}
+              .nch-ask{text-align:center;font-size:14px;font-weight:800;line-height:1.35;}
+              .nch-sub{font-size:12px;font-weight:700;opacity:.7;margin-left:6px;}
+            ` }} />
+            <div className={`nch-g${SIZE === 4 ? ' g4' : ''}`} role="grid" aria-label="Board"
+              style={{ gridTemplateColumns: `${SIZE === 4 ? 70 : 86}px repeat(${SIZE}, minmax(0, 1fr))` }}>
+              <span aria-hidden="true" />
+              {colAttrs.map((a) => <span key={a.id} className="nch-ch">{a.label}</span>)}
+              {rowAttrs.map((ra, r) => (
+                <React.Fragment key={ra.id}>
+                  <span className="nch-rh">{ra.label}</span>
+                  {colAttrs.map((ca, c) => {
+                    const i = r * SIZE + c;
+                    const name = picks[i];
+                    const pct = g.rar[i];
+                    const coord = `${r + 1}${COL_KEYS[c]}`;
+                    if (name) {
+                      const rare = pct != null && pct <= RARE_PCT;
+                      return (
+                        <button key={ca.id} type="button" className="nch-c f" aria-label={`Cell ${coord}, ${name}${pct != null ? `, ${pct}% picked` : ''}`}>
+                          <b>{name}</b>
+                          {pct != null ? <i>{rare ? `${pct}% · rare` : `${pct}% picked`}</i> : null}
+                        </button>
+                      );
+                    }
+                    const isSel = i === sel;
+                    return (
+                      <button key={ca.id} type="button" className={`nch-c${isSel ? ' sel' : ''}`}
+                        aria-pressed={isSel}
+                        aria-label={isSel ? `Answering cell ${coord}` : `Empty cell ${coord}`}
+                        onClick={() => pickCell(i)}>
+                        {isSel ? <i>Answering</i> : null}
+                      </button>
+                    );
+                  })}
+                </React.Fragment>
+              ))}
+            </div>
+            <div className="nch-ask">
+              {sel >= 0
+                ? <>{rowAttrs[selRow].label} <span style={{ opacity: 0.7 }}>+</span> {colAttrs[selCol].label}</>
+                : 'Tap an empty cell to answer it.'}
+            </div>
+          </>
+        );
+        const bottom = (
+          <>
+            {toast ? <div className="pst-note" role="status">{toast}</div> : null}
+            {sel >= 0 && suggestions.length > 0 ? (
+              <div className="pst-sug" aria-label="Matching answers">
+                {suggestions.map((m, i) => {
+                  const used = usedNames.has(m.t);
+                  return (
+                    <button key={m.t} type="button" className={i === hot ? 'on' : undefined}
+                      disabled={used} style={used ? { opacity: 0.5 } : undefined}
+                      onClick={() => { if (!used) submitPick(m); }}>
+                      {m.t}
+                      {used ? <span className="nch-sub">used</span> : (U.id === 'movies' || U.id === 'tv') && m.y ? <span className="nch-sub">{m.y}</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (sel >= 0 && q2.length >= 2 ? (
+              <div className="pst-sug"><div className="none">No {U.noun} on today&apos;s list matches that. It has cost you nothing.</div></div>
+            ) : null)}
+            <form className="pst-in" onSubmit={(e) => { e.preventDefault(); takeHot(); }}>
+              <input ref={stageInRef} value={query}
+                placeholder={sel >= 0 ? `Type a ${U.noun}` : 'Tap an empty cell first'}
+                disabled={sel < 0}
+                onChange={(e) => { setQuery(e.target.value); setHot(0); }}
+                onKeyDown={(e) => { if (e.key !== 'Enter') onKey(e); }}
+                autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+                aria-label="Type an answer" />
+              <button type="submit" className="pst-go" disabled={sel < 0 || !suggestions[hot] || usedNames.has(suggestions[hot].t)}>Fits both</button>
+            </form>
+            {filled + g.misses > 0 ? (
+              <div className="pst-tools">
+                <button type="button" className={`pst-tb${armEnd ? ' on' : ''}`}
+                  onClick={() => { if (armEnd) { if (Date.now() - armEnd < ARM_MIN_MS) return; setArmEnd(false); endNow(); } else { setArmEnd(Date.now()); } }}>
+                  {armEnd ? 'Tap again to end and score' : 'End and score'}
+                </button>
+              </div>
+            ) : null}
+          </>
+        );
+        return (
+          <PlayStage bg={gameColor('niche')} label="Niche"
+            eyebrow={`Niche · ${wday ? `${wday} · ` : ''}${U.name}`}
+            top={grid} bottom={bottom}
+            foot={`${filled} of ${CELLS} filled · ${guessesLeft} ${guessesLeft === 1 ? 'guess' : 'guesses'} left · rarer picks are the flex`}
+            frac={filled / CELLS} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="niche" name="Niche" collapsed={started} loft={LOFT} />

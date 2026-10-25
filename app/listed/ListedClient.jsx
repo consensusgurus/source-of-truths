@@ -59,6 +59,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -294,6 +295,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
   const [drag, setDrag] = useState(null); // {from, dy, target} while a desktop drag is live
 
   const [showChrome, setShowChrome] = useState(false);
+  const phoneStage = usePhoneStage();
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;   // not begun: show the start tile in place of the board
   const started = playing && !!g.t0;   // clock running: show the board
@@ -777,6 +779,51 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (
+        // The phone stage (owner, 2026-10-25): the same board drawn full screen.
+        // Every control calls the board's own handlers; nothing here keeps state.
+        <PlayStage bg={gameColor('listed')} label="Listed"
+          eyebrow={`${PUZZLE.cat ? `${PUZZLE.cat} · ` : ''}Submit ${Math.min(checksUsed + 1, MAX_CHECKS)} of ${MAX_CHECKS}`}
+          top={<>
+            <style dangerouslySetInnerHTML={{ __html: '.lst-leg{text-align:center;font-size:12px;font-weight:700;opacity:.75;}.lst-lk{width:44px;display:flex;justify-content:center;flex:none;}' }} />
+            <h2 className="pst-q">{PUZZLE.title}</h2>
+            <div className="pst-end"><span>{PUZZLE.hi}</span><span>{PUZZLE.metric || ''}</span></div>
+            <div className="pst-list" role="list">
+              {g.order.map((it, slot) => {
+                const locked = lockedSlots[slot];
+                const near = !locked && g.marks && g.marks[slot] === NEAR;
+                const nm = PUZZLE.items[it].t;
+                const showVal = locked || (g.hintUsed && g.hintIdx === it);
+                return (
+                  <div key={it} role="listitem" className={'pst-row' + (locked ? ' on' : '')}>
+                    <span className="n">{slot + 1}</span>
+                    <span className="t">{nm}{showVal ? <small>{PUZZLE.items[it].v}</small> : null}</span>
+                    {near ? <span className="pst-tag">1 off</span> : null}
+                    {locked ? (
+                      <span className="lst-lk" aria-label="Locked">{ICON.check}</span>
+                    ) : (
+                      <span className="pst-mv">
+                        <button type="button" onClick={() => moveRow(slot, -1)} disabled={slot === 0 || lockedSlots.slice(0, slot).every(Boolean)} aria-label={`Move ${nm} up`}>{ICON.up}</button>
+                        <button type="button" onClick={() => moveRow(slot, 1)} disabled={slot === N - 1 || lockedSlots.slice(slot + 1).every(Boolean)} aria-label={`Move ${nm} down`}>{ICON.down}</button>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="pst-end"><span>{PUZZLE.lo}</span><span></span></div>
+            <div className="lst-leg">{toast || 'Filled is locked. 1 off is one place from home.'}</div>
+          </>}
+          bottom={
+            <div className="pst-tools">
+              {hintOk && !g.hintUsed ? <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb}Hint</button> : null}
+              <button type="button" className="pst-tb on" onClick={submitOrder}>{ICON.check}Submit</button>
+            </div>
+          }
+          foot={`${lockedCount} locked of ${N} · ${checksLeft} submit${checksLeft === 1 ? '' : 's'} left`}
+          frac={N ? lockedCount / N : 0}
+          giveUp={{ armed: !!armReveal, label: 'Reveal the ranking and end', armedLabel: 'Tap again, this ends the puzzle and shows the real order', onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } }} />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

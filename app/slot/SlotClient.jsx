@@ -55,6 +55,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -214,6 +215,14 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
+  const phoneStage = usePhoneStage();
+  // The phone stage's Give up asks twice (a stray tap must not end the day).
+  const [stArm, setStArm] = useState(0);
+  useEffect(() => {
+    if (!stArm) return undefined;
+    const t = setTimeout(() => setStArm(0), 3500);
+    return () => clearTimeout(t);
+  }, [stArm]);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
@@ -517,6 +526,50 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        // The phone stage (owner, 2026-10-25): the same slots drawn full screen.
+        // An open slot places the item in hand through place(); Give up calls giveUp().
+        const unitBit = DAY.unit ? (DAY.unit === 'year' ? ' · by year' : ` · in ${DAY.unit}`) : '';
+        return (
+          <PlayStage bg={gameColor('slot')} label="Slot"
+            eyebrow={`Slot${DAY.axis ? ` · ${DAY.axis}` : ''} · Item ${Math.min(k + 1, N)} of ${N}`}
+            topKey={k}
+            top={<>
+              <style dangerouslySetInnerHTML={{ __html: '.slt-list{gap:4px;}.slt-list .pst-row{min-height:44px;border-radius:12px;}.slt-list .pst-row .t{font-size:15px;}.slt-list .pst-end{padding:2px 4px;}' }} />
+              {current != null ? (
+                <div className="pst-card" role="status" aria-live="polite">
+                  <small>Place it, nothing moves once it is down</small>
+                  <b>{ITEMS[current][0]}</b>
+                </div>
+              ) : null}
+              <div className="pst-list slt-list" role="group" aria-label={`${N} slots`}>
+                <div className="pst-end"><span>{DAY.top || 'Top'}</span></div>
+                {placed.map((it, s) => (it == null ? (
+                  <button key={s} type="button" className="pst-row e" onClick={() => place(s)}
+                    aria-label={current != null ? `Place ${ITEMS[current][0]} in slot ${s + 1}` : `Slot ${s + 1}, open`}>
+                    <span className="n">{s + 1}</span><span className="t">Drop here</span>
+                  </button>
+                ) : (
+                  <div key={s} className="pst-row on" aria-label={`Slot ${s + 1}: ${ITEMS[it][0]}`}>
+                    <span className="n">{s + 1}</span><span className="t">{ITEMS[it][0]}</span>
+                  </div>
+                )))}
+                <div className="pst-end"><span>{DAY.bottom || 'Bottom'}</span></div>
+              </div>
+              {notice ? <div className="pst-note" aria-live="polite">{notice.msg}</div> : null}
+            </>}
+            bottom={
+              <div className="pst-tools">
+                <button type="button" className={'pst-tb' + (stArm ? ' on' : '')}
+                  onClick={() => { if (stArm) { if (Date.now() - stArm < 400) return; setStArm(0); giveUp(); } else { setStArm(Date.now()); } }}>
+                  {stArm ? 'Tap again to end' : 'Give up'}
+                </button>
+              </div>
+            }
+            foot={`${k} placed · par ${PAR}${unitBit}`}
+            frac={N ? k / N : 0} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="slot" name="Slot" collapsed={started} loft={LOFT} />

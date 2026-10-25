@@ -349,7 +349,7 @@ export default function StageChrome({
           </div>
           <div className="stg-simt">
             <h1>{name}</h1>
-            <i>{dateLabel || ''}{sunday ? <>{dateLabel ? ' · ' : ''}{sunday}</> : null}</i>
+            <i>{dateShort || dateLabel || ''}{sunday ? <>{(dateShort || dateLabel) ? ' · ' : ''}{sunday}</> : null}</i>
           </div>
         </>
       ) : null}
@@ -619,9 +619,15 @@ const CSS = `
 .stg-sim{padding:max(12px, env(safe-area-inset-top)) 14px 0;}
 html:not([data-stage-pastel]) .stg-sim,html:not([data-stage-pastel]) .stg-simt{display:none;}
 html[data-stage-pastel] .stg-cap,html[data-stage-pastel] .stg-prog,html[data-stage-pastel] .stg-strip{display:none !important;}
-.stg-simt{padding:14px 14px 2px;color:var(--stg-ink,#08222e);}
-.stg-simt h1{margin:0;font:inherit;font-size:30px;line-height:1.05;font-weight:800;letter-spacing:-.02em;}
-.stg-simt i{display:block;font-style:normal;margin-top:4px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
+/* CONDENSED (owner, 2026-10-25): the name and the date share one line, and the
+   figures under it are one short row, so the board starts higher. */
+.stg-simt{padding:10px 14px 0;color:var(--stg-ink,#08222e);display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.stg-simt h1{margin:0;font:inherit;font-size:24px;line-height:1.2;font-weight:800;letter-spacing:-.02em;}
+.stg-simt i{display:block;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
+html[data-stage-pastel] .stg-fg{padding:4px 14px 8px;gap:22px;}
+html[data-stage-pastel] .stg-fg>div,html[data-stage-pastel] .stg-fg .stg-clk{flex-direction:row;align-items:baseline;gap:5px;}
+html[data-stage-pastel] .stg-fg b{font-size:14px;font-weight:800;}
+html[data-stage-pastel] .stg-fg i{font-size:10px;letter-spacing:.06em;}
 .stg-cap{display:flex;align-items:center;gap:16px;padding:12px 20px;position:relative;}
 .stg-id{display:flex;flex-direction:column;gap:1px;min-width:0;}
 .stg-id i{font-family:${MONO};font-style:normal;font-size:9.5px;letter-spacing:.15em;

@@ -51,6 +51,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { ANIMALS } from './animals';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 // A new game gets no colour of its own: on the stage it wears the Trivia step
 // of the category ramp. ACCENT is only the legacy (pre-stage) fallback.
@@ -260,6 +261,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
   const viewedRef = useRef(false);
 
   const [showChrome, setShowChrome] = useState(false);
+  const phoneStage = usePhoneStage();
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
@@ -555,6 +557,96 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        // The phone stage (owner, 2026-10-25): the tree so far, your guesses,
+        // then the type-ahead and the tools. Every control is the board's own.
+        const rows = [];
+        for (let i = 0; i < known; i++) {
+          const who = guesses.filter((nm, j) => nm !== PUZZLE.answer && depths[j] === i + 1);
+          rows.push(
+            <div key={'b' + i} className="cld-rg">
+              <span className="cld-d" aria-hidden="true" />
+              <span className="cld-l">{PATH[i]}</span>
+              {who.length ? <span className="cld-g">{who.join(', ')}</span> : null}
+            </div>
+          );
+        }
+        if (remBranches > 0) {
+          rows.push(
+            <div key="gh" className="cld-rg un">
+              <span className="cld-d" aria-hidden="true" />
+              <span className="cld-l">{remBranches === 1 ? 'One more branch' : `${remBranches} more branches`}</span>
+            </div>
+          );
+        }
+        rows.push(
+          <div key="leaf" className="cld-rg un ans">
+            <span className="cld-d" aria-hidden="true" />
+            <span className="cld-l">The hidden animal</span>
+          </div>
+        );
+        const noMatch = fold(q).length >= 2 && !opts.length;
+        const next = Math.max(1, 10 - guesses.length);
+        const down = guesses.length;
+        const foot = `${down} ${down === 1 ? 'guess' : 'guesses'} down · ${left} left · ${next} ${next === 1 ? 'point' : 'points'} if the next one lands`;
+        const top = (
+          <>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .cld-tree{display:flex;flex-direction:column;padding-left:6px;}
+              .cld-rg{display:flex;align-items:center;gap:12px;min-height:34px;position:relative;}
+              .cld-rg::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--pst-ink);}
+              .cld-rg:first-child::before{top:50%;}
+              .cld-d{width:18px;height:18px;border-radius:9px;background:var(--pst-ink);flex:none;position:relative;z-index:1;box-sizing:border-box;}
+              .cld-l{font-size:16px;font-weight:800;}
+              .cld-g{font-size:12px;font-weight:700;opacity:.75;margin-left:auto;text-align:right;}
+              .cld-rg.un .cld-d{background:var(--pst-bg);border:2px dashed var(--pst-ink);}
+              .cld-rg.un .cld-l{opacity:.6;}
+              .cld-rg.ans .cld-d{border-radius:5px;background:var(--pst-bg);border:2px solid var(--pst-ink);}
+              .cld-rg.ans::before{bottom:50%;}
+            ` }} />
+            <h2 className="pst-q">The tree so far</h2>
+            <div className="cld-tree" aria-label="Family tree">{rows}</div>
+            {guesses.length ? (
+              <div className="pst-chips" aria-label="Your guesses">
+                {guesses.map((nm) => <span key={nm} className="pst-chip">{nm}</span>)}
+              </div>
+            ) : <div className="pst-note">Any animal is a fair first guess.</div>}
+            {toast ? <div className="pst-note" aria-live="polite">{toast}</div> : null}
+          </>
+        );
+        const bottom = (
+          <>
+            {opts.length > 0 ? (
+              <div className="pst-sug" role="listbox" aria-label="Matching animals">
+                {opts.map((o, i) => (
+                  <button key={o} type="button" role="option" aria-selected={i === 0} className={i === 0 ? 'on' : undefined} onClick={() => pick(o)}>{o}</button>
+                ))}
+              </div>
+            ) : noMatch ? (
+              <div className="pst-sug" aria-live="polite"><div className="none">No animal on the list matches that. It has cost you nothing.</div></div>
+            ) : null}
+            <div className="pst-in">
+              <input type="text" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onInputKey}
+                placeholder="Type an animal" aria-label="Guess an animal" autoComplete="off" autoCorrect="off" spellCheck={false} />
+              <button type="button" className="pst-go" onClick={() => { if (opts.length) pick(opts[0]); }} disabled={!opts.length}>Guess</button>
+            </div>
+            <div className="pst-tools">
+              {hintOk && !g.hintUsed ? (
+                <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb}Hint</button>
+              ) : null}
+              <button type="button" className={'pst-tb' + (armReveal ? ' on' : '')}
+                onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+                {armReveal ? 'Tap again to end' : 'Give up'}
+              </button>
+            </div>
+          </>
+        );
+        return (
+          <PlayStage bg={gameColor('clade')} label="Clade"
+            eyebrow={`Clade · Guess ${Math.min(MAX, guesses.length + 1)} of ${MAX}`}
+            top={top} bottom={bottom} foot={foot} frac={guesses.length / MAX} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="clade" name="Clade" collapsed={started} loft={LOFT} />

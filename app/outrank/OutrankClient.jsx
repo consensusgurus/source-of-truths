@@ -56,6 +56,7 @@ import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -300,6 +301,11 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
   // away and the board sits on the run's dark ground; the game is unchanged.
   const EMBED = useRunEmbed();
   useRunHelp(EMBED, () => setShowHelp(true));
+  // The phone stage (owner, 2026-10-25): full screen while the game is in play.
+  const phoneStage = usePhoneStage();
+  // Which of the two moves the phone stage shows. Presentation only; null means
+  // "follow the save" (a full call opens on step 2, anything else on step 1).
+  const [orkStepPick, setOrkStepPick] = useState(null);
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -565,6 +571,27 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
     if (!playing) return;
     setG((cur) => ({ ...cur, order: [] }));
   }
+  // The phone stage's call is the whole slate as a list: what is placed, then
+  // what is not, in slate order. Committing it fills g.order with that list
+  // (the same order faceTheCrowd already sends); moving a row swaps it with its
+  // neighbour. State only: nothing is scored or posted here.
+  function fullOrder(order) {
+    return [...order, ...ITEMS.map((_, i) => i).filter((i) => order.indexOf(i) < 0)];
+  }
+  function commitOrder() {
+    if (!playing) return;
+    setG((cur) => (cur.order.length === K ? cur : { ...cur, order: fullOrder(cur.order) }));
+  }
+  function moveOrder(k, dir) {
+    if (!playing) return;
+    setG((cur) => {
+      const list = fullOrder(cur.order);
+      const j = k + dir;
+      if (j < 0 || j >= list.length) return cur;
+      [list[k], list[j]] = [list[j], list[k]];
+      return { ...cur, order: list };
+    });
+  }
 
   async function faceTheCrowd() {
     if (!playing || sending) return;
@@ -702,6 +729,76 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        // The phone stage (owner, 2026-10-25): step 1 votes (tap a row), step 2
+        // calls the crowd's order with up and down. Both write the same state
+        // the desktop board does, and Call it is the same faceTheCrowd.
+        const orkStep = g.fav == null ? 'vote' : (orkStepPick || (g.order.length === K ? 'call' : 'vote'));
+        const toCall = () => { if (g.fav == null) { say('Cast your vote first: tap your favorite.'); return; } commitOrder(); setOrkStepPick('call'); };
+        const list = fullOrder(g.order);
+        const css = `.ork-ps-steps{display:flex;justify-content:center;gap:6px;}
+.ork-ps-steps button{border:2px solid var(--pst-ink);border-radius:999px;padding:4px 12px;min-height:32px;font-size:12px;font-weight:800;background:transparent;}
+.ork-ps-steps button.on{background:var(--pst-ink);color:var(--pst-bg);}
+.ork-ps-steps button:disabled{opacity:.45;cursor:default;}
+.ork-ps .pst-row{min-height:60px;padding:0 6px 0 12px;}
+.ork-ps .pst-row .t{font-size:18px;}
+.ork-ps .pst-list{gap:6px;}
+.ork-ps .pst-sub{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;line-height:1.3;}`;
+        return (
+          <PlayStage bg={gameColor('outrank')} label="Outrank" topKey={orkStep}
+            frac={orkStep === 'call' ? 2 / 3 : (g.fav != null ? 1 / 3 : 0)}
+            top={(
+              <div className="ork-ps" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <style dangerouslySetInnerHTML={{ __html: css }} />
+                <div className="ork-ps-steps">
+                  <button type="button" className={orkStep === 'vote' ? 'on' : ''} aria-pressed={orkStep === 'vote'} onClick={() => setOrkStepPick('vote')}>1 Vote</button>
+                  <button type="button" className={orkStep === 'call' ? 'on' : ''} aria-pressed={orkStep === 'call'} disabled={g.fav == null} onClick={toCall}>2 Your call</button>
+                </div>
+                <h2 className="pst-q">{PUZZLE.theme}</h2>
+                <div className="pst-sub">{orkStep === 'vote' ? 'Tap your honest favorite. It goes into the crowd.' : 'How will today’s players vote?'}</div>
+                {orkStep === 'vote' ? (
+                  <div className="pst-list">
+                    {ITEMS.map((it, i) => (
+                      <button key={i} type="button" className={'pst-row' + (g.fav === i ? ' on' : '')} aria-pressed={g.fav === i} onClick={() => pickFav(i)}>
+                        <span className="t">{it}</span>
+                        {g.fav === i ? <span className="pst-tag f">Your vote</span> : null}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <div className="pst-end"><span>Most votes</span><span /></div>
+                    <div className="pst-list">
+                      {list.map((it, k) => (
+                        <div key={it} className={'pst-row' + (g.fav === it ? ' on' : '')}>
+                          <span className="n">{k + 1}</span>
+                          <span className="t">{ITEMS[it]}</span>
+                          {g.fav === it ? <span className="pst-tag f">Your vote</span> : null}
+                          <span className="pst-mv">
+                            <button type="button" aria-label={`Move ${ITEMS[it]} up`} disabled={k === 0} onClick={() => moveOrder(k, -1)}>{ICON.up}</button>
+                            <button type="button" aria-label={`Move ${ITEMS[it]} down`} disabled={k === list.length - 1} onClick={() => moveOrder(k, 1)}>{ICON.down}</button>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="pst-end"><span>Fewest votes</span><span /></div>
+                  </>
+                )}
+              </div>
+            )}
+            bottom={(
+              <>
+                {toast ? <div className="pst-note" role="status">{toast}</div> : null}
+                {orkStep === 'vote' ? (
+                  <button type="button" className="pst-tb on wide" disabled={g.fav == null} onClick={toCall}>Next: your call</button>
+                ) : (
+                  <button type="button" className="pst-tb on wide" disabled={sending} onClick={() => { if (g.order.length < K) commitOrder(); else faceTheCrowd(); }}>{sending ? 'Facing the crowd…' : 'Call it'}</button>
+                )}
+              </>
+            )}
+            foot={g.fav != null ? `You voted for ${ITEMS[g.fav]} · nothing is final until midnight` : 'Vote for your favorite · nothing is final until midnight'} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

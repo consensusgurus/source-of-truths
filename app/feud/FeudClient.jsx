@@ -56,6 +56,7 @@ import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -326,6 +327,10 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
   // away and the board sits on the run's dark ground; the game is unchanged.
   const EMBED = useRunEmbed();
   useRunHelp(EMBED, () => setShowHelp(true));
+  // The phone stage (owner, 2026-10-25): full screen while the game is in play.
+  // Its three inputs keep their own refs so the desktop board's stay intact.
+  const phoneStage = usePhoneStage();
+  const fudRefs = useRef([]);
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -725,6 +730,92 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && playing && !!g.t0 && (() => {
+        // The phone stage (owner, 2026-10-25): one prompt at a time, three
+        // answer fields, Back and Next walk the prompts with goTo, and the last
+        // Next is the same Lock in (faceTheCrowd) the desktop board uses.
+        const row = g.entries[step] || [];
+        const last = step === P - 1;
+        const filledHere = row.filter((t) => t && t.trim()).length;
+        const focusSlot = (j) => setTimeout(() => { try { const el = fudRefs.current[j]; if (el) el.focus(); } catch (e) {} }, 0);
+        const go = (i) => { goTo(i, false); focusSlot(0); };
+        const onKey = (e, j) => {
+          if (e.key !== 'Enter') return;
+          e.preventDefault();
+          if (j < MAX_PER_PROMPT - 1) { focusSlot(j + 1); return; }
+          if (!last) go(step + 1);
+          else if (readyToFace) faceTheCrowd();
+        };
+        const css = `.fud-pips{display:flex;justify-content:center;gap:6px;}
+.fud-pips button{width:30px;height:24px;padding:9px 0;border:0;background:transparent;display:flex;align-items:center;}
+.fud-pips button span{display:block;width:100%;height:6px;border-radius:3px;background:color-mix(in srgb, var(--pst-ink) 22%, transparent);}
+.fud-pips button.on span{background:var(--pst-ink);}
+.fud-q.pst-q{font-size:clamp(22px,6.8vw,27px);}
+.fud-an{display:flex;flex-direction:column;gap:10px;}
+.fud-a{display:flex;flex-direction:column;gap:4px;}
+.fud-a small{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;padding-left:4px;}
+.fud-a input{width:100%;min-height:58px;border-radius:14px;border:2px dashed var(--pst-ink);background:transparent;padding:0 16px;font:inherit;font-size:20px;font-weight:800;color:var(--pst-ink);outline:none;}
+.fud-a input::placeholder{color:var(--pst-ink);opacity:.6;font-size:15px;font-weight:700;}
+.fud-a input.fill{border-style:solid;background:var(--pst-ink);color:var(--pst-bg);}
+.fud-a input:focus{border-style:solid;border-width:3px;padding:0 15px;background:var(--pst-tint);color:var(--pst-ink);}
+.fud-nav{display:flex;gap:10px;}
+.fud-nav .pst-tb{flex:1;min-height:52px;}`;
+        return (
+          <PlayStage bg={gameColor('feud')} label="Feud" topKey={step}
+            eyebrow={`Feud · Prompt ${step + 1} of ${P}`}
+            frac={answeredCount / P}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: css }} />
+                <div className="fud-pips">
+                  {PROMPTS.map((_, p) => (
+                    <button key={p} type="button" className={p <= step ? 'on' : ''} aria-current={p === step ? 'step' : undefined}
+                      aria-label={`Prompt ${p + 1} of ${P}${(g.entries[p] || []).some((t) => t && t.trim()) ? ', answered' : ''}`}
+                      onClick={() => go(p)}><span /></button>
+                  ))}
+                </div>
+                <h2 className="pst-q fud-q">{PROMPTS[step] && PROMPTS[step].q}</h2>
+                <div className="fud-an">
+                  {row.map((val, j) => (
+                    <label key={`${step}-${j}`} className="fud-a">
+                      <small>{SLOT_HINTS[j]}</small>
+                      <input
+                        ref={(el) => { fudRefs.current[j] = el; }}
+                        className={val && val.trim() ? 'fill' : ''}
+                        type="text"
+                        maxLength={48}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        enterKeyHint={j < MAX_PER_PROMPT - 1 ? 'next' : (last ? 'done' : 'next')}
+                        placeholder="Type an answer"
+                        value={val}
+                        onChange={(e) => setEntry(step, j, e.target.value)}
+                        onKeyDown={(e) => onKey(e, j)}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
+            bottom={(
+              <>
+                {toast ? <div className="pst-note" role="status">{toast}</div> : null}
+                <div className="fud-nav">
+                  <button type="button" className="pst-tb" disabled={step === 0} onClick={() => go(step - 1)}>Back</button>
+                  {last ? (
+                    <button type="button" className="pst-tb on" disabled={sending || !readyToFace} onClick={faceTheCrowd}>{sending ? 'Facing the crowd…' : 'Lock in'}</button>
+                  ) : (
+                    <button type="button" className="pst-tb on" onClick={() => go(step + 1)}>Next</button>
+                  )}
+                </div>
+              </>
+            )}
+            foot={last && readyToFace
+              ? 'Every prompt has an answer · lock in to face the crowd'
+              : `${filledHere < MAX_PER_PROMPT ? 'Fill all three' : `${answeredCount} of ${P} prompts answered`} · the answer key is today’s players`} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

@@ -52,6 +52,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { UNIVERSES } from './universes';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 // A new game gets no colour of its own: on the stage it wears the Trivia step
 // of the category ramp. ACCENT is only the legacy (pre-stage) fallback.
@@ -259,6 +260,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
   const viewedRef = useRef(false);
 
   const [showChrome, setShowChrome] = useState(false);
+  const phoneStage = usePhoneStage();
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
@@ -594,6 +596,95 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        // The phone stage (owner, 2026-10-25): the evidence rows, what they pin
+        // down, then the type-ahead and the tools. Every control is the board's own.
+        const arrow = (svg) => <span className="dos-ar" aria-hidden="true">{svg}</span>;
+        const noMatch = fold(q).length >= 2 && !opts.length;
+        const down = guesses.length;
+        const foot = `${down} ${down === 1 ? 'guess' : 'guesses'} down · ${left} left · one of ${U.rows.length} names`;
+        const top = (
+          <>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .dos-hd{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;text-align:center;opacity:.75;}
+              .dos-gq{display:flex;flex-direction:column;gap:5px;}
+              .dos-nm{font-size:15px;font-weight:800;}
+              .dos-cells{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
+              .dos-cell{min-height:58px;border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-sizing:border-box;padding:3px 2px;min-width:0;}
+              .dos-cell b{font-size:16px;font-weight:800;line-height:1.1;text-align:center;overflow-wrap:anywhere;}
+              .dos-cell.sm b{font-size:12px;}
+              .dos-cell i{font-style:normal;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;opacity:.75;display:flex;align-items:center;gap:2px;}
+              .dos-ar svg{width:11px;height:11px;display:block;}
+              .dos-cell.hit{background:var(--pst-ink);color:var(--pst-bg);}
+              .dos-cell.hit *{color:var(--pst-bg);}
+              .dos-cell.hit i{opacity:.9;}
+              .dos-cell.no{opacity:.55;}
+              .dos-pin{border:2px dashed var(--pst-ink);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;line-height:1.45;}
+              .dos-pin b{font-weight:800;}
+            ` }} />
+            <h2 className="pst-q">Name the hidden {U.noun}</h2>
+            <div className="dos-hd" aria-hidden="true">{U.attrs.map((a) => <span key={a.key}>{a.label}</span>)}</div>
+            {guesses.length === 0 ? <div className="pst-note">No guesses yet. Any {U.noun} is a fair first guess.</div> : null}
+            {guesses.map((nm, gi) => {
+              const r = BY_NAME.get(nm);
+              if (!r) return null;
+              return (
+                <div key={nm + ':' + gi} className="dos-gq">
+                  <span className="dos-nm">{nm}</span>
+                  <div className="dos-cells">
+                    {U.attrs.map((a) => {
+                      const c = cmp(r, a);
+                      const v = String(r[a.key]);
+                      return (
+                        <div key={a.key} className={'dos-cell' + (c === 'hit' ? ' hit' : c === 'no' ? ' no' : '') + (v.length > 7 ? ' sm' : '')} aria-label={`${a.label} ${v}, ${c === 'hit' ? 'match' : c === 'up' ? 'higher' : c === 'down' ? 'lower' : 'no'}`}>
+                          <b>{v}</b>
+                          <i>{c === 'hit' ? 'match' : c === 'up' ? <>higher{arrow(ICON.up)}</> : c === 'down' ? <>lower{arrow(ICON.down)}</> : 'no'}</i>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+            {knownChips.length ? (
+              <div className="dos-pin"><b>Pinned:</b> {knownChips.map((k) => `${k.label} ${k.text}`).join(' · ')}</div>
+            ) : null}
+            {toast ? <div className="pst-note" aria-live="polite">{toast}</div> : null}
+          </>
+        );
+        const bottom = (
+          <>
+            {opts.length > 0 ? (
+              <div className="pst-sug" role="listbox" aria-label="Matching names">
+                {opts.map((o, i) => (
+                  <button key={o} type="button" role="option" aria-selected={i === 0} className={i === 0 ? 'on' : undefined} onClick={() => pick(o)}>{o}</button>
+                ))}
+              </div>
+            ) : noMatch ? (
+              <div className="pst-sug" aria-live="polite"><div className="none">No name on the list matches that. It has cost you nothing.</div></div>
+            ) : null}
+            <div className="pst-in">
+              <input type="text" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onInputKey}
+                placeholder={`Type a ${U.noun}`} aria-label="Guess a name" autoComplete="off" autoCorrect="off" spellCheck={false} />
+              <button type="button" className="pst-go" onClick={() => { if (opts.length) pick(opts[0]); }} disabled={!opts.length}>Guess</button>
+            </div>
+            <div className="pst-tools">
+              {hintOk && !g.hintUsed ? (
+                <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb}Hint</button>
+              ) : null}
+              <button type="button" className={'pst-tb' + (armReveal ? ' on' : '')}
+                onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+                {armReveal ? 'Tap again to end' : 'Give up'}
+              </button>
+            </div>
+          </>
+        );
+        return (
+          <PlayStage bg={gameColor('dossier')} label="Dossier"
+            eyebrow={`${U.name} · Guess ${Math.min(MAX, guesses.length + 1)} of ${MAX}`}
+            top={top} bottom={bottom} foot={foot} frac={guesses.length / MAX} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="dossier" name="Dossier" collapsed={started} loft={LOFT} />

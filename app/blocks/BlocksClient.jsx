@@ -61,6 +61,7 @@ import {
   LINE_POINTS, QUAD_BONUS, COMBO_STEP, scoreRows, PIECE_LABEL,
 } from '@/lib/blocks-seq';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 
 // The arm-then-confirm controls do not move when armed, so the second tap of
 // an accidental double-tap used to land on the armed state long before the
@@ -287,6 +288,54 @@ function MiniShape({ k, light, cell = 7 }) {
   );
 }
 
+// Phone stage layout for Blocks, scoped under blk- and read off the PlayStage
+// palette (--pst-ink / --pst-bg / --pst-tint), so every look recolours it.
+const STAGE_CSS = `
+.blk-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.blk-box{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;min-width:76px}
+.blk-mini{display:grid;grid-template-columns:repeat(4,12px);grid-auto-rows:12px;gap:2px;padding:8px;border:2px solid var(--pst-ink);border-radius:10px}
+.blk-mini i{border-radius:2px}
+.blk-mini i.p{background:var(--pst-ink)}
+.blk-score{text-align:center}
+.blk-score b{display:block;font-size:44px;line-height:1;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.blk-score span{font-size:13px;font-weight:800;opacity:.75}
+.blk-well{align-self:center;padding:5px;border:2px solid var(--pst-ink);border-radius:14px;background:color-mix(in srgb, var(--pst-ink) 6%, transparent)}
+.blk-paused{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:16px;background:color-mix(in srgb, var(--pst-bg) 88%, transparent);border-radius:9px;z-index:4}
+.blk-paused b{font-size:24px;font-weight:800}
+.blk-paused span{font-size:13px;font-weight:700;opacity:.8}
+.blk-bot{display:flex;flex-direction:column;gap:12px}
+.blk-pad{align-self:center;display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(2,56px);gap:6px}
+.blk-pad button{border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.blk-pad .rot{grid-column:2;grid-row:1}
+.blk-pad .lft{grid-column:1;grid-row:2}
+.blk-pad .dwn{grid-column:2;grid-row:2}
+.blk-pad .rgt{grid-column:3;grid-row:2}
+.blk-how{text-align:center;font-size:12px;font-weight:700;opacity:.8}
+.blk-acts{display:flex;gap:8px;justify-content:center}
+.blk-acts .pst-tb{touch-action:none}
+.blk-acts .blk-dim{opacity:.45}
+.blk-foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.blk-bar{display:block;height:6px;border-radius:3px;background:color-mix(in srgb, var(--pst-ink) 18%, transparent);overflow:hidden;flex:1;margin:0 12px}
+.blk-bar i{display:block;height:100%;background:var(--pst-ink);transition:width .25s}
+`;
+
+// The phone stage's Hold and Next boxes: the shape drawn in ink on a 4-wide
+// grid of 12px cells, two rows tall (three for the plus).
+function StageMini({ k }) {
+  const m = k && ROT[k] ? shapeAt(k, 0) : null;
+  let x0 = 9, x1 = -1, y0 = 9, y1 = -1;
+  if (m) m.forEach((row, y) => row.forEach((v, x) => { if (v) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); } }));
+  const w = m ? x1 - x0 + 1 : 0, h = m ? y1 - y0 + 1 : 0;
+  const rows = Math.max(2, h), ox = Math.floor((4 - w) / 2), oy = Math.floor((rows - h) / 2);
+  const cells = [];
+  for (let y = 0; y < rows; y++) for (let x = 0; x < 4; x++) {
+    const sx = x - ox + x0, sy = y - oy + y0;
+    const on = !!(m && x - ox >= 0 && x - ox < w && y - oy >= 0 && y - oy < h && m[sy] && m[sy][sx]);
+    cells.push(<i key={`${x}-${y}`} className={on ? 'p' : ''} />);
+  }
+  return <span className="blk-mini" role="img" aria-label={k ? (PIECE_LABEL[k] || k) : 'Empty'}>{cells}</span>;
+}
+
 export default function BlocksClient({ puzzles = [], forceNum = null }) {
   const searchParams = useSearchParams();
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
@@ -388,6 +437,16 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
   const over = g.status !== 'playing';
+  // THE PHONE STAGE (owner, 2026-10-25): under 900px a run in progress plays
+  // full screen on the shared PlayStage. It stays up through the end hold so
+  // the finished well greys out where it was played, then the page (and its
+  // finish card) takes over. The canvas is RE-PARENTED into the stage rather
+  // than drawn twice: drawWell and sizeWell read cvsRef every call, so the
+  // remounted element is picked up and resized by the effect keyed on stageOn.
+  const phoneStage = usePhoneStage();
+  const stageOn = phoneStage && !!g.t0 && (playing || endHold.held);
+  const stageOnRef = useRef(false);
+  stageOnRef.current = stageOn;
   // ROWS ARE THE SCORE, uncapped (see lib/blocks-seq). Par is the day's
   // benchmark rather than a ceiling: clearing it wins the card, and every row
   // above it still counts on the board.
@@ -805,10 +864,16 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
 
   const sizeWell = useCallback(() => {
     const box = boxRef.current, cvs = cvsRef.current;
-    if (!box || !cvs) return;
+    const stg = stageOnRef.current;
+    if (!cvs || (!stg && !box)) return;
     const phone = typeof window !== 'undefined' && window.innerWidth <= 640;
-    const fw = Math.max(120, box.clientWidth - (phone ? 0 : 146));
-    const fh = stableVH() - (phone ? 310 : 300);
+    // On the phone stage the well sits between the Hold / score / Next row and
+    // the pad, pills and foot, so it gets the screen less those (about 450px
+    // of chrome) and the width less the stage gutters and its own frame.
+    const fw = stg
+      ? Math.max(120, Math.min(380, (typeof window !== 'undefined' ? window.innerWidth : 390) - 28 - 14))
+      : Math.max(120, box.clientWidth - (phone ? 0 : 146));
+    const fh = stg ? stableVH() - 450 : stableVH() - (phone ? 310 : 300);
     const cell = Math.max(14, Math.min(34, Math.floor(Math.min(fw / COLS, fh / ROWS))));
     cellRef.current = cell;
     const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
@@ -833,6 +898,13 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
     };
     const light = lightRef.current;
+    // On the phone stage every shape is the stage ink (settled ones at 78%),
+    // read off --pst-ink, which PlayStage sets on its root and the re-parented
+    // canvas inherits, so all three looks colour the well with no extra wiring.
+    const stg = stageOnRef.current;
+    const SINK = stg ? ((typeof window !== 'undefined' && getComputedStyle(cvs).getPropertyValue('--pst-ink').trim()) || '#08222e') : null;
+    const SBG = stg ? ((typeof window !== 'undefined' && getComputedStyle(cvs).getPropertyValue('--pst-bg').trim()) || '#fde68a') : null;
+    const fillOf = (k) => (stg ? SINK : pieceFill(k, light));
     const ease = (t) => 1 - Math.pow(1 - t, 3);
     const easeBack = (t) => { const c = 1.4; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
     // A tile: the shape's colour with a soft sheen on its upper half and a
@@ -840,7 +912,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     // greyed stack), `o.flash` whitens it, `o.scale`/`o.rot` break it apart.
     const tile = (px, py, key, o = {}) => {
       const c = cell - 1, r = Math.max(2, c * 0.18);
-      const col = o.color || pieceFill(key, light);
+      const col = o.color || fillOf(key);
       ctx.save();
       ctx.globalAlpha = o.alpha == null ? 1 : o.alpha;
       if (o.scale != null && o.scale !== 1) {
@@ -849,9 +921,11 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       }
       rr(px + 1, py + 1, c - 1, c - 1, r);
       ctx.fillStyle = col; ctx.fill();
-      ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(0,0,0,0.22)'; ctx.stroke();
-      rr(px + 3, py + 3, c - 5, (c - 5) * 0.42, r * 0.7);
-      ctx.fillStyle = 'rgba(255,255,255,0.24)'; ctx.fill();
+      if (!stg) {
+        ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(0,0,0,0.22)'; ctx.stroke();
+        rr(px + 3, py + 3, c - 5, (c - 5) * 0.42, r * 0.7);
+        ctx.fillStyle = 'rgba(255,255,255,0.24)'; ctx.fill();
+      }
       if (o.flash) { rr(px + 1, py + 1, c - 1, c - 1, r); ctx.fillStyle = `rgba(255,255,255,${Math.min(1, o.flash)})`; ctx.fill(); }
       ctx.restore();
     };
@@ -867,12 +941,20 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const fx = fxRef.current;
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = wtok('--stg-cell', '#ffffff'); rr(0, 0, W, H, 12); ctx.fill();
-    // a faint grid, so a gap reads as a gap
-    ctx.strokeStyle = light ? 'rgba(20,40,80,0.05)' : 'rgba(255,255,255,0.045)'; ctx.lineWidth = 1; ctx.beginPath();
-    for (let x = 1; x < COLS; x++) { ctx.moveTo(x * cell + 0.5, 0); ctx.lineTo(x * cell + 0.5, H); }
-    for (let y = 1; y < ROWS; y++) { ctx.moveTo(0, y * cell + 0.5); ctx.lineTo(W, y * cell + 0.5); }
-    ctx.stroke();
+    if (stg) {
+      // The stage frame is drawn in CSS (.blk-well); the canvas only lays a
+      // faint ink square in every cell, so a gap still reads as a gap.
+      ctx.save(); ctx.globalAlpha = 0.07; ctx.fillStyle = SINK;
+      for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) { rr(x * cell + 1, y * cell + 1, cell - 2, cell - 2, Math.max(2, cell * 0.16)); ctx.fill(); }
+      ctx.restore();
+    } else {
+      ctx.fillStyle = wtok('--stg-cell', '#ffffff'); rr(0, 0, W, H, 12); ctx.fill();
+      // a faint grid, so a gap reads as a gap
+      ctx.strokeStyle = light ? 'rgba(20,40,80,0.05)' : 'rgba(255,255,255,0.045)'; ctx.lineWidth = 1; ctx.beginPath();
+      for (let x = 1; x < COLS; x++) { ctx.moveTo(x * cell + 0.5, 0); ctx.lineTo(x * cell + 0.5, H); }
+      for (let y = 1; y < ROWS; y++) { ctx.moveTo(0, y * cell + 0.5); ctx.lineTo(W, y * cell + 0.5); }
+      ctx.stroke();
+    }
     const st = gRef.current;
 
     // hard-drop trails
@@ -880,7 +962,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     for (const t of fx.trail) {
       const a = 1 - (now - t.t0) / 220;
       const gr = ctx.createLinearGradient(0, t.y0 * cell, 0, t.y1 * cell);
-      const tc = pieceFill(t.k, light);
+      const tc = fillOf(t.k);
       gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(1, tc);
       ctx.globalAlpha = 0.4 * a; ctx.fillStyle = gr;
       ctx.fillRect(t.x * cell + cell * 0.2, t.y0 * cell, cell * 0.6, Math.max(0, (t.y1 - t.y0)) * cell);
@@ -902,19 +984,19 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
           const cnt = quad ? 4 : 2;
           for (let q = 0; q < cnt; q++) {
             const ang = Math.random() * Math.PI * 2, sp = (quad ? 0.26 : 0.15) * (0.4 + Math.random());
-            const hue = quad ? pieceFill(Object.keys(PIECE_HUE)[(x + ri) % 9], light) : pieceFill(k, light);
+            const hue = quad ? fillOf(Object.keys(PIECE_HUE)[(x + ri) % 9]) : fillOf(k);
             fx.parts.push({ x: x + 0.5, y: y + 0.5, vx: Math.cos(ang) * sp + (x - COLS / 2) * 0.01, vy: Math.sin(ang) * sp - (quad ? 0.2 : 0.12), g: 0.012, life: 0, max: quad ? 70 : 42, s: (quad ? 0.34 : 0.26) * (0.6 + Math.random() * 0.6), rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4, col: hue });
           }
         }));
         if (quad) {
-          for (let q = 0; q < 60; q++) fx.parts.push({ x: Math.random() * COLS, y: -0.4, vx: (Math.random() - 0.5) * 0.12, vy: Math.random() * 0.08 + 0.04, g: 0.004, life: 0, max: 110, s: 0.22, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3, col: pieceFill(Object.keys(PIECE_HUE)[q % 9], light), conf: true });
+          for (let q = 0; q < 60; q++) fx.parts.push({ x: Math.random() * COLS, y: -0.4, vx: (Math.random() - 0.5) * 0.12, vy: Math.random() * 0.08 + 0.04, g: 0.004, life: 0, max: 110, s: 0.22, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3, col: fillOf(Object.keys(PIECE_HUE)[q % 9]), conf: true });
         }
       }
       if (ce >= 1 && fallE >= 1) fx.clear = null;
     }
     const lf = fx.lock && now - fx.lock.t0 < 200 ? fx.lock : null;
     const ov = fx.over ? Math.min(1, (now - fx.over.t0) / 700) : 0;
-    const grey = wtok('--stg-mute', '#9aa2b1');
+    const grey = stg ? SINK : wtok('--stg-mute', '#9aa2b1');
     for (let y = 0; y < ROWS; y++) {
       const sh = cl && cl.shifts[y] ? cl.shifts[y] * (1 - easeBack(fallE)) : 0;
       const greyRow = ov > 0 && (ROWS - 1 - y) < ov * ROWS;
@@ -923,7 +1005,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         if (!k) continue;
         let flash = 0;
         if (lf && lf.cells.some((c) => c[0] === x && c[1] === y)) flash = 0.6 * (1 - (now - lf.t0) / 200);
-        tile(x * cell, (y - sh) * cell, k, { flash, color: greyRow ? grey : null, alpha: greyRow ? 0.55 : 1 });
+        tile(x * cell, (y - sh) * cell, k, { flash, color: greyRow ? grey : null, alpha: greyRow ? (stg ? 0.3 : 0.55) : (stg ? 0.78 : 1) });
       }
     }
     if (cl && ce < 1) {
@@ -934,7 +1016,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         const dist = Math.abs(x - (COLS - 1) / 2) / (COLS / 2);
         const ph2 = Math.max(0, Math.min(1, (ce - 0.38 - dist * 0.25) / 0.4));
         if (ph2 >= 1) return;
-        const color = quad ? pieceFill(Object.keys(PIECE_HUE)[Math.floor(x + now / 70) % 9], light) : null;
+        const color = quad ? fillOf(Object.keys(PIECE_HUE)[Math.floor(x + now / 70) % 9]) : null;
         tile(x * cell, y * cell, k, { flash: ph1 * (quad ? 0.3 : 0.85) * (1 - ph2), scale: 1 - ph2 * 0.9, rot: ph2 * (x % 2 ? 0.8 : -0.8), alpha: 1 - ph2 * 0.6, color });
       }));
       if (quad && !reducedRef.current) {
@@ -953,7 +1035,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       if (!soft) {
         let gy = st.cur.y;
         while (!hits(st.grid, COLS, ROWS, st.cur, st.cur.x, gy + 1)) gy += 1;
-        ctx.save(); ctx.setLineDash([4, 3]); ctx.lineWidth = 2; ctx.strokeStyle = pieceFill(st.cur.k, light); ctx.globalAlpha = 0.55;
+        ctx.save(); ctx.setLineDash(stg ? [] : [4, 3]); ctx.lineWidth = 2; ctx.strokeStyle = fillOf(st.cur.k); ctx.globalAlpha = stg ? 0.5 : 0.55;
         for (let y = 0; y < m.length; y++) for (let x = 0; x < m.length; x++) if (m[y][x] && gy + y >= 0) { rr((st.cur.x + x) * cell + 3, (gy + y) * cell + 3, cell - 6, cell - 6, cell * 0.14); ctx.stroke(); }
         ctx.restore();
       }
@@ -982,15 +1064,15 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         ctx.save();
         ctx.globalAlpha = e < 0.15 ? e / 0.15 : 1 - Math.max(0, (e - 0.6) / 0.4);
         ctx.font = `800 ${f.big ? 22 : 17}px Manrope, system-ui, sans-serif`;
-        ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(11,13,18,0.75)';
+        ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeStyle = stg ? SBG : 'rgba(11,13,18,0.75)';
         const ty = (f.y - e * 1.4) * cell;
         ctx.strokeText(f.text, W / 2, ty);
-        ctx.fillStyle = f.big ? '#f5c94a' : '#ffffff'; ctx.fillText(f.text, W / 2, ty);
+        ctx.fillStyle = stg ? SINK : (f.big ? '#f5c94a' : '#ffffff'); ctx.fillText(f.text, W / 2, ty);
         ctx.restore();
       }
     }
 
-    ctx.strokeStyle = wtok('--stg-cell-line', COLORS.well); ctx.lineWidth = 2; rr(1, 1, W - 2, H - 2, 11); ctx.stroke();
+    if (!stg) { ctx.strokeStyle = wtok('--stg-cell-line', COLORS.well); ctx.lineWidth = 2; rr(1, 1, W - 2, H - 2, 11); ctx.stroke(); }
   }, [COLS, ROWS]);
 
   useEffect(() => {
@@ -999,7 +1081,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     const on = () => sizeWell();
     window.addEventListener('resize', on);
     return () => window.removeEventListener('resize', on);
-  }, [hydrated, sizeWell, started, preStart]);
+  }, [hydrated, sizeWell, started, preStart, stageOn]);
 
   // leaving the page never costs a run
   useEffect(() => {
@@ -1195,6 +1277,69 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // The well (canvas, banners) lives in ONE element that renders either on the
+  // page or inside the phone stage, never both, so cvsRef and wellWrapRef
+  // always point at the one on screen.
+  const wellEl = (
+    <div ref={wellWrapRef} className="bl-wellwrap" style={{ position: 'relative', flex: 'none' }}>
+      <canvas ref={cvsRef} {...wellProps} aria-label="The well" style={{ display: 'block', touchAction: 'none', cursor: started ? 'grab' : 'default' }} />
+      {burst && burst.n === 4 && (
+        <div key={`q${burst.id}`} className="bl-banner" aria-live="polite">
+          <div className="bl-banner-big">FOUR ROWS</div>
+          {TIER ? <span className="bl-banner-sub">4 rows = <em>6 points</em></span> : BONUS && <span className="bl-banner-sub">4 rows <em>+1 bonus</em> = 5</span>}
+        </div>
+      )}
+      {burst && burst.combo > 1 && (
+        <div key={`c${burst.id}`} className="bl-combo">Combo &times;{burst.combo}</div>
+      )}
+      {stageOn && paused && playing && (
+        <div className="blk-paused">
+          <b>Paused</b>
+          <span>Saved. Pick it up any time today.</span>
+          <button type="button" className="pst-tb on" onClick={togglePause} aria-label="Resume the run">Resume</button>
+        </div>
+      )}
+    </div>
+  );
+  const bestToday = Math.max(Number(board.best) || 0, ladder.rows.length && !ladder.rows[0].gap ? Number(ladder.rows[0].score) || 0 : 0);
+  const stageEl = stageOn ? (
+    <PlayStage
+      bg={gameColor('blocks')}
+      label="Blocks"
+      top={(
+        <>
+          <style dangerouslySetInnerHTML={{ __html: STAGE_CSS }} />
+          <div className="blk-hd">
+            <div className="blk-box">Hold<StageMini k={g.hold} /></div>
+            <div className="blk-score" aria-live="polite"><b>{nf(rowsCleared)}</b><span>{UNIT}{rowsCleared === 1 ? '' : 's'} &middot; par {nf(PAR)}</span></div>
+            <div className="blk-box">Next<StageMini k={SEQ[g.idx]} /></div>
+          </div>
+          <div className="blk-well">{wellEl}</div>
+        </>
+      )}
+      bottom={(
+        <div className="blk-bot">
+          <div className="blk-pad">
+            <button type="button" className="rot" {...tapProps('cw')} aria-label="Rotate">&#8635;</button>
+            <button type="button" className="lft" {...holdProps('left')} aria-label="Move left">&#9664;</button>
+            <button type="button" className="dwn" {...holdProps('down')} aria-label="Soft drop">&#9660;</button>
+            <button type="button" className="rgt" {...holdProps('right')} aria-label="Move right">&#9654;</button>
+          </div>
+          <div className="blk-how">Flick down the well to drop &middot; swipe to move, tap to rotate</div>
+          <div className="blk-acts">
+            <button type="button" className={'pst-tb' + (g.held ? ' blk-dim' : '')} {...tapProps('hold')} aria-label={g.held ? 'Hold, already used for this shape' : 'Hold this shape'}>Hold</button>
+            <button type="button" className={'pst-tb' + (paused ? ' on' : '')} onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'}>{paused ? 'Resume' : 'Pause'}</button>
+          </div>
+          <div className="blk-foot">
+            <span>Best today {nf(bestToday)}</span>
+            <span className="blk-bar" aria-hidden="true"><i style={{ width: `${Math.max(0, Math.min(1, PAR ? rowsCleared / PAR : 0)) * 100}%` }} /></span>
+            <span>Par {nf(PAR)}</span>
+          </div>
+        </div>
+      )}
+    />
+  ) : null;
+
   const btn = { fontFamily: SANS, fontWeight: 800, fontSize: 14, border: `2px solid var(--stg-line, ${COLORS.accent})`, background: STAGE ? SURF : '#fff', color: ACC_INK, borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
   const dockBtn = { width: 46, height: 44, borderRadius: 9, border: STAGE ? '1px solid var(--stg-cell-line)' : `1px solid ${COLORS.line}`, background: STAGE ? 'var(--stg-cell)' : '#fff', color: STAGE ? 'var(--stg-ink,#e9edf4)' : FADED, fontSize: 16, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' };
 
@@ -1202,6 +1347,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', fontFamily: SANS, background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="blocks" name="Blocks" collapsed={started} loft={LOFT} />
@@ -1300,18 +1446,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
             </div>
 
             <div ref={boxRef} style={{ display: 'flex', gap: 14, alignItems: 'stretch', justifyContent: 'center' }}>
-              <div ref={wellWrapRef} className="bl-wellwrap" style={{ position: 'relative', flex: 'none' }}>
-                <canvas ref={cvsRef} {...wellProps} style={{ display: 'block', touchAction: 'none', cursor: started ? 'grab' : 'default' }} />
-                {burst && burst.n === 4 && (
-                  <div key={`q${burst.id}`} className="bl-banner" aria-live="polite">
-                    <div className="bl-banner-big">FOUR ROWS</div>
-                    {TIER ? <span className="bl-banner-sub">4 rows = <em>6 points</em></span> : BONUS && <span className="bl-banner-sub">4 rows <em>+1 bonus</em> = 5</span>}
-                  </div>
-                )}
-                {burst && burst.combo > 1 && (
-                  <div key={`c${burst.id}`} className="bl-combo">Combo &times;{burst.combo}</div>
-                )}
-              </div>
+              {!stageOn && wellEl}
               <aside className="bl-ladder" style={{ width: 132, flex: 'none', borderLeft: `1px solid ${COLORS.line}`, paddingLeft: 11, display: 'flex', flexDirection: 'column' }}>
                 <div className="bl-tabs" role="tablist" aria-label="Leaderboard">
                   <button type="button" role="tab" aria-selected={lbTab === 'today'} onClick={() => setLbTab('today')}>Today</button>

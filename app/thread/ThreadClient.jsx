@@ -56,6 +56,7 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
@@ -438,6 +439,18 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
   const allTime = useGameAllTime({ game: 'thread', active: LOFT && !playing });
   const dayStats = useDayStats();
   const catRank = useCategoryRank({ self: 'thread', active: LOFT && !playing });
+  // The phone stage (owner, 2026-10-25): which tile it is showing, and whether
+  // the call box is open. Display state only; the game state is untouched.
+  const phoneStage = usePhoneStage();
+  const [stTile, setStTile] = useState(0);
+  const [stCalling, setStCalling] = useState(false);
+  const stTitleRef = useRef(null);
+  const stCallRef = useRef(null);
+  useEffect(() => {
+    // When the tile on show is named, move on to the next open one.
+    if (!solvedSet.has(stTile)) return;
+    for (let k = 1; k <= N; k++) { const i = (stTile + k) % N; if (!solvedSet.has(i)) { setStTile(i); return; } }
+  }, [solvedSet, stTile, N]);
   const prevPuzzle = puzzles.find((x) => x.num === PUZZLE.num - 1) || null;
   const myStats = deriveStats(stats, pickPuzzle(puzzles, null).num);
 
@@ -620,6 +633,132 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        // The phone stage (owner, 2026-10-25): one logline at a time, the tile
+        // row to jump, the title box (onType, which takes a title the moment it
+        // matches), and the call box (call). Gone the moment the day ends.
+        const cur = Math.min(stTile, Math.max(0, N - 1));
+        const t = TILES[cur] || { s: '', t: '' };
+        const curOn = solvedSet.has(cur);
+        const go = (k) => setStTile(((k % N) + N) % N);
+        const named = [...g.solved].sort((a, b) => a - b);
+        const nameNow = () => {
+          const gn = norm(q);
+          if (!gn) return;
+          if (tileFor(gn, TILES, solvedSet) >= 0) { onType(q); return; }
+          say('No film on today’s board matches that. It has cost you nothing.');
+        };
+        const callOpen = !threadsDone;
+        const top = (
+          <>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .thr-tg{display:grid;gap:5px;}
+              .thr-tg button{height:44px;border-radius:10px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:15px;font-weight:800;padding:0;}
+              .pst .thr-tg button.s{background:var(--pst-ink);color:var(--pst-bg);}
+              .thr-tg button.now{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--pst-ink);}
+              .thr-lg{display:flex;align-items:center;gap:8px;}
+              .thr-lg .s{flex:1;text-align:center;font-size:clamp(20px,6vw,24px);line-height:1.25;font-weight:800;letter-spacing:-.01em;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+              .thr-lg .s small{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
+              .thr-sol{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+              .thr-sol span{background:var(--pst-ink);color:var(--pst-bg);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800;}
+              .thr-call{display:flex;align-items:center;justify-content:space-between;gap:10px;border:2px dashed var(--pst-ink);border-radius:16px;padding:10px 10px 10px 14px;}
+              .thr-call.done{border-style:solid;}
+              .thr-call .t{font-size:14px;font-weight:800;line-height:1.3;}
+              .thr-call .t small{display:block;font-size:12px;font-weight:700;opacity:.75;}
+              .thr-strk{display:flex;gap:4px;margin-top:4px;}
+              .thr-strk i{width:10px;height:10px;border-radius:5px;border:2px solid var(--pst-ink);}
+              .thr-strk i.x{background:var(--pst-ink);}
+            ` }} />
+            <div className="thr-tg" role="group" aria-label={`${N} films`} style={{ gridTemplateColumns: `repeat(${N > 9 ? Math.ceil(N / 2) : N}, 1fr)` }}>
+              {TILES.map((_, i) => (
+                <button key={i} type="button" className={`${solvedSet.has(i) ? 's' : ''}${i === cur ? ' now' : ''}`}
+                  aria-pressed={i === cur}
+                  aria-label={`Film ${i + 1}${solvedSet.has(i) ? `, named: ${TILES[i].t}` : ''}`}
+                  onClick={() => go(i)}>{i + 1}</button>
+              ))}
+            </div>
+            <div className="thr-lg">
+              <button type="button" className="pst-arr" aria-label="Previous film" onClick={() => go(cur - 1)}>{ICON.left}</button>
+              <div className="s" aria-live="polite">
+                <span>{t.s}</span>
+                {curOn ? <small>Named: {t.t}</small> : null}
+              </div>
+              <button type="button" className="pst-arr" aria-label="Next film" onClick={() => go(cur + 1)}>{ICON.right}</button>
+            </div>
+            {named.length ? (
+              <div className="thr-sol" aria-label="Named so far">
+                {named.map((i) => <span key={i}>{i + 1} {TILES[i].t}</span>)}
+              </div>
+            ) : null}
+          </>
+        );
+        const strikes = (
+          <div className="thr-strk" aria-label={wrongCalls ? `${wrongCalls} wrong call${wrongCalls === 1 ? '' : 's'} of ${MAX_CALLS}` : 'No wrong calls'}>
+            {Array.from({ length: MAX_CALLS }, (_, i) => <i key={i} className={i < wrongCalls ? 'x' : undefined} />)}
+          </div>
+        );
+        const bottom = (
+          <>
+            {notice ? <div className="pst-note" role="status">{notice.msg}</div> : null}
+            <form className="pst-in" onSubmit={(e) => { e.preventDefault(); nameNow(); }}>
+              <input ref={stTitleRef} value={q}
+                onChange={(e) => onType(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Escape') setQ(''); }}
+                placeholder={g.solved.length === N ? 'Every film named. Call the thread.' : 'Type a film title'}
+                disabled={g.solved.length === N}
+                autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false}
+                aria-label="Type a film title" />
+              <button type="submit" className="pst-go" disabled={g.solved.length === N || !norm(q)}>Name</button>
+            </form>
+            {callOpen ? (
+              stCalling ? (
+                <>
+                  <form className="pst-in" onSubmit={(e) => { e.preventDefault(); call(); }}>
+                    <input ref={stCallRef} value={tq} onChange={(e) => setTq(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Escape') setStCalling(false); }}
+                      placeholder={NTH === 1 ? `Call the thread for +${tier}` : `Call a thread for +${tier}`}
+                      autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false}
+                      aria-label="Call the thread" />
+                    <button type="submit" className="pst-go" disabled={!norm(tq)}>Call</button>
+                  </form>
+                  <div className="pst-note">
+                    {thrNote ? thrNote.msg : 'A word or two does it: a surname, a year, a place, a kind of film.'}
+                    {strikes}
+                  </div>
+                  <div className="pst-tools"><button type="button" className="pst-tb" onClick={() => setStCalling(false)}>Back to the films</button></div>
+                </>
+              ) : (
+                <div className="thr-call">
+                  <div className="t">
+                    {NTH === 1 ? `Call the thread now for +${tier}` : `Call a thread now for +${tier} · ${g.called.length} of ${NTH} called`}
+                    <small>{thrNote ? thrNote.msg : 'Earlier pays more. Three wrong calls lock it.'}</small>
+                    {strikes}
+                  </div>
+                  <button type="button" className="pst-tb on"
+                    onClick={() => { setStCalling(true); setTimeout(() => { try { stCallRef.current && stCallRef.current.focus(); } catch (e) {} }, 30); }}>Call</button>
+                </div>
+              )
+            ) : (
+              <div className="thr-call done">
+                <div className="t">
+                  {okCalls.length
+                    ? (NTH === 1 ? `The thread: ${THREADS[okCalls[0].th].t}` : `Threads: ${okCalls.map((c) => THREADS[c.th].t).join(' and ')}`)
+                    : 'The thread is locked at 0.'}
+                  <small>{thrNote ? thrNote.msg : 'Films you name now still count.'}</small>
+                </div>
+              </div>
+            )}
+          </>
+        );
+        return (
+          <PlayStage bg={gameColor('thread')} label="Thread"
+            eyebrow={`Thread · Film ${cur + 1} of ${N}`}
+            top={top} topKey={cur} bottom={bottom}
+            foot={`${g.solved.length} of ${N} named · no penalty for a miss`}
+            frac={N ? g.solved.length / N : 0}
+            giveUp={{ armed: false, onPress: giveUp, label: allCalled ? 'Reveal the rest' : 'Give up' }} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="thread" name="Thread" collapsed={started} loft={LOFT} />
