@@ -3701,12 +3701,11 @@ export default function StageToday() {
                 <div className="mph-grid">
                   {lensCats.map(({ cat, games }) => {
                     const rc = rampCat(cat);
-                    const runs = ixLens === 'cat' ? mRunsFor(cat).map((c) => c.name) : [];
+                    const nd = games.filter((g) => done.has(g.key)).length;
                     return (
                       <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={() => mOpen(cat)}>
                         <b>{catLabel(cat)}</b>
-                        <em>{games.filter((g) => done.has(g.key)).length} of {games.length}</em>
-                        {runs.length ? <small>Runs: {runs.join(', ')}</small> : null}
+                        <em>{ixLens === 'cat' ? `${games.length} ${games.length === 1 ? 'game' : 'games'}${nd ? ` \u00b7 ${nd} played` : ''}` : `${nd} of ${games.length}`}</em>
                       </button>
                     );
                   })}
@@ -6325,14 +6324,12 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mst{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:var(--mb);border-radius:14px;overflow:hidden;}
   .sty-mst > a{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 6px 9px;min-width:0;border-left:1.5px solid var(--mln);}
   .sty-mst > a:first-child{border-left:0;}
-  .sty-mst > a::after{content:"";position:absolute;right:6px;top:8px;width:5px;height:5px;border-top:1.5px solid currentColor;border-right:1.5px solid currentColor;transform:rotate(45deg);opacity:.5;}
   .sty-mst > a b{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.26;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
   .sty-mst > a i{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;line-height:1.3;}
   .sty-mst > a.tk{background:#fde7ad;color:#08222e;}
   .stage-page:not([data-stage-theme=light]) .sty-mst > a.tk{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--mi);}
   .sty-mst.guest > a:not(.join):not(.tk) b{opacity:.45;}
   .sty-mst > a.join{grid-column:1 / -1;border-left:0;border-top:1.5px solid var(--mln);flex-direction:row;justify-content:center;font-weight:800;font-size:13px;padding:10px;}
-  .sty-mst > a.join::after{display:none;}
   .sty-mdraw{display:flex;align-items:center;justify-content:space-between;gap:10px;border:var(--mb);border-radius:12px;padding:8px 11px 9px;font-size:12.5px;line-height:1.3;}
   .sty-mdraw span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sty-mdraw u{flex:none;font-weight:800;text-underline-offset:3px;}
@@ -6390,7 +6387,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .mph-g b{font-size:14.5px;font-weight:800;line-height:1.26;padding-right:18px;}
   .mph-g em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .mph-g .st{position:absolute;top:6px;right:6px;width:24px;height:24px;display:grid;place-items:center;border:0;background:transparent;color:inherit;opacity:.45;padding:0;}
-  .mph-g .st.on{opacity:1;color:#c48a00;}
+  .mph-g .st.on{opacity:1;color:inherit;}
   .mph-note{margin:0;font-size:13px;font-weight:600;line-height:1.45;opacity:.85;}
 }
 `;
