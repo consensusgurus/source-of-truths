@@ -1167,3 +1167,25 @@ html:not([data-sot-hyd]) [data-sot-wait] > * {
 html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;pointer-events:none;background:var(--sot-land);animation:sotLand .34s cubic-bezier(.3,0,.2,1) .06s forwards;}
 @keyframes sotLand{to{opacity:0;visibility:hidden;}}
 @media (prefers-reduced-motion: reduce){html[data-sot-land]::after{display:none;}}
+
+/* PLAIN SUDOKUS ON A WHITE BOARD (owner, 2026-10-25). In the default look,
+   White with color, Sixes, Suds and Giant play on a white board with purple
+   numbers: printed digits deep indigo, yours a brighter indigo, the box rules
+   and the selected square in the Sudoku purple. Full color still fills the
+   board with the Sudoku colour. Phone only, like the looks themselves. */
+@media (max-width: 899px) {
+  html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) {
+    --stg-cell: #ffffff !important;
+    --stg-cell-line: color-mix(in srgb, #3949ab 28%, #ffffff) !important;
+    --stg-line3: #3949ab !important;
+    --stg-acc: #3949ab !important;
+    --stg-acc-ink: #3949ab !important;
+    --stg-acc-tint: rgba(57, 73, 171, 0.14) !important;
+    --stg-sel: #3949ab;
+  }
+  html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-given, .sd-given, .gi-given) { color: #2b3590 !important; }
+  html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-user, .sd-user, .gi-user) { color: #4f5bd5 !important; }
+  html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-pad, .sd-pad, .gi-pad) { color: #3949ab !important; }
+  html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"],
+  html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"] * { color: #ffffff !important; }
+}
