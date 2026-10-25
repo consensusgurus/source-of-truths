@@ -37,7 +37,7 @@ import { gameStats, mmss } from '@/lib/daily-row-stats';
 import GameGlyph from './GameGlyph';
 import { MemePeek } from './MemeShare';
 import FinishGroupLine from './groups/FinishGroupLine';
-import { holdThemeColor } from '@/lib/theme-color-hold';
+import { useStageChrome } from './GauntletScreens';
 
 const useIsoLayout = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -91,7 +91,7 @@ function Count({ fig, run }) {
 
 export default function StageStick({
   tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, run = null, allHref = '/#all',
-  sheet = {}, onLeave, onBack = null, replayNow = null, meme = null, shelf = null, cats = null,
+  sheet = {}, onLeave, onBack = null, archiveHref = null, archiveLabel = 'Past puzzles', replayNow = null, meme = null, shelf = null, cats = null,
 }) {
   const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
   const [step, setStep] = useState(0);        // 0..6, how many blocks have landed
@@ -195,17 +195,17 @@ export default function StageStick({
     } catch (e) {}
   }, [host, desk]);
 
-  // THE BROWSER BARS take the ending's colour while it is up on a phone, so
-  // Safari's top bar reads as part of the page rather than a strip of the
-  // game page above it (owner report, 2026-10-25).
+  // FULL SCREEN MEANS THE BARS TOO (owner, 2026-10-25): on a phone the page
+  // ground, Safari's top and bottom bars and the theme colour all take the
+  // ending's colour while it is up, the same way the phone stages paint them.
+  const [chromeColor, setChromeColor] = useState(null);
   useEffect(() => {
-    if (desk) return undefined;
+    if (desk) { setChromeColor(null); return; }
     const el = rootRef.current;
-    if (!el) return undefined;
-    let c = '';
-    try { c = getComputedStyle(el).backgroundColor; } catch (e) { c = ''; }
-    return c ? holdThemeColor(c) : undefined;
+    if (!el) return;
+    try { setChromeColor(getComputedStyle(el).backgroundColor || null); } catch (e) { setChromeColor(null); }
   }, [host, desk]);
+  useStageChrome(desk ? null : chromeColor);
 
   const trackRef = useRef(null);
   const trackKey = self && self.track ? self.track.map((p) => `${p.k}:${p.x}:${p.label}:${p.fig}`).join('|') : '';
@@ -290,6 +290,13 @@ export default function StageStick({
             {replayBtn}
             {back ? <button type="button" className="sst-hb" onClick={back}>{s.backLabel || 'Return to board'}</button> : null}
           </div>
+        ) : null}
+        {/* THE ARCHIVE, prominent on every ending (owner, 2026-10-25). */}
+        {archiveHref ? (
+          <a className="sst-arc" href={archiveHref}>
+            <span>{archiveLabel}</span>
+            <span aria-hidden="true">&rarr;</span>
+          </a>
         ) : null}
       </section>
       <div className="sst-h2">
@@ -551,6 +558,10 @@ const CSS = `
 .sst-hb{flex:1;max-width:200px;height:40px;display:flex;align-items:center;justify-content:center;padding:0 14px;border:2px solid var(--sst-ink);border-radius:12px;
   background:transparent;color:var(--sst-ink);font:inherit;font-size:14px;font-weight:800;text-decoration:none;cursor:pointer;white-space:nowrap;}
 .sst-hb:hover{background:var(--sst-wash);}
+.sst-arc{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:408px;min-height:46px;margin-top:8px;padding:0 16px;border-radius:12px;
+  background:var(--sst-ink);color:var(--sst-bg);font-size:14.5px;font-weight:800;text-decoration:none;}
+.sst-arc:hover{filter:brightness(1.12);}
+.sst-arc:focus-visible{outline:2px solid var(--sst-ink);outline-offset:3px;}
 .sst-lab{font-size:11.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;}
 .sst-hl{font-size:clamp(18px,5vw,22px);font-weight:800;letter-spacing:-.015em;line-height:1.22;margin-top:6px;overflow-wrap:anywhere;}
 .sst-sub{font-size:14px;font-weight:700;line-height:1.4;margin-top:8px;}

@@ -1024,7 +1024,9 @@ export default function StageFinish({
     if (typeof window === 'undefined') return;
     const q = window.location.search;
     if (/[?&]stick=0(&|$)/.test(q)) return;
-    if (!/[?&]flood=1(&|$)/.test(q) && pageAge() < FLOOD_FRESH) return;
+    // EVERY VISIT TO A FINISHED DAILY OPENS ON THE FULL-SCREEN ENDING (owner,
+    // 2026-10-25), not only the visit that finished it. The older card under
+    // the board is gone; Back to board leaves one button to come back here.
     setStick(true);
   }, []);
   const stickOn = stick && !retry && !boardLabel && !!name && DAILY_GAMES.some((g) => g.name === name);
@@ -2068,8 +2070,9 @@ export default function StageFinish({
       <div className="stf stf-bv">
         <style dangerouslySetInnerHTML={{ __html: BV_CSS }} />
         <button type="button" className="stf-bv-b" onClick={() => { setBoardView(false); setStick(true); }}>
-          Show results
+          Show end card and statistics
         </button>
+        {me ? <a className="stf-bv-a" href={`/archive?game=${encodeURIComponent(me.key)}`}>Past {me.name} puzzles</a> : null}
       </div>
     );
   }
@@ -2144,7 +2147,9 @@ export default function StageFinish({
 
       <MemeShare open={memeOpen} onClose={() => setMemeOpen(false)} ctx={memeCtx} getLink={challengeLink} />
       {stickProps ? (
-        <StageStick {...stickProps} onLeave={leaveStick} onBack={backToBoard} />
+        <StageStick {...stickProps} onLeave={leaveStick} onBack={backToBoard}
+          archiveHref={me ? `/archive?game=${encodeURIComponent(me.key)}` : null}
+          archiveLabel={me ? `Past ${me.name} puzzles` : 'Past puzzles'} />
       ) : flood ? (
         <CurtainFlood title={title} detail={detail} iq={iq} board={board}
           gameRank={gameRank} streak={streak} ready={ready} bandRef={bandRef}
@@ -3109,14 +3114,16 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
 
 `;
 
-// The one pill on the board view, floating at the foot of the screen so it is
-// in reach wherever the board sits.
+// The board view's foot (owner, 2026-10-25): one button back to the ending,
+// and the game's archive, under the board and nothing else.
 const BV_CSS = `
-.stf-bv{position:fixed;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));z-index:60;display:flex;justify-content:center;pointer-events:none;}
-.stf-bv-b{pointer-events:auto;min-height:46px;padding:0 22px;border:0;border-radius:99px;cursor:pointer;
-  font-family:Manrope,ui-sans-serif,system-ui,sans-serif;font-size:15px;font-weight:800;
-  background:var(--stg-ink,#08222e);color:var(--stg-ground,#ffffff);box-shadow:0 8px 24px rgba(8,34,46,.28);}
-.stf-bv-b:focus-visible{outline:2px solid var(--stg-ink,#08222e);outline-offset:3px;}
+.stf-bv{display:flex;flex-direction:column;align-items:stretch;gap:8px;width:100%;max-width:420px;margin:18px auto 8px;padding:0 4px;box-sizing:border-box;}
+.stf-bv-b{min-height:50px;padding:0 18px;border:0;border-radius:14px;cursor:pointer;
+  font-family:Manrope,ui-sans-serif,system-ui,sans-serif;font-size:15.5px;font-weight:800;
+  background:var(--stg-ink,#08222e);color:var(--stg-ground,#ffffff);}
+.stf-bv-a{display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:14px;border:2px solid var(--stg-ink,#08222e);
+  font-family:Manrope,ui-sans-serif,system-ui,sans-serif;font-size:14.5px;font-weight:800;color:var(--stg-ink,#08222e);text-decoration:none;}
+.stf-bv-b:focus-visible,.stf-bv-a:focus-visible{outline:2px solid var(--stg-ink,#08222e);outline-offset:3px;}
 /* The client's own Hide game board would leave only this pill and no board. */
 body:has(.stf-bv) .stf-hideboard{display:none !important;}
 `;
