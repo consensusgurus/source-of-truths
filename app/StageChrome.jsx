@@ -345,12 +345,12 @@ export default function StageChrome({
         // the look switch on the right, then the game's name. No rankings,
         // share or leader strip; the board and its figures are the page.
         <>
+          {/* The game's name and date ride in the top bar now (owner,
+              2026-10-25), the same header as the home's category pages. */}
           <div className="stg-sim">
-            <StageTopBar look={pastel.look} onFlip={pastel.flip} href={homeTo} ink="var(--stg-ink,#08222e)" />
-          </div>
-          <div className="stg-simt">
-            <h1>{name}</h1>
-            <i>{dateShort || dateLabel || ''}{sunday ? <>{(dateShort || dateLabel) ? ' · ' : ''}{sunday}</> : null}</i>
+            <StageTopBar look={pastel.look} onFlip={pastel.flip} href={homeTo} ink="var(--stg-ink,#08222e)"
+              title={name}
+              sub={<>{dateShort || dateLabel || ''}{sunday ? <>{(dateShort || dateLabel) ? ' · ' : ''}{sunday}</> : null}</>} />
           </div>
         </>
       ) : null}
@@ -616,7 +616,7 @@ const MONO = "'Manrope',ui-monospace,'SFMono-Regular',monospace";
 const CSS = `
 .stg-top{background:var(--stg-ground,#0b0f1a);font-family:${SANS};color:var(--stg-ink,#e9edf4);}
 
-.stg-sim{padding:max(12px, env(safe-area-inset-top)) 14px 0;}
+.stg-sim{padding:max(12px, env(safe-area-inset-top)) 14px 8px;}
 html:not([data-stage-pastel]) .stg-sim,html:not([data-stage-pastel]) .stg-simt{display:none;}
 html[data-stage-pastel] .stg-cap,html[data-stage-pastel] .stg-prog,html[data-stage-pastel] .stg-strip{display:none !important;}
 /* CONDENSED (owner, 2026-10-25): the name and the date share one line, and the
