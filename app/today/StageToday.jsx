@@ -3739,7 +3739,7 @@ export default function StageToday() {
                     const rc = rampCat(cat);
                     const nd = games.filter((g) => done.has(g.key)).length;
                     return (
-                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat), { below: '.sty-mtop' })}>
+                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat), { below: '.sty-mtop', label: 'b', target: '.mph-htx .t > span' })}>
                         <b>{catLabel(cat)}</b>
                         <em>{ixLens === 'cat' ? `${games.length} ${games.length === 1 ? 'game' : 'games'}${nd ? ` \u00b7 ${nd} played` : ''}` : `${nd} of ${games.length}`}</em>
                       </button>
