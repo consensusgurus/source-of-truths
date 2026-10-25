@@ -225,8 +225,11 @@ export default function StageChrome({
   // Sudokus play on the pastel stage on a phone (owner, 2026-10-24); see SudokuPastel.jsx.
   // ...and the End Game titles too, on their own gold (owner, 2026-10-24).
   const endGame = !!gameKey && gameCategory(gameKey) === 'End Game';
-  const pastelElig = SUDOKU_POOL.includes(gameKey) || endGame;
-  const pastel = useSudokuPastel(pastelElig, endGame ? gameColor(gameKey) : null);
+  // ...and from 2026-10-24 every daily (owner: "all of the ready up pages need
+  // to match this new style now too for mobile. simple."), each on its own
+  // category's soft ground.
+  const pastelElig = !!gameKey;
+  const pastel = useSudokuPastel(pastelElig, SUDOKU_POOL.includes(gameKey) ? null : gameColor(gameKey));
   const started = useStarted(gameKey, num);
   const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
   // SHARE FOR CREDIT (owner, 2026-10-23): the page itself, stamped with the

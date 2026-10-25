@@ -29,9 +29,10 @@ const LC_ROUTES = JSON.stringify(Array.from(new Set(DAILY_GAMES.map((g) => g.hre
 // load first painted the old full cap and page. The route map below lets the
 // boot script set data-stage-pastel, the look and the ground before the body
 // exists; app/SudokuPastel.jsx then takes it over unchanged.
+const PASTEL_SKIP = ['pricer', 'dealer', 'realtor', 'agent', 'curator', 'passport'];   // no StageChrome
 const PASTEL_ROUTES = JSON.stringify(Object.fromEntries(DAILY_GAMES
-  .filter((g) => SUDOKU_POOL.includes(g.key) || g.cat === 'End Game')
-  .map((g) => [g.href || '/' + g.key, softGround(g.cat === 'End Game' ? gameColor(g.key) : '#a5b4fc')])));
+  .filter((g) => !PASTEL_SKIP.includes(g.key))
+  .map((g) => [g.href || '/' + g.key, softGround(SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))])));
 
 const SOURCE_COUNT = getAllSources().length;
 
