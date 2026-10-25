@@ -42,9 +42,9 @@ const CSS = `
 .stb .stb-home{flex:none;display:inline-flex;align-items:center;gap:6px;height:40px;box-sizing:border-box;padding:0 12px 0 8px;border-radius:999px;border:2px solid currentColor;color:inherit;text-decoration:none;font-weight:800;font-size:14px;line-height:1;white-space:nowrap;}
 .stb .stb-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
 .stb .stb-t{display:flex;align-items:center;gap:7px;min-width:0;}
-.stb .stb-t h1{margin:0;font:inherit;font-size:19px;font-weight:800;line-height:1.15;letter-spacing:-.01em;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stb .stb-t h1{margin:0;font:inherit;font-size:19px;font-weight:800;line-height:1.3;letter-spacing:-.01em;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:2px;margin-bottom:-2px;}
 .stb .stb-dot{flex:none;width:11px;height:11px;border-radius:50%;background:var(--sp-g,#b1e5fd);box-shadow:inset 0 0 0 1.5px currentColor;}
-.stb .stb-tx em{font-style:normal;font-size:12px;font-weight:600;line-height:1.3;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stb .stb-tx em{font-style:normal;font-size:12px;font-weight:600;line-height:1.3;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:1px;}
 .stb .stb-sp{flex:1;}
 .stb .stb-look{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;flex:none;}
 .stb .stb-home:hover > span{text-decoration:underline;text-underline-offset:3px;}
