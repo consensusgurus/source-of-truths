@@ -157,7 +157,7 @@ export default function GroupsShell({ eyebrow, children, links = DEFAULT_LINKS }
   const [theme, setTheme] = useStageTheme();
   return (
     <div className="stage-page grp-page" data-stage-theme={theme}
-      style={{ '--stg-acc-dk': '#7dd3fc', '--stg-acc-lt': '#2563eb', '--stg-acc-ink-lt': '#2563eb', '--stg-onramp-lt': '#ffffff' }}>
+      style={{ '--stg-acc-dk': '#7dd3fc', '--stg-acc-lt': '#2563eb', '--stg-acc-ink-lt': '#2563eb', '--stg-onramp-lt': '#ffffff', '--stg-brand-dk': '#7dd3fc', '--stg-brand-lt': '#38bdf8' }}>
       <style dangerouslySetInnerHTML={{ __html: GROUPS_CSS }} />
       <header className="grp-cap">
         <Link href="/" className="grp-mark" aria-label="Mind Loft home"><MindLoftMark size={17} /> <b>Mind <i>Loft</i></b></Link>

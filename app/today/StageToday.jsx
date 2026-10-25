@@ -3456,6 +3456,10 @@ export default function StageToday() {
   // THE PHONE HOME'S OWN PIECES (owner, 2026-10-24, option A in full).
   const mph = !picked || paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID || !!paneCat(paneOn);
   const mTone = (cat) => ({ '--mc': categoryColor(cat), '--md': categoryAccentInkLight(cat) });
+  // THE LOGO WEARS THE PANE'S COLOUR (owner, 2026-10-25): inside a category or
+  // skill pane the Mind Loft mark and "Loft" take that pane's ramp step; on
+  // All, My Puzzles and Runs they stay sky. CSS picks --mc or --md by register.
+  const brandTone = (id) => (id && id !== ALL_ID && id !== MINE_ID && id !== CIRC_ID && paneCat(id)) ? mTone(rampCat(id)) : null;
   const mRunsFor = (cat) => {
     const sk = skillOfId(cat);
     return PILL_CIRCUITS.map((id) => circuits.find((c) => c.id === id)).filter((c) => c && (!cat
@@ -3498,7 +3502,7 @@ export default function StageToday() {
              controls at the right edge, as on every board. */}
       <div className="sty-cap v2" ref={capRef}>
         <div className="sty-id">
-          <a className="sty-brand" href="/" aria-label="Mind Loft, back to All Puzzles"
+          <a className={'sty-brand' + (brandTone(paneOn) ? ' tone' : '')} style={brandTone(paneOn) || undefined} href="/" aria-label="Mind Loft, back to All Puzzles"
             onClick={(e) => {
               if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
               e.preventDefault();
@@ -3607,7 +3611,7 @@ export default function StageToday() {
           const sub = isRuns ? `${circuits.filter(runFull).length} of ${circuits.length} finished` : `${nDone} of ${games.length} played`;
           return (
             <div className="sty-mtb pane">
-              <button type="button" className="mph-hback" onClick={mBack} aria-label="Back to Mind Loft home">
+              <button type="button" className={'mph-hback' + (pc ? ' tone' : '')} style={pc ? mTone(rampCat(paneOn)) : undefined} onClick={mBack} aria-label="Back to Mind Loft home">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
                 <MindLoftMark size={18} ink="var(--stg-ink)" accent="var(--stg-brand,#38bdf8)" />
                 <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
@@ -4425,6 +4429,8 @@ const CSS = `
 .sty-brand>svg{align-self:center;}
 .sty-id b{font-size:16px;font-weight:800;letter-spacing:-0.01em;white-space:nowrap;}
 .sty-id b em{font-style:normal;color:var(--stg-brand,#7dd3fc);}
+.sty-brand.tone,.mph-hback.tone{--stg-brand:var(--md);}
+[data-stage-theme=dark] .sty-brand.tone,[data-stage-theme=dark] .mph-hback.tone{--stg-brand:var(--mc);}
 .sty-date{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;}
