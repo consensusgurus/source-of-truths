@@ -57,7 +57,7 @@ import { fetchDailyBoard } from '../dailyBoardClient';
 import { IQ_TESTS } from '@/lib/iq-tests';
 import useMyGames from '../useMyGames';
 import { savedIdentity } from '@/lib/saved-identity';
-import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook, forceStageTheme } from '@/lib/stage-theme';
+import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
 import ThemePop, { LightOffer } from '../ThemePop';
 import StageLadder from '../StageLadder';
 import EntryDoor from '../EntryDoor';
@@ -3448,18 +3448,17 @@ export default function StageToday() {
   const mOpen = (id) => { pickPane(id); mTop(); };
   const mBack = () => { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (e) {} mTop(); };
   // A PANE ON THE PHONE IS ITS OWN PAGE (owner, 2026-10-24): nothing above the
-  // back button but the logo, and a category or skill recolours the whole page
-  // in its lighter step, on the light register whatever the reader's choice.
+  // back button but the logo, and a category or skill recolours the whole page:
+  // its lighter step on the light register, a deep wash of it on the dark.
   const mPane = runsMq && picked && mph;
   const mBackTo = paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID ? 'Home' : ixLens === 'skill' ? 'All skills' : 'All categories';
   const mTintCat = mPane && paneCat(paneOn) ? rampCat(paneOn) : null;
-  const mTintBg = mTintCat ? `color-mix(in srgb, ${categoryColor(mTintCat)} 60%, #fff)` : null;
+  const mTintBg = mTintCat ? (light ? `color-mix(in srgb, ${categoryColor(mTintCat)} 60%, #fff)` : `color-mix(in srgb, ${categoryColor(mTintCat)} 22%, #0b0f1a)`) : null;
   useEffect(() => (mTintBg ? holdRootPaint(mTintBg) : undefined), [mTintBg]);
-  useEffect(() => { if (!mTintBg) return undefined; forceStageTheme('light'); return () => forceStageTheme(null); }, [!!mTintBg]);
   const mGroup = grp && Array.isArray(grp.groups) && grp.groups.length ? grp.groups[0] : null;
   const mPlayed = DAILY_GAMES.reduce((n, g) => n + (done.has(g.key) ? 1 : 0), 0);
   return (
-    <div className={'sty stage-page' + (mph ? ' mph-on' : '') + (mPane ? ' mph-pane' : '') + (mTintBg ? ' mph-tint' : '')} data-stage-theme={mTintBg ? 'light' : stageTheme} style={mTintBg ? { '--stg-ground': mTintBg } : undefined} ref={snapRef}>
+    <div className={'sty stage-page' + (mph ? ' mph-on' : '') + (mPane ? ' mph-pane' : '') + (mTintBg ? ' mph-tint' : '')} data-stage-theme={stageTheme} style={mTintBg ? { '--stg-ground': mTintBg, '--stg-raise': mTintBg } : undefined} ref={snapRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {/* THE ENTRY DOOR: first visit then weekly, always dark, replaced the daily arrival. See app/EntryDoor.jsx. */}
       {/* A SKILL TILE OPENS THAT SKILL'S PANE (owner, 2026-10-18), and shows the
@@ -3791,7 +3790,7 @@ export default function StageToday() {
                       const on = !!(favorites && favorites.includes(g.key));
                       return (
                         <a key={g.key} className={'mph-g' + (isDone ? ' done' : '')} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`} style={mTone(g.cat)}>
-                          <b>{g.name}</b>
+                          <b>{pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
                           <em>{g.tag}</em>
                           <small>{isDone ? (r ? `You #${r.rank} of ${r.field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>
                           {canPin ? (
@@ -6406,9 +6405,12 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   /* The recoloured page: the ground is the category, so tiles go white. */
   .mph-tint .sty-mph .mph-band{background:transparent;border:0;padding:4px 2px 2px;}
   .mph-tint .sty-mph .mph-band b{font-size:26px;}
-  .mph-tint .sty-mph .mph-t,.mph-tint .sty-mph .mph-g,.mph-tint .sty-mph .mph-run{background:#fff;border-color:#08222e;color:#08222e;}
-  .mph-tint .sty-mph .mph-g.done,.mph-tint .sty-mph .mph-run.done{background:transparent;border-color:rgba(8,34,46,.35);}
-  .mph-tint .mph-srt button[aria-pressed="true"]{background:#08222e;color:#fff;}
+  .mph-tint[data-stage-theme=light] .sty-mph .mph-t,.mph-tint[data-stage-theme=light] .sty-mph .mph-g,.mph-tint[data-stage-theme=light] .sty-mph .mph-run{background:#fff;border-color:#08222e;color:#08222e;}
+  .mph-tint[data-stage-theme=light] .sty-mph .mph-g.done,.mph-tint[data-stage-theme=light] .sty-mph .mph-run.done{background:transparent;border-color:rgba(8,34,46,.35);}
+  .mph-tint:not([data-stage-theme=light]) .sty-mph .mph-band{color:#e9edf4;}
+  .mph-tint:not([data-stage-theme=light]) .sty-mph .mph-g.done,.mph-tint:not([data-stage-theme=light]) .sty-mph .mph-run.done{background:transparent;border-color:rgba(233,237,244,.35);color:#e9edf4;}
+  .mph-tint .stgf{background:transparent !important;}
+  .mph-g b .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mc);box-shadow:inset 0 0 0 1.5px currentColor;margin-right:6px;vertical-align:1px;}
   .mph-note{margin:0;font-size:13px;font-weight:600;line-height:1.45;opacity:.85;}
 }
 `;
