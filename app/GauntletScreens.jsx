@@ -363,8 +363,8 @@ export function GauntletBetween({ circuitName, sections = [], results = [], last
                   <a className="gsx-lb" href={leaveHref}>Leave the run</a>
                 </div>
               ) : null}
-              {fine ? <div className="gsx-fine">{fine}</div> : null}
             </div>
+            {fine ? <div className="gsx-fine gsx-lowfine">{fine}</div> : null}
           </div>
         </div>
       </div>
@@ -487,6 +487,18 @@ export function GauntletEndStage({
   });
   const avgTotal = avg && Object.keys(avg).length ? Math.round(sections.reduce((t, s) => t + (Number(avg[s.key]) || 0), 0)) : null;
   const ahead = rank && fieldSize && fieldSize >= 2 ? Math.max(0, Math.round(((fieldSize - rank) / fieldSize) * 100)) : null;
+  const boardCard = board && board.rows && board.rows.length ? (
+    <div className="gsx-rise gsx-card gsx-board" style={d('2.2s')}>
+      <div className="gsx-ch"><span>Today&rsquo;s board{board.field ? ` · ${Number(board.field).toLocaleString()}` : ''}</span>{board.href ? <a href={board.href}>See all</a> : null}</div>
+      {board.rows.map((r, i) => (r.gap ? (
+        <div key={'g' + i} className="gsx-br gsx-gap">&middot;&middot;&middot;</div>
+      ) : (
+        <div key={(r.name || '') + i} className={'gsx-br' + (r.me ? ' me' : '')}>
+          <span className="p">#{r.rank}</span><span className="n">{r.me ? 'You' : r.name}</span><span className="s">{r.score}</span>
+        </div>
+      )))}
+    </div>
+  ) : null;
   return (
     <div key={pal.look} className="gsx gsx-end" role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -521,19 +533,7 @@ export function GauntletEndStage({
                 {title.line ? <span>{title.line}</span> : null}
               </div>
             ) : null}
-            {/* 2. RANKINGS */}
-            {board && board.rows && board.rows.length ? (
-              <div className="gsx-rise gsx-card gsx-board" style={d('2.2s')}>
-                <div className="gsx-ch"><span>Today&rsquo;s board{board.field ? ` · ${Number(board.field).toLocaleString()}` : ''}</span>{board.href ? <a href={board.href}>See all</a> : null}</div>
-                {board.rows.map((r, i) => (r.gap ? (
-                  <div key={'g' + i} className="gsx-br gsx-gap">&middot;&middot;&middot;</div>
-                ) : (
-                  <div key={(r.name || '') + i} className={'gsx-br' + (r.me ? ' me' : '')}>
-                    <span className="p">#{r.rank}</span><span className="n">{r.me ? 'You' : r.name}</span><span className="s">{r.score}</span>
-                  </div>
-                )))}
-              </div>
-            ) : null}
+            {boardCard ? <div className={meme ? 'gsx-bdl' : undefined}>{boardCard}</div> : null}
             {/* 3. CHALLENGE (+ Polymath), and sharing the score */}
             <div className="gsx-rise gsx-tray" style={d('2.4s')}>
               {extra}
@@ -546,6 +546,9 @@ export function GauntletEndStage({
           </div>
           <div className="gsx-eright">
             {meme ? <div className="gsx-rise gsx-meme" style={d('2.45s')}>{meme}</div> : null}
+            {/* With the GIF on show, today's board sits under it on the right,
+                so the two columns come out even (owner, 2026-10-25). */}
+            {meme && boardCard ? <div className="gsx-bdr">{boardCard}</div> : null}
             {/* 4. PLAY NEXT */}
             {similar && similar.href ? (
               <a className="gsx-rise gsx-next" href={similar.href} style={{ ...d('2.5s'), background: pal.fill('#6ee7b7') }}>
@@ -717,6 +720,8 @@ const CSS = `
 .gsx-rw{display:block}
 .gsx-row{width:100%;border:0;border-top:1px solid color-mix(in srgb, var(--gsx-ink) 35%, transparent);font:inherit;color:var(--gsx-ink);text-align:left;cursor:default}
 .gsx-row{border-radius:0;margin:0;box-sizing:border-box;display:grid}
+.gsx-bdr{display:none}
+@media(min-width:900px){.gsx-bdl{display:none}.gsx-bdr{display:block}}
 .gsx-meme .msh-peek{margin:0;box-shadow:none;border:2px solid var(--gsx-ink);border-radius:16px}
 .gsx-meme .msh-peek img{max-height:280px}
 .gsx-row.can{cursor:pointer}
@@ -756,6 +761,7 @@ const CSS = `
   .gsx-low .gsx-acts{justify-content:stretch;height:100%}
   .gsx-low .gsx-last+.gsx-acts .gsx-go{flex:1 1 auto}
   .gsx-low .gsx-last{min-height:100%;box-sizing:border-box}
+  .gsx-low .gsx-lowfine{grid-column:1 / -1}
   .gsx-ecol{justify-content:center}
   .gsx-egrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:40px;align-items:start}
   .gsx-score span{font-size:132px}

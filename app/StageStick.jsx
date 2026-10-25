@@ -709,6 +709,8 @@ const CSS = `
   .sst-band .sst-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start;}
   .sst-page .sst-cards{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
   .sst-page .sst-cards > section:nth-child(n+3){grid-column:1 / -1;}
+  /* The board and the challenge stand the same height (owner, 2026-10-25). */
+  .sst-page .sst-cards > section:nth-child(-n+2){align-self:stretch;}
 }
 .sst-page .sst-tiles,.sst-page .sst-cats{flex-wrap:wrap;overflow:visible;margin:0;padding:0;}
 .sst-page .sst-gif .msh-peek img{max-height:300px;}
