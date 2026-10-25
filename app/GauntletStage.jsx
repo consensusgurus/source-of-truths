@@ -21,7 +21,7 @@
 
 import React from 'react';
 import { RAMP_INK, softGround } from '@/lib/category-ramp';
-import MindLoftMark from './MindLoftMark';
+import StageTopBar from './StageTopBar';
 import { useStageLook, stagePalette, useStageChrome, LookButton } from './GauntletScreens';
 import { nextLook } from '@/lib/stage-look';
 
@@ -43,12 +43,9 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   return (
     <div key={look} className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink, '--gst-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      {/* The Mind Loft mark and name top left, like every page (owner, 2026-10-24). */}
-      <a className="gst-brand" href="/" aria-label="Mind Loft home">
-        <MindLoftMark size={24} ink={pal.ink} accent="var(--stg-brand,#38bdf8)" title="Mind Loft" />
-        <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
-      </a>
-      <LookButton look={look} onFlip={() => setLook(nextLook(look))} className="gst-look" />
+      {/* The site's header pill, back arrow + Mind Loft mark, and the look
+          switch (owner, 2026-10-25), the same element every stage page uses. */}
+      <div className="gst-top"><StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} href="/" /></div>
       <div className="gst-col" key={qKey}>
         <div className="gst-q">{question}</div>
         <div className={`gst-ch${choices.length > 2 ? ' many' : ''}${shortSet ? ' grid' : ''}${tiny ? ' tiny' : ''}`}>
@@ -75,6 +72,7 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
 const CSS = `
 .gst{position:fixed;inset:0;z-index:85;background:var(--gst-bg);color:var(--gst-ink);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
 .gst *{color:var(--gst-ink);}
+.gst-top{position:fixed;top:max(12px, env(safe-area-inset-top));left:14px;right:12px;z-index:2;color:var(--gst-ink)}
 .gst-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--gst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
 .gst-look:hover{opacity:1}
 .gst-brand{position:fixed;top:max(12px, env(safe-area-inset-top));left:14px;z-index:2;display:inline-flex;align-items:center;gap:8px;height:40px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:-.01em;}

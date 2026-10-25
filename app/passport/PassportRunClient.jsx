@@ -18,32 +18,34 @@
 // The circuit board (lib/circuits 'passport', scorer 'passport') adds the four
 // rows up with lib/passport.js legPoints, the same rounding shown here.
 //
-// The pregame, the finale curtain and the ending are Passport's own (the
-// departures board, the visa page, the cover upgrading rung by rung), shared
-// with the five-round client in ./PassportClient.
+// ON THE STAGE (owner, 2026-10-25): the entry, the handover between legs, the
+// play page and the ending are the Gauntlet run's screens (app/GauntletScreens),
+// with Passport's own booklet as the entry's centerpiece and the six passports
+// as the ending's climb. The departures-board curtain and the old cover ending
+// are retired here; the five-round client in ./PassportClient keeps its own.
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { X } from 'lucide-react';
 import RunEmbed from '../RunEmbed';
 import DailyRules from '../DailyRules';
-import NextDrop from '../NextDrop';
 import ChallengeStrip from '../ChallengeStrip';
-import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
 import useCircuitBoard from '../circuits/useCircuitBoard';
-import RunScorecard, { boardRows, stageRank, stageAvg } from '../circuits/RunScorecard';
-import RunNextSlot from '../circuits/RunNextSlot';
+import { stageAvg } from '../circuits/RunScorecard';
 import { rampFor } from '@/lib/circuits';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import GauntletMorePop from '../circuits/GauntletMorePop';
+import { RUN_DOORS, runDoneToday } from '../circuits/RunDoorPop';
+import { otherRuns } from '@/lib/run-seo';
 import { RunChallengeButton, RunChallengeLine } from '../RunChallenge';
 import { notifyShareCredit } from '../ShareCreditPop';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
+import { isDarkLook } from '@/lib/stage-look';
 import { KEY, legsFor, legOrderFor, legOrderBefore, legPoints, TIERS, tierIndex, HENLEY_EDITION, shareLinesRun } from '@/lib/passport';
-import { Stamp, Cover, Departures, Launch, PP_CSS, LAUNCH_CSS, ENDING_CSS, usePlaneMap } from './PassportClient';
-import RunBackLink from '../circuits/RunBackLink';
+import { PP_CSS } from './PassportClient';
+import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useStageLook } from '../GauntletScreens';
 
 const CLIENTS = {
   span: dynamic(() => import('../span/SpanClient'), { ssr: false, loading: () => null }),
@@ -53,13 +55,15 @@ const CLIENTS = {
 
 const PATH = '/passport';
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
-const INKS = ['#a78bfa', '#60a5fa', '#34d399', '#fbbf24'];
 // The same four inks for paper (the stamps inside the earned passport).
 const INKS_DEEP = ['#6d28d9', '#1d4ed8', '#047857', '#a16207'];
 const STATS_KEY = 'sot_passport_stats';
 const VARS = { '--pp-sea': '#0a1222', '--pp-land': '#2a3652', '--pp-edge': '#0b0f1a', '--pp-home': '#f0718b', '--pp-hit': '#2f7a64', '--pp-miss': '#5a3340', '--pp-panel': '#181e2d', '--pp-line': 'rgba(255,255,255,0.18)', '--pp-good': '#6ee7b7', '--pp-bad': '#fb7185', '--pp-gold': '#fbbf24', '--pp-label': '#ffffff', '--pp-halo': '#0b0f1a' };
 const SRC_NAME = { span: 'Span', flank: 'Flank', ping: 'Ping' };
+// One short line per leg for the entry's lineup bands (the long lines in
+// lib/passport.js LEGS wrap under the big name on the handover instead).
+const SHORT = { ping: 'Find the secret city', passport: 'Nine size calls', flank: 'Name every neighbor', span: 'Cross the map by borders' };
+const BETWEEN_MS = 15000;
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
@@ -139,15 +143,12 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   const srvDone = useRef(false);
   const [holding, setHolding] = useState(null);
   const [numShow, setNumShow] = useState(null);
-  const [slam, setSlam] = useState(-1);
-  const [finale, setFinale] = useState(false);
   const [nudgeReady, setNudgeReady] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [identity, setIdentity] = useState(null);
   const [now, setNow] = useState(() => Date.now());
   const doneAtLoad = useRef(null);
-  const canvasRef = useRef(null);
 
   const commit = useCallback((next) => { gRef.current = next; setG(next); }, []);
   useEffect(() => { gRef.current = g; }, [g]);
@@ -220,7 +221,6 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   const done = !playing;
   const sc = g.sc;
   const total = sumScores(sc);
-  usePlaneMap(canvasRef, preStart && hydrated, true, 0);
 
   useEffect(() => {
     if (!started) return undefined;
@@ -233,7 +233,6 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   function award(cur, i, score, patch) {
     const sc2 = cur.sc.slice(); sc2[i] = score;
     commit({ ...cur, ...patch, sc: sc2 });
-    setSlam(i); setTimeout(() => setSlam(-1), 900);
   }
 
   // A game already finished today stamps its leg the moment the run reaches it.
@@ -267,7 +266,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     const t0 = Date.now();
     commit({ ...cur, t0, sz: ordOf(cur)[0] === 3 && !cur.sz.t0 ? { ...cur.sz, t0 } : cur.sz });
     setNow(t0);
-    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
+    toTop();
   }
   function advance() {
     const cur = gRef.current;
@@ -360,9 +359,11 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     if (cur.status !== 'playing') return;
     const fin = { ...cur, status: 'done', tEnd: Date.now() };
     postResult(fin);
-    commit(fin);
-    if (!reducedMotion()) setFinale(true);
-    else commit({ ...fin, fin: true });
+    // The stage ending replaced the departures-board curtain (owner,
+    // 2026-10-25), so the run lands straight on it; `fin` still marks the
+    // ending as seen, and the more-runs pop-up waits its usual 10 seconds.
+    commit({ ...fin, fin: true });
+    setNudgeReady(true);
   }
   useEffect(() => {
     if (!hydrated || g.round !== 3 || g.sc[ORD[3]] == null || g.status !== 'playing' || holding) return undefined;
@@ -370,11 +371,6 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, g.round, g.sc[ORD[3]], g.status, holding]);
-  function finaleDone() {
-    setFinale(false); setNudgeReady(true);
-    const cur = gRef.current;
-    if (!cur.fin) commit({ ...cur, fin: true });
-  }
 
   const elapsed = g.t0 ? fmtClock((g.tEnd || now) - g.t0) : '0:00';
   function shareUrl(withScores) {
@@ -415,43 +411,34 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   const LI = ORD[Math.min(3, g.round)];
   const sec = started && LI < 3 ? sections[LI] : null;
   const showGame = !!(sec && (g.sc[LI] == null || holding === sec.key) && !banked[sec.key] && !checking);
-  // The stamp card that follows a finished game sits at the top of a page that
-  // just lost its board, so bring the reader up to it too.
-  const betweenOn = !!(sec && !showGame && g.sc[LI] != null);
-  useEffect(() => { if (betweenOn) toTop(); }, [betweenOn, g.round]); // eslint-disable-line react-hooks/exhaustive-deps
   const Game = sec ? CLIENTS[sec.key] : null;
 
-  const slots = (
-    <div className="pp-slots pr-slots">
-      {ORD.map((i, step) => { const l = LEGS[i]; return (
-        <div key={l.k} className={`pp-slot${started && g.round === step ? ' on' : ''}`}>
-          {sc[i] == null ? <span>{l.n}</span> : <Stamp i={i} score={sc[i]} slam={slam === i} ink={INKS[i]} name={l.n} max={l.max} />}
-        </div>
-      ); })}
-    </div>
-  );
+  // THE STAGE (owner, 2026-10-25): the entry, the handover, the play page and
+  // the ending in the Gauntlet run's style. The legs in PLAY order, each on
+  // its ladder step (slot = step), as the gate, the handover strip, the play
+  // frame and the end table all read them.
+  const stageSecs = ORD.map((li, step) => ({ key: LEGS[li].k, name: LEGS[li].n, slot: step, questions: [], li }));
+  const dateShort = (PUZZLE.dateLabel || '').replace(/, \d{4}$/, '');
+  const dateLine = PUZZLE.sunday ? `Sunday Edition · ${dateShort}` : dateShort;
 
-  const between = () => {
-    const i = LI;
-    const l = LEGS[i];
-    const r = g.res[sec.key] || banked[sec.key] || {};
-    const wasBanked = !!banked[sec.key];
-    const nextL = g.round < 3 ? LEGS[ORD[g.round + 1]] : null;
-    return (
-      <div className="pr-between">
-        <div className="pp-eb"><span>Leg {g.round + 1} of 4</span><b>{l.n}</b></div>
-        <div className="pr-bstamp"><Stamp i={i} big slam={slam === i} score={sc[i]} name={l.n} max={l.max} ink={INKS[i]} /></div>
-        <p className="pp-reveal" style={{ textAlign: 'center' }}>
-          {wasBanked ? `${l.n} was played earlier today, so that first result stands. ` : ''}
-          {r.unknown ? 'Result on file.' : `${l.n} ${r.score}/${r.total}, worth ${sc[i]} of ${l.max} here.`}
-        </p>
-        <div className="pp-endrow" style={{ justifyContent: 'center' }}>
-          {nextL ? <button type="button" className="pp-go" onClick={advance}>Next: {nextL.k === 'passport' ? 'the sizes' : nextL.n} &rarr;</button>
-            : <p className="pp-reveal">Landing your passport&hellip;</p>}
-        </div>
-      </div>
-    );
-  };
+  // The handover between legs: the leg just stamped, the next leg large, and
+  // an automatic start with Hold (owner, 2026-10-25). It shows once a leg has
+  // its points and its finished board has had its beat; the last leg goes
+  // straight on to the ending.
+  const legDone = started && g.sc[LI] != null && g.round < 3;
+  const betweenOn = !!(legDone && (LI === 3 ? numShow == null : (!sec || holding !== sec.key)));
+  const [held, setHeld] = useState(false);
+  const [resumes, setResumes] = useState(0);
+  useEffect(() => { setHeld(false); }, [g.round]);
+  useEffect(() => {
+    if (!betweenOn || held) return undefined;
+    const t = setTimeout(() => advance(), BETWEEN_MS);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [betweenOn, held, resumes, g.round]);
+
+  const [look] = useStageLook();
+  const darkLook = isDarkLook(look);
 
   const sizes = () => {
     const doneR = sc[3] != null;
@@ -464,7 +451,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     const right = g.sz.res.filter(Boolean).length;
     return (
       <>
-        <div className="pp-eb"><span>Leg {g.round + 1} of 4</span><b>Sizes</b>{SRC_NAME[c.src] ? <span className="pr-src">From {SRC_NAME[c.src]}</span> : null}</div>
+        <div className="pp-eb"><b>Sizes</b>{SRC_NAME[c.src] ? <span className="pr-src">From {SRC_NAME[c.src]}</span> : null}</div>
         <h2 className="pp-h">{pop ? <>Does {c.bName} have more or fewer people than {c.aName}?</> : <>Is {c.bName} bigger or smaller than {c.aName} by area?</>}</h2>
         <div className="pp-vs">
           <div className="pp-vc home"><div className="pp-mono">{c.aName}</div><div className="v">{fmtSize(aV, pop)}</div><div className="bar"><i style={{ width: `${((aV || 0) / MAX) * 100}%` }} /></div></div>
@@ -479,207 +466,192 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
         <div className="pp-dots">{calls.map((_, k) => <i key={k} className={g.sz.res[k] === true ? 'ok' : g.sz.res[k] === false ? 'ko' : k === g.sz.i ? 'cur' : ''} />)}</div>
         {numShow != null && <p className="pp-reveal">{pop ? <>{c.bName} has {bV > aV ? 'more' : 'fewer'} people, by {fmtSize(Math.abs(bV - aV), true)}.</> : <>{c.bName} is {bV > aV ? 'bigger' : 'smaller'}, by {fmtSize(Math.abs(bV - aV), false)}.</>}</p>}
         {doneR && <p className="pp-reveal">{right} of {NC} called right. Areas and populations from the CIA World Factbook.</p>}
-        {doneR && g.round < 3 ? (
-          <div className="pp-endrow" style={{ justifyContent: 'center' }}>
-            <button type="button" className="pp-go" onClick={advance}>Next: {LEGS[ORD[g.round + 1]].n} &rarr;</button>
-          </div>
-        ) : null}
       </>
     );
   };
 
+  // ── THE ENDING ─────────────────────────────────────────────────────────
   const k = tierIndex(total);
   const tier = TIERS[k];
-  const up = TIERS[k + 1];
-  const me = cboard && cboard.data ? (cboard.data.me || cboard.data.meProvisional || null) : null;
-  const field = cboard && cboard.data && Array.isArray(cboard.data.overall) ? (cboard.data.overallField || cboard.data.uniquePlayers || cboard.data.overall.length) : null;
-  // THE BOARD ON THE ENDING (owner, 2026-10-17): the top three and the reader.
-  const topRows = cboard && cboard.data && Array.isArray(cboard.data.overall) ? cboard.data.overall.slice(0, 3) : [];
-  const meInTop = !!(me && topRows.some((r) => (me.userKey && r.userKey === me.userKey)));
-  const fmtSecs = (sec) => { const v = Math.max(0, Math.round(Number(sec) || 0)); return `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`; };
-  const boardRow = (r, i, mine) => (
-    <div key={(r && r.userKey) || `me-${i}`} className={`pe-lbr${mine ? ' me' : ''}`}>
-      <span className="pe-lbk">{r && r.rank ? `#${r.rank}` : '-'}</span>
-      <span className="pe-lbn">{mine ? 'You' : ((r && r.username) || 'Guest')}</span>
-      <span className="pe-lbs">{Math.round(Number(r && r.total) || 0)}<small>/50</small></span>
-      <span className="pe-lbt">{r && r.timeTotal ? fmtSecs(r.timeTotal) : ''}</span>
-    </div>
-  );
-  const frac = sc.map((v, i) => (v || 0) / LEGS[i].max);
-  let hiR = 0, loR = 0;
-  frac.forEach((v, i) => { if (v > frac[hiR]) hiR = i; if (v < frac[loR]) loR = i; });
-  const flat = frac[hiR] === frac[loR];
+  const data = cboard && cboard.data;
+  const me = data ? (data.me || data.meProvisional || null) : null;
+  const field = data && Array.isArray(data.overall) ? (data.overallField || data.uniquePlayers || data.overall.length) : null;
   const runSecs = g.t0 && g.tEnd ? Math.round((g.tEnd - g.t0) / 1000) : null;
-
-  const ending = (
-    <section className="pe">
-      <div className="pe-grid">
-        <div className="pe-cov">
-          <div className="pp-cwrap"><Cover tier={tier} /><div className="pp-issued small"><Stamp i={0} big label="Visa-free" score={tier.vf} ink={k === 0 ? 'var(--pp-bad)' : 'var(--pp-good)'} /></div></div>
-        </div>
-        <div className="pe-copy" role="status">
-          <div className="pe-you">You traveled on the</div>
-          <h1 className="pe-nm">{tier.name}</h1>
-          <p className="pe-ln">{tier.line}</p>
-          <div className="pe-stats">
-            <div><b>{total}/50</b><span>Score</span></div>
-            {me && me.rank ? <a className="pe-lbl" href={`${PATH}/leaderboard`} aria-label="See today's leaderboard"><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span><em aria-hidden="true">&rarr;</em></a> : null}
-            <div><b>{tier.vf}</b><span>Visa-free</span></div>
-          </div>
-          <div className="pe-next">{up ? <><b>{up.min - total} more</b> and you upgrade to the {up.name}.</> : <>Top of the ladder. <b>Every border waves you through.</b></>}</div>
-        </div>
-      </div>
-      {/* THE WIDE HALF (owner, 2026-10-17): everything under the hero runs the
-          full width of the ending, centred, Trivia Gauntlet style. Share is the
-          challenge card's job; the rank above opens the board. */}
-      <div className="pe-wide">
-        {(() => {
-          // THE RUN SCORECARD (owner, 2026-10-20): the board and every leg in
-          // one table, the challenge and the next slot under it. The cover and
-          // title above are the hero, so none here.
-          const legs = ORD.map((i) => LEGS[i]);
-          const sf = cboard && cboard.data && cboard.data.stageField;
-          const stages = legs.map((l, i) => ({ key: l.k, name: l.n, colour: rampFor(i) }));
-          const mePer = Object.fromEntries(LEGS.map((l, i) => [l.k, sc[i] == null ? null : sc[i]]));
-          const built = boardRows({ data: cboard && cboard.data, perOf: (x) => x.sv || null, titleOf: (v) => (TIERS[tierIndex(v)] || {}).name || '', mePer, meTotal: total, meTitle: tier.name });
-          const ranks = {};
-          LEGS.forEach((l, i) => { if (sc[i] != null) { const r = stageRank(sf, l.k, sc[i]); if (r) ranks[l.k] = r; } });
-          const avg = stageAvg(sf, legs.map((l) => ({ key: l.k })));
-          return (
-            <RunScorecard
-              stages={stages}
-              rows={built.rows}
-              you={{ miss: {} }}
-              avg={avg}
-              ranks={Object.keys(ranks).length ? ranks : null}
-              scale={Object.fromEntries(LEGS.map((l) => [l.k, l.max]))}
-              avgTotal={avg ? Math.round(LEGS.reduce((a, l) => a + (Number(avg[l.k]) || 0), 0)) : null}
-              field={built.field}
-              boardHref={`${PATH}/leaderboard`}
-              boardState={(cboard && cboard.state) || 'loading'}
-              aside={<>
-                <RunChallengeLine gameKey="passport" score={total} n={PUZZLE.num} />
-                <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays}
-                  t={runSecs} status={tier.name || ''} door />
-              </>}
-              next={<RunNextSlot circuitId="passport" exclude={LEGS.map((l) => l.k)} cats={['Geography']} />}
-            />
-          );
-        })()}
-        {isTodays ? (
-          <NextDrop label="Next flight" sub="A new Ping, Flank and Span board at midnight Eastern." href={PATH}
-            accent="#c4b5fd" style={{ margin: '14px 0 0' }} />
-        ) : null}
-        <MoreRunsList self="passport" onShare={copyShare} copied={copied} />
-        <div className="pe-foot">
-          Each leg is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}
-          {!isTodays ? <> · You played the {PUZZLE.dateLabel} archive. <a href={PATH}>Back to today&rsquo;s Passport</a></> : null}
-        </div>
-      </div>
-      {!identity && (
-        <div className="pe-join">
-          <JoinLeaderboardForm hideIcon heading="Put your passport on the board" identity={identity} onJoined={(id) => setIdentity(id)} />
-        </div>
-      )}
-    </section>
-  );
+  // The ladder is lib/passport.js TIERS, bottom to top: each passport its own
+  // rung, its cover colour on the chip.
+  const ladder = TIERS.map((t, i) => ({ min: t.min, name: t.name, line: t.line, colour: rampFor(i), chip: t.cv }));
+  const endBoard = (() => {
+    const rows = data && Array.isArray(data.overall) ? data.overall.filter((x) => Number.isFinite(Number(x.total))) : [];
+    const isMe = (row) => !!(me && row && me.userKey && row.userKey === me.userKey);
+    const out = rows.slice(0, 3).map((row, i) => ({ rank: row.rank || i + 1, name: row.username || 'Guest', score: isMe(row) ? total : Math.round(Number(row.total) || 0), me: isMe(row) }));
+    if (me && !out.some((x) => x.me)) {
+      if (Number.isFinite(Number(me.rank)) && me.rank > 4) out.push({ gap: true });
+      out.push({ rank: Number.isFinite(Number(me.rank)) ? me.rank : '–', name: 'You', score: total, me: true });
+    }
+    return out.length ? { rows: out, field, href: `${PATH}/leaderboard` } : null;
+  })();
+  const sf = data && data.stageField;
+  const legAvg = stageAvg(sf, stageSecs.map((s) => ({ key: s.key })));
+  const fmtF = (a) => (a == null ? '–' : (a < 10 ? Number(a).toFixed(1) : Math.round(a)));
+  const rowsIn = stageSecs.map((s, step) => {
+    const best = sf && sf.games && sf.games[s.key] && sf.games[s.key].best != null ? sf.games[s.key].best : null;
+    return { key: s.key, name: s.name, bg: rampFor(step), you: sc[s.li] == null ? '–' : sc[s.li], field: legAvg && legAvg[s.key] != null ? fmtF(Number(legAvg[s.key])) : '–', best: best != null ? best : '–' };
+  });
+  const topRow = data && Array.isArray(data.overall) && data.overall[0];
+  const leaderScore = topRow && Number.isFinite(Number(topRow.total)) ? Math.round(Number(topRow.total)) : null;
+  const [similar, setSimilar] = useState(null);
+  useEffect(() => {
+    if (!done) return;
+    const id = otherRuns('passport').map((x) => x.key).find((x) => x !== 'triviaencore' && !runDoneToday(x));
+    setSimilar(id && RUN_DOORS[id] ? { name: RUN_DOORS[id].name, href: RUN_DOORS[id].href } : null);
+  }, [done]);
 
   const doneNames = sections.filter((s) => banked[s.key]).map((s) => s.name);
-  const launchRules = (
-    <div className="pl-rules">
-      <ol>{rulesSteps.map((x, i) => <li key={i}>{x}</li>)}</ol>
-      <p>The passports are the {HENLEY_EDITION}. Areas from the CIA World Factbook.</p>
-    </div>
-  );
+  const PVARS = darkLook ? VARS : VARS_LIGHT;
 
   return (
-    <div className="stage-page pp-root pr-root" data-sot-wait="" data-stage-theme="dark"
-      style={{ ...VARS, minHeight: '100vh', background: 'var(--stg-ground,#0b0f1a)', color: 'var(--stg-ink,#e9edf4)', position: 'relative', overflowX: 'hidden', fontFamily: SANS }}>
-      <style dangerouslySetInnerHTML={{ __html: PP_CSS + LAUNCH_CSS + ENDING_CSS + RUN_CSS }} />
-      {playing ? <ChallengeStrip gameKey="passport" num={PUZZLE.num} /> : null}
-      <div className={`pc-cap${started ? ' on' : ''}${done && !finale ? ' vf' : ''}`}>
-        {done && <RunBackLink />}
-        <a href="/" className="pc-home">Mind Loft</a>
-        <b>Passport</b>
-        <span className="pc-capd">{PUZZLE.dateLabel.replace(/, \d{4}$/, '')}</span>
-        {started ? (
-          <>
-            <span className="pc-capt" aria-label={`Leg ${Math.min(4, g.round + 1)} of 4`}>{LEGS.map((l, i) => <i key={l.k} className={i < g.round ? 'd' : i === g.round ? 'on' : ''} />)}</span>
-            <span className="pc-clock">{elapsed}</span>
-            <button type="button" className="pc-rules" onClick={() => setShowHelp(true)}>Rules</button>
-          </>
-        ) : (
-          <a className="pc-lb" href={`${PATH}/leaderboard`}>Leaderboard</a>
-        )}
-      </div>
+    <div className="pr-root" style={{ fontFamily: SANS }}>
+      <style dangerouslySetInnerHTML={{ __html: PP_CSS + RUN_CSS }} />
+      {!hydrated ? <GauntletCover sections={stageSecs} /> : null}
 
-      <div className="pp-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '8px 16px 70px' }}>
-        {hydrated && preStart && (
-          <>
-            <Launch puzzle={PUZZLE} canvasRef={canvasRef} onBoard={start}
-              legs={ORD.map((i) => LEGS[i])} demo={ORD.map((i) => (LEGS[3].max === 20 ? [8, 10, 7, 16] : [10, 12, 8, 11])[i])} gate="4 legs"
-              lede={ORD[0] === 2 ? <>The day&rsquo;s <b>Ping</b>, then <b>nine size calls</b>{OPEN_SIZES ? ' on countries from anywhere' : ''}, then <b>Flank</b> and <b>Span</b>. Your score decides <b>which passport</b> you travel home on.</> : SIZES_FIRST ? <><b>Nine size calls</b> on countries from anywhere, then the day&rsquo;s <b>Ping</b>, <b>Flank</b> and <b>Span</b>. Your score decides <b>which passport</b> you travel home on.</> : <>The day&rsquo;s <b>Span</b>, <b>Flank</b> and <b>Ping</b>, then <b>nine size calls</b> on the countries you met. Your score decides <b>which passport</b> you travel home on.</>}
-              visaTitle="Four legs, four stamps"
-              visaText={ORD[0] === 2 ? 'Hunt a city in Ping, size up nine pairs of countries, ring a country in Flank, then cross the map in Span.' : SIZES_FIRST ? 'Size up nine pairs of countries, hunt a city in Ping, ring a country in Flank, then cross the map in Span.' : 'Cross the map in Span, ring a country in Flank, hunt a city in Ping, then size up the countries you met.'}
-              rules={launchRules}
-              sundayNote="Sundays bring each game's own Sunday Edition"
-              boardLabel="Board now: start the run" />
-            {doneNames.length ? <p className="pr-note">Already played today: {doneNames.join(', ')}. Your first {doneNames.length === 1 ? 'result stands' : 'results stand'}, so the run steps over {doneNames.length === 1 ? 'it' : 'them'}.</p> : null}
-          </>
-        )}
-        {hydrated && started && (
+      {/* 1. ENTRY */}
+      {hydrated && preStart ? (
+        <GauntletGate
+          circuitName="Passport"
+          dateLabel={dateLine}
+          sections={stageSecs}
+          lineFor={(s) => SHORT[s.key]}
+          bandNote={(s) => (banked[s.key] ? 'Done' : `${LEGS[s.li].max} pts`)}
+          headline={<>Four Legs.<br />One Passport.</>}
+          rule="One score out of 50 decides the passport you travel home on."
+          lineup={"Today\u2019s legs:"}
+          unit="legs"
+          startLabel={`Board Now: Start With ${stageSecs[0] ? stageSecs[0].name : 'Ping'}`}
+          fieldLine={doneNames.length ? `Already played today: ${doneNames.join(', ')}. Your first ${doneNames.length === 1 ? 'result stands' : 'results stand'}.` : null}
+          banner={<ChallengeStrip gameKey="passport" num={PUZZLE.num} />}
+          centerpiece={<Booklet num={PUZZLE.num} legs={stageSecs.map((s) => ({ n: s.name, max: LEGS[s.li].max }))} onOpen={start} />}
+          onStart={start}
+        />
+      ) : null}
+
+      {/* 3. PLAY */}
+      {hydrated && started && !betweenOn ? (
+        <RunPlayFrame sections={stageSecs} idx={Math.min(3, g.round)} title="Passport"
+          sub={`Leg ${Math.min(4, g.round + 1)} of 4 · ${LEGS[LI].n}`}
+          foot={<>{total} of 50 so far · {elapsed} · <button type="button" className="pr-rules" onClick={() => setShowHelp(true)}>Rules</button></>}>
           <div className="pr-play">
-            <div style={{ width: '100%', maxWidth: 620, margin: '0 auto' }}>{slots}</div>
             {sec && showGame && Game ? (
               <div className="pr-host">
-                <RunEmbed onResult={onSectionDone} theme="dark">
+                <RunEmbed onResult={onSectionDone} theme={darkLook ? 'dark' : 'light'}>
                   {sec.key === 'flank'
                     ? <Game key={`flank-${sec.num}`} puzzles={[sec.light]} dayByNum={{ [sec.num]: sec.day }} forceNum={null} />
                     : <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />}
                 </RunEmbed>
               </div>
             ) : null}
-            {sec && checking && g.sc[LI] == null ? <p className="pr-note" style={{ textAlign: 'center' }}>Checking whether you already played {sec.name} today.</p> : null}
-            {sec && !showGame && g.sc[LI] != null ? (
-              <div className="stg-board pp-board" style={{ maxWidth: 620, margin: '0 auto', background: 'var(--stg-surf,rgba(255,255,255,0.045))', border: '1px solid var(--stg-line,rgba(255,255,255,0.11))', padding: 15 }}>{between()}</div>
+            {sec && checking && g.sc[LI] == null ? <p className="pr-note">Checking whether you already played {sec.name} today.</p> : null}
+            {LI === 3 ? (
+              <div className="stage-page pp-root pr-sizes" data-stage-theme={darkLook ? 'dark' : 'light'} data-stage-pin="" style={PVARS}>
+                <div className="pp-board">{sizes()}</div>
+              </div>
             ) : null}
-            {started && LI === 3 ? (
-              <div className="stg-board pp-board" style={{ maxWidth: 620, margin: '0 auto', background: 'var(--stg-surf,rgba(255,255,255,0.045))', border: '1px solid var(--stg-line,rgba(255,255,255,0.11))', padding: 15 }}>{sizes()}</div>
-            ) : null}
+            {g.round === 3 && g.sc[LI] != null && !(sec && showGame) ? <p className="pr-note">Landing your passport&hellip;</p> : null}
           </div>
-        )}
-        {hydrated && done && !finale && ending}
-      </div>
+        </RunPlayFrame>
+      ) : null}
 
-      {finale && done && (
-        <Departures scores={ORD.map((i) => sc[i] || 0)} total={total} clock={elapsed}
-          inks={ORD.map((i) => INKS[i])} deeps={ORD.map((i) => INKS_DEEP[i])}
-          legs={ORD.map((i) => ({ n: LEGS[i].n, max: LEGS[i].max, line: i === 3 && OPEN_SIZES ? 'Nine close pairs of countries, bigger or smaller by area or by population.' : LEGS[i].line }))}
-          num={PUZZLE.num} dateLabel={(PUZZLE.dateLabel || '').replace(/, \d{4}$/, '')} onDone={finaleDone} />
-      )}
+      {/* 2. BETWEEN */}
+      {hydrated && betweenOn ? (() => {
+        const i = LI;
+        const l = LEGS[i];
+        const key = l.k;
+        const r = key === 'passport' ? null : (g.res[key] || banked[key] || {});
+        const wasBanked = key !== 'passport' && !!banked[key];
+        const nx = stageSecs[g.round + 1];
+        const nl = LEGS[nx.li];
+        const right = g.sz.res.filter(Boolean).length;
+        return (
+          <GauntletBetween
+            circuitName="Passport"
+            sections={stageSecs}
+            lastSec={stageSecs[g.round]}
+            upNext={nx}
+            upIdx={g.round + 1}
+            stepWord="Leg"
+            doneCount={g.round + 1}
+            lastBody={(
+              <>
+                <b>{key === 'passport' ? `Sizes: ${right} of ${NC} called right` : (r.unknown ? `${l.n}: result on file` : `${l.n}: ${r.score} of ${r.total}`)}</b>
+                <span>{wasBanked ? 'Played earlier today, so that first result stands. ' : ''}Worth {sc[i]} of {l.max} here.</span>
+                <span>Run total: {total} of 50</span>
+              </>
+            )}
+            lastFig={{ v: sc[i], unit: `of ${l.max}` }}
+            nextLine={nx.key === 'passport' && OPEN_SIZES ? 'Nine close pairs of countries, bigger or smaller by area or by population.' : nl.line}
+            dwellMs={BETWEEN_MS}
+            held={held}
+            resetKey={`${g.round}:${resumes}`}
+            onGo={() => { setHeld(false); advance(); }}
+            onHold={() => { if (held) setResumes((x) => x + 1); setHeld(!held); }}
+            leaveHref="/circuits/passport"
+          />
+        );
+      })() : null}
+
+      {/* 4. END */}
+      {hydrated && done ? (
+        <GauntletEndStage
+          circuitName="Passport"
+          dateLabel={dateLine}
+          sections={stageSecs}
+          score={total}
+          unitWord="points"
+          title={{ name: tier.name, line: tier.line, colour: rampFor(k) }}
+          ladder={ladder}
+          ladderHeading="Which passport takes you home?"
+          rank={me && Number.isFinite(Number(me.rank)) ? me.rank : null}
+          fieldSize={field}
+          board={endBoard}
+          rowsIn={rowsIn}
+          avg={legAvg}
+          colLabel="Leg"
+          leaderScore={leaderScore}
+          topNote={!isTodays ? `${PUZZLE.dateLabel} archive` : null}
+          challenge={<>
+            <RunChallengeLine gameKey="passport" score={total} n={PUZZLE.num} style={{ margin: 0 }} />
+            <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays} t={runSecs} status={tier.name || ''} door />
+          </>}
+          similar={similar}
+          more={<MoreRunsList self="passport" ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} />}
+          onShare={copyShare}
+          copied={copied}
+        />
+      ) : null}
+
       <MoreRunsPop self="passport" ready={nudgeReady} delay={10000} fireOnLeave />
-      <GauntletMorePop circuitId="passport" ready={hydrated && done && !finale} />
+      <GauntletMorePop circuitId="passport" ready={hydrated && done} />
 
       {showHelp && (
         <div onClick={() => setShowHelp(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(6,9,16,0.7)', zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: 'var(--stg-raise,#0e131f)', borderRadius: 12, border: '1px solid var(--stg-line)', padding: '20px 22px', fontFamily: SANS, maxHeight: '86vh', overflowY: 'auto' }}>
+          style={{ position: 'fixed', inset: 0, background: 'rgba(8,34,46,0.55)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: '#ffffff', color: '#08222e', borderRadius: 14, border: '2px solid #08222e', padding: '20px 22px', fontFamily: SANS, maxHeight: '86vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontSize: 21, fontWeight: 800, color: 'var(--stg-ink,#e9edf4)' }}>How to play</div>
-              <button onClick={() => setShowHelp(false)} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--stg-mute,#8b95a8)' }}><X size={20} /></button>
+              <div style={{ fontSize: 21, fontWeight: 800 }}>How to Play</div>
+              <button onClick={() => setShowHelp(false)} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#08222e' }}><X size={20} /></button>
             </div>
             {rulesBody}
-            <button className="pp-go" onClick={() => setShowHelp(false)} style={{ marginTop: 14 }}>Back to the run</button>
+            <button type="button" className="pr-back" onClick={() => setShowHelp(false)}>Back to the Run</button>
           </div>
         </div>
       )}
 
-      <section style={{ position: 'relative', display: started ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
-        <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--stg-ink,#e9edf4)' }}>About Passport</h2>
-        <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: 'var(--stg-mute,#8b95a8)', fontWeight: 600 }}>
+      {/* The about prose stays in the page for readers and search, under the entry. */}
+      <section className="pr-about" style={{ display: started ? 'none' : 'block' }}>
+        <h2>About Passport</h2>
+        <p>
           {ORD[0] === 2 ? <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Ping, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Flank and Span, each game worth {LEGS[0].max}. One total out of 50.</> : SIZES_FIRST ? <>Passport is a free daily geography run from Mind Loft: nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Ping, Flank and Span played back to back, each worth {LEGS[0].max}. One total out of 50.</> : <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth {LEGS[0].max}, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on countries from those three games set against others close to them in size. One total out of 50.</>}
         </p>
-        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: 'var(--stg-mute,#8b95a8)', fontWeight: 600 }}>
+        <p>
           Your total decides the passport you travel home on, from the Sierra Leonean passport up to the Japanese, ranked by the visa-free destinations each opens in the {HENLEY_EDITION}. Everyone plays the same boards, and the leaderboard ranks your total, then time. A new run boards every day at midnight Eastern.
         </p>
       </section>
@@ -687,46 +659,85 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   );
 }
 
-const RUN_CSS = `
-.pe-lb{max-width:400px;margin:12px 0 4px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.035);overflow:hidden}
-.pe-lbh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
-.pe-lbh b{font:800 10px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:#e9edf4}
-.pe-lbh span{font:700 11px ${SANS};color:#9aa8c4}
-.pe-lbr{display:grid;grid-template-columns:40px minmax(0,1fr) auto 46px;align-items:center;gap:8px;padding:8px 12px;font:700 13.5px ${SANS};color:#e9edf4}
-.pe-lbr + .pe-lbr{border-top:1px solid rgba(255,255,255,.07)}
-.pe-lbr.me{background:rgba(125,211,252,.12);box-shadow:inset 3px 0 0 #7dd3fc}
-.pe-lbk{font:500 12px ${MONO};color:#9aa8c4}
-.pe-lbn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
-.pe-lbs{font:600 14px ${MONO};text-align:right}
-.pe-lbs small{font-size:10.5px;color:#9aa8c4;margin-left:1px}
-.pe-lbt{font:500 11.5px ${MONO};color:#9aa8c4;text-align:right}
-.pe-lbgap{height:0;border-top:1px dashed rgba(255,255,255,.18);margin:0 12px}
-.pe-lbe{padding:10px 12px;font:700 12.5px ${SANS};color:#9aa8c4}
-.pe-chal{max-width:400px;margin:12px 0 0}
-.pe-wide{margin:24px 0 0}
+// THE ENTRY'S CENTERPIECE (owner-approved mockup, 2026-10-25): a small
+// passport booklet whose cover swings open onto the day's four leg stamps.
+// It is the start button too, like the Dojo's doors.
+function Booklet({ num, legs, onOpen }) {
+  return (
+    <button type="button" className="ppb" onClick={onOpen} aria-label="Open the passport and start the run">
+      <span className="ppb-book">
+        <span className="ppb-page ppb-r">
+          {legs.map((l, i) => (
+            <span key={l.n} className="ppb-st" style={{ '--ink': INKS_DEEP[i % 4], '--rot': `${[-6, 5, -3, 7][i % 4]}deg`, animationDelay: `${1.25 + i * 0.16}s` }}>
+              <i>{l.n}</i><b>{l.max}</b>
+            </span>
+          ))}
+        </span>
+        <span className="ppb-cover">
+          <span className="ppb-front">
+            <span className="ppb-t1">Mind Loft</span>
+            <svg viewBox="0 0 84 84" width="34" height="34" aria-hidden="true"><circle cx="42" cy="42" r="30" fill="none" stroke="currentColor" strokeWidth="3" /><circle cx="42" cy="42" r="23" fill="none" stroke="currentColor" strokeWidth="1.5" /><path d="M42 27l4.2 9 9.8 1-7.4 6.6 2.2 9.6L42 48l-8.8 5.2 2.2-9.6-7.4-6.6 9.8-1z" fill="currentColor" /></svg>
+            <span className="ppb-t2">Passport</span>
+          </span>
+          <span className="ppb-back">
+            <span className="ppb-k">Passport No.</span>
+            <span className="ppb-no">{num}</span>
+            <span className="ppb-k">Four legs</span>
+            <span className="ppb-k">50 points</span>
+          </span>
+        </span>
+      </span>
+    </button>
+  );
+}
 
-@media(min-width:761px){.pe .pe-grid{grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:32px}.pe .pe-cov{justify-content:flex-start}}
-.pe-wide .pe-rounds{max-width:none;grid-template-columns:repeat(4,minmax(0,1fr))}
-.pe-wide .pe-lb,.pe-wide .pe-chal{max-width:none}
-.pe-wide .pe-lb{margin-top:14px}
-.pe-lbl{position:relative;display:flex;flex-direction:column;gap:3px;min-width:0;padding:9px 30px 9px 11px;border-radius:12px;background:rgba(125,211,252,.08);border:1px solid rgba(125,211,252,.4);color:inherit;text-decoration:none}
-.pe-lbl b{font:500 20px ${MONO};white-space:nowrap;color:#e9edf4}
-.pe-lbl span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:#9aa8c4}
-.pe-lbl em{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-style:normal;font-weight:800;font-size:16px;color:#7dd3fc}
-.pe-lbl:hover{background:rgba(125,211,252,.16)}
-@media(max-width:760px){.pe-lb,.pe-chal{max-width:none}}
-.pr-slots{grid-template-columns:repeat(4,1fr) !important}
-.pr-play{display:flex;flex-direction:column;gap:6px}
+// The sizes board on the pastel ground: the leg's own --pp tokens in dark ink
+// (the run's old midnight values are VARS, kept for the Black looks).
+const VARS_LIGHT = { '--pp-sea': '#dbe7f3', '--pp-land': '#9fb3c8', '--pp-edge': '#ffffff', '--pp-home': '#9f1239', '--pp-hit': '#047857', '--pp-miss': '#be123c', '--pp-panel': 'rgba(255,255,255,0.6)', '--pp-line': 'rgba(8,34,46,0.28)', '--pp-good': '#047857', '--pp-bad': '#be123c', '--pp-gold': '#a16207', '--pp-label': '#08222e', '--pp-halo': '#ffffff', '--stg-ink': '#08222e', '--stg-mute': 'rgba(8,34,46,0.72)', '--stg-acc': '#08222e', '--stg-acc-ink': '#08222e' };
+
+const RUN_CSS = `
+.pr-play{display:flex;flex-direction:column;gap:6px;padding:0 0 8px}
 .pr-host{animation:prrise .45s ease both}
-.pr-host .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
-html:has(.stage-page.pr-root),body:has(.stage-page.pr-root){background:#0b0f1a !important}
-.pr-between{text-align:center;padding:8px 0 4px;animation:prrise .4s ease both}
-.pr-between .pp-eb{justify-content:center}
-.pr-bstamp{display:flex;justify-content:center;margin:14px 0 6px}
-.pr-src{margin-left:auto;font-weight:500;color:#9aa8c4}
-.pr-note{max-width:520px;margin:-4px auto 16px;text-align:center;font-size:13px;font-weight:700;color:#9aa8c4}
-.pr-legs{grid-template-columns:repeat(4,minmax(0,1fr)) !important}
-.pr-legs b small{font-size:11px;color:#9aa8c4}
+.pr-play .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
+.gsx-play .pr-host .stg-board{margin-left:0 !important;margin-right:0 !important}
+.pr-sizes{max-width:620px;width:100%;margin:0 auto;box-sizing:border-box;padding:4px 16px 0}
+.pr-sizes .pp-board{padding:0}
+.pr-sizes .pp-eb b{color:var(--stg-ink);border-color:currentColor}
+.pr-sizes .pp-h{font-size:22px}
+.pr-sizes .pp-ghost.big{border:2px solid var(--stg-ink);font-weight:800}
+.pr-sizes .pp-vc{border-width:2px;border-color:var(--pp-line)}
+.pr-src{margin-left:auto;font-weight:700}
+.pr-note{max-width:520px;margin:10px auto;text-align:center;font-size:14px;font-weight:700;opacity:.8;padding:0 16px}
+.pr-rules{background:none;border:0;padding:0;font:inherit;font-weight:800;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.pr-back{margin-top:14px;width:100%;min-height:48px;border-radius:14px;border:0;background:#08222e;color:#ffffff;font:800 16px Manrope,system-ui,sans-serif;cursor:pointer}
+.pr-about{position:relative;z-index:1;max-width:620px;margin:0 auto;padding:10px 24px 42px}
+.pr-about h2{margin:0 0 8px;font-size:15px;font-weight:800}
+.pr-about p{margin:0 0 8px;font-size:13px;line-height:1.65;font-weight:600}
+
+.ppb{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:150px;padding:0;border:0;background:none;cursor:pointer;font-family:Manrope,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+.ppb:focus-visible{outline:3px solid var(--gsx-ink);outline-offset:4px;border-radius:12px}
+.ppb-book{position:relative;display:block;width:min(272px,72vw);height:min(172px,45vw);perspective:900px;animation:ppbSlide 1s cubic-bezier(.5,0,.2,1) .55s both}
+.ppb-page{position:absolute;top:0;bottom:0;width:50%;box-sizing:border-box;background:#f6f1e4;border:2px solid #08222e}
+.ppb-r{right:0;border-radius:2px 10px 10px 2px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:5px;padding:9px 8px}
+.ppb-st{display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid var(--ink);color:var(--ink);border-radius:7px;transform:rotate(var(--rot));line-height:1;text-transform:uppercase;animation:ppbStamp .4s cubic-bezier(.2,1.4,.3,1) both}
+.ppb-st i{font-style:normal;font-size:9px;font-weight:800;letter-spacing:.06em}
+.ppb-st b{font-size:17px;font-weight:800;margin-top:2px}
+.ppb-cover{position:absolute;top:0;bottom:0;left:50%;width:50%;transform-origin:left center;transform-style:preserve-3d;animation:ppbOpen 1s cubic-bezier(.5,0,.2,1) .55s both}
+.ppb-front,.ppb-back{position:absolute;inset:0;box-sizing:border-box;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center}
+.ppb-front{background:#7d1d2c;color:#e3c77a;border-radius:2px 10px 10px 2px;padding:14px 8px 12px;box-shadow:inset 5px 0 0 rgba(0,0,0,.2);border:2px solid #08222e}
+.ppb-t1{font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+.ppb-t2{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+.ppb-back{transform:rotateY(180deg);background:#f6f1e4;color:#08222e;border:2px solid #08222e;border-radius:10px 2px 2px 10px;padding:16px 8px;justify-content:center;gap:4px}
+.ppb-k{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+.ppb-no{font-size:30px;font-weight:800;line-height:1;margin-bottom:8px}
+@keyframes ppbOpen{from{transform:rotateY(0)}to{transform:rotateY(-180deg)}}
+@keyframes ppbSlide{from{transform:translateX(-25%)}to{transform:none}}
+@keyframes ppbStamp{from{opacity:0;transform:rotate(var(--rot)) scale(1.6)}to{opacity:1;transform:rotate(var(--rot)) scale(1)}}
+@media(min-width:900px){
+  .ppb-book{width:300px;height:190px}
+  .ppb-st i{font-size:10px}.ppb-st b{font-size:19px}
+  .ppb-no{font-size:38px}
+}
 @keyframes prrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.pr-host,.pr-between{animation:none !important}}
+@media(prefers-reduced-motion:reduce){.pr-host,.ppb-book,.ppb-cover,.ppb-st{animation:none !important}.ppb-cover{transform:rotateY(-180deg)}}
 `;

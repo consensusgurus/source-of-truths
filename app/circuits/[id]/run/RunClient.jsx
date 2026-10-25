@@ -53,7 +53,7 @@ import GauntletMorePop from '../../GauntletMorePop';
 import useGauntletField, { FIELD_FLOOR } from '../../useGauntletField';
 import useCircuitBoard from '../../useCircuitBoard';
 import GauntletFinale, { GauntletBoardTop } from '../../GauntletFinale';
-import { titleFor } from '@/lib/run-titles';
+import { titleFor, titleLadder } from '@/lib/run-titles';
 import MissList, { missOf, MISS_CSS } from '../../RunMisses';
 import useCircuitHistory from '../../useCircuitHistory';
 import { T } from '@/lib/theme';
@@ -312,7 +312,10 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     try { replay = new URLSearchParams(window.location.search).get('ending') === '1'; } catch (e) { replay = false; }
     if (done && (!doneAtLoad.current || replay) && !curtainOnce.current) {
       curtainOnce.current = true;
-      setCurtain(true);
+      // THE GAUNTLETS CLIMB ON THE ENDING ITSELF (owner, 2026-10-25: match the
+      // other runs). The stage ending sweeps, counts and climbs the title
+      // ladder, so the separate curtain no longer plays before it.
+      if (!(circuitId === 'gauntlet' || circuitId === 'math' || circuitId === 'triviaencore' || circuitId === 'english')) setCurtain(true);
     }
   }, [hydrated, done]);
 
@@ -1109,7 +1112,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           onShare={shareRun}
           copied={copied}
           onDetails={() => setEndOpen(false)}
-          sweep={!curtainOnce.current}
+          sweep
+          ladder={!r.practice ? titleLadder(circuitId) : null}
+          ladderHeading={MATHRUN ? 'How quick are you with numbers?' : ENGLISH ? 'How good are you with words?' : 'Where does your trivia rank?'}
           board={(() => {
             // THE ONE-PAGE ENDING (owner, 2026-10-25): top three, then you.
             const meB = boardQ.data && boardQ.data.me;

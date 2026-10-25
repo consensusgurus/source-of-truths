@@ -18,27 +18,25 @@
 // result stands, read off that game's own save and stats, and the run steps
 // over it. That is the daily board's own rule (the first attempt counts).
 //
-// THE PREGAME is a desk of case folders (four from 2026-10-17) and a gavel that is the Start
-// button. THE ENDING grades the transcript case by case while a pennant on
-// the left climbs the ladder school by school, then the committee stamps the
-// file ADMITTED and the letter slides out of its envelope. The ending starts
-// on its own after the last case, as Price Check's does.
+// ON THE STAGE (owner, 2026-10-25): the run's four screens wear the Gauntlet
+// stage look (app/GauntletScreens.jsx). The entry is the gate with a compact
+// gavel and admissions letter; each case plays inside RunPlayFrame; between
+// cases the ruling stays up until the player presses Next (no countdown);
+// the ending climbs today's eight-school ladder to the school that takes you.
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
-import NextDrop from '../NextDrop';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
-import RunScorecard, { boardRows, stageRank, stageAvg } from '../circuits/RunScorecard';
-import RunNextSlot from '../circuits/RunNextSlot';
+import { stageAvg } from '../circuits/RunScorecard';
+import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useStageLook } from '../GauntletScreens';
+import { isDarkLook } from '@/lib/stage-look';
 import { rampFor } from '@/lib/circuits';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { LAW_RUN_ID, LAW_LADDER, LAW_CLOCK, LAW_CASE_MAX, LAW_MAX, lawLadderFor, lawTierOf, lawIndexOf, lawCasePoints, lawAcc, lawSpeed } from '@/lib/law-school';
-import RunBackLink from '../circuits/RunBackLink';
+import { LAW_RUN_ID, LAW_CLOCK, LAW_CASE_MAX, LAW_MAX, lawLadderFor, lawTierOf, lawIndexOf, lawCasePoints, lawAcc, lawSpeed } from '@/lib/law-school';
 
 const CLIENTS = {
   ergo: dynamic(() => import('../ergo/ErgoClient'), { ssr: false, loading: () => null }),
@@ -49,17 +47,12 @@ const CLIENTS = {
   stands: dynamic(() => import('../stands/StandsClient'), { ssr: false, loading: () => null }),
 };
 
-const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
-const SERIF = "'Newsreader', Georgia, 'Times New Roman', serif";
-const LOW = LAW_LADDER.length - 1;
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
 }
 const freshRun = () => ({ v: 1, phase: 'idle', si: 0, t0: null, results: {} });
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const fmtClock = (s) => { const v = Math.max(0, Math.round(Number(s) || 0)); return `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`; };
 
 // The first (counted) play of a case today, read off the game's own save and
@@ -80,18 +73,21 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   const N = sections.length;
   // Four cases at 25 or five at 20: the run is always out of 100.
   const CASE_MAX = N ? LAW_MAX / N : LAW_CASE_MAX;
-  const MAX = LAW_MAX;
   const STORE = `sot_run_judged_${etToday()}`;
   const [r, setR] = useState(() => freshRun());
   const rRef = useRef(r);
   const [hydrated, setHydrated] = useState(false);
   const [banked, setBanked] = useState({});
   const [leaving, setLeaving] = useState(false);
-  const [ladderOpen, setLadderOpen] = useState(false);
   const [holding, setHolding] = useState(null);
+  const [peek, setPeek] = useState(false);
   const [copied, setCopied] = useState(false);
   const doneAtLoad = useRef(null);
   const [settled, setSettled] = useState(false);
+  // The embedded boards follow the stage's look: dark ink on the pastel
+  // (light register) unless the reader picked one of the black looks.
+  const [look] = useStageLook();
+  const boardTheme = isDarkLook(look) ? 'dark' : 'light';
 
   useEffect(() => { rRef.current = r; }, [r]);
   const commit = useCallback((next) => {
@@ -122,43 +118,45 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
 
   // What counts for each case: the first finish of the day, wherever it happened.
   const counted = useMemo(() => sections.map((sec) => banked[sec.key] || r.results[sec.key] || null), [sections, banked, r.results]);
-  // Each case: 25 points, half accuracy and half speed (lib/law-school.js).
+  // Each case: half accuracy and half speed (lib/law-school.js).
   const parts = counted.map((c, i) => (c ? lawCasePoints(sections[i].key, c.score, c.total, c.secs, CASE_MAX) : 0));
   const total = Math.round(parts.reduce((a, b) => a + b, 0));
   const allBanked = N > 0 && sections.every((s) => banked[s.key]);
 
   function start() {
+    if (leaving) return;
     setLeaving(true);
     setTimeout(() => {
       setLeaving(false);
       const cur = rRef.current;
       if (allBanked) { commit({ ...cur, phase: 'done', t0: cur.t0 || Date.now(), tEnd: Date.now() }); return; }
       commit({ ...cur, phase: 'playing', si: 0, t0: cur.t0 || Date.now() });
-      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
-    }, 760);
+      try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) {}
+    }, 520);
   }
 
-  // A case reports its filed result. The finished board holds for a beat so
-  // the player sees how it ended, then the ruling card takes its place.
+  // A case reports its filed result. The finished board holds for its finish
+  // beat (RunEmbed plays it) and a moment more, then the ruling covers it and
+  // stays up until the player presses Next (owner, 2026-10-16: Judged never
+  // advances by itself). The board stays under the ruling, one tap away.
   const onSectionDone = useCallback((res) => {
     const cur = rRef.current;
     const sec = sections[cur.si];
     if (!sec || !res || res.key !== sec.key || cur.results[sec.key]) return;
     const secs = res.t0 ? Math.max(1, Math.round(((res.tEnd || Date.now()) - res.t0) / 1000)) : 0;
     commit({ ...cur, results: { ...cur.results, [sec.key]: { score: res.score, total: res.total, secs } } });
-    // The finished case stays on screen under its ruling (owner, 2026-10-17),
-    // and the page goes back to the top so the ruling is the first thing seen.
-    // It waits out the board's finish beat first (RunEmbed plays it).
-    setTimeout(() => { try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) {} }, (res.beatMs || 0) + 60);
+    setHolding(sec.key);
+    setTimeout(() => setHolding((h) => (h === sec.key ? null : h)), Math.max(1400, (res.beatMs || 0) + 600));
   }, [sections, commit]);
 
   const sec = playing ? sections[r.si] : null;
   const secDone = sec ? (banked[sec.key] || r.results[sec.key]) : null;
-  const between = !!(sec && secDone);
+  const between = !!(sec && secDone && holding !== sec.key);
   const last = playing && r.si >= N - 1;
 
   function advance() {
     const cur = rRef.current;
+    setPeek(false);
     if (cur.si >= N - 1) commit({ ...cur, phase: 'done', tEnd: Date.now() });
     else commit({ ...cur, si: cur.si + 1 });
     try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) {}
@@ -183,557 +181,236 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
 
-  const VARS = { '--ls-ground': '#0b0f1a', '--ls-panel': '#0d1220', '--ls-surf': 'rgba(255,255,255,.045)', '--ls-line': 'rgba(255,255,255,.12)', '--ls-ink': '#e9edf4', '--ls-mute': '#9aa8c4', '--ls-cta': '#7dd3fc', '--ls-cta-ink': '#08222e', '--ls-gold': '#e9cf7f', '--ls-good': '#6ee7b7', '--ls-bad': '#fb7185', '--ls-paper': '#f6f1e4', '--ls-manila': '#e6c98f' };
-  sections.forEach((s) => { VARS[`--ls-${s.key}`] = s.color; });
+  // The stage's sections: one ladder step per case, in play order.
+  const gs = useMemo(() => sections.map((s, i) => ({ ...s, slot: i, questions: [] })), [sections]);
   const runSoFar = sections.slice(0, r.si).reduce((a, s, i) => a + (counted[i] ? parts[i] : 0), 0);
   const Game = sec ? CLIENTS[sec.key] : null;
+  const mounted = !!(Game && sec && !banked[sec.key]);
 
-  return (
-    <div className="stage-page ls" data-sot-wait="" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--ls-ground)', color: 'var(--ls-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="ls-cap">
-        {done && <RunBackLink />}
-        <Link href="/" className="ls-home">Mind Loft</Link>
-        <b>Judged</b>
-        <span className="ls-capd">{dateShort}</span>
-        {playing && <span className="ls-capt">{sections.map((s, i) => <i key={s.key} className={i < r.si ? 'd' : i === r.si ? 'on' : ''} style={{ background: i <= r.si ? `var(--ls-${s.key})` : undefined }} title={s.name} />)}</span>}
-        {!playing && <a className="ls-lb" href="/judged/leaderboard">Leaderboard</a>}
-      </div>
+  // The ending settles once the count-up and the climb have landed; the
+  // every-other-run card waits for that, as it did after the old verdict.
+  useEffect(() => {
+    if (!hydrated || !done) return undefined;
+    const t = setTimeout(() => setSettled(true), doneAtLoad.current === false ? 6500 : 0);
+    return () => clearTimeout(t);
+  }, [hydrated, done]);
 
-      {hydrated && r.phase === 'idle' && (
-        <section className={`pre${leaving ? ' leave' : ''}`}>
-          <h1 className="title"><span>Judged</span></h1>
-          <p className="lede fade">{N === 4 ? 'Four' : N === 5 ? 'Five' : N} cases in one sitting, opening with <b>{(sections[0] && sections[0].phrase) || 'a logic case'}</b>{sections.length > 1 ? `, then ${sections.slice(1).map((s) => s.phrase || s.name).join(', ').replace(/, ([^,]*)$/, ' and $1')}` : ''}. Right counts half, <b>fast</b> counts the other half. <span className="lede-x">Your score decides which law school lets you in.</span></p>
-          {/* THE GAVEL IS THE START BUTTON: the block it strikes, the label
-              under it, and the strike plays before the folders clear. */}
-          <button type="button" className={`gav fade${leaving ? ' strike' : ''}`} onClick={start} aria-label="Begin the exam">
-            <span className="gscr">
-              <svg className="gv" viewBox="0 0 120 70" aria-hidden="true">
-                <g className="gv-arm">
-                  <rect x="56" y="6" width="9" height="46" rx="3" fill="#8a5a2b" />
-                  <rect x="38" y="2" width="44" height="18" rx="6" fill="#6b4220" />
-                  <rect x="38" y="7" width="44" height="3" fill="#c79a5b" opacity=".7" />
-                </g>
-                <rect x="30" y="56" width="60" height="10" rx="3" fill="#6b4220" />
-                <rect x="36" y="52" width="48" height="6" rx="2" fill="#8a5a2b" />
-              </svg>
-              <small>{allBanked ? 'Every case argued today' : 'The committee is seated'}</small>
-            </span>
-            <span className="gtrig">{allBanked ? 'Open your letter' : 'Begin the exam'} <span aria-hidden="true">&rarr;</span></span>
-          </button>
-          <div className="desk">
-            {sections.map((s, i) => (
-              <div key={s.key} className="fold" style={{ '--c': `var(--ls-${s.key})`, animationDelay: `${0.2 + i * 0.12}s`, '--r': `${[-4, 2, -1, 3, -3][i % 5]}deg` }}>
-                <div className="ftab">Case {String(i + 1).padStart(2, '0')}</div>
-                <div className="fbody">
-                  <div className="fk">{s.file}</div>
-                  <div className="fn">{s.name}</div>
-                  <div className="fc">{s.chip}</div>
-                  {banked[s.key]
-                    ? <div className="fbk"><span className="fbk-x">Argued today: </span>{banked[s.key].unknown ? 'on file' : `${banked[s.key].score}/${banked[s.key].total}`}<span className="fbk-x">{banked[s.key].unknown ? '' : ' stands'}</span></div>
-                    : <div className="fseal">SEALED</div>}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="pre-row fade">
-            <div className="sub2">Argued one today? Your first result stands.</div>
-            <button type="button" className="pre-how" aria-expanded={ladderOpen} onClick={() => setLadderOpen((v) => !v)}>{ladderOpen ? 'Hide the schools' : 'Which schools could take you?'}</button>
-          </div>
-          {ladderOpen && (
-            <div className="pre-lad">
-              <div className="facts">
-                <div className="fact"><b>{N}</b><span>cases</span></div>
-                <div className="fact"><b>20</b><span>points each</span></div>
-                <div className="fact"><b>50%</b><span>of it is speed</span></div>
-                <div className="fact"><b>8</b><span>schools on the ladder</span></div>
-              </div>
-              <Ladder at={null} L={L} />
-            </div>
-          )}
-          <div className="sub2 fade">Each case is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}</div>
-        </section>
-      )}
-
-      {hydrated && playing && sec && (
-        <section className="ls-play" style={{ '--c': `var(--ls-${sec.key})` }}>
-          <div className="ls-sechd">
-            <span className="ls-sectag">Case {String(r.si + 1).padStart(2, '0')} · {sec.file}</span>
-            <b>{sec.name}</b>
-            <span className="ls-run">Run total {Math.round(runSoFar + (between ? parts[r.si] : 0))}</span>
-          </div>
-          {between && (
-            <div className="ls-between">
-              <div className="eb">{sec.name} · {banked[sec.key] && !r.results[sec.key] ? 'argued earlier today, the first result stands' : 'ruling'}</div>
-              <div className="ls-bscore">{Math.round(parts[r.si])}<small>/{CASE_MAX}</small></div>
-              {secDone.unknown ? <div className="ls-braw">Result on file</div> : (
-                <div className="ls-split">
-                  <div><span>Accuracy</span><b>{secDone.score}/{secDone.total}</b><i style={{ width: `${Math.round(100 * lawAcc(secDone.score, secDone.total))}%` }} /></div>
-                  <div><span>Speed</span><b>{secDone.secs ? fmtClock(secDone.secs) : 'no clock'}</b><i style={{ width: `${Math.round(100 * lawSpeed(sec.key, secDone.secs))}%` }} /><small>full marks under {fmtClock(LAW_CLOCK[sec.key][0])}</small></div>
-                </div>
-              )}
-              {!last ? (
-                <button type="button" className="start" onClick={advance}>Next: Case {String(r.si + 2).padStart(2, '0')}, {sections[r.si + 1].name} <span aria-hidden="true">&rarr;</span></button>
-              ) : (
-                <button type="button" className="start" onClick={advance}>Send my file to the committee <span aria-hidden="true">&rarr;</span></button>
-              )}
-              {Game && !banked[sec.key] ? <div className="ls-below">Your finished case is below.</div> : null}
-            </div>
-          )}
-          {Game && !banked[sec.key] && (
-            <div className="ls-host">
-              <RunEmbed onResult={onSectionDone}>
-                <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
-              </RunEmbed>
-            </div>
-          )}
-        </section>
-      )}
-
-      <RunChallengeCapture gameKey={LAW_RUN_ID} />
-      {hydrated && done && (
-        <Verdict key="verdict" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel}
-          animate={doneAtLoad.current === false} board={board} onShare={copyShare} copied={copied} L={L}
-          onSettled={() => setSettled(true)} />
-      )}
-      {/* Every other run on one card, the first time (owner, 2026-10-09). */}
-      <MoreRunsPop self="judged" ready={settled && doneAtLoad.current === false} delay={2500} fireOnLeave />
-    </div>
-  );
-}
-
-// ─── the school ladder, top to bottom ───────────────────────────────────────
-function Ladder({ at, L }) {
-  return (
-    <ol className="lad">
-      {L.map((t, i) => (
-        <li key={t[2]} className={at === i ? 'me' : ''} style={{ '--p': t[5], '--s': t[6] }}>
-          <span className="lp" aria-hidden="true"><i /></span>
-          <span className="ln"><b>{t[1]}</b><small>{t[3]}</small></span>
-          <span className="lc">{i === LOW ? 'any score' : `${t[0]}+`}</span>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-// The school's placard: its colors as a banner and its full name set in type
-// that wraps, so long names ("University of North Carolina School of Law")
-// read in full. Owner, 2026-10-08: the pennants could not hold long names.
-function Placard({ ti, squash, L }) {
-  const t = L[ti];
-  const long = t[1].length > 34;
-  return (
-    <div className={`pn${squash ? ' squash' : ''}`} style={{ '--p': t[5], '--s': t[6] }}>
-      <div className="pn-band"><span>Rung {L.length - ti} of {L.length}</span><i /></div>
-      <div className="pn-body">
-        <div className={`pn-nm${long ? ' long' : ''}`}>{t[1]}</div>
-        <div className="pn-city">{t[3]}</div>
-      </div>
-    </div>
-  );
-}
-
-// The rung just above: the school that would have taken you with a few more
-// points. Owner, 2026-10-08: "something that shows what was one above just
-// missed." The bar runs from zero to that school's cutoff, so a near miss reads as nearly full.
-function Missed({ total, ti, L }) {
-  if (ti <= 0) return <div className="ms top"><span>Top of the ladder</span><b>No school above Yale.</b></div>;
-  const up = L[ti - 1];
-  const short = Math.max(1, up[0] - total);
-  const fill = Math.max(4, Math.min(97, 100 * total / up[0]));
-  return (
-    <div className="ms" style={{ '--p': up[5], '--s': up[6] }}>
-      <div className="ms-hd"><span>Waitlisted</span><em>{short} {short === 1 ? 'point' : 'points'} short</em></div>
-      <div className="ms-nm">{up[1]}</div>
-      <div className="ms-bar"><i style={{ width: `${fill}%` }} /><b>{up[0]}</b></div>
-    </div>
-  );
-}
-
-// ─── THE VERDICT ────────────────────────────────────────────────────────────
-// The transcript grades case by case and the total counts up; the pennant on
-// the left starts at the bottom of the ladder and is swapped for the next
-// school up each time the running total crosses a cutoff. Then the committee
-// stamps the file and the letter slides out of its envelope.
-function Verdict({ sections, counted, parts, total, dateLabel, animate, board, onShare, copied, L, onSettled }) {
-  const n = sections.length;
-  const max = LAW_MAX;
-  const CASE_MAX = n ? LAW_MAX / n : LAW_CASE_MAX;
-  const pts = parts.map((p) => Math.round(p));
-  const run50 = (v) => Math.round(v);
-  const fti = lawTierOf(total);
-  const t = L[fti];
-  const reduce = useMemo(() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }, []);
-  const play = animate && !reduce;
-  const [lines, setLines] = useState(play ? 0 : n);
-  const [cur, setCur] = useState(play ? 0 : total);
-  const [face, setFace] = useState(play ? LOW : fti);
-  const [squash, setSquash] = useState(false);
-  const [upg, setUpg] = useState(null);
-  const [phase, setPhase] = useState(play ? 'grade' : 'settled');
-  const [sparks, setSparks] = useState([]);
-
-  function burst(k) {
-    const id = Date.now();
-    const list = Array.from({ length: k }, (_, i) => {
-      const a = Math.random() * Math.PI * 2, d = 70 + Math.random() * 120;
-      return { id: `${id}-${i}`, x: Math.cos(a) * d, y: Math.sin(a) * d, ms: 900 + Math.random() * 500 };
-    });
-    setSparks((s) => [...s, ...list]);
-    setTimeout(() => setSparks((s) => s.filter((p) => !list.includes(p))), 1600);
+  // The case just ruled on, for the between card.
+  function rulingBody() {
+    if (!sec || !secDone) return null;
+    const earlier = banked[sec.key] && !r.results[sec.key];
+    const half = CASE_MAX / 2;
+    const acc = lawAcc(secDone.score, secDone.total);
+    const spd = lawSpeed(sec.key, secDone.secs);
+    return (
+      <>
+        <b>Case {r.si + 1} · {sec.name}{earlier ? ', argued earlier today' : ''}</b>
+        {secDone.unknown ? <span>Result on file. Your first result stands.</span> : (
+          <>
+            <span>{secDone.score} of {secDone.total} right{secDone.secs ? ` in ${fmtClock(secDone.secs)}` : ''}</span>
+            <span>Right {Math.round(half * acc)} of {half} · Fast {Math.round(half * acc * spd)} of {half}</span>
+            <span>Full speed marks under {fmtClock(LAW_CLOCK[sec.key][0])}</span>
+          </>
+        )}
+      </>
+    );
   }
 
-  useEffect(() => {
-    if (!play) return undefined;
-    let alive = true;
-    (async () => {
-      await sleep(550);
-      let acc = 0, ti = LOW;
-      for (let i = 0; i < n; i++) {
-        if (!alive) return;
-        setLines(i + 1);
-        const from = acc, to = acc + parts[i], steps = Math.max(1, Math.round(parts[i]));
-        for (let k = 1; k <= steps; k++) {
-          if (!alive) return;
-          const v = from + (to - from) * k / steps;
-          const shown = run50(v);
-          setCur(shown);
-          const nt = lawTierOf(shown);
-          if (nt < ti) {
-            ti = nt;
-            setSquash(true);
-            await sleep(150);
-            if (!alive) return;
-            setFace(nt); setSquash(false);
-            setUpg({ k: `${nt}-${Date.now()}`, text: `Moved up: ${L[nt][2]}` });
-            burst(nt <= 1 ? 14 : 8);
-          }
-          await sleep(45);
-        }
-        acc = to;
-        await sleep(330);
-      }
-      if (!alive) return;
-      setCur(total);
-      await sleep(350);
-      setPhase('stamp');
-      await sleep(1250);
-      if (!alive) return;
-      setPhase('letter');
-      await sleep(1900);
-      if (!alive) return;
-      setPhase('settled');
-      if (fti <= 1) burst(22);
-    })();
-    return () => { alive = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const nextSec = playing && !last ? gs[r.si + 1] : null;
+  const verdictSec = { key: '__verdict', name: 'Verdict', slot: N, questions: [] };
 
-  const me = board && board.data && board.data.me;
-  const field = board && board.data && Array.isArray(board.data.overall) ? (board.data.uniquePlayers || board.data.overall.length) : null;
-  let hi = 0, lo = 0;
-  pts.forEach((v, i) => { if (v > pts[hi]) hi = i; if (v < pts[lo]) lo = i; });
-  const flat = pts[hi] === pts[lo];
-  const settled = phase === 'settled';
-  useEffect(() => { if (settled && onSettled) onSettled(); }, [settled]); // eslint-disable-line react-hooks/exhaustive-deps
-  const showLetter = phase === 'letter' || settled;
-  const idx = lawIndexOf(cur);
+  // The end screen's figures off today's board.
+  const bd = board && board.data;
+  const sf = bd && bd.stageField;
+  const avg = stageAvg(sf, sections);
+  const caseRows = sections.map((s, i) => {
+    const g = sf && sf.games && sf.games[s.key];
+    const a = avg && avg[s.key] != null ? Number(avg[s.key]) : null;
+    return {
+      key: s.key, name: s.name, bg: rampFor(i),
+      you: counted[i] ? Math.round(parts[i]) : '–',
+      field: a != null ? Math.round(a) : '–',
+      best: g && Number.isFinite(Number(g.best)) ? Math.round(Number(g.best)) : '–',
+    };
+  });
+  const overall = bd && Array.isArray(bd.overall) ? bd.overall.filter((x) => Number.isFinite(Number(x.total))) : [];
+  const meB = bd ? (bd.me || null) : null;
+  const boardOut = (() => {
+    if (!bd) return null;
+    const isMe = (row) => !!(meB && row && meB.userKey && row.userKey === meB.userKey);
+    const out = overall.slice(0, 3).map((row, i) => ({ rank: row.rank || i + 1, name: row.username || 'Guest', score: Math.round(Number(row.total)), me: isMe(row) }));
+    if (meB && !out.some((x) => x.me) && Number.isFinite(Number(meB.total))) {
+      if (Number.isFinite(meB.rank) && meB.rank > 4) out.push({ gap: true });
+      out.push({ rank: Number.isFinite(meB.rank) ? meB.rank : '–', name: 'You', score: Math.round(Number(meB.total)), me: true });
+    }
+    return out.length ? { rows: out, field: bd.overallField || bd.uniquePlayers || null, href: '/judged/leaderboard' } : null;
+  })();
+  // Today's eight schools, bottom to top, each rung in the school's colour.
+  const ladder = [...L].reverse().map((t, i) => ({ min: t[0], name: t[1], line: t[4], colour: rampFor(i), chip: t[5] }));
 
   return (
-    <section className="vf">
-      <div className={`vf-stage${settled ? ' settled' : ''}${phase === 'stamp' ? ' thud' : ''}`}>
-        <div className="vf-left">
-          {upg && <div key={upg.k} className="vf-upg">{upg.text}</div>}
-          <Placard ti={face} squash={squash} L={L} />
-          {showLetter && <Missed total={total} ti={fti} L={L} />}
-          {sparks.map((p) => <i key={p.id} className="vf-spark" style={{ '--x': `${p.x}px`, '--y': `${p.y}px`, '--d': `${p.ms}ms` }} />)}
-        </div>
-        <div className="vf-right">
-          {!showLetter && (
-            <div className="tr" aria-hidden="true">
-              <div className="tr-hd"><span>Official transcript</span><span>Office of Admissions</span></div>
-              <div className="tr-lines">
-                {sections.slice(0, lines).map((s, i) => (
-                  <div key={s.key} className="tr-l">
-                    <span className="tr-c">Case {i + 1}</span>
-                    <span className="tr-n">{s.name}<small>{counted[i] && !counted[i].unknown ? `${counted[i].score}/${counted[i].total} in ${counted[i].secs ? fmtClock(counted[i].secs) : '?'}` : s.file}</small></span>
-                    <b className={pts[i] >= CASE_MAX - 1 ? 'ten' : ''}>{pts[i]}<small>/{CASE_MAX}</small></b>
-                  </div>
-                ))}
-              </div>
-              <div className="tr-tot">
-                <div><span>Run total</span><b>{cur}<small> / {LAW_MAX}</small></b></div>
-                <div className="r"><span>Admissions score</span><b>{idx}</b></div>
-              </div>
-              {phase === 'stamp' && <div className="tr-stamp">Admitted</div>}
-            </div>
-          )}
-          {showLetter && (
-            <div className={`env${settled ? ' open done' : ' open'}`} style={{ '--p': t[5], '--s': t[6] }}>
-              <div className="env-back" />
-              <div className="env-letter">
-                <div className="lt-from">Office of Admissions</div>
-                <div className="lt-sch">{t[1]}</div>
-                <div className="lt-city">{t[3]}</div>
-                <p className="lt-body">Dear applicant, after a full review of your file we are pleased to offer you a seat in the entering class.</p>
-                <div className="lt-sig"><span>Admissions score</span><b>{lawIndexOf(total)}</b></div>
-              </div>
-              <div className="env-front" />
-              <div className="env-flap" />
-              <div className="env-seal">{t[2].slice(0, 1)}</div>
-            </div>
-          )}
-        </div>
-      </div>
+    <>
+      {!hydrated ? <GauntletCover sections={gs} /> : null}
+      <div className="jd" data-sot-wait="">
+        <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
-      {settled && (
-        <div className="vf-copy" role="status">
-          {(() => {
-            // THE RUN SCORECARD (owner, 2026-10-20): result, board and every
-            // case in one table, the challenge and the next slot under it.
-            const sf = board && board.data && board.data.stageField;
-            const stages = sections.map((s, i) => ({ key: s.key, name: s.name, colour: rampFor(i) }));
-            const mePer = Object.fromEntries(sections.map((s, i) => [s.key, counted[i] ? pts[i] : null]));
-            const built = boardRows({ data: board && board.data, perOf: (x) => x.sv || null, titleOf: (v) => L[lawTierOf(v, L)] ? L[lawTierOf(v, L)][1] : '', mePer, meTotal: total, meTitle: t[1] });
-            const ranks = {};
-            sections.forEach((s, i) => { if (counted[i]) { const k = stageRank(sf, s.key, pts[i]); if (k) ranks[s.key] = k; } });
-            const avg = stageAvg(sf, sections);
-            const miss = Object.fromEntries(sections.map((s, i) => [s.key, !!(counted[i] && !counted[i].unknown && counted[i].score < counted[i].total)]));
-            const subBits = [];
-            if (built.meRank) subBits.push(<b key="r">#{built.meRank}{built.field ? ` of ${Number(built.field).toLocaleString()}` : ''}</b>);
-            if (built.ahead != null) subBits.push(`ahead of ${built.ahead}%`);
-            subBits.push(`admissions score ${lawIndexOf(total)}`);
-            return (
-              <RunScorecard
-                stages={stages}
-                rows={built.rows}
-                you={{ miss }}
-                avg={avg}
-                ranks={Object.keys(ranks).length ? ranks : null}
-                scale={Object.fromEntries(sections.map((s) => [s.key, CASE_MAX]))}
-                avgTotal={avg ? Math.round(sections.reduce((a, s) => a + (Number(avg[s.key]) || 0), 0)) : null}
-                hero={{ value: total, of: LAW_MAX, tone: '#bef264', eyebrow: 'You got into', title: t[1], sub: subBits.reduce((acc, x, i) => (i ? [...acc, ' \u00B7 ', x] : [x]), []), line: t[4],
-                  ladder: { kind: 'belts', label: 'The schools', value: total, steps: [...L].reverse().map((r) => ({ min: r[0], name: r[1], short: r[2], colour: r[5] })),
-                    next: fti > 0 ? `${L[fti - 1][0] - total} more point${L[fti - 1][0] - total === 1 ? '' : 's'} and you get into ${L[fti - 1][1]}.` : 'The top of the list. Nowhere left to apply.' } }}
-                field={built.field}
-                boardHref="/judged/leaderboard"
-                boardState={(board && board.state) || 'loading'}
-                aside={<>
-                  <RunChallengeLine gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} />
-                  <RunChallengeButton gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} status={`Admitted to ${t[1]}`} door />
-                </>}
-                next={<RunNextSlot circuitId={LAW_RUN_ID} exclude={sections.map((s) => s.key)} cats={['Logic']} />}
-              />
-            );
-          })()}
-          <NextDrop label="Tomorrow's docket" sub="Five new cases and a new set of schools at midnight Eastern." href="/judged"
-            accent="var(--ls-cta)" ink="var(--ls-ink)" mute="var(--ls-mute)" style={{ margin: '14px 0 0' }} />
-          <MoreRunsList self="judged" ink="var(--ls-ink)" mute="var(--ls-mute)" line="var(--ls-line)" onShare={onShare} copied={copied} />
-          <div className="vf-lad"><div className="eb">The ladder</div><Ladder at={fti} L={L} /></div>
-        </div>
-      )}
-    </section>
+        {hydrated && r.phase === 'idle' && (
+          <div className="jd-gate">
+            <GauntletGate
+              circuitName="Judged"
+              dateLabel={dateShort}
+              sections={gs}
+              lineFor={(s) => s.tag || s.chip || ''}
+              bandNote={(s) => (banked[s.key] ? (banked[s.key].unknown ? 'Argued' : `${banked[s.key].score}/${banked[s.key].total} stands`) : `Case ${gs.indexOf(s) + 1}`)}
+              headline={<>{NUM_WORDS[N] || N} Cases.<br />One Letter.</>}
+              rule={`${CASE_MAX} points a case: half for right, half for fast.`}
+              lineup="Your score decides which law school lets you in."
+              startLabel={leaving ? 'Order in the court…' : (allBanked ? 'Open your letter' : 'Begin the exam')}
+              fieldLine={Object.keys(banked).length ? 'Argued one today? Your first result stands.' : null}
+              centerpiece={<Gavel strike={leaving} allBanked={allBanked} top={L[0]} bottom={L[L.length - 1]} n={L.length} onStart={start} />}
+              onStart={start}
+            />
+          </div>
+        )}
+
+        {hydrated && playing && sec && (
+          <RunPlayFrame sections={gs} idx={r.si} title="Judged" sub={`Case ${r.si + 1} of ${N} · ${sec.name}`}
+            foot={<>Run total {Math.round(runSoFar + (secDone ? parts[r.si] : 0))} of {LAW_MAX}{between && peek ? <> · <button type="button" className="jd-back" onClick={() => setPeek(false)}>Back to the ruling</button></> : null}</>}>
+            {mounted ? (
+              <div className="jd-host">
+                <RunEmbed onResult={onSectionDone} theme={boardTheme}>
+                  <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
+                </RunEmbed>
+              </div>
+            ) : null}
+          </RunPlayFrame>
+        )}
+
+        {hydrated && playing && sec && between && !peek && (
+          <div className={last ? 'jd-final' : ''}>
+            <GauntletBetween
+              circuitName="Judged"
+              sections={gs}
+              results={[]}
+              doneCount={r.si + 1}
+              lastSec={gs[r.si]}
+              upNext={nextSec || verdictSec}
+              upIdx={nextSec ? r.si + 1 : -1}
+              stepWord="Case"
+              nextLine={nextSec ? (nextSec.tag || nextSec.chip || '') : 'Which law school takes you?'}
+              lastBody={rulingBody()}
+              lastFig={{ v: Math.round(parts[r.si]), unit: `of ${CASE_MAX}` }}
+              auto={false}
+              goLabel={nextSec ? `Next: ${nextSec.name}` : 'Send My File In'}
+              fine={<>The clock waits: each case&rsquo;s clock starts when you begin it.{mounted ? <><br /><button type="button" className="jd-peek" onClick={() => setPeek(true)}>See your finished board</button></> : null}</>}
+              onGo={advance}
+              leaveHref="/circuits/deduction"
+            />
+          </div>
+        )}
+
+        <RunChallengeCapture gameKey={LAW_RUN_ID} />
+        {hydrated && done && (
+          <GauntletEndStage
+            circuitName="Judged"
+            dateLabel={dateShort}
+            sections={gs}
+            results={sections.map((s, i) => ({ key: s.key, score: counted[i] ? Math.round(parts[i]) : '–' }))}
+            score={total}
+            unitWord="points"
+            colLabel="Case"
+            ladder={ladder}
+            ladderHeading="Which school takes you?"
+            title={{ name: school[1], line: school[4], colour: rampFor(L.length - 1 - tier) }}
+            topNote={`Admissions score ${lawIndexOf(total)}`}
+            rank={meB && Number.isFinite(Number(meB.rank)) ? Number(meB.rank) : null}
+            fieldSize={bd ? (bd.overallField || bd.uniquePlayers || overall.length || null) : null}
+            board={boardOut}
+            rowsIn={caseRows}
+            leaderScore={overall[0] ? Math.round(Number(overall[0].total)) : null}
+            extra={<RunChallengeLine gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} style={{ margin: 0 }} />}
+            challenge={<RunChallengeButton gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} status={`Admitted to ${school[1]}`} door />}
+            more={<MoreRunsList self="judged" ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} />}
+            onShare={copyShare}
+            copied={copied}
+            sweep={doneAtLoad.current === false}
+          />
+        )}
+        {/* Every other run on one card, the first time (owner, 2026-10-09). */}
+        <MoreRunsPop self="judged" ready={settled && doneAtLoad.current === false} delay={2500} fireOnLeave />
+      </div>
+    </>
+  );
+}
+
+const NUM_WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
+
+// THE ENTRY'S CENTERPIECE (owner, 2026-10-25): the gavel that used to be the
+// Start button, struck on the block, beside the admissions letter it decides.
+// Tapping it starts the exam. Ink lines on the pastel, the letter on paper.
+function Gavel({ strike, allBanked, top, bottom, n, onStart }) {
+  return (
+    <button type="button" className={`jd-gv${strike ? ' strike' : ''}`} onClick={onStart} aria-label={allBanked ? 'Open your letter' : 'Begin the exam'}>
+      <svg className="jd-gvs" viewBox="0 0 120 80" aria-hidden="true">
+        <g className="jd-arm">
+          <rect x="56" y="8" width="9" height="50" rx="3" fill="currentColor" opacity=".85" />
+          <rect x="36" y="2" width="48" height="20" rx="6" fill="currentColor" />
+          <rect x="36" y="8" width="48" height="3" fill="var(--gsx-bg)" opacity=".5" />
+        </g>
+        <rect x="28" y="66" width="64" height="11" rx="3" fill="currentColor" />
+        <rect x="35" y="61" width="50" height="7" rx="2" fill="currentColor" opacity=".7" />
+      </svg>
+      <span className="jd-lt">
+        <span className="jd-ltf">Office of Admissions</span>
+        <span className="jd-lts">{allBanked ? 'Every case argued today' : 'Your file is open'}</span>
+        <span className="jd-ltl"><i style={{ background: top ? top[5] : undefined }} />{top ? top[1] : ''}</span>
+        <span className="jd-ltd">{n} schools today, down to {bottom ? bottom[2] : ''}</span>
+      </span>
+    </button>
   );
 }
 
 const CSS = `
-.ls *{box-sizing:border-box}
-.ls .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ls-mute)}
-.ls-cap{display:flex;align-items:center;gap:12px;max-width:none;margin:0;padding:12px 20px;font-size:13px}
-.ls-home{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ls-mute);text-decoration:none}
-.ls-cap b{font-weight:900;letter-spacing:-.01em}
-.ls-capd{color:var(--ls-mute);font-weight:700}
-.ls-capt{display:flex;gap:4px;margin-left:auto}
-.ls-capt i{width:18px;height:6px;border-radius:3px;background:var(--ls-line)}
-.ls-capt i.on{box-shadow:0 0 0 2px var(--ls-ground),0 0 0 3px var(--ls-ink)}
-.ls-lb{margin-left:auto;font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ls-cta);text-decoration:none}
-/* PREGAME */
-.pre{max-width:860px;margin:0 auto;padding:18px 16px 54px;text-align:center}
-.title{margin:10px 0 0;font-size:clamp(46px,9vw,80px);font-weight:900;letter-spacing:-.035em;line-height:.95;font-family:${SERIF};font-style:italic}
-.title span{display:inline-block;animation:lsdrop .7s cubic-bezier(.2,1.4,.4,1) both}
-.title span:nth-child(2){animation-delay:.09s}
-@keyframes lsdrop{from{transform:translateY(-40px);opacity:0}to{transform:none;opacity:1}}
-.lede{margin:14px auto 0;max-width:560px;font-size:15.5px;font-weight:600;line-height:1.5;color:var(--ls-mute)}
-.lede b{color:var(--ls-ink)}
-.lede-x{display:block;margin-top:4px;color:var(--ls-gold);font-weight:800}
-.gav{display:block;width:100%;max-width:440px;margin:18px auto 0;padding:0;border:1.5px solid var(--ls-line);border-radius:16px;background:var(--ls-panel);color:var(--ls-ink);box-shadow:0 14px 34px rgba(0,0,0,.55);overflow:hidden;cursor:pointer;font:inherit}
-.gav .gscr{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 10px 8px}
-.gav .gscr small{font:500 9.5px ${MONO};letter-spacing:.16em;text-transform:uppercase;color:var(--ls-mute)}
-.gv{width:120px;height:70px;overflow:visible}
-.gv-arm{transform-origin:60px 50px;transform:rotate(-24deg);transition:transform .25s cubic-bezier(.6,0,.8,.4)}
-.gav:hover .gv-arm{transform:rotate(-30deg)}
-.gav.strike .gv-arm,.gav:active .gv-arm{transform:rotate(4deg);transition:transform .12s cubic-bezier(.7,0,1,.6)}
-.gav.strike{animation:lsthud .3s .12s ease-out}
-@keyframes lsthud{30%{transform:translateY(3px)}}
-.gav .gtrig{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;padding:15px 18px;background:var(--ls-cta);color:var(--ls-cta-ink);font:900 19px ${SANS}}
-.gav .gtrig::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-100%);animation:lssheen 2.6s 1.4s ease-in-out infinite}
-@keyframes lssheen{to{transform:translateX(100%)}}
-.gav:focus-visible,.pre-how:focus-visible{outline:2px solid var(--ls-ink);outline-offset:3px}
-.desk{display:flex;justify-content:center;gap:10px;max-width:820px;margin:34px auto 0;padding:24px 10px 18px;border-radius:18px;background:linear-gradient(180deg,#2a1b10,#1a110a);box-shadow:inset 0 2px 0 rgba(255,255,255,.06),0 18px 40px rgba(0,0,0,.5)}
-.fold{flex:1;max-width:150px;position:relative;transform:rotate(var(--r));animation:lsfold .6s cubic-bezier(.2,1.3,.4,1) both}
-@keyframes lsfold{from{opacity:0;transform:translateY(60px) rotate(12deg)}to{opacity:1;transform:rotate(var(--r))}}
-.ftab{position:relative;display:inline-block;margin-left:10px;padding:4px 10px 3px;border-radius:7px 7px 0 0;background:var(--ls-manila);color:#4a3314;font:800 9.5px ${MONO};letter-spacing:.12em;text-transform:uppercase}
-.fbody{background:var(--ls-manila);border-radius:3px 10px 10px 10px;padding:12px 10px 12px;text-align:left;color:#3b2810;box-shadow:0 10px 18px rgba(0,0,0,.45);border-top:4px solid var(--c)}
-.fk{font:800 10px ${MONO};letter-spacing:.12em;text-transform:uppercase;color:#7a5a2a}
-.fn{font-size:19px;font-weight:900;letter-spacing:-.01em;margin-top:2px}
-.fc{font-size:11.5px;font-weight:700;line-height:1.3;margin-top:5px;color:#5a4220}
-.fseal{display:inline-block;margin-top:9px;padding:2px 7px;border:2px solid #9b2c2c;border-radius:4px;color:#9b2c2c;font:800 10px ${MONO};letter-spacing:.14em;transform:rotate(-6deg)}
-.fbk{margin-top:8px;font-size:10.5px;font-weight:800;color:#2f5d3a}
-.pre-row{display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:820px;margin:16px auto 0}
-.pre-row .sub2{margin:0;text-align:right;max-width:280px}
-.pre-how{background:none;border:0;padding:6px 0;color:var(--ls-gold);font:800 13px ${SANS};text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.sub2{margin-top:12px;font-size:12.5px;font-weight:700;color:var(--ls-mute)}
-.sub2 a{color:var(--ls-ink)}
-.pre-lad{max-width:560px;margin:10px auto 0;animation:lsrise .3s ease both}
-.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 14px}
-.fact{background:var(--ls-panel);border:1.5px solid var(--ls-line);border-radius:12px;padding:9px 10px;text-align:left}
-.fact b{display:block;font-size:20px;font-weight:900}
-.fact span{font-size:11px;font-weight:700;color:var(--ls-mute);line-height:1.25;display:block}
-.pre.leave .fold{animation:lsout .6s cubic-bezier(.6,0,.8,.4) both !important}
-.pre.leave .fold:nth-child(2){animation-delay:.05s !important}.pre.leave .fold:nth-child(3){animation-delay:.1s !important}.pre.leave .fold:nth-child(4){animation-delay:.15s !important}.pre.leave .fold:nth-child(5){animation-delay:.2s !important}
-@keyframes lsout{to{transform:translateY(-120px) rotate(-8deg);opacity:0}}
-.pre.leave .fade{transition:opacity .4s .2s;opacity:0}
-/* THE LADDER */
-.lad{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;text-align:left}
-.lad li{display:flex;align-items:center;gap:12px;padding:7px 10px;border-radius:10px;background:var(--ls-surf);border:1px solid var(--ls-line)}
-.lad li.me{border-color:var(--ls-gold);box-shadow:0 0 0 1px var(--ls-gold) inset;background:rgba(233,207,127,.08)}
-.lad .lp{flex:none;width:12px;height:30px;border-radius:3px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(255,255,255,.18)}
-.lad .lp::before{content:'';flex:2;background:var(--p)}
-.lad .lp i{flex:1;background:var(--s)}
-.lad .ln{flex:1;min-width:0;display:flex;flex-direction:column}
-.lad .ln b{font-size:13.5px;font-weight:800;line-height:1.25;text-wrap:balance}
-.lad .ln small{font-size:11px;color:var(--ls-mute);font-weight:700}
-.lad .lc{font:500 12px ${MONO};color:var(--ls-gold);white-space:nowrap}
-/* PLAY */
-.ls-play{max-width:1180px;margin:0 auto;padding:4px 0 50px}
-.ls-sechd{display:flex;align-items:center;gap:10px;max-width:760px;margin:6px auto 0;padding:0 16px;animation:lsrise .4s ease both}
-.ls-sectag{font:800 11px ${SANS};letter-spacing:.06em;text-transform:uppercase;color:#0b0f1a;background:var(--c);padding:5px 10px;border-radius:5px}
-.ls-sechd b{font-size:20px;font-weight:900;letter-spacing:-.01em}
-.ls-run{margin-left:auto;font-family:${MONO};font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ls-mute)}
-.ls-host{animation:lsrise .45s ease both}
-.ls-host .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
-.ls-below{margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ls-mute,#9aa8c4)}
-.ls-between{text-align:center;padding:30px 16px;max-width:560px;margin:0 auto;animation:lsrise .4s ease both}
-.ls-bscore{font-size:68px;font-weight:900;letter-spacing:-.04em;margin-top:6px}
-.ls-bscore small{font-size:24px;color:var(--ls-mute)}
-.ls-braw{color:var(--ls-mute);font-weight:700}
-.ls-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:420px;margin:12px auto 0;text-align:left}
-.ls-split div{position:relative;background:var(--ls-surf);border:1px solid var(--ls-line);border-radius:12px;padding:10px 12px 14px;overflow:hidden}
-.ls-split span{display:block;font:800 9.5px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:var(--ls-mute)}
-.ls-split b{font:500 22px ${MONO}}
-.ls-split small{display:block;font-size:10.5px;font-weight:700;color:var(--ls-mute);margin-top:2px}
-.ls-split i{position:absolute;left:0;bottom:0;height:4px;background:var(--ls-gold);border-radius:0 2px 2px 0}
-.ls .start{margin:26px auto 0;display:inline-flex;align-items:center;gap:10px;font:900 18px ${SANS};border:0;border-radius:14px;padding:15px 28px;background:var(--ls-cta);color:var(--ls-cta-ink);cursor:pointer;box-shadow:0 14px 34px rgba(0,0,0,.55)}
-.ls .start:active{transform:scale(.97)}
-.ls-rolling{margin:26px auto 0;display:inline-flex;align-items:center;gap:10px;font:800 15px ${SANS};color:var(--ls-gold)}
-.ls-dots{display:inline-flex;gap:5px}
-.ls-dots i{width:6px;height:6px;border-radius:50%;background:var(--ls-gold);animation:lsdot 1s ease-in-out infinite}
-.ls-dots i:nth-child(2){animation-delay:.15s}.ls-dots i:nth-child(3){animation-delay:.3s}
-@keyframes lsdot{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
-@keyframes lsrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-/* VERDICT */
-.vf{position:relative;max-width:980px;margin:0 auto;padding:14px 16px 70px}
-.vf > .eb{text-align:center}
-.vf-stage{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:34px;align-items:center;margin-top:22px;min-height:420px}
-.vf-stage.thud{animation:lsshake .45s ease-out}
-@keyframes lsshake{15%{transform:translate(3px,2px)}30%{transform:translate(-3px,-1px)}45%{transform:translate(2px,-2px)}60%{transform:translate(-1px,1px)}}
-.vf-left{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:260px}
-.vf-upg{position:absolute;left:50%;top:-6px;font:800 11px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--ls-cta-ink);background:var(--ls-cta);padding:6px 11px;border-radius:999px;white-space:nowrap;z-index:4;animation:vfup 1s ease-out both}
-@keyframes vfup{0%{opacity:0;transform:translate(-50%,12px)}20%{opacity:1;transform:translate(-50%,0)}75%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}
-.vf-spark{position:absolute;left:50%;top:45%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--ls-gold);z-index:5;pointer-events:none;animation:vfspark var(--d) cubic-bezier(.2,.7,.3,1) both}
-@keyframes vfspark{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
-.pn{position:relative;width:min(320px,92%);background:#fffdf7;color:#1f2430;border-radius:8px;overflow:hidden;box-shadow:0 24px 50px -18px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.25);transition:transform .15s ease-in;animation:lsrise .4s ease both}
-.pn.squash{transform:rotateX(90deg)}
-.pn-band{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--p);color:var(--s);padding:10px 14px 9px;position:relative}
-.pn-band span{font:800 10px ${MONO};letter-spacing:.16em;text-transform:uppercase}
-.pn-band i{position:absolute;left:0;right:0;bottom:-5px;height:5px;background:var(--s)}
-.pn-body{padding:18px 16px 16px;min-height:118px;display:flex;flex-direction:column;justify-content:center}
-.pn-nm{font:700 24px/1.15 ${SERIF};text-wrap:balance;overflow-wrap:anywhere}
-.pn-nm.long{font-size:20px}
-.pn-city{margin-top:6px;font:700 12px ${SANS};color:#7a7360}
-.ms{width:min(320px,92%);margin-top:14px;padding:11px 13px 12px;border-radius:10px;background:var(--ls-surf);border:1px dashed var(--ls-line);text-align:left;animation:lsrise .5s .5s ease both}
-.ms-hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.ms-hd span{font:800 10px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--ls-mute)}
-.ms-hd em{font:normal 500 12px ${MONO};color:var(--ls-gold)}
-.ms-nm{margin-top:4px;font:700 16px/1.2 ${SERIF};text-wrap:balance}
-.ms-bar{position:relative;margin-top:9px;height:8px;border-radius:4px;background:rgba(255,255,255,.08);display:flex;align-items:center}
-.ms-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,var(--ls-gold),var(--p));box-shadow:0 0 0 1px rgba(255,255,255,.12) inset;animation:msfill 1.1s .7s cubic-bezier(.2,.8,.3,1) both;transform-origin:0 50%}
-.ms-bar b{position:absolute;right:-2px;top:-17px;font:500 10px ${MONO};color:var(--ls-mute)}
-.ms-bar::after{content:'';position:absolute;right:0;top:-3px;bottom:-3px;width:2px;background:var(--s);border-radius:1px}
-@keyframes msfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-.ms.top b{display:block;margin-top:4px;font:700 16px ${SERIF}}
-.ms.top span{font:800 10px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--ls-gold)}
-.vf-right{position:relative;display:flex;justify-content:center;min-height:380px;align-items:center}
-.tr{position:relative;width:min(440px,100%);background:var(--ls-paper);color:#1f2430;border-radius:6px;padding:18px 20px 16px;box-shadow:0 30px 60px -25px rgba(0,0,0,.8);font-family:${SANS};overflow:hidden}
-.tr::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 27px,rgba(31,36,48,.06) 27px 28px);pointer-events:none}
-.tr-hd{display:flex;justify-content:space-between;font:800 10px ${MONO};letter-spacing:.14em;text-transform:uppercase;color:#7a7360;border-bottom:2px solid #1f2430;padding-bottom:8px;margin-bottom:6px}
-.tr-lines{min-height:236px}
-.tr-l{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed rgba(31,36,48,.2);animation:lsrise .3s ease both}
-.tr-c{font:500 11px ${MONO};color:#7a7360;width:52px}
-.tr-n{flex:1;font-weight:900;font-size:16px;display:flex;flex-direction:column}
-.tr-n small{font:600 11px ${SANS};color:#7a7360}
-.tr-l b{font:500 22px ${MONO}}
-.tr-l b small{font-size:12px;color:#7a7360}
-.tr-l b.ten{color:#2f6f3a}
-.tr-tot{display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:2px solid #1f2430}
-.tr-tot span{display:block;font:800 9.5px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:#7a7360}
-.tr-tot b{font:500 30px ${MONO};font-variant-numeric:tabular-nums}
-.tr-tot b small{font-size:14px;color:#7a7360}
-.tr-tot .r{text-align:right}
-.tr-stamp{position:absolute;left:50%;top:44%;font:900 46px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:#b4232a;border:6px solid #b4232a;border-radius:10px;padding:4px 18px;transform:translate(-50%,-50%) rotate(-12deg);mix-blend-mode:multiply;animation:trstamp .45s cubic-bezier(.2,1.6,.4,1) both}
-@keyframes trstamp{from{opacity:0;transform:translate(-50%,-50%) rotate(-12deg) scale(2.6)}to{opacity:.9;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}}
-.env{position:relative;width:min(420px,100%);aspect-ratio:1.55;margin-top:110px;animation:envin .6s cubic-bezier(.2,1.2,.4,1) both}
-@keyframes envin{from{opacity:0;transform:translateY(60px) scale(.9)}to{opacity:1;transform:none}}
-.env-back{position:absolute;inset:0;background:#d9cfb6;border-radius:8px}
-.env-front{position:absolute;inset:0;border-radius:8px;background:linear-gradient(160deg,#efe7d3,#e2d6b9);clip-path:polygon(0 30%,50% 64%,100% 30%,100% 100%,0 100%);z-index:3;box-shadow:0 30px 60px -25px rgba(0,0,0,.8)}
-.env-flap{position:absolute;left:0;right:0;top:0;height:62%;background:linear-gradient(180deg,#e6dcc3,#d7cba9);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:50% 0;z-index:4;transition:transform .7s cubic-bezier(.4,0,.2,1) .15s}
-.env.open .env-flap{transform:rotateX(180deg);z-index:1}
-.env-seal{position:absolute;left:50%;top:56%;width:54px;height:54px;margin:-27px;border-radius:50%;background:var(--p);color:var(--s);display:flex;align-items:center;justify-content:center;font:900 24px ${SERIF};z-index:5;box-shadow:0 4px 10px rgba(0,0,0,.35),inset 0 0 0 4px rgba(0,0,0,.18);transition:opacity .3s .2s}
-.env.open .env-seal{opacity:0}
-.env-letter{position:absolute;left:6%;right:6%;top:6%;bottom:6%;background:#fffdf7;border-radius:4px;z-index:2;padding:14px 16px;color:#1f2430;box-shadow:0 6px 20px rgba(0,0,0,.25);transform:translateY(0);transition:transform .9s cubic-bezier(.3,1.2,.4,1) .75s;border-top:6px solid var(--p)}
-.env.open .env-letter{transform:translateY(-62%)}
-.env.done .env-letter{transition:none}
-.lt-from{font:800 9.5px ${MONO};letter-spacing:.16em;text-transform:uppercase;color:#7a7360}
-.lt-sch{font:700 19px/1.15 ${SERIF};margin-top:5px}
-.lt-city{font:600 11px ${SANS};color:#7a7360}
-.lt-body{margin:8px 0 6px;font:400 13px/1.45 ${SERIF};font-style:italic}
-.lt-sig{display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid rgba(31,36,48,.15);padding-top:5px}
-.lt-sig span{font:800 9px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:#7a7360}
-.lt-sig b{font:500 20px ${MONO};color:var(--p)}
-.vf-copy{margin:8px 0 0;animation:lsrise .6s .1s ease both}
-.vf-you{font:800 12px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--ls-gold)}
-.vf-nm{font-size:clamp(30px,5vw,46px);font-weight:900;letter-spacing:-.02em;line-height:1.05;margin:8px 0 10px;text-wrap:balance}
-.vf-ln{font-size:17px;line-height:1.45;margin:0 0 16px;color:var(--ls-ink)}
-.vf-stats{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;margin-bottom:10px}
-.vf-stats div{background:var(--ls-surf);border:1px solid var(--ls-line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-width:0}
-.vf-stats b{font:500 20px ${MONO};white-space:nowrap}
-.vf-lbl{position:relative;display:flex;flex-direction:column;gap:3px;min-width:0;padding:9px 30px 9px 11px;border-radius:12px;background:var(--ls-surf);border:1px solid var(--ls-cta);color:inherit;text-decoration:none}
-.vf-lbl b{font:500 20px ${MONO};white-space:nowrap}
-.vf-lbl span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:var(--ls-mute)}
-.vf-lbl em{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-style:normal;font-weight:800;font-size:16px;color:var(--ls-cta)}
-.vf-stats span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:var(--ls-mute)}
-.vf-games{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-.vf-games div{background:var(--ls-surf);border:1px solid var(--ls-line);border-radius:9px;padding:7px 2px;text-align:center;min-width:0}
-.vf-games i{display:block;font:normal 800 8.5px ${SANS};letter-spacing:.05em;text-transform:uppercase;color:var(--ls-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.vf-games b{font:500 17px ${MONO}}
-.vf-games .hi{border-color:var(--ls-gold)}.vf-games .hi b{color:var(--ls-gold)}
-.vf-games .lo b{color:var(--ls-bad)}
-.vf-next{display:inline-block;margin-top:12px;font-size:13px;font-weight:700;padding:9px 12px;border-radius:10px;background:var(--ls-surf);border:1px solid var(--ls-line)}
-.vf-next b{color:var(--ls-gold)}
-.vf-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-.vf-btns a,.vf-btns button{font:800 14px ${SANS};padding:12px 18px;border-radius:12px;text-decoration:none;color:var(--ls-ink);border:1px solid var(--ls-line);background:transparent;cursor:pointer}
-.vf-btns .pri{background:var(--ls-cta);color:var(--ls-cta-ink);border-color:transparent}
-.vf-lad{margin-top:26px}
-.vf-lad .eb{margin-bottom:8px}
-@media(max-width:720px){
-.vf-stage{display:flex;flex-direction:column;gap:16px;min-height:0}
-.vf-left{min-height:0;padding-top:16px;width:100%}
-.pn,.ms{width:100%;max-width:420px;flex:none}
-.vf-right{min-height:0;width:100%}
-.env{margin-top:150px}
-.vf-btns a,.vf-btns button{flex:1 1 40%;text-align:center;padding:12px 10px}
+.jd{min-height:100vh;font-family:'Manrope',system-ui,sans-serif}
+.jd *{box-sizing:border-box}
+/* The embedded board sits on the frame's pastel, not its own sheet. */
+.jd-host .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
+/* On the pastel the light register's grey prose went faint: the muted inks
+   darken toward the stage's one ink, the boards keep their own surfaces. */
+.gsx-play[data-stage-theme='light'] .jd-host .stage-page{--stg-mute:#33495a !important;--stg-mute2:#33495a !important;--stg-dim:#3d5263 !important;--stg-ink:#08222e !important}
+.jd-back,.jd-peek{background:none;border:0;padding:4px 2px;color:inherit;font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.jd-peek{margin-top:4px;font-size:13px}
+/* The last ruling hands over to the verdict, not to a sixth case. */
+.jd-final .gsx-eye2{font-size:0 !important}
+.jd-final .gsx-eye2::after{content:'Up Next \\00B7  All Cases Argued';font-size:15px}
+/* ENTRY BANDS: "Case N" sits on the right, so the bare number goes, and the
+   tagline gets its own line under the name so it is never cut off. */
+.jd-gate .gsx-bn{display:none}
+.jd-gate .gsx-bt{flex-direction:column;align-items:flex-start;gap:1px;white-space:normal}
+.jd-gate .gsx-bt i{overflow:visible;text-overflow:clip;line-height:1.2}
+.jd-gate .gsx-band{padding-top:5px;padding-bottom:5px}
+/* ENTRY CENTERPIECE */
+.jd-gv{flex:1;display:flex;align-items:center;justify-content:center;gap:12px;overflow:hidden;width:100%;margin:0;padding:12px 14px;border:2px solid var(--gsx-ink);border-radius:18px;background:transparent;color:var(--gsx-ink);font:inherit;cursor:pointer;text-align:left}
+.jd-gv:focus-visible{outline:3px solid var(--gsx-ink);outline-offset:3px}
+.jd-gvs{flex:none;width:96px;height:64px;overflow:visible}
+.jd-arm{transform-origin:60px 56px;transform:rotate(-24deg);transition:transform .25s cubic-bezier(.6,0,.8,.4)}
+.jd-gv:hover .jd-arm{transform:rotate(-30deg)}
+.jd-gv.strike .jd-arm,.jd-gv:active .jd-arm{transform:rotate(4deg);transition:transform .12s cubic-bezier(.7,0,1,.6)}
+.jd-gv.strike{animation:jdthud .3s .12s ease-out}
+@keyframes jdthud{30%{transform:translateY(3px)}}
+.jd-lt{flex:0 1 210px;min-width:0;max-width:210px;display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:8px;background:#fffdf7;color:#08222e;border:2px solid var(--gsx-ink);box-shadow:4px 4px 0 var(--gsx-ink);transform:rotate(-1.5deg)}
+.jd-ltf{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jd-lts{font-size:15px;font-weight:800;line-height:1.2}
+.jd-ltl{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;min-width:0}
+.jd-ltl i{flex:none;width:10px;height:10px;border-radius:50%}
+.jd-ltd{font-size:11.5px;font-weight:700;opacity:.75}
+@media(min-width:900px){
+  .jd-gate .gsx-split{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto;row-gap:18px}
+  .jd-gate .gsx-head{grid-row:1 / span 2}
+  .jd-gate .gsx-piece{display:flex}
+  .jd-gv{padding:16px 18px}
+  .jd-gvs{width:120px;height:80px}
+  .jd-lt{max-width:280px}
 }
-@media(max-width:600px){.fbk-x{display:none}.desk{gap:5px;padding:18px 6px 14px}.fbody{padding:9px 6px}.fn{font-size:13px}.fc{display:none}.fk{font-size:8px;letter-spacing:.06em}.ftab{margin-left:4px;padding:3px 5px 2px;font-size:8px;letter-spacing:.04em}.fseal{font-size:8px;padding:1px 4px}.fbk{font-size:9px}.title{font-size:48px}.lede{font-size:14px}.pre-row .sub2{font-size:11.5px;max-width:200px}.facts{gap:5px}.fact{padding:7px}.fact b{font-size:16px}.fact span{font-size:9.5px}.ls-sechd b{font-size:16px}}
-@media(prefers-reduced-motion:reduce){.ls *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition:none !important}}
+@media(prefers-reduced-motion:reduce){.jd *{animation:none !important;transition:none !important}}
 `;

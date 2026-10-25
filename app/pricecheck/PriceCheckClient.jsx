@@ -12,36 +12,44 @@
 // as practice: the player guesses again, nothing is posted, and the run
 // counts the FIRST score, the one on the leaderboard (owner, 2026-10-01).
 //
-// THE PREGAME is the approved mockup: tags hanging on a rail, a price-gun
-// odometer that never lands, Start with a sheen. THE ENDING is the Scanner
-// (owner, 2026-10-17, app/pricecheck/PriceScanner.jsx): each game paints the
-// screen in its colour while its price rolls up and the first guess stamps in,
-// then the total climbs the five payment cards and the earned one lands. The
-// persona is one of THE SHOPPERS (RUN_RANKS in lib/price-games). Ten seconds later the five items come up in one pop-up
+// ON THE STAGE (owner, 2026-10-25): the run's four screens take the Trivia
+// Gauntlet's stage look (app/GauntletScreens.jsx). The entry is GauntletGate
+// with the price gun's register kept as its centerpiece; between tags,
+// GauntletBetween shows the price, your guess and the tag score; play is
+// RunPlayFrame around the PriceGame engine; the ending is GauntletEndStage,
+// climbing THE SHOPPERS ladder (ranksFor in lib/price-games) with its cards.
+// Ten seconds after the ending comes up the five items open in one pop-up
 // (Pricer's reveal, kept), ON WHATEVER PAGE THE PLAYER IS ON BY THEN (owner,
-// 2026-10-02): see app/pricecheck/ItemsPop.jsx. Once it is closed, the Trivia Gauntlet offer follows
-// ten seconds later, or as soon as the player leaves the page, if that run has
-// not been finished today (owner, 2026-10-01: slow the pop-ups down).
+// 2026-10-02): see app/pricecheck/ItemsPop.jsx. Once it is closed, the
+// Trivia Gauntlet offer follows ten seconds later, or as soon as the player
+// leaves the page, if that run has not been finished today (owner,
+// 2026-10-01: slow the pop-ups down). The old Scanner ending
+// (PriceScanner.jsx) is no longer drawn.
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import PriceGame, { readDoneSave } from '../price/PriceGame';
-import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
-import NextDrop from '../NextDrop';
+import MoreRunsPop, { MoreRunsList, otherRuns } from '../circuits/MoreRuns';
+import { RUN_DOORS, runDoneToday } from '../circuits/RunDoorPop';
 import ItemsPop, { itemsFor, scheduleItems, spendItems } from './ItemsPop';
-import PriceScanner from './PriceScanner';
 import useCircuitBoard from '../circuits/useCircuitBoard';
-import RunNextSlot from '../circuits/RunNextSlot';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import ChallengeStrip from '../ChallengeStrip';
-import { RunChallengeButton, RunChallengeLine, runToken } from '../RunChallenge';
-import { PRICE_GAMES, fmtCents, errOf, scoreOf, pctLabel, runRankOf, runTierOf, ranksFor, ranksTag, isV2, scoreGuesses } from '@/lib/price-games';
-import RunBackLink from '../circuits/RunBackLink';
+import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
+import { fmtCents, runRankOf, runTierOf, ranksFor, ranksTag, isV2, scoreGuesses } from '@/lib/price-games';
+import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useStageLook } from '../GauntletScreens';
+import { rampFor } from '@/lib/circuits';
+import { softGround, RAMP_INK } from '@/lib/category-ramp';
+import { isDarkLook } from '@/lib/stage-look';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const RUN_ID = 'pricecheck';
+// How long the card between two tags holds before the next one starts on its
+// own (Hold stops it, the button skips it), as on the Gauntlet's stage.
+const BETWEEN_MS = 12000;
+// The colour of each card on the shopper ladder, best first (RUN_RANKS order).
+const CARD_COL = [['#1e1e23', '#e9cf7f'], ['#e6b532', '#2a1f04'], ['#2f6fe4', '#ffffff'], ['#4b5a6e', '#e7edf4'], ['#fbfaf6', '#22252b']];
+const NUMS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'];
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
@@ -57,24 +65,63 @@ function bankedOf(sec) {
   return { score: sg.score, at: sg.at, best: sg.at >= 0 ? s.guesses[sg.at] : null, first: s.guesses[0], guesses: s.guesses.length, secs: s.t0 && s.tEnd ? Math.round((s.tEnd - s.t0) / 1000) : 0, banked: true };
 }
 
-export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }) {
+// THE PRICE GUN, kept for the stage entry (owner, 2026-10-25): the register
+// whose digits never land, compact, between the title and the tags. The gate's
+// own button is Start, so the register is a picture now, not the trigger. The
+// scoring note sits under it and opens in the same box.
+const ODO = ['1234567890', '7391582640', '4086291537', ',', '9502738164', '2618407395', '5173094826'];
+const ODO_SPEED = [1.6, 1.1, 0.8, 0, 0.6, 0.45, 0.35];
+function Register({ v2, max, n, sections, howOpen, onHow }) {
+  return (
+    <div className="pcg">
+      <div className="pcg-box">
+        {howOpen ? (
+          <div className="pcg-how">
+            <div className="pcg-facts">
+              <span><b>{n}</b>tags</span><span><b>{v2 ? 3 : 5}</b>guesses each</span><span><b>{max}</b>points</span><span><b>1%</b>bullseye</span>
+            </div>
+            {v2 ? <p>The first guess can earn the full 10, the second up to 6, the third up to 3. The best one counts.</p> : <p>Your closest guess counts, 0 to 10.</p>}
+          </div>
+        ) : (
+          <>
+            <small>Today&rsquo;s register</small>
+            <span className="odo" aria-hidden="true"><span className="q">$</span>
+              {ODO.map((d, i) => (
+                d === ',' ? <span key={i} className="q">,</span>
+                  : <span key={i} className="d"><i style={{ animationDuration: `${ODO_SPEED[i]}s` }}>{d.split('').map((c, j) => <b key={j}>{c}</b>)}</i></span>
+              ))}
+            </span>
+          </>
+        )}
+      </div>
+      <div className="pcg-note">Played one today? Replay it here; your first score counts.</div>
+      <div className="pcg-row">
+        <button type="button" className="pcg-how-b" aria-expanded={howOpen} onClick={(e) => { e.stopPropagation(); onHow(); }}>{howOpen ? 'Hide scoring' : 'How scoring works'}</button>
+        <span className="pcg-links">{sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path} onClick={(e) => e.stopPropagation()}>{s.name}</a></React.Fragment>)}</span>
+      </div>
+    </div>
+  );
+}
+
+export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSections = [] }) {
+  // Each tag takes its ladder step (slot) for the stage colours.
+  const sections = useMemo(() => rawSections.map((s, i) => ({ ...s, slot: i })), [rawSections]);
   const N = sections.length;
   const MAX = N * 10;
   const V2 = isV2(sections[0] && sections[0].quizId);
   const RTAG = ranksTag(sections[0] && sections[0].quizId);
   const RANKS = ranksFor(sections[0] && sections[0].quizId);
   const STORE = `sot_run_${RUN_ID}_${etToday()}`;
-  // One register, the Trivia Gauntlet's (owner, 2026-10-01: match the
-  // Gauntlet): Midnight ground, translucent white surfaces, sky call to action.
-  const theme = 'dark';
-  const dark = true;
+  const [look] = useStageLook();
+  const darkLook = isDarkLook(look);
   const [r, setR] = useState(() => freshRun());
   const rRef = useRef(r);
   const [hydrated, setHydrated] = useState(false);
   const [banked, setBanked] = useState({});
-  const [leaving, setLeaving] = useState(false);
   const [howOpen, setHowOpen] = useState(false);
   const [between, setBetween] = useState(null);
+  const [hold, setHold] = useState(false);
+  const [resumes, setResumes] = useState(0);
   const doneAtLoad = useRef(null);
   const [showItems, setShowItems] = useState(false);
   const [itemAt, setItemAt] = useState(0);
@@ -82,6 +129,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   const itemsShown = useRef(false);
   const countedRef = useRef([]);
   const [copied, setCopied] = useState(false);
+  const [similar, setSimilar] = useState(null);
 
   useEffect(() => { rRef.current = r; }, [r]);
   const commit = useCallback((next) => {
@@ -122,15 +170,13 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   }), [sections, banked, r.results]);
   countedRef.current = counted;
   const total = counted.reduce((a, c) => a + (c ? c.score : 0), 0);
-  const rank = runRankOf(Math.round(total * 50 / Math.max(1, MAX)), RANKS);
+  const scaled = (v) => Math.round(v * 50 / Math.max(1, MAX));
+  const rank = runRankOf(scaled(total), RANKS);
+  const tier = runTierOf(scaled(total), RANKS);
 
   function start() {
-    setLeaving(true);
-    setTimeout(() => {
-      setLeaving(false);
-      commit({ ...rRef.current, phase: 'playing', si: 0, t0: rRef.current.t0 || Date.now() });
-      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
-    }, 620);
+    commit({ ...rRef.current, phase: 'playing', si: 0, t0: rRef.current.t0 || Date.now() });
+    try { window.scrollTo(0, 0); } catch (e) {}
   }
 
   function onSectionDone(res) {
@@ -143,18 +189,16 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
     const last = cur.si >= N - 1;
     const next = { ...cur, results };
     commit(next);
+    setHold(false);
     setBetween({ si: cur.si, last });
   }
   // THE LAST TAG ROLLS STRAIGHT INTO THE FINALE (owner, 2026-10-01): no
   // "Final prices" press. The last score and price hold for a beat so the
   // player sees them, then the ending starts on its own.
   const FINALE_BEAT = 1800;
-  // THE IN-BETWEEN CARD COMES ON SCREEN (owner, 2026-10-17). The player
-  // finishes a tag scrolled down to the guess rows, and the board unmounts
-  // under them, so the score card and its Next button sat above the fold.
   useEffect(() => {
     if (!between) return undefined;
-    const t = setTimeout(() => { try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); } }, 40);
+    const t = setTimeout(() => { try { window.scrollTo(0, 0); } catch (e) {} }, 40);
     return () => clearTimeout(t);
   }, [between]);
   useEffect(() => {
@@ -163,23 +207,43 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [between]);
+  // The card between two tags starts the next one on its own unless held.
+  useEffect(() => {
+    if (!between || between.last || hold) return undefined;
+    const t = setTimeout(() => advance(), BETWEEN_MS);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [between, hold, resumes]);
   function advance() {
     const cur = rRef.current;
     setBetween(null);
+    setHold(false);
     if (cur.si >= N - 1) commit({ ...cur, phase: 'done', tEnd: Date.now() });
     else commit({ ...cur, si: cur.si + 1 });
-    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
+    try { window.scrollTo(0, 0); } catch (e) {}
   }
 
-  // The items pop-up: ten seconds after the ending settles, once, and only for
-  // a run finished in this sitting. Stamped rather than timed here, so it opens
-  // wherever the player has gone (PriceCheckItemsGlobal in app/layout.js).
+  // The items pop-up: ten seconds after the ending comes up, once, and only
+  // for a run finished in this sitting. Stamped rather than timed here, so it
+  // opens wherever the player has gone (PriceCheckItemsGlobal in app/layout.js).
   const finaleOver = useCallback(() => {
     if (itemsShown.current) return;
     itemsShown.current = true;
     scheduleItems(itemsFor(sections, countedRef.current));
   }, [sections]);
+  useEffect(() => {
+    if (hydrated && done && doneAtLoad.current === false) finaleOver();
+  }, [hydrated, done, finaleOver]);
   function closeItems() { setShowItems(false); setNudge(true); }
+  function openItems() { spendItems(); setItemAt(0); setShowItems(true); }
+
+  // One quick play next: the first run in the more-runs order not finished
+  // today, as on the Gauntlet's ending. Read in an effect (local saves).
+  useEffect(() => {
+    if (!done) return;
+    const id = otherRuns(RUN_ID).find((x) => !runDoneToday(x));
+    setSimilar(id && RUN_DOORS[id] ? { name: RUN_DOORS[id].name, href: RUN_DOORS[id].href } : null);
+  }, [done]);
 
   function shareText() {
     const per = sections.map((s, i) => `${s.name} ${counted[i] ? counted[i].score : '-'}`).join(' · ');
@@ -192,112 +256,171 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
 
-  const tagCol = (key) => (dark ? PRICE_GAMES[key].tagDark : PRICE_GAMES[key].tagLight);
-  const VARS = { '--pc-ground': '#0b0f1a', '--pc-panel': '#0d1220', '--pc-surf': 'rgba(255,255,255,.045)', '--pc-line': 'rgba(255,255,255,.12)', '--pc-ink': '#e9edf4', '--pc-mute': '#9aa8c4', '--pc-rail': '#2a3247', '--pc-shadow': '0 14px 34px rgba(0,0,0,.55)', '--pc-cta': '#7dd3fc', '--pc-cta-ink': '#08222e', '--pc-hi': '#7dd3fc', '--pc-good': '#6ee7b7', '--pc-bad': '#fb7185', '--pc-mat': '#ffffff' };
-  sections.forEach((s) => { VARS[`--pc-${s.key}`] = tagCol(s.key); });
-
   const sec = playing ? sections[r.si] : null;
   const secBanked = sec ? banked[sec.key] : null;
+  const runSoFar = sections.slice(0, r.si).reduce((a, s, i) => a + (counted[i] ? counted[i].score : 0), 0);
+
+  // What the card says about the tag just played.
+  function tagBody(i) {
+    const s = sections[i];
+    const c = counted[i];
+    if (!s) return null;
+    const guessLine = !c ? null
+      : V2 && c.at >= 0 && c.best != null
+        ? (c.at === 0 ? <span>First guess <b>{fmtCents(c.best)}</b> earned it</span> : <span>Earned on guess {c.at + 1} at <b>{fmtCents(c.best)}</b>{typeof c.first === 'number' ? <>, first guess {fmtCents(c.first)}</> : null}</span>)
+        : typeof c.first === 'number' ? <span>Your first guess was <b>{fmtCents(c.first)}</b>{c.best != null && c.best !== c.first ? <>, closest {fmtCents(c.best)}</> : null}</span> : null;
+    return (
+      <>
+        <b>{s.name}: the price was {fmtCents(s.day.price)}</b>
+        {guessLine}
+        {c && c.banked ? <span>Your first play today counts</span> : null}
+      </>
+    );
+  }
+
+  // THE SHOPPER LADDER (owner, 2026-10-25): the real cards from lib/price-games,
+  // bottom to top, each cutoff put back on this run's own total (the persona is
+  // graded on the total scaled to 50).
+  const ladder = useMemo(() => RANKS.slice().reverse().map((t, k) => {
+    const ti = RANKS.length - 1 - k;
+    const min = t[0] <= 0 ? 0 : Math.ceil((t[0] - 0.5) * MAX / 50);
+    return { min, name: `${t[1]} \u00b7\u00a0${t[3]}\u00a0card`, line: t[2], colour: rampFor(k), chip: CARD_COL[ti] ? CARD_COL[ti][0] : undefined, ti };
+  }), [RANKS, MAX]);
+  const earned = ladder.find((x) => x.ti === tier) || ladder[0];
+
+  const data = board && board.data;
+  const me = data && data.me;
+  const overall = (data && Array.isArray(data.overall)) ? data.overall : [];
+  const fieldSize = data ? (data.uniquePlayers || overall.length || null) : null;
+  const per = (data && data.priceField && data.priceField.games) || {};
+  const rowsIn = sections.map((s, i) => {
+    const g = per[s.key];
+    const bests = overall.map((L) => L.perGame && L.perGame[s.key] && !L.perGame[s.key].abandoned ? Number(L.perGame[s.key].score) : null).filter((v) => Number.isFinite(v));
+    return {
+      key: s.key, name: s.name, bg: rampFor(i),
+      you: counted[i] ? counted[i].score : '–',
+      field: g && g.avg != null ? (g.avg < 10 ? Number(g.avg).toFixed(1) : Math.round(g.avg)) : '–',
+      best: bests.length ? Math.max(...bests) : '–',
+    };
+  });
+  const boardRows = (() => {
+    const isMe = (row) => !!(me && row && me.userKey && row.userKey === me.userKey);
+    const out = overall.slice(0, 3).map((row, i) => ({ rank: row.rank || i + 1, name: row.username || 'Guest', score: Math.round(Number(row.total) || 0), me: isMe(row) }));
+    if (me && !out.some((x) => x.me) && Number.isFinite(Number(me.total))) {
+      if (Number.isFinite(me.rank) && me.rank > 4) out.push({ gap: true });
+      out.push({ rank: Number.isFinite(me.rank) ? me.rank : '–', name: 'You', score: Math.round(Number(me.total) || 0), me: true });
+    }
+    return out.length ? { rows: out, field: fieldSize, href: '/pricecheck/leaderboard' } : null;
+  })();
+
+  // The play page's accent is the stage's one ink; the Guess button carries
+  // the ground's colour on it, so nothing white sits on the pastel.
+  const onramp = darkLook ? '#0b0f1a' : look === 'color' && sec ? softGround(rampFor(sec.slot)) : '#ffffff';
+  const accVars = darkLook
+    ? { '--stg-acc': '#e9edf4', '--stg-acc-ink': '#e9edf4', '--stg-onramp': onramp }
+    : { '--stg-acc': RAMP_INK, '--stg-acc-ink': RAMP_INK, '--stg-onramp': onramp };
 
   return (
-    <div className="stage-page pc" data-sot-wait="" data-stage-theme={theme} style={{ ...VARS, minHeight: '100vh', background: 'var(--pc-ground)', color: 'var(--pc-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
+    <div className={`stage-page pc${darkLook ? '' : ' pc-light'}`} data-sot-wait="" data-stage-theme={darkLook ? 'dark' : 'light'} data-stage-pin="" style={{ fontFamily: SANS }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      {done ? null : <ChallengeStrip gameKey="pricecheck" num={runToken()} run />}
-      <div className="pc-cap">
-        {done && <RunBackLink />}
-        <Link href="/" className="pc-home">Mind Loft</Link>
-        <b>Price Check</b>
-        <span className="pc-capd">{dateShort}</span>
-        {playing && <span className="pc-capt">{sections.map((s, i) => <i key={s.key} className={i < r.si ? 'd' : i === r.si ? 'on' : ''} style={{ background: i <= r.si ? `var(--pc-${s.key})` : undefined }} title={s.name} />)}</span>}
-        {!playing && <a className="pc-lb" href="/pricecheck/leaderboard">Leaderboard</a>}
-      </div>
+      <RunChallengeCapture gameKey="pricecheck" />
+      {!hydrated ? <GauntletCover sections={sections} /> : null}
 
       {hydrated && r.phase === 'idle' && (
-        <section className={`pre${leaving ? ' leave' : ''}`}>
-          <h1 className="title"><span>Price</span> <span>Check</span></h1>
-          <p className="lede fade">Five real price tags, from <b>pocket change</b> to <b>the auction block</b>. {V2 ? <>Three guesses at each, and <b>the first one counts most</b>.<span className="lede-x"> Trust your gut.</span></> : <>Five guesses at each.<span className="lede-x"> Get warm, get close, then go big.</span></>}</p>
-          {/* THE PRICE GUN IS THE START BUTTON (owner, 2026-10-01, option C): the
-              odometer that never lands is the gun's screen and Start is its trigger,
-              straight under the title, so it is on screen on every phone. */}
-          <button type="button" className="gun fade" onClick={start} aria-label="Start the run">
-            <span className="gscr"><small>Today&rsquo;s register</small>
-              <span className="odo" aria-hidden="true"><span className="q">$</span>
-                {['1234567890', '7391582640', '4086291537', ',', '9502738164', '2618407395', '5173094826'].map((d, i) => (
-                  d === ',' ? <span key={i} className="q">,</span>
-                    : <span key={i} className="d"><i style={{ animationDuration: `${[1.6, 1.1, 0.8, 0, 0.6, 0.45, 0.35][i]}s` }}>{d.split('').map((c, j) => <b key={j}>{c}</b>)}</i></span>
-                ))}
-              </span>
-            </span>
-            <span className="gtrig">Start the run <span aria-hidden="true">&rarr;</span></span>
-          </button>
-          <div className="rail" />
-          <div className="tags">
-            {sections.map((s, i) => (
-              <div key={s.key} className="hang" style={{ animationDelay: `${0.25 + i * 0.12}s, ${0.9 + i * 0.15}s`, animationDuration: `.6s, ${3.3 + (i % 3) * 0.3}s` }}>
-                <div className="string" />
-                <div className="tag" style={{ '--c': `var(--pc-${s.key})` }}>
-                  <div className="k"><span className="kn">{String(i + 1).padStart(2, '0')} · </span>{s.name}</div>
-                  <div className="n">{s.word}</div>
-                  <div className="chip">{s.chip}</div>
-                  <div className="pq"><em>$$$</em></div>
-                  {banked[s.key] && <div className="bk">Played: {banked[s.key].score}/10 counts</div>}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="pre-row fade">
-            <div className="sub2">Played one today? Replay it here; your first score counts.</div>
-            <button type="button" className="pre-how" aria-expanded={howOpen} onClick={() => setHowOpen((v) => !v)}>{howOpen ? 'Hide scoring' : 'How scoring works'}</button>
-          </div>
-          {howOpen && (
-            <div className="pre-hw">
-              <div className="facts">
-                <div className="fact"><b>{N}</b><span>price tags</span></div>
-                <div className="fact"><b>{V2 ? 3 : 5}</b><span>guesses each</span></div>
-                <div className="fact"><b>{MAX}</b><span>points to win</span></div>
-                <div className="fact"><b>1%</b><span>is a bullseye</span></div>
-              </div>
-              {V2 && <div className="sub2">Your first guess can earn the full 10. The second is capped at 6, the third at 3, and the best one counts.</div>}
-              <div className="heat"><div className="bar" /><div className="lbl"><span>Freezing</span><span>Cold</span><span>Warm</span><span>Hot</span><span>Burning</span><span>Bullseye</span></div></div>
-            </div>
-          )}
-          <div className="sub2 fade">Each one is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}</div>
-        </section>
+        <GauntletGate
+          circuitName="Price Check"
+          dateLabel={dateLabel}
+          sections={sections}
+          lineFor={(s) => s.word}
+          bandNote={(s) => (banked[s.key] ? `Played ${banked[s.key].score}` : '10 pts')}
+          headline={<>{NUMS[N] || N} Prices.<br />{V2 ? 'Three' : 'Five'} Guesses Each.</>}
+          rule={V2 ? 'The first guess counts most. Scored out of ' + MAX + '.' : 'Get warm, get close, then go big. Scored out of ' + MAX + '.'}
+          lineup={'Today\u2019s tags:'}
+          startLabel="Start the run"
+          banner={<ChallengeStrip gameKey="pricecheck" num={runToken()} run />}
+          centerpiece={<Register v2={V2} max={MAX} n={N} sections={sections} howOpen={howOpen} onHow={() => setHowOpen((v) => !v)} />}
+          onStart={start}
+        />
       )}
 
-      {hydrated && playing && sec && (
-        <section className="pc-play" style={{ '--stg-acc': `var(--pc-${sec.key})`, '--stg-acc-ink': `var(--pc-${sec.key})`, '--stg-onramp': dark ? '#0b0f1a' : '#ffffff' }}>
-          <div className="pc-sechd">
-            <span className="pc-sectag" style={{ background: `var(--pc-${sec.key})` }}>{String(r.si + 1).padStart(2, '0')} · {sec.name}</span>
-            <b>{sec.word}</b>
-            <span className="pc-run">Run total {sections.slice(0, r.si).reduce((a, s, i) => a + (counted[i] ? counted[i].score : 0), 0)}</span>
-          </div>
-          {secBanked && (
-            <div className="pc-banked">You played {sec.name} today and scored <b>{secBanked.score}/10</b>. That score counts. Guess again for fun.</div>
-          )}
-          {!between && (
-            <PriceGame key={`${sec.key}-${r.si}`} game={sec.key} puzzles={sec.puzzles} dayByNum={{ [sec.num]: sec.day }} forceNum={sec.num}
-              run={{ practice: !!secBanked, onDone: onSectionDone }} />
-          )}
-          {between && (
-            <div className="pc-between">
-              <div className="eb">{sec.name} · {secBanked ? 'counted score' : 'your score'}</div>
-              <div className="pc-bscore">{counted[r.si] ? counted[r.si].score : 0}<small>/10</small></div>
-              <div className="pc-bprice">The price was <b>{fmtCents(sec.day.price)}</b>{counted[r.si] && counted[r.si].best ? (V2 && counted[r.si].at >= 0 ? <>, earned on guess {counted[r.si].at + 1} at <b>{fmtCents(counted[r.si].best)}</b></> : <>, your closest <b>{fmtCents(counted[r.si].best)}</b></>) : null}.</div>
-              {!between.last ? (
-                <button type="button" className="start" onClick={advance}>Next: {sections[r.si + 1].name}, {sections[r.si + 1].word.toLowerCase()} <span aria-hidden="true">&rarr;</span></button>
-              ) : (
-                <div className="pc-rolling" role="status">Ringing up your final prices<span className="pc-dots" aria-hidden="true"><i /><i /><i /></span></div>
-              )}
-            </div>
-          )}
-        </section>
+      {hydrated && playing && sec && between && !between.last && sections[r.si + 1] && (
+        <GauntletBetween
+          circuitName="Price Check"
+          sections={sections}
+          lastSec={sec}
+          upNext={sections[r.si + 1]}
+          upIdx={r.si + 1}
+          stepWord="Tag"
+          doneCount={r.si + 1}
+          lastBody={tagBody(r.si)}
+          lastFig={{ v: counted[r.si] ? counted[r.si].score : 0, unit: 'of 10' }}
+          nextLine={`${sections[r.si + 1].word}${sections[r.si + 1].chip ? ` · ${sections[r.si + 1].chip}` : ''}`}
+          fine={`Run total ${runSoFar + (counted[r.si] ? counted[r.si].score : 0)} of ${MAX}`}
+          dwellMs={BETWEEN_MS}
+          held={hold}
+          resetKey={`${r.si}:${resumes}`}
+          onGo={advance}
+          onHold={() => { if (hold) setResumes((k) => k + 1); setHold(!hold); }}
+          leaveHref="/"
+        />
+      )}
+
+      {hydrated && playing && sec && !(between && !between.last) && (
+        <RunPlayFrame sections={sections} idx={r.si} title="Price Check" sub={`Tag ${r.si + 1} of ${N} · ${sec.name}`}
+          foot={<>Run total {runSoFar + (between ? (counted[r.si] ? counted[r.si].score : 0) : 0)} of {MAX} · {dateShort}</>}>
+          <section className={`pc-play pc-k-${sec.key}`} style={accVars}>
+            {!between ? <div className="pc-chs"><ChallengeStrip gameKey="pricecheck" num={runToken()} run /></div> : null}
+            {secBanked && !between && (
+              <div className="pc-banked">You played {sec.name} today and scored <b>{secBanked.score}/10</b>. That score counts. Guess again for fun.</div>
+            )}
+            {!between && (
+              <PriceGame key={`${sec.key}-${r.si}`} game={sec.key} puzzles={sec.puzzles} dayByNum={{ [sec.num]: sec.day }} forceNum={sec.num}
+                run={{ practice: !!secBanked, onDone: onSectionDone }} />
+            )}
+            {between && between.last && (
+              <div className="pc-last" role="status">
+                <div className="pc-lastc">
+                  <span className="pc-lastt">{tagBody(r.si)}</span>
+                  <span className="pc-lastf">{counted[r.si] ? counted[r.si].score : 0}<i>of 10</i></span>
+                </div>
+                <div className="pc-rolling">Ringing up your card<span className="pc-dots" aria-hidden="true"><i /><i /><i /></span></div>
+              </div>
+            )}
+          </section>
+        </RunPlayFrame>
       )}
 
       {hydrated && done && (
-        <Finale key="finale" sections={sections} counted={counted} total={total} max={MAX} dateLabel={dateLabel} dateShort={dateShort}
-          animate={doneAtLoad.current === false} onOver={finaleOver} board={board} ranks={RANKS} v2={V2}
-          onShare={copyShare} copied={copied} onItems={() => { spendItems(); setItemAt(0); setShowItems(true); }} />
+        <GauntletEndStage
+          circuitName="Price Check"
+          dateLabel={dateLabel}
+          sections={sections}
+          results={sections.map((s, i) => ({ key: s.key, score: counted[i] ? counted[i].score : '–' }))}
+          score={total}
+          unitWord="points"
+          colLabel="Tag"
+          title={{ name: earned.name, line: earned.line, colour: earned.colour }}
+          ladder={ladder}
+          ladderHeading="Which shopper are you?"
+          rank={me && Number.isFinite(me.rank) ? me.rank : null}
+          fieldSize={fieldSize}
+          board={boardRows}
+          rowsIn={rowsIn}
+          avg={Object.keys(per).length ? Object.fromEntries(sections.map((s) => [s.key, per[s.key] && per[s.key].avg != null ? per[s.key].avg : 0])) : null}
+          leaderScore={overall[0] ? Math.round(Number(overall[0].total) || 0) : null}
+          extra={<button type="button" className="pc-items" onClick={openItems}>Today&rsquo;s tags <span aria-hidden="true">&rarr;</span></button>}
+          challenge={(
+            <div className="pc-chal">
+              <RunChallengeLine gameKey="pricecheck" score={total} n={runToken()} />
+              <RunChallengeButton gameKey="pricecheck" score={total} total={MAX} n={runToken()} status={`${rank[3]} card`} door />
+            </div>
+          )}
+          similar={similar}
+          more={<MoreRunsList self="pricecheck" ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} />}
+          onShare={copyShare}
+          copied={copied}
+          sweep={doneAtLoad.current === false}
+        />
       )}
 
       {showItems && (
@@ -308,655 +431,69 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections = [] }
   );
 }
 
-// ─── THE FINALE (owner, 2026-10-17) ─────────────────────────────────────────
-// The Scanner curtain (PriceScanner.jsx) plays once over a run finished in this
-// sitting, then hands over to the settled card below, which is unchanged.
-const WAVE = (
-  <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M7 6c2 3 2 7 0 10M11 4c3 4 3 10 0 14M15 2c4 5 4 13 0 18" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" /></svg>
-);
-
-function PayCard({ ti, n, max, dateShort, squash, shine, ranks }) {
-  const t = ranks[ti];
-  const brand = <div className="pk-brand">Mind Loft<small>Price Check</small></div>;
-  const kind = <div className="pk-kind">{t[3]}{t[4] ? <small>{t[4]}</small> : null}</div>;
-  const num = <div className="pk-num"><span>{n}</span><small> / {max}</small></div>;
-  const prepaid = ti === ranks.length - 1;
-  return (
-    <div className={`pk pk${ti}${squash ? ' squash' : ''}${shine ? ' shine' : ''}`}>
-      {prepaid && <div className="pk-peg" />}
-      <div className="pk-top">{brand}{kind}</div>
-      {prepaid
-        ? <div className="pk-mid"><div className="pk-chip silver" /><div className="pk-bal">Balance<b>$0.00</b></div></div>
-        : <div className="pk-mid"><div className={`pk-chip${ti === 3 ? ' silver' : ''}`} /><span className="pk-wave">{WAVE}</span></div>}
-      <div className="pk-tier">{t[1]}</div>
-      <div className="pk-bot">
-        {num}
-        <div className="pk-br">
-          <div className="pk-since">{prepaid ? 'Valid thru' : 'Member since'}<b>{dateShort}</b></div>
-          {!prepaid && (ti === 3 ? <div className="pk-debit">DEBIT</div> : <div className="pk-mark" aria-hidden="true"><i /><i /></div>)}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// NEXT SHELF, one line (owner, 2026-10-12, layout A): the countdown to the
-// next Eastern midnight, read in an effect so server and client agree.
-function msToEtMidnight() {
-  try {
-    const p = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23' }).formatToParts(new Date());
-    const g = (k) => Number((p.find((x) => x.type === k) || {}).value || 0);
-    return Math.max(0, ((24 - g('hour')) * 3600 - g('minute') * 60 - g('second')) * 1000);
-  } catch (e) { return null; }
-}
-function ShelfIn() {
-  const [ms, setMs] = useState(null);
-  useEffect(() => {
-    const tick = () => setMs(msToEtMidnight());
-    tick();
-    const id = setInterval(tick, 20000);
-    return () => clearInterval(id);
-  }, []);
-  if (ms == null) return null;
-  const m = Math.floor(ms / 60000), h = Math.floor(m / 60);
-  return <span className="cf-shelf">Next shelf in <b>{String(h).padStart(2, '0')}h {String(m % 60).padStart(2, '0')}m</b></span>;
-}
-
-function Finale({ sections, counted, total, max, dateLabel, dateShort, animate, onOver, board, onShare, copied, onItems, ranks, v2 }) {
-  const RUN_RANKS = ranks;
-  const pts = sections.map((s, i) => (counted[i] ? counted[i].score : 0));
-  const tierAt = (v) => runTierOf(Math.round(v * 50 / Math.max(1, max)), RUN_RANKS);
-  const fti = tierAt(total);
-  const t = RUN_RANKS[fti];
-  const reduce = useMemo(() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }, []);
-  const play = animate && !reduce;
-  const [phase, setPhase] = useState(play ? 'scan' : 'settled');
-  const [shine, setShine] = useState(0);
-
-  // A run restored already finished, or reduced motion, gets the card at once.
-  useEffect(() => {
-    if (!play && animate) onOver();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  // The Scanner curtain hands over here, at its end or on any tap or key.
-  const scanDone = useCallback(() => {
-    setPhase('settled');
-    setShine((n) => n + 1);
-    onOver();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const me = board && board.data && board.data.me;
-  const field = board && board.data && Array.isArray(board.data.overall) ? (board.data.uniquePlayers || board.data.overall.length) : null;
-  let hi = 0, lo = 0;
-  pts.forEach((v, i) => { if (v > pts[hi]) hi = i; if (v < pts[lo]) lo = i; });
-  const flat = pts[hi] === pts[lo];
-  const settled = phase === 'settled';
-
-  if (!settled) {
-    return (
-      <section className="pf">
-        <PriceScanner sections={sections} counted={counted} total={total} max={max} ranks={RUN_RANKS} dateShort={dateShort} cardCol={CARD_COL}
-          renderCard={(ti) => <PayCard ti={ti} n={total} max={max} dateShort={dateShort} ranks={RUN_RANKS} />} onDone={scanDone} />
-      </section>
-    );
-  }
-
-  return (
-    <section className="pf">
-      <div className={`cf-stage${settled ? ' settled' : ''}`}>
-        <div className="cf-cardcol">
-          <div className="cf-cw">
-            <PayCard key={`pk${shine}`} ti={fti} n={total} max={max} dateShort={dateShort} shine={shine} ranks={RUN_RANKS} />
-          </div>
-        </div>
-        <div className="cf-right">
-          <div className={`cf-copy${settled ? ' on' : ''}`} role="status">
-            {settled && (
-              <>
-                <div className="cf-you">Your card today</div>
-                <h1 className="cf-nm">{t[1]}</h1>
-                <p className="cf-ln">{t[2]}</p>
-                {/* LAYOUT A (owner, 2026-10-12): the three stat tiles are one line,
-                    the upgrade and the next drop are one row of pills, and the five
-                    game tiles moved into the scoreboard below as the player's own row. */}
-                <div className="cf-sl">
-                  <span><b>{total}</b> of {max}</span>
-                  {me && me.rank ? <a className="cf-lbl" href="/pricecheck/leaderboard" aria-label="See today's leaderboard"><b>#{me.rank}</b> {field ? `of ${Number(field).toLocaleString()} today` : 'today'} <em aria-hidden="true">&rarr;</em></a> : null}
-                  {v2
-                    ? <span><b>{counted.filter((c) => c && c.at === 0).length}</b> of {sections.length} first-guess scores</span>
-                    : <span><b>{t[3]}</b> card</span>}
-                </div>
-                <div className="cf-pills">
-                  {fti > 0
-                    ? <span className="cf-next"><b>{Math.max(1, Math.ceil(RUN_RANKS[fti - 1][0] * max / 50) - total)} more</b> and you upgrade to {RUN_RANKS[fti - 1][3]}</span>
-                    : <span className="cf-next">Top of the ladder. <b>Black card.</b></span>}
-                  <ShelfIn />
-                </div>
-                {!v2 && (
-                  <div className="cf-games">
-                    {sections.map((s, i) => <div key={s.key} className={flat ? '' : i === hi ? 'hi' : i === lo ? 'lo' : ''}><i>{s.name}</i><b>{pts[i]}</b></div>)}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-      {settled && (
-        <div className="pf-wide">
-          {/* THE CHALLENGE AND THE NEXT SLOT side by side (owner, 2026-10-20),
-              as on every run's scorecard. Price Check's own game-by-game
-              scoreboard below is already that table, with each guess shown. */}
-          <div className="pf-low">
-            <div>
-              <RunChallengeLine gameKey="pricecheck" score={total} n={runToken()} />
-              <RunChallengeButton gameKey="pricecheck" score={total} total={max} n={runToken()} status={`${t[3]} card`} door />
-            </div>
-            <div><RunNextSlot circuitId="pricecheck" exclude={sections.map((s) => s.key)} /></div>
-          </div>
-          {!v2 && (
-            <div className="pf-btns">
-              <button type="button" onClick={onItems}>See the items</button>
-            </div>
-          )}
-        </div>
-      )}
-      {settled && v2 && <FieldPanel sections={sections} counted={counted} total={total} max={max} board={board} ranks={RUN_RANKS} onItems={onItems} />}
-      {settled && (
-        <div className="pf-foot">
-          <MoreRunsList self="pricecheck" onShare={onShare} copied={copied} />
-        </div>
-      )}
-    </section>
-  );
-}
-
-
-// ─── THE FIELD (owner, 2026-10-11) ──────────────────────────────────────────
-// Under the settled card: where the whole field paid on the ladder (worst on
-// the left, best on the right, you marked), the top five game by game with how
-// far off each first guess was and which guess earned the score, and how the
-// field did on each item. Every figure comes off the circuit board payload
-// (priceField and the overall rows); nothing here is stored or scored.
-const CARD_COL = [['#1e1e23', '#e9cf7f'], ['#e6b532', '#2a1f04'], ['#2f6fe4', '#ffffff'], ['#4b5a6e', '#e7edf4'], ['#fbfaf6', '#22252b']];
-const offLabel = (bps) => (typeof bps === 'number' ? pctLabel(bps / 10000) : '');
-// The short form for a table cell: a percentage that never runs past four
-// characters, so a wild first guess cannot widen the row.
-const offShort = (bps) => { if (typeof bps !== 'number') return ''; const p = bps / 100; if (p < 0.1) return 'dead on'; if (p >= 999.5) return '999%+ off'; return `${p < 10 ? Math.round(p * 10) / 10 : Math.round(p)}% off`; };
-// Which guess earned a leader's score, read off the score and the first
-// guess's error: the first guess earned it if it alone scores that much, a
-// score over 3 can only be the second guess, and the rest is the last guess.
-function earnedAt(p) {
-  if (!p || !p.score) return -1;
-  if (typeof p.bps === 'number' && Math.min(scoreOf(p.bps / 10000), 10) === p.score) return 0;
-  if (p.score > 3) return 1;
-  return Math.max(1, Math.min(2, (p.guessesUsed || 3) - 1));
-}
-
-function FieldPanel({ sections, counted, total, max, board, ranks, onItems }) {
-  const data = board && board.data;
-  const pf = data && data.priceField;
-  if (!data) return <div className="fp"><div className="fp-wait">Loading the field<span className="pc-dots" aria-hidden="true"><i /><i /><i /></span></div></div>;
-  const scale = (v) => Math.round(v * 50 / Math.max(1, max));
-  const totals = (pf && pf.totals) || [];
-  const counts = ranks.map(() => 0);
-  totals.forEach((v) => { counts[runTierOf(scale(v), ranks)] += 1; });
-  const sum = counts.reduce((a, b) => a + b, 0);
-  const ORD = ranks.map((_, i) => ranks.length - 1 - i); // worst on the left
-  const myTi = runTierOf(scale(total), ranks);
-  let pos = null;
-  if (sum) {
-    let before = 0;
-    for (const i of ORD) { if (i === myTi) break; before += counts[i]; }
-    const lo = ranks[myTi][0], hi = myTi > 0 ? ranks[myTi - 1][0] - 1 : 50;
-    const frac = hi > lo ? (scale(total) - lo + 0.5) / (hi - lo + 1) : 0.5;
-    pos = ((before + Math.max(counts[myTi], 0.0001) * Math.min(1, Math.max(0, frac))) / sum) * 100;
-    pos = Math.min(97, Math.max(3, pos));
-  }
-  const leaders = (data.overall || []).slice(0, 5).map((L, i) => ({ ...L, _rk: L.rank || i + 1 }));
-  // THE PLAYER'S OWN ROW (owner, 2026-10-12, layout A): the five game tiles
-  // that sat beside the card are this row now. A player in the top five is
-  // highlighted where they stand; anyone else is pinned above the leaders,
-  // built from their own counted plays so a guest gets a row too.
-  const myKey = data.me && data.me.userKey;
-  const inTop = !!myKey && leaders.some((L) => L.userKey === myKey);
-  const minePer = {};
-  sections.forEach((s, i) => {
-    const c = counted[i];
-    if (!c) { minePer[s.key] = null; return; }
-    const first = typeof c.first === 'number' ? c.first : (Array.isArray(c.guesses) ? c.guesses[0] : null);
-    minePer[s.key] = {
-      score: c.score,
-      at: typeof c.at === 'number' ? c.at : undefined,
-      bps: typeof first === 'number' ? Math.round(errOf(first, s.day.price) * 10000) : undefined,
-      guessesUsed: Array.isArray(c.guesses) ? c.guesses.length : (typeof c.guesses === 'number' ? c.guesses : undefined),
-    };
-  });
-  const mineRow = { userKey: myKey || '__me', _rk: (data.me && data.me.rank) || '-', username: (data.me && data.me.username) || 'You', total, perGame: minePer, _mine: true };
-  const rows = inTop ? leaders : [mineRow, ...leaders];
-  const isMine = (L) => L._mine || (!!myKey && L.userKey === myKey);
-  const per = (pf && pf.games) || {};
-  const avgs = sections.map((s) => (per[s.key] && per[s.key].plays ? per[s.key].avg : null));
-  let tough = -1;
-  avgs.forEach((a, i) => { if (a != null && (tough < 0 || a < avgs[tough])) tough = i; });
-  const cell = (p) => {
-    if (!p) return <div className="fp-cell"><b>-</b></div>;
-    const g = typeof p.at === 'number' && p.at >= 0 ? p.at : earnedAt(p);
-    return (
-      <div className={`fp-cell g${g + 1}${p.score === 10 ? ' ten' : ''}`}>
-        <b>{p.score}</b>
-        {typeof p.bps === 'number' && <span>{offShort(p.bps)}</span>}
-        <span className="gp">{[0, 1, 2].map((k) => <i key={k} className={k === g ? 'h' : k < (p.guessesUsed || 0) ? 'u' : ''} />)}</span>
-      </div>
-    );
-  };
-  return (
-    <div className="fp">
-      {onItems && <button type="button" className="fp-items" onClick={onItems}>See the items <span aria-hidden="true">&rarr;</span></button>}
-      {rows.length > 0 && (
-        <>
-          <div className="fp-bh"><h3>Today&rsquo;s scoreboard</h3><a href="/pricecheck/leaderboard">Full leaderboard</a></div>
-          <div className="fp-lb">
-            <table className="fp-t" aria-label="Today's leaders, game by game">
-              <thead><tr><th>#</th><th>Player</th>{sections.map((s) => <th key={s.key}><i style={{ background: `var(--pc-${s.key})` }} />{s.name}</th>)}<th>Total</th></tr></thead>
-              <tbody>
-                {rows.map((L, i) => {
-                  const ti = runTierOf(scale(L.total || 0), ranks);
-                  const mine = isMine(L);
-                  return (
-                    <tr key={L.userKey || i} className={mine ? 'me' : ''} style={{ animationDelay: `${i * 0.1}s` }}>
-                      <td>{L._rk}</td>
-                      <td className="fp-nm"><span className="cc" style={{ background: CARD_COL[ti][0] }} />{L.username}{mine && L.username !== 'You' && <em className="fp-you">You</em>}</td>
-                      {sections.map((s) => <td key={s.key}>{cell(L.perGame && L.perGame[s.key])}</td>)}
-                      <td className="fp-tot">{Math.round(L.total || 0)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div className="fp-ml" aria-hidden="true">
-            {rows.map((L, i) => {
-              const ti = runTierOf(scale(L.total || 0), ranks);
-              const mine = isMine(L);
-              return (
-                <div key={L.userKey || i} className={`fp-mr${mine ? ' me' : ''}`} style={{ animationDelay: `${i * 0.08}s` }}>
-                  <div className="fp-mh"><b>{L._rk}</b><span className="cc" style={{ background: CARD_COL[ti][0] }} /><span className="fp-mn">{L.username}{mine && L.username !== 'You' && <em className="fp-you">You</em>}</span><span className="fp-mt">{Math.round(L.total || 0)}</span></div>
-                  <div className="fp-mg">
-                    {sections.map((s) => <div key={s.key} className="fp-mc" style={{ '--c': `var(--pc-${s.key})` }}>{cell(L.perGame && L.perGame[s.key])}</div>)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="fp-key"><span><i className="g1" />earned on guess 1</span><span><i className="g2" />guess 2</span><span><i className="g3" />guess 3</span><span>The figure under a score is how far off the first guess was.</span></div>
-        </>
-      )}
-      <div className="fp-paid">
-      <div className="fp-bh"><h3>Where the field paid</h3><span>{sum ? `${sum.toLocaleString()} ${sum === 1 ? 'run' : 'runs'} today` : 'No finished runs yet'}</span></div>
-      {sum > 0 && (
-        <div className="fp-dist">
-          <div className="fp-bar">
-            {ORD.map((i, k) => {
-              const w = counts[i] / sum * 100;
-              return <span key={i} style={{ width: `${w}%`, background: CARD_COL[i][0], color: CARD_COL[i][1], animationDelay: `${k * 0.08}s` }} title={`${ranks[i][3]}: ${counts[i]}`}>{''}</span>;
-            })}
-          </div>
-          {pos != null && <div className="fp-mark"><i style={{ left: `${pos}%` }}>You · {ranks[myTi][3]}</i></div>}
-          <div className="fp-leg">{ORD.map((i) => <span key={i}>{ranks[i][3]} <b>{counts[i].toLocaleString()}</b></span>)}</div>
-        </div>
-      )}
-      </div>
-      <div className="fp-bh"><h3>Today&rsquo;s shelf</h3><span>field average and the best first guess</span></div>
-      <div className="fp-shelf">
-        {sections.map((s, i) => {
-          const g = per[s.key];
-          const mine = counted[i];
-          return (
-            <div key={s.key} className={`fp-sh${i === tough ? ' tough' : ''}`} style={{ '--c': `var(--pc-${s.key})` }}>
-              <div className="k">{s.name}</div>
-              <div className="it">{fmtCents(s.day.price)}</div>
-              <div className="f">
-                Field avg <b>{g && g.avg != null ? g.avg : '-'}</b><br />
-                Best first guess <b>{g && g.bestBps != null ? offLabel(g.bestBps) : '-'}</b>
-                {mine && typeof mine.first === 'number' ? <><br />Yours <b>{pctLabel(errOf(mine.first, s.day.price))}</b></> : null}
-              </div>
-              {i === tough && <span className="tg">Toughest today</span>}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ─── THE ITEMS POP-UP: today's five, one at a time ──────────────────────────
-
 const CSS = `
 .pc *{box-sizing:border-box}
-/* THE FIELD */
-.fp{margin:26px 0 0;padding:18px 0 4px;border-top:1px solid var(--pc-line);text-align:left}
-.fp-wait{color:var(--pc-mute);font-weight:700;font-size:13px;text-align:center;padding:14px 0}
-.fp-bh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:18px 0 0}
-.fp-bh:first-child{margin-top:0}
-.fp-bh h3{margin:0;font-size:18px;font-weight:800;letter-spacing:-.01em}
-.fp-bh span,.fp-bh a{font-size:12px;font-weight:700;color:var(--pc-mute);text-decoration:none}
-.fp-bh a{color:var(--pc-hi)}
-.fp-dist{margin:12px 0 2px}
-.fp-bar{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--pc-line)}
-.fp-bar span{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;transform-origin:left;animation:fpgrow .9s cubic-bezier(.2,.7,.3,1) both}
-@keyframes fpgrow{from{transform:scaleX(0)}to{transform:none}}
-.fp-mark{position:relative;height:22px}
-.fp-mark i{position:absolute;top:4px;transform:translateX(-50%);font-style:normal;font-size:11px;font-weight:800;color:var(--pc-hi);white-space:nowrap}
-.fp-mark i::before{content:"";position:absolute;left:50%;top:-6px;margin-left:-5px;border:5px solid transparent;border-bottom-color:var(--pc-hi);border-top:0}
-.fp-leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--pc-mute);font-weight:700}
-.fp-leg b{color:var(--pc-ink);font-variant-numeric:tabular-nums}
-.fp-lb{overflow-x:auto;margin-top:10px}
-.fp-t{width:100%;min-width:620px;border-collapse:separate;border-spacing:0 6px}
-.fp-t th{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pc-mute);text-align:center;padding:0 4px;white-space:nowrap}
-.fp-t th:nth-child(-n+2){text-align:left}
-.fp-t th i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
-.fp-t td{background:var(--pc-surf);padding:7px 6px;border-top:1px solid var(--pc-line);border-bottom:1px solid var(--pc-line);text-align:center;vertical-align:middle}
-.fp-t td:first-child{border-left:1px solid var(--pc-line);border-radius:10px 0 0 10px;width:34px;font-weight:800;color:var(--pc-mute);font-variant-numeric:tabular-nums}
-.fp-t td:last-child{border-right:1px solid var(--pc-line);border-radius:0 10px 10px 0}
-.fp-t tr{animation:fprin .4s ease both}
-@keyframes fprin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.fp-t tr.me td{background:rgba(125,211,252,.09);border-color:rgba(125,211,252,.5)}
-.fp-you{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.12em;color:var(--pc-hi);margin-left:8px;vertical-align:1px}
-.fp-paid{margin-top:16px;padding-top:4px;border-top:1px solid var(--pc-line)}
-.fp-paid .fp-bh h3{font-size:14px}
-.fp-paid .fp-bar{height:14px;border-radius:7px}
-.fp-nm{text-align:left!important;font-weight:800;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
-.fp-nm .cc{display:inline-block;width:22px;height:14px;border-radius:3px;margin-right:8px;vertical-align:-2px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
-.fp-cell{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.1}
-.fp-cell b{font-size:17px;font-variant-numeric:tabular-nums}
-.fp-cell span{font-size:10px;font-weight:700;color:var(--pc-mute);white-space:nowrap;font-variant-numeric:tabular-nums}
-.fp-cell .gp{display:inline-flex;gap:2px;margin-top:2px}
-.fp-cell .gp i{width:6px;height:6px;border-radius:50%;background:var(--pc-rail)}
-.fp-cell .gp i.u{background:#475569}
-.fp-cell.g1 .gp i.h{background:#7dd3fc}
-.fp-cell.g2 .gp i.h{background:#a5b4fc}
-.fp-cell.g3 .gp i.h{background:#94a3b8}
-.fp-cell.ten b{color:var(--pc-good)}
-.fp-tot{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
-.fp-key{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;font-size:11.5px;color:var(--pc-mute);font-weight:700;align-items:center}
-.fp-key i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
-.fp-key i.g1{background:#7dd3fc}.fp-key i.g2{background:#a5b4fc}.fp-key i.g3{background:#94a3b8}
-.fp-shelf{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}
-@media(max-width:620px){.fp-shelf{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.fp-sh{border:1px solid var(--pc-line);border-radius:12px;padding:10px;background:var(--pc-surf);border-top:3px solid var(--c)}
-.fp-sh .k{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
-.fp-sh .it{font-size:15px;font-weight:800;margin:3px 0 6px;font-variant-numeric:tabular-nums}
-.fp-sh .f{font-size:11.5px;color:var(--pc-mute);font-weight:700;line-height:1.5}
-.fp-sh .f b{color:var(--pc-ink);font-variant-numeric:tabular-nums}
-.fp-sh.tough{box-shadow:0 0 0 1.5px var(--pc-bad) inset}
-.fp-sh .tg{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pc-bad);margin-top:6px}
-@media(prefers-reduced-motion:reduce){.fp-bar span,.fp-t tr,.fp-mr{animation:none}}
-.fp-ml{display:none}
-@media(max-width:620px){
-.fp{padding-left:0;padding-right:0}
-.fp-lb{display:none}
-.fp-ml{display:flex;flex-direction:column;gap:8px;margin-top:10px}
-.fp-mr{background:var(--pc-surf);border:1px solid var(--pc-line);border-radius:12px;padding:8px 10px;animation:fprin .4s ease both}
-.fp-mr.me{background:rgba(125,211,252,.09);border-color:rgba(125,211,252,.5)}
-.fp-mh{display:flex;align-items:center;gap:8px;min-width:0}
-.fp-mh b{font-weight:800;color:var(--pc-mute);font-variant-numeric:tabular-nums;min-width:14px}
-.fp-mh .cc{flex:none;width:20px;height:13px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
-.fp-mn{flex:1;min-width:0;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
-.fp-mt{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
-.fp-mg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-top:6px}
-.fp-mc{border-top:2px solid var(--c);padding-top:4px;min-width:0}
-.fp-mc .fp-cell b{font-size:15px}
-.fp-mc .fp-cell span{font-size:9px}
-.fp-key span:last-child{flex-basis:100%}
-}
-@media(max-width:720px){
-.cf-stage.settled .cf-cw{animation:cfshrink .7s 1.6s cubic-bezier(.4,0,.2,1) both}
-@keyframes cfshrink{from{width:min(340px,92%)}to{width:min(150px,42%)}}
-.cf-stage.settled .cf-cardcol{padding-top:6px}
-}
-@media(max-width:720px) and (prefers-reduced-motion:reduce){.cf-stage.settled .cf-cw{animation:none;width:min(150px,42%)}}
-
-.pc .eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--pc-mute)}
-.pc-cap{display:flex;align-items:center;gap:12px;max-width:none;margin:0;padding:12px 20px;font-size:13px}
-.pc-home{font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pc-mute);text-decoration:none}
-.pc-cap b{font-weight:900;letter-spacing:-.01em}
-.pc-capd{color:var(--pc-mute);font-weight:700}
-.pc-capt{display:flex;gap:4px;margin-left:auto}
-.pc-capt i{width:18px;height:6px;border-radius:3px;background:var(--pc-line)}
-.pc-capt i.on{box-shadow:0 0 0 2px var(--pc-ground),0 0 0 3px var(--pc-ink)}
-.pc-theme{margin-left:auto;background:none;border:1px solid var(--pc-line);color:var(--pc-ink);border-radius:999px;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
-.pc-capt + .pc-theme{margin-left:8px}
-.pc-lb{margin-left:auto;font-family:${MONO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pc-cta);text-decoration:none}
-.pc-lb:hover{color:var(--pc-ink)}
-/* PREGAME */
-.pre{max-width:820px;margin:0 auto;padding:18px 16px 50px;text-align:center}
-.title{margin:10px 0 0;font-size:clamp(44px,9vw,76px);font-weight:900;letter-spacing:-.035em;line-height:.95}
-.title span{display:inline-block;animation:pcdrop .7s cubic-bezier(.2,1.4,.4,1) both}
-.title span:nth-child(2){animation-delay:.08s}
-@keyframes pcdrop{from{transform:translateY(-40px);opacity:0}to{transform:none;opacity:1}}
-.odo{margin:16px auto 0;display:inline-flex;align-items:center;gap:2px;font:900 30px ${MONO};background:var(--pc-panel);border:1.5px solid var(--pc-line);border-radius:12px;padding:8px 16px;box-shadow:var(--pc-shadow);line-height:1.15em}
-.odo .d{display:inline-block;width:.68em;height:1.15em;overflow:hidden;position:relative;vertical-align:top}
-.odo .d i{position:absolute;left:0;right:0;top:0;font-style:normal;display:flex;flex-direction:column;animation:pcspin 1.6s steps(10) infinite}
-.odo .d i b{display:block;height:1.15em;line-height:1.15em;text-align:center}
+.pc{min-height:100vh;overflow-x:hidden;position:relative}
+/* THE ENTRY'S REGISTER: one compact box in the stage's ink. */
+.pcg{display:flex;flex-direction:column;justify-content:center;gap:8px;width:100%;color:var(--gsx-ink)}
+.pcg-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:78px;padding:10px 12px;border:2px solid var(--gsx-ink);border-radius:16px}
+.pcg-box small{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.pcg .odo{display:inline-flex;align-items:center;gap:2px;font:800 34px/1.15em ${SANS};font-variant-numeric:tabular-nums}
+.pcg .odo .d{display:inline-block;width:.66em;height:1.15em;overflow:hidden;position:relative;vertical-align:top}
+.pcg .odo .d i{position:absolute;left:0;right:0;top:0;font-style:normal;display:flex;flex-direction:column;animation:pcspin 1.6s steps(10) infinite}
+.pcg .odo .d i b{display:block;height:1.15em;line-height:1.15em;text-align:center}
+.pcg .odo .q{opacity:.7}
 @keyframes pcspin{from{transform:translateY(0)}to{transform:translateY(-11.5em)}}
-.odo .q{color:var(--pc-mute)}
-.lede{margin:14px auto 0;max-width:540px;font-size:15.5px;font-weight:600;line-height:1.5;color:var(--pc-mute)}
-.lede b{color:var(--pc-ink)}
-.rail{position:relative;margin:34px auto 0;max-width:780px;height:10px;border-radius:5px;background:var(--pc-rail);box-shadow:inset 0 2px 3px rgba(0,0,0,.25)}
-.tags{display:flex;justify-content:space-around;gap:8px;max-width:780px;margin:0 auto;padding:0 4px}
-.hang{flex:1;max-width:150px;display:flex;flex-direction:column;align-items:center;transform-origin:50% 0;animation-name:pcin,pcswing;animation-timing-function:cubic-bezier(.2,1.3,.4,1),ease-in-out;animation-iteration-count:1,infinite;animation-fill-mode:both,none}
-@keyframes pcin{from{opacity:0;transform:translateY(-60px) rotate(-8deg)}to{opacity:1;transform:none}}
-@keyframes pcswing{0%,100%{transform:rotate(2.2deg)}50%{transform:rotate(-2.2deg)}}
-.string{width:2px;height:30px;background:var(--pc-rail)}
-.tag{position:relative;width:100%;background:var(--pc-panel);border:2px solid var(--c);border-radius:6px 6px 14px 14px;padding:24px 8px 14px;box-shadow:var(--pc-shadow);clip-path:polygon(18% 0,82% 0,100% 11%,100% 100%,0 100%,0 11%)}
-.tag::before{content:'';position:absolute;top:8px;left:50%;width:11px;height:11px;margin-left:-5.5px;border-radius:50%;background:var(--pc-ground);border:2px solid var(--c)}
-.tag .k{font:500 10px ${MONO};letter-spacing:.14em;text-transform:uppercase;color:var(--c)}
-.tag .n{font-size:18px;font-weight:900;letter-spacing:-.01em;margin-top:2px}
-.tag .chip{display:inline-block;margin-top:8px;border:1.5px solid var(--pc-line);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:800;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tag .pq{margin-top:10px;font:900 18px ${MONO};color:var(--c);letter-spacing:.01em;white-space:nowrap}
-.tag .pq em{font-style:normal;display:inline-block;animation:pcblink 1.4s steps(1) infinite}
-.tag .bk{margin-top:6px;font-size:10.5px;font-weight:800;color:var(--pc-mute)}
-@keyframes pcblink{50%{opacity:.25}}
-.facts{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:30px auto 0}
-.fact{background:var(--pc-panel);border:1.5px solid var(--pc-line);border-radius:12px;padding:10px 14px;box-shadow:var(--pc-shadow);text-align:left;min-width:118px}
-.fact b{display:block;font-size:22px;font-weight:900}
-.fact span{font-size:11.5px;font-weight:700;color:var(--pc-mute)}
-.heat{max-width:460px;margin:22px auto 0}
-.heat .bar{height:10px;border-radius:999px;background:linear-gradient(90deg,#7dd3fc,#93c5fd,#c4b5fd,#fbbf24,#fb923c,#f87171,#4ade80)}
-.heat .lbl{display:flex;justify-content:space-between;margin-top:6px;font:500 10px ${MONO};letter-spacing:.12em;text-transform:uppercase;color:var(--pc-mute)}
-.pc .start{margin:28px auto 0;display:inline-flex;align-items:center;gap:10px;font:900 19px ${SANS};border:0;border-radius:14px;padding:16px 34px;background:var(--pc-cta);color:var(--pc-cta-ink);cursor:pointer;box-shadow:var(--pc-shadow);position:relative;overflow:hidden}
-.pc .start::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-100%);animation:pcsheen 2.6s 1.4s ease-in-out infinite}
-@keyframes pcsheen{to{transform:translateX(100%)}}
-.pc .start:active{transform:scale(.97)}
-.sub2{margin-top:12px;font-size:12.5px;font-weight:700;color:var(--pc-mute)}
-.sub2 a{color:var(--pc-ink)}
-.gun{display:block;width:100%;max-width:440px;margin:18px auto 0;padding:0;border:1.5px solid var(--pc-line);border-radius:16px;background:var(--pc-panel);color:var(--pc-ink);box-shadow:var(--pc-shadow);overflow:hidden;cursor:pointer;text-align:center;font:inherit}
-.gun .gscr{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 10px 10px}
-.gun .gscr small{font:500 9.5px ${MONO};letter-spacing:.16em;text-transform:uppercase;color:var(--pc-mute)}
-.gun .odo{margin:0;border:0;background:none;box-shadow:none;padding:0;font-size:34px}
-.gun .gtrig{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;padding:15px 18px;background:var(--pc-cta);color:var(--pc-cta-ink);font:900 19px ${SANS}}
-.gun .gtrig::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-100%);animation:pcsheen 2.6s 1.4s ease-in-out infinite}
-.gun:active{transform:scale(.98)}
-.gun:focus-visible,.pre-how:focus-visible{outline:2px solid var(--pc-ink);outline-offset:3px}
-.pre-row{display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:780px;margin:16px auto 0}
-.pre-row .sub2{margin:0;text-align:right;max-width:260px}
-.pre-how{background:none;border:0;padding:6px 0;color:var(--pc-mute);font:700 13px ${SANS};text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.pre-hw{animation:pcrise .3s ease both}
-.pre-hw .facts{margin-top:18px}
-.pre.leave .hang{animation:pcout .55s cubic-bezier(.6,0,.8,.4) both !important}
-@keyframes pcout{to{transform:translateY(-140px) rotate(10deg);opacity:0}}
-.pre.leave .fade{transition:opacity .4s;opacity:0}
-/* PLAY */
-.pc-play{max-width:560px;margin:0 auto;padding:8px 12px 60px}
-.pc-sechd{display:flex;align-items:center;gap:10px;margin:6px 0 12px;animation:pcrise .4s ease both}
-.pc-sectag{font:800 11px ${SANS};letter-spacing:.06em;text-transform:uppercase;color:#0b0f1a;padding:5px 10px 5px 14px;border-radius:5px 7px 7px 5px;position:relative}
-.pc-sectag:before{content:"";position:absolute;left:5px;top:50%;width:4px;height:4px;margin-top:-2px;border-radius:50%;background:var(--pc-ground)}
-[data-stage-theme="light"] .pc-sectag{color:#fff}
-.pc-sechd b{font-size:20px;font-weight:900;letter-spacing:-.01em}
-.pc-run{margin-left:auto;font-family:${MONO};font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--pc-mute)}
-.pc-banked{margin:0 0 12px;padding:10px 12px;border:1.5px dashed var(--pc-line);border-radius:10px;font-size:13px;font-weight:700;color:var(--pc-mute)}
-.pc-banked b{color:var(--pc-ink)}
-.pc-between{text-align:center;padding:26px 8px;animation:pcrise .4s ease both}
-.pc-bscore{font-size:64px;font-weight:900;letter-spacing:-.04em;margin-top:6px}
-.pc-bscore small{font-size:24px;color:var(--pc-mute)}
-.pc-bprice{color:var(--pc-mute);font-weight:700}
-.pc-bprice b{color:var(--pc-ink)}
-.pc-rolling{margin:26px auto 0;display:inline-flex;align-items:center;gap:10px;font:800 15px ${SANS};color:var(--pc-cta)}
+.pcg-how{display:flex;flex-direction:column;gap:6px;width:100%}
+.pcg-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;text-align:center}
+.pcg-facts span{display:flex;flex-direction:column;font-size:11px;font-weight:700;line-height:1.2}
+.pcg-facts b{font-size:20px;font-weight:800}
+.pcg-how p{margin:0;font-size:12.5px;font-weight:600;line-height:1.35;text-align:center}
+.pcg-note{font-size:13px;font-weight:700;text-align:center;line-height:1.3}
+.pcg-row{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:2px 12px;font-size:12.5px;font-weight:700}
+.pcg-how-b{background:none;border:0;padding:4px 0;color:inherit;font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.pcg-links{opacity:.85}
+.pcg-links a{color:inherit;font-weight:800}
+@media(max-width:899px){.gsx-gate .gsx-piece .pcg{flex:1}}
+@media(max-width:380px){.pcg .odo{font-size:28px}.pcg-links{display:none}}
+@media(min-width:900px){
+  .pcg .odo{font-size:44px}.pcg-box{min-height:110px}.pcg-note{font-size:14px}
+  /* Desktop: the title and Start on the left, the register over the tags on the right. */
+  .pc .gsx-gate.gsx-cp .gsx-split{grid-template-rows:auto auto;row-gap:18px}
+  .pc .gsx-gate.gsx-cp .gsx-head{grid-column:1;grid-row:1 / span 2;align-self:center}
+  .pc .gsx-gate.gsx-cp .gsx-piece{grid-column:2;grid-row:1;display:flex}
+  .pc .gsx-gate.gsx-cp .gsx-bands{grid-column:2;grid-row:2}
+  .pc .gsx-gate.gsx-cp .gsx-band{min-height:58px}
+}
+/* Phone: the register box grows into the room the tags leave. */
+@media(max-width:899px){.gsx-gate .gsx-piece .pcg-box{flex:1 1 auto;max-height:200px}.gsx-gate .gsx-piece .pcg{justify-content:center}}
+/* PLAY: the price game inside the stage frame. The run used to force the
+   engine's dark panels; on a light look they follow the light register. */
+.pc-play{max-width:600px;margin:0 auto;padding:4px 14px 20px}
+.pc-light .pc-play .pg-run{--pr-panel:#ffffff !important;--pr-panel-line:rgba(8,34,46,.28) !important;--pr-shadow:0 6px 18px rgba(8,34,46,.10) !important;
+  --pr-freezing:#0369a1 !important;--pr-cold:#1d4ed8 !important;--pr-cool:#6d28d9 !important;--pr-warm:#a16207 !important;--pr-hot:#c2410c !important;--pr-burning:#b91c1c !important}
+.pc-light .pc-play:not(.pc-k-pricer) .pg-run{--pr-mat:#ece8df !important}
+.pc-chs{margin:0 -14px 10px}
+.pc-chs:empty{display:none}
+.pc-light .pc-play{--stg-mute:#23404f;--stg-line:rgba(8,34,46,.22);--stg-line2:rgba(8,34,46,.4);--stg-cell-line:rgba(8,34,46,.45);--stg-ink:#08222e}
+.pc-play .pr-money{min-width:0}
+.pc-play .pr-go{flex:none}
+.pc-banked{margin:0 0 12px;padding:10px 12px;border:2px dashed currentColor;border-radius:12px;font-size:13px;font-weight:700;line-height:1.35}
+.pc-last{display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px 0 8px;animation:pcrise .4s ease both}
+.pc-lastc{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border-radius:16px;border:2px solid currentColor}
+.pc-lastt{flex:1;display:flex;flex-direction:column;gap:3px;font-size:13px;font-weight:600;min-width:0}
+.pc-lastt b{font-weight:800;font-size:15px}
+.pc-lastf{font-size:30px;font-weight:800;line-height:1;text-align:right;font-variant-numeric:tabular-nums}
+.pc-lastf i{display:block;font-style:normal;font-size:12px;font-weight:700;opacity:.75}
+.pc-rolling{display:inline-flex;align-items:center;gap:10px;font:800 15px ${SANS}}
 .pc-dots{display:inline-flex;gap:5px}
-.pc-dots i{width:6px;height:6px;border-radius:50%;background:var(--pc-cta);animation:pcdot 1s ease-in-out infinite}
+.pc-dots i{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pcdot 1s ease-in-out infinite}
 .pc-dots i:nth-child(2){animation-delay:.15s}.pc-dots i:nth-child(3){animation-delay:.3s}
 @keyframes pcdot{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
 @keyframes pcrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-/* FINALE: the card climbs, then taps */
-.pf{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:14px 16px 70px}
-.pf > .eb{text-align:center}
-.cf-stage{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:36px;align-items:center;margin-top:22px;min-height:430px}
-.cf-cardcol{position:relative;display:flex;justify-content:center;align-items:center;min-height:250px}
-.cf-cw{container-type:inline-size;width:min(400px,100%);transition:transform .75s cubic-bezier(.5,0,.2,1);position:relative;z-index:3}
-.cf-right{position:relative;display:grid;min-height:380px}
-.cf-right > *{grid-area:1/1}
-.cf-upg{position:absolute;left:50%;top:-10px;font:800 11px ${SANS};letter-spacing:.18em;text-transform:uppercase;color:var(--pc-cta-ink);background:var(--pc-cta);padding:6px 11px;border-radius:999px;white-space:nowrap;z-index:4;pointer-events:none;animation:cfup 1s ease-out both}
-@keyframes cfup{0%{opacity:0;transform:translate(-50%,12px)}20%{opacity:1;transform:translate(-50%,0)}75%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}
-.cf-spark{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--pc-hi);z-index:5;pointer-events:none;animation:cfspark var(--d) cubic-bezier(.2,.7,.3,1) both}
-@keyframes cfspark{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
-.cf-term{justify-self:center;align-self:center;width:min(270px,100%);background:linear-gradient(180deg,#2a2f3a,#1b1f27);border-radius:26px;padding:16px 16px 20px;box-shadow:0 30px 60px -25px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08);transition:opacity .45s,transform .45s}
-.cf-term.gone{opacity:0;transform:translateY(14px) scale(.96);pointer-events:none}
-.cf-tap{position:relative;display:flex;justify-content:center;align-items:center;height:30px;margin-bottom:8px;color:#8a93a6}
-.cf-tap svg{width:26px;height:26px}
-.cf-tap i{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px;border:2px solid var(--pc-good);border-radius:50%;opacity:0;animation:cfring 1s ease-out infinite}
-.cf-tap i.r2{animation-delay:.33s}.cf-tap i.r3{animation-delay:.66s}
-@keyframes cfring{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.6);opacity:0}}
-.cf-scr{background:#0a1220;border-radius:12px;padding:12px 12px 10px;height:208px;display:flex;flex-direction:column;font-family:${MONO};color:#cfd8ea;box-shadow:inset 0 0 0 1px #1f2a40;transition:background .3s}
-.cf-scr.ok{background:#06291d}.cf-scr.no{background:#2e0c10}
-.cf-hd{display:flex;justify-content:space-between;font:800 10px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:#6f7d99;margin-bottom:8px}
-.cf-lines{display:flex;flex-direction:column;gap:5px;flex:1}
-.cf-lr{display:flex;justify-content:space-between;font-size:13px;animation:cfin .25s ease both}
-.cf-lr b{font-weight:500}.cf-lr b.ten{color:var(--pc-hi)}
-.cf-tot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed #2a3858;margin-top:8px;padding-top:8px;font-size:12px;color:#8a93a6}
-.cf-tot b{font:500 26px ${MONO};color:#fff;font-variant-numeric:tabular-nums}
-.cf-tot small{font-size:13px;color:#8a93a6}
-.cf-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;animation:cfin .3s ease both}
-.cf-msg .big{font:900 26px ${SANS};letter-spacing:.04em;color:#fff}
-.cf-scr.ok .big{color:var(--pc-good)}.cf-scr.no .big{color:var(--pc-bad)}
-.cf-msg .sm{font:700 11px ${SANS};letter-spacing:.14em;text-transform:uppercase;color:#a9b3c7}
-.cf-msg .who{font:900 15px ${SANS};color:#fff}
-.cf-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px}
-.cf-keys i{height:16px;border-radius:5px;background:#323845;box-shadow:inset 0 -2px 0 rgba(0,0,0,.35)}
-.cf-keys i:nth-child(10){background:#7f1d1d}.cf-keys i:nth-child(11){background:#854d0e}.cf-keys i:nth-child(12){background:#14532d}
-@keyframes cfin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.cf-copy{display:none;align-self:center;min-width:0;text-align:left}
-.cf-copy.on{display:block;animation:cfin .6s .1s ease both}
-.cf-you{font:800 12px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--pc-hi)}
-.cf-nm{font-size:clamp(34px,5vw,50px);font-weight:900;letter-spacing:-.02em;line-height:1;margin:8px 0 10px;text-wrap:balance}
-.cf-ln{font-size:17px;line-height:1.45;margin:0 0 16px;max-width:34ch;color:var(--pc-ink)}
-.cf-stats{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;margin-bottom:10px;max-width:390px}
-.cf-stats div{background:var(--pc-surf);border:1px solid var(--pc-line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-width:0}
-.cf-stats b{font:500 20px ${MONO};white-space:nowrap}
-.cf-stats span{font:800 9.5px ${SANS};letter-spacing:.12em;text-transform:uppercase;color:var(--pc-mute)}
-.cf-games{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:390px}
-.cf-games div{background:var(--pc-surf);border:1px solid var(--pc-line);border-radius:9px;padding:7px 2px;text-align:center;min-width:0}
-.cf-games i{display:block;font:normal 800 8.5px ${SANS};letter-spacing:.05em;text-transform:uppercase;color:var(--pc-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cf-games b{font:500 17px ${MONO}}
-.cf-games .hi{border-color:var(--pc-hi)}.cf-games .hi b{color:var(--pc-hi)}
-.cf-games .lo b{color:var(--pc-bad)}
-[data-stage-theme="light"] .cf-games .lo b{color:#b91c1c}
-.cf-next{display:inline-block;margin-top:12px;font-size:13px;font-weight:700;padding:9px 12px;border-radius:10px;background:var(--pc-surf);border:1px solid var(--pc-line)}
-.cf-next b{color:var(--pc-hi)}
-/* LAYOUT A (owner, 2026-10-12): settled, the card drops to a small badge
-   beside the result, and everything below it reads as one scoreboard. */
-@media(min-width:721px){
-.cf-stage.settled{grid-template-columns:280px minmax(0,1fr);max-width:880px;margin-left:auto;margin-right:auto;gap:30px;min-height:0;align-items:center;margin-top:16px}
-.cf-stage.settled .cf-cardcol{min-height:0}
-.cf-stage.settled .cf-cw{width:280px}
-.cf-stage.settled .cf-right{min-height:0}
-.cf-stage.settled .cf-term{position:absolute;left:0;right:0;top:0;margin:0 auto}
-}
-.cf-stage.settled .cf-nm{font-size:clamp(30px,4vw,40px);margin:6px 0 6px}
-.cf-stage.settled .cf-ln{font-size:14.5px;margin:0 0 10px;color:var(--pc-mute)}
-.cf-sl{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:14px;font-weight:700;color:var(--pc-mute);margin-bottom:10px}
-.cf-sl b{font-size:18px;font-weight:800;color:var(--pc-ink);font-variant-numeric:tabular-nums}
-.cf-pills{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
-.cf-pills .cf-next{margin-top:0;border-radius:999px;padding:6px 12px}
-.cf-shelf{font-size:13px;font-weight:700;color:var(--pc-mute)}
-.cf-shelf b{color:var(--pc-ink);font-variant-numeric:tabular-nums}
-.pf-foot{margin:22px 0 0}
-.pf-low{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start;text-align:left}
-.pf-low>div{min-width:0}
-@media (max-width:680px){.pf-low{grid-template-columns:minmax(0,1fr);gap:14px}}
-.pf-wide{margin:22px auto 0;max-width:880px}
-.pf-foot,.fp{max-width:880px;margin-left:auto;margin-right:auto}
-.fp-items{display:block;width:100%;margin:0 0 16px;font:800 14px ${SANS};padding:13px 16px;border-radius:12px;border:1px solid var(--pc-line);background:var(--pc-surf);color:var(--pc-ink);cursor:pointer;text-align:center}
-.fp-items:hover{border-color:var(--pc-hi)}
-.fp-items span{color:var(--pc-hi)}
-.cf-stage.settled{justify-content:center}
-.cf-lbl{display:inline-flex;align-items:baseline;gap:5px;color:inherit;text-decoration:none;padding:2px 10px;margin:-2px 0;border-radius:999px;border:1px solid var(--pc-line);background:var(--pc-surf)}
-.cf-lbl b{color:var(--pc-hi)}
-.cf-lbl em{font-style:normal;font-weight:800;color:var(--pc-hi)}
-.cf-lbl:hover{border-color:var(--pc-hi)}
-.pf-links{display:flex;gap:16px}
-.pf-links a{font-size:13px;font-weight:800;color:var(--pc-mute);text-decoration:none}
-.pf-links a:hover{color:var(--pc-ink)}
-.pf-btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-.pf-btns a,.pf-btns button{font:800 14px ${SANS};padding:12px 18px;border-radius:12px;text-decoration:none;color:var(--pc-ink);border:1px solid var(--pc-line);background:transparent;cursor:pointer}
-.pf-btns .pri{background:var(--pc-cta);color:var(--pc-cta-ink);border-color:transparent}
-/* the payment card, sized in container units */
-.pk{width:100%;aspect-ratio:1.586;border-radius:5cqw;position:relative;padding:5.5cqw 6cqw;overflow:hidden;box-shadow:0 30px 60px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.07) inset;display:flex;flex-direction:column;justify-content:space-between;transition:transform .14s ease-in;text-align:left}
-.pk.squash{transform:rotateY(90deg)}
-.pk::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.45) 48%,transparent 60%);background-size:260% 100%;background-position:120% 0;pointer-events:none;mix-blend-mode:overlay}
-.pk.shine::after{animation:pkshine 1.3s ease-out both}
-@keyframes pkshine{from{background-position:120% 0}to{background-position:-40% 0}}
-.pk-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
-.pk-brand{font:800 2.9cqw/1.25 ${SANS};letter-spacing:.2em;text-transform:uppercase}
-.pk-brand small{display:block;font-weight:700;letter-spacing:.14em;opacity:.7;font-size:2.4cqw}
-.pk-kind{font:800 2.8cqw ${SANS};letter-spacing:.2em;text-transform:uppercase;text-align:right}
-.pk-kind small{display:block;font:700 2.2cqw ${SANS};letter-spacing:.12em;opacity:.7;margin-top:.6cqw}
-.pk-mid{display:flex;align-items:center;gap:3.5cqw;position:relative;z-index:1}
-.pk-chip{width:12cqw;height:9.4cqw;border-radius:1.8cqw;background:linear-gradient(135deg,#f6dc8a,#c9a227 55%,#f2d272);position:relative;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
-.pk-chip::before{content:"";position:absolute;inset:2.1cqw 0;border-top:1px solid rgba(0,0,0,.3);border-bottom:1px solid rgba(0,0,0,.3)}
-.pk-chip::after{content:"";position:absolute;inset:0 4cqw;border-left:1px solid rgba(0,0,0,.3);border-right:1px solid rgba(0,0,0,.3)}
-.pk-chip.silver{background:linear-gradient(135deg,#eef0f4,#a7adb8 55%,#dfe2e8)}
-.pk-wave{display:flex;width:5.5cqw;height:5.5cqw;opacity:.6}
-.pk-wave svg{width:100%;height:100%}
-.pk-tier{font:900 7.4cqw/1 ${SANS};letter-spacing:-.02em;position:relative;z-index:1}
-.pk-bot{display:flex;justify-content:space-between;align-items:flex-end;gap:3cqw;position:relative;z-index:1}
-.pk-num{font:500 6.2cqw ${MONO};letter-spacing:.04em;white-space:nowrap;font-variant-numeric:tabular-nums}
-.pk-num small{font-size:3.4cqw;opacity:.7}
-.pk-br{display:flex;gap:3cqw;align-items:flex-end}
-.pk-since{font:700 2.3cqw/1.35 ${SANS};letter-spacing:.14em;text-transform:uppercase;text-align:right;opacity:.8}
-.pk-since b{display:block;font:500 3.1cqw ${MONO};letter-spacing:.04em}
-.pk-mark{display:flex;align-items:center}
-.pk-mark i{width:7cqw;height:7cqw;border-radius:50%;border:.7cqw solid currentColor;opacity:.75}
-.pk-mark i+i{margin-left:-2.6cqw;opacity:.45}
-.pk-debit{font:800 italic 4.2cqw ${SANS};letter-spacing:.06em}
-.pk0{background:repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 2px,transparent 2px 5px),linear-gradient(140deg,#2b2b30,#0c0c0f 60%,#1e1e23);color:#e9cf7f}
-.pk0 .pk-tier,.pk0 .pk-num{background:linear-gradient(180deg,#fbe7a6,#c9a227 60%,#f1d27a);-webkit-background-clip:text;background-clip:text;color:transparent}
-.pk1{background:radial-gradient(120% 90% at 0% 0%,#ffe9a8,#e6b532 40%,#a97a10 100%);color:#2a1f04}
-.pk2{background:radial-gradient(130% 120% at 100% 0%,#5b8ff0,#2f6fe4 35%,#163a8c 100%);color:#fff}
-.pk3{background:linear-gradient(160deg,#4b5a6e,#36424f);color:#e7edf4}
-.pk3::before{content:"";position:absolute;right:-12cqw;top:-18cqw;width:60cqw;height:60cqw;border-radius:50%;background:rgba(255,255,255,.05)}
-.pk4{background:#fbfaf6;color:#22252b;padding-top:9cqw;box-shadow:0 30px 60px -20px rgba(0,0,0,.6),0 0 0 1px rgba(11,15,26,.12) inset}
-.pk4::before{content:"";position:absolute;left:0;right:0;top:0;height:6.5cqw;background:repeating-linear-gradient(90deg,#ff6b3d 0 18%,#ffb02e 18% 36%,#28c08a 36% 54%,#3d8bff 54% 72%,#c560ff 72% 90%,#ff6b3d 90% 100%)}
-.pk4::after{mix-blend-mode:multiply;opacity:.3}
-.pk4 .pk-kind{color:#e2522a}
-.pk-peg{position:absolute;top:1.6cqw;left:50%;transform:translateX(-50%);width:14cqw;height:3.4cqw;border-radius:2cqw;background:var(--pc-ground);z-index:2}
-.pk-bal{font:800 2.3cqw ${SANS};letter-spacing:.14em;text-transform:uppercase;color:#6b7280}
-.pk-bal b{display:block;font:500 5cqw ${MONO};letter-spacing:.02em;color:#dc2626}
-@media(max-width:720px){
-.cf-stage{display:flex;flex-direction:column;align-items:stretch;gap:18px;min-height:0;margin-top:14px}
-.cf-right{display:contents}
-.cf-term{order:1;max-height:420px;overflow:hidden;transition:opacity .4s,transform .4s,max-height .6s .1s,padding .6s .1s}
-.cf-term.gone{max-height:0;padding-top:0;padding-bottom:0;transform:none}
-.cf-stage.settled{gap:12px}
-.cf-cardcol{order:2;min-height:0;padding-top:14px}
-.cf-cw{width:min(340px,92%)}
-.cf-copy{order:3}
-.cf-ln{font-size:15.5px}
-.cf-stats,.cf-games{max-width:none}
-.pf-btns a,.pf-btns button{flex:1 1 40%;text-align:center;padding:12px 10px}
-}
-@keyframes pcfade{from{opacity:0}to{opacity:1}}
-@media(max-width:600px){.tags{gap:4px}.tag{padding:27px 3px 8px}.tag .kn{display:none}.tag .k{white-space:nowrap;overflow:hidden;text-overflow:clip}.tag .n{font-size:13px}.tag .k{font-size:8.5px;letter-spacing:.06em}.tag .chip{display:none}.tag .pq{font-size:12px;margin-top:6px}.string{height:14px}.title{font-size:42px}.pre{padding-top:8px}.gun .odo{font-size:30px}.pre-row .sub2{font-size:11.5px;max-width:200px}.lede{font-size:14px;margin-top:10px;line-height:1.4}.lede-x{display:none}.rail{margin-top:22px;height:8px}.gun{margin-top:14px}.pre .facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:22px}.pre .fact{min-width:0;padding:8px;text-align:center;border-radius:10px}.pre .fact b{font-size:18px}.pre .fact span{font-size:10px;line-height:1.25;display:block}.heat .lbl{font-size:9px;letter-spacing:.08em}}
+/* END: the "Today's tags" button and the challenge, in the ending's dark tray. */
+.pc-items{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;border-radius:12px;border:2px solid #e9edf4;background:transparent;color:#e9edf4;font:800 15px ${SANS};cursor:pointer}
+.pc-items:hover{background:rgba(233,237,244,.12)}
+.pc-chal{display:flex;flex-direction:column;gap:10px}
 @media(prefers-reduced-motion:reduce){.pc *{animation-duration:.01ms !important;animation-iteration-count:1 !important}}
 `;

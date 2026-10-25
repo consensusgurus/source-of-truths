@@ -26,6 +26,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { RAMP_INK, softGround, categoryColor, gameCategory } from '@/lib/category-ramp';
 import { rampFor, LADDER_RAMP } from '@/lib/circuits';
 import MindLoftMark from './MindLoftMark';
+import StageTopBar from './StageTopBar';
 import { mathText } from '@/app/MathText';
 import { holdRootPaint } from '@/lib/root-paint';
 import { holdThemeColor } from '@/lib/theme-color-hold';
@@ -148,19 +149,47 @@ function ThemeButton({ pal }) {
 const INK = RAMP_INK;
 const slotOf = (s, i) => (s && s.slot != null ? s.slot : i);
 
-function TopBar({ pal, back = '/', backLabel = 'All Puzzles' }) {
+// THE SITE'S OWN HEADER (owner, 2026-10-25): "All Puzzles" is gone; the run
+// screens carry the same back-arrow + Mind Loft mark pill and look switch as
+// every phone stage page (StageTopBar), so a run reads like the rest of the site.
+function TopBar({ pal, title = null, sub = null }) {
   return (
     <div className="gsx-top">
-      <a className="gsx-logo" href="/" aria-label="Mind Loft home">
-        <MindLoftMark size={30} ink={pal.ink} accent="var(--stg-brand,#38bdf8)" title="Mind Loft" />
-        <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
-      </a>
-      <span className="gsx-tr2">
-        <a className="gsx-back" href={back}>
-          <span aria-hidden="true">&larr;</span> {backLabel}
-        </a>
-        <ThemeButton pal={pal} />
-      </span>
+      <StageTopBar look={pal.look} onFlip={pal.flip} ink={pal.ink} href="/" title={title} sub={sub} />
+    </div>
+  );
+}
+export { TopBar as GauntletTopBar };
+
+// ── PLAY ─────────────────────────────────────────────────────────────────
+// THE RUN'S PLAY PAGE ON THE STAGE (owner, 2026-10-25: every run's entry,
+// transition, play page and conclusion in the one style). The page takes the
+// current leg's soft pastel step as its ground, the site's header pill sits
+// on top with the run name and the leg, a slim strip shows the legs done, and
+// the game itself draws below on the light register (dark ink). The game's own
+// window and any real photos are left as they are (owner, 2026-10-24); only
+// the chrome around them takes the stage look. A quiet `foot` line can carry
+// the run total and the clock.
+export function RunPlayFrame({ sections = [], idx = 0, title, sub = null, foot = null, children }) {
+  const cur = sections[idx];
+  const pal = useStagePalette(rampFor(slotOf(cur, idx)));
+  const light = !isDarkLook(pal.look);
+  return (
+    <div key={pal.look} className="gsx-play" data-stage-theme={light ? 'light' : 'dark'} style={{ ...pal.vars, background: pal.bg, color: pal.ink }}>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <div className="gsx-pcol">
+        <TopBar pal={pal} title={title} sub={sub} />
+        <div className="gsx-strip gsx-pstrip" style={{ gridTemplateColumns: `repeat(${sections.length}, minmax(0,1fr))` }} aria-label={`${idx} of ${sections.length} done`}>
+          {sections.map((s, i) => (
+            <span key={s.key} className="gsx-seg">
+              <span className="gsx-sb" style={{ background: i < idx ? pal.ink : i === idx ? pal.fill(rampFor(slotOf(s, i))) : 'transparent', borderWidth: i === idx ? 3 : 2, animation: 'none' }} />
+              <span className="gsx-sn" style={{ opacity: i <= idx ? 1 : 0.55 }}>{s.name}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className="gsx-pbody">{children}</div>
+      {foot ? <div className="gsx-pfoot">{foot}</div> : null}
     </div>
   );
 }
@@ -189,7 +218,7 @@ export function GauntletCover({ sections = [] }) {
   const c = gateColour(sections);
   return (
     <>
-      <div id="gsx-cover" aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 90, background: softGround(c) }} />
+      <div id="gsx-cover" aria-hidden="true" suppressHydrationWarning style={{ position: 'fixed', inset: 0, zIndex: 90, background: softGround(c) }} />
       <script dangerouslySetInnerHTML={{ __html: `try{var L=localStorage.getItem('${LOOK_KEY}');if(!L){L=localStorage.getItem('sot_gstage_look1');if(L==='color')L=null}if(L!=='color'){var D=L==='dark'||L==='darktint'||(!L&&localStorage.getItem('sot_theme2')==='dark');var e=document.getElementById('gsx-cover');if(e)e.style.background=D?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
     </>
   );
@@ -255,24 +284,34 @@ function useCountdown(ms, held, resetKey) {
   return Math.ceil(left / 1000);
 }
 
-export function GauntletBetween({ circuitName, sections = [], results = [], lastSec, last, lastMiss, upNext, upIdx = -1, lineFor, stand = null, dwellMs = 20000, held = false, resetKey = 0, onGo, onHold, leaveHref, mathText = (x) => x }) {
-  const secs = useCountdown(dwellMs, held, resetKey);
+// GENERAL ENOUGH FOR EVERY RUN (owner, 2026-10-25: "make all consistent").
+// The quiz runs pass `last` / `lastMiss` and get the miss card; a run whose
+// legs are not one-life quizzes (Price Check, Passport, Judged, Read the Room)
+// passes `lastBody` (the card's text) and `lastFig` ({ v, unit }) instead, its
+// own `stepWord` ("Tag", "Leg", "Case", "Room") and `nextLine`. `auto={false}`
+// drops the countdown and Hold: the page waits for the player's Next (owner,
+// 2026-10-16: Judged and Read the Room must not auto-advance).
+export function GauntletBetween({ circuitName, sections = [], results = [], lastSec, last, lastMiss, upNext, upIdx = -1, lineFor, stand = null, dwellMs = 20000, held = false, resetKey = 0, onGo, onHold, leaveHref, mathText = (x) => x,
+  stepWord = 'Quiz', lastBody = null, lastFig = null, nextLine = null, auto = true, doneCount = null, goLabel = null, fine = null }) {
+  const secs = useCountdown(dwellMs, held || !auto, resetKey);
   const fromBg = lastSec ? rampFor(slotOf(lastSec, sections.indexOf(lastSec))) : rampFor(0);
   const pal = useStagePalette(upNext ? rampFor(slotOf(upNext, upIdx)) : fromBg);
   const prev = stagePalette(fromBg, pal.look);
   const doneKeys = new Set(results.map((x) => x && x.key));
+  const nDone = doneCount != null ? doneCount : results.length;
   const missed = lastMiss && !lastMiss.cleared;
+  const sub = nextLine != null ? nextLine : (upNext ? `${lineFor ? lineFor(upNext) : ''}${upNext.questions ? ` · ${upNext.questions.length} questions, one life` : ''}` : '');
   return (
     <div key={pal.look} className="gsx gsx-between" role="dialog" aria-label={`Up next, ${upNext ? upNext.name : ''}`} style={{ ...pal.vars, background: prev.bg }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="gsx-wipe" style={{ background: pal.bg }}>
         <div className="gsx-col gsx-bcol">
-          <TopBar pal={pal} back={leaveHref} backLabel="Leave" />
+          <TopBar pal={pal} />
           <div className="gsx-rise" style={{ animationDelay: '.3s' }}>
-            <div className="gsx-prow"><span>{circuitName}</span><span>{results.length} of {sections.length} done</span></div>
+            <div className="gsx-prow"><span>{circuitName}</span><span>{nDone} of {sections.length} done</span></div>
             <div className="gsx-strip" style={{ gridTemplateColumns: `repeat(${sections.length}, minmax(0,1fr))` }}>
               {sections.map((s, i) => {
-                const isDone = doneKeys.has(s.key);
+                const isDone = doneCount != null ? i < doneCount : doneKeys.has(s.key);
                 const isNext = upNext && s.key === upNext.key;
                 return (
                   <span key={s.key} className="gsx-seg">
@@ -284,31 +323,39 @@ export function GauntletBetween({ circuitName, sections = [], results = [], last
             </div>
           </div>
           <div className="gsx-mid">
-            <div className="gsx-rise gsx-eye2" style={{ animationDelay: '.35s' }}>Up Next · Quiz {upIdx >= 0 ? upIdx + 1 : results.length + 1}</div>
+            <div className="gsx-rise gsx-eye2" style={{ animationDelay: '.35s' }}>Up Next · {stepWord} {upIdx >= 0 ? upIdx + 1 : nDone + 1}</div>
             <div className="gsx-pop">{upNext ? upNext.name : ''}</div>
-            {upNext ? <div className="gsx-rise gsx-sub" style={{ animationDelay: '.6s' }}>{lineFor ? lineFor(upNext) : ''} · {upNext.questions.length} questions, one life</div> : null}
+            {upNext && sub ? <div className="gsx-rise gsx-sub" style={{ animationDelay: '.6s' }}>{sub}</div> : null}
           </div>
           <div className="gsx-rise gsx-low" style={{ animationDelay: '.75s' }}>
-            {last ? (
+            {lastBody || last ? (
               <div className="gsx-last" style={{ background: pal.fill(fromBg) }}>
                 <span className="gsx-lt">
-                  <b>{lastSec ? lastSec.name : 'That quiz'} {missed ? `ended on question ${last.score + 1}` : 'run clean, no misses'}</b>
-                  {missed && lastMiss.q ? <span>The one that got you: {mathText(lastMiss.q)}</span> : null}
-                  {missed && lastMiss.right != null ? <span>Answer: <b>{mathText(lastMiss.right)}</b>{lastMiss.timedOut ? ' · the clock ran out' : ''}</span> : null}
+                  {lastBody || (
+                    <>
+                      <b>{lastSec ? lastSec.name : 'That quiz'} {missed ? `ended on question ${last.score + 1}` : 'run clean, no misses'}</b>
+                      {missed && lastMiss.q ? <span>The one that got you: {mathText(lastMiss.q)}</span> : null}
+                      {missed && lastMiss.right != null ? <span>Answer: <b>{mathText(lastMiss.right)}</b>{lastMiss.timedOut ? ' · the clock ran out' : ''}</span> : null}
+                    </>
+                  )}
                   {stand ? <b className="gsx-st">You&rsquo;d place #{stand.pos} of {Number(stand.field).toLocaleString()} if you stopped here</b> : null}
                 </span>
-                <span className="gsx-ls">{last.score}<i>right</i></span>
+                {lastFig ? <span className="gsx-ls">{lastFig.v}<i>{lastFig.unit}</i></span>
+                  : last ? <span className="gsx-ls">{last.score}<i>right</i></span> : null}
               </div>
             ) : null}
             <div className="gsx-acts">
               <button type="button" className="gsx-go gsx-goc" onClick={onGo}>
-                <span>Start {upNext ? upNext.name : ''}</span>
-                <span className="gsx-cd" aria-label={held ? 'held' : `starts in ${secs} seconds`}>{held ? '||' : secs}</span>
+                <span>{goLabel || `Start ${upNext ? upNext.name : ''}`}</span>
+                {auto ? <span className="gsx-cd" aria-label={held ? 'held' : `starts in ${secs} seconds`}>{held ? '||' : secs}</span> : <span aria-hidden="true">&rarr;</span>}
               </button>
-              <div className="gsx-lesser">
-                <button type="button" className="gsx-lb" onClick={onHold}>{held ? 'Resume' : 'Hold'}</button>
-                <a className="gsx-lb" href={leaveHref}>Leave the run</a>
-              </div>
+              {auto ? (
+                <div className="gsx-lesser">
+                  <button type="button" className="gsx-lb" onClick={onHold}>{held ? 'Resume' : 'Hold'}</button>
+                  <a className="gsx-lb" href={leaveHref}>Leave the run</a>
+                </div>
+              ) : null}
+              {fine ? <div className="gsx-fine">{fine}</div> : null}
             </div>
           </div>
         </div>
@@ -318,22 +365,58 @@ export function GauntletBetween({ circuitName, sections = [], results = [], last
 }
 
 // ── END ──────────────────────────────────────────────────────────────────
-function useCountUp(to, delay, on) {
+function useCountUp(to, delay, on, dur = 900, inOut = false, replayKey = 0) {
   const [v, setV] = useState(on ? 0 : to);
+  const [fin, setFin] = useState(!on);
   useEffect(() => {
-    if (!on) { setV(to); return undefined; }
+    if (!on) { setV(to); setFin(true); return undefined; }
+    setV(0); setFin(false);
     let raf = 0;
     const t0 = performance.now() + delay;
-    const dur = 900;
     const tick = (now) => {
       const p = Math.max(0, Math.min(1, (now - t0) / dur));
-      setV(Math.round(to * (1 - Math.pow(1 - p, 3))));
-      if (p < 1) raf = requestAnimationFrame(tick);
+      const e = inOut ? (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2) : 1 - Math.pow(1 - p, 3);
+      setV(Math.round(to * e));
+      if (p < 1) raf = requestAnimationFrame(tick); else setFin(true);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [to, delay, on]);
-  return v;
+  }, [to, delay, on, dur, inOut, replayKey]);
+  return [v, fin];
+}
+
+// THE CLIMB TO THE TITLE (owner, 2026-10-25: "run thru the build up to the rank
+// title that each earns"). The whole ladder, best rung on top, each rung named
+// across (never a vertical bar). As the score counts up every rung it passes
+// lights in its colour, the one it is on swells, and when the count lands the
+// earned rung turns ink and opens to its line; the rung above says how far
+// off it is. `ladder` is bottom to top: [{ min, name, line, colour, chip? }].
+function TitleClimb({ ladder, score, shown, landed, pal, heading, onReplay }) {
+  const top = ladder.slice().reverse();
+  let earned = -1;
+  top.forEach((t, i) => { if (earned < 0 && score >= t.min) earned = i; });
+  let climbing = -1;
+  top.forEach((t, i) => { if (climbing < 0 && shown >= t.min) climbing = i; });
+  return (
+    <div className="gsx-climb" role="list" aria-label={heading || 'Title ladder'}>
+      <div className="gsx-clh"><b>{heading || 'Your title'}</b>{onReplay ? <button type="button" className="gsx-rp" onClick={onReplay}>Replay</button> : null}</div>
+      {top.map((t, i) => {
+        const lit = shown >= t.min;
+        const here = landed && i === earned;
+        const cls = 'gsx-rung' + (lit ? ' lit' : '') + (here ? ' here' : '') + (!landed && i === climbing ? ' on' : '');
+        let tail = `${t.min}+`;
+        if (here) tail = 'You';
+        else if (landed && i === earned - 1) tail = `${t.min - score} to go`;
+        return (
+          <div key={t.name} role="listitem" className={cls} style={{ '--rc': here ? pal.ink : lit ? pal.fill(t.colour) : 'transparent' }}>
+            <i className="gsx-rchip" style={{ background: t.chip || pal.fill(t.colour) }} aria-hidden="true" />
+            <span className="gsx-rt"><b>{t.name}</b>{here && t.line ? <em>{t.line}</em> : null}</span>
+            <span className="gsx-rtail">{tail}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export function GauntletEndStage({
@@ -346,11 +429,21 @@ export function GauntletEndStage({
   // you), `misses` the question that ended each quiz (missOf, by section
   // index), `more` the other runs still open today.
   board = null, misses = null, more = null, onPractice = null,
+  // THE CLIMB (owner, 2026-10-25): every run's ending builds up its title
+  // ladder. `ladder` is bottom to top; `ladderHeading` names it ("Which
+  // shopper are you?"). `rows` overrides the per-leg table for runs whose legs
+  // carry their own figures; `topNote` is a line under the rank (Read the
+  // Room's early read); `tableTotal` overrides the total row.
+  ladder = null, ladderHeading = null, rowsIn = null, topNote = null,
 }) {
   const [openRow, setOpenRow] = useState(-1);
   const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const anim = sweep && !reduce;
-  const shown = useCountUp(score, anim ? 1500 : 200, !reduce);
+  const [replays, setReplays] = useState(0);
+  const climb = !!(ladder && ladder.length);
+  const [shown, landed] = useCountUp(score, anim ? 1500 : 200, !reduce, climb ? 2800 : 900, climb, replays);
+  // Everything below the climb waits for it (2.2s more than without one).
+  const late = climb ? 2.3 : 0;
   // While the sweep runs, Safari's bars take the colours under them: the
   // first quiz's stripe along the top, the last quiz's along the bottom.
   const [sweeping, setSweeping] = useState(anim && sections.length > 0);
@@ -368,15 +461,16 @@ export function GauntletEndStage({
   } : null;
   const pal = useStagePalette((title && title.colour) || '#7dd3fc', sweepEdges);
   const bg = pal.bg;
-  const d = (s) => ({ animationDelay: anim ? s : `${Math.max(0, parseFloat(s) - 1.4)}s` });
+  const d0 = (s) => ({ animationDelay: anim ? s : `${Math.max(0, parseFloat(s) - 1.4)}s` });
+  const d = (s) => d0(`${parseFloat(s) >= 1.9 ? parseFloat(s) + late : parseFloat(s)}s`);
   const byKey = Object.fromEntries(results.filter(Boolean).map((x) => [x.key, x]));
-  const rows = sections.map((s, i) => {
+  const rows = rowsIn || sections.map((s, i) => {
     const res = byKey[s.key];
     const a = avg && avg[s.key] != null ? Number(avg[s.key]) : null;
     const b = top && top[s.key] != null ? Number(top[s.key]) : null;
     return { key: s.key, name: s.name, bg: rampFor(slotOf(s, i)), you: res ? res.score : '–', field: a != null ? (a < 10 ? a.toFixed(1) : Math.round(a)) : '–', best: b != null ? b : '–' };
   });
-  const avgTotal = avg ? Math.round(sections.reduce((t, s) => t + (Number(avg[s.key]) || 0), 0)) : null;
+  const avgTotal = avg && Object.keys(avg).length ? Math.round(sections.reduce((t, s) => t + (Number(avg[s.key]) || 0), 0)) : null;
   const ahead = rank && fieldSize && fieldSize >= 2 ? Math.max(0, Math.round(((fieldSize - rank) / fieldSize) * 100)) : null;
   return (
     <div key={pal.look} className="gsx gsx-end" role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
@@ -395,15 +489,20 @@ export function GauntletEndStage({
               <span>{shown}</span>
               <i>{unitWord}</i>
             </div>
-            {title ? (
-              <div className="gsx-title" style={d('1.9s')}>
-                <b style={{ color: bg }}>{title.name}</b>
-                {title.line ? <span>{title.line}</span> : null}
-              </div>
-            ) : null}
             {rank ? (
               <div className="gsx-rise gsx-rank" style={d('2.1s')}>
                 #{rank}{fieldSize ? ` of ${Number(fieldSize).toLocaleString()}` : ''}{ahead != null ? ` · ahead of ${ahead}%` : ''}
+              </div>
+            ) : null}
+            {topNote ? <div className="gsx-rise gsx-note" style={d('1.7s')}>{topNote}</div> : null}
+            {climb ? (
+              <div className="gsx-rise" style={d0('1.65s')}>
+                <TitleClimb ladder={ladder} score={score} shown={shown} landed={landed} pal={pal} heading={ladderHeading} onReplay={() => setReplays((k) => k + 1)} />
+              </div>
+            ) : title ? (
+              <div className="gsx-title" style={d('1.9s')}>
+                <b style={{ color: bg }}>{title.name}</b>
+                {title.line ? <span>{title.line}</span> : null}
               </div>
             ) : null}
             {/* 2. RANKINGS */}
@@ -639,6 +738,40 @@ const CSS = `
   .gsx-tr{min-height:44px;font-size:17px}
 }
 @media(max-width:400px){.gsx-h1{font-size:32px}.gsx-gate .gsx-h1{font-size:28px}.gsx-pop{font-size:64px}.gsx-score span{font-size:80px}}
+
+.gsx-note{align-self:center;display:inline-flex;align-items:center;min-height:30px;padding:2px 12px;border-radius:999px;border:2px dashed var(--gsx-ink);font-size:13px;font-weight:800;text-align:center}
+.gsx-climb{display:flex;flex-direction:column;gap:6px}
+.gsx-clh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px}
+.gsx-clh b{font-size:16px;font-weight:800;min-width:0}
+.gsx-rp{flex:none;min-height:32px;padding:0 12px;border-radius:999px;border:2px solid var(--gsx-ink);background:transparent;color:var(--gsx-ink);font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.gsx-rung{display:flex;align-items:center;gap:12px;min-height:44px;padding:6px 14px;border:2px solid var(--gsx-ink);border-radius:12px;box-sizing:border-box;background:var(--rc);color:var(--gsx-ink);opacity:.45;transition:background .25s,color .25s,opacity .25s,transform .3s,padding .3s}
+.gsx-rung.lit{opacity:1}
+.gsx-rung.on{transform:scale(1.03)}
+.gsx-rung.here{opacity:1;color:var(--gsx-bg);padding:12px 14px;transform:scale(1.02)}
+.gsx-rchip{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid currentColor;box-sizing:border-box}
+.gsx-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.gsx-rt b{font-size:15px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
+.gsx-rung.here .gsx-rt b{font-size:21px}
+.gsx-rt em{font-style:normal;font-size:13.5px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.gsx-rtail{flex:none;font-size:13px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.gsx .stb{width:100%}
+
+.gsx-play{min-height:100vh;min-height:100dvh;font-family:Manrope,system-ui,sans-serif;display:flex;flex-direction:column;--stg-ground:var(--gsx-bg);--stg-ink:var(--gsx-ink)}
+.gsx-play .gsx-pcol{width:100%;max-width:760px;margin:0 auto;box-sizing:border-box;padding:14px 16px 6px;display:flex;flex-direction:column;gap:12px}
+.gsx-play .gsx-pbody{flex:1;width:100%;max-width:960px;margin:0 auto;box-sizing:border-box;padding:4px 0 8px}
+.gsx-play .gsx-pfoot{text-align:center;font-size:13px;font-weight:700;opacity:.75;padding:6px 16px 18px;font-variant-numeric:tabular-nums}
+.gsx-play .gsx-pstrip .gsx-sn{font-size:10.5px}
+
+/* THE TRAY READS IN EVERY WIDTH (2026-10-25): the ticket card in the end
+   column is phone-narrow even on desktop, so it takes its phone layout there;
+   the tray's own links and buttons are light on its dark ground. */
+.gsx-tray .tkd-top{flex-wrap:wrap;gap:14px}
+.gsx-tray .tkd-tx{flex:1 1 180px}
+.gsx-tray .tkd-go{flex:1 1 100%;justify-content:center}
+.gsx .gsx-tray .pmm-lnk{color:#7dd3fc}
+.gsx .gsx-tray .gsx-lb{color:#e9edf4;border-color:#e9edf4}
+.gsx-rung.on{transform:none;box-shadow:0 0 0 3px var(--gsx-ink)}
+.gsx-rung.here{transform:none}
 
 .gsx-theme{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--gsx-ink);background:transparent;color:var(--gsx-ink);cursor:pointer;padding:0;flex:none}
 .gsx-theme:hover{background:color-mix(in srgb, var(--gsx-ink) 12%, transparent)}

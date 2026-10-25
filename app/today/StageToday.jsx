@@ -3735,14 +3735,6 @@ export default function StageToday() {
           <div className="sty-mph">
             {!picked ? (
               <>
-                <div className="mph-seg" role="group" aria-label="Group puzzles by">
-                  <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
-                  <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
-                </div>
-                <div className="mph-duo">
-                  <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}>All Puzzles<em>{alphaDone} of {alpha.length}</em></button>
-                  <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}>My Puzzles<em>{pinned.length ? `${pinned.length} starred` : 'Star any puzzle'}</em></button>
-                </div>
                 <div className="mph-grid">
                   {lensCats.map(({ cat, games }) => {
                     const rc = rampCat(cat);
@@ -3754,6 +3746,16 @@ export default function StageToday() {
                       </button>
                     );
                   })}
+                </div>
+                {/* BELOW THE TILES (owner, 2026-10-25): All Puzzles / My Puzzles, then
+                    the Categories / Skills switch, then the ranks. */}
+                <div className="mph-duo">
+                  <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}>All Puzzles<em>{alphaDone} of {alpha.length}</em></button>
+                  <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}>My Puzzles<em>{pinned.length ? `${pinned.length} starred` : 'Star any puzzle'}</em></button>
+                </div>
+                <div className="mph-seg" role="group" aria-label="Group puzzles by">
+                  <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
+                  <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
                 </div>
                 {/* UNDER THE TILES (owner, 2026-10-25): the ranks, then the drawing
                     with the reader's tickets in it. The progress bar is retired. */}
