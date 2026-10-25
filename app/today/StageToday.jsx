@@ -3609,34 +3609,6 @@ export default function StageToday() {
             </button>
           </span>
         </div>
-        {/* ONE CARD, TABS ON TOP (owner, 2026-10-25): the Categories / Skills
-            switch heads the rankings bar instead of sitting alone further down.
-            Categories first. The switch only shows on the hub, never in a pane. */}
-        <div className="sty-mrk">
-        {mph && !picked ? (
-          <div className="mph-seg mrk-seg" role="group" aria-label="Group puzzles by">
-            <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
-            <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
-          </div>
-        ) : null}
-        <div className={'sty-mst' + (who ? '' : ' guest')}>
-          <a href="#sty-board" onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
-            <b>{who && stats.dayRank ? '#' + stats.dayRank : '\u2013'}</b><i>Day</i>
-          </a>
-          <a href={who && mGroup ? withTq('/groups/' + mGroup.code) : '/groups'} onClick={() => { if (who && mGroup) pickGroup(mGroup.code); }}>
-            <b>{who && mGroup && mGroup.rank ? '#' + mGroup.rank : '\u2013'}</b><i>Group</i>
-          </a>
-          <a href={withTq('/quizzes/hub')}>
-            <b>{who && rank ? '#' + rank : '\u2013'}</b><i>All Time</i>
-          </a>
-          <a className="tk" href="/quizzes/community#drawing" title={`Your tickets for the ${DRAWING.prizeLabel} drawing`}>
-            <b>{who && mTix.count != null ? formatTickets(mTix.count) : who ? '\u2013' : '0'}</b><i>Tickets</i>
-          </a>
-          {who ? null : (
-            <a className="join" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Pick a name to keep a rank and earn tickets</a>
-          )}
-        </div>
-        </div>
       </div>
 
       <div className="sty-wrap" ref={wrapRef}>
@@ -3719,6 +3691,10 @@ export default function StageToday() {
           <div className="sty-mph">
             {!picked ? (
               <>
+                <div className="mph-seg" role="group" aria-label="Group puzzles by">
+                  <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
+                  <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
+                </div>
                 <div className="mph-duo">
                   <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}>All Puzzles<em>{alphaDone} of {alpha.length}</em></button>
                   <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}>My Puzzles<em>{pinned.length ? `${pinned.length} starred` : 'Star any puzzle'}</em></button>
@@ -3735,14 +3711,35 @@ export default function StageToday() {
                     );
                   })}
                 </div>
-                {/* COMPLETION STATUS sits under the last two tiles (owner, 2026-10-25). */}
-                <a className="sty-mprog" href="/" onClick={(e) => {
-                  e.preventDefault(); setPicked(false); setPane(ALL_ID);
-                  try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (er) {}
-                }}>
-                  <span><b>{fmtShort(day)}</b><em>{mPlayed} of {DAILY_GAMES.length} played today</em></span>
-                  <i><s style={{ width: Math.round((mPlayed / Math.max(1, DAILY_GAMES.length)) * 100) + '%' }} /></i>
-                </a>
+                {/* THE STAT BAR CARRIES THE DAY'S PROGRESS (owner, 2026-10-25): the
+                    ranks and tickets on top, today's completion under them, one
+                    card, sitting under the category tiles. */}
+                <div className="sty-mrk">
+                <div className={'sty-mst' + (who ? '' : ' guest')}>
+                  <a href="#sty-board" onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
+                    <b>{who && stats.dayRank ? '#' + stats.dayRank : '\u2013'}</b><i>Day</i>
+                  </a>
+                  <a href={who && mGroup ? withTq('/groups/' + mGroup.code) : '/groups'} onClick={() => { if (who && mGroup) pickGroup(mGroup.code); }}>
+                    <b>{who && mGroup && mGroup.rank ? '#' + mGroup.rank : '\u2013'}</b><i>Group</i>
+                  </a>
+                  <a href={withTq('/quizzes/hub')}>
+                    <b>{who && rank ? '#' + rank : '\u2013'}</b><i>All Time</i>
+                  </a>
+                  <a className="tk" href="/quizzes/community#drawing" title={`Your tickets for the ${DRAWING.prizeLabel} drawing`}>
+                    <b>{who && mTix.count != null ? formatTickets(mTix.count) : who ? '\u2013' : '0'}</b><i>Tickets</i>
+                  </a>
+                  {who ? null : (
+                    <a className="join" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Pick a name to keep a rank and earn tickets</a>
+                  )}
+                </div>
+                  <a className="sty-mprog" href="/" onClick={(e) => {
+                    e.preventDefault(); setPicked(false); setPane(ALL_ID);
+                    try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (er) {}
+                  }}>
+                    <span><b>{fmtShort(day)}</b><em>{mPlayed} of {DAILY_GAMES.length} played today</em></span>
+                    <i><s style={{ width: Math.round((mPlayed / Math.max(1, DAILY_GAMES.length)) * 100) + '%' }} /></i>
+                  </a>
+                </div>
                 <div className="mph-lab">Everything Else</div>
                 <div className="mph-list">
                   <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<span>&rarr;</span></button>
@@ -3755,7 +3752,9 @@ export default function StageToday() {
                   <a href="/kids">Kids<span>&rarr;</span></a>
                   <a href={withTq('/lists')}>Top 10 Lists<span>&rarr;</span></a>
                 </div>
-                {/* THE DRAWING CLOSES THE PAGE (owner, 2026-10-25). */}
+                {/* THE DRAWING CLOSES THE PAGE and is in view from the first paint
+                    (owner, 2026-10-25): sticky to the bottom of the screen while the
+                    hub is up, settling into its place at the end. Light blue. */}
                 {mDraw ? (
                   <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
                     <span><b>{DRAWING.prizeLabel} Drawing</b> &middot; through {DRAWING.endLabel}</span>
@@ -6469,15 +6468,17 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   /* The hub column ends with an 18px margin and the wrap adds a 22px gap;
      pull the toggle up to the column's own 10px rhythm. */
   .sty-tailbtn.snug{margin-top:-30px;}
-  /* The rankings card with the Categories / Skills tabs on top. */
+  /* The stat bar with the day's progress folded into its foot. */
   .sty-mrk{border:var(--mb);border-radius:14px;overflow:hidden;}
   .sty-mrk .sty-mst{border:0;border-radius:0;}
-  .sty-mrk .mrk-seg{border:0;border-bottom:var(--mb);border-radius:0;padding:0;}
-  .sty-mrk .mrk-seg button{border-radius:0;padding:9px 0 10px;font-size:13px;}
-  .sty-mrk .mrk-seg button + button{border-left:1.5px solid var(--mln);}
+  .sty-mrk .sty-mprog{margin:0;padding:9px 12px 11px;border-top:1.5px solid var(--mln);}
+  /* The drawing: light blue, stuck to the bottom of the screen until the hub ends. */
+  .sty-mph .sty-mdraw{position:sticky;bottom:max(10px, env(safe-area-inset-bottom));z-index:3;
+    background:#7dd3fc;color:#08222e;border:2px solid #08222e;box-shadow:0 6px 18px rgba(0,0,0,.28);padding:10px 12px 11px;font-size:13px;}
+  .sty-mph .sty-mdraw u{color:#08222e;}
   /* Moved out of the top block, these still need its tokens. */
   .sty-mph{--mi:var(--stg-ink);--mb:2px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
-  .sty-mph .sty-mprog{margin-top:4px;}
+
   .sty-tailbtn[aria-expanded="true"] svg{transform:rotate(180deg);}
   .sty-tail:not(.on){display:none;}
 }
