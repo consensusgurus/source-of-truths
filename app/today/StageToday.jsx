@@ -57,7 +57,7 @@ import { fetchDailyBoard } from '../dailyBoardClient';
 import { IQ_TESTS } from '@/lib/iq-tests';
 import useMyGames from '../useMyGames';
 import { savedIdentity } from '@/lib/saved-identity';
-import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
+import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook, forceStageTheme } from '@/lib/stage-theme';
 import ThemePop, { LightOffer } from '../ThemePop';
 import StageLadder from '../StageLadder';
 import EntryDoor from '../EntryDoor';
@@ -78,6 +78,7 @@ import { ChallengeBack, ChallengeRail, CapTickets } from '../ChallengeBack';
 import { useMyTickets } from '../TicketDoor';
 import { DRAWING, drawingIsLive, formatTickets } from '@/lib/drawing';
 import MindLoftMark from '../MindLoftMark';
+import { holdRootPaint } from '@/lib/root-paint';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
 import RollNum from '../RollNum';
 import useFlip from '../useFlip';
@@ -3446,10 +3447,19 @@ export default function StageToday() {
   const mTop = () => { try { requestAnimationFrame(() => window.scrollTo(0, 0)); } catch (e) {} };
   const mOpen = (id) => { pickPane(id); mTop(); };
   const mBack = () => { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (e) {} mTop(); };
+  // A PANE ON THE PHONE IS ITS OWN PAGE (owner, 2026-10-24): nothing above the
+  // back button but the logo, and a category or skill recolours the whole page
+  // in its lighter step, on the light register whatever the reader's choice.
+  const mPane = runsMq && picked && mph;
+  const mBackTo = paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID ? 'Home' : ixLens === 'skill' ? 'All skills' : 'All categories';
+  const mTintCat = mPane && paneCat(paneOn) ? rampCat(paneOn) : null;
+  const mTintBg = mTintCat ? `color-mix(in srgb, ${categoryColor(mTintCat)} 60%, #fff)` : null;
+  useEffect(() => (mTintBg ? holdRootPaint(mTintBg) : undefined), [mTintBg]);
+  useEffect(() => { if (!mTintBg) return undefined; forceStageTheme('light'); return () => forceStageTheme(null); }, [!!mTintBg]);
   const mGroup = grp && Array.isArray(grp.groups) && grp.groups.length ? grp.groups[0] : null;
   const mPlayed = DAILY_GAMES.reduce((n, g) => n + (done.has(g.key) ? 1 : 0), 0);
   return (
-    <div className={'sty stage-page' + (mph ? ' mph-on' : '')} data-stage-theme={stageTheme} ref={snapRef}>
+    <div className={'sty stage-page' + (mph ? ' mph-on' : '') + (mPane ? ' mph-pane' : '') + (mTintBg ? ' mph-tint' : '')} data-stage-theme={mTintBg ? 'light' : stageTheme} style={mTintBg ? { '--stg-ground': mTintBg } : undefined} ref={snapRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {/* THE ENTRY DOOR: first visit then weekly, always dark, replaced the daily arrival. See app/EntryDoor.jsx. */}
       {/* A SKILL TILE OPENS THAT SKILL'S PANE (owner, 2026-10-18), and shows the
@@ -3562,12 +3572,14 @@ export default function StageToday() {
           above 900px it draws nothing and the cap above stays as it was. */}
       <div className="sty-mtop">
         <div className="sty-mtb">
-          <a className="sty-mlogo" href="/" aria-label="Mind Loft home">
+          <a className="sty-mlogo" href="/" aria-label="Mind Loft home" onClick={(e) => { if (picked) { e.preventDefault(); mBack(); } }}>
             <MindLoftMark size={24} ink="var(--stg-ink)" accent="var(--stg-ink)" />
             <span>Mind Loft</span>
           </a>
           <span className="sty-mtbr">
-            {who ? (
+            {mPane ? (
+              <button type="button" className="sty-mback" onClick={mBack}>&larr; {mBackTo}</button>
+            ) : who ? (
               <a className="sty-mpill" href={withTq('/player/' + encodeURIComponent(who))}>{who}</a>
             ) : (
               <a className="sty-mpill" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Join</a>
@@ -3734,7 +3746,7 @@ export default function StageToday() {
               const nDone = games.filter((g) => done.has(g.key)).length;
               const s = pc ? skillOfId(paneOn) : null;
               const title = isAll ? 'All puzzles' : isMine ? 'My puzzles' : isRuns ? 'Runs' : catLabel(paneOn);
-              const backTo = isAll || isMine || isRuns ? 'Home' : ixLens === 'skill' ? 'All skills' : 'All categories';
+              const backTo = mBackTo;
               const mainTone = pc ? mTone(rampCat(paneOn)) : null;
               return (
                 <>
@@ -6388,6 +6400,15 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .mph-g em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .mph-g .st{position:absolute;top:6px;right:6px;width:24px;height:24px;display:grid;place-items:center;border:0;background:transparent;color:inherit;opacity:.45;padding:0;}
   .mph-g .st.on{opacity:1;color:inherit;}
+  /* A pane is its own page: only the top bar stays above it. */
+  .mph-pane .sty-mst,.mph-pane .sty-mdraw,.mph-pane .sty-mprog,.mph-pane .mph-back{display:none !important;}
+  .sty-mback{border:2px solid var(--stg-ink);background:transparent;color:var(--stg-ink);border-radius:999px;padding:6px 13px 7px;font:inherit;font-weight:800;font-size:13px;line-height:1.26;cursor:pointer;}
+  /* The recoloured page: the ground is the category, so tiles go white. */
+  .mph-tint .sty-mph .mph-band{background:transparent;border:0;padding:4px 2px 2px;}
+  .mph-tint .sty-mph .mph-band b{font-size:26px;}
+  .mph-tint .sty-mph .mph-t,.mph-tint .sty-mph .mph-g,.mph-tint .sty-mph .mph-run{background:#fff;border-color:#08222e;color:#08222e;}
+  .mph-tint .sty-mph .mph-g.done,.mph-tint .sty-mph .mph-run.done{background:transparent;border-color:rgba(8,34,46,.35);}
+  .mph-tint .mph-srt button[aria-pressed="true"]{background:#08222e;color:#fff;}
   .mph-note{margin:0;font-size:13px;font-weight:600;line-height:1.45;opacity:.85;}
 }
 `;
