@@ -62,7 +62,6 @@ import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from
 import ThemePop, { LightOffer } from '../ThemePop';
 import StageLadder from '../StageLadder';
 import EntryDoor from '../EntryDoor';
-import SundayLedger from '../SundayLedger';
 import PremierePop from '../PremierePop';
 import GroupsPop from '../GroupsPop';
 // GROUP STANDINGS on the home (2026-09-17): the band, the Groups badge and the
@@ -3658,7 +3657,7 @@ export default function StageToday() {
         {/* THE SUNDAY LEDGER (owner, 2026-09-07): the week, on a Sunday, above
             everything. Renders nothing on the other six days and nothing on the
             server; see app/SundayLedger.jsx. */}
-        <SundayLedger light={light} withTq={withTq} />
+        {/* THE SUNDAY SUMMARY IS RETIRED (owner, 2026-10-25): never shown. */}
         {/* THE CHALLENGE CAME BACK (owner, 2026-10-15): a friend finished a
             link this reader sent. Nothing until there is a result to report. */}
         <ChallengeBack />
@@ -3746,18 +3745,11 @@ export default function StageToday() {
                     );
                   })}
                 </div>
-                {/* UNDER THE TILES (owner, 2026-10-25): today's progress, then the
-                    ranks, then the drawing, each its own block. */}
-                <a className="sty-mprog" href="/" onClick={(e) => {
-                  e.preventDefault(); setPicked(false); setPane(ALL_ID);
-                  try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (er) {}
-                }}>
-                  <span><b>{fmtShort(day)}</b><em>{mPlayed} of {DAILY_GAMES.length} played today</em></span>
-                  <i><s style={{ width: Math.round((mPlayed / Math.max(1, DAILY_GAMES.length)) * 100) + '%' }} /></i>
-                </a>
+                {/* UNDER THE TILES (owner, 2026-10-25): the ranks, then the drawing
+                    with the reader's tickets in it. The progress bar is retired. */}
                 <div className={'sty-mst' + (who ? '' : ' guest')}>
                   <a href="#sty-board" onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
-                    <b>{who && stats.dayRank ? '#' + stats.dayRank : '\u2013'}</b><i>Day</i>
+                    <b>{who && stats.dayRank ? '#' + stats.dayRank : '\u2013'}</b><i>Today</i>
                   </a>
                   <a href={who && mGroup ? withTq('/groups/' + mGroup.code) : '/groups'} onClick={() => { if (who && mGroup) pickGroup(mGroup.code); }}>
                     <b>{who && mGroup && mGroup.rank ? '#' + mGroup.rank : '\u2013'}</b><i>Group</i>
@@ -3765,16 +3757,13 @@ export default function StageToday() {
                   <a href={withTq('/quizzes/hub')}>
                     <b>{who && rank ? '#' + rank : '\u2013'}</b><i>All Time</i>
                   </a>
-                  <a className="tk" href="/quizzes/community#drawing" title={`Your tickets for the ${DRAWING.prizeLabel} drawing`}>
-                    <b>{who && mTix.count != null ? formatTickets(mTix.count) : who ? '\u2013' : '0'}</b><i>Tickets</i>
-                  </a>
                   {who ? null : (
                     <a className="join" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Pick a name to keep a rank and earn tickets</a>
                   )}
                 </div>
                 {mDraw ? (
                   <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
-                    <span><b>{DRAWING.prizeLabel} Drawing</b> &middot; through {DRAWING.endLabel}</span>
+                    <span>{(() => { const n = who && mTix.count != null ? Number(mTix.count) || 0 : 0; return <><b>{who && mTix.count == null ? '\u2013' : formatTickets(n)} {n === 1 ? 'Ticket' : 'Tickets'}</b> for the {DRAWING.prizeLabel} Drawing</>; })()}</span>
                     <u>Ways to Earn</u>
                   </a>
                 ) : null}
@@ -6416,7 +6405,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mtbr{display:inline-flex;align-items:center;gap:8px;min-width:0;}
   .sty-mpill{display:inline-block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:var(--mb);border-radius:999px;padding:6px 13px 7px;font-weight:800;font-size:13px;line-height:1.26;}
   .sty-mlook{width:34px;height:34px;border-radius:50%;border:var(--mb);background:transparent;color:var(--mi);display:inline-grid;place-items:center;padding:0;cursor:pointer;}
-  .sty-mst{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:var(--mb);border-radius:14px;overflow:hidden;}
+  .sty-mst{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:var(--mb);border-radius:14px;overflow:hidden;}
   .sty-mst > a{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 6px 9px;min-width:0;border-left:1.5px solid var(--mln);}
   .sty-mst > a:first-child{border-left:0;}
   .sty-mst > a b{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.26;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
@@ -6515,7 +6504,12 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      pull the toggle up to the column's own 10px rhythm. */
   .sty-tailbtn.snug{margin-top:-30px;}
   /* The drawing under the ranks: the Tickets cell's soft gold, not a loud blue. */
-  .sty-mph .sty-mdraw{background:#fde7ad;color:#08222e;}
+  .sty-mph .sty-mdraw{background:#fde7ad;color:#08222e;margin-top:6px;}
+  /* A small gap above the ranks and the drawing, and the ranks a touch larger
+     now the progress bar no longer sits beside them (owner, 2026-10-25). */
+  .sty-mph .sty-mst{margin-top:6px;}
+  .sty-mph .sty-mst > a{padding:10px 6px 11px;}
+  .sty-mph .sty-mst > a b{font-size:20px;}
   /* Runs inside a pane: full-width rows, all one size, play count beside the name. */
   .mph-runs{display:flex;flex-direction:column;gap:8px;}
   .sty-mph .mph-run.mph-rc{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:10px;border-radius:12px;padding:8px 10px 8px 14px;min-height:52px;box-sizing:border-box;}

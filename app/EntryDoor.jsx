@@ -522,7 +522,7 @@ export default function EntryDoor({ onPick }) {
             <p className="ent-h">
               Loft your Mind in the{' '}
               <span className="ent-bn">
-                <span className="ent-mk"><MindLoftMark size="1em" ink="#08222e" accent="#7dd3fc" title="" /></span>
+                <span className="ent-mk"><MindLoftMark size="1em" ink="#08222e" accent="#0369a1" title="" /></span>
                 Mind <span className="ent-loft">Loft</span>
               </span>
             </p>
@@ -538,7 +538,7 @@ export default function EntryDoor({ onPick }) {
           <div className="ent-wipe" />
           <div className="ent-say">
             <div className="ent-word">
-              <MindLoftMark size="1.2em" ink="#08222e" accent="#7dd3fc" title="" />
+              <MindLoftMark size="1.2em" ink="#08222e" accent="#0369a1" title="" />
               <span>Mind <span className="ent-loft">Loft</span></span>
             </div>
             <div className="ent-lines">
