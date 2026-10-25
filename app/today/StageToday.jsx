@@ -3711,10 +3711,15 @@ export default function StageToday() {
                     );
                   })}
                 </div>
-                {/* THE STAT BAR CARRIES THE DAY'S PROGRESS (owner, 2026-10-25): the
-                    ranks and tickets on top, today's completion under them, one
-                    card, sitting under the category tiles. */}
-                <div className="sty-mrk">
+                {/* UNDER THE TILES (owner, 2026-10-25): today's progress, then the
+                    ranks, then the drawing, each its own block. */}
+                <a className="sty-mprog" href="/" onClick={(e) => {
+                  e.preventDefault(); setPicked(false); setPane(ALL_ID);
+                  try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (er) {}
+                }}>
+                  <span><b>{fmtShort(day)}</b><em>{mPlayed} of {DAILY_GAMES.length} played today</em></span>
+                  <i><s style={{ width: Math.round((mPlayed / Math.max(1, DAILY_GAMES.length)) * 100) + '%' }} /></i>
+                </a>
                 <div className={'sty-mst' + (who ? '' : ' guest')}>
                   <a href="#sty-board" onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
                     <b>{who && stats.dayRank ? '#' + stats.dayRank : '\u2013'}</b><i>Day</i>
@@ -3732,14 +3737,12 @@ export default function StageToday() {
                     <a className="join" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Pick a name to keep a rank and earn tickets</a>
                   )}
                 </div>
-                  <a className="sty-mprog" href="/" onClick={(e) => {
-                    e.preventDefault(); setPicked(false); setPane(ALL_ID);
-                    try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (er) {}
-                  }}>
-                    <span><b>{fmtShort(day)}</b><em>{mPlayed} of {DAILY_GAMES.length} played today</em></span>
-                    <i><s style={{ width: Math.round((mPlayed / Math.max(1, DAILY_GAMES.length)) * 100) + '%' }} /></i>
+                {mDraw ? (
+                  <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
+                    <span><b>{DRAWING.prizeLabel} Drawing</b> &middot; through {DRAWING.endLabel}</span>
+                    <u>Ways to Earn</u>
                   </a>
-                </div>
+                ) : null}
                 <div className="mph-lab">Everything Else</div>
                 <div className="mph-list">
                   <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<span>&rarr;</span></button>
@@ -3752,15 +3755,6 @@ export default function StageToday() {
                   <a href="/kids">Kids<span>&rarr;</span></a>
                   <a href={withTq('/lists')}>Top 10 Lists<span>&rarr;</span></a>
                 </div>
-                {/* THE DRAWING CLOSES THE PAGE and is in view from the first paint
-                    (owner, 2026-10-25): sticky to the bottom of the screen while the
-                    hub is up, settling into its place at the end. Light blue. */}
-                {mDraw ? (
-                  <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
-                    <span><b>{DRAWING.prizeLabel} Drawing</b> &middot; through {DRAWING.endLabel}</span>
-                    <u>Ways to Earn</u>
-                  </a>
-                ) : null}
               </>
             ) : (() => {
               const isAll = paneOn === ALL_ID;
@@ -6443,7 +6437,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .mph-g .st{position:absolute;top:6px;right:6px;width:24px;height:24px;display:grid;place-items:center;border:0;background:transparent;color:inherit;opacity:.45;padding:0;}
   .mph-g .st.on{opacity:1;color:inherit;}
   /* A pane is its own page: only the top bar stays above it. */
-  .mph-pane .sty-mrk,.mph-pane .sty-mst,.mph-pane .sty-mdraw,.mph-pane .sty-mprog,.mph-pane .mph-back{display:none !important;}
+  .mph-pane .sty-mst,.mph-pane .sty-mdraw,.mph-pane .sty-mprog,.mph-pane .mph-back{display:none !important;}
   .sty-mback{border:2px solid var(--stg-ink);background:transparent;color:var(--stg-ink);border-radius:999px;padding:6px 13px 7px;font:inherit;font-weight:800;font-size:13px;line-height:1.26;cursor:pointer;}
   /* The recoloured page: the ground is the category, so tiles go white. */
   .mph-tint .sty-mph .mph-band{background:transparent;border:0;padding:4px 2px 2px;}
@@ -6468,14 +6462,9 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   /* The hub column ends with an 18px margin and the wrap adds a 22px gap;
      pull the toggle up to the column's own 10px rhythm. */
   .sty-tailbtn.snug{margin-top:-30px;}
-  /* The stat bar with the day's progress folded into its foot. */
-  .sty-mrk{border:var(--mb);border-radius:14px;overflow:hidden;}
-  .sty-mrk .sty-mst{border:0;border-radius:0;}
-  .sty-mrk .sty-mprog{margin:0;padding:9px 12px 11px;border-top:1.5px solid var(--mln);}
-  /* The drawing: light blue, stuck to the bottom of the screen until the hub ends. */
-  .sty-mph .sty-mdraw{position:sticky;bottom:max(10px, env(safe-area-inset-bottom));z-index:3;
-    background:#7dd3fc;color:#08222e;border:2px solid #08222e;box-shadow:0 6px 18px rgba(0,0,0,.28);padding:10px 12px 11px;font-size:13px;}
-  .sty-mph .sty-mdraw u{color:#08222e;}
+  /* The drawing under the ranks: the Tickets cell's soft gold, not a loud blue. */
+  .sty-mph .sty-mdraw{background:#fde7ad;color:#08222e;}
+  .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */
   .sty-mph{--mi:var(--stg-ink);--mb:2px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
 
