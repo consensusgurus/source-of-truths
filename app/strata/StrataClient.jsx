@@ -62,6 +62,7 @@ import DailyRules from '../DailyRules';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
 import { makeCells, positions, adjacent, findOne, gridOf } from '@/lib/strata-core';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 
 const COLORS = {
   ink: T.ink,
@@ -583,6 +584,19 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
     return () => window.removeEventListener('resize', fit);
   }, [cols, STAGE]);
   const { gap, band: BAND, mar: BMAR } = boardGeom(narrow, cols);
+  // The phone play stage draws the same tiles at its own size: the column is
+  // at most 520 wide with 14px a side, and the board keeps 8px of padding.
+  const phoneStage = usePhoneStage();
+  const [sTile, setSTile] = useState(60);
+  useEffect(() => {
+    const fit = () => {
+      const avail = Math.min(520, window.innerWidth) - 28 - 20;
+      setSTile(Math.max(34, Math.min(70, Math.floor((avail - 5 * (cols - 1)) / cols))));
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, [cols]);
   const step = tile + gap;
   const boardW = cols * tile + gap * (cols - 1);
   const boardH = rows * tile + gap * (rows - 1);
@@ -591,6 +605,108 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && playing && !!g.t0 && (() => {
+        // The phone play stage: the same tiles, trace and hints on the shared
+        // full-screen frame. Tiles keep the st-tile class and data-cid so the
+        // page's own pointer listeners pick them up; every rule is the page's.
+        const SG = 5;
+        const sStep = sTile + SG;
+        const sW = cols * sTile + SG * (cols - 1);
+        const sH = rows * sTile + SG * (rows - 1);
+        const taken = new Set();
+        at.forEach((p) => { if (p) taken.add(`${p[0]},${p[1]}`); });
+        const holes = [];
+        for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (!taken.has(`${r},${c}`)) holes.push([r, c]);
+        const traceWord = trace.map((id) => cells[id].ch).join('');
+        const lede = PUZZLE.sunday ? 'Two hidden themes' : 'One hidden theme';
+        const top = (
+          <>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .pst .sta-dug{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
+              .pst .sta-dug span{font-size:14px;font-weight:800;padding:6px 14px;border-radius:999px;background:var(--pst-ink);color:var(--pst-bg);letter-spacing:.04em;}
+              .pst .sta-dug span.o{background:transparent;color:var(--pst-ink);border:2px dashed color-mix(in srgb, var(--pst-ink) 50%, transparent);padding:4px 12px;}
+              .pst .sta-trc{text-align:center;font-size:34px;font-weight:800;letter-spacing:.1em;min-height:44px;line-height:44px;}
+              .pst .sta-trc.bad{animation:stash .32s;}
+              @keyframes stash{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+              .pst .sta-site{align-self:center;padding:8px;border:2px solid var(--pst-ink);border-top-style:dashed;border-radius:18px;}
+              .pst .sta-b{position:relative;touch-action:none;user-select:none;-webkit-user-select:none;}
+              .pst .sta-b .st-tile{position:absolute;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:800;border-radius:12px;cursor:pointer;box-sizing:border-box;background:var(--pst-tint);border:2px solid var(--pst-ink);color:var(--pst-ink);transition:top ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),left ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),background 120ms,color 120ms,transform 160ms,opacity ${LIFT_MS}ms;}
+              .pst .sta-b .st-tile em{position:absolute;top:3px;left:6px;font-style:normal;font-size:10px;font-weight:800;}
+              .pst .sta-b .st-tile.on{background:var(--pst-ink);color:var(--pst-bg);transform:scale(1.04);}
+              .pst .sta-b .st-tile.bad{background:transparent;border-style:dashed;}
+              .pst .sta-b .st-tile.lift{background:var(--pst-ink);color:var(--pst-bg);opacity:.15;transform:scale(.82);}
+              .pst .sta-b .st-tile.flash{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink);animation:stapulse0 1.6s ease-in-out 3;}
+              @keyframes stapulse0{50%{transform:scale(1.08)}}
+              @keyframes stapulse1{50%{transform:scale(1.08)}}
+              .pst .sta-hole{position:absolute;box-sizing:border-box;border-radius:12px;background:color-mix(in srgb, var(--pst-ink) 4%, transparent);pointer-events:none;}
+              .pst .sta-clr{background:none;border:0;padding:0 8px;min-height:32px;font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;opacity:.75;}
+              @media (prefers-reduced-motion: reduce){.pst .sta-b .st-tile.flash,.pst .sta-trc.bad{animation:none}}
+            ` }} />
+            <div className="sta-dug" aria-label="Words dug out">
+              {foundWords.map((f) => <span key={f.word}>{f.word}</span>)}
+              {remaining.map((w) => <span key={w} className="o" aria-label={`Buried word, ${w.length} letters`}>?</span>)}
+            </div>
+            <div className={'sta-trc' + (bad ? ' bad' : '')} aria-live="polite" aria-label={trace.length ? `Tracing ${traceWord}` : 'Nothing traced'}>{traceWord}</div>
+            <div className="sta-site">
+              <div className="sta-b" aria-label="Strata grid" style={{ width: sW, height: sH }}>
+                {holes.map(([r, c]) => (
+                  <span key={`h${r},${c}`} className="sta-hole" style={{ width: sTile, height: sTile, top: r * sStep, left: c * sStep }} />
+                ))}
+                {cells.map((cell) => {
+                  const p = at.get(cell.id);
+                  if (!p) return null;
+                  if (removed.has(cell.id) && !liftSet.has(cell.id)) return null;
+                  const cls = ['st-tile'];
+                  if (liftSet.has(cell.id)) cls.push('lift');
+                  else if (traceSet.has(cell.id)) cls.push(bad ? 'bad' : 'on');
+                  const lit = flash === cell.id && !traceSet.has(cell.id) && !liftSet.has(cell.id);
+                  if (lit) cls.push('flash');
+                  const ti = trace.indexOf(cell.id);
+                  return (
+                    <div key={cell.id} className={cls.join(' ')} data-cid={cell.id}
+                      onPointerDown={(e) => onDown(cell.id, e)}
+                      style={{ width: sTile, height: sTile, fontSize: Math.round(sTile * 0.45), top: p[0] * sStep, left: p[1] * sStep, ...(lit ? { animationName: `stapulse${flashBeat % 2}` } : {}) }}>
+                      {ti >= 0 && !liftSet.has(cell.id) ? <em>{ti + 1}</em> : null}{cell.ch}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="pst-note">
+              {trace.length
+                ? <button type="button" className="sta-clr" onClick={() => setTrace([])}>Clear the trace</button>
+                : 'Drag through touching letters, diagonals too · lift to check'}
+            </div>
+            {g.thread && <div className="pst-note"><b>Thread: {threadLabel}</b></div>}
+            {stuck && (
+              <div className="pst-card">
+                <small>Nothing left to read. That is our fault, not yours.</small>
+                <button type="button" className="pst-tb" onClick={unstick} style={{ marginTop: 10, borderColor: 'var(--pst-bg)', color: 'var(--pst-bg)' }}>
+                  {unstickTo === 0 ? 'Put every word back' : `Put ${foundWords.length - unstickTo} word${foundWords.length - unstickTo > 1 ? 's' : ''} back`}
+                </button>
+              </div>
+            )}
+          </>
+        );
+        const bottom = (
+          <div className="pst-tools">
+            <button type="button" className={'pst-tb' + (flash != null && !removed.has(flash) ? ' on' : '')} onClick={showStart}>
+              {flash != null && !removed.has(flash) ? 'Start is lit' : 'Hint: a start'}
+            </button>
+            <button type="button" className="pst-tb" onClick={revealThread} disabled={g.thread}>
+              {g.thread ? 'Thread shown' : (PUZZLE.sunday ? 'Hint: the threads' : 'Hint: the thread')}
+            </button>
+            <button type="button" className="pst-tb" onClick={giveUp}>Give up</button>
+          </div>
+        );
+        return (
+          <PlayStage bg={gameColor('strata')} label="Strata"
+            eyebrow={`${lede} · dig a word out, the rest falls`}
+            top={top} bottom={bottom}
+            foot={`${foundWords.length} of ${TOTAL} words${g.hints ? ` · ${g.hints} hint${g.hints > 1 ? 's' : ''}` : ''}`}
+            frac={TOTAL ? foundWords.length / TOTAL : 0} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="strata" name="Strata" collapsed={!!g.t0} loft={LOFT} />

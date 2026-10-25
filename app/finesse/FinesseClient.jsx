@@ -56,6 +56,7 @@ import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
 import useDailyBoard from '../useDailyBoard';
@@ -255,6 +256,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
   const [thinking, setThinking] = useState(false);
   const toastTimer = useRef(null);
   const endHold = useEndHold();
+  const phoneStage = usePhoneStage();
 
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
 
@@ -793,6 +795,157 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div style={{ minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : (LOFT ? T.navy : COLORS.cream), color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, fontFamily: SANS, position: 'relative', overflowX: 'hidden', ...(STAGE ? STAGE_ACC : null) }} className={STAGE ? 'stage-page' : undefined} data-stage-theme={STAGE ? stageTheme : undefined}>
+      {/* THE PHONE STAGE (owner, 2026-10-25): the same deal drawn full screen.
+          Every control calls the handlers above; the stage keeps no state. */}
+      {phoneStage && started && (playing || short) && (() => {
+        const SEAT_FULL = ['North', 'East', 'South', 'West'];
+        const pcCard = (card) => {
+          const sIx = suitOf(card, R);
+          return <>{RANK_NAMES[R][rankOf(card, R)]}<i>{SUIT_GLYPH[sIx]}</i></>;
+        };
+        const isRedS = (sIx) => sIx === 1 || sIx === 2;
+        const stHand = (seat) => (
+          <div className="fin-hand" style={{ '--n': R }}>
+            {handFor(seat).map((card) => {
+              const sIx = suitOf(card, R);
+              const live = myTurn && pos.seat === seat && legal(pos.m, seat, pos.led, card);
+              return (
+                <button key={card} type="button" className={'fin-pc' + (isRedS(sIx) ? ' red' : '') + (live ? '' : ' dim')}
+                  onClick={() => playCard(card)} disabled={!live}
+                  aria-label={`${RANK_NAMES[R][rankOf(card, R)]} of ${SUIT_WORD[sIx]}${seat === 0 ? ', dummy' : ''}${live ? ', playable' : ''}`}>
+                  <span className="fin-pf">{pcCard(card)}</span>
+                </button>
+              );
+            })}
+          </div>
+        );
+        const stSide = (seat) => {
+          const cards = handFor(seat);
+          return (
+            <div className={'fin-side' + (seat === 1 ? ' e' : '')}>
+              <span className="fin-lab">{SEAT_FULL[seat]}{playing && !!cardsLeft && pos.seat === seat ? ' · to play' : ''}</span>
+              {[0, 1, 2, 3].map((sIx) => {
+                const rs = cards.filter((c) => suitOf(c, R) === sIx).map((c) => RANK_NAMES[R][rankOf(c, R)]);
+                return <div key={sIx}><span className={isRedS(sIx) ? 'fin-red' : undefined}>{SUIT_GLYPH[sIx]}</span> {rs.length ? rs.join(' ') : '·'}</div>;
+              })}
+            </div>
+          );
+        };
+        const seatNote = (seat) => {
+          if (myTurn && pos.seat === seat) return <span className="fin-you">Your play</span>;
+          const c = trickAt(seat);
+          if (c == null) return <span />;
+          const led = pos.played.length && pos.played[0].seat === seat;
+          return <span>{led ? 'Led' : 'Played'} the {cardTxt(c)}</span>;
+        };
+        const nextSeat = playing && !!cardsLeft ? pos.seat : -1;
+        const SLOT_POS = [
+          { top: 24, left: '50%', marginLeft: -23 },
+          { right: 8, top: 68 },
+          { bottom: 24, left: '50%', marginLeft: -23 },
+          { left: 8, top: 68 },
+        ];
+        const trickBox = (
+          <div className="fin-trick" aria-label={`Trick ${Math.min(trickNo, R)}${pos.played.length ? `: ${pos.played.map((p) => `${SEAT_WORD[p.seat]} ${cardTxt(p.card)}`).join(', ')}` : ''}`}>
+            <span className="fin-t" style={{ top: 6, left: '50%', transform: 'translateX(-50%)' }}>N</span>
+            <span className="fin-t" style={{ left: 14, top: 50 }}>W</span>
+            <span className="fin-t" style={{ right: 14, top: 50 }}>E</span>
+            <span className="fin-t" style={{ bottom: 5, left: '50%', transform: 'translateX(-50%)' }}>S</span>
+            {[0, 1, 2, 3].map((seat) => {
+              const card = trickAt(seat);
+              if (card != null) {
+                const sIx = suitOf(card, R);
+                return (
+                  <div key={seat} className={'fin-pc fin-tc' + (isRedS(sIx) ? ' red' : '') + (seat === winningSeat ? ' win' : '')} style={SLOT_POS[seat]}>
+                    <span className="fin-pf">{pcCard(card)}</span>
+                  </div>
+                );
+              }
+              return <span key={seat} className="fin-slot" style={SLOT_POS[seat]}>{seat === nextSeat ? SEAT_FULL[seat] : ''}</span>;
+            })}
+          </div>
+        );
+        const finCss = `
+          .fin-hn{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;min-height:24px;}
+          .fin-hn>b{opacity:.75;}
+          .fin-you{background:var(--pst-ink);color:var(--pst-bg) !important;border-radius:999px;padding:3px 10px;}
+          .fin-hand{display:flex;justify-content:center;gap:4px;}
+          .fin-pc{box-sizing:border-box;flex:0 1 46px;min-width:0;aspect-ratio:46/64;border-radius:8px;background:#ffffff !important;border:2px solid var(--pst-ink);color:#16181d !important;padding:0;container-type:inline-size;position:relative;}
+          .fin-pc.red{color:#b91c1c !important;}
+          .fin-pc *{color:inherit !important;}
+          .fin-pc.dim{opacity:.38;}
+          .fin-pc:disabled{cursor:default;}
+          .fin-pf{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;font-size:17px;font-size:37cqw;}
+          .fin-pf i{font-style:normal;font-size:14px;font-size:30cqw;margin-top:3px;}
+          .fin-mid{display:grid;grid-template-columns:72px minmax(0,1fr) 72px;align-items:center;gap:6px;}
+          .fin-side{display:flex;flex-direction:column;gap:3px;font-size:15px;font-weight:800;}
+          .fin-side.e{align-items:flex-end;text-align:right;}
+          .fin-lab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;margin-bottom:2px;}
+          .fin-red{color:#b91c1c !important;}
+          .fin-trick{position:relative;height:200px;border:2px solid var(--pst-ink);border-radius:16px;background:var(--pst-tint);}
+          .fin-t{position:absolute;font-size:11px;font-weight:800;letter-spacing:.06em;opacity:.7;}
+          .fin-tc{position:absolute;width:46px;}
+          .fin-tc.win{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--pst-ink);}
+          .fin-slot{position:absolute;box-sizing:border-box;width:46px;height:64px;border-radius:8px;border:2px dashed var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;opacity:.75;}
+          .fin-tb.q2{border-style:dashed;}
+          .fin-slots{display:inline-flex;gap:4px;vertical-align:middle;margin:0 10px;}
+          .fin-slots i{width:22px;height:10px;border-radius:5px;border:2px solid var(--pst-ink);opacity:.5;}
+          .fin-slots i.need{opacity:1;background:var(--pst-tint);}
+          .fin-slots i.won{opacity:1;background:var(--pst-ink);}
+          .fin-slots i.lost{opacity:.35;border-style:dashed;}
+        `;
+        return (
+          <PlayStage bg={gameColor('finesse')} label="Finesse"
+            eyebrow={`Trick ${Math.min(trickNo, R)} of ${R} · ${PUZZLE.trump ? `${SUIT_GLYPH[TRUMP]} trumps` : 'no trumps'}`}
+            top={<>
+              <style dangerouslySetInnerHTML={{ __html: finCss }} />
+              <h2 className="pst-q" style={{ fontSize: 24 }}>Take {TARGET} of the {R} tricks</h2>
+              <div className="fin-hn"><b>North · dummy</b>{seatNote(0)}</div>
+              {stHand(0)}
+              <div className="fin-mid">{stSide(3)}{trickBox}{stSide(1)}</div>
+              {stHand(2)}
+              <div className="fin-hn"><b>South · you</b>{seatNote(2)}</div>
+              {short ? (
+                <div className="pst-card">
+                  <small>Contract missed</small>
+                  <b>{TRICK_WORD[pos.ns].replace(/^./, (c) => c.toUpperCase())}, not {TRICK_WORD[TARGET]}.</b>
+                </div>
+              ) : (
+                <div className="pst-note" aria-live="polite">{[lastLine, nowLine].filter(Boolean).join(' ')}</div>
+              )}
+            </>}
+            bottom={<>
+              {short ? (
+                <button type="button" className="pst-tb wide on" onClick={rewind}>Try again</button>
+              ) : (
+                <div className="pst-tools">
+                  <button type="button" className="pst-tb" onClick={takeBack} disabled={!playing || !g.plays.length}>
+                    <Undo2 size={16} aria-hidden="true" /> Take it back
+                  </button>
+                  <button type="button" className="pst-tb" onClick={rewind} disabled={done || lost || !g.plays.length}>
+                    <RotateCcw size={16} aria-hidden="true" /> Start again
+                  </button>
+                </div>
+              )}
+              <div className="pst-tools">
+                <button type="button" className={'pst-tb fin-tb q2' + (armGive ? ' on' : '')} onClick={tapGiveUp}>
+                  <Flag size={16} aria-hidden="true" /> {armGive ? 'Tap again to give up' : 'Give up'}
+                </button>
+              </div>
+            </>}
+            foot={<>
+              Tricks {pos.ns}
+              <span className="fin-slots" role="img" aria-label={`${pos.ns} of ${TARGET} tricks taken, ${pos.tricks.length} of ${R} played`}>
+                {Array.from({ length: R }).map((_, i) => {
+                  const t = pos.tricks[i];
+                  return <i key={i} className={t ? (isNS(t.winner) ? 'won' : 'lost') : (i < TARGET ? 'need' : '')} />;
+                })}
+              </span>
+              Try {g.tries}
+            </>}
+          />
+        );
+      })()}
       <Grain />
       <Cap
         game="finesse" quizId={PUZZLE.quizId} name="Finesse" num={PUZZLE.num}

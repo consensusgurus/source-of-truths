@@ -59,6 +59,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { hinges, inVocab, HINGE_PAIRS } from '@/lib/hinge-pairs';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 
 // Hinge identity is INDIGO, between the Word row's ambers and the crossword
@@ -282,6 +283,26 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
   const inputRef = useRef(null);
   const wordSetRef = useRef(null);
   const coveredLenRef = useRef(null);
+  // The phone stage (owner, 2026-10-25): a full-screen drawing of the same
+  // chain with its own letter keys, so the page input below is never focused.
+  const phoneStage = usePhoneStage();
+  const stageKeyRef = useRef(null);
+  useEffect(() => {
+    if (!phoneStage) return undefined;
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+      const k = e.key;
+      const f = stageKeyRef.current;
+      if (!f) return;
+      if (k === 'Enter') { e.preventDefault(); f('ENTER'); }
+      else if (k === 'Backspace') { e.preventDefault(); f('DEL'); }
+      else if (/^[a-zA-Z]$/.test(k)) { e.preventDefault(); f(k.toUpperCase()); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [phoneStage]);
 
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
@@ -468,7 +489,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
   // a dead end is named the moment it happens rather than four words later
   const deadEnd = useMemo(() => playing && cur > 0 && !completion(fill, COUNTS, GIVEN), [playing, cur, fill, COUNTS, GIVEN]);
 
-  useEffect(() => { if (started && cur >= 0 && inputRef.current) { try { inputRef.current.focus({ preventScroll: true }); } catch (e) {} } }, [started, cur]);
+  useEffect(() => { if (started && cur >= 0 && !phoneStage && inputRef.current) { try { inputRef.current.focus({ preventScroll: true }); } catch (e) {} } }, [started, cur, phoneStage]);
 
   const REC_KEY = `sot_hinge_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
@@ -650,6 +671,97 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        const stageKey = (k) => {
+          if (!playing || cur < 0) return;
+          if (k === 'ENTER') { submit(); return; }
+          if (k === 'DEL') { setDraft((d) => d.slice(0, -1)); return; }
+          if (k === 'CLR') { setDraft(''); return; }
+          setDraft((d) => (d + k).slice(0, COUNTS[cur]));
+        };
+        stageKeyRef.current = stageKey;
+        const maxLen = Math.max(...COUNTS);
+        const tight = L > 6;
+        const giveUp = () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } };
+        const ready = cur >= 0 && draft.length === COUNTS[cur];
+        const line = toast
+          || (deadEnd
+            ? `No chain reaches ${fill[L - 1]} from ${fill[cur - 1]}. Tap a word to back up, free.`
+            : (cur > 0 ? `${fill[cur - 1]} ___${cur === L - 2 ? ` ___ ${fill[L - 1]}` : ''} · tap a placed word to clear it and everything below` : ''));
+        const top = (
+          <>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .hgs-chain{display:flex;flex-direction:column;align-items:center;gap:4px;--hgs-n:${maxLen};}
+              .hgs-sl{display:flex;gap:5px;padding:0;border:0;background:transparent;}
+              .hgs-sl span{width:min(44px, calc((100vw - 40px) / var(--hgs-n) - 5px));height:${tight ? 36 : 42}px;border-radius:10px;border:2px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:${tight ? 20 : 24}px;font-weight:800;background:var(--pst-tint);}
+              .hgs-sl.given span{background:var(--pst-ink);color:var(--pst-bg);}
+              .hgs-sl.now span{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+              .hgs-sl.open span{border-style:dashed;background:transparent;opacity:.55;}
+              .hgs-hj{width:2px;height:${tight ? 6 : 10}px;background:var(--pst-ink);opacity:.5;}
+              .hgs-det{font-size:12px;font-weight:800;opacity:.7;text-decoration:line-through;margin:-2px 0 2px;}
+              .hgs-line{text-align:center;font-size:13px;font-weight:700;opacity:.8;line-height:1.35;min-height:1.35em;}
+              @keyframes hgsShake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+              .hgs-shake{animation:hgsShake .42s cubic-bezier(.36,.07,.19,.97) both;}
+              .hgs-kb{display:flex;flex-direction:column;gap:7px;}
+              .hgs-kr{display:flex;justify-content:center;gap:5px;}
+              .hgs-k{flex:1 1 0;max-width:38px;height:50px;border-radius:9px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:17px;font-weight:800;padding:0;touch-action:manipulation;}
+              .hgs-k.w{max-width:60px;flex:1.6 1 0;font-size:13px;}
+              .hgs-k:active{transform:scale(.94);}
+              @media (prefers-reduced-motion: reduce){.hgs-shake{animation:none}}
+            ` }} />
+            <div key={shake} className={`hgs-chain${shake ? ' hgs-shake' : ''}`}>
+              {fill.map((w, i) => {
+                const given = !!GIVEN[i];
+                const now = !w && i === cur;
+                const kind = given ? 'given' : (w ? 'mine' : (now ? 'now' : 'open'));
+                const letters = Array.from({ length: COUNTS[i] }, (_, k) => (w ? w[k] : (now ? (draft.toUpperCase()[k] || '') : '')));
+                const cells = letters.map((ch, k) => <span key={k} aria-hidden="true">{ch}</span>);
+                const dets = i + 1 < L ? (g.detours[i + 1] || []) : [];
+                return (
+                  <React.Fragment key={i}>
+                    {kind === 'mine' ? (
+                      <button type="button" className="hgs-sl mine" onClick={() => backTo(i)} aria-label={`${w}, yours. Tap to clear it and everything below`}>{cells}</button>
+                    ) : (
+                      <div className={`hgs-sl ${kind}`} aria-label={given ? `${w}, given` : `Word ${i + 1}, ${COUNTS[i]} letters`}>{cells}</div>
+                    )}
+                    {dets.length > 0 && <span className="hgs-det">{dets.length === 1 ? 'detour' : 'detours'}: {dets.join(', ')}</span>}
+                    {i + 1 < L && <span className="hgs-hj" aria-hidden="true" />}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+            <div className="hgs-line" role="status">{line}</div>
+          </>
+        );
+        const rows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
+        const bottom = (
+          <>
+            <div className="pst-tools">
+              {hintOk && !g.hintUsed && (
+                <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb} Hint</button>
+              )}
+              <button type="button" className={'pst-tb' + (armReveal ? ' on' : '')} onClick={giveUp}>{armReveal ? 'Tap again to end' : 'Give up'}</button>
+              <button type="button" className="pst-tb on" onClick={() => submit()} disabled={!ready}>Place word</button>
+            </div>
+            <div className="hgs-kb">
+              {rows.map((r, ri) => (
+                <div className="hgs-kr" key={ri}>
+                  {ri === 2 && <button type="button" className="hgs-k w" onClick={() => stageKey('CLR')}>Clear</button>}
+                  {r.split('').map((ch) => <button type="button" key={ch} className="hgs-k" onClick={() => stageKey(ch)}>{ch}</button>)}
+                  {ri === 2 && <button type="button" className="hgs-k w" onClick={() => stageKey('DEL')} aria-label="Delete">Del</button>}
+                </div>
+              ))}
+            </div>
+          </>
+        );
+        return (
+          <PlayStage bg={gameColor('hinge')} label="Hinge"
+            eyebrow="Each pair makes a compound or a phrase"
+            top={top} bottom={bottom}
+            foot={`${hinged} of ${TO_FILL} placed · ${detourCount} detour${detourCount === 1 ? '' : 's'}`}
+            frac={TO_FILL ? hinged / TO_FILL : 0} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="hinge" name="Hinge" collapsed={started} loft={LOFT} />

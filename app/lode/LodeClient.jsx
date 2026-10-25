@@ -70,6 +70,7 @@ import LoftFinish from '../LoftFinish';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -261,6 +262,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
   // Touch UI is tracked separately from mobileUi (which gates the Add to Home
   // Screen button): it governs the on-screen KEYBOARD, and a touch laptop or an
   // iPad reporting a desktop UA still wants the touch behaviour.
@@ -649,6 +651,90 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (
+        <PlayStage bg={gameColor('lode')} label="Lode"
+          top={(
+            <>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .lds-rank{display:flex;flex-direction:column;gap:6px;}
+                .lds-rank .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;font-weight:800;}
+                .lds-rank .top b{font-size:22px;}
+                .lds-steps{display:flex;gap:4px;}
+                .lds-steps i{flex:1;height:8px;border-radius:4px;background:color-mix(in srgb, var(--pst-ink) 18%, transparent);}
+                .lds-steps i.on{background:var(--pst-ink);}
+                .lds-found{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+                .lds-found span{font-size:13px;font-weight:800;padding:5px 10px;border:2px solid var(--pst-ink);border-radius:999px;display:flex;gap:6px;background:var(--pst-tint);}
+                .lds-found span.new{background:var(--pst-ink);color:var(--pst-bg);}
+                .lds-found b{opacity:.6;}
+                .pst .lds-entry{width:100%;text-align:center;font:inherit;font-size:34px;font-weight:800;letter-spacing:.08em;min-height:52px;border:0;border-bottom:2px solid var(--pst-ink);background:transparent;color:var(--pst-ink);outline:none;border-radius:0;padding:0 4px;text-transform:uppercase;}
+                .pst .lds-entry::placeholder{font-size:15px;letter-spacing:0;font-weight:700;opacity:.55;color:var(--pst-ink);text-transform:none;}
+                .lds-comb{position:relative;align-self:center;}
+                .pst .lds-hx{position:absolute;width:84px;height:80px;clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%);border:0;background:var(--pst-tint);font-size:30px;font-weight:800;color:var(--pst-ink);padding:0;touch-action:manipulation;}
+                .pst .lds-hx:active{transform:scale(.95);}
+                .pst .lds-hx.core{background:var(--pst-ink);color:var(--pst-bg);}
+              ` }} />
+              <div className="lds-rank">
+                <div className="top">
+                  <span>{rank.n}</span>
+                  <b>{score} pts</b>
+                  <span>{nextRank ? `${nextRank.n} at ${nextRank.at}` : 'Every word found'}</span>
+                </div>
+                <div className="lds-steps" aria-hidden="true">
+                  {PUZZLE.ranks.map((r) => <i key={r.n} className={score >= r.at ? 'on' : undefined} />)}
+                </div>
+              </div>
+              {g.found.length > 0 && (
+                <div className="lds-found" aria-label="Words found">
+                  {g.found.slice().reverse().slice(0, 12).map((w) => (
+                    <span key={w} className={flash === w ? 'new' : undefined}>{w}<b>{WORDS.get(w)?.p}</b></span>
+                  ))}
+                </div>
+              )}
+              <input
+                className="lds-entry"
+                value={entry}
+                onChange={(e) => setEntry(e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 20))}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitEntry(); } }}
+                placeholder="Tap the letters, or tap here to type"
+                aria-label="Your word"
+                autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+              />
+              <div className="lds-comb" style={{ width: HEX.w, height: HEX.h }} aria-label={`Letters, ${CORE} is the core`}>
+                {HEX.cells.map((c) => (
+                  <button key={c.key} type="button"
+                    className={`lds-hx${c.core ? ' core' : ''}`}
+                    style={{ left: c.x, top: c.y }}
+                    onMouseDown={keepFocus}
+                    onClick={() => tapLetter(c.ch)}
+                    aria-label={c.core ? `Core letter ${c.ch}, required in every word` : `Letter ${c.ch}`}>
+                    {c.ch}
+                  </button>
+                ))}
+              </div>
+              <div className="pst-note" aria-live="polite">
+                {toast ? toast.msg : `Every word uses the center ${CORE} · ${MIN_LEN} letters or more · rare words pay triple`}
+              </div>
+            </>
+          )}
+          bottom={(
+            <>
+              <div className="pst-tools">
+                <button type="button" className="pst-tb" onMouseDown={keepFocus} onClick={() => setEntry((e) => e.slice(0, -1))} disabled={!entry}>Delete</button>
+                <button type="button" className="pst-tb" onMouseDown={keepFocus} onClick={shuffleLetters}>Shuffle</button>
+                <button type="button" className="pst-tb on" onMouseDown={keepFocus} onClick={submitEntry} disabled={!entry}>Mine it</button>
+              </div>
+              <div className="pst-tools">
+                <button type="button" className={`pst-tb${confirming ? ' on' : ''}`} onClick={cashIn} disabled={!g.found.length}>{confirming ? `Post ${score} pts, sure?` : 'Cash in'}</button>
+                {confirming && <button type="button" className="pst-tb" onClick={() => setConfirming(false)}>Keep digging</button>}
+              </div>
+            </>
+          )}
+          foot={`${g.found.length} word${g.found.length === 1 ? '' : 's'} · ${struck ? `Lode struck at ${VEIN}` : `Lode at ${VEIN}`}`}
+          frac={Math.min(1, score / Math.max(1, VEIN))}
+        />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

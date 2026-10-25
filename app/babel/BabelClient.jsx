@@ -51,6 +51,7 @@ import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import useIqStanding from '../useIqStanding';
@@ -326,6 +327,41 @@ function deriveStats(stats, todayNum) {
   return { played, won, cur, max };
 }
 
+// Phone stage board (owner, 2026-10-25): white page, the tiles carry the
+// category tint, played tiles are ink.
+const BAB_STAGE_CSS = `
+.bab-top2{display:flex;gap:12px;align-items:center;}
+.bab-mm{display:grid;grid-template-columns:repeat(11,7px);grid-auto-rows:7px;gap:1px;padding:5px;border:2px solid var(--pst-ink);border-radius:10px;flex:none;background:var(--pst-bg);}
+.bab-mm i{background:var(--pst-tint);}
+.bab-mm i.w{outline:1px solid var(--pst-ink);}
+.bab-mm i.f{background:var(--pst-ink);}
+.bab-sc{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:6px;text-align:center;}
+.bab-sc div{border:2px solid var(--pst-ink);border-radius:12px;padding:6px 0;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;background:var(--pst-tint);}
+.bab-sc b{display:block;font-size:24px;letter-spacing:0;}
+.bab-tabs{display:flex;border:2px solid var(--pst-ink);border-radius:12px;overflow:hidden;}
+.pst .bab-tabs button{flex:1;min-height:42px;border:0;background:transparent;font-size:14px;font-weight:800;}
+.pst .bab-tabs button+button{border-left:2px solid var(--pst-ink);}
+.pst .bab-tabs button.on{background:var(--pst-ink);color:var(--pst-bg);}
+.bab-board{align-self:center;display:grid;gap:3px;width:100%;max-width:356px;}
+.bab-board.whole{gap:2px;}
+.pst .bab-c{aspect-ratio:1;border:2px solid var(--pst-ink);border-radius:9px;background:var(--pst-tint);font-size:22px;font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;line-height:1;min-width:0;}
+.pst .bab-c.pm{font-size:10px;letter-spacing:.02em;}
+.pst .bab-c.sm{border-width:1.5px;border-radius:5px;font-size:13px;}
+.pst .bab-c.f{background:var(--pst-ink);color:var(--pst-bg);}
+.pst .bab-c.f.foe{box-shadow:inset 0 0 0 2px var(--pst-bg);}
+.pst .bab-c.p{background:var(--pst-tint);box-shadow:inset 0 0 0 3px var(--pst-bg),inset 0 0 0 5px var(--pst-ink);}
+.pst .bab-c.sel{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);position:relative;z-index:1;}
+.bab-pan{display:flex;justify-content:center;gap:8px;}
+.pst .bab-pan .pst-arr:disabled{opacity:.3;cursor:default;}
+.bab-bag{display:flex;flex-direction:column;gap:10px;}
+.bab-bad{font-weight:800;opacity:1;}
+.bab-rack{display:flex;gap:8px;justify-content:center;}
+.pst .bab-tile{position:relative;width:52px;height:52px;border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:24px;font-weight:800;padding:0;}
+.pst .bab-tile small{position:absolute;right:5px;bottom:3px;font-size:10px;font-weight:800;}
+.pst .bab-tile.on{background:var(--pst-ink);color:var(--pst-bg);}
+.bab-gone{width:52px;height:52px;border-radius:11px;border:2px dashed var(--pst-rule);box-sizing:border-box;}
+`;
+
 export default function BabelClient({ puzzles, forceNum }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const BENCH = PUZZLE.benchmark;
@@ -374,6 +410,11 @@ export default function BabelClient({ puzzles, forceNum }) {
   const [gateRules, setGateRules] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
   const [armGive, setArmGive] = useState(false); // two-tap Give up (owner, 2026-10-18)
+  // The phone stage (owner, 2026-10-25): which view it shows and where its
+  // zoomed window sits. Drawing state only; play state is untouched.
+  const phoneStage = usePhoneStage();
+  const [stView, setStView] = useState('zoom');
+  const [stOrg, setStOrg] = useState(null);
   // The finished board starts turned OVER, showing what to do next.
   const [revealed, setRevealed] = useState(false);
   const [shareCta, setShareCta] = useState('Share');
@@ -636,6 +677,149 @@ export default function BabelClient({ puzzles, forceNum }) {
       )}
     </ul>
   ) : <span className="bb-empty">No plays yet. You move first.</span>;
+
+  // ─── the phone stage ────────────────────────────────────────────────────
+  // A 7 by 7 window onto the 11 by 11 board, a map of the whole board that
+  // moves the window, and the same rack and buttons as the page. Every tap
+  // calls the handlers below (onCell, the rack arm, playWord, passTurn,
+  // giveTap), so the stage keeps no game state of its own.
+  const ZW = Math.min(7, SIZE);
+  const clampOrg = (v) => Math.max(0, Math.min(SIZE - ZW, v));
+  const stDefault = useMemo(() => {
+    let n = 0, sr = 0, sc = 0;
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (PUZZLE.board[r][c] !== '.') { n++; sr += r; sc += c; }
+    const cr = n ? Math.round(sr / n) : Math.floor(SIZE / 2);
+    const cc = n ? Math.round(sc / n) : Math.floor(SIZE / 2);
+    return { r: clampOrg(cr - 3), c: clampOrg(cc - 3) };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [PUZZLE]);
+  const zo = stOrg || stDefault;
+  useEffect(() => {
+    if (!sel) return;
+    if (sel.r >= zo.r && sel.r < zo.r + ZW && sel.c >= zo.c && sel.c < zo.c + ZW) return;
+    setStOrg({ r: clampOrg(sel.r - 3), c: clampOrg(sel.c - 3) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sel]);
+
+  function babelStage() {
+    const cellOf = (r, c, big) => {
+      const p = pendingAt.get(`${r},${c}`);
+      const v = p ? p.L : grid[r][c];
+      const pm = v ? null : PREM[PREMIUM[r][c]];
+      const isSel = sel && sel.r === r && sel.c === c;
+      const wasFoe = !p && grid[r][c] && g.log.length && lastFoeCells.has(`${r},${c}`);
+      const label = `Row ${r + 1} column ${c + 1}${v ? `, ${v}${p ? ' pending' : ''}` : pm ? `, ${pm.name}` : ''}${isSel ? `, picked, going ${dir === 'h' ? 'across' : 'down'}` : ''}`;
+      const cls = 'bab-c' + (big ? '' : ' sm') + (v && !p ? ' f' : '') + (p ? ' p' : '') + (wasFoe ? ' foe' : '') + (isSel ? ' sel' : '') + (pm ? ' pm' : '');
+      if (v && !p) return <span key={`${r}-${c}`} className={cls} role="img" aria-label={label}>{v}</span>;
+      return (
+        <button key={`${r}-${c}`} type="button" className={cls} aria-label={label} onClick={() => onCell(r, c)}>
+          {v || (isSel ? (dir === 'h' ? '→' : '↓') : (pm && big ? pm.label : ''))}
+        </button>
+      );
+    };
+    const zoomCells = [];
+    for (let r = zo.r; r < zo.r + ZW; r++) for (let c = zo.c; c < zo.c + ZW; c++) zoomCells.push(cellOf(r, c, true));
+    const wholeCells = [];
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) wholeCells.push(cellOf(r, c, false));
+    const mapCells = [];
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      const inWin = r >= zo.r && r < zo.r + ZW && c >= zo.c && c < zo.c + ZW;
+      const filled = !!grid[r][c] || pendingAt.has(`${r},${c}`);
+      mapCells.push(<i key={`${r}-${c}`} className={(filled ? 'f' : '') + (inWin ? ' w' : '')} />);
+    }
+    const onMap = (e) => {
+      const rc = e.currentTarget.getBoundingClientRect();
+      const fx = (e.clientX - rc.left) / rc.width, fy = (e.clientY - rc.top) / rc.height;
+      const r = Math.floor(fy * SIZE), c = Math.floor(fx * SIZE);
+      setStOrg({ r: clampOrg(r - 3), c: clampOrg(c - 3) });
+      setStView('zoom');
+    };
+    const pan = (dr, dc) => setStOrg({ r: clampOrg(zo.r + dr), c: clampOrg(zo.c + dc) });
+    const where = `${zo.r < 2 ? 'top' : zo.r > SIZE - ZW - 2 ? 'bottom' : 'middle'} ${zo.c < 2 ? 'left' : zo.c > SIZE - ZW - 2 ? 'right' : 'centre'}`;
+    const top = (
+      <>
+        <style dangerouslySetInnerHTML={{ __html: BAB_STAGE_CSS }} />
+        <div className="bab-top2">
+          <button type="button" className="bab-mm" onClick={onMap} aria-label="Whole board map. Tap to move the zoomed window there.">{mapCells}</button>
+          <div className="bab-sc">
+            <div>Spread<b>{signed(spread)}</b></div>
+            <div>Benchmark<b>{signed(BENCH)}</b></div>
+          </div>
+        </div>
+        <div className="bab-tabs" role="tablist" aria-label="Board view">
+          {[['zoom', 'Zoom'], ['whole', 'Whole board'], ['bag', 'Bag']].map(([k, t]) => (
+            <button key={k} type="button" role="tab" aria-selected={stView === k} className={stView === k ? 'on' : ''} onClick={() => setStView(k)}>{t}</button>
+          ))}
+        </div>
+        {stView === 'zoom' ? (
+          <>
+            <div className="bab-board" role="grid" aria-label={`Babel board, ${where}`} style={{ gridTemplateColumns: `repeat(${ZW}, minmax(0, 1fr))` }}>{zoomCells}</div>
+            <div className="bab-pan">
+              <button type="button" className="pst-arr" aria-label="Move the window left" disabled={zo.c === 0} onClick={() => pan(0, -1)}>{ICON.left}</button>
+              <button type="button" className="pst-arr" aria-label="Move the window up" disabled={zo.r === 0} onClick={() => pan(-1, 0)}>{ICON.up}</button>
+              <button type="button" className="pst-arr" aria-label="Move the window down" disabled={zo.r === SIZE - ZW} onClick={() => pan(1, 0)}>{ICON.down}</button>
+              <button type="button" className="pst-arr" aria-label="Move the window right" disabled={zo.c === SIZE - ZW} onClick={() => pan(0, 1)}>{ICON.right}</button>
+            </div>
+          </>
+        ) : stView === 'whole' ? (
+          <div className="bab-board whole" role="grid" aria-label="Babel board, whole" style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` }}>{wholeCells}</div>
+        ) : (
+          <div className="bab-bag">
+            <div className="pst-chips">
+              {BAG_ROWS.map(([L, n]) => (
+                <span key={L} className="pst-chip" aria-label={`${L}, ${n} in the bag`}>{L} &times;{n}</span>
+              ))}
+            </div>
+            <p className="pst-note">The bag held {BAG_SIZE} tiles, no blanks. Their {foeRack.length} tiles are whatever it has left once you take away the board and your rack.</p>
+            {g.log.length ? (
+              <div className="pst-list">
+                {g.log.map((m, i) => (
+                  <div key={i} className={'pst-row' + (m.who === 'you' ? ' on' : '')}>
+                    <span className="t">{m.who === 'you' ? 'You' : 'Them'} · {m.word}</span>
+                    {m.score ? <span className="pst-tag f">{m.score}</span> : null}
+                  </div>
+                ))}
+              </div>
+            ) : <p className="pst-note">No plays yet. You move first.</p>}
+          </div>
+        )}
+        <div className={'pst-note' + (statusBad ? ' bab-bad' : '')} aria-live="polite">{toast || statusLine}</div>
+      </>
+    );
+    const bottom = (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className="bab-rack" aria-label="Your rack">
+          {g.rack.map((L, i) => {
+            const used = usedIdx.has(i);
+            if (used) return <span key={i} className="bab-gone" aria-label={`Tile ${L}, on the board`} />;
+            return (
+              <button key={i} type="button" className={'bab-tile' + (armed === i ? ' on' : '')}
+                aria-pressed={armed === i}
+                aria-label={`Tile ${L}, ${PTS[L]} point${PTS[L] === 1 ? '' : 's'}${armed === i ? ', in hand' : ''}`}
+                onClick={() => { if (!playing || thinking) return; startClock(); setArmed((a) => (a === i ? null : i)); }}>
+                {L}<small>{PTS[L]}</small>
+              </button>
+            );
+          })}
+        </div>
+        <div className="pst-tools">
+          <button type="button" className="pst-tb" disabled={!pending.length || thinking} onClick={() => { setPending([]); setArmed(null); }}>Recall</button>
+          <button type="button" className="pst-tb" disabled={thinking} onClick={passTurn}>Pass</button>
+          <button type="button" className={'pst-tb' + (armGive ? ' on' : '')} onClick={giveTap}>{armGive ? 'Tap again' : 'Give up'}</button>
+          <button type="button" className="pst-tb on" disabled={!pending.length || thinking || (preview && !preview.ok)} onClick={playWord}>
+            Play{preview && preview.ok ? ` ${preview.score}` : ''}
+          </button>
+        </div>
+      </div>
+    );
+    const frac = BENCH > 0 ? Math.max(0, Math.min(1, spread / BENCH)) : null;
+    return (
+      <PlayStage bg={gameColor('babel')} label="Babel"
+        eyebrow={`The bag is empty · their ${foeRack.length} tiles are yours to work out`}
+        top={top} bottom={bottom} frac={frac}
+        foot={thinking ? 'Their move' : `Your move · you ${g.my}, them ${g.foeScore}`} />
+    );
+  }
 
   // ─── placing tiles ───────────────────────────────────────────────────────
   function startClock() { setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() })); }
@@ -905,6 +1089,7 @@ export default function BabelClient({ puzzles, forceNum }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', fontFamily: SANS, position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && playing && !!g.t0 ? babelStage() : null}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

@@ -3460,7 +3460,9 @@ export default function StageToday() {
   // its lighter step on the light register, a deep wash of it on the dark.
   const mPane = runsMq && picked && mph;
   const mBackTo = paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID ? 'Home' : ixLens === 'skill' ? 'All skills' : 'All categories';
-  const mTintCat = mPane && paneCat(paneOn) ? rampCat(paneOn) : null;
+  // White page, coloured tiles (owner, 2026-10-25): the category no longer
+  // recolours the page; its colour lives on the tiles.
+  const mTintCat = null;
   // A real hex, not color-mix: the browser bar colour (theme-color) takes only a plain colour.
   const mTintBg = mTintCat ? (light ? softGround(categoryColor(mTintCat)) : mixHex(categoryColor(mTintCat), '#0b0f1a', 0.22)) : null;
   // The same hold the play stages use, so Safari's top and bottom bars take the colour too.

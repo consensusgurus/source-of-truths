@@ -64,6 +64,7 @@ import { FREE, FND, suitOf, rankOf, redOf, RANK_LABEL, SUIT_PIP, SUIT_NAME, star
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -330,6 +331,16 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('cell'), '--stg-acc-lt': gameColorLight('cell'), '--stg-onramp-lt': gameOnrampLight('cell'), '--stg-acc-ink-lt': gameAccentInkLight('cell') };
   const [stageTheme] = useStageTheme();
+  const phoneStage = usePhoneStage();
+  // The phone stage sizes its cards off the viewport (the felt is not measured there).
+  const [stVw, setStVw] = useState(390);
+  useEffect(() => {
+    if (!phoneStage) return undefined;
+    const read = () => { try { setStVw(Math.min(520, window.innerWidth || 390)); } catch (e) {} };
+    read();
+    window.addEventListener('resize', read);
+    return () => window.removeEventListener('resize', read);
+  }, [phoneStage]);
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -715,10 +726,148 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
 
   const fnd = state.fnd;
 
+  // ── the phone stage (owner, 2026-10-25): the same deal drawn full screen.
+  // Every tap calls the board's own onCard / onTableau / onDest, so the rules,
+  // the move count and the save are untouched. Desktop never mounts it.
+  const cellStage = phoneStage && started ? (() => {
+    const AW = stVw - 28;
+    const NP = CELLS + 4;
+    const PW = Math.max(34, Math.min(54, Math.floor((AW - 5 * (NP - 1)) / NP)));
+    const PH = Math.round(PW * 1.41);
+    const CW = Math.max(34, Math.min(54, Math.floor((AW - 5 * (COLS - 1)) / COLS)));
+    const CH = Math.round(CW * 1.41);
+    const REV = Math.round(CH * 0.32);
+    const MAXH = 330;
+    const revOf = (len) => (len <= 1 ? REV : Math.max(Math.round(CH * 0.2), Math.min(REV, Math.floor((MAXH - CH) / (len - 1)))));
+    const tabH = 12 + CH + Math.max(REV * 5, ...state.cols.map((c) => revOf(c.length) * Math.max(0, c.length - 1)));
+    const inHand = sel != null;
+    const selLoc = inHand ? locate(state, sel) : null;
+    const selN = selLoc ? selLoc.n : 0;
+    const short = (c) => `${RANK_LABEL[rankOf(c)]}${SUIT_PIP[suitOf(c)]}`;
+    const named = (c) => `${RANK_LABEL[rankOf(c)]} of ${SUIT_NAME[suitOf(c)]}`;
+    const rides = (j, k) => !!(selLoc && selLoc.where === 'col' && selLoc.i === j && k >= selLoc.k);
+    const hinted = (c) => !!(hintCards && hintCards.includes(c));
+    const face = (c, w, h, cls, extra, onClick, label, style) => (
+      <button key={c} type="button" className={'cst-pc' + (redOf(c) === 1 ? ' red' : '') + (cls || '')} onClick={onClick} aria-label={label}
+        style={{ width: w, height: h, fontSize: Math.round(w * 0.31), ...style }}>
+        {RANK_LABEL[rankOf(c)]}<i style={{ fontSize: Math.round(w * 0.26) }}>{SUIT_PIP[suitOf(c)]}</i>{extra}
+      </button>
+    );
+    const freeIdx = state.free.indexOf(null);
+    const say2 = toast || (inHand
+      ? `${short(sel)}${selN > 1 ? ` and ${selN - 1} more` : ''} in hand. Tap where it goes.`
+      : (movable.length ? 'Tap a card to pick it up. Double-tap sends a card home.' : 'Nothing can move. Restart the deal.'));
+    const pilesRow = (
+      <div className="cst-top" style={{ gridTemplateColumns: `repeat(${NP},${PW}px)` }}>
+        {state.free.map((card, i) => (
+          <div key={`f${i}`} className="cst-w">
+            {card != null
+              ? face(card, PW, PH, (sel === card ? ' lift' : '') + (hinted(card) ? ' hint' : ''), null, () => onCard(card), `Free cell ${i + 1}: ${named(card)}${sel === card ? ', in hand' : ''}`)
+              : <button type="button" className={'cst-slot' + (inHand && dests.includes(FREE) && i === freeIdx ? ' drop' : '')} onClick={() => onDest(FREE)} disabled={!inHand}
+                  aria-label={`Free cell ${i + 1}, open${inHand && dests.includes(FREE) ? `: drop the ${named(sel)} here` : ''}`}
+                  style={{ width: PW, height: PH, fontSize: 11 }}>open</button>}
+            <span className="cst-lab">Free</span>
+          </div>
+        ))}
+        {[0, 1, 2, 3].map((st) => {
+          const top = fnd[st];
+          const live = inHand && dests.includes(FND) && suitOf(sel) === st;
+          const nm = SUIT_NAME[st];
+          return (
+            <div key={`h${st}`} className="cst-w">
+              {top > 0
+                ? face(st * 16 + top, PW, PH, live ? ' drop' : '', null, live ? () => onDest(FND) : undefined,
+                    live ? `${nm} home: ${RANK_LABEL[top]}. Drop the ${named(sel)} here` : `${nm} home: ${RANK_LABEL[top]}`)
+                : <button type="button" className={'cst-slot' + (live ? ' drop' : '')} onClick={() => onDest(FND)} disabled={!inHand}
+                    aria-label={`${nm} home, empty${live ? `: send the ${named(sel)} home` : ''}`}
+                    style={{ width: PW, height: PH, fontSize: 20, color: redOf(st * 16 + 1) === 1 ? RED_PIP : undefined }}>{SUIT_PIP[st]}</button>}
+              <span className="cst-lab">Home</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+    const tab = (
+      <div className="cst-tab" aria-label={`The ${COLS} columns`} style={{ gridTemplateColumns: `repeat(${COLS},${CW}px)`, minHeight: tabH }}>
+        {state.cols.map((col, j) => {
+          const sp = inHand && !dests.includes(j) ? splits[j] : null;
+          const live = inHand && (dests.includes(j) || !!sp);
+          const rev = revOf(col.length);
+          return (
+            <div key={j} className="cst-col" style={{ height: 12 + CH + rev * Math.max(0, col.length - 1) }}>
+              {col.length ? null : (
+                <button type="button" className={'cst-slot' + (live ? ' drop' : '')} onClick={() => onDest(j)} disabled={!inHand}
+                  aria-label={`Column ${j + 1}, empty${live ? (sp ? `: drop the last ${sp.m} cards here` : `: drop the ${named(sel)} here`) : ''}`}
+                  style={{ position: 'absolute', left: 0, top: 12, width: CW, height: CH, fontSize: 11 }}>{live ? (sp ? `Drop ${sp.m}` : 'Drop') : ''}</button>
+              )}
+              {col.map((card, k) => {
+                const isTop = k === col.length - 1;
+                const lifted = rides(j, k);
+                return face(card, CW, CH,
+                  (lifted ? ' lift' : '') + (live && isTop ? ' drop' : '') + (hinted(card) ? ' hint' : '') + (isTop ? '' : ' cov'),
+                  null, () => onTableau(j, k),
+                  `${named(card)}${lifted ? ', in hand' : live && isTop ? `: put the ${named(sel)} on it` : isTop ? '' : ', buried'}`,
+                  { position: 'absolute', left: 0, top: 12 + k * rev, zIndex: k + 1 });
+              })}
+            </div>
+          );
+        })}
+      </div>
+    );
+    return (
+      <PlayStage bg={gameColor('cell')} label="Cell" eyebrow={`FreeCell · ace to ${RANKS === 10 ? 'ten' : 'eight'} · ${CELLS} free cell${CELLS === 1 ? '' : 's'}`}
+        top={(
+          <>
+            <style dangerouslySetInnerHTML={{ __html: `
+.cst-top{display:grid;justify-content:space-between}
+.cst-w{display:flex;flex-direction:column;align-items:center;gap:5px}
+.cst-lab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.cst-tab{display:grid;justify-content:space-between;align-items:start}
+.cst-col{position:relative}
+.cst-pc{box-sizing:border-box;border-radius:8px;background:#fff;border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:${BLACK_PIP} !important;padding:0;transition:transform .12s}
+.cst-pc i{font-style:normal;margin-top:3px;color:inherit}
+.cst-pc.red{color:${RED_PIP} !important}
+.cst-pc.cov{justify-content:flex-start;padding-top:4px}
+.cst-pc.lift{transform:translateY(-10px);background:var(--pst-ink);color:var(--pst-bg) !important}
+.cst-pc.hint{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--pst-ink)}
+.cst-pc.drop,.cst-slot.drop{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink);border-style:solid}
+.cst-slot{box-sizing:border-box;border-radius:8px;border:2px dashed var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-weight:800;padding:0}
+.cst-slot:disabled{cursor:default}
+.cst-say{text-align:center;font-size:15px;font-weight:800;line-height:1.35}
+` }} />
+            {pilesRow}
+            {tab}
+            <div className="cst-say" role="status">{say2}</div>
+          </>
+        )}
+        bottom={(
+          <div className="pst-tools">
+            {inHand && dests.includes(FND) ? (
+              <button type="button" className="pst-tb on" onClick={() => onDest(FND)}><span aria-hidden="true">{SUIT_PIP[suitOf(sel)]}</span> Send home</button>
+            ) : (
+              <button type="button" className="pst-tb" onClick={restart} disabled={!used}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg> Restart deal
+              </button>
+            )}
+            {hintOk && !g.hintUsed ? <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb} Hint</button> : null}
+          </div>
+        )}
+        foot={`${used} move${used === 1 ? '' : 's'} · perfect ${perfect} · par ${par}${g.restarts ? ` · ${g.restarts} restart${g.restarts === 1 ? '' : 's'}` : ''}`}
+        frac={par ? Math.min(1, used / par) : 0}
+        giveUp={{
+          armed: !!armReveal,
+          armedLabel: 'Tap again: ends the deal and scores nothing',
+          onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } },
+        }}
+      />
+    );
+  })() : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {cellStage}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

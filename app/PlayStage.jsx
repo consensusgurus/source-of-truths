@@ -28,10 +28,11 @@ export { usePhoneStage } from './WordStage';
 
 export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0 }) {
   const [look, setLook] = useStageLook();
-  const pal = look === 'color' ? { bg: softGround(bg), ink: RAMP_INK } : stagePalette(bg, look);
+  // WHITE PAGE, COLOURED TILES (owner, 2026-10-25).
+  const pal = look === 'color' ? { bg: '#ffffff', ink: RAMP_INK, tile: softGround(bg) } : stagePalette(bg, look);
   useStageChrome(pal.bg);
   return (
-    <div className="pst" role="dialog" aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink }}>
+    <div className="pst" role="dialog" aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
         <StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} />

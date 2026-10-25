@@ -58,6 +58,7 @@ import {
 } from '@/lib/hold-core';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -289,6 +290,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('hold'), '--stg-acc-lt': gameColorLight('hold'), '--stg-onramp-lt': gameOnrampLight('hold'), '--stg-acc-ink-lt': gameAccentInkLight('hold') };
   const [stageTheme] = useStageTheme();
+  const phoneStage = usePhoneStage();
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -645,10 +647,108 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
     return { rows, top, pts: pointsFor(hand, pickM), gap: top - hand.ev[pickM], fin, k, pay: payOf(fin) };
   })() : null;
 
+  // ── the phone stage (owner, 2026-10-25): the same hand drawn full screen.
+  // Every control calls the board's own handlers; desktop never mounts it.
+  const holdStage = phoneStage && started ? (() => {
+    const showFin = reveal ? reveal.fin : null;
+    const live = g.shown === null;
+    const nHeld = popcount(g.sel);
+    const q = reveal
+      ? (reveal.pts ? 'The best hold. 1 point.' : `${fmtEV(reveal.gap)} behind the best. No point.`)
+      : 'Which cards do you keep?';
+    const line = reveal
+      ? `Drew ${reveal.k === 'nothing' ? 'no pay' : `${HAND_LABEL[reveal.k]}, pays ${reveal.pay}`} · score ${score} of ${TOTAL}`
+      : `Hand ${Math.min(current + 1, NH)} of ${NH} · ${nHeld === 0 ? 'tap a card to keep it' : nHeld === 5 ? 'keeping all five' : `holding ${nHeld}`}`;
+    return (
+      <PlayStage bg={gameColor('hold')} label="Hold" eyebrow="Jacks or Better · 9/6" topKey={current}
+        top={(
+          <>
+            <style dangerouslySetInnerHTML={{ __html: `
+.hol-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;padding:14px 0 28px}
+.hol-pc{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:100px;border-radius:10px;background:#fff;border:2px solid var(--pst-ink);font-size:24px;font-weight:800;line-height:1;color:#16181d !important;padding:0;transition:transform .15s}
+.hol-pc i{font-style:normal;font-size:20px;color:inherit}
+.hol-pc.red{color:${FACE_RED} !important}
+.hol-pc.held{transform:translateY(-10px);box-shadow:0 6px 0 var(--pst-ink)}
+.hol-pc.new{border-style:dashed}
+.hol-pc.ring{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink)}
+.hol-pc.held.ring{box-shadow:0 6px 0 var(--pst-ink),0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink)}
+.hol-pc:disabled{cursor:default}
+.hol-tag{position:absolute;bottom:-26px;left:0;right:0;text-align:center;font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--pst-ink) !important}
+.hol-c{display:flex;align-items:center;justify-content:center;gap:8px;min-height:72px;width:100%;border-radius:18px;padding:12px;background:var(--pst-ink);border:2px solid var(--pst-ink);font-size:22px;font-weight:800;color:var(--pst-bg) !important}
+.hol-ev{display:flex;flex-direction:column;gap:5px}
+.hol-ev .pst-row{min-height:44px}
+.hol-mini{display:inline-flex;gap:3px;flex-wrap:wrap}
+.hol-mini span{width:24px;height:32px;border-radius:5px;background:#fff;border:1.5px solid var(--pst-ink);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;color:#16181d !important}
+.hol-mini span.red{color:${FACE_RED} !important}
+.hol-v{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;flex:none;padding-right:6px}
+` }} />
+            <h2 className="pst-q">{q}</h2>
+            <div className="hol-row" role="group" aria-label="Your five cards">
+              {hand.cards.map((c0, k) => {
+                const held = !!((holdM >> k) & 1);
+                const c = showFin && !held ? showFin[k] : c0;
+                const drawn = !!showFin && !held;
+                const ring = k === hintCard;
+                return (
+                  <button key={k} type="button"
+                    className={'hol-pc' + (isRed(c) ? ' red' : '') + (held && !showFin ? ' held' : '') + (drawn ? ' new' : '') + (ring ? ' ring' : '')}
+                    onClick={live ? () => tapCard(k) : undefined} disabled={!live}
+                    aria-pressed={live ? held : undefined}
+                    aria-label={`${cardWords(c)}${showFin ? (held ? ', held' : ', new card') : (held ? ', held' : '')}${ring ? ', hinted' : ''}`}>
+                    {RANKS[rankOf(c)]}<i>{SUITS[suitOf(c)]}</i>
+                    {(held || drawn) ? <span className="hol-tag" aria-hidden="true">{held ? 'HELD' : 'NEW'}</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+            {reveal ? (
+              <div className="hol-ev">
+                {reveal.rows.map((m) => {
+                  const mine = m === pickM;
+                  const best = hand.ev[m] >= reveal.top - 1e-9;
+                  const cs = heldCards(hand.cards, m);
+                  return (
+                    <div key={m} className={'pst-row' + (mine ? ' on' : '')}>
+                      <span className="t">
+                        <span className="hol-mini">
+                          {cs.length ? cs.map((cc) => <span key={cc} className={isRed(cc) ? 'red' : ''}>{RANKS[rankOf(cc)]}{SUITS[suitOf(cc)]}</span>) : 'Draw five'}
+                        </span>
+                      </span>
+                      {best ? <span className="pst-tag f">Best</span> : null}
+                      {mine ? <span className="pst-tag">Yours</span> : null}
+                      <span className="hol-v">{fmtEV(hand.ev[m])}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+          </>
+        )}
+        bottom={(
+          <>
+            {live ? (
+              <button type="button" className="hol-c" onClick={drawIt}>{nHeld === 5 ? 'Stand pat' : 'Draw'}</button>
+            ) : (
+              <button type="button" className="hol-c" onClick={nextHand}>{g.picks.length >= NH ? 'See your score' : 'Next hand'} {ICON.right}</button>
+            )}
+            {live && hintOk && !g.hintUsed ? (
+              <div className="pst-tools"><button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb} Hint</button></div>
+            ) : null}
+            {toast ? <div className="pst-note" role="status">{toast}</div> : null}
+          </>
+        )}
+        foot={line}
+        frac={g.picks.length / NH}
+        giveUp={{ onPress: tapGiveUp, armed: !!armGive, armedLabel: 'Tap again to end the deal' }}
+      />
+    );
+  })() : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {holdStage}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="hold" name="Hold" collapsed={started} loft={LOFT} />

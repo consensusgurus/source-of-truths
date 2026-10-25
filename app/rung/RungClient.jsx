@@ -60,6 +60,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { vocabFor } from './vocab';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 
@@ -236,6 +237,28 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
   const inputRef = useRef(null);
   const shakeRef = useRef(null);
   const ladderRef = useRef(null);
+  // The phone stage (owner, 2026-10-25): a full-screen drawing of the same
+  // ladder with its own letter keys, so the page input below is never focused.
+  const phoneStage = usePhoneStage();
+  const phoneStageRef = useRef(false);
+  phoneStageRef.current = phoneStage;
+  const stageKeyRef = useRef(null);
+  useEffect(() => {
+    if (!phoneStage) return undefined;
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+      const k = e.key;
+      const f = stageKeyRef.current;
+      if (!f) return;
+      if (k === 'Enter') { e.preventDefault(); f('ENTER'); }
+      else if (k === 'Backspace') { e.preventDefault(); f('DEL'); }
+      else if (/^[a-zA-Z]$/.test(k)) { e.preventDefault(); f(k.toUpperCase()); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [phoneStage]);
 
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
@@ -312,6 +335,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
       void el.offsetWidth;
       el.classList.add('rg-shake');
     }
+    if (phoneStageRef.current) return;
     try { inputRef.current?.focus(); } catch (e) {}
   }, [shake]);
   // The ladder is a capped scroll box, so once the climb runs past the visible area a new
@@ -486,7 +510,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
     if (cur.t0) return;
     commit({ ...cur, t0: Date.now() });
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
-    setTimeout(() => { try { inputRef.current?.focus(); } catch (e) {} }, 40);
+    setTimeout(() => { if (phoneStageRef.current) return; try { inputRef.current?.focus(); } catch (e) {} }, 40);
   }
 
   function submit() {
@@ -705,6 +729,94 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        const stageKey = (k) => {
+          if (!playing) return;
+          if (k === 'ENTER') { submit(); return; }
+          if (k === 'DEL') { setDraft((d) => d.slice(0, -1)); return; }
+          if (k === 'CLR') { setDraft(''); return; }
+          setDraft((d) => (d + k).slice(0, 5));
+        };
+        stageKeyRef.current = stageKey;
+        const giveUp = () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } };
+        const SHOW = 4;
+        const hidden = Math.max(0, g.rungs.length - SHOW);
+        const shown = g.rungs.slice(hidden);
+        const d = draft.toLowerCase();
+        const row = (w, prev, kind, key, label) => (
+          <div key={key} className={`rgs-rw ${kind}`} aria-label={label}>
+            {[0, 1, 2, 3, 4].map((i) => {
+              const ch = w[i] || '';
+              const ch2 = kind === 'mine' && prev && prev[i] !== ch;
+              return <span key={i} className={ch2 ? 'ch' : undefined} aria-hidden="true">{ch.toUpperCase()}</span>;
+            })}
+          </div>
+        );
+        const line = toast || `${current.toUpperCase()} to ? · one letter different`;
+        const top = (
+          <>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .rgs-lad{display:flex;flex-direction:column;align-items:center;gap:6px;}
+              .rgs-rw{display:flex;gap:6px;}
+              .rgs-rw span{width:min(50px, calc((100vw - 60px) / 5 - 6px));height:44px;border-radius:10px;border:2px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;background:var(--pst-tint);}
+              .rgs-rw.start span,.rgs-rw.mine span.ch{background:var(--pst-ink);color:var(--pst-bg);}
+              .rgs-rw.now span{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+              .rgs-rw.goal span{border-style:dashed;background:transparent;}
+              .rgs-gap{font-size:12px;font-weight:800;opacity:.6;letter-spacing:.08em;}
+              .rgs-line{text-align:center;font-size:13px;font-weight:700;opacity:.8;line-height:1.35;min-height:1.35em;}
+              @keyframes rgsShake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+              .rgs-shake{animation:rgsShake .42s cubic-bezier(.36,.07,.19,.97) both;}
+              .rgs-kb{display:flex;flex-direction:column;gap:7px;}
+              .rgs-kr{display:flex;justify-content:center;gap:5px;}
+              .rgs-k{flex:1 1 0;max-width:38px;height:50px;border-radius:9px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:17px;font-weight:800;padding:0;touch-action:manipulation;}
+              .rgs-k.w{max-width:60px;flex:1.6 1 0;font-size:13px;}
+              .rgs-k:active{transform:scale(.94);}
+              @media (prefers-reduced-motion: reduce){.rgs-shake{animation:none}}
+            ` }} />
+            <div key={shake} className={`rgs-lad${shake ? ' rgs-shake' : ''}`}>
+              {row(PUZZLE.start, null, 'start', 'start', `${PUZZLE.start.toUpperCase()}, the start`)}
+              {hidden > 0 && <div className="rgs-gap">{hidden} more rung{hidden === 1 ? '' : 's'}</div>}
+              {shown.map((w, j) => {
+                const i = hidden + j;
+                return row(w, i > 0 ? g.rungs[i - 1] : PUZZLE.start, 'mine', `r${i}`, `Rung ${i + 1}, ${w.toUpperCase()}`);
+              })}
+              {row(d, null, 'now', 'now', `Rung ${used + 1}, change one letter of ${current.toUpperCase()}`)}
+              <div className="rgs-gap" aria-hidden="true">. . .</div>
+              {row(PUZZLE.target, null, 'goal', 'goal', `${PUZZLE.target.toUpperCase()}, the goal`)}
+            </div>
+            <div className="rgs-line" role="status">{line}</div>
+          </>
+        );
+        const rows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
+        const bottom = (
+          <>
+            <div className="pst-tools">
+              {hintOk && !g.hintUsed && (
+                <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb} Hint</button>
+              )}
+              <button type="button" className="pst-tb" onClick={restart} disabled={!used}>Restart</button>
+              <button type="button" className={'pst-tb' + (armReveal ? ' on' : '')} onClick={giveUp}>{armReveal ? 'Tap again to end' : 'Give up'}</button>
+              <button type="button" className="pst-tb on" onClick={() => submit()} disabled={draft.length !== 5}>Climb</button>
+            </div>
+            <div className="rgs-kb">
+              {rows.map((r, ri) => (
+                <div className="rgs-kr" key={ri}>
+                  {ri === 2 && <button type="button" className="rgs-k w" onClick={() => stageKey('CLR')}>Clear</button>}
+                  {r.split('').map((ch) => <button type="button" key={ch} className="rgs-k" onClick={() => stageKey(ch)}>{ch}</button>)}
+                  {ri === 2 && <button type="button" className="rgs-k w" onClick={() => stageKey('DEL')} aria-label="Delete">Del</button>}
+                </div>
+              ))}
+            </div>
+          </>
+        );
+        return (
+          <PlayStage bg={gameColor('rung')} label="Rung"
+            eyebrow="Change one letter a rung · real words only"
+            top={top} bottom={bottom}
+            foot={`${used} rung${used === 1 ? '' : 's'} · Par ${par}`}
+            frac={par ? Math.min(1, used / par) : 0} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome — see app/DailyChrome.jsx. Second test game for
           the 2026-08-04 header rollout (Crux is the other). */}

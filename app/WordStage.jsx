@@ -44,12 +44,14 @@ export default function WordStage({
   foot = null, frac = null, giveUp = null,
 }) {
   const [look, setLook] = useStageLook();
-  const pal = look === 'color' ? { bg: softGround(bg), ink: RAMP_INK } : stagePalette(bg, look);
+  // WHITE PAGE, COLOURED TILES (owner, 2026-10-25): the colour look keeps the
+  // page white and puts the category colour on the squares and keys.
+  const pal = look === 'color' ? { bg: '#ffffff', ink: RAMP_INK, tile: softGround(bg) } : stagePalette(bg, look);
   useStageChrome(pal.bg);
   const n = slots.reduce((s, g) => s + g.length, 0) + Math.max(0, slots.length - 1);
   const sn = scramble ? scramble.replace(/ /g, '').length : 0;
   return (
-    <div className="wst" role="dialog" aria-label={label} style={{ '--wst-bg': pal.bg, '--wst-ink': pal.ink, '--wst-n': Math.max(n, 4), '--wst-sn': Math.max(sn, 5) }}>
+    <div className="wst" role="dialog" aria-label={label} style={{ '--wst-bg': pal.bg, '--wst-ink': pal.ink, '--wst-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)', '--wst-n': Math.max(n, 4), '--wst-sn': Math.max(sn, 5) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="wst-col">
         <StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} />
@@ -135,7 +137,7 @@ const CSS = `
 .wst-tiles span{width:min(52px, calc((100vw - 40px - (var(--wst-sn) - 1) * 7px) / var(--wst-sn)));aspect-ratio:52/60;border-radius:12px;background:var(--wst-ink);color:var(--wst-bg);display:flex;align-items:center;justify-content:center;font-size:min(30px, calc((100vw - 40px) / var(--wst-sn) * .55));font-weight:800;}
 .wst-slots{display:flex;justify-content:center;flex-wrap:nowrap;gap:calc(min(52px, (100vw - 40px) / var(--wst-n)) * .45);}
 .wst-grp{display:flex;gap:6px;}
-.wst-s{--w:min(52px, calc((100vw - 40px - (var(--wst-n) - 1) * 6px) / var(--wst-n)));width:var(--w);aspect-ratio:52/60;box-sizing:border-box;border-radius:12px;border:2px solid var(--wst-ink);background:color-mix(in srgb, var(--wst-ink) 8%, transparent);display:flex;align-items:center;justify-content:center;font-size:calc(var(--w) * .56);font-weight:800;position:relative;transition:background .15s;}
+.wst-s{--w:min(52px, calc((100vw - 40px - (var(--wst-n) - 1) * 6px) / var(--wst-n)));width:var(--w);aspect-ratio:52/60;box-sizing:border-box;border-radius:12px;border:2px solid var(--wst-ink);background:var(--wst-tile);display:flex;align-items:center;justify-content:center;font-size:calc(var(--w) * .56);font-weight:800;position:relative;transition:background .15s;}
 .wst-s.cur{box-shadow:0 0 0 3px var(--wst-bg),0 0 0 5px var(--wst-ink);}
 .wst-s.mk{padding-bottom:9px;}
 .wst-s.mk::after{content:"";position:absolute;bottom:5px;left:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:4px;background:var(--wst-ink);}
@@ -152,7 +154,7 @@ const CSS = `
 .wst-acts{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;}
 .wst-combo{display:flex;flex-direction:column;align-items:center;gap:10px;font-size:22px;font-weight:800;letter-spacing:.08em;}
 .wst-combo i{font-style:normal;opacity:.55;}
-.wst-line1{min-width:min(320px,100%);min-height:60px;box-sizing:border-box;border-radius:14px;border:2px solid var(--wst-ink);background:color-mix(in srgb, var(--wst-ink) 8%, transparent);display:flex;align-items:center;justify-content:center;padding:0 14px;font-size:28px;font-weight:800;letter-spacing:.12em;white-space:nowrap;overflow:hidden;}
+.wst-line1{min-width:min(320px,100%);min-height:60px;box-sizing:border-box;border-radius:14px;border:2px solid var(--wst-ink);background:var(--wst-tile);display:flex;align-items:center;justify-content:center;padding:0 14px;font-size:28px;font-weight:800;letter-spacing:.12em;white-space:nowrap;overflow:hidden;}
 .wst-line1.ok{background:var(--wst-ink);color:var(--wst-bg);}
 .wst-tries{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:13px;font-weight:800;letter-spacing:.06em;}
 .wst-tries s{opacity:.7;}
@@ -170,7 +172,7 @@ const CSS = `
 .wst-pip.cur i{width:15px;height:15px;box-shadow:0 0 0 2px var(--wst-bg),0 0 0 4px var(--wst-ink);}
 .wst-kb{display:flex;flex-direction:column;gap:7px;}
 .wst-kr{display:flex;justify-content:center;gap:5px;}
-.wst-k{position:relative;flex:1 1 0;max-width:40px;height:50px;border-radius:9px;border:2px solid var(--wst-ink);background:color-mix(in srgb, var(--wst-ink) 8%, transparent);font-family:inherit;font-size:17px;font-weight:800;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+.wst-k{position:relative;flex:1 1 0;max-width:40px;height:50px;border-radius:9px;border:2px solid var(--wst-ink);background:var(--wst-tile);font-family:inherit;font-size:17px;font-weight:800;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
 .wst-k b{position:absolute;top:2px;right:4px;font-size:10px;font-weight:800;}
 .wst-k:active{background:color-mix(in srgb, var(--wst-ink) 20%, transparent);}
 .wst-k.d{opacity:.22;border-color:transparent;cursor:default;}

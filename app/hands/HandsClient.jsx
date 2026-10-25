@@ -55,6 +55,7 @@ import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
 import useDailyBoard from '../useDailyBoard';
@@ -300,6 +301,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
   const [showBest, setShowBest] = useState(false);
   const toastTimer = useRef(null);
   const endHold = useEndHold();
+  const phoneStage = usePhoneStage();
   // The board's hover / hold / focus preview: the empty square the card on
   // offer is shown ghosted in. heldRef swallows the click that ends a touch
   // hold, so holding previews and a second tap places.
@@ -714,6 +716,91 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE PHONE STAGE (owner, 2026-10-25): the same deal drawn full screen.
+          A tap on a square calls place(), Muck calls muck(), Give up its own
+          two-tap arm; the stage keeps no state of its own. */}
+      {phoneStage && playing && started && (() => {
+        const hdTxt = (card) => `${RANK_LABEL[rankOf(card)]}${SUIT_PIP[suitOf(card)]}`;
+        const hdFace = (card) => <span className="hst-pf">{RANK_LABEL[rankOf(card)]}<i>{SUIT_PIP[suitOf(card)]}</i></span>;
+        const mucked = g.muckAt >= 0 ? PUZZLE.deck[g.muckAt] : null;
+        const made = [];
+        PAY.forEach((v) => {
+          let n = 0;
+          scores.forEach((x, i) => { if (x === v && (i < 5 ? rowFull[i] : colFull[i - 5])) n++; });
+          if (n) made.push(`${handLabel(v).toLowerCase()}${n > 1 ? ` ×${n}` : ''} +${v * n}`);
+        });
+        const hstCss = `
+          .hst-offer{display:flex;align-items:center;justify-content:center;gap:16px;}
+          .hst-side{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:800;min-width:72px;}
+          .hst-side.r{align-items:flex-end;text-align:right;}
+          .hst-lab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
+          .hst-pc{box-sizing:border-box;border-radius:8px;background:#ffffff !important;border:2px solid var(--pst-ink);color:#16181d !important;padding:0;position:relative;container-type:inline-size;}
+          .hst-pc.red{color:#b91c1c !important;}
+          .hst-pc *{color:inherit !important;}
+          .hst-pf{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;font-size:20px;font-size:32cqw;}
+          .hst-pf i{font-style:normal;font-size:17px;font-size:27cqw;margin-top:3px;}
+          .hst-big{width:70px;height:98px;flex:none;box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--pst-ink);}
+          .hst-mini{width:30px;height:42px;display:inline-block;vertical-align:middle;}
+          .hst-mini .hst-pf{font-size:12px;font-size:36cqw;}
+          .hst-board{display:grid;grid-template-columns:repeat(5,minmax(0,62px));gap:8px;justify-content:center;}
+          .hst-cell{aspect-ratio:62/74;width:100%;}
+          .hst-slot{box-sizing:border-box;aspect-ratio:62/74;width:100%;border-radius:8px;border:2px dashed var(--pst-ink);background:var(--pst-tint);padding:0;}
+          .hst-slot:active{transform:translateY(1px);}
+          .hst-q2{border-style:dashed;}
+        `;
+        return (
+          <PlayStage bg={gameColor('hands')} label="Hands"
+            eyebrow={`Poker solitaire · 25 cards, 10 hands`}
+            top={<>
+              <style dangerouslySetInnerHTML={{ __html: hstCss }} />
+              <div className="hst-offer">
+                <div className="hst-side">
+                  <span className="hst-lab">On offer</span>
+                  <span>Card {Math.min(consumed + 1, PUZZLE.deck.length)} of {PUZZLE.deck.length}</span>
+                </div>
+                {current != null ? (
+                  <div key={consumed} className={'hst-pc hst-big' + (isRed(current) ? ' red' : '')} aria-label={`On offer: ${cardName(current)}`}>{hdFace(current)}</div>
+                ) : <div className="hst-slot hst-big" />}
+                <div className="hst-side r">
+                  <span className="hst-lab">Muck</span>
+                  {mucked != null ? (
+                    <span><span className={'hst-pc hst-mini' + (isRed(mucked) ? ' red' : '')} aria-label={`Mucked: ${cardName(mucked)}`}>{hdFace(mucked)}</span> used</span>
+                  ) : <span>1 left</span>}
+                </div>
+              </div>
+              <div className="pst-note">{toast || (current != null ? `Tap a square to place the ${hdTxt(current)}. Every row and column scores as a poker hand.` : '')}</div>
+              <div className="hst-board" aria-label="Five by five board">
+                {grid.map((card, idx) => {
+                  const r = Math.floor(idx / 5), c = idx % 5;
+                  if (card != null) {
+                    return <div key={idx} className={'hst-pc hst-cell' + (isRed(card) ? ' red' : '')} aria-label={cardName(card)}>{hdFace(card)}</div>;
+                  }
+                  return (
+                    <button key={idx} type="button" className="hst-slot" disabled={current == null}
+                      onClick={() => place(idx)}
+                      aria-label={`Row ${r + 1}, column ${c + 1}, empty${current != null ? `: place the ${cardName(current)} here` : ''}`} />
+                  );
+                })}
+              </div>
+              <div className="pst-note">{made.length ? `Made: ${made.join(' · ')}` : 'Made: nothing yet'}</div>
+            </>}
+            bottom={
+              <div className="pst-tools">
+                {muckLeft && (
+                  <button type="button" className="pst-tb" onClick={muck}>
+                    <Undo2 size={16} aria-hidden="true" /> Muck this card
+                  </button>
+                )}
+                <button type="button" className={'pst-tb hst-q2' + (armGive ? ' on' : '')} onClick={tapGiveUp}>
+                  <Flag size={16} aria-hidden="true" /> {armGive ? 'Tap again to give up' : 'Give up'}
+                </button>
+              </div>
+            }
+            frac={g.placed.length / 25}
+            foot={`${g.placed.length} of 25 placed · ${total} points · Par ${par}`}
+          />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

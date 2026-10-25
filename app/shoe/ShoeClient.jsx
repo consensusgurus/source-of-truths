@@ -47,6 +47,7 @@ import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import LoftFinish from '../LoftFinish';
@@ -255,6 +256,27 @@ function Fan({ cards, w, room, gap, downAt = -1, dim = false }) {
   );
 }
 
+// Phone stage table: card faces stay white with red suits in a readable red;
+// the table pieces take the category tint.
+const SHO_STAGE_CSS = `
+.sho-sec{display:flex;flex-direction:column;align-items:center;}
+.sho-lab{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;margin-bottom:8px;}
+.sho-rowc{display:flex;justify-content:center;}
+.sho-pc{flex:none;border-radius:10px;background:#ffffff;border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:#16181d !important;box-shadow:0 2px 0 rgba(0,0,0,.08);}
+.sho-pc i{font-style:normal;font-size:.85em;margin-top:4px;color:inherit !important;}
+.sho-pc.red{color:#b91c1c !important;}
+.sho-pc.down{background:repeating-linear-gradient(45deg,var(--pst-ink) 0 6px,var(--pst-tint) 6px 12px);}
+.sho-mid{display:flex;justify-content:center;}
+.sho-tot{display:inline-block;margin-top:10px;min-width:48px;padding:4px 12px;border-radius:999px;background:var(--pst-ink);color:var(--pst-bg) !important;font-size:15px;font-weight:800;text-align:center;}
+.sho-seats{display:flex;justify-content:center;gap:14px;}
+.sho-seat{padding:6px;border-radius:14px;border:2px solid transparent;}
+.sho-seat.on{border-color:var(--pst-ink);background:var(--pst-tint);}
+.sho-seat.dim{opacity:.55;}
+.sho-ch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.sho-c{display:flex;align-items:center;justify-content:center;min-height:72px;width:100%;border-radius:18px;padding:12px;background:var(--pst-tint);border:2px solid var(--pst-ink);font-size:21px;font-weight:800;}
+.sho-c:disabled{opacity:.35;cursor:default;}
+`;
+
 export default function ShoeClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const HANDS = PUZZLE.hands;
@@ -290,6 +312,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
 
   const [showChrome, setShowChrome] = useState(false);
   const [armGive, setArmGive] = useState(false);
+  const phoneStage = usePhoneStage();
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
@@ -541,6 +564,84 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
     advance(gRef.current.acts.concat(''));
   }
 
+  // THE PHONE STAGE (owner, 2026-10-25): the same table drawn full screen on a
+  // phone. Every control calls the handlers above; nothing here keeps state.
+  function shoeStage() {
+    if (!cur) return null;
+    const pc = (c, i, n, w, down) => {
+      const h = Math.round(w * 90 / 64);
+      const ov = n > 4 ? Math.round(w * 0.42) : 0;
+      const st = { width: w, height: h, marginLeft: i > 0 ? (ov ? -ov : 8) : 0, fontSize: Math.round(w * 0.4) };
+      if (down) return <div key={i} className="sho-pc down" style={st} role="img" aria-label="Dealer hole card, face down" />;
+      const red = isRed(c);
+      return (
+        <div key={i} className={'sho-pc' + (red ? ' red' : '')} style={st} role="img" aria-label={cardName(c)}>
+          {RANK_LABEL[rankOf(c)]}<i aria-hidden="true">{SUIT_PIP[suitOf(c)]}</i>
+        </div>
+      );
+    };
+    const totTxt = (cards) => {
+      const t = handTotal(cards);
+      if (t.total > 21) return `Bust ${t.total}`;
+      if (t.total === 21 && cards.length === 2 && !cur.split) return 'Blackjack';
+      return `${t.soft ? 'Soft ' : ''}${t.total}`;
+    };
+    const upCard = cur.d[0];
+    const shows = rankOf(upCard) === 14 ? 'A' : String(handTotal([upCard]).total);
+    const seats = cur.split ? cur.parts : [{ p: cur.p, doubled: cur.doubled }];
+    const inPlay = !cur.settled && R.phase === 'act';
+    const activeSeat = inPlay ? (cur.split ? cur.active : 0) : -1;
+    const W = cur.split ? 46 : 64;
+    const canDouble = R.legal.includes('D');
+    const canSplit = R.legal.includes('P');
+    const settledN = R.hands.filter((hd) => hd.settled).length;
+    const top = (
+      <>
+        <style dangerouslySetInnerHTML={{ __html: SHO_STAGE_CSS }} />
+        <div className="sho-sec">
+          <div className="sho-lab">Dealer</div>
+          <div className="sho-rowc">{cur.d.map((c, i) => pc(c, i, cur.d.length, 64, !cur.reveal && i === 1))}</div>
+          <div className="sho-mid"><span className="sho-tot">{cur.reveal ? totTxt(cur.d) : `Shows ${shows}`}</span></div>
+        </div>
+        <div className="sho-sec">
+          <div className="sho-lab">{cur.split && activeSeat >= 0 ? `You · hand ${activeSeat + 1} of 2` : 'You'}</div>
+          <div className="sho-seats">
+            {seats.map((st, si) => (
+              <div key={si} className={'sho-seat' + (cur.split && si === activeSeat ? ' on' : '') + (cur.split && activeSeat >= 0 && si !== activeSeat ? ' dim' : '')}>
+                <div className="sho-rowc">{st.p.map((c, i) => pc(c, i, st.p.length, W, false))}</div>
+                <div className="sho-mid"><span className="sho-tot">{totTxt(st.p)}{st.doubled ? ' · x2' : ''}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+    const bottom = R.phase === 'act' ? (
+      <div className="sho-ch">
+        <button type="button" className="sho-c" onClick={() => act('H')}>Hit</button>
+        <button type="button" className="sho-c" onClick={() => act('S')}>Stand</button>
+        <button type="button" className="sho-c" onClick={() => act('D')} disabled={!canDouble}
+          aria-label={canDouble ? `Double, stake to ${STAKE * 2}` : 'Double, first two cards only'}>Double</button>
+        {PUZZLE.split ? (
+          <button type="button" className="sho-c" onClick={() => act('P')} disabled={!canSplit}
+            aria-label={canSplit ? `Split the pair into two hands of ${STAKE}` : 'Split, a pair only'}>Split</button>
+        ) : null}
+      </div>
+    ) : R.phase === 'settled' ? (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="pst-note" aria-live="polite">{cur.note} {fmtChips(cur.net)}</div>
+        <button type="button" className="pst-tb wide on" onClick={dealNext}>Deal hand {R.hands.length + 1}</button>
+      </div>
+    ) : null;
+    return (
+      <PlayStage bg={gameColor('shoe')} label="Shoe" top={top} bottom={bottom}
+        topKey={R.hands.length}
+        frac={settledN / HANDS}
+        foot={`Hand ${handNo} of ${HANDS} · ${fmtChips(chips)} chips`}
+        giveUp={{ armed: !!armGive, onPress: tapGiveUp, armedLabel: 'Tap again to give up' }} />
+    );
+  }
+
   function shareText() {
     // One emoji per hand: win green, loss red, push white, blackjack gold.
     // Nothing about the cards leaks.
@@ -601,6 +702,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && cur ? shoeStage() : null}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="shoe" name="Shoe" collapsed={started} loft={LOFT} />

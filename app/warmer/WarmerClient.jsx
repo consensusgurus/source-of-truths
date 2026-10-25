@@ -45,7 +45,8 @@ import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
-import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
+import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight, softGround } from '@/lib/category-ramp';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import GamePanel from '../GamePanel';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
@@ -103,6 +104,14 @@ function heatVar(rank) { return rank === 1 ? `var(--stg-good, ${T.successDeep})`
 const HEAT_DARK = ['#7c9cf0', '#6fb0f5', '#5cc3f0', '#5fd3d6', '#6fdcb0', '#9be38a', '#cfe36a', '#f5d454', '#f8b84e', '#fb9a52', '#fb7a5a', '#fb6b6b'];
 const HEAT_LIGHT = ['#2f52b8', '#1f65b8', '#0b6fa3', '#0a7682', '#0b7a5a', '#3a7a12', '#6a6d05', '#8a6200', '#9c5200', '#b4470d', '#c2361f', '#b91c1c'];
 const heatDecl = (arr) => arr.map((c, i) => `--wh${i}:${c};`).join('');
+// TEMPERATURE PASTELS (owner, 2026-10-25): each guessed word's bar is filled
+// with a soft colour for how warm it is, cold pale blue up through teal, green,
+// yellow and orange to a warm pale red, always with dark ink on it. Keyed off
+// the same closeness fraction the meters use.
+const TEMP_BASE = ['#7aa7f5', '#5fd0d0', '#7fd98f', '#f2d65a', '#f7a75c', '#f47c7c'];
+const TEMP_SOFT = TEMP_BASE.map((h) => softGround(h));
+function tempTint(rank) { return TEMP_SOFT[Math.min(TEMP_SOFT.length - 1, Math.floor(heatFrac(rank) * TEMP_SOFT.length))]; }
+const KB_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
 
 // Scoring, submitted with total=100 so the daily board (score desc → guesses →
 // time) yields the required order. SOLVERS occupy 51..100 (fewer guesses = more),
@@ -207,6 +216,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -448,9 +458,9 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
     const frac = heatFrac(entry.rank);
     const hc = heatVar(entry.rank);
     return (
-      <div className={`wm-row${pinned ? ' pinned' : ''}`} style={pinned ? { borderColor: hc } : undefined}>
+      <div className={`wm-row temp${pinned ? ' pinned' : ''}`} style={{ background: tempTint(entry.rank), ...(pinned ? { borderColor: RAMP_INK } : null) }}>
         <span className="wm-word">{entry.w}</span>
-        <span className="wm-track"><span className="wm-fill" style={{ width: `${Math.round(frac * 100)}%`, background: hc }} /></span>
+        <span className="wm-track"><span className="wm-fill" style={{ width: `${Math.round(frac * 100)}%`, background: RAMP_INK }} /></span>
         <span className="wm-band">{b.name}</span>
         <span className="wm-rank">{entry.rank === 1 ? '★' : `#${entry.rank}`}</span>
       </div>
@@ -477,6 +487,64 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        // The phone stage (owner, 2026-10-25): the closest word, your guesses
+        // closest first, each bar in its temperature pastel, then the guess box,
+        // the tools and an on-screen keyboard. Every control is the board's own.
+        const best = sortedGuesses[0] || null;
+        const newest = lastEntry ? lastEntry.w : null;
+        const top = (
+          <>
+            <style dangerouslySetInnerHTML={{ __html: WMS_CSS }} />
+            <div className="wms-best">
+              <b>{best ? `#${best.rank.toLocaleString()}` : '?'}</b>
+              <span>{best ? `closest so far · ${best.w} · ${bandFor(best.rank).name}` : 'No guesses yet. Any word will do.'}</span>
+            </div>
+            {sortedGuesses.length > 0 ? (
+              <div className="wms-list" aria-label="Your guesses, closest first">
+                {sortedGuesses.map((x) => (
+                  <div key={x.w} className={'wms-g' + (x.w === newest ? ' new' : '')} style={{ background: tempTint(x.rank) }}>
+                    <span className="w">{x.w}</span>
+                    <span className="m"><i style={{ width: `${Math.round(heatFrac(x.rank) * 100)}%` }} /></span>
+                    <span className="r">#{x.rank.toLocaleString()}</span>
+                    <span className="b">{bandFor(x.rank).name}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </>
+        );
+        const bottom = (
+          <>
+            {toast ? <div className="pst-note" role="status">{toast}</div> : null}
+            <div className="wms-inp" role="textbox" aria-label="Your guess" aria-readonly="true">{text}<i aria-hidden="true" /></div>
+            <div className="pst-tools">
+              {hintOk && !g.hintUsed ? <button type="button" className="pst-tb" onClick={useHint}>Hint</button> : null}
+              <button type="button" className={'pst-tb' + (armGiveUp ? ' on' : '')} onClick={giveUp}>{armGiveUp ? 'Tap again to reveal' : 'Give up'}</button>
+              <button type="button" className="pst-tb on" disabled={!text.trim()} onClick={() => commitGuess(text)}>Guess</button>
+            </div>
+            <div className="wms-kb">
+              {KB_ROWS.map((row, ri) => (
+                <div key={ri} className="wms-kr">
+                  {ri === 2 ? <button type="button" className="wms-k w" onClick={() => setText('')}>Clear</button> : null}
+                  {row.split('').map((ch) => (
+                    <button key={ch} type="button" className="wms-k" aria-label={ch.toUpperCase()} onClick={() => setText((t) => (t + ch).slice(0, 30))}>{ch.toUpperCase()}</button>
+                  ))}
+                  {ri === 2 ? <button type="button" className="wms-k w" aria-label="Delete" onClick={() => setText((t) => t.slice(0, -1))}>Del</button> : null}
+                </div>
+              ))}
+            </div>
+          </>
+        );
+        const n = guesses.length;
+        return (
+          <PlayStage bg={gameColor('warmer')} label="Warmer"
+            eyebrow="One secret word · guess by meaning"
+            top={top} bottom={bottom}
+            foot={`${n} guess${n === 1 ? '' : 'es'} · of ${N_WORDS.toLocaleString()} words`}
+            frac={bestRank != null ? heatFrac(bestRank) : 0} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -555,6 +623,9 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
           .wm-list{display:flex;flex-direction:column;gap:6px;}
           .wm-row{display:grid;grid-template-columns:118px 1fr 74px 52px;gap:10px;align-items:center;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border: 1px solid var(--stg-line, rgba(28,30,36,0.12));border-radius:9px;padding:8px 12px;}
           .wm-row.pinned{border-width:2px;box-shadow:0 2px 0 rgba(28,30,36,0.06);}
+          .wm-row.temp{border-color:rgba(8,34,46,0.22);}
+          .wm-row.temp .wm-word,.wm-row.temp .wm-rank,.wm-row.temp .wm-band{color:${RAMP_INK};}
+          .wm-row.temp .wm-track{background:rgba(8,34,46,0.14);}
           .wm-word{font-family:${SANS};font-weight:800;font-size:15px;color:${INK};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
           .wm-track{height:12px;border-radius:99px;background:${STAGE ? 'var(--stg-surf2)' : '#eef0f3'};overflow:hidden;}
           .wm-fill{display:block;height:100%;border-radius:99px;transition:width .35s ease;}
@@ -899,3 +970,27 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
     </div>
   );
 }
+
+const WMS_CSS = `
+.wms-best{text-align:center}
+.wms-best b{display:block;font-size:46px;line-height:1;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.wms-best span{font-size:13px;font-weight:800;opacity:.8}
+.wms-list{display:flex;flex-direction:column;gap:6px}
+.wms-g{display:grid;grid-template-columns:minmax(0,1.3fr) 1fr 62px 62px;align-items:center;gap:8px;min-height:38px;padding:0 10px;border-radius:12px;border:2px solid ${RAMP_INK};color:${RAMP_INK}!important}
+.wms-g *{color:${RAMP_INK}!important}
+.wms-g.new{border-width:3px;box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink)}
+.wms-g .w{font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wms-g .m{height:8px;border-radius:4px;background:rgba(8,34,46,.16);overflow:hidden}
+.wms-g .m i{display:block;height:100%;background:${RAMP_INK}}
+.wms-g .r{font-size:14px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.wms-g .b{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;text-align:right}
+.wms-inp{min-height:52px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;padding:0 14px;font-size:22px;font-weight:800;overflow:hidden}
+.wms-inp i{width:2px;height:26px;background:var(--pst-ink);margin-left:2px;animation:wmsBlink 1s steps(1) infinite}
+@keyframes wmsBlink{50%{opacity:0}}
+.wms-kb{display:flex;flex-direction:column;gap:7px}
+.wms-kr{display:flex;justify-content:center;gap:5px}
+.pst .wms-k{flex:0 1 33px;min-width:0;height:50px;border-radius:9px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:17px;font-weight:800;padding:0}
+.pst .wms-k.w{flex:0 1 56px;font-size:13px}
+.wms-k:active{background:var(--pst-ink);color:var(--pst-bg)}
+@media (prefers-reduced-motion: reduce){.wms-inp i{animation:none}}
+`;

@@ -49,7 +49,7 @@ export default function BracketStage({
   onHelp, giveUp, elapsed,
 }) {
   const [look, setLook] = useStageLook();
-  const pal = look === 'color' ? { bg: softGround(bg), ink: RAMP_INK } : stagePalette(bg, look);
+  const pal = look === 'color' ? { bg: '#ffffff', ink: RAMP_INK, tile: softGround(bg) } : stagePalette(bg, look);
   useStageChrome(pal.bg);
   const vh = useVh();
 
@@ -165,7 +165,7 @@ export default function BracketStage({
   const champ = picks[idOf(rounds - 1, 0)];
 
   return (
-    <div className="bks" role="dialog" aria-label="Bracket" style={{ '--bks-bg': pal.bg, '--bks-ink': pal.ink, '--bks-ch': `${ch}px`, '--bks-h': `${H}px`, '--bks-gap': `${GAP}px`, '--bks-peek': `${PEEK}px`, '--bks-win': `${WIN}px`, '--bks-chip': `${chipH}px` }}>
+    <div className="bks" role="dialog" aria-label="Bracket" style={{ '--bks-bg': pal.bg, '--bks-ink': pal.ink, '--bks-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)', '--bks-ch': `${ch}px`, '--bks-h': `${H}px`, '--bks-gap': `${GAP}px`, '--bks-peek': `${PEEK}px`, '--bks-win': `${WIN}px`, '--bks-chip': `${chipH}px` }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="bks-col">
         <StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} />
@@ -278,7 +278,7 @@ const CSS = `
 .bks-m{height:var(--bks-h);box-sizing:border-box;display:flex;flex-direction:column;gap:8px;transition:opacity .35s;}
 .bks-m.peek{opacity:.38;}
 .bks-ml{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;text-align:center;}
-.bks-c{display:flex;align-items:center;justify-content:space-between;gap:10px;height:var(--bks-ch);width:100%;box-sizing:border-box;border-radius:18px;padding:0 18px;background:color-mix(in srgb, var(--bks-ink) 8%, transparent);border:2px solid var(--bks-ink);font-family:inherit;font-size:clamp(19px,6vw,24px);font-weight:800;text-align:left;cursor:pointer;transition:background .2s,opacity .2s;}
+.bks-c{display:flex;align-items:center;justify-content:space-between;gap:10px;height:var(--bks-ch);width:100%;box-sizing:border-box;border-radius:18px;padding:0 18px;background:var(--bks-tile);border:2px solid var(--bks-ink);font-family:inherit;font-size:clamp(19px,6vw,24px);font-weight:800;text-align:left;cursor:pointer;transition:background .2s,opacity .2s;}
 .bks-c:disabled{cursor:default;}
 .bks-c .bks-nm{flex:1 1 auto;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.26;}
 .bks-c.on{background:var(--bks-ink);}

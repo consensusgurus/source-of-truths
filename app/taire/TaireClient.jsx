@@ -64,6 +64,7 @@ import { FREE, FND, suitOf, rankOf, RANK_LABEL, fromData, replay, isWon, destina
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -294,6 +295,7 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
   const [showChrome, setShowChrome] = useState(false);
   // Phone layout (<=560px, the page's own breakpoint) and the measured felt
   // width the card size is cut from. Display only.
+  const phoneStage = usePhoneStage();
   const [narrow, setNarrow] = useState(false);
   const [feltW, setFeltW] = useState(0);
   const [feltEl, setFeltEl] = useState(null);
@@ -655,6 +657,146 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        // THE PHONE STAGE: the same board drawn full screen. Every tap goes to
+        // onCard / onDest / restart / useHint / revealEnd, so the rules, the
+        // move count and the save are exactly the desktop board's.
+        const inHand = sel != null;
+        const short = (c) => `${RANK_LABEL[rankOf(c)]}${SUIT_PIP(c)}`;
+        const named = (c) => `${RANK_LABEL[rankOf(c)]} of ${SUIT_NAME(c)}`;
+        const isHint = (c) => !!(hintCards && hintCards.includes(c));
+        const face = (c, extra = '') => (
+          <>{RANK_LABEL[rankOf(c)]}<i>{SUIT_PIP(c)}</i></>
+        );
+        const cardCls = (c, extra) => `tai-pc${suitOf(c) === 1 ? ' red' : ''}${isHint(c) ? ' hint' : ''}${extra ? ' ' + extra : ''}`;
+        const openCells = CELLS - state.free.length;
+        let say;
+        if (toast) say = toast;
+        else if (inHand) {
+          const places = [];
+          if (dests.includes(FND)) places.push('home');
+          dests.forEach((d) => { if (d !== FND && d !== FREE && state.cols[d].length) places.push(`the ${short(state.cols[d][state.cols[d].length - 1])}`); });
+          if (dests.some((d) => d !== FND && d !== FREE && !state.cols[d].length)) places.push('an empty column');
+          if (dests.includes(FREE)) places.push('a free cell');
+          say = places.length ? `${short(sel)} in hand. Tap ${places.length === 1 ? places[0] : places.slice(0, -1).join(', ') + ' or ' + places[places.length - 1]} to put it there.` : `${short(sel)} in hand.`;
+        } else say = movable.length ? 'Tap a card to pick it up.' : 'Nothing can move. Restart the deal.';
+        const giveTap = () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } };
+        const n = CELLS + 2;
+        const CSS_T = `
+.tai-wrap{--tai-w:min(62px, calc((100vw - 28px - ${COLS - 1} * 10px) / ${COLS}));--tai-h:calc(var(--tai-w) * 1.39);--tai-off:calc(var(--tai-w) * .48);display:flex;flex-direction:column;gap:16px;}
+.tai-pc{box-sizing:border-box;width:var(--tai-w);height:var(--tai-h);border-radius:8px;background:#fff;border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:var(--pst-ink) !important;padding:0;font-size:calc(var(--tai-w) * .31);transition:transform .12s;}
+.tai-pc i{font-style:normal;font-size:calc(var(--tai-w) * .26);margin-top:3px;color:inherit !important;}
+.tai-pc.red{color:#b4232c !important;}
+.tai-pc.bur{justify-content:flex-start;padding-top:6px;}
+.tai-pc.lift{transform:translateY(-10px);background:var(--pst-ink);color:var(--pst-bg) !important;}
+.tai-pc.drop{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink);}
+.tai-pc.hint{outline:3px dashed var(--pst-ink);outline-offset:3px;}
+.tai-slot{box-sizing:border-box;width:var(--tai-w);height:var(--tai-h);border-radius:8px;border:2px dashed var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-weight:800;padding:0;font-size:12px;}
+.tai-slot.pip{font-size:22px;}
+.tai-slot:disabled{cursor:default;}
+.tai-slot.drop{border-style:solid;box-shadow:0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink);}
+.tai-top{display:grid;grid-template-columns:repeat(${n},1fr);gap:8px;}
+.tai-cw{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.tai-lab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
+.tai-tab{display:grid;grid-template-columns:repeat(${COLS},var(--tai-w));justify-content:space-between;align-items:start;padding:10px 0 4px;}
+.tai-tab.shake{animation:taiShake .3s;}
+.tai-col{position:relative;}
+.tai-col>*{position:absolute;left:0;}
+.tai-say{text-align:center;font-size:15px;font-weight:800;line-height:1.35;min-height:2.7em;}
+.tai-q2{border-style:dashed !important;}
+.tai-q2.on{border-style:solid !important;}
+@keyframes taiShake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media (prefers-reduced-motion: reduce){.tai-tab.shake{animation:none}.tai-pc{transition:none}}`;
+        const top = (
+          <div className="tai-wrap">
+            <style dangerouslySetInnerHTML={{ __html: CSS_T }} />
+            <div className="tai-top">
+              {Array.from({ length: CELLS }).map((_, i) => {
+                const card = state.free[i];
+                if (card != null) {
+                  return (
+                    <div key={`f${i}`} className="tai-cw">
+                      <button type="button" className={cardCls(card, sel === card ? 'lift' : '')} onClick={() => onCard(card)}
+                        aria-label={`Free cell ${i + 1}: ${named(card)}${sel === card ? ', in hand' : ''}`}>{face(card)}</button>
+                      <span className="tai-lab">Free</span>
+                    </div>
+                  );
+                }
+                const live = inHand && dests.includes(FREE) && i === state.free.length;
+                return (
+                  <div key={`f${i}`} className="tai-cw">
+                    <button type="button" className={`tai-slot${live ? ' drop' : ''}`} onClick={() => onDest(FREE)} disabled={!inHand}
+                      aria-label={live ? `Free cell ${i + 1}, open: put the ${named(sel)} here` : `Free cell ${i + 1}, open`}>open</button>
+                    <span className="tai-lab">Free</span>
+                  </div>
+                );
+              })}
+              {[0, 1].map((s) => {
+                const topR = state.fnd[s];
+                const live = inHand && dests.includes(FND) && suitOf(sel) === s;
+                const nm = s === 1 ? 'Hearts' : 'Spades';
+                return (
+                  <div key={`h${s}`} className="tai-cw">
+                    {topR > 0 ? (
+                      <button type="button" className={cardCls(s * 16 + topR, live ? 'drop' : '')} onClick={() => onDest(FND)} disabled={!inHand}
+                        aria-label={`${nm} home: ${topR} of ${RANKS}${live ? `. Send the ${named(sel)} home` : ''}`}>{face(s * 16 + topR)}</button>
+                    ) : (
+                      <button type="button" className={`tai-slot pip${live ? ' drop' : ''}`} onClick={() => onDest(FND)} disabled={!inHand}
+                        aria-label={`${nm} home, empty${live ? `. Send the ${named(sel)} home` : ''}`}>{s === 1 ? '♥' : '♠'}</button>
+                    )}
+                    <span className="tai-lab">Home</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div key={shake} className={`tai-tab${shake ? ' shake' : ''}`} aria-label={`The ${NUM_WORD[COLS] ? NUM_WORD[COLS].toLowerCase() : COLS} columns`}>
+              {state.cols.map((col, j) => {
+                const live = inHand && dests.includes(j);
+                const bottom = col.length ? col[col.length - 1] : null;
+                return (
+                  <div key={j} className="tai-col" style={{ height: `calc(var(--tai-off) * ${Math.max(0, col.length - 1)} + var(--tai-h) + 10px)` }}>
+                    {col.length ? col.map((card, k) => {
+                      const isBottom = k === col.length - 1;
+                      const lifted = sel === card;
+                      return (
+                        <button key={card} type="button"
+                          className={cardCls(card, `${isBottom ? '' : 'bur'}${lifted ? ' lift' : ''}${live && isBottom ? ' drop' : ''}`)}
+                          style={{ top: `calc(var(--tai-off) * ${k} + 10px)`, zIndex: k + 1 }}
+                          onClick={() => (isBottom ? onCard(card) : live ? onDest(j) : onCard(bottom))}
+                          aria-label={`${named(card)}${lifted ? ', in hand' : live && isBottom ? `: put the ${named(sel)} on it` : isBottom ? '' : ', buried'}`}>
+                          {face(card)}
+                        </button>
+                      );
+                    }) : (
+                      <button type="button" className={`tai-slot${live ? ' drop' : ''}`} style={{ top: 10 }} onClick={() => onDest(j)} disabled={!inHand}
+                        aria-label={live ? `Empty column ${j + 1}: put the ${named(sel)} here` : `Column ${j + 1}, empty`}>empty</button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="tai-say" aria-live="polite">{say}</div>
+          </div>
+        );
+        const bottom = (
+          <>
+            <div className="pst-tools">
+              <button type="button" className="pst-tb" onClick={restart} disabled={!used}><RotateCcw size={16} aria-hidden="true" /> Restart deal</button>
+              {hintOk && !g.hintUsed ? <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb} Hint</button> : null}
+            </div>
+            <div className="pst-tools">
+              <button type="button" className={`pst-tb tai-q2${armReveal ? ' on' : ''}`} onClick={giveTap}><Eye size={16} aria-hidden="true" /> {armReveal ? 'Tap again: ends the deal and scores nothing' : 'Give up'}</button>
+            </div>
+          </>
+        );
+        return (
+          <PlayStage bg={gameColor('taire')} label="Taire"
+            eyebrow={`Two suits · ${CELLS === 1 ? 'one free cell' : `${NUM_WORD[CELLS] ? NUM_WORD[CELLS].toLowerCase() : CELLS} free cells`} · ace to ${RANK_LABEL[RANKS]}`}
+            top={top} bottom={bottom}
+            frac={par ? Math.min(1, used / par) : null}
+            foot={`${used} move${used === 1 ? '' : 's'} · perfect ${perfect} · par ${par}${g.restarts ? ` · ${g.restarts} restart${g.restarts === 1 ? '' : 's'}` : ''}`} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

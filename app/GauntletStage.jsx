@@ -29,7 +29,7 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   // The stage's own look switch (owner, 2026-10-23): pastel by default, Plain
   // is white with black type. Separate from the site's light/dark setting.
   const [look, setLook] = useStageLook();
-  const pal = look === 'color' ? { bg: softGround(bg || '#7dd3fc'), ink } : stagePalette(bg || '#7dd3fc', look);
+  const pal = look === 'color' ? { bg: '#ffffff', ink, tile: softGround(bg || '#7dd3fc') } : stagePalette(bg || '#7dd3fc', look);
   useStageChrome(pal.bg);
   // SHORT ANSWERS GO 2x2 ON A PHONE (2026-10-24, player report on Blitz): four
   // numbers stacked in one tall column made the eye travel down the screen to
@@ -41,7 +41,7 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   const shortSet = choices.length === 4 && lens.every((n) => n <= 16);
   const tiny = shortSet && lens.every((n) => n <= 6);
   return (
-    <div key={look} className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink }}>
+    <div key={look} className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink, '--gst-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {/* The Mind Loft mark and name top left, like every page (owner, 2026-10-24). */}
       <a className="gst-brand" href="/" aria-label="Mind Loft home">
@@ -84,7 +84,7 @@ const CSS = `
 .gst-q blockquote{margin:0 0 12px;font-size:20px;font-weight:700;line-height:1.35;font-style:italic;}
 .gst-q .gst-sub{display:block;margin-top:10px;font-size:17px;font-weight:700;}
 .gst-ch{display:flex;flex-direction:column;gap:12px;}
-.gst-c{position:relative;display:flex;align-items:center;justify-content:center;min-height:72px;width:100%;box-sizing:border-box;border-radius:18px;padding:14px 16px;text-align:center;cursor:pointer;background:color-mix(in srgb, var(--gst-ink) 8%, transparent);border:2px solid var(--gst-ink);font-family:inherit;font-size:22px;line-height:1.2;font-weight:800;animation:gstIn .5s cubic-bezier(.2,.8,.2,1) both;transition:background .15s, transform .1s;}
+.gst-c{position:relative;display:flex;align-items:center;justify-content:center;min-height:72px;width:100%;box-sizing:border-box;border-radius:18px;padding:14px 16px;text-align:center;cursor:pointer;background:var(--gst-tile);border:2px solid var(--gst-ink);font-family:inherit;font-size:22px;line-height:1.2;font-weight:800;animation:gstIn .5s cubic-bezier(.2,.8,.2,1) both;transition:background .15s, transform .1s;}
 .gst-ch.many .gst-c{min-height:58px;font-size:19px;padding:10px 14px;}
 .gst-ch.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
 .gst-ch.grid .gst-c{min-height:84px;font-size:20px;padding:10px 10px;}

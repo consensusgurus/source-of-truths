@@ -49,6 +49,7 @@ import LoftFinish from '../LoftFinish';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -243,6 +244,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -612,6 +614,70 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (
+        <PlayStage bg={gameColor('links')} label="Links"
+          eyebrow="Find four groups of four"
+          top={(
+            <>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .lks-band{border-radius:14px;background:var(--pst-ink);color:var(--pst-bg);padding:12px;text-align:center;}
+                .lks-band b{display:block;font-size:13px;letter-spacing:.08em;text-transform:uppercase;}
+                .lks-band span{display:block;font-size:16px;font-weight:800;margin-top:2px;line-height:1.25;}
+                .lks-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+                .pst .lks-t{min-height:72px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-weight:800;color:var(--pst-ink);padding:0 4px;line-height:1.15;letter-spacing:.02em;touch-action:manipulation;transition:transform .1s;}
+                .pst .lks-t:active{transform:scale(.97);}
+                .pst .lks-t.on{background:var(--pst-ink);color:var(--pst-bg);}
+                @keyframes lksshake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-4px);}40%,80%{transform:translateX(4px);}}
+                .pst .lks-t.shake{animation:lksshake .45s ease;}
+                .lks-miss{display:flex;justify-content:center;align-items:center;gap:8px;font-size:13px;font-weight:800;}
+                .lks-miss i{width:12px;height:12px;border-radius:6px;background:var(--pst-ink);box-sizing:border-box;}
+                .lks-miss i.u{background:transparent;border:2px solid var(--pst-ink);}
+              ` }} />
+              {g.solved.map((ci) => (
+                <div key={ci} className="lks-band">
+                  <b>{PUZZLE.groups[ci].name}</b>
+                  <span>{PUZZLE.groups[ci].words.join(', ')}</span>
+                </div>
+              ))}
+              {gridWords.length > 0 && (
+                <div className="lks-tiles" aria-label="Words left">
+                  {gridWords.map((w) => {
+                    const sel = selWords.includes(w);
+                    return (
+                      <button key={w} type="button" onClick={() => toggle(w)} aria-pressed={sel}
+                        className={`lks-t${sel ? ' on' : ''}${shakeIds && shakeIds.has(w) ? ' shake' : ''}`}
+                        style={{ fontSize: `${tileFs(w, 96, 16)}px` }}>
+                        {w}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="pst-note" aria-live="polite">{toast || `${selWords.length} of 4 picked`}</div>
+            </>
+          )}
+          bottom={(
+            <>
+              <div className="pst-tools">
+                <button type="button" className="pst-tb" onClick={doShuffle}>Shuffle</button>
+                <button type="button" className="pst-tb" onClick={() => setSelWords([])} disabled={selWords.length === 0}>Deselect</button>
+                <button type="button" className="pst-tb on" onClick={submit} disabled={selWords.length !== 4}>Submit four</button>
+              </div>
+              <div className="lks-miss" role="status" aria-label={`${MAX_MISTAKES - g.mistakes} of ${MAX_MISTAKES} mistakes left`}>
+                <span>Mistakes left</span>
+                {Array.from({ length: MAX_MISTAKES }).map((_, i) => (
+                  <i key={i} className={i < MAX_MISTAKES - g.mistakes ? undefined : 'u'} />
+                ))}
+              </div>
+              <div className="pst-tools">
+                <button type="button" className={`pst-tb${armGive ? ' on' : ''}`} onClick={giveTap}>{armGive ? 'Tap again to give up' : 'Give up'}</button>
+              </div>
+            </>
+          )}
+          foot={`${g.solved.length} of 4 groups`}
+          frac={g.solved.length / 4}
+        />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

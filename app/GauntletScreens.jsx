@@ -41,7 +41,9 @@ export const DARK = { bg: '#0b0f1a', ink: '#e9edf4', fill: '#1a2130' };
 export function stagePalette(pastel, look) {
   if (look === 'plain') return { ...PLAIN };
   if (look === 'dark') return { bg: DARK.bg, ink: DARK.ink };
-  return { bg: softGround(pastel), ink: INK };
+  // WHITE PAGE, COLOURED TILES (owner, 2026-10-25): the colour look's page is
+  // white; the colour lives on the tiles and cards (`tile`).
+  return { bg: '#ffffff', ink: INK, tile: softGround(pastel) };
 }
 // Paints <html>/<body> and the browser's theme-color so Safari's top and
 // bottom bars match the stage, and puts both back on unmount.
@@ -183,7 +185,7 @@ export function GauntletCover({ sections = [] }) {
   const c = gateColour(sections);
   return (
     <>
-      <div id="gsx-cover" aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 90, background: softGround(c) }} />
+      <div id="gsx-cover" aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 90, background: '#ffffff' }} />
       <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('${LOOK_KEY}')==='plain'||localStorage.getItem('${LOOK_KEY}')==='dark'){var e=document.getElementById('gsx-cover');if(e)e.style.background=localStorage.getItem('${LOOK_KEY}')==='dark'?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
     </>
   );
@@ -350,7 +352,7 @@ export function GauntletEndStage({
   }, []);
   const [lookNow] = useStageLook();
   const plainNow = lookNow === 'plain';
-  const sweepEdges = sweeping && !plainNow && lookNow !== 'dark' ? {
+  const sweepEdges = false && sweeping && !plainNow && lookNow !== 'dark' ? {
     top: softGround(rampFor(slotOf(sections[0], 0))),
     bottom: softGround(rampFor(slotOf(sections[sections.length - 1], sections.length - 1))),
   } : null;

@@ -49,6 +49,7 @@ import LoftFinish from '../LoftFinish';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 
 const COLORS = { cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted, good: T.successDeep || '#047857' };
 const ARM_MIN_MS = 400;
@@ -224,6 +225,10 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
   const viewedRef = useRef(false);
   const boardRef = useRef(null);
   const ptr = useRef(null);
+  // The phone play stage draws its own copy of the grid; while it is up the
+  // pointer maths reads that copy instead of the page's board.
+  const stageBoardRef = useRef(null);
+  const phoneStage = usePhoneStage();
 
   useEffect(() => {
     try {
@@ -388,7 +393,7 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
 
   // ---- pointer -> squares -----------------------------------------------------
   function cellAt(x, y) {
-    const el = boardRef.current;
+    const el = (phoneStage && stageBoardRef.current) || boardRef.current;
     if (!el) return null;
     const rect = el.getBoundingClientRect();
     const cw = rect.width / SIZE;
@@ -594,6 +599,66 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        // The phone play stage: the same grid, list and Give up, drawn on the
+        // shared full-screen frame. Every gesture runs through onDown / onMove /
+        // onUp above, so checking, saving and scoring are the page's own.
+        const foundCells = new Set();
+        Object.values(g.found).forEach((at) => { for (const [r, c] of lineCells(at[0], at[1], at[2], at[3])) foundCells.add(r * SIZE + c); });
+        const missCells = new Set();
+        if (miss) for (const [r, c] of lineCells(miss.r0, miss.c0, miss.r1, miss.c1)) missCells.add(r * SIZE + c);
+        const dirShort = dirs.length >= 8 ? 'all eight directions' : runsLine;
+        const readout = drag
+          ? (drag.off ? 'Let go to cancel' : liveLetters)
+          : (anchor ? anchorLine : (toast || 'Drag along a word, or tap its first letter then its last'));
+        const reading = !!(drag || anchor);
+        const top = (
+          <>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .sos-ws{align-self:center;position:relative;display:grid;width:100%;max-width:440px;aspect-ratio:1/1;container-type:inline-size;box-shadow:0 0 0 2px var(--pst-ink);border-radius:14px;background:var(--pst-tint);overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+              .sos-c{display:flex;align-items:center;justify-content:center;padding:1px;font-weight:800;line-height:1;font-size:calc(100cqw / ${SIZE} * 0.56);}
+              .sos-c i{font-style:normal;display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:6px;}
+              .sos-c.f i{background:var(--pst-ink);color:var(--pst-bg);}
+              .sos-c.d i{background:color-mix(in srgb, var(--pst-ink) 28%, transparent);}
+              .sos-c.x i{background:color-mix(in srgb, var(--pst-ink) 16%, transparent);animation:sosx .5s ease-out forwards;}
+              @keyframes sosx{to{background:transparent;}}
+              .sos-rd{text-align:center;font-size:13px;font-weight:700;opacity:.75;min-height:22px;line-height:1.4;}
+              .sos-rd.on{font-size:17px;font-weight:800;letter-spacing:.14em;opacity:1;}
+              .sos-w .pst-chip{font-size:12.5px;padding:4px 9px;}
+              .sos-w .pst-chip.on{text-decoration:line-through;}
+              @media (prefers-reduced-motion: reduce){.sos-c.x i{animation:none;}}
+            ` }} />
+            <div ref={stageBoardRef} className="sos-ws" role="grid" aria-label={`${SIZE} by ${SIZE} word search`}
+              onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onCancel}
+              style={{ gridTemplateColumns: `repeat(${SIZE}, 1fr)`, touchAction: 'none' }}>
+              {PUZZLE.grid.map((row, r) => row.split('').map((ch, c) => {
+                const k = r * SIZE + c;
+                const cls = cellsOn.has(k) ? ' d' : (missCells.has(k) ? ' x' : (foundCells.has(k) ? ' f' : ''));
+                return <div key={k} className={'sos-c' + cls} role="gridcell" aria-label={ch}><i>{ch}</i></div>;
+              }))}
+            </div>
+            <div className={'sos-rd' + (reading ? ' on' : '')} aria-live="polite" style={{ opacity: drag && drag.off ? 0.45 : undefined }}>{readout}</div>
+            <div className="pst-chips sos-w" aria-label="Words to find">
+              {PUZZLE.words.map((w, i) => (
+                <span key={w} className={'pst-chip' + (g.found[i] ? ' on' : '')}>{w}</span>
+              ))}
+            </div>
+          </>
+        );
+        const bottom = foundCount > 0 ? (
+          <div className="pst-tools">
+            <button type="button" className={'pst-tb' + (armReveal ? ' on' : '')}
+              onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); finish(g); } else { setArmReveal(Date.now()); } }}>
+              {armReveal ? 'Tap again to stop the clock and show the rest' : 'Give up and reveal'}
+            </button>
+          </div>
+        ) : null;
+        return (
+          <PlayStage bg={gameColor('scour')} label="Scour"
+            eyebrow={`Theme · ${PUZZLE.theme} · ${dirShort}`}
+            top={top} bottom={bottom} foot={`${foundCount} of ${N} words`} frac={N ? foundCount / N : 0} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && <DailyChrome slug="scour" name="Scour" collapsed={started} loft={LOFT} />}
       {LOFT && (

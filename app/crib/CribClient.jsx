@@ -51,6 +51,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { THROWS, NEAR, RANKS, SUITS, SUIT_NAMES, rankOf, suitOf, cardName, cutFor, scoreHand, scoreParts } from '@/lib/crib-core';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -249,6 +250,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const [armGive, setArmGive] = useState(false);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -591,6 +593,139 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (() => {
+        // THE PHONE STAGE: the same hand drawn full screen. Cards call tapCard,
+        // the big button throwIt or nextHand, and the pills useHint and
+        // tapGiveUp, so the scoring and the save are the desktop board's.
+        const isRed = (c) => suitOf(c) === 1 || suitOf(c) === 2;
+        const sh = (c) => `${RANKS[rankOf(c)]}${SUITS[suitOf(c)]}`;
+        const owner = hand.yours ? 'your' : 'their';
+        const thrownKs = g.shown !== null ? THROWS[pickT] : g.sel;
+        const ready = g.sel.length === 2;
+        let q, how;
+        if (reveal) {
+          q = reveal.pts === 2 ? 'The best throw. 2 points.'
+            : reveal.pts === 1 ? `Close: ${reveal.gap.toFixed(2)} behind the best. 1 point.`
+              : `${reveal.gap.toFixed(2)} behind the best. No points.`;
+          how = `The cut, for the look of it: ${cardName(reveal.cut)}. Your four scored ${scoreHand(reveal.keepMine, reveal.cut, false)} with it. The value is the average over every cut.`;
+        } else {
+          q = `Which two go to ${owner} crib?`;
+          how = ready ? `${g.sel.map((k) => sh(hand.cards[k])).join(' and ')} picked. Tap a card again to keep it.`
+            : g.sel.length === 1 ? `${sh(hand.cards[g.sel[0]])} picked. Pick one more.`
+              : `Tap two cards to throw. ${hand.yours ? 'Your crib adds to the throw.' : 'Their crib counts against it.'}`;
+        }
+        if (toast) how = toast;
+        const CSS_C = `
+.crb-wrap{--crb-w:min(54px, calc((100vw - 28px - 5 * 6px) / 6));display:flex;flex-direction:column;gap:16px;}
+.crb-row{display:grid;grid-template-columns:repeat(${hand.cards.length},var(--crb-w));justify-content:space-between;padding-top:12px;}
+.crb-pc{box-sizing:border-box;width:var(--crb-w);height:calc(var(--crb-w) * 1.52);border-radius:8px;background:#fff;border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:var(--pst-ink) !important;padding:0;font-size:calc(var(--crb-w) * .37);transition:transform .14s,opacity .14s;}
+.crb-pc i{font-style:normal;font-size:calc(var(--crb-w) * .31);margin-top:3px;color:inherit !important;}
+.crb-pc.red{color:#b4232c !important;}
+.crb-pc.held{transform:translateY(-12px);background:var(--pst-ink);color:var(--pst-bg) !important;}
+.crb-pc.dim{opacity:.45;}
+.crb-pc.hint{outline:3px dashed var(--pst-ink);outline-offset:3px;}
+.crb-pc:disabled{cursor:default;}
+.crb-pc.sm{width:30px;height:42px;font-size:12px;border-radius:5px;}
+.crb-pc.sm i{font-size:11px;margin-top:1px;}
+.crb-crib{display:flex;align-items:center;justify-content:center;gap:12px;}
+.crb-lab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
+.crb-stack{display:flex;gap:6px;}
+.crb-down{box-sizing:border-box;width:40px;height:58px;border-radius:7px;border:2px solid var(--pst-ink);background:repeating-linear-gradient(45deg,var(--pst-ink) 0 5px,var(--pst-tint) 5px 10px);}
+.crb-slot{box-sizing:border-box;width:40px;height:58px;border-radius:7px;border:2px dashed var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+.crb-slot.red{color:#b4232c !important;}
+.crb-how{text-align:center;font-size:13px;font-weight:700;opacity:.85;line-height:1.4;min-height:2.8em;}
+.crb-go{display:flex;align-items:center;justify-content:center;gap:8px;min-height:64px;width:100%;border-radius:18px;padding:12px;background:var(--pst-ink);border:2px solid var(--pst-ink);font-size:21px;font-weight:800;color:var(--pst-bg) !important;}
+.crb-go:disabled{background:var(--pst-tint);color:var(--pst-ink) !important;opacity:.6;cursor:default;}
+.crb-q2{border-style:dashed !important;}
+.crb-q2.on{border-style:solid !important;}
+.crb-peg{display:flex;gap:6px;justify-content:center;}
+.crb-peg i{width:30px;height:12px;border-radius:6px;border:2px solid var(--pst-ink);background:var(--pst-tint);}
+.crb-peg i.on{background:var(--pst-ink);}
+.crb-peg i.half{background:linear-gradient(90deg,var(--pst-ink) 50%,var(--pst-tint) 50%);}
+.crb-peg i.cur{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.crb-tr{display:flex;align-items:center;gap:8px;min-height:50px;}
+.crb-tr .pair{display:flex;gap:3px;flex:none;}
+.crb-tr .v{margin-left:auto;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;}
+@media (prefers-reduced-motion: reduce){.crb-pc{transition:none}}`;
+        const top = (
+          <div className="crb-wrap">
+            <style dangerouslySetInnerHTML={{ __html: CSS_C }} />
+            <h2 className="pst-q">{q}</h2>
+            <div className="crb-row">
+              {hand.cards.map((c, k) => {
+                const thrownNow = g.shown !== null && THROWS[pickT].includes(k);
+                const isSel = g.shown === null ? g.sel.includes(k) : thrownNow;
+                const dim = g.shown !== null && !thrownNow;
+                const live = g.shown === null;
+                const ring = k === hintCard;
+                return (
+                  <button key={c} type="button" className={`crb-pc${isRed(c) ? ' red' : ''}${isSel ? ' held' : ''}${dim ? ' dim' : ''}${ring ? ' hint' : ''}`}
+                    onClick={live ? () => tapCard(k) : undefined} disabled={!live}
+                    aria-pressed={live ? isSel : undefined}
+                    aria-label={`${RANKS[rankOf(c)]} of ${SUIT_NAMES[suitOf(c)]}${isSel ? (live ? ', selected to throw' : ', thrown') : ''}${ring ? ', hinted' : ''}`}>
+                    {RANKS[rankOf(c)]}<i>{SUITS[suitOf(c)]}</i>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="crb-crib">
+              <span className="crb-lab">{hand.yours ? 'Your crib' : 'Their crib'}</span>
+              <span className="crb-stack" aria-label={`The crib: two unseen cards${thrownKs.length ? `, and ${thrownKs.map((k) => cardName(hand.cards[k])).join(' and ')}` : ''}`}>
+                <span className="crb-down" aria-hidden="true" /><span className="crb-down" aria-hidden="true" />
+                {[0, 1].map((i) => {
+                  const k = thrownKs[i];
+                  return <span key={i} className={`crb-slot${k != null && isRed(hand.cards[k]) ? ' red' : ''}`} aria-hidden="true">{k != null ? sh(hand.cards[k]) : ''}</span>;
+                })}
+              </span>
+            </div>
+            {reveal ? (
+              <div className="pst-list" role="list" aria-label="The top throws">
+                {reveal.rows.map((t) => {
+                  const mine = t === pickT;
+                  const best = t === reveal.bestT;
+                  return (
+                    <div key={t} role="listitem" className={`pst-row crb-tr${mine ? ' on' : ''}`}>
+                      <span className="pair">
+                        {THROWS[t].map((k) => { const c = hand.cards[k]; return <span key={k} className={`crb-pc sm${isRed(c) ? ' red' : ''}`}>{RANKS[rankOf(c)]}<i>{SUITS[suitOf(c)]}</i></span>; })}
+                      </span>
+                      {best ? <span className="pst-tag f">Best</span> : null}
+                      {mine ? <span className="pst-tag">Yours</span> : null}
+                      <span className="v">{fmtSigned(hand.value[t])}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+            <div className="crb-how" aria-live="polite">{how}</div>
+          </div>
+        );
+        const bottom = (
+          <>
+            {reveal ? (
+              <button type="button" className="crb-go" onClick={nextHand}>{g.picks.length >= NH ? 'See your score' : 'Next hand'} <ArrowRight size={20} aria-hidden="true" /></button>
+            ) : (
+              <button type="button" className="crb-go" onClick={throwIt} disabled={!ready}>Throw these two</button>
+            )}
+            <div className="pst-tools">
+              {!reveal && hintOk && !g.hintUsed ? <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb} Hint</button> : null}
+              <button type="button" className={`pst-tb crb-q2${armGive ? ' on' : ''}`} onClick={tapGiveUp}><Flag size={16} aria-hidden="true" /> {armGive ? 'Tap again to give up' : 'Give up'}</button>
+            </div>
+            <div className="crb-peg" role="img" aria-label={`${score} of ${TOTAL} points after ${g.picks.length} of ${NH} hands`}>
+              {HANDS.map((h, i) => {
+                const e = earned[i];
+                return <i key={i} className={`${e === 2 ? 'on' : e === 1 ? 'half' : ''}${i === current ? ' cur' : ''}`} />;
+              })}
+            </div>
+          </>
+        );
+        return (
+          <PlayStage bg={gameColor('crib')} label="Crib"
+            eyebrow={`Hand ${Math.min(current + 1, NH)} of ${NH} · ${owner} crib`}
+            top={top} bottom={bottom} topKey={`${current}-${g.shown === null ? 'a' : 'r'}`}
+            frac={NH ? g.picks.length / NH : null}
+            foot={`${g.picks.length ? `After hand ${g.picks.length}` : 'No hands thrown yet'} · ${score} of ${TOTAL}`} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="crib" name="Crib" collapsed={started} loft={LOFT} />
