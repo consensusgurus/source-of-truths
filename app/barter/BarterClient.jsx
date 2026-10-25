@@ -4,9 +4,9 @@
 //
 // Six words interlock in a 5x5 lattice (Sundays: eight words in 7x7). Every
 // letter the answer needs is already on the board, scrambled. Tap two tiles to
-// trade them. Solid blue = right letter on the right square (it locks); faded
-// blue = that letter belongs somewhere else in a word crossing that square;
-// grey = it belongs to a different word entirely. The budget is the proven
+// trade them. Filled = right letter on the right square (it locks); dashed =
+// that letter belongs somewhere else in a word crossing that square; plain =
+// it belongs to a different word entirely. The budget is the proven
 // minimum number of trades (par) plus five; solve at par for a perfect 10, and
 // every extra trade costs two points. Run out of trades and the run is over
 // with the board as you left it: Barter keeps its answer (see KEEPS_ANSWER in
@@ -614,13 +614,13 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
         // surrendered the colour it is naming explains nothing. Both are the
         // same values the tiles use, read from COLORS, so the key cannot drift
         // away from the board.
-        { label: 'Solid blue: right letter, right square. It locks.', style: { background: COLORS.home, border: `1.5px solid ${COLORS.home}`, color: COLORS.homeInk } },
-        { label: 'Faded blue: belongs elsewhere in a word crossing that square', style: { background: COLORS.near, border: `1.5px solid ${COLORS.near}`, color: COLORS.nearInk } },
-        { label: 'Grey: belongs to a different word', tone: 'grey' },
+        { label: 'Filled: right letter, right square. It locks.', style: { background: COLORS.home, border: `1.5px solid ${COLORS.home}`, color: COLORS.homeInk } },
+        { label: 'Dashed: belongs elsewhere in a word crossing that square', style: { background: COLORS.near, border: `2px dashed ${STAGE ? 'var(--stg-ink, #08222e)' : COLORS.nearInk}`, color: COLORS.nearInk } },
+        { label: 'Plain: belongs to a different word', tone: 'grey' },
       ]}
       steps={[
         <>Words run along every <b>row and column</b> of tiles. Tap one tile, then another, and they <b>trade places</b>.</>,
-        <>The colors re-read after every trade. A <b>solid blue</b> tile is home and locks in place; a <b>faded blue</b> one belongs somewhere else in a word through that square.</>,
+        <>The tiles re-read after every trade. A <b>filled</b> tile is home and locks in place; a <b>dashed</b> one belongs somewhere else in a word through that square; a <b>plain</b> one belongs to a different word.</>,
         <>Your budget is <b>par + 5</b> trades. Par is the proven minimum for today&rsquo;s board, so a perfect game has no slack at all.</>,
         <>One free <b>hint</b>, on your first ever play, makes a correct trade at no cost.</>,
         <><b>Give up</b> ends the run now and scores 0. The board stays as you left it; the answer is not shown.</>,
@@ -754,7 +754,9 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
                     style={{
                       background: bg,
                       color: ink,
-                      border: col === 0 ? '2px solid rgba(28,30,36,0.35)' : '2px solid transparent',
+                      // THREE STATES IN EVERY LOOK (owner, 2026-10-25): filled, dashed, plain.
+                      // Never colour alone, so the five page looks all read the same way.
+                      border: col === 2 ? `2px solid ${COLORS.home}` : col === 1 ? `2.5px dashed ${STAGE ? 'var(--stg-ink, #08222e)' : COLORS.nearInk}` : `2px solid ${STAGE ? 'var(--stg-line2, rgba(28,30,36,0.35))' : 'rgba(28,30,36,0.35)'}`,
                       fontSize: S === 7 ? 'clamp(13px, 3.4vw, 24px)' : 'clamp(16px, 4.6vw, 30px)',
                       boxShadow: col === 2 ? 'none' : '0 1.5px 0 rgba(28,30,36,0.18)',
                     }}
@@ -784,7 +786,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
             <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: sel !== null ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})` }}>
               {sel !== null
                 ? 'Now tap the tile to trade it with. Tap it again to put it back.'
-                : 'Tap two tiles to trade them. Solid blue tiles are locked.'}
+                : 'Tap two tiles to trade them. Filled tiles are locked.'}
             </span>
             <button type="button" className="bt-tool" onClick={tapGiveUp}
               title={armGive ? 'Ends the run now, scored 0' : 'End the run now. Scores 0; the answer is not shown.'}
@@ -989,7 +991,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Barter</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Barter is a free daily word puzzle from Mind Loft. Six words interlock in a lattice, and every letter the answer needs is already on the board, just in the wrong places. Tap two tiles to trade them: solid blue means a letter has found its home, faded blue means it belongs somewhere else in one of the words crossing that square, and grey means it belongs to a different word entirely.
+          Barter is a free daily word puzzle from Mind Loft. Six words interlock in a lattice, and every letter the answer needs is already on the board, just in the wrong places. Tap two tiles to trade them: a filled tile means a letter has found its home, a dashed tile means it belongs somewhere else in one of the words crossing that square, and grey means it belongs to a different word entirely.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           The catch is the budget. Every board&rsquo;s par is the proven minimum number of trades, computed exactly, and you get par plus five. Careless trades are the whole game: a good player reads the faded tiles across both crossing words before touching anything, and the best trades home two tiles at once. Solve at par for a perfect score.

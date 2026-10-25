@@ -777,12 +777,15 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
 
   // A pip at the end of every row and under every column: a hollow ring while
   // the line still owes a seat, the accent once it holds its quota, the page's
-  // red if it holds too many. A two-jester line that holds one rings in accent.
+  // red, squared and ringed, if it holds too many. A two-jester line that holds one rings in accent.
   const pipStyle = (v) => {
     const full = v === 0, over = v < 0, part = v > 0 && v < STARS;
     return {
       width: PIP, height: PIP, borderRadius: '50%', boxSizing: 'border-box', flex: '0 0 auto',
+      // Too many is a SQUARE ringed in ink, never just a different fill (owner, 2026-10-25).
+      borderRadius: over ? 2 : '50%',
       background: over ? 'var(--stg-bad, #b91c1c)' : full ? `var(--stg-acc, ${COLORS.accent})` : 'transparent',
+      outline: over ? `2px solid var(--stg-ink, ${COLORS.ink})` : 'none', outlineOffset: 1,
       border: (full || over) ? 'none' : `2px solid ${part ? `var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : 'var(--stg-mute, #6b7280)'}`,
     };
   };
@@ -795,7 +798,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
   }, [jesters, N, PUZZLE]);
 
   // The plain status line. Built only from what is on the board (seat count,
-  // rows still open, any clash the rules already show in red), so it never
+  // rows still open, any clash the rules already show striped), so it never
   // states a deduction the player has not made.
   const statusLine = useMemo(() => {
     const W = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
@@ -847,7 +850,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
       accent={COLORS.accent} accentSoft={COLORS.accentSoft} accentDeep={COLORS.accentDeep}
       lead={<>Seat exactly <b>{STARS === 2 ? 'two jesters' : 'one jester'}</b> in every row, every column and every colored court.</>}
       chips={[
-        { label: 'Red = quarrelling jesters', tone: 'bad' },
+        { label: 'Striped = quarrelling jesters', tone: 'bad' },
         { label: 'Filled pip = line seated', tone: 'grey' },
         { label: 'Ticked court = seated', tone: 'good' },
       ]}
@@ -1048,8 +1051,8 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
                         // full court at half of it (it fades on either ground instead of washing
                         // toward a literal white), a quarrel in the page's own red. Loft: untouched.
                         background: STAGE
-                          ? (conflict ? 'color-mix(in srgb, var(--stg-bad) 38%, var(--stg-cell))' : regionMix(doneRegions.has(id) ? 0.5 : 1))
-                          : (conflict ? '#fecaca' : (doneRegions.has(id) ? REGION_FILLS_DONE : REGION_FILLS)[id % REGION_FILLS.length]), borderTop: bTop, borderLeft: bLeft, boxShadow: locked ? `inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
+                          ? (conflict ? 'repeating-linear-gradient(45deg, color-mix(in srgb, var(--stg-ink) 30%, transparent) 0 2px, transparent 2px 7px), color-mix(in srgb, var(--stg-bad) 38%, var(--stg-cell))' : regionMix(doneRegions.has(id) ? 0.5 : 1))
+                          : (conflict ? 'repeating-linear-gradient(45deg, color-mix(in srgb, #7f1d1d 30%, transparent) 0 2px, transparent 2px 7px), #fecaca' : (doneRegions.has(id) ? REGION_FILLS_DONE : REGION_FILLS)[id % REGION_FILLS.length]), borderTop: bTop, borderLeft: bLeft, boxShadow: locked ? `inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
                     >
                       {v === 1 && <span className="je-x" style={{ fontSize: Math.max(13, Math.round(cellPx * 0.36)) }}>✗</span>}
                       {v === 0 && autoMark && <span className="je-dot" style={{ width: dotPx, height: dotPx }} />}

@@ -11,8 +11,8 @@
 // the fib. Every board admits exactly one (grid, lying sign) pair across the
 // whole search space, so both halves of the answer are provably unique.
 //
-// A sign greys out once your grid satisfies it and glows amber once your grid
-// breaks it, which is only what the player could read off the board themselves.
+// A sign shades in once your grid satisfies it and turns STRIPED once your grid
+// breaks it (dashed while untested; the same cues in every page look), which is only what the player could read off the board themselves.
 // A wrong submission costs an error but never says which square is wrong.
 // Score is 10 minus half your errors, floor 1, so a clean solve is a perfect 10
 // and ties break on fewest errors then fastest time.
@@ -234,6 +234,7 @@ const FIB_VARS = {
   '--fb-peer': 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #4c1d95)) 15%, var(--stg-cell, #ffffff))',
   '--fb-ok': 'color-mix(in srgb, var(--stg-ink, #0b0d12) 13%, var(--stg-cell, #ffffff))',
   '--fb-warn-soft': 'color-mix(in srgb, var(--stg-warn, #b45309) 22%, var(--stg-cell, #ffffff))',
+  '--fb-warn-stripe': 'repeating-linear-gradient(45deg, color-mix(in srgb, var(--stg-warn, #b45309) 34%, var(--stg-cell, #ffffff)) 0 3px, var(--stg-cell, #ffffff) 3px 6px)',
   '--fb-bad-soft': 'color-mix(in srgb, var(--stg-bad, #b91c1c) 16%, var(--stg-cell, #ffffff))',
   '--fb-btn': 'var(--stg-mute, #5f6774)',
 };
@@ -699,9 +700,10 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="Solve the grid, then name the one sign that is lying."
       chips={[
-        { label: 'Grey sign: your grid satisfies it', tone: 'grey' },
-        { label: 'Amber sign: your grid breaks it', tone: 'warn' },
-        { label: 'Red digit: repeated in its line', tone: 'bad' },
+        { label: 'Dashed sign: not yet tested', style: { background: 'transparent', border: '1.5px dashed var(--fb-btn)' } },
+        { label: 'Shaded sign: your grid satisfies it', tone: 'grey' },
+        { label: 'Striped sign: your grid breaks it', tone: 'warn', style: { background: 'var(--fb-warn-stripe)', border: '2.5px solid var(--stg-warn, #b45309)' } },
+        { label: 'Struck digit: repeated in its line', tone: 'bad', style: { textDecoration: 'line-through' } },
       ]}
       steps={[
         <>Every row and column holds <b>1 to {n}</b> once each, and the <b>printed digits are true</b>. Each sign&rsquo;s open end points at the <b>larger</b> of its two neighbours.</>,
@@ -709,7 +711,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
         <>Tap a square then a number, or type. <b>Notes</b> (press N) pencils candidates, <b>Undo</b> is Ctrl+Z, and one free <b>hint</b>, on your first ever play, fills a correct square.</>,
         <>Fill the grid, then <b>tap the sign you are accusing</b> and hit <b>Submit</b>.</>,
       ]}
-      knack="The colours are free and only report what you could read off the board yourself. Finish with exactly one amber sign and that is your liar."
+      knack="The sign markings are free and only report what you could read off the board yourself. Finish with exactly one striped sign and that is your liar."
       footer="One grid and one liar fit the board, so the answer is provable, never a guess. A clean solve scores a perfect 10, every two wrong submissions cost a point. Ties break on fewest errors, then fastest time. Sundays are a bigger 6×6 Edition."
     />
   );
@@ -747,7 +749,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
           }}
         >
           {v ? (
-            <span style={{ fontFamily: SANS, fontSize: cellFs, lineHeight: 1, fontWeight: isGiven ? 800 : 700, color: isDup ? `var(--stg-bad, ${COLORS.rust})` : isGiven ? INK : ACC_INK }}>{v}</span>
+            <span style={{ fontFamily: SANS, fontSize: cellFs, lineHeight: 1, fontWeight: isGiven ? 800 : 700, color: isDup ? `var(--stg-bad, ${COLORS.rust})` : isGiven ? INK : ACC_INK, textDecoration: isDup ? 'line-through' : undefined, textDecorationThickness: isDup ? '2px' : undefined }}>{v}</span>
           ) : noteMask ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '86%', height: '86%', alignItems: 'center', justifyItems: 'center' }}>
               {Array.from({ length: n }).map((_, k) => (
@@ -781,11 +783,12 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
     const accused = viewAcc === ci;
     const isLiar = !playing && !hideAns && ci === PUZZLE.liar;
     const vert = isVertical(cl);
-    // Idle: dashed outline. Satisfied: filled muted. Broken: amber. The
-    // accused sign carries a red ring; after the game the liar does too.
+    // Idle: dashed outline. Satisfied: shaded, no border. Broken: STRIPED with a
+    // heavy solid border (owner, 2026-10-25: never colour alone). The accused
+    // sign carries a ring; after the game the liar does too.
     const stroke = isLiar ? 'var(--stg-bad, #b91c1c)' : st === 'broken' ? 'var(--stg-warn, #b45309)' : st === 'ok' ? 'var(--stg-ink2, #3f4757)' : 'var(--fb-btn)';
-    const chipBg = isLiar ? 'var(--fb-bad-soft)' : st === 'broken' ? 'var(--fb-warn-soft)' : st === 'ok' ? 'var(--fb-ok)' : 'transparent';
-    const chipBd = st === 'idle' && !isLiar ? '1.5px dashed var(--fb-btn)' : st === 'broken' ? '1.5px solid var(--stg-warn, #b45309)' : '1.5px solid transparent';
+    const chipBg = isLiar ? 'var(--fb-bad-soft)' : st === 'broken' ? 'var(--fb-warn-stripe)' : st === 'ok' ? 'var(--fb-ok)' : 'transparent';
+    const chipBd = st === 'idle' && !isLiar ? '1.5px dashed var(--fb-btn)' : st === 'broken' ? '2.5px solid var(--stg-warn, #b45309)' : '1.5px solid transparent';
     const ringed = accused || isLiar;
     const stateWord = st === 'idle' ? 'not yet tested' : st === 'ok' ? 'your grid satisfies it' : 'your grid breaks it';
     boardCells.push(
@@ -1023,8 +1026,8 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
                 <div style={{ flex: '1 1 260px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <span aria-live="polite" style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.4, color: canSubmit && brokenCount === 1 ? ACC_INK : INK }}>{statusMain}</span>
                   <span style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: FADED }}>
-                    <span className="fb-l">Every sign is a button: tap the one you think is lying. Amber means your grid breaks it.</span>
-                    <span className="fb-s">Tap a sign to accuse it. Amber means your grid breaks it.</span>
+                    <span className="fb-l">Every sign is a button: tap the one you think is lying. Striped means your grid breaks it.</span>
+                    <span className="fb-s">Tap a sign to accuse it. Striped means your grid breaks it.</span>
                   </span>
                 </div>
                 <button
@@ -1078,7 +1081,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
               {!hideAns && (
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
-                The sign ringed in <span style={{ color: `var(--stg-bad, ${COLORS.rust})` }}>red</span> is the one that lied.
+                The <span style={{ color: `var(--stg-bad, ${COLORS.rust})` }}>ringed</span> sign is the one that lied.
               </div>
               )}
               {PUZZLE.sunday && (

@@ -900,7 +900,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-cell.bk{background:${STAGE ? 'var(--stg-cell)' : '#eef1f5'};font-size:14px;}
           .an-cell.mine{background:${ACC_SOFT};border-bottom-color:${ACC_INK};}
           .an-cell.on{background:${ACC};border-bottom-color:${ACC_INK};color:${ON_ACC};}
-          .an-cell.miss{background:${STAGE ? 'color-mix(in srgb, var(--stg-bad) 16%, var(--stg-cell))' : '#fee2e2'};border-bottom-color:${STAGE ? 'var(--stg-bad)' : '#dc2626'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};font-weight:800;}
+          .an-cell.miss{background:${STAGE ? 'repeating-linear-gradient(45deg, color-mix(in srgb, var(--stg-ink) 22%, transparent) 0 2px, transparent 2px 7px), color-mix(in srgb, var(--stg-bad) 16%, var(--stg-cell))' : '#fee2e2'};border-bottom-style:dashed;border-bottom-color:${STAGE ? 'var(--stg-bad)' : '#dc2626'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};font-weight:800;}
           .an-punc{align-self:center;color:var(--stg-mute, #6b7280);font-weight:800;width:7px;text-align:center;}
           .an-sig{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid ${STAGE ? 'var(--stg-line)' : 'rgba(28,30,36,0.12)'};}
           .an-sigdash{width:18px;height:2px;background:${FADED};flex:none;}

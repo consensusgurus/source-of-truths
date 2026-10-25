@@ -5,14 +5,16 @@
 // Each day: eight real things and one measurable quantity. Arrange them
 // highest to lowest and submit. Every submit grades each row the way Wordle
 // grades a letter:
-//   green  = exactly right, and it LOCKS with its real figure revealed
-//   amber  = off by one place, so it is nearly home
-//   grey   = two or more places away
+//   filled = exactly right, and it LOCKS with its real figure revealed
+//   dashed = off by one place, so it is nearly home (tagged "Off by one")
+//   plain  = two or more places away
+// The marks never rely on colour alone (owner, 2026-10-25): in the submit
+// grid a near miss is striped, an exact one solid, a far one an empty box.
 // Five submits. Score is 10 for a clean first submit, minus one per extra
 // submit and one per item never locked. One free hint reveals the figure of
 // the item sitting furthest from where it belongs.
 //
-// The amber tier is the whole point of the puzzle and the reason Listed is not
+// The near-miss tier is the whole point of the puzzle and the reason Listed is not
 // just Dating with more rows: a near miss is worth knowing about, so the
 // board teaches you something on every submit instead of only confirming.
 //
@@ -720,13 +722,13 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
       lead={<>{N} real things, one ranking.</>}
       banner={<>Order them, {PUZZLE.hi.toLowerCase()} at the top, {PUZZLE.lo.toLowerCase()} at the bottom.</>}
       chips={[
-        { label: 'Exactly right, locks with its figure', style: { background: `var(--stg-surf, ${COLORS.lockSoft})`, border: `1.5px solid var(--stg-line, ${COLORS.lock})`, color: `var(--stg-ink, ${COLORS.lockInk})` } },
-        { label: 'Off by one place', style: { background: `var(--stg-surf, ${COLORS.nearSoft})`, border: `1.5px solid var(--stg-line, ${COLORS.near})`, color: `var(--stg-ink, ${COLORS.nearInk})` } },
-        { label: 'Two or more places away', tone: 'grey' },
+        { label: 'Filled: exactly right, locks with its figure', style: STAGE ? { background: 'var(--stg-acc)', border: '1.5px solid var(--stg-acc-ink, var(--stg-acc))', color: 'var(--stg-onramp)' } : { background: COLORS.lockSoft, border: `1.5px solid ${COLORS.lock}`, color: COLORS.lockInk } },
+        { label: 'Dashed: off by one place', style: { background: `var(--stg-surf, ${COLORS.nearSoft})`, border: `1.5px dashed var(--stg-warn, ${COLORS.near})`, color: `var(--stg-ink, ${COLORS.nearInk})` } },
+        { label: 'Plain: two or more places away', tone: 'grey' },
       ]}
       steps={[
         <>{mobileUi ? 'Tap the arrows to move a row.' : 'Drag a row where it belongs, or use the arrows.'}</>,
-        <>You get <b>{MAX_CHECKS} submits</b>, and each one grades every row by the colors above.</>,
+        <>You get <b>{MAX_CHECKS} submits</b>, and each one grades every row by the marks above.</>,
         <>One free <b>hint</b>, on your first ever play, reveals the figure of whichever item sits furthest from home.</>,
       ]}
       knack="Place the extremes first. Every row that locks with its real figure narrows what the rows around it can be."
@@ -971,7 +973,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
                 const rowInk = locked ? 'var(--stg-onramp)' : INK;
                 const bg = locked ? 'var(--stg-acc)' : dropHere ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 16%, var(--stg-surf2))' : 'var(--stg-surf2)';
                 const bord = locked || dropHere ? '1.5px solid var(--stg-acc)' : near ? '1.5px solid var(--stg-warn)' : '1.5px solid var(--stg-line2)';
-                const bord_INK = locked || dropHere ? '1.5px solid var(--stg-acc-ink, var(--stg-acc))' : near ? '1.5px solid var(--stg-warn)' : '1.5px solid var(--stg-line2)';
+                const bord_INK = locked || dropHere ? '1.5px solid var(--stg-acc-ink, var(--stg-acc))' : near ? '2px dashed var(--stg-warn)' : '1.5px solid var(--stg-line2)';
                 return (
                   <div key={it} className="ls-rowwrap" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span className="ls-num" style={{ flex: '0 0 auto', width: 30, textAlign: 'right', fontFamily: MONO, fontSize: 20, fontWeight: 500, color: locked ? 'var(--stg-acc-ink)' : near ? 'var(--stg-warn)' : 'var(--stg-mute2)' }}>{slot + 1}</span>
@@ -1007,7 +1009,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
                 <div key={ri} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ flex: '0 0 auto', width: 20, fontFamily: MONO, fontSize: 10, color: FADED }}>{ri + 1}</span>
                   {row.map((c, ci) => (
-                    <span key={ci} style={{ width: 15, height: 15, borderRadius: 3, boxSizing: 'border-box', background: c === EXACT ? 'var(--stg-good)' : c === NEAR ? 'var(--stg-warn)' : 'transparent', border: c === GREY ? '1.5px solid var(--stg-line3)' : 'none' }} />
+                    <span key={ci} style={{ width: 15, height: 15, borderRadius: 3, boxSizing: 'border-box', background: c === EXACT ? 'var(--stg-good)' : c === NEAR ? 'repeating-linear-gradient(45deg, var(--stg-warn) 0 2.5px, transparent 2.5px 5px)' : 'transparent', border: c === GREY ? '1.5px solid var(--stg-line3)' : c === NEAR ? '1.5px solid var(--stg-warn)' : 'none' }} />
                   ))}
                 </div>
               ))}
@@ -1078,8 +1080,8 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
               const dragging = drag && drag.from === slot;
               const dropHere = drag && !dragging && drag.target === slot;
               const bg = locked ? `var(--stg-surf2, ${COLORS.lockSoft})` : dropHere ? `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.brand})) 16%, transparent)` : near ? `var(--stg-surf2, ${COLORS.nearSoft})` : `var(--stg-surf, ${T.white})`;
-              const bord = locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc, ${COLORS.brand})` : near ? `1.5px solid var(--stg-warn, ${COLORS.near})` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))';
-              const bord_INK = locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.brand}))` : near ? `1.5px solid var(--stg-warn, ${COLORS.near})` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))';
+              const bord = locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc, ${COLORS.brand})` : near ? `2px dashed var(--stg-warn, ${COLORS.near})` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))';
+              const bord_INK = locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.brand}))` : near ? `2px dashed var(--stg-warn, ${COLORS.near})` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))';
               return (
                 <div key={it} ref={(el) => { rowRefs.current[slot] = el; }} onPointerDown={draggable ? (e) => startDrag(slot, e) : undefined} title={draggable ? 'Drag to reorder' : undefined}
                   style={{ display: 'flex', alignItems: 'center', gap: 9, background: bg, border: bord_INK, borderRadius: 9, padding: '9px 11px', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, position: dragging ? 'relative' : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(20,22,28,0.22)' : undefined, opacity: dragging ? 0.96 : undefined, touchAction: draggable ? 'none' : undefined }}>
@@ -1110,7 +1112,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
               <div key={ri} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span style={{ flex: '0 0 auto', width: 20, fontFamily: MONO, fontSize: 10, color: FADED }}>{ri + 1}</span>
                 {row.map((c, ci) => (
-                  <span key={ci} style={{ width: 15, height: 15, borderRadius: 3, background: c === EXACT ? COLORS.lock : c === NEAR ? COLORS.near : '#d3d7de' }} />
+                  <span key={ci} style={{ width: 15, height: 15, borderRadius: 3, boxSizing: 'border-box', background: c === EXACT ? COLORS.lock : c === NEAR ? `repeating-linear-gradient(45deg, ${COLORS.near} 0 2.5px, transparent 2.5px 5px)` : 'transparent', border: c === EXACT ? 'none' : `1.5px solid ${c === NEAR ? COLORS.near : '#b9bec7'}` }} />
                 ))}
               </div>
             ))}
@@ -1302,10 +1304,10 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Listed</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Listed is a free daily ranking puzzle from Mind Loft. Each day deals eight real things and one measurable quantity, shuffled out of order. Your job is to rank them. You get five submits, and every submit grades each row: green means exactly right and locks it in with the real figure revealed, amber means you are off by exactly one place, and grey means you are further away than that.
+          Listed is a free daily ranking puzzle from Mind Loft. Each day deals eight real things and one measurable quantity, shuffled out of order. Your job is to rank them. You get five submits, and every submit grades each row: a filled row is exactly right and locks in with the real figure revealed, a dashed row tagged off by one is exactly one place from home, and a plain row is further away than that.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          The amber tier is what makes it a deduction puzzle rather than a quiz. Knowing a row is one place from home turns a wild guess into arithmetic, and a board that looks hopeless after one submit is usually two nudges from solved. Rank the whole list on your first submit and you score a perfect 10.
+          The off-by-one tier is what makes it a deduction puzzle rather than a quiz. Knowing a row is one place from home turns a wild guess into arithmetic, and a board that looks hopeless after one submit is usually two nudges from solved. Rank the whole list on your first submit and you score a perfect 10.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Every board is a trivia, history or geography board, and the three rotate through the week: box office and sports records one day, founding years or independence dates the next, deepest trenches or highest capitals after that. Every answer key is a published number from a named source, never an opinion and never a critics&rsquo; poll, so there is always exactly one right order. A new list drops every day at midnight Eastern, and the Sunday Edition adds a ninth item. No app, no signup: play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword, <a href="/dating" style={{ color: INK, fontWeight: 800 }}>Dating</a>, our put-history-in-order puzzle, <a href="/links" style={{ color: INK, fontWeight: 800 }}>Links</a>, our word grouping puzzle, and <a href="/outrank" style={{ color: INK, fontWeight: 800 }}>Outrank</a>, where the crowd is the answer key.

@@ -78,8 +78,8 @@ const COLORS = {
   accentSoft: '#e8eefc',
   green: T.successDeep,
 };
-// The board itself, in the colours everyone already knows: a blue grid, red
-// discs for you, yellow for the engine.
+// The board itself, in the colours everyone already knows: a blue grid, solid
+// discs for you, ringed discs for the engine.
 // BOTH STOPS ON ONE TOKEN. The cabinet's vertical gradient collapses to a flat
 // surface on the stage and keeps its blue on the Loft, where neither token
 // exists and each stop falls back to its own literal.
@@ -703,7 +703,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead={<>You drop the <b>gold</b> discs, you move first, and the position is already won for you: a forced <b>win in {PUZZLE.winIn}</b> of your moves.</>}
+      lead={<>You drop the <b>solid</b> discs, the engine the <b>ringed</b> ones, you move first, and the position is already won for you: a forced <b>win in {PUZZLE.winIn}</b> of your moves.</>}
       chips={[
         { label: 'Win = 10', tone: 'good' },
         { label: 'Draw = 4', tone: 'warn' },
@@ -712,7 +712,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
       steps={[
         <><b>Tap a column</b> to drop a disc. Exactly <b>one</b> column wins, every other drop throws it away.</>,
         <>A wrong drop is <b>not taken back</b>. The engine plays on and it is perfect, so once the win is gone it never comes back and you are playing for a draw.</>,
-        <>One free <b>hint</b>, on your first ever play, greys out two columns that do not win.</>,
+        <>One free <b>hint</b>, on your first ever play, dims two columns that do not win.</>,
       ]}
       knack="The engine always answers with its most stubborn defense, and the same one for everybody, so the game you play is the game everyone else plays."
       footer="Restart records a 0 and deals the same board. Ties break on fewest wrong drops, then fastest time. Weekdays are a win in four, Sundays step up to a win in five."
@@ -804,6 +804,14 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
           .fr-hole{width:84%;height:84%;box-sizing:border-box;border-radius:50%;background:var(--fr-hole);border:1.5px solid var(--fr-hole-line);box-shadow:inset 0 3px 5px rgba(0,0,0,0.22);}
           .fr-disc{width:84%;height:84%;box-sizing:border-box;border-radius:50%;border:3px solid var(--fr-rim, transparent);display:flex;align-items:center;justify-content:center;}
           .fr-mark{width:23%;height:23%;border-radius:50%;background:var(--fr-mark);}
+          /* THE ENGINE'S DISCS ARE RINGED (owner, 2026-10-25): yours solid, its
+             ringed, so the two sides read apart in every page look, not by
+             colour alone. The ring is the mark colour, which always contrasts
+             with the engine's fill. */
+          .fr-disc.foe{position:relative;}
+          .fr-disc.foe::before{content:"";position:absolute;inset:24%;border-radius:50%;border:2px solid var(--fr-mark);box-sizing:border-box;pointer-events:none;}
+          .fr-leg i.foe{position:relative;}
+          .fr-leg i.foe::before{content:"";position:absolute;inset:2px;border-radius:50%;border:1.5px solid var(--fr-mark);}
           .fr-disc.fresh{animation:frdrop .34s cubic-bezier(.35,.05,.55,1);}
           @keyframes frdrop{0%{transform:translateY(-420%);}70%{transform:translateY(0);}82%{transform:translateY(-9%);}100%{transform:translateY(0);}}
           /* THE WINNING FOUR (owner, 2026-09-01). The ring is INK, the one colour
@@ -869,7 +877,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Four is ready'}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>You drop the gold discs, and the position is won: there is a forced win in {PUZZLE.winIn}. Only one column keeps it. Drop the wrong one and the engine, which is perfect, will not give it back.</p>
+                <p style={{ margin: '0 0 6px' }}>You drop the solid discs, the engine the ringed ones, and the position is won: there is a forced win in {PUZZLE.winIn}. Only one column keeps it. Drop the wrong one and the engine, which is perfect, will not give it back.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -976,7 +984,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
                           {v === 0 && !ghost && <div className="fr-hole" />}
                           {v !== 0 && (
                             <div
-                              className={`fr-disc${isLast && playing ? ' fresh' : ''}${lit ? ' lit' : ''}`}
+                              className={`fr-disc${v === 2 ? ' foe' : ''}${isLast && playing ? ' fresh' : ''}${lit ? ' lit' : ''}`}
                               style={{
                                 // NO DISC MAY DEPEND ON A GRADIENT TO BE SEEN (Android
                                 // report, 2026-10-06). Flat on the stage; the Loft keeps
@@ -1003,9 +1011,9 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
 
             <div className="fr-legrow" style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px 16px' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 12, fontWeight: 700, color: FADED, flexWrap: 'wrap' }}>
-                <span className="fr-leg"><i style={{ background: 'var(--stg-you, var(--stg-acc, #e8b43a))', border: '2px solid var(--fr-you-rim)' }} />You</span>
-                <span className="fr-leg"><i style={{ background: 'var(--fr-foe)', border: '2px solid var(--fr-foe-rim)' }} />Engine</span>
-                <span className="fr-leg"><i style={{ background: 'var(--fr-foe)', border: '2px solid var(--fr-foe-rim)' }}><span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--fr-mark)' }} /></i>Last drop</span>
+                <span className="fr-leg"><i style={{ background: 'var(--stg-you, var(--stg-acc, #e8b43a))', border: '2px solid var(--fr-you-rim)' }} />You (solid)</span>
+                <span className="fr-leg"><i className="foe" style={{ background: 'var(--fr-foe)', border: '2px solid var(--fr-foe-rim)' }} />Engine (ringed)</span>
+                <span className="fr-leg"><i className="foe" style={{ background: 'var(--fr-foe)', border: '2px solid var(--fr-foe-rim)' }}><span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--fr-mark)' }} /></i>Last drop</span>
               </span>
               {fullNote && <span style={{ fontSize: 12, fontWeight: 700, color: FADED }}>{fullNote}</span>}
             </div>
@@ -1030,14 +1038,14 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
         {started && (
           <>
           <div className="fr-ctlrow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--stg-line, rgba(28,30,36,0.10))' }}>
-            <span className="fr-note" style={{ flex: 1 }}>{canHint ? 'One free hint on your first play greys out two columns that do not win.' : 'Restart records a 0 and deals the same board.'}</span>
+            <span className="fr-note" style={{ flex: 1 }}>{canHint ? 'One free hint on your first play dims two columns that do not win.' : 'Restart records a 0 and deals the same board.'}</span>
             <button className={`fr-ctl${armRestart ? ' armed' : ''}`} style={{ minWidth: 124 }}
               onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } }}
               title={armRestart ? 'Records a 0 and deals the same board again' : 'Record a 0 and deal the same board again'}>
               <RotateCcw size={14} aria-hidden="true" style={{ flexShrink: 0 }} /> {armRestart ? 'Press again' : 'Restart'}
             </button>
             {canHint && (
-              <button className="fr-ctl primary" onClick={useHint} title="Grey out two columns that do not win (one hint, first play only)">
+              <button className="fr-ctl primary" onClick={useHint} title="Dim two columns that do not win (one hint, first play only)">
                 <Lightbulb size={15} aria-hidden="true" /> Use hint
               </button>
             )}

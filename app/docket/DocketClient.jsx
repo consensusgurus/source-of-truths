@@ -618,7 +618,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
           .dk-choice .k{flex:0 0 auto;width:26px;height:26px;border-radius:6px;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;}
           .dk-choice.right{border-color:${COLORS.green};background:${STAGE ? 'var(--stg-surf2)' : '#dcfce7'};}
           .dk-choice.right .k{background:${COLORS.green};color:var(--white);}
-          .dk-choice.wrong{border-color:#b91c1c;background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};}
+          .dk-choice.wrong{border-color:#b91c1c;border-style:dashed;background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};}
           .dk-choice.wrong .k{background:#b91c1c;color:var(--white);}
           .dk-choice .mono{font-family:${MONO};letter-spacing:0.02em;}
           .dk-choice.off{opacity:0.5;border-style:dashed;}

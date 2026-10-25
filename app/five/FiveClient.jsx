@@ -767,6 +767,11 @@ export default function FiveClient({ puzzles = [], forceNum = null }) {
     if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick})`;
     return {
       background: bg,
+      // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): the matching squares are
+      // also UNDERLINED, so they read apart from the peer shade with no hue.
+      textDecoration: sameVal ? 'underline' : undefined,
+      textDecorationThickness: sameVal ? '2px' : undefined,
+      textUnderlineOffset: sameVal ? '3px' : undefined,
       boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       borderRight: `${heavyR ? 2.5 : 1}px solid ${heavyR ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
       borderBottom: `${heavyB ? 2.5 : 1}px solid ${heavyB ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
@@ -779,13 +784,13 @@ export default function FiveClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="An ordinary sudoku, plus green lines. Any two squares next to each other along a green line must differ by at least 5. Rows, columns and boxes still hold 1 to 9 exactly once."
+      lead="An ordinary sudoku, plus drawn lines. Any two squares next to each other along a line must differ by at least 5. Rows, columns and boxes still hold 1 to 9 exactly once."
       steps={[
         <><b>Tap a square then tap a number</b>, or pick a number first and tap every square it goes in. On desktop the <b>arrow keys and number keys</b> work too.</>,
         <>Turn on <b>Notes</b> (or press N) to pencil candidates, or with a number picked just <b>long-press</b> a square to pencil it.</>,
         <><b>Undo</b> (or Ctrl+Z) takes back your last move. <b>Clear</b> wipes every number you have entered and leaves the printed clues.</>,
       ]}
-      knack="A 5 can never sit on a green line, since nothing is 5 or more away from it. Along a line the digits swing low, high, low: every high digit (6 to 9) sits between lows (1 to 4). A 4 can only touch a 9 and a 6 can only touch a 1, so a 4 or 6 in the middle of a line is boxed in fast."
+      knack="A 5 can never sit on a line, since nothing is 5 or more away from it. Along a line the digits swing low, high, low: every high digit (6 to 9) sits between lows (1 to 4). A 4 can only touch a 9 and a 6 can only touch a 1, so a 4 or 6 in the middle of a line is boxed in fast."
       footer="Every board has exactly one solution and can always be reached by logic, with no guessing. Solve the grid and you score a perfect 10, and because nothing is counted against you, the daily leaderboard is a straight race on the clock. One free hint, on your first ever play, fills a correct number. Sundays print just eleven digits under eight lines."
     />
   );
@@ -867,7 +872,7 @@ export default function FiveClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Five is ready'}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>An ordinary sudoku, plus green lines: any two neighbours along a line differ by at least 5. Rows, columns and boxes still hold 1 to 9 exactly once.</p>
+                <p style={{ margin: '0 0 6px' }}>An ordinary sudoku, plus drawn lines: any two neighbours along a line differ by at least 5. Rows, columns and boxes still hold 1 to 9 exactly once.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -994,7 +999,7 @@ export default function FiveClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <div style={{ maxWidth: GRID_MAX + 76, margin: '0 auto' }}>
               {PUZZLE.sunday && (
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '10px 0 0' }}>The Sunday Edition: eight green lines and just eleven printed digits, against six lines and twenty digits on a Monday.</div>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '10px 0 0' }}>The Sunday Edition: eight lines and just eleven printed digits, against six lines and twenty digits on a Monday.</div>
               )}
               {isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -1184,7 +1189,7 @@ export default function FiveClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Five</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Five is a free daily German whispers sudoku from Mind Loft. Each day gives you a 9×9 sudoku with green lines drawn across the grid, and any two squares next to each other on a line must differ by at least 5. Rows, columns, and 3×3 boxes still hold 1 through 9 exactly once, and the lines plus a handful of printed digits carry the rest.
+          Five is a free daily German whispers sudoku from Mind Loft. Each day gives you a 9×9 sudoku with lines drawn across the grid, and any two squares next to each other on a line must differ by at least 5. Rows, columns, and 3×3 boxes still hold 1 through 9 exactly once, and the lines plus a handful of printed digits carry the rest.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           The rule splits the digits in two: 1 to 4 are low, 6 to 9 are high, and 5 can never go on a line at all, so a line always alternates low and high. A 4 can only sit beside a 9 and a 6 only beside a 1, which is where most boards crack open. Every board has a single solution you can always reach by logic, with no guessing. Wrong entries are never flagged, so spotting your own slips is part of the puzzle, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.

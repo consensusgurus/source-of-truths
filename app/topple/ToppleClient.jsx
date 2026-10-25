@@ -464,7 +464,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
     }
     if (r.result === 'fall' || r.result === 'crack') {
       vibrate(HAPT.wrong);
-      say(r.result === 'crack' ? 'The orange tile cracked under the standing block. Back to the start.' : 'Off the edge. Back to the start, and the rolls still count.');
+      say(r.result === 'crack' ? 'The cracked tile gave way under the standing block. Back to the start.' : 'Off the edge. Back to the start, and the rolls still count.');
       queue.current = [];
     } else vibrate(HAPT.ok);
     commit(g2);
@@ -590,12 +590,12 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
       banner={<><b>Par is {par}</b> on this board, the number a clean solve lands on. <b>Perfect is {perfect}</b>, the fewest rolls that exist here, found by exhaustive search, and nobody gets under it.</>}
       steps={[
         <>Each roll <b>tips the block over one edge</b>: standing, it falls flat; flat, it rolls along or stands back up. Use the <b>arrow keys</b>, a <b>swipe</b>, or the pad.</>,
-        <>If any part of it ends up <b>over empty space</b> it falls off, back to the start. <b>Orange tiles</b> hold the block lying flat but <b>crack</b> if it stands on one, back to the start too.</>,
+        <>If any part of it ends up <b>over empty space</b> it falls off, back to the start. <b>Cracked tiles</b>, the ones drawn with crack lines, hold the block lying flat but <b>crack</b> if it stands on one, back to the start too.</>,
         <>Every roll counts, falls included. One free <b>hint</b>, on your first ever play, lights the next roll on the best line.</>,
       ]}
       knack={<>Work backwards from the spring: decide how the block has to arrive (standing, or lying along the two tiles), then find the roll that lands it that way.</>}
       note={<>There is <b>no undo</b>. A <b>restart</b> puts the block back on the start, but your rolls keep counting and the clock keeps running.</>}
-      footer={<>Perfect scores 10 and every {step10} rolls over it costs a point, so par scores 8, down to a floor of one, and finishing always beats walking away. Monday is plain floor; the orange tiles arrive Tuesday, and the Sunday Edition is a bigger board.</>}
+      footer={<>Perfect scores 10 and every {step10} rolls over it costs a point, so par scores 8, down to a floor of one, and finishing always beats walking away. Monday is plain floor; the cracked tiles arrive Tuesday, and the Sunday Edition is a bigger board.</>}
     />
   );
 
@@ -865,7 +865,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Topple</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Topple is a free daily block rolling puzzle from Mind Loft. A tall block stands on a floor of tiles, and every move tips it over one edge: standing, it falls flat; flat, it rolls along or stands back up. Land it on the spring and it fires off the board: a one-tile spring takes the block standing, a two-tile spring takes it lying flat across both. Roll any part of it off the edge and it goes back to the start, and the orange fragile tiles crack if the block stands on one.
+          Topple is a free daily block rolling puzzle from Mind Loft. A tall block stands on a floor of tiles, and every move tips it over one edge: standing, it falls flat; flat, it rolls along or stands back up. Land it on the spring and it fires off the board: a one-tile spring takes the block standing, a two-tile spring takes it lying flat across both. Roll any part of it off the edge and it goes back to the start, and the fragile tiles, drawn with crack lines, give way if the block stands on one.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Every board is machine generated and then solved exactly, so perfect really is the fewest rolls that exist rather than somebody&rsquo;s guess, and it was confirmed by a second solver written independently of the first. Par sits a cushion above perfect: it is the number a clean solve lands on, and it is beatable. Monday is plain floor, the fragile tiles arrive on Tuesday, the boards lengthen through the week, and the Sunday Edition is the biggest board of all.

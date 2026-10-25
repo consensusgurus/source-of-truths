@@ -13,7 +13,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Ranking Puzzle: Listed | Mind Loft',
   description:
-    'A free daily ranking puzzle. Eight real things, one measurable quantity, five submits. Green locks a row that is exactly right, amber means you are off by one place. New list every day, and nine items in the Sunday Edition.',
+    'A free daily ranking puzzle. Eight real things, one measurable quantity, five submits. A filled row is exactly right and locks, a dashed one is off by one place. New list every day, and nine items in the Sunday Edition.',
   alternates: { canonical: '/listed' },
   manifest: '/api/pwa-manifest?game=listed',
   icons: {
@@ -34,7 +34,7 @@ export const metadata = {
     images: [{ url: '/og/listed.png', width: 1200, height: 630, alt: 'Listed: a daily ranking puzzle from Mind Loft' }],
     title: 'Listed: A Daily Ranking Puzzle',
     description:
-      'Eight real things a day, shuffled. Rank them highest to lowest in five submits. Green locks, amber means you are one place off. Trivia, history and geography, rotating daily, from Mind Loft.',
+      'Eight real things a day, shuffled. Rank them highest to lowest in five submits. Filled locks, dashed means you are one place off. Trivia, history and geography, rotating daily, from Mind Loft.',
     url: '/listed',
     type: 'website',
     siteName: 'Mind Loft',
@@ -44,7 +44,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'Listed: A Daily Ranking Puzzle',
     description:
-      'Eight real things, one ranking, five submits. Green locks, amber means one place off.',
+      'Eight real things, one ranking, five submits. Filled locks, dashed means one place off.',
   },
 };
 
@@ -55,7 +55,7 @@ const gameJsonLd = {
   alternateName: 'Listed: Daily Ranking Puzzle',
   url: `${SITE_URL}/listed`,
   description:
-    'A free daily ranking puzzle: eight real things and one measurable quantity, shuffled. Arrange them highest to lowest. Each of your five submits grades every row, green for exactly right, amber for off by one place, and every green locks in with its real figure revealed.',
+    'A free daily ranking puzzle: eight real things and one measurable quantity, shuffled. Arrange them highest to lowest. Each of your five submits grades every row, filled for exactly right, dashed for off by one place, and every filled row locks in with its real figure revealed.',
   genre: ['Puzzle', 'Trivia puzzle', 'Educational puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

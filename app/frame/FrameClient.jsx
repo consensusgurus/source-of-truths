@@ -833,6 +833,10 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
     if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick})`;
     return {
       background: bg,
+      // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): a dashed ring, not just a
+      // deeper wash, since the phone looks collapse the accent toward the ink.
+      outline: sameVal ? `1.5px dashed ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
+      outlineOffset: sameVal ? '-4px' : undefined,
       boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       borderRight: `${heavyR ? 2.5 : 1}px solid ${heavyR ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
       borderBottom: `${heavyB ? 2.5 : 1}px solid ${heavyB ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
@@ -851,7 +855,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
         <>Turn on <b>Notes</b> (or press N) to pencil candidates, or with a number picked just <b>long-press</b> a square to pencil it.</>,
         <><b>Undo</b> (or Ctrl+Z) takes back your last move. <b>Clear</b> wipes every number you have entered and leaves the printed clues.</>,
       ]}
-      knack="Start at the extremes. A 6 can only be 1, 2 and 3, and a 24 only 7, 8 and 9, and each of those pins three squares at once and knocks the same digits out of the rest of the box. A row's left sum and right sum together account for six of its nine squares, so the middle three are what is left of 45. Select any square and the two sums that speak about it light up."
+      knack="Start at the extremes. A 6 can only be 1, 2 and 3, and a 24 only 7, 8 and 9, and each of those pins three squares at once and knocks the same digits out of the rest of the box. A row's left sum and right sum together account for six of its nine squares, so the middle three are what is left of 45. Select any square and the two sums that speak about it are ringed."
       footer="Every board has exactly one solution and can always be reached by logic, with no guessing, and on every board the gutter is doing real work: the printed digits alone would fit more than one grid. Solve it and you score a perfect 10, and because nothing is counted against you, the daily leaderboard is a straight race on the clock. One free hint, on your first ever play, fills a correct number. Printed digits fall through the week from 14 on Monday to 4 on Saturday, and the Sunday Edition prints two."
     />
   );
@@ -903,7 +907,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
           .fr-mark{font-family:${MONO};font-weight:700;font-size:clamp(8px,2vw,11px);line-height:1;letter-spacing:0;}
           .fr-mark.ok{color:var(--stg-good, ${COLORS.green});}
           .fr-mark.off{color:var(--stg-bad, ${COLORS.rust});}
-          .fr-gut.on{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:700;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);border-radius:4px;}
+          .fr-gut.on{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:700;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .fr-gut.done{color:var(--stg-mute, #c3c8cf);}
           .fr-pad{width:100%;aspect-ratio:1;border-radius:9px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.5));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};font-family:${MONO};font-weight:500;color:${INK};cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 2px 0 rgba(28,30,36,0.4);}
           .fr-pad:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.4);}
@@ -1276,7 +1280,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
           Frame is a free daily frame sudoku from Mind Loft. Each day gives you a 9×9 grid with a number printed outside every row and column end: the sum of the three squares nearest that edge, reading inward. Thirty-six sums, all printed, every day, and rows, columns and 3×3 boxes still hold 1 through 9 exactly once. The sums do so much of the work that the board prints far fewer digits than an ordinary sudoku needs.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          The reasoning is arithmetic on a fixed group of three: a 6 is 1, 2 and 3 in some order, a 24 is 7, 8 and 9, and the middle values are where the deduction lives. Select a square and the two sums that speak about it light up. Every board has a single solution you can always reach by logic, with no guessing, and on every board the gutter is load-bearing rather than decorative: the printed digits alone would fit more than one grid. Wrong entries are never flagged, so spotting your own slips is part of the puzzle, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.
+          The reasoning is arithmetic on a fixed group of three: a 6 is 1, 2 and 3 in some order, a 24 is 7, 8 and 9, and the middle values are where the deduction lives. Select a square and the two sums that speak about it are ringed. Every board has a single solution you can always reach by logic, with no guessing, and on every board the gutter is load-bearing rather than decorative: the printed digits alone would fit more than one grid. Wrong entries are never flagged, so spotting your own slips is part of the puzzle, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new board drops every day at midnight Eastern; weekdays print fewer digits as the week goes on, from 14 on Monday down to 4 on Saturday, and the Sunday Edition prints two. No app, no signup, play free in your browser. Want the rest of the family? Try <a href="/suds" style={{ color: INK, fontWeight: 800 }}>Suds</a>, the classic 9×9, <a href="/sando" style={{ color: INK, fontWeight: 800 }}>Sando</a>, the sandwich sudoku, <a href="/rim" style={{ color: INK, fontWeight: 800 }}>Rim</a>, the outside sudoku with nothing printed inside, and <a href="/diag" style={{ color: INK, fontWeight: 800 }}>Diag</a>, the one with the diagonals.

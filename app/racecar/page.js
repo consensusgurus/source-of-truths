@@ -7,7 +7,7 @@ import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
 import { categoryCrumb } from '@/lib/game-seo';
 
-// Racecar launched 2026-10-15 as the daily palindrome sudoku. Grey lines run
+// Racecar launched 2026-10-15 as the daily palindrome sudoku. Lines run
 // across an ordinary 9×9, and each reads the same from either end; the weekday
 // ramp is the printed-given count and the Sunday Edition prints just fourteen
 // digits under ten lines.
@@ -20,7 +20,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Palindrome Sudoku: Racecar | Mind Loft',
   description:
-    'A free daily palindrome sudoku: every grey line reads the same from either end. One logical solution, notes and a hint, and a new board every day.',
+    'A free daily palindrome sudoku: every line reads the same from either end. One logical solution, notes and a hint, and a new board every day.',
   alternates: { canonical: '/racecar' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
@@ -28,7 +28,7 @@ export const metadata = {
     images: [{ url: '/og/racecar.png', width: 1200, height: 630, alt: 'Racecar, a daily palindrome sudoku from Mind Loft' }],
     title: 'Racecar: A Daily Palindrome Sudoku',
     description:
-      'Every grey line reads the same both ways: a 9×9 palindrome sudoku with one logical solution, from Mind Loft, daily.',
+      'Every line reads the same both ways: a 9×9 palindrome sudoku with one logical solution, from Mind Loft, daily.',
     url: '/racecar',
     type: 'website',
     siteName: 'Mind Loft',
@@ -38,7 +38,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'Racecar: A Daily Palindrome Sudoku',
     description:
-      'Every grey line reads the same both ways. A clean solve wins and the clock breaks the tie.',
+      'Every line reads the same both ways. A clean solve wins and the clock breaks the tie.',
   },
 };
 
@@ -49,7 +49,7 @@ const gameJsonLd = {
   alternateName: 'Racecar: Daily Palindrome Sudoku',
   url: `${SITE_URL}/racecar`,
   description:
-    'A free daily palindrome sudoku: an ordinary 9×9 grid plus grey lines, each of which reads the same forwards and backwards, so its end squares match and so on inward. Each board has one solution reachable by pure logic. Solve it for a perfect score, and ties break on fastest time.',
+    'A free daily palindrome sudoku: an ordinary 9×9 grid plus drawn lines, each of which reads the same forwards and backwards, so its end squares match and so on inward. Each board has one solution reachable by pure logic. Solve it for a perfect score, and ties break on fastest time.',
   genre: ['Logic puzzle', 'Sudoku', 'Number puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
@@ -91,7 +91,7 @@ function ComingSoon({ first }) {
         </div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: '0 0 8px' }}>Racecar launches {first ? first.dateLabel : 'soon'}.</h1>
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
-          The daily palindrome sudoku: every grey line reads the same from either end. Come back when the first board drops.
+          The daily palindrome sudoku: every line reads the same from either end. Come back when the first board drops.
         </p>
         <a href="/" style={{ color: '#475569', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>

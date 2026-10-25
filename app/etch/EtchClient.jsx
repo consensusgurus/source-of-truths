@@ -955,7 +955,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
     const cTxt = colDone[focusC] ? `column ${focusC + 1} is done` : `column ${focusC + 1} wants ${runsText(PUZZLE.cols[focusC])}`;
     statusLine = `Row ${focusR + 1}, column ${focusC + 1}. ${rTxt}, ${cTxt}.`;
   } else if (hasWrong) {
-    statusLine = 'A red square is a wrong fill. Clear it to carry on.';
+    statusLine = 'A ringed square with a \u2717 is a wrong fill. Clear it to carry on.';
     statusBad = true;
   } else if (mode === 'fill') {
     statusLine = mobileUi ? 'Filling: tap or drag along a row or column. It lands when you lift.' : 'Filling: tap a square, or drag along a row or column.';
@@ -1053,7 +1053,9 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           onContextMenu={(e) => { e.preventDefault(); cellFnRef.current.fill(idx); }}
           style={{
             background: bg,
-            boxShadow: pv !== null ? `inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
+            // A wrong fill is RINGED and carries a heavy check-cross, so it reads
+            // in every look, not by its colour alone (owner, 2026-10-25).
+            boxShadow: pv !== null ? `inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : wrong ? `inset 0 0 0 2px var(--stg-bad, ${COLORS.rust})` : undefined,
             borderRight: wallR ? '2px solid var(--et-wall)' : '1px solid var(--et-line)',
             borderBottom: wallB ? '2px solid var(--et-wall)' : '1px solid var(--et-line)',
             borderLeft: c === 0 ? '2px solid var(--et-wall)' : undefined,
@@ -1084,7 +1086,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
         <><b>Undo</b> (or Ctrl+Z) takes back your last stroke, and one free <b>hint</b>, on your first ever play, fills a correct square.</>,
       ]}
       knack="One solution per board, reachable by pure logic, so you never have to guess. Marking what you have ruled out is free, filling it wrong is not."
-      note={<>Filling a square that isn&rsquo;t part of the picture turns <b>red</b> and counts as an error. Clear it to carry on.</>}
+      note={<>Filling a square that isn&rsquo;t part of the picture is <b>ringed with a &#10007;</b> and counts as an error. Clear it to carry on.</>}
       footer="A clean solve with no errors is a perfect 10, every two errors cost a point. Ties break on fewest errors, then fastest time. Monday to Friday is 10×10, Saturday steps up to 15×15, and Sunday is a 20×20 Edition."
     />
   );
@@ -1549,7 +1551,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           Etch is a free daily nonogram from Mind Loft, the picture-logic puzzle also known as a picross or griddler. The numbers along each row and column tell you how many squares are filled in a row, in order, and your job is to work out which ones. Get them all and a picture appears.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Every board has exactly one solution and is reachable by pure line logic, so there is never a moment where you have to guess. Drag to fill a run, mark the squares you have ruled out with an ×, and watch each clue cross itself off as its line falls into place. Fill a square that isn&rsquo;t part of the picture and it turns red, so you always know where you stand.
+          Every board has exactly one solution and is reachable by pure line logic, so there is never a moment where you have to guess. Drag to fill a run, mark the squares you have ruled out with an ×, and watch each clue cross itself off as its line falls into place. Fill a square that isn&rsquo;t part of the picture and it is ringed with a &#10007;, so you always know where you stand.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new picture drops every day at midnight Eastern: 10&times;10 Monday to Friday, 15&times;15 on Saturday, and a 20&times;20 Edition on Sunday. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/hedge" style={{ color: INK, fontWeight: 800 }}>Hedge</a>, our loop puzzle, <a href="/suds" style={{ color: INK, fontWeight: 800 }}>Suds</a>, our daily sudoku, and <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword.

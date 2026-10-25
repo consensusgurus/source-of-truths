@@ -761,7 +761,7 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 /* LADDER */
 .lad{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;text-align:left}
 .lad li{display:flex;align-items:center;gap:12px;padding:7px 10px;border-radius:10px;background:var(--dj-surf);border:1px solid var(--dj-line)}
-.lad li.me{border-color:var(--dj-gold);box-shadow:0 0 0 1px var(--dj-gold) inset;background:rgba(233,207,127,.08)}
+.lad li.me{border-color:var(--dj-gold);box-shadow:0 0 0 1px var(--dj-gold) inset,inset 5px 0 0 var(--dj-gold);background:rgba(233,207,127,.08)}
 .lad .lp{flex:none;position:relative;width:34px;height:12px;border-radius:3px;background:var(--b);box-shadow:0 0 0 1px rgba(255,255,255,.22)}
 .lad .lp i{position:absolute;right:5px;top:0;bottom:0;width:6px;background:var(--st)}
 .lad .ln{flex:1;min-width:0;display:flex;flex-direction:column}
@@ -841,7 +841,7 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 .db-hd a:hover{text-decoration:underline}
 .db-rows{display:flex;flex-direction:column;gap:7px}
 .db-row{display:grid;grid-template-columns:34px minmax(0,1fr) minmax(54px,96px) 44px;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--dj-surf);border:1px solid var(--dj-line);animation:djrise .45s ease both}
-.db-row.me{border-color:var(--dj-cta);background:rgba(125,211,252,.08)}
+.db-row.me{border-color:var(--dj-cta);background:rgba(125,211,252,.08);box-shadow:inset 0 0 0 1px var(--dj-cta),inset 5px 0 0 var(--dj-cta)}
 .db-rk{font:800 17px ${SANS};font-variant-numeric:tabular-nums}
 .db-rk.sm{font-size:14px}
 .db-who{min-width:0}

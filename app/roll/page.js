@@ -38,7 +38,7 @@ const gameJsonLd = {
   alternateName: 'Roll: Daily Die Rolling Puzzle',
   url: `${SITE_URL}/roll`,
   description:
-    'A free daily die rolling puzzle. A die sits on a floor of tiles and every move rolls it over one edge. Squares numbered 1 to 6 must be lit in order, and a square lights when the die lands on it with that number on top. A numbered square stays shut until it is next and the roll would land its number on top, and orange cracked squares crumble once the die rolls off them. Every board is solved exactly, so perfect is the true fewest rolls and par sits a cushion above it. Three squares on Monday, five by Friday, and the Sunday Edition lights six on a bigger floor.',
+    'A free daily die rolling puzzle. A die sits on a floor of tiles and every move rolls it over one edge. Squares numbered 1 to 6 must be lit in order, and a square lights when the die lands on it with that number on top. A numbered square stays shut until it is next and the roll would land its number on top, and cracked squares, drawn with crack lines, crumble once the die rolls off them. Every board is solved exactly, so perfect is the true fewest rolls and par sits a cushion above it. Three squares on Monday, five by Friday, and the Sunday Edition lights six on a bigger floor.',
   genre: ['Die rolling puzzle', 'Logic puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },

@@ -607,7 +607,7 @@ body:has(.stage-page) .qch-bar { display: none !important; }
    light tokens whatever the boot stamp says. See app/RunEmbed.jsx. */
 html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
 .stage-page[data-stage-theme='light'][data-stage-pin] {
-  --stg-brand: #2563eb;
+  --stg-brand: #38bdf8;
   --stg-ground: #eef1f6;
   --stg-raise: #ffffff;
   --stg-panel: #e9edf3;
@@ -700,7 +700,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
   html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: var(--sp-g, #c9d2fd) !important; }
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
-    --stg-brand: #08222e !important;
+    --stg-brand: #38bdf8 !important;
     /* END GAME PIECES (owner, 2026-10-24). The boards keep their own light
        surfaces in every look, so the player's pieces take fixed colours that
        read against them and against the engine's dark pieces in all three. */
@@ -786,7 +786,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   html[data-stage-pastel='plain']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
   html[data-stage-pastel='plain']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #ffffff !important; }
   html[data-stage-pastel='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
-    --stg-brand: #111111 !important;
+    --stg-brand: #38bdf8 !important;
     --stg-ground: #ffffff !important;
     --stg-raise: #ffffff !important;
     --stg-panel: #f4f4f4 !important;
@@ -831,7 +831,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   html[data-stage-pastel^='dark']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
   html[data-stage-pastel^='dark']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #0b0f1a !important; }
   html[data-stage-pastel^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
-    --stg-brand: #e9edf4 !important;
+    --stg-brand: #7dd3fc !important;
     --stg-ground: #0b0f1a !important;
     --stg-raise: #121826 !important;
     --stg-panel: #0f1420 !important;

@@ -225,7 +225,7 @@ function MarksOverlay({ edges, n, badMark }) {
         const s = 0.085;
         return (
           <g key={i}>
-            <circle cx={x} cy={y} r={0.2} strokeWidth={0.03} style={{ fill: broken ? 'color-mix(in srgb, var(--stg-bad, #be123c) 20%, var(--stg-cell, #fff))' : 'var(--stg-cell, #ffffff)', stroke: broken ? 'var(--stg-bad, #be123c)' : 'var(--stg-line3, rgba(11,15,26,0.45))' }} />
+            <circle cx={x} cy={y} r={0.2} strokeWidth={broken ? 0.045 : 0.03} strokeDasharray={broken ? '0.07 0.05' : undefined} style={{ fill: broken ? 'color-mix(in srgb, var(--stg-bad, #be123c) 20%, var(--stg-cell, #fff))' : 'var(--stg-cell, #ffffff)', stroke: broken ? 'var(--stg-bad, #be123c)' : 'var(--stg-line3, rgba(11,15,26,0.45))' }} />
             {t === '='
               ? <path d={`M${x - s} ${y - 0.04}H${x + s}M${x - s} ${y + 0.04}H${x + s}`} strokeWidth={0.042} strokeLinecap="round" style={{ stroke: ink, fill: 'none' }} />
               : <path d={`M${x - s * 0.78} ${y - s * 0.78}L${x + s * 0.78} ${y + s * 0.78}M${x + s * 0.78} ${y - s * 0.78}L${x - s * 0.78} ${y + s * 0.78}`} strokeWidth={0.042} strokeLinecap="round" style={{ stroke: ink, fill: 'none' }} />}
@@ -774,7 +774,10 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     const isBad = breaks.bad.has(idx);
     let bg = STAGE ? ROOM_TINTS[roomTint.get(id) || 0] : T.white;
     if (showSel && (r === selR || c === selC || id === selRoom)) bg = 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #1a7f37)) 28%, var(--stg-cell, #ffffff))';
-    if (isBad) bg = 'color-mix(in srgb, var(--stg-bad, #be123c) 20%, var(--stg-cell, #ffffff))';
+    // A break is STRIPED, not only tinted, and a printed square carries a corner
+    // notch, so both read in every page look (owner, 2026-10-25).
+    if (isBad) bg = 'repeating-linear-gradient(45deg, color-mix(in srgb, var(--stg-ink, #0b0d12) 28%, transparent) 0 2px, transparent 2px 7px), color-mix(in srgb, var(--stg-bad, #be123c) 20%, var(--stg-cell, #ffffff))';
+    if (given) bg = `linear-gradient(135deg, var(--stg-line3, rgba(11,15,26,0.45)) 0 ${cellPx >= 44 ? 7 : 5}px, transparent ${cellPx >= 44 ? 7 : 5}px), ${bg}`;
     return {
       background: bg,
       boxShadow: idx === sel && showSel ? `inset 0 0 0 ${cellPx >= 44 ? 3 : 2}px var(--stg-acc, ${COLORS.accent})` : undefined,
@@ -794,14 +797,16 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     return <span aria-hidden="true" style={{ width: d, height: d, borderRadius: '50%', border: `${Math.max(2.5, Math.round(cellPx * 0.085))}px solid ${col}`, boxSizing: 'border-box', display: 'block', flex: '0 0 auto' }} />;
   }
   // One line's pips: a row of HALF dots over a row of HALF rings. Filled up to
-  // the count in the accent; every pip of a kind turns red once it is over.
+  // the count in the accent; every pip of a kind turns red and square once it is over.
   function tally({ d, r, label }) {
     const one = (k, n2) => Array.from({ length: HALF }, (_, i) => {
       const over = n2 > HALF, on = i < n2;
       const c2 = over ? 'var(--stg-bad, #be123c)' : `var(--stg-acc, ${COLORS.accent})`;
+      // Over the half: the pips go SQUARE, not only a different colour.
+      const rad = over && on ? 1 : '50%';
       return <span key={i} style={k === 'dot'
-        ? { width: pip, height: pip, borderRadius: '50%', boxSizing: 'border-box', background: on ? c2 : 'transparent', border: on ? 0 : '1.5px solid var(--stg-line3, rgba(11,15,26,0.45))' }
-        : { width: pip, height: pip, borderRadius: '50%', boxSizing: 'border-box', border: on ? `${pip >= 6 ? 2 : 1.5}px solid ${c2}` : '1.5px solid var(--stg-line3, rgba(11,15,26,0.45))' }} />;
+        ? { width: pip, height: pip, borderRadius: rad, boxSizing: 'border-box', background: on ? c2 : 'transparent', border: on ? 0 : '1.5px solid var(--stg-line3, rgba(11,15,26,0.45))' }
+        : { width: pip, height: pip, borderRadius: rad, boxSizing: 'border-box', border: on ? `${pip >= 6 ? 2 : 1.5}px solid ${c2}` : '1.5px solid var(--stg-line3, rgba(11,15,26,0.45))' }} />;
     });
     return (
       <span role="img" aria-label={label} style={{ display: 'flex', flexDirection: 'column', gap: pipGap + 1, alignItems: 'center' }}>
@@ -846,7 +851,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
       steps={[
         <><b>Tap a square</b> to cycle it: dot, then ring, then empty. On desktop the <b>arrow keys</b> move, <b>D</b> or <b>1</b> places a dot, <b>R</b> or <b>2</b> a ring, Space cycles.</>,
         <>Shaded squares are <b>printed</b> and cannot change. Thick lines are the <b>walls</b> between rooms.</>,
-        <>A square turns red when it breaks a rule. <b>Undo</b> (or Ctrl+Z) takes back a move; <b>Clear</b> wipes the board.</>,
+        <>A square is <b>striped</b> when it breaks a rule, and a broken mark gets a <b>dashed</b> ring; a line over its half shows <b>square</b> pips. Printed squares carry a <b>corner notch</b>. <b>Undo</b> (or Ctrl+Z) takes back a move; <b>Clear</b> wipes the board.</>,
       ]}
       knack="Two alike side by side push the opposite onto both ends, and two alike with a gap push the opposite into the gap. A room is just another line with walls for edges: once half of it is dots, the rest are rings."
       footer="Every board has exactly one solution and can always be reached by logic, with no guessing. Solve it for a perfect 10; nothing is counted against you, so the daily leaderboard is a race on the clock. One free hint, on your first ever play, fills a correct square. Boards grow from 6×6 early in the week to 8×8, and the Sunday Edition is 10×10."
@@ -1033,7 +1038,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
             <div className="du-foot">
               <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <span aria-live="polite" className="du-status" style={{ color: breaks.any ? `var(--stg-bad, ${COLORS.rust})` : INK }}>{statusMain}</span>
-                <span className="du-help du-dk">Pips count each line: top row dots, bottom row rings. A square turns red when it breaks a rule.{g.hintUsed ? ' Hint used.' : ''}</span>
+                <span className="du-help du-dk">Pips count each line: top row dots, bottom row rings. A striped square breaks a rule.{g.hintUsed ? ' Hint used.' : ''}</span>
                 <span className="du-help du-ph">Pips count each line: dots on top, rings below.</span>
               </div>
               <div className="du-ph du-toolfoot">{toolSwitch}</div>
@@ -1247,7 +1252,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
           Duet is a free daily logic grid from Mind Loft. Fill every square with a dot or a ring so that every row, every column and every walled room holds exactly half of each, with never three alike in a line. An = mark between two squares says they match, an × says they differ.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          It is a balanced binary puzzle, the family sometimes called binairo or takuzu, with walled rooms that each have to balance too. Every board has a single solution you can always reach by logic, with no guessing. A square that breaks a rule turns red, but a square that is simply wrong is never flagged, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.
+          It is a balanced binary puzzle, the family sometimes called binairo or takuzu, with walled rooms that each have to balance too. Every board has a single solution you can always reach by logic, with no guessing. A square that breaks a rule is striped, but a square that is simply wrong is never flagged, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new board drops every day at midnight Eastern: 6×6 early in the week, 8×8 from Thursday, and a 10×10 Sunday Edition. No app, no signup, play free in your browser. More grid logic: try <a href="/plot" style={{ color: INK, fontWeight: 800 }}>Plot</a>, <a href="/hedge" style={{ color: INK, fontWeight: 800 }}>Hedge</a> and <a href="/polka" style={{ color: INK, fontWeight: 800 }}>Polka</a>.

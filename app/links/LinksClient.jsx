@@ -3,8 +3,8 @@
 // Links — sixteen words, four hidden groups.
 //
 // A 4x4 grid of sixteen words hides four groups of four. Select four tiles
-// and submit: a right guess banks the group as a colored bar (yellow, green,
-// blue, red — easiest to trickiest), a wrong guess costs one of four
+// and submit: a right guess banks the group as a bar carrying one to four
+// level dots (easiest to trickiest), a wrong guess costs one of four
 // mistakes. "One away" is the only mercy shown. Solve all four before the
 // mistakes run out.
 //
@@ -381,6 +381,10 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
         { bg: 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 10%, var(--stg-ground))', tc: 'var(--stg-ink)', edge: 'var(--stg-acc-ink)' },
       ][ci % 4]
     : { ...CAT_COLORS[ci], edge: CAT_COLORS[ci].tc });
+  // THE LEVEL IS DOTS, NOT ONLY A SHADE (owner, 2026-10-25): in the plain and
+  // dark looks the four band shades collapse toward grey, so every band also
+  // carries one to four filled dots, read in every look.
+  const LEVEL_NAMES = ['Easiest', 'Easier', 'Harder', 'Trickiest'];
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('links');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('links');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -602,7 +606,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
       ]}
       steps={[
         <><b>Tap four words</b> you think share a thread, then <b>Submit</b>.</>,
-        <>Right, and the thread banks in its own color, easiest at the top through trickiest at the foot.</>,
+        <>Right, and the thread banks as a band with its level in dots: <b>one dot</b> for the easiest through <b>four</b> for the trickiest.</>,
         <>Wrong, and one of your <b>four mistakes</b> is gone. <b>&ldquo;One away&rdquo;</b> is the only hint you get.</>,
       ]}
       knack={<>The words that look like they belong together usually don&apos;t. That&rsquo;s the puzzle.</>}
@@ -728,12 +732,15 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
           .stage-page .lk-band{min-height:96px;box-sizing:border-box;border-radius:14px;border:2px solid;margin-bottom:10px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;}
           .stage-page .lk-band-k{font-family:${MONO};font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;}
           .stage-page .lk-band-w{font-family:${SANS};font-size:19px;font-weight:800;letter-spacing:.04em;line-height:1.25;}
+          .lk-lv{display:inline-flex;gap:4px;margin-top:2px;}
+          .lk-lv i{width:7px;height:7px;border-radius:50%;box-sizing:border-box;border:1.5px solid currentColor;opacity:.85;}
+          .lk-lv i.on{background:currentColor;}
           .stage-page .lk-band-miss{background:transparent;border:2px dashed var(--stg-acc-ink);color:var(--stg-ink2);}
           .stage-page .lk-band-miss .lk-band-k{color:var(--stg-acc-ink);}
           .stage-page .lk-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px;}
           .stage-page .lk-tile{min-height:96px;border-radius:14px;border:2px solid var(--stg-cell-line);background:var(--stg-cell);color:var(--stg-ink);box-shadow:none;font-size:var(--lk-fs,17px);letter-spacing:.03em;line-height:1.15;padding:4px 6px;transition:background .12s,transform .12s,border-color .12s;}
           .stage-page .lk-tile:active{transform:scale(0.97);}
-          .stage-page .lk-tile.on{background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc)) 18%,var(--stg-cell));border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-ink);box-shadow:0 5px 12px -6px rgba(0,0,0,.45);transform:translateY(-3px);}
+          .stage-page .lk-tile.on{background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc)) 18%,var(--stg-cell));border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-ink);box-shadow:inset 0 0 0 1.5px var(--stg-acc-ink, var(--stg-acc)),0 5px 12px -6px rgba(0,0,0,.45);transform:translateY(-3px);}
           .stage-page .lk-tile.on:active{transform:translateY(-3px) scale(0.97);}
           @media(hover:hover){.stage-page .lk-tile:not(.on):hover{border-color:var(--stg-ink2);}}
           .stage-page .lk-selrow{display:flex;align-items:center;gap:10px;padding:6px 0 0;}
@@ -831,6 +838,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
             <div key={ci} className={`lk-band${justSolved === ci ? ' lk-bank' : ''}`} style={{ background: cc.bg, color: cc.tc, borderColor: cc.edge }}>
               <span className="lk-band-k">{PUZZLE.groups[ci].name}</span>
               <span className="lk-band-w">{PUZZLE.groups[ci].words.join(' · ')}</span>
+              <span className="lk-lv" aria-label={LEVEL_NAMES[ci % 4]}>{[0, 1, 2, 3].map((d) => <i key={d} className={d <= ci % 4 ? 'on' : undefined} />)}</span>
             </div>
           );
         })}
@@ -852,6 +860,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
           <div key={ci} className="lk-band lk-band-miss">
             <span className="lk-band-k">{PUZZLE.groups[ci].name}</span>
             <span className="lk-band-w">{PUZZLE.groups[ci].words.join(' · ')}</span>
+            <span className="lk-lv" aria-label={LEVEL_NAMES[ci % 4]}>{[0, 1, 2, 3].map((d) => <i key={d} className={d <= ci % 4 ? 'on' : undefined} />)}</span>
           </div>
         ))}
         {STAGE && started && (
@@ -880,6 +889,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
             <div key={ci} className={justSolved === ci ? 'lk-bank' : undefined} style={{ background: cc.bg, border: '1.5px solid rgba(28,30,36,0.35)', borderRadius: 10, padding: '10px 14px', marginBottom: 8, textAlign: 'center', boxShadow: '2px 2px 0 rgba(28,30,36,0.10)' }}>
               <div style={{ fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: '.04em', color: cc.tc }}>{PUZZLE.groups[ci].name}</div>
               <div style={{ fontWeight: 700, fontSize: 13.5, color: cc.tc, marginTop: 2 }}>{PUZZLE.groups[ci].words.join(', ')}</div>
+              <div style={{ color: cc.tc }}><span className="lk-lv" aria-label={LEVEL_NAMES[ci % 4]}>{[0, 1, 2, 3].map((d) => <i key={d} className={d <= ci % 4 ? 'on' : undefined} />)}</span></div>
             </div>
           );
         })}
@@ -904,6 +914,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
             <div key={ci} style={{ background: STAGE ? SURF : T.white, border: `1.5px dashed ${cc.bg}`, borderRadius: 10, padding: '10px 14px', marginBottom: 8, textAlign: 'center' }}>
               <div style={{ fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: '.04em', color: cc.tc }}>{PUZZLE.groups[ci].name}</div>
               <div style={{ fontWeight: 700, fontSize: 13.5, color: FADED, marginTop: 2 }}>{PUZZLE.groups[ci].words.join(', ')}</div>
+              <div style={{ color: cc.tc }}><span className="lk-lv" aria-label={LEVEL_NAMES[ci % 4]}>{[0, 1, 2, 3].map((d) => <i key={d} className={d <= ci % 4 ? 'on' : undefined} />)}</span></div>
             </div>
           );
         })}
@@ -1122,7 +1133,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 560, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Links</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Links is a free daily word grouping puzzle from Mind Loft. Sixteen words hide four threads of four, find each thread and bank it in its color, from the easy yellow group to the devious red one. Four mistakes and the board wins.
+          Links is a free daily word grouping puzzle from Mind Loft. Sixteen words hide four threads of four, find each thread and bank it as a band marked with its level, from the easy one-dot group to the devious four-dot one. Four mistakes and the board wins.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           The trick is the overlap: every puzzle plants words that look like they belong to one thread but pay off in another. Count carefully, eliminate boldly, and save the coin-flips for last. A &ldquo;one away&rdquo; nudge is the only mercy.

@@ -24,7 +24,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Anti-Knight Sudoku: Knight | Mind Loft',
   description:
-    'A free daily anti-knight sudoku. An ordinary 9×9 plus one rule: no digit repeats a chess knight’s move away. Select a square and its knights light up. One logical solution, notes and a free hint, a new board every day, and a thirteen-clue Edition on Sundays.',
+    'A free daily anti-knight sudoku. An ordinary 9×9 plus one rule: no digit repeats a chess knight’s move away. Select a square and its knights are ringed. One logical solution, notes and a free hint, a new board every day, and a thirteen-clue Edition on Sundays.',
   alternates: { canonical: '/knight' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game

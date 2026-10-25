@@ -151,8 +151,8 @@ function TopBar({ pal, back = '/', backLabel = 'All Puzzles' }) {
   return (
     <div className="gsx-top">
       <a className="gsx-logo" href="/" aria-label="Mind Loft home">
-        <MindLoftMark size={30} ink={pal.ink} accent={pal.ink} title="Mind Loft" />
-        <span>Mind Loft</span>
+        <MindLoftMark size={30} ink={pal.ink} accent="var(--stg-brand,#38bdf8)" title="Mind Loft" />
+        <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
       </a>
       <span className="gsx-tr2">
         <a className="gsx-back" href={back}>

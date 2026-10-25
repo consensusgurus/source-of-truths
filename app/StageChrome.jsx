@@ -372,7 +372,7 @@ export default function StageChrome({
             glyph and the same word in ink sits in front of it, so it is never
             the only thing carrying "Mind Loft". */}
         <a className="stg-brand" href={homeTo} aria-label="Mind Loft home" title="Mind Loft">
-          <MindLoftMark size={19} ink="var(--stg-ink,#e9edf4)" accent="var(--stg-acc, var(--stg-brand,#7dd3fc))" />
+          <MindLoftMark size={19} ink="var(--stg-ink,#e9edf4)" accent="var(--stg-brand,#7dd3fc)" />
           <b>Mind <em>Loft</em></b>
         </a>
 

@@ -17,8 +17,8 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
     <div className="stb" style={{ color: ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <a className="stb-logo" href={href} aria-label="Mind Loft home" onClick={(e) => soakNav(e, href)}>
-        <MindLoftMark size={26} ink={ink} accent={ink} title="Mind Loft" />
-        <span>Mind Loft</span>
+        <MindLoftMark size={26} ink={ink} accent="var(--stg-brand,#38bdf8)" title="Mind Loft" />
+        <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
       </a>
       <span className="stb-r">
         <a className="stb-back" href={href} onClick={(e) => soakNav(e, href)}><span aria-hidden="true">&larr;</span> All Puzzles</a>

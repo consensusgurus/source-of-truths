@@ -683,7 +683,7 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
       lead={`Place your gift, then choose what they get. Win in ${WIN_IN}.`}
       banner={<>Sixteen pieces, each <b>tall or short</b>, <b>dark or light</b>, <b>square or round</b> and <b>hollow or solid</b>. Four in a row, a column or a long diagonal that share <b>any one</b> of those traits win, for whoever placed the fourth.</>}
       steps={[
-        <>Your opponent has <b>handed you a piece</b>, the gift. <b>Tap an empty well</b> to put it there: the gold ring marks the square.</>,
+        <>Your opponent has <b>handed you a piece</b>, the gift. <b>Tap an empty well</b> to put it there: the ringed well marks the square.</>,
         <>Then <b>tap a piece</b> from the ones still off the board. That is what your opponent has to place next. Press <b>Hand it over</b>.</>,
         <>Your opponent places it and hands you one back. You can force a win by your <b>{WIN_IN === 2 ? 'second' : WIN_IN === 3 ? 'third' : WIN_IN === 4 ? 'fourth' : 'fifth'} placement</b>, the gift counting as the first, and exactly <b>one</b> first move does it.</>,
         <>One free <b>hint</b>, on your first ever play, rings the well the gift goes on, never the piece to hand back.</>,

@@ -636,8 +636,8 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
   // beam runs along the centre of every square a lamp lights, from the lamp to
   // the wall, so you can see which lamp lights what. Walls are slabs: a blank
   // one is hatched, a numbered one carries its number and one pip per lamp it
-  // wants, which fill as lamps touch it (warm while short, the accent once
-  // exact, red when over).
+  // wants, which fill as lamps touch it (outlined until touched, the number
+  // underlined once exact, struck through when over).
   const GRID_PAD = N >= 10 ? 2 : 3;
   const GRID_GAP = N >= 10 ? 2 : 3;
   const gridBoxRef = useRef(null);
@@ -706,10 +706,18 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
       const pipFill = (i) => (bad || k > need ? 'var(--lm-slab-ink)' : k === need ? 'var(--lm-pip-ok)' : i < k ? 'var(--lm-glow)' : 'var(--lm-pip)');
       return (
         <>
-          <span aria-hidden="true" style={{ fontFamily: SANS, fontWeight: 800, fontSize: Math.round(cellPx * 0.36), lineHeight: 1, color: 'var(--lm-slab-ink)' }}>{ch}</span>
+          <span aria-hidden="true" style={{ fontFamily: SANS, fontWeight: 800, fontSize: Math.round(cellPx * 0.36), lineHeight: 1, color: 'var(--lm-slab-ink)',
+            // IN EVERY LOOK (owner, 2026-10-25): a met number is UNDERLINED and an
+            // over-full one STRUCK THROUGH, not only recoloured.
+            textDecoration: bad || k > need ? 'line-through' : need > 0 && k === need ? 'underline' : undefined,
+            textDecorationThickness: Math.max(2, Math.round(cellPx * 0.06)), textUnderlineOffset: Math.max(2, Math.round(cellPx * 0.05)) }}>{ch}</span>
           {need > 0 && (
             <span aria-hidden="true" style={{ display: 'flex', gap: Math.max(2, Math.round(pip * 0.5)), minHeight: pip }}>
-              {Array.from({ length: need }, (_, i) => <span key={i} style={{ width: pip, height: pip, borderRadius: '50%', background: pipFill(i) }} />)}
+              {Array.from({ length: need }, (_, i) => {
+                // A pip still waiting for a lamp is an OUTLINED ring; a touched one is filled.
+                const empty = !(bad || k > need) && k !== need && i >= k;
+                return <span key={i} style={{ width: pip, height: pip, borderRadius: '50%', boxSizing: 'border-box', background: empty ? 'transparent' : pipFill(i), border: empty ? `${Math.max(1, Math.round(pip * 0.3))}px solid var(--lm-pip)` : undefined }} />;
+              })}
             </span>
           )}
         </>
@@ -724,7 +732,10 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
         {v === LAMP && (() => {
           const isBad = breaks.badLamp.has(idx);
           const d = Math.round(cellPx * 0.48), ring = Math.max(2, Math.round(cellPx * 0.08)), halo = Math.round(cellPx * 0.3);
-          return <span aria-hidden="true" style={{ position: 'relative', width: d, height: d, borderRadius: '50%', display: 'block', background: isBad ? 'var(--stg-bad, #be123c)' : 'var(--lm-glow)', boxShadow: isBad ? `0 0 0 ${ring}px var(--stg-cell, #ffffff)` : `0 0 0 ${ring}px var(--lm-lit), 0 0 ${halo}px ${Math.round(halo / 4)}px var(--lm-glow)` }} />;
+          // A clashing lamp also carries a SLASH, so it reads in every page look.
+          return <span aria-hidden="true" style={{ position: 'relative', width: d, height: d, borderRadius: '50%', display: 'block', background: isBad ? 'var(--stg-bad, #be123c)' : 'var(--lm-glow)', boxShadow: isBad ? `0 0 0 ${ring}px var(--stg-cell, #ffffff)` : `0 0 0 ${ring}px var(--lm-lit), 0 0 ${halo}px ${Math.round(halo / 4)}px var(--lm-glow)` }}>
+            {isBad && <span style={{ position: 'absolute', left: '-18%', right: '-18%', top: '50%', height: ring, marginTop: -ring / 2, background: 'var(--stg-cell, #ffffff)', borderRadius: ring, transform: 'rotate(-45deg)' }} />}
+          </span>;
         })()}
         {v === CROSS && <span aria-hidden="true" style={{ position: 'relative', width: Math.max(6, Math.round(cellPx * 0.15)), height: Math.max(6, Math.round(cellPx * 0.15)), borderRadius: '50%', background: 'var(--lm-dot)', display: 'block' }} />}
       </>
@@ -759,8 +770,8 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
       lead="Place lamps on the white squares until every one of them is lit. A lamp lights its own square and shines along its row and column until it meets a wall. No lamp may shine on another lamp, and a numbered wall must have exactly that many lamps on its four sides."
       steps={[
         <><b>Tap a white square</b> to cycle it: lamp, then a small dot that marks it as empty, then blank. On desktop the <b>arrow keys</b> move, <b>L</b> or <b>1</b> places a lamp, <b>X</b> or <b>2</b> a dot, Space cycles.</>,
-        <>Lit squares turn warm. A wall with <b>0</b> has no lamp beside it; a wall with <b>4</b> has one on every side. A blank wall can have any number.</>,
-        <>Two lamps that see each other turn red, and so does a numbered wall with too many lamps. A number is underlined once it is met. <b>Undo</b> (or Ctrl+Z) takes back a move; <b>Clear</b> wipes the board.</>,
+        <>A lit square shows the lamp&rsquo;s beam running through it. A wall with <b>0</b> has no lamp beside it; a wall with <b>4</b> has one on every side. A blank wall can have any number.</>,
+        <>Two lamps that see each other are <b>slashed</b>, and a numbered wall with too many lamps has its number <b>struck through</b>. A number is <b>underlined</b> once it is met, and its pips fill in as lamps touch it. <b>Undo</b> (or Ctrl+Z) takes back a move; <b>Clear</b> wipes the board.</>,
       ]}
       knack="Start with the walls that leave no choice: a 0, a 4, a 3 on an edge, a 2 in a corner. Then look for a dark square that only one open square can light, and put the lamp there."
       footer="Every board has exactly one solution and can always be reached by logic, with no guessing. Solve it for a perfect 10; nothing is counted against you, so the daily leaderboard is a race on the clock. One free hint, on your first ever play, places a lamp that belongs. Boards grow from 7×7 early in the week to 8×8, and the Sunday Edition is 10×10."
@@ -928,7 +939,7 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
             <div className="lm-foot">
               <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <span aria-live="polite" className="lm-status" style={{ color: breaks.any ? `var(--stg-bad, ${COLORS.rust})` : INK }}>{statusMain}</span>
-                <span className="lm-help lm-dk">Pips under a number fill as lamps touch it. Grey dots are squares you have ruled out.</span>
+                <span className="lm-help lm-dk">Pips under a number fill as lamps touch it. Small dots are squares you have ruled out.</span>
                 <span className="lm-help lm-ph">Tap: lamp, then dot, then blank. Pips fill as lamps touch a number.</span>
               </div>
               <div className="lm-acts">
@@ -1141,7 +1152,7 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
           Lamps is a free daily logic puzzle from Mind Loft. Place lamps on a grid of white squares and walls until every white square is lit. A lamp shines along its row and column until it meets a wall, no lamp may shine on another, and a wall with a number on it must touch exactly that many lamps.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          It is a light-placement puzzle, the family sometimes called akari. Every board has a single solution you can always reach by logic, with no guessing. Two lamps that see each other turn red, but a lamp that is simply in the wrong place is never flagged, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.
+          It is a light-placement puzzle, the family sometimes called akari. Every board has a single solution you can always reach by logic, with no guessing. Two lamps that see each other are slashed, but a lamp that is simply in the wrong place is never flagged, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new board drops every day at midnight Eastern: 7×7 early in the week, 8×8 from Thursday, and a 10×10 Sunday Edition. No app, no signup, play free in your browser. More grid logic: try <a href="/duet" style={{ color: INK, fontWeight: 800 }}>Duet</a>, <a href="/hedge" style={{ color: INK, fontWeight: 800 }}>Hedge</a> and <a href="/plot" style={{ color: INK, fontWeight: 800 }}>Plot</a>.

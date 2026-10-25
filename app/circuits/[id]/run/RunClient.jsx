@@ -1008,8 +1008,8 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     <div className="rt-rhd">
       <span>The run</span>
       <i>
-        Every {MATHRUN ? 'game' : 'quiz'} on the same scale. A miss ends a bar in red
-        {lanesAvg ? ', the grey tick is today’s average and the gold one today’s best.' : '.'}
+        Every {MATHRUN ? 'game' : 'quiz'} on the same scale. A miss ends a bar in a striped cap
+        {lanesAvg ? ', the plain tick is today’s average and the dotted one today’s best.' : '.'}
       </i>
     </div>
   );
@@ -1512,12 +1512,12 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   <p className="rn-fine tw">
                     {secondsLine(sections, 'question')} Keys 1 to 4 answer.
                     <br />Each bar is one {MATHRUN ? 'game' : 'quiz'}, every one on the same scale however many questions it has.
-                    {fieldOn ? ' The heavier the shading along a bar, the more of today\u2019s players got that far, the grey tick is the average and the gold tick is today\u2019s best.' : ''}
+                    {fieldOn ? ' The heavier the shading along a bar, the more of today\u2019s players got that far, the plain tick is the average and the dotted tick is today\u2019s best.' : ''}
                   </p>
                 ) : (
                   <p className="rn-fine">
                     Twenty seconds a question. Keys 1 to 4 answer.
-                    {fieldOn ? <><br />The dim rungs beside you are where today&rsquo;s players fell, and the bright one on each block is the average.</> : null}
+                    {fieldOn ? <><br />The faint rungs beside you are where today&rsquo;s players fell, and the bold one on each block is the average.</> : null}
                   </p>
                 )}
               </div>
@@ -1564,6 +1564,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                       disabled={lock}
                     >
                       <span className="rn-k">{k + 1}</span>{typeof c === 'number' ? c.toLocaleString('en-US') : mathText(c)}
+                      {lock && k === question.correct ? <Check className="rn-okm" size={18} strokeWidth={3} aria-label="Correct answer" /> : null}
                     </button>
                   ))}
                 </div>
@@ -1615,6 +1616,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                       disabled={lock}
                     >
                       <span className="rn-k">{k + 1}</span>{typeof c === 'number' ? c.toLocaleString('en-US') : mathText(c)}
+                      {lock && k === question.correct ? <Check className="rn-okm" size={18} strokeWidth={3} aria-label="Correct answer" /> : null}
                     </button>
                   ))}
                 </div>
@@ -2385,6 +2387,8 @@ body:has(.rn)::before{background:${T.ground};}
 .rn-c:disabled{cursor:default;}
 .rn-c.ok{border-color:${T.successDeep};background:rgba(16,185,129,.16);color:#c6f5e2;}
 .rn-c.ok .rn-k{border-color:${T.successDeep};color:#6ee7b7;}
+.rn-okm{margin-left:auto;flex:none;color:#6ee7b7;}
+.mth .rn-okm{position:absolute;top:10px;right:12px;margin:0;}
 .rn-k{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex:none;
   border-radius:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
   font-family:${MONO};font-size:11px;font-weight:500;color:#66748f;}
@@ -2644,6 +2648,11 @@ body:has(.rn)::before{background:${T.ground};}
    before. Ink on the run ground #0b0f1a and the card #141b2b: #e8ecf4 16:1,
    #c9d0de 11:1, #8b95a8 5.7:1, #f87171 6.2:1; marks #616d88 3.3:1. */
 ${TOWER_CSS}
+/* NOT BY COLOUR ALONE (owner, 2026-10-25): the miss cap is striped, the best
+   tick carries a dot, and the right answer carries a tick mark. */
+.rl-x{background-image:repeating-linear-gradient(135deg,rgba(11,15,26,.55) 0 2px,transparent 2px 4px);}
+.rl-best::after,.rt-key i.best::after{content:"";position:absolute;left:50%;top:-4px;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:#e8b43a;box-shadow:0 0 0 1.5px #0b0f1a;}
+.rt-key i.best{position:relative;}
 .rn-tick.tw{display:none;}
 .rn-stage.tw .rn-body{margin:0 auto;}
 .rn-fine.tw{color:#8b95a8;}

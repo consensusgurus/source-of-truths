@@ -919,8 +919,8 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
       lead={<>A <b>cryptarithm</b>: every letter is a different digit, 0&ndash;9, and the {opWord} must work out.</>}
       steps={[
         <>Letters that start a word are <b>never zero</b>.</>,
-        <><b>Tap a letter, then tap a digit</b>, or just type. Tap a filled letter again to clear it. The pad shows which letter owns each digit, and two letters sharing one both flag red.</>,
-        <>The board keeps the scratch work: a digit already taken <b>dims on the pad</b> and shows whose it is, 0 greys out under a leading letter, <b>Notes</b> crosses off any digit you have ruled out, and the <b>{carryWord} row</b> above the equation fills in as far as your digits allow, with the rest yours to pencil.</>,
+        <><b>Tap a letter, then tap a digit</b>, or just type. Tap a filled letter again to clear it. The pad shows which letter owns each digit, and two letters sharing one both turn <b>dashed</b>.</>,
+        <>The board keeps the scratch work: a digit already taken turns <b>dashed on the pad</b> and shows whose it is, 0 fades out under a leading letter, <b>Notes</b> crosses off any digit you have ruled out, and the <b>{carryWord} row</b> above the equation fills in as far as your digits allow, with the rest yours to pencil.</>,
         <>A <b>✓ or ✗</b> under each column shows exactly which column works, so a wrong digit turns up where it happened.</>,
         <>There is <b>no button to press</b>. Get every column to ✓ with a different digit for every letter, and the puzzle locks itself the moment it lands.</>,
       ]}
@@ -989,7 +989,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-cell .cf-ch{font-size:20px;font-weight:800;color:${INK};line-height:1;}
           .cf-cell .cf-dg{font-size:21px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accent});line-height:1;font-variant-numeric:tabular-nums;}
           .cf-cell .cf-dg.empty{color:${FADED};}
-          .cf-cell.bad{border-color:var(--stg-bad, ${COLORS.rust});}
+          .cf-cell.bad{border-color:var(--stg-bad, ${COLORS.rust});border-style:dashed;border-width:2px;}
           .cf-cell.bad .cf-dg{color:var(--stg-bad, ${COLORS.rust});}
           .cf-play.dock .cf-cell{border-radius:9px;}
           .cf-play.dock .cf-cell .cf-ch{font-size:16px;}
@@ -1026,7 +1026,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-bk .dots{flex:1;min-width:6px;height:0;border-bottom:2px dotted ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};}
           .cf-bk .d{width:26px;text-align:center;font-size:20px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accent});flex:none;font-variant-numeric:tabular-nums;}
           .cf-bk .d.empty{color:${FADED};}
-          .cf-bk .d.bad{color:var(--stg-bad, ${COLORS.rust});}
+          .cf-bk .d.bad{color:var(--stg-bad, ${COLORS.rust});outline:2px dashed var(--stg-bad, ${COLORS.rust});outline-offset:1px;border-radius:4px;}
           .cf-bk .fd{display:none;}
           .cf-play.dock .cf-book{background:transparent;border:0;padding:0;}
           .cf-play.dock .cf-bookhd{border:0;padding:0 0 4px;margin:0;}
@@ -1215,7 +1215,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
                           ? <>Assigning a digit to <b style={{ color: ACC_INK }}>{selected}</b>. {g.assign[selected] !== undefined ? <>Tap {selected} again to clear it.</> : 'Tap a key or type it.'}</>
                           : 'Tap a letter, then a digit, or just type.'))}
               </span>
-              {!dockUi && <span className="cf-legend">Dim key = taken{selected !== null ? <> &middot; struck = crossed off for {selected}</> : null}</span>}
+              {!dockUi && <span className="cf-legend">Dashed key = taken{selected !== null ? <> &middot; struck = crossed off for {selected}</> : null}</span>}
             </div>
           )}
 
@@ -1441,7 +1441,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           Cipher is a free daily cryptarithm puzzle from Mind Loft. Each day serves one alphametic equation, the classic puzzle form where SEND + MORE = MONEY and every letter hides a digit. Assign a different digit to each letter so the arithmetic works, and know that the puzzle is machine-verified to have exactly one solution: if your logic is sound, you never have to guess.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          The craft is in the columns, and Cipher hands you the tools instead of asking you to reach for paper. The digit pad dims a digit the moment another letter takes it and tells you whose it is, the carry row above the equation fills itself in as far as your digits reach, and each column carries its own &#10003; or &#10007; the moment it is decided. The leftmost letter of the answer is usually forced by a carry; from there each column narrows the field until the whole equation clicks open. There is no Check button and nothing to submit: because the board works the columns out with you, it simply ends the day the moment your assignment is right. A solve is a perfect 10, so the daily leaderboard is a straight race on the clock.
+          The craft is in the columns, and Cipher hands you the tools instead of asking you to reach for paper. The digit pad dashes a digit the moment another letter takes it and tells you whose it is, the carry row above the equation fills itself in as far as your digits reach, and each column carries its own &#10003; or &#10007; the moment it is decided. The leftmost letter of the answer is usually forced by a carry; from there each column narrows the field until the whole equation clicks open. There is no Check button and nothing to submit: because the board works the columns out with you, it simply ends the day the moment your assignment is right. A solve is a perfect 10, so the daily leaderboard is a straight race on the clock.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new equation drops every day at midnight Eastern, and the week ramps: two addends Monday through Wednesday, three Thursday through Saturday, and four in the Sunday Edition. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/suds" style={{ color: INK, fontWeight: 800 }}>Suds</a>, our daily sudoku, <a href="/tally" style={{ color: INK, fontWeight: 800 }}>Tally</a>, our number-balancing puzzle, and <a href="/alibi" style={{ color: INK, fontWeight: 800 }}>Alibi</a>, our whodunit logic puzzle.

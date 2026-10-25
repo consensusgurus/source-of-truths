@@ -624,7 +624,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
       for (let rr = r; rr < r + h && free; rr++) for (let cc = c; cc < c + w; cc++) if (owner[rr * N + cc] >= 0) { free = false; break; }
       if (free) { idx = k; break; }
     }
-    if (idx < 0) { say('Hand back a red plot first, the hint has nowhere to go.'); return; }
+    if (idx < 0) { say('Hand back a striped plot first, the hint has nowhere to go.'); return; }
     const [r, c, w, h] = PUZZLE.sol[idx];
     const k = CLUES.findIndex((cl) => inRect([r, c, w, h], cl[0], cl[1]));
     pushUndo(cur.plots);
@@ -751,7 +751,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
         <><b>Undo</b> (or Ctrl+Z) takes back your last move, and one free <b>hint</b>, on your first ever play, surveys one plot for you.</>,
       ]}
       knack="Start where a number has nowhere else to go: a 1 is its own cell, and a number in a corner or against an edge usually has only one shape that fits."
-      note={<>A plot that fits its number but is in the wrong place turns <b>red and striped</b> and counts as an error. Hand it back to carry on.</>}
+      note={<>A plot that fits its number but is in the wrong place turns <b>striped</b> and counts as an error. Hand it back to carry on.</>}
       footer="A clean solve with no errors is a perfect 10, every two errors cost a point. Ties break on fewest errors, then fastest time. Sundays are a bigger 12×12 Edition."
     />
   );
@@ -1257,7 +1257,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
           Plot is a free daily rectangle puzzle from Mind Loft, the logic puzzle also known as shikaku or divide by squares. Numbers are scattered across the board, and each one is the size of the plot it belongs to. Divide the whole board into rectangles so that every rectangle holds exactly one number and covers exactly that many cells.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Every board has exactly one solution and is reachable by pure deduction, so there is never a moment where you have to guess. Drag corner to corner to claim a plot, tap one to hand it back, slide off the board mid-drag to cancel, and start where a number has nowhere else to go. A plot that fits its number but sits in the wrong place turns red and striped, so you always know where you stand.
+          Every board has exactly one solution and is reachable by pure deduction, so there is never a moment where you have to guess. Drag corner to corner to claim a plot, tap one to hand it back, slide off the board mid-drag to cancel, and start where a number has nowhere else to go. A plot that fits its number but sits in the wrong place turns striped, so you always know where you stand.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new board drops every day at midnight Eastern, and Sundays step up to a 12&times;12 Edition. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/etch" style={{ color: INK, fontWeight: 800 }}>Etch</a>, our nonogram, <a href="/hedge" style={{ color: INK, fontWeight: 800 }}>Hedge</a>, our loop puzzle, and <a href="/suds" style={{ color: INK, fontWeight: 800 }}>Suds</a>, our daily sudoku.

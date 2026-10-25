@@ -801,9 +801,13 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
     if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick})`;
     return {
       background: bg,
+      // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): a dashed ring, not just a
+      // deeper wash, since the phone looks collapse the accent toward the ink.
+      outline: sameVal ? `1.5px dashed ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
+      outlineOffset: sameVal ? '-4px' : undefined,
       boxShadow: isSel
         ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`
-        : (knight ? `inset 0 0 0 1.5px ${COLORS.knightEdge}` : undefined),
+        : (knight ? `inset 0 0 0 1.5px ${STAGE ? 'var(--stg-ink)' : COLORS.knightEdge}` : undefined),
       borderRight: `${heavyR ? 2.5 : 1}px solid ${heavyR ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
       borderBottom: `${heavyB ? 2.5 : 1}px solid ${heavyB ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
       borderLeft: c === 0 ? 'none' : undefined,
@@ -815,7 +819,7 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="An ordinary sudoku, plus one rule: no digit may repeat a chess knight's move away from itself, two squares one way and one square across. Rows, columns and boxes still hold 1 to 9 exactly once. Select any square and the eight squares its knights reach light up, so you never have to picture the L."
+      lead="An ordinary sudoku, plus one rule: no digit may repeat a chess knight's move away from itself, two squares one way and one square across. Rows, columns and boxes still hold 1 to 9 exactly once. Select any square and the eight squares its knights reach are ringed, so you never have to picture the L."
       steps={[
         <><b>Tap a square then tap a number</b>, or pick a number first and tap every square it goes in. On desktop the <b>arrow keys and number keys</b> work too.</>,
         <>Turn on <b>Notes</b> (or press N) to pencil candidates, or with a number picked just <b>long-press</b> a square to pencil it.</>,
@@ -903,7 +907,7 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Knight is ready'}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>An ordinary sudoku, plus one rule: no digit repeats a chess knight&apos;s move away from itself. Rows, columns and boxes still hold 1 to 9 exactly once. Select a square and its knights light up.</p>
+                <p style={{ margin: '0 0 6px' }}>An ordinary sudoku, plus one rule: no digit repeats a chess knight&apos;s move away from itself. Rows, columns and boxes still hold 1 to 9 exactly once. Select a square and its knights are ringed.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -1222,7 +1226,7 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
           Knight is a free daily anti-knight sudoku from Mind Loft. Each day gives you a 9×9 grid with one rule added to the usual three: no digit may repeat a chess knight&apos;s move away from itself, two squares one way and one square across. Rows, columns, and 3×3 boxes still hold 1 through 9 exactly once, and that fourth constraint does so much of the work that the board can print far fewer digits than an ordinary sudoku needs.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          There is no arithmetic and nothing extra drawn on the grid: the whole twist is a shape you already know from chess, and selecting a square lights up the eight squares its knights reach so you never have to picture the L. Every board has a single solution you can always reach by logic, with no guessing, and on every board the knight rule is load-bearing rather than decorative: read as an ordinary sudoku, the same clues would fit more than one grid. Wrong entries are never flagged, so spotting your own slips is part of the puzzle, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.
+          There is no arithmetic and nothing extra drawn on the grid: the whole twist is a shape you already know from chess, and selecting a square rings the eight squares its knights reach so you never have to picture the L. Every board has a single solution you can always reach by logic, with no guessing, and on every board the knight rule is load-bearing rather than decorative: read as an ordinary sudoku, the same clues would fit more than one grid. Wrong entries are never flagged, so spotting your own slips is part of the puzzle, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new board drops every day at midnight Eastern; weekdays print fewer digits as the week goes on, from 28 on Monday down to 16 on Saturday, and the Sunday Edition prints thirteen. No app, no signup, play free in your browser. Want the rest of the family? Try <a href="/suds" style={{ color: INK, fontWeight: 800 }}>Suds</a>, the classic 9×9, <a href="/cages" style={{ color: INK, fontWeight: 800 }}>Cages</a>, the killer sudoku, <a href="/mercury" style={{ color: INK, fontWeight: 800 }}>Mercury</a>, the thermo, and <a href="/polka" style={{ color: INK, fontWeight: 800 }}>Polka</a>, the kropki with no numbers at all.

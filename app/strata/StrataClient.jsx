@@ -750,7 +750,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
           .st-k b{font-size:14px;letter-spacing:0;color:${INK};font-weight:800;}
           .st-clear{font-family:${SANS};font-weight:700;font-size:13px;background:transparent;color:${FADED};border:0;padding:0 8px;min-height:44px;min-width:44px;text-decoration:underline;cursor:pointer;}
           @media(max-width:640px){.st-k{font-size:10px;}.st-k b{font-size:13px;}.st-tile,.st-hole{border-radius:9px;}}
-          .st-tile.bad{background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#b91c1c'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};}
+          .st-tile.bad{border-style:dashed;background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#b91c1c'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};}
           .st-tile.flash{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));box-shadow:0 0 0 4px var(--stg-acc-ink, ${COLORS.accent});animation:st-hint0 1.6s ease-in-out 3;}
           @keyframes st-hint0{0%,100%{box-shadow:0 0 0 4px var(--stg-acc-ink, ${COLORS.accent});transform:scale(1)}50%{box-shadow:0 0 0 9px transparent;transform:scale(1.08)}}
           @keyframes st-hint1{0%,100%{box-shadow:0 0 0 4px var(--stg-acc-ink, ${COLORS.accent});transform:scale(1)}50%{box-shadow:0 0 0 9px transparent;transform:scale(1.08)}}

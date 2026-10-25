@@ -707,7 +707,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
         <>Every block grows out from its <b>ringed anchor square</b>, and there is exactly one way to carve the board.</>,
         <>Pick a colour below the board, or tap its anchor, then tap squares that <b>touch that block</b> to paint them in. Tap a painted square to un-carve it.</>,
         <>Each colour chip shows its block&rsquo;s running total.</>,
-        <>The moment a block hits {TARGET} it is checked: a true block <b>locks in</b>, a wrong one shakes <b style={{ color: `var(--stg-bad, ${COLORS.rust})` }}>red</b>, clears back to its anchor and counts as an <b>error</b>.</>,
+        <>The moment a block hits {TARGET} it is checked: a true block <b>locks in</b>, a wrong one <b style={{ color: `var(--stg-bad, ${COLORS.rust})` }}>shakes</b>, clears back to its anchor and counts as an <b>error</b>.</>,
       ]}
       knack="Start with the anchors hemmed in by edges or big numbers. A block with only one way to grow settles its neighbours for you."
       footer={<>No errors is a perfect 10, and every error costs a point. One free <b>hint</b>, on your first ever play, paints a correct square. Ties break on fewest errors, then fastest time. Sundays go bigger: a 7&times;7 board in nine blocks.</>}
@@ -1183,7 +1183,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
           Carve is a free daily number puzzle from Mind Loft. Each day gives you a fresh grid of digits and a handful of colored anchor squares. Slice the whole board into connected blocks, one grown from each anchor, so that every block adds up to the same target. There is always exactly one valid carving, the anchors pin it down.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          It plays like a knife-and-ledger cousin of sudoku: part arithmetic, part territory. Watch the running totals, spot the squares only one block can reach, and let each locked block squeeze the next. A wrong cut shakes red and costs an error, carve the whole board clean for a perfect score.
+          It plays like a knife-and-ledger cousin of sudoku: part arithmetic, part territory. Watch the running totals, spot the squares only one block can reach, and let each locked block squeeze the next. A wrong cut shakes, clears and costs an error, carve the whole board clean for a perfect score.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new board drops every day at midnight Eastern, and Sundays go bigger with a 7&times;7 grid in nine blocks. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/suds" style={{ color: INK, fontWeight: 800 }}>Suds</a>, our daily sudoku, <a href="/tally" style={{ color: INK, fontWeight: 800 }}>Tally</a>, our number ledger, and <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword.

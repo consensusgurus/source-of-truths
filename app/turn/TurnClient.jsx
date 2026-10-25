@@ -678,7 +678,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="Othello, picked up at the end. You play the gold discs, and the game is already won for you."
+      lead="Othello, picked up at the end. You play the dotted discs, and the game is already won for you."
       banner={<>{PUZZLE.empties} empty squares, and exactly <b>one</b> of them keeps the win.</>}
       steps={[
         <><b>Tap a ringed square</b> to play there. Your disc must trap a line of the engine&rsquo;s discs against another of yours, and every disc you trap flips.</>,
@@ -754,8 +754,16 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
                   ? `radial-gradient(circle at 34% 30%, ${DISC_YOU_HI}, ${DISC_YOU} 62%), ${DISC_YOU}`
                   : `radial-gradient(circle at 34% 30%, ${DISC_FOE_HI}, ${DISC_FOE} 62%), ${DISC_FOE}`,
               boxShadow: STAGE ? '0 0 0 2px var(--tn-rim)' : '0 1px 2px rgba(0,0,0,0.35)',
+              // YOURS CARRY A DOT (owner, 2026-10-25): in the black and white looks
+              // both discs go light, so a centre dot, not the colour, says whose.
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
-          />
+          >
+            {v === 1 && <span aria-hidden="true" style={{ width: '30%', height: '30%', borderRadius: '50%', background: 'var(--tn-rim, #1c1a14)' }} />}
+          </span>
+        )}
+        {fresh && STAGE && (
+          <span aria-hidden="true" style={{ position: 'absolute', inset: '4%', borderRadius: 3, border: '2px dashed var(--tn-dot)', pointerEvents: 'none' }} />
         )}
         {v === 0 && open && (
           STAGE
@@ -827,7 +835,8 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
           .tn-k b{color:var(--stg-acc-ink,#7c5104);font-weight:800;}
           .tn-meter{display:flex;gap:4px;margin-top:8px;}
           .tn-seg{flex:1;height:8px;border-radius:2px;background:var(--stg-line2,rgba(255,255,255,.17));}
-          .tn-seg.you{background:var(--stg-acc,#e8b43a);}
+          .tn-seg.you{background:var(--stg-acc,#e8b43a);position:relative;}
+          .tn-seg.you::after{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:var(--tn-rim);}
           .tn-seg.eng{background:var(--tn-eng);}
           .tn-seg.now{background:var(--tn-soft);box-shadow:inset 0 0 0 2px var(--stg-acc-ink,#e8b43a);}
           .tn-short{display:none;}
@@ -974,7 +983,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
                 <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 7 }}>
                   <span className="tn-k">Discs now</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-                    <span className="tn-chip"><i style={{ background: 'var(--stg-you-lt, var(--stg-acc, #e8b43a))' }} />You &middot; {view.score.mine}</span>
+                    <span className="tn-chip"><i style={{ background: 'var(--stg-you-lt, var(--stg-acc, #e8b43a))', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--tn-rim)' }} /></i>You &middot; {view.score.mine}</span>
                     <span className="tn-chip"><i style={{ background: 'var(--tn-eng)' }} />Engine &middot; {view.score.theirs}</span>
                     <span className="tn-note tn-rule" style={{ fontSize: 12.5 }}>Most discs at the end wins. A tie is not a win.</span>
                   </div>

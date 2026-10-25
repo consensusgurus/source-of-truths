@@ -71,7 +71,7 @@ const COLORS = {
 };
 
 // The board is the stage surface, the grid is its line. Your stones take the
-// category colour, filled; White takes the ground, lifted. Both are tokens, so
+// category colour, filled; White takes the ground, lifted, with an inner ring. Both are tokens, so
 // the picture holds on either register. SVG presentation attributes cannot read
 // a custom property, so every paint below goes through a style prop.
 const BOARD = 'var(--stg-surf, #d9b36c)';
@@ -658,7 +658,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="Go, picked up at the very end. The walls are built and the territories are settled; a handful of open points decide who wins. You play the gold stones, the engine plays White."
+      lead="Go, picked up at the very end. The walls are built and the territories are settled; a handful of open points decide who wins. You play the solid stones, the engine plays White's ringed ones."
       banner={<>{PUZZLE.pts.length} open points. To win you must <b>{needText(PUZZLE.komi)}</b>, and perfect play wins by exactly half a point.</>}
       steps={[
         <><b>Tap an open point</b> to place a stone. Only the open points are in play: the marked squares are settled territory and nobody may play there.</>,
@@ -720,11 +720,14 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
         <circle key={`s${i}`} className={fresh ? 'yo-fresh' : undefined} cx={x} cy={y} r={U * 0.42}
           style={{ fill: v === BLACK ? P_YOU : P_FOE, stroke: v === BLACK ? P_YOU_RIM : P_FOE_RIM, strokeWidth: STAGE ? 2 : 1.2 }} />,
       );
+      // WHITE'S STONES ARE RINGED (owner, 2026-10-25): yours solid, White's with an
+      // inner ring, so the two sides read apart in every page look.
+      if (v === WHITE) pieces.push(<circle key={`r${i}`} cx={x} cy={y} r={U * 0.24} style={{ fill: 'none', stroke: P_FOE_RIM, strokeWidth: STAGE ? 1.8 : 1.2 }} />);
       if (fresh) pieces.push(<circle key={`l${i}`} cx={x} cy={y} r={U * 0.1} style={{ fill: STAGE ? (v === BLACK ? 'var(--stg-onramp, #1c1a14)' : 'var(--yo-you-rim)') : (v === BLACK ? STONE_FOE : STONE_YOU) }} />);
     } else if (v === BTERR || v === WTERR) {
       const s = U * 0.25;
       pieces.push(<rect key={`t${i}`} x={x - s / 2} y={y - s / 2} width={s} height={s} rx={2}
-        style={{ fill: v === BTERR ? P_YOU : P_FOE, stroke: v === BTERR ? P_YOU_RIM : P_FOE_RIM, strokeWidth: STAGE ? 1.4 : 1 }} />);
+        style={{ fill: v === BTERR ? P_YOU : 'none', stroke: v === BTERR ? P_YOU_RIM : P_FOE_RIM, strokeWidth: v === BTERR ? (STAGE ? 1.4 : 1) : (STAGE ? 2 : 1.4) }} />);
     } else if (isOpenPt && open) {
       if (hot && STAGE) {
         pieces.push(<circle key={`d${i}`} cx={x} cy={y} r={U * 0.37} style={{ fill: 'var(--yo-soft)', stroke: 'var(--stg-acc-ink, #7c5104)', strokeWidth: 1.8, strokeDasharray: '4 3' }} />);
@@ -904,7 +907,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
                   <span style={{ fontSize: 14, fontWeight: 700, color: INK }}>To win: {needText(PUZZLE.komi)}.</span>
                   <span style={{ display: 'flex', gap: 6 }}>
                     <span className="yo-chip"><i style={{ background: 'var(--stg-you-dk, var(--stg-acc, #e8b43a))', border: '2px solid var(--yo-you-rim)' }} />You <b>{view.area.black}</b></span>
-                    <span className="yo-chip"><i style={{ background: 'var(--yo-wst)', border: '2px solid var(--yo-wst-rim)' }} />White <b>{view.area.white}</b></span>
+                    <span className="yo-chip"><i style={{ background: 'var(--yo-wst)', border: '2px solid var(--yo-wst-rim)', boxShadow: 'inset 0 0 0 2px var(--yo-wst), inset 0 0 0 3.5px var(--yo-wst-rim)' }} />White <b>{view.area.white}</b></span>
                   </span>
                 </div>
                 <div key={shake} className={`yo-board${shake ? ' shake' : ''}`}
@@ -919,8 +922,8 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
                 </div>
 
                 <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: '6px 14px', flexWrap: 'wrap', fontSize: 12, fontWeight: 700, color: FADED }}>
-                  <span className="yo-leg"><span style={{ width: 10, height: 10, borderRadius: 2, boxSizing: 'border-box', background: 'var(--stg-you-dk, var(--stg-acc, #e8b43a))', border: '1.5px solid var(--yo-you-rim)' }} />Your territory</span>
-                  <span className="yo-leg"><span style={{ width: 10, height: 10, borderRadius: 2, boxSizing: 'border-box', background: 'var(--yo-wst)', border: '1.5px solid var(--yo-wst-rim)' }} />White&rsquo;s territory</span>
+                  <span className="yo-leg"><span style={{ width: 10, height: 10, borderRadius: 2, boxSizing: 'border-box', background: 'var(--stg-you-dk, var(--stg-acc, #e8b43a))', border: '1.5px solid var(--yo-you-rim)' }} />Your territory (filled)</span>
+                  <span className="yo-leg"><span style={{ width: 10, height: 10, borderRadius: 2, boxSizing: 'border-box', background: 'transparent', border: '2px solid var(--yo-wst-rim)' }} />White&rsquo;s territory (outlined)</span>
                   <span className="yo-leg"><span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yo-dot)' }} />Open point</span>
                 </div>
 

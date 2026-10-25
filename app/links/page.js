@@ -55,7 +55,7 @@ const gameJsonLd = {
   alternateName: 'Links: Daily Word Grouping Puzzle',
   url: `${SITE_URL}/links`,
   description:
-    'A free daily word grouping puzzle: sixteen words hide four threads of four. Bank each thread in its color, easiest yellow to trickiest red. Four mistakes and the board wins.',
+    'A free daily word grouping puzzle: sixteen words hide four threads of four. Bank each thread as a band marked one to four dots, easiest to trickiest. Four mistakes and the board wins.',
   genre: ['Word puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

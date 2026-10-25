@@ -485,7 +485,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           .vn-z.over .bdg{border-color:var(--stg-bad, ${COLORS.rust});color:var(--stg-bad, ${COLORS.rust});}
           .vn-slot{display:flex;height:44px;box-sizing:border-box;border-radius:10px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);overflow:hidden;}
           .vn-z.ready .vn-slot{border-color:var(--stg-good, ${COLORS.green});}
-          .vn-z.over .vn-slot{border-color:var(--stg-bad, ${COLORS.rust});}
+          .vn-z.over .vn-slot{border-color:var(--stg-bad, ${COLORS.rust});border-style:dashed;}
           .vn-slot .t{flex:1;min-width:0;border:0;background:transparent;color:inherit;font-family:${SANS};font-size:12.5px;font-weight:800;letter-spacing:.01em;text-align:left;padding:0 0 0 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
           .vn-slot .x{width:28px;flex:none;border:0;background:transparent;color:${FADED};font-family:${SANS};font-size:17px;font-weight:700;padding:0;cursor:pointer;}
           .vn-slot .x:hover{color:var(--stg-bad, ${COLORS.rust});}
@@ -506,7 +506,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           .vn-pz{position:absolute;transform:translate(-50%,-50%);min-width:56px;min-height:48px;box-sizing:border-box;border-radius:12px;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));background:color-mix(in srgb, var(--stg-cell, #fff) 55%, transparent);padding:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:${SANS};cursor:pointer;z-index:1;}
           .vn-armed .vn-pz{border-color:var(--stg-acc-ink, ${COLORS.accent});}
           .vn-pz.ready{border-style:solid;border-color:var(--stg-good, ${COLORS.green});}
-          .vn-pz.over{border-style:solid;border-color:var(--stg-bad, ${COLORS.rust});}
+          .vn-pz.over{border-style:double;border-width:4px;border-color:var(--stg-bad, ${COLORS.rust});}
           .vn-pz .bdg{font-size:11px;font-weight:800;border-radius:7px;padding:0 5px;line-height:14px;color:${INK};font-variant-numeric:tabular-nums;}
           .vn-pz.ready .bdg{background:var(--stg-good, ${COLORS.green});color:var(--stg-ground, #fff);}
           .vn-pz.over .bdg{color:var(--stg-bad, ${COLORS.rust});}

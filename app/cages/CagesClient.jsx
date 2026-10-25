@@ -858,6 +858,11 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
     return {
       ...(STAGE ? regionStyle(tone) : null),
       background: bg,
+      // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): the matching squares are
+      // also UNDERLINED, so they read apart from the peer shade with no hue.
+      textDecoration: sameVal ? 'underline' : undefined,
+      textDecorationThickness: sameVal ? '2px' : undefined,
+      textUnderlineOffset: sameVal ? '3px' : undefined,
       // The cage tints are pale in BOTH registers, so the digits are dark in
       // both, exactly as Quilt's are. Without this the entered numbers took
       // .cg-user's accent (a mint green in the dark register) and sat on a

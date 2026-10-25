@@ -765,6 +765,10 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
     if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : '#ffd9bd'})`;
     return {
       background: bg,
+      // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): a dashed ring, not just a
+      // deeper wash, since the phone looks collapse the accent toward the ink.
+      outline: sameVal ? `1.5px dashed ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
+      outlineOffset: sameVal ? '-4px' : undefined,
       boxShadow: isSel ? `inset 0 0 0 2.5px ${STAGE ? STAGE_C_INK : COLORS.accent}` : undefined,
       zIndex: isSel ? 1 : undefined,
       // The box rules have to stay the STRONGEST line on the grid, or a

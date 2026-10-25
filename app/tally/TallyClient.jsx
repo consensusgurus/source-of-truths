@@ -1029,7 +1029,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           .tl-tgt.lit .s{color:var(--stg-acc-ink);}
           .tl-tgt.ok{background:var(--stg-acc);border:2px solid var(--stg-acc-ink, var(--stg-acc));}
           .tl-tgt.ok .v,.tl-tgt.ok .s{color:var(--stg-onramp);}
-          .tl-tgt.bad{border:2px solid var(--stg-bad);}
+          .tl-tgt.bad{border:2.5px dashed var(--stg-bad);}
           .tl-tgt.bad .v,.tl-tgt.bad .s{color:var(--stg-bad);}
           .tl-need{width:100%;max-width:560px;margin-top:16px;box-sizing:border-box;border-radius:14px;background:var(--stg-ground);border:1px solid var(--stg-line);padding:10px 14px;display:flex;flex-direction:column;gap:8px;min-height:44px;justify-content:center;}
           .tl-need-row{display:flex;align-items:center;gap:10px;}

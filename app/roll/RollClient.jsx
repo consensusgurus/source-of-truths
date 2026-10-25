@@ -582,7 +582,7 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
       steps={[
         <>Each roll <b>tips the die over one edge</b>, so the face that was on the side comes up on top. Use the <b>arrow keys</b>, a <b>swipe</b>, or the pad. You can see three faces: the top, the front and the right side.</>,
         <>A numbered square is <b>shut</b> until it is the <b>next one</b> and your roll would land <b>its number on top</b>. A shut square, or a roll off the floor, is refused and costs nothing. Once lit, a square is ordinary floor.</>,
-        <><b>Orange squares</b> are cracked: they hold the die once and crumble as soon as it rolls off. A crumbled square is gone, so a careless line can wall you in.</>,
+        <><b>Cracked squares</b>, drawn with crack lines, they hold the die once and crumble as soon as it rolls off. A crumbled square is gone, so a careless line can wall you in.</>,
       ]}
       knack={<>Work out how the die must arrive before you go for a square: which face has to be on top, and which side it rolls in from. The pad marks the roll that would light the next square.</>}
       note={<><b>Undo</b> takes back a roll and <b>Restart</b> puts the die home with the cracked squares mended, but neither refunds a roll: every roll counts, and the clock keeps running.</>}
@@ -856,7 +856,7 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Roll</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Roll is a free daily die rolling puzzle from Mind Loft. A die sits on a floor of tiles, and every move rolls it over one edge, so a side face comes up on top. Some squares carry a number, and the job is to light them in order: a square lights when the die lands on it with that number showing. A numbered square stays shut until it is the next one and your roll would land its number on top, and the orange cracked squares crumble once the die leaves them.
+          Roll is a free daily die rolling puzzle from Mind Loft. A die sits on a floor of tiles, and every move rolls it over one edge, so a side face comes up on top. Some squares carry a number, and the job is to light them in order: a square lights when the die lands on it with that number showing. A numbered square stays shut until it is the next one and your roll would land its number on top, and the cracked squares, drawn with crack lines, crumble once the die leaves them.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Every board is machine generated and then solved exactly, so perfect really is the fewest rolls that exist rather than somebody&rsquo;s guess, and it is confirmed by a second solver written independently of the first. Par sits a cushion above perfect: it is the number a clean solve lands on, and it is beatable. Monday lights three squares, the count climbs through the week, cracked squares arrive on Thursday, and the Sunday Edition lights six on the biggest floor.

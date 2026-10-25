@@ -17,14 +17,14 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Sliding Block Puzzle: Parker | Mind Loft',
   description:
-    'A free daily sliding-block puzzle. A jammed six by six lot, blocks that each slide on one axis, and a red block that has to reach the one gap in the wall. Every board is solved exactly, so you play against a real par and a perfect line that nobody can beat. No app, no signup, and a new jam every day.',
+    'A free daily sliding-block puzzle. A jammed six by six lot, blocks that each slide on one axis, and an arrow block that has to reach the one gap in the wall. Every board is solved exactly, so you play against a real par and a perfect line that nobody can beat. No app, no signup, and a new jam every day.',
   alternates: { canonical: '/parker' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
     images: [{ url: '/og/parker.png', width: 1200, height: 630, alt: 'Parker, a daily puzzle from Mind Loft' }],
     title: 'Parker: A Daily Sliding Block Puzzle',
-    description: 'You are in the red one. Everybody has blocked you in, and there is one gap in the wall. A new jam from Mind Loft, daily.',
+    description: 'You are in the arrow block. Everybody has blocked you in, and there is one gap in the wall. A new jam from Mind Loft, daily.',
     url: '/parker', type: 'website', siteName: 'Mind Loft',
   },
   twitter: {
@@ -40,7 +40,7 @@ const gameJsonLd = {
   alternateName: 'Parker: Daily Sliding Block Puzzle',
   url: `${SITE_URL}/parker`,
   description:
-    'A free daily sliding-block puzzle. Blocks fill a six by six lot and each slides along one axis only; the red block must reach the exit gap. Every board is machine generated and solved exactly, so the perfect line is the true fewest moves that exist rather than an estimate, and par sits a cushion above it as the number a clean solve lands on. Perfect scores ten and par scores eight. The week climbs: Monday to Wednesday run 11 to 14 moves, Thursday to Saturday 16 to 20, and Sundays 32 to 38.',
+    'A free daily sliding-block puzzle. Blocks fill a six by six lot and each slides along one axis only; the arrow block must reach the exit gap. Every board is machine generated and solved exactly, so the perfect line is the true fewest moves that exist rather than an estimate, and par sits a cushion above it as the number a clean solve lands on. Perfect scores ten and par scores eight. The week climbs: Monday to Wednesday run 11 to 14 moves, Thursday to Saturday 16 to 20, and Sundays 32 to 38.',
   genre: ['Sliding block puzzle', 'Logic puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
@@ -74,7 +74,7 @@ function ComingSoon({ first }) {
         </div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: '0 0 8px' }}>Parker launches {first ? first.dateLabel : 'soon'}.</h1>
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
-          The daily sliding-block jam. You are in the red one, everybody has blocked you in, and there is one gap in the wall. Come back when the first board drops.
+          The daily sliding-block jam. You are in the arrow block, everybody has blocked you in, and there is one gap in the wall. Come back when the first board drops.
         </p>
         <a href="/" style={{ color: '#7c5c2e', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>

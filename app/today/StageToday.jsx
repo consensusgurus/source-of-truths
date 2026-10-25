@@ -3586,8 +3586,8 @@ export default function StageToday() {
       <div className="sty-mtop">
         <div className="sty-mtb">
           <a className="sty-mlogo" href="/" aria-label="Mind Loft home" onClick={(e) => { if (picked) { e.preventDefault(); mBack(); } }}>
-            <MindLoftMark size={24} ink="var(--stg-ink)" accent="var(--stg-ink)" />
-            <span>Mind Loft</span>
+            <MindLoftMark size={24} ink="var(--stg-ink)" accent="var(--stg-brand,#38bdf8)" />
+            <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
           </a>
           <span className="sty-mtbr">
             {mPane ? (

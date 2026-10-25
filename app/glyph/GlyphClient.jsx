@@ -678,7 +678,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
           .gls-slot b{font-size:15px;font-weight:800;color:var(--stg-mute);}
           .gls-slot.has b{color:var(--stg-ink);}
           .gls-slot.giv b{color:var(--stg-acc-ink);}
-          .gls-slot.bad{border:2px solid var(--stg-bad);}
+          .gls-slot.bad{border:2px dashed var(--stg-bad);}
           .gls-slot.on{border:2px solid var(--stg-acc-ink, var(--stg-acc));background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 20%, transparent);}
           .gls-slot.on span{color:var(--stg-ink);}
           .gls-book::-webkit-scrollbar{display:none;height:0;}

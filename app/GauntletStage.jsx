@@ -45,8 +45,8 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {/* The Mind Loft mark and name top left, like every page (owner, 2026-10-24). */}
       <a className="gst-brand" href="/" aria-label="Mind Loft home">
-        <MindLoftMark size={24} ink={pal.ink} accent={pal.ink} title="Mind Loft" />
-        <span>Mind Loft</span>
+        <MindLoftMark size={24} ink={pal.ink} accent="var(--stg-brand,#38bdf8)" title="Mind Loft" />
+        <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
       </a>
       <LookButton look={look} onFlip={() => setLook(nextLook(look))} className="gst-look" />
       <div className="gst-col" key={qKey}>

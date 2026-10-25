@@ -2,7 +2,7 @@
 
 // Garble — five garbled words, one clued finale.
 //
-// Untangle each scrambled word using exactly the letters shown. The blue
+// Untangle each scrambled word using exactly the letters shown. The circled
 // (marked) letters of every solution feed a final answer whose clue is
 // printed from the start; solving the finale ends the puzzle. Score is out of
 // 10: one point per word untangled, five for the finale. Wrong tries are
@@ -662,15 +662,15 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
         // page — but this chip's whole job is to show the reader the colour the
         // board is about to use, and a chip that has given up that fill explains
         // nothing. Barter's two do the same for the same reason.
-        { label: 'Blue letters feed the finale', style: { background: COLORS.gold, border: `1.5px solid ${COLORS.gold}`, color: COLORS.goldInk } },
+        { label: 'Circled letters feed the finale', style: { background: COLORS.gold, border: `1.5px solid ${COLORS.gold}`, color: COLORS.goldInk } },
       ]}
       lead="Untangle five garbled words, then the finale they feed."
       steps={[
         <><b>Tap a row</b>, type the word using exactly the letters shown, and hit <b>enter</b>. A wrong word is a <b>miss</b>.</>,
-        <>Each solved word donates its <b>blue letters</b> to <b>the finale</b>, a last answer with its clue printed up top.</>,
+        <>Each solved word donates its <b>circled letters</b> to <b>the finale</b>, a last answer with its clue printed up top.</>,
         <>Solve the finale whenever you see it. It <b>ends the puzzle</b>.</>,
       ]}
-      knack="The finale is worth half the board, so a blue letter or two is often enough to call it before all five words are untangled."
+      knack="The finale is worth half the board, so a circled letter or two is often enough to call it before all five words are untangled."
       footer="Score is out of 10: one per word, five for the finale. Fewest misses breaks ties, then time."
     />
   );
@@ -1097,7 +1097,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Garble</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Garble is a free daily word scramble puzzle from Mind Loft. Five garbled words, one more than the classic format, each untangle into a real word using exactly the letters shown, and every solution donates its blue letters to the finale.
+          Garble is a free daily word scramble puzzle from Mind Loft. Five garbled words, one more than the classic format, each untangle into a real word using exactly the letters shown, and every solution donates its circled letters to the finale.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           The finale is the sixth answer: a final word with its clue printed from the start. Solve it whenever you spot it, it ends the puzzle on the spot, so an early finale sprint is a real strategy. Wrong arrangements count as misses, and fewest misses breaks ties on the daily leaderboard.

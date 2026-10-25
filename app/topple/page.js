@@ -38,7 +38,7 @@ const gameJsonLd = {
   alternateName: 'Topple: Daily Block Rolling Puzzle',
   url: `${SITE_URL}/topple`,
   description:
-    'A free daily block rolling puzzle. A one by one by two block stands on a floor of tiles; every move tips it over an edge, so it lies flat, rolls along, and stands back up. Land it on the spring, which fires it off the board: standing on a one-tile spring, lying flat across a two-tile one. Orange fragile tiles hold the block lying flat but crack if it stands on them, and any part over the edge sends it back to the start. Every board is solved exactly, so perfect is the true fewest rolls and par sits a cushion above it. The week climbs from about fifteen rolls on Monday to nearly thirty on Saturday, and the Sunday Edition is a bigger board.',
+    'A free daily block rolling puzzle. A one by one by two block stands on a floor of tiles; every move tips it over an edge, so it lies flat, rolls along, and stands back up. Land it on the spring, which fires it off the board: standing on a one-tile spring, lying flat across a two-tile one. Fragile tiles, drawn with crack lines, hold the block lying flat but crack if it stands on them, and any part over the edge sends it back to the start. Every board is solved exactly, so perfect is the true fewest rolls and par sits a cushion above it. The week climbs from about fifteen rolls on Monday to nearly thirty on Saturday, and the Sunday Edition is a bigger board.',
   genre: ['Block rolling puzzle', 'Logic puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },

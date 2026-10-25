@@ -9,7 +9,7 @@
 //
 // Tap a segment once for a line, again for a cross (your own "no line here"
 // note, free and never scored), again to clear it. Drawing a segment that isn't
-// part of the loop turns red and counts as an error. Score is 10 minus half
+// part of the loop turns red and dashed and counts as an error. Score is 10 minus half
 // your errors, floor 1, so a clean solve is a perfect 10, and ties break on
 // fewest errors then fastest time.
 //
@@ -490,7 +490,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
   const statusLine = (() => {
     const L = loop;
     if (!L.drawn) return 'No loop yet. Start on the 0s and 3s, and mark a × wherever the loop cannot go.';
-    if (L.wrong) return L.wrong === 1 ? 'A red line is not part of the loop. Tap it to lift it.' : `${L.wrong} red lines are not part of the loop. Tap one to lift it.`;
+    if (L.wrong) return L.wrong === 1 ? 'A dashed line is not part of the loop. Tap it to lift it.' : `${L.wrong} dashed lines are not part of the loop. Tap one to lift it.`;
     if (L.branches) return L.branches === 1 ? 'A dot has more than two lines. The loop never branches.' : `${L.branches} dots have more than two lines. The loop never branches.`;
     if (L.over) return L.over === 1 ? 'A number has too many of its sides on the loop.' : `${L.over} numbers have too many of their sides on the loop.`;
     const piece = L.pieces === 1 ? 'One piece of loop' : `${L.pieces} pieces of loop`;
@@ -731,7 +731,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
       chips={[
         { label: 'Blank cell = no number, on purpose', tone: 'warn' },
         { label: '× = no line here', tone: 'grey' },
-        { label: 'Red line = error', tone: 'bad' },
+        { label: 'Dashed line = error', tone: 'bad' },
         { label: 'Dimmed number = sides settled', tone: 'good' },
       ]}
       sub={<>Nothing is missing: many cells carry no number, and that is how a slitherlink is built. Roughly a third to a half of the grid is deliberately blank, and the numbers you do get are always enough to pin down one answer.</>}
@@ -939,7 +939,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
             <svg className="hg-svg" viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ maxWidth: n >= 10 ? 560 : 480 }} role="img" aria-label={`Hedge loop puzzle, ${n} by ${n}`}>
               {/* the faint field the loop is drawn on */}
               <rect className="hg-cellrect" x={PAD} y={PAD} width={n * CELL} height={n * CELL} rx={6} style={{ pointerEvents: 'none' }} />
-              {/* clue numbers: a settled number dims (no strike), an over-full one goes red */}
+              {/* clue numbers: a settled number dims (no strike), an over-full one is ringed in red */}
               {PUZZLE.clues.map((row, i) => row.map((c, j) => {
                 if (c === null || c === undefined) return null;
                 const k = cellCount[i][j];
@@ -947,10 +947,15 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
                 const col = k > c ? `var(--stg-bad, ${COLORS.rust})`
                   : met ? `var(--stg-mute, ${COLORS.faded})`
                   : `var(--stg-ink, ${COLORS.ink})`;
+                // An over-full number is RINGED as well as recoloured, so it reads
+                // in every page look (owner, 2026-10-25).
                 return (
-                  <text key={`c${i}-${j}`} x={X(j) + CELL / 2} y={Y(i) + CELL / 2 + 1} fill="currentColor"
+                  <g key={`c${i}-${j}`}>
+                  {k > c && <circle cx={X(j) + CELL / 2} cy={Y(i) + CELL / 2} r={CELL * 0.3} fill="none" strokeWidth={2} style={{ stroke: col, pointerEvents: 'none' }} />}
+                  <text x={X(j) + CELL / 2} y={Y(i) + CELL / 2 + 1} fill="currentColor"
                     style={{ color: col, pointerEvents: 'none', userSelect: 'none' }}
                     fontFamily={SANS} fontSize={Math.round(CELL * 0.42)} fontWeight={met ? 600 : 800} textAnchor="middle" dominantBaseline="central">{c}</text>
+                  </g>
                 );
               }))}
               {/* crosses: the player's own "no line here" notes, in the mute ink */}
@@ -963,7 +968,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
                     style={{ stroke: `var(--stg-mute, ${COLORS.faded})`, pointerEvents: 'none' }} strokeWidth={2.4} strokeLinecap="round" fill="none" />
                 );
               })}
-              {/* drawn lines: the loop in the accent, a line off the loop in red */}
+              {/* drawn lines: the loop in the accent, a line off the loop dashed, in red */}
               {segs.map((s) => {
                 const st = s.kind === 'h' ? H[s.idx] : V[s.idx];
                 if (st !== 1) return null;
@@ -971,7 +976,8 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
                 return (
                   <line key={`l${s.kind}${s.idx}`} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
                     style={{ stroke: ok ? `var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : `var(--stg-bad, ${COLORS.rust})`, pointerEvents: 'none' }}
-                    strokeWidth={Math.round(CELL * 0.13)} strokeLinecap="round" />
+                    strokeWidth={Math.round(CELL * 0.13)} strokeLinecap="round"
+                    strokeDasharray={ok ? undefined : `${Math.round(CELL * 0.16)} ${Math.round(CELL * 0.2)}`} />
                 );
               })}
               {/* dots: a loose end is ringed, a dot on the loop takes the accent, a branch goes red */}

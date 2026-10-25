@@ -166,6 +166,10 @@ button.cx-pill::before{content:'';position:absolute;left:-2px;right:-2px;top:-9p
 .cx-mk.g{background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border:0;}
 .cx-mk.y{background:transparent;color:var(--stg-ink,#0f1420);border:2px solid var(--stg-acc-ink, var(--stg-acc,#0369a1));}
 .cx-mk.x{background:var(--cx-spent,#c9cdd4);color:var(--stg-ink2,#3f4757);border:0;}
+/* NOT IN THE WORD IS STRUCK THROUGH in every look (owner, 2026-10-25), so a
+   spent mark never relies on its grey alone: filled, outlined, struck. */
+.cx-mk.x{text-decoration:line-through;text-decoration-thickness:2px;}
+.cx-legend .cx-mk.x{background:linear-gradient(to top right, transparent calc(50% - 1px), var(--stg-ink2,#3f4757) calc(50% - 1px), var(--stg-ink2,#3f4757) calc(50% + 1px), transparent calc(50% + 1px)), var(--cx-spent,#c9cdd4);}
 .cx-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;font-weight:700;color:var(--stg-mute,#5f6774);margin-top:2px;}
 .cx-legend span{display:inline-flex;align-items:center;gap:5px;}
 .cx-legend .cx-mk{width:12px;height:12px;border-radius:3px;}
@@ -186,7 +190,7 @@ button.cx-pill::before{content:'';position:absolute;left:-2px;right:-2px;top:-9p
 .cl-key.cx-k{flex:1 0 0;min-width:0;height:44px;border-radius:6px;font-size:15px;background:var(--cx-key,#fff);color:var(--stg-ink,#0f1420);border:1px solid var(--cx-keybd,#c3cad6);box-sizing:border-box;}
 .cl-key.cx-k.g{background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border-color:var(--stg-acc-ink, var(--stg-acc,#0369a1));}
 .cl-key.cx-k.y{border:2px solid var(--stg-acc-ink, var(--stg-acc,#0369a1));}
-.cl-key.cx-k.x{background:var(--cx-spent,#c9cdd4);color:var(--stg-ink2,#3f4757);border-color:transparent;}
+.cl-key.cx-k.x{background:var(--cx-spent,#c9cdd4);color:var(--stg-ink2,#3f4757);border-color:transparent;text-decoration:line-through;text-decoration-thickness:2px;}
 .cl-key.cx-k.cx-kent{flex:1.6 0 0;font-size:12px;background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#fff);border-color:var(--stg-acc-ink, var(--stg-acc,#0369a1));}
 .cl-key.cx-k.cx-kback{background:var(--cx-key,#fff);color:var(--stg-ink,#0f1420);border-color:var(--cx-keybd,#c3cad6);font-size:17px;}
 @media(max-width:640px){
@@ -1469,14 +1473,14 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
         // so the legend cannot drift from the grid again.
         { label: 'Filled = right letter, right square', style: { background: 'var(--stg-acc)', color: 'var(--stg-onramp)', border: '2px solid var(--stg-acc-ink, var(--stg-acc))' } },
         { label: 'Outlined = in the word, different square', style: { background: 'transparent', color: INK, border: '2px solid var(--stg-acc-ink, var(--stg-acc))' } },
-        { label: 'Grey = not in the word', style: { background: 'var(--cx-spent)', color: 'var(--stg-ink2)', border: '2px solid var(--cx-spent)' } },
+        { label: 'Struck = not in the word', style: { background: 'var(--cx-spent)', color: 'var(--stg-ink2)', border: '2px solid var(--cx-spent)', textDecoration: 'line-through' } },
       ] : [
-        { label: 'Dark = right letter, right square', style: { background: COLORS.ink, color: T.white, border: `1.5px solid var(--stg-line, ${COLORS.ink})` } },
-        { label: 'Yellow = in the word, different square', style: { background: '#e6b93f', color: '#5c4a06', border: '1.5px solid #5c4a06' } },
+        { label: 'Filled = right letter, right square', style: { background: COLORS.ink, color: T.white, border: `1.5px solid var(--stg-line, ${COLORS.ink})` } },
+        { label: 'Outlined = in the word, different square', style: { background: '#e6b93f', color: '#5c4a06', border: '2px solid #5c4a06' } },
       ]}
       steps={[
         <><b>Guess to reveal</b>: tap a slot, type a real word, hit enter. The whole board shares <b>{PUZZLE.guesses} guesses</b>.</>,
-        <>A {STAGE ? 'filled' : 'dark'} letter <b>locks in</b>, and its crossings lock with it.</>,
+        <>A <b>filled</b> letter <b>locks in</b>, and its crossings lock with it.</>,
         <><b>File your solves</b>: tap a word, then a category. Placements stay secret and movable.</>,
         <>One <b>submit</b> ends the puzzle.</>,
       ]}
@@ -1798,9 +1802,9 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
                 ))}
               </div>
               <div className="cx-legend">
-                <span><i className="cx-mk g" />Right square, locks in</span>
-                <span><i className="cx-mk y" />In the word, other square</span>
-                <span><i className="cx-mk x" />Not in the word</span>
+                <span><i className="cx-mk g" />Filled: right square, locks in</span>
+                <span><i className="cx-mk y" />Outlined: in the word, other square</span>
+                <span><i className="cx-mk x" />Struck: not in the word</span>
               </div>
             </div>
           )}
@@ -2078,7 +2082,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
           Crux is a free daily word puzzle from Mind Loft, a clueless crossword. Eight hidden words (twelve in the Sunday Edition) interlock in a compact grid, and the only hints are four visible categories; working out which words belong to them is the puzzle.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Guess real words to reveal letters: filled tiles lock a letter into its square and every crossing, outlined tiles mean the letter belongs elsewhere in the word. The whole board shares one guess budget, and a single submit files each solved word under its category: a point per solve, a point per correct placement.
+          Guess real words to reveal letters: filled tiles lock a letter into its square and every crossing, outlined tiles mean the letter belongs elsewhere in the word, and struck tiles mean it is not in the word. The whole board shares one guess budget, and a single submit files each solved word under its category: a point per solve, a point per correct placement.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new Crux puzzle arrives every day, with a bigger Sunday Edition each week. No app, no signup. Play free in your browser and compare score, guesses, and time on the daily leaderboard. Prefer scrambles? Try <a href="/garble" style={{ color: INK, fontWeight: 800 }}>Garble</a>, our daily word scramble.

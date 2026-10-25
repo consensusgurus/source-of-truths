@@ -768,6 +768,11 @@ export default function RacecarClient({ puzzles = [], forceNum = null }) {
     if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick})`;
     return {
       background: bg,
+      // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): the matching squares are
+      // also UNDERLINED, so they read apart from the peer shade with no hue.
+      textDecoration: sameVal ? 'underline' : undefined,
+      textDecorationThickness: sameVal ? '2px' : undefined,
+      textUnderlineOffset: sameVal ? '3px' : undefined,
       boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       borderRight: `${heavyR ? 2.5 : 1}px solid ${heavyR ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
       borderBottom: `${heavyB ? 2.5 : 1}px solid ${heavyB ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
@@ -780,7 +785,7 @@ export default function RacecarClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="An ordinary sudoku, plus grey lines that read the same from either end: the first and last squares on a line match, the second and second to last match, and so on. Rows, columns and boxes still hold 1 to 9 exactly once."
+      lead="An ordinary sudoku, plus drawn lines that read the same from either end: the first and last squares on a line match, the second and second to last match, and so on. Rows, columns and boxes still hold 1 to 9 exactly once."
       steps={[
         <><b>Tap a square then tap a number</b>, or pick a number first and tap every square it goes in. On desktop the <b>arrow keys and number keys</b> work too.</>,
         <>Turn on <b>Notes</b> (or press N) to pencil candidates, or with a number picked just <b>long-press</b> a square to pencil it.</>,
@@ -868,7 +873,7 @@ export default function RacecarClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Racecar is ready'}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>An ordinary sudoku, plus grey lines that read the same from either end. Rows, columns and boxes still hold 1 to 9 exactly once.</p>
+                <p style={{ margin: '0 0 6px' }}>An ordinary sudoku, plus drawn lines that read the same from either end. Rows, columns and boxes still hold 1 to 9 exactly once.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -995,7 +1000,7 @@ export default function RacecarClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <div style={{ maxWidth: GRID_MAX + 76, margin: '0 auto' }}>
               {PUZZLE.sunday && (
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '10px 0 0' }}>The Sunday Edition: ten grey lines and just fourteen printed digits, against eight lines and twenty-four digits on a Monday.</div>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '10px 0 0' }}>The Sunday Edition: ten lines and just fourteen printed digits, against eight lines and twenty-four digits on a Monday.</div>
               )}
               {isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -1185,7 +1190,7 @@ export default function RacecarClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Racecar</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Racecar is a free daily palindrome sudoku from Mind Loft. Each day gives you a 9×9 sudoku with grey lines drawn across the grid, and every line reads the same forwards and backwards: its two end squares hold the same digit, the next two in hold the same digit, and so on to the middle. Rows, columns, and 3×3 boxes still hold 1 through 9 exactly once, and the lines plus a handful of printed digits carry the rest.
+          Racecar is a free daily palindrome sudoku from Mind Loft. Each day gives you a 9×9 sudoku with lines drawn across the grid, and every line reads the same forwards and backwards: its two end squares hold the same digit, the next two in hold the same digit, and so on to the middle. Rows, columns, and 3×3 boxes still hold 1 through 9 exactly once, and the lines plus a handful of printed digits carry the rest.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Each line ties squares together in pairs, so a digit found at one end is found at the other, and a candidate ruled out in one square of a pair is gone from both. Two paired squares can never share a row, column or box. Every board has a single solution you can always reach by logic, with no guessing. Wrong entries are never flagged, so spotting your own slips is part of the puzzle, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.

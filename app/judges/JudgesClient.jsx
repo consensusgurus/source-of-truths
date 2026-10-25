@@ -813,7 +813,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
           return `Clash: the judges at row ${r1 + 1}, column ${c1 + 1} and row ${r2 + 1}, column ${c2 + 1} touch. Lift one.`;
         }
       }
-      return 'Clash on the bench. Lift a judge shown in red.';
+      return 'Clash on the bench. Lift a judge on a striped square.';
     }
     const head = `${cap(numWord(seated))} seated, no clashes.`;
     if (STARS < 2) return head;
@@ -824,14 +824,15 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
     return head;
   }, [seated, STARS, rowRemain, colRemain, courtHeld, conflictSet, judges]);
 
-  // Two pips per line: one fills per seat taken; a line over its quota shows red.
+  // Two pips per line: one fills per seat taken; a line over its quota shows ringed squares.
   const pips = (n, label) => (
     <span role="img" aria-label={label} style={{ display: 'inline-flex', gap: PIP_GAP }}>
       {Array.from({ length: STARS }, (_, i) => {
         const on = n > i;
         const over = n > STARS;
         return (
-          <span key={i} style={{ width: PIP, height: PIP, borderRadius: '50%', boxSizing: 'border-box', flex: '0 0 auto',
+          // Over the quota: a ringed SQUARE, not only a different fill (owner, 2026-10-25).
+          <span key={i} style={{ width: PIP, height: PIP, borderRadius: on && over ? 2 : '50%', outline: on && over ? `2px solid var(--stg-ink, ${COLORS.ink})` : 'none', outlineOffset: 1, boxSizing: 'border-box', flex: '0 0 auto',
             background: on ? (over ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-acc, ${COLORS.accent})`) : 'transparent',
             border: on ? 0 : `1.5px solid var(--stg-mute2, ${COLORS.faded})` }} />
         );
@@ -846,7 +847,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
       accent={COLORS.accent} accentSoft={COLORS.accentSoft} accentDeep={COLORS.accentDeep}
       lead={<>Seat exactly <b>{STARS === 2 ? 'two judges' : 'one judge'}</b> in every row, every column and every colored court.</>}
       chips={[
-        { label: 'Red = quarrelling judges', tone: 'bad' },
+        { label: 'Striped = quarrelling judges', tone: 'bad' },
         { label: 'Edge pips = judges seated', tone: 'grey' },
         { label: 'Faded court = full', tone: 'good' },
       ]}
@@ -1044,8 +1045,8 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                         // full court at half of it (it fades on either ground instead of washing
                         // toward a literal white), a quarrel in the page's own red. Loft: untouched.
                         background: STAGE
-                          ? (conflict ? 'color-mix(in srgb, var(--stg-bad) 38%, var(--stg-cell))' : regionMix(doneRegions.has(id) ? 0.5 : 1))
-                          : (conflict ? '#fecaca' : (doneRegions.has(id) ? REGION_FILLS_DONE : REGION_FILLS)[id % REGION_FILLS.length]), borderTop: bTop, borderLeft: bLeft, boxShadow: locked ? `inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
+                          ? (conflict ? 'repeating-linear-gradient(45deg, color-mix(in srgb, var(--stg-ink) 30%, transparent) 0 2px, transparent 2px 7px), color-mix(in srgb, var(--stg-bad) 38%, var(--stg-cell))' : regionMix(doneRegions.has(id) ? 0.5 : 1))
+                          : (conflict ? 'repeating-linear-gradient(45deg, color-mix(in srgb, #7f1d1d 30%, transparent) 0 2px, transparent 2px 7px), #fecaca' : (doneRegions.has(id) ? REGION_FILLS_DONE : REGION_FILLS)[id % REGION_FILLS.length]), borderTop: bTop, borderLeft: bLeft, boxShadow: locked ? `inset 0 0 0 2px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
                     >
                       {v === 1 && <span className="je-x" style={{ fontSize: Math.max(12, Math.round(cellPx * 0.42)) }}>✗</span>}
                       {v === 0 && autoMark && <span className="je-dot" aria-hidden="true" style={{ width: Math.max(6, Math.round(cellPx * 0.2)), height: Math.max(6, Math.round(cellPx * 0.2)) }} />}
@@ -1072,7 +1073,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                       <span key={id} role="img" aria-label={`Court ${id + 1}: ${seatWord(n)}`}
                         style={{ ...(STAGE ? regionStyle(id) : null), flex: 1, minWidth: 0, height: PHONE ? 24 : 30, borderRadius: PHONE ? 6 : 8, boxSizing: 'border-box',
                           background: STAGE ? regionMix(1) : REGION_FILLS[id % REGION_FILLS.length],
-                          border: over ? `2px solid var(--stg-bad, ${COLORS.rust})` : full ? `2px solid var(--stg-acc, ${COLORS.accent})` : `1px solid var(--stg-line2, ${SURF_B})`,
+                          border: over ? `2px dashed var(--stg-bad, ${COLORS.rust})` : full ? `2px solid var(--stg-acc, ${COLORS.accent})` : `1px solid var(--stg-line2, ${SURF_B})`,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontFamily: SANS, fontSize: PHONE ? 10 : 12, fontWeight: 800, color: over ? `var(--stg-bad, ${COLORS.rust})` : INK, fontVariantNumeric: 'tabular-nums' }}>
                         {full ? '✓' : `${n}/${STARS}`}

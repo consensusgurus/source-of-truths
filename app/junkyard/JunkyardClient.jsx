@@ -579,7 +579,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
       if (!slides.some(([i]) => i === b)) {
         setSel(null);
         setShake((k) => k + 1);
-        say(b === 0 ? 'The red block is wedged in. Clear its lane first.' : 'That one is boxed in. Nothing can move it yet.');
+        say(b === 0 ? 'The arrow block is wedged in. Clear its lane first.' : 'That one is boxed in. Nothing can move it yet.');
         return;
       }
       setSel((v) => (v === b ? null : b));
@@ -607,7 +607,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
     commit(g2);
     setHintBlock(r.next[0]);
     setSel(r.next[0]);
-    say(r.next[0] === 0 ? 'The red block itself moves next.' : 'That block moves next. Which way is still on you.');
+    say(r.next[0] === 0 ? 'The arrow block itself moves next.' : 'The block ringed in dashes moves next. Which way is still on you.');
   }
 
   function revealEnd() {
@@ -648,7 +648,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Junkyard #${PUZZLE.num}: the biggest daily sliding-block jam from Mind Loft. An eight by eight lot, you are in the red one, and there is one gap in the wall.\n${shareUrl()}`
+      ? `Junkyard #${PUZZLE.num}: the biggest daily sliding-block jam from Mind Loft. An eight by eight lot, you are in the arrow block, and there is one gap in the wall.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -662,14 +662,14 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead={<>Get the <b>red block</b> to the <b>exit</b>, the gap in the right-hand wall.</>}
+      lead={<>Get the <b>arrow block</b>, the one marked with an arrow, to the <b>exit</b>, the gap in the right-hand wall.</>}
       banner={<><b>Par is {par}</b> on this board, the number a clean solve lands on. <b>Perfect is {perfect}</b>, the fewest moves that exist here, found by exhaustive search rather than by hand, and nobody gets under it.</>}
       steps={[
         <><b>Tap a block</b> to pick it up, then <b>tap the square you want it to reach</b>, and it slides there if the lane is clear.</>,
         <>Every block is stuck on one axis: lying across it slides left and right, standing up only up and down. Nothing turns, nothing jumps.</>,
         <>Sliding one block any distance counts as <b>one move</b>. One free <b>hint</b>, on your first ever play, names the block to move next.</>,
       ]}
-      knack={<>Work back from the exit lane: clear whatever stands in the red block&rsquo;s run first, then find what is pinning those.</>}
+      knack={<>Work back from the exit lane: clear whatever stands in the arrow block&rsquo;s run first, then find what is pinning those.</>}
       note={<>There is <b>no undo</b>, only a <b>restart</b> that puts the board back and zeroes your moves, though the clock keeps running.</>}
       footer={<>Perfect scores 10 and every {step} moves over it costs a point, so par scores 8, down to a floor of one, and finishing always beats walking away. Sundays are a much longer jam.</>}
     />
@@ -752,7 +752,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Junkyard is ready'}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>Slide the blocks and get the red one to the exit on the right. Par is {par} moves and perfect is {perfect}, the fewest that exist. No undo, only a restart.</p>
+                <p style={{ margin: '0 0 6px' }}>Slide the blocks and get the arrow block to the exit on the right. Par is {par} moves and perfect is {perfect}, the fewest that exist. No undo, only a restart.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -851,11 +851,22 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
                       // reaches, so the block you are holding needs no second colour
                       // to be found. The hint takes the site's own assist amber:
                       // green is its confirm, and it sits next door to Logic's lime.
+                      // SELECTED IS A SOLID RING, THE HINT A DASHED ONE (owner, 2026-10-25),
+                      // so the two never rest on colour alone in any page look.
                       outline: on ? `3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.ink}))`
-                        : hintBlock === i ? `3px solid var(--stg-warn, ${COLORS.green})` : 'none',
+                        : hintBlock === i ? `3px dashed var(--stg-warn, ${COLORS.green})` : 'none',
                       outlineOffset: on || hintBlock === i ? '1px' : 0,
                       border: isRed ? `2px solid ${RED_EDGE}` : carEdge,
-                    }} />
+                      display: isRed ? 'flex' : undefined, alignItems: 'center', justifyContent: 'center',
+                    }}>
+                    {/* THE ARROW BLOCK CARRIES ITS MARK (owner, 2026-10-25): the block to get
+                        out is told apart by an arrow aimed at the exit, not by red alone. */}
+                    {isRed && (
+                      <svg aria-hidden="true" viewBox="0 0 24 24" style={{ width: '42%', height: '62%', maxWidth: 30 }}>
+                        <path d="M3 12h15M12 5l7 7-7 7" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -1078,7 +1089,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Junkyard</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Junkyard is a free daily sliding-block puzzle from Mind Loft, and it is the biggest lot in the family: eight by eight, with close to thirty blocks that each slide on one axis only, and a red block that has to reach the gap in the wall. Tap a block, tap where you want it, and it goes if the lane is clear. Parker is the same puzzle on a six by six lot and Impound on a seven by seven, so the three run as one ladder of sizes.
+          Junkyard is a free daily sliding-block puzzle from Mind Loft, and it is the biggest lot in the family: eight by eight, with close to thirty blocks that each slide on one axis only, and an arrow block that has to reach the gap in the wall. Tap a block, tap where you want it, and it goes if the lane is clear. Parker is the same puzzle on a six by six lot and Impound on a seven by seven, so the three run as one ladder of sizes.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Every board is machine generated and then solved exactly, by breadth-first search over the whole reachable position, so perfect really is the fewest moves that exist rather than somebody&rsquo;s guess. Par sits a cushion above perfect: it is the number a clean solve lands on, and it is beatable. Boards climb through the week, from the low twenties on Monday to the low forties by Saturday, and the Sunday Edition runs longer again. Every rung sits above the matching rung on Impound, and Monday alone already runs deeper than any Parker board short of a Sunday.

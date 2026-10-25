@@ -816,8 +816,8 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
           .th-tile{position:relative;z-index:2;flex:1;min-width:0;box-sizing:border-box;text-align:left;font-family:${SANS};background:var(--stg-cell, ${T.white});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.35));border-radius:4px;padding:10px 12px;min-height:${PUZZLE.sunday ? 112 : 124}px;display:flex;flex-direction:column;gap:5px;color:${INK};}
           .th-tile.on{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, var(--stg-cell, ${T.white}));border-color:var(--stg-acc-ink, ${COLORS.accent});}
           .th-tile.thr{box-shadow:inset 0 0 0 2px var(--stg-cool, #7dd3fc);}
-          .th-tile.thr2{box-shadow:inset 0 0 0 2px var(--stg-warn, #b45309);}
-          .th-tile.miss{border-color:var(--stg-bad, ${COLORS.rust});}
+          .th-tile.thr2{box-shadow:none;outline:2px dashed var(--stg-warn, #b45309);outline-offset:-4px;}
+          .th-tile.miss{border-color:var(--stg-bad, ${COLORS.rust});border-style:dashed;}
           .th-tile .n{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};display:flex;justify-content:space-between;gap:6px;font-variant-numeric:tabular-nums;}
           .th-tile .n .tag{color:var(--stg-acc-ink, ${COLORS.accent});}
           .th-tile p{margin:0;font-size:${PUZZLE.sunday ? 13 : 13.5}px;line-height:1.35;font-weight:600;color:${INK};text-wrap:pretty;}
@@ -852,7 +852,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
           .th-cta:disabled{cursor:default;background:var(--stg-surf2, #e4e9f1);color:${FADED};}
           .th-calls{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
           .th-calls span.p{width:11px;height:11px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.35));display:inline-block;flex:none;}
-          .th-calls span.p.x{background:var(--stg-bad, ${COLORS.rust});border-color:var(--stg-bad, ${COLORS.rust});}
+          .th-calls span.p.x{background:linear-gradient(45deg, transparent 38%, var(--stg-raise, #fff) 38% 62%, transparent 62%), var(--stg-bad, ${COLORS.rust});border-color:var(--stg-bad, ${COLORS.rust});}
           .th-calls span.p.ok{background:var(--stg-good, ${COLORS.green});border-color:var(--stg-good, ${COLORS.green});}
           .th-calls .t{margin-left:4px;font-size:12px;font-weight:700;color:${FADED};}
           .th-note{font-size:13px;font-weight:700;line-height:1.35;color:var(--stg-ink2, ${COLORS.faded});min-height:18px;}

@@ -22,7 +22,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Sliding Block Puzzle: Impound | Mind Loft',
   description:
-    'A free daily sliding-block puzzle on a seven by seven lot, and the bigger sibling of Parker. Around twenty blocks that each slide on one axis, and a red block that has to reach the one gap in the wall. Every board is solved exactly, so you play against a real par and a perfect line that nobody can beat. No app, no signup, and a new jam every day.',
+    'A free daily sliding-block puzzle on a seven by seven lot, and the bigger sibling of Parker. Around twenty blocks that each slide on one axis, and an arrow block that has to reach the one gap in the wall. Every board is solved exactly, so you play against a real par and a perfect line that nobody can beat. No app, no signup, and a new jam every day.',
   alternates: { canonical: '/impound' },
   openGraph: {
     // Static share card, per the 2026-09-02 rule: a new daily ships
@@ -45,7 +45,7 @@ const gameJsonLd = {
   alternateName: 'Impound: The Bigger Daily Sliding Block Puzzle',
   url: `${SITE_URL}/impound`,
   description:
-    'A free daily sliding-block puzzle, and the bigger sibling of Parker. Around twenty blocks fill a seven by seven lot and each slides along one axis only; the red block must reach the exit gap on the middle rank. Every board is machine generated and solved exactly by breadth-first search, so the perfect line is the true fewest moves that exist rather than an estimate, and par sits a cushion above it as the number a clean solve lands on. Perfect scores ten and par scores eight. The week climbs: Monday to Wednesday run 16 to 25 moves, Thursday to Saturday 23 to 35, and Sundays 34 to 50.',
+    'A free daily sliding-block puzzle, and the bigger sibling of Parker. Around twenty blocks fill a seven by seven lot and each slides along one axis only; the arrow block must reach the exit gap on the middle rank. Every board is machine generated and solved exactly by breadth-first search, so the perfect line is the true fewest moves that exist rather than an estimate, and par sits a cushion above it as the number a clean solve lands on. Perfect scores ten and par scores eight. The week climbs: Monday to Wednesday run 16 to 25 moves, Thursday to Saturday 23 to 35, and Sundays 34 to 50.',
   genre: ['Sliding block puzzle', 'Logic puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },

@@ -6,7 +6,7 @@
 // Sundays (22 words), numbered Across and Down clues, and a timer. Tap a
 // square to select its word, tap again to flip direction, and type. Fill every
 // square and press Check grid: a perfect fill wins, a
-// wrong one marks the misses in red and counts a CHECK against you. Score is
+// wrong one strikes the misses through and counts a CHECK against you. Score is
 // words correct out of the word count — finish the grid and it's a full
 // score — with ties on the daily board broken by fewest checks, then time.
 // One free hint reveals a letter.
@@ -502,7 +502,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
     const checked = maybeCheck(g2);
     setG(checked);
     if (checked.status === 'won') { postResult(checked, TOTAL); setJustWon(true); return; }
-    say('Not quite. The red squares are wrong: fix them and check again.');
+    say('Not quite. The struck-through squares are wrong: fix them and check again.');
   }
 
   const nextWord = useCallback((fromIdx, d0, needEmpty, ls) => {
@@ -716,8 +716,8 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
       lead="Fill every square of the mini crossword from the numbered Across and Down clues."
       steps={[
         <><b>Tap a square</b> to select its word, tap it again to flip direction, then type. On a keyboard, <b>space</b> flips direction and <b>tab</b> jumps to the next clue.</>,
-        <>When every square is filled, press <b>Check grid</b>. A perfect fill wins on the spot; a wrong one marks the misses in red.</>,
-        <>A wrong fill marks the misses <b style={{ color: `var(--stg-ink, ${COLORS.rust})` }}>red</b> and counts a <b>check</b> against you.</>,
+        <>When every square is filled, press <b>Check grid</b>. A perfect fill wins on the spot; a wrong one strikes the misses through.</>,
+        <>A wrong fill <b style={{ color: `var(--stg-ink, ${COLORS.rust})` }}>strikes the misses through</b> and counts a <b>check</b> against you.</>,
         <>One free <b>hint</b>, on your first ever play, reveals a letter.</>,
       ]}
       knack="Nothing is judged until you check, so read your shakiest word against its crossing clue before you turn the grid in."
@@ -796,6 +796,8 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
           .mc-cell.mc-wrongmark:not(.mc-sel){background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 16%, var(--xw-cell));}
           .mc-cell.mc-wrongmark:not(.mc-sel) .mc-ch{color:var(--stg-bad, ${COLORS.rust});}
           .mc-cell.mc-wrongmark{animation:mcshake .3s ease;}
+          /* A MISS IS STRUCK THROUGH IN EVERY LOOK (owner, 2026-10-25): a diagonal slash, not the tint alone. */
+          .mc-cell.mc-wrongmark::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top right, transparent calc(50% - 1.5px), var(--stg-bad, ${COLORS.rust}) calc(50% - 1.5px), var(--stg-bad, ${COLORS.rust}) calc(50% + 1.5px), transparent calc(50% + 1.5px));opacity:.85;}
           .mc-num{position:absolute;top:.4em;left:.55em;font-family:${SANS};font-weight:800;line-height:1;color:var(--stg-ink2, rgba(28,30,36,0.7));pointer-events:none;}
           .mc-bar{width:100%;margin-top:16px;display:flex;align-items:stretch;gap:8px;}
           .mc-step{flex:0 0 48px;min-height:52px;border-radius:12px;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.35));background:transparent;color:var(--stg-ink2, ${COLORS.ink});font-family:${SANS};cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
@@ -812,6 +814,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
           .mc-cluerow .mc-cn{font-size:12px;font-weight:800;min-width:16px;color:var(--stg-mute, ${COLORS.faded});}
           .mc-cluerow .mc-ct{font-size:14px;font-weight:600;line-height:1.35;}
           .mc-cluerow.done{color:var(--stg-mute, ${COLORS.faded});}
+          .mc-cluerow.done .mc-ct{text-decoration:line-through;text-decoration-thickness:1px;}
           .mc-cluerow.cross{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .mc-cluerow.on,.mc-cluerow.on:hover{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
           .mc-cluerow.on .mc-cn{color:var(--stg-onramp, #fff);}
@@ -1235,7 +1238,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
           Emcee is a free daily mini crossword from Mind Loft. Say the name fast and you&rsquo;ll hear the initials, M.C., because that&rsquo;s all it is: a proper mini crossword, five squares by five, with numbered Across and Down clues and a timer that only stops when the grid is right.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          The words are everyday words and the clues play fair, so most grids fall in a minute or two, the puzzle is speed and cleanliness. Fill every square and press Check grid: wrong squares turn red and each failed check counts against you on the leaderboard, where ties break on fewest checks and then fastest time.
+          The words are everyday words and the clues play fair, so most grids fall in a minute or two, the puzzle is speed and cleanliness. Fill every square and press Check grid: wrong squares are struck through and each failed check counts against you on the leaderboard, where ties break on fewest checks and then fastest time.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new grid drops every day at midnight Eastern, and Sundays go bigger with a 7&times;7 pinwheel. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More word puzzles: <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword, <a href="/links" style={{ color: INK, fontWeight: 800 }}>Links</a>, our word-grouping puzzle, and <a href="/garble" style={{ color: INK, fontWeight: 800 }}>Garble</a>, our daily unscramble.

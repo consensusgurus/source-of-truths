@@ -81,7 +81,7 @@ const CSS = `
 .tp-key{font-family:${SANS};border:1.5px solid var(--stg-mute2,#78859d);background:transparent;color:var(--stg-ink,#e9edf4);border-radius:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
 .tp-key:hover:not(:disabled){background:var(--stg-surf2,rgba(255,255,255,.08));}
 .tp-key:active:not(:disabled){background:var(--stg-acc);color:var(--stg-onramp,#08222e);border-color:var(--stg-acc);}
-.tp-key.hint{border-color:var(--stg-acc-ink,var(--stg-acc));box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc,#bef264) 40%, transparent);}
+.tp-key.hint{border:3px double var(--stg-acc-ink,var(--stg-acc));box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc,#bef264) 40%, transparent);}
 .tp-key:disabled{opacity:.4;cursor:default;}
 .tp-acts{display:flex;gap:8px;flex-wrap:wrap;}
 .tp-btn{font-family:${SANS};font-weight:700;font-size:14px;background:transparent;color:var(--stg-ink2,#aab5c7);border:1.5px solid var(--stg-mute2,#78859d);border-radius:12px;padding:0 16px;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;}
@@ -447,10 +447,10 @@ export default function ToppleBoard({
   const say1 = !playing ? doneLine
     : springLine(P);
   const say2 = playing
-    ? `Arrow keys, a swipe or the pad. Fall off or stand on an orange tile and you start over; every roll still counts.${falls ? ` Falls so far: ${falls}.` : ''}`
+    ? `Arrow keys, a swipe or the pad. Fall off or stand on a cracked tile and you start over; every roll still counts.${falls ? ` Falls so far: ${falls}.` : ''}`
     : null;
   const key = (d, Icon, area, label) => (
-    <button type="button" className={`tp-key${hintDir === d ? ' hint' : ''}`} style={{ gridArea: area }} disabled={!playing} onClick={() => onMove(d)} aria-label={label}>
+    <button type="button" className={`tp-key${hintDir === d ? ' hint' : ''}`} style={{ gridArea: area }} disabled={!playing} onClick={() => onMove(d)} aria-label={hintDir === d ? `${label}, the hinted roll` : label}>
       <Icon size={22} strokeWidth={2.6} />
     </button>
   );
@@ -496,7 +496,7 @@ export default function ToppleBoard({
       </div>
       {playing && (
         <div className="tp-foot">
-          <span className="tp-rule">{springLine(P)} Orange tiles crack under a standing block.</span>
+          <span className="tp-rule">{springLine(P)} Cracked tiles give way under a standing block.</span>
           <button type="button" className="tp-giveup" onClick={onGiveUp}
             style={{ color: armed ? 'var(--stg-bad, #fb7185)' : 'var(--stg-ink2, #aab5c7)' }}>
             <Eye size={13} /> {armed ? 'Tap again to give up and score nothing' : 'Give up'}

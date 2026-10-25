@@ -862,6 +862,10 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
     if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : '#bde0e4'})`;
     return {
       background: bg,
+      // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): a dashed ring, not just a
+      // deeper wash, since the phone looks collapse the accent toward the ink.
+      outline: sameVal ? `1.5px dashed ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
+      outlineOffset: sameVal ? '-4px' : undefined,
       boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       zIndex: isSel ? 1 : undefined,
       borderRight: `${c % 3 === 2 ? 2.5 : 1}px solid ${c % 3 === 2 ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
@@ -890,7 +894,7 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
         <>Turn on <b>Notes</b> (or press N) to pencil candidates, or with a number picked just <b>long-press</b> a square to pencil it.</>,
         <>Every row and column holds exactly one 1 and one 9, so it has exactly one <b>sandwich</b>: the squares between them. The number in the margin is what those digits add up to, and it does not matter which of the two comes first.</>,
         <>Put the 1 and the 9 <b>side by side</b> and there is nothing between them: the sandwich is <b>empty</b>, and an empty sandwich totals <b>0</b>. Put them at the <b>two ends</b> and everything else is inside, which totals <b>35</b>. Those two are the most useful clues on the board.</>,
-        <>Once a line has <b>both</b> its 1 and its 9 down, its clue starts keeping score: a green <b>tick</b> when the squares between them total the number, or a red <b>+2</b> or <b>-11</b> for how far off the running total is. Empty squares inside the sandwich count as nothing, so the figure runs negative until the line is filled.</>,
+        <>Once a line has <b>both</b> its 1 and its 9 down, its clue starts keeping score: a <b>tick</b> when the squares between them total the number, or a figure like <b>+2</b> or <b>-11</b> for how far off the running total is. Empty squares inside the sandwich count as nothing, so the figure runs negative until the line is filled.</>,
         <><b>Undo</b> (or Ctrl+Z) takes back your last move. <b>Clear</b> wipes every number you have entered and leaves the printed clues.</>,
       ]}
       knack="Work on the extremes first. An empty sandwich (a 0) pins the 1 and the 9 side by side, a 35 throws them to the two ends, and a 1, 2 or 3 leaves so few ways to make the filling that the pair has almost nowhere to sit. Everything in the middle of the range is the hard part, so leave it."
@@ -946,7 +950,7 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
           .sn-mark{font-family:${MONO};font-weight:700;font-size:clamp(9px,2.1vw,12px);line-height:1;letter-spacing:0;white-space:nowrap;}
           .sn-mark.ok{color:var(--stg-good, ${COLORS.green});}
           .sn-mark.off{color:var(--stg-bad, ${COLORS.rust});}
-          .sn-sum.on{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:700;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);border-radius:4px;}
+          .sn-sum.on{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:700;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .sn-sum.done{color:var(--stg-mute, #c3c8cf);}
           .sn-cell{display:flex;align-items:center;justify-content:center;font-family:${MONO};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;}
           .sn-given{font-weight:700;color:${INK};}

@@ -900,7 +900,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
           .tk-chips{display:none;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px;}
           .tk-wchip{display:inline-flex;align-items:center;gap:6px;border-radius:9px;padding:6px 10px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));font-size:14px;font-weight:800;letter-spacing:0.04em;color:${INK};}
           .tk-wchip b{font-size:13px;letter-spacing:0;color:${ACC_INK};}
-          .tk-wchip.invalid{color:var(--stg-bad, ${COLORS.rust});border-color:var(--stg-bad, ${COLORS.rust});}
+          .tk-wchip.invalid{color:var(--stg-bad, ${COLORS.rust});border-color:var(--stg-bad, ${COLORS.rust});border-style:dashed;text-decoration:line-through;}
           .tk-legend{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:${FADED};}
           .tk-legend i{position:relative;flex:0 0 auto;width:16px;height:16px;box-sizing:border-box;border-radius:3px;background:${TILE.face};border:1px solid ${TILE.edge};}
           .tk-legend i::after{content:"";position:absolute;left:2px;top:2px;width:5px;height:5px;border-radius:3px;background:${TILE.dot};}

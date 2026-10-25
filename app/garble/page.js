@@ -13,7 +13,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Word Scramble Puzzle: Garble | Mind Loft',
   description:
-    'A free daily word scramble puzzle: untangle five garbled words, feed their gold letters into a clued finale, and finish in the fewest misses. New puzzle every day, and a six-letter Sunday Edition each week.',
+    'A free daily word scramble puzzle: untangle five garbled words, feed their circled letters into a clued finale, and finish in the fewest misses. New puzzle every day, and a six-letter Sunday Edition each week.',
   alternates: { canonical: '/garble' },
   manifest: '/api/pwa-manifest?game=garble',
   icons: {
@@ -54,7 +54,7 @@ const gameJsonLd = {
   alternateName: 'Garble: Daily Word Scramble',
   url: `${SITE_URL}/garble`,
   description:
-    'A free daily word scramble puzzle: untangle five garbled words using exactly the letters shown. Each solution donates its gold letters to a clued finale. Solve the finale any time to end the puzzle. Fewest misses wins the tiebreak.',
+    'A free daily word scramble puzzle: untangle five garbled words using exactly the letters shown. Each solution donates its circled letters to a clued finale. Solve the finale any time to end the puzzle. Fewest misses wins the tiebreak.',
   genre: ['Word puzzle', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

@@ -680,8 +680,8 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
         style={{ cursor: shown ? 'pointer' : 'default' }}>
         {shown && <div className="ab-sweep" aria-hidden="true" />}
         <a className="ab-brand" href="/" aria-label="Mind Loft home" onClick={(ev) => ev.stopPropagation()}>
-          <MindLoftMark size={24} ink="currentColor" accent="currentColor" title="Mind Loft" />
-          <span>Mind Loft</span>
+          <MindLoftMark size={24} ink="currentColor" accent="var(--stg-brand,#38bdf8)" title="Mind Loft" />
+          <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
         </a>
         <div className="ab-col">
           <div className="ab-qwrap" style={{ opacity: e, transform: `translateY(${Math.round((1 - e) * 18)}px)` }}>

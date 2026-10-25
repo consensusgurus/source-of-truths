@@ -481,7 +481,7 @@ export default function RollBoard({
   const say1 = !playing ? doneLine
     : nextNum <= P.N ? `Light square ${nextNum} next: roll onto it with a ${nextNum} on top.` : 'Every square is lit.';
   const say2 = playing
-    ? 'A numbered square stays shut until it is next and your roll would land the right number on top. Orange squares crumble once you leave them.'
+    ? 'A numbered square stays shut until it is next and your roll would land the right number on top. Cracked squares crumble once you leave them.'
     : null;
   // What each pad key would do from here, so a refused roll can be seen coming.
   const keyState = (d) => {

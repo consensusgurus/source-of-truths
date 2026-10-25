@@ -824,6 +824,10 @@ export default function RimClient({ puzzles = [], forceNum = null }) {
     if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick})`;
     return {
       background: bg,
+      // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): a dashed ring, not just a
+      // deeper wash, since the phone looks collapse the accent toward the ink.
+      outline: sameVal ? `1.5px dashed ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
+      outlineOffset: sameVal ? '-4px' : undefined,
       boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       borderRight: `${heavyR ? 2.5 : 1}px solid ${heavyR ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
       borderBottom: `${heavyB ? 2.5 : 1}px solid ${heavyB ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
@@ -842,7 +846,7 @@ export default function RimClient({ puzzles = [], forceNum = null }) {
         <>Turn on <b>Notes</b> (or press N) to pencil candidates, or with a number picked just <b>long-press</b> a square to pencil it.</>,
         <><b>Undo</b> (or Ctrl+Z) takes back your last move. <b>Clear</b> wipes every number you have entered and leaves the printed clues.</>,
       ]}
-      knack="A printed triple is a naked triple handed to you: those three squares hold exactly those three digits, so every other square in their box loses all three at once. Two triples that meet in a box between them name six of its nine digits, which leaves the other three squares of the box holding the remaining three. Select any square and the gutters that speak about it light up."
+      knack="A printed triple is a naked triple handed to you: those three squares hold exactly those three digits, so every other square in their box loses all three at once. Two triples that meet in a box between them name six of its nine digits, which leaves the other three squares of the box holding the remaining three. Select any square and the gutters that speak about it are ringed."
       footer="Every board has exactly one solution and can always be reached by logic, with no guessing. Solve it and you score a perfect 10, and because nothing is counted against you, the daily leaderboard is a straight race on the clock. One free hint, on your first ever play, fills a correct number. Printed triples fall through the week from 30 of 36 on Monday to 16 on Saturday, and the Sunday Edition prints thirteen."
     />
   );
@@ -893,7 +897,7 @@ export default function RimClient({ puzzles = [], forceNum = null }) {
           .ri-mark{font-family:${MONO};font-weight:700;font-size:clamp(8px,2vw,11px);line-height:1;letter-spacing:0;}
           .ri-mark.ok{color:var(--stg-good, ${COLORS.green});}
           .ri-mark.off{color:var(--stg-bad, ${COLORS.rust});}
-          .ri-gut.on{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:700;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);border-radius:4px;}
+          .ri-gut.on{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:700;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .ri-gut.done{color:var(--stg-mute, #c3c8cf);}
           .ri-pad{width:100%;aspect-ratio:1;border-radius:9px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.5));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};font-family:${MONO};font-weight:500;color:${INK};cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 2px 0 rgba(28,30,36,0.4);}
           .ri-pad:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(28,30,36,0.4);}
@@ -1266,7 +1270,7 @@ export default function RimClient({ puzzles = [], forceNum = null }) {
           Rim is a free daily outside sudoku from Mind Loft. Each day gives you a 9×9 grid with no digits printed inside it at all. Instead, outside some of the row and column ends, the three digits that appear in that line's first three squares reading in from the edge are printed, in no particular order, and rows, columns and 3×3 boxes still hold 1 through 9 exactly once. The gutters that are left blank are the puzzle.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          There is no arithmetic anywhere: a printed triple says which three digits sit in those three squares, not where, so it reads as a naked triple you did not have to find, and two triples meeting in a box name six of its digits between them. Select a square and every gutter that speaks about it lights up. Every board has a single solution you can always reach by logic, with no guessing. Wrong entries are never flagged, so spotting your own slips is part of the puzzle, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.
+          There is no arithmetic anywhere: a printed triple says which three digits sit in those three squares, not where, so it reads as a naked triple you did not have to find, and two triples meeting in a box name six of its digits between them. Select a square and every gutter that speaks about it is ringed. Every board has a single solution you can always reach by logic, with no guessing. Wrong entries are never flagged, so spotting your own slips is part of the puzzle, and a clean solve scores a perfect 10 with the daily leaderboard decided on the clock.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new board drops every day at midnight Eastern; weekdays print fewer triples as the week goes on, from 30 of 36 on Monday down to 16 on Saturday, and the Sunday Edition prints thirteen. No app, no signup, play free in your browser. Want the rest of the family? Try <a href="/suds" style={{ color: INK, fontWeight: 800 }}>Suds</a>, the classic 9×9, <a href="/sando" style={{ color: INK, fontWeight: 800 }}>Sando</a>, the sandwich sudoku, <a href="/frame" style={{ color: INK, fontWeight: 800 }}>Frame</a>, the one with the sums, and <a href="/diag" style={{ color: INK, fontWeight: 800 }}>Diag</a>, the one with the diagonals.

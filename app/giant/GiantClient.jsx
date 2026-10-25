@@ -809,6 +809,10 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
     if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick})`;
     return {
       background: bg,
+      // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): a dashed ring, not just a
+      // deeper wash, since the phone looks collapse the accent toward the ink.
+      outline: sameVal ? `1.5px dashed ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
+      outlineOffset: sameVal ? '-3px' : undefined,
       boxShadow: isSel ? `inset 0 0 0 ${quarter ? 2.5 : 2}px var(--stg-acc, ${COLORS.accent})` : undefined,
       borderRight: `${heavyR ? 2.5 : 1}px solid ${heavyR ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
       borderBottom: `${heavyB ? 2.5 : 1}px solid ${heavyB ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
@@ -821,7 +825,7 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="An ordinary sudoku, just bigger: every row, every column and every 4×4 box holds sixteen symbols exactly once, 1 to 9 and then A to G. Tap a square to light up its row, column and box."
+      lead="An ordinary sudoku, just bigger: every row, every column and every 4×4 box holds sixteen symbols exactly once, 1 to 9 and then A to G. Tap a square to shade its row, column and box."
       steps={[
         <><b>Tap a square then tap a symbol</b>, or pick a symbol first and tap every square it goes in. On desktop the <b>arrow keys, 1 to 9 and A to G</b> work too.</>,
         <>On a phone, switch between the <b>Whole board</b> and <b>Zoom in</b>, which plays one quarter of the grid at a time with full-size squares. Tap the little map to move between quarters.</>,

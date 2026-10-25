@@ -386,7 +386,7 @@ function Figures({ n, lit = 0, me = -1, arriving = 0, step = 0 }) {
     return rank;
   }, [n, me]);
   return (
-    <div className="rr-figs" role="img" aria-label={me >= 0 ? `A room of ${n}, ${lit} of them out-read` : `A room of ${n} filling up`}>
+    <div className={`rr-figs${me >= 0 ? ' ro' : ''}`} role="img" aria-label={me >= 0 ? `A room of ${n}, ${lit} of them out-read` : `A room of ${n} filling up`}>
       {Array.from({ length: n }, (_, k) => {
         const isMe = k === me;
         const on = !isMe && order[k] < lit;
@@ -492,7 +492,7 @@ function Verdict({ sections, counted, parts, total, dateLabel, dateShort, animat
       <div className="rr-vf-room">
         <div className="rr-tn-hd"><span>Tonight&rsquo;s room{fieldNow ? ` · ${fmtN(fieldNow)} players` : ''}</span><em>You out-read {cur}%</em></div>
         <Figures n={FIG} lit={lit} me={ME} />
-        <p className="rr-vf-cap">Each figure you out-read turns toward you. You are the gold one.</p>
+        <p className="rr-vf-cap">Each figure you out-read fills in and turns toward you. The outlined ones you did not. You are the ringed one.</p>
       </div>
 
       {settled && (
@@ -670,6 +670,11 @@ const CSS = `
 @keyframes rrturn{0%{color:#222a44;transform:translateY(3px)}100%{color:var(--rr-acc-lt);transform:none}}
 .rr-pp.me{color:var(--rr-gold);animation:rrme 1.6s ease-in-out infinite alternate}
 @keyframes rrme{from{transform:none}to{transform:translateY(-3px)}}
+/* NOT BY COLOUR ALONE (owner, 2026-10-25): on the verdict, a figure you
+   out-read is filled, one you did not is outlined, and you are ringed. */
+.rr-figs.ro .rr-pp:not(.on):not(.me){color:#5d68a6}
+.rr-figs.ro .rr-pp:not(.on):not(.me) i,.rr-figs.ro .rr-pp:not(.on):not(.me) b{background:transparent;box-shadow:inset 0 0 0 1.5px currentColor}
+.rr-figs.ro .rr-pp.me i{box-shadow:0 0 0 1.5px var(--rr-ground),0 0 0 3px currentColor}
 /* pregame */
 .rr-pre{max-width:860px;margin:0 auto;padding:18px 16px 60px;transition:opacity .5s,transform .5s}
 .rr-pre.leave{opacity:0;transform:translateY(-14px)}
