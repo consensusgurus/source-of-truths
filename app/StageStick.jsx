@@ -33,7 +33,10 @@ const useIsoLayout = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 const SANS = "Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif";
 
 // When each block lands, from the mount (ms). The mock's timings.
-const T = { s1: 250, count: 900, s2: 1600, fill: 1750, s3: 3000, marks: 3150, chal: 4500, play: 5000, more: 5600 };
+// Shortened 2026-10-24 after a player report: the old timings (5.6s before the
+// last control) made a quick Replay wait out the whole show. Everything is
+// usable inside 1.5s now, and a tap anywhere lands it all at once.
+const T = { s1: 100, count: 350, s2: 450, fill: 550, s3: 750, marks: 850, chal: 1050, play: 1250, more: 1450 };
 
 const ease = (t) => 1 - Math.pow(1 - t, 3);
 
@@ -73,7 +76,7 @@ function Count({ fig, run }) {
 
 export default function StageStick({
   tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, run = null, allHref = '/#all',
-  sheet = {}, onLeave,
+  sheet = {}, onLeave, replayNow = null,
 }) {
   const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
   const [step, setStep] = useState(0);        // 0..6, how many blocks have landed
@@ -304,7 +307,15 @@ export default function StageStick({
           {!run && allHref ? (
             <a className={'sst-ob sst-all ' + on(5)} href={allHref}><b>See all Daily Puzzles</b></a>
           ) : null}
-          <button type="button" className={'sst-more ' + on(6)} onClick={() => { if (typeof onLeave === 'function') onLeave(); }}>See full details</button>
+          {/* REPLAY ON THE FACE (2026-10-24, player report): a quick retry was
+              three steps away (wait, See full details, find Replay). It sits
+              beside See full details now, one tap. */}
+          <div className={'sst-foot ' + on(6)}>
+            {replayNow ? (replayNow.href
+              ? <a className="sst-more" href={replayNow.href} onClick={replayNow.onClick || undefined}>Replay</a>
+              : <button type="button" className="sst-more" onClick={(e) => { if (onLeave) onLeave(); if (replayNow.onClick) replayNow.onClick(e); }}>Replay</button>) : null}
+            <button type="button" className="sst-more" onClick={() => { if (typeof onLeave === 'function') onLeave(); }}>See full details</button>
+          </div>
         </div>
       </div>
 
@@ -384,8 +395,11 @@ const CSS = `
 .sst-in{min-height:100%;width:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;
   justify-content:center;gap:clamp(18px,3.2vh,28px);
   padding:max(28px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));}
-.sst-b{opacity:0;transform:translateY(10px);transition:opacity .45s ease,transform .45s cubic-bezier(.2,.8,.2,1);}
-.sst-b.on{opacity:1;transform:none;}
+/* A block that has not landed yet takes NO taps (2026-10-24, player report: a
+   tap meant to hurry the screen hit a link that was still invisible). The tap
+   falls through to the colour, which skips the show instead. */
+.sst-b{opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .3s ease,transform .3s cubic-bezier(.2,.8,.2,1);}
+.sst-b.on{opacity:1;transform:none;pointer-events:auto;}
 .sst section{min-width:0;}
 .sst-eb{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;}
 .sst-v{font-size:clamp(36px,11vw,44px);font-weight:800;letter-spacing:-.035em;line-height:1.02;margin-top:6px;}
@@ -427,6 +441,7 @@ const CSS = `
 .sst-strip s.l{border:2.5px solid var(--sst-ink);}
 .sst-strip s.now{box-shadow:0 0 0 3px var(--sst-bg),0 0 0 5px var(--sst-ink);}
 .sst-acts{display:flex;flex-direction:column;gap:10px;}
+.sst-foot{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:4px 26px;}
 .sst-chal{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:11px 16px 11px 18px;border:0;border-radius:14px;
   background:var(--sst-ink);color:var(--sst-bg);font:inherit;text-align:left;cursor:pointer;}
 .sst-chal .tx{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}

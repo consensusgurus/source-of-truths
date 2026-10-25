@@ -29,13 +29,22 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   const [look, setLook] = useStageLook();
   const pal = look === 'plain' ? stagePalette(bg || '#7dd3fc', 'plain') : { bg: bg || '#7dd3fc', ink };
   useStageChrome(pal.bg);
+  // SHORT ANSWERS GO 2x2 ON A PHONE (2026-10-24, player report on Blitz): four
+  // numbers stacked in one tall column made the eye travel down the screen to
+  // compare them. When every choice is short the phone uses the same 2x2 grid
+  // as desktop; long trivia answers keep the single column so they never wrap
+  // into a cramped box. `tiny` (all six characters or fewer, e.g. Blitz's
+  // numbers) also sets the type larger so it fills its card.
+  const lens = choices.map((c) => (typeof c === 'string' || typeof c === 'number' ? String(c).length : 99));
+  const shortSet = choices.length === 4 && lens.every((n) => n <= 16);
+  const tiny = shortSet && lens.every((n) => n <= 6);
   return (
     <div key={look} className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <LookButton look={look} onFlip={() => setLook(look === 'plain' ? 'color' : 'plain')} className="gst-look" />
       <div className="gst-col" key={qKey}>
         <div className="gst-q">{question}</div>
-        <div className={`gst-ch${choices.length > 2 ? ' many' : ''}`}>
+        <div className={`gst-ch${choices.length > 2 ? ' many' : ''}${shortSet ? ' grid' : ''}${tiny ? ' tiny' : ''}`}>
           {choices.map((c, k) => (
             <button key={k} type="button"
               className={`gst-c${lockIdx === k ? ' ok' : ''}`}
@@ -67,8 +76,11 @@ const CSS = `
 .gst-q blockquote{margin:0 0 12px;font-size:20px;font-weight:700;line-height:1.35;font-style:italic;}
 .gst-q .gst-sub{display:block;margin-top:10px;font-size:17px;font-weight:700;}
 .gst-ch{display:flex;flex-direction:column;gap:12px;}
-.gst-c{position:relative;display:flex;align-items:center;min-height:96px;width:100%;box-sizing:border-box;border-radius:18px;padding:16px 18px;text-align:left;cursor:pointer;background:color-mix(in srgb, var(--gst-ink) 8%, transparent);border:2px solid var(--gst-ink);font-family:inherit;font-size:22px;line-height:1.2;font-weight:800;animation:gstIn .5s cubic-bezier(.2,.8,.2,1) both;transition:background .15s, transform .1s;}
-.gst-ch.many .gst-c{min-height:68px;font-size:19px;padding:12px 16px;}
+.gst-c{position:relative;display:flex;align-items:center;justify-content:center;min-height:72px;width:100%;box-sizing:border-box;border-radius:18px;padding:14px 16px;text-align:center;cursor:pointer;background:color-mix(in srgb, var(--gst-ink) 8%, transparent);border:2px solid var(--gst-ink);font-family:inherit;font-size:22px;line-height:1.2;font-weight:800;animation:gstIn .5s cubic-bezier(.2,.8,.2,1) both;transition:background .15s, transform .1s;}
+.gst-ch.many .gst-c{min-height:58px;font-size:19px;padding:10px 14px;}
+.gst-ch.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.gst-ch.grid .gst-c{min-height:84px;font-size:20px;padding:10px 10px;}
+.gst-ch.tiny .gst-c{font-size:30px;font-variant-numeric:tabular-nums;}
 .gst-c:active{transform:scale(.99);}
 @media(hover:hover){.gst-c:hover{background:color-mix(in srgb, var(--gst-ink) 16%, transparent);}}
 .gst-c:disabled{cursor:default;}
@@ -84,7 +96,7 @@ const CSS = `
 @keyframes gstIn{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
 @keyframes gstGlow{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--gst-ink) 45%, transparent)}100%{box-shadow:0 0 0 14px transparent}}
 @keyframes gstPulse{from{opacity:1}to{opacity:.35}}
-@media(min-width:900px){.gst-col{max-width:820px;gap:40px;padding:48px 32px 28px;}.gst-q{font-size:44px;}.gst-q blockquote{font-size:26px;}.gst-ch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}.gst-c{min-height:150px;font-size:26px;padding:22px;}.gst-ch.many .gst-c{min-height:120px;font-size:23px;}}
-@media(max-width:400px){.gst-q{font-size:25px;}.gst-c{font-size:19px;min-height:80px;}.gst-ch.many .gst-c{font-size:17px;min-height:60px;}}
+@media(min-width:900px){.gst-col{max-width:820px;gap:40px;padding:48px 32px 28px;}.gst-q{font-size:44px;}.gst-q blockquote{font-size:26px;}.gst-ch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}.gst-c{min-height:150px;font-size:26px;padding:22px;}.gst-ch.many .gst-c{min-height:120px;font-size:23px;}.gst-ch.tiny .gst-c{font-size:38px;}}
+@media(max-width:400px){.gst-q{font-size:25px;}.gst-c{font-size:19px;min-height:64px;}.gst-ch.many .gst-c{font-size:17px;min-height:54px;}.gst-ch.grid .gst-c{font-size:18px;min-height:76px;}.gst-ch.tiny .gst-c{font-size:27px;}}
 @media (prefers-reduced-motion: reduce){.gst-q,.gst-c,.gst-c.ok{animation:none}}
 `;

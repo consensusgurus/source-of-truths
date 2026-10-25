@@ -1973,7 +1973,7 @@ export default function StageFinish({
       catHref: categoryHrefForGame(me.key), catName: me.cat,
       homeHref: (mainOpt && mainOpt.href) || '/',
     };
-    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet };
+    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet, replayNow: replayOpt || null };
   })();
 
   // Placed AFTER every hook above AND after the challenge door is built (moved
