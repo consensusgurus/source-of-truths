@@ -826,7 +826,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
       <div className="pg-row" style={{ display: 'flex', alignItems: 'center', gap: 12, background: bg, border: `1.5px solid ${border}`, borderRadius: 12, padding: '10px 14px', minHeight: 48, boxSizing: 'border-box', animation: last ? ' pgrow .25s ease' : undefined }}>
         <span style={{ fontFamily: MONO, fontSize: 11, color: FADED, width: 16, flex: '0 0 auto', textAlign: 'right' }}>{i + 1}</span>
         <span aria-hidden="true" style={{ width: 12, height: 12, borderRadius: '50%', background: rc, flex: '0 0 auto' }} />
-        <span style={{ fontFamily: SANS, fontSize: 15.5, fontWeight: 800, color: INK, flex: '1 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span style={{ fontFamily: SANS, fontSize: 15.5, fontWeight: 800, color: INK, flex: '1 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
           {x.name}<span style={{ color: FADED, fontWeight: 600, fontSize: 12.5 }}> · {x.country}</span>
         </span>
         {solvedRow ? (

@@ -416,7 +416,7 @@ const CSS = `
   background:color-mix(in srgb,var(--sst-ink) 20%,transparent);}
 .sst-bar span{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--sst-ink);transition:width 1.1s cubic-bezier(.2,.8,.2,1);}
 .sst-caps{display:flex;justify-content:space-between;gap:12px;margin-top:7px;font-size:12.5px;font-weight:700;}
-.sst-caps span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-caps span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sst-track{position:relative;height:84px;margin:12px 12px 0;}
 .sst-track .ln{position:absolute;left:0;right:0;top:38.5px;height:3px;border-radius:3px;background:color-mix(in srgb,var(--sst-ink) 28%,transparent);}
 .sst-track .pt{position:absolute;top:0;bottom:0;width:0;opacity:0;transition:opacity .4s ease;}
@@ -446,7 +446,7 @@ const CSS = `
   background:var(--sst-ink);color:var(--sst-bg);font:inherit;text-align:left;cursor:pointer;}
 .sst-chal .tx{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
 .sst-chal b{font-size:17px;font-weight:800;line-height:1.2;}
-.sst-chal i{font-style:normal;font-size:12.5px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-chal i{font-style:normal;font-size:12.5px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sst-chal .ar{flex:none;font-size:22px;font-weight:800;}
 .sst-crow{display:flex;gap:10px;}
 .sst-crow .sst-chal{flex:1;min-width:0;}
@@ -474,7 +474,7 @@ const CSS = `
 .sst-run.on .pips s.now{animation:sst-pop .45s cubic-bezier(.3,1.7,.5,1) .5s forwards;}
 @keyframes sst-pop{to{transform:scaleY(1)}}
 .sst-run .ft{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.sst-run .sb{font-size:12.5px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-run .sb{font-size:12.5px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sst-run .go{flex:none;border-radius:99px;padding:6px 12px;background:var(--sst-bg);color:var(--sst-ink);font-size:13px;font-weight:800;white-space:nowrap;}
 .sst-chal.ol{min-height:54px;background:transparent;color:var(--sst-ink);border:2px solid var(--sst-ink);}
 .sst-chal.ol b{font-size:16px;}
@@ -485,7 +485,7 @@ const CSS = `
 .sst-ob{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0;min-height:60px;padding:9px 14px;border-radius:14px;
   border:2px solid var(--sst-ink);color:var(--sst-ink);text-decoration:none;}
 .sst-ob b{font-size:15.5px;font-weight:800;line-height:1.2;}
-.sst-ob i{font-style:normal;font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-ob i{font-style:normal;font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sst-all{min-height:52px;align-items:center;text-align:center;}
 .sst-ob i small{font-size:11px;font-weight:700;}
 .sst-chal:hover,.sst-ob:hover{filter:brightness(1.08);}
@@ -519,20 +519,20 @@ const CSS = `
 .sst-figs > div{flex:1 1 90px;min-width:0;background:#f3f5f9;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;}
 .sst-figs b{font-size:22px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
 .sst-figs b small{font-size:14px;color:#5b6475;}
-.sst-figs i{font-style:normal;font-size:12px;font-weight:700;color:#5b6475;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-figs i{font-style:normal;font-size:12px;font-weight:700;color:#5b6475;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sst-sheet section{margin-top:16px;}
 .sst-sl{font-size:11.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#5b6475;margin-bottom:7px;}
 .sst-tbl{width:100%;border-collapse:collapse;font-size:14px;}
 .sst-tbl td{padding:8px 6px;border-bottom:1px solid #e6e9ef;}
 .sst-tbl .p{width:46px;font-weight:800;color:#5b6475;}
-.sst-tbl .w{font-weight:700;max-width:0;width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-tbl .w{font-weight:700;max-width:0;width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sst-tbl .st{text-align:right;font-weight:700;color:#3a4252;font-variant-numeric:tabular-nums;white-space:nowrap;}
 .sst-tbl tr.me td{background:#e7efff;color:#0b2a6b;}
 .sst-tbl tr.me .p,.sst-tbl tr.me .st{color:#0b2a6b;}
 .sst-tbl tr.gap td{text-align:center;color:#8a93a3;padding:3px;}
 .sst-runs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;}
 .sst-runs a{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border-radius:10px;background:#f3f5f9;color:#0b0d12;text-decoration:none;min-width:0;}
-.sst-runs a span{font-size:11.5px;font-weight:700;color:#5b6475;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-runs a span{font-size:11.5px;font-weight:700;color:#5b6475;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sst-runs a b{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;}
 .sst-runs a.l b{color:#9a2a2a;}
 .sst-set{display:flex;flex-wrap:wrap;gap:8px;}

@@ -562,7 +562,7 @@ export default function HomeRails({
          carries the matching 43px (42 plus the 1px panel border the rails have
          above their header) and must move with this number. */
       .hr-ph{display:flex;align-items:center;gap:9px;padding:9px 13px;min-height:42px;box-sizing:border-box;background:var(--accent);flex:none;border-radius:12px 12px 0 0;box-shadow:inset 0 0 0 1px var(--accent);}
-      .hr-ph h2{font-size:11.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--white);margin:0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .hr-ph h2{font-size:11.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--white);margin:0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
       .hr-pi{width:24px;height:24px;border-radius:7px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);color:var(--white);display:flex;align-items:center;justify-content:center;flex:none;}
       /* Countdown chip in the panel header, contest only. Sits where the flip
          pill sits on the rotating panels, so the header keeps one shape. */
@@ -643,7 +643,7 @@ export default function HomeRails({
       .hr-hero::before{content:'';position:absolute;left:10px;top:13px;bottom:13px;width:4px;border-radius:2px;background:var(--gold);}
       .hr-hero.lite{background:#4d84f3;}
       .hr-htxt{min-width:0;}
-      .hr-heye{font-size:9.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#dbe8ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .hr-heye{font-size:9.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#dbe8ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
       /* line-height 1.3 plus a pixel of pad, not 1.1: these lines are
          overflow:hidden for the ellipsis, so a tight box clips a descender. */
       .hr-hnm{font-size:19px;font-weight:800;letter-spacing:-.3px;line-height:1.3;padding-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -682,7 +682,7 @@ export default function HomeRails({
       .hr-lslab.lite::before{background:var(--blue-200);}
       .hr-lstxt{min-width:0;flex:1;}
       .hr-lseye{font-size:9.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#dbe8ff;
-                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
       /* An explicit 26px line plus a pixel of pad, not a tight multiple: these
          lines are overflow:hidden for the ellipsis, so a tight box clips a
          descender, and a unitless line-height would drift from the cap bar the
@@ -736,9 +736,9 @@ export default function HomeRails({
          the row gains colour without gaining a second palette, and nine rows
          still read as one object rather than nine coloured cards. */
       .hr-clcat{display:block;font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;
-                color:var(--clr,#8b90a0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+                color:var(--clr,#8b90a0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
       .hr-clnm{display:block;font-size:13px;font-weight:800;color:var(--ink);line-height:1.35;
-               white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+               white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
       /* The right column mirrors the left: a small line on top, the figure
          under it, both right-aligned, so every row is the same four cells. */
       .hr-clr{flex:none;text-align:right;}
@@ -757,7 +757,7 @@ export default function HomeRails({
       .hr-res:hover{background:var(--surface);}
       .hr-mid{flex:1;min-width:0;}
       .hr-t{display:flex;align-items:baseline;gap:7px;min-width:0;font-size:12.5px;font-weight:800;}
-      .hr-ttl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+      .hr-ttl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;padding-bottom:.16em;margin-bottom:-.16em;}
       .hr-cat{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border-radius:4px;}
       /* "(x25)": how many times this game has been played today, site-wide. */
       .hr-x{flex:none;font-size:10.5px;font-weight:700;color:#8b90a0;font-variant-numeric:tabular-nums;}
@@ -790,18 +790,18 @@ export default function HomeRails({
       .hr-fcard:hover .hr-fcgo{background:var(--blue-200);}
       .hr-fctxt{flex:1;min-width:0;}
       .hr-fceye{display:block;font-size:9.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#dbe8ff;
-                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
       .hr-fcnm{display:block;font-size:16px;font-weight:800;letter-spacing:-.2px;line-height:1.3;padding-bottom:1px;
                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
       .hr-fcsub{display:flex;align-items:center;gap:5px;min-width:0;font-size:11px;font-weight:600;line-height:1.35;
-                color:var(--blue-200);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+                color:var(--blue-200);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
       .hr-fcdot{flex:none;opacity:.7;}
       /* Current leader (owner, 2026-08-04). Only the cards that HAVE a live
          board carry one; the duel card passes no leader and renders without it.
          On a coloured ground the gold ink it used on white is unreadable, so it
          takes the medal gold itself. */
       .hr-fl{display:inline-flex;align-items:center;gap:3px;min-width:0;flex:none;max-width:60%;
-             font-size:10.5px;font-weight:800;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+             font-size:10.5px;font-weight:800;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
       .hr-fl svg{flex:none;}
       .hr-fcgo{margin-left:auto;flex:none;font-size:11px;font-weight:800;letter-spacing:.04em;
                background:var(--white);color:var(--blue-deep);border-radius:8px;padding:8px 15px;transition:background .12s;}
@@ -972,7 +972,7 @@ export default function HomeRails({
           .hrb-duel:hover{background:var(--white);}
           .hrb-dtx{display:flex;flex-direction:column;min-width:0;}
           .hrb-de{font-size:8.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--slate);}
-          .hrb-dn{font-size:14px;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+          .hrb-dn{font-size:14px;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
           .hrb-dgo{display:block;text-align:center;background:var(--blue);color:var(--white);border-radius:7px;padding:11px 15px;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;}
           .hrb-duel:hover .hrb-dgo{background:var(--cta-hover);}
           /* YOU IS A REAL PANEL NOW (owner, 2026-08-15: it needs more content,
@@ -1002,7 +1002,7 @@ export default function HomeRails({
           .hrb-mfill{position:absolute;left:0;top:0;bottom:0;background:#e3ecfc;pointer-events:none;}
           .hrb-mdot{position:relative;width:7px;height:7px;border-radius:2px;flex:none;}
           .hrb-mnm{position:relative;flex:1;min-width:0;font-size:12.5px;font-weight:700;color:var(--ink);
-            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
           .hrb-mp{position:relative;flex:none;font-size:11.5px;font-weight:800;color:#4a4f5c;font-variant-numeric:tabular-nums;}
           .hrb-duel{flex:none;}
           @media(min-width:1201px){

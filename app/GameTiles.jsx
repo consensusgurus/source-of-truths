@@ -225,7 +225,7 @@ export const TILE_CSS = `
 .gtl-row b{flex:none;width:14px;font-family:${MONO};font-size:10.5px;font-weight:700;color:var(--stg-ink2);
   font-variant-numeric:tabular-nums;}
 .gtl-row:first-child b{color:var(--cci);}
-.gtl-who{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;color:var(--stg-ink);}
+.gtl-who{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;color:var(--stg-ink);padding-bottom:.16em;margin-bottom:-.16em;}
 .gtl-sc{flex:none;font-family:${MONO};font-size:10.5px;color:var(--stg-ink2);font-variant-numeric:tabular-nums;}
 .gtl-wait .gtl-who{height:12px;border-radius:3px;background:var(--stg-chip);}
 .gtl-none{display:block;font-size:12px;font-weight:600;color:var(--stg-mute);padding:6px 0 4px;}

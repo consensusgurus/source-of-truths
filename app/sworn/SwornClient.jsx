@@ -657,7 +657,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
           .sw-avrow{display:flex;justify-content:space-between;gap:4px;}
           .sw-avb{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;background:transparent;border:0;border-radius:12px;padding:6px 0;cursor:pointer;color:var(--stg-ink, ${COLORS.ink});font-family:${SANS};}
           .sw-avb.sel{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .sw-avn{font-size:12px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+          .sw-avn{font-size:12px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
           .sw-avt{font-family:${MONO};font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;}
           .sw-focus{margin-top:14px;background:var(--stg-cell, #ffffff);border:1.5px solid var(--stg-ink, ${COLORS.ink});border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px;}
           .sw-fq{font-family:${SERIF};font-size:23px;line-height:1.3;color:var(--stg-ink, ${COLORS.ink});}

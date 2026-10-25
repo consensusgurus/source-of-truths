@@ -629,7 +629,7 @@ const CSS = IQ_RAMP_CSS + `
 .iqt-sticky.on{transform:translate(-50%,0);}
 .iqt-sticky span{display:flex;flex-direction:column;min-width:0;line-height:1.25;}
 .iqt-sticky b{font-size:14px;font-weight:800;}
-.iqt-sticky small{font-size:11.5px;font-weight:600;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.iqt-sticky small{font-size:11.5px;font-weight:600;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .iqt-sticky a{margin-left:auto;flex:none;background:var(--stg-acc);color:var(--stg-onramp);border-radius:10px;padding:9px 16px;font-weight:800;font-size:14px;text-decoration:none;}
 @media (prefers-reduced-motion:reduce){.iqt-fade,.iqt-sticky,.iqt-cda{transition:none;}}
 

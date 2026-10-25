@@ -667,7 +667,7 @@ const CSS = `
 .fp-paid{margin-top:16px;padding-top:4px;border-top:1px solid var(--pc-line)}
 .fp-paid .fp-bh h3{font-size:14px}
 .fp-paid .fp-bar{height:14px;border-radius:7px}
-.fp-nm{text-align:left!important;font-weight:800;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+.fp-nm{text-align:left!important;font-weight:800;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .fp-nm .cc{display:inline-block;width:22px;height:14px;border-radius:3px;margin-right:8px;vertical-align:-2px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
 .fp-cell{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.1}
 .fp-cell b{font-size:17px;font-variant-numeric:tabular-nums}
@@ -703,7 +703,7 @@ const CSS = `
 .fp-mh{display:flex;align-items:center;gap:8px;min-width:0}
 .fp-mh b{font-weight:800;color:var(--pc-mute);font-variant-numeric:tabular-nums;min-width:14px}
 .fp-mh .cc{flex:none;width:20px;height:13px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
-.fp-mn{flex:1;min-width:0;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fp-mn{flex:1;min-width:0;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .fp-mt{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
 .fp-mg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-top:6px}
 .fp-mc{border-top:2px solid var(--c);padding-top:4px;min-width:0}

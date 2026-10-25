@@ -134,7 +134,7 @@ function FlipFace({ it, back, active }) {
           {it.leader ? (
             <span className="ttile-plays hpill" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
               <Crown size={12} style={{ color: T.gold, flex: 'none' }} />
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.leader}</span>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{it.leader}</span>
             </span>
           ) : null}
         </div>

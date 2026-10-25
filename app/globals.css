@@ -704,7 +704,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     /* END GAME PIECES (owner, 2026-10-24). The boards keep their own light
        surfaces in every look, so the player's pieces take fixed colours that
        read against them and against the engine's dark pieces in all three. */
-    --stg-you: #e8b43a;
+    --stg-you: var(--sp-g, #f1d289);
     --stg-you-lt: #ffffff;
     --stg-you-dk: #111111;
     --stg-ground: var(--sp-g, #c9d2fd) !important;

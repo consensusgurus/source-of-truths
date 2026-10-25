@@ -2875,7 +2875,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         /* Both eyebrows read blue (owner, 2026-08-03). The easiest board used to
            own gold against Up next's blue; the cap now sits on the brand blue like
            the rest of the surface, so the .up modifier is a no-op kept for callers. */
-        .dh-bue{font-size:9px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .dh-bue{font-size:9px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
         .dh-bue.up{color:var(--blue);}
         .dh-bshort{display:none;}
         .dh-bun{font-size:17px;font-weight:800;letter-spacing:-.3px;line-height:1.3;padding-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -3030,7 +3030,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .dh-tile.done .dh-acc{background:#22c55e !important;}
         .dh-tic{width:46px;height:30px;display:flex;align-items:center;justify-content:center;flex:none;margin:5px 0 6px;}
         .dh-tic img{height:24px;width:auto;max-width:30px;object-fit:contain;}
-        .dh-tnm{font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.34;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+        .dh-tnm{font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.34;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;padding-bottom:.16em;margin-bottom:-.16em;}
         .dh-tcat{margin-top:3px;font-family:'Manrope',ui-monospace,monospace;font-size:9px;letter-spacing:.09em;text-transform:uppercase;border-radius:999px;padding:1px 6px;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
         .dh-tmeta{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;min-width:0;margin-top:auto;}
         .dh-mrow{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:6px;max-width:100%;}
@@ -3040,7 +3040,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .dh-mstrk.none{color:#4d5872;}
         .dh-mlead{display:flex;align-items:center;justify-content:center;gap:3px;font-size:9.5px;font-weight:700;color:var(--muted);min-width:0;max-width:100%;width:100%;}
         .dh-mlead svg{flex:none;color:var(--gold-ink);}
-        .dh-mlead span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .dh-mlead span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         .dh-tdot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;}
         /* Top-left corner row: today's play count. It sits opposite
            .dh-tdot and clears the centred game name on a 123px tile. */
@@ -3072,7 +3072,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .dsd-row.me{background:#fdf3dd;border-color:#8a5300;}
         .dsd-rk{font-weight:800;font-size:15px;color:#8a5300;font-variant-numeric:tabular-nums;}
         .dsd-row.plain .dsd-rk{color:var(--muted);}
-        .dsd-pn{font-size:13.5px;font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .dsd-pn{font-size:13.5px;font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         .dsd-pn b{color:var(--gold-ink);font-weight:700;}
         .dsd-g{font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;font-weight:600;}
         .dsd-tt{font-size:13.5px;font-weight:800;color:#8a5300;text-align:right;font-variant-numeric:tabular-nums;}
@@ -3087,7 +3087,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .dsd-yest{display:flex;align-items:center;gap:7px;margin-top:6px;padding:7px 11px;border-radius:10px;background:var(--surface);border:1px solid #eef0f4;}
         .dsd-yest.top{padding:9px 11px;background:var(--surface);border-color:var(--muted);}
         .dsd-yest .yl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800;flex:none;min-width:56px;}
-        .dsd-yest b{min-width:0;font-size:12px;color:#c9d6ee;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .dsd-yest b{min-width:0;font-size:12px;color:#c9d6ee;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         .dsd-yest.top b{font-size:13px;color:var(--ink);font-weight:700;}
         .dsd-yest .yt{margin-left:auto;flex:none;font-size:11.5px;font-weight:700;color:#d8c489;font-variant-numeric:tabular-nums;}
         .dsd-yest.top .yt{font-size:12.5px;font-weight:800;color:#8a5300;}
@@ -3107,7 +3107,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .dsd-mini{background:var(--surface);border:1px solid #eef0f4;border-radius:11px;padding:10px 11px;}
         .dsd-mr{display:flex;gap:6px;align-items:baseline;font-size:11.5px;padding:2px 0;}
         .dsd-k{width:11px;font-weight:800;color:#8a5300;font-variant-numeric:tabular-nums;flex:0 0 auto;}
-        .dsd-n2{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:500;}
+        .dsd-n2{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:500;padding-bottom:.16em;margin-bottom:-.16em;}
         .dsd-n2 b{color:var(--gold-ink);font-weight:700;}
         .dsd-p{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;font-size:10.5px;}
         .dsd-none{color:var(--muted);font-size:10.5px;padding:2px 0;}
@@ -3492,7 +3492,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
            The two media-query overrides below only restate font-size and
            line-height, so they inherit this and need no copy of it. */
         .sl-nm b{display:block;font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.15;padding-bottom:3px;margin-bottom:-3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-        .sl-nm .sl-sub{display:block;font-size:11.5px;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .sl-nm .sl-sub{display:block;font-size:11.5px;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
         .sl-cm{display:none;}
         /* The tagline's wrapper. Desktop renders it as the plain inline text it
            has always been; only the phone makes it a shrinking flex item. */
@@ -3533,7 +3533,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .sl-st.none{color:#c3c8d1;}
         .sl-ld{display:flex;align-items:center;justify-content:center;gap:4px;font-size:11.5px;color:var(--muted);min-width:0;}
         .sl-ld svg{flex:none;color:var(--gold-ink);}
-        .sl-ld span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .sl-ld span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         .sl-nl{color:#8a93a3;}
         .sl-status{display:flex;justify-content:center;}
         .sl-btn{display:inline-flex;align-items:center;justify-content:center;width:70px;padding:6px 0;border-radius:7px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;border:1px solid var(--accent-border);background:var(--accent-soft);color:var(--blue-deep);cursor:pointer;font-family:inherit;}
@@ -3670,9 +3670,9 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
           .sl-nm b{order:1;min-width:0;display:block;font-size:15px;line-height:1.2;}
           .sl-cm{order:2;flex:none;display:block;font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;line-height:1.2;margin:0;}
           .sl-nm .sl-sub{order:3;flex:1 1 100%;min-width:0;display:flex;align-items:baseline;font-size:11px;line-height:1.35;margin-top:1px;}
-          .sl-tg{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+          .sl-tg{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
           .sl-dot{display:inline;flex:none;margin:0 5px;color:#c3c8d1;}
-          .sl-mld{flex:none;display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--muted);max-width:10vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+          .sl-mld{flex:none;display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--muted);max-width:10vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
           .sl-mld svg{flex:none;color:var(--gold-ink);}
           .sl-pl{order:3;display:block;text-align:right;line-height:1;min-width:38px;}
           .sl-pl b{display:block;font-size:13px;font-weight:800;color:var(--ink);}
@@ -3858,8 +3858,8 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
              leader chip is flex:none, so the leader is never the thing that gets
              cut off. It still caps at 38vw and ellipsizes its own long names. */
           .sl-nm .sl-sub{order:3;flex:1 1 100%;min-width:0;display:flex;align-items:baseline;font-size:11.5px;line-height:1.4;margin-top:1px;}
-          .sl-tg{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
-          .sl-mld{flex:none;display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:700;color:var(--muted);max-width:42vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+          .sl-tg{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
+          .sl-mld{flex:none;display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:700;color:var(--muted);max-width:42vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
           .sl-mld svg{flex:none;color:var(--gold-ink);}
           .sl-btn{width:64px;}
           /* The category selector is a DARK strip of pills on a phone (owner,
@@ -4309,7 +4309,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .cb-frow{display:grid;grid-template-columns:104px minmax(0,1fr) 190px 40px 58px;align-items:center;gap:12px;min-height:var(--fillrow,22px);}
         .cb-frow.head{min-height:0;margin-bottom:1px;font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
         .cb-frow.head .ar{grid-column:3 / span 3;}
-        .cb-fbn{font-size:12.5px;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .cb-fbn{font-size:12.5px;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         .cb-fbd{display:flex;flex-wrap:wrap;gap:5px;}
         .cb-fbc{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--white);font-size:10.5px;font-weight:700;color:var(--slate);text-decoration:none;font-variant-numeric:tabular-nums;}
         .cb-fbc:hover{border-color:var(--blue);color:var(--blue);}
@@ -4334,7 +4334,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .cb-fq{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;}
         .cb-fqc{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--white);text-decoration:none;}
         .cb-fqc:hover{border-color:var(--blue);}
-        .cb-fqt{font-size:12.5px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .cb-fqt{font-size:12.5px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         .cb-fqm{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);}
         .cb-fqc.done .cb-fqm{color:var(--muted);}
         /* THE SUGGEST BAR TAKES THE FLOOR (owner, 2026-08-15). Whatever the
@@ -4369,8 +4369,8 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .cb-card.fail{background:#b91c1c;color:var(--white);border-left-color:#f3a5a5;}
         .cb-ct{display:flex;flex-direction:column;min-width:0;}
         .cb-ce{font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.82;margin-bottom:4px;}
-        .cb-cn{font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .cb-cs{font-size:11.5px;line-height:1.45;font-weight:500;opacity:.85;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .cb-cn{font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
+        .cb-cs{font-size:11.5px;line-height:1.45;font-weight:500;opacity:.85;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         .cb-cb{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:5px;background:var(--white);color:var(--accent);border-radius:7px;padding:10px 14px;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;}
         .cb-card.prog .cb-cb{color:#3a2a05;}
         .cb-card.fail .cb-cb{color:#b91c1c;}
@@ -4393,7 +4393,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
            rows and a tall box, and an auto top margin pinned this one to the
            floor and opened a 92px hole above it. Centred as a group instead,
            which is what justify-content on the tile was already asking for. */
-        .cb-gnm{font-size:11px;font-weight:700;color:var(--muted);line-height:1.15;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+        .cb-gnm{font-size:11px;font-weight:700;color:var(--muted);line-height:1.15;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;padding-bottom:.16em;margin-bottom:-.16em;}
         /* With no category open the nine tiles ARE the board, so they take the
            whole of it: three equal rows rather than a short block with a void
            of ground under it. */

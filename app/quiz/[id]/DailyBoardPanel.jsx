@@ -359,7 +359,7 @@ export default function DailyBoardPanel({
         .dbp-hd .t{font-size:16px;font-weight:800;letter-spacing:-.01em;color:${INK};display:flex;align-items:center;gap:8px;min-width:0;}
         .dbp-hd .t .av{${avCss}display:flex;align-items:center;justify-content:center;flex-shrink:0;}
         .dbp-hd .t .sfx{${sfxCss}flex-shrink:0;}
-        .dbp-hd .t .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .dbp-hd .t .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         .dbp-hd .s{font-family:${MONO};font-size:10.5px;letter-spacing:.04em;color:${FADED};font-weight:500;white-space:nowrap;flex-shrink:0;}
         .dbp-signup{display:inline-flex;align-items:center;gap:6px;font-family:${SANS};font-size:12px;font-weight:800;color:${BLUE_INK};background:${SOFT};border:1px solid ${stage ? 'var(--stg-line2)' : (dark ? 'rgba(125,211,252,0.3)' : '#cfe0fb')};border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
         .dbp-signup:hover{background:${SOFT2};}

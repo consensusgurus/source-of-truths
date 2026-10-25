@@ -280,7 +280,7 @@ const CSS = `
 .bks-ml{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;text-align:center;}
 .bks-c{display:flex;align-items:center;justify-content:space-between;gap:10px;height:var(--bks-ch);width:100%;box-sizing:border-box;border-radius:18px;padding:0 18px;background:color-mix(in srgb, var(--bks-ink) 8%, transparent);border:2px solid var(--bks-ink);font-family:inherit;font-size:clamp(19px,6vw,24px);font-weight:800;text-align:left;cursor:pointer;transition:background .2s,opacity .2s;}
 .bks-c:disabled{cursor:default;}
-.bks-c .bks-nm{flex:1 1 auto;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.12;}
+.bks-c .bks-nm{flex:1 1 auto;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.26;}
 .bks-c.on{background:var(--bks-ink);}
 .bks-c.on, .bks-c.on *{color:var(--bks-bg);}
 .bks-c.off{opacity:.45;}
@@ -326,7 +326,7 @@ const CSS = `
 .bks-rv.tiny .bks-r{min-height:22px;font-size:12px;}
 .bks-r.in{opacity:1;transform:none;}
 .bks-r .rd{font-size:10px;letter-spacing:.06em;text-transform:uppercase;opacity:.7;}
-.bks-r .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bks-r .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .bks-r .pts{text-align:right;font-size:12px;opacity:.8;}
 .bks-r.ok{background:color-mix(in srgb, var(--bks-ink) 12%, transparent);}
 .bks-r.no .nm{text-decoration:line-through;text-decoration-thickness:2px;opacity:.6;}

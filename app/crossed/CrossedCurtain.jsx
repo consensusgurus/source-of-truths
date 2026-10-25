@@ -323,7 +323,7 @@ const CSS = WEEK_CSS + `
 .dc-c span{display:block;animation:dccell .25s ease var(--wd) both}
 .dc-side{width:440px;flex:none;display:flex;flex-direction:column;gap:10px}
 .dc-k{font-size:13px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
-.dc-line{font-size:20px;font-weight:700;height:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dc-line{font-size:20px;font-weight:700;height:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .dc-figs{display:flex;flex-direction:column;gap:10px}
 .dc-clk{width:2.95em;height:1em;font-size:120px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
 .dc-pts{height:52px;font-size:44px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap;animation:dcpop .4s cubic-bezier(.2,.8,.2,1) 1.5s both}
@@ -349,12 +349,12 @@ const CSS = WEEK_CSS + `
 .dc-sum{font-size:14px;font-weight:700;color:#c9d3e6;margin-top:4px;font-variant-numeric:tabular-nums}
 .dc-forms{display:flex;gap:6px}
 .dc-forms div{flex:1 1 0;min-width:0;border-radius:8px;padding:8px 6px;background:rgba(255,255,255,.05);border-top:3px solid;text-align:center}
-.dc-forms span{display:block;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9aa8c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dc-forms span{display:block;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9aa8c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .dc-forms b{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
 .dc-forms b small{font-size:12px;color:#9aa8c4}
 .dc-strip{flex:none;display:flex;gap:8px;padding:14px 28px 18px}
 .dc-sc{flex:1 1 0;min-width:0;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;transition:all .3s ease}
-.dc-sc span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dc-sc span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .dc-sc b{flex:none;width:2.2em;text-align:right;font-size:18px;font-variant-numeric:tabular-nums}
 @media(max-width:640px){
 .dc-cap{padding:16px 18px 0;font-size:10px;gap:10px}

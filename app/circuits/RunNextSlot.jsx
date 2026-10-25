@@ -25,8 +25,8 @@ const CSS = `
 .rns a:first-of-type{border-top:none}
 .rns i{flex:none;width:4px;align-self:stretch;border-radius:2px;background:var(--a)}
 .rns span{flex:1;min-width:0}
-.rns b{display:block;font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rns small{display:block;font-size:12px;font-weight:700;color:var(--rs-mute,#9aa8c4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rns b{display:block;font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
+.rns small{display:block;font-size:12px;font-weight:700;color:var(--rs-mute,#9aa8c4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .rns em{font-style:normal;font-size:13px;font-weight:800;color:var(--rs-me,#7dd3fc);white-space:nowrap}
 .rns a:hover b{text-decoration:underline;text-underline-offset:3px}
 .rns-done{font-size:13px;font-weight:700;color:var(--rs-mute,#9aa8c4);margin:4px 0}

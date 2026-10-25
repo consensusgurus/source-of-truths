@@ -144,7 +144,7 @@ export default function CommunityTile() {
         .cmtile .cm-podium{margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;border-top:1px solid rgba(255,209,102,.16);padding-top:7px;}
         .cmtile .cm-prow{display:flex;align-items:baseline;gap:5px;font-size:11.5px;line-height:1.25;min-width:0;}
         .cmtile .cm-prank{flex:none;font-weight:800;color:rgba(255,236,200,.55);font-variant-numeric:tabular-nums;}
-        .cmtile .cm-nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;color:rgba(255,255,255,.82);}
+        .cmtile .cm-nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;color:rgba(255,255,255,.82);padding-bottom:.16em;margin-bottom:-.16em;}
         .cmtile .cm-nm.cm-vacant{color:rgba(255,255,255,.34);font-weight:600;font-style:italic;}
         .cmtile .cm-pn{flex:none;font-weight:800;color:rgba(255,236,200,.62);font-variant-numeric:tabular-nums;}
         .cmtile .cm-foot{display:flex;align-items:center;gap:6px;margin-top:9px;font-size:12px;font-weight:800;color:rgba(255,255,255,.9);}

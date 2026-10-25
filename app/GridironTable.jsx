@@ -367,7 +367,7 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .gr-lg{filter:none
   .gr-crank{font-size:15px;font-weight:800;color:var(--stg-ink);min-width:22px;text-align:center;flex:none;}
   .gr-card .gr-lg,.gr-card .gr-mono{width:28px;height:28px;}
   .gr-cname{flex:1;min-width:0;font-size:15px;font-weight:800;letter-spacing:-.01em;
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--stg-ink);}
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--stg-ink);padding-bottom:.16em;margin-bottom:-.16em;}
   .gr-cscore{flex:none;display:inline-flex;flex-direction:column;align-items:center;
     min-width:56px;padding:4px 9px 5px;border-radius:8px;background:var(--stg-acc);color:var(--stg-onramp);}
   .gr-cscore b{font-size:15px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}

@@ -241,7 +241,7 @@ const CSS = `
 .csc-pip.bank{opacity:.62;}
 .csc-pip.open{opacity:.55;}
 .csc-pipn{display:block;font-weight:800;font-size:11.5px;letter-spacing:.02em;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;line-height:1.45;}
+  overflow:hidden;text-overflow:ellipsis;line-height:1.45;padding-bottom:.16em;margin-bottom:-.16em;}
 .csc-pips{display:block;font-family:'Manrope',ui-monospace,monospace;font-size:10.5px;}
 
 .csc-card{background:var(--white,#fff);border:1.5px solid var(--border,#e5e7eb);border-radius:14px;
@@ -272,10 +272,10 @@ const CSS = `
   border-radius:8px;background:var(--surface,#f7f8fa);border:1px solid var(--border,#e5e7eb);}
 .csc-rt{min-width:0;width:150px;flex:none;}
 .csc-rt .csc-rn{display:block;font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis;text-decoration:none;}
+  text-overflow:ellipsis;text-decoration:none;padding-bottom:.16em;margin-bottom:-.16em;}
 .csc-rt a.csc-rn:hover{text-decoration:underline;}
 .csc-rt i{display:block;font-style:normal;font-size:11.5px;font-weight:600;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;}
+  overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .csc-rb{flex:1;min-width:40px;height:8px;border-radius:4px;background:var(--surface-alt,#eef2f7);overflow:hidden;}
 .csc-rb span{display:block;height:100%;background:var(--acc);}
 .csc-rv{font-family:'Manrope',ui-monospace,monospace;font-size:15px;font-weight:700;flex:none;}
@@ -297,7 +297,7 @@ const CSS = `
 .csc-lbr.me{background:var(--accent-soft,#eef3ff);box-shadow:inset 3px 0 0 var(--blue,#2563eb);}
 .csc-rk{flex:none;width:24px;text-align:right;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;}
 .csc-who{flex:1;min-width:0;font-size:13.5px;font-weight:800;letter-spacing:-.15px;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;}
+  overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .csc-who s{display:block;text-decoration:none;font-size:10.5px;font-weight:700;margin-top:1px;}
 .csc-pipbar{flex:none;display:flex;gap:3px;}
 .csc-bp{width:16px;height:5px;border-radius:2px;background:#e3e8f0;}

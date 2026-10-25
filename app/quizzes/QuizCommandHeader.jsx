@@ -327,7 +327,7 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
              anonymous player gets the Sign Up button here instead, unchanged. */
           .dch-loft .qchm-user{display:flex;order:3;margin-left:auto;}
           .dch-loft .qchm-nav{order:4;margin-left:12px;}
-          .qchm-user .nm{font-size:13.5px;font-weight:800;color:var(--white);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44vw;}
+          .qchm-user .nm{font-size:13.5px;font-weight:800;color:var(--white);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44vw;padding-bottom:.16em;margin-bottom:-.16em;}
           .qchm-pic{width:30px;height:30px;border-radius:50%;background:var(--blue);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none;}
           .qchm-r2{background:#101d44;color:var(--white);border-bottom:3px solid var(--blue);}
           /* ONE SHAPE FOR EVERY CELL (owner, 2026-08-25). The row used to size
@@ -588,7 +588,7 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
            lines now, so stacking all three would make the bar three deep. Below
            900px it does stack, and the bar grows to suit (see that breakpoint). */
         .qch-mecol{display:flex;flex-direction:row;align-items:center;min-width:0;}
-        .qch-nm{display:flex;align-items:center;gap:5px;font-size:13.5px;font-weight:800;color:var(--ink);line-height:1;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;}
+        .qch-nm{display:flex;align-items:center;gap:5px;font-size:13.5px;font-weight:800;color:var(--ink);line-height:1;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
         .qch-hi{font-weight:600;color:var(--slate);}
         /* ── the stat block (owner, 2026-08-03) ──
            One column per figure, ACTUAL on the top line and TODAY on the bottom,

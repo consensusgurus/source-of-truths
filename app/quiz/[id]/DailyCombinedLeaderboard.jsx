@@ -379,7 +379,7 @@ function RankNum({ n, th }) {
 function PlayerName({ row, mine, th }) {
   const label = row.username;
   return (
-    <span style={{ minWidth: 0, fontFamily: FONT, fontSize: th.dense ? 13.5 : 16, fontWeight: 500, color: th.name, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+    <span style={{ minWidth: 0, fontFamily: FONT, fontSize: th.dense ? 13.5 : 16, fontWeight: 500, color: th.name, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
       {row.userKey ? <a href={`/quizzes/hub?player=${encodeURIComponent(row.userKey)}`} style={{ color: 'inherit', textDecoration: 'none', borderBottom: `1px dotted ${th.nameDot}` }}>{label}</a> : label}
       {mine ? <span style={{ color: th.you, fontWeight: 700 }}> (you)</span> : ''}
     </span>

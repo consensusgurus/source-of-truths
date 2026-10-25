@@ -309,7 +309,7 @@ const CSS = `
 .drw-stub-ic{display:flex;align-items:center;padding:0 10px;border-right:2px dashed rgba(11,13,18,.35)}
 .drw-stub-tx{display:flex;flex-direction:column;justify-content:center;padding:0 12px;line-height:1.15}
 .drw-stub-tx b{font-size:13px;font-weight:800}
-.drw-stub-tx i{font-style:normal;font-size:11px;font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drw-stub-tx i{font-style:normal;font-size:11px;font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .drw-more{display:flex;align-items:center;height:40px;padding:0 6px;font-size:13px;font-weight:800;color:var(--d-goldink)}
 .drw-next{display:flex;align-items:center;gap:6px;height:40px;box-sizing:border-box;padding:0 14px;border-radius:8px;
   border:2px dashed var(--d-goldline);font-size:13px;font-weight:700;color:var(--d-mute)}

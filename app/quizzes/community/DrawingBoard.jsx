@@ -278,7 +278,7 @@ const CSS = `
 .drb-stub-ic{display:flex;align-items:center;padding:0 10px;border-right:2px dashed rgba(11,13,18,.35)}
 .drb-stub-tx{display:flex;flex-direction:column;justify-content:center;padding:0 12px;line-height:1.15}
 .drb-stub-tx b{font-size:13px;font-weight:800}
-.drb-stub-tx i{font-style:normal;font-size:11px;font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drb-stub-tx i{font-style:normal;font-size:11px;font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .drb-none{font-size:13px;color:var(--stg-mute);font-weight:600}
 .drb-warn{margin:12px 0 0;font-size:13px;font-weight:700;color:var(--stg-bad);line-height:1.5}
 .drb-link{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -294,7 +294,7 @@ const CSS = `
 .drb-tr .r{text-align:right}
 .drb-tr.me{background:rgba(232,180,58,.12)}
 .drb-rk{font-size:13px;font-weight:800;color:var(--stg-mute)}
-.drb-nm{font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drb-nm{font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .drb-tr.me .drb-nm{font-weight:800}
 .drb-n{font-size:15px;font-weight:800}
 .drb-od{display:flex;align-items:center;gap:8px}

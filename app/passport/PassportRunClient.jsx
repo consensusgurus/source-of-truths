@@ -696,7 +696,7 @@ const RUN_CSS = `
 .pe-lbr + .pe-lbr{border-top:1px solid rgba(255,255,255,.07)}
 .pe-lbr.me{background:rgba(125,211,252,.12);box-shadow:inset 3px 0 0 #7dd3fc}
 .pe-lbk{font:500 12px ${MONO};color:#9aa8c4}
-.pe-lbn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pe-lbn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .pe-lbs{font:600 14px ${MONO};text-align:right}
 .pe-lbs small{font-size:10.5px;color:#9aa8c4;margin-left:1px}
 .pe-lbt{font:500 11.5px ${MONO};color:#9aa8c4;text-align:right}

@@ -983,7 +983,7 @@ function Home({ lists, viewCounts, voteData, extras, trending = {}, openList, on
         .nt-relwrap{flex:1 1 0;min-height:0;position:relative;overflow:hidden;margin-top:10px;}
         .nt-rel{display:flex;align-items:center;justify-content:space-between;gap:8px;background:${NT.bg};border:1px solid ${NT.line};border-radius:8px;padding:8px 11px;cursor:pointer;color:${NT.ink};transition:background .12s,border-color .12s;}
         .nt-rel:hover{background:var(--white);border-color:${NT.accent};}
-        .nt-rel-t{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .nt-rel-t{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         .nt-rel-a{flex:none;color:${NT.accent};font-weight:800;}
         @media(max-width:560px){.nt-wrap{padding:16px 14px 60px;}.nt-tagline{display:none;}.nt-pillsbar{display:none !important;}.nt-mfilter{display:inline-flex !important;flex:1 1 auto;justify-content:space-between;}.nt-msheet{display:block;flex:1 1 100%;width:100%;}.nt-toolbar{margin-bottom:10px;}.nt-toolwrap{display:block !important;padding:10px 14px 0 !important;}.nt-bodywrap{padding-top:0 !important;}}
       ` }} />
@@ -1127,7 +1127,7 @@ function QuizTile({ quiz, leader }) {
         {quiz.blurb && (<p style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 14.5, lineHeight: 1.5, color: T.slate, margin: 0 }}>{quiz.blurb}</p>)}
         <span style={{ marginTop: 'auto', paddingTop: 16, display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0, fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: accent.c }}>
           <span style={{ flex: 'none' }}>Current Leader:</span>
-          <span style={{ flex: '1 1 auto', minWidth: 0, fontWeight: 700, color: leader ? T.ink : T.slate, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{leader || 'Empty'}</span>
+          <span style={{ flex: '1 1 auto', minWidth: 0, fontWeight: 700, color: leader ? T.ink : T.slate, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{leader || 'Empty'}</span>
         </span>
         <div style={{ paddingTop: 10, fontFamily: 'Manrope, monospace', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700, color: accent.c }}>▶ Play</div>
       </div>

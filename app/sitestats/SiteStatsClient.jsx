@@ -357,7 +357,7 @@ const CSS = `
 .ss-toprow:last-child{border-bottom:none;}
 .ss-rank{flex:none;width:20px;height:20px;border-radius:50%;background:${NAVY};color:var(--white);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;}
 .ss-topmid{flex:1 1 auto;min-width:0;}
-.ss-topname{font-size:13.5px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ss-topname{font-size:13.5px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .ss-topbar{height:5px;background:${SURFACE};border-radius:3px;margin-top:5px;overflow:hidden;}
 .ss-topbar span{display:block;height:100%;background:${GOLD};border-radius:3px;}
 .ss-topcount{flex:none;font-size:14px;font-weight:800;color:${NAVY};font-variant-numeric:tabular-nums;}

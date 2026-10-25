@@ -322,7 +322,7 @@ const CSS = `
 .gmp-row:hover{background:#1b2336;}
 .gmp-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
 .gmp-rn{font-size:15px;font-weight:800;}
-.gmp-rg{font-size:13px;color:#a7b2c6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gmp-rg{font-size:13px;color:#a7b2c6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .gmp-arr{color:#7a869b;font-size:20px;line-height:1;}
 .gmp-monly{display:none;}
 .gmp-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:22px;flex-wrap:wrap;}

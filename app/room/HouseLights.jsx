@@ -257,7 +257,7 @@ const CSS = `
 .hl-meters{display:flex;gap:8px;padding:14px 28px 6px}
 .hl-m{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px}
 .hl-mh{display:flex;justify-content:space-between;gap:6px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;transition:color .3s ease}
-.hl-mh span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hl-mh span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .hl-mv{font-variant-numeric:tabular-nums}
 .hl-mt{height:8px;border-radius:4px;overflow:hidden;transition:background-color .3s ease}
 .hl-mf{height:100%;transition:width .5s ease,background-color .3s ease}

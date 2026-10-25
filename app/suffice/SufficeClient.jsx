@@ -695,7 +695,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
                     <div key={i} style={{ display: 'flex', gap: 9, alignItems: 'center', padding: '5px 0', borderTop: i ? '1px solid rgba(28,30,36,0.08)' : 'none', fontSize: 13.5 }}>
                       <span style={{ fontFamily: MONO, color: FADED, flex: '0 0 auto', width: 20 }}>{i + 1}</span>
                       <span aria-label={g.picks[i] === KEY[i] ? 'right' : 'wrong'} style={{ flex: '0 0 auto', width: 22, height: 22, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', background: g.picks[i] === KEY[i] ? COLORS.green : '#b91c1c', color: T.white }}>{g.picks[i] === KEY[i] ? <Check size={14} /> : <X size={14} />}</span>
-                      <span style={{ color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.ask}</span>
+                      <span style={{ color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{it.ask}</span>
                       {g.picks[i] && g.picks[i] !== KEY[i] && <span style={{ marginLeft: 'auto', flex: '0 0 auto', fontFamily: MONO, fontSize: 12, color: FADED }}>{SHORT[KEY[i]] || ''}, you said {SHORT[g.picks[i]] || ''}</span>}
                       {!g.picks[i] && <Minus size={14} style={{ marginLeft: 'auto', flex: '0 0 auto', color: FADED }} />}
                     </div>

@@ -1004,7 +1004,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
           .ow-seg{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-height:44px;background:none;border:0;padding:0 0 4px;margin:0;cursor:pointer;text-align:left;font-family:${SANS};min-width:0;}
           .ow-seg-bar{display:block;height:6px;border-radius:3px;}
           .ow-seg-tag{font-family:${MONO};font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-          .ow-seg-ans{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .ow-seg-ans{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
           .ow-cur{display:flex;flex-direction:column;gap:10px;margin:28px 0 22px;}
           .ow-eyebrow{font-family:${MONO};font-size:12px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;}
           .ow-q{font-size:30px;font-weight:800;line-height:1.18;letter-spacing:-0.02em;}

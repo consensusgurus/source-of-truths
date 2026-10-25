@@ -21,6 +21,7 @@
 
 import React from 'react';
 import { RAMP_INK, softGround } from '@/lib/category-ramp';
+import MindLoftMark from './MindLoftMark';
 import { useStageLook, stagePalette, useStageChrome, LookButton } from './GauntletScreens';
 import { nextLook } from '@/lib/stage-look';
 
@@ -42,6 +43,11 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   return (
     <div key={look} className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      {/* The Mind Loft mark and name top left, like every page (owner, 2026-10-24). */}
+      <a className="gst-brand" href="/" aria-label="Mind Loft home">
+        <MindLoftMark size={24} ink={pal.ink} accent={pal.ink} title="Mind Loft" />
+        <span>Mind Loft</span>
+      </a>
       <LookButton look={look} onFlip={() => setLook(nextLook(look))} className="gst-look" />
       <div className="gst-col" key={qKey}>
         <div className="gst-q">{question}</div>
@@ -71,7 +77,8 @@ const CSS = `
 .gst *{color:var(--gst-ink);}
 .gst-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--gst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
 .gst-look:hover{opacity:1}
-.gst-col{width:100%;max-width:600px;box-sizing:border-box;padding:28px 16px 22px;display:flex;flex-direction:column;justify-content:center;gap:28px;min-height:100%;}
+.gst-brand{position:fixed;top:max(12px, env(safe-area-inset-top));left:14px;z-index:2;display:inline-flex;align-items:center;gap:8px;height:40px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:-.01em;}
+.gst-col{width:100%;max-width:600px;box-sizing:border-box;padding:max(68px, calc(env(safe-area-inset-top) + 56px)) 16px 22px;display:flex;flex-direction:column;justify-content:center;gap:28px;min-height:100%;}
 .gst-q{text-align:center;font-size:30px;line-height:1.18;font-weight:800;letter-spacing:-0.02em;animation:gstRise .45s ease-out both;}
 .gst-q h2{margin:0;font:inherit;letter-spacing:inherit;}
 .gst-q blockquote{margin:0 0 12px;font-size:20px;font-weight:700;line-height:1.35;font-style:italic;}

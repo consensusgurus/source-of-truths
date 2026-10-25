@@ -163,6 +163,6 @@ const MORE_CSS = `
 .djm-row:hover{background:rgba(255,255,255,.08)}
 .djm-tx{flex:1;min-width:0;display:flex;flex-direction:column}
 .djm-tx b{font-size:14px;font-weight:800}
-.djm-tx small{font-size:11.5px;font-weight:600;color:#9aa8c4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.djm-tx small{font-size:11.5px;font-weight:600;color:#9aa8c4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .djm-go{font-size:12px;font-weight:800;color:#e9cf7f;white-space:nowrap}
 `;

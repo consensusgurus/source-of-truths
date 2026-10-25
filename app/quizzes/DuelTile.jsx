@@ -209,7 +209,7 @@ export default function DuelTile() {
                         <div style={menuHd}>Today{"'"}s Daily Puzzles</div>
                         {dailyResults.map((x) => (
                           <button key={x.quizId} onClick={() => { setQuiz({ id: x.quizId, title: x.title }); setQuizOpen(false); }} style={item}>
-                            <span style={{ display: 'block', fontWeight: 700, fontSize: 13, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{x.title}</span>
+                            <span style={{ display: 'block', fontWeight: 700, fontSize: 13, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{x.title}</span>
                             <span style={{ display: 'block', fontSize: 10.5, fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', color: T.muted }}>{x.tag || x.category}</span>
                           </button>
                         ))}
@@ -218,7 +218,7 @@ export default function DuelTile() {
                     )}
                     {quizResults.map((x) => (
                       <button key={x.id} onClick={() => { setQuiz({ id: x.id, title: x.title }); setQuizOpen(false); }} style={item}>
-                        <span style={{ display: 'block', fontWeight: 700, fontSize: 13, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{x.title}</span>
+                        <span style={{ display: 'block', fontWeight: 700, fontSize: 13, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{x.title}</span>
                         <span style={{ display: 'block', fontSize: 10.5, fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', color: T.muted }}>{x.category || 'Quiz'}</span>
                       </button>
                     ))}

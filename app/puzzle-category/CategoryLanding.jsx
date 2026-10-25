@@ -428,7 +428,7 @@ const CSS = `
 .pcl-row.open .pcl-cta{border-color:var(--cci, var(--cc));}
 .pcl-id,.pcl-desc,.pcl-lead{min-width:0;}
 .pcl-how{display:block;margin-top:2px;font-size:12.5px;font-weight:500;line-height:1.45;color:var(--stg-mute);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .pcl-lead{font-size:13.5px;line-height:1.35;}
 .pcl-lead b{font-weight:800;}
 .pcl-lead>span:not(.pcl-open):not(.pcl-wait){color:var(--stg-ink2);font-variant-numeric:tabular-nums;}
@@ -440,8 +440,8 @@ const CSS = `
 .pcl-day-n b{font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--stg-ink);margin-right:4px;font-variant-numeric:tabular-nums;}
 .pcl-day-list{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:9px;}
 .pcl-day li{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:8px;align-items:baseline;font-size:13px;}
-.pcl-day-g{font-weight:800;color:var(--cci);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.pcl-day li b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pcl-day-g{font-weight:800;color:var(--cci);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
+.pcl-day li b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .pcl-day-s{color:var(--stg-ink2);font-variant-numeric:tabular-nums;white-space:nowrap;}
 .pcl-day-note{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--stg-line);font-size:12.5px;line-height:1.5;color:var(--stg-mute);font-weight:600;}
 .pcl-day-wait{display:flex;flex-direction:column;gap:9px;margin-top:12px;}
@@ -468,7 +468,7 @@ const CSS = `
 .pcl-big-row{display:flex;align-items:baseline;gap:9px;font-size:14px;}
 .pcl-big-row b{flex:none;width:14px;font-family:${MONO};font-size:11px;font-weight:700;color:var(--stg-ink2);}
 .pcl-big-row:first-child b{color:var(--cci);}
-.pcl-big-who{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;}
+.pcl-big-who{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;padding-bottom:.16em;margin-bottom:-.16em;}
 .pcl-big-sc{flex:none;color:var(--stg-ink2);font-variant-numeric:tabular-nums;}
 .pcl-big-go{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 20px;border-radius:10px;
   background:var(--cc);color:var(--stg-onramp,#08222e);font-size:14.5px;font-weight:800;}
@@ -480,7 +480,7 @@ const CSS = `
 .pcl-mini:hover{border-color:var(--cci, var(--cc));}
 .pcl-mini.open{border-color:var(--cci, var(--cc));}
 .pcl-mini-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
-.pcl-mini-st{margin-top:4px;font-size:12.5px;color:var(--stg-ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pcl-mini-st{margin-top:4px;font-size:12.5px;color:var(--stg-ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .pcl-mini-st b{font-weight:800;color:var(--stg-ink);}
 .pcl-minis.two .pcl-mini{flex-direction:column;align-items:flex-start;}
 .pcl-minis.two .pcl-mini .pcl-cta{align-self:stretch;}
@@ -527,10 +527,10 @@ const CSS = `
   .pcl-lcol{display:none;}
   .pcl-row{grid-template-columns:40px minmax(0,1fr) auto;gap:4px 12px;padding:12px 14px;}
   .pcl-id{grid-column:2;grid-row:1;display:flex;align-items:baseline;gap:8px;min-width:0;}
-  .pcl-id .pcl-gen{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .pcl-id .pcl-gen{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
   .pcl-gi{grid-row:1 / span 2;}
   .pcl-desc{display:none;}
-  .pcl-lead{grid-column:2;grid-row:2;margin-top:0;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .pcl-lead{grid-column:2;grid-row:2;margin-top:0;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
   .pcl-cta{grid-column:3;grid-row:1 / span 2;min-width:64px;}
   .pcl-feat{grid-template-columns:minmax(0,1fr);gap:10px;}
   .pcl-big{padding:18px;}

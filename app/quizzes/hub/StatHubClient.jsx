@@ -233,7 +233,7 @@ function ShareStatsModal({ profile, byKey, onClose }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '18px 18px 12px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.05, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile.name}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.05, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{profile.name}</div>
             <div style={{ marginTop: 5 }}><span style={{ background: C.accsoft, color: C.ink || C.muted, fontSize: 10.5, fontWeight: 700, padding: '2px 8px', borderRadius: 6 }}>{(profile.tier || '').replace(/ Tier$/, '')}</span> <span style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>Level {profile.level || 1} · {Number(profile.xp || 0).toLocaleString()} IQ</span></div>
           </div>
           <div style={{ textAlign: 'right' }}>
@@ -424,7 +424,7 @@ function DuelsPanel({ data, setData, ladder, loaded, onSelectPlayer }) {
           </span>
           <a href={`/duel/${d.token}`} style={{ flex: 1, minWidth: 150, textDecoration: 'none', color: C.ink }}>
             <span style={{ display: 'block', fontSize: 13.5, fontWeight: 700 }}>{foe ? (iAmCh ? <>You challenged <span style={{ color: C.accent }}>{foe}</span></> : <><span style={{ color: C.accent }}>{foe}</span> challenged you</>) : 'Open invite'}</span>
-            <span style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.muted, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{qtitle(d.quiz_id)}</span>
+            <span style={{ display: 'block', fontSize: 12, fontWeight: 600, color: C.muted, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{qtitle(d.quiz_id)}</span>
           </a>
           {pulse && !iAmCh ? <span style={{ flex: 'none', fontSize: 10, fontWeight: 800, letterSpacing: '.05em', background: C.accsoft, color: C.accent, borderRadius: 999, padding: '4px 10px' }}>YOUR TURN</span> : null}
           {pulse && !iAmCh ? <button onClick={() => decline(d)} style={smallBtn(C.danger)}>Decline</button> : null}
@@ -534,7 +534,7 @@ function DuelsPanel({ data, setData, ladder, loaded, onSelectPlayer }) {
                       {Number.isFinite(sc.my) && Number.isFinite(sc.their) ? <>You {sc.my} - {sc.their} </> : null}
                       <span style={{ color: C.accent }}>{foe || 'Open invite'}</span>
                     </span>
-                    <span className="duelqt" style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: C.soft, fontWeight: 600 }}>{qtitle(d.quiz_id)}</span>
+                    <span className="duelqt" style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: C.soft, fontWeight: 600, paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{qtitle(d.quiz_id)}</span>
                   </a>
                   {(o === 'win' || o === 'loss' || o === 'tie') && foe ? (
                     <a href={rematchHref(foe, fa, d.quiz_id)} style={{ flex: 'none', fontSize: 11.5, fontWeight: 800, color: C.accent, textDecoration: 'none' }}>{o === 'loss' ? 'Avenge' : 'Rematch'}</a>
@@ -566,7 +566,7 @@ function DuelsPanel({ data, setData, ladder, loaded, onSelectPlayer }) {
                 <span
                   onClick={(e) => { e.stopPropagation(); if (onSelectPlayer) onSelectPlayer(p.key || `a:${p.anon}`); }}
                   title="View profile"
-                  style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: isMe ? 800 : 700, fontSize: 14, color: C.accent, cursor: 'pointer' }}
+                  style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: isMe ? 800 : 700, fontSize: 14, color: C.accent, cursor: 'pointer', paddingBottom: '0.16em', marginBottom: '-0.16em' }}
                 >{p.name}{isMe ? <span style={{ fontSize: 9.5, color: C.accent, fontWeight: 800, marginLeft: 6 }}>YOU</span> : null}</span>
                 <span style={{ flex: 'none', fontSize: 13, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{p.wins}-{p.losses}{p.ties ? `-${p.ties}` : ''}</span>
                 <span className="lbar" style={{ flex: 'none', width: 86, height: 7, borderRadius: 999, background: isMe ? 'var(--stg-line3,rgba(255,255,255,0.42))' : C.accsoft, overflow: 'hidden' }}><span style={{ display: 'block', width: `${Math.max(3, Math.min(100, p.winPct || 0))}%`, height: '100%', background: C.accent, borderRadius: 999 }} /></span>
@@ -584,8 +584,8 @@ function DuelsPanel({ data, setData, ladder, loaded, onSelectPlayer }) {
                       <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', fontSize: 12.5 }}>
                         <span style={{ flex: 'none', width: 34, fontWeight: 800, color: clr }}>{lbl}</span>
                         <span style={{ flex: 'none', color: C.muted }}>vs</span>
-                        <span style={{ flex: 'none', fontWeight: 700, color: C.ink, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.vs}</span>
-                        <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: C.soft }}>{qtitle(m.quizId)}</span>
+                        <span style={{ flex: 'none', fontWeight: 700, color: C.ink, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{m.vs}</span>
+                        <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: C.soft, paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{qtitle(m.quizId)}</span>
                         {m.my != null && m.their != null ? <span style={{ flex: 'none', fontWeight: 700, color: C.soft, fontVariantNumeric: 'tabular-nums' }}>{m.my}-{m.their}</span> : null}
                       </div>
                     );
@@ -1155,7 +1155,7 @@ function DailyGamesView({ onSelectPlayer, initialGame = null }) {
   const sub = { fontSize: 10, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: C.muted };
   const nameBtn = (key, name, size) => (key
     ? <button onClick={() => openPlayer(key)} style={{ border: 'none', background: 'transparent', padding: 0, font: 'inherit', fontFamily: FONT, fontWeight: 700, fontSize: size, color: C.accent, cursor: 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{name}</button>
-    : <span style={{ fontWeight: 700, fontSize: size, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>);
+    : <span style={{ fontWeight: 700, fontSize: size, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{name}</span>);
 
   return (
     <div>
@@ -1240,7 +1240,7 @@ function DailyGamesView({ onSelectPlayer, initialGame = null }) {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                     <a href={meta.href} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', minWidth: 0 }}>
                       <span style={{ width: 9, height: 9, borderRadius: '50%', background: meta.c, flex: 'none' }} />
-                      <span style={{ fontSize: 14, fontWeight: 800, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{meta.name}</span>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{meta.name}</span>
                     </a>
                     <span style={{ fontSize: 10.5, fontWeight: 700, color: C.soft, flex: 'none' }}>{g.days} {g.days === 1 ? 'day' : 'days'}</span>
                   </div>
@@ -1354,7 +1354,7 @@ function UserBaseBody({ board, boardTotal, myName, myAnonKey, onSelectPlayer, vi
                 <Avatar name={p.name} bg={MEDAL_BG[i]} fg={MEDAL_INK[i]} size={40} />
                 {i === 0 ? <span style={{ position: 'absolute', top: -7, right: -9, width: 19, height: 19, borderRadius: '50%', background: RAISE, border: `1px solid ${C.line}`, color: MEDAL_INK[0], display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Crown size={11} /></span> : null}
               </span>
-              <div style={{ marginTop: 7, fontSize: 13, fontWeight: 800, lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ marginTop: 7, fontSize: 13, fontWeight: 800, lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
                 <button onClick={() => onSelectPlayer && onSelectPlayer(p.userKey)} style={{ border: 'none', background: 'transparent', padding: 0, font: 'inherit', fontFamily: FONT, fontWeight: 800, color: mine ? C.ink : C.accent, cursor: 'pointer' }}>{p.name}</button>
                 {mine ? <span style={{ fontSize: 9.5, color: C.accent, fontWeight: 800, marginLeft: 5 }}>YOU</span> : null}
               </div>
@@ -1463,7 +1463,7 @@ function QuizzesPanel({ me, myProfile, scope, byKey, catalog, stats, totals, tot
                 <tr key={q.id}>
                   <td style={{ fontWeight: 600, maxWidth: 280 }}>
                     <span style={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
-                      <Link href={`/quiz/${q.id}`} className="qlink" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{q.title}</Link>
+                      <Link href={`/quiz/${q.id}`} className="qlink" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{q.title}</Link>
                       {doneCompleted.has(q.id) ? <Star size={13} strokeWidth={1.5} fill={T.gold} color={T.goldInk} style={{ flex: 'none', marginLeft: 5 }} aria-label="Completed (100%)" /> : donePlayed.has(q.id) ? <Check size={13} strokeWidth={2.75} style={{ flex: 'none', color: 'var(--stg-good,#6ee7b7)', marginLeft: 5 }} aria-label="Played" /> : null}
                     </span>
                   </td>

@@ -1623,12 +1623,12 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
     .qzh .card{background:${C.surface};border:1px solid ${C.line};border-radius:12px;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
     .qzh .boards .card{background:${C.surface};border-color:${C.line};}
     .qzh .head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 13px 9px;background:#f1f3f6;border-bottom:1px solid ${C.line};min-height:42px;cursor:pointer;}
-    .qzh .head .lbl{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;}
+    .qzh .head .lbl{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;padding-bottom:.16em;margin-bottom:-.16em;}
     .qzh .head .qlink{flex:none;white-space:nowrap;}
     .qzh .lrow{display:flex;align-items:center;gap:9px;padding:5.5px 13px;font-size:12.5px;}
     /* "(x25)": that game's play count since Eastern midnight, beside the title. */
     .qzh .lf-day{flex:none;font-size:10.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;}
-    .qzh .qtitle{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .qzh .qtitle{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
     .qzh .att{font-size:9.5px;font-weight:700;color:${C.soft};}
     .qzh .score{flex:none;font-weight:700;color:${C.accent};font-variant-numeric:tabular-nums;}
     @media(max-width:680px){.qzh .lf-extra{display:none;}}
@@ -1652,8 +1652,8 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
     .qzh .th-game-txt{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1 1 auto;overflow:hidden;}
     .qzh .th-game-art{flex:0 0 auto;height:52px;width:auto;max-width:56px;object-fit:contain;}
     .qzh .th-game-tag{font-size:9px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#8a5300;margin-bottom:3px;}
-    .qzh .th-game-t{font-size:17px;font-weight:800;letter-spacing:-.3px;color:var(--ink);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .qzh .th-game-p{font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .qzh .th-game-t{font-size:17px;font-weight:800;letter-spacing:-.3px;color:var(--ink);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
+    .qzh .th-game-p{font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
     @media(max-width:1180px){.qzh .th-game-art{height:44px;max-width:48px;}.qzh .th-game-p{display:none;}}
     @media(max-width:1080px){.qzh .th-game-art{height:40px;}.qzh .th-game{padding:11px 12px;gap:8px;}}
     @media(max-width:980px){.qzh .th-game-art{height:34px;max-width:36px;}.qzh .th-game{padding:10px 10px;gap:7px;}.qzh .th-game-t{font-size:15.5px;}}
@@ -1738,7 +1738,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
       /* Daily Challenge tile head: drop the N/N counter (the progress bars already show it) and let the title/chip wrap+ellipsis instead of running off the narrow tile. */
       .qzh .dtile-count{display:none !important;}
       .qzh .dtile-head{flex-wrap:wrap;gap:6px 7px;}
-      .qzh .dtile-head .x8{font-size:12px !important;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .qzh .dtile-head .x8{font-size:12px !important;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
       .qzh .dtile-chip{font-size:9px;padding:2px 7px;}
     }
     .qzh .dtile{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px 15px;color:var(--ink);display:flex;flex-direction:column;min-height:190px;}
@@ -1750,11 +1750,11 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
     .qzh .dtile-rows{display:flex;flex-direction:column;justify-content:space-evenly;flex:1;margin:2px 0 8px;}
     .qzh .dtile-row{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--ink);text-decoration:none;padding:2px 0;}
     .qzh .dtile-num{width:16px;height:16px;border-radius:50%;border:2px solid #c8ced9;flex:none;font-size:9px;display:flex;align-items:center;justify-content:center;}
-    .qzh .dtile-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .qzh .dtile-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
     .qzh .dtile-cta{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:10px;background:${C.cta};color:${C.ctaInk};border-radius:10px;padding:9px 12px;font-weight:800;font-size:12.5px;text-decoration:none;}
     .qzh .dtile-cta-go{display:inline-flex;align-items:center;gap:6px;flex:none;font-size:13.5px;font-weight:900;letter-spacing:0.01em;}
     .qzh .dtile-cta-ldr{display:inline-flex;align-items:center;gap:6px;min-width:0;flex:1;justify-content:center;padding:0 6px 0 10px;border-left:1px solid rgba(28,30,36,0.25);}
-    .qzh .dtile-cta-nm{min-width:0;font-size:13.5px;font-weight:900;letter-spacing:0.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .qzh .dtile-cta-nm{min-width:0;font-size:13.5px;font-weight:900;letter-spacing:0.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
     .qzh .dtile-cta-unseat{flex:0 1 auto;min-width:0;gap:5px;}
     .qzh .lbtile{background:var(--white);border:1px solid ${C.line};border-radius:14px;padding:12px 15px;flex:1;display:flex;flex-direction:column;min-height:132px;overflow:hidden;}
     .qzh .lbtile-head{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
@@ -1770,7 +1770,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
     .qzh .rseg:hover .rmeter{filter:brightness(1.18);}
     .qzh .rmeter{position:absolute;left:0;top:0;bottom:0;z-index:0;min-width:3px;background:linear-gradient(90deg,rgba(37,99,235,.16),rgba(37,99,235,.05));border-right:2px solid var(--blue);border-radius:7px 0 0 7px;}
     .qzh .rseg-top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;}
-    .qzh .rseg .rnm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:600;color:var(--ink);}
+    .qzh .rseg .rnm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:600;color:var(--ink);padding-bottom:.16em;margin-bottom:-.16em;}
     .qzh .rseg .rpct{font-size:10.5px;font-weight:800;flex:none;color:var(--slate);font-variant-numeric:tabular-nums;}
     /* Search + category + submit moved into the top command bar on desktop, so
        the browse control row collapses to just its (conditional) heading there. */
@@ -1944,7 +1944,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
       .qzh .qz-mobtoggle{display:flex;gap:4px;margin-bottom:12px;background:var(--surface-alt);border-radius:12px;padding:4px;}
       .qzh .qz-mobtoggle .mtbtn{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;background:transparent;border:none;border-radius:9px;padding:9px 12px;cursor:pointer;font:inherit;color:${C.soft};font-weight:700;font-size:12.5px;}
       .qzh .qz-mobtoggle .mtbtn.active{background:var(--white);color:${C.ink};box-shadow:0 1px 2px rgba(20,22,28,0.06);}
-      .qzh .qz-mobtoggle .mtbtn .mtlbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .qzh .qz-mobtoggle .mtbtn .mtlbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
       .qzh .qz-mobtoggle .mtbtn{justify-content:center !important;}
       .qzh .qz-mobtoggle .mtbtn svg:last-child{margin-left:0 !important;}
       .qzh .boards.show-lb .lb-card{display:flex !important;order:-1;}
@@ -2253,12 +2253,12 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
             .qzh .dhx-lb1{display:flex;align-items:center;gap:9px;border-radius:11px;padding:8px 10px;margin-bottom:4px;background:linear-gradient(90deg,#fdf1d3,var(--white));border:1px solid #f0dcae;}
             .qzh .dhx-lb1 .av{width:32px;height:32px;border-radius:50%;background:var(--gold);color:#2b1d00;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:none;}
             .qzh .dhx-lb1 .m{flex:1;min-width:0;}
-            .qzh .dhx-lb1 .m .n{display:block;font-size:19px;font-weight:800;line-height:1.02;color:var(--gold-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+            .qzh .dhx-lb1 .m .n{display:block;font-size:19px;font-weight:800;line-height:1.02;color:var(--gold-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
             .qzh .dhx-lb1 .m .s{display:block;font-size:10px;font-weight:600;color:var(--muted);margin-top:1px;}
             .qzh .dhx-lb1 .sc{flex:none;font-size:14px;font-weight:800;color:var(--gold-ink);font-variant-numeric:tabular-nums;}
             .qzh .dhx-lrow{display:flex;align-items:center;gap:9px;padding:4px 0;font-size:12px;color:#4a4f5c;}
             .qzh .dhx-lrow .pl{width:15px;font-size:10.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;flex:none;}
-            .qzh .dhx-lrow b{flex:1;min-width:0;color:var(--ink);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+            .qzh .dhx-lrow b{flex:1;min-width:0;color:var(--ink);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
             .qzh .dhx-lrow .sc{flex:none;font-size:11.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;}
             .qzh .dhx-lrow.you{background:#fdf7ec;border-radius:7px;padding:5px 8px;margin:2px -8px 0;}
             .qzh .dhx-lrow.you b{color:var(--gold-ink);}
@@ -2272,7 +2272,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
             .qzh .dhx-lpr .ring{width:30px;height:30px;flex:none;border-radius:999px;display:flex;align-items:center;justify-content:center;}
             .qzh .dhx-lpr .ring .in{width:23px;height:23px;border-radius:999px;background:var(--white);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:var(--ink);}
             .qzh .dhx-lpr .mid{flex:1;min-width:0;}
-            .qzh .dhx-lpr .mid .t{display:block;font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+            .qzh .dhx-lpr .mid .t{display:block;font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
             .qzh .dhx-lpr .mid .c .x{font-weight:600;color:var(--muted);}
             .qzh .dhx-lpr .mid .c{display:flex;align-items:center;gap:4px;font-size:9.5px;color:var(--muted);margin-top:1px;}
             .qzh .dhx-lpr .mid .c i{width:6px;height:6px;border-radius:2px;flex:none;}
@@ -2290,7 +2290,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
             .qzh .dhx-qrow .qic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none;color:var(--white);}
             .qzh .dhx-qrow .qm{flex:1;min-width:0;}
             .qzh .dhx-qrow .qm .qt{display:block;font-size:13px;font-weight:800;color:var(--ink);}
-            .qzh .dhx-qrow .qm .qs{display:block;font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+            .qzh .dhx-qrow .qm .qs{display:block;font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
             /* who currently leads this row, beside the title */
             .qzh .dhx-qrow .qm .qlead{display:inline-flex;align-items:center;gap:3px;margin-left:6px;vertical-align:1px;max-width:110px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 7px;background:#fdf7ec;color:var(--gold-ink);border:1px solid #f0dcae;}
             .qzh .dhx-qrow .qm .qlead svg{flex:none;}
@@ -2334,7 +2334,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
             .qzh .dhx-lb.daily .dhx-lb-tag{color:#7c4a06;}
             .qzh .dhx-lb.xp .dhx-lb-tag{color:#162b5c;}
             .qzh .dhx-lb-hero{display:flex;align-items:flex-end;gap:8px;min-width:0;min-height:43px;}
-            .qzh .dhx-lb-name{display:block;flex:1;min-width:0;font-weight:800;line-height:1.3;letter-spacing:-.5px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+            .qzh .dhx-lb-name{display:block;flex:1;min-width:0;font-weight:800;line-height:1.3;letter-spacing:-.5px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
             .qzh .dhx-lb.comm .dhx-lb-name{color:#5b21b6;}
             .qzh .dhx-lb.daily .dhx-lb-name{color:#7c4a06;}
             .qzh .dhx-lb.xp .dhx-lb-name{color:#162b5c;}
@@ -2357,7 +2357,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
             .qzh .dhx-lb.comm .dhx-lb-gi .rk{background:#ece5fb;color:#5b21b6;}
             .qzh .dhx-lb.daily .dhx-lb-gi .rk{background:#f6ebd2;color:#7c4a06;}
             .qzh .dhx-lb.xp .dhx-lb-gi .rk{background:#e1ebfd;color:#162b5c;}
-            .qzh .dhx-lb-gi b{flex:1;min-width:0;color:var(--ink);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+            .qzh .dhx-lb-gi b{flex:1;min-width:0;color:var(--ink);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
             .qzh .dhx-lb-gi:hover b{text-decoration:underline;}
             .qzh .dhx-lb-gi .sc{flex:none;color:var(--slate);font-weight:700;font-variant-numeric:tabular-nums;}
             .qzh .dhx-lb-gi.me b{color:var(--gold-ink);}
@@ -2412,7 +2412,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
             .qzh .dhx-lp-rows{display:flex;flex-direction:column;gap:1px;}
             .qzh .dhx-lp-row{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1.5px solid var(--border);text-decoration:none;}
             .qzh .dhx-lp-row:last-child{border-bottom:none;}
-            .qzh .dhx-lp-nm{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+            .qzh .dhx-lp-nm{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
             .qzh .dhx-lp-sc{flex:none;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;border-radius:7px;padding:2px 7px;}
             .qzh .dhx-lp-none{font-size:12px;color:var(--muted);padding:6px 0;}
             @media(max-width:1200px){
@@ -2863,13 +2863,13 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
                       {hot ? (
                         <a href={playHref(hot.id)} style={{ flex: '1 1 0', minWidth: 0, background: T.surface, border: `1px solid ${T.surfaceAlt}`, borderRadius: 8, padding: '4px 8px', textDecoration: 'none', display: 'block' }}>
                           <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '.04em', color: '#f4b183', textTransform: 'uppercase', display: 'block' }}>🔥 Hot now</span>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: T.white, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', marginTop: 1 }}>{stripVerb(titleById[hot.id] || hot.title)}</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: T.white, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', marginTop: 1, paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{stripVerb(titleById[hot.id] || hot.title)}</span>
                         </a>
                       ) : null}
                       {tough ? (
                         <a href={playHref(tough.quizId)} style={{ flex: '1 1 0', minWidth: 0, background: T.surface, border: `1px solid ${T.surfaceAlt}`, borderRadius: 8, padding: '4px 8px', textDecoration: 'none', display: 'block' }}>
                           <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '.04em', color: '#9ec5e8', textTransform: 'uppercase', display: 'block' }}>🧠 Toughest · {Math.round((tough.aceRate || 0) * 100)}% ace</span>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: T.white, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', marginTop: 1 }}>{stripVerb(resolveTitle(tough.quizId) || '')}</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: T.white, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', marginTop: 1, paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{stripVerb(resolveTitle(tough.quizId) || '')}</span>
                         </a>
                       ) : null}
                     </div>
@@ -2896,12 +2896,12 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
                           </span>
                           <span style={{ minWidth: 0, flex: 1 }}>
                             <span style={{ display: 'flex', alignItems: 'baseline', gap: 5, minWidth: 0 }}>
-                              <span style={{ fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: C.ink, minWidth: 0 }}>{stripVerb(f.title)}</span>
+                              <span style={{ fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: C.ink, minWidth: 0, paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{stripVerb(f.title)}</span>
                               {todayPlays(f.quizId) > 0 ? <span style={{ flex: 'none', fontSize: 9.5, fontWeight: 700, color: C.soft, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>(x{todayPlays(f.quizId).toLocaleString()} today)</span> : null}
                             </span>
                             <span style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 1 }}>
                               <span style={{ width: 6, height: 6, borderRadius: 2, background: catColor, flex: 'none' }} />
-                              <span style={{ fontSize: 10, color: C.soft, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{catLabel}</span>
+                              <span style={{ fontSize: 10, color: C.soft, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{catLabel}</span>
                             </span>
                           </span>
                           <span style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
@@ -3037,7 +3037,7 @@ function DetailCard({ q, s, leader, color }) {
   const Stat = ({ label, value }) => (
     <div style={{ minWidth: 0 }}>
       <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: C.soft }}>{label}</div>
-      <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{value}</div>
     </div>
   );
   return (
@@ -3045,7 +3045,7 @@ function DetailCard({ q, s, leader, color }) {
       <div className="card" style={{ padding: '12px 14px', gap: 10, height: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span className="dot" style={{ background: color, flex: 'none' }} />
-          <span style={{ fontSize: 13.5, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{stripVerb(q.title)}</span>
+          <span style={{ fontSize: 13.5, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{stripVerb(q.title)}</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px' }}>
           <Stat label="Plays" value={plays ? plays.toLocaleString() : '0'} />

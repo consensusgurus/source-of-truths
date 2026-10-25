@@ -263,7 +263,7 @@ const CSS = `
 .rn-sn{font-family:${SANS};font-weight:800;font-size:13.5px;color:#fff;flex:none;
   max-width:38vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rn-sf{font-variant-numeric:tabular-nums;flex:none;}
-.rn-sd{color:#66748f;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rn-sd{color:#66748f;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .rn-sy{margin-left:auto;flex:none;color:#7dd3fc;letter-spacing:.1em;text-transform:uppercase;font-size:9.5px;}
 
 .rn-rank{background:#0d1220;border-bottom:1px solid rgba(255,255,255,.09);}
@@ -284,7 +284,7 @@ const CSS = `
 .rn-ppl{display:block;font-family:${MONO};font-size:10px;color:#66748f;letter-spacing:.1em;margin-bottom:6px;}
 .rn-pstep.p1 .rn-ppl{color:${T.gold};}
 .rn-pnm{display:block;font-size:16px;font-weight:800;letter-spacing:-.02em;color:#fff;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .rn-pstep.p1 .rn-pnm{font-size:19px;}
 .rn-pfg{display:block;font-family:${MONO};font-size:12.5px;color:#9aa8c4;margin-top:5px;font-variant-numeric:tabular-nums;}
 .rn-pfg u{text-decoration:none;color:#66748f;}
@@ -302,7 +302,7 @@ const CSS = `
 .rn-rpos{font-family:${MONO};font-size:11.5px;color:#66748f;min-width:26px;flex:none;font-variant-numeric:tabular-nums;}
 .rn-rpos.day{min-width:46px;}
 .rn-rrow2.me .rn-rpos{color:#7dd3fc;}
-.rn-rnm{flex:1;min-width:0;font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rn-rnm{flex:1;min-width:0;font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .rn-rfg{font-family:${MONO};font-size:12.5px;color:#9aa8c4;flex:none;font-variant-numeric:tabular-nums;}
 .rn-rfg s{text-decoration:none;color:#66748f;}
 .rn-rfine{font-size:12px;line-height:1.6;font-weight:600;color:#66748f;margin:12px 0 0;}

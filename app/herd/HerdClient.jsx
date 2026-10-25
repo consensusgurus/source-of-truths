@@ -885,7 +885,7 @@ export default function HerdClient({ puzzles = [], forceNum = null }) {
           .hd-seg{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-height:44px;background:none;border:0;padding:0 0 4px;margin:0;cursor:pointer;text-align:left;font-family:${SANS};min-width:0;}
           .hd-seg-bar{display:block;height:6px;border-radius:3px;}
           .hd-seg-tag{font-family:${MONO};font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-          .hd-seg-ans{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .hd-seg-ans{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
           .hd-cur{display:flex;flex-direction:column;gap:10px;margin:28px 0 22px;}
           .hd-eyebrow{font-family:${MONO};font-size:12px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;}
           .hd-q{font-size:30px;font-weight:800;line-height:1.18;letter-spacing:-0.02em;}

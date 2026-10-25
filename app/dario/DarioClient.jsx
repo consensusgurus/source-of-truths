@@ -168,7 +168,7 @@ function FastestList({ refreshKey, myName, ink, faded, surf, line, acc }) {
             return (
               <li key={`${r.name}-${i}`} style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1fr) auto auto', gap: 10, alignItems: 'baseline', padding: '6px 0', borderTop: i ? `1px solid ${line}` : 'none', fontSize: 13.5, color: ink, fontWeight: me ? 800 : 600 }}>
                 <span style={{ color: i < 3 ? acc : faded, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{i + 1}</span>
-                <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}{me ? ' (you)' : ''}</span>
+                <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{r.name}{me ? ' (you)' : ''}</span>
                 <span style={{ fontSize: 11.5, color: faded, fontVariantNumeric: 'tabular-nums' }}>{dateOfQuiz(r.quizId)}</span>
                 <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 800 }}>{fmtRun(r.tenths)}</span>
               </li>
@@ -894,7 +894,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
         .dr-seg { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .dr-bar { display: flex; height: 8px; border-radius: 3px; overflow: hidden; background: var(--stg-line2, #c3cad6); }
         .dr-bar > span { display: block; background: var(--stg-acc, #fbbf24); transition: width .2s linear; }
-        .dr-nm { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--stg-mute, #5f6774); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dr-nm { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--stg-mute, #5f6774); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;padding-bottom:.16em;margin-bottom:-.16em; }
         .dr-nm.on { color: var(--stg-acc-ink, #8a5a00); }
         .dr-status { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
         .dr-world { width: 46px; height: 46px; flex: none; border-radius: 12px; background: var(--stg-acc, #fbbf24); color: var(--stg-onramp, #1c1a14); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; line-height: 1; }

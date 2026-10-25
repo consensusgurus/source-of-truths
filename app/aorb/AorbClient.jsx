@@ -19,6 +19,7 @@
 // Built from HerdClient's frame: the same daily plumbing (Eastern-date banks,
 // per-puzzle saves, ?p=N archive, stats and streaks, the stage, the finish).
 
+import MindLoftMark from '../MindLoftMark';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { X, Smartphone } from 'lucide-react';
@@ -678,6 +679,10 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
       <div className="ab-stage" role="dialog" aria-label={`Aorb, pair ${i + 1} of ${TOTAL}`} onClick={shown ? stageTap : undefined}
         style={{ cursor: shown ? 'pointer' : 'default' }}>
         {shown && <div className="ab-sweep" aria-hidden="true" />}
+        <a className="ab-brand" href="/" aria-label="Mind Loft home" onClick={(ev) => ev.stopPropagation()}>
+          <MindLoftMark size={24} ink="currentColor" accent="currentColor" title="Mind Loft" />
+          <span>Mind Loft</span>
+        </a>
         <div className="ab-col">
           <div className="ab-qwrap" style={{ opacity: e, transform: `translateY(${Math.round((1 - e) * 18)}px)` }}>
             <h1 className="ab-q">{pr.q}</h1>
@@ -837,7 +842,7 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
           .ab-seg{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-height:44px;background:none;border:0;padding:0 0 4px;margin:0;cursor:pointer;text-align:left;font-family:${SANS};min-width:0;}
           .ab-seg-bar{display:block;height:6px;border-radius:3px;}
           .ab-seg-tag{font-family:${MONO};font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-          .ab-seg-ans{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .ab-seg-ans{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
           .ab-cur{display:flex;flex-direction:column;gap:10px;margin:28px 0 22px;}
           .ab-eyebrow{font-family:${MONO};font-size:12px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;}
           .ab-q{font-size:30px;font-weight:800;line-height:1.18;letter-spacing:-0.02em;}
@@ -886,10 +891,12 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
             .ab-face.ab-go{justify-content:center;}
           }
           .ab-stage{position:fixed;inset:0;z-index:85;background:var(--stg-acc, #6d28d9);color:var(--stg-onramp, #fff);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:${SANS};-webkit-tap-highlight-color:transparent;}
-          .stage-page:not([data-stage-theme='light']) .ab-stage{background:color-mix(in srgb, var(--stg-acc, #6d28d9) 60%, #ffffff);}
+          /* The play stage wears the soft Crowd ground with the dark ink in both registers (owner, 2026-10-24). */
+          .stage-page .ab-stage{--stg-acc:#d9b5fd;--stg-onramp:#08222e;}
           .ab-stage, .ab-stage .ab-opt, .ab-stage .ab-name, .ab-stage .ab-name span, .ab-stage .ab-pill, .ab-stage .ab-pct, .ab-stage .ab-tag, .ab-stage .ab-q, .ab-stage .ab-hint, .ab-stage .ab-note, .ab-stage .ab-k, .ab-stage .ab-big, .ab-stage .ab-mid, .ab-stage .ab-eyebrow{color:var(--stg-onramp, #fff) !important;opacity:1;}
           .ab-stage .ab-pill.on, .ab-stage .ab-tag-on, .ab-stage .ab-go{color:var(--stg-acc, #6d28d9) !important;}
-          .ab-col{position:relative;z-index:2;width:100%;max-width:560px;box-sizing:border-box;padding:28px 16px;display:flex;flex-direction:column;justify-content:center;gap:30px;min-height:100%;}
+          .ab-brand{position:fixed;top:max(12px, env(safe-area-inset-top));left:14px;z-index:3;display:inline-flex;align-items:center;gap:8px;height:40px;text-decoration:none;color:inherit;font-weight:800;font-size:16px;letter-spacing:-.01em;}
+          .ab-col{position:relative;z-index:2;width:100%;max-width:560px;box-sizing:border-box;padding:max(68px, calc(env(safe-area-inset-top) + 56px)) 16px 28px;display:flex;flex-direction:column;justify-content:center;gap:30px;min-height:100%;}
           .ab-qwrap{text-align:center;}
           .ab-q{margin:0;font-size:36px;line-height:1.1;font-weight:800;letter-spacing:-0.02em;color:inherit;}
           .ab-eyebrow{display:block;margin-bottom:10px;font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;opacity:.85;}
@@ -1013,7 +1020,7 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
                     </div>
                     {[0, 1].map((side) => (
                       <div key={side} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
-                        <span style={{ flex: '0 0 44%', fontSize: 13, fontWeight: rp.call === side ? 800 : 600, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{rp.options[side]}</span>
+                        <span style={{ flex: '0 0 44%', fontSize: 13, fontWeight: rp.call === side ? 800 : 600, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{rp.options[side]}</span>
                         <div style={{ flex: '1 1 auto', height: 12, borderRadius: 6, background: 'var(--stg-surf2, rgba(28,30,36,0.08))', overflow: 'hidden' }}>
                           <div style={{ width: `${rp.pct ? rp.pct[side] : 0}%`, height: '100%', background: 'var(--stg-acc, #6d28d9)', opacity: rp.crowd === side ? 1 : 0.45 }} />
                         </div>

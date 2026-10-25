@@ -57,7 +57,7 @@ const CSS = `
 ${LIGHT} .pm-rule{background:var(--lhl);}
 .pm-ln{display:flex;flex-direction:column;gap:2px;min-width:0;}
 .pm-ln small{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
-.pm-ln b{font-size:16px;font-weight:800;color:var(--stg-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pm-ln b{font-size:16px;font-weight:800;color:var(--stg-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .pm-lp{font-size:24px;font-weight:800;color:var(--stg-ink);min-width:2.4ch;text-align:right;}
 .pm-play{display:inline-flex;align-items:center;justify-content:center;height:38px;padding:0 14px;border-radius:10px;
   background:#7dd3fc;color:#08222e;font-weight:800;font-size:13.5px;text-decoration:none;white-space:nowrap;}
@@ -73,7 +73,7 @@ ${LIGHT} .pm-rule{background:var(--lhl);}
 .pm-brow{display:grid;grid-template-columns:34px minmax(0,1fr) auto 40px;gap:10px;align-items:center;padding:10px 18px;border-bottom:1px solid var(--stg-line);font-size:14px;color:var(--stg-ink);}
 .pm-brow.me{background:color-mix(in srgb,var(--stg-acc) 14%,transparent);}
 .pm-brow .rk{font-weight:800;}
-.pm-brow .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pm-brow .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .pm-brow .nm small{display:block;font-size:11px;font-weight:700;color:var(--stg-mute);}
 .pm-brow .sc{font-weight:800;font-size:15px;text-align:right;}
 .pm-pill{padding:3px 8px;border-radius:999px;background:var(--tc);color:#0b0d12;font-size:11px;font-weight:800;white-space:nowrap;}

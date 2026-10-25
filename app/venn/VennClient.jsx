@@ -519,7 +519,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           .vn-rc.held{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);}
           .vn-rc .t{flex:1;min-width:0;border:0;background:transparent;padding:0 0 0 9px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;font-family:${SANS};cursor:pointer;text-align:left;}
           .vn-rc .t:disabled{cursor:default;}
-          .vn-rc .w{font-size:13px;font-weight:800;letter-spacing:.01em;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .vn-rc .w{font-size:13px;font-weight:800;letter-spacing:.01em;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
           .vn-tight .vn-rc .w{font-size:12px;letter-spacing:0;}
           .vn-rc .g{font-size:10px;font-weight:700;color:${FADED};white-space:nowrap;}
           .vn-rc.held .g{color:var(--stg-acc-ink, ${COLORS.accent});}

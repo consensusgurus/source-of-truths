@@ -53,6 +53,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useStageChrome } from '../GauntletScreens';
 import { rampFor } from '@/lib/circuits';
+import { softGround } from '@/lib/category-ramp';
+// Every gauntlet colour is the softened step (owner, 2026-10-24: lighter, every element).
+const softT = (t) => (t && t.colour ? { ...t, colour: softGround(t.colour) } : t);
 import { shownLength } from './GauntletLadder';
 import { titleLadder, titleFor } from '@/lib/run-titles';
 import { mathText } from '@/app/MathText';
@@ -209,8 +212,8 @@ function Broadcast({
   const tm = mode ? MODE_TIMING[mode] : null;
   const paintMs = tm ? tm.paint : PAINT_MS;
   const countMs = tm ? tm.count : COUNT_MS;
-  const ladder = mode ? titleLadder(circuitId) : null;
-  const earned = mode ? titleFor(circuitId, score) : null;
+  const ladder = mode ? (titleLadder(circuitId) || []).map(softT) : null;
+  const earned = mode ? softT(titleFor(circuitId, score)) : null;
   const K = earned ? earned.index : 0;
   // -1 waiting a beat, 0..N-1 a bank, N the repaint and the total, N+1 the board.
   // NOTHING IS DRAWN AT -1. The middle's non-painting branch is the TOTAL, so
@@ -230,7 +233,7 @@ function Broadcast({
     const res = results[i] || null;
     const asked = (s.questions && s.questions.length) || (res && res.total) || 0;
     const got = res && Number.isFinite(res.score) ? res.score : 0;
-    const colour = rampFor(Number.isFinite(s.slot) ? s.slot : i);
+    const colour = softGround(rampFor(Number.isFinite(s.slot) ? s.slot : i));
     // The place on this bank's own field, or null under the floor. `plays` is
     // reported either way so the line can say how many have played so far.
     const rank = field && typeof field.rank === 'function' ? field.rank(s.key, got) : null;
@@ -663,7 +666,7 @@ const CSS = `
   transition:opacity .35s ease,transform .35s cubic-bezier(.2,.8,.25,1)}
 .gfin-q.in{opacity:1;transform:none}
 .gfin-q .nm{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.62;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .gfin-q .rk{font-size:clamp(18px,2.4vw,26px);font-weight:800;letter-spacing:-.03em;line-height:1;
   font-variant-numeric:tabular-nums;color:var(--c)}
 .gfin-q .of{font-size:10.5px;font-weight:600;letter-spacing:.04em;opacity:.5;font-variant-numeric:tabular-nums}
@@ -675,7 +678,7 @@ const CSS = `
   padding:7px 14px;border-radius:8px;font-size:14px;font-weight:600;
   font-variant-numeric:tabular-nums;background:rgba(255,255,255,.04)}
 .gfin-row .p{opacity:.5}
-.gfin-row .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gfin-row .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .gfin-row.me{background:#7dd3fc;color:#08222e}
 /* .85, not .34 (2026-10-10): .34 was about 2.9:1. At .85 the label holds
    5.06:1 or better on the dark ground and on every ramp step it paints over. */
@@ -733,7 +736,7 @@ const CSS = `
   justify-content:flex-end;gap:6px;height:214px;overflow:hidden;box-sizing:border-box}
 .gfin-ln{height:26px;line-height:26px;flex:none;font-size:20px;font-weight:800;color:#bef264;text-align:right;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;letter-spacing:.04em;
-  animation:gfinTick .12s ease both}
+  animation:gfinTick .12s ease both;padding-bottom:.16em;margin-bottom:-.16em;}
 .gfin-ln.cur{height:36px;line-height:36px;font-size:30px}
 @keyframes gfinTick{from{opacity:0;transform:translateY(10px)}to{transform:none}}
 .gfin-err{height:48px;line-height:48px;flex:none;font-size:44px;font-weight:800;color:#fb7185;text-align:right;
@@ -926,7 +929,7 @@ function geBanks(sections, results, field, mode) {
     const res = results[i] || null;
     const asked = (s.questions && s.questions.length) || (res && res.total) || 0;
     const got = res && Number.isFinite(res.score) ? res.score : 0;
-    const colour = rampFor(Number.isFinite(s.slot) ? s.slot : i);
+    const colour = softGround(rampFor(Number.isFinite(s.slot) ? s.slot : i));
     const rank = field && typeof field.rank === 'function' ? field.rank(s.key, got) : null;
     const plays = field && field.plays && Number.isFinite(field.plays[s.key]) ? field.plays[s.key] : null;
     return {
@@ -961,8 +964,8 @@ function GauntletEnding({
   // page whose headwords are the run's titles.
   const mode = circuitId === 'math' ? 'math' : circuitId === 'english' ? 'english' : 'trivia';
   const TM = GE[mode];
-  const ladder = titleLadder(circuitId) || [];
-  const earned = titleFor(circuitId, score);
+  const ladder = (titleLadder(circuitId) || []).map(softT);
+  const earned = softT(titleFor(circuitId, score));
   const K = earned ? earned.index : 0;
 
   const [phone, setPhone] = useState(() => {
@@ -1466,8 +1469,8 @@ export function GauntletBoardTop({
   // slot (Polymath, or more runs and puzzles) under it.
   const N = sections.length;
   const mode = circuitId === 'math' ? 'math' : 'trivia';
-  const ladder = titleLadder(circuitId) || [];
-  const earned = titleFor(circuitId, score);
+  const ladder = (titleLadder(circuitId) || []).map(softT);
+  const earned = softT(titleFor(circuitId, score));
   const banks = useMemo(() => geBanks(sections, results, field, mode), [sections, results, field, mode]);
   if (!N) return null;
   void polymath;
@@ -1661,7 +1664,7 @@ const GE_CSS = `
 .ge-tiles.ph{gap:4px}
 .ge-tile{border-radius:8px;padding:7px 3px;background:rgba(255,255,255,.05);border-top:3px solid;text-align:center;min-width:0}
 .ge-tiles.ph .ge-tile{border-radius:7px;padding:6px 2px}
-.ge-tn{font-size:11px;font-weight:800;letter-spacing:.02em;color:#c9d3e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ge-tn{font-size:11px;font-weight:800;letter-spacing:.02em;color:#c9d3e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .ge-tiles.ph .ge-tn{font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:#9aa8c4}
 .ge-ts{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
 .ge-tiles.ph .ge-ts{font-size:16px}
@@ -1695,9 +1698,9 @@ const GE_CSS = `
 .ge-rr{white-space:nowrap;letter-spacing:-.02em}
 .ge.geb .ge-rr.l3,.ge-rr.l3{font-size:13px}
 .ge.geb .ge-rr.l4,.ge-rr.l4{font-size:10.5px}
-.ge-rn{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ge-rn{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .ge-row.ph .ge-rn{font-size:14px}
-.ge-rt{font-size:12px;font-weight:700;color:#9aa8c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ge-rt{font-size:12px;font-weight:700;color:#9aa8c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .ge-row.ph .ge-rt{font-size:11px}
 .ge-bars{display:flex;align-items:flex-end}
 .ge-bars>div{flex:1 1 0}

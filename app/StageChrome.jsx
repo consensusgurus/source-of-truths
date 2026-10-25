@@ -225,7 +225,8 @@ export default function StageChrome({
   // Sudokus play on the pastel stage on a phone (owner, 2026-10-24); see SudokuPastel.jsx.
   // ...and the End Game titles too, on their own gold (owner, 2026-10-24).
   const endGame = !!gameKey && gameCategory(gameKey) === 'End Game';
-  const pastel = useSudokuPastel(SUDOKU_POOL.includes(gameKey) || endGame, endGame ? gameColor(gameKey) : null);
+  const pastelElig = SUDOKU_POOL.includes(gameKey) || endGame;
+  const pastel = useSudokuPastel(pastelElig, endGame ? gameColor(gameKey) : null);
   const started = useStarted(gameKey, num);
   const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
   // SHARE FOR CREDIT (owner, 2026-10-23): the page itself, stamped with the
@@ -334,7 +335,7 @@ export default function StageChrome({
     <div className="stg-top">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
-      {pastel.on ? (
+      {pastelElig ? (
         // THE SIMPLE HEADER ON A PHONE SUDOKU (owner, 2026-10-24): the gauntlet
         // entry card's top bar, the mark and name on the left, All Puzzles and
         // the look switch on the right, then the game's name. No rankings,
@@ -348,7 +349,9 @@ export default function StageChrome({
             <i>{dateLabel || ''}{sunday ? <>{dateLabel ? ' · ' : ''}{sunday}</> : null}</i>
           </div>
         </>
-      ) : (
+      ) : null}
+      {/* Both headers render on a page that can take the phone register; CSS
+          (html[data-stage-pastel]) picks one, so the first paint is already right. */}
       <div className="stg-cap">
         {/* THE BRAND IS THE WAY OUT, and it is the only one (owner, 2026-08-31).
             The Home glyph and a wordmark would be two controls doing one job,
@@ -448,10 +451,9 @@ export default function StageChrome({
         <ThemePop />
         <LightOffer gameKey={gameKey} num={num} />
       </div>
-      )}
 
       <LoftSheet />
-      {pastel.on ? null : <div className="stg-prog"><span style={{ width: pct + '%' }} /></div>}
+      {<div className="stg-prog"><span style={{ width: pct + '%' }} /></div>}
       {/* A DAILY RUN (?run=a,b,c, lib/daily-run.js). Renders nothing unless the
           page was opened inside one. */}
       {gameKey ? <DailyRunRail gameKey={gameKey} /> : null}
@@ -459,7 +461,7 @@ export default function StageChrome({
       {gameKey ? <ChallengeStrip gameKey={gameKey} num={num} /> : null}
       {gameKey ? <OtherDeviceBar gameKey={gameKey} /> : null}
 
-      {pastel.on ? null : dailyStrip ? (
+      {dailyStrip ? (
         // THE DAILY STRIP IS TWO CONTROLS (owner, 2026-10-13): the leader and the
         // leaderboard, each hidden until asked for and remembered once shown.
         // It renders from first paint whatever the board fetch does, so it also
@@ -612,6 +614,8 @@ const CSS = `
 .stg-top{background:var(--stg-ground,#0b0f1a);font-family:${SANS};color:var(--stg-ink,#e9edf4);}
 
 .stg-sim{padding:max(12px, env(safe-area-inset-top)) 14px 0;}
+html:not([data-stage-pastel]) .stg-sim,html:not([data-stage-pastel]) .stg-simt{display:none;}
+html[data-stage-pastel] .stg-cap,html[data-stage-pastel] .stg-prog,html[data-stage-pastel] .stg-strip{display:none !important;}
 .stg-simt{padding:14px 14px 2px;color:var(--stg-ink,#08222e);}
 .stg-simt h1{margin:0;font:inherit;font-size:30px;line-height:1.05;font-weight:800;letter-spacing:-.02em;}
 .stg-simt i{display:block;font-style:normal;margin-top:4px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
@@ -742,7 +746,7 @@ const CSS = `
      the leader's result and your own place. */
   .stg-sd{display:none;}
   /* A long name yields to the figure beside it rather than pushing it out. */
-  .stg-sn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+  .stg-sn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;padding-bottom:.16em;margin-bottom:-.16em;}
   .stg-sf{flex:none;}
   .stg-pin{padding:14px 13px 18px;}
 }

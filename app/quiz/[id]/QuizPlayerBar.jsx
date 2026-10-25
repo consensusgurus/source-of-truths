@@ -137,7 +137,7 @@ export default function QuizPlayerBar({ me: meProp, controlled = false, rightAct
       <div className={found&&!signed?'qpb-guest':''} style={{display:'flex',flexDirection:'column',minWidth:0,height:33}}>
         <div style={lbl}>Player</div>
         {found?(
-          <div style={{display:'flex',alignItems:'center',gap:5,fontSize:16,fontWeight:800,color:ONBLUE,lineHeight:1.05,minWidth:0}}><span style={{minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{me.name}</span>{me.signed?<BadgeCheck size={13} strokeWidth={2.5} style={{color:ONBLUE,flex:'none'}}/>:null}</div>
+          <div style={{display:'flex',alignItems:'center',gap:5,fontSize:16,fontWeight:800,color:ONBLUE,lineHeight:1.05,minWidth:0}}><span style={{minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em'}}>{me.name}</span>{me.signed?<BadgeCheck size={13} strokeWidth={2.5} style={{color:ONBLUE,flex:'none'}}/>:null}</div>
         ):determined?(
           <button onClick={e=>{e.stopPropagation(); setSignupOpen(true);}} style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:14,fontWeight:800,color:ONBLUE,lineHeight:1.15,background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'inherit'}}><UserPlus size={14}/> Sign Up</button>
         ):(

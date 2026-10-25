@@ -468,7 +468,7 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .arc-chips button{
 .arc-g>*{min-width:0;}
 .arc-gtop{display:flex;align-items:center;gap:10px;}
 .arc-gnm{display:flex;align-items:center;gap:7px;min-width:0;flex:1;font-size:14.5px;font-weight:800;letter-spacing:-0.01em;color:var(--stg-ink);text-decoration:none;}
-.arc-gnm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.arc-gnm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .arc-gnm:hover{color:var(--cci);}
 .arc-gi{flex:none;color:var(--cci, var(--cc));}
 .arc-gct{flex:none;font-family:${MONO};font-size:10.5px;font-weight:600;color:var(--stg-mute);font-variant-numeric:tabular-nums;}

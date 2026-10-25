@@ -652,7 +652,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
                 <span style={{ flex: '0 0 20px', fontFamily: MONO, fontSize: 13, fontWeight: 700, color: r.rank <= 3 ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-mute, ${COLORS.faded})`, textAlign: 'right' }}>{r.rank}</span>
                 <div style={{ flex: '1 1 auto', minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    <span style={{ fontFamily: SANS, fontSize: 13.5, fontWeight: r.yourFav ? 800 : 700, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <span style={{ fontFamily: SANS, fontSize: 13.5, fontWeight: r.yourFav ? 800 : 700, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
                       {r.item}{r.yourFav ? ' ♥' : ''}
                     </span>
                     <span style={{ fontFamily: MONO, fontSize: 10.5, color: FADED, whiteSpace: 'nowrap' }}>{r.pct}%{r.tied ? ' · tied' : ''}</span>

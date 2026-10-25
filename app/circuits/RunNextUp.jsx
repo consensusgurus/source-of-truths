@@ -279,9 +279,9 @@ const CSS = `
   align-items:center;justify-content:center;background:rgba(255,255,255,.07);}
 .rnx-tile > span{min-width:0;flex:1;}
 .rnx-tile b{display:block;font-weight:800;font-size:13px;line-height:1.1;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;color:#eef2fa;}
+  overflow:hidden;text-overflow:ellipsis;color:#eef2fa;padding-bottom:.16em;margin-bottom:-.16em;}
 .rnx-tile i{display:block;font-style:normal;font-weight:600;font-size:10.5px;line-height:1.25;
-  margin-top:2px;color:#9aa8c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  margin-top:2px;color:#9aa8c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .rnx-tile em{flex:0 0 auto;font-style:normal;font-weight:800;font-size:9px;letter-spacing:.08em;
   text-transform:uppercase;color:${T.blue400};}
 .rnx-tile.played{background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.08);}

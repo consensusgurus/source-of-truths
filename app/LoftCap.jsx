@@ -330,9 +330,9 @@ export function LoftSheet() {
     border-radius:9px;padding:6px 9px;color:var(--ink)}
   .lcap-tiles a:hover{background:var(--white)}
   .lcap-tiles b{display:block;font-weight:800;font-size:12.5px;line-height:1;white-space:nowrap;
-    overflow:hidden;text-overflow:ellipsis}
+    overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
   .lcap-tiles i{display:block;font-style:normal;font-weight:600;font-size:9.5px;line-height:1.25;
-    margin-top:3px;color:var(--slate);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    margin-top:3px;color:var(--slate);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
   /* THE ICON SITS ON A WHITE PLATE, square and contained. The art is 76x76 and
      a non-square box renders it narrow, which throws the name out of line: that
      is the bug that shipped on the home rail when one game's art was 88x76. */
@@ -860,7 +860,7 @@ export function LoftSheet() {
   .loft-lbr+.loft-lbr{margin-top:3px}
   .loft-lbr .r{flex:none;width:18px;font-weight:800;font-size:12px;color:var(--muted);
     font-variant-numeric:tabular-nums}
-  .loft-lbr .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .loft-lbr .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
   .loft-lbr .s{flex:none;font-weight:800;font-variant-numeric:tabular-nums}
   .loft-lbr .s i{font-style:normal;font-weight:700;color:var(--slate);margin-left:7px}
   .loft-lbr.first{background:rgba(232,180,58,0.18)}
@@ -929,7 +929,7 @@ export function LoftSheet() {
   .loft-day span b{display:block;line-height:1;white-space:nowrap}
   /* The tile's own label cannot wrap either, or a two-word category name makes
      the row taller than the tiles beside it. */
-  .loft-day span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .loft-day span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
   .loft-fiq .loft-calc{font-size:18px;line-height:1}
   .loft-calc.wide{display:flex;padding:10px 2px}
   .loft-calc i{font-style:normal;animation:loftdot 1.4s infinite}
@@ -996,7 +996,7 @@ export function LoftSheet() {
     text-decoration:none;color:var(--ink);font-weight:700;font-size:13px}
   .loft-archr+.loft-archr{margin-top:3px}
   .loft-archr:hover{background:var(--surface-alt)}
-  .loft-archr .d{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .loft-archr .d{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
   .loft-archr .no{flex:none;font-weight:700;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
   .loft-archr .v{flex:none;min-width:44px;text-align:right;font-weight:800;font-size:12px;color:var(--blue)}
   .loft-archr.done .v{color:var(--success-deep)}
@@ -1076,9 +1076,9 @@ export function LoftSheet() {
   .loft-gtiles img{flex:0 0 auto;width:30px;height:30px;border-radius:7px;object-fit:contain;display:block}
   .loft-gtiles span{min-width:0;flex:1}
   .loft-gtiles b{display:block;font-weight:800;font-size:13px;line-height:1.1;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
   .loft-gtiles i{display:block;font-style:normal;font-weight:600;font-size:10.5px;line-height:1.25;
-    margin-top:2px;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    margin-top:2px;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
   /* A game you have already finished today stays reachable, just quieter. */
   .loft-gtiles a.played{background:var(--surface-alt);border-color:var(--border)}
   .loft-gtiles a.played b,.loft-gtiles a.played i{color:var(--slate)}

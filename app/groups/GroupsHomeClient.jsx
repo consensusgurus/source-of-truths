@@ -308,7 +308,7 @@ const CSS = `
 .gh-locked{cursor:default;}
 .gh-locked:hover b{color:var(--stg-ink);}
 .gh-name{display:flex;flex-direction:column;min-width:0;font-size:13px;}
-.gh-name b{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gh-name b{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .gh-code{margin-top:16px;padding-top:14px;border-top:1px solid var(--stg-line);display:flex;flex-direction:column;gap:8px;}
 .gh-code .grp-in{flex:1;}
 .gh-form{display:flex;flex-direction:column;gap:8px;margin-top:10px;}

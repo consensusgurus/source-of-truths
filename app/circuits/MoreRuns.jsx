@@ -243,7 +243,7 @@ const ROW_CSS = (c) => `
 .${c}-row:hover{border-color:var(--mr-acc);}
 .${c}-tx{display:flex;flex-direction:column;min-width:0;flex:1;}
 .${c}-nm{font-size:15px;font-weight:800;letter-spacing:-.01em;}
-.${c}-sb{font-size:11.5px;font-weight:700;color:var(--mr-mute,#9aa8c4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.${c}-sb{font-size:11.5px;font-weight:700;color:var(--mr-mute,#9aa8c4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;padding-bottom:.16em;margin-bottom:-.16em;}
 .${c}-go{flex:none;font-size:12.5px;font-weight:800;color:#0b0f1a;background:var(--mr-acc);border-radius:7px;padding:7px 11px;}
 `;
 

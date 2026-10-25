@@ -1325,7 +1325,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
                       background: r.me ? (STAGE ? 'var(--stg-surf2)' : '#eef4ff') : 'transparent', borderRadius: 5,
                     }}>
                       <span style={{ fontSize: 9.5, fontWeight: 700, width: 22, flex: 'none', color: r.me ? `var(--stg-acc-ink, ${COLORS.accent})` : '#9aa2b1' }}>#{i + 1}</span>
-                      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</span>
+                      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{r.name}</span>
                       <span style={{ fontWeight: 800 }}>{r.score}</span>
                     </div>
                   )) : (
@@ -1340,7 +1340,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
                     background: r.me ? (STAGE ? 'var(--stg-surf2)' : '#eef4ff') : 'transparent', borderRadius: 5,
                   }}>
                     <span style={{ fontSize: 9.5, fontWeight: 700, width: 30, flex: 'none', color: r.me ? `var(--stg-acc-ink, ${COLORS.accent})` : '#9aa2b1' }}>#{r.rank}</span>
-                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</span>
+                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{r.name}</span>
                     <span style={{ fontWeight: 800 }}>{r.score}</span>
                   </div>
                 )))}
@@ -1355,7 +1355,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
             <div className="bl-strip" style={{ display: 'none', marginTop: 10, paddingTop: 9, borderTop: `1px solid ${COLORS.line}`, alignItems: 'center', gap: 10, fontSize: 11.5, color: FADED }}>
               <span style={{ fontWeight: 800, color: ACC_INK }}>You #{ladder.rank}</span>
               <span>par {nf(PAR)} rows</span>
-              {bestRows.length > 0 && <span title="Best single run on any day" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>Best ever {bestRows[0].score} &middot; {bestRows[0].name}</span>}
+              {bestRows.length > 0 && <span title="Best single run on any day" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, paddingBottom: '0.16em', marginBottom: '-0.16em' }}>Best ever {bestRows[0].score} &middot; {bestRows[0].name}</span>}
               <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 800, color: INK }}>{nf(rowsCleared)}<em style={{ fontStyle: 'normal', fontSize: 10, color: '#94a3b8' }}> {UNIT}{rowsCleared === 1 ? '' : 's'}</em></span>
             </div>
 

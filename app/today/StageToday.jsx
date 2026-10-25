@@ -4275,11 +4275,11 @@ ${PATCH_CSS}
    the line beside the words (owner report: "the 1 looks off centre"). A float
    leaves the inline flow, and the count in it, exactly as it was. */
 .sty-dayg{float:right;padding-left:10px;color:var(--stg-mute);max-width:40%;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-mls{display:grid;gap:6px;margin-top:9px;padding-top:9px;border-top:1px solid var(--stg-line);}
 .sty-ml{display:grid;grid-template-columns:minmax(0,132px) minmax(0,1fr) 28px 46px;gap:10px;align-items:center;}
 .sty-ml .who{display:flex;align-items:center;gap:7px;min-width:0;font-size:12.5px;}
-.sty-ml .who b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-ml .who b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-ml .gms{font-family:${MONO};font-size:11px;color:var(--stg-mute);text-align:right;
   font-variant-numeric:tabular-nums;}
 .sty-ml .tot{font-family:${MONO};font-size:12px;color:var(--stg-ink2);text-align:right;
@@ -4412,7 +4412,7 @@ ${PATCH_CSS}
 .sty-card .sty-nm{font-size:20px;font-weight:800;letter-spacing:-0.015em;line-height:1.15;}
 .sty-card.lead .sty-nm{font-size:24px;}
 .sty-card .sty-tag{font-size:12px;font-weight:600;color:var(--stg-mute);margin-top:1px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-card .sty-go{align-self:flex-start;margin-top:12px;}
 .sty-card .sty-go.ghost{background:none;color:var(--cci, var(--cc));border:1px solid var(--cci, var(--cc));}
 .sty-allin{justify-content:center;}
@@ -4456,7 +4456,7 @@ html:not([data-stage-boot=dark]) [data-stage-theme=light] .sty-g .sty-star:not(.
   border-radius:8px;padding:8px 11px;min-width:0;}
 .sty-lrow:hover{border-color:var(--stg-line2);border-left-color:var(--cci, var(--cc));}
 .sty-lrow .sty-gi{color:var(--cci, var(--cc));}
-.sty-lname{font-size:13px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-lname{font-size:13px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-lsc{margin-left:auto;flex:none;font-family:${MONO};font-size:12px;font-weight:700;
   font-variant-numeric:tabular-nums;}
 .sty-lsc i{font-style:normal;color:var(--stg-mute);}
@@ -4604,7 +4604,7 @@ html:not([data-stage-boot=dark]) [data-stage-theme=light] .sty-g .sty-star:not(.
 
 /* ── a played card reports its result ──────────────────────────────────── */
 .sty-gres{display:flex;align-items:baseline;gap:7px;margin-top:2px;font-size:11.5px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-grk{font-weight:800;color:var(--stg-ink);}
 /* "You:" NAMES THE FIGURE (owner, 2026-09-01). A bare #3 of 10 on a card in a
    grid of cards reads as something about the game; the two characters in front
@@ -4623,7 +4623,7 @@ html:not([data-stage-boot=dark]) [data-stage-theme=light] .sty-g .sty-star:not(.
    group's NAME is what gives way, because it is the only shrinkable item. */
 .sty-gres2{gap:3px;flex-wrap:nowrap;}
 .sty-gres2 .sty-grl{font-size:9.5px;font-weight:500;letter-spacing:.12em;flex:0 1 auto;min-width:0;
-  max-width:8ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  max-width:8ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-gres2 .sty-grk{font-size:11px;flex:none;}
 .sty-gres2 .sty-grf{font-size:10px;font-weight:500;flex:none;}
 .sty-gsep{flex:none;color:var(--stg-line2);}
@@ -4632,11 +4632,11 @@ html:not([data-stage-boot=dark]) [data-stage-theme=light] .sty-g .sty-star:not(.
    not played (2026-09-22). Same shape as the played line above it, so a slate
    mixing the two reads as one column rather than two treatments. */
 .sty-ggrp{display:flex;align-items:baseline;gap:7px;margin-top:2px;font-size:11.5px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-ggrp .sty-grk{overflow:hidden;text-overflow:ellipsis;}
 /* The same line on a circuit card, which is a block rather than a flex child. */
 .sty-cres{display:flex;align-items:baseline;gap:7px;margin-top:5px;font-size:11.5px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 /* PLAYED IS DIM, BUT A RESULT IS NOT. .done wears opacity:.42, and opacity on a
    parent cannot be undone by a child, so a rank printed inside one lands around
    2:1 whatever colour it is given. A card that has something to say therefore
@@ -4762,7 +4762,7 @@ html:not([data-stage-boot=dark]) [data-stage-theme=light] .sty-g .sty-star:not(.
 .sty-next .sty-gi{color:currentColor;opacity:.85;}
 .sty-nm{display:flex;align-items:center;gap:11px;}
 .sty-gt{display:block;font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:2px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 /* Played is DIM, not struck through: the day is a record, not a chore list. */
 .sty-g.open{border-color:var(--cci, var(--cc));}
 .sty-g:focus-visible,.sty-next:focus-visible,.sty-cx:focus-visible{
@@ -4974,7 +4974,7 @@ html:not([data-stage-boot=dark]) [data-stage-theme=light] .sty-g .sty-star:not(.
 .sty-trow:hover{background:var(--stg-chip);}
 .sty-trow:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:-2px;}
 .sty-tn{font-size:14.5px;font-weight:800;letter-spacing:-0.01em;min-width:0;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-tc{margin-left:auto;flex:none;font-family:${MONO};font-size:12px;font-weight:700;
   font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
 /* The caret is the only thing on the row that says it opens, so it turns
@@ -5069,7 +5069,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-qph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .sty-qcrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px 10px;}
 .sty-qcn{flex:1;min-width:0;display:flex;flex-direction:column;}
-.sty-qcn strong{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-qcn strong{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-qcn span{font-size:12px;font-weight:600;color:var(--stg-mute);}
 .sty-qcp{flex:none;display:flex;flex-direction:column;align-items:flex-end;}
 .sty-qcp b{font-size:20px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
@@ -5083,7 +5083,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-qcb li a:hover .t{color:var(--stg-acc-ink);}
 .sty-qcb li a:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;border-radius:4px;}
 .sty-qcb .n{width:14px;flex:none;font-weight:800;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
-.sty-qcb .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-qcb .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-qcb li b{flex:none;font-weight:800;font-variant-numeric:tabular-nums;}
 .sty-qall2{display:block;width:100%;margin-top:10px;height:36px;border-radius:8px;border:1px solid var(--stg-line2);
   background:var(--stg-surf);color:var(--stg-ink2);font:800 12px/1 ${SANS};cursor:pointer;}
@@ -5118,7 +5118,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-qres li+li{border-top:1px solid var(--stg-line);}
 .sty-qres a{display:flex;align-items:center;gap:12px;padding:11px 14px;text-decoration:none;color:var(--stg-ink);font-size:13.5px;}
 .sty-qres a:hover .t{color:var(--stg-acc-ink);}
-.sty-qres .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-qres .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-qres i{flex:none;font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-mute);}
 @media (max-width:1180px){
   .sty-qtiles,.sty-qfg{grid-template-columns:repeat(3,minmax(0,1fr));}
@@ -5266,7 +5266,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-tile.on .sty-trung i.p{background:color-mix(in srgb,var(--stg-onramp,#08222e) 55%,transparent);}
 .sty-tile:focus-visible{outline:2px solid var(--cci, var(--cc));outline-offset:2px;}
 .sty-th{display:flex;align-items:baseline;gap:8px;}
-.sty-th b{flex:1 1 auto;min-width:0;font-size:16.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-th b{flex:1 1 auto;min-width:0;font-size:16.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-ctn{flex:none;font-family:${MONO};font-size:12px;font-weight:700;color:var(--stg-ink2);font-variant-numeric:tabular-nums;}
 .sty-ctn i{font-style:normal;color:var(--stg-mute);}
 .sty-trung{display:flex;gap:2px;height:10px;}
@@ -5274,7 +5274,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-trung i.d{background:var(--cc);}
 .sty-trung i.p{background:var(--cc);opacity:.5;}
 .sty-tf{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--stg-ink2);}
-.sty-ctnext{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-ctnext{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-tact{flex:none;font-size:12px;font-weight:700;color:var(--stg-mute);}
 .sty-tile.on .sty-tact{color:var(--stg-ink);}
 .sty-tdraw{border:1px solid var(--cci, var(--cc));border-radius:10px;background:var(--stg-surf);padding:14px;}
@@ -5304,8 +5304,8 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-pin:focus-visible{outline:2px solid var(--cci, var(--cc));outline-offset:2px;}
 .sty-pinl{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
 .sty-pine{font-family:${MONO};font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute);}
-.sty-pinn{font-size:15.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sty-pinb{font-size:12px;font-weight:600;color:var(--stg-ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-pinn{font-size:15.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
+.sty-pinb{font-size:12px;font-weight:600;color:var(--stg-ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-pingo{flex:none;background:var(--cc);color:var(--stg-onramp,#08222e);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:800;}
 @media (max-width:1099px){ .sty-pins{grid-template-columns:repeat(2,minmax(0,1fr));} .sty-pin.third{display:none;} }
 @media (max-width:640px){
@@ -5371,7 +5371,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   background:none;border-radius:8px;padding:8px 10px;font:inherit;font-size:13.5px;font-weight:700;
   color:var(--stg-ink2);text-align:left;cursor:pointer;}
 .sty-ixb > i{width:10px;height:10px;border-radius:3px;background:var(--cc);box-shadow:inset 0 0 0 1.5px var(--cci, var(--cc));}
-.sty-ixb > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-ixb > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-ixb > b{font-family:${MONO};font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--stg-ink2);}
 .sty-ixb > b em{font-style:normal;color:var(--stg-mute);}
 .sty-ixb:hover{color:var(--stg-ink);background:var(--stg-surf);}
@@ -5497,7 +5497,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-cmc ol.fd li{grid-template-columns:minmax(0,1fr) auto;}
 .sty-cmc li:last-child{border-bottom:0;}
 .sty-cmc li i{font-style:normal;font-family:${MONO};font-size:11px;color:var(--stg-mute);}
-.sty-cmc li span{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-cmc li span{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-cmc ol.fd li span{font-weight:500;color:var(--stg-ink2);}
 .sty-cmc ol.fd li strong{font-weight:800;color:var(--stg-ink);}
 .sty-cmc ol.fd li em{font-style:normal;color:var(--stg-mute);}
@@ -5518,7 +5518,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-favc span:last-child{text-align:right;}
 .sty-favr{box-sizing:border-box;display:grid;grid-template-columns:var(--cg);gap:14px;align-items:center;height:24px;
   text-decoration:none;color:inherit;font-variant-numeric:tabular-nums;}
-.sty-favr .n{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-favr .n{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-favr:hover .n{color:var(--stg-acc-ink,var(--cci, var(--cc)));}
 .sty-favr .tr{display:block;height:14px;background:var(--stg-chip);border-radius:4px;overflow:hidden;}
 .sty-favr .tr u{display:block;height:100%;background:var(--cc);border-radius:4px;}
@@ -5539,13 +5539,13 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   .sty-ix.rl{grid-template-columns:212px minmax(0,1fr) 264px;}
   .sty-ix > .sty-rail{display:flex;flex-direction:column;gap:16px;grid-column:3;grid-row:1 / span 5;min-width:0;}
 }
-.sty-rlb .sty-eb{display:block;height:24px;line-height:16px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-rlb .sty-eb{display:block;height:24px;line-height:16px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-rlb ol{list-style:none;margin:0;padding:0;}
 .sty-rlb li{box-sizing:border-box;display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:6px;align-items:center;
   height:var(--rh,30px);padding:0 6px;border-bottom:1px solid var(--stg-line);font-size:13px;font-variant-numeric:tabular-nums;}
 .sty-rlb li:last-child{border-bottom:0;}
 .sty-rlb li i{font-style:normal;font-family:${MONO};font-size:11px;color:var(--stg-mute);}
-.sty-rlb li span{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-rlb li span{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-rlb li b{font-weight:800;}
 .sty-rlb li.me{background:var(--stg-chip);}
 .sty-rlb li.ph span{height:8px;width:58%;border-radius:4px;background:var(--stg-chip);}
@@ -5748,7 +5748,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 @media (max-width:900px) and (prefers-reduced-motion:reduce){
   [data-sty-anim] .sty-ix.mpk > section,[data-sty-anim] .sty-ix.msel .sty-ixn .sty-ixb{animation:none;}
 }
-.sty-fg > i{max-width:11ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:auto;}
+.sty-fg > i{max-width:11ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:auto;padding-bottom:.16em;margin-bottom:-.16em;}
 
 /* POPULAR CIRCUIT PILLS (owner, 2026-10-09). */
 .sty-cpills{flex:1;min-width:0;display:flex;flex-wrap:wrap;justify-content:space-evenly;align-items:center;
@@ -5931,14 +5931,14 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-lr .ic{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--stg-chip);color:var(--cci, var(--cc));}
 .sty-lr .nm,.sty-lr .td,.sty-lr .yu{min-width:0;}
 .sty-lr .nm b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-0.01em;}
-.sty-lr .tg{display:block;font-size:12px;font-weight:600;color:var(--stg-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-lr .tg{display:block;font-size:12px;font-weight:600;color:var(--stg-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-lr .tg.tgl,.sty-lr .tg.tgs{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;line-height:1.3;}
 .sty-lr .tg.tgs{display:none;}
 @media (max-width:1399px){.sty-lr .tg.tgl{display:none;}.sty-lr .tg.tgs{display:-webkit-box;}}
 .sty-lr .td,.sty-lr .yu{font-size:12.5px;line-height:1.35;}
 .sty-lr .td b,.sty-lr .yu b{font-weight:800;}
 .sty-lr .sc{color:var(--stg-ink2);font-variant-numeric:tabular-nums;}
-.sty-lr i{display:block;margin-top:2px;font-style:normal;font-size:11px;color:var(--stg-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-lr i{display:block;margin-top:2px;font-style:normal;font-size:11px;color:var(--stg-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-lr i em{font-style:normal;color:var(--stg-ink2);}
 .sty-lr .mu{color:var(--stg-mute);font-weight:600;}
 .sty-lr .ph{display:block;width:110px;max-width:100%;height:10px;border-radius:3px;background:var(--stg-chip);}
@@ -6042,16 +6042,16 @@ html[data-stage-color=full] .sty-g.done .sty-gi{color:var(--cci, var(--cc));opac
 .sty-deck.done{opacity:.72;}
 .sty-deck:focus-visible{outline:2px solid var(--phi,var(--ph));outline-offset:2px;}
 .sty-dkn{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:800;letter-spacing:-.01em;min-width:0;}
-.sty-dkn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800;}
+.sty-dkn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-dkn em{margin-left:auto;flex:none;font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
 .sty-dkl{display:flex;align-items:center;gap:8px;min-width:0;}
 .sty-dkp{display:flex;gap:3px;flex:none;}
 .sty-dkp i{width:11px;height:4px;border-radius:2px;background:color-mix(in srgb,var(--ph) 28%,transparent);}
 .sty-dkp i.on{background:var(--ph);}
-.sty-dks{font-size:11.5px;font-weight:600;color:var(--stg-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-dks{font-size:11.5px;font-weight:600;color:var(--stg-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-dkfs{display:flex;align-items:flex-end;gap:12px;min-width:0;}
 .sty-dkf{display:flex;flex-direction:column;flex:none;min-width:0;line-height:1.15;}
-.sty-dkf i{font-style:normal;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-dkf i{font-style:normal;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-dkf b{font-size:13.5px;font-weight:800;color:var(--stg-ink);}
 .sty-dkf b small{font-size:10.5px;font-weight:600;color:var(--stg-mute);}
 .sty-dkfs .sty-dks{padding-bottom:1px;}
@@ -6075,7 +6075,7 @@ html[data-stage-color=full] .sty-deck:not(.done) .sty-rgres .sty-grf{color:${RAM
 .sty-dkm:hover{border-color:var(--gc);}
 .sty-dkm i{font-style:normal;font-size:11px;font-weight:800;color:var(--stg-mute);min-width:12px;}
 .sty-dkm .sty-gi{color:var(--gc);}
-.sty-dkm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sty-dkm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-dkm.on{color:var(--stg-mute);}
 .sty-dkm.on span::after{content:" \\2713";color:var(--stg-good,var(--gc));}
 .sty-dkleg{border-left:4px solid var(--ph);padding:2px 0 2px 10px;margin-top:10px;}

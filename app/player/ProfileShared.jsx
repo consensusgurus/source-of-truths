@@ -350,7 +350,7 @@ export function ActivityFeed({ recent, titleById, viewing, stage }) {
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: i < mile.length - 1 ? `1px solid ${C.line}` : 'none' }}>
                 <span style={{ flex: 'none', width: 30, height: 30, borderRadius: 9, background: mk.bg, color: mk.fg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Ic size={15} /></span>
                 <span style={{ flex: 1, minWidth: 0 }}>
-                  <Link href={`/quiz/${ev.quizId}`} style={{ display: 'block', fontSize: 13, fontWeight: 700, color: C.ink, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mk.label(tOf(ev.quizId))}</Link>
+                  <Link href={`/quiz/${ev.quizId}`} style={{ display: 'block', fontSize: 13, fontWeight: 700, color: C.ink, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{mk.label(tOf(ev.quizId))}</Link>
                   <span style={{ display: 'block', fontSize: 11.5, color: C.soft, fontWeight: 600 }}>{fmtWhen(ev.when)}{ev.sub ? ` · ${ev.sub}` : ''}</span>
                 </span>
                 <span style={{ flex: 'none', fontSize: 11, fontWeight: 800, background: mk.bg, color: mk.fg, borderRadius: 999, padding: '2px 8px' }}>{ev.chip}</span>
@@ -551,7 +551,7 @@ export function XpPanel({ me, titleById, viewing, stage }) {
               )}
               {recent.slice(0, 40).map((m, i) => (
                 <tr key={i}>
-                  <td style={{ fontWeight: 600, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <td style={{ fontWeight: 600, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
                     <Link href={`/quiz/${m.quizId}`} className="qlink">{titleById[m.quizId] || dailyLabel(m.quizId) || cleanTitle(m.quizId)}</Link>
                   </td>
                   <td style={{ textAlign: 'right' }}>{(m.dq || 0).toLocaleString()}</td>

@@ -139,7 +139,7 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
   background:none;border-radius:8px;padding:8px 10px;font:inherit;font-size:13.5px;font-weight:700;
   color:var(--stg-ink2);text-align:left;cursor:pointer;text-decoration:none;}
 .lc-nav .sty-ixb > i{width:10px;height:10px;border-radius:3px;background:var(--cc);}
-.lc-nav .sty-ixb > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lc-nav .sty-ixb > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .lc-nav .sty-ixb:hover{color:var(--stg-ink);background:var(--stg-surf);}
 .lc-nav .sty-ixb.on{background:var(--stg-chip);color:var(--stg-ink);font-weight:800;}
 .lc-nav .sty-ixb:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}

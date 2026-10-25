@@ -268,7 +268,7 @@ export default function CommunityLeaderboardClient() {
                   }}>{i + 1}</span>
                   {i === 0 ? <Crown size={16} style={{ flex: 'none', color: MEDAL[0] }} /> : null}
                   <span style={{ flex: '1 1 auto', minWidth: 0 }}>
-                    <span style={{ display: 'block', fontWeight: 700, fontSize: 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ display: 'block', fontWeight: 700, fontSize: 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
                       {r.username}{mine ? <span style={{ color: C.soft, fontWeight: 700, fontSize: 12 }}> · you</span> : null}
                     </span>
                     {/* The three inputs to the contest score, in formula order,
@@ -314,13 +314,13 @@ export default function CommunityLeaderboardClient() {
                 return (
                   <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 15px', borderTop: i ? `1px solid ${C.line}` : 'none', background: mine ? 'rgba(232,180,58,0.10)' : 'transparent' }}>
                     <span style={{ flex: '1 1 auto', minWidth: 0 }}>
-                      <span style={{ display: 'block', fontSize: 14.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span style={{ display: 'block', fontSize: 14.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
                         <b style={{ fontWeight: 800 }}>{f.sharer}</b>
                         <span style={{ color: C.muted }}> brought in </span>
                         <b style={{ fontWeight: 700 }}>{f.joined || 'a new player'}</b>
                       </span>
                       {f.game ? (
-                        <span style={{ display: 'block', marginTop: 2, fontSize: 12, color: C.soft, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ display: 'block', marginTop: 2, fontSize: 12, color: C.soft, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
                           via{' '}
                           {f.game.href ? <Link href={f.game.href} style={{ color: C.soft, textDecoration: 'underline' }}>{f.game.label}</Link> : f.game.label}
                         </span>

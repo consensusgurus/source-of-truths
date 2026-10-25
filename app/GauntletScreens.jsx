@@ -23,7 +23,7 @@
 // line, and the trivia total is never shown as "out of" the questions asked.
 
 import React, { useEffect, useRef, useState } from 'react';
-import { RAMP_INK } from '@/lib/category-ramp';
+import { RAMP_INK, softGround, categoryColor, gameCategory } from '@/lib/category-ramp';
 import { rampFor, LADDER_RAMP } from '@/lib/circuits';
 import MindLoftMark from './MindLoftMark';
 import { holdRootPaint } from '@/lib/root-paint';
@@ -41,7 +41,7 @@ export const DARK = { bg: '#0b0f1a', ink: '#e9edf4', fill: '#1a2130' };
 export function stagePalette(pastel, look) {
   if (look === 'plain') return { ...PLAIN };
   if (look === 'dark') return { bg: DARK.bg, ink: DARK.ink };
-  return { bg: pastel, ink: INK };
+  return { bg: softGround(pastel), ink: INK };
 }
 // Paints <html>/<body> and the browser's theme-color so Safari's top and
 // bottom bars match the stage, and puts both back on unmount.
@@ -122,7 +122,7 @@ function useStagePalette(pastel, edges) {
   return {
     ...p, look,
     plain: look === 'plain',
-    fill: (c) => (look === 'plain' ? PLAIN.bg : look === 'dark' ? DARK.fill : c),
+    fill: (c) => (look === 'plain' ? PLAIN.bg : look === 'dark' ? DARK.fill : softGround(c)),
     flip: () => setLook(nextLook(look)),
     vars: { '--gsx-bg': p.bg, '--gsx-ink': p.ink, '--gsx-tray': look === 'plain' ? PLAIN.ink : look === 'dark' ? '#1e2636' : INK },
   };
@@ -164,6 +164,12 @@ function TopBar({ pal, back = '/', backLabel = 'All Puzzles' }) {
 // 2026-10-24: on the first quiz's colour its band vanished into the page).
 // If every step is taken, the second quiz's colour.
 export function gateColour(sections = []) {
+  // THE ENTRY WEARS ITS GENRE (owner, 2026-10-24): the category the run's games
+  // belong to (Trivia orange, Numbers mint, Word sky), not a free ladder step.
+  const tally = {};
+  sections.forEach((s) => { const c = s && s.key ? gameCategory(s.key) : null; if (c) tally[c] = (tally[c] || 0) + 1; });
+  const top = Object.keys(tally).sort((a, b) => tally[b] - tally[a])[0];
+  if (top) return categoryColor(top);
   const used = new Set(sections.map((s, i) => rampFor(slotOf(s, i))));
   const free = LADDER_RAMP.find((c) => !used.has(c));
   if (free) return free;
@@ -177,7 +183,7 @@ export function GauntletCover({ sections = [] }) {
   const c = gateColour(sections);
   return (
     <>
-      <div id="gsx-cover" aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 90, background: c }} />
+      <div id="gsx-cover" aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 90, background: softGround(c) }} />
       <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('${LOOK_KEY}')==='plain'||localStorage.getItem('${LOOK_KEY}')==='dark'){var e=document.getElementById('gsx-cover');if(e)e.style.background=localStorage.getItem('${LOOK_KEY}')==='dark'?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
     </>
   );
@@ -345,8 +351,8 @@ export function GauntletEndStage({
   const [lookNow] = useStageLook();
   const plainNow = lookNow === 'plain';
   const sweepEdges = sweeping && !plainNow && lookNow !== 'dark' ? {
-    top: rampFor(slotOf(sections[0], 0)),
-    bottom: rampFor(slotOf(sections[sections.length - 1], sections.length - 1)),
+    top: softGround(rampFor(slotOf(sections[0], 0))),
+    bottom: softGround(rampFor(slotOf(sections[sections.length - 1], sections.length - 1))),
   } : null;
   const pal = useStagePalette((title && title.colour) || '#7dd3fc', sweepEdges);
   const bg = pal.bg;
@@ -450,7 +456,7 @@ const CSS = `
 .gsx-bgo{cursor:pointer}
 .gsx-bgo:hover .gsx-band{filter:brightness(1.04)}
 .gsx-bgo:focus-visible{outline:3px solid var(--gsx-ink);outline-offset:3px}
-.gsx-eye1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsx-eye1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 @media(max-width:899px){
   .gsx-gate .gsx-col{gap:12px;padding-top:14px;padding-bottom:18px}
   .gsx-gate .gsx-head{gap:8px}
@@ -485,7 +491,7 @@ const CSS = `
 .gsx-strip{display:grid;gap:5px}
 .gsx-seg{display:flex;flex-direction:column;gap:5px;min-width:0}
 .gsx-sb{display:block;height:12px;border-radius:6px;border:2px solid var(--gsx-ink);box-sizing:border-box;transform-origin:left;animation:gsxFill .4s ease-out both}
-.gsx-sn{font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsx-sn{font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .gsx-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:0}
 .gsx-eye2{font-size:15px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
 .gsx-pop{font-size:80px;line-height:1;font-weight:800;letter-spacing:-.04em;animation:gsxPop .6s cubic-bezier(.2,.8,.2,1) .45s both;overflow-wrap:anywhere}

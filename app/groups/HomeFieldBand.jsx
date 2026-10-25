@@ -161,7 +161,7 @@ const CSS = `
   font-variant-numeric:tabular-nums;}
 .hfb-near .rk,.hfb-near .gp{color:var(--stg-mute);}
 .hfb-near .pt{text-align:right;color:var(--stg-ink);}
-.hfb-near .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;}
+.hfb-near .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;padding-bottom:.16em;margin-bottom:-.16em;}
 .hfb-near .me .nm{color:var(--stg-acc-ink);}
 .hfb-near > div.sep{border-top:1px dashed var(--stg-line2);}
 .hfb-fr .dot{width:8px;height:8px;border-radius:2px;background:var(--cc,var(--stg-mute));justify-self:center;}

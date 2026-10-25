@@ -1357,7 +1357,7 @@ export default function DailyEndCard({
         .dec-answer-word{font-size:21px;font-weight:800;letter-spacing:-.02em;color:${RUST};}
         .dec-idbox{display:inline-flex;align-items:center;gap:8px;font-family:${SANS};font-size:12.5px;font-weight:700;color:${INK};background:#f4f6fa;border:1px solid ${BORD};border-radius:999px;padding:5px 13px 5px 5px;max-width:100%;}
         .dec-idbox .av{width:23px;height:23px;border-radius:50%;color:var(--white);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;}
-        .dec-idbox .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .dec-idbox .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         /* Guest CTA: the long label on desktop, the short one on a phone. */
         .dec-idbox .sm{display:none;}
         button.dec-idbox{cursor:pointer;color:${BLUE};background:#eff4fd;border-color:#cfe0fb;padding:8px 15px;}
@@ -1658,7 +1658,7 @@ export default function DailyEndCard({
         .dec-nx-name{display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;font-size:24px;font-weight:800;letter-spacing:-.025em;color:${INK};line-height:1.1;}
         .dec-nx-cd{font-family:${MONO};font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#2b5bb5;background:rgba(37,99,235,.10);border:1px solid #bcd6fb;border-radius:999px;padding:3px 8px;white-space:nowrap;}
         .dec-nx-fam{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:${SLATE};margin-top:3px;min-width:0;}
-        .dec-nx-fam,.dec-ez-fam{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .dec-nx-fam,.dec-ez-fam{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         .dec-nx-btns{display:flex;gap:7px;}
         .dec-nx-btns .b{flex:1;justify-content:center;font-family:${SANS};font-weight:800;font-size:14.5px;border-radius:11px;padding:13px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;text-decoration:none;border:1px solid #ccd8ea;background:var(--white);color:${SLATE};}
         .dec-nx-btns .b.primary{flex:1.7;background:${BLUE};border-color:${BLUE};color:var(--white);box-shadow:0 3px 10px rgba(37,99,235,.30);}
@@ -1691,8 +1691,8 @@ export default function DailyEndCard({
         .dec-row{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid ${BORD};border-radius:11px;background:var(--white);margin-bottom:7px;text-decoration:none;min-width:0;}
         .dec-row:hover{background:var(--surface);}
         .dec-row .nm{font-size:14px;font-weight:800;letter-spacing:-.01em;color:${INK};display:flex;align-items:center;gap:6px;min-width:0;}
-        .dec-row .nm span.t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .dec-row .tg{font-size:11px;color:#8a92a6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .dec-row .nm span.t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
+        .dec-row .tg{font-size:11px;color:#8a92a6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
         .dec-row .play{margin-left:auto;font-size:11px;font-weight:800;color:${SLATE};display:inline-flex;align-items:center;gap:2px;flex-shrink:0;}
         .dec-row .play.resume{color:#b9791a;}
         .dec-rz{display:inline-flex;align-items:center;margin-left:5px;vertical-align:-1px;}
@@ -2829,7 +2829,7 @@ export default function DailyEndCard({
         .d5e-lb .h s{text-decoration:none;letter-spacing:.04em;}
         .d5e-lbr{display:flex;align-items:center;gap:9px;padding:5px 8px;border-radius:7px;font-size:12px;font-weight:700;color:#dbe6ff;}
         .d5e-lbr .r{flex:none;width:15px;color:#93aae2;font-weight:800;font-variant-numeric:tabular-nums;}
-        .d5e-lbr .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .d5e-lbr .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
         .d5e-lbr .v{flex:none;font-weight:800;font-variant-numeric:tabular-nums;}
         .d5e-lbr.first{background:rgba(232,180,58,.18);}
         .d5e-lbr.me{background:rgba(37,99,235,.30);}

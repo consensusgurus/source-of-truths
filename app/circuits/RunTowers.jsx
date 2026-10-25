@@ -220,7 +220,7 @@ export function secondsLine(sections = [], unit = 'question') {
 export const TOWER_CSS = `
 .rl{display:flex;flex-direction:column;gap:7px;min-width:0}
 .rl-row{display:grid;grid-template-columns:84px minmax(0,1fr) 48px;align-items:center;gap:12px;min-height:22px}
-.rl-nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rl-nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .rl-row.live .rl-nm{font-weight:800;font-size:14px}
 .rl-sc{font-style:normal;font-size:11.5px;font-weight:700;color:#8b95a8;text-align:right;font-variant-numeric:tabular-nums}
 .rl-sc.on{color:#e8ecf4}

@@ -717,7 +717,7 @@ export default function DailyTilePanel({
         .dtp-lrow:last-child{border-bottom:none;}
         .dtp-lrow .pl{width:17px;font-family:'Manrope',ui-monospace,monospace;font-size:10.5px;color:var(--muted);flex:none;display:flex;align-items:center;}
         .dtp-lrow .pl svg{color:var(--gold-ink);}
-        .dtp-lrow b{color:var(--ink);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;}
+        .dtp-lrow b{color:var(--ink);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;padding-bottom:.16em;margin-bottom:-.16em;}
         .dtp-lrow .sc{margin-left:auto;font-family:'Manrope',ui-monospace,monospace;font-size:11.5px;color:var(--ink);flex:none;}
         /* The game's own result, under the name. Phone-only: the desktop column
            is 320px wide and already tight with three cells on one line. */
@@ -778,7 +778,7 @@ export default function DailyTilePanel({
         .dtp-crow .bar{position:absolute;left:0;top:0;bottom:0;background:var(--gc);opacity:.17;border-radius:5px;}
         .dtp-crow.you{background:#fdf4dd;}
         .dtp-crow.you .bar{background:var(--cta);opacity:.34;}
-        .dtp-crow .nm{position:relative;flex:1 1 auto;min-width:0;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .dtp-crow .nm{position:relative;flex:1 1 auto;min-width:0;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
         .dtp-crow.you .nm{color:#8a5300;}
         .dtp-crow .sub,.dtp-crow .tg{position:relative;flex:none;font-family:'Manrope',ui-monospace,monospace;font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;color:#5b6577;white-space:nowrap;}
         .dtp-crow.you .sub,.dtp-crow.you .tg{color:#8a5300;}
@@ -966,7 +966,7 @@ export default function DailyTilePanel({
           .dtp-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:0;background:var(--surface);border-bottom:1px solid var(--border);}
           .dtp-stats>div{min-width:0;background:transparent;border:0;border-right:1px solid var(--border);border-radius:0;padding:9px 8px;}
           .dtp-stats>div:last-child{border-right:none;}
-          .dtp-stats span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .dtp-stats span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
           /* stat rows and leaderboard rows: full-width, hairline separated. The
              desktop justify-content:space-between exists to stretch a card to
              the calendar's height, which no longer applies in one column. */
@@ -1061,7 +1061,7 @@ export default function DailyTilePanel({
           .dtp-slab::before{content:'';position:absolute;left:10px;top:13px;bottom:13px;width:4px;border-radius:2px;background:var(--gold);}
           .dtp-stxt{min-width:0;flex:1;}
           .dtp-seye{font-size:9.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#dbe8ff;
-                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
           /* An explicit 26px line plus a pixel of pad, not a tight multiple:
              these lines are overflow:hidden for the ellipsis, so a tight box
              clips a descender. Same reasoning as .hr-hnm in HomeRails. */

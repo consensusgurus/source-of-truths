@@ -13,7 +13,7 @@ function RankRow({ rank, name, value }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 3px', borderBottom: `1px solid rgba(26,22,17,0.12)` }}>
       <span style={{ flex: 'none', width: 24, height: 24, borderRadius: '50%', background: medal || 'transparent', border: medal ? `1.5px solid ${T.ink}` : `1.5px solid rgba(26,22,17,0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Manrope, monospace', fontSize: 11, fontWeight: 500, color: medal ? T.ink : T.slate }}>{rank}</span>
-      <span style={{ flex: '1 1 auto', minWidth: 0, fontFamily: 'Manrope, monospace', fontSize: 12.5, fontWeight: 500, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+      <span style={{ flex: '1 1 auto', minWidth: 0, fontFamily: 'Manrope, monospace', fontSize: 12.5, fontWeight: 500, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{name}</span>
       <span style={{ flex: 'none', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 15, color: T.ink }}>{value}</span>
     </div>
   );

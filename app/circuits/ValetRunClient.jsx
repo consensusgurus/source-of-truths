@@ -674,11 +674,11 @@ const CSS = `
 .vr .vr-cap{background:${T.ground};display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.08);}
 .vr-cid{min-width:0;flex:1;}
 .vr-cid i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:#66748f;}
-.vr-cid b{display:block;font-size:16px;font-weight:800;letter-spacing:-.02em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vr-cid b{display:block;font-size:16px;font-weight:800;letter-spacing:-.02em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .vr-cf{display:flex;gap:2px;flex:none;}
 .vr-cf div{width:84px;text-align:center;}
 .vr-cf div b{display:block;font-family:${MONO};font-size:16px;font-weight:500;color:#fff;font-variant-numeric:tabular-nums;}
-.vr-cf div i{display:block;font-style:normal;font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#66748f;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vr-cf div i{display:block;font-style:normal;font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#66748f;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .vr-cx{flex:none;font-family:${MONO};font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#9aa8c4;border:1px solid rgba(255,255,255,.18);border-radius:7px;padding:7px 10px;text-decoration:none;}
 .vr-cx:hover{color:#fff;border-color:rgba(255,255,255,.4);}
 .vr-cx.vr-cxi{padding:7px 9px;display:inline-flex;align-items:center;}
@@ -690,7 +690,7 @@ const CSS = `
 @keyframes vrpulse{0%,100%{opacity:1;}50%{opacity:.45;}}
 .vr-strip{display:flex;align-items:center;gap:11px;padding:9px 20px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;}
 .vr-se{font-family:${MONO};font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:#66748f;}
-.vr-sn{color:#fff;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vr-sn{color:#fff;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .vr-sf{font-family:${MONO};color:#bef264;font-variant-numeric:tabular-nums;}
 .vr-sd{color:#66748f;font-weight:700;}
 .vr-sy{margin-left:auto;font-weight:800;color:#9aa8c4;white-space:nowrap;}
@@ -765,7 +765,7 @@ const CSS = `
 .vr-br{display:flex;align-items:center;gap:12px;padding:9px 14px;border-top:1px solid rgba(255,255,255,.07);font-size:13.5px;}
 .vr-br.me{background:rgba(190,242,100,.08);}
 .vr-brk{font-family:${MONO};color:#66748f;width:22px;}
-.vr-brn{flex:1;min-width:0;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vr-brn{flex:1;min-width:0;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .vr-br.me .vr-brn{color:var(--stg-acc-ink, var(--stg-acc,#bef264));}
 .vr-brt{font-family:${MONO};color:#eef2fa;font-variant-numeric:tabular-nums;}
 .vr-bmsg{padding:16px 14px;font-size:13px;color:#9aa8c4;font-weight:600;line-height:1.5;}

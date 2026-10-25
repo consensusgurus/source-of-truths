@@ -53,7 +53,7 @@ const CSS = `
   border-top:1px solid var(--stg-line);font-size:13.5px;}
 .shg-r.shg-hd{border-top:0;padding-top:0;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute);}
 .shg-r .k{font-weight:800;color:var(--stg-mute);text-align:right;font-variant-numeric:tabular-nums;}
-.shg-r .n{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.shg-r .n{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .shg-r .st{text-align:right;font-size:12px;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
 .shg-r .s{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;}
 .shg-hd span:nth-child(4),.shg-hd span:nth-child(5){text-align:right;}

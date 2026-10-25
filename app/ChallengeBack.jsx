@@ -92,7 +92,7 @@ const CSS = `
 .cbk-s{font-size:13px;font-weight:600;color:var(--stg-mute,#8b95a8);margin-top:2px;}
 .cbk-row{display:grid;grid-template-columns:min(124px,34%) 1fr 64px;align-items:center;gap:10px;}
 .cbk-row span{font-size:13px;font-weight:800;}
-.cbk-row .cbk-nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cbk-row .cbk-nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .cbk-row b{font-size:15px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums;}
 .cbk-tr{height:14px;background:var(--stg-line,rgba(255,255,255,.08));border-radius:7px;overflow:hidden;}
 .cbk-bar{display:block;height:100%;border-radius:7px;transform-origin:left center;animation:cbkBar .7s cubic-bezier(.2,.8,.3,1) both;}

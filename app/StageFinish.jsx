@@ -2420,7 +2420,7 @@ const CSS = `
   background:var(--stg-surf);border:1px solid var(--stg-line);border-left:3px solid var(--tcl, var(--tc));
   border-radius:8px;padding:8px 10px;font-size:12.5px;font-weight:700;min-width:0;}
 .stf-tile svg{flex:none;color:var(--tcl, var(--tc));}
-.stf-tile span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.stf-tile span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .stf-tile:hover{border-color:var(--stg-line2);border-left-color:var(--tcl, var(--tc));}
 /* Played today reads as done without leaving the list: the tile keeps its
    colour on the rule and gives up only its fill. */
@@ -2494,7 +2494,7 @@ const CSS = `
 /* THE RIVAL PAIR on the card (2026-09-26). */
 .stf-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch;}
 .stf-vside{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:9px;padding:10px 12px;min-width:0;}
-.stf-vside .nm{display:block;font-weight:700;font-size:13px;line-height:20px;min-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.stf-vside .nm{display:block;font-weight:700;font-size:13px;line-height:20px;min-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .stf-vside b{display:block;font-family:${SANS};font-size:22px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--stg-ink);}
 .stf-vside small{display:block;font-family:${SANS};font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);margin-top:3px;}
 .stf-vside.you{border:2px solid var(--stg-acc-ink, var(--stg-acc));padding:9px 11px;background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc)) 14%,var(--stg-surf));}
@@ -2505,7 +2505,7 @@ const CSS = `
    overflow for the ellipsis, and a bordered chip taller than the 13px line had
    its bottom edge shaved off (owner, 2026-09-28, mobile). */
 .stf-vside.you .nm{display:flex;align-items:center;gap:6px;overflow:visible;flex-wrap:nowrap;}
-.stf-vside.you .nmt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.stf-vside.you .nmt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .stf-vside.you .nm{color:var(--stg-acc-ink,var(--stg-acc));}
 .stf-vsx2{font-family:${SANS};font-size:11px;color:var(--stg-mute);}
 .stf-rline{margin-top:8px;font-size:13px;color:var(--stg-ink2);line-height:1.45;}
@@ -2516,7 +2516,7 @@ const CSS = `
 .stf-pips i.now{background:var(--stg-gold,#e8b43a);border-color:var(--stg-gold,#e8b43a);}
 .stf-est{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px;margin-top:10px;}
 .stf-estc{display:block;text-decoration:none;color:var(--stg-ink);background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;padding:8px 10px;min-width:0;}
-.stf-estc b{display:block;font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stf-estc b{display:block;font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .stf-estc small{display:block;font-family:${SANS};font-size:9.5px;letter-spacing:.06em;color:var(--stg-mute);margin-top:2px;}
 .stf-estc.done{opacity:.5;}
 .stf-estc.done b{text-decoration:line-through;}
@@ -2615,7 +2615,7 @@ const CSS = `
   background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:8px;
   padding:9px 12px;font-size:13px;}
 .stf-archr:hover{border-color:var(--stg-line2);}
-.stf-archr .d{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.stf-archr .d{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .stf-archr .d i{font-style:normal;font-family:${SANS};font-size:8.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--stg-acc-ink);margin-left:7px;}
 .stf-archr .n{font-family:${SANS};font-size:11px;color:var(--stg-mute);}
@@ -2711,7 +2711,7 @@ const CSS = `
    opponent border is transparent; a won box trades 1px of padding for its
    3px border so the two stay the same height. */
 .stf-rvf .them{border:2px solid transparent;border-radius:9px;padding:7px 10px;}
-.stf-rvf small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stf-rvf small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .stf-rvf .you{text-align:right;border:2px solid currentColor;border-radius:9px;padding:7px 10px;}
 .stf-rvf .you.won{border-width:3px;padding:6px 9px;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 22%,transparent);}
 .stf-rvf .x{font-family:${SANS};font-size:12px;opacity:.7;padding-bottom:6px;}
@@ -2806,7 +2806,7 @@ const CSS = `
 .stf-dtx{flex:1;min-width:0;}
 .stf-dnm{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em;line-height:1.2;}
 .stf-dsb{display:block;margin-top:3px;font-size:12px;font-weight:600;color:var(--stg-mute);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .stf-dar{flex:none;font-size:20px;line-height:1;color:var(--stg-mute);transition:transform .2s ease;}
 .stf-door[aria-expanded="true"]{border-color:var(--stg-acc-ink, var(--stg-acc));}
 .stf-door[aria-expanded="true"] .stf-dar{transform:rotate(90deg);color:var(--stg-acc-ink,var(--stg-acc));}
@@ -2988,7 +2988,7 @@ body:has(.stf-a2hs) :is(button,div):has(+ #stf-stats-slot):has(.lucide-smartphon
 .stf-door.chal,.stf-door.pri{min-height:92px;padding:17px;}
 .stf-door.chal .stf-dic{width:56px;height:56px;border-radius:12px;}
 .stf-door.chal .stf-dnm{font-size:18px;}
-.stf-door.chal .stf-dsb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stf-door.chal .stf-dsb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 @media (max-width:640px){
   .stf-door.chal .stf-dic{width:46px;height:46px;}
   .stf-door.chal .stf-dnm{font-size:16px;}

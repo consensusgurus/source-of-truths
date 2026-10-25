@@ -1875,7 +1875,7 @@ const CSS = `
    bar for a graphic. The crown keeps its gold and is the only warm thing left
    on the band, which is where gold reads properly. */
 .tdy-hld{display:inline-flex;align-items:center;gap:6px;flex:none;max-width:190px;border-radius:8px;padding:3px 9px 3px 8px;background:rgba(6,10,20,.24);border:none;}
-.tdy-hld i{font-style:normal;font-size:11px;font-weight:800;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tdy-hld i{font-style:normal;font-size:11px;font-weight:800;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .tdy-hld b{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.82);font-variant-numeric:tabular-nums;flex:none;}
 /* the CTA inverts with the band. It used to carry an inline background too,
    which would have won over this rule, so that was removed at the call site. */
@@ -1978,7 +1978,7 @@ const CSS = `
 .tdy-st.tk{color:var(--success-deep);}
 .tdy-st.tp{color:#a16207;}
 .tdy-ld{display:flex;align-items:center;justify-content:center;gap:3px;max-width:92px;margin-top:-4px;overflow:hidden;}
-.tdy-ld i{font-style:normal;font-size:9.5px;font-weight:700;color:#9aa0ab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tdy-ld i{font-style:normal;font-size:9.5px;font-weight:700;color:#9aa0ab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 
 /* ── a finished category collapses to a band ── */
 .tdy-catdone{display:flex;align-items:center;gap:14px;background:var(--white);border:1px solid #e7e9ee;border-left:4px solid var(--success-deep);border-radius:14px;padding:12px 16px;margin:14px 2px 0;flex-wrap:wrap;box-shadow:0 1px 2px rgba(16,24,40,.04);}
@@ -2018,7 +2018,7 @@ const CSS = `
 .tdy-cols s{text-decoration:none;flex:none;width:56px;text-align:right;}
 .tdy-lr{display:flex;align-items:center;gap:9px;padding:8px 10px;border-left:4px solid transparent;border-radius:0 7px 7px 0;font-size:13px;color:var(--ink);}
 .tdy-lr b{font-size:11px;color:#9aa0ab;width:18px;flex:none;font-variant-numeric:tabular-nums;font-weight:800;}
-.tdy-lr .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800;flex:1 1 auto;display:inline-flex;align-items:center;gap:6px;}
+.tdy-lr .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800;flex:1 1 auto;display:inline-flex;align-items:center;gap:6px;padding-bottom:.16em;margin-bottom:-.16em;}
 .tdy-lr .gm{flex:none;width:56px;text-align:right;font-variant-numeric:tabular-nums;color:#9aa0ab;font-weight:700;font-size:11.5px;}
 .tdy-lr .sc{flex:none;width:56px;text-align:right;font-variant-numeric:tabular-nums;color:var(--slate);white-space:nowrap;font-weight:800;font-size:12.5px;}
 .tdy-lr.first{border-left-color:var(--gold);background:#fffaf0;}
@@ -2031,7 +2031,7 @@ const CSS = `
    taken today), so the ellipsis moves off .nm and onto the name itself or the
    count gets squeezed out of a narrow column. */
 .tdy-lr.feed .nm{overflow:visible;}
-.tdy-lr.feed .fnm{font-style:normal;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tdy-lr.feed .fnm{font-style:normal;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .tdy-lr.feed .fx{font-style:normal;flex:none;font-size:10.5px;font-weight:800;color:#9aa0ab;letter-spacing:.01em;white-space:nowrap;font-variant-numeric:tabular-nums;}
 .tdy-lr.feed .fdt{font-style:normal;flex:none;font-size:10.5px;font-weight:700;color:#b3b9c4;white-space:nowrap;font-variant-numeric:tabular-nums;}
 /* Backstop for a native hash jump (no JS, or a /#tdy-feed link followed cold):
@@ -2111,7 +2111,7 @@ const CSS = `
   .tdy-hd > div{display:contents;}
   .tdy-hnm{display:contents;}
   .tdy-hd .eb{display:none;}
-  .tdy-hd h2{flex:1 1 auto;min-width:0;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tdy-hd h2{flex:1 1 auto;min-width:0;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
   .tdy-prg{flex:none;margin-top:0;}
   .tdy-prg .pb{display:none;}
   .tdy-hld{flex:none;max-width:136px;margin-left:0;padding:3px 8px;}

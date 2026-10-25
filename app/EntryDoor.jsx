@@ -603,7 +603,7 @@ const CSS2 = `
 .ent-disc{grid-row:1 / span 2;width:42px;height:42px;border-radius:10px;background:rgba(8,34,46,.1);display:grid;place-items:center}
 .ent-disc svg{width:26px;height:26px}
 .ent-gnm{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
-.ent-gnm b{font-size:17px;font-weight:800;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ent-gnm b{font-size:17px;font-weight:800;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .ent-rk{font-size:11.5px;font-weight:800;font-variant-numeric:tabular-nums}
 .ent-gtg{font-size:12.5px;font-weight:700;line-height:1.35;min-width:0}
 .ent-gmeta{grid-column:1 / -1;align-self:end;display:flex;flex-wrap:nowrap;white-space:nowrap;align-items:center;gap:6px 10px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(8,34,46,.25);font-size:12px;font-weight:700}

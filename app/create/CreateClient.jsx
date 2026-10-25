@@ -324,7 +324,7 @@ export default function CreateClient({ lists }) {
             <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 16, width: 22, flex: '0 0 auto', color: t ? T.ink : T.slate }}>{i + 1}</span>
             {t ? (
               <>
-                <span style={{ flex: 1, minWidth: 0, fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: 16, fontVariationSettings: '"SOFT" 100', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</span>
+                <span style={{ flex: 1, minWidth: 0, fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: 16, fontVariationSettings: '"SOFT" 100', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{t.title}</span>
                 <button onClick={() => removeSlot(i)} aria-label="Remove" style={{ cursor: 'pointer', background: 'transparent', border: 'none', color: T.slate, display: 'flex', flex: '0 0 auto' }}>
                   <X size={18} strokeWidth={2.5} />
                 </button>

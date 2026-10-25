@@ -316,8 +316,8 @@ export default function DailyGamesGrid({ self, maxWidth = 640, challengeHref = n
         .dgg-t:hover{border-color:#5b8bff;}
         .dgg-txt{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1 1 auto;}
         .dgg-art{flex:0 0 auto;height:42px;width:auto;}
-        .dgg-nm{font-size:15px;font-weight:800;letter-spacing:-.3px;color:var(--ink);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-        .dgg-p{font-size:10.5px;font-weight:700;color:var(--muted);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .dgg-nm{font-size:15px;font-weight:800;letter-spacing:-.3px;color:var(--ink);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
+        .dgg-p{font-size:10.5px;font-weight:700;color:var(--muted);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
         .dgg-done{background:linear-gradient(0deg,rgba(22,163,74,0.14),rgba(22,163,74,0.14)),var(--accent);border-color:rgba(34,197,94,0.5);}
         .dgg-done .dgg-art{opacity:.5;}
         .dgg-done .dgg-nm{color:#dfeee4;}

@@ -208,7 +208,7 @@ export default function XpTile() {
         .xptile .xp-podium{margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;border-top:1px solid rgba(139,178,255,.18);padding-top:7px;}
         .xptile .xp-prow{display:flex;align-items:center;gap:7px;font-size:11.5px;line-height:1.25;min-width:0;}
         .xptile .xp-medal{flex:none;width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#12172a;}
-        .xptile .xp-pname{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;color:rgba(255,255,255,.82);}
+        .xptile .xp-pname{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;color:rgba(255,255,255,.82);padding-bottom:.16em;margin-bottom:-.16em;}
         .xptile .xp-pname.xp-vacant{color:rgba(255,255,255,.34);font-weight:600;font-style:italic;}
         .xptile .xp-pn{flex:none;font-weight:800;color:rgba(214,228,255,.66);font-variant-numeric:tabular-nums;}
         .xptile .xp-foot{display:flex;align-items:center;gap:6px;margin-top:9px;font-size:12px;font-weight:800;color:rgba(255,255,255,.9);}

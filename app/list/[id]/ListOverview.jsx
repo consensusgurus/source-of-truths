@@ -579,7 +579,7 @@ function LedgerRow({ item, rank, list, desc, pics, isTop, heavyDivider, poster, 
       <div style={{ display: 'grid', gridTemplateColumns: '52px minmax(0,1fr)', gap: 22, alignItems: 'center', padding: '12px 14px', borderBottom: '1px solid rgba(26,22,17,0.16)' }}>
         <div style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 900, fontSize: 20, lineHeight: 1, color: T.slate, textAlign: 'center' }}>{rank}</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0 }}>
-          <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 17, fontWeight: 700, color: T.ink, fontVariationSettings: '"SOFT" 100', lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayName}</span>
+          <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 17, fontWeight: 700, color: T.ink, fontVariationSettings: '"SOFT" 100', lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{displayName}</span>
           {locality && (
             <span style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: T.slate, marginLeft: 'auto', whiteSpace: 'nowrap', flexShrink: 0 }}>{locality}</span>
           )}
@@ -788,7 +788,7 @@ function CompactRow({ item, rank }) {
       <div style={{ width: 22, height: 22, border: `1.5px solid ${T.slate}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 10, fontWeight: 600, color: T.slate }}>{rank}</span>
       </div>
-      <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 16, fontWeight: 700, color: T.ink, fontVariationSettings: '"SOFT" 100', lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayName}</span>
+      <span style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontSize: 16, fontWeight: 700, color: T.ink, fontVariationSettings: '"SOFT" 100', lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{displayName}</span>
       {locality && (
         <span style={{ fontFamily: 'Manrope, monospace', fontSize: 8, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate, marginLeft: 'auto', whiteSpace: 'nowrap', flexShrink: 0 }}>{locality}</span>
       )}

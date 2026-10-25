@@ -52,7 +52,7 @@ export default function DailyTopNav({ player, compact = false }) {
         <a href={player.key ? `/quizzes/hub?player=${encodeURIComponent(player.key)}` : '/quizzes/hub'} title="Your Stat Hub"
           className="dtn-chip"
           style={{ marginLeft: 'auto', minWidth: 0, display: 'inline-flex', alignItems: 'center', gap: compact ? 5 : 6, fontFamily: MONO, fontSize: fz, letterSpacing: '0.06em', color: COLORS.ink, background: COLORS.paper, border: '1.5px solid rgba(28,30,36,0.35)', borderRadius: 5, padding: compact ? '3px 7px' : '4px 9px', textDecoration: 'none' }}>
-          <span className="dtn-nm" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: compact ? 120 : 150, fontWeight: 500 }}>{player.name}</span>
+          <span className="dtn-nm" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: compact ? 120 : 150, fontWeight: 500, paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{player.name}</span>
           {player.rank ? <span style={{ color: COLORS.ember, fontWeight: 500, whiteSpace: 'nowrap' }}>Rank #{player.rank}</span> : null}
         </a>
       )}

@@ -172,7 +172,7 @@ const CSS = `
 .fgl{margin-top:4px;}
 .fgl-card{background:var(--stg-raise,#0e131f);border:1px solid var(--stg-line,rgba(255,255,255,.11));border-radius:14px;padding:13px 14px 10px;}
 .fgl-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
-.fgl-h b{font-size:14.5px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fgl-h b{font-size:14.5px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .fgl-pill{flex:none;font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
   border:1px solid var(--stg-line2,rgba(255,255,255,.17));border-radius:999px;padding:2px 8px;color:var(--stg-ink2,#aab5c7);}
 .fgl-big{margin:4px 0 6px;font-size:19px;font-weight:800;letter-spacing:-.01em;}
@@ -183,7 +183,7 @@ const CSS = `
 .fgl-r{display:grid;grid-template-columns:18px 22px 1fr auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--stg-line,rgba(255,255,255,.11));font-size:13.5px;}
 .fgl-r:first-child{border-top:0;}
 .fgl-r .k{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:12px;color:var(--stg-mute,#8b95a8);text-align:right;}
-.fgl-r .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fgl-r .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .fgl-r .s{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:12.5px;font-variant-numeric:tabular-nums;}
 /* A GAME ROW carries the run as well as what it was worth: 10/10 · 4:49 · 15. */
 .fgl-r.g{grid-template-columns:18px 22px minmax(0,1fr) auto auto;}

@@ -254,7 +254,7 @@ const CSS = `
    legend: the name, and how far into it you got. */
 .gl-k{display:flex;align-items:baseline;gap:5px;margin-top:6px;min-width:0}
 .gl-k b{font-size:11px;font-weight:800;letter-spacing:.01em;color:#8ea6d6;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .gl-k em{font-style:normal;font-family:'Manrope',ui-monospace,monospace;font-size:10px;
   color:#66748f;font-variant-numeric:tabular-nums;flex:none}
 .gl-b.live .gl-k b{color:#fff}

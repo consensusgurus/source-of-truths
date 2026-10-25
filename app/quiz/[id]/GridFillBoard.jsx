@@ -461,7 +461,7 @@ export default function GridFillBoard({ quizId, mobile = false }) {
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 3px', borderBottom: i === col.items.length - 1 ? 'none' : `1px solid var(--stg-line,${COLORS.faded}22)`, minHeight: 21, background: isJust ? '#fff7d6' : 'transparent', transition: 'background .5s' }}>
               <span style={{ fontFamily: MONO, fontSize: 9.5, color: FADED, minWidth: 12 }}>{i + 1}</span>
-              <span style={{ fontFamily: SANS, fontWeight: 600, fontSize: 12, lineHeight: 1.12, color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ fontFamily: SANS, fontWeight: 600, fontSize: 12, lineHeight: 1.12, color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
                 {show ? it.label : ''}
               </span>
               {revealMode && !got && <X size={11} strokeWidth={3} style={{ color: COLORS.rust, flex: 'none', marginLeft: 'auto' }} />}
@@ -718,7 +718,7 @@ export default function GridFillBoard({ quizId, mobile = false }) {
                     return (
                       <div key={i} style={{ display: 'grid', gridTemplateColumns: '40px 1fr 76px 64px', gap: 8, alignItems: 'center', padding: '11px 14px', marginBottom: 6, background: mine ? `var(--stg-acc-tint,${T.white})` : `var(--stg-surf,${COLORS.paper})`, borderRadius: 10, border: `1px solid ${mine ? `var(--stg-acc-ink, var(--stg-acc,${COLORS.ember}))` : `var(--stg-line,${COLORS.faded + '22'})`}` }}>
                         <span style={{ fontFamily: SERIF, fontWeight: 800, fontSize: 18, color: i < 3 ? `var(--stg-acc-ink,${COLORS.ember})` : `var(--stg-mute,${COLORS.faded})` }}>{i + 1}</span>
-                        <span style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.username}{mine ? ' (you)' : ''}{row.tryNum ? <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 400, color: FADED, marginLeft: 6 }}>({ordinal(row.tryNum)} Try)</span> : ''}</span>
+                        <span style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{row.username}{mine ? ' (you)' : ''}{row.tryNum ? <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 400, color: FADED, marginLeft: 6 }}>({ordinal(row.tryNum)} Try)</span> : ''}</span>
                         <span style={{ fontFamily: MONO, fontSize: 14, textAlign: 'right' }}>{row.score}</span>
                         <span style={{ fontFamily: MONO, fontSize: 14, textAlign: 'right', color: FADED }}>{fmtTime(row.timeElapsed)}</span>
                       </div>
