@@ -50,7 +50,7 @@ const gameJsonLd = {
   alternateName: 'Squash: Daily Match-3 Fruit Game',
   url: `${SITE_URL}/squash`,
   description:
-    'A free daily match-three puzzle game. Swap neighbouring fruit to line up three or more of a kind; matches squash, fruit falls, and new fruit drops in. Four in a line makes a slicer, an L or T makes a bomb, and five makes a punch bowl that clears a whole fruit. Everyone plays the same board with the same refills, in a five-minute blitz (a bigger 9x9 board on the Sunday Edition), and your best run of the day counts.',
+    'A free daily match-three puzzle game. Swap neighbouring fruit to line up three or more of a kind; matches squash, fruit falls, and new fruit drops in. Four in a line makes a slicer, an L or T makes a bomb, and five makes a punch bowl that clears a whole fruit. Everyone plays the same board with the same refills, in a five-minute blitz on the same 8x8 board every day, and your best run of the day counts.',
   genre: ['Arcade', 'Match-3', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

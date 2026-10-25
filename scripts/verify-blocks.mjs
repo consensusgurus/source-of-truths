@@ -65,8 +65,9 @@ const CELLS  = { I:4, O:4, T:4, S:4, Z:4, J:4, L:4, C:3, P:5 };
     const wantLabel = `${MONTHS[m - 1]} ${day}, ${d.getUTCFullYear()}`;
     if (p.dateLabel !== wantLabel) fail('frame', `${at} dateLabel "${p.dateLabel}" should be "${wantLabel}"`);
 
-    const reallySunday = d.getUTCDay() === 0;
-    if (!!p.sunday !== reallySunday) fail('frame', `${at} sunday=${p.sunday} but ${p.live} is ${reallySunday ? 'a Sunday' : 'not a Sunday'}`);
+    // Arcade plays the same every day from 2026-10-26 (owner, 2026-10-25).
+    const reallySunday = d.getUTCDay() === 0 && p.live < '2026-10-26';
+    if (!!p.sunday !== reallySunday) fail('frame', `${at} sunday=${p.sunday} but ${p.live} is ${reallySunday ? 'a Sunday Edition day' : 'not a Sunday Edition day'}`);
 
     if (p.rows !== 16) fail('frame', `${at} rows=${p.rows}, the well is always 16 deep`);
     const wantCols = p.sunday ? 8 : 10;

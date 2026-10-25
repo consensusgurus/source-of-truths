@@ -116,7 +116,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['aorb', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
+const LAUNCH_PIN = { keys: ['mahj', 'aorb', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -204,6 +204,7 @@ export const GAME_META = {
   finesse: { accent: '#4c1d95', badgeBg: '#4c1d95', badgeInk: T.white, Fin: Layers },
   crib: { accent: '#a16207', badgeBg: '#a16207', badgeInk: T.white, Fin: Layers },
   hold: { accent: '#b91c1c', badgeBg: '#b91c1c', badgeInk: T.white, Fin: Layers },
+  mahj: { accent: '#a21caf', badgeBg: '#a21caf', badgeInk: T.white, Fin: Layers },
   cell: { accent: '#0e7490', badgeBg: '#0e7490', badgeInk: T.white, Fin: Club },
   swindle: { accent: '#9a3412', badgeBg: '#9a3412', badgeInk: T.white, Fin: Swords },
   gift: { accent: '#7c3aed', badgeBg: '#7c3aed', badgeInk: T.white, Fin: Swords },
@@ -432,6 +433,7 @@ const ALL_DAILY_GAMES = [
   { key: 'hands',  cat: 'cards',     name: 'Hands',  tag: 'The daily poker solitaire', blurb: 'Cards come one at a time into a grid where every row and column scores as a poker hand. Same deal for everybody, so it is decisions and not luck.', href: '/hands' },
   { key: 'crib',  cat: 'cards',     name: 'Crib',  tag: 'Six cards, throw two', blurb: 'Five cribbage hands, one choice each: which two cards go to the crib. Every throw is worked out exactly, so the best one is a fact. Seven hands on Sundays.', href: '/crib' },
   { key: 'hold',  cat: 'cards',     name: 'Hold',  tag: 'Video poker hold', blurb: 'Ten video poker hands a day, and one question each: which cards do you keep? Every hold is valued exactly over every draw. Fifteen hands on Sundays.', href: '/hold' },
+  { key: 'mahj',  cat: 'cards',     name: 'Mahj',  tag: 'The daily mahjong solitaire', blurb: 'All 144 mahjong tiles, cleared two of a kind at a time, against the clock. A new layout each weekday and the Pyramid on Sunday.', href: '/mahj' },
   { key: 'cell',  cat: 'cards',     name: 'Cell',  tag: 'The daily FreeCell', blurb: 'FreeCell on a small deck, every card face up, and a perfect line proven to be the fewest moves. Forty cards on Sundays.', href: '/cell' },
   { key: 'finesse',  cat: 'cards',     name: 'Finesse',  tag: 'The daily double dummy', blurb: 'All four hands face up and a defence that never errs. Play South and the dummy, and take the tricks the contract asks for. Three rules, no bidding, no luck.', href: '/finesse' },
   { key: 'shoe',  cat: 'cards',     name: 'Shoe',  tag: 'The daily blackjack shoe', blurb: 'Ten hands of blackjack off one fixed shoe, the same cards for everybody. Keep the count and play it better than the book.', href: '/shoe' },

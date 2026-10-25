@@ -114,7 +114,7 @@ function sportHeroFor(q) {
 // Daily-game quizzes are date/topic-stamped (crux-*, emcee-*, garble-*, links-*, span-*, dating-*,
 // tally-*, suds-*, circa-*, extra-*, carve-*, stet-*, outwit-*, tuck-*, alibi-*, cipher-*, ping-*, jester-*, sworn-*, closer-*) and every entry in a family shares ONE hero image, so the two hero
 // tiles (Newest + Trending) must never both draw from the same family.
-const DAILY_GAME_FAMILY_RE = /^(crux|emcee|garble|links|span|dating|tally|suds|quilt|circa|extra|carve|stet|outwit|tuck|alibi|cipher|ping|warmer|jester|sworn|closer|outrank|herd|aorb|shards|axiom|hearsay|venn|stands|bracket|lode|etch|hedge|listed|mate|four|park|impound|junkyard|topple|roll|snug|jig|duet|lamps|clade|dossier|judges|check|rung|hinge|sums|crunch|taire|fib|streak|feud|babel|glyph|hands|finesse|chain|turn|suffice|strata|redact|paths|deep|anon|blocks|snake|squash|dario|chomp|sweep|docket|ergo|blitz|blitzed|gap|series|back|defend|cages|sando|barter|plot|sixes|niche|shoe|queen|towers|mercury|arrow|polka|atlas|sport|calc|encore|biz|flank|passport|knight|script|quotes|sci|art|history|potluck|focus|thread|slot|whittle|diag|frame|rim|giant|sumo|window|five|racecar|yose|crib|hold|cell|swindle|gift|scram|arcos|gram|vocab|spell|origin|idiom|scour|pricer|dealer|realtor|agent|curator)-/;
+const DAILY_GAME_FAMILY_RE = /^(crux|emcee|garble|links|span|dating|tally|suds|quilt|circa|extra|carve|stet|outwit|tuck|alibi|cipher|ping|warmer|jester|sworn|closer|outrank|herd|aorb|shards|axiom|hearsay|venn|stands|bracket|lode|etch|hedge|listed|mate|four|park|impound|junkyard|topple|roll|snug|jig|duet|lamps|clade|dossier|judges|check|rung|hinge|sums|crunch|taire|fib|streak|feud|babel|glyph|hands|finesse|chain|turn|suffice|strata|redact|paths|deep|anon|blocks|snake|squash|dario|chomp|sweep|docket|ergo|blitz|blitzed|gap|series|back|defend|cages|sando|barter|plot|sixes|niche|shoe|queen|towers|mercury|arrow|polka|atlas|sport|calc|encore|biz|flank|passport|knight|script|quotes|sci|art|history|potluck|focus|thread|slot|whittle|diag|frame|rim|giant|sumo|window|five|racecar|yose|crib|hold|cell|mahj|swindle|gift|scram|arcos|gram|vocab|spell|origin|idiom|scour|pricer|dealer|realtor|agent|curator)-/;
 function gameFamily(id) { const m = (id || '').match(DAILY_GAME_FAMILY_RE); return m ? m[1] : null; }
 // A recorded PLAY carries the quiz's id, but a daily-game play id is date-stamped
 // ('<key>-M-D-YY') and has NO /quiz/<id> route -- its board lives at /<family>.
@@ -145,7 +145,7 @@ function dailyTitleFor(id) {
   // A dated daily instance whose own date is a Sunday shows the Sunday Edition
   // suffix, but only for games that actually run a Sunday variant. getDay() on
   // the calendar date is timezone-independent for the day-of-week.
-  if (hasSundayEdition(key) && new Date(2000 + Number(yr), Number(mo) - 1, Number(da)).getDay() === 0) {
+  if (hasSundayEdition(key, `20${yr}-${String(mo).padStart(2, '0')}-${String(da).padStart(2, '0')}`) && new Date(2000 + Number(yr), Number(mo) - 1, Number(da)).getDay() === 0) {
     t += ` (${SUNDAY_LABEL})`;
   }
   return t;

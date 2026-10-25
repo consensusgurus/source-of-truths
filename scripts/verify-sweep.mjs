@@ -46,8 +46,10 @@ PUZZLES.forEach((p, i) => {
   const expectId = `sweep-${M}-${D}-${Y % 100}`;
   if (p.quizId !== expectId) bad(p.quizId, `quizId does not match live (${expectId})`);
 
-  const realSunday = new Date(Date.UTC(Y, M - 1, D)).getUTCDay() === 0;
-  if (!!p.sunday !== realSunday) bad(p.quizId, `sunday flag is ${!!p.sunday} but ${p.live} ${realSunday ? 'IS' : 'is NOT'} a Sunday`);
+  // Arcade plays the same every day from 2026-10-26 (owner, 2026-10-25): the
+  // denser Sunday Edition exists only on the Sundays before that.
+  const realSunday = new Date(Date.UTC(Y, M - 1, D)).getUTCDay() === 0 && p.live < '2026-10-26';
+  if (!!p.sunday !== realSunday) bad(p.quizId, `sunday flag is ${!!p.sunday} but ${p.live} ${realSunday ? 'IS' : 'is NOT'} a Sunday Edition day`);
   if (p.par !== PAR[tier]) bad(p.quizId, `par ${p.par}, expected ${PAR[tier]} for a ${tier}`);
 
   if (typeof p.field !== 'string' || p.field.length !== Math.ceil(Math.ceil(ROWS * COLS / 8) / 3) * 4) {

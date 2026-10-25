@@ -17,7 +17,8 @@
 //
 // The shape ORDER is generated from the day's quizId in lib/blocks-seq.js, so
 // every player gets the same 6,000 shapes in the same order and the bank ships
-// no board. Sundays narrow the well from 10 columns to 8.
+// no board. The well is 10 wide every day (Sundays narrowed it to 8 through
+// 2026-10-25, before Arcade went the same every day).
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -1659,7 +1660,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
           </p>
           <p style={{ margin: '0 0 9px' }}>
             Your run waits for you. Pause whenever, close the tab, come back after lunch: the board
-            is saved and the same run picks up where you left it. On Sundays the well narrows from ten columns to eight.
+            is saved and the same run picks up where you left it. The well is ten columns wide every day, Sundays included.
             However long a run goes, Blocks pays at most 1 IQ point a day, so a long sitting cannot buy a place in the
             standings. The day&rsquo;s leaderboard is where the run actually counts.
           </p>

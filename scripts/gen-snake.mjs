@@ -14,6 +14,9 @@ const LAST = '2027-01-31';
 const SIZE = 15;
 const WEEKDAY = { grow: 1, par: 20 };
 const SUNDAY = { grow: 2, par: 15 };
+// Arcade plays the same every day from 2026-10-26 (owner, 2026-10-25): the
+// Sunday frame applies only to the Sundays already played before that.
+const SAME_FROM = '2026-10-26';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const rows = [];
@@ -23,7 +26,7 @@ let num = 1;
 while (d <= end) {
   const y = d.getUTCFullYear(), m = d.getUTCMonth() + 1, day = d.getUTCDate();
   const live = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-  const sunday = d.getUTCDay() === 0;
+  const sunday = d.getUTCDay() === 0 && live < SAME_FROM;
   const f = sunday ? SUNDAY : WEEKDAY;
   rows.push(`  { num: ${num}, quizId: 'snake-${m}-${day}-${String(y).slice(2)}', live: '${live}', dateLabel: '${MONTHS[m - 1]} ${day}, ${y}', sunday: ${sunday}, size: ${SIZE}, grow: ${f.grow}, par: ${f.par} },`);
   num++;
@@ -40,8 +43,8 @@ process.stdout.write(`// Puzzle data for Snake, the daily snake game. Imported O
 // shipping today's row. A row therefore carries only the frame:
 //
 //   size  the board is size x size and its edges wrap. Always 15.
-//   grow  squares the snake grows per apple. 1 on a weekday, 2 on the Sunday
-//         Edition, which fills the board twice as fast.
+//   grow  squares the snake grows per apple: 1 every day. The Sundays through
+//         2026-10-25 ran a Sunday Edition growing by 2 (sunday: true rows).
 //   par   the day's BENCHMARK apple count, not a ceiling. Apples are the score,
 //         posted raw and uncapped, and par is only the denominator the combined
 //         board uses for its completion ratio (it clamps at 1). Reaching par

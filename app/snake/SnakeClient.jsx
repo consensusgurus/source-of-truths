@@ -656,7 +656,7 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
         <><b>Pause</b> with space or P whenever you like. Leaving the page pauses too, and the run waits for you.</>,
       ]}
       knack="It never speeds up. The snake moves one square at the same pace from the first apple to the last, so a run ends on a corner you painted yourself into, not on your reflexes. Keep the body in long straight lines and leave yourself a way out."
-      footer={`Scored on APPLES, and you can play the day as many times as you like, because Snake keeps your BEST run: your score is the number of apples you eat, with no ceiling, and ${nf(PAR)} is par for the day. Ties break on FEWEST MOVES, since the same apples in fewer moves is the tidier run, and a run that eats nothing ranks on moves survived instead. Snake pays at most 1 IQ point a day however many runs you play. The Sunday Edition grows the snake by two squares an apple instead of one.`}
+      footer={`Scored on APPLES, and you can play the day as many times as you like, because Snake keeps your BEST run: your score is the number of apples you eat, with no ceiling, and ${nf(PAR)} is par for the day. Ties break on FEWEST MOVES, since the same apples in fewer moves is the tidier run, and a run that eats nothing ranks on moves survived instead. Snake pays at most 1 IQ point a day however many runs you play. Every day plays the same, Sundays included.`}
     />
   );
 
@@ -910,7 +910,7 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
           <p style={{ margin: '0 0 9px' }}>
             There are no walls: leave one edge and you come back on the opposite one. The pace never changes, so a run ends on
             a corner you painted yourself into rather than on your reflexes. Play as many runs as you like; your best one takes
-            the board. On the Sunday Edition every apple grows the snake by two squares instead of one.
+            the board. Every day plays the same, Sundays included: each apple grows the snake by one square.
           </p>
           <p style={{ margin: 0 }}>
             More arcade games: <a href="/blocks" style={{ color: ACC_INK }}>Blocks</a> and{' '}

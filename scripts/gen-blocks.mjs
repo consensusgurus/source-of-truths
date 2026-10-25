@@ -53,7 +53,8 @@ for (;;) {
   const live = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   if (live > UNTIL) break;
   num++;
-  const sunday = d.getUTCDay() === 0;
+  // Arcade plays the same every day from 2026-10-26 (owner, 2026-10-25).
+  const sunday = d.getUTCDay() === 0 && live < '2026-10-26';
   const s = sunday ? SHAPE.sun : SHAPE.week;
   rows.push(`  { num: ${num}, quizId: 'blocks-${m}-${day}-${String(y).slice(2)}', live: '${live}', dateLabel: '${MONTHS[m - 1]} ${day}, ${y}', sunday: ${sunday}, cols: ${s.cols}, rows: ${s.rows}, par: ${s.par} },`);
 }

@@ -155,6 +155,7 @@ const GAMES = [
   { key: 'finesse', href: '/finesse', name: 'Finesse', tag: 'The daily double dummy', img: '/games/btn-finesse.png' },
   { key: 'crib', href: '/crib', name: 'Crib', tag: 'Six cards, throw two', img: '/games/btn-crib.png' },
   { key: 'hold', href: '/hold', name: 'Hold', tag: 'Video poker hold', img: '/games/btn-hold.png' },
+  { key: 'mahj', href: '/mahj', name: 'Mahj', tag: 'The daily mahjong solitaire', img: '/games/btn-mahj.png' },
   { key: 'cell', href: '/cell', name: 'Cell', tag: 'The daily FreeCell', img: '/games/btn-cell.png' },
   { key: 'fib', href: '/fib', name: 'Fib', tag: 'One clue is lying', img: '/games/btn-fib.png' },
   { key: 'streak', href: '/streak', name: 'Streak', tag: 'Forty questions, one life', img: '/games/btn-streak.png' },
@@ -213,7 +214,7 @@ const CATEGORIES = [
   { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'art', 'history', 'potluck', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'redact', 'dating', 'extra'] },
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'topple', 'roll', 'snug', 'jig', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'ergo', 'docket', 'plot'] },
   { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
-  { key: 'cards', label: 'Cards', keys: ['taire', 'cell', 'hands', 'hold', 'shoe', 'finesse', 'crib'] },
+  { key: 'cards', label: 'Cards', keys: ['taire', 'cell', 'mahj', 'hands', 'hold', 'shoe', 'finesse', 'crib'] },
   { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'squash', 'dario', 'sweep'] },
 ];
 

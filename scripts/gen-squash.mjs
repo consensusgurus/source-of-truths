@@ -27,6 +27,9 @@ const LAST = '2027-01-31';
 const SECONDS = 300;
 const WEEKDAY = { size: 8 };
 const SUNDAY = { size: 9 };
+// Arcade plays the same every day from 2026-10-26 (owner, 2026-10-25): the
+// 9x9 Sunday frame applies only to the Sundays already played before that.
+const SAME_FROM = '2026-10-26';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const rows = [];
@@ -36,7 +39,7 @@ let num = 1;
 while (d <= end) {
   const y = d.getUTCFullYear(), m = d.getUTCMonth() + 1, day = d.getUTCDate();
   const live = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-  const sunday = d.getUTCDay() === 0;
+  const sunday = d.getUTCDay() === 0 && live < SAME_FROM;
   const f = sunday ? SUNDAY : WEEKDAY;
   const quizId = `squash-${m}-${day}-${String(y).slice(2)}`;
   rows.push(`  { num: ${num}, quizId: '${quizId}', live: '${live}', dateLabel: '${MONTHS[m - 1]} ${day}, ${y}', sunday: ${sunday}, size: ${f.size}, seconds: ${SECONDS}, par: ${parFor(quizId, f)} },`);
@@ -54,7 +57,8 @@ process.stdout.write(`// Puzzle data for Squash, the daily fruit-matching game. 
 // player on a given day gets the same board and the same fruit dropping into
 // each column, and nothing about tomorrow leaks by shipping today's row.
 //
-//   size     the board is size x size. 8 on a weekday, 9 on the Sunday Edition.
+//   size     the board is size x size: 8 every day. The Sundays through
+//            2026-10-25 ran a 9x9 Sunday Edition (sunday: true on those rows).
 //   seconds  the blitz clock: five minutes, every day.
 //   par      the day's BENCHMARK score, measured off the engine at blitz pace
 //          (scripts/squash-par.mjs). Points are the score, posted raw

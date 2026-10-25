@@ -10,7 +10,7 @@
 //     (lib/squash-engine.js). What falls is decided by your play, not luck.
 //  2. A FIVE-MINUTE BLITZ (owner, 2026-10-17). The clock starts on the first
 //     swap and the run ends when it runs out; swap as much as you like until
-//     then. The Sunday Edition is the same five minutes on a 9x9 board. A swap
+//     then. Every day is 8x8 (a 9x9 Sunday Edition ran through 2026-10-25). A swap
 //     that makes no match is undone. Pausing (or leaving the tab) stops the
 //     clock and COVERS the board, so a pause cannot be used to plan.
 //  3. SCORED ON POINTS against the day's par, which is measured off the engine
@@ -1046,7 +1046,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
         <>Swap two specials together for a <b>combo</b>: two slicers clear a cross, a slicer and a bomb clear three rows and three columns, two bombs clear a 5x5, and two punch bowls clear the whole board.</>,
       ]}
       knack="Fruit that falls makes new matches on its own, and every one of those pays more than the last: the second wave scores double, the third triple. Work near the bottom of the board to shake more loose, and save your specials for a combo, but keep swapping: a run is five minutes, not a number of moves."
-      footer={`Scored on POINTS: every fruit squashed is 10 points, times the wave it fell in, plus a bonus for each special you make (60 for a slicer, 100 for a bomb, 200 for a punch bowl). ${nf(PAR)} is par for the day, and there is no ceiling. You can play the day as many times as you like, because Squash keeps your BEST run. Ties break on fewer swaps. Squash pays at most 1 IQ point a day however many runs you play. The Sunday Edition is the same five minutes on a bigger 9x9 board.`}
+      footer={`Scored on POINTS: every fruit squashed is 10 points, times the wave it fell in, plus a bonus for each special you make (60 for a slicer, 100 for a bomb, 200 for a punch bowl). ${nf(PAR)} is par for the day, and there is no ceiling. You can play the day as many times as you like, because Squash keeps your BEST run. Ties break on fewer swaps. Squash pays at most 1 IQ point a day however many runs you play. Every day is the same 8x8 board, Sundays included.`}
     />
   );
 
@@ -1289,7 +1289,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
             Bigger matches make special fruit: four in a line makes a slicer that clears a row or column, an L or a T makes a bomb,
             and five in a line makes a punch bowl that clears every fruit of one kind. Falling fruit that makes new matches scores
             more with every wave. A run is a five-minute blitz from your first swap; play as many runs as you like, and your best one
-            takes the board. The Sunday Edition is the same five minutes on a bigger 9x9 board.
+            takes the board. Every day is the same 8x8 board, Sundays included.
           </p>
           <p style={{ margin: 0 }}>
             More arcade games: <a href="/blocks" style={{ color: ACC_INK }}>Blocks</a>,{' '}

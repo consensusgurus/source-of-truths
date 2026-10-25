@@ -67,7 +67,10 @@ export function buildField(quizId, density) {
 }
 
 function suffixOf(iso) { const [Y, M, D] = iso.split('-').map(Number); return `${M}-${D}-${Y % 100}`; }
-function isSunday(iso) { const [Y, M, D] = iso.split('-').map(Number); return new Date(Date.UTC(Y, M - 1, D)).getUTCDay() === 0; }
+// Arcade plays the same every day from 2026-10-26 (owner, 2026-10-25): the
+// denser Sunday field is dealt only on the Sundays before that.
+const SAME_FROM = '2026-10-26';
+function isSunday(iso) { const [Y, M, D] = iso.split('-').map(Number); return iso < SAME_FROM && new Date(Date.UTC(Y, M - 1, D)).getUTCDay() === 0; }
 function label(iso) {
   const MO = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const [Y, M, D] = iso.split('-').map(Number);
@@ -75,6 +78,9 @@ function label(iso) {
 }
 function addDays(iso, n) { const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
 
+// Run as a script only; importing buildField must not deal a bank.
+const IS_MAIN = (process.argv[1] || '').endsWith('gen-sweep-bank.mjs');
+if (IS_MAIN) {
 const first = process.argv[2] || '2026-08-08';
 const days = Number(process.argv[3] || 60);
 const rows = [];
@@ -98,3 +104,4 @@ process.stderr.write(`\nworst solvedThrough ${worst} (need >= ${ROWS - 3})  ·  
 console.log(rows.map((r) =>
   `  { num: ${r.num}, quizId: '${r.quizId}', live: '${r.live}', dateLabel: '${r.dateLabel}', sunday: ${r.sunday}, par: ${r.par},\n    field: '${r.field}' },`
 ).join('\n'));
+}

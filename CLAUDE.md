@@ -3843,12 +3843,13 @@ archive and hub chips use the short form `Sun`.
 | Crib | seven hands instead of five, three of them decided by the crib (from launch, 2026-09-20) |
 | Hold | fifteen hands instead of ten, at least five of them traps where the rule of thumb is wrong (from launch, 2026-10-18) |
 | Cell | forty cards (ace to ten) in seven columns on two free cells, against the weekday thirty-two in six (from launch, 2026-10-18) |
+| Mahj | the classic Pyramid layout, and the hardest deal of the week by measured ease (from launch, 2026-10-25) |
 | Swindle | the deepest draw of the week, five White moves or more (from launch, 2026-10-18) |
 | Gift | a win in five where the last piece on the board decides it, against the weekday wins in two to four (from launch, 2026-10-16) |
 | Duet | a 10x10 board against the weekday 6x6 and 8x8 (from launch, 2026-10-03) |
 | Lamps | a 10x10 board against the weekday 7x7 and 8x8 (from launch, 2026-10-04) |
 | Ergo | twelve statements to sort instead of nine, under seven rules (from launch, 2026-10-11) |
-| Snake | every apple grows the snake by two instead of one, par 15 against the weekday 20 (from launch, 2026-10-11) |
+| Snake | every apple grew the snake by two instead of one, par 15 against the weekday 20 (2026-10-11 to 2026-10-25 only; Arcade plays the same every day from 2026-10-26) |
 | Clade | a rarer animal, tier 4 of the list (from launch, 2026-10-04) |
 | Dossier | six guesses instead of eight (from launch, 2026-10-04) |
 | Judges | a 12x12 two-judge board against the weekday 10x10 (from launch, 2026-10-04) |
@@ -10227,3 +10228,70 @@ adds a "Typical player" marker from the median of `scoreDist`. A miss on a SCORE
 score track (average / best / typical / today), never the "0 of your last 7 solved" strip; a
 solve-only miss with zero solves shows the field's solve share instead. A new daily follows all
 of this from launch.
+
+## ARCADE PLAYS THE SAME EVERY DAY (owner, 2026-10-25)
+
+Sweep, Squash, Snake and Blocks no longer run a Sunday variant. Through Sunday 2026-10-25 their
+Sundays were different games (an 18.5% mine field, a 9x9 board, double growth, an 8-wide well);
+from 2026-10-26 every Arcade day is the weekday game, Sundays included. Dario never had one.
+
+- **The past is frozen.** The Sundays already played keep `sunday: true` and their Sunday frame,
+  so the archive and the badges still describe them truthfully. Every Sunday from 2026-11-01 was
+  re-dealt with the weekday frame (Squash pars re-measured, Sweep fields re-proven at 15%).
+- **`SUNDAY_UNTIL` in `lib/sunday-editions.js` closes an edition without deleting it.** The four
+  keys stay on `SUNDAY_EDITION_GAMES` (the list also answers "was that archived day a Sunday
+  Edition?"), and `hasSundayEdition(key, on)` now takes the day being described: after a game's
+  `SUNDAY_UNTIL` date it answers false, so no hub chip, FAQ line or dated title promises a Sunday
+  Edition that no longer runs. Callers that describe a specific day pass it (dated titles in
+  `lib/daily-games.js` and `QuizHomeClient`, the slate's back-fill chips); everything else asks
+  about today in Eastern time by default. Retiring another game's Sunday Edition is one line here.
+- **The generators and verifiers carry the same date** (`SAME_FROM = '2026-10-26'` in
+  gen/verify for snake, squash and sweep, and the inline test in gen/verify-blocks): a Sunday frame
+  is required before it and forbidden after it.
+- Reader copy says "Every day plays the same, Sundays included" where it used to describe the
+  Sunday twist; the in-game badges stay keyed on `PUZZLE.sunday`, which is false from 2026-10-26.
+
+## Mahj (`/mahj`): the daily 144-tile mahjong solitaire (launched 2026-10-25)
+
+Key/route `mahj`, category **Cards**, `miss: null`, legacy accent magenta `#a21caf` / `#e879f9`,
+skills Spatial, Planning (verify-skills allows two at most). Built from the "Mahj Mockup" canvas
+(https://claude.ai/artifact/Ej8gVeF1PZo3JYWAGN4rH4). Wired by `scripts/wire-mahj.mjs` (anchored
+beside Hold). Tiles `public/games/btn-mahj.png` and the blue copy from
+`node scripts/gen-tile-art.mjs mahj`; share card `public/og/mahj.png` from `scripts/bake-og.mjs mahj`.
+
+- **The full 144 every day** (owner), on a layout that changes with the weekday
+  (`lib/mahj-core.js` `LAYOUT_BY_DOW`): Monday Bridge, Tuesday Fortress, Wednesday Cross, Thursday
+  Towers, Friday Wide, Saturday Arena, Sunday Pyramid (the Sunday Edition). Every layout is 144
+  positions, none overlapping on a layer, every raised tile resting on one below.
+- **Rules:** a tile is FREE when nothing on the layer above overlaps it and its left or right side
+  is open. Two free tiles with the same face clear; any flower with any flower, any season with
+  any season. **Look Under** (layer pills) hides the upper layers as dashed outlines so the tiles
+  beneath can be read: the deal holds no secrets (owner approved the open-information design).
+- **TIMED (owner, 2026-10-25).** A full clear scores 10/10 and ranks on `timeElapsed`. Undo is
+  free; **Shuffle** redeals the tiles left into a clearable layout (seeded by the day and the
+  shuffle count, so it is the same redeal for everyone in the same spot) and adds 30 seconds to the
+  posted time (`SHUFFLE_PENALTY_S`). A run that stops short (give up, abandon) scores
+  `floor(9 x pairs / 72)` and posts `progress` = pairs cleared, so it ranks on depth then clock.
+  First attempt stands; one free first-play hint (a pair the search proves keeps the board
+  clearable when it can within budget).
+- **Print, not tiles, carries colour** (owner, mockup rounds): white faces, gray when blocked, and
+  the marks in the site's category pastels (dots sky, bamboo mint, characters rose, winds
+  periwinkle, flowers magenta, seasons orange, dragons rose / mint / periwinkle frame), each mark
+  outlined in the one dark ink `#08222e` so a pastel reads on white. A dark corner index on every
+  tile (number or E/S/W/N, R/G/W, F/S) so no one needs to read the characters.
+- **Solvable by construction.** `dealOver` walks a removal order over the full layout, always
+  taking two tiles free at that moment, and hands each step a matching pair. The order goes to
+  `scripts/mahj-orders.json` (never shipped). The week ramps by **measured ease** (`easeOf`: the
+  mean share a random player clears, 40 seeded runs) over 16 candidate deals a day: Monday takes the
+  gentlest, Sunday the hardest. `node scripts/gen-mahj.mjs` rebuilds the whole bank byte for byte.
+- `scripts/verify-mahj.mjs` re-derives the cover and side relations with its own code, checks the
+  frame, the layout and the full tile set, and **replays every day's clearing order** to an empty
+  board with its own free rule. Bank runs 2026-10-25 to 2027-01-31.
+- On a phone (640px and under) a **Zoom** control doubles the board width inside a scroller; the
+  14 to 16 column layouts are otherwise small at 360px.
+- Phone play runs on the full-screen **PlayStage** (`usePhoneStage`): stats row (Time, Pairs, Open),
+  a minimap with a viewport box (tap to jump), Whole board / Big tiles (46px tiles, the default), the
+  board in a scroll port, and a tray of Undo, Hint, Shuffle +30s and Look under. Owner rule: the
+  port's scrollbar is INVISIBLE (scrollbar-width none plus ::-webkit-scrollbar display none); the
+  minimap is how a player sees where they are.
+

@@ -632,7 +632,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
         <>There is no bottom. Keep going until you are wrong, then <b>play again</b> as many times as you like.</>,
       ]}
       knack="You never have to guess. Every field is checked before it ships and is solvable from the top row down with the two rules you already know, plus the one where a number's unknowns sit inside another number's. If you are stuck, the answer is on the board."
-      footer={`Scored on CELLS UNCOVERED, and you can play the day as many times as you like, because Sweep keeps your BEST run rather than your first: your score IS the number of squares you uncover, with no ceiling on it, and ${nf(PAR)} is par for the day. Ties break on FEWEST DIGS, since the same cells off fewer clicks means you read the cascades rather than clicking through them. Sweep pays at most 1 IQ point a day however long the run goes and however many runs you play, so nobody can grind their way up the standings: the real competition is today’s leaderboard. Sundays put more mines in the same field.`}
+      footer={`Scored on CELLS UNCOVERED, and you can play the day as many times as you like, because Sweep keeps your BEST run rather than your first: your score IS the number of squares you uncover, with no ceiling on it, and ${nf(PAR)} is par for the day. Ties break on FEWEST DIGS, since the same cells off fewer clicks means you read the cascades rather than clicking through them. Sweep pays at most 1 IQ point a day however long the run goes and however many runs you play, so nobody can grind their way up the standings: the real competition is today’s leaderboard. Every day plays the same, Sundays included.`}
     />
   );
 
@@ -1027,8 +1027,8 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
           </p>
           <p style={{ margin: '0 0 9px' }}>
             One life a run, and as many runs as you like. Your best one takes the board. However long you dig, Sweep pays
-            at most 1 IQ point a day, so a long sitting cannot buy a place in the standings. On Sundays the same field
-            carries more mines.
+            at most 1 IQ point a day, so a long sitting cannot buy a place in the standings. Every day plays the same,
+            Sundays included.
           </p>
           <p style={{ margin: 0 }}>
             More daily puzzles: <a href="/blocks" style={{ color: ACC_INK }}>Blocks</a>,{' '}

@@ -8,8 +8,8 @@ import { categoryCrumb } from '@/lib/game-seo';
 
 // Blocks launched 2026-08-08 as the daily Arcade game: linked from the hub
 // puzzles row, the footer, the /daily archive, and the sitemap (/blocks is the
-// canonical, evergreen URL). Weekdays drop into a 10-wide well; Sundays narrow
-// it to 8. Rows are gated by Eastern date here, the same as every other daily,
+// canonical, evergreen URL). Every day drops into a 10-wide well (Sundays
+// narrowed it to 8 through 2026-10-25). Rows are gated by Eastern date here, the same as every other daily,
 // though Blocks leaks less than most by construction: the row carries only the
 // frame, and the day's shape order is generated from its quizId in the client.
 

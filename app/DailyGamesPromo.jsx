@@ -89,6 +89,7 @@ export const DAILY_GAMES = [
   { key: 'finesse', href: '/finesse', name: 'Finesse', tag: 'the daily double dummy', store: 'sot_finesse_day', accent: '#4c1d95', bg: '#ede9fe', border: 'rgba(76,29,149,0.4)' },
   { key: 'crib', href: '/crib', name: 'Crib', tag: 'six cards, throw two', store: 'sot_crib_day', accent: '#a16207', bg: '#fbf3dd', border: 'rgba(161,98,7,0.4)' },
   { key: 'hold', href: '/hold', name: 'Hold', tag: 'video poker hold', store: 'sot_hold_day', accent: '#b91c1c', bg: '#fdecec', border: 'rgba(185,28,28,0.4)' },
+  { key: 'mahj', href: '/mahj', name: 'Mahj', tag: 'the daily mahjong solitaire', store: 'sot_mahj_day', accent: '#a21caf', bg: '#fbe8fd', border: 'rgba(162,28,175,0.4)' },
   { key: 'cell', href: '/cell', name: 'Cell', tag: 'the daily FreeCell', store: 'sot_cell_day', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.4)' },
   { key: 'hands', href: '/hands', name: 'Hands', tag: 'the daily poker solitaire', store: 'sot_hands_day', accent: '#7f1d1d', bg: '#f6eaea', border: 'rgba(127,29,29,0.4)' },
   { key: 'chain', href: '/chain', name: 'Chain', tag: 'take them, or leave them', store: 'sot_chain_day', accent: '#4a044e', bg: '#f6ecf8', border: 'rgba(74,4,78,0.4)' },

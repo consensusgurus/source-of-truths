@@ -17,8 +17,9 @@
 //         count, UNCAPPED, and par is only the denominator daily-combined uses
 //         for its completion ratio (it clamps at 1, so clearing above par is
 //         safe and still separates players on placement). Clearing par wins the
-//         end card. Sunday's par is lower because the narrower well ends runs
-//         sooner.
+//         end card. Sunday's par was lower because the narrower well ended runs
+//         sooner. From 2026-10-26 every day is the weekday well (owner,
+//         2026-10-25: Arcade plays the same every day).
 //
 //         RETUNED 2026-08-08, the same day, off the real field. The launch
 //         numbers (100 weekday, 60 Sunday) came off a crude solver that clears
@@ -43,8 +44,9 @@
 // SUNDAY EDITION (owner, 2026-08-08): Sundays narrow the well from 10 to 8.
 // Width is the right knob here because there is no speed curve to steepen, and
 // two fewer columns makes every shape harder to seat, the plus most of all.
-// `sunday` must be true if and only if `live` really is a Sunday; the flag is
-// the ONLY source of truth for the badge (see lib/sunday-editions.js).
+// `sunday` is true on the Sundays through 2026-10-25 (the narrow-well Sunday
+// Edition) and nowhere else: from 2026-10-26 Arcade plays the same every day.
+// The flag is the ONLY source of truth for the badge (see lib/sunday-editions.js).
 export const PUZZLES = [
   { num: 1, quizId: 'blocks-8-8-26', live: '2026-08-08', dateLabel: 'August 8, 2026', sunday: false, cols: 10, rows: 16, par: 15, resetAt: '2026-08-08T16:11:30Z' },
   { num: 2, quizId: 'blocks-8-9-26', live: '2026-08-09', dateLabel: 'August 9, 2026', sunday: true, cols: 8, rows: 16, par: 9 },
@@ -131,34 +133,34 @@ export const PUZZLES = [
   { num: 83, quizId: 'blocks-10-29-26', live: '2026-10-29', dateLabel: 'October 29, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 84, quizId: 'blocks-10-30-26', live: '2026-10-30', dateLabel: 'October 30, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 85, quizId: 'blocks-10-31-26', live: '2026-10-31', dateLabel: 'October 31, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
-  { num: 86, quizId: 'blocks-11-1-26', live: '2026-11-01', dateLabel: 'November 1, 2026', sunday: true, cols: 8, rows: 16, par: 9 },
+  { num: 86, quizId: 'blocks-11-1-26', live: '2026-11-01', dateLabel: 'November 1, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 87, quizId: 'blocks-11-2-26', live: '2026-11-02', dateLabel: 'November 2, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 88, quizId: 'blocks-11-3-26', live: '2026-11-03', dateLabel: 'November 3, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 89, quizId: 'blocks-11-4-26', live: '2026-11-04', dateLabel: 'November 4, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 90, quizId: 'blocks-11-5-26', live: '2026-11-05', dateLabel: 'November 5, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 91, quizId: 'blocks-11-6-26', live: '2026-11-06', dateLabel: 'November 6, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 92, quizId: 'blocks-11-7-26', live: '2026-11-07', dateLabel: 'November 7, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
-  { num: 93, quizId: 'blocks-11-8-26', live: '2026-11-08', dateLabel: 'November 8, 2026', sunday: true, cols: 8, rows: 16, par: 9 },
+  { num: 93, quizId: 'blocks-11-8-26', live: '2026-11-08', dateLabel: 'November 8, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 94, quizId: 'blocks-11-9-26', live: '2026-11-09', dateLabel: 'November 9, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 95, quizId: 'blocks-11-10-26', live: '2026-11-10', dateLabel: 'November 10, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 96, quizId: 'blocks-11-11-26', live: '2026-11-11', dateLabel: 'November 11, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 97, quizId: 'blocks-11-12-26', live: '2026-11-12', dateLabel: 'November 12, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 98, quizId: 'blocks-11-13-26', live: '2026-11-13', dateLabel: 'November 13, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 99, quizId: 'blocks-11-14-26', live: '2026-11-14', dateLabel: 'November 14, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
-  { num: 100, quizId: 'blocks-11-15-26', live: '2026-11-15', dateLabel: 'November 15, 2026', sunday: true, cols: 8, rows: 16, par: 9 },
+  { num: 100, quizId: 'blocks-11-15-26', live: '2026-11-15', dateLabel: 'November 15, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 101, quizId: 'blocks-11-16-26', live: '2026-11-16', dateLabel: 'November 16, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 102, quizId: 'blocks-11-17-26', live: '2026-11-17', dateLabel: 'November 17, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 103, quizId: 'blocks-11-18-26', live: '2026-11-18', dateLabel: 'November 18, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 104, quizId: 'blocks-11-19-26', live: '2026-11-19', dateLabel: 'November 19, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 105, quizId: 'blocks-11-20-26', live: '2026-11-20', dateLabel: 'November 20, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 106, quizId: 'blocks-11-21-26', live: '2026-11-21', dateLabel: 'November 21, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
-  { num: 107, quizId: 'blocks-11-22-26', live: '2026-11-22', dateLabel: 'November 22, 2026', sunday: true, cols: 8, rows: 16, par: 9 },
+  { num: 107, quizId: 'blocks-11-22-26', live: '2026-11-22', dateLabel: 'November 22, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 108, quizId: 'blocks-11-23-26', live: '2026-11-23', dateLabel: 'November 23, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 109, quizId: 'blocks-11-24-26', live: '2026-11-24', dateLabel: 'November 24, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 110, quizId: 'blocks-11-25-26', live: '2026-11-25', dateLabel: 'November 25, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 111, quizId: 'blocks-11-26-26', live: '2026-11-26', dateLabel: 'November 26, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 112, quizId: 'blocks-11-27-26', live: '2026-11-27', dateLabel: 'November 27, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 113, quizId: 'blocks-11-28-26', live: '2026-11-28', dateLabel: 'November 28, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
-  { num: 114, quizId: 'blocks-11-29-26', live: '2026-11-29', dateLabel: 'November 29, 2026', sunday: true, cols: 8, rows: 16, par: 9 },
+  { num: 114, quizId: 'blocks-11-29-26', live: '2026-11-29', dateLabel: 'November 29, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
   { num: 115, quizId: 'blocks-11-30-26', live: '2026-11-30', dateLabel: 'November 30, 2026', sunday: false, cols: 10, rows: 16, par: 15 },
 ];

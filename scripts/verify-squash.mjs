@@ -22,6 +22,9 @@ const fail = (m) => { fails++; console.error('FAIL', m); };
 
 // ---- bank -----------------------------------------------------------------
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+// Arcade plays the same every day from 2026-10-26 (owner, 2026-10-25): a
+// Sunday frame is required on the Sundays before that and forbidden after.
+const SAME_FROM = '2026-10-26';
 let prev = null;
 PUZZLES.forEach((p, i) => {
   if (p.num !== i + 1) fail(`row ${i}: num ${p.num}`);
@@ -31,7 +34,7 @@ PUZZLES.forEach((p, i) => {
   const m = d.getUTCMonth() + 1, day = d.getUTCDate(), y = d.getUTCFullYear();
   if (p.quizId !== `squash-${m}-${day}-${String(y).slice(2)}`) fail(`${p.quizId}: quizId does not match ${p.live}`);
   if (p.dateLabel !== `${MONTHS[m - 1]} ${day}, ${y}`) fail(`${p.quizId}: dateLabel`);
-  const sun = d.getUTCDay() === 0;
+  const sun = d.getUTCDay() === 0 && p.live < SAME_FROM;
   if (p.sunday !== sun) fail(`${p.quizId}: sunday flag`);
   const want = sun ? 9 : 8;
   if (p.size !== want || p.seconds !== 300) fail(`${p.quizId}: frame ${p.size}x${p.size}, ${p.seconds}s`);

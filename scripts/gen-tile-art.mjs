@@ -239,6 +239,30 @@ function drawDefend(p) {
   return c;
 }
 
+// MAHJ: three mahjong tiles, two side by side and one stacked across them,
+// each a white face over a darker edge. The top tile carries a ringed dot, the
+// two below a pair of bamboo sticks, so it reads as tiles rather than cards.
+function drawMahj(p) {
+  const c = canvas();
+  roundRect(c, 0, 0, S, S, 16, hex(p.ground));
+  const tile = (x, y) => {
+    roundRect(c, x + 2.2, y + 2.8, 21, 28, 4, hex(p.edge));
+    roundRect(c, x, y, 21, 28, 4, hex(p.face));
+  };
+  tile(14, 36); tile(41, 36);
+  for (const x of [14, 41]) {
+    bar(c, x + 7.5, 40.5, x + 7.5, 59.5, 3.4, hex(p.mark));
+    bar(c, x + 13.5, 40.5, x + 13.5, 59.5, 3.4, hex(p.mark));
+    bar(c, x + 6, 50, x + 9, 50, 1.6, hex(p.face));
+    bar(c, x + 12, 50, x + 15, 50, 1.6, hex(p.face));
+  }
+  tile(27.5, 12);
+  disc(c, 38, 26, 7.4, hex(p.mark));
+  disc(c, 38, 26, 4.6, hex(p.dot));
+  disc(c, 38, 26, 1.8, hex(p.mark));
+  return c;
+}
+
 const PALETTES = {
   // Defend's roles are the board, the king and the square he is standing on.
   // The blue copy takes a MID ground because the other End Game tiles are
@@ -264,11 +288,19 @@ const PALETTES = {
     colour: { ground: '#226218', felt: '#4c8a41', dark: '#12140f', light: '#f2efe4' },
     blue: { ground: '#c2ddfe', felt: '#245edf', dark: '#0f1f4d', light: '#e8f2ff' },
   },
+  // Mahj (Cards) wears the Cards magenta; the blue copy takes a mid ground
+  // because Hold, beside it in Cards, already wears the deep one.
+  mahj: {
+    colour: { ground: '#86198f', face: '#ffffff', edge: '#d8b4e2', mark: '#08222e', dot: '#e879f9' },
+    blue: { ground: '#245edf', face: '#e8f2ff', edge: '#9cc1f5', mark: '#0f1f4d', dot: '#4a8cf0' },
+  },
 };
-const DRAW = { chain: drawChain, hold: drawHold, turn: drawTurn, defend: drawDefend };
+const DRAW = { chain: drawChain, hold: drawHold, turn: drawTurn, defend: drawDefend, mahj: drawMahj };
 
 mkdirSync('public/games/blue', { recursive: true });
-for (const key of Object.keys(DRAW)) {
+// Pass keys to draw only those (node scripts/gen-tile-art.mjs mahj).
+const ONLY = process.argv.slice(2);
+for (const key of Object.keys(DRAW).filter((k) => !ONLY.length || ONLY.includes(k))) {
   for (const [variant, dir] of [['colour', 'public/games'], ['blue', 'public/games/blue']]) {
     const png = encodePng(downsample(DRAW[key](PALETTES[key][variant])));
     const path = `${dir}/btn-${key}.png`;

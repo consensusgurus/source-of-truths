@@ -25,6 +25,9 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 
 // ---- bank -------------------------------------------------------------------
 if (!PUZZLES.length) fail('empty bank');
+// Arcade plays the same every day from 2026-10-26 (owner, 2026-10-25): a
+// Sunday frame is required on the Sundays before that and forbidden after.
+const SAME_FROM = '2026-10-26';
 let prev = null;
 PUZZLES.forEach((p, i) => {
   if (p.num !== i + 1) fail(`row ${i}: num ${p.num}, expected ${i + 1}`);
@@ -35,8 +38,8 @@ PUZZLES.forEach((p, i) => {
   if (p.quizId !== `snake-${m}-${day}-${String(y).slice(2)}`) fail(`${p.live}: quizId ${p.quizId}`);
   if (p.dateLabel !== `${MONTHS[m - 1]} ${day}, ${y}`) fail(`${p.live}: dateLabel ${p.dateLabel}`);
   if (p.size !== SNAKE_SIZE) fail(`${p.live}: size ${p.size}`);
-  const sun = d.getUTCDay() === 0;
-  if (!!p.sunday !== sun) fail(`${p.live}: sunday flag ${p.sunday} on a ${sun ? 'Sunday' : 'weekday'}`);
+  const sun = d.getUTCDay() === 0 && p.live < SAME_FROM;
+  if (!!p.sunday !== sun) fail(`${p.live}: sunday flag ${p.sunday} (Sunday Edition ${sun ? 'expected' : 'not expected'} on this day)`);
   if (sun && (p.grow !== 2 || p.par !== 15)) fail(`${p.live}: Sunday frame grow ${p.grow} par ${p.par}`);
   if (!sun && (p.grow !== 1 || p.par !== 20)) fail(`${p.live}: weekday frame grow ${p.grow} par ${p.par}`);
 });
