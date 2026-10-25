@@ -1110,6 +1110,24 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           copied={copied}
           onDetails={() => setEndOpen(false)}
           sweep={!curtainOnce.current}
+          board={(() => {
+            // THE ONE-PAGE ENDING (owner, 2026-10-25): top three, then you.
+            const meB = boardQ.data && boardQ.data.me;
+            const fig = (row) => Math.round((Number(row.total) || 0) * 10) / 10;
+            const isMe = (row) => !!(meB && row && meB.userKey && row.userKey === meB.userKey);
+            const out = (viewRows || []).slice(0, 3).map((row, i) => ({ rank: row.rank || i + 1, name: row.username || 'Guest', score: fig(row), me: isMe(row) }));
+            if (meB && !out.some((x) => x.me) && Number.isFinite(meB.total)) {
+              if (Number.isFinite(meB.rank) && meB.rank > 4) out.push({ gap: true });
+              out.push({ rank: Number.isFinite(meB.rank) ? meB.rank : '–', name: 'You', score: fig(meB), me: true });
+            }
+            return out.length ? { rows: out, field: (boardQ.data && boardQ.data.overallField) || null, href: runSummaryHref(circuitId) } : null;
+          })()}
+          misses={sections.map((s, i) => missOf(s, r.results[i] || null))}
+          more={!r.practice ? <MoreRunsList self={circuitId} ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} /> : null}
+          onPractice={!r.practice ? startPractice : null}
+          extra={guest && !claimed ? (
+            <button type="button" className="gsx-lb" onClick={() => setEndOpen(false)}>Claim a free name to hold your spot</button>
+          ) : null}
         />
       ) : null}
       {isChallengeableRun(circuitId) && !done && !(TOWERS && hydrated && r.phase === 'idle') ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}

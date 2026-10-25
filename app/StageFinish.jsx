@@ -71,7 +71,7 @@ import StageStick from './StageStick';
 import { fmtMetric } from '@/lib/challenge-metric';
 import { typicalSeconds } from '@/lib/game-medians';
 import { ARCADE_RUN, ARCADE_BEST } from '@/lib/end-verdict';
-import { categoryHrefForGame } from '@/lib/puzzle-categories';
+import { categoryHrefForGame, categoryHref } from '@/lib/puzzle-categories';
 import { DISPLAY_CIRCUITS, circuitKeysFor, circuitName, runHref } from '@/lib/circuits';
 import { themeParam } from '@/lib/share-palette';
 
@@ -1947,11 +1947,12 @@ export default function StageFinish({
     } : null;
     const simSec = primaryDoor && primaryDoor.key ? typicalSeconds(primaryDoor.key) : null;
     const similar = primaryDoor ? {
+      key: primaryDoor.key || null,
       name: primaryDoor.name, href: primaryDoor.href, onClick: primaryDoor.onClick,
       time: simSec ? `${Math.max(1, Math.round(simSec / 60))} min` : '',
     } : null;
     const nextUp = archiveRows.find((r) => !r.done && r.href && (curN == null || Number(r.num) !== curN));
-    const another = nextUp ? { name: me.name, href: nextUp.href } : null;
+    const another = nextUp ? { key: me.key, name: me.name, href: nextUp.href } : null;
 
     // FINISH THE RUN (owner, 2026-10-20, option B of the "Finish the Run
     // button" canvas). A player who finishes a game that belongs to a run on
@@ -2023,8 +2024,25 @@ export default function StageFinish({
       replay: replayOpt && revealOpt ? replayOpt : null,
       catHref: categoryHrefForGame(me.key), catName: me.cat,
       homeHref: (mainOpt && mainOpt.href) || '/',
+      gameName: me.name,
+      allTime: gameRank && gameRank.value != null ? { value: gameRank.value, label: gameRank.label || 'all time' } : null,
     };
-    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet, replayNow: replayOpt || null };
+    // THE ONE-PAGE ENDING (owner, 2026-10-25): the rest of the category as
+    // glyph tiles, and every category with what is played today.
+    const minOf = (k) => { const t = typicalSeconds(k); return t ? `${Math.max(1, Math.round(t / 60))} min` : ''; };
+    const inCatAll = LIVE().filter((x) => x.cat === me.cat);
+    const shelf = sameCat.length ? {
+      cat: me.cat,
+      n: inCatAll.filter((x) => played.has(x.key) || x.key === me.key).length,
+      total: inCatAll.length,
+      games: sameCat.slice(0, 14).map(({ g: x }) => ({ key: x.key, name: x.name, href: x.href || `/${x.key}`, done: played.has(x.key), time: minOf(x.key) })),
+    } : null;
+    const cats = RAMP_ORDER.map((c) => {
+      const gs = LIVE().filter((x) => x.cat === c);
+      return { name: c, total: gs.length, n: gs.filter((x) => played.has(x.key) || x.key === me.key).length, href: categoryHref(c) || '/', bg: categoryColor(c) };
+    }).filter((c) => c.total > 0);
+    const meme = memeCtx && openMeme ? { ctx: memeCtx, onOpen: openMeme } : null;
+    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet, replayNow: replayOpt || null, meme, shelf, cats };
   })();
 
   // Placed AFTER every hook above AND after the challenge door is built (moved

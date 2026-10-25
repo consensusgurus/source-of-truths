@@ -26,6 +26,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { RAMP_INK, softGround, categoryColor, gameCategory } from '@/lib/category-ramp';
 import { rampFor, LADDER_RAMP } from '@/lib/circuits';
 import MindLoftMark from './MindLoftMark';
+import { mathText } from '@/app/MathText';
 import { holdRootPaint } from '@/lib/root-paint';
 import { holdThemeColor } from '@/lib/theme-color-hold';
 
@@ -340,7 +341,13 @@ export function GauntletEndStage({
   rank = null, fieldSize = null, avg = null, top = null, leaderScore = null,
   challenge = null, polymath = null, similar = null, onShare, copied = false,
   onDetails, sweep = true, unitWord = 'right', colLabel = 'Quiz', extra = null,
+  // THE ONE-PAGE ENDING (owner, 2026-10-25): what used to sit behind "See full
+  // details" is on this page now. `board` is today's board (top three, then
+  // you), `misses` the question that ended each quiz (missOf, by section
+  // index), `more` the other runs still open today.
+  board = null, misses = null, more = null, onPractice = null,
 }) {
+  const [openRow, setOpenRow] = useState(-1);
   const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const anim = sweep && !reduce;
   const shown = useCountUp(score, anim ? 1500 : 200, !reduce);
@@ -399,35 +406,67 @@ export function GauntletEndStage({
                 #{rank}{fieldSize ? ` of ${Number(fieldSize).toLocaleString()}` : ''}{ahead != null ? ` · ahead of ${ahead}%` : ''}
               </div>
             ) : null}
+            {/* 2. RANKINGS */}
+            {board && board.rows && board.rows.length ? (
+              <div className="gsx-rise gsx-card gsx-board" style={d('2.2s')}>
+                <div className="gsx-ch"><span>Today&rsquo;s board{board.field ? ` · ${Number(board.field).toLocaleString()}` : ''}</span>{board.href ? <a href={board.href}>See all</a> : null}</div>
+                {board.rows.map((r, i) => (r.gap ? (
+                  <div key={'g' + i} className="gsx-br gsx-gap">&middot;&middot;&middot;</div>
+                ) : (
+                  <div key={(r.name || '') + i} className={'gsx-br' + (r.me ? ' me' : '')}>
+                    <span className="p">#{r.rank}</span><span className="n">{r.me ? 'You' : r.name}</span><span className="s">{r.score}</span>
+                  </div>
+                )))}
+              </div>
+            ) : null}
+            {/* 3. CHALLENGE (+ Polymath), and sharing the score */}
             <div className="gsx-rise gsx-tray" style={d('2.4s')}>
               {extra}
               {challenge}
               {polymath ? <div className="gsx-poly">{polymath}</div> : null}
             </div>
+            {onShare ? (
+              <button type="button" className="gsx-rise gsx-ib gsx-share" style={d('2.45s')} onClick={onShare}>{copied ? 'Copied' : 'Share Your Score'}</button>
+            ) : null}
           </div>
           <div className="gsx-eright">
-            <div className="gsx-rise gsx-table" style={d('2.25s')}>
-              <div className="gsx-tr gsx-th"><span>{colLabel}</span><span>You</span><span>Field</span><span>Best</span></div>
-              {rows.map((x) => (
-                <div key={x.key} className="gsx-tr gsx-row" style={{ background: pal.fill(x.bg) }}>
-                  <span><b>{x.name}</b></span><span><b>{x.you}</b></span><span>{x.field}</span><span>{x.best}</span>
-                </div>
-              ))}
-              <div className="gsx-tr gsx-tt">
-                <span>Total</span><span>{score}</span><span>{avgTotal != null ? avgTotal : '–'}</span><span>{leaderScore != null ? leaderScore : '–'}</span>
-              </div>
-            </div>
+            {/* 4. PLAY NEXT */}
             {similar && similar.href ? (
               <a className="gsx-rise gsx-next" href={similar.href} style={{ ...d('2.5s'), background: pal.fill('#6ee7b7') }}>
                 <span><i>One Quick Play Next</i><b>{similar.name}</b></span>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </a>
             ) : null}
-            <div className="gsx-rise gsx-two" style={d('2.6s')}>
-              <a className="gsx-ob" href="/">All Daily Puzzles</a>
-              <button type="button" className="gsx-ib" onClick={onShare}>{copied ? 'Copied' : 'Share Your Score'}</button>
+            {more ? <div className="gsx-rise gsx-card gsx-more" style={d('2.55s')}>{more}</div> : null}
+            <a className="gsx-rise gsx-ob" href="/" style={d('2.6s')}>All Daily Puzzles</a>
+            {/* 5. FULL STATS: quiz by quiz, and the question that ended each */}
+            <div className="gsx-rise gsx-table" style={d('2.65s')}>
+              <div className="gsx-tr gsx-th"><span>{colLabel}</span><span>You</span><span>Field</span><span>Best</span></div>
+              {rows.map((x, i) => {
+                const m = misses ? misses[i] : null;
+                const can = !!(m && !m.cleared && m.q);
+                const open = can && openRow === i;
+                return (
+                  <div key={x.key} className="gsx-rw">
+                    <button type="button" className={'gsx-tr gsx-row' + (can ? ' can' : '')} style={{ background: pal.fill(x.bg) }}
+                      onClick={can ? () => setOpenRow(open ? -1 : i) : undefined} aria-expanded={can ? open : undefined} disabled={!can}>
+                      <span><b>{x.name}</b>{can ? <em aria-hidden="true">{open ? ' −' : ' +'}</em> : null}</span><span><b>{x.you}</b></span><span>{x.field}</span><span>{x.best}</span>
+                    </button>
+                    {open ? (
+                      <div className="gsx-miss">
+                        <div className="q">{mathText(m.q)}</div>
+                        <div className="a"><b>{mathText(m.right)}</b>{m.yours ? <span> · you said {mathText(m.yours)}</span> : m.timedOut ? <span> · the clock ran out</span> : null}</div>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+              <div className="gsx-tr gsx-tt">
+                <span>Total</span><span>{score}</span><span>{avgTotal != null ? avgTotal : '–'}</span><span>{leaderScore != null ? leaderScore : '–'}</span>
+              </div>
             </div>
-            <button type="button" className="gsx-rise gsx-det" style={d('2.65s')} onClick={onDetails}>See full details</button>
+            {misses && misses.some((m) => m && !m.cleared && m.q) ? <div className="gsx-fine">Tap a quiz to see the question that ended it.</div> : null}
+            {onPractice ? <button type="button" className="gsx-det" onClick={onPractice}>Practice replay</button> : null}
           </div>
         </div>
       </div>
@@ -547,6 +586,27 @@ const CSS = `
 .gsx-ob{border:2px solid var(--gsx-ink);background:transparent}
 .gsx-ib{border:0;background:var(--gsx-ink);color:var(--gsx-bg)}
 .gsx-ib:hover{filter:brightness(.86)}
+.gsx-card{border:2px solid var(--gsx-ink);border-radius:16px;padding:12px 14px}
+.gsx-ch{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.gsx-ch a{font-size:13px;letter-spacing:0;text-transform:none;text-decoration:underline;text-underline-offset:3px}
+.gsx-br{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid color-mix(in srgb, var(--gsx-ink) 25%, transparent);font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+.gsx-br:nth-child(2){border-top:0}
+.gsx-br .p{font-weight:800;opacity:.8}
+.gsx-br .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gsx-br .s{font-weight:800}
+.gsx-br.me{background:color-mix(in srgb, var(--gsx-ink) 10%, transparent);border-radius:10px;padding:8px;margin:2px -8px 0;border-top-color:transparent}
+.gsx-gap{display:block;text-align:center;padding:2px 0;opacity:.6}
+.gsx-share{width:100%}
+.gsx-more .mr{margin:0}
+.gsx-rw{display:block}
+.gsx-row{width:100%;border:0;border-top:1px solid color-mix(in srgb, var(--gsx-ink) 35%, transparent);font:inherit;color:var(--gsx-ink);text-align:left;cursor:default}
+.gsx-row.can{cursor:pointer}
+.gsx-row.can:hover{filter:brightness(.96)}
+.gsx-row:disabled{opacity:1}
+.gsx-row em{font-style:normal;font-weight:800;opacity:.7}
+.gsx-miss{padding:10px 12px 12px;border-top:1px dashed color-mix(in srgb, var(--gsx-ink) 35%, transparent);font-size:14px;font-weight:600;line-height:1.35}
+.gsx-miss .a{margin-top:5px;font-size:13.5px}
+.gsx-miss .a b{font-weight:800}
 .gsx-det{align-self:center;background:none;border:0;padding:8px;color:var(--gsx-ink);font:inherit;font-size:14px;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .gsx-rise{animation:gsxRise .5s ease-out both}
 @keyframes gsxRise{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
@@ -573,7 +633,7 @@ const CSS = `
   .gsx-low{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
   .gsx-acts{justify-content:center}
   .gsx-ecol{justify-content:center}
-  .gsx-egrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:40px;align-items:center}
+  .gsx-egrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:40px;align-items:start}
   .gsx-score span{font-size:132px}
   .gsx-title b{font-size:30px}
   .gsx-tr{min-height:44px;font-size:17px}
