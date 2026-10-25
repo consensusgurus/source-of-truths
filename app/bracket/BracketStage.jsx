@@ -13,7 +13,7 @@
 // posted then), onDone once the reveal has played.
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { RAMP_INK } from '@/lib/category-ramp';
+import { RAMP_INK, softGround } from '@/lib/category-ramp';
 import { useStageLook, stagePalette, useStageChrome } from '../GauntletScreens';
 import { nextLook } from '@/lib/stage-look';
 import StageTopBar from '../StageTopBar';
@@ -49,7 +49,7 @@ export default function BracketStage({
   onHelp, giveUp, elapsed,
 }) {
   const [look, setLook] = useStageLook();
-  const pal = look === 'color' ? { bg, ink: RAMP_INK } : stagePalette(bg, look);
+  const pal = look === 'color' ? { bg: softGround(bg), ink: RAMP_INK } : stagePalette(bg, look);
   useStageChrome(pal.bg);
   const vh = useVh();
 

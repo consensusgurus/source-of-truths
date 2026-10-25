@@ -11,7 +11,7 @@
 // rendering it and the finish plays on the page's own board underneath.
 
 import React, { useEffect, useState } from 'react';
-import { RAMP_INK } from '@/lib/category-ramp';
+import { RAMP_INK, softGround } from '@/lib/category-ramp';
 import { useStageLook, stagePalette, useStageChrome } from './GauntletScreens';
 import { nextLook } from '@/lib/stage-look';
 import StageTopBar from './StageTopBar';
@@ -44,7 +44,7 @@ export default function WordStage({
   foot = null, frac = null, giveUp = null,
 }) {
   const [look, setLook] = useStageLook();
-  const pal = look === 'color' ? { bg, ink: RAMP_INK } : stagePalette(bg, look);
+  const pal = look === 'color' ? { bg: softGround(bg), ink: RAMP_INK } : stagePalette(bg, look);
   useStageChrome(pal.bg);
   const n = slots.reduce((s, g) => s + g.length, 0) + Math.max(0, slots.length - 1);
   const sn = scramble ? scramble.replace(/ /g, '').length : 0;

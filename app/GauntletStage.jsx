@@ -20,7 +20,7 @@
 // Fixed to the viewport at the page root's stacking level, phone and desktop.
 
 import React from 'react';
-import { RAMP_INK } from '@/lib/category-ramp';
+import { RAMP_INK, softGround } from '@/lib/category-ramp';
 import { useStageLook, stagePalette, useStageChrome, LookButton } from './GauntletScreens';
 import { nextLook } from '@/lib/stage-look';
 
@@ -28,7 +28,7 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   // The stage's own look switch (owner, 2026-10-23): pastel by default, Plain
   // is white with black type. Separate from the site's light/dark setting.
   const [look, setLook] = useStageLook();
-  const pal = look === 'color' ? { bg: bg || '#7dd3fc', ink } : stagePalette(bg || '#7dd3fc', look);
+  const pal = look === 'color' ? { bg: softGround(bg || '#7dd3fc'), ink } : stagePalette(bg || '#7dd3fc', look);
   useStageChrome(pal.bg);
   // SHORT ANSWERS GO 2x2 ON A PHONE (2026-10-24, player report on Blitz): four
   // numbers stacked in one tall column made the eye travel down the screen to

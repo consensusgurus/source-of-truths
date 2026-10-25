@@ -20,6 +20,7 @@ import { useEffect } from 'react';
 import { usePhoneStage } from './WordStage';
 import { useStageLook, nextLook } from '@/lib/stage-look';
 import { forceStageTheme } from '@/lib/stage-theme';
+import { softGround } from '@/lib/category-ramp';
 
 let holders = 0;
 function hold() {
@@ -42,9 +43,10 @@ export default function useSudokuPastel(active, ground) {
   const phone = usePhoneStage();
   const on = !!active && phone;
   useEffect(() => {
-    if (!on || typeof document === 'undefined' || !ground) return undefined;
+    if (!on || typeof document === 'undefined') return undefined;
     const r = document.documentElement;
-    r.style.setProperty('--sp-g', ground);
+    // softened 40% toward white, like every phone stage ground (lib/category-ramp.js)
+    r.style.setProperty('--sp-g', softGround(ground || '#a5b4fc'));
     return () => { r.style.removeProperty('--sp-g'); };
   }, [on, ground]);
   const [look, setLook] = useStageLook();

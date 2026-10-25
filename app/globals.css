@@ -698,7 +698,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
    element, and the :not(#sot-x) lifts the html rule over the register's own. */
 @media (max-width: 899px) {
   html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
-  html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: var(--sp-g, #a5b4fc) !important; }
+  html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: var(--sp-g, #c9d2fd) !important; }
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
     --stg-brand: #08222e !important;
     /* END GAME PIECES (owner, 2026-10-24). The boards keep their own light
@@ -707,27 +707,29 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-you: #e8b43a;
     --stg-you-lt: #ffffff;
     --stg-you-dk: #111111;
-    --stg-ground: var(--sp-g, #a5b4fc) !important;
-    --stg-raise: color-mix(in srgb, var(--sp-g, #a5b4fc) 60%, #ffffff) !important;
-    --stg-panel: color-mix(in srgb, var(--sp-g, #a5b4fc) 80%, #ffffff) !important;
+    --stg-ground: var(--sp-g, #c9d2fd) !important;
+    --stg-raise: color-mix(in srgb, var(--sp-g, #c9d2fd) 60%, #ffffff) !important;
+    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 80%, #ffffff) !important;
     --stg-surf: rgba(8, 34, 46, 0.07) !important;
     --stg-surf2: rgba(8, 34, 46, 0.13) !important;
     --stg-line: rgba(8, 34, 46, 0.2) !important;
     --stg-line2: rgba(8, 34, 46, 0.34) !important;
     --stg-line3: #08222e !important;
-    --stg-cell: color-mix(in srgb, var(--sp-g, #a5b4fc) 88%, #08222e) !important;
+    --stg-cell: color-mix(in srgb, var(--sp-g, #c9d2fd) 88%, #08222e) !important;
     --stg-cell-line: rgba(8, 34, 46, 0.3) !important;
     --stg-cell-dot: rgba(8, 34, 46, 0.6) !important;
     --stg-cell-dot2: rgba(8, 34, 46, 0.9) !important;
     --stg-cell-given: #08222e !important;
-    --stg-tint-mix: 100% !important;
+    /* Region tiles softened like the ground: 60% hue into white (owner, 2026-10-24). */
+    --stg-tint-mix: 60% !important;
+    --stg-region-base: #ffffff;
     --stg-dk: 100% !important;
     --stg-ink: #08222e !important;
     --stg-ink2: #1d3a4a !important;
     --stg-mute: #23404f !important;
     --stg-mute2: #2c4757 !important;
     --stg-dim: #2c4757 !important;
-    --stg-onramp: var(--sp-g, #a5b4fc) !important;
+    --stg-onramp: var(--sp-g, #c9d2fd) !important;
     --stg-chip: rgba(8, 34, 46, 0.1) !important;
     --stg-b1: rgba(8, 34, 46, 0.06) !important;
     --stg-b2: rgba(8, 34, 46, 0.1) !important;
@@ -744,7 +746,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-acc-ink: #08222e !important;
     --stg-acc-tint: rgba(8, 34, 46, 0.14) !important;
     --stg-sel: #08222e;
-    background: var(--sp-g, #a5b4fc) !important;
+    background: var(--sp-g, #c9d2fd) !important;
     color: #08222e;
   }
   /* Region boards (Quilt, Cages) wear the full pastels here. Periwinkle is
@@ -762,7 +764,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [class$="-note"] { color: var(--stg-ink) !important; font-weight: 700 !important; }
   /* The selected square is inked solid, so whatever it holds turns pastel. */
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
-  html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: var(--sp-g, #a5b4fc) !important; }
+  html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: var(--sp-g, #c9d2fd) !important; }
   /* PLAIN, the stage's other look: a white page and black type, nothing coloured.
      Region boards lose their pastels and keep only their heavy walls. */
   html[data-stage-pastel='plain']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
@@ -783,6 +785,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-cell-dot2: rgba(17, 17, 17, 0.9) !important;
     --stg-cell-given: #111111 !important;
     --stg-tint-mix: 0% !important;
+    --stg-region-base: var(--stg-cell) !important;
     --stg-ink: #111111 !important;
     --stg-ink2: #333333 !important;
     --stg-mute: #444444 !important;
@@ -826,6 +829,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-cell-dot2: rgba(233, 237, 244, 0.9) !important;
     --stg-cell-given: #ffffff !important;
     --stg-tint-mix: 0% !important;
+    --stg-region-base: var(--stg-cell) !important;
     --stg-ink: #e9edf4 !important;
     --stg-ink2: #c4ccd8 !important;
     --stg-mute: #aab5c7 !important;

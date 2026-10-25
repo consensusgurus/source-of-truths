@@ -886,6 +886,7 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
             .ab-face.ab-go{justify-content:center;}
           }
           .ab-stage{position:fixed;inset:0;z-index:85;background:var(--stg-acc, #6d28d9);color:var(--stg-onramp, #fff);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:${SANS};-webkit-tap-highlight-color:transparent;}
+          .stage-page:not([data-stage-theme='light']) .ab-stage{background:color-mix(in srgb, var(--stg-acc, #6d28d9) 60%, #ffffff);}
           .ab-stage, .ab-stage .ab-opt, .ab-stage .ab-name, .ab-stage .ab-name span, .ab-stage .ab-pill, .ab-stage .ab-pct, .ab-stage .ab-tag, .ab-stage .ab-q, .ab-stage .ab-hint, .ab-stage .ab-note, .ab-stage .ab-k, .ab-stage .ab-big, .ab-stage .ab-mid, .ab-stage .ab-eyebrow{color:var(--stg-onramp, #fff) !important;opacity:1;}
           .ab-stage .ab-pill.on, .ab-stage .ab-tag-on, .ab-stage .ab-go{color:var(--stg-acc, #6d28d9) !important;}
           .ab-col{position:relative;z-index:2;width:100%;max-width:560px;box-sizing:border-box;padding:28px 16px;display:flex;flex-direction:column;justify-content:center;gap:30px;min-height:100%;}
