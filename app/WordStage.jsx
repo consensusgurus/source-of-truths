@@ -46,7 +46,7 @@ export default function WordStage({
   const [look, setLook] = useStageLook();
   // WHITE PAGE, COLOURED TILES (owner, 2026-10-25): the colour look keeps the
   // page white and puts the category colour on the squares and keys.
-  const pal = look === 'color' ? { bg: '#ffffff', ink: RAMP_INK, tile: softGround(bg) } : stagePalette(bg, look);
+  const pal = stagePalette(bg, look);
   useStageChrome(pal.bg);
   const n = slots.reduce((s, g) => s + g.length, 0) + Math.max(0, slots.length - 1);
   const sn = scramble ? scramble.replace(/ /g, '').length : 0;

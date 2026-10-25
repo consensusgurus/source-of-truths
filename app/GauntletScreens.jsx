@@ -41,9 +41,10 @@ export const DARK = { bg: '#0b0f1a', ink: '#e9edf4', fill: '#1a2130' };
 export function stagePalette(pastel, look) {
   if (look === 'plain') return { ...PLAIN };
   if (look === 'dark') return { bg: DARK.bg, ink: DARK.ink };
-  // WHITE PAGE, COLOURED TILES (owner, 2026-10-25): the colour look's page is
-  // white; the colour lives on the tiles and cards (`tile`).
-  return { bg: '#ffffff', ink: INK, tile: softGround(pastel) };
+  // FOUR LOOKS (owner, 2026-10-25): 'tint' is a white page with the colour on
+  // the tiles and cards (`tile`); 'color' keeps the coloured page.
+  if (look === 'tint') return { bg: '#ffffff', ink: INK, tile: softGround(pastel) };
+  return { bg: softGround(pastel), ink: INK };
 }
 // Paints <html>/<body> and the browser's theme-color so Safari's top and
 // bottom bars match the stage, and puts both back on unmount.
@@ -185,8 +186,8 @@ export function GauntletCover({ sections = [] }) {
   const c = gateColour(sections);
   return (
     <>
-      <div id="gsx-cover" aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 90, background: '#ffffff' }} />
-      <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('${LOOK_KEY}')==='plain'||localStorage.getItem('${LOOK_KEY}')==='dark'){var e=document.getElementById('gsx-cover');if(e)e.style.background=localStorage.getItem('${LOOK_KEY}')==='dark'?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
+      <div id="gsx-cover" aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 90, background: softGround(c) }} />
+      <script dangerouslySetInnerHTML={{ __html: `try{var L=localStorage.getItem('${LOOK_KEY}');if(L==='plain'||L==='dark'||L==='tint'){var e=document.getElementById('gsx-cover');if(e)e.style.background=localStorage.getItem('${LOOK_KEY}')==='dark'?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
     </>
   );
 }
@@ -352,7 +353,7 @@ export function GauntletEndStage({
   }, []);
   const [lookNow] = useStageLook();
   const plainNow = lookNow === 'plain';
-  const sweepEdges = false && sweeping && !plainNow && lookNow !== 'dark' ? {
+  const sweepEdges = sweeping && lookNow === 'color' ? {
     top: softGround(rampFor(slotOf(sections[0], 0))),
     bottom: softGround(rampFor(slotOf(sections[sections.length - 1], sections.length - 1))),
   } : null;

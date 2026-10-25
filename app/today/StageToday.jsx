@@ -40,10 +40,10 @@ import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys, dailySco
 // 2026-09-29 too, with no deploy needed on the day. Same fix as StageFinish.
 const LIVE_KEYS = new Set(liveDailyKeys());
 const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => LIVE_KEYS.has(g.key));
-import { DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
+import { SUDOKU_POOL, DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
 import GameGlyph from '../GameGlyph';
 import CircuitArt from '../CircuitArt';
-import { softGround, RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
+import { softGround, gameColor, RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
 import PolymathRunCard from './PolymathRunCard';
 import { POLY_LEGS, localPolymath } from '@/lib/polymath';
 import { SKILLS, SKILL_MAP, hasSkill } from '@/lib/daily-skills';
@@ -81,6 +81,7 @@ import MindLoftMark from '../MindLoftMark';
 import { useStageChrome } from '../GauntletScreens';
 import StagePatch, { PATCH_CSS } from '../StagePatch';
 import RollNum from '../RollNum';
+import { floodNav } from '@/lib/tile-flood';
 import useFlip from '../useFlip';
 // THE FOOTER IS SHARED (2026-08-31). It used to be drawn here, because this
 // was the only stage surface that needed one; the circuit pages needed the
@@ -3801,7 +3802,8 @@ export default function StageToday() {
                       const r = standBy[g.key];
                       const on = !!(favorites && favorites.includes(g.key));
                       return (
-                        <a key={g.key} className={'mph-g' + (isDone ? ' done' : '')} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`} style={mTone(g.cat)}>
+                        <a key={g.key} className={'mph-g' + (isDone ? ' done' : '')} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`} style={mTone(g.cat)}
+                          onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
                           <b>{pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
                           <em>{g.tag}</em>
                           <small>{isDone ? (r ? `You #${r.rank} of ${r.field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>

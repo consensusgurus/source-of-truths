@@ -698,7 +698,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
    element, and the :not(#sot-x) lifts the html rule over the register's own. */
 @media (max-width: 899px) {
   html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
-  html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #ffffff !important; }
+  html[data-stage-pastel]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: var(--sp-g, #c9d2fd) !important; }
   html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
     --stg-brand: #08222e !important;
     /* END GAME PIECES (owner, 2026-10-24). The boards keep their own light
@@ -707,17 +707,15 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-you: var(--sp-g, #f1d289);
     --stg-you-lt: #ffffff;
     --stg-you-dk: #111111;
-    /* WHITE PAGE, COLOURED TILES (owner, 2026-10-25): the ground is white and the
-       category's soft colour moves onto the squares, chips and panels. */
-    --stg-ground: #ffffff !important;
-    --stg-raise: #ffffff !important;
-    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #ffffff) !important;
-    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 55%, #ffffff) !important;
-    --stg-surf2: var(--sp-g, #c9d2fd) !important;
+    --stg-ground: var(--sp-g, #c9d2fd) !important;
+    --stg-raise: color-mix(in srgb, var(--sp-g, #c9d2fd) 60%, #ffffff) !important;
+    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 80%, #ffffff) !important;
+    --stg-surf: rgba(8, 34, 46, 0.07) !important;
+    --stg-surf2: rgba(8, 34, 46, 0.13) !important;
     --stg-line: rgba(8, 34, 46, 0.2) !important;
     --stg-line2: rgba(8, 34, 46, 0.34) !important;
     --stg-line3: #08222e !important;
-    --stg-cell: var(--sp-g, #c9d2fd) !important;
+    --stg-cell: color-mix(in srgb, var(--sp-g, #c9d2fd) 88%, #08222e) !important;
     --stg-cell-line: rgba(8, 34, 46, 0.3) !important;
     --stg-cell-dot: rgba(8, 34, 46, 0.6) !important;
     --stg-cell-dot2: rgba(8, 34, 46, 0.9) !important;
@@ -748,8 +746,22 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
     --stg-acc-ink: #08222e !important;
     --stg-acc-tint: rgba(8, 34, 46, 0.14) !important;
     --stg-sel: #08222e;
-    background: #ffffff !important;
+    background: var(--sp-g, #c9d2fd) !important;
     color: #08222e;
+  }
+  /* WHITE AND COLOR, the fourth look (owner, 2026-10-25): a white page, with the
+     category's soft colour on the squares, chips and panels instead. */
+  html[data-stage-pastel='tint']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
+  html[data-stage-pastel='tint']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #ffffff !important; }
+  html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
+    --stg-ground: #ffffff !important;
+    --stg-raise: #ffffff !important;
+    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #ffffff) !important;
+    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 55%, #ffffff) !important;
+    --stg-surf2: var(--sp-g, #c9d2fd) !important;
+    --stg-cell: var(--sp-g, #c9d2fd) !important;
+    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 70%, #ffffff) !important;
+    background: #ffffff !important;
   }
   /* Region boards (Quilt, Cages) wear the full pastels here. Periwinkle is
      the ground, so a periwinkle region takes amber instead, and the region

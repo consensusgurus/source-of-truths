@@ -49,7 +49,7 @@ export default function BracketStage({
   onHelp, giveUp, elapsed,
 }) {
   const [look, setLook] = useStageLook();
-  const pal = look === 'color' ? { bg: '#ffffff', ink: RAMP_INK, tile: softGround(bg) } : stagePalette(bg, look);
+  const pal = stagePalette(bg, look);
   useStageChrome(pal.bg);
   const vh = useVh();
 

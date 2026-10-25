@@ -141,7 +141,7 @@ export default function RootLayout({ children }) {
             cap height is the reader's last measured one (LayoutCInner keeps
             it), so even that does not move. Blocking and inline for the same
             reason as the register stamp above. */}
-        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var M=" + PASTEL_ROUTES + ",p=location.pathname.replace(/\\/+$/,'')||'/',g=M[p];if(!g||!window.matchMedia('(max-width: 899px)').matches)return;var d=document.documentElement,l=window.localStorage.getItem('sot_gstage_look1');if(l!=='plain'&&l!=='dark')l='color';d.setAttribute('data-stage-pastel',l);d.setAttribute('data-stage-boot','light');d.style.setProperty('--sp-g',g)}catch(e){}})();" }} />
+        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var M=" + PASTEL_ROUTES + ",p=location.pathname.replace(/\\/+$/,'')||'/',g=M[p];if(!g||!window.matchMedia('(max-width: 899px)').matches)return;var d=document.documentElement,l=window.localStorage.getItem('sot_gstage_look1');if(l!=='plain'&&l!=='dark'&&l!=='tint')l='color';d.setAttribute('data-stage-pastel',l);d.setAttribute('data-stage-boot','light');d.style.setProperty('--sp-g',g)}catch(e){}})();" }} />
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{var R=" + LC_ROUTES + ",p=location.pathname.replace(/\\/+$/,'')||'/';if(R.indexOf(p)<0)return;var q=null;try{q=new URLSearchParams(location.search).get('layout')}catch(e){}var w=window.innerWidth;if(q==='off'||!(w>=1280||(q==='c'&&w>=1100)))return;var d=document.documentElement;d.classList.add('lc-pre');var h=parseInt(window.localStorage.getItem('sot_lc_hh'),10);if(h>30&&h<200)d.style.setProperty('--lc-hh',h+'px')}catch(e){}})();" }} />
         <script
           type="application/ld+json"

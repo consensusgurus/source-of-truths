@@ -240,17 +240,17 @@ const CSS = (acc) => `
 /* On a phone stage page (owner, 2026-10-25: "tough to read the pop-up") the card
    takes the stage's own look: white, one dark ink, ink outlines, the run button
    filled with ink. The dark look keeps the dark card. */
-html[data-stage-pastel='color'] .rdp-bd,html[data-stage-pastel='plain'] .rdp-bd{background:rgba(8,34,46,.45);backdrop-filter:none;}
-html[data-stage-pastel='color'] .rdp,html[data-stage-pastel='plain'] .rdp{background:#fff;color:#08222e;border:2px solid #08222e;border-radius:18px;box-shadow:0 18px 50px rgba(8,34,46,.35);padding:20px 20px 18px;}
-html[data-stage-pastel='color'] .rdp-x,html[data-stage-pastel='plain'] .rdp-x{color:#08222e;}
-html[data-stage-pastel='color'] .rdp-e,html[data-stage-pastel='plain'] .rdp-e{color:#08222e;opacity:.75;font-family:${SANS};font-size:11px;font-weight:800;letter-spacing:.08em;}
-html[data-stage-pastel='color'] .rdp-h,html[data-stage-pastel='plain'] .rdp-h{color:#08222e;}
-html[data-stage-pastel='color'] .rdp-tags span,html[data-stage-pastel='plain'] .rdp-tags span{border:2px solid #08222e;color:#08222e;padding:3px 9px 3px 13px;}
-html[data-stage-pastel='color'] .rdp-tags span:before,html[data-stage-pastel='plain'] .rdp-tags span:before{background:#08222e;}
-html[data-stage-pastel='color'] .rdp-p,html[data-stage-pastel='plain'] .rdp-p{color:#08222e;font-size:15px;}
-html[data-stage-pastel='color'] .rdp-go,html[data-stage-pastel='plain'] .rdp-go{background:#08222e;color:#fff;border-radius:14px;padding:15px 18px;font-size:16px;}
-html[data-stage-pastel='color'] .rdp-go:after,html[data-stage-pastel='plain'] .rdp-go:after{display:none;}
-html[data-stage-pastel='color'] .rdp-no,html[data-stage-pastel='plain'] .rdp-no{border:2px solid #08222e;color:#08222e;border-radius:14px;padding:13px 18px;font-size:15px;}
+html[data-stage-pastel='color'] .rdp-bd,html[data-stage-pastel='tint'] .rdp-bd,html[data-stage-pastel='plain'] .rdp-bd{background:rgba(8,34,46,.45);backdrop-filter:none;}
+html[data-stage-pastel='color'] .rdp,html[data-stage-pastel='tint'] .rdp,html[data-stage-pastel='plain'] .rdp{background:#fff;color:#08222e;border:2px solid #08222e;border-radius:18px;box-shadow:0 18px 50px rgba(8,34,46,.35);padding:20px 20px 18px;}
+html[data-stage-pastel='color'] .rdp-x,html[data-stage-pastel='tint'] .rdp-x,html[data-stage-pastel='plain'] .rdp-x{color:#08222e;}
+html[data-stage-pastel='color'] .rdp-e,html[data-stage-pastel='tint'] .rdp-e,html[data-stage-pastel='plain'] .rdp-e{color:#08222e;opacity:.75;font-family:${SANS};font-size:11px;font-weight:800;letter-spacing:.08em;}
+html[data-stage-pastel='color'] .rdp-h,html[data-stage-pastel='tint'] .rdp-h,html[data-stage-pastel='plain'] .rdp-h{color:#08222e;}
+html[data-stage-pastel='color'] .rdp-tags span,html[data-stage-pastel='tint'] .rdp-tags span,html[data-stage-pastel='plain'] .rdp-tags span{border:2px solid #08222e;color:#08222e;padding:3px 9px 3px 13px;}
+html[data-stage-pastel='color'] .rdp-tags span:before,html[data-stage-pastel='tint'] .rdp-tags span:before,html[data-stage-pastel='plain'] .rdp-tags span:before{background:#08222e;}
+html[data-stage-pastel='color'] .rdp-p,html[data-stage-pastel='tint'] .rdp-p,html[data-stage-pastel='plain'] .rdp-p{color:#08222e;font-size:15px;}
+html[data-stage-pastel='color'] .rdp-go,html[data-stage-pastel='tint'] .rdp-go,html[data-stage-pastel='plain'] .rdp-go{background:#08222e;color:#fff;border-radius:14px;padding:15px 18px;font-size:16px;}
+html[data-stage-pastel='color'] .rdp-go:after,html[data-stage-pastel='tint'] .rdp-go:after,html[data-stage-pastel='plain'] .rdp-go:after{display:none;}
+html[data-stage-pastel='color'] .rdp-no,html[data-stage-pastel='tint'] .rdp-no,html[data-stage-pastel='plain'] .rdp-no{border:2px solid #08222e;color:#08222e;border-radius:14px;padding:13px 18px;font-size:15px;}
 `;
 
 export const RUN_DOOR_CSS = CSS;
