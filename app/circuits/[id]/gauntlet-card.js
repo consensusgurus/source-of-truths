@@ -117,8 +117,13 @@ export function gauntletCardProps(circuit, banks) {
     // with. That is not hypothetical: the bank map held five banks while the
     // run had seven, and the card advertised 130 questions for a 180 question
     // run until it was caught.
-    line1: isMath ? `${asked} problems, ${banks.length} games.` : `${asked} questions, ${banks.length} quizzes.`,
-    line2: 'One life each.',
+    // NO TOTAL (owner, 2026-10-25): "180 questions" read as too daunting, so
+    // no card or gate names the run's question count. The roster size and the
+    // one-life rule are the whole pitch.
+    line1: isMath ? `${banks.length} games, one life each.`
+      : (circuit && circuit.id === 'english') ? `${banks.length} quizzes, one life each.`
+      : `${banks.length} categories, one life each.`,
+    line2: '',
     cta: 'Take your run',
     shareHref: (circuit && circuit.shareHref) || null,
     banks,

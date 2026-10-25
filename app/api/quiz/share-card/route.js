@@ -6,7 +6,7 @@ import { buildProfile } from '@/lib/quiz-profile';
 import { DEPT_LABEL } from '@/lib/quiz-departments';
 import { SHARE_HOST } from '@/lib/site';
 import { crownCategory, crownAccent } from '@/lib/crown';
-import { D, markURI, stageFonts } from '@/lib/og-stage-card';
+import { D, markURI, stageFonts, soft } from '@/lib/og-stage-card';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -31,7 +31,7 @@ export const dynamic = 'force-dynamic';
 // filled in the accent carries D.onramp as its ink, never white.
 const SZ = 1080;
 const SANS = 'Manrope';
-const MONO = 'DM Mono';
+const MONO = 'Manrope'; // one typeface site-wide (owner, 2026-10-08)
 
 // The three top-category bars are painted in the CARD'S ACCENT rather than in
 // each category's own ramp step. profile.byCategory is keyed by QUIZ
@@ -45,7 +45,7 @@ const MONO = 'DM Mono';
 // is the honest render.
 
 function mono(extra) {
-  return { display: 'flex', fontFamily: MONO, fontWeight: 400, ...(extra || {}) };
+  return { display: 'flex', fontFamily: MONO, fontWeight: 700, ...(extra || {}) };
 }
 
 function textImage(msg) {
@@ -86,12 +86,12 @@ function cutName(name) {
  */
 export function playerCardElement(d) {
   const hue = d.hue || D.brand;
-  const capLabel = { display: 'flex', fontFamily: MONO, fontWeight: 400, fontSize: 22, letterSpacing: '0.16em', textTransform: 'uppercase', color: D.mute };
+  const capLabel = { display: 'flex', fontFamily: MONO, fontWeight: 700, fontSize: 22, color: D.mute };
 
   return (
     <div style={{ width: SZ, height: SZ, background: D.ground, color: D.ink, fontFamily: SANS, display: 'flex', flexDirection: 'column' }}>
       {/* the band */}
-      <div style={{ display: 'flex', width: SZ, height: 14, background: hue, flex: 'none' }} />
+      <div style={{ display: 'flex', width: SZ, height: 14, background: D.ground, flex: 'none' }} />
 
       <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between', padding: '48px 56px 44px' }}>
         {/* the cap */}
@@ -100,7 +100,7 @@ export function playerCardElement(d) {
             <img src={markURI(hue)} width={46} height={46} alt="" />
             <div style={{ display: 'flex', alignItems: 'center', fontSize: 32, fontWeight: 800, letterSpacing: '-0.3px', marginLeft: 14 }}>
               <span style={{ display: 'flex' }}>Mind</span>
-              <span style={{ display: 'flex', color: hue, marginLeft: 11 }}>Loft</span>
+              <span style={{ display: 'flex', marginLeft: 11 }}>Loft</span>
             </div>
           </div>
           <span style={capLabel}>Player card</span>
@@ -108,7 +108,7 @@ export function playerCardElement(d) {
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* the curtain: the one filled block, in the accent, with onramp ink */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', background: hue, color: D.onramp, borderRadius: 26, padding: '38px 40px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', background: soft(hue), color: D.onramp, borderRadius: 26, padding: '38px 40px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 640, minWidth: 0 }}>
               <span style={{ display: 'flex', fontWeight: 800, fontSize: nameSize(cutName(d.name)), letterSpacing: '-0.04em', lineHeight: 1 }}>{cutName(d.name)}</span>
               <span style={{ display: 'flex', fontWeight: 700, fontSize: 26, marginTop: 18 }}>{d.detail}</span>
@@ -136,7 +136,7 @@ export function playerCardElement(d) {
                   <span style={{ display: 'flex', fontWeight: 800, fontSize: 52, letterSpacing: '-0.02em' }}>{value}</span>
                   {rk ? <span style={mono({ fontSize: 22, color: D.mute, marginLeft: 12 })}>{`#${rk}`}</span> : null}
                 </div>
-                <span style={{ display: 'flex', fontFamily: MONO, fontWeight: 400, fontSize: 18, letterSpacing: '0.16em', textTransform: 'uppercase', color: D.mute2, marginTop: 10 }}>{label}</span>
+                <span style={{ display: 'flex', fontFamily: MONO, fontWeight: 700, fontSize: 18, color: D.mute2, marginTop: 10 }}>{label}</span>
               </div>
             ))}
           </div>
@@ -144,7 +144,7 @@ export function playerCardElement(d) {
           {/* top categories */}
           {(d.cats || []).length ? (
             <div style={{ display: 'flex', flexDirection: 'column', marginTop: 36 }}>
-              <span style={{ display: 'flex', fontFamily: MONO, fontWeight: 400, fontSize: 20, letterSpacing: '0.16em', textTransform: 'uppercase', color: D.mute }}>Top categories</span>
+              <span style={{ display: 'flex', fontFamily: MONO, fontWeight: 700, fontSize: 20, color: D.mute }}>Top categories</span>
               <div style={{ display: 'flex', flexDirection: 'column', marginTop: 20 }}>
                 {d.cats.map((c, i) => (
                   <div key={c.label} style={{ display: 'flex', flexDirection: 'column', marginTop: i ? 22 : 0 }}>
@@ -165,7 +165,7 @@ export function playerCardElement(d) {
         {/* the footer */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `1px solid ${D.line}`, paddingTop: 24 }}>
           <span style={mono({ fontSize: 22, letterSpacing: '0.04em', color: D.ink2 })}>{d.url}</span>
-          <span style={mono({ fontSize: 20, letterSpacing: '0.16em', textTransform: 'uppercase', color: hue })}>Out-rank me</span>
+          <span style={mono({ fontSize: 20, color: D.ink })}>Out-Rank Me</span>
         </div>
       </div>
     </div>

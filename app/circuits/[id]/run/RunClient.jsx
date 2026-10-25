@@ -657,15 +657,15 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     // the box the player is reading, not in the header.
     if (done) return [];
     if (r.phase === 'verdict') return [
-      { v: `${cleared}/${askable}`, k: 'questions' },
+      // No denominator (owner, 2026-10-25): the run's total reads as daunting.
+      { v: `${cleared}`, k: 'right so far' },
       { v: `${r.results.length}/${N}`, k: 'quizzes done' },
     ];
     // Three columns rather than two, and short labels: the cap gives each
     // figure a fixed 124px and centres it, so two long words ("quizzes",
     // "questions") sit shoulder to shoulder and read as one.
     return [
-      { v: `${N}`, k: 'quizzes' },
-      { v: `${askable}`, k: 'asked' },
+      { v: `${N}`, k: GAUNT ? 'categories' : MATHRUN ? 'games' : 'quizzes' },
       { v: '1', k: 'life each' },
     ];
   })();
@@ -1493,7 +1493,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   </h1>
                 ) : (
                   <h1 className="rn-h1">
-                    <var>{askable}</var> questions, <var>{N}</var> quizzes.<br />
+                    {/* NO QUESTION TOTAL (owner, 2026-10-25): "180 questions"
+                        read as too daunting. The roster size and the rule. */}
+                    <var>{N}</var> {GAUNT ? 'categories' : MATHRUN ? 'games' : 'quizzes'}.<br />
                     <u>One life each.</u>
                   </h1>
                 )}
@@ -1505,7 +1507,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                       {fieldOn && field.avg[s.key] != null
                         ? <s>avg {field.avg[s.key].toFixed(1)}</s>
                         : <s />}
-                      <em>{s.questions.length}</em>
+                      <em />
                       {/* THE GATE'S BARS (2026-10-10): the run lanes' bar,
                           empty, one width for every quiz, shaded where today's
                           players got to, with a tick at the average. Both
@@ -1873,8 +1875,8 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                 {!BTOP ? (
                 <div className={`rn-sc-hero${TOWERS ? ' tw' : ''}`}>
                   <div className="rn-sc-big">
-                    {cleared}<small>/{askable}</small>
-                    <i>questions cleared</i>
+                    {cleared}
+                    <i>questions right</i>
                   </div>
                   {/* NO "0 of 7 CLEARED" (owner, 2026-08-30). Clearing a
                       one-life quiz of twenty-five questions is rare, so for

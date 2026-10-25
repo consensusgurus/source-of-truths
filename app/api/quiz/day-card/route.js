@@ -44,7 +44,7 @@ export const dynamic = 'force-dynamic';
 // box are gone with it.
 const SZ = 1080;
 const SANS = 'Manrope';
-const MONO = 'DM Mono';
+const MONO = 'Manrope'; // one typeface site-wide (owner, 2026-10-08)
 
 // The card's own step. The daily slate crosses every category, so it takes no
 // game's colour; sky is the ramp's first step and the Stage's brand blue.
@@ -70,7 +70,7 @@ function prettyDay(suffix) {
 }
 
 function mono(extra) {
-  return { display: 'flex', fontFamily: MONO, fontWeight: 400, ...(extra || {}) };
+  return { display: 'flex', fontFamily: MONO, fontWeight: 700, ...(extra || {}) };
 }
 
 function textImage(msg) {
@@ -99,14 +99,14 @@ export function dayCardElement(d) {
   // figure and the footer instruction go to D.good, and the band stays sky so
   // the card is still recognisably the same object.
   const full = gameCount > 0 && played >= gameCount;
-  const hero = full ? D.good : ACCENT;
+  const hero = D.ink; // ink on white: a pastel cannot be text (owner, 2026-10-25 white set)
   const rungs = [];
   for (let i = 0; i < gameCount; i += 1) rungs.push(i < played);
 
   return (
     <div style={{ width: SZ, height: SZ, background: D.ground, color: D.ink, fontFamily: SANS, display: 'flex', flexDirection: 'column' }}>
       {/* the band */}
-      <div style={{ display: 'flex', width: SZ, height: 14, background: ACCENT, flex: 'none' }} />
+      <div style={{ display: 'flex', width: SZ, height: 14, background: D.ground, flex: 'none' }} />
 
       <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between', padding: '48px 56px 44px' }}>
         {/* the cap */}
@@ -115,10 +115,10 @@ export function dayCardElement(d) {
             <img src={markURI(ACCENT)} width={46} height={46} alt="" />
             <div style={{ display: 'flex', alignItems: 'center', fontSize: 32, fontWeight: 800, letterSpacing: '-0.3px', marginLeft: 14 }}>
               <span style={{ display: 'flex' }}>Mind</span>
-              <span style={{ display: 'flex', color: ACCENT, marginLeft: 11 }}>Loft</span>
+              <span style={{ display: 'flex', marginLeft: 11 }}>Loft</span>
             </div>
           </div>
-          <span style={mono({ fontSize: 22, letterSpacing: '0.16em', textTransform: 'uppercase', color: D.mute })}>
+          <span style={mono({ fontSize: 22, color: D.mute })}>
             {d.dayLabel ? `Daily slate · ${d.dayLabel}` : 'Daily slate'}
           </span>
         </div>
@@ -129,7 +129,7 @@ export function dayCardElement(d) {
             <span style={{ display: 'flex', fontWeight: 800, fontSize: 196, letterSpacing: '-0.055em', lineHeight: 1, color: hero }}>
               {`+${Number(d.iqToday || 0).toLocaleString()}`}
             </span>
-            <span style={mono({ fontSize: 24, letterSpacing: '0.16em', textTransform: 'uppercase', color: D.mute, marginTop: 8 })}>IQ points today</span>
+            <span style={mono({ fontSize: 24, color: D.mute, marginTop: 8 })}>IQ Points Today</span>
           </div>
 
           {/* the slate, as a ladder. A slate the route could not read has no
@@ -137,7 +137,7 @@ export function dayCardElement(d) {
           {gameCount > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', marginTop: 22 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-              <span style={mono({ fontSize: 20, letterSpacing: '0.16em', textTransform: 'uppercase', color: D.mute })}>Today&apos;s slate</span>
+              <span style={mono({ fontSize: 20, color: D.mute })}>Today&apos;s Slate</span>
               <div style={mono({ fontSize: 26, color: D.ink })}>
                 <span style={{ display: 'flex' }}>{String(played)}</span>
                 <span style={{ display: 'flex', color: D.mute2, marginLeft: 9 }}>/</span>
@@ -171,7 +171,7 @@ export function dayCardElement(d) {
                   borderRadius: 18, padding: '16px 28px', marginTop: i ? 8 : 0,
                 }}
               >
-                <span style={{ display: 'flex', flex: 'none', width: 250, fontFamily: MONO, fontWeight: 400, fontSize: 19, letterSpacing: '0.16em', textTransform: 'uppercase', color: D.mute2 }}>{row.label}</span>
+                <span style={{ display: 'flex', flex: 'none', width: 250, fontFamily: MONO, fontWeight: 700, fontSize: 19, color: D.mute2 }}>{row.label}</span>
                 <span style={{ display: 'flex', fontWeight: 800, fontSize: 46, letterSpacing: '-0.02em' }}>{row.value}</span>
                 {row.sub ? <span style={{ display: 'flex', fontWeight: 600, fontSize: 24, color: D.ink2, marginLeft: 14 }}>{row.sub}</span> : null}
               </div>
@@ -182,7 +182,7 @@ export function dayCardElement(d) {
         {/* the footer */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `1px solid ${D.line}`, paddingTop: 24 }}>
           <span style={mono({ fontSize: 22, letterSpacing: '0.04em', color: D.ink2 })}>{d.url}</span>
-          <span style={mono({ fontSize: 20, letterSpacing: '0.16em', textTransform: 'uppercase', color: hero })}>Beat my score</span>
+          <span style={mono({ fontSize: 20, color: D.ink })}>Beat My Score</span>
         </div>
       </div>
     </div>

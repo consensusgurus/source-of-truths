@@ -203,7 +203,7 @@ export default function MemeShare({ open, onClose, ctx, getLink }) {
           <button type="button" className="msh-ob" onClick={() => copyLink()}>Copy link</button>
           <button type="button" className="msh-ob" disabled={!blob} onClick={() => { if (blob) { download(blob, fname); setNote('GIF saved.'); } }}>Save GIF</button>
         </div>
-        <button type="button" className="msh-go" style={{ background: pal.fill, color: pal.onFill }} disabled={busy} onClick={share}>
+        <button type="button" className="msh-go" style={{ background: pal.cta, color: pal.onCta }} disabled={busy} onClick={share}>
           {busy ? 'Making your GIF…' : 'Share the GIF'}
         </button>
         <div className="msh-note" role="status">{note || 'Each new player who finishes from your link earns you a drawing ticket.'}</div>

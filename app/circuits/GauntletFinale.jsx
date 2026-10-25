@@ -337,7 +337,7 @@ function Broadcast({
         {step < 0 ? null : restored
           ? (noDenom
             ? <><Count to={score} ms={800} from={0} resetKey="tot" /> right</>
-            : <><Count to={score} ms={800} from={0} resetKey="tot" /> of {total} right</>)
+            : <><Count to={score} ms={800} from={0} resetKey="tot" /> right</>)
           : <>running · <Count to={running[step]} ms={COUNT_MS} from={step > 0 ? running[step - 1] : 0} resetKey={step} /></>}
       </div>
 
@@ -406,7 +406,6 @@ function Broadcast({
           <>
             <div className="gfin-sub">questions right</div>
             <div className="gfin-n"><Count to={score} ms={800} from={0} resetKey="total" /></div>
-            <div className="gfin-of">of {total} asked</div>
           </>
         )}
       </div>
@@ -903,7 +902,7 @@ function GeChallenge({ gameKey, challenge }) {
     const rankX = challenge.status || (titleFor(gameKey, score) || {}).name || '';
     const raw = encodeChallenge({ name: who, t: tt, s: score, o, n: challenge.n, won: false, d, x: rankX });
     const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=6${themeParam()}`, cid));
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=7${themeParam()}`, cid));
     recordSend({ cid, gameKey, num: challenge.n, day, fig: { s: score, o, t: tt, won: false, x: rankX }, source: 'run' });
     const copy = () => { try { navigator.clipboard.writeText(url).then(() => setMsg('Link copied. Paste it to a friend.'), () => setMsg(url)); } catch (e) { setMsg(url); } };
     let touch = false;

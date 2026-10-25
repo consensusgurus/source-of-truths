@@ -33,49 +33,52 @@ const arrowURI = (col) => svgURI('<svg xmlns="http://www.w3.org/2000/svg" width=
 // The arrow is drawn, not typed: Manrope's latin subset has no U+2192, and a
 // missing glyph makes Satori fetch a font over the network.
 
-// The Mind Loft row: mark and name on the left, the address on the right
-// (where the game glyph used to sit, now given to the name and description).
+// WHITE WITH COLOR (owner, 2026-10-25), the same look as every other share
+// card: the Mind Loft row on white, the puzzle on its soft pastel panel, and a
+// black button. lib/share-palette is the one source, so the sheet's buttons and
+// this card agree.
 function brandRow(p) {
   const h = React.createElement;
   return Row([
-    h('img', { key: 'm', src: svgURI(markSvg(p.ink, p.fill)), width: 40, height: 40 }),
-    T('Mind Loft', { key: 'w', fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px', marginLeft: '10px' }),
+    h('img', { key: 'm', src: svgURI(markSvg(p.ink, p.hue)), width: 44, height: 44 }),
+    T('Mind Loft', { key: 'w', fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', marginLeft: '12px' }),
     T('mindloftdaily.com', { key: 'u', fontSize: 22, fontWeight: 700, color: p.mute, marginLeft: 'auto' }),
-  ], { key: 'brand', alignItems: 'center', width: '100%' });
+  ], { key: 'brand', alignItems: 'center', width: '100%', flex: 'none' });
 }
 
 // BESIDE THE GIF: the puzzle's name and long description over a big Accept
-// the challenge, on the category fill (owner, 2026-10-23). The GIF carries the
-// result and the Mind Loft row, so this card carries the game and the action.
+// the challenge (owner, 2026-10-23). The whole image is the button: the soft
+// pastel panel edge to edge, the call to action as a black pill.
 function buttonOnly(p, { name, desc }) {
   const h = React.createElement;
   return Col([
-    T(name, { key: 'n', fontSize: 52, fontWeight: 800, letterSpacing: '-1.5px', lineHeight: 1.05 }),
-    ...(desc ? [T(desc, { key: 'd', fontSize: 32, fontWeight: 600, lineHeight: 1.3, marginTop: '10px', maxWidth: '1000px' })] : []),
+    T(name, { key: 'n', fontSize: 56, fontWeight: 800, letterSpacing: '-1.8px', lineHeight: 1.05 }),
+    ...(desc ? [T(clamp(desc, 120), { key: 'd', fontSize: 31, fontWeight: 600, lineHeight: 1.3, marginTop: '10px', maxWidth: '1000px' })] : []),
     Row([
-      T('Accept the challenge', { key: 't', fontSize: 78, fontWeight: 800, letterSpacing: '-2.5px', lineHeight: 1, whiteSpace: 'nowrap', flexShrink: 0 }),
-      h('img', { key: 'a', src: arrowURI(p.onFill), width: 72, height: 72, style: { marginLeft: '26px', flexShrink: 0 } }),
-    ], { key: 'cta', alignItems: 'center', marginTop: '48px' }),
+      T('Accept the Challenge', { key: 't', fontSize: 60, fontWeight: 800, letterSpacing: '-2px', lineHeight: 1, whiteSpace: 'nowrap', flexShrink: 0 }),
+      h('img', { key: 'a', src: arrowURI(p.onCta), width: 56, height: 56, style: { marginLeft: '22px', flexShrink: 0 } }),
+    ], { key: 'cta', alignItems: 'center', alignSelf: 'flex-start', marginTop: '40px', background: p.cta, color: p.onCta, borderRadius: '999px', padding: '26px 44px 30px' }),
   ], { width: '1200px', height: '630px', background: p.fill, color: p.onFill, fontFamily: 'Manrope', justifyContent: 'center', padding: '0 96px' });
 }
 
 // SENT ON ITS OWN (owner, 2026-10-23): the link is the whole message, so the
 // puzzle is the headline. The result sits small above it, the name and long
-// description large, and a full-width button runs across the foot.
-function detailed(p, { line, name, desc, cta = 'Accept the challenge' }) {
+// description large on the pastel panel, and a full-width button runs across
+// the foot.
+function detailed(p, { line, name, desc, cta = 'Accept the Challenge' }) {
   const h = React.createElement;
   return Col([
     brandRow(p),
     Col([
-      T(line, { key: 'l', fontSize: 30, fontWeight: 700, color: p.mute, letterSpacing: '-0.4px' }),
-      T(name, { key: 'n', fontSize: 84, fontWeight: 800, letterSpacing: '-3px', lineHeight: 1, marginTop: '10px' }),
-      ...(desc ? [T(desc, { key: 'd', fontSize: 36, fontWeight: 600, lineHeight: 1.25, marginTop: '12px', maxWidth: '1020px' })] : []),
-    ], { key: 'mid', flex: 1, justifyContent: 'center', width: '100%' }),
+      T(line, { key: 'l', fontSize: 28, fontWeight: 700, letterSpacing: '-0.3px' }),
+      T(name, { key: 'n', fontSize: 80, fontWeight: 800, letterSpacing: '-3px', lineHeight: 1, marginTop: '10px' }),
+      ...(desc ? [T(clamp(desc, 132), { key: 'd', fontSize: 30, fontWeight: 600, lineHeight: 1.28, marginTop: '12px', maxWidth: '980px' })] : []),
+    ], { key: 'mid', flex: 1, justifyContent: 'center', width: '100%', background: p.fill, color: p.onFill, borderRadius: '30px', padding: '0 48px', marginTop: '22px' }),
     Row([
-      T(cta, { key: 't', fontSize: 50, fontWeight: 800, letterSpacing: '-1.5px' }),
-      h('img', { key: 'a', src: arrowURI(p.onFill), width: 46, height: 46, style: { marginLeft: '22px' } }),
-    ], { key: 'btn', width: '100%', alignItems: 'center', justifyContent: 'center', background: p.fill, color: p.onFill, borderRadius: '24px', padding: '26px 0 30px' }),
-  ], { width: '1200px', height: '630px', background: p.ground, color: p.ink, fontFamily: 'Manrope', padding: '44px 90px 56px' });
+      T(cta, { key: 't', fontSize: 40, fontWeight: 800, letterSpacing: '-1px' }),
+      h('img', { key: 'a', src: arrowURI(p.onCta), width: 38, height: 38, style: { marginLeft: '18px' } }),
+    ], { key: 'btn', width: '100%', alignItems: 'center', justifyContent: 'center', background: p.cta, color: p.onCta, borderRadius: '999px', padding: '20px 0 24px', marginTop: '20px', flex: 'none' }),
+  ], { width: '1200px', height: '630px', background: p.ground, color: p.ink, fontFamily: 'Manrope', padding: '44px 72px 52px' });
 }
 
 export async function GET(req) {
@@ -84,10 +87,10 @@ export async function GET(req) {
   const run = RUN_CHALLENGES[key] || null;
   const g = DAILY_GAME_MAP[key] || run;
   const c = decodeChallenge(u.searchParams.get('vs') || '');
-  const p = sharePalette(g && g.cat ? g.cat : 'Word', u.searchParams.get('t') === 'd');
+  const p = sharePalette(g && g.cat ? g.cat : 'Word');
   const opts = { width: size.width, height: size.height, fonts: stageFonts() };
   if (!g || !c) {
-    return new ImageResponse(detailed(p, { line: 'Free daily puzzles', name: 'Mind Loft', desc: 'A new set of puzzles every day. No sign-up to play.', cta: 'Play free' }), opts);
+    return new ImageResponse(detailed(p, { line: 'Free daily puzzles', name: 'Mind Loft', desc: 'A new set of puzzles every day. No sign-up to play.', cta: 'Play Free' }), opts);
   }
   const name = clamp(c.name, 20);
   const fig = challengeFig(c, key);
