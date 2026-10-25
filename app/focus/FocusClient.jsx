@@ -60,6 +60,7 @@ import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { subjectFor, fold, matchOptions } from './subjects';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -880,7 +881,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? frame : null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={won ? `frame ${frame}/${FRAMES} · ${misses} wrong · ${elapsed}` : `X/${FRAMES} · ${misses} wrong · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

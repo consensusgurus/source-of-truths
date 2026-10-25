@@ -54,6 +54,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // Five identity is GREEN. Every colour the board uses derives from
 // COLORS.accent below rather than a literal hex a second time.
@@ -1041,7 +1042,7 @@ export default function FiveClient({ puzzles = [], forceNum = null }) {
             name="Five"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${filledCount}/${FREE.length} filled · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

@@ -81,6 +81,7 @@ import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
 import { notifyShareCredit } from '../ShareCreditPop';
 import { T } from '@/lib/theme';
 import { DIRS, DIR_KEYS, freshState, applyMove, anyLegal, isCleared, fillOf, canEnter } from '@/lib/chomp-engine';
+import { endSolved } from '@/lib/end-verdict';
 
 // The arm-then-confirm controls do not move when armed, so the second tap of
 // an accidental double-tap used to land on the armed state long before the
@@ -977,7 +978,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={won ? fmtTime(g.ms) : `${nf(g.moves)} moves`}
               iq={iq}
               board={dailyBoard}

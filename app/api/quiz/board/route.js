@@ -49,7 +49,13 @@ export function summarize(rows) {
   // with the finisher's own bar lit. Linear from the fastest run to the 95th
   // percentile; anything slower lands in the last bin. Null under five runs.
   const timeDist = timeDistOf(rows, best);
-  return { plays, best, topTime: Number.isFinite(topTime) ? topTime : null, leaderboard, leaderboardMobile, leaderboardFirst, leaderboardAll, leaderboards, scoreDist, timeDist };
+  // THE FIELD'S TYPICAL COUNT (owner, 2026-10-25): the median moves / guesses /
+  // trades over runs that scored, so a finish can say "typical player: 14
+  // moves" instead of measuring the player against par. Null under five runs.
+  const gs = rows.filter((r) => !r.abandoned && Number(r.score) > 0 && r.guesses_used != null)
+    .map((r) => Number(r.guesses_used)).filter((g) => Number.isFinite(g) && g >= 0).sort((a, b) => a - b);
+  const guessMid = gs.length >= 5 ? gs[Math.floor((gs.length - 1) / 2)] : null;
+  return { plays, best, topTime: Number.isFinite(topTime) ? topTime : null, leaderboard, leaderboardMobile, leaderboardFirst, leaderboardAll, leaderboards, scoreDist, timeDist, guessMid };
 }
 
 const DIST_BINS = 12;

@@ -65,6 +65,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { endEfficiency } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -679,22 +680,18 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
 
   function shareUrl() { return withRef(`mindloftdaily.com/cell${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
   function shareText() {
-    const vs = used === perfect ? 'perfect'
-      : used < par ? `${par - used} under par`
-      : used === par ? 'level par'
-      : `${used - par} over par`;
     const g5 = won ? Math.max(1, Math.round(scoreFor(used, perfect) / 2)) : 0;
     const squares = '\u{1F7E9}'.repeat(g5) + '⬜'.repeat(5 - g5);
     const hintBit = g.hintUsed ? ' · \u{1F4A1}' : '';
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const head = won
-      ? `Cell #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${used} moves, ${vs} · ${elapsed}${hintBit}${streakBit}`
+      ? `Cell #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${used} moves · ${elapsed}${hintBit}${streakBit}`
       : `Cell #${PUZZLE.num} · gave up`;
     return `${head}\n${squares}\n${shareUrl()}`;
   }
   function copyShare() {
     const text = playing
-      ? `Cell #${PUZZLE.num}, the daily FreeCell from Mind Loft. Par ${par}.\n${shareUrl()}`
+      ? `Cell #${PUZZLE.num}, the daily FreeCell from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -852,7 +849,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
             {hintOk && !g.hintUsed ? <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb} Hint</button> : null}
           </div>
         )}
-        foot={`${used} move${used === 1 ? '' : 's'} · perfect ${perfect} · par ${par}${g.restarts ? ` · ${g.restarts} restart${g.restarts === 1 ? '' : 's'}` : ''}`}
+        foot={`${used} move${used === 1 ? '' : 's'} · perfect ${perfect}${g.restarts ? ` · ${g.restarts} restart${g.restarts === 1 ? '' : 's'}` : ''}`}
         frac={par ? Math.min(1, used / par) : 0}
         giveUp={{
           armed: !!armReveal,
@@ -891,11 +888,11 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
           figures={playing ? [
             { v: used, k: 'moves' },
             { v: elapsed, k: 'time' },
-            { v: `${par} · ${perfect}`, k: 'par · perfect' },
+            { v: perfect, k: 'perfect' },
           ] : [
             { v: finalScore, k: 'score' },
             { v: used, k: 'moves' },
-            { v: `${par} · ${perfect}`, k: 'par · perfect' },
+            { v: perfect, k: 'perfect' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -1016,7 +1013,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
           };
           let status, sub = null;
           if (!playing) {
-            status = won ? (used === perfect ? `All home in ${used}. That is perfect.` : `All home in ${used}. Par was ${par}.`) : 'You left it on the table.';
+            status = won ? (used === perfect ? `All home in ${used}. That is perfect.` : `All home in ${used} moves.`) : 'You left it on the table.';
           } else if (inHand) {
             const w = placeWords();
             const n = w.length;
@@ -1040,11 +1037,11 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
                   <span className="cel-k">The line · {perfect} moves is the proven minimum</span>
                   <span className="cel-k" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                    <b style={{ color: used > par ? 'var(--stg-bad, #b91c1c)' : ACC_INK }}>{used}</b> used · {used <= par ? `${par - used} to par` : `${used - par} over par`}
+                    <b style={{ color: used > par ? 'var(--stg-bad, #b91c1c)' : ACC_INK }}>{used}</b> used
                   </span>
                 </div>
               )}
-              <div role="img" aria-label={`${used} moves used. Perfect is ${perfect}, par is ${par}.`} style={{ display: 'flex', gap: narrow ? 2 : 3, alignItems: 'center' }}>
+              <div role="img" aria-label={`${used} moves used. Perfect is ${perfect}.`} style={{ display: 'flex', gap: narrow ? 2 : 3, alignItems: 'center' }}>
                 {Array.from({ length: segN }).map((_, i) => {
                   const cushion = i >= perfect && i < par;
                   const over = i >= par;
@@ -1058,11 +1055,10 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
                     }} />
                   );
                 })}
-                <span className="cel-k" style={{ marginLeft: narrow ? 4 : 6, fontWeight: 800 }}>Par</span>
               </div>
               {narrow && (
                 <span className="cel-k" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                  Perfect {perfect} is the proven minimum · <b style={{ color: used > par ? 'var(--stg-bad, #b91c1c)' : ACC_INK }}>{used}</b> used · {used <= par ? `${par - used} to par` : `${used - par} over`}
+                  Perfect {perfect} is the proven minimum · <b style={{ color: used > par ? 'var(--stg-bad, #b91c1c)' : ACC_INK }}>{used}</b> used
                 </span>
               )}
             </div>
@@ -1210,7 +1206,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
                   <span style={{ whiteSpace: 'nowrap' }}>moves <b style={{ color: used > par ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})` }}>{used}</b></span>
                   <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-                  <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>par <b style={{ color: ACC_INK }}>{par}</b> &middot; perfect <b style={{ color: INK }}>{perfect}</b></span>
+                  <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>perfect <b style={{ color: INK }}>{perfect}</b></span>
                 </div>
               )}
 
@@ -1272,14 +1268,12 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
-                Par was <span style={{ color: ACC_INK }}>{par} moves</span>, perfect was <span style={{ color: INK }}>{perfect}</span>.
+                Perfect was <span style={{ color: ACC_INK }}>{perfect} moves</span>.
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: FADED, margin: '6px 0 0', lineHeight: 1.5 }}>
                 {won
                   ? used === perfect ? 'You matched the proven minimum, which is as good as this deal gets.'
-                    : used < par ? `You got home in ${used}, ${par - used} under par and ${used - perfect} off perfect.`
-                      : used === par ? `You got home in ${used}, level par, ${used - perfect} off perfect.`
-                        : `You got home in ${used}, ${used - par} over par.`
+                    : `You got home in ${used} moves.`
                   : 'The minimum was found by an exact search and proved again by a second solver, so it is real, not an estimate. This deal was always winnable.'}
               </div>
               {PUZZLE.sunday && (
@@ -1317,8 +1311,8 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? used : null}
-              title={won ? 'Solved' : 'Not solved'}
-              detail={`${finalScore}/10 \u00b7 ${used} moves \u00b7 par ${par}, perfect ${perfect} \u00b7 ${elapsed}`}
+              title={endEfficiency(won, finalScore)}
+              detail={`${used} moves \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1410,10 +1404,10 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !endHold.held && !LOFT && (
         <DailyEndCard modal self="cell" won={won}
-          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : used < par ? <>Under par.</> : <>All home.</>) : <>You scored 0%</>}
+          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : <>Solved!</>) : <>You scored 0%</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {used} moves &middot; par {par}, perfect {perfect} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; par here was {par}, perfect was {perfect}</>}
+            ? <>{used} moves &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>0/10 &middot; perfect was {perfect} moves</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}

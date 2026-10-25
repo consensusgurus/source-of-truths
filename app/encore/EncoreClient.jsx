@@ -59,6 +59,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T as THEME } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: THEME.surface,
@@ -1157,7 +1158,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
             name="Encore"
             catRank={catRank}
             outcome={won ? 'won' : (endScore > 0 ? 'part' : 'lost')}
-            title={won ? 'Solved' : (endScore > 0 ? 'Partly solved' : 'Not solved')}
+            title={endGrade(endScore, TOTAL)}
             detail={`${endScore}/${TOTAL} \u00b7 ${checks} checks \u00b7 ${elapsed}`}
             iq={iq}
             board={dailyBoard}

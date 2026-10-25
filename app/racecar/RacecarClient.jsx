@@ -55,6 +55,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // Racecar identity is SLATE. Every colour the board uses derives from
 // COLORS.accent below rather than a literal hex a second time.
@@ -1042,7 +1043,7 @@ export default function RacecarClient({ puzzles = [], forceNum = null }) {
             name="Racecar"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${filledCount}/${FREE.length} filled · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

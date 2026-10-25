@@ -59,6 +59,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // Sixes identity is BLUE, the one hue absent from the whole Numbers row (Suds
 // orange, Quilt magenta, Carve violet, Cipher and Sando teal, Tally and Pricer
@@ -1038,7 +1039,7 @@ export default function SixesClient({ puzzles = [], forceNum = null }) {
             name="Sixes"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${filledCount}/${FREE.length} filled · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

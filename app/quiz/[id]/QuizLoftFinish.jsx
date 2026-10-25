@@ -36,6 +36,7 @@ import useIqStanding from '../../useIqStanding';
 import useDayStats from '../../useDayStats';
 import { quizDept, DEPT_LABEL } from '@/lib/quiz-departments';
 import { CONTEST, contestIsLive } from '@/lib/contest';
+import { endGrade } from '@/lib/end-verdict';
 
 function fmtTime(s) {
   if (s == null) return null;
@@ -82,7 +83,7 @@ export default function QuizLoftFinish({
   const outcome = win ? 'won' : score > 0 ? 'part' : 'lost';
   // 'New record' outranks 'Perfect' because it is the rarer thing and the
   // player already knows a full score is full.
-  const title = topScore ? 'New record' : win ? 'Perfect' : score > 0 ? 'Partly solved' : timedOut ? "Time's up" : 'Not solved';
+  const title = topScore ? 'New record!' : win ? 'Perfect!' : endGrade(score, total);
 
   const detail = [
     `${score}/${total}`,

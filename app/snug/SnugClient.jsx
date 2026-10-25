@@ -65,6 +65,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // Snug's legacy identity is a slate blue, the pre-stage hue only the old
 // tables read. Every colour the board paints on the stage is a token, and on
@@ -1089,7 +1090,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
             name="Snug"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${placedCount}/${NP} pieces · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

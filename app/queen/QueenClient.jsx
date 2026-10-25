@@ -64,6 +64,7 @@ import {
 } from './kpk';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1121,7 +1122,7 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
               name="Queen"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${errors} ${errors === 1 ? 'miss' : 'misses'} · promote in ${PUZZLE.winIn} moves · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1225,8 +1226,8 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
           headline={won ? <>Promoted!</> : g.status === 'lost' ? <>The pawn never queened.</> : <>You scored 0%</>}
           subline={won
             ? <>Solved &middot; walked in, in {PUZZLE.winIn} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : g.status === 'lost' ? <>Not solved &middot; the win slipped away</>
-            : <>Not solved &middot; the win is still in the position</>}
+            : g.status === 'lost' ? <>So close &middot; the win slipped away</>
+            : <>Not yet &middot; the win is still there</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

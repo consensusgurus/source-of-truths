@@ -63,6 +63,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
 import { makeCells, positions, adjacent, findOne, gridOf } from '@/lib/strata-core';
 import PlayStage, { usePhoneStage } from '../PlayStage';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   ink: T.ink,
@@ -1062,7 +1063,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
               name="Strata"
               catRank={catRank}
               outcome={won ? 'won' : (foundWords.length > 0 ? 'part' : 'lost')}
-              title={won ? 'Solved' : (foundWords.length > 0 ? 'Partly solved' : 'Not solved')}
+              title={endGrade(foundWords.length, TOTAL)}
               detail={`${`${foundWords.length}/${TOTAL}`} found \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

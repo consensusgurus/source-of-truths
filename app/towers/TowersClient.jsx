@@ -58,6 +58,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // Towers identity is STEEL SKY (#075985), glass and girders, clear of Towers's
 // royal blue and Ping's brighter sky. Every colour the board uses derives from
@@ -1076,7 +1077,7 @@ export default function TowersClient({ puzzles = [], forceNum = null }) {
             name="Towers"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${filledCount}/${FREE.length} filled · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

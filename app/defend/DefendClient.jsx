@@ -77,6 +77,7 @@ import {
 import { makeMateSearch, stubbornestReply } from './defense';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1199,7 +1200,7 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
               name="Defend"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${errors} ${errors === 1 ? 'miss' : 'misses'} \u00b7 hold for ${HOLD} moves \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1304,8 +1305,8 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
           headline={won ? <>You held.</> : g.status === 'lost' ? <>Mated.</> : <>You scored 0%</>}
           subline={won
             ? <>Solved &middot; found the save &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : g.status === 'lost' ? <>Not solved &middot; that move allowed the mate</>
-            : <>Not solved &middot; the save is still in the position</>}
+            : g.status === 'lost' ? <>Not yet &middot; that move allowed the mate</>
+            : <>Not yet &middot; the save is still in the position</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

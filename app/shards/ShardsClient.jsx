@@ -68,6 +68,7 @@ import LoftFinish from '../LoftFinish';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1184,7 +1185,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? finalScore : null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${finalScore} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

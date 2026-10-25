@@ -57,6 +57,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // Sums identity is ROSE, the one hue absent from the Numbers row (Suds orange,
 // Quilt magenta, Carve violet, Cipher and Sando teal, Tally green, Crunch amber,
@@ -1244,7 +1245,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
             name="Sums"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${filledCount}/${FREE.length} filled · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

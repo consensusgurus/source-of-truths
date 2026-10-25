@@ -59,6 +59,7 @@ import { solve, applyOp, scoreFor } from './solver';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -948,7 +949,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
               challengeMetric={won ? used : null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endGrade(finalScore, 10)}
               detail={`${finalScore} \u00b7 ${used} steps \u00b7 ${bestDiff == null ? '—' : (bestDiff === 0 ? 'exact' : `${bestDiff} off`)} closest \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

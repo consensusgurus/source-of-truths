@@ -56,6 +56,7 @@ import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage } from '../PlayStage';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -488,7 +489,7 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
   function shareText() {
     // The axis and the strip travel, never a placement and never a figure.
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
-    const head = `Slot #${PUZZLE.num} · ${score}/${N} · par ${PAR} · ${brokeBit()} · ${elapsed}${streakBit}`;
+    const head = `Slot #${PUZZLE.num} · ${score}/${N} · ${brokeBit()} · ${elapsed}${streakBit}`;
     return `${head}\n${DAY.axis}\n${strip()}\n${shareUrl()}`;
   }
   function copyShare() {
@@ -566,7 +567,7 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
                 </button>
               </div>
             }
-            foot={`${k} placed · par ${PAR}${unitBit}`}
+            foot={`${k} placed${unitBit}`}
             frac={N ? k / N : 0} />
         );
       })()}
@@ -587,11 +588,9 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
           onHelp={() => setShowHelp(true)}
           figures={playing ? [
             { v: `${k}/${N}`, k: 'placed' },
-            { v: String(PAR), k: 'par' },
             { v: elapsed, k: 'time' },
           ] : [
             { v: `${score}/${TOTAL}`, k: 'score' },
-            { v: String(PAR), k: 'par' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -747,7 +746,6 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             <span style={{ whiteSpace: 'nowrap' }}>placed <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{k}/{N}</b></span>
             <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>par <b style={{ color: INK, fontWeight: 500 }}>{PAR}</b></span>
           </div>
           )}
 
@@ -861,16 +859,15 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
           {!playing && (
             <div className="sl-card2">
               <h3>Result</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                 <div><div style={{ fontFamily: MONO, fontSize: 22, color: ACC_INK }}>{score}<span style={{ fontSize: 13, color: FADED }}>/{TOTAL}</span></div><div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '.12em', textTransform: 'uppercase', color: FADED }}>right slot</div></div>
                 <div><div style={{ fontFamily: MONO, fontSize: 22, color: INK }}>{near}</div><div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '.12em', textTransform: 'uppercase', color: FADED }}>one off</div></div>
-                <div><div style={{ fontFamily: MONO, fontSize: 22, color: INK }}>{PAR}</div><div style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '.12em', textTransform: 'uppercase', color: FADED }}>par</div></div>
               </div>
               <div className="sl-strip" aria-hidden="true">
                 {placed.map((it, s) => <i key={s} className={`${it == null ? '' : marks[s] === 0 ? 'g' : marks[s] === 1 ? 'a' : ''}${broke === s ? ' b' : ''}`} />)}
               </div>
               <div style={{ fontSize: 13, fontWeight: 700, color: won ? `var(--stg-good, ${COLORS.green})` : `var(--stg-ink, ${COLORS.rust})` }}>
-                {score === N ? `Perfect. Every one of the ${N} in its slot, in ${elapsed}.` : `${won ? 'Made par.' : 'Short of par.'} ${score} of ${N} in the right slot${broke != null ? `, ${brokeBit()}` : ''}. ${elapsed}.`}
+                {score === N ? `Perfect. Every one of the ${N} in its slot, in ${elapsed}.` : `${score} of ${N} in the right slot${broke != null ? `, ${brokeBit()}` : ''}. ${elapsed}.`}
               </div>
             </div>
           )}
@@ -916,8 +913,8 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
               name="Slot"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={score === N ? 'Perfect' : won ? 'Made par' : 'Under par'}
-              detail={`${score}/${N} in the right slot · par ${PAR} · ${brokeBit()} · ${elapsed}`}
+              title={endGrade(score, N, 'Perfect!')}
+              detail={`${score}/${N} in the right slot · ${brokeBit()} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1001,8 +998,8 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="slot" won={won}
-          headline={score === N ? <>Perfect.</> : won ? <>Made par.</> : <>Short of par.</>}
-          subline={<>{score}/{N} in the right slot &middot; par {PAR} &middot; {brokeBit()} &middot; {elapsed}</>}
+          headline={score === N ? <>Perfect.</> : won ? <>Solved!</> : <>Round over.</>}
+          subline={<>{score}/{N} in the right slot &middot; {brokeBit()} &middot; {elapsed}</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
           onClose={() => setEndClosed(true)} />

@@ -821,7 +821,7 @@ export default function LoftFinish({
             <>
               <button type="button" className="loft-next d5f-retry" onClick={fire(replayOpt)}>
                 <span className="t">
-                  <span className="eb">Not solved {'\u00b7'} the run waits</span>
+                  <span className="eb">Not yet {'\u00b7'} the run waits</span>
                   <span className="nm">Play it again</span>
                   <span className="tg">{attemptRule.replay}</span>
                 </span>

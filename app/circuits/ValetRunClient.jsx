@@ -431,9 +431,9 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
   const verdictLine = (x, s) => {
     if (!x || !s) return '';
     const par = parFor(s.perfect);
-    if (!x.won) return `Left parked. Par here was ${par}.`;
+    if (!x.won) return 'Left parked.';
     if (x.moves === s.perfect) return `Out in ${x.moves}. That is perfect.`;
-    return `Out in ${x.moves} moves. Par was ${par}.`;
+    return `Out in ${x.moves} moves.`;
   };
 
   return (
@@ -501,7 +501,7 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
                     <span className="vr-ron">{i + 1}</span>
                     <span className="vr-rob">
                       <b>{s.name}</b>
-                      <i>{s.n} by {s.n} &middot; par {parFor(s.perfect)}{s.sunday ? ' · Sunday Edition' : ''}</i>
+                      <i>{s.n} by {s.n}{s.sunday ? ' · Sunday Edition' : ''}</i>
                     </span>
                     <span className="vr-rot">{res ? (res.won ? `parked · ${fmtTime(res.secs * 1000)}` : 'left parked') : `${s.pieces.length} blocks`}</span>
                   </div>
@@ -528,7 +528,7 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
               <div className="vr-lh">
                 <span className="vr-le">Lot {r.si + 1} of {N}</span>
                 <b className="vr-ln">{sec.name}</b>
-                <span className="vr-lp">{sec.n}&times;{sec.n} &middot; par {parFor(sec.perfect)}</span>
+                <span className="vr-lp">{sec.n}&times;{sec.n}</span>
               </div>
               <JamBoard
                 n={sec.n} exitRow={sec.exitRow} blocks={blocks} tones={tones[r.si]}
@@ -561,7 +561,7 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
               <div className="vr-hn">
                 <i>Up next</i>
                 <b>{upNext.name}</b>
-                <span>{upNext.n} by {upNext.n} &middot; par {parFor(upNext.perfect)} &middot; {upNext.pieces.length} blocks</span>
+                <span>{upNext.n} by {upNext.n} &middot; {upNext.pieces.length} blocks</span>
               </div>
             ) : null}
             <div className={`vr-vbar${hold ? ' held' : ''}`} style={{ '--dwell': `${VERDICT_MS}ms` }} key={r.si}><span /></div>

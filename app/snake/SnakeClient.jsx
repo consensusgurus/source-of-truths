@@ -63,6 +63,7 @@ import { withRef } from '@/lib/referrals';
 import { T } from '@/lib/theme';
 import { arcadeRanksForKey } from '@/lib/daily-games';
 import { meRequest } from '@/app/quizMeClient';
+import { ARCADE_RUN } from '@/lib/end-verdict';
 import {
   SNAKE_SIZE, STEP_MS, dayPlan, newGame, turn, step, peekNext, snapshot, restore,
 } from '@/lib/snake-engine';
@@ -262,7 +263,7 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
   const over = g.status !== 'playing';
   const won = over && g.apples >= PAR;
   const verdictTone = won ? 'won' : 'part';
-  const verdictWord = g.won ? 'Board filled' : won ? 'Par reached' : 'Run complete';
+  const verdictWord = g.won ? 'Board filled!' : ARCADE_RUN;
   const myStats = useMemo(() => deriveStats(stats || { rec: {} }, PUZZLE.num), [stats, PUZZLE.num]);
   const bestToday = myStats.rec && myStats.rec[PUZZLE.num] ? myStats.rec[PUZZLE.num].s : null;
   const shownApples = playing ? fig.apples : g.apples;
@@ -629,7 +630,7 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
   function shareText() {
     const sun = PUZZLE.sunday ? ' · Sunday' : '';
     const a = bestToday != null ? Math.max(bestToday, g.apples) : g.apples;
-    return `Snake #${PUZZLE.num}${sun} · ${nf(a)} apple${a === 1 ? '' : 's'} · par ${nf(PAR)}\n${shareUrl()}`;
+    return `Snake #${PUZZLE.num}${sun} · ${nf(a)} apple${a === 1 ? '' : 's'}\n${shareUrl()}`;
   }
   function copyShare() {
     const txt = over ? shareText() : `Snake #${PUZZLE.num}, the daily snake game from Mind Loft. Same apples for everybody.\n${shareUrl()}`;
@@ -692,7 +693,6 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
           sunday={PUZZLE.sunday ? 'Sunday Edition · grows by two' : null}
           figures={[
             { v: shownApples, k: 'apples' },
-            { v: PAR, k: 'par' },
             { v: bestToday != null ? bestToday : '–', k: 'best' },
           ]}
         />
@@ -748,8 +748,8 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
                       {/* the meter: apples against the day's par, one segment an apple */}
                       <div className="sn-meter" data-sn-meter="">
                         <div className="sn-meter-row">
-                          <span>Apples · <b className="sn-acc">{nf(shownApples)}</b> · par {nf(PAR)}</span>
-                          <span className="sn-meter-r sn-wide">{shownApples >= PAR ? `${nf(shownApples - PAR)} past par · no ceiling` : `${nf(PAR - shownApples)} to par · no ceiling`}</span>
+                          <span>Apples · <b className="sn-acc">{nf(shownApples)}</b></span>
+                          <span className="sn-meter-r sn-wide">No ceiling</span>
                           <span className="sn-meter-r sn-narrow">Length {nf(shownLen)} · {nf(shownMoves)} moves</span>
                         </div>
                         <div className="sn-segs" aria-hidden="true">
@@ -835,7 +835,7 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
                   outcome={verdictTone}
                   challengeMetric={Number.isFinite(g.apples) ? g.apples : null}
                   title={verdictWord}
-                  detail={`${g.apples} apples · ${PAR} par`}
+                  detail={`${g.apples} apples`}
                   iq={iq}
                   board={dailyBoard}
                   gameRank={allTime && allTime.ready
@@ -926,7 +926,7 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
           won={won}
           quizId={PUZZLE.quizId}
           completed
-          score={<>{nf(g.apples)} apple{g.apples === 1 ? '' : 's'} &middot; par {nf(PAR)}</>}
+          score={<>{nf(g.apples)} apple{g.apples === 1 ? '' : 's'}</>}
           subline={<>{nf(g.moves)} moves</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}

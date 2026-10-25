@@ -59,6 +59,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1126,7 +1127,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
               name="Fib"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${endScore} \u00b7 ${errors} errors \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

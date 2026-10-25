@@ -487,7 +487,7 @@ export default function DailyTilePanel({
           </div>
           <div className="dtp-key">
             <span><i className="sw played" />Solved</span>
-            {drops.some((d) => d.incomplete) ? <span><i className="sw incomplete" />Not solved</span> : null}
+            {drops.some((d) => d.incomplete) ? <span><i className="sw incomplete" />Unfinished</span> : null}
             <span><i className="sw open" />Open</span>
             <span><i className="sw today" />Today</span>
           </div>

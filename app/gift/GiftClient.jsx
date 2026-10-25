@@ -59,6 +59,7 @@ import {
 } from '@/lib/gift-core';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -962,7 +963,7 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
               name="Gift"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${errors} ${errors === 1 ? 'slip' : 'slips'} · ${W.mine} ${W.mine === 1 ? 'turn' : 'turns'} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1059,7 +1060,7 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
           headline={won ? <>You won it.</> : g.status === 'lost' ? <>{g.end === 'draw' ? 'A draw.' : 'Beaten to it.'}</> : <>You scored 0%</>}
           subline={won
             ? <>Solved &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>Not solved &middot; the win is still in the position</>}
+            : <>Not yet &middot; the win is still there</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

@@ -61,6 +61,7 @@ import DailyRules from '../DailyRules';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
 import { getScenario, decide, linClassify, witness } from './engine';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   ink: T.ink,
@@ -719,7 +720,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
               name="Suffice"
               catRank={catRank}
               outcome={score === TOTAL ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={score === TOTAL ? 'Solved' : (score > 0 ? 'Partly solved' : 'Not solved')}
+              title={endGrade(score, TOTAL)}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

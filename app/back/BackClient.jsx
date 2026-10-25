@@ -52,6 +52,7 @@ import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import RunDoorPop from '../circuits/RunDoorPop';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -775,7 +776,7 @@ export default function BackClient({ puzzles = [], problemsByNum = {}, forceNum 
               name="Back"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endGrade(score, TOTAL_Q)}
               detail={`${`${score}/${TOTAL_Q}`} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

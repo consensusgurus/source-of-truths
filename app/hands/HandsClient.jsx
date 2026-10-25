@@ -67,6 +67,7 @@ import AddToHome from '../AddToHome';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
+import { endGrade } from '@/lib/end-verdict';
 import {
   RANK_LABEL, SUIT_PIP, rankOf, suitOf, isRed, cardName,
   lineScores, totalOf, bustsOf, scoreForPoints, rowCells, colCells,
@@ -566,17 +567,13 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
     // Deliberately a single row rather than a five by five block: a grid-shaped
     // strip would hand somebody else the shape of a good board.
     const chips = scores.map((v) => (v >= 10 ? '\u{1F7E8}' : v > 0 ? '\u{1F7E6}' : '⬜')).join('');
-    const vs = total >= ace ? 'ace'
-      : total > par ? `${total - par} above par`
-      : total === par ? 'level par'
-      : `${par - total} short of par`;
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
-    const head = `Hands #${PUZZLE.num} · ${total} pts, ${vs} · ${elapsed}${streakBit}`;
+    const head = `Hands #${PUZZLE.num} · ${total} pts${total >= ace ? ', ace' : ''} · ${elapsed}${streakBit}`;
     return `${head}\n${chips}\n${shareUrl()}`;
   }
   function copyShare() {
     const text = playing
-      ? `Hands #${PUZZLE.num} — the daily poker solitaire from Mind Loft. Par ${par}.\n${shareUrl()}`
+      ? `Hands #${PUZZLE.num}: the daily poker solitaire from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -797,7 +794,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
               </div>
             }
             frac={g.placed.length / 25}
-            foot={`${g.placed.length} of 25 placed · ${total} points · Par ${par}`}
+            foot={`${g.placed.length} of 25 placed · ${total} points`}
           />
         );
       })()}
@@ -807,7 +804,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           the page wrapper so the bands run full bleed; nothing here is pinned. */}
       {!STAGE && (
       <DailyChrome slug="hands" name="Hands" collapsed={started}
-        stats={started ? [{ k: 'Points', v: total }, { k: 'Par', v: par }] : null} loft={LOFT} />
+        stats={started ? [{ k: 'Points', v: total }] : null} loft={LOFT} />
       )}
       {/* LOFT: the cap replaces the title block AND the board's own stat
           strip. A finished hand under par still scores, so it is a partial and the cap goes
@@ -824,11 +821,11 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           figures={playing ? [
             { v: total, k: 'points' },
             { v: elapsed, k: 'time' },
-            { v: `${par} · ${ace}`, k: 'par · ace' },
+            { v: ace, k: 'ace' },
           ] : [
             { v: finalScore, k: 'score' },
             { v: total, k: 'points' },
-            { v: `${par} · ${ace}`, k: 'par · ace' },
+            { v: ace, k: 'ace' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -904,11 +901,11 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
                   <span style={K}>Best this deal allows · <b style={{ color: S_INK }}>{ceil}</b></span>
                 </div>
               )}
-              <div role="img" aria-label={`Score track: ${total} points so far. Par ${par}, ace ${ace}, best this deal allows ${ceil}.`}
+              <div role="img" aria-label={`Score track: ${total} points so far. Ace ${ace}, best this deal allows ${ceil}.`}
                 style={{ position: 'relative', height: narrow ? 40 : 34 }}>
                 <div style={{ position: 'absolute', left: 0, right: 0, top: narrow ? 15 : 6, height: narrow ? 8 : 10, borderRadius: 5, background: CELL, border: `1px solid ${CELL_LINE}`, boxSizing: 'border-box' }} />
                 <div style={{ position: 'absolute', left: 0, width: `${pct(total)}%`, minWidth: total > 0 ? 8 : 0, top: narrow ? 15 : 6, height: narrow ? 8 : 10, borderRadius: 5, background: A_FILL, transition: 'width .3s ease' }} />
-                {[[parP, par, 'Par', S_INK2, parAnchor], [aceP, ace, 'Ace', 'var(--stg-warn, #8a5406)', aceAnchor]].map(([p, v, nm, col, tr]) => (
+                {[[aceP, ace, 'Ace', 'var(--stg-warn, #8a5406)', aceAnchor]].map(([p, v, nm, col, tr]) => (
                   <React.Fragment key={nm}>
                     <span style={{ position: 'absolute', left: `${p}%`, top: narrow ? 11 : 0, width: 2, height: narrow ? 16 : 22, marginLeft: -1, background: col }} />
                     <span style={{ position: 'absolute', left: `${p}%`, top: narrow ? 0 : 21, transform: tr, fontFamily: SANS, fontSize: narrow ? 9 : 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: col, whiteSpace: 'nowrap' }}>{nm} {v}</span>
@@ -1007,7 +1004,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
                 <span style={{ whiteSpace: 'nowrap' }}>points <b style={{ color: total >= par ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{total}</b></span>
                 <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-                <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>par <b style={{ color: ACC_INK, fontWeight: 500 }}>{par}</b> &middot; ace <b style={{ color: INK, fontWeight: 500 }}>{ace}</b></span>
+                <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>ace <b style={{ color: INK, fontWeight: 500 }}>{ace}</b></span>
               </div>
               )}
 
@@ -1056,7 +1053,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
                         {renderGrid(PUZZLE.best, bestScores, [true, true, true, true, true], [true, true, true, true, true], [5, 5, 5, 5, 5], [5, 5, 5, 5, 5], false)}
                       </div>
                       <div style={{ fontSize: 12, color: FADED, fontWeight: 600, marginTop: 8, lineHeight: 1.5 }}>
-                        The best arrangement of these 26 cards our search could find. It is not a target and not a proven maximum: you would have to have seen the whole deal coming to build it, which is exactly why the round is scored against par and ace, both of which are rounds played blind.
+                        The best arrangement of these 26 cards our search could find. It is not a target and not a proven maximum: you would have to have seen the whole deal coming to build it, which is exactly why the round is scored against rounds played blind.
                       </div>
                     </div>
                   )}
@@ -1071,14 +1068,14 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           {done && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
-                You scored <span style={{ color: ACC_INK }}>{total} points</span>. Par was {par}, ace was {ace}.
+                You scored <span style={{ color: ACC_INK }}>{total} points</span>.
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: FADED, margin: '6px 0 0', lineHeight: 1.5 }}>
                 {g.gaveUp ? `You ended the round with ${25 - g.placed.length} square${25 - g.placed.length === 1 ? '' : 's'} still open, so the lines through them scored nothing.`
                   : total >= ace ? 'You matched or beat the best round our solver found playing blind on this deal. That is as good as it gets without seeing the cards coming.'
-                  : total > par ? `That is ${total - par} above par, with ${busts === 0 ? 'not a single hand wasted' : `${busts} of the ten hands worth nothing`}.`
-                  : total === par ? 'Level par, exactly what an ordinary round comes home with.'
-                  : `That is ${par - total} short of par. ${busts >= 4 ? 'Too many dead lines: a card that helps nothing is still costing you a square.' : 'Close enough that one or two placements were the difference.'}`}
+                  : busts === 0 ? 'Not a single hand wasted.'
+                  : busts >= 4 ? 'Too many dead lines: a card that helps nothing is still costing you a square.'
+                  : `${busts} of the ten hands ${busts === 1 ? 'was' : 'were'} worth nothing.`}
               </div>
               {isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -1112,8 +1109,8 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
               challengeMetric={done ? total : null}
-              title={won ? 'Solved' : 'Not solved'}
-              detail={`${finalScore}/10 \u00b7 ${total} points \u00b7 par ${par}, ace ${ace} \u00b7 ${elapsed}`}
+              title={endGrade(finalScore, 10, 'Perfect!')}
+              detail={`${total} points \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1196,7 +1193,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           deprecated on that component; `score` is the live prop. */}
       {done && !endClosed && !endHold.held && !LOFT && (
         <DailyEndCard modal self="hands" won={won} completed
-          score={<>{total} pts &middot; par {par}</>}
+          score={<>{total} pts</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}

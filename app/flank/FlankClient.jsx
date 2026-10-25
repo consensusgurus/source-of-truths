@@ -55,6 +55,7 @@ import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { BORDERS, buildAliasMap, buildPrefixAmbiguous, normGuess } from './borders';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -870,7 +871,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
               name="Flank"
               catRank={catRank}
               outcome={won ? 'won' : (foundCount > 0 ? 'part' : 'lost')}
-              title={won ? 'Solved' : (foundCount > 0 ? 'Partly solved' : 'Not solved')}
+              title={endGrade(foundCount, TOTAL)}
               detail={`${foundCount}/${TOTAL} borders · ${strikes} wrong · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

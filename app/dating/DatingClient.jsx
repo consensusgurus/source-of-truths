@@ -60,6 +60,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1065,7 +1066,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
               challengeMetric={won ? checksUsed : null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endGrade(finalScore, 10)}
               detail={`${finalScore} \u00b7 ${`${checksUsed}/${MAX_CHECKS}`} checks \u00b7 ${lockedCount} placed`}
               iq={iq}
               board={dailyBoard}

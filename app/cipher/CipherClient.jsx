@@ -86,6 +86,7 @@ import useRailClearance from '../useRailClearance';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1247,7 +1248,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '0 auto 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{won ? 'Solved' : 'Not solved'}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{won ? 'Solved!' : 'Good effort'}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done'
                       ? `Cracked. ${eqnText}`
@@ -1290,7 +1291,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
               name="Cipher"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${`${Object.keys(g.assign).length}/${LETTERS.length}`} placed \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1401,7 +1402,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           won={won}
           completed={g.status === 'done'}
           headline={g.status === 'done' ? <>You cracked the cipher</> : <>The cipher held</>}
-          subline={<>Cipher #{PUZZLE.num} &middot; {won ? 'Solved' : 'Not solved'} &middot; {elapsed}</>}
+          subline={<>Cipher #{PUZZLE.num} &middot; {won ? 'Solved!' : 'Good effort'} &middot; {elapsed}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

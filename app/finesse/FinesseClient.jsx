@@ -68,6 +68,7 @@ import AddToHome from '../AddToHome';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
+import { GOOD_EFFORT } from '@/lib/end-verdict';
 import {
   RANK_NAMES, SUIT_GLYPH, SUITS, suitOf, rankOf, isNS, bits, parseHand, handOrder,
   makeSolver, analyse,
@@ -1255,7 +1256,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={done ? 'won' : lost ? 'lost' : 'part'}
               challengeMetric={done ? g.tries : null}
-              title={done ? 'Made' : lost ? 'Gave up' : 'Not made'}
+              title={done ? 'Made!' : GOOD_EFFORT}
               detail={`${finalScore}/10 · ${TRICK_WORD[TARGET]} of ${R} · ${g.tries} tr${g.tries === 1 ? 'y' : 'ies'} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

@@ -91,6 +91,7 @@ import { N, EXIT_ROW, fromData, grid, moves as legalSlides, apply, solved, solve
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endEfficiency } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -633,16 +634,12 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
 
   function shareUrl() { return withRef(`mindloftdaily.com/junkyard${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
   function shareText() {
-    const vs = used === perfect ? 'perfect'
-      : used < par ? `${par - used} under par`
-      : used === par ? 'level par'
-      : `${used - par} over par`;
     const g5 = won ? Math.max(1, Math.round(scoreFor(used, perfect) / 2)) : 0;
     const squares = '\u{1F7EB}'.repeat(g5) + '⬜'.repeat(5 - g5);
     const hintBit = g.hintUsed ? ' · \u{1F4A1}' : '';
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const head = won
-      ? `Junkyard #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${used} moves, ${vs} · ${elapsed}${hintBit}${streakBit}`
+      ? `Junkyard #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${used} moves${used === perfect ? ', perfect' : ''} · ${elapsed}${hintBit}${streakBit}`
       : `Junkyard #${PUZZLE.num} · left it in the junkyard`;
     return `${head}\n${squares}\n${shareUrl()}`;
   }
@@ -700,15 +697,15 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
           tiles={playing ? null : upNext}
           dateLabel={PUZZLE.dateLabel}
           onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday ? `Sunday Edition · Par ${par}` : null}
+          sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
             { v: used, k: 'moves' },
             { v: elapsed, k: 'time' },
-            ...(STAGE ? [] : [{ v: `${par} · ${perfect}`, k: 'par · perfect' }]),
+            ...(STAGE ? [] : [{ v: perfect, k: 'perfect' }]),
           ] : [
             { v: finalScore, k: 'score' },
             { v: used, k: 'moves' },
-            { v: `${par} / ${perfect}`, k: 'par / perfect' },
+            { v: perfect, k: 'perfect' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -733,7 +730,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
         <DailyMasthead
           slug="junkyard" num={PUZZLE.num} dateLabel={PUZZLE.dateLabel} accent={COLORS.accent}
           blockGap={5} helpTop={13} marginBottom={16} onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Par {par}</span>}
+          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition</span>}
           blocks={'PARKER'.split('').map((ch, i) => (
             <div key={i} style={{ width: 40, height: 40, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 23, background: i === 5 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
           ))}
@@ -771,7 +768,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
             onCell={onCell} playing={playing} used={used} par={par} perfect={perfect} restarts={g.restarts}
             onRestart={restart} hintAvail={hintOk && !g.hintUsed} onHint={useHint}
             armed={!!armReveal} onGiveUp={giveUpTap}
-            doneLine={won ? (used === perfect ? `Out in ${used}. That is perfect.` : `Out in ${used}. Par was ${par}.`) : 'You left it in the junkyard.'} />
+            doneLine={won ? (used === perfect ? `Out in ${used}. That is perfect.` : `Out in ${used} moves.`) : 'You left it in the junkyard.'} />
         )}
         {!preStart && !STAGE && (
         <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
@@ -781,7 +778,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             <span style={{ whiteSpace: 'nowrap' }}>moves <b style={{ color: used > par ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{used}</b></span>
             <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>par <b style={{ color: ACC_INK, fontWeight: 500 }}>{par}</b> &middot; perfect <b style={{ color: INK, fontWeight: 500 }}>{perfect}</b></span>
+            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>perfect <b style={{ color: INK, fontWeight: 500 }}>{perfect}</b></span>
           </div>
           )}
 
@@ -875,7 +872,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
           <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800, color: playing ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})` }}>
               {!playing
-                ? (won ? (used === perfect ? `Out in ${used}. That is perfect.` : `Out in ${used}. Par was ${par}.`) : 'You left it in the junkyard.')
+                ? (won ? (used === perfect ? `Out in ${used}. That is perfect.` : `Out in ${used} moves.`) : 'You left it in the junkyard.')
                 : sel != null ? 'Now tap where it goes.' : 'Tap a block to pick it up.'}
             </span>
             {g.restarts > 0 && playing && (
@@ -918,14 +915,12 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
-                Par was <span style={{ color: ACC_INK }}>{par} moves</span>, perfect was <span style={{ color: INK }}>{perfect}</span>.
+                Perfect was <span style={{ color: ACC_INK }}>{perfect} moves</span>.
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: FADED, margin: '6px 0 0', lineHeight: 1.5 }}>
                 {won
                   ? used === perfect ? 'You matched perfect, which is as good as this board gets. Nobody got out faster.'
-                    : used < par ? `You got out in ${used}, ${par - used} under par and ${used - perfect} off perfect.`
-                      : used === par ? `You got out in ${used}, level par, ${used - perfect} off perfect.`
-                        : `You got out in ${used}, ${used - par} over par.`
+                    : `You got out in ${used} moves.`
                   : 'Perfect was found by exhaustive search, so it is real, not an estimate.'}
               </div>
               {PUZZLE.sunday && (
@@ -963,8 +958,8 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? used : null}
-              title={won ? 'Solved' : 'Not solved'}
-              detail={`${finalScore}/10 \u00b7 ${used} moves \u00b7 par ${par}, perfect ${perfect} \u00b7 ${elapsed}`}
+              title={endEfficiency(won, finalScore)}
+              detail={`${used} moves \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1056,10 +1051,10 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="junkyard" won={won}
-          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : used < par ? <>Under par.</> : <>You&rsquo;re out.</>) : <>You scored 0%</>}
+          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : <>Solved!</>) : <>You scored 0%</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {used} moves &middot; par {par}, perfect {perfect} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; par here was {par}, perfect was {perfect}</>}
+            ? <>{used} moves &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Perfect here was {perfect} moves</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}

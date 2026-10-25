@@ -58,6 +58,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // Mercury identity is DEEP RED, the mercury line itself, a hue absent from the
 // whole Numbers row (Suds orange, Quilt magenta, Cages purple, Sando teal,
@@ -1055,7 +1056,7 @@ export default function MercuryClient({ puzzles = [], forceNum = null }) {
             name="Mercury"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${filledCount}/${FREE.length} filled · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

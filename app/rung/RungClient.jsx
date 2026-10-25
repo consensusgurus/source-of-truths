@@ -63,6 +63,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endEfficiency } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -590,22 +591,18 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
 
   function shareUrl() { return withRef(`mindloftdaily.com/rung${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
   function shareText() {
-    const vs = used === perfect ? 'perfect'
-      : used < par ? `${par - used} under par`
-      : used === par ? 'level par'
-      : `${used - par} over par`;
     const g5 = won ? Math.max(1, Math.round(scoreFor(used, perfect) / 2)) : 0;
     const squares = '\u{1F7E6}'.repeat(g5) + '⬜'.repeat(5 - g5);
     const hintBit = g.hintUsed ? ' · \u{1F4A1}' : '';
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const head = won
-      ? `Rung #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${PUZZLE.start} to ${PUZZLE.target} in ${used}, ${vs} · ${elapsed}${hintBit}${streakBit}`
+      ? `Rung #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${PUZZLE.start} to ${PUZZLE.target} in ${used} · ${elapsed}${hintBit}${streakBit}`
       : `Rung #${PUZZLE.num} · gave up`;
     return `${head}\n${squares}\n${shareUrl()}`;
   }
   function copyShare() {
     const text = playing
-      ? `Rung #${PUZZLE.num} — the daily word ladder from Mind Loft. ${PUZZLE.start.toUpperCase()} to ${PUZZLE.target.toUpperCase()}, par ${par}.\n${shareUrl()}`
+      ? `Rung #${PUZZLE.num}, the daily word ladder from Mind Loft. ${PUZZLE.start.toUpperCase()} to ${PUZZLE.target.toUpperCase()}.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -678,7 +675,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
     // GOAL
     rows.push(rungRow({
       key: 'goal', tag: reached ? `Goal · rung ${used}` : 'Goal', tagTone: 'acc',
-      side: `Par ${par} · perfect ${perfect}`, bar: `var(--stg-acc, ${COLORS.accent})`, sticky: 'top', focus: !playing,
+      side: `Perfect ${perfect}`, bar: `var(--stg-acc, ${COLORS.accent})`, sticky: 'top', focus: !playing,
       children: reached ? wordTiles(PUZZLE.target, ladder[ladder.length - 2], 'done') : wordTiles(PUZZLE.target, null, 'goal'),
     }));
     // Empty rungs still owed before par. The goal is rung `par`, the row you
@@ -813,7 +810,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
           <PlayStage bg={gameColor('rung')} label="Rung"
             eyebrow="Change one letter a rung · real words only"
             top={top} bottom={bottom}
-            foot={`${used} rung${used === 1 ? '' : 's'} · Par ${par}`}
+            foot={`${used} rung${used === 1 ? '' : 's'}`}
             frac={par ? Math.min(1, used / par) : 0} />
         );
       })()}
@@ -836,15 +833,15 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
           tiles={playing ? null : upNext}
           dateLabel={PUZZLE.dateLabel}
           onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday ? `Sunday Edition · Par ${par}` : null}
+          sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
             { v: used, k: 'rungs' },
             { v: elapsed, k: 'time' },
-            { v: `${par} · ${perfect}`, k: 'par · perfect' },
+            { v: perfect, k: 'perfect' },
           ] : [
             { v: finalScore, k: 'score' },
             { v: used, k: 'rungs' },
-            { v: `${par} · ${perfect}`, k: 'par · perfect' },
+            { v: perfect, k: 'perfect' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -891,7 +888,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
         <DailyMasthead
           slug="rung" num={PUZZLE.num} dateLabel={PUZZLE.dateLabel} accent={COLORS.accent}
           blockGap={5} helpTop={13} marginBottom={16} onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Par {par}</span>}
+          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition</span>}
           blocks={'RUNG'.split('').map((ch, i) => (
             <div key={i} style={{ width: 44, height: 44, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 26, background: i === 3 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
           ))}
@@ -932,7 +929,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             <span style={{ whiteSpace: 'nowrap' }}>rungs <b style={{ color: used > par ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{used}</b></span>
             <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>par <b style={{ color: ACC_INK, fontWeight: 500 }}>{par}</b> &middot; perfect <b style={{ color: INK, fontWeight: 500 }}>{perfect}</b></span>
+            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>perfect <b style={{ color: INK, fontWeight: 500 }}>{perfect}</b></span>
           </div>
           )}
 
@@ -955,7 +952,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
           <div style={{ marginTop: 12, minHeight: 22, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800, color: playing ? `var(--stg-acc-ink, ${COLORS.accent})` : `var(--stg-mute, ${COLORS.faded})` }}>
               {!playing
-                ? (won ? (used === perfect ? `${used} rungs. That is perfect.` : `${used} rungs. Par was ${par}.`) : 'You stepped off the ladder.')
+                ? (won ? (used === perfect ? `${used} rungs. That is perfect.` : `${used} rungs.`) : 'You stepped off the ladder.')
                 : `On ${current.toUpperCase()}. Change one letter.`}
             </span>
             {g.restarts > 0 && playing && (
@@ -996,14 +993,12 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
-                Par was <span style={{ color: ACC_INK }}>{par} rungs</span>, perfect was <span style={{ color: INK }}>{perfect}</span>.
+                Perfect was <span style={{ color: ACC_INK }}>{perfect} rungs</span>.
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: FADED, margin: '6px 0 4px', lineHeight: 1.5 }}>
                 {won && used === perfect
                   ? 'You matched the shortest ladder there is, which on this board is not easy.'
-                  : won && used < par ? `You got there in ${used}, ${par - used} under par and ${used - perfect} off perfect.`
-                  : won && used === par ? `You got there in ${used}, level par, ${used - perfect} off perfect.`
-                  : won ? `You got there in ${used}, ${used - par} over par.`
+                  : won ? `You got there in ${used} rungs.`
                   : 'We are not printing the ladder. It is still there between these two words, so take another run at it.'}
                 {PUZZLE.routes === 1 && ' There is exactly one shortest ladder between these two words.'}
               </div>
@@ -1048,8 +1043,8 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? used : null}
-              title={won ? 'Solved' : 'Not solved'}
-              detail={`${finalScore}/10 \u00b7 ${used} rungs \u00b7 par ${par}, perfect ${perfect} \u00b7 ${elapsed}`}
+              title={endEfficiency(won, finalScore)}
+              detail={`${used} rungs \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1141,10 +1136,10 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="rung" won={won}
-          headline={won ? (used === perfect ? <>Perfect. The shortest there is.</> : used < par ? <>Under par.</> : <>You made it across.</>) : <>You scored 0%</>}
+          headline={won ? (used === perfect ? <>Perfect. The shortest there is.</> : <>You made it across.</>) : <>You scored 0%</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {used} rungs &middot; par {par}, perfect {perfect} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; par here was {par}, perfect was {perfect}</>}
+            ? <>{used} rungs &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>0/10 &middot; perfect was {perfect} rungs</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}

@@ -50,6 +50,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage } from '../PlayStage';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -986,7 +987,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? g.mistakes : null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${`${g.solved.length}/4`} groups \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

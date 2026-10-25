@@ -68,6 +68,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
 import { useRunEmbed, useRunHelp } from '../RunEmbed';
 import RunDoorPop from '../circuits/RunDoorPop';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   ink: T.ink,
@@ -1110,7 +1111,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
               name="Anon"
               catRank={catRank}
               outcome={won ? 'won' : (nSolved > 0 ? 'part' : 'lost')}
-              title={won ? 'Solved' : (nSolved > 0 ? 'Partly solved' : 'Not solved')}
+              title={endGrade(nSolved, TOTAL)}
               detail={`${`${nSolved}/${TOTAL}`} solved \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

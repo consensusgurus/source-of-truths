@@ -52,6 +52,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -811,7 +812,7 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? guesses.length : null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${finalScore} \u00b7 ${`${Math.min(guesses.length, MAX_GUESSES)}/${MAX_GUESSES}`} guesses`}
               iq={iq}
               board={dailyBoard}

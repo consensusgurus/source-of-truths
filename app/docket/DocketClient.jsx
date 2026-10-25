@@ -70,6 +70,7 @@ import DailyRules from '../DailyRules';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
 import { solveDay, CHOICE_KEYS, showSolution, WORD } from './engine';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   ink: T.ink,
@@ -911,7 +912,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
               name="Docket"
               catRank={catRank}
               outcome={score > 0 ? 'won' : 'lost'}
-              title={score > 0 ? 'Complete' : 'Not complete'}
+              title={endGrade(score, TOTAL)}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

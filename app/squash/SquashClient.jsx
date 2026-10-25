@@ -64,6 +64,7 @@ import { withRef } from '@/lib/referrals';
 import { T } from '@/lib/theme';
 import { arcadeRanksForKey } from '@/lib/daily-games';
 import { meRequest } from '@/app/quizMeClient';
+import { ARCADE_RUN } from '@/lib/end-verdict';
 import {
   SQUASH_SIZE, FRUITS, newGame, move as playMove, swapValid, validMoves, pieces as piecesOf, clone, adjacent,
 } from '@/lib/squash-engine';
@@ -409,7 +410,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
   const over = g.status !== 'playing';
   const won = over && g.score >= PAR;
   const verdictTone = won ? 'won' : 'part';
-  const verdictWord = won ? 'Par reached' : 'Run complete';
+  const verdictWord = ARCADE_RUN;
   const myStats = useMemo(() => deriveStats(stats || { rec: {} }, PUZZLE.num), [stats, PUZZLE.num]);
   const bestToday = myStats.rec && myStats.rec[PUZZLE.num] ? myStats.rec[PUZZLE.num].s : null;
   const shownScore = playing ? fig.score : g.score;
@@ -1019,7 +1020,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
   function shareText() {
     const sun = PUZZLE.sunday ? ' · Sunday' : '';
     const a = bestToday != null ? Math.max(bestToday, g.score) : g.score;
-    return `Squash #${PUZZLE.num}${sun} · ${nf(a)} points · par ${nf(PAR)}\n${shareUrl()}`;
+    return `Squash #${PUZZLE.num}${sun} · ${nf(a)} points\n${shareUrl()}`;
   }
   function copyShare() {
     const txt = over ? shareText() : `Squash #${PUZZLE.num}, the daily fruit-matching game from Mind Loft. Same board for everybody.\n${shareUrl()}`;
@@ -1056,7 +1057,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
       ? 'Make your first swap to start the five-minute clock.'
       : shownLeft <= 0 ? 'Time! Last fruit falling.'
         : paused ? 'Paused. Tap the board or press Resume.'
-          : `${fmtClock(shownLeft)} left. ${shownScore >= PAR ? `${nf(shownScore - PAR)} past par.` : `${nf(PAR - shownScore)} to par.`}`;
+          : `${fmtClock(shownLeft)} left.`;
   const parPct = Math.min(100, Math.round((shownScore / Math.max(1, PAR)) * 100));
 
   const btn = { fontFamily: SANS, fontWeight: 800, fontSize: 14, border: `2px solid var(--stg-line, ${COLORS.accent})`, background: STAGE ? SURF : '#fff', color: ACC_INK, borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
@@ -1081,7 +1082,6 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
           sunday={PUZZLE.sunday ? 'Sunday Edition · 9x9 board' : null}
           figures={[
             { v: nf(shownScore), k: 'points' },
-            { v: nf(PAR), k: 'par' },
             { v: bestToday != null ? nf(bestToday) : '–', k: 'best' },
           ]}
         />
@@ -1137,8 +1137,8 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
                       {/* the meters: points against par, and the clock */}
                       <div className="sq-meter">
                         <div className="sq-row">
-                          <span>Points · <b className="sq-acc" data-sq-score="">{nf(shownScore)}</b> · par {nf(PAR)}</span>
-                          <span className="sq-r">{shownScore >= PAR ? 'Past par · no ceiling' : `${parPct}% of par`}</span>
+                          <span>Points · <b className="sq-acc" data-sq-score="">{nf(shownScore)}</b></span>
+                          <span className="sq-r">No ceiling</span>
                         </div>
                         <div className="sq-bar" aria-hidden="true"><span style={{ width: `${parPct}%` }} /></div>
                         <div className="sq-row">
@@ -1215,7 +1215,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
                   outcome={verdictTone}
                   challengeMetric={Number.isFinite(g.score) ? g.score : null}
                   title={verdictWord}
-                  detail={`${nf(g.score)} points · ${nf(PAR)} par`}
+                  detail={`${nf(g.score)} points`}
                   iq={iq}
                   board={dailyBoard}
                   gameRank={allTime && allTime.ready
@@ -1306,7 +1306,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
           won={won}
           quizId={PUZZLE.quizId}
           completed
-          score={<>{nf(g.score)} points &middot; par {nf(PAR)}</>}
+          score={<>{nf(g.score)} points</>}
           subline={<>{nf(g.used)} swap{g.used === 1 ? '' : 's'} in five minutes</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}

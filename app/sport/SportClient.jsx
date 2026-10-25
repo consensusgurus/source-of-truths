@@ -60,6 +60,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endStreak } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -767,7 +768,7 @@ export default function SportClient({ puzzles = [], questionsByNum = {}, forceNu
               name="Sport"
               catRank={catRank}
               outcome={won ? 'won' : (depth > 0 ? 'part' : 'lost')}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endStreak(depth, TOTAL_Q)}
               detail={`${`${depth}/${TOTAL_Q}`} straight \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

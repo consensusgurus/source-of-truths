@@ -62,6 +62,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import RunDoorPop from '../circuits/RunDoorPop';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -932,7 +933,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
               name="Alibi"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={won ? 'Solved' : (score > 0 ? 'Partly solved' : 'Not solved')}
+              title={endGrade(score, TOTAL)}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${g.wrong} wrong \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

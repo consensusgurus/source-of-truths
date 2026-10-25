@@ -50,6 +50,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage } from '../PlayStage';
+import { GOOD_EFFORT } from '@/lib/end-verdict';
 
 const COLORS = { cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted, good: T.successDeep || '#047857' };
 const ARM_MIN_MS = 400;
@@ -798,7 +799,7 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
               name="Scour"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={won ? `All ${N} words found` : (score > 0 ? `${score} of ${N} words found` : 'Not solved')}
+              title={won ? `All ${N} words found!` : (score > 0 ? `${score} of ${N} words found` : GOOD_EFFORT)}
               detail={`${score}/${N} · ${PUZZLE.theme} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

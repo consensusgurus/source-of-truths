@@ -57,6 +57,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1086,7 +1087,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={score > 0 ? 'won' : 'lost'}
               challengeMetric={result ? score : null}
-              title={score > 0 ? 'Complete' : 'Not complete'}
+              title={endGrade(score, TOTAL)}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

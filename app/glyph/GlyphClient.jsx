@@ -55,6 +55,7 @@ import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1035,7 +1036,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
               name="Glyph"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${finalScore} \u00b7 ${checks} checks \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

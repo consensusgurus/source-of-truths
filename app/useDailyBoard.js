@@ -122,6 +122,7 @@ export default function useDailyBoard({ quizId = null, active = false }) {
             best: d.best != null ? d.best : null,
             scoreDist: d.scoreDist || null,
             timeDist: d.timeDist || null,
+            guessMid: d.guessMid != null ? d.guessMid : null,
             rows,
             mine,
             myRank: me ? me.placement : null,

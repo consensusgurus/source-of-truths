@@ -54,6 +54,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // A new game gets no colour of its own: on the stage it wears the Logic step
 // of the category ramp. ACCENT is only the legacy (pre-stage) fallback.
@@ -1114,7 +1115,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
             name="Duet"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${N}×${N} · ${filledCount}/${FREE.length} filled · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

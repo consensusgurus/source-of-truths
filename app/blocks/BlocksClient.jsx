@@ -62,6 +62,7 @@ import {
 } from '@/lib/blocks-seq';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage } from '../PlayStage';
+import { ARCADE_RUN } from '@/lib/end-verdict';
 
 // The arm-then-confirm controls do not move when armed, so the second tap of
 // an accidental double-tap used to land on the armed state long before the
@@ -461,7 +462,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   // Modelled on Babel's verdictTone/verdictWord, the other benchmark-scored
   // game.
   const verdictTone = won ? 'won' : 'part';
-  const verdictWord = won ? 'Par cleared' : 'Run complete';
+  const verdictWord = ARCADE_RUN;
   const myStats = useMemo(() => deriveStats(stats || { rec: {} }, PUZZLE.num), [stats, PUZZLE.num]);
 
   // ---- hydrate -------------------------------------------------------------
@@ -1173,7 +1174,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   // ---- share ---------------------------------------------------------------
   function shareText() {
     const sun = PUZZLE.sunday ? ' · Sunday' : '';
-    return `Blocks #${PUZZLE.num}${sun} · ${nf(rowsCleared)} ${UNIT}${rowsCleared === 1 ? '' : 's'} · par ${nf(PAR)}${TIER ? '' : ` · ${nf(g.raw)} points`}\nmindloftdaily.com/blocks`;
+    return `Blocks #${PUZZLE.num}${sun} · ${nf(rowsCleared)} ${UNIT}${rowsCleared === 1 ? '' : 's'}${TIER ? '' : ` · ${nf(g.raw)} points`}\nmindloftdaily.com/blocks`;
   }
   function copyShare() {
     const txt = shareText();
@@ -1311,7 +1312,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
           <style dangerouslySetInnerHTML={{ __html: STAGE_CSS }} />
           <div className="blk-hd">
             <div className="blk-box">Hold<StageMini k={g.hold} /></div>
-            <div className="blk-score" aria-live="polite"><b>{nf(rowsCleared)}</b><span>{UNIT}{rowsCleared === 1 ? '' : 's'} &middot; par {nf(PAR)}</span></div>
+            <div className="blk-score" aria-live="polite"><b>{nf(rowsCleared)}</b><span>{UNIT}{rowsCleared === 1 ? '' : 's'}</span></div>
             <div className="blk-box">Next<StageMini k={SEQ[g.idx]} /></div>
           </div>
           <div className="blk-well">{wellEl}</div>
@@ -1333,7 +1334,6 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
           <div className="blk-foot">
             <span>Best today {nf(bestToday)}</span>
             <span className="blk-bar" aria-hidden="true"><i style={{ width: `${Math.max(0, Math.min(1, PAR ? rowsCleared / PAR : 0)) * 100}%` }} /></span>
-            <span>Par {nf(PAR)}</span>
           </div>
         </div>
       )}
@@ -1364,10 +1364,8 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
             { v: rowsCleared, k: TIER ? 'points' : 'rows' },
-            { v: PAR, k: 'par' },
           ] : [
             { v: rowsCleared, k: TIER ? 'points' : 'rows' },
-            { v: PAR, k: 'par' },
           ]}
         />
       )}
@@ -1482,14 +1480,12 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
                 {lbTab === 'all' && <div style={{ fontSize: 9.5, color: '#94a3b8', marginTop: 5, lineHeight: 1.35 }}>Best single run on any day</div>}
                 <div style={{ marginTop: 'auto', paddingTop: 9, borderTop: `1px solid ${COLORS.line}` }}>
                   <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1 }}>{nf(rowsCleared)}<em style={{ fontStyle: 'normal', fontSize: 11, fontWeight: 700, color: '#94a3b8' }}> {UNIT}{rowsCleared === 1 ? '' : 's'}</em></div>
-                  <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', marginTop: 3 }}>par {nf(PAR)}</div>
                 </div>
               </aside>
             </div>
 
             <div className="bl-strip" style={{ display: 'none', marginTop: 10, paddingTop: 9, borderTop: `1px solid ${COLORS.line}`, alignItems: 'center', gap: 10, fontSize: 11.5, color: FADED }}>
               <span style={{ fontWeight: 800, color: ACC_INK }}>You #{ladder.rank}</span>
-              <span>par {nf(PAR)} rows</span>
               {bestRows.length > 0 && <span title="Best single run on any day" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, paddingBottom: '0.16em', marginBottom: '-0.16em' }}>Best ever {bestRows[0].score} &middot; {bestRows[0].name}</span>}
               <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 800, color: INK }}>{nf(rowsCleared)}<em style={{ fontStyle: 'normal', fontSize: 10, color: '#94a3b8' }}> {UNIT}{rowsCleared === 1 ? '' : 's'}</em></span>
             </div>
@@ -1555,7 +1551,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
                     Saved. Come back any time before midnight and pick this run up where you left it.
                   </p>
                   <div style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1 }}>{nf(rowsCleared)}<span style={{ fontSize: 19, color: 'var(--stg-mute, #94a3b8)' }}> {UNIT}{rowsCleared === 1 ? '' : 's'}</span></div>
-                  <p style={{ margin: '7px 0 13px', fontSize: 13, color: FADED }}>par {nf(PAR)}{TIER ? null : <> &middot; {nf(g.raw)} points</>} &middot; shape {nf(g.idx)} &middot; {fmtTime(g.ms)}</p>
+                  <p style={{ margin: '7px 0 13px', fontSize: 13, color: FADED }}>{TIER ? null : <>{nf(g.raw)} points &middot; </>}shape {nf(g.idx)} &middot; {fmtTime(g.ms)}</p>
                   <button onClick={togglePause} style={{ ...btn, background: STAGE ? STAGE_C : T.cta, borderColor: STAGE ? STAGE_C_INK : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Resume</button>
                 </div>
               </div>
@@ -1576,7 +1572,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
               outcome={verdictTone}
               challengeMetric={rowsCleared}
               title={verdictWord}
-              detail={`${rowsCleared} ${UNIT}${rowsCleared === 1 ? '' : 's'} \u00b7 ${PAR} par`}
+              detail={`${rowsCleared} ${UNIT}${rowsCleared === 1 ? '' : 's'}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1691,7 +1687,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
           won={won}
           quizId={PUZZLE.quizId}
           completed
-          score={<>{nf(rowsCleared)} {UNIT}{rowsCleared === 1 ? '' : 's'}{TIER ? '' : ' cleared'} &middot; par {nf(PAR)}</>}
+          score={<>{nf(rowsCleared)} {UNIT}{rowsCleared === 1 ? '' : 's'}{TIER ? '' : ' cleared'}</>}
           subline={<>{TIER ? null : <>{nf(g.raw)} points &middot; </>}{nf(g.quads)} quad{g.quads === 1 ? '' : 's'} &middot; best combo {nf(g.bestCombo)} &middot; {nf(g.pieces)} shapes</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}

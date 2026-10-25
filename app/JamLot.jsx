@@ -8,7 +8,7 @@
 // (the leading edge of a landing spot) slides the held block there, tapping a
 // block picks it up, anything else drops the selection.
 //
-// What it draws: a moves meter with Perfect and Par ticks above the board; a
+// What it draws: a moves meter with a Perfect tick above the board; a
 // walled lot whose wall, inset, corner radius and groove all scale with the
 // lot size; tinted blocks each carrying a groove along its axis; the red block
 // with a white arrow; a dotted lane from the red block to the gap; an EXIT marker
@@ -151,16 +151,14 @@ export function JamMeter({ used, par, perfect }) {
     <div className="jl-meter" role="meter" aria-label="Moves" aria-valuemin={0} aria-valuemax={max} aria-valuenow={used}>
       <div className="jl-mhead">
         <span>Moves <b className="jl-mv" style={over ? { color: 'var(--stg-warn, #fbbf24)' } : undefined}>{used}</b></span>
-        <span>Perfect <b>{perfect}</b> &middot; Par <b>{par}</b></span>
+        <span>Perfect <b>{perfect}</b></span>
       </div>
       <div className="jl-mtrack">
         <div className="jl-mfill" style={{ width: `${pct(used)}%`, background: over ? 'var(--stg-warn, #fbbf24)' : 'var(--stg-acc-ink, var(--stg-acc))' }} />
         <span className="jl-mtick" style={{ left: `calc(${pct(perfect)}% - 1px)`, background: 'var(--stg-ink, #e9edf4)' }} />
-        <span className="jl-mtick" style={{ left: `calc(${pct(par)}% - 1px)`, background: 'var(--stg-mute, #8b95a8)' }} />
       </div>
       <div className="jl-mlabs">
         <span style={{ right: `calc(${100 - pct(perfect)}% + 5px)`, color: 'var(--stg-ink, #e9edf4)' }}>Perfect</span>
-        <span style={{ left: `calc(${pct(par)}% + 5px)`, color: 'var(--stg-mute, #8b95a8)' }}>Par</span>
       </div>
     </div>
   );

@@ -53,6 +53,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { UNIVERSES } from './universes';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { endSolved } from '@/lib/end-verdict';
 
 // A new game gets no colour of its own: on the stage it wears the Trivia step
 // of the category ramp. ACCENT is only the legacy (pre-stage) fallback.
@@ -1054,7 +1055,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
             challengeMetric={won ? guesses.length : null}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             missLabel="Guesses"
             detail={`${U.name} · ${guesses.length}/${MAX} guesses · ${elapsed}`}
             iq={iq}

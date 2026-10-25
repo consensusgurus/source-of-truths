@@ -54,6 +54,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { usePhoneStage } from '../WordStage';
 import BracketStage from './BracketStage';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted,
@@ -820,7 +821,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
               name="Bracket"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={won ? 'Solved' : (score > 0 ? 'Partly solved' : 'Not solved')}
+              title={endGrade(score, TOTAL)}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

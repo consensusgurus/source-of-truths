@@ -68,6 +68,7 @@ import { makeMateSearch } from '../defend/defense';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { SwBoard } from './SwBoard';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -917,7 +918,7 @@ export default function SwindleClient({ puzzles = [], forceNum = null }) {
               name="Swindle"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${errors} ${errors === 1 ? 'slip' : 'slips'} · ${W.wMoves} of ${BUDGET} moves · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1014,7 +1015,7 @@ export default function SwindleClient({ puzzles = [], forceNum = null }) {
           headline={won ? <>You drew it.</> : g.status === 'lost' ? <>{g.end === 'budget' ? 'Out of moves.' : 'Mated.'}</> : <>You scored 0%</>}
           subline={won
             ? <>Solved &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>Not solved &middot; the draw is still in the position</>}
+            : <>Not yet &middot; the draw is still in the position</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

@@ -68,6 +68,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1225,7 +1226,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? hops : null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${finalScore} \u00b7 ${hops} hops \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

@@ -57,6 +57,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { makeYose, replay, BLACK, WHITE, EMPTY, BTERR, WTERR, pointName, COLS } from '@/lib/yose-core';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1015,7 +1016,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
               name="Yose"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${errors} error${errors === 1 ? "" : "s"} · You ${view.area.black}, White ${view.area.white} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

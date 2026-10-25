@@ -56,6 +56,7 @@ import DailyRules from '../DailyRules';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
 import { solveDay, BINS, BIN_LABEL, litText, whyLine } from './engine';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = { ink: T.ink, faded: T.muted, accent: '#5b3a9e', accentSoft: '#efe9fa', accentDeep: '#3b2470', green: T.successDeep };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -544,7 +545,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
               name="Ergo"
               catRank={catRank}
               outcome={score > 0 ? 'won' : 'lost'}
-              title={won ? 'Perfect ruling' : score > 0 ? 'Ruled' : 'Not complete'}
+              title={endGrade(score, TOTAL, 'Perfect ruling!')}
               detail={`${score}/${TOTAL} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

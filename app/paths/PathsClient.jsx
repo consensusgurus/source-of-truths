@@ -66,6 +66,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { parFor, stepFor, scoreFor } from '@/lib/par';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endEfficiency } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -837,7 +838,6 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           ] : [
             { v: finalScore, k: 'score' },
             { v: cost, k: 'cost' },
-            { v: parTarget, k: 'par' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -916,7 +916,6 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           {!LOFT && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 10, flexWrap: 'wrap' }}>
             <span style={{ whiteSpace: 'nowrap' }}>cost <b style={{ color: allLinked && cost === perfect ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{cost}</b></span>
-            {!playing && <span style={{ whiteSpace: 'nowrap' }}>par <b style={{ color: INK, fontWeight: 500 }}>{parTarget}</b></span>}
             <span style={{ whiteSpace: 'nowrap' }}>linked <b style={{ color: allLinked ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{linked}</b>/{TOWNS.length}</span>
             <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
           </div>
@@ -927,7 +926,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
               cheapest, and the muted tick is PAR. Lower is better. */}
           {LOFT && (
           <div className="pt-meter pt-side" role="meter" aria-valuemin={0} aria-valuemax={Math.round(METER_MAX)} aria-valuenow={cost}
-            aria-label={playing ? `Track cost ${cost}. Lower is better.` : `Track cost ${cost}. Perfect is ${perfect}, par is ${parTarget}. Lower is better.`}
+            aria-label={playing ? `Track cost ${cost}. Lower is better.` : `Track cost ${cost}. Perfect is ${perfect}. Lower is better.`}
             style={{ marginBottom: 12 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10, fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: FADED }}>
               <span>Track cost &middot; lower is better</span>
@@ -941,8 +940,6 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
               {!playing && (<>
               <span style={{ position: 'absolute', left: `calc(${meterPct(perfect)}% - 1px)`, top: 0, width: 2, height: 22, background: INK }} />
               <span style={{ position: 'absolute', right: `calc(${100 - meterPct(perfect)}% + 5px)`, top: 21, fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: INK, whiteSpace: 'nowrap' }}>Perfect {perfect}</span>
-              <span style={{ position: 'absolute', left: `calc(${meterPct(parTarget)}% - 1px)`, top: 0, width: 2, height: 22, background: FADED }} />
-              <span style={{ position: 'absolute', left: `calc(${meterPct(parTarget)}% + 5px)`, top: 21, fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED, whiteSpace: 'nowrap' }}>Par {parTarget}</span>
               </>)}
             </div>
           </div>
@@ -1194,8 +1191,8 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? cost : null}
-              title={won ? 'Solved' : 'Not solved'}
-              detail={`${finalScore} \u00b7 ${cost} cost \u00b7 ${parTarget} par \u00b7 ${elapsed}`}
+              title={endEfficiency(won, finalScore)}
+              detail={`${cost} cost \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready

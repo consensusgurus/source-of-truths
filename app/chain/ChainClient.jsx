@@ -51,6 +51,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { makeGame, engineMove, idOrder } from './boxes';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1141,7 +1142,7 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
               name="Chain"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${errors} errors \u00b7 ${`${view.score.mine}\u2013${view.score.theirs}`} boxes \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

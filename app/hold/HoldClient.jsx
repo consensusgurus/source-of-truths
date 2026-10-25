@@ -59,6 +59,7 @@ import {
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1150,7 +1151,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
               name="Hold"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endGrade(score, TOTAL, 'Perfect!')}
               detail={`${score}/${TOTAL} · ${score} best holds · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

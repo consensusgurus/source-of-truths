@@ -54,6 +54,7 @@ import { T } from '@/lib/theme';
 import { ruleFn, ruleLabel, usesFacts } from '@/lib/venn-rules';
 import { domainNote } from '@/lib/venn-facts';
 import { meRequest } from '@/app/quizMeClient';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted,
@@ -776,7 +777,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
               challengeMetric={g.status === 'done' ? g.rejected : null}
-              title={won ? 'Solved' : (score > 0 ? 'Partly solved' : 'Not solved')}
+              title={endGrade(score, TOTAL)}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${g.rejected} rejected \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

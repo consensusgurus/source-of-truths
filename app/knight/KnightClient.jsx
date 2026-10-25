@@ -70,6 +70,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // Knight identity is INDIGO. The Numbers row already runs Suds orange, Quilt
 // magenta, Cages purple, Sando teal, Knight deep red, Polka kelly green,
@@ -1075,7 +1076,7 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
             name="Knight"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${filledCount}/${FREE.length} filled · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

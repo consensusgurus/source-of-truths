@@ -62,6 +62,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1128,7 +1129,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
             challengeMetric={won ? checksUsed : null}
-            title={won ? 'Solved' : (finalScore > 0 ? 'Partly solved' : 'Not solved')}
+            title={endGrade(finalScore, 10)}
             detail={`${finalScore}/10 \u00b7 ${checksUsed}/${MAX_CHECKS} submits \u00b7 ${elapsed}`}
             iq={iq}
             board={dailyBoard}

@@ -59,6 +59,7 @@ import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { UNIVERSE_MAP, attrById, cellMembers, searchMembers, normAnswer } from './facts';
+import { endGrade } from '@/lib/end-verdict';
 
 // Niche identity is DEEP TEAL, distinct from every live Trivia sibling
 // (Dating violet, Extra red, Bracket orange, Listed magenta, Streak crimson,
@@ -1158,7 +1159,7 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
             name="Niche"
             catRank={catRank}
             outcome={won ? 'won' : (filled > 0 ? 'part' : 'lost')}
-            title={won ? 'Solved' : (filled > 0 ? 'Partly solved' : 'Not solved')}
+            title={endGrade(filled, CELLS)}
             detail={`${filled}/${CELLS} · ${g.misses} ${g.misses === 1 ? 'miss' : 'misses'} · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

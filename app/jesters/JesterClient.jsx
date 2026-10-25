@@ -63,6 +63,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1142,7 +1143,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '12px auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{won ? 'Solved' : 'Not solved'}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{won ? 'Solved!' : 'Good effort'}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {won
                       ? <>The whole court is seated: {g.placements} placement{g.placements === 1 ? '' : 's'}, {elapsed}.{g.hintUsed ? ' (1 hint)' : ''}</>
@@ -1184,7 +1185,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
               name="Jesters"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1293,7 +1294,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
           self="jester"
           won={won}
           headline={won ? <>The court is seated</> : <>The court dissolved</>}
-          subline={<>Jesters #{PUZZLE.num} &middot; {won ? 'Solved' : 'Not solved'} &middot; {g.placements} placement{g.placements === 1 ? '' : 's'} &middot; {elapsed}</>}
+          subline={<>Jesters #{PUZZLE.num} &middot; {won ? 'Solved!' : 'Good effort'} &middot; {g.placements} placement{g.placements === 1 ? '' : 's'} &middot; {elapsed}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

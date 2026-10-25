@@ -57,6 +57,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { acceptsAnswer } from '@/lib/dialect-variants';
 import { meRequest } from '@/app/quizMeClient';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1002,7 +1003,7 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
               name="Stet"
               catRank={catRank}
               outcome={perfect ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={perfect ? 'Solved' : (score > 0 ? 'Partly solved' : 'Not solved')}
+              title={endGrade(score, TOTAL)}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${`${solvedCount}/${ITEMS.length}`} filed \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

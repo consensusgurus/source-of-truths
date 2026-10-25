@@ -64,6 +64,7 @@ import DailyRules from '../DailyRules';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
 import { FREEBIES, norm, tokenize, titleTargets, guessMatches } from './words';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   ink: T.ink,
@@ -755,7 +756,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? g.guesses.length : null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${elapsed}`}
               iq={iq}
               board={dailyBoard}

@@ -66,6 +66,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { solve as logicSolve, starterLines } from '@/lib/tally-logic';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1321,7 +1322,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
             challengeMetric={won ? g.moves : null}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0}/10 \u00b7 ${g.moves} moves \u00b7 ${elapsed}`}
             iq={iq}
             board={dailyBoard}

@@ -72,6 +72,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { CELLS, boxOf, legalRemovals, bestRemoval, scoreFor } from '@/lib/whittle-core';
+import { endGrade } from '@/lib/end-verdict';
 
 // Whittle's identity is the bronze end of the Sudoku row, the one warm dark
 // step none of the other nine wears (Suds orange, Quilt magenta, Cages purple,
@@ -820,7 +821,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={perfectHit ? 'won' : 'lost'}
             challengeMetric={left}
-            title={perfectHit ? 'Perfect' : `${score} of 10`}
+            title={perfectHit ? 'Perfect!' : endGrade(score, 10)}
             detail={`${detail} · ${elapsed}`}
             missLabel="Slips"
             iq={iq}

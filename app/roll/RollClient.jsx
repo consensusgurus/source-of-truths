@@ -61,6 +61,7 @@ import { parse, step, replay, rollsOf } from '@/lib/roll-engine';
 import RollBoard from './RollBoard';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endEfficiency } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -549,15 +550,12 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
 
   function shareUrl() { return withRef(`mindloftdaily.com/roll${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
   function shareText() {
-    const vs = used === perfect ? 'perfect'
-      : used < par ? `${par - used} under par`
-      : used === par ? 'level par'
-      : `${used - par} over par`;
+    const vs = used === perfect ? ', perfect' : '';
     const g5 = won ? Math.max(1, Math.round(scoreFor(used, perfect) / 2)) : 0;
     const squares = '\u{1F7E9}'.repeat(g5) + '⬜'.repeat(5 - g5);
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const head = won
-      ? `Roll #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${used} rolls, ${vs} · ${elapsed}${streakBit}`
+      ? `Roll #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${used} rolls${vs} · ${elapsed}${streakBit}`
       : `Roll #${PUZZLE.num} · left squares unlit`;
     return `${head}\n${squares}\n${shareUrl()}`;
   }
@@ -614,15 +612,15 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
           tiles={playing ? null : upNext}
           dateLabel={PUZZLE.dateLabel}
           onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday ? `Sunday Edition · Par ${par}` : null}
+          sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
             { v: used, k: 'rolls' },
             { v: elapsed, k: 'time' },
-            ...(STAGE ? [] : [{ v: `${par} · ${perfect}`, k: 'par · perfect' }]),
+            ...(STAGE ? [] : [{ v: perfect, k: 'perfect' }]),
           ] : [
             { v: finalScore, k: 'score' },
             { v: used, k: 'rolls' },
-            { v: `${par} / ${perfect}`, k: 'par / perfect' },
+            { v: perfect, k: 'perfect' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -640,7 +638,7 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
         <DailyMasthead
           slug="roll" num={PUZZLE.num} dateLabel={PUZZLE.dateLabel} accent={COLORS.accent}
           blockGap={5} helpTop={13} marginBottom={16} onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; Par {par}</span>}
+          sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition</span>}
           blocks={'ROLL'.split('').map((ch, i) => (
             <div key={i} style={{ width: 40, height: 40, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 23, background: i === 0 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
           ))}
@@ -678,21 +676,19 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
             used={used} par={par} perfect={perfect}
             onMove={onMove} onUndo={undo} onRestart={restart} canUndo={!!rest.depth && !anim}
             armed={!!armReveal} onGiveUp={giveUpTap} themeKey={stageTheme} won={won}
-            doneLine={won ? (used === perfect ? `All ${P.N} lit in ${used}. That is perfect.` : `All ${P.N} lit in ${used}. Par was ${par}.`) : 'You left squares unlit.'} />
+            doneLine={won ? (used === perfect ? `All ${P.N} lit in ${used}. That is perfect.` : `All ${P.N} lit in ${used} rolls.`) : 'You left squares unlit.'} />
         )}
 
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
-                Par was <span style={{ color: ACC_INK }}>{par} rolls</span>, perfect was <span style={{ color: INK }}>{perfect}</span>.
+                Perfect was <span style={{ color: ACC_INK }}>{perfect} rolls</span>.
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: FADED, margin: '6px 0 0', lineHeight: 1.5 }}>
                 {won
                   ? used === perfect ? 'You matched perfect, which is as good as this board gets. Nobody can do it in fewer.'
-                    : used < par ? `Lit in ${used}, ${par - used} under par and ${used - perfect} off perfect.`
-                      : used === par ? `Lit in ${used}, level par, ${used - perfect} off perfect.`
-                        : `Lit in ${used}, ${used - par} over par.`
+                    : `You did it in ${used} rolls.`
                   : 'Perfect was found by exhaustive search, so it is real, not an estimate.'}
               </div>
               {PUZZLE.sunday && (
@@ -730,8 +726,8 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? used : null}
-              title={won ? 'Solved' : 'Not solved'}
-              detail={`${finalScore}/10 \u00b7 ${used} rolls \u00b7 par ${par}, perfect ${perfect} \u00b7 ${elapsed}`}
+              title={endEfficiency(won, finalScore)}
+              detail={`${used} rolls \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -823,10 +819,10 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="roll" won={won}
-          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : used < par ? <>Under par.</> : <>All lit.</>) : <>You scored 0%</>}
+          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : used < par ? <>Solved!</> : <>All lit.</>) : <>You scored 0%</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {used} rolls &middot; par {par}, perfect {perfect} &middot; {elapsed}</>
-            : <>0/10 &middot; par here was {par}, perfect was {perfect}</>}
+            ? <>{used} rolls &middot; {elapsed}</>
+            : <>Perfect here was {perfect} rolls.</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}

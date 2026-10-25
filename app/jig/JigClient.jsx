@@ -66,6 +66,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { migrateJigSaves } from '@/lib/jig-renum';
+import { endSolved } from '@/lib/end-verdict';
 
 // The renumber of 2026-10-16 (25 backfill boards before launch): move this
 // browser's saves and streak record up to the new numbers BEFORE anything
@@ -1313,7 +1314,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
             name="Jig"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${won ? NP : (g.pre || []).length}/${NP} pieces · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

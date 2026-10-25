@@ -66,6 +66,7 @@ import {
 } from './c4';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { GOOD_EFFORT } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1131,7 +1132,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
               name="Four"
               catRank={catRank}
               outcome={won ? 'won' : (drawn ? 'part' : 'lost')}
-              title={won ? 'Solved' : 'Not solved'}
+              title={won ? 'Solved!' : (drawn ? 'Held the draw' : GOOD_EFFORT)}
               detail={`${errors} wrong drop${errors === 1 ? '' : 's'} \u00b7 win in ${PUZZLE.winIn} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1239,8 +1240,8 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
             : drawn
               ? <>Drawn &middot; the win went, you held the draw</>
               : g.status === 'lost'
-                ? <>Not solved &middot; that was not the column</>
-                : <>Not solved &middot; the win is still in the position</>}
+                ? <>Not yet &middot; that was not the column</>
+                : <>Not yet &middot; the win is still there</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

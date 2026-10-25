@@ -54,6 +54,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endEfficiency } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -579,7 +580,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
     const hintBit = g.hintUsed ? ' · \u{1F4A1}' : '';
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const head2 = won
-      ? `Barter #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${extra === 0 ? 'solved at par' : `${extra} over par`} · ${g.swaps} trades · ${elapsed}${hintBit}${streakBit}`
+      ? `Barter #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${g.swaps} trades · ${elapsed}${hintBit}${streakBit}`
       : `Barter #${PUZZLE.num} · out of trades`;
     return `${head2}\n${squares}\n${shareUrl()}`;
   }
@@ -654,12 +655,11 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           sunday={PUZZLE.sunday ? `Sunday Edition · 7\u00d77` : null}
           figures={playing ? [
             { v: swapsLeft, k: 'trades left' },
-            { v: PAR, k: 'par' },
             { v: elapsed, k: 'time' },
             { v: `${homeCount}/${N}`, k: 'home' },
           ] : [
             { v: finalScore, k: 'score' },
-            { v: PAR, k: 'par' },
+            { v: g.swaps, k: 'trades' },
             { v: `${homeCount}/${N}`, k: 'home' },
             { v: elapsed, k: 'time' },
           ]}
@@ -728,7 +728,6 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           {!LOFT && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             <span style={{ whiteSpace: 'nowrap' }}>trades left <b style={{ color: playing && swapsLeft <= 2 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{swapsLeft}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>par <b style={{ color: INK, fontWeight: 500 }}>{PAR}</b></span>
             <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
             <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>home <b style={{ color: homeCount === N ? COLORS.home : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 500 }}>{homeCount}</b>/{N}</span>
           </div>
@@ -850,8 +849,8 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? g.swaps : null}
-              title={won ? 'Solved' : 'Not solved'}
-              detail={`${finalScore} \u00b7 ${PAR} par \u00b7 ${`${homeCount}/${N}`} home \u00b7 ${elapsed}`}
+              title={endEfficiency(won, finalScore)}
+              detail={`${g.swaps} trades \u00b7 ${`${homeCount}/${N}`} home \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -953,9 +952,9 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           modal
           self="barter"
           won={won}
-          headline={won ? (extra === 0 ? <>Solved at par!</> : <>Solved!</>) : <>You scored {Math.round(((won ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? (extra === 0 ? <>Perfect!</> : <>Solved!</>) : <>You scored {Math.round(((won ? finalScore : 0) / 10) * 100)}%</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {extra === 0 ? `a perfect ${g.swaps}-trade game` : `${extra} over par`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            ? <>{finalScore}/10 &middot; {extra === 0 ? `a perfect ${g.swaps}-trade game` : `${g.swaps} trades`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>0/10 &middot; the words are shown above</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}

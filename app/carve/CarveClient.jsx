@@ -54,6 +54,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T as THEME } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: THEME.surface,
@@ -1030,7 +1031,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
               name="Carve"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${finalScore} \u00b7 ${errors} errors \u00b7 ${`${lockedCount}/${R}`} blocks \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

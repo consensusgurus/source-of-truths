@@ -73,6 +73,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import DailyRules from '../DailyRules';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1215,7 +1216,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={g.submitted ? finalScore : null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${finalScore} \u00b7 ${BENCH} benchmark \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

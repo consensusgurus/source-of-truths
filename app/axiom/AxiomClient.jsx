@@ -61,6 +61,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import DailyRules from '../DailyRules';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1103,7 +1104,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
               name="Axiom"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={won ? 'Solved' : (score > 0 ? 'Partly solved' : 'Not solved')}
+              title={endGrade(score, TOTAL)}
               detail={`${`${score}/${TOTAL}`} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

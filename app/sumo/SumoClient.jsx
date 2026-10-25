@@ -58,6 +58,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // Sumo's legacy slate hue is OCHRE, the clay of the ring. The page itself is painted by the Sudoku
 // category ramp (lib/category-ramp.js), so this pair only tells Sumo apart
@@ -1074,7 +1075,7 @@ export default function SumoClient({ puzzles = [], forceNum = null }) {
             name="Sumo"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${filledCount}/${FREE.length} filled · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

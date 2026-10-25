@@ -56,6 +56,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { makeGame, idOrder, engineMove, SQ_NAME } from './othello';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1070,7 +1071,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
               name="Turn"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${errors} error${errors === 1 ? "" : "s"} \u00b7 ${`${view.score.mine}\u2013${view.score.theirs}`} discs \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

@@ -54,6 +54,7 @@ import { useStageRoom } from '@/lib/stage-fit';
 import { gameColorLight, gameColor, CATEGORY_RAMP, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { meRequest } from '@/app/quizMeClient';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1906,7 +1907,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
             catRank={catRank}
             outcome={won ? 'won' : (endScore > 0 ? 'part' : 'lost')}
             challengeMetric={won ? guessesUsed : null}
-              title={won ? 'Solved' : (endScore > 0 ? 'Partly solved' : 'Not solved')}
+              title={endGrade(endScore, PUZZLE.slots.length * 2)}
               detail={`${endScore}/${PUZZLE.slots.length * 2} · ${guessesUsed} guesses · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

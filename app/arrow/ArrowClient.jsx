@@ -59,6 +59,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // Arrow identity is FUCHSIA, a hue no other sudoku on the slate wears. Every
 // colour the board uses derives from COLORS.accent below rather than a
@@ -1072,7 +1073,7 @@ export default function ArrowClient({ puzzles = [], forceNum = null }) {
             name="Arrow"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${filledCount}/${FREE.length} filled · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

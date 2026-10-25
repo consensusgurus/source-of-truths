@@ -47,6 +47,7 @@ import { notifyShareCredit } from '../ShareCreditPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { loadRun, startRun, potluckScore, potluckNextSlot, potluckSlotHref, etToday, PER_QUIZ, POT_TOTAL } from '@/lib/potluck';
+import { endGrade } from '@/lib/end-verdict';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const HELP_KEY = 'sot_potluck_help_seen';
@@ -328,7 +329,7 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
                 name="Potluck"
                 catRank={catRank}
                 outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-                title={won ? 'A clean sweep' : 'Turned in'}
+                title={endGrade(score, total, 'A clean sweep!')}
                 detail={`${score}/${total} points · ${played} of 3 played · ${fmtTime(time)}`}
                 iq={iq}
                 board={dailyBoard}

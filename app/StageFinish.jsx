@@ -70,6 +70,7 @@ import { pageAge } from '@/lib/finish-beat';
 import StageStick from './StageStick';
 import { fmtMetric } from '@/lib/challenge-metric';
 import { typicalSeconds } from '@/lib/game-medians';
+import { ARCADE_RUN, ARCADE_BEST } from '@/lib/end-verdict';
 import { categoryHrefForGame } from '@/lib/puzzle-categories';
 import { DISPLAY_CIRCUITS, circuitKeysFor, circuitName, runHref } from '@/lib/circuits';
 import { themeParam } from '@/lib/share-palette';
@@ -839,7 +840,7 @@ export default function StageFinish({
   // `day` is gone with the today's-board FIGURE it was the only reader of. The
   // callers still pass it, harmlessly, so putting that figure back is a one-line
   // change here rather than a sweep through 80 clients.
-  title, detail, iq = null, board = null, streak = null,
+  title: titleProp, detail, iq = null, board = null, streak = null,
   // Whether every figure on this card has arrived. LoftFinish's own
   // `figuresShow`, passed through so the flood can hold on the verdict until
   // there is a finished card under it. See FLOOD_MIN above.
@@ -1594,6 +1595,9 @@ export default function StageFinish({
   // NO GOLD FOR A PERSONAL BEST (owner, 2026-10-20): a best keeps the category
   // colour like any solve. The "New best" words stay; only the band colour went.
   const isPb = !!(!isQuiz && vs && vs.pb);
+  // An arcade run has no win or loss; beating your own record is the result
+  // worth naming (owner, 2026-10-25).
+  const title = isPb && titleProp === ARCADE_RUN ? ARCADE_BEST : titleProp;
   const tone = missed ? 'lost' : '';
   // THE ONE BIG FIGURE, right edge, under Back to board: the clock when the run
   // was solved on one, the score on a miss. A solve-only game has no score to
@@ -1795,7 +1799,13 @@ export default function StageFinish({
         : `${race ? 'faster than' : 'ahead of'} ${pct}%`;
       const top = board && Array.isArray(board.rows) ? board.rows[0] : null;
       const med = typicalSeconds(me.key);
-      const lo = race && med ? `Typical solver ${mmss(med)}` : (fr.n ? `${fr.n} ${fr.n === 1 ? 'player' : 'players'} today` : '');
+      // A game counted in moves, guesses or trades compares against the
+      // field's typical count, never against par (owner, 2026-10-25).
+      const mdef = mineM != null ? metricDef(me.key) : null;
+      const gMid = mdef && mdef.field === 'guesses' && board && board.guessMid != null ? Number(board.guessMid) : null;
+      const lo = race && med ? `Typical solver ${mmss(med)}`
+        : gMid != null ? `Typical player ${fmtMetric(me.key, gMid)}`
+        : (fr.n ? `${fr.n} ${fr.n === 1 ? 'player' : 'players'} today` : '');
       const hi = top && race && top.timeElapsed != null && Number(top.total) > 0 && Number(top.score) >= Number(top.total)
         ? `Fastest ${mmss(Number(top.timeElapsed))}`
         // A game scored in its own unit (points, cells, apples) posts a total
@@ -1823,7 +1833,13 @@ export default function StageFinish({
       const last = priors.slice(0, 6).reverse().map((r) => !!r.won);
       const all = [...last, outcome === 'won'];
       const k = all.filter(Boolean).length;
+      // A row of empty squares is not a comparison, it is a scolding (owner,
+      // 2026-10-25). With no solves to show, measure against the field.
+      const td0 = board && board.timeDist;
+      const share = td0 && board.plays >= 5 ? Math.round((td0.n / board.plays) * 100) : null;
+      if (k === 0 && share != null) return { head: `${share}% of today\u2019s players solved it`, sub: share < 40 ? 'A tough one today.' : 'Your next one starts the comparison.' };
       if (all.length < 2) return { head: `Your first ${me.name} on record`, sub: 'Your next one starts the comparison.' };
+      if (k === 0) return { head: 'A tough one today', sub: 'Your next one starts the comparison.' };
       return { head: `${k} of your last ${all.length} solved`, strip: all };
     };
     const edge = (x) => (x < 0.1 ? 'first' : x > 0.9 ? 'last' : '');
@@ -1839,8 +1855,26 @@ export default function StageFinish({
       }
       return pts.map((p) => ({ ...p, edge: edge(p.x) }));
     };
+    // THE FIELD'S TYPICAL SCORE (owner, 2026-10-25): the median of today's
+    // runs, so a hard day reads against everybody rather than against a
+    // solve the player rarely makes. Five runs or it is not a field.
+    const fieldMid = (() => {
+      const sd = board && board.scoreDist;
+      if (!sd) return null;
+      const pts = Object.entries(sd).map(([k, n]) => [Number(k), Number(n) || 0]).filter(([k, n]) => Number.isFinite(k) && n > 0).sort((a, b) => a[0] - b[0]);
+      const N = pts.reduce((t, [, n]) => t + n, 0);
+      if (N < 5) return null;
+      let c = 0;
+      for (const [k, n] of pts) { c += n; if (c >= N / 2) return k; }
+      return null;
+    })();
+    // A miss on a SCORED game is still a score: "0 of your last 7 solved" on a
+    // 25-question one-life gauntlet nobody clears told a 14-in-a-row run it had
+    // failed (owner, 2026-10-25). Misses go to the score track like any run;
+    // only a solve-or-not game with nothing to count keeps the solve strip.
+    const scoredToday = !!(today && !meSolveOnly && today.total > 0);
     let self = null;
-    if (missed || !today) self = strip();
+    if (!today || (missed && !scoredToday)) self = strip();
     else if (race && today.time != null) {
       const clocked = priors.filter((r) => r.won && r.time != null);
       if (!clocked.length) self = { head: `Your first timed ${me.name} on record`, sub: 'Your next one starts the comparison.' };
@@ -1865,24 +1899,41 @@ export default function StageFinish({
       }
     } else if (!meSolveOnly && today.total > 0) {
       const scored = priors.filter((r) => r.total > 0);
-      if (!scored.length) self = { head: `Your first ${me.name} on record`, sub: 'Your next one starts the comparison.' };
-      else {
+      const nfmt0 = (v) => (today.total >= 100 || Number.isInteger(v) ? Math.round(v).toLocaleString('en-US') : (Math.round(v * 10) / 10).toFixed(1).replace(/\.0$/, ''));
+      if (!scored.length) {
+        // No history yet: the field is the comparison.
+        if (fieldMid != null) {
+          const s0 = today.score;
+          const head = s0 > fieldMid ? 'Above the typical player today' : s0 === fieldMid ? 'Right with the typical player today' : 'The typical player today';
+          const vals = [fieldMid, s0];
+          const lo2 = Math.min(...vals), hi2 = Math.max(...vals);
+          const x = (v) => (hi2 === lo2 ? 0.5 : 0.04 + ((v - lo2) / (hi2 - lo2)) * 0.92);
+          self = { head, track: spread([
+            { k: 'field', label: 'Typical player', fig: nfmt0(fieldMid), x: x(fieldMid) },
+            { k: 'today', label: 'Today', fig: nfmt0(s0), x: x(s0) },
+          ]) };
+        } else self = { head: `Your first ${me.name} on record`, sub: 'Your next one starts the comparison.' };
+      } else {
         const T0 = today.total;
         const fr2 = (r) => r.score / r.total;
         const avgV = (scored.reduce((t, r) => t + fr2(r), 0) / scored.length) * T0;
         const bestV = Math.max(...scored.map(fr2)) * T0;
         const s0 = today.score;
         const d = Math.round(s0 - avgV);
+        const fm = fieldMid;
         const head = s0 > bestV ? `Your best ${me.name} score yet`
-          : d > 0 ? `${d.toLocaleString('en-US')} above your average` : d < 0 ? `${(-d).toLocaleString('en-US')} below your average` : 'Right on your average';
+          : d > 0 ? `${d.toLocaleString('en-US')} above your average`
+          : fm != null && s0 > fm ? 'Above the typical player today'
+          : d < 0 ? `${(-d).toLocaleString('en-US')} below your average` : 'Right on your average';
         // Point-scale games (a total of 100 or more) print whole numbers with commas.
         const nfmt = (v) => (T0 >= 100 || Number.isInteger(v) ? Math.round(v).toLocaleString('en-US') : (Math.round(v * 10) / 10).toFixed(1).replace(/\.0$/, ''));
-        const vals = [avgV, s0, bestV];
+        const vals = [avgV, s0, bestV, ...(fm != null ? [fm] : [])];
         const lo2 = Math.min(...vals), hi2 = Math.max(...vals);
         const x = (v) => (hi2 === lo2 ? 0.5 : 0.04 + ((v - lo2) / (hi2 - lo2)) * 0.92);
         self = { head, track: spread([
           { k: 'avg', label: 'Your average', fig: nfmt(avgV), x: x(avgV) },
           { k: 'best', label: 'Best', fig: nfmt(bestV), x: x(bestV) },
+          ...(fm != null ? [{ k: 'field', label: 'Typical player', fig: nfmt(fm), x: x(fm) }] : []),
           { k: 'today', label: 'Today', fig: nfmt(s0), x: x(s0) },
         ]) };
       }

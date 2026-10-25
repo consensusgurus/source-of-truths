@@ -63,6 +63,7 @@ import {
 } from './draughts';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -985,7 +986,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
               name="Check"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${taken} of ${blkStart} taken \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1081,8 +1082,8 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
           headline={won ? <>Swept.</> : g.status === 'gaveup' ? <>You scored 0%</> : <>You missed it.</>}
           subline={won
             ? <>Solved &middot; every piece in {BUDGET} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : g.status === 'gaveup' ? <>Not solved &middot; the sweep was there</>
-            : <>Not solved &middot; you took {taken} of {blkStart}, the sweep needed them all</>}
+            : g.status === 'gaveup' ? <>Not yet &middot; the sweep was there</>
+            : <>Not yet &middot; you took {taken} of {blkStart}, the sweep needed them all</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}

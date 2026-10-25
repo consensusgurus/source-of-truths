@@ -61,6 +61,7 @@ import useCategoryRank from '../useCategoryRank';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endGrade } from '@/lib/end-verdict';
 import {
   RANK_LABEL, SUIT_PIP, rankOf, suitOf, isRed, cardName, STAKE,
   replay, handTotal, scoreForPoints, fmtChips,
@@ -659,7 +660,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Shoe #${PUZZLE.num} — the daily blackjack shoe from Mind Loft. Same cards, same order, for everyone.\n${shareUrl()}`
+      ? `Shoe #${PUZZLE.num}: the daily blackjack shoe from Mind Loft. Same cards, same order, for everyone.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -726,7 +727,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
             : [
               { v: finalScore, k: 'score' },
               { v: fmtChips(chips), k: 'bank' },
-              { v: `${fmtChips(PUZZLE.par)} · ${fmtChips(PUZZLE.ace)}`, k: 'par · ace' },
+              { v: fmtChips(PUZZLE.ace), k: 'ace' },
               { v: elapsed, k: 'time' },
             ]}
         />
@@ -864,7 +865,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
                 );
               }
             }
-            const parAce = <span style={K2}>Par <b style={{ color: 'var(--stg-ink, #0b0d12)' }}>{fmtChips(PUZZLE.par)}</b> &middot; Ace <b style={{ color: 'var(--stg-warn, #9c5d02)' }}>{fmtChips(PUZZLE.ace)}</b></span>;
+            const parAce = <span style={K2}>Ace <b style={{ color: 'var(--stg-warn, #9c5d02)' }}>{fmtChips(PUZZLE.ace)}</b></span>;
             const strip = (
               <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 5 : 9 }}>
                 {!narrow && (
@@ -1134,7 +1135,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           {/* the standing anchor line */}
           {started && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: narrow ? '0 6px' : 0, flexWrap: 'wrap', fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>
-              <span>Same shoe, same order for everybody. Par {fmtChips(PUZZLE.par)} scores 8 &middot; ace {fmtChips(PUZZLE.ace)} scores 10. The book banks par; the count beats it.</span>
+              <span>Same shoe, same order for everybody. Ace {fmtChips(PUZZLE.ace)} scores 10.</span>
             </div>
           )}
 
@@ -1142,7 +1143,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <div style={{ margin: '0 auto' }}>
               <div style={{ fontSize: 13.5, fontWeight: 700, color: INK, margin: '12px 0 0' }}>
-                Bank {fmtChips(chips)} against par {fmtChips(PUZZLE.par)}{won ? ': par beaten.' : ': short of par.'} {R.busts > 0 ? `${R.busts} bust${R.busts === 1 ? '' : 's'}.` : 'No busts.'}
+                Bank {fmtChips(chips)}. {R.busts > 0 ? `${R.busts} bust${R.busts === 1 ? '' : 's'}.` : 'No busts.'}
               </div>
               <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '8px 0 0' }}>
                 A clairvoyant line on this shoe banks {fmtChips(PUZZLE.ceiling)}. That is the most these cards allowed, seeing every one coming, which nobody does.
@@ -1191,8 +1192,8 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
             challengeMetric={chips}
-            title={won ? 'Solved' : 'Not solved'}
-            detail={`${finalScore}/10 · bank ${fmtChips(chips)} · par ${fmtChips(PUZZLE.par)} · ${elapsed}`}
+            title={endGrade(finalScore, 10, 'Perfect!')}
+            detail={`bank ${fmtChips(chips)} · ${elapsed}`}
             iq={iq}
             board={dailyBoard}
             gameRank={allTime && allTime.ready
@@ -1295,8 +1296,8 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           modal
           self="shoe"
           won={won}
-          headline={won ? <>Par beaten!</> : <>Shoe played out</>}
-          subline={<>bank {fmtChips(chips)} against par {fmtChips(PUZZLE.par)}</>}
+          headline={won ? <>Solved!</> : <>Shoe played out</>}
+          subline={<>bank {fmtChips(chips)}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

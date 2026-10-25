@@ -62,6 +62,7 @@ import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { norm, tileFor, threadFor, decoyFor } from './match';
+import { endGrade } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -1141,7 +1142,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
               name="Thread"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endGrade(score, TOTAL)}
               detail={`${g.solved.length}/${N} films · ${threadBit()} · ${score}/${TOTAL} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

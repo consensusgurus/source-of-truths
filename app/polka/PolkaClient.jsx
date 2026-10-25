@@ -58,6 +58,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 // Polka identity is KELLY GREEN, clear of every other sudoku (Suds orange,
 // Quilt magenta, Cages purple, Sando teal, Polka blue, Mercury red) and a
@@ -1064,7 +1065,7 @@ export default function PolkaClient({ puzzles = [], forceNum = null }) {
             name="Polka"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Solved' : 'Not solved'}
+            title={endSolved(won)}
             detail={`${filledCount}/${FREE.length} filled · ${elapsed}`}
             iq={iq}
             board={dailyBoard}

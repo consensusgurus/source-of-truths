@@ -322,7 +322,7 @@ export default function CrossedClient({ day = null, dateLabel, dateShort, sectio
               <div className="dj-bscore">{Math.round(parts[r.si])}<small>/{sec.weight}</small></div>
               {secDone.unknown ? <div className="dj-braw">Result on file</div> : (
                 <div className="dj-split">
-                  <div><span>Solve</span><b>{crossedAcc(secDone.score, secDone.total) >= 1 ? 'Clean' : 'Not solved'}</b><i style={{ width: `${Math.round(100 * crossedAcc(secDone.score, secDone.total))}%` }} /></div>
+                  <div><span>Solve</span><b>{crossedAcc(secDone.score, secDone.total) >= 1 ? 'Clean' : 'Unfinished'}</b><i style={{ width: `${Math.round(100 * crossedAcc(secDone.score, secDone.total))}%` }} /></div>
                   <div><span>Speed</span><b>{secDone.secs ? fmtClock(secDone.secs) : 'no clock'}</b><i style={{ width: `${Math.round(100 * crossedSpeed(sec.key, secDone.secs, CLK))}%` }} /><small>full marks under {fmtClock((CLK[sec.key] || CROSSED_CLOCK[sec.key])[0])}</small></div>
                 </div>
               )}
@@ -435,7 +435,7 @@ function Grading({ sections, counted, parts, total, dateLabel, dateShort, animat
               {sections.slice(0, lines).map((s, i) => (
                 <div key={s.key} className="sh-l">
                   <span className="sh-c">Puzzle {i + 1}</span>
-                  <span className="sh-n">{s.name}<small>{counted[i] && !counted[i].unknown ? `${crossedAcc(counted[i].score, counted[i].total) >= 1 ? 'Solved' : crossedAcc(counted[i].score, counted[i].total) > 0 ? `${Math.round(100 * crossedAcc(counted[i].score, counted[i].total))}% done` : 'Not solved'} in ${counted[i].secs ? fmtClock(counted[i].secs) : '?'}` : s.form}</small></span>
+                  <span className="sh-n">{s.name}<small>{counted[i] && !counted[i].unknown ? `${crossedAcc(counted[i].score, counted[i].total) >= 1 ? 'Solved' : crossedAcc(counted[i].score, counted[i].total) > 0 ? `${Math.round(100 * crossedAcc(counted[i].score, counted[i].total))}% done` : 'Unfinished'} in ${counted[i].secs ? fmtClock(counted[i].secs) : '?'}` : s.form}</small></span>
                   <b className={pts[i] >= s.weight - 1 ? 'top' : ''}>{pts[i]}<small>/{s.weight}</small></b>
                 </div>
               ))}

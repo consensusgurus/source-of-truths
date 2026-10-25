@@ -69,6 +69,7 @@ import {
 import { T } from '@/lib/theme';
 import { loadRackDict } from '@/lib/rack-dict';
 import { meRequest } from '@/app/quizMeClient';
+import { GOOD_EFFORT } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1053,7 +1054,7 @@ export default function BabelClient({ puzzles, forceNum }) {
   // lib/daily-games above SOLVES_ON_SCORE).
   const beat = g.status === 'done' && !won && spread > 0;
   const verdictTone = won ? 'won' : (beat ? 'part' : 'lost');
-  const verdictWord = won ? 'Solved' : (beat ? 'Completed' : 'Not solved');
+  const verdictWord = won ? 'Solved!' : (beat ? 'Good job!' : GOOD_EFFORT);
 
   function copyShare() {
     const line = g.status === 'playing'

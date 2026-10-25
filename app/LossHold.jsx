@@ -77,7 +77,7 @@ export default function LossHold({ gameKey, verdict, detail, chip, sub, onReplay
         <div className="lsh-in">
           <div className="lsh-tx">
             {chip ? <div className="lsh-eb">{chip}</div> : null}
-            <div className="lsh-v">{verdict || 'Not solved'}</div>
+            <div className="lsh-v">{verdict || 'Good effort'}</div>
             {detail ? <div className="lsh-d">{detail}</div> : null}
           </div>
           <div className="lsh-acts">

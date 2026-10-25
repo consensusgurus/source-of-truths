@@ -60,6 +60,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { WORLD } from '@/lib/admin-world-map';
 import { projectPoint } from '@/lib/geo-project';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1211,7 +1212,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
               challengeMetric={won ? guesses.length : null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={detailLine}
               iq={iq}
               board={dailyBoard}

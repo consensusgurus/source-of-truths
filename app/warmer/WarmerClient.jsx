@@ -60,6 +60,7 @@ import DailyRules from '../DailyRules';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -825,7 +826,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? g.guesses.length : null}
-              title={won ? 'Solved' : 'Not solved'}
+              title={endSolved(won)}
               detail={`${elapsed}`}
               iq={iq}
               board={dailyBoard}

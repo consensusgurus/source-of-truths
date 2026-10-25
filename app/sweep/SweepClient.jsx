@@ -58,6 +58,7 @@ import { notifyShareCredit } from '../ShareCreditPop';
 import { T } from '@/lib/theme';
 import { arcadeRanksForKey } from '@/lib/daily-games';
 import { COLS, ROWS, decodeField, idx, neighbors, numberAt } from '@/lib/sweep-field';
+import { ARCADE_RUN } from '@/lib/end-verdict';
 
 // The arm-then-confirm controls do not move when armed, so the second tap of
 // an accidental double-tap used to land on the armed state long before the
@@ -261,7 +262,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
   // Modelled on Babel's verdictTone/verdictWord, the other benchmark-scored
   // game.
   const verdictTone = won ? 'won' : 'part';
-  const verdictWord = won ? 'Par cleared' : 'Run complete';
+  const verdictWord = ARCADE_RUN;
   const myStats = useMemo(() => deriveStats(stats || { rec: {} }, PUZZLE.num), [stats, PUZZLE.num]);
 
   // How deep the dig has reached, which is what the viewport follows.
@@ -485,7 +486,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
   // ---- share ---------------------------------------------------------------
   function shareText() {
     const sun = PUZZLE.sunday ? ' · Sunday' : '';
-    return `Sweep #${PUZZLE.num}${sun} · ${nf(g.score)} cell${g.score === 1 ? '' : 's'} · depth ${nf(depth)} · par ${nf(PAR)}\nmindloftdaily.com/sweep`;
+    return `Sweep #${PUZZLE.num}${sun} · ${nf(g.score)} cell${g.score === 1 ? '' : 's'} · depth ${nf(depth)}\nmindloftdaily.com/sweep`;
   }
   function copyShare() {
     const txt = shareText();
@@ -574,7 +575,6 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
       key: `o${k}-${r.name}`, name: r.name, score: r.score,
       kind: r === next ? 'next' : (r.score === top && top > 0 ? 'lead' : 'other'),
     }));
-    items.push({ key: 'par', name: 'Par', score: PAR, kind: 'par' });
     items.push({ key: 'me', name: 'You', score: mine, kind: 'me' });
     return { max, items, next, lead: top > mine ? null : (others.length ? 'you' : null) };
   }, [ladder.others, g.score, PAR, boardShown]);
@@ -612,7 +612,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
   const pctOf = (v) => `${Math.min(100, (v / race.max) * 100).toFixed(2)}%`;
   const toPar = PAR - g.score;
   const raceLine = !boardShown
-    ? (toPar > 0 ? <><b style={{ color: ACC_INK }}>{nf(toPar)}</b> cell{toPar === 1 ? '' : 's'} to par</> : <b style={{ color: ACC_INK }}>Par cleared</b>)
+    ? <><b style={{ color: ACC_INK }}>{nf(g.score)}</b> cell{g.score === 1 ? '' : 's'} uncovered</>
     : race.next
     ? <><b style={{ color: INK }}>{race.next.name}</b> is <b style={{ color: ACC_INK }}>{nf(race.next.score - g.score)}</b> cell{race.next.score - g.score === 1 ? '' : 's'} ahead</>
     : (race.lead === 'you' ? <b style={{ color: ACC_INK }}>You lead today</b> : <>First on the board today</>);
@@ -752,11 +752,9 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
           onHelp={() => setShowHelp(true)}
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
-            { v: g.score, k: 'score' },
-            { v: PAR, k: 'par' },
+            { v: g.score, k: 'cells' },
           ] : [
-            { v: g.score, k: 'score' },
-            { v: PAR, k: 'par' },
+            { v: g.score, k: 'cells' },
           ]}
         />
       )}
@@ -815,7 +813,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
             <div className="sw-head">
               <div className="sw-score">
                 <span className="sw-big" style={{ color: INK }}>{nf(g.score)}</span>
-                <span style={{ color: FADED }}>cell{g.score === 1 ? '' : 's'} &middot; par {nf(PAR)}</span>
+                <span style={{ color: FADED }}>cell{g.score === 1 ? '' : 's'}</span>
               </div>
               <div className="sw-chip"><span>Depth</span><b style={{ color: INK }}>{nf(depth)}</b></div>
               <div className="sw-chip"><span>Digs</span><b style={{ color: INK }}>{nf(g.digs)}</b></div>
@@ -862,7 +860,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
                       </div>
                     ) : it.kind === 'par' ? (
                       <div key={it.key} className="sw-mk par" style={{ top: it.y, color: ACC_INK }}>
-                        <span className="sw-pardash" />Par &middot; {nf(it.score)}
+                        <span className="sw-pardash" />{nf(it.score)}
                       </div>
                     ) : (
                       <div key={it.key} className={`sw-mk ${it.kind}`} style={{ top: it.y, color: it.kind === 'next' ? INK : FADED }}>
@@ -946,7 +944,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
               outcome={verdictTone}
               challengeMetric={g.score}
               title={verdictWord}
-              detail={`${g.score} \u00b7 ${PAR} par`}
+              detail={`${g.score} cells`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1050,7 +1048,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
           won={won}
           quizId={PUZZLE.quizId}
           completed
-          score={<>{nf(g.score)} cell{g.score === 1 ? '' : 's'} uncovered &middot; par {nf(PAR)}</>}
+          score={<>{nf(g.score)} cell{g.score === 1 ? '' : 's'} uncovered</>}
           subline={<>depth {nf(depth)} &middot; {nf(g.digs)} dig{g.digs === 1 ? '' : 's'} &middot; {nf(g.flag.length)} flag{g.flag.length === 1 ? '' : 's'} &middot; {fmtTime(g.ms)}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}

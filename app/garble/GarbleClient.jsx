@@ -49,6 +49,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import WordStage, { usePhoneStage } from '../WordStage';
+import { endSolved } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -928,7 +929,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
               name="Garble"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={won ? 'Solved' : (score > 0 ? 'Partly solved' : 'Not solved')}
+              title={endSolved(won)}
               detail={`${score} \u00b7 ${solvedCount} correct \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
