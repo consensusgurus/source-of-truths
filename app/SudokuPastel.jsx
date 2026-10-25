@@ -18,7 +18,7 @@
 
 import { useEffect } from 'react';
 import { usePhoneStage } from './WordStage';
-import { useStageLook } from '@/lib/stage-look';
+import { useStageLook, nextLook } from '@/lib/stage-look';
 
 let holders = 0;
 function hold() {
@@ -41,7 +41,7 @@ export default function useSudokuPastel(active) {
   useEffect(() => (on ? hold() : undefined), [on]);
   useEffect(() => {
     if (!on || typeof document === 'undefined') return;
-    document.documentElement.setAttribute('data-stage-pastel', look === 'plain' ? 'plain' : 'color');
+    document.documentElement.setAttribute('data-stage-pastel', look);
   }, [on, look]);
-  return { on, look, flip: () => setLook(look === 'plain' ? 'color' : 'plain') };
+  return { on, look, flip: () => setLook(nextLook(look)) };
 }

@@ -414,8 +414,8 @@ export default function StageChrome({
           className={'stg-cx stg-theme' + (hint ? ' hint' : '')}
           data-look="" onClick={(e) => (pastel.on ? pastel.flip() : openLook(e.currentTarget))}
           aria-haspopup={pastel.on ? undefined : 'dialog'}
-          aria-label={pastel.on ? (pastel.look === 'plain' ? 'Switch to colour' : 'Switch to plain white') : 'Page look: light or dark, and how much color'}
-          title={pastel.on ? (pastel.look === 'plain' ? 'Colour' : 'Plain') : 'Page look'}
+          aria-label={pastel.on ? 'Change the look' : 'Page look: light or dark, and how much color'}
+          title={pastel.on ? 'Change the look' : 'Page look'}
         >
           {pastel.on ? (
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">

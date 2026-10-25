@@ -34,11 +34,14 @@ import { holdThemeColor } from '@/lib/theme-color-hold';
 // The button on the stage is a separate switch with its own key: Plain is a
 // white page with black type and nothing coloured. The phone's top and bottom
 // bars are painted to match whichever look is on.
-import { LOOK_KEY, useStageLook } from '@/lib/stage-look';
+import { LOOK_KEY, useStageLook, nextLook, LOOK_NAMES } from '@/lib/stage-look';
 export { useStageLook };
 export const PLAIN = { bg: '#ffffff', ink: '#111111' };
+export const DARK = { bg: '#0b0f1a', ink: '#e9edf4', fill: '#1a2130' };
 export function stagePalette(pastel, look) {
-  return look === 'plain' ? { ...PLAIN } : { bg: pastel, ink: INK };
+  if (look === 'plain') return { ...PLAIN };
+  if (look === 'dark') return { bg: DARK.bg, ink: DARK.ink };
+  return { bg: pastel, ink: INK };
 }
 // Paints <html>/<body> and the browser's theme-color so Safari's top and
 // bottom bars match the stage, and puts both back on unmount.
@@ -119,15 +122,15 @@ function useStagePalette(pastel, edges) {
   return {
     ...p, look,
     plain: look === 'plain',
-    fill: (c) => (look === 'plain' ? PLAIN.bg : c),
-    flip: () => setLook(look === 'plain' ? 'color' : 'plain'),
-    vars: { '--gsx-bg': p.bg, '--gsx-ink': p.ink, '--gsx-tray': look === 'plain' ? PLAIN.ink : INK },
+    fill: (c) => (look === 'plain' ? PLAIN.bg : look === 'dark' ? DARK.fill : c),
+    flip: () => setLook(nextLook(look)),
+    vars: { '--gsx-bg': p.bg, '--gsx-ink': p.ink, '--gsx-tray': look === 'plain' ? PLAIN.ink : look === 'dark' ? '#1e2636' : INK },
   };
 }
 export function LookButton({ look, onFlip, className = 'gsx-theme' }) {
-  const plain = look === 'plain';
+  const next = LOOK_NAMES[nextLook(look)];
   return (
-    <button type="button" className={className} onClick={onFlip} aria-label={plain ? 'Switch to colour' : 'Switch to plain white'} title={plain ? 'Colour' : 'Plain'}>
+    <button type="button" className={className} onClick={onFlip} aria-label={`Look: ${LOOK_NAMES[look] || 'Color'}. Switch to ${next}`} title={`Switch to ${next}`}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
     </button>
   );
@@ -175,7 +178,7 @@ export function GauntletCover({ sections = [] }) {
   return (
     <>
       <div id="gsx-cover" aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 90, background: c }} />
-      <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('${LOOK_KEY}')==='plain'){var e=document.getElementById('gsx-cover');if(e)e.style.background='#ffffff'}}catch(e){}` }} />
+      <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('${LOOK_KEY}')==='plain'||localStorage.getItem('${LOOK_KEY}')==='dark'){var e=document.getElementById('gsx-cover');if(e)e.style.background=localStorage.getItem('${LOOK_KEY}')==='dark'?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
     </>
   );
 }
@@ -341,7 +344,7 @@ export function GauntletEndStage({
   }, []);
   const [lookNow] = useStageLook();
   const plainNow = lookNow === 'plain';
-  const sweepEdges = sweeping && !plainNow ? {
+  const sweepEdges = sweeping && !plainNow && lookNow !== 'dark' ? {
     top: rampFor(slotOf(sections[0], 0)),
     bottom: rampFor(slotOf(sections[sections.length - 1], sections.length - 1)),
   } : null;
@@ -406,7 +409,7 @@ export function GauntletEndStage({
             {similar && similar.href ? (
               <a className="gsx-rise gsx-next" href={similar.href} style={{ ...d('2.5s'), background: pal.fill('#6ee7b7') }}>
                 <span><i>One Quick Play Next</i><b>{similar.name}</b></span>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </a>
             ) : null}
             <div className="gsx-rise gsx-two" style={d('2.6s')}>
@@ -438,7 +441,7 @@ const CSS = `
 .gsx-lede{margin:0;font-size:15px;line-height:1.4;font-weight:600}
 .gsx-head{display:flex;flex-direction:column;gap:12px}
 .gsx-bands{display:flex;flex-direction:column;border:2px solid var(--gsx-ink);border-radius:18px;overflow:hidden}
-.gsx-band{color:${INK};display:flex;align-items:center;gap:14px;min-height:54px;padding:4px 18px;border-top:2px solid ${INK};animation:gsxSlide .55s cubic-bezier(.2,.8,.2,1) both}
+.gsx-band{color:var(--gsx-ink);display:flex;align-items:center;gap:14px;min-height:54px;padding:4px 18px;border-top:2px solid var(--gsx-ink);animation:gsxSlide .55s cubic-bezier(.2,.8,.2,1) both}
 .gsx-band:first-child{border-top:0}
 .gsx-bn{width:20px;font-size:15px;font-weight:800;opacity:.6}
 .gsx-bt{flex:1;display:flex;align-items:baseline;gap:10px;line-height:1.15;min-width:0;white-space:nowrap;overflow:hidden}
@@ -474,7 +477,7 @@ const CSS = `
 .gsx-gowrap{display:flex;flex-direction:column;gap:10px}
 .gsx-wide{display:none}
 .gsx-go{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:64px;border-radius:18px;border:0;background:var(--gsx-ink);color:var(--gsx-bg);font:inherit;font-size:21px;font-weight:800;cursor:pointer;transition:transform .1s,background .15s}
-.gsx-go:hover{background:#0f3442}.gsx-go:active{transform:scale(.99)}
+.gsx-go:hover{filter:brightness(.86)}.gsx-go:active{transform:scale(.99)}
 .gsx-fine{text-align:center;font-size:13px;font-weight:700;opacity:.75}
 .gsx-wipe{position:absolute;inset:0;overflow-y:auto;animation:gsxWipe .6s cubic-bezier(.7,0,.2,1) both}
 .gsx-bcol{gap:16px}
@@ -488,7 +491,7 @@ const CSS = `
 .gsx-pop{font-size:80px;line-height:1;font-weight:800;letter-spacing:-.04em;animation:gsxPop .6s cubic-bezier(.2,.8,.2,1) .45s both;overflow-wrap:anywhere}
 .gsx-sub{font-size:17px;font-weight:700}
 .gsx-low{display:flex;flex-direction:column;gap:14px}
-.gsx-last{color:${INK};display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:2px solid var(--gsx-ink)}
+.gsx-last{color:var(--gsx-ink);display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:2px solid var(--gsx-ink)}
 .gsx-lt{flex:1;display:flex;flex-direction:column;gap:3px;font-size:13px;font-weight:600;min-width:0}
 .gsx-lt b{font-weight:800}
 .gsx-st{margin-top:3px;font-variant-numeric:tabular-nums}
@@ -519,10 +522,10 @@ const CSS = `
 .gsx-tr{display:grid;grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(0,1fr));align-items:center;min-height:38px;padding:0 12px;border-top:1px solid color-mix(in srgb, var(--gsx-ink) 35%, transparent);font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
 .gsx-tr>span:not(:first-child){text-align:right}
 .gsx-th{min-height:34px;border-top:0;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
-.gsx-row{color:${INK};border-top-color:rgba(8,34,46,.35)}
-.gsx-band{border-top-color:${INK}}
+.gsx-row{color:var(--gsx-ink);border-top-color:color-mix(in srgb, var(--gsx-ink) 35%, transparent)}
+.gsx-band{border-top-color:var(--gsx-ink)}
 .gsx-tt{min-height:42px;border-top:2px solid var(--gsx-ink);font-size:16px;font-weight:800}
-.gsx .gsx-next{color:${INK}}
+.gsx .gsx-next{color:var(--gsx-ink)}
 .gsx-next{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:2px solid var(--gsx-ink);text-decoration:none}
 .gsx-next>span{flex:1;display:flex;flex-direction:column;gap:2px}
 .gsx-next i{font-style:normal;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;opacity:.75}
@@ -532,7 +535,7 @@ const CSS = `
 .gsx-ob,.gsx-ib{display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:14px;font:inherit;font-size:15px;font-weight:800;text-decoration:none;cursor:pointer;text-align:center;padding:0 8px}
 .gsx-ob{border:2px solid var(--gsx-ink);background:transparent}
 .gsx-ib{border:0;background:var(--gsx-ink);color:var(--gsx-bg)}
-.gsx-ib:hover{background:#0f3442}
+.gsx-ib:hover{filter:brightness(.86)}
 .gsx-det{align-self:center;background:none;border:0;padding:8px;color:var(--gsx-ink);font:inherit;font-size:14px;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .gsx-rise{animation:gsxRise .5s ease-out both}
 @keyframes gsxRise{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}

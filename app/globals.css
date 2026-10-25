@@ -797,6 +797,49 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   html[data-stage-pastel='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
   html[data-stage-pastel='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: #ffffff !important; }
   html[data-stage-pastel='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--hue-ink"] { --hue-ink: #111111 !important; }
+  /* BLACK AND WHITE, the third look (owner, 2026-10-24): a near-black page and
+     light type, like the site's dark mode but with no colour at all. Region
+     boards keep only their walls, as on Plain. */
+  html[data-stage-pastel='dark']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
+  html[data-stage-pastel='dark']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #0b0f1a !important; }
+  html[data-stage-pastel='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
+    --stg-brand: #e9edf4 !important;
+    --stg-ground: #0b0f1a !important;
+    --stg-raise: #121826 !important;
+    --stg-panel: #0f1420 !important;
+    --stg-surf: rgba(233, 237, 244, 0.05) !important;
+    --stg-surf2: rgba(233, 237, 244, 0.1) !important;
+    --stg-line: rgba(233, 237, 244, 0.16) !important;
+    --stg-line2: rgba(233, 237, 244, 0.3) !important;
+    --stg-line3: #e9edf4 !important;
+    --stg-cell: #161b27 !important;
+    --stg-cell-line: rgba(233, 237, 244, 0.28) !important;
+    --stg-cell-dot: rgba(233, 237, 244, 0.6) !important;
+    --stg-cell-dot2: rgba(233, 237, 244, 0.9) !important;
+    --stg-cell-given: #ffffff !important;
+    --stg-tint-mix: 0% !important;
+    --stg-ink: #e9edf4 !important;
+    --stg-ink2: #c4ccd8 !important;
+    --stg-mute: #aab5c7 !important;
+    --stg-mute2: #9aa5b8 !important;
+    --stg-dim: #9aa5b8 !important;
+    --stg-onramp: #0b0f1a !important;
+    --stg-chip: rgba(233, 237, 244, 0.1) !important;
+    --stg-b1: rgba(233, 237, 244, 0.06) !important;
+    --stg-b2: rgba(233, 237, 244, 0.1) !important;
+    --stg-b3: rgba(233, 237, 244, 0.15) !important;
+    --stg-b4: rgba(233, 237, 244, 0.22) !important;
+    --stg-acc: #e9edf4 !important;
+    --stg-acc-ink: #e9edf4 !important;
+    --stg-acc-tint: rgba(233, 237, 244, 0.14) !important;
+    --stg-sel: #e9edf4;
+    --stg-fieldink: 233, 237, 244 !important;
+    background: #0b0f1a !important;
+    color: #e9edf4;
+  }
+  html[data-stage-pastel='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
+  html[data-stage-pastel='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: #0b0f1a !important; }
+  html[data-stage-pastel='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--hue-ink"] { --hue-ink: #e9edf4 !important; }
 }
 
 /* THE FIRST-LOAD DEMONSTRATION of the light switch (useThemeIntro in

@@ -22,12 +22,13 @@
 import React from 'react';
 import { RAMP_INK } from '@/lib/category-ramp';
 import { useStageLook, stagePalette, useStageChrome, LookButton } from './GauntletScreens';
+import { nextLook } from '@/lib/stage-look';
 
 export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choices = [], onPick, lockIdx = null, disabled = false, frac = null, hot = false, footer = null, label = 'Question' }) {
   // The stage's own look switch (owner, 2026-10-23): pastel by default, Plain
   // is white with black type. Separate from the site's light/dark setting.
   const [look, setLook] = useStageLook();
-  const pal = look === 'plain' ? stagePalette(bg || '#7dd3fc', 'plain') : { bg: bg || '#7dd3fc', ink };
+  const pal = look === 'color' ? { bg: bg || '#7dd3fc', ink } : stagePalette(bg || '#7dd3fc', look);
   useStageChrome(pal.bg);
   // SHORT ANSWERS GO 2x2 ON A PHONE (2026-10-24, player report on Blitz): four
   // numbers stacked in one tall column made the eye travel down the screen to
@@ -41,7 +42,7 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   return (
     <div key={look} className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <LookButton look={look} onFlip={() => setLook(look === 'plain' ? 'color' : 'plain')} className="gst-look" />
+      <LookButton look={look} onFlip={() => setLook(nextLook(look))} className="gst-look" />
       <div className="gst-col" key={qKey}>
         <div className="gst-q">{question}</div>
         <div className={`gst-ch${choices.length > 2 ? ' many' : ''}${shortSet ? ' grid' : ''}${tiny ? ' tiny' : ''}`}>
