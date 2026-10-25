@@ -991,7 +991,7 @@ export default function PolkaClient({ puzzles = [], forceNum = null }) {
                   <Trash2 size={14} /> {armClear ? 'Tap again to clear' : 'Clear'}
                 </button>
                 {hintOk && !g.hintUsed && (
-                  <button className="pk-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(22,163,74,0.5)', color: ACC_DEEP_INK }}>
+                  <button className="pk-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
                     <Lightbulb size={14} /> Hint
                   </button>
                 )}

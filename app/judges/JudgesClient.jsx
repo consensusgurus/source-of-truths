@@ -1125,7 +1125,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                 {!PHONE && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>{cap(numWord(STARS))} per row, column and court. No two touch, not even corners.</span>}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginLeft: PHONE ? 0 : 'auto', width: PHONE ? '100%' : undefined, justifyContent: PHONE ? 'space-between' : 'flex-end' }}>
                   {hintOk && !g.hintUsed && (
-                    <button type="button" className="je-btn" onClick={useHint} title="Seat one correct judge (one hint, first play only)" style={{ minHeight: 44, fontSize: 13, borderColor: `var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, color: ACC_DEEP_INK, ...(PHONE ? { flex: '1 0 100%' } : null) }}>
+                    <button type="button" className="je-btn" onClick={useHint} title="Seat one correct judge (one hint, first play only)" style={{ minHeight: 44, fontSize: 13, borderColor: `var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, ...(PHONE ? { flex: '1 0 100%' } : null) }}>
                       <Lightbulb size={14} /> Hint: seat one judge
                     </button>
                   )}

@@ -1127,7 +1127,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
                 <Trash2 size={14} /> Clear
               </button>
               {hintOk && !g.hintUsed && (
-                <button type="button" className="pt-tool" onClick={useHint} title="Lay one lane of a cheapest network (one hint, first play only)" aria-label="Hint" style={{ borderColor: ACC_INK, color: ACC_INK }}>
+                <button type="button" className="pt-tool" onClick={useHint} title="Lay one lane of a cheapest network (one hint, first play only)" aria-label="Hint" style={{ borderColor: ACC_INK }}>
                   <Lightbulb size={14} /> Hint
                 </button>
               )}

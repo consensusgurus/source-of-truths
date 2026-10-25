@@ -994,7 +994,7 @@ export default function ArrowClient({ puzzles = [], forceNum = null }) {
                   <Trash2 size={14} /> {armClear ? 'Tap again to clear' : 'Clear'}
                 </button>
                 {hintOk && !g.hintUsed && (
-                  <button className="ar-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(134,25,143,0.5)', color: ACC_DEEP_INK }}>
+                  <button className="ar-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
                     <Lightbulb size={14} /> Hint
                   </button>
                 )}

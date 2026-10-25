@@ -1115,7 +1115,7 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
                   <Trash2 size={14} /> {armClear ? 'Tap again to clear' : 'Clear'}
                 </button>
                 {hintOk && !g.hintUsed && (
-                  <button className="sn-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(234,88,12,0.5)', color: '#9a3d0c' }}>
+                  <button className="sn-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
                     <Lightbulb size={14} /> Hint
                   </button>
                 )}

@@ -757,7 +757,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
                 Tap a bold clue to take it out. {g.slips > 0 && <b style={{ color: `var(--stg-bad, ${COLORS.rust})` }}>{g.slips} slip{g.slips === 1 ? '' : 's'}</b>}
               </span>
               {hintOk && !g.hintUsed && (
-                <button className="wh-tool" onClick={useHint} title="Lift a clue that keeps the best finish open (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(133,77,14,0.5)', color: ACC_DEEP_INK }}>
+                <button className="wh-tool" onClick={useHint} title="Lift a clue that keeps the best finish open (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
                   <Lightbulb size={14} /> {thinking ? 'Looking…' : 'Hint'}
                 </button>
               )}

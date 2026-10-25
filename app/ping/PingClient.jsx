@@ -1137,7 +1137,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           {started && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 13, flexWrap: 'wrap' }}>
               {hintOk && !g.hintUsed && (
-                <button className="pg-tool" onClick={useHint} title="Reveal the continent (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(2,132,199,0.5)', color: ACC_DEEP_INK }}>
+                <button className="pg-tool" onClick={useHint} title="Reveal the continent (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
                   <Lightbulb size={14} /> Hint: the continent
                 </button>
               )}

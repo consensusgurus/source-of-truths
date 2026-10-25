@@ -178,18 +178,17 @@ export default function EntryDoor({ onPick }) {
     setSunday(isSundayET());
     let still = false;
     try { still = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
-    // NO SKILL PAGE (owner, 2026-10-25): the door is the intro alone. The
-    // curtain lifts straight onto the home; with reduced motion there is no door.
-    if (still) return undefined;
-    setPhase('cur');
-    timers.current.push(setTimeout(() => setPhase((p) => (p === 'cur' ? 'lift' : p)), LIFT_AT));
+    setPhase(still ? 'page' : 'cur');
+    if (!still) {
+      timers.current.push(setTimeout(() => setPhase((p) => (p === 'cur' ? 'lift' : p)), LIFT_AT));
+    }
     return () => { timers.current.forEach(clearTimeout); timers.current = []; };
   }, []);
 
   // The lift ends on the page.
   useEffect(() => {
     if (phase !== 'lift') return undefined;
-    const t = setTimeout(() => close(), LIFT_MS);
+    const t = setTimeout(() => setPhase('page'), LIFT_MS);
     return () => clearTimeout(t);
   }, [phase]);
 
@@ -264,7 +263,7 @@ export default function EntryDoor({ onPick }) {
   // Escape steps back a page, and closes the door from the skill page.
   function back() {
     const p = phaseRef.current;
-    if (p === 'tiles') setPhase('level');
+    if (p === 'tiles') setPhase('page');
     else if (p === 'level') setPhase('page');
     else close();
   }
@@ -275,7 +274,8 @@ export default function EntryDoor({ onPick }) {
     setSkill(id);
     setTier('any');
     setShowNew(false);
-    setPhase('level');
+    // NO LEVEL PAGE (owner, 2026-10-25): a skill goes straight to its puzzles.
+    setPhase('tiles');
   }
   function pickTier(id) {
     setTier(id);
@@ -341,8 +341,8 @@ export default function EntryDoor({ onPick }) {
   const steps = phase === 'level' || phase === 'tiles';
 
   const dots = (n) => (
-    <div className="ent-dots" aria-label={`Step ${n} of 3`}>
-      {[1, 2, 3].map((k) => <i key={k} className={k <= n ? 'on' : ''} />)}
+    <div className="ent-dots" aria-label={`Step ${n} of 2`}>
+      {[1, 2].map((k) => <i key={k} className={k <= n ? 'on' : ''} />)}
     </div>
   );
 
@@ -401,7 +401,7 @@ export default function EntryDoor({ onPick }) {
   );
 
   return (
-    <div className={'ent-door' + (phase === 'lift' ? ' lifting' : '')} role="dialog" aria-modal="true" aria-label="Welcome to Mind Loft">
+    <div className="ent-door" role="dialog" aria-modal="true" aria-label="Welcome to Mind Loft">
       <style dangerouslySetInnerHTML={{ __html: CSS + CSS2 }} />
       {steps ? (
         <div className="ent-st" ref={stRef}>
@@ -446,8 +446,8 @@ export default function EntryDoor({ onPick }) {
           {phase === 'tiles' && sk ? (
             <div className="ent-stp" key="tiles">
               <div className="ent-top">
-                <button type="button" className="ent-back" onClick={() => setPhase('level')}>← Level</button>
-                {dots(3)}
+                <button type="button" className="ent-back" onClick={() => setPhase('page')}>← Skills</button>
+                {dots(2)}
               </div>
               <div className="ent-hd">
                 <span className="ent-skchip" style={{ '--c': CATEGORY_RAMP[sk.ramp] }}>{sk.name}</span>
@@ -522,7 +522,7 @@ export default function EntryDoor({ onPick }) {
             <p className="ent-h">
               Loft your Mind in the{' '}
               <span className="ent-bn">
-                <span className="ent-mk"><MindLoftMark size="1em" ink="#08222e" accent="#2563eb" title="" /></span>
+                <span className="ent-mk"><MindLoftMark size="1em" ink="#08222e" accent="#7dd3fc" title="" /></span>
                 Mind <span className="ent-loft">Loft</span>
               </span>
             </p>
@@ -538,7 +538,7 @@ export default function EntryDoor({ onPick }) {
           <div className="ent-wipe" />
           <div className="ent-say">
             <div className="ent-word">
-              <MindLoftMark size="1.2em" ink="#08222e" accent="#2563eb" title="" />
+              <MindLoftMark size="1.2em" ink="#08222e" accent="#7dd3fc" title="" />
               <span>Mind <span className="ent-loft">Loft</span></span>
             </div>
             <div className="ent-lines">
@@ -637,8 +637,6 @@ const CSS2 = `
 const INK = RAMP_INK;
 const CSS = `
 .ent-door{position:fixed;inset:0;z-index:6000;background:#ffffff;color:#08222e;font-family:'Manrope',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
-.ent-door.lifting{background:transparent}
-.ent-door.lifting .ent-pg,.ent-door.lifting .ent-st{visibility:hidden}
 .ent-pg{position:absolute;inset:0;box-sizing:border-box;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,3.4vh,34px);
   padding:max(28px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .ent-ask{margin:0;font-size:clamp(30px,4.2vw,50px);line-height:1.1;font-weight:800;letter-spacing:-0.03em;text-align:center;text-wrap:balance;max-width:900px;color:#08222e}

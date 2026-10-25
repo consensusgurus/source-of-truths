@@ -769,7 +769,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           {playing && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
               {hintOk && !g.hintUsed && (
-                <button className="bt-tool" onClick={useHint} title="One correct trade at no cost (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(190,18,60,0.5)', color: ACC_INK }}>
+                <button className="bt-tool" onClick={useHint} title="One correct trade at no cost (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
                   <Lightbulb size={14} /> Hint
                 </button>
               )}

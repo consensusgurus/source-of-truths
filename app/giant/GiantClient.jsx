@@ -1042,7 +1042,7 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
                   <Trash2 size={14} /> {armClear ? 'Tap again to clear' : 'Clear'}
                 </button>
                 {hintOk && !g.hintUsed && (
-                  <button className="gi-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(153,27,27,0.5)', color: ACC_DEEP_INK }}>
+                  <button className="gi-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
                     <Lightbulb size={14} /> Hint
                   </button>
                 )}

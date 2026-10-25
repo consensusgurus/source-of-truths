@@ -864,7 +864,7 @@ export default function ImpoundClient({ puzzles = [], forceNum = null }) {
                 <RotateCcw size={14} /> Restart board
               </button>
               {hintOk && !g.hintUsed && (
-                <button className="pk-tool" onClick={useHint} title="Name the block that moves next (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(124,92,46,0.5)', color: '#6a4f27' }}>
+                <button className="pk-tool" onClick={useHint} title="Name the block that moves next (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
                   <Lightbulb size={14} /> Hint
                 </button>
               )}

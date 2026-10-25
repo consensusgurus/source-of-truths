@@ -1052,7 +1052,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
                   <RotateCcw size={14} /> Undo
                 </button>
                 {hintOk && !g.hintUsed && (
-                  <button type="button" className="fb-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" aria-label="Hint" style={{ borderColor: ACC_INK, color: ACC_INK }}>
+                  <button type="button" className="fb-tool" onClick={useHint} title="Fill one correct square (one hint, first play only)" aria-label="Hint" style={{ borderColor: ACC_INK }}>
                     <Lightbulb size={14} /> Hint
                   </button>
                 )}

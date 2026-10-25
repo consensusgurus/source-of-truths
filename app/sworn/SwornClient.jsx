@@ -856,7 +856,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button type="button" className="sw-btn" onClick={clearMarks}><Eraser size={14} /> Clear marks</button>
               {hintOk && !g.hintUsed && (
-                <button type="button" className="sw-btn" onClick={useHint} title="Verify one witness (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, borderColor: 'rgba(190,24,93,0.5)', color: ACC_DEEP_INK }}>
+                <button type="button" className="sw-btn" onClick={useHint} title="Verify one witness (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
                   <Lightbulb size={14} /> Hint: verify a witness
                 </button>
               )}
