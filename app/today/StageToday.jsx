@@ -1280,6 +1280,12 @@ export default function StageToday() {
   const [qAllMore, setQAllMore] = useState(false);
   const [visitors, setVisitors] = useState(null);
   const footRef = useRef(null);
+  // THE PHONE TAIL FOLDS (owner, 2026-10-25). Below 900px the page ends at the
+  // hub's Everything else list, and the About block plus the footer sit behind
+  // one toggle. They stay in the DOM and in the server HTML, hidden by CSS
+  // only, so crawlers (mobile-first indexing included) read them exactly as
+  // before. NEVER unmount them to hide them: that is what would cost SEO.
+  const [tailOpen, setTailOpen] = useState(false);
   // The cap's own box.
   const capRef = useRef(null);
   const [nearFoot, setNearFoot] = useState(false);
@@ -4333,12 +4339,20 @@ export default function StageToday() {
         </div>
         {/* The lazy reads (quiz topics, the visitor count) wait on this now
             that the quiz section is a pane and may never be on screen. */}
-        <div ref={footRef}><HomeAbout /></div>
+        {/* The observer sits on the WRAPPER, which keeps the toggle's box on a
+            phone, so the lazy reads still fire while the tail is folded. */}
+        <div ref={footRef}>
+          <button type="button" className="sty-tailbtn" aria-expanded={tailOpen} aria-controls="sty-about" onClick={() => setTailOpen((v) => !v)}>
+            <span>{tailOpen ? 'Hide' : 'About Mind Loft and site links'}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          </button>
+          <div className={'sty-tail' + (tailOpen ? ' on' : '')}><HomeAbout /></div>
+        </div>
       </div>
 
       {/* The visitor count rides the observer this page already runs for its
           topics, so the footer asks for nothing of its own here. */}
-      <StageFooter visitors={visitors} />
+      <div className={'sty-tail' + (tailOpen ? ' on' : '')}><StageFooter visitors={visitors} /></div>
     </div>
   );
 }
@@ -6434,4 +6448,17 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .mph-g b .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mc);box-shadow:inset 0 0 0 1.5px currentColor;margin-right:6px;vertical-align:1px;}
   .mph-note{margin:0;font-size:13px;font-weight:600;line-height:1.45;opacity:.85;}
 }
+/* THE PHONE TAIL (owner, 2026-10-25): About + footer fold behind one toggle
+   below 900px. display:none only, never unmounted, so the text stays indexed. */
+.sty-tailbtn{display:none;}
+@media (max-width:900px){
+  .sty-tailbtn{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;margin:4px 0 22px;
+    border:2px solid var(--stg-ink);border-radius:14px;background:transparent;color:var(--stg-ink);
+    padding:11px 12px 12px;font:inherit;font-weight:800;font-size:14px;line-height:1.26;text-align:left;cursor:pointer;}
+  .sty-tailbtn svg{flex:none;transition:transform .18s ease;}
+  .sty-tailbtn[aria-expanded="true"]{margin-bottom:14px;}
+  .sty-tailbtn[aria-expanded="true"] svg{transform:rotate(180deg);}
+  .sty-tail:not(.on){display:none;}
+}
+@media (max-width:900px) and (prefers-reduced-motion:reduce){.sty-tailbtn svg{transition:none;}}
 `;
