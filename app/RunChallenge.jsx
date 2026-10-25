@@ -11,6 +11,7 @@ import { withRef, myRefCode, ensureMyRefCode } from '@/lib/referrals';
 import { drawingIsLive, DRAWING } from '@/lib/drawing';
 import { newCid, withCid, recordSend, reportTake } from '@/lib/challenge-client';
 import TicketDoor from './TicketDoor';
+import MemeShare, { MemePeek } from './MemeShare';
 import { titleFor } from '@/lib/run-titles';
 import { themeParam } from '@/lib/share-palette';
 
@@ -57,6 +58,56 @@ const FLAG = (
   </svg>
 );
 
+// The run's challenge link, minted and recorded. Shared by the door's Send
+// and the GIF sheet (RunMeme), so a GIF share earns the same credit.
+export function runChallengeLink({ gameKey, score, total, n, t = null, won = false, archive = false, rank = '', source = 'run' }) {
+  let who = 'A friend';
+  try { who = (JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null') || {}).username || who; } catch (e) { /* a guest */ }
+  const blank = !(score > 0) && !won;
+  const o = rightOnly(gameKey) ? 0 : total;
+  const d = archive ? 0 : ymdCompact(etToday());
+  // A blank run still carries something to beat, or the link will not decode.
+  const tt = t != null ? t : (blank && !o ? 0 : null);
+  const x = rank || (titleFor(gameKey, score) || {}).name || '';
+  const raw = encodeChallenge({ name: who, t: tt, s: score, o, n, won: !!won, d, x });
+  const cid = newCid();
+  const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=7${themeParam()}`, cid));
+  recordSend({ cid, gameKey, num: n, day: d ? etToday() : null, fig: { s: score, o, t: tt, won: !!won, x }, source });
+  return url;
+}
+
+// The GIF sheet on a run's ending. RunMeme registers itself here while it is
+// mounted, so the challenge door's Send can open it.
+let memeOpener = null;
+function runMemeOpen() { if (memeOpener) { memeOpener(); return true; } return false; }
+
+// THE GIF ON A RUN'S ENDING (owner, 2026-10-25: "where is the gif share option
+// with preview?"). The same preview and sheet the daily endings carry
+// (MemePeek, MemeShare), fed the run's figure and its challenge link.
+export function RunMeme({ gameKey, score, total, n, t = null, won = false, status = '', cat = 'Trivia' }) {
+  const [open, setOpen] = useState(false);
+  const [route, setRoute] = useState('');
+  useEffect(() => {
+    try { setRoute(window.location.pathname.replace(/^\//, '')); } catch (e) { setRoute(''); }
+    memeOpener = () => setOpen(true);
+    return () => { memeOpener = null; };
+  }, []);
+  const blank = !(score > 0) && !won;
+  const timed = !!(won && t != null && unitOf(gameKey) === 'time');
+  const fig = blank ? '' : timed ? `${Math.floor(t / 60)}:${String(Math.round(t) % 60).padStart(2, '0')}`
+    : rightOnly(gameKey) ? `${score} right` : total ? `${score} of ${total}` : String(score);
+  const name = RUN_CHALLENGES[gameKey] ? RUN_CHALLENGES[gameKey].name : 'the run';
+  const rank = status || (titleFor(gameKey, score) || {}).name || '';
+  const ctx = { gameKey, game: name, cat, fig, timed, won: !blank, pb: false, line1: [name, rank].filter(Boolean).join(' · '), route: route || `circuits/${gameKey}/run` };
+  const getLink = (source) => runChallengeLink({ gameKey, score, total, n, t, won, rank, source: source || 'meme' });
+  return (
+    <>
+      <MemePeek ctx={ctx} onOpen={() => setOpen(true)} />
+      <MemeShare open={open} onClose={() => setOpen(false)} ctx={ctx} getLink={getLink} />
+    </>
+  );
+}
+
 export function RunChallengeButton({ gameKey, score, total, n, t = null, won = false, status = '', archive = false, style = null, className = '', door = false }) {
   const [msg, setMsg] = useState('');
   const [them, setThem] = useState(null);
@@ -80,16 +131,11 @@ export function RunChallengeButton({ gameKey, score, total, n, t = null, won = f
   // title ladder (the Gauntlets), so every run with one names it.
   const rank = status || (titleFor(gameKey, score) || {}).name || '';
   const send = () => {
-    let who = 'A friend';
-    try { who = (JSON.parse(localStorage.getItem('sot_quiz_identity') || 'null') || {}).username || who; } catch (e) { /* a guest */ }
-    const o = rightOnly(gameKey) ? 0 : total;
-    const d = archive ? 0 : ymdCompact(etToday());
-    // A blank run still carries something to beat, or the link will not decode.
-    const tt = t != null ? t : (blank && !o ? 0 : null);
-    const raw = encodeChallenge({ name: who, t: tt, s: score, o, n, won: !!won, d, x: rank });
-    const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(gameKey)}&vs=${encodeURIComponent(raw)}&v=7${themeParam()}`, cid));
-    recordSend({ cid, gameKey, num: n, day: d ? etToday() : null, fig: { s: score, o, t: tt, won: !!won, x: rank }, source: 'run' });
+    // THE CHALLENGE SENDS THE GIF TOO (owner, 2026-10-23, runs 2026-10-25):
+    // when the ending carries a RunMeme, Send link opens its GIF sheet, whose
+    // share carries the GIF and this same link together.
+    if (!archive && runMemeOpen()) return;
+    const url = runChallengeLink({ gameKey, score, total, n, t, won, archive, rank, source: 'run' });
     const copied = () => { setMsg('Link copied. Paste it to a friend.'); };
     const copy = () => { try { navigator.clipboard.writeText(url).then(copied, () => setMsg(url)); } catch (e) { setMsg(url); } };
     let touch = false;

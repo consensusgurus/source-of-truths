@@ -30,7 +30,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
 import NextDrop from '../NextDrop';
-import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
+import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../RunChallenge';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import RunScorecard, { boardRows, stageRank, stageAvg } from '../circuits/RunScorecard';
@@ -384,6 +384,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           rank={board.data && board.data.me && Number.isFinite(board.data.me.rank) ? board.data.me.rank : null}
           fieldSize={board.data ? (board.data.uniquePlayers || (Array.isArray(board.data.overall) ? board.data.overall.length : null)) : null}
           challenge={<RunChallengeButton gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} status={belt[1]} door />}
+          meme={<RunMeme gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} status={belt[1]} cat="Sudoku" />}
           onShare={copyShare}
           copied={copied}
           onDetails={() => { setEndOpen(false); setSettled(true); }}

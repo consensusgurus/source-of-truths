@@ -38,14 +38,14 @@ import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import GauntletMorePop from '../circuits/GauntletMorePop';
 import { RUN_DOORS, runDoneToday } from '../circuits/RunDoorPop';
 import { otherRuns } from '@/lib/run-seo';
-import { RunChallengeButton, RunChallengeLine } from '../RunChallenge';
+import { RunChallengeButton, RunChallengeLine, RunMeme } from '../RunChallenge';
 import { notifyShareCredit } from '../ShareCreditPop';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { isDarkLook } from '@/lib/stage-look';
 import { KEY, legsFor, legOrderFor, legOrderBefore, legPoints, TIERS, tierIndex, HENLEY_EDITION, shareLinesRun } from '@/lib/passport';
 import { PP_CSS } from './PassportClient';
-import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useStageLook } from '../GauntletScreens';
+import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
 
 const CLIENTS = {
   span: dynamic(() => import('../span/SpanClient'), { ssr: false, loading: () => null }),
@@ -437,7 +437,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [betweenOn, held, resumes, g.round]);
 
-  const [look] = useStageLook();
+  const [look] = useGauntletLook();
   const darkLook = isDarkLook(look);
 
   const sizes = () => {
@@ -621,6 +621,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
             <RunChallengeLine gameKey="passport" score={total} n={PUZZLE.num} style={{ margin: 0 }} />
             <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays} t={runSecs} status={tier.name || ''} door />
           </>}
+          meme={isTodays ? <RunMeme gameKey="passport" score={total} total={50} n={PUZZLE.num} t={runSecs} status={tier.name || ''} cat="Geography" /> : null}
           similar={similar}
           more={<MoreRunsList self="passport" ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} />}
           onShare={copyShare}

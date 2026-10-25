@@ -63,7 +63,7 @@ import GauntletBackPop from '../../GauntletBackPop';
 import { runDoneToday, RUN_DOORS } from '../../RunDoorPop';
 import NextDrop from '../../../NextDrop';
 import ChallengeStrip from '../../../ChallengeStrip';
-import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../../../RunChallenge';
+import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../../../RunChallenge';
 import { isChallengeableRun } from '@/lib/challenge';
 import RunBackLink from '../../RunBackLink';
 import PolymathMeter from '../../PolymathMeter';
@@ -1106,6 +1106,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           leaderScore={rightUnit ? leaderScore : null}
           challenge={isChallengeableRun(circuitId) && !r.practice
             ? <RunChallengeButton gameKey={circuitId} score={cleared} total={askable} n={runToken()} t={runSecs > 0 ? Math.round(runSecs) : null} door />
+            : null}
+          meme={isChallengeableRun(circuitId) && !r.practice
+            ? <RunMeme gameKey={circuitId} score={cleared} total={askable} n={runToken()} t={runSecs > 0 ? Math.round(runSecs) : null} cat={MATHRUN ? 'Numbers' : ENGLISH ? 'Word' : 'Trivia'} />
             : null}
           polymath={POLY_IDS.includes(circuitId) && !r.practice ? <PolymathMeter circuitId={circuitId} right={cleared} /> : null}
           similar={similarRun}

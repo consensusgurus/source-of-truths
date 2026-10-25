@@ -36,8 +36,8 @@ import { holdThemeColor } from '@/lib/theme-color-hold';
 // The button on the stage is a separate switch with its own key: Plain is a
 // white page with black type and nothing coloured. The phone's top and bottom
 // bars are painted to match whichever look is on.
-import { LOOK_KEY, useStageLook, nextLook, LOOK_NAMES, isDarkLook } from '@/lib/stage-look';
-export { useStageLook };
+import { LOOK_KEY, GAUNTLET_LOOK_KEY, useStageLook, useGauntletLook, nextLook, LOOK_NAMES, isDarkLook } from '@/lib/stage-look';
+export { useStageLook, useGauntletLook };
 export const PLAIN = { bg: '#ffffff', ink: '#111111' };
 export const DARK = { bg: '#0b0f1a', ink: '#e9edf4', fill: '#1a2130' };
 export function stagePalette(pastel, look) {
@@ -123,7 +123,7 @@ export function useStageChrome(color, edges) {
   }, [color, eTop, eBot]);
 }
 function useStagePalette(pastel, edges) {
-  const [look, setLook] = useStageLook();
+  const [look, setLook] = useGauntletLook();
   const p = stagePalette(pastel, look);
   useStageChrome(p.bg, edges);
   return {
@@ -131,7 +131,15 @@ function useStagePalette(pastel, edges) {
     plain: look === 'plain',
     fill: (c) => (look === 'plain' ? PLAIN.bg : look === 'dark' ? DARK.fill : look === 'darktint' ? `color-mix(in srgb, ${softGround(c)} 34%, ${DARK.bg})` : softGround(c)),
     flip: () => setLook(nextLook(look)),
-    vars: { '--gsx-bg': p.bg, '--gsx-ink': p.ink, '--gsx-tray': look === 'plain' ? PLAIN.ink : isDarkLook(look) ? '#1e2636' : INK },
+    vars: {
+      '--gsx-bg': p.bg, '--gsx-ink': p.ink, '--gsx-tray': look === 'plain' ? PLAIN.ink : isDarkLook(look) ? '#1e2636' : INK,
+      // THE TICKET CARD TAKES THE PAGE'S COLOUR, NOT GOLD (owner, 2026-10-25:
+      // "the color of this element, gold, kills the page aesthetic"). In the
+      // dark tray it is a lighter step of the ground with the page's own ink.
+      '--gsx-card': isDarkLook(look) ? '#2a3346' : look === 'plain' ? '#ffffff' : look === 'tint' ? (p.tile || '#ffffff') : `color-mix(in srgb, ${p.bg} 62%, #ffffff)`,
+      '--gsx-card-ink': isDarkLook(look) ? '#e9edf4' : look === 'plain' ? PLAIN.ink : INK,
+      '--gsx-card-paper': isDarkLook(look) ? '#141a26' : '#ffffff',
+    },
   };
 }
 export function LookButton({ look, onFlip, className = 'gsx-theme' }) {
@@ -219,7 +227,7 @@ export function GauntletCover({ sections = [] }) {
   return (
     <>
       <div id="gsx-cover" aria-hidden="true" suppressHydrationWarning style={{ position: 'fixed', inset: 0, zIndex: 90, background: softGround(c) }} />
-      <script dangerouslySetInnerHTML={{ __html: `try{var L=localStorage.getItem('${LOOK_KEY}');if(!L){L=localStorage.getItem('sot_gstage_look1');if(L==='color')L=null}if(L!=='color'){var D=L==='dark'||L==='darktint'||(!L&&localStorage.getItem('sot_theme2')==='dark');var e=document.getElementById('gsx-cover');if(e)e.style.background=D?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
+      <script dangerouslySetInnerHTML={{ __html: `try{var L=localStorage.getItem('${GAUNTLET_LOOK_KEY}');if(L&&L!=='color'){var D=L==='dark'||L==='darktint';var e=document.getElementById('gsx-cover');if(e)e.style.background=D?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
     </>
   );
 }
@@ -409,7 +417,8 @@ function TitleClimb({ ladder, score, shown, landed, pal, heading, onReplay }) {
         else if (landed && i === earned - 1) tail = `${t.min - score} to go`;
         return (
           <div key={t.name} role="listitem" className={cls} style={{ '--rc': here ? pal.ink : lit ? pal.fill(t.colour) : 'transparent' }}>
-            <i className="gsx-rchip" style={{ background: t.chip || pal.fill(t.colour) }} aria-hidden="true" />
+            {t.card ? <span className="gsx-rcard" aria-hidden="true">{t.card}</span>
+              : <i className="gsx-rchip" style={{ background: t.chip || pal.fill(t.colour) }} aria-hidden="true" />}
             <span className="gsx-rt"><b>{t.name}</b>{here && t.line ? <em>{t.line}</em> : null}</span>
             <span className="gsx-rtail">{tail}</span>
           </div>
@@ -435,6 +444,12 @@ export function GauntletEndStage({
   // carry their own figures; `topNote` is a line under the rank (Read the
   // Room's early read); `tableTotal` overrides the total row.
   ladder = null, ladderHeading = null, rowsIn = null, topNote = null,
+  // THE GIF (owner, 2026-10-25): the meme preview and its share sheet
+  // (RunMeme), heading the right column so the two columns balance.
+  meme = null,
+  // THE PRIZE (owner, 2026-10-25): a picture of what the climb earned (Price
+  // Check's payment card), landing under the score when the count does.
+  prize = null,
 }) {
   const [openRow, setOpenRow] = useState(-1);
   const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -453,7 +468,7 @@ export function GauntletEndStage({
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const [lookNow] = useStageLook();
+  const [lookNow] = useGauntletLook();
   const plainNow = lookNow === 'plain';
   const sweepEdges = sweeping && lookNow === 'color' ? {
     top: softGround(rampFor(slotOf(sections[0], 0))),
@@ -494,6 +509,7 @@ export function GauntletEndStage({
                 #{rank}{fieldSize ? ` of ${Number(fieldSize).toLocaleString()}` : ''}{ahead != null ? ` · ahead of ${ahead}%` : ''}
               </div>
             ) : null}
+            {prize ? <div className={'gsx-prize' + (landed ? ' in' : '')} aria-hidden={landed ? undefined : 'true'}>{prize}</div> : null}
             {topNote ? <div className="gsx-rise gsx-note" style={d('1.7s')}>{topNote}</div> : null}
             {climb ? (
               <div className="gsx-rise" style={d0('1.65s')}>
@@ -529,6 +545,7 @@ export function GauntletEndStage({
             ) : null}
           </div>
           <div className="gsx-eright">
+            {meme ? <div className="gsx-rise gsx-meme" style={d('2.45s')}>{meme}</div> : null}
             {/* 4. PLAY NEXT */}
             {similar && similar.href ? (
               <a className="gsx-rise gsx-next" href={similar.href} style={{ ...d('2.5s'), background: pal.fill('#6ee7b7') }}>
@@ -637,7 +654,7 @@ const CSS = `
 .gsx-sn{font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .gsx-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:0}
 .gsx-eye2{font-size:15px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
-.gsx-pop{font-size:80px;line-height:1;font-weight:800;letter-spacing:-.04em;animation:gsxPop .6s cubic-bezier(.2,.8,.2,1) .45s both;overflow-wrap:anywhere}
+.gsx-pop{font-size:80px;line-height:1.14;padding-bottom:.04em;font-weight:800;letter-spacing:-.04em;animation:gsxPop .6s cubic-bezier(.2,.8,.2,1) .45s both;overflow-wrap:anywhere}
 .gsx-sub{font-size:17px;font-weight:700}
 .gsx-low{display:flex;flex-direction:column;gap:14px}
 .gsx-last{color:var(--gsx-ink);display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:2px solid var(--gsx-ink)}
@@ -648,8 +665,8 @@ const CSS = `
 .gsx-ls i{display:block;font-style:normal;font-size:12px;font-weight:700;opacity:.75}
 .gsx-acts{display:flex;flex-direction:column;gap:10px}
 .gsx-cd{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;border-radius:16px;border:2px solid var(--gsx-bg);font-size:15px;font-variant-numeric:tabular-nums;box-sizing:border-box}
-.gsx-lesser{display:flex;gap:10px}
-.gsx-lb{flex:1;display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:14px;border:2px solid var(--gsx-ink);background:transparent;color:var(--gsx-ink);font:inherit;font-size:15px;font-weight:800;text-decoration:none;cursor:pointer}
+.gsx-lesser{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.gsx-lb{flex:1;box-sizing:border-box;min-width:0;display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:14px;border:2px solid var(--gsx-ink);background:transparent;color:var(--gsx-ink);font:inherit;font-size:15px;font-weight:800;text-decoration:none;cursor:pointer}
 .gsx-lb:hover,.gsx-ob:hover{background:color-mix(in srgb, var(--gsx-ink) 10%, transparent)}
 .gsx-show{position:fixed;inset:0;display:flex;flex-direction:column;pointer-events:none;z-index:2}
 .gsx-show span{flex:1;animation:gsxSweep 1.5s cubic-bezier(.7,0,.3,1) both}
@@ -699,6 +716,9 @@ const CSS = `
 .gsx-more .mr{margin:0}
 .gsx-rw{display:block}
 .gsx-row{width:100%;border:0;border-top:1px solid color-mix(in srgb, var(--gsx-ink) 35%, transparent);font:inherit;color:var(--gsx-ink);text-align:left;cursor:default}
+.gsx-row{border-radius:0;margin:0;box-sizing:border-box;display:grid}
+.gsx-meme .msh-peek{margin:0;box-shadow:none;border:2px solid var(--gsx-ink);border-radius:16px}
+.gsx-meme .msh-peek img{max-height:280px}
 .gsx-row.can{cursor:pointer}
 .gsx-row.can:hover{filter:brightness(.96)}
 .gsx-row:disabled{opacity:1}
@@ -730,7 +750,12 @@ const CSS = `
   .gsx-pop{font-size:128px}
   .gsx-sub{font-size:21px}
   .gsx-low{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
-  .gsx-acts{justify-content:center}
+  /* THE TWO HALVES MATCH (owner, 2026-10-25: "the bottom elements here need
+     to be same size"): the button column stretches to the card's height, the
+     Start button taking the slack, Hold and Leave splitting evenly. */
+  .gsx-low .gsx-acts{justify-content:stretch;height:100%}
+  .gsx-low .gsx-last+.gsx-acts .gsx-go{flex:1 1 auto}
+  .gsx-low .gsx-last{min-height:100%;box-sizing:border-box}
   .gsx-ecol{justify-content:center}
   .gsx-egrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:40px;align-items:start}
   .gsx-score span{font-size:132px}
@@ -748,6 +773,11 @@ const CSS = `
 .gsx-rung.lit{opacity:1}
 .gsx-rung.on{transform:scale(1.03)}
 .gsx-rung.here{opacity:1;color:var(--gsx-bg);padding:12px 14px;transform:scale(1.02)}
+.gsx-rcard{flex:none;display:block;width:46px}
+.gsx-rung.here .gsx-rcard{width:58px}
+.gsx-prize{align-self:center;width:min(250px,72%);opacity:0;transform:translateY(40px) rotate(-10deg) scale(.7)}
+.gsx-prize.in{opacity:1;transform:rotate(-3deg);animation:gsxLand .8s cubic-bezier(.2,.9,.25,1) both}
+@keyframes gsxLand{0%{opacity:0;transform:translateY(40px) rotate(-10deg) scale(.7)}70%{opacity:1;transform:translateY(-4px) rotate(-2deg) scale(1.02)}100%{opacity:1;transform:rotate(-3deg)}}
 .gsx-rchip{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid currentColor;box-sizing:border-box}
 .gsx-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .gsx-rt b{font-size:15px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
@@ -770,6 +800,7 @@ const CSS = `
 .gsx-tray .tkd-go{flex:1 1 100%;justify-content:center}
 .gsx .gsx-tray .pmm-lnk{color:#7dd3fc}
 .gsx .gsx-tray .gsx-lb{color:#e9edf4;border-color:#e9edf4}
+.gsx-tray .tkd{--tkd-bg:var(--gsx-card);--tkd-ink:var(--gsx-card-ink);--tkd-sub:color-mix(in srgb, var(--gsx-card-ink) 78%, transparent);--tkd-paper:var(--gsx-card-paper);--tkd-go-ink:var(--gsx-card);border:2px solid var(--gsx-card-ink)}
 .gsx-rung.on{transform:none;box-shadow:0 0 0 3px var(--gsx-ink)}
 .gsx-rung.here{transform:none}
 

@@ -29,7 +29,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
-import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
+import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../RunChallenge';
 import MoreRunsPop, { MoreRunsList, otherRuns } from '../circuits/MoreRuns';
 import { runDoneToday, RUN_DOORS } from '../circuits/RunDoorPop';
 import useCircuitBoard from '../circuits/useCircuitBoard';
@@ -40,7 +40,7 @@ import { dailyMeIdentity } from '../dailyMeClient';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { ROOM_RUN_ID, ROOM_MAX, ROOM_LADDER, roomBeat, roomPoints, roomTierOf, roomPartFor } from '@/lib/read-room';
-import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useStageLook } from '../GauntletScreens';
+import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
 import { isDarkLook } from '@/lib/stage-look';
 
 const COUNT_WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
@@ -184,7 +184,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
   // The player can step back from the handover to the room's full board of answers.
   const [peek, setPeek] = useState(false);
   const [openKey, setOpenKey] = useState(null);
-  const [look] = useStageLook();
+  const [look] = useGauntletLook();
   const embedTheme = isDarkLook(look) ? 'dark' : 'light';
   const stageSecs = useMemo(() => sections.map((s, i) => ({ ...s, slot: i, questions: [] })), [sections]);
 
@@ -490,6 +490,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
               <RunChallengeLine gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} style={{ margin: 0 }} />
               <RunChallengeButton gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} status={rung[1]} door />
             </>}
+            meme={<RunMeme gameKey={ROOM_RUN_ID} score={total} total={ROOM_MAX} n={runToken()} status={rung[1]} cat="Crowd Psychology" />}
             similar={similarRun}
             more={<>
               <Morning />

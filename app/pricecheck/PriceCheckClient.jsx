@@ -31,13 +31,14 @@ import PriceGame, { readDoneSave } from '../price/PriceGame';
 import MoreRunsPop, { MoreRunsList, otherRuns } from '../circuits/MoreRuns';
 import { RUN_DOORS, runDoneToday } from '../circuits/RunDoorPop';
 import ItemsPop, { itemsFor, scheduleItems, spendItems } from './ItemsPop';
+import PayCard from './PayCard';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import ChallengeStrip from '../ChallengeStrip';
-import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
+import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../RunChallenge';
 import { fmtCents, runRankOf, runTierOf, ranksFor, ranksTag, isV2, scoreGuesses } from '@/lib/price-games';
-import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useStageLook } from '../GauntletScreens';
+import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
 import { rampFor } from '@/lib/circuits';
 import { softGround, RAMP_INK } from '@/lib/category-ramp';
 import { isDarkLook } from '@/lib/stage-look';
@@ -112,7 +113,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
   const RTAG = ranksTag(sections[0] && sections[0].quizId);
   const RANKS = ranksFor(sections[0] && sections[0].quizId);
   const STORE = `sot_run_${RUN_ID}_${etToday()}`;
-  const [look] = useStageLook();
+  const [look] = useGauntletLook();
   const darkLook = isDarkLook(look);
   const [r, setR] = useState(() => freshRun());
   const rRef = useRef(r);
@@ -284,7 +285,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
   const ladder = useMemo(() => RANKS.slice().reverse().map((t, k) => {
     const ti = RANKS.length - 1 - k;
     const min = t[0] <= 0 ? 0 : Math.ceil((t[0] - 0.5) * MAX / 50);
-    return { min, name: `${t[1]} \u00b7\u00a0${t[3]}\u00a0card`, line: t[2], colour: rampFor(k), chip: CARD_COL[ti] ? CARD_COL[ti][0] : undefined, ti };
+    return { min, name: `${t[1]} \u00b7\u00a0${t[3]}\u00a0card`, line: t[2], colour: rampFor(k), chip: CARD_COL[ti] ? CARD_COL[ti][0] : undefined, ti, card: <PayCard ti={ti} mini /> };
   }), [RANKS, MAX]);
   const earned = ladder.find((x) => x.ti === tier) || ladder[0];
 
@@ -401,7 +402,8 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
           colLabel="Tag"
           title={{ name: earned.name, line: earned.line, colour: earned.colour }}
           ladder={ladder}
-          ladderHeading="Which shopper are you?"
+          ladderHeading="Which card are you paying with?"
+          prize={<PayCard ti={tier} label={rank[3]} name={rank[1]} total={total} max={MAX} sheen />}
           rank={me && Number.isFinite(me.rank) ? me.rank : null}
           fieldSize={fieldSize}
           board={boardRows}
@@ -415,6 +417,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
               <RunChallengeButton gameKey="pricecheck" score={total} total={MAX} n={runToken()} status={`${rank[3]} card`} door />
             </div>
           )}
+          meme={<RunMeme gameKey="pricecheck" score={total} total={MAX} n={runToken()} status={`${rank[3]} card`} cat="Trivia" />}
           similar={similar}
           more={<MoreRunsList self="pricecheck" ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} />}
           onShare={copyShare}
@@ -470,13 +473,33 @@ const CSS = `
 /* PLAY: the price game inside the stage frame. The run used to force the
    engine's dark panels; on a light look they follow the light register. */
 .pc-play{max-width:600px;margin:0 auto;padding:4px 14px 20px}
-.pc-light .pc-play .pg-run{--pr-panel:#ffffff !important;--pr-panel-line:rgba(8,34,46,.28) !important;--pr-shadow:0 6px 18px rgba(8,34,46,.10) !important;
-  --pr-freezing:#0369a1 !important;--pr-cold:#1d4ed8 !important;--pr-cool:#6d28d9 !important;--pr-warm:#a16207 !important;--pr-hot:#c2410c !important;--pr-burning:#b91c1c !important}
+.pc-light .pc-play .pg-run{--pr-freezing:#0369a1 !important;--pr-cold:#1d4ed8 !important;--pr-cool:#6d28d9 !important;--pr-warm:#a16207 !important;--pr-hot:#c2410c !important;--pr-burning:#b91c1c !important}
 .pc-light .pc-play:not(.pc-k-pricer) .pg-run{--pr-mat:#ece8df !important}
 .pc-chs{margin:0 -14px 10px}
 .pc-chs:empty{display:none}
 .pc-light .pc-play{--stg-mute:#23404f;--stg-line:rgba(8,34,46,.22);--stg-line2:rgba(8,34,46,.4);--stg-cell-line:rgba(8,34,46,.45);--stg-ink:#08222e}
 .pc-play .pr-money{min-width:0}
+/* THE PRICE GAME ON THE STAGE (owner, 2026-10-25: "the selection elements and
+   picture bubble in price check also need to match rest of aesthetic"). The
+   same objects the gauntlet stage draws: 2px ink outlines, a faint ink tile in
+   place of white panels, no drop shadows, Manrope only. The product photos
+   themselves keep their own mat. */
+.pc-play .pg-run{--pr-panel:color-mix(in srgb, var(--gsx-ink, #08222e) 7%, transparent) !important;--pr-panel-line:var(--gsx-ink, #08222e) !important;--pr-shadow:none !important}
+.pc-play .pr-prod,.pc-play .pr-prod.hero{border:2px solid var(--gsx-ink, currentColor);border-radius:18px;box-shadow:none;background:var(--pr-panel)}
+.pc-play .pg-hero{border-radius:12px;border:2px solid var(--gsx-ink, currentColor);box-sizing:border-box;background:#ffffff}
+.pc-play .pg-lab,.pc-play .pg-thumbs span{font-family:${SANS};font-weight:800;letter-spacing:.06em;background:var(--gsx-ink, #08222e);color:var(--gsx-bg, #ffffff)}
+.pc-play .pg-thumbs{gap:8px;margin-top:8px}
+.pc-play .pg-thumbs button{border:2px solid color-mix(in srgb, var(--gsx-ink, #08222e) 35%, transparent);border-radius:12px;background:#ffffff;height:64px}
+.pc-play .pg-thumbs button.on{border:3px solid var(--gsx-ink, #08222e)}
+.pc-play .pr-eb,.pc-play .pr-row .n,.pc-play .pr-row .heat b{font-family:${SANS};font-weight:800}
+.pc-play .pr-eb{color:var(--gsx-ink, currentColor) !important;opacity:.8}
+.pc-play .pg-facts span{border:2px solid var(--gsx-ink, currentColor);background:transparent;color:var(--gsx-ink, currentColor)}
+.pc-play .pr-money{border:2px solid var(--gsx-ink, currentColor);border-radius:16px;box-shadow:none;background:var(--pr-panel)}
+.pc-play .pr-go{border-radius:16px;box-shadow:none;background:var(--gsx-ink, #08222e);color:var(--gsx-bg, #ffffff)}
+.pc-play .pr-row{border:2px solid var(--gsx-ink, currentColor);border-left:6px solid var(--row-c, var(--gsx-ink, currentColor));border-radius:14px;box-shadow:none}
+.pc-play .pr-row.empty{border:2px dashed color-mix(in srgb, var(--gsx-ink, #08222e) 40%, transparent);border-left-width:2px;background:transparent}
+.pc-play .pr-stop{border:2px solid var(--gsx-ink, currentColor);color:var(--gsx-ink, currentColor)}
+.pc-play .pc-banked{border-color:var(--gsx-ink, currentColor)}
 .pc-play .pr-go{flex:none}
 .pc-banked{margin:0 0 12px;padding:10px 12px;border:2px dashed currentColor;border-radius:12px;font-size:13px;font-weight:700;line-height:1.35}
 .pc-last{display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px 0 8px;animation:pcrise .4s ease both}

@@ -25,7 +25,7 @@ import useGroupStanding from './groups/groupStanding';
 import { withRef } from '@/lib/referrals';
 
 const CSS = `
-.tkd{position:relative;background:#e8b43a;color:#2a1f04;border-radius:16px;padding:18px 20px 14px;
+.tkd{position:relative;background:var(--tkd-bg,#e8b43a);color:var(--tkd-ink,#2a1f04);border-radius:16px;padding:18px 20px 14px;
   display:flex;flex-direction:column;gap:14px;font-family:inherit;text-align:left;}
 .tkd-top{display:flex;align-items:center;gap:18px;}
 .tkd-tk{flex:none;position:relative;width:104px;height:70px;}
@@ -37,21 +37,21 @@ const CSS = `
 .tkd-n i{font-style:normal;font-size:8.5px;font-weight:800;letter-spacing:.14em;margin-top:3px;}
 .tkd-tx{flex:1;min-width:0;}
 .tkd-hd{font-size:20px;font-weight:800;letter-spacing:-.01em;line-height:1.2;}
-.tkd-sb{font-size:13.5px;font-weight:700;line-height:1.4;margin-top:4px;color:#4a3a12;}
-.tkd-sb b{font-weight:800;color:#2a1f04;}
+.tkd-sb{font-size:13.5px;font-weight:700;line-height:1.4;margin-top:4px;color:var(--tkd-sub,#4a3a12);}
+.tkd-sb b{font-weight:800;color:var(--tkd-ink,#2a1f04);}
 .tkd-go{flex:none;display:flex;align-items:center;gap:8px;height:48px;padding:0 18px;border:0;border-radius:12px;
-  background:#2a1f04;color:#fff4d6;font:inherit;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;}
+  background:var(--tkd-ink,#2a1f04);color:var(--tkd-go-ink,#fff4d6);font:inherit;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .tkd-go:hover{filter:brightness(1.2);}
-.tkd-go:focus-visible,.tkd-claim:focus-visible,.tkd-inv:focus-visible{outline:2px solid #2a1f04;outline-offset:3px;}
+.tkd-go:focus-visible,.tkd-claim:focus-visible,.tkd-inv:focus-visible{outline:2px solid var(--tkd-ink,#2a1f04);outline-offset:3px;}
 .tkd-claim{all:unset;cursor:pointer;display:inline;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px;}
 .tkd-claim span{font-size:.9em;margin-left:6px;}
-.tkd-form{background:#fff8e6;border-radius:12px;padding:4px 14px 14px;
-  --join-head:#2a1f04;--join-body:#4a3a12;--join-soft:#6b5622;--join-field-bg:#ffffff;--join-field-ink:#2a1f04;--join-field-line:#2a1f04;--join-cta:#2a1f04;--join-cta-ink:#fff4d6;}
+.tkd-form{background:var(--tkd-paper,#fff8e6);border-radius:12px;padding:4px 14px 14px;
+  --join-head:var(--tkd-ink,#2a1f04);--join-body:var(--tkd-sub,#4a3a12);--join-soft:#6b5622;--join-field-bg:#ffffff;--join-field-ink:var(--tkd-ink,#2a1f04);--join-field-line:var(--tkd-ink,#2a1f04);--join-cta:var(--tkd-ink,#2a1f04);--join-cta-ink:var(--tkd-go-ink,#fff4d6);}
 .tkd-ft{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
-  border-top:1.5px solid rgba(42,31,4,.18);padding-top:10px;font-size:11.5px;font-weight:700;color:#4a3a12;}
-.tkd-inv{all:unset;cursor:pointer;font-size:12.5px;font-weight:800;color:#2a1f04;border:1.5px solid rgba(42,31,4,.5);
+  border-top:1.5px solid color-mix(in srgb, var(--tkd-ink,#2a1f04) 18%, transparent);padding-top:10px;font-size:11.5px;font-weight:700;color:var(--tkd-sub,#4a3a12);}
+.tkd-inv{all:unset;cursor:pointer;font-size:12.5px;font-weight:800;color:var(--tkd-ink,#2a1f04);border:1.5px solid color-mix(in srgb, var(--tkd-ink,#2a1f04) 50%, transparent);
   border-radius:8px;padding:6px 10px;white-space:nowrap;}
-.tkd-inv:hover{border-color:#2a1f04;}
+.tkd-inv:hover{border-color:var(--tkd-ink,#2a1f04);}
 @media (max-width:560px){
   .tkd{padding:16px 16px 12px;}
   .tkd-top{flex-wrap:wrap;gap:14px;}
@@ -162,9 +162,9 @@ export default function TicketDoor({ fig = '', title = '', vs = null, label = 'C
       <div className="tkd-top">
         <div className="tkd-tk" aria-label={`${formatTickets(n)} tickets`} role="img">
           <svg width="104" height="70" viewBox="0 0 96 66" aria-hidden="true">
-            <path d={TICKET_PATH} fill="#fff8e6" stroke="#2a1f04" strokeWidth="2" />
-            <line x1="27" y1="7" x2="27" y2="59" stroke="#2a1f04" strokeWidth="2" strokeDasharray="3 4" />
-            <text x="14" y="38" textAnchor="middle" fontFamily="inherit" fontSize="9" fontWeight="800" fill="#2a1f04" transform="rotate(-90 14 33)">{DRAWING.prizeLabel}</text>
+            <path d={TICKET_PATH} strokeWidth="2" style={{ fill: 'var(--tkd-paper,#fff8e6)', stroke: 'var(--tkd-ink,#2a1f04)' }} />
+            <line x1="27" y1="7" x2="27" y2="59" strokeWidth="2" strokeDasharray="3 4" style={{ stroke: 'var(--tkd-ink,#2a1f04)' }} />
+            <text x="14" y="38" textAnchor="middle" fontFamily="inherit" fontSize="9" fontWeight="800" style={{ fill: 'var(--tkd-ink,#2a1f04)' }} transform="rotate(-90 14 33)">{DRAWING.prizeLabel}</text>
           </svg>
           <span className="tkd-n" aria-hidden="true"><StubCount n={n} /><i>TICKETS</i></span>
         </div>

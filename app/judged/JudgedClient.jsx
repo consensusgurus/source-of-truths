@@ -27,11 +27,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
-import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
+import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../RunChallenge';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { stageAvg } from '../circuits/RunScorecard';
-import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useStageLook } from '../GauntletScreens';
+import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
 import { isDarkLook } from '@/lib/stage-look';
 import { rampFor } from '@/lib/circuits';
 import { withRef } from '@/lib/referrals';
@@ -86,7 +86,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   const [settled, setSettled] = useState(false);
   // The embedded boards follow the stage's look: dark ink on the pastel
   // (light register) unless the reader picked one of the black looks.
-  const [look] = useStageLook();
+  const [look] = useGauntletLook();
   const boardTheme = isDarkLook(look) ? 'dark' : 'light';
 
   useEffect(() => { rRef.current = r; }, [r]);
@@ -330,6 +330,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
             leaderScore={overall[0] ? Math.round(Number(overall[0].total)) : null}
             extra={<RunChallengeLine gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} style={{ margin: 0 }} />}
             challenge={<RunChallengeButton gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} status={`Admitted to ${school[1]}`} door />}
+            meme={<RunMeme gameKey={LAW_RUN_ID} score={total} total={LAW_MAX} n={runToken()} status={`Admitted to ${school[1]}`} cat="Logic" />}
             more={<MoreRunsList self="judged" ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} />}
             onShare={copyShare}
             copied={copied}

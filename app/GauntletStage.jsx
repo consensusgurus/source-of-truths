@@ -22,13 +22,13 @@
 import React from 'react';
 import { RAMP_INK, softGround } from '@/lib/category-ramp';
 import StageTopBar from './StageTopBar';
-import { useStageLook, stagePalette, useStageChrome, LookButton } from './GauntletScreens';
+import { useGauntletLook, stagePalette, useStageChrome, LookButton } from './GauntletScreens';
 import { nextLook } from '@/lib/stage-look';
 
 export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choices = [], onPick, lockIdx = null, disabled = false, frac = null, hot = false, footer = null, label = 'Question' }) {
   // The stage's own look switch (owner, 2026-10-23): pastel by default, Plain
   // is white with black type. Separate from the site's light/dark setting.
-  const [look, setLook] = useStageLook();
+  const [look, setLook] = useGauntletLook();
   const pal = look === 'color' ? { bg: softGround(bg || '#7dd3fc'), ink } : stagePalette(bg || '#7dd3fc', look);
   useStageChrome(pal.bg);
   // SHORT ANSWERS GO 2x2 ON A PHONE (2026-10-24, player report on Blitz): four
@@ -80,6 +80,10 @@ const CSS = `
 .gst-q{text-align:center;font-size:30px;line-height:1.18;font-weight:800;letter-spacing:-0.02em;animation:gstRise .45s ease-out both;}
 .gst-q h2{margin:0;font:inherit;letter-spacing:inherit;}
 .gst-q blockquote{margin:0 0 12px;font-size:20px;font-weight:700;line-height:1.35;font-style:italic;}
+/* THE QUOTE LEADS (owner, 2026-10-25): on a quote question the line itself is
+   the big type and the prompt under it is the small one. */
+.gst-q:has(blockquote){font-size:18px;line-height:1.3;font-weight:700;letter-spacing:-.01em}
+.gst-q:has(blockquote) blockquote{font-size:28px;line-height:1.25;font-weight:800;margin-bottom:14px;letter-spacing:-.015em}
 .gst-q .gst-sub{display:block;margin-top:10px;font-size:17px;font-weight:700;}
 .gst-ch{display:flex;flex-direction:column;gap:12px;}
 .gst-c{position:relative;display:flex;align-items:center;justify-content:center;min-height:72px;width:100%;box-sizing:border-box;border-radius:18px;padding:14px 16px;text-align:center;cursor:pointer;background:var(--gst-tile);border:2px solid var(--gst-ink);font-family:inherit;font-size:22px;line-height:1.2;font-weight:800;animation:gstIn .5s cubic-bezier(.2,.8,.2,1) both;transition:background .15s, transform .1s;}
@@ -102,7 +106,7 @@ const CSS = `
 @keyframes gstIn{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
 @keyframes gstGlow{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--gst-ink) 45%, transparent)}100%{box-shadow:0 0 0 14px transparent}}
 @keyframes gstPulse{from{opacity:1}to{opacity:.35}}
-@media(min-width:900px){.gst-col{max-width:820px;gap:40px;padding:48px 32px 28px;}.gst-q{font-size:44px;}.gst-q blockquote{font-size:26px;}.gst-ch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}.gst-c{min-height:150px;font-size:26px;padding:22px;}.gst-ch.many .gst-c{min-height:120px;font-size:23px;}.gst-ch.tiny .gst-c{font-size:38px;}}
-@media(max-width:400px){.gst-q{font-size:25px;}.gst-c{font-size:19px;min-height:64px;}.gst-ch.many .gst-c{font-size:17px;min-height:54px;}.gst-ch.grid .gst-c{font-size:18px;min-height:76px;}.gst-ch.tiny .gst-c{font-size:27px;}}
+@media(min-width:900px){.gst-col{max-width:820px;gap:40px;padding:48px 32px 28px;}.gst-q{font-size:44px;}.gst-q blockquote{font-size:26px;}.gst-q:has(blockquote){font-size:22px;}.gst-q:has(blockquote) blockquote{font-size:40px;}.gst-ch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}.gst-c{min-height:150px;font-size:26px;padding:22px;}.gst-ch.many .gst-c{min-height:120px;font-size:23px;}.gst-ch.tiny .gst-c{font-size:38px;}}
+@media(max-width:400px){.gst-q{font-size:25px;}.gst-q:has(blockquote){font-size:16px;}.gst-q:has(blockquote) blockquote{font-size:24px;}.gst-c{font-size:19px;min-height:64px;}.gst-ch.many .gst-c{font-size:17px;min-height:54px;}.gst-ch.grid .gst-c{font-size:18px;min-height:76px;}.gst-ch.tiny .gst-c{font-size:27px;}}
 @media (prefers-reduced-motion: reduce){.gst-q,.gst-c,.gst-c.ok{animation:none}}
 `;
