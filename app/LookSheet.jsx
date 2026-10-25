@@ -87,9 +87,17 @@ export default function LookSheet() {
   const [color, setColor] = useStageColor();
   const box = useRef(null);
   const opener = useRef(null);
+  // THE SWITCH TOGGLES (owner report, 2026-10-24): a tap on the look button
+  // while the sheet is open used to close it on pointerdown and reopen it on
+  // the click, so it flickered instead of collapsing. The press that closes it
+  // is remembered, and the open it would trigger is dropped.
+  const justClosed = useRef(0);
+  const openNow = useRef(false);
 
   useEffect(() => {
     const onOpen = (e) => {
+      if (Date.now() - justClosed.current < 800) { justClosed.current = 0; return; }
+      if (openNow.current && !(e.detail && e.detail.intro)) { openNow.current = false; setAt(null); return; }
       opener.current = document.activeElement;
       setAt(e.detail && e.detail.bottom ? e.detail : { top: 8, bottom: 56, left: window.innerWidth - 60, right: window.innerWidth - 12, intro: !!(e.detail && e.detail.intro) });
     };
@@ -134,10 +142,17 @@ export default function LookSheet() {
     try { if (opener.current && opener.current.focus) opener.current.focus({ preventScroll: true }); } catch (e) {}
   };
 
+  useEffect(() => { openNow.current = !!at; }, [at]);
   useEffect(() => {
     if (!at) return undefined;
     const onKey = (e) => { if (e.key === 'Escape') close(); };
-    const onDown = (e) => { if (box.current && !box.current.contains(e.target)) close(); };
+    const onDown = (e) => {
+      if (box.current && !box.current.contains(e.target)) {
+        const t = e.target && e.target.closest ? e.target.closest('[data-look]') : null;
+        if (t) justClosed.current = Date.now();
+        close();
+      }
+    };
     const onResize = () => setAt(null);
     window.addEventListener('keydown', onKey);
     document.addEventListener('pointerdown', onDown, true);
