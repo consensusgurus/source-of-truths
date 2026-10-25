@@ -30,7 +30,7 @@
 // Data comes from fetchDayStatus, the same call the existing home makes, so
 // this surface adds no new endpoint and cannot disagree with the other one
 // about what has been played.
-import { cycleSiteLook } from '@/lib/stage-look';
+import { cycleSiteLook, useStageLook, isColorLook } from '@/lib/stage-look';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys, dailyScoreText } from '@/lib/daily-games';
 
@@ -3473,12 +3473,18 @@ export default function StageToday() {
   // back button but the logo, and a category or skill recolours the whole page:
   // its lighter step on the light register, a deep wash of it on the dark.
   const mPane = runsMq && picked && mph;
+  const [siteLook] = useStageLook();
   const mBackTo = paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID ? 'Home' : ixLens === 'skill' ? 'All skills' : 'All categories';
-  // White page, coloured tiles (owner, 2026-10-25): the category no longer
-  // recolours the page; its colour lives on the tiles.
-  const mTintCat = null;
+  // A CATEGORY OR SKILL PANE WEARS ITS COLOUR (owner, 2026-10-25, reversing
+  // the white pane of the same morning): the page takes the category's soft
+  // step in the colour looks, so the flood from its tile lands on a page of the
+  // same colour and nothing has to fade back to white. A game opened from it
+  // floods white into the game's own white start page. The no-colour looks
+  // (White, Black) keep a plain page.
+  const mTintCat = mPane && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : null;
   // A real hex, not color-mix: the browser bar colour (theme-color) takes only a plain colour.
-  const mTintBg = mTintCat ? (light ? softGround(categoryColor(mTintCat)) : mixHex(categoryColor(mTintCat), '#0b0f1a', 0.22)) : null;
+  const paneGround = (cat) => (isColorLook(siteLook) ? (light ? softGround(categoryColor(cat)) : mixHex(categoryColor(cat), '#0b0f1a', 0.22)) : null);
+  const mTintBg = mTintCat ? paneGround(mTintCat) : null;
   // The same hold the play stages use, so Safari's top and bottom bars take the colour too.
   useStageChrome(mTintBg);
   const mGroup = grp && Array.isArray(grp.groups) && grp.groups.length ? grp.groups[0] : null;
@@ -3742,7 +3748,7 @@ export default function StageToday() {
                     const rc = rampCat(cat);
                     const nd = games.filter((g) => done.has(g.key)).length;
                     return (
-                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat), { below: '.sty-mtop', label: 'b', target: '.mph-htx .t > span', toTop: true })}>
+                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat), { label: 'b', target: '.mph-htx .t > span', toTop: true, color: paneGround(rc) })}>
                         <b>{catLabel(cat)}</b>
                         <em>{ixLens === 'cat' ? `${games.length} ${games.length === 1 ? 'game' : 'games'}${nd ? ` \u00b7 ${nd} played` : ''}` : `${nd} of ${games.length}`}</em>
                       </button>
