@@ -1667,7 +1667,7 @@ export default function StageFinish({
     // c= is the return leg's id (lib/challenge-client.js), minted here so the
     // share sheet still opens inside the tap; the row is written alongside it.
     const cid = newCid();
-    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=6${themeParam()}`, cid)); // v: bump when the card changes, a phone caches a link's preview by its URL
+    const url = withRef(withCid(`${window.location.origin}/vs?g=${encodeURIComponent(me.key)}&vs=${encodeURIComponent(raw)}&v=7${themeParam()}`, cid)); // v: bump when the card changes, a phone caches a link's preview by its URL
     recordSend({ cid, gameKey: me.key, num: mine.n, day: d ? etTodayISO() : null, fig: mine, source });
     return url;
   };
