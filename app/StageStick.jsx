@@ -575,6 +575,9 @@ const CSS = `
 .sst-tbl tr.me + tr td{border-top-color:transparent;}
 .sst-tbl tr.gap td{text-align:center;padding:2px;opacity:.6;}
 .sst-grp:not(:empty){margin-top:12px;padding-top:12px;border-top:1px solid var(--sst-rule);}
+.sst-grp:only-child:not(:empty){margin-top:0;padding-top:0;border-top:0;}
+/* No board rows yet and no groups: no empty card while the board loads. */
+.sst-card:has(> .sst-grp:only-child:empty){display:none;}
 .sst-grp .stf-eb{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:inherit;opacity:.82;margin-bottom:8px;}
 .sst-grp .fgl-card{background:transparent;border:0;padding:0;}
 .sst-grp .fgl,.sst-grp .fgl *{color:var(--sst-ink);}
