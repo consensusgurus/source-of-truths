@@ -1104,8 +1104,11 @@ export default function StageToday() {
     // (TILES_KEY) brings the tiles back on the next load. Read in this layout
     // effect so the pane is up before the first paint, never shown then shut.
     try {
+      // ONLY MY PUZZLES IS REMEMBERED (owner, 2026-10-25): a reader who left
+      // on My Puzzles comes back to it; any other pane (a category, a skill,
+      // All Puzzles, Runs) is not restored, and the visit opens on the home.
       const v = localStorage.getItem(PANE_KEY);
-      if (v) { setPane(v); if (localStorage.getItem(TILES_KEY) !== '1') setPicked(true); }
+      if (v === MINE_ID && localStorage.getItem(TILES_KEY) !== '1') { setPane(v); setPicked(true); }
     } catch (e) {}
     // /#all OPENS ALL PUZZLES AS TILES (owner, 2026-10-18): the daily ending's
     // "See all Daily Puzzles" button lands here. The pane opens, the tiles view
