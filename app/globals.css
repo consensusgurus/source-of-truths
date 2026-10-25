@@ -1113,3 +1113,41 @@ html:not([data-sot-hyd]) [data-sot-wait] > * {
   visibility: hidden;
   animation: sot-hyd-show 0s linear 3s forwards;
 }
+
+/* THE OUTLINED SLOTS (owner, 2026-10-25, Anon option A, then Barter). A
+   letter square is a box with a firm outline on the raised surface; a filled
+   one is tinted with a stronger outline; the one you are on is solid. Keys are
+   a neutral step of the ink so a keyboard never reads as more board. Defined
+   on .stage-page from the register's own tokens, so the desktop light and dark
+   registers and the phone's plain and dark looks need nothing more. The three
+   colour looks on a phone take the category's pastel (--sp-g) instead, because
+   their accent is the one dark ink. */
+.stage-page {
+  --stg-slot: var(--stg-raise);
+  --stg-slot-line: color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 62%, var(--stg-raise));
+  --stg-slot-line2: var(--stg-acc-ink, var(--stg-acc));
+  --stg-slot-fill: color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 14%, var(--stg-raise));
+  --stg-slot-band: color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 10%, transparent);
+  --stg-slot-on-ink: var(--stg-raise);
+  --stg-key: color-mix(in srgb, var(--stg-ink) 7%, var(--stg-raise));
+  --stg-key-line: color-mix(in srgb, var(--stg-ink) 28%, var(--stg-raise));
+  --stg-key-fn: color-mix(in srgb, var(--stg-ink) 15%, var(--stg-raise));
+}
+@media (max-width: 899px) {
+  html[data-stage-pastel='color'] .stage-page,
+  html[data-stage-pastel='tint'] .stage-page {
+    --stg-slot: #ffffff;
+    --stg-slot-line: color-mix(in srgb, var(--sp-g, #c9d2fd) 40%, #08222e);
+    --stg-slot-line2: color-mix(in srgb, var(--sp-g, #c9d2fd) 18%, #08222e);
+    --stg-slot-fill: color-mix(in srgb, var(--sp-g, #c9d2fd) 70%, #ffffff);
+    --stg-slot-band: color-mix(in srgb, var(--sp-g, #c9d2fd) 40%, transparent);
+    --stg-slot-on-ink: #ffffff;
+  }
+  html[data-stage-pastel='darktint'] .stage-page {
+    --stg-slot-line: color-mix(in srgb, var(--sp-g, #c9d2fd) 75%, #0b0f1a);
+    --stg-slot-line2: var(--sp-g, #c9d2fd);
+    --stg-slot-fill: color-mix(in srgb, var(--sp-g, #c9d2fd) 24%, #0b0f1a);
+    --stg-slot-band: color-mix(in srgb, var(--sp-g, #c9d2fd) 16%, transparent);
+    --stg-slot-on-ink: #0b0f1a;
+  }
+}

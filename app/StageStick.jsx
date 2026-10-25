@@ -37,6 +37,7 @@ import { gameStats, mmss } from '@/lib/daily-row-stats';
 import GameGlyph from './GameGlyph';
 import { MemePeek } from './MemeShare';
 import FinishGroupLine from './groups/FinishGroupLine';
+import { holdThemeColor } from '@/lib/theme-color-hold';
 
 const useIsoLayout = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -90,7 +91,7 @@ function Count({ fig, run }) {
 
 export default function StageStick({
   tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, run = null, allHref = '/#all',
-  sheet = {}, onLeave, replayNow = null, meme = null, shelf = null, cats = null,
+  sheet = {}, onLeave, onBack = null, replayNow = null, meme = null, shelf = null, cats = null,
 }) {
   const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
   const [step, setStep] = useState(0);        // 0..6, how many blocks have landed
@@ -194,6 +195,18 @@ export default function StageStick({
     } catch (e) {}
   }, [host, desk]);
 
+  // THE BROWSER BARS take the ending's colour while it is up on a phone, so
+  // Safari's top bar reads as part of the page rather than a strip of the
+  // game page above it (owner report, 2026-10-25).
+  useEffect(() => {
+    if (desk) return undefined;
+    const el = rootRef.current;
+    if (!el) return undefined;
+    let c = '';
+    try { c = getComputedStyle(el).backgroundColor; } catch (e) { c = ''; }
+    return c ? holdThemeColor(c) : undefined;
+  }, [host, desk]);
+
   const trackRef = useRef(null);
   const trackKey = self && self.track ? self.track.map((p) => `${p.k}:${p.x}:${p.label}:${p.fig}`).join('|') : '';
   const fitTrack = () => {
@@ -250,7 +263,10 @@ export default function StageStick({
 
   // Return to board / Reveal answer, and Replay. Both leave this page for the
   // board, so both close it first.
-  const back = s.back ? () => { if (onLeave) onLeave(); s.back(); } : null;
+  // BACK TO BOARD (owner, 2026-10-25) shows the board itself, with a way back
+  // to this page, and none of the older card underneath. onBack is that
+  // board view; onLeave stays the path for Replay.
+  const back = s.back ? () => { if (onBack) onBack(); else if (onLeave) onLeave(); s.back(); } : null;
   const replayBtn = replayNow ? (replayNow.href
     ? <a className="sst-hb" href={replayNow.href} onClick={replayNow.onClick || undefined}>Replay</a>
     : <button type="button" className="sst-hb" onClick={(e) => { if (onLeave) onLeave(); if (replayNow.onClick) replayNow.onClick(e); }}>Replay</button>) : null;
@@ -494,13 +510,21 @@ export default function StageStick({
 }
 
 const CSS = `
-.sst,.sst-page{--sst-bg:var(--stg-acc);--sst-ink:var(--stg-onramp,#08222e);
+/* THE COLOUR IS THE SOFT STEP (owner, 2026-10-25): the same 40%-lighter
+   pastel the phone pages use (--sp-g, set by the boot script), and on a page
+   without one the category step mixed 40% toward white. Dark ink on every one. */
+.sst,.sst-page{--sst-bg:var(--sp-g,color-mix(in srgb,var(--stg-acc) 60%,#ffffff));--sst-ink:#08222e;
   --sst-card:color-mix(in srgb,var(--sst-bg) 58%,#ffffff);--sst-rule:color-mix(in srgb,var(--sst-ink) 14%,transparent);
   --sst-wash:color-mix(in srgb,#ffffff 55%,transparent);font-family:${SANS};-webkit-tap-highlight-color:transparent;}
 .sst.ink-l,.sst-page.ink-l{--sst-card:color-mix(in srgb,var(--sst-bg) 82%,#000000);--sst-wash:color-mix(in srgb,#ffffff 12%,transparent);}
 .sst.t-lost,.sst-page.t-lost{--sst-bg:color-mix(in srgb,var(--stg-bad) 13%,var(--stg-raise));--sst-ink:var(--stg-ink);}
 .sst{position:fixed;inset:0;z-index:9000;height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior:contain;
   background:var(--sst-bg);color:var(--sst-ink);}
+/* THE WHITE STRIP (owner report, 2026-10-25): iOS Safari can leave a band of
+   the game page showing above a fixed layer pinned to top:0 once the toolbar
+   has moved. The phone layer reaches well past both edges, padded back, so
+   no part of the page under it can show. */
+.sst:not(.sst-cover){top:-160px;bottom:-160px;height:auto;padding:160px 0;}
 .sst *,.sst-page *{box-sizing:border-box;}
 .sst-in{width:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px;
   padding:max(10px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));}
