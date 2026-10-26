@@ -22,7 +22,7 @@
 // dwell, hold. They invent nothing either: a figure that is missing drops its
 // line, and the trivia total is never shown as "out of" the questions asked.
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { RAMP_INK, softGround, categoryColor, gameCategory } from '@/lib/category-ramp';
 import { rampFor, LADDER_RAMP } from '@/lib/circuits';
 import MindLoftMark from './MindLoftMark';
@@ -492,6 +492,47 @@ export function GauntletEndStage({
   });
   const avgTotal = avg && Object.keys(avg).length ? Math.round(sections.reduce((t, s) => t + (Number(avg[s.key]) || 0), 0)) : null;
   const ahead = rank && fieldSize && fieldSize >= 2 ? Math.max(0, Math.round(((fieldSize - rank) / fieldSize) * 100)) : null;
+  const [moveN, setMoveN] = useState(0);
+  const leftRef = useRef(null);
+  const rightRef = useRef(null);
+  const tailRefs = useRef({});
+  const moveRef = useRef(0);
+  moveRef.current = moveN;
+  useIsoLayoutEffect(() => {
+    const L = leftRef.current;
+    const R = rightRef.current;
+    if (!L || !R) return undefined;
+    const mq = window.matchMedia('(min-width:900px)');
+    const GAP = 14; // .gsx-eleft / .gsx-eright flex gap
+    let raf = 0;
+    const measure = () => {
+      raf = 0;
+      if (!mq.matches) { if (moveRef.current) setMoveN(0); return; }
+      const ids = ['more', 'all', 'stats'].filter((id) => tailRefs.current[id]);
+      const hOf = (id) => tailRefs.current[id].getBoundingClientRect().height + GAP;
+      const n0 = Math.min(moveRef.current, ids.length);
+      let hl = L.getBoundingClientRect().height;
+      let hr = R.getBoundingClientRect().height;
+      ids.slice(ids.length - n0).forEach((id) => { const h = hOf(id); hl -= h; hr += h; });
+      let n = 0;
+      while (n < ids.length) {
+        const h = hOf(ids[ids.length - 1 - n]);
+        if (hr - hl <= h) break; // moving it would leave the left side the longer one by more
+        hl += h; hr -= h; n += 1;
+      }
+      if (n !== moveRef.current) setMoveN(n);
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(measure); };
+    measure();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(kick) : null;
+    if (ro) { ro.observe(L); ro.observe(R); }
+    if (mq.addEventListener) mq.addEventListener('change', kick);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      if (ro) ro.disconnect();
+      if (mq.removeEventListener) mq.removeEventListener('change', kick);
+    };
+  }, []);
   const boardCard = board && board.rows && board.rows.length ? (
     <div className="gsx-rise gsx-card gsx-board" style={d('2.2s')}>
       <div className="gsx-ch"><span>Today&rsquo;s board{board.field ? ` · ${Number(board.field).toLocaleString()}` : ''}</span>{board.href ? <a href={board.href}>See all</a> : null}</div>
@@ -504,6 +545,52 @@ export function GauntletEndStage({
       )))}
     </div>
   ) : null;
+  // THE COLUMNS END LEVEL ON DESKTOP (owner, 2026-10-25: "move elements
+  // around ... so they fill space more evenly, ideally not overstretch").
+  // The right column's tail (more, All Daily Puzzles, the full stats) is
+  // movable: blocks go, last first, to the foot of the left column for as
+  // long as each move brings the two columns closer to level. Always
+  // recomputed from the unmoved baseline, so it settles and never flips back
+  // and forth. Phones keep one column and move nothing. Nothing stretches.
+  const statsNode = (
+    <>
+        {/* 5. FULL STATS: quiz by quiz, and the question that ended each */}
+        <div className="gsx-rise gsx-table" style={d('2.65s')}>
+          <div className="gsx-tr gsx-th"><span>{colLabel}</span><span>You</span><span>Field</span><span>Best</span></div>
+          {rows.map((x, i) => {
+            const m = misses ? misses[i] : null;
+            const can = !!(m && !m.cleared && m.q);
+            const open = can && openRow === i;
+            return (
+              <div key={x.key} className="gsx-rw">
+                <button type="button" className={'gsx-tr gsx-row' + (can ? ' can' : '')} style={{ background: pal.fill(x.bg) }}
+                  onClick={can ? () => setOpenRow(open ? -1 : i) : undefined} aria-expanded={can ? open : undefined} disabled={!can}>
+                  <span><b>{x.name}</b>{can ? <em aria-hidden="true">{open ? ' −' : ' +'}</em> : null}</span><span><b>{x.you}</b></span><span>{x.field}</span><span>{x.best}</span>
+                </button>
+                {open ? (
+                  <div className="gsx-miss">
+                    <div className="q">{mathText(m.q)}</div>
+                    <div className="a"><b>{mathText(m.right)}</b>{m.yours ? <span> · you said {mathText(m.yours)}</span> : m.timedOut ? <span> · the clock ran out</span> : null}</div>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+          <div className="gsx-tr gsx-tt">
+            <span>Total</span><span>{score}</span><span>{avgTotal != null ? avgTotal : '–'}</span><span>{leaderScore != null ? leaderScore : '–'}</span>
+          </div>
+        </div>
+        {misses && misses.some((m) => m && !m.cleared && m.q) ? <div className="gsx-fine">Tap a quiz to see the question that ended it.</div> : null}
+        {onPractice ? <button type="button" className="gsx-det" onClick={onPractice}>Practice replay</button> : null}
+    </>
+  );
+  const tail = [];
+  if (more) tail.push({ id: 'more', node: <div className="gsx-rise gsx-card gsx-more" style={d('2.55s')}>{more}</div> });
+  tail.push({ id: 'all', node: <a className="gsx-rise gsx-ob" href="/" style={d('2.6s')}>All Daily Puzzles</a> });
+  tail.push({ id: 'stats', node: statsNode });
+  const renderTail = (t) => (
+    <div key={t.id} className="gsx-tb" ref={(el) => { tailRefs.current[t.id] = el; }}>{t.node}</div>
+  );
   return (
     <div key={pal.look} className="gsx gsx-end" role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -515,7 +602,7 @@ export function GauntletEndStage({
       <div className="gsx-col gsx-ecol">
         <div className="gsx-rise" style={d('1.4s')}><TopBar pal={pal} /></div>
         <div className="gsx-egrid">
-          <div className="gsx-eleft">
+          <div className="gsx-eleft" ref={leftRef}>
             <div className="gsx-rise gsx-eye gsx-c" style={d('1.5s')}>{circuitName} · {dateLabel}</div>
             <div className="gsx-rise gsx-score" style={d('1.6s')}>
               <span>{shown}</span>
@@ -549,8 +636,9 @@ export function GauntletEndStage({
             {onShare ? (
               <button type="button" className="gsx-rise gsx-ib gsx-share" style={d('2.45s')} onClick={onShare}>{copied ? 'Copied' : 'Share Your Score'}</button>
             ) : null}
+            {tail.slice(tail.length - moveN).map(renderTail)}
           </div>
-          <div className="gsx-eright">
+          <div className="gsx-eright" ref={rightRef}>
             {meme ? <div className="gsx-rise gsx-meme" style={d('2.45s')}>{meme}</div> : null}
             {/* With the GIF on show, today's board sits under it on the right,
                 so the two columns come out even (owner, 2026-10-25). */}
@@ -562,42 +650,15 @@ export function GauntletEndStage({
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </a>
             ) : null}
-            {more ? <div className="gsx-rise gsx-card gsx-more" style={d('2.55s')}>{more}</div> : null}
-            <a className="gsx-rise gsx-ob" href="/" style={d('2.6s')}>All Daily Puzzles</a>
-            {/* 5. FULL STATS: quiz by quiz, and the question that ended each */}
-            <div className="gsx-rise gsx-table" style={d('2.65s')}>
-              <div className="gsx-tr gsx-th"><span>{colLabel}</span><span>You</span><span>Field</span><span>Best</span></div>
-              {rows.map((x, i) => {
-                const m = misses ? misses[i] : null;
-                const can = !!(m && !m.cleared && m.q);
-                const open = can && openRow === i;
-                return (
-                  <div key={x.key} className="gsx-rw">
-                    <button type="button" className={'gsx-tr gsx-row' + (can ? ' can' : '')} style={{ background: pal.fill(x.bg) }}
-                      onClick={can ? () => setOpenRow(open ? -1 : i) : undefined} aria-expanded={can ? open : undefined} disabled={!can}>
-                      <span><b>{x.name}</b>{can ? <em aria-hidden="true">{open ? ' −' : ' +'}</em> : null}</span><span><b>{x.you}</b></span><span>{x.field}</span><span>{x.best}</span>
-                    </button>
-                    {open ? (
-                      <div className="gsx-miss">
-                        <div className="q">{mathText(m.q)}</div>
-                        <div className="a"><b>{mathText(m.right)}</b>{m.yours ? <span> · you said {mathText(m.yours)}</span> : m.timedOut ? <span> · the clock ran out</span> : null}</div>
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-              <div className="gsx-tr gsx-tt">
-                <span>Total</span><span>{score}</span><span>{avgTotal != null ? avgTotal : '–'}</span><span>{leaderScore != null ? leaderScore : '–'}</span>
-              </div>
-            </div>
-            {misses && misses.some((m) => m && !m.cleared && m.q) ? <div className="gsx-fine">Tap a quiz to see the question that ended it.</div> : null}
-            {onPractice ? <button type="button" className="gsx-det" onClick={onPractice}>Practice replay</button> : null}
+            {tail.slice(0, tail.length - moveN).map(renderTail)}
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 const CSS = `
 .gsx{position:fixed;inset:0;z-index:85;background:var(--gsx-bg);color:var(--gsx-ink);overflow-y:auto;overflow-x:hidden;font-family:Manrope,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
@@ -683,6 +744,7 @@ const CSS = `
 .gsx-ecol{gap:16px}
 .gsx-egrid{display:flex;flex-direction:column;gap:16px}
 .gsx-eleft,.gsx-eright{display:flex;flex-direction:column;gap:14px}
+.gsx-tb{display:flex;flex-direction:column;gap:14px}
 .gsx-score{display:flex;flex-direction:column;align-items:center}
 .gsx-score span{display:inline-block;min-width:3ch;text-align:center;font-size:96px;line-height:1;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 .gsx-score i{font-style:normal;font-size:17px;font-weight:800}

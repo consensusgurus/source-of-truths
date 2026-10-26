@@ -36,7 +36,7 @@ const CSS = `
 .pmm-res i{font-style:normal;font-size:24px;font-weight:800;min-width:2.4ch;text-align:right;}
 .pmm-next{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
 .pmm-next p{margin:0;font-size:13.5px;font-weight:700;color:#cbd5e1;}
-.pmm-btn{display:inline-flex;align-items:center;height:42px;padding:0 16px;border-radius:10px;background:#7dd3fc;color:#08222e;
+.pmm-btn{display:flex;flex:1 1 100%;width:100%;box-sizing:border-box;justify-content:center;align-items:center;height:42px;padding:0 16px;border-radius:10px;background:#7dd3fc;color:#08222e;
   font-weight:800;font-size:14px;text-decoration:none;white-space:nowrap;}
 .pmm a.pmm-btn,.pmm a.pmm-btn:hover,.pmm a.pmm-btn:visited{color:#08222e;}
 .pmm a.pmm-t.go,.pmm a.pmm-t.go:hover{color:#e9edf4;}
