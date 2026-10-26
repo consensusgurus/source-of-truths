@@ -150,6 +150,17 @@ export default function EntryDoor({ onPick }) {
     return out;
   }, [phase, today]);
 
+  // NO HOME BEFORE THE DOOR (owner, 2026-10-26). The door can only decide in an
+  // effect, so the server-rendered home used to paint for a moment first. The
+  // home page's head script (ENTRY_WAIT in app/page.js) runs the same gate during
+  // parse and, when the door is due, stamps data-entry-wait on <html>, which lays
+  // a white sheet over the page. It comes off once the door is in the DOM, or
+  // here on every path where the door decides not to show.
+  const clearWait = () => { try { delete document.documentElement.dataset.entryWait; } catch (e) {} };
+  useEffect(() => {
+    if (phase) clearWait();
+  }, [phase]);
+
   useEffect(() => {
     let preview = false;
     let fresh = false;
@@ -158,10 +169,10 @@ export default function EntryDoor({ onPick }) {
       const q = sp.get('entry');
       preview = q === '1' || q === 'new' || q === 'ret';
       if (!preview) {
-        if (q === '0') return undefined;
+        if (q === '0') { clearWait(); return undefined; }
         const last = Number(window.localStorage.getItem(KEY)) || 0;
-        if (last && Date.now() - last < ENTRY_EVERY_MS) return undefined;
-        if (window.location.hash) return undefined;
+        if (last && Date.now() - last < ENTRY_EVERY_MS) { clearWait(); return undefined; }
+        if (window.location.hash) { clearWait(); return undefined; }
         // A NEW visitor: first door on this browser, nothing played, no register stored.
         fresh = !last && !hasFootprint() && !window.localStorage.getItem('sot_theme2');
         window.localStorage.setItem(KEY, String(Date.now()));
@@ -172,7 +183,7 @@ export default function EntryDoor({ onPick }) {
     } catch (e) {
       // Storage refused (private mode): the read failing is not evidence it was
       // seen, but a door on every load would be worse, so it stays shut.
-      if (!preview) return undefined;
+      if (!preview) { clearWait(); return undefined; }
     }
     setIsNew(fresh);
     setSunday(isSundayET());

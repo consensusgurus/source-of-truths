@@ -68,11 +68,32 @@ window.__sotMe={key:k,promise:fetch('/api/quiz/me?'+k).then(function(r){return r
 // decision needs the browser: it comes from the URL, which the server can read,
 // so it is passed down as the state's INITIAL value and there is no flash and
 // no hydration mismatch.
+// NO HOME BEFORE THE DOOR (owner, 2026-10-26: "first time site visitors see the
+// main page for a second before they see the welcome animation"). The entry
+// door (app/EntryDoor.jsx) decides in an effect, after the server-rendered home
+// has already painted. This runs the door's own gate during parse, BEFORE any of
+// the page below can paint: same key (sot_entry_v1), same week, same ?entry= and
+// #hash rules. When the door is due it stamps data-entry-wait on <html> and a
+// white sheet (the door's own ground) covers the page until the door mounts and
+// lifts it. A five-second backstop lifts it anyway if the door never arrives.
+const ENTRY_WAIT = `(function(){try{
+var q=new URLSearchParams(location.search).get('entry');
+var pv=q==='1'||q==='new'||q==='ret';
+if(!pv){if(q==='0'||location.hash)return;
+var l=Number(localStorage.getItem('sot_entry_v1'))||0;
+if(l&&Date.now()-l<${7 * 24 * 3600 * 1000})return;}
+var h=document.documentElement;h.setAttribute('data-entry-wait','1');
+setTimeout(function(){h.removeAttribute('data-entry-wait')},5000);
+}catch(x){}})();`;
+const ENTRY_WAIT_CSS = 'html[data-entry-wait]::after{content:"";position:fixed;inset:0;z-index:5999;background:#ffffff;}';
+
 export default function HomePage({ searchParams }) {
   const sp = searchParams || {};
   const stageDefault = String(sp.stage ?? '') !== '0';
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: ENTRY_WAIT_CSS }} />
+      <script dangerouslySetInnerHTML={{ __html: ENTRY_WAIT }} />
       <script dangerouslySetInnerHTML={{ __html: ME_PRELOAD }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqLd()) }} />
       {/* THE DRAWING BANNER (owner, 2026-10-21). Outside the snapshot box on

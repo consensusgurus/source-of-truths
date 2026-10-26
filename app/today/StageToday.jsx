@@ -2002,6 +2002,51 @@ export default function StageToday() {
     return () => mq.removeEventListener('change', on);
   }, []);
 
+  // THE PHONE HOME FILLS THE SCREEN (owner, 2026-10-26): the drawing, the tiles,
+  // All / My Puzzles and the Categories / Skills switch take exactly the first
+  // screen, the switch the last thing on it with room to spare; the ranks and
+  // Everything Else are a scroll away. The fold's height is CSS (100svh, the
+  // screen with the browser bars showing, so the switch is never under them);
+  // all this measures is where the fold starts and how tall the tiles may get
+  // before they look silly on a tablet. It re-measures only when the WIDTH
+  // changes (a turn of the phone), never when the bars slide, so nothing
+  // resizes under a thumb mid-scroll.
+  const foldRef = useRef(null);
+  useEffect(() => {
+    if (!runsMq || picked) return undefined;
+    let lastW = 0;
+    const TILE_MAX = 150;
+    const fit = (force) => {
+      const el = foldRef.current;
+      if (!el) return;
+      const w = window.innerWidth;
+      if (!force && w === lastW) return;
+      lastW = w;
+      el.style.setProperty('--fold-top', Math.round(el.getBoundingClientRect().top + window.scrollY) + 'px');
+      const grid = el.querySelector('.mph-grid');
+      if (!grid) return;
+      const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length || 2;
+      const rows = Math.ceil(grid.children.length / cols);
+      const gap = parseFloat(getComputedStyle(el).rowGap) || 10;
+      let rest = 0;
+      for (const c of el.children) {
+        if (c === grid || c.offsetParent === null) continue;
+        rest += c.offsetHeight + gap;
+      }
+      el.style.setProperty('--fold-max', Math.round(rows * TILE_MAX + (rows - 1) * 8 + rest) + 'px');
+    };
+    fit(true);
+    const raf = requestAnimationFrame(() => fit(true));
+    const onR = () => fit(false);
+    window.addEventListener('resize', onR);
+    window.addEventListener('orientationchange', onR);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onR);
+      window.removeEventListener('orientationchange', onR);
+    };
+  }, [runsMq, picked, ixLens, mDraw]);
+
   // WHERE THE A-TO-Z / REORDER BAR SITS (owner, 2026-09-02). A first-time or
   // unregistered visitor on a phone gets it at the FOOT of the categories, not
   // the top: those two controls rearrange a page the reader has not read yet,
@@ -3824,6 +3869,14 @@ export default function StageToday() {
               <MindLoftMark size={24} ink="var(--stg-ink)" accent="var(--stg-brand,#7dd3fc)" />
               <span>Mind <span style={{ color: 'var(--stg-brand,#7dd3fc)' }}>Loft</span></span>
             </a>
+            {/* ON A PHONE TURNED SIDEWAYS (owner, 2026-10-26) the drawing rides in
+                the top bar, so the tiles keep the little height there is. */}
+            {mDraw && !picked ? (
+              <a className="sty-mdraw hd" href="/quizzes/community#drawing-earn">
+                <span>{(() => { const n = who && mTix.count != null ? Number(mTix.count) || 0 : 0; return <><b>{who && mTix.count == null ? '\u2013' : formatTickets(n)} {n === 1 ? 'Ticket' : 'Tickets'}</b> for the {DRAWING.prizeLabel} Drawing</>; })()}</span>
+                <u>Ways to Earn</u>
+              </a>
+            ) : null}
             <span className="sty-mtbr">
               {mPane ? (
                 <button type="button" className="sty-mback" onClick={mBack}>&larr; {mBackTo}</button>
@@ -3921,6 +3974,17 @@ export default function StageToday() {
           <div className="sty-mph">
             {!picked ? (
               <>
+                {/* THE FIRST SCREEN (owner, 2026-10-26): the drawing back at the top,
+                    then the tiles grown to fill the screen, All / My Puzzles in the
+                    same grid, and the Categories / Skills switch the last thing on
+                    it. Sideways, 3 or 4 tiles across, whatever fits. */}
+                <div className="mph-fold" ref={foldRef}>
+                {mDraw ? (
+                  <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
+                    <span>{(() => { const n = who && mTix.count != null ? Number(mTix.count) || 0 : 0; return <><b>{who && mTix.count == null ? '\u2013' : formatTickets(n)} {n === 1 ? 'Ticket' : 'Tickets'}</b> for the {DRAWING.prizeLabel} Drawing</>; })()}</span>
+                    <u>Ways to Earn</u>
+                  </a>
+                ) : null}
                 <div className="mph-grid">
                   {lensCats.map(({ cat, games }) => {
                     const rc = rampCat(cat);
@@ -3932,16 +3996,14 @@ export default function StageToday() {
                       </button>
                     );
                   })}
-                </div>
-                {/* BELOW THE TILES (owner, 2026-10-25): All Puzzles / My Puzzles, then
-                    the Categories / Skills switch, then the ranks. */}
-                <div className="mph-duo">
-                  <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}>All Puzzles<em>{alphaDone} of {alpha.length}</em></button>
-                  <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}>My Puzzles<em>{pinned.length ? `${pinned.length} starred` : 'Star any puzzle'}</em></button>
+                  {/* All Puzzles / My Puzzles close the grid, the same size as the tiles. */}
+                  <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}><b>All Puzzles</b><em>{alphaDone} of {alpha.length}</em></button>
+                  <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}><b>My Puzzles</b><em>{pinned.length ? `${pinned.length} starred` : 'Star any puzzle'}</em></button>
                 </div>
                 <div className="mph-seg" role="group" aria-label="Group puzzles by">
                   <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
                   <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
+                </div>
                 </div>
                 {/* UNDER THE TILES (owner, 2026-10-25): the ranks, then the drawing
                     with the reader's tickets in it. The progress bar is retired. */}
@@ -3959,12 +4021,6 @@ export default function StageToday() {
                     <a className="join" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Pick a name to keep a rank and earn tickets</a>
                   )}
                 </div>
-                {mDraw ? (
-                  <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
-                    <span>{(() => { const n = who && mTix.count != null ? Number(mTix.count) || 0 : 0; return <><b>{who && mTix.count == null ? '\u2013' : formatTickets(n)} {n === 1 ? 'Ticket' : 'Tickets'}</b> for the {DRAWING.prizeLabel} Drawing</>; })()}</span>
-                    <u>Ways to Earn</u>
-                  </a>
-                ) : null}
                 <div className="mph-lab">Everything Else</div>
                 <div className="mph-list">
                   <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<span>&rarr;</span></button>
@@ -6760,6 +6816,62 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-tail:not(.on){display:none;}
 }
 @media (max-width:900px) and (prefers-reduced-motion:reduce){.sty-tailbtn svg{transition:none;}}
+
+/* ── THE PHONE'S FIRST SCREEN (owner, 2026-10-26) ──
+   The drawing, the tiles, All / My Puzzles and the Categories / Skills switch
+   fill exactly the first screen, the switch last with 14px to spare; the ranks
+   and Everything Else start below the fold. 100svh is the screen with the
+   browser bars showing, so the switch never lands under them. --fold-top (where
+   the fold starts) and --fold-max (the height at which tiles would pass 150px,
+   so a tablet does not get giant tiles) are measured by the foldRef effect.
+   Tiles never go under 48px: on a very short screen the fold simply runs long
+   rather than squeeze them. 2 across upright, 3 or 4 across when wider. */
+@media (max-width:900px){
+  .mph-fold{display:flex;flex-direction:column;gap:10px;
+    min-height:calc(100vh - var(--fold-top, 0px) - 14px);
+    min-height:min(calc(100svh - var(--fold-top, 0px) - 14px), var(--fold-max, 100000px));}
+  .sty-mph .mph-fold > .sty-mdraw{margin-top:0;flex:none;}
+  .sty-mph .mph-fold > .mph-seg{flex:none;}
+  .sty-mph .mph-grid{--mcols:2;flex:1 1 auto;grid-template-columns:repeat(var(--mcols),minmax(0,1fr));grid-auto-rows:minmax(48px,auto);align-content:stretch;}
+  .sty-mph .mph-grid > .mph-t,.sty-mph .mph-grid > .mph-big{justify-content:space-between;gap:4px;min-height:48px;box-sizing:border-box;}
+  .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:15.5px;font-weight:800;line-height:1.2;}
+  .sty-mph .mph-grid > .mph-big{padding:10px 12px 11px;}
+  .sty-mph .mph-fold > .mph-seg button{padding:9px 0 10px;font-size:13.5px;}
+  /* The drawing in the top bar is for a phone turned sideways only. */
+  .sty-mtop a.sty-mdraw.hd{display:none;}
+}
+@media (max-width:900px) and (min-width:600px){
+  .sty-mph .mph-grid{--mcols:3;}
+}
+@media (max-width:900px) and (min-width:750px){
+  .sty-mph .mph-grid{--mcols:4;}
+}
+@media (max-width:900px) and (orientation:landscape) and (max-height:600px){
+  .sty-mtop a.sty-mdraw.hd{display:flex;flex:0 1 auto;min-width:0;gap:12px;padding:6px 12px 7px;font-size:12px;border-radius:11px;background:#fde7ad;color:#08222e;}
+  .stage-page:not([data-stage-theme=light]) .sty-mtop a.sty-mdraw.hd{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
+  .sty-mph .mph-fold > .sty-mdraw{display:none;}
+  .sty-mtop{gap:8px;padding-top:max(8px, env(safe-area-inset-top));padding-left:max(16px, env(safe-area-inset-left));padding-right:max(16px, env(safe-area-inset-right));}
+  .sty-mph .mph-fold{gap:8px;}
+  .sty-mph .mph-grid > .mph-t,.sty-mph .mph-grid > .mph-big{padding:7px 11px 8px;gap:2px;}
+  .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:14.5px;}
+  .sty-mph .mph-grid > .mph-t em,.sty-mph .mph-grid > .mph-big em{font-size:11.5px;}
+  .sty-mph .mph-grid{grid-auto-rows:minmax(44px,auto);}
+  .sty-mph .mph-grid > .mph-t,.sty-mph .mph-grid > .mph-big{min-height:44px;}
+  .sty-mph .mph-fold > .mph-seg button{padding:7px 0 8px;font-size:13px;}
+}
+/* The shortest sideways screens (an SE-sized phone with the bars up): tighter
+   still, so the switch keeps its place on the first screen. */
+@media (max-width:900px) and (orientation:landscape) and (max-height:360px){
+  .sty-mph .mph-grid > .mph-t,.sty-mph .mph-grid > .mph-big{padding:5px 10px 6px;gap:0;min-height:38px;}
+  .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:13.5px;line-height:1.15;}
+  .sty-mph .mph-grid > .mph-t em,.sty-mph .mph-grid > .mph-big em{font-size:11px;line-height:1.2;}
+  .sty-mph .mph-grid{grid-auto-rows:minmax(38px,auto);gap:6px;}
+  .sty-mph .mph-fold{gap:6px;}
+  .sty-mtop{gap:6px;padding-top:max(4px, env(safe-area-inset-top));}
+  .sty-mtb{height:38px;}
+  .sty-mph .mph-fold > .mph-seg{padding:2px;}
+  .sty-mph .mph-fold > .mph-seg button{padding:5px 0 6px;font-size:12.5px;}
+}
 
 /* ── THE DESKTOP IN THE PHONE'S LOOK (owner, 2026-10-25) ──
    Same desktop structure (cap, index, pane, rail), drawn the way the phone
