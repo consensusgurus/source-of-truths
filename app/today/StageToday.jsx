@@ -2431,7 +2431,7 @@ export default function StageToday() {
       <button type="button" aria-pressed={sortBy === 'diff'} onClick={() => pickSort('diff')}
         title="Gentlest first, rated every Sunday night from the last 7 days of play"><span className="sty-sl">Easy to Hard</span><span className="sty-ss">Easy</span></button>
       <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}
-        title="Most played across the site over the last 7 days">Popular</button>
+        title="Most played across the site today">Popular</button>
       <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A to Z</button>
     </div>
   );
@@ -2676,9 +2676,12 @@ export default function StageToday() {
       const r = (g) => diff[g.key] || 9;
       return list.slice().sort((a, b) => (r(a) - r(b)) || a.name.localeCompare(b.name));
     }
-    if (sortBy !== 'pop' || !fav || !fav.week) return list;
-    const w = fav.week;
-    return list.slice().sort((a, b) => ((w[b.key] || 0) - (w[a.key] || 0)) || a.name.localeCompare(b.name));
+    // POPULAR IS TODAY'S PLAYS (owner, 2026-10-26), off the day board the
+    // tiles already read; the week's plays only break a tie.
+    if (sortBy !== 'pop' || !board) return list;
+    const w = (fav && fav.week) || {};
+    const t = (g) => Number((boardBy[g.key] || {}).plays) || 0;
+    return list.slice().sort((a, b) => (t(b) - t(a)) || ((w[b.key] || 0) - (w[a.key] || 0)) || a.name.localeCompare(b.name));
   };
   const favBlock = (cat, games, k) => {
     if (!k) return null;
@@ -3246,7 +3249,7 @@ export default function StageToday() {
     const base = (a, b) => PILL_CIRCUITS.indexOf(a.id) - PILL_CIRCUITS.indexOf(b.id);
     const by = sortBy === 'az' ? (a, b) => a.name.localeCompare(b.name)
       : sortBy === 'diff' ? (a, b) => (diff ? df(a) - df(b) : 0) || base(a, b)
-        : (a, b) => (w ? wk(b) - wk(a) : 0) || base(a, b);
+        : (a, b) => (((runStat[b.id] || {}).players || 0) - ((runStat[a.id] || {}).players || 0)) || (w ? wk(b) - wk(a) : 0) || base(a, b);
     if (polyRun && list.some((c) => polyRun.legs.some((l) => l.id === c.id))) list.push(polyRun);
     return list.sort((a, b) => ((runFull(a) ? 1 : 0) - (runFull(b) ? 1 : 0)) || by(a, b));
   };
@@ -6689,9 +6692,8 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      who leads today; then Play and today's plays along the foot. One size
      everywhere. */
   .sty-ix .sty-g{display:flex;flex-direction:column;gap:3px;min-height:104px;box-sizing:border-box;padding:9px 10px 10px 12px;}
-  .sty-g .sty-gn > .sty-gi,.sty-g .sty-gn > svg:first-child{display:none;}
-  .sty-g .sty-gn::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;box-sizing:border-box;
-    border:2px solid var(--stg-ink);background:var(--cfull, var(--cc));}
+  /* THE GLYPH IN ITS CATEGORY'S COLOUR stands in for the dot (owner, 2026-10-26). */
+  .sty-g .sty-gi,.sty-g.grp .sty-gi,.sty-g.grp.done .sty-gi,.sty-g.done.res .sty-gi{color:var(--cci, var(--cc));opacity:1;}
   .sty-g .sty-gn{font-size:16px;}
   .sty-g .sty-gld{display:block;font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-ink2, var(--stg-ink));opacity:.85;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -6703,9 +6705,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-lh{background:var(--stg-surf);border-bottom:2px solid var(--stg-ink);font-family:inherit;font-size:10.5px;font-weight:800;color:var(--stg-ink);}
   .sty-lh+.sty-lr{border-top:0;}
   .sty-lr .ic{background:transparent;}
-  .sty-lr .ic > *{display:none;}
-  .sty-lr .ic::before{content:"";width:12px;height:12px;border-radius:50%;box-sizing:border-box;
-    border:2px solid var(--stg-ink);background:var(--cfull, var(--cc));}
+  .sty-lr .ic .sty-gi{color:var(--cci, var(--cc));}
   .sty-lr .ct{background:var(--stg-ink);color:var(--stg-ground);border:2px solid var(--stg-ink);}
   .sty-lr.run .ct{color:var(--stg-ground);}
   .sty-lr.done .ct,.sty-lr.run.done .ct{background:transparent;color:var(--stg-ink);}
@@ -6761,6 +6761,17 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-rt3 .go:hover{filter:brightness(.94);}
   .sty-rt3.done{border-width:3px;padding:8px 9px 8px 12px;}
   .sty-ix .sty-pqs,.sty-ix .sty-fav{display:none !important;}
+  /* THE CAP AS IN THE MOCKUP (owner, 2026-10-26): no rule under it, the name at
+     20px, the date in bold capitals, the day's strip as a row of 16px blocks,
+     and the page starting close under it. */
+  .sty-cap{border-bottom:0;padding:14px 28px 6px;}
+  .sty-id b{font-size:20px;line-height:1.3;}
+  .sty-date{font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--stg-ink);}
+  .sty-capl .stl{height:16px;gap:5px;}
+  .sty-capl .stl-b{gap:1px;}
+  .sty-capl .stl-r{height:100% !important;border-radius:2px;}
+  .sty-capl .stl-r.off{background:color-mix(in srgb, var(--stg-ink) 13%, transparent) !important;}
+  .sty-wrap{padding-top:12px;}
   /* ONE INK, NO SECOND HUE ON A TINTED PANE (owner, 2026-10-25: "secondary
      colors here don't work at all"). A finished tile is white with a heavier ink
      outline, a tile the group played keeps the plain ink outline, and every

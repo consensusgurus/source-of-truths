@@ -22,7 +22,7 @@
 // inherits the register's --stg-* tokens, which are undefined outside it.
 // The finish flood is position:fixed at z 9000 and covers all of this on its own.
 
-import { cycleSiteLook } from '@/lib/stage-look';
+import { cycleSiteLook, useStageLook, isColorLook } from '@/lib/stage-look';
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
@@ -198,6 +198,79 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
 .lc-reveal-btn:focus-visible,.lc-hide:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 .lc-hide{border:0;background:none;padding:0;cursor:pointer;color:var(--stg-mute);font:600 12px Manrope,system-ui,sans-serif;text-decoration:underline;text-underline-offset:2px;}
 .lc-hide:hover{color:var(--stg-ink);}
+
+/* ── THE PUZZLE PAGE IN THE PHONE'S LOOK (owner, 2026-10-26) ──
+   The same treatment as the desktop home: no rule under the cap, the cap as
+   the home draws it (name at 20px, bold date, the strip in 16px blocks, the
+   figures plain, the name a pill the height of the look switch), the index as
+   outlined tiles, ink pills for the subheader's controls, and the right panel
+   one outlined box with its tabs along the top. */
+.lc-cap{--dk:2px solid var(--stg-ink);}
+.lc-cap .sty-cap{border-bottom:0;padding:14px 28px 8px;}
+.lc-cap .sty-id b{font-size:20px;line-height:1.3;}
+.lc-cap .sty-date{font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--stg-ink);}
+.lc-cap .sty-capl .stl{height:16px;gap:5px;}
+.lc-cap .sty-capl .stl-b{gap:1px;}
+.lc-cap .sty-capl .stl-r{height:100% !important;border-radius:2px;}
+.lc-cap .sty-capl .stl-r.off{background:color-mix(in srgb, var(--stg-ink) 13%, transparent) !important;}
+.lc-cap .sty-figs{align-items:center;gap:24px;}
+.lc-cap .sty-figs > *{order:5;}
+.lc-cap .sty-figs > .lc-fday{order:1;}
+.lc-cap .sty-figs > .lc-fg{order:2;}
+.lc-cap .sty-figs > .lc-fall{order:3;}
+.lc-cap .sty-figs > .sty-who{order:6;display:inline-flex;align-items:center;height:40px;padding:0 16px;border:var(--dk);border-radius:999px;}
+.lc-cap .sty-who > i{display:none;}
+.lc-cap .sty-who > b{font-size:14px;line-height:1.3;}
+.lc-cap .sty-fca{text-align:center;}
+.lc-cap .sty-fca > b{font-size:19px;line-height:1.2;}
+.lc-cap .sty-fca > i{font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--stg-ink);}
+.lc-cap .sty-tg{width:40px;height:40px;padding:0;border:var(--dk);border-radius:50%;color:var(--stg-ink);}
+.lc-nav{--dk:2px solid var(--stg-ink);padding-top:10px;}
+.lc-nav .sty-ixn{gap:8px;width:236px;}
+.lc-nav .sty-ixsep{margin:2px 0;background:transparent;}
+.lc-nav .sty-ixb{grid-template-columns:minmax(0,1fr);border:var(--dk);border-radius:12px;padding:7px 12px;
+  background:var(--stg-surf);color:var(--stg-ink);font-size:14px;font-weight:800;}
+.lc-nav .sty-ixb > i{display:none;}
+.lc-nav .sty-ixb:hover{background:var(--stg-surf);color:var(--stg-ink);filter:brightness(.97);}
+.lc-nav.slc .sty-ixb.ct{background:color-mix(in srgb, var(--cfull) 60%, #fff);color:#0b0d12;}
+.lc-nav .sty-ixb.on,.lc-nav .sty-ixb.ct.on{background:var(--stg-ink);color:var(--stg-ground);border-color:var(--stg-ink);}
+.lc-nav .sty-ixb.lc-ee{border-color:transparent;background:transparent;padding:5px 12px;font-weight:700;font-size:13.5px;}
+.lc-nav .sty-ixsw{border:var(--dk);margin:0;padding:3px;}
+.lc-nav .sty-ixsw button{font-size:13px;letter-spacing:0;text-transform:none;padding:7px 3px;}
+.lc-nav .sty-ixsw button:first-child{order:2;}
+.lc-nav .lc-sub{margin:-4px 0 2px;border:var(--dk);border-radius:12px;overflow:hidden;background:var(--stg-surf);gap:0;}
+.lc-nav .lc-g{border-radius:0;color:var(--stg-ink);font-weight:600;padding:5px 12px;border-top:1.5px solid color-mix(in srgb, var(--stg-ink) 14%, transparent);}
+.lc-nav .lc-g:first-child{border-top:0;}
+.lc-nav .lc-g.now{background:var(--stg-ink);color:var(--stg-ground);box-shadow:none;}
+.lc-nav .lc-g s.up,.lc-nav .lc-g s.pz{color:inherit;}
+html.lc-on .lc-host{padding-left:290px !important;}
+.lc-sub-btn,.lc-reveal-btn{border:2px solid var(--stg-ink) !important;color:var(--stg-ink) !important;font-size:13px;height:34px;}
+.lc-sub-btn:hover,.lc-reveal-btn:hover{filter:brightness(.96);}
+.lc-shr{color:var(--stg-ink) !important;}
+.lc-side{--dk:2px solid var(--stg-ink);right:22px;width:300px;top:calc(var(--lc-hh,62px) + 10px);border:var(--dk);border-radius:12px;overflow:hidden;background:var(--stg-surf);}
+.lc-tabs{height:auto;padding:0;border-bottom:2px solid var(--stg-ink);}
+.lc-tab{padding:10px 0;border-bottom:0;color:var(--stg-ink);font-weight:800;}
+.lc-tab.on{background:var(--stg-ink);color:var(--stg-ground);}
+.lc-body{padding:12px 14px;}
+.lc-row{border-bottom:1.5px solid color-mix(in srgb, var(--stg-ink) 14%, transparent);}
+.lc-row span:first-child,.lc-row em,.lc-cap2,.lc-empty,.lc-hide{color:var(--stg-ink);}
+.lc-row.me{background:color-mix(in srgb, var(--stg-ink) 8%, transparent);box-shadow:none;}
+.lc-stat{border:var(--dk);background:var(--stg-surf);}
+.lc-stat i{color:var(--stg-ink);font-weight:700;}
+.lc-day{border:2px solid var(--stg-ink);background:var(--stg-surf);color:var(--stg-ink);border-radius:8px;}
+.lc-day.x{border:0;}
+.lc-day.p{background:var(--stg-ink);color:var(--stg-ground);}
+.lc-day.t{box-shadow:inset 0 0 0 2px var(--stg-ink);}
+/* The game's own subheader and gate, inside the frame only: no rule under the
+   figures, the figures in plain bold type, the gate's title larger and its
+   start button the one ink button (the button every gate puts first in its
+   action row, row-reversed to the right edge). */
+html.lc-on .lc-host .stg-fg{border-bottom:0;}
+html.lc-on .lc-host .stg-fg b{font-family:inherit;font-size:18px;font-weight:800;}
+html.lc-on .lc-host .stg-fg i{font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.07em;color:var(--stg-ink);}
+html.lc-on .lc-host .stg-gate > div:first-child{font-size:26px !important;line-height:1.3;}
+html.lc-on .lc-host .stg-gate > div:last-child > button:first-child:not([type=button]){background:var(--stg-ink) !important;color:var(--stg-ground) !important;
+  border:2px solid var(--stg-ink) !important;border-radius:10px !important;font-weight:800 !important;}
 `;
 
 export default function LayoutCInner({ gameKey }) {
@@ -221,6 +294,7 @@ export default function LayoutCInner({ gameKey }) {
   const [ixLens, setIxLens] = useState('skill');
   const capRef = useRef(null);
   const [theme, setTheme] = useStageTheme();
+  const [siteLook] = useStageLook();
   const light = theme === 'light';
   const stats = useDayStats();
   // Groups standing is a 5-10s server read for a side rail, so it waits until
@@ -467,18 +541,18 @@ export default function LayoutCInner({ gameKey }) {
       localStorage.setItem(PANE_KEY, id);
     } catch (err) {}
   };
-  const ixLink = (id, label, hue) => (
-    <Link key={id} className="sty-ixb" href="/" style={{ '--cc': hue }} onClick={setPane(id)}>
+  const ixLink = (id, label, hue, cls) => (
+    <Link key={id} className={'sty-ixb' + (cls ? ' ' + cls : '')} href="/" style={{ '--cc': hue }} onClick={setPane(id)}>
       <i aria-hidden="true" /><span>{label}</span>
     </Link>
   );
   const ixHash = (hash, label) => (
-    <Link key={hash} className="sty-ixb" href={'/#' + hash} style={{ '--cc': 'var(--stg-mute)' }}>
+    <Link key={hash} className="sty-ixb lc-ee" href={'/#' + hash} style={{ '--cc': 'var(--stg-mute)' }}>
       <i aria-hidden="true" /><span>{label}</span>
     </Link>
   );
   const ixDoor = (href, label) => (
-    <Link key={href} className="sty-ixb" href={href} style={{ '--cc': 'var(--stg-mute)' }}>
+    <Link key={href} className="sty-ixb lc-ee" href={href} style={{ '--cc': 'var(--stg-mute)' }}>
       <i aria-hidden="true" /><span>{label}</span>
     </Link>
   );
@@ -561,18 +635,18 @@ export default function LayoutCInner({ gameKey }) {
               {!who ? <a className="sty-keep" href="/?signup=1">Keep stats, play with friends</a> : null}
               {who ? <div className="sty-who"><b>{who}</b><i>player</i></div> : null}
               {who && grp && Array.isArray(grp.groups) ? grp.groups.map((g) => (
-                <Link key={g.code} className="sty-fca" href={`/groups/${g.code}`}>
+                <Link key={g.code} className="sty-fca lc-fg" href={`/groups/${g.code}`}>
                   <b>{g.rank ? '#' + g.rank : '–'}{typeof g.members === 'number' && g.members ? <i> of {g.members}</i> : null}</b>
                   <i>{g.name}</i>
                 </Link>
               )) : null}
               {who ? (
-                <Link className="sty-fca" href="/#sty-board">
+                <Link className="sty-fca lc-fday" href="/#sty-board">
                   <b>{stats.dayRank ? '#' + stats.dayRank : '–'}</b><i>Today</i>
                 </Link>
               ) : null}
               {who ? (
-                <a className="sty-fca" href="/quizzes/hub">
+                <a className="sty-fca lc-fall" href="/quizzes/hub">
                   <b>{rank ? '#' + rank : '–'}</b><i>All-Time</i>
                 </a>
               ) : null}
@@ -597,7 +671,7 @@ export default function LayoutCInner({ gameKey }) {
         </div>
       </div>
 
-      <nav className="lc-nav" aria-label="Sections">
+      <nav className={'lc-nav' + (isColorLook(siteLook) ? ' slc' : '')} aria-label="Sections">
         <div className="sty-ixn">
           {ixLink('all', 'All Puzzles', 'var(--stg-ink)')}
           {ixLink('sty-mine', 'My Puzzles', 'var(--stg-acc)')}
@@ -608,7 +682,7 @@ export default function LayoutCInner({ gameKey }) {
           </div>
           {lensCats.map(({ cat, games: gs }) => (
             <React.Fragment key={cat}>
-              <button type="button" className={'sty-ixb' + (cat === shownCat ? ' on' : '')} style={{ '--cc': inkFor(swatchCat(cat)) }}
+              <button type="button" className={'sty-ixb ct' + (cat === shownCat ? ' on' : '')} style={{ '--cc': inkFor(swatchCat(cat)), '--cfull': categoryColor(swatchCat(cat)) }}
                 aria-expanded={cat === shownCat} onClick={() => toggleCat(cat)}>
                 <i aria-hidden="true" /><span>{ixLabel(cat)}</span>
               </button>
@@ -633,7 +707,7 @@ export default function LayoutCInner({ gameKey }) {
             </React.Fragment>
           ))}
           <span className="sty-ixsep" aria-hidden="true" />
-          {ixLink('sty-circs', 'Runs', 'var(--stg-mute)')}
+          {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
           {ixHash('sty-quizzes', 'Quizzes')}
           {ixHash('sty-iq', 'IQ Tests')}
           {ixHash('sty-exams', 'School Tests')}
