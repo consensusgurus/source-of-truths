@@ -435,7 +435,20 @@ export default function StageStick({
                 )))}
               </tbody></table>
             </>
-          ) : null}
+          ) : (
+            /* EMPTY SLOTS WHILE THE BOARD LOADS (owner, 2026-10-26): the card
+               holds its place, so the challenge card beside it never starts on
+               the left and jumps right when the rows land. The group board
+               gets no slots; it opens when it arrives. */
+            <>
+              <div className="sst-sl">{s.boardLabel || 'Today’s board'}</div>
+              <table className="sst-tbl sst-tbl-empty" aria-hidden="true"><tbody>
+                {[1, 2, 3, 4].map((n) => (
+                  <tr key={n}><td className="p">{n < 4 ? '#' + n : ''}</td><td className="w">{n < 4 ? '' : 'You'}</td><td className="st">—</td></tr>
+                ))}
+              </tbody></table>
+            </>
+          )}
           {s.gameKey ? <div className="sst-grp"><FinishGroupLine gameKey={s.gameKey} gameName={s.gameName} missLabel={s.missLabel} /></div> : null}
         </section>
       ) : null}
@@ -685,9 +698,9 @@ const CSS = `
 .sst-tbl tr.me + tr td{border-top-color:transparent;}
 .sst-tbl tr.gap td{text-align:center;padding:2px;opacity:.6;}
 .sst-grp:not(:empty){margin-top:12px;padding-top:12px;border-top:1px solid var(--sst-rule);}
-.sst-grp:only-child:not(:empty){margin-top:0;padding-top:0;border-top:0;}
-/* No board rows yet and no groups: no empty card while the board loads. */
-.sst-card:has(> .sst-grp:only-child:empty){display:none;}
+.sst-tbl-empty td{opacity:.42;}
+.sst-tbl-empty .w::before{content:"";display:inline-block;width:60%;height:.7em;border-radius:4px;background:var(--sst-rule);vertical-align:middle;}
+.sst-tbl-empty tr:last-child .w::before{display:none;}
 /* The group line is the one read that lands seconds after everything else, so
    it OPENS rather than appearing: a jump of a whole table pushed every card
    under it down at once (owner, 2026-10-25: "jitters"). */

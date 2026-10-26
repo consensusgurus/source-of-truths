@@ -2676,14 +2676,46 @@ export default function StageToday() {
   // the pane title and filters the pane's puzzles by name and description as
   // you type. Desktop only, and gone on a narrower window.
   const [findQ, setFindQ] = useState('');
+  // UNIVERSAL (owner, 2026-10-26): "if im on sudoku page, i should be able to
+  // search all puzzles and quizzes." A query searches every live daily from
+  // whatever pane it is typed in, and the quiz catalogue under them.
+  const findOn = !!findQ.trim();
   const findIn = (list) => {
     const q = findQ.trim().toLowerCase();
-    return q ? list.filter((g) => (g.name + ' ' + (g.tag || '') + ' ' + (g.tagLong || '')).toLowerCase().includes(q)) : list;
+    return q ? alpha.filter((g) => (g.name + ' ' + (g.tag || '') + ' ' + (g.tagLong || '')).toLowerCase().includes(q)) : list;
   };
+  useEffect(() => {
+    if (!findOn || topics) return undefined;
+    let alive = true;
+    fetch('/api/quiz/topics').then((r) => r.json())
+      .then((d) => { if (alive && d && Array.isArray(d.topics) && d.topics.length) setTopics(d.topics); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [findOn, topics]);
+  const findQuiz = (() => {
+    if (!findOn) return null;
+    const q = findQ.trim().toLowerCase();
+    const hits = [];
+    for (const t of (topics || [])) for (const z of (t.quizzes || [])) {
+      if (String(z.title).toLowerCase().includes(q)) hits.push({ ...z, label: t.label });
+    }
+    return (
+      <div className="sty-findq">
+        <div className="sty-plab">Quizzes{topics ? ' \u00b7 ' + (hits.length > QZ_SEARCH_MAX ? QZ_SEARCH_MAX + '+' : hits.length) : ''}</div>
+        {hits.length ? (
+          <ul className="sty-qres">
+            {hits.slice(0, QZ_SEARCH_MAX).map((z) => (
+              <li key={z.id}><a href={`/quiz/${z.id}`}><span className="t">{z.title}</span><i>{z.label}</i></a></li>
+            ))}
+          </ul>
+        ) : <div className="sty-lnone">{topics ? <>No quizzes match &ldquo;{findQ.trim()}&rdquo;.</> : 'Searching the quizzes\u2026'}</div>}
+      </div>
+    );
+  })();
   const findBox = (
     <label className="sty-find" onClick={(e) => e.stopPropagation()}>
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
-      <input type="search" value={findQ} onChange={(e) => setFindQ(e.target.value)} placeholder="Find a puzzle" aria-label="Find a puzzle" />
+      <input type="search" value={findQ} onChange={(e) => setFindQ(e.target.value)} placeholder="Search puzzles and quizzes" aria-label="Search puzzles and quizzes" />
     </label>
   );
   const sortGames = (list0) => {
@@ -3498,23 +3530,24 @@ export default function StageToday() {
         </div>
         {s ? <p className="sty-skw">{s.what}. {games.length} daily puzzles.</p> : null}
         {circPills(cat, true)}
-        {runStrip(cat)}
+        {findOn ? null : runStrip(cat)}
         {puzLab(findIn(games).length)}
-        {mid && viewOf(cat) === 'list' ? catLedger(games, sk, cat) : null}
+        {mid && viewOf(cat) === 'list' ? catLedger(games, sk || findOn, cat) : null}
         {!(mid && viewOf(cat) === 'list') ? <>
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle} ref={dk ? deckGridRef : undefined}>
           {(() => {
             const nodes = tileRun(sortGames(games), (g, i) => (
               <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
                 canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
-                hue={sk ? hueFor(g.cat) : undefined} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={sk ? cat + ':' + g.key : null} />
+                hue={sk || findOn ? hueFor(g.cat) : undefined} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={sk ? cat + ':' + g.key : null} />
             ));
             return dk ? deckGrid(cat, nodes) : nodes;
           })()}
         </div>
         {fit ? favBlock(cat, games, fit.k) : null}
         </> : null}
-        {sk ? null : permQuizzes(cat)}
+        {findQuiz}
+        {sk || findOn ? null : permQuizzes(cat)}
       </section>
     );
   };
@@ -4072,7 +4105,7 @@ export default function StageToday() {
           {circPills(null, true)}
           {grpBanners()}
           {grpLists('azg')}
-          {runStrip(null)}
+          {findOn ? null : runStrip(null)}
           {who && grpGames.some((x) => mineGrp.has(x.code)) ? <div className="sty-mgl">All Puzzles</div> : puzLab(findIn(alpha).length)}
           {mid && viewOf(ALL_ID) === 'list' ? (
             <div className="sty-led">
@@ -4094,6 +4127,7 @@ export default function StageToday() {
               return deckOn(ALL_ID) && paneOn === ALL_ID ? deckGrid(null, nodes) : nodes;
             })()}
           </div>
+          {findQuiz}
         </section>
         {catTiles}
 
@@ -5508,6 +5542,8 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-qbest td.p{text-align:right;width:70px;font-variant-numeric:tabular-nums;}
 .sty-qbest td.r{text-align:right;width:130px;font-weight:700;}
 /* search */
+.sty-findq{margin-top:16px;}
+.sty-findq .sty-qres{max-height:420px;overflow-y:auto;}
 .sty-qres{list-style:none;margin:0;padding:0;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;overflow:hidden;}
 .sty-qres li+li{border-top:1px solid var(--stg-line);}
 .sty-qres a{display:flex;align-items:center;gap:12px;padding:11px 14px;text-decoration:none;color:var(--stg-ink);font-size:13.5px;}
@@ -6761,6 +6797,12 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix > .sty-ixn:not(.re) > *{flex:1 1 100%;min-width:0;}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixtop{flex:1 1 0;padding:9px 11px;}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixtop > span{font-size:14px;white-space:nowrap;}
+  /* PHONE ORDER ON THE DESKTOP TOO (owner, 2026-10-26): the categories lead,
+     All and My Puzzles sit under them, the Skills / Categories switch under
+     those, then Everything Else. Order only; the DOM is unchanged. */
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixtop{order:1;margin-top:8px;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixsw{order:2;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixee,.sty-ix > .sty-ixn:not(.re) > .sty-ixee ~ *{order:3;}
   .sty-ixb.sty-ixtop > span{font-size:15px;font-weight:800;line-height:1.3;}
   .sty-ixb.sty-ixtop .sty-ixct{font-size:12px;font-weight:600;}
   /* Everything Else: a label, then one outlined box of plain rows. */
@@ -6787,7 +6829,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-rt3 .tx{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
   .sty-rt3 b{font-size:15px;font-weight:800;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--stg-ink);}
   .sty-rt3 small{font-size:12px;font-weight:700;line-height:1.35;color:var(--stg-ink);}
-  .sty-rt3 .go{flex:none;text-decoration:none;font-size:13px;font-weight:800;padding:7px 14px;border-radius:8px;border:var(--dk);
+  .sty-rt3 .go{flex:none;text-decoration:none;font-size:13px;font-weight:800;padding:7px 0;width:92px;box-sizing:border-box;text-align:center;border-radius:8px;border:var(--dk);
     background:var(--stg-surf);color:var(--stg-ink);}
   .sty-rt3 .go.play{background:var(--stg-ink);color:var(--stg-ground);}
   .sty-rt3 .go:hover{filter:brightness(.94);}
