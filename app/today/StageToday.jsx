@@ -579,7 +579,10 @@ function MemberLadder({ cats, keys, hueFor, inkFor = hueFor }) {
   );
 }
 
-function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null, light = true, plays = null }) {
+function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null, light = true, day = null }) {
+  const plays = day ? Number(day.plays || day.field) || 0 : null;
+  const lead = day && Array.isArray(day.board) && day.board[0] ? day.board[0] : null;
+  const lsc = lead ? [dailyScoreText(g.key, lead.score, lead.total), mmss(lead.timeElapsed)].filter(Boolean).join(' \u00b7 ') : '';
   const dots = dotsFor ? dotsFor(g.key) : null;
   const isDone = done.has(g.key);
   // THREE STATES, NEVER TWO (owner, 2026-09-25): nobody has played it (the
@@ -661,7 +664,10 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       )}
       {/* THE PLAY TOTAL (owner, 2026-10-26): today's plays at the foot of the
           tile, desktop only (shown by the desktop block). */}
-      {plays != null ? <span className="sty-gpl">{Number(plays).toLocaleString('en-US')} {plays === 1 ? 'play' : 'plays'} today</span> : null}
+      {day ? <span className="sty-gld">{lead ? `${lead.username} leads${lsc ? ' \u00b7 ' + lsc : ''}` : plays ? 'No solve yet' : 'Open. Be first.'}</span> : null}
+      {day ? (
+        <span className="sty-gpl"><u>{isDone ? 'Played' : state === 'open' ? 'Resume' : 'Play'}</u><span>{Number(plays).toLocaleString('en-US')} Today</span></span>
+      ) : null}
       {canPin ? (
         <button
           type="button"
@@ -3112,7 +3118,7 @@ export default function StageToday() {
       <div className="sty-mgl">Played by {x.name}</div>
       <div className="sty-games sty-mgg">
         {x.games.map((g, i) => (
-          <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} plays={board ? ((boardBy[g.key] || {}).plays || 0) : null}
+          <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
             canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
             hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={pre + ':' + x.code + ':' + g.key} />
         ))}
@@ -3479,7 +3485,7 @@ export default function StageToday() {
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle} ref={dk ? deckGridRef : undefined}>
           {(() => {
             const nodes = tileRun(sortGames(games), (g, i) => (
-              <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} plays={board ? ((boardBy[g.key] || {}).plays || 0) : null}
+              <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
                 canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                 hue={sk ? hueFor(g.cat) : undefined} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={sk ? cat + ':' + g.key : null} />
             ));
@@ -3993,7 +3999,7 @@ export default function StageToday() {
               <div className={'sty-games' + (isOpen(MINE_ID) ? '' : ' shut')}>
                 {/* ON A PHONE MY GAMES IS ALPHABETICAL (owner, 2026-10-03); desktop keeps played-last. */}
                 {(narrow ? [...pinned].sort((a, b) => a.name.localeCompare(b.name)) : playedLast(pinned, done)).map((g, i) => (
-                  <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} plays={board ? ((boardBy[g.key] || {}).plays || 0) : null}
+                  <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                     hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'mine:' + g.key} />
                 ))}
@@ -4057,7 +4063,7 @@ export default function StageToday() {
               const nodes = tileRun(playedLast(sortGames(alpha), done), (g, i) => (
               // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
               // card carries its own hue (owner, 2026-08-31).
-              <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} plays={board ? ((boardBy[g.key] || {}).plays || 0) : null}
+              <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
                 canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                 hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
             ));
@@ -4781,7 +4787,7 @@ ${PATCH_CSS}
 
 /* ── a star on every card ──────────────────────────────────────────────── */
 .sty-g{position:relative;}
-.sty-gpl{display:none;}
+.sty-gpl,.sty-gld{display:none;}
 .sty-star{position:absolute;top:6px;right:6px;display:flex;align-items:center;justify-content:center;
   width:24px;height:24px;border:0;border-radius:8px;background:none;cursor:pointer;
   color:var(--stg-mute2);opacity:0;transition:opacity .12s;}
@@ -6679,7 +6685,18 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   /* Tiles */
   .sty-g{border:var(--dk);border-radius:12px;}
   .sty-g.open{box-shadow:inset 0 0 0 1px var(--stg-ink);}
-  .sty-g .sty-gpl{display:block;margin-top:auto;padding-top:4px;font-size:12px;font-weight:700;color:var(--stg-ink);}
+  /* THE TILE, FROM THE MOCKUP (owner, 2026-10-26): dot, name and star; the tag;
+     who leads today; then Play and today's plays along the foot. One size
+     everywhere. */
+  .sty-ix .sty-g{display:flex;flex-direction:column;gap:3px;min-height:104px;box-sizing:border-box;padding:9px 10px 10px 12px;}
+  .sty-g .sty-gn > .sty-gi,.sty-g .sty-gn > svg:first-child{display:none;}
+  .sty-g .sty-gn::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;box-sizing:border-box;
+    border:2px solid var(--stg-ink);background:var(--cfull, var(--cc));}
+  .sty-g .sty-gn{font-size:16px;}
+  .sty-g .sty-gld{display:block;font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-ink2, var(--stg-ink));opacity:.85;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sty-g .sty-gpl{display:flex;justify-content:space-between;align-items:baseline;margin-top:auto;padding-top:4px;font-size:12.5px;font-weight:600;color:var(--stg-ink);}
+  .sty-g .sty-gpl u{font-weight:800;text-underline-offset:3px;}
   .sty-star.on,.sty-star.on:hover{color:var(--stg-ink);}
   /* The ledger */
   .sty-led{border:var(--dk);}
@@ -6744,7 +6761,6 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-rt3 .go:hover{filter:brightness(.94);}
   .sty-rt3.done{border-width:3px;padding:8px 9px 8px 12px;}
   .sty-ix .sty-pqs,.sty-ix .sty-fav{display:none !important;}
-  .sty-g .sty-gn .sty-gi,.sty-g .sty-gn svg{color:var(--stg-ink);}
   /* ONE INK, NO SECOND HUE ON A TINTED PANE (owner, 2026-10-25: "secondary
      colors here don't work at all"). A finished tile is white with a heavier ink
      outline, a tile the group played keeps the plain ink outline, and every
