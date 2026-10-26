@@ -1063,6 +1063,10 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           lineFor={lineFor}
           onStart={startRun}
           unit={MATHRUN ? 'games' : 'quizzes'}
+          // ONLY THE ROTATING RUNS SAY "TODAY'S LINEUP" (owner, 2026-10-25): the
+          // Trivia Gauntlet and Trivia Encore change their quizzes daily; every
+          // other run plays the same lineup, so the line would mislead.
+          lineup={GAUNT || ENCORE ? 'Today\u2019s lineup:' : null}
           rule={MATHRUN ? 'A wrong answer ends that game and the next one starts.' : 'A wrong answer ends that quiz and the next one starts.'}
           fieldLine={fieldOn && field.started >= FIELD_FLOOR
             ? `${fieldToday.toLocaleString()} played today${leaderScore != null ? ` \u00B7 the leader has ${leaderScore} ${scoreWord}` : ''}`

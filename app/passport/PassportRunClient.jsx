@@ -524,7 +524,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           bandNote={(s) => (banked[s.key] ? 'Done' : `${LEGS[s.li].max} pts`)}
           headline={<>Four Legs.<br />One Passport.</>}
           rule="One score out of 50 decides the passport you travel home on."
-          lineup={"Today\u2019s legs:"}
+          lineup={null}
           unit="legs"
           startLabel={`Board Now: Start With ${stageSecs[0] ? stageSecs[0].name : 'Ping'}`}
           fieldLine={doneNames.length ? `Already played today: ${doneNames.join(', ')}. Your first ${doneNames.length === 1 ? 'result stands' : 'results stand'}.` : null}

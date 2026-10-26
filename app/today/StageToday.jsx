@@ -598,6 +598,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
   return (
     <a className={`sty-g ${state}${res ? ' res' : ''}${grpOn ? ' grp' : grpWash ? ' gw' : ''}${canPin ? ' pin' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
       data-fk={fk || g.key}
+      onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, categoryColor(g.cat), { desk: true })}
       style={{
         '--i': i,
         // THE FULL COLOR LEVEL (owner, 2026-10-19) fills every tile with the
@@ -702,7 +703,8 @@ function LedgerRow({ g, hue, ink, tq, day, dots, res, done, inprog, me, favLoade
   const rec = me ? [me.best ? 'Best ' + mmss(me.best) : '', me.streak ? me.streak + '-day streak' : ''].filter(Boolean).join(' · ') : '';
   return (
     <a className={`sty-lr ${state}${gw ? ' gw' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
-      data-fk={fk || g.key} style={hue ? { '--cc': hue, '--cci': ink || hue } : undefined}>
+      onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, categoryColor(g.cat), { desk: true })}
+      data-fk={fk || g.key} style={hue ? { '--cc': hue, '--cci': ink || hue, '--cfull': categoryColor(g.cat) } : { '--cfull': categoryColor(g.cat) }}>
       <span className="ic"><Glyph k={g.key} size={18} /></span>
       <span className="nm"><b>{g.name}</b>
         {/* TWO LINES OF COPY (owner, 2026-10-16): the list has room the tile
@@ -2356,7 +2358,7 @@ export default function StageToday() {
       <button key={id} type="button" aria-pressed={paneOn === id}
         className={'sty-ixb' + (rp ? ' ct' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
         style={{ '--cc': hue, '--cci': rp ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(rp && !light ? { '--ixp': categoryColor(rampCat(id)) } : null), ...(rp ? { '--cfull': categoryColor(rampCat(id)) } : null), '--i': ixSeq++ }}
-        onClick={(e) => { if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
+        onClick={(e) => { if (!runsMq) { deskGo(e, id); return; } if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
         {ixRing(id, prog)}
         <span>{label}</span>
@@ -2427,13 +2429,13 @@ export default function StageToday() {
   const alphaDone = alpha.filter((g) => done.has(g.key)).length;
   const ixNav = (
     <nav className={'sty-ixn' + (reorder ? ' re' : '') + (picked ? ' pk' : '')} aria-label="Sections">
-      {ixBtn(ALL_ID, 'All Puzzles', 'var(--stg-ink)')}
+      {ixBtn(ALL_ID, 'All Puzzles', 'var(--stg-ink)', 'sty-ixtop')}
       {/* ON A PHONE THE SORT RIDES IN THE OPEN BAR (owner, 2026-10-12): the bar
           has the width once "Back to categories" became "Back". It is a sibling
           of the bar's button, not inside it (no button in a button), and the
           CSS lays both into the same grid row. */}
       {picked && (paneOn === ALL_ID || !!paneCat(paneOn)) ? sortCtl(true) : null}
-      {ixBtn(MINE_ID, 'My Puzzles', 'var(--stg-acc)')}
+      {ixBtn(MINE_ID, 'My Puzzles', 'var(--stg-acc)', 'sty-ixtop')}
       <span className="sty-ixsep" aria-hidden="true" />
       {/* SKILLS OR CATEGORIES (owner, 2026-10-18): the index groups the dailies
           by the skill they sharpen until the reader picks Categories, and the
@@ -3423,8 +3425,8 @@ export default function StageToday() {
           <h2>{catLabel(cat)}</h2>
           <b>{n}<i>/{games.length}</i></b>
           {runsIn() ? null : circPills(cat, false)}
-          {sortCtl(false)}
-          {viewCtl(cat)}
+          {/* SORT AND VIEW STAY ON ONE LINE TOGETHER (owner, 2026-10-25). */}
+          <span className="sty-svw">{sortCtl(false)}{viewCtl(cat)}</span>
         </div>
         {s ? <p className="sty-skw">{s.what}. {games.length} daily puzzles.</p> : null}
         {circPills(cat, true)}
@@ -3485,12 +3487,27 @@ export default function StageToday() {
   // A real hex, not color-mix: the browser bar colour (theme-color) takes only a plain colour.
   const paneGround = (cat) => (isColorLook(siteLook) ? (light ? softGround(categoryColor(cat)) : mixHex(categoryColor(cat), '#0b0f1a', 0.22)) : null);
   const mTintBg = mTintCat ? paneGround(mTintCat) : null;
+  // THE DESKTOP WEARS THE PHONE'S LOOK (owner, 2026-10-25): a category or skill
+  // pane recolours the desktop page too, in the colour looks, and the switch
+  // between panes runs the phone's flood. The page stays put; only the ground
+  // changes, so the flood lands on the colour the pane then keeps.
+  const dTintCat = !runsMq && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : null;
+  const dTintBg = dTintCat ? paneGround(dTintCat) : null;
+  const baseGround = light ? '#eef1f6' : '#0b0f1a';
+  const deskGo = (e, id) => {
+    const to = paneCat(id) && isColorLook(siteLook) ? paneGround(rampCat(id)) : baseGround;
+    const from = dTintBg || baseGround;
+    const go = () => { pickPane(id); };
+    if (id === paneOn || to === from) { go(); return; }
+    floodIn(e, go, { desk: true, color: to });
+  };
+  const tintBg = mTintBg || dTintBg;
   // The same hold the play stages use, so Safari's top and bottom bars take the colour too.
   useStageChrome(mTintBg);
   const mGroup = grp && Array.isArray(grp.groups) && grp.groups.length ? grp.groups[0] : null;
   const mPlayed = DAILY_GAMES.reduce((n, g) => n + (done.has(g.key) ? 1 : 0), 0);
   return (
-    <div className={'sty stage-page' + (mph ? ' mph-on' : '') + (mPane ? ' mph-pane' : '') + (mTintBg ? ' mph-tint' : '')} data-stage-theme={stageTheme} style={mTintBg ? { '--stg-ground': mTintBg, '--stg-raise': mTintBg } : undefined} ref={snapRef}>
+    <div className={'sty stage-page' + (mph ? ' mph-on' : '') + (mPane ? ' mph-pane' : '') + (mTintBg ? ' mph-tint' : '') + (dTintBg ? ' dsk-tint' : '') + (isColorLook(siteLook) ? ' slc' : ' sln')} data-stage-theme={stageTheme} style={tintBg ? { '--stg-ground': tintBg, '--stg-raise': tintBg } : undefined} ref={snapRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {/* THE ENTRY DOOR: first visit then weekly, always dark, replaced the daily arrival. See app/EntryDoor.jsx. */}
       {/* A SKILL TILE OPENS THAT SKILL'S PANE (owner, 2026-10-18), and shows the
@@ -3512,6 +3529,7 @@ export default function StageToday() {
             onClick={(e) => {
               if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
               e.preventDefault();
+              if (!runsMq && paneOn !== ALL_ID) { deskGo(e, ALL_ID); return; }
               setPicked(false);
               setPane(ALL_ID);
               try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (er) {}
@@ -3550,7 +3568,7 @@ export default function StageToday() {
           {/* TWO FIGURES, EACH A WAY THROUGH (owner, 2026-10-07): today's rank
               opens the leaderboard pane, the all-time rank opens the Stat Hub. */}
           {who ? (
-            <a className={'sty-fc sty-fca' + (capWait ? ' wait' : '')} href="#sty-board"
+            <a className={'sty-fc sty-fca sty-fday' + (capWait ? ' wait' : '')} href="#sty-board"
               onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
               {capWait ? null : <b key="v">{stats.dayRank ? <>#<RollNum value={stats.dayRank} /></> : '\u2013'}</b>}
               {capWait ? null : <i key="l">Today</i>}
@@ -3558,7 +3576,7 @@ export default function StageToday() {
             </a>
           ) : null}
           {who ? (
-            <a className={'sty-fc sty-fca' + (capWait ? ' wait' : '')} href={withTq('/quizzes/hub')}>
+            <a className={'sty-fc sty-fca sty-fall' + (capWait ? ' wait' : '')} href={withTq('/quizzes/hub')}>
               {capWait ? null : <b key="v">{rank ? <>#<RollNum value={rank} /></> : '\u2013'}</b>}
               {capWait ? null : <i key="l">All-Time</i>}
               <StagePatch key="p" on={capWait} light={light} />
@@ -3971,8 +3989,7 @@ export default function StageToday() {
             <b>{alphaDone}<i>/{alpha.length}</i></b>
             {grpChips()}
             {runsIn() ? null : circPills(null, false)}
-            {sortCtl(false)}
-            {viewCtl(ALL_ID)}
+            <span className="sty-svw">{sortCtl(false)}{viewCtl(ALL_ID)}</span>
           </div>
           {circPills(null, true)}
           {grpBanners()}
@@ -6074,6 +6091,9 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-sortm{display:none;}
 /* The view control sits just after the sort, so only the sort takes the auto margin. */
 .sty-sort + .sty-view{margin-left:6px;}
+.sty-svw{margin-left:auto;align-self:center;flex:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.sty-svw > .sty-sort{margin-left:0;}
+.sty-svw > .sty-sort + .sty-view{margin-left:0;}
 .sty-games.sty-vhid{display:none;}
 @media (max-width:900px){
   .sty-sort:not(.sty-sortm){display:none;}
@@ -6556,4 +6576,84 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-tail:not(.on){display:none;}
 }
 @media (max-width:900px) and (prefers-reduced-motion:reduce){.sty-tailbtn svg{transition:none;}}
+
+/* ── THE DESKTOP IN THE PHONE'S LOOK (owner, 2026-10-25) ──
+   Same desktop structure (cap, index, pane, rail), drawn the way the phone
+   home is: 2px ink outlines, rounded tiles, black pills, the index as pastel
+   tiles carrying "x of y", a colour dot where the game glyph was, and black
+   stars. The cap reads Today, group, All-Time, tickets as plain figures, with
+   the name as a pill the height of the look switch. Desktop only: every rule
+   sits above 900px, so the phone is untouched. */
+@media (min-width:901px){
+  .sty{--dk:2px solid var(--stg-ink);}
+  /* THE CAP */
+  .sty-cap.v2 .sty-figs{align-items:center;gap:24px;}
+  .sty-cap.v2 .sty-figs > *{order:5;}
+  .sty-cap.v2 .sty-figs > .sty-fday{order:1;}
+  .sty-cap.v2 .sty-figs > .sty-fg{order:2;}
+  .sty-cap.v2 .sty-figs > .sty-fall{order:3;}
+  .sty-cap.v2 .sty-figs > .sty-tix{order:4;}
+  .sty-cap.v2 .sty-figs > .sty-who{order:6;display:inline-flex;align-items:center;height:40px;box-sizing:border-box;
+    padding:0 16px;border:var(--dk);border-radius:999px;text-align:left;}
+  .sty-cap.v2 .sty-who > i{display:none;}
+  .sty-cap.v2 .sty-who > b{font-size:14px;line-height:1.3;}
+  .sty-cap.v2 .sty-fca{text-align:center;}
+  .sty-cap.v2 .sty-fca > b{font-size:19px;line-height:1.2;}
+  .sty-cap.v2 .sty-fca > i{font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--stg-ink);}
+  .sty-cap.v2 .sty-tg{display:inline-grid;place-items:center;width:40px;height:40px;padding:0;box-sizing:border-box;
+    border:var(--dk);border-radius:50%;background:transparent;color:var(--stg-ink);}
+  /* THE INDEX: pastel tiles in the colour looks, white in the plain ones */
+  .sty-ixn{gap:8px;}
+  .sty-ixsep{margin:4px 0;background:transparent;}
+  .sty-ixb{grid-template-columns:minmax(0,1fr) auto;gap:8px;border:var(--dk);border-radius:12px;padding:7px 12px;
+    background:var(--stg-surf);color:var(--stg-ink);font-size:14px;font-weight:800;}
+  .sty-ixb > i{display:none;}
+  .sty-ixb .sty-ixct{display:block;font-style:normal;font-size:12px;font-weight:600;white-space:nowrap;}
+  .sty-ixb:hover{background:var(--stg-surf);color:var(--stg-ink);filter:brightness(.97);}
+  .sty.slc .sty-ixb.ct{background:color-mix(in srgb, var(--cfull) 60%, #fff);color:#0b0d12;}
+  .sty.slc:not([data-stage-theme=light]) .sty-ixb.ct{border-color:color-mix(in srgb, var(--cfull) 60%, #fff);}
+  .sty .sty-ixb.on,.sty.slc .sty-ixb.ct.on{background:var(--stg-ink);color:var(--stg-ground);border-color:var(--stg-ink);filter:none;}
+  /* Everything else (Runs, Quizzes, Archive, the tests, Kids, lists) stays a plain row. */
+  .sty-ixb:not(.ct):not(.sty-ixtop){border-color:transparent;background:transparent;padding:5px 12px;font-weight:700;font-size:13.5px;}
+  .sty-ixb:not(.ct):not(.sty-ixtop).on{background:var(--stg-ink);color:var(--stg-ground);}
+  .sty-ixsw{border:var(--dk);margin:2px 0 4px;padding:3px;}
+  .sty-ixsw button{font-size:13px;letter-spacing:0;text-transform:none;padding:7px 3px;}
+  .sty-ixsw button[aria-pressed="true"]{color:var(--stg-ground);}
+  /* THE PANE */
+  .sty-ix > .sty-cat > .sty-cathead h2{font-size:26px;letter-spacing:-.015em;text-transform:none;line-height:1.3;padding-bottom:2px;}
+  .sty-ixc .sty-cathead h2::before{display:none;}
+  .sty-sort{border:var(--dk);padding:3px;}
+  .sty-sort button{font-size:12.5px;letter-spacing:0;text-transform:none;padding:6px 12px;}
+  .sty-sort button[aria-pressed="true"]{color:var(--stg-ground);}
+  /* Tiles */
+  .sty-g{border:var(--dk);border-radius:12px;}
+  .sty-g.open{box-shadow:inset 0 0 0 1px var(--stg-ink);}
+  .sty-g .sty-gn > .sty-gi{display:none;}
+  .sty-g .sty-gn::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;box-sizing:border-box;
+    border:2px solid var(--stg-ink);background:var(--cfull, var(--cc));}
+  .sty-star.on,.sty-star.on:hover{color:var(--stg-ink);}
+  /* The ledger */
+  .sty-led{border:var(--dk);}
+  .sty-lh{background:var(--stg-surf);border-bottom:2px solid var(--stg-ink);font-family:inherit;font-size:10.5px;font-weight:800;color:var(--stg-ink);}
+  .sty-lh+.sty-lr{border-top:0;}
+  .sty-lr .ic{background:transparent;}
+  .sty-lr .ic > *{display:none;}
+  .sty-lr .ic::before{content:"";width:12px;height:12px;border-radius:50%;box-sizing:border-box;
+    border:2px solid var(--stg-ink);background:var(--cfull, var(--cc));}
+  .sty-lr .ct{background:var(--stg-ink);color:var(--stg-ground);border:2px solid var(--stg-ink);}
+  .sty-lr.run .ct{color:var(--stg-ground);}
+  .sty-lr.done .ct,.sty-lr.run.done .ct{background:transparent;color:var(--stg-ink);}
+  .sty-lr:hover .ct,.sty-lr.open .ct{border-color:var(--stg-ink);}
+  .sty-lr .tr{height:8px;border:1.5px solid var(--stg-ink);background:var(--stg-surf);border-radius:4px;box-sizing:content-box;}
+  .sty-lr .tr s{background:var(--stg-ink);}
+  /* Run cards */
+  .sty-rbig{border:var(--dk);border-radius:12px;}
+  .sty-rbig .go{background:var(--stg-ink);color:var(--stg-ground);border-radius:8px;}
+  /* The rail */
+  .sty-rlb{border:var(--dk);border-radius:12px;overflow:hidden;background:var(--stg-surf);}
+  .sty-rlb .sty-eb{height:auto;padding:9px 12px;margin:0;border-bottom:2px solid var(--stg-ink);font-family:inherit;
+    font-size:11px;font-weight:800;color:var(--stg-ink);}
+  .sty-rlb li{padding:0 12px;}
+  .sty-rail .cbr{border:var(--dk);}
+}
 `;

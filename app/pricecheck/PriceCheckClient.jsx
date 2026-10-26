@@ -479,10 +479,11 @@ const CSS = `
 @media(min-width:900px){
   .pcg .odo{font-size:44px}.pcg-box{min-height:110px}.pcg-note{font-size:14px}
   /* Desktop: the title and Start on the left, the register over the tags on the right. */
-  .pc .gsx-gate.gsx-cp .gsx-split{grid-template-rows:auto auto;row-gap:18px}
-  .pc .gsx-gate.gsx-cp .gsx-head{grid-column:1;grid-row:1 / span 2;align-self:center}
-  .pc .gsx-gate.gsx-cp .gsx-piece{grid-column:2;grid-row:1;display:flex}
-  .pc .gsx-gate.gsx-cp .gsx-bands{grid-column:2;grid-row:2}
+  .pc .gsx-gate.gsx-cp .gsx-split{grid-template-rows:auto auto auto;row-gap:18px}
+  .pc .gsx-gate.gsx-cp .gsx-split > .gsx-top{margin-bottom:0}
+  .pc .gsx-gate.gsx-cp .gsx-head{grid-column:1;grid-row:2 / span 2;align-self:center}
+  .pc .gsx-gate.gsx-cp .gsx-piece{grid-column:2;grid-row:2;display:flex}
+  .pc .gsx-gate.gsx-cp .gsx-bands{grid-column:2;grid-row:3}
   .pc .gsx-gate.gsx-cp .gsx-band{min-height:58px}
 }
 /* Phone: the register box grows into the room the tags leave. */

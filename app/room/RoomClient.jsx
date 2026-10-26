@@ -387,7 +387,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
           bandNote={(s) => (banked[s.key] ? 'Done' : (BAND_NOTE[s.key] || s.unit))}
           headline={<>{(COUNT_WORD[N] || String(N)).replace(/^./, (c) => c.toUpperCase())} Rooms.<br />No Answer Key.</>}
           rule={"The key is whatever tonight\u2019s crowd does, and it moves until midnight."}
-          lineup={"Tonight\u2019s rooms:"}
+          lineup={null}
           startLabel={allBanked ? 'Read your verdict' : 'Walk in'}
           fieldLine="About 5 minutes · the read settles at midnight Eastern"
           banner={<Morning />}
@@ -653,10 +653,11 @@ const CSS = `
 @media(min-width:900px){
   .rr-fill{padding:16px 18px}.rr-figs{gap:9px 4px}
   /* the room and the lineup share the right column; the title holds the left */
-  .rr .gsx-gate.gsx-cp .gsx-split{grid-template-rows:auto auto;row-gap:18px}
-  .rr .gsx-gate.gsx-cp .gsx-head{grid-column:1;grid-row:1 / span 2}
-  .rr .gsx-gate.gsx-cp .gsx-piece{grid-column:2;grid-row:1;display:flex}
-  .rr .gsx-gate.gsx-cp .gsx-bands{grid-column:2;grid-row:2}
+  .rr .gsx-gate.gsx-cp .gsx-split{grid-template-rows:auto auto auto;row-gap:18px}
+  .rr .gsx-gate.gsx-cp .gsx-split > .gsx-top{margin-bottom:0}
+  .rr .gsx-gate.gsx-cp .gsx-head{grid-column:1;grid-row:2 / span 2}
+  .rr .gsx-gate.gsx-cp .gsx-piece{grid-column:2;grid-row:2;display:flex}
+  .rr .gsx-gate.gsx-cp .gsx-bands{grid-column:2;grid-row:3}
 }
 /* the morning strip (gate banner and end page) */
 .rr-morn{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 12px;border:2px solid var(--gsx-ink);border-radius:14px;color:var(--gsx-ink);background:color-mix(in srgb, var(--gsx-ink) 7%, transparent)}

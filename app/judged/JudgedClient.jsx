@@ -406,8 +406,9 @@ const CSS = `
 .jd-ltl i{flex:none;width:10px;height:10px;border-radius:50%}
 .jd-ltd{font-size:11.5px;font-weight:700;opacity:.75}
 @media(min-width:900px){
-  .jd-gate .gsx-split{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto;row-gap:18px}
-  .jd-gate .gsx-head{grid-row:1 / span 2}
+  .jd-gate .gsx-split{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto;row-gap:18px}
+  .jd-gate .gsx-split > .gsx-top{margin-bottom:0}
+  .jd-gate .gsx-head{grid-row:2 / span 2}
   .jd-gate .gsx-piece{display:flex}
   .jd-gv{padding:16px 18px}
   .jd-gvs{width:120px;height:80px}

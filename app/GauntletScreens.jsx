@@ -232,7 +232,7 @@ export function GauntletCover({ sections = [] }) {
   );
 }
 // One line per quiz, name then subject (owner, 2026-10-24).
-export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes', headline = null, bandNote = null, lineup = 'Today\u2019s lineup:', startLabel = null, centerpiece = null, after = null }) {
+export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes', headline = null, bandNote = null, lineup = null, startLabel = null, centerpiece = null, after = null }) {
   const first = sections[0];
   const pal = useStagePalette(gateColour(sections));
   const word = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][sections.length] || String(sections.length);
@@ -245,15 +245,20 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
     <div key={pal.look} className={`gsx gsx-gate${centerpiece ? ' gsx-cp' : ''}`} role="dialog" aria-label={`${circuitName}, start`} style={pal.vars}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="gsx-col gsx-split">
+        {/* THE LOOK SWITCH SITS AT THE RIGHT EDGE (owner, 2026-10-25): the top
+            bar spans both columns of the split, so on a desktop the switch is
+            right aligned to the page rather than ending the left column. */}
+        <TopBar pal={pal} />
         <div className="gsx-head gsx-rise">
-          <TopBar pal={pal} />
           {banner ? <div className="gsx-banner">{banner}</div> : null}
           <div className="gsx-eye gsx-eye1">{circuitName} · {dateLabel}</div>
           <h1 className="gsx-h1">{headline || <>{word} {unit.charAt(0).toUpperCase() + unit.slice(1)}.<br />One Life in Each.</>}</h1>
           <p className="gsx-lede">{rule}{lineup ? ` ${lineup}` : ''}</p>
           <div className="gsx-gowrap gsx-wide">
             <button type="button" className="gsx-go" onClick={onStart}>{startLabel || `Start with ${first ? first.name : 'the run'}`}</button>
-            {fieldLine ? <div className="gsx-fine">{fieldLine}</div> : null}
+            {/* NO PLAY COUNT UNDER START (owner, 2026-10-25): the field line is
+                gone from the gate, so on a desktop the Start button's foot
+                lines up with the foot of the lineup beside it. */}
             {after}
           </div>
         </div>
@@ -273,7 +278,6 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
         </div>
         <div className="gsx-gowrap gsx-narrow">
           <button type="button" className="gsx-go" onClick={onStart}>{startLabel || `Start with ${first ? first.name : 'the run'}`}</button>
-          {fieldLine ? <div className="gsx-fine">{fieldLine}</div> : null}
           {after}
         </div>
       </div>
@@ -815,6 +819,8 @@ const CSS = `
 @media(min-width:900px){
   .gsx-col{max-width:1040px;padding:24px 32px 32px}
   .gsx-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:center;align-content:center}
+  .gsx-split > .gsx-top{grid-column:1 / -1;grid-row:1;align-self:start;margin-bottom:-28px}
+  .gsx-gate:not(.gsx-cp) .gsx-split{align-items:end}
   .gsx-gate .gsx-head{gap:16px}
   .gsx-h1{font-size:60px}
   .gsx-lede{font-size:18px;max-width:440px}
