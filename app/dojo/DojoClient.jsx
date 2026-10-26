@@ -843,5 +843,18 @@ html[data-stage-pastel] .dj-host.lt{background:transparent}
 .dj .pd{min-height:200px}
 .dj .pd-p span{font-size:26px}
 }
+/* THE DESKTOP LOOK REACHES THE DOJO'S OWN FRAME (owner, 2026-10-26). A grid
+   on a desktop repaints the page in the stage look (html[data-stage-tone], set
+   by app/SudokuPastel.jsx). The run's header, form strip and between card are
+   drawn in the --dj tokens, which were dark-page only, so on a light look they
+   went pale on pale. These follow the look as the phone block below does.
+   The two dark looks keep the dark tokens. */
+@media(min-width:900px){
+html[data-stage-tone]:not([data-stage-tone^='dark']) .dj{--dj-ground:var(--sp-g,#c9d2fd) !important;--dj-panel:color-mix(in srgb,var(--sp-g,#c9d2fd) 80%,#fff) !important;--dj-surf:rgba(8,34,46,.07) !important;--dj-line:rgba(8,34,46,.2) !important;--dj-ink:#08222e !important;--dj-mute:#23404f !important;--dj-cta:#08222e !important;--dj-cta-ink:#ffffff !important;--dj-gold:#7c4a03 !important;--dj-good:#065f46 !important;--dj-bad:#9f1239 !important}
+html[data-stage-tone='tint'] .dj{--dj-ground:#eef1f6 !important;--dj-panel:#ffffff !important;--dj-surf:#ffffff !important}
+html[data-stage-tone='plain'] .dj{--dj-ground:#ffffff !important;--dj-panel:#ffffff !important;--dj-surf:#f3f4f6 !important;--dj-line:rgba(0,0,0,.18) !important;--dj-ink:#111111 !important;--dj-mute:#333333 !important;--dj-cta:#111111 !important}
+html[data-stage-tone]:not([data-stage-tone^='dark']) .dj .start{box-shadow:0 10px 24px rgba(8,34,46,.18)}
+html[data-stage-tone] .dj-host.lt{background:transparent}
+}
 .dj-look{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:18px;border:2px solid var(--dj-ink);background:transparent;color:var(--dj-ink);cursor:pointer;padding:0;margin-left:auto}
 `;
