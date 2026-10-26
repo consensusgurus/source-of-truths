@@ -5,7 +5,7 @@
 // and the frame itself (app/LayoutCInner.jsx) is a separate chunk loaded only
 // when the flag is present on a desktop-width window.
 import { useEffect, useLayoutEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
+import Inner from './LayoutCInner';
 
 // Read before paint, so a client switch between games never paints a frame
 // with the panels gone.
@@ -14,7 +14,8 @@ const useIso = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 // Below this the centre column gets too narrow for the widest boards.
 const DEFAULT_MIN_W = 1280;
 
-const Inner = dynamic(() => import('./LayoutCInner'), { ssr: false, loading: () => null });
+// Imported, not lazy-loaded (owner, 2026-10-26): the lazy chunk arrived after
+// first paint, so the bare page showed for a split second before the frame.
 
 export default function LayoutC({ gameKey }) {
   const [on, setOn] = useState(false);

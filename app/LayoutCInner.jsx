@@ -227,6 +227,19 @@ html[data-stage-tone] .lc-cap,html[data-stage-tone] .lc-nav,html[data-stage-tone
 .lc-cap .sty-fca{text-align:center;}
 .lc-cap .sty-fca > b{font-size:19px;line-height:1.2;}
 .lc-cap .sty-fca > i{font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--stg-ink);}
+/* THE HOME'S HEADER, OCT 26 (owner): the split strip, figures a size down, the name opens the profile. */
+.lc-cap .sty-capl .stl{display:none;}
+.lc-cap .sty-split{display:flex;gap:6px;height:16px;width:100%;}
+.lc-cap .sty-spl{flex:1 1 0;min-width:0;display:flex;gap:2px;border-radius:3px;text-decoration:none;}
+.lc-cap .sty-spl i{flex:1 1 0;min-width:1px;border-radius:2px;}
+.lc-cap .sty-spl i.f{background:var(--sc);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--stg-ink) 22%, transparent);}
+.lc-cap .sty-spl i.e{background:color-mix(in srgb, var(--stg-ink) 9%, transparent);box-shadow:inset 0 0 0 1.5px var(--sc);}
+.lc-cap .sty-spl:hover i{filter:brightness(.95);}
+.lc-cap .sty-figs{gap:18px !important;}
+.lc-cap .sty-fca > b{font-size:15px;}
+.lc-cap .sty-fca > i{font-size:8.5px;}
+.lc-cap a.sty-who{text-decoration:none;color:var(--stg-ink);cursor:pointer;}
+.lc-cap a.sty-who:hover{background:var(--stg-ink);color:var(--stg-ground);}
 .lc-cap .sty-tg{width:40px;height:40px;padding:0;border:var(--dk);border-radius:50%;color:var(--stg-ink);}
 .lc-nav{--dk:2px solid var(--stg-ink);padding-top:10px;}
 .lc-nav .sty-ixn{gap:8px;width:236px;}
@@ -522,6 +535,7 @@ export default function LayoutCInner({ gameKey }) {
   if (!game || !host || !flag) return null;
 
   const blocks = orderedCats.map(({ cat, games: gs }) => ({
+    cat,
     n: gs.length,
     c: `color-mix(in srgb, ${categoryColor(cat)} 60%, #fff)`,
     on: gs.map((g) => done.has(g.key)),
@@ -655,11 +669,26 @@ export default function LayoutCInner({ gameKey }) {
             </Link>
             <span className="sty-date">{fmtDate(day)}</span>
           </div>
-          <div className="sty-capl"><StageLadder blocks={blocks} light={light} /></div>
+          <div className="sty-capl"><StageLadder blocks={blocks} light={light} />
+            {/* THE SPLIT STRIP, the home's header (owner, 2026-10-26): one segment
+                per category, one empty piece ahead until it is finished. */}
+            <div className="sty-split" role="list" aria-label="Today's puzzles by category">
+              {blocks.map((b) => {
+                const k = b.on.filter(Boolean).length;
+                return (
+                  <Link key={b.cat} role="listitem" className="sty-spl" href="/" onClick={setPane(b.cat)} style={{ '--sc': b.c }}
+                    title={`${catLabel(b.cat)} \u00b7 ${k} of ${b.n}`} aria-label={`${catLabel(b.cat)}, ${k} of ${b.n} played`}>
+                    {Array.from({ length: k }, (_, j) => <i key={j} className="f" />)}
+                    {k < b.n ? <i className="e" /> : null}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
           <div className="sty-rt">
             <div className="sty-figs">
               {!who ? <a className="sty-keep" href="/?signup=1">Keep stats, play with friends</a> : null}
-              {who ? <div className="sty-who"><b>{who}</b><i>player</i></div> : null}
+              {who ? <a className="sty-who" href={'/player/' + encodeURIComponent(who)} title="Your stats and profile"><b>{who}</b><i>player</i></a> : null}
               {who && grp && Array.isArray(grp.groups) ? grp.groups.map((g) => (
                 <Link key={g.code} className="sty-fca lc-fg" href={`/groups/${g.code}`}>
                   <b>{g.rank ? '#' + g.rank : '–'}{typeof g.members === 'number' && g.members ? <i> of {g.members}</i> : null}</b>

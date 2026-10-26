@@ -770,12 +770,16 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
     --stg-ground: #eef1f6 !important;
     --stg-raise: #ffffff !important;
-    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #ffffff) !important;
-    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 55%, #ffffff) !important;
-    --stg-surf2: var(--sp-g, #c9d2fd) !important;
-    --stg-cell: var(--sp-g, #c9d2fd) !important;
-    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 70%, #ffffff) !important;
-    --stg-feed-soft: var(--sp-g, #c9d2fd);
+    /* NO COLOUR UNDER THE PLAY (owner, 2026-10-26: "i don't want color
+       backgrounds for any puzzle play itself"). Squares, boards, panels and
+       chips are white and grey; region boards (Quilt, Cages, Jesters) keep
+       their own region colours, which come from --hue, not these. */
+    --stg-panel: #ffffff !important;
+    --stg-surf: #ffffff !important;
+    --stg-surf2: #eef1f6 !important;
+    --stg-cell: #ffffff !important;
+    --stg-chip: #eef1f6 !important;
+    --stg-feed-soft: #f4f6f9;
     background: #eef1f6 !important;
   }
   /* Region boards (Quilt, Cages) wear the full pastels here. Periwinkle is
@@ -886,12 +890,13 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   /* BLACK WITH COLOR (owner, 2026-10-25): the dark look, with the category's
      colour deepened onto the squares, chips and panels so light type reads. */
   html[data-stage-pastel='darktint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
-    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 22%, #0b0f1a) !important;
-    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 26%, #0b0f1a) !important;
-    --stg-surf2: color-mix(in srgb, var(--sp-g, #c9d2fd) 36%, #0b0f1a) !important;
-    --stg-cell: color-mix(in srgb, var(--sp-g, #c9d2fd) 30%, #0b0f1a) !important;
-    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 30%, #0b0f1a) !important;
-    --stg-feed-soft: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #0b0f1a);
+    /* Neutral under the play here too (owner, 2026-10-26). */
+    --stg-panel: #151b28 !important;
+    --stg-surf: #151b28 !important;
+    --stg-surf2: #1f2737 !important;
+    --stg-cell: #151b28 !important;
+    --stg-chip: #1f2737 !important;
+    --stg-feed-soft: #1a2130;
   }
 }
 
@@ -1075,7 +1080,18 @@ html.stg-wipe::view-transition-new(root) {
    with no stage root (or the quiz pages, which share StageChrome but have no
    frame) is untouched even if the class is present. */
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page){
-  padding:var(--lc-hh,62px) 330px 0 260px !important;box-sizing:border-box;min-height:100vh;}
+  padding:var(--lc-hh,62px) 330px 0 290px !important;box-sizing:border-box;min-height:100vh;}
+/* NO OLD START PAGE FOR A SPLIT SECOND (owner, 2026-10-26). The frame restyles
+   the game's figures row and its start card (LayoutCInner's CSS) only once it
+   attaches, so the old small figures and the old gate painted first. The same
+   rules apply from lc-pre, so the page paints once in its final look. Keep in
+   step with the end of LayoutCInner's CSS. */
+html.lc-pre .stage-page:has(.stg-top) .stg-fg{border-bottom:0;}
+html.lc-pre .stage-page:has(.stg-top) .stg-fg b{font-family:inherit;font-size:18px;font-weight:800;}
+html.lc-pre .stage-page:has(.stg-top) .stg-fg i{font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.07em;color:var(--stg-ink);}
+html.lc-pre .stage-page:has(.stg-top) .stg-gate > div:first-child{font-size:26px !important;line-height:1.3;}
+html.lc-pre .stage-page:has(.stg-top) .stg-gate > div:last-child > button:first-child:not([type=button]){background:var(--stg-ink) !important;color:var(--stg-ground) !important;
+  border:2px solid var(--stg-ink) !important;border-radius:10px !important;font-weight:800 !important;}
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-cap,
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-strip,
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-prog,
@@ -1084,7 +1100,7 @@ html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-prog,
    moment between hydration and the frame attaching (owner, 2026-10-14). */
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-panel{display:none !important;}
 html.lc-pre:not(.lc-on):has(.stg-top) .stage-tail{display:none !important;}
-html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-fg{position:relative;padding-right:240px;}
+html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-fg{position:relative;padding-right:400px;}
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:79;
   background:
@@ -1270,12 +1286,16 @@ html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
     --stg-ground: #eef1f6 !important;
     --stg-raise: #ffffff !important;
-    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #ffffff) !important;
-    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 55%, #ffffff) !important;
-    --stg-surf2: var(--sp-g, #c9d2fd) !important;
-    --stg-cell: var(--sp-g, #c9d2fd) !important;
-    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 70%, #ffffff) !important;
-    --stg-feed-soft: var(--sp-g, #c9d2fd);
+    /* NO COLOUR UNDER THE PLAY (owner, 2026-10-26: "i don't want color
+       backgrounds for any puzzle play itself"). Squares, boards, panels and
+       chips are white and grey; region boards (Quilt, Cages, Jesters) keep
+       their own region colours, which come from --hue, not these. */
+    --stg-panel: #ffffff !important;
+    --stg-surf: #ffffff !important;
+    --stg-surf2: #eef1f6 !important;
+    --stg-cell: #ffffff !important;
+    --stg-chip: #eef1f6 !important;
+    --stg-feed-soft: #f4f6f9;
     background: #eef1f6 !important;
   }
   /* Region boards (Quilt, Cages) wear the full pastels here. Periwinkle is
@@ -1386,12 +1406,13 @@ html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;
   /* BLACK WITH COLOR (owner, 2026-10-25): the dark look, with the category's
      colour deepened onto the squares, chips and panels so light type reads. */
   html[data-stage-tone='darktint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
-    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 22%, #0b0f1a) !important;
-    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 26%, #0b0f1a) !important;
-    --stg-surf2: color-mix(in srgb, var(--sp-g, #c9d2fd) 36%, #0b0f1a) !important;
-    --stg-cell: color-mix(in srgb, var(--sp-g, #c9d2fd) 30%, #0b0f1a) !important;
-    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 30%, #0b0f1a) !important;
-    --stg-feed-soft: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #0b0f1a);
+    /* Neutral under the play here too (owner, 2026-10-26). */
+    --stg-panel: #151b28 !important;
+    --stg-surf: #151b28 !important;
+    --stg-surf2: #1f2737 !important;
+    --stg-cell: #151b28 !important;
+    --stg-chip: #1f2737 !important;
+    --stg-feed-soft: #1a2130;
   }
 }
 @media (min-width: 900px) {
