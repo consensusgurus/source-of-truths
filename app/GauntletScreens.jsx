@@ -821,6 +821,16 @@ const CSS = `
   .gsx-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:center;align-content:center}
   .gsx-split > .gsx-top{grid-column:1 / -1;grid-row:1;align-self:start;margin-bottom:-28px}
   .gsx-gate:not(.gsx-cp) .gsx-split{align-items:end}
+  /* LEFT AND RIGHT SHARE A TOP AND A FOOT (owner, 2026-10-26): the head
+     stretches to the lineup's height, the eyebrow sits on the lineup's top
+     edge and Start sits on its bottom edge, full width of the column. */
+  .gsx-gate:not(.gsx-cp) .gsx-split{align-items:stretch}
+  .gsx-gate:not(.gsx-cp) .gsx-head{justify-content:flex-start}
+  .gsx-gate:not(.gsx-cp) .gsx-h1{font-size:clamp(60px,6.4vw,78px);line-height:1}
+  .gsx-gate:not(.gsx-cp) .gsx-lede{font-size:20px;max-width:none}
+  .gsx-gate:not(.gsx-cp) .gsx-wide{margin-top:auto;max-width:none}
+  .gsx-gate:not(.gsx-cp) .gsx-wide .gsx-go{min-height:72px;font-size:22px}
+  .gsx-gate:not(.gsx-cp) .gsx-band{flex:1 1 auto}
   .gsx-gate .gsx-head{gap:16px}
   .gsx-h1{font-size:60px}
   .gsx-lede{font-size:18px;max-width:440px}
