@@ -36,6 +36,7 @@ import DailyMasthead from '../DailyMasthead';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import { LEG_ON, LegShell, LEG_PAGE_CSS } from '../StageLeg';
 import RunDoorPop from '../circuits/RunDoorPop';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
@@ -264,6 +265,9 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
   const won = g.status === 'won';
   const LOFT = isLoft('flank');
   const STAGE = isStage('flank', searchParams);
+  // The stage board (app/StageLeg.jsx, owner 2026-10-26): in the Passport run
+  // and on Flank's own page alike.
+  const LEG = LEG_ON && STAGE;
   // The register comes from the shared store the switch in the cap writes.
   // Resolved in an effect: the server cannot know what is stored.
   const [stageTheme] = useStageTheme();
@@ -449,6 +453,8 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
     focusSoon(() => inputRef.current);
   }
+  // The Passport run deals its legs straight in (RunEmbed autostart).
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function say(msg, kind) {
     setNotice({ msg, kind: kind || 'note' });
@@ -571,6 +577,72 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
     return out;
   })();
 
+  // ─── THE STAGE BOARD (owner, 2026-10-26) ───────────────────────────────────
+  // The country as the question, the input under it, one slot per land
+  // border (filled in the order found, so a slot says nothing about which
+  // neighbor is missing), then the strikes. A missed border stays hidden
+  // exactly when the old ring hid it.
+  function renderLeg() {
+    const strike = notice && notice.kind === 'strike';
+    return (
+      <LegShell embed={EMBED} game="flank">
+        <div className="lg-kick">Flank · Name every neighbor{PUZZLE.sunday ? ' · Sunday Edition' : ''}</div>
+        <h2 className="lg-q">
+          Which countries border {SUBJECT}?
+          <small>{playing ? (TOTAL === 1 ? '1 land border' : `${TOTAL} land borders`) : (won ? `All ${TOTAL} named` : `${foundCount} of ${TOTAL} named`)}</small>
+        </h2>
+        {playing && started && (
+          <div className={`lg-in${strike ? ' shake' : ''}`}>
+            <input
+              ref={inputRef}
+              value={q}
+              onChange={(e) => onType(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onEnter(); } }}
+              placeholder="Type a country"
+              autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false}
+              aria-label={`Type a country that borders ${SUBJECT}`}
+            />
+            <button type="button" className="lg-go" onMouseDown={(e) => e.preventDefault()} onClick={onEnter}>Add</button>
+          </div>
+        )}
+        <div className="lg-slots" role="list" aria-label={`${foundCount} of ${TOTAL} borders found`} style={{ '--lg-cols': Math.max(1, Math.min(3, TOTAL)), '--lg-cols-w': Math.max(1, Math.min(4, TOTAL)) }}>
+          {ringSlots.map((sl, k) => {
+            const show = sl.found || (sl.missed && (!LOFT || revealed));
+            const cls = sl.found ? 'f' : (show ? 'm' : 'e');
+            return (
+              <div key={k} role="listitem" className={`lg-slot ${cls}${flash && sl.code === flash ? ' flash' : ''}`}
+                aria-label={sl.found ? `Found: ${sl.name}` : (show ? `Missed: ${sl.name}` : 'Not found yet')}>
+                {show ? sl.name : ''}
+              </div>
+            );
+          })}
+        </div>
+        <div className="lg-say" role="status" aria-live="polite">
+          {playing
+            ? (notice ? notice.msg : (started ? 'A correct neighbor banks itself as soon as the name is complete.' : ''))
+            : (won ? `Every border named.` : (g.gaveUp ? 'You gave up.' : `${STRIKES} strikes.`))}
+        </div>
+        <div className="lg-strikes" role="img" aria-label={`${strikes} of ${STRIKES} strikes used`}>
+          {Array.from({ length: STRIKES }, (_, i) => (
+            <i key={i} className={i < strikes ? 'x' : ''} aria-hidden="true">{i < strikes ? '×' : ''}</i>
+          ))}
+        </div>
+        <div className="lg-foot">
+          <span>{foundCount} of {TOTAL} named · {strikes} of {STRIKES} strikes</span>
+          {g.wrong.length > 0 && (
+            <span>Misses: {g.wrong.map((code, i) => <React.Fragment key={code}>{i ? ', ' : ''}<span className="lg-struck">{nameOf(code)}</span></React.Fragment>)}</span>
+          )}
+          {playing && started && (
+            <button type="button" className={`lg-act${armGive ? ' arm' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={giveUp}
+              title={armGive ? 'Ends the run now' : 'End the run now. Borders you found keep their points.'}>
+              {armGive ? 'Tap again to give up' : 'Give up'}
+            </button>
+          )}
+        </div>
+      </LegShell>
+    );
+  }
+
   function shareUrl() { return withRef(`mindloftdaily.com/flank${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
   function shareText() {
     const bar = '\u{1F7E9}'.repeat(foundCount) + '⬜'.repeat(Math.max(0, TOTAL - foundCount));
@@ -611,11 +683,12 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={STAGE ? `stage-page${LEG && !EMBED ? ' lg-white' : ''}` : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'clip' : undefined }}>
       {!STAGE && <Grain />}
+      {LEG && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
       {!STAGE && (
       <DailyChrome slug="flank" name="Flank" collapsed={started} loft={LOFT} />
       )}
@@ -696,7 +769,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
 
         <RunDoorPop id="passport" game="flank" ready={hydrated && preStart && isTodays && !EMBED} self="Flank" />
-        {preStart && (
+        {preStart && !(EMBED && EMBED.autostart) && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Flank is ready'}</div>
             {gateRules ? rulesBody : (
@@ -715,7 +788,8 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
           </div>
         )}
 
-        {!preStart && (
+        {!preStart && LEG && renderLeg()}
+        {!preStart && !LEG && (
         <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {/* These figures move UP into the cap on a loft page. */}
           {!LOFT && (

@@ -39,6 +39,7 @@ import DailyMasthead from '../DailyMasthead';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import { LEG_ON, LegShell, LEG_PAGE_CSS } from '../StageLeg';
 import RunDoorPop from '../circuits/RunDoorPop';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
@@ -393,6 +394,9 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   const focusMode = playing && !showChrome;
   const LOFT = isLoft('ping');
   const STAGE = isStage('ping', searchParams);
+  // The stage board (app/StageLeg.jsx, owner 2026-10-26): in the Passport run
+  // and on Ping's own page alike.
+  const LEG = LEG_ON && STAGE;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('ping');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('ping');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -672,6 +676,8 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
     if (!mobileUi) focusSoon(() => inputRef.current);
   }
+  // The Passport run deals its legs straight in (RunEmbed autostart).
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function commitGuess(city) {
     if (!playing || !city) return;
@@ -894,6 +900,126 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   }
 
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
+  // ─── THE STAGE BOARD (owner, 2026-10-26) ───────────────────────────────────
+  // The question, the input, the ring map on a white card, then the guesses
+  // closest first, numbered in the order they were made so they match the
+  // map. Every ring is drawn solid (no dashed lines); the closest is heavy.
+  function renderLegMap() {
+    const vb = `${view.x.toFixed(1)} ${view.y.toFixed(1)} ${view.w.toFixed(1)} ${view.h.toFixed(1)}`;
+    const u = view.w / (narrow ? 360 : 480);
+    const best = closest;
+    const sea = 'color-mix(in srgb, var(--lg-ink) 5%, var(--lg-paper))';
+    const land = 'color-mix(in srgb, var(--lg-ink) 14%, var(--lg-paper))';
+    const edge = 'color-mix(in srgb, var(--lg-ink) 30%, var(--lg-paper))';
+    const cap = !rings.length ? 'Each guess draws a ring at its distance'
+      : won ? 'Found where the rings cross'
+      : rings.length >= 2 ? 'The city is where your rings cross' : 'The city sits somewhere on this ring';
+    return (
+      <figure className="lg-map">
+        <svg viewBox={vb} preserveAspectRatio="xMidYMid meet" role="img" style={{ aspectRatio: narrow ? `${PHONE_AR}` : `${MAP_W} / ${MAP_H}` }}
+          aria-label={rings.length ? `Map with ${rings.length} distance ring${rings.length === 1 ? '' : 's'}, one per guess` : 'World map. Your guesses will appear here as distance rings.'}>
+          <rect x={0} y={0} width={MAP_W} height={MAP_H} style={{ fill: sea }} />
+          <path d={LAND_D} style={{ fill: land, stroke: edge }} strokeWidth={0.6} vectorEffect="non-scaling-stroke" />
+          {rings.map((r) => r.d && (
+            <path key={`r${r.i}`} d={r.d} fill="none" strokeWidth={best && r.x === best ? 2.6 : 1.4} vectorEffect="non-scaling-stroke"
+              style={{ stroke: 'var(--lg-ink)', strokeOpacity: best && r.x === best ? 1 : 0.42 }} />
+          ))}
+          {rings.map((r) => (
+            <g key={`d${r.i}`}>
+              {r.x.mi === 0 && (
+                <circle cx={r.cx} cy={r.cy} r={16 * u} fill="none" strokeWidth={2} vectorEffect="non-scaling-stroke" style={{ stroke: 'var(--lg-ink)' }}>
+                  <animate attributeName="r" values={`${8 * u};${22 * u};${8 * u}`} dur="1.8s" repeatCount="indefinite" />
+                </circle>
+              )}
+              <circle cx={r.cx} cy={r.cy} r={9 * u} strokeWidth={1.5} vectorEffect="non-scaling-stroke" style={{ fill: 'var(--lg-ink)', stroke: 'var(--lg-paper)' }} />
+              <text x={r.cx} y={r.cy + 3.4 * u} textAnchor="middle" fontSize={10 * u} fontWeight={800} fontFamily="Manrope, system-ui, sans-serif" style={{ fill: 'var(--lg-paper)', pointerEvents: 'none' }}>{r.i + 1}</text>
+            </g>
+          ))}
+        </svg>
+        <figcaption>{cap}</figcaption>
+        <div className="lg-zoom">
+          <button type="button" aria-label="Zoom out" disabled={view.world} onClick={() => setZoomStep((z) => z - 1)}>&minus;</button>
+          <button type="button" aria-label="Zoom in" disabled={view.w <= 61} onClick={() => setZoomStep((z) => z + 1)}>+</button>
+        </div>
+      </figure>
+    );
+  }
+  function renderLeg() {
+    const order = guesses.map((x, i) => ({ x, i })).sort((a, b) => a.x.mi - b.x.mi || a.i - b.i);
+    const lastI = guesses.length - 1;
+    return (
+      <LegShell embed={EMBED} game="ping">
+        <div className="lg-kick">Ping · Find the secret city{PUZZLE.sunday ? ' · Sunday Edition' : ''}</div>
+        <h2 className="lg-q">
+          {playing ? <>Where is today&rsquo;s city?</> : (won ? <>Found in {guesses.length} guess{guesses.length === 1 ? '' : 'es'}</> : <>You gave up</>)}
+          {!playing && !won ? <small>{closest ? `Your closest: ${closest.name}, ${fmtDist(closest.mi)} away` : 'No guesses made'}</small> : null}
+        </h2>
+        {g.hintUsed && playing && <div className="lg-chip">It&rsquo;s in {continent}</div>}
+        {started && (
+          <>
+            <div className="lg-in">
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Type any city"
+                value={val}
+                autoFocus={!mobileUi}
+                autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+                onChange={(e) => { setVal(e.target.value); setSugIdx(-1); }}
+                onKeyDown={onKeyDown}
+                aria-label="Your city guess"
+              />
+              <button type="button" className="lg-go" onMouseDown={keepFocus} onClick={submitTyped}>Guess</button>
+              {suggestions.length > 0 && (
+                <div className="lg-sug">
+                  {suggestions.map((c, i) => (
+                    <button key={`${c.name}|${c.country}`} type="button" className={i === sugIdx ? 'on' : ''}
+                      onMouseEnter={() => setSugIdx(i)} onMouseDown={keepFocus} onClick={() => commitGuess(c)}>
+                      {c.name}<small>{c.country}</small>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="lg-say" role="status" aria-live="polite">{toast || ''}</div>
+          </>
+        )}
+        <div className={`lg-pbody${guesses.length ? ' two' : ''}`}>
+          {renderLegMap()}
+          {guesses.length > 0 && (
+            <div className="lg-rows">
+              {order.map(({ x, i }) => {
+                const hit = x.mi === 0;
+                const hl = hit || (playing && closest && x === closest);
+                return (
+                  <div key={i} className={`lg-row${hl ? ' best' : ''}${i === lastI && playing ? ' lg-new' : ''}`}>
+                    <em className="lg-num">{i + 1}</em>
+                    <b>{x.name} <small>{x.country}</small></b>
+                    <span>{hit ? 'Found it' : fmtDist(x.mi)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        <div className="lg-foot">
+          <span>{guesses.length} guess{guesses.length === 1 ? '' : 'es'}{playing ? ' · no limit' : ''}</span>
+          <button type="button" className="lg-act" onClick={() => changeUnit(unit === 'km' ? 'mi' : 'km')}>{unit === 'km' ? 'Show miles' : 'Show kilometers'}</button>
+          {started && hintOk && !g.hintUsed && (
+            <button type="button" className="lg-act" onClick={useHint} title="Reveal the continent (one hint, first play only)">Hint: the continent</button>
+          )}
+          {started && guesses.length > 0 && (
+            <button type="button" className={`lg-act${armReveal ? ' arm' : ''}`}
+              onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+              title="Give up: your closest guess still counts">
+              {armReveal ? 'Tap again to give up' : 'Give up'}
+            </button>
+          )}
+        </div>
+      </LegShell>
+    );
+  }
+
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft} accentDeep={COLORS.accentDeep}
@@ -920,11 +1046,12 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={STAGE ? `stage-page${LEG && !EMBED ? ' lg-white' : ''}` : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
+      {LEG && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
           the page wrapper so the bands run full bleed; nothing here is pinned. */}
@@ -1021,7 +1148,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
 
         {/* start gate — the hunt stays sealed until Start begins the clock */}
         <RunDoorPop id="passport" game="ping" ready={hydrated && preStart && isTodays && !EMBED} self="Ping" />
-        {preStart && (
+        {preStart && !(EMBED && EMBED.autostart) && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', minHeight: 220, display: 'flex', flexDirection: 'column', marginBottom: 12 }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Ping is ready'}</div>
             {gateRules ? rulesBody : (
@@ -1040,7 +1167,8 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
         {/* the hunt */}
-        {!preStart && (
+        {!preStart && LEG && renderLeg()}
+        {!preStart && !LEG && (
         <div className={STAGE ? 'stg-board pg-board' : (LOFT ? 'loft-card pg-board' : 'pg-board')} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '15px 17px 17px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {/* These figures move UP into the cap on a loft page; printing
               them twice is the one thing to avoid. */}
@@ -1339,7 +1467,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
-      {toast && (
+      {toast && !LEG && (
         <div className="pg-toast" style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>

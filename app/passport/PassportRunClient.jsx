@@ -46,6 +46,7 @@ import { isDarkLook } from '@/lib/stage-look';
 import { scoreText } from '@/lib/daily-games';
 import { KEY, legsFor, legOrderFor, legOrderBefore, legPoints, TIERS, tierIndex, HENLEY_EDITION, shareLinesRun } from '@/lib/passport';
 import { PP_CSS } from './PassportClient';
+import { LegShell } from '../StageLeg';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
 
 const CLIENTS = {
@@ -59,7 +60,6 @@ const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 // The same four inks for paper (the stamps inside the earned passport).
 const INKS_DEEP = ['#6d28d9', '#1d4ed8', '#047857', '#a16207'];
 const STATS_KEY = 'sot_passport_stats';
-const VARS = { '--pp-sea': '#0a1222', '--pp-land': '#2a3652', '--pp-edge': '#0b0f1a', '--pp-home': '#f0718b', '--pp-hit': '#2f7a64', '--pp-miss': '#5a3340', '--pp-panel': '#181e2d', '--pp-line': 'rgba(255,255,255,0.18)', '--pp-good': '#6ee7b7', '--pp-bad': '#fb7185', '--pp-gold': '#fbbf24', '--pp-label': '#ffffff', '--pp-halo': '#0b0f1a' };
 const SRC_NAME = { span: 'Span', flank: 'Flank', ping: 'Ping' };
 // One short line per leg for the entry's lineup bands (the long lines in
 // lib/passport.js LEGS wrap under the big name on the handover instead).
@@ -441,33 +441,46 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   const [look] = useGauntletLook();
   const darkLook = isDarkLook(look);
 
-  const sizes = () => {
+
+  // THE SIZES LEG ON THE STAGE (owner, 2026-10-26): the gauntlet's own shape.
+  // The question, the known country's figure, two answers side by side; the
+  // right answer fills in ink and carries the other country's figure.
+  const sizesLeg = () => {
     const doneR = sc[3] != null;
     const i = Math.min(g.sz.i, NC - 1);
     const c = calls[i] || {};
     const shown = numShow === i || doneR;
     const pop = c.m === 'pop';
     const aV = valA(c), bV = valB(c);
-    const MAX = Math.max(aV || 1, bV || 1) * 1.05;
+    const more = bV > aV;
     const right = g.sz.res.filter(Boolean).length;
+    const ok = g.sz.res[i];
     return (
-      <>
-        <div className="pp-eb"><b>Sizes</b>{SRC_NAME[c.src] ? <span className="pr-src">From {SRC_NAME[c.src]}</span> : null}</div>
-        <h2 className="pp-h">{pop ? <>Does {c.bName} have more or fewer people than {c.aName}?</> : <>Is {c.bName} bigger or smaller than {c.aName} by area?</>}</h2>
-        <div className="pp-vs">
-          <div className="pp-vc home"><div className="pp-mono">{c.aName}</div><div className="v">{fmtSize(aV, pop)}</div><div className="bar"><i style={{ width: `${((aV || 0) / MAX) * 100}%` }} /></div></div>
-          <div className="pp-vc them"><div className="pp-mono">{doneR ? 'Last one' : `${i + 1} of ${NC}`}</div><div className="n">{c.bName}</div><div className="v">{shown ? fmtSize(bV, pop) : (pop ? '? people' : '? km²')}</div><div className="bar"><i style={{ width: shown ? `${((bV || 0) / MAX) * 100}%` : '0%' }} /></div></div>
+      <LegShell embed game="passport">
+        <div className="lg-kick">Sizes · {doneR ? `${NC} calls` : `Call ${i + 1} of ${NC}`} · {pop ? 'By population' : 'By area'}{SRC_NAME[c.src] ? ` · From ${SRC_NAME[c.src]}` : ''}</div>
+        <h2 className="lg-q" key={`q${i}`}>{pop ? <>Does {c.bName} have more or fewer people than {c.aName}?</> : <>Is {c.bName} bigger or smaller than {c.aName} by area?</>}</h2>
+        <div className="lg-known"><b>{c.aName}</b><span>{fmtSize(aV, pop)}</span></div>
+        <div className="lg-pair">
+          {[true, false].map((big) => {
+            const truth = shown && big === more;
+            return (
+              <button key={big ? 'b' : 's'} type="button" className={`lg-ans${truth ? ' ok' : ''}${shown && !truth ? ' dim' : ''}`}
+                disabled={doneR || numShow != null} onClick={() => callSize(big)}>
+                {big ? (pop ? 'More' : 'Bigger') : (pop ? 'Fewer' : 'Smaller')}
+                {truth ? <em>{c.bName} {fmtSize(bV, pop)}</em> : null}
+              </button>
+            );
+          })}
         </div>
-        {!doneR && (
-          <div className="pp-bl">
-            <button type="button" className="pp-ghost big" disabled={numShow != null} onClick={() => callSize(true)}>{pop ? 'More' : 'Bigger'}</button>
-            <button type="button" className="pp-ghost big" disabled={numShow != null} onClick={() => callSize(false)}>{pop ? 'Fewer' : 'Smaller'}</button>
-          </div>
-        )}
-        <div className="pp-dots">{calls.map((_, k) => <i key={k} className={g.sz.res[k] === true ? 'ok' : g.sz.res[k] === false ? 'ko' : k === g.sz.i ? 'cur' : ''} />)}</div>
-        {numShow != null && <p className="pp-reveal">{pop ? <>{c.bName} has {bV > aV ? 'more' : 'fewer'} people, by {fmtSize(Math.abs(bV - aV), true)}.</> : <>{c.bName} is {bV > aV ? 'bigger' : 'smaller'}, by {fmtSize(Math.abs(bV - aV), false)}.</>}</p>}
-        {doneR && <p className="pp-reveal">{right} of {NC} called right. Areas and populations from the CIA World Factbook.</p>}
-      </>
+        <div className="lg-say" role="status" aria-live="polite">
+          {doneR
+            ? `${right} of ${NC} called right. Areas and populations from the CIA World Factbook.`
+            : (numShow === i ? `${ok ? 'Right.' : 'Not this time.'} ${pop ? `${c.bName} has ${more ? 'more' : 'fewer'} people, by ${fmtSize(Math.abs(bV - aV), true)}.` : `${c.bName} is ${more ? 'bigger' : 'smaller'}, by ${fmtSize(Math.abs(bV - aV), false)}.`}` : '')}
+        </div>
+        <div className="lg-dots" aria-label={`${g.sz.res.length} of ${NC} called, ${right} right`}>
+          {calls.map((_, k) => <i key={k} className={g.sz.res[k] === true ? 'ok' : g.sz.res[k] === false ? 'ko' : (k === g.sz.i && !doneR ? 'cur' : '')} />)}
+        </div>
+      </LegShell>
     );
   };
 
@@ -508,7 +521,6 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   }, [done]);
 
   const doneNames = sections.filter((s) => banked[s.key]).map((s) => s.name);
-  const PVARS = darkLook ? VARS : VARS_LIGHT;
 
   return (
     <div className="pr-root" style={{ fontFamily: SANS }}>
@@ -543,7 +555,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           <div className="pr-play">
             {sec && showGame && Game ? (
               <div className="pr-host">
-                <RunEmbed onResult={onSectionDone} theme={darkLook ? 'dark' : 'light'}>
+                <RunEmbed onResult={onSectionDone} theme={darkLook ? 'dark' : 'light'} autostart>
                   {sec.key === 'flank'
                     ? <Game key={`flank-${sec.num}`} puzzles={[sec.light]} dayByNum={{ [sec.num]: sec.day }} forceNum={null} />
                     : <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />}
@@ -551,11 +563,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
               </div>
             ) : null}
             {sec && checking && g.sc[LI] == null ? <p className="pr-note">Checking whether you already played {sec.name} today.</p> : null}
-            {LI === 3 ? (
-              <div className="stage-page pp-root pr-sizes" data-stage-theme={darkLook ? 'dark' : 'light'} data-stage-pin="" style={PVARS}>
-                <div className="pp-board">{sizes()}</div>
-              </div>
-            ) : null}
+            {LI === 3 ? sizesLeg() : null}
             {g.round === 3 && g.sc[LI] != null && !(sec && showGame) ? <p className="pr-note">Landing your passport&hellip;</p> : null}
           </div>
         </RunPlayFrame>
@@ -693,22 +701,11 @@ function Booklet({ num, legs, onOpen }) {
   );
 }
 
-// The sizes board on the pastel ground: the leg's own --pp tokens in dark ink
-// (the run's old midnight values are VARS, kept for the Black looks).
-const VARS_LIGHT = { '--pp-sea': '#dbe7f3', '--pp-land': '#9fb3c8', '--pp-edge': '#ffffff', '--pp-home': '#9f1239', '--pp-hit': '#047857', '--pp-miss': '#be123c', '--pp-panel': 'rgba(255,255,255,0.6)', '--pp-line': 'rgba(8,34,46,0.28)', '--pp-good': '#047857', '--pp-bad': '#be123c', '--pp-gold': '#a16207', '--pp-label': '#08222e', '--pp-halo': '#ffffff', '--stg-ink': '#08222e', '--stg-mute': 'rgba(8,34,46,0.72)', '--stg-acc': '#08222e', '--stg-acc-ink': '#08222e' };
-
 const RUN_CSS = `
 .pr-play{display:flex;flex-direction:column;gap:6px;padding:0 0 8px}
 .pr-host{animation:prrise .45s ease both}
 .pr-play .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
 .gsx-play .pr-host .stg-board{margin-left:0 !important;margin-right:0 !important}
-.pr-sizes{max-width:620px;width:100%;margin:0 auto;box-sizing:border-box;padding:4px 16px 0}
-.pr-sizes .pp-board{padding:0}
-.pr-sizes .pp-eb b{color:var(--stg-ink);border-color:currentColor}
-.pr-sizes .pp-h{font-size:22px}
-.pr-sizes .pp-ghost.big{border:2px solid var(--stg-ink);font-weight:800}
-.pr-sizes .pp-vc{border-width:2px;border-color:var(--pp-line)}
-.pr-src{margin-left:auto;font-weight:700}
 .pr-note{max-width:520px;margin:10px auto;text-align:center;font-size:14px;font-weight:700;opacity:.8;padding:0 16px}
 .pr-rules{background:none;border:0;padding:0;font:inherit;font-weight:800;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .pr-back{margin-top:14px;width:100%;min-height:48px;border-radius:14px;border:0;background:#08222e;color:#ffffff;font:800 16px Manrope,system-ui,sans-serif;cursor:pointer}

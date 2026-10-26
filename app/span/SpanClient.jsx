@@ -50,6 +50,7 @@ import { isLoft } from '@/lib/loft';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import { LEG_ON, LegShell, LEG_PAGE_CSS } from '../StageLeg';
 import RunDoorPop from '../circuits/RunDoorPop';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
@@ -396,6 +397,9 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   const playing = g.status === 'playing';
   const LOFT = isLoft('span');
   const STAGE = isStage('span', searchParams);
+  // The stage board (app/StageLeg.jsx, owner 2026-10-26): in the Passport run
+  // and on Span's own page alike.
+  const LEG = LEG_ON && STAGE;
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('span');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('span');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -590,6 +594,8 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
     focusSoon(() => inputRef.current);
   }
+  // The Passport run deals its legs straight in (RunEmbed autostart).
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function miss(g2, msg) {
     g2.misses = g2.misses + 1;
@@ -828,6 +834,91 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   }
   const arrow = (k) => <span key={k} style={{ color: `var(--stg-ink2, ${T.muted})`, fontWeight: 800 }}>&rarr;</span>;
 
+  // ─── THE STAGE BOARD (owner, 2026-10-26) ───────────────────────────────────
+  // The route as the question, the input under it, then the road built
+  // downward from the start, with the destination waiting at the foot (on a
+  // wide screen the road runs across). Undo and the hint are full-width
+  // buttons; giving up shows a shortest road, as before.
+  function renderLeg() {
+    const reached = won && chain[chain.length - 1] === PUZZLE.end;
+    const stops = chain;
+    const go = () => { if (suggestions.length === 1) addCountry(suggestions[0]); else addCountry(typed); };
+    const rule = VIA ? `Pass through ${VIA}${viaDone ? ' (done)' : ''}` : (AVOID ? `${AVOID} is closed today` : null);
+    return (
+      <LegShell embed={EMBED} game="span" boardRef={boardRef}>
+        <div className="lg-kick">Span · Cross the map by borders{isSundayEd ? ' · Sunday Edition' : ''}</div>
+        <h2 className="lg-q">
+          {PUZZLE.start} to {PUZZLE.end}
+          <small>{won ? `Spanned in ${hops} hop${hops === 1 ? '' : 's'}${hops === PUZZLE.perfect ? ', the shortest road' : ''}` : `Shortest road: ${PUZZLE.perfect} hop${PUZZLE.perfect === 1 ? '' : 's'}`}</small>
+        </h2>
+        {rule && sundayRule && <div className="lg-chip">{rule}</div>}
+        {started && (
+          <>
+            <div className={`lg-in${shake ? ' shake' : ''}`}>
+              <input
+                aria-label="Next stop"
+                ref={inputRef}
+                value={typed}
+                onFocus={onBoxFocus}
+                onBlur={onBoxBlur}
+                onChange={(e) => setTyped(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } }}
+                placeholder={`Next after ${head}`}
+                autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+              />
+              <button type="button" className="lg-go" onMouseDown={(e) => e.preventDefault()} onClick={go}>Go</button>
+              {suggestions.length > 0 && (
+                <div ref={sugRef} className="lg-sug">
+                  {suggestions.map((c) => (
+                    <button key={c} type="button" onMouseDown={(e) => { e.preventDefault(); addCountry(c); }}>{c}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="lg-say" role="status" aria-live="polite">{toast || ''}</div>
+          </>
+        )}
+        <div className={`lg-road${shake ? ' shake' : ''}`} role="list" aria-label="Your road">
+          {stops.map((c, i) => {
+            const isEnd = reached && i === stops.length - 1;
+            const cls = i === 0 || !playing ? 's' : 'w';
+            return (
+              <React.Fragment key={`${c}-${i}`}>
+                {i > 0 && <div className="lg-link" aria-hidden="true" />}
+                <div role="listitem" className={`lg-stop ${cls}${i === stops.length - 1 && playing && i > 0 ? ' lg-new' : ''}`}>
+                  <span className="n">{i + 1}</span>{c}
+                  {i === 0 ? <span className="tag">Start</span> : (isEnd ? <span className="tag">There</span> : null)}
+                </div>
+              </React.Fragment>
+            );
+          })}
+          {!reached && (
+            <>
+              <div className="lg-gap" aria-hidden="true" />
+              <div role="listitem" className="lg-stop dst"><span className="n">?</span>{PUZZLE.end}<span className="tag">Destination</span></div>
+            </>
+          )}
+        </div>
+        {started && (chain.length > 1 || (hintOk && !g.hintUsed)) && (
+          <div className="lg-row2">
+            {chain.length > 1 && <button type="button" className="lg-btn" onClick={undo}>Undo</button>}
+            {hintOk && !g.hintUsed && <button type="button" className="lg-btn" onClick={useHint} title="Take one step down a shortest road (one hint, first play only)">Hint</button>}
+          </div>
+        )}
+        <div className="lg-foot">
+          <span>{hops} hop{hops === 1 ? '' : 's'} so far · {g.misses} miss{g.misses === 1 ? '' : 'es'}</span>
+          {started && (
+            <button type="button" className={`lg-act${armReveal ? ' arm' : ''}`}
+              onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
+              title="Give up: ends the puzzle and shows a shortest road">
+              {armReveal ? 'Tap again to give up' : 'Give up'}
+            </button>
+          )}
+        </div>
+      </LegShell>
+    );
+  }
+
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
   const rulesBody = (
     <DailyRules
@@ -847,11 +938,12 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={STAGE ? `stage-page${LEG && !EMBED ? ' lg-white' : ''}` : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'clip' : undefined }}>
       {!STAGE && <Grain />}
+      {LEG && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
           the page wrapper so the bands run full bleed; nothing here is pinned. */}
@@ -997,7 +1089,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
         {/* start tile — sits where the board goes until the player presses Start,
             which begins the clock. The assignment stays sealed until then. */}
         <RunDoorPop id="passport" game="span" ready={hydrated && preStart && isTodays && !EMBED} self="Span" />
-        {preStart && (
+        {preStart && !(EMBED && EMBED.autostart) && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Span is ready'}</div>
             {gateRules ? rulesBody : (
@@ -1017,7 +1109,8 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
         )}
 
         {/* the assignment */}
-        {!preStart && (
+        {!preStart && LEG && renderLeg()}
+        {!preStart && !LEG && (
         <div ref={boardRef} className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {isSundayEd && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontFamily: MONO, fontSize: 11, letterSpacing: '0.09em', textTransform: 'uppercase', color: STAGE ? 'var(--stg-warn)' : '#8a6d1a', background: STAGE ? 'var(--stg-surf2)' : '#fdf6e3', border: STAGE ? '1px solid var(--stg-warn)' : '1px solid rgba(230,185,63,0.6)', borderRadius: 7, padding: '6px 10px', marginBottom: 11, flexWrap: 'wrap' }}>
@@ -1122,7 +1215,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
         )}
 
         {/* input */}
-        {started && (
+        {started && !LEG && (
           <div className="sp-dock" style={{ marginBottom: 12 }}>
             <div className="sp-row" style={{ position: 'relative', display: 'flex', gap: 10, alignItems: 'stretch' }}>
               <div style={{ position: 'relative', flex: 1, display: 'flex' }}>
@@ -1351,7 +1444,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
-      {toast && (
+      {toast && !LEG && (
         <div className="sp-toast" style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
           {toast}
         </div>

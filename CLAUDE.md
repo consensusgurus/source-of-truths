@@ -10406,3 +10406,30 @@ deals (Dojo sudokus, Judged cases, crosswords) stay themselves. The puzzle page'
 follows the home's index order: All Puzzles, the categories, My Puzzles, the switch, then an
 "Everything Else" box (Runs, Quizzes, Puzzle Archive, Leaderboards + Stats / IQ Tests, School Tests,
 Kids, Top 10 Lists / Most Appreciated). Change both together.
+
+## The stage board for Ping, Flank and Span (owner, 2026-10-26)
+
+Ping, Flank and Span draw their play area with `app/StageLeg.jsx`: the gauntlet
+stage's shape (kicker, the question big and centred, a 2px-ink input tile, the
+answers as ink-bordered tiles, a quiet foot line with Give up). It replaces the
+old board in BOTH homes:
+
+- **Inside the Passport run** the board reads the run frame's tokens
+  (`--gsx-ink`, `--gsx-card`, `--gsx-card-paper`), so it follows the run's five
+  looks. The run mounts the games through `RunEmbed` with `autostart`, so a leg
+  opens straight on its board with no start gate. The Sizes leg uses the same
+  shell (`sizesLeg()` in `PassportRunClient.jsx`).
+- **On each game's own page** it sits on a WHITE page (owner: "white background
+  versions for the individual puzzles") with the game's category pastel on the
+  tiles. `LEG_PAGE_CSS` paints the light register's ground white; its selector
+  carries an ID in `:not()` on purpose, to outweigh the phone look rules in
+  globals.css (`html[data-stage-pastel]:not(#sot-x)`). The dark register is
+  untouched.
+
+**StageLeg only draws.** Every rule (matching, scoring, saves, stats, the
+`/api/quiz/result` row, the abandon flush, the run hand-off) stays in the game
+client, so the run and the page cannot score differently. `LEG_ON` in
+StageLeg.jsx is the one switch back to the old boards; the old JSX is still in
+each client behind `!LEG`. Ping's ring map on the stage board is drawn in ink
+with solid rings only (no dashed lines); the closest ring is heavy. Flank still
+hides a missed border exactly when its old ring did (`!LOFT || revealed`).
