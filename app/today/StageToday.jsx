@@ -7153,11 +7153,19 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      .sty-g.done.grp and .sty-g.done.grp.res outweighed the rule above and kept
      the category pastel as a fill under this block's light dark-mode ink. */
   .sty-g.done.grp,.sty-g.done.grp.res,.sty-g.done.grp:hover,.sty-g.done.grp.res:hover{background:var(--stg-surf);border-color:var(--stg-ink);box-shadow:inset 0 0 0 1px var(--stg-ink);color:var(--stg-ink);}
-  /* A PLAYED TILE WEARS A DOUBLE OUTLINE (owner, 2026-10-26). With the fills
-     gone a played game needs a mark of its own, and a colour cannot be it: the
-     glyph in ink vanishes on the dark register. The ink border plus a second
-     ink ring inside it reads in every look, light or dark. */
-  .sty-g.done,.sty-g.done:hover,.sty-g.done.res,.sty-g.done.res:hover,.sty-g.done.grp,.sty-g.done.grp.res,.sty-g.done.grp:hover,.sty-g.done.grp.res:hover{border-color:var(--stg-ink);box-shadow:none;outline:2px solid var(--stg-ink);outline-offset:-6px;}
+  /* A PLAYED TILE SWAPS ITS GLYPH FOR A CHECK (owner, 2026-10-26, option A;
+     replaces the double outline). One outline, the same as an unplayed tile, and
+     the glyph slot becomes a solid disc in the category's colour with a check
+     knocked out of it. The check's ink flips with the register (white on the
+     light register's deep ink step, near-black on the dark register's pastel),
+     so the mark never vanishes the way an ink glyph did on dark. Mixed panes
+     (.mx) swap their colour dot for the same disc. */
+  .sty-g.done,.sty-g.done:hover,.sty-g.done.res,.sty-g.done.res:hover,.sty-g.done.grp,.sty-g.done.grp.res,.sty-g.done.grp:hover,.sty-g.done.grp.res:hover{border-color:var(--stg-ink);box-shadow:none;outline:0;}
+  .sty-g.done .sty-gn > .sty-gi{display:none;}
+  .sty-g.done .sty-gn::before,.sty-g.done.mx .sty-gn::before{content:"";flex:none;width:19px;height:19px;border:0;border-radius:50%;box-sizing:border-box;
+    background:var(--cci, var(--cc)) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b0f1a' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/13px 13px no-repeat;}
+  [data-stage-theme=light] .sty-g.done .sty-gn::before,[data-stage-theme=light] .sty-g.done.mx .sty-gn::before{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E");}
   .sty-g.grp .sty-gn,.sty-g.grp:hover .sty-gn,.sty-g.grp.done .sty-gn,.sty-g.grp.done.res .sty-gn,.sty-g.grp.done.res:hover .sty-gn,
   .sty-g.grp .sty-grk,.sty-g.grp .sty-star{color:var(--stg-ink);}
   .sty-g.grp .sty-gt,.sty-g.grp .sty-grl,.sty-g.grp .sty-grf,.sty-g.grp .sty-gsep{color:var(--stg-ink2, var(--stg-ink));}
