@@ -10334,8 +10334,10 @@ it under `eg.order`. Gate: `node scripts/verify-scale-off.mjs`, shown to fail on
 On desktop the one-page ending (`app/StageStick.jsx`) is ONE sheet in the page's own materials:
 the raised surface with the 2px ink rule and 12px corners the rails wear, the category colour only
 on the result band across its top, the sections below divided by rules rather than boxed as pastel
-cards. While it is up the right rail folds away (`html.lc-on:has(.sst-page)`) and the sheet takes
-the width (up to 1240px). By the sheet's own width (container queries): 1000px+ is board | group |
+cards. While it is up the sheet stays in the board's column and the right rail turns into **Up next**
+(owner, 2026-10-26, replacing the fold, which left the sheet off center): StageStick portals `.sst-rail`
+into `.lc-side` (most played today from `/api/quiz/pulse`, more in the category, quizzes, categories) and
+the rail's tabs hide while it is there. Keep playing renders in the sheet only when there is no rail. By the sheet's own width (container queries): 1000px+ is board | group |
 challenge in three columns; 700-999px is board beside group with the challenge full width under;
 below 700px it stacks. The overall board pads to five places with "Empty"; the group card lists only
 members who have played (no empty slots). "Keep playing" closes the sheet: category chips, more

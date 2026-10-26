@@ -2082,7 +2082,10 @@ export default function StageFinish({
       return { name: c, total: gs.length, n: gs.filter((x) => played.has(x.key) || x.key === me.key).length, href: categoryHref(c) || '/', bg: categoryColor(c) };
     }).filter((c) => c.total > 0);
     const meme = memeCtx && openMeme ? { ctx: memeCtx, onOpen: openMeme } : null;
-    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet, replayNow: replayOpt || null, meme, shelf, cats };
+    // UP NEXT (owner, 2026-10-26): every live daily, for the desktop rail's
+    // most-played-today list.
+    const allGames = LIVE().map((x) => ({ key: x.key, name: x.name, cat: x.cat, href: x.href || `/${x.key}`, done: played.has(x.key) || x.key === me.key }));
+    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet, replayNow: replayOpt || null, meme, shelf, cats, allGames };
   })();
 
   // Placed AFTER every hook above AND after the challenge door is built (moved

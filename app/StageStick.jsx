@@ -111,7 +111,7 @@ function padRows(rows) {
 export default function StageStick({
   tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, run = null, allHref = '/#all',
   sheet = {}, onLeave, onBack = null, archiveHref = null, archiveLabel = 'Past puzzles', replayNow = null, meme = null, shelf = null, cats = null,
-  ready = true,
+  ready = true, allGames = null,
 }) {
   const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
   const [step, setStep] = useState(0);        // 0..6, how many blocks have landed
@@ -150,6 +150,27 @@ export default function StageStick({
       setQuizzes(d.cats);
     }).catch(() => {});
     return () => { alive = false; };
+  }, [desk]);
+  // UP NEXT IN THE RAIL (owner, 2026-10-26: the ending "looks really bad off
+  // center ... maybe we keep right panel on full width but it displays
+  // something else? today's top puzzles?"). On a desktop with the side rail
+  // the ending stays in the board's column and the rail turns into Up next:
+  // today's most played puzzles (the home pane's /api/quiz/pulse read, held
+  // by the CDN), the rest of this category, a few quizzes and the categories.
+  const [rail, setRail] = useState(null);
+  const [pulse, setPulse] = useState(null);
+  useEffect(() => {
+    if (!desk) { setRail(null); return undefined; }
+    // Re-found when the frame comes and goes (Hide menus & leaderboard).
+    const find = () => setRail(document.querySelector('html.lc-on .lc-side'));
+    find();
+    let mo = null;
+    try { mo = new MutationObserver(find); mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
+    let alive = true;
+    fetch('/api/quiz/pulse').then((r) => (r.ok ? r.json() : null)).then((d) => {
+      if (alive && d && d.gameToday) setPulse(d.gameToday);
+    }).catch(() => {});
+    return () => { alive = false; if (mo) mo.disconnect(); };
   }, [desk]);
 
   const retract = () => {
@@ -449,6 +470,57 @@ export default function StageStick({
   const myDept = s.gameKey ? dailyDept(s.gameKey) : null;
   const quizPicks = quizzes ? quizzes.slice().sort((x, y) => (x.dept === myDept ? -1 : 0) - (y.dept === myDept ? -1 : 0)).slice(0, 4) : [];
   const leftToday = cats ? cats.reduce((t, c) => t + Math.max(0, c.total - c.n), 0) : null;
+  const topToday = (allGames && pulse)
+    ? allGames.filter((g) => g.key !== s.gameKey && pulse[g.key] && pulse[g.key].players > 0)
+      .sort((a, b) => (pulse[b.key].players - pulse[a.key].players) || a.name.localeCompare(b.name)).slice(0, 6)
+    : null;
+  const moreHere = shelf && shelf.games ? shelf.games.slice().sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0)).slice(0, 4) : [];
+  const railRow = (g, sub) => (
+    <a key={g.key} href={g.href} className={'sst-rr' + (g.done ? ' done' : '')}>
+      <span className="gl"><GameGlyph gameKey={g.key} size={20} /></span>
+      <span className="tx"><b>{g.name}</b><small>{sub}</small></span>
+      <span className="ar" aria-hidden="true">{g.done ? '\u2713' : '\u2192'}</span>
+    </a>
+  );
+  const upNext = (
+    <div className={'sst-rail' + (phase !== 'show' ? ' in' : '')}>
+      <div className="sst-rh"><b>Up next</b>{leftToday ? <span>{leftToday} left today</span> : null}</div>
+      <div className="sst-rs">
+        <div className="sst-rl">Most played today</div>
+        {topToday === null ? <div className="sst-rhold" aria-hidden="true" /> : topToday.map((g) => railRow(g,
+          `${g.cat} \u00b7 ${pulse[g.key].players} ${pulse[g.key].players === 1 ? 'player' : 'players'}`))}
+      </div>
+      {moreHere.length ? (
+        <div className="sst-rs">
+          <div className="sst-rl">More {shelf.cat}{shelf.total ? <span>{shelf.n} of {shelf.total}</span> : null}</div>
+          {moreHere.map((g) => railRow(g, g.done ? 'Played' : (g.time || 'Today\u2019s puzzle')))}
+        </div>
+      ) : null}
+      {quizPicks.length ? (
+        <div className="sst-rs">
+          <div className="sst-rl">Quizzes<a href="/quizzes">All</a></div>
+          {quizPicks.slice(0, 3).map((q) => (
+            <a key={q.id} href={q.href} className="sst-rr q">
+              <span className="tx"><b>{q.title}</b><small>{q.label}</small></span>
+              <span className="ar" aria-hidden="true">&rarr;</span>
+            </a>
+          ))}
+        </div>
+      ) : null}
+      {cats && cats.length ? (
+        <div className="sst-rs">
+          <div className="sst-rl">Categories</div>
+          <div className="sst-rc">
+            {cats.map((c) => (
+              <a key={c.name} href={c.href} className="sst-catc" style={{ '--cc': c.bg }}>
+                <span className="n">{c.n}/{c.total}</span>{c.name}
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
   const keepPlaying = (
     <div className="sst-kp">
       <div className="sst-kph"><b>Keep playing</b>{leftToday ? <span>{leftToday} {leftToday === 1 ? 'puzzle' : 'puzzles'} left today</span> : null}</div>
@@ -585,7 +657,7 @@ export default function StageStick({
             </div>
           ) : null}
         </div>
-        {desk ? keepPlaying : (
+        {desk ? (rail ? null : keepPlaying) : (
           <>
           {shelf && shelf.games && shelf.games.length ? (
             <div className="sst-shelf">
@@ -678,6 +750,7 @@ export default function StageStick({
         <div className="sst-band" ref={heroRef}>{result(phase === 'inline')}</div>
         {cards}
       </div>
+      {rail ? createPortal(upNext, rail) : null}
       {phase !== 'inline' ? createPortal((
         <div ref={rootRef} className={'sst sst-cover' + toneCls + (phase === 'retract' ? ' go' : '')}
           style={clip ? { clipPath: clip, WebkitClipPath: clip } : undefined}
@@ -958,8 +1031,32 @@ const CSS = `
 @container (max-width:699px){ .sst-kpg{grid-template-columns:minmax(0,1fr);} }
 /* THE RIGHT RAIL FOLDS AWAY while the ending is up (direction B): the
    ending takes the stage, and it carries the boards the rail would repeat. */
-html.lc-on:has(.sst-page) .lc-side{display:none !important;}
-html.lc-on:has(.sst-page) .lc-host{padding-right:22px !important;}
+/* UP NEXT: the rail's own tabs step aside while the ending holds it. */
+html.lc-on .lc-side:has(> .sst-rail) > :not(.sst-rail){display:none !important;}
+.sst-rail{font-family:${SANS};color:var(--stg-ink,#0b0d12);opacity:0;transform:translateY(8px);
+  transition:opacity .45s ease .25s,transform .45s cubic-bezier(.2,.8,.2,1) .25s;}
+.sst-rail.in{opacity:1;transform:none;}
+.sst-rh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:2px solid var(--stg-ink,#0b0d12);}
+.sst-rh b{font-size:17px;font-weight:800;letter-spacing:-.01em;}
+.sst-rh span{font-size:12px;font-weight:700;opacity:.75;}
+.sst-rs{padding:12px 14px 10px;border-top:1.5px solid color-mix(in srgb,var(--stg-ink,#0b0d12) 14%,transparent);}
+.sst-rh + .sst-rs{border-top:0;}
+.sst-rl{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;}
+.sst-rl span,.sst-rl a{font-size:11px;letter-spacing:0;text-transform:none;font-weight:700;color:inherit;opacity:.75;}
+.sst-rr{display:flex;align-items:center;gap:9px;min-width:0;padding:6px 6px;margin:0 -6px;border-radius:9px;color:inherit;text-decoration:none;}
+.sst-rr:hover{background:color-mix(in srgb,var(--stg-ink,#0b0d12) 6%,transparent);}
+.sst-rr:focus-visible{outline:2px solid var(--stg-ink,#0b0d12);outline-offset:1px;}
+.sst-rr .gl{flex:none;width:28px;height:28px;border-radius:8px;background:color-mix(in srgb,var(--sp-g,var(--stg-acc,#c9d2fd)) 55%,#ffffff);display:flex;align-items:center;justify-content:center;color:#08222e;}
+.sst-rr .tx{display:flex;flex-direction:column;min-width:0;flex:1;}
+.sst-rr b{font-size:13.5px;font-weight:800;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-rr small{font-size:11.5px;font-weight:600;opacity:.72;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-rr .ar{flex:none;font-weight:800;opacity:.8;}
+.sst-rr.done{opacity:.55;}
+.sst-rhold{height:180px;}
+.sst-rc{display:flex;flex-wrap:wrap;gap:6px;}
+.sst-rc .sst-catc{height:30px;font-size:12px;padding:0 10px 0 4px;}
+.sst-rc .sst-catc .n{min-width:22px;height:22px;font-size:10.5px;}
+@media (prefers-reduced-motion: reduce){.sst-rail{transition:none;}}
 .sst-page .sst-tiles,.sst-page .sst-cats{flex-wrap:wrap;overflow:visible;margin:0;padding:0;}
 .sst-page .sst-gif .msh-peek img{max-height:300px;}
 .sst-page:not(.in) .sst-b{opacity:0;}
