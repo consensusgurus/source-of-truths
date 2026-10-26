@@ -3834,7 +3834,8 @@ export default function StageToday() {
             <a className={'sty-keep' + (brandTone(paneOn) ? ' tone' : '')} style={brandTone(paneOn) || undefined} href="/?signup=1"
               onClick={(e) => { e.preventDefault(); openChooseName(); }}>Keep stats, play with friends</a>
           ) : null}
-          {who ? <div className="sty-who"><b>{who}</b><i>player</i></div> : null}
+          {/* THE NAME OPENS THE PLAYER'S PROFILE (owner, 2026-10-26), as the phone's name pill does. */}
+          {who ? <a className="sty-who" href={withTq('/player/' + encodeURIComponent(who))} title="Your stats and profile"><b>{who}</b><i>player</i></a> : null}
           {/* THE DRAWING TICKETS (owner, 2026-10-15): the count, while the $100
               drawing runs, opening Your challenges. See app/ChallengeBack.jsx. */}
           {who ? <CapTickets /> : null}
@@ -6972,6 +6973,9 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
     padding:0 16px;border:var(--dk);border-radius:999px;text-align:left;}
   .sty-cap.v2 .sty-who > i{display:none;}
   .sty-cap.v2 .sty-who > b{font-size:14px;line-height:1.3;}
+  .sty-cap.v2 a.sty-who{text-decoration:none;color:var(--stg-ink);cursor:pointer;}
+  .sty-cap.v2 a.sty-who:hover{background:var(--stg-ink);color:var(--stg-ground);}
+  .sty-cap.v2 a.sty-who:hover > b{color:inherit;}
   .sty-cap.v2 .sty-fca{text-align:center;}
   .sty-cap.v2 .sty-fca > b{font-size:19px;line-height:1.2;}
   .sty-cap.v2 .sty-fca > i{font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--stg-ink);}
