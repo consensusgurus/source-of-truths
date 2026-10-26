@@ -120,7 +120,6 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   const [hydrated, setHydrated] = useState(false);
   const [banked, setBanked] = useState({});
   const [leaving, setLeaving] = useState(false);
-  const [ladderOpen, setLadderOpen] = useState(false);
   const [holding, setHolding] = useState(null);
   // How to play, from the run: the embedded grid has no cap of its own.
   const [helpSeq, setHelpSeq] = useState(0);
@@ -140,9 +139,9 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   const flipBoard = () => setBoardTheme((cur) => { const next = cur === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('sot_dojo_board2', JSON.stringify({ t: next, day: etToday() })); } catch (e) {} return next; });
   const doneAtLoad = useRef(null);
   const [settled, setSettled] = useState(false);
-  // THE PHONE DOJO (owner, 2026-10-24): on a phone the entrance and the
-  // ending are the gauntlet stage's screens, and the grids play on the pastel
-  // sudoku register. Desktop keeps the doors, the scrolls and the dye curtain.
+  // THE PHONE DOJO (owner, 2026-10-24): on a phone the ending is the gauntlet
+  // stage's screen and the grids play on the pastel sudoku register. The
+  // ENTRANCE is the stage gate on every width since 2026-10-26.
   const phone = usePhoneStage();
   const [endOpen, setEndOpen] = useState(true);
 
@@ -242,7 +241,6 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   sections.forEach((s) => { VARS[`--dj-${s.key}`] = s.color; });
   const runSoFar = sections.slice(0, r.si).reduce((a, s, i) => a + (counted[i] ? parts[i] : 0), 0);
   const Game = sec ? CLIENTS[sec.key] : null;
-  const variant = sections[N - 1];
 
   return (
     <div className="stage-page dj" data-sot-wait="" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--dj-ground)', color: 'var(--dj-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
@@ -256,7 +254,10 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
         {!playing && <a className="dj-lb" href="/dojo/leaderboard">Leaderboard</a>}
       </div>
 
-      {hydrated && r.phase === 'idle' && phone && (
+      {/* ONE ENTRY ON EVERY WIDTH (owner, 2026-10-26): the stage gate the other
+          runs use, with the sudoku doors as its picture. The old desktop entry
+          (paper doors over a wall of scrolls) is retired. */}
+      {hydrated && r.phase === 'idle' && (
         <GauntletGate
           circuitName="Enter the Dojo"
           dateLabel={dateShort}
@@ -271,59 +272,6 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           onStart={() => { if (!leaving) start(); }}
         />
       )}
-      {hydrated && r.phase === 'idle' && !phone && (
-        <section className={`pre${leaving ? ' leave' : ''}`}>
-          <h1 className="title fade">{'Enter the Dojo'.split(' ').map((w, i) => <span key={i} style={{ animationDelay: `${i * 0.09}s` }}>{w}</span>)}</h1>
-          <p className="lede fade">Three sudokus in one sitting: <b>a six by six warm-up</b>, <b>the classic nine by nine</b>, then <b>{(variant && variant.phrase) || 'a variant'}</b>. Solving counts half, <b>speed</b> counts the other half. <span className="lede-x">Your score decides the belt you tie on.</span></p>
-
-          {/* THE DOORS ARE THE START BUTTON: two paper panels that slide
-              apart, and the light behind them, before the first grid. */}
-          <button type="button" className={`door fade${leaving ? ' open' : ''}`} onClick={start} aria-label={allBanked ? 'See your belt' : 'Step onto the mat'}>
-            <span className="door-frame">
-              <span className="door-light" />
-              <span className="door-p l"><i /></span>
-              <span className="door-p r"><i /></span>
-              <span className="door-sign">{allBanked ? 'All three done today' : 'The mat is ready'}</span>
-            </span>
-            <span className="door-go">{allBanked ? 'See your belt' : 'Step onto the mat'} <span aria-hidden="true">&rarr;</span></span>
-          </button>
-
-          <div className="wall">
-            {sections.map((s, i) => (
-              <div key={s.key} className="scroll" style={{ '--c': `var(--dj-${s.key})`, animationDelay: `${0.25 + i * 0.14}s` }}>
-                <i className="rod t" />
-                <div className="sc-body">
-                  <div className="sc-k">Form {NUMS[i] || i + 1}</div>
-                  <div className="sc-n">{s.name}</div>
-                  <div className="sc-f">{s.form}</div>
-                  <div className="sc-c">{s.chip}</div>
-                  {banked[s.key]
-                    ? <div className="sc-bk">{banked[s.key].unknown ? 'Done today' : `Done: ${banked[s.key].secs ? fmtClock(banked[s.key].secs) : `${banked[s.key].score}/${banked[s.key].total}`}`}<span className="sc-bkx"> · it stands</span></div>
-                    : <div className="sc-w">{s.weight} points</div>}
-                </div>
-                <i className="rod b" />
-              </div>
-            ))}
-          </div>
-
-          <div className="pre-row fade">
-            <div className="sub2">Solved one today already? Your first time stands.</div>
-            <button type="button" className="pre-how" aria-expanded={ladderOpen} onClick={() => setLadderOpen((v) => !v)}>{ladderOpen ? 'Hide the belts' : 'Which belt could you earn?'}</button>
-          </div>
-          {ladderOpen && (
-            <div className="pre-lad">
-              <div className="facts">
-                <div className="fact"><b>{N}</b><span>grids</span></div>
-                <div className="fact"><b>100</b><span>points in all</span></div>
-                <div className="fact"><b>50%</b><span>of it is speed</span></div>
-                <div className="fact"><b>{B.length}</b><span>belts, white to black</span></div>
-              </div>
-              <Ladder at={null} />
-            </div>
-          )}
-        </section>
-      )}
-
       {hydrated && playing && sec && (
         <section className="dj-play" style={{ '--c': `var(--dj-${sec.key})` }}>
           <div className="dj-sechd">
