@@ -285,6 +285,40 @@ export default function StageStick({
     return () => window.removeEventListener('resize', re);
   }, [trackKey, host, phase]);
 
+  // THE ENDING IS ITS OWN WIDTH, NOT THE GAME'S (owner, 2026-10-26: "I liked
+  // the prior format better, wider top element with side by side lower
+  // elements"). The in-page ending sits inside each game's own board column,
+  // which runs 620px on Sixes and 880px on Jig, so the same ending came out
+  // single file on one game and two across on another. It now takes up to
+  // 880px of the page's content area (inside the side rails), centred on the
+  // game column, and only drops to one column when that room is not there.
+  const fitWide = () => {
+    const el = inlineRef.current;
+    if (!el) return;
+    el.style.width = ''; el.style.maxWidth = ''; el.style.marginLeft = '';
+    const par = el.parentElement;
+    const pg = el.closest('.stage-page');
+    if (!par || !pg) return;
+    const hb = pg.getBoundingClientRect();
+    const cs = getComputedStyle(pg);
+    const L = hb.left + (parseFloat(cs.paddingLeft) || 0);
+    const R = hb.right - (parseFloat(cs.paddingRight) || 0);
+    const pb = par.getBoundingClientRect();
+    const Wd = Math.min(880, R - L);
+    if (Wd <= pb.width + 1) return;
+    const left = Math.max(L, Math.min(pb.left + pb.width / 2 - Wd / 2, R - Wd));
+    el.style.maxWidth = 'none';
+    el.style.width = `${Math.round(Wd)}px`;
+    el.style.marginLeft = `${Math.round(left - pb.left)}px`;
+  };
+  useIsoLayout(() => { if (desk) fitWide(); }, [host, desk, phase]);   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!desk) return undefined;
+    const re = () => fitWide();
+    window.addEventListener('resize', re);
+    return () => window.removeEventListener('resize', re);
+  }, [host, desk]);   // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!host) return null;
   const on = (n) => 'sst-b' + (step >= n ? ' on' : '');
   const bgTap = (e) => {
