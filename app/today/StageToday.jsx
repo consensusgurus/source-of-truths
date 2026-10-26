@@ -664,7 +664,8 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       )}
       {/* THE PLAY TOTAL (owner, 2026-10-26): today's plays at the foot of the
           tile, desktop only (shown by the desktop block). */}
-      {day ? <span className="sty-gld">{lead ? `${lead.username} leads${lsc ? ' \u00b7 ' + lsc : ''}` : plays ? 'No solve yet' : 'Open. Be first.'}</span> : null}
+      {/* WHO LEADS, NO SCORE (owner, 2026-10-26): "#1 schnabinator". */}
+      {day ? <span className="sty-gld">{lead ? `#1 ${lead.username}` : plays ? 'No solve yet' : 'Open. Be first.'}</span> : null}
       {day ? (
         <span className="sty-gpl"><u>{isDone ? 'Played' : state === 'open' ? 'Resume' : 'Play'}</u><span>{Number(plays).toLocaleString('en-US')} Today</span></span>
       ) : null}
@@ -2332,6 +2333,7 @@ export default function StageToday() {
   // THE STRIP WEARS THE INDEX'S COLOURS (owner, 2026-10-26): each category's
   // blocks in the same pastel as its index tile, in the index's order.
   const blocks = useMemo(() => orderedCats.map(({ cat, games }) => ({
+    cat,
     n: games.length,
     c: `color-mix(in srgb, ${categoryColor(rampCat(cat))} 60%, #fff)`,
     on: games.map((g) => done.has(g.key)),
@@ -3579,7 +3581,60 @@ export default function StageToday() {
       </>
     );
   };
-  const puzLab = (n) => (mid ? <div className="sty-plab">Puzzles &middot; {n}</div> : null);
+  // THE COUNT LIVES IN THE INDEX ONLY (owner, 2026-10-26): no "Puzzles \u00b7 N" line in the pane.
+  const puzLab = () => null;
+  // RUNS INSIDE THE TILE GRID (owner, 2026-10-26). In tile view the runs stop
+  // being their own block: the grid opens with two cells. The first is the most
+  // played run the reader has not finished, in the puzzle tile's own shape, so
+  // it is one click straight in; finishing it hands the cell to the next most
+  // played. The second is a deck of every other run, which unfurls into the run
+  // cards as they were (the runStrip cards) on a full-width row under it.
+  // List view keeps the run block above the ledger.
+  const [runsOpen, setRunsOpen] = useState(false);
+  useEffect(() => { setRunsOpen(false); }, [paneOn]);
+  const runCells = (cat) => {
+    if (!mid || findOn) return null;
+    const runs = deckRuns(cat);
+    if (!runs.length) return null;
+    const pl = (c) => ((runStat[c.id] || {}).players || 0);
+    const lead = runs.filter((c) => !c.poly && !runFull(c)).sort((a, b) => pl(b) - pl(a))[0] || null;
+    const rest = runs.filter((c) => c !== lead);
+    const cells = [];
+    if (lead) {
+      const st = runStat[lead.id];
+      cells.push(
+        <a key={'rl-' + lead.id} className="sty-g mx sty-grun" href={withTq(circuitEntryHref(lead.id))} data-fk={'rl:' + lead.id}
+          style={{ '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} title={lead.blurb || lead.name}>
+          <span className="sty-gn">{lead.name}</span>
+          <span className="sty-gt">{lead.blurb || `Run \u00b7 ${lead.games.length} games`}</span>
+          <span className="sty-gld">{lead.n ? `${lead.n} of ${lead.games.length} played` : `Run \u00b7 ${lead.games.length} games`}</span>
+          <span className="sty-gpl"><u>{lead.n ? 'Continue' : 'Play'}</u><span>{fmtN(st && st.players)} Today</span></span>
+        </a>
+      );
+    }
+    if (rest.length) {
+      cells.push(
+        <button key="rdeck" type="button" className={'sty-g mx sty-gdeck' + (runsOpen ? ' on' : '')} aria-expanded={runsOpen} aria-controls="sty-runsu"
+          data-fk="rdeck" style={{ '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} onClick={() => setRunsOpen((v) => !v)}>
+          <span className="sty-gn">{lead ? 'More Runs' : 'Runs'} <em>{rest.length}</em></span>
+          {rest.slice(0, 2).map((c) => <span key={c.id} className="sty-gdl"><b>{c.name}</b><i>{runFull(c) ? 'Played' : c.n ? `${c.n} of ${c.games.length}` : fmtN((runStat[c.id] || {}).players)}</i></span>)}
+          <span className="sty-gpl"><u>{runsOpen ? 'Fold runs' : 'Show all'}</u><span aria-hidden="true">{runsOpen ? '\u25b4' : '\u25be'}</span></span>
+        </button>
+      );
+      if (runsOpen) {
+        cells.push(
+          <div key="runsu" id="sty-runsu" className="sty-runsu" data-fk="runsu">
+            <div className="sty-rt3s">{rest.map((c) => runTile(c, cat))}</div>
+          </div>
+        );
+      }
+    }
+    return cells;
+  };
+  const withRuns = (cat, nodes) => {
+    const cells = runCells(cat);
+    return cells ? [...cells, ...nodes] : nodes;
+  };
   const deckFitOff = (cat) => !!deckOpen && deckRuns(cat).some((c) => c.id === deckOpen);
   // ONE SECTION PER PANE, a category or a skill. A skill mixes categories, so
   // its tiles and rows carry their own category's hue, as All Puzzles does.
@@ -3600,23 +3655,24 @@ export default function StageToday() {
           <div className="sty-cht"><h2>{catLabel(cat)}</h2><span className="sty-csub">{s ? s.what + ' \u00b7 ' : ''}{n} of {games.length} Played</span></div>
           <b>{n}<i>/{games.length}</i></b>
           {/* SORT AND VIEW STAY ON ONE LINE TOGETHER (owner, 2026-10-25). */}
+          {viewCtl(cat)}
           {findBox}
-          <span className="sty-svw">{sortCtl(false)}{viewCtl(cat)}</span>
+          {sortCtl(false)}
         </div>
         {s ? <p className="sty-skw">{s.what}. {games.length} daily puzzles.</p> : null}
         {circPills(cat, true)}
-        {findOn ? null : runStrip(cat)}
+        {findOn || !(mid && viewOf(cat) === 'list') ? null : runStrip(cat)}
         {puzLab(findIn(games).length)}
         {mid && viewOf(cat) === 'list' ? catLedger(games, sk || findOn, cat) : null}
         {!(mid && viewOf(cat) === 'list') ? <>
-        <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle} ref={dk ? deckGridRef : undefined}>
+        <div className={'sty-games' + (fit ? ' fit' : '') + (runsOpen && sortBy !== 'diff' && paneOn === cat ? ' ropen' : '')} style={fitStyle} ref={dk ? deckGridRef : undefined}>
           {(() => {
             const nodes = tileRun(sortGames(games), (g, i) => (
               <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
                 canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                 hue={sk || findOn ? hueFor(g.cat) : undefined} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={sk ? cat + ':' + g.key : null} />
             ));
-            return dk ? deckGrid(cat, nodes) : nodes;
+            return dk ? deckGrid(cat, nodes) : withRuns(cat, nodes);
           })()}
         </div>
         {fit ? favBlock(cat, games, fit.k) : null}
@@ -3751,7 +3807,25 @@ export default function StageToday() {
         </div>
         {/* THE DAY'S STRIP IS THE ONLY PROGRESS FIGURE (owner, 2026-10-07): one
             block per game in its category's colour. No played count beside it. */}
-        <div className="sty-capl"><StageLadder blocks={blocks} light={light} /></div>
+        <div className="sty-capl"><StageLadder blocks={blocks} light={light} />
+          {/* THE SPLIT STRIP (owner, 2026-10-26), desktop only: one segment per
+              category, equal widths. Nothing played is one empty block; each game
+              played splits off a filled piece, and exactly one empty piece stays
+              ahead until the category is finished. A segment opens its category. */}
+          <div className="sty-split" role="list" aria-label="Today's puzzles by category">
+            {blocks.map((b) => {
+              const k = b.on.filter(Boolean).length;
+              return (
+                <button key={b.cat} type="button" role="listitem" className="sty-spl" style={{ '--sc': b.c }}
+                  title={`${catLabel(b.cat)} \u00b7 ${k} of ${b.n}`} aria-label={`${catLabel(b.cat)}, ${k} of ${b.n} played`}
+                  onClick={(e) => deskGo(e, b.cat)}>
+                  {Array.from({ length: k }, (_, j) => <i key={j} className="f" />)}
+                  {k < b.n ? <i className="e" /> : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div className="sty-rt">
         <div className="sty-figs">
           {/* NO NAME, NO FIGURES: a guest gets the one control that would fill
@@ -4148,7 +4222,7 @@ export default function StageToday() {
             {/* STARRED RUNS AS THE RUN BLOCK (owner, 2026-10-26), the same cards
                 every other pane leads with, not pills. */}
             {pinnedCircs.length ? runStrip(null, pinnedCircs) : null}
-            {pinnedCircs.length && pinned.length && mid ? <div className="sty-plab">Puzzles &middot; {pinned.length}</div> : null}
+            {null}
             {grpBanners()}
             {grpLists('mineg')}
             {who && grpGames.some((x) => mineGrp.has(x.code)) && (pinned.length || pinnedCircs.length)
@@ -4215,14 +4289,17 @@ export default function StageToday() {
           <div className="sty-cathead">
             <div className="sty-cht"><h2>All Puzzles</h2><span className="sty-csub">{alphaDone} of {alpha.length} Played</span></div>
             <b>{alphaDone}<i>/{alpha.length}</i></b>
+            {/* ONE CONTROL ROW THAT STRETCHES (owner, 2026-10-26): Tiles / List,
+                the group, search, then the sort, filling the width together. */}
+            {viewCtl(ALL_ID)}
             {grpChips()}
             {findBox}
-            <span className="sty-svw">{sortCtl(false)}{viewCtl(ALL_ID)}</span>
+            {sortCtl(false)}
           </div>
           {circPills(null, true)}
           {grpBanners()}
           {grpLists('azg')}
-          {findOn ? null : runStrip(null)}
+          {findOn || !(mid && viewOf(ALL_ID) === 'list') ? null : runStrip(null)}
           {who && grpGames.some((x) => mineGrp.has(x.code)) ? <div className="sty-mgl">All Puzzles</div> : puzLab(findIn(alpha).length)}
           {mid && viewOf(ALL_ID) === 'list' ? (
             <div className="sty-led">
@@ -4232,7 +4309,7 @@ export default function StageToday() {
               {runRows(null, true)}
             </div>
           ) : null}
-          <div className={'sty-games' + (mid && viewOf(ALL_ID) === 'list' ? ' sty-vhid' : '')} ref={deckOn(ALL_ID) && paneOn === ALL_ID ? deckGridRef : undefined}>
+          <div className={'sty-games' + (mid && viewOf(ALL_ID) === 'list' ? ' sty-vhid' : '') + (runsOpen && sortBy !== 'diff' && paneOn === ALL_ID ? ' ropen' : '')} ref={deckOn(ALL_ID) && paneOn === ALL_ID ? deckGridRef : undefined}>
             {(() => {
               const nodes = tileRun(playedLast(sortGames(alpha), done), (g, i) => (
               // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
@@ -4241,7 +4318,7 @@ export default function StageToday() {
                 canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                 hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
             ));
-              return deckOn(ALL_ID) && paneOn === ALL_ID ? deckGrid(null, nodes) : nodes;
+              return deckOn(ALL_ID) && paneOn === ALL_ID ? deckGrid(null, nodes) : (mid && viewOf(ALL_ID) === 'list' ? nodes : withRuns(null, nodes));
             })()}
           </div>
           {findQuiz}
@@ -6873,6 +6950,8 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-fold > .mph-seg button{padding:5px 0 6px;font-size:12.5px;}
 }
 
+/* The split strip is a desktop object; the phone keeps its ladder. */
+.sty-split{display:none;}
 /* ── THE DESKTOP IN THE PHONE'S LOOK (owner, 2026-10-25) ──
    Same desktop structure (cap, index, pane, rail), drawn the way the phone
    home is: 2px ink outlines, rounded tiles, black pills, the index as pastel
@@ -7061,5 +7140,47 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-favr .wk s{background:var(--stg-surf);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--stg-ink) 35%, transparent);}
   .sty-favr:hover .n,.sty-favr.try .go{color:var(--stg-ink);}
   .sty-favh .sty-eb,.sty-favc{color:var(--stg-ink);}
+  /* ── OCT 26 CALMER HOME (owner) ── */
+  /* The split strip replaces the per-game ladder on desktop. */
+  .sty-capl .stl{display:none;}
+  .sty-split{display:flex;gap:6px;height:16px;width:100%;}
+  .sty-spl{flex:1 1 0;min-width:0;display:flex;gap:2px;padding:0;margin:0;border:0;background:none;cursor:pointer;border-radius:3px;}
+  .sty-spl i{flex:1 1 0;min-width:1px;border-radius:2px;transition:flex .3s;}
+  .sty-spl i.f{background:var(--sc);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--stg-ink) 22%, transparent);}
+  .sty-spl i.e{background:color-mix(in srgb, var(--stg-ink) 9%, transparent);box-shadow:inset 0 0 0 1.5px var(--sc);}
+  .sty-spl:hover i{filter:brightness(.95);}
+  .sty-spl:focus-visible{outline:2px solid var(--stg-ink);outline-offset:2px;}
+  /* Ranks and tickets a size down so the strip gets the room. */
+  .sty-cap.v2 .sty-figs{gap:18px;}
+  .sty-cap.v2 .sty-fca > b,.sty-cap.v2 .sty-tix > b{font-size:15px;}
+  .sty-cap.v2 .sty-fca > i,.sty-cap.v2 .sty-tix > i{font-size:8.5px;}
+  /* One control row that stretches: Tiles / List, the group, search, sort. */
+  .sty-ix > .sty-cat > .sty-cathead{gap:10px;}
+  .sty-ix > .sty-cat > .sty-cathead > .sty-sort{margin-left:0;align-self:stretch;display:flex;}
+  .sty-ix > .sty-cat > .sty-cathead > .sty-sort button{flex:1 1 0;white-space:nowrap;}
+  .sty-ix > .sty-cat > .sty-cathead > .sty-view{flex:1.1 1 0;}
+  .sty-ix > .sty-cat > .sty-cathead > .sty-sort:not(.sty-view){flex:2.2 1 0;}
+  .sty-ix > .sty-cat > .sty-cathead > .sty-find{flex:2.4 1 0;margin-left:0;}
+  .sty-ix > .sty-cat > .sty-cathead > .sty-mgchips{flex:.9 1 0;margin-left:0;display:flex;flex-wrap:nowrap;gap:8px;align-self:stretch;}
+  .sty-ix .sty-mgc{flex:1 1 0;border:var(--dk);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);
+    font-size:13px;font-weight:800;padding:0 14px;white-space:nowrap;}
+  .sty-ix .sty-mgc i{color:var(--stg-ink2, var(--stg-ink));font-weight:700;}
+  .sty-ix .sty-mgc.on{background:var(--stg-ink);color:var(--stg-ground);}
+  .sty-ix .sty-mgc.on i{color:inherit;}
+  @media (max-width:1279px){ .sty-ix > .sty-cat > .sty-cathead > .sty-find{display:flex;} }
+  /* Runs in the tile grid: the lead run, the deck, and the unfurled cards. */
+  .sty-grun .sty-gn::before,.sty-gdeck .sty-gn::before{border-radius:3px !important;background:var(--stg-ink) !important;}
+  .sty-gdeck{font:inherit;text-align:left;cursor:pointer;background:var(--stg-surf);color:var(--stg-ink);margin:0 7px 7px 0;
+    box-shadow:3px 3px 0 -1px var(--stg-surf),3px 3px 0 1px var(--stg-ink),7px 7px 0 -1px var(--stg-surf),7px 7px 0 1px var(--stg-ink);}
+  .sty-gdeck.on{box-shadow:none;margin:0;}
+  .sty-gdeck .sty-gn em{font-style:normal;font-size:12px;font-weight:700;margin-left:4px;}
+  .sty-gdl{display:flex;justify-content:space-between;gap:6px;font-size:12px;line-height:1.35;min-width:0;}
+  .sty-gdl b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sty-gdl i{font-style:normal;font-weight:600;flex:none;}
+  .sty-games.ropen{grid-auto-flow:row dense;}
+  .sty-runsu{grid-column:1 / -1;animation:styRunsU .26s ease-out;}
+  .sty-runsu .sty-rt3s{margin-bottom:2px;}
+  @keyframes styRunsU{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){ .sty-runsu{animation:none;} .sty-spl i{transition:none;} }
 }
 `;
