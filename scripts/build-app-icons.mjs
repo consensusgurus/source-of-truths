@@ -31,7 +31,10 @@ const { CATEGORY_RAMP, RAMP_ORDER } = await import('../lib/category-ramp.js');
 // opening a true transparent cutout. Icons sit on the PASTELS (owner: "one each for our
 // different pastels"). The site's own icons use sky, the owner's reference; the other
 // nine are written to public/brand/icons/ for share, print and per-surface use.
-let INK = CATEGORY_RAMP[0]; // the field (sky). Reassigned per pastel below.
+// The site's own icons sit on the LIGHT sky of the owner's reference (#b1e5fd), not
+// the full ramp step: #7dd3fc read too dark at favicon size (owner, 2026-10-26).
+const SITE_FIELD = '#b1e5fd';
+let INK = SITE_FIELD; // the field. Reassigned per pastel below.
 
 // LARGE cut (>=48px): the mark at ~72% of the tile, inside the platform safe zones.
 const largeCut = `<g transform="translate(60,61) scale(0.74) translate(-60,-61)">${markInner({})}</g>`;
@@ -109,7 +112,7 @@ RAMP_ORDER.forEach((cat, i) => {
     writeFileSync(`public/brand/icons/mindloft-${slug(cat)}-${sz}.png`, png(src, sz));
   }
 });
-INK = CATEGORY_RAMP[0];
+INK = SITE_FIELD;
 const master = markSvg({});
 writeFileSync('public/brand/mindloft-mark.svg', master);
 writeFileSync('public/brand/mindloft-mark-1024.png', new Resvg(master, { fitTo: { mode: 'width', value: 1024 } }).render().asPng());
