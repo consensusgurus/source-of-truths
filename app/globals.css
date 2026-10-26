@@ -1483,3 +1483,28 @@ html:is([data-stage-pastel='dark'], [data-stage-tone='dark']) .stage-page .crt {
     --stg-slot-on-ink: #0b0f1a;
   }
 }
+
+/* PASTEL BOARD IN BLACK WITH COLOR (owner, 2026-10-26). The region boards
+   (Jesters, Judges, Quilt, Cages, Carve, Shards) keep their full pastel regions
+   in the dark colour look; any board marked .pastel-board does: the board is a lit panel
+   with dark ink, the page around it stays dark. Black (plain dark) keeps the dark greys. */
+html:is([data-stage-pastel='darktint'], [data-stage-tone='darktint']) .stage-page .pastel-board {
+  --stg-tint-mix: 60%;
+  --stg-region-base: #ffffff;
+  --stg-dk: 100%;
+  --stg-ink: #08222e;
+  --stg-ink2: #1d3a4a;
+  --stg-cell: #ffffff;
+  --stg-cell-line: rgba(8, 34, 46, 0.3);
+  --stg-cell-dot: rgba(8, 34, 46, 0.6);
+  --stg-cell-given: #08222e;
+  --stg-line: rgba(8, 34, 46, 0.2);
+  --stg-line2: rgba(8, 34, 46, 0.34);
+  --stg-line3: #08222e;
+  --stg-fieldink: 8, 34, 46;
+  --stg-acc-ink: #08222e;
+  --stg-sel: #08222e;
+  color: #08222e;
+}
+html:is([data-stage-pastel='darktint'], [data-stage-tone='darktint']) .stage-page .pastel-board [style*="--hue-ink"] { --hue-ink: #08222e !important; }
+html:is([data-stage-pastel='darktint'], [data-stage-tone='darktint']) .stage-page span.crt { background: color-mix(in srgb, var(--hue) 60%, #ffffff) !important; color: #08222e !important; }

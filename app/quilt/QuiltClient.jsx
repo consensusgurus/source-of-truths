@@ -979,7 +979,7 @@ export default function QuiltClient({ puzzles = [], forceNum = null }) {
 
           {/* 9×9 grid with heavy rules along the region borders */}
           <div style={{ maxWidth: 468, margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, minmax(0, 1fr))', gridTemplateRows: 'repeat(9, minmax(0, 1fr))', aspectRatio: '1', border: `2.5px solid ${WALL}`, borderRadius: 4, overflow: 'hidden' }}>
+            <div className="pastel-board" style={{ display: 'grid', gridTemplateColumns: 'repeat(9, minmax(0, 1fr))', gridTemplateRows: 'repeat(9, minmax(0, 1fr))', aspectRatio: '1', border: `2.5px solid ${WALL}`, borderRadius: 4, overflow: 'hidden' }}>
               {Array.from({ length: 81 }).map((_, idx) => {
                 const given = givenFlat[idx];
                 const val = given || cells[idx];

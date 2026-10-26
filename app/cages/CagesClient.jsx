@@ -1042,7 +1042,7 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
           {/* 9×9 grid: solid rules for the sudoku, a dashed outline for each
               cage, and every cage's total printed in its top-left square */}
           <div style={{ maxWidth: 468, margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, minmax(0, 1fr))', gridTemplateRows: 'repeat(9, minmax(0, 1fr))', aspectRatio: '1', border: `2.5px solid rgba(28,30,36,0.85)`, borderRadius: 4, overflow: 'hidden' }}>
+            <div className="pastel-board" style={{ display: 'grid', gridTemplateColumns: 'repeat(9, minmax(0, 1fr))', gridTemplateRows: 'repeat(9, minmax(0, 1fr))', aspectRatio: '1', border: `2.5px solid rgba(28,30,36,0.85)`, borderRadius: 4, overflow: 'hidden' }}>
               {Array.from({ length: 81 }).map((_, idx) => {
                 const val = cells[idx];
                 const base = cellStyle(idx);

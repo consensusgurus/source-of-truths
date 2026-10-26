@@ -1026,7 +1026,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
         <div className="je-board-scroll" ref={boardBoxRef} style={{ textAlign: 'center' }}>
          <div style={{ display: 'inline-block', textAlign: 'left' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: PIP_GAP }}>
-          <div className="je-court" style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, ${cellPx}px)`, gridAutoRows: `${cellPx}px`, border: `${EDGE}px solid ${WALL}`, borderRadius: 6, overflow: 'hidden', background: WALL }}>
+          <div className="je-court pastel-board" style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, ${cellPx}px)`, gridAutoRows: `${cellPx}px`, border: `${EDGE}px solid ${WALL}`, borderRadius: 6, overflow: 'hidden', background: WALL }}>
             {PUZZLE.regions.map((row, r) => row.map((id, c) => {
                   const v = cellsView[r][c];
                   const conflict = v === 2 && conflictSet.has(r * N + c);

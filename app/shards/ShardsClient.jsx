@@ -1043,7 +1043,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
             <div className="sh-cols" style={{ display: 'flex', gap: 26, flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'center' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 {/* board */}
-                <div className="sh-board" ref={gridRef} role="grid" aria-label="Shards grid">
+                <div className="sh-board pastel-board" ref={gridRef} role="grid" aria-label="Shards grid">
                   {Array.from({ length: N * N }, (_, i) => {
                     const r = Math.floor(i / N), c = i % N, k = r * 100 + c;
                     const isBlock = blockSet.has(k);
@@ -1088,7 +1088,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
               {/* tray + controls */}
               <div style={{ display: 'flex', flexDirection: 'column', minWidth: 240, flex: '1 1 240px', maxWidth: 320 }}>
                 <div className="sh-trayhead">{trayShards.length ? `${trayShards.length} piece${trayShards.length === 1 ? '' : 's'} to place` : 'Every piece is down'}</div>
-                <div className={`sh-tray${drag && drag.from === 'board' ? ' drop' : ''}`}>
+                <div className={`sh-tray pastel-board${drag && drag.from === 'board' ? ' drop' : ''}`}>
                   {drag && drag.from === 'board' && <div className="sh-trayback">Drop here to send it back</div>}
                   {trayShards.map((id) => {
                     const s = SHARDS[id];

@@ -912,7 +912,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
 
           <div className={`cv-panel${N === 7 ? " n7" : ""}`}>
           {/* the grid */}
-            <div className={`cv-grid${N === 7 ? ' n7' : ''}`} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
+            <div className={`cv-grid pastel-board${N === 7 ? ' n7' : ''}`} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
               {Array.from({ length: T }).map((_, idx) => {
                 const reg = assign[idx];
                 const isSeed = seedOf[idx] >= 0;
@@ -932,7 +932,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
           {playing && (
               <div className="cv-pick">
                 <span className="cv-lab">Pick a block to grow</span>
-                <div className="cv-chips" style={{ gridTemplateColumns: `repeat(${R > 6 ? Math.ceil(R / 2) : R}, minmax(0, 1fr))` }}>
+                <div className="cv-chips pastel-board" style={{ gridTemplateColumns: `repeat(${R > 6 ? Math.ceil(R / 2) : R}, minmax(0, 1fr))` }}>
                 {Array.from({ length: R }).map((_, k) => {
                   const done = locked.includes(k);
                   const on = cur === k && !done;

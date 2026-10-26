@@ -1019,7 +1019,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
           <div style={{ display: 'flex', justifyContent: 'center' }}>
            <div style={{ display: 'flex', gap: SIDE_GAP, padding: 3 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: PHONE ? 7 : 9 }}>
-              <div className="je-court" style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, ${cellPx}px)`, gridAutoRows: `${cellPx}px`, borderRadius: PHONE ? 5 : 6, overflow: 'hidden', boxShadow: '0 0 0 2.5px var(--je-wall)' }}>
+              <div className="je-court pastel-board" style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, ${cellPx}px)`, gridAutoRows: `${cellPx}px`, borderRadius: PHONE ? 5 : 6, overflow: 'hidden', boxShadow: '0 0 0 2.5px var(--je-wall)' }}>
                 {PUZZLE.regions.map((row, r) => row.map((id, c) => {
                   const v = cellsView[r][c];
                   const conflict = v === 2 && conflictSet.has(r * N + c);
