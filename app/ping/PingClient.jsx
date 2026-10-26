@@ -450,9 +450,22 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   // guess blows out to the whole world) zooms in exactly as far as the
   // guesses justify. Once the round is over it steps back to show them all.
   // Desktop and phone both get this; +/- moves from there.
+  // THE ANSWER ON THE STAGE BOARD (owner, 2026-10-26: "I couldn't even tell
+  // what the right answer was"). Once a round ends where the city may be shown
+  // (a find, the Passport run, or a give-up whose board has been revealed), the
+  // stage map zooms in close on the city and pins it.
+  const showAnswer = LEG && g.status !== 'playing' && (g.status === 'won' || !!EMBED || !LOFT || revealed);
+  const targetXY = useMemo(() => projectPoint(WORLD, TARGET.lng, TARGET.lat), [TARGET]);
   const view = useMemo(() => {
     const AR = narrow ? PHONE_AR : MAP_W / MAP_H;
     const worldW = narrow ? MAP_H * PHONE_AR : MAP_W;
+    if (showAnswer && targetXY) {
+      const w = Math.max(40, Math.min(MAP_W, (narrow ? 70 : 90) / Math.pow(1.6, zoomStep)));
+      const h = w / AR;
+      const x = Math.min(Math.max(targetXY[0] - w / 2, Math.min(0, MAP_W - w)), Math.max(0, MAP_W - w));
+      const y = Math.min(Math.max(targetXY[1] - h / 2, Math.min(0, MAP_H - h)), Math.max(0, MAP_H - h));
+      return { x, y, w, h, world: w >= MAP_W - 1, fitW: w };
+    }
     let fitW = worldW, cx = MAP_W / 2, cy = MAP_H / 2;
     const live = rings.filter((r) => r.d && r.x.mi > 0);
     let pool = live;
@@ -472,7 +485,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
     const x = Math.min(Math.max(cx - w / 2, Math.min(0, MAP_W - w)), Math.max(0, MAP_W - w));
     const y = Math.min(Math.max(cy - h / 2, Math.min(0, MAP_H - h)), Math.max(0, MAP_H - h));
     return { x, y, w, h, world: w >= MAP_W - 1, fitW };
-  }, [narrow, rings, zoomStep, g.status]);
+  }, [narrow, rings, zoomStep, g.status, showAnswer, targetXY]);
 
   // display helpers bound to the player's unit choice
   const fmtDist = (mi) => fmtDistIn(mi, unit);
@@ -911,7 +924,8 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
     const sea = 'color-mix(in srgb, var(--lg-ink) 5%, var(--lg-paper))';
     const land = 'color-mix(in srgb, var(--lg-ink) 14%, var(--lg-paper))';
     const edge = 'color-mix(in srgb, var(--lg-ink) 30%, var(--lg-paper))';
-    const cap = !rings.length ? 'Each guess draws a ring at its distance'
+    const cap = showAnswer ? `${TARGET.name}, ${TARGET.country}`
+      : !rings.length ? 'Each guess draws a ring at its distance'
       : won ? 'Found where the rings cross'
       : rings.length >= 2 ? 'The city is where your rings cross' : 'The city sits somewhere on this ring';
     return (
@@ -926,15 +940,21 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           ))}
           {rings.map((r) => (
             <g key={`d${r.i}`}>
-              {r.x.mi === 0 && (
-                <circle cx={r.cx} cy={r.cy} r={16 * u} fill="none" strokeWidth={2} vectorEffect="non-scaling-stroke" style={{ stroke: 'var(--lg-ink)' }}>
-                  <animate attributeName="r" values={`${8 * u};${22 * u};${8 * u}`} dur="1.8s" repeatCount="indefinite" />
-                </circle>
-              )}
               <circle cx={r.cx} cy={r.cy} r={9 * u} strokeWidth={1.5} vectorEffect="non-scaling-stroke" style={{ fill: 'var(--lg-ink)', stroke: 'var(--lg-paper)' }} />
               <text x={r.cx} y={r.cy + 3.4 * u} textAnchor="middle" fontSize={10 * u} fontWeight={800} fontFamily="Manrope, system-ui, sans-serif" style={{ fill: 'var(--lg-paper)', pointerEvents: 'none' }}>{r.i + 1}</text>
             </g>
           ))}
+          {showAnswer && (
+            <g>
+              <circle cx={targetXY[0]} cy={targetXY[1]} r={14 * u} fill="none" strokeWidth={2.4} vectorEffect="non-scaling-stroke" style={{ stroke: 'var(--lg-ink)' }}>
+                <animate attributeName="r" values={`${8 * u};${26 * u};${8 * u}`} dur="1.8s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="1;0.15;1" dur="1.8s" repeatCount="indefinite" />
+              </circle>
+              <circle cx={targetXY[0]} cy={targetXY[1]} r={8 * u} strokeWidth={2.5} vectorEffect="non-scaling-stroke" style={{ fill: 'var(--lg-ink)', stroke: 'var(--lg-paper)' }} />
+              <text x={targetXY[0] + 13 * u} y={targetXY[1] + 5 * u} fontSize={16 * u} fontWeight={800} fontFamily="Manrope, system-ui, sans-serif"
+                strokeWidth={4 * u} paintOrder="stroke" style={{ fill: 'var(--lg-ink)', stroke: 'var(--lg-paper)', pointerEvents: 'none' }}>{TARGET.name}</text>
+            </g>
+          )}
         </svg>
         <figcaption>{cap}</figcaption>
         <div className="lg-zoom">
@@ -951,8 +971,8 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
       <LegShell embed={EMBED} game="ping">
         <div className="lg-kick">Ping · Find the secret city{PUZZLE.sunday ? ' · Sunday Edition' : ''}</div>
         <h2 className="lg-q">
-          {playing ? <>Where is today&rsquo;s city?</> : (won ? <>Found in {guesses.length} guess{guesses.length === 1 ? '' : 'es'}</> : <>You gave up</>)}
-          {!playing && !won ? <small>{closest ? `Your closest: ${closest.name}, ${fmtDist(closest.mi)} away` : 'No guesses made'}</small> : null}
+          {playing ? <>Where is today&rsquo;s city?</> : (showAnswer ? <>{TARGET.name}, {TARGET.country}</> : <>You gave up</>)}
+          {!playing ? <small>{won ? `Found in ${guesses.length} guess${guesses.length === 1 ? '' : 'es'}` : `${showAnswer ? 'You gave up. ' : ''}${closest ? `Your closest: ${closest.name}, ${fmtDist(closest.mi)} away` : 'No guesses made'}`}</small> : null}
         </h2>
         {g.hintUsed && playing && <div className="lg-chip">It&rsquo;s in {continent}</div>}
         {started && (
@@ -1285,8 +1305,8 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
 
 
           <div className={STAGE ? undefined : 'loft-sol'}>
-          {/* result */}
-          {!playing && (
+          {/* result (the stage board names the city itself inside the run) */}
+          {!playing && !(LEG && EMBED) && (
             <>
               <div style={{ maxWidth: 472, margin: '0 auto 12px' }}>
                 {(won || !LOFT || revealed) && (

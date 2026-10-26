@@ -65,6 +65,7 @@ const SRC_NAME = { span: 'Span', flank: 'Flank', ping: 'Ping' };
 // lib/passport.js LEGS wrap under the big name on the handover instead).
 const SHORT = { ping: 'Find the secret city', passport: 'Nine size calls', flank: 'Name every neighbor', span: 'Cross the map by borders' };
 const BETWEEN_MS = 15000;
+const HOLD_PING_MS = 10000;
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
@@ -257,7 +258,11 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     const ms = res.t0 ? Math.max(1000, (res.tEnd || Date.now()) - res.t0) : 0;
     award(cur, li, legPoints(sec.key, res.score, res.total, PUZZLE.live), { res: { ...cur.res, [sec.key]: { score: res.score, total: res.total, ms } } });
     setHolding(sec.key);
-    setTimeout(() => setHolding((h) => (h === sec.key ? null : h)), Math.max(1700, (res.beatMs || 0) + 500));
+    // PING HOLDS LONGER (owner, 2026-10-26: the answer was gone before it
+    // could be read). Its finished board names the city and zooms in on it,
+    // and stays up for HOLD_PING_MS unless the player moves on first.
+    const hold = sec.key === 'ping' ? HOLD_PING_MS : Math.max(1700, (res.beatMs || 0) + 500);
+    setTimeout(() => setHolding((h) => (h === sec.key ? null : h)), hold);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sections]);
 
@@ -562,6 +567,9 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
                 </RunEmbed>
               </div>
             ) : null}
+            {sec && holding === sec.key ? (
+              <button type="button" className="pr-next" onClick={() => setHolding(null)}>Continue to the next leg</button>
+            ) : null}
             {sec && checking && g.sc[LI] == null ? <p className="pr-note">Checking whether you already played {sec.name} today.</p> : null}
             {LI === 3 ? sizesLeg() : null}
             {g.round === 3 && g.sc[LI] != null && !(sec && showGame) ? <p className="pr-note">Landing your passport&hellip;</p> : null}
@@ -591,6 +599,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
             lastBody={(
               <>
                 <b>{key === 'passport' ? `Sizes: ${right} of ${NC} called right` : (r.unknown ? `${l.n}: result on file` : `${l.n}: ${scoreText(key, r.score, r.total)}`)}</b>
+                {key === 'ping' && sections[i] && sections[i].puzzle && sections[i].puzzle.city ? <span>The city was {sections[i].puzzle.city}{sections[i].puzzle.country ? `, ${sections[i].puzzle.country}` : ''}.</span> : null}
                 <span>{wasBanked ? 'Played earlier today, so that first result stands. ' : ''}Worth {sc[i]} point{sc[i] === 1 ? '' : 's'} here.</span>
                 <span>Run total: {total} point{total === 1 ? '' : 's'}</span>
               </>
@@ -706,6 +715,7 @@ const RUN_CSS = `
 .pr-host{animation:prrise .45s ease both}
 .pr-play .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
 .gsx-play .pr-host .stg-board{margin-left:0 !important;margin-right:0 !important}
+.pr-next{display:block;width:calc(100% - 32px);max-width:568px;margin:6px auto 0;min-height:52px;border-radius:14px;border:0;background:var(--gsx-ink,#08222e);color:var(--gsx-bg,#ffffff);font:800 16px Manrope,system-ui,sans-serif;cursor:pointer}
 .pr-note{max-width:520px;margin:10px auto;text-align:center;font-size:14px;font-weight:700;opacity:.8;padding:0 16px}
 .pr-rules{background:none;border:0;padding:0;font:inherit;font-weight:800;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .pr-back{margin-top:14px;width:100%;min-height:48px;border-radius:14px;border:0;background:#08222e;color:#ffffff;font:800 16px Manrope,system-ui,sans-serif;cursor:pointer}

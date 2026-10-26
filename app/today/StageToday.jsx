@@ -7149,6 +7149,10 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      outline, a tile the group played keeps the plain ink outline, and every
      figure, bar and hover in the pane is ink. */
   .sty-g.grp,.sty-g.grp:hover{background:var(--stg-surf);border-color:var(--stg-ink);box-shadow:inset 0 0 0 1px var(--stg-ink);color:var(--stg-ink);}
+  /* A FINISHED GROUP TILE TOO (owner, 2026-10-26: unreadable in dark mode).
+     .sty-g.done.grp and .sty-g.done.grp.res outweighed the rule above and kept
+     the category pastel as a fill under this block's light dark-mode ink. */
+  .sty-g.done.grp,.sty-g.done.grp.res,.sty-g.done.grp:hover,.sty-g.done.grp.res:hover{background:var(--stg-surf);border-color:var(--stg-ink);box-shadow:inset 0 0 0 1px var(--stg-ink);color:var(--stg-ink);}
   .sty-g.grp .sty-gn,.sty-g.grp:hover .sty-gn,.sty-g.grp.done .sty-gn,.sty-g.grp.done.res .sty-gn,.sty-g.grp.done.res:hover .sty-gn,
   .sty-g.grp .sty-grk,.sty-g.grp .sty-star{color:var(--stg-ink);}
   .sty-g.grp .sty-gt,.sty-g.grp .sty-grl,.sty-g.grp .sty-grf,.sty-g.grp .sty-gsep{color:var(--stg-ink2, var(--stg-ink));}
