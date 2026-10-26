@@ -130,16 +130,23 @@ export default function StageStick({
     if (!hero) { setPhase('inline'); return; }
     // Bring the band to the top of the screen first, so the colour lands on
     // something the reader can see.
+    // THE SCROLL IS INSTANT (owner report, 2026-10-26: the band "renders much
+    // higher initially"). html carries scroll-behavior:smooth, so a plain
+    // scrollTo glided AFTER the clip had been measured: the colour pulled back
+    // onto where the band was before the scroll, then the band slid away from
+    // it. Scroll at once, let layout settle a frame, then measure.
     try {
       const r0 = hero.getBoundingClientRect();
       const want = window.scrollY + r0.top - 84;
-      if (Math.abs(r0.top - 84) > 4) window.scrollTo(0, Math.max(0, want));
+      if (Math.abs(r0.top - 84) > 4) window.scrollTo({ top: Math.max(0, want), behavior: 'instant' });
     } catch (e) {}
-    const r = hero.getBoundingClientRect();
-    const W = window.innerWidth, H = window.innerHeight;
-    setClip(`inset(${Math.max(0, r.top)}px ${Math.max(0, W - r.right)}px ${Math.max(0, H - r.bottom)}px ${Math.max(0, r.left)}px round 22px)`);
     setPhase('retract');
-    timers.current.push(setTimeout(() => setPhase('inline'), RETRACT_MS + 40));
+    requestAnimationFrame(() => {
+      const r = hero.getBoundingClientRect();
+      const W = window.innerWidth, H = window.innerHeight;
+      setClip(`inset(${Math.max(0, r.top)}px ${Math.max(0, W - r.right)}px ${Math.max(0, H - r.bottom)}px ${Math.max(0, r.left)}px round 22px)`);
+      timers.current.push(setTimeout(() => setPhase('inline'), RETRACT_MS + 40));
+    });
   };
 
   const skip = () => {
@@ -658,7 +665,14 @@ const CSS = `
 .sst-grp .fgl-card{background:transparent;border:0;padding:0;}
 .sst-grp .fgl,.sst-grp .fgl *{color:var(--sst-ink);}
 .sst-grp .fgl-r{border-top-color:var(--sst-rule);}
-.sst-grp .fgl-r.me{background:var(--sst-wash);}
+/* THE GROUP ROWS SIT IN THE SAME GUTTER AS THE BOARD ROWS ABOVE (owner,
+   2026-10-26: the 15 touched the right edge). The base .me row bleeds 8px
+   past its column, and .sst-grp clips its children, so the wash was cut off
+   flush with the text. Here every row is inset 6px, like the table cells. */
+.sst-grp .fgl-r{padding:7px 6px;}
+.sst-grp .fgl-r.me{background:var(--sst-wash);margin:0;padding:7px 6px;border-radius:10px;}
+.sst-grp .fgl-av0{background:var(--sst-rule);}
+.sst-grp .fgl-r.empty .n,.sst-grp .fgl-r.empty .s{color:var(--sst-ink);opacity:.55;}
 .sst-grp .fgl-mini{background:var(--sst-wash);border-color:var(--sst-rule);}
 .sst-chal{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:11px 16px 11px 18px;border:0;border-radius:14px;
   background:var(--sst-ink);color:var(--sst-bg);font:inherit;text-align:left;cursor:pointer;}
@@ -742,7 +756,7 @@ const CSS = `
 .sst-cover .sst-cin{transition:opacity .3s ease;}
 .sst-cover.go .sst-cin{opacity:0;}
 /* The in-page ending: hidden under the cover, revealed when it pulls back. */
-.sst-page{color:var(--sst-ink);width:100%;max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:4px 0 28px;
+.sst-page{color:var(--sst-ink);width:100%;max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:14px 0 28px;
   visibility:hidden;container-type:inline-size;}
 .sst-page.in{visibility:visible;}
 .sst-band{background:var(--sst-bg);border-radius:22px;padding:22px 26px;}

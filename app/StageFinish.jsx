@@ -426,7 +426,7 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
       // instead of collapsing into it. An instant scroll under an opaque screen
       // is invisible, which is the one thing this moment can spend freely.
       if (r0.top < 8 || r0.bottom > vh - 8) {
-        window.scrollTo(0, Math.max(0, window.scrollY + r0.top - Math.round(vh * 0.14)));
+        window.scrollTo({ top: Math.max(0, window.scrollY + r0.top - Math.round(vh * 0.14)), behavior: 'instant' });
       }
       requestAnimationFrame(() => {
         const r = el.getBoundingClientRect();
