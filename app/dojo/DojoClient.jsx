@@ -283,8 +283,12 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
               </button>
             )}
             {!between && Game && !banked[sec.key] && !phone && (
-              <button type="button" className="dj-tg" onClick={flipBoard} aria-pressed={boardTheme === 'light'} title={boardTheme === 'light' ? 'Switch the board to dark' : 'Switch the board to light'}>
-                <span aria-hidden="true">{boardTheme === 'light' ? '\u263E' : '\u2600'}</span> {boardTheme === 'light' ? 'Dark board' : 'Light board'}
+              /* THE SWITCH DRIVES THE PAGE LOOK (owner, 2026-10-26: it "does
+                 nothing"). On a desktop the grid is painted by the stage look
+                 (html[data-stage-tone]), which outranks the old per-board theme,
+                 so the switch flips the look itself, as the phone's circle does. */
+              <button type="button" className="dj-tg" onClick={pastel.flip} aria-pressed={pastel.look === 'darktint'} title={pastel.look === 'darktint' ? 'Switch the board to light' : 'Switch the board to dark'}>
+                <span aria-hidden="true">{pastel.look === 'darktint' ? '\u2600' : '\u263E'}</span> {pastel.look === 'darktint' ? 'Light board' : 'Dark board'}
               </button>
             )}
             {phone && pastel.on ? <LookButton look={pastel.look} onFlip={pastel.flip} className="dj-look" /> : null}

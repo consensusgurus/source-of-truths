@@ -1207,7 +1207,8 @@ html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;
     --stg-sel: #3949ab;
   }
   html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-given, .sd-given, .gi-given) { color: #2b3590 !important; }
-  html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-user, .sd-user, .gi-user) { color: #4f5bd5 !important; }
+  /* Your own digits read on the grey row/column shade too (owner, 2026-10-26: "too faint"): one step darker, one step heavier. */
+  html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-user, .sd-user, .gi-user) { color: #3646c4 !important; font-weight: 600 !important; }
   html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-pad, .sd-pad, .gi-pad) { color: #3949ab !important; }
   html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"],
   html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"] * { color: #ffffff !important; }
@@ -1447,7 +1448,8 @@ html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;
     --stg-sel: #3949ab;
   }
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-given, .sd-given, .gi-given) { color: #2b3590 !important; }
-  html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-user, .sd-user, .gi-user) { color: #4f5bd5 !important; }
+  /* Your own digits read on the grey row/column shade too (owner, 2026-10-26: "too faint"): one step darker, one step heavier. */
+  html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-user, .sd-user, .gi-user) { color: #3646c4 !important; font-weight: 600 !important; }
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-pad, .sd-pad, .gi-pad) { color: #3949ab !important; }
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"],
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"] * { color: #ffffff !important; }
