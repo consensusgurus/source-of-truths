@@ -1138,7 +1138,10 @@ html[data-sot-paint]:not(#sot-x) body::before { background: var(--sot-root-paint
 @keyframes sot-hyd-show { to { visibility: visible; } }
 html:not([data-sot-hyd]) .stage-page .stg-gate,
 html:not([data-sot-hyd]) .stage-page .stg-board,
-html:not([data-sot-hyd]) [data-sot-wait] > * {
+/* The run cover (#gsx-cover, app/GauntletScreens.jsx) is exempt: it is the
+   thing that hides the page until hydration, and hiding it too let the run's
+   FAQ and the site footer paint first (owner, 2026-10-26). */
+html:not([data-sot-hyd]) [data-sot-wait] > *:not(#gsx-cover) {
   visibility: hidden;
   animation: sot-hyd-show 0s linear 3s forwards;
 }
