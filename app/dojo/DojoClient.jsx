@@ -832,5 +832,16 @@ html[data-stage-pastel] .dj-host.lt{background:transparent}
 .pd.open .pd-p.l{transform:translateX(-100%)}.pd.open .pd-p.r{transform:translateX(100%)}
 .pd-sign{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);font:800 10px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:#f6efdc;background:rgba(36,22,13,.85);padding:4px 9px;border-radius:5px;white-space:nowrap;z-index:2}
 @media(prefers-reduced-motion:reduce){.pd-p{transition:none}}
+/* DESKTOP GATE (owner, 2026-10-26): the doors and the lineup share the right
+   column and the title holds the left, as on Judged and Read the Room. */
+@media(min-width:900px){
+.dj .gsx-gate.gsx-cp .gsx-split{grid-template-rows:auto auto auto;row-gap:18px}
+.dj .gsx-gate.gsx-cp .gsx-split > .gsx-top{margin-bottom:0}
+.dj .gsx-gate.gsx-cp .gsx-head{grid-column:1;grid-row:2 / span 2}
+.dj .gsx-gate.gsx-cp .gsx-piece{grid-column:2;grid-row:2;display:flex}
+.dj .gsx-gate.gsx-cp .gsx-bands{grid-column:2;grid-row:3}
+.dj .pd{min-height:200px}
+.dj .pd-p span{font-size:26px}
+}
 .dj-look{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:18px;border:2px solid var(--dj-ink);background:transparent;color:var(--dj-ink);cursor:pointer;padding:0;margin-left:auto}
 `;
