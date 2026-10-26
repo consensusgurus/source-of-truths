@@ -797,6 +797,13 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
           .mc-cell.mc-wrongmark:not(.mc-sel){background:color-mix(in srgb, var(--stg-bad, ${COLORS.rust}) 16%, var(--xw-cell));}
           .mc-cell.mc-wrongmark:not(.mc-sel) .mc-ch{color:var(--stg-bad, ${COLORS.rust});}
           .mc-cell.mc-wrongmark{animation:mcshake .3s ease;}
+          /* THE CURSOR TAKES THE CATEGORY COLOUR in light with color and dark with
+             color (owner, 2026-10-26): the accent is ink in those looks, so the
+             selected square read as one more black square. */
+          html[data-stage-tone='tint'] .mc-cell.mc-sel,html[data-stage-pastel='tint'] .mc-cell.mc-sel,html[data-stage-tone='darktint'] .mc-cell.mc-sel,html[data-stage-pastel='darktint'] .mc-cell.mc-sel{background:var(--sp-g, #bae6fd) !important;box-shadow:inset 0 0 0 3px var(--stg-ink, #08222e) !important;}
+          html[data-stage-tone='tint'] .mc-cell.mc-sel .mc-ch,html[data-stage-pastel='tint'] .mc-cell.mc-sel .mc-ch,html[data-stage-tone='darktint'] .mc-cell.mc-sel .mc-ch,html[data-stage-pastel='darktint'] .mc-cell.mc-sel .mc-ch,html[data-stage-tone='tint'] .mc-cell.mc-sel .mc-num,html[data-stage-pastel='tint'] .mc-cell.mc-sel .mc-num,html[data-stage-tone='darktint'] .mc-cell.mc-sel .mc-num,html[data-stage-pastel='darktint'] .mc-cell.mc-sel .mc-num{color:#08222e !important;}
+          html[data-stage-tone='tint'] .mc-cell.mc-inword,html[data-stage-pastel='tint'] .mc-cell.mc-inword{background:color-mix(in srgb, var(--sp-g, #bae6fd) 45%, var(--xw-cell, #fff)) !important;}
+          html[data-stage-tone='darktint'] .mc-cell.mc-inword,html[data-stage-pastel='darktint'] .mc-cell.mc-inword{background:color-mix(in srgb, var(--sp-g, #bae6fd) 30%, var(--xw-cell, #1b2130)) !important;}
           /* A MISS IS STRUCK THROUGH IN EVERY LOOK (owner, 2026-10-25): a diagonal slash, not the tint alone. */
           .mc-cell.mc-wrongmark::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top right, transparent calc(50% - 1.5px), var(--stg-bad, ${COLORS.rust}) calc(50% - 1.5px), var(--stg-bad, ${COLORS.rust}) calc(50% + 1.5px), transparent calc(50% + 1.5px));opacity:.85;}
           .mc-num{position:absolute;top:.4em;left:.55em;font-family:${SANS};font-weight:800;line-height:1;color:var(--stg-ink2, rgba(28,30,36,0.7));pointer-events:none;}

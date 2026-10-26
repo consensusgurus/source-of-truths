@@ -15,7 +15,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RAMP_INK, softGround } from '@/lib/category-ramp';
 import { useStageLook, stagePalette, useStageChrome } from '../GauntletScreens';
-import { nextLook } from '@/lib/stage-look';
+import { nextMainLook } from '@/lib/stage-look';
 import StageTopBar from '../StageTopBar';
 
 const RNAME = (r, rounds) => {
@@ -168,7 +168,7 @@ export default function BracketStage({
     <div className="bks" role="dialog" aria-label="Bracket" style={{ '--bks-bg': pal.bg, '--bks-ink': pal.ink, '--bks-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)', '--bks-ch': `${ch}px`, '--bks-h': `${H}px`, '--bks-gap': `${GAP}px`, '--bks-peek': `${PEEK}px`, '--bks-win': `${WIN}px`, '--bks-chip': `${chipH}px` }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="bks-col">
-        <StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} />
+        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} />
         {phase === 'play' && (
           <>
             <div className="bks-eb">{RNAME(r, rounds)}{n > 1 ? ` · Match ${m + 1} of ${n}` : ''} · {Math.pow(2, r)} {Math.pow(2, r) === 1 ? 'pt' : 'pts'}</div>

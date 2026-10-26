@@ -13,7 +13,7 @@
 import React, { useEffect, useState } from 'react';
 import { RAMP_INK, softGround } from '@/lib/category-ramp';
 import { useStageLook, stagePalette, useStageChrome } from './GauntletScreens';
-import { nextLook } from '@/lib/stage-look';
+import { nextMainLook } from '@/lib/stage-look';
 import StageTopBar from './StageTopBar';
 
 export const WORD_STAGE_BG = '#7dd3fc'; // the Word step of the pastel ramp
@@ -54,7 +54,7 @@ export default function WordStage({
     <div className="wst" role="dialog" aria-label={label} style={{ '--wst-bg': pal.bg, '--wst-ink': pal.ink, '--wst-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)', '--wst-n': Math.max(n, 4), '--wst-sn': Math.max(sn, 5) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="wst-col">
-        <StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} />
+        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} />
         <div className="wst-top" key={rowKey}>
           {eyebrow ? <div className="wst-eb">{eyebrow}</div> : null}
           {spine}

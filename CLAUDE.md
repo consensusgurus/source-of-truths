@@ -10355,3 +10355,12 @@ The cap's Rankings chip, its drawer (DailyBoardPanel / QuizLeaderboard under the
 remembered preference as the desktop rail's Board tab (`REVEAL.leaderboard`), so a window narrowed past
 the desktop breakpoint showed it already open under the phone header. Standings live on the ending sheet
 and the desktop rail. Do not reintroduce a header drawer; the `panelBody` prop is accepted and ignored.
+
+## Two looks off the runs (owner, 2026-10-26)
+
+The home, site pages and every daily page flip between **light with color** (`tint`) and **dark with
+color** (`darktint`) only (`lib/stage-look.js`: `MAIN_LOOKS`, `mainLook`, `nextMainLook`). Stored
+`color`/`plain` read as `tint` and `dark` as `darktint`, including in the pre-paint script in
+`app/layout.js`. The gauntlet and run stages (Trivia Gauntlet etc.) keep all five looks on their own key
+(`GAUNTLET_LOOK_KEY`); `StageTopBar` takes `allLooks` there. In those two looks `--stg-acc` is ink, so a
+grid's selected cell must not use it alone: the crossword cursor (Emcee, Encore) takes `--sp-g`.

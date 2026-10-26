@@ -18,7 +18,7 @@
 
 import { useEffect } from 'react';
 import { usePhoneStage } from './WordStage';
-import { useStageLook, nextLook, readLook } from '@/lib/stage-look';
+import { useStageLook, nextMainLook, readLook } from '@/lib/stage-look';
 import { forceStageTheme } from '@/lib/stage-theme';
 import { softGround } from '@/lib/category-ramp';
 
@@ -75,5 +75,5 @@ export default function useSudokuPastel(active, ground) {
     forceStageTheme('light');
     return () => { r.removeAttribute('data-stage-tone'); r.style.removeProperty('--sp-g'); forceStageTheme(null); };
   }, [desk, ground, look]);
-  return { on, look, flip: () => setLook(nextLook(look)) };
+  return { on, look, flip: () => setLook(nextMainLook(look)) };
 }

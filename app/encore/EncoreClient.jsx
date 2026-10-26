@@ -824,6 +824,13 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
           .ec-cell.ec-wrongmark::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top right, transparent calc(50% - 1.5px), var(--stg-bad, ${COLORS.rust}) calc(50% - 1.5px), var(--stg-bad, ${COLORS.rust}) calc(50% + 1.5px), transparent calc(50% + 1.5px));opacity:.85;}
           .ec-cell.ec-sel{background:var(--stg-acc, ${COLORS.accent});box-shadow:inset 0 0 0 3px var(--stg-ink, ${COLORS.ink});}
           .ec-cell.ec-sel .ec-l,.ec-cell.ec-sel .ec-num{color:var(--stg-onramp, #fff);}
+          /* THE CURSOR TAKES THE CATEGORY COLOUR in light with color and dark with
+             color (owner, 2026-10-26): the accent is ink in those looks, so the
+             selected square read as one more black square. */
+          html[data-stage-tone='tint'] .ec-cell.ec-sel,html[data-stage-pastel='tint'] .ec-cell.ec-sel,html[data-stage-tone='darktint'] .ec-cell.ec-sel,html[data-stage-pastel='darktint'] .ec-cell.ec-sel{background:var(--sp-g, #bae6fd) !important;box-shadow:inset 0 0 0 3px var(--stg-ink, #08222e) !important;}
+          html[data-stage-tone='tint'] .ec-cell.ec-sel .ec-l,html[data-stage-pastel='tint'] .ec-cell.ec-sel .ec-l,html[data-stage-tone='darktint'] .ec-cell.ec-sel .ec-l,html[data-stage-pastel='darktint'] .ec-cell.ec-sel .ec-l,html[data-stage-tone='tint'] .ec-cell.ec-sel .ec-num,html[data-stage-pastel='tint'] .ec-cell.ec-sel .ec-num,html[data-stage-tone='darktint'] .ec-cell.ec-sel .ec-num,html[data-stage-pastel='darktint'] .ec-cell.ec-sel .ec-num{color:#08222e !important;}
+          html[data-stage-tone='tint'] .ec-cell.ec-inword,html[data-stage-pastel='tint'] .ec-cell.ec-inword{background:color-mix(in srgb, var(--sp-g, #bae6fd) 45%, var(--xw-cell, #fff)) !important;}
+          html[data-stage-tone='darktint'] .ec-cell.ec-inword,html[data-stage-pastel='darktint'] .ec-cell.ec-inword{background:color-mix(in srgb, var(--sp-g, #bae6fd) 30%, var(--xw-cell, #1b2130)) !important;}
           .ec-num{position:absolute;top:3px;left:4px;line-height:1;font-family:${SANS};font-weight:800;color:var(--stg-ink2, rgba(28,30,36,0.7));pointer-events:none;}
           @media(max-width:560px){.ec-num{top:2px;left:3px;}.ec-cell.ec-sel{box-shadow:inset 0 0 0 2.5px var(--stg-ink, ${COLORS.ink});}}
 

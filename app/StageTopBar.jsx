@@ -11,11 +11,13 @@
 import { BrandFit } from '@/lib/use-brand-fit';
 import React from 'react';
 import MindLoftMark from './MindLoftMark';
-import { nextLook, LOOK_NAMES } from '@/lib/stage-look';
+import { nextLook, nextMainLook, LOOK_NAMES } from '@/lib/stage-look';
 import { soakNav } from '@/lib/tile-flood';
 
-export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentColor', title = null, sub = null }) {
-  const next = LOOK_NAMES[nextLook(look)];
+// `allLooks` is for the gauntlet and run stages, which keep all five looks;
+// every other page flips between light with color and dark with color.
+export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentColor', title = null, sub = null, allLooks = false }) {
+  const next = LOOK_NAMES[allLooks ? nextLook(look) : nextMainLook(look)];
   return (
     <div className="stb" style={{ color: ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />

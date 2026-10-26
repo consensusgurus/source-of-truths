@@ -21,7 +21,7 @@
 import React from 'react';
 import { RAMP_INK, softGround } from '@/lib/category-ramp';
 import { useStageLook, stagePalette, useStageChrome } from './GauntletScreens';
-import { nextLook } from '@/lib/stage-look';
+import { nextMainLook } from '@/lib/stage-look';
 import StageTopBar from './StageTopBar';
 
 export { usePhoneStage } from './WordStage';
@@ -35,7 +35,7 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
     <div className="pst" role="dialog" aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
-        <StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} />
+        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} />
         <div className="pst-top" key={topKey}>
           {eyebrow ? <div className="pst-eb">{eyebrow}</div> : null}
           {top}

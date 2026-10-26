@@ -45,7 +45,7 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {/* The site's header pill, back arrow + Mind Loft mark, and the look
           switch (owner, 2026-10-25), the same element every stage page uses. */}
-      <div className="gst-top"><StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} href="/" /></div>
+      <div className="gst-top"><StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} href="/" allLooks /></div>
       <div className="gst-col" key={qKey}>
         <div className="gst-q">{question}</div>
         <div className={`gst-ch${choices.length > 2 ? ' many' : ''}${shortSet ? ' grid' : ''}${tiny ? ' tiny' : ''}`}>
