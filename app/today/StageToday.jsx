@@ -6857,6 +6857,10 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-csub{font-size:13px;font-weight:600;color:var(--stg-ink);line-height:1.35;}
   .sty-ixc .sty-skw{display:none;}
   .sty-ix > .sty-cat > .sty-cathead{align-items:center;}
+  /* THE PANE DOES NOT REPEAT ITS NAME (owner, 2026-10-26): the big block at the
+     top of the index already names the open pane and its count, so the pane's
+     own title and Played line go on the desktop. */
+  .sty-ix > .sty-cat > .sty-cathead > .sty-cht,.sty-ix > .sty-mine > .sty-cathead > h2{display:none;}
   /* The section labels, and the runs atop the puzzles, three across. */
   .sty-plab{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-ink);margin:4px 0 8px;}
   .sty-rt3s{display:grid;grid-template-columns:repeat(auto-fill,minmax(max(236px,calc((100% - 30px) / 4)),1fr));gap:10px;margin-bottom:16px;}
