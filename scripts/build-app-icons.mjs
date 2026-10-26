@@ -50,6 +50,20 @@ function svg(inner, scale) {
 const png = (source, size) =>
   new Resvg(source, { fitTo: { mode: 'width', value: size } }).render().asPng();
 
+// PIXEL-SNAPPED SMALL SIZES (owner, 2026-10-26: "make the favicon sharper, it stinks").
+// The 120-grid mark scaled to 16/32/48 puts every edge between two pixels, so each wall
+// and foot rendered as a grey smear, and at 16px the walls touched the tile edge. These
+// are the same house re-drawn on each size's own pixel grid: walls, feet and the M's
+// inner legs land on whole pixels, only the roof and the V stay anti-aliased, and there
+// is a clear pixel of field all round. [left, right, peakY, eaveY, footY, legW, innerTopY, vY]
+const SNAP = { 16: [1, 15, 1, 5, 15, 3, 8, 11], 32: [2, 30, 2, 11, 30, 5, 17, 23], 48: [3, 45, 3, 17, 45, 8, 25, 35] };
+function snapped(n) {
+  const [a, b, p, e, bt, w, it, v] = SNAP[n], c = n / 2;
+  const d = `M${c} ${p}L${b} ${e}V${bt}H${b - w}V${it}L${c} ${v}L${a + w} ${it}V${bt}H${a}V${e}Z`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n} ${n}" width="${n}" height="${n}">`
+    + `<rect width="${n}" height="${n}" fill="${INK}"/><path d="${d}" fill="${MARK_INK}"/></svg>`;
+}
+
 const LARGE = svg(largeCut, 1);
 const SMALL = svg(smallCut, 1);
 // Android crops a maskable icon to the inner 80% circle, so the art is pulled in a further 15%.
@@ -95,11 +109,22 @@ function ico(entries) {
 }
 
 const icoBuf = ico([
-  { size: 16, data: png(SMALL, 16) },
-  { size: 32, data: png(SMALL, 32) },
-  { size: 48, data: png(LARGE, 48) },
+  { size: 16, data: png(snapped(16), 16) },
+  { size: 32, data: png(snapped(32), 32) },
+  { size: 48, data: png(snapped(48), 48) },
 ]);
 writeFileSync('app/favicon.ico', icoBuf);
+
+// THE TAB ICON BROWSERS ACTUALLY USE. Given a 512px icon.png beside favicon.ico, Chrome
+// and Firefox pick the PNG and shrink it to 16px, padding and all, which is what made the
+// tab icon soft. So the pixel-snapped 16 and 32 also ship as PNGs with their sizes
+// declared, and the browser takes the matching one: app/icon1.png + icon2.png for pages
+// on the file convention, public/favicon-*.png for pages that set metadata.icons (every
+// game page lists them ahead of /icon.png).
+for (const [n, paths] of [[32, ['app/icon1.png', 'public/favicon-32x32.png']], [16, ['app/icon2.png', 'public/favicon-16x16.png']]]) {
+  const buf = png(snapped(n), n);
+  for (const p of paths) { writeFileSync(p, buf); console.log(p, n + 'px', buf.length + ' bytes'); }
+}
 console.log('app/favicon.ico', icoBuf.length + ' bytes');
 
 // One full set per pastel, plus the transparent master for print and share.
@@ -108,7 +133,7 @@ const slug = (c) => c.toLowerCase().replace(/[^a-z]+/g, '-');
 RAMP_ORDER.forEach((cat, i) => {
   INK = CATEGORY_RAMP[i];
   const L = svg(largeCut, 1), S = svg(smallCut, 1);
-  for (const [sz, src] of [[512, L], [180, L], [32, S]]) {
+  for (const [sz, src] of [[512, L], [180, L], [32, snapped(32)]]) {
     writeFileSync(`public/brand/icons/mindloft-${slug(cat)}-${sz}.png`, png(src, sz));
   }
 });

@@ -59,15 +59,30 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
       el.setAttribute('viewBox', TIGHT_BOX);
       el.style.height = h.toFixed(2) + 'px';
       el.style.width = (h * TIGHT_ASPECT).toFixed(2) + 'px';
-      el.style.alignSelf = 'baseline';
       el.style.display = 'inline-block';
       el.style.verticalAlign = 'baseline';
-      word.style.alignSelf = 'baseline';
+      // SIT ON THE BASELINE BY MEASUREMENT, NOT BY align-self (owner, 2026-10-26, "logo
+      // name glitching"). align-self:baseline on a flex child pulls the mark AND the
+      // words to the TOP of a centred flex row (the baseline group is placed at
+      // cross-start), so in the back pill they rode up against the border while the
+      // chevron stayed centred. Leave the parent's alignment alone; read the words'
+      // real baseline with a zero-size probe and nudge the mark's feet onto it.
+      el.style.transform = '';
+      const probe = document.createElement('span');
+      probe.style.cssText = 'display:inline-block;width:0;height:0;padding:0;margin:0;border:0;vertical-align:baseline;';
+      word.appendChild(probe);
+      const base = probe.getBoundingClientRect().bottom;
+      word.removeChild(probe);
+      const r = el.getBoundingClientRect();
+      const scale = r.height && h ? r.height / h : 1; // an ancestor may be scaled (BrandFit)
+      const dy = (base - r.bottom) / (scale || 1);
+      if (Math.abs(dy) > 0.25) el.style.transform = `translateY(${dy.toFixed(2)}px)`;
     };
     fit();
     let ro;
     try { ro = new ResizeObserver(fit); ro.observe(word); } catch (e) {}
     window.addEventListener('resize', fit);
+    try { document.fonts && document.fonts.ready.then(fit); } catch (e) {}
     return () => { try { ro && ro.disconnect(); } catch (e) {} window.removeEventListener('resize', fit); };
   }, []);
 

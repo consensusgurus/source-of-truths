@@ -24,7 +24,7 @@ export const metadata = {
     // Favicon is the Mind Loft mark on every page, games included (owner rule, 2026-08-31).
     // Do NOT delete this line: ANY metadata.icons object suppresses the root app/icon.png
     // inheritance, so the tab would fall back to the 16px favicon.ico alone.
-    icon: [{ url: '/icon.png', sizes: '512x512', type: 'image/png' }],
+    icon: [{ url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' }, { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' }, { url: '/icon.png', sizes: '512x512', type: 'image/png' }],
     apple: [{ url: '/gift-icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Gift' },
