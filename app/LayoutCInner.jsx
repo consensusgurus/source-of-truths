@@ -264,6 +264,15 @@ html.lc-on .lc-host{padding-left:290px !important;}
 .lc-sub-btn,.lc-reveal-btn{border:2px solid var(--stg-ink) !important;color:var(--stg-ink) !important;font-size:13px;height:34px;}
 .lc-sub-btn:hover,.lc-reveal-btn:hover{filter:brightness(.96);}
 .lc-shr{color:var(--stg-ink) !important;}
+/* EVERYTHING ELSE: the home's label and one outlined box of plain rows. */
+.lc-nav .lc-eeh{margin:10px 0 -2px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-ink);}
+.lc-nav .lc-eebox{display:flex;flex-direction:column;border:var(--dk);border-radius:12px;overflow:hidden;background:var(--stg-surf);}
+.lc-nav .lc-eebox > .sty-ixb.sty-ixb{border:0;border-radius:0;border-top:1.5px solid color-mix(in srgb, var(--stg-ink) 16%, transparent);
+  background:transparent;color:var(--stg-ink);padding:7px 13px;font-size:13.5px;font-weight:700;}
+.lc-nav .lc-eebox > .sty-ixb.sty-ixb:first-child{border-top:0;}
+.lc-nav .lc-eebox > .lc-eecut{height:2px;background:var(--stg-ink);flex:none;}
+.lc-nav .lc-eebox > .lc-eecut + .sty-ixb.sty-ixb{border-top:0;}
+.lc-nav .lc-eebox > .sty-ixb.sty-ixb:hover{background:color-mix(in srgb, var(--stg-ink) 6%, transparent);filter:none;}
 .lc-side{--dk:2px solid var(--stg-ink);right:22px;width:300px;top:calc(var(--lc-hh,62px) + 10px);border:var(--dk);border-radius:12px;overflow:hidden;background:var(--stg-surf);}
 .lc-tabs{height:auto;padding:0;border-bottom:2px solid var(--stg-ink);}
 .lc-tab{padding:10px 0;border-bottom:0;color:var(--stg-ink);font-weight:800;}
@@ -732,14 +741,6 @@ export default function LayoutCInner({ gameKey }) {
       <nav className={'lc-nav' + (isColorLook(siteLook) ? ' slc' : '')} aria-label="Sections">
         <div className="sty-ixn">
           {ixLink('all', 'All Puzzles', 'var(--stg-ink)')}
-          {/* MY PUZZLES OPENS IN PLACE (owner, 2026-10-26), the starred games
-              under it like a category's, rather than leaving for the home. */}
-          <button type="button" className={'sty-ixb' + (shownCat === MINE ? ' on' : '')} style={{ '--cc': 'var(--stg-acc)' }}
-            aria-expanded={shownCat === MINE} onClick={() => toggleCat(MINE)}>
-            <i aria-hidden="true" /><span>My Puzzles</span>
-          </button>
-          {shownCat === MINE ? subList(mineGames, 'Star a puzzle on the home page and it shows up here.') : null}
-          <span className="sty-ixsep" aria-hidden="true" />
           {lensCats.map(({ cat, games: gs }) => (
             <React.Fragment key={cat}>
               <button type="button" className={'sty-ixb ct' + (cat === shownCat || cat === myCat ? ' on' : '')} style={{ '--cc': inkFor(swatchCat(cat)), '--cfull': categoryColor(swatchCat(cat)) }}
@@ -749,23 +750,35 @@ export default function LayoutCInner({ gameKey }) {
               {cat === shownCat ? subList(gs) : null}
             </React.Fragment>
           ))}
-          {/* THE SWITCH UNDER THE CATEGORIES (owner, 2026-10-26), as on the home;
-              All and My Puzzles stay at the top here. */}
+          {/* MY PUZZLES UNDER THE CATEGORIES, as on the home (owner, 2026-10-26:
+              "make left navigation consistent with main page"). It opens in
+              place, the starred games under it like a category's. */}
+          <button type="button" className={'sty-ixb' + (shownCat === MINE ? ' on' : '')} style={{ '--cc': 'var(--stg-acc)' }}
+            aria-expanded={shownCat === MINE} onClick={() => toggleCat(MINE)}>
+            <i aria-hidden="true" /><span>My Puzzles</span>
+          </button>
+          {shownCat === MINE ? subList(mineGames, 'Star a puzzle on the home page and it shows up here.') : null}
+          {/* THE SWITCH UNDER THE CATEGORIES (owner, 2026-10-26), as on the home. */}
           <div className="sty-ixsw" role="group" aria-label="Group puzzles by">
             <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
             <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
           </div>
-          <span className="sty-ixsep" aria-hidden="true" />
-          {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
-          {ixHash('sty-quizzes', 'Quizzes')}
-          {ixHash('sty-iq', 'IQ Tests')}
-          {ixHash('sty-exams', 'School Tests')}
-          {ixDoor('/kids', 'Kids')}
-          {ixDoor('/lists', 'Top 10 Lists')}
-          {ixDoor('/archive', 'Puzzle Archive')}
-          <span className="sty-ixsep" aria-hidden="true" />
-          {ixHash('sty-board', 'Leaderboards + Stats')}
-          {ixHash('sty-comm', 'Most Appreciated')}
+          {/* EVERYTHING ELSE, as on the home (owner, 2026-10-26): a label, then one
+              outlined box in the home's order and groups. */}
+          <div className="lc-eeh">Everything Else</div>
+          <div className="lc-eebox">
+            {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
+            {ixHash('sty-quizzes', 'Quizzes')}
+            {ixDoor('/archive', 'Puzzle Archive')}
+            {ixHash('sty-board', 'Leaderboards + Stats')}
+            <span className="lc-eecut" aria-hidden="true" />
+            {ixHash('sty-iq', 'IQ Tests')}
+            {ixHash('sty-exams', 'School Tests')}
+            {ixDoor('/kids', 'Kids')}
+            {ixDoor('/lists', 'Top 10 Lists')}
+            <span className="lc-eecut" aria-hidden="true" />
+            {ixHash('sty-comm', 'Most Appreciated')}
+          </div>
         </div>
       </nav>
 

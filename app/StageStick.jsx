@@ -39,6 +39,38 @@ import { MemePeek } from './MemeShare';
 import FinishGroupLine from './groups/FinishGroupLine';
 import { useStageChrome } from './GauntletScreens';
 import { dailyDept } from '@/lib/daily-games';
+import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref } from '@/lib/circuits';
+
+// RUNS, NOT THEIR PARTS (owner, 2026-10-26: "don't send users to individual
+// run components. show runs in place of those"). A game that is one question
+// set of a gauntlet-style run (Trivia, English and Math Gauntlets, Price
+// Check) is offered as its run. Standalone dailies a run also deals (the Dojo
+// sudokus, the Judged cases, the crosswords, Passport's geography games) stay
+// themselves.
+const PART_ENGINES = new Set(['quiz', 'math', 'price']);
+const RUN_OF = (() => {
+  const m = new Map();
+  for (const c of CIRCUITS) {
+    if (!PART_ENGINES.has(runEngine(c.id))) continue;
+    const serve = runGamesFor(c.id);
+    for (const k of c.keys || []) if (serve.includes(k) && !m.has(k)) m.set(k, c);
+  }
+  return m;
+})();
+// Folds run parts into one entry per run, kept at the place of its first part.
+function foldRuns(list, players) {
+  const out = [];
+  const seen = new Map();
+  for (const g of list) {
+    const c = RUN_OF.get(g.key);
+    if (!c) { out.push(g); continue; }
+    const n = players ? players(g.key) : 0;
+    if (seen.has(c.id)) { const r = seen.get(c.id); r.players = Math.max(r.players, n); continue; }
+    const r = { key: g.key, run: c.id, name: c.name, href: circuitEntryHref(c.id), cat: 'Run', done: false, players: n };
+    seen.set(c.id, r); out.push(r);
+  }
+  return out;
+}
 
 const useIsoLayout = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -470,13 +502,21 @@ export default function StageStick({
   const myDept = s.gameKey ? dailyDept(s.gameKey) : null;
   const quizPicks = quizzes ? quizzes.slice().sort((x, y) => (x.dept === myDept ? -1 : 0) - (y.dept === myDept ? -1 : 0)).slice(0, 4) : [];
   const leftToday = cats ? cats.reduce((t, c) => t + Math.max(0, c.total - c.n), 0) : null;
+  const plays = (k) => (pulse && pulse[k] ? pulse[k].players || 0 : 0);
+  const myRun = s.gameKey ? RUN_OF.get(s.gameKey) : null;
   const topToday = (allGames && pulse)
-    ? allGames.filter((g) => g.key !== s.gameKey && pulse[g.key] && pulse[g.key].players > 0)
-      .sort((a, b) => (pulse[b.key].players - pulse[a.key].players) || a.name.localeCompare(b.name)).slice(0, 6)
+    ? foldRuns(allGames.filter((g) => g.key !== s.gameKey && plays(g.key) > 0)
+      .sort((a, b) => (plays(b.key) - plays(a.key)) || a.name.localeCompare(b.name)), plays)
+      .filter((g) => !(myRun && g.run === myRun.id))
+      .map((g) => (g.run ? g : { ...g, players: plays(g.key) }))
+      .slice(0, 6)
     : null;
-  const moreHere = shelf && shelf.games ? shelf.games.slice().sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0)).slice(0, 4) : [];
+  const moreHere = shelf && shelf.games
+    ? foldRuns(shelf.games.slice().sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0)))
+      .filter((g) => !(myRun && g.run === myRun.id)).slice(0, 4)
+    : [];
   const railRow = (g, sub) => (
-    <a key={g.key} href={g.href} className={'sst-rr' + (g.done ? ' done' : '')}>
+    <a key={g.run || g.key} href={g.href} className={'sst-rr' + (g.done ? ' done' : '')}>
       <span className="gl"><GameGlyph gameKey={g.key} size={20} /></span>
       <span className="tx"><b>{g.name}</b><small>{sub}</small></span>
       <span className="ar" aria-hidden="true">{g.done ? '\u2713' : '\u2192'}</span>
@@ -488,12 +528,12 @@ export default function StageStick({
       <div className="sst-rs">
         <div className="sst-rl">Most played today</div>
         {topToday === null ? <div className="sst-rhold" aria-hidden="true" /> : topToday.map((g) => railRow(g,
-          `${g.cat} \u00b7 ${pulse[g.key].players} ${pulse[g.key].players === 1 ? 'player' : 'players'}`))}
+          `${g.cat} \u00b7 ${g.players} ${g.players === 1 ? 'player' : 'players'}`))}
       </div>
       {moreHere.length ? (
         <div className="sst-rs">
           <div className="sst-rl">More {shelf.cat}{shelf.total ? <span>{shelf.n} of {shelf.total}</span> : null}</div>
-          {moreHere.map((g) => railRow(g, g.done ? 'Played' : (g.time || 'Today\u2019s puzzle')))}
+          {moreHere.map((g) => railRow(g, g.run ? 'Run' : g.done ? 'Played' : (g.time || 'Today\u2019s puzzle')))}
         </div>
       ) : null}
       {quizPicks.length ? (
