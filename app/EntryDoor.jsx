@@ -270,17 +270,12 @@ export default function EntryDoor({ onPick }) {
   function skip() {
     setPhase((p) => (p === 'cur' ? 'lift' : p));
   }
+  // A SKILL GOES STRAIGHT TO THE HOME (owner, 2026-10-26): picking a skill
+  // closes the door onto the main page with that skill's pane open. The door's
+  // own level and puzzle steps were retired; they were never routes, so no
+  // search page went with them.
   function pickSkill(id) {
-    setSkill(id);
-    setTier('any');
-    setShowNew(false);
-    // NO LEVEL PAGE (owner, 2026-10-25): a skill goes straight to its puzzles.
-    setPhase('tiles');
-  }
-  function pickTier(id) {
-    setTier(id);
-    setShowNew(false);
-    setPhase('tiles');
+    toHome('sk:' + id);
   }
   function toHome(id) {
     close();
@@ -338,161 +333,11 @@ export default function EntryDoor({ onPick }) {
 
   if (!phase) return null;
   const curtain = phase === 'cur' || phase === 'lift';
-  const steps = phase === 'level' || phase === 'tiles';
-
-  const dots = (n) => (
-    <div className="ent-dots" aria-label={`Step ${n} of 2`}>
-      {[1, 2].map((k) => <i key={k} className={k <= n ? 'on' : ''} />)}
-    </div>
-  );
-
-  const levelTile = (x) => {
-    const id = x ? x.id : 'any';
-    const n = data ? inTier(pool, ratings, x).length : null;
-    return (
-      <button key={id} type="button" className="ent-lv" style={{ '--c': TIER_C[id] }} onClick={() => pickTier(id)}>
-        <span className="ent-meter" aria-hidden="true">
-          {[1, 2, 3, 4, 5].map((k) => <i key={k} className={!x || k <= x.hi ? 'on' : ''} />)}
-        </span>
-        <b>{x ? x.label : 'Surprise Me'}</b>
-        <span className="ent-lsub">{x ? x.sub : 'Every level, most played first'}</span>
-        <span className="ent-lct">{n == null ? ' ' : `${n} games`}<em aria-hidden="true">→</em></span>
-      </button>
-    );
-  };
-
-  const gameTile = (k, i) => {
-    const g = DAILY_GAME_MAP[k];
-    if (!g) return null;
-    const r = ratings[k];
-    const lvl = tierOf(r);
-    const plays = week[k] || 0;
-    const href = monOn ? monday.boards[k].href : g.href;
-    const chip = monOn ? `${monLabel(monday.date)}` : (sunday && hasSundayEdition(k) ? 'Sunday Edition' : '');
-    return (
-      <li key={k} style={{ '--i': Math.min(i, 14) }}>
-        <button type="button" className="ent-gt" style={{ '--c': categoryColor(g.cat) }} onClick={() => go(href)}
-          aria-label={`${g.name}: ${g.tag}. Play`}>
-          <span className="ent-disc"><Glyph d={GLYPHS[k]} /></span>
-          <span className="ent-gnm"><b>{g.name}</b><span className="ent-rk">#{i + 1}</span></span>
-          <span className="ent-gtg">{g.tag}</span>
-          <span className="ent-gmeta">
-            <span className="ent-pl">{plays ? `${fmtN(plays)} plays` : 'New'}</span>
-            <span className="ent-gcat">{lvl ? lvl.label : 'Unrated'} {catShort(g.cat)}</span>
-            {chip ? <span className="ent-chip">{chip}</span> : null}
-          </span>
-        </button>
-      </li>
-    );
-  };
-
-  const runTile = (r, i) => (
-    <li key={r.id} style={{ '--i': i }}>
-      <button type="button" className="ent-gt" style={{ '--c': r.color }} onClick={() => go(r.href)} aria-label={`${r.name}: ${r.tag}. Start the run`}>
-        <span className="ent-disc"><Glyph d={RUN_GLYPH} /></span>
-        <span className="ent-gnm"><b>{r.name}</b><span className="ent-rk">Run</span></span>
-        <span className="ent-gtg">{r.tag}</span>
-        <span className="ent-gmeta">
-          <span className="ent-pl">{r.names.length} games</span>
-          <span className="ent-gcat ent-gcl">{r.names.join(', ')}</span>
-        </span>
-      </button>
-    </li>
-  );
-
+  
   return (
     <div className="ent-door" role="dialog" aria-modal="true" aria-label="Welcome to Mind Loft">
       <style dangerouslySetInnerHTML={{ __html: CSS + CSS2 }} />
-      {steps ? (
-        <div className="ent-st" ref={stRef}>
-          {phase === 'level' && sk ? (
-            <div className="ent-stp" key="level">
-              <div className="ent-top">
-                <button type="button" className="ent-back" onClick={() => setPhase('page')}>← Skills</button>
-                {dots(2)}
-              </div>
-              <div className="ent-hd">
-                <span className="ent-skchip" style={{ '--c': CATEGORY_RAMP[sk.ramp] }}>{sk.name} · {all.length} games today</span>
-                <h2 className="ent-h2" tabIndex={-1} ref={headRef}>How hard do you want it today?</h2>
-              </div>
-              {showSun ? (
-                <section className="ent-sun" aria-label="Sunday boards">
-                  <div>
-                    <h3><span className="ent-pill">Sunday</span>Today is Sunday Edition day</h3>
-                    <p><b>{sunN} of your {all.length} {sk.name} puzzles</b> run their Sunday Edition today: bigger boards, fewer givens and longer answers. They are the toughest boards of the week, whatever level you pick below.</p>
-                  </div>
-                  <div className="ent-pick" role="group" aria-label="Which boards">
-                    <button type="button" aria-pressed={!mon} onClick={() => setMon(false)}>
-                      <b>Today&apos;s Sunday boards</b><span>Bigger and harder. They count on today&apos;s leaderboard.</span>
-                    </button>
-                    {monday ? (
-                      <button type="button" aria-pressed={mon} onClick={() => setMon(true)}>
-                        <b>Last Monday&apos;s boards instead</b><span>{monLabel(monday.date)}, from the archive</span>
-                      </button>
-                    ) : null}
-                    {monday ? (
-                      <p className="ent-why">Why Monday: most of our dailies build in difficulty through the week, so Monday&apos;s boards are the gentlest. A good warm-up, but archive plays do not count toward today&apos;s leaderboard.</p>
-                    ) : null}
-                  </div>
-                </section>
-              ) : null}
-              <div className="ent-lvs">
-                {TIERS.map((x) => levelTile(x))}
-                {levelTile(null)}
-              </div>
-              <p className="ent-fine">Levels come from last week&apos;s play: how many players finish a game and how long it takes them. They update every Sunday night.</p>
-            </div>
-          ) : null}
-          {phase === 'tiles' && sk ? (
-            <div className="ent-stp" key="tiles">
-              <div className="ent-top">
-                <button type="button" className="ent-back" onClick={() => setPhase('page')}>← Skills</button>
-                {dots(2)}
-              </div>
-              <div className="ent-hd">
-                <span className="ent-skchip" style={{ '--c': CATEGORY_RAMP[sk.ramp] }}>{sk.name}</span>
-                <h2 className="ent-h2" tabIndex={-1} ref={headRef}>{t ? t.label : 'Every level'}, most played this week</h2>
-                <p className="ent-lede">
-                  {shownRuns.length ? (shownRuns.length > 1 ? 'Today’s runs first, then puzzles' : 'Today’s run first, then puzzles') + ' ranked by plays over the last 7 days.' : 'Ranked by plays over the last 7 days.'} Pick one to start.
-                </p>
-              </div>
-              <div className="ent-tierbar" role="group" aria-label="Level">
-                {TIERS.map((x) => (
-                  <button key={x.id} type="button" aria-pressed={tier === x.id} onClick={() => { setTier(x.id); setShowNew(false); }}>
-                    {x.label} · {data ? inTier(pool, ratings, x).length : '…'}
-                  </button>
-                ))}
-                <button type="button" aria-pressed={!t} onClick={() => { setTier('any'); setShowNew(false); }}>Every level · {pool.length}</button>
-              </div>
-              {monOn ? (
-                <div className="ent-monbar">
-                  <span>Showing last Monday&apos;s boards ({monLabel(monday.date)}). Archive plays do not count toward today&apos;s leaderboard.</span>
-                  <button type="button" onClick={() => setMon(false)}>Switch to today&apos;s Sunday boards</button>
-                </div>
-              ) : null}
-              {!data ? <div className="ent-empty">Loading this week&apos;s picks…</div> : null}
-              {data && (shownRuns.length || shown.length) ? (
-                <ul className="ent-gts">
-                  {shownRuns.map((r, i) => runTile(r, i))}
-                  {shown.map((k, i) => gameTile(k, i))}
-                </ul>
-              ) : null}
-              {data && !shown.length ? (
-                <div className="ent-empty">No {sk.name} games rated {t ? t.label : ''} last week. Try another level above.</div>
-              ) : null}
-              {data && t && unrated.length && !showNew ? (
-                <div className="ent-more">
-                  <span>{unrated.length} newer {sk.name} {unrated.length === 1 ? 'game is' : 'games are'} not rated yet.</span>
-                  <button type="button" onClick={() => setShowNew(true)}>Show {unrated.length === 1 ? 'it' : 'them'} too</button>
-                </div>
-              ) : null}
-              <div className="ent-tail">
-                <button type="button" className="ent-link" onClick={() => toHome('sk:' + sk.id)}>See every {sk.name} puzzle on the home page <span aria-hidden="true">→</span></button>
-              </div>
-            </div>
-          ) : null}
-        </div>
-      ) : (
+      {(
         <div className={'ent-pg' + (phase === 'page' ? ' rise' : '')} aria-hidden={curtain ? 'true' : undefined}>
           <h2 className="ent-ask">What do you want to sharpen today?</h2>
           <ul className="ent-tiles">
@@ -502,7 +347,7 @@ export default function EntryDoor({ onPick }) {
               return (
                 <li key={x.id} style={{ '--i': i }}>
                   <button type="button" className="ent-tile" style={{ '--c': CATEGORY_RAMP[x.ramp] }} onClick={() => pickSkill(x.id)}
-                    aria-label={`${x.name}: choose a level`}>
+                    aria-label={`${x.name}: open its puzzles on the home page`}>
                     <span className="ent-sk">
                       {x.short ? <><span className="ent-cl">{x.name}</span><span className="ent-cs">{x.short}</span></> : x.name}
                     </span>

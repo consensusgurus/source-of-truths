@@ -761,18 +761,23 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   }
   /* WHITE AND COLOR, the fourth look (owner, 2026-10-25): a white page, with the
      category's soft colour on the squares, chips and panels instead. */
+  /* THE PUZZLE PAGE TAKES THE HOME'S GROUND (owner, 2026-10-26: "the puzzle
+     pages themselves should not be white but rather the same color background
+     as main"). The page is the category's soft colour, exactly the ground its
+     home pane wears, and the squares, chips and panels go white on it, the way
+     the home's tiles sit on that pane. */
   html[data-stage-pastel='tint']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
-  html[data-stage-pastel='tint']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #ffffff !important; }
+  html[data-stage-pastel='tint']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: var(--sp-g, #c9d2fd) !important; }
   html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
-    --stg-ground: #ffffff !important;
+    --stg-ground: var(--sp-g, #c9d2fd) !important;
     --stg-raise: #ffffff !important;
-    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #ffffff) !important;
-    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 55%, #ffffff) !important;
-    --stg-surf2: var(--sp-g, #c9d2fd) !important;
-    --stg-cell: var(--sp-g, #c9d2fd) !important;
-    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 70%, #ffffff) !important;
-    --stg-feed-soft: var(--sp-g, #c9d2fd);
-    background: #ffffff !important;
+    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 35%, #ffffff) !important;
+    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 30%, #ffffff) !important;
+    --stg-surf2: color-mix(in srgb, var(--sp-g, #c9d2fd) 60%, #ffffff) !important;
+    --stg-cell: #ffffff !important;
+    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #ffffff) !important;
+    --stg-feed-soft: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #ffffff);
+    background: var(--sp-g, #c9d2fd) !important;
   }
   /* Region boards (Quilt, Cages) wear the full pastels here. Periwinkle is
      the ground, so a periwinkle region takes amber instead, and the region
@@ -1257,18 +1262,23 @@ html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;
   }
   /* WHITE AND COLOR, the fourth look (owner, 2026-10-25): a white page, with the
      category's soft colour on the squares, chips and panels instead. */
+  /* THE PUZZLE PAGE TAKES THE HOME'S GROUND (owner, 2026-10-26: "the puzzle
+     pages themselves should not be white but rather the same color background
+     as main"). The page is the category's soft colour, exactly the ground its
+     home pane wears, and the squares, chips and panels go white on it, the way
+     the home's tiles sit on that pane. */
   html[data-stage-tone='tint']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
-  html[data-stage-tone='tint']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #ffffff !important; }
+  html[data-stage-tone='tint']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: var(--sp-g, #c9d2fd) !important; }
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
-    --stg-ground: #ffffff !important;
+    --stg-ground: var(--sp-g, #c9d2fd) !important;
     --stg-raise: #ffffff !important;
-    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #ffffff) !important;
-    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 55%, #ffffff) !important;
-    --stg-surf2: var(--sp-g, #c9d2fd) !important;
-    --stg-cell: var(--sp-g, #c9d2fd) !important;
-    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 70%, #ffffff) !important;
-    --stg-feed-soft: var(--sp-g, #c9d2fd);
-    background: #ffffff !important;
+    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 35%, #ffffff) !important;
+    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 30%, #ffffff) !important;
+    --stg-surf2: color-mix(in srgb, var(--sp-g, #c9d2fd) 60%, #ffffff) !important;
+    --stg-cell: #ffffff !important;
+    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #ffffff) !important;
+    --stg-feed-soft: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #ffffff);
+    background: var(--sp-g, #c9d2fd) !important;
   }
   /* Region boards (Quilt, Cages) wear the full pastels here. Periwinkle is
      the ground, so a periwinkle region takes amber instead, and the region

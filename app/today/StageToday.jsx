@@ -2368,7 +2368,7 @@ export default function StageToday() {
     return (
       <button key={id} type="button" aria-pressed={paneOn === id}
         className={'sty-ixb' + (rp ? ' ct' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
-        style={{ '--cc': hue, '--cci': rp ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(rp && !light ? { '--ixp': categoryColor(rampCat(id)) } : null), ...(rp ? { '--cfull': categoryColor(rampCat(id)) } : null), '--i': ixSeq++ }}
+        style={{ '--cc': hue, '--cci': rp ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(rp && !light ? { '--ixp': categoryColor(rampCat(id)) } : null), ...(rp ? { '--cfull': categoryColor(rampCat(id)) } : null), '--ixf': prog && prog[1] ? `${Math.min(100, (prog[0] / prog[1]) * 100).toFixed(1)}%` : '0%', '--i': ixSeq++ }}
         onClick={(e) => { if (!runsMq) { deskGo(e, id); return; } if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
         {ixRing(id, prog)}
@@ -3597,7 +3597,15 @@ export default function StageToday() {
   const dTintCat = !runsMq && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : null;
   const dTintBg = dTintCat ? paneGround(dTintCat) : null;
   const baseGround = light ? '#eef1f6' : '#0b0f1a';
+  const ixFlip = useRef(null);
   const deskGo = (e, id) => {
+    // THE PICK SLIDES TO THE TOP (owner, 2026-10-26): the index is measured
+    // here, before the pane commits, and the layout effect below plays every
+    // row from where it was to where it lands while the colour seeps.
+    try {
+      const nav = document.querySelector('.sty-ix > .sty-ixn');
+      if (nav && id !== paneOn) ixFlip.current = new Map([...nav.children].map((el) => [el, el.getBoundingClientRect()]));
+    } catch (er) { ixFlip.current = null; }
     const to = paneCat(id) && isColorLook(siteLook) ? paneGround(rampCat(id)) : baseGround;
     const from = dTintBg || baseGround;
     const go = () => { pickPane(id); };
@@ -3605,6 +3613,29 @@ export default function StageToday() {
     floodIn(e, go, { desk: true, color: to });
   };
   const tintBg = mTintBg || dTintBg;
+  useIsoLayoutEffect(() => {
+    const first = ixFlip.current;
+    ixFlip.current = null;
+    if (!first || typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const nav = document.querySelector('.sty-ix > .sty-ixn');
+    if (!nav) return;
+    const ease = 'cubic-bezier(.3,0,.2,1)';
+    for (const el of nav.children) {
+      const a = first.get(el);
+      if (!a || !el.animate) continue;
+      const b = el.getBoundingClientRect();
+      const dx = a.left - b.left;
+      const dy = a.top - b.top;
+      const grew = b.height - a.height > 2;
+      if (!dx && !dy && !grew) continue;
+      const from = { transform: `translate(${dx}px,${dy}px)` };
+      const to = { transform: 'translate(0,0)' };
+      // The pick opens downward from its old row height as it rises.
+      if (grew) { from.clipPath = `inset(0 0 ${Math.round(b.height - a.height)}px 0 round 12px)`; to.clipPath = 'inset(0 0 0 0 round 14px)'; }
+      try { el.animate([from, to], { duration: 520, easing: ease }); } catch (er) { /* no WAAPI */ }
+    }
+  }, [paneOn]);
   // The same hold the play stages use, so Safari's top and bottom bars take the colour too.
   useStageChrome(mTintBg);
   const mGroup = grp && Array.isArray(grp.groups) && grp.groups.length ? grp.groups[0] : null;
@@ -6791,20 +6822,24 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ixtop + .sty-ixsep{display:none;}
   .sty-ixsw{margin:4px 0;}
   .sty-ixsw button:first-child{order:2;}
-  .sty-ixb.sty-ixtop{display:flex;flex-direction:column;align-items:flex-start;gap:0;padding:9px 13px;}
-  /* ALL PUZZLES AND MY PUZZLES SIDE BY SIDE (owner, 2026-10-26). */
+  /* THE DESKTOP INDEX ORDER (owner, 2026-10-26, superseding the same day's
+     side-by-side pair): the open category, skill, All Puzzles or My Puzzles
+     rides at the very top as one big dark block, then All Puzzles and My
+     Puzzles as single rows like the categories, then the categories, then the
+     Skills / Categories switch, then Everything Else. Order only; the DOM is
+     unchanged, and the layout effect beside deskGo slides the rows. */
   .sty-ix > .sty-ixn:not(.re){flex-flow:row wrap;}
   .sty-ix > .sty-ixn:not(.re) > *{flex:1 1 100%;min-width:0;}
-  .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixtop{flex:1 1 0;padding:9px 11px;}
-  .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixtop > span{font-size:14px;white-space:nowrap;}
-  /* PHONE ORDER ON THE DESKTOP TOO (owner, 2026-10-26): the categories lead,
-     All and My Puzzles sit under them, the Skills / Categories switch under
-     those, then Everything Else. Order only; the DOM is unchanged. */
-  .sty-ix > .sty-ixn:not(.re) > .sty-ixtop{order:1;margin-top:8px;}
-  .sty-ix > .sty-ixn:not(.re) > .sty-ixsw{order:2;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixtop{order:-1;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixsw{order:2;margin-top:8px;}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixee,.sty-ix > .sty-ixn:not(.re) > .sty-ixee ~ *{order:3;}
-  .sty-ixb.sty-ixtop > span{font-size:15px;font-weight:800;line-height:1.3;}
-  .sty-ixb.sty-ixtop .sty-ixct{font-size:12px;font-weight:600;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixtop + .sty-ixtop{margin-bottom:8px;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop).on{order:-2;display:flex;flex-direction:column;align-items:stretch;gap:5px;
+    padding:13px 14px 14px;border-radius:14px;margin-bottom:8px;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop).on > span{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.25;white-space:normal;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop).on .sty-ixct{font-size:13px;font-weight:700;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop).on::after{content:"";display:block;height:6px;border-radius:3px;margin-top:3px;
+    background:linear-gradient(to right, currentColor var(--ixf, 0%), color-mix(in srgb, currentColor 22%, transparent) 0);}
   /* Everything Else: a label, then one outlined box of plain rows. */
   .sty-ixsep.sty-ixee{height:auto;margin:10px 0 0;background:none;}
   .sty-ixsep.sty-ixee::before{content:"Everything Else";display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-ink);}

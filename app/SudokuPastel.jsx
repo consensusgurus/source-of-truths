@@ -18,7 +18,7 @@
 
 import { useEffect } from 'react';
 import { usePhoneStage } from './WordStage';
-import { useStageLook, nextLook } from '@/lib/stage-look';
+import { useStageLook, nextLook, readLook } from '@/lib/stage-look';
 import { forceStageTheme } from '@/lib/stage-theme';
 import { softGround } from '@/lib/category-ramp';
 
@@ -59,7 +59,9 @@ export default function useSudokuPastel(active, ground) {
   }, [on]);
   useEffect(() => {
     if (!on || typeof document === 'undefined') return;
-    document.documentElement.setAttribute('data-stage-pastel', look);
+    // Read the stored look, not the state: the state starts on the default for
+    // one render, which repainted the page in the wrong look for a frame.
+    document.documentElement.setAttribute('data-stage-pastel', readLook());
   }, [on, look]);
   // THE DESKTOP TONE (owner, 2026-10-26): on a desktop the same colours are
   // set through html[data-stage-tone] (see the end of app/globals.css), which
@@ -69,7 +71,7 @@ export default function useSudokuPastel(active, ground) {
     if (!desk || typeof document === 'undefined') return undefined;
     const r = document.documentElement;
     r.style.setProperty('--sp-g', softGround(ground || '#a5b4fc'));
-    r.setAttribute('data-stage-tone', look);
+    r.setAttribute('data-stage-tone', readLook());
     forceStageTheme('light');
     return () => { r.removeAttribute('data-stage-tone'); r.style.removeProperty('--sp-g'); forceStageTheme(null); };
   }, [desk, ground, look]);

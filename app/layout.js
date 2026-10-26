@@ -25,6 +25,9 @@ const LC_ROUTES = JSON.stringify(Array.from(new Set(DAILY_GAMES.map((g) => g.hre
 // "make the loading screen consistent with the new styling, greatly
 // simplified"). The sudokus and End Game titles play on the soft category
 // ground on a phone, but the register used to arrive in an effect, so every
+// THE DESKTOP TOO (owner, 2026-10-26): the desktop's tone register (data-stage-tone)
+// used to arrive after hydration, so a puzzle opened from the home painted its old
+// colours and board for a beat and then jumped. The script sets it before paint now.
 // load first painted the old full cap and page. The route map below lets the
 // boot script set data-stage-pastel, the look and the ground before the body
 // exists; app/SudokuPastel.jsx then takes it over unchanged.
@@ -145,7 +148,7 @@ export default function RootLayout({ children }) {
             board come up through it. lib/tile-flood.js writes sot_land just
             before it navigates; html[data-sot-land] in globals.css paints it. */}
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{var S=window.sessionStorage,v=S.getItem('sot_land');if(!v)return;S.removeItem('sot_land');var o=JSON.parse(v),p=location.pathname.replace(/\\/+$/,'')||'/';if(!o||o.p!==p||!(Date.now()-o.t<5000)||!/^#[0-9a-f]{3,8}$/i.test(o.c))return;var d=document.documentElement;d.style.setProperty('--sot-land',o.c);d.setAttribute('data-sot-land','');setTimeout(function(){d.removeAttribute('data-sot-land')},900)}catch(e){}})();" }} />
-        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var M=" + PASTEL_ROUTES + ",p=location.pathname.replace(/\\/+$/,'')||'/',g=M[p];if(!g||!window.matchMedia('(max-width: 899px)').matches)return;var d=document.documentElement,S=window.localStorage,K=['color','tint','plain','darktint','dark'],l=S.getItem('sot_gstage_look2');if(K.indexOf(l)<0){l=S.getItem('sot_gstage_look1');if(l==='color')l=null}if(K.indexOf(l)<0)l=window.localStorage.getItem('sot_theme2')==='dark'?'dark':'tint';d.setAttribute('data-stage-pastel',l);d.setAttribute('data-stage-boot','light');d.style.setProperty('--sp-g',g)}catch(e){}})();" }} />
+        <script dangerouslySetInnerHTML={{ __html: "(function(){try{var M=" + PASTEL_ROUTES + ",p=location.pathname.replace(/\\/+$/,'')||'/',g=M[p];if(!g)return;var ph=window.matchMedia('(max-width: 899px)').matches;var d=document.documentElement,S=window.localStorage,K=['color','tint','plain','darktint','dark'],l=S.getItem('sot_gstage_look2');if(K.indexOf(l)<0){l=S.getItem('sot_gstage_look1');if(l==='color')l=null}if(K.indexOf(l)<0)l=window.localStorage.getItem('sot_theme2')==='dark'?'darktint':'tint';d.setAttribute(ph?'data-stage-pastel':'data-stage-tone',l);d.setAttribute('data-stage-boot','light');d.style.setProperty('--sp-g',g)}catch(e){}})();" }} />
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{var R=" + LC_ROUTES + ",p=location.pathname.replace(/\\/+$/,'')||'/';if(R.indexOf(p)<0)return;var q=null;try{q=new URLSearchParams(location.search).get('layout')}catch(e){}var w=window.innerWidth;if(q==='off'||!(w>=1280||(q==='c'&&w>=1100)))return;var d=document.documentElement;d.classList.add('lc-pre');var h=parseInt(window.localStorage.getItem('sot_lc_hh'),10);if(h>30&&h<200)d.style.setProperty('--lc-hh',h+'px')}catch(e){}})();" }} />
         <script
           type="application/ld+json"
