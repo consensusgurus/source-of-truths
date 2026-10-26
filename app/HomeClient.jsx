@@ -974,7 +974,7 @@ function Home({ lists, viewCounts, voteData, extras, trending = {}, openList, on
         .nt-tbadge{position:absolute;bottom:8px;left:8px;background:rgba(28,30,36,0.85);color:var(--white);font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;}
         .nt-tbody{padding:12px 14px 13px;display:flex;flex-direction:column;flex:1 1 auto;}
         .nt-ttitle{font-size:16px;font-weight:800;line-height:1.18;letter-spacing:-0.01em;margin:0 0 9px;}
-        .nt-crow{display:flex;align-items:flex-start;gap:9px;padding:5px 0;border-bottom:1px dashed rgba(20,22,28,0.12);font-size:12.5px;}
+        .nt-crow{display:flex;align-items:flex-start;gap:9px;padding:5px 0;border-bottom:1px solid rgba(20,22,28,0.12);font-size:12.5px;}
         .nt-crow:last-of-type{border-bottom:none;}
         .nt-cnum{flex:none;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-top:1px;}
         .nt-cname{flex:1 1 auto;min-width:0;line-height:1.3;}
@@ -1453,7 +1453,7 @@ export function Tile({ list, rank, views, voteData, extras, onClick, href, showC
                   alignItems: 'center',
                   gap: 8,
                   padding: '4px 0',
-                  borderBottom: i < preview.rows.length - 1 ? `1px dashed ${T.slate}` : 'none',
+                  borderBottom: i < preview.rows.length - 1 ? `1px solid ${T.slate}` : 'none',
                   opacity: 1,
                 }}
               >

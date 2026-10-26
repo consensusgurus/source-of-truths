@@ -2406,7 +2406,7 @@ body:has(.rn)::before{background:${T.ground};}
 .rn-qm{font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.02em;max-width:none;
   font-variant-numeric:tabular-nums;}
 .rn-blank{display:inline-block;min-width:1.1em;padding:0 .1em;margin:0 .04em;text-align:center;
-  border:3px dashed rgba(125,211,252,.85);border-radius:8px;color:#7dd3fc;line-height:1.05;}
+  border:3px solid rgba(125,211,252,.85);border-radius:8px;color:#7dd3fc;line-height:1.05;}
 .rn-ch{display:grid;gap:9px;}
 .rn-c{display:flex;align-items:center;gap:12px;text-align:left;background:rgba(255,255,255,.045);
   border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:15px 16px;font-family:inherit;
@@ -2789,7 +2789,7 @@ ${TOWER_CSS}
 .rt-t5r.me{background:rgba(47,111,228,.18);border-color:rgba(96,165,250,.35);}
 .rt-t5r.me .rt-t5n{color:#fff;font-weight:800;}
 .rt-t5r.gap{margin-top:6px;position:relative;}
-.rt-t5r.gap::before{content:'';position:absolute;left:9px;right:9px;top:-6px;border-top:1px dashed rgba(255,255,255,.12);}
+.rt-t5r.gap::before{content:'';position:absolute;left:9px;right:9px;top:-6px;border-top:1px solid rgba(255,255,255,.12);}
 .rt-t5m{font-size:13px;font-weight:600;color:#8b95a8;padding:4px 0;}
 .rt-split .rt-done{margin:0;}
 .rt-split .rt-done.rl{gap:5px;flex:1;justify-content:stretch;}

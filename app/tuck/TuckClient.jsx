@@ -867,7 +867,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
           .tk-meter{position:relative;height:26px;}
           .tk-meter .trk{position:absolute;left:0;right:0;top:8px;height:12px;border-radius:6px;background:${STAGE ? 'var(--stg-cell)' : '#efe7d8'};box-shadow:inset 0 0 0 1px ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};}
           .tk-meter .fill{position:absolute;left:0;top:8px;height:12px;border-radius:6px;background:var(--stg-acc, ${COLORS.accent});}
-          .tk-meter .bonus{position:absolute;top:8px;height:12px;box-sizing:border-box;border:1.5px dashed var(--stg-acc-ink, ${COLORS.accent});border-left:0;border-radius:0 6px 6px 0;}
+          .tk-meter .bonus{position:absolute;top:8px;height:12px;box-sizing:border-box;border:1.5px solid var(--stg-acc-ink, ${COLORS.accent});border-left:0;border-radius:0 6px 6px 0;}
           .tk-meter .mark{position:absolute;top:0;width:3px;height:26px;margin-left:-1px;border-radius:2px;background:${INK};}
           .tk-play{display:flex;gap:22px;align-items:flex-start;}
           .tk-boardcol{flex:0 1 452px;min-width:0;}
@@ -901,7 +901,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
           .tk-chips{display:none;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px;}
           .tk-wchip{display:inline-flex;align-items:center;gap:6px;border-radius:9px;padding:6px 10px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));font-size:14px;font-weight:800;letter-spacing:0.04em;color:${INK};}
           .tk-wchip b{font-size:13px;letter-spacing:0;color:${ACC_INK};}
-          .tk-wchip.invalid{color:var(--stg-bad, ${COLORS.rust});border-color:var(--stg-bad, ${COLORS.rust});border-style:dashed;text-decoration:line-through;}
+          .tk-wchip.invalid{color:var(--stg-bad, ${COLORS.rust});border-color:var(--stg-bad, ${COLORS.rust});border-style:solid;text-decoration:line-through;}
           .tk-legend{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:${FADED};}
           .tk-legend i{position:relative;flex:0 0 auto;width:16px;height:16px;box-sizing:border-box;border-radius:3px;background:${TILE.face};border:1px solid ${TILE.edge};}
           .tk-legend i::after{content:"";position:absolute;left:2px;top:2px;width:5px;height:5px;border-radius:3px;background:${TILE.dot};}
@@ -910,7 +910,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
           .tk-trayrow{display:flex;gap:6px;justify-content:center;}
           .tk-tile{position:relative;width:40px;height:46px;box-sizing:border-box;background:${TILE.face};border:1px solid ${TILE.edge};border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:${TILE.ink};cursor:pointer;user-select:none;box-shadow:inset 0 -4px 0 ${TILE.edge};}
           .tk-tile .pts{position:absolute;right:3px;bottom:3px;font-size:9px;font-weight:800;line-height:1;color:${TILE.pts};}
-          .tk-tile.used{background:transparent;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));box-shadow:none;color:${FADED};cursor:default;}
+          .tk-tile.used{background:transparent;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));box-shadow:none;color:${FADED};cursor:default;}
           .tk-tile.used .pts{color:${FADED};}
           .tk-tile.armed{outline:2.5px solid var(--stg-acc-ink, ${COLORS.accent});outline-offset:2px;}
           .tk-status{font-size:13px;font-weight:700;min-height:18px;}
@@ -1386,7 +1386,7 @@ const TKS_CSS = `
 .tks-board{align-self:center;width:100%;max-width:366px;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:3px}
 .pst .tks-c{position:relative;aspect-ratio:1;border:2px solid color-mix(in srgb, var(--pst-ink) 30%, transparent);border-radius:8px;background:var(--pst-tint);font-size:19px;font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;line-height:1}
 .pst .tks-c.f{background:var(--pst-ink);color:var(--pst-bg);border-color:var(--pst-ink)}
-.pst .tks-c.bad{background:var(--pst-bg);color:var(--pst-ink);border:2px dashed var(--pst-ink);text-decoration:underline wavy;text-underline-offset:3px}
+.pst .tks-c.bad{background:var(--pst-bg);color:var(--pst-ink);border:2px solid var(--pst-ink);text-decoration:underline wavy;text-underline-offset:3px}
 .pst .tks-c.now{border-color:var(--pst-ink);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink)}
 .tks-c .x{position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.8}
 .tks-c .d{font-size:16px;opacity:.7}
@@ -1394,5 +1394,5 @@ const TKS_CSS = `
 .pst .tks-t{position:relative;height:50px;border-radius:10px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:22px;font-weight:800;padding:0}
 .tks-t em{position:absolute;right:4px;bottom:2px;font-style:normal;font-size:10px}
 .pst .tks-t.on{background:var(--pst-ink);color:var(--pst-bg)}
-.tks-gone{height:50px;border-radius:10px;border:2px dashed color-mix(in srgb, var(--pst-ink) 30%, transparent)}
+.tks-gone{height:50px;border-radius:10px;border:2px solid color-mix(in srgb, var(--pst-ink) 30%, transparent)}
 `;

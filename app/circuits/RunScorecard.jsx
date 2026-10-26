@@ -45,7 +45,7 @@ const CSS = `
 .rsc-wk{display:flex;gap:5px}
 .rsc-wk>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
 .rsc-wk i{position:relative;font-style:normal;width:100%;max-width:44px;aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:.04em;
-  color:#5d6a83;border:1.5px dashed #33405c}
+  color:#5d6a83;border:1.5px solid #33405c}
 .rsc-wk i.on{background:var(--rs-ink);color:#0b0f1a;border:0}
 .rsc-wk i.top{color:#e9cf7f;border-color:#6b5a2a}
 .rsc-wk i.cur::after{content:'';position:absolute;inset:-6px;border:2.5px solid #ef4444;border-radius:50%;transform:rotate(-8deg)}

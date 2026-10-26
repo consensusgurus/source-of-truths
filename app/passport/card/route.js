@@ -70,7 +70,7 @@ function card(scores) {
       d({ fontSize: 15, fontWeight: 800, color: W.ink2, width: 104 }, 'Destination'),
       d({ gap: 3 }, ...'???????'.split('').map((c) => flap(c)))),
     ...rows,
-    d({ alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 8, borderTop: `1px dashed ${W.line}` },
+    d({ alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 8, borderTop: `1px solid ${W.line}` },
       d({ fontSize: 18, fontWeight: 800, color: W.ink2 }, 'Total'),
       d({ alignItems: 'center', gap: 5 }, flap(totalDigits[0], true), flap(totalDigits[1], true),
         d({ fontSize: 32, fontWeight: 800, color: W.mute, margin: '0 4px' }, '/'), flap('5', true), flap('0', true))));

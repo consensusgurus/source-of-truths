@@ -71,7 +71,7 @@ function useAdminPart(part, enabled) {
 // A quiet placeholder line for a part that is loading or failed.
 function PartNote({ children, error, onRetry }) {
   return (
-    <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 15, color: error ? COLORS.rust : COLORS.faded, border: `1px dashed ${COLORS.line}` }}>
+    <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 15, color: error ? COLORS.rust : COLORS.faded, border: `1px solid ${COLORS.line}` }}>
       {children}
       {onRetry ? (
         <button onClick={onRetry} style={{ marginLeft: 10, background: 'transparent', border: `1px solid ${COLORS.line}`, color: COLORS.ink, padding: '4px 10px', fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>Retry</button>
@@ -1122,7 +1122,7 @@ export default function AdminClient() {
               fontStyle: 'italic',
               fontSize: 18,
               color: COLORS.faded,
-              border: `1px dashed ${COLORS.line}`,
+              border: `1px solid ${COLORS.line}`,
             }}
           >
             {tab === 'pending'
@@ -1235,7 +1235,7 @@ function PageViewsPanel({ lists, quizzes, mode }) {
           fontStyle: 'italic',
           fontSize: 18,
           color: COLORS.faded,
-          border: `1px dashed ${COLORS.line}`,
+          border: `1px solid ${COLORS.line}`,
         }}
       >
         No view data yet.
@@ -1289,7 +1289,7 @@ function PageViewsPanel({ lists, quizzes, mode }) {
             fontStyle: 'italic',
             fontSize: 16,
             color: COLORS.faded,
-            border: `1px dashed ${COLORS.line}`,
+            border: `1px solid ${COLORS.line}`,
           }}
         >
           No matches.
@@ -1491,7 +1491,7 @@ function QuizSignupsPanel({ signups, partial = false, total, onNeedAll }) {
           fontStyle: 'italic',
           fontSize: 18,
           color: COLORS.faded,
-          border: `1px dashed ${COLORS.line}`,
+          border: `1px solid ${COLORS.line}`,
         }}
       >
         No quiz signups yet.
@@ -1557,7 +1557,7 @@ function QuizSignupsPanel({ signups, partial = false, total, onNeedAll }) {
             fontStyle: 'italic',
             fontSize: 16,
             color: COLORS.faded,
-            border: `1px dashed ${COLORS.line}`,
+            border: `1px solid ${COLORS.line}`,
           }}
         >
           No matches.
@@ -1639,7 +1639,7 @@ function ResearchPanel({ alerts, busy, onResolve }) {
           fontStyle: 'italic',
           fontSize: 18,
           color: COLORS.faded,
-          border: `1px dashed ${COLORS.line}`,
+          border: `1px solid ${COLORS.line}`,
         }}
       >
         No consensus changes awaiting research.
@@ -1897,7 +1897,7 @@ function ComplaintsPanel({ complaints, busy, onDismiss, onRespond }) {
           fontStyle: 'italic',
           fontSize: 18,
           color: COLORS.faded,
-          border: `1px dashed ${COLORS.line}`,
+          border: `1px solid ${COLORS.line}`,
         }}
       >
         No reader notices right now.
@@ -1995,7 +1995,7 @@ function AnonPlayersPanel({ players, partial = false, total, onNeedAll }) {
 
   if (!list.length) {
     return (
-      <div style={{ padding: '60px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 18, color: COLORS.faded, border: `1px dashed ${COLORS.line}` }}>
+      <div style={{ padding: '60px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 18, color: COLORS.faded, border: `1px solid ${COLORS.line}` }}>
         No anonymous players yet.
       </div>
     );
@@ -2012,7 +2012,7 @@ function AnonPlayersPanel({ players, partial = false, total, onNeedAll }) {
       <PartialNote partial={partial} shown={list.length} total={total} noun="anonymous players" onNeedAll={onNeedAll} />
       <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter by guest handle or number\u2026" style={{ width: '100%', padding: '10px 12px', background: COLORS.paper, border: `1px solid ${COLORS.line}`, color: COLORS.ink, fontFamily: 'Manrope, monospace', fontSize: 10, outline: 'none', boxSizing: 'border-box', marginBottom: 16 }} />
       {visible.length === 0 ? (
-        <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 16, color: COLORS.faded, border: `1px dashed ${COLORS.line}` }}>No matches.</div>
+        <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 16, color: COLORS.faded, border: `1px solid ${COLORS.line}` }}>No matches.</div>
       ) : (
         <div style={{ border: `1px solid ${COLORS.line}`, background: COLORS.paper, borderRadius: 12, maxHeight: expandedKey != null ? PLAYERS_VIEW_H_OPEN : PLAYERS_VIEW_H, overflowY: 'auto' }}>
           <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '5px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
@@ -2122,7 +2122,7 @@ function AllPlayersPanel({ signups, anonPlayers, partial = false, counts = {}, o
 
   if (!rows.length) {
     return (
-      <div style={{ padding: '60px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 18, color: COLORS.faded, border: `1px dashed ${COLORS.line}` }}>
+      <div style={{ padding: '60px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 18, color: COLORS.faded, border: `1px solid ${COLORS.line}` }}>
         No players yet.
       </div>
     );
@@ -2146,7 +2146,7 @@ function AllPlayersPanel({ signups, anonPlayers, partial = false, counts = {}, o
       <PartialNote partial={partial} shown={rows.length} total={playerCount} noun="players" onNeedAll={onNeedAll} />
       <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter by name or email…" style={{ width: '100%', padding: '10px 12px', background: COLORS.paper, border: `1px solid ${COLORS.line}`, color: COLORS.ink, fontFamily: 'Manrope, monospace', fontSize: 10, outline: 'none', boxSizing: 'border-box', marginBottom: 16 }} />
       {visible.length === 0 ? (
-        <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 16, color: COLORS.faded, border: `1px dashed ${COLORS.line}` }}>No matches.</div>
+        <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 16, color: COLORS.faded, border: `1px solid ${COLORS.line}` }}>No matches.</div>
       ) : (
         <div style={{ border: `1px solid ${COLORS.line}`, background: COLORS.paper, borderRadius: 12, maxHeight: expandedKey != null ? PLAYERS_VIEW_H_OPEN : PLAYERS_VIEW_H, overflowY: 'auto' }}>
           <div style={{ display: 'flex', gap: 16, position: 'sticky', top: 0, zIndex: 1, background: COLORS.cream, fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: COLORS.faded, padding: '5px 14px', borderBottom: `1px solid ${COLORS.line}` }}>
@@ -2509,7 +2509,7 @@ function DailyGameTile({ g }) {
         <DgStat label="Total plays" value={g.plays.toLocaleString()} dim />
       </div>
 
-      <div style={{ marginTop: 11, paddingTop: 9, borderTop: `1px dashed ${COLORS.line}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ marginTop: 11, paddingTop: 9, borderTop: `1px solid ${COLORS.line}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.ember, fontWeight: 700 }}>Today</div>
         <DgStat label="Plays" value={g.today.plays.toLocaleString()} dim />
         <DgStat label="Players" value={g.today.players.toLocaleString()} dim />
@@ -3239,7 +3239,7 @@ function ExtrasPanel({ extras, busy, onRename, onDelete }) {
           fontStyle: 'italic',
           fontSize: 18,
           color: COLORS.faded,
-          border: `1px dashed ${COLORS.line}`,
+          border: `1px solid ${COLORS.line}`,
         }}
       >
         No reader-submitted items yet.
@@ -3274,7 +3274,7 @@ function ExtrasPanel({ extras, busy, onRename, onDelete }) {
             fontStyle: 'italic',
             fontSize: 16,
             color: COLORS.faded,
-            border: `1px dashed ${COLORS.line}`,
+            border: `1px solid ${COLORS.line}`,
           }}
         >
           No matches.

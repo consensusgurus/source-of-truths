@@ -33,6 +33,7 @@
 //   * ONE COLOUR. The stage is near-black plus this game's category step and
 //     nothing else. That includes the primary button: see ctaFor in
 //     lib/category-ramp.js for why the brand blue does not belong here.
+import { BrandFit } from '@/lib/use-brand-fit';
 import { cycleLook } from '@/lib/stage-look';
 import React, { useEffect, useRef, useState } from 'react';
 import ChallengeStrip from './ChallengeStrip';
@@ -371,10 +372,10 @@ export default function StageChrome({
             4.5:1 as 13px text on paper; the word is a brand mark beside a filled
             glyph and the same word in ink sits in front of it, so it is never
             the only thing carrying "Mind Loft". */}
-        <a className="stg-brand" href={homeTo} aria-label="Mind Loft home" title="Mind Loft">
+        <BrandFit><a className="stg-brand" href={homeTo} aria-label="Mind Loft home" title="Mind Loft">
           <MindLoftMark size={19} ink="var(--stg-ink,#e9edf4)" accent="var(--stg-brand,#7dd3fc)" />
           <b>Mind <em>Loft</em></b>
-        </a>
+        </a></BrandFit>
 
         <div className="stg-id">
           <i>

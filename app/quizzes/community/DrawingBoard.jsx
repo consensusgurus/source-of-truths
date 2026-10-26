@@ -275,7 +275,7 @@ const CSS = `
 .drb-figs b{font-size:28px;font-weight:800}
 .drb-stubs{flex:1 1 280px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
 .drb-stub{display:flex;align-items:stretch;height:42px;border-radius:8px;overflow:hidden;background:#e8b43a;color:#0b0d12}
-.drb-stub-ic{display:flex;align-items:center;padding:0 10px;border-right:2px dashed rgba(11,13,18,.35)}
+.drb-stub-ic{display:flex;align-items:center;padding:0 10px;border-right:2px solid rgba(11,13,18,.35)}
 .drb-stub-tx{display:flex;flex-direction:column;justify-content:center;padding:0 12px;line-height:1.15}
 .drb-stub-tx b{font-size:13px;font-weight:800}
 .drb-stub-tx i{font-style:normal;font-size:11px;font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}

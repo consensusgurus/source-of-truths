@@ -677,7 +677,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
           .cr-tile{width:64px;height:64px;border-radius:12px;border:2px solid ${STAGE ? 'var(--stg-cell-line)' : TILE_EDGE};background:${STAGE ? 'var(--stg-surf2)' : TILE_FACE};color:${INK};font-family:${MONO};font-weight:500;font-size:24px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s ease;padding:0;}
           .cr-tile:active{transform:translateY(1px);}
           .cr-tile.made{width:84px;border-color:${STAGE ? 'var(--stg-acc-ink)' : COLORS.accent};background:${STAGE ? 'var(--stg-acc-tint)' : TILE_MADE};}
-          .cr-tile.used{background:transparent;border-style:dashed;border-color:${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.3)'};color:${FADED};text-decoration:line-through;cursor:default;}
+          .cr-tile.used{background:transparent;border-style:solid;border-color:${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.3)'};color:${FADED};text-decoration:line-through;cursor:default;}
           .cr-tile.on{background:${STAGE ? 'var(--stg-acc)' : COLORS.accentSoft};color:${STAGE ? 'var(--stg-onramp)' : INK};outline:3px solid var(--stg-acc-ink, ${COLORS.accent});outline-offset:2px;}
           .cr-ops{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
           .cr-op{width:64px;height:52px;border-radius:12px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${STAGE ? 'var(--stg-acc-ink)' : 'var(--blue-deep)'};font-family:${MONO};font-size:24px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}

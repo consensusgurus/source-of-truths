@@ -755,7 +755,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
 .fud-an{display:flex;flex-direction:column;gap:10px;}
 .fud-a{display:flex;flex-direction:column;gap:4px;}
 .fud-a small{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;padding-left:4px;}
-.fud-a input{width:100%;min-height:58px;border-radius:14px;border:2px dashed var(--pst-ink);background:transparent;padding:0 16px;font:inherit;font-size:20px;font-weight:800;color:var(--pst-ink);outline:none;}
+.fud-a input{width:100%;min-height:58px;border-radius:14px;border:2px solid var(--pst-ink);background:transparent;padding:0 16px;font:inherit;font-size:20px;font-weight:800;color:var(--pst-ink);outline:none;}
 .fud-a input::placeholder{color:var(--pst-ink);opacity:.6;font-size:15px;font-weight:700;}
 .fud-a input.fill{border-style:solid;background:var(--pst-ink);color:var(--pst-bg);}
 .fud-a input:focus{border-style:solid;border-width:3px;padding:0 15px;background:var(--pst-tint);color:var(--pst-ink);}

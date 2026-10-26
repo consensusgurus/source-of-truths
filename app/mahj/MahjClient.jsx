@@ -613,14 +613,14 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
       WebkitTapHighlightColor: 'transparent',
     };
     if (ghost) {
-      st.background = 'transparent'; st.border = '1.5px dashed var(--stg-line3, rgba(8,34,46,0.45))'; st.boxShadow = 'none';
+      st.background = 'transparent'; st.border = '1.5px solid var(--stg-line3, rgba(8,34,46,0.45))'; st.boxShadow = 'none';
     } else {
       st.background = face;
       st.border = `${tw * 0.018}cqw solid ${isSel ? INK : 'rgba(8,34,46,0.42)'}`;
       st.boxShadow = (isSel ? `0 0 0 ${tw * 0.045}cqw var(--stg-ink, ${INK}), ` : '') +
         `${tw * 0.045}cqw ${tw * 0.075}cqw 0 ${full ? EDGE : EDGE_BLOCKED}, ` +
         `${tw * 0.09}cqw ${tw * 0.15}cqw ${tw * 0.1}cqw rgba(8,34,46,0.28)`;
-      if (isHint) { st.outline = `${tw * 0.04}cqw dashed var(--stg-ink, ${INK})`; st.outlineOffset = `${tw * 0.03}cqw`; }
+      if (isHint) { st.outline = `${tw * 0.04}cqw solid var(--stg-ink, ${INK})`; st.outlineOffset = `${tw * 0.03}cqw`; }
     }
     let body = null;
     if (!ghost) {
@@ -824,7 +824,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
           .mj-btn{font-family:${SANS};font-weight:800;font-size:14px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,.35));background:transparent;color:${S_INK};border-radius:12px;padding:9px 16px;min-height:48px;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
           .mj-tool{font-family:${SANS};font-weight:800;font-size:13.5px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,.35));background:transparent;color:${S_INK};border-radius:999px;padding:0 15px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;}
           .mj-tool:hover:not(:disabled){background:var(--stg-surf2, #f1f3f7);}
-          .mj-tool:disabled{color:${S_MUTE};cursor:default;border-style:dashed;}
+          .mj-tool:disabled{color:${S_MUTE};cursor:default;border-style:solid;}
           .mj-tool.pri:not(:disabled){background:${STAGE_C};border-color:${STAGE_C_INK};color:var(--stg-onramp, #ffffff);}
           .mj-tool.on{background:var(--stg-ink, ${INK});border-color:var(--stg-ink, ${INK});color:var(--stg-ground, #ffffff);}
           .mj-board{position:relative;width:100%;container-type:inline-size;touch-action:manipulation;}

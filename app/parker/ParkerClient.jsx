@@ -827,7 +827,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
                       // SELECTED IS A SOLID RING, THE HINT A DASHED ONE (owner, 2026-10-25),
                       // so the two never rest on colour alone in any page look.
                       outline: on ? `3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.ink}))`
-                        : hintBlock === i ? `3px dashed var(--stg-warn, ${COLORS.green})` : 'none',
+                        : hintBlock === i ? `3px solid var(--stg-warn, ${COLORS.green})` : 'none',
                       outlineOffset: on || hintBlock === i ? '1px' : 0,
                       border: isRed ? `2px solid ${RED_EDGE}` : carEdge,
                       display: isRed ? 'flex' : undefined, alignItems: 'center', justifyContent: 'center',

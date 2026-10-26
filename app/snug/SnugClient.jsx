@@ -805,7 +805,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
           .sg-cell{border-radius:6px;box-sizing:border-box;position:relative;display:flex;align-items:flex-start;justify-content:flex-start;padding:5px 7px;font-family:${SANS};font-weight:800;font-size:13px;line-height:1;color:var(--sg-pink);cursor:${playing ? 'pointer' : 'default'};transition:background .12s;}
           .sg-cell.void{background:repeating-linear-gradient(45deg, var(--sg-void1) 0 5px, var(--sg-void2) 5px 10px);cursor:default;pointer-events:none;}
           .sg-cell.open{background:var(--stg-cell, #ffffff);box-shadow:inset 0 0 0 1px var(--stg-cell-line, rgba(11,15,26,0.44));}
-          .sg-cell.open.ghost{background:color-mix(in srgb, var(--sg-hand) 24%, var(--stg-cell, #ffffff));box-shadow:none;outline:2.5px dashed var(--sg-hand);outline-offset:-2.5px;}
+          .sg-cell.open.ghost{background:color-mix(in srgb, var(--sg-hand) 24%, var(--stg-cell, #ffffff));box-shadow:none;outline:2.5px solid var(--sg-hand);outline-offset:-2.5px;}
           .sg-cell.open.bad{background:color-mix(in srgb, var(--stg-bad, #be123c) 34%, var(--stg-cell, #ffffff));}
           .sg-side{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:12px;container-type:inline-size;}
           @container (max-width: 330px){
@@ -816,7 +816,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
           }
           .sg-lab{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
           .sg-well{border:2px solid var(--sg-hand);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:118px;box-sizing:border-box;}
-          .sg-well.empty{border-style:dashed;border-color:var(--stg-line2, rgba(11,15,26,0.24));}
+          .sg-well.empty{border-style:solid;border-color:var(--stg-line2, rgba(11,15,26,0.24));}
           .sg-hand{--sg-hu:26px;flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;}
           .sg-none{font-size:13px;font-weight:600;color:var(--stg-mute, ${COLORS.faded});}
           .sg-wellmsg{display:none;}

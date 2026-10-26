@@ -614,7 +614,7 @@ const CSS2 = `
 .ent-gcat{min-width:0;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:800}
 .ent-gcl{text-transform:none;letter-spacing:0;font-size:12px;font-weight:700}
 .ent-chip{margin-left:auto;flex:none;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 6px;border-radius:4px;background:${RAMP_INK};color:var(--c)}
-.ent-more{border:1px dashed rgba(8,34,46,0.288);border-radius:10px;padding:12px 14px;font-size:13px;color:#3d5260;font-weight:600;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.ent-more{border:1px solid rgba(8,34,46,0.288);border-radius:10px;padding:12px 14px;font-size:13px;color:#3d5260;font-weight:600;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
 .ent-more button,.ent-link{border:0;background:transparent;color:#0369a1;font:inherit;font-weight:800;cursor:pointer;font-size:13.5px;padding:4px 0}
 .ent-empty{padding:24px;border-radius:12px;background:rgba(8,34,46,0.072);color:#3d5260;font-size:14px;line-height:1.5}
 .ent-tail{display:flex;justify-content:center;padding-top:4px}

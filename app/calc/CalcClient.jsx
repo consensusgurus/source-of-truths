@@ -792,7 +792,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
           .cl-key{position:relative;aspect-ratio:1;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-variant-numeric:tabular-nums;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;padding:0;min-width:0;border-radius:50%;transition:transform .09s ease,background .12s ease,color .12s ease;font-size:26px;}
           .cl-board.n7 .cl-key{font-size:22px;}
           .cl-num{background:var(--stg-cell);color:var(--stg-ink);border:1.5px solid var(--stg-cell-line);}
-          .cl-op{background:var(--stg-surf);color:var(--stg-ink2);border:1.5px dashed var(--stg-cell-line);font-size:22px;}
+          .cl-op{background:var(--stg-surf);color:var(--stg-ink2);border:1.5px solid var(--stg-cell-line);font-size:22px;}
           .cl-board.n7 .cl-op{font-size:19px;}
           .cl-key.on{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 22%, var(--stg-cell));color:var(--stg-ink);border:2px solid var(--stg-acc-ink, var(--stg-acc));}
           .cl-key.head{background:var(--stg-acc);color:var(--stg-onramp);border:2px solid var(--stg-acc-ink, var(--stg-acc));box-shadow:0 0 0 5px color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 26%, transparent);}

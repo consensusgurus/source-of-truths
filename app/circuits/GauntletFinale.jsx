@@ -1263,7 +1263,7 @@ function GauntletEnding({
           <div key={x.key} className="ge-mtile" style={{
             background: filled ? x.colour : (isPaint ? 'rgba(11,15,26,.1)' : 'rgba(255,255,255,.05)'),
             color: filled ? GE_INK : (isPaint ? 'rgba(11,15,26,.55)' : '#9aa8c4'),
-            border: filled ? '1px solid rgba(11,15,26,.35)' : (isPaint ? '1px dashed rgba(11,15,26,.3)' : '1px dashed rgba(255,255,255,.18)'),
+            border: filled ? '1px solid rgba(11,15,26,.35)' : (isPaint ? '1px solid rgba(11,15,26,.3)' : '1px solid rgba(255,255,255,.18)'),
           }}>
             <span>{x.name}</span><span className="ge-mv" style={{ width: `${digits(x.got)}ch` }}>{filled ? x.got : ''}</span>
           </div>

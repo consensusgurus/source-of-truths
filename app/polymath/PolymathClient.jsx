@@ -32,7 +32,7 @@ const CSS = `
 .pm-eb{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-acc);}
 .pm-h1{margin:0;font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1.05;color:var(--stg-ink);}
 .pm-lede{margin:0;font-size:16px;line-height:1.5;color:var(--stg-ink2);max-width:640px;}
-.pm-shared{border:1.5px dashed var(--stg-line2,var(--stg-line));border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;color:var(--stg-ink);}
+.pm-shared{border:1.5px solid var(--stg-line2,var(--stg-line));border-radius:12px;padding:12px 14px;font-size:14px;font-weight:700;color:var(--stg-ink);}
 .pm-shared b{font-weight:800;}
 .pm-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:22px;align-items:start;}
 .pm-col{display:flex;flex-direction:column;gap:22px;min-width:0;}

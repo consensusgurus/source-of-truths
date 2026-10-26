@@ -89,7 +89,7 @@ const STRIP_CSS = `
 .pcwk-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
 .pcwk-d{display:flex;flex-direction:column;align-items:center;gap:3px}
 .pcwk-d b{width:100%;height:34px;border-radius:8px;border:2px solid currentColor;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#08222e;background:transparent}
-.pcwk-d.miss b,.pcwk-d.fut b{border-style:dashed;color:inherit;opacity:.6}
+.pcwk-d.miss b,.pcwk-d.fut b{border-style:solid;color:inherit;opacity:.6}
 .pcwk-d.on b{outline:3px solid currentColor;outline-offset:2px}
 .pcwk-d i{font-style:normal;font-size:11px;font-weight:800}
 .pcwk-line{margin:0;font-size:14px;font-weight:700;line-height:1.4}

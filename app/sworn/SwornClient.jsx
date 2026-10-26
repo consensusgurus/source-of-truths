@@ -624,7 +624,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
           .sw-meterk{font-family:${MONO};font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
           .sw-mright{margin-left:auto;}
           .sw-slots{display:inline-flex;gap:6px;}
-          .sw-slot{width:22px;height:22px;border-radius:6px;box-sizing:border-box;border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.44));}
+          .sw-slot{width:22px;height:22px;border-radius:6px;box-sizing:border-box;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.44));}
           .sw-slot.on{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});}
           .sw-over{font-family:${SANS};font-size:12px;font-weight:700;color:var(--stg-bad, #b91c1c);}
           .sw-stand{display:grid;gap:12px;align-items:start;}

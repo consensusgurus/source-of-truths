@@ -781,7 +781,7 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 @keyframes djup{0%{opacity:0;transform:translate(-50%,12px)}20%{opacity:1;transform:translate(-50%,0)}75%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}
 .gr-spark{position:absolute;left:50%;top:40%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--dj-gold);z-index:5;pointer-events:none;animation:djspark var(--d) cubic-bezier(.2,.7,.3,1) both}
 @keyframes djspark{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
-.ms{width:min(320px,92%);margin-top:14px;padding:11px 13px 12px;border-radius:10px;background:var(--dj-surf);border:1px dashed var(--dj-line);text-align:left;animation:djrise .5s .5s ease both}
+.ms{width:min(320px,92%);margin-top:14px;padding:11px 13px 12px;border-radius:10px;background:var(--dj-surf);border:1px solid var(--dj-line);text-align:left;animation:djrise .5s .5s ease both}
 .ms-hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .ms-hd span{font:800 10px ${SANS};letter-spacing:.16em;text-transform:uppercase;color:var(--dj-mute)}
 .ms-hd em{font:normal 500 12px ${MONO};color:var(--dj-gold)}
@@ -797,7 +797,7 @@ html:not(.dj-x):has(.stage-page.dj[data-stage-theme]),html:not(.dj-x) body:has(.
 .sh::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 27px,rgba(31,36,48,.06) 27px 28px);pointer-events:none}
 .sh-hd{display:flex;justify-content:space-between;font:800 10px ${MONO};letter-spacing:.14em;text-transform:uppercase;color:#7a7360;border-bottom:2px solid #1f2430;padding-bottom:8px;margin-bottom:6px}
 .sh-lines{min-height:150px}
-.sh-l{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed rgba(31,36,48,.2);animation:djrise .3s ease both}
+.sh-l{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(31,36,48,.2);animation:djrise .3s ease both}
 .sh-c{font:500 11px ${MONO};color:#7a7360;width:52px}
 .sh-n{flex:1;font-weight:900;font-size:16px;display:flex;flex-direction:column}
 .sh-n small{font:600 11px ${SANS};color:#7a7360}

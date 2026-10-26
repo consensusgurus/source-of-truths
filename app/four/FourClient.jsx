@@ -795,7 +795,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
           .fr-colbtn .n{font-size:15px;font-weight:800;}
           .fr-colbtn .s{font-size:9px;font-weight:800;letter-spacing:.06em;}
           .fr-colbtn.hot{border:2px solid var(--stg-acc-ink,#e8b43a);background:var(--fr-soft);color:var(--stg-acc-ink,#e8b43a);}
-          .fr-colbtn.full{border:1.5px dashed var(--stg-line2,rgba(255,255,255,.17));color:var(--stg-mute,#8b95a8);cursor:default;}
+          .fr-colbtn.full{border:1.5px solid var(--stg-line2,rgba(255,255,255,.17));color:var(--stg-mute,#8b95a8);cursor:default;}
           .fr-colbtn:disabled{cursor:default;}
           .fr-colbtn.grey{opacity:.45;}
           .fr-col{display:flex;flex-direction:column;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0;border-radius:8px;}
@@ -822,7 +822,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
           .fr-board.won .fr-disc:not(.lit){opacity:.38;}
           .fr-board.won .fr-hole{opacity:.55;}
           @keyframes frlit{0%,100%{transform:scale(1);box-shadow:0 0 0 3px var(--stg-ink, var(--white)), 0 0 0 6px color-mix(in srgb, var(--stg-ink, #fff) 55%, transparent);}50%{transform:scale(1.08);box-shadow:0 0 0 3px var(--stg-ink, var(--white)), 0 0 0 11px color-mix(in srgb, var(--stg-ink, #fff) 18%, transparent);}}
-          .fr-ghost{position:absolute;width:84%;height:84%;box-sizing:border-box;border-radius:50%;border:3px dashed var(--stg-acc-ink,#e8b43a);}
+          .fr-ghost{position:absolute;width:84%;height:84%;box-sizing:border-box;border-radius:50%;border:3px solid var(--stg-acc-ink,#e8b43a);}
           .fr-board.shake{animation:frshake .34s ease;}
           @keyframes frshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
           .fr-leg{display:flex;align-items:center;gap:6px;}

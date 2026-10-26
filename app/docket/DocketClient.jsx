@@ -619,10 +619,10 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
           .dk-choice .k{flex:0 0 auto;width:26px;height:26px;border-radius:6px;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);color:${STAGE ? 'var(--stg-ink)' : COLORS.accentDeep};font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;}
           .dk-choice.right{border-color:${COLORS.green};background:${STAGE ? 'var(--stg-surf2)' : '#dcfce7'};}
           .dk-choice.right .k{background:${COLORS.green};color:var(--white);}
-          .dk-choice.wrong{border-color:#b91c1c;border-style:dashed;background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};}
+          .dk-choice.wrong{border-color:#b91c1c;border-style:solid;background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};}
           .dk-choice.wrong .k{background:#b91c1c;color:var(--white);}
           .dk-choice .mono{font-family:${MONO};letter-spacing:0.02em;}
-          .dk-choice.off{opacity:0.5;border-style:dashed;}
+          .dk-choice.off{opacity:0.5;border-style:solid;}
           .dk-choice.off .t{text-decoration:line-through;}
           .dk-choice.off:hover:not(:disabled){border-color:rgba(28,30,36,0.16);background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};}
           .dk-x{flex:0 0 auto;width:44px;min-height:44px;border: 1.5px solid var(--stg-line, rgba(28,30,36,0.16));border-radius:10px;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};color:${FADED};cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0.5;padding:0;}
@@ -648,7 +648,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
           .dk-slotcol{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;}
           .dk-slot{width:100%;min-height:52px;aspect-ratio:3/4;max-height:96px;box-sizing:border-box;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:22px;font-weight:500;color:${INK};cursor:pointer;padding:0;}
           .dk-slot.full{background:var(--stg-surf2, #f1f1f3);border-color:var(--stg-line3, rgba(28,30,36,0.5));}
-          .dk-slot.armed:not(.full){border-style:dashed;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
+          .dk-slot.armed:not(.full){border-style:solid;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .dk-slot.fr{border-width:5px;border-radius:3px;}
           .dk-slot.fr.full{background:${FRAME.canvas};border-color:${FRAME.edge};color:${FRAME.ink};}
           .dk-slotn{font-family:${MONO};font-size:11px;color:${FADED};font-weight:700;}
@@ -656,7 +656,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
           .dk-mark.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, #fff);}
           .dk-zones{display:grid;gap:8px;}
           .dk-zone{min-height:104px;box-sizing:border-box;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:6px;cursor:pointer;min-width:0;}
-          .dk-zone.armed{border-style:dashed;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
+          .dk-zone.armed{border-style:solid;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .dk-zone:focus-visible,.dk-slot:focus-visible,.dk-tile:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:2px;}
           .dk-zlab{font-family:${MONO};font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;color:${FADED};text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
           .dk-ztiles{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;}
@@ -671,7 +671,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
           .dk-sknotes{margin-top:12px;padding-top:10px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.12));}
           .dk-seq{display:inline-flex;flex-wrap:wrap;gap:4px;}
           .dk-sbox{width:28px;height:32px;box-sizing:border-box;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-family:${MONO};font-size:14px;font-weight:500;color:${INK};}
-          .dk-choice.off .dk-sbox{border-style:dashed;}
+          .dk-choice.off .dk-sbox{border-style:solid;}
           .dk-struck{margin-left:auto;align-self:center;flex:0 0 auto;font-family:${MONO};font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;color:${FADED};}
           @media(max-width:640px){
             .dk-slots,.dk-zones{gap:5px;}

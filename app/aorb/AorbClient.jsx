@@ -19,6 +19,7 @@
 // Built from HerdClient's frame: the same daily plumbing (Eastern-date banks,
 // per-puzzle saves, ?p=N archive, stats and streaks, the stage, the finish).
 
+import { BrandFit } from '@/lib/use-brand-fit';
 import MindLoftMark from '../MindLoftMark';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -679,10 +680,10 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
       <div className="ab-stage" role="dialog" aria-label={`Aorb, pair ${i + 1} of ${TOTAL}`} onClick={shown ? stageTap : undefined}
         style={{ cursor: shown ? 'pointer' : 'default' }}>
         {shown && <div className="ab-sweep" aria-hidden="true" />}
-        <a className="ab-brand" href="/" aria-label="Mind Loft home" onClick={(ev) => ev.stopPropagation()}>
+        <BrandFit><a className="ab-brand" href="/" aria-label="Mind Loft home" onClick={(ev) => ev.stopPropagation()}>
           <MindLoftMark size={24} ink="currentColor" accent="var(--stg-brand,#7dd3fc)" title="Mind Loft" />
           <span>Mind <span style={{ color: 'var(--stg-brand,#7dd3fc)' }}>Loft</span></span>
-        </a>
+        </a></BrandFit>
         <div className="ab-col">
           <div className="ab-qwrap" style={{ opacity: e, transform: `translateY(${Math.round((1 - e) * 18)}px)` }}>
             <h1 className="ab-q">{pr.q}</h1>

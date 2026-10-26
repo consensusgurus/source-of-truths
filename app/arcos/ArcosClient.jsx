@@ -600,11 +600,11 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
       if (spine) { bg = STAGE_C; fg = ONRAMP; border = `1.5px solid ${STAGE_C}`; }
       else { bg = flash ? GOOD : CELL; fg = flash ? DONE_FG : INK; border = `1.5px solid ${flash ? GOOD : LINE2}`; }
     } else if (miss) {
-      fg = BAD; border = `1.5px dashed ${BAD}`;
+      fg = BAD; border = `1.5px solid ${BAD}`;
     } else if (cur) {
       bg = CUR_BG; border = `2px solid ${ACC_INK}`;
     } else if (spine) {
-      border = `1.5px dashed ${STAGE_C_INK}`;
+      border = `1.5px solid ${STAGE_C_INK}`;
     }
     return { bg, fg, border, letter: letter || (ghost || ''), ghost: !letter && !!ghost };
   }
@@ -662,7 +662,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
         <div style={{ display: 'flex', gap: 5 }}>
           {round.word.split('').map((ch, i) => {
             const on = !!g.solved[keyOf(r, i)] || showAll;
-            return <span key={i} style={{ width: 30, height: 30, boxSizing: 'border-box', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, background: on ? STAGE_C : 'transparent', color: on ? ONRAMP : FADED, border: on ? `1.5px solid ${STAGE_C}` : `1.5px dashed ${STAGE_C_INK}` }}>{on ? ch : ''}</span>;
+            return <span key={i} style={{ width: 30, height: 30, boxSizing: 'border-box', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, background: on ? STAGE_C : 'transparent', color: on ? ONRAMP : FADED, border: on ? `1.5px solid ${STAGE_C}` : `1.5px solid ${STAGE_C_INK}` }}>{on ? ch : ''}</span>;
           })}
         </div>
       </div>
@@ -722,7 +722,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
               </div>
             );
             const slot = (
-              <span style={{ minWidth: 86, height: 30, boxSizing: 'border-box', borderRadius: 6, border: `1.5px dashed ${showF ? STAGE_C : LINE2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, letterSpacing: '.06em', color: showF ? ACC_INK : FADED, padding: '0 8px' }}>{showF ? shownF : '?'}</span>
+              <span style={{ minWidth: 86, height: 30, boxSizing: 'border-box', borderRadius: 6, border: `1.5px solid ${showF ? STAGE_C : LINE2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, letterSpacing: '.06em', color: showF ? ACC_INK : FADED, padding: '0 8px' }}>{showF ? shownF : '?'}</span>
             );
             return (
               <div key={r} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -735,7 +735,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
         <div key={shaking ? 'm' + fx.n : 'a'} className={shaking ? 'ar-rej' : (flashing('fin') ? 'ar-flip' : undefined)}
           style={{ alignSelf: 'center', width: 'min(340px, 100%)', minHeight: 58, boxSizing: 'border-box', marginTop: 6, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 14px', fontWeight: 800, fontSize: 26, letterSpacing: '.12em', overflow: 'hidden', whiteSpace: 'nowrap',
             background: g.finale ? STAGE_C : CELL, color: g.finale ? ONRAMP : (ended ? BAD : INK),
-            border: g.finale ? `1.5px solid ${STAGE_C}` : (ended ? `1.5px dashed ${BAD}` : `2px solid ${ACC_INK}`) }}>
+            border: g.finale ? `1.5px solid ${STAGE_C}` : (ended ? `1.5px solid ${BAD}` : `2px solid ${ACC_INK}`) }}>
           {lineText}
           {playing && !g.finale && <span aria-hidden className="ar-caret" style={{ display: 'inline-block', width: 2, height: 28, marginLeft: 3, background: ACC_INK }} />}
         </div>

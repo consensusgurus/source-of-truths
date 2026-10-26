@@ -141,11 +141,11 @@ const CSS = `
 .wst-s.cur{box-shadow:0 0 0 3px var(--wst-bg),0 0 0 5px var(--wst-ink);}
 .wst-s.mk{padding-bottom:9px;}
 .wst-s.mk::after{content:"";position:absolute;bottom:5px;left:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:4px;background:var(--wst-ink);}
-.wst-s.sp{border-style:dashed;border-width:2.5px;}
+.wst-s.sp{border-style:solid;border-width:2.5px;}
 .wst-s.gh{opacity:.45;}
 .wst-slots.ok .wst-s{background:var(--wst-ink);color:var(--wst-bg);animation:wstPop .45s ease-out both;}
 .wst-slots.ok .wst-s.mk::after{background:var(--wst-bg);}
-.wst-slots.shown .wst-s{border-style:dashed;}
+.wst-slots.shown .wst-s{border-style:solid;}
 .wst-slots.bad{animation:wstShake .4s cubic-bezier(.2,.7,.3,1);}
 .wst-spine{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;}
 .wst-spine span{width:36px;height:36px;box-sizing:border-box;border-radius:9px;border:2px solid var(--wst-ink);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;}

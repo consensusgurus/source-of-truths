@@ -820,7 +820,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   function chip(name, kind, key) {
     const base = { display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, borderRadius: 8, padding: '7px 11px', border: '1.5px solid rgba(28,30,36,0.35)' };
     if (kind === 'start') return <span key={key} style={{ ...base, background: COLORS.ink, color: T.white }}>{name}</span>;
-    if (kind === 'end') return <span key={key} style={{ ...base, background: STAGE ? SURF : T.white, color: INK, borderStyle: 'dashed' }}><Flag size={13} /> {name}</span>;
+    if (kind === 'end') return <span key={key} style={{ ...base, background: STAGE ? SURF : T.white, color: INK, borderStyle: 'solid' }}><Flag size={13} /> {name}</span>;
     if (kind === 'goal') return <span key={key} style={{ ...base, background: COLORS.trail, color: T.white, borderColor: COLORS.trail }}><Flag size={13} /> {name}</span>;
     return <span key={key} style={{ ...base, background: `var(--stg-surf, ${COLORS.trailSoft})`, color: '#14532d', borderColor: 'rgba(21,128,61,0.45)' }}>{name}</span>;
   }
@@ -898,10 +898,10 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
           .sp-rail{width:40px;flex:none;display:flex;flex-direction:column;align-items:center;}
           .sp-dot{width:28px;height:28px;flex:none;border-radius:50%;box-sizing:border-box;border:4px solid var(--stg-acc-ink, ${COLORS.trail});background:var(--stg-ground, ${T.white});}
           .sp-dot.here{background:var(--stg-acc, ${COLORS.trail});}
-          .sp-dot.todo{width:22px;height:22px;border-style:dashed;border-color:var(--stg-cell-line, rgba(28,30,36,0.44));}
+          .sp-dot.todo{width:22px;height:22px;border-style:solid;border-color:var(--stg-cell-line, rgba(28,30,36,0.44));}
           .sp-dot.dest{width:40px;height:40px;background:var(--stg-acc, ${COLORS.trail});}
           .sp-seg{flex:1;width:0;min-height:38px;border-left:5px solid var(--stg-acc-ink, ${COLORS.trail});}
-          .sp-seg.gap{border-left-style:dashed;border-left-color:var(--stg-cell-line, rgba(28,30,36,0.44));}
+          .sp-seg.gap{border-left-style:solid;border-left-color:var(--stg-cell-line, rgba(28,30,36,0.44));}
           .sp-lbl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;padding:2px 0 20px;}
           .sp-tag{font-family:${MONO};font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:${FADED};}
           .sp-tag.here,.sp-tag.dest{color:var(--stg-acc-ink, ${COLORS.trail});}
@@ -918,7 +918,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
           .sp-strip{display:none;flex-wrap:wrap;align-items:center;column-gap:5px;row-gap:8px;padding:14px 0 2px;}
           .sp-pill{display:inline-flex;align-items:center;gap:5px;min-height:32px;max-width:100%;box-sizing:border-box;padding:4px 11px;border-radius:999px;font-family:${SANS};font-size:14px;font-weight:800;line-height:1.15;overflow-wrap:anywhere;color:${INK};background:var(--stg-cell, ${T.white});border:2px solid var(--stg-acc-ink, ${COLORS.trail});}
           .sp-pill.here{background:var(--stg-acc, ${COLORS.trail});border-color:var(--stg-acc, ${COLORS.trail});color:var(--stg-onramp, ${T.white});}
-          .sp-pill.todo{color:${FADED};border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.44));background:transparent;min-width:36px;justify-content:center;}
+          .sp-pill.todo{color:${FADED};border:2px solid var(--stg-cell-line, rgba(28,30,36,0.44));background:transparent;min-width:36px;justify-content:center;}
           .sp-pill.dest{border-width:2.5px;}
           .sp-pill.dest.reached{background:var(--stg-acc, ${COLORS.trail});border-color:var(--stg-acc, ${COLORS.trail});color:var(--stg-onramp, ${T.white});}
           .sp-pill small{font-family:${MONO};font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;}

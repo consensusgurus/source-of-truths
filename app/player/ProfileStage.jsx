@@ -344,7 +344,7 @@ export const profileStageCss = [
 
   '.pf-tro{display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}',
   '.pf-t{display:flex;flex-direction:column;gap:2px;background:var(--stg-surf);border:1px solid var(--stg-line);border-left:3px solid var(--stg-acc-ink, var(--stg-acc));border-radius:8px;padding:9px 11px;min-width:0;}',
-  '.pf-t.off{background:none;border:1px dashed var(--stg-cell-line);}',
+  '.pf-t.off{background:none;border:1px solid var(--stg-cell-line);}',
   '.pf-t.off .pf-tn{color:var(--stg-mute);}',
   '.pf-tn{font-size:12.5px;font-weight:800;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}',
   '.pf-tp{font-family:' + MONO + ';font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}',

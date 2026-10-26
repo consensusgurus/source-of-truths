@@ -829,7 +829,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
           /* Tailings: real, unscored. Deliberately the quietest tag on the
              board: dashed and faded, so it reads as acknowledged rather than
              earned and can never be mistaken for a scoring word. */
-          .ld-wtag.spare{background:transparent;border-style:dashed;border-color:var(--stg-line2, rgba(28,30,36,0.28));color:${FADED};font-weight:500;font-size:12px;padding:3px 8px;border-radius:6px;}
+          .ld-wtag.spare{background:transparent;border-style:solid;border-color:var(--stg-line2, rgba(28,30,36,0.28));color:${FADED};font-weight:500;font-size:12px;padding:3px 8px;border-radius:6px;}
           .ld-found{display:flex;flex-wrap:wrap;gap:8px;max-height:300px;overflow-y:auto;overflow-x:hidden;padding:4px;}
         ` }} />
 

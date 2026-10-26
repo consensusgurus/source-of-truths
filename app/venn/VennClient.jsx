@@ -486,12 +486,12 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           .vn-z.over .bdg{border-color:var(--stg-bad, ${COLORS.rust});color:var(--stg-bad, ${COLORS.rust});}
           .vn-slot{display:flex;height:44px;box-sizing:border-box;border-radius:10px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);overflow:hidden;}
           .vn-z.ready .vn-slot{border-color:var(--stg-good, ${COLORS.green});}
-          .vn-z.over .vn-slot{border-color:var(--stg-bad, ${COLORS.rust});border-style:dashed;}
+          .vn-z.over .vn-slot{border-color:var(--stg-bad, ${COLORS.rust});border-style:solid;}
           .vn-slot .t{flex:1;min-width:0;border:0;background:transparent;color:inherit;font-family:${SANS};font-size:12.5px;font-weight:800;letter-spacing:.01em;text-align:left;padding:0 0 0 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
           .vn-slot .x{width:28px;flex:none;border:0;background:transparent;color:${FADED};font-family:${SANS};font-size:17px;font-weight:700;padding:0;cursor:pointer;}
           .vn-slot .x:hover{color:var(--stg-bad, ${COLORS.rust});}
           .vn-slot:hover{border-color:var(--stg-acc-ink, ${COLORS.accent});}
-          .vn-open{height:44px;box-sizing:border-box;border-radius:10px;border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);color:${FADED};font-family:${SANS};font-size:12px;font-weight:800;padding:0;cursor:default;}
+          .vn-open{height:44px;box-sizing:border-box;border-radius:10px;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);color:${FADED};font-family:${SANS};font-size:12px;font-weight:800;padding:0;cursor:default;}
           .vn-armed .vn-open{border-color:var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});cursor:pointer;}
           /* Knowledge boards run nine-letter names (ARGENTINA, TENNESSEE), so a
              board whose longest item passes 8 characters drops a step in size
@@ -504,7 +504,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           .vn-pdia,.vn-roster,.vn-ph-only{display:none;}
           .vn-pdia{position:relative;width:100%;max-width:358px;aspect-ratio:358/330;margin:8px auto 0;}
           .vn-pdia svg{position:absolute;inset:0;width:100%;height:100%;}
-          .vn-pz{position:absolute;transform:translate(-50%,-50%);min-width:56px;min-height:48px;box-sizing:border-box;border-radius:12px;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));background:color-mix(in srgb, var(--stg-cell, #fff) 55%, transparent);padding:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:${SANS};cursor:pointer;z-index:1;}
+          .vn-pz{position:absolute;transform:translate(-50%,-50%);min-width:56px;min-height:48px;box-sizing:border-box;border-radius:12px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:color-mix(in srgb, var(--stg-cell, #fff) 55%, transparent);padding:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:${SANS};cursor:pointer;z-index:1;}
           .vn-armed .vn-pz{border-color:var(--stg-acc-ink, ${COLORS.accent});}
           .vn-pz.ready{border-style:solid;border-color:var(--stg-good, ${COLORS.green});}
           .vn-pz.over{border-style:double;border-width:4px;border-color:var(--stg-bad, ${COLORS.rust});}
@@ -513,10 +513,10 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           .vn-pz.over .bdg{color:var(--stg-bad, ${COLORS.rust});}
           .vn-pips{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;max-width:44px;}
           .vn-pip{width:20px;height:20px;box-sizing:border-box;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:800;letter-spacing:0;color:var(--stg-ground, #fff);background:${INK};}
-          .vn-pip.open{background:transparent;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));}
+          .vn-pip.open{background:transparent;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));}
           .vn-roster{grid-template-columns:repeat(auto-fill, minmax(104px, 1fr));gap:6px;}
           .vn-rc{height:44px;box-sizing:border-box;border-radius:10px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};display:flex;overflow:hidden;min-width:0;}
-          .vn-rc.filed{border-style:dashed;background:transparent;}
+          .vn-rc.filed{border-style:solid;background:transparent;}
           .vn-rc.held{border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 16%, transparent);}
           .vn-rc .t{flex:1;min-width:0;border:0;background:transparent;padding:0 0 0 9px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;font-family:${SANS};cursor:pointer;text-align:left;}
           .vn-rc .t:disabled{cursor:default;}
@@ -530,7 +530,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           .vn-ob:disabled{color:${FADED};cursor:default;}
           .vn-fnote{flex:1;min-width:150px;text-align:right;font-family:${SANS};font-size:12px;font-weight:600;color:${FADED};line-height:1.4;}
           .vn-file{font-family:${SANS};font-weight:800;font-size:15px;border-radius:12px;padding:0 18px;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);border:1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
-          .vn-file:disabled{background:transparent;color:${FADED};border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));cursor:not-allowed;}
+          .vn-file:disabled{background:transparent;color:${FADED};border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));cursor:not-allowed;}
           @media(max-width:640px){
             .vn-rules{flex-direction:column;gap:5px;margin-bottom:6px;}
             .vn-rule{background:transparent;padding:0;gap:8px;}

@@ -273,7 +273,7 @@ const CSS = `
 .ps-ln{font-size:14px;font-weight:700;color:#c9d3e6;margin-top:12px;line-height:1.45;animation:pspop .4s .5s cubic-bezier(.2,.8,.2,1) both}
 .ps-ln b{color:#e9b532}
 .ps-tags{display:flex;gap:8px;padding:14px 28px 10px}
-.ps-tag{position:relative;flex:1 1 0;min-width:0;height:40px;border-radius:6px 18px 18px 6px;display:flex;align-items:center;justify-content:space-between;padding:0 14px 0 12px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.05);color:#9aa8c4;border:1px dashed rgba(255,255,255,.18);transition:background .3s ease,color .3s ease,border-color .3s ease}
+.ps-tag{position:relative;flex:1 1 0;min-width:0;height:40px;border-radius:6px 18px 18px 6px;display:flex;align-items:center;justify-content:space-between;padding:0 14px 0 12px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.05);color:#9aa8c4;border:1px solid rgba(255,255,255,.18);transition:background .3s ease,color .3s ease,border-color .3s ease}
 .ps-tag span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .ps-tag b{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;opacity:0;flex:none;width:2ch;text-align:right}
 .ps.on .ps-tag{background:rgba(11,15,26,.1);color:rgba(11,15,26,.55);border-color:rgba(11,15,26,.3)}

@@ -737,12 +737,12 @@ export default function DailyTilePanel({
         .dtp-tkey span{display:inline-flex;align-items:center;gap:5px;}
         .dtp-tkey .sw{flex:none;display:inline-block;}
         .dtp-tkey .sw.bar{width:7px;height:11px;border-radius:2px;background:var(--gc);opacity:.85;}
-        .dtp-tkey .sw.avg{width:14px;height:0;border-top:1px dashed #8a9bb8;}
+        .dtp-tkey .sw.avg{width:14px;height:0;border-top:1px solid #8a9bb8;}
         /* every row reserves the same right gutter (--agut) so the columns stay in
            lockstep and the average label has clear space to sit in */
         .dtp-trend{--agut:44px;}
         .dtp-bars{position:relative;flex:1 1 auto;min-height:48px;display:flex;align-items:flex-end;gap:3px;border-bottom:1px solid #dde3ec;padding-bottom:1px;padding-right:var(--agut);}
-        .dtp-avg{position:absolute;left:0;right:var(--agut);height:0;border-top:1px dashed var(--border);pointer-events:none;}
+        .dtp-avg{position:absolute;left:0;right:var(--agut);height:0;border-top:1px solid var(--border);pointer-events:none;}
         .dtp-avg i{position:absolute;left:100%;bottom:-6px;margin-left:5px;font-style:normal;white-space:nowrap;
                    font-family:'Manrope',ui-monospace,monospace;font-size:8.5px;line-height:12px;letter-spacing:.04em;color:#5b6577;}
         .dtp-daterow{flex:none;display:flex;gap:3px;margin-top:5px;padding-right:var(--agut);font-family:'Manrope',ui-monospace,monospace;font-size:9px;color:#5b6577;}

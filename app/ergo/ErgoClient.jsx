@@ -355,7 +355,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
           .eg-rt{flex:1;min-width:0;font-size:15px;font-weight:700;line-height:1.4;color:${INK};}
           .eg-flipt{font-size:13.5px;font-weight:700;color:var(--stg-acc-ink, ${COLORS.accent});margin-top:3px;}
           .eg-flip{flex:0 0 auto;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.2));background:transparent;color:${INK};border-radius:8px;padding:5px 10px;min-height:32px;font-family:${SANS};font-size:12.5px;font-weight:800;cursor:pointer;}
-          .eg-fact{display:flex;gap:10px;align-items:center;margin-top:10px;padding:10px 12px;border-radius:9px;border:1.5px dashed var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));font-size:15px;font-weight:800;color:${INK};}
+          .eg-fact{display:flex;gap:10px;align-items:center;margin-top:10px;padding:10px 12px;border-radius:9px;border:1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));font-size:15px;font-weight:800;color:${INK};}
           .eg-card{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:12px;padding:18px 18px 16px;margin-bottom:12px;}
           .eg-st{font-size:22px;font-weight:800;line-height:1.3;color:${INK};margin:6px 0 14px;}
           .eg-bins3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}

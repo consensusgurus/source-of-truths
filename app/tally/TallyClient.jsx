@@ -1007,19 +1007,19 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           /* out of play: a dark slab, so it reads as no square at all */
           .tl-blocked{background:var(--tl-block);border:1.5px solid var(--tl-block);}
           .tl-given{background:color-mix(in srgb, var(--stg-ink) 14%, var(--stg-cell));border:1.5px solid transparent;color:var(--stg-ink);}
-          .tl-empty{background:var(--stg-cell);border:1.5px dashed var(--stg-cell-line);cursor:pointer;}
+          .tl-empty{background:var(--stg-cell);border:1.5px solid var(--stg-cell-line);cursor:pointer;}
           /* the row and column of the picked square, so a line reads as one */
           .tl-cell.peer.tl-empty,.tl-cell.peer.tl-placed{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 12%, var(--stg-cell));}
           .tl-cell.peer.tl-given{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 12%, color-mix(in srgb, var(--stg-ink) 14%, var(--stg-cell)));}
           /* an armed digit has somewhere to go: every open square says so */
-          .tl-empty.hot{border:2px dashed var(--stg-acc-ink, var(--stg-acc));}
+          .tl-empty.hot{border:2px solid var(--stg-acc-ink, var(--stg-acc));}
           @media(hover:hover){.tl-empty.hot:hover{box-shadow:0 0 0 3px ${RING_INK};}}
           .tl-placed{background:var(--stg-cell);border:2.5px solid var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);cursor:grab;box-shadow:0 3px 0 color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 28%, transparent);position:relative;touch-action:none;}
           .tl-placed.same{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 18%, var(--stg-cell));}
           .tl-cell.cur{border:3px solid var(--stg-acc-ink, var(--stg-acc));background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 28%, var(--stg-cell));box-shadow:none;}
           .tl-placed.cur{box-shadow:0 0 0 3px ${RING_INK};}
           .tl-placed.tl-drag{cursor:grabbing;box-shadow:0 0 0 3px ${RING_INK}, 0 7px 15px rgba(0,0,0,0.35);}
-          .tl-placed.tl-drag.home{border-style:dashed;background:var(--stg-surf2);}
+          .tl-placed.tl-drag.home{border-style:solid;background:var(--stg-surf2);}
           /* the square a drag would land on */
           .tl-cell.tl-drop{border:3px solid var(--stg-acc-ink, var(--stg-acc));box-shadow:0 0 0 3px ${RING_INK};}
           .tl-cell.tl-drop-no{box-shadow:0 0 0 3px var(--stg-bad);}
@@ -1030,7 +1030,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           .tl-tgt.lit .s{color:var(--stg-acc-ink);}
           .tl-tgt.ok{background:var(--stg-acc);border:2px solid var(--stg-acc-ink, var(--stg-acc));}
           .tl-tgt.ok .v,.tl-tgt.ok .s{color:var(--stg-onramp);}
-          .tl-tgt.bad{border:2.5px dashed var(--stg-bad);}
+          .tl-tgt.bad{border:2.5px solid var(--stg-bad);}
           .tl-tgt.bad .v,.tl-tgt.bad .s{color:var(--stg-bad);}
           .tl-need{width:100%;max-width:560px;margin-top:16px;box-sizing:border-box;border-radius:14px;background:var(--stg-ground);border:1px solid var(--stg-line);padding:10px 14px;display:flex;flex-direction:column;gap:8px;min-height:44px;justify-content:center;}
           .tl-need-row{display:flex;align-items:center;gap:10px;}
@@ -1051,7 +1051,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           .tl-rtile:hover:not(:disabled){background:var(--stg-surf2);}
           .tl-rtile.sel{border:2px solid var(--stg-acc-ink, var(--stg-acc));background:var(--stg-acc);box-shadow:0 0 0 3px ${RING_INK};}
           .tl-rtile.sel .d,.tl-rtile.sel .n{color:var(--stg-onramp);}
-          .tl-rtile.out{background:transparent;border:1.5px dashed var(--stg-line2);cursor:default;}
+          .tl-rtile.out{background:transparent;border:1.5px solid var(--stg-line2);cursor:default;}
           .tl-rtile.out .d{color:var(--stg-mute);text-decoration:line-through;}
           .tl-foot{width:100%;margin-top:18px;display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid var(--stg-line);padding-top:14px;}
           .tl-foot-n{flex:1;font-size:12px;font-weight:600;color:var(--stg-mute);}

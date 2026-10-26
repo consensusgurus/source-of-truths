@@ -1119,7 +1119,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
         .sw-mk.next { font-weight: 800; }
         .sw-mk.lead .sw-dot { background: var(--sw-acc); }
         .sw-mk.par { left: 0; font-weight: 800; }
-        .sw-pardash { width: 26px; flex: none; border-top: 2px dashed currentColor; }
+        .sw-pardash { width: 26px; flex: none; border-top: 2px solid currentColor; }
         .sw-mk.me { left: 0; z-index: 2; }
         .sw-mechip { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 6px; border-radius: 999px; background: var(--sw-acc); color: var(--sw-on); font-weight: 800; font-size: 13px; }
         .sw-mechip::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--sw-on); }
@@ -1131,7 +1131,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
         .sw-pin { position: absolute; top: -3px; width: 10px; height: 10px; border-radius: 50%; transform: translateX(-50%); background: color-mix(in srgb, var(--stg-ink, #0b0d12) 30%, transparent); box-shadow: 0 0 0 2px var(--stg-ground, #f7f8fa); }
         .sw-pin.next { background: var(--stg-ink, #0b0d12); }
         .sw-pin.lead { background: var(--sw-acc); }
-        .sw-parpin { position: absolute; top: -6px; height: 16px; border-left: 2px dashed var(--sw-flag); }
+        .sw-parpin { position: absolute; top: -6px; height: 16px; border-left: 2px solid var(--sw-flag); }
         .sw-stripline { display: flex; gap: 10px; margin-top: 10px; font-size: 12.5px; font-weight: 700; }
 
         .sw-mode { display: inline-flex; padding: 4px; border-radius: 12px; background: color-mix(in srgb, var(--stg-ink, #0b0d12) 6%, transparent); }

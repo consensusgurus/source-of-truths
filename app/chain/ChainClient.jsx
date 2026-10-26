@@ -913,8 +913,8 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
           .ch-open{padding:0;margin:0;border:0;background:transparent;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
           button.ch-open{cursor:default;}
           button.ch-open.live{cursor:pointer;}
-          .ch-dh{display:block;width:100%;height:0;border-top:2px dashed var(--stg-line3, rgba(28,30,36,0.45));}
-          .ch-dv{display:block;width:0;height:100%;border-left:2px dashed var(--stg-line3, rgba(28,30,36,0.45));}
+          .ch-dh{display:block;width:100%;height:0;border-top:2px solid var(--stg-line3, rgba(28,30,36,0.45));}
+          .ch-dv{display:block;width:0;height:100%;border-left:2px solid var(--stg-line3, rgba(28,30,36,0.45));}
           .ch-dh.hot,.ch-dh.hint{height:6px;border-top:0;border-radius:3px;}
           .ch-dv.hot,.ch-dv.hint{width:6px;border-left:0;border-radius:3px;}
           .ch-dh.hot,.ch-dv.hot{background:var(--stg-acc-ink, ${COLORS.accent});opacity:.9;}
@@ -924,7 +924,7 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
           .ch-legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:12px;font-family:${MONO};font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
           .ch-legend > span{display:inline-flex;align-items:center;gap:8px;}
           .ch-sw{display:inline-block;width:26px;height:8px;border-radius:4px;flex:0 0 auto;}
-          .ch-sw.dash{height:0;border-radius:0;border-top:2px dashed var(--stg-line3, rgba(28,30,36,0.45));}
+          .ch-sw.dash{height:0;border-radius:0;border-top:2px solid var(--stg-line3, rgba(28,30,36,0.45));}
           .ch-sw.boxs{width:16px;height:16px;border-radius:4px;background:var(--stg-cell, #eceae6);box-shadow:inset 0 0 0 1px var(--stg-cell-line, transparent);}
           .ch-sw.band{height:12px;border-radius:6px;background:var(--stg-acc-tint, rgba(74,4,78,0.08));box-shadow:0 0 0 1px var(--stg-cell-line, transparent);}
           .ch-narrow{display:none;}
@@ -932,8 +932,8 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
             .ch-T .ch-board{aspect-ratio:var(--tar);}
             .ch-T{max-width:none;}
             .ch-T .ch-p{left:var(--b);top:var(--a);width:var(--d);height:var(--c);}
-            .ch-T .ch-dh{width:0;height:100%;border-top:0;border-left:2px dashed var(--stg-line3, rgba(28,30,36,0.45));}
-            .ch-T .ch-dv{width:100%;height:0;border-left:0;border-top:2px dashed var(--stg-line3, rgba(28,30,36,0.45));}
+            .ch-T .ch-dh{width:0;height:100%;border-top:0;border-left:2px solid var(--stg-line3, rgba(28,30,36,0.45));}
+            .ch-T .ch-dv{width:100%;height:0;border-left:0;border-top:2px solid var(--stg-line3, rgba(28,30,36,0.45));}
             .ch-T .ch-dh.hot,.ch-T .ch-dh.hint{width:6px;border-left:0;}
             .ch-T .ch-dv.hot,.ch-T .ch-dv.hint{height:6px;border-top:0;}
             .ch-board{border-radius:18px;clip-path:inset(0 round 18px);}

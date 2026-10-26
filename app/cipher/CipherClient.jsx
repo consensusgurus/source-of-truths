@@ -920,8 +920,8 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
       lead={<>A <b>cryptarithm</b>: every letter is a different digit, 0&ndash;9, and the {opWord} must work out.</>}
       steps={[
         <>Letters that start a word are <b>never zero</b>.</>,
-        <><b>Tap a letter, then tap a digit</b>, or just type. Tap a filled letter again to clear it. The pad shows which letter owns each digit, and two letters sharing one both turn <b>dashed</b>.</>,
-        <>The board keeps the scratch work: a digit already taken turns <b>dashed on the pad</b> and shows whose it is, 0 fades out under a leading letter, <b>Notes</b> crosses off any digit you have ruled out, and the <b>{carryWord} row</b> above the equation fills in as far as your digits allow, with the rest yours to pencil.</>,
+        <><b>Tap a letter, then tap a digit</b>, or just type. Tap a filled letter again to clear it. The pad shows which letter owns each digit, and two letters sharing one both turn <b>red</b>.</>,
+        <>The board keeps the scratch work: a digit already taken <b>fades on the pad</b> and shows whose it is, 0 fades out under a leading letter, <b>Notes</b> crosses off any digit you have ruled out, and the <b>{carryWord} row</b> above the equation fills in as far as your digits allow, with the rest yours to pencil.</>,
         <>A <b>✓ or ✗</b> under each column shows exactly which column works, so a wrong digit turns up where it happened.</>,
         <>There is <b>no button to press</b>. Get every column to ✓ with a different digit for every letter, and the puzzle locks itself the moment it lands.</>,
       ]}
@@ -990,7 +990,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-cell .cf-ch{font-size:20px;font-weight:800;color:${INK};line-height:1;}
           .cf-cell .cf-dg{font-size:21px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accent});line-height:1;font-variant-numeric:tabular-nums;}
           .cf-cell .cf-dg.empty{color:${FADED};}
-          .cf-cell.bad{border-color:var(--stg-bad, ${COLORS.rust});border-style:dashed;border-width:2px;}
+          .cf-cell.bad{border-color:var(--stg-bad, ${COLORS.rust});border-style:solid;border-width:2px;}
           .cf-cell.bad .cf-dg{color:var(--stg-bad, ${COLORS.rust});}
           .cf-play.dock .cf-cell{border-radius:9px;}
           .cf-play.dock .cf-cell .cf-ch{font-size:16px;}
@@ -998,7 +998,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-rule{position:relative;margin:2px 0 2px calc(var(--cf-opw) + var(--cf-gap));height:8px;box-sizing:border-box;border-top:2px solid ${INK};border-bottom:2px solid ${INK};}
           .cf-carrow,.cf-mkrow{margin:0;}
           .cf-carry{width:var(--cf-cw);height:44px;flex:0 0 auto;border:0;background:transparent;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-          .cf-carry span{width:34px;height:28px;max-width:100%;box-sizing:border-box;border-radius:7px;border:1.5px dashed ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:16px;font-weight:700;color:${FADED};}
+          .cf-carry span{width:34px;height:28px;max-width:100%;box-sizing:border-box;border-radius:7px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:16px;font-weight:700;color:${FADED};}
           .cf-carry:hover:not(:disabled) span{background:var(--stg-surf2, ${COLORS.accentSoft});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .cf-carry.fixed span{border-color:transparent;color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
           .cf-carry.fixed{cursor:default;}
@@ -1024,10 +1024,10 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-bk .l{width:16px;font-size:18px;font-weight:800;text-align:left;flex:none;}
           .cf-bk .t{font-family:${MONO};font-size:10px;font-weight:700;letter-spacing:0.06em;color:${FADED};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
           .cf-bk .t s{margin-left:4px;}
-          .cf-bk .dots{flex:1;min-width:6px;height:0;border-bottom:2px dotted ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};}
+          .cf-bk .dots{flex:1;min-width:6px;height:0;border-bottom:2px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};}
           .cf-bk .d{width:26px;text-align:center;font-size:20px;font-weight:800;color:var(--stg-acc-ink, ${COLORS.accent});flex:none;font-variant-numeric:tabular-nums;}
           .cf-bk .d.empty{color:${FADED};}
-          .cf-bk .d.bad{color:var(--stg-bad, ${COLORS.rust});outline:2px dashed var(--stg-bad, ${COLORS.rust});outline-offset:1px;border-radius:4px;}
+          .cf-bk .d.bad{color:var(--stg-bad, ${COLORS.rust});outline:2px solid var(--stg-bad, ${COLORS.rust});outline-offset:1px;border-radius:4px;}
           .cf-bk .fd{display:none;}
           .cf-play.dock .cf-book{background:transparent;border:0;padding:0;}
           .cf-play.dock .cf-bookhd{border:0;padding:0 0 4px;margin:0;}
@@ -1052,11 +1052,11 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-pk .dg{font-size:23px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
           .cf-pk .who{font-size:11px;font-weight:800;line-height:1;height:11px;color:${FADED};letter-spacing:0.02em;}
           .cf-pk:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
-          .cf-pad.notes .cf-pk{border-style:dashed;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
+          .cf-pad.notes .cf-pk{border-style:solid;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           /* Pad key states. A digit already owned by another letter, a 0 under a
              leading letter, or a digit crossed off in Notes READS as such on the
              key itself, which is what the letter rack used to be for. */
-          .cf-pk.taken{background:transparent;border-style:dashed;color:${FADED};}
+          .cf-pk.taken{background:transparent;border-style:solid;color:${FADED};}
           .cf-pk.xed{background:transparent;color:${FADED};}
           .cf-pk.xed .dg{text-decoration:line-through;}
           .cf-pk:disabled{opacity:0.32;cursor:default;}
@@ -1157,7 +1157,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
                 <div className="cf-cap">
                   {dockUi
                     ? <>{carryWord}s on top &middot; &#10003; under a column that lands</>
-                    : <>{carryWord}s on top, solid when the board works them out, dashed to pencil your own &middot; it locks itself when it lands</>}
+                    : <>{carryWord}s on top, in bold when the board works them out, in a box to pencil your own &middot; it locks itself when it lands</>}
                 </div>
               )}
             </div>

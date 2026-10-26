@@ -380,7 +380,7 @@ const CSS = `
 .typ-last-tx b{font-size:17px;font-weight:800;color:var(--t-ink);letter-spacing:-.01em}
 .typ-last-tx em{font-style:normal;font-size:13px;color:var(--t-mute)}
 .typ-grp{margin-top:12px;display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.5;color:var(--t-body);
-  text-decoration:none;border:1px dashed var(--t-field);border-radius:10px;padding:11px 14px}
+  text-decoration:none;border:1px solid var(--t-field);border-radius:10px;padding:11px 14px}
 .typ-grp b{color:var(--t-ink)}.typ-grp svg{flex:none;margin-top:1px;color:var(--t-acc)}
 .typ-grp:hover{border-style:solid}
 .typ-grp:focus-visible{outline:2px solid var(--t-acc);outline-offset:2px}

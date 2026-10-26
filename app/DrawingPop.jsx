@@ -306,13 +306,13 @@ const CSS = `
 .drw-odds{font-style:normal;font-size:14px;font-weight:800;color:var(--d-goldink)}
 .drw-stubs{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
 .drw-stub{display:flex;align-items:stretch;height:40px;border-radius:8px;overflow:hidden;background:#e8b43a;color:#0b0d12}
-.drw-stub-ic{display:flex;align-items:center;padding:0 10px;border-right:2px dashed rgba(11,13,18,.35)}
+.drw-stub-ic{display:flex;align-items:center;padding:0 10px;border-right:2px solid rgba(11,13,18,.35)}
 .drw-stub-tx{display:flex;flex-direction:column;justify-content:center;padding:0 12px;line-height:1.15}
 .drw-stub-tx b{font-size:13px;font-weight:800}
 .drw-stub-tx i{font-style:normal;font-size:11px;font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .drw-more{display:flex;align-items:center;height:40px;padding:0 6px;font-size:13px;font-weight:800;color:var(--d-goldink)}
 .drw-next{display:flex;align-items:center;gap:6px;height:40px;box-sizing:border-box;padding:0 14px;border-radius:8px;
-  border:2px dashed var(--d-goldline);font-size:13px;font-weight:700;color:var(--d-mute)}
+  border:2px solid var(--d-goldline);font-size:13px;font-weight:700;color:var(--d-mute)}
 .drw-warn{margin:12px 0 0;font-size:13px;line-height:1.5;font-weight:600;color:var(--d-warn)}
 .drw-lab{margin-top:18px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--d-mute);font-weight:700}
 .drw-row{display:flex;gap:8px;margin-top:8px}

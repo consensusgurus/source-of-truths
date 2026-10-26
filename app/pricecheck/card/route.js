@@ -66,7 +66,7 @@ function card(scores, ranks = RUN_RANKS_V3) {
   const board = d({ flexDirection: 'column', flex: 1 },
     d({ justifyContent: 'space-between', fontSize: 16, fontWeight: 800, color: W.ink2, paddingBottom: 8, borderBottom: `1px solid ${W.line}`, marginBottom: 6 }, d({}, 'Item'), d({}, 'Points')),
     ...rows,
-    d({ alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 8, borderTop: `1px dashed ${W.line}` },
+    d({ alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 8, borderTop: `1px solid ${W.line}` },
       d({ fontSize: 18, fontWeight: 800, color: W.ink2 }, 'Total'),
       d({ alignItems: 'center', gap: 5 }, flap(totalDigits[0], true), flap(totalDigits[1], true),
         d({ fontSize: 34, fontWeight: 800, color: W.mute, margin: '0 4px' }, '/'), flap('5', true), flap('0', true))));

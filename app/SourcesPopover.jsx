@@ -62,7 +62,7 @@ export default function SourcesPopover({ label, emphasis, align, href, onDark, p
           textDecoration: plain ? 'none' : 'underline',
           // On the dark blue header band a blue underline is invisible, so render a
           // faint white underline there; default stays blue (dotted/solid) on light bg.
-          textDecorationStyle: (onDark || emphasis) ? 'solid' : 'dotted',
+          textDecorationStyle: (onDark || emphasis) ? 'solid' : 'solid',
           textDecorationThickness: emphasis ? '2px' : (onDark ? '1px' : 'auto'),
           textUnderlineOffset: '3px',
           textDecorationColor: onDark ? 'rgba(255,255,255,0.5)' : T.accent,

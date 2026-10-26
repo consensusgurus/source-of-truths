@@ -872,7 +872,7 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
           .qn-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
           .qn-chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:9px;border:1px solid var(--stg-line2,rgba(255,255,255,0.17));background:var(--stg-cell,#1a1d28);color:var(--stg-ink,#e9edf4);font-size:14px;font-weight:700;white-space:nowrap;}
           .qn-chip i{font-style:normal;color:var(--stg-mute,#8b95a8);}
-          .qn-chip.next{background:transparent;border:1.5px dashed var(--stg-acc-ink,#e8b43a);font-weight:800;}
+          .qn-chip.next{background:transparent;border:1.5px solid var(--stg-acc-ink,#e8b43a);font-weight:800;}
           .qn-chip.next span{color:var(--stg-acc-ink,#e8b43a);}
           .qn-ctl{max-width:480px;margin:16px auto 0;padding-top:14px;border-top:1px solid var(--stg-line,rgba(255,255,255,0.11));display:flex;align-items:center;justify-content:flex-end;gap:10px;}
           .qn-ctl-note{flex:1;font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-mute,#8b95a8);}

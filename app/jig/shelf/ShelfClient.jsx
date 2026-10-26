@@ -304,7 +304,7 @@ const CSS = `
   background:#8a6440;border-top:3px solid #a87d55;box-shadow:0 3px 0 #5c4029;}
 
 .jsh-slot{display:block;aspect-ratio:3/2.5;}
-.jsh-slot.locked{border:1.5px dashed var(--stg-line);border-radius:4px;opacity:.9;}
+.jsh-slot.locked{border:1.5px solid var(--stg-line);border-radius:4px;opacity:.9;}
 .jsh-box{position:relative;display:flex;flex-direction:column;text-decoration:none;border-radius:4px;overflow:hidden;
   background:#1b2436;box-shadow:3px 3px 0 rgba(5,7,13,.55);transition:transform .15s ease, opacity .15s ease;}
 .jsh-box:hover{transform:translateY(-3px);}

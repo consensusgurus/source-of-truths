@@ -249,7 +249,7 @@ const CSS = `
   left:calc((100% - 50px) / 6 * (var(--at) + .5) + var(--at) * 10px);transform:translateX(-50%);
   background:radial-gradient(ellipse 150px 420px at 50% 60%,rgba(255,240,200,.22),rgba(255,240,200,.05) 60%,transparent 75%);
   transition:left .25s ease,top .25s ease}
-.hl-sign{position:relative;flex:1 1 0;min-width:0;height:70px;border-radius:10px;border:3px dotted rgba(255,255,255,.14);
+.hl-sign{position:relative;flex:1 1 0;min-width:0;height:70px;border-radius:10px;border:3px solid rgba(255,255,255,.14);
   background:rgba(255,255,255,.03);color:#5b6684;display:flex;align-items:center;justify-content:center;text-align:center;
   font-size:14px;font-weight:800;padding:0 8px;line-height:1.2;transition:all .25s ease}
 .hl-sign.past{border-color:rgba(232,180,58,.45);color:#c9d3e6}

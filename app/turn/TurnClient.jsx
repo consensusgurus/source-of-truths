@@ -764,7 +764,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
           </span>
         )}
         {fresh && STAGE && (
-          <span aria-hidden="true" style={{ position: 'absolute', inset: '4%', borderRadius: 3, border: '2px dashed var(--tn-dot)', pointerEvents: 'none' }} />
+          <span aria-hidden="true" style={{ position: 'absolute', inset: '4%', borderRadius: 3, border: '2px solid var(--tn-dot)', pointerEvents: 'none' }} />
         )}
         {v === 0 && open && (
           STAGE

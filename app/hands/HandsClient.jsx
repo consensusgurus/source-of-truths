@@ -233,7 +233,7 @@ function CardFace({ card, sz = 'cell', ghost = false, ring = false }) {
     <div style={{
       position: 'relative', width: '100%', height: '100%', boxSizing: 'border-box', borderRadius: f.rad,
       background: ghost ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #7f1d1d)) 12%, #ffffff)' : FACE,
-      border: ghost ? `2.5px dashed ${A_FILL_INK}` : ring ? `3px solid ${A_FILL}` : `1.5px solid ${FACE_EDGE}`,
+      border: ghost ? `2.5px solid ${A_FILL_INK}` : ring ? `3px solid ${A_FILL}` : `1.5px solid ${FACE_EDGE}`,
       boxShadow: ghost ? 'none' : ring ? `0 0 0 3px ${FELT}, 0 0 0 5px ${A_FILL}, 0 14px 22px rgba(0,0,0,.32)` : big ? '0 4px 10px rgba(0,0,0,.28)' : '0 3px 7px rgba(0,0,0,.22)',
       color: red ? FACE_RED : FACE_INK, fontFamily: SANS, userSelect: 'none',
     }}>
@@ -272,7 +272,7 @@ function lineChip({ k, full, value, preview, cardTxt, axis, n, wouldBe }) {
 const CHIP_LOOK = {
   open: { bg: 'transparent', bd: `1.5px solid ${CELL_LINE}`, ink: S_INK2, ink2: S_MUTE },
   bust: { bg: 'transparent', bd: `1.5px solid ${CELL_LINE}`, ink: S_MUTE, ink2: S_MUTE },
-  prev: { bg: A_TINT, bd: `1.5px dashed ${A_FILL}`, ink: A_INK, ink2: A_INK },
+  prev: { bg: A_TINT, bd: `1.5px solid ${A_FILL}`, ink: A_INK, ink2: A_INK },
   made: { bg: A_FILL, bd: `1.5px solid ${A_FILL}`, ink: ON_A, ink2: ON_A },
 };
 
@@ -741,9 +741,9 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           .hst-mini .hst-pf{font-size:12px;font-size:36cqw;}
           .hst-board{display:grid;grid-template-columns:repeat(5,minmax(0,62px));gap:8px;justify-content:center;}
           .hst-cell{aspect-ratio:62/74;width:100%;}
-          .hst-slot{box-sizing:border-box;aspect-ratio:62/74;width:100%;border-radius:8px;border:2px dashed var(--pst-ink);background:var(--pst-tint);padding:0;}
+          .hst-slot{box-sizing:border-box;aspect-ratio:62/74;width:100%;border-radius:8px;border:2px solid var(--pst-ink);background:var(--pst-tint);padding:0;}
           .hst-slot:active{transform:translateY(1px);}
-          .hst-q2{border-style:dashed;}
+          .hst-q2{border-style:solid;}
         `;
         return (
           <PlayStage bg={gameColor('hands')} label="Hands"
@@ -923,7 +923,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           const bigCard = (w, h, sz) => (
             <div key={consumed} className="hd-offer" style={{ width: w, height: h, flex: 'none' }}>
               {playing && current != null ? <CardFace card={current} sz={sz} ring={started} /> : (
-                <div style={{ width: '100%', height: '100%', boxSizing: 'border-box', borderRadius: 10, background: CELL, border: `1.5px dashed ${CELL_LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: 12, fontWeight: 700, color: S_MUTE, textAlign: 'center', padding: 6 }}>{g.gaveUp ? 'Round over' : 'Board full'}</div>
+                <div style={{ width: '100%', height: '100%', boxSizing: 'border-box', borderRadius: 10, background: CELL, border: `1.5px solid ${CELL_LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: 12, fontWeight: 700, color: S_MUTE, textAlign: 'center', padding: 6 }}>{g.gaveUp ? 'Round over' : 'Board full'}</div>
               )}
             </div>
           );

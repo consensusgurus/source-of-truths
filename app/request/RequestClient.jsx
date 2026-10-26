@@ -75,7 +75,7 @@ function RequestView({ onSubmit }) {
     .req .pickin{flex:1;min-width:0;background:transparent;border:none;outline:none;font-family:${FONT};font-size:15px;color:${C.ink};padding:4px 0;}
     .req .iconbtn{background:transparent;border:none;color:${C.soft};cursor:pointer;display:flex;align-items:center;padding:4px;}
     .req .iconbtn:hover{color:${C.danger};}
-    .req .addbtn{margin-top:12px;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;background:var(--white);color:${C.ink};border:1px dashed ${C.line};border-radius:10px;padding:11px 16px;font-family:${FONT};font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;}
+    .req .addbtn{margin-top:12px;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;background:var(--white);color:${C.ink};border:1px solid ${C.line};border-radius:10px;padding:11px 16px;font-family:${FONT};font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;}
     .req .addbtn:hover{border-color:${C.accent};color:${C.accent};}
     .req .submit{width:100%;background:${C.accent};color:var(--white);border:none;border-radius:10px;padding:14px 24px;font-family:${FONT};font-size:14px;font-weight:700;cursor:pointer;}
     .req .submit:hover{filter:brightness(1.05);}

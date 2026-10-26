@@ -749,7 +749,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           .sh-act small{font-size:11px;font-weight:700;letter-spacing:.04em;}
           .sh-act.dbl{color:var(--stg-acc-ink, ${ACCENT});border-color:var(--stg-acc-ink, var(--stg-acc, ${ACCENT}));}
           .sh-act.dbl small{color:var(--stg-acc-ink, ${ACCENT});}
-          .sh-act:disabled{cursor:default;border-style:dashed;border-color:var(--stg-line2, rgba(28,30,36,.24));color:${FELT_INK2};background:transparent;transform:none;}
+          .sh-act:disabled{cursor:default;border-style:solid;border-color:var(--stg-line2, rgba(28,30,36,.24));color:${FELT_INK2};background:transparent;transform:none;}
           .sh-act:disabled small{color:${FELT_INK2};}
           .sh-act.deal{flex:0 0 auto;padding:0 24px;background:var(--stg-acc, ${ACCENT});border-color:var(--stg-acc-ink, var(--stg-acc, ${ACCENT}));color:var(--stg-onramp, #ffffff);}
           .sh-act.deal:hover{background:var(--stg-acc, ${ACCENT});filter:brightness(1.06);}
@@ -859,7 +859,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
                 );
               } else {
                 cells.push(
-                  <div key={i} title={`Hand ${i + 1}, to come`} style={{ ...base, background: 'transparent', border: '1.5px dashed var(--stg-cell-line, rgba(28,30,36,.44))' }}>
+                  <div key={i} title={`Hand ${i + 1}, to come`} style={{ ...base, background: 'transparent', border: '1.5px solid var(--stg-cell-line, rgba(28,30,36,.44))' }}>
                     {!narrow && <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', color: 'var(--stg-mute, #5f6774)' }}>H{i + 1}</span>}
                   </div>,
                 );
@@ -958,7 +958,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
               : `Stake ${seats[0].stake}${seats[0].doubled ? ' · doubled' : ''}`;
             const stakeChip = (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: SANS, fontSize: narrow ? 10 : 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: FELT_INK2 }}>
-                <span aria-hidden="true" style={{ width: 18, height: 18, borderRadius: '50%', boxSizing: 'border-box', border: '3px dashed var(--stg-warn, #9c5d02)', background: WELL }} />
+                <span aria-hidden="true" style={{ width: 18, height: 18, borderRadius: '50%', boxSizing: 'border-box', border: '3px solid var(--stg-warn, #9c5d02)', background: WELL }} />
                 {stakeTxt}
               </span>
             );
@@ -1095,7 +1095,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
                     {center}
                     <div style={{ marginTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                       <span className="sh-k" style={{ fontSize: 10, letterSpacing: '.06em' }}>Shoe <b style={{ color: 'var(--stg-ink, #0b0d12)' }}>{cardsLeft}</b> of {PUZZLE.shoe.length} left</span>
-                      <button type="button" className="sh-outbtn" aria-expanded={showOut} aria-controls="sh-outlist" onClick={() => setShowOut((v) => !v)} disabled={!outRows.length} style={!outRows.length ? { borderStyle: 'dashed', color: FELT_INK2, cursor: 'default' } : undefined}>
+                      <button type="button" className="sh-outbtn" aria-expanded={showOut} aria-controls="sh-outlist" onClick={() => setShowOut((v) => !v)} disabled={!outRows.length} style={!outRows.length ? { borderStyle: 'solid', color: FELT_INK2, cursor: 'default' } : undefined}>
                         Already out &middot; {outCards}
                       </button>
                     </div>

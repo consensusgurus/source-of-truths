@@ -625,16 +625,16 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
             <style dangerouslySetInnerHTML={{ __html: `
               .pst .sta-dug{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
               .pst .sta-dug span{font-size:14px;font-weight:800;padding:6px 14px;border-radius:999px;background:var(--pst-ink);color:var(--pst-bg);letter-spacing:.04em;}
-              .pst .sta-dug span.o{background:transparent;color:var(--pst-ink);border:2px dashed color-mix(in srgb, var(--pst-ink) 50%, transparent);padding:4px 12px;}
+              .pst .sta-dug span.o{background:transparent;color:var(--pst-ink);border:2px solid color-mix(in srgb, var(--pst-ink) 50%, transparent);padding:4px 12px;}
               .pst .sta-trc{text-align:center;font-size:34px;font-weight:800;letter-spacing:.1em;min-height:44px;line-height:44px;}
               .pst .sta-trc.bad{animation:stash .32s;}
               @keyframes stash{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-              .pst .sta-site{align-self:center;padding:8px;border:2px solid var(--pst-ink);border-top-style:dashed;border-radius:18px;}
+              .pst .sta-site{align-self:center;padding:8px;border:2px solid var(--pst-ink);border-top-style:solid;border-radius:18px;}
               .pst .sta-b{position:relative;touch-action:none;user-select:none;-webkit-user-select:none;}
               .pst .sta-b .st-tile{position:absolute;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:800;border-radius:12px;cursor:pointer;box-sizing:border-box;background:var(--pst-tint);border:2px solid var(--pst-ink);color:var(--pst-ink);transition:top ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),left ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),background 120ms,color 120ms,transform 160ms,opacity ${LIFT_MS}ms;}
               .pst .sta-b .st-tile em{position:absolute;top:3px;left:6px;font-style:normal;font-size:10px;font-weight:800;}
               .pst .sta-b .st-tile.on{background:var(--pst-ink);color:var(--pst-bg);transform:scale(1.04);}
-              .pst .sta-b .st-tile.bad{background:transparent;border-style:dashed;}
+              .pst .sta-b .st-tile.bad{background:transparent;border-style:solid;}
               .pst .sta-b .st-tile.lift{background:var(--pst-ink);color:var(--pst-bg);opacity:.15;transform:scale(.82);}
               .pst .sta-b .st-tile.flash{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink);animation:stapulse0 1.6s ease-in-out 3;}
               @keyframes stapulse0{50%{transform:scale(1.08)}}
@@ -746,12 +746,12 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
             transition:top ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),left ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),background 120ms,color 120ms,border-color 120ms,transform 160ms,opacity ${LIFT_MS}ms;}
           .st-tile.on{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));transform:scale(1.04);}
           .st-tile.lift{background:${STAGE ? 'var(--stg-good)' : COLORS.green};border-color:${STAGE ? 'var(--stg-good)' : COLORS.green};color:${STAGE ? 'var(--stg-ground)' : 'var(--white)'};opacity:0.15;transform:scale(0.82);}
-          .st-hole{position:absolute;box-sizing:border-box;border-radius:10px;border:1.5px dashed ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};pointer-events:none;}
+          .st-hole{position:absolute;box-sizing:border-box;border-radius:10px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};pointer-events:none;}
           .st-k{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:${FADED};}
           .st-k b{font-size:14px;letter-spacing:0;color:${INK};font-weight:800;}
           .st-clear{font-family:${SANS};font-weight:700;font-size:13px;background:transparent;color:${FADED};border:0;padding:0 8px;min-height:44px;min-width:44px;text-decoration:underline;cursor:pointer;}
           @media(max-width:640px){.st-k{font-size:10px;}.st-k b{font-size:13px;}.st-tile,.st-hole{border-radius:9px;}}
-          .st-tile.bad{border-style:dashed;background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#b91c1c'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};}
+          .st-tile.bad{border-style:solid;background:${STAGE ? 'var(--stg-surf2)' : '#fee2e2'};border-color:${STAGE ? 'var(--stg-bad)' : '#b91c1c'};color:${STAGE ? 'var(--stg-bad)' : '#7f1d1d'};}
           .st-tile.flash{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, var(--white));box-shadow:0 0 0 4px var(--stg-acc-ink, ${COLORS.accent});animation:st-hint0 1.6s ease-in-out 3;}
           @keyframes st-hint0{0%,100%{box-shadow:0 0 0 4px var(--stg-acc-ink, ${COLORS.accent});transform:scale(1)}50%{box-shadow:0 0 0 9px transparent;transform:scale(1.08)}}
           @keyframes st-hint1{0%,100%{box-shadow:0 0 0 4px var(--stg-acc-ink, ${COLORS.accent});transform:scale(1)}50%{box-shadow:0 0 0 9px transparent;transform:scale(1.08)}}
@@ -932,7 +932,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
                     {trace.map((id, i) => (
                       <span key={`${id}-${i}`} style={{ width: narrow ? 34 : 36, height: narrow ? 38 : 40, boxSizing: 'border-box', borderRadius: 8, background: bad ? (STAGE ? 'var(--stg-surf2)' : '#fee2e2') : A_FILL, border: bad ? `1.5px solid ${BAD}` : 'none', color: bad ? BAD : ON_ACC, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: narrow ? 19 : 20, fontWeight: 800 }}>{cells[id].ch}</span>
                     ))}
-                    <span aria-hidden="true" style={{ width: narrow ? 34 : 36, height: narrow ? 38 : 40, boxSizing: 'border-box', borderRadius: 8, border: `1.5px dashed ${CELL_LINE}` }} />
+                    <span aria-hidden="true" style={{ width: narrow ? 34 : 36, height: narrow ? 38 : 40, boxSizing: 'border-box', borderRadius: 8, border: `1.5px solid ${CELL_LINE}` }} />
                   </div>
                   {narrow && <div style={{ flex: 1 }} />}
                   <button className="st-clear" onClick={() => setTrace([])} style={{ visibility: trace.length ? 'visible' : 'hidden' }} tabIndex={trace.length ? 0 : -1}>clear</button>
@@ -986,7 +986,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
                     <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                       {logRows.map((s) => (
                         <span key={s.k} aria-label={s.found ? `Lifted ${s.t}` : (s.missed ? `Missed ${s.t}` : `Buried word, ${s.k.length} letters`)}
-                          style={{ flex: `${s.found || s.missed ? 1.15 : 1} 1 0`, minWidth: 54, height: 38, boxSizing: 'border-box', borderRadius: 9, border: `1.5px ${s.found ? 'solid' : 'dashed'} ${rowEdge(s)}`, background: s.found ? A_TINT : 'transparent', color: rowInk(s), display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', fontFamily: SANS, fontSize: 13, fontWeight: 800, letterSpacing: s.found || s.missed ? '0.06em' : '0.18em' }}>{s.t}</span>
+                          style={{ flex: `${s.found || s.missed ? 1.15 : 1} 1 0`, minWidth: 54, height: 38, boxSizing: 'border-box', borderRadius: 9, border: `1.5px ${s.found ? 'solid' : 'solid'} ${rowEdge(s)}`, background: s.found ? A_TINT : 'transparent', color: rowInk(s), display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', fontFamily: SANS, fontSize: 13, fontWeight: 800, letterSpacing: s.found || s.missed ? '0.06em' : '0.18em' }}>{s.t}</span>
                       ))}
                     </div>
                     <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>All {TOTAL} share {lede}.</span>
@@ -1028,7 +1028,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
                           <span aria-hidden="true" style={{ position: 'absolute', left: -18, top: 21, width: 13, height: 13, boxSizing: 'border-box', borderRadius: 7, background: s.found ? A_FILL : GROUND, border: `2px solid ${s.found ? A_FILL_INK : rowEdge(s)}` }} />
                           <span className="st-k" style={{ fontSize: 10, lineHeight: '13px', color: rowInk(s) }}>{s.tag}</span>
                           <span aria-label={s.found ? `Lifted ${s.t}` : (s.missed ? `Missed ${s.t}` : `Buried word, ${s.k.length} letters`)}
-                            style={{ height: 36, boxSizing: 'border-box', borderRadius: 9, border: `1.5px ${s.found ? 'solid' : 'dashed'} ${rowEdge(s)}`, background: s.found ? A_TINT : 'transparent', color: rowInk(s), display: 'flex', alignItems: 'center', padding: '0 12px', fontFamily: SANS, fontSize: 15, fontWeight: 800, letterSpacing: s.found || s.missed ? '0.08em' : '0.3em', overflow: 'hidden', whiteSpace: 'nowrap' }}>{s.t}</span>
+                            style={{ height: 36, boxSizing: 'border-box', borderRadius: 9, border: `1.5px ${s.found ? 'solid' : 'solid'} ${rowEdge(s)}`, background: s.found ? A_TINT : 'transparent', color: rowInk(s), display: 'flex', alignItems: 'center', padding: '0 12px', fontFamily: SANS, fontSize: 15, fontWeight: 800, letterSpacing: s.found || s.missed ? '0.08em' : '0.3em', overflow: 'hidden', whiteSpace: 'nowrap' }}>{s.t}</span>
                         </div>
                       ))}
                     </div>

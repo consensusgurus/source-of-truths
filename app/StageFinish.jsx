@@ -2826,7 +2826,7 @@ const CSS = `
 .stf-dstrip s{text-decoration:none;flex:1;display:block;height:12px;border-radius:6px;background:currentColor;opacity:.9;
   animation:stf-rackhit 340ms cubic-bezier(.22,.8,.26,1) both;}
 .stf-dstrip s.off{background:none;border:1.5px solid currentColor;opacity:.35;}
-.stf-dstrip s.next{background:none;border:1.5px dashed currentColor;opacity:1;}
+.stf-dstrip s.next{background:none;border:1.5px solid currentColor;opacity:1;}
 /* THE STAMP. An overshoot on the way down, so a figure lands rather than
    fades: it is the one motion on this screen that says a number just arrived.
    The fill holds the end state, since each figure mounts once and never leaves. */

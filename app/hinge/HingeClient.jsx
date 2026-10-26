@@ -697,7 +697,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
               .hgs-sl span{width:min(44px, calc((100vw - 40px) / var(--hgs-n) - 5px));height:${tight ? 36 : 42}px;border-radius:10px;border:2px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:${tight ? 20 : 24}px;font-weight:800;background:var(--pst-tint);}
               .hgs-sl.given span{background:var(--pst-ink);color:var(--pst-bg);}
               .hgs-sl.now span{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
-              .hgs-sl.open span{border-style:dashed;background:transparent;opacity:.55;}
+              .hgs-sl.open span{border-style:solid;background:transparent;opacity:.55;}
               .hgs-hj{width:2px;height:${tight ? 6 : 10}px;background:var(--pst-ink);opacity:.5;}
               .hgs-det{font-size:12px;font-weight:800;opacity:.7;text-decoration:line-through;margin:-2px 0 2px;}
               .hgs-line{text-align:center;font-size:13px;font-weight:700;opacity:.8;line-height:1.35;min-height:1.35em;}
@@ -796,7 +796,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
           .hg-word{display:flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:7px 9px;border-radius:12px;box-sizing:border-box;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(28,30,36,0.18)'};background:${STAGE ? 'var(--stg-surf)' : T.white};}
           .hg-word.solved{cursor:pointer;}
           .hg-word.active{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
-          .hg-word.empty{border-style:dashed;}
+          .hg-word.empty{border-style:solid;}
           .hg-screw{flex:none;color:${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.4)'};}
           .hg-cell{width:clamp(26px, 7.2vw, 40px);height:clamp(32px, 8.4vw, 48px);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-weight:800;font-size:clamp(15px, 4.4vw, 22px);letter-spacing:0.02em;box-sizing:border-box;}
           .hg-word.given .hg-cell{background:${STAGE ? 'var(--stg-surf2)' : '#e9edf3'};color:${INK};}
@@ -804,12 +804,12 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
           .hg-word.solved:hover .hg-cell{background:${STAGE ? 'color-mix(in srgb, var(--stg-acc) 34%, var(--stg-cell))' : COLORS.accentTint};}
           .hg-word.active .hg-cell{border:2px solid var(--stg-cell-line, rgba(28,30,36,0.35));background:${STAGE ? 'var(--stg-cell)' : T.white};color:${INK};}
           .hg-word.active .hg-cell.cursor{box-shadow:inset 0 -4px 0 var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
-          .hg-word.empty .hg-cell{border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;color:${FADED};font-weight:600;}
+          .hg-word.empty .hg-cell{border:2px solid var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;color:${FADED};font-weight:600;}
           .hg-joint{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;column-gap:10px;position:relative;min-height:50px;}
           .hg-strap{position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--stg-line2, rgba(28,30,36,0.25));}
           .hg-strap.shut{background:var(--stg-acc, ${COLORS.accent});}
           .hg-barrel{grid-column:2;position:relative;display:flex;align-items:center;}
-          .hg-half{width:108px;height:30px;box-sizing:border-box;padding:0 12px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:${SANS};font-size:14px;font-weight:700;border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.35));background:${STAGE ? 'var(--stg-ground)' : T.white};color:${FADED};}
+          .hg-half{width:108px;height:30px;box-sizing:border-box;padding:0 12px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:${SANS};font-size:14px;font-weight:700;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.35));background:${STAGE ? 'var(--stg-ground)' : T.white};color:${FADED};}
           .hg-half.a{border-radius:15px 0 0 15px;border-right:0;justify-content:flex-end;}
           .hg-half.b{border-radius:0 15px 15px 0;border-left:0;}
           .hg-half.known{border-style:solid;background:${STAGE ? 'var(--stg-cell)' : '#e9edf3'};color:${INK};}

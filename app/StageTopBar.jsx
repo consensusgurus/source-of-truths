@@ -8,6 +8,7 @@
 // header; the look switch on the right, all in the stage's one ink. It sits in
 // the page's flow at the top of the column, so it scrolls away with the content.
 
+import { BrandFit } from '@/lib/use-brand-fit';
 import React from 'react';
 import MindLoftMark from './MindLoftMark';
 import { nextLook, LOOK_NAMES } from '@/lib/stage-look';
@@ -18,11 +19,11 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
   return (
     <div className="stb" style={{ color: ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <a className="stb-home" href={href} aria-label="Back to Mind Loft home" onClick={(e) => soakNav(e, href)}>
+      <BrandFit><a className="stb-home" href={href} aria-label="Back to Mind Loft home" onClick={(e) => soakNav(e, href)}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
         <MindLoftMark size={18} ink={ink} accent="var(--stg-brand,#7dd3fc)" />
         <span>Mind <span style={{ color: 'var(--stg-brand,#7dd3fc)' }}>Loft</span></span>
-      </a>
+      </a></BrandFit>
       {title ? (
         <span className="stb-tx">
           <span className="stb-t"><i className="stb-dot" aria-hidden="true" /><h1>{title}</h1></span>

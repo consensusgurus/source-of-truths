@@ -5829,7 +5829,7 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-favc .r,.sty-favr .m{text-align:right;}
 .sty-favr .m{font-size:13px;color:var(--stg-ink);font-weight:600;}
 .sty-favr.try .go{grid-column:2 / -1;justify-self:start;font-size:12px;font-weight:800;color:var(--stg-acc-ink,var(--cci, var(--cc)));
-  border:1px dashed var(--cci, var(--cc));border-radius:4px;padding:2px 10px;line-height:16px;}
+  border:1px solid var(--cci, var(--cc));border-radius:4px;padding:2px 10px;line-height:16px;}
 .sty-favr.try:hover .go{border-style:solid;}
 @media (max-width:1240px){ .sty-fav.own{--cg:110px minmax(0,1fr) 120px 58px 58px 48px 44px 40px;} }
 @media (min-width:1100px){

@@ -28,7 +28,7 @@ const CSS = `
 .pmm-t b{font-size:26px;font-weight:800;line-height:1;min-width:2.4ch;}
 .pmm-t.on{background:var(--lh);border-color:var(--lh);color:#08222e;}
 .pmm-t.on small{color:#08222e;}
-.pmm-t.go{border-style:dashed;justify-content:space-between;text-decoration:none;color:#e9edf4;}
+.pmm-t.go{border-style:solid;justify-content:space-between;text-decoration:none;color:#e9edf4;}
 .pmm-t.go span{font-size:13px;font-weight:800;color:#7dd3fc;}
 .pmm-res{display:flex;align-items:center;justify-content:space-between;gap:12px;border-radius:12px;padding:12px 14px;color:#0b0d12;min-height:56px;box-sizing:border-box;}
 .pmm-res b{font-size:24px;font-weight:800;letter-spacing:-.01em;}

@@ -628,7 +628,7 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
           .sl-tw{position:relative;width:100%;height:var(--h);box-sizing:border-box;margin:0;padding:0;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.44));border-bottom:0;border-radius:6px 6px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;overflow:hidden;font-family:${SANS};color:${INK};background:transparent;}
           .sl-tw.built{background:repeating-linear-gradient(to bottom, var(--stg-cell, ${T.white}) 0 13px, var(--stg-surf2, #e4e9f1) 13px 15px);}
           .sl-tw.built::before{content:"";position:absolute;left:-2px;right:-2px;top:-2px;height:5px;background:var(--stg-acc-ink, ${COLORS.accent});}
-          .sl-tw.open{border-style:dashed;cursor:pointer;color:${FADED};}
+          .sl-tw.open{border-style:solid;cursor:pointer;color:${FADED};}
           .sl-tw.open:hover,.sl-tw.open:focus-visible{border-style:solid;border-color:var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-acc-tint, ${COLORS.accentSoft});color:var(--stg-acc-ink, ${COLORS.accent});outline:none;}
           .sl-twt{writing-mode:vertical-rl;transform:rotate(180deg);padding:12px 0;font-size:13px;font-weight:800;line-height:1.15;max-height:calc(100% - 8px);overflow:hidden;text-align:left;}
           .sl-tw.open .sl-twt{font-size:11px;letter-spacing:.16em;text-transform:uppercase;}
@@ -660,7 +660,7 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
             .sl-col{min-width:0;width:100%;}
             .sl-twwrap{flex:1 1 0;min-width:0;padding:3px 0;border-bottom:0;border-left:3px solid var(--stg-line3, rgba(28,30,36,0.45));align-items:center;}
             .sl-tw{width:var(--w);max-width:100%;min-width:0;flex:none;height:auto;min-height:44px;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.44));border-left:0;border-radius:0 8px 8px 0;flex-direction:row;justify-content:flex-start;padding:4px 12px 4px 10px;text-align:left;}
-            .sl-tw.open{border-style:dashed;border-left:0;}
+            .sl-tw.open{border-style:solid;border-left:0;}
             .sl-tw.open:hover,.sl-tw.open:focus-visible{border-left:0;}
             .sl-tw.built{background:repeating-linear-gradient(to right, var(--stg-cell, ${T.white}) 0 13px, var(--stg-surf2, #e4e9f1) 13px 15px);}
             .sl-tw.built::before{left:auto;top:-2px;bottom:-2px;right:-2px;width:5px;height:auto;}
@@ -682,7 +682,7 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
           .sl-slot .nm small{display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${FADED};}
           .sl-slot .r{font-family:${MONO};font-size:11px;color:${FADED};padding:0 12px 0 8px;text-align:right;white-space:nowrap;line-height:1.3;}
           .sl-slot .r b{display:block;font-family:${SANS};font-weight:700;font-size:12.5px;color:${INK};}
-          .sl-slot.open{border-style:dashed;cursor:pointer;}
+          .sl-slot.open{border-style:solid;cursor:pointer;}
           .sl-slot.open .nm{color:${FADED};font-weight:600;}
           .sl-slot.open:hover,.sl-slot.open:focus-visible{border-style:solid;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));background:var(--stg-acc-tint, ${COLORS.accentSoft});}
           .sl-slot.locked{cursor:default;}
@@ -693,7 +693,7 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
           /* EXACT, NEAR, MISS IN EVERY LOOK (owner, 2026-10-25): ticked, dashed, struck,
              never the left-rule colour alone. */
           .sl-slot.g .n::after{content:' ✓';font-family:${SANS};font-weight:800;}
-          .sl-slot.a{border-style:dashed;border-left-style:dashed;}
+          .sl-slot.a{border-style:solid;border-left-style:solid;}
           .sl-slot.x .nm{text-decoration:line-through;text-decoration-thickness:1.5px;}
           .sl-slot.broke .nm small{color:var(--stg-bad, ${COLORS.rust});}
           .sl-strip{display:flex;gap:4px;margin:12px 0 6px;}

@@ -1074,7 +1074,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                       <span key={id} role="img" aria-label={`Court ${id + 1}: ${seatWord(n)}`}
                         style={{ ...(STAGE ? regionStyle(id) : null), flex: 1, minWidth: 0, height: PHONE ? 24 : 30, borderRadius: PHONE ? 6 : 8, boxSizing: 'border-box',
                           background: STAGE ? regionMix(1) : REGION_FILLS[id % REGION_FILLS.length],
-                          border: over ? `2px dashed var(--stg-bad, ${COLORS.rust})` : full ? `2px solid var(--stg-acc, ${COLORS.accent})` : `1px solid var(--stg-line2, ${SURF_B})`,
+                          border: over ? `2px solid var(--stg-bad, ${COLORS.rust})` : full ? `2px solid var(--stg-acc, ${COLORS.accent})` : `1px solid var(--stg-line2, ${SURF_B})`,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontFamily: SANS, fontSize: PHONE ? 10 : 12, fontWeight: 800, color: over ? `var(--stg-bad, ${COLORS.rust})` : INK, fontVariantNumeric: 'tabular-nums' }}>
                         {full ? '✓' : `${n}/${STARS}`}

@@ -624,7 +624,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
 .crb-pc.red{color:#b4232c !important;}
 .crb-pc.held{transform:translateY(-12px);background:var(--pst-ink);color:var(--pst-bg) !important;}
 .crb-pc.dim{opacity:.45;}
-.crb-pc.hint{outline:3px dashed var(--pst-ink);outline-offset:3px;}
+.crb-pc.hint{outline:3px solid var(--pst-ink);outline-offset:3px;}
 .crb-pc:disabled{cursor:default;}
 .crb-pc.sm{width:30px;height:42px;font-size:12px;border-radius:5px;}
 .crb-pc.sm i{font-size:11px;margin-top:1px;}
@@ -632,12 +632,12 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
 .crb-lab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
 .crb-stack{display:flex;gap:6px;}
 .crb-down{box-sizing:border-box;width:40px;height:58px;border-radius:7px;border:2px solid var(--pst-ink);background:repeating-linear-gradient(45deg,var(--pst-ink) 0 5px,var(--pst-tint) 5px 10px);}
-.crb-slot{box-sizing:border-box;width:40px;height:58px;border-radius:7px;border:2px dashed var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+.crb-slot{box-sizing:border-box;width:40px;height:58px;border-radius:7px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
 .crb-slot.red{color:#b4232c !important;}
 .crb-how{text-align:center;font-size:13px;font-weight:700;opacity:.85;line-height:1.4;min-height:2.8em;}
 .crb-go{display:flex;align-items:center;justify-content:center;gap:8px;min-height:64px;width:100%;border-radius:18px;padding:12px;background:var(--pst-ink);border:2px solid var(--pst-ink);font-size:21px;font-weight:800;color:var(--pst-bg) !important;}
 .crb-go:disabled{background:var(--pst-tint);color:var(--pst-ink) !important;opacity:.6;cursor:default;}
-.crb-q2{border-style:dashed !important;}
+.crb-q2{border-style:solid !important;}
 .crb-q2.on{border-style:solid !important;}
 .crb-peg{display:flex;gap:6px;justify-content:center;}
 .crb-peg i{width:30px;height:12px;border-radius:6px;border:2px solid var(--pst-ink);background:var(--pst-tint);}
@@ -933,7 +933,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
             const slot = (i) => {
               const k = thrownKs[i];
               return (
-                <span key={`s${i}`} style={{ width: SW, height: SH, boxSizing: 'border-box', borderRadius: narrow ? 5 : 6, border: `2px dashed ${k != null ? A_FILL_INK : CELL_LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: narrow ? 12 : 15, fontWeight: 800, color: ACC_INK }}>
+                <span key={`s${i}`} style={{ width: SW, height: SH, boxSizing: 'border-box', borderRadius: narrow ? 5 : 6, border: `2px solid ${k != null ? A_FILL_INK : CELL_LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: narrow ? 12 : 15, fontWeight: 800, color: ACC_INK }}>
                   {k != null ? short(hand.cards[k]) : ''}
                 </span>
               );

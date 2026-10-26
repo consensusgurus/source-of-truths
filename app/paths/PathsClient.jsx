@@ -958,7 +958,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
             {HAS_RAILS && (
               <span className="pt-chip" style={{ background: 'var(--pt-rail-soft)', color: 'var(--pt-rail)' }}>Old track 0</span>
             )}
-            {!REVIEW && <span className="pt-chip" style={{ border: '1px dashed var(--pt-warn)', color: 'var(--pt-warn)' }}>Loose end</span>}
+            {!REVIEW && <span className="pt-chip" style={{ border: '1px solid var(--pt-warn)', color: 'var(--pt-warn)' }}>Loose end</span>}
           </div>
 
           <div style={{ maxWidth: 520, margin: '10px auto 0' }}>
@@ -1092,7 +1092,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           {REVIEW && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, justifyContent: 'center', marginTop: 8, flexWrap: 'wrap', fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: FADED }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 16, height: 5, borderRadius: 3, background: `var(--stg-good, ${COLORS.green})` }} /> yours, and in the network</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 16, height: 5, borderRadius: 3, background: `var(--stg-bad, ${COLORS.rust})`, borderTop: '2px dashed var(--pt-cell)' }} /> yours, not in it</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 16, height: 5, borderRadius: 3, background: `var(--stg-bad, ${COLORS.rust})`, borderTop: '2px solid var(--pt-cell)' }} /> yours, not in it</span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 16, height: 4, borderRadius: 3, background: 'repeating-linear-gradient(90deg, var(--stg-warn, #e8b43a) 0 2px, transparent 2px 6px)' }} /> in it, not yours</span>
             </div>
           )}

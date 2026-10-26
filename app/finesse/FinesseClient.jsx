@@ -731,8 +731,8 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
     .fn-wl{position:absolute;left:0;right:0;text-align:center;font-family:${SANS};font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute,#5b6475);}
     .fn-slot{position:absolute;width:23.5%;aspect-ratio:68/96;box-sizing:border-box;border-radius:9px;}
     .fn-sn{top:11.5%;left:38.25%;} .fn-ss{top:55%;left:38.25%;} .fn-sw{top:33.2%;left:6.2%;} .fn-se{top:33.2%;right:6.2%;}
-    .fn-slot.empty{border:2px dashed var(--stg-cell-line,rgba(28,30,36,0.35));background:var(--stg-cell,#ffffff);}
-    .fn-slot.next{border:2.5px dashed var(--stg-acc-ink, var(--stg-acc,${COLORS.accent}));background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc,${COLORS.accent})) 18%,var(--stg-cell,#ffffff));display:flex;align-items:center;justify-content:center;text-align:center;font-family:${SANS};font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--stg-acc-ink,${COLORS.accent});line-height:1.3;}
+    .fn-slot.empty{border:2px solid var(--stg-cell-line,rgba(28,30,36,0.35));background:var(--stg-cell,#ffffff);}
+    .fn-slot.next{border:2.5px solid var(--stg-acc-ink, var(--stg-acc,${COLORS.accent}));background:color-mix(in srgb,var(--stg-acc-ink, var(--stg-acc,${COLORS.accent})) 18%,var(--stg-cell,#ffffff));display:flex;align-items:center;justify-content:center;text-align:center;font-family:${SANS};font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--stg-acc-ink,${COLORS.accent});line-height:1.3;}
     .fn-slot .fn-face{box-shadow:0 6px 12px rgba(0,0,0,.28);}
     .fn-slot.win .fn-face{box-shadow:0 0 0 3px var(--stg-ground,#eef1f5),0 0 0 5px var(--stg-warn,#b45309);}
     .fn-win{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);font-family:${SANS};font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--stg-warn,#b45309);background:var(--stg-ground,#eef1f5);border-radius:5px;padding:2px 5px;white-space:nowrap;z-index:2;}
@@ -746,7 +746,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
     .fn-slots{display:flex;gap:6px;align-items:flex-end;}
     .fn-ts{display:flex;flex-direction:column;align-items:center;gap:4px;}
     .fn-tb{width:var(--tw,42px);height:var(--th,56px);box-sizing:border-box;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:${SANS};font-size:14px;font-weight:800;background:var(--stg-cell,#ffffff);border:2px solid var(--stg-cell-line,rgba(28,30,36,0.35));}
-    .fn-tb.beyond{border:1.5px dashed var(--stg-line,rgba(28,30,36,0.25));}
+    .fn-tb.beyond{border:1.5px solid var(--stg-line,rgba(28,30,36,0.25));}
     .fn-tb.won{background:var(--stg-acc,${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc,${COLORS.accent}));color:var(--stg-onramp,#ffffff);}
     .fn-tb.lost{color:var(--stg-mute,#5b6475);}
     .fn-tb.now{border:2px solid var(--stg-acc-ink, var(--stg-acc,${COLORS.accent}));}
@@ -887,13 +887,13 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
           .fin-t{position:absolute;font-size:11px;font-weight:800;letter-spacing:.06em;opacity:.7;}
           .fin-tc{position:absolute;width:46px;}
           .fin-tc.win{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--pst-ink);}
-          .fin-slot{position:absolute;box-sizing:border-box;width:46px;height:64px;border-radius:8px;border:2px dashed var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;opacity:.75;}
-          .fin-tb.q2{border-style:dashed;}
+          .fin-slot{position:absolute;box-sizing:border-box;width:46px;height:64px;border-radius:8px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;opacity:.75;}
+          .fin-tb.q2{border-style:solid;}
           .fin-slots{display:inline-flex;gap:4px;vertical-align:middle;margin:0 10px;}
           .fin-slots i{width:22px;height:10px;border-radius:5px;border:2px solid var(--pst-ink);opacity:.5;}
           .fin-slots i.need{opacity:1;background:var(--pst-tint);}
           .fin-slots i.won{opacity:1;background:var(--pst-ink);}
-          .fin-slots i.lost{opacity:.35;border-style:dashed;}
+          .fin-slots i.lost{opacity:.35;border-style:solid;}
         `;
         return (
           <PlayStage bg={gameColor('finesse')} label="Finesse"

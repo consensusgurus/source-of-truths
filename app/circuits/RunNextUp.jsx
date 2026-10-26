@@ -310,7 +310,7 @@ const CSS = `
 .rnx-circs.mini .rnx-cm b{padding:5px 9px;font-size:11px;}
 
 .rnx-more{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px;}
-.rnx-gh{display:block;width:100%;padding:10px;border-radius:9px;border:1px dashed rgba(255,255,255,.14);
+.rnx-gh{display:block;width:100%;padding:10px;border-radius:9px;border:1px solid rgba(255,255,255,.14);
   background:transparent;color:#9aa8c4;font-family:inherit;font-weight:800;font-size:12.5px;cursor:pointer;}
 .rnx-gh:hover{border-color:${T.blue400};color:#fff;}
 .rnx-gh.on{border-style:solid;border-color:${T.blue400};background:rgba(47,111,228,.12);color:#fff;}

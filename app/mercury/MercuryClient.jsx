@@ -785,7 +785,7 @@ export default function MercuryClient({ puzzles = [], forceNum = null }) {
       background: bg,
       // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): a dashed ring, not just a
       // deeper wash, since the phone looks collapse the accent toward the ink.
-      outline: sameVal ? `1.5px dashed ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
+      outline: sameVal ? `1.5px solid ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
       outlineOffset: sameVal ? '-4px' : undefined,
       boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       borderRight: `${heavyR ? 2.5 : 1}px solid ${heavyR ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,

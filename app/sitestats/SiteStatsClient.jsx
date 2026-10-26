@@ -342,7 +342,7 @@ const CSS = `
 .ss-h-sub{font-size:10.5px;font-weight:700;color:${FAINT};text-transform:none;letter-spacing:0;margin-left:4px;}
 
 .ss-dot{width:9px;height:9px;border-radius:50%;flex:none;}
-.ss-mrow{padding:11px 0;border-bottom:1px dashed ${LINE};}
+.ss-mrow{padding:11px 0;border-bottom:1px solid ${LINE};}
 .ss-mrow:last-child{border-bottom:none;}
 .ss-mrow:first-of-type{padding-top:2px;}
 .ss-mtop{display:flex;align-items:center;gap:8px;}
@@ -353,7 +353,7 @@ const CSS = `
 .ss-chip-k{display:block;font-size:9.5px;font-weight:800;color:${FAINT};letter-spacing:.06em;}
 .ss-chip-v{display:block;font-size:13.5px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums;}
 
-.ss-toprow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed ${LINE};}
+.ss-toprow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid ${LINE};}
 .ss-toprow:last-child{border-bottom:none;}
 .ss-rank{flex:none;width:20px;height:20px;border-radius:50%;background:${NAVY};color:var(--white);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;}
 .ss-topmid{flex:1 1 auto;min-width:0;}
@@ -362,7 +362,7 @@ const CSS = `
 .ss-topbar span{display:block;height:100%;background:${GOLD};border-radius:3px;}
 .ss-topcount{flex:none;font-size:14px;font-weight:800;color:${NAVY};font-variant-numeric:tabular-nums;}
 
-.ss-lprow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed ${LINE};}
+.ss-lprow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid ${LINE};}
 .ss-lprow:last-child{border-bottom:none;}
 .ss-lpmid{flex:1 1 auto;min-width:0;}
 .ss-lpsub{font-size:11.5px;color:${MUTED};margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}

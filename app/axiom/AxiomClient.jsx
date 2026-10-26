@@ -800,7 +800,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
           .ax-tile:disabled{cursor:default;opacity:1;}
           .ax-tile.yes{background:var(--ax-good-soft);border:2px solid var(--ax-good);}
           .ax-tile.no{background:var(--ax-bad-soft);border:2px solid var(--ax-bad);}
-          .ax-tile.marked{background:transparent;border:1.5px dashed var(--ax-btn);color:var(--ax-mute);text-decoration:line-through;text-decoration-thickness:1.5px;}
+          .ax-tile.marked{background:transparent;border:1.5px solid var(--ax-btn);color:var(--ax-mute);text-decoration:line-through;text-decoration-thickness:1.5px;}
           .ax-g{font-size:13px;font-weight:900;line-height:1;}
           .ax-tile.yes .ax-g{color:var(--ax-good);}
           .ax-tile.no .ax-g{color:var(--ax-bad);}
@@ -822,7 +822,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
           .ax-rule.win{border:2px solid var(--ax-good);background:var(--ax-good-soft);color:var(--ax-ink);}
           .ax-rule.win .ax-chip{background:var(--ax-good);color:var(--stg-raise, var(--white));}
           .ax-rule.win .ax-tag{color:var(--ax-good);}
-          .ax-cands.naming .ax-rule:not(.wrong):not(:disabled){outline:2px dashed var(--ax-acc);outline-offset:2px;}
+          .ax-cands.naming .ax-rule:not(.wrong):not(:disabled){outline:2px solid var(--ax-acc);outline-offset:2px;}
           .ax-foot{display:flex;align-items:center;gap:10px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.15));margin-top:16px;padding-top:14px;}
           .ax-status{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
           .ax-line1{font-size:14px;font-weight:700;line-height:1.4;color:var(--ax-ink);}
@@ -832,7 +832,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
           .ax-obtn:hover{background:var(--stg-surf2, rgba(28,30,36,0.06));}
           .ax-obtn:disabled{color:var(--ax-mute);cursor:default;background:transparent;}
           .ax-name{font-family:${SANS};font-weight:800;font-size:15px;background:var(--ax-acc);color:var(--stg-onramp, var(--white));border:2px solid var(--ax-acc);border-radius:12px;padding:0 20px;min-height:48px;cursor:pointer;white-space:nowrap;}
-          .ax-name.armed{background:transparent;color:var(--stg-acc-ink, ${COLORS.accentDeep});border-style:dashed;}
+          .ax-name.armed{background:transparent;color:var(--stg-acc-ink, ${COLORS.accentDeep});border-style:solid;}
           .ax-link{font-family:${SANS};font-weight:700;font-size:13px;background:none;border:0;color:var(--ax-mute);text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 6px;cursor:pointer;}
           .ax-foot-tools{display:none;}
           .ax-foot-desk{display:flex;gap:10px;align-items:center;}

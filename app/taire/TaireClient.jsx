@@ -225,7 +225,7 @@ function CardFace({ card, w, h, pile = false, covered = false, lifted = false, h
         border: lifted ? '3px solid var(--stg-acc-ink, var(--stg-acc, #1d6b4f))' : `1.5px solid ${CARD_EDGE}`,
         boxShadow: ring, color: red ? RED_PIP : BLACK_PIP, fontFamily: SANS, padding: 0,
         position: 'relative', lineHeight: 1, cursor: onClick ? 'pointer' : 'default', userSelect: 'none',
-        outline: drop ? '2.5px dashed var(--stg-acc-ink, var(--stg-acc, #1d6b4f))' : 'none', outlineOffset: drop ? 3 : 0,
+        outline: drop ? '2.5px solid var(--stg-acc-ink, var(--stg-acc, #1d6b4f))' : 'none', outlineOffset: drop ? 3 : 0,
         flexShrink: 0, ...style,
       }}>
       {pile ? (
@@ -687,8 +687,8 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
 .tai-pc.bur{justify-content:flex-start;padding-top:6px;}
 .tai-pc.lift{transform:translateY(-10px);background:var(--pst-ink);color:var(--pst-bg) !important;}
 .tai-pc.drop{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink);}
-.tai-pc.hint{outline:3px dashed var(--pst-ink);outline-offset:3px;}
-.tai-slot{box-sizing:border-box;width:var(--tai-w);height:var(--tai-h);border-radius:8px;border:2px dashed var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-weight:800;padding:0;font-size:12px;}
+.tai-pc.hint{outline:3px solid var(--pst-ink);outline-offset:3px;}
+.tai-slot{box-sizing:border-box;width:var(--tai-w);height:var(--tai-h);border-radius:8px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-weight:800;padding:0;font-size:12px;}
 .tai-slot.pip{font-size:22px;}
 .tai-slot:disabled{cursor:default;}
 .tai-slot.drop{border-style:solid;box-shadow:0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink);}
@@ -700,7 +700,7 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
 .tai-col{position:relative;}
 .tai-col>*{position:absolute;left:0;}
 .tai-say{text-align:center;font-size:15px;font-weight:800;line-height:1.35;min-height:2.7em;}
-.tai-q2{border-style:dashed !important;}
+.tai-q2{border-style:solid !important;}
 .tai-q2.on{border-style:solid !important;}
 @keyframes taiShake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 @media (prefers-reduced-motion: reduce){.tai-tab.shake{animation:none}.tai-pc{transition:none}}`;
@@ -840,8 +840,8 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
           @keyframes tashake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
           .ta-k{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};}
           @media(max-width:560px){.ta-k{font-size:10px;}}
-          .ta-drop{box-sizing:border-box;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #1d6b4f)) 22%, var(--stg-cell, #ffffff));border:2.5px dashed var(--stg-acc-ink, var(--stg-acc, #1d6b4f));color:var(--stg-acc-ink, #1d6b4f);font-family:${SANS};font-weight:800;letter-spacing:.06em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-          .ta-hole{box-sizing:border-box;background:var(--stg-cell, rgba(0,0,0,0.06));border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.3));padding:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+          .ta-drop{box-sizing:border-box;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #1d6b4f)) 22%, var(--stg-cell, #ffffff));border:2.5px solid var(--stg-acc-ink, var(--stg-acc, #1d6b4f));color:var(--stg-acc-ink, #1d6b4f);font-family:${SANS};font-weight:800;letter-spacing:.06em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+          .ta-hole{box-sizing:border-box;background:var(--stg-cell, rgba(0,0,0,0.06));border:2px solid var(--stg-cell-line, rgba(28,30,36,0.3));padding:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
           .ta-ctl{font-family:${SANS};font-weight:700;font-size:14px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};background:transparent;color:${INK};border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;}
           .ta-ctl:hover:not(:disabled){background:var(--stg-surf2, rgba(28,30,36,0.05));}
           .ta-ctl:disabled{cursor:default;color:${FADED};}

@@ -736,7 +736,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
           .lk-lv{display:inline-flex;gap:4px;margin-top:2px;}
           .lk-lv i{width:7px;height:7px;border-radius:50%;box-sizing:border-box;border:1.5px solid currentColor;opacity:.85;}
           .lk-lv i.on{background:currentColor;}
-          .stage-page .lk-band-miss{background:transparent;border:2px dashed var(--stg-acc-ink);color:var(--stg-ink2);}
+          .stage-page .lk-band-miss{background:transparent;border:2px solid var(--stg-acc-ink);color:var(--stg-ink2);}
           .stage-page .lk-band-miss .lk-band-k{color:var(--stg-acc-ink);}
           .stage-page .lk-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px;}
           .stage-page .lk-tile{min-height:96px;border-radius:14px;border:2px solid var(--stg-cell-line);background:var(--stg-cell);color:var(--stg-ink);box-shadow:none;font-size:var(--lk-fs,17px);letter-spacing:.03em;line-height:1.15;padding:4px 6px;transition:background .12s,transform .12s,border-color .12s;}
@@ -912,7 +912,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
         {!STAGE && lost && (!LOFT || revealed) && unsolvedCis.map((ci) => {
           const cc = catTone(ci);
           return (
-            <div key={ci} style={{ background: STAGE ? SURF : T.white, border: `1.5px dashed ${cc.bg}`, borderRadius: 10, padding: '10px 14px', marginBottom: 8, textAlign: 'center' }}>
+            <div key={ci} style={{ background: STAGE ? SURF : T.white, border: `1.5px solid ${cc.bg}`, borderRadius: 10, padding: '10px 14px', marginBottom: 8, textAlign: 'center' }}>
               <div style={{ fontWeight: 800, fontSize: 13, textTransform: 'uppercase', letterSpacing: '.04em', color: cc.tc }}>{PUZZLE.groups[ci].name}</div>
               <div style={{ fontWeight: 700, fontSize: 13.5, color: FADED, marginTop: 2 }}>{PUZZLE.groups[ci].words.join(', ')}</div>
               <div style={{ color: cc.tc }}><span className="lk-lv" aria-label={LEVEL_NAMES[ci % 4]}>{[0, 1, 2, 3].map((d) => <i key={d} className={d <= ci % 4 ? 'on' : undefined} />)}</span></div>

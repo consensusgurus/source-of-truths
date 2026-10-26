@@ -654,10 +654,10 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
           /* The ring. Lines first, then the oval, then the slots, so every
              line runs UNDER the shapes it joins. */
           .fl-ring{position:relative;width:100%;}
-          .fl-line{position:absolute;left:50%;top:50%;height:0;border-top:2px dashed var(--stg-cell-line, rgba(28,30,36,0.4));transform-origin:0 50%;pointer-events:none;}
+          .fl-line{position:absolute;left:50%;top:50%;height:0;border-top:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));transform-origin:0 50%;pointer-events:none;}
           .fl-line.on{border-top-style:solid;border-top-color:var(--stg-acc-ink, ${COLORS.accent});}
           .fl-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);box-sizing:border-box;border-radius:50%;border:3px solid var(--stg-acc-ink, ${COLORS.accent});background:linear-gradient(var(--stg-acc-tint, transparent), var(--stg-acc-tint, transparent)), var(--stg-cell, ${T.white});display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
-          .fl-slot{position:absolute;transform:translate(-50%,-50%);box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px 8px;border-radius:22px;border:2px dashed var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, ${T.white});color:${FADED};font-family:${SANS};font-weight:800;line-height:1.1;transition:background .15s ease,border-color .15s ease;}
+          .fl-slot{position:absolute;transform:translate(-50%,-50%);box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px 8px;border-radius:22px;border:2px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, ${T.white});color:${FADED};font-family:${SANS};font-weight:800;line-height:1.1;transition:background .15s ease,border-color .15s ease;}
           .fl-slot.on{border-style:solid;border-color:var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, ${T.white});}
           .fl-slot.miss{border-color:var(--stg-bad, ${COLORS.rust});color:var(--stg-bad, ${COLORS.rust});}
           .fl-slot.flash{animation:flpop .5s ease;}

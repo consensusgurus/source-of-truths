@@ -491,7 +491,7 @@ const DEP_CSS = `
 .dp-landt .c{font-size:15px;font-weight:700;color:#9aa8c4;margin-top:6px;font-variant-numeric:tabular-nums}
 .dp-stops{display:flex;align-items:center;padding:14px 40px 20px}
 .dp-stop{flex:1 1 0;display:flex;align-items:center;min-width:0}
-.dp-stop b{width:34px;height:34px;flex:none;box-sizing:border-box;border-radius:50%;border:2px dashed rgba(255,255,255,.25);background:transparent;color:#0b0f1a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;transition:all .3s ease;font-variant-numeric:tabular-nums}
+.dp-stop b{width:34px;height:34px;flex:none;box-sizing:border-box;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:transparent;color:#0b0f1a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;transition:all .3s ease;font-variant-numeric:tabular-nums}
 .dp-stop span{margin-left:8px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9aa8c4}
 .dp-stop em{flex:1 1 auto;height:2px;margin:0 12px;background:rgba(255,255,255,.14)}
 .dp-stop.last em{background:transparent}
@@ -564,7 +564,7 @@ export const PP_CSS = `
     .pp-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${PP_STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${PP_STAGE ? 'transparent' : 'var(--white)'};color:${PP_STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
     .pp-board{border-radius:14px;}
     .pp-slots{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;}
-    .pp-slot{height:54px;border:1.5px dashed var(--pp-line);border-radius:9px;display:grid;place-items:center;position:relative;font-family:${MONO};font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:${PP_FADED};}
+    .pp-slot{height:54px;border:1.5px solid var(--pp-line);border-radius:9px;display:grid;place-items:center;position:relative;font-family:${MONO};font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:${PP_FADED};}
     .pp-slot.on{border-style:solid;border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:${PP_INK};}
     .pp-slot .pp-stamp{position:absolute;inset:3px;}
     .pp-stamp{--ink:#a78bfa;--rot:-6deg;border:2.5px solid var(--ink);color:var(--ink);border-radius:9px;display:grid;place-items:center;text-align:center;font-family:${STAMP_FONT};text-transform:uppercase;line-height:1;transform:rotate(var(--rot));box-shadow:inset 0 0 0 2px var(--pp-panel),inset 0 0 0 3.5px var(--ink);padding:2px;background:transparent;}
@@ -603,7 +603,7 @@ export const PP_CSS = `
     .pp-flagwrap{display:grid;place-items:center;padding:16px;background:var(--pp-panel);border:1.5px solid var(--pp-line);border-radius:14px;}
     .pp-flag{width:min(300px,100%);aspect-ratio:3/2;border-radius:3px;box-shadow:0 10px 26px rgba(0,0,0,.28);overflow:hidden;}
     .pp-flag svg{width:100%;height:100%;display:block;}
-    .pp-flag.empty{display:grid;place-items:center;border:1.5px dashed var(--pp-line);box-shadow:none;font:800 44px ${SANS};color:${PP_FADED};}
+    .pp-flag.empty{display:grid;place-items:center;border:1.5px solid var(--pp-line);box-shadow:none;font:800 44px ${SANS};color:${PP_FADED};}
     .pp-flag.wash{animation:ppwash 1s ease-out both;}
     @keyframes ppwash{from{opacity:0;filter:blur(10px)}to{opacity:1;filter:none}}
     .pp-flag.build{animation:ppbuild .7s cubic-bezier(.3,.8,.3,1) both;transform-origin:left center;}
@@ -675,7 +675,7 @@ export const PP_CSS = `
     .pp-gmap canvas{width:100%;height:100%;display:block;}
     .pp-pass{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr) 108px;background:${PASS_PAPER};color:#16202f;border-radius:14px;overflow:hidden;}
     .pp-pass .m{padding:12px 14px;min-width:0;}
-    .pp-pass .stub{padding:12px 10px;border-left:2px dashed #b8b1a0;display:flex;flex-direction:column;justify-content:space-between;}
+    .pp-pass .stub{padding:12px 10px;border-left:2px solid #b8b1a0;display:flex;flex-direction:column;justify-content:space-between;}
     .pp-pass .lab{font-family:${MONO};font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#6b6556;}
     .pp-pass .val{font-weight:800;font-size:15px;}
     .pp-pass .big{font-family:${MONO};font-size:28px;letter-spacing:.06em;line-height:1;}
@@ -994,7 +994,7 @@ export const LAUNCH_CSS = `
 .pl-pass .main b{font:800 21px ${SANS}}
 .pl-pass .main::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.5) 50%,transparent 70%);transform:translateX(-100%);animation:plsheen 2.6s 1.6s ease-in-out infinite}
 @keyframes plsheen{to{transform:translateX(100%)}}
-.pl-pass .stub{width:112px;border-left:2px dashed rgba(8,34,46,.4);padding:14px 12px;display:flex;flex-direction:column;justify-content:center;gap:2px;position:relative}
+.pl-pass .stub{width:112px;border-left:2px solid rgba(8,34,46,.4);padding:14px 12px;display:flex;flex-direction:column;justify-content:center;gap:2px;position:relative}
 .pl-pass .stub::before,.pl-pass .stub::after{content:'';position:absolute;left:-9px;width:16px;height:16px;border-radius:50%;background:var(--stg-ground,#0b0f1a)}
 .pl-pass .stub::before{top:-8px}.pl-pass .stub::after{bottom:-8px}
 .pl-pass .stub b{font:500 18px ${MONO}}
@@ -1009,7 +1009,7 @@ export const LAUNCH_CSS = `
 .pl-visa{margin-top:14px;background:#efe9da;border-radius:14px;padding:14px 14px 26px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;position:relative;box-shadow:0 14px 34px rgba(0,0,0,.5)}
 .pl-visa.n4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .pl-visa::before{content:'VISAS';position:absolute;right:14px;top:8px;font:500 9px ${MONO};letter-spacing:.2em;color:#9b917b}
-.pl-visa .slot{aspect-ratio:1/1.05;border:1.5px dashed #c8bfa8;border-radius:10px;margin-top:12px;position:relative}
+.pl-visa .slot{aspect-ratio:1/1.05;border:1.5px solid #c8bfa8;border-radius:10px;margin-top:12px;position:relative}
 .pl-visa .stamp{position:absolute;inset:4px;border:2.5px solid var(--c);border-radius:9px;color:var(--c);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:${STAMP_FONT};text-transform:uppercase;transform:rotate(var(--r));opacity:0;box-shadow:inset 0 0 0 2px #efe9da,inset 0 0 0 3.5px var(--c)}
 .pl-visa .stamp small{font-size:clamp(7px,1.8vw,10px);letter-spacing:.1em}
 .pl-visa .stamp b{font-size:clamp(16px,4.6vw,24px);font-weight:700;line-height:1}

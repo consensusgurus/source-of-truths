@@ -134,8 +134,8 @@ export default function BusinessNewsClient() {
     .bnh .sdate{flex:none;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:${C.soft};margin-right:2px;}
     .bnh .smeta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:${C.soft};margin-top:3px;}
     .bnh .splay{flex:none;width:34px;height:34px;border-radius:50%;background:${C.accent};color:var(--white);display:flex;align-items:center;justify-content:center;font-size:13px;}
-    .bnh .sbtn-soon{border-style:dashed;background:transparent;}
-    .bnh .sbtn-soon .sfav{background:transparent;border-style:dashed;color:${C.soft};}
+    .bnh .sbtn-soon{border-style:solid;background:transparent;}
+    .bnh .sbtn-soon .sfav{background:transparent;border-style:solid;color:${C.soft};}
     .bnh .sbtn-soon .sname{color:${C.soft};}
     .bnh .cosearch{margin:0 0 14px;position:relative;max-width:340px;}
     .bnh .cosearch input{width:100%;padding:9px 12px;border:1px solid ${C.line};border-radius:10px;font-family:${FONT};font-size:13.5px;background:var(--white);color:${C.ink};outline:none;}

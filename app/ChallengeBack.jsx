@@ -110,7 +110,7 @@ const CSS = `
 .cbk-g2{display:flex;align-items:center;justify-content:center;text-align:center;padding:0 8px;min-height:44px;border:1.5px solid var(--stg-line2,rgba(255,255,255,.2));border-radius:12px;
   color:var(--stg-ink,#e9edf4);font-size:13.5px;font-weight:800;text-decoration:none;}
 .cbk-g2:hover{border-color:var(--stg-ink2,#aab5c7);}
-.cbk-tx{order:3;flex:1 1 100%;display:flex;align-items:center;gap:18px;border:1.5px dashed #c9971f;border-radius:14px;padding:12px 20px;
+.cbk-tx{order:3;flex:1 1 100%;display:flex;align-items:center;gap:18px;border:1.5px solid #c9971f;border-radius:14px;padding:12px 20px;
   min-height:80px;box-sizing:border-box;background:#1c1708;}
 .cbk-tk{flex:none;width:78px;height:56px;}
 .cbk-tk svg{display:block;animation:cbkDrop .9s cubic-bezier(.3,1.2,.5,1) both;}

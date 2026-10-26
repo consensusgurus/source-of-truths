@@ -485,7 +485,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
         if (showAns) {
           letter = answer[idx];
           if (curSolved) { fg = flipping ? GOOD : INK; line = `2.5px solid ${GOOD}`; }
-          else { fg = BAD; line = `2.5px dashed ${BAD}`; }
+          else { fg = BAD; line = `2.5px solid ${BAD}`; }
         } else if (playing && idx === typed.length) { line = `3px solid ${ACC_INK}`; }
         return (
           <span key={idx} className={'sc-slot' + (flipping ? ' sc-flipc' : '')}

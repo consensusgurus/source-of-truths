@@ -205,7 +205,7 @@ export function CategoryView({ me, scope, cats, totalQuizzes, viewing }) {
               );
             })}
             {unplayedCats.map((c) => (
-              <div key={c.key} style={{ border: `1.5px dashed ${C.line}`, borderRadius: 12, padding: '13px 14px', minWidth: 0 }}>
+              <div key={c.key} style={{ border: `1.5px solid ${C.line}`, borderRadius: 12, padding: '13px 14px', minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                   <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#b4b2a9', flex: 'none' }} />
                   <span style={{ fontSize: 13, fontWeight: 800, color: C.muted }}>{c.label}</span>
@@ -621,7 +621,7 @@ export function TrophyCase({ trophies, viewing, stage }) {
                     </span>
                   </div>
                 ) : (
-                  <div key={t.id} style={{ border: `1.5px dashed ${C.line}`, borderRadius: 12, padding: '12px 13px', display: 'flex', gap: 11, alignItems: 'flex-start', minWidth: 0, opacity: 0.75 }}>
+                  <div key={t.id} style={{ border: `1.5px solid ${C.line}`, borderRadius: 12, padding: '12px 13px', display: 'flex', gap: 11, alignItems: 'flex-start', minWidth: 0, opacity: 0.75 }}>
                     <span style={{ flex: 'none', width: 38, height: 38, borderRadius: '50%', background: (stage ? S_WELL : '#f2f3f5'), color: (stage ? S_MUTE : '#9aa1ad'), display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                       <Ic size={18} />
                       <span style={{ position: 'absolute', right: -3, bottom: -3, width: 16, height: 16, borderRadius: '50%', background: stage ? 'var(--stg-raise,#0e131f)' : T.white, border: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: (stage ? S_MUTE : '#9aa1ad') }}><Lock size={9} /></span>

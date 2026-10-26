@@ -701,7 +701,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="Solve the grid, then name the one sign that is lying."
       chips={[
-        { label: 'Dashed sign: not yet tested', style: { background: 'transparent', border: '1.5px dashed var(--fb-btn)' } },
+        { label: 'Dashed sign: not yet tested', style: { background: 'transparent', border: '1.5px solid var(--fb-btn)' } },
         { label: 'Shaded sign: your grid satisfies it', tone: 'grey' },
         { label: 'Striped sign: your grid breaks it', tone: 'warn', style: { background: 'var(--fb-warn-stripe)', border: '2.5px solid var(--stg-warn, #b45309)' } },
         { label: 'Struck digit: repeated in its line', tone: 'bad', style: { textDecoration: 'line-through' } },
@@ -789,7 +789,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
     // sign carries a ring; after the game the liar does too.
     const stroke = isLiar ? 'var(--stg-bad, #b91c1c)' : st === 'broken' ? 'var(--stg-warn, #b45309)' : st === 'ok' ? 'var(--stg-ink2, #3f4757)' : 'var(--fb-btn)';
     const chipBg = isLiar ? 'var(--fb-bad-soft)' : st === 'broken' ? 'var(--fb-warn-stripe)' : st === 'ok' ? 'var(--fb-ok)' : 'transparent';
-    const chipBd = st === 'idle' && !isLiar ? '1.5px dashed var(--fb-btn)' : st === 'broken' ? '2.5px solid var(--stg-warn, #b45309)' : '1.5px solid transparent';
+    const chipBd = st === 'idle' && !isLiar ? '1.5px solid var(--fb-btn)' : st === 'broken' ? '2.5px solid var(--stg-warn, #b45309)' : '1.5px solid transparent';
     const ringed = accused || isLiar;
     const stateWord = st === 'idle' ? 'not yet tested' : st === 'ok' ? 'your grid satisfies it' : 'your grid breaks it';
     boardCells.push(

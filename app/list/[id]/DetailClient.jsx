@@ -834,7 +834,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
                   const val = userCurrentVote[slot];
                   if (!val) {
                     return (
-                      <div key={slot} style={{ padding: '12px', minHeight: 72, border: `1.5px dashed ${T.slate}`, opacity: 0.5, fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate }}>
+                      <div key={slot} style={{ padding: '12px', minHeight: 72, border: `1.5px solid ${T.slate}`, opacity: 0.5, fontFamily: 'Manrope, monospace', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate }}>
                         {labels[slot]}
                       </div>
                     );
@@ -959,7 +959,7 @@ function ListDetail({ list, viewCount, voteData, userVotes, extras, relatedLists
               gap: 8,
               marginBottom: 18,
               padding: 14,
-              border: `1.5px dashed ${T.ink}`,
+              border: `1.5px solid ${T.ink}`,
               background: T.surfaceAlt,
             }}
           >

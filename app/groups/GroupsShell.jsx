@@ -229,7 +229,7 @@ const GROUPS_CSS = `
 .grp-pill.gold{background:#e8b43a;color:#08222e;}
 .grp-pill.wait{background:var(--stg-surf2);color:var(--stg-mute);}
 .grp-pill.line{border:1px solid var(--stg-line2);color:var(--stg-ink2);}
-.grp-tag{font-family:"Manrope",ui-monospace,monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);border:1px dashed var(--stg-line2);border-radius:999px;padding:1px 6px;margin-left:6px;vertical-align:1px;}
+.grp-tag{font-family:"Manrope",ui-monospace,monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);border:1px solid var(--stg-line2);border-radius:999px;padding:1px 6px;margin-left:6px;vertical-align:1px;}
 @media(max-width:560px){
   .grp-cap{padding-left:16px;padding-right:16px;gap:10px;}
   .grp-eb{display:none;}

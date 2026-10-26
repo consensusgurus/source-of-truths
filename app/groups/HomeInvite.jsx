@@ -74,7 +74,7 @@ const CSS = `
 .hgi{display:flex;flex-direction:column;gap:6px;min-width:0;align-self:start;}
 .hgi-h{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:9.5px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
-.hgi-c{border:1px dashed var(--stg-line2);border-radius:12px;background:var(--stg-surf);
+.hgi-c{border:1px solid var(--stg-line2);border-radius:12px;background:var(--stg-surf);
   padding:10px 12px;display:flex;flex-direction:column;gap:9px;min-width:0;}
 .hgi-t b{display:block;font-size:14.5px;font-weight:800;}
 .hgi-t i{font-style:normal;display:block;margin-top:3px;font-size:12.5px;color:var(--stg-mute);}

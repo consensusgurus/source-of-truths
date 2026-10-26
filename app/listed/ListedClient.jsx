@@ -724,7 +724,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
       banner={<>Order them, {PUZZLE.hi.toLowerCase()} at the top, {PUZZLE.lo.toLowerCase()} at the bottom.</>}
       chips={[
         { label: 'Filled: exactly right, locks with its figure', style: STAGE ? { background: 'var(--stg-acc)', border: '1.5px solid var(--stg-acc-ink, var(--stg-acc))', color: 'var(--stg-onramp)' } : { background: COLORS.lockSoft, border: `1.5px solid ${COLORS.lock}`, color: COLORS.lockInk } },
-        { label: 'Dashed: off by one place', style: { background: `var(--stg-surf, ${COLORS.nearSoft})`, border: `1.5px dashed var(--stg-warn, ${COLORS.near})`, color: `var(--stg-ink, ${COLORS.nearInk})` } },
+        { label: 'Dashed: off by one place', style: { background: `var(--stg-surf, ${COLORS.nearSoft})`, border: `1.5px solid var(--stg-warn, ${COLORS.near})`, color: `var(--stg-ink, ${COLORS.nearInk})` } },
         { label: 'Plain: two or more places away', tone: 'grey' },
       ]}
       steps={[
@@ -974,7 +974,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
                 const rowInk = locked ? 'var(--stg-onramp)' : INK;
                 const bg = locked ? 'var(--stg-acc)' : dropHere ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 16%, var(--stg-surf2))' : 'var(--stg-surf2)';
                 const bord = locked || dropHere ? '1.5px solid var(--stg-acc)' : near ? '1.5px solid var(--stg-warn)' : '1.5px solid var(--stg-line2)';
-                const bord_INK = locked || dropHere ? '1.5px solid var(--stg-acc-ink, var(--stg-acc))' : near ? '2px dashed var(--stg-warn)' : '1.5px solid var(--stg-line2)';
+                const bord_INK = locked || dropHere ? '1.5px solid var(--stg-acc-ink, var(--stg-acc))' : near ? '2px solid var(--stg-warn)' : '1.5px solid var(--stg-line2)';
                 return (
                   <div key={it} className="ls-rowwrap" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span className="ls-num" style={{ flex: '0 0 auto', width: 30, textAlign: 'right', fontFamily: MONO, fontSize: 20, fontWeight: 500, color: locked ? 'var(--stg-acc-ink)' : near ? 'var(--stg-warn)' : 'var(--stg-mute2)' }}>{slot + 1}</span>
@@ -1081,8 +1081,8 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
               const dragging = drag && drag.from === slot;
               const dropHere = drag && !dragging && drag.target === slot;
               const bg = locked ? `var(--stg-surf2, ${COLORS.lockSoft})` : dropHere ? `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.brand})) 16%, transparent)` : near ? `var(--stg-surf2, ${COLORS.nearSoft})` : `var(--stg-surf, ${T.white})`;
-              const bord = locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc, ${COLORS.brand})` : near ? `2px dashed var(--stg-warn, ${COLORS.near})` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))';
-              const bord_INK = locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.brand}))` : near ? `2px dashed var(--stg-warn, ${COLORS.near})` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))';
+              const bord = locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc, ${COLORS.brand})` : near ? `2px solid var(--stg-warn, ${COLORS.near})` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))';
+              const bord_INK = locked ? '1.5px solid var(--stg-good, rgba(21,128,61,0.5))' : dropHere ? `1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.brand}))` : near ? `2px solid var(--stg-warn, ${COLORS.near})` : '1.5px solid var(--stg-line2, rgba(28,30,36,0.32))';
               return (
                 <div key={it} ref={(el) => { rowRefs.current[slot] = el; }} onPointerDown={draggable ? (e) => startDrag(slot, e) : undefined} title={draggable ? 'Drag to reorder' : undefined}
                   style={{ display: 'flex', alignItems: 'center', gap: 9, background: bg, border: bord_INK, borderRadius: 9, padding: '9px 11px', cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined, position: dragging ? 'relative' : undefined, zIndex: dragging ? 5 : undefined, transform: dragging ? `translateY(${drag.dy}px)` : undefined, boxShadow: dragging ? '0 8px 20px rgba(20,22,28,0.22)' : undefined, opacity: dragging ? 0.96 : undefined, touchAction: draggable ? 'none' : undefined }}>

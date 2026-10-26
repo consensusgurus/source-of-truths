@@ -15,7 +15,7 @@ const CSS = `
 .si-w.sel{background:#fff8dc;border-color:var(--kink);transform:translateY(2px);box-shadow:0 1px 0 #e9d9ad}
 .si-w.gone{visibility:hidden}
 .si-bins{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.si-bin{border-radius:18px;padding:10px;border:3px dashed var(--kline);min-height:150px;cursor:pointer;transition:transform .1s,border-color .15s;text-align:left;font:inherit;color:inherit}
+.si-bin{border-radius:18px;padding:10px;border:3px solid var(--kline);min-height:150px;cursor:pointer;transition:transform .1s,border-color .15s;text-align:left;font:inherit;color:inherit}
 .si-bin.arm{border-style:solid;transform:scale(1.02)}
 .si-bin.full{border-style:solid}
 .si-bin h3{font-size:16px;font-weight:700;margin-bottom:8px;line-height:1.15}

@@ -256,7 +256,7 @@ export default function CreateClient({ lists }) {
       {/* Step 3 — add lists in order */}
       <SectionLabel>3 · Add lists ({filledCount} of {tiles.length})</SectionLabel>
       {gridFull ? (
-        <div style={{ padding: '14px 16px', border: `1.5px dashed ${T.slate}`, marginBottom: 16, fontFamily: 'Manrope, sans-serif', fontSize: 14, color: T.slate }}>
+        <div style={{ padding: '14px 16px', border: `1.5px solid ${T.slate}`, marginBottom: 16, fontFamily: 'Manrope, sans-serif', fontSize: 14, color: T.slate }}>
           All {tiles.length} tiles are filled. Remove one below to swap in a different list.
         </div>
       ) : (
@@ -317,7 +317,7 @@ export default function CreateClient({ lists }) {
               alignItems: 'center',
               gap: 12,
               padding: '11px 14px',
-              border: t ? `1.5px solid ${T.ink}` : `1.5px dashed ${T.slate}`,
+              border: t ? `1.5px solid ${T.ink}` : `1.5px solid ${T.slate}`,
               background: t ? T.surfaceAlt : 'transparent',
             }}
           >
@@ -444,7 +444,7 @@ const Board = forwardRef(function Board({ tiles, format, title, voteData, extras
                   minHeight: 230,
                   background: t ? T.surfaceAlt : 'transparent',
                   color: T.ink,
-                  border: t ? `2px solid ${T.ink}` : `2px dashed ${T.slate}`,
+                  border: t ? `2px solid ${T.ink}` : `2px solid ${T.slate}`,
                   padding: 26,
                   display: 'flex',
                   flexDirection: 'column',
@@ -461,7 +461,7 @@ const Board = forwardRef(function Board({ tiles, format, title, voteData, extras
                     <div style={{ fontFamily: 'Manrope, monospace', fontSize: 13, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.6, marginBottom: 10 }}>{pv.label}</div>
                     <ol style={{ margin: 0, padding: 0, listStyle: 'none', fontFamily: 'Manrope, sans-serif', fontSize: 19 }}>
                       {pv.items.map((it, idx) => (
-                        <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: idx < 2 ? `1px dashed ${T.slate}` : 'none' }}>
+                        <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: idx < 2 ? `1px solid ${T.slate}` : 'none' }}>
                           {idx < 3 ? (
                             <span style={{ position: 'relative', width: 30, height: 30, flex: '0 0 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                               <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: RANK_MEDALS[idx].fill, opacity: 0.3 }} />

@@ -172,7 +172,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .bb{
 .bb-tile{position:relative;flex:0 0 auto;width:52px;height:56px;border-radius:9px;border:0;background:var(--bb-tile);color:var(--bb-tile-ink);font-family:${SANS};font-size:24px;font-weight:800;padding:0;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);transition:transform .12s ease, box-shadow .12s ease;-webkit-tap-highlight-color:transparent;}
 .bb-tile .pts{position:absolute;right:5px;bottom:3px;font-size:10px;font-weight:800;}
 .bb-tile.armed{transform:translateY(-8px);box-shadow:0 0 0 3px var(--stg-acc-ink, var(--stg-acc,#7dd3fc)),0 10px 16px rgba(0,0,0,.3);}
-.bb-tile.used{background:transparent;box-shadow:none;border:1.5px dashed var(--stg-line2,rgba(255,255,255,.17));cursor:default;}
+.bb-tile.used{background:transparent;box-shadow:none;border:1.5px solid var(--stg-line2,rgba(255,255,255,.17));cursor:default;}
 .bb-tile:focus-visible{outline:2px solid var(--stg-acc-ink,#7dd3fc);outline-offset:3px;}
 .bb-out{font-size:13px;font-weight:700;color:var(--stg-ink,#e9edf4);padding:0 4px;align-self:center;}
 .bb-actions{grid-area:actions;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;}
@@ -360,7 +360,7 @@ const BAB_STAGE_CSS = `
 .pst .bab-tile{position:relative;width:52px;height:52px;border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:24px;font-weight:800;padding:0;}
 .pst .bab-tile small{position:absolute;right:5px;bottom:3px;font-size:10px;font-weight:800;}
 .pst .bab-tile.on{background:var(--pst-ink);color:var(--pst-bg);}
-.bab-gone{width:52px;height:52px;border-radius:11px;border:2px dashed var(--pst-rule);box-sizing:border-box;}
+.bab-gone{width:52px;height:52px;border-radius:11px;border:2px solid var(--pst-rule);box-sizing:border-box;}
 `;
 
 export default function BabelClient({ puzzles, forceNum }) {

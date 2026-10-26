@@ -815,7 +815,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
           .pl-cols > span,.pl-rows > span{flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;}
           .pl-rows > span{justify-content:flex-start;}
           .pl-grid{grid-column:2;grid-row:2;container-type:inline-size;--pl-po:-5px;--pl-pi:-7px;}
-          .pl-rail{position:absolute;inset:4px;border:1.5px dashed;border-radius:2px;opacity:.55;}
+          .pl-rail{position:absolute;inset:4px;border:1.5px solid;border-radius:2px;opacity:.55;}
           .pl-post{position:absolute;width:8px;height:8px;}
           .pl-pin{position:absolute;width:13px;height:13px;border-radius:50%;}
           .pl-dims{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);white-space:nowrap;font-size:12px;font-weight:800;border:1.5px solid;border-radius:6px;padding:3px 8px;font-variant-numeric:tabular-nums;z-index:2;}
@@ -969,7 +969,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
               {preview && (
                 <div style={{
                   position: 'absolute', left: pct(preview[1]), top: pct(preview[0]), width: pct(preview[2]), height: pct(preview[3]),
-                  border: `2.5px dashed ${drag && drag.off ? P_CELL_LINE : previewOk ? P_GOOD : P_LINE3}`,
+                  border: `2.5px solid ${drag && drag.off ? P_CELL_LINE : previewOk ? P_GOOD : P_LINE3}`,
                   background: drag && drag.off ? 'transparent' : previewOk ? `color-mix(in srgb, ${P_GOOD} 22%, ${P_CELL})` : 'var(--stg-surf2, rgba(28,30,36,0.07))',
                   opacity: drag && drag.off ? 0.4 : 1,
                   borderRadius: 3, boxSizing: 'border-box', pointerEvents: 'none',

@@ -386,7 +386,7 @@ function SubmitView({ mode = 'list', onBack, onSubmit }) {
                 marginTop: 12,
                 background: 'transparent',
                 color: T.ink,
-                border: `1.5px dashed ${T.ink}`,
+                border: `1.5px solid ${T.ink}`,
                 padding: '10px 16px',
                 fontFamily: 'Manrope, monospace',
                 fontSize: 10,

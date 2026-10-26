@@ -620,7 +620,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
               .dos-cell.hit *{color:var(--pst-bg);}
               .dos-cell.hit i{opacity:.9;}
               .dos-cell.no{opacity:.55;}
-              .dos-pin{border:2px dashed var(--pst-ink);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;line-height:1.45;}
+              .dos-pin{border:2px solid var(--pst-ink);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;line-height:1.45;}
               .dos-pin b{font-weight:800;}
             ` }} />
             <h2 className="pst-q">Name the hidden {U.noun}</h2>
@@ -727,7 +727,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
           .ds-file{margin:2px 0 0;}
           .ds-tab{display:inline-block;background:var(--stg-ground, #f4f6f9);border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-bottom:none;border-radius:10px 10px 0 0;padding:8px 16px 6px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-acc-ink, ${COLORS.accent});position:relative;top:1px;}
           .ds-sheet{background:var(--stg-ground, #f4f6f9);border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:0 14px 14px 14px;padding:14px 18px 6px;}
-          .ds-subj{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1.5px dashed var(--stg-line3, rgba(28,30,36,0.45));flex-wrap:wrap;}
+          .ds-subj{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1.5px solid var(--stg-line3, rgba(28,30,36,0.45));flex-wrap:wrap;}
           .ds-sl,.ds-pinned,.ds-outl,.ds-evt,.ds-evk,.ds-colk{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:${FADED};}
           .ds-redact{width:180px;height:22px;border-radius:4px;background:repeating-linear-gradient(135deg,var(--stg-line3, rgba(28,30,36,0.45)) 0 6px,var(--stg-surf2, #e4e9f1) 6px 12px);}
           .ds-sname{font-size:17px;font-weight:800;color:${INK};}

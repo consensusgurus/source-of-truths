@@ -600,7 +600,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
               .cld-d{width:18px;height:18px;border-radius:9px;background:var(--pst-ink);flex:none;position:relative;z-index:1;box-sizing:border-box;}
               .cld-l{font-size:16px;font-weight:800;}
               .cld-g{font-size:12px;font-weight:700;opacity:.75;margin-left:auto;text-align:right;}
-              .cld-rg.un .cld-d{background:var(--pst-bg);border:2px dashed var(--pst-ink);}
+              .cld-rg.un .cld-d{background:var(--pst-bg);border:2px solid var(--pst-ink);}
               .cld-rg.un .cld-l{opacity:.6;}
               .cld-rg.ans .cld-d{border-radius:5px;background:var(--pst-bg);border:2px solid var(--pst-ink);}
               .cld-rg.ans::before{bottom:50%;}
@@ -694,7 +694,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
           .cl-bars{display:flex;gap:4px;}
           .cl-bar{width:22px;height:8px;border-radius:4px;box-sizing:border-box;border:1.5px solid var(--stg-acc-ink, ${COLORS.accent});}
           .cl-bar.on{background:var(--stg-acc-ink, ${COLORS.accent});}
-          .cl-bar.off{border-style:dashed;}
+          .cl-bar.off{border-style:solid;}
           .cl-panel{background:var(--stg-ground, #f6f7f9);border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:14px;padding:12px 0;overflow:hidden;}
           .cl-r{position:relative;display:flex;align-items:center;min-height:46px;}
           .cl-r.band{background:var(--stg-acc-tint, ${COLORS.accentSoft});}
@@ -707,13 +707,13 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
           .cl-r.ghost .cl-bn{color:${FADED};}
           .cl-tk{position:relative;width:40px;flex:none;align-self:stretch;}
           .cl-ln{position:absolute;left:18px;width:0;border-left:3px solid var(--stg-acc-ink, ${COLORS.accent});}
-          .cl-ln.dash{border-left-style:dashed;}
-          .cl-ln.dot{border-left-style:dotted;}
+          .cl-ln.dash{border-left-style:solid;}
+          .cl-ln.dot{border-left-style:solid;}
           .cl-ln.t{top:0;height:50%;}
           .cl-ln.b{top:50%;bottom:0;}
           .cl-nd{position:absolute;left:13px;top:50%;margin-top:-6.5px;width:13px;height:13px;border-radius:50%;background:var(--stg-acc-ink, ${COLORS.accent});}
           .cl-r.deep .cl-nd{left:8px;margin-top:-11.5px;width:23px;height:23px;box-sizing:border-box;border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-ground, #ffffff);box-shadow:inset 0 0 0 4px var(--stg-ground, #ffffff), inset 0 0 0 11px var(--stg-acc-ink, ${COLORS.accent});}
-          .cl-r.ghost .cl-nd{left:10px;margin-top:-9.5px;width:19px;height:19px;box-sizing:border-box;border:2px dashed var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-cell, #ffffff);}
+          .cl-r.ghost .cl-nd{left:10px;margin-top:-9.5px;width:19px;height:19px;box-sizing:border-box;border:2px solid var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-cell, #ffffff);}
           /* The finish beat (lib/finish-beats.js, def clade) draws the trunk down
              .cl-rung markers and dims .cl-row cards: one marker per branch, 6px
              right of the trunk, so the line it draws lands on the trunk. */
@@ -729,7 +729,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
           .cl-cn{font-size:14px;font-weight:800;line-height:1.2;}
           .cl-cs{font-size:11.5px;font-weight:700;line-height:1.3;color:${FADED};}
           .cl-leaf{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;padding:6px 0 4px;}
-          .cl-box{min-height:42px;box-sizing:border-box;padding:4px 14px;border:2px dashed var(--stg-acc-ink, ${COLORS.accent});border-radius:11px;display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:${INK};}
+          .cl-box{min-height:42px;box-sizing:border-box;padding:4px 14px;border:2px solid var(--stg-acc-ink, ${COLORS.accent});border-radius:11px;display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:${INK};}
           .cl-box i{font-style:normal;font-size:17px;color:var(--stg-acc-ink, ${COLORS.accent});}
           .cl-box.ans{border-style:solid;background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, #ffffff);}
           .cl-box.ans .cl-n{background:var(--stg-onramp, #ffffff);color:var(--stg-acc, ${COLORS.accent});}

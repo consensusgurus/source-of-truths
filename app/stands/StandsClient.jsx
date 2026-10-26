@@ -573,7 +573,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
           .sd-rowh{display:flex;align-items:center;gap:8px;min-width:0;}
           .sd-rowh .nm{font-family:${SANS};font-size:13.5px;font-weight:800;color:${INK};line-height:1.15;min-width:0;}
           .sd-rowh .ab{display:none;font-family:${SANS};font-size:10px;font-weight:800;letter-spacing:.06em;color:${INK};}
-          .sd-cell{height:46px;width:100%;box-sizing:border-box;border-radius:8px;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);color:${FADED};font-family:${SANS};font-size:17px;font-weight:800;padding:0;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
+          .sd-cell{height:46px;width:100%;box-sizing:border-box;border-radius:8px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));background:var(--stg-cell, #fff);color:${FADED};font-family:${SANS};font-size:17px;font-weight:800;padding:0;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
           .sd-cell:disabled{cursor:default;}
           .sd-cell:not(:disabled):hover{border-color:var(--stg-acc-ink, ${COLORS.accent});}
           .sd-cell.W{background:var(--stg-acc, ${COLORS.accent});border:1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));color:var(--stg-onramp, #fff);}
@@ -611,7 +611,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
           .sd-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:${SANS};font-weight:800;font-size:14px;border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;background:transparent;color:var(--stg-ink2, ${COLORS.ink});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));}
           .sd-btn:disabled{color:${FADED};cursor:default;}
           .sd-btn.go{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));padding:0 18px;}
-          .sd-btn.go:disabled{background:transparent;color:${FADED};border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));cursor:not-allowed;}
+          .sd-btn.go:disabled{background:transparent;color:${FADED};border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));cursor:not-allowed;}
           .sd-btn.nudge{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, transparent);color:var(--stg-acc-ink, ${COLORS.accentDeep});border-color:var(--stg-acc-ink, ${COLORS.accent});}
           .sd-btn .ph{display:none;}
           .sd-fnote{margin-left:auto;font-family:${SANS};font-size:12px;font-weight:600;line-height:1.4;color:${FADED};text-align:right;}

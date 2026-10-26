@@ -448,7 +448,7 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .arc-chips button{
 .arc-key .k{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--stg-cell,var(--stg-surf2));border:1px solid var(--stg-cell-line,var(--stg-line));}
 .arc-key .k.solved{background:var(--cc);border-color:var(--cci, var(--cc));}
 .arc-key .k.played{border:2px solid var(--cci, var(--cc));}
-.arc-key .k.started{border:1.5px dashed var(--cci, var(--cc));}
+.arc-key .k.started{border:1.5px solid var(--cci, var(--cc));}
 .arc-key .k.sun{position:relative;}
 .arc-key .k.sun::after{content:'';position:absolute;right:1px;top:1px;width:4px;height:4px;border-radius:50%;background:var(--stg-warn,#e8b43a);}
 
@@ -485,7 +485,7 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .arc-chips button{
 .arc-d:hover{border-color:var(--cci, var(--cc));color:var(--stg-ink);}
 .arc-d.solved{background:var(--cc);border-color:var(--cci, var(--cc));color:var(--cco);}
 .arc-d.played{border:2px solid var(--cci, var(--cc));color:var(--stg-ink);}
-.arc-d.started{border:1.5px dashed var(--cci, var(--cc));}
+.arc-d.started{border:1.5px solid var(--cci, var(--cc));}
 .arc-d.today{outline:2px solid var(--stg-ink);outline-offset:1px;}
 .arc-d.sun::after{content:'';position:absolute;right:2px;top:2px;width:4px;height:4px;border-radius:50%;background:var(--stg-warn,#e8b43a);}
 .arc-d.solved.sun::after{background:var(--cco);}

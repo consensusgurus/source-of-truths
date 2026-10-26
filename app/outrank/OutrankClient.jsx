@@ -843,18 +843,18 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
           .ork-cardwrap{position:relative;padding:0 3px;margin-bottom:16px;}
           .ork-card{box-sizing:border-box;width:100%;min-height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px 6px;font-family:${SANS};font-weight:800;font-size:12.5px;line-height:1.15;overflow-wrap:anywhere;margin:0;}
           .ork-card.on{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border:0;cursor:pointer;}
-          .ork-card.next{border:2px dashed var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-ground, transparent);}
-          .ork-card.open{border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));color:var(--stg-mute, ${COLORS.faded});background:var(--stg-ground, transparent);}
+          .ork-card.next{border:2px solid var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});background:var(--stg-ground, transparent);}
+          .ork-card.open{border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));color:var(--stg-mute, ${COLORS.faded});background:var(--stg-ground, transparent);}
           .ork-ped{position:relative;height:var(--h);margin:0 3px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-bottom:0;border-top:4px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:8px 8px 0 0;background:var(--stg-cell, var(--white));display:flex;justify-content:center;padding-top:8px;font-family:${MONO};font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--stg-mute, ${COLORS.faded});}
           .ork-ped.on{border-top-color:var(--stg-acc-ink, ${COLORS.accent});color:var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, var(--stg-cell, var(--white)));}
-          .ork-ped::before{content:'';position:absolute;left:5px;right:-9px;top:-11px;bottom:0;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));border-bottom:0;border-radius:8px 8px 0 0;z-index:-1;}
+          .ork-ped::before{content:'';position:absolute;left:5px;right:-9px;top:-11px;bottom:0;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-bottom:0;border-radius:8px 8px 0 0;z-index:-1;}
           .ork-base{height:2px;background:var(--stg-cell-line, rgba(28,30,36,0.3));}
-          .ork-crowd{margin:8px 3px 0;height:26px;box-sizing:border-box;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});white-space:nowrap;overflow:hidden;}
+          .ork-crowd{margin:8px 3px 0;height:26px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});white-space:nowrap;overflow:hidden;}
           .ork-ph{display:none;}
           .ork-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin-top:10px;font-family:${MONO};font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
           .ork-legend > span{display:inline-flex;align-items:center;gap:6px;}
           .ork-sw{width:16px;height:12px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-top:3px solid var(--stg-acc-ink, ${COLORS.accent});background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, var(--stg-cell, var(--white)));}
-          .ork-sw.ghost{border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;}
+          .ork-sw.ghost{border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;}
           .ork-facerow{display:flex;align-items:center;gap:16px;margin:22px 0 4px;flex-wrap:wrap;}
           .ork-face-note{flex:1 1 220px;font-family:${SANS};font-size:12.5px;font-weight:600;line-height:1.45;color:var(--stg-mute, ${COLORS.faded});}
           .ork-face{font-family:${SANS};font-weight:800;font-size:15px;border:none;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));border-radius:12px;padding:0 22px;min-height:52px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;}
@@ -868,7 +868,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
             .ork-step{flex-direction:row;align-items:center;gap:8px;}
             .ork-rk{display:block;flex:0 0 18px;text-align:right;font-family:${MONO};font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;}
             .ork-cardwrap{flex:1 1 auto;margin:0;padding:0;}
-            .ork-cardwrap::before{content:'';position:absolute;left:6px;top:5px;width:calc(var(--w) - 6px);height:44px;box-sizing:border-box;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:0 9px 9px 0;}
+            .ork-cardwrap::before{content:'';position:absolute;left:6px;top:5px;width:calc(var(--w) - 6px);height:44px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));border-radius:0 9px 9px 0;}
             .ork-card{position:relative;width:calc(var(--w) - 6px);min-height:44px;height:44px;justify-content:flex-start;text-align:left;border-radius:0 9px 9px 0;font-size:14px;padding:0 12px;}
             .ork-card.open{background:var(--stg-cell, var(--white));border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));}
             .ork-ped,.ork-base{display:none;}

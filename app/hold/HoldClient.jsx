@@ -670,7 +670,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
 .hol-pc i{font-style:normal;font-size:20px;color:inherit}
 .hol-pc.red{color:${FACE_RED} !important}
 .hol-pc.held{transform:translateY(-10px);box-shadow:0 6px 0 var(--pst-ink)}
-.hol-pc.new{border-style:dashed}
+.hol-pc.new{border-style:solid}
 .hol-pc.ring{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink)}
 .hol-pc.held.ring{box-shadow:0 6px 0 var(--pst-ink),0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink)}
 .hol-pc:disabled{cursor:default}
@@ -856,7 +856,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                 );
               }
               return (
-                <div key={i} role="listitem" title={`Hand ${i + 1}, to come`} style={{ ...base, background: 'transparent', border: `1.5px dashed ${CELL_LINE}` }}>
+                <div key={i} role="listitem" title={`Hand ${i + 1}, to come`} style={{ ...base, background: 'transparent', border: `1.5px solid ${CELL_LINE}` }}>
                   {!narrow && <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', color: S_MUTE }}>H{i + 1}</span>}
                 </div>
               );
@@ -944,7 +944,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                         aria-label={label}
                         style={{
                           width: CW, height: CH, borderRadius: narrow ? 8 : 11, display: 'block',
-                          border: held && !showFin ? `3px solid ${A_FILL_INK}` : drawn ? `2px dashed ${A_FILL}` : `1.5px solid ${FACE_EDGE}`,
+                          border: held && !showFin ? `3px solid ${A_FILL_INK}` : drawn ? `2px solid ${A_FILL}` : `1.5px solid ${FACE_EDGE}`,
                           boxShadow: shadow, transform: `translateY(-${lift}px)`, cursor: live ? 'pointer' : 'default',
                         }}>
                         <CardFace card={c} sz={FACE_SZ} />

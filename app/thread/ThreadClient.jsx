@@ -662,7 +662,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
               .thr-lg .s small{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
               .thr-sol{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
               .thr-sol span{background:var(--pst-ink);color:var(--pst-bg);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800;}
-              .thr-call{display:flex;align-items:center;justify-content:space-between;gap:10px;border:2px dashed var(--pst-ink);border-radius:16px;padding:10px 10px 10px 14px;}
+              .thr-call{display:flex;align-items:center;justify-content:space-between;gap:10px;border:2px solid var(--pst-ink);border-radius:16px;padding:10px 10px 10px 14px;}
               .thr-call.done{border-style:solid;}
               .thr-call .t{font-size:14px;font-weight:800;line-height:1.3;}
               .thr-call .t small{display:block;font-size:12px;font-weight:700;opacity:.75;}
@@ -817,8 +817,8 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
           .th-tile{position:relative;z-index:2;flex:1;min-width:0;box-sizing:border-box;text-align:left;font-family:${SANS};background:var(--stg-cell, ${T.white});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.35));border-radius:4px;padding:10px 12px;min-height:${PUZZLE.sunday ? 112 : 124}px;display:flex;flex-direction:column;gap:5px;color:${INK};}
           .th-tile.on{background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 14%, var(--stg-cell, ${T.white}));border-color:var(--stg-acc-ink, ${COLORS.accent});}
           .th-tile.thr{box-shadow:inset 0 0 0 2px var(--stg-cool, #7dd3fc);}
-          .th-tile.thr2{box-shadow:none;outline:2px dashed var(--stg-warn, #b45309);outline-offset:-4px;}
-          .th-tile.miss{border-color:var(--stg-bad, ${COLORS.rust});border-style:dashed;}
+          .th-tile.thr2{box-shadow:none;outline:2px solid var(--stg-warn, #b45309);outline-offset:-4px;}
+          .th-tile.miss{border-color:var(--stg-bad, ${COLORS.rust});border-style:solid;}
           .th-tile .n{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:${FADED};display:flex;justify-content:space-between;gap:6px;font-variant-numeric:tabular-nums;}
           .th-tile .n .tag{color:var(--stg-acc-ink, ${COLORS.accent});}
           .th-tile p{margin:0;font-size:${PUZZLE.sunday ? 13 : 13.5}px;line-height:1.35;font-weight:600;color:${INK};text-wrap:pretty;}

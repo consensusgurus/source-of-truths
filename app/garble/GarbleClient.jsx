@@ -347,7 +347,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
   const DONE_BG = STAGE ? 'var(--stg-ink)' : COLORS.ink;
   const DONE_FG = STAGE ? 'var(--stg-ground)' : T.white;
   const MISS_FG = STAGE ? 'var(--stg-bad)' : COLORS.rust;
-  const MISS_B = STAGE ? '1.5px dashed var(--stg-bad)' : '1.5px dashed rgba(192,57,43,0.55)';
+  const MISS_B = STAGE ? '1.5px solid var(--stg-bad)' : '1.5px solid rgba(192,57,43,0.55)';
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
   const ACC = STAGE ? STAGE_C : COLORS.accent;
   const ACC_DEEP = STAGE ? STAGE_C : COLORS.accentDeep;
@@ -847,7 +847,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
                 const fresh = lit && fx.solved === b.wi && landed && Date.now() - landed < 900;
                 return (
                   <span key={i} data-gbank={fk} className={fresh ? 'gb-land' : undefined}
-                    style={{ ...cellBase, width: 28, height: 28, fontSize: 13, borderRadius: '50%', boxSizing: 'border-box', background: lit ? COLORS.gold : (STAGE ? 'var(--stg-cell)' : COLORS.paper), color: lit ? COLORS.goldInk : (STAGE ? 'var(--stg-ink2)' : COLORS.faded), border: lit ? `1.5px solid ${COLORS.gold}` : (STAGE ? '1.5px dashed var(--stg-cell-line)' : '1.5px dashed rgba(20,22,28,0.3)') }}>{lit ? b.ch : '?'}</span>
+                    style={{ ...cellBase, width: 28, height: 28, fontSize: 13, borderRadius: '50%', boxSizing: 'border-box', background: lit ? COLORS.gold : (STAGE ? 'var(--stg-cell)' : COLORS.paper), color: lit ? COLORS.goldInk : (STAGE ? 'var(--stg-ink2)' : COLORS.faded), border: lit ? `1.5px solid ${COLORS.gold}` : (STAGE ? '1.5px solid var(--stg-cell-line)' : '1.5px solid rgba(20,22,28,0.3)') }}>{lit ? b.ch : '?'}</span>
                 );
               })}
               <span style={{ fontSize: 11, fontWeight: 700, color: FADED, alignSelf: 'center', marginLeft: 6 }}>your collected letters</span>

@@ -25,6 +25,7 @@
 // Both registers are published as --stg-acc-dk / --stg-acc-lt and globals.css
 // picks one, exactly as every daily client does: an inline style beats a
 // stylesheet, so a root setting --stg-acc directly could never be re-themed.
+import { BrandFit } from '@/lib/use-brand-fit';
 import { cycleSiteLook } from '@/lib/stage-look';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
 import ThemePop from '../ThemePop';
@@ -73,10 +74,10 @@ export default function CircuitFrame({ cat = null, label = 'Runs', progress = nu
           stage's first rule and the specific thing that was wrong here. */}
       <div className="cfr-cap">
         <div className="cfr-id">
-          <a className="cfr-brand" href={withTq('/')}>
+          <BrandFit><a className="cfr-brand" href={withTq('/')}>
             <MindLoftMark size={20} ink="var(--stg-ink)" accent="var(--stg-brand,#7dd3fc)" />
             <b>Mind <em>Loft</em></b>
-          </a>
+          </a></BrandFit>
           <span className="cfr-lab">{label}</span>
         </div>
         <a className="cfr-cx cfr-t" href={withTq('/')}>Today</a>

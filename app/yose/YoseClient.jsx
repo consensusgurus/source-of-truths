@@ -816,7 +816,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
           .yo-ctl.primary{background:var(--stg-acc,#e8b43a);color:var(--stg-onramp,#1c1a14);border-color:var(--stg-acc-ink, var(--stg-acc,#e8b43a));font-weight:800;padding:0 22px;}
           .yo-ctl.primary:hover{filter:brightness(1.05);}
           .yo-ctl.primary.armed{box-shadow:0 0 0 2px var(--stg-ground,#0b0f1a), 0 0 0 4px var(--stg-acc-ink,#e8b43a);}
-          .yo-ctl:disabled{cursor:default;background:transparent;color:var(--stg-mute,#8b95a8);border:1.5px dashed var(--stg-line2,rgba(255,255,255,.17));filter:none;box-shadow:none;}
+          .yo-ctl:disabled{cursor:default;background:transparent;color:var(--stg-mute,#8b95a8);border:1.5px solid var(--stg-line2,rgba(255,255,255,.17));filter:none;box-shadow:none;}
           .yo-link{background:none;border:none;cursor:pointer;font-family:${SANS};font-weight:700;font-size:12px;color:var(--stg-ink2,#aab5c7);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;min-height:44px;min-width:84px;padding:0;text-align:right;}
           .yo-link.armed{color:var(--stg-bad,#fb7185);}
           .yo-note{font-size:12px;font-weight:600;color:var(--stg-mute,#8b95a8);line-height:1.45;}

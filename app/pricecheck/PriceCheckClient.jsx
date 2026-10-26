@@ -523,7 +523,7 @@ const CSS = `
 .pc-play .pr-stop{border:2px solid var(--gsx-ink, currentColor);color:var(--gsx-ink, currentColor)}
 .pc-play .pc-banked{border-color:var(--gsx-ink, currentColor)}
 .pc-play .pr-go{flex:none}
-.pc-banked{margin:0 0 12px;padding:10px 12px;border:2px dashed currentColor;border-radius:12px;font-size:13px;font-weight:700;line-height:1.35}
+.pc-banked{margin:0 0 12px;padding:10px 12px;border:2px solid currentColor;border-radius:12px;font-size:13px;font-weight:700;line-height:1.35}
 .pc-last{display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px 0 8px;animation:pcrise .4s ease both}
 .pc-lastc{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border-radius:16px;border:2px solid currentColor}
 .pc-lastt{flex:1;display:flex;flex-direction:column;gap:3px;font-size:13px;font-weight:600;min-width:0}

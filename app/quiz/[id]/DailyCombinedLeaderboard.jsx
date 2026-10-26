@@ -380,7 +380,7 @@ function PlayerName({ row, mine, th }) {
   const label = row.username;
   return (
     <span style={{ minWidth: 0, fontFamily: FONT, fontSize: th.dense ? 13.5 : 16, fontWeight: 500, color: th.name, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
-      {row.userKey ? <a href={`/quizzes/hub?player=${encodeURIComponent(row.userKey)}`} style={{ color: 'inherit', textDecoration: 'none', borderBottom: `1px dotted ${th.nameDot}` }}>{label}</a> : label}
+      {row.userKey ? <a href={`/quizzes/hub?player=${encodeURIComponent(row.userKey)}`} style={{ color: 'inherit', textDecoration: 'none', borderBottom: `1px solid ${th.nameDot}` }}>{label}</a> : label}
       {mine ? <span style={{ color: th.you, fontWeight: 700 }}> (you)</span> : ''}
     </span>
   );
@@ -413,7 +413,7 @@ function OverallBoard({ data, myKey, maxTotal, gameCount = 10, limit = 10, showM
         );
       })}
       {showMe && myKey && data.me && !meShown ? (
-        <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px dashed ${th.line}` }}>
+        <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${th.line}` }}>
           <div style={{ ...grid, ...rowStyle(th, true, data.me.rank), alignItems: 'center', padding: th.dense ? '7px 12px' : '10px 14px', borderRadius: 10 }}>
             <RankNum n={data.me.rank} th={th} />
             <PlayerName row={data.me} mine th={th} />

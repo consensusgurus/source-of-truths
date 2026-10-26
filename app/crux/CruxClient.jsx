@@ -137,12 +137,12 @@ const CX_R7_CSS = `
 .cx-chead-r{font-size:11px;font-weight:700;color:var(--stg-mute,#5f6774);white-space:nowrap;}
 .cl-cats{margin-bottom:16px;}
 .cl-cat{border:1px solid var(--cx-catbd,transparent);border-radius:12px;gap:7px !important;padding:9px 10px;min-height:48px;box-sizing:border-box;align-items:stretch !important;}
-.cl-cat.cx-drop{outline:2.5px dashed currentColor;outline-offset:2px;}
+.cl-cat.cx-drop{outline:2.5px solid currentColor;outline-offset:2px;}
 .cl-cat.cx-drop:focus-visible{outline-style:solid;}
 .cl-cat-nm{font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;line-height:1.25;}
 .cl-cat-ws{display:flex;gap:5px;min-width:0;}
 .cx-slot0,.cx-pill{height:26px;box-sizing:border-box;border-radius:7px;font-family:${SANS};font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap;min-width:0;padding:0 6px;}
-.cx-slot0{flex:1 1 0;border:1.5px dashed;background:transparent;}
+.cx-slot0{flex:1 1 0;border:1.5px solid;background:transparent;}
 .cx-pill{flex:0 1 auto;background:var(--cx-pill,#fff);border:1.5px solid var(--cx-pill,#fff);position:relative;text-overflow:ellipsis;}
 button.cx-pill::before{content:'';position:absolute;left:-2px;right:-2px;top:-9px;bottom:-9px;}
 .cx-num{position:absolute;top:2px;left:3px;font-size:calc(var(--cs) * 0.22);font-weight:800;line-height:1;}
@@ -1368,7 +1368,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
     // category. The selected word is an accent wash with an accent edge, the
     // cursor square takes an ink ring, and an empty square is a board cell.
     if (green) return { ...base, background: SPAL ? 'var(--stg-acc)' : COLORS.ink, color: SPAL ? 'var(--stg-onramp)' : T.white, border: `1.5px solid ${SPAL ? 'var(--stg-acc-ink, var(--stg-acc))' : COLORS.ink}`, boxShadow: SPAL ? 'none' : 'inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.5)' };
-    if (lost) return { ...base, background: SPAL ? 'var(--stg-cell)' : TILE, color: `var(--stg-bad, ${COLORS.rust})`, border: `1.5px dashed ${SPAL ? 'var(--stg-bad)' : 'rgba(192,57,43,0.55)'}` };
+    if (lost) return { ...base, background: SPAL ? 'var(--stg-cell)' : TILE, color: `var(--stg-bad, ${COLORS.rust})`, border: `1.5px solid ${SPAL ? 'var(--stg-bad)' : 'rgba(192,57,43,0.55)'}` };
     if (inSel) {
       const isCursor = cursorKey === k;
       return {

@@ -645,7 +645,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
     else if (kind === 'new') st = { background: `var(--stg-acc, ${COLORS.accent})`, border: `2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, color: ON_ACC };
     else if (kind === 'cur') st = { background: `var(--stg-cell, ${T.white})`, border: `2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, color: INK };
     else if (kind === 'curNew') st = { background: `var(--stg-cell, ${T.white})`, border: `2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))`, color: ACC_INK, boxShadow: `inset 0 -4px 0 var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` };
-    else if (kind === 'empty') st = { background: 'transparent', border: `2px dashed var(--stg-cell-line, ${TILE_EDGE})`, color: FADED };
+    else if (kind === 'empty') st = { background: 'transparent', border: `2px solid var(--stg-cell-line, ${TILE_EDGE})`, color: FADED };
     else st = { background: STAGE ? 'var(--stg-surf2)' : TILE, border: `2px solid var(--stg-line2, ${TILE_EDGE})`, color: INK };
     // The rung bar runs BEHIND the tiles, and most tile fills are translucent
     // tokens, so the bar showed through every letter. Lay the fill over an
@@ -758,7 +758,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
               .rgs-rw span{width:min(50px, calc((100vw - 60px) / 5 - 6px));height:44px;border-radius:10px;border:2px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;background:var(--pst-tint);}
               .rgs-rw.start span,.rgs-rw.mine span.ch{background:var(--pst-ink);color:var(--pst-bg);}
               .rgs-rw.now span{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
-              .rgs-rw.goal span{border-style:dashed;background:transparent;}
+              .rgs-rw.goal span{border-style:solid;background:transparent;}
               .rgs-gap{font-size:12px;font-weight:800;opacity:.6;letter-spacing:.08em;}
               .rgs-line{text-align:center;font-size:13px;font-weight:700;opacity:.8;line-height:1.35;min-height:1.35em;}
               @keyframes rgsShake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}

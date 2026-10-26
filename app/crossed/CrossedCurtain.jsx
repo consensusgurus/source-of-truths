@@ -292,7 +292,7 @@ export default function CrossedCurtain({ sections = [], counted = [], parts = []
               <div key={s.key} className="dc-sc" style={{
                 background: on ? s.color : (dark ? 'rgba(11,15,26,.1)' : 'rgba(255,255,255,.05)'),
                 color: on ? MID : (dark ? 'rgba(11,15,26,.55)' : '#9aa8c4'),
-                border: on ? '1px solid rgba(11,15,26,.35)' : (dark ? '1px dashed rgba(11,15,26,.3)' : '1px dashed rgba(255,255,255,.18)'),
+                border: on ? '1px solid rgba(11,15,26,.35)' : (dark ? '1px solid rgba(11,15,26,.3)' : '1px solid rgba(255,255,255,.18)'),
               }}>
                 <span>{s.name}</span><b>{on ? pts[i] : ''}</b>
               </div>

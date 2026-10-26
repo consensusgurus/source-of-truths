@@ -828,7 +828,7 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
           .st-sheet{background:${SH.paper};color:${SH.ink};border-radius:6px;padding:26px 30px 22px 0;border:1px solid transparent;box-shadow:0 18px 40px rgba(0,0,0,.45);}
           html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .st-sheet{border-color:${SH.edge};box-shadow:0 10px 26px rgba(40,34,20,.16);}
           .st-sheethd{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;padding:0 0 16px 70px;border-bottom:1px solid ${SH.rule};font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:${SH.mute};}
-          .st-line{display:flex;padding:18px 0 16px;border-bottom:1px dashed ${SH.dash};}
+          .st-line{display:flex;padding:18px 0 16px;border-bottom:1px solid ${SH.dash};}
           .st-ln{flex:0 0 70px;text-align:center;font-family:${MONO};font-size:13px;color:${SH.mute};padding-top:22px;}
           .st-body{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:8px;}
           .st-copy{margin:0;padding-top:14px;font-family:${PROOF};font-size:20px;line-height:1.9;color:${SH.ink};}
@@ -849,7 +849,7 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
           .st-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
           .st-chip{display:inline-flex;align-items:center;gap:7px;font-family:${PROOF};font-size:16px;color:${SH.ink};border:1.5px solid ${SH.btn};border-radius:8px;padding:0 4px 0 10px;min-height:44px;}
           .st-chipx{background:none;border:none;cursor:pointer;color:${SH.mute};padding:0;width:36px;height:40px;display:flex;align-items:center;justify-content:center;}
-          .st-fixbox{padding-top:10px;border-top:1px dashed ${SH.dash};}
+          .st-fixbox{padding-top:10px;border-top:1px solid ${SH.dash};}
           .st-inp{font-family:${SANS};font-weight:700;font-size:16px;flex:1 1 auto;min-width:0;min-height:44px;box-sizing:border-box;border:2px solid ${SH.btn};border-radius:9px;padding:9px 12px;background:${SH.field};color:${SH.ink};outline:none;}
           .st-inp::placeholder{color:${SH.mute};}
           .st-inp:focus{border-color:${SH.pencil};box-shadow:0 0 0 3px ${SH.pencilWash};}

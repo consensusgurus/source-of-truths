@@ -800,7 +800,7 @@ const CSS = `
 .gsx-row.can:hover{filter:brightness(.96)}
 .gsx-row:disabled{opacity:1}
 .gsx-row em{font-style:normal;font-weight:800;opacity:.7}
-.gsx-miss{padding:10px 12px 12px;border-top:1px dashed color-mix(in srgb, var(--gsx-ink) 35%, transparent);font-size:14px;font-weight:600;line-height:1.35}
+.gsx-miss{padding:10px 12px 12px;border-top:1px solid color-mix(in srgb, var(--gsx-ink) 35%, transparent);font-size:14px;font-weight:600;line-height:1.35}
 .gsx-miss .a{margin-top:5px;font-size:13.5px}
 .gsx-miss .a b{font-weight:800}
 .gsx-det{align-self:center;background:none;border:0;padding:8px;color:var(--gsx-ink);font:inherit;font-size:14px;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
@@ -845,7 +845,7 @@ const CSS = `
 }
 @media(max-width:400px){.gsx-h1{font-size:32px}.gsx-gate .gsx-h1{font-size:28px}.gsx-pop{font-size:64px}.gsx-score span{font-size:80px}}
 
-.gsx-note{align-self:center;display:inline-flex;align-items:center;min-height:30px;padding:2px 12px;border-radius:999px;border:2px dashed var(--gsx-ink);font-size:13px;font-weight:800;text-align:center}
+.gsx-note{align-self:center;display:inline-flex;align-items:center;min-height:30px;padding:2px 12px;border-radius:999px;border:2px solid var(--gsx-ink);font-size:13px;font-weight:800;text-align:center}
 .gsx-climb{display:flex;flex-direction:column;gap:6px}
 .gsx-clh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px}
 .gsx-clh b{font-size:16px;font-weight:800;min-width:0}

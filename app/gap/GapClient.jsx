@@ -628,7 +628,7 @@ export default function GapClient({ puzzles = [], problemsByNum = {}, forceNum =
           @media(max-width:560px){.bd-prob{font-size:36px;padding:10px 2px 16px;}}
           .bd-prob.long{font-size:32px;}
           @media(max-width:560px){.bd-prob.long{font-size:24px;}}
-          .bd-blank{display:inline-block;min-width:1.15em;padding:0 .12em;margin:0 .04em;border:3px dashed ${ACC_INK};border-radius:8px;color:${ACC_INK};line-height:1.05;}
+          .bd-blank{display:inline-block;min-width:1.15em;padding:0 .12em;margin:0 .04em;border:3px solid ${ACC_INK};border-radius:8px;color:${ACC_INK};line-height:1.05;}
           .bd-timebar{height:7px;border-radius:4px;background:var(--stg-surf, ${COLORS.paper});overflow:hidden;}
           .bd-timefill{height:100%;border-radius:4px;transition:width .1s linear;}
         ` }} />
