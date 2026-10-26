@@ -16,7 +16,7 @@ function page(title, body) {
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>${title}</title></head>
 <body style="margin:0;background:#eef1f6;font-family:Manrope,'Helvetica Neue',Arial,sans-serif;color:#0b0d12;">
 <div style="max-width:520px;margin:48px auto;padding:0 16px;">
-  <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-bottom:18px;">Mind&nbsp;<span style="color:#2563eb;font-style:italic;">Loft</span></div>
+  <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-bottom:18px;"><svg viewBox="5.5 8.5 109 102" overflow="visible" style="height:17px;width:18px;vertical-align:baseline;margin-right:7px"><path d="M60 10L113 43V109H93V63L60 86L27 63V109H7V43Z" fill="none" stroke="#0589c7" stroke-width="9" stroke-linejoin="round"/><path d="M60 10L113 43V109H93V63L60 86L27 63V109H7V43Z" fill="#7dd3fc" stroke="#7dd3fc" stroke-width="3" stroke-linejoin="round"/></svg>Mind&nbsp;Loft</div>
   <div style="background:#fff;border:1px solid #e7e9ee;border-radius:14px;padding:28px 30px;">
     <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;">${title}</div>
     <div style="font-size:15px;line-height:1.55;color:#3f4757;margin-top:10px;">${body}</div>

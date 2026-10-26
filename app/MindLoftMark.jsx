@@ -4,10 +4,16 @@
 // cards, OG images, icon scripts) also reads, so there is one drawing on the whole
 // site. Import this component; never paste the path.
 //
-// COLOUR (owner, 2026-10-26): the mark takes the colour of "Loft" beside it, which
-// is `accent` (default --stg-brand, the same variable the word reads). It is also
-// available in black: pass `mono`, or put data-brand-mono on any ancestor, which
-// turns --stg-brand into the ink colour for the whole subtree.
+// COLOUR (owner, 2026-10-26, "A2"): the HOUSE carries the colour and the words beside
+// it are plain ink. The fill is `accent` (default --stg-brand: sky on the home, the
+// category hue on a game page). It is also available in black: pass `mono`, or put
+// data-brand-mono on any ancestor, which turns --stg-brand into the ink colour.
+//
+// OUTLINE ONLY WHERE NEEDED: after mount the mark reads its own computed fill and the
+// first opaque background behind it, and draws a thin outline in a deeper shade of its
+// own colour when the fill falls under 3:1 against that ground (lib/mindloft-mark.js
+// outlineFor). Sky on the light home gets one; a deep category step, or anything on the
+// dark register, does not. It re-checks when the theme or the page colour changes.
 //
 // CAP ALIGNMENT (owner, 2026-10-26): when the mark sits beside the "Mind Loft"
 // wordmark, its roof peak and wall feet line up with the top and bottom of the M.
@@ -18,9 +24,17 @@
 'use client';
 
 import { useLayoutEffect, useRef } from 'react';
-import { HOUSE, TIGHT_BOX, TIGHT_ASPECT, CAP_RATIO, CAP_OVERSHOOT } from '../lib/mindloft-mark';
+import { HOUSE, TIGHT_BOX, TIGHT_ASPECT, CAP_RATIO, CAP_OVERSHOOT, OUTLINE_W, outlineFor } from '../lib/mindloft-mark';
 
 const useIso = typeof window === 'undefined' ? () => {} : useLayoutEffect;
+
+function groundOf(el) {
+  for (let n = el && el.parentElement; n; n = n.parentElement) {
+    const bg = getComputedStyle(n).backgroundColor;
+    if (bg && !/rgba\([^)]*,\s*0\)$/.test(bg) && bg !== 'transparent') return bg;
+  }
+  return 'rgb(255, 255, 255)';
+}
 
 function wordmarkNext(el) {
   const sib = el && el.nextElementSibling;
@@ -30,6 +44,8 @@ function wordmarkNext(el) {
 
 export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--ink, #0b0d12))', accent, mono = false, title = 'Mind Loft' }) {
   const ref = useRef(null);
+  const olRef = useRef(null);
+  const houseRef = useRef(null);
   const fill = mono ? ink : (accent || 'var(--stg-brand, #7dd3fc)');
 
   useIso(() => {
@@ -55,6 +71,25 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
     return () => { try { ro && ro.disconnect(); } catch (e) {} window.removeEventListener('resize', fit); };
   }, []);
 
+  useIso(() => {
+    const ol = olRef.current, house = houseRef.current;
+    if (!ol || !house) return undefined;
+    const check = () => {
+      const c = outlineFor(getComputedStyle(house).fill, groundOf(ref.current));
+      if (c) { ol.setAttribute('stroke', c); ol.style.display = ''; } else { ol.style.display = 'none'; }
+    };
+    check();
+    let mo;
+    try {
+      mo = new MutationObserver(check);
+      // the register lives on .stage-page (a descendant), the page colour on <html>'s style
+      mo.observe(document.documentElement, { attributes: true, subtree: true, attributeFilter: ['data-stage-theme', 'data-theme', 'data-brand-mono', 'data-stage-pastel', 'data-stage-tone'] });
+      mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
+    } catch (e) {}
+    const t = setTimeout(check, 400);
+    return () => { clearTimeout(t); try { mo && mo.disconnect(); } catch (e) {} };
+  }, [fill]);
+
   return (
     <svg
       ref={ref}
@@ -66,9 +101,11 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
       role="img"
       aria-label={title || undefined}
       aria-hidden={title ? undefined : true}
-      style={{ display: 'block', flex: 'none' }}
+      overflow="visible"
+      style={{ display: 'block', flex: 'none', overflow: 'visible' }}
     >
-      <path className="mlm-house" d={HOUSE} fill={fill} stroke={fill} strokeWidth="3" strokeLinejoin="round" />
+      <path ref={olRef} className="mlm-ol" d={HOUSE} fill="none" stroke="none" strokeWidth={3 + OUTLINE_W} strokeLinejoin="round" style={{ display: 'none' }} />
+      <path ref={houseRef} className="mlm-house" d={HOUSE} fill={fill} stroke={fill} strokeWidth="3" strokeLinejoin="round" />
     </svg>
   );
 }

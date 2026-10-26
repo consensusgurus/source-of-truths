@@ -10436,7 +10436,7 @@ hides a missed border exactly when its old ring did (`!LOFT || revealed`).
 
 ## THE MARK IS THE HOUSE M (owner, 2026-10-26)
 
-The Mind Loft logo is a solid black house whose lower half IS the M: the walls are
+The Mind Loft logo is a solid house whose lower half IS the M: the walls are
 the M's legs, the roof hangs into the M's middle V, and the opening under the V is
 a TRUE TRANSPARENT CUTOUT, so it always shows whatever the mark sits on (owner: "the
 cutout should match the background always"). It replaced the caret-and-brain mark.
@@ -10445,18 +10445,27 @@ cutout should match the background always"). It replaced the caret-and-brain mar
   `app/MindLoftMark.jsx`, the share cards (`lib/og-stage-card.js` `markURI`,
   `lib/share-palette.js` `markSvg`, `lib/og-kids-card.js`), the kids shell and both
   icon scripts all read it. Never paste the path anywhere else.
-- **It takes the colour of "Loft"** beside it (`accent`, default `var(--stg-brand)`,
-  the variable the word reads), and is **available in black**: `mono` on the component,
-  or `data-brand-mono` on any ancestor. Black/white/sky SVGs live in `public/brand/`.
+- **A2 (owner, 2026-10-26): the HOUSE carries the colour, the words are plain ink.**
+  The fill is `accent` (default `var(--stg-brand)`: sky on the home, the category hue on a
+  game page). "Loft" is NOT coloured anywhere any more; every wordmark em/span inherits ink.
+  Black is available: `mono` on the component, or `data-brand-mono` on any ancestor.
+- **Outline only where needed.** A pale house gets a thin outline in a deeper shade of its
+  own colour (`deepen`, same hue at 40% lightness) when the fill is under 3:1 against its
+  ground (`outlineFor`). The component measures its computed fill and the first opaque
+  background behind it after mount and re-checks on theme changes, so sky on the light home
+  is outlined and a deep category step, or anything in dark mode, is not. String builders
+  pass `ground` (share cards are white, so their pastel house is outlined).
+- **Print and share masters**: `node scripts/build-brand-marks.mjs` writes transparent SVG +
+  1024 PNG of the sky mark (outlined, for light paper), sky without outline (dark grounds),
+  black, white, and every category pastel in both forms under `public/brand/marks/`.
+  The favicon and app icons are separate (`build-app-icons.mjs`, black house on light sky,
+  owner kept them as they are) and must pass `ink: MARK_INK, outline: null` explicitly.
 - **Cap-aligned beside the wordmark.** When the next sibling element reads "Mind Loft",
   the component measures its font size after mount, switches to the tight viewBox and
   sizes itself to Manrope's cap height (0.72em) on the baseline, so the roof peak and
   wall feet sit on the top and bottom of the M. No call site passes anything for it.
-- **Icons sit on the pastels** (owner: "one each for our different pastels").
-  `node scripts/build-app-icons.mjs` writes the site set on SKY (the owner's reference)
-  plus `public/brand/icons/mindloft-<category>-{512,180,32}.png` for all ten ramp
-  steps, and the transparent masters `public/brand/mindloft-mark.svg`,
-  `mindloft-mark-white.svg` and `mindloft-mark-1024.png` for print. Needs
-  `@resvg/resvg-js` installed for the run.
-- After any change to the mark: rerun `build-app-icons.mjs`, then
+- **Icons**: `node scripts/build-app-icons.mjs` writes the site set (black house on the
+  light sky #b1e5fd) plus `public/brand/icons/mindloft-<category>-{512,180,32}.png`.
+  Needs `@resvg/resvg-js` installed for the run.
+- After any change to the mark: rerun `build-brand-marks.mjs` (and `build-app-icons.mjs` if the icons should change), then
   `node scripts/bake-og.mjs --site` (every share card carries it).

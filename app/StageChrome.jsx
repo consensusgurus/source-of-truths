@@ -632,7 +632,7 @@ html[data-stage-pastel] .stg-fg i{font-size:10px;letter-spacing:.06em;}
 .stg-brand{display:flex;align-items:center;gap:8px;flex:none;text-decoration:none;
   color:var(--stg-ink,#e9edf4);padding-right:15px;border-right:1px solid var(--stg-line);}
 .stg-brand b{font-size:13px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;}
-.stg-brand b em{font-style:normal;color:var(--stg-acc-ink,var(--stg-brand,#7dd3fc));}
+.stg-brand b em{font-style:normal;color:inherit;}
 .stg-brand:hover{opacity:.82;}
 .stg-brand:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 .stg-ds{display:none;}

@@ -302,7 +302,7 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
           .qchm-in{max-width:1560px;margin:0 auto;padding:12px clamp(16px,2.5vw,34px);display:flex;align-items:center;gap:16px;}
           .qchm-brand{display:flex;align-items:center;gap:9px;text-decoration:none;flex:none;}
           .qchm-wm{font-size:18px;font-weight:800;letter-spacing:-.025em;color:var(--white);line-height:1;white-space:nowrap;}
-          .qchm-wm em{font-style:normal;color:#7dd3fc;}
+          .qchm-wm em{font-style:normal;color:inherit;}
           .qchm-tag{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue-200);border-left:1px solid #1e2e5a;padding-left:13px;font-weight:800;white-space:nowrap;}
           .qchm-nav{margin-left:auto;display:flex;gap:20px;align-items:center;}
           /* THE TOP ROW CARRIES NO BOXES (owner, 2026-08-26). Three

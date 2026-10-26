@@ -296,7 +296,7 @@ export const profileStageCss = [
   '.pf-cap{display:flex;align-items:center;gap:16px;padding:12px 20px;}',
   '.pf-brand{display:flex;align-items:center;gap:8px;flex:none;text-decoration:none;color:var(--stg-ink);padding-right:15px;border-right:1px solid var(--stg-line);}',
   '.pf-brand b{font-size:13px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;}',
-  '.pf-brand b em{font-style:normal;color:var(--stg-acc-ink,var(--stg-acc));}',
+  '.pf-brand b em{font-style:normal;color:inherit;}',
   '.pf-id{display:flex;flex-direction:column;gap:1px;min-width:0;}',
   '.pf-id i{font-family:' + MONO + ';font-style:normal;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--stg-mute2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}',
   '.pf-id h1{margin:0;font-size:16px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:9px;min-width:0;}',

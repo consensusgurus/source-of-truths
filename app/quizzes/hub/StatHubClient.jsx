@@ -940,7 +940,7 @@ export default function StatHubClient() {
     .hubcap{position:relative;display:flex;align-items:center;gap:18px;flex-wrap:wrap;max-width:1180px;margin:0 auto;padding:15px 38px 14px;font-family:${FONT};}
     .hubcap-mark{display:flex;align-items:center;gap:9px;flex:none;text-decoration:none;color:${C.ink};}
     .hubcap-mark b{font-size:15.5px;font-weight:800;letter-spacing:-.2px;}
-    .hubcap-mark b i{font-style:normal;color:${C.accent};}
+    .hubcap-mark b i{font-style:normal;color:inherit;}
     .hubcap-eyebrow{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:${C.soft};}
     .hubcap-figs{display:flex;gap:26px;margin-left:auto;flex-wrap:wrap;}
     .hubfig{text-align:right;line-height:1.15;}

@@ -235,7 +235,7 @@ export default function SiteHeader({ active = 'lists', maxWidth = 1180, visitors
             <div className="sh-brand">
               <Link href="/" style={{ flex: 'none', display: 'flex' }} aria-label="Mind Loft home"><Logo size={34} /></Link>
               <span style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline', gap: 8, flexWrap: 'nowrap' }}>
-                <Link href="/" className="sh-word" style={{ textDecoration: 'none', color:T.ink }}><span className="sh-word-full">Mind <span style={{ color: T.blue, fontWeight: 800 }}>Loft</span></span><span className="sh-word-sot"><MindLoftMark size={24} /></span></Link>
+                <Link href="/" className="sh-word" style={{ textDecoration: 'none', color:T.ink }}><span className="sh-word-full">Mind <span style={{ fontWeight: 800 }}>Loft</span></span><span className="sh-word-sot"><MindLoftMark size={24} /></span></Link>
                 <span className="sh-tag" style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 'normal', textTransform: 'uppercase', color:T.ink, marginTop: 0 }}><HeaderTagline active={active} /></span>
               </span>
             </div>

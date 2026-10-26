@@ -21,7 +21,7 @@
 
 import { Resvg } from '@resvg/resvg-js';
 import { writeFileSync, mkdirSync } from 'node:fs';
-import { markInner, markSvg } from '../lib/mindloft-mark.js';
+import { markInner, MARK_INK } from '../lib/mindloft-mark.js';
 import { register } from 'node:module';
 // category-ramp imports extensionless siblings, which plain node needs the alias loader for.
 register('./alias-loader.mjs', import.meta.url);
@@ -37,9 +37,9 @@ const SITE_FIELD = '#b1e5fd';
 let INK = SITE_FIELD; // the field. Reassigned per pastel below.
 
 // LARGE cut (>=48px): the mark at ~72% of the tile, inside the platform safe zones.
-const largeCut = `<g transform="translate(60,61) scale(0.74) translate(-60,-61)">${markInner({})}</g>`;
+const largeCut = `<g transform="translate(60,61) scale(0.74) translate(-60,-61)">${markInner({ ink: MARK_INK, outline: null })}</g>`;
 // SMALL cut (16/32px): nearly full bleed; at 16px a generous mark beats a padded one.
-const smallCut = `<g transform="translate(60,61) scale(0.98) translate(-60,-61)">${markInner({})}</g>`;
+const smallCut = `<g transform="translate(60,61) scale(0.98) translate(-60,-61)">${markInner({ ink: MARK_INK, outline: null })}</g>`;
 
 function svg(inner, scale) {
   const art = scale === 1 ? inner : `<g transform="translate(60,60) scale(${scale}) translate(-60,-60)">${inner}</g>`;
@@ -113,12 +113,8 @@ RAMP_ORDER.forEach((cat, i) => {
   }
 });
 INK = SITE_FIELD;
-const master = markSvg({});
-writeFileSync('public/brand/mindloft-mark.svg', master);
-writeFileSync('public/brand/mindloft-mark-1024.png', new Resvg(master, { fitTo: { mode: 'width', value: 1024 } }).render().asPng());
-writeFileSync('public/brand/mindloft-mark-white.svg', markSvg({ ink: '#ffffff' }));
-writeFileSync('public/brand/mindloft-mark-sky.svg', markSvg({ ink: '#7dd3fc' }));
-console.log('public/brand/icons/ (10 pastels x 3 sizes), public/brand/mindloft-mark.svg/.png');
+// The transparent print and share masters live in scripts/build-brand-marks.mjs.
+console.log('public/brand/icons/ (10 pastels x 3 sizes)');
 
 // Proof sheet for eyeballing every size at once, including the Android circle crop and the
 // small sizes magnified. Not shipped; .gitignore keeps it out.

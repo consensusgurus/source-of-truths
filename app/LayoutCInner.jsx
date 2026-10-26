@@ -104,7 +104,7 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
 .lc-cap .sty-brand{display:flex;align-items:baseline;gap:8px;min-width:0;color:inherit;text-decoration:none;}
 .lc-cap .sty-brand>svg{align-self:center;}
 .lc-cap .sty-id b{font-size:16px;font-weight:800;letter-spacing:-0.01em;white-space:nowrap;}
-.lc-cap .sty-id b em{font-style:normal;color:var(--stg-brand,#7dd3fc);}
+.lc-cap .sty-id b em{font-style:normal;color:inherit;}
 .lc-cap .sty-date{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .lc-cap .sty-capl{min-width:0;width:100%;}

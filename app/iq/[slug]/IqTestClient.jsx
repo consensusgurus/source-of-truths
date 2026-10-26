@@ -551,7 +551,7 @@ const CSS = IQ_RAMP_CSS + `
   max-width:46ch;line-height:1.7;}
 .iqt-rnote{margin-top:10px;font-size:12.5px;font-weight:600;color:var(--stg-mute);}
 .iqt-brand{margin-top:16px;font-size:13px;font-weight:800;color:var(--stg-ink2);letter-spacing:-0.005em;}
-.iqt-brand em{font-style:normal;color:var(--stg-brand,#7dd3fc);}
+.iqt-brand em{font-style:normal;color:inherit;}
 
 .iqt-below{padding:30px 0 10px;border-top:1px solid var(--stg-line);}
 .iqt-acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}

@@ -118,7 +118,7 @@ export function useKidsDone(dayKey) {
 export function KidsMark({ size = 36 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" fill="none" aria-hidden="true" style={{ display: 'block', flex: 'none' }}>
-      <path d={HOUSE} fill={KIDS_INK} stroke={KIDS_INK} strokeWidth="3" strokeLinejoin="round" />
+      <path d={HOUSE} fill="#3a86ff" stroke="#3a86ff" strokeWidth="3" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -154,7 +154,7 @@ export const KIDS_CSS = `
 .kd-hdr{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0 10px;flex-wrap:wrap}
 .kd-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
 .kd-nm{font-family:var(--kdisp);font-weight:700;font-size:26px;letter-spacing:-.01em}
-.kd-nm span{color:var(--kblue)}
+.kd-nm span{color:inherit}
 .kd-kidstag{font-family:var(--kdisp);font-weight:700;font-size:15px;background:var(--kyellow);color:var(--kink);padding:4px 12px;border-radius:999px;transform:rotate(-3deg);display:inline-block;margin-left:4px}
 .kd-nav{display:flex;gap:6px;flex-wrap:wrap}
 .kd-nav a{font-family:var(--kdisp);font-weight:600;text-decoration:none;padding:8px 14px;border-radius:999px;background:var(--kpaper);border:2px solid var(--kline)}

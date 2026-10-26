@@ -189,7 +189,7 @@ const GROUPS_CSS = `
 .grp-cap{display:flex;align-items:center;gap:16px;flex-wrap:nowrap;max-width:1120px;margin:0 auto;padding:15px 24px 14px;border-bottom:1px solid var(--stg-line);}
 .grp-mark{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--stg-ink);}
 .grp-mark b{font-size:15.5px;font-weight:800;letter-spacing:-.2px;}
-.grp-mark b i{font-style:normal;color:var(--stg-brand);}
+.grp-mark b i{font-style:normal;color:inherit;}
 .grp-eb{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-dim);}
 .grp-capnav{display:flex;gap:8px;margin-left:auto;flex:none;}
 .grp-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--stg-line2);background:none;color:var(--stg-ink);border-radius:999px;padding:7px 13px;font:inherit;font-size:12px;font-weight:700;text-decoration:none;cursor:pointer;}
