@@ -21,6 +21,10 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { holdRootPaint } from '@/lib/root-paint';
+import { useStageChrome } from '../GauntletScreens';
+import { useGauntletLook, isDarkLook } from '@/lib/stage-look';
+import { softGround, RAMP_INK } from '@/lib/category-ramp';
+import { rampFor } from '@/lib/circuits';
 import { CROSSED_BELTS, CROSSED_MAX, crossedTierOf } from '@/lib/crossed';
 import Week, { WEEK_CSS } from './Week';
 
@@ -40,6 +44,18 @@ const STEP = 650;    // one rank on the climb
 const FLASH = 260;   // the flood
 const GAP = 600;     // the last rank, held, before the seal
 const HOLD = 2600;   // the inked week, before the card
+const PD_STAGE = 1700; // on the stage a puzzle holds the screen a little less long
+const DARK_BG = '#0b0f1a';
+const DARK_FILL = '#1a2130';
+// THE STAGE'S COLOURS (owner, 2026-10-26): on the run stage each puzzle paints
+// the screen in its pastel ladder step (the same step its band and play page
+// wore), in whichever of the five looks the reader picked.
+function stageFill(look, c) {
+  if (look === 'plain') return '#ffffff';
+  if (look === 'dark') return DARK_FILL;
+  if (look === 'darktint') return `color-mix(in srgb, ${softGround(c)} 34%, ${DARK_BG})`;
+  return softGround(c);
+}
 
 const ease = (x) => { const v = Math.max(0, Math.min(1, x)); return 1 - Math.pow(1 - v, 3); };
 const fmtClock = (s) => { const v = Math.max(0, Math.round(Number(s) || 0)); return `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`; };
@@ -138,7 +154,12 @@ function Grid({ sec, res }) {
   );
 }
 
-export default function CrossedCurtain({ sections = [], counted = [], parts = [], total = 0, runClock = 0, dateShort = '', board = null, onDone }) {
+// `stage`: the run's new stage ending (owner, 2026-10-26). The curtain plays
+// only the grids, each on its pastel, and hands over to the stage's own climb
+// up the week (GauntletEndStage), so the week is not climbed twice.
+export default function CrossedCurtain({ sections = [], counted = [], parts = [], total = 0, runClock = 0, dateShort = '', board = null, onDone, stage = false }) {
+  const [look] = useGauntletLook();
+  const dark = isDarkLook(look);
   const N = sections.length;
   const fti = crossedTierOf(total);
   // The ranks the total climbs through, Monday first.
@@ -162,11 +183,16 @@ export default function CrossedCurtain({ sections = [], counted = [], parts = []
     if (!N) { finish(); return undefined; }
     const timers = [];
     const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    const pd = stage ? PD_STAGE : PD;
     for (let i = 0; i < N; i++) {
-      at(P0 + i * PD, () => setStep(i));
-      at(P0 + i * PD + SCROLL, () => setFilled(i + 1));
+      at(P0 + i * pd, () => setStep(i));
+      at(P0 + i * pd + Math.min(SCROLL, pd - 200), () => setFilled(i + 1));
     }
-    const RP = P0 + N * PD;
+    const RP = P0 + N * pd;
+    if (stage) {
+      at(RP + 350, finish);
+      return () => timers.forEach(clearTimeout);
+    }
     at(RP, () => { setStep(N); setK(0); });
     climb.forEach((_, j) => {
       at(RP + j * STEP, () => { setK(j); setFlash(true); });
@@ -202,6 +228,11 @@ export default function CrossedCurtain({ sections = [], counted = [], parts = []
   const rank = B[bi];
   let bg = MID, ink = INK_LT;
   if (painting) { bg = sec.color; ink = MID; } else if (counting && flash) { bg = rank[3]; ink = inkOn(rank[3]); }
+  if (stage) {
+    const at = painting ? step : Math.max(0, Math.min(N - 1, step < 0 ? 0 : N - 1));
+    bg = stageFill(look, rampFor(at));
+    ink = dark ? INK_LT : (look === 'plain' ? '#111111' : RAMP_INK);
+  }
   const capRight = painting ? `Puzzle ${step + 1} of ${N}` : sealed ? 'Graded' : '';
 
   // The climb: each rank counts from its own cutoff to just under the next one,
@@ -218,11 +249,13 @@ export default function CrossedCurtain({ sections = [], counted = [], parts = []
 
   // The root takes the curtain's colour while it is up, so the scrollbar
   // gutter is never a dark strip beside it (lib/root-paint.js).
-  useEffect(() => holdRootPaint(bg), [bg]);
+  useEffect(() => (stage ? undefined : holdRootPaint(bg)), [bg, stage]);
+  // On the stage the browser's bars follow the colour too (lib/theme-color-hold).
+  useStageChrome(stage && !String(bg).startsWith('color-mix') ? bg : (stage ? (dark ? DARK_BG : null) : null));
   return (
     <div
-      className={`dc${thud ? ' thud' : ''}`}
-      style={{ background: bg, color: ink, transition: `background ${counting && flash ? '.05s' : '.45s'} ease, color .3s ease` }}
+      className={`dc${thud ? ' thud' : ''}${stage ? ' st' : ''}`}
+      style={{ background: bg, color: ink, '--dc-ink': ink, transition: `background ${counting && flash ? '.05s' : '.45s'} ease, color .3s ease` }}
       onClick={finish}
       role="button"
       tabIndex={0}
@@ -287,6 +320,17 @@ export default function CrossedCurtain({ sections = [], counted = [], parts = []
       <div className="dc-strip">
           {sections.map((s, i) => {
             const on = i < filled;
+            if (stage) {
+              return (
+                <div key={s.key} className="dc-sc" style={{
+                  background: on ? stageFill(look, rampFor(i)) : 'transparent',
+                  color: ink, opacity: on || i === step ? 1 : 0.5,
+                  border: `2px solid ${ink}`,
+                }}>
+                  <span>{s.name}</span><b>{on ? pts[i] : ''}</b>
+                </div>
+              );
+            }
             const dark = painting;
             return (
               <div key={s.key} className="dc-sc" style={{
@@ -390,6 +434,21 @@ const CSS = WEEK_CSS + `
 .dc-sc{padding:0 10px;font-size:11px;letter-spacing:.06em}
 .dc-sc b{font-size:16px}
 }
+/* ON THE STAGE (owner, 2026-10-26): white squares are paper whatever the look,
+   so the letters read on every ground, framed in the stage's one ink; the
+   ripple brings the paper in. */
+.dc.st .dc-grid{border-color:var(--dc-ink);background:transparent}
+.dc.st .dc-c{border-color:rgba(8,34,46,.35) !important;animation:dcpaper var(--wl) ease var(--wd) both}
+.dc.st .dc-c.blk{background:#0b0f1a;animation:none}
+.dc.st .dc-c span{color:#08222e}
+@keyframes dcpaper{from{background:transparent}to{background:#fffdf7}}
+.dc.st .dc-sc{border-radius:10px}
+@media(max-width:640px){
+.dc.st .dc-sc{flex-direction:column;justify-content:center;align-items:center;gap:1px;height:46px;padding:0 4px}
+.dc.st .dc-sc span{font-size:9.5px;letter-spacing:.04em;max-width:100%}
+.dc.st .dc-sc b{width:auto;text-align:center;font-size:16px;line-height:1}
+}
+.dc.st .dc-cap{opacity:.85}
 /* WIDE DESKTOPS (owner, 2026-10-17): the curtain draws in a centred column
    rather than from edge to edge. */
 @media (min-width:1180px){
