@@ -514,9 +514,9 @@ export default function LayoutCInner({ gameKey }) {
 
   if (!game || !host || !flag) return null;
 
-  const blocks = cats.map(({ cat, games: gs }) => ({
+  const blocks = orderedCats.map(({ cat, games: gs }) => ({
     n: gs.length,
-    c: hueFor(cat),
+    c: `color-mix(in srgb, ${categoryColor(cat)} 60%, #fff)`,
     on: gs.map((g) => done.has(g.key)),
     half: gs.map((g) => inprog.has(g.key) || g.key === game.key),
     pop: gs.map(() => false),

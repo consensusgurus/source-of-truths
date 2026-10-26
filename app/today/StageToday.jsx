@@ -2268,13 +2268,15 @@ export default function StageToday() {
 
   // THE DAY, as one ladder. Blocks flex by their game count, so a block's width
   // says how big its category is, which is true and useful rather than decorative.
-  const blocks = useMemo(() => cats.map(({ cat, games }) => ({
+  // THE STRIP WEARS THE INDEX'S COLOURS (owner, 2026-10-26): each category's
+  // blocks in the same pastel as its index tile, in the index's order.
+  const blocks = useMemo(() => orderedCats.map(({ cat, games }) => ({
     n: games.length,
-    c: hueFor(cat),
+    c: `color-mix(in srgb, ${categoryColor(rampCat(cat))} 60%, #fff)`,
     on: games.map((g) => done.has(g.key)),
     half: games.map((g) => inprog.has(g.key)),
     pop: games.map((g) => newDone.has(g.key)),
-  })), [cats, done, inprog, newDone, light]);   // eslint-disable-line react-hooks/exhaustive-deps
+  })), [orderedCats, done, inprog, newDone, light]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // UP NEXT is the first game of the day nobody has started, in registry order,
   // preferring one already in progress: finishing beats starting.
