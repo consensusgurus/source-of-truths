@@ -579,7 +579,7 @@ function MemberLadder({ cats, keys, hueFor, inkFor = hueFor }) {
   );
 }
 
-function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null, light = true }) {
+function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null, light = true, plays = null }) {
   const dots = dotsFor ? dotsFor(g.key) : null;
   const isDone = done.has(g.key);
   // THREE STATES, NEVER TWO (owner, 2026-09-25): nobody has played it (the
@@ -659,6 +659,9 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       ) : (
         <span className="sty-gt">{g.tag}</span>
       )}
+      {/* THE PLAY TOTAL (owner, 2026-10-26): today's plays at the foot of the
+          tile, desktop only (shown by the desktop block). */}
+      {plays != null ? <span className="sty-gpl">{Number(plays).toLocaleString('en-US')} {plays === 1 ? 'play' : 'plays'} today</span> : null}
       {canPin ? (
         <button
           type="button"
@@ -2460,8 +2463,8 @@ export default function StageToday() {
         : skillOfId(cat) && skillOfId(cat).short
           ? <><span className="sty-ixl">{skillOfId(cat).name}</span><span className="sty-ixs">{skillOfId(cat).short}</span></>
           : catLabel(cat), hueFor(cat))))}
-      <span className="sty-ixsep" aria-hidden="true" />
-      {ixBtn(CIRC_ID, 'Runs', 'var(--stg-mute)')}
+      <span className="sty-ixsep sty-ixee" aria-hidden="true" />
+      {ixBtn(CIRC_ID, 'Runs', 'var(--stg-mute)', 'sty-ixe1')}
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
       {/* DESKTOP INDEX ORDER (owner, 2026-10-13): Circuits, Quizzes, Puzzle Archive
           and Leaderboards + Stats are one group; the tests, Kids and the lists
@@ -3109,7 +3112,7 @@ export default function StageToday() {
       <div className="sty-mgl">Played by {x.name}</div>
       <div className="sty-games sty-mgg">
         {x.games.map((g, i) => (
-          <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+          <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} plays={board ? ((boardBy[g.key] || {}).plays || 0) : null}
             canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
             hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={pre + ':' + x.code + ':' + g.key} />
         ))}
@@ -3147,7 +3150,9 @@ export default function StageToday() {
     if (typeof ResizeObserver !== 'undefined') { deckRO.current = new ResizeObserver(read); deckRO.current.observe(el); }
   }, []);
   useEffect(() => { setDeckOpen(null); }, [paneOn]);
-  const deckOn = (pane) => mid && viewOf(pane) === 'tile';
+  // RUNS SIT ATOP, SEPARATE (owner, 2026-10-25): no longer mixed into the
+  // grid or the ledger; runStrip draws them above the puzzles instead.
+  const deckOn = () => false;
   const runsIn = () => mid;
   // POLYMATH IN THE GRID (owner, 2026-10-22): a deck tile like every other run,
   // whose drawer opens all three gauntlets at once, each with its own games and
@@ -3406,14 +3411,51 @@ export default function StageToday() {
       on ? <div key={'rrd-' + c.id} id={'rrd-' + c.id} className="sty-rrd">{deckDrawer(c, cat, 0, 0)}</div> : null,
     ];
   };
-  const runRows = (cat, fin) => (runsIn() ? deckRuns(cat).filter((c) => runFull(c) === fin).flatMap((c) => runRow(c, cat)) : null);
+  const runRows = () => null;
+  // THE RUNS BLOCK (owner, 2026-10-25, the desktop mockup): a labelled row of
+  // run cards above the puzzles, three across, each with its one way in.
+  const runTile = (c, cat) => {
+    const fin = runFull(c);
+    if (c.poly) {
+      return (
+        <div key={'rt-' + c.id} className={'sty-rt3' + (fin ? ' done' : '')} style={runLook(c, cat)}>
+          <span className="tx"><b>{c.name}</b><small>{polyStatus(fin)}</small></span>
+          <a className="go" href={withTq('/polymath')}>{fin ? 'Results' : 'Open'}</a>
+        </div>
+      );
+    }
+    const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+    const line = fin ? (st && st.rank ? `You: #${st.rank} of ${fmtN(st.players)}` : 'Finished')
+      : c.n ? `${c.n} of ${c.games.length} played`
+        : st && st.players ? `${fmtN(st.players)} played today` : `${c.games.length} games`;
+    return (
+      <div key={'rt-' + c.id} className={'sty-rt3' + (fin ? ' done' : c.n ? ' open' : '')} style={runLook(c, cat)} title={c.blurb || c.name}>
+        <span className="tx"><b>{c.name}</b><small>{line}</small></span>
+        <a className={'go' + (!fin && !c.n ? ' play' : '')} href={withTq(circuitEntryHref(c.id))}>{fin ? 'Results' : c.n ? 'Continue' : 'Play'}</a>
+      </div>
+    );
+  };
+  const runStrip = (cat) => {
+    if (!mid) return null;
+    const runs = deckRuns(cat);
+    if (!runs.length) return null;
+    return (
+      <>
+        <div className="sty-plab">Runs</div>
+        <div className="sty-rt3s">{runs.map((c) => runTile(c, cat))}</div>
+      </>
+    );
+  };
+  const puzLab = (n) => (mid ? <div className="sty-plab">Puzzles &middot; {n}</div> : null);
   const deckFitOff = (cat) => !!deckOpen && deckRuns(cat).some((c) => c.id === deckOpen);
   // ONE SECTION PER PANE, a category or a skill. A skill mixes categories, so
   // its tiles and rows carry their own category's hue, as All Puzzles does.
   const paneSection = ({ cat, games }) => {
     const sk = isSkillId(cat);
     const dk = deckOn(cat) && paneOn === cat;
-    const fit = paneOn === cat && sortBy !== 'diff' && !(dk && deckFitOff(cat)) ? fitFor(games.length + (dk ? deckRuns(cat).length : 0)) : null;
+    // EVERY PANE'S TILES ONE SIZE, nothing under them (owner, 2026-10-26): the
+    // fitted (grown) tiles and the favourites block below them are off.
+    const fit = null;
     const fitStyle = fit ? fit.style : undefined;
     const n = games.filter((g) => done.has(g.key)).length;
     const s = sk ? skillOfId(cat) : null;
@@ -3422,7 +3464,7 @@ export default function StageToday() {
         className={'sty-cat sty-ixc' + (sk ? ' sty-skc' : '') + (paneOn === cat ? '' : ' sty-ixoff')}
         data-fk={'sec:' + cat} style={{ '--cc': hueFor(cat), '--cci': inkFor(cat) }}>
         <div className="sty-cathead">
-          <h2>{catLabel(cat)}</h2>
+          <div className="sty-cht"><h2>{catLabel(cat)}</h2><span className="sty-csub">{s ? s.what + ' \u00b7 ' : ''}{n} of {games.length} Played</span></div>
           <b>{n}<i>/{games.length}</i></b>
           {runsIn() ? null : circPills(cat, false)}
           {/* SORT AND VIEW STAY ON ONE LINE TOGETHER (owner, 2026-10-25). */}
@@ -3430,12 +3472,14 @@ export default function StageToday() {
         </div>
         {s ? <p className="sty-skw">{s.what}. {games.length} daily puzzles.</p> : null}
         {circPills(cat, true)}
+        {runStrip(cat)}
+        {puzLab(games.length)}
         {mid && viewOf(cat) === 'list' ? catLedger(games, sk, cat) : null}
         {!(mid && viewOf(cat) === 'list') ? <>
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle} ref={dk ? deckGridRef : undefined}>
           {(() => {
             const nodes = tileRun(sortGames(games), (g, i) => (
-              <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+              <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} plays={board ? ((boardBy[g.key] || {}).plays || 0) : null}
                 canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                 hue={sk ? hueFor(g.cat) : undefined} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={sk ? cat + ':' + g.key : null} />
             ));
@@ -3949,7 +3993,7 @@ export default function StageToday() {
               <div className={'sty-games' + (isOpen(MINE_ID) ? '' : ' shut')}>
                 {/* ON A PHONE MY GAMES IS ALPHABETICAL (owner, 2026-10-03); desktop keeps played-last. */}
                 {(narrow ? [...pinned].sort((a, b) => a.name.localeCompare(b.name)) : playedLast(pinned, done)).map((g, i) => (
-                  <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+                  <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} plays={board ? ((boardBy[g.key] || {}).plays || 0) : null}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                     hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'mine:' + g.key} />
                 ))}
@@ -3989,7 +4033,7 @@ export default function StageToday() {
         {/* 4. THE GAMES, either as nine category rows or as one A-to-Z list. */}
         <section className={'sty-cat sty-az' + (paneOn === ALL_ID ? '' : ' sty-ixoff')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
-            <h2>All Puzzles</h2>
+            <div className="sty-cht"><h2>All Puzzles</h2><span className="sty-csub">{alphaDone} of {alpha.length} Played</span></div>
             <b>{alphaDone}<i>/{alpha.length}</i></b>
             {grpChips()}
             {runsIn() ? null : circPills(null, false)}
@@ -3998,7 +4042,8 @@ export default function StageToday() {
           {circPills(null, true)}
           {grpBanners()}
           {grpLists('azg')}
-          {who && grpGames.some((x) => mineGrp.has(x.code)) ? <div className="sty-mgl">All Puzzles</div> : null}
+          {runStrip(null)}
+          {who && grpGames.some((x) => mineGrp.has(x.code)) ? <div className="sty-mgl">All Puzzles</div> : puzLab(alpha.length)}
           {mid && viewOf(ALL_ID) === 'list' ? (
             <div className="sty-led">
               {ledgerHead(null)}
@@ -4012,7 +4057,7 @@ export default function StageToday() {
               const nodes = tileRun(playedLast(sortGames(alpha), done), (g, i) => (
               // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
               // card carries its own hue (owner, 2026-08-31).
-              <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq}
+              <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} plays={board ? ((boardBy[g.key] || {}).plays || 0) : null}
                 canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                 hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
             ));
@@ -4736,6 +4781,7 @@ ${PATCH_CSS}
 
 /* ── a star on every card ──────────────────────────────────────────────── */
 .sty-g{position:relative;}
+.sty-gpl{display:none;}
 .sty-star{position:absolute;top:6px;right:6px;display:flex;align-items:center;justify-content:center;
   width:24px;height:24px;border:0;border-radius:8px;background:none;cursor:pointer;
   color:var(--stg-mute2);opacity:0;transition:opacity .12s;}
@@ -6633,9 +6679,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   /* Tiles */
   .sty-g{border:var(--dk);border-radius:12px;}
   .sty-g.open{box-shadow:inset 0 0 0 1px var(--stg-ink);}
-  .sty-g .sty-gn > .sty-gi{display:none;}
-  .sty-g .sty-gn::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;box-sizing:border-box;
-    border:2px solid var(--stg-ink);background:var(--cfull, var(--cc));}
+  .sty-g .sty-gpl{display:block;margin-top:auto;padding-top:4px;font-size:12px;font-weight:700;color:var(--stg-ink);}
   .sty-star.on,.sty-star.on:hover{color:var(--stg-ink);}
   /* The ledger */
   .sty-led{border:var(--dk);}
@@ -6660,5 +6704,61 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
     font-size:11px;font-weight:800;color:var(--stg-ink);}
   .sty-rlb li{padding:0 12px;}
   .sty-rail .cbr{border:var(--dk);}
+  /* SECOND PASS (owner, 2026-10-25: "only half done"). */
+  .sty-pins,.sty-rhome{display:none !important;}
+  .sty-cap.v2 .sty-tix > b,.sty-cap.v2 .sty-tix > i{color:var(--stg-ink);}
+  /* The index: Categories on the left of the switch, the switch close under My Puzzles. */
+  .sty-ixtop + .sty-ixsep{display:none;}
+  .sty-ixsw{margin:4px 0;}
+  .sty-ixsw button:first-child{order:2;}
+  .sty-ixb.sty-ixtop{display:flex;flex-direction:column;align-items:flex-start;gap:0;padding:9px 13px;}
+  .sty-ixb.sty-ixtop > span{font-size:15px;font-weight:800;line-height:1.3;}
+  .sty-ixb.sty-ixtop .sty-ixct{font-size:12px;font-weight:600;}
+  /* Everything Else: a label, then one outlined box of plain rows. */
+  .sty-ixsep.sty-ixee{height:auto;margin:10px 0 0;background:none;}
+  .sty-ixsep.sty-ixee::before{content:"Everything Else";display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-ink);}
+  .sty-ixn .sty-ixee ~ .sty-ixb{margin-top:-8px;border:2px solid var(--stg-ink);border-width:1.5px 2px 0;
+    border-top-color:color-mix(in srgb, var(--stg-ink) 16%, transparent);border-radius:0;background:var(--stg-surf);
+    padding:7px 13px;font-size:13.5px;font-weight:700;}
+  .sty-ixn .sty-ixee ~ .sty-ixb.on{background:var(--stg-ink);color:var(--stg-ground);}
+  .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixe1{margin-top:0;border-top:2px solid var(--stg-ink);border-radius:12px 12px 0 0;}
+  .sty-ixn .sty-ixee ~ .sty-ixsep{display:none;}
+  .sty-ixn .sty-ixee ~ .sty-ixsep + .sty-ixb{border-top:2px solid var(--stg-ink);}
+  .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixma{border-bottom-width:2px;border-radius:0 0 12px 12px;}
+  .sty-ixn .sty-ixee ~ .sty-ixre{margin-top:8px;}
+  /* The pane head: the title with its subtitle under it. */
+  .sty-cht{display:flex;flex-direction:column;min-width:0;}
+  .sty-csub{font-size:13px;font-weight:600;color:var(--stg-ink);line-height:1.35;}
+  .sty-ixc .sty-skw{display:none;}
+  .sty-ix > .sty-cat > .sty-cathead{align-items:center;}
+  /* The section labels, and the runs atop the puzzles, three across. */
+  .sty-plab{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-ink);margin:4px 0 8px;}
+  .sty-rt3s{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px;}
+  .sty-rt3{display:flex;align-items:center;gap:10px;min-width:0;background:var(--stg-surf);border:var(--dk);border-radius:12px;padding:9px 10px 9px 13px;}
+  .sty-rt3 .tx{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
+  .sty-rt3 b{font-size:15px;font-weight:800;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--stg-ink);}
+  .sty-rt3 small{font-size:12px;font-weight:700;line-height:1.35;color:var(--stg-ink);}
+  .sty-rt3 .go{flex:none;text-decoration:none;font-size:13px;font-weight:800;padding:7px 14px;border-radius:8px;border:var(--dk);
+    background:var(--stg-surf);color:var(--stg-ink);}
+  .sty-rt3 .go.play{background:var(--stg-ink);color:var(--stg-ground);}
+  .sty-rt3 .go:hover{filter:brightness(.94);}
+  .sty-rt3.done{border-width:3px;padding:8px 9px 8px 12px;}
+  .sty-ix .sty-pqs,.sty-ix .sty-fav{display:none !important;}
+  .sty-g .sty-gn .sty-gi,.sty-g .sty-gn svg{color:var(--stg-ink);}
+  /* ONE INK, NO SECOND HUE ON A TINTED PANE (owner, 2026-10-25: "secondary
+     colors here don't work at all"). A finished tile is white with a heavier ink
+     outline, a tile the group played keeps the plain ink outline, and every
+     figure, bar and hover in the pane is ink. */
+  .sty-g.grp,.sty-g.grp:hover{background:var(--stg-surf);border-color:var(--stg-ink);box-shadow:inset 0 0 0 1px var(--stg-ink);color:var(--stg-ink);}
+  .sty-g.grp .sty-gn,.sty-g.grp:hover .sty-gn,.sty-g.grp.done .sty-gn,.sty-g.grp.done.res .sty-gn,.sty-g.grp.done.res:hover .sty-gn,
+  .sty-g.grp .sty-grk,.sty-g.grp .sty-star{color:var(--stg-ink);}
+  .sty-g.grp .sty-gt,.sty-g.grp .sty-grl,.sty-g.grp .sty-grf,.sty-g.grp .sty-gsep{color:var(--stg-ink2, var(--stg-ink));}
+  .sty-g.gw,.sty-g.gw:hover,.sty-g:hover{border-color:var(--stg-ink);}
+  .sty-g:hover .sty-gn,.sty-g .sty-grk,.sty-g .sty-grl{color:var(--stg-ink);}
+  .sty-favr .tr{background:var(--stg-surf);box-shadow:inset 0 0 0 1.5px var(--stg-ink);}
+  .sty-favr .tr u,.sty-favr .wk s.p{background:var(--stg-ink);}
+  .sty-favr .wk s{background:var(--stg-surf);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--stg-ink) 35%, transparent);}
+  .sty-favr:hover .n,.sty-favr.try .go{color:var(--stg-ink);}
+  .sty-favh .sty-eb,.sty-favc{color:var(--stg-ink);}
 }
 `;
