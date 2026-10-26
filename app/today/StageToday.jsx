@@ -2672,7 +2672,22 @@ export default function StageToday() {
       .catch(() => setFav({ mine: {}, site: {}, week: {}, failed: true }));
   }, [favWanted]);
   // A to Z until the week's counts land, so nothing jumps twice.
-  const sortGames = (list) => {
+  // THE SEARCH IN THE TITLE ROW (owner, 2026-10-26): it fills the space beside
+  // the pane title and filters the pane's puzzles by name and description as
+  // you type. Desktop only, and gone on a narrower window.
+  const [findQ, setFindQ] = useState('');
+  const findIn = (list) => {
+    const q = findQ.trim().toLowerCase();
+    return q ? list.filter((g) => (g.name + ' ' + (g.tag || '') + ' ' + (g.tagLong || '')).toLowerCase().includes(q)) : list;
+  };
+  const findBox = (
+    <label className="sty-find" onClick={(e) => e.stopPropagation()}>
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+      <input type="search" value={findQ} onChange={(e) => setFindQ(e.target.value)} placeholder="Find a puzzle" aria-label="Find a puzzle" />
+    </label>
+  );
+  const sortGames = (list0) => {
+    const list = findIn(list0);
     if (sortBy === 'diff') {
       if (!diff) return list;
       const r = (g) => diff[g.key] || 9;
@@ -3479,12 +3494,13 @@ export default function StageToday() {
           <b>{n}<i>/{games.length}</i></b>
           {runsIn() ? null : circPills(cat, false)}
           {/* SORT AND VIEW STAY ON ONE LINE TOGETHER (owner, 2026-10-25). */}
+          {findBox}
           <span className="sty-svw">{sortCtl(false)}{viewCtl(cat)}</span>
         </div>
         {s ? <p className="sty-skw">{s.what}. {games.length} daily puzzles.</p> : null}
         {circPills(cat, true)}
         {runStrip(cat)}
-        {puzLab(games.length)}
+        {puzLab(findIn(games).length)}
         {mid && viewOf(cat) === 'list' ? catLedger(games, sk, cat) : null}
         {!(mid && viewOf(cat) === 'list') ? <>
         <div className={'sty-games' + (fit ? ' fit' : '')} style={fitStyle} ref={dk ? deckGridRef : undefined}>
@@ -4048,13 +4064,14 @@ export default function StageToday() {
             <b>{alphaDone}<i>/{alpha.length}</i></b>
             {grpChips()}
             {runsIn() ? null : circPills(null, false)}
+            {findBox}
             <span className="sty-svw">{sortCtl(false)}{viewCtl(ALL_ID)}</span>
           </div>
           {circPills(null, true)}
           {grpBanners()}
           {grpLists('azg')}
           {runStrip(null)}
-          {who && grpGames.some((x) => mineGrp.has(x.code)) ? <div className="sty-mgl">All Puzzles</div> : puzLab(alpha.length)}
+          {who && grpGames.some((x) => mineGrp.has(x.code)) ? <div className="sty-mgl">All Puzzles</div> : puzLab(findIn(alpha).length)}
           {mid && viewOf(ALL_ID) === 'list' ? (
             <div className="sty-led">
               {ledgerHead(null)}
@@ -4792,7 +4809,7 @@ ${PATCH_CSS}
 
 /* ── a star on every card ──────────────────────────────────────────────── */
 .sty-g{position:relative;}
-.sty-gpl,.sty-gld{display:none;}
+.sty-gpl,.sty-gld,.sty-find{display:none;}
 .sty-star{position:absolute;top:6px;right:6px;display:flex;align-items:center;justify-content:center;
   width:24px;height:24px;border:0;border-radius:8px;background:none;cursor:pointer;
   color:var(--stg-mute2);opacity:0;transition:opacity .12s;}
@@ -6763,6 +6780,15 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-rt3 .go:hover{filter:brightness(.94);}
   .sty-rt3.done{border-width:3px;padding:8px 9px 8px 12px;}
   .sty-ix .sty-pqs,.sty-ix .sty-fav{display:none !important;}
+  /* AT MOST SIX ACROSS (owner, 2026-10-26). */
+  .sty-ix .sty-games{gap:10px;grid-template-columns:repeat(auto-fill,minmax(max(184px,calc((100% - 50px) / 6)),1fr));}
+  .sty-find{flex:1 1 auto;max-width:none;margin-left:28px;display:flex;align-items:center;gap:8px;height:38px;box-sizing:border-box;
+    padding:0 14px;border:var(--dk);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);cursor:text;}
+  .sty-find input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--stg-ink);}
+  .sty-find input::placeholder{color:color-mix(in srgb, var(--stg-ink) 55%, transparent);}
+  .sty-find:focus-within{box-shadow:0 0 0 2px var(--stg-surf),0 0 0 4px var(--stg-ink);}
+  .sty-find + .sty-svw{margin-left:12px;}
+  @media (max-width:1279px){ .sty-find{display:none;} .sty-find + .sty-svw{margin-left:auto;} }
   /* THE CAP AS IN THE MOCKUP (owner, 2026-10-26): no rule under it, the name at
      20px, the date in bold capitals, the day's strip as a row of 16px blocks,
      and the page starting close under it. */

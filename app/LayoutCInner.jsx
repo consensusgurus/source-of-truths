@@ -43,6 +43,7 @@ import { SNAP_KEY } from '@/lib/home-snapshot';
 import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import { sharedGet } from './sharedGet';
 import { meRequest } from './quizMeClient';
+import useMyGames from './useMyGames';
 
 const MIN_W = 1100;
 const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
@@ -241,6 +242,7 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
 .lc-nav .lc-sub{margin:-4px 0 2px;border:var(--dk);border-radius:12px;overflow:hidden;background:var(--stg-surf);gap:0;}
 .lc-nav .lc-g{border-radius:0;color:var(--stg-ink);font-weight:600;padding:5px 12px;border-top:1.5px solid color-mix(in srgb, var(--stg-ink) 14%, transparent);}
 .lc-nav .lc-g:first-child{border-top:0;}
+.lc-nav .lc-gx{white-space:normal;line-height:1.4;padding:8px 12px;}
 .lc-nav .lc-g.now{background:var(--stg-ink);color:var(--stg-ground);box-shadow:none;}
 .lc-nav .lc-g s.up,.lc-nav .lc-g s.pz{color:inherit;}
 html.lc-on .lc-host{padding-left:290px !important;}
@@ -250,6 +252,7 @@ html.lc-on .lc-host{padding-left:290px !important;}
 .lc-side{--dk:2px solid var(--stg-ink);right:22px;width:300px;top:calc(var(--lc-hh,62px) + 10px);border:var(--dk);border-radius:12px;overflow:hidden;background:var(--stg-surf);}
 .lc-tabs{height:auto;padding:0;border-bottom:2px solid var(--stg-ink);}
 .lc-tab{padding:10px 0;border-bottom:0;color:var(--stg-ink);font-weight:800;}
+.lc-tab{border-radius:0 !important;margin:0;}
 .lc-tab.on{background:var(--stg-ink);color:var(--stg-ground);}
 .lc-body{padding:12px 14px;}
 .lc-row{border-bottom:1.5px solid color-mix(in srgb, var(--stg-ink) 14%, transparent);}
@@ -295,6 +298,8 @@ export default function LayoutCInner({ gameKey }) {
   const capRef = useRef(null);
   const [theme, setTheme] = useStageTheme();
   const [siteLook] = useStageLook();
+  const { favorites } = useMyGames();
+  const MINE = '__mine';
   const light = theme === 'light';
   const stats = useDayStats();
   // Groups standing is a 5-10s server read for a side rail, so it waits until
@@ -522,7 +527,8 @@ export default function LayoutCInner({ gameKey }) {
     pop: gs.map(() => false),
   }));
   const rank = mine ? ((mine.ranks && mine.ranks.xp) || mine.rank || null) : null;
-  const openGames = (lensCats.find((c) => c.cat === shownCat) || { games: [] }).games;
+  const mineGames = games.filter((g) => (favorites || []).includes(g.key)).sort((a, b) => a.name.localeCompare(b.name));
+  const openGames = shownCat === MINE ? mineGames : (lensCats.find((c) => c.cat === shownCat) || { games: [] }).games;
   const nextUp = openGames.find((g) => g.key !== game.key && !done.has(g.key) && !inprog.has(g.key));
   const toggleCat = (cat) => setOpenCat(shownCat === cat ? '' : cat);
   const gameHref = (g) => (g.href || '/' + g.key);
@@ -558,6 +564,24 @@ export default function LayoutCInner({ gameKey }) {
   );
   const pauseIcon = (
     <svg viewBox="0 0 12 12" width="11" height="11" aria-label="Paused" role="img"><rect x="2.5" y="2" width="2.6" height="8" rx=".8" fill="currentColor" /><rect x="6.9" y="2" width="2.6" height="8" rx=".8" fill="currentColor" /></svg>
+  );
+  const subList = (gs, empty) => (
+    <div className="lc-sub">
+      {gs.length ? gs.map((g) => {
+        const isNow = g.key === game.key;
+        const paused = !done.has(g.key) && inprog.has(g.key) && !isNow;
+        const mark = done.has(g.key) ? '\u2713' : isNow ? 'Playing' : paused ? pauseIcon : (nextUp && nextUp.key === g.key ? 'Up next' : '');
+        return isNow ? (
+          <span key={g.key} aria-current="page" className="lc-g now" style={{ '--cc': inkFor(g.cat) }}>
+            {g.name}<s>{mark}</s>
+          </span>
+        ) : (
+          <Link key={g.key} href={gameHref(g)} className="lc-g" style={{ '--cc': inkFor(g.cat) }}>
+            {g.name}<s className={mark === 'Up next' ? 'up' : paused ? 'pz' : undefined}>{mark}</s>
+          </Link>
+        );
+      }) : <span className="lc-g lc-gx">{empty || ''}</span>}
+    </div>
   );
   const groups = grp && Array.isArray(grp.groups) ? grp.groups.filter((g) => !g.failed) : [];
   const tabs = [['board', 'Board']].concat(groups.length ? [['group', 'Group']] : [], [['you', 'You'], ['archive', 'Archive'], ['rules', 'Rules']]);
@@ -674,7 +698,13 @@ export default function LayoutCInner({ gameKey }) {
       <nav className={'lc-nav' + (isColorLook(siteLook) ? ' slc' : '')} aria-label="Sections">
         <div className="sty-ixn">
           {ixLink('all', 'All Puzzles', 'var(--stg-ink)')}
-          {ixLink('sty-mine', 'My Puzzles', 'var(--stg-acc)')}
+          {/* MY PUZZLES OPENS IN PLACE (owner, 2026-10-26), the starred games
+              under it like a category's, rather than leaving for the home. */}
+          <button type="button" className={'sty-ixb' + (shownCat === MINE ? ' on' : '')} style={{ '--cc': 'var(--stg-acc)' }}
+            aria-expanded={shownCat === MINE} onClick={() => toggleCat(MINE)}>
+            <i aria-hidden="true" /><span>My Puzzles</span>
+          </button>
+          {shownCat === MINE ? subList(mineGames, 'Star a puzzle on the home page and it shows up here.') : null}
           <span className="sty-ixsep" aria-hidden="true" />
           <div className="sty-ixsw" role="group" aria-label="Group puzzles by">
             <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
@@ -686,24 +716,7 @@ export default function LayoutCInner({ gameKey }) {
                 aria-expanded={cat === shownCat} onClick={() => toggleCat(cat)}>
                 <i aria-hidden="true" /><span>{ixLabel(cat)}</span>
               </button>
-              {cat === shownCat ? (
-                <div className="lc-sub">
-                  {gs.map((g) => {
-                    const isNow = g.key === game.key;
-                    const paused = !done.has(g.key) && inprog.has(g.key) && !isNow;
-                    const mark = done.has(g.key) ? '\u2713' : isNow ? 'Playing' : paused ? pauseIcon : (nextUp && nextUp.key === g.key ? 'Up next' : '');
-                    return isNow ? (
-                      <span key={g.key} aria-current="page" className="lc-g now" style={{ '--cc': inkFor(g.cat) }}>
-                        {g.name}<s>{mark}</s>
-                      </span>
-                    ) : (
-                      <Link key={g.key} href={gameHref(g)} className="lc-g" style={{ '--cc': inkFor(g.cat) }}>
-                        {g.name}<s className={mark === 'Up next' ? 'up' : paused ? 'pz' : undefined}>{mark}</s>
-                      </Link>
-                    );
-                  })}
-                </div>
-              ) : null}
+              {cat === shownCat ? subList(gs) : null}
             </React.Fragment>
           ))}
           <span className="sty-ixsep" aria-hidden="true" />
