@@ -275,13 +275,19 @@ for (const c of CIRCUITS) {
 // THE TRIVIA SPLIT, recomputed here with its own date math rather than read
 // back off lib/circuits.js (2026-10-14). Eight banks, five a day in the
 // Gauntlet and three in the Encore, sliding one bank a day from 2026-10-15.
-const SPLIT_POOL = ['atlas', 'sci', 'sport', 'art', 'script', 'history', 'biz', 'quotes'];
+// FOODIE JOINED on 2026-10-27 (owner, 2026-10-26): nine banks from then, five
+// in the Gauntlet and FOUR in the Encore, the window restarting that day.
+const SPLIT_POOL_V1 = ['atlas', 'sci', 'sport', 'art', 'script', 'history', 'biz', 'quotes'];
+const SPLIT_POOL = ['foodie', 'atlas', 'sci', 'sport', 'art', 'script', 'history', 'biz', 'quotes'];
 const SPLIT_FROM = '2026-10-15';
+const FOODIE_FROM_LOCAL = '2026-10-27';
 function splitLocal(c, iso) {
   if (c.split === 'out' && iso < SPLIT_FROM) return iso === '2026-10-14' ? ['sci', 'art', 'history'] : [];
   if (c.split === 'in' && iso < SPLIT_FROM) return c.before.keys.slice();
-  const days = Math.round((Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(2026, 9, 15)) / 86400000);
-  const live = SPLIT_POOL.filter((k) => DAILY_GAME_MAP[k] && !(RETIRED_DAILY[k] && RETIRED_DAILY[k] <= iso));
+  const v2 = iso >= FOODIE_FROM_LOCAL;
+  const pool = v2 ? SPLIT_POOL : SPLIT_POOL_V1;
+  const days = Math.round((Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - (v2 ? Date.UTC(2026, 9, 27) : Date.UTC(2026, 9, 15))) / 86400000);
+  const live = pool.filter((k) => DAILY_GAME_MAP[k] && !(RETIRED_DAILY[k] && RETIRED_DAILY[k] <= iso));
   const n = live.length;
   const at = ((days % n) + n) % n;
   const inn = [];
@@ -295,19 +301,25 @@ function splitLocal(c, iso) {
   const g = CIRCUITS.find((c) => c.split === 'in');
   const e = CIRCUITS.find((c) => c.split === 'out');
   if (g && e) {
-    const inCt = Object.fromEntries(SPLIT_POOL.map((k) => [k, 0]));
-    for (let i = 0; i < 8; i += 1) {
-      const iso = new Date(Date.UTC(2026, 9, 15) + i * 86400000).toISOString().slice(0, 10);
-      const gk = circuitKeysFor(g.id, iso);
-      const ek = circuitKeysFor(e.id, iso);
-      if (gk.length !== 7) fails.push(`${g.id}: ${iso} plays ${gk.length}, expected 7`);
-      if (ek.length !== 3) fails.push(`${e.id}: ${iso} plays ${ek.length}, expected 3`);
-      if (ek.some((k) => gk.includes(k))) fails.push(`${iso}: a bank is in both the Gauntlet and the Encore`);
-      const both = [...gk, ...ek].filter((k) => SPLIT_POOL.includes(k)).sort().join();
-      if (both !== [...SPLIT_POOL].sort().join()) fails.push(`${iso}: Gauntlet + Encore do not cover the trivia pool`);
-      for (const k of gk) if (k in inCt) inCt[k] += 1;
+    // Two eras: eight banks from 2026-10-15 (Encore three), nine from
+    // 2026-10-27 when Foodie joined (Encore four).
+    for (const [pool, start, ec] of [[SPLIT_POOL_V1, Date.UTC(2026, 9, 15), 3], [SPLIT_POOL, Date.UTC(2026, 9, 27), 4]]) {
+      const inCt = Object.fromEntries(pool.map((k) => [k, 0]));
+      for (let i = 0; i < pool.length; i += 1) {
+        const iso = new Date(start + i * 86400000).toISOString().slice(0, 10);
+        if (pool === SPLIT_POOL_V1 && iso >= FOODIE_FROM_LOCAL) break;
+        const gk = circuitKeysFor(g.id, iso);
+        const ek = circuitKeysFor(e.id, iso);
+        if (gk.length !== 7) fails.push(`${g.id}: ${iso} plays ${gk.length}, expected 7`);
+        if (ek.length !== ec) fails.push(`${e.id}: ${iso} plays ${ek.length}, expected ${ec}`);
+        if (ek.some((k) => gk.includes(k))) fails.push(`${iso}: a bank is in both the Gauntlet and the Encore`);
+        const both = [...gk, ...ek].filter((k) => pool.includes(k)).sort().join();
+        if (both !== [...pool].sort().join()) fails.push(`${iso}: Gauntlet + Encore do not cover the trivia pool`);
+        for (const k of gk) if (k in inCt) inCt[k] += 1;
+      }
+      if (pool === SPLIT_POOL) for (const [k, v] of Object.entries(inCt)) if (v !== 5) fails.push(`${k}: in the Gauntlet ${v} of ${pool.length} days, expected 5`);
     }
-    for (const [k, v] of Object.entries(inCt)) if (v !== 5) fails.push(`${k}: in the Gauntlet ${v} of 8 days, expected 5`);
+    if (circuitKeysFor(g.id, '2026-10-26').includes('foodie') || circuitKeysFor(e.id, '2026-10-26').includes('foodie')) fails.push('foodie: dealt before it launched');
     if (circuitKeysFor(e.id, '2026-10-13').length) fails.push(`${e.id}: plays before it launched`);
     if ([...circuitKeysFor(e.id, '2026-10-14')].sort().join() !== 'art,history,sci') fails.push(`${e.id}: launch day is not Sci, Art and History`);
   }

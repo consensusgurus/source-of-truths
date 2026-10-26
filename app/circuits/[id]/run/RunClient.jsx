@@ -1037,6 +1037,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           bg={rampFor(sec.slot != null ? sec.slot : r.si)}
           qKey={`${r.si}:${r.i}`}
           label={`${sec.name}, question ${r.i + 1} of ${sec.questions.length}`}
+          kicker={sec.key === 'deep' && sec.topic ? sec.topic : null}
           question={MATH_RUN_GAMES.includes(sec.key)
             ? <h2>{String(question.q).split('?').map((p, i) => (i === 0 ? <React.Fragment key="h">{mathText(p)}</React.Fragment> : [<span key={i} style={{ borderBottom: '3px solid currentColor', padding: '0 .3em' }}>?</span>, <React.Fragment key={'p' + i}>{mathText(p)}</React.Fragment>]))}</h2>
             : question.line

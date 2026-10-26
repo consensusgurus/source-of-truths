@@ -46,7 +46,7 @@ export const RUN_DOORS = {
   },
   gauntlet: {
     href: '/trivia', name: 'Trivia Gauntlet', eyebrow: 'Daily run · Seven categories',
-    body: 'Seven daily trivia quizzes back to back, one life in each: a topic in depth, a streak of anything at all, and five that rotate daily through geography, science, sport, the arts, history, business, the screen and famous lines.',
+    body: 'Seven daily trivia quizzes back to back, one life in each: a topic in depth, a streak of anything at all, and five that rotate daily through food and drink, geography, science, sport, the arts, history, business, the screen and famous lines.',
     go: 'Run all seven', accent: '#7dd3fc',
     tags: [['Deep', '#7dd3fc'], ['Atlas', '#6ee7b7'], ['Sci', '#5eead4'], ['Art', '#fb7185'], ['History', '#e8b43a'], ['Sport', '#bef264'], ['Streak', '#e879f9']],
   },
@@ -54,8 +54,8 @@ export const RUN_DOORS = {
   // (MoreRuns) offers it while unplayed. Its quizzes change daily, so
   // MoreRuns reads them live from lib/circuits; these tags are a fallback.
   triviaencore: {
-    href: '/triviaencore', name: 'Trivia Encore', eyebrow: 'Daily run \u00b7 Three quizzes',
-    body: 'The three trivia quizzes that sat out today\u2019s Gauntlet, back to back, one life in each.',
+    href: '/triviaencore', name: 'Trivia Encore', eyebrow: 'Daily run \u00b7 Four quizzes',
+    body: 'The four trivia quizzes that sat out today\u2019s Gauntlet, back to back, one life in each.',
     go: 'Take the Encore', accent: '#e8b43a',
     tags: [['Encore', '#e8b43a']],
   },

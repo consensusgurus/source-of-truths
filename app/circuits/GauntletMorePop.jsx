@@ -71,6 +71,7 @@ const CONFIG = {
       sci: ['clade', 'dossier', 'potluck'],
       art: ['thread', 'focus', 'potluck'],
       history: ['dating', 'listed', 'dossier'],
+      foodie: ['pricecheck', 'potluck', 'bracket'],
     },
     why: {
       atlas: 'These three are geography too.',
@@ -81,6 +82,7 @@ const CONFIG = {
       streak: 'More quick-fire trivia.',
       sci: 'An animal and an element to track down by deduction.',
       art: 'More for the eye and the well read.',
+      foodie: 'Price Check prices real things, groceries included.',
       history: 'Put events in order, rank the past, and name the president.',
     },
     also: ['passport', 'bracket', 'listed', 'ping', 'dating', 'thread', 'focus', 'potluck', 'dossier', 'flank', 'clade'],

@@ -16,7 +16,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Arts and Culture Trivia Game: Art | Mind Loft',
   description:
-    'A free daily arts quiz: 25 questions on painting, music, books, architecture and food, easy to expert. One wrong answer ends the run.',
+    'A free daily arts quiz: 25 questions on painting, music, books, architecture and design, easy to expert. One wrong answer ends the run.',
   alternates: { canonical: '/art' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
@@ -33,7 +33,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Art',
   alternateName: 'Art: Daily Arts and Culture Trivia', url: `${SITE_URL}/art`,
   description:
-    'A free daily arts and culture trivia game. Twenty-five multiple-choice questions climb from easy to expert in five rounds of five, cycling the same five lanes each round: art, music, books, architecture and design, and food and drink. One wrong answer, or a twenty-second clock at zero, ends the run, and every question cleared is a point. Everyone plays the same twenty-five questions in the same order each day, and the daily leaderboard ranks the longest runs with ties broken by time. Every answer is a settled fact rather than a sales chart or a ranking that moves next week.',
+    'A free daily arts and culture trivia game. Twenty-five multiple-choice questions climb from easy to expert in five rounds of five, each round asking art, music, books, and architecture and design, then a fifth from anywhere across the arts. One wrong answer, or a twenty-second clock at zero, ends the run, and every question cleared is a point. Everyone plays the same twenty-five questions in the same order each day, and the daily leaderboard ranks the longest runs with ties broken by time. Every answer is a settled fact rather than a sales chart or a ranking that moves next week.',
   genre: ['Arts', 'Culture', 'Trivia', 'Quiz', 'Survival'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },

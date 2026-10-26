@@ -25,6 +25,8 @@ import { PUZZLES as artPuzzles } from '../../../art/puzzles';
 import { QUESTION_MAP as artQuestions } from '../../../art/questions';
 import { PUZZLES as historyPuzzles } from '../../../history/puzzles';
 import { QUESTION_MAP as historyQuestions } from '../../../history/questions';
+import { PUZZLES as foodiePuzzles } from '../../../foodie/puzzles';
+import { QUESTION_MAP as foodieQuestions } from '../../../foodie/questions';
 import { PUZZLES as gramPuzzles } from '../../../gram/puzzles';
 import { QUESTION_MAP as gramQuestions } from '../../../gram/questions';
 import { PUZZLES as vocabPuzzles } from '../../../vocab/puzzles';
@@ -86,6 +88,7 @@ const BANKS = {
   biz: { puzzles: bizPuzzles, questions: bizQuestions, tiers: ['Warm-up', 'First half', 'Second half', 'Crunch time', 'Overtime'] },
   sci: { puzzles: sciPuzzles, questions: sciQuestions, tiers: ['Hypothesis', 'Experiment', 'Observation', 'Analysis', 'Discovery'] },
   art: { puzzles: artPuzzles, questions: artQuestions, tiers: ['Sketch', 'Draft', 'Study', 'Gallery', 'Masterpiece'] },
+  foodie: { puzzles: foodiePuzzles, questions: foodieQuestions, tiers: ['Snack', 'Appetizer', 'Main Course', 'Chef\'s Table', 'Tasting Menu'] },
   history: { puzzles: historyPuzzles, questions: historyQuestions, tiers: ['Living memory', 'The textbook', 'The archive', 'The footnotes', 'The primary sources'] },
   gram: { puzzles: gramPuzzles, questions: gramQuestions, tiers: ['Draft', 'Edit', 'Revise', 'Proof', 'Polish'] },
   vocab: { puzzles: vocabPuzzles, questions: vocabQuestions, tiers: ['Everyday', 'Educated', 'Literary', 'Learned', 'Lexicon'] },
@@ -251,11 +254,11 @@ export async function generateMetadata({ params }) {
   }
   if (c.id === 'triviaencore') {
     const url = `${SITE_URL}${runHref(c.id)}`;
-    const hook = 'Trivia Encore: three more quizzes. One life each.';
+    const hook = 'Trivia Encore: four more quizzes. One life each.';
     return {
-      title: 'Trivia Encore: Three More Daily Trivia Quizzes | Mind Loft',
+      title: 'Trivia Encore: Four More Daily Trivia Quizzes | Mind Loft',
       description:
-        'The three daily trivia quizzes that sat out today\'s Trivia Gauntlet, played back to back as one run. Twenty seconds a question, one life in each. Free, no signup.',
+        'The four daily trivia quizzes that sat out today\'s Trivia Gauntlet, played back to back as one run. Twenty seconds a question, one life in each. Free, no signup.',
       alternates: { canonical: runHref(c.id) },
       robots: { index: false, follow: true },
       openGraph: { title: hook, description: 'The quizzes that sat out today\'s Gauntlet. One wrong answer ends each one.', url, type: 'website', siteName: 'Mind Loft' },
@@ -269,7 +272,7 @@ export async function generateMetadata({ params }) {
   return {
     title: `${c.name}: ${spell(n, true)} Trivia Categories, One Life Each | Mind Loft`,
     description:
-      `Quiz show practice, ${spell(n)} rounds deep. Every daily trivia quiz played back to back as one run: a topic in depth, a sudden-death round of anything at all, and five more that rotate daily through geography, science, sport, the arts, history, business, the screen and famous lines. Twenty seconds a question, one life in each quiz, and one wrong answer ends it. Free, no signup, new questions every day.`,
+      `Quiz show practice, ${spell(n)} rounds deep. Every daily trivia quiz played back to back as one run: a topic in depth, a sudden-death round of anything at all, and five more that rotate daily through food and drink, geography, science, sport, the arts, history, business, the screen and famous lines. Twenty seconds a question, one life in each quiz, and one wrong answer ends it. Free, no signup, new questions every day.`,
     alternates: { canonical: runHref(c.id) },
     robots: { index: false, follow: true },
     openGraph: {

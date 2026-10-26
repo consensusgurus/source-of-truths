@@ -88,7 +88,7 @@ import {
   Club, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, UserPlus, Gavel, Shield,
   Flame, Frame, Contrast, Layers, FileText, Waypoints, Anchor, PenLine, Gamepad2, Zap, Sigma, Sandwich,
   ArrowLeftRight, Gem, Map as MapIcon, Divide, TableProperties, TrendingUp, Milestone, Plane, CornerUpRight,
-  Palette, Landmark,
+  Palette, Landmark, UtensilsCrossed,
   Clapperboard, Quote, CookingPot, ZoomIn, Axe, Truck, Rows3, Boxes, MoveDiagonal, Crop, Scan, MoveDownRight,
 } from 'lucide-react';
 import ReportIssue from './ReportIssue';
@@ -116,7 +116,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['mahj', 'aorb', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
+const LAUNCH_PIN = { keys: ['mahj', 'aorb', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'foodie', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -250,6 +250,7 @@ export const GAME_META = {
   quotes: { accent: '#3d4f7c', badgeBg: '#3d4f7c', badgeInk: T.white, Fin: Quote },
   sci: { accent: '#0f766e', badgeBg: '#0f766e', badgeInk: T.white, Fin: FlaskConical },
   art: { accent: '#9d174d', badgeBg: '#9d174d', badgeInk: T.white, Fin: Palette },
+  foodie: { accent: '#c2410c', badgeBg: '#c2410c', badgeInk: T.white, Fin: UtensilsCrossed },
   history: { accent: '#854d0e', badgeBg: '#854d0e', badgeInk: T.white, Fin: Landmark },
   potluck: { accent: '#b4532a', badgeBg: '#b4532a', badgeInk: T.white, Fin: CookingPot },
   focus: { accent: '#8a4b08', badgeBg: '#8a4b08', badgeInk: T.white, Fin: ZoomIn },
@@ -417,7 +418,8 @@ const ALL_DAILY_GAMES = [
   { key: 'slot', cat: 'trivia',   name: 'Slot', tag: 'Ten things, one at a time', blurb: 'Ten things on one axis, dealt one at a time. Drop each into a slot before you see the next; nothing moves once it is down, and the reveal shows the true order beside yours.', href: '/slot' },
   { key: 'focus', cat: 'trivia',   name: 'Focus', tag: 'Name the zoomed-in photo', blurb: 'One photo a day, zoomed in close. Name it before six frames pull the camera all the way back; the earlier the frame, the more it pays.', href: '/focus' },
   { key: 'sci', cat: 'trivia',   name: 'Sci', tag: 'Science, one life', blurb: 'Twenty-five science questions, gimme to expert, five lanes a round from the human body and space to the lab bench, living things and the inventions that changed everything. One wrong answer ends the run.', href: '/sci' },
-  { key: 'art', cat: 'trivia',   name: 'Art', tag: 'Arts and culture, one life', blurb: 'Twenty-five arts and culture questions, gimme to expert, five lanes a round from the gallery and the concert hall to the bookshelf, the skyline and the kitchen. One wrong answer ends the run.', href: '/art' },
+  { key: 'art', cat: 'trivia',   name: 'Art', tag: 'Arts and culture, one life', blurb: 'Twenty-five arts and culture questions, gimme to expert, five lanes a round from the gallery and the concert hall to the bookshelf and the skyline. One wrong answer ends the run.', href: '/art' },
+  { key: 'foodie', cat: 'trivia',   name: 'Foodie', tag: 'Food and drink, one life', blurb: 'Twenty-five food and drink questions, gimme to expert, five lanes a round from dishes of the world and the pantry to the bar, the kitchen and the history of what we eat. One wrong answer ends the run.', href: '/foodie' },
   { key: 'history', cat: 'trivia',   name: 'History', tag: 'History, one life', blurb: 'Twenty-five history questions, gimme to expert, five lanes a round from the ancient world and the Middle Ages to empires, wars and the modern era. One wrong answer ends the run.', href: '/history' },
   { key: 'potluck', cat: 'trivia',  name: 'Potluck', tag: 'Three quizzes, one score', blurb: 'Three quizzes a day from the catalog, one to type, one to match and one to spot, each from a different subject. Each is worth 10; turn it in whenever you are done.', href: '/potluck' },
   { key: 'quotes', cat: 'trivia',   name: 'Quotes', tag: 'Who said it, one life', blurb: 'Twenty-five famous lines, gimme to expert, five lanes a round from presidents and generals to scientists, writers and the odd film character. One wrong attribution ends the run.', href: '/quotes' },

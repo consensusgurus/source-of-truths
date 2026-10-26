@@ -85,6 +85,13 @@ const LANE_FILE = {
 const FIRST_LIVE = '2026-10-14';
 const QUIZ_PREFIX = 'art';
 const PER_TIER = SUBJECTS.length;   // 5
+// THE FIFTH SLOT LEAVES FOOD (owner, 2026-10-26). From ART_FIFTH_FROM the
+// food and drink questions moved to Foodie, their own daily, and the fifth
+// slot of every round is filled from across the other four arts lanes. The
+// lane file keeps its name (art-food.mjs) so the frozen days rebuild byte for
+// byte; from that date each entry's `c` names the arts lane it really is.
+const ART_FIFTH_FROM = '2026-10-27';
+const FIFTH_LANES = ['Art', 'Music', 'Books', 'Architecture & Design'];
 const TOTAL_Q = PER_TIER * 5;       // 25
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -240,7 +247,8 @@ for (let d = 0; d < nDays; d++) {
     const slot = (t - 1) * PER_TIER + s + 1;
     const id = qidFor(num, slot);
     if (!entry) die(`${LANE_FILE[subject]} day ${d + 1}: no tier ${t} question`);
-    if (entry.c !== subject) die(`${id}: lane says "${entry.c}", the lane cycle wants "${subject}"`);
+    const fifthOpen = s === PER_TIER - 1 && live >= ART_FIFTH_FROM;
+    if (fifthOpen ? !FIFTH_LANES.includes(entry.c) : entry.c !== subject) die(`${id}: lane says "${entry.c}", the lane cycle wants "${fifthOpen ? FIFTH_LANES.join(' / ') : subject}"`);
     if (entry.t !== t) die(`${id}: lane says tier ${entry.t}, the ramp wants ${t}`);
     if (!entry.q || !entry.a || !Array.isArray(entry.d) || entry.d.length !== 3) die(`${id}: needs q, a and exactly 3 distractors`);
     if (haveIds.has(id)) die(`${id} is already in the bank; the past is frozen`);   // (empty set under --check, which rebuilds ids that are there on purpose)
@@ -255,7 +263,7 @@ for (let d = 0; d < nDays; d++) {
     for (let c = 0, w = 0; c < 4; c++) choices.push(c === correct ? entry.a : wrong[w++]);
 
     qids.push(id);
-    qLines.push(`  { id: '${id}', cat: '${esc(subject)}', tier: ${t}, q: '${esc(entry.q)}', choices: [${choices.map((c) => `'${esc(c)}'`).join(', ')}], correct: ${correct}${fromField(entry)} },`);
+    qLines.push(`  { id: '${id}', cat: '${esc(fifthOpen ? entry.c : subject)}', tier: ${t}, q: '${esc(entry.q)}', choices: [${choices.map((c) => `'${esc(c)}'`).join(', ')}], correct: ${correct}${fromField(entry)} },`);
   }
   if (qids.length !== TOTAL_Q) die(`day ${num}: built ${qids.length} questions, need ${TOTAL_Q}`);
 

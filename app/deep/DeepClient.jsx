@@ -555,6 +555,7 @@ export default function DeepClient({ puzzles = [], questionsByNum = {}, forceNum
           bg={gstRamp(gstSlot('gauntlet', 'deep'))}
           qKey={g.i}
           label={`Question ${g.i + 1} of ${TOTAL_Q}`}
+          kicker={PUZZLE.topic || null}
           question={question.line ? <><blockquote>&ldquo;{question.line}&rdquo;</blockquote><h2>{question.ask}</h2></> : <h2>{question.q}</h2>}
           choices={question.choices.map((c) => (typeof c === 'number' ? c.toLocaleString('en-US') : c))}
           onPick={answer}

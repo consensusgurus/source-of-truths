@@ -32,7 +32,7 @@ import { ArrowRight, Search, X } from 'lucide-react';
 import CircuitFrame from '../circuits/CircuitFrame';
 import GameGlyph from '../GameGlyph';
 import { fetchDayStatus } from '../useDayStats';
-import { DAILY_GAME_MAP, isRetiredDaily } from '@/lib/daily-games';
+import { DAILY_GAME_MAP, isRetiredDaily, isUnlaunchedDaily } from '@/lib/daily-games';
 import { categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
 import { useThemeQs } from '@/lib/stage-theme';
 
@@ -101,6 +101,7 @@ export default function ArchiveClient({ games = [], today = '' }) {
     .map((g) => {
       const reg = DAILY_GAME_MAP[g.key];
       if (!reg) return null;
+      if (isUnlaunchedDaily(g.key, today)) return null;
       const retired = isRetiredDaily(g.key, today);
       // Unpack the lean server shape (see page.js) into named fields.
       const puzzles = (g.puzzles || []).map((x) => {

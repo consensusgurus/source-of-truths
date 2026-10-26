@@ -91,6 +91,8 @@ const STOP = new Set(['the', 'a', 'an', 'of', 'and', 'in', 'on', 'at', 'to', 'fo
 // lanes in this order. Both are the shape of the game, not a convention.
 const SUBJECTS = ['Art', 'Music', 'Books', 'Architecture & Design', 'Food & Drink'];
 const PER_TIER = SUBJECTS.length;
+const ART_FIFTH_FROM = '2026-10-27';
+const FIFTH_LANES = ['Art', 'Music', 'Books', 'Architecture & Design'];
 const TOTAL_Q = 25;
 const RAMP = [];
 for (let t = 1; t <= 5; t++) for (let s = 0; s < PER_TIER; s++) RAMP.push(t);
@@ -178,7 +180,11 @@ for (const p of PUZZLES) {
   qs.forEach((q, i) => {
     if (q.tier !== RAMP[i]) fail(`${tag}: slot ${i + 1} is tier ${q.tier}, the ramp wants ${RAMP[i]}`);
     const want = SUBJECTS[i % PER_TIER];
-    if (q.cat !== want) fail(`${tag}: slot ${i + 1} is ${q.cat}, the subject cycle wants ${want}`);
+    // From ART_FIFTH_FROM the fifth slot of each round is any arts lane but
+    // food (food and drink moved to Foodie, owner 2026-10-26).
+    if (i % PER_TIER === PER_TIER - 1 && p.live >= ART_FIFTH_FROM) {
+      if (!FIFTH_LANES.includes(q.cat)) fail(`${tag}: slot ${i + 1} is ${q.cat}, the fifth slot wants one of ${FIFTH_LANES.join(', ')}`);
+    } else if (q.cat !== want) fail(`${tag}: slot ${i + 1} is ${q.cat}, the subject cycle wants ${want}`);
   });
 
   // Correct-answer column spread: 25 questions over 4 columns, so every column

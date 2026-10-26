@@ -144,6 +144,7 @@ export const DAILY_GAMES = [
   { key: 'quotes', href: '/quotes', name: 'Quotes', tag: 'who said it, one life', store: 'sot_quotes_day', accent: '#3d4f7c', bg: '#eef1f8', border: 'rgba(61,79,124,0.4)' },
   { key: 'sci', href: '/sci', name: 'Sci', tag: 'science, one life', store: 'sot_sci_day', accent: '#0f766e', bg: '#e8f5f3', border: 'rgba(15,118,110,0.4)' },
   { key: 'art', href: '/art', name: 'Art', tag: 'arts and culture, one life', store: 'sot_art_day', accent: '#9d174d', bg: '#fbeef3', border: 'rgba(157,23,77,0.4)' },
+  { key: 'foodie', href: '/foodie', name: 'Foodie', tag: 'food and drink, one life', store: 'sot_foodie_day', accent: '#c2410c', bg: '#fbefe7', border: 'rgba(194,65,12,0.4)' },
   { key: 'history', href: '/history', name: 'History', tag: 'history, one life', store: 'sot_history_day', accent: '#854d0e', bg: '#f8f1e4', border: 'rgba(133,77,14,0.4)' },
   { key: 'potluck', href: '/potluck', name: 'Potluck', tag: 'three quizzes, one score', store: 'sot_potluck_day', accent: '#b4532a', bg: '#fdf1ea', border: 'rgba(180,83,42,0.4)' },
   { key: 'focus', href: '/focus', name: 'Focus', tag: 'name the zoomed-in photo', store: 'sot_focus_day', accent: '#8a4b08', bg: '#fdf3e6', border: 'rgba(138,75,8,0.4)' },

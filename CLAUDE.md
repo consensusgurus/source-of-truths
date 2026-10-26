@@ -7208,6 +7208,36 @@ to a rotating pool. Its copy does not claim to be exhaustive, so nothing goes st
 should take a slot is an owner call. Also NOT in `lib/daily-five.js`, whose hand-picked bank ran out
 on 2026-09-13.
 
+## Foodie (`/foodie`) and the nine-bank trivia rotation (owner, 2026-10-26)
+
+Food and drink left Art and became its own daily trivia gauntlet, **Foodie**, live
+**2026-10-27**. Same shape as Art, Sci and History: twenty-five questions, five tiers of five,
+one life, twenty seconds a question. Key `foodie`, Trivia, accent `#c2410c`, no Sunday Edition.
+
+- **Lanes:** World Dishes, Ingredients, Drinks, Kitchen Craft, Food History, in that order in
+  every tier block. Bank built by `scripts/gen-foodie.mjs` from `scripts/foodie-lanes/`, gated by
+  `scripts/verify-foodie.mjs`. 35 days to 2026-11-30.
+- **It began with Art's 240 Food & Drink questions**, every one reused verbatim and tagged
+  `was: 'art:<id>'`; the rest were authored new. The ones players had already seen on Art
+  (10-14 to 10-26) were placed on Foodie's later days.
+- **Art's fifth slot is no longer food.** From 2026-10-27 (`ART_FIFTH_FROM` in gen-art and
+  verify-art) the fifth question of each round comes from Art, Music, Books or Architecture &
+  Design, drawn from new questions (`scripts/art-lanes/art-fill.mjs`) and the unseen arts
+  reserve. The lane file keeps its name, `art-food.mjs`, so the frozen days rebuild byte for byte.
+- **The rotation is NINE banks from 2026-10-27** (`TRIVIA_POOL`, `FOODIE_FROM` in lib/circuits.js):
+  the Gauntlet still deals Streak, Deep and five of the pool; the **Encore now takes four**. The
+  window restarts on 10-27 over the nine; days before keep the eight-bank cycle (`TRIVIA_POOL_V1`).
+  `scripts/verify-circuits.mjs` mirrors both eras. Foodie sits LAST in both circuits' `keys` so
+  no other bank changed its stage colour; it takes an eleventh ladder step (peach `#fdba74`).
+- **`LAUNCH_DAILY` in lib/daily-games.js** keeps a game shipped ahead of its first drop off every
+  roster until that Eastern date (`isUnlaunchedDaily`, folded into `isRetiredDaily`; the archive
+  skips it rather than shelving it as retired). Use it for any future game pushed a day early.
+- Encore copy everywhere says four (the run page metadata, RunDoorPop, EntryDoor, the circuit
+  blurb and share lines, the Encore title ladder rescaled to 100 asked, the trophy reads "every quiz").
+
+**Deep's topic on the stage (same push):** `GauntletStage` takes a `kicker`, a faint uppercase line
+above the question. Deep passes its day topic, on its own stage and inside the Gauntlet run.
+
 ## THE RUN: a circuit played as ONE LONG QUIZ (owner, 2026-08-27)
 
 `/circuits/<id>/run` deals every game in a runnable circuit as a single continuous board.

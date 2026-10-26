@@ -4,7 +4,8 @@
 //
 // Twenty-five questions on the arts stand between you and a perfect run. They
 // climb from gimme to expert in five tiers of five, every tier cycling the same
-// five lanes (art, music, books, architecture and design, and food and drink),
+// lanes (art, music, books, architecture and design, and from 2026-10-27 a
+// fifth slot drawn from across the arts; food and drink moved to Foodie),
 // and everyone faces the same twenty-five in the same order. You have twenty
 // seconds a question and one life: answer wrong, or let the clock hit zero, and
 // the run is over. Every question you clear is a point, so there is never a
@@ -504,9 +505,9 @@ export default function ArtClient({ puzzles = [], questionsByNum = {}, forceNum 
         <>Answer multiple-choice arts and culture questions until you get one wrong. <b>Every question you clear is a point.</b></>,
         <>A wrong answer, or a clock at zero, <b>ends the run on the spot</b>.</>,
         <>You get <b>{Q_SECONDS} seconds a question</b>, and the clock does not pause, so looking things up costs the run.</>,
-        <>The twenty-five climb in <b>five rounds of five</b>, from gimmes to genuinely obscure, each round cycling the same five lanes: art, music, books, architecture and design, and food and drink.</>,
+        <>The twenty-five climb in <b>five rounds of five</b>, from gimmes to genuinely obscure, each round asking art, music, books, and architecture and design, then a fifth from anywhere across the arts.</>,
       ]}
-      knack="Every round asks the same five lanes in the same order, so you always know what is coming next. The lane you never read about is the one that ends most of your runs."
+      knack="Every round asks the same four lanes in the same order, then one more from anywhere in the arts, so you mostly know what is coming next. The lane you never read about is the one that ends most of your runs."
       footer="Everyone plays the same twenty-five in the same order. Ties on the daily board break by time, so sure-footed beats slow. Clear all twenty-five and you have run the table."
     />
   );
@@ -900,7 +901,7 @@ export default function ArtClient({ puzzles = [], questionsByNum = {}, forceNum 
           Art is a free daily arts and culture quiz from Mind Loft. Twenty-five multiple-choice questions climb from ones anyone can answer to ones almost nobody can, and a single wrong answer ends the run. Your score is simply how many you cleared in a row, which makes every question a small act of nerve: the further you get, the more you have to lose.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Everyone plays the same twenty-five questions in the same order each day, so the daily leaderboard is a straight fight: longest run wins, and ties break by time. Twenty seconds a question keeps it honest. Every round cycles the same five lanes, art, music, books, architecture and design, and food and drink, so a run rewards someone who reads, listens and looks widely rather than someone who knows one art form. Every answer is a settled fact, never a chart position or a price that moves next week.
+          Everyone plays the same twenty-five questions in the same order each day, so the daily leaderboard is a straight fight: longest run wins, and ties break by time. Twenty seconds a question keeps it honest. Every round asks art, music, books, and architecture and design, then one more from anywhere across the arts, so a run rewards someone who reads, listens and looks widely rather than someone who knows one art form. Every answer is a settled fact, never a chart position or a price that moves next week.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new twenty-five drops every day at midnight Eastern. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/script" style={{ color: INK, fontWeight: 800 }}>Script</a>, the same run on film and television, <a href="/quotes" style={{ color: INK, fontWeight: 800 }}>Quotes</a>, the same run on who said it, <a href="/streak" style={{ color: INK, fontWeight: 800 }}>Streak</a>, our forty-question trivia gauntlet, and <a href="/deep" style={{ color: INK, fontWeight: 800 }}>Deep</a>, one subject fifteen questions down.

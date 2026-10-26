@@ -25,7 +25,7 @@ import StageTopBar from './StageTopBar';
 import { useGauntletLook, stagePalette, useStageChrome, LookButton } from './GauntletScreens';
 import { nextLook } from '@/lib/stage-look';
 
-export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choices = [], onPick, lockIdx = null, disabled = false, frac = null, hot = false, footer = null, label = 'Question' }) {
+export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choices = [], onPick, lockIdx = null, disabled = false, frac = null, hot = false, footer = null, label = 'Question', kicker = null }) {
   // The stage's own look switch (owner, 2026-10-23): pastel by default, Plain
   // is white with black type. Separate from the site's light/dark setting.
   const [look, setLook] = useGauntletLook();
@@ -47,6 +47,11 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
           switch (owner, 2026-10-25), the same element every stage page uses. */}
       <div className="gst-top"><StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} href="/" allLooks /></div>
       <div className="gst-col" key={qKey}>
+        {/* THE KICKER (owner, 2026-10-26): a faint line naming what the
+            question is about, for a quiz whose subject is the day (Deep's
+            topic) rather than a lane printed on each question. Quiet on
+            purpose: it must not pull the eye off the question. */}
+        {kicker ? <div className="gst-kick">{kicker}</div> : null}
         <div className="gst-q">{question}</div>
         <div className={`gst-ch${choices.length > 2 ? ' many' : ''}${shortSet ? ' grid' : ''}${tiny ? ' tiny' : ''}`}>
           {choices.map((c, k) => (
@@ -78,6 +83,7 @@ const CSS = `
 .gst-brand{position:fixed;top:max(12px, env(safe-area-inset-top));left:14px;z-index:2;display:inline-flex;align-items:center;gap:8px;height:40px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:-.01em;}
 .gst-col{width:100%;max-width:600px;box-sizing:border-box;padding:max(68px, calc(env(safe-area-inset-top) + 56px)) 16px 22px;display:flex;flex-direction:column;justify-content:center;gap:28px;min-height:100%;}
 .gst-q{text-align:center;font-size:30px;line-height:1.18;font-weight:800;letter-spacing:-0.02em;animation:gstRise .45s ease-out both;}
+.gst-kick{text-align:center;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.42;margin-bottom:-14px;animation:gstRise .45s ease-out both;}
 .gst-q h2{margin:0;font:inherit;letter-spacing:inherit;}
 .gst-q blockquote{margin:0 0 12px;font-size:20px;font-weight:700;line-height:1.35;font-style:italic;}
 /* THE QUOTE LEADS (owner, 2026-10-25): on a quote question the line itself is
