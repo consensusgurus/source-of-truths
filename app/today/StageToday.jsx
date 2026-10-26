@@ -1573,8 +1573,24 @@ export default function StageToday() {
   const lensCats = ixLens === 'skill' ? skillCats : orderedCats;
   const paneCat = (id) => orderedCats.find((c) => c.cat === id) || skillCats.find((c) => c.cat === id) || null;
 
+  // ALL AND MY PUZZLES REORDER WITH THE CATEGORIES (owner, 2026-10-26): on
+  // the desktop index they sit at the foot of the categories, under Arcade, by
+  // default, and Reorder moves them like any category. Their places ride in the
+  // same sot_cat_order list; every other reader of that key ranks or filters
+  // by category name, so the two extra ids are ignored there.
+  const ixOrd = useMemo(() => {
+    const base = [...orderedCats.map((c) => c.cat), ALL_ID, MINE_ID];
+    if (!handOrder || !handOrder.length) return base;
+    const rank = new Map(handOrder.map((c, i) => [c, i]));
+    const at = (c, i) => (rank.has(c) ? rank.get(c) : 99 + i);
+    return base.map((c, i) => [c, i]).sort((a, b) => at(a[0], a[1]) - at(b[0], b[1])).map(([c]) => c);
+  }, [orderedCats, handOrder]);
+  const ixPos = useMemo(() => {
+    const seq = ixLens === 'skill' ? [...skillCats.map((c) => c.cat), ALL_ID, MINE_ID] : ixOrd;
+    return new Map(seq.map((c, i) => [c, i]));
+  }, [ixLens, skillCats, ixOrd]);
   const moveCat = (cat, dir) => {
-    const cur = orderedCats.map((c) => c.cat);
+    const cur = ixOrd;
     const i = cur.indexOf(cat);
     const j = i + dir;
     if (i < 0 || j < 0 || j >= cur.length) return;
@@ -2368,7 +2384,7 @@ export default function StageToday() {
     return (
       <button key={id} type="button" aria-pressed={paneOn === id}
         className={'sty-ixb' + (rp ? ' ct' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
-        style={{ '--cc': hue, '--cci': rp ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(rp && !light ? { '--ixp': categoryColor(rampCat(id)) } : null), ...(rp ? { '--cfull': categoryColor(rampCat(id)) } : null), '--ixf': prog && prog[1] ? `${Math.min(100, (prog[0] / prog[1]) * 100).toFixed(1)}%` : '0%', '--i': ixSeq++ }}
+        style={{ '--cc': hue, '--cci': rp ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(rp && !light ? { '--ixp': categoryColor(rampCat(id)) } : null), ...(rp ? { '--cfull': categoryColor(rampCat(id)) } : null), '--ixo': ixPos.has(id) ? ixPos.get(id) : undefined, '--ixf': prog && prog[1] ? `${Math.min(100, (prog[0] / prog[1]) * 100).toFixed(1)}%` : '0%', '--i': ixSeq++ }}
         onClick={(e) => { if (!runsMq) { deskGo(e, id); return; } if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
         {ixRing(id, prog)}
@@ -2440,13 +2456,13 @@ export default function StageToday() {
   const alphaDone = alpha.filter((g) => done.has(g.key)).length;
   const ixNav = (
     <nav className={'sty-ixn' + (reorder ? ' re' : '') + (picked ? ' pk' : '')} aria-label="Sections">
-      {ixBtn(ALL_ID, 'All Puzzles', 'var(--stg-ink)', 'sty-ixtop')}
+      {reorder ? null : ixBtn(ALL_ID, 'All Puzzles', 'var(--stg-ink)', 'sty-ixtop')}
       {/* ON A PHONE THE SORT RIDES IN THE OPEN BAR (owner, 2026-10-12): the bar
           has the width once "Back to categories" became "Back". It is a sibling
           of the bar's button, not inside it (no button in a button), and the
           CSS lays both into the same grid row. */}
       {picked && (paneOn === ALL_ID || !!paneCat(paneOn)) ? sortCtl(true) : null}
-      {ixBtn(MINE_ID, 'My Puzzles', 'var(--stg-acc)', 'sty-ixtop')}
+      {reorder ? null : ixBtn(MINE_ID, 'My Puzzles', 'var(--stg-acc)', 'sty-ixtop')}
       <span className="sty-ixsep" aria-hidden="true" />
       {/* SKILLS OR CATEGORIES (owner, 2026-10-18): the index groups the dailies
           by the skill they sharpen until the reader picks Categories, and the
@@ -2457,13 +2473,14 @@ export default function StageToday() {
           <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
         </div>
       )}
-      {(reorder ? orderedCats : lensCats).map(({ cat }, ci) => (reorder ? (
-        <div key={cat} className={'sty-ixb sty-ixr' + (paneOn === cat ? ' on' : '')} style={{ '--cc': hueFor(cat), '--cci': inkFor(cat) }}>
+      {(reorder ? ixOrd.map((cat) => ({ cat })) : lensCats).map(({ cat }, ci) => (reorder ? (
+        <div key={cat} className={'sty-ixb sty-ixr' + (cat === ALL_ID || cat === MINE_ID ? ' sty-ixrt' : '') + (paneOn === cat ? ' on' : '')}
+          style={cat === ALL_ID || cat === MINE_ID ? { '--cc': 'var(--stg-ink)', '--cci': 'var(--stg-ink)' } : { '--cc': hueFor(cat), '--cci': inkFor(cat) }}>
           <i aria-hidden="true" />
-          <span>{catLabel(cat)}</span>
+          <span>{cat === ALL_ID ? 'All Puzzles' : cat === MINE_ID ? 'My Puzzles' : catLabel(cat)}</span>
           <span className="sty-move">
-            <button type="button" onClick={() => moveCat(cat, -1)} disabled={ci === 0} aria-label={`Move ${cat} up`}>&uarr;</button>
-            <button type="button" onClick={() => moveCat(cat, 1)} disabled={ci === orderedCats.length - 1} aria-label={`Move ${cat} down`}>&darr;</button>
+            <button type="button" onClick={() => moveCat(cat, -1)} disabled={ci === 0} aria-label={`Move ${cat === ALL_ID ? 'All Puzzles' : cat === MINE_ID ? 'My Puzzles' : cat} up`}>&uarr;</button>
+            <button type="button" onClick={() => moveCat(cat, 1)} disabled={ci === ixOrd.length - 1} aria-label={`Move ${cat === ALL_ID ? 'All Puzzles' : cat === MINE_ID ? 'My Puzzles' : cat} down`}>&darr;</button>
           </span>
         </div>
       ) : ixBtn(cat, cat === 'Crowd Psychology'
@@ -6830,10 +6847,14 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      unchanged, and the layout effect beside deskGo slides the rows. */
   .sty-ix > .sty-ixn:not(.re){flex-flow:row wrap;}
   .sty-ix > .sty-ixn:not(.re) > *{flex:1 1 100%;min-width:0;}
-  .sty-ix > .sty-ixn:not(.re) > .sty-ixtop{order:-1;}
-  .sty-ix > .sty-ixn:not(.re) > .sty-ixsw{order:2;margin-top:8px;}
-  .sty-ix > .sty-ixn:not(.re) > .sty-ixee,.sty-ix > .sty-ixn:not(.re) > .sty-ixee ~ *{order:3;}
-  .sty-ix > .sty-ixn:not(.re) > .sty-ixtop + .sty-ixtop{margin-bottom:8px;}
+  /* All and My Puzzles take their places among the categories (--ixo, set per
+     button from the reorderable sequence), under Arcade unless moved. The
+     Reorder control sits under the switch. */
+  .sty-ix > .sty-ixn:not(.re) > :is(.sty-ixb.ct, .sty-ixtop){order:var(--ixo, 0);}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixsw{order:100;margin-top:8px;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixre{order:101;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixee,.sty-ix > .sty-ixn:not(.re) > .sty-ixee ~ :not(.sty-ixre){order:200;}
+  .sty-ix > .sty-ixn.re > .sty-ixre{order:-1;}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop).on{order:-2;display:flex;flex-direction:column;align-items:stretch;gap:5px;
     padding:13px 14px 14px;border-radius:14px;margin-bottom:8px;}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop).on > span{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.25;white-space:normal;}

@@ -708,10 +708,6 @@ export default function LayoutCInner({ gameKey }) {
           </button>
           {shownCat === MINE ? subList(mineGames, 'Star a puzzle on the home page and it shows up here.') : null}
           <span className="sty-ixsep" aria-hidden="true" />
-          <div className="sty-ixsw" role="group" aria-label="Group puzzles by">
-            <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
-            <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
-          </div>
           {lensCats.map(({ cat, games: gs }) => (
             <React.Fragment key={cat}>
               <button type="button" className={'sty-ixb ct' + (cat === shownCat ? ' on' : '')} style={{ '--cc': inkFor(swatchCat(cat)), '--cfull': categoryColor(swatchCat(cat)) }}
@@ -721,6 +717,12 @@ export default function LayoutCInner({ gameKey }) {
               {cat === shownCat ? subList(gs) : null}
             </React.Fragment>
           ))}
+          {/* THE SWITCH UNDER THE CATEGORIES (owner, 2026-10-26), as on the home;
+              All and My Puzzles stay at the top here. */}
+          <div className="sty-ixsw" role="group" aria-label="Group puzzles by">
+            <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
+            <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
+          </div>
           <span className="sty-ixsep" aria-hidden="true" />
           {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
           {ixHash('sty-quizzes', 'Quizzes')}
