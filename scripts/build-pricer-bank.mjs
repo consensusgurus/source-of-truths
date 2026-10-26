@@ -19,12 +19,22 @@ const A = {
   O: ['Amazon Kindle Paperwhite, 16GB (2024)', 'Electronics', 19999, 'B0CFPJYX7P', '71YwNBmu+aL'],
   P: ['Weber Original Kettle Premium 22-Inch Charcoal Grill', 'Outdoors', 21900, 'B00MKB5TXA', '71uQnSUmBFL'],
   Q: ['Theragun Mini Massage Gun (3rd Gen)', 'Health', 21999, 'B0DV7JN7ZD', '71TcycbAqDL'],
+  // Restock read 2026-10-25 for Nov 1 to 7, the first city week (owner, 2026-10-25):
+  // a thing tied to the day's city where Amazon carries one (London, Miami,
+  // Honolulu, New York, Vancouver, Los Angeles). The sixth field is the read date.
+  TEA: ['Twinings English Breakfast Tea, 100 Bags', 'Pantry', 1238, 'B001GM60LE', '71iQV0KGOCL', '2026-10-25'],
+  BOSE: ['Bose QuietComfort Ultra Earbuds (2nd Gen)', 'Electronics', 29900, 'B0F7M3HPBD', '513LCPDEWKL', '2026-10-25'],
+  SUN: ['Banana Boat Sport SPF 50 Sunscreen Lotion, 12 oz', 'Beauty', 1152, 'B004CDV7EY', '71WxmmRlhFL', '2026-10-25'],
+  UKE: ['Kala Solid Acacia Tenor Ukulele', 'Music', 39900, 'B09TM97H2M', '71eYWsJJ8kL', '2026-10-25'],
+  BAGEL: ['Einstein Bros. Bagels Everything Bagel Seasoning, 5 oz', 'Pantry', 437, 'B09YMM6PTS', '61AIvsZo8oL', '2026-10-25'],
+  MAPLE: ['Escuminac Extra Rare Amber Maple Syrup, Canada, 16.9 fl oz', 'Pantry', 2595, 'B01N5Y20XD', '51U09-7WWWL', '2026-10-25'],
+  RAYBAN: ['Ray-Ban Original Wayfarer Polarized Sunglasses', 'Fashion', 24400, 'B00KVBP17K', '51DU1Hs8jgL', '2026-10-25'],
   R: ['Apple Watch Series 11, GPS, 42mm', 'Electronics', 34999, 'B0FQF9ZX7P', '61T8W7-25IL'],
   S: ['Samsung 65-Inch Crystal UHD 4K Smart TV (2026)', 'Electronics', 37799, 'B0H3L589W7', '61GSarr1eSL'],
   T: ['KitchenAid Artisan 5-Quart Tilt-Head Stand Mixer', 'Kitchen', 37995, 'B004GUVD6K', '711fcF6OfnL'],
   U: ['Apple iPad 11-Inch (A16, 128GB, Wi-Fi)', 'Electronics', 42700, 'B0DZ75TN5F', '61aPY8odPSL'],
   V: ['Sony WH-1000XM6 Noise Cancelling Headphones', 'Electronics', 45800, 'B0F3PQHWTZ', '61ddahpESML'],
-  W: ['Nintendo Switch 2', 'Games', 49900, 'B0F3GWXLTS', '714-Fh3ngmL'],
+  W: ['Nintendo Switch 2', 'Games', 49900, 'B0F3GWXLTS', '714-Fh3ngmL', '2026-10-08'],
   X: ['Breville Barista Express Espresso Machine', 'Kitchen', 49995, 'B00CH9QWOU', '71BvCt6eAFL'],
   Y: ['Dyson V15 Detect Origin Cordless Vacuum', 'Home', 58999, 'B0GTC14BFW', '61k9OPHOj-L'],
   POST: ['Post-it Notes, 3 x 3 in, Canary Yellow, 12 Pads', 'Office', 1399, 'B00006JNNE', '51vekcOpdrL'],
@@ -37,9 +47,9 @@ const A = {
 // No Sunday Edition (owner, 2026-10-01): the big tickets moved to Dealer, and
 // Pricer is Amazon every day, with a wider range up to the larger-ticket items.
 const S = {};
-// One slot per day from Thursday 2026-10-01 (opened early, owner) to Saturday 2026-10-31. Weekdays
+// One slot per day from Thursday 2026-10-01 (opened early, owner) to Saturday 2026-11-07. Weekdays
 // alternate cheap and dear so no stretch of the week reads as a pattern.
-const ORDER = ['M','O','N','NINJA','E','A','T','H','W','C','PODS','L','S','F','Y','I','R','SONY','D','X','K','Z','B','P','IPAD','J','V','G','U','POST','Q'];
+const ORDER = ['M','O','N','NINJA','E','A','T','H','W','C','PODS','L','S','F','Y','I','R','SONY','D','X','K','Z','B','P','IPAD','J','V','G','U','POST','Q','TEA','BOSE','SUN','UKE','BAGEL','MAPLE','RAYBAN'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const out = [];
 let d = new Date(Date.UTC(2026, 9, 1));
@@ -49,8 +59,8 @@ ORDER.forEach((k, i) => {
   const sunday = false;
   const base = { num: 1 + i, quizId: `pricer-${m}-${dd}-${String(y).slice(2)}`, live: iso, dateLabel: `${MONTHS[m - 1]} ${dd}, ${y}`, sunday, gathered: '2026-10-01' };
   if (A[k]) {
-    const [name, cat, price, asin, img] = A[k];
-    out.push({ ...base, name, cat, price, shop: 'amazon', asin, href: `https://www.amazon.com/dp/${asin}?tag=cgurus-20`, img: AMZ(img), note: 'Price on Amazon' });
+    const [name, cat, price, asin, img, read] = A[k];
+    out.push({ ...base, ...(read ? { gathered: read } : {}), name, cat, price, shop: 'amazon', asin, href: `https://www.amazon.com/dp/${asin}?tag=cgurus-20`, img: AMZ(img), note: 'Price on Amazon' });
   } else {
     throw new Error('not an Amazon item: ' + k);
   }

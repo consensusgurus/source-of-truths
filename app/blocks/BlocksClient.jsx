@@ -307,8 +307,13 @@ const STAGE_CSS = `
 .blk-paused b{font-size:24px;font-weight:800}
 .blk-paused span{font-size:13px;font-weight:700;opacity:.8}
 .blk-bot{display:flex;flex-direction:column;gap:10px}
-.blk-pad{align-self:stretch;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:56px;gap:8px}
-.blk-pad button{border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.blk-mid{display:grid;grid-template-columns:minmax(44px,1fr) auto minmax(44px,1fr);align-items:end;gap:6px}
+.blk-mid .blk-well{align-self:end}
+.blk-side{display:flex;align-items:flex-end;justify-content:center;align-self:stretch}
+.blk-side button{width:100%;max-width:76px;height:min(160px,48%);min-height:96px}
+.blk-pad{align-self:stretch;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:54px;gap:8px}
+.blk-pad button,.blk-side button{border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);color:var(--pst-ink);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.blk-pad .slm{background:var(--pst-ink);color:var(--pst-bg);font-size:15px}
 .blk-foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
 .blk-bar{display:block;height:6px;border-radius:3px;background:color-mix(in srgb, var(--pst-ink) 18%, transparent);overflow:hidden;flex:1;margin:0 12px}
 .blk-bar i{display:block;height:100%;background:var(--pst-ink);transition:width .25s}
@@ -866,10 +871,23 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     // row and a single row of four pad keys (owner, 2026-10-25: the well needs
     // the room), so it gets the screen less about 290px of chrome and the
     // width less the stage gutters and its own frame.
+    // The phone stage: the well sits between the side keys (two gutters of
+    // 44px on a phone, up to 76px wider), under the slim score row and over one row of three keys.
+    // Its height budget is MEASURED off that chrome rather than a constant
+    // (owner, 2026-10-25: use the space), with the old 290px as the fallback.
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 390;
     const fw = stg
-      ? Math.max(120, Math.min(460, (typeof window !== 'undefined' ? window.innerWidth : 390) - 28 - 14))
+      ? Math.max(120, Math.min(460, vw - 28 - 14 - 2 * (vw < 420 ? 44 + 6 : 76 + 8)))
       : Math.max(120, box.clientWidth - (phone ? 0 : 146));
-    const fh = stg ? stableVH() - 290 : stableVH() - (phone ? 310 : 300);
+    let fh = stg ? stableVH() - 290 : stableVH() - (phone ? 310 : 300);
+    if (stg && typeof document !== 'undefined') {
+      const hd = document.querySelector('.blk-hd'), bot = document.querySelector('.blk-bot');
+      if (hd && bot) {
+        const top = hd.getBoundingClientRect().bottom + (window.scrollY || 0);
+        const used = top + bot.getBoundingClientRect().height + 14 /* well frame */ + 40 /* gaps and stage padding */;
+        if (used > 120 && used < 420) fh = stableVH() - used;
+      }
+    }
     const cell = Math.max(14, Math.min(stg ? 40 : 34, Math.floor(Math.min(fw / COLS, fh / ROWS))));
     cellRef.current = cell;
     const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
@@ -1259,7 +1277,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       banner={`Everyone gets the same shapes in the same order today${PUZZLE.sunday ? ', in a narrower Sunday well' : ''}.`}
       sub="Nine shapes: the seven you know, plus a corner and a plus. "
       steps={[
-        <>Move with <b>&larr; &rarr;</b>, rotate with <b>&uarr;</b>, and hard drop with <b>space</b> on a keyboard or a <b>flick down the well</b> on a phone.</>,
+        <>Move with <b>&larr; &rarr;</b>, rotate with <b>&uarr;</b>, and hard drop with <b>space</b> on a keyboard, or the <b>Drop</b> key or a <b>flick down the well</b> on a phone.</>,
         <>Complete a row to clear it, and clear on <b>consecutive shapes</b> to build a combo.</>,
         ...(TIER ? [<>Bigger clears pay more. One shape clearing <b>1 row</b> scores <b>1 point</b>, <b>2 rows</b> score <b>3</b>, <b>3 rows</b> score <b>4</b>, and <b>4 rows</b> score <b>6</b>.</>] : []),
         ...(BONUS ? [<>Clear <b>four rows with one shape</b> and it counts as <b>five</b>: a bonus row on top.</>] : []),
@@ -1311,16 +1329,23 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
             <button type="button" className={'pst-tb blk-pause' + (paused ? ' on' : '')} onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'}>{paused ? 'Resume' : 'Pause'}</button>
             <div className="blk-box"><span>Next</span><StageMini k={SEQ[g.idx]} /></div>
           </div>
-          <div className="blk-well">{wellEl}</div>
+          {/* THE PAD AROUND THE WELL (owner, 2026-10-25): the well is held back by
+              height, never width, so left and right sit in the side gutters
+              beside the bottom of the well, and only Rotate, Down and the
+              new Drop (the slam) take a row below it. */}
+          <div className="blk-mid">
+            <div className="blk-side"><button type="button" className="lft" {...holdProps('left')} aria-label="Move left">&#9664;</button></div>
+            <div className="blk-well">{wellEl}</div>
+            <div className="blk-side"><button type="button" className="rgt" {...holdProps('right')} aria-label="Move right">&#9654;</button></div>
+          </div>
         </>
       )}
       bottom={(
         <div className="blk-bot">
           <div className="blk-pad">
-            <button type="button" className="lft" {...holdProps('left')} aria-label="Move left">&#9664;</button>
             <button type="button" className="rot" {...tapProps('cw')} aria-label="Rotate">&#8635;</button>
             <button type="button" className="dwn" {...holdProps('down')} aria-label="Soft drop">&#9660;</button>
-            <button type="button" className="rgt" {...holdProps('right')} aria-label="Move right">&#9654;</button>
+            <button type="button" className="slm" {...tapProps('drop')} aria-label="Drop to the bottom"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 5l6 6 6-6M6 12l6 6 6-6M5 21h14" /></svg>Drop</button>
           </div>
           <div className="blk-foot">
             <span>Best today {nf(bestToday)}</span>

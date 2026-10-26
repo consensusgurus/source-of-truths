@@ -20,8 +20,8 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <a className="stb-home" href={href} aria-label="Back to Mind Loft home" onClick={(e) => soakNav(e, href)}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
-        <MindLoftMark size={18} ink={ink} accent="var(--stg-brand,#38bdf8)" />
-        <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
+        <MindLoftMark size={18} ink={ink} accent="var(--stg-brand,#7dd3fc)" />
+        <span>Mind <span style={{ color: 'var(--stg-brand,#7dd3fc)' }}>Loft</span></span>
       </a>
       {title ? (
         <span className="stb-tx">

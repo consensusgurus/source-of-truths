@@ -715,5 +715,178 @@ export const PUZZLES = [
       "https://ssl.cdn-redfin.com/photo/154/bigphoto/199/5112199_12_1.jpg",
       "https://ssl.cdn-redfin.com/photo/154/bigphoto/199/5112199_4_1.jpg"
     ]
+  },
+  {
+    "num": 32,
+    "quizId": "realtor-11-1-26",
+    "live": "2026-11-01",
+    "dateLabel": "November 1, 2026",
+    "gathered": "2026-10-25",
+    "city": "London",
+    "country": "UK",
+    "zip": "N19",
+    "address": "Sparsholt Road",
+    "price": 80232000,
+    "local": {
+      "cur": "GBP",
+      "amount": 60000000
+    },
+    "fx": 1.3372,
+    "beds": 2,
+    "baths": 1,
+    "sqft": 850,
+    "year": null,
+    "broker": "David Andrew, Finsbury Park",
+    "via": "Rightmove",
+    "href": "https://www.rightmove.co.uk/properties/94698477",
+    "imgs": [
+      "https://media.rightmove.co.uk/property-photo/333430cfb/94698477/333430cfbcbd0c642cde24d127c6cdff.jpeg",
+      "https://media.rightmove.co.uk/property-photo/96321744d/94698477/96321744d98fac2a8e062592db91538d.jpeg",
+      "https://media.rightmove.co.uk/property-photo/2b031082f/94698477/2b031082fb8e0c16bce279d2e009b91c.jpeg"
+    ]
+  },
+  {
+    "num": 33,
+    "quizId": "realtor-11-2-26",
+    "live": "2026-11-02",
+    "dateLabel": "November 2, 2026",
+    "gathered": "2026-10-25",
+    "city": "Chicago",
+    "state": "IL",
+    "zip": "60638",
+    "address": "6017 S Monitor Ave",
+    "price": 52500000,
+    "beds": 4,
+    "baths": 3,
+    "sqft": 2100,
+    "year": 1929,
+    "broker": "PAK Home Realty",
+    "href": "https://www.redfin.com/IL/Chicago/6017-S-Monitor-Ave-60638/home/14002402",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/68/bigphoto/701/12793701_34_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/68/bigphoto/701/12793701_7_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/68/bigphoto/701/12793701_1_0.jpg"
+    ]
+  },
+  {
+    "num": 34,
+    "quizId": "realtor-11-3-26",
+    "live": "2026-11-03",
+    "dateLabel": "November 3, 2026",
+    "gathered": "2026-10-25",
+    "city": "Miami",
+    "state": "FL",
+    "zip": "33138",
+    "address": "862 NE 82nd St",
+    "price": 130000000,
+    "beds": 5,
+    "baths": 4,
+    "sqft": 2530,
+    "year": 1935,
+    "broker": "Canvas Real Estate",
+    "href": "https://www.redfin.com/FL/Miami/862-NE-82nd-St-33138/home/43408656",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/105/bigphoto/296/A12111296_1_1.jpg",
+      "https://ssl.cdn-redfin.com/photo/105/bigphoto/296/A12111296_15_1.jpg",
+      "https://ssl.cdn-redfin.com/photo/105/bigphoto/296/A12111296_6_1.jpg"
+    ]
+  },
+  {
+    "num": 35,
+    "quizId": "realtor-11-4-26",
+    "live": "2026-11-04",
+    "dateLabel": "November 4, 2026",
+    "gathered": "2026-10-25",
+    "city": "Honolulu",
+    "state": "HI",
+    "zip": "96816",
+    "address": "3021 Herman St",
+    "price": 99500000,
+    "beds": 4,
+    "baths": 2,
+    "sqft": 1408,
+    "year": 1945,
+    "broker": "Keller Williams Honolulu",
+    "href": "https://www.redfin.com/HI/Honolulu/3021-Herman-St-96816/home/88521692",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/169/bigphoto/410/202619410_12_1.jpg",
+      "https://ssl.cdn-redfin.com/photo/169/bigphoto/410/202619410_17_1.jpg",
+      "https://ssl.cdn-redfin.com/photo/169/bigphoto/410/202619410_4_1.jpg"
+    ]
+  },
+  {
+    "num": 36,
+    "quizId": "realtor-11-5-26",
+    "live": "2026-11-05",
+    "dateLabel": "November 5, 2026",
+    "gathered": "2026-10-25",
+    "city": "Brooklyn",
+    "state": "NY",
+    "zip": "11238",
+    "address": "120 Cambridge Pl",
+    "price": 222000000,
+    "beds": 4,
+    "baths": 2,
+    "sqft": 2250,
+    "year": 1899,
+    "broker": "Serhant",
+    "href": "https://www.redfin.com/NY/Brooklyn/120-Cambridge-Pl-11238/home/40732174",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/211/bigphoto/338/RLS20122338_12_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/211/bigphoto/338/RLS20122338_5_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/211/bigphoto/338/RLS20122338_0.jpg"
+    ]
+  },
+  {
+    "num": 37,
+    "quizId": "realtor-11-6-26",
+    "live": "2026-11-06",
+    "dateLabel": "November 6, 2026",
+    "gathered": "2026-10-25",
+    "city": "Vancouver",
+    "state": "BC",
+    "country": "Canada",
+    "zip": "V5T",
+    "address": "473 E 6th Ave",
+    "price": 106953650,
+    "local": {
+      "cur": "CAD",
+      "amount": 149900000
+    },
+    "fx": 0.7135,
+    "beds": 4,
+    "baths": 1.5,
+    "sqft": 1736,
+    "year": 1905,
+    "broker": "RE/MAX Real Estate Services",
+    "href": "https://www.redfin.ca/bc/vancouver/473-E-6th-Ave-V5T-1K8/home/156023238",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/256/bigphoto/214/R3178214_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/256/bigphoto/214/R3178214_7_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/256/bigphoto/214/R3178214_9_0.jpg"
+    ]
+  },
+  {
+    "num": 38,
+    "quizId": "realtor-11-7-26",
+    "live": "2026-11-07",
+    "dateLabel": "November 7, 2026",
+    "gathered": "2026-10-25",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90041",
+    "address": "5315 Mount Royal Dr",
+    "price": 200000000,
+    "beds": 4,
+    "baths": 3,
+    "sqft": 2670,
+    "year": 1888,
+    "broker": "Coldwell Banker Realty",
+    "href": "https://www.redfin.com/CA/Los-Angeles/5315-Mount-Royal-Dr-90041/home/7171197",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/45/bigphoto/371/P1-29371_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/45/bigphoto/371/P1-29371_12_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/45/bigphoto/371/P1-29371_6_0.jpg"
+    ]
   }
 ];

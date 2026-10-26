@@ -12,7 +12,7 @@ const BRAIN =
   'M14 42C12 28 22 16 36 16C40 8 54 6 60 14C70 8 84 14 86 26C96 30 98 44 88 50C92 58 86 66 76 64'
   + 'C74 72 64 74 60 66C48 70 36 66 32 56C20 56 12 50 14 42Z';
 
-export default function MindLoftMark({ size = 32, ink = 'var(--ink)', accent = 'var(--blue)', title = 'Mind Loft' }) {
+export default function MindLoftMark({ size = 32, ink = 'var(--ink)', accent = 'var(--stg-brand, #7dd3fc)', title = 'Mind Loft' }) {
   return (
     <svg
       width={size}

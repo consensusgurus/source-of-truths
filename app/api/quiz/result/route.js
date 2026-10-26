@@ -59,6 +59,11 @@ export async function POST(request) {
     // guess. null when the player skipped, when the guess was unusable, or on
     // every other game, and null deliberately sorts LAST on the board. Its own
     // insert tier below, so a database without the column simply drops it.
+    // The FIRST guess itself, in cents (migration 62, owner 2026-10-25): the
+    // crowd-guess reveal on the price games draws everyone's first guess on
+    // one strip. price_tiebreak keeps only the size of the miss, not its side.
+    const firstGuess = typeof body.firstGuess === 'number' && Number.isFinite(body.firstGuess) && body.firstGuess > 0
+      ? Math.min(Math.round(body.firstGuess), 1e15) : null;
     const priceTiebreak = typeof body.priceTiebreak === 'number' && Number.isFinite(body.priceTiebreak) && body.priceTiebreak >= 0
       ? Math.min(body.priceTiebreak, 1e15)
       : null;
@@ -168,7 +173,11 @@ export async function POST(request) {
     const withIpHash = ipHash ? { ip_hash: ipHash } : {};
     const withPriceTiebreak = priceTiebreak != null ? { price_tiebreak: priceTiebreak } : {};
     const withProgress = progress != null ? { progress } : {};
+    const withFirstGuess = firstGuess != null ? { first_guess: firstGuess } : {};
     const attempts = [
+      // Its own top tier, so a database without first_guess (migration 62) drops
+      // only that column and files everything else exactly as before.
+      { ...baseRow, anon_id: anonId, ...withCorrect, ...withMobile, ...withMeta, ...withMeta27, ...withGuesses, ...withAbandoned, ...withCampaign, ...withIpHash, ...withPriceTiebreak, ...withProgress, ...withFirstGuess },
       { ...baseRow, anon_id: anonId, ...withCorrect, ...withMobile, ...withMeta, ...withMeta27, ...withGuesses, ...withAbandoned, ...withCampaign, ...withIpHash, ...withPriceTiebreak, ...withProgress },
       { ...baseRow, anon_id: anonId, ...withCorrect, ...withMobile, ...withMeta, ...withMeta27, ...withGuesses, ...withAbandoned, ...withCampaign, ...withIpHash, ...withPriceTiebreak },
       { ...baseRow, anon_id: anonId, ...withCorrect, ...withMobile, ...withMeta, ...withMeta27, ...withGuesses, ...withAbandoned, ...withCampaign, ...withIpHash },

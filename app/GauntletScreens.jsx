@@ -300,7 +300,7 @@ function useCountdown(ms, held, resetKey) {
 // drops the countdown and Hold: the page waits for the player's Next (owner,
 // 2026-10-16: Judged and Read the Room must not auto-advance).
 export function GauntletBetween({ circuitName, sections = [], results = [], lastSec, last, lastMiss, upNext, upIdx = -1, lineFor, stand = null, dwellMs = 20000, held = false, resetKey = 0, onGo, onHold, leaveHref, mathText = (x) => x,
-  stepWord = 'Quiz', lastBody = null, lastFig = null, nextLine = null, auto = true, doneCount = null, goLabel = null, fine = null }) {
+  stepWord = 'Quiz', lastBody = null, lastFig = null, lastExtra = null, nextLine = null, auto = true, doneCount = null, goLabel = null, fine = null }) {
   const secs = useCountdown(dwellMs, held || !auto, resetKey);
   const fromBg = lastSec ? rampFor(slotOf(lastSec, sections.indexOf(lastSec))) : rampFor(0);
   const pal = useStagePalette(upNext ? rampFor(slotOf(upNext, upIdx)) : fromBg);
@@ -352,6 +352,9 @@ export function GauntletBetween({ circuitName, sections = [], results = [], last
                   : last ? <span className="gsx-ls">{last.score}<i>right</i></span> : null}
               </div>
             ) : null}
+            {/* A run can hang one more block under the card about the leg just
+                played (Price Check's crowd guess, owner 2026-10-25). */}
+            {lastExtra ? <div className="gsx-lx">{lastExtra}</div> : null}
             <div className="gsx-acts">
               <button type="button" className="gsx-go gsx-goc" onClick={onGo}>
                 <span>{goLabel || `Start ${upNext ? upNext.name : ''}`}</span>
@@ -438,6 +441,8 @@ export function GauntletEndStage({
   // you), `misses` the question that ended each quiz (missOf, by section
   // index), `more` the other runs still open today.
   board = null, misses = null, more = null, onPractice = null,
+  // A run's own card right under today's board (Price Check's week, owner 2026-10-25).
+  afterBoard = null,
   // THE CLIMB (owner, 2026-10-25): every run's ending builds up its title
   // ladder. `ladder` is bottom to top; `ladderHeading` names it ("Which
   // shopper are you?"). `rows` overrides the per-leg table for runs whose legs
@@ -534,6 +539,7 @@ export function GauntletEndStage({
               </div>
             ) : null}
             {boardCard ? <div className={meme ? 'gsx-bdl' : undefined}>{boardCard}</div> : null}
+            {afterBoard}
             {/* 3. CHALLENGE (+ Polymath), and sharing the score */}
             <div className="gsx-rise gsx-tray" style={d('2.4s')}>
               {extra}
@@ -663,6 +669,7 @@ const CSS = `
 .gsx-last{color:var(--gsx-ink);display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:2px solid var(--gsx-ink)}
 .gsx-lt{flex:1;display:flex;flex-direction:column;gap:3px;font-size:13px;font-weight:600;min-width:0}
 .gsx-lt b{font-weight:800}
+.gsx-lx{color:var(--gsx-ink);margin-top:10px}
 .gsx-st{margin-top:3px;font-variant-numeric:tabular-nums}
 .gsx-ls{font-size:30px;font-weight:800;line-height:1;text-align:right;font-variant-numeric:tabular-nums}
 .gsx-ls i{display:block;font-style:normal;font-size:12px;font-weight:700;opacity:.75}

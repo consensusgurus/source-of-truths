@@ -138,28 +138,28 @@
     "note": "whole bank, review rounds rv-a..rv-p"
   },
   "pricer": {
-    "through": "2026-10-31",
-    "on": "2026-10-09",
+    "through": "2026-11-07",
+    "on": "2026-10-25",
     "note": "whole bank; item names and copy read, prices not re-checked live since the 2026-10-05 recheck"
   },
   "dealer": {
-    "through": "2026-10-31",
-    "on": "2026-10-09",
+    "through": "2026-11-07",
+    "on": "2026-10-25",
     "note": "whole bank; item names and copy read, prices not re-checked live since the 2026-10-05 recheck"
   },
   "realtor": {
-    "through": "2026-10-31",
-    "on": "2026-10-09",
+    "through": "2026-11-07",
+    "on": "2026-10-25",
     "note": "whole bank; item names and copy read, prices not re-checked live since the 2026-10-05 recheck"
   },
   "agent": {
-    "through": "2026-10-31",
-    "on": "2026-10-09",
+    "through": "2026-11-07",
+    "on": "2026-10-25",
     "note": "whole bank; item names and copy read, prices not re-checked live since the 2026-10-05 recheck"
   },
   "curator": {
-    "through": "2026-10-31",
-    "on": "2026-10-09",
+    "through": "2026-11-07",
+    "on": "2026-10-25",
     "note": "whole bank; item names and copy read, prices not re-checked live since the 2026-10-05 recheck"
   },
   "glyph": {

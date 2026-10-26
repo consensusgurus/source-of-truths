@@ -977,7 +977,7 @@ export default function StatHubClient() {
   `;
 
   return (
-    <div className="stage-page qzhub-stage" data-stage-theme={stageTheme} style={{ '--stg-acc-dk': '#7dd3fc', '--stg-acc-lt': '#0369a1', '--stg-acc-ink-lt': '#0369a1', '--stg-brand-dk': '#7dd3fc', '--stg-brand-lt': '#38bdf8', background: C.bg, minHeight: '100vh', position: 'relative' }}>
+    <div className="stage-page qzhub-stage" data-stage-theme={stageTheme} style={{ '--stg-acc-dk': '#7dd3fc', '--stg-acc-lt': '#0369a1', '--stg-acc-ink-lt': '#0369a1', '--stg-brand-dk': '#7dd3fc', '--stg-brand-lt': '#7dd3fc', background: C.bg, minHeight: '100vh', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <header className="hubcap">
         <Link href="/" className="hubcap-mark" aria-label="Mind Loft home"><Logo size={17} /> <b>Mind <i>Loft</i></b></Link>

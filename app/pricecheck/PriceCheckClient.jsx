@@ -30,6 +30,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import PriceGame, { readDoneSave } from '../price/PriceGame';
 import MoreRunsPop, { MoreRunsList, otherRuns } from '../circuits/MoreRuns';
 import { RUN_DOORS, runDoneToday } from '../circuits/RunDoorPop';
+import PriceCrowd from '../price/PriceCrowd';
+import { WeekStrip, useShopWeek } from './ShopWeek';
 import ItemsPop, { itemsFor, scheduleItems, spendItems } from './ItemsPop';
 import PayCard from './PayCard';
 import useCircuitBoard from '../circuits/useCircuitBoard';
@@ -98,6 +100,7 @@ function Register({ v2, max, n, sections, howOpen, onHow }) {
       <div className="pcg-note">Played one today? Replay it here; your first score counts.</div>
       <div className="pcg-row">
         <button type="button" className="pcg-how-b" aria-expanded={howOpen} onClick={(e) => { e.stopPropagation(); onHow(); }}>{howOpen ? 'Hide scoring' : 'How scoring works'}</button>
+        <a className="pcg-wk" href="/pricecheck/week" onClick={(e) => e.stopPropagation()}>Your week</a>
         <span className="pcg-links">{sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path} onClick={(e) => e.stopPropagation()}>{s.name}</a></React.Fragment>)}</span>
       </div>
     </div>
@@ -158,6 +161,11 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
   }, []);
 
   const done = r.phase === 'done';
+  // The week (owner, 2026-10-25), read a few seconds after the ending opens so
+  // the last tag's row has been filed and today's run is in it.
+  const [weekOn, setWeekOn] = useState(false);
+  useEffect(() => { if (!(hydrated && done)) return undefined; const t = setTimeout(() => setWeekOn(true), 2500); return () => clearTimeout(t); }, [hydrated, done]);
+  const week = useShopWeek(weekOn);
   const playing = r.phase === 'playing';
   const board = useCircuitBoard(RUN_ID, hydrated && done);
 
@@ -273,6 +281,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
     return (
       <>
         <b>{s.name}: the price was {fmtCents(s.day.price)}</b>
+        {s.day.local ? <span>Listed at {s.day.local}, shown in US dollars</span> : null}
         {guessLine}
         {c && c.banked ? <span>Your first play today counts</span> : null}
       </>
@@ -354,6 +363,8 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
           stepWord="Tag"
           doneCount={r.si + 1}
           lastBody={tagBody(r.si)}
+          lastExtra={V2 && counted[r.si] && typeof counted[r.si].first === 'number'
+            ? <PriceCrowd quizId={sec.quizId} price={sec.day.price} first={counted[r.si].first} compact /> : null}
           lastFig={{ v: counted[r.si] ? counted[r.si].score : 0, unit: 'of 10' }}
           nextLine={`${sections[r.si + 1].word}${sections[r.si + 1].chip ? ` · ${sections[r.si + 1].chip}` : ''}`}
           fine={`Run total ${runSoFar + (counted[r.si] ? counted[r.si].score : 0)} of ${MAX}`}
@@ -410,6 +421,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
           rowsIn={rowsIn}
           avg={Object.keys(per).length ? Object.fromEntries(sections.map((s) => [s.key, per[s.key] && per[s.key].avg != null ? per[s.key].avg : 0])) : null}
           leaderScore={overall[0] ? Math.round(Number(overall[0].total) || 0) : null}
+          afterBoard={week ? <WeekStrip data={week} /> : null}
           extra={<button type="button" className="pc-items" onClick={openItems}>Today&rsquo;s tags <span aria-hidden="true">&rarr;</span></button>}
           challenge={(
             <div className="pc-chal">
@@ -455,6 +467,7 @@ const CSS = `
 .pcg-note{font-size:13px;font-weight:700;text-align:center;line-height:1.3}
 .pcg-row{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:2px 12px;font-size:12.5px;font-weight:700}
 .pcg-how-b{background:none;border:0;padding:4px 0;color:inherit;font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.pcg-wk{color:inherit;font-weight:800}
 .pcg-links{opacity:.85}
 .pcg-links a{color:inherit;font-weight:800}
 @media(max-width:899px){.gsx-gate .gsx-piece .pcg{flex:1}}

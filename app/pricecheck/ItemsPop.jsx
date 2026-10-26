@@ -12,6 +12,7 @@
 // dropped rather than shown out of nowhere. Closing it hands on to the Trivia
 // Gauntlet offer, exactly as the run page did.
 
+import PriceCrowd from '../price/PriceCrowd';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { X, ExternalLink } from 'lucide-react';
@@ -76,6 +77,7 @@ export function itemsFor(sections, counted) {
       href: D.href || '', buy: D.buy || 'See it', sponsored: !!D.sponsored,
       img: D.imgs && D.imgs[0] ? D.imgs[0].src : '', fit: D.fit || '',
       score: counted[i] ? counted[i].score : 0,
+      quizId: s.quizId || '', first: counted[i] && typeof counted[i].first === 'number' ? counted[i].first : null,
     };
   });
 }
@@ -184,6 +186,7 @@ export default function ItemsPop({ items, at, setAt, onClose, closeLabel = 'Clos
           {s.facts.length > 0 && <div className="ip-meta">{s.facts.join(' · ')}</div>}
           <div className="ip-price"><b>{fmtCents(s.price)}</b><span>You scored {s.score} / 10</span></div>
           <div className="ip-asof">{s.asOf}</div>
+          {s.quizId && s.first ? <div className="ip-crowd"><PriceCrowd quizId={s.quizId} price={s.price} first={s.first} compact /></div> : null}
           {s.credit && <div className="ip-credit">{s.creditUrl ? <a href={s.creditUrl} target="_blank" rel="noopener">{s.credit}</a> : s.credit}</div>}
           <div className="ip-act">
             {s.href && <a href={s.href} target="_blank" rel={s.sponsored ? 'noopener sponsored' : 'noopener'}>{s.buy} <ExternalLink size={13} /></a>}
@@ -227,6 +230,7 @@ const CSS = `
 .ip-eb{font-family:${SANS};font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
 .ip-body h3{margin:4px 0 2px;font-size:18px;font-weight:900;color:var(--ip-ink);font-family:${SANS}}
 .ip-meta{color:var(--ip-mute);font-weight:700;font-size:13px}
+.ip-crowd{color:var(--ip-ink);margin:10px 0 4px}
 .ip-price{display:flex;align-items:baseline;gap:10px;margin:10px 0 2px;flex-wrap:wrap}
 .ip-price b{font:800 28px ${SANS};font-variant-numeric:tabular-nums;color:var(--ip-ink)}
 .ip-price span{font-weight:800;font-size:13px;color:var(--ip-mute)}

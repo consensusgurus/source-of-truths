@@ -522,7 +522,7 @@ export default function EntryDoor({ onPick }) {
             <p className="ent-h">
               Loft your Mind in the{' '}
               <span className="ent-bn">
-                <span className="ent-mk"><MindLoftMark size="1em" ink="#08222e" accent="#0369a1" title="" /></span>
+                <span className="ent-mk"><MindLoftMark size="1em" ink="#08222e" accent="#7dd3fc" title="" /></span>
                 Mind <span className="ent-loft">Loft</span>
               </span>
             </p>
@@ -538,7 +538,7 @@ export default function EntryDoor({ onPick }) {
           <div className="ent-wipe" />
           <div className="ent-say">
             <div className="ent-word">
-              <MindLoftMark size="1.2em" ink="#08222e" accent="#0369a1" title="" />
+              <MindLoftMark size="1.2em" ink="#08222e" accent="#7dd3fc" title="" />
               <span>Mind <span className="ent-loft">Loft</span></span>
             </div>
             <div className="ent-lines">
@@ -644,7 +644,7 @@ const CSS = `
 .ent-h{margin:0;font-size:clamp(17px,1.7vw,21px);font-weight:700;color:#3d5260;text-align:center;letter-spacing:-0.01em}
 .ent-bn{white-space:nowrap;color:#08222e}
 .ent-mk{display:inline-block;width:1em;height:1em;vertical-align:-0.14em;margin-right:.16em}
-.ent-loft{color:#0369a1}
+.ent-loft{color:#7dd3fc}
 .ent-tiles{width:100%;max-width:960px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:0}
 .ent-tiles li{display:flex;min-width:0}
 .ent-tile{flex:1;min-width:0;min-height:128px;display:flex;flex-direction:column;justify-content:space-between;gap:16px;text-align:left;padding:16px 16px 14px;border:0;border-radius:10px;cursor:pointer;

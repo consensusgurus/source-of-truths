@@ -3619,8 +3619,8 @@ export default function StageToday() {
             <div className="sty-mtb pane">
               <button type="button" className={'mph-hback' + (pc ? ' tone' : '')} style={pc ? mTone(rampCat(paneOn)) : undefined} onClick={mBack} aria-label="Back to Mind Loft home">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
-                <MindLoftMark size={18} ink="var(--stg-ink)" accent="var(--stg-brand,#38bdf8)" />
-                <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
+                <MindLoftMark size={18} ink="var(--stg-ink)" accent="var(--stg-brand,#7dd3fc)" />
+                <span>Mind <span style={{ color: 'var(--stg-brand,#7dd3fc)' }}>Loft</span></span>
               </button>
               <span className="mph-htx" style={pc ? mTone(rampCat(paneOn)) : undefined}>
                 <span className="t">{pc ? <i className="dot" aria-hidden="true" /> : null}<span>{title}</span></span>
@@ -3635,8 +3635,8 @@ export default function StageToday() {
         })() : (
           <div className="sty-mtb">
             <a className="sty-mlogo" href="/" aria-label="Mind Loft home" onClick={(e) => { if (picked) { e.preventDefault(); mBack(); } }}>
-              <MindLoftMark size={24} ink="var(--stg-ink)" accent="var(--stg-brand,#38bdf8)" />
-              <span>Mind <span style={{ color: 'var(--stg-brand,#38bdf8)' }}>Loft</span></span>
+              <MindLoftMark size={24} ink="var(--stg-ink)" accent="var(--stg-brand,#7dd3fc)" />
+              <span>Mind <span style={{ color: 'var(--stg-brand,#7dd3fc)' }}>Loft</span></span>
             </a>
             <span className="sty-mtbr">
               {mPane ? (

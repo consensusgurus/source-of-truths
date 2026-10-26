@@ -23,7 +23,7 @@ const dayMs = 86400000;
 const fails = [], warns = [];
 const FIELDS = {
   dealer: ['name', 'cat', 'maker', 'href', 'img', 'credit', 'creditUrl'],
-  realtor: ['city', 'state', 'zip', 'address', 'beds', 'baths', 'sqft', 'broker', 'href', 'imgs'],
+  realtor: ['city', 'zip', 'address', 'beds', 'baths', 'sqft', 'broker', 'href', 'imgs'],
   agent: ['kind', 'href', 'img', 'date', 'credit'],
   curator: ['kind', 'name', 'href', 'img', 'credit'],
 };
@@ -48,11 +48,25 @@ for (const key of Object.keys(FIELDS).filter((k) => !ONLY || k === ONLY)) {
     if (p.sunday) bad('the price family has no Sunday Edition');
     if (!Number.isInteger(p.price) || p.price <= 0) bad('price must be positive integer cents');
     for (const f of FIELDS[key]) if (p[f] == null || p[f] === '') bad(`missing ${f}`);
+    // A home names a US state, or a country (owner, 2026-10-25: Realtor is global).
+    // Outside US dollars it carries the local asking price and the rate it was
+    // converted at, and the two must agree with the dollar price within 1%.
+    if (key === 'realtor') {
+      if (!p.state && !p.country) bad('a home needs a state (US/Canada) or a country');
+      if (p.local) {
+        if (!/^[A-Z]{3}$/.test(p.local.cur || '') || !Number.isInteger(p.local.amount) || p.local.amount <= 0) bad('local must be { cur: ISO code, amount: integer minor units }');
+        if (!(p.fx > 0)) bad('a local price needs fx, US dollars per one unit on the day it was read');
+        else if (Math.abs(p.local.amount * p.fx - p.price) > p.price * 0.01) bad(`local ${p.local.amount} x fx ${p.fx} does not make price ${p.price}`);
+      }
+      if (p.via && !['Redfin', 'Rightmove'].includes(p.via)) bad(`via must be Redfin or Rightmove: ${p.via}`);
+      if (/rightmove/.test((p.imgs || [])[0] || '') && p.via !== 'Rightmove') bad('Rightmove photos must say via: Rightmove');
+    }
     const imgs = key === 'realtor' ? (p.imgs || []) : [p.img];
     if (key === 'realtor' && imgs.length !== 3) bad('a home needs exactly three photos: curb, kitchen, one more room');
     for (const u of imgs) {
       if (!/^https:\/\//.test(u || '')) bad(`img not https: ${u}`);
-      if (key === 'realtor' && !/^https:\/\/ssl\.cdn-redfin\.com\/photo\/.+_\d+\.jpg$/.test(u || '')) bad(`realtor photo must be a Redfin CDN JPEG ending in its _<version>.jpg suffix (the image route walks that suffix): ${u}`);
+      // Redfin (US and Canada) or Rightmove (UK and Rightmove Overseas), owner 2026-10-25.
+      if (key === 'realtor' && !/^https:\/\/ssl\.cdn-redfin\.com\/photo\/.+_\d+\.jpg$/.test(u || '') && !/^https:\/\/media\.rightmove\.co\.uk\/property-photo\/[0-9a-f]+\/\d+\/[0-9a-f]+\.jpe?g$/.test(u || '')) bad(`realtor photo must be a Redfin CDN JPEG ending in its _<version>.jpg suffix, or a Rightmove property photo: ${u}`);
       if (BANNED.test(u || '')) bad(`img on a banned host: ${u}`);
       if (/\.(webp|avif)(\?|$)/i.test(u || '')) bad('img must be JPEG or PNG');
     }

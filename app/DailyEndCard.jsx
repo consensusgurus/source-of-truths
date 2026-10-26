@@ -2275,7 +2275,7 @@ export default function DailyEndCard({
               This cap carried a leftover house glyph from before the rebrand, so a
               screenshot of the end card was branded differently from every other
               surface. Sized down to 16px to sit inside the 19px white tile. */}
-          <MindLoftMark size={16} ink="#233a63" accent="#2563eb" title="Mind Loft" />
+          <MindLoftMark size={16} ink="#233a63" accent="#7dd3fc" title="Mind Loft" />
         </span>
         <span className="wm">Mind <i>Loft</i></span>
         <span className="gm">{selfName} {'\u00b7'} {MONTH_NAMES[Number(todayISO.slice(5, 7)) - 1]} {Number(todayISO.slice(8, 10))}</span>
@@ -2844,7 +2844,7 @@ export default function DailyEndCard({
         .d5e-again:hover{background:rgba(255,255,255,.16);}
       ` }} />
       <div className="d5e-cap">
-        <span className="d5e-mk" aria-hidden="true"><MindLoftMark size={15} ink="#233a63" accent="#2563eb" title="Mind Loft" /></span>
+        <span className="d5e-mk" aria-hidden="true"><MindLoftMark size={15} ink="#233a63" accent="#7dd3fc" title="Mind Loft" /></span>
         <span className="d5e-wm">Mind <i>Loft</i></span>
         <span className="d5e-gm">{runName}</span>
       </div>

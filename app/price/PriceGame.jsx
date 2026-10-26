@@ -22,6 +22,7 @@
 // The bank is resolved on the server and only the picked day ships, so
 // tomorrow's price never reaches a browser.
 
+import PriceCrowd from './PriceCrowd';
 import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { X, Smartphone, ArrowUp, ArrowDown, ExternalLink } from 'lucide-react';
@@ -507,7 +508,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
       const r3 = scoreGuesses(cur.guesses, PRICE, PUZZLE.live);
       const el3 = Math.max(1, Math.round(((cur.lockT || Date.now()) - cur.t0) / 1000));
       try { recordStat(STATS_KEY, PUZZLE.num, { s: r3.score, t: TOTAL, won: r3.score > 0, b: r3.bps }); } catch (e) {}
-      return { quizId: PUZZLE.quizId, score: r3.score, total: TOTAL, correct: r3.score, guessesUsed: cur.lockG, priceTiebreak: r3.bps == null ? undefined : r3.bps, timeElapsed: el3, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : ''), ...(RUN ? { circuit: 'pricecheck' } : {}) };
+      return { quizId: PUZZLE.quizId, score: r3.score, total: TOTAL, correct: r3.score, guessesUsed: cur.lockG, priceTiebreak: r3.bps == null ? undefined : r3.bps, firstGuess: cur.guesses[0], timeElapsed: el3, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : ''), ...(RUN ? { circuit: 'pricecheck' } : {}) };
     }
     return { quizId: PUZZLE.quizId, score: 0, total: TOTAL, correct: 0, guessesUsed: cur.guesses.length, timeElapsed: el, abandoned: true, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') };
   });
@@ -524,7 +525,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     try {
       fetch('/api/quiz/result', {
         method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quizId: PUZZLE.quizId, score: sc, total: TOTAL, correct: sc, guessesUsed: g2.lockG || g2.guesses.length, priceTiebreak: bps == null ? undefined : bps, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : ''), ...(RUN ? { circuit: 'pricecheck' } : {}) }),
+        body: JSON.stringify({ quizId: PUZZLE.quizId, score: sc, total: TOTAL, correct: sc, guessesUsed: g2.lockG || g2.guesses.length, priceTiebreak: bps == null ? undefined : bps, firstGuess: g2.guesses[0], timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : ''), ...(RUN ? { circuit: 'pricecheck' } : {}) }),
       }).catch(() => {});
     } catch (e) {}
   }
@@ -825,6 +826,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
               ? <>{score}/10 · {earned ? <>earned on guess {sg.at + 1}, {pctLabel(earned.e)}</> : 'no guess scored'}{tries[0] && sg.at !== 0 ? <> · first guess {pctLabel(tries[0].e)}</> : null}</>
               : <>{score}/10 · your closest was {best ? fmtCents(best.c) : '—'}, {best ? pctLabel(best.e) : ''}</>}
           </div>
+          {!RUN && V2 && tries[0] ? <PriceCrowd quizId={PUZZLE.quizId} price={PRICE} first={tries[0].c} style={{ marginTop: 14 }} /> : null}
           {!RUN && (
             <>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>

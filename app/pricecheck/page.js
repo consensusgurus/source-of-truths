@@ -60,7 +60,7 @@ export default function PriceCheckPage({ searchParams }) {
     const day = shipFor(key, p);
     const g = PRICE_GAMES[key];
     const visible = bank.filter((x) => x.live <= today || x.num === p.num).map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
-    const chip = key === 'realtor' ? `${p.city}, ${p.state}` : key === 'agent' ? (p.kind === 'hotel' ? 'Hotel' : `${p.from} to ${p.to}`) : day.cat;
+    const chip = key === 'realtor' ? `${p.city}, ${p.state || p.country}` : key === 'agent' ? (p.kind === 'hotel' ? 'Hotel' : `${p.from} to ${p.to}`) : day.cat;
     sections.push({ key, name: g.name, word: g.word, path: g.path, num: p.num, quizId: p.quizId, puzzles: visible, day, chip });
   }
   const d = new Date(`${today}T12:00:00Z`);

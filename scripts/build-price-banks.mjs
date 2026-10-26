@@ -115,7 +115,7 @@ const REALTOR = [
   H('San Diego', 'CA', '92117', '4789 Andalusia Ave', 1450000, 3, 2, 2215, 1961, 'Keller Williams La Jolla', '/CA/San-Diego/4789-Andalusia-Ave-92117/home/4963347', ['45/bigphoto/393/PTP2607393_0.jpg', '45/bigphoto/393/PTP2607393_11_0.jpg', '45/bigphoto/393/PTP2607393_15_0.jpg']),
   H('Nashville', 'TN', '37209', '541 Eastboro Dr', 625000, 3, 3, 1725, 2015, 'Compass', '/TN/Nashville/541-Eastboro-Dr-37209/home/60710325', ['641/bigphoto/505/2199320751951348505_0.jpg', '641/bigphoto/505/2199320751951348505_8_0.jpg', '641/bigphoto/505/2199320751951348505_16_0.jpg']),
   H('Denver', 'CO', '80220', '1210 Ivy St', 1100000, 3, 2, 1663, 1951, 'Compass', '/CO/Denver/1210-Ivy-St-80220/home/34171006', ['641/bigphoto/121/2204550812115091121_33_0.jpg', '641/bigphoto/121/2204550812115091121_4_0.jpg', '641/bigphoto/121/2204550812115091121_3_0.jpg']),
-  H('Raleigh', 'NC', '27601', '610 Rocky Knob Ct', 559000, 4, 4, 2300, 2025, 'Compass, Raleigh', '/NC/Raleigh/610-Rocky-Knob-Ct-27601/home/189999234', ['102/bigphoto/588/10195588_1_0.jpg', '102/bigphoto/588/10195588_4_0.jpg', '102/bigphoto/588/10195588_9_0.jpg']),
+  H('Raleigh', 'NC', '27601', '610 Rocky Knob Ct', 559000, 4, 4, 2300, 2025, 'Compass, Raleigh', '/NC/Raleigh/610-Rocky-Knob-Ct-27601/home/189999234', ['102/bigphoto/588/10195588_1_1.jpg', '102/bigphoto/588/10195588_4_1.jpg', '102/bigphoto/588/10195588_9_1.jpg']),
   H('Austin', 'TX', '78751', '4502 Avenue H', 799000, 3, 2, 1560, null, 'Kuper Sotheby\'s International Realty', '/TX/Austin/4502-Avenue-H-78751/home/31431268', ['641/bigphoto/065/2185691984059466065_0.jpg', '641/bigphoto/065/2185691984059466065_10_0.jpg', '641/bigphoto/065/2185691984059466065_1_0.jpg']),
   // Restock, read 2026-10-03 (to 2026-11-30).
   ...READ('2026-10-03', [
@@ -289,7 +289,7 @@ const CURATOR = [
   RT('Leica Q3 Compact Camera', 'Leica', 'leicacamerausa.com', 7350, 'https://leicacamerausa.com/leica-q3-black.html', 'Leica Q3.jpg', 'Peachyeung316', 'CC BY-SA 4.0'),
   RT('Rimowa Hybrid Cabin Suitcase', 'Rimowa', 'rimowa.com', 1200, 'https://www.rimowa.com/us/en/luggage/colour/black/cabin/88353631.html', 'Rimowa Hybrid Cabin blue, 2019.jpg', 'Stefanhaler.wiki', 'CC BY-SA 4.0'),
   AU('Les Poseuses, Ensemble (petite version)', 'Georges Seurat', '1888', "Christie's", 'New York', '2022-11-09', 14924000000, 'https://galeriemagazine.com/christies-paul-g-allen-results/', 'Georges seurat les poseuses ensemble100119).jpg', pd),
-  AU('1962 Ferrari 250 GTO, chassis 3413 GT', 'Ferrari', '1962', "RM Sotheby's", 'Monterey, California', '2018-08-26', 4840500000, 'https://www.supercars.net/blog/ferrari-250-gto-sets-record-in-monterey/', 'Ferrari 250 GTO 3413GT at RM Sothebys Auction Monterey 2018.jpg', (f) => credit('Prova MO', 'CC BY-SA 4.0', f)),
+  AU('1962 Ferrari 250 GTO, chassis 3413 GT', 'Ferrari', '1962', "RM Sotheby's", 'Monterey, California', '2018-08-25', 4840500000, 'https://www.supercars.net/blog/ferrari-250-gto-sets-record-in-monterey/', 'Ferrari 250 GTO 3413GT at RM Sothebys Auction Monterey 2018.jpg', (f) => credit('Prova MO', 'CC BY-SA 4.0', f)),
   AU('1964 Ferrari 250 LM, winner of the 1965 24 Hours of Le Mans', 'Ferrari', '1964', "RM Sotheby's", 'Paris', '2025-02-05', 3634496000, 'https://en.wikipedia.org/wiki/List_of_most_expensive_cars_sold_at_auction', 'Ferrari 250 LM 5893 at PB 2022.jpg', (f) => credit('Prova MO', 'CC BY-SA 4.0', f)),
   AU('Young Lion Resting, a chalk drawing', 'Rembrandt van Rijn', 'about 1638–42', "Sotheby's", 'New York', '2026-02-04', 1786000000, 'https://www.theleidencollection.com/news-media/rembrandt-drawing-roars-to-17-9-million-at-auction/', 'Young Lion Resting.jpg', pd),
   RT('Leica M11 Camera Body, Glossy Black', 'Leica', 'leicacamerausa.com', 10400, 'https://leicacamerausa.com/leica-m11-in-glossy-black-finish.html', 'Leica M11 with Summicron-M 50mm F2 lens.jpg', 'Peachyeung316', 'CC BY-SA 4.0'),
@@ -321,11 +321,67 @@ const CURATOR = [
   ]),
 ];
 
+// ── THE FIRST CITY WEEK, read 2026-10-25 (owner, 2026-10-25) ─────────────
+// Each day of Nov 1 to 7 is a city: London, Chicago, Miami, Honolulu, New
+// York, Vancouver, Los Angeles. Agent always goes there (a flight in, or a
+// night in a hotel there, alternating) and Realtor is a home for sale there;
+// Dealer, Pricer and Curator join only where a real fit exists. The entry
+// never names the city or any item (owner, 2026-10-25): the city shows itself
+// one tag at a time. The rows these replace were read 2026-10-03 and are gone.
+//
+// REALTOR GOES GLOBAL: a home outside the US names its country, keeps the
+// local asking price (`local`, integer minor units) and the rate it was
+// converted at (`fx`, US dollars per unit, read on Google Finance the same
+// day), and says which site its photos came from (`via`).
+const HG = (o) => {
+  const usd = o.local ? Math.round(o.local.amount * o.fx) : o.dollars * 100;
+  return {
+    city: o.city, ...(o.state ? { state: o.state } : {}), ...(o.country ? { country: o.country } : {}), zip: o.zip, address: o.address,
+    price: usd, ...(o.local ? { local: o.local, fx: o.fx } : {}), beds: o.beds, baths: o.baths, sqft: o.sqft, year: o.year, broker: o.broker,
+    ...(o.via ? { via: o.via } : {}), href: o.href, imgs: o.imgs,
+  };
+};
+const RM = (id, file) => `https://media.rightmove.co.uk/property-photo/${file.slice(0, 9)}/${id}/${file}.jpeg`;
+const CITY_REALTOR = READ('2026-10-25', [
+  HG({ city: 'London', country: 'UK', zip: 'N19', address: 'Sparsholt Road', local: { cur: 'GBP', amount: 60000000 }, fx: 1.3372, beds: 2, baths: 1, sqft: 850, year: null, broker: 'David Andrew, Finsbury Park', via: 'Rightmove', href: 'https://www.rightmove.co.uk/properties/94698477', imgs: [RM(94698477, '333430cfbcbd0c642cde24d127c6cdff'), RM(94698477, '96321744d98fac2a8e062592db91538d'), RM(94698477, '2b031082fb8e0c16bce279d2e009b91c')] }),
+  HG({ city: 'Chicago', state: 'IL', zip: '60638', address: '6017 S Monitor Ave', dollars: 525000, beds: 4, baths: 3, sqft: 2100, year: 1929, broker: 'PAK Home Realty', href: 'https://www.redfin.com/IL/Chicago/6017-S-Monitor-Ave-60638/home/14002402', imgs: ['68/bigphoto/701/12793701_34_0.jpg', '68/bigphoto/701/12793701_7_0.jpg', '68/bigphoto/701/12793701_1_0.jpg'].map(RF) }),
+  HG({ city: 'Miami', state: 'FL', zip: '33138', address: '862 NE 82nd St', dollars: 1300000, beds: 5, baths: 4, sqft: 2530, year: 1935, broker: 'Canvas Real Estate', href: 'https://www.redfin.com/FL/Miami/862-NE-82nd-St-33138/home/43408656', imgs: ['105/bigphoto/296/A12111296_1_1.jpg', '105/bigphoto/296/A12111296_15_1.jpg', '105/bigphoto/296/A12111296_6_1.jpg'].map(RF) }),
+  HG({ city: 'Honolulu', state: 'HI', zip: '96816', address: '3021 Herman St', dollars: 995000, beds: 4, baths: 2, sqft: 1408, year: 1945, broker: 'Keller Williams Honolulu', href: 'https://www.redfin.com/HI/Honolulu/3021-Herman-St-96816/home/88521692', imgs: ['169/bigphoto/410/202619410_12_1.jpg', '169/bigphoto/410/202619410_17_1.jpg', '169/bigphoto/410/202619410_4_1.jpg'].map(RF) }),
+  HG({ city: 'Brooklyn', state: 'NY', zip: '11238', address: '120 Cambridge Pl', dollars: 2220000, beds: 4, baths: 2, sqft: 2250, year: 1899, broker: 'Serhant', href: 'https://www.redfin.com/NY/Brooklyn/120-Cambridge-Pl-11238/home/40732174', imgs: ['211/bigphoto/338/RLS20122338_12_0.jpg', '211/bigphoto/338/RLS20122338_5_0.jpg', '211/bigphoto/338/RLS20122338_0.jpg'].map(RF) }),
+  HG({ city: 'Vancouver', state: 'BC', country: 'Canada', zip: 'V5T', address: '473 E 6th Ave', local: { cur: 'CAD', amount: 149900000 }, fx: 0.7135, beds: 4, baths: 1.5, sqft: 1736, year: 1905, broker: 'RE/MAX Real Estate Services', href: 'https://www.redfin.ca/bc/vancouver/473-E-6th-Ave-V5T-1K8/home/156023238', imgs: ['256/bigphoto/214/R3178214_0.jpg', '256/bigphoto/214/R3178214_7_0.jpg', '256/bigphoto/214/R3178214_9_0.jpg'].map(RF) }),
+  HG({ city: 'Los Angeles', state: 'CA', zip: '90041', address: '5315 Mount Royal Dr', dollars: 2000000, beds: 4, baths: 3, sqft: 2670, year: 1888, broker: 'Coldwell Banker Realty', href: 'https://www.redfin.com/CA/Los-Angeles/5315-Mount-Royal-Dr-90041/home/7171197', imgs: ['45/bigphoto/371/P1-29371_0.jpg', '45/bigphoto/371/P1-29371_12_0.jpg', '45/bigphoto/371/P1-29371_6_0.jpg'].map(RF) }),
+]);
+const CITY_AGENT = READ('2026-10-25', [
+  F('British Airways', 'JFK', 'New York', 'LHR', 'London Heathrow', '2027-01-21', '8:05 AM', 'Economy', 'economy', 300, 'British Airways Airbus A320-232 G-EUUA at Heathrow T5.jpg', 'Jared Preston', 'CC BY-SA 3.0'),
+  HT('The Drake', 'Chicago, IL', '2027-01-11', 1, 'Room, 1 Queen Bed', 144, 'The Drake Hotel Chicago', '20070513 Drake Hotel Entrance.JPG', 'TonyTheTiger', 'CC BY-SA 3.0'),
+  F('American', 'LGA', 'New York LaGuardia', 'MIA', 'Miami', '2027-01-28', '1:00 PM', 'First', 'first class', 851, 'American Airlines Boeing 777-300ER (cropped).jpg', 'Venkat Mangudi', 'CC BY 2.0'),
+  HT('The Royal Hawaiian, a Luxury Collection Resort', 'Honolulu, HI', '2027-01-11', 1, 'Historic Room King', 681, 'The Royal Hawaiian Honolulu', 'Royal Hawaiian Hotel - from outside - oct 2015.jpg', 'Nesnad', 'CC BY-SA 4.0'),
+  F('JetBlue', 'LAX', 'Los Angeles', 'JFK', 'New York JFK', '2027-02-04', '7:35 AM', 'Business', 'business class', 1446, 'JetBlue A321LR (N4058J) at Boston.jpg', 'Tim', 'CC0'),
+  HT('Fairmont Hotel Vancouver', 'Vancouver, BC', '2027-01-11', 1, 'Fairmont Room, 1 King Bed', 182, 'Fairmont Hotel Vancouver', 'Hotel vanc 2007.jpg', 'Ken Walker', 'CC BY 2.5'),
+  F('United', 'ORD', 'Chicago', 'LAX', 'Los Angeles', '2027-02-11', '7:00 AM', 'First', 'first class', 725, 'United Airlines Boeing 787-9 Dreamliner (33047122154).jpg', 'Bill Abbott', 'CC BY-SA 2.0'),
+]);
+const CITY_AT = 31; // 2026-11-01 is the 32nd day from START
+REALTOR.splice(CITY_AT, CITY_REALTOR.length, ...CITY_REALTOR);
+AGENT.splice(CITY_AT, CITY_AGENT.length, ...CITY_AGENT);
+// Dealer and Curator: banked rows moved onto the city they fit (unpublished
+// days only, so nothing live changes): a MINI on London day, a lot sold at
+// Sotheby's London, a Sotheby's New York lot on New York day, and a guitar
+// sold at Julien's in Los Angeles on LA day.
+const swap = (arr, a, b) => { const t = arr[a]; arr[a] = arr[b]; arr[b] = t; };
+const at = (arr, name) => { const i = arr.findIndex((r) => r.name === name); if (i < 0) throw new Error(`no row ${name}`); return i; };
+swap(DEALER, CITY_AT, at(DEALER, '2027 MINI Cooper 2 Door'));
+swap(CURATOR, CITY_AT, at(CURATOR, 'Dame mit Fächer (Lady with a Fan)'));
+swap(CURATOR, CITY_AT + 4, at(CURATOR, 'Magna Carta, the 1297 issue'));
+swap(CURATOR, CITY_AT + 6, at(CURATOR, "Kurt Cobain's MTV Unplugged guitar, a 1959 Martin D-18E"));
+// Review 2026-10-25: Rembrandt's Young Lion on Nov 4 pointed at Focus's answer
+// that day (The Night Watch), so Magna Carta takes Nov 4 and the drawing Nov 5.
+swap(CURATOR, CITY_AT + 3, CITY_AT + 4);
+
 const START = '2026-10-01'; // opened a day early, same day as Pricer (owner, 2026-10-01)
 // Boards are PUBLISHED only through END. Rows past it stay banked here for the next
 // top-up, so a perishable price (a listing, a fare) is re-read before it ships rather
 // than going live weeks after it was read (owner, 2026-10-07: stock to Oct 31).
-const END = '2026-10-31';
+const END = '2026-11-07'; // a week more, the first city week (owner, 2026-10-25)
 const banks = { dealer: DEALER, realtor: REALTOR, agent: AGENT, curator: CURATOR };
 const HEAD = {
   dealer: 'Dealer: one vehicle a day at its maker\'s starting MSRP, read on the maker\'s own site on `gathered`.',
