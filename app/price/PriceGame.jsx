@@ -275,6 +275,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   // the keyboard, without ever pushing the input off the top.
   const askRef = useRef(null);
   const rowsRef = useRef(null);
+  const hintRef = useRef(null);
   const [kb, setKb] = useState(false);
   const kbBlurRef = useRef(null);
   // Put the caret back where the player was typing after a regroup moves commas.
@@ -600,9 +601,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
       const vv = window.visualViewport;
       const ask = askRef.current;
       if (!vv || !ask || document.activeElement !== inputRef.current) return;
-      const rows = rowsRef.current;
-      const first = rows && rows.firstElementChild;
-      const tgt = first && !first.classList.contains('empty') ? first : (ask.nextElementSibling || ask);
+      const tgt = hintRef.current || ask;
       const top = vv.offsetTop, bot = vv.offsetTop + vv.height;
       const a = ask.getBoundingClientRect(), t = tgt.getBoundingClientRect();
       let d = t.bottom - (bot - 10);
@@ -703,6 +702,38 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
     );
   };
 
+  // THE SLOTS (owner, 2026-10-25). The dashed empty rows are gone, and so is
+  // the jump: each guess fills its own fixed slot right under the input, in
+  // place, so nothing on the page moves when a guess lands and the result is
+  // read where the eye already is. The slot takes the heat colour and pops.
+  const slotRow = (
+    <div className="pr-slots" style={{ gridTemplateColumns: `repeat(${MAXG}, minmax(0, 1fr))` }} data-n={MAXG}>
+      {Array.from({ length: MAXG }, (_, i) => {
+        const x = tries[i];
+        if (x) {
+          const b = bandOf(x.e);
+          return (
+            <div key={`u${i}-${x.c}`} className="pr-slot used" style={{ '--row-c': b.col }}>
+              <span className="sv">{fmtCents(x.c)}</span>
+              <span className="sh" style={{ color: b.col }}>{b.label}</span>
+              <span className="sp">
+                {b.key === 'bull' ? null : <>{x.up ? <ArrowUp size={12} strokeWidth={3} /> : <ArrowDown size={12} strokeWidth={3} />}{x.up ? 'higher' : 'lower'}</>}
+                {V2 ? <>{b.key === 'bull' ? '' : ' · '}{x.p} pt{x.p === 1 ? '' : 's'}</> : null}
+              </span>
+            </div>
+          );
+        }
+        const nextUp = i === tries.length;
+        return (
+          <div key={`e${i}`} className={`pr-slot${nextUp ? ' next' : ''}`}>
+            <span className="sk">Guess {i + 1}</span>
+            <span className="sw">{lockedAt ? 'for fun' : V2 ? `up to ${CAPS[i]}` : '\u00a0'}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   const CSS = `
           @media(max-width:560px){.pr-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .pr-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
@@ -738,7 +769,21 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           @media(pointer:coarse){.pr-kbpad{height:45vh;}}
           .pr-rows{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
           .pr-row{display:grid;grid-template-columns:22px 1fr auto 104px;align-items:center;gap:10px;border:1.5px solid var(--pr-panel-line);border-left:5px solid var(--row-c, var(--pr-panel-line));border-radius:11px;padding:12px 14px;background:var(--pr-panel);box-shadow:var(--pr-shadow);}
-          .pr-row.empty{background:transparent;border:1.5px dashed var(--stg-cell-line, rgba(28,30,36,0.4));box-shadow:none;}
+          .pr-slots{display:grid;gap:8px;margin-top:10px;}
+          .pr-slot{height:78px;box-sizing:border-box;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;border:1.5px solid color-mix(in srgb, ${INK} 16%, transparent);background:color-mix(in srgb, ${INK} 4%, transparent);}
+          .pr-slot .sk{font-family:${SANS};font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:${FADED};}
+          .pr-slot .sw{font-size:14px;font-weight:800;color:${FADED};}
+          .pr-slot.next{border:2px solid ${INK};background:var(--pr-panel);}
+          .pr-slot.next .sk,.pr-slot.next .sw{color:${INK};}
+          .pr-slot.used{border:2px solid var(--row-c);background:color-mix(in srgb, var(--row-c) 13%, var(--pr-panel));animation:prslot .5s cubic-bezier(.2,.9,.25,1.25) both;}
+          .pr-slot .sv{font-size:17px;font-weight:900;font-variant-numeric:tabular-nums;color:${INK};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .pr-slot .sh{display:inline-flex;align-items:center;gap:3px;font-size:13px;font-weight:900;white-space:nowrap;}
+          .pr-slot .sp{display:inline-flex;align-items:center;gap:2px;font-size:12px;font-weight:800;color:${INK};white-space:nowrap;}
+          .pr-slots[data-n="5"] .pr-slot{padding:6px 6px;}
+          .pr-slots[data-n="5"] .pr-slot .sv{font-size:13px;}
+          .pr-slots[data-n="5"] .pr-slot .sk{font-size:10px;}
+          @keyframes prslot{0%{transform:scale(.9);box-shadow:0 0 0 0 var(--row-c);}55%{transform:scale(1.04);box-shadow:0 0 0 6px color-mix(in srgb, var(--row-c) 30%, transparent);}100%{transform:scale(1);box-shadow:0 0 0 0 transparent;}}
+          @media(prefers-reduced-motion:reduce){.pr-slot.used{animation:none;}}
           .pr-row .n{font-family:${MONO};font-size:12px;font-weight:500;color:${FADED};}
           .pr-row .g{font-weight:900;font-size:19px;font-variant-numeric:tabular-nums;color:${INK};display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
           .pr-row .g .worth{font-size:12.5px;font-weight:700;color:${FADED};}
@@ -799,7 +844,8 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
             </label>
             <button type="button" className="pr-go" onMouseDown={(e) => e.preventDefault()} onClick={guess}>Guess</button>
           </div>
-          <div style={{ minHeight: 19, marginTop: 6, fontSize: 12.5, fontWeight: 700, color: FADED }}>
+          {slotRow}
+          <div ref={hintRef} style={{ minHeight: 38, marginTop: 8, fontSize: 13.5, fontWeight: 700, color: FADED }}>
             {notice ? notice.msg
               : tries.length ? (() => { const x = tries[tries.length - 1]; const b = bandOf(x.e); return <>{b.label}. Go <b style={{ color: INK }}>{x.up ? 'higher' : 'lower'}</b>. {left} guess{left === 1 ? '' : 'es'} left{lockedAt ? <>, score locked at <b style={{ color: INK }}>{score}</b></> : null}.</>; })()
               : V2 ? <>Your first guess is worth up to 10. Press Enter to lock it in. 45k or 2.5m works.</> : <>Type a price and press Enter. Big numbers: 45k or 2.5m works.</>}
@@ -814,7 +860,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           row and older ones shift down, so the one you just made is always on
           screen. Unused slots stay below the guesses. Each row keeps its own
           guess number. */}
-      <div className="pr-rows" ref={rowsRef}>{[...tries.map((_, i) => tries.length - 1 - i), ...(playing ? Array.from({ length: Math.max(0, MAXG - tries.length) }, (_, j) => tries.length + j) : [])].map((i) => guessRow(i))}</div>
+      {!playing && <div className="pr-rows" ref={rowsRef}>{tries.map((_, i) => tries.length - 1 - i).map((i) => guessRow(i))}</div>}
       {kb && playing && <div className="pr-kbpad" aria-hidden="true" />}
 
       {!playing && (

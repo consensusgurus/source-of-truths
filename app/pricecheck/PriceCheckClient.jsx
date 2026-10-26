@@ -510,7 +510,12 @@ const CSS = `
 .pc-play .pr-money{border:2px solid var(--gsx-ink, currentColor);border-radius:16px;box-shadow:none;background:var(--pr-panel)}
 .pc-play .pr-go{border-radius:16px;box-shadow:none;background:var(--gsx-ink, #08222e);color:var(--gsx-bg, #ffffff)}
 .pc-play .pr-row{border:2px solid var(--gsx-ink, currentColor);border-left:6px solid var(--row-c, var(--gsx-ink, currentColor));border-radius:14px;box-shadow:none}
-.pc-play .pr-row.empty{border:2px dashed color-mix(in srgb, var(--gsx-ink, #08222e) 40%, transparent);border-left-width:2px;background:transparent}
+.pc-play .pr-slot{border:2px solid color-mix(in srgb, var(--gsx-ink, #08222e) 22%, transparent);background:transparent}
+.pc-play .pr-slot.next{border:2px solid var(--gsx-ink, currentColor);background:var(--pr-panel)}
+.pc-play .pr-slot.used{border:2px solid var(--row-c);background:color-mix(in srgb, var(--row-c) 14%, transparent)}
+.pc-play .pr-slot .sk,.pc-play .pr-slot .sw,.pc-play .pr-slot .sp{color:var(--gsx-ink, currentColor);opacity:.75}
+.pc-play .pr-slot.next .sk,.pc-play .pr-slot.next .sw{opacity:1}
+.pc-play .pr-slot .sv{color:var(--gsx-ink, currentColor)}
 .pc-play .pr-stop{border:2px solid var(--gsx-ink, currentColor);color:var(--gsx-ink, currentColor)}
 .pc-play .pc-banked{border-color:var(--gsx-ink, currentColor)}
 .pc-play .pr-go{flex:none}
