@@ -10347,3 +10347,11 @@ sections rise in after.
 
 **Left index on a puzzle page:** the game's own category header is highlighted but NOT opened; its
 list opens only when clicked (`LayoutCInner`, `shownCat = openCat`).
+
+## No Rankings drawer in the game header (owner, 2026-10-26)
+
+The cap's Rankings chip, its drawer (DailyBoardPanel / QuizLeaderboard under the header) and the strip's
+"Show leaderboard" toggle are removed sitewide (`app/StageChrome.jsx`). The drawer read the same
+remembered preference as the desktop rail's Board tab (`REVEAL.leaderboard`), so a window narrowed past
+the desktop breakpoint showed it already open under the phone header. Standings live on the ending sheet
+and the desktop rail. Do not reintroduce a header drawer; the `panelBody` prop is accepted and ignored.

@@ -45,7 +45,6 @@ import ThemePop, { LightOffer } from './ThemePop';
 // The stage swaps LoftCap out, and LoftCap was carrying the whole .loft-*
 // sheet that LoftFinish depends on, so the end card rendered unstyled.
 import { LoftSheet } from './LoftCap';
-import DailyBoardPanel from './quiz/[id]/DailyBoardPanel';
 import { dailyMeIdentity } from './dailyMeClient';
 import { gameColor, gameCategory, RAMP_INK, STAGE_GROUND } from '@/lib/category-ramp';
 import { gameStatsShort } from '@/lib/daily-row-stats';
@@ -218,6 +217,12 @@ export default function StageChrome({
   //
   // So the caller may hand in the body. Null keeps the daily behaviour exactly,
   // which is why none of the eighty call sites moved.
+  //
+  // RETIRED (owner, 2026-10-26: "scrap this element altogether sitewide"). The
+  // Rankings chip and its drawer are gone from the cap: the drawer shared the
+  // desktop rail's remembered board preference, so narrowing a window after
+  // opening the rail's board unfurled it under the phone header. The prop is
+  // still accepted so the quiz call sites need not move; it renders nothing.
   panelBody = null,
 }) {
   // The page's own clock for every finish freshness test (lib/finish-beat.js
@@ -251,13 +256,6 @@ export default function StageChrome({
   // desktop right panel (LayoutCInner); a quiz keeps its own local state.
   const daily = !!gameKey;
   const [leaderShown, toggleLeader] = useRevealPref(REVEAL.leader);
-  const [boardShown, , setBoardShown] = useRevealPref(REVEAL.leaderboard);
-  const [panelLocal, setPanelLocal] = useState(false);
-  const panel = daily ? boardShown : panelLocal;
-  const setPanel = (v) => {
-    const next = typeof v === 'function' ? v(panel) : v;
-    if (daily) setBoardShown(next); else setPanelLocal(next);
-  };
   // The switch reads the SAME store the page root reads, so the glyph and the
   // ground can never disagree about which register is showing.
   const [theme, setTheme] = useStageTheme();
@@ -395,19 +393,6 @@ export default function StageChrome({
           </h1>
         </div>
 
-        <button
-          type="button"
-          className={'stg-cx stg-rank' + (panel ? ' on' : '')}
-          onClick={() => setPanel((v) => !v)}
-          aria-expanded={panel}
-          aria-controls="stg-rankings"
-        >
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
-            strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-            <path d="M4 21v-7" /><path d="M12 21V4" /><path d="M20 21v-10" />
-          </svg>
-          <span>Rankings</span>
-        </button>
         <span className="stg-shw">
           <button type="button" className="stg-cx stg-shr" onClick={shareCredit} title="Share this puzzle. New players from your link earn you drawing tickets.">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
@@ -471,7 +456,7 @@ export default function StageChrome({
         // It renders from first paint whatever the board fetch does, so it also
         // does the old hold's job: the row never arrives late and shoves the
         // board down.
-        <div className={'stg-strip stg-strip2' + (panel ? ' on' : '')}>
+        <div className="stg-strip stg-strip2">
           {leaderShown ? (
             <button type="button" className="stg-sl" onClick={toggleLeader}
               aria-pressed="true" title="Hide the leader">
@@ -500,20 +485,9 @@ export default function StageChrome({
               <span>Show leader</span>
             </button>
           )}
-          <button type="button" className="stg-sy stg-sb" onClick={() => setPanel((v) => !v)}
-            aria-expanded={panel} aria-controls="stg-rankings">
-            {panel ? 'Hide leaderboard' : 'Show leaderboard'}
-            <i>{panel ? '‹' : '›'}</i>
-          </button>
         </div>
       ) : showStrip ? (
-        <button
-          type="button"
-          className={'stg-strip' + (panel ? ' on' : '')}
-          onClick={() => setPanel((v) => !v)}
-          aria-expanded={panel}
-          aria-controls="stg-rankings"
-        >
+        <div className="stg-strip">
           {/* IT SAYS WHAT THE ROW IS, NOT WHEN IT IS (owner, 2026-08-31). The
               eyebrow read "Today", which dated a row whose date the cap above
               it already carries, and left the one thing the row is actually
@@ -537,9 +511,8 @@ export default function StageChrome({
           </span>
           <span className="stg-sy">
             {board.myRank ? 'You ' + ord(board.myRank) : (started ? 'In progress' : 'Not played yet')}
-            <i>{panel ? '‹' : '›'}</i>
           </span>
-        </button>
+        </div>
       ) : holdStrip ? (
         <div className="stg-strip stg-strip-hold" aria-hidden="true">
           <span className="stg-se">{'\u00a0'}</span>
@@ -591,19 +564,6 @@ export default function StageChrome({
           bar an inch under the cap's own. It lives on where it earns its keep:
           the run's own GauntletLadder, and the home, where a rung is a whole
           game rather than one square of one. */}
-      {panel && !pastel.on ? (
-        <div className="stg-panel" id="stg-rankings" role="region" aria-label="Rankings">
-          <div className="stg-pin">
-            {/* The panel's dark styling has to follow the REGISTER, not the stage. It
-                    was hardcoded, so on the light stage it drew the dark register's
-                    near-white ink and pale sky tabs onto a near-white panel. */}
-            {panelBody || (
-              <DailyBoardPanel self={gameKey} quizId={quizId} maxWidth={720} stage dark={theme !== 'light'}
-                onClose={() => setPanel(false)} />
-            )}
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -660,8 +620,7 @@ html[data-stage-pastel] .stg-fg i{font-size:10px;letter-spacing:.06em;}
 .stg-cx{display:inline-flex;align-items:center;gap:6px;font-family:${MONO};font-size:10px;
   letter-spacing:.11em;text-transform:uppercase;color:var(--stg-ink2,#aab5c7);border:1px solid var(--stg-line);
   border-radius:99px;padding:5px 11px;background:none;cursor:pointer;text-decoration:none;}
-.stg-rank{margin-left:auto;}
-.stg-shw{position:relative;display:inline-flex;}
+.stg-shw{position:relative;display:inline-flex;margin-left:auto;}
 .stg-shr{color:var(--stg-acc-ink,var(--stg-acc));border-color:var(--stg-acc-ink,var(--stg-acc));}
 .stg-shs{display:none;}
 .stg-shm{position:absolute;top:calc(100% + 8px);right:0;z-index:60;width:max-content;max-width:240px;padding:8px 11px;border-radius:10px;
@@ -691,17 +650,14 @@ html[data-stage-pastel] .stg-fg i{font-size:10px;letter-spacing:.06em;}
 @media (prefers-reduced-motion: reduce){ .hint{animation:none !important;} }
 
 .stg-cx:hover{border-color:var(--stg-line2,rgba(255,255,255,0.17));color:var(--stg-ink,#e9edf4);}
-.stg-rank.on{color:var(--stg-onramp,#08222e);background:var(--stg-acc);border-color:var(--stg-acc-ink, var(--stg-acc));}
 .stg-cx:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
 
 .stg-prog{height:2px;background:var(--stg-surf2,rgba(255,255,255,0.08));}
 .stg-prog span{display:block;height:100%;background:var(--stg-acc);transition:width .3s ease;}
 
-.stg-strip{display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:pointer;
+.stg-strip{display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:default;
   background:var(--stg-surf,rgba(255,255,255,0.045));border:0;border-bottom:1px solid var(--stg-line);
   padding:9px 20px;font-family:${SANS};font-size:12.5px;color:var(--stg-ink,#e9edf4);}
-.stg-strip:hover{background:var(--stg-surf,rgba(255,255,255,0.045));}
-.stg-strip.on{background:var(--stg-surf2,rgba(255,255,255,0.08));}
 .stg-strip:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:-2px;}
 /* The held row is a div standing in for a button: a button's UA line-height
    is normal, so the div is told the same or it lands a pixel or two off. */
@@ -716,7 +672,6 @@ html[data-stage-pastel] .stg-fg i{font-size:10px;letter-spacing:.06em;}
 .stg-show{color:var(--stg-ink2,#aab5c7);font-family:${MONO};font-size:9.5px;font-weight:500;
   letter-spacing:.12em;text-transform:uppercase;gap:7px;}
 .stg-show:hover{color:var(--stg-ink,#e9edf4);}
-.stg-sb{flex:none;}
 .stg-se{font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute2,#66748f);}
 .stg-sn{font-weight:800;}
 .stg-sf{font-family:${MONO};font-size:11.5px;color:var(--stg-ink2,#aab5c7);}
@@ -724,8 +679,6 @@ html[data-stage-pastel] .stg-fg i{font-size:10px;letter-spacing:.06em;}
 .stg-sy{margin-left:auto;flex:none;color:var(--stg-acc-ink);font-family:${MONO};font-size:9.5px;font-weight:500;
   letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
 
-.stg-panel{border-bottom:1px solid var(--stg-line);background:var(--stg-panel,#0d1220);}
-.stg-pin{max-width:1180px;margin:0 auto;padding:16px 20px 20px;}
 .stg-px{display:block;margin:14px auto 0;background:none;border:1px solid var(--stg-line);
   border-radius:99px;color:var(--stg-mute2,#66748f);font-family:${MONO};font-size:9.5px;letter-spacing:.13em;
   text-transform:uppercase;padding:6px 16px;cursor:pointer;}
@@ -758,11 +711,8 @@ html[data-stage-pastel] .stg-fg i{font-size:10px;letter-spacing:.06em;}
   /* A long name yields to the figure beside it rather than pushing it out. */
   .stg-sn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;padding-bottom:.16em;margin-bottom:-.16em;}
   .stg-sf{flex:none;}
-  .stg-pin{padding:14px 13px 18px;}
 }
 @media(max-width:640px){
-  .stg-rank{padding:5px 8px;}
-  .stg-rank span{display:none;}
   .stg-shl{display:none;}
   .stg-shs{display:inline;}
   .stg-shr{padding:5px 9px;}
