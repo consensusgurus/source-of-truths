@@ -39,11 +39,13 @@ export function generateMetadata({ searchParams }) {
   const description = run
     ? `${g.name} on Mind Loft${c.x ? `: ${c.x}` : ''}. Same run, free, no sign-up to play.`
     : `${g.name} No. ${c.n} on Mind Loft. Same board, free, no sign-up to play.`;
-  const img = `/vs/card?g=${encodeURIComponent(key)}&vs=${encodeURIComponent(raw)}${meme ? '&m=1' : ''}&c=2`; // c: bump when the card's look changes, so no CDN copy of the old one is served
+  const img = `/vs/card?g=${encodeURIComponent(key)}&vs=${encodeURIComponent(raw)}${meme ? '&m=1' : ''}&c=3`; // c: bump when the card's look changes, so no CDN copy of the old one is served
   // TWO PREVIEWS, NO REPEATS (owner, 2026-10-23). Beside the GIF the link says
   // only Accept the challenge, since the GIF carries the detail. Sent on its
   // own, the link carries the full sentence in its card and its title.
-  const share = meme ? 'Accept the challenge' : title;
+  // NO TEXT UNDER THE CARD (owner, 2026-10-25): the image carries the whole
+  // message, so the title a bubble prints beneath it is only the site name.
+  const share = 'Mind Loft';
   return {
     ...base, title, description,
     openGraph: { title: share, description, images: [{ url: img, width: 1200, height: 630 }], siteName: 'Mind Loft', type: 'website' },

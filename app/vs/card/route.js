@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 import React from 'react';
 import { stageFonts, clamp, size, T, Row, Col } from '@/lib/og-stage-card';
 import { sharePalette, markSvg } from '@/lib/share-palette';
-import { metricDef, metricLine } from '@/lib/challenge-metric';
+import { metricDef } from '@/lib/challenge-metric';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { circuitById } from '@/lib/circuits';
 import { decodeChallenge, challengeFig, mmssOf, RUN_CHALLENGES, isBlankMiss } from '@/lib/challenge';
@@ -49,15 +49,21 @@ function brandRow(p) {
 // BESIDE THE GIF: the puzzle's name and long description over a big Accept
 // the challenge (owner, 2026-10-23). The whole image is the button: the soft
 // pastel panel edge to edge, the call to action as a black pill.
-function buttonOnly(p, { name, desc }) {
+function buttonOnly(p, { name, desc, who, stats }) {
   const h = React.createElement;
   return Col([
-    T(name, { key: 'n', fontSize: 56, fontWeight: 800, letterSpacing: '-1.8px', lineHeight: 1.05 }),
-    ...(desc ? [T(clamp(desc, 120), { key: 'd', fontSize: 31, fontWeight: 600, lineHeight: 1.3, marginTop: '10px', maxWidth: '1000px' })] : []),
+    T(name, { key: 'n', fontSize: 54, fontWeight: 800, letterSpacing: '-1.8px', lineHeight: 1.05 }),
+    ...(desc ? [T(clamp(desc, 110), { key: 'd', fontSize: 29, fontWeight: 600, lineHeight: 1.3, marginTop: '10px', maxWidth: '1000px' })] : []),
     Row([
-      T('Accept the Challenge', { key: 't', fontSize: 60, fontWeight: 800, letterSpacing: '-2px', lineHeight: 1, whiteSpace: 'nowrap', flexShrink: 0 }),
-      h('img', { key: 'a', src: arrowURI(p.onCta), width: 56, height: 56, style: { marginLeft: '22px', flexShrink: 0 } }),
-    ], { key: 'cta', alignItems: 'center', alignSelf: 'flex-start', marginTop: '40px', background: p.cta, color: p.onCta, borderRadius: '999px', padding: '26px 44px 30px' }),
+      T('Accept the Challenge', { key: 't', fontSize: 58, fontWeight: 800, letterSpacing: '-2px', lineHeight: 1, whiteSpace: 'nowrap', flexShrink: 0 }),
+      h('img', { key: 'a', src: arrowURI(p.onCta), width: 54, height: 54, style: { marginLeft: '22px', flexShrink: 0 } }),
+    ], { key: 'cta', alignItems: 'center', alignSelf: 'flex-start', marginTop: '34px', background: p.cta, color: p.onCta, borderRadius: '999px', padding: '24px 44px 28px' }),
+    // WHO AND WHAT TO BEAT, under the button (owner, 2026-10-25): the GIF beside
+    // it says what happened, this line says whose score it is.
+    ...(who ? [Row([
+      T(who, { key: 'w', fontSize: 36, fontWeight: 800, letterSpacing: '-0.8px' }),
+      ...(stats ? [T(stats, { key: 's', fontSize: 36, fontWeight: 600, marginLeft: '16px', opacity: 0.85 })] : []),
+    ], { key: 'who', alignItems: 'center', marginTop: '28px' })] : []),
   ], { width: '1200px', height: '630px', background: p.fill, color: p.onFill, fontFamily: 'Manrope', justifyContent: 'center', padding: '0 96px' });
 }
 
@@ -65,20 +71,19 @@ function buttonOnly(p, { name, desc }) {
 // puzzle is the headline. The result sits small above it, the name and long
 // description large on the pastel panel, and a full-width button runs across
 // the foot.
-function detailed(p, { line, name, desc, cta = 'Accept the Challenge' }) {
+function detailed(p, { line, desc, cta = 'Accept the Challenge' }) {
   const h = React.createElement;
   return Col([
     brandRow(p),
     Col([
-      T(line, { key: 'l', fontSize: 28, fontWeight: 700, letterSpacing: '-0.3px' }),
-      T(name, { key: 'n', fontSize: 80, fontWeight: 800, letterSpacing: '-3px', lineHeight: 1, marginTop: '10px' }),
-      ...(desc ? [T(clamp(desc, 132), { key: 'd', fontSize: 30, fontWeight: 600, lineHeight: 1.28, marginTop: '12px', maxWidth: '980px' })] : []),
-    ], { key: 'mid', flex: 1, justifyContent: 'center', width: '100%', background: p.fill, color: p.onFill, borderRadius: '30px', padding: '0 48px', marginTop: '22px' }),
-    Row([
-      T(cta, { key: 't', fontSize: 40, fontWeight: 800, letterSpacing: '-1px' }),
-      h('img', { key: 'a', src: arrowURI(p.onCta), width: 38, height: 38, style: { marginLeft: '18px' } }),
-    ], { key: 'btn', width: '100%', alignItems: 'center', justifyContent: 'center', background: p.cta, color: p.onCta, borderRadius: '999px', padding: '20px 0 24px', marginTop: '20px', flex: 'none' }),
-  ], { width: '1200px', height: '630px', background: p.ground, color: p.ink, fontFamily: 'Manrope', padding: '44px 72px 52px' });
+      T(clamp(line, 90), { key: 'l', fontSize: 58, fontWeight: 800, letterSpacing: '-2px', lineHeight: 1.08, maxWidth: '1000px' }),
+      Row([
+        T(cta, { key: 't', fontSize: 44, fontWeight: 800, letterSpacing: '-1.2px', lineHeight: 1, whiteSpace: 'nowrap' }),
+        h('img', { key: 'a', src: arrowURI(p.onCta), width: 42, height: 42, style: { marginLeft: '18px' } }),
+      ], { key: 'btn', alignItems: 'center', alignSelf: 'flex-start', background: p.cta, color: p.onCta, borderRadius: '999px', padding: '22px 40px 26px', marginTop: '28px' }),
+      ...(desc ? [T(clamp(desc, 120), { key: 'd', fontSize: 28, fontWeight: 600, lineHeight: 1.3, marginTop: '24px', maxWidth: '1000px' })] : []),
+    ], { key: 'mid', flex: 1, justifyContent: 'center', width: '100%', background: p.fill, color: p.onFill, borderRadius: '30px', padding: '0 52px', marginTop: '22px' }),
+  ], { width: '1200px', height: '630px', background: p.ground, color: p.ink, fontFamily: 'Manrope', padding: '44px 64px 52px' });
 }
 
 export async function GET(req) {
@@ -90,18 +95,20 @@ export async function GET(req) {
   const p = sharePalette(g && g.cat ? g.cat : 'Word');
   const opts = { width: size.width, height: size.height, fonts: stageFonts() };
   if (!g || !c) {
-    return new ImageResponse(detailed(p, { line: 'Free daily puzzles', name: 'Mind Loft', desc: 'A new set of puzzles every day. No sign-up to play.', cta: 'Play Free' }), opts);
+    return new ImageResponse(detailed(p, { line: 'Free daily puzzles on Mind Loft.', desc: 'A new set of puzzles every day. No sign-up to play.', cta: 'Play Free' }), opts);
   }
   const name = clamp(c.name, 20);
   const fig = challengeFig(c, key);
   const blank = !run && isBlankMiss(c);
-  const byMetric = !run && c.m != null && !!metricDef(key);
-  const line = blank ? `${name} could not crack ${g.name}.`
-    : run ? (c.o ? `${name} scored ${c.s}/${c.o} on ${run.the}.` : `${name} scored ${c.s} on ${run.the}.`)
-    : byMetric ? metricLine(key, name, g.name, fig)
-    : c.won && c.t != null ? `${name} solved ${g.name} in ${clamp(fig, 18)}.`
-    : c.won ? `${name} solved ${g.name}: ${clamp(fig, 18)}.` : `${name} scored ${clamp(fig, 18)} on ${g.name}.`;
+  // ONE SENTENCE, THE DARE (owner, 2026-10-25): "Gator85 challenges you to
+  // beat 61 right on the Trivia Encore."
+  const target = run ? (run.unit === 'right' ? `${c.s} right` : c.o ? `${c.s}/${c.o}` : `${c.s} points`) : clamp(fig, 18);
+  const line = blank ? `${name} challenges you to crack ${g.name}.`
+    : `${name} challenges you to beat ${target} on ${run ? run.the : g.name}.`;
+  const time = c.t != null && !(c.won && !run && fig === mmssOf(c.t)) ? mmssOf(c.t) : null;
+  const shown = !run && c.won && c.t != null && fig === mmssOf(c.t) ? `solved in ${fig}` : target;
+  const stats = blank ? 'could not crack it' : [shown, c.x && run ? clamp(c.x, 24) : null, time].filter(Boolean).join(' · ');
   const desc = run ? ((circuitById(key) || {}).blurb || '') : (g.tagLong || g.tag || '');
-  if (u.searchParams.get('m') === '1') return new ImageResponse(buttonOnly(p, { name: g.name, desc }), opts);
-  return new ImageResponse(detailed(p, { line, name: g.name, desc }), opts);
+  if (u.searchParams.get('m') === '1') return new ImageResponse(buttonOnly(p, { name: g.name, desc, who: name, stats }), opts);
+  return new ImageResponse(detailed(p, { line, desc }), opts);
 }
