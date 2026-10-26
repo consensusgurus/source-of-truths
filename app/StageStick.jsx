@@ -44,10 +44,10 @@ import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref } from '@/lib/circui
 // RUNS, NOT THEIR PARTS (owner, 2026-10-26: "don't send users to individual
 // run components. show runs in place of those"). A game that is one question
 // set of a gauntlet-style run (Trivia, English and Math Gauntlets, Price
-// Check) is offered as its run. Standalone dailies a run also deals (the Dojo
-// sudokus, the Judged cases, the crosswords, Passport's geography games) stay
-// themselves.
-const PART_ENGINES = new Set(['quiz', 'math', 'price']);
+// Check, Passport: owner, 2026-10-26) is offered as its run. Standalone
+// dailies a run also deals (the Dojo sudokus, the Judged cases, the
+// crosswords) stay themselves.
+const PART_ENGINES = new Set(['quiz', 'math', 'price', 'passport']);
 const RUN_OF = (() => {
   const m = new Map();
   for (const c of CIRCUITS) {

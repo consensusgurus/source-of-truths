@@ -10370,9 +10370,9 @@ grid's selected cell must not use it alone: the crossword cursor (Emcee, Encore)
 ## Up next offers runs, not their parts; the puzzle nav mirrors the home (owner, 2026-10-26)
 
 The ending's Up next rail (`app/StageStick.jsx`, `RUN_OF` / `foldRuns`) never links a question set of a
-gauntlet-style run (engines quiz, math, price: the Trivia/English/Math Gauntlets, Price Check); it
-offers the run instead, once. Standalone dailies a run also deals (Dojo sudokus, Judged cases,
-crosswords, Passport's Span/Flank/Ping) stay themselves. The puzzle page's left nav (`LayoutCInner`)
+gauntlet-style run (engines quiz, math, price, passport: the Trivia/English/Math Gauntlets, Price
+Check, Passport with Span/Flank/Ping); it offers the run instead, once. Standalone dailies a run also
+deals (Dojo sudokus, Judged cases, crosswords) stay themselves. The puzzle page's left nav (`LayoutCInner`)
 follows the home's index order: All Puzzles, the categories, My Puzzles, the switch, then an
 "Everything Else" box (Runs, Quizzes, Puzzle Archive, Leaderboards + Stats / IQ Tests, School Tests,
 Kids, Top 10 Lists / Most Appreciated). Change both together.
