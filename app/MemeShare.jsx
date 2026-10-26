@@ -82,7 +82,7 @@ export function MemePeek({ ctx, onOpen }) {
       <button type="button" className="msh-peek" onClick={onOpen} aria-label={`Share with a meme: ${MEMES[k].name}`}>
         <span className="cap">{memeCaption(k, ctx)}</span>
         <img src={MEMES[k].src} alt={`${MEMES[k].name} reaction GIF`} loading="lazy" />
-        <span className="ft" style={{ background: pal.fill, color: pal.onFill }}>Share this GIF <span aria-hidden="true">→</span></span>
+        <span className="ft" style={{ background: pal.fill, color: pal.onFill }}>Share with this or another GIF <span aria-hidden="true">→</span></span>
       </button>
     </>
   );
