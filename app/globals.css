@@ -1207,8 +1207,7 @@ html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;
     --stg-sel: #3949ab;
   }
   html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-given, .sd-given, .gi-given) { color: #2b3590 !important; }
-  /* Your own digits read on the grey row/column shade too (owner, 2026-10-26: "too faint"): one step darker, one step heavier. */
-  html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-user, .sd-user, .gi-user) { color: #3646c4 !important; font-weight: 600 !important; }
+  html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-user, .sd-user, .gi-user) { color: #4f5bd5 !important; }
   html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-pad, .sd-pad, .gi-pad) { color: #3949ab !important; }
   html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"],
   html[data-stage-pastel='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"] * { color: #ffffff !important; }
@@ -1448,8 +1447,7 @@ html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;
     --stg-sel: #3949ab;
   }
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-given, .sd-given, .gi-given) { color: #2b3590 !important; }
-  /* Your own digits read on the grey row/column shade too (owner, 2026-10-26: "too faint"): one step darker, one step heavier. */
-  html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-user, .sd-user, .gi-user) { color: #3646c4 !important; font-weight: 600 !important; }
+  html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-user, .sd-user, .gi-user) { color: #4f5bd5 !important; }
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-pad, .sd-pad, .gi-pad) { color: #3949ab !important; }
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"],
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"] * { color: #ffffff !important; }
@@ -1513,3 +1511,17 @@ html:is([data-stage-pastel='darktint'], [data-stage-tone='darktint']) .stage-pag
 }
 html:is([data-stage-pastel='darktint'], [data-stage-tone='darktint']) .stage-page .pastel-board [style*="--hue-ink"] { --hue-ink: #08222e !important; }
 html:is([data-stage-pastel='darktint'], [data-stage-tone='darktint']) .stage-page span.crt { background: color-mix(in srgb, var(--hue) 60%, #ffffff) !important; color: #08222e !important; }
+
+/* THE GRID SHOWS THROUGH THE SELECTION'S SHADE (owner, 2026-10-26: the square
+   separators went faint when highlighted). Every sudoku-family grid shades the
+   selected square's row, column and box 18% toward the ink, which swallowed
+   the 1px cell lines; at 10% the lines stay visible in every look. The
+   string matched is the one each grid client writes inline. */
+.stage-page [style*="var(--stg-ink) 18%, var(--stg-cell)"] { background: color-mix(in srgb, var(--stg-ink) 10%, var(--stg-cell)) !important; }
+
+/* THE NUMBER PAD'S COUNTS READ (owner, 2026-10-26: "too faint"). The small
+   squares-left figure on every sudoku pad key was 8px light grey; it is a
+   real figure the player uses, so it takes the page's mute ink at 10px bold.
+   The armed key keeps its own colour. */
+.stage-page [class$="-pad-n"] { font-size: 10px !important; font-weight: 800 !important; right: 5px !important; }
+.stage-page :not(.armed) > [class$="-pad-n"] { color: var(--stg-mute, #5b6472) !important; }

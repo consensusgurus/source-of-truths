@@ -139,9 +139,9 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   const flipBoard = () => setBoardTheme((cur) => { const next = cur === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('sot_dojo_board2', JSON.stringify({ t: next, day: etToday() })); } catch (e) {} return next; });
   const doneAtLoad = useRef(null);
   const [settled, setSettled] = useState(false);
-  // THE PHONE DOJO (owner, 2026-10-24): on a phone the ending is the gauntlet
-  // stage's screen and the grids play on the pastel sudoku register. The
-  // ENTRANCE is the stage gate on every width since 2026-10-26.
+  // THE PHONE DOJO (owner, 2026-10-24): on a phone the grids play on the
+  // pastel sudoku register. The ENTRANCE and the ENDING are the gauntlet
+  // stage's screens on every width since 2026-10-26, as on the other runs.
   const phone = usePhoneStage();
   const [endOpen, setEndOpen] = useState(true);
 
@@ -172,7 +172,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   const playing = r.phase === 'playing';
   const pastel = useSudokuPastel(hydrated && playing);
   // The stage ending counts as settled for the more-runs card that follows it.
-  useEffect(() => { if (hydrated && done && phone && endOpen) setSettled(true); }, [hydrated, done, phone, endOpen]);
+  useEffect(() => { if (hydrated && done && endOpen) setSettled(true); }, [hydrated, done, endOpen]);
   const board = useCircuitBoard(DOJO_RUN_ID, hydrated && done);
 
   const counted = useMemo(() => sections.map((sec) => r.results[sec.key] || banked[sec.key] || null), [sections, banked, r.results]);
@@ -241,6 +241,31 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   sections.forEach((s) => { VARS[`--dj-${s.key}`] = s.color; });
   const runSoFar = sections.slice(0, r.si).reduce((a, s, i) => a + (counted[i] ? parts[i] : 0), 0);
   const Game = sec ? CLIENTS[sec.key] : null;
+  // THE END SCREEN'S FIGURES (owner, 2026-10-26: the Dojo's ending matches the
+  // other runs on every width): today's board (top three, then you), each
+  // form against the field, and the belt ladder for the climb.
+  const djBd = board && board.data;
+  const djSf = djBd && djBd.stageField;
+  const djAvg = stageAvg(djSf, sections);
+  const formRows = sections.map((s, i) => {
+    const gm = djSf && djSf.games && djSf.games[s.key];
+    const a = djAvg && djAvg[s.key] != null ? Number(djAvg[s.key]) : null;
+    return { key: s.key, name: s.name, bg: rampFor(i), you: counted[i] ? Math.round(parts[i]) : '\u2013', field: a != null ? Math.round(a) : '\u2013', best: gm && Number.isFinite(Number(gm.best)) ? Math.round(Number(gm.best)) : '\u2013' };
+  });
+  const djOverall = djBd && Array.isArray(djBd.overall) ? djBd.overall.filter((x) => Number.isFinite(Number(x.total))) : [];
+  const djMe = djBd ? (djBd.me || null) : null;
+  const djBoard = (() => {
+    if (!djBd) return null;
+    const isMe = (row) => !!(djMe && row && djMe.userKey && row.userKey === djMe.userKey);
+    const out = djOverall.slice(0, 3).map((row, i) => ({ rank: row.rank || i + 1, name: row.username || 'Guest', score: Math.round(Number(row.total)), me: isMe(row) }));
+    if (djMe && !out.some((x) => x.me) && Number.isFinite(Number(djMe.total))) {
+      if (Number.isFinite(djMe.rank) && djMe.rank > 4) out.push({ gap: true });
+      out.push({ rank: Number.isFinite(djMe.rank) ? djMe.rank : '\u2013', name: 'You', score: Math.round(Number(djMe.total)), me: true });
+    }
+    return out.length ? { rows: out, field: djBd.overallField || djBd.uniquePlayers || null, href: '/dojo/leaderboard' } : null;
+  })();
+  // The belts, white at the bottom to black at the top.
+  const beltLadder = [...B].reverse().map((t, i) => ({ min: t[0], name: t[1], line: t[5], colour: rampFor(i) }));
 
   return (
     <div className="stage-page dj" data-sot-wait="" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--dj-ground)', color: 'var(--dj-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
@@ -322,7 +347,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
       )}
 
       <RunChallengeCapture gameKey={DOJO_RUN_ID} />
-      {hydrated && done && phone && endOpen && (
+      {hydrated && done && endOpen && (
         <GauntletEndStage
           circuitName="Enter the Dojo"
           dateLabel={dateShort}
@@ -331,6 +356,12 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           score={total}
           unitWord="points"
           colLabel="Form"
+          ladder={beltLadder}
+          ladderHeading="Which belt do you tie on?"
+          board={djBoard}
+          rowsIn={formRows}
+          leaderScore={djOverall[0] ? Math.round(Number(djOverall[0].total)) : null}
+          more={<MoreRunsList self="dojo" ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} />}
           title={{ name: belt[1], colour: '#a5b4fc', line: tier > 0 ? `${Math.max(1, B[tier - 1][0] - total)} points short of ${B[tier - 1][1]}` : 'Top of the ladder' }}
           rank={board.data && board.data.me && Number.isFinite(board.data.me.rank) ? board.data.me.rank : null}
           fieldSize={board.data ? (board.data.uniquePlayers || (Array.isArray(board.data.overall) ? board.data.overall.length : null)) : null}
@@ -342,9 +373,9 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           sweep={doneAtLoad.current === false}
         />
       )}
-      {hydrated && done && !(phone && endOpen) && (
+      {hydrated && done && !endOpen && (
         <Grading key="grading" sections={sections} counted={counted} parts={parts} total={total} dateLabel={dateLabel} dateShort={dateShort}
-          animate={doneAtLoad.current === false && !phone} board={board} clocks={CLK} onShare={copyShare} copied={copied}
+          animate={false} board={board} clocks={CLK} onShare={copyShare} copied={copied}
           onSettled={() => setSettled(true)} />
       )}
       <MoreRunsPop self="dojo" ready={settled && doneAtLoad.current === false} delay={2500} fireOnLeave />

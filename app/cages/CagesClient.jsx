@@ -25,7 +25,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { HelpCircle, Share2, RotateCcw, X, Lightbulb, Eye, Smartphone, Pencil, Eraser, Trash2, ArrowRight } from 'lucide-react';
-import { useAutoAdvance } from '@/lib/sudoku-auto-advance';
+import { useAutoAdvance, logicalNext } from '@/lib/sudoku-auto-advance';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
@@ -628,7 +628,7 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
     // Auto-move (owner, 2026-10-02): on by default, the selection moves to the
     // next empty square; a player who solves out of order turns it off with the
     // Auto-move tool and the selection then stays put. See lib/sudoku-auto-advance.
-    if (advance && autoAdv) { const nx = nextEmpty(nextCells, idx); if (nx >= 0) setSel(nx); }
+    if (advance && autoAdv) { const nx = logicalNext(nextCells, (i) => !givenFlat[i] && !nextCells[i], idx, 9, (i) => boxOf(Math.floor(i / 9), i % 9)); if (nx >= 0) setSel(nx); }
   }
 
   // keyboard dispatcher: honors the Notes toggle, advances on a pad-style fill
