@@ -868,7 +868,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? g.swaps : null}
-              title={endEfficiency(won, finalScore)}
+              title={endEfficiency(won, extra === 0 ? 10 : 9)}
               detail={`${g.swaps} trades \u00b7 ${`${homeCount}/${N}`} home \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

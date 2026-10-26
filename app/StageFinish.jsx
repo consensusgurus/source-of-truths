@@ -2029,12 +2029,16 @@ export default function StageFinish({
 
     // THE SHEET.
     const allRows = board && Array.isArray(board.rows) ? board.rows.map((r, i) => ({ ...r, rank: r.rank != null ? r.rank : i + 1 })) : [];
-    let srows = allRows.slice(0, 3).map((r) => ({ ...r, me: isMine(r) }));
-    if (myRank != null && myRank > 3) {
-      const near = allRows.filter((r) => r.rank >= myRank - 1 && r.rank <= myRank + 1 && r.rank > 3).map((r) => ({ ...r, me: isMine(r) }));
+    // FIVE PLACES (owner, 2026-10-26): the board shows the top five, and the
+    // ending pads only what the field genuinely has not filled. It used to take
+    // the top THREE, so a four-player day printed Empty where #4 played.
+    const TOPN = 5;
+    let srows = allRows.slice(0, TOPN).map((r) => ({ ...r, me: isMine(r) }));
+    if (myRank != null && myRank > TOPN) {
+      const near = allRows.filter((r) => r.rank >= myRank - 1 && r.rank <= myRank + 1 && r.rank > TOPN).map((r) => ({ ...r, me: isMine(r) }));
       if (!near.some((r) => r.me) && board && board.myRow) near.push({ ...board.myRow, rank: myRank, me: true });
       near.sort((a, b) => a.rank - b.rank);
-      if (near.length && near[0].rank > 4) srows.push({ gap: true });
+      if (near.length && near[0].rank > TOPN + 1) srows.push({ gap: true });
       srows = srows.concat(near);
     } else if (myRank == null && board && board.myRow) {
       srows.push({ gap: true }, { ...board.myRow, rank: '—', me: true });
