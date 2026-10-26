@@ -73,7 +73,6 @@ html.paper-skin .qchm-v i{color:var(--slate);}
    presentation attribute, so re-inking is a selector rather than a prop. Matched
    by structure, not by attribute: the two strokes are the svg's own children and
    the brain is the one path inside the <g>. */
-html.paper-skin .qchm-brand svg .mlm-house{fill:var(--ink);stroke:var(--ink);}
 
 /* ---------- 3. the circuit header: slab out, identity line in ---------- */
 html.paper-skin .clp-hd{background:transparent;color:var(--ink);border-radius:0;

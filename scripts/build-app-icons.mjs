@@ -114,6 +114,7 @@ const master = markSvg({});
 writeFileSync('public/brand/mindloft-mark.svg', master);
 writeFileSync('public/brand/mindloft-mark-1024.png', new Resvg(master, { fitTo: { mode: 'width', value: 1024 } }).render().asPng());
 writeFileSync('public/brand/mindloft-mark-white.svg', markSvg({ ink: '#ffffff' }));
+writeFileSync('public/brand/mindloft-mark-sky.svg', markSvg({ ink: '#7dd3fc' }));
 console.log('public/brand/icons/ (10 pastels x 3 sizes), public/brand/mindloft-mark.svg/.png');
 
 // Proof sheet for eyeballing every size at once, including the Android circle crop and the

@@ -93,7 +93,7 @@ export default function PlayerProfileClient({ name }) {
 
       <div className="pf-cap">
         <Link className="pf-brand" href="/" aria-label="Mind Loft home">
-          <MindLoftMark size={19} ink="var(--stg-ink,#e9edf4)" accent="var(--stg-brand,#7dd3fc)" />
+          <MindLoftMark size={19} ink="var(--stg-ink,#e9edf4)" accent="var(--stg-acc-ink,var(--stg-brand,#7dd3fc))" />
           <b>Mind <em>Loft</em></b>
         </Link>
         <span className="pf-id">

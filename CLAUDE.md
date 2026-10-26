@@ -10445,8 +10445,13 @@ cutout should match the background always"). It replaced the caret-and-brain mar
   `app/MindLoftMark.jsx`, the share cards (`lib/og-stage-card.js` `markURI`,
   `lib/share-palette.js` `markSvg`, `lib/og-kids-card.js`), the kids shell and both
   icon scripts all read it. Never paste the path anywhere else.
-- **One colour.** `ink` paints the house; `accent` and `cut` are still accepted by the
-  component so the ~40 call sites compile, but they do nothing.
+- **It takes the colour of "Loft"** beside it (`accent`, default `var(--stg-brand)`,
+  the variable the word reads), and is **available in black**: `mono` on the component,
+  or `data-brand-mono` on any ancestor. Black/white/sky SVGs live in `public/brand/`.
+- **Cap-aligned beside the wordmark.** When the next sibling element reads "Mind Loft",
+  the component measures its font size after mount, switches to the tight viewBox and
+  sizes itself to Manrope's cap height (0.72em) on the baseline, so the roof peak and
+  wall feet sit on the top and bottom of the M. No call site passes anything for it.
 - **Icons sit on the pastels** (owner: "one each for our different pastels").
   `node scripts/build-app-icons.mjs` writes the site set on SKY (the owner's reference)
   plus `public/brand/icons/mindloft-<category>-{512,180,32}.png` for all ten ramp
