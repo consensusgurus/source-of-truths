@@ -67,6 +67,7 @@ import DailyRules from '../DailyRules';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
 import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import { LEG_PAGE_CSS } from '../StageLeg';
 import RunDoorPop from '../circuits/RunDoorPop';
 import { endGrade } from '@/lib/end-verdict';
 
@@ -418,6 +419,9 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }, [abandon, PUZZLE, TOTAL, identity, EMBED]);
 
+  // A run that deals its puzzles straight in (Crossed Up, owner 2026-10-26)
+  // skips the start page: RunEmbed autostart.
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) start(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   function start() {
     setG((c) => (c.t0 ? c : { ...c, t0: Date.now(), fill: c.fill || new Array(N).fill('') }));
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
@@ -870,11 +874,12 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={STAGE ? `stage-page${EMBED ? '' : ' lg-white'}` : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
+      {STAGE && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
       {!STAGE && (
       <DailyChrome slug="anon" name="Anon" collapsed={!!g.t0} loft={LOFT} />
       )}
@@ -1024,7 +1029,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
           <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
 
-          {preStart && (
+          {preStart && !(EMBED && EMBED.autostart) && (
             <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white, border: STAGE ? '1px solid var(--stg-line)' : '1px solid rgba(28,30,36,0.14)', borderRadius: 12, padding: '20px 22px', margin: '4px 0 14px' }}>
               <h2 style={{ fontSize: 19, fontWeight: 900, color: INK, margin: '0 0 8px' }}>
                 A clueless acrostic: a passage nobody signed, in {N} letters.

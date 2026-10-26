@@ -349,7 +349,7 @@ export default function CrossedClient({ day = null, dateLabel, dateShort, sectio
             </>}>
             {mounted ? (
               <div className="cr-host">
-                <RunEmbed onResult={onSectionDone} theme={boardTheme} help={helpSeq}>
+                <RunEmbed onResult={onSectionDone} theme={boardTheme} help={helpSeq} autostart>
                   <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
                 </RunEmbed>
               </div>
@@ -427,6 +427,23 @@ const CSS = WEEK_CSS + `
 /* The embedded grid sits on the frame's pastel, not its own sheet. */
 .cr-host .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
 .gsx-play[data-stage-theme='light'] .cr-host .stage-page{--stg-mute:#33495a !important;--stg-mute2:#33495a !important;--stg-dim:#3d5263 !important;--stg-ink:#08222e !important}
+/* ONLY THE PAGE, BLACK AND GREYS (owner, 2026-10-26: "colors used should be
+   background, black, and grey or shades of either"). Inside the run every
+   accent a crossword carries (its category blue, the given-letter teal, the
+   right and wrong greens and reds) is remapped to the frame's ink, its greys,
+   and the paper of the squares, in all five looks. */
+.gsx-play .cr-host .stage-page{
+  --stg-acc:var(--gsx-ink) !important;--stg-acc-ink:var(--gsx-ink) !important;--stg-acc-lt:var(--gsx-ink) !important;--stg-acc-dk:var(--gsx-ink) !important;--stg-acc-ink-lt:var(--gsx-ink) !important;
+  --stg-acc-tint:color-mix(in srgb, var(--gsx-ink) 12%, transparent) !important;
+  --stg-onramp:var(--gsx-card-paper, #ffffff) !important;--stg-onramp-lt:var(--gsx-card-paper, #ffffff) !important;
+  --stg-brand:var(--gsx-ink) !important;
+  --stg-good:var(--gsx-ink) !important;--stg-bad:var(--gsx-ink) !important;--stg-warn:var(--gsx-ink) !important;--stg-cool:var(--gsx-ink) !important;--stg-up:var(--gsx-ink) !important;--stg-dn:var(--gsx-ink) !important;
+  --stg-cell-given:var(--gsx-ink) !important;
+  --stg-cell:var(--gsx-card-paper, #ffffff) !important;--stg-raise:var(--gsx-card-paper, #ffffff) !important;--stg-surf:var(--gsx-card-paper, #ffffff) !important;
+  --stg-surf2:color-mix(in srgb, var(--gsx-ink) 10%, var(--gsx-card-paper, #ffffff)) !important;
+  --stg-chip:color-mix(in srgb, var(--gsx-ink) 10%, var(--gsx-card-paper, #ffffff)) !important;
+  --stg-panel:color-mix(in srgb, var(--gsx-ink) 7%, var(--gsx-card-paper, #ffffff)) !important;
+}
 .cr-lk{background:none;border:0;padding:4px 2px;color:inherit;font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 /* THE GRID SHAPES: paper squares, black squares, framed in ink. */
 .cr-g{display:inline-grid;flex:none;height:26px;max-width:40px;border:1.5px solid var(--gsx-ink,#08222e);background:#08222e;gap:1px;vertical-align:middle}

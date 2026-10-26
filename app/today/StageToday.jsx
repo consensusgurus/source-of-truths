@@ -7153,6 +7153,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      .sty-g.done.grp and .sty-g.done.grp.res outweighed the rule above and kept
      the category pastel as a fill under this block's light dark-mode ink. */
   .sty-g.done.grp,.sty-g.done.grp.res,.sty-g.done.grp:hover,.sty-g.done.grp.res:hover{background:var(--stg-surf);border-color:var(--stg-ink);box-shadow:inset 0 0 0 1px var(--stg-ink);color:var(--stg-ink);}
+  /* A PLAYED TILE WEARS A DOUBLE OUTLINE (owner, 2026-10-26). With the fills
+     gone a played game needs a mark of its own, and a colour cannot be it: the
+     glyph in ink vanishes on the dark register. The ink border plus a second
+     ink ring inside it reads in every look, light or dark. */
+  .sty-g.done,.sty-g.done:hover,.sty-g.done.res,.sty-g.done.res:hover,.sty-g.done.grp,.sty-g.done.grp.res,.sty-g.done.grp:hover,.sty-g.done.grp.res:hover{border-color:var(--stg-ink);box-shadow:none;outline:2px solid var(--stg-ink);outline-offset:-6px;}
   .sty-g.grp .sty-gn,.sty-g.grp:hover .sty-gn,.sty-g.grp.done .sty-gn,.sty-g.grp.done.res .sty-gn,.sty-g.grp.done.res:hover .sty-gn,
   .sty-g.grp .sty-grk,.sty-g.grp .sty-star{color:var(--stg-ink);}
   .sty-g.grp .sty-gt,.sty-g.grp .sty-grl,.sty-g.grp .sty-grf,.sty-g.grp .sty-gsep{color:var(--stg-ink2, var(--stg-ink));}

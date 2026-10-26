@@ -48,6 +48,7 @@ import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
 import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import { LEG_PAGE_CSS } from '../StageLeg';
 import RunDoorPop from '../circuits/RunDoorPop';
 import useRailClearance from '../useRailClearance';
 import { CONTEST, contestIsLive } from '@/lib/contest';
@@ -546,6 +547,9 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onKey, showHelp, started, sel, atFinale, g, R]);
 
+  // A run that deals its puzzles straight in (Crossed Up, owner 2026-10-26)
+  // skips the start page: RunEmbed autostart.
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   function startGame() {
     setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() }));
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
@@ -776,7 +780,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={STAGE ? `stage-page${EMBED ? '' : ' lg-white'}` : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
@@ -858,6 +862,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
         );
       })()}
       {!STAGE && <Grain />}
+      {STAGE && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
       {!STAGE && <DailyChrome slug="arcos" name="Arcos" collapsed={started} loft={LOFT} />}
       {LOFT && !EMBED && (
         <Cap gameKey="arcos" quizId={PUZZLE.quizId}
@@ -917,7 +922,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
           <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
 
-          {preStart && (
+          {preStart && !(EMBED && EMBED.autostart) && (
             <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Arcos is ready'}</div>
               {gateRules ? rulesBody : (
