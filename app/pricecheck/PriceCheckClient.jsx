@@ -97,12 +97,17 @@ function Register({ v2, max, n, sections, howOpen, onHow }) {
           </>
         )}
       </div>
-      <div className="pcg-note">Played one today? Replay it here; your first score counts.</div>
-      <div className="pcg-row">
-        <button type="button" className="pcg-how-b" aria-expanded={howOpen} onClick={(e) => { e.stopPropagation(); onHow(); }}>{howOpen ? 'Hide scoring' : 'How scoring works'}</button>
-        <a className="pcg-wk" href="/pricecheck/week" onClick={(e) => e.stopPropagation()}>Your week</a>
-        <span className="pcg-links">{sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path} onClick={(e) => e.stopPropagation()}>{s.name}</a></React.Fragment>)}</span>
-      </div>
+      <div className="pcg-note">Played one today? Your first score counts.</div>
+    </div>
+  );
+}
+
+// Under the Start button (owner, 2026-10-25): scoring and the week, one row.
+function GateLinks({ howOpen, onHow }) {
+  return (
+    <div className="pcg-row">
+      <button type="button" className="pcg-how-b" aria-expanded={howOpen} onClick={onHow}>{howOpen ? 'Hide scoring' : 'How scoring works'}</button>
+      <a className="pcg-wk" href="/pricecheck/week">Your week</a>
     </div>
   );
 }
@@ -345,10 +350,11 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
           bandNote={(s) => (banked[s.key] ? `Played ${banked[s.key].score}` : '10 pts')}
           headline={<>{NUMS[N] || N} Prices.<br />{V2 ? 'Three' : 'Five'} Guesses Each.</>}
           rule={V2 ? 'The first guess counts most. Scored out of ' + MAX + '.' : 'Get warm, get close, then go big. Scored out of ' + MAX + '.'}
-          lineup={'Today\u2019s tags:'}
+          lineup={null}
           startLabel="Start the run"
           banner={<ChallengeStrip gameKey="pricecheck" num={runToken()} run />}
           centerpiece={<Register v2={V2} max={MAX} n={N} sections={sections} howOpen={howOpen} onHow={() => setHowOpen((v) => !v)} />}
+          after={<GateLinks howOpen={howOpen} onHow={() => setHowOpen((v) => !v)} />}
           onStart={start}
         />
       )}
@@ -465,13 +471,11 @@ const CSS = `
 .pcg-facts b{font-size:20px;font-weight:800}
 .pcg-how p{margin:0;font-size:12.5px;font-weight:600;line-height:1.35;text-align:center}
 .pcg-note{font-size:13px;font-weight:700;text-align:center;line-height:1.3}
-.pcg-row{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:2px 12px;font-size:12.5px;font-weight:700}
+.pcg-row{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:2px 18px;font-size:13px;font-weight:700;margin-top:8px;color:var(--gsx-ink)}
 .pcg-how-b{background:none;border:0;padding:4px 0;color:inherit;font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .pcg-wk{color:inherit;font-weight:800}
-.pcg-links{opacity:.85}
-.pcg-links a{color:inherit;font-weight:800}
 @media(max-width:899px){.gsx-gate .gsx-piece .pcg{flex:1}}
-@media(max-width:380px){.pcg .odo{font-size:28px}.pcg-links{display:none}}
+@media(max-width:380px){.pcg .odo{font-size:28px}}
 @media(min-width:900px){
   .pcg .odo{font-size:44px}.pcg-box{min-height:110px}.pcg-note{font-size:14px}
   /* Desktop: the title and Start on the left, the register over the tags on the right. */

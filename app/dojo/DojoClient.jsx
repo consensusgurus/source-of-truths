@@ -321,7 +321,6 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
               <Ladder at={null} />
             </div>
           )}
-          <div className="sub2 fade">Each grid is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}</div>
         </section>
       )}
 

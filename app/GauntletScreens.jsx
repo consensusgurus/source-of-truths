@@ -232,7 +232,7 @@ export function GauntletCover({ sections = [] }) {
   );
 }
 // One line per quiz, name then subject (owner, 2026-10-24).
-export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes', headline = null, bandNote = null, lineup = 'Today\u2019s lineup:', startLabel = null, centerpiece = null }) {
+export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes', headline = null, bandNote = null, lineup = 'Today\u2019s lineup:', startLabel = null, centerpiece = null, after = null }) {
   const first = sections[0];
   const pal = useStagePalette(gateColour(sections));
   const word = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][sections.length] || String(sections.length);
@@ -250,10 +250,11 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
           {banner ? <div className="gsx-banner">{banner}</div> : null}
           <div className="gsx-eye gsx-eye1">{circuitName} · {dateLabel}</div>
           <h1 className="gsx-h1">{headline || <>{word} {unit.charAt(0).toUpperCase() + unit.slice(1)}.<br />One Life in Each.</>}</h1>
-          <p className="gsx-lede">{rule} {lineup}</p>
+          <p className="gsx-lede">{rule}{lineup ? ` ${lineup}` : ''}</p>
           <div className="gsx-gowrap gsx-wide">
             <button type="button" className="gsx-go" onClick={onStart}>{startLabel || `Start with ${first ? first.name : 'the run'}`}</button>
             {fieldLine ? <div className="gsx-fine">{fieldLine}</div> : null}
+            {after}
           </div>
         </div>
         {/* A run can put its own picture between the title and the lineup (the
@@ -273,6 +274,7 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
         <div className="gsx-gowrap gsx-narrow">
           <button type="button" className="gsx-go" onClick={onStart}>{startLabel || `Start with ${first ? first.name : 'the run'}`}</button>
           {fieldLine ? <div className="gsx-fine">{fieldLine}</div> : null}
+          {after}
         </div>
       </div>
     </div>
@@ -707,7 +709,8 @@ const CSS = `
   .gsx-gate.gsx-cp .gsx-band{flex:0 0 auto;min-height:46px}
   .gsx-gate.gsx-cp .gsx-bt b{font-size:17px}
   .gsx-gate.gsx-cp .gsx-bt i{font-size:13px}
-  .gsx-piece{flex:1 1 auto;min-height:160px;display:flex}
+  /* The picture never pushes Start below the fold on a phone (owner, 2026-10-25). */
+  .gsx-piece{flex:0 1 auto;min-height:0;display:flex}
 }
 .gsx-bq{font-size:13px;font-weight:800;white-space:nowrap}
 .gsx-gowrap{display:flex;flex-direction:column;gap:10px}
@@ -824,12 +827,15 @@ const CSS = `
   .gsx-pop{font-size:128px}
   .gsx-sub{font-size:21px}
   .gsx-low{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
-  /* THE TWO HALVES MATCH (owner, 2026-10-25: "the bottom elements here need
-     to be same size"): the button column stretches to the card's height, the
-     Start button taking the slack, Hold and Leave splitting evenly. */
-  .gsx-low .gsx-acts{justify-content:stretch;height:100%}
-  .gsx-low .gsx-last+.gsx-acts .gsx-go{flex:1 1 auto}
+  /* EVENLY DISTRIBUTED (owner, 2026-10-25, every run): the result cards share
+     the top row at one height (the leg card spans it alone when nothing sits
+     beside it), and the buttons take a FULL-WIDTH row under them: Start across
+     the whole width, Hold and Leave splitting it evenly beneath. */
   .gsx-low .gsx-last{min-height:100%;box-sizing:border-box}
+  .gsx-low .gsx-last:not(:has(+ .gsx-lx)){grid-column:1 / -1}
+  .gsx-low .gsx-lx{margin-top:0;display:flex;flex-direction:column}
+  .gsx-low .gsx-lx>*{flex:1 1 auto;box-sizing:border-box}
+  .gsx-low .gsx-acts{grid-column:1 / -1}
   .gsx-low .gsx-lowfine{grid-column:1 / -1}
   .gsx-ecol{justify-content:center}
   .gsx-egrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:40px;align-items:start}

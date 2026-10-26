@@ -288,7 +288,6 @@ export default function CrossedClient({ day = null, dateLabel, dateShort, sectio
               <Ladder at={null} />
             </div>
           )}
-          <div className="sub2 fade">Each puzzle is also its own daily: {sections.map((s, i) => <React.Fragment key={s.key}>{i ? ' · ' : ''}<a href={s.path}>{s.name}</a></React.Fragment>)}</div>
         </section>
       )}
 
