@@ -82,6 +82,12 @@ import { themeParam } from '@/lib/share-palette';
 // after it (owner, 2026-10-25: "I see a flash of the old format").
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
+// NO COUNTING ANIMATION ON ANY SUDOKU (owner, 2026-10-26: "we don't need the
+// counting animation on any sudoku. get rid of that everywhere"). A sudoku's
+// ending prints its figures whole; every other game still counts.
+const SUDOKU_NAMES = new Set(DAILY_GAMES.filter((g) => g.cat === 'Sudoku').map((g) => g.name));
+const isSudokuName = (n) => !!n && SUDOKU_NAMES.has(n);
+
 // ── THE FLOOD ──────────────────────────────────────────────────────────────
 // THE CURTAIN ARRIVES AT FULL SIZE (owner, 2026-08-31). The band was already
 // the moment the page changes state; what it was missing is the CHANGE. It
@@ -305,7 +311,8 @@ function CurtainFlood({ title, detail, iq, board, gameRank, streak, ready = null
   // the ready branch rather than printed as a blank.
   const figs = useMemo(() => (quick ? [] : [
     {
-      k: 'iq', lead: true, count: true,
+      // NO COUNTING ON A SUDOKU (owner, 2026-10-26): the figure lands whole.
+      k: 'iq', lead: true, count: !isSudokuName(gameName),
       has: !!(iq && iq.gained != null),
       value: iq && iq.gained != null ? Number(iq.gained) : null,
       label: 'IQ earned',

@@ -44,7 +44,6 @@ const FLASH = 260;   // the flood
 const GAP = 600;     // the last belt, held, before the seal
 const HOLD = 2600;   // the tied belt, before the card
 
-const ease = (x) => { const v = Math.max(0, Math.min(1, x)); return 1 - Math.pow(1 - v, 3); };
 const fmtClock = (s) => { const v = Math.max(0, Math.round(Number(s) || 0)); return `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`; };
 
 function inkOn(hex) {
@@ -56,22 +55,11 @@ function inkOn(hex) {
   return L > 0.3 ? MID : '#ffffff';
 }
 
-// A number that counts, on its own frame loop.
-function Count({ from = 0, to, ms, fmt }) {
-  const [v, setV] = useState(from);
-  useEffect(() => {
-    setV(from);
-    const t0 = performance.now();
-    let raf = 0;
-    const tick = (t) => {
-      const p = Math.min(1, (t - t0) / Math.max(1, ms));
-      setV(from + (to - from) * ease(p));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [from, to, ms]);
-  const n = Math.round(v);
+// NO COUNTING ON A SUDOKU (owner, 2026-10-26: "we don't need the counting
+// animation on any sudoku. get rid of that everywhere"). Every figure the
+// curtain shows lands whole, at its final value; the beats stay.
+function Count({ to, fmt }) {
+  const n = Math.round(Number(to) || 0);
   return <>{fmt ? fmt(n) : n}</>;
 }
 

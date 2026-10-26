@@ -9,6 +9,12 @@
 // Renders nothing when this device holds today's finished board itself (its end
 // card already does the job), on an archive replay (?p=), for a guest with no
 // row, and on an abandoned run. Read in an effect: the server has no device.
+//
+// IT CAN BE CLOSED, AND IT STEPS ASIDE FOR PLAY (owner, 2026-10-26, a Sixes
+// played on a phone after the desktop). The x hides it for that game's board
+// and remembers it on this device. It also goes away the moment this device
+// starts or finishes the board itself: a replay here is its own game, and the
+// bar was still up when the ending came down over it.
 import { useEffect, useState } from 'react';
 import MemeShare from './MemeShare';
 import { DAILY_GAMES, etTodayISO, scoreText } from '@/lib/daily-games';
@@ -32,6 +38,10 @@ const CSS = `
 .odb button.ol{background:transparent;color:var(--stg-onramp,#08222e);}
 .odb button:focus-visible{outline:2px solid var(--stg-onramp,#08222e);outline-offset:2px;}
 .odb .msg{flex-basis:100%;font-size:12.5px;font-weight:700;}
+.odb{position:relative;padding-right:46px;}
+.odb button.x{position:absolute;top:50%;right:8px;transform:translateY(-50%);width:32px;min-height:32px;height:32px;padding:0;
+  border:0;background:transparent;color:var(--stg-onramp,#08222e);display:flex;align-items:center;justify-content:center;}
+.odb button.x svg{width:18px;height:18px;}
 body:has(.stf) .odb,body:has(.sst) .odb{display:none;}
 `;
 
@@ -41,6 +51,11 @@ export default function OtherDeviceBar({ gameKey }) {
   const [res, setRes] = useState(null);
   const [meme, setMeme] = useState(false);
   const [msg, setMsg] = useState('');
+  const shutKey = res ? `sot_odb_x_${gameKey}_${res.num}` : null;
+  const close = () => {
+    try { if (shutKey) localStorage.setItem(shutKey, '1'); } catch (e) { /* hide for this visit */ }
+    setRes(null);
+  };
 
   useEffect(() => {
     if (!gameKey) return undefined;
@@ -63,6 +78,7 @@ export default function OtherDeviceBar({ gameKey }) {
           const sv = raw ? JSON.parse(raw) : null;
           if (sv && sv.status && sv.status !== 'playing') return;
         } catch (e) { /* unreadable save: show the bar */ }
+        try { if (localStorage.getItem(`sot_odb_x_${gameKey}_${g.num}`)) return; } catch (e) { /* show it */ }
         setRes({ ...pg, num: g.num });
       })
       .catch(() => {});
@@ -71,6 +87,23 @@ export default function OtherDeviceBar({ gameKey }) {
     window.addEventListener('sot:daily-updated', off);
     return () => { live = false; window.removeEventListener('sot:daily-updated', off); };
   }, [gameKey]);
+
+  // PLAY HERE TAKES OVER. While the bar is up, watch this device's own save
+  // for the board: once it is started (a clock) or finished, the bar goes, so
+  // it is never left under, or fighting, the ending.
+  useEffect(() => {
+    if (!res) return undefined;
+    const key = `sot_${gameKey}_${res.num}`;
+    const check = () => {
+      try {
+        const raw = localStorage.getItem(key);
+        const sv = raw ? JSON.parse(raw) : null;
+        if (sv && ((sv.status && sv.status !== 'playing') || sv.t0 || sv.startedAt || sv.started)) setRes(null);
+      } catch (e) { /* unreadable save: leave it */ }
+    };
+    const iv = setInterval(check, 700);
+    return () => clearInterval(iv);
+  }, [res, gameKey]);
 
   if (!res) return null;
   const meta = DAILY_GAMES.find((g) => g.key === gameKey);
@@ -120,6 +153,9 @@ export default function OtherDeviceBar({ gameKey }) {
         <button type="button" className="ol" onClick={() => setMeme(true)}>Share with a meme</button>
       </span>
       {msg ? <span className="msg">{msg}</span> : null}
+      <button type="button" className="x" onClick={close} aria-label="Hide this">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
       <MemeShare open={meme} onClose={() => setMeme(false)} ctx={ctx} getLink={link} />
     </div>
   );

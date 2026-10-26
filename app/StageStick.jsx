@@ -38,7 +38,7 @@ import GameGlyph from './GameGlyph';
 import { MemePeek } from './MemeShare';
 import FinishGroupLine from './groups/FinishGroupLine';
 import { useStageChrome } from './GauntletScreens';
-import { dailyDept } from '@/lib/daily-games';
+import { dailyDept, DAILY_GAME_MAP } from '@/lib/daily-games';
 import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref } from '@/lib/circuits';
 
 // RUNS, NOT THEIR PARTS (owner, 2026-10-26: "don't send users to individual
@@ -429,6 +429,8 @@ export default function StageStick({
   const chalSub = chal ? (chal.msg || [chal.lead, tickets || 'No spoilers'].filter(Boolean).join(' · ')) : '';
 
   const s = sheet || {};
+  // NO COUNTING ON ANY SUDOKU (owner, 2026-10-26): the time lands whole.
+  const noCount = !!(s.gameKey && DAILY_GAME_MAP[s.gameKey] && DAILY_GAME_MAP[s.gameKey].cat === 'Sudoku');
   const pos = (v) => `${Math.round(Math.max(0, Math.min(1, v)) * 100)}%`;
 
   // Return to board / Reveal answer, and Replay. Both leave this page for the
@@ -451,7 +453,7 @@ export default function StageStick({
         <div className="sst-v">{verdict}</div>
         {metric ? (
           <div className="sst-m">
-            <b>{live ? <Count fig={metric} run={step >= 1} /> : metric.text}</b>
+            <b>{live && !noCount ? <Count fig={metric} run={step >= 1} /> : metric.text}</b>
             {metric.label ? <i>{metric.label}</i> : null}
           </div>
         ) : null}
