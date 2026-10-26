@@ -207,6 +207,8 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
    outlined tiles, ink pills for the subheader's controls, and the right panel
    one outlined box with its tabs along the top. */
 .lc-cap{--dk:2px solid var(--stg-ink);}
+/* Under the desktop tone (app/SudokuPastel.jsx) the frame's tiles and panel sit on the raised step, not the tinted surface. */
+html[data-stage-tone] .lc-cap,html[data-stage-tone] .lc-nav,html[data-stage-tone] .lc-side{--stg-surf:var(--stg-raise);}
 .lc-cap .sty-cap{border-bottom:0;padding:14px 28px 8px;}
 .lc-cap .sty-id b{font-size:20px;line-height:1.3;}
 .lc-cap .sty-date{font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--stg-ink);}

@@ -1192,3 +1192,231 @@ html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;
 
 /* The Mind Loft mark goes all ink where its blue would vanish (lib/use-brand-fit.js, owner 2026-10-25). */
 [data-brand-mono]{--stg-brand:currentColor !important;--stg-acc-ink:currentColor !important;}
+
+/* THE PUZZLE PAGES ON A DESKTOP WEAR THE CATEGORY'S COLOURS TOO (owner,
+   2026-10-26: "make the colors on the individual puzzle pages match the
+   category colors"). The phone's pastel register, copied token for token from
+   the three blocks above that carry it, keyed on html[data-stage-tone] instead
+   of data-stage-pastel. A second attribute because data-stage-pastel also
+   switches the phone's own header in (app/StageChrome.jsx), and the desktop
+   keeps its frame. Set by app/SudokuPastel.jsx on a desktop. Keep the three
+   blocks above and these in step. */
+@media (min-width: 900px) {
+  html[data-stage-tone]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
+  html[data-stage-tone]:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: var(--sp-g, #c9d2fd) !important; }
+  html[data-stage-tone]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
+    --stg-brand: var(--stg-brand-lt, var(--stg-acc-ink-lt, var(--stg-acc-lt, #7dd3fc))) !important;
+    /* END GAME PIECES (owner, 2026-10-24). The boards keep their own light
+       surfaces in every look, so the player's pieces take fixed colours that
+       read against them and against the engine's dark pieces in all three. */
+    --stg-you: var(--sp-g, #f1d289);
+    --stg-you-lt: #ffffff;
+    --stg-you-dk: #111111;
+    --stg-ground: var(--sp-g, #c9d2fd) !important;
+    --stg-raise: color-mix(in srgb, var(--sp-g, #c9d2fd) 60%, #ffffff) !important;
+    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 80%, #ffffff) !important;
+    --stg-surf: rgba(8, 34, 46, 0.07) !important;
+    --stg-surf2: rgba(8, 34, 46, 0.13) !important;
+    --stg-line: rgba(8, 34, 46, 0.2) !important;
+    --stg-line2: rgba(8, 34, 46, 0.34) !important;
+    --stg-line3: #08222e !important;
+    --stg-cell: color-mix(in srgb, var(--sp-g, #c9d2fd) 88%, #08222e) !important;
+    --stg-cell-line: rgba(8, 34, 46, 0.3) !important;
+    --stg-cell-dot: rgba(8, 34, 46, 0.6) !important;
+    --stg-cell-dot2: rgba(8, 34, 46, 0.9) !important;
+    --stg-cell-given: #08222e !important;
+    /* Region tiles softened like the ground: 60% hue into white (owner, 2026-10-24). */
+    --stg-tint-mix: 60% !important;
+    --stg-region-base: #ffffff;
+    --stg-dk: 100% !important;
+    --stg-ink: #08222e !important;
+    --stg-ink2: #1d3a4a !important;
+    --stg-mute: #23404f !important;
+    --stg-mute2: #2c4757 !important;
+    --stg-dim: #2c4757 !important;
+    --stg-onramp: var(--sp-g, #c9d2fd) !important;
+    --stg-chip: rgba(8, 34, 46, 0.1) !important;
+    --stg-b1: rgba(8, 34, 46, 0.06) !important;
+    --stg-b2: rgba(8, 34, 46, 0.1) !important;
+    --stg-b3: rgba(8, 34, 46, 0.15) !important;
+    --stg-b4: rgba(8, 34, 46, 0.22) !important;
+    --stg-good: #065f46 !important;
+    --stg-up: #065f46 !important;
+    --stg-cool: #1e3a8a !important;
+    --stg-warn: #7c4a03 !important;
+    --stg-bad: #9f1239 !important;
+    --stg-dn: #9f1239 !important;
+    --stg-fieldink: 8, 34, 46 !important;
+    --stg-acc: #08222e !important;
+    --stg-acc-ink: #08222e !important;
+    --stg-acc-tint: rgba(8, 34, 46, 0.14) !important;
+    --stg-sel: #08222e;
+    --stg-feed-soft: color-mix(in srgb, var(--sp-g, #c9d2fd) 55%, #ffffff);
+    background: var(--sp-g, #c9d2fd) !important;
+    color: #08222e;
+  }
+  /* WHITE AND COLOR, the fourth look (owner, 2026-10-25): a white page, with the
+     category's soft colour on the squares, chips and panels instead. */
+  html[data-stage-tone='tint']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
+  html[data-stage-tone='tint']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #ffffff !important; }
+  html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
+    --stg-ground: #ffffff !important;
+    --stg-raise: #ffffff !important;
+    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #ffffff) !important;
+    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 55%, #ffffff) !important;
+    --stg-surf2: var(--sp-g, #c9d2fd) !important;
+    --stg-cell: var(--sp-g, #c9d2fd) !important;
+    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 70%, #ffffff) !important;
+    --stg-feed-soft: var(--sp-g, #c9d2fd);
+    background: #ffffff !important;
+  }
+  /* Region boards (Quilt, Cages) wear the full pastels here. Periwinkle is
+     the ground, so a periwinkle region takes amber instead, and the region
+     ink (cage sums, labels) is the one dark ink rather than the pastel. */
+  html[data-stage-tone]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="#a5b4fc var(--stg-dk"] { --hue: #fbbf24 !important; }
+  html[data-stage-tone]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--hue-ink"] { --hue-ink: #08222e !important; }
+  /* Pencil notes (owner report, 2026-10-24: hard to see on the periwinkle):
+     every sudoku's note is a class ending in -note; here they take the one dark
+     ink at full weight, whatever colour the client wrote for the dark stage.
+     Placed before the selected-square rule so a note in that square still
+     turns pastel. Applies to the plain look too. */
+  /* A key chip's piece dot is ringed in the stage ink, so a dark piece still reads on the dark look's chips. */
+  html[data-stage-tone]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.ck-chip, .tn-chip, .yo-chip, .fr-leg) i { box-shadow: 0 0 0 2px var(--stg-ink) !important; }
+  html[data-stage-tone]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [class$="-note"] { color: var(--stg-ink) !important; font-weight: 700 !important; }
+  /* The selected square is inked solid, so whatever it holds turns pastel. */
+  html[data-stage-tone]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
+  html[data-stage-tone]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: var(--sp-g, #c9d2fd) !important; }
+  /* PLAIN, the stage's other look: a white page and black type, nothing coloured.
+     Region boards lose their pastels and keep only their heavy walls. */
+  html[data-stage-tone='plain']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
+  html[data-stage-tone='plain']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #ffffff !important; }
+  html[data-stage-tone='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
+    --stg-brand: var(--stg-brand-lt, var(--stg-acc-ink-lt, var(--stg-acc-lt, #7dd3fc))) !important;
+    --stg-ground: #ffffff !important;
+    --stg-raise: #ffffff !important;
+    --stg-panel: #f4f4f4 !important;
+    --stg-surf: rgba(17, 17, 17, 0.04) !important;
+    --stg-surf2: rgba(17, 17, 17, 0.09) !important;
+    --stg-line: rgba(17, 17, 17, 0.18) !important;
+    --stg-line2: rgba(17, 17, 17, 0.32) !important;
+    --stg-line3: #111111 !important;
+    --stg-cell: #ffffff !important;
+    --stg-cell-line: rgba(17, 17, 17, 0.28) !important;
+    --stg-cell-dot: rgba(17, 17, 17, 0.6) !important;
+    --stg-cell-dot2: rgba(17, 17, 17, 0.9) !important;
+    --stg-cell-given: #111111 !important;
+    --stg-tint-mix: 0% !important;
+    --stg-region-base: var(--stg-cell) !important;
+    --stg-ink: #111111 !important;
+    --stg-ink2: #333333 !important;
+    --stg-mute: #444444 !important;
+    --stg-mute2: #555555 !important;
+    --stg-dim: #555555 !important;
+    --stg-onramp: #ffffff !important;
+    --stg-chip: rgba(17, 17, 17, 0.08) !important;
+    --stg-b1: rgba(17, 17, 17, 0.05) !important;
+    --stg-b2: rgba(17, 17, 17, 0.09) !important;
+    --stg-b3: rgba(17, 17, 17, 0.14) !important;
+    --stg-b4: rgba(17, 17, 17, 0.2) !important;
+    --stg-acc: #111111 !important;
+    --stg-acc-ink: #111111 !important;
+    --stg-acc-tint: rgba(17, 17, 17, 0.12) !important;
+    --stg-sel: #111111;
+    --stg-fieldink: 17, 17, 17 !important;
+    --stg-feed-soft: #cfd3d8;
+    background: #ffffff !important;
+    color: #111111;
+  }
+  html[data-stage-tone='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
+  html[data-stage-tone='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: #ffffff !important; }
+  html[data-stage-tone='plain']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--hue-ink"] { --hue-ink: #111111 !important; }
+  /* BLACK AND WHITE, the third look (owner, 2026-10-24): a near-black page and
+     light type, like the site's dark mode but with no colour at all. Region
+     boards keep only their walls, as on Plain. */
+  html[data-stage-tone^='dark']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)),
+  html[data-stage-tone^='dark']:not(#sot-x):not(:has(.stf, .stf-flood, .loft-back)) body { background: #0b0f1a !important; }
+  html[data-stage-tone^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
+    --stg-brand: var(--stg-brand-dk, var(--stg-acc-dk, #7dd3fc)) !important;
+    --stg-ground: #0b0f1a !important;
+    --stg-raise: #121826 !important;
+    --stg-panel: #0f1420 !important;
+    --stg-surf: rgba(233, 237, 244, 0.05) !important;
+    --stg-surf2: rgba(233, 237, 244, 0.1) !important;
+    --stg-line: rgba(233, 237, 244, 0.16) !important;
+    --stg-line2: rgba(233, 237, 244, 0.3) !important;
+    --stg-line3: #e9edf4 !important;
+    --stg-cell: #161b27 !important;
+    --stg-cell-line: rgba(233, 237, 244, 0.28) !important;
+    --stg-cell-dot: rgba(233, 237, 244, 0.6) !important;
+    --stg-cell-dot2: rgba(233, 237, 244, 0.9) !important;
+    --stg-cell-given: #ffffff !important;
+    --stg-tint-mix: 0% !important;
+    --stg-region-base: var(--stg-cell) !important;
+    --stg-ink: #e9edf4 !important;
+    --stg-ink2: #c4ccd8 !important;
+    --stg-mute: #aab5c7 !important;
+    --stg-mute2: #9aa5b8 !important;
+    --stg-dim: #9aa5b8 !important;
+    --stg-onramp: #0b0f1a !important;
+    --stg-chip: rgba(233, 237, 244, 0.1) !important;
+    --stg-b1: rgba(233, 237, 244, 0.06) !important;
+    --stg-b2: rgba(233, 237, 244, 0.1) !important;
+    --stg-b3: rgba(233, 237, 244, 0.15) !important;
+    --stg-b4: rgba(233, 237, 244, 0.22) !important;
+    --stg-acc: #e9edf4 !important;
+    --stg-acc-ink: #e9edf4 !important;
+    --stg-acc-tint: rgba(233, 237, 244, 0.14) !important;
+    --stg-sel: #e9edf4;
+    --stg-fieldink: 233, 237, 244 !important;
+    --stg-feed-soft: #2c3444;
+    background: #0b0f1a !important;
+    color: #e9edf4;
+  }
+  html[data-stage-tone^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"],
+  html[data-stage-tone^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--stg-sel"] * { color: #0b0f1a !important; }
+  html[data-stage-tone^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page [style*="--hue-ink"] { --hue-ink: #e9edf4 !important; }
+  /* BLACK WITH COLOR (owner, 2026-10-25): the dark look, with the category's
+     colour deepened onto the squares, chips and panels so light type reads. */
+  html[data-stage-tone='darktint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page {
+    --stg-panel: color-mix(in srgb, var(--sp-g, #c9d2fd) 22%, #0b0f1a) !important;
+    --stg-surf: color-mix(in srgb, var(--sp-g, #c9d2fd) 26%, #0b0f1a) !important;
+    --stg-surf2: color-mix(in srgb, var(--sp-g, #c9d2fd) 36%, #0b0f1a) !important;
+    --stg-cell: color-mix(in srgb, var(--sp-g, #c9d2fd) 30%, #0b0f1a) !important;
+    --stg-chip: color-mix(in srgb, var(--sp-g, #c9d2fd) 30%, #0b0f1a) !important;
+    --stg-feed-soft: color-mix(in srgb, var(--sp-g, #c9d2fd) 45%, #0b0f1a);
+  }
+}
+@media (min-width: 900px) {
+  html[data-stage-tone='color'] .stage-page,
+  html[data-stage-tone='tint'] .stage-page {
+    --stg-slot: #ffffff;
+    --stg-slot-line: color-mix(in srgb, var(--sp-g, #c9d2fd) 40%, #08222e);
+    --stg-slot-line2: color-mix(in srgb, var(--sp-g, #c9d2fd) 18%, #08222e);
+    --stg-slot-fill: color-mix(in srgb, var(--sp-g, #c9d2fd) 70%, #ffffff);
+    --stg-slot-band: color-mix(in srgb, var(--sp-g, #c9d2fd) 40%, transparent);
+    --stg-slot-on-ink: #ffffff;
+  }
+  html[data-stage-tone='darktint'] .stage-page {
+    --stg-slot-line: color-mix(in srgb, var(--sp-g, #c9d2fd) 75%, #0b0f1a);
+    --stg-slot-line2: var(--sp-g, #c9d2fd);
+    --stg-slot-fill: color-mix(in srgb, var(--sp-g, #c9d2fd) 24%, #0b0f1a);
+    --stg-slot-band: color-mix(in srgb, var(--sp-g, #c9d2fd) 16%, transparent);
+    --stg-slot-on-ink: #0b0f1a;
+  }
+}
+@media (min-width: 900px) {
+  html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) {
+    --stg-cell: #ffffff !important;
+    --stg-cell-line: color-mix(in srgb, #3949ab 28%, #ffffff) !important;
+    --stg-line3: #3949ab !important;
+    --stg-acc: #3949ab !important;
+    --stg-acc-ink: #3949ab !important;
+    --stg-acc-tint: rgba(57, 73, 171, 0.14) !important;
+    --stg-sel: #3949ab;
+  }
+  html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-given, .sd-given, .gi-given) { color: #2b3590 !important; }
+  html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-user, .sd-user, .gi-user) { color: #4f5bd5 !important; }
+  html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page :is(.sx-pad, .sd-pad, .gi-pad) { color: #3949ab !important; }
+  html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"],
+  html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"] * { color: #ffffff !important; }
+}

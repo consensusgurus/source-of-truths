@@ -61,5 +61,17 @@ export default function useSudokuPastel(active, ground) {
     if (!on || typeof document === 'undefined') return;
     document.documentElement.setAttribute('data-stage-pastel', look);
   }, [on, look]);
+  // THE DESKTOP TONE (owner, 2026-10-26): on a desktop the same colours are
+  // set through html[data-stage-tone] (see the end of app/globals.css), which
+  // remaps only the stage tokens and leaves the desktop's own frame alone.
+  const desk = !!active && !phone;
+  useEffect(() => {
+    if (!desk || typeof document === 'undefined') return undefined;
+    const r = document.documentElement;
+    r.style.setProperty('--sp-g', softGround(ground || '#a5b4fc'));
+    r.setAttribute('data-stage-tone', look);
+    forceStageTheme('light');
+    return () => { r.removeAttribute('data-stage-tone'); r.style.removeProperty('--sp-g'); forceStageTheme(null); };
+  }, [desk, ground, look]);
   return { on, look, flip: () => setLook(nextLook(look)) };
 }

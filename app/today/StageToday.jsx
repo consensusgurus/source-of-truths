@@ -599,7 +599,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
   // inheriting the section's (owner, 2026-08-31). In a category row every card
   // is that category anyway, so passing nothing keeps the row's colour.
   return (
-    <a className={`sty-g ${state}${res ? ' res' : ''}${grpOn ? ' grp' : grpWash ? ' gw' : ''}${canPin ? ' pin' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
+    <a className={`sty-g ${state}${hue ? ' mx' : ''}${res ? ' res' : ''}${grpOn ? ' grp' : grpWash ? ' gw' : ''}${canPin ? ' pin' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
       data-fk={fk || g.key}
       onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, categoryColor(g.cat), { desk: true })}
       style={{
@@ -711,7 +711,7 @@ function LedgerRow({ g, hue, ink, tq, day, dots, res, done, inprog, me, favLoade
   const on = !!(favorites && favorites.includes(g.key));
   const rec = me ? [me.best ? 'Best ' + mmss(me.best) : '', me.streak ? me.streak + '-day streak' : ''].filter(Boolean).join(' · ') : '';
   return (
-    <a className={`sty-lr ${state}${gw ? ' gw' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
+    <a className={`sty-lr ${state}${hue ? ' mx' : ''}${gw ? ' gw' : ''}`} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`}
       onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, categoryColor(g.cat), { desk: true })}
       data-fk={fk || g.key} style={hue ? { '--cc': hue, '--cci': ink || hue, '--cfull': categoryColor(g.cat) } : { '--cfull': categoryColor(g.cat) }}>
       <span className="ic"><Glyph k={g.key} size={18} /></span>
@@ -3461,9 +3461,9 @@ export default function StageToday() {
       </div>
     );
   };
-  const runStrip = (cat) => {
+  const runStrip = (cat, list) => {
     if (!mid) return null;
-    const runs = deckRuns(cat);
+    const runs = list || deckRuns(cat);
     if (!runs.length) return null;
     return (
       <>
@@ -3492,7 +3492,6 @@ export default function StageToday() {
         <div className="sty-cathead">
           <div className="sty-cht"><h2>{catLabel(cat)}</h2><span className="sty-csub">{s ? s.what + ' \u00b7 ' : ''}{n} of {games.length} Played</span></div>
           <b>{n}<i>/{games.length}</i></b>
-          {runsIn() ? null : circPills(cat, false)}
           {/* SORT AND VIEW STAY ON ONE LINE TOGETHER (owner, 2026-10-25). */}
           {findBox}
           <span className="sty-svw">{sortCtl(false)}{viewCtl(cat)}</span>
@@ -3996,6 +3995,10 @@ export default function StageToday() {
               {pinned.length ? viewCtl(MINE_ID) : null}
               {mineTot ? cav(MINE_ID) : null}
             </div>
+            {/* STARRED RUNS AS THE RUN BLOCK (owner, 2026-10-26), the same cards
+                every other pane leads with, not pills. */}
+            {pinnedCircs.length ? runStrip(null, pinnedCircs) : null}
+            {pinnedCircs.length && pinned.length && mid ? <div className="sty-plab">Puzzles &middot; {pinned.length}</div> : null}
             {grpBanners()}
             {grpLists('mineg')}
             {who && grpGames.some((x) => mineGrp.has(x.code)) && (pinned.length || pinnedCircs.length)
@@ -4029,7 +4032,7 @@ export default function StageToday() {
             {/* STARRED CIRCUITS ARE STRIPS HERE (owner, 2026-10-13): the drawn art
                 lives on the Circuits pane only, and a reader who starred a run
                 already knows what it is, so no description either. */}
-            {pinnedCircs.length && !mineCut ? (
+            {pinnedCircs.length && !mineCut && !mid ? (
               <div className={'sty-cpills sty-minep sty-minec' + (isOpen(MINE_ID) ? '' : ' shut')}>
                 {pinnedCircs.map((c) => {
                   const full = c.games.length > 0 && c.n === c.games.length;
@@ -4063,7 +4066,6 @@ export default function StageToday() {
             <div className="sty-cht"><h2>All Puzzles</h2><span className="sty-csub">{alphaDone} of {alpha.length} Played</span></div>
             <b>{alphaDone}<i>/{alpha.length}</i></b>
             {grpChips()}
-            {runsIn() ? null : circPills(null, false)}
             {findBox}
             <span className="sty-svw">{sortCtl(false)}{viewCtl(ALL_ID)}</span>
           </div>
@@ -6711,8 +6713,14 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      who leads today; then Play and today's plays along the foot. One size
      everywhere. */
   .sty-ix .sty-g{display:flex;flex-direction:column;gap:3px;min-height:104px;box-sizing:border-box;padding:9px 10px 10px 12px;}
-  /* THE GLYPH IN ITS CATEGORY'S COLOUR stands in for the dot (owner, 2026-10-26). */
+  /* DOTS WHERE CATEGORIES MIX, GLYPHS IN A CATEGORY (owner, 2026-10-26): All
+     Puzzles, My Puzzles and the skill panes (.mx, a tile handed its own hue)
+     carry a colour dot; a category pane carries the glyph in its colour. */
   .sty-g .sty-gi,.sty-g.grp .sty-gi,.sty-g.grp.done .sty-gi,.sty-g.done.res .sty-gi{color:var(--cci, var(--cc));opacity:1;}
+  .sty-g.mx .sty-gn > .sty-gi{display:none;}
+  .sty-g.mx .sty-gn::before,.sty-lr.mx .ic::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;box-sizing:border-box;
+    border:2px solid var(--stg-ink);background:var(--cfull, var(--cc));}
+  .sty-lr.mx .ic > *{display:none;}
   .sty-g .sty-gn{font-size:16px;}
   .sty-g .sty-gld{display:block;font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-ink2, var(--stg-ink));opacity:.85;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -6748,6 +6756,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ixsw{margin:4px 0;}
   .sty-ixsw button:first-child{order:2;}
   .sty-ixb.sty-ixtop{display:flex;flex-direction:column;align-items:flex-start;gap:0;padding:9px 13px;}
+  /* ALL PUZZLES AND MY PUZZLES SIDE BY SIDE (owner, 2026-10-26). */
+  .sty-ix > .sty-ixn:not(.re){flex-flow:row wrap;}
+  .sty-ix > .sty-ixn:not(.re) > *{flex:1 1 100%;min-width:0;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixtop{flex:1 1 0;padding:9px 11px;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixtop > span{font-size:14px;white-space:nowrap;}
   .sty-ixb.sty-ixtop > span{font-size:15px;font-weight:800;line-height:1.3;}
   .sty-ixb.sty-ixtop .sty-ixct{font-size:12px;font-weight:600;}
   /* Everything Else: a label, then one outlined box of plain rows. */
@@ -6769,7 +6782,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix > .sty-cat > .sty-cathead{align-items:center;}
   /* The section labels, and the runs atop the puzzles, three across. */
   .sty-plab{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-ink);margin:4px 0 8px;}
-  .sty-rt3s{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px;}
+  .sty-rt3s{display:grid;grid-template-columns:repeat(auto-fill,minmax(max(236px,calc((100% - 30px) / 4)),1fr));gap:10px;margin-bottom:16px;}
   .sty-rt3{display:flex;align-items:center;gap:10px;min-width:0;background:var(--stg-surf);border:var(--dk);border-radius:12px;padding:9px 10px 9px 13px;}
   .sty-rt3 .tx{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
   .sty-rt3 b{font-size:15px;font-weight:800;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--stg-ink);}
