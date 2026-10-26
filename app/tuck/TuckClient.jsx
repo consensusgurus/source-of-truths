@@ -1217,7 +1217,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
               outcome={won ? 'won' : 'lost'}
               challengeMetric={g.submitted ? finalScore : null}
               title={endSolved(won)}
-              detail={`${finalScore} \u00b7 ${BENCH} benchmark \u00b7 ${elapsed}`}
+              detail={`${finalScore} point${finalScore === 1 ? '' : 's'} \u00b7 benchmark ${BENCH} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready

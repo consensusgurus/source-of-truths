@@ -54,7 +54,8 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T as THEME } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved } from '@/lib/end-verdict';
+import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: THEME.surface,
@@ -423,6 +424,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
   const myStats = deriveStats(stats, pickPuzzle(puzzles, null).num);
   const errors = g.errors;
   const finalScore = won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0;
+  const resultText = scoreText('carve', finalScore, 10);
   const nbrsOf = useCallback((i) => {
     const r = Math.floor(i / N), c = i % N, out = [];
     if (r > 0) out.push(i - N);
@@ -711,7 +713,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
         <>The moment a block hits {TARGET} it is checked: a true block <b>locks in</b>, a wrong one <b style={{ color: `var(--stg-bad, ${COLORS.rust})` }}>shakes</b>, clears back to its anchor and counts as an <b>error</b>.</>,
       ]}
       knack="Start with the anchors hemmed in by edges or big numbers. A block with only one way to grow settles its neighbours for you."
-      footer={<>No errors is a perfect 10, and every error costs a point. One free <b>hint</b>, on your first ever play, paints a correct square. Ties break on fewest errors, then fastest time. Sundays go bigger: a 7&times;7 board in nine blocks.</>}
+      footer={<>Carve every block to solve it. Fewer errors, then a faster time, rank higher on the board. One free <b>hint</b>, on your first ever play, paints a correct square. Sundays go bigger: a 7&times;7 board in nine blocks.</>}
     />
   );
 
@@ -745,7 +747,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: `${lockedCount}/${R}`, k: 'blocks' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: errors, k: 'errors' },
             { v: `${lockedCount}/${R}`, k: 'blocks' },
             { v: elapsed, k: 'time' },
@@ -966,7 +968,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
 
           {playing && (
             <div className="cv-foot">
-              <span className="cv-foot-n">A block is checked the moment it reaches {TARGET}. A wrong one clears back to its anchor and costs a point.</span>
+              <span className="cv-foot-n">A block is checked the moment it reaches {TARGET}. A wrong one clears back to its anchor and counts as an error.</span>
               {hintOk && !g.hintUsed && (
                 <button type="button" className="cv-tool hint" onClick={useHint} title="Paint one correct square (one hint, first play only)">
                   <Lightbulb size={15} aria-hidden="true" /> Hint
@@ -980,7 +982,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
           <div className="cv-under">
             <span className="cv-under-n">
               <span className="cv-d">{NUM_WORD[R] || R} connected blocks, each grown from its ringed anchor. One carving works.</span>
-              <span className="cv-m">A wrong block at {TARGET} clears to its anchor and costs a point.</span>
+              <span className="cv-m">A wrong block at {TARGET} clears to its anchor and counts as an error.</span>
             </span>
             {started && (
               <button type="button" className={`cv-reveal${armReveal ? ' armed' : ''}`} onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
@@ -1032,7 +1034,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={endSolved(won)}
-              detail={`${finalScore} \u00b7 ${errors} errors \u00b7 ${`${lockedCount}/${R}`} blocks \u00b7 ${elapsed}`}
+              detail={`${resultText} \u00b7 ${errors} errors \u00b7 ${`${lockedCount}/${R}`} blocks \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1141,10 +1143,10 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
           modal
           self="carve"
           won={won}
-          headline={won ? <>Board carved!</> : <>You scored {Math.round(((won ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? <>Board carved!</> : <>{GOOD_EFFORT}</>}
           subline={<>{won
-            ? <>{finalScore}/10 &middot; {errors === 0 ? 'clean cuts, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; the finished carving is shown above</>}</>}
+            ? <>Solved &middot; {errors === 0 ? 'clean cuts, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Unfinished &middot; the finished carving is shown above</>}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
@@ -1184,7 +1186,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
           Carve is a free daily number puzzle from Mind Loft. Each day gives you a fresh grid of digits and a handful of colored anchor squares. Slice the whole board into connected blocks, one grown from each anchor, so that every block adds up to the same target. There is always exactly one valid carving, the anchors pin it down.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          It plays like a knife-and-ledger cousin of sudoku: part arithmetic, part territory. Watch the running totals, spot the squares only one block can reach, and let each locked block squeeze the next. A wrong cut shakes, clears and costs an error, carve the whole board clean for a perfect score.
+          It plays like a knife-and-ledger cousin of sudoku: part arithmetic, part territory. Watch the running totals, spot the squares only one block can reach, and let each locked block squeeze the next. A wrong cut shakes, clears and costs an error, so carve the whole board clean.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new board drops every day at midnight Eastern, and Sundays go bigger with a 7&times;7 grid in nine blocks. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/suds" style={{ color: INK, fontWeight: 800 }}>Suds</a>, our daily sudoku, <a href="/tally" style={{ color: INK, fontWeight: 800 }}>Tally</a>, our number ledger, and <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword.

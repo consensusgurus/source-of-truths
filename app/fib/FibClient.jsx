@@ -59,7 +59,8 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved } from '@/lib/end-verdict';
+import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -353,6 +354,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
   // reads it, and only once the game is over.
   const endScore = won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0;
   const finalScore = won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0;
+  const resultText = scoreText('fib', finalScore, 10);
 
   const liveFilled = useMemo(() => vals.reduce((a, v) => a + (v ? 1 : 0), 0), [vals]);
   // reveal writes SOL into vals; readouts show the stamped pre-reveal count
@@ -713,7 +715,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
         <>Fill the grid, then <b>tap the sign you are accusing</b> and hit <b>Submit</b>.</>,
       ]}
       knack="The sign markings are free and only report what you could read off the board yourself. Finish with exactly one striped sign and that is your liar."
-      footer="One grid and one liar fit the board, so the answer is provable, never a guess. A clean solve scores a perfect 10, every two wrong submissions cost a point. Ties break on fewest errors, then fastest time. Sundays are a bigger 6×6 Edition."
+      footer="One grid and one liar fit the board, so the answer is provable, never a guess. Fewer wrong submissions, then a faster time, rank higher on the board. Sundays are a bigger 6×6 Edition."
     />
   );
 
@@ -860,7 +862,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
             { v: errors, k: 'errors' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: endScore, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: errors, k: 'errors' },
             { v: elapsed, k: 'time' },
           ]}
@@ -1128,7 +1130,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={endSolved(won)}
-              detail={`${endScore} \u00b7 ${errors} errors \u00b7 ${elapsed}`}
+              detail={`${resultText} \u00b7 ${errors} errors \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1230,10 +1232,10 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
           modal
           self="fib"
           won={won}
-          headline={won ? <>Liar caught!</> : <>You scored {Math.round(((won ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? <>Liar caught!</> : <>{GOOD_EFFORT}</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; the answer is shown above</>}
+            ? <>Solved &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Unfinished &middot; the answer is shown above</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

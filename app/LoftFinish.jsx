@@ -68,7 +68,7 @@ import React, { useEffect, useState } from 'react';
 import useDailyRoster from './useDailyRoster';
 import { Brain } from 'lucide-react';
 import { circuitKeysFor, circuitHref, circuitName, readRunParam, runSummaryHref, isMarquee } from '@/lib/circuits';
-import { DAILY_GAMES, DAILY_GAME_MAP, attemptsMode, isArcade, wantsFastRetry, dailyAttemptRule } from '@/lib/daily-games';
+import { DAILY_GAMES, DAILY_GAME_MAP, attemptsMode, isArcade, wantsFastRetry, dailyAttemptRule, scoreView, scoreText } from '@/lib/daily-games';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 import { savedIdentity } from '@/lib/saved-identity';
@@ -513,7 +513,7 @@ export default function LoftFinish({
     <div key={i} className={`loft-lbr${i === 0 ? ' first' : ''}${isMe(r) ? ' me' : ''} cols`}>
       <span className="r">{i + 1}</span>
       <span className="n">{r.username || 'Anonymous'}</span>
-      <span className="s">{r.score}</span>
+      <span className="s">{scoreView(selfKey) && r.score != null && typeof r.score !== 'string' ? scoreText(selfKey, r.score, r.total) : r.score}</span>
       {/* END GAME prints TRIES here (owner, 2026-08-12): its registry label is
           'Tries' and its board ranks on how many runs the solve took, not on
           the per-run error count, which is 0 on every clean solve and printed
@@ -728,7 +728,7 @@ export default function LoftFinish({
                 {/* Played is stated, not implied. A score alone reads as noise
                     next to a row that just says Play. */}
                 <span className="v">{a.done
-                  ? <>{a.score != null ? <b>{a.score}</b> : null}<em>Played</em></>
+                  ? <>{a.score != null ? <b>{scoreView(selfKey) && typeof a.score === 'number' ? scoreText(selfKey, a.score, null) : a.score}</b> : null}<em>Played</em></>
                   : 'Play'}</span>
               </a>
             ))}

@@ -535,7 +535,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
   function shareText() {
     const row = earned.map((x) => (x === 2 ? '\u{1F7E9}' : x === 1 ? '\u{1F7E8}' : '⬜')).join('');
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
-    return `Crib #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${score}/${TOTAL} · ${elapsed}${g.hintUsed ? ' · \u{1F4A1}' : ''}${streakBit}\n${row}\n${shareUrl()}`;
+    return `Crib #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${score} point${score === 1 ? '' : 's'} · ${elapsed}${g.hintUsed ? ' · \u{1F4A1}' : ''}${streakBit}\n${row}\n${shareUrl()}`;
   }
   function copyShare() {
     const text = playing
@@ -571,7 +571,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
         <><b>Give up</b> ends the deal now: hands already thrown keep their points, the rest score 0.</>,
       ]}
       knack="Throw fives and pairs into your own crib and keep them out of your opponent's. The best four cards to keep are often not the best throw: a card that helps the crib is worth something only when the crib is yours."
-      footer={`Score out of ${TOTAL}. Nothing counts against you, and ties break on the clock. Sundays deal seven hands.`}
+      footer={`Every hand scores points. Nothing counts against you, and ties break on the clock. Sundays deal seven hands.`}
     />
   );
 
@@ -711,7 +711,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
               {!reveal && hintOk && !g.hintUsed ? <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb} Hint</button> : null}
               <button type="button" className={`pst-tb crb-q2${armGive ? ' on' : ''}`} onClick={tapGiveUp}><Flag size={16} aria-hidden="true" /> {armGive ? 'Tap again to give up' : 'Give up'}</button>
             </div>
-            <div className="crb-peg" role="img" aria-label={`${score} of ${TOTAL} points after ${g.picks.length} of ${NH} hands`}>
+            <div className="crb-peg" role="img" aria-label={`${score} point${score === 1 ? '' : 's'} after ${g.picks.length} of ${NH} hands`}>
               {HANDS.map((h, i) => {
                 const e = earned[i];
                 return <i key={i} className={`${e === 2 ? 'on' : e === 1 ? 'half' : ''}${i === current ? ' cur' : ''}`} />;
@@ -724,7 +724,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
             eyebrow={`Hand ${Math.min(current + 1, NH)} of ${NH} · ${owner} crib`}
             top={top} bottom={bottom} topKey={`${current}-${g.shown === null ? 'a' : 'r'}`}
             frac={NH ? g.picks.length / NH : null}
-            foot={`${g.picks.length ? `After hand ${g.picks.length}` : 'No hands thrown yet'} · ${score} of ${TOTAL}`} />
+            foot={`${g.picks.length ? `After hand ${g.picks.length}` : 'No hands thrown yet'} · ${score} point${score === 1 ? '' : 's'}`} />
         );
       })()}
       {!STAGE && <Grain />}
@@ -744,9 +744,9 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
           figures={playing ? [
             { v: elapsed, k: 'time' },
             { v: `${Math.min(g.picks.length + (answering ? 1 : 0), NH)}/${NH}`, k: 'hand' },
-            { v: `${score}/${TOTAL}`, k: 'points' },
+            { v: score, k: score === 1 ? 'point' : 'points' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: score, k: score === 1 ? 'point' : 'points' },
             { v: `${bests}/${NH}`, k: 'best throws' },
             { v: elapsed, k: 'time' },
           ]}
@@ -841,7 +841,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
                     ? <span style={K}>{playing ? <>Hand <b style={{ color: ACC_INK }}>{Math.min(current + 1, NH)}</b> of {NH}</> : <>{NH} hands</>}</span>
                     : <span style={K}>Front peg <b style={{ color: ACC_INK }}>{front}</b> · Back peg <b style={{ color: INK }}>{back}</b></span>}
                 </div>
-                <div role="img" aria-label={`Peg board: ${score} of ${TOTAL} points after ${g.picks.length} of ${NH} hands`}
+                <div role="img" aria-label={`Peg board: ${score} point${score === 1 ? '' : 's'} after ${g.picks.length} of ${NH} hands`}
                   style={{ background: STAGE ? 'var(--stg-surf)' : T.white, border: STAGE ? undefined : '1px solid rgba(28,30,36,0.14)', borderRadius: narrow ? 14 : 18, padding: narrow ? '10px 8px 8px' : '16px 16px 14px', display: 'flex', alignItems: 'flex-start', gap: narrow ? 5 : 8 }}>
                   <div style={{ width: narrow ? 18 : 44, flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                     <div style={{ height: narrow ? 28 : 34, display: 'flex', alignItems: 'center' }}>{hole(0)}</div>
@@ -1043,7 +1043,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
                   </tbody>
                 </table>
                 <div style={{ fontSize: endHold.held ? 15 : 13, fontWeight: 800, color: INK, marginTop: 12 }}>
-                  {`${score} of ${TOTAL}. ${bests} best throw${bests === 1 ? '' : 's'} out of ${NH}.`}
+                  {`${score} point${score === 1 ? '' : 's'}. ${bests} best throw${bests === 1 ? '' : 's'} out of ${NH}.`}
                 </div>
               </div>
             );
@@ -1148,7 +1148,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
               title={endGrade(score, TOTAL, 'Perfect!')}
-              detail={`${score}/${TOTAL} · ${bests} best throws · ${elapsed}`}
+              detail={`${score} point${score === 1 ? '' : 's'} · ${bests} best throws · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready

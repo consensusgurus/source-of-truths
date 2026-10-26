@@ -54,7 +54,8 @@ import { T } from '@/lib/theme';
 import { ruleFn, ruleLabel, usesFacts } from '@/lib/venn-rules';
 import { domainNote } from '@/lib/venn-facts';
 import { meRequest } from '@/app/quizMeClient';
-import { endGrade } from '@/lib/end-verdict';
+import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted,
@@ -232,6 +233,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
   const placedCount = g.place.filter(Boolean).length;
   const liveScore = Math.max(1, TOTAL - 3 * g.rejected);
   const score = g.status === 'done' ? liveScore : 0;
+  const resultText = scoreText('venn', score, TOTAL);
   const won = g.status === 'done' && g.rejected === 0;
   // A reveal keeps the player's own filing on the board until the end card's
   // Reveal tile is pressed; the finish beat would otherwise show the answer.
@@ -420,7 +422,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           {showHidesNote && <div>A word hides something only when the smaller word sits inside a longer one. SHIP hides a hip, but LUNG does not hide a lung.</div>}
         </>
       ) : null}
-      footer={`12 points, 3 off for each sheet that comes back wrong. Vowels are A, E, I, O, U, never Y.${PUZZLE.sunday ? ' Sunday withholds two of the counts.' : ''}`}
+      footer={`Fill the sheet so every count matches to solve it. Fewer sheets sent back wrong, then a faster time, rank higher. Vowels are A, E, I, O, U, never Y.${PUZZLE.sunday ? ' Sunday withholds two of the counts.' : ''}`}
     />
   );
 
@@ -448,11 +450,10 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           onHelp={() => setShowHelp(true)}
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
-            { v: liveScore, k: 'score' },
             { v: g.rejected, k: 'rejected' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: g.rejected, k: 'rejected' },
             { v: elapsed, k: 'time' },
           ]}
@@ -630,7 +631,6 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
               <span className="vn-note">{factNote}</span>
               <span className="vn-cap">
                 Filed <b>{placedCount}</b> of {N} &middot; counts <b style={countsMatch ? { color: `var(--stg-good, ${COLORS.green})` } : undefined}>{countsMatch ? 'match' : 'off'}</b>
-                {!LOFT && <> &middot; on the board <b style={{ color: g.rejected ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-good, ${COLORS.green})` }}>{liveScore}</b>/{TOTAL}</>}
               </span>
             </div>
 
@@ -734,7 +734,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           <div className="vn-foot">
             <button type="button" className="vn-ob vn-help" onClick={() => setShowHelp(true)}><HelpCircle size={15} /> How to play</button>
             <button type="button" className="vn-ob" onClick={clearAll} disabled={placedCount === 0}><Eraser size={14} /> Clear all</button>
-            <span className="vn-fnote">12 points, 3 off for each<br />sheet that comes back wrong.</span>
+            <span className="vn-fnote">Fewer sheets sent back<br />wrong rank higher.</span>
             {started && <button type="button" className="vn-ob" onClick={reveal}>Reveal (ends the day)</button>}
             <button type="button" className="vn-file" onClick={submit} disabled={!canSubmit}>
               <Circle size={14} /> File the sheet{!canSubmit && <> &middot; {placedCount < N ? 'tray first' : 'counts first'}</>}
@@ -749,7 +749,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '10px 0 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{resultText}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done' ? (won ? <>Filed clean on the first sheet.</> : <>Filed after {g.rejected} rejected sheet{g.rejected === 1 ? '' : 's'}.</>) : <>The sheet beat you. The correct filing is shown above.</>}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
@@ -777,8 +777,8 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
               challengeMetric={g.status === 'done' ? g.rejected : null}
-              title={endGrade(score, TOTAL)}
-              detail={`${`${score}/${TOTAL}`} \u00b7 ${g.rejected} rejected \u00b7 ${elapsed}`}
+              title={endSolved(g.status === 'done')}
+              detail={`${resultText} \u00b7 ${g.rejected} rejected \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -865,7 +865,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="venn" won={won} completed={g.status === 'done'}
           headline={g.status === 'done' ? <>Every word filed</> : <>The sheet came back</>}
-          subline={<>Venn #{PUZZLE.num} &middot; {score}/{TOTAL} &middot; {g.rejected} rejected sheet{g.rejected === 1 ? '' : 's'} &middot; {elapsed}</>}
+          subline={<>Venn #{PUZZLE.num} &middot; {resultText} &middot; {g.rejected} rejected sheet{g.rejected === 1 ? '' : 's'} &middot; {elapsed}</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'} onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />

@@ -812,7 +812,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
             { v: `${pairsDone}/${PAIRS}`, k: 'pairs' },
             { v: String(open.length), k: 'open pairs' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: score, k: score === 1 ? 'point' : 'points' },
             { v: `${pairsDone}/${PAIRS}`, k: 'pairs' },
             { v: elapsed, k: 'time' },
           ]}
@@ -903,7 +903,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
             )}
             {!playing && (
               <div style={{ textAlign: 'center', padding: '12px 4px 0', fontSize: 14, fontWeight: 800, color: S_INK }}>
-                {cleared ? `Cleared in ${elapsed}.` : `Stopped with ${pairsDone} of ${PAIRS} pairs cleared. ${score} of ${TOTAL}.`}
+                {cleared ? `Cleared in ${elapsed}.` : `Stopped with ${pairsDone} of ${PAIRS} pairs cleared. ${score} point${score === 1 ? '' : 's'}.`}
               </div>
             )}
           </div>
@@ -936,7 +936,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
             title={won ? `Cleared in ${elapsed}` : `${pairsDone} of ${PAIRS} pairs`}
-            detail={`${score}/${TOTAL} · ${pairsDone}/${PAIRS} pairs · ${elapsed}`}
+            detail={`${score} point${score === 1 ? '' : 's'} · ${pairsDone}/${PAIRS} pairs · ${elapsed}`}
             iq={iq}
             board={dailyBoard}
             gameRank={allTime && allTime.ready

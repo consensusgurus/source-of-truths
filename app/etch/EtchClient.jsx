@@ -58,7 +58,8 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved } from '@/lib/end-verdict';
+import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -396,6 +397,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
   // reads it, and only once the game is over.
   const endScore = won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0;
   const finalScore = won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0;
+  const resultText = scoreText('etch', finalScore, 10);
 
   useEffect(() => { gRef.current = g; }, [g]);
   useEffect(() => {
@@ -1088,7 +1090,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
       ]}
       knack="One solution per board, reachable by pure logic, so you never have to guess. Marking what you have ruled out is free, filling it wrong is not."
       note={<>Filling a square that isn&rsquo;t part of the picture is <b>ringed with a &#10007;</b> and counts as an error. Clear it to carry on.</>}
-      footer="A clean solve with no errors is a perfect 10, every two errors cost a point. Ties break on fewest errors, then fastest time. Monday to Friday is 10×10, Saturday steps up to 15×15, and Sunday is a 20×20 Edition."
+      footer="Finish the picture to solve it. Fewer errors, then a faster time, rank higher on the board. Monday to Friday is 10×10, Saturday steps up to 15×15, and Sunday is a 20×20 Edition."
     />
   );
 
@@ -1121,7 +1123,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
             { v: errors, k: 'errors' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: endScore, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: errors, k: 'errors' },
             { v: elapsed, k: 'time' },
           ]}
@@ -1409,7 +1411,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? errors : null}
               title={endSolved(won)}
-              detail={`${endScore} \u00b7 ${errors} errors \u00b7 ${elapsed}`}
+              detail={`${resultText} \u00b7 ${errors} errors \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1511,10 +1513,10 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           modal
           self="etch"
           won={won}
-          headline={won ? <>Picture solved!</> : <>You scored {Math.round(((won ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? <>Picture solved!</> : <>{GOOD_EFFORT}</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; the picture is shown above</>}
+            ? <>Solved &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Unfinished &middot; the picture is shown above</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

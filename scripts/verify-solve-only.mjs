@@ -42,7 +42,9 @@ eq('solve with no clock', gameStats(row(10, 10, 0, null), null, 'cages'), 'Solve
 eq('crux unchanged', gameStats(row(14, 16, 3, 200), 'Guesses', 'crux'), '14/16 · 3 guesses · 3:20');
 eq('no key unchanged', gameStats(row(10, 10, 0, 251), null), '10/10 · 4:11');
 eq('short suds', gameStatsShort(row(10, 10, 0, 251), 'suds'), '4:11');
-eq('fig parker', scoreFig(row(8, 10), 'park'), '8/10');
+eq('fig parker', scoreFig(row(8, 10), 'park'), 'Solved');
+eq('fig crux keeps its real count', scoreFig(row(14, 16), 'crux'), '14/16');
+eq('fig garble reads points', scoreFig(row(7, 10), 'garble'), '7 points');
 eq('fig suds miss', scoreFig(row(0, 10), 'suds'), 'Unfinished');
 
 if (fails.length) { console.log(`verify-solve-only: ${fails.length} failure(s)`); for (const f of fails) console.log('  ' + f); process.exit(1); }

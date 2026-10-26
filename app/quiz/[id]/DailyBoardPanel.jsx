@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
-import { DAILY_GAME_MAP, dailyAttemptRule } from '@/lib/daily-games';
+import { DAILY_GAME_MAP, dailyAttemptRule, scoreText } from '@/lib/daily-games';
 import { fetchDailyMe, dailyMeQuery, invalidateDailyMe } from '../../dailyMeClient';
 // EVERYONE / <group> over This Puzzle's board (owner, 2026-09-17).
 import useGroupStanding from '../../groups/groupStanding';
@@ -532,7 +532,7 @@ export default function DailyBoardPanel({
                           <div className={`dbp-g dbp-grow${mine ? ' me' : ''}`} key={r.userKey || i}>
                             <span className="rk">#{r.rank}</span>
                             <span className="nm">{r.username || '—'}{mine ? <span className="you"> (you)</span> : null}</span>
-                            <span className="num">{scoreUnit ? r.score : <>{r.score}/{r.total}</>}</span>
+                            <span className="num">{scoreUnit ? r.score : scoreText(self, r.score, r.total)}</span>
                             <span className="num">{fmtTime(r.timeElapsed)}</span>
                             {/* END GAME prints TRIES here (owner, 2026-08-12).
                                 Its registry label is 'Tries' and its rows carry

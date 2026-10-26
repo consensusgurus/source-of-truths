@@ -51,7 +51,8 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import DailyRules from '../DailyRules';
 import { T as THEME } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endGrade } from '@/lib/end-verdict';
+import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: THEME.surface, paper: THEME.paper, ink: THEME.ink, ember: THEME.accent, rust: THEME.danger, faded: THEME.muted,
@@ -244,6 +245,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
   const filled = g.cells.filter((c) => c >= 0).length;
   const liveScore = Math.max(1, TOTAL - 3 * g.rejected - 2 * g.hints);
   const score = g.status === 'done' ? liveScore : 0;
+  const resultText = scoreText('stands', score, TOTAL);
   const won = g.status === 'done' && g.rejected === 0 && g.hints === 0;
 
   // A reveal keeps the player's own sheet on the board until the end card's
@@ -506,7 +508,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
         <>Fill every cell, then <b>hand in the sheet</b>.</>,
       ]}
       knack="points are the lever. A team on 7 from four matches can only be two wins and a draw, so one line of the table often fixes three results at once. Start with whichever team the clues pin hardest."
-      footer="12 points, 3 off for each sheet handed in wrong, 2 for a nudge. Exactly one set of results fits the clues."
+      footer="Rebuild every result to solve it. Fewer sheets handed in wrong and fewer nudges, then a faster time, rank higher. Exactly one set of results fits the clues."
     />
   );
 
@@ -533,11 +535,10 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
           onHelp={() => setShowHelp(true)}
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
-            { v: liveScore, k: 'score' },
             { v: g.rejected, k: 'rejected' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: g.rejected, k: 'rejected' },
             { v: elapsed, k: 'time' },
           ]}
@@ -722,7 +723,6 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
                   <span className="sd-cap" style={{ color: `var(--stg-acc-ink, ${COLORS.accentDeep})` }}>Results grid &middot; read across</span>
                   <span className="sd-cap">
                     Filled <b>{filled}</b> of {PAIRS.length}
-                    {(!LOFT || EMBED) && <> &middot; score <b style={{ color: (g.rejected || g.hints) ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-good, ${COLORS.green})` }}>{liveScore}</b>/{TOTAL}</>}
                     {(!LOFT || EMBED) && g.rejected > 0 && <> &middot; rejected <b>{g.rejected}</b></>}
                   </span>
                 </div>
@@ -807,10 +807,10 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
                 ? <>Hand in the sheet</>
                 : <><span className="dt">Hand in the sheet &middot; {PAIRS.length - filled} to fill</span><span className="ph">Hand in &middot; {PAIRS.length - filled} to fill</span></>}
             </button>
-            <button type="button" className="sd-btn nudge" onClick={hint} aria-label="Nudge, fills one match, costs 2 points"><Lightbulb size={16} /> Nudge (&minus;2)</button>
+            <button type="button" className="sd-btn nudge" onClick={hint} aria-label="Nudge, fills one match, counts against you on the board"><Lightbulb size={16} /> Nudge</button>
             <button type="button" className="sd-btn clr" onClick={clearAll} disabled={filled === 0} aria-label="Clear the grid"><Eraser size={16} /><span className="lbl">Clear</span></button>
             {started && <button type="button" className="sd-btn" onClick={reveal}>Reveal (ends the day)</button>}
-            <span className="sd-fnote">12 points, 3 off per wrong sheet, 2 per nudge.<br />Reveal ends the day at any time.</span>
+            <span className="sd-fnote">Wrong sheets and nudges count against you.<br />Reveal ends the day at any time.</span>
           </div>
         )}
 
@@ -821,7 +821,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '10px 0 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: `var(--stg-surf, ${THEME.white})`, border: '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{resultText}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done' ? (won ? <>Rebuilt clean, first sheet, no nudges.</> : <>Rebuilt after {g.rejected} rejected sheet{g.rejected === 1 ? '' : 's'}{g.hints ? ` and ${g.hints} nudge${g.hints === 1 ? '' : 's'}` : ''}.</>) : <>The record beat you.{hideSol ? '' : ' The true results are shown above.'}</>}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
@@ -849,8 +849,8 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
               challengeMetric={score}
-              title={endGrade(score, TOTAL)}
-              detail={`${`${score}/${TOTAL}`} \u00b7 ${g.rejected} rejected \u00b7 ${elapsed}`}
+              title={endSolved(g.status === 'done')}
+              detail={`${resultText} \u00b7 ${g.rejected} rejected \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -937,7 +937,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="stands" won={g.status === 'done'}
           headline={g.status === 'done' ? <>The season is reconstructed</> : <>The record kept its secret</>}
-          subline={<>Stands #{PUZZLE.num} &middot; {score}/{TOTAL} &middot; {g.rejected} rejected &middot; {elapsed}</>}
+          subline={<>Stands #{PUZZLE.num} &middot; {resultText} &middot; {g.rejected} rejected &middot; {elapsed}</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'} onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />

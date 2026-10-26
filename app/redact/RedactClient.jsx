@@ -65,6 +65,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
 import { FREEBIES, norm, tokenize, titleTargets, guessMatches } from './words';
 import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   ink: T.ink,
@@ -776,7 +777,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/redact?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('redact', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
@@ -873,7 +874,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
               <li>The category chip and difficulty are shown from the start.</li>
               <li>Tap a block to see its letter count.</li>
               <li>Fewer guesses beats faster time on the daily board.</li>
-              <li>Give up and the article is revealed, scored by what you uncovered.</li>
+              <li>Give up and the article is revealed; how much you uncovered still counts.</li>
             </ul>
             <button className="rd-btn primary" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>
           </div>

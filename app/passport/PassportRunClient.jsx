@@ -43,6 +43,7 @@ import { notifyShareCredit } from '../ShareCreditPop';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { isDarkLook } from '@/lib/stage-look';
+import { scoreText } from '@/lib/daily-games';
 import { KEY, legsFor, legOrderFor, legOrderBefore, legPoints, TIERS, tierIndex, HENLEY_EDITION, shareLinesRun } from '@/lib/passport';
 import { PP_CSS } from './PassportClient';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
@@ -381,7 +382,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   }
   function copyShare() {
     const text = playing
-      ? `Passport #${PUZZLE.num}: ${ORD[0] === 2 ? "the day's Ping, nine size calls, then Flank and Span" : SIZES_FIRST ? "nine size calls, then the day's Ping, Flank and Span" : "the day's Span, Flank and Ping, then nine size calls"}. One score out of 50, one passport.\n${shareUrl()}`
+      ? `Passport #${PUZZLE.num}: ${ORD[0] === 2 ? "the day's Ping, nine size calls, then Flank and Span" : SIZES_FIRST ? "nine size calls, then the day's Ping, Flank and Span" : "the day's Span, Flank and Ping, then nine size calls"}. One points total, one passport.\n${shareUrl()}`
       : shareLinesRun(PUZZLE.num, total, sc, elapsed, shareUrl(true));
     if (notifyShareCredit(text)) return;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
@@ -392,9 +393,9 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     ? <><b>Sizes.</b> Nine pairs of countries close in size, drawn from anywhere in the world. Is the second bigger or smaller, by area or by population (each call says which)? {LEGS[3].max >= 18 ? 'About 2 points a call' : 'About a point and a half a call'}, {LEGS[3].max} in all.</>
     : <><b>Sizes.</b> Nine pairs, three for each game: a country from that game against another country close to it in size, often one you met today. Is the second bigger or smaller, by area or by population (each call says which)? {LEGS[3].max >= 18 ? 'About 2 points a call' : 'About a point and a half a call'}, {LEGS[3].max} in all.</>;
   const gameSteps = [
-    <><b>Span.</b> The day&rsquo;s Span: join two countries by the shortest chain of land borders. Its score out of {LEGS[0].max} is your stamp.</>,
-    <><b>Flank.</b> The day&rsquo;s Flank: name every land neighbor of one country. The share you name, out of {LEGS[1].max}.</>,
-    <><b>Ping.</b> The day&rsquo;s Ping: find a secret city by how far each guess lands from it. Its score out of {LEGS[2].max}.</>,
+    <><b>Span.</b> The day&rsquo;s Span: join two countries by the shortest chain of land borders. Its score is your stamp, worth up to {LEGS[0].max} points.</>,
+    <><b>Flank.</b> The day&rsquo;s Flank: name every land neighbor of one country. The share you name is worth up to {LEGS[1].max} points.</>,
+    <><b>Ping.</b> The day&rsquo;s Ping: find a secret city by how far each guess lands from it. Its score is worth up to {LEGS[2].max} points.</>,
   ];
   const rulesSteps = [
     ...ORD.map((i) => (i === 3 ? sizesStep : gameSteps[i])),
@@ -402,7 +403,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   ];
   const rulesBody = (
     <DailyRules accent="#be123c" accentSoft="#fdecef"
-      lead={ORD[3] !== 3 && !SIZES_FIRST ? `${ORD.map((i) => (i === 3 ? 'a size round' : LEGS[i].n)).join(', ').replace(/^./, (c) => c.toUpperCase()).replace(/, ([^,]*)$/, ' and $1')}: one score out of 50. Your total decides which passport you travel home on.` : SIZES_FIRST ? 'A size round and three geography games, one score out of 50. Your total decides which passport you travel home on.' : 'Three geography games and one size round, one score out of 50. Your total decides which passport you travel home on.'}
+      lead={ORD[3] !== 3 && !SIZES_FIRST ? `${ORD.map((i) => (i === 3 ? 'a size round' : LEGS[i].n)).join(', ').replace(/^./, (c) => c.toUpperCase()).replace(/, ([^,]*)$/, ' and $1')}: one points total. Your total decides which passport you travel home on.` : SIZES_FIRST ? 'A size round and three geography games, one points total. Your total decides which passport you travel home on.' : 'Three geography games and one size round, one points total. Your total decides which passport you travel home on.'}
       steps={rulesSteps}
       knack={ORD[3] !== 3 && !SIZES_FIRST ? 'The size pairs are close, so trust what you know about each country over a guess at scale.' : SIZES_FIRST ? 'The size pairs are close, so trust what you know about each country over a guess at scale. Then Ping, Flank and Span, in that order.' : "The sizes leg leans on the countries you just met: the road you walked in Span, Flank's country and its ring, and the country Ping's city is in. The pairs are close, so trust what you know over a guess at scale."}
       footer={`Areas are from the CIA World Factbook, checked against a second table so no call turns on a disputed figure. The passports and their visa-free counts are the ${HENLEY_EDITION}.`} />
@@ -523,7 +524,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           lineFor={(s) => SHORT[s.key]}
           bandNote={(s) => (banked[s.key] ? 'Done' : `${LEGS[s.li].max} pts`)}
           headline={<>Four Legs.<br />One Passport.</>}
-          rule="One score out of 50 decides the passport you travel home on."
+          rule="One points total decides the passport you travel home on."
           lineup={null}
           unit="legs"
           startLabel={`Board Now: Start With ${stageSecs[0] ? stageSecs[0].name : 'Ping'}`}
@@ -538,7 +539,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       {hydrated && started && !betweenOn ? (
         <RunPlayFrame sections={stageSecs} idx={Math.min(3, g.round)} title="Passport"
           sub={`Leg ${Math.min(4, g.round + 1)} of 4 · ${LEGS[LI].n}`}
-          foot={<>{total} of 50 so far · {elapsed} · <button type="button" className="pr-rules" onClick={() => setShowHelp(true)}>Rules</button></>}>
+          foot={<>{total} point{total === 1 ? '' : 's'} so far · {elapsed} · <button type="button" className="pr-rules" onClick={() => setShowHelp(true)}>Rules</button></>}>
           <div className="pr-play">
             {sec && showGame && Game ? (
               <div className="pr-host">
@@ -581,12 +582,12 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
             doneCount={g.round + 1}
             lastBody={(
               <>
-                <b>{key === 'passport' ? `Sizes: ${right} of ${NC} called right` : (r.unknown ? `${l.n}: result on file` : `${l.n}: ${r.score} of ${r.total}`)}</b>
-                <span>{wasBanked ? 'Played earlier today, so that first result stands. ' : ''}Worth {sc[i]} of {l.max} here.</span>
-                <span>Run total: {total} of 50</span>
+                <b>{key === 'passport' ? `Sizes: ${right} of ${NC} called right` : (r.unknown ? `${l.n}: result on file` : `${l.n}: ${scoreText(key, r.score, r.total)}`)}</b>
+                <span>{wasBanked ? 'Played earlier today, so that first result stands. ' : ''}Worth {sc[i]} point{sc[i] === 1 ? '' : 's'} here.</span>
+                <span>Run total: {total} point{total === 1 ? '' : 's'}</span>
               </>
             )}
-            lastFig={{ v: sc[i], unit: `of ${l.max}` }}
+            lastFig={{ v: sc[i], unit: sc[i] === 1 ? 'point' : 'points' }}
             nextLine={nx.key === 'passport' && OPEN_SIZES ? 'Nine close pairs of countries, bigger or smaller by area or by population.' : nl.line}
             dwellMs={BETWEEN_MS}
             held={held}
@@ -650,7 +651,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       <section className="pr-about" style={{ display: started ? 'none' : 'block' }}>
         <h2>About Passport</h2>
         <p>
-          {ORD[0] === 2 ? <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Ping, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Flank and Span, each game worth {LEGS[0].max}. One total out of 50.</> : SIZES_FIRST ? <>Passport is a free daily geography run from Mind Loft: nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Ping, Flank and Span played back to back, each worth {LEGS[0].max}. One total out of 50.</> : <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth {LEGS[0].max}, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on countries from those three games set against others close to them in size. One total out of 50.</>}
+          {ORD[0] === 2 ? <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Ping, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Flank and Span, each game worth {LEGS[0].max}. One points total.</> : SIZES_FIRST ? <>Passport is a free daily geography run from Mind Loft: nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Ping, Flank and Span played back to back, each worth {LEGS[0].max}. One points total.</> : <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth {LEGS[0].max}, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on countries from those three games set against others close to them in size. One points total.</>}
         </p>
         <p>
           Your total decides the passport you travel home on, from the Sierra Leonean passport up to the Japanese, ranked by the visa-free destinations each opens in the {HENLEY_EDITION}. Everyone plays the same boards, and the leaderboard ranks your total, then time. A new run boards every day at midnight Eastern.

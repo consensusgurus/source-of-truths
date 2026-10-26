@@ -82,6 +82,7 @@ import { notifyShareCredit } from '../ShareCreditPop';
 import { T } from '@/lib/theme';
 import { DIRS, DIR_KEYS, freshState, applyMove, anyLegal, isCleared, fillOf, canEnter } from '@/lib/chomp-engine';
 import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 // The arm-then-confirm controls do not move when armed, so the second tap of
 // an accidental double-tap used to land on the armed state long before the
@@ -697,10 +698,10 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
         <>A mascot whose turn has not come is <b>solid</b>. You cannot cross the tiger to reach the gamecock.</>,
         <>There is <b>exactly one route</b> that eats the whole cast, and it uses <b>every square on the board</b>. Nothing is spare, so there is no second way round.</>,
         <>Steering into a wall is <b>refused</b>, not punished, and costs no move. The run ends only when the head has nowhere legal left to go.</>,
-        <>Boxed in early? <b>Give up</b> ends the run and <b>records it as it stands</b>, and then <b>Try again</b> re-deals the same board. <b>Restart</b> does both in one press. Only your first result counts on the leaderboard, so a second run costs nothing.</>,
+        <>Boxed in early? <b>Give up</b> ends the run and <b>records it as it stands</b>, and then <b>Try again</b> re-deals the same board. <b>Restart</b> does both in one press. Every attempt counts, so another run can only help.</>,
       ]}
       knack="Work backwards from the last mascot. Because the route has to cover every square and there is only one that does, the question at each junction is never 'which way is quicker' but 'which way can still come back for that corner'. When a move looks obviously right, that is usually the one worth checking."
-      footer={`Scored on HOW FAR DOWN THE CAST YOU GOT, so you do not need all ${NPEL}: stall on the fifth and you still score five. Clearing the whole cast is a perfect 10. Ties break on fewest moves, then on time. Giving up or restarting records the run as it stood, and only your first result is leaderboard eligible. The cast SHRINKS through the week, from ten signposts on Monday to eight on Saturday, and the Sunday Edition moves up to an 8x8 board with the whole cast on it.`}
+      footer={`Eat all ${NPEL} to solve it. Every attempt counts here, and your fastest solve of the day takes the board, with fewer moves breaking a tie. Giving up or restarting records the run as it stood. The cast SHRINKS through the week, from ten signposts on Monday to eight on Saturday, and the Sunday Edition moves up to an 8x8 board with the whole cast on it.`}
     />
   );
 
@@ -938,7 +939,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
               <div className="ch-foot">
                 <div className="ch-foot-row">
                   <span className="ch-foot-hint">
-                    {playing ? 'Your trail stays put. Score is how far down the cast you get.' : 'Your result is recorded. Play it again as often as you like.'}
+                    {playing ? 'Your trail stays put. Eat the whole cast to solve it.' : 'Your result is recorded. Play it again as often as you like.'}
                   </span>
                   <span className="ch-ph-flex">{restartCtl()}</span>
                   {playing && (
@@ -988,7 +989,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
                 : null}
               day={dayStats}
               streak={isTodays ? myStats.cur : null}
-              missLabel="Tries"
+              missLabel="Moves"
               archive={puzzles
                 .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
                 .sort((x, y) => y.num - x.num)
@@ -998,7 +999,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/chomp?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('chomp', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
@@ -1053,9 +1054,9 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
             moves and the run is over.
           </p>
           <p style={{ margin: '0 0 9px' }}>
-            You do not need all of them. The score is how far down the cast you got, so a run that stalls still counts.
-            Everybody plays the same board on the same day, ties break on fewest moves, and giving up records the run as it
-            stood, so the first attempt is the one that counts. The bulldog always leads and the rest are dealt fresh each
+            Eat the whole cast and the board is solved. Everybody plays the same board on the same day, every attempt
+            counts, and your fastest solve takes the board, with fewer moves breaking a tie. Giving up records the run as
+            it stood. The bulldog always leads and the rest are dealt fresh each
             day. Each mascot is a signpost on the one route, so the cast gets shorter through the week, from ten on Monday
             to eight on Saturday; the Sunday Edition moves up to a bigger 8x8 board and puts the whole cast on it.
           </p>

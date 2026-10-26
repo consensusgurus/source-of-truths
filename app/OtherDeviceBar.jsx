@@ -11,7 +11,7 @@
 // row, and on an abandoned run. Read in an effect: the server has no device.
 import { useEffect, useState } from 'react';
 import MemeShare from './MemeShare';
-import { DAILY_GAMES, etTodayISO } from '@/lib/daily-games';
+import { DAILY_GAMES, etTodayISO, scoreText } from '@/lib/daily-games';
 import { categoryAccentInkLight } from '@/lib/category-ramp';
 import { encodeChallenge, challengeFig, ymdCompact } from '@/lib/challenge';
 import { newCid, withCid, recordSend } from '@/lib/challenge-client';
@@ -113,7 +113,7 @@ export default function OtherDeviceBar({ gameKey }) {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <span className="tx">
         <b>You finished today&rsquo;s {meta.name} on another device</b>
-        <i>{[t != null ? mmss(t) : (total ? `${score}/${total}` : ''), rank].filter(Boolean).join(' · ')}</i>
+        <i>{[t != null ? mmss(t) : (total ? scoreText(gameKey, score, total) : ''), rank].filter(Boolean).join(' · ')}</i>
       </span>
       <span className="bt">
         <button type="button" onClick={challenge}>Challenge a friend</button>

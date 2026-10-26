@@ -55,7 +55,8 @@ import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved } from '@/lib/end-verdict';
+import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -559,9 +560,9 @@ export default function GlyphClient({ puzzles, forceNum }) {
   function shareUrl() { return 'https://mindloftdaily.com/glyph'; }
   function shareText() {
     const bits = won
-      ? `${finalScore}/10 · ${checks === 0 ? 'no checks' : `${checks} check${checks === 1 ? '' : 's'}`} · ${elapsed}`
+      ? `Solved · ${checks === 0 ? 'no checks' : `${checks} check${checks === 1 ? '' : 's'}`} · ${elapsed}`
       : 'unsolved';
-    return `Glyph #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday Edition' : ''} — ${bits}\n${shareUrl()}`;
+    return `Glyph #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday Edition' : ''} · ${bits}\n${shareUrl()}`;
   }
   function copyShare() {
     const text = playing
@@ -744,7 +745,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
         <>Press <b>Check</b> if you want the board audited. You have <b>{MAX_CHECKS}</b>. Stuck for good? <b>Give up</b> ends the puzzle at 0.</>,
       ]}
       knack="The key is one letter to one number with nothing left over, so a letter you have already spent is as much information as a square you have filled."
-      footer={<>Each Check costs 3 points, so a clean solve is 10 out of 10.</>}
+      footer={<>Fewer checks rank higher, and a faster time breaks a tie.</>}
     />
   );
 
@@ -774,7 +775,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
             { v: checks, k: 'checks' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: won ? 'Solved' : 'Unfinished', k: 'result' },
             { v: checks, k: 'checks' },
             { v: elapsed, k: 'time' },
           ]}
@@ -937,7 +938,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
 
                   <div className="gls-act">
                     <span className="gls-note">Struck letters are already in the key.</span>
-                    {g.t0 && <button type="button" className="gls-clear" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it scores 0'}><Flag size={14} /> {armGive ? 'Tap again' : 'Give up'}</button>}
+                    {g.t0 && <button type="button" className="gls-clear" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it records as unfinished'}><Flag size={14} /> {armGive ? 'Tap again' : 'Give up'}</button>}
                     <button type="button" className="gls-clear" onClick={clearLetter} disabled={!sel || !assign[sel] || !!GIVEN[sel]}>Clear{sel ? ` ${sel}` : ''}</button>
                     <button type="button" className="gls-check" onClick={runCheck} disabled={checks >= MAX_CHECKS}>
                       {checksLeft > 0
@@ -945,7 +946,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
                         : 'No checks left'}
                     </button>
                   </div>
-                  <div className="gls-foot">No clues. Every letter appears once in the key. A check costs 3 points.</div>
+                  <div className="gls-foot">No clues. Every letter appears once in the key. Fewer checks rank higher.</div>
                 </>
               )}
 
@@ -990,7 +991,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
                     </span>
                     <button className="gl-btn" onClick={clearLetter} disabled={!sel || !assign[sel] || !!GIVEN[sel]} style={{ marginLeft: 'auto', padding: '7px 12px', fontSize: 12.5 }}><Eraser size={14} /> Clear</button>
                     <button className="gl-btn" onClick={runCheck} disabled={checks >= MAX_CHECKS} style={{ padding: '7px 12px', fontSize: 12.5 }}><SearchCheck size={14} /> Check ({MAX_CHECKS - checks})</button>
-                    {g.t0 && <button className="gl-btn" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it scores 0'} style={{ padding: '7px 12px', fontSize: 12.5 }}><Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}</button>}
+                    {g.t0 && <button className="gl-btn" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it records as unfinished'} style={{ padding: '7px 12px', fontSize: 12.5 }}><Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}</button>}
                   </div>
 
                   <div className="gl-key" style={{ marginTop: 10 }}>
@@ -1037,7 +1038,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={endSolved(won)}
-              detail={`${finalScore} \u00b7 ${checks} checks \u00b7 ${elapsed}`}
+              detail={`${scoreText('glyph', finalScore, 10)} \u00b7 ${checks} checks \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1056,7 +1057,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
                   sunday: !!p.sunday,
                   href: `/glyph?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('glyph', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
@@ -1139,10 +1140,10 @@ export default function GlyphClient({ puzzles, forceNum }) {
           modal
           self="glyph"
           won={won}
-          headline={won ? <>Code cracked!</> : <>You scored {Math.round(((won ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? <>Code cracked!</> : <>{GOOD_EFFORT}</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {checks === 0 ? 'no checks' : `${checks} check${checks === 1 ? '' : 's'}`} &middot; {elapsed}</>
-            : <>0/10 &middot; the key is shown above</>}
+            ? <>Solved &middot; {checks === 0 ? 'no checks' : `${checks} check${checks === 1 ? '' : 's'}`} &middot; {elapsed}</>
+            : <>Unfinished &middot; the key is shown above</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

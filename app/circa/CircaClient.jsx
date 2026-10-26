@@ -52,7 +52,8 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved } from '@/lib/end-verdict';
+import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -414,6 +415,7 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
   const prevPuzzle = puzzles.find((x) => x.num === PUZZLE.num - 1) || null;
   const myStats = deriveStats(stats, pickPuzzle(puzzles, null).num);
   const finalScore = won ? Math.max(1, (exact ? 11 : 10) - guesses.length) : 0;
+  const resultText = scoreText('circa', finalScore, 10);
 
   // known bounds from the misses so far (never derived from the win guess)
   const bounds = useMemo(() => {
@@ -597,7 +599,7 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
           figures={playing ? [
             { v: `${Math.min(guesses.length + (playing ? 1 : 0), MAX_GUESSES)}/${MAX_GUESSES}`, k: 'guess' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: `${Math.min(guesses.length, MAX_GUESSES)}/${MAX_GUESSES}`, k: 'guesses' },
           ]}
         />
@@ -813,7 +815,7 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? guesses.length : null}
               title={endSolved(won)}
-              detail={`${finalScore} \u00b7 ${`${Math.min(guesses.length, MAX_GUESSES)}/${MAX_GUESSES}`} guesses`}
+              detail={`${resultText} \u00b7 ${`${Math.min(guesses.length, MAX_GUESSES)}/${MAX_GUESSES}`} guesses`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -922,10 +924,10 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
           modal
           self="circa"
           won={won}
-          headline={<>You scored {Math.round((finalScore / 10) * 100)}%</>}
+          headline={<>{endSolved(won)}</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {exact ? 'dead on' : 'circa'} in {guesses.length} guess{guesses.length === 1 ? '' : 'es'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; out of guesses</>}
+            ? <>Solved &middot; {exact ? 'dead on' : 'circa'} in {guesses.length} guess{guesses.length === 1 ? '' : 'es'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Unfinished &middot; out of guesses</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
@@ -954,7 +956,7 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
               <p style={{ margin: '0 0 9px' }}>One historical moment a day. <b>Guess the year</b> it happened &mdash; any year from {YR_MIN} to today &mdash; in six tries. The moment stays covered until you press <b>Start</b>.</p>
               <p style={{ margin: '0 0 9px' }}>Every miss tells you two things: whether the real year is <b>earlier or later</b> than your guess, and how close you are &mdash; from <b style={{ color: 'var(--stg-ink2, #475569)' }}>cold</b> (200+ years off) through <b style={{ color: 'var(--stg-cool, #0a1730)' }}>cool</b> and <b style={{ color: 'var(--stg-warn, #92610b)' }}>warm</b> to <b style={{ color: 'var(--stg-bad, #9a3d0c)' }}>hot</b> (within 10).</p>
               <p style={{ margin: '0 0 9px' }}>Land <b>within {SNAP} years</b> and you&rsquo;ve placed it &mdash; that&rsquo;s circa, and it counts. Hitting the <b>exact year</b> is a dead-on finish. One free <b>hint</b>, on your first ever play, reveals the century.</p>
-              <p style={{ margin: 0 }}>A dead-on first guess scores a perfect 10; every extra guess costs a point (a circa finish costs one more). Ties break on fewest guesses, then fastest time. Sundays bring a trickier moment.</p>
+              <p style={{ margin: 0 }}>Land within three years to solve it. Fewer guesses rank higher on the board, a dead-on year counts as one guess fewer than a circa finish, and the faster time breaks ties. Sundays bring a trickier moment.</p>
             </div>
             <button className="cc-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: COLORS.ink, color: T.white }}>Play</button>
           </div>
@@ -970,7 +972,7 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
           Circa is a free daily history puzzle from Mind Loft, the daily year hunt. Each day serves up one famous moment from the last thousand years: a battle, a disaster, a discovery, a first. Your job is to pin down the exact year it happened, in six guesses or fewer.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Every guess plays hot and cold: an arrow tells you whether the true year is earlier or later, and a heat band tells you how close you are. Get within three years and the moment is placed, that&rsquo;s circa, and it counts as a win. Know it cold and name the exact year on your first try for a perfect score.
+          Every guess plays hot and cold: an arrow tells you whether the true year is earlier or later, and a heat band tells you how close you are. Get within three years and the moment is placed, that&rsquo;s circa, and it counts as a win. Know it cold and name the exact year on your first try for the cleanest solve.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new moment drops every day at midnight Eastern, with a trickier one on Sundays. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/dating" style={{ color: INK, fontWeight: 800 }}>Dating</a>, our history-ordering puzzle, <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword, and <a href="/span" style={{ color: INK, fontWeight: 800 }}>Span</a>, our geography puzzle.

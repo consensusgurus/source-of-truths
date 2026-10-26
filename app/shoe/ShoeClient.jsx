@@ -61,7 +61,8 @@ import useCategoryRank from '../useCategoryRank';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endGrade } from '@/lib/end-verdict';
+import { endGrade, endEfficiency } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 import {
   RANK_LABEL, SUIT_PIP, rankOf, suitOf, isRed, cardName, STAKE,
   replay, handTotal, scoreForPoints, fmtChips,
@@ -652,7 +653,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
       return '⬜';
     }).join('');
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
-    const head = `Shoe #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · bank ${fmtChips(chips)} · ${finalScore != null ? `${finalScore}/10` : ''} in ${elapsed}${streakBit}`;
+    const head = `Shoe #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · bank ${fmtChips(chips)} in ${elapsed}${streakBit}`;
     return `${head}\n${marks}\n${shareUrl()}`;
   }
   function shareUrl() {
@@ -691,11 +692,11 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
         <><b>Hit</b> takes a card, <b>Stand</b> keeps your total, <b>Double</b> doubles your 10-chip stake for exactly one more card (first two cards only). Blackjack, an ace plus a ten-card, pays 15.</>,
         <>The dealer stands on <b>every 17</b> and draws to 16. If you bust, the hand is over and the dealer draws nothing.</>,
         ...(PUZZLE.split ? [<><b>Split</b> a pair of the same rank into two hands of 10 chips each, played one after the other. One split a hand; you may double after splitting; split aces take one card each; a 21 after a split pays even money.</>] : [<>No splits on this shoe.</>]),
-        <><b>Give up</b> ends the day now and scores 0, whatever your bank.</>,
+        <><b>Give up</b> ends the day now and leaves it unfinished, whatever your bank.</>,
         <>The shoe is the skill: <b>{PUZZLE.shoe.length} cards{FULL_SHOE ? `, ${SHOE_WHAT}` : ` ${SHOE_WHAT}`}</b>. Count what you have seen, because it changes what is left.</>,
       ]}
       knack="The book line (basic strategy) banks par exactly. To beat it, deviate when the cards already on the table say so: stand a stiff 15 while the tens are still buried, hit it once they are gone."
-      footer={`Your score is 1 to 10: matching par scores 8 and the ace line scores 10. Busts then time break ties, and only your first attempt counts. Weekdays deal ten hands off a 72-card, two-deck shoe; Sundays deal fourteen hands off the entire 104-card double deck, so a perfect counter knows exactly what is left.`}
+      footer={`Play out every hand to post a result. Fewer busts and a faster time rank higher, and only your first attempt counts. Weekdays deal ten hands off a 72-card, two-deck shoe; Sundays deal fourteen hands off the entire 104-card double deck, so a perfect counter knows exactly what is left.`}
     />
   );
 
@@ -725,7 +726,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
               { v: elapsed, k: 'time' },
             ]
             : [
-              { v: finalScore, k: 'score' },
+              { v: scoreText('shoe', finalScore, 10) || 'Unfinished', k: 'result' },
               { v: fmtChips(chips), k: 'bank' },
               { v: fmtChips(PUZZLE.ace), k: 'ace' },
               { v: elapsed, k: 'time' },
@@ -1135,7 +1136,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           {/* the standing anchor line */}
           {started && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: narrow ? '0 6px' : 0, flexWrap: 'wrap', fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>
-              <span>Same shoe, same order for everybody. Ace {fmtChips(PUZZLE.ace)} scores 10.</span>
+              <span>Same shoe, same order for everybody. The ace line banks {fmtChips(PUZZLE.ace)}.</span>
             </div>
           )}
 
@@ -1192,7 +1193,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
             challengeMetric={chips}
-            title={endGrade(finalScore, 10, 'Perfect!')}
+            title={endEfficiency(finalScore > 0, finalScore)}
             detail={`bank ${fmtChips(chips)} · ${elapsed}`}
             iq={iq}
             board={dailyBoard}
@@ -1212,7 +1213,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
                 sunday: !!p.sunday,
                 href: `/shoe?p=${p.num}`,
                 done: !!(stats && stats.rec && stats.rec[p.num]),
-                score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('shoe', stats.rec[p.num].s, stats.rec[p.num].t) : null,
               }))}
             options={[
               { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your hands, no spoilers', kind: 'gold', onClick: copyShare },
@@ -1330,7 +1331,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           Shoe is a free daily blackjack puzzle from Mind Loft. Every player faces the same shoe: ten hands of blackjack dealt from one fixed 72-card shoe cut from two decks, the same cards in the same order for everyone, which turns blackjack from a gamble into a decision game a leaderboard can rank. Hit, stand, double, or split a pair on a 10-chip stake; the dealer stands on every 17; blackjack pays 3 to 2.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Par is what basic strategy, the book line, banks on the day&apos;s shoe playing blind, and matching it scores 8 out of 10. The ace line, a blind player&apos;s best day, scores 10. Beating the book means counting: the shoe holds 72 cards off two standard decks, so every card on the table changes what is left, and the player who notices stands where the book hits.
+          Par is what basic strategy, the book line, banks on the day&apos;s shoe playing blind. The ace line is a blind player&apos;s best day. Beating the book means counting: the shoe holds 72 cards off two standard decks, so every card on the table changes what is left, and the player who notices stands where the book hits.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new shoe is dealt every day at midnight Eastern, and Sundays step up to fourteen hands off the entire 104-card double deck, where a perfect counter knows exactly what remains. No app, no signup, play free in your browser, keep a streak, and race the leaderboard. For more cards, try <a href="/taire" style={{ color: INK, fontWeight: 800 }}>Taire</a>, the daily solitaire, or <a href="/hands" style={{ color: INK, fontWeight: 800 }}>Hands</a>, the daily poker solitaire.

@@ -61,7 +61,8 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import DailyRules from '../DailyRules';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endGrade } from '@/lib/end-verdict';
+import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -418,6 +419,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
   const unproven = g.status === 'done' ? (g.unproven || 0) : standing;
   const liveScore = Math.max(1, TOTAL - 2 * overPerfect - WRONG_COST * g.wrongPicks.length - UNPROVEN_COST * unproven);
   const score = g.status === 'done' ? liveScore : 0;
+  const resultText = scoreText('axiom', score, TOTAL);
   const won = g.status === 'done' && testsUsed <= PERFECT && g.wrongPicks.length === 0 && unproven === 0;
   const namesLeft = Math.max(0, MAX_WRONG - g.wrongPicks.length);
 
@@ -755,10 +757,10 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
           onHelp={() => setShowHelp(true)}
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
-            { v: liveScore, k: 'score' },
+            { v: testsUsed, k: 'tests' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -1039,7 +1041,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
                       onClick={() => { if (namesLeft <= 0) { say('No names left today.'); return; } setG((cur) => ({ ...cur, naming: !cur.naming })); }}
                       aria-pressed={g.naming}
                     >
-                      {g.naming ? 'Picking a rule…' : `Name it · ${liveScore} of ${TOTAL}`}{g.wrongPicks.length ? ` (${namesLeft} left)` : ''}
+                      {g.naming ? 'Picking a rule…' : 'Name it'}{g.wrongPicks.length ? ` (${namesLeft} left)` : ''}
                     </button>
                   </div>
                 </div>
@@ -1061,7 +1063,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '14px 0 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? `var(--stg-good, ${COLORS.green})` : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? `var(--stg-good, ${COLORS.green})` : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{resultText}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done'
                       ? (won ? <>Named at perfect on {testsUsed} test{testsUsed === 1 ? '' : 's'}.</> : <>Named it on {testsUsed} test{testsUsed === 1 ? '' : 's'}{g.wrongPicks.length ? ` and ${g.wrongPicks.length} wrong name${g.wrongPicks.length === 1 ? '' : 's'}` : ''}.</>)
@@ -1104,8 +1106,8 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
               name="Axiom"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={endGrade(score, TOTAL)}
-              detail={`${`${score}/${TOTAL}`} \u00b7 ${elapsed}`}
+              title={endSolved(g.status === 'done')}
+              detail={`${resultText} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1208,7 +1210,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
           won={won}
           completed={g.status === 'done'}
           headline={g.status === 'done' ? <>The rule is named</> : <>The board keeps its rule</>}
-          subline={<>Axiom #{PUZZLE.num} &middot; {score}/{TOTAL} &middot; {testsUsed} test{testsUsed === 1 ? '' : 's'} (perfect {PERFECT}) &middot; {elapsed}</>}
+          subline={<>Axiom #{PUZZLE.num} &middot; {resultText} &middot; {testsUsed} test{testsUsed === 1 ? '' : 's'} (perfect {PERFECT}) &middot; {elapsed}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

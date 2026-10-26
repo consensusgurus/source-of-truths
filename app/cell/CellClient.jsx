@@ -65,7 +65,8 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
-import { endEfficiency } from '@/lib/end-verdict';
+import { endEfficiency, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -717,7 +718,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
         <>Every move you make counts <b>one</b>, a whole run included. Cards that are safe go home <b>on their own, for free</b>: aces and twos always, any other card once both piles of the other color are one rank below it. There is <b>no undo</b>, only a <b>restart</b> that redeals the same board and zeroes your moves while the clock keeps running.</>,
       ]}
       knack={<><b>Perfect</b> is the proven minimum, so nothing beats it, while <b>par</b> is the number a clean line comes home in. Every deal is winnable, and finishing always beats walking away.</>}
-      footer={<>Every {step} moves over perfect costs a point, down to a floor of one. One free hint, on your first ever play, shows which cards can move at all. The week takes free cells away, four on Monday down to two by Friday, and the Sunday Edition deals the bigger deck: ace to ten, forty cards, seven columns.</>}
+      footer={<>Any solve counts. Your solve in the fewest moves takes the board, with the clock breaking a tie. One free hint, on your first ever play, shows which cards can move at all. The week takes free cells away, four on Monday down to two by Friday, and the Sunday Edition deals the bigger deck: ace to ten, forty cards, seven columns.</>}
     />
   );
 
@@ -853,7 +854,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
         frac={par ? Math.min(1, used / par) : 0}
         giveUp={{
           armed: !!armReveal,
-          armedLabel: 'Tap again: ends the deal and scores nothing',
+          armedLabel: 'Tap again: ends the deal unfinished',
           onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } },
         }}
       />
@@ -890,7 +891,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: perfect, k: 'perfect' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: won ? 'Solved' : 'Unfinished', k: 'result' },
             { v: used, k: 'moves' },
             { v: perfect, k: 'perfect' },
             { v: elapsed, k: 'time' },
@@ -1174,7 +1175,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
           const giveUp = started && (
             <button type="button" onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: narrow ? 13 : 12, color: armReveal ? 'var(--stg-bad, #b91c1c)' : INK, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5, minHeight: 44, padding: narrow ? '0 6px' : 0, textAlign: 'left' }}>
-              <Eye size={13} /> {armReveal ? 'Tap again: ends the deal and scores nothing' : 'Give up'}
+              <Eye size={13} /> {armReveal ? 'Tap again: ends the deal unfinished' : 'Give up'}
             </button>
           );
           const homeBtn = inHand && dests.includes(FND) && (
@@ -1321,7 +1322,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
                 : null}
               day={dayStats}
               streak={isTodays ? myStats.cur : null}
-              missLabel="Tries"
+              missLabel="Moves"
               archive={puzzles
                 .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
                 .sort((x, y) => y.num - x.num)
@@ -1331,7 +1332,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/cell?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('cell', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
@@ -1404,10 +1405,10 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !endHold.held && !LOFT && (
         <DailyEndCard modal self="cell" won={won}
-          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : <>Solved!</>) : <>You scored 0%</>}
+          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : <>Solved!</>) : <>{GOOD_EFFORT}</>}
           subline={won
             ? <>{used} moves &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; perfect was {perfect} moves</>}
+            : <>Unfinished &middot; perfect was {perfect} moves</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}

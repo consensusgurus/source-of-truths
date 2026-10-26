@@ -61,6 +61,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { WORLD } from '@/lib/admin-world-map';
 import { projectPoint } from '@/lib/geo-project';
 import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -910,11 +911,11 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
       steps={[
         <>Guess <b>any world city</b> to begin. There are <b>no clues</b> and <b>no guess limit</b>. Type a city name and pick it from the list.</>,
         <>Each guess pings back one number: the <b>distance in {unitWord(unit)}</b> to the secret city. No direction, just the distance, and it shrinks as you close in.</>,
-        <>Flip the <b>mi / km</b> switch above the guess box any time. It only changes what you read, never your score.</>,
-        <>Land on the city, or <b>Give up</b> and still be scored on how close your best guess got, ranked against everyone who played.</>,
+        <>Flip the <b>mi / km</b> switch above the guess box any time. It only changes what you read, never your result.</>,
+        <>Land on the city, or <b>Give up</b> and how close your best guess got still counts, ranked against everyone who played.</>,
       ]}
       knack="Distance alone triangulates fast, so spread your first few guesses across far apart continents rather than crowding one region."
-      footer={<>Your score is how few guesses it took. One free <b>hint</b>, on your first ever play, reveals the continent. Ties break on fewest guesses, then fastest time. Sundays hide a trickier city.</>}
+      footer={<>Fewer guesses rank higher, and a faster time breaks a tie. One free <b>hint</b>, on your first ever play, reveals the continent. Sundays hide a trickier city.</>}
     />
   );
 
@@ -947,7 +948,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           figures={playing ? [
             { v: guesses.length, k: 'guesses so far' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: scoreText('ping', finalScore, TOTAL), k: 'result' },
             { v: guesses.length, k: 'guesses' },
           ]}
         />
@@ -1144,9 +1145,9 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
               )}
               {guesses.length > 0 && (
                 <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
-                  title="Give up: reveals the city and scores you on your closest guess"
+                  title="Give up: reveals the city, and your closest guess still counts"
                   style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5, minHeight: 44 }}>
-                  <Eye size={13} /> {armReveal ? 'Tap again to give up (you keep your closeness score)' : 'Give up & reveal'}
+                  <Eye size={13} /> {armReveal ? 'Tap again to give up (your closest guess still counts)' : 'Give up & reveal'}
                 </button>
               )}
             </div>
@@ -1173,7 +1174,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
                 )}
                 {!won && closest && (
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: ACC_DEEP_INK, margin: '8px 0 0' }}>
-                    Your closest: {closest.name}, {fmtDist(closest.mi)} away &middot; scored {finalScore}/{TOTAL}.
+                    Your closest: {closest.name}, {fmtDist(closest.mi)} away &middot; Unfinished.
                   </div>
                 )}
               </div>
@@ -1232,7 +1233,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/ping?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('ping', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
@@ -1327,7 +1328,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           subline={won
             ? <>{TARGET.name} &middot; found in {guesses.length} guess{guesses.length === 1 ? '' : 'es'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : (closest
-              ? <>Closest: {closest.name}, {fmtDist(closest.mi)} &middot; scored {finalScore}/{TOTAL}</>
+              ? <>Closest: {closest.name}, {fmtDist(closest.mi)} &middot; Unfinished</>
               : <>You revealed {TARGET.name} without guessing</>)}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
@@ -1368,7 +1369,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           Ping is a free daily geography puzzle from Mind Loft, the daily city hunt. Each day there&rsquo;s one secret city somewhere in the world and not a single clue to start. Name any well-known city and Ping answers with one number: the great-circle distance to the target, in miles or kilometers, whichever you prefer.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          From there it&rsquo;s pure triangulation: watch the distance fall and close in on the answer. There&rsquo;s no limit on guesses, so everyone gets there in the end, the goal is to do it in as few guesses as you can. Give up any time and you&rsquo;re still scored on how close you got. One free hint, on your first ever play, reveals the continent.
+          From there it&rsquo;s pure triangulation: watch the distance fall and close in on the answer. There&rsquo;s no limit on guesses, so everyone gets there in the end, the goal is to do it in as few guesses as you can. Give up any time and how close you got still counts. One free hint, on your first ever play, reveals the continent.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new city drops every day at midnight Eastern, with a trickier one on Sundays. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/span" style={{ color: INK, fontWeight: 800 }}>Span</a>, our geography puzzle, <a href="/outrank" style={{ color: INK, fontWeight: 800 }}>Outrank</a>, the daily crowd-ranking puzzle, and <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword.

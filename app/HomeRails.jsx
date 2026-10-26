@@ -75,7 +75,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { T } from '@/lib/theme';
-import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
+import { DAILY_GAME_MAP, liveDailyKeys, scoreText, keyOfQuizId } from '@/lib/daily-games';
 import { notifyShareCredit } from './ShareCreditPop';
 import { ringBlue, catBlue } from '@/lib/home-blues';
 import { CONTEST, COPY, contestIsLive, formatScore } from '@/lib/contest';
@@ -1090,7 +1090,7 @@ export default function HomeRails({
                           {cat ? <span className="hr-cat" style={{ background: cat.tint, color: cat.color }}>{cat.label}</span> : null}
                         </span>
                         <span className="hr-s">
-                          <b className="hr-res-sc">{f.score}/{f.total}</b>
+                          <b className="hr-res-sc">{keyOfQuizId(f.quizId) ? scoreText(keyOfQuizId(f.quizId), f.score, f.total) : `${f.score}/${f.total}`}</b>
                           {typeof f.pct === 'number' ? ' \u00b7 beat ' + f.pct + '%' : ''}{f.when ? ' \u00b7 ' + f.when : ''}
                         </span>
                       </span>
@@ -1377,7 +1377,7 @@ export default function HomeRails({
                     {cat ? <span className="hr-cat" style={{ background: cat.tint, color: cat.color }}>{cat.label}</span> : null}
                   </span>
                   <span className="hr-s">
-                    <b className="hr-res-sc">{f.score}/{f.total}</b>
+                    <b className="hr-res-sc">{keyOfQuizId(f.quizId) ? scoreText(keyOfQuizId(f.quizId), f.score, f.total) : `${f.score}/${f.total}`}</b>
                     {typeof f.pct === 'number' ? ` · beat ${f.pct}%` : ''}{f.when ? ` · ${f.when}` : ''}
                   </span>
                 </span>

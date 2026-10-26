@@ -59,7 +59,8 @@ import { solve, applyOp, scoreFor } from './solver';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endGrade } from '@/lib/end-verdict';
+import { endGrade, GOOD_EFFORT, endEfficiency } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -595,10 +596,8 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="Make the target out of the six numbers."
       chips={[
-        { label: 'Spot on = 10', tone: 'good' },
-        { label: 'Within five = 7', tone: 'good' },
-        { label: 'Within ten = 5', tone: 'warn' },
-        { label: 'Anything else = 1', tone: 'grey' },
+        { label: 'Spot on solves it', tone: 'good' },
+        { label: 'Closer ranks higher', tone: 'warn' },
       ]}
       steps={[
         <><b>Tap a number</b>, <b>tap an operation</b>, then <b>tap a second number</b>. The answer replaces both and becomes a number you can use again.</>,
@@ -606,8 +605,8 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
         <>You do not have to use all six. On this board an exact answer needs <b>{need} of the six</b>.</>,
         <><b>Undo</b> and <b>start over</b> cost nothing.</>,
       ]}
-      knack="You are scored on the closest value you ever make, not on how many steps you take, so there is nothing to gain by hoarding take-backs."
-      footer={<>Only walking away scores nothing. One free <b>hint</b>, on your first ever play, names a step that still works. Sundays are a harder set.</>}
+      knack="What counts is the closest value you ever make, not how many steps you take, so there is nothing to gain by hoarding take-backs."
+      footer={<>Spot on is a solve. Otherwise the closer you land, the higher you rank, and a faster time breaks a tie. Only walking away counts for nothing. One free <b>hint</b>, on your first ever play, names a step that still works. Sundays are a harder set.</>}
     />
   );
 
@@ -648,7 +647,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: bestDiff == null ? '—' : (bestDiff === 0 ? 'exact' : `${bestDiff} off`), k: 'closest' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: scoreText('crunch', finalScore, 10), k: 'result' },
             { v: used, k: 'steps' },
             { v: bestDiff == null ? '—' : (bestDiff === 0 ? 'exact' : `${bestDiff} off`), k: 'closest' },
             { v: elapsed, k: 'time' },
@@ -860,8 +859,8 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
               {bestDiff != null && bestDiff > 0 && (
                 <button className={`cr-tool cr-lock${armLock ? ' armed' : ''}`} onClick={() => { if (armLock) { if (Date.now() - armLock < ARM_MIN_MS) return; setArmLock(false); lockIn(); } else { setArmLock(Date.now()); } }}>
                   {armLock
-                    ? `Tap again to end the board at ${scoreFor(bestDiff)}/10`
-                    : `Lock in my closest, ${bestDiff} off · ${scoreFor(bestDiff)}/10`}
+                    ? `Tap again to lock in ${bestDiff} off`
+                    : `Lock in my closest, ${bestDiff} off`}
                 </button>
               )}
               {hintOk && !g.hintUsed && (
@@ -882,7 +881,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
             </span>
             <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
               style={{ marginLeft: 'auto', minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <Eye size={13} /> {armReveal ? 'Tap again: this ends the board and scores nothing' : 'Give up'}
+              <Eye size={13} /> {armReveal ? 'Tap again: this ends the board unfinished' : 'Give up'}
             </button>
           </div>
         )}
@@ -900,7 +899,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
                 {won
                   ? `Exact, using ${used} step${used === 1 ? '' : 's'}. An exact answer needed ${need} of the six numbers.`
                   : g.status === 'done'
-                    ? `Your closest was ${bestDiff} off, worth ${finalScore} out of 10.`
+                    ? `Your closest was ${bestDiff} off.`
                     : `It was reachable. An exact answer needed ${need} of the six.`}
               </div>
               {(won || !LOFT || revealed) && Array.isArray(PUZZLE.example) && PUZZLE.example.length > 0 && (
@@ -949,8 +948,8 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
               challengeMetric={won ? used : null}
-              title={endGrade(finalScore, 10)}
-              detail={`${finalScore} \u00b7 ${used} steps \u00b7 ${bestDiff == null ? '—' : (bestDiff === 0 ? 'exact' : `${bestDiff} off`)} closest \u00b7 ${elapsed}`}
+              title={endEfficiency(finalScore >= 10, finalScore)}
+              detail={`${scoreText('crunch', finalScore, 10)} \u00b7 ${used} steps \u00b7 ${bestDiff == null ? '—' : (bestDiff === 0 ? 'exact' : `${bestDiff} off`)} closest \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -969,7 +968,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/crunch?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('crunch', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
@@ -1043,12 +1042,12 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="crunch" won={won}
-          headline={won ? <>Bang on.</> : g.status === 'done' ? <>Close enough to count.</> : <>You scored 0%</>}
+          headline={won ? <>Bang on.</> : g.status === 'done' ? <>Close enough to count.</> : <>{GOOD_EFFORT}</>}
           subline={won
-            ? <>10/10 &middot; {TARGET} in {used} step{used === 1 ? '' : 's'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            ? <>Solved &middot; {TARGET} in {used} step{used === 1 ? '' : 's'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : g.status === 'done'
-              ? <>{finalScore}/10 &middot; {bestDiff} off {TARGET} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-              : <>0/10 &middot; the target was {TARGET}</>}
+              ? <>Unfinished &middot; {bestDiff} off {TARGET} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+              : <>Unfinished &middot; the target was {TARGET}</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}
@@ -1081,7 +1080,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
           Crunch is a free daily numbers round from Mind Loft. Six numbers, one target between 101 and 999, and four operations. Combine two numbers, the answer replaces both, and you go again. Every value along the way has to be a positive whole number, and you never have to use all six.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Every board is checked by an exhaustive solver before it ships, so the target is always reachable and the difficulty rating, the fewest numbers any exact answer needs, is a fact rather than a guess. Scoring is the scale people already know: spot on is ten, within five is seven, within ten is five. Undo and start over cost nothing, because the score is about where you land, not how you got there.
+          Every board is checked by an exhaustive solver before it ships, so the target is always reachable and the difficulty rating, the fewest numbers any exact answer needs, is a fact rather than a guess. Spot on solves it, and otherwise the closer you land, the higher you rank. Undo and start over cost nothing, because what counts is where you land, not how you got there.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new board drops every day at midnight Eastern. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/rung" style={{ color: INK, fontWeight: 800 }}>Rung</a>, <a href="/four" style={{ color: INK, fontWeight: 800 }}>Four</a>, our daily Connect Four position, and <a href="/mate" style={{ color: INK, fontWeight: 800 }}>Mate</a>, our daily chess endgame.

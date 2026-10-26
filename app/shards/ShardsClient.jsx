@@ -69,6 +69,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -855,7 +856,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
     const url = withRef(`mindloftdaily.com/shards${isTodays ? '' : `?p=${PUZZLE.num}`}`);
     const text = playing
       ? `Shards No. ${PUZZLE.num} - reassemble the shattered crossword.\n${url}`
-      : `Shards No. ${PUZZLE.num} - ${finalScore}/${START} · ${elapsed} · ${g.misplaced > 0 ? `${g.misplaced} miss${g.misplaced === 1 ? '' : 'es'} · ` : ''}${g.hintsUsed} hint${g.hintsUsed === 1 ? '' : 's'}\n${shareArt()}${url}`;
+      : `Shards No. ${PUZZLE.num} · ${scoreText('shards', finalScore, START)} · ${elapsed} · ${g.misplaced > 0 ? `${g.misplaced} miss${g.misplaced === 1 ? '' : 'es'} · ` : ''}${g.hintsUsed} hint${g.hintsUsed === 1 ? '' : 's'}\n${shareArt()}${url}`;
     if (notifyShareCredit(text)) return;
     try { if (typeof navigator !== 'undefined' && navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
@@ -880,17 +881,17 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
       lead="Reassemble the shattered grid so every across and down run of letters reads as a word."
       chips={[
         { label: 'Every move is free', tone: 'good' },
-        { label: 'Hints cost points', tone: 'warn' },
+        { label: 'Hints count against you', tone: 'warn' },
       ]}
       steps={[
         <>The lettered pieces are rigid: no turning, no flipping. <b>Drag</b> one onto the grid, or <b>tap a piece then tap a square</b>.</>,
         <>Move pieces as often as you like, <b>for free</b>. To take one off the grid, <b>drag it off the board</b>, or tap it twice.</>,
         <>A tick appears on each finished valid word. The board finishes itself the moment every piece is down and every word checks out.</>,
-        <>Only the three hints cost points. <b>Undo</b> and <b>Clear</b> are free too. Stuck for good? <b>Give up</b> ends the grid at 0.</>,
+        <>Only the three hints count against you. <b>Undo</b> and <b>Clear</b> are free too. Stuck for good? <b>Give up</b> ends the grid unfinished.</>,
         <>Words are checked against a <b>Scrabble word list</b>, which is broader than everyday English and accepts some odd short entries. Grids from 20 August 2026 are built from common words only; older grids in the archive can still turn up a Scrabble two-letter word such as ST, JA or PE.</>,
       ]}
       knack="There are no clues but the letters, and exactly one reassembly is correct, so place the pieces whose runs can only spell one thing and let the rest fall in."
-      footer={<>Start at {START}. Three hints, in order, cost {HINTS[0]}, {HINTS[1]} and {HINTS[2]}. Score never drops below {FLOOR}. Moves are free, so ties break on the clock.</>}
+      footer={<>Three hints unlock in order. Fewer hints and fewer misses rank higher, and the clock breaks a tie. Moves are free.</>}
     />
   );
 
@@ -924,10 +925,10 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
           onHelp={() => setShowHelp(true)}
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
-            { v: liveScore, k: 'score' },
+            { v: g.hintsUsed, k: 'hints' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: scoreText('shards', finalScore, START), k: 'result' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -1024,7 +1025,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
           {/* score bar */}
           {!preStart && (
             <div style={{ display: 'flex', gap: 18, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 10, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
-              <span style={{ fontSize: 12 }}>score <b style={{ color: `var(--stg-ink, ${COLORS.accentDk})`, fontWeight: 500, fontSize: 20 }}>{playing ? liveScore : finalScore}</b><span style={{ fontSize: 11 }}>/{START}</span></span>
+              {!playing && <span style={{ fontSize: 12 }}>result <b style={{ color: `var(--stg-ink, ${COLORS.accentDk})`, fontWeight: 500, fontSize: 20 }}>{scoreText('shards', finalScore, START)}</b></span>}
               <span>placed <b style={{ color: INK, fontWeight: 500 }}>{placedCount}</b>/{SHARDS.length}</span>
               {g.misplaced > 0 && <span>misses <b style={{ color: INK, fontWeight: 500 }}>{g.misplaced}</b></span>}
               <span>hints <b style={{ color: INK, fontWeight: 500 }}>{g.hintsUsed}</b>/3</span>
@@ -1128,19 +1129,19 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                       <button type="button" className="sh-btn" onClick={undo} disabled={!histRef.current.length}><Undo2 size={14} /> Undo</button>
                       <button type="button" className="sh-btn" onClick={clearBoard} disabled={placedCount === 0}><Trash2 size={14} /> Clear</button>
                       {g.t0 && (
-                        <button type="button" className="sh-btn" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it scores 0'}><Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}</button>
+                        <button type="button" className="sh-btn" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it records as unfinished'}><Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}</button>
                       )}
                       {armed != null && g.placements[armed] && !g.locked.includes(armed) && (
                         <button type="button" className="sh-btn primary" onClick={() => { pickUp(armed); setArmed(null); }}>Send back</button>
                       )}
                     </div>
                     <div className="sh-hintbar">
-                      <button type="button" className="sh-hint" disabled={g.hintsUsed >= 1 || placedCount === 0} title={placedCount === 0 ? 'Place a shard first' : undefined} onClick={() => useHint(1)}><Lightbulb size={13} /> Check placed (-{HINTS[0]})</button>
-                      <button type="button" className="sh-hint" disabled={g.hintsUsed !== 1} onClick={() => useHint(2)}><Lightbulb size={13} /> Place one (-{HINTS[1]})</button>
-                      <button type="button" className="sh-hint" disabled={g.hintsUsed !== 2} onClick={() => useHint(3)}><Lightbulb size={13} /> Show home (-{HINTS[2]})</button>
+                      <button type="button" className="sh-hint" disabled={g.hintsUsed >= 1 || placedCount === 0} title={placedCount === 0 ? 'Place a shard first' : undefined} onClick={() => useHint(1)}><Lightbulb size={13} /> Check placed</button>
+                      <button type="button" className="sh-hint" disabled={g.hintsUsed !== 1} onClick={() => useHint(2)}><Lightbulb size={13} /> Place one</button>
+                      <button type="button" className="sh-hint" disabled={g.hintsUsed !== 2} onClick={() => useHint(3)}><Lightbulb size={13} /> Show home</button>
                     </div>
                     <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, textAlign: 'center', marginTop: 10, lineHeight: 1.5 }}>
-                      Moves are free. Hints unlock in order and cost points. Drag a piece off the board to send it back.
+                      Moves are free. Hints unlock in order and count against you. Drag a piece off the board to send it back.
                     </div>
                   </>
                 )}
@@ -1156,9 +1157,9 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
               <>
                 <div style={{ maxWidth: 472, margin: '18px auto 12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                    <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: `var(--stg-ink, ${COLORS.green})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{finalScore}</span>
+                    <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: `var(--stg-ink, ${COLORS.green})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{won ? 'Solved' : 'Unfinished'}</span>
                     <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
-                      {won ? <>Solved. {finalScore} of {START}{g.misplaced > 0 ? `, with ${g.misplaced} miss${g.misplaced === 1 ? '' : 'es'} and` : ' with'} {g.hintsUsed} hint{g.hintsUsed === 1 ? '' : 's'}.</> : <>You gave up on this grid, so it scores 0.</>} <span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
+                      {won ? <>Solved{g.misplaced > 0 ? `, with ${g.misplaced} miss${g.misplaced === 1 ? '' : 'es'} and` : ' with'} {g.hintsUsed} hint{g.hintsUsed === 1 ? '' : 's'}.</> : <>You gave up on this grid, so it is unfinished.</>} <span style={{ color: FADED, fontWeight: 600 }}>{elapsed}</span>
                     </span>
                   </div>
                 </div>
@@ -1186,7 +1187,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? finalScore : null}
               title={endSolved(won)}
-              detail={`${finalScore} \u00b7 ${elapsed}`}
+              detail={`${scoreText('shards', finalScore, START)} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1205,7 +1206,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/shards?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('shards', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
@@ -1285,7 +1286,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard
           modal self="shards" won={won} completed
-          score={<>{finalScore}/{START} pts</>}
+          score={<>{scoreText('shards', finalScore, START)}</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)}
         />
@@ -1337,7 +1338,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
           Shards is a free daily word puzzle from Mind Loft, a jigsaw crossword. The grid arrives already solved but shattered into lettered puzzle pieces, and you reassemble it so that every across and down run of letters reads as a word. There are no clues. The letters are the clues, and the shapes are how you fit them back together.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Every day&rsquo;s pieces have exactly one valid reassembly, checked by a solver before it ships, so there is always a single right answer to find. Pieces never rotate or flip. Drag them onto the grid or tap to place, move them as often as you like for free, drag one off the board to send it back, and lean on three optional hints when you are stuck. You start at {START} and finish the moment the last word clicks into place. Answers are checked against a Scrabble word list, so it is broader than everyday English and accepts some unusual short entries.
+          Every day&rsquo;s pieces have exactly one valid reassembly, checked by a solver before it ships, so there is always a single right answer to find. Pieces never rotate or flip. Drag them onto the grid or tap to place, move them as often as you like for free, drag one off the board to send it back, and lean on three optional hints when you are stuck. Fewer hints rank higher, and you finish the moment the last word clicks into place. Answers are checked against a Scrabble word list, so it is broader than everyday English and accepts some unusual short entries.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A fresh grid lands every day at midnight Eastern, with a larger Sunday Edition. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/emcee" style={{ color: INK, fontWeight: 800 }}>Emcee</a>, our mini crossword, <a href="/tuck" style={{ color: INK, fontWeight: 800 }}>Tuck</a>, our tile-tucking puzzle, and <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword.

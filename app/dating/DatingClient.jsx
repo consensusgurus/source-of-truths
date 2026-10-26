@@ -682,9 +682,9 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
     const hintBit = g.hintUsed ? ' · 💡' : '';
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const head = won
-      ? `Dating #${PUZZLE.num} · ${finalScore}/10 · ${checksUsed} check${checksUsed === 1 ? '' : 's'} · ${elapsed}${hintBit}${streakBit}`
+      ? `Dating #${PUZZLE.num} · ${finalScore} point${finalScore === 1 ? '' : 's'} · ${checksUsed} check${checksUsed === 1 ? '' : 's'} · ${elapsed}${hintBit}${streakBit}`
       : g.status === 'lost'
-        ? `Dating #${PUZZLE.num} · ${finalScore}/10 · ${lockedCount}/${N} placed${hintBit}`
+        ? `Dating #${PUZZLE.num} · ${finalScore} point${finalScore === 1 ? '' : 's'} · ${lockedCount}/${N} placed${hintBit}`
         : `Dating #${PUZZLE.num} · gave it up${hintBit}`;
     return grid ? `${head}\n${grid}\n${shareUrl()}` : `${head}\n${shareUrl()}`;
   }
@@ -721,7 +721,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
         <>One free <b>hint</b>, on your first ever play, reveals the year of your most misplaced event.</>,
       ]}
       knack="Anchor the two dates you are sure of, then slot the rest between them. A check spent early still pays: every card it confirms shows its year, and those years fence in the cards around them."
-      footer={<>Date the whole board on your first check for a perfect 10. Each extra check costs a point, and each event you never place costs two. New moments every day at midnight Eastern.</>}
+      footer={<>Date the whole board on your first check for the full 10 points. Each extra check costs a point, and each event you never place costs two. New moments every day at midnight Eastern.</>}
     />
   );
 
@@ -1067,7 +1067,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
               challengeMetric={won ? checksUsed : null}
               title={endGrade(finalScore, 10)}
-              detail={`${finalScore} \u00b7 ${`${checksUsed}/${MAX_CHECKS}`} checks \u00b7 ${lockedCount} placed`}
+              detail={`${finalScore} point${finalScore === 1 ? '' : 's'} \u00b7 ${`${checksUsed}/${MAX_CHECKS}`} checks \u00b7 ${lockedCount} placed`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1176,12 +1176,12 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
           modal
           self="dating"
           won={won}
-          headline={won ? <>Nailed the date!</> : <>You scored {Math.round((((won || g.status === 'lost') ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? <>Nailed the date!</> : <>You scored {(won || g.status === 'lost') ? finalScore : 0} point{((won || g.status === 'lost') ? finalScore : 0) === 1 ? '' : 's'}</>}
           subline={<>{won
-            ? <>{finalScore}/10 &middot; {checksUsed} check{checksUsed === 1 ? '' : 's'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            ? <>{finalScore} point{finalScore === 1 ? '' : 's'} &middot; {checksUsed} check{checksUsed === 1 ? '' : 's'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : g.status === 'lost'
-              ? <>{finalScore}/10 &middot; {lockedCount}/{N} placed &middot; the timeline is below</>
-              : <>0/10 &middot; the timeline is below</>}</>}
+              ? <>{finalScore} point{finalScore === 1 ? '' : 's'} &middot; {lockedCount}/{N} placed &middot; the timeline is below</>
+              : <>0 points &middot; the timeline is below</>}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

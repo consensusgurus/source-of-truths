@@ -54,6 +54,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { UNIVERSES } from './universes';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 // A new game gets no colour of its own: on the stage it wears the Trivia step
 // of the category ramp. ACCENT is only the legacy (pre-stage) fallback.
@@ -589,7 +590,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
         <>The <b>case file</b> at the top adds your clues up: a range for each number and the values ruled out for the rest. You have <b>eight guesses</b>, six on the Sunday Edition.</>,
       ]}
       knack="Guess from the middle. A number near the center of its range cuts the list in half whichever way the arrow points, and two arrows on the same fact trap the answer between them."
-      footer="Solving on your first guess scores 10, and each further guess takes a point off. Running out, or revealing the answer, scores 0. One free hint, on your first ever play, pins one fact the guesses have not. The list changes through the week: presidents Monday and Thursday, elements Tuesday and Friday, states Wednesday and Saturday, and the Sunday Edition gives you six guesses instead of eight."
+      footer="Fewer guesses rank higher, and a faster time breaks a tie. Running out, or revealing the answer, leaves it unfinished. One free hint, on your first ever play, pins one fact the guesses have not. The list changes through the week: presidents Monday and Thursday, elements Tuesday and Friday, states Wednesday and Saturday, and the Sunday Edition gives you six guesses instead of eight."
     />
   );
 
@@ -1075,7 +1076,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
                 sunday: !!p.sunday,
                 href: `/dossier?p=${p.num}`,
                 done: !!(myStats.rec && myStats.rec[p.num]),
-                score: myStats.rec && myStats.rec[p.num] ? myStats.rec[p.num].s : null,
+                score: myStats.rec && myStats.rec[p.num] ? scoreText('dossier', myStats.rec[p.num].s, myStats.rec[p.num].t) : null,
               }))}
             options={[
               won

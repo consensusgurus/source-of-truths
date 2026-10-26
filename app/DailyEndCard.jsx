@@ -95,7 +95,7 @@ import ReportIssue from './ReportIssue';
 import MindLoftMark from './MindLoftMark';
 import { notifyTrophies } from './TrophyPop';
 import { fetchDailyMe, dailyMeQuery, invalidateDailyMe } from './dailyMeClient';
-import { isRetiredDaily, DAILY_GAME_MAP, dailyAttemptRule, attemptsMode, isArcade } from '@/lib/daily-games';
+import { isRetiredDaily, DAILY_GAME_MAP, dailyAttemptRule, attemptsMode, isArcade, scoreText } from '@/lib/daily-games';
 import { circuitKeysFor, circuitHref, circuitName, readRunParam, runSummaryHref, isMarquee } from '@/lib/circuits';
 import { T } from '@/lib/theme';
 import { CONTEST, COPY, contestIsLive } from '@/lib/contest';
@@ -2450,7 +2450,7 @@ export default function DailyEndCard({
                       <div className={`dec-lbg dec-lbgrow${r.me ? ' me' : ''}`} key={idx}>
                         <span className="rk">#{r.rank}</span>
                         <span className="nm">{r.name || '—'}</span>
-                        <span className="num">{r.score == null ? '—' : (scoreUnit ? r.score : <>{r.score}/{r.total}</>)}</span>
+                        <span className="num">{r.score == null ? '—' : (scoreUnit ? r.score : scoreText(self, r.score, r.total))}</span>
                         <span className="num">{fmtTime(r.timeElapsed)}</span>
                         {/* END GAME prints TRIES here (owner, 2026-08-12): its
                             registry label is 'Tries' and its board ranks on the

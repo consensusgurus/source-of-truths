@@ -62,7 +62,8 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import RunDoorPop from '../circuits/RunDoorPop';
-import { endGrade } from '@/lib/end-verdict';
+import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -328,6 +329,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   const focusMode = playing && !showChrome;
   const won = g.status === 'done' && g.wrong === 0;
   const score = g.status === 'done' ? Math.max(1, TOTAL - 2 * g.wrong) : 0;
+  const resultText = scoreText('alibi', score, TOTAL);
   const placedCount = CATS.reduce((n, c) => n + g.marks[c].flat().filter((m) => m === 2).length, 0);
   // A lost case keeps the player's own marks on the board through the finish
   // beat; the solution is drawn only once the end card's Reveal answer is pressed.
@@ -585,7 +587,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
       setG((cur) => ({ ...cur, wrong: cur.wrong + 1, t0: cur.t0 || Date.now() }));
       // Deliberately vague: naming HOW MANY marks are wrong hands back a slice
       // of the solution, so a wrong accusation only says that it is wrong.
-      setVerdict({ msg: "You're wrong. Try again. Each wrong accusation costs 2." });
+      setVerdict({ msg: "You're wrong. Try again. Each wrong accusation counts against you on the board." });
       return;
     }
     const g2 = { ...g, status: 'done', tEnd: Date.now(), t0: g.t0 || Date.now() };
@@ -641,7 +643,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
         <>Confirm all <b>{TOTAL} facts</b>, then check your <b>accusation</b>.</>,
       ]}
       knack="Work the three boards together. A fact you settle on one board almost always rules out a cell on another."
-      footer={<>A first-try accusation is a perfect {TOTAL}, and each wrong accusation costs 2. Ties on the daily board break by fewest wrong accusations, then fastest time. A new case opens at midnight Eastern.</>}
+      footer={<>Name the culprit to close the case. The daily board ranks a solve with fewer wrong accusations higher, then the faster time. A new case opens at midnight Eastern.</>}
     />
   );
 
@@ -671,7 +673,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
             { v: g.wrong, k: 'wrong' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: g.wrong, k: 'wrong' },
             { v: elapsed, k: 'time' },
           ]}
@@ -890,7 +892,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '8px 0 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{resultText}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done'
                       ? (won ? 'Case closed — a first-try accusation.' : `Case closed with ${g.wrong} wrong accusation${g.wrong === 1 ? '' : 's'}.`)
@@ -933,8 +935,8 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
               name="Alibi"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={endGrade(score, TOTAL)}
-              detail={`${`${score}/${TOTAL}`} \u00b7 ${g.wrong} wrong \u00b7 ${elapsed}`}
+              title={endSolved(g.status === 'done')}
+              detail={`${resultText} \u00b7 ${g.wrong} wrong \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1043,7 +1045,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
           won={won}
           completed={g.status === 'done'}
           headline={g.status === 'done' ? <>Case closed</> : <>The case went cold</>}
-          subline={<>Alibi #{PUZZLE.num} &middot; {score}/{TOTAL} &middot; {g.wrong} wrong accusation{g.wrong === 1 ? '' : 's'} &middot; {elapsed}</>}
+          subline={<>Alibi #{PUZZLE.num} &middot; {resultText} &middot; {g.wrong} wrong accusation{g.wrong === 1 ? '' : 's'} &middot; {elapsed}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

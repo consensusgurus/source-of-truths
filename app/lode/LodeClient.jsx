@@ -1105,7 +1105,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
               outcome={score > 0 ? 'won' : 'lost'}
               challengeMetric={score}
               title={score > 0 ? 'Good job!' : GOOD_EFFORT}
-              detail={`${score} \u00b7 ${elapsed}`}
+              detail={`${score} point${score === 1 ? '' : 's'} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready

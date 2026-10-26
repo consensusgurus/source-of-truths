@@ -67,7 +67,8 @@ import AddToHome from '../AddToHome';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
-import { endGrade } from '@/lib/end-verdict';
+import { endGrade, endEfficiency } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 import {
   RANK_LABEL, SUIT_PIP, rankOf, suitOf, isRed, cardName,
   lineScores, totalOf, bustsOf, scoreForPoints, rowCells, colCells,
@@ -588,7 +589,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="Build ten poker hands at once: five across and five down."
-      banner={<><b>Par is {par}</b> on this deal, what an ordinary round comes home with: it scores 8. <b>Ace is {ace}</b>, the best our solver managed playing blind: it scores 10.</>}
+      banner={<><b>Par is {par}</b> on this deal, what an ordinary round comes home with. <b>Ace is {ace}</b>, the best our solver managed playing blind.</>}
       chips={[
         { label: 'Pair 1' }, { label: 'Two pair 3' }, { label: 'Flush 5' },
         { label: 'Three of a kind 6' }, { label: 'Full house 10' }, { label: 'Straight 12' },
@@ -601,7 +602,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
         <><b>Give up</b> ends the round now: full lines keep their points, open lines score nothing.</>,
       ]}
       knack="A straight beats a flush here, because on a five by five grid flushes are the easy ones."
-      footer="Par and ace are both real rounds somebody played, not formulas. Everybody today gets this same deal in this same order, so nothing here is luck."
+      footer="A bigger total ranks higher, and fewer busts, then a faster time, break a tie. Par and ace are both real rounds somebody played, not formulas. Everybody today gets this same deal in this same order, so nothing here is luck."
     />
   );
 
@@ -823,7 +824,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: ace, k: 'ace' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: scoreText('hands', finalScore, 10), k: 'result' },
             { v: total, k: 'points' },
             { v: ace, k: 'ace' },
             { v: elapsed, k: 'time' },
@@ -1109,7 +1110,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
               challengeMetric={done ? total : null}
-              title={endGrade(finalScore, 10, 'Perfect!')}
+              title={endEfficiency(finalScore > 0, finalScore)}
               detail={`${total} points \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1129,7 +1130,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/hands?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('hands', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },

@@ -594,7 +594,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
     // the dare. The last film named is the one that took longest.
     const last = g.solved.length ? TILES[g.solved[g.solved.length - 1]] : TILES[0];
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
-    const head = `Thread #${PUZZLE.num} · ${g.solved.length}/${N} · ${threadBit()} · ${score}/${TOTAL} · ${elapsed}${streakBit}`;
+    const head = `Thread #${PUZZLE.num} · ${g.solved.length}/${N} · ${threadBit()} · ${score} point${score === 1 ? '' : 's'} · ${elapsed}${streakBit}`;
     return `${head}\n“${last ? last.s : ''}”\n${shareUrl()}`;
   }
   function copyShare() {
@@ -780,7 +780,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
             { v: okCalls.length ? (NTH === 1 ? `at ${okCalls[0].open}` : `${okCalls.length}/${NTH}`) : (g.locked ? 'locked' : '–'), k: 'thread' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: score, k: score === 1 ? 'point' : 'points' },
             { v: okCalls.length ? (NTH === 1 ? `at ${okCalls[0].open}` : `${okCalls.length}/${NTH}`) : (g.locked ? 'locked' : '–'), k: 'thread' },
             { v: elapsed, k: 'time' },
           ]}
@@ -955,7 +955,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             <span style={{ whiteSpace: 'nowrap' }}>films <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{g.solved.length}/{N}</b></span>
             <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>score <b style={{ color: INK, fontWeight: 500 }}>{score}/{TOTAL}</b></span>
+            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}><b style={{ color: INK, fontWeight: 500 }}>{score}</b> point{score === 1 ? '' : 's'}</span>
           </div>
           )}
 
@@ -1044,7 +1044,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
                   <ThreadGlyph />
                   <span className="th-lab">
                     {NTH === 1 ? 'The thread' : `The threads · ${g.called.length} of ${NTH} called`}
-                    <span className="sc"> · Score <b>{score}/{TOTAL}</b></span>
+                    <span className="sc"> · <b>{score} point{score === 1 ? '' : 's'}</b></span>
                   </span>
                 </span>
                 {playing && !threadsDone && <span className="th-lab rt">Call it any time</span>}
@@ -1085,13 +1085,13 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
               <span className="th-lab">Score</span>
               <div className="th-row"><span>Films</span><b>{g.solved.length}</b></div>
               <div className="th-row"><span>Thread</span><b>+{threadBonus}</b></div>
-              <div className="th-row tot"><span>Total</span><b>{score}<small>/{TOTAL}</small></b></div>
+              <div className="th-row tot"><span>Total</span><b>{score}<small> pts</small></b></div>
               {playing && (
                 <button type="button" className="th-quit" onClick={giveUp}>{allCalled ? 'Reveal the rest' : 'Give up'}</button>
               )}
               {!playing && (
                 <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, color: won ? `var(--stg-good, ${COLORS.green})` : `var(--stg-ink, ${COLORS.rust})` }}>
-                  {won ? `${threadBit().replace(/^t/, 'T')}. ${score} of ${TOTAL} in ${elapsed}.` : (g.locked && !okCalls.length && !hideSol ? `The thread was ${THREADS.map((t) => t.t).join(' and ')}. ${score} of ${TOTAL}.` : `${score} of ${TOTAL}.`)}
+                  {won ? `${threadBit().replace(/^t/, 'T')}. ${score} point${score === 1 ? '' : 's'} in ${elapsed}.` : (g.locked && !okCalls.length && !hideSol ? `The thread was ${THREADS.map((t) => t.t).join(' and ')}. ${score} point${score === 1 ? '' : 's'}.` : `${score} point${score === 1 ? '' : 's'}.`)}
                 </div>
               )}
             </div>
@@ -1143,7 +1143,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               title={endGrade(score, TOTAL)}
-              detail={`${g.solved.length}/${N} films · ${threadBit()} · ${score}/${TOTAL} · ${elapsed}`}
+              detail={`${g.solved.length}/${N} films · ${threadBit()} · ${score} point${score === 1 ? '' : 's'} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1229,7 +1229,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="thread" won={won}
           headline={won ? <>Thread found.</> : <>The thread got away.</>}
-          subline={<>{g.solved.length}/{N} films &middot; {threadBit()} &middot; {score}/{TOTAL} &middot; {elapsed}</>}
+          subline={<>{g.solved.length}/{N} films &middot; {threadBit()} &middot; {score} point{score === 1 ? '' : 's'} &middot; {elapsed}</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
           onClose={() => setEndClosed(true)} />

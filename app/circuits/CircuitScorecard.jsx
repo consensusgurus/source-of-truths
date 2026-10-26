@@ -33,7 +33,7 @@
 
 import React from 'react';
 import GameGlyph from '../GameGlyph';
-import { DAILY_GAME_MAP } from '@/lib/daily-games';
+import { DAILY_GAME_MAP, scoreText } from '@/lib/daily-games';
 
 const r1 = (n) => Math.round(Number(n) * 10) / 10;
 
@@ -87,7 +87,7 @@ export default function CircuitScorecard({
               <span className="csc-pipn">{x.name}</span>
               <span className="csc-pips">
                 {Number.isFinite(x.score) && Number.isFinite(x.total) && x.total > 0
-                  ? `${x.score}/${x.total}` : (x.railText || '—')}
+                  ? scoreText(x.key, x.score, x.total) : (x.railText || '—')}
               </span>
             </div>
           ))}

@@ -69,6 +69,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 import {
   RANK_NAMES, SUIT_GLYPH, SUITS, suitOf, rankOf, isNS, bits, parseHand, handOrder,
   makeSolver, analyse,
@@ -608,7 +609,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
         <>You play <b>two hands</b>: your own at the bottom and the <b>dummy</b> opposite. Tap a card to play it, and the defenders answer at once.</>,
         <>Everything is face up, so nothing is a guess. The only question is the <b>order</b> you play them in.</>,
         <>Come up short and the board <b>rewinds to trick one</b>. Nothing is lost but the clock, and the clock is the tiebreak.</>,
-        <><b>Give up</b> ends the deal unmade and scores 0. The winning line is not shown.</>,
+        <><b>Give up</b> ends the deal unmade and leaves it unfinished. The winning line is not shown.</>,
       ]}
       knack="Cashing a winner is rarely the move. Ask which hand you need to be in next, and play the card that gets you there."
       note={<>The deck runs ace down to {RANK_NAMES[R][0]} and every card of it is on the table, so what you can see is genuinely all there is. It grows through the week: four cards a hand on Monday, the full eight on Sunday.</>}
@@ -1164,7 +1165,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
             </button>
             {started && (playing || short) && (
               <button type="button" className="fn-btn" onClick={tapGiveUp}
-                title={armGive ? 'Ends the deal now, scored 0' : 'End the deal unmade. Scores 0.'}
+                title={armGive ? 'Ends the deal now, unfinished' : 'End the deal unmade. It records as unfinished.'}
                 style={armGive ? { borderColor: 'var(--stg-warn, #b45309)', color: 'var(--stg-warn, #b45309)' } : undefined}>
                 <Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}
               </button>
@@ -1257,7 +1258,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
               outcome={done ? 'won' : lost ? 'lost' : 'part'}
               challengeMetric={done ? g.tries : null}
               title={done ? 'Made!' : GOOD_EFFORT}
-              detail={`${finalScore}/10 · ${TRICK_WORD[TARGET]} of ${R} · ${g.tries} tr${g.tries === 1 ? 'y' : 'ies'} · ${elapsed}`}
+              detail={`${scoreText('finesse', finalScore, 10)} · ${TRICK_WORD[TARGET]} of ${R} · ${g.tries} tr${g.tries === 1 ? 'y' : 'ies'} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1276,7 +1277,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/finesse?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('finesse', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },

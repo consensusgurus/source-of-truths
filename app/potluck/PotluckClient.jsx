@@ -178,7 +178,7 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
       const pts = r.t ? Math.round((PER_QUIZ * r.s) / r.t) : 0;
       return pts >= 10 ? '\u{1F7E9}' : pts >= 6 ? '\u{1F7E8}' : '\u{1F7E7}';
     }).join('');
-    return `Potluck #${day.num} · ${score}/${total} · ${fmtTime(time)}${isTodays && streak >= 2 ? ` · streak ${streak}` : ''}\n${cells}\n${shareUrl()}`;
+    return `Potluck #${day.num} · ${score} point${score === 1 ? '' : 's'} · ${fmtTime(time)}${isTodays && streak >= 2 ? ` · streak ${streak}` : ''}\n${cells}\n${shareUrl()}`;
   }
   function copyShare() {
     const text = playing ? `Potluck #${day.num}: three quizzes, three subjects, one score, from Mind Loft.\n${shareUrl()}` : shareText();
@@ -194,7 +194,7 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
       steps={[
         <>Every day brings <b>three quizzes</b> from the Mind Loft catalog: one where you <b>type</b> the answers, one where you <b>match</b> them, and one where you <b>spot</b> them on a map or in pictures. Each is from a different subject.</>,
         <>Press <b>Start</b> and the three play <b>back to back</b>. You will not see them until each one opens. Each runs on its own clock, and when one ends the next one is served.</>,
-        <>Each quiz is worth <b>10 points</b>, scaled by how much of it you got, so the day is out of <b>30</b>.</>,
+        <>Each quiz is worth <b>10 points</b>, scaled by how much of it you got, so the three count equally.</>,
         <>Finish the third and your Potluck is <b>turned in</b> on its own, straight to the end card. Your first run is the one the board keeps.</>,
       ]}
       knack="The three are worth the same however long they are, so a short quiz you nail counts as much as a long one."
@@ -248,7 +248,7 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
           dateLabel={day.dateLabel}
           onHelp={() => setShowHelp(true)}
           figures={[
-            { v: `${score}/${total}`, k: 'points' },
+            { v: score, k: score === 1 ? 'point' : 'points' },
             { v: `${doneCount}/3`, k: 'played' },
             { v: fmtTime(time), k: 'time' },
           ]}
@@ -271,7 +271,7 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
                 {turnedIn ? (
                   <>
                     <div style={{ fontSize: 15, fontWeight: 800, color: INK, marginBottom: 12 }}>
-                      Turned in: <span style={{ color: ACC_INK }}>{score} of {total}</span>
+                      Turned in: <span style={{ color: ACC_INK }}>{score} point{score === 1 ? '' : 's'}</span>
                     </div>
                     <div className="pl-grid">{quizzes.map(card)}</div>
                   </>
@@ -285,7 +285,7 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
                     </div>
                     <p style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 600, color: FADED, lineHeight: 1.55, maxWidth: 560 }}>
                       {started
-                        ? `${score} of ${total} points banked so far. Pick up where you left off; the rest are served one after another.`
+                        ? `${score} point${score === 1 ? '' : 's'} banked so far. Pick up where you left off; the rest are served one after another.`
                         : 'One to type, one to match, one to spot. You see each quiz when it opens, and the next one is served when it ends. Each is worth 10, scaled by how much of it you got.'}
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }} aria-label={`${doneCount} of ${quizzes.length} played`}>
@@ -330,7 +330,7 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
                 catRank={catRank}
                 outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
                 title={endGrade(score, total, 'A clean sweep!')}
-                detail={`${score}/${total} points · ${played} of 3 played · ${fmtTime(time)}`}
+                detail={`${score} point${score === 1 ? '' : 's'} · ${played} of 3 played · ${fmtTime(time)}`}
                 iq={iq}
                 board={dailyBoard}
                 gameRank={allTime && allTime.ready
@@ -396,7 +396,7 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
           Potluck is a free daily trivia mix from Mind Loft. Every day it serves three quizzes from the catalog back to back, one where you type the answers, one where you match them, and one where you find them on a map or in pictures, each from a different subject, so no two days taste the same.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Each quiz is worth 10 points, scaled by how much of it you got, so a short quiz counts as much as a long one and the day is scored out of 30. Press Start and the three play one after another; finishing the third turns your day in and shows your result. Everyone gets the same three, and the daily leaderboard breaks ties on the three clocks added together.
+          Each quiz is worth 10 points, scaled by how much of it you got, so a short quiz counts as much as a long one. Press Start and the three play one after another; finishing the third turns your day in and shows your result. Everyone gets the same three, and the daily leaderboard breaks ties on the three clocks added together.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new three every day at midnight Eastern. No app, no signup. More trivia: <a href="/streak" style={{ color: INK, fontWeight: 800 }}>Streak</a>, <a href="/deep" style={{ color: INK, fontWeight: 800 }}>Deep</a> and <a href="/atlas" style={{ color: INK, fontWeight: 800 }}>Atlas</a>.

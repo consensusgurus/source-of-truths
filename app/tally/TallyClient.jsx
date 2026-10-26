@@ -66,7 +66,8 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { solve as logicSolve, starterLines } from '@/lib/tally-logic';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved } from '@/lib/end-verdict';
+import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -468,6 +469,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
   const errors = g.moves > FEWEST ? g.moves - FEWEST : 0;
   const anyPlaced = FREE.some(([r, c]) => !!cells[r * N + c]);
   const finalScore = won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0;
+  const resultText = scoreText('tally', finalScore, 10);
 
   // The rack, by digit: how many of each the day holds, and how many are
   // still off the board. The rack shows one key per digit with its count, so
@@ -940,7 +942,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
         <>Drag a placed tile to any open square to move it, or onto another tile to swap them. Or tap a placed tile, then an empty square. Tap it twice, drag it off the board, or press <b>Backspace</b> to send it home to the rack, which is free. <b>Undo</b> and <b>Clear board</b> are free too.</>,
       ]}
       knack="The rack supply is the lever. When the sums leave two ways to fill a line, the tiles you have left leave one."
-      footer="Placing a tile costs a move, and so does moving one; sending a tile home does not. Using exactly as many moves as there are tiles is a perfect 10, and every two extra moves cost a point. Ties break on fewest extra moves, then fastest time. One free hint, on your first ever play, fills the next square you can work out."
+      footer="Placing a tile costs a move, and so does moving one; sending a tile home does not. Using exactly as many moves as there are tiles is the cleanest solve. Fewer extra moves, then a faster time, rank higher on the board. One free hint, on your first ever play, fills the next square you can work out."
     />
   );
 
@@ -974,7 +976,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
             { v: `${linesOk}/${2 * N}`, k: 'lines' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: g.moves, k: `moves \u00b7 fewest ${FEWEST}` },
             { v: elapsed, k: 'time' },
           ]}
@@ -1323,7 +1325,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
             outcome={won ? 'won' : 'lost'}
             challengeMetric={won ? g.moves : null}
             title={endSolved(won)}
-            detail={`${won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0}/10 \u00b7 ${g.moves} moves \u00b7 ${elapsed}`}
+            detail={`${resultText} \u00b7 ${g.moves} moves \u00b7 ${elapsed}`}
             iq={iq}
             board={dailyBoard}
             gameRank={allTime && allTime.ready
@@ -1433,10 +1435,10 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           modal
           self="tally"
           won={won}
-          headline={won ? <>Grid balanced!</> : <>You scored {Math.round(((won ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? <>Grid balanced!</> : <>{GOOD_EFFORT}</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {g.moves} move{g.moves === 1 ? '' : 's'} &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; the balanced grid is shown above</>}
+            ? <>Solved &middot; {g.moves} move{g.moves === 1 ? '' : 's'} &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Unfinished &middot; the balanced grid is shown above</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
@@ -1476,7 +1478,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           Tally is a free daily number puzzle from Mind Loft, a logic puzzle in the sudoku family with a ledger twist. Each day gives you a grid and a rack of number tiles. Place every tile so that each row and each column adds up to the target printed at its end.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          What sets it apart from kakuro or a magic square is the supply. You have exactly the tiles you need, no more, no fewer, so when the arithmetic alone leaves two ways to finish a line, counting what is left on the rack settles it. Every board opens with one row or column a single square short, has a single solution you can reach by working it out, and solving it with no wasted moves scores a perfect ten.
+          What sets it apart from kakuro or a magic square is the supply. You have exactly the tiles you need, no more, no fewer, so when the arithmetic alone leaves two ways to finish a line, counting what is left on the rack settles it. Every board opens with one row or column a single square short, has a single solution you can reach by working it out, and solving it with no wasted moves is the cleanest finish there is.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new ledger drops every day at midnight Eastern, and Sundays step up to a bigger 6&times;6 board. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword, <a href="/span" style={{ color: INK, fontWeight: 800 }}>Span</a>, our geography puzzle, and <a href="/dating" style={{ color: INK, fontWeight: 800 }}>Dating</a>, our history puzzle.

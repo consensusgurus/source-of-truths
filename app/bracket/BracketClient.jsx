@@ -439,7 +439,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
         <>Everything reveals at once, with the real numbers under every name.</>,
       ]}
       knack="the first round is deliberately lopsided and the final is close on purpose. Getting round one right is not the puzzle. The puzzle is that a single bad call in round one takes every later pick down with it, exactly like a busted Final Four."
-      footer={`Pool scoring: 1 a pick in the first round, 2 in the quarters, 4 in the semis, 8 for the final. Every round is worth ${N / 2}, so ${TOTAL} is perfect. A later pick only counts if the thing you advanced really did win that slot.`}
+      footer={`Pool scoring: 1 a pick in the first round, 2 in the quarters, 4 in the semis, 8 for the final. Every round is worth ${N / 2}, so ${TOTAL} points is perfect. A later pick only counts if the thing you advanced really did win that slot.`}
     />
   );
 
@@ -696,7 +696,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
             { v: `${filled}/${MATCHES}`, k: 'picks' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: score, k: score === 1 ? 'point' : 'points' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -792,7 +792,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 560, margin: '14px 0 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px', flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score} pt{score === 1 ? '' : 's'}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {won ? <>A perfect bracket. Nothing busted.</> : solShown ? <>{champion.name} took it at {fmtValue(champion.value, PUZZLE.unit)}.</> : <>Your bracket busted.</>}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>
@@ -822,7 +822,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
               title={endGrade(score, TOTAL)}
-              detail={`${`${score}/${TOTAL}`} \u00b7 ${elapsed}`}
+              detail={`${score} point${score === 1 ? '' : 's'} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -906,7 +906,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="bracket" won={won} completed
           headline={won ? <>A perfect bracket</> : <>The field is settled</>}
-          subline={<>Bracket #{PUZZLE.num} &middot; {score}/{TOTAL} &middot; {elapsed}</>}
+          subline={<>Bracket #{PUZZLE.num} &middot; {score} point{score === 1 ? '' : 's'} &middot; {elapsed}</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'} onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
@@ -949,7 +949,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
     const streakBit = isTodays && myStats.cur >= 2 && g.status !== 'playing' ? ` · streak ${myStats.cur}` : '';
     const text = playing
       ? `Bracket #${PUZZLE.num}: the daily bracket of facts from Mind Loft.\n${withRef(`mindloftdaily.com/bracket${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`
-      : `Bracket #${PUZZLE.num} · ${score}/${TOTAL}\n${rows}${streakBit}\n${withRef(`mindloftdaily.com/bracket${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`;
+      : `Bracket #${PUZZLE.num} · ${score} point${score === 1 ? '' : 's'}\n${rows}${streakBit}\n${withRef(`mindloftdaily.com/bracket${isTodays ? '' : `?p=${PUZZLE.num}`}`)}`;
     if (notifyShareCredit(text)) return;
     try { if (typeof navigator !== 'undefined' && navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}

@@ -72,7 +72,8 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { CELLS, boxOf, legalRemovals, bestRemoval, scoreFor } from '@/lib/whittle-core';
-import { endGrade } from '@/lib/end-verdict';
+import { endGrade, endEfficiency } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 // Whittle's identity is the bronze end of the Sudoku row, the one warm dark
 // step none of the other nine wears (Suds orange, Quilt magenta, Cages purple,
@@ -549,7 +550,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
     const hintBit = g.hintUsed ? ' · \u{1F4A1}' : '';
     const slipBit = g.slips ? ` · ${g.slips} slip${g.slips === 1 ? '' : 's'}` : '';
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
-    const head = `Whittle #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · down to ${left}${perfectHit ? ' — perfect' : ` (perfect is ${PERFECT})`}${slipBit}${hintBit}${streakBit}`;
+    const head = `Whittle #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · down to ${left}${perfectHit ? ' · perfect' : ` (perfect is ${PERFECT})`}${slipBit}${hintBit}${streakBit}`;
     return `${head}\n${squares}\n${shareUrl()}`;
   }
   function copyShare() {
@@ -616,7 +617,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
         <>The board ends itself the moment nothing more can come out. <b>Perfect</b> is the fewest clues any order can leave, and it is printed on the board from the start.</>,
       ]}
       knack="Ask what would fill the square if the clue were gone. If the only digit that fits is the one already there, it comes out. The clue you cannot take is usually one of four squares sitting on the corners of a rectangle in two boxes, holding just two digits between them: lift it and those four can spin round into a second answer."
-      footer="Ten out of ten for reaching perfect, and two points a clue for every one left above it, with a floor of one. Slips do not cost you score, only the tiebreak. One free hint, on your first ever play, lifts a clue that keeps the best finish open. Sundays are the least forgiving deal of the week."
+      footer="The fewer clues you leave standing, the higher you rank, and reaching perfect is the best finish there is. Slips only break ties, then the clock. One free hint, on your first ever play, lifts a clue that keeps the best finish open. Sundays are the least forgiving deal of the week."
     />
   );
 
@@ -821,7 +822,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={perfectHit ? 'won' : 'lost'}
             challengeMetric={left}
-            title={perfectHit ? 'Perfect!' : endGrade(score, 10)}
+            title={perfectHit ? 'Perfect!' : endEfficiency(score > 0, score)}
             detail={`${detail} · ${elapsed}`}
             missLabel="Slips"
             iq={iq}
@@ -841,7 +842,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
                 sunday: !!p.sunday,
                 href: `/whittle?p=${p.num}`,
                 done: !!(myStats.rec && myStats.rec[p.num]),
-                score: myStats.rec && myStats.rec[p.num] ? myStats.rec[p.num].s : null,
+                score: myStats.rec && myStats.rec[p.num] ? scoreText('whittle', myStats.rec[p.num].s, myStats.rec[p.num].t) : null,
               }))}
             options={[
               { tone: 'board', label: 'See the board', sub: 'What you left standing', onClick: () => setRevealed(true) },
@@ -957,7 +958,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
           Whittle is a free daily puzzle from Mind Loft, and it is a sudoku played backwards. Every other sudoku hands you an empty grid and asks you to fill it. Whittle hands you a finished 6 by 6 grid with eighteen of its digits printed as clues, and asks you to take clues away. A clue can come out only while the grid still has exactly one answer, so the whole game is deciding which one to lift next.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          The solution is on show from the first second, because Whittle never asks what the answer is. It asks what the grid can survive losing. Nothing goes back once it is out, and the day ends the moment not one of the clues left can come out, so the order you choose is the score. Every board carries the proven fewest clues any order can leave, and reaching it is a perfect ten.
+          The solution is on show from the first second, because Whittle never asks what the answer is. It asks what the grid can survive losing. Nothing goes back once it is out, and the day ends the moment not one of the clues left can come out, so the order you choose is what ranks you. Every board carries the proven fewest clues any order can leave, and reaching it is perfect.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new board drops every day at midnight Eastern, and Sunday is the least forgiving deal of the week. No app, no signup, play free in your browser, keep a streak, and race the leaderboard. Want to fill a grid in instead? Try <a href="/sixes" style={{ color: INK, fontWeight: 800 }}>Sixes</a>, the mini sudoku on this same board, <a href="/suds" style={{ color: INK, fontWeight: 800 }}>Suds</a>, our classic 9 by 9, and <a href="/cages" style={{ color: INK, fontWeight: 800 }}>Cages</a>, the killer sudoku.

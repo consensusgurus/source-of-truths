@@ -66,7 +66,8 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { parFor, stepFor, scoreFor } from '@/lib/par';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endEfficiency } from '@/lib/end-verdict';
+import { endEfficiency, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -806,7 +807,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
       knack={HAS_RAILS
         ? 'Follow the old track. A free lane is worth a detour to reach, and the network that uses it rarely looks like the short one.'
         : 'Share one crossing. You pay the river somewhere, and two lanes of detour on open ground beats paying 3 again.'}
-      footer={<><b>Perfect</b>, the solver-proved cheapest network on the board, scores 10; a point comes off per {step} over, so par is 8. Ties break on cost, then time. Boards get harder across the week: cliffs from Thursday, old track and a ninth town on Friday and Saturday, and a 13&times;13 Sunday Edition with eleven towns.</>}
+      footer={<><b>Perfect</b> is the solver-proved cheapest network on the board. The cheaper your network, the higher you rank, and a faster time breaks a tie. Boards get harder across the week: cliffs from Thursday, old track and a ninth town on Friday and Saturday, and a 13&times;13 Sunday Edition with eleven towns.</>}
     />
   );
 
@@ -836,7 +837,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
             { v: `${linked}/${TOWNS.length}`, k: 'linked' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: won ? 'Solved' : 'Unfinished', k: 'result' },
             { v: cost, k: 'cost' },
             { v: elapsed, k: 'time' },
           ]}
@@ -1211,7 +1212,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/paths?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('paths', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
@@ -1294,10 +1295,10 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           modal
           self="paths"
           won={won}
-          headline={won ? (over === 0 ? <>Perfect network!</> : <>Linked for {cost}</>) : <>You scored 0%</>}
+          headline={won ? (over === 0 ? <>Perfect network!</> : <>Linked for {cost}</>) : <>{GOOD_EFFORT}</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {over === 0 ? 'nothing cheaper exists' : `${over} over perfect ${perfect}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; a cheapest network is shown above</>}
+            ? <>Solved &middot; {over === 0 ? 'nothing cheaper exists' : `${over} over perfect ${perfect}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Unfinished &middot; a cheapest network is shown above</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
@@ -1338,7 +1339,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           The trick is that towns are cheaper to link in bunches than one at a time. A lane you lay to reach one town is free for the next town that runs along it, which is why the obvious connect-the-nearest-town network is always several over, and why one shared trunk line through a single crossing usually beats three separate detours around the river.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Every board carries a proven cheapest network, so a perfect score is real and nobody beats it. A new board drops at midnight Eastern, and the week ramps: open ground Monday to Wednesday, cliffs from Thursday, old track and a ninth town on Friday and Saturday, and a 13&times;13 Sunday Edition with eleven towns and every element at once. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/hedge" style={{ color: INK, fontWeight: 800 }}>Hedge</a>, our daily loop, <a href="/parker" style={{ color: INK, fontWeight: 800 }}>Parker</a>, our gridlock puzzle, and <a href="/span" style={{ color: INK, fontWeight: 800 }}>Span</a>, our border chain.
+          Every board carries a proven cheapest network, so perfect is real and nobody beats it. A new board drops at midnight Eastern, and the week ramps: open ground Monday to Wednesday, cliffs from Thursday, old track and a ninth town on Friday and Saturday, and a 13&times;13 Sunday Edition with eleven towns and every element at once. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/hedge" style={{ color: INK, fontWeight: 800 }}>Hedge</a>, our daily loop, <a href="/parker" style={{ color: INK, fontWeight: 800 }}>Parker</a>, our gridlock puzzle, and <a href="/span" style={{ color: INK, fontWeight: 800 }}>Span</a>, our border chain.
         </p>
       </section>
 

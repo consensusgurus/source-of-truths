@@ -304,7 +304,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
   const swapsLeft = Math.max(0, BUDGET - g.swaps);
   const extra = Math.max(0, g.swaps - PAR);
-  const finalScore = won ? Math.max(1, Math.min(10, 10 - 2 * extra)) : 0;
+  const finalScore = won ? 10 : 0;
   const tileColors = useMemo(() => colorsOf(cells, TARGET, LINES), [cells, TARGET, LINES]);
   const homeCount = useMemo(() => { let k = 0; for (let i = 0; i < N; i++) if (cells[i] === TARGET[i]) k++; return k; }, [cells, TARGET, N]);
 
@@ -462,8 +462,11 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
   function finish(g2) {
     if (g2.status === 'won') {
       vibrate(HAPT.win);
-      const over = Math.max(0, g2.swaps - PAR);
-      postResult(g2, Math.max(1, Math.min(10, 10 - 2 * over)));
+      // ANY SOLVE IS FULL CREDIT (owner, 2026-10-26). Barter ranks on runs and
+      // the clock from this date, so the old 10-minus-2-per-trade-over-par scale
+      // no longer orders anything; a solve posts 10 of 10. Trades over par still
+      // ride in guessesUsed for the record.
+      postResult(g2, 10);
     } else {
       vibrate(HAPT.wrong);
       // The board is LEFT AS THE PLAYER LEFT IT (owner, 2026-08-26). It used to
@@ -628,7 +631,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
       ]}
       knack="Do not spend a trade to test a theory the colors can settle. Read the faded tiles across BOTH words at a crossing before you move anything, and hunt for trades that home two tiles at once — par is built entirely out of those."
       note={<>Run out of trades and the run ends with the board where you left it, so come back at it. The answer is one arrangement, and the colors always point at it.</>}
-      footer="Solve at par for a perfect 10; every extra trade costs 2 points. Ties break on fewest trades over par, then fastest time. Sundays are a bigger 7×7 Edition."
+      footer="Any solve counts. The board ranks you on how few runs the solve took, then on time, so a first-run solve beats a faster second one. Sundays are a bigger 7×7 Edition."
     />
   );
 
@@ -658,7 +661,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: `${homeCount}/${N}`, k: 'home' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: won ? 'Solved' : 'Unfinished', k: 'result' },
             { v: g.swaps, k: 'trades' },
             { v: `${homeCount}/${N}`, k: 'home' },
             { v: elapsed, k: 'time' },
@@ -968,10 +971,10 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           modal
           self="barter"
           won={won}
-          headline={won ? (extra === 0 ? <>Perfect!</> : <>Solved!</>) : <>You scored {Math.round(((won ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? (extra === 0 ? <>Perfect!</> : <>Solved!</>) : <>Good effort</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {extra === 0 ? `a perfect ${g.swaps}-trade game` : `${g.swaps} trades`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; the words are shown above</>}
+            ? <>{extra === 0 ? `a perfect ${g.swaps}-trade game` : `${g.swaps} trades`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Unfinished &middot; the board stays as you left it</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

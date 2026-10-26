@@ -49,7 +49,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import StageToday from './StageToday';
 import { useStageTheme } from '@/lib/stage-theme';
-import { DAILY_GAMES, DAILY_GAME_MAP } from '@/lib/daily-games';
+import { DAILY_GAMES, DAILY_GAME_MAP, scoreText, keyOfQuizId } from '@/lib/daily-games';
 import { CIRCUITS, ALL_CIRCUITS, DISPLAY_CIRCUITS, CIRCUIT_BASE, SUDOKU_POOL, circuitById, circuitKeysFor, circuitPageHref, circuitEntryHref } from '@/lib/circuits';
 import { catBlue } from '@/lib/home-blues';
 import StageLadder from '../StageLadder';
@@ -1624,7 +1624,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
                           <div key={(r && r.userKey) || i} className={'tdy-lr' + (i === 0 ? ' first' : '') + (meKey && r && r.userKey === meKey ? ' me' : '')}>
                             <b>{(r && r.rank) || i + 1}</b>
                             <span className="nm">{i === 0 ? CROWN : null}{(r && r.username) || 'Player'}{meKey && r && r.userKey === meKey ? ' · You' : ''}</span>
-                            <span className="cell">{r && r.score != null ? `${r.score}${r.total ? '/' + r.total : ''}` : ''}</span>
+                            <span className="cell">{r && r.score != null ? scoreText(pickGame, r.score, r.total) : ''}</span>
                             {missLabel ? <span className="cell">{eg ? (r && r.tries != null ? r.tries : '—') : (r && r.guessesUsed != null ? r.guessesUsed : '—')}</span> : null}
                             <span className="cell">{fmtClock(r && r.timeElapsed)}</span>
                             <span className="cell pts">{fmtPts(r && r.points)}</span>
@@ -1729,7 +1729,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
                       {feedDate(p.quizId) ? <i className="fdt">{feedDate(p.quizId)}</i> : null}
                       {n > 0 ? <i className="fx" title={tot > 0 ? `Play ${n.toLocaleString()} of ${tot.toLocaleString()} today` : `Play ${n.toLocaleString()} today`}>{`play #${n.toLocaleString()}`}</i> : null}
                     </span>
-                    {p && p.total > 0 ? <span className="gm">{`${p.score}/${p.total}`}</span> : <span className="gm" />}
+                    {p && p.total > 0 ? <span className="gm">{keyOfQuizId(p.quizId) ? scoreText(keyOfQuizId(p.quizId), p.score, p.total) : `${p.score}/${p.total}`}</span> : <span className="gm" />}
                     <span className="sc">{agoLabel(p.playedAt)}</span>
                   </div>
                 );

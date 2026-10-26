@@ -33,7 +33,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import GameGlyph from './GameGlyph';
 import { Play, X, Flame, Crown, ChevronLeft, ChevronRight, CalendarDays, Trophy, TrendingUp, Share2, Users, Star } from 'lucide-react';
-import { DAILY_GAME_MAP } from '../lib/daily-games';
+import { DAILY_GAME_MAP, scoreView, scoreText } from '../lib/daily-games';
 import { T } from '@/lib/theme';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 // gameStats/mmss moved to lib/daily-row-stats.js so the stage's leader strip
@@ -207,7 +207,7 @@ export default function DailyTilePanel({
 
   const todayScore = todayRow
     ? (todayRow.total != null && Number(todayRow.total) > 0
-      ? fmtPts(todayRow.score) + '/' + fmtPts(todayRow.total)
+      ? (scoreView(game.key) ? scoreText(game.key, todayRow.score, todayRow.total) : fmtPts(todayRow.score) + '/' + fmtPts(todayRow.total))
       : (todayRow.score != null ? fmtPts(todayRow.score) : fmtPts(todayRow.points)))
     : null;
   const beatPct = (todayRow && todayField > 0)

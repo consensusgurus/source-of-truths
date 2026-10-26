@@ -68,7 +68,8 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved } from '@/lib/end-verdict';
+import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -550,6 +551,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   const prevPuzzle = puzzles.find((x) => x.num === PUZZLE.num - 1) || null;
   const myStats = deriveStats(stats, pickPuzzle(puzzles, null).num);
   const finalScore = won ? Math.max(1, Math.min(10, 10 - (hops - PUZZLE.perfect))) : 0;
+  const resultText = scoreText('span', finalScore, 10);
 
   const REC_KEY = `sot_span_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
@@ -840,7 +842,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
       note={isSundayEd && sundayRule ? (
         <><b>Sunday Edition:</b> {VIA ? <>your road must pass through <b>{VIA}</b> before it reaches {PUZZLE.end}. The {PUZZLE.perfect}-hop shortest road already takes the detour.</> : <><b>{AVOID}</b> is closed today, so the road has to go around it. The {PUZZLE.perfect}-hop shortest road already does.</>}</>
       ) : null}
-      footer="Score is 10 if your final chain matches perfect, minus one for each country over. Misses break leaderboard ties. One free hint, on your first ever play, walks you one step down a shortest road."
+      footer="A final chain that matches perfect ranks highest, and each country over ranks lower. Misses, then the clock, break leaderboard ties. One free hint, on your first ever play, walks you one step down a shortest road."
     />
   );
 
@@ -871,7 +873,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
             { v: PUZZLE.perfect, k: 'perfect' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: hops, k: 'hops' },
             { v: elapsed, k: 'time' },
           ]}
@@ -1227,7 +1229,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? hops : null}
               title={endSolved(won)}
-              detail={`${finalScore} \u00b7 ${hops} hops \u00b7 ${elapsed}`}
+              detail={`${resultText} \u00b7 ${hops} hops \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1336,10 +1338,10 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
           modal
           self="span"
           won={won}
-          headline={won ? <>You made the span!</> : <>You scored {Math.round(((won ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? <>You made the span!</> : <>{GOOD_EFFORT}</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {hops} hops (perfect {PUZZLE.perfect}) &middot; {g.misses} miss{g.misses === 1 ? '' : 'es'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; a shortest road is below</>}
+            ? <>Solved &middot; {hops} hops (perfect {PUZZLE.perfect}) &middot; {g.misses} miss{g.misses === 1 ? '' : 'es'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Unfinished &middot; a shortest road is below</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

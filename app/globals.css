@@ -1458,3 +1458,28 @@ html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;
    carries .crt. */
 html:is([data-stage-pastel='plain'], [data-stage-tone='plain']) .stage-page .crt { background: var(--court-gl) !important; }
 html:is([data-stage-pastel='dark'], [data-stage-tone='dark']) .stage-page .crt { background: var(--court-gd) !important; }
+
+/* THE SLOTS POP (owner, 2026-10-26: Barter's tiles "don't pop enough"). In the
+   colour looks the home square was the pastel crushed to near-black and the
+   near square a wash barely off white, so the board read as grey. Both now take
+   the category's OWN hue at full strength: home a saturated mid step with white
+   letters, near a bright light step with dark ones. Chroma is scaled from the
+   pastel and capped, so a near-neutral category stays neutral instead of being
+   handed an invented hue. Browsers without relative colour keep the old pair.
+   Used by Anon and Barter (the --stg-slot-* consumers). */
+@supports (color: oklch(from red l c h)) {
+  html[data-stage-pastel='color'] .stage-page,
+  html[data-stage-pastel='tint'] .stage-page,
+  html[data-stage-tone='color'] .stage-page,
+  html[data-stage-tone='tint'] .stage-page {
+    --stg-slot-line2: oklch(from var(--sp-g, #c9d2fd) 0.5 clamp(0, calc(c * 2.6), 0.17) h);
+    --stg-slot-fill: oklch(from var(--sp-g, #c9d2fd) 0.83 clamp(0, calc(c * 1.9), 0.12) h);
+    --stg-slot-on-ink: #ffffff;
+  }
+  html[data-stage-pastel='darktint'] .stage-page,
+  html[data-stage-tone='darktint'] .stage-page {
+    --stg-slot-line2: oklch(from var(--sp-g, #c9d2fd) 0.8 clamp(0, calc(c * 2.2), 0.15) h);
+    --stg-slot-fill: oklch(from var(--sp-g, #c9d2fd) 0.42 clamp(0, calc(c * 1.8), 0.11) h);
+    --stg-slot-on-ink: #0b0f1a;
+  }
+}

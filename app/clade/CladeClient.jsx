@@ -53,6 +53,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { ANIMALS } from './animals';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 // A new game gets no colour of its own: on the stage it wears the Trivia step
 // of the category ramp. ACCENT is only the legacy (pre-stage) fallback.
@@ -550,7 +551,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
         <>You have <b>eight guesses</b>. Name the hidden animal to win.</>,
       ]}
       knack="Start wide. A mammal, a bird and an insect in your first few guesses tell you which part of the tree to stay in, and then each guess should come from inside the deepest branch showing."
-      footer="Solving on your first guess scores 10, and each further guess takes a point off, down to 3 on the eighth. Running out, or revealing the answer, scores 0. One free hint, on your first ever play, shows the next branch down. The Sunday Edition hides a rare animal."
+      footer="Fewer guesses rank higher, and a faster time breaks a tie. Running out, or revealing the answer, leaves it unfinished. One free hint, on your first ever play, shows the next branch down. The Sunday Edition hides a rare animal."
     />
   );
 
@@ -587,9 +588,8 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
           </div>
         );
         const noMatch = fold(q).length >= 2 && !opts.length;
-        const next = Math.max(1, 10 - guesses.length);
         const down = guesses.length;
-        const foot = `${down} ${down === 1 ? 'guess' : 'guesses'} down · ${left} left · ${next} ${next === 1 ? 'point' : 'points'} if the next one lands`;
+        const foot = `${down} ${down === 1 ? 'guess' : 'guesses'} down · ${left} left`;
         const top = (
           <>
             <style dangerouslySetInnerHTML={{ __html: `
@@ -1035,7 +1035,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
                 sunday: !!p.sunday,
                 href: `/clade?p=${p.num}`,
                 done: !!(myStats.rec && myStats.rec[p.num]),
-                score: myStats.rec && myStats.rec[p.num] ? myStats.rec[p.num].s : null,
+                score: myStats.rec && myStats.rec[p.num] ? scoreText('clade', myStats.rec[p.num].s, myStats.rec[p.num].t) : null,
               }))}
             options={[
               won
@@ -1154,7 +1154,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
           Clade is a free daily animal guessing game from Mind Loft. One animal is hidden, and every guess you make is answered with the closest branch of the animal family tree that your guess shares with it. A branch is a group of related animals: Vertebrates, Mammals, Carnivores, the Dog family.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Guess a bald eagle against a hidden fox and you learn only that both are vertebrates. Guess a house cat and you learn it is a carnivore. Guess a wolf and you are inside the dog family, with one or two names left to try. You have eight guesses, and the score is how few you needed.
+          Guess a bald eagle against a hidden fox and you learn only that both are vertebrates. Guess a house cat and you learn it is a carnivore. Guess a wolf and you are inside the dog family, with one or two names left to try. You have eight guesses, and the fewer you need, the higher you rank.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new animal drops every day at midnight Eastern, well known early in the week and a rare one in the Sunday Edition. The tree uses the familiar groups a field guide does. No app, no signup, play free in your browser. More daily guessing: try <a href="/dossier" style={{ color: INK, fontWeight: 800 }}>Dossier</a>, <a href="/ping" style={{ color: INK, fontWeight: 800 }}>Ping</a> and <a href="/focus" style={{ color: INK, fontWeight: 800 }}>Focus</a>.

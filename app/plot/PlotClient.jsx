@@ -56,7 +56,8 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved } from '@/lib/end-verdict';
+import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -295,6 +296,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
   // What the game actually posted, mirroring the win path: 10 down one point
   // per two errors, floored at 1, and 0 for a give-up.
   const finalScore = won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0;
+  const resultText = scoreText('plot', finalScore, 10);
   const endScore = finalScore;
 
   // Which claims are legal but not part of the solution. Derived every render
@@ -753,7 +755,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
       ]}
       knack="Start where a number has nowhere else to go: a 1 is its own cell, and a number in a corner or against an edge usually has only one shape that fits."
       note={<>A plot that fits its number but is in the wrong place turns <b>striped</b> and counts as an error. Hand it back to carry on.</>}
-      footer="A clean solve with no errors is a perfect 10, every two errors cost a point. Ties break on fewest errors, then fastest time. Sundays are a bigger 12×12 Edition."
+      footer="Divide the whole board to solve it. Fewer errors, then a faster time, rank higher on the board. Sundays are a bigger 12×12 Edition."
     />
   );
 
@@ -783,7 +785,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: `${claimed}/${CELLS}`, k: 'claimed' },
           ] : [
-            { v: endScore, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: errors, k: 'errors' },
             { v: elapsed, k: 'time' },
           ]}
@@ -1038,14 +1040,14 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
                   return (
                     <div className="pl-err" style={{ background: `color-mix(in srgb, ${P_BAD} 12%, ${P_CELL})`, borderColor: P_BAD }}>
                       <span className="pl-lab" style={{ color: P_BAD }}>{errWord} &middot; {span}</span>
-                      <span className="pl-errtx" style={{ color: INK }}>That fits the number, but it is not where the plot goes. Tap it to hand it back.<span className="pl-err-tail"> Every two errors cost a point off 10.</span></span>
+                      <span className="pl-errtx" style={{ color: INK }}>That fits the number, but it is not where the plot goes. Tap it to hand it back.<span className="pl-err-tail"> Errors count against you on the board.</span></span>
                     </div>
                   );
                 }
                 return (
                   <div className="pl-err" style={{ background: 'var(--stg-surf, transparent)', borderColor: 'var(--stg-line2, rgba(28,30,36,0.2))' }}>
                     <span className="pl-lab" style={{ color: FADED }}>{errors > 0 ? errWord : 'No errors yet'}</span>
-                    <span className="pl-errtx" style={{ color: 'var(--stg-ink2, #3f4652)' }}>A clean solve is a perfect 10. Every two errors cost a point.</span>
+                    <span className="pl-errtx" style={{ color: 'var(--stg-ink2, #3f4652)' }}>Fewer errors rank higher on the board.</span>
                   </div>
                 );
               })()}
@@ -1116,7 +1118,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? errors : null}
               title={endSolved(won)}
-              detail={`${endScore} \u00b7 ${errors} errors \u00b7 ${elapsed}`}
+              detail={`${resultText} \u00b7 ${errors} errors \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1217,10 +1219,10 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
           modal
           self="plot"
           won={won}
-          headline={won ? <>Board surveyed!</> : <>You scored {Math.round(((won ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? <>Board surveyed!</> : <>{GOOD_EFFORT}</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; the map is shown above</>}
+            ? <>Solved &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Unfinished &middot; the map is shown above</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

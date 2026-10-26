@@ -55,7 +55,8 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved } from '@/lib/end-verdict';
+import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -389,6 +390,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
   const prevPuzzle = puzzles.find((x) => x.num === PUZZLE.num - 1) || null;
   const myStats = deriveStats(stats, pickPuzzle(puzzles, null).num);
   const finalScore = won ? Math.max(1, 10 - tears) : 0;
+  const resultText = scoreText('extra', finalScore, 10);
 
   const REC_KEY = `sot_extra_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
@@ -567,7 +569,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
         <>One free <b>hint</b>, on your first ever play, reveals the dateline: the paper&rsquo;s date and place.</>,
       ]}
       knack="A wrong guess and a deliberate tear cost exactly the same, so when you are unsure, tear on purpose rather than guess and hope."
-      footer="Naming it with zero tears is a cold read, a perfect 10, and every tear costs a point. Ties break on fewest tears, then fastest time. Sundays run a trickier story."
+      footer="Naming it with zero tears is a cold read. Fewer tears, then a faster time, rank higher on the board. Sundays run a trickier story."
     />
   );
 
@@ -598,7 +600,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
           figures={playing ? [
             { v: `${tears}/${MAX_TEARS}`, k: 'tears' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: `${tears}/${MAX_TEARS}`, k: 'tears' },
           ]}
         />
@@ -830,7 +832,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? tears : null}
               title={endSolved(won)}
-              detail={`${finalScore} \u00b7 ${`${tears}/${MAX_TEARS}`} tears`}
+              detail={`${resultText} \u00b7 ${`${tears}/${MAX_TEARS}`} tears`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -939,10 +941,10 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
           modal
           self="extra"
           won={won}
-          headline={won ? <>Nailed the read!</> : <>You scored {Math.round((finalScore / 10) * 100)}%</>}
+          headline={won ? <>Nailed the read!</> : <>{GOOD_EFFORT}</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {tears === 0 ? 'a perfect cold read' : `named it with ${tears} tear${tears === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; the story got away</>}
+            ? <>Solved &middot; {tears === 0 ? 'a perfect cold read' : `named it with ${tears} tear${tears === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Unfinished &middot; the story got away</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
@@ -982,7 +984,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
           Extra is a free daily history puzzle from Mind Loft, the daily front page. Each day resurrects one of history&rsquo;s great headlines with the giveaway words blacked out, newsroom-censor style. Your job: name the story.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Guess wrong, or press the tear button, and one more word rips free, six tears and the page is bare. Name the story straight off the fully redacted page and that&rsquo;s a cold read, the perfect score. A free hint reveals the dateline if you need a foothold in time.
+          Guess wrong, or press the tear button, and one more word rips free, six tears and the page is bare. Name the story straight off the fully redacted page and that&rsquo;s a cold read, the cleanest solve. A free hint reveals the dateline if you need a foothold in time.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           {gameRetired ? (

@@ -559,7 +559,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
   function shareText() {
     const sq = rs.map((x) => (x.complete ? (x.shown ? '\u{1F7E8}' : '\u{1F7E9}') : '⬛')).join('');
     const fin = g.finale ? '✨' : '⬛';
-    return `Arcos #${PUZZLE.num} · ${score}/${TOTAL} · ${elapsed}\n${sq} ${fin}\n${withRef('mindloftdaily.com/arcos')}`;
+    return `Arcos #${PUZZLE.num} · ${score} point${score === 1 ? '' : 's'} · ${elapsed}\n${sq} ${fin}\n${withRef('mindloftdaily.com/arcos')}`;
   }
   function copyShare() {
     const text = playing
@@ -800,7 +800,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
           done: r === 3 ? g.finale : rs[r].complete, cur: g.round === r,
           onClick: () => goRound(r), label: r === 3 ? 'The finale' : `Acrostic ${r + 1}`,
         }));
-        const foot = `${roundsDone} of 3 acrostics · ${score} of ${TOTAL} points`;
+        const foot = `${roundsDone} of 3 acrostics · ${score} point${score === 1 ? '' : 's'}`;
         const giveUp = { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); finish(g); } else { setArmReveal(Date.now()); } } };
         const nav = { onBack: () => goStop(at - 1), onNext: () => goStop(at + 1), pips };
         if (atFinale) {
@@ -873,7 +873,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
             { v: `${roundsDone} of 3`, k: 'rounds' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: score, k: score === 1 ? 'point' : 'points' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -1011,8 +1011,8 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
               name="Arcos"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={won ? 'A clean sweep!' : (g.finale ? `${finWord} found` : (score > 0 ? `${score} of ${TOTAL}` : GOOD_EFFORT))}
-              detail={`${score}/${TOTAL} · ${roundsDone} of 3 acrostics · ${elapsed}`}
+              title={won ? 'A clean sweep!' : (g.finale ? `${finWord} found` : (score > 0 ? `${score} point${score === 1 ? '' : 's'}` : GOOD_EFFORT))}
+              detail={`${score} point${score === 1 ? '' : 's'} · ${roundsDone} of 3 acrostics · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1107,7 +1107,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
           modal
           self="arcos"
           won={won}
-          headline={<>{score} of {TOTAL}</>}
+          headline={<>{score} point{score === 1 ? '' : 's'}</>}
           subline={<>{PUZZLE.finale} &middot; {elapsed}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}

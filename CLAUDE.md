@@ -10295,3 +10295,55 @@ beside Hold). Tiles `public/games/btn-mahj.png` and the blue copy from
   port's scrollbar is INVISIBLE (scrollbar-width none plus ::-webkit-scrollbar display none); the
   minimap is how a player sees where they are.
 
+
+## No arbitrary fractions, and the scale comes off the move boards (owner, 2026-10-26)
+
+"I don't want to see 10/10 anywhere unless there are 10 items to guess or fill." A daily's
+posted `total` is a real count on some games (25 questions, 16 Crux marks, 9 Niche cells) and an
+invented scale on the rest (10 down to 1 for efficiency, a 100-point read, a benchmark).
+
+- **`SCORE_VIEW` in `lib/daily-games.js` classifies every scaled game**, read off each client's
+  postResult on 2026-10-26: `verdict` games read **Solved / Unfinished** (`min` is the lowest score
+  that is a solve; Ping, Warmer, Crunch and Redact post partial credit on a give-up, Chomp is solved
+  only on a full clear, Four reads Won / Drew), `points` games read **"N points"** with no
+  denominator. A game NOT in the table keeps its fraction, which is the honest default for a count.
+- **`scoreText(key, score, total)` is the one string every surface prints**, and `rowSolved(key, score,
+  total)` the one solve test. `dailyScoreText`, `scoreFig`, `gameStats` and `gameStatsShort` route
+  through it. A new surface that prints a daily result must call it, never `${score}/${total}`.
+- **A new daily game decides at launch** whether its total is a count. If it is a scale, add it to
+  `SCORE_VIEW` in the same push.
+
+**The rankings that went with it** (`attemptsModeForQuizId`, from `SCALE_OFF_CUTOVER` = 2026-10-26,
+so a day already crowned keeps its order):
+
+| Games | Mode | Order among solvers |
+|---|---|---|
+| Barter | `tries` | runs, then the clock (any solve is a solve; Barter now posts 10 on every solve) |
+| Parker, Junkyard, Impound, Topple, Roll, Chomp | `timed` | the clock, then moves |
+| Taire, Cell, Rung | `moves` | moves, then the clock |
+
+A solve always ranks above a run that never solved; the unsolved fall to depth, never to attempts.
+The player's representative run is their best by that order. Moves are `guesses_used`. The nine
+move games' registry `miss` is now **Moves** (their rows print "14 moves · 1:20", not their run
+count), and `endEfficiency` reads **Solved!** for any solve, **Perfect!** only at the proven
+minimum. The comparator lives once in `attemptsRanker`; the guest copy in `guestGameResult` mirrors
+it under `eg.order`. Gate: `node scripts/verify-scale-off.mjs`, shown to fail on a swapped order.
+
+## Desktop ending: direction B, one sheet (owner, 2026-10-26)
+
+On desktop the one-page ending (`app/StageStick.jsx`) is ONE sheet in the page's own materials:
+the raised surface with the 2px ink rule and 12px corners the rails wear, the category colour only
+on the result band across its top, the sections below divided by rules rather than boxed as pastel
+cards. While it is up the right rail folds away (`html.lc-on:has(.sst-page)`) and the sheet takes
+the width (up to 1240px). By the sheet's own width (container queries): 1000px+ is board | group |
+challenge in three columns; 700-999px is board beside group with the challenge full width under;
+below 700px it stacks. The overall board pads to five places with "Empty"; the group card lists only
+members who have played (no empty slots). "Keep playing" closes the sheet: category chips, more
+puzzles in the category, and the most-played quiz per department (`/api/quiz/popular-by-category`,
+the game's own department first). The record card is desktop-hidden; the game page's You and
+Archive tabs carry it. The phone ending is unchanged. Motion: while the colour pulls back, the sheet
+and the band's own result are already showing (`.sst-page.rt`), so the hand-off is one move; the
+sections rise in after.
+
+**Left index on a puzzle page:** the game's own category header is highlighted but NOT opened; its
+list opens only when clicked (`LayoutCInner`, `shownCat = openCat`).

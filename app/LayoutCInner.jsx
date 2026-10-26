@@ -357,7 +357,10 @@ export default function LayoutCInner({ gameKey }) {
   const swatchCat = (c) => { const sk = skillOfId(c); return sk ? RAMP_ORDER[sk.ramp] || c : c; };
   const mySkill = game && primarySkill(game.key) ? SK_PRE + primarySkill(game.key) : null;
   const myCat = game ? (ixLens === 'skill' && mySkill ? mySkill : game.cat) : null;
-  const shownCat = openCat === null ? myCat : openCat;
+  // THE GAME'S OWN CATEGORY IS MARKED, NOT OPENED (owner, 2026-10-26): its
+  // header stays highlighted so the reader sees where they are, but the list
+  // under it opens only when they click it on this page.
+  const shownCat = openCat || null;
   const pickIx = (v) => {
     setIxLens(v);
     setOpenCat(null);
@@ -739,7 +742,7 @@ export default function LayoutCInner({ gameKey }) {
           <span className="sty-ixsep" aria-hidden="true" />
           {lensCats.map(({ cat, games: gs }) => (
             <React.Fragment key={cat}>
-              <button type="button" className={'sty-ixb ct' + (cat === shownCat ? ' on' : '')} style={{ '--cc': inkFor(swatchCat(cat)), '--cfull': categoryColor(swatchCat(cat)) }}
+              <button type="button" className={'sty-ixb ct' + (cat === shownCat || cat === myCat ? ' on' : '')} style={{ '--cc': inkFor(swatchCat(cat)), '--cfull': categoryColor(swatchCat(cat)) }}
                 aria-expanded={cat === shownCat} onClick={() => toggleCat(cat)}>
                 <i aria-hidden="true" /><span>{ixLabel(cat)}</span>
               </button>

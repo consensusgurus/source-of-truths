@@ -153,7 +153,7 @@ function OutwitLiveBoard({ board }) {
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 8px', borderRadius: 6, background: r.you ? 'rgba(232,180,58,0.16)' : (i % 2 ? `var(--stg-surf, ${COLORS.cream})` : 'transparent'), border: r.you ? `1px solid ${COLORS.gold}` : '1px solid transparent' }}>
               <span style={{ flex: '0 0 26px', fontFamily: MONO, fontSize: 12, fontWeight: 500, color: r.rank <= 3 ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-mute, ${COLORS.faded})`, textAlign: 'right' }}>{r.rank}</span>
               <span style={{ flex: '1 1 auto', fontFamily: SANS, fontSize: 13, fontWeight: r.you ? 800 : 600, color: r.you ? '#8a6d1a' : `var(--stg-ink, ${COLORS.ink})`, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}{r.you ? ' \u00b7 you' : ''}</span>
-              <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 12.5, fontWeight: 500, color: `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums' }}>{r.total}<span style={{ color: `var(--stg-mute, ${COLORS.faded})`, fontSize: 10.5 }}>/10</span></span>
+              <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 12.5, fontWeight: 500, color: `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums' }}>{r.total}<span style={{ color: `var(--stg-mute, ${COLORS.faded})`, fontSize: 10.5 }}> pts</span></span>
             </div>
           ))}
         </div>
@@ -162,7 +162,7 @@ function OutwitLiveBoard({ board }) {
         <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(28,30,36,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ flex: '0 0 26px', fontFamily: MONO, fontSize: 12, fontWeight: 700, color: '#8a6d1a', textAlign: 'right' }}>{board.you.rank}</span>
           <span style={{ flex: '1 1 auto', fontFamily: SANS, fontSize: 13, fontWeight: 800, color: '#8a6d1a' }}>You</span>
-          <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 12.5, fontWeight: 500, color: `var(--stg-ink, ${COLORS.ink})` }}>{board.you.total}<span style={{ color: `var(--stg-mute, ${COLORS.faded})`, fontSize: 10.5 }}>/10</span></span>
+          <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 12.5, fontWeight: 500, color: `var(--stg-ink, ${COLORS.ink})` }}>{board.you.total}<span style={{ color: `var(--stg-mute, ${COLORS.faded})`, fontSize: 10.5 }}> pts</span></span>
         </div>
       ) : null}
       {!board.youRegistered ? (
@@ -601,7 +601,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
     const squares = (result ? result.prompts : []).map((p) => (p.pts === 2 ? '\u{1F7E9}' : p.pts === 1 ? '\u{1F7E8}' : '⬜')).join('');
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const crowdBit = result ? ` · crowd of ${fmtBig(result.poolSize)}` : '';
-    return `Outwit #${PUZZLE.num} · ${score}/${TOTAL}${crowdBit}${streakBit}\n${squares}\n${shareUrl()}`;
+    return `Outwit #${PUZZLE.num} · ${score} point${score === 1 ? '' : 's'}${crowdBit}${streakBit}\n${squares}\n${shareUrl()}`;
   }
   function shareUrl() {
     return withRef(`mindloftdaily.com/outwit${isTodays ? '' : `?p=${PUZZLE.num}`}`);
@@ -951,7 +951,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
       ]}
       knack="Play the answer you think the average player types, not the one you like. Your own taste is the trap."
       note={<><b>Nothing is final.</b> Every new player re-scores the whole field, including you, so your rank moves all day.</>}
-      footer="Each prompt pays 0, 1, or 2 points. 7 of 10 means you outwitted them, for now."
+      footer="Each prompt pays 0, 1, or 2 points. Seven or more means you outwitted them, for now."
     />
   );
 
@@ -978,10 +978,10 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
           onHelp={() => setShowHelp(true)}
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: score, k: score === 1 ? 'point' : 'points' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: score, k: score === 1 ? 'point' : 'points' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -1124,7 +1124,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '0 auto 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: sharp ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: sharp ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score} pt{score === 1 ? '' : 's'}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {sharp ? 'You outwitted the crowd.' : score >= 4 ? 'You held your own against the crowd.' : 'The crowd got you today.'}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{result.board && result.board.youRegistered && result.board.you ? <>Live rank #{result.board.you.rank} of {fmtBig(result.board.registered)} &middot; </> : null}A field of {fmtBig(result.realCount != null ? result.realCount : result.poolSize)} &middot; {elapsed}</span>
@@ -1168,7 +1168,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
               outcome={score > 0 ? 'won' : 'lost'}
               challengeMetric={result ? score : null}
               title={endGrade(score, TOTAL)}
-              detail={`${`${score}/${TOTAL}`} \u00b7 ${elapsed}`}
+              detail={`${score} point${score === 1 ? '' : 's'} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1275,7 +1275,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
           self="outwit"
           won={sharp}
           completed
-          score={<>{score}/{TOTAL}</>}
+          score={<>{score} point{score === 1 ? '' : 's'}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

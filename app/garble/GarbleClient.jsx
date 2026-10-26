@@ -556,7 +556,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
     const row = PUZZLE.words.map((_, i) => (g.solved[i] ? '\u{1F7E6}' : '⬛')).join('');
     const star = g.finalSolved ? '⭐' : '⬛';
     const score = solvedCount + (g.finalSolved ? 5 : 0);
-    return `Garble #${PUZZLE.num} · ${score}/10 · ${g.misses} miss${g.misses === 1 ? '' : 'es'} · ${elapsed}\n${row}${star}\n${withRef('mindloftdaily.com/garble')}`;
+    return `Garble #${PUZZLE.num} · ${score} point${score === 1 ? '' : 's'} · ${g.misses} miss${g.misses === 1 ? '' : 'es'} · ${elapsed}\n${row}${star}\n${withRef('mindloftdaily.com/garble')}`;
   }
   function copyShare() {
     const text = playing
@@ -672,7 +672,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
         <>Solve the finale whenever you see it. It <b>ends the puzzle</b>.</>,
       ]}
       knack="The finale is worth half the board, so a circled letter or two is often enough to call it before all five words are untangled."
-      footer="Score is out of 10: one per word, five for the finale. Fewest misses breaks ties, then time."
+      footer="One point per word, five for the finale. Fewest misses breaks ties, then time."
     />
   );
 
@@ -930,7 +930,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
               title={endSolved(won)}
-              detail={`${score} \u00b7 ${solvedCount} correct \u00b7 ${elapsed}`}
+              detail={`${score} point${score === 1 ? '' : 's'} \u00b7 ${solvedCount} correct \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1063,8 +1063,8 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
           modal
           self="garble"
           won={won}
-          headline={<>You scored {Math.round((score / 10) * 100)}%</>}
-          subline={<>{score}/10 &middot; {g.misses} miss{g.misses === 1 ? '' : 'es'} &middot; {elapsed}</>}
+          headline={<>You scored {score} point{score === 1 ? '' : 's'}</>}
+          subline={<>{g.misses} miss{g.misses === 1 ? '' : 'es'} &middot; {elapsed}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

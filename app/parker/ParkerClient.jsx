@@ -67,7 +67,8 @@ import { N, EXIT_ROW, fromData, grid, moves as legalSlides, apply, solved, solve
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endEfficiency } from '@/lib/end-verdict';
+import { endEfficiency, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -644,7 +645,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
       ]}
       knack={<>Work back from the exit lane: clear whatever stands in the arrow block&rsquo;s run first, then find what is pinning those.</>}
       note={<>There is <b>no undo</b>, only a <b>restart</b> that puts the board back and zeroes your moves, though the clock keeps running.</>}
-      footer={<>Perfect scores 10 and every {step} moves over it costs a point, so par scores 8, down to a floor of one, and finishing always beats walking away. Sundays are a much longer jam.</>}
+      footer={<>Any solve counts, and finishing always beats walking away. Your fastest solve of the day takes the board, with fewer moves breaking a tie. Sundays are a much longer jam.</>}
     />
   );
 
@@ -679,7 +680,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             ...(STAGE ? [] : [{ v: perfect, k: 'perfect' }]),
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: won ? 'Solved' : 'Unfinished', k: 'result' },
             { v: used, k: 'moves' },
             { v: perfect, k: 'perfect' },
             { v: elapsed, k: 'time' },
@@ -879,7 +880,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
             </span>
             <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
               style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <Eye size={13} /> {armReveal ? 'Tap again to give up and score nothing' : 'Give up'}
+              <Eye size={13} /> {armReveal ? 'Tap again to give up and leave it unfinished' : 'Give up'}
             </button>
           </div>
         )}
@@ -944,7 +945,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
                 : null}
               day={dayStats}
               streak={isTodays ? myStats.cur : null}
-              missLabel="Tries"
+              missLabel="Moves"
               archive={puzzles
                 .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
                 .sort((x, y) => y.num - x.num)
@@ -954,7 +955,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/parker?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('park', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
@@ -1027,10 +1028,10 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="park" won={won}
-          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : <>You&rsquo;re out.</>) : <>You scored 0%</>}
+          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : <>You&rsquo;re out.</>) : <>{GOOD_EFFORT}</>}
           subline={won
             ? <>{used} moves &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; perfect was {perfect} moves</>}
+            : <>Unfinished &middot; perfect was {perfect} moves</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}

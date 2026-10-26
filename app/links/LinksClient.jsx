@@ -611,7 +611,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
         <>Wrong, and one of your <b>four mistakes</b> is gone. <b>&ldquo;One away&rdquo;</b> is the only hint you get.</>,
       ]}
       knack={<>The words that look like they belong together usually don&apos;t. That&rsquo;s the puzzle.</>}
-      footer="Every thread you bank scores 2, out of 8. Four mistakes ends the day, and Give up ends it early, keeping what you banked."
+      footer="Every thread you bank scores 2 points. Four mistakes ends the day, and Give up ends it early, keeping what you banked."
     />
   );
 
@@ -1096,7 +1096,7 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
           modal
           self="links"
           won={won}
-          headline={<>You scored {Math.round((g.solved.length / 4) * 100)}%</>}
+          headline={<>You scored {g.solved.length * 2} point{g.solved.length * 2 === 1 ? '' : 's'}</>}
           subline={<>{g.solved.length}/4 groups &middot; {g.mistakes} mistake{g.mistakes === 1 ? '' : 's'} &middot; {elapsed}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}

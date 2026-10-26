@@ -38,6 +38,7 @@ import GameGlyph from './GameGlyph';
 import { MemePeek } from './MemeShare';
 import FinishGroupLine from './groups/FinishGroupLine';
 import { useStageChrome } from './GauntletScreens';
+import { dailyDept } from '@/lib/daily-games';
 
 const useIsoLayout = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -94,6 +95,19 @@ function Count({ fig, run }) {
   );
 }
 
+// THE OVERALL BOARD HOLDS FIVE PLACES (owner, 2026-10-26). A small field
+// left the table a row or two in a tall card; the places nobody holds yet read
+// Empty. Only a plain top of the board pads: a board that jumps (a gap row
+// carrying the reader's own place further down) is already past five.
+function padRows(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  if (list.some((r) => r.gap) || list.length >= 5) return list;
+  const top = list.reduce((m, r) => Math.max(m, Number(r.rank) || 0), 0);
+  const out = list.slice();
+  for (let k = top + 1; out.length < 5; k += 1) out.push({ empty: true, rank: k });
+  return out;
+}
+
 export default function StageStick({
   tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, run = null, allHref = '/#all',
   sheet = {}, onLeave, onBack = null, archiveHref = null, archiveLabel = 'Past puzzles', replayNow = null, meme = null, shelf = null, cats = null,
@@ -123,6 +137,20 @@ export default function StageStick({
   const heroRef = useRef(null);
   const rootRef = useRef(null);
   const tk = useMyTickets();
+  // KEEP PLAYING (owner, 2026-10-26, direction B): on desktop the bottom of
+  // the ending offers the categories, more puzzles AND quizzes, in place of
+  // the record card. The quizzes are the most-played one per department (the
+  // same cached read DailyEndCard uses), the game's own department first.
+  const [quizzes, setQuizzes] = useState(null);
+  useEffect(() => {
+    if (!desk) return undefined;
+    let alive = true;
+    fetch('/api/quiz/popular-by-category').then((r) => (r.ok ? r.json() : null)).then((d) => {
+      if (!alive || !d || !Array.isArray(d.cats)) return;
+      setQuizzes(d.cats);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, [desk]);
 
   const retract = () => {
     if (phase !== 'show') return;
@@ -144,7 +172,7 @@ export default function StageStick({
     requestAnimationFrame(() => {
       const r = hero.getBoundingClientRect();
       const W = window.innerWidth, H = window.innerHeight;
-      setClip(`inset(${Math.max(0, r.top)}px ${Math.max(0, W - r.right)}px ${Math.max(0, H - r.bottom)}px ${Math.max(0, r.left)}px round 22px)`);
+      setClip(`inset(${Math.max(0, r.top)}px ${Math.max(0, W - r.right)}px ${Math.max(0, H - r.bottom)}px ${Math.max(0, r.left)}px round 12px)`);
       timers.current.push(setTimeout(() => setPhase('inline'), RETRACT_MS + 40));
     });
   };
@@ -304,7 +332,7 @@ export default function StageStick({
     const L = hb.left + (parseFloat(cs.paddingLeft) || 0);
     const R = hb.right - (parseFloat(cs.paddingRight) || 0);
     const pb = par.getBoundingClientRect();
-    const Wd = Math.min(880, R - L);
+    const Wd = Math.min(1240, R - L);
     if (Wd <= pb.width + 1) return;
     const left = Math.max(L, Math.min(pb.left + pb.width / 2 - Wd / 2, R - Wd));
     el.style.maxWidth = 'none';
@@ -414,48 +442,102 @@ export default function StageStick({
     </div>
   );
 
+  // KEEP PLAYING, desktop (owner, 2026-10-26, direction B). The categories
+  // first, then the rest of this category and a few quizzes side by side. It
+  // stands in for the record card, which the desktop no longer shows: the
+  // game page's own You and Archive tabs carry that.
+  const myDept = s.gameKey ? dailyDept(s.gameKey) : null;
+  const quizPicks = quizzes ? quizzes.slice().sort((x, y) => (x.dept === myDept ? -1 : 0) - (y.dept === myDept ? -1 : 0)).slice(0, 4) : [];
+  const leftToday = cats ? cats.reduce((t, c) => t + Math.max(0, c.total - c.n), 0) : null;
+  const keepPlaying = (
+    <div className="sst-kp">
+      <div className="sst-kph"><b>Keep playing</b>{leftToday ? <span>{leftToday} {leftToday === 1 ? 'puzzle' : 'puzzles'} left today</span> : null}</div>
+      {cats && cats.length ? (
+        <div className="sst-cats">
+          {cats.map((c) => (
+            <a key={c.name} href={c.href} className="sst-catc" style={{ '--cc': c.bg }}>
+              <span className="n">{c.n}/{c.total}</span>{c.name}
+            </a>
+          ))}
+        </div>
+      ) : null}
+      <div className={'sst-kpg' + (quizPicks.length ? '' : ' one')}>
+        {shelf && shelf.games && shelf.games.length ? (
+          <div className="sst-shelf">
+            <div className="sst-shd2"><b>More {shelf.cat} puzzles</b>{shelf.total ? <span>{shelf.n} of {shelf.total} played</span> : null}</div>
+            <div className="sst-kpt">
+              {shelf.games.slice(0, 9).map((g) => (
+                <a key={g.key} href={g.href} className={'sst-kpc' + (g.done ? ' done' : '')}>
+                  <span className="gl"><GameGlyph gameKey={g.key} size={22} /></span>
+                  <span className="tx"><b>{g.name}</b><small>{g.done ? 'Played' : (g.time || ' ')}</small></span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : null}
+        {quizPicks.length ? (
+          <div className="sst-shelf">
+            <div className="sst-shd2"><b>Quizzes to try</b><a href="/quizzes">All quizzes</a></div>
+            <div className="sst-kpq">
+              {quizPicks.map((q) => (
+                <a key={q.id} href={q.href} className="sst-kpc q">
+                  <span className="tx"><b>{q.title}</b><small>{q.label}</small></span>
+                  <span className="ar" aria-hidden="true">&rarr;</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+
   // ── 2-5. THE CARDS ─────────────────────────────────────────────────────
   const cards = (
     <div className="sst-cards">
       {/* 2. RANKINGS */}
       {(s.rows && s.rows.length) || s.gameKey ? (
-        <section className={'sst-card ' + on(4)}>
-          {s.rows && s.rows.length ? (
-            <>
-              <div className="sst-sl">{s.boardLabel || 'Today’s board'}{s.field ? ` · ${s.field} ${s.field === 1 ? 'player' : 'players'}` : ''}</div>
-              <table className="sst-tbl"><tbody>
-                {s.rows.map((r, i) => (r.gap ? (
-                  <tr key={'g' + i} className="gap"><td colSpan={3}>&middot;&middot;&middot;</td></tr>
-                ) : (
-                  <tr key={(r.username || '') + r.rank + i} className={r.me ? 'me' : undefined}>
-                    <td className="p">#{r.rank}</td>
-                    <td className="w">{r.me ? 'You' : (r.username || 'Guest')}</td>
-                    <td className="st">{gameStats(r, s.missLabel, s.gameKey) || '—'}</td>
-                  </tr>
-                )))}
-              </tbody></table>
-            </>
-          ) : (
-            /* EMPTY SLOTS WHILE THE BOARD LOADS (owner, 2026-10-26): the card
-               holds its place, so the challenge card beside it never starts on
-               the left and jumps right when the rows land. The group board
-               gets no slots; it opens when it arrives. */
-            <>
-              <div className="sst-sl">{s.boardLabel || 'Today’s board'}</div>
-              <table className="sst-tbl sst-tbl-empty" aria-hidden="true"><tbody>
-                {[1, 2, 3, 4].map((n) => (
-                  <tr key={n}><td className="p">{n < 4 ? '#' + n : ''}</td><td className="w">{n < 4 ? '' : 'You'}</td><td className="st">—</td></tr>
-                ))}
-              </tbody></table>
-            </>
-          )}
+        <section className={'sst-card sst-rk ' + on(4)}>
+          <div className="sst-rkb">
+            {s.rows && s.rows.length ? (
+              <>
+                <div className="sst-sl">{s.boardLabel || 'Today’s board'}{s.field ? ` · ${s.field} ${s.field === 1 ? 'player' : 'players'}` : ''}</div>
+                <table className="sst-tbl"><tbody>
+                  {padRows(s.rows).map((r, i) => (r.empty ? (
+                    <tr key={'e' + i} className="empty"><td className="p">#{r.rank}</td><td className="w">Empty</td><td className="st">—</td></tr>
+                  ) : r.gap ? (
+                    <tr key={'g' + i} className="gap"><td colSpan={3}>&middot;&middot;&middot;</td></tr>
+                  ) : (
+                    <tr key={(r.username || '') + r.rank + i} className={r.me ? 'me' : undefined}>
+                      <td className="p">#{r.rank}</td>
+                      <td className="w">{r.me ? 'You' : (r.username || 'Guest')}</td>
+                      <td className="st">{gameStats(r, s.missLabel, s.gameKey) || '—'}</td>
+                    </tr>
+                  )))}
+                </tbody></table>
+              </>
+            ) : (
+              /* EMPTY SLOTS WHILE THE BOARD LOADS (owner, 2026-10-26): the card
+                 holds its place, so the challenge card beside it never starts on
+                 the left and jumps right when the rows land. The group board
+                 gets no slots; it opens when it arrives. */
+              <>
+                <div className="sst-sl">{s.boardLabel || 'Today’s board'}</div>
+                <table className="sst-tbl sst-tbl-empty" aria-hidden="true"><tbody>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <tr key={n}><td className="p">#{n}</td><td className="w" /><td className="st">—</td></tr>
+                  ))}
+                </tbody></table>
+              </>
+            )}
+          </div>
           {s.gameKey ? <div className="sst-grp"><FinishGroupLine gameKey={s.gameKey} gameName={s.gameName} missLabel={s.missLabel} /></div> : null}
         </section>
       ) : null}
 
       {/* 3. CHALLENGE, with the GIF itself on show */}
       {chal ? (
-        <section className={'sst-card ' + on(4)}>
+        <section className={'sst-card sst-ch ' + on(4)}>
           <button type="button" className="sst-chal" onClick={chal.onSend}>
             <span className="tx">
               <b>{chal.title}</b>
@@ -468,7 +550,7 @@ export default function StageStick({
       ) : null}
 
       {/* 4. PLAY NEXT */}
-      <section className={'sst-card ' + on(5)}>
+      <section className={'sst-card sst-pn ' + on(5)}>
         <div className="sst-sl">Play next</div>
         <div className="sst-acts">
           {run ? (
@@ -503,38 +585,42 @@ export default function StageStick({
             </div>
           ) : null}
         </div>
-        {shelf && shelf.games && shelf.games.length ? (
-          <div className="sst-shelf">
-            <div className="sst-shd2"><b>More {shelf.cat} puzzles</b>{shelf.total ? <span>{shelf.n} of {shelf.total} played</span> : null}</div>
-            <div className="sst-tiles">
-              {shelf.games.map((g) => (
-                <a key={g.key} href={g.href} className={'sst-tile' + (g.done ? ' done' : '')}>
-                  <span className="gl"><GameGlyph gameKey={g.key} size={28} /></span>
-                  <b>{g.name}</b>
-                  <small>{g.done ? 'Played' : (g.time || ' ')}</small>
-                </a>
-              ))}
+        {desk ? keepPlaying : (
+          <>
+          {shelf && shelf.games && shelf.games.length ? (
+            <div className="sst-shelf">
+              <div className="sst-shd2"><b>More {shelf.cat} puzzles</b>{shelf.total ? <span>{shelf.n} of {shelf.total} played</span> : null}</div>
+              <div className="sst-tiles">
+                {shelf.games.map((g) => (
+                  <a key={g.key} href={g.href} className={'sst-tile' + (g.done ? ' done' : '')}>
+                    <span className="gl"><GameGlyph gameKey={g.key} size={28} /></span>
+                    <b>{g.name}</b>
+                    <small>{g.done ? 'Played' : (g.time || ' ')}</small>
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
-        ) : null}
-        {cats && cats.length ? (
-          <div className="sst-shelf">
-            <div className="sst-shd2"><b>Every category</b></div>
-            <div className="sst-cats">
-              {cats.map((c) => (
-                <a key={c.name} href={c.href} className="sst-catc" style={{ '--cc': c.bg }}>
-                  <span className="n">{c.n}/{c.total}</span>{c.name}
-                </a>
-              ))}
+          ) : null}
+          {cats && cats.length ? (
+            <div className="sst-shelf">
+              <div className="sst-shd2"><b>Every category</b></div>
+              <div className="sst-cats">
+                {cats.map((c) => (
+                  <a key={c.name} href={c.href} className="sst-catc" style={{ '--cc': c.bg }}>
+                    <span className="n">{c.n}/{c.total}</span>{c.name}
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+          </>
+        )}
         {allHref ? <a className="sst-all" href={allHref}>See all Daily Puzzles</a> : null}
       </section>
 
       {/* 5. FULL STATS, at the bottom */}
       {(s.streak || s.allTime || s.set || (s.recent && s.recent.length)) ? (
-        <section className={'sst-card ' + on(6)}>
+        <section className={'sst-card sst-st ' + on(6)}>
           <div className="sst-sl">{s.gameName ? `You and ${s.gameName}` : 'Your record'}</div>
           {(s.streak || s.allTime || s.set) ? (
             <div className="sst-figs">
@@ -587,7 +673,7 @@ export default function StageStick({
   // it pulls back onto the band.
   return (
     <>
-      <div ref={inlineRef} className={'sst-page' + toneCls + (phase === 'inline' ? ' in' : '')}>
+      <div ref={inlineRef} className={'sst-page' + toneCls + (phase === 'inline' ? ' in' : phase === 'retract' ? ' rt' : '')}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
         <div className="sst-band" ref={heroRef}>{result(phase === 'inline')}</div>
         {cards}
@@ -700,7 +786,6 @@ const CSS = `
 .sst-grp:not(:empty){margin-top:12px;padding-top:12px;border-top:1px solid var(--sst-rule);}
 .sst-tbl-empty td{opacity:.42;}
 .sst-tbl-empty .w::before{content:"";display:inline-block;width:60%;height:.7em;border-radius:4px;background:var(--sst-rule);vertical-align:middle;}
-.sst-tbl-empty tr:last-child .w::before{display:none;}
 /* The group line is the one read that lands seconds after everything else, so
    it OPENS rather than appearing: a jump of a whole table pushed every card
    under it down at once (owner, 2026-10-25: "jitters"). */
@@ -802,21 +887,79 @@ const CSS = `
 .sst-cover .sst-hl{font-size:24px;}
 .sst-cover .sst-cin{transition:opacity .3s ease;}
 .sst-cover.go .sst-cin{opacity:0;}
-/* The in-page ending: hidden under the cover, revealed when it pulls back. */
-.sst-page{color:var(--sst-ink);width:100%;max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:14px 0 28px;
-  visibility:hidden;container-type:inline-size;}
+/* The in-page ending: hidden under the cover, revealed when it pulls back.
+   DIRECTION B (owner, 2026-10-26: "too disjointed" with the page around it).
+   One sheet made of the page's own materials: the raised surface with the 2px
+   ink rule and 12px corners the rails and buttons wear, the category colour
+   only on the result band across its top. No pastel cards on a pastel ground;
+   the sections inside are divided by rules, not boxed. */
+.sst-page{color:var(--sst-ink);width:100%;max-width:1240px;margin:14px auto 28px;display:flex;flex-direction:column;gap:0;padding:0;
+  visibility:hidden;container-type:inline-size;background:var(--stg-raise,#fff);border:2px solid var(--stg-ink,#0b0d12);border-radius:12px;overflow:hidden;}
 .sst-page.in{visibility:visible;}
-.sst-band{background:var(--sst-bg);border-radius:22px;padding:22px 26px;}
+/* THE HAND-OFF IS ONE MOVE (owner, 2026-10-26: "make sure the animations still
+   work in harmony"). While the colour pulls back, the sheet and its band are
+   already there underneath with the result on them, so the cover's verdict
+   fades into the band's own copy rather than into an empty frame; the sections
+   below the band then rise in once the colour has gone, as before. */
+.sst-page.rt{visibility:visible;}
+.sst-page.rt .sst-band .sst-b{opacity:1;transform:none;transition:opacity .35s ease .15s;}
+.sst-band{background:var(--sst-bg);border-radius:0;padding:22px 26px;border-bottom:2px solid var(--stg-ink,#0b0d12);}
 .sst-band .sst-hero{padding:0;}
-.sst-page .sst-cards{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start;}
-/* Two columns only where the game column is wide enough to hold them. */
+/* Below the band the sheet speaks the page's ink, not the pastel's. */
+.sst-page .sst-cards{--sst-ink:var(--stg-ink,#0b0d12);--sst-bg:var(--stg-raise,#fff);--sst-rule:var(--stg-line,#e2e5ea);
+  --sst-wash:color-mix(in srgb,var(--sp-g,#b1e5fd) 45%,var(--stg-raise,#fff));--sst-card:transparent;color:var(--stg-ink,#0b0d12);
+  display:grid;grid-template-columns:minmax(0,1fr);gap:0;align-items:stretch;}
+.sst-page .sst-card{background:transparent;border-radius:0;padding:18px 20px;border-top:2px solid var(--stg-line,#e2e5ea);}
+.sst-page .sst-cards > .sst-card:first-child{border-top:0;}
+/* The record moves to the game page's You and Archive tabs on desktop. */
+.sst-page .sst-st{display:none;}
+.sst-page .sst-tbl tr.empty td{opacity:.5;font-weight:600;}
+/* Two across from 700px: the board beside the group, the challenge under. */
 @container (min-width:700px){
   .sst-band .sst-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start;}
-  .sst-page .sst-cards{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
-  .sst-page .sst-cards > section:nth-child(n+3){grid-column:1 / -1;}
-  /* The board and the challenge stand the same height (owner, 2026-10-25). */
-  .sst-page .sst-cards > section:nth-child(-n+2){align-self:stretch;}
+  .sst-page .sst-rk{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:0;padding:0;}
+  .sst-page .sst-rk > *{padding:18px 20px;min-width:0;}
+  .sst-page .sst-rk > .sst-grp:not(:empty){margin:0;padding:18px 20px;border-top:0;border-left:2px solid var(--stg-line,#e2e5ea);}
+  .sst-page .sst-rk:has(> .sst-grp:empty),.sst-page .sst-rk:not(:has(> .sst-grp)){grid-template-columns:minmax(0,1fr);}
+  .sst-page .sst-ch{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start;}
+  .sst-page .sst-ch .sst-gif{margin-top:0;}
 }
+/* Three across from 1000px: board, group, challenge, as in the mock-up. */
+@container (min-width:1000px){
+  .sst-page .sst-cards{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .sst-page .sst-rk{grid-column:span 2;}
+  .sst-page .sst-ch{grid-column:span 1;display:block;border-top:0;border-left:2px solid var(--stg-line,#e2e5ea);}
+  .sst-page .sst-ch .sst-gif{margin-top:12px;}
+  .sst-page .sst-pn{grid-column:1 / -1;}
+}
+/* KEEP PLAYING: categories, then more puzzles beside quizzes. */
+.sst-kp{margin:18px -20px -18px;padding:16px 20px 20px;border-top:2px solid var(--stg-ink,#0b0d12);background:color-mix(in srgb,var(--stg-ink,#0b0d12) 3%,var(--stg-raise,#fff));
+  display:flex;flex-direction:column;gap:14px;}
+.sst-kph{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
+.sst-kph b{font-size:20px;font-weight:800;letter-spacing:-.01em;}
+.sst-kph span{font-size:12.5px;font-weight:700;opacity:.75;}
+.sst-kpg{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px;align-items:start;}
+.sst-kpg.one{grid-template-columns:minmax(0,1fr);}
+.sst-kp .sst-shelf{margin-top:0;}
+.sst-shd2 a{font-size:12.5px;font-weight:800;color:inherit;}
+.sst-kpt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.sst-kpq{display:flex;flex-direction:column;gap:8px;}
+.sst-kpc{display:flex;align-items:center;gap:9px;min-width:0;padding:9px 11px;border:2px solid var(--stg-ink,#0b0d12);border-radius:12px;
+  background:var(--stg-raise,#fff);color:var(--stg-ink,#0b0d12);text-decoration:none;}
+.sst-kpc .gl{flex:none;width:30px;height:30px;border-radius:8px;background:var(--sst-wash);display:flex;align-items:center;justify-content:center;}
+.sst-kpc .tx{display:flex;flex-direction:column;min-width:0;flex:1;}
+.sst-kpc b{font-size:14px;font-weight:800;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
+.sst-kpc small{font-size:11.5px;font-weight:700;opacity:.72;}
+.sst-kpc.done{opacity:.55;}
+.sst-kpc .ar{flex:none;font-weight:800;}
+.sst-kpc:hover{background:var(--sst-wash);}
+.sst-kpc:focus-visible{outline:2px solid var(--stg-ink,#0b0d12);outline-offset:2px;}
+@container (max-width:999px){ .sst-kpt{grid-template-columns:repeat(2,minmax(0,1fr));} }
+@container (max-width:699px){ .sst-kpg{grid-template-columns:minmax(0,1fr);} }
+/* THE RIGHT RAIL FOLDS AWAY while the ending is up (direction B): the
+   ending takes the stage, and it carries the boards the rail would repeat. */
+html.lc-on:has(.sst-page) .lc-side{display:none !important;}
+html.lc-on:has(.sst-page) .lc-host{padding-right:22px !important;}
 .sst-page .sst-tiles,.sst-page .sst-cats{flex-wrap:wrap;overflow:visible;margin:0;padding:0;}
 .sst-page .sst-gif .msh-peek img{max-height:300px;}
 .sst-page:not(.in) .sst-b{opacity:0;}

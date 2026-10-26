@@ -639,7 +639,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   function shareText() {
     const lines = tries.map((x) => { const b = bandOf(x.e); return b.key === 'bull' ? 'Bullseye' : `${x.up ? '▲' : '▼'} ${b.label}`; });
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
-    return `${NAME} #${PUZZLE.num} · ${score}/10 · ${V2 && tries[0] ? `first guess ${pctLabel(tries[0].e)}` : best ? pctLabel(best.e) : ''}${streakBit}\n${lines.join('\n')}\n${shareUrl()}`;
+    return `${NAME} #${PUZZLE.num} · ${score} point${score === 1 ? '' : 's'} · ${V2 && tries[0] ? `first guess ${pctLabel(tries[0].e)}` : best ? pctLabel(best.e) : ''}${streakBit}\n${lines.join('\n')}\n${shareUrl()}`;
   }
   function copyShare() {
     const text = playing
@@ -869,8 +869,8 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '-0.02em', color: INK }}>{fmtCents(PRICE)}</div>
           <div style={{ fontSize: 15, fontWeight: 800, color: ACC_INK, marginTop: 2 }}>
             {V2
-              ? <>{score}/10 · {earned ? <>earned on guess {sg.at + 1}, {pctLabel(earned.e)}</> : 'no guess scored'}{tries[0] && sg.at !== 0 ? <> · first guess {pctLabel(tries[0].e)}</> : null}</>
-              : <>{score}/10 · your closest was {best ? fmtCents(best.c) : '—'}, {best ? pctLabel(best.e) : ''}</>}
+              ? <>{score} point{score === 1 ? '' : 's'} · {earned ? <>earned on guess {sg.at + 1}, {pctLabel(earned.e)}</> : 'no guess scored'}{tries[0] && sg.at !== 0 ? <> · first guess {pctLabel(tries[0].e)}</> : null}</>
+              : <>{score} point{score === 1 ? '' : 's'} · your closest was {best ? fmtCents(best.c) : '—'}, {best ? pctLabel(best.e) : ''}</>}
           </div>
           {!RUN && V2 && tries[0] ? <PriceCrowd quizId={PUZZLE.quizId} price={PRICE} first={tries[0].c} style={{ marginTop: 14 }} /> : null}
           {!RUN && (
@@ -924,7 +924,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           { v: elapsed, k: 'time' },
           { v: best ? String(score) : '—', k: 'best' },
         ] : [
-          { v: `${score}/10`, k: 'score' },
+          { v: score, k: score === 1 ? 'point' : 'points' },
           { v: `${tries.length}/${MAXG}`, k: 'guesses' },
           { v: elapsed, k: 'time' },
         ]}
@@ -988,7 +988,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
               catRank={catRank}
               outcome={outcome}
               challengeMetric={best ? Math.round(best.e * 1000) / 10 : null}
-              title={score === 10 ? 'Bullseye' : `${score} of 10`}
+              title={score === 10 ? 'Bullseye' : `${score} point${score === 1 ? '' : 's'}`}
               detail={`${fmtCents(PRICE)} · closest ${best ? fmtCents(best.c) : '—'} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
@@ -1078,7 +1078,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
               <div style={{ fontSize: 17, fontWeight: 800, color: INK, lineHeight: 1.25, margin: '4px 0 10px' }}>{DAY.revealName || DAY.name}</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 36, fontWeight: 900, letterSpacing: '-0.02em', color: INK }}>{fmtCents(PRICE)}</span>
-                <span style={{ fontSize: 14, fontWeight: 800, color: ACC_INK }}>{score}/10{best ? ` · you said ${fmtCents(best.c)}` : ''}</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: ACC_INK }}>{score} point{score === 1 ? '' : 's'}{best ? ` · you said ${fmtCents(best.c)}` : ''}</span>
               </div>
               <div style={{ marginTop: 6, fontSize: 12.5, fontWeight: 700, color: FADED, lineHeight: 1.45 }}>{DAY.asOf}</div>
               <a className="pr-buy" href={DAY.href} target="_blank" rel={DAY.sponsored ? 'noopener sponsored' : 'noopener'} style={{ marginTop: 14, width: '100%', justifyContent: 'center', boxSizing: 'border-box' }}>
@@ -1119,7 +1119,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           {NAME} is a free daily price-guessing game from Mind Loft. {CFG.how}
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Everyone gets the same {CFG.noun}, so the leaderboard ranks your score, then exactly how close you got, then fewer guesses, then time. {NAME} is one of five games in <a href="/pricecheck" style={{ color: INK, fontWeight: 800 }}>Price Check</a>, which plays Pricer, Dealer, Realtor, Agent and Curator back to back for one score out of 50.
+          Everyone gets the same {CFG.noun}, so the leaderboard ranks your score, then exactly how close you got, then fewer guesses, then time. {NAME} is one of five games in <a href="/pricecheck" style={{ color: INK, fontWeight: 800 }}>Price Check</a>, which plays Pricer, Dealer, Realtor, Agent and Curator back to back for one points total.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new {CFG.noun} drops every day at midnight Eastern. No app, no signup.

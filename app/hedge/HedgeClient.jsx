@@ -55,7 +55,8 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved } from '@/lib/end-verdict';
+import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -288,6 +289,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
   // reads it, and only once the game is over.
   const endScore = won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0;
   const finalScore = won ? Math.max(1, Math.min(10, 10 - Math.ceil(errors / 2))) : 0;
+  const resultText = scoreText('hedge', finalScore, 10);
 
   useEffect(() => { gRef.current = g; }, [g]);
   useEffect(() => {
@@ -743,7 +745,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
         <><b>Undo</b> (or Ctrl+Z) takes back your last move. One free <b>hint</b>, on your first ever play, draws a correct segment.</>,
       ]}
       knack="Start on the 0s and 3s: they settle sides outright, and every settled side forces the corners around it."
-      footer={<>No errors scores a perfect 10, and every two errors cost a point. Ties break on fewest errors, then fastest time. Sundays are a bigger 10&times;10 Edition.</>}
+      footer={<>Close the loop to solve it. Fewer errors, then a faster time, rank higher on the board. Sundays are a bigger 10&times;10 Edition.</>}
     />
   );
 
@@ -799,7 +801,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
             { v: errors, k: 'errors' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: endScore, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: errors, k: 'errors' },
             { v: elapsed, k: 'time' },
           ]}
@@ -1087,7 +1089,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? errors : null}
               title={endSolved(won)}
-              detail={`${endScore} \u00b7 ${errors} errors \u00b7 ${elapsed}`}
+              detail={`${resultText} \u00b7 ${errors} errors \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1189,10 +1191,10 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
           modal
           self="hedge"
           won={won}
-          headline={won ? <>Loop closed!</> : <>You scored {Math.round(((won ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? <>Loop closed!</> : <>{GOOD_EFFORT}</>}
           subline={won
-            ? <>{finalScore}/10 &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; the solved loop is shown above</>}
+            ? <>Solved &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            : <>Unfinished &middot; the solved loop is shown above</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

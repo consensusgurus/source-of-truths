@@ -49,7 +49,11 @@ import { useStageTheme } from '@/lib/stage-theme';
 // and what the player actually did, and only the second means anything next to
 // the game they just played.
 import { gameStats, mmss, missWord, scoreFig as runFig } from '@/lib/daily-row-stats';
-import { isSolveOnly } from '@/lib/daily-games';
+import { isSolveOnly as isSolveOnlyRaw, scoreView, scoreText } from '@/lib/daily-games';
+// NO ARBITRARY FRACTIONS (owner, 2026-10-26): a game whose 10 is a scale, not a
+// count, reads like a solve-or-not game everywhere on the ending, and its own
+// figure (moves, errors, clock) carries the comparison.
+const isSolveOnly = (k) => isSolveOnlyRaw(k) || ((scoreView(k) || {}).v === 'verdict');
 import { typicalLabel } from '@/lib/game-medians';
 import GameGlyph from './GameGlyph';
 import { savedIdentity } from '@/lib/saved-identity';
@@ -709,10 +713,10 @@ function compareRuns(key, rows, scoreOnly = false, outcome = null) {
   const frac = (r) => (r.total ? r.score / r.total : 0);
   const bestF = Math.max(...prior.map(frac));
   const bestRow = prior.find((r) => frac(r) === bestF);
-  return { mode: 'score', today, last, best: bestRow, bestDate: bestRow.dateLabel,
+  return { mode: 'score', key, today, last, best: bestRow, bestDate: bestRow.dateLabel,
     better: frac(today) > frac(last), pb: frac(today) > bestF, tie: frac(today) === frac(last) };
 }
-const fmtRun = (vs, r) => (vs.mode === 'time' ? mmss(r) : `${r.score}/${r.total}`);
+const fmtRun = (vs, r) => (vs.mode === 'time' ? mmss(r) : scoreText(vs.key, r.score, r.total));
 function vsLine(vs) {
   const lead = vs.pb ? 'Personal best \u00b7 ' : '';
   if (vs.mode === 'time') {
@@ -1620,7 +1624,7 @@ export default function StageFinish({
   const meSolveOnly = !!(me && isSolveOnly(me.key));
   const bandFig = isQuiz || !me ? null
     : myT != null ? { v: mmss(myT), l: isPb && vs.mode === 'time' ? `New best \u00b7 was ${mmss(vs.best)}` : (isPb ? 'New best' : (board && board.myRank != null && board.field ? `#${board.myRank} of ${board.field}` : '')) }
-    : (tone === 'lost' && run && run.total && !meSolveOnly ? { v: `${run.score}/${run.total}`, l: '' } : null);
+    : (tone === 'lost' && run && run.total && !meSolveOnly ? { v: scoreText(me.key, run.score, run.total), l: '' } : null);
   // CHALLENGE A FRIEND. Mine is this run in the link's own shape; the door
   // shows on any daily finish that has a figure worth beating.
   // The score is the better of the record's and the board row's: the record is
@@ -1813,7 +1817,9 @@ export default function StageFinish({
     } else if (myT != null) {
       metric = { text: mmss(myT), n: myT, kind: 'time' };
     } else if (sc && sc.o > 0 && !meSolveOnly) {
-      metric = { text: `${sc.s} of ${sc.o}`, n: sc.s, post: ` of ${sc.o}` };
+      metric = (scoreView(me.key) || {}).v === 'points'
+        ? { text: scoreText(me.key, sc.s, sc.o), n: sc.s, post: sc.s === 1 ? ' point' : ' points' }
+        : { text: `${sc.s} of ${sc.o}`, n: sc.s, post: ` of ${sc.o}` };
     }
 
     // 2. TODAY'S FIELD: rank and share on one line, a bar, two captions.
@@ -1844,7 +1850,7 @@ export default function StageFinish({
         : (top && top.score != null && top.total
           ? (dailyUnit(me.key)
             ? `Top ${Number(top.score).toLocaleString('en-US')} ${dailyUnit(me.key)}`
-            : `Top ${Number(top.score).toLocaleString('en-US')}/${Number(top.total).toLocaleString('en-US')}`)
+            : (isSolveOnly(me.key) ? '' : `Top ${scoreText(me.key, Number(top.score), Number(top.total))}`))
           : '');
       fieldInfo = { line: pct <= 0 && fr.rank > 1 ? head : `${head} · ${tail}`, pct: fr.n > 1 ? pct : 100, lo, hi };
     }
@@ -2044,7 +2050,7 @@ export default function StageFinish({
       rows: srows, myRank, field, missLabel, gameKey: me.key,
       recent: priors.slice(0, 6).map((r) => ({
         num: r.num, date: short(r.dateLabel), won: !!r.won, href: r.href,
-        fig: r.won && r.time != null && !arcade ? mmss(r.time) : (r.total ? `${r.score}/${r.total}` : (r.won ? 'Solved' : 'Missed')),
+        fig: r.won && r.time != null && !arcade ? mmss(r.time) : (r.total ? scoreText(me.key, r.score, r.total) : (r.won ? 'Solved' : 'Missed')),
       })),
       set: g ? {
         name: g.name, n: g.n, total: g.games.length,
@@ -2356,7 +2362,7 @@ export default function StageFinish({
             game reads as failure. */}
         {vs && !vs.better && !vs.pb && !vs.tie ? (
           <div className="stf-vslow">
-            <b>{fmtRun(vs, vs.today)}</b> today &middot; your best on {name || 'this one'} is <b>{vs.mode === 'time' ? mmss(vs.best) : `${vs.best.score}/${vs.best.total}`}</b>{vs.bestDate ? `, set ${vs.bestDate}` : ''}. Beat it tomorrow.
+            <b>{fmtRun(vs, vs.today)}</b> today &middot; your best on {name || 'this one'} is <b>{vs.mode === 'time' ? mmss(vs.best) : fmtRun(vs, vs.best)}</b>{vs.bestDate ? `, set ${vs.bestDate}` : ''}. Beat it tomorrow.
           </div>
         ) : null}
         {/* THE RIVAL LEADS (owner, 2026-09-26). One name, two clocks, the gap.
@@ -2440,7 +2446,9 @@ export default function StageFinish({
                       figure ahead of the word Played read as a crowd count. */}
                   <span className="v">{a.done
                     ? (a.score != null
-                        ? <><em>You scored</em><b>{a.score}</b></>
+                        ? (typeof a.score === 'string' || (me && scoreView(me.key))
+                          ? <b>{typeof a.score === 'string' ? a.score : scoreText(me.key, a.score, null)}</b>
+                          : <><em>You scored</em><b>{a.score}</b></>)
                         : <em>Played</em>)
                     : 'Play'}</span>
                 </a>

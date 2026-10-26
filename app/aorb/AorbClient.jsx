@@ -779,7 +779,7 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
       banner="Ten A or B pairs. On each one, make your pick AND call the crowd's."
       steps={[
         <><b>Tap Me</b> on the side you honestly prefer, and <b>tap Crowd</b> on the side you think most players picked as their own. They can differ.</>,
-        <><b>Your crowd call scores the real split:</b> call the side that went 72 to 28 and you earn 72, call the 28 side and you earn 28. Ten pairs are averaged into a score out of 100.</>,
+        <><b>Your crowd call scores the real split:</b> call the side that went 72 to 28 and you earn 72, call the 28 side and you earn 28. Ten pairs are averaged into one score.</>,
         <><b>Surprise bonus:</b> +1 when your own pick turns out more popular than the room predicted it would be.</>,
       ]}
       knack="Your own pick never counts for you: every call is checked against everyone else."
@@ -1174,7 +1174,7 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
           self="aorb"
           won={sharp}
           completed
-          score={<>{score}/{TOTAL}</>}
+          score={<>{score} point{score === 1 ? '' : 's'}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
@@ -1216,7 +1216,7 @@ export default function AorbClient({ puzzles = [], forceNum = null }) {
           Aorb is a free daily A or B game from Mind Loft. Every day brings ten pairs to weigh: better movie, better burger, better trip, who is more attractive. On each one you make two picks: your own honest pick, and your call on which side most of today&rsquo;s players picked.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Your call scores the real split: call the side that went 72 to 28 and you earn 72, call the 28 side and you earn 28. Ten pairs make a score out of 100, and you earn a surprise bonus whenever your own pick turns out more popular than the room predicted. There is no answer key, only the crowd, and every new player re-scores the field until midnight.
+          Your call scores the real split: call the side that went 72 to 28 and you earn 72, call the 28 side and you earn 28. Ten pairs are averaged into one score, and you earn a surprise bonus whenever your own pick turns out more popular than the room predicted. There is no answer key, only the crowd, and every new player re-scores the field until midnight.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           New pairs every day at midnight Eastern. No app, no signup. More crowd games: <a href="/herd" style={{ color: INK, fontWeight: 800 }}>Herd</a>, <a href="/outwit" style={{ color: INK, fontWeight: 800 }}>Outwit</a>, <a href="/outrank" style={{ color: INK, fontWeight: 800 }}>Outrank</a> and <a href="/feud" style={{ color: INK, fontWeight: 800 }}>Feud</a>, or play the crowd run <a href="/room" style={{ color: INK, fontWeight: 800 }}>Read the Room</a>.

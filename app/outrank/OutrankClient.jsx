@@ -161,7 +161,7 @@ function OutrankLiveBoard({ board, total }) {
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 8px', borderRadius: 6, background: r.you ? 'rgba(232,180,58,0.16)' : (i % 2 ? `var(--stg-surf, ${COLORS.cream})` : 'transparent'), border: r.you ? `1px solid ${COLORS.gold}` : '1px solid transparent' }}>
               <span style={{ flex: '0 0 26px', fontFamily: MONO, fontSize: 12, fontWeight: 500, color: r.rank <= 3 ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-mute, ${COLORS.faded})`, textAlign: 'right' }}>{r.rank}</span>
               <span style={{ flex: '1 1 auto', fontFamily: SANS, fontSize: 13, fontWeight: r.you ? 800 : 600, color: r.you ? '#8a6d1a' : `var(--stg-ink, ${COLORS.ink})`, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}{r.you ? ' · you' : ''}</span>
-              <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 12.5, fontWeight: 500, color: `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums' }}>{r.total}<span style={{ color: `var(--stg-mute, ${COLORS.faded})`, fontSize: 10.5 }}>/{total}</span></span>
+              <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 12.5, fontWeight: 500, color: `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums' }}>{r.total}<span style={{ color: `var(--stg-mute, ${COLORS.faded})`, fontSize: 10.5 }}> pts</span></span>
             </div>
           ))}
         </div>
@@ -170,7 +170,7 @@ function OutrankLiveBoard({ board, total }) {
         <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(28,30,36,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ flex: '0 0 26px', fontFamily: MONO, fontSize: 12, fontWeight: 700, color: '#8a6d1a', textAlign: 'right' }}>{board.you.rank}</span>
           <span style={{ flex: '1 1 auto', fontFamily: SANS, fontSize: 13, fontWeight: 800, color: '#8a6d1a' }}>You</span>
-          <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 12.5, fontWeight: 500, color: `var(--stg-ink, ${COLORS.ink})` }}>{board.you.total}<span style={{ color: `var(--stg-mute, ${COLORS.faded})`, fontSize: 10.5 }}>/{total}</span></span>
+          <span style={{ flex: '0 0 auto', fontFamily: MONO, fontSize: 12.5, fontWeight: 500, color: `var(--stg-ink, ${COLORS.ink})` }}>{board.you.total}<span style={{ color: `var(--stg-mute, ${COLORS.faded})`, fontSize: 10.5 }}> pts</span></span>
         </div>
       ) : null}
       {!board.youRegistered ? (
@@ -632,7 +632,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
     const squares = (result ? result.slotPts || [] : []).map((p) => (p === 2 ? '\u{1F7E9}' : p === 1 ? '\u{1F7E8}' : '⬜')).join('');
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const crowdBit = result ? ` · crowd of ${fmtBig(result.poolSize)}` : '';
-    return `Outrank #${PUZZLE.num} · ${score}/${TOTAL}${crowdBit}${streakBit}\n${squares}\n${shareUrl()}`;
+    return `Outrank #${PUZZLE.num} · ${score} point${score === 1 ? '' : 's'}${crowdBit}${streakBit}\n${squares}\n${shareUrl()}`;
   }
   function shareUrl() {
     return withRef(`mindloftdaily.com/outrank${isTodays ? '' : `?p=${PUZZLE.num}`}`);
@@ -717,7 +717,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
       steps={[
         <><b>Vote</b>: tap your honest favorite, and your taste becomes part of the crowd.</>,
         <><b>Call it</b>: put the whole slate in the order you think today&rsquo;s crowd ranks it by favorite votes.</>,
-        <>Score <b>{winBar(TOTAL)} of {TOTAL}</b> and you outranked the crowd, for now.</>,
+        <>Score <b>{winBar(TOTAL)} points or more</b> and you outranked the crowd, for now.</>,
       ]}
       knack={<>Rank what the crowd likes, not what you like. Your own favorite is one vote among all of today&rsquo;s.</>}
       note={<><b>Nothing is final.</b> Every new vote can reshuffle the crowd&rsquo;s order, so your score and rank move all day.</>}
@@ -818,10 +818,10 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
           onHelp={() => setShowHelp(true)}
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: score, k: score === 1 ? 'point' : 'points' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: score, k: score === 1 ? 'point' : 'points' },
             { v: elapsed, k: 'time' },
           ]}
         />
@@ -1024,7 +1024,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
                   <Users size={18} aria-hidden="true" /> {sending ? 'Facing the crowd…' : 'Face the crowd'}
                   {!sending && !placedAll && <span className="ork-face-sub">{g.order.length < K ? `${K - g.order.length} to place` : 'vote first'}</span>}
                 </button>
-                <span className="ork-face-note">Score {winBar(TOTAL)} of {TOTAL} and you outranked the crowd, for now. The order keeps moving all day as votes arrive.</span>
+                <span className="ork-face-note">Score {winBar(TOTAL)} points or more and you outranked the crowd, for now. The order keeps moving all day as votes arrive.</span>
               </div>
             </>
           ) : (
@@ -1043,7 +1043,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '0 auto 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: sharp ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: sharp ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score} pt{score === 1 ? '' : 's'}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {sharp ? 'You outranked the crowd.' : score >= TOTAL / 2 ? 'You read the room respectably.' : 'The crowd surprised you today.'}
                     {' '}<span style={{ color: FADED, fontWeight: 600 }}>{result.board && result.board.youRegistered && result.board.you ? <>Live rank #{result.board.you.rank} of {fmtBig(result.board.registered)} &middot; </> : null}A field of {fmtBig(result.realCount != null ? result.realCount : result.poolSize)} &middot; {elapsed}</span>
@@ -1088,7 +1088,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
               outcome={score > 0 ? 'won' : 'lost'}
               challengeMetric={result ? score : null}
               title={endGrade(score, TOTAL)}
-              detail={`${`${score}/${TOTAL}`} \u00b7 ${elapsed}`}
+              detail={`${score} point${score === 1 ? '' : 's'} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1195,7 +1195,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
           self="outrank"
           won={sharp}
           completed
-          score={<>{score}/{TOTAL}</>}
+          score={<>{score} point{score === 1 ? '' : 's'}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

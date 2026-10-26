@@ -95,22 +95,10 @@ export default function FinishGroupLine({ gameKey, gameName = null, missLabel = 
   if (gMine && !gRows.some((r) => r.userKey === data.userKey)) gRows = gRows.slice(0, GAME_ROWS - 1).concat([gMine]);
   const gField = gAll.length;
 
-  // EMPTY SLOTS (owner, 2026-10-26): a small group left the card a single row
-  // in a tall box. The board always reads five places; the ones nobody holds
-  // yet say Empty, with no names attached.
-  const empties = (shown, maxRank) => {
-    const n = Math.max(0, GAME_ROWS - shown);
-    return Array.from({ length: n }, (_, i) => maxRank + 1 + i);
-  };
-  const Empty = ({ k, game }) => (
-    <div className={'fgl-r empty' + (game ? ' g' : '')}>
-      <span className="k">{k}</span>
-      <span className="fgl-av0" aria-hidden="true" />
-      <span className="n">Empty</span>
-      {game ? <span className="run" /> : null}
-      <span className="s">&mdash;</span>
-    </div>
-  );
+  // NO EMPTY SLOTS HERE (owner, 2026-10-26, reversing the five-slot board the
+  // same morning): a group card lists only the members who have actually
+  // played. The padded five-place look belongs to the overall Today's board on
+  // the ending (app/StageStick.jsx), not to a group.
 
   return (
     <section className="fgl">
@@ -138,7 +126,6 @@ export default function FinishGroupLine({ gameKey, gameName = null, missLabel = 
                   <span className="s">{fmtPts(r.points)}</span>
                 </div>
               ))}
-              {empties(gRows.length, gRows.reduce((m, r) => Math.max(m, r.rank || 0), 0)).map((k) => <Empty key={'e' + k} k={k} game />)}
             </div>
             {/* The day is still worth a line: this game is one of its games. */}
             <p className="fgl-gap">
@@ -168,7 +155,6 @@ export default function FinishGroupLine({ gameKey, gameName = null, missLabel = 
                   <span className="s">{fmtPts(mine.total)}</span>
                 </div>
               ) : null}
-              {mine ? null : empties(rows.length, rows.reduce((m, r) => Math.max(m, r.rank || 0), 0)).map((k) => <Empty key={'e' + k} k={k} />)}
             </div>
             {lead.gap != null && lead.ahead ? (
               <p className="fgl-gap">{fmtPts(lead.gap)} behind {lead.ahead.username}</p>
@@ -209,8 +195,6 @@ const CSS = `
 .fgl-r.g .run{font-family:'Manrope',ui-monospace,Menlo,monospace;font-size:11.5px;
   color:var(--stg-mute,#8b95a8);white-space:nowrap;}
 .fgl-gap b{font-weight:800;color:var(--stg-ink,#e9edf4);}
-.fgl-av0{width:22px;height:22px;border-radius:50%;background:var(--stg-line,rgba(255,255,255,.11));}
-.fgl-r.empty .n,.fgl-r.empty .s{color:var(--stg-mute,#8b95a8);font-weight:600;}
 .fgl-r.me{background:color-mix(in srgb, var(--stg-brand,#7dd3fc) 14%, transparent);margin:0 -8px;padding:6px 8px;border-radius:8px;border-top-color:transparent;}
 .fgl-r.me + .fgl-r{border-top-color:transparent;}
 .fgl-r.me .n{font-weight:800;}

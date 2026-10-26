@@ -63,7 +63,8 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endEfficiency } from '@/lib/end-verdict';
+import { endEfficiency, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -628,7 +629,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
         <>No <b>undo</b>: <b>restart</b> puts you back at the start word and zeroes your rungs while the clock keeps running. Climbing backwards by retyping an earlier word costs a rung too.</>,
       ]}
       knack="Change only the letters the target needs. A detour that undoes a letter you already had right costs you two rungs."
-      footer={<>Every {step} rungs over perfect costs a point, down to a floor of one. One free hint, on your first ever play, gives the next word of a shortest ladder from wherever you are. Sundays are a much longer climb.</>}
+      footer={<>Any solve counts. Your solve in the fewest rungs takes the board, with the clock breaking a tie. One free hint, on your first ever play, gives the next word of a shortest ladder from wherever you are. Sundays are a much longer climb.</>}
     />
   );
 
@@ -839,7 +840,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             { v: perfect, k: 'perfect' },
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: won ? 'Solved' : 'Unfinished', k: 'result' },
             { v: used, k: 'rungs' },
             { v: perfect, k: 'perfect' },
             { v: elapsed, k: 'time' },
@@ -981,7 +982,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
             <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>One letter at a time. No undo.</span>
             <button onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
               style={{ marginLeft: 'auto', minHeight: 44, padding: '0 4px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armReveal ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-mute, ${COLORS.faded})`, textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <Eye size={13} /> {armReveal ? 'Tap again — ends the ladder and scores nothing' : 'Give up'}
+              <Eye size={13} /> {armReveal ? 'Tap again: ends the ladder unfinished' : 'Give up'}
             </button>
           </div>
         )}
@@ -1053,7 +1054,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
                 : null}
               day={dayStats}
               streak={isTodays ? myStats.cur : null}
-              missLabel="Tries"
+              missLabel="Moves"
               archive={puzzles
                 .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
                 .sort((x, y) => y.num - x.num)
@@ -1063,7 +1064,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/rung?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('rung', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
@@ -1136,10 +1137,10 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="rung" won={won}
-          headline={won ? (used === perfect ? <>Perfect. The shortest there is.</> : <>You made it across.</>) : <>You scored 0%</>}
+          headline={won ? (used === perfect ? <>Perfect. The shortest there is.</> : <>You made it across.</>) : <>{GOOD_EFFORT}</>}
           subline={won
             ? <>{used} rungs &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
-            : <>0/10 &middot; perfect was {perfect} rungs</>}
+            : <>Unfinished &middot; perfect was {perfect} rungs</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}

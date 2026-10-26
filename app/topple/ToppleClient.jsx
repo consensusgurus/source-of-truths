@@ -63,7 +63,8 @@ import ToppleBoard from './ToppleBoard';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endEfficiency } from '@/lib/end-verdict';
+import { endEfficiency, GOOD_EFFORT } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -593,7 +594,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
       ]}
       knack={<>Work backwards from the spring: decide how the block has to arrive (standing, or lying along the two tiles), then find the roll that lands it that way.</>}
       note={<>There is <b>no undo</b>. A <b>restart</b> puts the block back on the start, but your rolls keep counting and the clock keeps running.</>}
-      footer={<>Perfect scores 10 and every {step10} rolls over it costs a point, so par scores 8, down to a floor of one, and finishing always beats walking away. Monday is plain floor; the cracked tiles arrive Tuesday, and the Sunday Edition is a bigger board.</>}
+      footer={<>Any solve counts, and finishing always beats walking away. Your fastest solve of the day takes the board, with fewer rolls breaking a tie. Monday is plain floor; the cracked tiles arrive Tuesday, and the Sunday Edition is a bigger board.</>}
     />
   );
 
@@ -627,7 +628,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
             { v: elapsed, k: 'time' },
             ...(STAGE ? [] : [{ v: perfect, k: 'perfect' }]),
           ] : [
-            { v: finalScore, k: 'score' },
+            { v: won ? 'Solved' : 'Unfinished', k: 'result' },
             { v: used, k: 'rolls' },
             { v: perfect, k: 'perfect' },
             { v: elapsed, k: 'time' },
@@ -745,7 +746,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
                 : null}
               day={dayStats}
               streak={isTodays ? myStats.cur : null}
-              missLabel="Tries"
+              missLabel="Moves"
               archive={puzzles
                 .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
                 .sort((x, y) => y.num - x.num)
@@ -755,7 +756,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
                   sunday: !!p.sunday,
                   href: `/topple?p=${p.num}`,
                   done: !!(stats && stats.rec && stats.rec[p.num]),
-                  score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  score: (stats && stats.rec && stats.rec[p.num]) ? scoreText('topple', stats.rec[p.num].s, stats.rec[p.num].t) : null,
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
@@ -828,7 +829,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="topple" won={won}
-          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : used < par ? <>Solved!</> : <>Launched.</>) : <>You scored 0%</>}
+          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : used < par ? <>Solved!</> : <>Launched.</>) : <>{GOOD_EFFORT}</>}
           subline={won
             ? <>{used} rolls &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Perfect here was {perfect} rolls.</>}

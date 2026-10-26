@@ -59,7 +59,8 @@ import { withRef } from '@/lib/referrals';
 import { notifyShareCredit } from '../ShareCreditPop';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endGrade } from '@/lib/end-verdict';
+import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -303,6 +304,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
   const focusMode = playing && !showChrome;
   const liveScore = Math.max(1, TOTAL - 3 * g.wrong.length);
   const score = g.status === 'done' ? liveScore : 0;
+  const resultText = scoreText('hearsay', score, TOTAL);
   const won = g.status === 'done' && g.wrong.length === 0;
   // A reveal (status lost) keeps the answer off the loft board until the end
   // card's Reveal answer tile is pressed; a player who named it sees it.
@@ -530,7 +532,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
         <>Hit <b>Name the {PUZZLE.noun}</b> and pick the last one standing.</>,
       ]}
       knack={<>&ldquo;I don&rsquo;t know&rdquo; is the evidence. If the secret {PUZZLE.noun} were the only one with its {PUZZLE.attrs[0]}, {PUZZLE.who[0]} would have known straight away. {PUZZLE.who[0]} did not, so every {PUZZLE.attrs[0]} that appears just once is out. A line said <i>later</i> is sharper still: &ldquo;I still don&rsquo;t know&rdquo; is about the list as it stands after everything already said.</>}
-      footer="12 points for a first-time pick, 3 off for each wrong name. Exactly one card survives every line."
+      footer="Name the secret card to solve it. Fewer wrong names, then a faster time, rank higher on the board. Exactly one card survives every line."
     />
   );
 
@@ -557,11 +559,10 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
           onHelp={() => setShowHelp(true)}
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
-            { v: liveScore, k: 'score' },
             { v: g.wrong.length, k: 'wrong' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: g.wrong.length, k: 'wrong' },
             { v: elapsed, k: 'time' },
           ]}
@@ -626,7 +627,6 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: FADED }}>
           <span>on the list <b style={{ color: INK, fontWeight: 500 }}>{PUZZLE.cards.length}</b></span>
           <span>crossed off <b style={{ color: INK, fontWeight: 500 }}>{g.crossed.length}</b></span>
-          <span>on the board <b style={{ color: g.wrong.length ? `var(--stg-bad, ${COLORS.rust})` : COLORS.green, fontWeight: 500 }}>{liveScore}</b>/{TOTAL}</span>
           {g.wrong.length > 0 && <span>wrong names <b style={{ color: `var(--stg-ink, ${COLORS.rust})`, fontWeight: 500 }}>{g.wrong.length}</b></span>}
         </div>
         )}
@@ -718,7 +718,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '14px 0 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{resultText}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done'
                       ? (won ? <>It was <b>{ansText}</b>, named first time.</> : <>It was <b>{ansText}</b>, after {g.wrong.length} wrong name{g.wrong.length === 1 ? '' : 's'}.</>)
@@ -770,8 +770,8 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
               challengeMetric={g.status === 'done' ? g.wrong.length : null}
-              title={endGrade(score, TOTAL)}
-              detail={`${`${score}/${TOTAL}`} \u00b7 ${g.wrong.length} wrong \u00b7 ${elapsed}`}
+              title={endSolved(g.status === 'done')}
+              detail={`${resultText} \u00b7 ${g.wrong.length} wrong \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -874,7 +874,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
           won={won}
           completed={g.status === 'done'}
           headline={g.status === 'done' ? <>Named from what they didn&rsquo;t know</> : <>The room kept its secret</>}
-          subline={<>Hearsay #{PUZZLE.num} &middot; {score}/{TOTAL} &middot; {g.wrong.length} wrong name{g.wrong.length === 1 ? '' : 's'} &middot; {elapsed}</>}
+          subline={<>Hearsay #{PUZZLE.num} &middot; {resultText} &middot; {g.wrong.length} wrong name{g.wrong.length === 1 ? '' : 's'} &middot; {elapsed}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

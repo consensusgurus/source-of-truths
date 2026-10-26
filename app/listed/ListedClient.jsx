@@ -688,9 +688,9 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
     const hintBit = g.hintUsed ? ' · \u{1F4A1}' : '';
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const head = won
-      ? `Listed #${PUZZLE.num} · ${finalScore}/10 · ${checksUsed} submit${checksUsed === 1 ? '' : 's'} · ${elapsed}${hintBit}${streakBit}`
+      ? `Listed #${PUZZLE.num} · ${finalScore} point${finalScore === 1 ? '' : 's'} · ${checksUsed} submit${checksUsed === 1 ? '' : 's'} · ${elapsed}${hintBit}${streakBit}`
       : g.status === 'lost'
-        ? `Listed #${PUZZLE.num} · ${finalScore}/10 · ${lockedCount}/${N} ranked${hintBit}`
+        ? `Listed #${PUZZLE.num} · ${finalScore} point${finalScore === 1 ? '' : 's'} · ${lockedCount}/${N} ranked${hintBit}`
         : `Listed #${PUZZLE.num} · gave it up${hintBit}`;
     return grid ? `${head}\n${grid}\n${shareUrl()}` : `${head}\n${shareUrl()}`;
   }
@@ -733,7 +733,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
         <>One free <b>hint</b>, on your first ever play, reveals the figure of whichever item sits furthest from home.</>,
       ]}
       knack="Place the extremes first. Every row that locks with its real figure narrows what the rows around it can be."
-      footer="Rank the whole board on your first submit for a perfect 10. Each extra submit costs a point, and each item you never lock costs one more. Boards are trivia, history or geography, and every ranking is a published number, never an opinion. New list daily at midnight Eastern."
+      footer="Rank the whole board on your first submit for the full 10 points. Each extra submit costs a point, and each item you never lock costs one more. Boards are trivia, history or geography, and every ranking is a published number, never an opinion. New list daily at midnight Eastern."
     />
   );
 
@@ -1130,7 +1130,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
             outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
             challengeMetric={won ? checksUsed : null}
             title={endGrade(finalScore, 10)}
-            detail={`${finalScore}/10 \u00b7 ${checksUsed}/${MAX_CHECKS} submits \u00b7 ${elapsed}`}
+            detail={`${finalScore} point${finalScore === 1 ? '' : 's'} \u00b7 ${checksUsed}/${MAX_CHECKS} submits \u00b7 ${elapsed}`}
             iq={iq}
             board={dailyBoard}
             gameRank={allTime && allTime.ready
@@ -1263,12 +1263,12 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
           modal
           self="listed"
           won={won}
-          headline={won ? <>Called it, top to bottom!</> : <>You scored {Math.round((((won || g.status === 'lost') ? finalScore : 0) / 10) * 100)}%</>}
+          headline={won ? <>Called it, top to bottom!</> : <>You scored {(won || g.status === 'lost') ? finalScore : 0} point{((won || g.status === 'lost') ? finalScore : 0) === 1 ? '' : 's'}</>}
           subline={<>{won
-            ? <>{finalScore}/10 &middot; {checksUsed} submit{checksUsed === 1 ? '' : 's'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
+            ? <>{finalScore} point{finalScore === 1 ? '' : 's'} &middot; {checksUsed} submit{checksUsed === 1 ? '' : 's'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : g.status === 'lost'
-              ? <>{finalScore}/10 &middot; {lockedCount}/{N} locked &middot; the real ranking is below</>
-              : <>0/10 &middot; the real ranking is below</>}</>}
+              ? <>{finalScore} point{finalScore === 1 ? '' : 's'} &middot; {lockedCount}/{N} locked &middot; the real ranking is below</>
+              : <>0 points &middot; the real ranking is below</>}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

@@ -167,7 +167,7 @@ export function Stamp({ i, score, big, slam, label, ink, name, max = 10 }) {
     <div className={`pp-stamp${big ? ' big' : ''}${slam ? ' slam' : ''}`} style={{ '--ink': ink, '--rot': `${ROTS[i % 5] || -6}deg` }}>
       <div>
         <div className="s1">{label || name || r.n}</div>
-        <div className="s2">{score}{label ? null : <span>/{max}</span>}</div>
+        <div className="s2">{score}{label ? null : <span> pts</span>}</div>
       </div>
     </div>
   );
@@ -268,7 +268,7 @@ export function Finale({ scores, total, clock, inks, onDone, legs = null }) {
       {phase === 'cover' || phase === 'issued' ? (
         <div className="pp-rungs">{TIERS.map((t, k) => <div key={k} className={k <= tier ? 'on' : ''} style={{ '--rc': t.cv }}><i /><b>{t.min}</b></div>)}</div>
       ) : null}
-      <div className="pp-fintot"><span>{tot}</span><small>/50</small></div>
+      <div className="pp-fintot"><span>{tot}</span><small> pts</small></div>
       <span className="pp-skip">Tap to skip</span>
     </div>
   );
@@ -337,7 +337,7 @@ export function Departures({ legs, scores, inks, deeps, total, clock, num, dateL
   // The board: the leg name padded to eight flaps, then its score in eight
   // (one row on a wide screen, two rows of eight on a phone).
   const row1 = String(leg.n || '').toUpperCase().slice(0, 8).padEnd(8, ' ');
-  const row2 = `${String(score).padStart(2, ' ')} OF ${leg.max}`.padEnd(8, ' ').slice(0, 8);
+  const row2 = `${String(score).padStart(2, ' ')} PTS`.padEnd(8, ' ').slice(0, 8);
   const flap = (ch, i) => {
     const done = local >= 260 + i * 50 || ch === ' ';
     const r = DEP_GLYPHS[(Math.floor(local / 50) * 7 + i * 13) % DEP_GLYPHS.length];
@@ -363,7 +363,7 @@ export function Departures({ legs, scores, inks, deeps, total, clock, num, dateL
             <circle cx="910" cy="220" r="9" fill="none" stroke="#0b0f1a" strokeWidth="3" />
           </svg>
           <div className="dp-body">
-            <div className="dp-board" aria-label={`${leg.n}, ${score} of ${leg.max}`}>
+            <div className="dp-board" aria-label={`${leg.n}, ${score} point${score === 1 ? '' : 's'}`}>
               <div className="dp-row">{row1.split('').map((ch, j) => flap(ch, j))}</div>
               <div className="dp-row">{row2.split('').map((ch, j) => flap(ch, j + 8))}</div>
             </div>
@@ -416,7 +416,7 @@ export function Departures({ legs, scores, inks, deeps, total, clock, num, dateL
           <div className="dp-landt">
             <div className="a">You travel home on the</div>
             <div className="b">{finalTier.name}</div>
-            <div className="c">{total} / 50 · {finalTier.vf} visa-free{clock ? ` · ${clock}` : ''}</div>
+            <div className="c">{total} point{total === 1 ? '' : 's'} · {finalTier.vf} visa-free{clock ? ` · ${clock}` : ''}</div>
           </div>
         </div>
       ) : null}
@@ -1488,7 +1488,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="One mystery country a day, played five ways. Each round stamps your passport with a score out of 10, and your total out of 50 decides which passport you leave with."
+      lead="One mystery country a day, played five ways. Each round stamps your passport with points, and your total decides which passport you leave with."
       steps={[
         <><b>Landmark.</b> A photo of somewhere in the country, zoomed right in. Type the country. Every wrong country pulls the camera back a frame: 10, 8, 5 or 3 points. Getting it right unseals the destination for the rest of the run.</>,
         <><b>Flag.</b> Build its flag: its exact shades, then its layout with the colors in the right order (the wrong ones can differ by a single stripe). If other countries fly a flag that builds the same way, a last pick asks for the real one among those twins, which differ only in the details. Each wrong pick takes 3 off the stamp.</>,
@@ -1790,7 +1790,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
           <h1 className="pe-nm">{tier.name}</h1>
           <p className="pe-ln">{tier.line} The destination was <b>{DAY.name}</b>: {DAY.land.name}.</p>
           <div className="pe-stats">
-            <div><b>{total}/50</b><span>Score</span></div>
+            <div><b>{total}</b><span>Points</span></div>
             {me && me.rank ? <div><b>#{me.rank}</b><span>{field ? `of ${Number(field).toLocaleString()} today` : 'today'}</span></div> : null}
             <div><b>{tier.vf}</b><span>Visa-free</span></div>
           </div>
@@ -1877,7 +1877,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
       <section style={{ position: 'relative', display: started ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About {NAME}</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          {NAME} is a free daily geography run from Mind Loft: one mystery country a day, played five ways. Name it from a zoomed-in photo of a landmark, build its flag, name its land neighbors, drop a pin on its capital, and call five countries bigger or smaller by area. Each round scores out of 10, for one total out of 50.
+          {NAME} is a free daily geography run from Mind Loft: one mystery country a day, played five ways. Name it from a zoomed-in photo of a landmark, build its flag, name its land neighbors, drop a pin on its capital, and call five countries bigger or smaller by area. Each round scores points toward one total.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Your total decides the passport you travel home on, from the Sierra Leonean passport up to the Japanese, ranked by the visa-free destinations each opens in the {HENLEY_EDITION}. Everyone gets the same country, and the leaderboard ranks your total, then time. A new country boards every day at midnight Eastern, with a bigger one on Sundays.

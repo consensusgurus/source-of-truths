@@ -61,7 +61,8 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endGrade } from '@/lib/end-verdict';
+import { endSolved } from '@/lib/end-verdict';
+import { scoreText } from '@/lib/daily-games';
 
 const COLORS = {
   cream: T.surface,
@@ -296,6 +297,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
   // end card's Reveal tile is pressed; the finish beat would otherwise show them.
   const hideSol = LOFT && g.status === 'lost' && !revealed;
   const score = g.status === 'done' ? Math.max(1, TOTAL - 2 * g.wrong) : 0;
+  const resultText = scoreText('sworn', score, TOTAL);
   const liarsMarked = g.marks.filter((m) => m === 2).length;
 
   useEffect(() => {
@@ -500,7 +502,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
       postResult(g2, Math.max(1, TOTAL - 2 * g2.wrong));
     } else {
       setG((cur) => ({ ...cur, wrong: cur.wrong + 1, accusedWrong: [...cur.accusedWrong, i], t0: cur.t0 || Date.now() }));
-      setVerdict({ msg: `${PUZZLE.suspects[i]} has an ironclad defense, so the charge fails (minus 2 points).` });
+      setVerdict({ msg: `${PUZZLE.suspects[i]} has an ironclad defense, so the charge fails.` });
     }
   }
 
@@ -572,7 +574,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
         <>When you&rsquo;re sure, hit <b>Accuse</b>.</>,
       ]}
       knack="Every case has exactly one consistent story, reachable by pure logic, so a theory that leaves the lie count off by even one is dead."
-      footer={<>A first-try accusation is a perfect 12, and each wrong accusation costs 2. Ties on the daily board break by fewest wrong accusations, then fastest time. Six are sworn for Sunday&rsquo;s Grand Inquest.</>}
+      footer={<>Name the thief to close the inquest. The daily board ranks a solve with fewer wrong accusations higher, then the faster time. Six are sworn for Sunday&rsquo;s Grand Inquest.</>}
     />
   );
 
@@ -602,7 +604,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
             { v: g.wrong, k: 'wrong' },
             { v: elapsed, k: 'time' },
           ] : [
-            { v: `${score}/${TOTAL}`, k: 'score' },
+            { v: resultText, k: 'result' },
             { v: g.wrong, k: 'wrong' },
             { v: elapsed, k: 'time' },
           ]}
@@ -853,7 +855,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
         )}
         {started && (
           <div className="sw-foot">
-            <span className="sw-foott">Mark who is TRUE and who is LYING as you test each theory, then accuse the thief. Marks are scratch notes; a wrong accusation costs 2 points.</span>
+            <span className="sw-foott">Mark who is TRUE and who is LYING as you test each theory, then accuse the thief. Marks are scratch notes; a wrong accusation counts against you.</span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button type="button" className="sw-btn" onClick={clearMarks}><Eraser size={14} /> Clear marks</button>
               {hintOk && !g.hintUsed && (
@@ -876,7 +878,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '8px 0 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{score}/{TOTAL}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : g.status === 'done' ? `var(--stg-ink, ${COLORS.ink})` : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{resultText}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {g.status === 'done'
                       ? (won ? <>It was <b>{thiefName}</b>, nailed on the first accusation.</> : <>It was <b>{thiefName}</b>, found after {g.wrong} wrong accusation{g.wrong === 1 ? '' : 's'}.</>)
@@ -919,8 +921,8 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
               name="Sworn"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={endGrade(score, TOTAL)}
-              detail={`${`${score}/${TOTAL}`} \u00b7 ${g.wrong} wrong \u00b7 ${elapsed}`}
+              title={endSolved(g.status === 'done')}
+              detail={`${resultText} \u00b7 ${g.wrong} wrong \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1029,7 +1031,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
           won={won}
           completed={g.status === 'done'}
           headline={g.status === 'done' ? <>The thief is named</> : <>The inquest collapsed</>}
-          subline={<>Sworn #{PUZZLE.num} &middot; {score}/{TOTAL} &middot; {g.wrong} wrong accusation{g.wrong === 1 ? '' : 's'} &middot; {elapsed}</>}
+          subline={<>Sworn #{PUZZLE.num} &middot; {resultText} &middot; {g.wrong} wrong accusation{g.wrong === 1 ? '' : 's'} &middot; {elapsed}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}
