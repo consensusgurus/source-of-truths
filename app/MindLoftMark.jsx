@@ -18,7 +18,7 @@
 'use client';
 
 import { useLayoutEffect, useRef } from 'react';
-import { HOUSE, TIGHT_BOX, TIGHT_ASPECT, CAP_RATIO } from '../lib/mindloft-mark';
+import { HOUSE, TIGHT_BOX, TIGHT_ASPECT, CAP_RATIO, CAP_OVERSHOOT } from '../lib/mindloft-mark';
 
 const useIso = typeof window === 'undefined' ? () => {} : useLayoutEffect;
 
@@ -39,7 +39,7 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
     const fit = () => {
       const fs = parseFloat(getComputedStyle(word).fontSize) || 0;
       if (!fs) return;
-      const h = fs * CAP_RATIO;
+      const h = fs * CAP_RATIO * CAP_OVERSHOOT;
       el.setAttribute('viewBox', TIGHT_BOX);
       el.style.height = h.toFixed(2) + 'px';
       el.style.width = (h * TIGHT_ASPECT).toFixed(2) + 'px';
