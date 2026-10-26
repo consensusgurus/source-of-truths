@@ -7157,12 +7157,12 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   /* One control row that stretches: Tiles / List, the group, search, sort. */
   .sty-ix > .sty-cat > .sty-cathead{gap:10px;}
   .sty-ix > .sty-cat > .sty-cathead > .sty-sort{margin-left:0;align-self:stretch;display:flex;}
-  .sty-ix > .sty-cat > .sty-cathead > .sty-sort button{flex:1 1 0;white-space:nowrap;}
-  .sty-ix > .sty-cat > .sty-cathead > .sty-view{flex:1.1 1 0;}
-  .sty-ix > .sty-cat > .sty-cathead > .sty-sort:not(.sty-view){flex:2.2 1 0;}
-  .sty-ix > .sty-cat > .sty-cathead > .sty-find{flex:2.4 1 0;margin-left:0;}
-  .sty-ix > .sty-cat > .sty-cathead > .sty-mgchips{flex:.9 1 0;margin-left:0;display:flex;flex-wrap:nowrap;gap:8px;align-self:stretch;}
-  .sty-ix .sty-mgc{flex:1 1 0;border:var(--dk);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);
+  /* Every toggle is only as wide as its labels; all spare width goes to search (owner, 2026-10-26). */
+  .sty-ix > .sty-cat > .sty-cathead > .sty-sort{flex:none;}
+  .sty-ix > .sty-cat > .sty-cathead > .sty-sort button{white-space:nowrap;padding:6px 14px;}
+  .sty-ix > .sty-cat > .sty-cathead > .sty-find{flex:1 1 auto;margin-left:0;}
+  .sty-ix > .sty-cat > .sty-cathead > .sty-mgchips{flex:none;margin-left:0;display:flex;flex-wrap:nowrap;gap:8px;align-self:stretch;}
+  .sty-ix .sty-mgc{flex:none;border:var(--dk);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);
     font-size:13px;font-weight:800;padding:0 14px;white-space:nowrap;}
   .sty-ix .sty-mgc i{color:var(--stg-ink2, var(--stg-ink));font-weight:700;}
   .sty-ix .sty-mgc.on{background:var(--stg-ink);color:var(--stg-ground);}
