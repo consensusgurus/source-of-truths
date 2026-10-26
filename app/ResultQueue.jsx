@@ -175,6 +175,7 @@ function announceSaved(bodyText) {
   try {
     const b = JSON.parse(bodyText);
     if (!b || b.abandoned === true) return;
+    try { localStorage.setItem('sot_finished_one', '1'); } catch (e) {}
     window.dispatchEvent(new CustomEvent('sot:result-saved', { detail: { quizId: b.quizId || null } }));
   } catch (e) {}
 }

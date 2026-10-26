@@ -6,6 +6,7 @@ import { Crown, Copy, Check, UserPlus } from 'lucide-react';
 import GroupsShell from '../../groups/GroupsShell';
 import JoinLeaderboardForm from '../../quiz/[id]/JoinLeaderboardForm';
 import DrawingBoard from './DrawingBoard';
+import { drawingIsLive } from '@/lib/drawing';
 import { T } from '@/lib/theme';
 import { CONTEST, COPY, contestIsLive, formatScore } from '@/lib/contest';
 
@@ -161,6 +162,42 @@ export default function CommunityLeaderboardClient() {
     } catch { /* clipboard blocked; the link is selectable */ }
   }, [me]);
 
+  // Read after mount, never during render (the clock would split the server and client).
+  const [drawOn, setDrawOn] = useState(null);
+  useEffect(() => { setDrawOn(drawingIsLive()); }, []);
+  const standing = (
+        <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16, marginBottom: 18 }}>
+          {me ? (
+            <>
+              <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.soft, fontWeight: 800, marginBottom: 8 }}>Your standing</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
+                <span style={{ fontSize: 22, fontWeight: 800 }}>{me.username}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.muted }}>
+                  {me.credits} brought in{myRank >= 0 ? ` · #${myRank + 1}` : ''}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <code style={{ flex: '1 1 260px', minWidth: 0, fontFamily: FONT, fontSize: 13, background: C.well, border: `1px solid ${C.line}`, borderRadius: 9, padding: '9px 11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {me.shareUrl}
+                </code>
+                <button type="button" onClick={copy} style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: FONT, fontSize: 13, fontWeight: 800, color: '#ffffff', background: '#0b0d12', border: 0, borderRadius: 9, padding: '10px 14px', cursor: 'pointer' }}>
+                  {copied ? <Check size={14} /> : <Copy size={14} />}{copied ? 'Copied' : 'Copy link'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 300px', fontSize: 14, color: C.muted }}>
+                Register to get your own share link and appear on this board.
+              </div>
+              <button type="button" onClick={() => setJoinOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: FONT, fontSize: 13, fontWeight: 800, color: '#ffffff', background: '#0b0d12', border: 0, borderRadius: 9, padding: '10px 14px', cursor: 'pointer' }}>
+                <UserPlus size={14} /> Register
+              </button>
+            </div>
+          )}
+        </div>
+  );
+
   return (
     <GroupsShell eyebrow="Community" links={[{ href: '/groups', label: 'Groups' }, { href: '/quizzes/hub', label: 'Stat Hub' }]}>
       <div style={{ fontFamily: FONT, color: C.ink }}>
@@ -176,39 +213,11 @@ export default function CommunityLeaderboardClient() {
         </p>
 
         {/* The $100 ticket drawing (owner, 2026-10-09); renders nothing once it closes. */}
-        <DrawingBoard />
-
-        {/* Your standing + link */}
-        <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16, marginBottom: 18 }}>
-          {me ? (
-            <>
-              <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.soft, fontWeight: 800, marginBottom: 8 }}>Your standing</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-                <span style={{ fontSize: 22, fontWeight: 800 }}>{me.username}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: C.muted }}>
-                  {me.credits} brought in{myRank >= 0 ? ` · #${myRank + 1}` : ''}
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <code style={{ flex: '1 1 260px', minWidth: 0, fontFamily: FONT, fontSize: 13, background: C.well, border: `1px solid ${C.line}`, borderRadius: 9, padding: '9px 11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {me.shareUrl}
-                </code>
-                <button type="button" onClick={copy} style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: FONT, fontSize: 13, fontWeight: 800, color: C.ctaInk, background: C.cta, border: 0, borderRadius: 9, padding: '10px 14px', cursor: 'pointer' }}>
-                  {copied ? <Check size={14} /> : <Copy size={14} />}{copied ? 'Copied' : 'Copy link'}
-                </button>
-              </div>
-            </>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 300px', fontSize: 14, color: C.muted }}>
-                Register to get your own share link and appear on this board.
-              </div>
-              <button type="button" onClick={() => setJoinOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: FONT, fontSize: 13, fontWeight: 800, color: C.ctaInk, background: C.cta, border: 0, borderRadius: 9, padding: '10px 14px', cursor: 'pointer' }}>
-                <UserPlus size={14} /> Register
-              </button>
-            </div>
-          )}
-        </div>
+        {/* THE REGISTER BAR SITS BETWEEN THE DRAWING'S TWO BOXES (owner, 2026-10-26):
+            under "Every ticket is a shot", above How to earn. With the drawing
+            closed it falls back to its old place. */}
+        <DrawingBoard between={standing} />
+        {drawOn === false ? standing : null}
 
         {/* View toggle: Contest (while live) / Last 90 days / All time */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>

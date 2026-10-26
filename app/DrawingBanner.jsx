@@ -81,16 +81,16 @@ export default function DrawingBanner() {
 // type and the pill follow the home's top bar (.sty-cap); gold is the colour
 // the cap already gives the ticket count.
 const CSS = `
-.dbn{--b-raise:#0e131f;--b-line:hsla(0,0%,100%,.11);--b-surf2:hsla(0,0%,100%,.08);--b-ink:#e9edf4;--b-ink2:#aab5c7;--b-mute:#8b95a8;--b-acc:#7dd3fc;--b-tint:rgba(125,211,252,.16);--dbn-gold:#f5c84c;
+.dbn{--b-raise:#0e131f;--b-line:hsla(0,0%,100%,.11);--b-surf2:hsla(0,0%,100%,.08);--b-ink:#e9edf4;--b-ink2:#aab5c7;--b-mute:#8b95a8;--b-acc:#e9edf4;--b-tint:hsla(0,0%,100%,.1);--dbn-gold:#f5c84c;
   font-family:'Manrope',system-ui,-apple-system,sans-serif;background:var(--b-raise);color:var(--b-ink);border-bottom:1px solid var(--b-line)}
-html:not([data-stage-boot='dark']) .dbn[data-dbn-theme='light']{--b-raise:#ffffff;--b-line:rgba(11,15,26,.14);--b-surf2:#e4e9f1;--b-ink:#0b0d12;--b-ink2:#3f4757;--b-mute:#5f6774;--b-acc:#2563eb;--b-tint:rgba(37,99,235,.1);--dbn-gold:#8a5a00}
+html:not([data-stage-boot='dark']) .dbn[data-dbn-theme='light']{--b-raise:#ffffff;--b-line:rgba(11,15,26,.14);--b-surf2:#e4e9f1;--b-ink:#0b0d12;--b-ink2:#3f4757;--b-mute:#5f6774;--b-acc:#0b0d12;--b-tint:rgba(11,13,18,.07);--dbn-gold:#8a5a00}
 .dbn-in{display:flex;align-items:center;gap:14px;padding:9px 12px 9px 22px}
 .dbn-tk{flex:none;color:var(--dbn-gold)}
 .dbn-tx{flex:1 1 auto;min-width:0;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;row-gap:2px}
 .dbn-eb{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--dbn-gold);white-space:nowrap}
 .dbn-ln{font-size:13px;font-weight:600;line-height:1.45;color:var(--b-ink2)}
 .dbn-ln b{color:var(--dbn-gold);font-weight:800}
-.dbn-go{flex:none;font-size:12.5px;font-weight:800;color:var(--b-acc);text-decoration:none;border:1px solid var(--b-acc);border-radius:999px;padding:6px 12px;white-space:nowrap}
+.dbn-go{flex:none;font-size:12.5px;font-weight:800;color:var(--b-acc);text-decoration:none;border:2px solid var(--b-acc);border-radius:999px;padding:6px 12px;white-space:nowrap}
 .dbn-go:hover{background:var(--b-tint)}
 .dbn-x{flex:none;width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--b-mute);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .dbn-x:hover{background:var(--b-surf2);color:var(--b-ink)}

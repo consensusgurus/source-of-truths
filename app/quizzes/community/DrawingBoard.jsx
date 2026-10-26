@@ -25,7 +25,7 @@ function ago(iso, now) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-export default function DrawingBoard() {
+export default function DrawingBoard({ between = null }) {
   const [live, setLive] = useState(false);
   const [days, setDays] = useState(0);
   const [now, setNow] = useState(0);
@@ -123,6 +123,7 @@ export default function DrawingBoard() {
         </div>
       </div>
 
+      {between}
       <div className="drb-card drb-how" id="drawing-earn">
         <h3 className="drb-h3">How to earn tickets</h3>
         <div className="drb-steps">
@@ -251,7 +252,8 @@ export default function DrawingBoard() {
 const CSS = `
 .drb{margin:0 0 18px;color:var(--stg-ink)}
 .drb-card{background:var(--stg-raise);border:1px solid var(--stg-line);border-radius:14px;margin-bottom:14px;overflow:hidden}
-.drb-ramp{height:6px;background:#7db0ff}
+.drb{--stg-acc:var(--stg-ink);--stg-acc-ink:var(--stg-ink);--stg-onramp:var(--stg-raise,#ffffff)}
+.drb-ramp{height:6px;background:#e8b43a}
 .drb-hin{padding:22px 24px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between}
 .drb-hl{flex:999 1 360px;min-width:0}
 .drb-eb{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-acc-ink,var(--stg-acc));font-weight:800}

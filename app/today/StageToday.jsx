@@ -2434,6 +2434,19 @@ export default function StageToday() {
     try { localStorage.setItem('sot_home_view', v); } catch (e) { /* storage off */ }
   };
   const viewOf = (pane) => (allTiles && pane === ALL_ID ? 'tile' : (viewBy || (pane === ALL_ID ? 'tile' : 'list')));
+  // A SKILL OPENS TILED AND POPULAR (owner, 2026-10-26). Opening a skill pane
+  // shows its puzzles as tiles, most played first, whatever the stored choice;
+  // any other pane goes back to the reader's stored sort and view. Picking a
+  // sort or view inside the skill still applies and is remembered as usual.
+  useEffect(() => {
+    if (isSkillId(paneOn)) { setSortBy('pop'); setViewBy('tile'); return; }
+    try {
+      const sv = localStorage.getItem('sot_home_sort');
+      setSortBy(sv === 'pop' || sv === 'diff' ? sv : 'az');
+      const vv = localStorage.getItem('sot_home_view');
+      setViewBy(vv === 'tile' || vv === 'list' ? vv : null);
+    } catch (e) { /* storage off */ }
+  }, [paneOn]);
   const viewCtl = (pane) => (
     <div className="sty-sort sty-view" role="group" aria-label="Show puzzles as"
       onClick={(e) => e.stopPropagation()}>
@@ -3699,7 +3712,7 @@ export default function StageToday() {
           {/* NO NAME, NO FIGURES: a guest gets the one control that would fill
               the row. Copy is the owner's (2026-10-07). */}
           {!who ? (
-            <a className="sty-keep" href="/?signup=1"
+            <a className={'sty-keep' + (brandTone(paneOn) ? ' tone' : '')} style={brandTone(paneOn) || undefined} href="/?signup=1"
               onClick={(e) => { e.preventDefault(); openChooseName(); }}>Keep stats, play with friends</a>
           ) : null}
           {who ? <div className="sty-who"><b>{who}</b><i>player</i></div> : null}
@@ -5406,11 +5419,12 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
    of the cards above it, and on the same tokens the cap button already proved in
    both registers: the accent as the fill and the ink published for it. */
 .sty-join{display:flex;align-items:center;gap:18px;text-decoration:none;
-  background:var(--stg-acc);color:var(--stg-onramp);border-radius:12px;padding:18px 20px;}
+  background:var(--stg-raise,#ffffff);color:var(--stg-ink);border:2px solid var(--stg-ink);border-radius:12px;padding:18px 20px;}
+.sty-join .sty-go{background:var(--stg-ink);color:var(--stg-raise,#ffffff);border-color:var(--stg-ink);}
 .sty-join .sty-eb{color:inherit;margin-bottom:5px;}
 .sty-join .sty-jn{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.1;}
 .sty-join .sty-tag{font-size:13.5px;font-weight:600;margin-top:4px;}
-.sty-join:hover .sty-go{background:var(--stg-onramp);color:var(--stg-acc);border-color:var(--stg-onramp);}
+.sty-join:hover .sty-go{opacity:.88;}
 .sty-join:focus-visible{outline:2px solid currentColor;outline-offset:2px;}
 /* ONE LINE IS ALL THE ROW ADDS TO A TILE: which category it speaks for. */
 .sty-pcat{display:block;font-family:${MONO};font-size:8.5px;font-weight:700;
@@ -6063,8 +6077,13 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
   text-transform:uppercase;color:var(--stg-mute);}
 .sty-fca:hover>b{color:var(--stg-acc-ink);}
 .sty-fca:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
-.sty-keep{display:inline-flex;align-items:center;border-radius:999px;background:var(--stg-acc);
-  color:var(--stg-onramp,#08222e);padding:8px 14px;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;}
+/* KEEP STATS WEARS THE LOGO'S COLOUR (owner, 2026-10-26): the same --stg-brand
+   the "Loft" of the mark takes, toned per pane exactly as the brand link is. */
+.sty-keep.tone{--stg-brand:var(--md);}
+[data-stage-theme=dark] .sty-keep.tone{--stg-brand:var(--mc);}
+[data-stage-theme=dark] .sty-keep{color:#0b0f1a;}
+.sty-keep{display:inline-flex;align-items:center;border-radius:999px;background:var(--stg-brand,#2f7de1);
+  color:#ffffff;padding:8px 14px;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;}
 .sty-keep:hover{opacity:.9;}
 .sty-keep:focus-visible{outline:2px solid var(--stg-ink);outline-offset:2px;}
 .sty-ixsep{flex:none;height:1px;background:var(--stg-line);margin:6px 10px;}

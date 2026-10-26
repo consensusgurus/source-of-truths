@@ -121,8 +121,8 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
 .lc-cap .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
 .lc-cap .sty-fca:hover>b{color:var(--stg-acc-ink);}
-.lc-cap .sty-keep{display:inline-flex;align-items:center;border-radius:999px;background:var(--stg-acc);
-  color:var(--stg-onramp,#08222e);padding:8px 14px;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;}
+.lc-cap .sty-keep{display:inline-flex;align-items:center;border-radius:999px;background:var(--stg-brand,#2f7de1);
+  color:#ffffff;padding:8px 14px;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;}
 .lc-cap .sty-cx{flex:none;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-ink2);text-decoration:none;border:1px solid var(--stg-line);border-radius:8px;padding:6px 10px;}
 .lc-cap .sty-cx:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
