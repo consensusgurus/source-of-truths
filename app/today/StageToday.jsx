@@ -1146,6 +1146,21 @@ export default function StageToday() {
       }
     } catch (e) {}
     try { const h = String(window.location.hash || '').slice(1); if (INFO_PANES.includes(h) || STAT_ANCHORS.includes(h)) { setPane(STAT_ANCHORS.includes(h) ? BOARD_ID : h); setPicked(true); } } catch (e) {}
+    // /#cat=<Category> OPENS THAT CATEGORY (owner, 2026-10-26: the ending's
+    // category chips "should take users to main page with the category
+    // selected", not the old category pages). Shown under Categories, for this
+    // visit only, and the hash is cleared like #all's.
+    try {
+      const h = String(window.location.hash || '');
+      if (h.startsWith('#cat=')) {
+        const c = decodeURIComponent(h.slice(5));
+        if (RAMP_ORDER.includes(c)) {
+          setIxLens('cat'); setPane(c); setPicked(true);
+          setTimeout(() => { try { if (String(window.location.hash).startsWith('#cat=')) window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (er) {} }, 2500);
+          try { window.scrollTo(0, 0); } catch (er) {}
+        }
+      }
+    } catch (e) {}
   }, []);
   // ONLY A GAMES PANE IS REMEMBERED. A reader who last looked at the leaderboard
   // should still come back tomorrow to something they can play.

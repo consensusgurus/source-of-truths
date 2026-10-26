@@ -75,7 +75,7 @@ import StageStick from './StageStick';
 import { fmtMetric } from '@/lib/challenge-metric';
 import { typicalSeconds } from '@/lib/game-medians';
 import { ARCADE_RUN, ARCADE_BEST } from '@/lib/end-verdict';
-import { categoryHrefForGame, categoryHref } from '@/lib/puzzle-categories';
+import { categoryHrefForGame } from '@/lib/puzzle-categories';
 import { DISPLAY_CIRCUITS, circuitKeysFor, circuitName, runHref } from '@/lib/circuits';
 import { themeParam } from '@/lib/share-palette';
 // Decisions that pick WHICH ending paints run before the first paint, never
@@ -2062,7 +2062,7 @@ export default function StageFinish({
       } : null,
       back: backFn, backLabel: revealOpt ? (revealOpt.label || 'Reveal answer') : 'Back to board',
       replay: replayOpt && revealOpt ? replayOpt : null,
-      catHref: categoryHrefForGame(me.key), catName: me.cat,
+      catHref: me.cat ? `/#cat=${encodeURIComponent(me.cat)}` : categoryHrefForGame(me.key), catName: me.cat,
       homeHref: (mainOpt && mainOpt.href) || '/',
       gameName: me.name,
       allTime: gameRank && gameRank.value != null ? { value: gameRank.value, label: gameRank.label || 'all time' } : null,
@@ -2079,7 +2079,8 @@ export default function StageFinish({
     } : null;
     const cats = RAMP_ORDER.map((c) => {
       const gs = LIVE().filter((x) => x.cat === c);
-      return { name: c, total: gs.length, n: gs.filter((x) => played.has(x.key) || x.key === me.key).length, href: categoryHref(c) || '/', bg: categoryColor(c) };
+      // To the home with the category open (owner, 2026-10-26), not the old category page.
+      return { name: c, total: gs.length, n: gs.filter((x) => played.has(x.key) || x.key === me.key).length, href: `/#cat=${encodeURIComponent(c)}`, bg: categoryColor(c) };
     }).filter((c) => c.total > 0);
     const meme = memeCtx && openMeme ? { ctx: memeCtx, onOpen: openMeme } : null;
     // UP NEXT (owner, 2026-10-26): every live daily, for the desktop rail's
