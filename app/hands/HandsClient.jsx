@@ -743,7 +743,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           .hst-cell{aspect-ratio:62/74;width:100%;}
           .hst-slot{box-sizing:border-box;aspect-ratio:62/74;width:100%;border-radius:8px;border:2px solid var(--pst-ink);background:var(--pst-tint);padding:0;}
           .hst-slot:active{transform:translateY(1px);}
-          .hst-q2{border-style:solid;}
+          .hst-q2{border-color:transparent !important;background:transparent !important;opacity:.8;} .hst-q2.on{border-color:currentColor !important;opacity:1;}
         `;
         return (
           <PlayStage bg={gameColor('hands')} label="Hands"

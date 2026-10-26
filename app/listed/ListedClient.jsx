@@ -6,7 +6,7 @@
 // highest to lowest and submit. Every submit grades each row the way Wordle
 // grades a letter:
 //   filled = exactly right, and it LOCKS with its real figure revealed
-//   dashed = off by one place, so it is nearly home (tagged "Off by one")
+//   amber edge = off by one place, so it is nearly home (tagged "Off by one")
 //   plain  = two or more places away
 // The marks never rely on colour alone (owner, 2026-10-25): in the submit
 // grid a near miss is striped, an exact one solid, a far one an empty box.
@@ -724,7 +724,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
       banner={<>Order them, {PUZZLE.hi.toLowerCase()} at the top, {PUZZLE.lo.toLowerCase()} at the bottom.</>}
       chips={[
         { label: 'Filled: exactly right, locks with its figure', style: STAGE ? { background: 'var(--stg-acc)', border: '1.5px solid var(--stg-acc-ink, var(--stg-acc))', color: 'var(--stg-onramp)' } : { background: COLORS.lockSoft, border: `1.5px solid ${COLORS.lock}`, color: COLORS.lockInk } },
-        { label: 'Dashed: off by one place', style: { background: `var(--stg-surf, ${COLORS.nearSoft})`, border: `1.5px solid var(--stg-warn, ${COLORS.near})`, color: `var(--stg-ink, ${COLORS.nearInk})` } },
+        { label: 'Amber edge: off by one place', style: { background: `var(--stg-surf, ${COLORS.nearSoft})`, border: `1.5px solid var(--stg-warn, ${COLORS.near})`, color: `var(--stg-ink, ${COLORS.nearInk})` } },
         { label: 'Plain: two or more places away', tone: 'grey' },
       ]}
       steps={[
@@ -1305,7 +1305,7 @@ export default function ListedClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Listed</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Listed is a free daily ranking puzzle from Mind Loft. Each day deals eight real things and one measurable quantity, shuffled out of order. Your job is to rank them. You get five submits, and every submit grades each row: a filled row is exactly right and locks in with the real figure revealed, a dashed row tagged off by one is exactly one place from home, and a plain row is further away than that.
+          Listed is a free daily ranking puzzle from Mind Loft. Each day deals eight real things and one measurable quantity, shuffled out of order. Your job is to rank them. You get five submits, and every submit grades each row: a filled row is exactly right and locks in with the real figure revealed, an amber row tagged off by one is exactly one place from home, and a plain row is further away than that.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           The off-by-one tier is what makes it a deduction puzzle rather than a quiz. Knowing a row is one place from home turns a wild guess into arithmetic, and a board that looks hopeless after one submit is usually two nudges from solved. Rank the whole list on your first submit and you score a perfect 10.

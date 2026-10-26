@@ -709,7 +709,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
         ) : null;
         return (
           <WordStage label="Garble"
-            eyebrow={isFin ? 'The finale · your collected letters' : `Word ${sel + 1} of ${PUZZLE.words.length} · dotted letters build the finale`}
+            eyebrow={isFin ? 'The finale · your collected letters' : `Word ${sel + 1} of ${PUZZLE.words.length} · circled letters build the finale`}
             spine={collected} clue={isFin ? `\u201c${PUZZLE.clue}\u201d` : null}
             scramble={isFin ? null : w.scramble} scrambleKind="tiles" slots={stSlots}
             rowState={solvedW ? 'ok' : (missed ? 'bad' : null)} rowKey={String(sel)} slotsKey={missed ? 'm' + fx.miss : 'a'}

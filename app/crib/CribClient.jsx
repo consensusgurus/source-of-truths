@@ -637,8 +637,8 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
 .crb-how{text-align:center;font-size:13px;font-weight:700;opacity:.85;line-height:1.4;min-height:2.8em;}
 .crb-go{display:flex;align-items:center;justify-content:center;gap:8px;min-height:64px;width:100%;border-radius:18px;padding:12px;background:var(--pst-ink);border:2px solid var(--pst-ink);font-size:21px;font-weight:800;color:var(--pst-bg) !important;}
 .crb-go:disabled{background:var(--pst-tint);color:var(--pst-ink) !important;opacity:.6;cursor:default;}
-.crb-q2{border-style:solid !important;}
-.crb-q2.on{border-style:solid !important;}
+.crb-q2{border-color:transparent !important;background:transparent !important;opacity:.8;}
+.crb-q2.on{border-color:currentColor !important;opacity:1;}
 .crb-peg{display:flex;gap:6px;justify-content:center;}
 .crb-peg i{width:30px;height:12px;border-radius:6px;border:2px solid var(--pst-ink);background:var(--pst-tint);}
 .crb-peg i.on{background:var(--pst-ink);}

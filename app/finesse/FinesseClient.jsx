@@ -888,7 +888,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
           .fin-tc{position:absolute;width:46px;}
           .fin-tc.win{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--pst-ink);}
           .fin-slot{position:absolute;box-sizing:border-box;width:46px;height:64px;border-radius:8px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;opacity:.75;}
-          .fin-tb.q2{border-style:solid;}
+          .fin-tb.q2{border-color:transparent !important;background:transparent !important;opacity:.8;} .fin-tb.q2.on{border-color:currentColor !important;opacity:1;}
           .fin-slots{display:inline-flex;gap:4px;vertical-align:middle;margin:0 10px;}
           .fin-slots i{width:22px;height:10px;border-radius:5px;border:2px solid var(--pst-ink);opacity:.5;}
           .fin-slots i.need{opacity:1;background:var(--pst-tint);}

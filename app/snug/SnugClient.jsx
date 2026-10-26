@@ -724,7 +724,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
     ? (ghost && ghost.bad != null
       ? `Piece ${armed + 1} does not fit there. Turn it, or try another square.`
       : ghost && ghost.cells
-        ? (aim ? `Piece ${armed + 1} in hand. Tap the outline again to drop it.` : `Piece ${armed + 1} in hand. The dashed outline is where it lands.`)
+        ? (aim ? `Piece ${armed + 1} in hand. Tap the outline again to drop it.` : `Piece ${armed + 1} in hand. The outline is where it lands.`)
         : (coarse ? `Piece ${armed + 1} in hand. Tap once to see the outline, again to drop.` : `Piece ${armed + 1} in hand. Point at the board to see where it lands.`))
     : placedCount
       ? `${placedCount} of ${NP} pieces in. Pick the next one from the pad.`

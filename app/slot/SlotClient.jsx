@@ -513,7 +513,7 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
       steps={[
         <>The board is <b>{N} empty slots</b> on one hard numeric axis, slot 1 at the top: today, <b>{DAY.axis ? DAY.axis.toLowerCase() : 'the axis'}</b>. Slot 1 is {DAY.top ? DAY.top.toLowerCase() : 'the top'}, slot {N} is {DAY.bottom ? DAY.bottom.toLowerCase() : 'the bottom'}.</>,
         <>The items arrive <b>one at a time</b>. Tap any open slot to drop the item in hand there, and it is <b>locked for good</b>. You will not see what is still to come. The last item takes the last slot left.</>,
-        <>The reveal shows the true order beside yours. A <b>ticked</b> row is the right slot and scores a point; a <b>dashed</b> row is one slot off, which scores nothing but breaks a tie on the board; a <b>struck-through</b> row is a miss.</>,
+        <>The reveal shows the true order beside yours. A <b>ticked</b> row is the right slot and scores a point; a row marked <b>±1</b> is one slot off, which scores nothing but breaks a tie on the board; a <b>struck-through</b> row is a miss.</>,
         <><b>Par</b> is what a sensible player averages on today&rsquo;s order of arrival (today: <b>{PAR}</b>). The order changes how hard the same ten things are, and the week climbs: Monday deals the anchors first, Saturday deals the middle of the board first.</>,
       ]}
       knack="Leave room. The first item is almost never a 1 or a 10, so the mistake is spending an end slot on it. Ask where it sits among everything that COULD be on this board, not among what you have seen."
@@ -690,10 +690,10 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
           .sl-slot.a{border-color:var(--stg-warn, #b45309);border-left-width:6px;}
           .sl-slot.x{border-color:var(--stg-bad, ${COLORS.rust});border-left-width:6px;}
           .sl-slot.g .n{color:var(--stg-good, ${COLORS.green});} .sl-slot.a .n{color:var(--stg-warn, #b45309);} .sl-slot.x .n{color:var(--stg-bad, ${COLORS.rust});}
-          /* EXACT, NEAR, MISS IN EVERY LOOK (owner, 2026-10-25): ticked, dashed, struck,
+          /* EXACT, NEAR, MISS IN EVERY LOOK (owner, 2026-10-25): ticked, marked ±1, struck,
              never the left-rule colour alone. */
           .sl-slot.g .n::after{content:' ✓';font-family:${SANS};font-weight:800;}
-          .sl-slot.a{border-style:solid;border-left-style:solid;}
+          .sl-slot.a .n::after{content:' ±1';font-family:${SANS};font-weight:800;}
           .sl-slot.x .nm{text-decoration:line-through;text-decoration-thickness:1.5px;}
           .sl-slot.broke .nm small{color:var(--stg-bad, ${COLORS.rust});}
           .sl-strip{display:flex;gap:4px;margin:12px 0 6px;}

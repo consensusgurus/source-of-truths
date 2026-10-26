@@ -814,9 +814,9 @@ export default function QuiltClient({ puzzles = [], forceNum = null }) {
     return {
       ...(STAGE ? regionStyle(b) : null),
       background: bg,
-      // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): a dashed ring, not just a
+      // SAME DIGIT IN EVERY LOOK (owner, 2026-10-25): a double ring, not just a
       // deeper wash, since the phone looks collapse the accent toward the ink.
-      outline: sameVal ? `1.5px solid ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
+      outline: sameVal ? `3px double ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
       outlineOffset: sameVal ? '-4px' : undefined,
       // Digit ink comes from .ql-given and .ql-user, both of which the register
       // already moves. An inline colour here outranks a stylesheet, so the flat

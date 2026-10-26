@@ -700,8 +700,8 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
 .tai-col{position:relative;}
 .tai-col>*{position:absolute;left:0;}
 .tai-say{text-align:center;font-size:15px;font-weight:800;line-height:1.35;min-height:2.7em;}
-.tai-q2{border-style:solid !important;}
-.tai-q2.on{border-style:solid !important;}
+.tai-q2{border-color:transparent !important;background:transparent !important;opacity:.8;}
+.tai-q2.on{border-color:currentColor !important;opacity:1;}
 @keyframes taiShake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 @media (prefers-reduced-motion: reduce){.tai-tab.shake{animation:none}.tai-pc{transition:none}}`;
         const top = (
