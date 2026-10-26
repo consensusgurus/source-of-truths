@@ -3641,7 +3641,11 @@ export default function StageToday() {
                 <span>Mind <span style={{ color: 'var(--stg-brand,#7dd3fc)' }}>Loft</span></span>
               </button>
               <span className="mph-htx" style={pc ? mTone(rampCat(paneOn)) : undefined}>
-                <span className="t">{pc ? <i className="dot" aria-hidden="true" /> : null}<span>{title}</span></span>
+                {/* THE TITLE SITS FLUSH LEFT AND ALWAYS SHOWS IN FULL (owner, 2026-10-25):
+                    the colour dot that led it vanished into the toned page and only
+                    pushed the name right of the count below, so it is gone; a long
+                    name steps its size down instead of trailing off in an ellipsis. */}
+                <span className={'t' + (title.length > 14 ? ' xl' : title.length > 11 ? ' l' : '')}><span>{title}</span></span>
                 <em>{sub}</em>
               </span>
           <button type="button" className="sty-mlook" data-look="" onClick={(e) => cycleSiteLook()}
@@ -6557,10 +6561,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mtb.pane{justify-content:flex-start;gap:10px;}
   .mph-hback{flex:none;height:40px;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;border:var(--mb);border-radius:999px;background:transparent;color:var(--mi);padding:0 12px 0 8px;font:inherit;font-weight:800;font-size:14px;line-height:1;white-space:nowrap;cursor:pointer;}
   .mph-htx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;color:var(--mi);}
-  .mph-htx .t{display:flex;align-items:center;gap:7px;min-width:0;font-size:19px;font-weight:800;line-height:1.3;}
-  /* Descenders (the g in Language) need room inside the clipping box. */
-  .mph-htx .t > span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;padding-bottom:2px;margin-bottom:-2px;}
-  .mph-htx .dot{flex:none;width:11px;height:11px;border-radius:50%;background:color-mix(in srgb, var(--mc) 60%, #fff);}
+  .mph-htx .t{display:flex;align-items:center;min-width:0;font-size:19px;font-weight:800;line-height:1.2;}
+  /* The name never clips: it wraps before it would ever cut off. */
+  .mph-htx .t > span{min-width:0;line-height:1.2;}
+  .mph-htx .t.l{font-size:17px;}
+  .mph-htx .t.xl{font-size:15.5px;}
   .mph-htx em{font-style:normal;font-size:12px;font-weight:600;line-height:1.3;opacity:.85;white-space:nowrap;}
   .sty-mtb.pane .sty-mlook{flex:none;width:40px;height:40px;}
   .mph-pane .sld-host{display:none !important;}
