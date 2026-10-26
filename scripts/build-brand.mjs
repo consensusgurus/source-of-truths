@@ -47,6 +47,7 @@ import { readFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { markInner } from '../lib/mindloft-mark.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const b64 = (rel) => readFileSync(join(ROOT, 'node_modules', rel)).toString('base64');
@@ -62,7 +63,7 @@ const RAMP = ['#7dd3fc', '#6ee7b7', '#bef264', '#e8b43a', '#fb923c',
   '#fb7185', '#e879f9', '#c084fc', '#fbbf24', '#a5b4fc'];
 
 const TILE_FILL = 0.92;
-const AVATAR_FILL = 0.86;
+const AVATAR_FILL = 0.70; // the house's eave corners must clear X's circle crop
 
 const FONTS = `
 @font-face{font-family:Manrope;font-weight:800;src:url(data:font/woff;base64,${b64('@fontsource/manrope/files/manrope-latin-800-normal.woff')}) format('woff');}
@@ -70,16 +71,10 @@ const FONTS = `
 @font-face{font-family:'DM Mono';font-weight:400;src:url(data:font/woff;base64,${b64('@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff')}) format('woff');}
 `;
 
-// Verbatim from app/MindLoftMark.jsx. If that moves, move this with it.
-const BRAIN = 'M14 42C12 28 22 16 36 16C40 8 54 6 60 14C70 8 84 14 86 26C96 30 98 44 88 50'
-  + 'C92 58 86 66 76 64C74 72 64 74 60 66C48 70 36 66 32 56C20 56 12 50 14 42Z';
-
-const mark = (size) => `
-<svg width="${size}" height="${size}" viewBox="0 0 120 120" fill="none" style="display:block">
-  <path d="M20 52l40-34 40 34" stroke="${INK}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M14 102h92" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>
-  <g transform="translate(31,48) scale(0.53)"><path d="${BRAIN}" fill="${SKY}"/></g>
-</svg>`;
+// The house mark (owner, 2026-10-26): black house, sky M, from lib/mindloft-mark.js.
+// It always sits on a PASTEL tile (sky), because a black house on the dark ground vanishes.
+const mark = (size) => `<svg width="${size}" height="${size}" viewBox="0 0 120 120" fill="none" style="display:block">${markInner({})}</svg>`;
+const markTile = (size) => `<div style="width:${size}px;height:${size}px;border-radius:${Math.round(size * 0.22)}px;background:${SKY};display:flex;align-items:center;justify-content:center">${mark(Math.round(size * 0.78))}</div>`;
 
 const page = (w, h, body, css = '') => `<!doctype html><html><head><meta charset="utf-8"><style>
 ${FONTS}
@@ -91,7 +86,7 @@ ${css}
 
 const tile = (px, fill) => page(px, px,
   `<div class="t">${mark(Math.round(px * fill))}</div>`,
-  `.t{width:${px}px;height:${px}px;display:flex;align-items:center;justify-content:center;background:${GROUND}}`);
+  `.t{width:${px}px;height:${px}px;display:flex;align-items:center;justify-content:center;background:${SKY}}`);
 
 // THE BANNER (owner, 2026-10-12): the three lines in their fixed order, each on
 // a ramp step, then every category as a chip so the banner shows the width of
@@ -110,7 +105,7 @@ const banner = page(1500, 500, `
 <div class="band">${band}</div>
 <div class="wrap">
   <div class="left">
-    <div class="brand">${mark(50)}<b>Mind <em>Loft</em></b></div>
+    <div class="brand">${markTile(54)}<b>Mind <em>Loft</em></b></div>
     ${lines}
   </div>
   <div class="cats">${chips}</div>
@@ -144,8 +139,7 @@ async function shot(rel, w, h, html) {
 
 // `--banner` redraws the banner alone, so a copy change does not re-render the icons.
 if (!process.argv.includes('--banner')) {
-  await shot('app/icon.png', 512, 512, tile(512, TILE_FILL));
-  await shot('app/apple-icon.png', 180, 180, tile(180, TILE_FILL));
+  // app/icon.png, apple-icon.png and favicon.ico are drawn by scripts/build-app-icons.mjs.
   await shot('public/brand/x-avatar.png', 400, 400, tile(400, AVATAR_FILL));
 }
 await shot('public/brand/x-banner.png', 1500, 500, banner);
@@ -154,5 +148,4 @@ await browser.close();
 // The .ico is downsampled from the 512 rather than rendered per size: Chromium
 // hints a 16px render for the screen, which is the wrong trade for an icon that
 // also has to hold up at 64.
-console.log('\nNow write the .ico from app/icon.png, e.g.:');
-console.log("  python3 -c \"from PIL import Image; Image.open('app/icon.png').save('app/favicon.ico', sizes=[(16,16),(32,32),(48,48),(64,64)])\"");
+

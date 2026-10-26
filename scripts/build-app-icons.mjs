@@ -17,46 +17,26 @@
 //   3. One drawing was used at every size. A 7px stroke on a 120 grid is a hairline by 32px.
 //
 // A logo and an app icon are not the same drawing. This file keeps the mark from
-// app/MindLoftMark.jsx but re-cuts it twice, on an opaque field, inside the platform safe zones.
-//
-//   LARGE cut (>=48px)   caret + brain + floor rule, mark at ~64% of the tile.
-//   SMALL cut (16/32px)  floor rule DROPPED (it degrades to a smudge at 2px), caret thickened
-//                        and shallowed, brain enlarged. Scaling the large cut down does not work.
-//
-// Colours come from lib/theme.js. The brain uses blue400 rather than blue: #2563eb on #0b0c0e is
-// only 3.6:1 and mushes at favicon size, where blue400 is 7.7:1.
+// lib/mindloft-mark.js but cuts it twice, on an opaque field, inside the platform safe zones.
 
 import { Resvg } from '@resvg/resvg-js';
 import { writeFileSync, mkdirSync } from 'node:fs';
+import { markInner, markSvg } from '../lib/mindloft-mark.js';
+import { register } from 'node:module';
+// category-ramp imports extensionless siblings, which plain node needs the alias loader for.
+register('./alias-loader.mjs', import.meta.url);
+const { CATEGORY_RAMP, RAMP_ORDER } = await import('../lib/category-ramp.js');
 
-const INK = '#0b0c0e';      // T.ink, the field
-const WHITE = '#ffffff';    // T.white, caret + floor rule
-const BRAIN_C = '#60a5fa';  // T.blue400
+// THE HOUSE MARK (owner, 2026-10-26): a black house whose lower half is the M, the M's
+// opening a true transparent cutout. Icons sit on the PASTELS (owner: "one each for our
+// different pastels"). The site's own icons use sky, the owner's reference; the other
+// nine are written to public/brand/icons/ for share, print and per-surface use.
+let INK = CATEGORY_RAMP[0]; // the field (sky). Reassigned per pastel below.
 
-const BRAIN =
-  'M14 42C12 28 22 16 36 16C40 8 54 6 60 14C70 8 84 14 86 26C96 30 98 44 88 50C92 58 86 66 76 64'
-  + 'C74 72 64 74 60 66C48 70 36 66 32 56C20 56 12 50 14 42Z';
-
-// The BRAIN path's real bbox, measured off a render rather than guessed from its control points
-// (control points overstate a cubic's extent): x 13.70..94.50 (cx 54.10), y 8.90..71.00. Every
-// translate below is derived from it, so the brain lands optically centred instead of a pixel left.
-const BX = 54.10, BY1 = 71.00;
-const place = (scale, cx, bottom) =>
-  `translate(${(cx - BX * scale).toFixed(3)},${(bottom - BY1 * scale).toFixed(3)}) scale(${scale})`;
-
-// Mark bounds land at x 21.5..98.5, y 23.5..98 in the 120 grid: 64% of the tile, clear of the
-// Apple squircle and inside the Android 80% safe circle once the maskable scale is applied.
-const largeCut = `
-  <path d="M26 54l34-26 34 26" stroke="${WHITE}" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M28 94h64" stroke="${WHITE}" stroke-width="8" stroke-linecap="round"/>
-  <g transform="${place(0.45, 60, 85)}"><path d="${BRAIN}" fill="${BRAIN_C}"/></g>`;
-
-// Small cut fills ~72% of the tile: at 16px a generous mark beats a well-padded one. The caret is
-// both thicker and shallower than the large cut, and the brain larger, so the two shapes stay a
-// full pixel apart at 16px instead of blurring into one grey mass.
-const smallCut = `
-  <path d="M22 54l38-26 38 26" stroke="${WHITE}" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <g transform="${place(0.6, 60, 103)}"><path d="${BRAIN}" fill="${BRAIN_C}"/></g>`;
+// LARGE cut (>=48px): the mark at ~72% of the tile, inside the platform safe zones.
+const largeCut = `<g transform="translate(60,61) scale(0.74) translate(-60,-61)">${markInner({})}</g>`;
+// SMALL cut (16/32px): nearly full bleed; at 16px a generous mark beats a padded one.
+const smallCut = `<g transform="translate(60,61) scale(0.98) translate(-60,-61)">${markInner({})}</g>`;
 
 function svg(inner, scale) {
   const art = scale === 1 ? inner : `<g transform="translate(60,60) scale(${scale}) translate(-60,-60)">${inner}</g>`;
@@ -118,6 +98,23 @@ const icoBuf = ico([
 ]);
 writeFileSync('app/favicon.ico', icoBuf);
 console.log('app/favicon.ico', icoBuf.length + ' bytes');
+
+// One full set per pastel, plus the transparent master for print and share.
+mkdirSync('public/brand/icons', { recursive: true });
+const slug = (c) => c.toLowerCase().replace(/[^a-z]+/g, '-');
+RAMP_ORDER.forEach((cat, i) => {
+  INK = CATEGORY_RAMP[i];
+  const L = svg(largeCut, 1), S = svg(smallCut, 1);
+  for (const [sz, src] of [[512, L], [180, L], [32, S]]) {
+    writeFileSync(`public/brand/icons/mindloft-${slug(cat)}-${sz}.png`, png(src, sz));
+  }
+});
+INK = CATEGORY_RAMP[0];
+const master = markSvg({});
+writeFileSync('public/brand/mindloft-mark.svg', master);
+writeFileSync('public/brand/mindloft-mark-1024.png', new Resvg(master, { fitTo: { mode: 'width', value: 1024 } }).render().asPng());
+writeFileSync('public/brand/mindloft-mark-white.svg', markSvg({ ink: '#ffffff' }));
+console.log('public/brand/icons/ (10 pastels x 3 sizes), public/brand/mindloft-mark.svg/.png');
 
 // Proof sheet for eyeballing every size at once, including the Android circle crop and the
 // small sizes magnified. Not shipped; .gitignore keeps it out.

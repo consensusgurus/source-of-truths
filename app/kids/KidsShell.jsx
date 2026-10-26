@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Footer from '../Footer';
 import { KIDS_DAILIES, kidsDayNumber, kidsDateForDay } from '@/lib/kids-daily';
+import { HOUSE } from '../../lib/mindloft-mark';
 
 // The frame every kids daily renders inside: the Kids masthead, the title
 // row, the board, a "how to play" panel, the cheer, and the strip of the other
@@ -117,11 +118,7 @@ export function useKidsDone(dayKey) {
 export function KidsMark({ size = 36 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" fill="none" aria-hidden="true" style={{ display: 'block', flex: 'none' }}>
-      <path d="M20 52l40-34 40 34" stroke={KIDS_INK} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M14 102h92" stroke={KIDS_INK} strokeWidth="6" strokeLinecap="round" />
-      <g transform="translate(31,48) scale(0.53)">
-        <path d="M14 42C12 28 22 16 36 16C40 8 54 6 60 14C70 8 84 14 86 26C96 30 98 44 88 50C92 58 86 66 76 64C74 72 64 74 60 66C48 70 36 66 32 56C20 56 12 50 14 42Z" fill="#3a86ff" />
-      </g>
+      <path d={HOUSE} fill={KIDS_INK} stroke={KIDS_INK} strokeWidth="3" strokeLinejoin="round" />
     </svg>
   );
 }

@@ -10433,3 +10433,25 @@ StageLeg.jsx is the one switch back to the old boards; the old JSX is still in
 each client behind `!LEG`. Ping's ring map on the stage board is drawn in ink
 with solid rings only (no dashed lines); the closest ring is heavy. Flank still
 hides a missed border exactly when its old ring did (`!LOFT || revealed`).
+
+## THE MARK IS THE HOUSE M (owner, 2026-10-26)
+
+The Mind Loft logo is a solid black house whose lower half IS the M: the walls are
+the M's legs, the roof hangs into the M's middle V, and the opening under the V is
+a TRUE TRANSPARENT CUTOUT, so it always shows whatever the mark sits on (owner: "the
+cutout should match the background always"). It replaced the caret-and-brain mark.
+
+- **One drawing, `lib/mindloft-mark.js`** (`HOUSE`, `markInner`, `markSvg`).
+  `app/MindLoftMark.jsx`, the share cards (`lib/og-stage-card.js` `markURI`,
+  `lib/share-palette.js` `markSvg`, `lib/og-kids-card.js`), the kids shell and both
+  icon scripts all read it. Never paste the path anywhere else.
+- **One colour.** `ink` paints the house; `accent` and `cut` are still accepted by the
+  component so the ~40 call sites compile, but they do nothing.
+- **Icons sit on the pastels** (owner: "one each for our different pastels").
+  `node scripts/build-app-icons.mjs` writes the site set on SKY (the owner's reference)
+  plus `public/brand/icons/mindloft-<category>-{512,180,32}.png` for all ten ramp
+  steps, and the transparent masters `public/brand/mindloft-mark.svg`,
+  `mindloft-mark-white.svg` and `mindloft-mark-1024.png` for print. Needs
+  `@resvg/resvg-js` installed for the run.
+- After any change to the mark: rerun `build-app-icons.mjs`, then
+  `node scripts/bake-og.mjs --site` (every share card carries it).

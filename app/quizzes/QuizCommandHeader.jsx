@@ -453,7 +453,7 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
         ` }} />
         <div className="qchm-r1"><div className="qchm-in">
           <Link href="/" className="qchm-brand" aria-label="Mind Loft home">
-            <MindLoftMark size={30} ink="#ffffff" accent="#7dd3fc" />
+            <MindLoftMark size={30} ink="#ffffff" />
             <span className="qchm-wm">Mind <em>Loft</em></span>
           </Link>
           <span className="qchm-tag">Sharpen Your Mind</span>

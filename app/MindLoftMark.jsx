@@ -1,18 +1,17 @@
-// The Mind Loft mark: a caret over a side-profile brain over a floor line.
+// The Mind Loft mark (owner, 2026-10-26): a solid house whose lower half is the M.
+// The opening under the M's V is a true cutout, so it always shows the background.
+// The geometry lives in lib/mindloft-mark.js, which every string-built copy (share
+// cards, OG images, icon scripts) also reads, so there is one drawing on the whole
+// site. Import this component; never paste the path.
 //
-// The caret is doing double duty, which is the whole idea: it is a roofline (loft, the room
-// under the roof) AND an upward arrow (loft, to raise). The brain is a silhouette rather
-// than a folded drawing so it survives at favicon size.
-//
-// ONE component, used everywhere. The six previous logo copies were each a hand-inlined SVG
-// of the retired mark, which is why the rebrand did not reach them: there was nothing to
-// find and replace. Import this instead of pasting a new one.
+// `ink` paints the house: near-black on the light register, --stg-ink on the dark
+// one. `accent` and `cut` are still accepted so existing call sites keep working,
+// but the mark has no second colour any more.
 
-const BRAIN =
-  'M14 42C12 28 22 16 36 16C40 8 54 6 60 14C70 8 84 14 86 26C96 30 98 44 88 50C92 58 86 66 76 64'
-  + 'C74 72 64 74 60 66C48 70 36 66 32 56C20 56 12 50 14 42Z';
+import { HOUSE } from '../lib/mindloft-mark';
 
-export default function MindLoftMark({ size = 32, ink = 'var(--ink)', accent = 'var(--stg-brand, #7dd3fc)', title = 'Mind Loft' }) {
+// eslint-disable-next-line no-unused-vars
+export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--ink, #0b0d12))', accent, cut, title = 'Mind Loft' }) {
   return (
     <svg
       width={size}
@@ -21,14 +20,11 @@ export default function MindLoftMark({ size = 32, ink = 'var(--ink)', accent = '
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label={title}
+      aria-label={title || undefined}
+      aria-hidden={title ? undefined : true}
       style={{ display: 'block', flex: 'none' }}
     >
-      <path d="M20 52l40-34 40 34" stroke={ink} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <path d="M14 102h92" stroke={ink} strokeWidth="6" strokeLinecap="round" />
-      <g transform="translate(31,48) scale(0.53)">
-        <path d={BRAIN} fill={accent} />
-      </g>
+      <path className="mlm-house" d={HOUSE} fill={ink} stroke={ink} strokeWidth="3" strokeLinejoin="round" />
     </svg>
   );
 }
