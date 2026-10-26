@@ -193,8 +193,22 @@ export default function StageStick({
   const [pulse, setPulse] = useState(null);
   useEffect(() => {
     if (!desk) { setRail(null); return undefined; }
-    // Re-found when the frame comes and goes (Hide menus & leaderboard).
-    const find = () => setRail(document.querySelector('html.lc-on .lc-side'));
+    // Re-found when the frame comes and goes (Hide menus & leaderboard), and
+    // looked for again for a few seconds: the frame can mount after the ending
+    // does, and a missed rail left it showing an empty Board tab.
+    let poll = null;
+    const find = () => {
+      const el = document.querySelector('html.lc-on .lc-side');
+      setRail(el);
+      clearInterval(poll); poll = null;
+      if (!el) {
+        let n = 0;
+        poll = setInterval(() => {
+          const e2 = document.querySelector('html.lc-on .lc-side');
+          if (e2 || ++n > 25) { clearInterval(poll); poll = null; if (e2) setRail(e2); }
+        }, 400);
+      }
+    };
     find();
     let mo = null;
     try { mo = new MutationObserver(find); mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
@@ -202,7 +216,7 @@ export default function StageStick({
     fetch('/api/quiz/pulse').then((r) => (r.ok ? r.json() : null)).then((d) => {
       if (alive && d && d.gameToday) setPulse(d.gameToday);
     }).catch(() => {});
-    return () => { alive = false; if (mo) mo.disconnect(); };
+    return () => { alive = false; if (mo) mo.disconnect(); clearInterval(poll); };
   }, [desk]);
 
   const retract = () => {
