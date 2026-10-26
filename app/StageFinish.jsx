@@ -2086,7 +2086,9 @@ export default function StageFinish({
     // UP NEXT (owner, 2026-10-26): every live daily, for the desktop rail's
     // most-played-today list.
     const allGames = LIVE().map((x) => ({ key: x.key, name: x.name, cat: x.cat, href: x.href || `/${x.key}`, done: played.has(x.key) || x.key === me.key }));
-    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet, replayNow: replayOpt || null, meme, shelf, cats, allGames };
+    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet, replayNow: replayOpt || null, meme, shelf, cats, allGames,
+      // CRUX KEEPS ITS EMOJI TEXT SHARE on the one-page ending (owner, 2026-10-26).
+      share: me.key === 'crux' && goldOpt ? { label: goldOpt.label, sub: goldOpt.sub, onClick: goldOpt.onClick } : null };
   })();
 
   // Placed AFTER every hook above AND after the challenge door is built (moved

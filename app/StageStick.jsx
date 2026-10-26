@@ -143,7 +143,7 @@ function padRows(rows) {
 export default function StageStick({
   tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, run = null, allHref = '/#all',
   sheet = {}, onLeave, onBack = null, archiveHref = null, archiveLabel = 'Past puzzles', replayNow = null, meme = null, shelf = null, cats = null,
-  ready = true, allGames = null,
+  ready = true, allGames = null, share = null,
 }) {
   const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
   const [step, setStep] = useState(0);        // 0..6, how many blocks have landed
@@ -661,16 +661,30 @@ export default function StageStick({
         </section>
       ) : null}
 
-      {/* 3. CHALLENGE, with the GIF itself on show */}
-      {chal ? (
+      {/* 3. CHALLENGE, with the GIF itself on show. Crux also keeps its
+          emoji result grid as a plain text Share (owner, 2026-10-26: a Crux
+          player reported the board could no longer be shared once the
+          one-page ending replaced the old door grid). */}
+      {chal || share ? (
         <section className={'sst-card sst-ch ' + on(4)}>
-          <button type="button" className="sst-chal" onClick={chal.onSend}>
-            <span className="tx">
-              <b>{chal.title}</b>
-              <i>{chalSub}</i>
-            </span>
-            <span className="ar" aria-hidden="true">{chal.copied ? '✓' : '→'}</span>
-          </button>
+          {chal ? (
+            <button type="button" className="sst-chal" onClick={chal.onSend}>
+              <span className="tx">
+                <b>{chal.title}</b>
+                <i>{chalSub}</i>
+              </span>
+              <span className="ar" aria-hidden="true">{chal.copied ? '✓' : '→'}</span>
+            </button>
+          ) : null}
+          {share ? (
+            <button type="button" className="sst-shr" onClick={share.onClick}>
+              <span className="tx">
+                <b>{share.label}</b>
+                <i>{share.sub || 'Your result, no spoilers'}</i>
+              </span>
+              <span className="ar" aria-hidden="true">{share.label === 'Copied' ? '✓' : '→'}</span>
+            </button>
+          ) : null}
           {meme && meme.ctx ? <div className="sst-gif"><MemePeek ctx={meme.ctx} onOpen={meme.onOpen} /></div> : null}
         </section>
       ) : null}
@@ -939,6 +953,15 @@ const CSS = `
 .sst-chal b{font-size:17px;font-weight:800;line-height:1.2;}
 .sst-chal i{font-style:normal;font-size:12.5px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sst-chal .ar{flex:none;font-size:22px;font-weight:800;}
+.sst-shr{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:10px 16px 10px 18px;border:1.5px solid var(--sst-ink);border-radius:14px;
+  background:transparent;color:var(--sst-ink);font:inherit;text-align:left;cursor:pointer;}
+.sst-chal + .sst-shr{margin-top:10px;}
+.sst-shr .tx{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
+.sst-shr b{font-size:16px;font-weight:800;line-height:1.2;}
+.sst-shr i{font-style:normal;font-size:12.5px;font-weight:700;line-height:1.3;}
+.sst-shr .ar{flex:none;font-size:20px;font-weight:800;}
+.sst-shr:hover{filter:brightness(1.08);}
+.sst-shr:focus-visible{outline:2px solid var(--sst-ink);outline-offset:3px;}
 .sst-gif{margin-top:12px;}
 .sst-gif .msh-peek{box-shadow:none;margin:0;}
 .sst-acts{display:flex;flex-direction:column;gap:10px;}
