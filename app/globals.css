@@ -1449,3 +1449,12 @@ html[data-sot-land]::after{content:'';position:fixed;inset:0;z-index:2147483000;
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"],
   html[data-stage-tone='tint']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page:has(.sx-cell, .sd-cell, .gi-cell) [style*="--stg-sel"] * { color: #ffffff !important; }
 }
+
+/* COURT GREYS (owner, 2026-10-26). Jesters and Judges courts in the two
+   colourless looks: White draws them in light greys, Black in dark slate greys.
+   Each court's two greys ride on --court-gl / --court-gd from lib/court-colors.js,
+   picked per colour slot so touching courts still differ. Phone (data-stage-pastel)
+   and desktop (data-stage-tone) alike. A quarrelling square keeps its red: it never
+   carries .crt. */
+html:is([data-stage-pastel='plain'], [data-stage-tone='plain']) .stage-page .crt { background: var(--court-gl) !important; }
+html:is([data-stage-pastel='dark'], [data-stage-tone='dark']) .stage-page .crt { background: var(--court-gd) !important; }

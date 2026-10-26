@@ -49,7 +49,8 @@ import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
-import { regionStyle, regionMix } from '@/lib/category-ramp';
+import { regionMix } from '@/lib/category-ramp';
+import { courtColors, courtStyle } from '@/lib/court-colors';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import useIqStanding from '../useIqStanding';
@@ -286,6 +287,9 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
   const SEATS = N * STARS;
   const STORE_KEY = `sot_jester_${PUZZLE.num}`;
   const SOLUTION = useMemo(() => solveBoard(N, PUZZLE.regions, STARS), [N, PUZZLE, STARS]);
+  // Court colours: touching courts never share one, no lime on a Logic board,
+  // and greys in the White and Black looks (lib/court-colors.js, owner 2026-10-26).
+  const COURTS = useMemo(() => courtColors(PUZZLE.regions), [PUZZLE]);
 
   // Viewport width, measured on mount so the grid can be sized to fit. Null
   // until hydrated, so SSR and first paint agree on the desktop size.
@@ -1038,7 +1042,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
                   return (
                     <div
                       key={`${r}-${c}`}
-                      className="je-cell"
+                      className={STAGE && !conflict ? 'je-cell crt' : 'je-cell'}
                       onClick={() => { if (longFired.current) { longFired.current = false; return; } tapCell(r, c); }}
                       onContextMenu={(e) => { e.preventDefault(); if (longFired.current) return; toggleJester(r, c); }}
                       onTouchStart={() => startPress(r, c)}
@@ -1047,7 +1051,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
                       onTouchCancel={endPress}
                       role="button"
                       aria-label={`Row ${r + 1}, column ${c + 1}: ${v === 2 ? 'jester' : showX ? 'ruled out' : 'blank'}${conflict ? ', quarrelling' : ''}. Tap to place the ${tool === 'jester' ? 'jester' : '✗ mark'}; hold or right-click to seat a jester directly.`}
-                      style={{ ...(STAGE ? regionStyle(id) : null), width: cellPx, height: cellPx,
+                      style={{ ...(STAGE ? courtStyle(COURTS, id) : null), width: cellPx, height: cellPx,
                         // Stage: the court's ramp hue mixed into the cell at the register's mix, a
                         // full court at half of it (it fades on either ground instead of washing
                         // toward a literal white), a quarrel in the page's own red. Loft: untouched.
@@ -1084,8 +1088,8 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
               {courtHeld.map((k, id) => {
                 const done = k >= STARS;
                 return (
-                  <span key={id} role="img" aria-label={`Court ${id + 1}: ${done ? 'seated' : k > 0 ? `${k} of ${STARS} seated` : 'open'}`}
-                    style={{ ...(STAGE ? regionStyle(id) : null), flex: 1, minWidth: 0, height: PHONE ? 24 : 30, borderRadius: PHONE ? 6 : 8, boxSizing: 'border-box',
+                  <span key={id} className={STAGE ? 'crt' : undefined} role="img" aria-label={`Court ${id + 1}: ${done ? 'seated' : k > 0 ? `${k} of ${STARS} seated` : 'open'}`}
+                    style={{ ...(STAGE ? courtStyle(COURTS, id) : null), flex: 1, minWidth: 0, height: PHONE ? 24 : 30, borderRadius: PHONE ? 6 : 8, boxSizing: 'border-box',
                       background: STAGE ? regionMix(1) : REGION_FILLS[id % REGION_FILLS.length],
                       border: done ? `2px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : `1px solid var(--stg-line2, rgba(28,30,36,0.2))`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: PHONE ? 11 : 13, fontWeight: 800, color: INK }}>
