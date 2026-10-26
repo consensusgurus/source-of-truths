@@ -51,6 +51,11 @@ const T = { s1: 100, count: 350, s2: 450, fill: 550, s3: 750, marks: 850, chal: 
 // pull-back itself.
 const HOLD_MS = 2800;
 const RETRACT_MS = 900;
+// THE ENDING WAITS FOR ITS FIGURES (owner, 2026-10-25: "things fill in
+// piecemeal with jitters"). The verdict lands at once; everything that reads
+// the day's standings waits until those have arrived, then lands finished. If
+// they have not arrived after this long, it lands anyway and fills in place.
+const READY_WAIT_MS = 1600;
 const DESK_MQ = '(min-width: 901px)';
 
 const ease = (t) => 1 - Math.pow(1 - t, 3);
@@ -92,6 +97,7 @@ function Count({ fig, run }) {
 export default function StageStick({
   tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, run = null, allHref = '/#all',
   sheet = {}, onLeave, onBack = null, archiveHref = null, archiveLabel = 'Past puzzles', replayNow = null, meme = null, shelf = null, cats = null,
+  ready = true,
 }) {
   const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
   const [step, setStep] = useState(0);        // 0..6, how many blocks have landed
@@ -104,6 +110,15 @@ export default function StageStick({
   const [clip, setClip] = useState(null);
   const [inkLight, setInkLight] = useState(false);
   const timers = useRef([]);
+  // `go` flips once the figures are in (or the wait runs out), and never back.
+  const mountAt = useRef(0);
+  const [go, setGo] = useState(!!ready);
+  useEffect(() => { if (ready) setGo(true); }, [ready]);
+  useEffect(() => {
+    if (go) return undefined;
+    const t = setTimeout(() => setGo(true), READY_WAIT_MS);
+    return () => clearTimeout(t);
+  }, [go]);
   const inlineRef = useRef(null);
   const heroRef = useRef(null);
   const rootRef = useRef(null);
@@ -134,9 +149,24 @@ export default function StageStick({
   useEffect(() => {
     let reduced = false;
     try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduced = false; }
+    mountAt.current = Date.now();
     if (reduced) { skip(); return undefined; }
-    const at = (ms, fn) => timers.current.push(setTimeout(fn, ms));
-    at(T.s1, () => setStep((s) => Math.max(s, 1)));
+    // The verdict needs nothing from the server, so it never waits.
+    const t = setTimeout(() => setStep((s) => Math.max(s, 1)), T.s1);
+    timers.current.push(t);
+    return () => { timers.current.forEach(clearTimeout); timers.current = []; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // The rest lands on its usual beat, counted from the mount, but never before
+  // the figures it shows are in. Each block lands complete or not at all.
+  useEffect(() => {
+    if (!go) return undefined;
+    let reduced = false;
+    try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduced = false; }
+    if (reduced) { skip(); return undefined; }
+    const since = Date.now() - (mountAt.current || Date.now());
+    // On time: each block at its usual moment. Late: the same rhythm, started now.
+    const at = (ms, fn) => timers.current.push(setTimeout(fn, since <= T.s2 ? ms - since : ms - T.s2));
     at(T.s2, () => setStep((s) => Math.max(s, 2)));
     at(T.fill, () => setFill(true));
     at(T.s3, () => setStep((s) => Math.max(s, 3)));
@@ -144,20 +174,24 @@ export default function StageStick({
     at(T.chal, () => setStep((s) => Math.max(s, 4)));
     at(T.play, () => setStep((s) => Math.max(s, 5)));
     at(T.more, () => setStep((s) => Math.max(s, 6)));
-    return () => { timers.current.forEach(clearTimeout); timers.current = []; };
+    return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [go]);
 
   // DESKTOP: hold, then pull back. Reduced motion goes straight to the page.
+  // The hold counts from the mount as before, but the colour never pulls back
+  // before the figures under it have landed, so the page it reveals is whole.
   useEffect(() => {
     if (!desk) return undefined;
     let reduced = false;
     try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduced = false; }
     if (reduced) { setPhase('inline'); return undefined; }
-    const t = setTimeout(() => retract(), HOLD_MS);
+    if (!go) return undefined;
+    const since = Date.now() - (mountAt.current || Date.now());
+    const t = setTimeout(() => retract(), Math.max(HOLD_MS - since, T.more - T.s2 + 600));
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [desk]);
+  }, [desk, go]);
 
   // The page under the colour does not scroll while the colour is up.
   const covering = phase !== 'inline';
@@ -613,6 +647,13 @@ const CSS = `
 .sst-grp:only-child:not(:empty){margin-top:0;padding-top:0;border-top:0;}
 /* No board rows yet and no groups: no empty card while the board loads. */
 .sst-card:has(> .sst-grp:only-child:empty){display:none;}
+/* The group line is the one read that lands seconds after everything else, so
+   it OPENS rather than appearing: a jump of a whole table pushed every card
+   under it down at once (owner, 2026-10-25: "jitters"). */
+.sst-grp:not(:empty){display:grid;grid-template-rows:1fr;animation:sstgrp .45s cubic-bezier(.2,.7,.3,1) both;}
+.sst-grp:not(:empty)>*{min-height:0;overflow:hidden;}
+@keyframes sstgrp{from{grid-template-rows:0fr;opacity:0;margin-top:0;padding-top:0;border-top-color:transparent;}}
+@media (prefers-reduced-motion:reduce){.sst-grp:not(:empty){animation:none;}}
 .sst-grp .stf-eb{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:inherit;opacity:.82;margin-bottom:8px;}
 .sst-grp .fgl-card{background:transparent;border:0;padding:0;}
 .sst-grp .fgl,.sst-grp .fgl *{color:var(--sst-ink);}

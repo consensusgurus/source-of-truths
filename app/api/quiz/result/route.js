@@ -222,7 +222,13 @@ export async function POST(request) {
     }
 
     const data = [];
-    let cols = 'id, user_id, username, score, time_elapsed, anon_id, created_at, is_mobile, guesses_used, abandoned, progress';
+    // THE SAME COLUMNS /api/quiz/board reads (lib/quiz-results-cache COLS_FULL).
+    // buildLeaderboard decides the game's ranking rule from quiz_id (an arcade
+    // board keeps each player's BEST run, End Game ranks on attempts) and reads
+    // total / price_tiebreak for tiers and ties. Without them this response
+    // ranked every game as a plain first-try board, so on Blocks the ladder
+    // flipped to first-run scores the moment a REPLAY posted (owner, 2026-10-25).
+    let cols = 'id, user_id, username, quiz_id, score, total, correct_count, time_elapsed, anon_id, created_at, is_mobile, guesses_used, abandoned, price_tiebreak, progress';
     for (let from = 0; ; from += 1000) {
       let { data: page, error } = await supabaseAdmin
         .from('quiz_results')
@@ -232,6 +238,9 @@ export async function POST(request) {
         .range(from, from + 999);
       if (error && cols.includes(', progress') && (error.code === '42703' || error.code === 'PGRST204' || /column|schema cache/i.test(error.message || ''))) {
         cols = cols.replace(', progress', ''); from -= 1000; continue;
+      }
+      if (error && cols.includes(', price_tiebreak') && (error.code === '42703' || error.code === 'PGRST204' || /column|schema cache/i.test(error.message || ''))) {
+        cols = cols.replace(', price_tiebreak', ''); from -= 1000; continue;
       }
       if (error && cols.includes(', abandoned') && (error.code === '42703' || error.code === 'PGRST204' || /column|schema cache/i.test(error.message || ''))) {
         cols = cols.replace(', abandoned', ''); from -= 1000; continue;

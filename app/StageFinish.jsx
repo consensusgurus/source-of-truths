@@ -19,7 +19,7 @@
 // because showing a player what they missed is the one thing they want first;
 // 'similar' comes OUT of the grid because a finisher was passing two exits
 // before reaching the one that hands them forward).
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { holdRootPaint } from '@/lib/root-paint';
 import { DAILY_GAMES, liveDailyKeys, dailyUnit } from '@/lib/daily-games';
@@ -74,6 +74,9 @@ import { ARCADE_RUN, ARCADE_BEST } from '@/lib/end-verdict';
 import { categoryHrefForGame, categoryHref } from '@/lib/puzzle-categories';
 import { DISPLAY_CIRCUITS, circuitKeysFor, circuitName, runHref } from '@/lib/circuits';
 import { themeParam } from '@/lib/share-palette';
+// Decisions that pick WHICH ending paints run before the first paint, never
+// after it (owner, 2026-10-25: "I see a flash of the old format").
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 // ── THE FLOOD ──────────────────────────────────────────────────────────────
 // THE CURTAIN ARRIVES AT FULL SIZE (owner, 2026-08-31). The band was already
@@ -993,7 +996,7 @@ export default function StageFinish({
     return () => { window.removeEventListener('resize', on); if (mo) mo.disconnect(); clearTimeout(t); };
   }, []);
   const [flood, setFlood] = useState(false);
-  useEffect(() => {
+  useIsoLayoutEffect(() => {
     // The fast-retry ending floods too, QUICKLY (owner, 2026-09-01; it used to
     // stay quiet on the reasoning that a player takes it several times in a
     // row). It has no figures, so the quick flood is the verdict, a beat, and
@@ -1020,7 +1023,11 @@ export default function StageFinish({
   // itself, and the older card under it stays hidden. One pill brings the
   // ending back.
   const [boardView, setBoardView] = useState(false);
-  useEffect(() => {
+  // A LAYOUT effect, not a plain one (owner, 2026-10-25). As a plain effect the
+  // first frame of every ending painted the OLD card (the band and its doors),
+  // and only then did the full-screen ending take over: a visible flash of the
+  // retired format between the board and the colour, on every daily.
+  useIsoLayoutEffect(() => {
     if (typeof window === 'undefined') return;
     const q = window.location.search;
     if (/[?&]stick=0(&|$)/.test(q)) return;
@@ -1033,7 +1040,7 @@ export default function StageFinish({
   // The curtain has landed (or never ran). The hand-off counts from here.
   const [floodDone, setFloodDone] = useState(false);
   const [freshFinish, setFreshFinish] = useState(false);
-  useEffect(() => {
+  useIsoLayoutEffect(() => {
     const since = pageAge();
     const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const forced = /[?&]flood=1(&|$)/.test(window.location.search);
@@ -1778,6 +1785,12 @@ export default function StageFinish({
       requestAnimationFrame(() => requestAnimationFrame(go));
     } catch (e) {}
   };
+  // WHETHER THE STANDINGS HAVE LANDED, so the ending can bring its result and
+  // its cards in once, finished, instead of a line at a time as each read
+  // returns (owner, 2026-10-25: "things fill in piecemeal with jitters").
+  // StageStick waits on this for a bounded beat and lands everything anyway
+  // if it never comes.
+  const stickReady = !!(board && (board.myRank != null || board.settled || (board.guest && board.guest.placement)));
   const leaveStick = () => { setStick(false); setFromStick(true); setFlood(true); setFloodDone(false); setHandoffOff(true); };
   const stickProps = (() => {
     if (!stickOn || !me) return null;
@@ -2147,7 +2160,7 @@ export default function StageFinish({
 
       <MemeShare open={memeOpen} onClose={() => setMemeOpen(false)} ctx={memeCtx} getLink={challengeLink} />
       {stickProps ? (
-        <StageStick {...stickProps} onLeave={leaveStick} onBack={backToBoard}
+        <StageStick {...stickProps} ready={stickReady} onLeave={leaveStick} onBack={backToBoard}
           archiveHref={me ? `/archive?game=${encodeURIComponent(me.key)}` : null}
           archiveLabel={me ? `Past ${me.name} puzzles` : 'Past puzzles'} />
       ) : flood ? (

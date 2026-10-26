@@ -717,6 +717,25 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
               .so-listhd{flex-direction:row;align-items:baseline;flex-wrap:wrap;gap:4px 10px;}
             }
             @media (max-width:420px){.so-words{grid-template-columns:repeat(2,minmax(0,1fr));}}
+            /* INSIDE THE DESKTOP FRAME (html.lc-on, LayoutCInner): the 260px index
+               and the 330px panel take the sides, so the play row must size to
+               what is left, never to the viewport. Sized off 100vw it ran under
+               the panel on any window below ~1840px, and the panel's leaderboard
+               box sat on top of the first words in the list (player report,
+               2026-10-25). Three columns only when the list fits beside a
+               centred board; else board + list as a pair; else stacked. */
+            html.lc-on .so-play{--so-w:min(1156px,calc(100vw - 700px));}
+            @media (max-width:1839px){
+              html.lc-on .so-play{grid-template-columns:minmax(0,644px) 210px;justify-content:center;width:auto;margin-left:0;}
+              html.lc-on .so-mid{grid-column:1;}
+              html.lc-on .so-side{grid-column:2;}
+            }
+            @media (max-width:1399px){
+              html.lc-on .so-play{grid-template-columns:minmax(0,1fr);gap:14px;}
+              html.lc-on .so-mid,html.lc-on .so-side{grid-column:1;max-width:none;}
+              html.lc-on .so-words{grid-template-columns:repeat(3,minmax(0,1fr));}
+              html.lc-on .so-listhd{flex-direction:row;align-items:baseline;flex-wrap:wrap;gap:4px 10px;}
+            }
             @media (prefers-reduced-motion:reduce){.so-pop,.so-miss{animation:none !important;}}
             @media(max-width:560px){.so-wrap{padding-left:10px !important;padding-right:10px !important;}}
           ` }} />

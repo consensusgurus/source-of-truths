@@ -20,6 +20,7 @@
 // no board. The well is 10 wide every day (Sundays narrowed it to 8 through
 // 2026-10-25, before Arcade went the same every day).
 
+import { buildLiveLadder } from '@/lib/live-ladder';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Pause, Play, RotateCcw } from 'lucide-react';
@@ -1220,34 +1221,13 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   //
   // Still fetched once and never polled: only YOUR row moves as you clear, so
   // nothing here is invented mid-run.
-  const ladder = useMemo(() => {
-    const anon = hydrated ? getAnonId() : null;
-    const myKey = anon ? `a:${anon}` : null;
-    const myName = String((identity && identity.username) || '').toLowerCase();
-    // Drop my OWN stored row. The live run below is already on the ladder as
-    // "You", so leaving it in lists the same person twice, once under their
-    // name and once as You. Guests match on the anon key that buildLeaderboard
-    // returns; a signed-in player matches on the display name, because the
-    // board carries no user_id to compare against.
-    const isMine = (r) => (!!myKey && r.userKey === myKey)
-      || (!!myName && String(r.username || '').toLowerCase() === myName);
-    const rows = (board.leaderboardFirst || board.leaderboard || [])
-      .filter((r) => !isMine(r))
-      .slice(0, 40)
-      .map((r) => ({ name: r.username || 'player', score: r.score, me: false }));
-    const mine = rowsCleared;
-    let at = rows.findIndex((r) => r.score < mine);
-    if (at < 0) at = rows.length;
-    const out = rows.slice(0, at).concat([{ name: 'You', score: mine, me: true }], rows.slice(at))
-      .map((r, i) => ({ ...r, rank: i + 1 }));
-    const meAt = out.findIndex((r) => r.me);
-    const TOP = 5;
-    return {
-      rows: out.slice(0, TOP).concat(meAt >= TOP ? [{ gap: true }, out[meAt]] : []),
-      rank: meAt + 1,
-      field: out.length,
-    };
-  }, [board.leaderboardFirst, board.leaderboard, rowsCleared, identity, hydrated]);
+  // Built by lib/live-ladder.js, from the SAME registered rows the panel's
+  // Board tab shows, with "You" as your best run of the day (owner, 2026-10-25).
+  const ladder = useMemo(() => buildLiveLadder(board, {
+    live: rowsCleared,
+    anonId: hydrated ? getAnonId() : null,
+    username: (identity && identity.username) || '',
+  }), [board, rowsCleared, identity, hydrated]);
 
   // ALL TIME: the best single run on any day, one row per registered player
   // (/api/quiz/blocks-best). Your live run slots in when it would make the list.
