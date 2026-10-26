@@ -812,7 +812,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
               </div>
               <div className="sw-stripline">
                 {boardShown
-                  ? <span>You #{ladder.rank} of {nf(ladder.field)}</span>
+                  ? <span>{ladder.rank ? <>You #{ladder.rank} of {nf(ladder.field)}</> : '\u00a0'}</span>
                   : <button type="button" className="sw-show" onClick={() => setBoardShown(true)}>Show leaderboard</button>}
                 <span style={{ marginLeft: 'auto', textAlign: 'right' }}>{raceLine}</span>
               </div>
@@ -829,7 +829,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
               </div>
 
               <aside className="sw-rail" aria-label="Today's runs by cells uncovered">
-                <div className="sw-raillab" style={{ color: FADED }}>{boardShown ? <>Today &middot; you #{ladder.rank} of {nf(ladder.field)}</> : <>Today</>}</div>
+                <div className="sw-raillab" style={{ color: FADED }}>{boardShown && ladder.rank ? <>Today &middot; you #{ladder.rank} of {nf(ladder.field)}</> : <>Today</>}</div>
                 <div ref={railRef} className="sw-railbox">
                   <span className="sw-railtrack" />
                   <span className="sw-railfill" style={{ height: `${Math.min(1, g.score / race.max) * railH}px` }} />

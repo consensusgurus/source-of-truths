@@ -730,7 +730,7 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
               html.lc-on .so-mid{grid-column:1;}
               html.lc-on .so-side{grid-column:2;}
             }
-            @media (max-width:1399px){
+            @media (max-width:1279px){
               html.lc-on .so-play{grid-template-columns:minmax(0,1fr);gap:14px;}
               html.lc-on .so-mid,html.lc-on .so-side{grid-column:1;max-width:none;}
               html.lc-on .so-words{grid-template-columns:repeat(3,minmax(0,1fr));}

@@ -1472,7 +1472,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
             </div>
 
             <div className="bl-strip" style={{ display: 'none', marginTop: 10, paddingTop: 9, borderTop: `1px solid ${COLORS.line}`, alignItems: 'center', gap: 10, fontSize: 11.5, color: FADED }}>
-              <span style={{ fontWeight: 800, color: ACC_INK }}>You #{ladder.rank}</span>
+              <span style={{ fontWeight: 800, color: ACC_INK }}>{ladder.rank ? `You #${ladder.rank}` : '\u00a0'}</span>
               {bestRows.length > 0 && <span title="Best single run on any day" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, paddingBottom: '0.16em', marginBottom: '-0.16em' }}>Best ever {bestRows[0].score} &middot; {bestRows[0].name}</span>}
               <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 800, color: INK }}>{nf(rowsCleared)}<em style={{ fontStyle: 'normal', fontSize: 10, color: '#94a3b8' }}> {UNIT}{rowsCleared === 1 ? '' : 's'}</em></span>
             </div>

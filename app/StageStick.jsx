@@ -732,7 +732,10 @@ const CSS = `
 
 /* DESKTOP. The cover holds the result at display size, centred. */
 .sst-cover{overflow:hidden;cursor:pointer;transition:clip-path ${RETRACT_MS}ms cubic-bezier(.7,0,.2,1),-webkit-clip-path ${RETRACT_MS}ms cubic-bezier(.7,0,.2,1);}
-.sst-cin{min-height:100%;max-width:720px;justify-content:center;padding:40px;}
+/* Anchored from the TOP at about where the finished result centres, never
+   centred live: centred, every figure that filled in underneath nudged the
+   verdict up the screen (owner, 2026-10-25: "jitters"). */
+.sst-cin{min-height:100%;max-width:720px;justify-content:flex-start;padding:max(40px,calc(50vh - 340px)) 40px 40px;}
 .sst-cover .sst-v{font-size:clamp(56px,7vw,96px);}
 .sst-cover .sst-m b{font-size:clamp(60px,6vw,84px);}
 .sst-cover .sst-hl{font-size:24px;}
