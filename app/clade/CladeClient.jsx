@@ -707,8 +707,9 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
           .cl-r.ghost .cl-bn{color:${FADED};}
           .cl-tk{position:relative;width:40px;flex:none;align-self:stretch;}
           .cl-ln{position:absolute;left:18px;width:0;border-left:3px solid var(--stg-acc-ink, ${COLORS.accent});}
-          .cl-ln.dash{border-left-style:solid;}
-          .cl-ln.dot{border-left-style:solid;}
+          /* No dashes (owner, 2026-10-25): a branch still to find is a fainter line, not a broken one. */
+          .cl-ln.dash{opacity:.5;}
+          .cl-ln.dot{opacity:.25;}
           .cl-ln.t{top:0;height:50%;}
           .cl-ln.b{top:50%;bottom:0;}
           .cl-nd{position:absolute;left:13px;top:50%;margin-top:-6.5px;width:13px;height:13px;border-radius:50%;background:var(--stg-acc-ink, ${COLORS.accent});}

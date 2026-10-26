@@ -939,7 +939,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
                dashes into a jagged chain on a phone, so the unvisited stops are
                a thin solid ring and the gap is drawn as an even dash pattern. */
             .sp-dot.todo{border-width:2.5px;border-style:solid;}
-            .sp-seg.gap{border-left:0;width:4px;border-radius:2px;background:repeating-linear-gradient(to bottom, var(--stg-cell-line, rgba(28,30,36,0.44)) 0 7px, transparent 7px 14px);}
+            .sp-seg.gap{border-left:0;width:4px;border-radius:2px;background:var(--stg-cell-line, rgba(28,30,36,0.44));opacity:.6;}
             .sp-lbl{padding-bottom:16px;}
             .sp-tag{font-size:9px;letter-spacing:.14em;}
             .sp-nm{font-size:18px;}
