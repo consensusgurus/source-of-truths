@@ -66,13 +66,22 @@ export default function useSudokuPastel(active, ground, lookIn = null) {
   const narrow = usePhoneStage();
   const phone = narrow || focus;
   const on = !!active && phone;
+  // ONE OWNER FOR --sp-g (owner report, 2026-10-27: Taire's ending band came
+  // out a dull orchid instead of the Cards pastel). Two effects used to set it,
+  // one for the phone/focus register and one for the desktop tone, and each
+  // removed it on cleanup. Showing the site navigation (which the ending does)
+  // turns focus off, so the phone effect's cleanup REMOVED --sp-g while the
+  // desktop effect, whose deps had not changed, never put it back. Everything
+  // painted with var(--sp-g, fallback) then fell back to the deep accent. The
+  // soft category ground is the same value at every width, so it is set once
+  // here for as long as the game is on the stage, whatever the width or focus.
   useEffect(() => {
-    if (!on || typeof document === 'undefined') return undefined;
+    if (!active || typeof document === 'undefined') return undefined;
     const r = document.documentElement;
     // softened 40% toward white, like every phone stage ground (lib/category-ramp.js)
     r.style.setProperty('--sp-g', softGround(ground || '#a5b4fc'));
     return () => { r.style.removeProperty('--sp-g'); };
-  }, [on, ground]);
+  }, [active, ground]);
   const [mainLookNow, setLook] = useStageLook();
   const look = lookIn || mainLookNow;
   useEffect(() => (on ? hold() : undefined), [on]);
@@ -101,10 +110,9 @@ export default function useSudokuPastel(active, ground, lookIn = null) {
   useEffect(() => {
     if (!desk || typeof document === 'undefined') return undefined;
     const r = document.documentElement;
-    r.style.setProperty('--sp-g', softGround(ground || '#a5b4fc'));
     r.setAttribute('data-stage-tone', lookIn || readLook());
     forceStageTheme('light');
-    return () => { r.removeAttribute('data-stage-tone'); r.style.removeProperty('--sp-g'); forceStageTheme(null); };
+    return () => { r.removeAttribute('data-stage-tone'); forceStageTheme(null); };
   }, [desk, ground, look]);
   return { on, look, flip: () => setLook(nextMainLook(look)) };
 }
