@@ -58,21 +58,38 @@ export default function ChallengePage({ searchParams }) {
   const byMetric = !!(c && !run && c.m != null && metricDef(key));
   const ok = !!(g && c);
   const href = ok ? challengeDest(g.href || `/${g.key}`, raw, c, etTodayISO(), run ? run.archive : true) : '/';
-  const page = { minHeight: '100vh', background: '#0b0f1a', color: '#e9edf4', display: 'grid', placeItems: 'center', padding: '24px 16px', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif' };
-  const card = { width: '100%', maxWidth: 460, border: '1px solid rgba(255,255,255,.11)', borderLeft: '4px solid #e8b43a', borderRadius: 12, padding: '22px 22px 24px', background: '#0e131f' };
-  const eb = { fontFamily: "'Manrope', ui-monospace, Menlo, monospace", fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: '#aab5c7', fontWeight: 700 };
+  // NOBODY SHOULD SEE THIS PAGE (owner, 2026-10-27). A person is sent on by
+  // ChallengeGo the moment the page's script runs; a link-preview crawler reads
+  // only the metadata above. The card used to paint at once in the retired navy
+  // look and sat there until React started, which read as an old page flashing
+  // before the game. Now the page paints as the site's own ground (light, or
+  // dark when the boot stamp says so) and the card fades in only if the
+  // redirect has not happened after a beat: a slow or broken load still gets a
+  // button. With scripts off it shows at once.
+  const CSS = `
+.vs-page{min-height:100vh;background:#eef1f6;color:#0b0f1a;display:grid;place-items:center;padding:24px 16px;font-family:Manrope,system-ui,-apple-system,sans-serif}
+.vs-card{width:100%;max-width:460px;border:1px solid rgba(11,15,26,.10);border-radius:12px;padding:22px 22px 24px;background:#fff;opacity:0;animation:vs-in .3s ease-out 1.6s forwards}
+.vs-eb{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5b6578;font-weight:700}
+.vs-sub{margin:0;font-size:15px;color:#5b6578;font-weight:600}
+html[data-stage-boot='dark'] .vs-page{background:#0b0f1a;color:#e9edf4}
+html[data-stage-boot='dark'] .vs-card{background:#0e131f;border-color:rgba(255,255,255,.11)}
+html[data-stage-boot='dark'] .vs-eb,html[data-stage-boot='dark'] .vs-sub{color:#aab5c7}
+@keyframes vs-in{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.vs-card{animation-duration:.01s}}`;
   // THE BUTTON'S INK IS SET ON THE BUTTON. The mock-up's "Take the challenge"
   // inherited a muted grey from its parent and could not be read on the fill.
   const btn = { display: 'inline-block', marginTop: 18, background: '#7dd3fc', color: '#08222e', fontWeight: 800, fontSize: 16, textDecoration: 'none', borderRadius: 9, padding: '12px 22px' };
   return (
-    <main style={page}>
+    <main className="vs-page">
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <noscript><style>{'.vs-card{opacity:1;animation:none}'}</style></noscript>
       <ChallengeGo href={href} gameKey={ok ? key : null} cid={ok ? cid : null} />
-      <div style={card}>
-        <div style={eb}>Mind Loft{ok ? (run && !run.archive ? ` · ${g.name}` : ` · ${g.name} No. ${c.n}`) : ''}</div>
+      <div className="vs-card">
+        <div className="vs-eb">Mind Loft{ok ? (run && !run.archive ? ` · ${g.name}` : ` · ${g.name} No. ${c.n}`) : ''}</div>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.15, margin: '10px 0 6px' }}>
           {ok ? (!run && isBlankMiss(c) ? `${c.name} could not crack ${g.name}.` : byMetric ? metricLine(key, c.name, g.name, challengeFig(c, key)) : `${c.name} ${c.won ? 'set' : 'scored'} ${challengeFig(c, key)}.`) : 'That challenge link did not come through whole.'}
         </h1>
-        <p style={{ margin: 0, fontSize: 15, color: '#aab5c7', fontWeight: 600 }}>
+        <p className="vs-sub">
           {ok ? (run ? `${c.x ? c.x + '. ' : ''}Same run, same rules. Can you beat that?` : (isBlankMiss(c) ? 'Same board, same rules. Can you crack it?' : 'Same board, same rules. Can you beat that?')) : 'You can still play today’s puzzles.'}
         </p>
         <a href={href} style={btn}>{ok ? 'Take the challenge' : 'Open Mind Loft'}</a>
