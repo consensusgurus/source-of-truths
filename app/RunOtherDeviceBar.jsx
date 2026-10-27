@@ -90,7 +90,7 @@ export default function RunOtherDeviceBar({ runId, keys = [], show = false, boar
     <div className="odb" role="status" style={vars}>
       <style dangerouslySetInnerHTML={{ __html: ODB_CSS }} />
       <span className="odb-tx">
-        <b>You finished today&rsquo;s {meta.name} on another device</b>
+        <b>You already finished today&rsquo;s {meta.name}</b>
         <i>{[fig, rank].filter(Boolean).join(' · ')}</i>
       </span>
       <span className="odb-bt">

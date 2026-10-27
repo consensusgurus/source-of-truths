@@ -16,7 +16,7 @@
 //   - the game's name, very large               (::after,  from --stg-gate-name)
 //   - the game's own one-paragraph short rules, larger
 //   - one full-width Start button at the foot of the screen
-//   - a small "How to play" link under it (the gate's own rules toggle)
+//   (no How to play link under it: the ? in the header opens the rules)
 // The "How to play / Report an issue" row the page already carries sits just
 // below the fold. The name and eyebrow come from CSS variables written in the
 // server-rendered <style>, so the first paint already has them (no jitter).
@@ -25,7 +25,7 @@
 // says "How to play" and shows as a heading.
 //
 // THE GROUP IS CENTRED ON THE SCREEN, not spread down it (owner, 2026-10-27):
-// the eyebrow, name, rules, Start and How to play sit together, and the gate
+// the eyebrow, name, rules and Start sit together, and the gate
 // pads its foot by the header's height so the group's middle is the screen's.
 // The gate's height is MEASURED: it fills from its own top to the bottom of the
 // screen (--stg-gate-y, written on <html>), because the header above it is not
@@ -123,16 +123,11 @@ html .stage-page .stg-gate > div:last-child > button:first-child:not([type=butto
   border:2px solid #08222e !important;box-shadow:none !important;
 }
 html .stage-page .stg-gate > div:last-child > div{text-align:center;}
-html .stage-page .stg-gate > div:last-child > button:not(:first-child){
-  align-self:center;background:transparent !important;border:0 !important;box-shadow:none !important;
-  font-size:13px !important;font-weight:700 !important;color:var(--stg-ink,#08222e) !important;
-  opacity:.72;padding:10px 14px !important;width:auto !important;
-}
-html .stage-page .stg-gate > div:last-child > div > button[type=button]{
-  font-size:13px !important;font-weight:700 !important;text-decoration:none !important;
-  color:var(--stg-ink,#08222e) !important;opacity:.72;padding:10px 14px !important;
-}
-html .stage-page .stg-gate > div:last-child > div > button[type=button]:hover{opacity:1;}
+/* NO HOW TO PLAY LINK UNDER START (owner, 2026-10-27): the ? in the header
+   opens the rules sheet, so the gate toggle is hidden on every daily. In all
+   132 gates the action row holds only Start and that toggle. */
+html .stage-page .stg-gate > div:last-child > button:not(:first-child),
+html .stage-page .stg-gate > div:last-child > div:has(> button[type=button]){display:none !important;}
 @media (min-width: 641px){
   html .stage-page .stg-gate{padding:6px 8px calc(var(--stg-gate-y, 120px) + 24px) !important;}
 }

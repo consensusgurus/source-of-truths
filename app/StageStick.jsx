@@ -1051,7 +1051,11 @@ const CSS = `
 .sst-scope button.on{opacity:1;font-weight:800;border-bottom-color:currentColor;}
 .sst-scope button:hover{opacity:.85;}
 .sst-scope button:focus-visible{outline:2px solid var(--sst-ink);outline-offset:2px;}
-.sst-tbl{width:100%;border-collapse:collapse;font-size:14.5px;}
+/* SEPARATE borders, spacing 0 (owner, 2026-10-27: the You bubble looked
+   notched against the rows above). In the collapsed model a cell background
+   stops short of its shared border and border-radius is ignored, so the wash
+   read as a squared, inset box under the rounded names. */
+.sst-tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:14.5px;}
 .sst-tbl td{padding:9px 6px;border-top:1px solid var(--sst-rule);}
 .sst-tbl tr:first-child td{border-top:0;}
 .sst-tbl .p{width:48px;font-weight:800;}

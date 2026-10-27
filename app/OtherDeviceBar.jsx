@@ -6,6 +6,11 @@
 // read the end card makes) and offers Challenge a friend and Share with a meme,
 // built from that saved row.
 //
+// IT NO LONGER SAYS "ON ANOTHER DEVICE" (owner, 2026-10-27). It also shows on
+// the SAME device after a replay resets this device's save to a fresh board
+// (Taire and every attempts game), so it says what is true either way:
+// "You already finished today's X".
+//
 // Renders nothing when this device holds today's finished board itself (its end
 // card already does the job), on an archive replay (?p=), for a guest with no
 // row, and on an abandoned run. Read in an effect: the server has no device.
@@ -145,7 +150,7 @@ export default function OtherDeviceBar({ gameKey }) {
     <div className="odb" role="status">
       <style dangerouslySetInnerHTML={{ __html: ODB_CSS }} />
       <span className="odb-tx">
-        <b>You finished today&rsquo;s {meta.name} on another device</b>
+        <b>You already finished today&rsquo;s {meta.name}</b>
         <i>{[t != null ? mmss(t) : (total ? scoreText(gameKey, score, total) : ''), rank].filter(Boolean).join(' · ')}</i>
       </span>
       <span className="odb-bt">
