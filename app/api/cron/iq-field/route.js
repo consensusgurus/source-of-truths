@@ -14,7 +14,7 @@ import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
 import { buildIqField, storeIqField, iqFieldStoredAt } from '@/lib/iq-field';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 const RECENT_MS = 4 * 60 * 1000;
 const NO_STORE = { 'Cache-Control': 'no-store' };
@@ -29,7 +29,10 @@ function authed(request) {
 
 export async function GET(request) {
   if (!authed(request)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  const T = Date.now();
+  const lap = (what) => console.log('[iq-field cron]', what, Date.now() - T, 'ms');
   const at = await iqFieldStoredAt();
+  lap('stored-at read');
   const age = at ? Date.now() - at : Infinity;
   if (age < RECENT_MS) return NextResponse.json({ ok: true, skipped: 'recent', ageMs: age }, { headers: NO_STORE });
   try {
@@ -39,10 +42,13 @@ export async function GET(request) {
       return NextResponse.json({ ok: false, error: (error && error.message) || 'no rows' }, { status: 500, headers: NO_STORE });
     }
     const t1 = Date.now();
+    lap(`rows loaded (${data.length})`);
     const field = buildIqField(data);
     const t2 = Date.now();
+    lap('field built');
     const bytes = JSON.stringify(field).length;
     const stored = await storeIqField(field);  // { ok, bytes }
+    lap(`stored ${JSON.stringify(stored)}`);
     return NextResponse.json({
       ok: true,
       stored,
