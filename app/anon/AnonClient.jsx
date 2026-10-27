@@ -347,7 +347,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           setCur(openingCell(A, saved.fill));
         }
       }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);
@@ -1057,7 +1057,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
               )}
               <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                 <button className="an-btn primary" onClick={start}>Start</button>
-                {!gateRules && <button className="an-btn" onClick={() => setGateRules(true)}>Show instructions</button>}
+                {!gateRules && <button className="an-btn" onClick={() => setGateRules(true)}>How to play</button>}
               </div>
             </div>
           )}

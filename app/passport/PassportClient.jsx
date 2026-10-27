@@ -1197,7 +1197,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
           setG(next);
         }
       }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);

@@ -199,7 +199,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   const [paused, setPaused] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [gateRules, setGateRules] = useState(true);
+  const [gateRules, setGateRules] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -272,7 +272,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
       if (s.status === 'playing') { s.t0 = null; }
       gRef.current = s; setG(s);
     }
-    try { setGateRules(!localStorage.getItem(HELP_KEY)); } catch (e) {}
+    try { setGateRules(false); } catch (e) {}
     try { const m = localStorage.getItem(MUSIC_KEY); if (m === '0') setMusic(false); } catch (e) {}
     setStats(getStats());
     try { setIdentity(JSON.parse(localStorage.getItem('sot_quiz_identity'))); } catch (e) {}

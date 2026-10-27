@@ -202,7 +202,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
   const gRef = useRef(g);
   const [hydrated, setHydrated] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [gateRules, setGateRules] = useState(true);
+  const [gateRules, setGateRules] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
   // The finished board starts turned OVER, showing what to do next.
   const [revealed, setRevealed] = useState(false);
@@ -291,7 +291,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
       const s = { ...freshState(PUZZLE), ...saved, tMark: Date.now() };
       gRef.current = s; setG(s);
     }
-    try { setGateRules(!localStorage.getItem(HELP_KEY)); } catch (e) {}
+    try { setGateRules(false); } catch (e) {}
     setStats(getStats());
     try { setIdentity(JSON.parse(localStorage.getItem('sot_quiz_identity'))); } catch (e) {}
     setHydrated(true);
@@ -770,7 +770,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
 
         {preStart && (
           <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '22px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Chomp is ready'}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
                 <p style={{ margin: '0 0 6px' }}>Eat today&apos;s {NPEL} mascots in order. Every square you touch stays yours for the rest of the run, so your trail and the bolted-down bleachers are all that stand in your way. Replay is free.</p>
@@ -780,7 +780,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
               <button onClick={startGame} style={{ ...btn, background: STAGE ? STAGE_C : T.cta, borderColor: STAGE ? STAGE_C_INK : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-                  {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
+                  {gateRules ? 'Back' : 'How to play'}
                 </button>
               </div>
             </div>

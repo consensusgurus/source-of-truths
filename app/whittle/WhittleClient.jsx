@@ -328,7 +328,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
         const saved = JSON.parse(raw);
         if (saved && saved.v === 1 && Array.isArray(saved.gone)) setG({ ...freshState(), ...saved });
       }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);
@@ -683,7 +683,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
 
         {preStart && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Whittle is ready'}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
                 <p style={{ margin: '0 0 6px' }}>A solved sudoku with eighteen printed clues. Take away as many clues as you can: each one may come out only while the grid still has exactly one answer. Nothing goes back, so the order is everything.</p>
@@ -694,7 +694,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
               <button className="wh-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-                  {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
+                  {gateRules ? 'Back' : 'How to play'}
                 </button>
               </div>
             </div>

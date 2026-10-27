@@ -382,7 +382,7 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
           setG({ ...freshState(), ...saved, notes: Array.isArray(saved.notes) && saved.notes.length === CELLS ? saved.notes : Array(CELLS).fill(0) });
         }
       }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);
@@ -913,7 +913,7 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
             Start, which begins the clock. The grid stays sealed until then. */}
         {preStart && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Giant is ready'}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
                 <p style={{ margin: '0 0 6px' }}>An ordinary sudoku, just bigger: sixteen rows, sixteen columns and sixteen 4×4 boxes, each holding 1 to 9 and A to G exactly once. Settle in, this one is a long sit.</p>
@@ -923,7 +923,7 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
               <button className="gi-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-                  {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
+                  {gateRules ? 'Back' : 'How to play'}
                 </button>
               </div>
             </div>

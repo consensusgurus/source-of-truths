@@ -268,7 +268,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
     try {
       const raw = localStorage.getItem(STORE_KEY);
       if (raw) { const saved = JSON.parse(raw); if (saved && saved.v === 1 && Array.isArray(saved.picks) && saved.picks.length === MATCHES) setG({ ...freshState(MATCHES), ...saved }); }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);
@@ -768,7 +768,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
 
         {preStart && (
           <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px 22px', minHeight: 320, display: 'flex', flexDirection: 'column', maxWidth: 760 }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'The field is sealed'}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
                 <p style={{ margin: '0 0 6px' }}>{N} contenders, one question, {MATCHES} picks, and no feedback until you hand the sheet in.</p>
@@ -777,7 +777,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
             <div style={{ marginTop: 'auto', paddingTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               <button className="bk-btn" onClick={startRun} style={{ background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Open the bracket</button>
               <div>
-                <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>{gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}</button>
+                <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>{gateRules ? 'Back' : 'How to play'}</button>
               </div>
             </div>
           </div>

@@ -54,6 +54,7 @@ import RollNum from './RollNum';
 import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import DailyRunRail from './DailyRunRail';
 import GateLanding from './GateLanding';
+import GateScreen from './GateScreen';
 import { markPageEntry } from '@/lib/finish-beat';
 import { shareForCredit } from '@/lib/share-credit';
 import useSudokuPastel from './SudokuPastel';
@@ -447,6 +448,7 @@ export default function StageChrome({
           page was opened inside one. */}
       {gameKey ? <DailyRunRail gameKey={gameKey} /> : null}
       {gameKey ? <GateLanding /> : null}
+      {gameKey ? <GateScreen name={name} accent={colour} eye={[category, dateShort || dateLabel].filter(Boolean).join(' \u00b7 ')} /> : null}
       {gameKey ? <ChallengeStrip gameKey={gameKey} num={num} /> : null}
       {gameKey ? <OtherDeviceBar gameKey={gameKey} /> : null}
 

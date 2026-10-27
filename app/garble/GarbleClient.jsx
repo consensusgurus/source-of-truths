@@ -257,7 +257,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
           setSel(nextOpen(saved.solved || {}, -1, PUZZLE.words.length));
         }
       }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);
@@ -808,7 +808,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
           {/* start tile — the words stay sealed until Start begins the clock */}
           {preStart && (
             <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Garble is ready'}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
               {gateRules ? rulesBody : (
                 <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
                   <p style={{ margin: '0 0 6px' }}>Five scrambled words to untangle, each feeding a final clued answer.</p>
@@ -818,7 +818,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
                 <button className="gb-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
                 <div>
                   <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-                    {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
+                    {gateRules ? 'Back' : 'How to play'}
                   </button>
                 </div>
               </div>

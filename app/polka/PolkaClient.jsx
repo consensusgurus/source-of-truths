@@ -371,7 +371,7 @@ export default function PolkaClient({ puzzles = [], forceNum = null }) {
           setG({ ...freshState(), ...saved, notes: Array.isArray(saved.notes) && saved.notes.length === CELLS ? saved.notes : Array(CELLS).fill(0) });
         }
       }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);
@@ -893,7 +893,7 @@ export default function PolkaClient({ puzzles = [], forceNum = null }) {
             Start, which begins the clock. The grid stays sealed until then. */}
         {preStart && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Polka is ready'}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
                 <p style={{ margin: '0 0 6px' }}>No digits are printed, only dots. A white dot means the two neighbours differ by exactly 1, a black dot means one is double the other, and no dot means neither. Rows, columns and boxes still hold 1 to 9 once each.</p>
@@ -903,7 +903,7 @@ export default function PolkaClient({ puzzles = [], forceNum = null }) {
               <button className="pk-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-                  {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
+                  {gateRules ? 'Back' : 'How to play'}
                 </button>
               </div>
             </div>

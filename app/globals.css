@@ -1096,8 +1096,8 @@ html.lc-pre .stage-page:has(.stg-top) .stg-fg{border-bottom:0;}
 html.lc-pre .stage-page:has(.stg-top) .stg-fg b{font-family:inherit;font-size:18px;font-weight:800;}
 html.lc-pre .stage-page:has(.stg-top) .stg-fg i{font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.07em;color:var(--stg-ink);}
 html.lc-pre .stage-page:has(.stg-top) .stg-gate > div:first-child{font-size:26px !important;line-height:1.3;}
-html.lc-pre .stage-page:has(.stg-top) .stg-gate > div:last-child > button:first-child:not([type=button]){background:var(--stg-ink) !important;color:var(--stg-ground) !important;
-  border:2px solid var(--stg-ink) !important;border-radius:10px !important;font-weight:800 !important;}
+html.lc-pre .stage-page:has(.stg-top) .stg-gate > div:last-child > button:first-child:not([type=button]){background:var(--stg-gate-acc, var(--stg-acc, #7dd3fc)) !important;color:#08222e !important;
+  border:2px solid #08222e !important;border-radius:18px !important;font-weight:800 !important;}
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-cap,
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-strip,
 html.lc-pre:not(.lc-on) .stage-page:has(.stg-top) .stg-prog,
@@ -1111,6 +1111,13 @@ html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::
   content:'';position:fixed;inset:0;pointer-events:none;z-index:79;
   background:
     linear-gradient(var(--stg-line),var(--stg-line)) 0 calc(var(--lc-hh,62px) - 1px)/100% 1px no-repeat;}
+/* FULL-SCREEN PUZZLE FIRST (owner, 2026-10-26): the page opens in focus, so the
+   reserve is the bare stage with its own cap, not the frame's columns. Keep in
+   step with LayoutCInner's lc-focus rules. */
+html.lc-pre.lc-focus:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page){padding:0 !important;}
+html.lc-pre.lc-focus:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::before{display:none;}
+html.lc-pre.lc-focus:not(.lc-on) .stage-page:has(.stg-top) .stg-cap{display:flex !important;}
+html.lc-pre.lc-focus:not(.lc-on) .stage-page:has(.stg-top) .stg-fg{padding-right:20px;}
 
 /* QUIET SCROLLBARS (owner, 2026-10-11). Every scrolling pane inside a stage
    page (Anon's passage and bank panes, typeahead lists, side panels) wears the

@@ -279,7 +279,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
         const saved = JSON.parse(raw);
         if (saved && saved.v === 1 && Array.isArray(saved.picks) && saved.picks.length === TOTAL) setG({ ...freshState(TOTAL), ...saved });
       }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);
@@ -577,7 +577,7 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
               <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                 <button className="sf-btn primary" onClick={start}>Start</button>
                 {!gateRules && (
-                  <button className="sf-btn" onClick={() => setGateRules(true)}>Show instructions</button>
+                  <button className="sf-btn" onClick={() => setGateRules(true)}>How to play</button>
                 )}
               </div>
             </div>

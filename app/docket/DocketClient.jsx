@@ -406,7 +406,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
           setG(merged);
         }
       }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);
@@ -748,7 +748,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
               <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                 <button className="dk-btn primary" onClick={start}>Start</button>
                 {!gateRules && (
-                  <button className="dk-btn" onClick={() => setGateRules(true)}>Show instructions</button>
+                  <button className="dk-btn" onClick={() => setGateRules(true)}>How to play</button>
                 )}
               </div>
             </div>

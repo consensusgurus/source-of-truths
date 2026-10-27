@@ -87,6 +87,16 @@ html.lc-on .lc-host .stg-cap,html.lc-on .lc-host .stg-strip,html.lc-on .lc-host 
 html.lc-on .lc-host .stg-panel{display:none !important;}
 html.lc-on .stage-tail{display:none !important;}
 html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
+/* THE PUZZLE IS THE WHOLE SCREEN (owner, 2026-10-26: "puzzle itself is full
+   screen even on desktop, but there is a button in header by colorization that
+   says 'Show Site Navigation'"; "end screen remains with navigation"). Focus is
+   the default on a puzzle page, the game's own stage cap comes back as the
+   header, and the menus button rides in it just left of the look switch. */
+html.lc-on.lc-focus .lc-host .stg-cap{display:flex !important;}
+html.lc-on.lc-focus .lc-host .stg-fg{padding-right:20px;}
+.stg-cap>.lc-subs{position:static;transform:none;order:1;}
+.stg-cap>.stg-theme{order:2;}
+.stg-cap>.lc-subs .lc-shw{display:none;}
 .lc-subs,.stg-fg>.lc-subs{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:row;align-items:center;gap:8px;}
 .lc-shw{position:relative;display:inline-flex;}
 .lc-shr{display:inline-flex;align-items:center;gap:6px;color:var(--stg-acc-ink,var(--stg-acc)) !important;border-color:var(--stg-acc-ink,var(--stg-acc)) !important;}
@@ -303,15 +313,21 @@ html.lc-on .lc-host .stg-fg{border-bottom:0;}
 html.lc-on .lc-host .stg-fg b{font-family:inherit;font-size:18px;font-weight:800;}
 html.lc-on .lc-host .stg-fg i{font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.07em;color:var(--stg-ink);}
 html.lc-on .lc-host .stg-gate > div:first-child{font-size:26px !important;line-height:1.3;}
-html.lc-on .lc-host .stg-gate > div:last-child > button:first-child:not([type=button]){background:var(--stg-ink) !important;color:var(--stg-ground) !important;
-  border:2px solid var(--stg-ink) !important;border-radius:10px !important;font-weight:800 !important;}
+html.lc-on .lc-host .stg-gate > div:last-child > button:first-child:not([type=button]){background:var(--stg-gate-acc, var(--stg-acc, #7dd3fc)) !important;color:#08222e !important;
+  border:2px solid #08222e !important;border-radius:18px !important;font-weight:800 !important;}
 `;
 
 export default function LayoutCInner({ gameKey }) {
   const game = DAILY_GAME_MAP[gameKey] || null;
   const [host, setHost] = useState(null);
   const [fgEl, setFgEl] = useState(null);
-  const [focus, setFocus] = useState(false);
+  // Focus (the full-screen puzzle) is the default; the player's own choice wins
+  // until the game ends, and the ending always brings the navigation back.
+  const [focusPref, setFocusPref] = useState(null);
+  const [ended, setEnded] = useState(false);
+  const focus = focusPref === null ? !ended : focusPref;
+  const setFocus = (fn) => setFocusPref(typeof fn === 'function' ? fn(focus) : fn);
+  const [capEl, setCapEl] = useState(null);
   const [shareMsg, setShareMsg] = useState('');
   const shareTimer = useRef(null);
   const [tab, setTab] = useState('board');
@@ -407,6 +423,7 @@ export default function LayoutCInner({ gameKey }) {
       setHost(el);
       fgNow = el.querySelector('.stg-fg');
       setFgEl(fgNow);
+      setCapEl(el.querySelector('.stg-cap'));
     };
     attach();
     const late = setTimeout(attach, 500);
@@ -440,6 +457,23 @@ export default function LayoutCInner({ gameKey }) {
   }, [game, flag]);
 
   useEffect(() => { document.documentElement.classList.toggle('lc-focus', focus); }, [focus]);
+  // THE ENDING IS SEEN WITH THE SITE AROUND IT: the end flood or curtain on the
+  // page turns the navigation back on, whatever the player chose before.
+  useEffect(() => {
+    if (!host) return undefined;
+    let was = null;
+    const read = () => {
+      const on = !!host.querySelector('.stf-curtain, .stf-flood');
+      if (on === was) return;
+      if (on) setFocusPref(null);
+      was = on;
+      setEnded(on);
+    };
+    read();
+    const mo = new MutationObserver(read);
+    mo.observe(host, { childList: true, subtree: true });
+    return () => mo.disconnect();
+  }, [host]);
 
   // The subheader's bottom edge, measured, so the right panel's tab bar ends on
   // the same line. Its height varies by game (some carry more figures), so this
@@ -672,7 +706,7 @@ export default function LayoutCInner({ gameKey }) {
         {shareMsg ? <span className="lc-shm" role="status">{shareMsg}</span> : null}
       </span>
       <button type="button" className="lc-sub-btn" onClick={() => setFocus((v) => !v)}>
-        {focus ? 'Show menus & leaderboard' : 'Hide menus & leaderboard'}
+        {focus ? 'Show Site Navigation' : 'Hide Site Navigation'}
       </button>
     </div>
   );
@@ -902,8 +936,8 @@ export default function LayoutCInner({ gameKey }) {
 
   return (
     <>
-      {createPortal(<><style dangerouslySetInnerHTML={{ __html: CSS }} />{frame}{fgEl ? null : <div style={{ position: 'fixed', top: 8, right: 16, zIndex: 91 }}>{subBtn}</div>}</>, host)}
-      {fgEl ? createPortal(subBtn, fgEl) : null}
+      {createPortal(<><style dangerouslySetInnerHTML={{ __html: CSS }} />{frame}{(focus ? capEl : fgEl) ? null : <div style={{ position: 'fixed', top: 8, right: 16, zIndex: 91 }}>{subBtn}</div>}</>, host)}
+      {focus && capEl ? createPortal(subBtn, capEl) : (fgEl ? createPortal(subBtn, fgEl) : null)}
     </>
   );
 }

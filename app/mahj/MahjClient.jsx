@@ -310,7 +310,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
           setG(next);
         }
       }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);
@@ -849,7 +849,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
               <button className="mj-btn" onClick={startGame} style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C_INK, fontSize: 15, padding: '11px 22px' }}>Start</button>
               <div>
                 <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: S_MUTE, textDecoration: 'underline' }}>
-                  {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
+                  {gateRules ? 'Back' : 'How to play'}
                 </button>
               </div>
             </div>

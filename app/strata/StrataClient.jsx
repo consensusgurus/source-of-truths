@@ -230,7 +230,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
         const saved = JSON.parse(raw);
         if (saved && saved.v === 1 && Array.isArray(saved.found)) setG({ ...freshState(), ...saved });
       }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);
@@ -809,7 +809,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
               )}
               <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                 <button className="st-btn primary" onClick={start}>Start digging</button>
-                {!gateRules && <button className="st-btn" onClick={() => setGateRules(true)}>Show instructions</button>}
+                {!gateRules && <button className="st-btn" onClick={() => setGateRules(true)}>How to play</button>}
               </div>
             </div>
           )}

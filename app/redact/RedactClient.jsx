@@ -293,7 +293,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
         const saved = JSON.parse(raw);
         if (saved && saved.v === 1 && Array.isArray(saved.guesses)) setG({ ...freshState(), ...saved });
       }
-      setGateRules(!localStorage.getItem(HELP_KEY));
+      setGateRules(false);
     } catch (e) {}
     try { setStats(getStats()); } catch (e) {}
     setHydrated(true);
@@ -636,7 +636,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
               <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                 <button className="rd-btn primary" onClick={start}>Start uncovering</button>
                 {!gateRules && (
-                  <button className="rd-btn" onClick={() => setGateRules(true)}>Show instructions</button>
+                  <button className="rd-btn" onClick={() => setGateRules(true)}>How to play</button>
                 )}
               </div>
             </div>

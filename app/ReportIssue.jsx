@@ -166,7 +166,7 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
             </button>
           ) : null}
           <button type="button" className="ri-link" onClick={() => setOpen(true)}>
-            <MessageSquare size={11} strokeWidth={2.2} /> Submit feedback
+            <MessageSquare size={11} strokeWidth={2.2} /> Flag an issue
           </button>
         </span>
       )}

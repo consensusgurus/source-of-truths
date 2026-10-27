@@ -344,7 +344,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
   const [shake, setShake] = useState(0);
   const [hydrated, setHydrated] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [gateRules, setGateRules] = useState(true);
+  const [gateRules, setGateRules] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [armRestart, setArmRestart] = useState(false);
@@ -444,7 +444,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
       else if (s.status === 'playing') { s.t0 = null; s.run = null; eRef.current = null; }
       gRef.current = s; setG(s);
     }
-    try { setGateRules(!localStorage.getItem(HELP_KEY)); } catch (e) {}
+    try { setGateRules(false); } catch (e) {}
     setStats(getStats());
     try { setIdentity(JSON.parse(localStorage.getItem('sot_quiz_identity'))); } catch (e) {}
     try { setTouchOnly(isMobileDevice()); } catch (e) {}
@@ -1115,7 +1115,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
 
                   {preStart && (
                     <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '22px', display: 'flex', flexDirection: 'column', maxWidth: 560, margin: '0 auto', width: '100%' }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : 'Squash is ready'}</div>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
                       {gateRules ? rulesBody : (
                         <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
                           <p style={{ margin: '0 0 6px' }}>Swap fruit to line up three of a kind. You have five minutes, the board is the same for everybody, and you can play as often as you like. Your best run is the one that counts.</p>
@@ -1125,7 +1125,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
                         <button onClick={startGame} style={{ ...btn, background: STAGE ? STAGE_C : T.cta, borderColor: STAGE ? STAGE_C_INK : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
                         <div>
                           <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-                            {gateRules ? 'Hide detailed instructions' : 'Show detailed instructions'}
+                            {gateRules ? 'Back' : 'How to play'}
                           </button>
                         </div>
                       </div>
