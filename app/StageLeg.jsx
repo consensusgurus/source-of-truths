@@ -172,5 +172,9 @@ export const LEG_CSS = `
 // never changes colour when Start is pressed. The dark register is untouched.
 // The ID in :not() is there for weight only: the phone look rules in
 // globals.css carry one (html[data-stage-pastel]:not(#sot-x)) and must lose here.
-export const LEG_PAGE_CSS = `html:not(#lg-x) .stage-page.lg-white[data-stage-theme="light"]{--stg-ground:#ffffff !important;background:#ffffff !important}
-html:not(#lg-x):has(.stage-page.lg-white[data-stage-theme="light"]),html:not(#lg-x):has(.stage-page.lg-white[data-stage-theme="light"]) body{background:#ffffff !important}`;
+// The dark looks are excluded (owner report, 2026-10-27): the stage register
+// is forced light under the look, so data-stage-theme alone said "light" and
+// painted these pages white in Black with color too.
+const LG_LIGHT = 'html:not(#lg-x):not([data-stage-pastel^="dark"]):not([data-stage-tone^="dark"])';
+export const LEG_PAGE_CSS = `${LG_LIGHT} .stage-page.lg-white[data-stage-theme="light"]{--stg-ground:#ffffff !important;background:#ffffff !important}
+${LG_LIGHT}:has(.stage-page.lg-white[data-stage-theme="light"]),${LG_LIGHT}:has(.stage-page.lg-white[data-stage-theme="light"]) body{background:#ffffff !important}`;

@@ -63,7 +63,8 @@ function useLcFocus() {
 // page look as before.
 export default function useSudokuPastel(active, ground, lookIn = null) {
   const focus = useLcFocus();
-  const phone = usePhoneStage() || focus;
+  const narrow = usePhoneStage();
+  const phone = narrow || focus;
   const on = !!active && phone;
   useEffect(() => {
     if (!on || typeof document === 'undefined') return undefined;
@@ -90,7 +91,13 @@ export default function useSudokuPastel(active, ground, lookIn = null) {
   // THE DESKTOP TONE (owner, 2026-10-26): on a desktop the same colours are
   // set through html[data-stage-tone] (see the end of app/globals.css), which
   // remaps only the stage tokens and leaves the desktop's own frame alone.
-  const desk = !!active && !phone;
+  // A DESKTOP IN FULL SCREEN CARRIES BOTH (owner report, 2026-10-27: dark mode
+  // showed a white page on the play and start screens). Focus sets the phone's
+  // data-stage-pastel, whose colours all sit under max-width:899px, so a wide
+  // window in focus had no register at all and fell back to the light stage.
+  // The desktop tone now follows the WIDTH alone, so a wide focus page gets the
+  // data-stage-tone colours (min-width:900px) beside the phone header.
+  const desk = !!active && !narrow;
   useEffect(() => {
     if (!desk || typeof document === 'undefined') return undefined;
     const r = document.documentElement;
