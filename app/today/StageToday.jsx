@@ -665,9 +665,14 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       {/* THE PLAY TOTAL (owner, 2026-10-26): today's plays at the foot of the
           tile, desktop only (shown by the desktop block). */}
       {/* WHO LEADS, NO SCORE (owner, 2026-10-26): "#1 schnabinator". */}
-      {day ? <span className="sty-gld">{lead ? `#1 ${lead.username}` : plays ? 'No solve yet' : 'Open. Be first.'}</span> : null}
+      {/* THE CROWD STRIP (owner, 2026-10-26): who leads and today's plays in
+          one band along the foot, filled with the category's colour, so the
+          strip carries the category and the tile needs no dot or Play link. */}
       {day ? (
-        <span className="sty-gpl"><u>{isDone ? 'Played' : state === 'open' ? 'Resume' : 'Play'}</u><span>{Number(plays).toLocaleString('en-US')} Today</span></span>
+        <span className="sty-gpl sty-gcs">
+          <span className="ld">{lead ? <>#1 <b>{lead.username}</b></> : plays ? 'No solve yet' : 'Open. Be first.'}</span>
+          <span className="ct">{!isDone && state === 'open' ? <><u>Resume</u> &middot; </> : null}{Number(plays).toLocaleString('en-US')} today</span>
+        </span>
       ) : null}
       {canPin ? (
         <button
@@ -3622,8 +3627,10 @@ export default function StageToday() {
           style={{ '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} title={lead.blurb || lead.name}>
           <span className="sty-gn">{lead.name}</span>
           <span className="sty-gt">{lead.blurb || `Run \u00b7 ${lead.games.length} games`}</span>
-          <span className="sty-gld">{lead.n ? `${lead.n} of ${lead.games.length} played` : `Run \u00b7 ${lead.games.length} games`}</span>
-          <span className="sty-gpl"><u>{lead.n ? 'Continue' : 'Play'}</u><span>{fmtN(st && st.players)} Today</span></span>
+          <span className="sty-gpl sty-gcs">
+            <span className="ld"><b>{lead.n ? `${lead.n} of ${lead.games.length} played` : `${lead.games.length} games`}</b></span>
+            <span className="ct">{fmtN(st && st.players)} today</span>
+          </span>
         </a>
       );
     }
@@ -3633,7 +3640,7 @@ export default function StageToday() {
           data-fk="rdeck" style={{ '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} onClick={() => setRunsOpen((v) => !v)}>
           <span className="sty-gn">{lead ? 'More Runs' : 'Runs'} <em>{rest.length}</em></span>
           {rest.slice(0, 2).map((c) => <span key={c.id} className="sty-gdl"><b>{c.name}</b><i>{runFull(c) ? 'Played' : c.n ? `${c.n} of ${c.games.length}` : fmtN((runStat[c.id] || {}).players)}</i></span>)}
-          <span className="sty-gpl"><u>{runsOpen ? 'Fold runs' : 'Show all'}</u><span aria-hidden="true">{runsOpen ? '\u25b4' : '\u25be'}</span></span>
+          <span className="sty-gpl sty-gcs"><span className="ld"><b>{runsOpen ? 'Fold runs' : 'Show all'}</b></span><span className="ct" aria-hidden="true">{runsOpen ? '\u25b4' : '\u25be'}</span></span>
         </button>
       );
       if (runsOpen) {
@@ -7039,6 +7046,25 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sty-g .sty-gpl{display:flex;justify-content:space-between;align-items:baseline;margin-top:auto;padding-top:4px;font-size:12.5px;font-weight:600;color:var(--stg-ink);}
   .sty-g .sty-gpl u{font-weight:800;text-underline-offset:3px;}
+  /* THE CROWD STRIP (owner, 2026-10-26, mockup idea 5). The tile is two zones:
+     what the game is on white, what the crowd did in a band filled with the
+     category's colour. The band carries the category, so the colour dot on
+     mixed panes goes; a played tile still swaps its mark for the check. */
+  .sty-ix .sty-g{overflow:hidden;padding-bottom:0;}
+  .sty-g .sty-gpl.sty-gcs{margin:auto -10px 0 -12px;padding:6px 10px 6px 12px;gap:8px;align-items:center;
+    border-top:2px solid var(--stg-ink);background:color-mix(in srgb, var(--cfull, var(--cc)) 60%, #fff);color:#0b0d12;
+    font-size:12.5px;font-weight:600;white-space:nowrap;}
+  .sty:not([data-stage-theme=light]) .sty-g .sty-gpl.sty-gcs{background:var(--cfull, var(--cc));}
+  .sty-gcs .ld{min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  .sty-gcs .ld b{font-weight:800;}
+  .sty-gcs .ct{flex:none;}
+  .sty-gcs u{text-underline-offset:3px;}
+  .sty-grun .sty-gpl.sty-gcs,.sty-gdeck .sty-gpl.sty-gcs,
+  .sty:not([data-stage-theme=light]) .sty-grun .sty-gpl.sty-gcs,.sty:not([data-stage-theme=light]) .sty-gdeck .sty-gpl.sty-gcs{
+    background:color-mix(in srgb, var(--stg-ink) 8%, var(--stg-surf));color:var(--stg-ink);}
+  .sty-g .sty-gld{display:none;}
+  .sty-g.mx:not(.done) .sty-gn::before{display:none;}
+  .sty-g.open{box-shadow:none;}
   .sty-star.on,.sty-star.on:hover{color:var(--stg-ink);}
   /* The ledger */
   .sty-led{border:var(--dk);}
