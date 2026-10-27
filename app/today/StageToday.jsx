@@ -5801,7 +5801,10 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
   background:color-mix(in srgb, var(--cfull, #ffffff) 60%, #fff);}
 .sty-qxchips button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
 /* The dark register fills the colour at full strength, as the puzzle strips do. */
-.sty:not([data-stage-theme=light]) :is(.sty-qxs,.sty-qxch,.sty-qxl .m em,.sty-qxtl .sty-qxl > i.dc,.sty-qxr .r i,.sty-qxchips button i){background:var(--cfull, #ffffff);}
+.sty:not([data-stage-theme=light]) .sty-qxs,.sty:not([data-stage-theme=light]) .sty-qxch,
+.sty:not([data-stage-theme=light]) .sty-qxl .m em,.sty:not([data-stage-theme=light]) .sty-qxtl .sty-qxl > i.dc,
+.sty:not([data-stage-theme=light]) .sty-qxr .r i,.sty:not([data-stage-theme=light]) .sty-qxchips button i{background:var(--cfull, #ffffff);}
+/* A tile still loading has no topic yet, so its strip is a faint band, not white. */
 .sty:not([data-stage-theme=light]) .sty-qxt.ph .sty-qxs{background:color-mix(in srgb, var(--stg-ink) 8%, transparent);}
 /* your best topics */
 .sty-qbest{max-width:680px;background:var(--stg-surf);border:2px solid var(--stg-ink);border-radius:12px;padding:14px 18px;}
