@@ -29,8 +29,14 @@ const TRIES = [0, 2500, 6000, 12000];
 // nobody else has played it, the card is exactly what it was.
 const GAME_ROWS = 5;
 
-export default function FinishGroupLine({ gameKey, gameName = null, missLabel = null, onData = null }) {
+// THE EMPTY SLOT IS AN INVITATION (owner, 2026-10-27: "what goes in the center
+// slot if someone isn't in a group? can it be an ad for creating a group?").
+// With `promo`, a player in no group (or a guest) gets a Start a group card in
+// its place. A player who IS in a group but whose score has not landed yet
+// still gets nothing, so the invite never shows to someone already in one.
+export default function FinishGroupLine({ gameKey, gameName = null, missLabel = null, onData = null, promo = false }) {
   const [data, setData] = useState(null);
+  const [none, setNone] = useState(false);
   // THE FINISH READS THIS TOO (2026-09-26): StageFinish picks the rival off the
   // group's board on this game and leads with the group when a member has
   // played it, so the one read is handed up rather than made twice.
@@ -46,7 +52,7 @@ export default function FinishGroupLine({ gameKey, gameName = null, missLabel = 
       fetchGroupStanding({ fresh: true }).then((d) => {
         if (!alive) return;
         const groups = d && d.groups ? d.groups.filter((g) => !g.failed) : [];
-        if (!groups.length) { if (d) setData(null); return; }
+        if (!groups.length) { if (d) setData(null); setNone(true); return; }
         const landed = groups.some((g) => g.myPoints && g.myPoints[gameKey] != null);
         if (landed || n >= TRIES.length - 1) {
           setData(landed ? d : null);
@@ -60,7 +66,18 @@ export default function FinishGroupLine({ gameKey, gameName = null, missLabel = 
     return () => { alive = false; timers.forEach(clearTimeout); };
   }, [gameKey]);
 
-  if (!data) return null;
+  if (!data) {
+    if (!promo || !none) return null;
+    return (
+      <section className="fgl fgl-promo">
+        <style dangerouslySetInnerHTML={{ __html: CSS }} />
+        <div className="stf-eb">Groups</div>
+        <p className="fgl-big">Play against your friends</p>
+        <p className="fgl-pt">Start a private group and share one link. Everyone who joins gets their own ranking on every daily puzzle.</p>
+        <a className="fgl-pbtn" href="/groups">Start a group <span aria-hidden="true">&rarr;</span></a>
+      </section>
+    );
+  }
   const groups = data.groups.filter((g) => !g.failed && g.rank);
   if (!groups.length) return null;
 
@@ -203,5 +220,9 @@ const CSS = `
   text-transform:uppercase;color:var(--stg-ink,#e9edf4);text-decoration:underline;text-underline-offset:3px;}
 .fgl-mini{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;padding:10px 14px;border-radius:12px;
   border:1px solid var(--stg-line,rgba(255,255,255,.11));background:var(--stg-raise,#0e131f);color:var(--stg-ink,#e9edf4);text-decoration:none;font-size:13.5px;}
+.fgl-pt{margin:0 0 12px;font-size:13.5px;line-height:1.45;opacity:.85;}
+.fgl-pbtn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1.5px solid currentColor;border-radius:12px;
+  font-size:14px;font-weight:800;text-decoration:none;color:inherit;}
+.fgl-pbtn:hover{filter:brightness(1.08);}
 .fgl-mini:hover{border-color:var(--stg-line2,rgba(255,255,255,.17));}
 `;

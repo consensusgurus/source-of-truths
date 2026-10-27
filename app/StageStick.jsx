@@ -37,6 +37,8 @@ import { gameStats, mmss } from '@/lib/daily-row-stats';
 import GameGlyph from './GameGlyph';
 import { MemePeek } from './MemeShare';
 import FinishGroupLine from './groups/FinishGroupLine';
+import { dailyMeIdentity } from './dailyMeClient';
+import { sharedGet } from './sharedGet';
 import { useStageChrome } from './GauntletScreens';
 import { dailyDept, DAILY_GAME_MAP } from '@/lib/daily-games';
 import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref } from '@/lib/circuits';
@@ -131,6 +133,17 @@ function Count({ fig, run }) {
 // left the table a row or two in a tall card; the places nobody holds yet read
 // Empty. Only a plain top of the board pads: a board that jumps (a gap row
 // carrying the reader's own place further down) is already past five.
+// The all-time board, top five, then the reader's own place when it is
+// further down, in the same shape the day's board uses.
+function allRows(at) {
+  const board = Array.isArray(at && at.board) ? at.board : [];
+  const top = board.slice(0, 5).map((r) => ({ rank: r.rank, username: r.username, points: r.points, me: !!r.isMe }));
+  if (at && at.myRank && !top.some((r) => r.me)) {
+    top.push({ gap: true }, { rank: at.myRank, points: at.myPoints, me: true });
+  }
+  return padRows(top);
+}
+
 function padRows(rows) {
   const list = Array.isArray(rows) ? rows : [];
   if (list.some((r) => r.gap) || list.length >= 5) return list;
@@ -174,6 +187,24 @@ export default function StageStick({
   // the record card. The quizzes are the most-played one per department (the
   // same cached read DailyEndCard uses), the game's own department first.
   const [quizzes, setQuizzes] = useState(null);
+  // TODAY / ALL TIME on the board (owner, 2026-10-26: "a subtle toggle to
+  // select the all-time leaderboard; its data must not load unless the player
+  // selects it"). Nothing is asked for until All time is pressed, and then once.
+  const [scope, setScope] = useState('today');
+  const [allTime, setAllTime] = useState(null);
+  const askedAll = useRef(false);
+  const boardGame = sheet && sheet.gameKey;
+  useEffect(() => {
+    if (scope !== 'all' || askedAll.current || !boardGame) return;
+    askedAll.current = true;
+    const { anonId, email } = dailyMeIdentity();
+    const qs = new URLSearchParams({ game: boardGame });
+    if (anonId) qs.set('anonId', anonId);
+    if (email) qs.set('email', email);
+    sharedGet('/api/quiz/daily-game?' + qs.toString())
+      .then((d) => setAllTime(d && d.allTime ? d.allTime : { board: [] }))
+      .catch(() => setAllTime({ board: [] }));
+  }, [scope, boardGame]);
   useEffect(() => {
     if (!desk) return undefined;
     let alive = true;
@@ -239,7 +270,16 @@ export default function StageStick({
     requestAnimationFrame(() => {
       const r = hero.getBoundingClientRect();
       const W = window.innerWidth, H = window.innerHeight;
-      setClip(`inset(${Math.max(0, r.top)}px ${Math.max(0, W - r.right)}px ${Math.max(0, H - r.bottom)}px ${Math.max(0, r.left)}px round 12px)`);
+      // THE RULE UNDER THE BAND STAYS IN VIEW (owner report, 2026-10-27: the line
+      // "comes in piecemeal, bold on the side initially before filling"). The
+      // colour used to land on the band's full box, rule included, with all
+      // four corners rounded: the rule hid under it and only its two ends
+      // showed through the rounded bottom corners until the cover went. It now
+      // lands just above the rule, square at the bottom, so the line is whole
+      // the whole time.
+      let bb = 2;
+      try { bb = parseFloat(getComputedStyle(hero).borderBottomWidth) || 0; } catch (e) {}
+      setClip(`inset(${Math.max(0, r.top)}px ${Math.max(0, W - r.right)}px ${Math.max(0, H - r.bottom + bb)}px ${Math.max(0, r.left)}px round 10px 10px 0 0)`);
       timers.current.push(setTimeout(() => setPhase('inline'), RETRACT_MS + 40));
     });
   };
@@ -429,6 +469,19 @@ export default function StageStick({
   const chalSub = chal ? (chal.msg || [chal.lead, tickets || 'No spoilers'].filter(Boolean).join(' · ')) : '';
 
   const s = sheet || {};
+  // The board's heading, with the quiet Today / All time switch beside it.
+  // A quiz board is already all-time, so it carries no switch.
+  const boardHead = (label) => (
+    <div className="sst-bh">
+      <div className="sst-sl">{label}</div>
+      {s.gameKey && !s.boardLabel ? (
+        <div className="sst-scope" role="tablist" aria-label="Leaderboard">
+          <button type="button" role="tab" aria-selected={scope === 'today'} className={scope === 'today' ? 'on' : ''} onClick={() => setScope('today')}>Today</button>
+          <button type="button" role="tab" aria-selected={scope === 'all'} className={scope === 'all' ? 'on' : ''} onClick={() => setScope('all')}>All time</button>
+        </div>
+      ) : null}
+    </div>
+  );
   // NO COUNTING ON ANY SUDOKU (owner, 2026-10-26): the time lands whole.
   const noCount = !!(s.gameKey && DAILY_GAME_MAP[s.gameKey] && DAILY_GAME_MAP[s.gameKey].cat === 'Sudoku');
   const pos = (v) => `${Math.round(Math.max(0, Math.min(1, v)) * 100)}%`;
@@ -627,9 +680,34 @@ export default function StageStick({
       {(s.rows && s.rows.length) || s.gameKey ? (
         <section className={'sst-card sst-rk ' + on(4)}>
           <div className="sst-rkb">
-            {s.rows && s.rows.length ? (
+            {scope === 'all' ? (
               <>
-                <div className="sst-sl">{s.boardLabel || 'Today’s board'}{s.field ? ` · ${s.field} ${s.field === 1 ? 'player' : 'players'}` : ''}</div>
+                {boardHead(`All-time board${allTime && allTime.field ? ` · ${allTime.field} ${allTime.field === 1 ? 'player' : 'players'}` : ''}`)}
+                {allTime ? (
+                  <table className="sst-tbl"><tbody>
+                    {allRows(allTime).map((r, i) => (r.empty ? (
+                      <tr key={'e' + i} className="empty"><td className="p">#{r.rank}</td><td className="w">Empty</td><td className="st">—</td></tr>
+                    ) : r.gap ? (
+                      <tr key={'g' + i} className="gap"><td colSpan={3}>&middot;&middot;&middot;</td></tr>
+                    ) : (
+                      <tr key={(r.username || '') + r.rank + i} className={r.me ? 'me' : undefined}>
+                        <td className="p">#{r.rank}</td>
+                        <td className="w">{r.me ? 'You' : (r.username || 'Guest')}</td>
+                        <td className="st">{Math.round(Number(r.points) || 0)} pts</td>
+                      </tr>
+                    )))}
+                  </tbody></table>
+                ) : (
+                  <table className="sst-tbl sst-tbl-empty" aria-hidden="true"><tbody>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <tr key={n}><td className="p">#{n}</td><td className="w" /><td className="st">—</td></tr>
+                    ))}
+                  </tbody></table>
+                )}
+              </>
+            ) : s.rows && s.rows.length ? (
+              <>
+                {boardHead(`${s.boardLabel || 'Today’s board'}${s.field ? ` · ${s.field} ${s.field === 1 ? 'player' : 'players'}` : ''}`)}
                 <table className="sst-tbl"><tbody>
                   {padRows(s.rows).map((r, i) => (r.empty ? (
                     <tr key={'e' + i} className="empty"><td className="p">#{r.rank}</td><td className="w">Empty</td><td className="st">—</td></tr>
@@ -650,7 +728,7 @@ export default function StageStick({
                  the left and jumps right when the rows land. The group board
                  gets no slots; it opens when it arrives. */
               <>
-                <div className="sst-sl">{s.boardLabel || 'Today’s board'}</div>
+                {boardHead(s.boardLabel || 'Today’s board')}
                 <table className="sst-tbl sst-tbl-empty" aria-hidden="true"><tbody>
                   {[1, 2, 3, 4, 5].map((n) => (
                     <tr key={n}><td className="p">#{n}</td><td className="w" /><td className="st">—</td></tr>
@@ -659,7 +737,7 @@ export default function StageStick({
               </>
             )}
           </div>
-          {s.gameKey ? <div className="sst-grp"><FinishGroupLine gameKey={s.gameKey} gameName={s.gameName} missLabel={s.missLabel} /></div> : null}
+          {s.gameKey ? <div className="sst-grp"><FinishGroupLine gameKey={s.gameKey} gameName={s.gameName} missLabel={s.missLabel} promo={desk} /></div> : null}
         </section>
       ) : null}
 
@@ -915,6 +993,14 @@ const CSS = `
 .sst-cards{display:flex;flex-direction:column;gap:12px;}
 .sst-card{background:var(--sst-card);color:var(--sst-ink);border-radius:18px;padding:16px;}
 .sst-sl{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:9px;opacity:.82;}
+.sst-bh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+.sst-bh .sst-sl{min-width:0;}
+.sst-scope{flex:none;display:flex;gap:10px;margin-bottom:9px;}
+.sst-scope button{border:0;background:none;padding:0 0 2px;font:inherit;font-size:11.5px;font-weight:700;color:var(--sst-ink);opacity:.5;cursor:pointer;
+  border-bottom:1.5px solid transparent;border-radius:0;}
+.sst-scope button.on{opacity:1;font-weight:800;border-bottom-color:currentColor;}
+.sst-scope button:hover{opacity:.85;}
+.sst-scope button:focus-visible{outline:2px solid var(--sst-ink);outline-offset:2px;}
 .sst-tbl{width:100%;border-collapse:collapse;font-size:14.5px;}
 .sst-tbl td{padding:9px 6px;border-top:1px solid var(--sst-rule);}
 .sst-tbl tr:first-child td{border-top:0;}
