@@ -36,6 +36,48 @@ const GROUP_FROZEN_HEADERS = { 'Cache-Control': 'private, max-age=600' };
 const DISPLAY = 10; // overall rows returned (viewer's own row is always appended via `me`)
 const BOARD = 10;   // per-game rows returned per tab
 
+// SHARED WORK, COMPUTED ONCE PER SERVER (2026-10-27). This route is the most
+// called function on the site (about 22,000 calls in 12 hours) and every call
+// re-read the five crowd games' whole pick tables plus two name lookups each,
+// then re-scored the entire day, just to hand back one viewer's row. The day's
+// board is the same for everyone, so it is now computed once and reused for a
+// few seconds by every viewer this server answers; only the viewer's own row
+// (identity, `me`, the rival) is worked out per request. `fresh=1`, sent by the
+// just-finished flow, skips every memo below and refreshes them, so a player
+// who has just posted still sees their own row at once.
+const CROWD_TTL_MS = 20 * 1000;
+const CORE_TTL_MS = 15 * 1000;
+const IDENT_TTL_MS = 20 * 1000;
+const RIVAL_TTL_MS = 10 * 60 * 1000;
+const crowdMemo = new Map();  // table|quizId|cutoff -> { at, val } or { p }
+const coreMemo = new Map();   // day|circuit|keys|frozen -> { at, val }
+const identMemo = new Map();  // email|anon -> { at, val }
+const rivalMemo = new Map();  // user id -> { at, anon }
+function trimMemo(m, max) { while (m.size > max) m.delete(m.keys().next().value); }
+async function memoCrowd(key, fresh, fn) {
+  const hit = crowdMemo.get(key);
+  if (!fresh && hit) {
+    if (hit.p) return hit.p;
+    if (Date.now() - hit.at < CROWD_TTL_MS) return hit.val;
+  }
+  const p = fn().then(
+    (val) => { crowdMemo.set(key, { at: Date.now(), val }); return val; },
+    (e) => { crowdMemo.delete(key); throw e; },
+  );
+  crowdMemo.set(key, { p });
+  trimMemo(crowdMemo, 60);
+  return p;
+}
+async function memoIdentity(email, anonId) {
+  const key = `${email || ''}|${anonId || ''}`;
+  const hit = identMemo.get(key);
+  if (hit && Date.now() - hit.at < IDENT_TTL_MS) return hit.val;
+  const val = await findQuizIdentity(supabaseAdmin, { email, anonId });
+  identMemo.set(key, { at: Date.now(), val });
+  trimMemo(identMemo, 5000);
+  return val;
+}
+
 // GET /api/quiz/daily-combined?anonId=&email=&quizId=&date=
 //   quizId (a daily quizId) or date ("M-D-YY") picks the day; default = today.
 //   -> { date, maxTotal, gameMax, bestN, gameCount, games:[{key,quizId,field,board}], overall, me }
@@ -475,6 +517,15 @@ export async function GET(request) {
     // after its filter, but a cold lambda now fetches ~780 rows in one request
     // instead of paging all 33,800. That cold path was measured at 8.5s and
     // 11.7s on live instances, and it sits directly on the end-of-game wait.
+    // The viewer-independent half of the board, shared for CORE_TTL_MS. Group
+    // boards re-score over their members and are left out of it.
+    let rowsByQuiz, uniquePlayers, gameResults, overallFull;
+    const coreKey = groupRef ? null : `${suffix}|${circuitOn ? circuitId : ''}|${keysParam.join(',')}|${frozen ? 1 : 0}`;
+    const coreHit = coreKey && !fresh ? coreMemo.get(coreKey) : null;
+    if (coreHit && Date.now() - coreHit.at < CORE_TTL_MS) {
+      ({ rowsByQuiz, uniquePlayers, gameResults, overallFull } = coreHit.val);
+      maxTotal = coreHit.val.maxTotal;
+    } else {
     const { data, error } = await loadDailyResultsCached(supabaseAdmin, [...wanted], { force: fresh });
     if (error) {
       console.error('daily-combined error', error);
@@ -484,7 +535,7 @@ export async function GET(request) {
     // Bucket the day's quizIds' rows in one pass. The loader is already scoped
     // to `wanted`, so the guard below is now belt-and-braces rather than a real
     // filter, and is kept so the pass stays correct if the loader ever widens.
-    const rowsByQuiz = new Map();
+    rowsByQuiz = new Map();
     const dayRows = frozen ? rowsWithinDay(data || [], suffix) : (data || []);
     for (const r of dayRows) {
       if (!r || !wanted.has(r.quiz_id)) continue;
@@ -504,7 +555,7 @@ export async function GET(request) {
         if (k) uniqueSet.add(k);
       }
     }
-    const uniquePlayers = uniqueSet.size;
+    uniquePlayers = uniqueSet.size;
 
     // OUTWIT OVERRIDE: Outwit is adaptively re-scored on every view (see
     // lib/outwit-score); its quiz_results snapshot is frozen at submission and
@@ -514,38 +565,38 @@ export async function GET(request) {
     const outwitGame = games.find((g) => g.key === 'outwit');
     if (outwitGame) {
       const op = (GAME_PUZZLES.outwit || []).find((x) => x && x.quizId === outwitGame.quizId);
-      if (op) outwitLive = await scoreOutwitLive(op, cutoffMs);
+      if (op) outwitLive = await memoCrowd(`outwit|${op.quizId}|${cutoffMs}`, fresh, () => scoreOutwitLive(op, cutoffMs));
     }
     // Same override for Outrank (also adaptive; see lib/outrank-score).
     let outrankLive = null;
     const outrankGame = games.find((g) => g.key === 'outrank');
     if (outrankGame) {
       const op = (GAME_PUZZLES.outrank || []).find((x) => x && x.quizId === outrankGame.quizId);
-      if (op) outrankLive = await scoreOutrankLive(op, cutoffMs);
+      if (op) outrankLive = await memoCrowd(`outrank|${op.quizId}|${cutoffMs}`, fresh, () => scoreOutrankLive(op, cutoffMs));
     }
     // Same override for Feud (live crowd-survey key; see lib/feud-score).
     let feudLive = null;
     const feudGame = games.find((g) => g.key === 'feud');
     if (feudGame) {
       const fp = (GAME_PUZZLES.feud || []).find((x) => x && x.quizId === feudGame.quizId);
-      if (fp) feudLive = await scoreFeudLive(fp, cutoffMs);
+      if (fp) feudLive = await memoCrowd(`feud|${fp.quizId}|${cutoffMs}`, fresh, () => scoreFeudLive(fp, cutoffMs));
     }
     // And for Herd (live crowd split; see lib/herd-score).
     let herdLive = null;
     const herdGame = games.find((g) => g.key === 'herd');
     if (herdGame) {
       const hp = (GAME_PUZZLES.herd || []).find((x) => x && x.quizId === herdGame.quizId);
-      if (hp) herdLive = await scoreHerdLive(hp, cutoffMs);
+      if (hp) herdLive = await memoCrowd(`herd|${hp.quizId}|${cutoffMs}`, fresh, () => scoreHerdLive(hp, cutoffMs));
     }
     // And for Aorb (live A-or-B split; see lib/aorb-score).
     let aorbLive = null;
     const aorbGame = games.find((g) => g.key === 'aorb');
     if (aorbGame) {
       const ap = (GAME_PUZZLES.aorb || []).find((x) => x && x.quizId === aorbGame.quizId);
-      if (ap) aorbLive = await scoreAorbLive(ap, cutoffMs);
+      if (ap) aorbLive = await memoCrowd(`aorb|${ap.quizId}|${cutoffMs}`, fresh, () => scoreAorbLive(ap, cutoffMs));
     }
 
-    const gameResults = games.map((g) => {
+    gameResults = games.map((g) => {
       if (g.key === 'outwit' && outwitLive) {
         return { key: g.key, quizId: g.quizId, num: g.num, rev: g.rev, href: g.href, field: outwitLive.field, plays: outwitLive.plays, players: outwitLive.players };
       }
@@ -568,7 +619,7 @@ export async function GET(request) {
       return { key: g.key, quizId: g.quizId, num: g.num, rev: g.rev, href: g.href, field: gr.field, plays: gameRows.length, players: gr.players };
     });
 
-    const overallFull = combineDaily(gameResults, dayBestN);
+    overallFull = combineDaily(gameResults, dayBestN);
 
     // QUESTIONS RIGHT, for the one circuit that ranks that way. The rows keep
     // every per-game figure they already carried (each game's own points, rank
@@ -593,6 +644,12 @@ export async function GET(request) {
       }, 0);
     }
 
+    if (coreKey) {
+      coreMemo.set(coreKey, { at: Date.now(), val: { rowsByQuiz, uniquePlayers, gameResults, overallFull, maxTotal } });
+      trimMemo(coreMemo, 16);
+    }
+    }
+
     if (groupRef && !circuitOn) {
       return NextResponse.json(
         groupPayload({ suffix, frozen, maxTotal, gameCount, gameResults, overallFull, group: groupRef.group, members: groupRef.members, bestN: effBestN }),
@@ -604,11 +661,17 @@ export async function GET(request) {
     // the top DISPLAY. email -> account, else this browser's anon.
     let myKey = null;
     try {
-      const ident = await findQuizIdentity(supabaseAdmin, { email, anonId });
+      const ident = fresh ? await findQuizIdentity(supabaseAdmin, { email, anonId }) : await memoIdentity(email, anonId);
       if (ident && ident.id) myKey = `u:${ident.id}`;
       else if (anonId) myKey = `a:${anonId}`; // guests are scored into overallFull; myKey finds them directly
     } catch (e) { /* identity is best-effort */ }
-    const me = myKey ? (overallFull.find((row) => row.userKey === myKey) || null) : null;
+    const meRow = myKey ? (overallFull.find((row) => row.userKey === myKey) || null) : null;
+    // A COPY, never the shared row: me.rank and me.perGame[*].rank are written
+    // below, and overallFull is reused by every viewer until the memo expires.
+    const me = meRow ? {
+      ...meRow,
+      perGame: meRow.perGame ? Object.fromEntries(Object.entries(meRow.perGame).map(([k, v]) => [k, { ...v }])) : meRow.perGame,
+    } : null;
 
     // Fallback provisional standing: only reached when a guest is absent from
     // overallFull (e.g. no scored rows yet). After Part 3 guests appear in
@@ -830,10 +893,15 @@ export async function GET(request) {
     if (rival) {
       if (rival.userKey.startsWith('a:')) rival.anon = rival.userKey.slice(2);
       else if (rival.userKey.startsWith('u:')) {
-        try {
+        const rid = rival.userKey.slice(2);
+        const rh = rivalMemo.get(rid);
+        if (rh && Date.now() - rh.at < RIVAL_TTL_MS) rival.anon = rh.anon;
+        else try {
           const { data: ru } = await supabaseAdmin
-            .from('quiz_users').select('anon_id').eq('id', rival.userKey.slice(2)).limit(1);
+            .from('quiz_users').select('anon_id').eq('id', rid).limit(1);
           if (ru && ru[0] && ru[0].anon_id) rival.anon = ru[0].anon_id;
+          rivalMemo.set(rid, { at: Date.now(), anon: rival.anon });
+          trimMemo(rivalMemo, 2000);
         } catch (e) { /* best effort */ }
       }
       delete rival.userKey;
