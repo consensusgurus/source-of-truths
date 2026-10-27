@@ -34,6 +34,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../RunChallenge';
+import RunOtherDeviceBar from '../RunOtherDeviceBar';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { stageAvg } from '../circuits/RunScorecard';
@@ -320,6 +321,7 @@ export default function CrossedClient({ day = null, dateLabel, dateShort, sectio
           <div className="cr-gate">
             <GauntletGate
               circuitName="Crossed Up"
+              banner={<RunOtherDeviceBar runId={CROSSED_RUN_ID} keys={sections.map((s) => s.key)} show={hydrated && r.phase === 'idle' && !r.t0 && !allBanked} />}
               dateLabel={dateShort}
               sections={gs}
               lineFor={(s) => s.form && s.form !== s.name ? s.form : (s.chip || '')}

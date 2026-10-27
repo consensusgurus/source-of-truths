@@ -64,6 +64,7 @@ import { runDoneToday, RUN_DOORS } from '../../RunDoorPop';
 import NextDrop from '../../../NextDrop';
 import ChallengeStrip from '../../../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../../../RunChallenge';
+import RunOtherDeviceBar from '../../../RunOtherDeviceBar';
 import { isChallengeableRun } from '@/lib/challenge';
 import RunBackLink from '../../RunBackLink';
 import PolymathMeter from '../../PolymathMeter';
@@ -1017,6 +1018,14 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     </div>
   );
 
+  // FINISHED ON ANOTHER DEVICE (owner, 2026-10-26). The gate on a device that
+  // has neither started nor finished today's run, for a player the board has
+  // down for every game in it, offers the same share bar the dailies carry.
+  const otherDevice = (
+    <RunOtherDeviceBar runId={circuitId} keys={sections.map((s) => s.key)}
+      show={hydrated && r.phase === 'idle' && !r.t0 && !r.practice} board={boardGate} />
+  );
+
   return (
     // NO SITE CHROME AT ALL. Every other daily wears DailyChrome (the site
     // masthead plus the stat bar) over LoftCap, which on this page put two
@@ -1027,6 +1036,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     // and its ink outright, which the stylesheet does explicitly.
     <div className="rn" style={{ minHeight: '100vh', background: T.ground, position: 'relative', overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      {!TOWERS ? otherDevice : null}
       {/* THE GAUNTLET STAGE (owner, 2026-10-23): while a question is up it
           plays full screen on the bank's pastel ladder step, question and
           answers only, with the clock and standing in one quiet line below.
@@ -1072,7 +1082,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           fieldLine={fieldOn && field.started >= FIELD_FLOOR
             ? `${fieldToday.toLocaleString()} played today${leaderScore != null ? ` \u00B7 the leader has ${leaderScore} ${scoreWord}` : ''}`
             : null}
-          banner={isChallengeableRun(circuitId) ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}
+          banner={<>{otherDevice}{isChallengeableRun(circuitId) ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}</>}
         />
       ) : null}
       {TOWERS && hydrated && r.phase === 'verdict' && last && upNext ? (

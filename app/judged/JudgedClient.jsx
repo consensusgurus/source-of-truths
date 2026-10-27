@@ -28,6 +28,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../RunChallenge';
+import RunOtherDeviceBar from '../RunOtherDeviceBar';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import { stageAvg } from '../circuits/RunScorecard';
@@ -258,6 +259,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
           <div className="jd-gate">
             <GauntletGate
               circuitName="Judged"
+              banner={<RunOtherDeviceBar runId={LAW_RUN_ID} keys={sections.map((s) => s.key)} show={hydrated && r.phase === 'idle' && !r.t0 && !allBanked} />}
               dateLabel={dateShort}
               sections={gs}
               lineFor={(s) => s.tag || s.chip || ''}

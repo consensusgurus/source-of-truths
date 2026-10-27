@@ -26,7 +26,7 @@ import { savedIdentity } from '@/lib/saved-identity';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
 import { themeParam } from '@/lib/share-palette';
 
-const CSS = `
+export const ODB_CSS = `
 .odb{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 14px;padding:10px 16px;
   background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#08222e);font-family:Manrope,system-ui,sans-serif;text-align:center;}
 .odb .tx{display:flex;flex-direction:column;gap:1px;min-width:0;}
@@ -143,7 +143,7 @@ export default function OtherDeviceBar({ gameKey }) {
 
   return (
     <div className="odb" role="status">
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: ODB_CSS }} />
       <span className="tx">
         <b>You finished today&rsquo;s {meta.name} on another device</b>
         <i>{[t != null ? mmss(t) : (total ? scoreText(gameKey, score, total) : ''), rank].filter(Boolean).join(' · ')}</i>

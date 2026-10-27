@@ -53,6 +53,7 @@ import useCircuitBoard from './useCircuitBoard';
 import RunScorecard, { boardRows as scBoardRows, stageRank, stageAvg } from './RunScorecard';
 import RunNextSlot from './RunNextSlot';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken } from '../RunChallenge';
+import RunOtherDeviceBar from '../RunOtherDeviceBar';
 import { T } from '@/lib/theme';
 import RunBackLink from './RunBackLink';
 
@@ -484,6 +485,7 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
         {/* ── THE GATE ── */}
         {hydrated && r.phase === 'idle' ? (
           <div className="vr-gate">
+            <RunOtherDeviceBar runId={circuitId} keys={sections.map((s) => s.key)} show={hydrated && r.phase === 'idle' && !r.t0 && !r.results.length} />
             <ValetScene mode="arrive" sizes={sizes} step={r.results.length} />
             <div className="vr-gh">
               <h1 className="vr-h1">Three lots. One clock.</h1>

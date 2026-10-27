@@ -39,6 +39,7 @@ import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import ChallengeStrip from '../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../RunChallenge';
+import RunOtherDeviceBar from '../RunOtherDeviceBar';
 import { fmtCents, runRankOf, runTierOf, ranksFor, ranksTag, isV2, scoreGuesses } from '@/lib/price-games';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
 import { rampFor } from '@/lib/circuits';
@@ -352,7 +353,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
           rule={V2 ? 'The first guess counts most. Scored out of ' + MAX + '.' : 'Get warm, get close, then go big. Scored out of ' + MAX + '.'}
           lineup={null}
           startLabel="Start the run"
-          banner={<ChallengeStrip gameKey="pricecheck" num={runToken()} run />}
+          banner={<><RunOtherDeviceBar runId={RUN_ID} keys={sections.map((s) => s.key)} show={hydrated && r.phase === 'idle' && !r.t0 && !Object.keys(banked).length} /><ChallengeStrip gameKey="pricecheck" num={runToken()} run /></>}
           centerpiece={<Register v2={V2} max={MAX} n={N} sections={sections} howOpen={howOpen} onHow={() => setHowOpen((v) => !v)} />}
           after={<GateLinks howOpen={howOpen} onHow={() => setHowOpen((v) => !v)} />}
           onStart={start}

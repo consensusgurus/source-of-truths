@@ -31,6 +31,7 @@ import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
 import NextDrop from '../NextDrop';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../RunChallenge';
+import RunOtherDeviceBar from '../RunOtherDeviceBar';
 import MoreRunsPop, { MoreRunsList } from '../circuits/MoreRuns';
 import useCircuitBoard from '../circuits/useCircuitBoard';
 import RunScorecard, { boardRows, stageRank, stageAvg } from '../circuits/RunScorecard';
@@ -285,6 +286,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
       {hydrated && r.phase === 'idle' && (
         <GauntletGate
           circuitName="Enter the Dojo"
+          banner={<RunOtherDeviceBar runId={DOJO_RUN_ID} keys={sections.map((s) => s.key)} show={hydrated && r.phase === 'idle' && !r.t0 && !allBanked} />}
           dateLabel={dateShort}
           sections={sections.map((s, i) => ({ ...s, slot: i, questions: [] }))}
           lineFor={(s) => (s.form && s.form !== s.name ? s.form : (s.chip || ''))}

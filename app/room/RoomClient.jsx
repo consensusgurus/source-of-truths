@@ -30,6 +30,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../RunChallenge';
+import RunOtherDeviceBar from '../RunOtherDeviceBar';
 import MoreRunsPop, { MoreRunsList, otherRuns } from '../circuits/MoreRuns';
 import { runDoneToday, RUN_DOORS } from '../circuits/RunDoorPop';
 import useCircuitBoard from '../circuits/useCircuitBoard';
@@ -390,7 +391,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
           lineup={null}
           startLabel={allBanked ? 'Read your verdict' : 'Walk in'}
           fieldLine="About 5 minutes · the read settles at midnight Eastern"
-          banner={<Morning />}
+          banner={<><RunOtherDeviceBar runId={ROOM_RUN_ID} keys={sections.map((s) => s.key)} show={hydrated && r.phase === 'idle' && !r.t0 && !allBanked} /><Morning /></>}
           centerpiece={<RoomFill crowd={crowd} left={left} onStart={start} />}
           onStart={start}
         />
