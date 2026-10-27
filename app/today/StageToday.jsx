@@ -624,7 +624,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
         // registers. Same rule as the newcomer row below.
         ...(grpOn ? { '--stg-onramp': RAMP_INK } : null),
       }}>
-      <span className="sty-gn"><Glyph k={g.key} size={17} />{g.name}<GroupDots dots={dots} /></span>
+      <span className="sty-gn"><Glyph k={g.key} size={17} />{g.name}<GroupDots dots={dots} />{!isDone && state === 'open' ? <span className="sty-gopen">Resume</span> : null}</span>
       {res && dots && dots.mine ? (
         /* BOTH PLACES, SIDE BY SIDE (owner, 2026-09-22): where you came in the
            group, then where you came on the site. A tile is about 136px of
@@ -671,7 +671,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       {day ? (
         <span className="sty-gpl sty-gcs">
           <span className="ld">{lead ? <>#1 <b>{lead.username}</b></> : plays ? 'No solve yet' : 'Open. Be first.'}</span>
-          <span className="ct">{!isDone && state === 'open' ? <><u>Resume</u> &middot; </> : null}{Number(plays).toLocaleString('en-US')} today</span>
+          <span className="ct">{Number(plays).toLocaleString('en-US')} today</span>
         </span>
       ) : null}
       {canPin ? (
@@ -5062,7 +5062,7 @@ ${PATCH_CSS}
 
 /* ── a star on every card ──────────────────────────────────────────────── */
 .sty-g{position:relative;}
-.sty-gpl,.sty-gld,.sty-find{display:none;}
+.sty-gpl,.sty-gld,.sty-find,.sty-gopen{display:none;}
 .sty-star{position:absolute;top:6px;right:6px;display:flex;align-items:center;justify-content:center;
   width:24px;height:24px;border:0;border-radius:8px;background:none;cursor:pointer;
   color:var(--stg-mute2);opacity:0;transition:opacity .12s;}
@@ -7051,7 +7051,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      category's colour. The band carries the category, so the colour dot on
      mixed panes goes; a played tile still swaps its mark for the check. */
   .sty-ix .sty-g{overflow:hidden;padding-bottom:0;}
-  .sty-g .sty-gpl.sty-gcs{margin:auto -10px 0 -12px;padding:6px 10px 6px 12px;gap:8px;align-items:center;
+  .sty-g .sty-gpl.sty-gcs{max-width:none;width:auto;align-self:stretch;margin:auto -10px 0 -12px;padding:6px 10px 6px 12px;gap:8px;align-items:center;
     border-top:2px solid var(--stg-ink);background:color-mix(in srgb, var(--cfull, var(--cc)) 60%, #fff);color:#0b0d12;
     font-size:12.5px;font-weight:600;white-space:nowrap;}
   .sty:not([data-stage-theme=light]) .sty-g .sty-gpl.sty-gcs{background:var(--cfull, var(--cc));}
@@ -7065,6 +7065,8 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-g .sty-gld{display:none;}
   .sty-g.mx:not(.done) .sty-gn::before{display:none;}
   .sty-g.open{box-shadow:none;}
+  .sty-g .sty-gopen{display:inline-block;flex:none;margin-left:2px;padding:2px 7px;border-radius:999px;font-size:11px;font-weight:800;
+    background:color-mix(in srgb, var(--cfull, var(--cc)) 60%, #fff);color:#0b0d12;}
   .sty-star.on,.sty-star.on:hover{color:var(--stg-ink);}
   /* The ledger */
   .sty-led{border:var(--dk);}
