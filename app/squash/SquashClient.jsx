@@ -83,13 +83,18 @@ const IDLE_NUDGE_MS = 9000;
 
 // The fruit, real colours: a match-three reads by colour first and shape
 // second, so both are distinct. [body, rim, leaf]
+// FLAT PASTELS (owner, 2026-10-27): the fruit takes the site's category
+// pastels (lib/category-ramp) and is drawn flat, one fill with a thin RAMP_INK
+// outline, the way a home tile is. No gradient, no shadow, no shine. The leaf
+// is lime so it reads on every body, the apple's included. [body, rim, leaf]
+const FRUIT_INK = '#08222e';
 const FRUIT_PAINT = [
-  ['#e11d48', '#9f1239', '#16a34a'], // strawberry
-  ['#f97316', '#c2410c', '#15803d'], // orange
-  ['#facc15', '#a16207', '#4d7c0f'], // lemon
-  ['#4ade80', '#15803d', '#166534'], // green apple
-  ['#8b5cf6', '#5b21b6', '#4d7c0f'], // grapes
-  ['#3b82f6', '#1e3a8a', '#1e3a8a'], // blueberry
+  ['#fb7185', FRUIT_INK, '#bef264'], // strawberry  (rose)
+  ['#fb923c', FRUIT_INK, '#bef264'], // orange      (orange)
+  ['#fbbf24', FRUIT_INK, '#bef264'], // lemon       (amber)
+  ['#6ee7b7', FRUIT_INK, '#bef264'], // green apple (mint)
+  ['#c084fc', FRUIT_INK, '#bef264'], // grapes      (violet)
+  ['#7dd3fc', FRUIT_INK, '#bef264'], // blueberry   (sky)
 ];
 
 function etToday() {
@@ -212,41 +217,33 @@ function drawFruit(ctx, f, x, y, r, pal) {
   if (f < 0) return;
   const [body, rim, leaf] = FRUIT_PAINT[f];
   ctx.save();
-  // drop shadow
-  ctx.fillStyle = pal.dark ? 'rgba(0,0,0,0.35)' : 'rgba(15,23,42,0.16)';
-  ctx.save(); ctx.translate(0, r * 0.1); fruitPath(ctx, f, x, y, r); ctx.fill(); ctx.restore();
-  // body with a soft gradient
-  const gr = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r * 1.05);
-  gr.addColorStop(0, rgb(mixc(hex(body), [255, 255, 255], 0.35)));
-  gr.addColorStop(0.55, body);
-  gr.addColorStop(1, rim);
-  ctx.fillStyle = gr;
+  // flat body, thin ink outline
+  ctx.fillStyle = body;
   fruitPath(ctx, f, x, y, r); ctx.fill();
-  ctx.lineWidth = Math.max(1, r * 0.07); ctx.strokeStyle = rim; ctx.stroke();
+  ctx.lineWidth = Math.max(1.2, r * 0.08); ctx.lineJoin = 'round'; ctx.strokeStyle = rim; ctx.stroke();
+  const leafAt = (lx, ly, rx, ry, a) => {
+    ctx.beginPath(); ctx.ellipse(lx, ly, rx, ry, a, 0, Math.PI * 2);
+    ctx.fillStyle = leaf; ctx.fill(); ctx.lineWidth = Math.max(1, r * 0.06); ctx.strokeStyle = rim; ctx.stroke();
+  };
   // detail
   if (f === 0) { // seeds and a green cap
-    ctx.fillStyle = 'rgba(255,240,170,0.9)';
+    ctx.fillStyle = rim;
     for (const [dx, dy] of [[-0.4, -0.15], [0, -0.2], [0.4, -0.15], [-0.22, 0.2], [0.22, 0.2], [0, 0.52]]) {
-      ctx.beginPath(); ctx.ellipse(x + dx * r, y + dy * r, r * 0.05, r * 0.08, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(x + dx * r, y + dy * r, r * 0.04, r * 0.065, 0, 0, Math.PI * 2); ctx.fill();
     }
-    ctx.fillStyle = leaf;
-    for (const a of [-0.9, -0.3, 0.3, 0.9]) {
-      ctx.beginPath(); ctx.ellipse(x + Math.sin(a) * r * 0.32, y - r * 0.7, r * 0.12, r * 0.28, a, 0, Math.PI * 2); ctx.fill();
-    }
+    for (const a of [-0.9, -0.3, 0.3, 0.9]) leafAt(x + Math.sin(a) * r * 0.32, y - r * 0.7, r * 0.12, r * 0.28, a);
   } else if (f === 1) { // a dimple and a leaf
-    ctx.fillStyle = rgb(hex(rim), 0.55);
-    for (const [dx, dy] of [[-0.35, 0.1], [0.3, 0.3], [0.05, -0.25], [-0.15, 0.45], [0.45, -0.1]]) { ctx.beginPath(); ctx.arc(x + dx * r, y + dy * r, r * 0.035, 0, Math.PI * 2); ctx.fill(); }
-    ctx.fillStyle = leaf; ctx.beginPath(); ctx.ellipse(x + r * 0.22, y - r * 0.8, r * 0.26, r * 0.12, -0.5, 0, Math.PI * 2); ctx.fill();
+    leafAt(x + r * 0.22, y - r * 0.8, r * 0.26, r * 0.12, -0.5);
   } else if (f === 2) { // the lemon's tips
     ctx.fillStyle = rim;
     ctx.beginPath(); ctx.arc(x - r * 0.96, y, r * 0.06, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(x + r * 0.96, y, r * 0.06, 0, Math.PI * 2); ctx.fill();
   } else if (f === 3) { // stem and leaf
-    ctx.strokeStyle = '#78350f'; ctx.lineWidth = Math.max(1.5, r * 0.1); ctx.lineCap = 'round';
+    ctx.strokeStyle = rim; ctx.lineWidth = Math.max(1.5, r * 0.1); ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(x, y - r * 0.5); ctx.quadraticCurveTo(x + r * 0.05, y - r * 0.85, x + r * 0.18, y - r * 0.98); ctx.stroke();
-    ctx.fillStyle = leaf; ctx.beginPath(); ctx.ellipse(x + r * 0.38, y - r * 0.82, r * 0.24, r * 0.11, -0.4, 0, Math.PI * 2); ctx.fill();
+    leafAt(x + r * 0.38, y - r * 0.82, r * 0.24, r * 0.11, -0.4);
   } else if (f === 4) { // a stem
-    ctx.strokeStyle = '#4d7c0f'; ctx.lineWidth = Math.max(1.5, r * 0.1); ctx.lineCap = 'round';
+    ctx.strokeStyle = rim; ctx.lineWidth = Math.max(1.5, r * 0.1); ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(x, y - r * 0.78); ctx.lineTo(x + r * 0.12, y - r * 1.0); ctx.stroke();
   } else { // the crown
     ctx.fillStyle = rim;
@@ -258,9 +255,6 @@ function drawFruit(ctx, f, x, y, r, pal) {
     }
     ctx.closePath(); ctx.fill();
   }
-  // shine
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.beginPath(); ctx.ellipse(x - r * 0.36, y - r * 0.28, r * 0.15, r * 0.09, -0.7, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
 // The specials. A slicer wears two white bands the way it cuts, a bomb a ring
@@ -272,9 +266,7 @@ function drawSpecial(ctx, p, x, y, r, pal, now) {
     // glass bowl
     ctx.fillStyle = pal.dark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.08)';
     ctx.beginPath(); ctx.ellipse(x, y + r * 0.62, r * 0.55, r * 0.14, 0, 0, Math.PI * 2); ctx.fill();
-    const gr = ctx.createLinearGradient(x, y - r * 0.2, x, y + r * 0.7);
-    gr.addColorStop(0, '#fb7185'); gr.addColorStop(1, '#be123c');
-    ctx.fillStyle = gr;
+    ctx.fillStyle = '#fb7185';
     ctx.beginPath(); ctx.moveTo(x - r * 0.92, y - r * 0.12 + wob); ctx.quadraticCurveTo(x, y + r * 1.25, x + r * 0.92, y - r * 0.12 - wob); ctx.closePath(); ctx.fill();
     ctx.strokeStyle = pal.dark ? 'rgba(255,255,255,0.85)' : 'rgba(15,23,42,0.55)'; ctx.lineWidth = Math.max(1.5, r * 0.09);
     ctx.beginPath(); ctx.moveTo(x - r * 0.95, y - r * 0.14); ctx.quadraticCurveTo(x, y + r * 1.3, x + r * 0.95, y - r * 0.14); ctx.stroke();
@@ -283,6 +275,7 @@ function drawSpecial(ctx, p, x, y, r, pal, now) {
     FRUIT_PAINT.forEach(([c], i) => {
       const a = now / 900 + (i * Math.PI * 2) / 6;
       ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x + Math.cos(a) * r * 0.55, y - r * 0.13 + Math.sin(a) * r * 0.12, r * 0.13, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = Math.max(1, r * 0.05); ctx.strokeStyle = FRUIT_INK; ctx.stroke();
     });
     ctx.restore();
     return;
@@ -305,7 +298,7 @@ function drawSpecial(ctx, p, x, y, r, pal, now) {
   } else if (p.sp === 'bomb') {
     const pulse = 0.5 + 0.5 * Math.sin(now / 200);
     ctx.strokeStyle = pal.dark ? `rgba(255,255,255,${0.6 + 0.4 * pulse})` : `rgba(11,13,18,${0.55 + 0.4 * pulse})`;
-    ctx.lineWidth = Math.max(2, r * 0.12); ctx.setLineDash([r * 0.22, r * 0.14]);
+    ctx.lineWidth = Math.max(2, r * 0.12); ctx.setLineDash([]);
     ctx.beginPath(); ctx.arc(x, y, r * 1.08, now / 900, now / 900 + Math.PI * 2); ctx.stroke();
   }
   ctx.restore();

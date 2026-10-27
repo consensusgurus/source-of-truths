@@ -249,9 +249,15 @@ const KICKS = [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0], [0, -1], [-1, -1], [1, 
 // they are told apart by shape alone, like the other seven.
 // lib/blocks-seq PIECES keeps its blues for the verifier; nothing on screen
 // reads them any more.
-const PIECE_DARK = { I: '#fde68a', O: '#fbbf24', T: '#d97706', S: '#fcd34d', Z: '#b45309', J: '#f59e0b', L: '#eab308', C: '#ca8a04', P: '#fde047' };
-const PIECE_LIGHT = { I: '#fbbf24', O: '#f59e0b', T: '#b45309', S: '#eab308', Z: '#92400e', J: '#d97706', L: '#ca8a04', C: '#a16207', P: '#78350f' };
+// FLAT PASTELS (owner, 2026-10-27, supersedes the amber shades above): every
+// shape takes one of the site's ten category pastels (lib/category-ramp), the
+// same in both registers, drawn flat with a thin RAMP_INK edge the way a home
+// tile is: no sheen, no bevel, no shadow. The ink edge is what keeps a pastel
+// readable on a white cell, so the register no longer needs its own set.
+const PIECE_DARK = { I: '#7dd3fc', O: '#fbbf24', T: '#c084fc', S: '#6ee7b7', Z: '#fb7185', J: '#a5b4fc', L: '#fb923c', C: '#bef264', P: '#e879f9' };
+const PIECE_LIGHT = PIECE_DARK;
 const PIECE_HUE = PIECE_DARK;
+const PIECE_EDGE = '#08222e';
 function pieceFill(k, light) {
   return (light ? PIECE_LIGHT : PIECE_DARK)[k] || '#94a3b8';
 }
@@ -282,7 +288,7 @@ function MiniShape({ k, light, cell = 7 }) {
   const rects = [];
   m.forEach((row, y) => row.forEach((v, x) => {
     if (!v) return;
-    rects.push(<rect key={`${x}-${y}`} x={(x - x0) * cell + 0.5} y={(y - y0) * cell + 0.5} width={cell - 1} height={cell - 1} rx={1.6} fill={fill} />);
+    rects.push(<rect key={`${x}-${y}`} x={(x - x0) * cell + 0.5} y={(y - y0) * cell + 0.5} width={cell - 1} height={cell - 1} rx={1.6} fill={fill} stroke={PIECE_EDGE} strokeWidth={0.9} />);
   }));
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-label={PIECE_LABEL[k] || k} role="img" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
@@ -936,11 +942,8 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       }
       rr(px + 1, py + 1, c - 1, c - 1, r);
       ctx.fillStyle = col; ctx.fill();
-      if (!stg) {
-        ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(0,0,0,0.22)'; ctx.stroke();
-        rr(px + 3, py + 3, c - 5, (c - 5) * 0.42, r * 0.7);
-        ctx.fillStyle = 'rgba(255,255,255,0.24)'; ctx.fill();
-      }
+      // flat: one fill and a thin ink edge, no sheen (owner, 2026-10-27)
+      if (!stg) { ctx.lineWidth = 1.5; ctx.strokeStyle = PIECE_EDGE; ctx.stroke(); }
       if (o.flash) { rr(px + 1, py + 1, c - 1, c - 1, r); ctx.fillStyle = `rgba(255,255,255,${Math.min(1, o.flash)})`; ctx.fill(); }
       ctx.restore();
     };
@@ -1050,7 +1053,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       if (!soft) {
         let gy = st.cur.y;
         while (!hits(st.grid, COLS, ROWS, st.cur, st.cur.x, gy + 1)) gy += 1;
-        ctx.save(); ctx.setLineDash(stg ? [] : [4, 3]); ctx.lineWidth = 2; ctx.strokeStyle = fillOf(st.cur.k); ctx.globalAlpha = stg ? 0.5 : 0.55;
+        ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 2; ctx.strokeStyle = fillOf(st.cur.k); ctx.globalAlpha = stg ? 0.5 : 0.55;
         for (let y = 0; y < m.length; y++) for (let x = 0; x < m.length; x++) if (m[y][x] && gy + y >= 0) { rr((st.cur.x + x) * cell + 3, (gy + y) * cell + 3, cell - 6, cell - 6, cell * 0.14); ctx.stroke(); }
         ctx.restore();
       }
@@ -1066,7 +1069,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         ctx.save(); ctx.globalAlpha = a; ctx.translate(q.x * cell, q.y * cell); ctx.rotate(q.rot);
         if (q.dust) { ctx.fillStyle = grey; ctx.beginPath(); ctx.arc(0, 0, sz * a, 0, 7); ctx.fill(); }
         else if (q.conf) { ctx.fillStyle = q.col; ctx.fillRect(-sz / 2, -sz / 4, sz, sz / 2); }
-        else { ctx.fillStyle = q.col; rr(-sz / 2, -sz / 2, sz, sz, sz * 0.2); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(-sz / 2 + 1, -sz / 2 + 1, sz - 2, sz * 0.35); }
+        else { ctx.fillStyle = q.col; rr(-sz / 2, -sz / 2, sz, sz, sz * 0.2); ctx.fill(); }
         ctx.restore();
       }
     }
