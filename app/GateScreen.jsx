@@ -17,7 +17,7 @@
 //   - the game's own one-paragraph short rules, larger
 //   - one full-width Start button at the foot of the screen
 //   - a small "How to play" link under it (the gate's own rules toggle)
-// The "How to play / Flag an issue" row the page already carries sits just
+// The "How to play / Report an issue" row the page already carries sits just
 // below the fold. The name and eyebrow come from CSS variables written in the
 // server-rendered <style>, so the first paint already has them (no jitter).
 // The clients' "X is ready" titles were blanked to null (an empty first child

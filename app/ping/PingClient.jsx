@@ -6,7 +6,7 @@
 // guess pings back one number: the great-circle distance in miles to the secret
 // city. Keep guessing (there's no limit) and home in until you land on it. Two
 // outcomes only: you GET THE CITY or you GIVE UP. Score is out of 10 - getting
-// the city scores 6-10 (fewer guesses = higher), giving up scores 1-5 by how
+// the city scores 6-10 (found in three or fewer is a perfect 10), giving up scores 1-5 by how
 // close your best guess got. Getting it always outranks giving up; the daily
 // board ranks by score, then guesses, then time. One free hint reveals the
 // continent (unregistered players).
@@ -185,8 +185,9 @@ const fmtDistIn = (mi, unit) =>
   unit === 'km' ? `${toKm(mi).toLocaleString('en-US')} km` : `${fmtMi(mi)} mi`;
 const unitWord = (unit) => (unit === 'km' ? 'kilometers' : 'miles');
 
-// Score is out of 10. Two outcomes: you GET THE CITY (6-10, fewer guesses is
-// higher, a first-guess find is a perfect 10) or you GIVE UP (1-5 by how close
+// Score is out of 10. Two outcomes: you GET THE CITY (6-10; owner, 2026-10-27:
+// finding it in three guesses or fewer is a perfect 10, then 9, 8, 7 and 6 from
+// seven on; guesses still break ties on the board) or you GIVE UP (1-5 by how close
 // your best guess got, within 100 mi = 5). The worst solve (6) still beats the
 // best give-up (5), so getting the city always ranks above quitting.
 const TOTAL = 10;
@@ -196,7 +197,7 @@ function proximityScore(mi) {
   for (let i = 0; i < PROX_MILES.length; i++) if (mi <= PROX_MILES[i]) return 5 - i;
   return 1;
 }
-const getScore = (n) => Math.max(6, 11 - n);
+const getScore = (n) => (n <= 3 ? 10 : Math.max(6, 13 - n));
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&

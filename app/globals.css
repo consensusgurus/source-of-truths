@@ -1539,3 +1539,51 @@ html:is([data-stage-pastel='darktint'], [data-stage-tone='darktint']) .stage-pag
    The armed key keeps its own colour. */
 .stage-page [class$="-pad-n"] { font-size: 10px !important; font-weight: 800 !important; right: 5px !important; }
 .stage-page :not(.armed) > [class$="-pad-n"] { color: var(--stg-mute, #5b6472) !important; }
+
+/* THE ENDING IN THE DARK LOOK (owner report, 2026-10-27: "even though I have
+   the site set to dark mode, on some pages it still has a white background.
+   Especially on the solved pages"). The play registers above stand down while
+   an ending is up (the :has(.stf, .stf-flood) guards), so the ending fell back
+   to the light stage tokens and the soft pastel ground whatever the look was.
+   In Black with color (and plain Black) the ending now sits on the near-black
+   page, its band and cover take the category deepened onto that black, and
+   every card goes dark with light ink. The category accent itself is kept, so
+   the filled tiles and buttons still wear it with their dark ink. */
+html:is([data-stage-pastel^='dark'], [data-stage-tone^='dark']):has(.stf, .stf-flood, .sst, .sst-page):not(#sot-x),
+html:is([data-stage-pastel^='dark'], [data-stage-tone^='dark']):has(.stf, .stf-flood, .sst, .sst-page):not(#sot-x) body {
+  background: #0b0f1a !important;
+}
+html:is([data-stage-pastel^='dark'], [data-stage-tone^='dark']):has(.stf, .stf-flood, .sst, .sst-page) :is(.stage-page, .sst, .stf-flood) {
+  --stg-ground: #0b0f1a !important;
+  --stg-raise: #151b28 !important;
+  --stg-panel: #121826 !important;
+  --stg-surf: rgba(233, 237, 244, 0.06) !important;
+  --stg-surf2: rgba(233, 237, 244, 0.1) !important;
+  --stg-line: rgba(233, 237, 244, 0.16) !important;
+  --stg-line2: rgba(233, 237, 244, 0.3) !important;
+  --stg-line3: #e9edf4 !important;
+  --stg-ink: #e9edf4 !important;
+  --stg-ink2: #c4ccd8 !important;
+  --stg-mute: #aab5c7 !important;
+  --stg-mute2: #9aa5b8 !important;
+  --stg-dim: #9aa5b8 !important;
+  --stg-chip: rgba(233, 237, 244, 0.1) !important;
+  --stg-cell: #161b27 !important;
+  --stg-cell-line: rgba(233, 237, 244, 0.28) !important;
+  --stg-dark-end: color-mix(in srgb, var(--sp-g, var(--stg-acc, #7dd3fc)) 24%, #0b0f1a);
+}
+html:is([data-stage-pastel^='dark'], [data-stage-tone^='dark']):has(.stf, .stf-flood, .sst, .sst-page) .stage-page {
+  background: #0b0f1a !important;
+  color: #e9edf4;
+}
+html:is([data-stage-pastel^='dark'], [data-stage-tone^='dark']) :is(.sst, .sst-page):not(.t-lost) {
+  --sst-bg: var(--stg-dark-end, color-mix(in srgb, var(--sp-g, var(--stg-acc, #7dd3fc)) 24%, #0b0f1a));
+  --sst-ink: #e9edf4;
+  --sst-card: color-mix(in srgb, var(--sst-bg) 84%, #ffffff);
+  --sst-rule: rgba(233, 237, 244, 0.16);
+  --sst-wash: rgba(233, 237, 244, 0.08);
+}
+html:is([data-stage-pastel^='dark'], [data-stage-tone^='dark']) :is(.stf-curtain, .stf-flood) {
+  background: var(--stg-dark-end, color-mix(in srgb, var(--sp-g, var(--stg-acc, #7dd3fc)) 24%, #0b0f1a)) !important;
+  color: #e9edf4 !important;
+}

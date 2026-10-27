@@ -10523,3 +10523,18 @@ cutout should match the background always"). It replaced the caret-and-brain mar
   Needs `@resvg/resvg-js` installed for the run.
 - After any change to the mark: rerun `build-brand-marks.mjs` (and `build-app-icons.mjs` if the icons should change), then
   `node scripts/bake-og.mjs --site` (every share card carries it).
+
+## Sudoku auto-move is the plain next empty square again (owner, 2026-10-27)
+
+The "next most logical square" auto-move (`logicalNext`, 2026-10-26) was reverted on all 18 grids after
+player complaints that the cursor "jumps all over the place". Every grid calls its own `nextEmpty(...)`
+again, exactly as before that change. `logicalNext` is left exported in `lib/sudoku-auto-advance.js` and
+unused; do not wire it back in without the owner asking.
+
+## The ending follows the dark look (owner report, 2026-10-27)
+
+The play registers stand down while an ending is up, so the ending used to paint the light stage tokens
+and the pastel ground even in Black with color. `app/globals.css` (THE ENDING IN THE DARK LOOK) now puts
+the ending on the near-black page with the category deepened onto it, and `groundOf` in
+`lib/finish-beat.js` paints the win iris in that same colour. Any new ending surface must read the
+`--sst-*` / `--stg-*` tokens rather than hardcoding a light ground.

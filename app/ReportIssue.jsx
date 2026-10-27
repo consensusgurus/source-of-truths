@@ -1,6 +1,6 @@
 'use client';
 
-// ReportIssue — a small "Submit feedback" affordance for the daily puzzles
+// ReportIssue — a small "Report an issue" affordance for the daily puzzles
 // (renamed from "Report an issue", owner 2026-10-08: we want ideas as well as problems).
 // It wires into the site's existing submission system: the same `complaints`
 // table + admin "Notices" tab used for list feedback, via POST /api/complaints.
@@ -107,9 +107,9 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
     <div className="ri-wrap" style={{ textAlign: align }}>
       <style dangerouslySetInnerHTML={{ __html: `
         .ri-wrap{margin-top:10px;font-family:${SANS};}
-        .ri-link{background:none;border:none;cursor:pointer;font-family:${MONO};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:${FADED};display:inline-flex;align-items:center;gap:5px;padding:4px 6px;}
+        .ri-link{background:none;border:1.5px solid var(--stg-line2, #c9d0da);border-radius:999px;cursor:pointer;font-family:${SANS};font-size:13px;font-weight:700;color:${INK};display:inline-flex;align-items:center;gap:6px;padding:9px 14px;min-height:40px;box-sizing:border-box;}
         .ri-link:hover{color:${INK};}
-        .ri-chips{display:inline-flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;}
+        .ri-chips{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;}
         .ri-how{color:${INK};font-weight:700;}
         .ri-form{max-width:400px;margin:6px auto 0;text-align:left;}
         .ri-h{font-size:12.5px;font-weight:800;color:${INK};margin:0 0 7px;text-align:center;}
@@ -162,11 +162,11 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
         <span className="ri-chips">
           {onHelp ? (
             <button type="button" className="ri-link ri-how" onClick={onHelp}>
-              <HelpCircle size={11} strokeWidth={2.2} /> How to play
+              <HelpCircle size={14} strokeWidth={2.2} /> How to play
             </button>
           ) : null}
           <button type="button" className="ri-link" onClick={() => setOpen(true)}>
-            <MessageSquare size={11} strokeWidth={2.2} /> Flag an issue
+            <MessageSquare size={14} strokeWidth={2.2} /> Report an issue
           </button>
         </span>
       )}
