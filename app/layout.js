@@ -11,6 +11,7 @@ import ThanksPop from './ThanksPop';
 import EmailTicketPop from './EmailTicketPop';
 import { PriceCheckItemsGlobal } from './pricecheck/ItemsPop';
 import ChunkReload from './ChunkReload';
+import VersionGuard from './VersionGuard';
 import HydrationMark from './HydrationMark';
 import { getAllSources } from '@/lib/sources';
 import { T } from '@/lib/theme';
@@ -215,6 +216,9 @@ export default function RootLayout({ children }) {
         {/* Reloads once when a hashed chunk from a superseded deployment fails to
             load. See app/ChunkReload.jsx and app/error.js (2026-09-23). */}
         <ChunkReload />
+        {/* Moves a tab left open across a deploy onto the live build. See
+            app/VersionGuard.jsx and CLAUDE.md "No tab stays on an old deployment". */}
+        <VersionGuard />
         <Analytics />
       </body>
     </html>

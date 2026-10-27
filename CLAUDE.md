@@ -1234,6 +1234,60 @@ TripAdvisor (and sometimes Yelp) search pages are JS/bot-protected and return no
 
 ---
 
+## No tab stays on an old deployment (owner rule, 2026-10-27)
+
+Owner report: "initial load of page shows an old version ... all over the place." Measured on the live
+site that day, **the HTML is never the stale part.** Every daily, `/`, `/today` and `/trivia` are served
+`private, no-cache, no-store`; quiz and list pages `public, max-age=0, must-revalidate`; `/public` art
+`max-age=0, must-revalidate`. A real page load always gets the live build. What goes stale is a tab
+that was ALREADY OPEN when a deploy landed:
+
+- a tab left open on a laptop, or a phone tab Safari restores from memory,
+- **the installed home-screen app**, which resumes for days without ever reloading,
+- a page restored from the back/forward cache.
+
+From there every in-app link is a client-side navigation, and **Vercel Skew Protection is ON** (every
+asset carries `?dpl=dpl_...`), which routes an old tab's navigations to the OLD deployment on purpose,
+chunks and server render both. So the tab shows the old site page after page until a hard refresh.
+Next 14's client router cache made it worse: it replayed a page's payload for 30s (dynamic) or 5 min
+(static), so going back to the home after a game showed the pre-game home.
+
+### The mechanisms (all shipped 2026-10-27)
+
+1. **`app/VersionGuard.jsx`, mounted in `app/layout.js`.** `next.config.js` inlines the commit sha as
+   `NEXT_PUBLIC_SOT_BUILD`; `/api/version` (edge, `no-store`) reports the live one. The guard checks on
+   mount, every time the tab returns to the foreground, on a bfcache restore, and every 5 minutes. On a
+   mismatch: a RESUMED page reloads at once; otherwise the next in-app link becomes a full page load,
+   and a `router.push` that slips past is reloaded on arrival.
+2. **It never reloads under a game in progress.** `useAbandonFlush` registers a probe in
+   `window.__sotInPlay` (true while it would post an abandon row), and the guard checks it before every
+   reload. A reload mid-game would fire `pagehide` and file the attempt as abandoned. A link clicked
+   mid-game navigates softly as before, and the page it lands on (where the game has unmounted) reloads.
+3. **Loop guard:** one reload per target build per two minutes (`sessionStorage.sot_vg_reload`), so a CDN
+   that has not caught up cannot bounce a page.
+4. **`experimental.staleTimes: { dynamic: 0, static: 30 }`** in `next.config.js`: a soft navigation always
+   asks the server. Back/forward is still instant.
+5. `ChunkReload.jsx` (2026-09-23) stays: it is the backstop for a chunk that has gone missing outright.
+
+### Rules
+
+- **NEVER add a service worker or Cache Storage**, for a PWA, offline mode or "speed". On a site that
+  deploys this often it is the classic way to serve last week's site forever.
+- **Never set a browser cache lifetime on a page** (`Cache-Control: max-age>0` on HTML, in `headers()`, a
+  route, or middleware). Hashed `/_next/static` assets are already immutable; pages must revalidate.
+  `s-maxage` (CDN) on an API is fine, because a deploy empties the CDN.
+- **Do not raise `staleTimes`** or remove `VersionGuard`, its `/api/version`, or the `__sotInPlay` probe.
+- **A new game board that is not built on `useAbandonFlush` must register its own probe** in
+  `window.__sotInPlay` (a function returning true while a round is live), or the guard can reload a page
+  under a player.
+- **Never compute "today" or any versioned state during render** (that is the hydration flash, a
+  different bug, handled by `HydrationMark.jsx`): read it in an effect.
+- **Diagnosing "I see the old version":** first ask whether it was a tab already open or the home-screen
+  app. A cold load from a new tab is always live; if it is NOT, check the response headers before
+  touching any code.
+- `node scripts/verify-freshness.mjs` (picked up by `verify-all`) fails if any mechanism above is removed,
+  if a service worker appears, or if `headers()` puts a browser cache lifetime on anything.
+
 ## Deploy — Claude pushes directly via the stored PAT (DEFAULT)
 
 Claude deploys by pushing the new `lib/data.js` straight to `origin/main` using a stored fine-grained

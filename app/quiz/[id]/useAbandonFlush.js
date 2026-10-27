@@ -49,7 +49,15 @@ export default function useAbandonFlush(getPayload) {
       } catch (e) { /* nothing more to do on exit */ }
     };
     window.addEventListener('pagehide', flush);
-    return () => window.removeEventListener('pagehide', flush);
+    // Tells app/VersionGuard.jsx a game is in progress, so it never reloads
+    // the page under a player (that would file this attempt as abandoned).
+    const probe = () => {
+      if (doneRef.current) return false;
+      try { return !!(getRef.current && getRef.current()); } catch (e) { return false; }
+    };
+    const set = (window.__sotInPlay = window.__sotInPlay || new Set());
+    set.add(probe);
+    return () => { window.removeEventListener('pagehide', flush); set.delete(probe); };
   }, []);
 
   return { markFlushed: () => { doneRef.current = true; } };

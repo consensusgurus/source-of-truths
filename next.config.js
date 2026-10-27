@@ -1,12 +1,22 @@
 /** @type {import('next').NextConfig} */
+// The build the running JavaScript was compiled from. app/VersionGuard.jsx compares it with
+// /api/version so a tab left open across a deploy moves onto the live build (2026-10-27).
+const SOT_BUILD = process.env.VERCEL_GIT_COMMIT_SHA || process.env.VERCEL_DEPLOYMENT_ID || '';
+
 const nextConfig = {
   reactStrictMode: true,
+  env: { NEXT_PUBLIC_SOT_BUILD: SOT_BUILD },
   poweredByHeader: false,
   // Build-time only, no effect on the emitted app (2026-09-01, build-time pass).
   // ESLint used to run over the whole tree inside `next build` on every
   // deploy; the no-undef sweep and verify-all are the pre-push gate instead.
   eslint: { ignoreDuringBuilds: true },
   experimental: {
+    // NO CLIENT-SIDE PAGE CACHE (2026-10-27). Next 14's router keeps the payload of a
+    // page you navigated to for 30s (dynamic) / 5 min (static) and replays it on the
+    // next visit, so going back to the home after a game showed the pre-game page.
+    // Every soft navigation now asks the server. Back/forward still restores instantly.
+    staleTimes: { dynamic: 0, static: 30 },
     // Run the server, client and edge webpack compilations in separate
     // workers instead of serially. Output is identical; only wall time moves.
     webpackBuildWorker: true,
