@@ -184,6 +184,8 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
   const [handUp, setHandUp] = useState(false);
   // The player can step back from the handover to the room's full board of answers.
   const [peek, setPeek] = useState(false);
+  // How to play, from the run: the game starts on its own (owner, 2026-10-27).
+  const [helpSeq, setHelpSeq] = useState(0);
   const [openKey, setOpenKey] = useState(null);
   const [look] = useGauntletLook();
   const embedTheme = isDarkLook(look) ? 'dark' : 'light';
@@ -400,10 +402,10 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
       {hydrated && playing && sec && (
         <div className={showHand ? 'rr-under' : undefined} aria-hidden={showHand ? 'true' : undefined}>
           <RunPlayFrame sections={stageSecs} idx={r.si} title="Read the Room" sub={`Room ${r.si + 1} of ${N} · ${sec.name}`}
-            foot={`Your read so far ${runSoFar} of ${ROOM_MAX}`}>
+            foot={<>Your read so far {runSoFar} of {ROOM_MAX}{mountGame && !banked[sec.key] ? <> · <button type="button" className="rr-lk" onClick={() => setHelpSeq((x) => x + 1)}>How to play {sec.name}</button></> : null}</>}>
             {mountGame ? (
               <div className="rr-host">
-                <RunEmbed onResult={banked[sec.key] ? NOOP : onSectionDone} theme={embedTheme}>
+                <RunEmbed onResult={banked[sec.key] ? NOOP : onSectionDone} theme={embedTheme} help={helpSeq} autostart>
                   <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
                 </RunEmbed>
               </div>
@@ -635,6 +637,7 @@ function Morning() {
 const CSS = `
 .rr *{box-sizing:border-box}
 /* the embedded crowd games sit on the run's pastel ground */
+.rr-lk{background:none;border:0;padding:4px 2px;color:inherit;font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .rr-host .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
 .gsx-play .rr-host .stage-page{color:var(--stg-ink) !important}
 .rr-under{pointer-events:none}

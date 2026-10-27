@@ -191,7 +191,7 @@ const slotOf = (s, i) => (s && s.slot != null ? s.slot : i);
 function TopBar({ pal, title = null, sub = null }) {
   return (
     <div className="gsx-top">
-      <StageTopBar look={pal.look} onFlip={pal.flip} ink={pal.ink} href="/" title={title} sub={sub} />
+      <StageTopBar look={pal.look} onFlip={pal.flip} ink={pal.ink} href="/" title={title} sub={sub} allLooks />
     </div>
   );
 }
@@ -269,44 +269,46 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onStart]);
+  // THE START BUTTON WEARS THE RUN'S CATEGORY, as on every daily's start
+  // screen; the two black-and-white looks keep the ink button.
+  const cat = gateColour(sections);
+  const goStyle = pal.look === 'plain' || pal.look === 'dark' ? undefined : { background: cat, color: '#08222e', border: '2px solid #08222e' };
+  const go = <button type="button" className="gsx-go gsx-startgo" style={goStyle} onClick={onStart}>{startLabel || `Start with ${first ? first.name : 'the run'}`}</button>;
   return (
-    <div key={pal.look} className={`gsx gsx-gate${centerpiece ? ' gsx-cp' : ''}`} role="dialog" aria-label={`${circuitName}, start`} style={pal.vars}>
+    <div key={pal.look} className={`gsx gsx-gate gsx-gs${centerpiece ? ' gsx-cp' : ''}`} role="dialog" aria-label={`${circuitName}, start`} style={pal.vars}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="gsx-col gsx-split">
-        {/* THE LOOK SWITCH SITS AT THE RIGHT EDGE (owner, 2026-10-25): the top
-            bar spans both columns of the split, so on a desktop the switch is
-            right aligned to the page rather than ending the left column. */}
+      {/* THE RUN'S START SCREEN IS THE DAILY START SCREEN (owner, 2026-10-27:
+          the runs still had the old start screen). One centred group on every
+          width: a small eyebrow, the run's name very large, its short rules,
+          the lineup kept compact, and one full-width Start in the category
+          colour. The top bar keeps the back arrow, the mark and the look
+          switch at the right edge. */}
+      <div className="gsx-col gsx-start">
         <TopBar pal={pal} />
-        <div className="gsx-head gsx-rise">
+        <div className="gsx-sgrp">
           {banner ? <div className="gsx-banner">{banner}</div> : null}
-          <div className="gsx-eye gsx-eye1">{circuitName} · {dateLabel}</div>
-          <h1 className="gsx-h1">{headline || <>{word} {unit.charAt(0).toUpperCase() + unit.slice(1)}.<br />One Life in Each.</>}</h1>
-          <p className="gsx-lede">{rule}{lineup ? ` ${lineup}` : ''}</p>
-          <div className="gsx-gowrap gsx-wide">
-            <button type="button" className="gsx-go" onClick={onStart}>{startLabel || `Start with ${first ? first.name : 'the run'}`}</button>
-            {/* NO PLAY COUNT UNDER START (owner, 2026-10-25): the field line is
-                gone from the gate, so on a desktop the Start button's foot
-                lines up with the foot of the lineup beside it. */}
+          <div className="gsx-head gsx-rise">
+            <div className="gsx-eye gsx-eye1">Daily Run · {dateLabel}</div>
+            <h1 className="gsx-h1 gsx-sname">{circuitName}</h1>
+            <p className="gsx-lede"><b className="gsx-tag">{headline || <>{word} {unit.charAt(0).toUpperCase() + unit.slice(1)}. One Life in Each.</>}</b> {rule}{lineup ? ` ${lineup}` : ''}</p>
+          </div>
+          {/* A run's own picture (the Dojo's doors, Judged's gavel), kept small. */}
+          {centerpiece ? <div className="gsx-piece">{centerpiece}</div> : null}
+          {/* The whole lineup starts the run too (owner, 2026-10-24). */}
+          <div className="gsx-bands gsx-bgo" role="button" tabIndex={0} aria-label={`Start with ${first ? first.name : 'the run'}`} onClick={onStart}
+            onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault(); onStart && onStart(); } }}>
+            {sections.map((s, i) => (
+              <div key={s.key} className="gsx-band" style={{ background: pal.fill(rampFor(slotOf(s, i))), animationDelay: `${0.15 + i * 0.07}s` }}>
+                <span className="gsx-bn">{i + 1}</span>
+                <span className="gsx-bt"><b>{s.name}</b>{lineFor && lineFor(s) ? <i>{lineFor(s)}</i> : null}</span>
+                <span className="gsx-bq">{bandNote ? bandNote(s) : `${s.questions.length} Qs`}</span>
+              </div>
+            ))}
+          </div>
+          <div className="gsx-gowrap">
+            {go}
             {after}
           </div>
-        </div>
-        {/* A run can put its own picture between the title and the lineup (the
-            Dojo's doors, owner 2026-10-24); the lineup then stays compact. */}
-        {centerpiece ? <div className="gsx-piece">{centerpiece}</div> : null}
-        {/* The whole lineup starts the run too (owner, 2026-10-24). */}
-        <div className="gsx-bands gsx-bgo" role="button" tabIndex={0} aria-label={`Start with ${first ? first.name : 'the run'}`} onClick={onStart}
-          onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault(); onStart && onStart(); } }}>
-          {sections.map((s, i) => (
-            <div key={s.key} className="gsx-band" style={{ background: pal.fill(rampFor(slotOf(s, i))), animationDelay: `${0.15 + i * 0.07}s` }}>
-              <span className="gsx-bn">{i + 1}</span>
-              <span className="gsx-bt"><b>{s.name}</b>{lineFor && lineFor(s) ? <i>{lineFor(s)}</i> : null}</span>
-              <span className="gsx-bq">{bandNote ? bandNote(s) : `${s.questions.length} Qs`}</span>
-            </div>
-          ))}
-        </div>
-        <div className="gsx-gowrap gsx-narrow">
-          <button type="button" className="gsx-go" onClick={onStart}>{startLabel || `Start with ${first ? first.name : 'the run'}`}</button>
-          {after}
         </div>
       </div>
     </div>
@@ -932,5 +934,37 @@ const CSS = `
 .gsx-theme{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--gsx-ink);background:transparent;color:var(--gsx-ink);cursor:pointer;padding:0;flex:none}
 .gsx-theme:hover{background:color-mix(in srgb, var(--gsx-ink) 12%, transparent)}
 .gsx-tr2{display:flex;align-items:center;gap:8px}
+/* THE RUN START SCREEN (owner, 2026-10-27): the daily start screen's grammar.
+   Everything below is scoped to .gsx-gs so the between and end screens are
+   untouched, and it wins over each run's old two-column desktop placement
+   because .gsx-start is not a grid. */
+.gsx-gs .gsx-start{max-width:640px !important;padding:14px 16px 22px !important;gap:0 !important;min-height:100%}
+.gsx-gs .gsx-sgrp{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:12px 0 8px}
+.gsx-gs .gsx-head{gap:6px !important}
+.gsx-gs .gsx-eye1{font-size:13px !important;font-weight:700;letter-spacing:.08em !important;text-transform:uppercase;opacity:.7}
+.gsx-gs .gsx-sname{font-size:clamp(46px,13.5vw,96px) !important;line-height:.95 !important;font-weight:800;letter-spacing:-.035em;overflow-wrap:anywhere;margin:4px 0 6px !important}
+.gsx-gs .gsx-lede{font-size:17px !important;line-height:1.42 !important;font-weight:600;max-width:34em !important}
+.gsx-gs .gsx-tag{display:block;font-weight:800;font-size:1.12em;margin-bottom:4px}
+.gsx-gs .gsx-piece{flex:0 0 auto !important;display:flex;height:140px;min-height:0;overflow:hidden;border-radius:18px}
+.gsx-gs .gsx-piece > *{flex:1 1 auto;height:100%;max-height:none;min-height:0 !important}
+.gsx-gs .gsx-bands{flex:0 0 auto !important;border-radius:14px}
+.gsx-gs .gsx-band{flex:0 0 auto !important;min-height:40px !important;padding:2px 14px !important;gap:10px !important}
+.gsx-gs .gsx-bt b{font-size:16px !important}
+.gsx-gs .gsx-bt i{font-size:13px !important}
+.gsx-gs .gsx-bq{font-size:12px}
+.gsx-gs .gsx-gowrap{display:flex !important;max-width:none !important;margin-top:6px !important}
+.gsx-gs .gsx-startgo{min-height:70px !important;font-size:23px !important;border-radius:18px}
+.gsx-gs .gsx-startgo:hover{filter:brightness(.95)}
+@media(min-width:900px){
+  .gsx-gs .gsx-start{max-width:680px !important;padding:24px 24px 32px !important}
+  .gsx-gs .gsx-lede{font-size:19px !important}
+  .gsx-gs .gsx-band{min-height:46px !important}
+  .gsx-gs .gsx-bt b{font-size:18px !important}
+  .gsx-gs .gsx-piece{height:170px}
+}
+@media(max-height:700px){
+  .gsx-gs .gsx-piece{display:none !important}
+  .gsx-gs .gsx-sname{font-size:clamp(40px,11vw,72px) !important}
+}
 @media (prefers-reduced-motion: reduce){.gsx *,.gsx{animation:none !important}}
 `;

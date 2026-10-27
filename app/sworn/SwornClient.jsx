@@ -290,6 +290,9 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
   const ACC_SOFT = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : COLORS.accentSoft;
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
   const preStart = playing && !g.t0;   // not begun: show the start tile where the board goes
+  // IN A RUN THE GAME STARTS ON ITS OWN (owner, 2026-10-27): the run's own entry is the
+  // start screen, so no second start screen sits between the legs (RunEmbed autostart).
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startInquest(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   const started = playing && !!g.t0;    // clock running: show the board
   const focusMode = playing && !showChrome;
   const won = g.status === 'done' && g.wrong === 0;

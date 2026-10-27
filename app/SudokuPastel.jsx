@@ -57,7 +57,11 @@ function useLcFocus() {
   return f;
 }
 
-export default function useSudokuPastel(active, ground) {
+// `lookIn` lets a run drive the register with its own look (owner, 2026-10-27:
+// the Dojo plays inside the run frame, whose one switch is the run's look,
+// gauntlet key and all five looks); without it the register follows the main
+// page look as before.
+export default function useSudokuPastel(active, ground, lookIn = null) {
   const focus = useLcFocus();
   const phone = usePhoneStage() || focus;
   const on = !!active && phone;
@@ -68,7 +72,8 @@ export default function useSudokuPastel(active, ground) {
     r.style.setProperty('--sp-g', softGround(ground || '#a5b4fc'));
     return () => { r.style.removeProperty('--sp-g'); };
   }, [on, ground]);
-  const [look, setLook] = useStageLook();
+  const [mainLookNow, setLook] = useStageLook();
+  const look = lookIn || mainLookNow;
   useEffect(() => (on ? hold() : undefined), [on]);
   // The page under the stage look stays in the light register (lib/stage-theme.js).
   useEffect(() => {
@@ -80,7 +85,7 @@ export default function useSudokuPastel(active, ground) {
     if (!on || typeof document === 'undefined') return;
     // Read the stored look, not the state: the state starts on the default for
     // one render, which repainted the page in the wrong look for a frame.
-    document.documentElement.setAttribute('data-stage-pastel', readLook());
+    document.documentElement.setAttribute('data-stage-pastel', lookIn || readLook());
   }, [on, look]);
   // THE DESKTOP TONE (owner, 2026-10-26): on a desktop the same colours are
   // set through html[data-stage-tone] (see the end of app/globals.css), which
@@ -90,7 +95,7 @@ export default function useSudokuPastel(active, ground) {
     if (!desk || typeof document === 'undefined') return undefined;
     const r = document.documentElement;
     r.style.setProperty('--sp-g', softGround(ground || '#a5b4fc'));
-    r.setAttribute('data-stage-tone', readLook());
+    r.setAttribute('data-stage-tone', lookIn || readLook());
     forceStageTheme('light');
     return () => { r.removeAttribute('data-stage-tone'); r.style.removeProperty('--sp-g'); forceStageTheme(null); };
   }, [desk, ground, look]);

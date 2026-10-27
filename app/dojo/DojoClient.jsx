@@ -25,7 +25,6 @@
 // on its own after the last grid, as Judged's and Price Check's do.
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { readStageTheme } from '@/lib/stage-theme';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import RunEmbed from '../RunEmbed';
@@ -42,8 +41,8 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import { DOJO_RUN_ID, DOJO_BELTS, DOJO_CLOCK, DOJO_MAX, dojoTierOf, dojoGridPoints, dojoAcc, dojoSpeed } from '@/lib/dojo';
 import RunBackLink from '../circuits/RunBackLink';
 import DyeCurtain from './DyeCurtain';
-import { GauntletGate, GauntletEndStage, LookButton } from '../GauntletScreens';
-import { usePhoneStage } from '../WordStage';
+import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
+import { isDarkLook } from '@/lib/stage-look';
 import useSudokuPastel from '../SudokuPastel';
 
 const CLIENTS = {
@@ -125,25 +124,18 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   // How to play, from the run: the embedded grid has no cap of its own.
   const [helpSeq, setHelpSeq] = useState(0);
   const [copied, setCopied] = useState(false);
-  // THE BOARD'S LIGHT SWITCH. Light or dark for the grids only; the run's own
-  // page stays on its dark ground. The board OPENS IN THE READER'S OWN PAGE
-  // SETTING (owner, 2026-10-20: never a default of its own), and the switch
-  // is a choice for today only: it is kept under today's date so a reload mid
-  // run holds it, and tomorrow the board follows the page setting again.
-  // Read in an effect so the first paint matches the server.
-  const [boardTheme, setBoardTheme] = useState('dark');
-  useEffect(() => {
-    let t = readStageTheme();
-    try { const v = JSON.parse(window.localStorage.getItem('sot_dojo_board2') || 'null'); if (v && v.day === etToday() && (v.t === 'light' || v.t === 'dark')) t = v.t; } catch (e) {}
-    setBoardTheme(t);
-  }, []);
-  const flipBoard = () => setBoardTheme((cur) => { const next = cur === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('sot_dojo_board2', JSON.stringify({ t: next, day: etToday() })); } catch (e) {} return next; });
+  // ONE SWITCH, THE RUN'S (owner, 2026-10-27: the Dojo's play screen takes
+  // the same header as the other runs). The look button in the run's top bar
+  // is the run look (all five looks, its own key), and it paints the grids
+  // too, so the old Light board / Dark board pill and the stray circle under
+  // the header are gone.
+  const [look] = useGauntletLook();
+  const boardTheme = isDarkLook(look) ? 'dark' : 'light';
   const doneAtLoad = useRef(null);
   const [settled, setSettled] = useState(false);
   // THE PHONE DOJO (owner, 2026-10-24): on a phone the grids play on the
   // pastel sudoku register. The ENTRANCE and the ENDING are the gauntlet
   // stage's screens on every width since 2026-10-26, as on the other runs.
-  const phone = usePhoneStage();
   const [endOpen, setEndOpen] = useState(true);
 
   useEffect(() => { rRef.current = r; }, [r]);
@@ -171,7 +163,9 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
 
   const done = r.phase === 'done';
   const playing = r.phase === 'playing';
-  const pastel = useSudokuPastel(hydrated && playing);
+  // The grids draw in the run's look on the current form's colour, the same
+  // ground RunPlayFrame paints, so board and page are one surface.
+  useSudokuPastel(hydrated && playing, rampFor(r.si), look);
   // The stage ending counts as settled for the more-runs card that follows it.
   useEffect(() => { if (hydrated && done && endOpen) setSettled(true); }, [hydrated, done, endOpen]);
   const board = useCircuitBoard(DOJO_RUN_ID, hydrated && done);
@@ -242,6 +236,9 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   sections.forEach((s) => { VARS[`--dj-${s.key}`] = s.color; });
   const runSoFar = sections.slice(0, r.si).reduce((a, s, i) => a + (counted[i] ? parts[i] : 0), 0);
   const Game = sec ? CLIENTS[sec.key] : null;
+  // The forms as the run stage's sections (slot = ladder step, no questions).
+  const gs = sections.map((s, i) => ({ ...s, slot: i, questions: [] }));
+  const beltSec = { key: '__belt', name: 'Your Belt', slot: N, questions: [] };
   // THE END SCREEN'S FIGURES (owner, 2026-10-26: the Dojo's ending matches the
   // other runs on every width): today's board (top three, then you), each
   // form against the field, and the belt ladder for the climb.
@@ -271,14 +268,20 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   return (
     <div className="stage-page dj" data-sot-wait="" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--dj-ground)', color: 'var(--dj-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className={`dj-cap${done ? ' vf' : ''}`}>
-        {done && <RunBackLink />}
-        <Link href="/" className="dj-home">Mind Loft</Link>
-        <b>Enter the Dojo</b>
-        <span className="dj-capd">{dateShort}</span>
-        {playing && <span className="dj-capt">{sections.map((s, i) => <i key={s.key} className={i < r.si ? 'd' : i === r.si ? 'on' : ''} style={{ background: i <= r.si ? `var(--dj-${s.key})` : undefined }} title={s.name} />)}</span>}
-        {!playing && <a className="dj-lb" href="/dojo/leaderboard">Leaderboard</a>}
-      </div>
+      {!hydrated ? <GauntletCover sections={gs} /> : null}
+      {/* The old cap (Mind Loft · Enter the Dojo · date · form pills) is gone
+          from the entry and the play screen (owner, 2026-10-27): those carry
+          the run stage's own top bar. It stays only on the settled grading
+          card, which has no stage bar of its own. */}
+      {hydrated && done && !endOpen && (
+        <div className="dj-cap vf">
+          <RunBackLink />
+          <Link href="/" className="dj-home">Mind Loft</Link>
+          <b>Enter the Dojo</b>
+          <span className="dj-capd">{dateShort}</span>
+          <a className="dj-lb" href="/dojo/leaderboard">Leaderboard</a>
+        </div>
+      )}
 
       {/* ONE ENTRY ON EVERY WIDTH (owner, 2026-10-26): the stage gate the other
           runs use, with the sudoku doors as its picture. The old desktop entry
@@ -288,7 +291,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           circuitName="Enter the Dojo"
           banner={<RunOtherDeviceBar runId={DOJO_RUN_ID} keys={sections.map((s) => s.key)} show={hydrated && r.phase === 'idle' && !r.t0 && !allBanked} />}
           dateLabel={dateShort}
-          sections={sections.map((s, i) => ({ ...s, slot: i, questions: [] }))}
+          sections={gs}
           lineFor={(s) => (s.form && s.form !== s.name ? s.form : (s.chip || ''))}
           bandNote={(s) => (banked[s.key] ? 'Done' : `${s.weight} pts`)}
           headline={<>{(NUMS[N - 1] || String(N))} Forms.<br />One Belt.</>}
@@ -300,52 +303,60 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
         />
       )}
       {hydrated && playing && sec && (
-        <section className="dj-play" style={{ '--c': `var(--dj-${sec.key})` }}>
-          <div className="dj-sechd">
-            <span className="dj-sectag">Form {NUMS[r.si] || r.si + 1} · {sec.form}</span>
-            <b>{sec.name}</b>
-            {!between && Game && !banked[sec.key] && (
-              <button type="button" className="dj-tg" onClick={() => setHelpSeq((n) => n + 1)} title={`How to play ${sec.name}`}>
-                <span aria-hidden="true">?</span> How to play
-              </button>
-            )}
-            {!between && Game && !banked[sec.key] && !phone && (
-              /* THE SWITCH DRIVES THE PAGE LOOK (owner, 2026-10-26: it "does
-                 nothing"). On a desktop the grid is painted by the stage look
-                 (html[data-stage-tone]), which outranks the old per-board theme,
-                 so the switch flips the look itself, as the phone's circle does. */
-              <button type="button" className="dj-tg" onClick={pastel.flip} aria-pressed={pastel.look === 'darktint'} title={pastel.look === 'darktint' ? 'Switch the board to light' : 'Switch the board to dark'}>
-                <span aria-hidden="true">{pastel.look === 'darktint' ? '\u2600' : '\u263E'}</span> {pastel.look === 'darktint' ? 'Light board' : 'Dark board'}
-              </button>
-            )}
-            {phone && pastel.on ? <LookButton look={pastel.look} onFlip={pastel.flip} className="dj-look" /> : null}
-            <span className="dj-run">Run total {Math.round(runSoFar + (between ? parts[r.si] : 0))}</span>
-          </div>
-          {!between && Game && !banked[sec.key] && (
-            <div className={`dj-host${boardTheme === 'light' ? ' lt' : ''}`}>
-              <RunEmbed onResult={onSectionDone} theme={boardTheme} help={helpSeq} autostart={phone}>
+        <RunPlayFrame sections={gs} idx={r.si} title="Enter the Dojo" sub={`Form ${NUMS[r.si] || r.si + 1} of ${NUMS[N - 1] || N} · ${sec.name}`}
+          foot={<>
+            Run total {Math.round(runSoFar + (between ? parts[r.si] : 0))} of {DOJO_MAX}
+            {!between && Game && !banked[sec.key] ? <> · <button type="button" className="dj-lk" onClick={() => setHelpSeq((n) => n + 1)}>How to play {sec.name}</button></> : null}
+          </>}>
+          {!between && Game && !banked[sec.key] ? (
+            <div className="dj-host">
+              <RunEmbed onResult={onSectionDone} theme={boardTheme} help={helpSeq} autostart>
                 <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
               </RunEmbed>
             </div>
-          )}
-          {between && (
-            <div className="dj-between">
-              <div className="eb">{sec.name} · {banked[sec.key] && !r.results[sec.key] ? 'solved earlier today, the first time stands' : `form ${(NUMS[r.si] || r.si + 1).toString().toLowerCase()} done`}</div>
-              <div className="dj-bscore">{Math.round(parts[r.si])}<small>/{sec.weight}</small></div>
-              {secDone.unknown ? <div className="dj-braw">Result on file</div> : (
-                <div className="dj-split">
-                  <div><span>Solve</span><b>{dojoAcc(secDone.score, secDone.total) >= 1 ? 'Clean' : 'Unfinished'}</b><i style={{ width: `${Math.round(100 * dojoAcc(secDone.score, secDone.total))}%` }} /></div>
-                  <div><span>Speed</span><b>{secDone.secs ? fmtClock(secDone.secs) : 'no clock'}</b><i style={{ width: `${Math.round(100 * dojoSpeed(sec.key, secDone.secs, CLK))}%` }} /><small>full marks under {fmtClock((CLK[sec.key] || DOJO_CLOCK[sec.key])[0])}</small></div>
-                </div>
-              )}
-              {!last ? (
-                <button type="button" className="start" onClick={advance}>Next: Form {NUMS[r.si + 1] || r.si + 2}, {sections[r.si + 1].name} <span aria-hidden="true">&rarr;</span></button>
-              ) : (
-                <div className="dj-rolling" role="status">The examiner is grading your forms<span className="dj-dots" aria-hidden="true"><i /><i /><i /></span></div>
-              )}
-            </div>
-          )}
-        </section>
+          ) : null}
+        </RunPlayFrame>
+      )}
+
+      {/* BETWEEN FORMS, the run stage's handover card as on the other runs. The
+          clock waits here: each grid's clock starts when it opens, so this is
+          the pause (owner, 2026-10-12: say so, and make it real). The last
+          form rolls straight into the grading. */}
+      {hydrated && playing && sec && between && (
+        <div className={last ? 'dj-final' : ''}>
+          <GauntletBetween
+            circuitName="Enter the Dojo"
+            sections={gs}
+            results={[]}
+            doneCount={r.si + 1}
+            lastSec={gs[r.si]}
+            upNext={last ? beltSec : gs[r.si + 1]}
+            upIdx={last ? -1 : r.si + 1}
+            stepWord="Form"
+            nextLine={last ? 'Which belt do you tie on?' : `${gs[r.si + 1].form && gs[r.si + 1].form !== gs[r.si + 1].name ? `${gs[r.si + 1].form} · ` : ''}${gs[r.si + 1].weight} points`}
+            lastBody={(
+              <>
+                <b>Form {NUMS[r.si] || r.si + 1} · {sec.name}{banked[sec.key] && !r.results[sec.key] ? ', solved earlier today' : ''}</b>
+                {secDone.unknown ? <span>Result on file. Your first time stands.</span> : (
+                  <>
+                    <span>{dojoAcc(secDone.score, secDone.total) >= 1 ? 'Solved clean' : 'Unfinished'}{secDone.secs ? ` in ${fmtClock(secDone.secs)}` : ''}</span>
+                    <span className="dj-bars">
+                      <span><em>Solve</em><i><u style={{ width: `${Math.round(100 * dojoAcc(secDone.score, secDone.total))}%` }} /></i></span>
+                      <span><em>Speed</em><i><u style={{ width: `${Math.round(100 * dojoSpeed(sec.key, secDone.secs, CLK))}%` }} /></i></span>
+                    </span>
+                    <span>Full speed marks under {fmtClock((CLK[sec.key] || DOJO_CLOCK[sec.key])[0])}</span>
+                  </>
+                )}
+              </>
+            )}
+            lastFig={{ v: Math.round(parts[r.si]), unit: `of ${sec.weight}` }}
+            auto={false}
+            goLabel={last ? 'The examiner is grading\u2026' : `Next: ${gs[r.si + 1].name}`}
+            fine={last ? null : <>The clock waits for you here. Leave now and the run picks up at Form {NUMS[r.si + 1] || r.si + 2} when you come back today.<br /><a className="dj-lk" href="/">Pause and come back later</a></>}
+            onGo={() => { if (!last) advance(); }}
+            leaveHref="/"
+          />
+        </div>
       )}
 
       <RunChallengeCapture gameKey={DOJO_RUN_ID} />
@@ -893,5 +904,16 @@ html[data-stage-tone='plain'] .dj{--dj-ground:#ffffff !important;--dj-panel:#fff
 html[data-stage-tone]:not([data-stage-tone^='dark']) .dj .start{box-shadow:0 10px 24px rgba(8,34,46,.18)}
 html[data-stage-tone] .dj-host.lt{background:transparent}
 }
+.dj-lk{background:none;border:0;padding:4px 2px;color:inherit;font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.gsx-play .dj-host{animation:none}
+.gsx-play .dj-host .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
+.dj-bars{display:flex;flex-direction:column;gap:5px;margin:4px 0 2px}
+.dj-bars > span{display:flex;align-items:center;gap:8px}
+.dj-bars em{width:46px;flex:none;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.dj-bars i{flex:1;height:8px;border:1.5px solid var(--gsx-ink);border-radius:999px;overflow:hidden}
+.dj-bars u{display:block;height:100%;background:var(--gsx-ink);text-decoration:none}
+.dj-final .gsx-eye2{font-size:0 !important}
+.dj-final .gsx-eye2::after{content:'Up Next \\00B7  All Forms In';font-size:15px}
+.gsx-between .gsx-fine .dj-lk{margin-top:6px;display:inline-block}
 .dj-look{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:18px;border:2px solid var(--dj-ink);background:transparent;color:var(--dj-ink);cursor:pointer;padding:0;margin-left:auto}
 `;

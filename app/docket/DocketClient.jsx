@@ -382,6 +382,9 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
   const [showChrome, setShowChrome] = useState(false);
   const focusMode = playing && !showChrome;
   const preStart = playing && !g.t0;
+  // IN A RUN THE GAME STARTS ON ITS OWN (owner, 2026-10-27): the run's own entry is the
+  // start screen, so no second start screen sits between the legs (RunEmbed autostart).
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) start(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   const idx = Math.min(g.i, TOTAL - 1);
   const q = QS[idx];
   const correct = g.picks.filter((p, i) => p !== null && p === KEY[i]).length;

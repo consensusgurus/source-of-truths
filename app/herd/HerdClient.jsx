@@ -337,6 +337,9 @@ export default function HerdClient({ puzzles = [], forceNum = null }) {
   // The accent as TEXT (eyebrows, lit words): never --stg-acc, which is a fill.
   const ACC_INK_OW = STAGE ? 'var(--stg-acc-ink)' : COLORS.accent;
   const preStart = playing && !g.t0;
+  // IN A RUN THE GAME STARTS ON ITS OWN (owner, 2026-10-27): the run's own entry is the
+  // start screen, so no second start screen sits between the legs (RunEmbed autostart).
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   const started = playing && !!g.t0;
   const focusMode = playing && !showChrome;
   const answered = Object.keys(g.ans).length;

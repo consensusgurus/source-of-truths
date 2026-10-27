@@ -82,6 +82,9 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   const [leaving, setLeaving] = useState(false);
   const [holding, setHolding] = useState(null);
   const [peek, setPeek] = useState(false);
+  // How to play, from the run: the game starts on its own, so its own rules
+  // link is gone (RunEmbed autostart, owner 2026-10-27).
+  const [helpSeq, setHelpSeq] = useState(0);
   const [copied, setCopied] = useState(false);
   const doneAtLoad = useRef(null);
   const [settled, setSettled] = useState(false);
@@ -277,10 +280,10 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
 
         {hydrated && playing && sec && (
           <RunPlayFrame sections={gs} idx={r.si} title="Judged" sub={`Case ${r.si + 1} of ${N} · ${sec.name}`}
-            foot={<>Run total {Math.round(runSoFar + (secDone ? parts[r.si] : 0))} of {LAW_MAX}{between && peek ? <> · <button type="button" className="jd-back" onClick={() => setPeek(false)}>Back to the ruling</button></> : null}</>}>
+            foot={<>Run total {Math.round(runSoFar + (secDone ? parts[r.si] : 0))} of {LAW_MAX}{mounted && !between ? <> · <button type="button" className="jd-back" onClick={() => setHelpSeq((x) => x + 1)}>How to play {sec.name}</button></> : null}{between && peek ? <> · <button type="button" className="jd-back" onClick={() => setPeek(false)}>Back to the ruling</button></> : null}</>}>
             {mounted ? (
               <div className="jd-host">
-                <RunEmbed onResult={onSectionDone} theme={boardTheme}>
+                <RunEmbed onResult={onSectionDone} theme={boardTheme} help={helpSeq} autostart>
                   <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
                 </RunEmbed>
               </div>
