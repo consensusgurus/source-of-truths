@@ -16,7 +16,7 @@
 // Several mounts can want it at once (a run page and the board inside it), so
 // the attribute is counted rather than set and cleared by whoever ran last.
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePhoneStage } from './WordStage';
 import { useStageLook, nextMainLook, readLook } from '@/lib/stage-look';
 import { forceStageTheme } from '@/lib/stage-theme';
@@ -39,8 +39,27 @@ function hold() {
 // `ground` is the page colour for the colour look: the Sudoku periwinkle by
 // default, a game's own category pastel when another family uses the register
 // (the End Game titles, 2026-10-24).
+// THE DESKTOP FULL SCREEN IS THE PHONE STAGE (owner, 2026-10-26: "the desktop
+// stage does not match the mobile stage, and it should except for the site
+// navigation button"). While Layout C is in focus (html.lc-focus, set before
+// paint by the boot script and by LayoutCInner), the page takes the phone
+// register too; showing the site navigation turns focus off and the desktop
+// tone comes back.
+function useLcFocus() {
+  const read = () => typeof document !== 'undefined' && document.documentElement.classList.contains('lc-focus');
+  const [f, setF] = useState(false);
+  useEffect(() => {
+    setF(read());
+    const mo = new MutationObserver(() => setF(read()));
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => mo.disconnect();
+  }, []);
+  return f;
+}
+
 export default function useSudokuPastel(active, ground) {
-  const phone = usePhoneStage();
+  const focus = useLcFocus();
+  const phone = usePhoneStage() || focus;
   const on = !!active && phone;
   useEffect(() => {
     if (!on || typeof document === 'undefined') return undefined;

@@ -1116,7 +1116,6 @@ html.lc-pre:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::
    step with LayoutCInner's lc-focus rules. */
 html.lc-pre.lc-focus:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page){padding:0 !important;}
 html.lc-pre.lc-focus:not(.lc-on) .stage-page:has(.stg-top):not(.stage-page .stage-page)::before{display:none;}
-html.lc-pre.lc-focus:not(.lc-on) .stage-page:has(.stg-top) .stg-cap{display:flex !important;}
 html.lc-pre.lc-focus:not(.lc-on) .stage-page:has(.stg-top) .stg-fg{padding-right:20px;}
 
 /* QUIET SCROLLBARS (owner, 2026-10-11). Every scrolling pane inside a stage

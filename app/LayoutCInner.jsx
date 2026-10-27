@@ -92,11 +92,11 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
    says 'Show Site Navigation'"; "end screen remains with navigation"). Focus is
    the default on a puzzle page, the game's own stage cap comes back as the
    header, and the menus button rides in it just left of the look switch. */
-html.lc-on.lc-focus .lc-host .stg-cap{display:flex !important;}
 html.lc-on.lc-focus .lc-host .stg-fg{padding-right:20px;}
-.stg-cap>.lc-subs{position:static;transform:none;order:1;}
-.stg-cap>.stg-theme{order:2;}
-.stg-cap>.lc-subs .lc-shw{display:none;}
+.stb>.lc-subs{position:static;transform:none;order:1;}
+.stb>.stb-look{order:2;}
+.stb>.lc-subs .lc-sub-btn{height:40px;padding:0 16px;border:2px solid currentColor;color:inherit;font-size:13px;font-weight:800;}
+.stb>.lc-subs .lc-sub-btn:hover{border-color:currentColor;color:inherit;text-decoration:underline;text-underline-offset:3px;}
 .lc-subs,.stg-fg>.lc-subs{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:row;align-items:center;gap:8px;}
 .lc-shw{position:relative;display:inline-flex;}
 .lc-shr{display:inline-flex;align-items:center;gap:6px;color:var(--stg-acc-ink,var(--stg-acc)) !important;border-color:var(--stg-acc-ink,var(--stg-acc)) !important;}
@@ -423,7 +423,7 @@ export default function LayoutCInner({ gameKey }) {
       setHost(el);
       fgNow = el.querySelector('.stg-fg');
       setFgEl(fgNow);
-      setCapEl(el.querySelector('.stg-cap'));
+      setCapEl(el.querySelector('.stg-sim .stb'));
     };
     attach();
     const late = setTimeout(attach, 500);
@@ -692,21 +692,13 @@ export default function LayoutCInner({ gameKey }) {
 
   // SHARE FOR CREDIT sits beside the menus toggle (owner, 2026-10-23), which
   // shows in every mode, so it is there before, during and after the game.
+  // ONE BUTTON (owner, 2026-10-26): Show Site Navigation in full screen, Show Full
+  // Screen once the navigation is up. Share for credit left it (the stage's own
+  // cap and the ending carry sharing).
   const subBtn = (
     <div className="lc-subs">
-      <span className="lc-shw">
-        <button type="button" className="lc-sub-btn lc-shr" onClick={() => shareForCredit((m) => {
-          setShareMsg(m); clearTimeout(shareTimer.current); shareTimer.current = setTimeout(() => setShareMsg(''), 4200);
-        })} title="Share this puzzle. New players from your link earn you drawing tickets.">
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M12 3v12" /><path d="M7 8l5-5 5 5" /><path d="M5 13v7h14v-7" />
-          </svg>
-          Share for credit
-        </button>
-        {shareMsg ? <span className="lc-shm" role="status">{shareMsg}</span> : null}
-      </span>
       <button type="button" className="lc-sub-btn" onClick={() => setFocus((v) => !v)}>
-        {focus ? 'Show Site Navigation' : 'Hide Site Navigation'}
+        {focus ? 'Show Site Navigation' : 'Show Full Screen'}
       </button>
     </div>
   );

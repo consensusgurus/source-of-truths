@@ -24,6 +24,9 @@
 // hides), so the name is never said twice; in the rules view that first child
 // says "How to play" and shows as a heading.
 //
+// THE GROUP IS CENTRED ON THE SCREEN, not spread down it (owner, 2026-10-27):
+// the eyebrow, name, rules, Start and How to play sit together, and the gate
+// pads its foot by the header's height so the group's middle is the screen's.
 // The gate's height is MEASURED: it fills from its own top to the bottom of the
 // screen (--stg-gate-y, written on <html>), because the header above it is not
 // the same height on every game or at every width. Until the measure lands a
@@ -82,12 +85,12 @@ export default function GateScreen({ name, eye, accent = null }) {
 
 const CSS = `
 html .stage-page .stg-gate{
-  display:flex !important;flex-direction:column !important;box-sizing:border-box;
+  display:flex !important;flex-direction:column !important;justify-content:center !important;box-sizing:border-box;
   min-height:calc(100svh - var(--stg-gate-y, 120px) - 8px) !important;
-  padding:6px 8px 20px !important;max-width:640px;margin-left:auto;margin-right:auto;
+  padding:6px 8px calc(var(--stg-gate-y, 120px) + 24px) !important;max-width:640px;margin-left:auto;margin-right:auto;
 }
 html .stage-page .stg-gate::before{
-  content:var(--stg-gate-eye, "");order:-2;margin-top:auto;
+  content:var(--stg-gate-eye, "");order:-2;
   font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   color:var(--stg-ink,#08222e);opacity:.7;
 }
@@ -108,7 +111,6 @@ html .stage-page .stg-gate > :first-child:not(:empty){
 html .stage-page .stg-gate > :not(:first-child):not(:last-child){
   font-size:20px !important;line-height:1.42 !important;font-weight:600;max-width:34em;
 }
-html .stage-page .stg-gate > :nth-last-child(2){margin-bottom:auto !important;}
 html .stage-page .stg-gate > div:last-child{
   flex-direction:column !important;align-items:stretch !important;justify-content:flex-start !important;
   gap:14px !important;margin-top:30px !important;padding-top:0 !important;flex-wrap:nowrap !important;
@@ -132,7 +134,7 @@ html .stage-page .stg-gate > div:last-child > div > button[type=button]{
 }
 html .stage-page .stg-gate > div:last-child > div > button[type=button]:hover{opacity:1;}
 @media (min-width: 641px){
-  html .stage-page .stg-gate{padding:6px 8px 24px !important;}
+  html .stage-page .stg-gate{padding:6px 8px calc(var(--stg-gate-y, 120px) + 24px) !important;}
 }
 html:has(.stage-page .stg-gate) .stg-fg,
 html:has(.stage-page .stg-gate) .stg-strip,

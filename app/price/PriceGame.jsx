@@ -770,13 +770,14 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           .pr-rows{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
           .pr-row{display:grid;grid-template-columns:22px 1fr auto 104px;align-items:center;gap:10px;border:1.5px solid var(--pr-panel-line);border-left:5px solid var(--row-c, var(--pr-panel-line));border-radius:11px;padding:12px 14px;background:var(--pr-panel);box-shadow:var(--pr-shadow);}
           .pr-slots{display:grid;gap:8px;margin-top:10px;}
-          .pr-slot{height:78px;box-sizing:border-box;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;border:1.5px solid color-mix(in srgb, ${INK} 16%, transparent);background:color-mix(in srgb, ${INK} 4%, transparent);}
+          .pr-slot{height:86px;box-sizing:border-box;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;border:1.5px solid color-mix(in srgb, ${INK} 16%, transparent);background:color-mix(in srgb, ${INK} 4%, transparent);}
           .pr-slot .sk{font-family:${SANS};font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:${FADED};}
           .pr-slot .sw{font-size:14px;font-weight:800;color:${FADED};}
           .pr-slot.next{border:2px solid ${INK};background:var(--pr-panel);}
           .pr-slot.next .sk,.pr-slot.next .sw{color:${INK};}
           .pr-slot.used{border:2px solid var(--row-c);background:color-mix(in srgb, var(--row-c) 13%, var(--pr-panel));animation:prslot .5s cubic-bezier(.2,.9,.25,1.25) both;}
-          .pr-slot .sv{font-size:17px;font-weight:900;font-variant-numeric:tabular-nums;color:${INK};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .pr-slot>*{flex:none;}
+          .pr-slot .sv{font-size:17px;line-height:1.25;font-weight:900;font-variant-numeric:tabular-nums;color:${INK};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
           .pr-slot .sh{display:inline-flex;align-items:center;gap:3px;font-size:13px;font-weight:900;white-space:nowrap;}
           .pr-slot .sp{display:inline-flex;align-items:center;gap:2px;font-size:12px;font-weight:800;color:${INK};white-space:nowrap;}
           .pr-slots[data-n="5"] .pr-slot{padding:6px 6px;}
@@ -940,7 +941,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
 
         {preStart && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : `${NAME} is ready`}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
                 <p style={{ margin: '0 0 6px' }}>{CFG.lead} {V2 ? 'Three guesses, worth up to 10, 6 and 3: your first read counts most.' : 'Five guesses; your closest is your score.'} The clock starts when you do.</p>
