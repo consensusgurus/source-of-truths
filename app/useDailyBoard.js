@@ -75,7 +75,7 @@ export default function useDailyBoard({ quizId = null, active = false }) {
     const idq = who.toString() ? `&${who.toString()}` : '';
 
     const attempt = () => {
-      fetch(`/api/quiz/board?quizId=${encodeURIComponent(quizId)}${idq}${i > 0 ? `&_=${Date.now()}` : ''}`)
+      fetch(`/api/quiz/board?quizId=${encodeURIComponent(quizId)}${idq}${idq ? '&fresh=1' : ''}${i > 0 ? `&_=${Date.now()}` : ''}`)
         .then((r) => r.json())
         .then((d) => {
           if (!alive || !d) return;

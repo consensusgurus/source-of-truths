@@ -98,7 +98,14 @@ export async function GET(request) {
     // The cache column superset includes everything summarize() needs
     // (time_elapsed, is_mobile, guesses_used, correct_count) and handles the
     // missing-column fallbacks internally. Rows are already in id order.
-    const { data: all, error } = await loadQuizResultsCached(supabaseAdmin);
+    // ?fresh=1 with an identity (the end card's own read, owner report
+    // 2026-10-27): skip the 20s burst copy so a just-posted run is on the board.
+    // Without it a lambda warmed by this player's earlier read served the same
+    // pre-insert rows to the whole retry ladder (Blocks: a 232 run shown as the
+    // earlier 0-point run).
+    const wantFresh = searchParams.get('fresh') === '1'
+      && !!((searchParams.get('anonId') || '').trim() || (searchParams.get('email') || '').trim());
+    const { data: all, error } = await loadQuizResultsCached(supabaseAdmin, { force: wantFresh });
     if (error) {
       console.error('quiz board error', error);
       return NextResponse.json({ error: 'db error' }, { status: 500 });
