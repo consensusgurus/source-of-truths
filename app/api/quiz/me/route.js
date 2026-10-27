@@ -99,7 +99,7 @@ export async function GET(request) {
       ({ players } = computeXpCached(data || [], { recentN: 100000, rankFor: myKey }));
     } else {
       const keys = [myKey, ...(who.keys || [])].filter(Boolean);
-      ({ players, snap } = iqPlayersFresh(data || [], { recentN: light ? 1 : 100000, keys }));
+      ({ players, snap } = await iqPlayersFresh(data || [], { recentN: light ? 1 : 100000, keys }));
     }
     // A member with no entry under their account key has their rows filed under
     // a browser anon they never joined from, so read the profile from that key

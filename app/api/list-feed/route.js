@@ -13,6 +13,11 @@ import { LISTS } from '@/lib/data';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// Viewer-independent answer, so the CDN may hold it briefly (Vercel cost fix,
+// 2026-10-27): repeat reads within the window never start a function.
+const EDGE = { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300' };
+
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -127,7 +132,7 @@ export async function GET(request) {
       .sort((a, b) => new Date(b.removedAt || 0) - new Date(a.removedAt || 0));
 
     const editorNotes = (notesRes.data || []).map((r) => ({ note: r.note, createdAt: r.created_at }));
-    return NextResponse.json({ votes, manager, research: researchVisible, comments, sources, editorNotes, removedSources });
+    return NextResponse.json({ votes, manager, research: researchVisible, comments, sources, editorNotes, removedSources }, { headers: EDGE });
   } catch (err) {
     console.error('list-feed error', err);
     return NextResponse.json({ votes: [], manager: [], research: [], comments: [], sources: [], editorNotes: [], removedSources: [] });

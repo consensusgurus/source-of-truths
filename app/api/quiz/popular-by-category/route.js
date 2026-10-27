@@ -7,6 +7,11 @@ import { quizDept, DEPT_LABEL, DEPT_COLOR } from '@/lib/quiz-departments';
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
+// Viewer-independent answer, so the CDN may hold it briefly (Vercel cost fix,
+// 2026-10-27): repeat reads within the window never start a function.
+const EDGE = { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' };
+
+
 // GET /api/quiz/popular-by-category -> { cats: [{ dept, label, color, tint, id, title, href, plays }] }
 //
 // The single most-played LISTED quiz in each department, ordered by that quiz's
@@ -24,7 +29,7 @@ const MAX_CATS = 8; // one row per category; cap so the block stays a tidy grid
 export async function GET() {
   try {
     if (CACHE.payload && Date.now() - CACHE.at < TTL_MS) {
-      return NextResponse.json(CACHE.payload);
+      return NextResponse.json(CACHE.payload, { headers: EDGE });
     }
     // Counted off the shared results cache (Disk IO fix, 2026-10-14). This used
     // to page the WHOLE quiz_results table by OFFSET every 10 minutes per lambda
@@ -79,7 +84,7 @@ export async function GET() {
     // Only cache a genuinely populated result so a transient read error doesn't
     // pin an empty block for 10 minutes.
     if (cats.length) CACHE = { at: Date.now(), payload };
-    return NextResponse.json(payload);
+    return NextResponse.json(payload, { headers: EDGE });
   } catch (e) {
     return NextResponse.json({ cats: [] });
   }

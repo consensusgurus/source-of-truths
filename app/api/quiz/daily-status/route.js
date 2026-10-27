@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
 import { dailySolvedRow } from '@/lib/daily-games';
 import { resolvePlayerKeys, attributeAnonGames } from '@/lib/quiz-identity';
-import { iqPlayersFresh, dailyStandingCached } from '@/lib/quiz-derived-cache';
+import { iqPlayersFresh, iqSnapshotStanding } from '@/lib/quiz-derived-cache';
 
 // Midnight "today" in US Eastern (handles EST/EDT) as a UTC epoch ms. Same
 // helper as /api/quiz/today and /api/quiz/totals, so all three roll over
@@ -222,7 +222,7 @@ export async function GET(request) {
       // up to 30 minutes old; THIS player is recomputed fresh from their own
       // rows, so today's IQ and the rank they are compared on include the game
       // they just finished. See lib/quiz-derived-cache.
-      const { players, snap } = iqPlayersFresh(data || [], { recentN: 400, keys: [myKey, ...myKeys] });
+      const { players, snap } = await iqPlayersFresh(data || [], { recentN: 400, keys: [myKey, ...myKeys] });
       // Fall back across the player's other keys: a member who played today as a
       // guest on this browser has that day's IQ filed under a:<anon>, so looking
       // only under the account key reports a zero day.
@@ -234,7 +234,7 @@ export async function GET(request) {
         // Only this player's own figures are fresh; they are slotted into the
         // snapshot field by counting, with their own stale entry left out.
         const dayStart = startOfEasternTodayUTC();
-        const st = dailyStandingCached(snap.rows, snap.players, { dayStartMs: dayStart, recentN: 100000 });
+        const st = iqSnapshotStanding(snap, dayStart);
         const { gained } = st;
 
         let mineToday = 0;

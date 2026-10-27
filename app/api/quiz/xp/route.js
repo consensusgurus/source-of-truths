@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResults } from '@/lib/quiz-results-load';
 import { rankPlayers } from '@/lib/quiz-xp';
-import { computeXpCached } from '@/lib/quiz-derived-cache';
+import { iqSnapshot } from '@/lib/quiz-derived-cache';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -40,7 +40,9 @@ export async function GET(request) {
       console.error('quiz xp error', error);
       return NextResponse.json({ scope, total: 0, players: [] });
     }
-    const { players } = computeXpCached(data || []);
+    // The shared IQ field (up to ten minutes old) rather than a fresh pass over
+    // every row: this is a public board, cached at the CDN anyway (2026-10-27).
+    const { players } = await iqSnapshot(data || []);
     let ranked = rankPlayers(players, scope);
     // Recent-window board. Ties fall back to all-time XP so the order is stable
     // for the (many) players sitting at 0 for the window.

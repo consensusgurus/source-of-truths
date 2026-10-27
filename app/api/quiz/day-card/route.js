@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResults } from '@/lib/quiz-results-load';
 import { findQuizIdentity } from '@/lib/quiz-identity';
 import { rankPlayers } from '@/lib/quiz-xp';
-import { computeXpCached } from '@/lib/quiz-derived-cache';
+import { iqPlayersFresh, rankWithFresh } from '@/lib/quiz-derived-cache';
 import { dailyGameName } from '@/lib/daily-games';
 import { categoryColor } from '@/lib/category-ramp';
 import { SHARE_HOST } from '@/lib/site';
@@ -230,7 +230,8 @@ export async function GET(request) {
     if (myKey) {
       const { data, error } = await loadQuizResults(supabaseAdmin);
       if (!error) {
-        const { players } = computeXpCached(data || [], { recentN: 200 });
+        // The shared IQ field with this player recomputed fresh (2026-10-27).
+        const { players, snap } = await iqPlayersFresh(data || [], { recentN: 200, keys: [myKey] });
         const me = players.get(myKey);
         if (me) {
           const day = etToday();
@@ -238,7 +239,7 @@ export async function GET(request) {
           iqToday = Math.round(recent
             .filter((r) => r.createdAt && etDate(r.createdAt) === day)
             .reduce((s, r) => s + (Number(r.xp) || 0), 0));
-          const ranked = rankPlayers(players, 'all');
+          const ranked = rankWithFresh(snap, players, [myKey]);
           const idx = ranked.findIndex((p) => p.key === myKey);
           if (idx >= 0) { iqRank = idx + 1; iqTotal = ranked.length; }
         }

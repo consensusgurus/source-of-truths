@@ -35,7 +35,22 @@
     {
       "path": "/api/cron/drawing-warm",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/iq-field",
+      "schedule": "*/10 * * * *"
     }
   ],
-  "ignoreCommand": "bash scripts/vercel-ignore-build.sh"
+  "ignoreCommand": "bash scripts/vercel-ignore-build.sh",
+  "functions": {
+    "app/api/quiz/**/*.js": {
+      "maxDuration": 60
+    },
+    "app/api/challenge/**/*.js": {
+      "maxDuration": 60
+    },
+    "app/api/groups/**/*.js": {
+      "maxDuration": 60
+    }
+  }
 }

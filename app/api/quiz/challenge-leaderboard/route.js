@@ -7,6 +7,11 @@ import { correctAnswersOf } from '@/lib/quiz-scoring';
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
+// Viewer-independent answer, so the CDN may hold it briefly (Vercel cost fix,
+// 2026-10-27): repeat reads within the window never start a function.
+const EDGE = { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=90' };
+
+
 // GET /api/quiz/challenge-leaderboard?id=<challengeId>
 // Public read. For the named challenge (default if absent), returns every
 // REGISTERED player's BEST attempt per quiz (highest score, tie -> fastest
@@ -90,7 +95,7 @@ export async function GET(request) {
       until: ch.until || null,
       totalRegisteredPlayers: users.length,
       users,
-    });
+    }, { headers: EDGE });
   } catch (e) {
     console.error('challenge-leaderboard exception', e);
     return NextResponse.json({ error: 'failed' }, { status: 500 });

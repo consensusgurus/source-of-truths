@@ -7,6 +7,11 @@ import { correctAnswersOf } from '@/lib/quiz-scoring';
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
+// Viewer-independent answer, so the CDN may hold it briefly (Vercel cost fix,
+// 2026-10-27): repeat reads within the window never start a function.
+const EDGE = { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300' };
+
+
 // GET /api/quiz/challenge-winners
 // The #1 finisher of EVERY challenge in the selector menu (the recent daily
 // challenges plus the static events), computed with the same best/first-attempt
@@ -81,7 +86,7 @@ export async function GET() {
         winner: ranked.length ? ranked[0] : null,
       };
     });
-    return NextResponse.json({ generatedAt: new Date().toISOString(), winners });
+    return NextResponse.json({ generatedAt: new Date().toISOString(), winners }, { headers: EDGE });
   } catch (e) {
     console.error('challenge-winners exception', e);
     return NextResponse.json({ winners: [] });

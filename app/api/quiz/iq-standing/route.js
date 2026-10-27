@@ -60,7 +60,7 @@ export async function GET(request) {
     // The asker is recomputed fresh from their own rows (so the just-finished
     // game's +N is in it); the rest of the field is the shared IQ snapshot,
     // up to 30 minutes old. See lib/quiz-derived-cache, THE IQ SNAPSHOT.
-    const { players, snap } = iqPlayersFresh(data || [], { recentN: 200, keys: [myKey] });
+    const { players, snap } = await iqPlayersFresh(data || [], { recentN: 200, keys: [myKey] });
     const me = players.get(myKey);
     // Brand-new player whose very first row has not surfaced yet: report a real
     // zeroed standing rather than found:false. found:false made the card drop

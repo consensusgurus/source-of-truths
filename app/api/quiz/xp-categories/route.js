@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResults } from '@/lib/quiz-results-load';
 import { rankPlayers } from '@/lib/quiz-xp';
-import { computeXpCached } from '@/lib/quiz-derived-cache';
+import { iqSnapshot } from '@/lib/quiz-derived-cache';
 import { DEPT_NAV } from '@/lib/quiz-departments';
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +26,8 @@ export async function GET() {
       console.error('quiz xp-categories error', error);
       return NextResponse.json({ boards: {} });
     }
-    const { players } = computeXpCached(data || []);
+    // The shared IQ field (up to ten minutes old), see /api/quiz/xp (2026-10-27).
+    const { players } = await iqSnapshot(data || []);
     const boards = {};
     for (const d of DEPT_NAV) {
       const ranked = rankPlayers(players, d.id);

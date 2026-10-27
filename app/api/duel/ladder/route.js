@@ -4,6 +4,11 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
+// Viewer-independent answer, so the CDN may hold it briefly (Vercel cost fix,
+// 2026-10-27): repeat reads within the window never start a function.
+const EDGE = { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=180' };
+
+
 // GET /api/duel/ladder  -> standings from completed duels, by player (anon).
 export async function GET(request) {
   try {
@@ -56,7 +61,7 @@ export async function GET(request) {
       for (const r of (rows || [])) { if (r.anon_id && r.user_id != null) userByAnon.set(r.anon_id, r.user_id); }
     }
     const ladder = ranked.map((g) => ({ ...g, key: userByAnon.has(g.anon) ? `u:${userByAnon.get(g.anon)}` : `a:${g.anon}` }));
-    return NextResponse.json({ ladder });
+    return NextResponse.json({ ladder }, { headers: EDGE });
   } catch (e) {
     return NextResponse.json({ ladder: [] });
   }

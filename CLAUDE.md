@@ -6019,6 +6019,40 @@ combined board; the day's slate is shared in `lib/daily-slate.js`.
 you then derive XP or trophies from it, go through `quiz-derived-cache` so the
 work is shared.
 
+### The IQ field and request deadlines (Vercel cost fix, 2026-10-27)
+
+Measured that day: 24h of `/api/quiz/iq-standing` was 4.1K calls, **8 hours of
+Active CPU and 57-60% of calls dying at "Task timed out after 300 seconds"**,
+with daily-me, board, daily-save, daily-combined and me timing out too. Each
+timeout held an instance and its memory for five minutes, which is the Fluid
+Provisioned Memory jump on the bill. Supabase itself answered everything in
+under 3s, so the stalls were on our side: oversized instances (quiz_results had
+grown to ~305k rows, nine times the size the per-instance IQ snapshot was
+designed for, and every instance held a full-history copy of it per `recentN`)
+and promises with no deadline. Four rules came out of it:
+
+1. **Every Supabase request has a deadline.** `lib/supabase-server.js` passes a
+   `fetch` with `AbortSignal.timeout` (20s, 45s for Storage). Never create a
+   server client without it.
+2. **No cache refresh can wedge an instance.** `quiz-results-cache` and
+   `daily-results-cache` race each refresh against a deadline and serve the rows
+   they hold past it; a forced read queues at most 8s behind an older refresh.
+3. **The IQ field is built ONCE, by `/api/cron/iq-field` every 10 minutes**, and
+   stored compressed in Supabase Storage (`results-snapshots/iq-field-v1.json.gz`,
+   never a table row: a big row rewritten every 10 minutes is the Disk IO trap). Instances download it
+   only when a newer copy exists, and build it locally only if it is missing,
+   older than 25 minutes or from an earlier ET day. It holds every player's
+   TOTALS and per-category totals, trophies and today's gain, never a play list.
+   The asker is still recomputed fresh from their own rows, so their own figures
+   are live and everyone else is at most ~10 minutes old.
+   `iqSnapshot` / `iqPlayersFresh` are **async** now. Routes on it: iq-standing,
+   me (except `full=1`), daily-status, day-card, xp, xp-categories. Equivalence
+   with the old per-instance snapshot was checked on synthetic data (ranking,
+   fresh player, profile, trophies, day standings, every category board: zero
+   diffs).
+4. **`vercel.json` caps `app/api/quiz`, `challenge` and `groups` at 60s.** A
+   route that genuinely needs longer must export its own `maxDuration`.
+
 ---
 
 ## Opening a game is not starting it: t0 is the started signal (owner rule, 2026-08-10)
