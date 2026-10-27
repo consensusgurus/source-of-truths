@@ -582,6 +582,15 @@ const CSS = `
 .stg-sim{padding:max(12px, env(safe-area-inset-top)) 14px 8px;}
 html:not([data-stage-pastel]) .stg-sim,html:not([data-stage-pastel]) .stg-simt{display:none;}
 html[data-stage-pastel] .stg-cap,html[data-stage-pastel] .stg-prog,html[data-stage-pastel] .stg-strip{display:none !important;}
+/* THE GAP BETWEEN THE TWO HEADERS (owner report, 2026-10-27: "why does this
+   header still exist on certain widths?"). Under 900px the page takes the phone
+   register and its simple top bar; from 1100px the desktop layout hides this
+   cap for its own header. Between the two, nothing hid the old cap, so it showed.
+   That band now gets the simple top bar too. */
+@media (min-width:900px) and (max-width:1099px){
+  html:not([data-stage-pastel]) .stg-top:has(.stg-sim) .stg-sim{display:block;}
+  html:not([data-stage-pastel]) .stg-top:has(.stg-sim) .stg-cap{display:none !important;}
+}
 /* CONDENSED (owner, 2026-10-25): the name and the date share one line, and the
    figures under it are one short row, so the board starts higher. */
 .stg-simt{padding:10px 14px 0;color:var(--stg-ink,#08222e);display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
