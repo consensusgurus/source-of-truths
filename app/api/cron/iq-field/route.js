@@ -14,6 +14,9 @@ import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
 import { buildIqField, storeIqField, iqFieldStoredAt } from '@/lib/iq-field';
 
 export const dynamic = 'force-dynamic';
+// The Storage upload is a fetch; never let Next try to cache it (it logged
+// "Failed to generate cache key" on every run).
+export const fetchCache = 'force-no-store';
 export const maxDuration = 300;
 
 const RECENT_MS = 4 * 60 * 1000;

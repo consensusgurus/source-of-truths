@@ -6054,6 +6054,22 @@ and promises with no deadline. Four rules came out of it:
    diffs).
 4. **`vercel.json` caps `app/api/quiz`, `challenge` and `groups` at 60s.** A
    route that genuinely needs longer must export its own `maxDuration`.
+5. **A request never waits on Storage for the field once its instance holds
+   one** (stale-while-revalidate in `getIqField`); a cold instance waits at most
+   4s + 12s, then builds locally.
+6. **Measured at production scale (305k rows, 16.6k players), the whole-site
+   build was 19s and 1.3GB RSS** before two fixes: `etTodayISO` (lib/daily-games)
+   built a new Intl formatter per call and the trophy pass hit it ~2.7M times,
+   so it now reuses one formatter with a 1s cache; and `computeXp` takes
+   `recentSinceMs`, so the field keeps only today's plays as `recent`. Live cron
+   after both: load 2.2s, build 6.8s, write 2.5s, payload 1.5MB gzipped.
+   **Any per-instance pass over every row of quiz_results now blocks an
+   instance for tens of seconds and freezes every request sharing it.** That,
+   not Supabase, is what the 300s timeouts were. Put such work in a cron.
+7. **After a deploy, check that the field is fresh** (`/api/cron/iq-field`
+   reports its age when it skips). A deploy that lands while the stored field is
+   older than 25 minutes makes every cold instance build its own, which is a
+   burst of 60s timeouts (seen twice on 2026-10-27 while the cron was failing).
 
 ---
 
