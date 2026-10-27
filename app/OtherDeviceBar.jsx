@@ -29,19 +29,19 @@ import { themeParam } from '@/lib/share-palette';
 export const ODB_CSS = `
 .odb{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 14px;padding:10px 16px;
   background:var(--stg-acc,#0369a1);color:var(--stg-onramp,#08222e);font-family:Manrope,system-ui,sans-serif;text-align:center;}
-.odb .tx{display:flex;flex-direction:column;gap:1px;min-width:0;}
-.odb .tx b{font-size:14.5px;font-weight:800;line-height:1.25;}
-.odb .tx i{font-style:normal;font-size:12.5px;font-weight:700;}
-.odb .bt{display:flex;gap:8px;}
+.odb .odb-tx{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.odb .odb-tx b{font-size:14.5px;font-weight:800;line-height:1.25;}
+.odb .odb-tx i{font-style:normal;font-size:12.5px;font-weight:700;}
+.odb .odb-bt{display:flex;gap:8px;}
 .odb button{min-height:36px;padding:0 14px;border-radius:99px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;
   border:2px solid var(--stg-onramp,#08222e);background:var(--stg-onramp,#08222e);color:var(--stg-acc,#0369a1);}
-.odb button.ol{background:transparent;color:var(--stg-onramp,#08222e);}
+.odb button.odb-ol{background:transparent;color:var(--stg-onramp,#08222e);}
 .odb button:focus-visible{outline:2px solid var(--stg-onramp,#08222e);outline-offset:2px;}
-.odb .msg{flex-basis:100%;font-size:12.5px;font-weight:700;}
+.odb .odb-msg{flex-basis:100%;font-size:12.5px;font-weight:700;}
 .odb{position:relative;padding-right:46px;}
-.odb button.x{position:absolute;top:50%;right:8px;transform:translateY(-50%);width:32px;min-height:32px;height:32px;padding:0;
+.odb button.odb-x{position:absolute;top:50%;right:8px;transform:translateY(-50%);width:32px;min-height:32px;height:32px;padding:0;
   border:0;background:transparent;color:var(--stg-onramp,#08222e);display:flex;align-items:center;justify-content:center;}
-.odb button.x svg{width:18px;height:18px;}
+.odb button.odb-x svg{width:18px;height:18px;}
 body:has(.stf) .odb,body:has(.sst) .odb{display:none;}
 `;
 
@@ -144,16 +144,16 @@ export default function OtherDeviceBar({ gameKey }) {
   return (
     <div className="odb" role="status">
       <style dangerouslySetInnerHTML={{ __html: ODB_CSS }} />
-      <span className="tx">
+      <span className="odb-tx">
         <b>You finished today&rsquo;s {meta.name} on another device</b>
         <i>{[t != null ? mmss(t) : (total ? scoreText(gameKey, score, total) : ''), rank].filter(Boolean).join(' · ')}</i>
       </span>
-      <span className="bt">
+      <span className="odb-bt">
         <button type="button" onClick={challenge}>Challenge a friend</button>
-        <button type="button" className="ol" onClick={() => setMeme(true)}>Share with a meme</button>
+        <button type="button" className="odb-ol" onClick={() => setMeme(true)}>Share with a meme</button>
       </span>
-      {msg ? <span className="msg">{msg}</span> : null}
-      <button type="button" className="x" onClick={close} aria-label="Hide this">
+      {msg ? <span className="odb-msg">{msg}</span> : null}
+      <button type="button" className="odb-x" onClick={close} aria-label="Hide this">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
       </button>
       <MemeShare open={meme} onClose={() => setMeme(false)} ctx={ctx} getLink={link} />

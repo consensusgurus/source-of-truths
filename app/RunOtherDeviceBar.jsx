@@ -89,16 +89,16 @@ export default function RunOtherDeviceBar({ runId, keys = [], show = false, boar
   return (
     <div className="odb" role="status" style={vars}>
       <style dangerouslySetInnerHTML={{ __html: ODB_CSS }} />
-      <span className="tx">
+      <span className="odb-tx">
         <b>You finished today&rsquo;s {meta.name} on another device</b>
         <i>{[fig, rank].filter(Boolean).join(' · ')}</i>
       </span>
-      <span className="bt">
+      <span className="odb-bt">
         <button type="button" onClick={challenge}>Challenge a friend</button>
-        <button type="button" className="ol" onClick={() => setMeme(true)}>Share with a meme</button>
+        <button type="button" className="odb-ol" onClick={() => setMeme(true)}>Share with a meme</button>
       </span>
-      {msg ? <span className="msg">{msg}</span> : null}
-      <button type="button" className="x" onClick={close} aria-label="Hide this">
+      {msg ? <span className="odb-msg">{msg}</span> : null}
+      <button type="button" className="odb-x" onClick={close} aria-label="Hide this">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
       </button>
       {/* The sheet goes to <body>: the gate's banner clips and animates, and a
