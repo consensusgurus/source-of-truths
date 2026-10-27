@@ -48,6 +48,7 @@ import ChallengeStrip from '../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine } from '../RunChallenge';
 import { DOTS, HOME } from './dots';
 import RunBackLink from '../circuits/RunBackLink';
+import HelpSheet from '../HelpSheet';
 
 const NAME = 'Passport';
 const PATH = '/passport';
@@ -1861,17 +1862,9 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
-        <div onClick={() => setShowHelp(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(6,9,16,0.7)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: 'var(--stg-raise,#0e131f)', borderRadius: 12, border: '1px solid var(--stg-line)', padding: '20px 22px', fontFamily: SANS, maxHeight: '86vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontSize: 21, fontWeight: 800, color: INK }}>How to play</div>
-              <button onClick={() => setShowHelp(false)} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
-            </div>
+        <HelpSheet onClose={() => setShowHelp(false)} self="passport" name="Passport">
             {rulesBody}
-            <button className="pp-go" onClick={() => setShowHelp(false)} style={{ marginTop: 14 }}>Back to the round</button>
-          </div>
-        </div>
+          </HelpSheet>
       )}
 
       <section style={{ position: 'relative', display: started ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>

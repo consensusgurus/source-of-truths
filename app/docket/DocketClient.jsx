@@ -71,6 +71,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
 import { solveDay, CHOICE_KEYS, showSolution, WORD } from './engine';
 import { endGrade } from '@/lib/end-verdict';
+import HelpSheet from '../HelpSheet';
 
 const COLORS = {
   ink: T.ink,
@@ -1002,14 +1003,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
       <RunDoorPop id="judged" game="docket" ready={hydrated && preStart && isTodays && !EMBED} self="Docket" />
 
       {showHelp && (
-        <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, borderRadius: 13, padding: '20px 22px', maxWidth: 460, fontFamily: SANS }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
-              <HelpCircle size={19} color={COLORS.accent} />
-              <b style={{ fontSize: 17, color: INK }}>How Docket works</b>
-              <button onClick={() => setShowHelp(false)} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
-            </div>
+        <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="docket" name="Docket">
             <p style={{ fontSize: 14, lineHeight: 1.6, color: INK, margin: '0 0 10px' }}>
               A setup describes a small world, the numbered conditions constrain it, and every question is
               about what those conditions do and do not force. It is the analytical reasoning format a
@@ -1024,9 +1018,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
               <li>One point per question, {TOTAL} on the board today.</li>
               <li>Give up ends the docket now. Questions you have answered keep their points; the rest score nothing.</li>
             </ul>
-            <button className="dk-btn primary" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>
-          </div>
-        </div>
+          </HelpSheet>
       )}
 
       {!STAGE && <div style={{ display: focusMode ? 'none' : 'block' }}><Footer /></div>}

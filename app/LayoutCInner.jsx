@@ -32,6 +32,7 @@ import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight }
 import { gameStatsShort } from '@/lib/daily-row-stats';
 import { savedIdentity } from '@/lib/saved-identity';
 import { useStageTheme, openLook } from '@/lib/stage-theme';
+import { useStageHelp } from '@/lib/stage-help';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
 import useDayStats, { etToday } from './useDayStats';
 import useGroupStanding from './groups/groupStanding';
@@ -266,6 +267,7 @@ html[data-stage-tone] .lc-cap,html[data-stage-tone] .lc-nav,html[data-stage-tone
 .lc-cap a.sty-who{text-decoration:none;color:var(--stg-ink);cursor:pointer;}
 .lc-cap a.sty-who:hover{background:var(--stg-ink);color:var(--stg-ground);}
 .lc-cap .sty-tg{width:40px;height:40px;padding:0;border:var(--dk);border-radius:50%;color:var(--stg-ink);}
+.lc-cap .lc-help{font-family:Manrope,ui-sans-serif,system-ui,sans-serif;font-size:17px;font-weight:800;letter-spacing:0;text-transform:none;line-height:1;margin-right:-12px;}
 .lc-nav{--dk:2px solid var(--stg-ink);padding-top:10px;}
 .lc-nav .sty-ixn{gap:8px;width:236px;}
 .lc-nav .sty-ixsep{margin:2px 0;background:transparent;}
@@ -356,6 +358,7 @@ export default function LayoutCInner({ gameKey }) {
   const { favorites } = useMyGames();
   const MINE = '__mine';
   const light = theme === 'light';
+  const help = useStageHelp();
   const stats = useDayStats();
   // Groups standing is a 5-10s server read for a side rail, so it waits until
   // the board has loaded instead of competing with it (2026-10-14).
@@ -760,6 +763,10 @@ export default function LayoutCInner({ gameKey }) {
               ) : null}
             </div>
             {subBtn}
+            {help ? (
+              <button type="button" className="sty-cx sty-tg lc-help" onClick={help}
+                aria-label="How to play" title="How to play">?</button>
+            ) : null}
             <button type="button" className="sty-cx sty-tg"
               data-look="" onClick={(e) => cycleSiteLook()}
           aria-haspopup="dialog"

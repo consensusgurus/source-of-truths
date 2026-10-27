@@ -64,6 +64,7 @@ import { T } from '@/lib/theme';
 import { makeCells, positions, adjacent, findOne, gridOf } from '@/lib/strata-core';
 import PlayStage, { usePhoneStage } from '../PlayStage';
 import { endGrade } from '@/lib/end-verdict';
+import HelpSheet from '../HelpSheet';
 
 const COLORS = {
   ink: T.ink,
@@ -1150,14 +1151,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
-        <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, borderRadius: 13, padding: '20px 22px', maxWidth: 470, fontFamily: SANS, border: STAGE ? '1px solid var(--stg-line)' : undefined }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
-              <HelpCircle size={19} color={COLORS.accent} />
-              <b style={{ fontSize: 17, color: INK }}>How Strata works</b>
-              <button onClick={() => setShowHelp(false)} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
-            </div>
+        <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="strata" name="Strata">
             <p style={{ fontSize: 14, lineHeight: 1.6, color: INK, margin: '0 0 10px' }}>
               Every letter on the grid belongs to one of today&rsquo;s hidden words, and the words are all
               members of {PUZZLE.sunday ? 'two categories' : 'a category'} you are not told. Trace a word through
@@ -1172,9 +1166,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
               <li>Two hints are on offer: name the thread, or light up where a word starts. The lit letter stays lit until a word you find uses it.</li>
               <li>{TOTAL} words today{PUZZLE.sunday ? ', across two threads on a bigger grid' : ''}.</li>
             </ul>
-            <button className="st-btn primary" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>
-          </div>
-        </div>
+          </HelpSheet>
       )}
 
       {!STAGE && <div style={{ display: focusMode ? 'none' : 'block' }}><Footer /></div>}

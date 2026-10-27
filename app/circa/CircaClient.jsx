@@ -54,6 +54,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
+import HelpSheet from '../HelpSheet';
 
 const COLORS = {
   cream: T.surface,
@@ -945,22 +946,14 @@ export default function CircaClient({ puzzles = [], forceNum = null }) {
 
       {/* help modal */}
       {showHelp && (
-        <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 460, background: STAGE ? 'var(--stg-raise,#0e131f)' : COLORS.cream, borderRadius: 12, border: STAGE ? '1px solid var(--stg-line)' : `2px solid ${COLORS.ink}`, padding: '20px 22px', fontFamily: SANS, maxHeight: '86vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontSize: 21, fontWeight: 800, color: INK }}>How to play</div>
-              <button onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
-            </div>
+        <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="circa" name="Circa">
             <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
               <p style={{ margin: '0 0 9px' }}>One historical moment a day. <b>Guess the year</b> it happened &mdash; any year from {YR_MIN} to today &mdash; in six tries. The moment stays covered until you press <b>Start</b>.</p>
               <p style={{ margin: '0 0 9px' }}>Every miss tells you two things: whether the real year is <b>earlier or later</b> than your guess, and how close you are &mdash; from <b style={{ color: 'var(--stg-ink2, #475569)' }}>cold</b> (200+ years off) through <b style={{ color: 'var(--stg-cool, #0a1730)' }}>cool</b> and <b style={{ color: 'var(--stg-warn, #92610b)' }}>warm</b> to <b style={{ color: 'var(--stg-bad, #9a3d0c)' }}>hot</b> (within 10).</p>
               <p style={{ margin: '0 0 9px' }}>Land <b>within {SNAP} years</b> and you&rsquo;ve placed it &mdash; that&rsquo;s circa, and it counts. Hitting the <b>exact year</b> is a dead-on finish. One free <b>hint</b>, on your first ever play, reveals the century.</p>
               <p style={{ margin: 0 }}>Land within three years to solve it. Fewer guesses rank higher on the board, a dead-on year counts as one guess fewer than a circa finish, and the faster time breaks ties. Sundays bring a trickier moment.</p>
             </div>
-            <button className="cc-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginTop: 14, background: COLORS.ink, color: T.white }}>Play</button>
-          </div>
-        </div>
+          </HelpSheet>
       )}
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}

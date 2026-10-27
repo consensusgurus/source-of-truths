@@ -60,6 +60,7 @@ import {
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage } from '../PlayStage';
+import HelpSheet from '../HelpSheet';
 
 const KEY = 'mahj';
 const NAME = 'Mahj';
@@ -1024,18 +1025,9 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
       )}
 
       {showHelp && (
-        <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: STAGE ? 'var(--stg-raise,#0e131f)' : T.surface, border: '1px solid var(--stg-line)', borderRadius: 12, padding: 20, maxWidth: 460, maxHeight: '86vh', overflowY: 'auto', fontFamily: SANS }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: S_INK }}>How to play</div>
-              <button type="button" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: S_INK, display: 'flex' }} aria-label="Close"><X size={20} /></button>
-            </div>
+        <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="KEY" name="NAME">
             {rulesBody}
-            <div style={{ marginTop: 16 }}>
-              <button className="mj-btn" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>
-            </div>
-          </div>
-        </div>
+          </HelpSheet>
       )}
 
       <StageFold />

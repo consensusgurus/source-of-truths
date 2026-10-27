@@ -57,6 +57,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import { T } from '@/lib/theme';
 import { solveDay, BINS, BIN_LABEL, litText, whyLine } from './engine';
 import { endGrade } from '@/lib/end-verdict';
+import HelpSheet from '../HelpSheet';
 
 const COLORS = { ink: T.ink, faded: T.muted, accent: '#5b3a9e', accentSoft: '#efe9fa', accentDeep: '#3b2470', green: T.successDeep };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -612,14 +613,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
       <RunDoorPop id="judged" game="ergo" ready={hydrated && preStart && isTodays && !EMBED} self="Ergo" />
 
       {showHelp && (
-        <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, borderRadius: 13, padding: '20px 22px', maxWidth: 460, fontFamily: SANS }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
-              <HelpCircle size={19} color={COLORS.accent} />
-              <b style={{ fontSize: 17, color: INK }}>How Ergo works</b>
-              <button onClick={() => setShowHelp(false)} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
-            </div>
+        <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="ergo" name="Ergo">
             <p style={{ fontSize: 14, lineHeight: 1.6, color: INK, margin: '0 0 10px' }}>
               Each person in the cast either does the day&rsquo;s one thing or does not. The numbered rules always hold, and one fact is given
               for today. Sort every statement into must be true, could be true or cannot be true.
@@ -633,9 +627,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
               <li>Give up rules on what you have filed so far. Anything unfiled scores nothing.</li>
               <li>After the ruling, every statement shows the chain of rules that settles it.</li>
             </ul>
-            <button className="eg-btn primary" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>
-          </div>
-        </div>
+          </HelpSheet>
       )}
 
       {!STAGE && <div style={{ display: focusMode ? 'none' : 'block' }}><Footer /></div>}

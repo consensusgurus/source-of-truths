@@ -48,6 +48,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { loadRun, startRun, potluckScore, potluckNextSlot, potluckSlotHref, etToday, PER_QUIZ, POT_TOTAL } from '@/lib/potluck';
 import { endGrade } from '@/lib/end-verdict';
+import HelpSheet from '../HelpSheet';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const HELP_KEY = 'sot_potluck_help_seen';
@@ -377,16 +378,9 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
       </div>
 
       {showHelp && (
-        <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 460, background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, borderRadius: 12, border: STAGE ? '1px solid var(--stg-line)' : `2px solid ${T.ink}`, padding: '20px 22px', fontFamily: SANS, maxHeight: '86vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontSize: 21, fontWeight: 800, color: INK }}>How to play</div>
-              <button onClick={() => setShowHelp(false)} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
-            </div>
+        <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="potluck" name="Potluck">
             {rulesBody}
-          </div>
-        </div>
+          </HelpSheet>
       )}
 
       <StageFold />

@@ -70,6 +70,7 @@ import { useRunEmbed, useRunHelp } from '../RunEmbed';
 import { LEG_PAGE_CSS } from '../StageLeg';
 import RunDoorPop from '../circuits/RunDoorPop';
 import { endGrade } from '@/lib/end-verdict';
+import HelpSheet from '../HelpSheet';
 
 const COLORS = {
   ink: T.ink,
@@ -1294,14 +1295,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
-        <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, borderRadius: 13, padding: '20px 22px', maxWidth: 480, fontFamily: SANS }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
-              <HelpCircle size={19} color={COLORS.accent} />
-              <b style={{ fontSize: 17, color: INK }}>How Anon works</b>
-              <button onClick={() => setShowHelp(false)} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
-            </div>
+        <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="anon" name="Anon">
             <p style={{ fontSize: 14, lineHeight: 1.6, color: INK, margin: '0 0 10px' }}>
               The passage arrives unsigned. Every box in it belongs to exactly one answer in the bank,
               so the two halves are the same letters seen twice and a letter typed in either one shows up
@@ -1315,9 +1309,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
               <li>No checks, no hints. A wrong answer makes the passage stop reading as English.</li>
               <li>Click or tap any box and type. On a touch screen the keys sit at the foot of the board. Arrow keys walk the passage, Tab jumps to the next answer.</li>
             </ul>
-            <button className="an-btn primary" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>
-          </div>
-        </div>
+          </HelpSheet>
       )}
 
       {!STAGE && <div style={{ display: focusMode ? 'none' : 'block' }}><Footer /></div>}

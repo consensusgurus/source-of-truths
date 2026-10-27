@@ -10621,3 +10621,17 @@ borrows `.loft-next`'s 11px from LoftCap.jsx), put `/* corners-ok: why */` insid
 In the browser console on the page:
 `[...document.querySelectorAll('body *')].filter(e=>{const p=e.parentElement;if(!p||!e.offsetParent)return 0;const ps=getComputedStyle(p),r=e.getBoundingClientRect(),q=p.getBoundingClientRect();return parseFloat(ps.borderLeftWidth)>0&&parseFloat(ps.paddingLeft)===0&&Math.abs(r.left-q.left-parseFloat(ps.borderLeftWidth))<1&&Math.abs(q.right-parseFloat(ps.borderRightWidth)-r.right)<1&&parseFloat(getComputedStyle(e).borderTopLeftRadius)>0&&r.width>60})`
 must return an empty array.
+
+## How to play is ONE sheet, opened from the ? (owner, 2026-10-27)
+
+Every daily's rules modal is `app/HelpSheet.jsx`: the site's sheet (2px ink border, 16px corners,
+stage tokens), a ? disc and "How to play", the game's own rules body, a full-width **Close** button
+(it only closes; it never starts play), and the Report an issue link at its foot. A client renders
+`{showHelp && <HelpSheet onClose={...} self="<key>" name="<Name>">{rulesBody}</HelpSheet>}`; the
+close handler is the game's own (it stamps the seen-the-rules key). The 138 inline modals were
+converted by codemod; a new daily copies this line, never an inline modal.
+
+The **?** opens it from every header: StageChrome's cap, the phone StageTopBar (via
+`lib/stage-help.js`, which the cap registers its `onHelp` into), and the desktop Layout C cap
+(`useStageHelp`). The How to play link at the foot of the page is gone (`ReportIssue` no longer
+draws it; `onHelp` is still accepted). The page foot keeps Report an issue.

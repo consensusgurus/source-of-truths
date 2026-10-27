@@ -160,11 +160,10 @@ export default function ReportIssue({ self, name, accent = T.accent, align = 'ce
         </div>
       ) : (
         <span className="ri-chips">
-          {onHelp ? (
-            <button type="button" className="ri-link ri-how" onClick={onHelp}>
-              <HelpCircle size={14} strokeWidth={2.2} /> How to play
-            </button>
-          ) : null}
+          {/* The How to play link left the foot of every page (owner, 2026-10-27):
+              the ? in the game header opens the rules now, and the rules sheet
+              carries this Report an issue link at its foot. onHelp is still
+              accepted so no caller had to change. */}
           <button type="button" className="ri-link" onClick={() => setOpen(true)}>
             <MessageSquare size={14} strokeWidth={2.2} /> Report an issue
           </button>

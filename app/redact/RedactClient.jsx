@@ -66,6 +66,7 @@ import { T } from '@/lib/theme';
 import { FREEBIES, norm, tokenize, titleTargets, guessMatches } from './words';
 import { endSolved } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
+import HelpSheet from '../HelpSheet';
 
 const COLORS = {
   ink: T.ink,
@@ -857,14 +858,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
       )}
 
       {showHelp && (
-        <div onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: STAGE ? 'var(--stg-raise,#0e131f)' : T.white, borderRadius: 13, padding: '20px 22px', maxWidth: 460, fontFamily: SANS }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
-              <HelpCircle size={19} color={COLORS.accentDeep} />
-              <b style={{ fontSize: 17, color: INK }}>How Redact works</b>
-              <button onClick={() => setShowHelp(false)} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED }}><X size={20} /></button>
-            </div>
+        <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="redact" name="Redact">
             <p style={{ fontSize: 14, lineHeight: 1.6, color: INK, margin: '0 0 10px' }}>
               One article a day about one famous subject, every meaningful word hidden. Guess words to
               uncover them; uncover the title to win.
@@ -876,9 +870,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
               <li>Fewer guesses beats faster time on the daily board.</li>
               <li>Give up and the article is revealed; how much you uncovered still counts.</li>
             </ul>
-            <button className="rd-btn primary" onClick={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }}>Play</button>
-          </div>
-        </div>
+          </HelpSheet>
       )}
 
       {!STAGE && <div style={{ display: focusMode ? 'none' : 'block' }}><Footer /></div>}

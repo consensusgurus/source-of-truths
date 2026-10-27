@@ -48,6 +48,7 @@ import { KEY, legsFor, legOrderFor, legOrderBefore, legPoints, TIERS, tierIndex,
 import { PP_CSS } from './PassportClient';
 import { LegShell } from '../StageLeg';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
+import HelpSheet from '../HelpSheet';
 
 const CLIENTS = {
   span: dynamic(() => import('../span/SpanClient'), { ssr: false, loading: () => null }),
@@ -651,17 +652,9 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       <GauntletMorePop circuitId="passport" ready={hydrated && done} />
 
       {showHelp && (
-        <div onClick={() => setShowHelp(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(8,34,46,0.55)', zIndex: 95, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: '#ffffff', color: '#08222e', borderRadius: 14, border: '2px solid #08222e', padding: '20px 22px', fontFamily: SANS, maxHeight: '86vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontSize: 21, fontWeight: 800 }}>How to Play</div>
-              <button onClick={() => setShowHelp(false)} aria-label="Close" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#08222e' }}><X size={20} /></button>
-            </div>
+        <HelpSheet onClose={() => setShowHelp(false)} self="passport" name="Passport">
             {rulesBody}
-            <button type="button" className="pr-back" onClick={() => setShowHelp(false)}>Back to the Run</button>
-          </div>
-        </div>
+          </HelpSheet>
       )}
 
       {/* The about prose stays in the page for readers and search, under the entry. */}

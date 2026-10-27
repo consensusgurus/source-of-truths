@@ -4202,7 +4202,7 @@ export default function StageToday() {
                         return (
                           <a key={c.id} className={'mph-run mph-rc' + (fin ? ' done' : '')} href={withTq(circuitEntryHref(c.id))} title={c.blurb || c.name} style={mTone(pc ? rampCat(paneOn) : pillCat(c, null))}>
                             <span className="tx"><b>{c.name}</b>{line ? <small>{line}</small> : null}</span>
-                            <span className="go">{fin ? 'Board' : 'Play'}</span>
+                            <span className="go">{fin ? 'Board' : c.n ? 'Continue' : 'Play'}</span>
                           </a>
                         );
                       })}
@@ -4220,7 +4220,7 @@ export default function StageToday() {
                           {c.blurb ? <em>{c.blurb}</em> : null}
                           {line ? <small>{line}</small> : null}
                         </span>
-                        <span className="go">{fin ? 'Board' : 'Play'}</span>
+                        <span className="go">{fin ? 'Board' : c.n ? 'Continue' : 'Play'}</span>
                       </a>
                     );
                   }) : null}
@@ -6896,11 +6896,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .mph-run i{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
   .mph-run b{font-size:16px;font-weight:800;line-height:1.26;}
   .mph-run small,.mph-g small{font-size:11.5px;font-weight:800;line-height:1.3;margin-top:3px;}
-  .mph-run .go{flex:none;border-radius:11px;padding:9px 14px 10px;font-weight:800;font-size:13px;background:var(--mink);color:#fff;}
+  .mph-run .go{flex:none;border-radius:11px;padding:9px 0 10px;width:92px;box-sizing:border-box;text-align:center;font-weight:800;font-size:13px;background:var(--mink);color:#fff;}
   .sty-mph .mph-run.done,.sty-mph .mph-g.done{background:#fff;}
   .stage-page:not([data-stage-theme=light]) .sty-mph .mph-run.done,.stage-page:not([data-stage-theme=light]) .sty-mph .mph-g.done{background:#1a2130;color:#e9edf4;}
   .stage-page:not([data-stage-theme=light]) .mph-run.done .go{color:#e9edf4;}
-  .mph-run.done .go{background:transparent;color:inherit;border:2px solid currentColor;padding:7px 12px 8px;}
+  .mph-run.done .go{background:transparent;color:inherit;border:2px solid currentColor;padding:7px 0 8px;}
   .mph-srt{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
   .mph-srt button{border:2px solid var(--stg-ink);background:transparent;color:var(--stg-ink);border-radius:999px;padding:5px 11px 6px;font-size:12px;font-weight:800;line-height:1.26;}
   .mph-g{position:relative;display:flex;flex-direction:column;gap:1px;border-radius:12px;padding:9px 10px 10px;min-width:0;}
@@ -6947,7 +6947,9 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-run.mph-rc .tx{flex:1;min-width:0;display:flex;flex-direction:column;}
   .sty-mph .mph-run.mph-rc b{font-size:15px;line-height:1.26;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sty-mph .mph-run.mph-rc small{margin-top:1px;font-size:11.5px;}
-  .sty-mph .mph-run.mph-rc .go{padding:7px 14px 8px;font-size:13px;}
+  /* Every run button is the same width (owner, 2026-10-27): Play, Continue and Board line up. */
+  .sty-mph .mph-run.mph-rc .go{padding:7px 0 8px;width:92px;font-size:13px;}
+  .sty-mph .mph-run.mph-rc.done .go{padding:5px 0 6px;}
   /* The pane header: back to home with the site name, then the pane's title. */
   .sty-mtb.pane{justify-content:flex-start;gap:10px;}
   .mph-hback{flex:none;height:40px;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;border:var(--mb);border-radius:999px;background:transparent;color:var(--mi);padding:0 12px 0 8px;font:inherit;font-weight:800;font-size:14px;line-height:1;white-space:nowrap;cursor:pointer;}
