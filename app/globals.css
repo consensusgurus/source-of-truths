@@ -152,6 +152,9 @@ a {
 /* Round interactive controls site-wide (quiz tiles, Play/Give-up buttons, modal
    buttons, inputs). Inline border-radius (where set) still overrides this. */
 button, input, textarea, select { border-radius: 8px; }
+/* This rounds every button, so a full-bleed row built from a <button> (width:100%, border:0)
+   must set its own border-radius, or its fill shows notched corners inside a framed panel.
+   Gate: scripts/verify-full-bleed-corners.mjs. See "Full-bleed rows state their corners" in CLAUDE.md. */
 
 /* Prevent iOS Safari from auto-zooming when a text field is focused (it zooms
    whenever the focused input's font-size is below 16px). Mobile widths only,

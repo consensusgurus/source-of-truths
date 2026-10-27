@@ -803,7 +803,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
           .ld-act{min-height:46px;border-radius:12px;justify-content:center;}
           .ld-act.mine{font-size:15px;padding:0 22px;}
           @media(max-width:640px){.ld-act{flex:1;min-height:48px;}.ld-act.mine{flex:1.4;}}
-          .ld-entry{font-family:${MONO};font-weight:500;font-size:30px;letter-spacing:0.12em;text-transform:uppercase;text-align:center;width:100%;border:none;border-bottom: 2px solid var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;color:${INK};padding:8px 4px;outline:none;caret-color:var(--stg-acc-ink, ${COLORS.accent});min-height:54px;}
+          .ld-entry{border-radius:0;font-family:${MONO};font-weight:500;font-size:30px;letter-spacing:0.12em;text-transform:uppercase;text-align:center;width:100%;border:none;border-bottom: 2px solid var(--stg-cell-line, rgba(28,30,36,0.3));background:transparent;color:${INK};padding:8px 4px;outline:none;caret-color:var(--stg-acc-ink, ${COLORS.accent});min-height:54px;}
           @media(max-width:640px){.ld-entry{font-size:26px;}}
           .ld-entry::placeholder{letter-spacing:0.02em;font-family:${SANS};font-size:14px;font-weight:700;color:${FADED};text-transform:none;}
           .ld-shake{animation:ldshake .3s;}

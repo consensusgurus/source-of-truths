@@ -798,7 +798,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
           .th-field{flex:1;min-width:0;display:flex;align-items:center;gap:10px;background:var(--stg-cell, ${T.white});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));border-radius:12px;padding:0 16px;min-height:52px;box-sizing:border-box;}
           .th-field:focus-within{border-color:var(--stg-acc-ink, ${COLORS.accent});box-shadow:0 0 0 1px var(--stg-acc-ink, ${COLORS.accent});}
           .th-field svg{flex:none;color:${FADED};}
-          .th-input{font-family:${SANS};font-weight:700;font-size:17px;width:100%;min-width:0;border:0;padding:0;color:${INK};background:transparent;outline:none;}
+          .th-input{border-radius:0;font-family:${SANS};font-weight:700;font-size:17px;width:100%;min-width:0;border:0;padding:0;color:${INK};background:transparent;outline:none;}
           .th-input::placeholder{color:${FADED};font-weight:600;}
           .th-input.pop{animation:thpop .28s ease;}
           @keyframes thpop{0%{transform:scale(1)}40%{transform:scale(1.02)}100%{transform:scale(1)}}

@@ -10538,3 +10538,34 @@ and the pastel ground even in Black with color. `app/globals.css` (THE ENDING IN
 the ending on the near-black page with the category deepened onto it, and `groundOf` in
 `lib/finish-beat.js` paints the win iris in that same colour. Any new ending surface must read the
 `--sst-*` / `--stg-*` tokens rather than hardcoding a light ground.
+
+---
+
+## Full-bleed rows state their corners (owner rule, 2026-10-27)
+
+Owner report: "the black selection bar does not fill the full element - this happens often." The
+quiz Topics rail on the home: the selected All Topics row was black with curved corners that pulled
+away from the panel edge, so the fill looked short of the row.
+
+**Cause.** `app/globals.css` rounds EVERY `button, input, textarea, select` 8px. A list row, card
+head or strip built from a `<button>` and stretched edge to edge inside a framed panel
+(`width:100%` with its own border stripped) silently inherits that 8px. While the row is
+transparent nobody sees it; the moment it fills (selected, hovered, a coloured head band) its
+corners curve and leave notches against the panel's square inner edge. The first sweep found 21
+rules carrying it, among them the Topics rail rows, the Top Topics card heads, the quiz list rows,
+both sort menus, the Leg and Ping suggestion lists, and the stage and run strips.
+
+**Rule.** Any CSS rule that sets `width:100%` AND `border:0` / `border:none` must also set
+`border-radius` explicitly: `0` for a full-bleed row or band (the panel's `overflow:hidden` and
+radius round the outer corners), `inherit` for a transparent overlay that covers a rounded parent,
+or the value you mean. Never rely on the global 8px for a row.
+
+**Gate.** `node scripts/verify-full-bleed-corners.mjs` (or `REF=origin/main node ...` to check a
+ref without a checkout) fails on any such rule without a radius. Run it before every push that
+touches CSS. If a rule truly gets its radius from another file (e.g. `.loft-next.d5f-retry`
+borrows `.loft-next`'s 11px from LoftCap.jsx), put `/* corners-ok: why */` inside the block.
+
+**Live check** (a component can still build a row the gate cannot see, such as inline styles).
+In the browser console on the page:
+`[...document.querySelectorAll('body *')].filter(e=>{const p=e.parentElement;if(!p||!e.offsetParent)return 0;const ps=getComputedStyle(p),r=e.getBoundingClientRect(),q=p.getBoundingClientRect();return parseFloat(ps.borderLeftWidth)>0&&parseFloat(ps.paddingLeft)===0&&Math.abs(r.left-q.left-parseFloat(ps.borderLeftWidth))<1&&Math.abs(q.right-parseFloat(ps.borderRightWidth)-r.right)<1&&parseFloat(getComputedStyle(e).borderTopLeftRadius)>0&&r.width>60})`
+must return an empty array.

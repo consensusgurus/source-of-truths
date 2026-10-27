@@ -529,7 +529,7 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
           .rd-bar .rd-btn.quiet{border-width:1.5px;border-color:${STAGE ? 'var(--stg-line3)' : COLORS.accentDeep};color:${STAGE ? 'var(--stg-ink2)' : COLORS.accentDeep};font-weight:700;font-size:14px;padding:0 14px;}
           .rd-field{flex:1;min-width:0;display:flex;align-items:center;background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accentDeep}));border-radius:12px;padding:0 16px;min-height:50px;}
           .rd-field:focus-within{box-shadow:0 0 0 2px var(--stg-acc-ink, ${COLORS.accentDeep});}
-          .rd-input{flex:1;min-width:0;width:100%;font-family:${SANS};font-weight:700;font-size:17px;border:0;padding:0;background:transparent;color:${INK};outline:none;}
+          .rd-input{border-radius:0;flex:1;min-width:0;width:100%;font-family:${SANS};font-weight:700;font-size:17px;border:0;padding:0;background:transparent;color:${INK};outline:none;}
           .rd-input::placeholder{color:${FADED};font-weight:600;}
           .rd-chip{display:inline-flex;align-items:center;gap:5px;font-family:${SANS};font-size:11px;letter-spacing:0.09em;text-transform:uppercase;font-weight:800;border-radius:6px;padding:4px 8px;border:1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accentDeep}));}
           .rd-lab{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:${FADED};white-space:nowrap;}

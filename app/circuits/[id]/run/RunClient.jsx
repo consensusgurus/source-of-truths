@@ -2234,7 +2234,7 @@ body:has(.rn)::before{background:${T.ground};}
    left, the reader's own place on the right. It carries a faint lift rather
    than a fill so it reads as part of the cap rather than as a banner laid over
    the stage. */
-.rn-strip{display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:pointer;
+.rn-strip{border-radius:0;display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:pointer;
   background:rgba(255,255,255,.03);border:0;border-bottom:1px solid rgba(255,255,255,.09);
   padding:10px 20px;font-family:${MONO};font-size:11.5px;color:#9aa8c4;}
 .rn-strip:hover{background:rgba(255,255,255,.055);}

@@ -666,7 +666,7 @@ html[data-stage-pastel] .stg-fg i{font-size:10px;letter-spacing:.06em;}
 .stg-prog{height:2px;background:var(--stg-surf2,rgba(255,255,255,0.08));}
 .stg-prog span{display:block;height:100%;background:var(--stg-acc);transition:width .3s ease;}
 
-.stg-strip{display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:default;
+.stg-strip{border-radius:0;display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:default;
   background:var(--stg-surf,rgba(255,255,255,0.045));border:0;border-bottom:1px solid var(--stg-line);
   padding:9px 20px;font-family:${SANS};font-size:12.5px;color:var(--stg-ink,#e9edf4);}
 .stg-strip:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:-2px;}

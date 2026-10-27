@@ -867,7 +867,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
           .rg-tiles{position:relative;display:flex;justify-content:center;gap:8px;}
           .rg-bar{position:absolute;left:-28px;right:-28px;top:50%;height:4px;margin-top:-2px;border-radius:2px;}
           .rg-tile{width:54px;height:56px;font-size:26px;}
-          .rg-in{position:absolute;inset:0;width:100%;height:100%;opacity:0.011;border:0;padding:0;margin:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;cursor:text;z-index:2;}
+          .rg-in{border-radius:0;position:absolute;inset:0;width:100%;height:100%;opacity:0.011;border:0;padding:0;margin:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;cursor:text;z-index:2;}
           .rg-tiles:focus-within .rg-tile{box-shadow:0 0 0 3px color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 30%, transparent);}
           @media(max-width:640px){
             .rg-row{padding:4px 22px 5px;}

@@ -960,7 +960,7 @@ function Home({ lists, viewCounts, voteData, extras, trending = {}, openList, on
         .nt-msheet{display:none;box-sizing:border-box;background:var(--white);border:1px solid ${NT.line};border-radius:12px;padding:4px 14px calc(14px + env(safe-area-inset-bottom) + 76px);max-height:calc(100dvh - 120px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
         .nt-sortpill{position:relative;flex:none;display:flex;}
         .nt-sortmenu{position:absolute;top:calc(100% + 6px);z-index:30;min-width:190px;background:var(--white);border:1px solid ${NT.line};border-radius:10px;box-shadow:0 12px 30px rgba(20,22,28,0.12);overflow:hidden;}
-        .nt-sortitem{width:100%;display:block;text-align:left;border:none;background:var(--white);padding:10px 14px;font-family:inherit;font-size:13px;font-weight:600;color:${NT.ink};cursor:pointer;}
+        .nt-sortitem{border-radius:0;width:100%;display:block;text-align:left;border:none;background:var(--white);padding:10px 14px;font-family:inherit;font-size:13px;font-weight:600;color:${NT.ink};cursor:pointer;}
         .nt-sortitem.on,.nt-sortitem:hover{background:${NT.accsoft};color:${NT.accent};}
         .nt-grid{display:grid;grid-template-columns:repeat(5,1fr);grid-auto-flow:dense;gap:16px;}
         @media(max-width:1240px){.nt-grid{grid-template-columns:repeat(4,1fr);}}

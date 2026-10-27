@@ -876,7 +876,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
           .fd-num{flex:0 0 64px;align-self:stretch;display:flex;align-items:center;justify-content:center;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, var(--white));font-family:${MONO};font-size:28px;font-weight:500;}
           .fd-field{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;cursor:text;}
           .fd-hint{font-family:${MONO};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
-          .fd-sin{width:100%;min-height:32px;background:transparent;border:0;outline:0;padding:0;color:${INK};font-family:${SANS};font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;}
+          .fd-sin{border-radius:0;width:100%;min-height:32px;background:transparent;border:0;outline:0;padding:0;color:${INK};font-family:${SANS};font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;}
           .fd-sin::placeholder{color:var(--stg-mute, ${COLORS.faded});opacity:1;text-transform:none;font-weight:700;letter-spacing:0;}
           .fd-seal{flex:0 0 56px;height:46px;border-radius:8px;background:var(--stg-ground, ${COLORS.paper});border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:18px;color:var(--stg-mute, ${COLORS.faded});}
           .fd-note{font-family:${SANS};font-size:14px;font-weight:600;line-height:1.5;margin:16px 0 0;}

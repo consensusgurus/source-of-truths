@@ -76,7 +76,7 @@ export const LEG_CSS = `
 .lg-go{flex:none;min-height:46px;padding:0 16px;border-radius:12px;border:0;background:var(--lg-ink);color:var(--lg-on);font:800 14px 'Manrope',system-ui,sans-serif;cursor:pointer}
 .lg-go:active{transform:translateY(1px)}
 .lg-sug{position:absolute;left:-2px;right:-2px;top:calc(100% + 6px);z-index:6;background:var(--lg-paper);border:2px solid var(--lg-ink);border-radius:16px;overflow:hidden;box-shadow:0 12px 28px rgba(0,0,0,.18)}
-.lg-sug button{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left;padding:12px 16px;min-height:46px;border:0;border-bottom:1px solid var(--lg-line);background:transparent;color:var(--lg-ink);font:700 16px 'Manrope',system-ui,sans-serif;cursor:pointer}
+.lg-sug button{border-radius:0;display:flex;gap:8px;align-items:baseline;width:100%;text-align:left;padding:12px 16px;min-height:46px;border:0;border-bottom:1px solid var(--lg-line);background:transparent;color:var(--lg-ink);font:700 16px 'Manrope',system-ui,sans-serif;cursor:pointer}
 .lg-sug button:last-child{border-bottom:0}
 .lg-sug button.on,.lg-sug button:hover{background:var(--lg-tile)}
 .lg-sug small{font-weight:600;opacity:.65;font-size:13px}

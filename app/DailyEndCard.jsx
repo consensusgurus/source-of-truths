@@ -1496,7 +1496,7 @@ export default function DailyEndCard({
         /* Transparent expand layer under the content: the panel toggles the IQ
            ranking, while the identity chip inside it stays independently
            clickable (content is pointer-transparent except that chip). */
-        .dec-iqhero-hit{position:absolute;inset:0;z-index:1;width:100%;height:100%;padding:0;border:none;background:transparent;cursor:pointer;}
+        .dec-iqhero-hit{border-radius:inherit;position:absolute;inset:0;z-index:1;width:100%;height:100%;padding:0;border:none;background:transparent;cursor:pointer;}
         .dec-iqhero-in{position:relative;z-index:2;pointer-events:none;display:flex;align-items:center;justify-content:flex-start;gap:18px;}
         .dec-iqhero-in a,.dec-iqhero-in button{pointer-events:auto;}
         /* Brain meter: empty art as the base, the filled art clipped to the

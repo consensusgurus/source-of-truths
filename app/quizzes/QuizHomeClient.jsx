@@ -2298,7 +2298,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
             .qzh .dhx-qrow .qa{flex:none;color:var(--muted);font-weight:800;font-size:16px;}
             /* Category Mastery (collapsible) */
             .qzh .dhx-cm{background:var(--white);border:1px solid ${C.line};border-radius:14px;flex:none;overflow:hidden;}
-            .qzh .dhx-cm-h{width:100%;display:flex;align-items:center;gap:7px;padding:12px 14px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:800;letter-spacing:.02em;color:var(--blue);}
+            .qzh .dhx-cm-h{border-radius:0;width:100%;display:flex;align-items:center;gap:7px;padding:12px 14px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:800;letter-spacing:.02em;color:var(--blue);}
             .qzh .dhx-cm-h .cmchev{margin-left:auto;color:var(--muted);transition:transform .2s;}
             .qzh .dhx-cm.open .dhx-cm-h .cmchev{transform:rotate(180deg);}
             .qzh .dhx-cm-bars{padding:0 13px 12px;display:flex;flex-direction:column;gap:5px;}

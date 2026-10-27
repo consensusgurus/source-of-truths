@@ -1005,7 +1005,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
           .sp-dest{display:flex;gap:18px;align-items:center;}
           .sp-dest .sp-lbl{padding:0;}
           .sp-field{flex:1;display:flex;align-items:center;background:var(--stg-cell, ${T.white});border:1.5px solid var(--stg-cell-line, ${COLORS.ink});border-radius:12px;padding:0 16px;min-height:52px;box-sizing:border-box;}
-          .sp-field input{flex:1;width:100%;min-width:0;background:transparent;border:0;outline:0;color:${INK};font-family:${SANS};font-size:16px;font-weight:700;padding:0;}
+          .sp-field input{border-radius:0;flex:1;width:100%;min-width:0;background:transparent;border:0;outline:0;color:${INK};font-family:${SANS};font-size:16px;font-weight:700;padding:0;}
           .sp-go{font-family:${SANS};font-weight:800;font-size:15px;border:0;border-radius:12px;padding:0 22px;min-height:52px;min-width:64px;cursor:pointer;background:var(--stg-acc, ${COLORS.trail});color:var(--stg-onramp, ${T.white});}
           .sp-sugs{position:absolute;top:100%;left:0;right:0;z-index:30;margin-top:4px;}
           .sp-sug{min-height:44px;}

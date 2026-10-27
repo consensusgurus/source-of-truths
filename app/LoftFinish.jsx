@@ -770,7 +770,7 @@ export default function LoftFinish({
             /* The retry control borrows loft-next's shape so it reads as the
                card's one primary action, and takes the blue so it is never
                mistaken for the green hand-off it is standing in for. */
-            .loft-next.d5f-retry{background:rgba(37,99,235,.10);width:100%;text-align:left;
+            .loft-next.d5f-retry{/* corners-ok: .loft-next in LoftCap.jsx sets 11px */background:rgba(37,99,235,.10);width:100%;text-align:left;
               border:0;font-family:inherit;cursor:pointer;}
             .loft-next.d5f-retry:hover{background:rgba(37,99,235,.16);}
             .loft-next.d5f-retry .go{background:#2563eb;}

@@ -723,7 +723,7 @@ const RUN_CSS = `
 .pr-about h2{margin:0 0 8px;font-size:15px;font-weight:800}
 .pr-about p{margin:0 0 8px;font-size:13px;line-height:1.65;font-weight:600}
 
-.ppb{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:150px;padding:0;border:0;background:none;cursor:pointer;font-family:Manrope,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+.ppb{border-radius:0;flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:150px;padding:0;border:0;background:none;cursor:pointer;font-family:Manrope,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 .ppb:focus-visible{outline:3px solid var(--gsx-ink);outline-offset:4px;border-radius:12px}
 .ppb-book{position:relative;display:block;width:min(272px,72vw);height:min(172px,45vw);perspective:900px;box-sizing:border-box;animation:ppbSlide 1s cubic-bezier(.5,0,.2,1) .55s both}
 .ppb-page{position:absolute;top:0;bottom:0;width:50%;box-sizing:border-box;background:var(--gsx-card-paper,#ffffff);border:2px solid var(--gsx-ink,#08222e)}
