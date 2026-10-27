@@ -24,6 +24,7 @@
 'use client';
 
 import { useLayoutEffect, useRef } from 'react';
+import { isMud } from '../lib/use-brand-fit';
 import { HOUSE, TIGHT_BOX, TIGHT_ASPECT, CAP_RATIO, CAP_OVERSHOOT, OUTLINE_W, outlineFor } from '../lib/mindloft-mark';
 
 const useIso = typeof window === 'undefined' ? () => {} : useLayoutEffect;
@@ -90,6 +91,12 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
     const ol = olRef.current, house = houseRef.current;
     if (!ol || !house) return undefined;
     const check = () => {
+      // THE WARM STEPS GO INK (owner, 2026-10-26): Trivia's rust, End Game's
+      // and the Arcade's browns read as mud on the house wherever it sits, the
+      // headers BrandFit does not wrap included, so the mark checks itself.
+      house.style.fill = ''; house.style.stroke = '';
+      const own = String(getComputedStyle(house).fill || '').match(/\d+/g);
+      if (!mono && own && own.length >= 3 && isMud(own.slice(0, 3).map(Number))) { house.style.fill = ink; house.style.stroke = ink; }
       const c = outlineFor(getComputedStyle(house).fill, groundOf(ref.current));
       if (c) { ol.setAttribute('stroke', c); ol.style.display = ''; } else { ol.style.display = 'none'; }
     };
@@ -103,7 +110,7 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
     } catch (e) {}
     const t = setTimeout(check, 400);
     return () => { clearTimeout(t); try { mo && mo.disconnect(); } catch (e) {} };
-  }, [fill]);
+  }, [fill, ink, mono]);
 
   return (
     <svg
