@@ -60,6 +60,22 @@ export function stagePalette(pastel, look) {
 // colour along both edges for Safari to sample (see below). The page's own tags and backgrounds are
 // saved on the first hold and put back when the last stage screen unmounts.
 const chrome = { stack: [], saved: null };
+// Dark ink on a light stage ground, light ink on a dark one. The colour can be a
+// color-mix() string, so the browser resolves it on a probe first.
+function inkOn(color) {
+  try {
+    const p = document.createElement('span');
+    p.style.color = color;
+    p.style.display = 'none';
+    document.body.appendChild(p);
+    const v = getComputedStyle(p).color;
+    p.remove();
+    const n = (v.match(/[\d.]+/g) || []).map(Number);
+    if (n.length < 3) return '#111111';
+    const [r, g, b] = /color\(srgb/.test(v) ? n.slice(0, 3).map((x) => x * 255) : n.slice(0, 3);
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 140 ? '#111111' : '#e9edf4';
+  } catch (e) { return '#111111'; }
+}
 function paintChrome() {
   if (typeof document === 'undefined') return;
   const html = document.documentElement;
@@ -78,10 +94,22 @@ function paintChrome() {
     chrome.release = holdThemeColor(top.color);
     html.style.backgroundColor = top.color;
     if (body) body.style.backgroundColor = top.color;
+    // THE HEADER MATCHES THE STAGE (owner, 2026-10-26: "if we color blitz and
+    // others, the header must match"). The desktop cap (LayoutC's .lc-cap) sits
+    // ABOVE a full-screen stage, so it reads these two and takes the stage's
+    // ground and ink instead of the site's.
+    html.style.setProperty('--chrome-bg', top.color);
+    html.style.setProperty('--chrome-ink', inkOn(top.color));
+    html.setAttribute('data-stage-chrome', '');
   } else if (chrome.saved) {
     html.style.backgroundColor = chrome.saved.html;
     if (body) body.style.backgroundColor = chrome.saved.body;
     chrome.saved = null;
+  }
+  if (!top) {
+    html.style.removeProperty('--chrome-bg');
+    html.style.removeProperty('--chrome-ink');
+    html.removeAttribute('data-stage-chrome');
   }
   // Fixed bands on both edges, and THEY are what tints Safari's bars. iOS 26
   // Safari samples the fixed element under each edge (WebKit

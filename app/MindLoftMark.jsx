@@ -9,6 +9,11 @@
 // category hue on a game page). It is also available in black: pass `mono`, or put
 // data-brand-mono on any ancestor, which turns --stg-brand into the ink colour.
 //
+// ON A COLOURED PAGE IT IS AN OUTLINE (owner, 2026-10-26): when the ground behind
+// the mark is a light colour (a pastel stage, a category-filled page, the desktop
+// cap matching a Blitz or gauntlet stage) the house draws as a black outline
+// filled with that ground. White, grey and dark grounds keep the coloured fill.
+//
 // OUTLINE ONLY WHERE NEEDED: after mount the mark reads its own computed fill and the
 // first opaque background behind it, and draws a thin outline in a deeper shade of its
 // own colour when the fill falls under 3:1 against that ground (lib/mindloft-mark.js
@@ -35,6 +40,24 @@ function groundOf(el) {
     if (bg && !/rgba\([^)]*,\s*0\)$/.test(bg) && bg !== 'transparent') return bg;
   }
   return 'rgb(255, 255, 255)';
+}
+
+const OUTLINE_INK = '#111111';
+const OUTLINE_STROKE = 10; // in 120-grid units, centred on the edge
+
+// A ground counts as COLOURED when it carries real hue: the pastel and category
+// grounds do, white, the greys and the near-black register do not. Chroma
+// (max - min channel) rather than HSL saturation, which inflates near-whites.
+function isColoredGround(bg) {
+  const n = String(bg || '').match(/[\d.]+/g);
+  if (!n || n.length < 3) return false;
+  let [r, g, b] = n.slice(0, 3).map(Number);
+  if (/color\(srgb/.test(bg)) { r *= 255; g *= 255; b *= 255; }
+  if (n.length >= 4 && !/color\(srgb/.test(bg) && Number(n[3]) < 0.5) return false;
+  // Light grounds only: a black outline on a deep navy or a dark tint would vanish,
+  // so those keep the coloured fill.
+  if (0.299 * r + 0.587 * g + 0.114 * b < 140) return false;
+  return (Math.max(r, g, b) - Math.min(r, g, b)) / 255 >= 0.1;
 }
 
 function wordmarkNext(el) {
@@ -94,10 +117,21 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
       // THE WARM STEPS GO INK (owner, 2026-10-26): Trivia's rust, End Game's
       // and the Arcade's browns read as mud on the house wherever it sits, the
       // headers BrandFit does not wrap included, so the mark checks itself.
-      house.style.fill = ''; house.style.stroke = '';
+      house.style.fill = ''; house.style.stroke = ''; house.style.strokeWidth = '';
+      const ground = groundOf(ref.current);
+      // ON A COLOURED PAGE THE MARK IS AN OUTLINE (owner, 2026-10-26): a black
+      // outline filled with the page's own colour. Off colour (white, grey, the
+      // dark register) it keeps its matching pastel or main colour fill.
+      if (!mono && isColoredGround(ground)) {
+        house.style.fill = ground;
+        house.style.stroke = OUTLINE_INK;
+        house.style.strokeWidth = String(OUTLINE_STROKE);
+        ol.style.display = 'none';
+        return;
+      }
       const own = String(getComputedStyle(house).fill || '').match(/\d+/g);
       if (!mono && own && own.length >= 3 && isMud(own.slice(0, 3).map(Number))) { house.style.fill = ink; house.style.stroke = ink; }
-      const c = outlineFor(getComputedStyle(house).fill, groundOf(ref.current));
+      const c = outlineFor(getComputedStyle(house).fill, ground);
       if (c) { ol.setAttribute('stroke', c); ol.style.display = ''; } else { ol.style.display = 'none'; }
     };
     check();
@@ -105,8 +139,8 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
     try {
       mo = new MutationObserver(check);
       // the register lives on .stage-page (a descendant), the page colour on <html>'s style
-      mo.observe(document.documentElement, { attributes: true, subtree: true, attributeFilter: ['data-stage-theme', 'data-theme', 'data-brand-mono', 'data-stage-pastel', 'data-stage-tone'] });
-      mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
+      mo.observe(document.documentElement, { attributes: true, subtree: true, attributeFilter: ['data-stage-theme', 'data-theme', 'data-brand-mono', 'data-stage-pastel', 'data-stage-tone', 'data-stage-chrome'] });
+      mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style', 'data-stage-chrome'] });
     } catch (e) {}
     const t = setTimeout(check, 400);
     return () => { clearTimeout(t); try { mo && mo.disconnect(); } catch (e) {} };

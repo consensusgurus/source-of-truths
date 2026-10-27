@@ -98,6 +98,13 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
 .lc-cap,.lc-nav,.lc-side{font-family:Manrope,ui-sans-serif,system-ui,sans-serif;color:var(--stg-ink);box-sizing:border-box;-webkit-font-smoothing:antialiased;}
 .lc-cap *,.lc-nav *,.lc-side *{box-sizing:border-box;}
 .lc-cap{position:absolute;top:0;left:0;right:0;z-index:90;background:var(--stg-ground);}
+/* A full-screen stage (Blitz, the gauntlets, the run stages) paints the page in
+   its colour; the cap sits above it and takes the same ground and ink (owner,
+   2026-10-26). The vars come from useStageChrome in GauntletScreens. */
+html[data-stage-chrome] .lc-cap{background:var(--chrome-bg) !important;color:var(--chrome-ink);
+  --stg-ground:var(--chrome-bg);--stg-ink:var(--chrome-ink);
+  --stg-mute:color-mix(in srgb,var(--chrome-ink) 62%,var(--chrome-bg));
+  --stg-line:color-mix(in srgb,var(--chrome-ink) 16%,var(--chrome-bg));}
 .lc-cap .sty-cap{display:grid;grid-template-columns:auto minmax(60px,1fr) auto;align-items:center;gap:26px;padding:11px 22px;position:relative;
   border-bottom:1px solid var(--stg-line);}
 .lc-cap .sty-id{display:flex;align-items:baseline;gap:11px;min-width:0;}
