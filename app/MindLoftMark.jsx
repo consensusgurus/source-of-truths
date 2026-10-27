@@ -36,6 +36,14 @@ const useIso = typeof window === 'undefined' ? () => {} : useLayoutEffect;
 
 function groundOf(el) {
   for (let n = el && el.parentElement; n; n = n.parentElement) {
+    // MID-RECOLOUR (lib/tile-flood.js): while the page's colour seeps in, the
+    // ancestor still paints the OLD ground and carries the new one in
+    // --sot-seep1. Read the target, so the mark changes over the same beat as
+    // the flood instead of after it.
+    if (n.hasAttribute && n.hasAttribute('data-sot-seep')) {
+      const to = getComputedStyle(n).getPropertyValue('--sot-seep1').trim();
+      if (to) return to;
+    }
     const bg = getComputedStyle(n).backgroundColor;
     if (bg && !/rgba\([^)]*,\s*0\)$/.test(bg) && bg !== 'transparent') return bg;
   }
@@ -51,6 +59,11 @@ const TRANSITION = 'fill .65s cubic-bezier(.3,0,.2,1), stroke .65s cubic-bezier(
 // grounds do, white, the greys and the near-black register do not. Chroma
 // (max - min channel) rather than HSL saturation, which inflates near-whites.
 function isColoredGround(bg) {
+  const hx = String(bg || '').trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (hx) {
+    const h = hx[1].length === 3 ? hx[1].split('').map((c) => c + c).join('') : hx[1];
+    bg = `rgb(${parseInt(h.slice(0, 2), 16)}, ${parseInt(h.slice(2, 4), 16)}, ${parseInt(h.slice(4, 6), 16)})`;
+  }
   const n = String(bg || '').match(/[\d.]+/g);
   if (!n || n.length < 3) return false;
   let [r, g, b] = n.slice(0, 3).map(Number);
@@ -152,6 +165,7 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
     // with the mark animating into place.
     const raf = requestAnimationFrame(() => { try { if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) house.style.transition = TRANSITION; } catch (e) {} });
     const mos = [];
+    const lateRef = { clear: () => {} };
     try {
       const mo = new MutationObserver(check);
       // the register lives on .stage-page (a descendant), the page colour on <html>'s style
@@ -160,14 +174,18 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
       // THE GROUND CAN CHANGE ON ANY ANCESTOR (the home's category pane writes
       // --stg-ground inline on .sty), so watch the style and class of every
       // ancestor: each one on its own, never the whole subtree.
-      const mo2 = new MutationObserver(check);
+      // A second look once the seep has settled, in case the ground landed on a
+      // value that was not readable while it moved.
+      let late = 0;
+      const mo2 = new MutationObserver(() => { check(); clearTimeout(late); late = setTimeout(check, 720); });
+      lateRef.clear = () => clearTimeout(late);
       for (let n = ref.current && ref.current.parentElement; n; n = n.parentElement) {
-        mo2.observe(n, { attributes: true, attributeFilter: ['class', 'style', 'data-stage-chrome'] });
+        mo2.observe(n, { attributes: true, attributeFilter: ['class', 'style', 'data-stage-chrome', 'data-sot-seep'] });
       }
       mos.push(mo2);
     } catch (e) {}
     const t = setTimeout(check, 400);
-    return () => { clearTimeout(t); cancelAnimationFrame(raf); mos.forEach((m) => { try { m.disconnect(); } catch (e) {} }); };
+    return () => { clearTimeout(t); lateRef.clear(); cancelAnimationFrame(raf); mos.forEach((m) => { try { m.disconnect(); } catch (e) {} }); };
   }, [fill, ink, mono]);
 
   return (
