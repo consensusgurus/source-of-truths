@@ -116,7 +116,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['mahj', 'aorb', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'foodie', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
+const LAUNCH_PIN = { keys: ['mahj', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'foodie', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -213,7 +213,6 @@ export const GAME_META = {
   streak: { accent: '#e11d48', badgeBg: '#e11d48', badgeInk: T.white, Fin: Flame },
   feud: { accent: '#9f1239', badgeBg: '#9f1239', badgeInk: T.white, Fin: BarChart3 },
   herd: { accent: '#92400e', badgeBg: '#92400e', badgeInk: T.white, Fin: BarChart3 },
-  aorb: { accent: '#6d28d9', badgeBg: '#6d28d9', badgeInk: T.white, Fin: BarChart3 },
   babel: { accent: '#14532d', badgeBg: '#14532d', badgeInk: T.white, Fin: Blocks },
   chain: { accent: '#4a044e', badgeBg: '#4a044e', badgeInk: T.white, Fin: Frame },
   turn: { accent: '#226218', badgeBg: '#226218', badgeInk: T.white, Fin: Contrast },
@@ -430,7 +429,6 @@ const ALL_DAILY_GAMES = [
   { key: 'anon',  cat: 'word',       name: 'Anon',   tag: 'A clueless acrostic',    blurb: "An unsigned passage and a bank of answers built from its letters. Solve them, and their first letters spell out who wrote it.", href: '/anon' },
   { key: 'feud',   cat: 'crowd',     name: 'Feud',   tag: 'Match the crowd',            blurb: 'Name the answers real players gave most often. The most popular answers pay the most.', href: '/feud' },
   { key: 'herd',   cat: 'crowd',     name: 'Herd',   tag: 'Pick what most people pick',      blurb: 'Ten quick this-or-that calls. Pick what you think most players picked; every call with the herd scores.', href: '/herd' },
-  { key: 'aorb',   cat: 'crowd',     name: 'Aorb',   tag: 'Your pick, then the crowd call',  blurb: 'Ten A or B pairs. Make your own pick, then call the crowd; your call scores the real split.', href: '/aorb' },
   { key: 'babel',  cat: 'word',      name: 'Babel',  tag: 'The bag is empty',           blurb: 'A word tile game picked up at the very end. Their rack is knowable, so race them out or block the lane they need.', href: '/babel' },
   { key: 'hands',  cat: 'cards',     name: 'Hands',  tag: 'The daily poker solitaire', blurb: 'Cards come one at a time into a grid where every row and column scores as a poker hand. Same deal for everybody, so it is decisions and not luck.', href: '/hands' },
   { key: 'crib',  cat: 'cards',     name: 'Crib',  tag: 'Six cards, throw two', blurb: 'Five cribbage hands, one choice each: which two cards go to the crib. Every throw is worked out exactly, so the best one is a fact. Seven hands on Sundays.', href: '/crib' },

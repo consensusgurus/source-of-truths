@@ -13,10 +13,15 @@ import React from 'react';
 import MindLoftMark from './MindLoftMark';
 import { nextLook, nextMainLook, LOOK_NAMES } from '@/lib/stage-look';
 import { soakNav } from '@/lib/tile-flood';
+import { useStageHelp } from '@/lib/stage-help';
 
 // `allLooks` is for the gauntlet and run stages, which keep all five looks;
 // every other page flips between light with color and dark with color.
-export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentColor', title = null, sub = null, allLooks = false }) {
+export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentColor', title = null, sub = null, allLooks = false, onHelp = null }) {
+  // THE ? (owner, 2026-10-27): every gameplay page's stage carries How to play.
+  // A host may pass onHelp; otherwise the game's cap registered its own (lib/stage-help.js).
+  const registered = useStageHelp();
+  const help = onHelp || registered;
   const next = LOOK_NAMES[allLooks ? nextLook(look) : nextMainLook(look)];
   return (
     <div className="stb" style={{ color: ink }}>
@@ -32,7 +37,11 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
           {sub ? <em>{sub}</em> : null}
         </span>
       ) : <span className="stb-sp" />}
-      <button type="button" className="stb-look" onClick={onFlip}
+      {help ? (
+        <button type="button" className="stb-look stb-help" onClick={(e) => { e.stopPropagation(); help(); }}
+          aria-label="How to play" title="How to play">?</button>
+      ) : null}
+      <button type="button" className="stb-look" onClick={(e) => { e.stopPropagation(); onFlip && onFlip(); }}
         aria-label={`Look: ${LOOK_NAMES[look] || 'Color'}. Switch to ${next}`} title={`Switch to ${next}`}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
       </button>
@@ -50,5 +59,6 @@ const CSS = `
 .stb .stb-tx em{font-style:normal;font-size:12px;font-weight:600;line-height:1.3;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:1px;}
 .stb .stb-sp{flex:1;}
 .stb .stb-look{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;flex:none;}
+.stb .stb-help{font:inherit;font-size:19px;font-weight:800;line-height:1;}
 .stb .stb-home:hover > span{text-decoration:underline;text-underline-offset:3px;}
 `;

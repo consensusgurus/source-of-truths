@@ -112,6 +112,8 @@ const nextConfig = {
       { source: '/circuits/valet', destination: '/parker', permanent: true },
       { source: '/circuits/valet/run', destination: '/parker', permanent: true },
       { source: '/circuits/sudoku/:path*', destination: '/dojo', permanent: true },
+      // Aorb was deleted (owner, 2026-10-27).
+      { source: '/aorb', destination: '/crowd-psychology-games', permanent: true },
       // Crossed Up (owner, 2026-10-20) lives at /crossed; its name's spellings land there.
       { source: '/crossedup', destination: '/crossed', permanent: true },
       { source: '/crossed-up', destination: '/crossed', permanent: true },

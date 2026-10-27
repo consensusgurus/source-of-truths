@@ -40,6 +40,7 @@ import ChallengeStrip from './ChallengeStrip';
 import OtherDeviceBar from './OtherDeviceBar';
 import MindLoftMark from './MindLoftMark';
 import StageTopBar from './StageTopBar';
+import { useRegisterStageHelp } from '@/lib/stage-help';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
 import ThemePop, { LightOffer } from './ThemePop';
 // The stage swaps LoftCap out, and LoftCap was carrying the whole .loft-*
@@ -225,7 +226,12 @@ export default function StageChrome({
   // opening the rail's board unfurled it under the phone header. The prop is
   // still accepted so the quiz call sites need not move; it renders nothing.
   panelBody = null,
+  // HOW TO PLAY (owner, 2026-10-27). Every caller already passed onHelp to the
+  // old cap; the stage dropped it. It draws a ? in both headers again, and is
+  // registered so a full-screen phone stage's top bar can open it too.
+  onHelp = null,
 }) {
+  useRegisterStageHelp(onHelp);
   // The page's own clock for every finish freshness test (lib/finish-beat.js
   // pageAge): marked once, on this mount's first render, so a board opened
   // already finished by a client-side link goes straight to its end card.
@@ -405,6 +411,10 @@ export default function StageChrome({
           </button>
           {shareMsg ? <span className="stg-shm" role="status">{shareMsg}</span> : null}
         </span>
+        {onHelp ? (
+          <button type="button" className="stg-cx stg-help" onClick={onHelp}
+            aria-label="How to play" title="How to play">?</button>
+        ) : null}
         <button
           type="button"
           className={'stg-cx stg-theme' + (hint ? ' hint' : '')}
@@ -648,6 +658,7 @@ html[data-stage-pastel] .stg-fg i{font-size:10px;letter-spacing:.06em;}
 .stg-brand:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 .stg-ds{display:none;}
 .stg-theme{padding:5px 8px;}
+.stg-help{padding:3px 9px;font-family:inherit;font-size:13px;font-weight:800;letter-spacing:0;line-height:1;}
 .stg-theme.hint{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);animation:stg-hintring 1.9s ease-out 3;}
 /* THE FIRST-VISIT POINTER at the light switch: a ring pulsing out of the glyph,
    three times, then gone for good. Deliberately a ring rather than a colour

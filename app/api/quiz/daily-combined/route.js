@@ -7,7 +7,6 @@ import { scoreOutwitGame } from '@/lib/outwit-score';
 import { scoreOutrankGame } from '@/lib/outrank-score';
 import { scoreFeudGame } from '@/lib/feud-score';
 import { scoreHerdGame } from '@/lib/herd-score';
-import { scoreAorbGame } from '@/lib/aorb-score';
 import { attemptsModeForQuizId, attemptsPlan, arcadeRanksForQuizId } from '@/lib/daily-games';
 import { GAME_PUZZLES, etTodayServer, suffixOfDate, gamesForSuffix } from '@/lib/daily-slate';
 import { groupByCode, membersOf, isMissingTable } from '@/lib/groups';
@@ -231,8 +230,6 @@ async function scoreFeudLive(puzzle, cutoffMs, table = 'feud_picks', scorer = sc
 // Herd is adaptive exactly like Feud, and stores its ballots in outwit_picks
 // under herd-* quiz ids, so it reuses scoreFeudLive's read with its own scorer.
 const scoreHerdLive = (puzzle, cutoffMs) => scoreFeudLive(puzzle, cutoffMs, 'outwit_picks', scoreHerdGame);
-// Aorb likewise: outwit_picks under aorb-* quiz ids, its own scorer.
-const scoreAorbLive = (puzzle, cutoffMs) => scoreFeudLive(puzzle, cutoffMs, 'outwit_picks', scoreAorbGame);
 
 // The guest's single chosen row for a game (their anon rows only), mirroring
 // scoreGame's selection: a completed attempt beats an abandoned one, then the
@@ -588,13 +585,6 @@ export async function GET(request) {
       const hp = (GAME_PUZZLES.herd || []).find((x) => x && x.quizId === herdGame.quizId);
       if (hp) herdLive = await memoCrowd(`herd|${hp.quizId}|${cutoffMs}`, fresh, () => scoreHerdLive(hp, cutoffMs));
     }
-    // And for Aorb (live A-or-B split; see lib/aorb-score).
-    let aorbLive = null;
-    const aorbGame = games.find((g) => g.key === 'aorb');
-    if (aorbGame) {
-      const ap = (GAME_PUZZLES.aorb || []).find((x) => x && x.quizId === aorbGame.quizId);
-      if (ap) aorbLive = await memoCrowd(`aorb|${ap.quizId}|${cutoffMs}`, fresh, () => scoreAorbLive(ap, cutoffMs));
-    }
 
     gameResults = games.map((g) => {
       if (g.key === 'outwit' && outwitLive) {
@@ -608,9 +598,6 @@ export async function GET(request) {
       }
       if (g.key === 'herd' && herdLive) {
         return { key: g.key, quizId: g.quizId, num: g.num, rev: g.rev, href: g.href, field: herdLive.field, plays: herdLive.plays, players: herdLive.players };
-      }
-      if (g.key === 'aorb' && aorbLive) {
-        return { key: g.key, quizId: g.quizId, num: g.num, rev: g.rev, href: g.href, field: aorbLive.field, plays: aorbLive.plays, players: aorbLive.players };
       }
       const gameRows = rowsByQuiz.get(g.quizId) || [];
       const gr = scoreGame(gameRows);

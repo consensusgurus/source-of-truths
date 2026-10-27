@@ -91,7 +91,6 @@ import { PUZZLES as FIB_FULL } from '../fib/puzzles';
 import { PUZZLES as STREAK_FULL } from '../streak/puzzles';
 import { PUZZLES as FEUD_FULL } from '../feud/puzzles';
 import { PUZZLES as HERD_FULL } from '../herd/puzzles';
-import { PUZZLES as AORB_FULL } from '../aorb/puzzles';
 import { PUZZLES as BABEL_FULL } from '../babel/puzzles';
 import { PUZZLES as CHAIN_FULL } from '../chain/puzzles';
 import { PUZZLES as HANDS_FULL } from '../hands/puzzles';
@@ -208,7 +207,6 @@ const STREAK = STREAK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ 
 // Feud's bank carries the canonical buckets + house pools — same strip.
 const FEUD = FEUD_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const HERD = HERD_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
-const AORB = AORB_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const BABEL = BABEL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CHAIN = CHAIN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const TURN = TURN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -410,7 +408,6 @@ const GAMES = [
   { key: 'streak', name: 'Streak', path: '/streak', tag: 'Forty questions, one life', accent: '#e11d48', bg: '#fdecef', border: 'rgba(225,29,72,0.35)', src: STREAK },
   { key: 'feud', name: 'Feud', path: '/feud', tag: 'Match the crowd', accent: '#9f1239', bg: '#fdf0f3', border: 'rgba(159,18,57,0.4)', src: FEUD },
   { key: 'herd', name: 'Herd', path: '/herd', tag: 'Pick what most people pick', accent: '#92400e', bg: '#fdf3e4', border: 'rgba(146,64,14,0.4)', src: HERD },
-  { key: 'aorb', name: 'Aorb', path: '/aorb', tag: 'Your pick, then the crowd call', accent: '#6d28d9', bg: '#f3edfd', border: 'rgba(109,40,217,0.4)', src: AORB },
   { key: 'babel', name: 'Babel', path: '/babel', tag: 'The bag is empty', accent: '#14532d', bg: '#e9f2ec', border: 'rgba(20,83,45,0.4)', src: BABEL },
   { key: 'hands', name: 'Hands', path: '/hands', tag: 'The daily poker solitaire', accent: '#7f1d1d', bg: '#f6eaea', border: 'rgba(127,29,29,0.4)', src: HANDS },
   { key: 'finesse', name: 'Finesse', path: '/finesse', tag: 'The daily double dummy', accent: '#4c1d95', bg: '#ede9fe', border: 'rgba(76,29,149,0.4)', src: FINESSE },

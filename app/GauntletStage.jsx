@@ -2,7 +2,7 @@
 
 // THE GAUNTLET STAGE (owner, 2026-10-23): every gauntlet question, in a run or
 // on a daily's own page, plays on one full-screen stage that shows the question
-// and its answers and nothing else, built after Aorb's play screen ("I want all
+// and its answers and nothing else, built after a crowd game's play screen ("I want all
 // gauntlet questions to look just like this. A counter can run below, but
 // otherwise this simple").
 //

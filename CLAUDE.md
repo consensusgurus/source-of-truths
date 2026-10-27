@@ -4391,6 +4391,8 @@ match background", "it needs to use the pastel colors", counter "clock and stand
   `rampFor(circuitSlotFor(<run>, <key>))`, with the clock and the question count below (no live standing
   on a daily yet). Wired by `scripts/wire-gauntlet-stage.mjs`; a new gauntlet daily gets the same block.
 
+## Aorb (DELETED 2026-10-27, owner: removed from the site completely; /aorb redirects to /crowd-psychology-games). Kept for history only.
+
 ## Aorb is the A-OR-B CROWD GAME, two picks a pair, and it plays FULL SCREEN (launched 2026-10-23)
 
 Route `/aorb`, key `aorb`, Crowd Psychology, skill Reading People, `miss: null`, no Sunday Edition (no

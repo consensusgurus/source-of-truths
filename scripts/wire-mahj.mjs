@@ -93,7 +93,7 @@ sub('lib/loft.js', `'hold', 'cell', 'swindle',`, `'hold', 'cell', 'mahj', 'swind
 afterLine('lib/game-glyphs.js', "  hold: 'M2 9h3.6v9H2z", [
   "  mahj: 'M4 9h7v11H4zM13 9h7v11h-7zM8.5 3h7v11h-7z',  // three tiles, one stacked on the pair below"]);
 sub('lib/daily-skills.js', `crib: ['plan'], hold: ['est'], cell: ['plan'],`, `crib: ['plan'], hold: ['est'], cell: ['plan'], mahj: ['spa', 'plan', 'speed'],`);
-sub('lib/game-medians.js', `outwit: 90, outrank: 90, feud: 90, herd: 60, aorb: 90,`, `outwit: 90, outrank: 90, feud: 90, herd: 60, aorb: 90,\n  // Mahj launched 2026-10-25: an estimate until there is a field to pool.\n  mahj: 600,`);
+sub('lib/game-medians.js', `outwit: 90, outrank: 90, feud: 90, herd: 60,`, `outwit: 90, outrank: 90, feud: 90, herd: 60,\n  // Mahj launched 2026-10-25: an estimate until there is a field to pool.\n  mahj: 600,`);
 sub('lib/daily-difficulty.js', `art: 3, calc: 3, cell: 3,`, `art: 3, calc: 3, cell: 3, mahj: 3,`);
 
 // 9. groups and sets
