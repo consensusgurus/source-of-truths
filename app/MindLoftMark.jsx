@@ -86,7 +86,9 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
   const olRef = useRef(null);
   const houseRef = useRef(null);
   const probeRef = useRef(null);
-  const fill = mono ? ink : (accent || 'var(--stg-brand, #7dd3fc)');
+  // THE HOUSE IS THE PAGE'S PASTEL (owner, 2026-10-26): a light stage page
+  // publishes --stg-mark (globals.css), which wins over the call site's accent.
+  const fill = mono ? ink : `var(--stg-mark, ${accent || 'var(--stg-brand, #7dd3fc)'})`;
 
   useIso(() => {
     const el = ref.current;
