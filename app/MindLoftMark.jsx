@@ -44,6 +44,8 @@ function groundOf(el) {
 
 const OUTLINE_INK = '#111111';
 const OUTLINE_STROKE = 10; // in 120-grid units, centred on the edge
+// Matches the page's colour seep (lib/tile-flood.js, 650ms).
+const TRANSITION = 'fill .65s cubic-bezier(.3,0,.2,1), stroke .65s cubic-bezier(.3,0,.2,1), stroke-width .65s cubic-bezier(.3,0,.2,1)';
 
 // A ground counts as COLOURED when it carries real hue: the pastel and category
 // grounds do, white, the greys and the near-black register do not. Chroma
@@ -70,6 +72,7 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
   const ref = useRef(null);
   const olRef = useRef(null);
   const houseRef = useRef(null);
+  const probeRef = useRef(null);
   const fill = mono ? ink : (accent || 'var(--stg-brand, #7dd3fc)');
 
   useIso(() => {
@@ -111,39 +114,60 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
   }, []);
 
   useIso(() => {
-    const ol = olRef.current, house = houseRef.current;
-    if (!ol || !house) return undefined;
+    const ol = olRef.current, house = houseRef.current, probe = probeRef.current;
+    if (!ol || !house || !probe) return undefined;
+    // The house's inline style is only ever WRITTEN with its final value, never
+    // cleared and re-read, so a change of mode plays as a CSS transition (see
+    // TRANSITION below) instead of snapping. The mark's natural colour is read
+    // off an invisible twin path (`probe`) that carries the same fill.
+    const set = (f, st, w) => {
+      if (house.style.fill !== f) house.style.fill = f;
+      if (house.style.stroke !== st) house.style.stroke = st;
+      if (house.style.strokeWidth !== w) house.style.strokeWidth = w;
+    };
     const check = () => {
-      // THE WARM STEPS GO INK (owner, 2026-10-26): Trivia's rust, End Game's
-      // and the Arcade's browns read as mud on the house wherever it sits, the
-      // headers BrandFit does not wrap included, so the mark checks itself.
-      house.style.fill = ''; house.style.stroke = ''; house.style.strokeWidth = '';
       const ground = groundOf(ref.current);
       // ON A COLOURED PAGE THE MARK IS AN OUTLINE (owner, 2026-10-26): a black
       // outline filled with the page's own colour. Off colour (white, grey, the
-      // dark register) it keeps its matching pastel or main colour fill.
+      // dark register) it keeps its matching pastel or main colour fill. The
+      // switch rides the page's recolour: when a category floods the page, the
+      // blue house turns into the outline over the same beat.
       if (!mono && isColoredGround(ground)) {
-        house.style.fill = ground;
-        house.style.stroke = OUTLINE_INK;
-        house.style.strokeWidth = String(OUTLINE_STROKE);
+        set(ground, OUTLINE_INK, String(OUTLINE_STROKE));
         ol.style.display = 'none';
         return;
       }
-      const own = String(getComputedStyle(house).fill || '').match(/\d+/g);
-      if (!mono && own && own.length >= 3 && isMud(own.slice(0, 3).map(Number))) { house.style.fill = ink; house.style.stroke = ink; }
-      const c = outlineFor(getComputedStyle(house).fill, ground);
+      // THE WARM STEPS GO INK (owner, 2026-10-26): Trivia's rust, End Game's
+      // and the Arcade's browns read as mud on the house wherever it sits, the
+      // headers BrandFit does not wrap included, so the mark checks itself.
+      const nat = getComputedStyle(probe).fill;
+      const own = String(nat || '').match(/\d+/g);
+      const mud = !mono && own && own.length >= 3 && isMud(own.slice(0, 3).map(Number));
+      if (mud) set(ink, ink, ''); else set('', '', '');
+      const c = outlineFor(mud ? getComputedStyle(house).fill : nat, ground);
       if (c) { ol.setAttribute('stroke', c); ol.style.display = ''; } else { ol.style.display = 'none'; }
     };
     check();
-    let mo;
+    // Transitions switch on only after the first paint, so a page never loads
+    // with the mark animating into place.
+    const raf = requestAnimationFrame(() => { try { if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) house.style.transition = TRANSITION; } catch (e) {} });
+    const mos = [];
     try {
-      mo = new MutationObserver(check);
+      const mo = new MutationObserver(check);
       // the register lives on .stage-page (a descendant), the page colour on <html>'s style
       mo.observe(document.documentElement, { attributes: true, subtree: true, attributeFilter: ['data-stage-theme', 'data-theme', 'data-brand-mono', 'data-stage-pastel', 'data-stage-tone', 'data-stage-chrome'] });
-      mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style', 'data-stage-chrome'] });
+      mos.push(mo);
+      // THE GROUND CAN CHANGE ON ANY ANCESTOR (the home's category pane writes
+      // --stg-ground inline on .sty), so watch the style and class of every
+      // ancestor: each one on its own, never the whole subtree.
+      const mo2 = new MutationObserver(check);
+      for (let n = ref.current && ref.current.parentElement; n; n = n.parentElement) {
+        mo2.observe(n, { attributes: true, attributeFilter: ['class', 'style', 'data-stage-chrome'] });
+      }
+      mos.push(mo2);
     } catch (e) {}
     const t = setTimeout(check, 400);
-    return () => { clearTimeout(t); try { mo && mo.disconnect(); } catch (e) {} };
+    return () => { clearTimeout(t); cancelAnimationFrame(raf); mos.forEach((m) => { try { m.disconnect(); } catch (e) {} }); };
   }, [fill, ink, mono]);
 
   return (
@@ -161,6 +185,7 @@ export default function MindLoftMark({ size = 32, ink = 'var(--stg-ink, var(--in
       style={{ display: 'block', flex: 'none', overflow: 'visible' }}
     >
       <path ref={olRef} className="mlm-ol" d={HOUSE} fill="none" stroke="none" strokeWidth={3 + OUTLINE_W} strokeLinejoin="round" style={{ display: 'none' }} />
+      <path ref={probeRef} d={HOUSE} fill={fill} style={{ visibility: 'hidden' }} aria-hidden="true" />
       <path ref={houseRef} className="mlm-house" d={HOUSE} fill={fill} stroke={fill} strokeWidth="3" strokeLinejoin="round" />
     </svg>
   );
