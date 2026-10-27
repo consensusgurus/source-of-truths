@@ -342,6 +342,15 @@ const QZ_ICONS = {
   school: 'M2 9l10-5 10 5-10 5z M6 11v5c3 2 9 2 12 0v-5',
   misc: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14 M12 17h.01',
 };
+// EACH QUIZ TOPIC WEARS A CATEGORY STEP (owner, 2026-10-27). Fifteen topics
+// over the ten steps of the daily ramp, so no new hue enters the product; the
+// pairs that share a step were picked for kinship (History and Literature,
+// Movies and Entertainment, Arts and Gaming). An unknown topic takes Trivia.
+const QZ_CAT = {
+  geography: 'Geography', movies: 'Cards', sports: 'Sudoku', history: 'End Game', business: 'Numbers',
+  food: 'Trivia', travel: 'Word', science: 'Logic', literature: 'End Game', entertainment: 'Cards',
+  music: 'Arcade', arts: 'Crowd Psychology', gaming: 'Crowd Psychology', school: 'Sudoku', word: 'Word', misc: 'Trivia',
+};
 const QZ_TILES = 12;
 const QZ_ROWS = 4;
 const QZ_SEARCH_MAX = 40;
@@ -1304,14 +1313,21 @@ export default function StageToday() {
   const [qpane, setQpane] = useState(null);
   const [qSort, setQSort] = useState('plays');
   const [qq, setQq] = useState('');
-  // Which topic is open on the PHONE, where the cards fold to rows. null = the
-  // first, '' = none. Desktop always shows every card open.
-  const [qOpen, setQOpen] = useState(null);
-  // The topic whose FULL list is open in the pane (what /quizzes/all was for a
-  // reader), its sort, and whether it is past its first QZ_FULL_PEEK.
-  const [qAll, setQAll] = useState(null);
-  const [qAllSort, setQAllSort] = useState('new');
-  const [qAllMore, setQAllMore] = useState(false);
+  // THE OPEN TOPIC (owner, 2026-10-27): null is every topic; an id shows that
+  // topic's whole catalogue and floods the page in its colour. qMore is whether
+  // the topic is past its first QZ_FULL_PEEK. qView is Tiles or List, kept per
+  // browser beside the sort, like the puzzle panes' own pair.
+  const [qTopic, setQTopic] = useState(null);
+  const [qMore, setQMore] = useState(false);
+  const [qView, setQView] = useState('tile');
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem('sot_quiz_view'); if (v === 'tile' || v === 'list') setQView(v);
+      const o = localStorage.getItem('sot_quiz_sort'); if (o === 'plays' || o === 'az') setQSort(o);
+    } catch (e) { /* storage off */ }
+  }, []);
+  const pickQView = (v) => { setQView(v); try { localStorage.setItem('sot_quiz_view', v); } catch (e) { /* storage off */ } };
+  const pickQSort = (v) => { setQSort(v); try { localStorage.setItem('sot_quiz_sort', v); } catch (e) { /* storage off */ } };
   const [visitors, setVisitors] = useState(null);
   const footRef = useRef(null);
   // THE PHONE TAIL FOLDS (owner, 2026-10-25). Below 900px the page ends at the
@@ -2457,6 +2473,7 @@ export default function StageToday() {
         {ixRing(id, prog)}
         <span>{label}</span>
         {ixCount(prog)}
+        {id === QUIZ_ID && quizTotal ? <em className="sty-ixct sty-ixqc" aria-hidden="true">{quizTotal.toLocaleString()} Quizzes &middot; {topicList.length} Topics</em> : null}
         <em className="sty-ixbk" aria-hidden="true">Back</em>
       </button>
     );
@@ -2570,7 +2587,7 @@ export default function StageToday() {
           : catLabel(cat), hueFor(cat))))}
       <span className="sty-ixsep sty-ixee" aria-hidden="true" />
       {ixBtn(CIRC_ID, 'Runs', 'var(--stg-mute)', 'sty-ixe1')}
-      {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)')}
+      {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)', 'sty-ixq')}
       {/* DESKTOP INDEX ORDER (owner, 2026-10-13): Circuits, Quizzes, Puzzle Archive
           and Leaderboards + Stats are one group; the tests, Kids and the lists
           are their own group below; Most Appreciated comes last. The phone
@@ -2987,7 +3004,7 @@ export default function StageToday() {
           ))}
           <a className="sty-pqm" href="#sty-quizzes" onClick={(e) => {
             e.preventDefault();
-            if (cat === 'Geography') { setQAll('geography'); setQAllMore(false); }
+            if (cat === 'Geography') { setQTopic('geography'); setQMore(false); }
             goPane(QUIZ_ID);
           }}>
             {cat === 'Geography' ? 'See all geography quizzes' : 'See all quizzes'}
@@ -3739,7 +3756,10 @@ export default function StageToday() {
   // same colour and nothing has to fade back to white. A game opened from it
   // floods white into the game's own white start page. The no-colour looks
   // (White, Black) keep a plain page.
-  const mTintCat = mPane && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : null;
+  // A QUIZ TOPIC WEARS ITS COLOUR TOO (owner, 2026-10-27): the open topic's
+  // category step, exactly as a category pane does, and only in the colour looks.
+  const qTintCat = paneOn === QUIZ_ID && qTopic && isColorLook(siteLook) ? (QZ_CAT[qTopic] || 'Trivia') : null;
+  const mTintCat = mPane && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : (mPane ? qTintCat : null);
   // A real hex, not color-mix: the browser bar colour (theme-color) takes only a plain colour.
   const paneGround = (cat) => (isColorLook(siteLook) ? (light ? softGround(categoryColor(cat)) : mixHex(categoryColor(cat), '#0b0f1a', 0.22)) : null);
   const mTintBg = mTintCat ? paneGround(mTintCat) : null;
@@ -3747,7 +3767,7 @@ export default function StageToday() {
   // pane recolours the desktop page too, in the colour looks, and the switch
   // between panes runs the phone's flood. The page stays put; only the ground
   // changes, so the flood lands on the colour the pane then keeps.
-  const dTintCat = !runsMq && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : null;
+  const dTintCat = !runsMq && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : (!mPane ? qTintCat : null);
   const dTintBg = dTintCat ? paneGround(dTintCat) : null;
   const baseGround = light ? '#eef1f6' : '#0b0f1a';
   const ixFlip = useRef(null);
@@ -3766,6 +3786,25 @@ export default function StageToday() {
     floodIn(e, go, { desk: true, color: to });
   };
   const tintBg = mTintBg || dTintBg;
+  // Leaving the Quizzes pane closes its topic, so the next visit opens on every
+  // topic and the page is not left wearing a quiz colour.
+  useEffect(() => { if (paneOn !== QUIZ_ID) { setQTopic(null); setQMore(false); } }, [paneOn]);
+  const openTopic = (e, id) => {
+    const to = id && isColorLook(siteLook) ? paneGround(QZ_CAT[id] || 'Trivia') : baseGround;
+    const from = tintBg || baseGround;
+    const go = () => {
+      setQTopic(id); setQMore(false); setQq('');
+      try {
+        requestAnimationFrame(() => {
+          const sec = document.getElementById(QUIZ_ID);
+          const y = sec ? sec.getBoundingClientRect().top : 0;
+          if (y < 0) window.scrollTo(0, window.scrollY + y - 12);
+        });
+      } catch (er) { /* no window */ }
+    };
+    if ((id || null) === qTopic || to === from) { go(); return; }
+    floodIn(e, go, { desk: true, color: to });
+  };
   useIsoLayoutEffect(() => {
     const first = ixFlip.current;
     ixFlip.current = null;
@@ -4467,58 +4506,55 @@ export default function StageToday() {
           </div>
         </section>
         <section id="sty-quizzes" className={'sty-cat sty-qsec' + (paneOn !== QUIZ_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
-          <div className="sty-cathead">
-            {/* THE HEADING IS THE DOOR (owner, 2026-09-04). This section is a
-                set of drawers standing in for a surface that now exists, so the
-                word Quizzes goes to it. Every other category head on this page
-                is a label for what is under it and stays one; this one is the
-                only head with somewhere else to be. */}
-            <h2>Quizzes</h2>
-            {/* DRAWN ONLY WHEN REAL: no figure until the catalogue has landed,
-                rather than a zero that is not true yet. */}
-            {quizTotal ? (
-              <b>{quizTotal.toLocaleString()}<i>/{topicList.length} topics{qpane && qpane.plays ? ` \u00b7 ${qpane.plays.toLocaleString()} plays` : ''}</i></b>
-            ) : null}
-            {/* NO OUTBOUND LINK (owner, 2026-10-16): this pane IS the quiz home
-                now. /quizzes redirects here and /quizzes/all stays live for
-                crawlers only, linked from nowhere on the site. */}
-          </div>
           {(() => {
-            // THE QUIZZES PANE (owner, 2026-10-16). Since the same day it is
-            // also the whole quiz home: /quizzes redirects here, and each topic
-            // card opens its full list in place, which is what /quizzes/all was
-            // for a reader (that page stays live, unlinked, for crawlers).
-            // Every block keeps its height before the counts land.
+            // THE QUIZZES PANE, REDRAWN IN THE SITE'S LOOK (owner, 2026-10-27).
+            // The photo banners, photo tiles, thin grey outlines and blue Play
+            // buttons are gone. A quiz is a tile like a puzzle tile: ink outline,
+            // the topic's glyph and name on white, and a crowd strip along the
+            // foot in the topic's colour. Each of the fifteen topics wears one of
+            // the ten category steps (QZ_CAT), so no new hue enters the product.
+            // The topics sit in a right rail (a strip of chips on a phone), and
+            // picking one floods the page in its colour the way opening a
+            // category does. Tiles / List, search and the sort ride in the head
+            // row like every other pane. Every block keeps its height before the
+            // counts land.
             const fmt = (n) => Number(n || 0).toLocaleString();
-            const pic = (src, w) => `/_next/image?url=${encodeURIComponent(src)}&w=${w || 640}&q=70`;
-            const hue = {};
-            if (qpane) for (const t of qpane.topics) hue[t.id] = t.color;
             const icon = (id) => QZ_ICONS[id] || QZ_ICONS.misc;
-            const tiles = qpane ? qpane.top : Array.from({ length: QZ_TILES }, () => null);
-            const banners = qpane ? (qpane.banners || []) : [null, null];
+            const qVars = (id) => {
+              const c = QZ_CAT[id] || 'Trivia';
+              return { '--cfull': categoryColor(c), '--cci': light ? categoryAccentInkLight(c) : categoryColor(c), '--cdk': categoryAccentInkLight(c) };
+            };
+            const glyph = (id, size) => (
+              <svg className="sty-qxg" viewBox="0 0 24 24" width={size || 16} height={size || 16} fill="none" stroke="currentColor"
+                strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={icon(id)} /></svg>
+            );
+            const pm = (qpane && qpane.pm) || {};
             const cats0 = qpane
               ? qpane.topics
-              : TOPIC_SKELETON.map((t) => ({ ...t, color: null, count: 0, plays: null, top: [] }));
-            const cats = qSort === 'az'
-              ? cats0.slice().sort((a, b) => a.label.localeCompare(b.label))
-              : cats0;
-            const pm = (qpane && qpane.pm) || {};
+              : TOPIC_SKELETON.map((t) => ({ ...t, count: 0, plays: null, top: [] }));
+            const byPlays = cats0.slice().sort((a, b) => (Number(b.plays) || 0) - (Number(a.plays) || 0));
+            const rail = qSort === 'az' ? cats0.slice().sort((a, b) => a.label.localeCompare(b.label)) : byPlays;
+            const allPlays = qpane && qpane.plays ? qpane.plays : null;
+            const labelOf = {};
+            for (const t of cats0) labelOf[t.id] = t.label;
+            const cur = qTopic ? cats0.find((t) => t.id === qTopic) || null : null;
+            const curList = (() => {
+              if (!cur) return [];
+              const t = topicList.find((x) => x.id === cur.id);
+              const list = (t && t.quizzes) || [];
+              if (qSort === 'az') return list.slice().sort((a, b) => String(a.title).localeCompare(String(b.title)));
+              return list.map((q, i) => [q, i]).sort((a, b) => ((pm[b[0].id] || 0) - (pm[a[0].id] || 0)) || (a[1] - b[1])).map((x) => x[0]);
+            })();
             const needle = qq.trim().toLowerCase();
             const hits = [];
             if (needle) {
               for (const t of topicList) {
+                if (qTopic && t.id !== qTopic) continue;
                 for (const q of (t.quizzes || [])) {
                   if (String(q.title).toLowerCase().includes(needle)) hits.push({ ...q, label: t.label });
                 }
               }
             }
-            const fullList = (id) => {
-              const t = topicList.find((x) => x.id === id);
-              const list = (t && t.quizzes) || [];
-              if (qAllSort === 'az') return list.slice().sort((a, b) => String(a.title).localeCompare(String(b.title)));
-              if (qAllSort === 'plays') return list.slice().sort((a, b) => (pm[b.id] || 0) - (pm[a.id] || 0));
-              return list;
-            };
             const best = (() => {
               const by = mine && mine.byCategory;
               if (!by || !topics) return [];
@@ -4528,213 +4564,207 @@ export default function StageToday() {
                 .sort((a, b) => (b.c.xp || 0) - (a.c.xp || 0))
                 .slice(0, 6);
             })();
-            const openAll = (id) => { setQAll((cur) => (cur === id ? null : id)); setQAllMore(false); };
+            // The phone is tiles, as every pane there is (owner, 2026-10-07).
+            const tiled = qView === 'tile' || runsMq;
+            const tile = (q, dept, left, right) => (
+              <a key={q.id} className="sty-qxt" href={`/quiz/${q.id}`} style={qVars(dept)}>
+                <span className="sty-qxn">{glyph(dept)}<span>{q.title}</span></span>
+                <span className="sty-qxs"><span className="ld">{left}</span><span className="ct">{right}</span></span>
+              </a>
+            );
+            const tileHole = (i) => (
+              <span key={'h' + i} className="sty-qxt ph" aria-hidden="true"><span className="sty-qxn" /><span className="sty-qxs" /></span>
+            );
+            const row = (q, n, dept, mid, plays) => (
+              <a key={q.id} className="sty-qxl" href={`/quiz/${q.id}`} style={qVars(dept)}>
+                <i>{n}</i>
+                <span className="t">{glyph(dept, 15)}<span>{q.title}</span></span>
+                <span className="m">{mid}</span>
+                <b>{plays}</b>
+              </a>
+            );
+            const playsLine = (n) => (n ? <><b>{fmt(n)}</b> {n === 1 ? 'play' : 'plays'}</> : 'Be the first');
+            const top = qpane ? qpane.top : null;
             return (
-              <div className="sty-qpane">
-                <div className="sty-qtools">
-                  <label className="sty-qsearch">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                      strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-                      <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" />
-                    </svg>
-                    <span className="sty-sr">Search quizzes</span>
-                    <input type="search" value={qq} onChange={(e) => setQq(e.target.value)}
-                      placeholder={quizTotal ? `Search ${quizTotal.toLocaleString()} quizzes` : 'Search quizzes'} />
-                  </label>
-                  {!needle ? (
-                    <div className="sty-qsort" role="group" aria-label="Sort quiz topics">
-                      <button type="button" aria-pressed={qSort === 'plays'} onClick={() => setQSort('plays')}>Most played</button>
-                      <button type="button" aria-pressed={qSort === 'az'} onClick={() => setQSort('az')}>A to Z</button>
+              <>
+                <div className="sty-cathead">
+                  <div className="sty-cht"><h2>Quizzes</h2>{quizTotal ? <span className="sty-csub">{fmt(quizTotal)} Quizzes &middot; {topicList.length} Topics</span> : null}</div>
+                  <div className="sty-qxtools">
+                    <div className="sty-sort sty-view" role="group" aria-label="Show quizzes as">
+                      <button type="button" aria-pressed={tiled} onClick={() => pickQView('tile')}>Tiles</button>
+                      <button type="button" aria-pressed={!tiled} onClick={() => pickQView('list')}>List</button>
                     </div>
-                  ) : null}
+                    <label className="sty-qxfind">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                        strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" />
+                      </svg>
+                      <span className="sty-sr">Search quizzes</span>
+                      <input type="search" value={qq} onChange={(e) => setQq(e.target.value)}
+                        placeholder={cur ? (cur.count ? `Search ${fmt(cur.count)} ${cur.label} quizzes` : `Search ${cur.label} quizzes`) : quizTotal ? `Search ${fmt(quizTotal)} quizzes` : 'Search quizzes'} />
+                    </label>
+                    <span className="sty-qxsl" aria-hidden="true">Sort:</span>
+                    <div className="sty-sort sty-qxsort" role="group" aria-label="Sort quizzes">
+                      <button type="button" aria-pressed={qSort === 'plays'} onClick={() => pickQSort('plays')}>Popular</button>
+                      <button type="button" aria-pressed={qSort === 'az'} onClick={() => pickQSort('az')}>A to Z</button>
+                    </div>
+                  </div>
                 </div>
-                {needle ? (
-                  <div className="sty-qblk">
-                    <div className="sty-qbh">
-                      <h3>{topics ? `${hits.length > QZ_SEARCH_MAX ? `${QZ_SEARCH_MAX}+` : hits.length} ${hits.length === 1 ? 'match' : 'matches'}` : 'Searching'}</h3>
-                      {hits.length > QZ_SEARCH_MAX ? <span>Showing the first {QZ_SEARCH_MAX}. Keep typing to narrow it.</span> : null}
+                <div className="sty-qx">
+                  <div className="sty-qxm">
+                    <div className="sty-qxchips" role="group" aria-label="Quiz topics">
+                      <button type="button" aria-pressed={!qTopic} onClick={(e) => openTopic(e, null)}>All Topics</button>
+                      {rail.map((t) => (
+                        <button key={t.id} type="button" aria-pressed={qTopic === t.id} style={qVars(t.id)} onClick={(e) => openTopic(e, t.id)}>
+                          <i aria-hidden="true" />{t.label}
+                        </button>
+                      ))}
                     </div>
-                    {hits.length ? (
-                      <ul className="sty-qres">
-                        {hits.slice(0, QZ_SEARCH_MAX).map((q) => (
-                          <li key={q.id}><a href={`/quiz/${q.id}`}><span className="t">{q.title}</span><i>{q.label}</i></a></li>
-                        ))}
-                      </ul>
-                    ) : topics ? (
-                      <div className="sty-lnone">No quizzes match &ldquo;{qq.trim()}&rdquo;.</div>
+                    {cur ? (
+                      <div className="sty-qxth">
+                        <button type="button" className="sty-qxback" onClick={(e) => openTopic(e, null)}>
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+                          All Topics
+                        </button>
+                        <span>{cur.label}{cur.count ? <> &middot; {fmt(cur.count)} quizzes</> : null}{cur.plays ? <> &middot; {fmt(cur.plays)} plays</> : null}</span>
+                      </div>
+                    ) : null}
+                    {needle ? (
+                      <section className="sty-qxblk" aria-labelledby="sty-qxsr">
+                        <div className="sty-qxh">
+                          <h3 id="sty-qxsr">{topics ? `${hits.length > QZ_SEARCH_MAX ? `${QZ_SEARCH_MAX}+` : hits.length} ${hits.length === 1 ? 'Match' : 'Matches'}` : 'Searching'}</h3>
+                          {hits.length > QZ_SEARCH_MAX ? <span>Showing the first {QZ_SEARCH_MAX}. Keep typing to narrow it.</span> : null}
+                        </div>
+                        {hits.length ? (
+                          <ul className="sty-qres">
+                            {hits.slice(0, QZ_SEARCH_MAX).map((q) => (
+                              <li key={q.id}><a href={`/quiz/${q.id}`}><span className="t">{q.title}</span><i>{q.label}</i></a></li>
+                            ))}
+                          </ul>
+                        ) : topics ? (
+                          <div className="sty-lnone">No quizzes match &ldquo;{qq.trim()}&rdquo;.</div>
+                        ) : (
+                          <div className="sty-lnone">Loading the catalogue&hellip;</div>
+                        )}
+                      </section>
+                    ) : cur ? (
+                      <section className="sty-qxblk" aria-label={`${cur.label} quizzes`}>
+                        {curList.length ? (
+                          tiled ? (
+                            <div className="sty-qxtiles">
+                              {(qMore ? curList : curList.slice(0, QZ_FULL_PEEK)).map((q) => tile(q, cur.id, playsLine(pm[q.id] || 0), qzTag(q)))}
+                            </div>
+                          ) : (
+                            <div className="sty-qxled">
+                              <div className="sty-qxlh"><span>#</span><span>Quiz</span><span>Length</span><span>Plays</span></div>
+                              {(qMore ? curList : curList.slice(0, QZ_FULL_PEEK)).map((q, i) => row(q, i + 1, cur.id, qzTag(q), pm[q.id] ? fmt(pm[q.id]) : '0'))}
+                            </div>
+                          )
+                        ) : (
+                          <div className="sty-qxtiles">{Array.from({ length: 8 }, (_, i) => tileHole(i))}</div>
+                        )}
+                        {curList.length > QZ_FULL_PEEK ? (
+                          <button type="button" className="sty-qxall" onClick={() => setQMore((v) => !v)}>
+                            {qMore ? 'Show Fewer' : `Show All ${fmt(curList.length)}`}
+                          </button>
+                        ) : null}
+                      </section>
                     ) : (
-                      <div className="sty-lnone">Loading the catalogue&hellip;</div>
+                      <>
+                        <section className="sty-qxblk" aria-labelledby="sty-qxmp">
+                          <div className="sty-qxh">
+                            <h3 id="sty-qxmp">Most Played</h3>
+                            <span>All-time plays &middot; at most two per topic</span>
+                          </div>
+                          {tiled ? (
+                            <div className="sty-qxtiles">
+                              {top ? top.map((q) => tile(q, q.dept, playsLine(q.plays), q.label || labelOf[q.dept] || '')) : Array.from({ length: QZ_TILES }, (_, i) => tileHole(i))}
+                            </div>
+                          ) : (
+                            <div className="sty-qxled">
+                              <div className="sty-qxlh"><span>#</span><span>Quiz</span><span>Topic</span><span>Plays</span></div>
+                              {top ? top.map((q, i) => row(q, i + 1, q.dept, <em>{q.label || labelOf[q.dept] || ''}</em>, fmt(q.plays)))
+                                : Array.from({ length: QZ_TILES }, (_, i) => <span key={i} className="sty-qxl ph" aria-hidden="true" />)}
+                            </div>
+                          )}
+                        </section>
+                        <section className="sty-qxblk" aria-labelledby="sty-qxtt">
+                          <div className="sty-qxh">
+                            <h3 id="sty-qxtt">{tiled ? 'Top Topics' : 'Every Topic'}</h3>
+                            <span>{qSort === 'az' && !tiled ? 'A to Z' : 'Sorted by total plays'} &middot; counts refresh daily</span>
+                          </div>
+                          {tiled ? (
+                            <div className="sty-qxcards">
+                              {byPlays.slice(0, 6).map((t) => (
+                                <article key={t.id} className="sty-qxc" style={qVars(t.id)}>
+                                  <button type="button" className="sty-qxch" onClick={(e) => openTopic(e, t.id)}>
+                                    <span className="dc">{glyph(t.id)}</span>
+                                    <span className="nm"><b>{t.label}</b><span>{t.count ? `${fmt(t.count)} quizzes` : ' '}</span></span>
+                                    <span className="pl"><b>{t.plays === null ? ' ' : fmt(t.plays)}</b><span>plays</span></span>
+                                  </button>
+                                  <ol>
+                                    {(t.top.length ? t.top.slice(0, QZ_ROWS) : Array.from({ length: QZ_ROWS }, () => null)).map((q, j) => (q ? (
+                                      <li key={q.id}><a href={`/quiz/${q.id}`}><i>{j + 1}</i><span>{q.title}</span><b>{fmt(q.plays)}</b></a></li>
+                                    ) : <li key={j} className="ph" aria-hidden="true" />))}
+                                  </ol>
+                                  <button type="button" className="sty-qxall" onClick={(e) => openTopic(e, t.id)}>
+                                    {t.count ? `Show All ${fmt(t.count)}` : 'Show All'}
+                                  </button>
+                                </article>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="sty-qxled sty-qxtl">
+                              <div className="sty-qxlh"><span /><span>Topic</span><span>Most Played Quiz</span><span>Quizzes</span><span>Plays</span></div>
+                              {rail.map((t) => (
+                                <button key={t.id} type="button" className="sty-qxl" style={qVars(t.id)} onClick={(e) => openTopic(e, t.id)}>
+                                  <i className="dc">{glyph(t.id, 13)}</i>
+                                  <span className="t"><span>{t.label}</span></span>
+                                  <span className="m">{t.top && t.top[0] ? t.top[0].title : ''}</span>
+                                  <span className="m n">{t.count ? fmt(t.count) : ''}</span>
+                                  <b>{t.plays === null ? '' : fmt(t.plays)}</b>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </section>
+                        {best.length ? (
+                          <section className="sty-qxblk sty-qbest" aria-labelledby="sty-qyb">
+                            <div className="sty-qxh">
+                              <h3 id="sty-qyb">Your Best Topics</h3>
+                              {mine && mine.activity ? <span>{fmt(mine.activity.played)} played</span> : null}
+                            </div>
+                            <table>
+                              <tbody>
+                                {best.map((r, i) => (
+                                  <tr key={r.t.id}>
+                                    <td className="n">{i + 1}</td>
+                                    <td>{r.t.label}<span> &middot; {fmt(r.c.played || r.c.matches)} of {fmt(r.t.count)}</span></td>
+                                    <td className="p">{fmt(r.c.xp)}</td>
+                                    <td className="r">#{fmt(r.c.rank)}<span> of {fmt(r.c.catTotal)}</span></td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </section>
+                        ) : null}
+                      </>
                     )}
                   </div>
-                ) : (
-                  <>
-                    <div className="sty-qbans">
-                      {banners.map((b, i) => (b ? (
-                        <a key={b.id} className="sty-qban" href={`/quiz/${b.id}`}>
-                          <img src={pic(b.img, 1080)} alt="" style={b.pos ? { objectPosition: b.pos } : undefined} />
-                          <span className="sty-qbtx">
-                            <i>{b.kind}</i>
-                            <strong>{b.title}</strong>
-                            <span>{b.label}{b.plays ? ` · ${fmt(b.plays)} plays` : ''}</span>
-                          </span>
-                        </a>
-                      ) : <span key={i} className="sty-qban ph" aria-hidden="true" />))}
-                    </div>
-                    <section className="sty-qblk" aria-labelledby="sty-qmp">
-                      <div className="sty-qbh">
-                        <h3 id="sty-qmp">Most played</h3>
-                        <span>All-time plays, at most two per topic</span>
-                      </div>
-                      <div className="sty-qtiles">
-                        {tiles.map((q, i) => (q ? (
-                          <a key={q.id} className="sty-qtile" href={`/quiz/${q.id}`} style={{ '--dc': hue[q.dept] || 'var(--stg-mute)' }}>
-                            <span className="sty-qtband">
-                              {q.img ? (
-                                <img src={pic(q.img)} alt="" loading="lazy" style={q.pos ? { objectPosition: q.pos } : undefined} />
-                              ) : (
-                                <svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor"
-                                  strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <path d={icon(q.dept)} />
-                                </svg>
-                              )}
-                              <b>{i + 1}</b>
-                            </span>
-                            <span className="sty-qtbody">
-                              <i>{q.label}</i>
-                              <strong>{q.title}</strong>
-                              <span className="sty-qtfoot">
-                                <em>{fmt(q.plays)} <small>plays</small></em>
-                                <span className="sty-qtplay">Play</span>
-                              </span>
-                            </span>
-                          </a>
-                        ) : (
-                          <span key={i} className="sty-qtile ph" aria-hidden="true">
-                            <span className="sty-qtband" /><span className="sty-qtbody" />
-                          </span>
-                        )))}
-                      </div>
-                    </section>
-                    <section className="sty-qblk" aria-labelledby="sty-qbc">
-                      <div className="sty-qbh">
-                        <h3 id="sty-qbc">By category</h3>
-                        <span>{qSort === 'az' ? 'A to Z' : 'Sorted by total plays'} &middot; counts refresh daily</span>
-                      </div>
-                      <div className="sty-qcats">
-                        {cats.map((t, i) => {
-                          const open = qOpen === null ? i === 0 : qOpen === t.id;
-                          const full = qAll === t.id;
-                          const list = full ? fullList(t.id) : [];
-                          const shown = qAllMore ? list : list.slice(0, QZ_FULL_PEEK);
-                          return [
-                            <article key={t.id} className={'sty-qcat' + (open ? ' on' : '') + (full ? ' full' : '')} style={t.color ? { '--dc': t.color } : undefined}>
-                              <button type="button" className="sty-qch" aria-expanded={open}
-                                aria-controls={`sty-qc-${t.id}`} onClick={() => setQOpen(open ? '' : t.id)}>
-                                <span className="sty-qph">
-                                  {t.img ? (
-                                    <img src={pic(t.img)} alt="" loading="lazy" style={t.pos ? { objectPosition: t.pos } : undefined} />
-                                  ) : (
-                                    <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor"
-                                      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                      <path d={icon(t.id)} />
-                                    </svg>
-                                  )}
-                                </span>
-                                <span className="sty-qcrow">
-                                  <span className="sty-qcn">
-                                    <strong>{t.label}</strong>
-                                    <span>{t.count ? `${fmt(t.count)} quizzes` : ' '}</span>
-                                  </span>
-                                  <span className="sty-qcp">
-                                    <b>{t.plays === null ? ' ' : fmt(t.plays)}</b>
-                                    <small>plays</small>
-                                  </span>
-                                  <svg className="sty-qpm" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                                    strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-                                    <path d="M5 12h14" /><path className="v" d="M12 5v14" />
-                                  </svg>
-                                </span>
-                              </button>
-                              <div className="sty-qcb" id={`sty-qc-${t.id}`}>
-                                <ol>
-                                  {(t.top.length ? t.top : Array.from({ length: QZ_ROWS }, () => null)).map((q, j) => (q ? (
-                                    <li key={q.id}>
-                                      <a href={`/quiz/${q.id}`}>
-                                        <span className="n">{j + 1}</span>
-                                        <span className="t">{q.title}</span>
-                                        <b>{fmt(q.plays)}</b>
-                                      </a>
-                                    </li>
-                                  ) : <li key={j} className="ph" aria-hidden="true" />))}
-                                </ol>
-                                {t.count ? (
-                                  <button type="button" className="sty-qall2" aria-expanded={full}
-                                    aria-controls={`sty-qf-${t.id}`} onClick={() => openAll(t.id)}>
-                                    {full ? 'Hide the full list' : `Show all ${fmt(t.count)}`}
-                                  </button>
-                                ) : null}
-                              </div>
-                            </article>,
-                            full ? (
-                              <section key={t.id + '-all'} id={`sty-qf-${t.id}`} className="sty-qfull" style={t.color ? { '--dc': t.color } : undefined}
-                                aria-label={`All ${t.label} quizzes`}>
-                                <div className="sty-qfh">
-                                  <h4>All {fmt(t.count)} {t.label} quizzes</h4>
-                                  <div className="sty-qsort" role="group" aria-label={`Sort ${t.label} quizzes`}>
-                                    <button type="button" aria-pressed={qAllSort === 'new'} onClick={() => setQAllSort('new')}>Newest</button>
-                                    <button type="button" aria-pressed={qAllSort === 'plays'} onClick={() => setQAllSort('plays')}>Most played</button>
-                                    <button type="button" aria-pressed={qAllSort === 'az'} onClick={() => setQAllSort('az')}>A to Z</button>
-                                  </div>
-                                  <button type="button" className="sty-qfx" aria-label={`Close the ${t.label} list`} onClick={() => openAll(t.id)}>
-                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
-                                  </button>
-                                </div>
-                                {list.length ? (
-                                  <div className="sty-qfg">
-                                    {shown.map((q) => (
-                                      <a key={q.id} href={`/quiz/${q.id}`}>
-                                        <strong>{q.title}</strong>
-                                        <span>{[qzTag(q), pm[q.id] ? `${fmt(pm[q.id])} ${pm[q.id] === 1 ? 'play' : 'plays'}` : ''].filter(Boolean).join(' · ')}</span>
-                                      </a>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="sty-lnone">Loading the catalogue&hellip;</div>
-                                )}
-                                {list.length > QZ_FULL_PEEK ? (
-                                  <button type="button" className="sty-qfmore" onClick={() => setQAllMore((v) => !v)}>
-                                    {qAllMore ? 'Show fewer' : `Show the other ${fmt(list.length - QZ_FULL_PEEK)}`}
-                                  </button>
-                                ) : null}
-                              </section>
-                            ) : null,
-                          ];
-                        })}
-                      </div>
-                    </section>
-                    {best.length ? (
-                      <section className="sty-qblk sty-qbest" aria-labelledby="sty-qyb">
-                        <div className="sty-qbh">
-                          <h3 id="sty-qyb">Your best topics</h3>
-                          {mine && mine.activity ? <span>{fmt(mine.activity.played)} played</span> : null}
-                        </div>
-                        <table>
-                          <tbody>
-                            {best.map((r, i) => (
-                              <tr key={r.t.id}>
-                                <td className="n">{i + 1}</td>
-                                <td>{r.t.label}<span> &middot; {fmt(r.c.played || r.c.matches)} of {fmt(r.t.count)}</span></td>
-                                <td className="p">{fmt(r.c.xp)}</td>
-                                <td className="r">#{fmt(r.c.rank)}<span> of {fmt(r.c.catTotal)}</span></td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </section>
-                    ) : null}
-                  </>
-                )}
-              </div>
+                  <aside className="sty-qxr" aria-label="Quiz topics">
+                    <div className="h">Topics<span>Plays</span></div>
+                    <button type="button" className={'r' + (!qTopic ? ' on' : '')} aria-pressed={!qTopic} onClick={(e) => openTopic(e, null)}>
+                      <i aria-hidden="true" /><em>All Topics</em><span>{allPlays ? fmt(allPlays) : ''}</span>
+                    </button>
+                    {rail.map((t) => (
+                      <button key={t.id} type="button" className={'r' + (qTopic === t.id ? ' on' : '')} aria-pressed={qTopic === t.id}
+                        style={qVars(t.id)} onClick={(e) => openTopic(e, t.id)}>
+                        <i aria-hidden="true" /><em>{t.label}</em><span>{t.plays === null ? '' : fmt(t.plays)}</span>
+                      </button>
+                    ))}
+                  </aside>
+                </div>
+              </>
             );
           })()}
         </section>
@@ -5645,168 +5675,190 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-tmore{width:auto;margin-top:0;flex:1 1 auto;text-align:center;text-decoration:none;
   display:flex;align-items:center;justify-content:center;}
 
-/* ── THE QUIZZES PANE (owner, 2026-10-16) ──
-   The whole quiz home: two photo banners, most-played tiles, then every topic
-   as a card with its photo, total plays and top four, which opens its full list
-   in place. Desktop shows every card open; at phone width the banners and tiles
-   become swipe strips and the cards fold into rows, one open at a time. The
-   topic hue arrives as --dc and is mixed toward the register's own surface and
-   ink, so it reads in light and dark alike. Photos come through /_next/image. */
-.sty-qtools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 18px;}
-.sty-qsearch{flex:1 1 260px;max-width:380px;display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;
-  border:1px solid var(--stg-line2);border-radius:999px;background:var(--stg-surf);color:var(--stg-mute);}
-.sty-qsearch:focus-within{border-color:var(--stg-acc);}
-.sty-qsearch input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:600 13.5px/1 ${SANS};color:var(--stg-ink);}
-.sty-qsearch input::placeholder{color:var(--stg-mute);}
-.sty-qsort{margin-left:auto;flex:none;display:inline-flex;gap:2px;padding:2px;border:1px solid var(--stg-cell-line);border-radius:999px;}
-.sty-qsort button{border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);font:800 11px/1 ${SANS};
-  letter-spacing:.05em;text-transform:uppercase;padding:7px 12px;cursor:pointer;}
-.sty-qsort button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
-.sty-qblk{margin-bottom:26px;}
-.sty-qbh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
-.sty-qbh h3{margin:0;font-size:17px;font-weight:800;letter-spacing:-0.01em;color:var(--stg-ink);}
-.sty-qbh span{font-size:12px;font-weight:600;color:var(--stg-mute);}
-/* banners: photo, a dark scrim at the foot, white type on the scrim only */
-.sty-qbans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:26px;}
-.sty-qban{position:relative;display:block;height:200px;border-radius:14px;overflow:hidden;background:var(--stg-chip);
-  text-decoration:none;color:#fff;}
-.sty-qban img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.sty-qban::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,12,20,0) 30%,rgba(8,12,20,.84) 100%);}
-.sty-qban.ph::after{display:none;}
-.sty-qban:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
-.sty-qbtx{position:absolute;left:20px;right:20px;bottom:16px;z-index:1;display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
-.sty-qbtx i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
-  background:#fff;color:#0b0d12;border-radius:4px;padding:3px 7px;}
-.sty-qbtx strong{font-size:22px;font-weight:800;line-height:1.15;}
-.sty-qbtx span{font-size:12px;font-weight:600;color:#e6ebf3;}
-/* tiles */
-.sty-qtiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
-.sty-qtile{display:flex;flex-direction:column;min-width:0;background:var(--stg-surf);border:1px solid var(--stg-line);
-  border-radius:12px;overflow:hidden;text-decoration:none;color:var(--stg-ink);}
-a.sty-qtile:hover{border-color:var(--stg-line2);}
-a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
-.sty-qtile:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;}
-.sty-qtband{position:relative;height:104px;display:flex;align-items:center;padding:0 16px;overflow:hidden;
-  background:color-mix(in srgb,var(--dc,var(--stg-mute)) 18%,var(--stg-surf));
-  color:color-mix(in srgb,var(--dc,var(--stg-mute)) 82%,var(--stg-ink));}
-.sty-qtband img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.sty-qtband b{position:absolute;top:8px;right:8px;min-width:30px;height:30px;padding:0 6px;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;background:#fff;color:#0b0d12;
-  font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;}
-.sty-qtbody{display:flex;flex-direction:column;gap:6px;padding:12px 14px 14px;flex:1;min-height:96px;}
-.sty-qtbody i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
-.sty-qtbody strong{font-size:14px;font-weight:700;line-height:1.3;min-height:2.6em;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.sty-qtfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:4px;}
-.sty-qtfoot em{font-style:normal;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;}
-.sty-qtfoot small{font-size:13px;font-weight:600;color:var(--stg-mute);}
-.sty-qtplay{flex:none;font-size:12px;font-weight:800;border-radius:999px;padding:5px 12px;
-  background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
-.sty-qtile.ph .sty-qtband{background:var(--stg-chip);}
-/* topic cards; dense flow lets an opened full list take the next whole row */
-.sty-qcats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-flow:row dense;gap:12px;align-items:start;}
-.sty-qcat{min-width:0;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;overflow:hidden;}
-.sty-qcat.full{border-color:var(--dc,var(--stg-line2));box-shadow:0 0 0 1px var(--dc,var(--stg-line2));}
-.sty-qch{display:flex;flex-wrap:wrap;width:100%;border:0;background:none;padding:0;
-  font-family:inherit;color:var(--stg-ink);text-align:left;cursor:default;}
-.sty-qph{position:relative;flex:0 0 100%;height:88px;display:flex;align-items:center;padding:0 16px;overflow:hidden;
-  background:color-mix(in srgb,var(--dc,var(--stg-mute)) 18%,var(--stg-surf));
-  color:color-mix(in srgb,var(--dc,var(--stg-mute)) 82%,var(--stg-ink));}
-.sty-qph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.sty-qcrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px 10px;}
-.sty-qcn{flex:1;min-width:0;display:flex;flex-direction:column;}
-.sty-qcn strong{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
-.sty-qcn span{font-size:12px;font-weight:600;color:var(--stg-mute);}
-.sty-qcp{flex:none;display:flex;flex-direction:column;align-items:flex-end;}
-.sty-qcp b{font-size:20px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
-.sty-qcp small{font-size:11px;font-weight:700;color:var(--stg-mute);}
-.sty-qpm{display:none;}
-.sty-qcb{padding:0 16px 12px;}
-.sty-qcb ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--stg-line);}
-.sty-qcb li{border-bottom:1px solid var(--stg-line);}
-.sty-qcb li.ph{height:35px;}
-.sty-qcb li a{display:flex;align-items:center;gap:10px;padding:8px 0;text-decoration:none;color:var(--stg-ink);font-size:13px;}
-.sty-qcb li a:hover .t{color:var(--stg-acc-ink);}
-.sty-qcb li a:focus-visible{outline:2px solid var(--stg-acc);outline-offset:2px;border-radius:4px;}
-.sty-qcb .n{width:14px;flex:none;font-weight:800;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
-.sty-qcb .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
-.sty-qcb li b{flex:none;font-weight:800;font-variant-numeric:tabular-nums;}
-.sty-qall2{display:block;width:100%;margin-top:10px;height:36px;border-radius:8px;border:1px solid var(--stg-line2);
-  background:var(--stg-surf);color:var(--stg-ink2);font:800 12px/1 ${SANS};cursor:pointer;}
-.sty-qall2:hover{border-color:var(--stg-acc);color:var(--stg-acc-ink);}
-.sty-qcat.full .sty-qall2{background:var(--stg-ink);border-color:var(--stg-ink);color:var(--stg-ground);}
-/* the full list that replaced /quizzes/all for a reader */
-.sty-qfull{grid-column:1 / -1;background:var(--stg-surf);border:1px solid var(--dc,var(--stg-line2));
-  box-shadow:0 0 0 1px var(--dc,var(--stg-line2));border-radius:12px;padding:16px 18px 18px;}
-.sty-qfh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
-.sty-qfh h4{margin:0;font-size:16px;font-weight:800;color:var(--stg-ink);}
-.sty-qfx{flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--stg-line2);background:var(--stg-surf);
-  color:var(--stg-ink2);display:flex;align-items:center;justify-content:center;cursor:pointer;}
-.sty-qfg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
-.sty-qfg a{display:flex;flex-direction:column;gap:4px;min-width:0;min-height:58px;padding:10px 12px;border:1px solid var(--stg-line);
-  border-radius:8px;text-decoration:none;color:var(--stg-ink);}
-.sty-qfg a:hover{border-color:var(--stg-line2);}
-.sty-qfg a:hover strong{color:var(--stg-acc-ink);}
-.sty-qfg strong{font-size:13px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.sty-qfg span{margin-top:auto;font-size:11px;font-weight:600;color:var(--stg-mute);}
-.sty-qfmore{display:block;width:100%;margin-top:12px;height:40px;border-radius:8px;border:1px solid var(--stg-line2);
-  background:var(--stg-chip);color:var(--stg-ink2);font:800 13px/1 ${SANS};cursor:pointer;}
+/* ── THE QUIZZES PANE, IN THE SITE'S LOOK (owner, 2026-10-27) ──
+   Replaces the 2026-10-16 photo pane. No photos, no grey hairline cards, no
+   blue Play pills: a quiz is a tile with a 2px ink outline, its topic glyph and
+   title on white, and a crowd strip along the foot in the topic's colour,
+   exactly like a puzzle tile. Each topic carries a category step as --cfull
+   (the pastel), --cci (the glyph ink for the register) and --cdk (the deep ink,
+   for glyphs that sit on a white disc in either register). The topics live in
+   a right rail on a desktop and a strip of chips under 901px. */
+.sty-qsec .sty-cathead{flex-wrap:wrap;}
+.sty-qxtools{flex:1 1 100%;display:flex;align-items:center;gap:10px;min-width:0;margin:2px 0 14px;}
+.sty-qxtools .sty-sort{margin-left:0;}
+.sty-qxfind{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;
+  border:2px solid var(--stg-ink);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);cursor:text;}
+.sty-qxfind input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:600 14px/1 ${SANS};color:var(--stg-ink);}
+.sty-qxfind input::placeholder{color:color-mix(in srgb, var(--stg-ink) 55%, transparent);}
+.sty-qxfind:focus-within{box-shadow:0 0 0 2px var(--stg-surf),0 0 0 4px var(--stg-ink);}
+.sty-qx{display:grid;grid-template-columns:minmax(0,1fr) 216px;gap:22px;align-items:start;}
+.sty-qxm{min-width:0;}
+.sty-qxblk{margin-bottom:24px;}
+.sty-qxh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:9px;}
+.sty-qxh h3{margin:0;font-size:17px;font-weight:800;letter-spacing:-0.01em;line-height:1.3;color:var(--stg-ink);}
+.sty-qxh span{font-size:11.5px;font-weight:600;color:var(--stg-ink2, var(--stg-ink));}
+/* the tile */
+.sty-qxtiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;}
+.sty-qxt{display:flex;flex-direction:column;min-width:0;min-height:96px;background:var(--stg-surf);border:2px solid var(--stg-ink);
+  border-radius:12px;overflow:hidden;text-decoration:none;color:var(--stg-ink);transition:transform .12s cubic-bezier(.2,.7,.3,1);}
+.sty-qxt:hover{transform:translateY(-1px);}
+.sty-qxt:hover .sty-qxn > span{color:var(--cci, var(--stg-ink));}
+.sty-qxt:focus-visible{outline:2px solid var(--stg-ink);outline-offset:2px;}
+.sty-qxn{flex:1;display:flex;align-items:flex-start;gap:7px;padding:10px 10px 10px 12px;font-size:14px;font-weight:800;
+  line-height:1.3;letter-spacing:-0.01em;}
+.sty-qxn > span{min-width:0;transition:color .12s;}
+.sty-qxg{flex:none;color:var(--cci, var(--stg-ink));}
+.sty-qxn .sty-qxg{margin-top:2px;}
+.sty-qxs{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px 6px 12px;
+  border-top:2px solid var(--stg-ink);background:color-mix(in srgb, var(--cfull, #ffffff) 60%, #fff);color:#0b0d12;
+  font-size:12.5px;font-weight:600;white-space:nowrap;}
+.sty-qxs .ld{min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.sty-qxs .ld b{font-weight:800;}
+.sty-qxs .ct{flex:none;}
+.sty-qxt.ph{border-color:var(--stg-line2);}
+.sty-qxt.ph .sty-qxs{height:31px;border-top-color:var(--stg-line2);background:color-mix(in srgb, var(--stg-ink) 6%, transparent);}
+/* the topic cards */
+.sty-qxcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:start;}
+.sty-qxc{display:flex;flex-direction:column;min-width:0;background:var(--stg-surf);border:2px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
+.sty-qxch{display:flex;align-items:center;gap:10px;width:100%;border:0;border-bottom:2px solid var(--stg-ink);padding:10px 14px;
+  background:color-mix(in srgb, var(--cfull, #ffffff) 60%, #fff);color:#0b0d12;font-family:inherit;text-align:left;cursor:pointer;}
+.sty-qxch:focus-visible{outline:2px solid var(--stg-ink);outline-offset:-4px;}
+.sty-qxch .dc{flex:none;width:30px;height:30px;border-radius:999px;border:2px solid #0b0d12;background:#fff;display:grid;place-items:center;}
+.sty-qxch .dc .sty-qxg{color:var(--cdk, #0b0d12);}
+.sty-qxch .nm{flex:1;min-width:0;line-height:1.2;}
+.sty-qxch .nm b{display:block;font-size:15px;font-weight:800;}
+.sty-qxch .nm span{font-size:11px;font-weight:700;}
+.sty-qxch .pl{flex:none;text-align:right;line-height:1.15;}
+.sty-qxch .pl b{display:block;font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;}
+.sty-qxch .pl span{font-size:10px;font-weight:700;}
+.sty-qxc ol{list-style:none;margin:0;padding:0;}
+.sty-qxc li a{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:6px;padding:7px 14px;border-top:1px solid var(--stg-line);
+  font-size:12.5px;font-weight:700;color:var(--stg-ink);text-decoration:none;}
+.sty-qxc li:first-child a{border-top:0;}
+.sty-qxc li a span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
+.sty-qxc li a:hover span{color:var(--cci, var(--stg-ink));}
+.sty-qxc li i{font-style:normal;font-weight:600;color:var(--stg-mute);}
+.sty-qxc li b{font-weight:800;font-variant-numeric:tabular-nums;}
+.sty-qxc li.ph{height:33px;border-top:1px solid var(--stg-line);}
+.sty-qxc li.ph:first-child{border-top:0;}
+.sty-qxall{display:block;width:calc(100% - 24px);margin:8px 12px 12px;height:36px;border:2px solid var(--stg-ink);border-radius:8px;
+  background:var(--stg-surf);color:var(--stg-ink);font:800 12.5px/1 ${SANS};cursor:pointer;}
+.sty-qxall:hover{background:var(--stg-ink);color:var(--stg-ground);}
+.sty-qxblk > .sty-qxall{width:100%;margin:12px 0 0;height:40px;}
+/* the ledger (List view) */
+.sty-qxled{background:var(--stg-surf);border:2px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
+.sty-qxlh,.sty-qxl{display:grid;grid-template-columns:28px minmax(0,1fr) 160px 70px;gap:10px;align-items:center;padding:0 14px;}
+.sty-qxlh{height:30px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-ink2, var(--stg-ink));
+  border-bottom:2px solid var(--stg-ink);}
+.sty-qxlh span:last-child{text-align:right;}
+.sty-qxl{box-sizing:border-box;width:100%;min-height:38px;margin:0;border:0;border-top:1px solid var(--stg-line);background:transparent;
+  font:700 13px/1.3 ${SANS};color:var(--stg-ink);text-decoration:none;text-align:left;cursor:pointer;}
+.sty-qxlh + .sty-qxl{border-top:0;}
+.sty-qxl:hover{background:color-mix(in srgb, var(--stg-ink) 5%, transparent);}
+.sty-qxl:focus-visible{outline:2px solid var(--stg-ink);outline-offset:-2px;}
+.sty-qxl > i{font-style:normal;font-size:12px;font-weight:700;color:var(--stg-mute);}
+.sty-qxl .t{display:flex;align-items:center;gap:8px;min-width:0;}
+.sty-qxl .t > span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
+.sty-qxl .m{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;font-weight:600;color:var(--stg-ink2, var(--stg-ink));}
+.sty-qxl .m em{font-style:normal;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;border:1.5px solid #0b0d12;
+  background:color-mix(in srgb, var(--cfull, #ffffff) 60%, #fff);color:#0b0d12;}
+.sty-qxl > b{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;}
+.sty-qxl.ph{height:38px;}
+.sty-qxtl .sty-qxlh,.sty-qxtl .sty-qxl{grid-template-columns:28px 170px minmax(0,1fr) 70px 70px;}
+.sty-qxtl .sty-qxlh span:nth-child(4),.sty-qxtl .sty-qxl .m.n{text-align:right;}
+.sty-qxtl .sty-qxl > i.dc{width:24px;height:24px;border-radius:999px;border:1.5px solid #0b0d12;display:grid;place-items:center;
+  box-sizing:border-box;background:color-mix(in srgb, var(--cfull, #ffffff) 60%, #fff);}
+.sty-qxtl .sty-qxl > i.dc .sty-qxg{color:var(--cdk, #0b0d12);}
+.sty-qxtl .sty-qxl .t{font-weight:800;}
+/* an open topic */
+.sty-qxth{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;}
+.sty-qxback{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px 0 10px;border:2px solid var(--stg-ink);border-radius:999px;
+  background:var(--stg-surf);color:var(--stg-ink);font:800 12.5px/1 ${SANS};cursor:pointer;}
+.sty-qxback:hover{background:var(--stg-ink);color:var(--stg-ground);}
+.sty-qxth > span{font-size:14px;font-weight:800;color:var(--stg-ink);}
+/* the topic rail */
+.sty-qxr{position:sticky;top:12px;background:var(--stg-surf);border:2px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
+.sty-qxr .h{display:flex;justify-content:space-between;padding:10px 12px;border-bottom:2px solid var(--stg-ink);font-size:10.5px;
+  font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-ink);}
+.sty-qxr .h span{letter-spacing:0;text-transform:none;font-weight:700;color:var(--stg-mute);}
+.sty-qxr .r{display:flex;align-items:center;gap:8px;width:100%;margin:0;border:0;border-top:1px solid var(--stg-line);background:transparent;
+  padding:7px 12px;font:700 12.5px/1.3 ${SANS};color:var(--stg-ink);cursor:pointer;text-align:left;}
+.sty-qxr .h + .r{border-top:0;}
+.sty-qxr .r:hover{background:color-mix(in srgb, var(--stg-ink) 6%, transparent);}
+.sty-qxr .r:focus-visible{outline:2px solid var(--stg-ink);outline-offset:-2px;}
+.sty-qxr .r i{flex:none;width:12px;height:12px;border-radius:4px;border:1.5px solid #0b0d12;box-sizing:border-box;
+  background:color-mix(in srgb, var(--cfull, #ffffff) 60%, #fff);}
+.sty-qxr .r em{flex:1;min-width:0;font-style:normal;}
+.sty-qxr .r span{flex:none;font-size:11px;font-weight:600;color:var(--stg-mute);font-variant-numeric:tabular-nums;}
+.sty-qxr .r.on{background:var(--stg-ink);color:var(--stg-ground);}
+.sty-qxr .r.on span{color:inherit;opacity:.75;}
+/* the topic chips (phone) */
+.sty-qxchips{display:none;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -14px 14px;padding:2px 14px;}
+.sty-qxchips::-webkit-scrollbar{display:none;}
+.sty-qxchips button{flex:none;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 13px;border:2px solid var(--stg-ink);
+  border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);font:800 12.5px/1 ${SANS};cursor:pointer;white-space:nowrap;}
+.sty-qxchips button i{width:10px;height:10px;border-radius:999px;border:1.5px solid #0b0d12;box-sizing:border-box;
+  background:color-mix(in srgb, var(--cfull, #ffffff) 60%, #fff);}
+.sty-qxchips button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
+/* The dark register fills the colour at full strength, as the puzzle strips do. */
+.sty:not([data-stage-theme=light]) :is(.sty-qxs,.sty-qxch,.sty-qxl .m em,.sty-qxtl .sty-qxl > i.dc,.sty-qxr .r i,.sty-qxchips button i){background:var(--cfull, #ffffff);}
+.sty:not([data-stage-theme=light]) .sty-qxt.ph .sty-qxs{background:color-mix(in srgb, var(--stg-ink) 8%, transparent);}
 /* your best topics */
-.sty-qbest{max-width:680px;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;padding:14px 18px;}
+.sty-qbest{max-width:680px;background:var(--stg-surf);border:2px solid var(--stg-ink);border-radius:12px;padding:14px 18px;}
 .sty-qbest table{width:100%;border-collapse:collapse;font-size:13px;}
 .sty-qbest td{padding:8px 0;border-top:1px solid var(--stg-line);font-weight:800;color:var(--stg-ink);}
 .sty-qbest td span{font-weight:600;color:var(--stg-mute);}
 .sty-qbest td.n{width:22px;color:var(--stg-mute);}
 .sty-qbest td.p{text-align:right;width:70px;font-variant-numeric:tabular-nums;}
 .sty-qbest td.r{text-align:right;width:130px;font-weight:700;}
-/* search */
+/* search results (this pane and the head-row search on every pane) */
 .sty-findq{margin-top:16px;}
 .sty-findq .sty-qres{max-height:420px;overflow-y:auto;}
-.sty-qres{list-style:none;margin:0;padding:0;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;overflow:hidden;}
+.sty-qres{list-style:none;margin:0;padding:0;background:var(--stg-surf);border:2px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
 .sty-qres li+li{border-top:1px solid var(--stg-line);}
 .sty-qres a{display:flex;align-items:center;gap:12px;padding:11px 14px;text-decoration:none;color:var(--stg-ink);font-size:13.5px;}
-.sty-qres a:hover .t{color:var(--stg-acc-ink);}
-.sty-qres .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
+.sty-qres a:hover .t{text-decoration:underline;text-underline-offset:3px;}
+.sty-qres .t{flex:1;min-width:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .sty-qres i{flex:none;font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-mute);}
+/* Quizzes rides at the top of the index while it is open, like a category. */
+.sty-ixqc{display:none !important;}
+@media (min-width:901px){
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixq.on{order:-2;display:flex;flex-direction:column;align-items:stretch;gap:5px;
+    padding:13px 14px 14px;border:2px solid var(--stg-ink);border-radius:14px;margin:0 0 8px;background:var(--stg-ink);color:var(--stg-ground);}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixq.on > span{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.25;white-space:normal;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixq.on .sty-ixqc{display:block !important;font-size:13px;font-weight:700;}
+}
 @media (max-width:1180px){
-  .sty-qtiles,.sty-qfg{grid-template-columns:repeat(3,minmax(0,1fr));}
-  .sty-qcats{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .sty-qxtiles{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .sty-qxcards{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (max-width:900px){
+  .sty-qx{grid-template-columns:minmax(0,1fr);}
+  .sty-qxr{display:none;}
+  .sty-qxchips{display:flex;}
+}
+.sty-qxsl{display:none;}
+@media (max-width:900px){
+  .sty-qxtools .sty-view{display:none;}
+  .sty-qxtools .sty-sort.sty-qxsort{display:inline-flex;}
+  .sty-qxsl{display:block;flex:none;font-size:12px;font-weight:800;color:var(--stg-ink);}
 }
 @media (max-width:640px){
-  .sty-qsearch{flex-basis:100%;max-width:none;height:44px;}
-  .sty-qsort{margin-left:0;}
-  .sty-qbans,.sty-qtiles{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:2px;}
-  .sty-qbans::-webkit-scrollbar,.sty-qtiles::-webkit-scrollbar{display:none;}
-  .sty-qban{flex:0 0 88%;height:176px;scroll-snap-align:start;}
-  .sty-qbtx strong{font-size:19px;}
-  .sty-qtile{flex:0 0 156px;scroll-snap-align:start;}
-  .sty-qtband{height:84px;padding:0 12px;}
-  .sty-qtband svg{width:34px;height:34px;}
-  .sty-qtband b{min-width:26px;height:26px;font-size:13px;top:6px;right:6px;}
-  .sty-qtbody{padding:10px 11px 12px;min-height:88px;}
-  .sty-qtbody strong{font-size:13px;}
-  .sty-qtplay{display:none;}
-  .sty-qcats{grid-template-columns:minmax(0,1fr);gap:0;background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:12px;overflow:hidden;}
-  .sty-qcat{border:0;border-radius:0;box-shadow:none;}
-  .sty-qcat+.sty-qcat,.sty-qfull+.sty-qcat{border-top:1px solid var(--stg-line);}
-  .sty-qcat.full{box-shadow:none;}
-  .sty-qch{flex-wrap:nowrap;align-items:center;cursor:pointer;min-height:64px;padding:0 14px;}
-  .sty-qch:focus-visible{outline:2px solid var(--stg-acc);outline-offset:-2px;}
-  .sty-qph{flex:0 0 44px;height:44px;border-radius:9px;padding:0;justify-content:center;margin-right:12px;}
-  .sty-qph svg{width:22px;height:22px;}
-  .sty-qcrow{padding:0;}
-  .sty-qcp b{font-size:16px;}
-  .sty-qcp small{font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
-  .sty-qpm{display:block;flex:none;color:var(--stg-mute);}
-  .sty-qcat.on .sty-qpm .v{display:none;}
-  .sty-qcat:not(.on) .sty-qcb{display:none;}
-  .sty-qcb{padding:0 14px 12px 70px;}
-  .sty-qcb li a{min-height:44px;padding:0;}
-  .sty-qall2{height:44px;}
-  .sty-qfull{border:0;box-shadow:none;border-radius:0;border-top:1px solid var(--stg-line);padding:12px 14px 14px;}
-  .sty-qfg{grid-template-columns:minmax(0,1fr);gap:0;}
-  .sty-qfg a{border:0;border-top:1px solid var(--stg-line);border-radius:0;padding:8px 0;min-height:52px;}
-  .sty-qfmore{height:44px;}
+  .sty-qxtools{flex-wrap:wrap;}
+  .sty-qxfind{flex-basis:100%;order:-1;height:44px;}
+  .sty-qxtools .sty-sort{flex:1 1 0;}
+  .sty-qxtools .sty-sort button{flex:1;padding:9px 6px;}
+  .sty-qxtiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .sty-qxn{font-size:13.5px;padding:9px 9px 9px 10px;}
+  .sty-qxs{font-size:11.5px;padding:5px 9px 5px 10px;}
+  .sty-qxs .ct{display:none;}
+  .sty-qxcards{grid-template-columns:minmax(0,1fr);}
+  .sty-qxlh,.sty-qxl{grid-template-columns:22px minmax(0,1fr) 56px;gap:8px;padding:0 12px;}
+  .sty-qxl{min-height:46px;}
+  .sty-qxlh span:nth-child(3),.sty-qxl .m{display:none;}
+  .sty-qxtl .sty-qxlh,.sty-qxtl .sty-qxl{grid-template-columns:28px minmax(0,1fr) 64px;}
+  .sty-qxtl .sty-qxlh span:nth-child(4){display:none;}
+  .sty-qxall{height:44px;}
   .sty-qbest td.r{width:auto;}
 }
 
