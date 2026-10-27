@@ -44,6 +44,21 @@ async function findViewer(admin, { anonId, email }) {
   return user || null;
 }
 
+// The viewer's account and share code, remembered for a minute: the field is
+// shared now, so these two reads were most of what was left of a request.
+const VIEWER_MS = 60 * 1000;
+const viewerMemo = new Map();
+async function viewerWithCode(admin, anonId, email) {
+  const key = `${email || ''}|${anonId || ''}`;
+  const hit = viewerMemo.get(key);
+  if (hit && Date.now() - hit.at < VIEWER_MS) return hit.val;
+  const user = await findViewer(admin, { anonId, email });
+  const val = user ? { user, code: await ensureRefCode(admin, user) } : null;
+  viewerMemo.set(key, { at: Date.now(), val });
+  while (viewerMemo.size > 5000) viewerMemo.delete(viewerMemo.keys().next().value);
+  return val;
+}
+
 export async function GET(request) {
   const meta = {
     id: DRAWING.id,
@@ -86,9 +101,10 @@ export async function GET(request) {
 
     let me = null;
     if (anonId || email) {
-      const user = await findViewer(supabaseAdmin, { anonId: anonId || null, email });
+      const vw = await viewerWithCode(supabaseAdmin, anonId || null, email);
+      const user = vw ? vw.user : null;
       if (user) {
-        const code = await ensureRefCode(supabaseAdmin, user);
+        const code = vw.code;
         const hasEmail = !!(user.email && String(user.email).trim());
         const mine = field.holders.get(user.id) || null;
         const ranked = field.eligible.find((h) => h.referrerId === user.id) || null;

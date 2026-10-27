@@ -31,6 +31,10 @@
     {
       "path": "/api/cron/stats-warm",
       "schedule": "20 9 * * *"
+    },
+    {
+      "path": "/api/cron/drawing-warm",
+      "schedule": "*/5 * * * *"
     }
   ],
   "ignoreCommand": "bash scripts/vercel-ignore-build.sh"
