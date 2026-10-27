@@ -149,9 +149,14 @@ export default function LoftFinish({
   // review path; once the stage went sitewide it left every finished game
   // showing the LOFT ending on a stage page — a cream card at the foot of a
   // near-black one. It matches lib/stage.js now: on unless '?stage=0'.
-  const [urlStage, setUrlStage] = useState(false);
+  // STARTS ON (owner report, 2026-10-27: "before loading the end animation,
+  // the OLD page screen showed for a second"). It started false and was set in
+  // an effect, so the first paint of every finish was the retired Loft card,
+  // replaced a frame later by the stage ending. The stage is sitewide, so it
+  // starts true and only '?stage=0' turns it off.
+  const [urlStage, setUrlStage] = useState(true);
   useEffect(() => {
-    try { setUrlStage(new URLSearchParams(window.location.search).get('stage') !== '0'); } catch (e) { setUrlStage(true); }
+    try { if (new URLSearchParams(window.location.search).get('stage') === '0') setUrlStage(false); } catch (e) {}
   }, []);
   const onStage = onStageProp == null ? urlStage : !!onStageProp;
   const [showAll, setShowAll] = useState(false);

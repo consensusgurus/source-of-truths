@@ -74,7 +74,7 @@ export default function FinishGroupLine({ gameKey, gameName = null, missLabel = 
         <div className="stf-eb">Groups</div>
         <p className="fgl-big">Play against your friends</p>
         <p className="fgl-pt">Start a private group and share one link. Everyone who joins gets their own ranking on every daily puzzle.</p>
-        <a className="fgl-pbtn" href="/groups">Start a group <span aria-hidden="true">&rarr;</span></a>
+        <a className="fgl-pbtn" href="/groups"><span>Create a group leaderboard</span><span aria-hidden="true">&rarr;</span></a>
       </section>
     );
   }
@@ -221,8 +221,9 @@ const CSS = `
 .fgl-mini{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;padding:10px 14px;border-radius:12px;
   border:1px solid var(--stg-line,rgba(255,255,255,.11));background:var(--stg-raise,#0e131f);color:var(--stg-ink,#e9edf4);text-decoration:none;font-size:13.5px;}
 .fgl-pt{margin:0 0 12px;font-size:13.5px;line-height:1.45;opacity:.85;}
-.fgl-pbtn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1.5px solid currentColor;border-radius:12px;
-  font-size:14px;font-weight:800;text-decoration:none;color:inherit;}
+.fgl-pbtn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:64px;padding:12px 18px;border:0;border-radius:14px;
+  background:var(--stg-ink,#0b0d12);color:var(--stg-raise,#fff);font-size:17px;font-weight:800;line-height:1.2;text-decoration:none;box-sizing:border-box;}
+.fgl-pbtn span:last-child{font-size:22px;}
 .fgl-pbtn:hover{filter:brightness(1.08);}
 .fgl-mini:hover{border-color:var(--stg-line2,rgba(255,255,255,.17));}
 `;

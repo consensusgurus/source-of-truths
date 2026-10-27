@@ -135,22 +135,45 @@ function Count({ fig, run }) {
 // carrying the reader's own place further down) is already past five.
 // The all-time board, top five, then the reader's own place when it is
 // further down, in the same shape the day's board uses.
-function allRows(at) {
-  const board = Array.isArray(at && at.board) ? at.board : [];
-  const top = board.slice(0, 5).map((r) => ({ rank: r.rank, username: r.username, points: r.points, me: !!r.isMe }));
+function allRows(at, n = 5) {
+  const board = (Array.isArray(at && at.board) ? at.board : []).map((r) => ({ rank: r.rank, username: r.username, points: r.points, me: !!r.isMe }));
+  const top = board.slice(0, 5);
   if (at && at.myRank && !top.some((r) => r.me)) {
     top.push({ gap: true }, { rank: at.myRank, points: at.myPoints, me: true });
   }
-  return padRows(top);
+  return fillRows(top, board, n);
 }
 
-function padRows(rows) {
+function padRows(rows, n = 5) {
   const list = Array.isArray(rows) ? rows : [];
-  if (list.some((r) => r.gap) || list.length >= 5) return list;
+  if (list.some((r) => r.gap) || list.length >= n) return list;
   const top = list.reduce((m, r) => Math.max(m, Number(r.rank) || 0), 0);
   const out = list.slice();
-  for (let k = top + 1; out.length < 5; k += 1) out.push({ empty: true, rank: k });
+  for (let k = top + 1; out.length < n; k += 1) out.push({ empty: true, rank: k });
   return out;
+}
+
+// THE BOARD FILLS ITS CARD (owner, 2026-10-27: "top five should fill down for
+// as many ranks as fit"). `list` is the five-place board (with a gap and the
+// reader's own rows when they sit further down); `pool` is every ranked row the
+// read carried. With room for `n` rows the top runs on down to n, and when the
+// reader's place falls inside that run the gap closes and the list is simply
+// contiguous. Ranks nobody holds yet read Empty, as before.
+function fillRows(list, pool, n) {
+  const rows = Array.isArray(list) ? list : [];
+  const all = Array.isArray(pool) ? pool.filter((r) => r && !r.gap && !r.empty) : [];
+  if (n <= 5 || !all.length) return padRows(rows, Math.max(5, n));
+  const gi = rows.findIndex((r) => r.gap);
+  if (gi < 0) return padRows(all.slice(0, n), n);
+  const tail = rows.slice(gi + 1);
+  const last = Number(tail.length ? tail[tail.length - 1].rank : NaN);
+  if (Number.isFinite(last) && last <= n && tail.every((r) => Number.isFinite(Number(r.rank)))) {
+    const byRank = new Map(all.slice(0, last).map((r) => [Number(r.rank), r]));
+    tail.forEach((r) => byRank.set(Number(r.rank), r));
+    return padRows([...byRank.values()].sort((a, b) => Number(a.rank) - Number(b.rank)), n);
+  }
+  const head = all.slice(0, Math.max(5, n - tail.length - 1));
+  return head.concat([{ gap: true }], tail);
 }
 
 export default function StageStick({
@@ -191,6 +214,10 @@ export default function StageStick({
   // select the all-time leaderboard; its data must not load unless the player
   // selects it"). Nothing is asked for until All time is pressed, and then once.
   const [scope, setScope] = useState('today');
+  // How many board rows fit the card on a desktop (never fewer than five).
+  const [fitN, setFitN] = useState(5);
+  const [rowH, setRowH] = useState(38);
+  const fillRef = useRef(null);
   const [allTime, setAllTime] = useState(null);
   const askedAll = useRef(false);
   const boardGame = sheet && sheet.gameKey;
@@ -454,6 +481,22 @@ export default function StageStick({
     return () => window.removeEventListener('resize', re);
   }, [host, desk]);   // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    const el = fillRef.current;
+    if (!desk || !el || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = () => {
+      const tr = el.querySelector('tr');
+      const rh = tr ? tr.getBoundingClientRect().height : 0;
+      if (!rh) return;
+      setRowH((p) => (Math.abs(p - rh) < 0.5 ? p : rh));
+      const n = Math.max(5, Math.floor((el.clientHeight + 1) / rh));
+      setFitN((p) => (p === n ? p : n));
+    };
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    measure();
+    return () => ro.disconnect();
+  });
   if (!host) return null;
   const on = (n) => 'sst-b' + (step >= n ? ' on' : '');
   const bgTap = (e) => {
@@ -684,8 +727,9 @@ export default function StageStick({
               <>
                 {boardHead(`All-time board${allTime && allTime.field ? ` · ${allTime.field} ${allTime.field === 1 ? 'player' : 'players'}` : ''}`)}
                 {allTime ? (
+                  <div ref={fillRef} className={desk ? 'sst-tfill' : undefined} style={desk ? { minHeight: allRows(allTime).length * rowH } : undefined}>
                   <table className="sst-tbl"><tbody>
-                    {allRows(allTime).map((r, i) => (r.empty ? (
+                    {allRows(allTime, desk ? fitN : 5).map((r, i) => (r.empty ? (
                       <tr key={'e' + i} className="empty"><td className="p">#{r.rank}</td><td className="w">Empty</td><td className="st">—</td></tr>
                     ) : r.gap ? (
                       <tr key={'g' + i} className="gap"><td colSpan={3}>&middot;&middot;&middot;</td></tr>
@@ -697,6 +741,7 @@ export default function StageStick({
                       </tr>
                     )))}
                   </tbody></table>
+                  </div>
                 ) : (
                   <table className="sst-tbl sst-tbl-empty" aria-hidden="true"><tbody>
                     {[1, 2, 3, 4, 5].map((n) => (
@@ -708,8 +753,9 @@ export default function StageStick({
             ) : s.rows && s.rows.length ? (
               <>
                 {boardHead(`${s.boardLabel || 'Today’s board'}${s.field ? ` · ${s.field} ${s.field === 1 ? 'player' : 'players'}` : ''}`)}
+                <div ref={fillRef} className={desk ? 'sst-tfill' : undefined} style={desk ? { minHeight: padRows(s.rows).length * rowH } : undefined}>
                 <table className="sst-tbl"><tbody>
-                  {padRows(s.rows).map((r, i) => (r.empty ? (
+                  {(desk ? fillRows(s.rows, s.allTop, fitN) : padRows(s.rows)).map((r, i) => (r.empty ? (
                     <tr key={'e' + i} className="empty"><td className="p">#{r.rank}</td><td className="w">Empty</td><td className="st">—</td></tr>
                   ) : r.gap ? (
                     <tr key={'g' + i} className="gap"><td colSpan={3}>&middot;&middot;&middot;</td></tr>
@@ -721,6 +767,7 @@ export default function StageStick({
                     </tr>
                   )))}
                 </tbody></table>
+                </div>
               </>
             ) : (
               /* EMPTY SLOTS WHILE THE BOARD LOADS (owner, 2026-10-26): the card
@@ -993,6 +1040,9 @@ const CSS = `
 .sst-cards{display:flex;flex-direction:column;gap:12px;}
 .sst-card{background:var(--sst-card);color:var(--sst-ink);border-radius:18px;padding:16px;}
 .sst-sl{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:9px;opacity:.82;}
+.sst-page .sst-rkb{display:flex;flex-direction:column;}
+.sst-tfill{position:relative;flex:1 1 auto;overflow:hidden;}
+.sst-tfill > .sst-tbl{position:absolute;left:0;right:0;top:0;}
 .sst-bh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
 .sst-bh .sst-sl{min-width:0;}
 .sst-scope{flex:none;display:flex;gap:10px;margin-bottom:9px;}
@@ -1034,6 +1084,8 @@ const CSS = `
 .sst-grp .fgl-r.me{background:var(--sst-wash);margin:0;padding:7px 6px;border-radius:10px;}
 .sst-grp .fgl-av0{background:var(--sst-rule);}
 .sst-grp .fgl-r.empty .n,.sst-grp .fgl-r.empty .s{color:var(--sst-ink);opacity:.55;}
+.sst-grp .fgl .fgl-pbtn{background:var(--sst-ink);color:var(--sst-bg);}
+.sst-grp .fgl .fgl-pbtn *{color:var(--sst-bg);}
 .sst-grp .fgl-mini{background:var(--sst-wash);border-color:var(--sst-rule);}
 .sst-chal{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:11px 16px 11px 18px;border:0;border-radius:14px;
   background:var(--sst-ink);color:var(--sst-bg);font:inherit;text-align:left;cursor:pointer;}

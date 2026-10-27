@@ -138,8 +138,11 @@ html[data-stage-chrome] .lc-cap{background:var(--chrome-bg) !important;color:var
 .lc-cap .sty-fca>i{display:block;font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--stg-mute);}
 .lc-cap .sty-fca:hover>b{color:var(--stg-acc-ink);}
-.lc-cap .sty-keep{display:inline-flex;align-items:center;border-radius:999px;background:var(--stg-brand,#2f7de1);
-  color:#ffffff;padding:8px 14px;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;}
+/* The category's own light colour with dark letters (owner, 2026-10-27: the
+   deep step read as a brown gold beside the yellow Arcade pages, and white
+   letters on the light steps were hard to read). */
+.lc-cap .sty-keep{display:inline-flex;align-items:center;border-radius:999px;background:var(--sp-g,var(--stg-mark,var(--stg-brand,#7dd3fc)));
+  color:#08222e;padding:8px 14px;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;}
 .lc-cap .sty-cx{flex:none;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
   color:var(--stg-ink2);text-decoration:none;border:1px solid var(--stg-line);border-radius:8px;padding:6px 10px;}
 .lc-cap .sty-cx:hover{border-color:var(--stg-line2);color:var(--stg-ink);}

@@ -6235,9 +6235,10 @@ a.sty-qtile:hover .sty-qtbody strong{color:var(--stg-acc-ink);}
 .sty-fca:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 /* KEEP STATS WEARS THE LOGO'S COLOUR (owner, 2026-10-26): the same --stg-brand
    the "Loft" of the mark takes, toned per pane exactly as the brand link is. */
-.sty-keep.tone{--stg-brand:var(--md);}
-[data-stage-theme=dark] .sty-keep.tone{--stg-brand:var(--mc);}
-[data-stage-theme=dark] .sty-keep{color:#0b0f1a;}
+/* Light fill, dark letters in both registers (owner, 2026-10-27: white on the
+   sky step did not read). */
+.sty-keep.tone{--stg-brand:var(--mc);}
+.sty-keep{color:#08222e !important;}
 .sty-keep{display:inline-flex;align-items:center;border-radius:999px;background:var(--stg-brand,#2f7de1);
   color:#ffffff;padding:8px 14px;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;}
 .sty-keep:hover{opacity:.9;}

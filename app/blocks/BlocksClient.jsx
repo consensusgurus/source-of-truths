@@ -395,7 +395,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('blocks');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('blocks');
   const Cap = STAGE ? StageChrome : LoftCap;
-  const STAGE_ACC = { '--stg-acc-dk': gameColor('blocks'), '--stg-acc-lt': gameColorLight('blocks'), '--stg-onramp-lt': gameOnrampLight('blocks'), '--stg-acc-ink-lt': gameAccentInkLight('blocks') };
+  const STAGE_ACC = { '--stg-acc-dk': 'var(--sp-g, #fdd97c)', '--stg-acc-lt': 'var(--sp-g, #fdd97c)', '--stg-onramp-lt': gameOnrampLight('blocks'), '--stg-acc-ink-lt': gameAccentInkLight('blocks') };
   const [stageTheme] = useStageTheme();
   const LIGHT = !STAGE || stageTheme === 'light';
   const lightRef = useRef(LIGHT);
@@ -1702,6 +1702,12 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         </div>
       )}
 
+      <style dangerouslySetInnerHTML={{ __html: `
+        /* THE CATEGORY'S YELLOW, NOT THE AMBER (owner, 2026-10-27): the mark,
+           the buttons and the accents on this page take the same yellow the
+           Arcade shelf wears, rather than the deeper amber step. */
+        :root{--stg-acc:var(--sp-g, #fdd97c) !important;--stg-acc-dk:var(--sp-g, #fdd97c) !important;--stg-acc-lt:var(--sp-g, #fdd97c) !important;--stg-mark:var(--sp-g, #fdd97c) !important;}
+      ` }} />
       <style dangerouslySetInnerHTML={{ __html: `
         /* the T piece, as a pad: rotate on top, move-left / down / move-right
            across the middle, Drop as the bar beneath. Centered at every width. */

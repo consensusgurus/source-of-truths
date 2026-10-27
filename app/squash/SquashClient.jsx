@@ -380,7 +380,7 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('squash');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('squash');
   const Cap = STAGE ? StageChrome : LoftCap;
-  const STAGE_ACC = { '--stg-acc-dk': gameColor('squash'), '--stg-acc-lt': gameColorLight('squash'), '--stg-onramp-lt': gameOnrampLight('squash'), '--stg-acc-ink-lt': gameAccentInkLight('squash') };
+  const STAGE_ACC = { '--stg-acc-dk': 'var(--sp-g, #fdd97c)', '--stg-acc-lt': 'var(--sp-g, #fdd97c)', '--stg-onramp-lt': gameOnrampLight('squash'), '--stg-acc-ink-lt': gameAccentInkLight('squash') };
   const [stageTheme] = useStageTheme();
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
@@ -1324,6 +1324,12 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
         </div>
       )}
 
+      <style dangerouslySetInnerHTML={{ __html: `
+        /* THE CATEGORY'S YELLOW, NOT THE AMBER (owner, 2026-10-27): the mark,
+           the buttons and the accents on this page take the same yellow the
+           Arcade shelf wears, rather than the deeper amber step. */
+        :root{--stg-acc:var(--sp-g, #fdd97c) !important;--stg-acc-dk:var(--sp-g, #fdd97c) !important;--stg-acc-lt:var(--sp-g, #fdd97c) !important;--stg-mark:var(--sp-g, #fdd97c) !important;}
+      ` }} />
       <style dangerouslySetInnerHTML={{ __html: `
         .sq-meter { display: flex; flex-direction: column; gap: 7px; margin: 0 auto 14px; max-width: ${BOARD_MAX}px; }
         .sq-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--stg-mute, #5f6774); }

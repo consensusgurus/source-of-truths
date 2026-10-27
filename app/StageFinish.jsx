@@ -2059,6 +2059,7 @@ export default function StageFinish({
       iq: iq && iq.gained != null ? iq.gained : null,
       streak: streak || null,
       rows: srows, myRank, field, missLabel, gameKey: me.key,
+      allTop: allRows.slice(0, 30).map((r) => ({ ...r, me: isMine(r) })),
       recent: priors.slice(0, 6).map((r) => ({
         num: r.num, date: short(r.dateLabel), won: !!r.won, href: r.href,
         fig: r.won && r.time != null && !arcade ? mmss(r.time) : (r.total ? scoreText(me.key, r.score, r.total) : (r.won ? 'Solved' : 'Missed')),
