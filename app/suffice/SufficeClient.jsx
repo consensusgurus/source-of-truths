@@ -554,10 +554,8 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
                 {TOTAL} questions you do not have to answer.
               </h2>
               <p style={{ fontSize: 14.5, lineHeight: 1.6, color: FADED, fontWeight: 600, margin: '0 0 12px' }}>
-                Each item gives you a question and two statements. You are not asked what the answer is,
-                only whether the statements are <b style={{ color: ACC_DEEP_INK }}>enough to settle it</b>.
-                Working out the actual value is wasted time. You answer three yes-or-no questions per
-                item, and they add up to your answer.
+                Each item has a question and two statements. Say whether the statements
+                are <b style={{ color: ACC_DEEP_INK }}>enough to settle it</b>, not what the answer is.
               </p>
               {gateRules && (
                 <div style={{ marginBottom: 14 }}>

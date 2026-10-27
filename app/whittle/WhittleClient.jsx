@@ -686,7 +686,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>A solved sudoku with eighteen printed clues. Take away as many clues as you can: each one may come out only while the grid still has exactly one answer. Nothing goes back, so the order is everything.</p>
+                <p style={{ margin: '0 0 6px' }}>A solved sudoku with eighteen clues. Remove as many as you can while the grid keeps exactly one answer. Nothing goes back.</p>
                 <p style={{ margin: 0 }}>Today&rsquo;s perfect is <b>{PERFECT}</b> clues left standing.</p>
               </div>
             )}

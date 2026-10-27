@@ -651,11 +651,11 @@ export default function BlitzedClient({ puzzles = [], problemsByNum = {}, forceN
 
         {preStart && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: FADED, marginBottom: 5 }}>Today&rsquo;s twenty</div>
+            <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: FADED, marginBottom: 5 }}>{STAGE ? null : <>Today&rsquo;s twenty</>}</div>
             <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: 22, color: ACC_INK, lineHeight: 1.2, marginBottom: 14 }}>Three numbers a line, against the clock</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>Twenty problems in five rounds, easy to hard, and every one is three numbers and two operations, like 5 + 10 × 2. {Q_SECONDS} seconds each, one life. Do it in your head and pick from four; every problem you clear is a point. Keys 1 to 4 answer. The clock starts when you do.</p>
+                <p style={{ margin: '0 0 6px' }}>Twenty problems, easy to hard, each three numbers and two operations, like 5 + 10 × 2. {Q_SECONDS} seconds each, one life.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>

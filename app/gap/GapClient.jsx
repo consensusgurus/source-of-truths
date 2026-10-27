@@ -654,11 +654,11 @@ export default function GapClient({ puzzles = [], problemsByNum = {}, forceNum =
 
         {preStart && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: FADED, marginBottom: 5 }}>Today&rsquo;s twenty</div>
+            <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: FADED, marginBottom: 5 }}>{STAGE ? null : <>Today&rsquo;s twenty</>}</div>
             <div style={{ fontFamily: SANS, fontWeight: 900, fontSize: 22, color: ACC_INK, lineHeight: 1.2, marginBottom: 14 }}>One number missing, against the clock</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>Twenty equations in five rounds, easy to hard, each with one number taken out, like 7 × ? = 56. {Q_SECONDS} seconds each, one life. Pick the number that makes the line true; every problem you clear is a point. Keys 1 to 4 answer. The clock starts when you do.</p>
+                <p style={{ margin: '0 0 6px' }}>Twenty equations, easy to hard, each missing a number, like 7 × ? = 56. {Q_SECONDS} seconds each, one life.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>

@@ -909,9 +909,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 7px' }}>{PUZZLE.tiles.length} words below, and {PUZZLE.rules.length} candidate rules. <b>Exactly one of those rules fits every word on the board, and your job is to work out which.</b></p>
-                <p style={{ margin: '0 0 7px' }}>Three words start <b style={{ color: `var(--stg-ink, ${COLORS.green})` }}>green</b>, meaning the hidden rule is true of them, and two start <b style={{ color: `var(--stg-ink, ${COLORS.redInk})` }}>red</b>, meaning it is false. Every other word is already green or red too, you just cannot see which yet. Spend a test to uncover one. You have {PUZZLE.budget}, and {PERFECT} well chosen will settle it.</p>
-                <p style={{ margin: 0 }}>You score only the rules you actually rule out, so eliminate before you name.</p>
+                <p style={{ margin: 0 }}>{PUZZLE.tiles.length} words and {PUZZLE.rules.length} rules. <b>Exactly one rule fits every word.</b> Spend a test to see if a word is <b style={{ color: `var(--stg-ink, ${COLORS.green})` }}>green</b> or <b style={{ color: `var(--stg-ink, ${COLORS.redInk})` }}>red</b>; you have {PUZZLE.budget}. You score the rules you rule out.</p>
               </div>
             )}
             <div style={{ marginTop: 'auto', paddingTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>

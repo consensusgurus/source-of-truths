@@ -723,12 +723,8 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
                 One small world, {TOTAL} questions about it.
               </h2>
               <p style={{ fontSize: 14.5, lineHeight: 1.6, color: FADED, fontWeight: 600, margin: '0 0 12px' }}>
-                Today it is <b style={{ color: ACC_DEEP_INK }}>{PUZZLE.title}</b>. Read the setup and the
-                conditions, work out what they force, then answer. The conditions stay on screen the whole
-                time, because <b style={{ color: ACC_DEEP_INK }}>the deductions are meant to be reused</b>.
-                There is a sketch to lay the letters out in, a notes pad, and you can cross off a choice you have ruled out.
-                If the format feels familiar, it is: this is the reasoning section a well known standardized
-                test used to run, and quietly retired.
+                Today it is <b style={{ color: ACC_DEEP_INK }}>{PUZZLE.title}</b>. Read the conditions, work
+                out what they force, then answer. The conditions stay on screen the whole time.
               </p>
               {gateRules && (
                 <div style={{ marginBottom: 14 }}>

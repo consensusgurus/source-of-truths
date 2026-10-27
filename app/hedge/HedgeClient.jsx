@@ -893,8 +893,7 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>Draw one closed loop so every number has exactly that many of its sides on the loop. {n}&times;{n} today.</p>
-                <p style={{ margin: 0, fontWeight: 600, color: FADED }}>Plenty of cells carry no number. That is the puzzle, not a glitch: a blank cell has no rule, and the printed numbers are enough to pin down one answer.</p>
+                <p style={{ margin: '0 0 6px' }}>Draw one closed loop so every number has exactly that many of its sides on the loop. Blank cells have no rule. {n}&times;{n} today.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>

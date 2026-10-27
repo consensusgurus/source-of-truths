@@ -95,6 +95,11 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
 html.lc-on.lc-focus .lc-host .stg-fg{padding-right:20px;}
 .stb>.lc-subs{position:static;transform:none;order:1;}
 .stb>.stb-look{order:2;}
+/* With the navigation up the button sits in the site header, by the look switch
+   (owner, 2026-10-27: "where is show full screen?"). It used to ride in the
+   figures row, which the start screen hides. */
+.sty-rt>.lc-subs{position:static;transform:none;}
+.sty-rt>.lc-subs .lc-sub-btn{height:34px;padding:0 14px;border:2px solid currentColor;color:var(--stg-ink);font-size:12px;font-weight:800;}
 .stb>.lc-subs .lc-sub-btn{height:40px;padding:0 16px;border:2px solid currentColor;color:inherit;font-size:13px;font-weight:800;}
 .stb>.lc-subs .lc-sub-btn:hover{border-color:currentColor;color:inherit;text-decoration:underline;text-underline-offset:3px;}
 .lc-subs,.stg-fg>.lc-subs{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:row;align-items:center;gap:8px;}
@@ -754,6 +759,7 @@ export default function LayoutCInner({ gameKey }) {
                 </a>
               ) : null}
             </div>
+            {subBtn}
             <button type="button" className="sty-cx sty-tg"
               data-look="" onClick={(e) => cycleSiteLook()}
           aria-haspopup="dialog"
@@ -931,8 +937,8 @@ export default function LayoutCInner({ gameKey }) {
 
   return (
     <>
-      {createPortal(<><style dangerouslySetInnerHTML={{ __html: CSS }} />{frame}{(focus ? capEl : fgEl) ? null : <div style={{ position: 'fixed', top: 8, right: 16, zIndex: 91 }}>{subBtn}</div>}</>, host)}
-      {focus && capEl ? createPortal(subBtn, capEl) : (fgEl ? createPortal(subBtn, fgEl) : null)}
+      {createPortal(<><style dangerouslySetInnerHTML={{ __html: CSS }} />{frame}{focus && !capEl ? <div style={{ position: 'fixed', top: 8, right: 16, zIndex: 91 }}>{subBtn}</div> : null}</>, host)}
+      {focus && capEl ? createPortal(subBtn, capEl) : null}
     </>
   );
 }

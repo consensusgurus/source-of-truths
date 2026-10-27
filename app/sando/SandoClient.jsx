@@ -1001,7 +1001,7 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>Sandwich sudoku. Fill the grid so every row, column, and 3×3 box holds the digits 1 to 9. The number beside each row and column is the total of the digits between that line&apos;s 1 and its 9, so an <b>empty</b> sandwich, with the two side by side, is 0. Once a line has both its 1 and its 9 down, the margin keeps the running total for you: a tick when the sandwich adds up, or how far off it is.</p>
+                <p style={{ margin: '0 0 6px' }}>Sandwich sudoku. Each number beside a row or column is the total of the digits between its 1 and its 9. An <b>empty</b> sandwich, the two side by side, is 0.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>

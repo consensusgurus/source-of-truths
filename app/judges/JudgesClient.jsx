@@ -977,10 +977,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>Seat {STARS === 2 ? 'two judges' : 'one judge'} in every row, column and colored court, with none touching. The board stays covered until you begin.</p>
-                {STARS === 2 && (
-                  <p style={{ margin: '0 0 6px' }}>This court takes <b>two</b> per row, column and court, so a second judge in a row is correct here and only a third is a quarrel. The pips at the end of each row and under each column fill as their seats are taken.</p>
-                )}
+                <p style={{ margin: '0 0 6px' }}>Seat {STARS === 2 ? 'two judges' : 'one judge'} in every row, column and colored court, with none touching.{STARS === 2 ? ' A second judge in a row is fine; a third is not.' : ''}</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
