@@ -41,8 +41,10 @@ for (const d of readdirSync('app', { withFileTypes: true })) {
     for (const m of src.matchAll(/import\s+(\w+)\s+from/g)) imported.add(m[1]);
     const declared = new Set([...src.matchAll(/(?:^|\n)\s*(?:const|let|var|function)\s+([A-Za-z_$][\w$]*)/g)].map((m) => m[1]));
     for (const name of NEEDED) {
-      const used = new RegExp(String.raw`(?<![\w$.])${name}\s*[({[]`).test(src)
-        || new RegExp(String.raw`(?<![\w$.])${name}(?![\w$])`).test(src.replace(/^import[^\n]*$/gm, ''));
+      // Comments are not uses (Squash's header comment names RAMP_INK).
+      const code = src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:'"`\\])\/\/[^\n]*/g, '$1');
+      const used = new RegExp(String.raw`(?<![\w$.])${name}\s*[({[]`).test(code)
+        || new RegExp(String.raw`(?<![\w$.])${name}(?![\w$])`).test(code.replace(/^import[^\n]*$/gm, ''));
       if (used && !imported.has(name) && !declared.has(name)) {
         console.log(`✗ ${rel}: uses ${name} but never imports or declares it`);
         bad++;
@@ -90,6 +92,8 @@ for (const d of readdirSync('app', { withFileTypes: true })) {
       // Strip STRINGS before scanning, or 'var(--stg-acc)' reads as the
       // identifier `acc`, and object KEYS, or { pts: ... } reads as `pts`.
       const init = m[2]
+        // REGEX LITERALS first: Shards' /^#?([0-9a-f]{6})$/ read as the identifier `f`.
+        .replace(/(^|[=(,:!&|?]\s*)\/(?:\\.|\[[^\]\n]*\]|[^/\\\n])+\/[gimsuy]*/g, '$1""')
         .replace(/'(?:\\.|[^'\\])*'/g, "''")
         .replace(/"(?:\\.|[^"\\])*"/g, '""')
         .replace(/`(?:\\.|\$\{[^}]*\}|[^`\\])*`/g, '``')
