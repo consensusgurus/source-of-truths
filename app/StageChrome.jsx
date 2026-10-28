@@ -218,9 +218,11 @@ function useEnded(gameKey, num, outcome) {
   return told || saved;
 }
 
-// THE FOOT ROW'S PLACE: the last child of the game's own root, under the board,
-// so no client has to be edited to gain it. A node React does not manage, kept
-// last when the client mounts something after it (the end card does).
+// THE FOOT ROW'S PLACE: under the board, just above the game's Report an
+// issue link (app/ReportIssue, .ri-wrap, on 139 clients), else the last child
+// of the game's own root, so no client has to be edited to gain it. A node
+// React does not manage, put back in place whenever the client mounts
+// something around it (the end card does).
 function useFootSlot(topRef, on) {
   const [slot, setSlot] = useState(null);
   useEffect(() => {
@@ -229,10 +231,15 @@ function useFootSlot(topRef, on) {
     if (!root) return undefined;
     const el = document.createElement('div');
     el.className = 'stg-footslot';
-    root.appendChild(el);
-    const keep = () => { if (el.parentNode === root && root.lastElementChild !== el) root.appendChild(el); };
-    const mo = new MutationObserver(keep);
-    mo.observe(root, { childList: true });
+    const place = () => {
+      const ri = [...root.querySelectorAll('.ri-wrap')].find((n) => !n.closest('.hsh-foot') && !el.contains(n));
+      if (ri && ri.parentNode) {
+        if (el.nextElementSibling !== ri) ri.parentNode.insertBefore(el, ri);
+      } else if (root.lastElementChild !== el) root.appendChild(el);
+    };
+    place();
+    const mo = new MutationObserver(() => place());
+    mo.observe(root, { childList: true, subtree: true });
     setSlot(el);
     return () => { mo.disconnect(); setSlot(null); try { el.remove(); } catch (e) {} };
   }, [topRef, on]);
@@ -677,7 +684,7 @@ html[data-stage-pastel] .stg-cap,html[data-stage-pastel] .stg-prog,html[data-sta
 .stg-simt i{display:block;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
 html[data-stage-pastel] .stg-fg{padding:4px 14px 8px;gap:22px;}
 html[data-stage-pastel] .stg-fg .stg-clk{display:none;}
-.stg-footslot{padding:20px 14px calc(22px + env(safe-area-inset-bottom,0px));color:var(--stg-ink,#08222e);font-family:${SANS};position:relative;z-index:2;}
+.stg-footslot{padding:18px 0 14px;color:var(--stg-ink,#08222e);font-family:${SANS};position:relative;z-index:2;}
 html:not([data-stage-pastel]) .stg-footslot{display:none;}
 html[data-stage-pastel] .stg-fg>div,html[data-stage-pastel] .stg-fg .stg-clk{flex-direction:row;align-items:baseline;gap:5px;}
 html[data-stage-pastel] .stg-fg b{font-size:14px;font-weight:800;}
