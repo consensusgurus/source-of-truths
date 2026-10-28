@@ -27,6 +27,7 @@ import { RAMP_INK, softGround, categoryColor, gameCategory } from '@/lib/categor
 import { rampFor, LADDER_RAMP } from '@/lib/circuits';
 import MindLoftMark from './MindLoftMark';
 import StageTopBar from './StageTopBar';
+import RunRoll from './RunRoll';
 import { mathText } from '@/app/MathText';
 import { holdRootPaint } from '@/lib/root-paint';
 import { holdThemeColor } from '@/lib/theme-color-hold';
@@ -493,6 +494,16 @@ export function GauntletEndStage({
   prize = null,
 }) {
   const [openRow, setOpenRow] = useState(-1);
+  // PHONES ROLL (owner, 2026-10-28): see RunRoll.jsx. Desktop is unchanged.
+  const [phone, setPhone] = useState(() => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(max-width:899px)').matches);
+  useEffect(() => {
+    if (!window.matchMedia) return undefined;
+    const mq = window.matchMedia('(max-width:899px)');
+    const on = () => setPhone(mq.matches);
+    on();
+    if (mq.addEventListener) mq.addEventListener('change', on);
+    return () => { if (mq.removeEventListener) mq.removeEventListener('change', on); };
+  }, []);
   const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const anim = sweep && !reduce;
   const [replays, setReplays] = useState(0);
@@ -620,6 +631,65 @@ export function GauntletEndStage({
         {onPractice ? <button type="button" className="gsx-det" onClick={onPractice}>Practice replay</button> : null}
     </>
   );
+  if (phone) {
+    // The title the climb earned: the prop when a run passes one, else the
+    // highest rung the score reaches.
+    let titleName = title && title.name ? title.name : null;
+    if (!titleName && climb) {
+      ladder.forEach((t) => { if (score >= t.min) titleName = t.name; });
+    }
+    return (
+      <div key={pal.look} className="gsx gsx-end gsx-roll" role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
+        <style dangerouslySetInnerHTML={{ __html: CSS }} />
+        {anim ? (
+          <div className="gsx-show" aria-hidden="true">
+            {sections.map((s, i) => <span key={s.key} style={{ background: pal.fill(rampFor(slotOf(s, i))), animationDelay: `${i * 0.06}s` }} />)}
+          </div>
+        ) : null}
+        <div className="gsx-col">
+          <RunRoll
+            anim={anim}
+            landed={landed}
+            shown={shown}
+            unitWord={unitWord}
+            eyebrow={`${circuitName} · ${dateLabel}`}
+            rank={rank}
+            fieldSize={fieldSize}
+            titleName={titleName}
+            climbHero={climb ? <TitleClimb ladder={ladder} score={score} shown={shown} landed={landed} pal={pal} heading={ladderHeading} /> : null}
+            climbDone={climb ? <TitleClimb ladder={ladder} score={score} shown={score} landed pal={pal} heading={ladderHeading} /> : title ? (
+              <div className="gsx-title"><b style={{ color: bg }}>{title.name}</b>{title.line ? <span>{title.line}</span> : null}</div>
+            ) : null}
+            prize={prize}
+            topNote={topNote}
+            board={board && board.rows && board.rows.length ? (
+              <div className="gsx-card gsx-board">
+                <div className="gsx-ch"><span>Today&rsquo;s board{board.field ? ` · ${Number(board.field).toLocaleString()}` : ''}</span>{board.href ? <a href={board.href}>See all</a> : null}</div>
+                {board.rows.map((r, i) => (r.gap ? (
+                  <div key={'g' + i} className="gsx-br gsx-gap">&middot;&middot;&middot;</div>
+                ) : (
+                  <div key={(r.name || '') + i} className={'gsx-br' + (r.me ? ' me' : '')}>
+                    <span className="p">#{r.rank}</span><span className="n">{r.me ? 'You' : r.name}</span><span className="s">{r.score}</span>
+                  </div>
+                )))}
+              </div>
+            ) : null}
+            afterBoard={afterBoard}
+            stats={<div className="rrl-stats">{statsNode}</div>}
+            extra={extra}
+            challenge={challenge}
+            polymath={polymath}
+            meme={meme}
+            onShare={onShare}
+            copied={copied}
+            onPractice={onPractice}
+            similar={similar}
+            more={more}
+          />
+        </div>
+      </div>
+    );
+  }
   const tail = [];
   if (more) tail.push({ id: 'more', node: <div className="gsx-rise gsx-card gsx-more" style={d('2.55s')}>{more}</div> });
   tail.push({ id: 'all', node: <a className="gsx-rise gsx-ob" href="/" style={d('2.6s')}>All Daily Puzzles</a> });

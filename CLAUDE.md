@@ -10497,6 +10497,18 @@ unsolved solve-or-not game and for a scored run that got nothing. 'Good effort' 
 run that got something (1 of 35 on trivia is Good effort, 0 of 35 is Fail). No client writes
 'Good effort' for an unsolved board.
 
+## Phone run ending: the rolling run ending (owner, 2026-10-28)
+
+Every run's ending on a phone (`GauntletEndStage` in `app/GauntletScreens.jsx`, so the Trivia, Math
+and English Gauntlets, Price Check, Passport, Enter the Dojo, Judged, Read the Room and Crossed Up)
+renders `app/RunRoll.jsx` below 900px. The sweep and the score counting up the title ladder still
+play; when the count lands the hero rolls up into ONE full-width bar (`74 right · Know-It-All · #39 of
+214`, shortened before it shrinks). The bar's dropdown holds the climb, the rank note, the prize,
+today's board, the run's own card and the leg-by-leg table. The page below is Play next (one quick play
+next, the other runs, See all Daily Puzzles) then the Challenge tray (challenge, Polymath meter, the
+full GIF, Share Your Score). Header: Mind Loft home, Practice, Share, no outlines. Any tap on the hero
+skips to the bar; reduced motion lands there. Desktop is unchanged.
+
 ## Desktop ending: direction B, one sheet (owner, 2026-10-26)
 
 On desktop the one-page ending (`app/StageStick.jsx`) is ONE sheet in the page's own materials:
