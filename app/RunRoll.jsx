@@ -33,6 +33,10 @@ export default function RunRoll({
   const [rolled, setRolled] = useState(!anim);
   const [leaving, setLeaving] = useState(false);
   const [open, setOpen] = useState(false);
+  // The other runs show two at a time, so Challenge stays near the top.
+  const moreRef = useRef(null);
+  const [moreN, setMoreN] = useState(0);
+  const [allRuns, setAllRuns] = useState(false);
   // The hero rolls up and shrinks into the bar's spot, then the bar takes it.
   const roll = () => { if (!leaving && !rolled) setLeaving(true); };
   useEffect(() => {
@@ -80,6 +84,16 @@ export default function RunRoll({
     try { document.fonts && document.fonts.ready.then(re); } catch (e) { /* older browsers */ }
     return () => window.removeEventListener('resize', re);
   }, [vKey, rolled]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const el = moreRef.current;
+    if (!el) return undefined;
+    const count = () => { const rows = el.querySelector('.mr-rows'); setMoreN(rows ? rows.children.length : 0); };
+    count();
+    const mo = typeof MutationObserver !== 'undefined' ? new MutationObserver(count) : null;
+    if (mo) mo.observe(el, { childList: true, subtree: true });
+    return () => { if (mo) mo.disconnect(); };
+  }, [rolled]);
 
   return (
     <div className={'rrl' + (rolled ? ' in' : '') + (dark ? ' dk' : '')}>
@@ -143,7 +157,10 @@ export default function RunRoll({
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </a>
             ) : null}
-            {more ? <div className="rrl-more">{more}</div> : null}
+            {more ? <div ref={moreRef} className={'rrl-more' + (allRuns ? '' : ' cap')}>{more}</div> : null}
+            {more && !allRuns && moreN > 2 ? (
+              <button type="button" className="rrl-show" onClick={() => setAllRuns(true)}>Show {moreN - 2} more {moreN - 2 === 1 ? 'run' : 'runs'}</button>
+            ) : null}
             <a className="rrl-all" href="/">See all Daily Puzzles</a>
           </section>
 
@@ -164,10 +181,11 @@ const CSS = `
 .gsx-roll .gsx-col{gap:12px;padding:12px 14px 26px}
 .rrl{display:flex;flex-direction:column;gap:12px;--rrl-card:var(--gsx-card)}
 .rrl-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px}
-.rrl-tr{display:flex;gap:2px}
-.rrl-tb{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--gsx-ink);font:inherit;font-size:14px;font-weight:800;text-decoration:none;cursor:pointer}
+.rrl-tr{display:flex;gap:0;flex:none}
+.rrl-tb{display:inline-flex;align-items:center;gap:5px;min-height:40px;padding:0 8px;white-space:nowrap;border:0;border-radius:999px;background:transparent;color:var(--gsx-ink);font:inherit;font-size:14px;font-weight:800;text-decoration:none;cursor:pointer}
 .rrl-tb:active{background:color-mix(in srgb, var(--gsx-ink) 10%, transparent)}
-.rrl-home{padding-left:2px}
+.rrl-home{padding-left:2px;min-width:0;overflow:hidden}
+@media(max-width:359px){.rrl-home span{display:none}}
 .rrl-hero{display:flex;flex-direction:column;align-items:stretch;gap:12px;width:100%;padding:6px 0 0;border:0;background:transparent;color:var(--gsx-ink);font:inherit;text-align:left;cursor:pointer}
 .rrl-hero .gsx-score{align-items:center}
 .rrl-hero{transform-origin:50% 0;transition:transform .42s cubic-bezier(.5,0,.75,0),opacity .42s ease-in}
@@ -190,6 +208,9 @@ const CSS = `
 .rrl-next i{font-style:normal;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;opacity:.8}
 .rrl-next b{font-size:19px;font-weight:800}
 .rrl-more .mr{margin:0}
+.rrl-more.cap .mr-rows>:nth-child(n+3){display:none}
+.rrl-show{align-self:center;min-height:36px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--gsx-ink);font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.rrl-show:active{background:color-mix(in srgb, var(--gsx-ink) 10%, transparent)}
 .gsx .rrl-all{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:14px;background:color-mix(in srgb, var(--gsx-ink) 8%, transparent);font-size:15px;font-weight:800;text-decoration:none}
 .rrl-share{display:flex;align-items:center;justify-content:center;min-height:50px;border:0;border-radius:14px;background:#e9edf4;color:#08222e;font:inherit;font-size:15px;font-weight:800;cursor:pointer}
 .rrl-r1,.rrl-r2{animation:rrlRise .5s ease-out both}
