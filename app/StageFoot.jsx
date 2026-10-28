@@ -8,7 +8,8 @@
 //                screen the time is always shown.
 //   How to play  the game's rules (lib/stage-help.js).
 //   Give up      while the board is in play, when the game offers it. Two taps:
-//                the first arms it, the second ends the game.
+//                the first arms it (it reads Tap again, in the same spot), the
+//                second ends the game.
 //
 // The header keeps only the way back, the game's name, Share and the look, so
 // the board gets the room. The row is the same during play and at the end;
@@ -48,8 +49,8 @@ export default function StageFoot({ clock = undefined, done = undefined, giveUp 
         </button>
       ) : null}
       {give ? (
-        <button type="button" className={'sft-b sft-give' + (give.armed ? ' on' : '')} onClick={(e) => { e.stopPropagation(); give.onPress && give.onPress(e); }}>
-          <span>{give.armed ? (give.armedLabel || 'Tap again to give up') : (give.label || 'Give up')}</span>
+        <button type="button" aria-label={give.armed ? (give.armedLabel || 'Tap again to give up') : 'Give up'} className={'sft-b sft-give' + (give.armed ? ' on' : '')} onClick={(e) => { e.stopPropagation(); give.onPress && give.onPress(e); }}>
+          <span>{give.armed ? 'Tap again' : 'Give up'}</span>
         </button>
       ) : null}
     </div>
@@ -57,7 +58,8 @@ export default function StageFoot({ clock = undefined, done = undefined, giveUp 
 }
 
 const CSS = `
-.sft{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;flex:none;}
+.sft{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:nowrap;flex:none;}
+.sft .sft-give{min-width:96px;}
 .sft .sft-b{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;box-sizing:border-box;padding:0 14px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;opacity:1;}
 .sft .sft-b b{font-size:16px;font-weight:800;line-height:1;}
 .sft .sft-clock.on span{font-size:14px;font-variant-numeric:tabular-nums;}
