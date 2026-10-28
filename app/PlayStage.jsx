@@ -118,7 +118,7 @@ const CSS = `
 .pst-give{background:none;border:none;padding:4px 8px;font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;}
 .pst-give.on{font-weight:800;}
 .pst.inl{position:relative;inset:auto;z-index:auto;overflow:visible;border-radius:22px;margin:0 auto;max-width:640px;}
-.pst.inl .pst-col{min-height:min(640px, calc(100vh - 220px));padding:18px 14px 18px;}
+.pst.inl .pst-col{min-height:max(600px, calc(100vh - 150px));padding:18px 14px 18px;}
 @keyframes pstRise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion: reduce){.pst-top{animation:none}}
 `;
