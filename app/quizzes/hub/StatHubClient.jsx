@@ -28,6 +28,11 @@ const C = {
   accsoft: 'var(--stg-surf2,rgba(255,255,255,0.08))',
   live: 'var(--stg-up,#6ee7b7)',
   danger: 'var(--stg-dn,#fb7185)',
+  // THE HOME'S DRAWING RULES (owner, 2026-10-28): a box is a 2px ink outline,
+  // the same --dk the home's tiles and index use, and "you" is a periwinkle
+  // pastel wash rather than a grey one.
+  box: 'var(--dk,2px solid var(--stg-ink,#e9edf4))',
+  me: 'var(--hub-me,rgba(165,180,252,0.22))',
 };
 // Ink that rides ON the accent (and on a medal). The accent is a pale step on
 // the dark register and a deep one on the light register, so this flips with it
@@ -189,7 +194,7 @@ function SignupModal({ onClose }) {
   }
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(3,6,14,0.66)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: FONT }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: 380, maxWidth: '100%', background: RAISE, borderRadius: 14, border: `1px solid ${C.line}`, padding: 22 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: 380, maxWidth: '100%', background: RAISE, borderRadius: 14, border: C.box, padding: 22 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <div style={{ fontSize: 18, fontWeight: 800, color: C.ink }}>Claim your name</div>
           <button onClick={onClose} aria-label="Close" style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: C.soft, display: 'flex' }}><X size={18} /></button>
@@ -227,7 +232,7 @@ function ShareStatsModal({ profile, byKey, onClose }) {
   const lbl = { fontFamily: FONT, fontWeight: 700, fontSize: 10, letterSpacing: '.06em', textTransform: 'uppercase', color: C.muted };
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(20,22,28,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: FONT }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: 440, maxWidth: '100%', background: RAISE, borderRadius: 16, border: `1px solid ${C.line}`, overflow: 'hidden', color: C.ink }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: 440, maxWidth: '100%', background: RAISE, borderRadius: 16, border: C.box, overflow: 'hidden', color: C.ink }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: `1px solid ${C.line}` }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Logo size={20} /><span style={{ fontWeight: 800, fontSize: 14 }}>Mind Loft</span></span>
           <button onClick={onClose} aria-label="Close" style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: C.soft, display: 'flex' }}><ArrowLeft size={0} /><span style={{ fontSize: 20, lineHeight: 1 }}>&times;</span></button>
@@ -264,7 +269,7 @@ function ShareStatsModal({ profile, byKey, onClose }) {
         <div style={{ display: 'flex', gap: 9, padding: '16px 18px 18px' }}>
           <button onClick={copy} style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: C.accent, color: ON_ACC, border: 'none', borderRadius: 10, padding: '11px 14px', fontFamily: FONT, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}><Share2 size={15} strokeWidth={2.4} /> {copied ? 'Link copied!' : 'Copy share link'}</button>
           <a href={`/api/quiz/share-card?key=${encodeURIComponent(profile.userKey || '')}`} target="_blank" rel="noopener noreferrer" download="source-of-truths-stats.png" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, border: `1px solid ${C.line}`, background: RAISE, color: C.ink, borderRadius: 10, padding: '11px 14px', fontFamily: FONT, fontWeight: 700, fontSize: 13, cursor: 'pointer', textDecoration: 'none' }}><Download size={15} strokeWidth={2.4} /> Image</a>
-          <button onClick={onClose} style={{ border: `1px solid ${C.line}`, background: RAISE, color: C.ink, borderRadius: 10, padding: '11px 16px', fontFamily: FONT, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Close</button>
+          <button onClick={onClose} style={{ border: C.box, background: RAISE, color: C.ink, borderRadius: 999, padding: '11px 16px', fontFamily: FONT, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Close</button>
         </div>
       </div>
     </div>
@@ -328,7 +333,7 @@ function DuelsPanel({ data, setData, ladder, loaded, onSelectPlayer }) {
   // daily label rather than printing a raw 'crux-8-15-26' at the reader.
   const qtitle = (id) => { const q = getQuiz(id); return (q && q.title) || dailyLabel(id) || id; };
   const mutedEntries = Object.entries(muted);
-  const card = { background: C.surface, border: `1px solid ${C.line}`, borderRadius: 12, padding: 16, marginBottom: 14 };
+  const card = { background: C.surface, border: C.box, borderRadius: 12, padding: 16, marginBottom: 14 };
   const hd = { fontSize: 13, fontWeight: 800, letterSpacing: '.04em', textTransform: 'uppercase', color: C.soft, margin: '0 0 10px' };
   // The other player in a duel, from the current player's perspective.
   const iAmChallenger = (d) => (d.mine ? d.mine === 'challenger' : d.challenger_anon === anon);
@@ -408,7 +413,7 @@ function DuelsPanel({ data, setData, ladder, loaded, onSelectPlayer }) {
   const rematchHref = (nm, a2, quizId) => (a2
     ? `/duel/new?opponent=${encodeURIComponent(a2)}&oppName=${encodeURIComponent(nm || 'Player')}${quizId ? `&quiz=${encodeURIComponent(quizId)}` : ''}`
     : '/duel/new');
-  const smallBtn = (clr) => ({ background: 'transparent', border: `1px solid ${C.line}`, color: clr, borderRadius: 8, padding: '5px 12px', fontFamily: FONT, fontWeight: 700, fontSize: 12, cursor: 'pointer', flex: 'none' });
+  const smallBtn = (clr) => ({ background: 'transparent', border: C.box, color: clr, borderRadius: 999, padding: '5px 12px', fontFamily: FONT, fontWeight: 700, fontSize: 12, cursor: 'pointer', flex: 'none' });
   const empty = loaded && !data.yourMove.length && !data.awaiting.length && !data.completed.length;
 
   // A pending duel as a VS matchup card. Cards in Your Move pulse gently.
@@ -483,7 +488,7 @@ function DuelsPanel({ data, setData, ladder, loaded, onSelectPlayer }) {
       ) : null)}
 
       {rival ? (
-        <div style={{ ...card, padding: '13px 14px', border: '1.5px solid rgba(232,180,58,0.42)', background: 'rgba(232,180,58,0.10)' }}>
+        <div style={{ ...card, padding: '13px 14px', border: C.box, background: 'var(--hub-gold,rgba(232,180,58,0.16))' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
               <Avatar name={rival.name} bg="rgba(232,180,58,0.16)" fg={GOLD_INK} />
@@ -496,7 +501,7 @@ function DuelsPanel({ data, setData, ladder, loaded, onSelectPlayer }) {
                 </span>
               </span>
             </span>
-            <a href={rematchHref(rival.name, rival.anon, null)} style={{ flex: 'none', fontSize: 12, fontWeight: 800, color: C.accent, border: `1px solid ${C.accent}`, borderRadius: 8, padding: '6px 13px', textDecoration: 'none' }}>Rematch</a>
+            <a href={rematchHref(rival.name, rival.anon, null)} style={{ flex: 'none', fontSize: 12, fontWeight: 800, color: C.ink, border: C.box, borderRadius: 999, padding: '6px 13px', textDecoration: 'none' }}>Rematch</a>
           </div>
         </div>
       ) : null}
@@ -610,7 +615,7 @@ function DuelsPanel({ data, setData, ladder, loaded, onSelectPlayer }) {
         {mutedEntries.length === 0 ? <div style={{ color: C.muted, fontSize: 13, marginTop: 6 }}>No muted players.</div> : mutedEntries.map(([a, nm]) => (
           <div key={a} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderBottom: `1px solid ${C.line}` }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>{nm || 'Player'}</span>
-            <button onClick={() => unmute(a)} style={{ background: 'transparent', border: `1px solid ${C.accent}`, color: C.accent, borderRadius: 8, padding: '5px 12px', fontFamily: FONT, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>Unmute</button>
+            <button onClick={() => unmute(a)} style={{ background: 'transparent', border: C.box, color: C.ink, borderRadius: 999, padding: '5px 12px', fontFamily: FONT, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>Unmute</button>
           </div>
         ))}
       </div>
@@ -974,10 +979,103 @@ export default function StatHubClient() {
     .hubyou{font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:${C.accent};margin-left:7px;}
     @media(max-width:900px){.hubcap-figs{gap:18px;width:100%;margin-left:0;}}
     @media(max-width:560px){.hubcap,.hubjump-in{padding-left:14px;padding-right:14px;}.hubcap-figs{gap:14px 20px;}.hubfig b{font-size:13.5px;}}
+
+    /* ── THE HOME'S LOOK (owner, 2026-10-28) ──────────────────────────────
+       The hub drew in 1px grey hairlines and a sky/teal accent while the home
+       moved to 2px ink outlines, rounded white tiles, black pills and the
+       category pastels. These rules redraw the hub in the home's terms: every
+       box is --dk, every control is an ink-outlined pill that fills ink when
+       pressed, and colour is a PASTEL FILL (medals, "you", the chase), never
+       text. Scoped to .qzhub-stage so the public /player/[name] profile, which
+       shares ProfileShared's sheet, is untouched. Both registers: --dk reads
+       --stg-ink, so it is near-black on light and near-white on dark, exactly
+       as on the home. */
+    .qzhub-stage{--dk:2px solid var(--stg-ink);
+      --hub-me:color-mix(in srgb, #a5b4fc 42%, #fff);
+      --hub-gold:color-mix(in srgb, #e8b43a 38%, #fff);
+      --hpm1:color-mix(in srgb, #e8b43a 55%, #fff);--hpm2:color-mix(in srgb, #b8bcc4 55%, #fff);--hpm3:color-mix(in srgb, #c8814b 50%, #fff);}
+    .qzhub-stage:not([data-stage-theme=light]){
+      --hub-me:color-mix(in srgb, #a5b4fc 22%, transparent);
+      --hub-gold:color-mix(in srgb, #e8b43a 20%, transparent);
+      --hpm1:color-mix(in srgb, #e8b43a 70%, #fff);--hpm2:color-mix(in srgb, #b8bcc4 70%, #fff);--hpm3:color-mix(in srgb, #c8814b 65%, #fff);}
+    .qzhub-stage .qzhub .card{border:var(--dk);border-radius:12px;background:var(--stg-surf);}
+    .qzhub-stage .qzhub .tile{border:var(--dk);background:var(--stg-surf);color:var(--stg-ink);}
+    .qzhub-stage .qzhub .tile:hover{border-color:var(--stg-ink);filter:brightness(.97);}
+    .qzhub-stage .qzhub .tile.on,.qzhub-stage .qzhub .pill.on,.qzhub-stage .qzhub .pvbtn.on{background:var(--stg-ink);border-color:var(--stg-ink);color:var(--stg-ground);filter:none;}
+    .qzhub-stage .qzhub .tilebadge{color:#fff;}
+    .qzhub-stage .qzhub .pill{border:var(--dk);background:var(--stg-surf);color:var(--stg-ink);}
+    .qzhub-stage .qzhub .pill:hover{border-color:var(--stg-ink);background:var(--stg-ink);color:var(--stg-ground);}
+    .qzhub-stage .qzhub .pvbtn{color:var(--stg-ink);border-radius:999px;font-weight:700;}
+    .qzhub-stage .qzhub .ddbtn,.qzhub-stage .qzhub .ddmenu{border:var(--dk);background:var(--stg-surf);}
+    .qzhub-stage .qzhub .ddbtn{border-radius:999px;}
+    .qzhub-stage .qzhub .ddmenu{border-radius:12px;box-shadow:none;}
+    .qzhub-stage .qzhub .metric{background:var(--stg-surf2);}
+    .qzhub-stage .qzhub .rankchip{color:var(--stg-ink);background:var(--hub-me);border-radius:999px;padding:1px 7px;}
+    .qzhub-stage .qzhub .score{color:var(--stg-ink);}
+    .qzhub-stage .qzhub th{color:var(--stg-ink);font-weight:800;font-size:10.5px;letter-spacing:.06em;border-bottom:var(--dk);}
+    .qzhub-stage .qzhub td{border-bottom:1px solid var(--stg-line);}
+    .qzhub-stage .qzhub tr:last-child td{border-bottom:0;}
+    .qzhub-stage .qzhub .gtag{border:1.5px solid var(--stg-ink);color:var(--stg-ink);}
+    .qzhub-stage .qzhub .formula{border:var(--dk);background:var(--stg-surf);}
+    .qzhub-stage .qzhub .back{color:var(--stg-ink);}
+    .qzhub-stage .qzhub .crumb2{color:var(--stg-ink);text-decoration:underline;text-underline-offset:4px;}
+    .qzhub-stage .qzhub .hubbtn{border:var(--dk);border-radius:999px;color:var(--stg-ink);background:var(--stg-surf);}
+    .qzhub-stage .qzhub .hubbtn:hover{background:var(--stg-ink);color:var(--stg-ground);}
+    .qzhub-stage .qzhub .qz-playerbar.hub-bleed .hubbtn{border:var(--dk);border-radius:999px;margin:0;padding:10px 15px;align-self:center;}
+    /* the cap: ink-outlined pills at the height of the home's name pill */
+    .qzhub-stage .hubchip{border:var(--dk);height:36px;box-sizing:border-box;padding:0 15px;font-size:12.5px;font-weight:800;color:var(--stg-ink);}
+    .qzhub-stage .hubchip:hover{background:var(--stg-ink);color:var(--stg-ground);}
+    .qzhub-stage .hub-tg{width:36px;padding:0;justify-content:center;}
+    .qzhub-stage .hubcap-eyebrow{color:var(--stg-ink);}
+    .qzhub-stage .hubfig b{font-size:17px;}
+    .qzhub-stage .hubfig span{color:var(--stg-ink);font-weight:700;letter-spacing:.07em;}
+    /* the jump bar: the home's sort pills, ink outline, ink fill on hover */
+    .qzhub-stage .hubjump{border-bottom:0;background:var(--stg-ground);}
+    .qzhub-stage .hubjump-in{gap:7px;padding:10px 38px 12px;}
+    .qzhub-stage .hubjump a{border:var(--dk);color:var(--stg-ink);background:var(--stg-surf);font-size:12.5px;font-weight:800;letter-spacing:0;text-transform:none;padding:6px 14px;}
+    .qzhub-stage .hubjump a:hover{background:var(--stg-ink);color:var(--stg-ground);}
+    /* sections: the home's pane heading, no hairline between them */
+    .qzhub-stage .hubsec{border-top:0;padding-top:26px;}
+    .qzhub-stage .hubsec-head{align-items:center;}
+    .qzhub-stage .hubsec-head h2{font-size:24px;letter-spacing:-.015em;text-transform:none;line-height:1.3;}
+    .qzhub-stage .hubsec-sub{color:var(--stg-ink2,var(--stg-mute));font-weight:600;font-size:13px;}
+    .qzhub-stage .hubmore{color:var(--stg-ink);text-decoration:underline;text-underline-offset:3px;font-size:12.5px;}
+    .qzhub-stage a.hubmore:hover{text-decoration-thickness:2px;}
+    .qzhub-stage .hublab{color:var(--stg-ink);}
+    .qzhub-stage .hublink{border:var(--dk);border-radius:999px;}
+    .qzhub-stage .hubbar{border-radius:999px;background:var(--stg-surf2);}
+    .qzhub-stage .hubbar span{border-radius:999px;}
+    .qzhub-stage .hubyou{color:var(--stg-ink);}
+    /* the ink button and the "you" tag */
+    .qzhub-stage .hubink{background:var(--stg-ink);color:var(--stg-ground);}
+    .qzhub-stage .hubink:hover{opacity:.86;}
+    .qzhub-stage .hubyoupill{display:inline-block;vertical-align:1px;margin-left:5px;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+      color:var(--stg-ground);background:var(--stg-ink);border-radius:999px;padding:1px 7px;}
+    /* the podium: medal pastels with ink outlines, like the home's index
+       tiles. The pastel is always light, so its ink is always the dark one,
+       whichever register the page is in. */
+    .qzhub-stage .hubpod{border:var(--dk);border-radius:12px;color:#0b0d12;text-align:center;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;}
+    .qzhub-stage .hubpod.m1{background:var(--hpm1);}
+    .qzhub-stage .hubpod.m2{background:var(--hpm2);}
+    .qzhub-stage .hubpod.m3{background:var(--hpm3);}
+    .qzhub-stage:not([data-stage-theme=light]) .hubpod{border-color:transparent;}
+    .qzhub-stage .hubpod.mine{box-shadow:inset 0 0 0 2px #0b0d12;}
+    .qzhub-stage .hubpod-sub{color:#2b313c;}
+    .qzhub-stage .hubpod-av > span{border:2px solid #0b0d12;box-sizing:border-box;}
+    .qzhub-stage .hubpod .hubyoupill{color:#fff;background:#0b0d12;}
+    /* the board: one ink-outlined box, medal chips on the top three */
+    .qzhub-stage .hubtbl{border:var(--dk);border-radius:12px;background:var(--stg-surf);}
+    .qzhub-stage .hubtbl th{position:sticky;top:0;z-index:1;background:var(--stg-surf);}
+    .qzhub-stage .hubmed{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;box-sizing:border-box;
+      border:2px solid var(--stg-ink);color:#0b0d12;font-size:11.5px;font-weight:800;}
+    .qzhub-stage:not([data-stage-theme=light]) .hubmed{border-color:transparent;}
+    .qzhub-stage .hubmed.m1{background:var(--hpm1);}
+    .qzhub-stage .hubmed.m2{background:var(--hpm2);}
+    .qzhub-stage .hubmed.m3{background:var(--hpm3);}
   `;
 
   return (
-    <div className="stage-page qzhub-stage" data-stage-theme={stageTheme} style={{ '--stg-acc-dk': '#7dd3fc', '--stg-acc-lt': '#0369a1', '--stg-acc-ink-lt': '#0369a1', '--stg-brand-dk': '#7dd3fc', '--stg-brand-lt': '#7dd3fc', background: C.bg, minHeight: '100vh', position: 'relative' }}>
+    <div className="stage-page qzhub-stage" data-stage-theme={stageTheme} style={{ '--stg-acc-dk': '#e9edf4', '--stg-acc-lt': '#0b0d12', '--stg-acc-ink-lt': '#0b0d12', '--stg-brand-dk': '#7dd3fc', '--stg-brand-lt': '#7dd3fc', background: C.bg, minHeight: '100vh', position: 'relative' }}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <header className="hubcap">
         <Link href="/" className="hubcap-mark" aria-label="Mind Loft home"><Logo size={17} /> <b>Mind <i>Loft</i></b></Link>
@@ -1027,14 +1125,14 @@ export default function StatHubClient() {
       <div className="qzhub qzf-w" style={{ maxWidth: 1180, margin: '0 auto', padding: '4px 38px 70px', position: 'relative' }}>
 
         {viewing ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: C.accsoft, border: `1px solid ${C.line}`, borderRadius: 10, padding: '8px 14px', marginTop: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: C.me, border: C.box, borderRadius: 12, padding: '8px 14px', marginTop: 10 }}>
             <span style={{ fontSize: 13, color: C.ink }}>Viewing <b>{(viewProfile && viewProfile.name) || 'player'}</b>{"'"}s stats</span>
-            <button onClick={() => { setViewKey(null); if (typeof window !== 'undefined' && window.history) window.history.replaceState(null, '', '/quizzes/hub'); }} style={{ border: `1px solid ${T.accentBorder}`, background: RAISE, color: C.accent, borderRadius: 7, padding: '6px 13px', font: 'inherit', fontFamily: FONT, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Back to my stats</button>
+            <button onClick={() => { setViewKey(null); if (typeof window !== 'undefined' && window.history) window.history.replaceState(null, '', '/quizzes/hub'); }} style={{ border: C.box, background: RAISE, color: C.ink, borderRadius: 999, padding: '6px 13px', font: 'inherit', fontFamily: FONT, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Back to my stats</button>
           </div>
         ) : null}
 
         {!viewing && me && !(me.found && !me.isAnon) ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', background: C.accsoft, border: `1px solid ${C.line}`, borderRadius: 12, padding: '14px 18px', marginTop: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', background: C.me, border: C.box, borderRadius: 12, padding: '14px 18px', marginTop: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
               <div style={{ width: 38, height: 38, borderRadius: 10, background: C.accent, color: ON_ACC, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}><UserPlus size={20} /></div>
               <div style={{ minWidth: 0 }}>
@@ -1176,7 +1274,7 @@ function DailyGamesView({ onSelectPlayer, initialGame = null }) {
           {hist == null ? null : <span style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>{history.length} {history.length === 1 ? 'day' : 'days'} crowned</span>}
         </div>
         {topChamp && topChamp.wins > 1 ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'rgba(232,180,58,0.10)', border: '1.5px solid rgba(232,180,58,0.42)', borderRadius: 12, padding: '11px 14px', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'var(--hub-gold,rgba(232,180,58,0.16))', border: C.box, borderRadius: 12, padding: '11px 14px', marginBottom: 12 }}>
             <span style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(232,180,58,0.16)', color: GOLD_INK, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}><Crown size={17} /></span>
             <span style={{ minWidth: 0 }}>
               <span style={{ display: 'block', fontSize: 13, fontWeight: 800 }}><span style={{ color: GOLD_INK }}>Most crowns:</span> {nameBtn(topChamp.userKey, topChamp.username, 13)}</span>
@@ -1237,7 +1335,7 @@ function DailyGamesView({ onSelectPlayer, initialGame = null }) {
                 </span>
               );
               return (
-                <div key={g.key} style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: '13px 14px', minWidth: 0 }}>
+                <div key={g.key} style={{ border: C.box, background: C.surface, borderRadius: 12, padding: '13px 14px', minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                     <a href={meta.href} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', minWidth: 0 }}>
                       <span style={{ width: 9, height: 9, borderRadius: '50%', background: meta.c, flex: 'none' }} />
@@ -1350,38 +1448,38 @@ function UserBaseBody({ board, boardTotal, myName, myAnonKey, onSelectPlayer, vi
         {top3.map((p, i) => {
           const mine = isMine(p);
           return (
-            <div key={p.userKey} style={{ background: mine ? 'var(--stg-surf2,rgba(255,255,255,0.08))' : C.bg, border: `1px solid ${mine ? 'var(--stg-acc-ink, var(--stg-acc,#7dd3fc))' : C.line}`, borderTop: `3px solid ${MEDAL[i]}`, borderRadius: '0 0 12px 12px', padding: '14px 12px 12px', textAlign: 'center', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}>
+            <div key={p.userKey} className={'hubpod m' + (i + 1) + (mine ? ' mine' : '')} style={{ padding: '14px 12px 12px' }}>
               <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
-                <Avatar name={p.name} bg={MEDAL_BG[i]} fg={MEDAL_INK[i]} size={40} />
-                {i === 0 ? <span style={{ position: 'absolute', top: -7, right: -9, width: 19, height: 19, borderRadius: '50%', background: RAISE, border: `1px solid ${C.line}`, color: MEDAL_INK[0], display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Crown size={11} /></span> : null}
+                <span className="hubpod-av"><Avatar name={p.name} bg="#fff" fg="#0b0d12" size={40} /></span>
+                {i === 0 ? <span style={{ position: 'absolute', top: -7, right: -9, width: 21, height: 21, borderRadius: '50%', background: '#fff', border: '2px solid #0b0d12', color: '#0b0d12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Crown size={11} /></span> : null}
               </span>
               <div style={{ marginTop: 7, fontSize: 13, fontWeight: 800, lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
-                <button onClick={() => onSelectPlayer && onSelectPlayer(p.userKey)} style={{ border: 'none', background: 'transparent', padding: 0, font: 'inherit', fontFamily: FONT, fontWeight: 800, color: mine ? C.ink : C.accent, cursor: 'pointer' }}>{p.name}</button>
-                {mine ? <span style={{ fontSize: 9.5, color: C.accent, fontWeight: 800, marginLeft: 5 }}>YOU</span> : null}
+                <button onClick={() => onSelectPlayer && onSelectPlayer(p.userKey)} style={{ border: 'none', background: 'transparent', padding: 0, font: 'inherit', fontFamily: FONT, fontWeight: 800, color: 'inherit', cursor: 'pointer' }}>{p.name}</button>
+                {mine ? <span className="hubyoupill">You</span> : null}
               </div>
               <div style={{ fontSize: 20, fontWeight: 800, marginTop: 2, lineHeight: 1.15, fontVariantNumeric: 'tabular-nums' }}>{(p.xp || 0).toLocaleString()}</div>
-              <div style={{ fontSize: 10, color: C.soft, fontWeight: 800, letterSpacing: '.05em', marginTop: 2 }}>{tierNameOf(p.level || 1).toUpperCase()} · {p.accuracy || 0}% ACC</div>
+              <div className="hubpod-sub" style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.05em', marginTop: 2 }}>{tierNameOf(p.level || 1).toUpperCase()} · {p.accuracy || 0}% ACC</div>
             </div>
           );
         })}
       </div>
       {chase ? (
-        <div style={{ background: C.bg, borderRadius: 12, padding: '13px 14px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <span style={{ flex: 'none', color: C.accent, background: C.accsoft, borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Target size={19} /></span>
+        <div style={{ background: C.surface, border: C.box, borderRadius: 12, padding: '13px 14px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <span style={{ flex: 'none', color: '#0b0d12', background: 'color-mix(in srgb, #a5b4fc 60%, #fff)', border: C.box, borderRadius: 10, width: 36, height: 36, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Target size={19} /></span>
           <span style={{ flex: 1, minWidth: 200 }}>
             <span style={{ display: 'block', fontSize: 13, fontWeight: 800 }}>{chase.title}</span>
             <span style={{ display: 'block', fontSize: 12, color: C.muted, fontWeight: 600, marginTop: 1 }}>{chase.sub}</span>
-            <span style={{ display: 'block', height: 6, borderRadius: 999, background: C.accsoft, marginTop: 8, overflow: 'hidden' }}><span style={{ display: 'block', width: `${chase.pct}%`, height: '100%', background: C.accent, borderRadius: 999 }} /></span>
+            <span style={{ display: 'block', height: 8, borderRadius: 999, background: 'var(--stg-surf2,rgba(255,255,255,0.08))', marginTop: 8, overflow: 'hidden' }}><span style={{ display: 'block', width: `${chase.pct}%`, height: '100%', background: '#a5b4fc', borderRadius: 999 }} /></span>
           </span>
-          <Link href="/#sty-quizzes" style={{ flex: 'none', fontSize: 12, fontWeight: 800, color: ON_ACC, background: C.accent, borderRadius: 9, padding: '8px 14px', textDecoration: 'none' }}>{chase.cta}</Link>
+          <Link href="/#sty-quizzes" className="hubink" style={{ flex: 'none', fontSize: 12.5, fontWeight: 800, borderRadius: 999, padding: '8px 16px', textDecoration: 'none' }}>{chase.cta}</Link>
         </div>
       ) : null}
       <div style={{ fontSize: 11, color: C.soft, marginBottom: 10 }}>Top {board.length.toLocaleString()} of {Math.max(boardTotal || 0, board.length).toLocaleString()} players, anonymous guests included. Tap a column to sort; your row is highlighted.{hasTrend ? ' 7-Day = IQ Points earned over the last week.' : ''}</div>
-      <div style={{ overflow: 'auto', maxHeight: 600 }}>
+      <div className="hubtbl" style={{ overflow: 'auto', maxHeight: 600 }}>
         <table>
           <thead><tr>
             {COLS.map((c) => (
-              <th key={c.key} onClick={() => clickSort(c)} style={{ width: c.w, textAlign: c.align, whiteSpace: 'nowrap', userSelect: 'none', cursor: c.get ? 'pointer' : 'default', color: c.get && sort.col === c.key ? C.accent : undefined }}>
+              <th key={c.key} onClick={() => clickSort(c)} style={{ width: c.w, textAlign: c.align, whiteSpace: 'nowrap', userSelect: 'none', cursor: c.get ? 'pointer' : 'default', textDecoration: c.get && sort.col === c.key ? 'underline' : undefined, textUnderlineOffset: 3 }}>
                 {c.label}{c.get && sort.col === c.key ? (sort.dir === 'desc' ? ' ↓' : ' ↑') : ''}
               </th>
             ))}
@@ -1392,10 +1490,10 @@ function UserBaseBody({ board, boardTotal, myName, myAnonKey, onSelectPlayer, vi
               const viewed = !!viewKey && p.userKey === viewKey && !mine;
               const mi = idx < 3 ? idx : -1;
               return (
-                <tr key={p.userKey} style={mine ? { background: C.accsoft } : (viewed ? { background: 'rgba(232,180,58,0.12)' } : undefined)}>
-                  <td style={{ fontWeight: 800, color: mi >= 0 ? MEDAL_INK[mi] : C.soft }}>{idx + 1}</td>
-                  <td style={{ fontWeight: (mine || viewed) ? 800 : 600, whiteSpace: 'nowrap' }}><button onClick={() => onSelectPlayer && onSelectPlayer(p.userKey)} style={{ border: 'none', background: 'transparent', padding: 0, font: 'inherit', fontFamily: FONT, fontWeight: 'inherit', color: C.accent, cursor: 'pointer', textAlign: 'left' }}>{p.name}</button>{p.isAnon ? <span style={{ fontSize: 10, color: C.soft, fontWeight: 600, marginLeft: 6 }}>guest</span> : null}{mine ? <span style={{ fontSize: 10, color: C.accent, fontWeight: 700, marginLeft: 6 }}>you</span> : null}{viewed ? <span style={{ fontSize: 10, color: GOLD_INK, fontWeight: 700, marginLeft: 6 }}>viewing</span> : null}</td>
-                  <td className="score" style={{ textAlign: 'right', color: C.accent, fontWeight: 700 }}>{(p.xp || 0).toLocaleString()}</td>
+                <tr key={p.userKey} style={mine ? { background: C.me } : (viewed ? { background: 'var(--hub-gold,rgba(232,180,58,0.16))' } : undefined)}>
+                  <td style={{ fontWeight: 800, color: C.soft }}>{mi >= 0 ? <span className={'hubmed m' + (mi + 1)}>{idx + 1}</span> : idx + 1}</td>
+                  <td style={{ fontWeight: (mine || viewed) ? 800 : 600, whiteSpace: 'nowrap' }}><button onClick={() => onSelectPlayer && onSelectPlayer(p.userKey)} style={{ border: 'none', background: 'transparent', padding: 0, font: 'inherit', fontFamily: FONT, fontWeight: 'inherit', color: C.ink, cursor: 'pointer', textAlign: 'left' }}>{p.name}</button>{p.isAnon ? <span style={{ fontSize: 10, color: C.soft, fontWeight: 600, marginLeft: 6 }}>guest</span> : null}{mine ? <span className="hubyoupill" style={{ marginLeft: 7 }}>You</span> : null}{viewed ? <span style={{ fontSize: 10, color: GOLD_INK, fontWeight: 700, marginLeft: 6 }}>viewing</span> : null}</td>
+                  <td className="score" style={{ textAlign: 'right', color: C.ink, fontWeight: 800 }}>{(p.xp || 0).toLocaleString()}</td>
                   {hasTrend ? <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>{trendCell(p)}</td> : null}
                   <td style={{ textAlign: 'right' }}>{(p.correct || 0).toLocaleString()}</td>
                   <td style={{ textAlign: 'right' }}>{p.completed || 0}</td>
@@ -1456,7 +1554,7 @@ function QuizzesPanel({ me, myProfile, scope, byKey, catalog, stats, totals, tot
           <table>
             <thead><tr>
               {QUIZ_COLS.map((c) => (
-                <th key={c.key} onClick={() => clickSort(c)} style={{ textAlign: c.align, whiteSpace: 'nowrap', userSelect: 'none', cursor: c.get ? 'pointer' : 'default', color: c.get && sort.col === c.key ? C.accent : undefined }}>{c.label}{c.get && sort.col === c.key ? (sort.dir === 'desc' ? ' ↓' : ' ↑') : ''}</th>
+                <th key={c.key} onClick={() => clickSort(c)} style={{ textAlign: c.align, whiteSpace: 'nowrap', userSelect: 'none', cursor: c.get ? 'pointer' : 'default', textDecoration: c.get && sort.col === c.key ? 'underline' : undefined, textUnderlineOffset: 3 }}>{c.label}{c.get && sort.col === c.key ? (sort.dir === 'desc' ? ' ↓' : ' ↑') : ''}</th>
               ))}
             </tr></thead>
             <tbody>
