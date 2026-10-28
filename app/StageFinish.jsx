@@ -1731,7 +1731,17 @@ export default function StageFinish({
     return {
       gameKey: me.key, game: me.name, cat: me.cat, hue: categoryAccentInkLight(me.cat),
       fig, timed: !!(mine.won && mine.t != null && mine.m == null && /^\d+:\d\d/.test(fig)),
-      won: !!mine.won, pb: isPb,
+      won: !!mine.won, pb: isPb, blank,
+      // Slower than today's typical solve: the median of the field's solve
+      // clocks, read off the board's time bins.
+      slow: (() => {
+        const td = board && board.timeDist;
+        if (!mine.won || mine.t == null || !td || !td.n || !td.bins) return false;
+        let acc = 0, i = 0;
+        for (; i < td.bins.length; i += 1) { acc += td.bins[i]; if (acc >= td.n / 2) break; }
+        const mid = td.lo + ((i + 0.5) / td.bins.length) * (td.hi - td.lo);
+        return Number(mine.t) > mid;
+      })(),
       line1: [me.name, curN != null && /[?&]p=\d+/.test(typeof window !== 'undefined' ? window.location.search : '') ? `No. ${curN}` : dLab, rk].filter(Boolean).join(' · '),
       route: String(me.href || `/${me.key}`).replace(/^\//, ''),
     };

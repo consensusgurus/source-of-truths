@@ -103,7 +103,7 @@ function download(blob, filename) {
   } catch (e) { /* nothing to fall back to */ }
 }
 
-// ctx: { gameKey, game, cat, hue, fig, timed, won, pb, line1, route }
+// ctx: { gameKey, game, cat, hue, fig, timed, won, pb, slow?, blank?, line1, route }
 // getLink(source): returns the player's challenge link (records the send).
 export default function MemeShare({ open, onClose, ctx, getLink }) {
   const order = ctx ? memeOrder(ctx) : [];
