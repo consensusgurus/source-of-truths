@@ -65,7 +65,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
-import { endEfficiency, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endEfficiency, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -1406,7 +1406,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !endHold.held && !LOFT && (
         <DailyEndCard modal self="cell" won={won}
-          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : <>Solved!</>) : <>{GOOD_EFFORT}</>}
+          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : <>Solved!</>) : <>{FAIL}</>}
           subline={won
             ? <>{used} moves &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Unfinished &middot; perfect was {perfect} moves</>}

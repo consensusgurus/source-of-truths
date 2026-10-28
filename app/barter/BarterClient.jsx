@@ -1049,7 +1049,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           modal
           self="barter"
           won={won}
-          headline={won ? (extra === 0 ? <>Perfect!</> : <>Solved!</>) : <>Good effort</>}
+          headline={won ? (extra === 0 ? <>Perfect!</> : <>Solved!</>) : <>Fail</>}
           subline={won
             ? <>{extra === 0 ? `a perfect ${g.swaps}-trade game` : `${g.swaps} trades`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Unfinished &middot; the board stays as you left it</>}

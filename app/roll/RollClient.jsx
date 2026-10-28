@@ -61,7 +61,7 @@ import { parse, step, replay, rollsOf } from '@/lib/roll-engine';
 import RollBoard from './RollBoard';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endEfficiency, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endEfficiency, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -821,7 +821,7 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="roll" won={won}
-          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : used < par ? <>Solved!</> : <>All lit.</>) : <>{GOOD_EFFORT}</>}
+          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : used < par ? <>Solved!</> : <>All lit.</>) : <>{FAIL}</>}
           subline={won
             ? <>{used} rolls &middot; {elapsed}</>
             : <>Perfect here was {perfect} rolls.</>}

@@ -71,7 +71,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage } from '../PlayStage';
-import { GOOD_EFFORT } from '@/lib/end-verdict';
+import { FAIL } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 
 const COLORS = {
@@ -1105,7 +1105,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={score > 0 ? 'won' : 'lost'}
               challengeMetric={score}
-              title={score > 0 ? 'Good job!' : GOOD_EFFORT}
+              title={score > 0 ? 'Good job!' : FAIL}
               detail={`${score} point${score === 1 ? '' : 's'} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

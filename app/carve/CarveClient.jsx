@@ -54,7 +54,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T as THEME } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -1144,7 +1144,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
           modal
           self="carve"
           won={won}
-          headline={won ? <>Board carved!</> : <>{GOOD_EFFORT}</>}
+          headline={won ? <>Board carved!</> : <>{FAIL}</>}
           subline={<>{won
             ? <>Solved &middot; {errors === 0 ? 'clean cuts, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Unfinished &middot; the finished carving is shown above</>}</>}

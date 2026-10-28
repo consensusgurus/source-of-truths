@@ -10465,6 +10465,38 @@ count), and `endEfficiency` reads **Solved!** for any solve, **Perfect!** only a
 minimum. The comparator lives once in `attemptsRanker`; the guest copy in `guestGameResult` mirrors
 it under `eg.order`. Gate: `node scripts/verify-scale-off.mjs`, shown to fail on a swapped order.
 
+## Phone ending: the rolling ending (owner, 2026-10-28)
+
+On a phone (under 901px) every daily ends on `app/StageRoll.jsx`, mounted by StageStick's phone
+branch. Desktop is unchanged. Three beats play one at a time and each ROLLS UP into the result bar:
+the message (verdict + the game's key figure), then the stats (today's field, against yourself,
+today's board + group), then the final view, which is only **Play next** (run, Play similar, Play
+another, the category's glyph tiles, every category, See all Daily Puzzles) and the **Challenge**
+(Challenge a friend with the drawing-ticket line, and the meme GIF peek, full frame), in that order. Mock-up: the "Rolling Mobile
+Ending" design canvas.
+
+- **The result bar** is one full-width card (16px radius like the other cards): verdict + key
+  figure + standing. The standing is the GROUP (`#2 of 5 in <group>`) when at least one other member
+  played this game (read from FinishGroupLine's `onData`), else the overall board (`rankHead`). Its
+  text sizes itself to the width: the group name drops first, then the type shrinks, floor 13px.
+  Its dropdown opens Show Board (a button, never the board itself), the result, the stats, the
+  board and the record card; closing rolls them back up.
+- **Header:** the Mind Loft house + name (to All Puzzles), Replay, Share (share for credit). No
+  outlines on header buttons, and NO text links anywhere on the ending.
+- **Play another** opens the game's archive IN PLACE as a month calendar, played days filled ink,
+  unplayed outlined. It falls back to a plain link only when no archive date parses.
+- **The replay pop-up games** (LossHold: End Game, attempt-ranked, Arcade, `fastRetry`): on a phone
+  an unsolved finish skips LossHold, plays this ending, and the final view LEADS with Replay
+  instantly (`retryOffer` from LoftFinish, chip and sub from `dailyAttemptRule`).
+- **No loss colour.** The phone ending is always the category pastel; `t-lost` is not applied.
+- A reopened finish (not fresh, per `pageAge() < BEAT_FRESH`) and reduced motion land straight on
+  the final view. `?flood=1` forces the full sequence on an archive replay for review.
+
+**Verdict words (owner, 2026-10-28):** `FAIL` ('Fail') in `lib/end-verdict.js` is the word for an
+unsolved solve-or-not game and for a scored run that got nothing. 'Good effort' is only for a scored
+run that got something (1 of 35 on trivia is Good effort, 0 of 35 is Fail). No client writes
+'Good effort' for an unsolved board.
+
 ## Desktop ending: direction B, one sheet (owner, 2026-10-26)
 
 On desktop the one-page ending (`app/StageStick.jsx`) is ONE sheet in the page's own materials:

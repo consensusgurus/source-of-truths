@@ -66,7 +66,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { solve as logicSolve, starterLines } from '@/lib/tally-logic';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -1436,7 +1436,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
           modal
           self="tally"
           won={won}
-          headline={won ? <>Grid balanced!</> : <>{GOOD_EFFORT}</>}
+          headline={won ? <>Grid balanced!</> : <>{FAIL}</>}
           subline={won
             ? <>Solved &middot; {g.moves} move{g.moves === 1 ? '' : 's'} &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Unfinished &middot; the balanced grid is shown above</>}

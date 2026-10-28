@@ -68,7 +68,7 @@ import AddToHome from '../AddToHome';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
-import { GOOD_EFFORT } from '@/lib/end-verdict';
+import { FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import {
   RANK_NAMES, SUIT_GLYPH, SUITS, suitOf, rankOf, isNS, bits, parseHand, handOrder,
@@ -1258,7 +1258,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={done ? 'won' : lost ? 'lost' : 'part'}
               challengeMetric={done ? g.tries : null}
-              title={done ? 'Made!' : GOOD_EFFORT}
+              title={done ? 'Made!' : FAIL}
               detail={`${scoreText('finesse', finalScore, 10)} · ${TRICK_WORD[TARGET]} of ${R} · ${g.tries} tr${g.tries === 1 ? 'y' : 'ies'} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

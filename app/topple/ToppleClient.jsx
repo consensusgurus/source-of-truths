@@ -63,7 +63,7 @@ import ToppleBoard from './ToppleBoard';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endEfficiency, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endEfficiency, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -830,7 +830,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="topple" won={won}
-          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : used < par ? <>Solved!</> : <>Launched.</>) : <>{GOOD_EFFORT}</>}
+          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : used < par ? <>Solved!</> : <>Launched.</>) : <>{FAIL}</>}
           subline={won
             ? <>{used} rolls &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Perfect here was {perfect} rolls.</>}

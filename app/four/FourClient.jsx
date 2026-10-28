@@ -67,7 +67,7 @@ import {
 } from './c4';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { GOOD_EFFORT } from '@/lib/end-verdict';
+import { FAIL } from '@/lib/end-verdict';
 
 const COLORS = {
   cream: T.surface,
@@ -1133,7 +1133,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
               name="Four"
               catRank={catRank}
               outcome={won ? 'won' : (drawn ? 'part' : 'lost')}
-              title={won ? 'Solved!' : (drawn ? 'Held the draw' : GOOD_EFFORT)}
+              title={won ? 'Solved!' : (drawn ? 'Held the draw' : FAIL)}
               detail={`${errors} wrong drop${errors === 1 ? '' : 's'} \u00b7 win in ${PUZZLE.winIn} \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

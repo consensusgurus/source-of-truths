@@ -67,7 +67,7 @@ import { N, EXIT_ROW, fromData, grid, moves as legalSlides, apply, solved, solve
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endEfficiency, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endEfficiency, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -1029,7 +1029,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="park" won={won}
-          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : <>You&rsquo;re out.</>) : <>{GOOD_EFFORT}</>}
+          headline={won ? (used === perfect ? <>Perfect. Nothing wasted.</> : <>You&rsquo;re out.</>) : <>{FAIL}</>}
           subline={won
             ? <>{used} moves &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Unfinished &middot; perfect was {perfect} moves</>}

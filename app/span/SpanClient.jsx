@@ -69,7 +69,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -1432,7 +1432,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
           modal
           self="span"
           won={won}
-          headline={won ? <>You made the span!</> : <>{GOOD_EFFORT}</>}
+          headline={won ? <>You made the span!</> : <>{FAIL}</>}
           subline={won
             ? <>Solved &middot; {hops} hops (perfect {PUZZLE.perfect}) &middot; {g.misses} miss{g.misses === 1 ? '' : 'es'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Unfinished &middot; a shortest road is below</>}

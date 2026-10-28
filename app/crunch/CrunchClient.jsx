@@ -59,7 +59,7 @@ import { solve, applyOp, scoreFor } from './solver';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endGrade, GOOD_EFFORT, endEfficiency } from '@/lib/end-verdict';
+import { endGrade, FAIL, endEfficiency } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -1043,7 +1043,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="crunch" won={won}
-          headline={won ? <>Bang on.</> : g.status === 'done' ? <>Close enough to count.</> : <>{GOOD_EFFORT}</>}
+          headline={won ? <>Bang on.</> : g.status === 'done' ? <>Close enough to count.</> : <>{FAIL}</>}
           subline={won
             ? <>Solved &middot; {TARGET} in {used} step{used === 1 ? '' : 's'} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : g.status === 'done'

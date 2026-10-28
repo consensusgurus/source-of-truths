@@ -56,7 +56,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import WordStage, { usePhoneStage } from '../WordStage';
-import { GOOD_EFFORT } from '@/lib/end-verdict';
+import { FAIL } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 
 const COLORS = { cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted, good: T.successDeep || '#047857' };
@@ -1017,7 +1017,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
               name="Arcos"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={won ? 'A clean sweep!' : (g.finale ? `${finWord} found` : (score > 0 ? `${score} point${score === 1 ? '' : 's'}` : GOOD_EFFORT))}
+              title={won ? 'A clean sweep!' : (g.finale ? `${finWord} found` : (score > 0 ? `${score} point${score === 1 ? '' : 's'}` : FAIL))}
               detail={`${score} point${score === 1 ? '' : 's'} · ${roundsDone} of 3 acrostics · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

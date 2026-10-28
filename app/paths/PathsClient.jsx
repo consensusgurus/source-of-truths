@@ -66,7 +66,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { parFor, stepFor, scoreFor } from '@/lib/par';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endEfficiency, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endEfficiency, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -1296,7 +1296,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           modal
           self="paths"
           won={won}
-          headline={won ? (over === 0 ? <>Perfect network!</> : <>Linked for {cost}</>) : <>{GOOD_EFFORT}</>}
+          headline={won ? (over === 0 ? <>Perfect network!</> : <>Linked for {cost}</>) : <>{FAIL}</>}
           subline={won
             ? <>Solved &middot; {over === 0 ? 'nothing cheaper exists' : `${over} over perfect ${perfect}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Unfinished &middot; a cheapest network is shown above</>}

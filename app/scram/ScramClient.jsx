@@ -50,7 +50,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import WordStage, { usePhoneStage } from '../WordStage';
-import { GOOD_EFFORT } from '@/lib/end-verdict';
+import { FAIL } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 
 const COLORS = { cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted, good: T.successDeep || '#047857' };
@@ -733,7 +733,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
               name="Scram"
               catRank={catRank}
               outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
-              title={won ? 'All ten unscrambled!' : (score > 0 ? `${score} of ${N} unscrambled` : GOOD_EFFORT)}
+              title={won ? 'All ten unscrambled!' : (score > 0 ? `${score} of ${N} unscrambled` : FAIL)}
               detail={`${score}/${N} · ${PUZZLE.theme} · ${elapsed}`}
               iq={iq}
               board={dailyBoard}

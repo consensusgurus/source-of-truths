@@ -56,7 +56,7 @@ import RunDoorPop from '../circuits/RunDoorPop';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -1146,7 +1146,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
           modal
           self="glyph"
           won={won}
-          headline={won ? <>Code cracked!</> : <>{GOOD_EFFORT}</>}
+          headline={won ? <>Code cracked!</> : <>{FAIL}</>}
           subline={won
             ? <>Solved &middot; {checks === 0 ? 'no checks' : `${checks} check${checks === 1 ? '' : 's'}`} &middot; {elapsed}</>
             : <>Unfinished &middot; the key is shown above</>}

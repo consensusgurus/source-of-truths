@@ -55,7 +55,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -942,7 +942,7 @@ export default function ExtraClient({ puzzles = [], forceNum = null }) {
           modal
           self="extra"
           won={won}
-          headline={won ? <>Nailed the read!</> : <>{GOOD_EFFORT}</>}
+          headline={won ? <>Nailed the read!</> : <>{FAIL}</>}
           subline={won
             ? <>Solved &middot; {tears === 0 ? 'a perfect cold read' : `named it with ${tears} tear${tears === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Unfinished &middot; the story got away</>}

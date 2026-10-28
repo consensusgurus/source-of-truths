@@ -58,7 +58,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endSolved, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -1514,7 +1514,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           modal
           self="etch"
           won={won}
-          headline={won ? <>Picture solved!</> : <>{GOOD_EFFORT}</>}
+          headline={won ? <>Picture solved!</> : <>{FAIL}</>}
           subline={won
             ? <>Solved &middot; {errors === 0 ? 'clean, no errors' : `${errors} error${errors === 1 ? '' : 's'}`} &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Unfinished &middot; the picture is shown above</>}

@@ -35,6 +35,7 @@ import { DRAWING } from '@/lib/drawing';
 import { useMyTickets } from './TicketDoor';
 import { gameStats, mmss } from '@/lib/daily-row-stats';
 import GameGlyph from './GameGlyph';
+import StageRoll from './StageRoll';
 import { MemePeek } from './MemeShare';
 import FinishGroupLine from './groups/FinishGroupLine';
 import { dailyMeIdentity } from './dailyMeClient';
@@ -179,7 +180,7 @@ function fillRows(list, pool, n) {
 export default function StageStick({
   tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, run = null, allHref = '/#all',
   sheet = {}, onLeave, onBack = null, archiveHref = null, archiveLabel = 'Past puzzles', replayNow = null, meme = null, shelf = null, cats = null,
-  ready = true, allGames = null, share = null,
+  ready = true, allGames = null, share = null, retry = null, archive = null, curISO = null, rankHead = null,
 }) {
   const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
   const [step, setStep] = useState(0);        // 0..6, how many blocks have landed
@@ -205,6 +206,8 @@ export default function StageStick({
   const heroRef = useRef(null);
   const rootRef = useRef(null);
   const tk = useMyTickets();
+  // THE GROUP READ, handed up by FinishGroupLine, for the phone's result bar.
+  const [grp, setGrp] = useState(null);
   // KEEP PLAYING (owner, 2026-10-26, direction B): on desktop the bottom of
   // the ending offers the categories, more puzzles AND quizzes, in place of
   // the record card. The quizzes are the most-played one per department (the
@@ -542,6 +545,47 @@ export default function StageStick({
   // ── 1. THE RESULT ──────────────────────────────────────────────────────
   // `live` is true on exactly ONE copy at a time, the one the reader can
   // see, so the measured track and the counted figure belong to it.
+  // Today's field and you against yourself: the second half of the result, on
+  // its own so the phone's rolling ending can play it as its own beat.
+  const resultStats = (live) => (
+    <div className="sst-h2">
+      <section className={on(2)}>
+        <div className="sst-lab">Today&rsquo;s field</div>
+        <div className="sst-hl">{field && field.line ? field.line : 'The board is still filling'}</div>
+        <div className="sst-bar" aria-hidden="true">
+          <span style={{ width: fill && field && field.pct != null ? pos(field.pct / 100) : '0%' }} />
+        </div>
+        <div className="sst-caps">
+          <span>{field && field.lo ? field.lo : ' '}</span>
+          <span>{field && field.hi ? field.hi : ' '}</span>
+        </div>
+      </section>
+      <section className={on(3)}>
+        <div className="sst-lab">Against yourself</div>
+        <div className="sst-hl">{self ? self.head : ' '}</div>
+        {self && self.track ? (
+          <div className="sst-track" ref={live ? trackRef : undefined} aria-hidden="true">
+            <span className="ln" />
+            {self.track.map((p) => (
+              <span key={p.k} className={'pt ' + p.k + (p.edge ? ' ' + p.edge : '') + (marks ? ' on' : '')} style={{ left: pos(p.x) }}>
+                <s />
+                <span className="lb"><em>{p.label}</em><small>{p.fig}</small></span>
+              </span>
+            ))}
+          </div>
+        ) : self && self.strip ? (
+          <div className="sst-strip" aria-hidden="true">
+            {self.strip.map((w, i) => (
+              <s key={i} className={(w ? 'w' : 'l') + (marks ? ' on' : '') + (i === self.strip.length - 1 ? ' now' : '')}
+                style={{ transitionDelay: `${i * 60}ms` }} />
+            ))}
+          </div>
+        ) : (
+          <div className="sst-sub">{self && self.sub ? self.sub : ' '}</div>
+        )}
+      </section>
+    </div>
+  );
   const result = (live) => (
     <div className="sst-hero">
       <section className={on(1) + ' sst-h1'}>
@@ -567,43 +611,7 @@ export default function StageStick({
           </a>
         ) : null}
       </section>
-      <div className="sst-h2">
-        <section className={on(2)}>
-          <div className="sst-lab">Today&rsquo;s field</div>
-          <div className="sst-hl">{field && field.line ? field.line : 'The board is still filling'}</div>
-          <div className="sst-bar" aria-hidden="true">
-            <span style={{ width: fill && field && field.pct != null ? pos(field.pct / 100) : '0%' }} />
-          </div>
-          <div className="sst-caps">
-            <span>{field && field.lo ? field.lo : ' '}</span>
-            <span>{field && field.hi ? field.hi : ' '}</span>
-          </div>
-        </section>
-        <section className={on(3)}>
-          <div className="sst-lab">Against yourself</div>
-          <div className="sst-hl">{self ? self.head : ' '}</div>
-          {self && self.track ? (
-            <div className="sst-track" ref={live ? trackRef : undefined} aria-hidden="true">
-              <span className="ln" />
-              {self.track.map((p) => (
-                <span key={p.k} className={'pt ' + p.k + (p.edge ? ' ' + p.edge : '') + (marks ? ' on' : '')} style={{ left: pos(p.x) }}>
-                  <s />
-                  <span className="lb"><em>{p.label}</em><small>{p.fig}</small></span>
-                </span>
-              ))}
-            </div>
-          ) : self && self.strip ? (
-            <div className="sst-strip" aria-hidden="true">
-              {self.strip.map((w, i) => (
-                <s key={i} className={(w ? 'w' : 'l') + (marks ? ' on' : '') + (i === self.strip.length - 1 ? ' now' : '')}
-                  style={{ transitionDelay: `${i * 60}ms` }} />
-              ))}
-            </div>
-          ) : (
-            <div className="sst-sub">{self && self.sub ? self.sub : ' '}</div>
-          )}
-        </section>
-      </div>
+      {resultStats(live)}
     </div>
   );
 
@@ -717,10 +725,7 @@ export default function StageStick({
   );
 
   // ── 2-5. THE CARDS ─────────────────────────────────────────────────────
-  const cards = (
-    <div className="sst-cards">
-      {/* 2. RANKINGS */}
-      {(s.rows && s.rows.length) || s.gameKey ? (
+  const rankCard = (s.rows && s.rows.length) || s.gameKey ? (
         <section className={'sst-card sst-rk ' + on(4)}>
           <div className="sst-rkb">
             {scope === 'all' ? (
@@ -784,15 +789,10 @@ export default function StageStick({
               </>
             )}
           </div>
-          {s.gameKey ? <div className="sst-grp"><FinishGroupLine gameKey={s.gameKey} gameName={s.gameName} missLabel={s.missLabel} promo={desk} /></div> : null}
+          {s.gameKey ? <div className="sst-grp"><FinishGroupLine gameKey={s.gameKey} gameName={s.gameName} missLabel={s.missLabel} promo={desk} onData={setGrp} /></div> : null}
         </section>
-      ) : null}
-
-      {/* 3. CHALLENGE, with the GIF itself on show. Crux also keeps its
-          emoji result grid as a plain text Share (owner, 2026-10-26: a Crux
-          player reported the board could no longer be shared once the
-          one-page ending replaced the old door grid). */}
-      {chal || share ? (
+      ) : null;
+  const chalCard = chal || share ? (
         <section className={'sst-card sst-ch ' + on(4)}>
           {chal ? (
             <button type="button" className="sst-chal" onClick={chal.onSend}>
@@ -814,13 +814,8 @@ export default function StageStick({
           ) : null}
           {meme && meme.ctx ? <div className="sst-gif"><MemePeek ctx={meme.ctx} onOpen={meme.onOpen} /></div> : null}
         </section>
-      ) : null}
-
-      {/* 4. PLAY NEXT */}
-      <section className={'sst-card sst-pn ' + on(5)}>
-        <div className="sst-sl">Play next</div>
-        <div className="sst-acts">
-          {run ? (
+      ) : null;
+  const runLink = run ? (
             <a className="sst-run" href={run.href}>
               <span className="top">
                 <span className="tx"><small>{run.eyebrow}</small><b>{run.title}</b></span>
@@ -834,27 +829,8 @@ export default function StageStick({
                 {run.next ? <span className="go">Play {run.next} next</span> : null}
               </span>
             </a>
-          ) : null}
-          {(similar || another) ? (
-            <div className={'sst-row' + (similar && another ? '' : ' one')}>
-              {similar ? (
-                <a className="sst-ob pri" href={similar.href} onClick={similar.onClick || undefined}>
-                  <span className="g">{similar.key ? <GameGlyph gameKey={similar.key} size={24} /> : null}</span>
-                  <span className="t"><b>Play similar</b><i>{similar.name}{similar.time ? <small> · {similar.time}</small> : null}</i></span>
-                </a>
-              ) : null}
-              {another ? (
-                <a className="sst-ob" href={another.href}>
-                  <span className="g">{another.key ? <GameGlyph gameKey={another.key} size={24} /> : null}</span>
-                  <span className="t"><b>Play another</b><i>{another.name}</i></span>
-                </a>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-        {desk ? (rail ? null : keepPlaying) : (
-          <>
-          {shelf && shelf.games && shelf.games.length ? (
+          ) : null;
+  const shelfNode = shelf && shelf.games && shelf.games.length ? (
             <div className="sst-shelf">
               <div className="sst-shd2"><b>More {shelf.cat} puzzles</b>{shelf.total ? <span>{shelf.n} of {shelf.total} played</span> : null}</div>
               <div className="sst-tiles">
@@ -867,8 +843,8 @@ export default function StageStick({
                 ))}
               </div>
             </div>
-          ) : null}
-          {cats && cats.length ? (
+          ) : null;
+  const catsNode = cats && cats.length ? (
             <div className="sst-shelf">
               <div className="sst-shd2"><b>Every category</b></div>
               <div className="sst-cats">
@@ -879,14 +855,8 @@ export default function StageStick({
                 ))}
               </div>
             </div>
-          ) : null}
-          </>
-        )}
-        {allHref ? <a className="sst-all" href={allHref}>See all Daily Puzzles</a> : null}
-      </section>
-
-      {/* 5. FULL STATS, at the bottom */}
-      {(s.streak || s.allTime || s.set || (s.recent && s.recent.length)) ? (
+          ) : null;
+  const recordCard = (s.streak || s.allTime || s.set || (s.recent && s.recent.length)) ? (
         <section className={'sst-card sst-st ' + on(6)}>
           <div className="sst-sl">{s.gameName ? `You and ${s.gameName}` : 'Your record'}</div>
           {(s.streak || s.allTime || s.set) ? (
@@ -910,28 +880,80 @@ export default function StageStick({
             <a href={s.homeHref || '/'}>All daily puzzles</a>
           </div>
         </section>
-      ) : null}
+      ) : null;
+
+  const cards = (
+    <div className="sst-cards">
+      {/* 2. RANKINGS */}
+      {rankCard}
+
+      {/* 3. CHALLENGE, with the GIF itself on show. Crux also keeps its
+          emoji result grid as a plain text Share (owner, 2026-10-26: a Crux
+          player reported the board could no longer be shared once the
+          one-page ending replaced the old door grid). */}
+      {chalCard}
+
+      {/* 4. PLAY NEXT */}
+      <section className={'sst-card sst-pn ' + on(5)}>
+        <div className="sst-sl">Play next</div>
+        <div className="sst-acts">
+          {runLink}
+          {(similar || another) ? (
+            <div className={'sst-row' + (similar && another ? '' : ' one')}>
+              {similar ? (
+                <a className="sst-ob pri" href={similar.href} onClick={similar.onClick || undefined}>
+                  <span className="g">{similar.key ? <GameGlyph gameKey={similar.key} size={24} /> : null}</span>
+                  <span className="t"><b>Play similar</b><i>{similar.name}{similar.time ? <small> · {similar.time}</small> : null}</i></span>
+                </a>
+              ) : null}
+              {another ? (
+                <a className="sst-ob" href={another.href}>
+                  <span className="g">{another.key ? <GameGlyph gameKey={another.key} size={24} /> : null}</span>
+                  <span className="t"><b>Play another</b><i>{another.name}</i></span>
+                </a>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+        {desk ? (rail ? null : keepPlaying) : (
+          <>
+          {shelfNode}
+          {catsNode}
+          </>
+        )}
+        {allHref ? <a className="sst-all" href={allHref}>See all Daily Puzzles</a> : null}
+      </section>
+
+      {/* 5. FULL STATS, at the bottom */}
+      {recordCard}
     </div>
   );
 
   const toneCls = (tone ? ' t-' + tone : '') + (inkLight ? ' ink-l' : '');
 
-  // THE PHONE: the colour is the page, scrolled as one.
+  // THE PHONE: the rolling ending (app/StageRoll.jsx, owner 2026-10-28). The
+  // colour is the page; the message, then the stats, roll up into one result
+  // bar, and what stays on screen is Play next and the Challenge. Always the
+  // category pastel, a loss included: Fail gets no colour of its own.
   if (!desk) {
+    const replayProps = retry ? { onReplay: retry.onReplay }
+      : replayNow ? (replayNow.href
+        ? { replayHref: replayNow.href, onReplay: replayNow.onClick || null }
+        : { onReplay: (e) => { if (onLeave) onLeave(); if (replayNow.onClick) replayNow.onClick(e); } })
+      : {};
     return createPortal((
-      <div ref={rootRef} className={'sst' + toneCls} onClick={bgTap} role="dialog" aria-modal="true" aria-label={`${eyebrow}: ${verdict}`}>
+      <div ref={rootRef} className={'sst' + (inkLight ? ' ink-l' : '')} role="dialog" aria-modal="true" aria-label={`${eyebrow}: ${verdict}`}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
-        <div className="sst-in">
-          <div className="sst-top">
-            <a href={allHref || '/'} className="sst-tb">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
-              All Puzzles
-            </a>
-            <a href="/" className="sst-brand">Mind Loft</a>
-          </div>
-          {result(true)}
-          {cards}
-        </div>
+        <StageRoll
+          eyebrow={eyebrow} verdict={verdict} metric={metric} self={self} rankHead={rankHead} go={go}
+          gameKey={s.gameKey} gameName={s.gameName} grp={grp}
+          statsNode={resultStats(true)} rankNode={rankCard} recordNode={recordCard} chalNode={chalCard}
+          runNode={runLink} shelfNode={shelfNode} catsNode={catsNode} allHref={allHref}
+          similar={similar} another={another} archive={archive} curISO={curISO}
+          onShowBoard={back} showBoardLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show Board'}
+          retry={retry} homeHref={allHref || '/'}
+          {...replayProps}
+        />
       </div>
     ), host);
   }

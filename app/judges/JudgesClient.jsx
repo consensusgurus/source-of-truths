@@ -1156,7 +1156,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
             <>
               <div style={{ maxWidth: 472, margin: '12px auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>
-                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{won ? 'Solved!' : 'Good effort'}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 32, fontWeight: 500, color: won ? COLORS.green : `var(--stg-bad, ${COLORS.rust})`, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', flex: '0 0 auto' }}>{won ? 'Solved!' : 'Fail'}</span>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.45 }}>
                     {won
                       ? <>The whole court is seated: {g.placements} placement{g.placements === 1 ? '' : 's'}, {elapsed}.{g.hintUsed ? ' (1 hint)' : ''}</>
@@ -1307,7 +1307,7 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
           self="judges"
           won={won}
           headline={won ? <>The court is seated</> : <>The court dissolved</>}
-          subline={<>Judges #{PUZZLE.num} &middot; {won ? 'Solved!' : 'Good effort'} &middot; {g.placements} placement{g.placements === 1 ? '' : 's'} &middot; {elapsed}</>}
+          subline={<>Judges #{PUZZLE.num} &middot; {won ? 'Solved!' : 'Fail'} &middot; {g.placements} placement{g.placements === 1 ? '' : 's'} &middot; {elapsed}</>}
           onShare={copyShare}
           shareLabel={copied ? 'Copied' : 'Share Result'}
           onReplay={resetGame}

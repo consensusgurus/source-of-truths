@@ -68,7 +68,7 @@ import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { GOOD_EFFORT } from '@/lib/end-verdict';
+import { FAIL } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 
 // Calc identity is ROSE. The Numbers row is crowded and every neighbouring hue
@@ -1108,7 +1108,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={won ? 'won' : (landed ? 'part' : 'lost')}
             challengeMetric={won ? g.tries : null}
-            title={won ? (TARGETS.length > 1 ? 'All three landed!' : 'Target hit!') : (landed ? `${landed} of ${TARGETS.length}` : GOOD_EFFORT)}
+            title={won ? (TARGETS.length > 1 ? 'All three landed!' : 'Target hit!') : (landed ? `${landed} of ${TARGETS.length}` : FAIL)}
             detail={`${score} point${score === 1 ? '' : 's'} · ${elapsed}${g.tries ? ` · ${g.tries} ${g.tries === 1 ? 'try' : 'tries'}` : ''}`}
             iq={iq}
             board={dailyBoard}

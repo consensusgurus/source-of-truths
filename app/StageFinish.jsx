@@ -900,6 +900,11 @@ export default function StageFinish({
   // Hands, 3 trades on Barter, null where the clock or the score is the right
   // figure. lib/challenge-metric.js says what each game counts.
   challengeMetric = null,
+  // THE REPLAY OFFER (owner, 2026-10-28): on a phone an unsolved finish of a
+  // game with the replay pop-up (LossHold) skips the pop-up and plays the
+  // rolling ending, which leads its final view with Replay instantly.
+  // { chip, sub, onReplay } from LoftFinish; null everywhere else.
+  retryOffer = null,
 }) {
   // THE RETRY ENDING. On the nine games where a replay genuinely counts, an
   // unsolved finish is not a page of furniture, it is one control (see the
@@ -1844,6 +1849,7 @@ export default function StageFinish({
     const fr = board && board.myRank != null && board.field ? { rank: board.myRank, n: board.field, guest: false }
       : (board && board.guest && board.guest.placement ? { rank: board.guest.placement, n: board.guest.field || null, guest: true } : null);
     let fieldInfo = null;
+    let rankHead = null;
     if (fr) {
       const pct = fr.n > 1 ? Math.floor(((fr.n - fr.rank) / fr.n) * 100) : 100;
       const head = `${fr.guest ? 'Would be ' : ''}#${fr.rank}${fr.n ? ` of ${fr.n}` : ''}`;
@@ -1870,6 +1876,7 @@ export default function StageFinish({
             : (isSolveOnly(me.key) ? '' : `Top ${scoreText(me.key, Number(top.score), Number(top.total))}`))
           : '');
       fieldInfo = { line: pct <= 0 && fr.rank > 1 ? head : `${head} · ${tail}`, pct: fr.n > 1 ? pct : 100, lo, hi };
+      rankHead = head;
     }
 
     // 3. AGAINST YOURSELF. Every OTHER finish this browser holds, newer boards
@@ -2104,7 +2111,12 @@ export default function StageFinish({
     // UP NEXT (owner, 2026-10-26): every live daily, for the desktop rail's
     // most-played-today list.
     const allGames = LIVE().map((x) => ({ key: x.key, name: x.name, cat: x.cat, href: x.href || `/${x.key}`, done: played.has(x.key) || x.key === me.key }));
+    // THE PHONE'S ROLLING ENDING (owner, 2026-10-28) also takes the archive,
+    // for Play another's calendar, the rank line for its result bar, and the
+    // replay offer on the games whose replay pop-up it replaces on a phone.
+    const archiveCal = archiveRows.map((r) => ({ num: r.num, dateLabel: r.dateLabel, done: !!r.done, href: r.href }));
     return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet, replayNow: replayOpt || null, meme, shelf, cats, allGames,
+      archive: archiveCal, curISO: archived ? null : etTodayISO(), rankHead, retry: retryOffer || null,
       // CRUX KEEPS ITS EMOJI TEXT SHARE on the one-page ending (owner, 2026-10-26).
       share: me.key === 'crux' && goldOpt ? { label: goldOpt.label, sub: goldOpt.sub, onClick: goldOpt.onClick } : null };
   })();

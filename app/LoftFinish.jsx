@@ -697,7 +697,14 @@ export default function LoftFinish({
   // lib/finish-beat.js and app/useFinishBeat.js.
   // A fast-retry loss on the stage plays its own loss beat inside LossHold
   // and HOLDS there, so the beat here stands down for it.
-  const holdsLoss = fastRetry && !showCard && onStage;
+  // ON A PHONE THE REPLAY POP-UP STANDS DOWN (owner, 2026-10-28): the rolling
+  // ending (app/StageRoll.jsx) plays instead and leads with Replay instantly,
+  // so the finish beat plays the loss as it does on every other game.
+  const phoneRoll = (() => {
+    try { return typeof window !== 'undefined' && !window.matchMedia('(min-width: 901px)').matches; } catch (e) { return false; }
+  })();
+  const rollRetry = fastRetry && !showCard && onStage && phoneRoll;
+  const holdsLoss = fastRetry && !showCard && onStage && !phoneRoll;
   // Read SYNCHRONOUSLY, not from onStage / runActive: both come from effects
   // that have not landed on the first render, and the beat decides on that
   // render. LoftFinish only mounts on the client, after a game ends.
@@ -891,7 +898,7 @@ export default function LoftFinish({
   // this panel arrives after it, never over it. See app/useEndHold.js; the two
   // Arcade clients were wired to it in the same pass as this panel, because
   // they were the only two of the eight with no hold at all.
-  if (fastRetry && !showCard) {
+  if (fastRetry && !showCard && !rollRetry) {
     // ON THE STAGE, THE RETRY ENDING IS A CURTAIN TOO. This branch was the last
     // place on the site still opening the white Loft card on a near-black page
     // once the stage went sitewide. StageFinish renders the band and the one
@@ -990,6 +997,7 @@ export default function LoftFinish({
       <>
       <DojoPop ready self={selfKey} />
       <StageFinish
+        retryOffer={rollRetry ? { chip: attemptRule.chip, sub: attemptRule.replay, onReplay: fire(replayOpt) } : null}
         title={retryVerdict || title} detail={detail} iq={iq} board={board} day={day} streak={streak}
         missLabel={missLabel} gameRank={gameRank} outcome={outcome} options={options} name={name}
         archive={archive}

@@ -60,7 +60,7 @@ import { hinges, inVocab, HINGE_PAIRS } from '@/lib/hinge-pairs';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
-import { GOOD_EFFORT } from '@/lib/end-verdict';
+import { FAIL } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 
 
@@ -1146,7 +1146,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
             name="Hinge"
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
-            title={won ? 'Chained!' : GOOD_EFFORT}
+            title={won ? 'Chained!' : FAIL}
             detail={`${hinged}/${TO_FILL} hinged · ${detourCount} detour${detourCount === 1 ? '' : 's'} · ${elapsed}`}
             missLabel="Detours"
             iq={iq}

@@ -63,7 +63,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { endEfficiency, GOOD_EFFORT } from '@/lib/end-verdict';
+import { endEfficiency, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
@@ -1138,7 +1138,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
 
       {!playing && !endClosed && !LOFT && (
         <DailyEndCard modal self="rung" won={won}
-          headline={won ? (used === perfect ? <>Perfect. The shortest there is.</> : <>You made it across.</>) : <>{GOOD_EFFORT}</>}
+          headline={won ? (used === perfect ? <>Perfect. The shortest there is.</> : <>You made it across.</>) : <>{FAIL}</>}
           subline={won
             ? <>{used} rungs &middot; {elapsed}{g.hintUsed ? <> &middot; 1 hint</> : null}</>
             : <>Unfinished &middot; perfect was {perfect} rungs</>}
