@@ -18,6 +18,7 @@ import { useStageLook, stagePalette, useStageChrome } from '../GauntletScreens';
 import { nextMainLook } from '@/lib/stage-look';
 import StageTopBar from '../StageTopBar';
 import StageFoot from '../StageFoot';
+import { useHostedStage } from '../StageHost';
 
 const RNAME = (r, rounds) => {
   const left = rounds - r;
@@ -51,7 +52,8 @@ export default function BracketStage({
 }) {
   const [look, setLook] = useStageLook();
   const pal = stagePalette(bg, look);
-  useStageChrome(pal.bg);
+  const host = useHostedStage(false);
+  useStageChrome(host.chrome ? pal.bg : null);
   const vh = useVh();
 
   const N = items.length;
@@ -165,11 +167,11 @@ export default function BracketStage({
   }
   const champ = picks[idOf(rounds - 1, 0)];
 
-  return (
-    <div className="bks" role="dialog" aria-label="Bracket" style={{ '--bks-bg': pal.bg, '--bks-ink': pal.ink, '--bks-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)', '--bks-ch': `${ch}px`, '--bks-h': `${H}px`, '--bks-gap': `${GAP}px`, '--bks-peek': `${PEEK}px`, '--bks-win': `${WIN}px`, '--bks-chip': `${chipH}px` }}>
+  return host.render(
+    <div className={'bks' + (host.inline ? ' inl' : '')} role={host.inline ? 'region' : 'dialog'} aria-label="Bracket" style={{ '--bks-bg': pal.bg, '--bks-ink': pal.ink, '--bks-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)', '--bks-ch': `${ch}px`, '--bks-h': `${H}px`, '--bks-gap': `${GAP}px`, '--bks-peek': `${PEEK}px`, '--bks-win': `${WIN}px`, '--bks-chip': `${chipH}px` }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="bks-col">
-        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} title="Bracket" />
+        {host.inline ? null : <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} title="Bracket" nav={host.nav} />}
         {phase === 'play' && (
           <>
             <div className="bks-eb">{RNAME(r, rounds)}{n > 1 ? ` · Match ${m + 1} of ${n}` : ''} · {Math.pow(2, r)} {Math.pow(2, r) === 1 ? 'pt' : 'pts'}</div>
@@ -274,6 +276,8 @@ const CSS = `
 .bks{position:fixed;inset:0;z-index:85;background:var(--bks-bg);color:var(--bks-ink);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
 .bks *{color:var(--bks-ink);}
 .bks-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--bks-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
+.bks.inl{position:relative;inset:auto;z-index:auto;overflow:visible;border-radius:22px;margin:0 auto;max-width:640px;}
+.bks.inl .bks-col{min-height:min(720px, calc(100vh - 200px));}
 .bks-col{width:100%;max-width:520px;box-sizing:border-box;padding:max(12px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;min-height:100%;}
 .bks-eb{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
 .bks-q{margin:0;text-align:center;font-size:clamp(22px,7vw,28px);line-height:1.15;font-weight:800;letter-spacing:-.02em;}

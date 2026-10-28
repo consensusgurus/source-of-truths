@@ -16,17 +16,23 @@ import { useStageLook, stagePalette, useStageChrome } from './GauntletScreens';
 import { nextMainLook } from '@/lib/stage-look';
 import StageTopBar from './StageTopBar';
 import StageFoot from './StageFoot';
+import { useHostedStage } from './StageHost';
 
 export const WORD_STAGE_BG = '#7dd3fc'; // the Word step of the pastel ramp
 
-// True on a phone-width screen. False on the server and the first paint, so the
-// page renders as before and the stage comes in once the effect has run.
+// SHOULD THE STAGE DRAW? Once named for phones only; from 2026-10-28 (owner:
+// "move all of the full screen only designs like hinge to all views") it is
+// true on every width of a stage page, and the stage itself decides how to sit
+// (app/StageHost.jsx: fixed on a phone and in desktop full screen, in the page's
+// column with the site navigation showing). A legacy non-stage page keeps the
+// old phone-only rule. False on the server and the first paint, so the page
+// renders as before and the stage comes in once the effect has run.
 export function usePhoneStage() {
   const [on, setOn] = useState(false);
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
     const mq = window.matchMedia('(max-width: 899px)');
-    const f = () => setOn(mq.matches);
+    const f = () => setOn(mq.matches || !!document.querySelector('.stage-page'));
     f();
     if (mq.addEventListener) mq.addEventListener('change', f); else mq.addListener(f);
     return () => { if (mq.removeEventListener) mq.removeEventListener('change', f); else mq.removeListener(f); };
@@ -48,14 +54,15 @@ export default function WordStage({
   // WHITE PAGE, COLOURED TILES (owner, 2026-10-25): the colour look keeps the
   // page white and puts the category colour on the squares and keys.
   const pal = stagePalette(bg, look);
-  useStageChrome(pal.bg);
+  const host = useHostedStage(false);
+  useStageChrome(host.chrome ? pal.bg : null);
   const n = slots.reduce((s, g) => s + g.length, 0) + Math.max(0, slots.length - 1);
   const sn = scramble ? scramble.replace(/ /g, '').length : 0;
-  return (
-    <div className="wst" role="dialog" aria-label={label} style={{ '--wst-bg': pal.bg, '--wst-ink': pal.ink, '--wst-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)', '--wst-n': Math.max(n, 4), '--wst-sn': Math.max(sn, 5) }}>
+  return host.render(
+    <div className={'wst' + (host.inline ? ' inl' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--wst-bg': pal.bg, '--wst-ink': pal.ink, '--wst-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)', '--wst-n': Math.max(n, 4), '--wst-sn': Math.max(sn, 5) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="wst-col">
-        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} title={label} dot={bg} />
+        {host.inline ? null : <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} title={label} dot={bg} nav={host.nav} />}
         <div className="wst-top" key={rowKey}>
           {eyebrow ? <div className="wst-eb">{eyebrow}</div> : null}
           {spine}
@@ -186,6 +193,8 @@ const CSS = `
 .wst-line{font-size:13px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;}
 .wst-give{background:none;border:none;padding:4px 8px;font:inherit;font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
 .wst-give.on{font-weight:800;}
+.wst.inl{position:relative;inset:auto;z-index:auto;overflow:visible;border-radius:22px;margin:0 auto;max-width:640px;}
+.wst.inl .wst-col{min-height:min(720px, calc(100vh - 200px));padding:18px 12px;}
 @keyframes wstRise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
 @keyframes wstPop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:none}}
 @keyframes wstShake{0%,100%{transform:none}20%{transform:translateX(-8px)}50%{transform:translateX(7px)}80%{transform:translateX(-3px)}}
