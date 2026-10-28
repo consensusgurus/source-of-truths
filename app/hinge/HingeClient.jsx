@@ -302,7 +302,6 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
   const phoneStage = phoneNarrow || lcFocus;
   const stageKeyRef = useRef(null);
   useEffect(() => {
-    if (!phoneStage) return undefined;
     const onKey = (e) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const t = e.target;
@@ -316,7 +315,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [phoneStage]);
+  }, []);
 
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
@@ -681,11 +680,12 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
     return 'hg-word empty';
   };
 
-  return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && (() => {
+  // ONE BOARD ON EVERY DESKTOP VIEW (owner, 2026-10-28: "the stage and 'with
+  // navigation' on desktop should be the same"). With the site navigation
+  // showing, the same stage board sits in the page (PlayStage inline).
+  const deskStage = STAGE && !phoneStage && started && playing;
+  stageKeyRef.current = null;
+  const hingeStage = (inline) => {
         const stageKey = (k) => {
           if (!playing || cur < 0) return;
           if (k === 'ENTER') { submit(); return; }
@@ -778,9 +778,14 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
             foot={`${hinged} of ${TO_FILL} · ${detourCount} detour${detourCount === 1 ? '' : 's'}`}
             giveUp={{ armed: !!armReveal, onPress: giveUp, label: 'Give up', armedLabel: 'Tap again to end and see the answers' }}
             clock={elapsed} done={!playing}
-            nav={phoneNarrow ? null : { label: 'Show Site Navigation', onPress: () => { const b = document.querySelector('.lc-sub-btn'); if (b) b.click(); } }} />
+            inline={inline} nav={(inline || phoneNarrow) ? null : { label: 'Show Site Navigation', onPress: () => { const b = document.querySelector('.lc-sub-btn'); if (b) b.click(); } }} />
         );
-      })()}
+  };
+  return (
+    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+      data-stage-theme={STAGE ? stageTheme : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && hingeStage(false)}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="hinge" name="Hinge" collapsed={started} loft={LOFT} />
@@ -966,7 +971,8 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
               ))}
             </div>
           ) : null}
-          <div className={`hg-play${playing ? ' two' : ''}`} style={!playing ? { display: 'none' } : undefined}>
+          {deskStage ? hingeStage(true) : null}
+          <div className={`hg-play${playing ? ' two' : ''}`} style={(!playing || deskStage) ? { display: 'none' } : undefined}>
           {/* the chain: every word a plate of letter cells, every join a hinge
               barrel whose two halves read across the pin as the compound
               (broad | side), shut in the accent once both words are in */}

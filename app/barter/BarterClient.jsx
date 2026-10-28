@@ -650,11 +650,12 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
     />
   );
 
-  return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && (
+  // ONE BOARD ON EVERY DESKTOP VIEW (owner, 2026-10-28: "the stage and 'with
+  // navigation' on desktop should be the same"). The full-screen stage draws
+  // the board fixed over the page; with the site navigation showing, the same
+  // stage board sits in the page (PlayStage inline) instead of the old one.
+  const deskStage = STAGE && !phoneStage && started && playing;
+  const barterStage = (inline) => (
         <PlayStage bg={gameColor('barter')} label="Barter"
           top={(
             <>
@@ -693,8 +694,13 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           foot={`${swapsLeft} trade${swapsLeft === 1 ? '' : 's'} left · ${homeCount} of ${N} home`}
           giveUp={{ armed: !!armGive, onPress: tapGiveUp, label: 'Give up', armedLabel: 'Tap again to give up' }}
           clock={elapsed} done={!playing}
-          nav={phoneNarrow ? null : { label: 'Show Site Navigation', onPress: () => { const b = document.querySelector('.lc-sub-btn'); if (b) b.click(); } }} />
-      )}
+          inline={inline} nav={(inline || phoneNarrow) ? null : { label: 'Show Site Navigation', onPress: () => { const b = document.querySelector('.lc-sub-btn'); if (b) b.click(); } }} />
+  );
+  return (
+    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+      data-stage-theme={STAGE ? stageTheme : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && barterStage(false)}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="barter" name="Barter" collapsed={started} loft={LOFT} />
@@ -817,7 +823,8 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
               </div>
             </div>
           ) : null}
-          <div style={{ maxWidth: boardMax, margin: '0 auto', display: !playing ? 'none' : undefined }}>
+          {deskStage ? barterStage(true) : null}
+          <div style={{ maxWidth: boardMax, margin: '0 auto', display: (!playing || deskStage) ? 'none' : undefined }}>
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${S}, minmax(0, 1fr))`, gap: 6, aspectRatio: '1 / 1' }}>
               {Array.from({ length: S * S }).map((_, k) => {
                 const r = Math.floor(k / S), c = k % S;
@@ -859,7 +866,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
 
-          {playing && (
+          {playing && !deskStage && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
               {hintOk && !g.hintUsed && (
                 <button className="bt-tool" onClick={useHint} title="One correct trade at no cost (one hint, first play only)" style={{ background: `var(--stg-surf, ${COLORS.accentSoft})` }}>
@@ -872,7 +879,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
         {/* Controls. These sit INSIDE the board card: on the navy stage a
             bare row of faded text has nothing to sit on, and the card is
             meant to hold the whole game. */}
-        {started && (
+        {started && !deskStage && (
           // THE FOOT OF THE BOARD (owner, 2026-10-25): the instruction as one
           // centred line, and Give up as a quiet link under it, so neither
           // competes with the board.

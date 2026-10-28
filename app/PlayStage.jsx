@@ -27,16 +27,20 @@ import StageFoot from './StageFoot';
 
 export { usePhoneStage } from './WordStage';
 
-export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null, done = null }) {
+export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null, done = null, inline = false }) {
   const [look, setLook] = useStageLook();
   // WHITE PAGE, COLOURED TILES (owner, 2026-10-25).
   const pal = stagePalette(bg, look);
-  useStageChrome(pal.bg);
+  // INLINE (owner, 2026-10-28): on desktop with the site navigation showing, the
+  // same stage board is drawn in the page's flow under the site's own header,
+  // so the full-screen stage and the navigation view show one board. Inline it
+  // keeps no top bar of its own and leaves the browser bars alone.
+  useStageChrome(inline ? null : pal.bg);
   return (
-    <div className="pst" role="dialog" aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null) }}>
+    <div className={'pst' + (inline ? ' inl' : '')} role={inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
-        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav} title={label} dot={bg} />
+        {inline ? null : <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav} title={label} dot={bg} />}
         <div className="pst-top" key={topKey}>
           {eyebrow ? <div className="pst-eb">{eyebrow}</div> : null}
           {top}
@@ -111,6 +115,8 @@ const CSS = `
 .pst-line{font-size:13px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;line-height:1.35;}
 .pst-give{background:none;border:none;padding:4px 8px;font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;}
 .pst-give.on{font-weight:800;}
+.pst.inl{position:relative;inset:auto;z-index:auto;overflow:visible;border-radius:22px;margin:0 auto 8px;max-width:640px;}
+.pst.inl .pst-col{min-height:min(640px, calc(100vh - 220px));padding:18px 14px 18px;}
 @keyframes pstRise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion: reduce){.pst-top{animation:none}}
 `;
