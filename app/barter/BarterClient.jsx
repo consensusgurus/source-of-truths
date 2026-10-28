@@ -56,6 +56,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endEfficiency } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -271,6 +272,19 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const [armGive, setArmGive] = useState(false);
+  // THE STAGE (owner, 2026-10-28: "restyle Barter like Hinge C"). On a phone,
+  // and in desktop full screen (html.lc-focus), the lattice plays on the shared
+  // full-screen stage: only the tiles, one quiet line, Give up as a link.
+  const phoneNarrow = usePhoneStage();
+  const [lcFocus, setLcFocus] = useState(false);
+  useEffect(() => {
+    const read = () => setLcFocus(document.documentElement.classList.contains('lc-focus'));
+    read();
+    const mo = new MutationObserver(read);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => mo.disconnect();
+  }, []);
+  const phoneStage = phoneNarrow || lcFocus;
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -640,6 +654,46 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {phoneStage && started && (
+        <PlayStage bg={gameColor('barter')} label="Barter"
+          top={(
+            <>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .bts-grid{display:grid;grid-template-columns:repeat(${S}, minmax(0, 1fr));gap:${S === 7 ? 5 : 7}px;width:min(100%, ${S === 7 ? 380 : 340}px);margin:0 auto;aspect-ratio:1/1;}
+                .bts-t{box-sizing:border-box;border-radius:${S === 7 ? 9 : 11}px;border:2px solid var(--pst-ink);display:flex;align-items:center;justify-content:center;font-weight:800;text-transform:uppercase;font-size:${S === 7 ? 'clamp(15px, 4.6vw, 24px)' : 'clamp(20px, 6vw, 30px)'};user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;background:transparent;}
+                .bts-t.play{cursor:pointer;}
+                .bts-t.home{background:var(--pst-ink);color:var(--pst-bg);}
+                .bts-t.near{background:var(--pst-tint);}
+                .bts-t.plain{border-color:color-mix(in srgb, var(--pst-ink) 35%, transparent);}
+                .bts-t.sel{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);transform:scale(1.04);}
+                .bts-line{text-align:center;font-size:13px;font-weight:700;opacity:.8;line-height:1.35;min-height:1.35em;}
+              ` }} />
+              <div className="bts-grid">
+                {Array.from({ length: S * S }).map((_, k) => {
+                  const r = Math.floor(k / S), c = k % S;
+                  if (r % 2 === 1 && c % 2 === 1) return <div key={k} />;
+                  const idx = IDX[r * S + c];
+                  const col = tileColors[idx];
+                  const kind = col === 2 ? 'home' : col === 1 ? 'near' : 'plain';
+                  const canPlay = playing && col !== 2;
+                  return (
+                    <div key={k} className={`bts-t ${kind}${canPlay ? ' play' : ''}${sel === idx ? ' sel' : ''}`}
+                      onPointerDown={playing ? () => onTile(idx) : undefined}>
+                      {cells[idx]}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="bts-line" role="status">{toast || (sel !== null ? 'Now tap the tile to trade with' : '')}</div>
+            </>
+          )}
+          bottom={hintOk && !g.hintUsed ? (
+            <button type="button" className="pst-give" style={{ alignSelf: 'center' }} onClick={useHint}>Use your free hint</button>
+          ) : null}
+          foot={`${swapsLeft} trade${swapsLeft === 1 ? '' : 's'} left · ${homeCount} of ${N} home`}
+          giveUp={{ armed: !!armGive, onPress: tapGiveUp, label: 'Give up', armedLabel: 'Tap again to give up' }}
+          nav={phoneNarrow ? null : { label: 'Show Site Navigation', onPress: () => { const b = document.querySelector('.lc-sub-btn'); if (b) b.click(); } }} />
+      )}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="barter" name="Barter" collapsed={started} loft={LOFT} />

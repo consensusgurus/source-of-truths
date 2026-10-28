@@ -712,9 +712,9 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
               .hgs-sl.now span{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
               .hgs-sl.open span{border-style:solid;background:transparent;opacity:.55;}
               .hgs-jn{display:flex;align-items:center;justify-content:center;gap:8px;height:${tight ? 22 : 28}px;font-size:13px;font-weight:800;letter-spacing:.02em;text-transform:lowercase;}
-              .hgs-jn::before,.hgs-jn::after{content:"";width:2px;height:${tight ? 5 : 8}px;background:currentColor;}
               .hgs-jn.o{opacity:.35;}
-              @media (min-width:900px){.hgs-kb{display:none;}}
+              .hgs-jn.o i{display:block;width:2px;height:${tight ? 8 : 12}px;background:currentColor;}
+              @media (min-width:900px){.hgs-kb{display:none !important;}}
               .hgs-det{font-size:12px;font-weight:800;opacity:.7;text-decoration:line-through;margin:-2px 0 2px;}
               .hgs-line{text-align:center;font-size:13px;font-weight:700;opacity:.8;line-height:1.35;min-height:1.35em;}
               @keyframes hgsShake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
@@ -746,7 +746,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
                       const a = fill[i], b = fill[i + 1];
                       if (a && b) return <span className="hgs-jn">{`${a} ${b}`}</span>;
                       if (a && i + 1 === cur) return <span className="hgs-jn">{`${a} · ?`}</span>;
-                      return <span className="hgs-jn o" aria-hidden="true">·</span>;
+                      return <span className="hgs-jn o" aria-hidden="true"><i /></span>;
                     })()}
                   </React.Fragment>
                 );
