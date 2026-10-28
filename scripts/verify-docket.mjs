@@ -35,6 +35,8 @@
 //                later weekday's band strictly above the earlier one
 //   variety      rule 7 ceilings on theme and rule-template reuse, question-type
 //                mix, and no repeated question wording inside a day
+//   selfcancel   no conditional on one entity across two groups, and no imp +
+//                impn pair on the same entities (both read as contradictions)
 //   copy         US spellings, no em dashes, and no answer named in the setup
 //
 // Run: node scripts/verify-docket.mjs
@@ -217,6 +219,13 @@ const keyCount = {}, themeUse = {}, sigUse = {}, kindUse = {};
 PUZZLES.forEach((p, i) => {
   const tag = `#${p.num} (${p.quizId})`;
   if (p.num !== i + 1) fail(`${tag}: num out of sequence`);
+
+  // ── self-cancelling conditions (player report, 2026-10-27/28) ────────────
+  // "If P is in the south bed, then P is in the herb bed" and the pair "if N
+  // then P" + "if N then not P" are legal but read as typos or contradictions
+  // to players. Each collapses to a plain negative, so state it plainly.
+  for (const c of p.spec.cons) if (c[0] === 'cto' && c[1] === c[3]) fail(`${tag}: conditional on ONE entity (${JSON.stringify(c)}), state it as nto`);
+  for (const c of p.spec.cons) if ((c[0] === 'imp' || c[0] === 'onlyif') && p.spec.cons.some((d) => d[0] === 'impn' && ((d[1] === c[1] && d[2] === c[2]) || (d[1] === c[2] && d[2] === c[1])))) fail(`${tag}: imp + impn on the same pair, state it as out`);
 
   // ── structural ────────────────────────────────────────────────────────────
   const [y, m, d] = p.live.split('-').map(Number);

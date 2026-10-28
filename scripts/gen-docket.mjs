@@ -96,7 +96,9 @@ function sampleSel(n, hard) {
   while (cons.length < want && guard++ < 200) {
     const [a, b] = pickN(E, 2);
     const t = pick(kinds);
-    const key = `${t}:${Math.min(a, b)}:${Math.max(a, b)}`;
+    // imp and impn on the same pair cancel to 'a is out', which reads as a
+    // contradiction, so they share one key
+    const key = `${t === 'impn' || t === 'onlyif' ? 'imp' : t}:${Math.min(a, b)}:${Math.max(a, b)}`;
     if (used.has(key)) continue;
     used.add(key);
     cons.push([t, a, b]);
@@ -115,7 +117,9 @@ function sampleMatch(n, m, hard) {
   cons.push(pick([['same', a, b], ['diff', a, b]]));
   const [c, d] = pickN(E, 2);
   cons.push(pick([['to', c, pick(G)], ['nto', c, pick(G)], ['diff', c, d]]));
-  cons.push(['cto', pick(E), pick(G), pick(E), pick(G)]);
+  // two DIFFERENT entities: a conditional on one entity across two groups is
+  // just 'not in group a' and players read it as a contradiction
+  { const [e1, e2] = pickN(E, 2); cons.push(['cto', e1, pick(G), e2, pick(G)]); }
   if (hard) {
     const [e, f] = pickN(E, 2);
     cons.push(pick([['nto', e, pick(G)], ['same', e, f], ['gmax', pick(G), 1 + ri(2)]]));
