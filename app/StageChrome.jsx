@@ -36,6 +36,9 @@
 import { BrandFit } from '@/lib/use-brand-fit';
 import { cycleLook } from '@/lib/stage-look';
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import StageFoot from './StageFoot';
+import { publishStageClock, publishStageDone } from '@/lib/stage-foot';
 import ChallengeStrip from './ChallengeStrip';
 import OtherDeviceBar from './OtherDeviceBar';
 import MindLoftMark from './MindLoftMark';
@@ -189,6 +192,53 @@ function useStarted(gameKey, num) {
 // choice arrives in an effect, so there is no hydration mismatch. A custom
 // event keeps two mounted chromes (or two tabs, via storage) in step. The hook
 // is shared with the leader and the leaderboard: see lib/reveal-pref.js.
+// IS THIS BOARD OVER? The caller's outcome when it passes one (150 do), else
+// the client's own save: a status other than 'playing' is a finished board.
+function useEnded(gameKey, num, outcome) {
+  const [saved, setSaved] = useState(false);
+  const told = outcome != null && outcome !== false && outcome !== '';
+  useEffect(() => {
+    if (told || !gameKey || num === null || num === undefined) return undefined;
+    const re = new RegExp('^sot_' + gameKey + '_' + num + '(r[0-9]+)?$');
+    const read = () => {
+      try {
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const k = window.localStorage.key(i);
+          if (!k || !re.test(k)) continue;
+          const sv = JSON.parse(window.localStorage.getItem(k) || 'null');
+          if (sv && sv.status && sv.status !== 'playing') return true;
+        }
+      } catch (e) {}
+      return false;
+    };
+    setSaved(read());
+    const id = setInterval(() => setSaved(read()), 2000);
+    return () => clearInterval(id);
+  }, [told, gameKey, num]);
+  return told || saved;
+}
+
+// THE FOOT ROW'S PLACE: the last child of the game's own root, under the board,
+// so no client has to be edited to gain it. A node React does not manage, kept
+// last when the client mounts something after it (the end card does).
+function useFootSlot(topRef, on) {
+  const [slot, setSlot] = useState(null);
+  useEffect(() => {
+    const top = topRef.current;
+    const root = on && top ? top.parentElement : null;
+    if (!root) return undefined;
+    const el = document.createElement('div');
+    el.className = 'stg-footslot';
+    root.appendChild(el);
+    const keep = () => { if (el.parentNode === root && root.lastElementChild !== el) root.appendChild(el); };
+    const mo = new MutationObserver(keep);
+    mo.observe(root, { childList: true });
+    setSlot(el);
+    return () => { mo.disconnect(); setSlot(null); try { el.remove(); } catch (e) {} };
+  }, [topRef, on]);
+  return slot;
+}
+
 function isClockFigure(f) {
   return !!f && String(f.k || '').toLowerCase() === 'time';
 }
@@ -230,6 +280,8 @@ export default function StageChrome({
   // old cap; the stage dropped it. It draws a ? in both headers again, and is
   // registered so a full-screen phone stage's top bar can open it too.
   onHelp = null,
+  // THE CALLER'S OWN END STATE (150 callers pass it): null while in play.
+  outcome = null,
 }) {
   useRegisterStageHelp(onHelp);
   // The page's own clock for every finish freshness test (lib/finish-beat.js
@@ -246,6 +298,22 @@ export default function StageChrome({
   const pastel = useSudokuPastel(pastelElig, SUDOKU_POOL.includes(gameKey) ? null : gameColor(gameKey));
   const started = useStarted(gameKey, num);
   const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
+  // THE FOOT ROW (owner, 2026-10-28, "this is new standard"): Clock and How to
+  // play sit in one row of buttons at the bottom of the game, under the board,
+  // on every daily in the phone register; the header keeps the way back, the
+  // name, Share and the look. The cap publishes the time and whether the game
+  // is over (lib/stage-foot.js) so a full-screen stage over the page reads the
+  // same values, and on the end screen the time is shown whatever the choice.
+  const ended = useEnded(gameKey, num, outcome);
+  const clockRaw = gameKey ? ((figures.find(isClockFigure) || {}).v ?? null) : null;
+  const lastClock = useRef(null);
+  if (clockRaw != null) lastClock.current = clockRaw;
+  const clockVal = clockRaw != null ? clockRaw : (ended ? lastClock.current : null);
+  useEffect(() => { if (gameKey) publishStageClock(clockVal); }, [gameKey, clockVal]);
+  useEffect(() => { if (gameKey) publishStageDone(ended); }, [gameKey, ended]);
+  useEffect(() => () => { if (gameKey) { publishStageClock(null); publishStageDone(false); } }, [gameKey]);
+  const topRef = useRef(null);
+  const footSlot = useFootSlot(topRef, pastelElig);
   // SHARE FOR CREDIT (owner, 2026-10-23): the page itself, stamped with the
   // player's referral code, from the cap, so it is there before, during and
   // after the game. A new player who finishes from it earns the sharer a
@@ -342,8 +410,9 @@ export default function StageChrome({
   const pct = Math.max(0, Math.min(100, Math.round((Number(progress) || 0) * 100)));
 
   return (
-    <div className="stg-top">
+    <div className="stg-top" ref={topRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      {footSlot ? createPortal(<StageFoot clock={clockVal} done={ended} bg="var(--stg-ground)" />, footSlot) : null}
 
       {pastelElig ? (
         // THE SIMPLE HEADER ON A PHONE SUDOKU (owner, 2026-10-24): the gauntlet
@@ -356,7 +425,6 @@ export default function StageChrome({
           <div className="stg-sim">
             <StageTopBar look={pastel.look} onFlip={pastel.flip} href={homeTo} ink="var(--stg-ink,#08222e)"
               title={name}
-              clock={gameKey ? ((figures.find(isClockFigure) || {}).v ?? null) : null}
               sub={<>{dateShort || dateLabel || ''}{sunday ? <>{(dateShort || dateLabel) ? ' · ' : ''}{sunday}</> : null}</>} />
           </div>
         </>
@@ -609,6 +677,8 @@ html[data-stage-pastel] .stg-cap,html[data-stage-pastel] .stg-prog,html[data-sta
 .stg-simt i{display:block;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
 html[data-stage-pastel] .stg-fg{padding:4px 14px 8px;gap:22px;}
 html[data-stage-pastel] .stg-fg .stg-clk{display:none;}
+.stg-footslot{padding:20px 14px calc(22px + env(safe-area-inset-bottom,0px));color:var(--stg-ink,#08222e);font-family:${SANS};position:relative;z-index:2;}
+html:not([data-stage-pastel]) .stg-footslot{display:none;}
 html[data-stage-pastel] .stg-fg>div,html[data-stage-pastel] .stg-fg .stg-clk{flex-direction:row;align-items:baseline;gap:5px;}
 html[data-stage-pastel] .stg-fg b{font-size:14px;font-weight:800;}
 html[data-stage-pastel] .stg-fg i{font-size:10px;letter-spacing:.06em;}

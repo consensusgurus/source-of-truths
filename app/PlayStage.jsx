@@ -23,10 +23,11 @@ import { RAMP_INK, softGround } from '@/lib/category-ramp';
 import { useStageLook, stagePalette, useStageChrome } from './GauntletScreens';
 import { nextMainLook } from '@/lib/stage-look';
 import StageTopBar from './StageTopBar';
+import StageFoot from './StageFoot';
 
 export { usePhoneStage } from './WordStage';
 
-export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null }) {
+export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null, done = null }) {
   const [look, setLook] = useStageLook();
   // WHITE PAGE, COLOURED TILES (owner, 2026-10-25).
   const pal = stagePalette(bg, look);
@@ -35,19 +36,20 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
     <div className="pst" role="dialog" aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
-        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav} clock={clock} />
+        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav} title={label} dot={bg} />
         <div className="pst-top" key={topKey}>
           {eyebrow ? <div className="pst-eb">{eyebrow}</div> : null}
           {top}
         </div>
         {bottom}
-        {(foot || frac != null || giveUp) ? (
+        {(foot || frac != null) ? (
           <div className="pst-foot">
             {frac != null ? <span className="pst-bar"><span style={{ width: `${Math.max(0, Math.min(1, frac)) * 100}%` }} /></span> : null}
             {foot ? <span className="pst-line">{foot}</span> : null}
-            {giveUp ? <button type="button" className={'pst-give' + (giveUp.armed ? ' on' : '')} onClick={giveUp.onPress}>{giveUp.armed ? (giveUp.armedLabel || 'Tap again to end and see the answers') : (giveUp.label || 'Give up')}</button> : null}
           </div>
         ) : null}
+        {/* THE FOOT ROW (owner, 2026-10-28): Clock, How to play, Give up. */}
+        <StageFoot clock={clock == null ? undefined : clock} done={done == null ? undefined : done} giveUp={giveUp} bg={pal.bg} />
       </div>
     </div>
   );

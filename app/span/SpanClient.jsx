@@ -1287,7 +1287,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
                   <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '6px 0 10px', lineHeight: 1.5 }}>{PUZZLE.note}</div>
                 )}
               </div>
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+              {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
                   <>
                     {countdown ? <>Next Span in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new route drops at midnight Eastern.'}
@@ -1308,7 +1308,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
                     <a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
-              </p>
+              </p>)}
             </>
           )}
           </div>

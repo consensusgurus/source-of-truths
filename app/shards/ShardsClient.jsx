@@ -1164,7 +1164,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                     </span>
                   </div>
                 </div>
-                <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px auto 0', maxWidth: 472 }}>
+                {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px auto 0', maxWidth: 472 }}>
                   {isTodays ? (
                     <>
                       {countdown ? <>A fresh grid in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A fresh grid lands at midnight Eastern.'}
@@ -1173,7 +1173,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
                   ) : (
                     <>You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}<a href="/shards" style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Shards &rarr;</a>{' · '}<a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a></>
                   )}
-                </p>
+                </p>)}
               </>
             )}
           </div>

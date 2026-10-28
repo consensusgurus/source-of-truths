@@ -1226,12 +1226,12 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
                   ? 'Found at the table, first time through. Against a defence that sees every card, that is the whole game.'
                   : `It took ${g.tries} runs at it. The clock is the tiebreak, so a line found late still counts.`}
               </div>
-              {isTodays && myStats.cur >= 2 && (
+              {!STAGE && isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                   <span style={{ color: 'var(--stg-warn, #b45309)' }}>{myStats.cur}-day streak</span>
                 </div>
               )}
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+              {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
                   <>
                     {countdown ? <>Next Finesse in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new deal drops at midnight Eastern.'}
@@ -1244,7 +1244,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
                     {' · '}<a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
-              </p>
+              </p>)}
             </div>
           )}
           </div>

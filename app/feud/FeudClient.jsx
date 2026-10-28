@@ -1069,7 +1069,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
               </div>
               {(score > 0 || !LOFT || revealed) && revealBoards()}
               <FeudLiveBoard board={result.board} total={TOTAL} />
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ display: EMBED ? 'none' : undefined, fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+              {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ display: EMBED ? 'none' : undefined, fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
                   <>
                     {countdown ? <>The key freezes and a new survey opens in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new survey opens at midnight Eastern.'}
@@ -1090,7 +1090,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
                     <a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
-              </p>
+              </p>)}
             </>
           )}
           </div>

@@ -1156,7 +1156,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
                   </span>
                 </div>
               </div>
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+              {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
                   <>
                     {countdown ? <>A new court convenes in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new court convenes at midnight Eastern.'}
@@ -1177,7 +1177,7 @@ export default function JesterClient({ puzzles = [], forceNum = null }) {
                     <a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
-              </p>
+              </p>)}
             </>
           )}
           </div>

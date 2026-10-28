@@ -777,7 +777,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
             top={top} bottom={bottom}
             foot={`${hinged} of ${TO_FILL} · ${detourCount} detour${detourCount === 1 ? '' : 's'}`}
             giveUp={{ armed: !!armReveal, onPress: giveUp, label: 'Give up', armedLabel: 'Tap again to end and see the answers' }}
-            clock={elapsed}
+            clock={elapsed} done={!playing}
             nav={phoneNarrow ? null : { label: 'Show Site Navigation', onPress: () => { const b = document.querySelector('.lc-sub-btn'); if (b) b.click(); } }} />
         );
       })()}
@@ -1106,12 +1106,12 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
               {PUZZLE.sunday && (
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, fontStyle: 'italic', margin: '10px 0 0' }}>The Sunday Edition: eight words, six to fill, one printed.</div>
               )}
-              {isTodays && myStats.cur >= 2 && (
+              {!STAGE && isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                   <span style={{ color: 'var(--stg-warn, #b45309)' }}>{myStats.cur}-day streak</span>
                 </div>
               )}
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+              {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
                   <>
                     {countdown ? <>Next Hinge in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new chain drops at midnight Eastern.'}
@@ -1132,7 +1132,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
                     <a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
-              </p>
+              </p>)}
             </div>
           )}
           </div>

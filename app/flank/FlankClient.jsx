@@ -915,12 +915,12 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
                   : foundCount > 0 ? 'The map keeps its corners quiet. Tomorrow is a new country.'
                   : 'A blank board happens to everyone once. Tomorrow is a new country.'}
               </div>
-              {isTodays && myStats.cur >= 2 && (
+              {!STAGE && isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                   <span style={{ color: 'var(--stg-warn, #b45309)' }}>{myStats.cur}-day streak</span>
                 </div>
               )}
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+              {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
                   <>
                     {countdown ? <>Next Flank in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new country drops at midnight Eastern.'}
@@ -933,7 +933,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
                     {' · '}<a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
-              </p>
+              </p>)}
             </div>
           )}
           </div>

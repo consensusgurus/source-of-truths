@@ -956,7 +956,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
                 </>
               )}
 
-              {!playing && (
+              {!STAGE && !playing && (
                 <div className="gls-next">Next Glyph in {countdown}</div>
               )}
             </div>
@@ -1024,7 +1024,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
                 </>
               )}
 
-              {!playing && (
+              {!STAGE && !playing && (
                 <div style={{ marginTop: 14, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.09em', textTransform: 'uppercase', color: FADED, textAlign: 'center' }}>
                   Next Glyph in {countdown}
                 </div>

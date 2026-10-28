@@ -14,24 +14,32 @@ import MindLoftMark from './MindLoftMark';
 import { nextLook, nextMainLook, LOOK_NAMES } from '@/lib/stage-look';
 import { soakNav } from '@/lib/tile-flood';
 import { useStageHelp } from '@/lib/stage-help';
-import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
+import { shareForCredit } from '@/lib/share-credit';
 
 // `allLooks` is for the gauntlet and run stages, which keep all five looks;
 // every other page flips between light with color and dark with color.
-export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentColor', title = null, sub = null, allLooks = false, onHelp = null, nav = null, clock = null }) {
-  // THE ? (owner, 2026-10-27): every gameplay page's stage carries How to play.
-  // A host may pass onHelp; otherwise the game's cap registered its own (lib/stage-help.js).
-  // THE CLOCK (owner, 2026-10-28): every puzzle page carries the timer as a
-  // header button. Hidden by default (players found the running clock made
-  // them nervous, 2026-10-13); one tap shows it, one tap hides it, and the
-  // choice is the same site-wide sot_clock_shown the figures strip uses.
-  // Rendered only when the page passes its elapsed time as `clock`.
-  const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
+export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentColor', title = null, sub = null, allLooks = false, onHelp = null, helpHere = null, nav = null, share = true, dot = null }) {
+  // THE NEW STANDARD (owner, 2026-10-28): the header carries the way back, the
+  // game's name with its colour dot, Share and the look switch, nothing else.
+  // The clock and How to play moved to the foot row under the board
+  // (app/StageFoot.jsx) so the board gets the room. Only the runs (allLooks),
+  // which have no foot row, still draw the ? up here; `helpHere` forces it.
   const registered = useStageHelp();
-  const help = onHelp || registered;
+  const help = (helpHere ?? allLooks) ? (onHelp || registered) : null;
+  // SHARE (owner, 2026-10-28: "a share button with an arrow. That prompts share
+  // link"). The phone's share sheet where there is one, otherwise the link is
+  // copied, stamped with the player's referral code (lib/share-credit.js).
+  const [shareMsg, setShareMsg] = React.useState('');
+  const shareTimer = React.useRef(null);
+  React.useEffect(() => () => clearTimeout(shareTimer.current), []);
+  const doShare = () => shareForCredit((m) => {
+    setShareMsg(m);
+    clearTimeout(shareTimer.current);
+    shareTimer.current = setTimeout(() => setShareMsg(''), 3600);
+  });
   const next = LOOK_NAMES[allLooks ? nextLook(look) : nextMainLook(look)];
   return (
-    <div className="stb" style={{ color: ink }}>
+    <div className={'stb' + (title ? ' has-t' : '')} style={{ color: ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <BrandFit><a className="stb-home" href={href} aria-label="Back to Mind Loft home" onClick={(e) => soakNav(e, href)}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
@@ -40,7 +48,7 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
       </a></BrandFit>
       {title ? (
         <span className="stb-tx">
-          <span className="stb-t"><i className="stb-dot" aria-hidden="true" /><h1>{title}</h1></span>
+          <span className="stb-t"><i className="stb-dot" aria-hidden="true" style={dot ? { background: dot } : undefined} /><h1>{title}</h1></span>
           {sub ? <em>{sub}</em> : null}
         </span>
       ) : <span className="stb-sp" />}
@@ -50,11 +58,12 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
       {nav ? (
         <button type="button" className="stb-nav" onClick={(e) => { e.stopPropagation(); nav.onPress && nav.onPress(); }}>{nav.label}</button>
       ) : null}
-      {clock != null ? (
-        <button type="button" className={'stb-clock' + (clockShown ? ' on' : '')} onClick={(e) => { e.stopPropagation(); toggleClock(); }}
-          aria-pressed={clockShown} aria-label={clockShown ? `Time ${clock}. Hide the clock` : 'Show the clock'} title={clockShown ? 'Hide the clock' : 'Show the clock'}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2.5" /><path d="M9.5 2.5h5" /></svg>
-          {clockShown ? <span>{clock}</span> : null}
+      {share ? (
+        <button type="button" className={'stb-share' + (shareMsg ? ' on' : '')} onClick={(e) => { e.stopPropagation(); doShare(); }}
+          aria-label="Share this puzzle" title={shareMsg || 'Share this puzzle'}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="M7 8l5-5 5 5" /><path d="M5 13v7h14v-7" /></svg>
+          <span>{shareMsg ? 'Copied' : 'Share'}</span>
+          {shareMsg ? <span className="stb-sr" role="status">{shareMsg}</span> : null}
         </button>
       ) : null}
       {help ? (
@@ -80,8 +89,9 @@ const CSS = `
 .stb .stb-sp{flex:1;}
 .stb .stb-look{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;flex:none;}
 .stb .stb-help{font:inherit;font-size:19px;font-weight:800;line-height:1;}
-.stb .stb-clock{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:40px;height:40px;box-sizing:border-box;padding:0 11px;border-radius:20px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;cursor:pointer;}
-.stb .stb-clock:not(.on){padding:0;width:40px;}
+.stb .stb-share{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;box-sizing:border-box;padding:0 13px 0 11px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;}
+.stb .stb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+@media (max-width:480px){.stb.has-t .stb-home > span{display:none;}.stb.has-t .stb-home{padding:0 10px 0 8px;}}
 .stb .stb-nav{flex:none;height:40px;box-sizing:border-box;padding:0 14px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .stb .stb-home:hover > span{text-decoration:underline;text-underline-offset:3px;}
 `;

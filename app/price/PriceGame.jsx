@@ -967,16 +967,16 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
                 {score === 10 ? <>Bullseye on guess {tries.length}.</> : score >= 7 ? <>Close: {pctLabel(best.e)}.</> : score >= 4 ? <>In the neighborhood.</> : <>Not your aisle today.</>}
               </div>
-              {isTodays && myStats.cur >= 2 && (
+              {!STAGE && isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0', color: 'var(--stg-warn, #b45309)' }}>{myStats.cur}-day streak</div>
               )}
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+              {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
                   <>{countdown ? <>Next {NAME} in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : `A new ${CFG.noun} drops at midnight Eastern.`}</>
                 ) : (
                   <>You&rsquo;re playing the {PUZZLE.dateLabel} archive.{' '}<a href={PATH} style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s {NAME} &rarr;</a></>
                 )}
-              </p>
+              </p>)}
             </div>
           )}
           </div>

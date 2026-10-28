@@ -805,7 +805,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
           <div className={STAGE ? undefined : 'loft-sol'}>
             {!playing && (
               <div style={{ maxWidth: 472, margin: '14px auto 0' }}>
-                <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: 0 }}>
+                {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: 0 }}>
                   {isTodays ? (
                     <>
                       {countdown ? <>Next Warmer in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new word drops at midnight Eastern.'}
@@ -814,7 +814,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
                   ) : (
                     <>You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}<a href="/warmer" style={{ color: COLORS.ember, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Warmer &rarr;</a>{' · '}<a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a></>
                   )}
-                </p>
+                </p>)}
               </div>
             )}
           </div>

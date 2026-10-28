@@ -15,6 +15,7 @@ import { RAMP_INK, softGround } from '@/lib/category-ramp';
 import { useStageLook, stagePalette, useStageChrome } from './GauntletScreens';
 import { nextMainLook } from '@/lib/stage-look';
 import StageTopBar from './StageTopBar';
+import StageFoot from './StageFoot';
 
 export const WORD_STAGE_BG = '#7dd3fc'; // the Word step of the pastel ramp
 
@@ -54,7 +55,7 @@ export default function WordStage({
     <div className="wst" role="dialog" aria-label={label} style={{ '--wst-bg': pal.bg, '--wst-ink': pal.ink, '--wst-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)', '--wst-n': Math.max(n, 4), '--wst-sn': Math.max(sn, 5) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="wst-col">
-        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} />
+        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} title={label} dot={bg} />
         <div className="wst-top" key={rowKey}>
           {eyebrow ? <div className="wst-eb">{eyebrow}</div> : null}
           {spine}
@@ -112,13 +113,14 @@ export default function WordStage({
             </div>
           ))}
         </div>
-        {(foot || frac != null || giveUp) ? (
+        {(foot || frac != null) ? (
           <div className="wst-foot">
             {frac != null ? <span className="wst-bar"><span style={{ width: `${Math.max(0, Math.min(1, frac)) * 100}%` }} /></span> : null}
             {foot ? <span className="wst-line">{foot}</span> : null}
-            {giveUp ? <button type="button" className={'wst-give' + (giveUp.armed ? ' on' : '')} onClick={giveUp.onPress}>{giveUp.armed ? 'Tap again to end and see the answers' : 'Give up'}</button> : null}
           </div>
         ) : null}
+        {/* THE FOOT ROW (owner, 2026-10-28): Clock, How to play, Give up. */}
+        <StageFoot giveUp={giveUp ? { ...giveUp, armedLabel: giveUp.armedLabel || 'Tap again to give up' } : null} bg={pal.bg} />
       </div>
     </div>
   );

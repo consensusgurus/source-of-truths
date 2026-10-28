@@ -1182,7 +1182,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
                   </span>
                 </div>
               </div>
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+              {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
                   <>
                     {countdown ? <>A fresh rack in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A fresh rack lands at midnight Eastern.'}
@@ -1203,7 +1203,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
                     <a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
-              </p>
+              </p>)}
             </>
           )}
           </div>

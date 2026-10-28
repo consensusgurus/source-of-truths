@@ -1049,17 +1049,17 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
                 {PUZZLE.sunday && (
                   <div style={{ fontSize: 12.5, fontStyle: 'italic', color: FADED, marginTop: 8 }}>The Sunday Edition, with two more squares to read.</div>
                 )}
-                {isTodays && myStats.cur >= 2 && (
+                {!STAGE && isTodays && myStats.cur >= 2 && (
                   <div style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--stg-warn, #9c5d02)', marginTop: 8 }}>{myStats.cur}-day streak</div>
                 )}
-                <p style={{ fontSize: 12.5, fontWeight: 600, color: FADED, marginTop: 12, lineHeight: 1.6 }}>
+                {!STAGE && (<p style={{ fontSize: 12.5, fontWeight: 600, color: FADED, marginTop: 12, lineHeight: 1.6 }}>
                   {isTodays ? (
                     <>Next Turn in <b style={{ fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>. {PUZZLE.num > 1 && (<a href={`/turn?p=${PUZZLE.num - 1}`} style={{ color: ACC_INK, fontWeight: 800 }}>Play yesterday&rsquo;s Turn &rarr;</a>)}</>
                   ) : (
                     <>You&rsquo;re playing the {PUZZLE.dateLabel} archive. <a href="/turn" style={{ color: ACC_INK, fontWeight: 800 }}>Back to today&rsquo;s Turn &rarr;</a></>
                   )}
                   {' '}<a href="/archive" style={{ color: ACC_INK, fontWeight: 800 }}>Puzzle archive</a>
-                </p>
+                </p>)}
               </div>
             )}
           </div>

@@ -1059,7 +1059,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
 
           <div className={STAGE ? undefined : 'loft-sol'}>
           {/* result */}
-          {!playing && (
+          {!STAGE && !playing && (
             <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0', padding: '0 4px' }}>
               {isTodays ? (
                 <>

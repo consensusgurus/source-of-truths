@@ -17,6 +17,7 @@ import { RAMP_INK, softGround } from '@/lib/category-ramp';
 import { useStageLook, stagePalette, useStageChrome } from '../GauntletScreens';
 import { nextMainLook } from '@/lib/stage-look';
 import StageTopBar from '../StageTopBar';
+import StageFoot from '../StageFoot';
 
 const RNAME = (r, rounds) => {
   const left = rounds - r;
@@ -168,7 +169,7 @@ export default function BracketStage({
     <div className="bks" role="dialog" aria-label="Bracket" style={{ '--bks-bg': pal.bg, '--bks-ink': pal.ink, '--bks-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)', '--bks-ch': `${ch}px`, '--bks-h': `${H}px`, '--bks-gap': `${GAP}px`, '--bks-peek': `${PEEK}px`, '--bks-win': `${WIN}px`, '--bks-chip': `${chipH}px` }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="bks-col">
-        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} />
+        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} title="Bracket" />
         {phase === 'play' && (
           <>
             <div className="bks-eb">{RNAME(r, rounds)}{n > 1 ? ` · Match ${m + 1} of ${n}` : ''} · {Math.pow(2, r)} {Math.pow(2, r) === 1 ? 'pt' : 'pts'}</div>
@@ -261,6 +262,9 @@ export default function BracketStage({
             ))}
           </div>
         )}
+        <div style={{ flex: 1 }} />
+        {/* THE FOOT ROW (owner, 2026-10-28): Clock and How to play. */}
+        <StageFoot bg={pal.bg} />
       </div>
     </div>
   );

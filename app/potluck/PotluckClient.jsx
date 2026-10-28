@@ -314,11 +314,11 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
 
               {!playing && (
                 <div className={STAGE ? undefined : 'loft-sol'} style={{ maxWidth: 520, margin: '14px auto 0' }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: FADED, lineHeight: 1.5 }}>
+                  {!STAGE && (<div style={{ fontSize: 13, fontWeight: 600, color: FADED, lineHeight: 1.5 }}>
                     {isTodays
                       ? <>{countdown ? <>Next Potluck in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new three at midnight Eastern.'}{prevPuzzle && <> Meanwhile: <a href={`/potluck?p=${prevPuzzle.num}`} style={{ color: ACC_INK, fontWeight: 800 }}>yesterday&rsquo;s three &rarr;</a></>}</>
                       : <>You&rsquo;re playing the {day.dateLabel} Potluck. <a href="/potluck" style={{ color: ACC_INK, fontWeight: 800 }}>Back to today&rsquo;s &rarr;</a></>}
-                  </div>
+                  </div>)}
                 </div>
               )}
               {LOFT && !playing && revealed && (

@@ -1275,12 +1275,12 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
                 Today&rsquo;s picture: <b style={{ color: INK }}>{PUZZLE.name}</b>. Photo by {PUZZLE.by}, {PUZZLE.lic}, via{' '}
                 <a href={`https://commons.wikimedia.org/wiki/File:${encodeURIComponent(PUZZLE.t.replace(/ /g, '_'))}`} target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>.
               </p>
-              {isTodays && myStats.cur >= 2 && (
+              {!STAGE && isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0' }}>
                   <span style={{ color: 'var(--stg-warn, #b45309)' }}>{myStats.cur}-day streak</span>
                 </div>
               )}
-              <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+              {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
                 {isTodays ? (
                   <>
                     {countdown ? <>Next Jig in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new picture drops at midnight Eastern.'}
@@ -1301,7 +1301,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
                     <a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                   </>
                 )}
-              </p>
+              </p>)}
             </div>
           )}
           </div>

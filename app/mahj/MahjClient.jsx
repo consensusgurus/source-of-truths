@@ -913,17 +913,17 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
         <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && !endHold.held && (
             <div style={{ maxWidth: 520, margin: '0 auto 6px', textAlign: 'center' }}>
-              {isTodays && myStats.cur >= 2 && (
+              {!STAGE && isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 12.5, fontWeight: 800, color: WARN, marginTop: 8 }}>{myStats.cur}-day streak</div>
               )}
-              <p style={{ fontSize: 12.5, fontWeight: 600, color: S_MUTE, marginTop: 12, lineHeight: 1.6 }}>
+              {!STAGE && (<p style={{ fontSize: 12.5, fontWeight: 600, color: S_MUTE, marginTop: 12, lineHeight: 1.6 }}>
                 {isTodays ? (
                   <>Next Mahj in <b style={{ fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>. {PUZZLE.num > 1 && (<a href={`/mahj?p=${PUZZLE.num - 1}`} style={{ color: ACC_INK, fontWeight: 800 }}>Play yesterday&rsquo;s Mahj &rarr;</a>)}</>
                 ) : (
                   <>You&rsquo;re playing the {PUZZLE.dateLabel} archive. <a href="/mahj" style={{ color: ACC_INK, fontWeight: 800 }}>Back to today&rsquo;s Mahj &rarr;</a></>
                 )}
                 {' '}<a href="/archive" style={{ color: ACC_INK, fontWeight: 800 }}>Puzzle archive</a>
-              </p>
+              </p>)}
             </div>
           )}
         </div>

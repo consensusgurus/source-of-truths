@@ -1000,7 +1000,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
           {/* result */}
           {!playing && (
             <>
-            <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
+            {!STAGE && (<p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0' }}>
               {isTodays ? (
                 <>
                   {countdown ? <>Next Carve in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new board drops at midnight Eastern.'}
@@ -1021,7 +1021,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
                   <a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
                 </>
               )}
-            </p>
+            </p>)}
             </>
           )}
           </div>
