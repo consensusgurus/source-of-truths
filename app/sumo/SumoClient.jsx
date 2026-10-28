@@ -797,7 +797,10 @@ export default function SumoClient({ puzzles = [], forceNum = null }) {
     if (isSel) bg = `var(--stg-sel, ${STAGE ? 'color-mix(in srgb, var(--stg-acc) 48%, var(--stg-cell))' : COLORS.accentPick})`;
     return {
       background: bg,
-      boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
+      // The selected ring sits a few px INSIDE the square, with the square's own
+      // fill between it and the edge, so it never lies flush against a box or
+      // region wall and the walls stay readable (owner, 2026-10-28).
+      boxShadow: isSel ? `inset 0 0 0 3px ${bg}, inset 0 0 0 5.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       // Only the BOX borders are drawn as borders. Every edge inside a box is
       // a sign, drawn bent by the overlay above the cells, so its border is
       // transparent here (it keeps its width so the squares stay equal).

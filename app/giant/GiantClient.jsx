@@ -815,7 +815,10 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
       // deeper wash, since the phone looks collapse the accent toward the ink.
       outline: sameVal ? `3px double ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
       outlineOffset: sameVal ? '-3px' : undefined,
-      boxShadow: isSel ? `inset 0 0 0 ${quarter ? 2.5 : 2}px var(--stg-acc, ${COLORS.accent})` : undefined,
+      // The selected ring sits a few px INSIDE the square, with the square's own
+      // fill between it and the edge, so it never lies flush against a box or
+      // region wall and the walls stay readable (owner, 2026-10-28).
+      boxShadow: isSel ? `inset 0 0 0 2px ${bg}, inset 0 0 0 ${quarter ? 4.5 : 4}px var(--stg-acc, ${COLORS.accent})` : undefined,
       borderRight: `${heavyR ? 2.5 : 1}px solid ${heavyR ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
       borderBottom: `${heavyB ? 2.5 : 1}px solid ${heavyB ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
       borderLeft: lc === 0 ? 'none' : undefined,

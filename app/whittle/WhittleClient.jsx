@@ -598,7 +598,10 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
     if (standing && (peer || sameVal)) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 54%, var(--stg-cell))' : '#efd9b0';
     return {
       background: bg,
-      boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accentDeep}))` : undefined,
+      // The selected ring sits a few px INSIDE the square, with the square's own
+      // fill between it and the edge, so it never lies flush against a box or
+      // region wall and the walls stay readable (owner, 2026-10-28).
+      boxShadow: isSel ? `inset 0 0 0 3px ${bg}, inset 0 0 0 5.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accentDeep}))` : undefined,
       zIndex: isSel ? 1 : undefined,
       cursor: playing && started ? 'pointer' : 'default',
       borderRight: `${heavyR ? 2.5 : 1}px solid ${heavyR ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,

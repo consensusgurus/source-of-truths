@@ -868,7 +868,10 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
       // deeper wash, since the phone looks collapse the accent toward the ink.
       outline: sameVal ? `3px double ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
       outlineOffset: sameVal ? '-4px' : undefined,
-      boxShadow: isSel ? `inset 0 0 0 2.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
+      // The selected ring sits a few px INSIDE the square, with the square's own
+      // fill between it and the edge, so it never lies flush against a box or
+      // region wall and the walls stay readable (owner, 2026-10-28).
+      boxShadow: isSel ? `inset 0 0 0 3px ${bg}, inset 0 0 0 5.5px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       zIndex: isSel ? 1 : undefined,
       borderRight: `${c % 3 === 2 ? 2.5 : 1}px solid ${c % 3 === 2 ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,
       borderBottom: `${r % 3 === 2 ? 2.5 : 1}px solid ${r % 3 === 2 ? 'var(--stg-line3, rgba(28,30,36,0.85))' : 'var(--stg-cell-line, rgba(28,30,36,0.18))'}`,

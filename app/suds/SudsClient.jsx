@@ -771,7 +771,10 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
       // deeper wash, since the phone looks collapse the accent toward the ink.
       outline: sameVal ? `3px double ${STAGE ? 'var(--stg-ink)' : 'rgba(28,30,36,0.7)'}` : undefined,
       outlineOffset: sameVal ? '-4px' : undefined,
-      boxShadow: isSel ? `inset 0 0 0 2.5px ${STAGE ? STAGE_C_INK : COLORS.accent}` : undefined,
+      // The selected ring sits a few px INSIDE the square, with the square's own
+      // fill between it and the edge, so it never lies flush against a box or
+      // region wall and the walls stay readable (owner, 2026-10-28).
+      boxShadow: isSel ? `inset 0 0 0 3px ${bg}, inset 0 0 0 5.5px ${STAGE ? STAGE_C_INK : COLORS.accent}` : undefined,
       zIndex: isSel ? 1 : undefined,
       // The box rules have to stay the STRONGEST line on the grid, or a
       // sudoku loses its nine boxes and becomes an 81 cell square.

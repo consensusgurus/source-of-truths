@@ -750,7 +750,10 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     tallyW = HALF * pip + (HALF - 1) * pipGap;
   }
   const gridPx = cellPx * N + EDGE * 2;
-  const WALL = 'color-mix(in srgb, var(--stg-ink, #0b0d12) 78%, transparent)';
+  // The wall is mixed into the CELL, not into transparent, so it is one solid
+  // colour whatever fill sits under it; a see-through wall took on the
+  // highlight's tint along the selected row, column and room and faded there.
+  const WALL = 'color-mix(in srgb, var(--stg-ink, #0b0d12) 82%, var(--stg-cell, #ffffff))';
   const THIN = 'var(--stg-line, rgba(28,30,36,0.18))';
   const WALL_W = cellPx >= 44 ? 3 : 2;
   const selR = sel >= 0 ? Math.floor(sel / N) : -1, selC = sel >= 0 ? sel % N : -1;
@@ -774,15 +777,25 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     const wallB = r < N - 1 && PUZZLE.rooms[r + 1][c] !== id;
     const given = givenSet.has(idx);
     const isBad = breaks.bad.has(idx);
-    let bg = STAGE ? ROOM_TINTS[roomTint.get(id) || 0] : T.white;
-    if (showSel && (r === selR || c === selC || id === selRoom)) bg = 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #1a7f37)) 28%, var(--stg-cell, #ffffff))';
+    // THE HIGHLIGHT KEEPS THE ROOMS (owner, 2026-10-28: the highlight made the
+    // walls hard to see). The selected row, column and room are mixed INTO each
+    // square's room tint, as Quilt and Cages do, rather than painted one flat
+    // colour over it, so neighbouring rooms still differ inside the highlight.
+    // The selected square takes a deeper mix of its own, and its ring sits 3px
+    // inside the square instead of flush against the walls.
+    const tint = STAGE ? ROOM_TINTS[roomTint.get(id) || 0] : T.white;
+    let fill = tint;
+    const isSel = showSel && idx === sel;
+    if (showSel && (r === selR || c === selC || id === selRoom)) fill = `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #1a7f37)) 20%, ${tint})`;
+    if (isSel) fill = `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #1a7f37)) 38%, ${tint})`;
+    let bg = fill;
     // A break is STRIPED, not only tinted, and a printed square carries a corner
     // notch, so both read in every page look (owner, 2026-10-25).
     if (isBad) bg = 'repeating-linear-gradient(45deg, color-mix(in srgb, var(--stg-ink, #0b0d12) 28%, transparent) 0 2px, transparent 2px 7px), color-mix(in srgb, var(--stg-bad, #be123c) 20%, var(--stg-cell, #ffffff))';
     if (given) bg = `linear-gradient(135deg, var(--stg-line3, rgba(11,15,26,0.45)) 0 ${cellPx >= 44 ? 7 : 5}px, transparent ${cellPx >= 44 ? 7 : 5}px), ${bg}`;
     return {
       background: bg,
-      boxShadow: idx === sel && showSel ? `inset 0 0 0 ${cellPx >= 44 ? 3 : 2}px var(--stg-acc, ${COLORS.accent})` : undefined,
+      boxShadow: isSel ? `inset 0 0 0 ${cellPx >= 44 ? 3 : 2}px ${fill}, inset 0 0 0 ${cellPx >= 44 ? 5.5 : 4}px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
       borderRight: c === N - 1 ? 'none' : `${wallR ? WALL_W : 1}px solid ${wallR ? WALL : THIN}`,
       borderBottom: r === N - 1 ? 'none' : `${wallB ? WALL_W : 1}px solid ${wallB ? WALL : THIN}`,
       cursor: given || !playing ? 'default' : 'pointer',
