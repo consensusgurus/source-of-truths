@@ -52,11 +52,14 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
       const tx = bar.querySelector('.stb-t');
       const lab = bar.querySelector('.stb-share-l');
       if (!h || !tx) return;
-      if (lab && lab.offsetWidth) labW.current = lab.offsetWidth + 6;
+      // What the word costs: the full button's width over the 40px arrow-only
+      // one, plus a little slack so it can never flip back and forth at the edge.
+      const btn = bar.querySelector('.stb-share');
+      if (lab && btn && !btn.classList.contains('tight')) labW.current = btn.offsetWidth - 40 + 4;
       setTight((t) => {
         if (!t) return h.scrollWidth > h.clientWidth + 1;
         const room = tx.clientWidth - (h.offsetLeft - tx.offsetLeft) - h.scrollWidth;
-        return room < (labW.current || 52);
+        return room < (labW.current || 64);
       });
     };
     fit();
