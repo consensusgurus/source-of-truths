@@ -992,9 +992,11 @@ const CSS = `
 /* THE TRAY READS IN EVERY WIDTH (2026-10-25): the ticket card in the end
    column is phone-narrow even on desktop, so it takes its phone layout there;
    the tray's own links and buttons are light on its dark ground. */
+@media(min-width:561px){
 .gsx-tray .tkd-top{flex-wrap:wrap;gap:14px}
 .gsx-tray .tkd-tx{flex:1 1 180px}
 .gsx-tray .tkd-go{flex:1 1 100%;justify-content:center}
+}
 .gsx .gsx-tray .pmm-lnk{color:#7dd3fc}
 .gsx .gsx-tray .gsx-lb{color:#e9edf4;border-color:#e9edf4}
 .gsx-tray .tkd{--tkd-bg:var(--gsx-card);--tkd-ink:var(--gsx-card-ink);--tkd-sub:color-mix(in srgb, var(--gsx-card-ink) 78%, transparent);--tkd-paper:var(--gsx-card-paper);--tkd-go-ink:var(--gsx-card);border:2px solid var(--gsx-card-ink)}

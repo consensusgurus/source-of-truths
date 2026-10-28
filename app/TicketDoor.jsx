@@ -52,21 +52,24 @@ const CSS = `
 .tkd-inv{all:unset;cursor:pointer;font-size:12.5px;font-weight:800;color:var(--tkd-ink,#2a1f04);border:1.5px solid color-mix(in srgb, var(--tkd-ink,#2a1f04) 50%, transparent);
   border-radius:8px;padding:6px 10px;white-space:nowrap;}
 .tkd-inv:hover{border-color:var(--tkd-ink,#2a1f04);}
-.tkd-m{display:none;}
+.tkd-m,.tkd-pinv,.tkd-tshort{display:none;}
 /* THE PHONE CARD IS TWO LINES (owner, 2026-10-28): "Share for your chance to
    win $500", then "You have N tickets", with the send button beside them. No
    ticket drawing, no headline, no to-beat line. */
 @media (max-width:560px){
   .tkd{padding:12px 12px 9px 14px;gap:8px;}
-  .tkd-top{gap:10px;}
+  .tkd-top{gap:8px 10px;flex-wrap:wrap;}
   .tkd-tk,.tkd-tx{display:none;}
-  .tkd-m{display:block;flex:1;min-width:0;}
+  .tkd-m{display:block;flex:1 1 190px;min-width:0;}
   .tkd-m b{display:block;font-size:15.5px;font-weight:800;line-height:1.25;}
   .tkd-m>span{display:block;font-size:13px;font-weight:700;line-height:1.35;margin-top:2px;color:var(--tkd-sub,#4a3a12);}
   .tkd-m .tkd-claim{font-size:13px;font-weight:800;color:var(--tkd-ink,#2a1f04);}
-  .tkd-go{height:42px;padding:0 14px;font-size:13.5px;}
+  .tkd-go{flex:none;height:38px;padding:0 14px;font-size:13.5px;}
   .tkd-ft{padding-top:7px;font-size:10.5px;gap:6px;}
-  .tkd-inv{font-size:11.5px;padding:4px 8px;}
+  .tkd-ft .tkd-inv,.tkd-tlong{display:none;}
+  .tkd-tshort{display:inline;}
+  .tkd-pinv{display:inline-flex;align-items:center;}
+  .tkd-pinv .tkd-inv{font-size:12px;padding:0 10px;height:38px;display:inline-flex;align-items:center;box-sizing:border-box;}
 }
 `;
 
@@ -199,6 +202,7 @@ export default function TicketDoor({ fig = '', title = '', vs = null, label = 'C
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
           )}
         </button>
+        <span className="tkd-pinv"><GroupInvite /></span>
       </div>
       {claimOpen && !claimed ? (
         <div className="tkd-form">
@@ -207,7 +211,8 @@ export default function TicketDoor({ fig = '', title = '', vs = null, label = 'C
         </div>
       ) : null}
       <div className="tkd-ft">
-        <span>{DRAWING.prizeLabel} drawing {'·'} ends {DRAWING.endLabel} {'·'} no purchase necessary</span>
+        <span className="tkd-tlong">{DRAWING.prizeLabel} drawing {'·'} ends {DRAWING.endLabel} {'·'} no purchase necessary</span>
+        <span className="tkd-tshort">Drawing ends {DRAWING.endLabel}. No purchase necessary.</span>
         <GroupInvite />
       </div>
     </section>
