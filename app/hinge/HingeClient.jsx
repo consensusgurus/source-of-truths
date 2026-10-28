@@ -287,7 +287,19 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
   const coveredLenRef = useRef(null);
   // The phone stage (owner, 2026-10-25): a full-screen drawing of the same
   // chain with its own letter keys, so the page input below is never focused.
-  const phoneStage = usePhoneStage();
+  // HINGE C (owner, 2026-10-27): the desktop full screen plays the same stage.
+  // While the page is in full screen (html.lc-focus) the stage mounts at any
+  // width; Show Site Navigation turns focus off and the page's own board returns.
+  const phoneNarrow = usePhoneStage();
+  const [lcFocus, setLcFocus] = useState(false);
+  useEffect(() => {
+    const read = () => setLcFocus(document.documentElement.classList.contains('lc-focus'));
+    read();
+    const mo = new MutationObserver(read);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => mo.disconnect();
+  }, []);
+  const phoneStage = phoneNarrow || lcFocus;
   const stageKeyRef = useRef(null);
   useEffect(() => {
     if (!phoneStage) return undefined;
@@ -686,10 +698,10 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
         const tight = L > 6;
         const giveUp = () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } };
         const ready = cur >= 0 && draft.length === COUNTS[cur];
+        // HINGE C: the board explains itself through the joins, so the line only
+        // speaks when there is news (a toast, or a dead end).
         const line = toast
-          || (deadEnd
-            ? `No chain reaches ${fill[L - 1]} from ${fill[cur - 1]}. Tap a word to back up, free.`
-            : (cur > 0 ? `${fill[cur - 1]} ___${cur === L - 2 ? ` ___ ${fill[L - 1]}` : ''} · tap a placed word to clear it and everything below` : ''));
+          || (deadEnd ? `No chain reaches ${fill[L - 1]} from ${fill[cur - 1]}. Tap a word to back up, free.` : '');
         const top = (
           <>
             <style dangerouslySetInnerHTML={{ __html: `
@@ -699,7 +711,10 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
               .hgs-sl.given span{background:var(--pst-ink);color:var(--pst-bg);}
               .hgs-sl.now span{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
               .hgs-sl.open span{border-style:solid;background:transparent;opacity:.55;}
-              .hgs-hj{width:2px;height:${tight ? 6 : 10}px;background:var(--pst-ink);opacity:.5;}
+              .hgs-jn{display:flex;align-items:center;justify-content:center;gap:8px;height:${tight ? 22 : 28}px;font-size:13px;font-weight:800;letter-spacing:.02em;text-transform:lowercase;}
+              .hgs-jn::before,.hgs-jn::after{content:"";width:2px;height:${tight ? 5 : 8}px;background:currentColor;}
+              .hgs-jn.o{opacity:.35;}
+              @media (min-width:900px){.hgs-kb{display:none;}}
               .hgs-det{font-size:12px;font-weight:800;opacity:.7;text-decoration:line-through;margin:-2px 0 2px;}
               .hgs-line{text-align:center;font-size:13px;font-weight:700;opacity:.8;line-height:1.35;min-height:1.35em;}
               @keyframes hgsShake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
@@ -727,7 +742,12 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
                       <div className={`hgs-sl ${kind}`} aria-label={given ? `${w}, given` : `Word ${i + 1}, ${COUNTS[i]} letters`}>{cells}</div>
                     )}
                     {dets.length > 0 && <span className="hgs-det">{dets.length === 1 ? 'detour' : 'detours'}: {dets.join(', ')}</span>}
-                    {i + 1 < L && <span className="hgs-hj" aria-hidden="true" />}
+                    {i + 1 < L && (() => {
+                      const a = fill[i], b = fill[i + 1];
+                      if (a && b) return <span className="hgs-jn">{`${a} ${b}`}</span>;
+                      if (a && i + 1 === cur) return <span className="hgs-jn">{`${a} · ?`}</span>;
+                      return <span className="hgs-jn o" aria-hidden="true">·</span>;
+                    })()}
                   </React.Fragment>
                 );
               })}
@@ -738,17 +758,13 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
         const rows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
         const bottom = (
           <>
-            <div className="pst-tools">
-              {hintOk && !g.hintUsed && (
-                <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb} Hint</button>
-              )}
-              <button type="button" className={'pst-tb' + (armReveal ? ' on' : '')} onClick={giveUp}>{armReveal ? 'Tap again to end' : 'Give up'}</button>
-              <button type="button" className="pst-tb on" onClick={() => submit()} disabled={!ready}>Place word</button>
-            </div>
+            {hintOk && !g.hintUsed ? (
+              <button type="button" className="pst-give" style={{ alignSelf: 'center' }} onClick={useHint}>Use your free hint</button>
+            ) : null}
             <div className="hgs-kb">
               {rows.map((r, ri) => (
                 <div className="hgs-kr" key={ri}>
-                  {ri === 2 && <button type="button" className="hgs-k w" onClick={() => stageKey('CLR')}>Clear</button>}
+                  {ri === 2 && <button type="button" className="hgs-k w" style={ready ? { background: 'var(--pst-ink)', color: 'var(--pst-bg)' } : undefined} onClick={() => stageKey('ENTER')}>Enter</button>}
                   {r.split('').map((ch) => <button type="button" key={ch} className="hgs-k" onClick={() => stageKey(ch)}>{ch}</button>)}
                   {ri === 2 && <button type="button" className="hgs-k w" onClick={() => stageKey('DEL')} aria-label="Delete">Del</button>}
                 </div>
@@ -758,10 +774,10 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
         );
         return (
           <PlayStage bg={gameColor('hinge')} label="Hinge"
-            eyebrow="Each pair makes a compound or a phrase"
             top={top} bottom={bottom}
-            foot={`${hinged} of ${TO_FILL} placed · ${detourCount} detour${detourCount === 1 ? '' : 's'}`}
-            frac={TO_FILL ? hinged / TO_FILL : 0} />
+            foot={`${hinged} of ${TO_FILL} · ${detourCount} detour${detourCount === 1 ? '' : 's'}`}
+            giveUp={{ armed: !!armReveal, onPress: giveUp, label: 'Give up', armedLabel: 'Tap again to end and see the answers' }}
+            nav={phoneNarrow ? null : { label: 'Show Site Navigation', onPress: () => { const b = document.querySelector('.lc-sub-btn'); if (b) b.click(); } }} />
         );
       })()}
       {!STAGE && <Grain />}

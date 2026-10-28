@@ -17,7 +17,7 @@ import { useStageHelp } from '@/lib/stage-help';
 
 // `allLooks` is for the gauntlet and run stages, which keep all five looks;
 // every other page flips between light with color and dark with color.
-export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentColor', title = null, sub = null, allLooks = false, onHelp = null }) {
+export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentColor', title = null, sub = null, allLooks = false, onHelp = null, nav = null }) {
   // THE ? (owner, 2026-10-27): every gameplay page's stage carries How to play.
   // A host may pass onHelp; otherwise the game's cap registered its own (lib/stage-help.js).
   const registered = useStageHelp();
@@ -37,6 +37,12 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
           {sub ? <em>{sub}</em> : null}
         </span>
       ) : <span className="stb-sp" />}
+      {/* DESKTOP FULL SCREEN (owner, 2026-10-27): a phone stage drawn over the
+          desktop page carries the page's Show Site Navigation control, since the
+          stage covers the header that normally holds it. `nav` = { label, onPress }. */}
+      {nav ? (
+        <button type="button" className="stb-nav" onClick={(e) => { e.stopPropagation(); nav.onPress && nav.onPress(); }}>{nav.label}</button>
+      ) : null}
       {help ? (
         <button type="button" className="stb-look stb-help" onClick={(e) => { e.stopPropagation(); help(); }}
           aria-label="How to play" title="How to play">?</button>
@@ -60,5 +66,6 @@ const CSS = `
 .stb .stb-sp{flex:1;}
 .stb .stb-look{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;flex:none;}
 .stb .stb-help{font:inherit;font-size:19px;font-weight:800;line-height:1;}
+.stb .stb-nav{flex:none;height:40px;box-sizing:border-box;padding:0 14px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .stb .stb-home:hover > span{text-decoration:underline;text-underline-offset:3px;}
 `;
