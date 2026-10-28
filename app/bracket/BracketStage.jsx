@@ -215,11 +215,6 @@ export default function BracketStage({
             </div>
             <div className="bks-foot">
               <span className="bks-line">Changing a pick clears what it fed. Nothing is scored until the sheet is in.</span>
-              <div className="bks-tools">
-                <button type="button" className="bks-tl" onClick={onHelp}>How to play</button>
-                <span className="bks-clock">{elapsed}</span>
-                <button type="button" className={'bks-tl' + (giveUp.armed ? ' on' : '')} onClick={giveUp.onPress}>{giveUp.armed ? 'Tap again to hand it in' : 'Give up'}</button>
-              </div>
             </div>
           </>
         )}
@@ -265,8 +260,10 @@ export default function BracketStage({
           </div>
         )}
         <div style={{ flex: 1 }} />
-        {/* THE FOOT ROW (owner, 2026-10-28): Clock and How to play. */}
-        <StageFoot bg={pal.bg} />
+        {/* THE FOOT ROW (owner, 2026-10-28): Clock, How to play and, while the
+            sheet is being filled, Give up (it hands the sheet in). */}
+        <StageFoot bg={pal.bg} clock={elapsed} done={phase === 'reveal'} onHelp={onHelp}
+          giveUp={phase === 'play' && giveUp ? { armed: giveUp.armed, onPress: giveUp.onPress, armedLabel: 'Tap again to hand it in' } : null} />
       </div>
     </div>
   );
@@ -277,7 +274,7 @@ const CSS = `
 .bks *{color:var(--bks-ink);}
 .bks-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--bks-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
 .bks.inl{position:relative;inset:auto;z-index:auto;overflow:visible;border-radius:22px;margin:0 auto;max-width:640px;}
-.bks.inl .bks-col{min-height:min(720px, calc(100vh - 200px));}
+.bks.inl .bks-col{min-height:max(600px, calc(100vh - 150px));}
 .bks-col{width:100%;max-width:520px;box-sizing:border-box;padding:max(12px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;min-height:100%;}
 .bks-eb{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
 .bks-q{margin:0;text-align:center;font-size:clamp(22px,7vw,28px);line-height:1.15;font-weight:800;letter-spacing:-.02em;}

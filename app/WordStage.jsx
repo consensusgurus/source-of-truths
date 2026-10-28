@@ -194,7 +194,7 @@ const CSS = `
 .wst-give{background:none;border:none;padding:4px 8px;font:inherit;font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
 .wst-give.on{font-weight:800;}
 .wst.inl{position:relative;inset:auto;z-index:auto;overflow:visible;border-radius:22px;margin:0 auto;max-width:640px;}
-.wst.inl .wst-col{min-height:min(720px, calc(100vh - 200px));padding:18px 12px;}
+.wst.inl .wst-col{min-height:max(600px, calc(100vh - 150px));padding:18px 12px;}
 @keyframes wstRise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
 @keyframes wstPop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:none}}
 @keyframes wstShake{0%,100%{transform:none}20%{transform:translateX(-8px)}50%{transform:translateX(7px)}80%{transform:translateX(-3px)}}
