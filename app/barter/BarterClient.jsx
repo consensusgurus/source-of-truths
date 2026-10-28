@@ -797,7 +797,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
 
           {/* THE ENDING KEEPS THE STAGE'S BOARD (owner, 2026-10-28): the finished
               lattice is drawn in the same tiles the stage played it in. */}
-          {phoneStage && !playing ? (
+          {!playing ? (
             <div style={{ '--pst-ink': 'var(--stg-ink, #08222e)', '--pst-bg': 'var(--stg-ground, #fff)', '--pst-tint': 'var(--sp-g, #b1e5fd)', color: 'var(--stg-ink, #08222e)', fontFamily: SANS, padding: '4px 0' }}>
               <style dangerouslySetInnerHTML={{ __html: `
                 .btd-grid{display:grid;grid-template-columns:repeat(${S}, minmax(0, 1fr));gap:${S === 7 ? 5 : 7}px;width:min(100%, ${S === 7 ? 380 : 340}px);margin:0 auto;aspect-ratio:1/1;}
@@ -817,7 +817,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
               </div>
             </div>
           ) : null}
-          <div style={{ maxWidth: boardMax, margin: '0 auto', display: phoneStage && !playing ? 'none' : undefined }}>
+          <div style={{ maxWidth: boardMax, margin: '0 auto', display: !playing ? 'none' : undefined }}>
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${S}, minmax(0, 1fr))`, gap: 6, aspectRatio: '1 / 1' }}>
               {Array.from({ length: S * S }).map((_, k) => {
                 const r = Math.floor(k / S), c = k % S;

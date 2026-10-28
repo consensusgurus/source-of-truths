@@ -940,7 +940,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
               everything change so drastically on the end screen"). Where the
               game was played on the stage, the finished chain is drawn in the
               same tiles, not the old plated board. */}
-          {phoneStage && !playing ? (
+          {!playing ? (
             <div className="hgd">
               <style dangerouslySetInnerHTML={{ __html: `
                 .hgd{display:flex;flex-direction:column;align-items:center;padding:6px 0 4px;color:var(--stg-ink,#08222e);}
@@ -966,7 +966,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
               ))}
             </div>
           ) : null}
-          <div className={`hg-play${playing ? ' two' : ''}`} style={phoneStage && !playing ? { display: 'none' } : undefined}>
+          <div className={`hg-play${playing ? ' two' : ''}`} style={!playing ? { display: 'none' } : undefined}>
           {/* the chain: every word a plate of letter cells, every join a hinge
               barrel whose two halves read across the pin as the compound
               (broad | side), shut in the accent once both words are in */}
