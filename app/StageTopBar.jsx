@@ -37,9 +37,37 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
     clearTimeout(shareTimer.current);
     shareTimer.current = setTimeout(() => setShareMsg(''), 3600);
   });
+  // SHARE SHOWS ITS WORD ONLY WHEN IT FITS (owner, 2026-10-28). The back pill
+  // always keeps the Mind Loft mark and name; when the game's name would be cut
+  // short, Share drops to its arrow alone, and gets its word back as soon as
+  // there is room again. Measured, so a long name and a short one both work.
+  const barRef = React.useRef(null);
+  const [tight, setTight] = React.useState(false);
+  const labW = React.useRef(0);
+  React.useLayoutEffect(() => {
+    const bar = barRef.current;
+    if (!bar || !title || !share) return undefined;
+    const fit = () => {
+      const h = bar.querySelector('.stb-t h1');
+      const tx = bar.querySelector('.stb-t');
+      const lab = bar.querySelector('.stb-share-l');
+      if (!h || !tx) return;
+      if (lab && lab.offsetWidth) labW.current = lab.offsetWidth + 6;
+      setTight((t) => {
+        if (!t) return h.scrollWidth > h.clientWidth + 1;
+        const room = tx.clientWidth - (h.offsetLeft - tx.offsetLeft) - h.scrollWidth;
+        return room < (labW.current || 52);
+      });
+    };
+    fit();
+    let ro;
+    try { ro = new ResizeObserver(fit); ro.observe(bar); } catch (e) {}
+    try { document.fonts && document.fonts.ready.then(fit); } catch (e) {}
+    return () => { try { ro && ro.disconnect(); } catch (e) {} };
+  }, [title, share, tight]);
   const next = LOOK_NAMES[allLooks ? nextLook(look) : nextMainLook(look)];
   return (
-    <div className={'stb' + (title ? ' has-t' : '')} style={{ color: ink }}>
+    <div ref={barRef} className={'stb' + (title ? ' has-t' : '')} style={{ color: ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <BrandFit><a className="stb-home" href={href} aria-label="Back to Mind Loft home" onClick={(e) => soakNav(e, href)}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
@@ -59,10 +87,10 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
         <button type="button" className="stb-nav" onClick={(e) => { e.stopPropagation(); nav.onPress && nav.onPress(); }}>{nav.label}</button>
       ) : null}
       {share ? (
-        <button type="button" className={'stb-share' + (shareMsg ? ' on' : '')} onClick={(e) => { e.stopPropagation(); doShare(); }}
+        <button type="button" className={'stb-share' + (shareMsg ? ' on' : '') + (tight ? ' tight' : '')} onClick={(e) => { e.stopPropagation(); doShare(); }}
           aria-label="Share this puzzle" title={shareMsg || 'Share this puzzle'}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="M7 8l5-5 5 5" /><path d="M5 13v7h14v-7" /></svg>
-          <span>{shareMsg ? 'Copied' : 'Share'}</span>
+          {tight ? null : <span className="stb-share-l">{shareMsg ? 'Copied' : 'Share'}</span>}
           {shareMsg ? <span className="stb-sr" role="status">{shareMsg}</span> : null}
         </button>
       ) : null}
@@ -90,8 +118,8 @@ const CSS = `
 .stb .stb-look{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;flex:none;}
 .stb .stb-help{font:inherit;font-size:19px;font-weight:800;line-height:1;}
 .stb .stb-share{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;box-sizing:border-box;padding:0 13px 0 11px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;}
+.stb .stb-share.tight{width:40px;padding:0;}
 .stb .stb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
-@media (max-width:480px){.stb.has-t .stb-home > span{display:none;}.stb.has-t .stb-home{padding:0 10px 0 8px;}}
 .stb .stb-nav{flex:none;height:40px;box-sizing:border-box;padding:0 14px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .stb .stb-home:hover > span{text-decoration:underline;text-underline-offset:3px;}
 `;
