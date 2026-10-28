@@ -977,7 +977,7 @@ const CSS = `
 @keyframes gsxLand{0%{opacity:0;transform:translateY(40px) rotate(-10deg) scale(.7)}70%{opacity:1;transform:translateY(-4px) rotate(-2deg) scale(1.02)}100%{opacity:1;transform:rotate(-3deg)}}
 .gsx-rchip{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid currentColor;box-sizing:border-box}
 .gsx-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.gsx-rt b{font-size:15px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
+.gsx-rt b{font-size:15px;font-weight:800;line-height:1.28;overflow-wrap:anywhere}
 .gsx-rung.here .gsx-rt b{font-size:21px}
 .gsx-rt em{font-style:normal;font-size:13.5px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
 .gsx-rtail{flex:none;font-size:13px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}

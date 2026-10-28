@@ -350,7 +350,7 @@ const CSS = `
   background:var(--sst-card);color:var(--sst-ink);font:inherit;text-align:left;cursor:pointer;}
 .srl-bar .tx{flex:1;min-width:0;position:relative;}
 .srl-meas{position:absolute;left:0;top:0;visibility:hidden;white-space:nowrap;font-weight:800;letter-spacing:-.015em;font-variant-numeric:tabular-nums;pointer-events:none;}
-.srl-bar b{display:block;width:100%;font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.15;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums;}
+.srl-bar b{display:block;width:100%;font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.15;padding:.08em 0 .2em;margin:-.08em 0 -.2em;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums;}
 .srl-bar .ch{flex:none;width:26px;height:26px;display:flex;align-items:center;justify-content:center;opacity:.65;transition:transform .35s cubic-bezier(.2,.8,.2,1);}
 .srl-bar.open .ch{transform:rotate(180deg);opacity:1;}
 .srl-bar:focus-visible{outline:2px solid var(--sst-ink);outline-offset:2px;}
@@ -371,7 +371,7 @@ const CSS = `
 @media (prefers-reduced-motion: reduce){
   .srl *,.srl-stack{transition:none !important;animation:none !important;}
 }
-.srl-wrap{display:block;width:100%;padding:0 4px;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;}
+.srl-wrap{display:block;width:100%;padding:0 4px;border:0;border-radius:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;}
 .srl-chip{display:inline-flex;align-items:center;margin-top:14px;min-height:30px;padding:5px 12px;border-radius:99px;background:var(--sst-card);font-size:13px;font-weight:800;}
 .srl-stats{display:flex;flex-direction:column;gap:10px;}
 .srl-stats > .sst-card .sst-h2{gap:18px;}
@@ -379,7 +379,7 @@ const CSS = `
 .srl-sbd{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:46px;border:0;border-radius:14px;
   background:var(--sst-wash);color:var(--sst-ink);font:inherit;font-size:14.5px;font-weight:800;cursor:pointer;}
 .srl-final{display:flex;flex-direction:column;gap:10px;}
-.srl-retry{border:0;font:inherit;text-align:left;cursor:pointer;width:100%;}
+.srl-retry{border:0;font:inherit;text-align:left;cursor:pointer;width:100%;/* corners-ok: the sst-run card class it carries sets them */}
 .srl-wrapsub{white-space:normal !important;overflow:visible !important;}
 
 .srl-ab{background:none;font:inherit;text-align:left;cursor:pointer;width:100%;}

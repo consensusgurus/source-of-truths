@@ -52,13 +52,21 @@ const CSS = `
 .tkd-inv{all:unset;cursor:pointer;font-size:12.5px;font-weight:800;color:var(--tkd-ink,#2a1f04);border:1.5px solid color-mix(in srgb, var(--tkd-ink,#2a1f04) 50%, transparent);
   border-radius:8px;padding:6px 10px;white-space:nowrap;}
 .tkd-inv:hover{border-color:var(--tkd-ink,#2a1f04);}
+.tkd-m{display:none;}
+/* THE PHONE CARD IS TWO LINES (owner, 2026-10-28): "Share for your chance to
+   win $500", then "You have N tickets", with the send button beside them. No
+   ticket drawing, no headline, no to-beat line. */
 @media (max-width:560px){
-  .tkd{padding:16px 16px 12px;}
-  .tkd-top{flex-wrap:wrap;gap:14px;}
-  .tkd-tk{width:88px;height:60px;}.tkd-tk svg{width:88px;height:60px;}.tkd-n{left:25px;}.tkd-n b{font-size:22px;}.tkd-n b.lg{font-size:18px;}
-  .tkd-tx{flex:1 1 180px;}
-  .tkd-hd{font-size:17.5px;}
-  .tkd-go{flex:1 1 100%;justify-content:center;}
+  .tkd{padding:12px 12px 9px 14px;gap:8px;}
+  .tkd-top{gap:10px;}
+  .tkd-tk,.tkd-tx{display:none;}
+  .tkd-m{display:block;flex:1;min-width:0;}
+  .tkd-m b{display:block;font-size:15.5px;font-weight:800;line-height:1.25;}
+  .tkd-m>span{display:block;font-size:13px;font-weight:700;line-height:1.35;margin-top:2px;color:var(--tkd-sub,#4a3a12);}
+  .tkd-m .tkd-claim{font-size:13px;font-weight:800;color:var(--tkd-ink,#2a1f04);}
+  .tkd-go{height:42px;padding:0 14px;font-size:13.5px;}
+  .tkd-ft{padding-top:7px;font-size:10.5px;gap:6px;}
+  .tkd-inv{font-size:11.5px;padding:4px 8px;}
 }
 `;
 
@@ -167,6 +175,15 @@ export default function TicketDoor({ fig = '', title = '', vs = null, label = 'C
             <text x="14" y="38" textAnchor="middle" fontFamily="inherit" fontSize="9" fontWeight="800" style={{ fill: 'var(--tkd-ink,#2a1f04)' }} transform="rotate(-90 14 33)">{DRAWING.prizeLabel}</text>
           </svg>
           <span className="tkd-n" aria-hidden="true"><StubCount n={n} /><i>TICKETS</i></span>
+        </div>
+        <div className="tkd-m">
+          <b>Share for your chance to win {DRAWING.prizeLabel}</b>
+          {msg ? <span role="status">{msg}</span>
+            : named === false && !claimed ? (
+              <span><button type="button" className="tkd-claim" aria-expanded={claimOpen} onClick={() => setClaimOpen((v) => !v)}>
+                Pick a name to earn tickets<span aria-hidden="true">{claimOpen ? '↑' : '→'}</span>
+              </button></span>
+            ) : <span>You have {formatTickets(n)} {n === 1 ? 'ticket' : 'tickets'}</span>}
         </div>
         <div className="tkd-tx">
           <div className="tkd-hd">{named === false && !claimed && !vs ? (

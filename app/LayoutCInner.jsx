@@ -101,7 +101,7 @@ html.lc-on.lc-focus .lc-host .stg-fg{padding-right:20px;}
    figures row, which the start screen hides. */
 .sty-rt>.lc-subs{position:static;transform:none;}
 .sty-rt>.lc-subs .lc-sub-btn{height:34px;padding:0 14px;border:2px solid currentColor;color:var(--stg-ink);font-size:12px;font-weight:800;}
-.stb>.lc-subs .lc-sub-btn{height:40px;padding:0 16px;border:2px solid currentColor;color:inherit;font-size:13px;font-weight:800;}
+.stb>.lc-subs .lc-sub-btn{height:34px;box-sizing:border-box;padding:0 12px;border:2px solid currentColor;color:inherit;font-size:13px;font-weight:800;line-height:1;}
 .stb>.lc-subs .lc-sub-btn:hover{border-color:currentColor;color:inherit;text-decoration:underline;text-underline-offset:3px;}
 .lc-subs,.stg-fg>.lc-subs{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:row;align-items:center;gap:8px;}
 .lc-shw{position:relative;display:inline-flex;}

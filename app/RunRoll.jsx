@@ -96,7 +96,7 @@ export default function RunRoll({
   }, [rolled]);
 
   return (
-    <div className={'rrl' + (rolled ? ' in' : '') + (dark ? ' dk' : '')}>
+    <div className={'rrl' + (rolled ? ' in' : '') + (dark ? ' dk' : '') + (anim ? ' sw' : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="rrl-top">
         <a className="rrl-tb rrl-home" href="/" aria-label="All Puzzles">
@@ -180,19 +180,23 @@ export default function RunRoll({
 const CSS = `
 .gsx-roll .gsx-col{gap:12px;padding:12px 14px 26px}
 .rrl{display:flex;flex-direction:column;gap:12px;--rrl-card:var(--gsx-card)}
+/* NOTHING SHOWS UNDER THE SWEEP (owner, 2026-10-28): the page waits until the
+   colour bands have crossed, the way the desktop ending's rises do. */
+.rrl.sw{animation:rrlUnder .45s ease-out 1.35s both}
+@keyframes rrlUnder{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .rrl-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px}
 .rrl-tr{display:flex;gap:0;flex:none}
 .rrl-tb{display:inline-flex;align-items:center;gap:5px;min-height:40px;padding:0 8px;white-space:nowrap;border:0;border-radius:999px;background:transparent;color:var(--gsx-ink);font:inherit;font-size:14px;font-weight:800;text-decoration:none;cursor:pointer}
 .rrl-tb:active{background:color-mix(in srgb, var(--gsx-ink) 10%, transparent)}
 .rrl-home{padding-left:2px;min-width:0;overflow:hidden}
 @media(max-width:359px){.rrl-home span{display:none}}
-.rrl-hero{display:flex;flex-direction:column;align-items:stretch;gap:12px;width:100%;padding:6px 0 0;border:0;background:transparent;color:var(--gsx-ink);font:inherit;text-align:left;cursor:pointer}
+.rrl-hero{display:flex;flex-direction:column;align-items:stretch;gap:12px;width:100%;padding:6px 0 0;border:0;border-radius:0;background:transparent;color:var(--gsx-ink);font:inherit;text-align:left;cursor:pointer}
 .rrl-hero .gsx-score{align-items:center}
 .rrl-hero{transform-origin:50% 0;transition:transform .42s cubic-bezier(.5,0,.75,0),opacity .42s ease-in}
 .rrl-hero.gone{transform:translateY(-64px) scale(.88);opacity:0}
 .rrl-bar{display:flex;align-items:center;gap:4px;width:100%;height:54px;padding:0 10px 0 16px;border:0;border-radius:16px;background:var(--rrl-card);color:var(--gsx-ink);font:inherit;cursor:pointer;text-align:left;animation:rrlTake .6s cubic-bezier(.2,.9,.25,1.2) both}
 .rrl-bar .tx{flex:1;min-width:0;position:relative}
-.rrl-bar b{display:block;width:100%;font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.15;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
+.rrl-bar b{display:block;width:100%;font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.15;padding:.08em 0 .2em;margin:-.08em 0 -.2em;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
 .rrl-meas{position:absolute;left:0;top:0;visibility:hidden;white-space:nowrap;font-weight:800;letter-spacing:-.015em;font-variant-numeric:tabular-nums;pointer-events:none}
 .rrl-bar .ch{flex:none;width:26px;height:26px;display:flex;align-items:center;justify-content:center;opacity:.65;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 .rrl-bar.open .ch{transform:rotate(180deg);opacity:1}
@@ -219,5 +223,5 @@ const CSS = `
 @keyframes rrlTake{0%{transform:translateY(46px) scale(.9);opacity:0}55%{transform:translateY(-3px) scale(1.02);opacity:1}100%{transform:none}}
 @keyframes rrlRise{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
 @keyframes rrlDrop{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion: reduce){.rrl-bar,.rrl-r1,.rrl-r2,.rrl-dd{animation:none}}
+@media (prefers-reduced-motion: reduce){.rrl.sw,.rrl-bar,.rrl-r1,.rrl-r2,.rrl-dd{animation:none}}
 `;
