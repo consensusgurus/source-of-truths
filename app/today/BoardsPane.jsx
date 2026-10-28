@@ -316,7 +316,7 @@ export default function BoardsPane({
               <>
                 <div className="lbs-stack" aria-hidden="true">
                   {catSplit.map((c) => (
-                    <i key={c.cat} style={{ width: `${(c.n / catSum) * 100}%`, background: hueFor(c.cat) }} />
+                    <i key={c.cat} style={{ width: `${(c.n / catSum) * 100}%`, '--cc': hueFor(c.cat) }} />
                   ))}
                 </div>
                 <ul className="lbs-leg">
@@ -503,6 +503,43 @@ const CSS = `
 .lbs-srun{color:var(--stg-ink2);font-size:12.5px;}
 .lbs-srk{text-align:right;font-weight:800;white-space:nowrap;}
 .lbs-srk i{font-style:normal;font-weight:600;color:var(--stg-mute);}
+/* THE HOME'S LOOK (owner, 2026-10-28). The rest of the home draws in 2px ink
+   outlines, ink pills and the category pastels (the index tiles are
+   color-mix(<category> 60%, white)); this pane still drew in grey hairlines and
+   the full-strength ramp. --lbk is the outline, --ccp the pastel of whatever
+   --cc a row carries. On the dark register the ramp is already a pastel, so
+   --ccp is just --cc there. */
+.lbs{--lbk:2px solid var(--stg-ink);--ccp:var(--cc);}
+[data-stage-theme=light] .lbs{--ccp:color-mix(in srgb, var(--cc) 60%, #fff);}
+.lbs-kpi,.lbs-card{border:var(--lbk);}
+.lbs-spark{color:var(--stg-ink);}
+.lbs-step button{border:var(--lbk);color:var(--stg-ink);}
+.lbs-step button:hover{background:var(--stg-ink);color:var(--stg-ground);}
+.lbs-chips button{border:var(--lbk);color:var(--stg-ink);font-weight:800;}
+.lbs-chips button:hover{background:var(--stg-ink);color:var(--stg-ground);}
+.lbs-tbl tr.me td{background:color-mix(in srgb, #a5b4fc 42%, var(--stg-surf));}
+.lbs-foot a,.lbs .sty-ixe a{color:var(--stg-ink);text-decoration:underline;text-underline-offset:3px;}
+.lbs-bar{height:10px;background:var(--stg-surf2);}
+.lbs-bar i{background:var(--ccp);box-shadow:inset 0 0 0 1.5px var(--stg-ink);}
+.lbs-stack{height:18px;gap:0;border:var(--lbk);box-sizing:border-box;}
+.lbs-stack i{background:var(--ccp);box-shadow:inset -1.5px 0 0 var(--stg-ink);}
+.lbs-stack i:last-child{box-shadow:none;}
+.lbs-sw{background:var(--ccp);box-shadow:inset 0 0 0 1.5px var(--stg-ink);border-radius:50%;}
+.lbs-key i.t{background:#a5b4fc;box-shadow:inset 0 0 0 1.5px var(--stg-ink);}
+.lbs-hr i.t{background:#a5b4fc;box-shadow:inset 0 0 0 1.5px var(--stg-ink);}
+.lbs-hr i.t.now{background:#6ee7b7;}
+.lbs-supc{border:var(--lbk);border-radius:12px;background:var(--ccp);}
+[data-stage-theme=light] .lbs-supc,[data-stage-theme=light] .lbs-supc i,[data-stage-theme=light] .lbs-supc b,[data-stage-theme=light] .lbs-supc span{color:#0b0d12;}
+.lbs-supc:hover{background:var(--ccp);filter:brightness(.96);}
+[data-stage-theme]:not([data-stage-theme=light]) .lbs-supc{background:color-mix(in srgb, var(--cc) 20%, transparent);}
+.lbs-hc{border:1.5px solid var(--stg-ink);border-radius:8px;}
+[data-stage-theme=light] .lbs-hc{background:color-mix(in srgb, var(--cc) calc(var(--hp) * 1.8), #fff);color:#0b0d12;}
+[data-stage-theme=light] .lbs-hc.zero{background:var(--stg-surf);color:var(--stg-ink2);}
+.lbs-hc.zero{border-color:var(--stg-line2);}
+.lbs-hc:hover{outline:none;background:var(--ccp);}
+/* the pastels are fills, not ink: glyphs and labels stay the one dark ink */
+.lbs .sty-gi{color:var(--stg-ink);}
+[data-stage-theme=light] .lbs-leg li,[data-stage-theme=light] .lbs-hc b{color:#0b0d12;}
 @media (max-width:1100px){ .lbs-kpis{grid-template-columns:repeat(2,minmax(0,1fr));} }
 @media (max-width:900px){
   .lbs-two{grid-template-columns:minmax(0,1fr);}

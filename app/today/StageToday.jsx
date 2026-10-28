@@ -4430,7 +4430,7 @@ export default function StageToday() {
             request, and a closed pane keeps it out of the stored home snapshot. */}
         <section id="sty-board" className={'sty-ixp sty-lbs' + (paneOn !== BOARD_ID ? ' sty-ixoff' : '')} ref={lbRef}>
           {paneOn === BOARD_ID ? (
-            <BoardsPane games={DAILY_GAMES} hueFor={hueFor} withTq={withTq} total={total}
+            <BoardsPane games={DAILY_GAMES} hueFor={(cat) => categoryColor(rampCat(cat))} withTq={withTq} total={total}
               top={top} myOut={myOut} meKey={meKey} boardCount={boardCount}
               grp={grp} scope={lbScope} setScope={setLbScope}
               standing={standing} myRow={myRow} who={who} />
