@@ -26,7 +26,7 @@ import StageTopBar from './StageTopBar';
 
 export { usePhoneStage } from './WordStage';
 
-export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null }) {
+export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null }) {
   const [look, setLook] = useStageLook();
   // WHITE PAGE, COLOURED TILES (owner, 2026-10-25).
   const pal = stagePalette(bg, look);
@@ -35,7 +35,7 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
     <div className="pst" role="dialog" aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
-        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav} />
+        <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav} clock={clock} />
         <div className="pst-top" key={topKey}>
           {eyebrow ? <div className="pst-eb">{eyebrow}</div> : null}
           {top}

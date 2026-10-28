@@ -356,6 +356,7 @@ export default function StageChrome({
           <div className="stg-sim">
             <StageTopBar look={pastel.look} onFlip={pastel.flip} href={homeTo} ink="var(--stg-ink,#08222e)"
               title={name}
+              clock={gameKey ? ((figures.find(isClockFigure) || {}).v ?? null) : null}
               sub={<>{dateShort || dateLabel || ''}{sunday ? <>{(dateShort || dateLabel) ? ' · ' : ''}{sunday}</> : null}</>} />
           </div>
         </>
@@ -607,6 +608,7 @@ html[data-stage-pastel] .stg-cap,html[data-stage-pastel] .stg-prog,html[data-sta
 .stg-simt h1{margin:0;font:inherit;font-size:24px;line-height:1.2;font-weight:800;letter-spacing:-.02em;}
 .stg-simt i{display:block;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
 html[data-stage-pastel] .stg-fg{padding:4px 14px 8px;gap:22px;}
+html[data-stage-pastel] .stg-fg .stg-clk{display:none;}
 html[data-stage-pastel] .stg-fg>div,html[data-stage-pastel] .stg-fg .stg-clk{flex-direction:row;align-items:baseline;gap:5px;}
 html[data-stage-pastel] .stg-fg b{font-size:14px;font-weight:800;}
 html[data-stage-pastel] .stg-fg i{font-size:10px;letter-spacing:.06em;}

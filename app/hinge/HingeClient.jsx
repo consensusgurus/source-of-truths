@@ -777,6 +777,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
             top={top} bottom={bottom}
             foot={`${hinged} of ${TO_FILL} · ${detourCount} detour${detourCount === 1 ? '' : 's'}`}
             giveUp={{ armed: !!armReveal, onPress: giveUp, label: 'Give up', armedLabel: 'Tap again to end and see the answers' }}
+            clock={elapsed}
             nav={phoneNarrow ? null : { label: 'Show Site Navigation', onPress: () => { const b = document.querySelector('.lc-sub-btn'); if (b) b.click(); } }} />
         );
       })()}
@@ -935,7 +936,37 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          <div className={`hg-play${playing ? ' two' : ''}`}>
+          {/* THE ENDING KEEPS THE STAGE'S BOARD (owner, 2026-10-28: "why does
+              everything change so drastically on the end screen"). Where the
+              game was played on the stage, the finished chain is drawn in the
+              same tiles, not the old plated board. */}
+          {phoneStage && !playing ? (
+            <div className="hgd">
+              <style dangerouslySetInnerHTML={{ __html: `
+                .hgd{display:flex;flex-direction:column;align-items:center;padding:6px 0 4px;color:var(--stg-ink,#08222e);}
+                .hgd-sl{display:flex;gap:5px;}
+                .hgd-sl span{width:42px;height:44px;border-radius:10px;border:2px solid currentColor;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;font-family:${SANS};}
+                .hgd-sl.given span{background:var(--stg-ink,#08222e);color:var(--stg-ground,#fff);}
+                .hgd-sl.mine span{background:var(--sp-g,#b1e5fd);color:#08222e;}
+                .hgd-sl.open span{opacity:.35;}
+                .hgd-jn{height:26px;display:flex;align-items:center;font-size:13px;font-weight:800;text-transform:lowercase;font-family:${SANS};}
+                .hgd-jn.o{opacity:.35;}
+                .hgd-jn.o i{display:block;width:2px;height:12px;background:currentColor;}
+                @media (max-width:380px){.hgd-sl span{width:36px;height:38px;font-size:19px;}}
+              ` }} />
+              {fill.map((w, i) => (
+                <React.Fragment key={i}>
+                  <div className={`hgd-sl ${GIVEN[i] ? 'given' : (w ? 'mine' : 'open')}`}>
+                    {Array.from({ length: COUNTS[i] }).map((_, k) => <span key={k}>{w ? w[k] : ''}</span>)}
+                  </div>
+                  {i + 1 < L && (fill[i] && fill[i + 1]
+                    ? <span className="hgd-jn">{`${fill[i]} ${fill[i + 1]}`}</span>
+                    : <span className="hgd-jn o" aria-hidden="true"><i /></span>)}
+                </React.Fragment>
+              ))}
+            </div>
+          ) : null}
+          <div className={`hg-play${playing ? ' two' : ''}`} style={phoneStage && !playing ? { display: 'none' } : undefined}>
           {/* the chain: every word a plate of letter cells, every join a hinge
               barrel whose two halves read across the pin as the compound
               (broad | side), shut in the accent once both words are in */}

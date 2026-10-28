@@ -692,6 +692,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           ) : null}
           foot={`${swapsLeft} trade${swapsLeft === 1 ? '' : 's'} left · ${homeCount} of ${N} home`}
           giveUp={{ armed: !!armGive, onPress: tapGiveUp, label: 'Give up', armedLabel: 'Tap again to give up' }}
+          clock={elapsed}
           nav={phoneNarrow ? null : { label: 'Show Site Navigation', onPress: () => { const b = document.querySelector('.lc-sub-btn'); if (b) b.click(); } }} />
       )}
       {!STAGE && <Grain />}
@@ -794,7 +795,29 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          <div style={{ maxWidth: boardMax, margin: '0 auto' }}>
+          {/* THE ENDING KEEPS THE STAGE'S BOARD (owner, 2026-10-28): the finished
+              lattice is drawn in the same tiles the stage played it in. */}
+          {phoneStage && !playing ? (
+            <div style={{ '--pst-ink': 'var(--stg-ink, #08222e)', '--pst-bg': 'var(--stg-ground, #fff)', '--pst-tint': 'var(--sp-g, #b1e5fd)', color: 'var(--stg-ink, #08222e)', fontFamily: SANS, padding: '4px 0' }}>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .btd-grid{display:grid;grid-template-columns:repeat(${S}, minmax(0, 1fr));gap:${S === 7 ? 5 : 7}px;width:min(100%, ${S === 7 ? 380 : 340}px);margin:0 auto;aspect-ratio:1/1;}
+                .btd-t{box-sizing:border-box;border-radius:${S === 7 ? 9 : 11}px;border:2px solid var(--pst-ink);display:flex;align-items:center;justify-content:center;font-weight:800;text-transform:uppercase;font-size:${S === 7 ? 'clamp(15px, 4.6vw, 24px)' : 'clamp(20px, 6vw, 30px)'};}
+                .btd-t.home{background:var(--pst-ink);color:var(--pst-bg);}
+                .btd-t.near{background:var(--pst-tint);color:#08222e;}
+                .btd-t.plain{border-color:color-mix(in srgb, var(--pst-ink) 35%, transparent);}
+              ` }} />
+              <div className="btd-grid">
+                {Array.from({ length: S * S }).map((_, k) => {
+                  const r = Math.floor(k / S), c = k % S;
+                  if (r % 2 === 1 && c % 2 === 1) return <div key={k} />;
+                  const idx = IDX[r * S + c];
+                  const col = tileColors[idx];
+                  return <div key={k} className={`btd-t ${col === 2 ? 'home' : col === 1 ? 'near' : 'plain'}`}>{cells[idx]}</div>;
+                })}
+              </div>
+            </div>
+          ) : null}
+          <div style={{ maxWidth: boardMax, margin: '0 auto', display: phoneStage && !playing ? 'none' : undefined }}>
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${S}, minmax(0, 1fr))`, gap: 6, aspectRatio: '1 / 1' }}>
               {Array.from({ length: S * S }).map((_, k) => {
                 const r = Math.floor(k / S), c = k % S;
