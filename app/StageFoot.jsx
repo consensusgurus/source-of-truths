@@ -39,7 +39,7 @@ export default function StageFoot({ clock = undefined, done = undefined, giveUp 
           aria-pressed={ended ? undefined : clockShown}
           aria-label={showTime ? `Time ${time}${ended ? '' : '. Hide the clock'}` : 'Show the clock'}
           title={ended ? 'Your time' : (clockShown ? 'Hide the clock' : 'Show the clock')}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2.5" /><path d="M9.5 2.5h5" /></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2.5" /><path d="M9.5 2.5h5" /></svg>
           <span>{showTime ? time : 'Clock'}</span>
         </button>
       ) : null}
@@ -59,10 +59,10 @@ export default function StageFoot({ clock = undefined, done = undefined, giveUp 
 
 const CSS = `
 .sft{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:nowrap;flex:none;}
-.sft .sft-give{min-width:96px;}
-.sft .sft-b{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;box-sizing:border-box;padding:0 14px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;opacity:1;}
-.sft .sft-b b{font-size:16px;font-weight:800;line-height:1;}
-.sft .sft-clock.on span{font-size:14px;font-variant-numeric:tabular-nums;}
+.sft .sft-give{min-width:86px;}
+.sft .sft-b{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:34px;box-sizing:border-box;padding:0 12px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;opacity:1;}
+.sft .sft-b b{font-size:14px;font-weight:800;line-height:1;}
+.sft .sft-clock.on span{font-size:13px;font-variant-numeric:tabular-nums;}
 .sft .sft-give.on{background:currentColor;}
 .sft .sft-give.on span{color:var(--sft-bg,#fff);}
 .sft .sft-b:focus-visible{outline:2px solid currentColor;outline-offset:2px;}

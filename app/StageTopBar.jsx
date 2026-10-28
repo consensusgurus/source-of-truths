@@ -19,6 +19,7 @@ import { shareForCredit } from '@/lib/share-credit';
 // `allLooks` is for the gauntlet and run stages, which keep all five looks;
 // every other page flips between light with color and dark with color.
 export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentColor', title = null, sub = null, allLooks = false, onHelp = null, helpHere = null, nav = null, share = true, dot = null }) {
+  // SIZES MATCH THE HOME'S HEADER (owner, 2026-10-28): 34px controls, 13px type.
   // THE NEW STANDARD (owner, 2026-10-28): the header carries the way back, the
   // game's name with its colour dot, Share and the look switch, nothing else.
   // The clock and How to play moved to the foot row under the board
@@ -55,7 +56,7 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
       // What the word costs: the full button's width over the 40px arrow-only
       // one, plus a little slack so it can never flip back and forth at the edge.
       const btn = bar.querySelector('.stb-share');
-      if (lab && btn && !btn.classList.contains('tight')) labW.current = btn.offsetWidth - 40 + 4;
+      if (lab && btn && !btn.classList.contains('tight')) labW.current = btn.offsetWidth - 34 + 4;
       setTight((t) => {
         if (!t) return h.scrollWidth > h.clientWidth + 1;
         const room = tx.clientWidth - (h.offsetLeft - tx.offsetLeft) - h.scrollWidth;
@@ -73,8 +74,8 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
     <div ref={barRef} className={'stb' + (title ? ' has-t' : '')} style={{ color: ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <BrandFit><a className="stb-home" href={href} aria-label="Back to Mind Loft home" onClick={(e) => soakNav(e, href)}>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
-        <MindLoftMark size={18} ink={ink} accent="var(--stg-brand,#7dd3fc)" />
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        <MindLoftMark size={16} ink={ink} accent="var(--stg-brand,#7dd3fc)" />
         <span>Mind <span>Loft</span></span>
       </a></BrandFit>
       {title ? (
@@ -92,7 +93,7 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
       {share ? (
         <button type="button" className={'stb-share' + (shareMsg ? ' on' : '') + (tight ? ' tight' : '')} onClick={(e) => { e.stopPropagation(); doShare(); }}
           aria-label="Share this puzzle" title={shareMsg || 'Share this puzzle'}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="M7 8l5-5 5 5" /><path d="M5 13v7h14v-7" /></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="M7 8l5-5 5 5" /><path d="M5 13v7h14v-7" /></svg>
           {tight ? null : <span className="stb-share-l">{shareMsg ? 'Copied' : 'Share'}</span>}
           {shareMsg ? <span className="stb-sr" role="status">{shareMsg}</span> : null}
         </button>
@@ -103,7 +104,7 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
       ) : null}
       <button type="button" className="stb-look" onClick={(e) => { e.stopPropagation(); onFlip && onFlip(); }}
         aria-label={`Look: ${LOOK_NAMES[look] || 'Color'}. Switch to ${next}`} title={`Switch to ${next}`}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
       </button>
     </div>
   );
@@ -111,18 +112,18 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
 
 const CSS = `
 .stb{display:flex;align-items:center;gap:10px;flex:none;}
-.stb .stb-home{flex:none;display:inline-flex;align-items:center;gap:6px;height:40px;box-sizing:border-box;padding:0 12px 0 8px;border-radius:999px;border:2px solid currentColor;color:inherit;text-decoration:none;font-weight:800;font-size:14px;line-height:1;white-space:nowrap;}
+.stb .stb-home{flex:none;display:inline-flex;align-items:center;gap:5px;height:34px;box-sizing:border-box;padding:0 11px 0 7px;border-radius:999px;border:2px solid currentColor;color:inherit;text-decoration:none;font-weight:800;font-size:13px;line-height:1;white-space:nowrap;}
 .stb .stb-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
 .stb .stb-t{display:flex;align-items:center;gap:7px;min-width:0;}
 .stb .stb-t h1{margin:0;font:inherit;font-size:19px;font-weight:800;line-height:1.3;letter-spacing:-.01em;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:2px;margin-bottom:-2px;}
 .stb .stb-dot{flex:none;width:11px;height:11px;border-radius:50%;background:var(--sp-g,#b1e5fd);box-shadow:inset 0 0 0 1.5px currentColor;}
 .stb .stb-tx em{font-style:normal;font-size:12px;font-weight:600;line-height:1.3;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:1px;}
 .stb .stb-sp{flex:1;}
-.stb .stb-look{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;flex:none;}
-.stb .stb-help{font:inherit;font-size:19px;font-weight:800;line-height:1;}
-.stb .stb-share{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;box-sizing:border-box;padding:0 13px 0 11px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;}
-.stb .stb-share.tight{width:40px;padding:0;}
+.stb .stb-look{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:17px;border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;flex:none;}
+.stb .stb-help{font:inherit;font-size:16px;font-weight:800;line-height:1;}
+.stb .stb-share{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;height:34px;box-sizing:border-box;padding:0 11px 0 9px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;}
+.stb .stb-share.tight{width:34px;padding:0;}
 .stb .stb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
-.stb .stb-nav{flex:none;height:40px;box-sizing:border-box;padding:0 14px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.stb .stb-nav{flex:none;height:34px;box-sizing:border-box;padding:0 12px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .stb .stb-home:hover > span{text-decoration:underline;text-underline-offset:3px;}
 `;
