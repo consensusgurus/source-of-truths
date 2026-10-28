@@ -24,6 +24,7 @@ import { useStageLook, stagePalette, useStageChrome } from './GauntletScreens';
 import { nextMainLook } from '@/lib/stage-look';
 import StageTopBar from './StageTopBar';
 import StageFoot from './StageFoot';
+import { useHostedStage } from './StageHost';
 
 export { usePhoneStage } from './WordStage';
 
@@ -35,12 +36,13 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
   // same stage board is drawn in the page's flow under the site's own header,
   // so the full-screen stage and the navigation view show one board. Inline it
   // keeps no top bar of its own and leaves the browser bars alone.
-  useStageChrome(inline ? null : pal.bg);
-  return (
-    <div className={'pst' + (inline ? ' inl' : '')} role={inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null) }}>
+  const host = useHostedStage(inline);
+  useStageChrome(host.chrome ? pal.bg : null);
+  return host.render(
+    <div className={'pst' + (host.inline ? ' inl' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
-        {inline ? null : <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav} title={label} dot={bg} />}
+        {host.inline ? null : <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav || host.nav} title={label} dot={bg} />}
         <div className="pst-top" key={topKey}>
           {eyebrow ? <div className="pst-eb">{eyebrow}</div> : null}
           {top}
@@ -115,7 +117,7 @@ const CSS = `
 .pst-line{font-size:13px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;line-height:1.35;}
 .pst-give{background:none;border:none;padding:4px 8px;font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;}
 .pst-give.on{font-weight:800;}
-.pst.inl{position:relative;inset:auto;z-index:auto;overflow:visible;border-radius:22px;margin:0 auto 8px;max-width:640px;}
+.pst.inl{position:relative;inset:auto;z-index:auto;overflow:visible;border-radius:22px;margin:0 auto;max-width:640px;}
 .pst.inl .pst-col{min-height:min(640px, calc(100vh - 220px));padding:18px 14px 18px;}
 @keyframes pstRise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion: reduce){.pst-top{animation:none}}
