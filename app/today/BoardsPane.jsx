@@ -509,8 +509,12 @@ const CSS = `
    the full-strength ramp. --lbk is the outline, --ccp the pastel of whatever
    --cc a row carries. On the dark register the ramp is already a pastel, so
    --ccp is just --cc there. */
-.lbs{--lbk:2px solid var(--stg-ink);--ccp:var(--cc);}
-[data-stage-theme=light] .lbs{--ccp:color-mix(in srgb, var(--cc) 60%, #fff);}
+.lbs{--lbk:2px solid var(--stg-ink);}
+/* --ccp is declared on EVERY element, not on .lbs: a custom property that reads
+   var(--cc) resolves where it is declared, and .lbs itself carries no --cc, so
+   declaring it there left every row with an empty pastel. */
+.lbs *{--ccp:var(--cc);}
+[data-stage-theme=light] .lbs *{--ccp:color-mix(in srgb, var(--cc) 60%, #fff);}
 .lbs-kpi,.lbs-card{border:var(--lbk);}
 .lbs-spark{color:var(--stg-ink);}
 .lbs-step button{border:var(--lbk);color:var(--stg-ink);}
