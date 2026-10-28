@@ -1072,6 +1072,11 @@ export default function StatHubClient() {
     .qzhub-stage .hubmed.m1{background:var(--hpm1);}
     .qzhub-stage .hubmed.m2{background:var(--hpm2);}
     .qzhub-stage .hubmed.m3{background:var(--hpm3);}
+    /* a phone keeps the podium on one line rather than stranding bronze */
+    @media(max-width:560px){.qzhub-stage .hubpodrow{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:7px !important;}
+      .qzhub-stage .hubpod{padding:11px 6px 10px !important;}
+      .qzhub-stage .hubpod > div:nth-of-type(2){font-size:16px !important;}
+      .qzhub-stage .hubpod-sub{font-size:8.5px !important;letter-spacing:.02em !important;}}
   `;
 
   return (
@@ -1444,7 +1449,7 @@ function UserBaseBody({ board, boardTotal, myName, myAnonKey, onSelectPlayer, vi
   const clickSort = (c) => { if (!c.get) return; setSort((st) => st.col === c.key ? { col: c.key, dir: st.dir === 'desc' ? 'asc' : 'desc' } : { col: c.key, dir: c.key === 'name' ? 'asc' : 'desc' }); };
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 10, marginBottom: 12 }}>
+      <div className="hubpodrow" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 10, marginBottom: 12 }}>
         {top3.map((p, i) => {
           const mine = isMine(p);
           return (

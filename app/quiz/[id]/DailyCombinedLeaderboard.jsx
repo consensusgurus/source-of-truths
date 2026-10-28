@@ -49,19 +49,22 @@ function theme(mode) {
   // beside those cards and a second, brighter card is a second ground.
   if (mode === 'stage') return {
     light: false, stage: true,
-    card: 'var(--stg-surf,rgba(255,255,255,0.045))', cardBorder: 'var(--stg-line,rgba(255,255,255,0.11))', boxShadow: 'none',
+    // THE HOME'S LOOK (owner, 2026-10-28): the hub's boxes are 2px ink
+    // outlines now, so this card, its tabs and the "you" row follow.
+    card: 'var(--stg-surf,rgba(255,255,255,0.045))', cardBorder: 'var(--stg-ink,#e9edf4)', cardBw: 2, cardRadius: 12, boxShadow: 'none',
+    tabLine: 'var(--stg-ink,#e9edf4)', tabBw: 2,
     label: 'var(--stg-mute,#8b95a8)', labelWeight: 700, sub: 'var(--stg-mute,#8b95a8)',
     line: 'var(--stg-line,rgba(255,255,255,0.11))',
     // A row is a hairline on the card, never a fill: --stg-surf painted on a
     // --stg-surf card stacks into a rectangle nobody designed (globals.css).
     row: 'transparent', topRow: 'transparent', topBorder: 'var(--stg-line2,rgba(255,255,255,0.17))',
-    meRow: 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc,#7dd3fc)) 14%, transparent)', meBorder: 'var(--stg-acc,#7dd3fc)',
+    meRow: 'var(--hub-me,rgba(165,180,252,0.22))', meBorder: 'var(--stg-ink,#e9edf4)', meBw: 2,
     rankTop: 'var(--stg-acc,#7dd3fc)', rankOther: 'var(--stg-mute,#8b95a8)',
     name: 'var(--stg-ink,#e9edf4)', nameDot: 'var(--stg-line2,rgba(255,255,255,0.17))', you: 'var(--stg-mute,#8b95a8)',
     dim: 'var(--stg-mute,#8b95a8)', total: 'var(--stg-ink,#e9edf4)', unit: 'var(--stg-dim,#747f97)',
     tabOnText: 'var(--stg-onramp,#08222e)', tabOffBg: 'transparent', tabOffText: 'var(--stg-mute,#8b95a8)',
     toggleTrack: 'var(--stg-surf2,rgba(255,255,255,0.08))', toggleOn: 'var(--stg-raise,#0e131f)', toggleOnShadow: 'none',
-    expandColor: 'var(--stg-acc,#7dd3fc)', expandBorder: 'var(--stg-line2,rgba(255,255,255,0.17))',
+    expandColor: 'var(--stg-ink,#e9edf4)', expandBorder: 'var(--stg-ink,#e9edf4)',
     note: 'var(--stg-dim,#747f97)', empty: 'var(--stg-mute,#8b95a8)',
     skeleton: 'var(--stg-surf2,rgba(255,255,255,0.08))',
     scrollThumb: 'var(--stg-line2,rgba(255,255,255,0.17))',
@@ -222,7 +225,7 @@ export default function DailyCombinedLeaderboard({ todayKey = null, identity = n
 
   const wrap = embedded
     ? { fontFamily: FONT, background: 'transparent', border: 'none', borderRadius: 0, padding: 0, boxShadow: 'none' }
-    : { fontFamily: FONT, background: th.card, border: `1px solid ${th.cardBorder}`, borderRadius: 16, padding: '18px 18px 16px', boxShadow: th.boxShadow };
+    : { fontFamily: FONT, background: th.card, border: `${th.cardBw || 1}px solid ${th.cardBorder}`, borderRadius: th.cardRadius || 16, padding: '18px 18px 16px', boxShadow: th.boxShadow };
   const subtitle = (data && gameCount)
     ? (gameCount > 1 ? `Best ${bestN} of ${gameCount} · ${maxTotal} pts max` : `${maxTotal} pts max`)
     : 'Best 10';
@@ -263,9 +266,9 @@ export default function DailyCombinedLeaderboard({ todayKey = null, identity = n
         // fatter accent-colored outline and accent text instead of the muted
         // off-tab look every other tab uses.
         const anchor = t.key === 'overall';
-        const offBorder = anchor ? th.overallAccent : th.line;
-        const offText = anchor ? th.overallAccent : th.tabOffText;
-        const bw = on ? 1.5 : (anchor ? 2.5 : 1.5);
+        const offBorder = anchor ? th.overallAccent : (th.tabLine || th.line);
+        const offText = anchor ? th.overallAccent : (th.tabLine || th.tabOffText);
+        const bw = th.tabBw || (on ? 1.5 : (anchor ? 2.5 : 1.5));
         return (
           <button key={t.key} onClick={() => setTab(t.key)}
             style={{ flex: '0 0 auto', padding: '7px 14px', borderRadius: 999, cursor: 'pointer', fontFamily: FONT, fontSize: 12.5, fontWeight: anchor ? 900 : 800, letterSpacing: '0.01em', whiteSpace: 'nowrap',
@@ -354,7 +357,7 @@ export default function DailyCombinedLeaderboard({ todayKey = null, identity = n
 }
 
 function rowStyle(th, mine, rank) {
-  if (mine) return { background: th.meRow, border: `1px solid ${th.meBorder}` };
+  if (mine) return { background: th.meRow, border: `${th.meBw || 1}px solid ${th.meBorder}` };
   // Podium: gold / silver / bronze tint for the top three (light theme).
   if (th.light && rank >= 1 && rank <= 3) return { background: MEDAL_BG[rank - 1], border: `1px solid ${MEDAL_BD[rank - 1]}` };
   const bg = rank <= 3 ? th.topRow : th.row;
