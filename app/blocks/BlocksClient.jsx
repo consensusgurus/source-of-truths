@@ -320,8 +320,8 @@ const STAGE_CSS = `
 .blk-lead em{font-style:normal;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.75}
 .blk-lead b{overflow:hidden;text-overflow:ellipsis;max-width:55%}
 .blk-mid{display:flex;justify-content:center}
-.blk-pad{align-self:stretch;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:52px;gap:8px;max-width:420px;width:100%;margin:0 auto}
-.blk-pad .slm{grid-column:1 / -1}
+.blk-pad{align-self:stretch;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:48px;gap:7px;max-width:420px;width:100%;margin:0 auto}
+.blk-pad .slm,.blk-pad .dwn{grid-column:1 / -1}
 .blk-pad button{border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);color:var(--pst-ink);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .blk-pad .slm{background:var(--pst-ink);color:var(--pst-bg);font-size:15px}
 .blk-padt{align-self:center;min-height:36px;padding:0 14px;font-size:13px}
@@ -464,8 +464,24 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   useEffect(() => { try { setPadOpt(localStorage.getItem('sot_blocks_pad') === '1'); } catch (e) {} }, []);
   const padAlways = stageMode === 'phone' || coarse;
   const padShown = padAlways || padOpt;
+  const phoneModeRef = useRef(false);
+  phoneModeRef.current = stageMode === 'phone';
   const togglePad = () => setPadOpt((v) => { const n = !v; try { localStorage.setItem('sot_blocks_pad', n ? '1' : '0'); } catch (e) {} return n; });
   const stageOn = phoneStage && !!g.t0 && (playing || endHold.held || !revealed);
+  // On a phone, scroll the stage so the play block starts at the top of the
+  // screen: header and leader above, How to play below, both a scroll away.
+  useEffect(() => {
+    if (!stageOn || stageMode !== 'phone') return undefined;
+    const pin = () => {
+      try {
+        const p = document.querySelector('.pst'), h = document.querySelector('.blk-hd');
+        if (p && h) p.scrollTop += h.getBoundingClientRect().top - p.getBoundingClientRect().top - 6;
+      } catch (e) {}
+    };
+    const r = requestAnimationFrame(pin);
+    const t = setTimeout(pin, 380);
+    return () => { cancelAnimationFrame(r); clearTimeout(t); };
+  }, [stageOn, stageMode, padShown]);
   const stageOnRef = useRef(false);
   stageOnRef.current = stageOn;
   // ROWS ARE THE SCORE, uncapped (see lib/blocks-seq). Par is the day's
@@ -903,7 +919,14 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     let fh = stg ? stableVH() - 290 : stableVH() - (phone ? 310 : 300);
     if (stg && typeof document !== 'undefined') {
       const hd = document.querySelector('.blk-lead') || document.querySelector('.blk-hd'), bot = document.querySelector('.blk-bot');
-      if (hd && bot) {
+      const row = document.querySelector('.blk-hd');
+      if (phoneModeRef.current && row && bot) {
+        // PHONE (owner, 2026-10-29): the play block (Next row, well, keys)
+        // fills the whole screen; the top bar and leader scroll off above it
+        // and How to play sits below it.
+        const used = row.getBoundingClientRect().height + bot.getBoundingClientRect().height + 14 /* well frame */ + 12 + 14 /* gaps */ + 14 /* breathing room */;
+        fh = stableVH() - used;
+      } else if (hd && bot) {
         const top = hd.getBoundingClientRect().bottom + (window.scrollY || 0);
         const used = top + bot.getBoundingClientRect().height + 14 /* well frame */ + 40 /* gaps and stage padding */;
         if (used > 120 && used < 520) fh = stableVH() - used;
@@ -1322,24 +1345,21 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       top={(
         <>
           <style dangerouslySetInnerHTML={{ __html: STAGE_CSS }} />
-          {/* ONE SLIM ROW above the well (owner, 2026-10-25): the score, Pause,
-              and Next. No Hold, and nothing else, so the well gets the room. */}
-          <div className="blk-hd">
-            <div className="blk-score" aria-live="polite"><b>{nf(rowsCleared)}</b><span>{UNIT}{rowsCleared === 1 ? '' : 's'}</span></div>
-            <button type="button" className={'pst-tb blk-pause' + (paused ? ' on' : '')} onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'}>{paused ? 'Resume' : 'Pause'}</button>
-            <div className="blk-box"><span>Next</span><StageMini k={SEQ[g.idx]} /></div>
-          </div>
-          {/* THE PAD AROUND THE WELL (owner, 2026-10-25): the well is held back by
-              height, never width, so left and right sit in the side gutters
-              beside the bottom of the well, and only Rotate, Down and the
-              new Drop (the slam) take a row below it. */}
-          {/* THE LEADER, ALWAYS SHOWN (owner, 2026-10-29). */}
+          {/* THE LEADER, ALWAYS SHOWN (owner, 2026-10-29). On a phone it sits above
+              the play block and scrolls away with the top bar. */}
           <div className="blk-lead" aria-live="polite">
             {leadRow
               ? (leadRow.me
                 ? <><em>Leader</em><b>You</b><span>{nf(leadRow.score)}</span></>
                 : <><em>Leader</em><b>{leadRow.name}</b><span>{nf(leadRow.score)}</span></>)
               : <><em>Leader</em><span>No runs yet today</span></>}
+          </div>
+          {/* ONE SLIM ROW above the well (owner, 2026-10-25): the score, Pause,
+              and Next. No Hold, and nothing else, so the well gets the room. */}
+          <div className="blk-hd">
+            <div className="blk-score" aria-live="polite"><b>{nf(rowsCleared)}</b><span>{UNIT}{rowsCleared === 1 ? '' : 's'}</span></div>
+            <button type="button" className={'pst-tb blk-pause' + (paused ? ' on' : '')} onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'}>{paused ? 'Resume' : 'Pause'}</button>
+            <div className="blk-box"><span>Next</span><StageMini k={SEQ[g.idx]} /></div>
           </div>
           <div className="blk-mid">
             <div className="blk-well">{wellEl}</div>
@@ -1356,6 +1376,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
               <button type="button" className="lft" {...holdProps('left')} aria-label="Move left">&#9664;</button>
               <button type="button" className="rot" {...tapProps('cw')} aria-label="Rotate">&#8635;</button>
               <button type="button" className="rgt" {...holdProps('right')} aria-label="Move right">&#9654;</button>
+              <button type="button" className="dwn" {...holdProps('down')} aria-label="Slow drop">&#9660;</button>
               <button type="button" className="slm" {...tapProps('drop')} aria-label="Drop to the bottom"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 5l6 6 6-6M6 12l6 6 6-6M5 21h14" /></svg>Drop</button>
             </div>
           ) : null}
