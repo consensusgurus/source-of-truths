@@ -714,7 +714,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
               .hgs-jn{display:flex;align-items:center;justify-content:center;gap:8px;height:${tight ? 22 : 28}px;font-size:13px;font-weight:800;letter-spacing:.02em;text-transform:lowercase;}
               .hgs-jn.o{opacity:.35;}
               .hgs-jn.o i{display:block;width:2px;height:${tight ? 8 : 12}px;background:currentColor;}
-              @media (min-width:900px){.hgs-kb{display:none !important;}}
+              @media (min-width:900px) and (hover:hover) and (pointer:fine){.hgs-kb{display:none !important;}}
               .hgs-det{font-size:12px;font-weight:800;opacity:.7;text-decoration:line-through;margin:-2px 0 2px;}
               .hgs-line{text-align:center;font-size:13px;font-weight:700;opacity:.8;line-height:1.35;min-height:1.35em;}
               @keyframes hgsShake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}

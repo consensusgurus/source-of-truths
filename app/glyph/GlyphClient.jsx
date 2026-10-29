@@ -695,6 +695,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
           .gls-key.used{color:var(--stg-mute);text-decoration:line-through;text-decoration-thickness:2px;border-color:var(--stg-line);}
           .gls-key:disabled{cursor:default;}
           .gls-qw{display:none;}
+          @media (min-width:900px) and (hover:hover) and (pointer:fine){.gls-abc{display:none !important;}}
           .gls-act{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--stg-line);}
           .gls-note{flex:1;font-size:12px;font-weight:600;color:var(--stg-mute);}
           .gls-clear,.gls-check{min-height:48px;border-radius:12px;font-family:${SANS};font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}

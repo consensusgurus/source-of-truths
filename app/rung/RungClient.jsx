@@ -766,6 +766,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
               @keyframes rgsShake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
               .rgs-shake{animation:rgsShake .42s cubic-bezier(.36,.07,.19,.97) both;}
               .rgs-kb{display:flex;flex-direction:column;gap:7px;}
+              @media (min-width:900px) and (hover:hover) and (pointer:fine){.rgs-kb{display:none !important;}}
               .rgs-kr{display:flex;justify-content:center;gap:5px;}
               .rgs-k{flex:1 1 0;max-width:38px;height:50px;border-radius:9px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:17px;font-weight:800;padding:0;touch-action:manipulation;}
               .rgs-k.w{max-width:60px;flex:1.6 1 0;font-size:13px;}

@@ -228,6 +228,25 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
 
   const guesses = g.guesses;
   const playing = g.status === 'playing';
+  // PHYSICAL KEYS ON THE STAGE (owner, 2026-10-29): the stage's guess box is a
+  // drawn box, not an <input>, so typing on a real keyboard did nothing and a
+  // desktop player had to click the on-screen keys. Letters type, Backspace
+  // deletes, Enter guesses. Skipped while focus is in a real field.
+  const stageUp = phoneStage && !!g.t0 && playing;
+  useEffect(() => {
+    if (!stageUp || showHelp) return undefined;
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+      if (e.key === 'Enter') { e.preventDefault(); commitGuess(text); }
+      else if (e.key === 'Backspace') { e.preventDefault(); setText((s) => s.slice(0, -1)); }
+      else if (e.key === 'Escape') { setText(''); }
+      else if (/^[a-zA-Z]$/.test(e.key)) { e.preventDefault(); setText((s) => (s + e.key.toLowerCase()).slice(0, 30)); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
   const LOFT = isLoft('warmer');
   const STAGE = isStage('warmer', searchParams);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('warmer');
@@ -984,6 +1003,7 @@ const WMS_CSS = `
 .wms-inp i{width:2px;height:26px;background:var(--pst-ink);margin-left:2px;animation:wmsBlink 1s steps(1) infinite}
 @keyframes wmsBlink{50%{opacity:0}}
 .wms-kb{display:flex;flex-direction:column;gap:7px}
+@media (min-width:900px) and (hover:hover) and (pointer:fine){.wms-kb{display:none !important}}
 .wms-kr{display:flex;justify-content:center;gap:5px}
 .pst .wms-k{flex:0 1 33px;min-width:0;height:50px;border-radius:9px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:17px;font-weight:800;padding:0}
 .pst .wms-k.w{flex:0 1 56px;font-size:13px}

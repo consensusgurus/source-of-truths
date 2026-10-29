@@ -180,6 +180,7 @@ const CSS = `
 .wst-pip.done i{background:var(--wst-ink);}
 .wst-pip.cur i{width:15px;height:15px;box-shadow:0 0 0 2px var(--wst-bg),0 0 0 4px var(--wst-ink);}
 .wst-kb{display:flex;flex-direction:column;gap:7px;}
+@media (min-width:900px) and (hover:hover) and (pointer:fine){.wst-kb{display:none !important;}}
 .wst-kr{display:flex;justify-content:center;gap:5px;}
 .wst-k{position:relative;flex:1 1 0;max-width:40px;height:50px;border-radius:9px;border:2px solid var(--wst-ink);background:var(--wst-tile);font-family:inherit;font-size:17px;font-weight:800;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
 .wst-k b{position:absolute;top:2px;right:4px;font-size:10px;font-weight:800;}
