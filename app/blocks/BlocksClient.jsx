@@ -322,7 +322,9 @@ const STAGE_CSS = `
 .blk-mid{display:flex;justify-content:center}
 .blk-pad{align-self:stretch;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:52px;gap:8px;max-width:420px;width:100%;margin:0 auto}
 .blk-pad .slm,.blk-pad .dwn{grid-column:1 / -1}
-.blk-pad.ph{grid-auto-rows:48px;gap:7px}
+.blk-pad.ph{grid-auto-rows:48px;gap:7px;grid-template-columns:repeat(6,minmax(0,1fr))}
+.blk-pad.ph .lft,.blk-pad.ph .rot,.blk-pad.ph .rgt{grid-column:span 2}
+.blk-pad.ph .dwn,.blk-pad.ph .slm{grid-column:span 3}
 .blk-pad button{border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);color:var(--pst-ink);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .blk-pad .slm{background:var(--pst-ink);color:var(--pst-bg);font-size:15px}
 .blk-padt{align-self:center;min-height:36px;padding:0 14px;font-size:13px}
