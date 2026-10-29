@@ -605,10 +605,7 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
         // The phone play stage: the same grid, list and Give up, drawn on the
         // shared full-screen frame. Every gesture runs through onDown / onMove /
         // onUp above, so checking, saving and scoring are the page's own.
-        const foundCells = new Set();
-        Object.values(g.found).forEach((at) => { for (const [r, c] of lineCells(at[0], at[1], at[2], at[3])) foundCells.add(r * SIZE + c); });
-        const missCells = new Set();
-        if (miss) for (const [r, c] of lineCells(miss.r0, miss.c0, miss.r1, miss.c1)) missCells.add(r * SIZE + c);
+        const stHl = (i, a) => `hsla(${hueOf(i)}, 78%, 58%, ${a})`;
         const dirShort = dirs.length >= 8 ? 'all eight directions' : runsLine;
         const readout = drag
           ? (drag.off ? 'Let go to cancel' : liveLetters)
@@ -618,31 +615,41 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
           <>
             <style dangerouslySetInnerHTML={{ __html: `
               .sos-ws{align-self:center;position:relative;display:grid;width:100%;max-width:440px;aspect-ratio:1/1;container-type:inline-size;box-shadow:0 0 0 2px var(--pst-ink);border-radius:14px;background:var(--pst-tint);overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
-              .sos-c{display:flex;align-items:center;justify-content:center;padding:1px;font-weight:800;line-height:1;font-size:calc(100cqw / ${SIZE} * 0.56);}
-              .sos-c i{font-style:normal;display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:6px;}
-              .sos-c.f i{background:var(--pst-ink);color:var(--pst-bg);}
-              .sos-c.d i{background:color-mix(in srgb, var(--pst-ink) 28%, transparent);}
-              .sos-c.x i{background:color-mix(in srgb, var(--pst-ink) 16%, transparent);animation:sosx .5s ease-out forwards;}
-              @keyframes sosx{to{background:transparent;}}
+              .sos-ink{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+              .sos-c{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:1px;font-weight:800;line-height:1;font-size:calc(100cqw / ${SIZE} * 0.56);}
+              .sos-c i{font-style:normal;display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
+              .sos-pop{animation:sospop .45s cubic-bezier(.2,.7,.3,1);}
+              @keyframes sospop{from{stroke-width:0.4;}to{stroke-width:0.78;}}
+              .sos-x{animation:sosx .5s ease-out forwards;}
+              @keyframes sosx{to{opacity:0;}}
               .sos-rd{text-align:center;font-size:13px;font-weight:700;opacity:.75;min-height:22px;line-height:1.4;}
               .sos-rd.on{font-size:17px;font-weight:800;letter-spacing:.14em;opacity:1;}
               .sos-w .pst-chip{font-size:12.5px;padding:4px 9px;}
-              .sos-w .pst-chip.on{text-decoration:line-through;}
-              @media (prefers-reduced-motion: reduce){.sos-c.x i{animation:none;}}
+              .sos-w .pst-chip.on{text-decoration:line-through;text-decoration-thickness:2px;color:var(--pst-ink);border-color:transparent;}
+              @media (prefers-reduced-motion: reduce){.sos-pop,.sos-x{animation:none;}}
             ` }} />
             <div ref={stageBoardRef} className="sos-ws" role="grid" aria-label={`${SIZE} by ${SIZE} word search`}
               onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onCancel}
               style={{ gridTemplateColumns: `repeat(${SIZE}, 1fr)`, touchAction: 'none' }}>
+              {/* PASTEL WORD HIGHLIGHTS (owner, 2026-10-29): each found word keeps
+                  its own pastel stroke, as on the original board, so crossing
+                  words stay tellable apart. Letters stay ink on top. */}
+              <svg className="sos-ink" viewBox={`0 0 ${SIZE} ${SIZE}`} preserveAspectRatio="none" aria-hidden>
+                {Object.entries(g.found).map(([i, at]) => pill('f' + i, at[0], at[1], at[2], at[3], stHl(Number(i), 0.5),
+                  { className: justFound && justFound.i === Number(i) ? 'sos-pop' : undefined }))}
+                {miss && pill('x', miss.r0, miss.c0, miss.r1, miss.c1, 'color-mix(in srgb, var(--pst-ink) 18%, transparent)', { className: 'sos-x' })}
+                {liveLine && pill('live', liveLine.r0, liveLine.c0, liveLine.r1, liveLine.c1, 'color-mix(in srgb, var(--pst-ink) 26%, transparent)', { style: { opacity: liveLine.off ? 0.35 : 1 } })}
+                {anchor && !drag && <circle cx={anchor.c + 0.5} cy={anchor.r + 0.5} r={0.39} fill="color-mix(in srgb, var(--pst-ink) 26%, transparent)" />}
+              </svg>
               {PUZZLE.grid.map((row, r) => row.split('').map((ch, c) => {
                 const k = r * SIZE + c;
-                const cls = cellsOn.has(k) ? ' d' : (missCells.has(k) ? ' x' : (foundCells.has(k) ? ' f' : ''));
-                return <div key={k} className={'sos-c' + cls} role="gridcell" aria-label={ch}><i>{ch}</i></div>;
+                return <div key={k} className="sos-c" role="gridcell" aria-label={ch}><i>{ch}</i></div>;
               }))}
             </div>
             <div className={'sos-rd' + (reading ? ' on' : '')} aria-live="polite" style={{ opacity: drag && drag.off ? 0.45 : undefined }}>{readout}</div>
             <div className="pst-chips sos-w" aria-label="Words to find">
               {PUZZLE.words.map((w, i) => (
-                <span key={w} className={'pst-chip' + (g.found[i] ? ' on' : '')}>{w}</span>
+                <span key={w} className={'pst-chip' + (g.found[i] ? ' on' : '')} style={g.found[i] ? { background: stHl(i, 0.55) } : undefined}>{w}</span>
               ))}
             </div>
           </>
