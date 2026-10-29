@@ -1139,7 +1139,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     const on = () => sizeWell();
     window.addEventListener('resize', on);
     return () => window.removeEventListener('resize', on);
-  }, [hydrated, sizeWell, started, preStart, stageOn, padShown]);
+  }, [hydrated, sizeWell, started, preStart, stageOn, padShown, stageMode]);
 
   // leaving the page never costs a run
   useEffect(() => {
