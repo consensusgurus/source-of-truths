@@ -320,8 +320,9 @@ const STAGE_CSS = `
 .blk-lead em{font-style:normal;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.75}
 .blk-lead b{overflow:hidden;text-overflow:ellipsis;max-width:55%}
 .blk-mid{display:flex;justify-content:center}
-.blk-pad{align-self:stretch;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:48px;gap:7px;max-width:420px;width:100%;margin:0 auto}
+.blk-pad{align-self:stretch;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:52px;gap:8px;max-width:420px;width:100%;margin:0 auto}
 .blk-pad .slm,.blk-pad .dwn{grid-column:1 / -1}
+.blk-pad.ph{grid-auto-rows:48px;gap:7px}
 .blk-pad button{border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);color:var(--pst-ink);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .blk-pad .slm{background:var(--pst-ink);color:var(--pst-bg);font-size:15px}
 .blk-padt{align-self:center;min-height:36px;padding:0 14px;font-size:13px}
@@ -1338,15 +1339,11 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   );
   const bestToday = Math.max(Number(board.best) || 0, ladder.rows.length && !ladder.rows[0].gap ? Number(ladder.rows[0].score) || 0 : 0);
   const leadRow = ladder.rows.find((r) => !r.gap) || null;
-  const stageEl = stageOn ? (
-    <PlayStage
-      bg={gameColor('blocks')}
-      label="Blocks"
-      top={(
-        <>
-          <style dangerouslySetInnerHTML={{ __html: STAGE_CSS }} />
-          {/* THE LEADER, ALWAYS SHOWN (owner, 2026-10-29). On a phone it sits above
-              the play block and scrolls away with the top bar. */}
+  // THE LEADER, ALWAYS SHOWN (owner, 2026-10-29). On a phone it sits above the
+  // play block and scrolls away with the top bar; on desktop it stays between
+  // the score row and the well (owner: desktop looks great, don't change).
+  const phoneLayout = stageMode === 'phone';
+  const leadEl = (
           <div className="blk-lead" aria-live="polite">
             {leadRow
               ? (leadRow.me
@@ -1354,6 +1351,15 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
                 : <><em>Leader</em><b>{leadRow.name}</b><span>{nf(leadRow.score)}</span></>)
               : <><em>Leader</em><span>No runs yet today</span></>}
           </div>
+  );
+  const stageEl = stageOn ? (
+    <PlayStage
+      bg={gameColor('blocks')}
+      label="Blocks"
+      top={(
+        <>
+          <style dangerouslySetInnerHTML={{ __html: STAGE_CSS }} />
+          {phoneLayout ? leadEl : null}
           {/* ONE SLIM ROW above the well (owner, 2026-10-25): the score, Pause,
               and Next. No Hold, and nothing else, so the well gets the room. */}
           <div className="blk-hd">
@@ -1361,6 +1367,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
             <button type="button" className={'pst-tb blk-pause' + (paused ? ' on' : '')} onClick={togglePause} aria-label={paused ? 'Resume' : 'Pause'}>{paused ? 'Resume' : 'Pause'}</button>
             <div className="blk-box"><span>Next</span><StageMini k={SEQ[g.idx]} /></div>
           </div>
+          {phoneLayout ? null : leadEl}
           <div className="blk-mid">
             <div className="blk-well">{wellEl}</div>
           </div>
@@ -1372,11 +1379,11 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
               right in one row, Drop alone below. Always on on a phone or touch
               screen; on desktop the keyboard plays and a button shows them. */}
           {padShown ? (
-            <div className="blk-pad">
+            <div className={'blk-pad' + (phoneLayout ? ' ph' : '')}>
               <button type="button" className="lft" {...holdProps('left')} aria-label="Move left">&#9664;</button>
               <button type="button" className="rot" {...tapProps('cw')} aria-label="Rotate">&#8635;</button>
               <button type="button" className="rgt" {...holdProps('right')} aria-label="Move right">&#9654;</button>
-              <button type="button" className="dwn" {...holdProps('down')} aria-label="Slow drop">&#9660;</button>
+              {phoneLayout ? <button type="button" className="dwn" {...holdProps('down')} aria-label="Slow drop">&#9660;</button> : null}
               <button type="button" className="slm" {...tapProps('drop')} aria-label="Drop to the bottom"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 5l6 6 6-6M6 12l6 6 6-6M5 21h14" /></svg>Drop</button>
             </div>
           ) : null}
