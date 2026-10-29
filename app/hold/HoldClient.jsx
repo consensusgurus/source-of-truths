@@ -651,7 +651,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
 
   // ── the phone stage (owner, 2026-10-25): the same hand drawn full screen.
   // Every control calls the board's own handlers; desktop never mounts it.
-  const holdStage = phoneStage && started ? (() => {
+  const holdStage = phoneStage && !!g.t0 && (playing || !revealed) ? (() => {
     const showFin = reveal ? reveal.fin : null;
     const live = g.shown === null;
     const nHeld = popcount(g.sel);

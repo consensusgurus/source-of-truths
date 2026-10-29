@@ -561,7 +561,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && (() => {
+      {phoneStage && !!g.t0 && (playing || !revealed) && (() => {
         let si = 0;
         const stSlots = groups.map((grp) => grp.split('').map(() => {
           const idx = si++;

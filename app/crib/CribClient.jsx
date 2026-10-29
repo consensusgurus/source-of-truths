@@ -595,7 +595,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && (() => {
+      {phoneStage && !!g.t0 && (playing || !revealed) && (() => {
         // THE PHONE STAGE: the same hand drawn full screen. Cards call tapCard,
         // the big button throwIt or nextHand, and the pills useHint and
         // tapGiveUp, so the scoring and the save are the desktop board's.

@@ -755,7 +755,7 @@ export default function TuckClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && (() => {
+      {phoneStage && !!g.t0 && (playing || !revealed) && (() => {
         // The phone stage (owner, 2026-10-25): the score, the board, your rack
         // and the two actions. Every control is the board's own: a square goes
         // through onCell, a rack tile places at the selected square exactly as

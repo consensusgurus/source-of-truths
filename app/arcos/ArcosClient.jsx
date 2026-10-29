@@ -785,7 +785,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && !EMBED && (() => {
+      {phoneStage && !!g.t0 && (playing || !revealed) && !EMBED && (() => {
         // The phone stage (owner, 2026-10-24): one clue at a time. Back and Next
         // walk every clue of the three acrostics in order, then the finale once
         // it is open; the dots jump straight to an acrostic.

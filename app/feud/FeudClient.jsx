@@ -735,7 +735,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && !!g.t0 && (() => {
+      {phoneStage && !!g.t0 && (playing || !revealed) && (() => {
         // The phone stage (owner, 2026-10-25): one prompt at a time, three
         // answer fields, Back and Next walk the prompts with goTo, and the last
         // Next is the same Lock in (faceTheCrowd) the desktop board uses.

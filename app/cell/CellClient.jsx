@@ -728,7 +728,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
   // ── the phone stage (owner, 2026-10-25): the same deal drawn full screen.
   // Every tap calls the board's own onCard / onTableau / onDest, so the rules,
   // the move count and the save are untouched. Desktop never mounts it.
-  const cellStage = phoneStage && started ? (() => {
+  const cellStage = phoneStage && !!g.t0 && (playing || !revealed) ? (() => {
     const AW = stVw - 28;
     const NP = CELLS + 4;
     const PW = Math.max(34, Math.min(54, Math.floor((AW - 5 * (NP - 1)) / NP)));

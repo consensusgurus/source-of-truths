@@ -734,7 +734,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && (() => {
+      {phoneStage && !!g.t0 && (playing || !revealed) && (() => {
         // The phone stage (owner, 2026-10-25): step 1 votes (tap a row), step 2
         // calls the crowd's order with up and down. Both write the same state
         // the desktop board does, and Call it is the same faceTheCrowd.

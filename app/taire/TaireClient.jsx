@@ -656,7 +656,7 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && (() => {
+      {phoneStage && !!g.t0 && (playing || !revealed) && (() => {
         // THE PHONE STAGE: the same board drawn full screen. Every tap goes to
         // onCard / onDest / restart / useHint / revealEnd, so the rules, the
         // move count and the save are exactly the desktop board's.

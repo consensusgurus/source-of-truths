@@ -635,7 +635,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && (() => {
+      {phoneStage && !!g.t0 && (playing || !revealed) && (() => {
         // The phone stage (owner, 2026-10-25): one logline at a time, the tile
         // row to jump, the title box (onType, which takes a title the moment it
         // matches), and the call box (call). Gone the moment the day ends.

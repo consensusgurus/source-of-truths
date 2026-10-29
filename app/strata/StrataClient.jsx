@@ -607,7 +607,7 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && playing && !!g.t0 && (() => {
+      {phoneStage && !!g.t0 && (playing || !revealed) && (() => {
         // The phone play stage: the same tiles, trace and hints on the shared
         // full-screen frame. Tiles keep the st-tile class and data-cid so the
         // page's own pointer listeners pick them up; every rule is the page's.

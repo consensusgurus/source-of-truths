@@ -654,7 +654,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
   // navigation' on desktop should be the same"). The full-screen stage draws
   // the board fixed over the page; with the site navigation showing, the same
   // stage board sits in the page (PlayStage inline) instead of the old one.
-  const deskStage = STAGE && !phoneStage && started && playing;
+  const deskStage = STAGE && !phoneStage && !!g.t0 && (playing || !revealed);
   const barterStage = (inline) => (
         <PlayStage bg={gameColor('barter')} label="Barter"
           top={(
@@ -700,7 +700,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && barterStage(false)}
+      {phoneStage && !!g.t0 && (playing || !revealed) && barterStage(false)}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="barter" name="Barter" collapsed={started} loft={LOFT} />

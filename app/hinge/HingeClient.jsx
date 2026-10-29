@@ -683,7 +683,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
   // ONE BOARD ON EVERY DESKTOP VIEW (owner, 2026-10-28: "the stage and 'with
   // navigation' on desktop should be the same"). With the site navigation
   // showing, the same stage board sits in the page (PlayStage inline).
-  const deskStage = STAGE && !phoneStage && started && playing;
+  const deskStage = STAGE && !phoneStage && !!g.t0 && (playing || !revealed);
   stageKeyRef.current = null;
   const hingeStage = (inline) => {
         const stageKey = (k) => {
@@ -785,7 +785,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && hingeStage(false)}
+      {phoneStage && !!g.t0 && (playing || !revealed) && hingeStage(false)}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="hinge" name="Hinge" collapsed={started} loft={LOFT} />

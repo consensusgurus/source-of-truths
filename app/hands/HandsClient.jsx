@@ -724,7 +724,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
       {/* Stays up after the last card (like every other phone stage) so the
           finished deal, not the old in-page board, is what shows until the
           ending covers it (owner, 2026-10-29). */}
-      {phoneStage && started && (() => {
+      {phoneStage && !!g.t0 && (playing || !revealed) && (() => {
         const hdTxt = (card) => `${RANK_LABEL[rankOf(card)]}${SUIT_PIP[suitOf(card)]}`;
         const hdFace = (card) => <span className="hst-pf">{RANK_LABEL[rankOf(card)]}<i>{SUIT_PIP[suitOf(card)]}</i></span>;
         const mucked = g.muckAt >= 0 ? PUZZLE.deck[g.muckAt] : null;

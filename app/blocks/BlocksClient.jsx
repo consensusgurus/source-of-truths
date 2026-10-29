@@ -452,7 +452,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   // than drawn twice: drawWell and sizeWell read cvsRef every call, so the
   // remounted element is picked up and resized by the effect keyed on stageOn.
   const phoneStage = usePhoneStage();
-  const stageOn = phoneStage && !!g.t0 && (playing || endHold.held);
+  const stageOn = phoneStage && !!g.t0 && (playing || endHold.held || !revealed);
   const stageOnRef = useRef(false);
   stageOnRef.current = stageOn;
   // ROWS ARE THE SCORE, uncapped (see lib/blocks-seq). Par is the day's

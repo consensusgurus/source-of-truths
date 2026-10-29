@@ -705,7 +705,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && cur ? shoeStage() : null}
+      {phoneStage && !!g.t0 && (playing || !revealed) && cur ? shoeStage() : null}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="shoe" name="Shoe" collapsed={started} loft={LOFT} />

@@ -800,7 +800,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
     <div style={{ minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : (LOFT ? T.navy : COLORS.cream), color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, fontFamily: SANS, position: 'relative', overflowX: 'hidden', ...(STAGE ? STAGE_ACC : null) }} className={STAGE ? 'stage-page' : undefined} data-stage-theme={STAGE ? stageTheme : undefined}>
       {/* THE PHONE STAGE (owner, 2026-10-25): the same deal drawn full screen.
           Every control calls the handlers above; the stage keeps no state. */}
-      {phoneStage && started && (playing || short) && (() => {
+      {phoneStage && !!g.t0 && (playing || short || !revealed) && (() => {
         const SEAT_FULL = ['North', 'East', 'South', 'West'];
         const pcCard = (card) => {
           const sIx = suitOf(card, R);

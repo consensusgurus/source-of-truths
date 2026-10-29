@@ -694,7 +694,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
   for (let z = REL.maxZ; z >= 1; z--) lookOrder.push(z);
   const PHONE_TILE_PX = 46;
   let mahjStage = null;
-  if (phoneStage && started) {
+  if (phoneStage && !!g.t0 && (playing || !revealed)) {
     const vr = (scr && bigTiles && scr.sw > 0 && scr.sh > 0)
       ? { l: (scr.sl / scr.sw) * 100, t: (scr.st / scr.sh) * 100, w: Math.min(100, (scr.cw / scr.sw) * 100), h: Math.min(100, (scr.ch / scr.sh) * 100) }
       : null;
