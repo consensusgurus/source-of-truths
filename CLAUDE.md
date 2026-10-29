@@ -3912,7 +3912,7 @@ archive and hub chips use the short form `Sun`.
 | Defend | a hold for four instead of a hold for three, so a fourth white move to survive before the attack is spent (from 2026-08-12) |
 | Barter | eight seven-letter words on a 7x7 lattice instead of six five-letter words on 5x5, and a deeper par (from launch, 2026-08-16) |
 | Snug | a 7x7 board with four holes and eight pieces against the weekday 6x6 with six or seven, still one way to fit (from launch, 2026-09-13) |
-| Jig | the 80-piece cut, the biggest of the week against Saturday's 77 (from launch, 2026-10-15) |
+| Jig | the 80-piece cut, the biggest of the week against Saturday's 77 (2026-10-15 to 2026-10-25; from 2026-10-30 every day is 80 pieces and there is no Sunday Edition) |
 | Sixes | a grid in the top fraction of a percent of the difficulty distribution: ten to fourteen squares reachable only by a hidden single, against none on a Monday (from launch, 2026-08-14) |
 | Etch | a 20x20 picture instead of Saturday's 15x15 and the weekday 10x10 (from 2026-08-23) |
 | Hedge | a 10x10 loop lattice instead of the weekday 7x7 |

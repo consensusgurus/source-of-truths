@@ -3,8 +3,8 @@
 // Jig, the daily jigsaw.
 //
 // Each day: one Wikimedia Commons featured photograph, cut the same way for
-// everyone, from 48 pieces on a Monday to 80 on the Sunday Edition (owner,
-// 2026-10-15: capped at 80, every day kept close to it). Drag a piece from the
+// everyone, 80 pieces every day from 2026-10-30 (owner, 2026-10-29; before it
+// the cut grew from 48 on a Monday to an 80-piece Sunday Edition). Drag a piece from the
 // tray onto the board; dropped near its own spot it snaps in and stays, and a
 // drop anywhere else sends it back to the tray for nothing. Pieces never turn.
 //
@@ -999,7 +999,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
         <><b>Peek</b> shows the whole picture for a moment and adds 15 seconds to your clock. Edge pieces have a straight side; corners have two.</>,
       ]}
       knack="Do the edges first: the tray opens on Edges, so build the frame, then fill it a color at a time. A sky, a lake or a field falls fastest once its pieces are in one bin."
-      footer="Finish the picture and you score a perfect 10, and because nothing is counted against you, the daily leaderboard is a straight race on the clock, Peek seconds included. One free hint, on your first ever play, drops a corner in. The cut grows through the week, 48 pieces on Monday to 77 on Saturday, and the Sunday Edition is 80."
+      footer="Finish the picture and you score a perfect 10, and because nothing is counted against you, the daily leaderboard is a straight race on the clock, Peek seconds included. One free hint, on your first ever play, drops a corner in. Every day is cut into 80 pieces."
     />
   );
 
@@ -1452,7 +1452,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Jig</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Jig is a free daily online jigsaw puzzle from Mind Loft. Every day brings a new photograph, a featured picture from Wikimedia Commons, cut into classic interlocking pieces: 48 on Monday, building to 77 on Saturday, and an 80-piece Sunday Edition. Everyone gets the same picture and the same cut, so the daily leaderboard is a fair race.
+          Jig is a free daily online jigsaw puzzle from Mind Loft. Every day brings a new photograph, a featured picture from Wikimedia Commons, cut into 80 classic interlocking pieces. Everyone gets the same picture and the same cut, so the daily leaderboard is a fair race.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Drag a piece from the tray onto the board and it snaps in when it is near its own spot; a wrong drop just sends it back, at no cost. Pieces never need turning. Sort the tray into two bins, edge pieces and the middle or one of the picture&rsquo;s colors and the rest, to build the frame first and then fill it a color at a time. Peek shows the whole picture for a moment and adds 15 seconds to the clock. Full screen gives the board and the tray the whole screen, on a computer, a tablet or a phone, and on a phone See more opens the tray into a taller grid.

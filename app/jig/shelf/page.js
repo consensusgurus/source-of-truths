@@ -22,7 +22,7 @@ import { gameCategory } from '@/lib/game-seo';
 export const metadata = {
   title: 'Jig Puzzle Shelf: Free Daily Jigsaw Archive | Mind Loft',
   description:
-    'Every Jig daily jigsaw so far, 48 to 80 pieces, a new photo each day. Play any past puzzle free, no app or signup.',
+    'Every Jig daily jigsaw so far, 80 pieces, a new photo each day. Play any past puzzle free, no app or signup.',
   alternates: { canonical: '/jig/shelf' },
   openGraph: {
     images: [{ url: '/og/jig-shelf.png', width: 1200, height: 630, alt: 'The Jig Puzzle Shelf: past daily jigsaw photos on two wooden shelves, today a question mark' }],
@@ -64,7 +64,7 @@ const FAQ = [
   },
   {
     q: 'How many pieces is each Jig puzzle?',
-    a: 'Monday is 48 pieces and the week builds from there: 54 on Tuesday, 60 on Wednesday, 63 on Thursday, 70 on Friday and 77 on Saturday. The Sunday Edition is the biggest, 80 pieces.',
+    a: 'Every Jig is 80 pieces, every day. Boards before October 30, 2026 grew through the week, from 48 on a Monday to an 80-piece Sunday Edition.',
   },
   {
     q: 'Why is today’s box a question mark?',

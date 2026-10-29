@@ -146,7 +146,7 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
         <div>
           <h1>Jig Puzzle Shelf: Every Daily Jigsaw</h1>
           <p className="jsh-lede">
-            Every Jig so far, newest week first. Each box is one day&apos;s photograph, cut into 48 to 80 pieces.
+            Every Jig so far, newest week first. Each box is one day&apos;s photograph, cut into 80 pieces.
             Pick any past box to play it free from the archive. Today&apos;s stays a question mark until you finish it.
           </p>
         </div>

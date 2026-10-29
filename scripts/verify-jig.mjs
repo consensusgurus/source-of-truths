@@ -44,8 +44,9 @@ PUZZLES.forEach((p, k) => {
   const lab = `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
   if (p.dateLabel !== lab) bad(p.num, `dateLabel ${p.dateLabel} should be ${lab}`);
   const dow = d.getUTCDay();
-  if (!!p.sunday !== (dow === 0)) bad(p.num, `sunday flag ${p.sunday} on a ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dow]}`);
-  const [c, r] = CUT[dow];
+  const same = p.live >= '2026-10-30'; // every day 10x8, no Sunday Edition (owner, 2026-10-29)
+  if (!!p.sunday !== (!same && dow === 0)) bad(p.num, `sunday flag ${p.sunday} on a ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dow]}`);
+  const [c, r] = same ? [10, 8] : CUT[dow];
   if (p.cols !== c || p.rows !== r) bad(p.num, `cut ${p.cols}x${p.rows}, the weekday's is ${c}x${r}`);
   if (p.cols * p.rows > 80) bad(p.num, `${p.cols * p.rows} pieces, over the cap of 80`);
   if (!Number.isInteger(p.seed) || p.seed < 0) bad(p.num, `seed ${p.seed} is not a whole number`);

@@ -29,6 +29,9 @@ const LAUNCH = '2026-10-15';
 const B = BACKFILL.length;
 const seedFor = (num) => (num <= B ? (num * 48271 + 101) % 100003 : ((num - B) * 7919 + 13) % 100003);
 const CUT = { 1: [8, 6], 2: [9, 6], 3: [10, 6], 4: [9, 7], 5: [10, 7], 6: [11, 7], 0: [10, 8] };
+// From SAME_FROM every day is the 80-piece 10x8 cut and there is no Sunday
+// Edition (owner, 2026-10-29). Days before it keep their weekday cut.
+const SAME_FROM = '2026-10-30';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const rows = [];
@@ -38,14 +41,15 @@ if (new Date(d0.getTime() + B * 86400000).toISOString().slice(0, 10) !== LAUNCH)
   const d = new Date(d0.getTime() + i * 86400000);
   const iso = d.toISOString().slice(0, 10);
   const dow = d.getUTCDay();
-  const [cols, rows_] = CUT[dow];
+  const same = iso >= SAME_FROM;
+  const [cols, rows_] = same ? [10, 8] : CUT[dow];
   const num = i + 1;
   rows.push({
     num,
     quizId: `jig-${d.getUTCMonth() + 1}-${d.getUTCDate()}-${String(d.getUTCFullYear()).slice(2)}`,
     live: iso,
     dateLabel: `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`,
-    sunday: dow === 0,
+    sunday: !same && dow === 0,
     cols, rows: rows_,
     seed: seedFor(num),
     t: p.t, name: p.name, lic: p.lic, by: p.by,

@@ -8,7 +8,7 @@ import { SITE_URL } from '@/lib/site';
 import { categoryCrumb } from '@/lib/game-seo';
 
 // Jig launched 2026-10-15 as the daily jigsaw: one Wikimedia Commons featured
-// photograph a day, cut into 48 to 80 interlocking pieces, raced on the clock.
+// photograph a day, cut into 80 interlocking pieces, raced on the clock.
 //
 // /jig is the canonical, evergreen URL; the dated /quiz/jig-* stubs
 // canonicalize here. This server page filters live<=today before handing
@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 const baseMetadata = {
   title: 'Free Daily Jigsaw Puzzle Online: Jig | Mind Loft',
   description:
-    'A free daily online jigsaw puzzle: a new photo every day, cut into 48 to 80 pieces. Sort by edges or colors and race the clock. No app, no signup.',
+    'A free daily online jigsaw puzzle: a new photo every day, cut into 80 pieces. Sort by edges or colors and race the clock. No app, no signup.',
   alternates: { canonical: '/jig' },
   openGraph: {
     images: [{ url: '/og/jig.png', width: 1200, height: 630, alt: 'Jig, a daily jigsaw puzzle from Mind Loft' }],
@@ -99,7 +99,7 @@ const gameJsonLd = {
   alternateName: 'Jig: Daily Jigsaw Puzzle',
   url: `${SITE_URL}/jig`,
   description:
-    'A free daily online jigsaw puzzle: a new photograph every day, cut into 48 to 80 interlocking pieces, the same cut for everyone. Drag the pieces into place; finish the picture for a perfect score, and ties break on fastest time.',
+    'A free daily online jigsaw puzzle: a new photograph every day, cut into 80 interlocking pieces, the same cut for everyone. Drag the pieces into place; finish the picture for a perfect score, and ties break on fastest time.',
   genre: ['Jigsaw puzzle', 'Puzzle', 'Casual game'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
