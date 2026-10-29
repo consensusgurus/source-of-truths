@@ -545,7 +545,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="One animal is hidden. Guess any animal and you are told the closest branch of the animal family tree the two share. A branch is a group of related animals, such as Mammals, Carnivores or the Dog family. The deeper the shared branch, the closer you are."
+      lead="One animal is hidden. Guess any animal and you are told the closest branch of the animal family tree the two share. A branch is a group of related animals, such as Mammals, Rodents or the Dog family. The deeper the shared branch, the closer you are."
       steps={[
         <><b>Type a name</b> and choose it from the list. A name that is not on the list, or one you already tried, costs nothing.</>,
         <>Each guess answers <b>shares &hellip;</b> with the deepest branch both animals sit on. The tree at the top keeps the deepest one you have found.</>,
@@ -1144,7 +1144,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Clade</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Clade is a free daily animal guessing game from Mind Loft. One animal is hidden, and every guess you make is answered with the closest branch of the animal family tree that your guess shares with it. A branch is a group of related animals: Vertebrates, Mammals, Carnivores, the Dog family.
+          Clade is a free daily animal guessing game from Mind Loft. One animal is hidden, and every guess you make is answered with the closest branch of the animal family tree that your guess shares with it. A branch is a group of related animals: Vertebrates, Mammals, Rodents, the Dog family.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Guess a bald eagle against a hidden fox and you learn only that both are vertebrates. Guess a house cat and you learn it is a carnivore. Guess a wolf and you are inside the dog family, with one or two names left to try. You have eight guesses, and the fewer you need, the higher you rank.

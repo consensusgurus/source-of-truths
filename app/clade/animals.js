@@ -20,7 +20,7 @@
 //  * In strict cladistics birds sit INSIDE reptiles (crocodilians are closer
 //    to birds than to lizards). This game uses the familiar classes instead:
 //    Mammals, Birds, Reptiles and Amphibians are siblings under
-//    'Four-limbed vertebrates'. Likewise the four fish groups are siblings
+//    'Tetrapods (four-limbed animals and their descendants)'. Likewise the four fish groups are siblings
 //    under 'Vertebrates', and insects are siblings of crustaceans under
 //    'Arthropods', the way a field guide files them.
 //  * A path may skip real intermediate groups (it is coarser than the full
@@ -33,9 +33,14 @@
 //    Wild boar (Pig), Koi (Common carp), Ferret or Grizzly bear (Brown bear).
 //    Where a second name is common it is an alt.
 //  * US spellings throughout (Gray wolf, Harbor seal).
+//  * LABELS MUST SURVIVE A LITERAL READING (owner, 2026-10-29). A branch is
+//    defined by ancestry, so a label read as a description can look wrong for
+//    a member: a snake under 'Four-limbed', a giant panda under 'Carnivores',
+//    a slow worm under 'Monitors', an electric eel under 'Knifefish'. Name the
+//    surprising members, or the real group name, in the label itself.
 
 const VERT = ['Animals', 'Vertebrates'];
-const TETRA = [...VERT, 'Four-limbed vertebrates'];
+const TETRA = [...VERT, 'Tetrapods (four-limbed animals and their descendants)'];
 
 // ---- Mammals ----
 const MAMMALS = [...TETRA, 'Mammals'];
@@ -47,8 +52,8 @@ const VOMBAT = [...DIPROTO, 'Koalas and wombats'];
 const DASYURO = [...MARSUPIALS, 'Carnivorous marsupials'];
 const OPOSSUMS = [...MARSUPIALS, 'American opossums'];
 const PLACENTAL = [...MAMMALS, 'Placental mammals'];
-const CARNIVORES = [...PLACENTAL, 'Carnivores'];
-const CANIFORM = [...CARNIVORES, 'Dog-like carnivores'];
+const CARNIVORES = [...PLACENTAL, 'Carnivorans (dogs, cats, bears and kin)'];
+const CANIFORM = [...CARNIVORES, 'Dog-like carnivorans (dogs, bears, seals, weasels)'];
 const DOGS = [...CANIFORM, 'Dog family'];
 const FOXES = [...DOGS, 'True foxes'];
 const CANIS = [...DOGS, 'Wolves and jackals'];
@@ -59,7 +64,7 @@ const EARED = [...PINNIPEDS, 'Eared seals'];
 const WEASELS = [...CANIFORM, 'Weasel family'];
 const RACCOONS = [...CANIFORM, 'Raccoon family'];
 const SKUNKS = [...CANIFORM, 'Skunk family'];
-const FELIFORM = [...CARNIVORES, 'Cat-like carnivores'];
+const FELIFORM = [...CARNIVORES, 'Cat-like carnivorans (cats, hyenas, mongooses)'];
 const CATS = [...FELIFORM, 'Cat family'];
 const BIGCATS = [...CATS, 'Big cats (Panthera)'];
 const PURRCATS = [...CATS, 'Purring cats'];
@@ -93,7 +98,7 @@ const TAPIRS = [...PERISSO, 'Tapirs'];
 const RODENTS = [...PLACENTAL, 'Rodents'];
 const MYO = [...RODENTS, 'Mouse-like rodents'];
 const SCIURO = [...RODENTS, 'Squirrel-like rodents'];
-const HYSTRICO = [...RODENTS, 'Porcupine-like rodents'];
+const HYSTRICO = [...RODENTS, 'Porcupines, guinea pigs and kin'];
 const CASTORI = [...RODENTS, 'Beavers and gophers'];
 const LAGOMORPHS = [...PLACENTAL, 'Rabbits, hares and pikas'];
 const BATS = [...PLACENTAL, 'Bats'];
@@ -119,7 +124,7 @@ const PASSERINES = [...AUSTRAL, 'Perching birds'];
 const CORVIDS = [...PASSERINES, 'Crow family'];
 const PARROTS = [...AUSTRAL, 'Parrots'];
 const FALCONS = [...AUSTRAL, 'Falcons'];
-const AFROAVES = [...LANDBIRDS, 'Hawks, owls and woodpeckers'];
+const AFROAVES = [...LANDBIRDS, 'Hawks, owls, woodpeckers and kin'];
 const RAPTORS = [...AFROAVES, 'Hawks, eagles and vultures'];
 const OWLS = [...AFROAVES, 'Owls'];
 const PICI = [...AFROAVES, 'Woodpeckers and toucans'];
@@ -151,7 +156,7 @@ const ELAPIDS = [...SNAKES, 'Cobras, mambas and coral snakes'];
 const COLUBRIDS = [...SNAKES, 'Colubrid snakes'];
 const IGUANIA = [...SQUAMATES, 'Iguanas, chameleons and dragon lizards'];
 const GECKOS = [...SQUAMATES, 'Geckos'];
-const ANGUI = [...SQUAMATES, 'Monitors and kin'];
+const ANGUI = [...SQUAMATES, 'Monitors, Gila monsters and slow worms'];
 const SKINKS = [...SQUAMATES, 'Skinks'];
 const TURTLES = [...REPTILES, 'Turtles'];
 const SEATURTLES = [...TURTLES, 'Sea turtles'];
@@ -185,7 +190,7 @@ const SALMON = f('Salmon and trout');
 const CARPS = f('Carp and minnows');
 const CATFISH = f('Catfishes');
 const CHARACINS = f('Piranhas and tetras');
-const KNIFEFISH = f('Knifefish');
+const KNIFEFISH = f('Knifefish and electric eels');
 const EELS = f('Eels');
 const TUNAS = f('Tunas and mackerels');
 const BILLFISH = f('Billfish');

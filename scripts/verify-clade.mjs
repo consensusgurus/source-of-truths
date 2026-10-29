@@ -56,7 +56,7 @@ for (const a of ANIMALS) {
 for (const b of parentOf.keys()) if (labels.has(b.toLowerCase())) fail(`branch "${b}" is also an animal name`);
 
 // ---- bank ----
-const classOf = (a) => (a.path[2] === 'Four-limbed vertebrates' ? a.path[3] : a.path[2]);
+const classOf = (a) => (a.path[2] === 'Tetrapods (four-limbed animals and their descendants)' ? a.path[3] : a.path[2]);
 const common = (p, q) => { let i = 0; while (i < p.length && i < q.length && p[i] === q[i]) i += 1; return i; };
 const seen = new Set();
 const classes = [];

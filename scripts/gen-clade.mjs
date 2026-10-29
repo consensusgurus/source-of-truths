@@ -11,7 +11,7 @@
 //   * No answer repeats.
 //   * No two consecutive days from the same class, and no class more than
 //     3 times in any 7 consecutive days. Class = the 4th rung under
-//     'Four-limbed vertebrates' (Mammals, Birds, ...), otherwise the 3rd.
+//     'Tetrapods (four-limbed animals and their descendants)' (Mammals, Birds, ...), otherwise the 3rd.
 //   * Narrowing: an answer needs another animal on the list sharing its
 //     first 4 rungs or more, so guesses can actually close in.
 import { ANIMALS } from '../app/clade/animals.js';
@@ -21,7 +21,7 @@ const DAYS = 78;
 const TIER_BY_DOW = { 0: 4, 1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 6: 3 };
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-const classOf = (a) => (a.path[2] === 'Four-limbed vertebrates' ? a.path[3] : a.path[2]);
+const classOf = (a) => (a.path[2] === 'Tetrapods (four-limbed animals and their descendants)' ? a.path[3] : a.path[2]);
 function shared(a, b) { let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++; return i; }
 const narrows = (a) => ANIMALS.some((b) => b !== a && shared(a.path, b.path) >= 4);
 
