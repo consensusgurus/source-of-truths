@@ -130,7 +130,9 @@ const MAX_PANGRAMS = 4;
 const VEIN_SHARE = 0.38;
 
 // The rank ladder, as a share of the board maximum. Reaching `Lode` solves the
-// day; `Mother Lode` means every word on the board.
+// day; `Mother Lode` means every EVERYDAY word on the board (owner, 2026-10-29):
+// its cutoff is the points of the words with recorded usage, so the words marked
+// `o` (no recorded usage: kreplech, reperepe) are a bonus, never a requirement.
 const RANKS = [
   { name: 'Speck', at: 0.03 },
   { name: 'Trace', at: 0.09 },
@@ -206,7 +208,7 @@ const WORDS = [];
 for (const [w, z] of Object.entries(freq)) {
   if (w.length < MIN_LEN) continue;   // the letter minimum is the only bar left
   const up = w.toUpperCase();
-  WORDS.push({ w: up, set: new Set(up), tier: tierOf(z, up) });
+  WORDS.push({ w: up, set: new Set(up), tier: tierOf(z, up), o: z === 0 });
 }
 // Bucket by letter-set signature so board assembly is a lookup, not a scan.
 const bySig = new Map();
@@ -256,7 +258,7 @@ function buildBoard(sig, core) {
     const isPan = s.length === sig.length;
     for (const it of items) {
       if (isPan) pangrams++;
-      words.push({ w: it.w, p: pointsOf(it.w, isPan, it.tier), t: it.tier, g: isPan ? 1 : 0 });
+      words.push({ w: it.w, p: pointsOf(it.w, isPan, it.tier), t: it.tier, g: isPan ? 1 : 0, ...(it.o ? { o: 1 } : {}) });
     }
   }
   if (!words.length) return null;
@@ -353,13 +355,13 @@ if (!dealWeek.length || !dealSun.length) {
 }
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-function ranksFor(max) {
+function ranksFor(max, everyday = max) {
   // Thresholds are absolute points, rounded, and strictly increasing so two
   // ranks can never share a cutoff on a small board.
   const out = [];
   let last = 0;
   for (const r of RANKS) {
-    const at = r.at === 1 ? max : Math.max(last + 1, Math.round(max * r.at));
+    const at = r.at === 1 ? Math.max(last + 1, everyday) : Math.max(last + 1, Math.round(max * r.at));
     out.push({ n: r.name, at });
     last = at;
   }
@@ -374,7 +376,7 @@ for (let i = 0; i < DAYS; i++) {
   const y = d.getUTCFullYear(), mo = d.getUTCMonth() + 1, da = d.getUTCDate();
   const isSun = d.getUTCDay() === 0;
   const b = isSun ? dealSun[is++ % dealSun.length] : dealWeek[iw++ % dealWeek.length];
-  const rk = ranksFor(b.max);
+  const rk = ranksFor(b.max, b.words.filter((x) => !x.o).reduce((a, x) => a + x.p, 0));
   const vein = rk.find((x) => x.n === 'Lode').at;
   const others = [...b.sig].filter((c) => c !== b.core).sort();
   lines.push(JSON.stringify({

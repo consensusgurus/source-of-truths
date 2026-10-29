@@ -7,6 +7,8 @@
 //
 // Run it after ANY regeneration. Exits non-zero on the first failure so it can
 // sit in front of a deploy.
+import { readFileSync as __rf } from 'node:fs';
+const LODE_FREQ = JSON.parse(__rf(new URL('./.lode-freq.json', import.meta.url), 'utf8'));
 import { PUZZLES } from '../app/lode/puzzles.js';
 
 const MIN_LEN = 4;
@@ -81,7 +83,18 @@ for (const p of PUZZLES) {
     prev = r.at;
   }
   const top = p.ranks[p.ranks.length - 1];
-  if (top.at !== p.max) bad(p, `top rank ${top.n} is ${top.at}, should be the board max ${p.max}`);
+  // Mother Lode is every EVERYDAY word (owner, 2026-10-29): its cutoff is the
+  // points of the words with recorded usage, never the obscure ones marked o.
+  for (const x of p.words) {
+    const z = LODE_FREQ[x.w.toLowerCase()];
+    if (z === 0 && x.o !== 1) bad(p, `${x.w} has no recorded usage and is not marked o`);
+    if (z !== 0 && x.o) bad(p, `${x.w} is marked o but has recorded usage`);
+  }
+  const everyday = p.words.filter((x) => !x.o).reduce((a, x) => a + x.p, 0);
+  const lodeAt = (p.ranks.find((r) => r.n === 'Lode') || {}).at || 0;
+  const wantTop = Math.max(lodeAt + 1, everyday);
+  if (top.n !== 'Mother Lode') bad(p, `top rank is ${top.n}, should be Mother Lode`);
+  if (top.at !== wantTop) bad(p, `Mother Lode is ${top.at}, should be the everyday words' ${wantTop}`);
   const lode = p.ranks.find((r) => r.n === 'Lode');
   if (!lode) bad(p, 'no Lode rank');
   else if (lode.at !== p.vein) bad(p, `vein ${p.vein} does not match the Lode rank ${lode.at}`);

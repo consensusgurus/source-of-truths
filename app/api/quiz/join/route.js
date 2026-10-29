@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { nameBlocked, NAME_BLOCKED_MSG } from '@/lib/name-filter';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { resolveQuizIdentity, takenResponse, attributeAnonGames, validEmail, looksLikeEmail } from '@/lib/quiz-identity';
 
@@ -17,6 +18,9 @@ export async function POST(request) {
 
     if (!username || username.length > 15) {
       return NextResponse.json({ error: 'Display name required (max 15 characters).' }, { status: 400 });
+    }
+    if (nameBlocked(username)) {
+      return NextResponse.json({ error: NAME_BLOCKED_MSG, code: 'name_blocked' }, { status: 400 });
     }
     if (looksLikeEmail(username)) {
       return NextResponse.json({ error: 'Display name cannot be an email address.' }, { status: 400 });

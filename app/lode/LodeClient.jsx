@@ -311,12 +311,27 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
   const score = useMemo(() => g.found.reduce((s, w) => s + (WORDS.get(w)?.p || 0), 0), [g.found, WORDS]);
   const pangramsFound = useMemo(() => g.found.filter((w) => WORDS.get(w)?.g).length, [g.found, WORDS]);
   const struck = score >= VEIN;
+  // Mother Lode is every EVERYDAY word (owner, 2026-10-29). Words marked `o`
+  // have no recorded usage (kreplech, reperepe): they score, but the top rank
+  // never needs them, and it is not reached on points alone while an everyday
+  // word is still in the ground.
+  const everydayLeft = useMemo(() => {
+    const got = new Set(g.found);
+    return PUZZLE.words.filter((x) => !x.o && !got.has(x.w)).length;
+  }, [g.found, PUZZLE.words]);
   const rank = useMemo(() => {
     let cur = { n: 'Unbroken', at: 0 };
-    for (const r of PUZZLE.ranks) if (score >= r.at) cur = r;
+    for (const r of PUZZLE.ranks) {
+      if (r.n === 'Mother Lode' && everydayLeft > 0) continue;
+      if (score >= r.at) cur = r;
+    }
     return cur;
-  }, [score, PUZZLE.ranks]);
-  const nextRank = useMemo(() => PUZZLE.ranks.find((r) => score < r.at) || null, [score, PUZZLE.ranks]);
+  }, [score, PUZZLE.ranks, everydayLeft]);
+  const nextRank = useMemo(() => {
+    const r = PUZZLE.ranks.find((x) => score < x.at || (x.n === 'Mother Lode' && everydayLeft > 0)) || null;
+    return r && r.n === 'Mother Lode' && everydayLeft > 0 && score >= r.at ? { ...r, words: everydayLeft } : r;
+  }, [score, PUZZLE.ranks, everydayLeft]);
+  const toNext = (r) => (r.words ? `${r.words} everyday word${r.words === 1 ? '' : 's'} to ${r.n}` : `${r.at - score} to ${r.n}`);
 
   useEffect(() => {
     try {
@@ -654,7 +669,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
       steps={[
         <><b>Type</b> a word and press Enter, or <b>tap the letters</b>.</>,
         <>Points come from <b>rarity, not length</b>: the multiplier above scales the word&rsquo;s length bonus. A <b>pangram</b> uses every letter on the board and pays a further 10.</>,
-        <>Reach <b>{VEIN} points</b> and you have struck the Lode, so the day counts as solved. Keep digging for the <b>Mother Lode</b>, every last word.</>,
+        <>Reach <b>{VEIN} points</b> and you have struck the Lode, so the day counts as solved. Keep digging for the <b>Mother Lode</b>: every everyday word on the board. The rare dictionary words nobody uses still score, but the Mother Lode never needs them.</>,
         <>A board scores a curated set of words. Type a real word that is not on it and it goes to your <b>tailings</b>: acknowledged, worth nothing, and it costs you nothing.</>,
       ]}
       knack="One good word is worth a fistful of easy ones, so work the awkward letters before you clear the obvious four-letter fills."
@@ -693,10 +708,10 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
                 <div className="top">
                   <span>{rank.n}</span>
                   <b>{score} pts</b>
-                  <span>{nextRank ? `${nextRank.n} at ${nextRank.at}` : 'Every word found'}</span>
+                  <span>{nextRank ? (nextRank.words ? toNext(nextRank) : `${nextRank.n} at ${nextRank.at}`) : 'Every everyday word found'}</span>
                 </div>
                 <div className="lds-steps" aria-hidden="true">
-                  {PUZZLE.ranks.map((r) => <i key={r.n} className={score >= r.at ? 'on' : undefined} />)}
+                  {PUZZLE.ranks.map((r) => <i key={r.n} className={score >= r.at && (r.n !== 'Mother Lode' || !everydayLeft) ? 'on' : undefined} />)}
                 </div>
               </div>
               {g.found.length > 0 && (
@@ -913,8 +928,8 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
             {/* current rank, in words, above the board */}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
               <span style={{ fontFamily: SANS, fontWeight: 900, fontSize: 17, color: struck ? `var(--stg-good, ${COLORS.green})` : ACC_INK }}>{rank.n}</span>
-              {nextRank && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>{nextRank.at - score} to {nextRank.n}</span>}
-              {!nextRank && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: `var(--stg-good, ${COLORS.green})` }}>every word on the board</span>}
+              {nextRank && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: FADED }}>{toNext(nextRank)}</span>}
+              {!nextRank && <span style={{ fontFamily: SANS, fontSize: 12, fontWeight: 700, color: `var(--stg-good, ${COLORS.green})` }}>every everyday word found</span>}
             </div>
 
             {/* the depth gauge, phone: a horizontal bar with the ladder under it */}
@@ -1258,7 +1273,7 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
           Lode is a free daily word puzzle from Mind Loft, and a fresh answer to the make-words-from-letters puzzle. Every player gets the same seven letters, with one core letter that every word must contain, and eight letters in the Sunday Edition. Words must be four letters or longer, and you can reuse a letter as often as you like. A word that uses every letter on the board is a pangram.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          The twist is the scoring. Points come from how rare a word is, not simply how long it is, so an uncommon word is worth two or three ordinary ones and a single good find can outrank a long grind. Reach the day&rsquo;s vein and you have struck the Lode, which counts the day as solved. Keep going and the Mother Lode waits at the far end, where you have found every word on the board.
+          The twist is the scoring. Points come from how rare a word is, not simply how long it is, so an uncommon word is worth two or three ordinary ones and a single good find can outrank a long grind. Reach the day&rsquo;s vein and you have struck the Lode, which counts the day as solved. Keep going and the Mother Lode waits at the far end, where you have found every everyday word on the board. The obscure dictionary words still score if you know them, but the Mother Lode never asks for them.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A fresh board lands every day at midnight Eastern. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/crux" style={{ color: INK, fontWeight: 800 }}>Crux</a>, our clueless crossword, <a href="/tuck" style={{ color: INK, fontWeight: 800 }}>Tuck</a>, our tile-tucking puzzle, and <a href="/garble" style={{ color: INK, fontWeight: 800 }}>Garble</a>, our unscrambling puzzle.
