@@ -667,7 +667,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && started && playing && (
+      {phoneStage && !!g.t0 && (
         <BracketStage bg={gameColor('bracket')} items={PUZZLE.items} metric={PUZZLE.metric} rounds={ROUNDS}
           picks={g.picks} truth={TRUE} idOf={idOf} kidsOf={kidsOf} onPick={pick}
           onLock={lockSheet} onDone={finishSheet} onHelp={() => setShowHelp(true)}
@@ -789,7 +789,7 @@ export default function BracketClient({ puzzles = [], forceNum = null }) {
 
           </div>
           <div className={STAGE ? undefined : 'loft-sol'}>
-          {!playing && (
+          {!playing && (!STAGE || revealed) && (
             <>
               <div style={{ maxWidth: 560, margin: '14px 0 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px', flexWrap: 'wrap' }}>

@@ -805,10 +805,10 @@ export default function BabelClient({ puzzles, forceNum }) {
           })}
         </div>
         <div className="pst-tools">
-          <button type="button" className="pst-tb" disabled={!pending.length || thinking} onClick={() => { setPending([]); setArmed(null); }}>Recall</button>
-          <button type="button" className="pst-tb" disabled={thinking} onClick={passTurn}>Pass</button>
-          <button type="button" className={'pst-tb' + (armGive ? ' on' : '')} onClick={giveTap}>{armGive ? 'Tap again' : 'Give up'}</button>
-          <button type="button" className="pst-tb on" disabled={!pending.length || thinking || (preview && !preview.ok)} onClick={playWord}>
+          <button type="button" className="pst-tb" disabled={!playing || !pending.length || thinking} onClick={() => { setPending([]); setArmed(null); }}>Recall</button>
+          <button type="button" className="pst-tb" disabled={!playing || thinking} onClick={passTurn}>Pass</button>
+          <button type="button" className={'pst-tb' + (armGive ? ' on' : '')} disabled={!playing} onClick={giveTap}>{armGive ? 'Tap again' : 'Give up'}</button>
+          <button type="button" className="pst-tb on" disabled={!playing || !pending.length || thinking || (preview && !preview.ok)} onClick={playWord}>
             Play{preview && preview.ok ? ` ${preview.score}` : ''}
           </button>
         </div>
@@ -1091,7 +1091,7 @@ export default function BabelClient({ puzzles, forceNum }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', fontFamily: SANS, position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && playing && !!g.t0 ? babelStage() : null}
+      {phoneStage && !!g.t0 ? babelStage() : null}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1268,12 +1268,12 @@ ${BB_CSS}
                 </div>
               </div>
 
-              {playing && (
+              {(playing || (STAGE && !revealed)) && (
                 <div className="bb-actions">
-                  <button type="button" className="bb-btn" disabled={!pending.length || thinking} onClick={() => { setPending([]); setArmed(null); }}>Recall</button>
-                  <button type="button" className="bb-btn" disabled={thinking} onClick={passTurn}>Pass</button>
-                  {g.t0 && <button type="button" className="bb-btn" onClick={giveTap} title={armGive ? 'Ends the endgame now' : 'End the endgame now; it scores 0'}><Flag size={14} /> {armGive ? 'Tap again' : 'Give up'}</button>}
-                  <button type="button" className="bb-btn play" disabled={!pending.length || thinking || (preview && !preview.ok)} onClick={playWord}>
+                  <button type="button" className="bb-btn" disabled={!playing || !pending.length || thinking} onClick={() => { setPending([]); setArmed(null); }}>Recall</button>
+                  <button type="button" className="bb-btn" disabled={!playing || thinking} onClick={passTurn}>Pass</button>
+                  {g.t0 && <button type="button" className="bb-btn" disabled={!playing} onClick={giveTap} title={armGive ? 'Ends the endgame now' : 'End the endgame now; it scores 0'}><Flag size={14} /> {armGive ? 'Tap again' : 'Give up'}</button>}
+                  <button type="button" className="bb-btn play" disabled={!playing || !pending.length || thinking || (preview && !preview.ok)} onClick={playWord}>
                     Play{preview && preview.ok ? ` ${preview.score}` : ''}
                   </button>
                 </div>
@@ -1281,7 +1281,7 @@ ${BB_CSS}
 
               <div className="bb-status" aria-live="polite">
                 <span className={`l1 bb-statusline${statusBad ? ' bad' : ''}`}>{statusLine}</span>
-                {playing && <span className="l2">Go out first and their leftover tiles come off their score and onto yours.</span>}
+                {(playing || (STAGE && !revealed)) && <span className="l2">Go out first and their leftover tiles come off their score and onto yours.</span>}
               </div>
 
               <div className="bb-folds">
@@ -1306,7 +1306,7 @@ ${BB_CSS}
 
           </div>
           <div className={STAGE ? undefined : 'loft-sol'}>
-          {!playing && !endHold.held && (
+          {!playing && !endHold.held && (!STAGE || revealed) && (
             <>
               <div style={{ maxWidth: 480, margin: '16px 0 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>

@@ -735,7 +735,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && playing && !!g.t0 && (() => {
+      {phoneStage && !!g.t0 && (() => {
         // The phone stage (owner, 2026-10-25): one prompt at a time, three
         // answer fields, Back and Next walk the prompts with goTo, and the last
         // Next is the same Lock in (faceTheCrowd) the desktop board uses.
@@ -809,7 +809,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
                 <div className="fud-nav">
                   <button type="button" className="pst-tb" disabled={step === 0} onClick={() => go(step - 1)}>Back</button>
                   {last ? (
-                    <button type="button" className="pst-tb on" disabled={sending || !readyToFace} onClick={faceTheCrowd}>{sending ? 'Facing the crowd…' : 'Lock in'}</button>
+                    <button type="button" className="pst-tb on" disabled={!playing || sending || !readyToFace} onClick={faceTheCrowd}>{sending ? 'Facing the crowd…' : 'Lock in'}</button>
                   ) : (
                     <button type="button" className="pst-tb on" onClick={() => go(step + 1)}>Next</button>
                   )}
@@ -962,7 +962,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
             board): a progress strip, the question large, and a game-show answer
             board of three numbered slots, each with its points sealed. Every
             prompt stays editable from the strip until the final lock-in. */}
-        {!preStart && playing && (() => {
+        {!preStart && (playing || (STAGE && !revealed)) && (() => {
           const row = g.entries[step] || [];
           const done = row.some((t) => t && t.trim());
           const last = step === P - 1;
@@ -1056,7 +1056,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
           </div>
           <div className={STAGE ? undefined : 'loft-sol'}>
           {/* result */}
-          {!playing && result && (
+          {!playing && result && (!STAGE || revealed) && (
             <>
               <div style={{ maxWidth: 472, margin: '0 auto 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', borderRadius: 10, padding: '12px 14px' }}>

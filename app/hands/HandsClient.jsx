@@ -374,6 +374,9 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
   const started = !!g.t0;
   const preStart = !started && playing;
   const done = g.status === 'done';
+  // The board keeps its in-play look through the finish (owner, 2026-10-29):
+  // on the stage nothing in it changes until the player asks to see it again.
+  const inPlayLook = playing || (STAGE && !revealed);
   const total = useMemo(() => totalOf(grid), [grid]);
   const par = PUZZLE.par;
   const ace = PUZZLE.ace;
@@ -788,16 +791,14 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
             </>}
             bottom={
               <div className="pst-tools">
-                {playing && muckLeft && (
-                  <button type="button" className="pst-tb" onClick={muck}>
+                {muckLeft && (
+                  <button type="button" className="pst-tb" disabled={!playing} onClick={muck}>
                     <Undo2 size={16} aria-hidden="true" /> Muck this card
                   </button>
                 )}
-                {playing && (
-                  <button type="button" className={'pst-tb hst-q2' + (armGive ? ' on' : '')} onClick={tapGiveUp}>
-                    <Flag size={16} aria-hidden="true" /> {armGive ? 'Tap again to give up' : 'Give up'}
-                  </button>
-                )}
+                <button type="button" className={'pst-tb hst-q2' + (armGive ? ' on' : '')} disabled={!playing} onClick={tapGiveUp}>
+                  <Flag size={16} aria-hidden="true" /> {armGive ? 'Tap again to give up' : 'Give up'}
+                </button>
               </div>
             }
             frac={g.placed.length / 25}
@@ -1021,7 +1022,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
                 <div className="hd-felt" style={{ padding: 12, borderRadius: 18, display: 'flex', flexDirection: 'column' }}>
                   {phoneHead}
                   <div style={{ marginTop: 14 }}>{renderGrid(grid, scores, rowFull, colFull, rowK, colK, true)}</div>
-                  {playing && (
+                  {inPlayLook && (
                     <span style={{ fontSize: 11, fontWeight: 600, color: S_MUTE, lineHeight: 1.4, paddingTop: 10 }}>Press and hold a square to preview its row and column before you commit.</span>
                   )}
                 </div>
@@ -1030,15 +1031,15 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
                   {deskLeft}
                   <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {renderGrid(grid, scores, rowFull, colFull, rowK, colK, true)}
-                    {playing && (
+                    {inPlayLook && (
                       <span style={{ fontSize: 12, fontWeight: 600, color: S_MUTE, marginTop: 'auto', paddingTop: 8, lineHeight: 1.45 }}>Hovering a square shows what each of its two lines would hold. A line scores the moment its fifth card lands.</span>
                     )}
                   </div>
                 </div>
               )}
-              {playing && started && (
+              {inPlayLook && started && (
                 <div style={{ display: 'flex', justifyContent: narrow ? 'center' : 'flex-end', paddingTop: 10 }}>
-                  <button type="button" className="hd-tool" onClick={tapGiveUp}
+                  <button type="button" className="hd-tool" disabled={!playing} onClick={tapGiveUp}
                     title={armGive ? 'Ends the round now' : 'End the round now. Full lines keep their points.'}
                     style={{ minHeight: 44, ...(armGive ? { borderColor: 'var(--stg-warn, #b45309)', color: 'var(--stg-warn, #b45309)' } : null) }}>
                     <Flag size={15} /> {armGive ? 'Tap again to give up' : 'Give up'}
@@ -1047,7 +1048,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
               )}
               <div style={{ padding: '10px 2px 0', fontSize: narrow ? 11 : 12, fontWeight: 600, color: S_MUTE }}>Same deal for everybody. Every square serves one row and one column.</div>
 
-              {done && (won || !LOFT || revealed) && (
+              {done && (STAGE ? revealed : (won || !LOFT || revealed)) && (
                 <div style={{ marginTop: 12, textAlign: 'center' }}>
                   <button type="button" onClick={() => setShowBest((v) => !v)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: FADED, textDecoration: 'underline', textUnderlineOffset: 3, minHeight: 44 }}>
@@ -1072,7 +1073,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
 
 
           <div className={STAGE ? undefined : 'loft-sol'}>
-          {done && (
+          {done && (!STAGE || revealed) && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '8px 0 0' }}>
                 You scored <span style={{ color: ACC_INK }}>{total} points</span>.
