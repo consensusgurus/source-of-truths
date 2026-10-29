@@ -1590,3 +1590,7 @@ html:is([data-stage-pastel^='dark'], [data-stage-tone^='dark']) :is(.stf-curtain
   background: var(--stg-dark-end, color-mix(in srgb, var(--sp-g, var(--stg-acc, #7dd3fc)) 24%, #0b0f1a)) !important;
   color: #e9edf4 !important;
 }
+
+/* THE ENDING TAKES OVER (2026-10-29): stages stay mounted through the finish so
+   no old board flashes; once an ending is on screen every stage steps aside. */
+html:has(.loft-back, .stf, .sst-page, .srl) :is(.pst, .wst, .bks){display:none !important;}

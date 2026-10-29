@@ -83,10 +83,16 @@ function useStageSlot(anchorRef, on) {
 }
 
 const HOST_CSS = `
-.stg-hosting > :not(.stg-hslot):not(.stg-top):not(:has(.stg-top)){display:none !important;}
+html:not(:has(.loft-back, .stf, .sst-page, .srl)) .stg-hosting > :not(.stg-hslot):not(.stg-top):not(:has(.stg-top)){display:none !important;}
 .stg-hslot{padding:6px 0 18px;}
 `;
 
+// THE ENDING TAKES OVER (2026-10-29). A stage now stays mounted through the
+// finish so no old board flashes, which means it is still up when the ending
+// arrives. The moment an ending is on screen (.loft-back, .stf, .sst-page,
+// .srl) the column comes back and every stage steps aside (the global rule in
+// app/globals.css hides the fixed ones too); before that, through the finish
+// hold, the finished stage board is what shows.
 // Wraps a stage's markup. `force` keeps the old explicit inline mode (the stage
 // rendered in place by its host). Returns { mode, inline, chrome, render }:
 // `inline` says to draw the in-page version (no top bar, no fixed frame),
