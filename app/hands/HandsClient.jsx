@@ -718,7 +718,10 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
       {/* THE PHONE STAGE (owner, 2026-10-25): the same deal drawn full screen.
           A tap on a square calls place(), Muck calls muck(), Give up its own
           two-tap arm; the stage keeps no state of its own. */}
-      {phoneStage && playing && started && (() => {
+      {/* Stays up after the last card (like every other phone stage) so the
+          finished deal, not the old in-page board, is what shows until the
+          ending covers it (owner, 2026-10-29). */}
+      {phoneStage && started && (() => {
         const hdTxt = (card) => `${RANK_LABEL[rankOf(card)]}${SUIT_PIP[suitOf(card)]}`;
         const hdFace = (card) => <span className="hst-pf">{RANK_LABEL[rankOf(card)]}<i>{SUIT_PIP[suitOf(card)]}</i></span>;
         const mucked = g.muckAt >= 0 ? PUZZLE.deck[g.muckAt] : null;
@@ -785,14 +788,16 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
             </>}
             bottom={
               <div className="pst-tools">
-                {muckLeft && (
+                {playing && muckLeft && (
                   <button type="button" className="pst-tb" onClick={muck}>
                     <Undo2 size={16} aria-hidden="true" /> Muck this card
                   </button>
                 )}
-                <button type="button" className={'pst-tb hst-q2' + (armGive ? ' on' : '')} onClick={tapGiveUp}>
-                  <Flag size={16} aria-hidden="true" /> {armGive ? 'Tap again to give up' : 'Give up'}
-                </button>
+                {playing && (
+                  <button type="button" className={'pst-tb hst-q2' + (armGive ? ' on' : '')} onClick={tapGiveUp}>
+                    <Flag size={16} aria-hidden="true" /> {armGive ? 'Tap again to give up' : 'Give up'}
+                  </button>
+                )}
               </div>
             }
             frac={g.placed.length / 25}
