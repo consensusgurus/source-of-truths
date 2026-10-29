@@ -41,6 +41,7 @@ import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
+import { useStageMode } from '../StageHost';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import useIqStanding from '../useIqStanding';
@@ -315,13 +316,15 @@ const STAGE_CSS = `
 .blk-paused b{font-size:24px;font-weight:800}
 .blk-paused span{font-size:13px;font-weight:700;opacity:.8}
 .blk-bot{display:flex;flex-direction:column;gap:10px}
-.blk-mid{display:grid;grid-template-columns:minmax(44px,1fr) auto minmax(44px,1fr);align-items:end;gap:6px}
-.blk-mid .blk-well{align-self:end}
-.blk-side{display:flex;align-items:flex-end;justify-content:center;align-self:stretch}
-.blk-side button{width:100%;max-width:76px;height:min(160px,48%);min-height:96px}
-.blk-pad{align-self:stretch;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:54px;gap:8px}
-.blk-pad button,.blk-side button{border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);color:var(--pst-ink);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.blk-lead{display:flex;justify-content:center;align-items:baseline;gap:6px;font-size:13px;font-weight:800;margin:2px 0 6px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.blk-lead em{font-style:normal;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.75}
+.blk-lead b{overflow:hidden;text-overflow:ellipsis;max-width:55%}
+.blk-mid{display:flex;justify-content:center}
+.blk-pad{align-self:stretch;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:52px;gap:8px;max-width:420px;width:100%;margin:0 auto}
+.blk-pad .slm{grid-column:1 / -1}
+.blk-pad button{border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);color:var(--pst-ink);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .blk-pad .slm{background:var(--pst-ink);color:var(--pst-bg);font-size:15px}
+.blk-padt{align-self:center;min-height:36px;padding:0 14px;font-size:13px}
 .blk-foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
 .blk-bar{display:block;height:6px;border-radius:3px;background:color-mix(in srgb, var(--pst-ink) 18%, transparent);overflow:hidden;flex:1;margin:0 12px}
 .blk-bar i{display:block;height:100%;background:var(--pst-ink);transition:width .25s}
@@ -452,6 +455,16 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
   // than drawn twice: drawWell and sizeWell read cvsRef every call, so the
   // remounted element is picked up and resized by the effect keyed on stageOn.
   const phoneStage = usePhoneStage();
+  // On-screen keys: always on a phone or a touch screen; on desktop hidden
+  // behind a Show controls button, remembered (owner, 2026-10-29).
+  const stageMode = useStageMode();
+  const [coarse, setCoarse] = useState(false);
+  useEffect(() => { try { setCoarse(!!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches)); } catch (e) {} }, []);
+  const [padOpt, setPadOpt] = useState(false);
+  useEffect(() => { try { setPadOpt(localStorage.getItem('sot_blocks_pad') === '1'); } catch (e) {} }, []);
+  const padAlways = stageMode === 'phone' || coarse;
+  const padShown = padAlways || padOpt;
+  const togglePad = () => setPadOpt((v) => { const n = !v; try { localStorage.setItem('sot_blocks_pad', n ? '1' : '0'); } catch (e) {} return n; });
   const stageOn = phoneStage && !!g.t0 && (playing || endHold.held || !revealed);
   const stageOnRef = useRef(false);
   stageOnRef.current = stageOn;
@@ -885,15 +898,15 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     // (owner, 2026-10-25: use the space), with the old 290px as the fallback.
     const vw = typeof window !== 'undefined' ? window.innerWidth : 390;
     const fw = stg
-      ? Math.max(120, Math.min(460, vw - 28 - 14 - 2 * (vw < 420 ? 44 + 6 : 76 + 8)))
+      ? Math.max(120, Math.min(460, vw - 28 - 14))
       : Math.max(120, box.clientWidth - (phone ? 0 : 146));
     let fh = stg ? stableVH() - 290 : stableVH() - (phone ? 310 : 300);
     if (stg && typeof document !== 'undefined') {
-      const hd = document.querySelector('.blk-hd'), bot = document.querySelector('.blk-bot');
+      const hd = document.querySelector('.blk-lead') || document.querySelector('.blk-hd'), bot = document.querySelector('.blk-bot');
       if (hd && bot) {
         const top = hd.getBoundingClientRect().bottom + (window.scrollY || 0);
         const used = top + bot.getBoundingClientRect().height + 14 /* well frame */ + 40 /* gaps and stage padding */;
-        if (used > 120 && used < 420) fh = stableVH() - used;
+        if (used > 120 && used < 520) fh = stableVH() - used;
       }
     }
     const cell = Math.max(14, Math.min(stg ? 40 : 34, Math.floor(Math.min(fw / COLS, fh / ROWS))));
@@ -926,7 +939,9 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     const stg = stageOnRef.current;
     const SINK = stg ? ((typeof window !== 'undefined' && getComputedStyle(cvs).getPropertyValue('--pst-ink').trim()) || '#08222e') : null;
     const SBG = stg ? ((typeof window !== 'undefined' && getComputedStyle(cvs).getPropertyValue('--pst-bg').trim()) || '#fde68a') : null;
-    const fillOf = (k) => (stg ? SINK : pieceFill(k, light));
+    // PASTELS ON THE STAGE TOO (owner, 2026-10-29): every shape keeps its
+    // category pastel with a thin edge in the stage ink.
+    const fillOf = (k) => pieceFill(k, light);
     const ease = (t) => 1 - Math.pow(1 - t, 3);
     const easeBack = (t) => { const c = 1.4; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
     // A tile: the shape's colour with a soft sheen on its upper half and a
@@ -944,7 +959,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
       rr(px + 1, py + 1, c - 1, c - 1, r);
       ctx.fillStyle = col; ctx.fill();
       // flat: one fill and a thin ink edge, no sheen (owner, 2026-10-27)
-      if (!stg) { ctx.lineWidth = 1.5; ctx.strokeStyle = PIECE_EDGE; ctx.stroke(); }
+      if (!o.color || !stg) { ctx.lineWidth = 1.5; ctx.strokeStyle = stg ? SINK : PIECE_EDGE; ctx.stroke(); }
       if (o.flash) { rr(px + 1, py + 1, c - 1, c - 1, r); ctx.fillStyle = `rgba(255,255,255,${Math.min(1, o.flash)})`; ctx.fill(); }
       ctx.restore();
     };
@@ -1024,7 +1039,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         if (!k) continue;
         let flash = 0;
         if (lf && lf.cells.some((c) => c[0] === x && c[1] === y)) flash = 0.6 * (1 - (now - lf.t0) / 200);
-        tile(x * cell, (y - sh) * cell, k, { flash, color: greyRow ? grey : null, alpha: greyRow ? (stg ? 0.3 : 0.55) : (stg ? 0.78 : 1) });
+        tile(x * cell, (y - sh) * cell, k, { flash, color: greyRow ? grey : null, alpha: greyRow ? (stg ? 0.3 : 0.55) : 1 });
       }
     }
     if (cl && ce < 1) {
@@ -1100,7 +1115,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     const on = () => sizeWell();
     window.addEventListener('resize', on);
     return () => window.removeEventListener('resize', on);
-  }, [hydrated, sizeWell, started, preStart, stageOn]);
+  }, [hydrated, sizeWell, started, preStart, stageOn, padShown]);
 
   // leaving the page never costs a run
   useEffect(() => {
@@ -1299,6 +1314,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
     </div>
   );
   const bestToday = Math.max(Number(board.best) || 0, ladder.rows.length && !ladder.rows[0].gap ? Number(ladder.rows[0].score) || 0 : 0);
+  const leadRow = ladder.rows.find((r) => !r.gap) || null;
   const stageEl = stageOn ? (
     <PlayStage
       bg={gameColor('blocks')}
@@ -1317,24 +1333,35 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
               height, never width, so left and right sit in the side gutters
               beside the bottom of the well, and only Rotate, Down and the
               new Drop (the slam) take a row below it. */}
+          {/* THE LEADER, ALWAYS SHOWN (owner, 2026-10-29). */}
+          <div className="blk-lead" aria-live="polite">
+            {leadRow
+              ? (leadRow.me
+                ? <><em>Leader</em><b>You</b><span>{nf(leadRow.score)}</span></>
+                : <><em>Leader</em><b>{leadRow.name}</b><span>{nf(leadRow.score)}</span></>)
+              : <><em>Leader</em><span>No runs yet today</span></>}
+          </div>
           <div className="blk-mid">
-            <div className="blk-side"><button type="button" className="lft" {...holdProps('left')} aria-label="Move left">&#9664;</button></div>
             <div className="blk-well">{wellEl}</div>
-            <div className="blk-side"><button type="button" className="rgt" {...holdProps('right')} aria-label="Move right">&#9654;</button></div>
           </div>
         </>
       )}
       bottom={(
         <div className="blk-bot">
-          <div className="blk-pad">
-            <button type="button" className="rot" {...tapProps('cw')} aria-label="Rotate">&#8635;</button>
-            <button type="button" className="dwn" {...holdProps('down')} aria-label="Soft drop">&#9660;</button>
-            <button type="button" className="slm" {...tapProps('drop')} aria-label="Drop to the bottom"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 5l6 6 6-6M6 12l6 6 6-6M5 21h14" /></svg>Drop</button>
-          </div>
-          <div className="blk-foot">
-            <span>Best today {nf(bestToday)}</span>
-            <span className="blk-bar" aria-hidden="true"><i style={{ width: `${Math.max(0, Math.min(1, PAR ? rowsCleared / PAR : 0)) * 100}%` }} /></span>
-          </div>
+          {/* ALL THE KEYS UNDER THE WELL (owner, 2026-10-29): left, rotate,
+              right in one row, Drop alone below. Always on on a phone or touch
+              screen; on desktop the keyboard plays and a button shows them. */}
+          {padShown ? (
+            <div className="blk-pad">
+              <button type="button" className="lft" {...holdProps('left')} aria-label="Move left">&#9664;</button>
+              <button type="button" className="rot" {...tapProps('cw')} aria-label="Rotate">&#8635;</button>
+              <button type="button" className="rgt" {...holdProps('right')} aria-label="Move right">&#9654;</button>
+              <button type="button" className="slm" {...tapProps('drop')} aria-label="Drop to the bottom"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 5l6 6 6-6M6 12l6 6 6-6M5 21h14" /></svg>Drop</button>
+            </div>
+          ) : null}
+          {!padAlways ? (
+            <button type="button" className="pst-tb blk-padt" onClick={togglePad}>{padOpt ? 'Hide controls' : 'Show controls'}</button>
+          ) : null}
         </div>
       )}
     />
