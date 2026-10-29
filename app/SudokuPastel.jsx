@@ -17,7 +17,24 @@
 // the attribute is counted rather than set and cleared by whoever ran last.
 
 import { useEffect, useState } from 'react';
-import { usePhoneStage } from './WordStage';
+// NOT usePhoneStage (owner report, 2026-10-29: dark with colour went white on
+// desktop puzzle pages). usePhoneStage was widened on 2026-10-28 to mean "a
+// stage is drawing", true on ANY .stage-page at any width, which made every
+// desktop read as a phone here: the desktop tone came off, the light force went
+// on, and the phone register's colours (all under max-width:899px) never apply.
+// This register needs the WIDTH, so it keeps its own width-only reader.
+function useNarrow() {
+  const [n, setN] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(max-width: 899px)');
+    const f = () => setN(mq.matches);
+    f();
+    if (mq.addEventListener) mq.addEventListener('change', f); else mq.addListener(f);
+    return () => { if (mq.removeEventListener) mq.removeEventListener('change', f); else mq.removeListener(f); };
+  }, []);
+  return n;
+}
 import { useStageLook, nextMainLook, readLook } from '@/lib/stage-look';
 import { forceStageTheme } from '@/lib/stage-theme';
 import { softGround } from '@/lib/category-ramp';
@@ -63,7 +80,7 @@ function useLcFocus() {
 // page look as before.
 export default function useSudokuPastel(active, ground, lookIn = null) {
   const focus = useLcFocus();
-  const narrow = usePhoneStage();
+  const narrow = useNarrow();
   const phone = narrow || focus;
   const on = !!active && phone;
   // ONE OWNER FOR --sp-g (owner report, 2026-10-27: Taire's ending band came
