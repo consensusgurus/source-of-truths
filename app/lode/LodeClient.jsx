@@ -588,6 +588,19 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
   const botRow = order.slice(Math.ceil(order.length / 2));
 
   const foundSorted = useMemo(() => g.found.slice().sort(), [g.found]);
+  // The phone stage lists EVERY mined word (alphabetical, like the haul) so a
+  // player can check before retyping one; the box scrolls, and a fresh word is
+  // brought into view inside it without moving the page (player report, 2026-10-29).
+  const foundBoxRef = useRef(null);
+  useEffect(() => {
+    const box = foundBoxRef.current;
+    if (!box || !flash) return;
+    const chip = box.querySelector('.new');
+    if (!chip) return;
+    const top = chip.offsetTop - box.offsetTop;
+    if (top < box.scrollTop) box.scrollTop = top - 4;
+    else if (top + chip.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = top + chip.offsetHeight - box.clientHeight + 4;
+  }, [flash]);
   const spareSorted = useMemo(() => (g.spare || []).slice().sort(), [g.spare]);
   const pct = Math.min(100, Math.round((score / Math.max(1, MAXSCORE)) * 100));
 
@@ -664,7 +677,8 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
                 .lds-steps{display:flex;gap:4px;}
                 .lds-steps i{flex:1;height:8px;border-radius:4px;background:color-mix(in srgb, var(--pst-ink) 18%, transparent);}
                 .lds-steps i.on{background:var(--pst-ink);}
-                .lds-found{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+                .lds-found{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-height:134px;overflow-y:auto;overscroll-behavior:contain;padding:2px 0;}
+                .lds-found-n{font-size:12px;font-weight:800;text-align:center;opacity:.7;margin-bottom:-4px;}
                 .lds-found span{font-size:13px;font-weight:800;padding:5px 10px;border:2px solid var(--pst-ink);border-radius:999px;display:flex;gap:6px;background:var(--pst-tint);}
                 .lds-found span.new{background:var(--pst-ink);color:var(--pst-bg);}
                 .lds-found b{opacity:.6;}
@@ -686,8 +700,11 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
                 </div>
               </div>
               {g.found.length > 0 && (
-                <div className="lds-found" aria-label="Words found">
-                  {g.found.slice().reverse().slice(0, 12).map((w) => (
+                <div className="lds-found-n">{g.found.length} word{g.found.length === 1 ? '' : 's'} mined</div>
+              )}
+              {g.found.length > 0 && (
+                <div className="lds-found" ref={foundBoxRef} aria-label="Words found">
+                  {foundSorted.map((w) => (
                     <span key={w} className={flash === w ? 'new' : undefined}>{w}<b>{WORDS.get(w)?.p}</b></span>
                   ))}
                 </div>
