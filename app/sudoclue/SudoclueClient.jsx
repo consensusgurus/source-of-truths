@@ -221,28 +221,13 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const [sel, setSel] = useState(CAST[0]);
   const [mode, setMode] = useState('place');
   const [clueView, setClueView] = useState('person');
-  // THE PHONE DOCK (owner, 2026-10-30): the cast strip by default; pick a person and their face slides left
-  // with their clues rotating beside it and the role buttons beneath; tap the face again, or place them on a
-  // square, and it goes back to the full list.
-  const [focus, setFocus] = useState(null);
-  const [clueIdx, setClueIdx] = useState(0);
-  const [narrow, setNarrow] = useState(false);
-  const [showAll, setShowAll] = useState(false);
   // THE RATING POP-UP (owner, 2026-10-30, Sudoclue only): stars and easy-to-hard, each 1 to 5. Once per
   // board, 10 seconds after the game ends, never during play (the standing pop-up rule).
   const [rateOpen, setRateOpen] = useState(false);
-  // Sheets render into the page root, not <body>, so they keep the stage's colour variables.
-  const rootRef = useRef(null);
   const [rateStars, setRateStars] = useState(0);
   const [rateHard, setRateHard] = useState(0);
-  useEffect(() => {
-    try {
-      const mq = window.matchMedia('(max-width: 899px)');
-      const on = () => setNarrow(mq.matches);
-      on(); mq.addEventListener('change', on);
-      return () => mq.removeEventListener('change', on);
-    } catch (e) { return undefined; }
-  }, []);
+  // Sheets render into the page root, not <body>, so they keep the stage's colour variables.
+  const rootRef = useRef(null);
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
   const [toast, setToast] = useState(null);
@@ -479,7 +464,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     if (!cur.t0) { startGame(); }
     const occ = CAST.find((p) => cur.place[p] && `${cur.place[p][0]},${cur.place[p][1]}` === k);
     if (mode === 'mark') {
-      if (occ) { setSel(occ); setFocus(occ); setClueIdx(0); return; }
+      if (occ) { setSel(occ); return; }
       commit({ ...gRef.current, cross: { ...cur.cross, [k]: !cur.cross[k] } });
       return;
     }
@@ -487,8 +472,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       if (occ === sel) {
         const place = { ...cur.place }; delete place[occ];
         commit({ ...gRef.current, place });
-        setFocus(null);
-      } else { setSel(occ); setFocus(occ); setClueIdx(0); }
+      } else { setSel(occ); }
       return;
     }
     if (!IDX.isOpen(k)) { vibrate(HAPT.wrong); say(`Nobody can stand there: ${cellTitle(LAYOUT, k)}.`); return; }
@@ -497,7 +481,8 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     const cross = { ...cur.cross }; delete cross[k];
     commit({ ...gRef.current, place: { ...cur.place, [sel]: [r, c] }, cross });
     vibrate(HAPT.ok);
-    setFocus(null);
+    // Placing someone new moves the pen on to the next person still to place, so a run of taps fills the board.
+    if (!cur.place[sel]) { const nx = CAST.find((q) => q !== sel && !cur.place[q]); if (nx) setSel(nx); }
   }
 
   function setRole(p, r) {
@@ -635,13 +620,13 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   // on one screen ... integrate that and job / role"). The board is capped to the screen height so the
   // dossier card (the cast strip, the selected person's name, their role picker and their clues) shows
   // beneath it on a phone and beside it on a desktop, with no scrolling between them.
+  // Rows and columns already holding someone are shaded, so the next free square is easy to see.
+  const takenRC = new Set();
+  for (const q of CAST) { const x = g.place[q]; if (!x) continue; for (let i = 0; i < N; i++) { takenRC.add(`${x[0]},${i}`); takenRC.add(`${i},${x[1]}`); } }
   const boardEl = (
-    <div className="sc-board" style={{ position: 'relative', width: '100%', margin: '0 auto', borderRadius: 10, overflow: 'hidden', boxShadow: '0 6px 22px rgba(0,0,0,0.28)' }}>
+    <div className="sc-board" style={{ position: 'relative', width: '100%', margin: '12px auto 0' }}>
+    <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', boxShadow: '0 6px 22px rgba(0,0,0,0.28)' }}>
       <div dangerouslySetInnerHTML={{ __html: svg }} />
-      {/* The place, written into the board (owner, 2026-10-30), top centre, in the game's own colour. */}
-      <div aria-hidden="true" style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', zIndex: 2, pointerEvents: 'none', whiteSpace: 'nowrap', background: STAGE ? 'var(--stg-acc)' : COLORS.accent, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 'clamp(10px, 2.6vw, 13px)', letterSpacing: '0.06em', textTransform: 'uppercase', borderRadius: 999, padding: '4px 12px', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-        {LAYOUT.title} · {LAYOUT.place.split(',')[0]}
-      </div>
       {playing && (
         <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: `repeat(${N}, 1fr)`, gridTemplateRows: `repeat(${N}, 1fr)` }}>
           {Array.from({ length: N * N }, (_, i) => {
@@ -650,11 +635,16 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
             return (
               <button key={k} type="button" onClick={() => tapCell(k)}
                 aria-label={`${cellTitle(LAYOUT, k)}, row ${r + 1}, column ${c + 1}${occ ? `, ${occ}` : ''}`}
-                className="sc-hit" style={{ background: 'transparent', border: 'none', padding: 0, margin: 0, cursor: IDX.isOpen(k) || occ ? 'pointer' : 'default' }} />
+                className="sc-hit" style={{ background: !occ && takenRC.has(k) ? 'rgba(11,15,26,0.30)' : 'transparent', border: 'none', padding: 0, margin: 0, cursor: IDX.isOpen(k) || occ ? 'pointer' : 'default' }} />
             );
           })}
         </div>
       )}
+    </div>
+      {/* The place, written into the board (owner, 2026-10-30), straddling the top edge so it never covers a square, in the game's own colour. */}
+      <div aria-hidden="true" style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', zIndex: 2, pointerEvents: 'none', whiteSpace: 'nowrap', background: STAGE ? 'var(--stg-acc)' : COLORS.accent, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 'clamp(10px, 2.6vw, 13px)', letterSpacing: '0.06em', textTransform: 'uppercase', borderRadius: 999, padding: '4px 12px', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+        {LAYOUT.title} · {LAYOUT.place.split(',')[0]}
+      </div>
     </div>
   );
 
@@ -670,167 +660,46 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   );
 
   const selPlace = g.place[sel] ? LAYOUT.rinfo[LAYOUT.rooms[g.place[sel][0]][g.place[sel][1]]].name : null;
-  const focusClues = focus ? clueList.filter((c) => c.p === focus || c.q === focus) : [];
-  useEffect(() => {
-    if (!focus || focusClues.length < 2) return undefined;
-    const t = setInterval(() => setClueIdx((i) => i + 1), 3800);
-    return () => clearInterval(t);
-  }, [focus, focusClues.length]);
-  function pickFace(p) {
-    if (focus === p) { setFocus(null); return; }
-    setSel(p); setFocus(p); setClueIdx(0);
-  }
-  const FACE = 38, GAP = 6;
-  const dock = playing && !preStart && (
-    <div className="sc-dock" style={{ fontFamily: SANS }}>
-      <div style={{ borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, overflow: 'hidden' }}>
-        <div style={{ height: 74, position: 'relative', overflow: 'hidden' }}>
-          {!focus ? (
-            <div role="listbox" aria-label="People" className="sc-strip" style={{ display: 'flex', gap: GAP, padding: '8px 10px', overflowX: 'auto', height: '100%', alignItems: 'flex-start' }}>
-              {CAST.map((p) => (
-                <button key={p} type="button" role="option" aria-selected={p === sel} onClick={() => pickFace(p)}
-                  style={{ flex: 'none', width: FACE + 6, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-                  <span style={{ borderRadius: '50%', boxShadow: p === sel ? `0 0 0 2px ${ACC}` : 'none', padding: 1 }}><Portrait id={p} size={FACE - 4} ring={CAST_COLORS[p]} dim={!g.place[p]} /></span>
-                  <span style={{ fontSize: 10.5, fontWeight: 800, color: p === sel ? INK : FADED, lineHeight: 1.1, maxWidth: FACE + 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p}</span>
-                  <span style={{ fontSize: 9.5, fontWeight: 800, color: ACC_INK, lineHeight: 1.1, minHeight: 10 }}>{g.roles[p] ? ROLE_ABBR[g.roles[p]] : ''}</span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', height: '100%' }}>
-              <button type="button" onClick={() => pickFace(focus)} aria-label={`${focus}, tap to show everyone`} className="sc-slide"
-                style={{ '--from': `${CAST.indexOf(focus) * (FACE + 6 + GAP)}px`, flex: 'none', width: FACE + 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-                <span style={{ borderRadius: '50%', boxShadow: `0 0 0 2px ${ACC}`, padding: 1 }}><Portrait id={focus} size={FACE} ring={CAST_COLORS[focus]} /></span>
-                <span style={{ fontSize: 11, fontWeight: 800, color: INK, lineHeight: 1.1 }}>{focus}</span>
-              </button>
-              {focusClues.length ? (() => {
-                const c = focusClues[clueIdx % focusClues.length];
-                return (
-                  <button type="button" onClick={() => setClueIdx((i) => i + 1)} className="sc-cluebtn"
-                    style={{ flex: 1, minWidth: 0, textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS }}>
-                    <span key={`${focus}-${clueIdx}`} className="sc-fade" style={{ display: 'block', fontSize: 15, fontWeight: 700, lineHeight: 1.3, color: g.struck[c.i] ? FADED : INK }}>{c.text}</span>
-                    <span style={{ display: 'flex', gap: 4, marginTop: 5, alignItems: 'center' }}>
-                      {focusClues.length > 1 && focusClues.map((x, k) => (
-                        <span key={k} style={{ width: 6, height: 6, borderRadius: '50%', background: k === clueIdx % focusClues.length ? ACC : SURF_B }} />
-                      ))}
-                      {focusClues.length > 1 && <span style={{ fontSize: 10.5, fontWeight: 700, color: FADED, marginLeft: 4 }}>{(clueIdx % focusClues.length) + 1} of {focusClues.length}</span>}
-                    </span>
-                  </button>
-                );
-              })() : (
-                <span className="sc-fade" style={{ flex: 1, fontSize: 13.5, fontWeight: 650, color: FADED, lineHeight: 1.35 }}>No clue names {focus}. Rows, columns and the role clues will place them.</span>
-              )}
-            </div>
-          )}
-        </div>
-        {focus && (
-          <div role="group" aria-label={`${focus}'s role`} className="sc-roles sc-fade" style={{ display: 'flex', gap: 5, padding: '0 10px 9px' }}>
-            {ROLE_ORDER.filter((r) => COUNTS[r]).map((r) => {
-              const left = COUNTS[r] - CAST.filter((q) => g.roles[q] === r).length;
-              const on = g.roles[focus] === r;
-              return (
-                <button key={r} type="button" onClick={() => setRole(focus, r)} aria-pressed={on}
-                  style={{ ...chipBase, flex: 'none', fontSize: 12, padding: '5px 9px', borderColor: on ? ACC : SURF_B, background: on ? ACC : 'transparent', color: on ? ON_ACC : (left > 0 ? INK : FADED) }}>
-                  {r}<span style={{ fontWeight: 700, opacity: 0.7 }}>{left}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-      <div className="sc-tools" style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 8 }}>
-        <button type="button" className="pk-btn" onClick={() => setShowAll(true)}>Clues</button>
-        <button type="button" className="pk-btn" onClick={() => setMode(mode === 'place' ? 'mark' : 'place')} aria-pressed={mode === 'mark'}
-          style={mode === 'mark' ? { borderColor: ACC, color: ACC_INK } : undefined}>{mode === 'mark' ? 'Marking' : 'Mark'}</button>
-        <button type="button" className="pk-btn" onClick={check}
-          style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white }}>
-          Check{placedN === N && rolesN === N ? '' : ` ${CAST.filter((q) => g.place[q] && g.roles[q]).length}/${N}`}
-        </button>
-        <button type="button" className="pk-btn" onClick={clearTap} style={armClear ? { color: BAD, borderColor: BAD } : undefined}>{armClear ? 'Sure?' : 'Clear'}</button>
-      </div>
-      {showAll && rootRef.current && createPortal(
-        <div onClick={() => setShowAll(false)} style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(8,10,16,0.5)', display: 'flex', alignItems: 'flex-end' }}>
-          <div onClick={(e) => e.stopPropagation()} className="sc-sheet" style={{ width: '100%', maxHeight: '72svh', overflowY: 'auto', background: STAGE ? 'var(--stg-raise, #0e131f)' : T.white, borderRadius: '16px 16px 0 0', padding: '14px 14px 20px', borderTop: `1px solid ${SURF_B}` }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <span style={{ fontSize: 16, fontWeight: 800, color: INK }}>All clues</span>
-              <button type="button" onClick={() => setShowAll(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 800, color: FADED, textDecoration: 'underline' }}>Done</button>
-            </div>
-            <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-              {clueList.map((c) => (
-                <li key={c.i}>
-                  <button type="button" onClick={() => toggleStruck(c.i)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, padding: '9px 0', cursor: 'pointer', fontFamily: SANS }}>
-                    {c.p ? <Portrait id={c.p} size={24} ring={CAST_COLORS[c.p]} /> : <RoleTag size={24} />}
-                    <span style={{ fontSize: 14.5, fontWeight: 650, lineHeight: 1.35, color: g.struck[c.i] ? FADED : INK, textDecoration: g.struck[c.i] ? 'line-through' : 'none' }}>{c.text}</span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>, rootRef.current
-      )}
-    </div>
-  );
-
+  // ONE PANEL, PHONE AND DESKTOP (owner, 2026-10-30: "revert mobile back to ability to see full list of
+  // clues ... cant figure out how to place players"). A prompt says exactly what the next tap does, the cast
+  // strip picks who, the role buttons sit under it, and every clue is listed with the selected person's first.
+  const ordered = [...mine, ...clueList.filter((c) => !mine.includes(c))];
+  const prompt = mode === 'mark' ? 'Tap squares to cross them out. Tap Mark again to go back to placing.'
+    : g.place[sel] ? `${sel} is ${LAYOUT.rinfo[LAYOUT.rooms[g.place[sel][0]][g.place[sel][1]]].out ? 'in the ' + LAYOUT.rinfo[LAYOUT.rooms[g.place[sel][0]][g.place[sel][1]]].name.replace(/^The /, '') + ' area' : 'in the ' + LAYOUT.rinfo[LAYOUT.rooms[g.place[sel][0]][g.place[sel][1]]].name.replace(/^The /, '')}. Tap another square to move them, or tap them on the board to take them off.`
+      : `Tap a square on the board to place ${sel}.`;
   const dossier = playing && !preStart && (
     <div className="sc-side" style={{ fontFamily: SANS }}>
       <div style={{ borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, overflow: 'hidden' }}>
-        {/* The cast strip: one tap picks a person. A dimmed face is not placed yet; the word under a name is the role given. */}
-        <div role="listbox" aria-label="People" className="sc-strip" style={{ display: 'flex', gap: 6, padding: '9px 10px 7px', overflowX: 'auto', borderBottom: `1px solid ${SURF_B}` }}>
+        <div aria-live="polite" style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 12px', background: 'var(--stg-surf2, #f1f3f7)', borderBottom: `1px solid ${SURF_B}` }}>
+          <Portrait id={sel} size={30} ring={CAST_COLORS[sel]} />
+          <span style={{ fontSize: 13.5, fontWeight: 750, lineHeight: 1.35, color: bad.has(sel) ? BAD : INK }}>{bad.has(sel) ? `${sel} shares a row or column with someone. One per row and column.` : prompt}</span>
+        </div>
+        {/* The cast strip: tap a face to pick who the next tap places. A dimmed face is not placed yet; the word under a name is the role given. */}
+        <div role="listbox" aria-label="People" className="sc-strip" style={{ display: 'flex', gap: 6, padding: '8px 10px 6px', overflowX: 'auto' }}>
           {CAST.map((p) => {
             const on = p === sel;
             return (
-              <button key={p} type="button" role="option" aria-selected={on} aria-label={`${p}${g.roles[p] ? `, ${g.roles[p]}` : ''}`} onClick={() => setSel(p)}
-                style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', padding: '2px 3px', cursor: 'pointer', borderRadius: 8, outline: on ? `2px solid ${ACC}` : 'none', outlineOffset: 0 }}>
-                <Portrait id={p} size={32} ring={CAST_COLORS[p]} dim={!g.place[p]} />
+              <button key={p} type="button" role="option" aria-selected={on} aria-label={`${p}${g.place[p] ? ', placed' : ', not placed'}${g.roles[p] ? `, ${g.roles[p]}` : ''}`} onClick={() => { setSel(p); if (mode === 'mark') setMode('place'); }}
+                style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: on ? 'var(--stg-surf2, #fff1f2)' : 'none', border: 'none', padding: '3px 4px', cursor: 'pointer', borderRadius: 9, outline: on ? `2px solid ${ACC}` : 'none' }}>
+                <Portrait id={p} size={34} ring={CAST_COLORS[p]} dim={!g.place[p]} />
                 <span style={{ fontSize: 10.5, fontWeight: 800, color: on ? INK : FADED, lineHeight: 1.1 }}>{p}</span>
                 <span style={{ fontSize: 9.5, fontWeight: 800, color: ACC_INK, lineHeight: 1.1, minHeight: 10 }}>{g.roles[p] ? ROLE_ABBR[g.roles[p]] : ''}</span>
               </button>
             );
           })}
         </div>
-        {/* The selected person: name, where they stand, their role, and the clues that name them. */}
-        <div style={{ padding: '9px 12px 4px' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 19, fontWeight: 800, color: INK, letterSpacing: '-0.01em' }}>{sel}</span>
-            <span style={{ fontSize: 12.5, fontWeight: 650, color: bad.has(sel) ? BAD : FADED }}>
-              {selPlace ? selPlace : 'not placed: tap a square'}{bad.has(sel) ? ' · shares a row or column' : ''}
-            </span>
-          </div>
-          <div role="group" aria-label={`${sel}'s role`} className="sc-roles" style={{ display: 'flex', gap: 5, marginTop: 7 }}>
-            {ROLE_ORDER.filter((r) => COUNTS[r]).map((r) => {
-              const left = COUNTS[r] - CAST.filter((q) => g.roles[q] === r).length;
-              const on = g.roles[sel] === r;
-              return (
-                <button key={r} type="button" onClick={() => setRole(sel, r)} aria-pressed={on}
-                  style={{ ...chipBase, flex: 'none', fontSize: 12, padding: '5px 9px', borderColor: on ? ACC : SURF_B, background: on ? ACC : 'transparent', color: on ? ON_ACC : (left > 0 ? INK : FADED) }}>
-                  {r}<span style={{ fontWeight: 700, opacity: 0.7 }}>{left}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <div style={{ padding: '6px 12px 4px' }}>
-          {clueView === 'person' && !mine.length && (
-            <div style={{ fontSize: 13, fontWeight: 600, color: FADED, padding: '6px 0 4px' }}>No clue names {sel}. The role clues may still reach them:</div>
-          )}
-          <ol className="sc-clues" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {shownClues.map((c) => (
-              <li key={c.i}>
-                <button type="button" onClick={() => toggleStruck(c.i)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, padding: '8px 0', cursor: 'pointer', fontFamily: SANS }}>
-                  {c.p ? <Portrait id={c.p} size={22} ring={CAST_COLORS[c.p]} /> : <RoleTag size={22} />}
-                  <span style={{ fontSize: 14, fontWeight: 650, lineHeight: 1.35, color: g.struck[c.i] ? FADED : INK, textDecoration: g.struck[c.i] ? 'line-through' : 'none' }}>{c.text}</span>
-                </button>
-              </li>
-            ))}
-          </ol>
-          <div style={{ display: 'flex', gap: 12, padding: '6px 0 8px', borderTop: `1px solid ${SURF_B}` }}>
-            {[['person', `${sel}'s clues`], ['roles', `Role clues (${roleClues.length})`], ['all', `All clues (${clueList.length})`]].map(([v, l]) => (
-              <button key={v} type="button" onClick={() => setClueView(v)} aria-pressed={clueView === v}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 12, fontWeight: 800, color: clueView === v ? ACC_INK : FADED, textDecoration: clueView === v ? 'none' : 'underline' }}>{l}</button>
-            ))}
-          </div>
+        <div role="group" aria-label={`${sel}'s role`} className="sc-roles" style={{ display: 'flex', gap: 5, padding: '0 10px 10px', alignItems: 'center' }}>
+          <span style={{ flex: 'none', fontSize: 11.5, fontWeight: 800, color: FADED, marginRight: 2 }}>{sel} was</span>
+          {ROLE_ORDER.filter((r) => COUNTS[r]).map((r) => {
+            const left = COUNTS[r] - CAST.filter((q) => g.roles[q] === r).length;
+            const on = g.roles[sel] === r;
+            return (
+              <button key={r} type="button" onClick={() => setRole(sel, r)} aria-pressed={on}
+                style={{ ...chipBase, flex: 'none', fontSize: 12, padding: '5px 9px', borderColor: on ? ACC : SURF_B, background: on ? ACC : 'transparent', color: on ? ON_ACC : (left > 0 ? INK : FADED) }}>
+                {r}<span style={{ fontWeight: 700, opacity: 0.7 }}>{left}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
       <div className="sc-tools" style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 }}>
@@ -841,6 +710,25 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           Check{placedN === N && rolesN === N ? '' : ` · ${CAST.filter((q) => g.place[q] && g.roles[q]).length} of ${N} done`}
         </button>
         <button type="button" className="pk-btn" onClick={clearTap} style={armClear ? { color: BAD, borderColor: BAD } : undefined}>{armClear ? 'Tap again to clear' : 'Clear'}</button>
+      </div>
+      <div style={{ marginTop: 10, borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '8px 12px 4px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED, padding: '2px 0 4px' }}>
+          <span>Clues</span><span style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 650 }}>tap one to cross it off</span>
+        </div>
+        <ol className="sc-clues" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          {ordered.map((c) => {
+            const hot = mine.includes(c);
+            return (
+              <li key={c.i}>
+                <button type="button" onClick={() => toggleStruck(c.i)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, boxShadow: hot ? `inset 3px 0 0 ${ACC}` : 'none', padding: hot ? '8px 0 8px 8px' : '8px 0', cursor: 'pointer', fontFamily: SANS }}>
+                  {c.p ? <Portrait id={c.p} size={22} ring={CAST_COLORS[c.p]} /> : <RoleTag size={22} />}
+                  <span style={{ fontSize: 14, fontWeight: hot ? 750 : 620, lineHeight: 1.35, color: g.struck[c.i] ? FADED : INK, textDecoration: g.struck[c.i] ? 'line-through' : 'none' }}>{c.text}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </div>
   );
@@ -893,7 +781,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.pk-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .pk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .pk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .sc-board{max-width:min(560px, calc(100svh - 270px));min-width:min(100%, 250px);}
+          .sc-board{max-width:min(560px, calc(100svh - 150px));min-width:min(100%, 250px);}
           @keyframes scSlide{from{transform:translateX(var(--from));}to{transform:none;}}
           @keyframes scFade{from{opacity:0;transform:translateX(14px);}to{opacity:1;transform:none;}}
           @keyframes scUp{from{transform:translateY(100%);}to{transform:none;}}
@@ -901,10 +789,8 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           .sc-fade{animation:scFade .3s ease-out;}
           .sc-sheet{animation:scUp .25s ease-out;}
           @media (prefers-reduced-motion: reduce){.sc-slide,.sc-fade,.sc-sheet{animation:none;}}
-          .sc-dock{position:sticky;bottom:0;z-index:5;padding-bottom:6px;background:var(--stg-ground, #f7f8fa);}
-          .sc-dock .pk-btn{padding:8px 12px;font-size:13.5px;}
+          @media(max-width:899px){.sc-tools .pk-btn{padding:8px 13px;font-size:13.5px;}}
           .sc-roles{overflow-x:auto;scrollbar-width:none;} .sc-roles::-webkit-scrollbar{display:none;}
-          .sc-clues{max-height:26svh;overflow-y:auto;}
           @media(max-width:899px){
             .sc-play{gap:8px !important;}
             .sc-tools .pk-btn{padding:8px 13px;font-size:13.5px;}
@@ -916,7 +802,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
             .sc-board{max-width:none;}
             .sc-side{position:sticky;top:12px;}
             .sc-roles{flex-wrap:wrap;overflow:visible;}
-            .sc-clues{max-height:calc(100vh - 380px);}
+            .sc-clues{max-height:calc(100vh - 420px);overflow-y:auto;}
           }
           .sc-hit:focus-visible{outline:3px solid var(--stg-acc, #be123c);outline-offset:-3px;border-radius:6px;}
         ` }} />
@@ -962,7 +848,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           <>
             <div className={playing ? 'sc-play' : undefined}>
               <div>{boardEl}</div>
-              {narrow ? dock : dossier}
+              {dossier}
             </div>
             {foot}
             {casePanel}
