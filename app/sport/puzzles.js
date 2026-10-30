@@ -1,7 +1,10 @@
 // Puzzle data for Sport, the daily sports gauntlet. Each day is twenty-five
 // question ids from questions.js in play order: five tiers of five, gimme to
-// expert, each tier cycling the same five sports lanes in this order: NFL, NBA,
-// MLB, Soccer, Everything Else. Imported by the server page (which resolves and
+// expert. Through 2026-10-30 each tier cycled the same five sports lanes in this
+// order: NFL, NBA, MLB, Soccer, Everything Else. From 2026-10-31 (owner: less US
+// centric) each tier runs World, US, World, US, World; the rules are in
+// scripts/sport-mix.mjs and the US surplus waits in
+// scripts/sport-lanes/sport-inventory.mjs. Imported by the server page (which resolves and
 // gates by Eastern date), the archive map, and the daily APIs. The extra qids
 // field is ignored by the shared daily consumers.
 //
@@ -622,124 +625,5 @@ export const PUZZLES = [
     live: '2026-11-13',
     dateLabel: 'November 13, 2026',
     qids: ['d81q01', 'd81q02', 'd81q03', 'd81q04', 'd81q05', 'd81q06', 'd81q07', 'd81q08', 'd81q09', 'd81q10', 'd81q11', 'd81q12', 'd81q13', 'd81q14', 'd81q15', 'd81q16', 'd81q17', 'd81q18', 'd81q19', 'd81q20', 'd81q21', 'd81q22', 'd81q23', 'd81q24', 'd81q25'],
-  },
-  {
-    num: 82,
-    quizId: 'sport-11-14-26',
-    live: '2026-11-14',
-    dateLabel: 'November 14, 2026',
-    qids: ['d82q01', 'd82q02', 'd82q03', 'd82q04', 'd82q05', 'd82q06', 'd82q07', 'd82q08', 'd82q09', 'd82q10', 'd82q11', 'd82q12', 'd82q13', 'd82q14', 'd82q15', 'd82q16', 'd82q17', 'd82q18', 'd82q19', 'd82q20', 'd82q21', 'd82q22', 'd82q23', 'd82q24', 'd82q25'],
-  },
-  {
-    num: 83,
-    quizId: 'sport-11-15-26',
-    live: '2026-11-15',
-    dateLabel: 'November 15, 2026',
-    qids: ['d83q01', 'd83q02', 'd83q03', 'd83q04', 'd83q05', 'd83q06', 'd83q07', 'd83q08', 'd83q09', 'd83q10', 'd83q11', 'd83q12', 'd83q13', 'd83q14', 'd83q15', 'd83q16', 'd83q17', 'd83q18', 'd83q19', 'd83q20', 'd83q21', 'd83q22', 'd83q23', 'd83q24', 'd83q25'],
-  },
-  {
-    num: 84,
-    quizId: 'sport-11-16-26',
-    live: '2026-11-16',
-    dateLabel: 'November 16, 2026',
-    qids: ['d84q01', 'd84q02', 'd84q03', 'd84q04', 'd84q05', 'd84q06', 'd84q07', 'd84q08', 'd84q09', 'd84q10', 'd84q11', 'd84q12', 'd84q13', 'd84q14', 'd84q15', 'd84q16', 'd84q17', 'd84q18', 'd84q19', 'd84q20', 'd84q21', 'd84q22', 'd84q23', 'd84q24', 'd84q25'],
-  },
-  {
-    num: 85,
-    quizId: 'sport-11-17-26',
-    live: '2026-11-17',
-    dateLabel: 'November 17, 2026',
-    qids: ['d85q01', 'd85q02', 'd85q03', 'd85q04', 'd85q05', 'd85q06', 'd85q07', 'd85q08', 'd85q09', 'd85q10', 'd85q11', 'd85q12', 'd85q13', 'd85q14', 'd85q15', 'd85q16', 'd85q17', 'd85q18', 'd85q19', 'd85q20', 'd85q21', 'd85q22', 'd85q23', 'd85q24', 'd85q25'],
-  },
-  {
-    num: 86,
-    quizId: 'sport-11-18-26',
-    live: '2026-11-18',
-    dateLabel: 'November 18, 2026',
-    qids: ['d86q01', 'd86q02', 'd86q03', 'd86q04', 'd86q05', 'd86q06', 'd86q07', 'd86q08', 'd86q09', 'd86q10', 'd86q11', 'd86q12', 'd86q13', 'd86q14', 'd86q15', 'd86q16', 'd86q17', 'd86q18', 'd86q19', 'd86q20', 'd86q21', 'd86q22', 'd86q23', 'd86q24', 'd86q25'],
-  },
-  {
-    num: 87,
-    quizId: 'sport-11-19-26',
-    live: '2026-11-19',
-    dateLabel: 'November 19, 2026',
-    qids: ['d87q01', 'd87q02', 'd87q03', 'd87q04', 'd87q05', 'd87q06', 'd87q07', 'd87q08', 'd87q09', 'd87q10', 'd87q11', 'd87q12', 'd87q13', 'd87q14', 'd87q15', 'd87q16', 'd87q17', 'd87q18', 'd87q19', 'd87q20', 'd87q21', 'd87q22', 'd87q23', 'd87q24', 'd87q25'],
-  },
-  {
-    num: 88,
-    quizId: 'sport-11-20-26',
-    live: '2026-11-20',
-    dateLabel: 'November 20, 2026',
-    qids: ['d88q01', 'd88q02', 'd88q03', 'd88q04', 'd88q05', 'd88q06', 'd88q07', 'd88q08', 'd88q09', 'd88q10', 'd88q11', 'd88q12', 'd88q13', 'd88q14', 'd88q15', 'd88q16', 'd88q17', 'd88q18', 'd88q19', 'd88q20', 'd88q21', 'd88q22', 'd88q23', 'd88q24', 'd88q25'],
-  },
-  {
-    num: 89,
-    quizId: 'sport-11-21-26',
-    live: '2026-11-21',
-    dateLabel: 'November 21, 2026',
-    qids: ['d89q01', 'd89q02', 'd89q03', 'd89q04', 'd89q05', 'd89q06', 'd89q07', 'd89q08', 'd89q09', 'd89q10', 'd89q11', 'd89q12', 'd89q13', 'd89q14', 'd89q15', 'd89q16', 'd89q17', 'd89q18', 'd89q19', 'd89q20', 'd89q21', 'd89q22', 'd89q23', 'd89q24', 'd89q25'],
-  },
-  {
-    num: 90,
-    quizId: 'sport-11-22-26',
-    live: '2026-11-22',
-    dateLabel: 'November 22, 2026',
-    qids: ['d90q01', 'd90q02', 'd90q03', 'd90q04', 'd90q05', 'd90q06', 'd90q07', 'd90q08', 'd90q09', 'd90q10', 'd90q11', 'd90q12', 'd90q13', 'd90q14', 'd90q15', 'd90q16', 'd90q17', 'd90q18', 'd90q19', 'd90q20', 'd90q21', 'd90q22', 'd90q23', 'd90q24', 'd90q25'],
-  },
-  {
-    num: 91,
-    quizId: 'sport-11-23-26',
-    live: '2026-11-23',
-    dateLabel: 'November 23, 2026',
-    qids: ['d91q01', 'd91q02', 'd91q03', 'd91q04', 'd91q05', 'd91q06', 'd91q07', 'd91q08', 'd91q09', 'd91q10', 'd91q11', 'd91q12', 'd91q13', 'd91q14', 'd91q15', 'd91q16', 'd91q17', 'd91q18', 'd91q19', 'd91q20', 'd91q21', 'd91q22', 'd91q23', 'd91q24', 'd91q25'],
-  },
-  {
-    num: 92,
-    quizId: 'sport-11-24-26',
-    live: '2026-11-24',
-    dateLabel: 'November 24, 2026',
-    qids: ['d92q01', 'd92q02', 'd92q03', 'd92q04', 'd92q05', 'd92q06', 'd92q07', 'd92q08', 'd92q09', 'd92q10', 'd92q11', 'd92q12', 'd92q13', 'd92q14', 'd92q15', 'd92q16', 'd92q17', 'd92q18', 'd92q19', 'd92q20', 'd92q21', 'd92q22', 'd92q23', 'd92q24', 'd92q25'],
-  },
-  {
-    num: 93,
-    quizId: 'sport-11-25-26',
-    live: '2026-11-25',
-    dateLabel: 'November 25, 2026',
-    qids: ['d93q01', 'd93q02', 'd93q03', 'd93q04', 'd93q05', 'd93q06', 'd93q07', 'd93q08', 'd93q09', 'd93q10', 'd93q11', 'd93q12', 'd93q13', 'd93q14', 'd93q15', 'd93q16', 'd93q17', 'd93q18', 'd93q19', 'd93q20', 'd93q21', 'd93q22', 'd93q23', 'd93q24', 'd93q25'],
-  },
-  {
-    num: 94,
-    quizId: 'sport-11-26-26',
-    live: '2026-11-26',
-    dateLabel: 'November 26, 2026',
-    qids: ['d94q01', 'd94q02', 'd94q03', 'd94q04', 'd94q05', 'd94q06', 'd94q07', 'd94q08', 'd94q09', 'd94q10', 'd94q11', 'd94q12', 'd94q13', 'd94q14', 'd94q15', 'd94q16', 'd94q17', 'd94q18', 'd94q19', 'd94q20', 'd94q21', 'd94q22', 'd94q23', 'd94q24', 'd94q25'],
-  },
-  {
-    num: 95,
-    quizId: 'sport-11-27-26',
-    live: '2026-11-27',
-    dateLabel: 'November 27, 2026',
-    qids: ['d95q01', 'd95q02', 'd95q03', 'd95q04', 'd95q05', 'd95q06', 'd95q07', 'd95q08', 'd95q09', 'd95q10', 'd95q11', 'd95q12', 'd95q13', 'd95q14', 'd95q15', 'd95q16', 'd95q17', 'd95q18', 'd95q19', 'd95q20', 'd95q21', 'd95q22', 'd95q23', 'd95q24', 'd95q25'],
-  },
-  {
-    num: 96,
-    quizId: 'sport-11-28-26',
-    live: '2026-11-28',
-    dateLabel: 'November 28, 2026',
-    qids: ['d96q01', 'd96q02', 'd96q03', 'd96q04', 'd96q05', 'd96q06', 'd96q07', 'd96q08', 'd96q09', 'd96q10', 'd96q11', 'd96q12', 'd96q13', 'd96q14', 'd96q15', 'd96q16', 'd96q17', 'd96q18', 'd96q19', 'd96q20', 'd96q21', 'd96q22', 'd96q23', 'd96q24', 'd96q25'],
-  },
-  {
-    num: 97,
-    quizId: 'sport-11-29-26',
-    live: '2026-11-29',
-    dateLabel: 'November 29, 2026',
-    qids: ['d97q01', 'd97q02', 'd97q03', 'd97q04', 'd97q05', 'd97q06', 'd97q07', 'd97q08', 'd97q09', 'd97q10', 'd97q11', 'd97q12', 'd97q13', 'd97q14', 'd97q15', 'd97q16', 'd97q17', 'd97q18', 'd97q19', 'd97q20', 'd97q21', 'd97q22', 'd97q23', 'd97q24', 'd97q25'],
-  },
-  {
-    num: 98,
-    quizId: 'sport-11-30-26',
-    live: '2026-11-30',
-    dateLabel: 'November 30, 2026',
-    qids: ['d98q01', 'd98q02', 'd98q03', 'd98q04', 'd98q05', 'd98q06', 'd98q07', 'd98q08', 'd98q09', 'd98q10', 'd98q11', 'd98q12', 'd98q13', 'd98q14', 'd98q15', 'd98q16', 'd98q17', 'd98q18', 'd98q19', 'd98q20', 'd98q21', 'd98q22', 'd98q23', 'd98q24', 'd98q25'],
   },
 ];

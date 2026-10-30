@@ -1,0 +1,112 @@
+import { Suspense } from 'react';
+import MishmashClient from './MishmashClient';
+import StageTail from '../StageTail';
+import { isStageServer } from '@/lib/stage';
+import { PUZZLES } from './puzzles';
+import { getQuiz } from '@/lib/quizzes';
+import { quizDept, DEPT_LABEL } from '@/lib/quiz-departments';
+import { POTLUCK_FAMILY, FAMILY_LABEL, potluckAnswerCount } from '@/lib/potluck';
+import { T } from '@/lib/theme';
+import { SITE_URL } from '@/lib/site';
+import { categoryCrumb } from '@/lib/game-seo';
+
+// Mishmash launched 2026-10-30 (owner): Potluck's format, three catalog quizzes
+// a day, a different kind and a different subject each, scored together,
+// played back to back as one run, from its own bank (scripts/gen-quiz-mix.mjs). The day's three are resolved HERE,
+// on the server, so the 4MB quiz catalog never reaches the browser: the client
+// gets only the titles, labels and sizes it shows.
+
+export const metadata = {
+  title: 'Free Daily Trivia Quiz Mix: Mishmash | Mind Loft',
+  description:
+    'A free daily trivia mix: three quizzes to type, match and spot, sometimes on a map, each a new subject. Play all three and race the daily board.',
+  alternates: { canonical: '/mishmash' },
+  openGraph: {
+    images: [{ url: '/og/mishmash.png', width: 1200, height: 630, alt: 'Mishmash, a daily puzzle from Mind Loft' }],
+    title: 'Mishmash: Three Quizzes a Day',
+    description: 'Three quizzes, three subjects, one run, one score.',
+    url: '/mishmash', type: 'website', siteName: 'Mind Loft',
+  },
+  twitter: { images: ['/og/mishmash.png'], card: 'summary_large_image', title: 'Mishmash: Three Quizzes a Day', description: 'Three quizzes, three subjects, one score.' },
+};
+
+const gameJsonLd = {
+  '@context': 'https://schema.org', '@type': 'Game', name: 'Mishmash',
+  alternateName: 'Mishmash: Daily Quiz Mix', url: `${SITE_URL}/mishmash`,
+  description:
+    'A free daily trivia game made of three quizzes from the Mind Loft catalog, a sibling of Potluck and Mixtape with its own three. Every day brings one quiz where you type the answers, one where you match them, and one where you find them on a map or in pictures, each from a different subject. Each quiz is worth 10 points, scaled by how much of it you got, so the day is scored out of 30, and the combined clock breaks ties. The three are served back to back in one run, and finishing the third turns the day in automatically. Everyone gets the same three each day.',
+  genre: ['Trivia', 'Quiz'],
+  gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
+  numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
+  image: `${SITE_URL}/og/mishmash.png`,
+  publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
+};
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}` },
+    categoryCrumb('mishmash'),
+    { '@type': 'ListItem', position: 3, name: 'Mishmash' },
+  ],
+};
+
+export const dynamic = 'force-dynamic';
+
+function etTodayServer() {
+  try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
+  catch (e) { return new Date().toISOString().slice(0, 10); }
+}
+
+function ComingSoon({ first }) {
+  return (
+    <div style={{ minHeight: '100vh', background: T.surface, fontFamily: "'Manrope', system-ui, sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ textAlign: 'center', maxWidth: 420 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: '0 0 8px' }}>Mishmash opens {first ? first.dateLabel : 'soon'}.</h1>
+        <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
+          Three quizzes a day, each a different kind and a different subject, one score. Come back at midnight Eastern.
+        </p>
+        <a href="/" style={{ color: T.ink, fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
+      </div>
+    </div>
+  );
+}
+
+function fmtClock(sec) {
+  const s = Math.max(0, Number(sec) || 0);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+export default function MishmashPage({ searchParams }) {
+  const today = etTodayServer();
+  const visible = PUZZLES.filter((p) => p.live <= today);
+  if (!visible.length) return <ComingSoon first={PUZZLES[0]} />;
+  const n = Number(searchParams && searchParams.p);
+  const forceNum = Number.isInteger(n) && n > 0 ? n : null;
+  const picked = (forceNum && visible.find((p) => p.num === forceNum)) || visible[visible.length - 1];
+  const quizzes = picked.quizzes.map((id) => {
+    const q = getQuiz(id);
+    if (!q) return { id, title: id, dept: '', family: 'typed', familyLabel: '', answers: 0, clock: '' };
+    const family = POTLUCK_FAMILY[q.format || 'default'] || 'typed';
+    return {
+      id,
+      title: q.title,
+      dept: DEPT_LABEL[quizDept(q)] || q.category || 'Quiz',
+      family,
+      familyLabel: FAMILY_LABEL[family],
+      answers: potluckAnswerCount(q),
+      noun: q.noun || '',
+      clock: fmtClock(q.timeLimit),
+    };
+  });
+  const light = visible.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(gameJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <Suspense fallback={null}>
+        <MishmashClient key={picked.num} puzzles={light} day={{ ...picked }} quizzes={quizzes} forceNum={forceNum} />
+      </Suspense>
+      <StageTail self="mishmash" stage={isStageServer('mishmash', searchParams)} />
+    </>
+  );
+}

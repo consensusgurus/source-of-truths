@@ -152,6 +152,8 @@ export const DAILY_GAMES = [
   { key: 'foodie', href: '/foodie', name: 'Foodie', tag: 'food and drink, one life', store: 'sot_foodie_day', accent: '#c2410c', bg: '#fbefe7', border: 'rgba(194,65,12,0.4)' },
   { key: 'history', href: '/history', name: 'History', tag: 'history, one life', store: 'sot_history_day', accent: '#854d0e', bg: '#f8f1e4', border: 'rgba(133,77,14,0.4)' },
   { key: 'potluck', href: '/potluck', name: 'Potluck', tag: 'three quizzes, one score', store: 'sot_potluck_day', accent: '#b4532a', bg: '#fdf1ea', border: 'rgba(180,83,42,0.4)' },
+  { key: 'mixtape', href: '/mixtape', name: 'Mixtape', tag: 'three more quizzes, one score', store: 'sot_mixtape_day', accent: '#9d2f6b', bg: '#fbeef5', border: 'rgba(157,47,107,0.4)' },
+  { key: 'mishmash', href: '/mishmash', name: 'Mishmash', tag: 'another three quizzes, one score', store: 'sot_mishmash_day', accent: '#2f7a5c', bg: '#ecf7f1', border: 'rgba(47,122,92,0.4)' },
   { key: 'focus', href: '/focus', name: 'Focus', tag: 'name the zoomed-in photo', store: 'sot_focus_day', accent: '#8a4b08', bg: '#fdf3e6', border: 'rgba(138,75,8,0.4)' },
   { key: 'thread', href: '/thread', name: 'Thread', tag: 'nine films described badly, one thread', store: 'sot_thread_day', accent: '#8b2c6b', bg: '#f7e9f2', border: 'rgba(139,44,107,0.4)' },
   { key: 'slot', href: '/slot', name: 'Slot', tag: 'ten things, one at a time', store: 'sot_slot_day', accent: '#4a5d23', bg: '#eef2e3', border: 'rgba(74,93,35,0.4)' },

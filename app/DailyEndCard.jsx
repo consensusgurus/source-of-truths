@@ -89,7 +89,7 @@ import {
   Flame, Frame, Contrast, Layers, FileText, Waypoints, Anchor, PenLine, Gamepad2, Zap, Sigma, Sandwich,
   ArrowLeftRight, Gem, Map as MapIcon, Divide, TableProperties, TrendingUp, Milestone, Plane, CornerUpRight,
   Palette, Landmark, UtensilsCrossed,
-  Clapperboard, Quote, CookingPot, ZoomIn, Axe, Truck, Rows3, Boxes, MoveDiagonal, Crop, Scan, MoveDownRight,
+  Clapperboard, Quote, CookingPot, Disc3, Shuffle, ZoomIn, Axe, Truck, Rows3, Boxes, MoveDiagonal, Crop, Scan, MoveDownRight,
 } from 'lucide-react';
 import ReportIssue from './ReportIssue';
 import MindLoftMark from './MindLoftMark';
@@ -116,7 +116,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['sudoclue', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'mahj', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'foodie', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
+const LAUNCH_PIN = { keys: ['mixtape', 'mishmash', 'sudoclue', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'mahj', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'foodie', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -258,6 +258,8 @@ export const GAME_META = {
   foodie: { accent: '#c2410c', badgeBg: '#c2410c', badgeInk: T.white, Fin: UtensilsCrossed },
   history: { accent: '#854d0e', badgeBg: '#854d0e', badgeInk: T.white, Fin: Landmark },
   potluck: { accent: '#b4532a', badgeBg: '#b4532a', badgeInk: T.white, Fin: CookingPot },
+  mixtape: { accent: '#9d2f6b', badgeBg: '#9d2f6b', badgeInk: T.white, Fin: Disc3 },
+  mishmash: { accent: '#2f7a5c', badgeBg: '#2f7a5c', badgeInk: T.white, Fin: Shuffle },
   focus: { accent: '#8a4b08', badgeBg: '#8a4b08', badgeInk: T.white, Fin: ZoomIn },
   thread: { accent: '#8b2c6b', badgeBg: '#8b2c6b', badgeInk: T.white, Fin: Waypoints },
   slot: { accent: '#4a5d23', badgeBg: '#4a5d23', badgeInk: T.white, Fin: Rows3 },
@@ -433,9 +435,11 @@ const ALL_DAILY_GAMES = [
   { key: 'foodie', cat: 'trivia',   name: 'Foodie', tag: 'Food and drink, one life', blurb: 'Twenty-five food and drink questions, gimme to expert, five lanes a round from dishes of the world and the pantry to the bar, the kitchen and the history of what we eat. One wrong answer ends the run.', href: '/foodie' },
   { key: 'history', cat: 'trivia',   name: 'History', tag: 'History, one life', blurb: 'Twenty-five history questions, gimme to expert, five lanes a round from the ancient world and the Middle Ages to empires, wars and the modern era. One wrong answer ends the run.', href: '/history' },
   { key: 'potluck', cat: 'trivia',  name: 'Potluck', tag: 'Three quizzes, one score', blurb: 'Three quizzes a day from the catalog, one to type, one to match and one to spot, each from a different subject. Each is worth 10; turn it in whenever you are done.', href: '/potluck' },
+  { key: 'mixtape', cat: 'trivia',  name: 'Mixtape', tag: 'Three more quizzes, one score', blurb: 'Three quizzes a day from the catalog, one to type, one to match and one to spot, each from a different subject, back to back. Each is worth 10.', href: '/mixtape' },
+  { key: 'mishmash', cat: 'trivia',  name: 'Mishmash', tag: 'Another three quizzes, one score', blurb: 'Three quizzes a day from the catalog, one to type, one to match and one to spot, each from a different subject, back to back. Each is worth 10.', href: '/mishmash' },
   { key: 'quotes', cat: 'trivia',   name: 'Quotes', tag: 'Who said it, one life', blurb: 'Twenty-five famous lines, gimme to expert, five lanes a round from presidents and generals to scientists, writers and the odd film character. One wrong attribution ends the run.', href: '/quotes' },
   { key: 'biz',   cat: 'trivia',    name: 'Biz',   tag: 'Business, one life', blurb: 'Twenty-five business questions, gimme to expert, five lanes a round from brands and markets to founders, deals and business history. One wrong answer ends the run.', href: '/biz' },
-  { key: 'sport', cat: 'trivia',    name: 'Sport', tag: 'Every sport, one life', blurb: 'Twenty-five sports questions, gimme to expert, five lanes a round from the NFL to the Olympics. One wrong answer ends the run.', href: '/sport' },
+  { key: 'sport', cat: 'trivia',    name: 'Sport', tag: 'Every sport, one life', blurb: 'Twenty-five sports questions, gimme to expert, three world and two American questions a round, from soccer to the NFL. One wrong answer ends the run.', href: '/sport' },
   { key: 'atlas', cat: 'geography', name: 'Atlas', tag: 'Twenty-five questions, one life', blurb: 'Twenty-five geography questions, gimme to expert, five subjects a round. One wrong answer ends the run.', href: '/atlas' },
   { key: 'flank', cat: 'geography', name: 'Flank', tag: 'Name every neighbor', blurb: 'One country a day; name every country on its land border before three wrong countries end the run. Sundays hand you a fourteen-neighbor giant.', href: '/flank' },
   { key: 'anon',  cat: 'word',       name: 'Anon',   tag: 'A clueless acrostic',    blurb: "An unsigned passage and a bank of answers built from its letters. Solve them, and their first letters spell out who wrote it.", href: '/anon' },

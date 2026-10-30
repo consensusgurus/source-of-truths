@@ -1,0 +1,394 @@
+'use client';
+
+// Mishmash, a daily quiz mix (owner, 2026-10-30): Potluck's format with its own
+// bank. Three catalog quizzes a day, one to type, one to match and one to spot
+// (sometimes on a map), each from a different subject, played back to back in
+// one run. app/mishmash/puzzles.js is built by scripts/gen-quiz-mix.mjs together
+// with Mixtape's so Potluck, Mixtape and Mishmash never serve the same quiz on
+// the same day. The run engine is lib/potluck.js, keyed by day.game. This file
+// is app/potluck/PotluckClient.jsx with the name changed; keep the three in step.
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { X } from 'lucide-react';
+import Grain from '../Grain';
+import DailyRules from '../DailyRules';
+import Footer from '../Footer';
+import DailyChrome from '../DailyChrome';
+import ReportIssue from '../ReportIssue';
+import StageFold from '../StageFold';
+import LoftCap from '../LoftCap';
+import StageChrome from '../StageChrome';
+import GamePanel from '../GamePanel';
+import LoftFinish from '../LoftFinish';
+import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
+import AddToHome from '../AddToHome';
+import useIqStanding from '../useIqStanding';
+import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
+import useDailyBoard from '../useDailyBoard';
+import useGameAllTime from '../useGameAllTime';
+import useDayStats from '../useDayStats';
+import useCategoryRank from '../useCategoryRank';
+import { isStage } from '@/lib/stage';
+import { isLoft } from '@/lib/loft';
+import { useStageTheme } from '@/lib/stage-theme';
+import { gameColor, gameColorLight, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
+import { isMobileDevice } from '@/lib/is-mobile';
+import { withRef } from '@/lib/referrals';
+import { notifyShareCredit } from '../ShareCreditPop';
+import { CONTEST, contestIsLive } from '@/lib/contest';
+import { T } from '@/lib/theme';
+import { loadRun, startRun, potluckScore, potluckNextSlot, potluckSlotHref, etToday, PER_QUIZ, POT_TOTAL } from '@/lib/potluck';
+import { endGrade } from '@/lib/end-verdict';
+import HelpSheet from '../HelpSheet';
+
+const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
+const HELP_KEY = 'sot_mishmash_help_seen';
+const ACCENT = '#2f7a5c';
+
+function fmtTime(sec) {
+  const s = Math.max(0, Math.round(Number(sec) || 0));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+function msToMidnightET() {
+  try {
+    const now = new Date();
+    const et = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    const next = new Date(et); next.setHours(24, 0, 0, 0);
+    return next - et;
+  } catch (e) { return 0; }
+}
+function fmtCountdown(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(s / 3600)}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+}
+function getStats() {
+  try { const s = JSON.parse(localStorage.getItem('sot_mishmash_stats')); if (s && s.rec) return s; } catch (e) {}
+  return { v: 1, rec: {} };
+}
+function streakOf(s, todayNum) {
+  const rec = (s && s.rec) || {};
+  let cur = 0, at = rec[todayNum] ? todayNum : todayNum - 1;
+  while (rec[at]) { cur++; at--; }
+  return cur;
+}
+
+export default function MishmashClient({ puzzles = [], day, quizzes = [], forceNum = null }) {
+  const searchParams = useSearchParams();
+  const [run, setRun] = useState(null);
+  const [hydrated, setHydrated] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [countdown, setCountdown] = useState('');
+  const [identity, setIdentity] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [shareCta, setShareCta] = useState('Share');
+
+  useEffect(() => {
+    setRun(loadRun(day.num, 'mishmash'));
+    setStats(getStats());
+    try { const id = JSON.parse(localStorage.getItem('sot_quiz_identity')); if (id && id.username) setIdentity(id); } catch (e) {}
+    try { if (!localStorage.getItem(HELP_KEY)) setShowHelp(false); } catch (e) {}
+    if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
+    setHydrated(true);
+    // A quiz finished in another tab (or this one, before the back button)
+    // shows up the moment the page is looked at again.
+    const sync = () => { setRun(loadRun(day.num, 'mishmash')); setStats(getStats()); };
+    window.addEventListener('focus', sync);
+    window.addEventListener('pageshow', sync);
+    window.addEventListener('storage', sync);
+    try { fetch('/api/quiz/view', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ quizId: day.quizId }) }).catch(() => {}); } catch (e) {}
+    return () => {
+      window.removeEventListener('focus', sync);
+      window.removeEventListener('pageshow', sync);
+      window.removeEventListener('storage', sync);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const cur = run || { done: {}, turnedIn: false, t0: null };
+  const turnedIn = !!cur.turnedIn;
+  const playing = !turnedIn;
+  const { score, time, played } = potluckScore(day, cur);
+  const total = POT_TOTAL;
+  const won = turnedIn && score === total;
+  const started = !!cur.t0;
+  const isTodays = day.live === etToday();
+
+  useEffect(() => {
+    if (playing) return undefined;
+    const tick = () => setCountdown(fmtCountdown(msToMidnightET()));
+    tick();
+    const iv = setInterval(tick, 1000);
+    return () => clearInterval(iv);
+  }, [playing]);
+
+  const LOFT = isLoft('mishmash');
+  const STAGE = isStage('mishmash', searchParams);
+  const [stageTheme] = useStageTheme();
+  const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('mishmash');
+  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('mishmash');
+  const STAGE_ACC = { '--stg-acc-dk': gameColor('mishmash'), '--stg-acc-lt': gameColorLight('mishmash'), '--stg-onramp-lt': gameOnrampLight('mishmash'), '--stg-acc-ink-lt': gameAccentInkLight('mishmash') };
+  const Cap = STAGE ? StageChrome : LoftCap;
+  const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : T.ink;
+  const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : T.muted;
+  const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
+  const LINE = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.25)';
+  const CELL = STAGE ? 'var(--stg-cell,rgba(255,255,255,0.03))' : T.surface;
+  const ACC = STAGE ? STAGE_C : ACCENT;
+  const ACC_INK = STAGE ? 'var(--stg-acc-ink)' : ACCENT;
+  const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : T.white;
+  const GOOD = STAGE ? 'var(--stg-good,#3fb27f)' : T.successDeep;
+
+  const finished = LOFT && !playing;
+  const iq = useIqStanding({ game: 'mishmash', quizId: day.quizId, active: finished });
+  const nextUp = useNextUnplayed({ self: 'mishmash', active: finished });
+  const upNext = useUnplayedSimilar({ self: 'mishmash', active: finished });
+  const dailyBoard = useDailyBoard({ quizId: day.quizId, active: finished });
+  const allTime = useGameAllTime({ game: 'mishmash', active: finished });
+  const dayStats = useDayStats();
+  const catRank = useCategoryRank({ self: 'mishmash', active: finished });
+  const prevPuzzle = puzzles.find((x) => x.num === day.num - 1) || null;
+  const todayNum = (puzzles[puzzles.length - 1] || day).num;
+  const streak = useMemo(() => streakOf(stats, todayNum), [stats, todayNum]);
+
+  // Start and Continue are the same control: into the next unplayed slot.
+  function goRun() {
+    if (turnedIn) return;
+    const r = startRun(day);
+    const i = potluckNextSlot(day, r);
+    if (i == null) return;
+    try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
+    window.location.href = potluckSlotHref(day, i);
+  }
+
+  function shareUrl() { return withRef(`mindloftdaily.com/mishmash${isTodays ? '' : `?p=${day.num}`}`); }
+  function shareText() {
+    const cells = quizzes.map((q, i) => {
+      const r = cur.done[i];
+      if (!r) return '⬜';
+      const pts = r.t ? Math.round((PER_QUIZ * r.s) / r.t) : 0;
+      return pts >= 10 ? '\u{1F7E9}' : pts >= 6 ? '\u{1F7E8}' : '\u{1F7E7}';
+    }).join('');
+    return `Mishmash #${day.num} · ${score} point${score === 1 ? '' : 's'} · ${fmtTime(time)}${isTodays && streak >= 2 ? ` · streak ${streak}` : ''}\n${cells}\n${shareUrl()}`;
+  }
+  function copyShare() {
+    const text = playing ? `Mishmash #${day.num}: three quizzes, three subjects, one score, from Mind Loft.\n${shareUrl()}` : shareText();
+    if (notifyShareCredit(text)) return;
+    try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
+    try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
+  }
+
+  const rulesBody = (
+    <DailyRules
+      accent={ACCENT} accentSoft="#ecf7f1"
+      lead="Three quizzes, back to back, one score."
+      steps={[
+        <>Every day brings <b>three quizzes</b> from the Mind Loft catalog: one where you <b>type</b> the answers, one where you <b>match</b> them, and one where you <b>spot</b> them on a map or in pictures. Each is from a different subject.</>,
+        <>Press <b>Start</b> and the three play <b>back to back</b>. You will not see them until each one opens. Each runs on its own clock, and when one ends the next one is served.</>,
+        <>Each quiz is worth <b>10 points</b>, scaled by how much of it you got, so the three count equally.</>,
+        <>Finish the third and your Mishmash is <b>turned in</b> on its own, straight to the end card. Your first run is the one the board keeps.</>,
+      ]}
+      knack="The three are worth the same however long they are, so a short quiz you nail counts as much as a long one."
+      footer="Everyone gets the same three each day. Ties on the daily board break by the three quizzes' clocks added together."
+    />
+  );
+
+  const card = (q, i) => {
+    const r = cur.done[i];
+    const pts = r && r.t ? Math.round((PER_QUIZ * r.s) / r.t) : null;
+    return (
+      <div key={q.id} className="pl-card" style={{ background: SURF, border: `1px solid ${r ? GOOD : LINE}`, borderRadius: 12, padding: '14px 15px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 10.5, letterSpacing: '0.13em', textTransform: 'uppercase', fontWeight: 800, color: ACC_INK }}>{q.familyLabel}</span>
+          <span style={{ fontSize: 10.5, letterSpacing: '0.13em', textTransform: 'uppercase', fontWeight: 700, color: FADED }}>{q.dept}</span>
+        </div>
+        <div style={{ fontSize: 16.5, fontWeight: 800, color: INK, lineHeight: 1.3 }}>{q.title}</div>
+        <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED }}>{q.answers} answers · {q.clock} on the clock</div>
+        <div style={{ marginTop: 'auto', paddingTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          {r ? (
+            <>
+              <span style={{ fontSize: 13.5, fontWeight: 800, color: INK }}>{r.s}/{r.t} · {fmtTime(r.e)}</span>
+              <span style={{ fontSize: 13.5, fontWeight: 800, color: GOOD }}>{pts} pts</span>
+            </>
+          ) : turnedIn ? (
+            <>
+              <span style={{ fontSize: 13, fontWeight: 700, color: FADED }}>Not played · 0 pts</span>
+              <a href={`/quiz/${encodeURIComponent(q.id)}`} style={{ fontSize: 13, fontWeight: 800, color: ACC_INK }}>Play it anyway &rarr;</a>
+            </>
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
+  const doneCount = Object.keys(cur.done || {}).length;
+
+  return (
+    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+      data-stage-theme={STAGE ? stageTheme : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? INK : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {!STAGE && <Grain />}
+      {!STAGE && <DailyChrome slug="mishmash" name="Mishmash" collapsed={false} loft={LOFT} />}
+      {LOFT && (
+        <Cap gameKey="mishmash" quizId={day.quizId}
+          name="Mishmash"
+          cat="Trivia"
+          outcome={playing ? null : (won ? 'won' : (score > 0 ? 'part' : 'lost'))}
+          num={day.num}
+          tiles={playing ? null : upNext}
+          dateLabel={day.dateLabel}
+          onHelp={() => setShowHelp(true)}
+          figures={[
+            { v: score, k: score === 1 ? 'point' : 'points' },
+            { v: `${doneCount}/3`, k: 'played' },
+            { v: fmtTime(time), k: 'time' },
+          ]}
+        />
+      )}
+      <div className="pl-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media(max-width:560px){.pl-wrap{padding-left:10px !important;padding-right:10px !important;}}
+          .pl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+          @media(max-width:760px){.pl-grid{grid-template-columns:1fr;}}
+          .pl-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid;border-radius:8px;padding:8px 18px;cursor:pointer;}
+          .pl-btn:disabled{opacity:.5;cursor:default;}
+        ` }} />
+        <div style={{ maxWidth: 860, margin: '0 auto' }}>
+          <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
+            <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
+            <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
+            <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
+              <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : T.white, border: STAGE ? 'none' : `2px solid ${T.ink}`, borderRadius: 12, padding: STAGE ? 0 : 14 }}>
+                {turnedIn ? (
+                  <>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: INK, marginBottom: 12 }}>
+                      Turned in: <span style={{ color: ACC_INK }}>{score} point{score === 1 ? '' : 's'}</span>
+                    </div>
+                    <div className="pl-grid">{quizzes.map(card)}</div>
+                  </>
+                ) : (
+                  <div style={{ padding: '6px 4px 4px' }}>
+                    <div style={{ fontSize: 10.5, letterSpacing: '0.13em', textTransform: 'uppercase', fontWeight: 800, color: ACC_INK, marginBottom: 6 }}>
+                      {started ? `Quiz ${Math.min(doneCount + 1, quizzes.length)} of ${quizzes.length} is next` : `${quizzes.length} quizzes, back to back`}
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: INK, lineHeight: 1.25, marginBottom: 8 }}>
+                      {started ? 'Your Mishmash is under way.' : 'Three quizzes, three subjects, one run.'}
+                    </div>
+                    <p style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 600, color: FADED, lineHeight: 1.55, maxWidth: 560 }}>
+                      {started
+                        ? `${score} point${score === 1 ? '' : 's'} banked so far. Pick up where you left off; the rest are served one after another.`
+                        : 'One to type, one to match, one to spot. You see each quiz when it opens, and the next one is served when it ends. Each is worth 10, scaled by how much of it you got.'}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }} aria-label={`${doneCount} of ${quizzes.length} played`}>
+                      {quizzes.map((q, i) => {
+                        const r = cur.done[i];
+                        const pts = r && r.t ? Math.round((PER_QUIZ * r.s) / r.t) : null;
+                        return (
+                          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 54, height: 30, padding: '0 10px', borderRadius: 8, fontSize: 12.5, fontWeight: 800, background: r ? GOOD : CELL, color: r ? ON_ACC : FADED, border: `1px solid ${r ? GOOD : LINE}` }}>
+                            {r ? `${pts} pts` : `Quiz ${i + 1}`}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                      <button type="button" className="pl-btn" disabled={!hydrated} onClick={goRun} style={{ background: ACC, borderColor: ACC_INK, color: ON_ACC, padding: '10px 26px', fontSize: 15 }}>
+                        {started ? `Continue to quiz ${Math.min(doneCount + 1, quizzes.length)}` : 'Start'}
+                      </button>
+                      <div>
+                        <button type="button" onClick={() => setShowHelp(true)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>How it works</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {!playing && (
+                <div className={STAGE ? undefined : 'loft-sol'} style={{ maxWidth: 520, margin: '14px auto 0' }}>
+                  {!STAGE && (<div style={{ fontSize: 13, fontWeight: 600, color: FADED, lineHeight: 1.5 }}>
+                    {isTodays
+                      ? <>{countdown ? <>Next Mishmash in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new three at midnight Eastern.'}{prevPuzzle && <> Meanwhile: <a href={`/mishmash?p=${prevPuzzle.num}`} style={{ color: ACC_INK, fontWeight: 800 }}>yesterday&rsquo;s three &rarr;</a></>}</>
+                      : <>You&rsquo;re playing the {day.dateLabel} Mishmash. <a href="/mishmash" style={{ color: ACC_INK, fontWeight: 800 }}>Back to today&rsquo;s &rarr;</a></>}
+                  </div>)}
+                </div>
+              )}
+              {LOFT && !playing && revealed && (
+                <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
+              )}
+            </div>
+            {LOFT && !playing && (
+              <LoftFinish
+                name="Mishmash"
+                catRank={catRank}
+                outcome={won ? 'won' : (score > 0 ? 'part' : 'lost')}
+                title={endGrade(score, total, 'A clean sweep!')}
+                detail={`${score} point${score === 1 ? '' : 's'} · ${played} of 3 played · ${fmtTime(time)}`}
+                iq={iq}
+                board={dailyBoard}
+                gameRank={allTime && allTime.ready
+                  ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '—',
+                      label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Mishmash all time` : 'all-time rank' }
+                  : null}
+                day={dayStats}
+                streak={isTodays ? streak : null}
+                archive={puzzles
+                  .filter((p) => p.live <= etToday() && p.num !== day.num)
+                  .sort((x, y) => y.num - x.num)
+                  .map((p) => ({
+                    num: p.num, dateLabel: p.dateLabel, sunday: false, href: `/mishmash?p=${p.num}`,
+                    done: !!(stats && stats.rec && stats.rec[p.num]),
+                    score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null,
+                  }))}
+                options={[
+                  { label: copied ? 'Copied' : shareCta, sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
+                  { tone: 'board', label: 'Return to board', sub: 'Your three quizzes', onClick: () => setRevealed(true) },
+                  prevPuzzle && { tone: 'another', label: 'Play another Mishmash', sub: `No. ${prevPuzzle.num}, yesterday’s three`, href: `/mishmash?p=${prevPuzzle.num}` },
+                  nextUp && { tone: 'similar', label: 'Play similar', sub: `${nextUp.name} · ${nextUp.tag}`, href: nextUp.href },
+                  { label: 'Back to main', sub: 'The day’s full board', tone: 'main', href: '/' },
+                ]}
+              />
+            )}
+            </div>
+            </div>
+          </div>
+        </div>
+
+        {!STAGE && <GamePanel self="mishmash" name="Mishmash" onShow={() => {}} />}
+        <div style={{ margin: '30px auto 0', maxWidth: 860 }}>
+          <div className={STAGE ? undefined : 'loft-report'}>
+            <ReportIssue self="mishmash" name="Mishmash" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
+          </div>
+          <AddToHome name="Mishmash" />
+          <div id="stf-stats-slot" />
+          {!identity && (
+            <div id="daily-join" style={{ margin: '18px auto 0' }}>
+              <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => setIdentity(id)} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showHelp && (
+        <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="mishmash" name="Mishmash">
+            {rulesBody}
+          </HelpSheet>
+      )}
+
+      <StageFold />
+      <section style={{ position: 'relative', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+        <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, color: INK }}>About Mishmash</h2>
+        <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
+          Mishmash is a free daily trivia mix from Mind Loft. Every day it serves three quizzes from the catalog back to back, one where you type the answers, one where you match them, and one where you find them on a map or in pictures, each from a different subject, so no two days look the same.
+        </p>
+        <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
+          Each quiz is worth 10 points, scaled by how much of it you got, so a short quiz counts as much as a long one. Press Start and the three play one after another; finishing the third turns your day in and shows your result. Everyone gets the same three, and the daily leaderboard breaks ties on the three clocks added together.
+        </p>
+        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
+          A new three every day at midnight Eastern. No app, no signup. <a href="/potluck" style={{ color: INK, fontWeight: 800 }}>Potluck</a> and <a href="/mixtape" style={{ color: INK, fontWeight: 800 }}>Mixtape</a> serve three more each day. More trivia: <a href="/streak" style={{ color: INK, fontWeight: 800 }}>Streak</a> and <a href="/atlas" style={{ color: INK, fontWeight: 800 }}>Atlas</a>.
+        </p>
+      </section>
+      {!STAGE && <div style={{ position: 'relative', zIndex: 2 }}><Footer /></div>}
+    </div>
+  );
+}

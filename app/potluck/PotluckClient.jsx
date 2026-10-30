@@ -393,7 +393,7 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
           Each quiz is worth 10 points, scaled by how much of it you got, so a short quiz counts as much as a long one. Press Start and the three play one after another; finishing the third turns your day in and shows your result. Everyone gets the same three, and the daily leaderboard breaks ties on the three clocks added together.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          A new three every day at midnight Eastern. No app, no signup. More trivia: <a href="/streak" style={{ color: INK, fontWeight: 800 }}>Streak</a>, <a href="/deep" style={{ color: INK, fontWeight: 800 }}>Deep</a> and <a href="/atlas" style={{ color: INK, fontWeight: 800 }}>Atlas</a>.
+          A new three every day at midnight Eastern. No app, no signup. <a href="/mixtape" style={{ color: INK, fontWeight: 800 }}>Mixtape</a> and <a href="/mishmash" style={{ color: INK, fontWeight: 800 }}>Mishmash</a> serve three more each day. More trivia: <a href="/streak" style={{ color: INK, fontWeight: 800 }}>Streak</a>, <a href="/deep" style={{ color: INK, fontWeight: 800 }}>Deep</a> and <a href="/atlas" style={{ color: INK, fontWeight: 800 }}>Atlas</a>.
         </p>
       </section>
       {!STAGE && <div style={{ position: 'relative', zIndex: 2 }}><Footer /></div>}

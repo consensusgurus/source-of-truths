@@ -11,7 +11,12 @@ import RegisterRankLine from './RegisterRankLine';
 import { QUIZZES, getQuiz } from '@/lib/quizzes';
 import { getChallenge, challengeQuizIds } from '@/lib/challenges';
 import { PUZZLES as POTLUCK_DAYS } from '@/app/potluck/puzzles';
-import { recordPotluck, potluckNextSlot, potluckSlotHref, etToday as potToday } from '@/lib/potluck';
+import { PUZZLES as MIXTAPE_DAYS } from '@/app/mixtape/puzzles';
+import { PUZZLES as MISHMASH_DAYS } from '@/app/mishmash/puzzles';
+import { recordPotluck, potluckNextSlot, potluckSlotHref, etToday as potToday, MIX_NAMES } from '@/lib/potluck';
+// The three quiz-mix dailies share one run engine (lib/potluck.js); &g= names
+// which bank a slot belongs to, absent for Potluck (owner, 2026-10-30).
+const MIX_DAYS = { potluck: POTLUCK_DAYS, mixtape: MIXTAPE_DAYS, mishmash: MISHMASH_DAYS };
 import { quizDept as deptOf, DEPT_LABEL } from '@/lib/quiz-departments';
 import Grain from '../../Grain';
 import Footer from '../../Footer';
@@ -432,10 +437,13 @@ export default function QuizClient({ quizId }) {
   // and this quiz is the one in that slot, so a stray link changes nothing.
   const potNumRaw = searchParams ? searchParams.get('potluck') : null;
   const potIRaw = searchParams ? searchParams.get('i') : null;
-  const potDay = potNumRaw && /^\d+$/.test(potNumRaw) ? (POTLUCK_DAYS.find((p) => p.num === Number(potNumRaw)) || null) : null;
+  const potGRaw = searchParams ? searchParams.get('g') : null;
+  const potGame = potGRaw && MIX_DAYS[potGRaw] ? potGRaw : 'potluck';
+  const potName = MIX_NAMES[potGame];
+  const potDay = potNumRaw && /^\d+$/.test(potNumRaw) ? (MIX_DAYS[potGame].find((p) => p.num === Number(potNumRaw)) || null) : null;
   const potI = potIRaw != null && /^\d+$/.test(potIRaw) ? Number(potIRaw) : null;
   const potActive = !!(potDay && potI != null && potDay.quizzes[potI] === quizId);
-  const potHome = potDay ? (potDay.live === potToday() ? '/potluck' : `/potluck?p=${potDay.num}`) : '/potluck';
+  const potHome = potDay ? (potDay.live === potToday() ? `/${potGame}` : `/${potGame}?p=${potDay.num}`) : `/${potGame}`;
 
   if (!quiz) {
     return (
@@ -1745,14 +1753,14 @@ export default function QuizClient({ quizId }) {
           {potActive && (
             <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '9px 14px', borderRadius: 10, border: '1.5px solid var(--stg-acc-ink, var(--stg-acc,#c2410c))', background: 'var(--stg-surf,#fff7ed)' }}>
               <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 800, color: 'var(--stg-acc-ink,#c2410c)' }}>
-                Potluck · quiz {potI + 1} of {potDay.quizzes.length}
+                {potName} · quiz {potI + 1} of {potDay.quizzes.length}
               </span>
               {ended ? (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <span style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED }}>
                     {potNext != null ? 'Banked.' : 'All three in.'}{potCountdown != null && potCountdown > 0 ? (potNext != null ? ` Quiz ${potNext + 1} in ${potCountdown}…` : ` Your result in ${potCountdown}…`) : ''}
                   </span>
-                  <a href={potTarget} style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800, padding: '7px 13px', borderRadius: 8, background: 'var(--stg-acc,#c2410c)', color: 'var(--stg-onramp,#fff)', textDecoration: 'none' }}>{potNext != null ? `Next quiz` : 'See your Potluck'}</a>
+                  <a href={potTarget} style={{ fontFamily: SANS, fontSize: 13, fontWeight: 800, padding: '7px 13px', borderRadius: 8, background: 'var(--stg-acc,#c2410c)', color: 'var(--stg-onramp,#fff)', textDecoration: 'none' }}>{potNext != null ? `Next quiz` : `See your ${potName}`}</a>
                 </span>
               ) : (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>

@@ -80,6 +80,7 @@ import { QUESTIONS, QUESTION_MAP } from '../app/sport/questions.js';
 import { PUZZLES } from '../app/sport/puzzles.js';
 import { scanUS } from './us-spellings.mjs';
 import { checkRecycled } from './trivia-recycle.mjs';
+import { rulesHit, SPORT_GLOBAL_FROM, MIX_PATTERN, isUSQuestion, usKind } from './sport-mix.mjs';
 
 // The first live date the US-spelling screen and the answer-reuse ceiling apply
 // to. It is day 42, the first day of the 2026-10-05..2026-11-30 segment;
@@ -90,36 +91,7 @@ const ANSWER_CAP = 4;
 // The first live date the one-rules-question-a-day cap applies to.
 const RULES_CAP_FROM = '2026-09-24';
 const RULES_CAP = 1;
-const RULES_PAST = /\b(did|was|were|had|became)\b|\b1[89]\d\d\b|\b20\d\d\b/i;
-const RULES_NOT = /\b(which body|annual|fans?|supporters?|crowd|nickname|nicknamed|division|league|trophy|cup|award|tournament|championship|shirts?|uniform|jersey|kit|helmet|stadium|ballpark|arena|song|chant|tour de france|grand slam)\b/i;
-const RULES_PATTERNS = [
-  [/\b(term|word|phrase) (for|given to)\b/i, 'term for'],
-  [/^(what|which)\b[^?]*\b(is|are)\b[^?]*\bcalled\b/i, 'is called'],
-  [/\bknown as\?$/i, 'is called'],
-  [/\bwhat is the name (of|for|given to) the\b/i, 'name of the'],
-  [/\bwhat is the title of\b/i, 'title of'],
-  [/\b(stand for|stands for|abbreviat)\b|\bwhat do the (letters|initials)\b/i, 'abbreviation'],
-  [/^how (many|long|far|deep|wide|tall|high|much)\b/i, 'how many'],
-  [/\bhow many (points|players|minutes|periods|innings|outs|strikes|balls|sets|holes|downs|yards|seconds|quarters|timeouts|events|pins|bases|rounds|pieces|squares|feet|inches|meters|red balls|clubs|deliveries|stitches|barriers|pullers|umpires|officials|corner arcs)\b[^?]*\b(is|are|does|do|must|may|make|makes|take|gets?)\b/i, 'how many'],
-  [/^how (is|are|does|do)\b/i, 'how does'],
-  [/^in (a |an |the )?[a-z -]+,\s*(what|how|which|who)\b/i, 'in sport,'],
-  [/^what (do|does|must|happens|has|should)\b/i, 'what does'],
-  [/^what colou?r (is|are)\b/i, 'what color'],
-  [/\b(violation|foul|fouls|penalty|penalties)\b[^?]*\b(is|are|called|whistled|assessed|gives?)\b/i, 'violation'],
-  [/\b(under the rules|laws of the game|legal|illegal|against the rules)\b/i, 'legality'],
-  [/\bworth\b/i, 'worth'],
-  [/^(on|in) (a|the) (scorecard|scoreboard|box score|line score)\b/i, 'scorecard'],
-  [/^which (offensive |defensive |special teams )?(position|base|pitch|breaking pitch|infielder|outfielder|lineman|linemen|reliever|device|statistic|piece|apparatus|member of a team|side|two offensive|defensive back|specialist|player)\b[^?]*\b(is|are|lines up|stands|plays|takes|sends|receives|stationed|normally|traditionally|usually|must|may)\b/i, 'which position'],
-  [/^(in )?which (olympic |winter |indoor |endurance |team |south asian |equestrian |athletics |women's gymnastics )?(sport|event|discipline|apparatus|martial art|throwing event|road race|winter sport|sliding sport)\b[^?]*\b(uses?|features?|combines?|contest|contests|contested|performs?|shoot|ride|rides|consists|involves|raced|run|has|do|does|must|would)\b/i, 'which sport'],
-  [/\b(piece of (protective )?(equipment|gear)|protective (gear|equipment|item)|wear on|wear over|wear under|worn under|strap to)\b/i, 'equipment'],
-  [/\bwhich (material|implement|stick|device)\b/i, 'equipment'],
-];
-function rulesHit(stem) {
-  const s = String(stem);
-  if (RULES_PAST.test(s) || RULES_NOT.test(s)) return null;
-  for (const [re, tag] of RULES_PATTERNS) if (re.test(s)) return tag;
-  return null;
-}
+// rulesHit() and its patterns live in scripts/sport-mix.mjs (moved 2026-10-30, unchanged).
 // Proper names that keep their own spelling; skipped verbatim by both the
 // shared screen and the local supplement below, before either word list runs
 // over the string. Longer names come first so the longer match wins.
@@ -279,11 +251,35 @@ for (const p of PUZZLES) {
   }
   if (qs.length !== TOTAL_Q) continue;
 
+  // THE MIX. Before SPORT_GLOBAL_FROM every tier block cycles NFL, NBA, MLB,
+  // Soccer, Everything Else. From it (owner, 2026-10-30, scripts/sport-mix.mjs)
+  // every tier block runs World, US, World, US, World: at least one Soccer
+  // question among its world slots, two different US kinds, and the day
+  // carries each of the NFL, NBA and MLB at least twice.
+  const global = p.live >= SPORT_GLOBAL_FROM;
   qs.forEach((q, i) => {
     if (q.tier !== RAMP[i]) fail(`${tag}: slot ${i + 1} is tier ${q.tier}, the ramp wants ${RAMP[i]}`);
-    const want = SUBJECTS[i % PER_TIER];
-    if (q.cat !== want) fail(`${tag}: slot ${i + 1} is ${q.cat}, the subject cycle wants ${want}`);
+    if (global) {
+      const want = MIX_PATTERN[i % PER_TIER];
+      if ((want === 'us') !== isUSQuestion(q)) fail(`${tag}: slot ${i + 1} (${q.id}) is ${isUSQuestion(q) ? 'a US' : 'a world'} question, the global mix wants ${want === 'us' ? 'a US' : 'a world'} one`);
+    } else {
+      const want = SUBJECTS[i % PER_TIER];
+      if (q.cat !== want) fail(`${tag}: slot ${i + 1} is ${q.cat}, the subject cycle wants ${want}`);
+    }
   });
+  if (global) {
+    for (let t = 0; t < 5; t++) {
+      const block = qs.slice(t * PER_TIER, t * PER_TIER + PER_TIER);
+      const world = block.filter((_, k) => MIX_PATTERN[k] === 'world');
+      const us = block.filter((_, k) => MIX_PATTERN[k] === 'us');
+      if (!world.some((q) => q.cat === 'Soccer')) fail(`${tag}: tier ${t + 1} has no Soccer question among its world slots`);
+      if (new Set(us.map(usKind)).size !== us.length) fail(`${tag}: tier ${t + 1}'s US slots are the same kind (${us.map(usKind).join(', ')})`);
+    }
+    for (const k of ['NFL', 'NBA', 'MLB']) {
+      const n = qs.filter((q) => usKind(q) === k).length;
+      if (n < 2) fail(`${tag}: only ${n} ${k} question(s); the global mix keeps each US league at least twice a day`);
+    }
+  }
 
   // Correct-answer column spread: 25 questions over 4 columns, so every column
   // carries at least 5 and no column repeats three times running.

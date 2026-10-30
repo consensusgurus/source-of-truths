@@ -3,8 +3,9 @@
 // Sport — the daily sports gauntlet.
 //
 // Twenty-five sports questions stand between you and a perfect run. They climb
-// from gimme to expert in five tiers of five, every tier cycling the same five
-// lanes (the NFL, the NBA, MLB, soccer, and everything else), and everyone
+// from gimme to expert in five tiers of five. From 2026-10-31 every tier is
+// three questions from world sport and two from American sport (owner: less
+// US centric; scripts/sport-mix.mjs), and everyone
 // faces the same twenty-five in the same order. You have twenty seconds a
 // question and one life: answer wrong, or let the clock hit zero, and the run
 // is over. Every question you clear is a point, so there is never a reason to
@@ -504,9 +505,9 @@ export default function SportClient({ puzzles = [], questionsByNum = {}, forceNu
         <>Answer multiple-choice sports questions until you get one wrong. <b>Every question you clear is a point.</b></>,
         <>A wrong answer, or a clock at zero, <b>ends the run on the spot</b>.</>,
         <>You get <b>{Q_SECONDS} seconds a question</b>, and the clock does not pause, so looking things up costs the run.</>,
-        <>The twenty-five climb in <b>five rounds of five</b>, from gimmes to genuinely obscure, each round cycling the same five lanes: the NFL, the NBA, MLB, soccer, and everything else.</>,
+        <>The twenty-five climb in <b>five rounds of five</b>, from gimmes to genuinely obscure, each round mixing <b>three from world sport</b> (soccer, the Olympics, tennis, cricket, motorsport and more) with <b>two from American sport</b> (the NFL, the NBA, MLB and the rest).</>,
       ]}
-      knack="Every round asks the same five lanes in the same order, so you always know what is coming next. The sport you do not follow is the one that ends most of your runs."
+      knack="Every round runs world, US, world, US, world, so you always know what kind is coming next. The sport you do not follow is the one that ends most of your runs."
       footer="Everyone plays the same twenty-five in the same order. Ties on the daily board break by time, so sure-footed beats slow. Clear all twenty-five and you have run the table."
     />
   );
@@ -892,7 +893,7 @@ export default function SportClient({ puzzles = [], questionsByNum = {}, forceNu
           Sport is a free daily sports quiz from Mind Loft. Twenty-five multiple-choice questions climb from ones anyone can answer to ones almost nobody can, and a single wrong answer ends the run. Your score is simply how many you cleared in a row, which makes every question a small act of nerve: the further you get, the more you have to lose.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Everyone plays the same twenty-five questions in the same order each day, so the daily leaderboard is a straight fight: longest run wins, and ties break by time. Twenty seconds a question keeps it honest. Every round cycles the same five lanes, the NFL, the NBA, MLB, soccer, and everything else from the Olympics to golf, so a run rewards a fan of sport rather than a fan of one team. Every answer is a settled fact, never a record somebody could break next week.
+          Everyone plays the same twenty-five questions in the same order each day, so the daily leaderboard is a straight fight: longest run wins, and ties break by time. Twenty seconds a question keeps it honest. Every round mixes three questions from world sport, from soccer and the Olympics to tennis, cricket and motorsport, with two from American sport, the NFL, the NBA, MLB and the rest, so a run rewards a fan of sport rather than a fan of one team. Every answer is a settled fact, never a record somebody could break next week.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new twenty-five drops every day at midnight Eastern. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More dailies: <a href="/streak" style={{ color: INK, fontWeight: 800 }}>Streak</a>, our forty-question trivia gauntlet, <a href="/atlas" style={{ color: INK, fontWeight: 800 }}>Atlas</a>, the same run on geography, and <a href="/deep" style={{ color: INK, fontWeight: 800 }}>Deep</a>, one subject fifteen questions down.

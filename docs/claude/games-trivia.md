@@ -1,7 +1,7 @@
 # Trivia gauntlets and banks
 
 > Split out of CLAUDE.md on 2026-10-29 to keep the auto-loaded file small. Rules here are verbatim and still binding.
-> Scope: Trivia gauntlets and banks: Atlas, Sport, Biz, Foodie, Quotes, Valet, Math, English, Polymath, Sci/Art/History, Potluck, recycling, the gauntlet stage
+> Scope: Trivia gauntlets and banks: Atlas, Sport, Biz, Foodie, Quotes, Valet, Math, English, Polymath, Sci/Art/History, Potluck, Mixtape, Mishmash, recycling, the gauntlet stage
 
 ## EVERY GAUNTLET QUESTION PLAYS ON THE GAUNTLET STAGE (owner, 2026-10-23)
 
@@ -104,6 +104,36 @@ a row; the USA's 1950 win over England was not its first World Cup), one wrong s
 born in Mozambique, beat Weah to the first African-born Ballon d'Or by thirty years), and three
 questions whose stem referred to "that championship" with no antecedent. None of those is visible
 without checking each figure, so budget for the pass rather than trusting the authoring.
+
+## Sport goes global: World, US, World, US, World from 2026-10-31 (owner, 2026-10-30)
+
+Owner: "make our sports trivia category less US centric. It should still use US centric
+questions, but the mix should shift more globally. Do not delete questions, just push them out to
+future inventory." The calendar from day 68 (2026-10-31) was re-planned by
+`scripts/sport-global-mix.mjs`; the rules live in `scripts/sport-mix.mjs` and
+`scripts/verify-sport.mjs` enforces them from `SPORT_GLOBAL_FROM`:
+
+- Every tier block runs **World, US, World, US, World**: 15 world and 10 US questions a day
+  (the old NFL, NBA, MLB, Soccer, Everything Else cycle was about 67% US once the American
+  questions inside Soccer and Everything Else are counted; the new days are 40%).
+- A question is **US** when its lane is NFL, NBA or MLB, or `isUSQuestion` finds an American
+  subject in its stem or answer (MLS, the NHL, college sport, an American skater or sprinter,
+  the US Open, the Masters...). Each tier's world slots carry at least one Soccer question, its
+  two US slots are two different kinds, and each of the NFL, NBA and MLB appears at least twice
+  a day. The `cat` lane labels are unchanged.
+- **Nothing was deleted.** The 425 questions the new days do not use (382 US, 43 world in
+  tiers 3 to 5) wait in `scripts/sport-lanes/sport-inventory.mjs` in the lane shape, with the
+  id they used to carry. Days before 2026-10-31 are byte for byte unchanged; re-planned
+  questions got new `d<day>q<slot>` ids and had their choices rotated to a fresh balanced
+  column plan (distractor order kept).
+- **The cost: the bank now ends 2026-11-13, not 11-30.** World questions are the scarce half
+  (tier 1 ran out first). To restock, author WORLD questions in the lane shape and run
+  `node scripts/sport-global-mix.mjs --from <tomorrow> --extra <lane file>`; it pulls the
+  waiting US questions back onto the calendar. `scripts/gen-sport.mjs` still writes the OLD
+  five-lane cycle and its `--check` no longer matches the shipped segment, so do not use it for
+  days on or after 2026-10-31.
+- `rulesHit()` moved, unchanged, from verify-sport into `scripts/sport-mix.mjs` so the planner
+  can keep the one-rules-question-a-day cap.
 
 ## Biz (`/biz`) — the daily business gauntlet (launched 2026-08-27)
 
@@ -546,6 +576,40 @@ Daily Challenge, both unplugged in the same push.
   (`sot_potluck_<num>` with t0, `sot_potluck_day`, `sot_potluck_stats`), all written by lib/potluck.js.
 - Wired by `scripts/wire-potluck.mjs` (beside Quotes in every list) and
   `scripts/wire-potluck-quizclient.mjs`. No Sunday Edition.
+
+## Mixtape (`/mixtape`) and Mishmash (`/mishmash`): two more quiz mixes (launched 2026-10-30)
+
+Owner, 2026-10-30: two more "recycling quizzes" dailies, the SAME FORMAT as Potluck, but each pulls
+three DIFFERENT catalog quizzes a day, and each uses a variety of quizzes including, at times, map
+quizzes. Keys/routes `mixtape` and `mishmash`, category **Trivia**, `miss: null`, scored exactly like
+Potluck (10 a quiz, out of 30, clocks break ties, one row `<key>-M-D-YY`). Accents: Mixtape
+`#9d2f6b` / navy `#f0a3c8`, Mishmash `#2f7a5c` / navy `#8fd8b5`. No Sunday Edition.
+
+- **One engine, three banks.** `lib/potluck.js` keys every storage key (`sot_<game>_run_<num>`,
+  `sot_<game>_<num>`, `sot_<game>_day`, `sot_<game>_stats`), the posted row and the slot links by
+  `day.game`. Potluck's rows carry no `game` field and default to `potluck`, so nothing about
+  Potluck changed. Mixtape/Mishmash rows carry `"game"`, and their slot links add `&g=<game>`,
+  which `QuizClient` reads to pick the bank (`MIX_DAYS`) and to name the run in its strip.
+  `app/mixtape/MixtapeClient.jsx` and `app/mishmash/MishmashClient.jsx` are PotluckClient with the
+  name changed; keep the three in step.
+- **The banks** are built TOGETHER by `scripts/gen-quiz-mix.mjs` around Potluck's fixed bank; the
+  rules live in `scripts/quiz-mix-rules.mjs` and are re-derived by `scripts/verify-mixtape.mjs` /
+  `verify-mishmash.mjs` (body in `scripts/quiz-mix-check.mjs`):
+  1. Potluck's eligibility and variety rules (three families, three departments).
+  2. **No same-day overlap**: the nine quizzes on a date across the three games are all different.
+  3. Typed and match quizzes are **fresh** (never used by any of the three banks).
+  4. Visual quizzes are **recycled** (only ~94 exist and Potluck spends one a day), never within
+     `MIN_GAP` = 21 days of any other use in any of the three banks, past or scheduled.
+  5. **Maps at times**: each game serves a `map`-format quiz at least once every 14 days (the
+     generator leans to one after 6 days without). Only 11 map quizzes are eligible: the
+     sudden-death and over-50 versions are excluded by `potluckEligible`.
+  Stocked 2026-10-30 to 2027-01-07 (Potluck's last day), ~10 map days each.
+- **Extending**: Potluck's own generator does not know about these banks and has already used
+  every visual quiz once. Extend all three together: Potluck's next days must recycle visuals and
+  respect rules 2 and 4 against these banks.
+- Wired by `scripts/wire-mixtape-mishmash.mjs` (after Potluck in every registry). Tiles by
+  `scripts/gen-mix-tiles.py`; share cards by `scripts/bake-og.mjs mixtape mishmash`. The three
+  share the slate group "Quiz mixes" and the finish set "Three mixes".
 
 ## Sci, Art, History and the Trivia Encore (launched 2026-10-14)
 

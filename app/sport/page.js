@@ -16,7 +16,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Sports Trivia Game: Sport | Mind Loft',
   description:
-    'A free daily sports quiz. Twenty-five questions on the NFL, the NBA, MLB, soccer and everything else climb from easy to expert, and one wrong answer ends the run. Twenty seconds a question, one life, everyone plays the same twenty-five. No app, no signup, a new twenty-five every day.',
+    'A free daily sports quiz. Twenty-five questions on world and American sport, from soccer and the Olympics to the NFL, climb from easy to expert, and one wrong answer ends the run. Twenty seconds a question, one life, everyone plays the same twenty-five.',
   alternates: { canonical: '/sport' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
@@ -33,7 +33,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Sport',
   alternateName: 'Sport: Daily Sports Trivia', url: `${SITE_URL}/sport`,
   description:
-    'A free daily sports trivia game. Twenty-five multiple-choice questions climb from easy to expert in five rounds of five, cycling the same five lanes each round: the NFL, the NBA, MLB, soccer, and everything else from the Olympics to golf. One wrong answer, or a twenty-second clock at zero, ends the run, and every question cleared is a point. Everyone plays the same twenty-five questions in the same order each day, and the daily leaderboard ranks the longest runs with ties broken by time. Every answer is a settled fact rather than a record a current season could break.',
+    'A free daily sports trivia game. Twenty-five multiple-choice questions climb from easy to expert in five rounds of five, each round three questions from world sport (soccer, the Olympics, tennis, cricket, motorsport) and two from American sport (the NFL, the NBA, MLB and the rest). One wrong answer, or a twenty-second clock at zero, ends the run, and every question cleared is a point. Everyone plays the same twenty-five questions in the same order each day, and the daily leaderboard ranks the longest runs with ties broken by time. Every answer is a settled fact rather than a record a current season could break.',
   genre: ['Sports', 'Trivia', 'Quiz', 'Survival'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
