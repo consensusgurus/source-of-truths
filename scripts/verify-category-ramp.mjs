@@ -160,12 +160,13 @@ CATEGORY_RAMP_LIGHT.forEach((hex, i) => {
   // one's names, and a reader who flips the toggle loses every association
   // they had built.
   //
-  // ONE EXEMPTION, and it is a decision rather than an oversight: LOGIC.
+  // ONE EXEMPTION, and it is a decision rather than an oversight: GEOGRAPHY
+  // (Logic until the 2026-10-30 swap, when the lime step moved to Geography).
   // Lime dark enough to carry white text is olive, which is inherent to a dark
   // yellow-green, and the owner chose two clean colours over one muddy one
   // (2026-08-31). Lime on the dark register, green on the light. Any OTHER
   // category drifting in hue is still a failure.
-  const HUE_EXEMPT = new Set(['Logic']);
+  const HUE_EXEMPT = new Set(['Geography']);
   const d = apart(hue(hex), hue(CATEGORY_RAMP[i]));
   if (d > 25 && !HUE_EXEMPT.has(cat)) fail(`light ${cat} is ${Math.round(d)} degrees from its dark step, so it is a different colour`);
   if (d > 25 && HUE_EXEMPT.has(cat)) warn(`light ${cat} is ${Math.round(d)} degrees from its dark step, by owner decision: dark lime goes olive, so this register is green instead.`);
