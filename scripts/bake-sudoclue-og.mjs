@@ -42,6 +42,7 @@ h1 b{color:#fb7185}
 .f{position:relative}
 .pt{width:54px;height:54px;border-radius:50%;overflow:hidden;background:#fff}
 .q{position:absolute;right:-6px;bottom:-6px;width:24px;height:24px;border-radius:50%;background:#fb7185;color:#08222e;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;border:2px solid #0b0f1a}
+.tag{margin-top:16px;font-weight:800;font-size:24px;letter-spacing:.01em;color:#fb7185}
 .url{position:absolute;left:64px;bottom:44px;font-weight:700;font-size:22px;color:#8b95a8}
 .play{position:absolute;left:64px;bottom:88px;display:none}
 .tape{position:absolute;right:-60px;top:36px;transform:rotate(18deg);background:#fde047;color:#111827;font-weight:800;font-size:18px;letter-spacing:.24em;padding:8px 90px;box-shadow:0 8px 20px rgba(0,0,0,.35)}
@@ -53,7 +54,7 @@ h1 b{color:#fb7185}
 <div class="chip">Daily Murder Mystery</div>
 <h1>Sudo<b>clue</b></h1>
 <div class="sub">One suspect per row and column.<br>Every role hidden. One killer.</div>
-<div class="faces">${faces}</div></div>
+<div class="faces">${faces}</div><div class="tag">Realish people. Real places.</div></div>
 <div class="url">mindloftdaily.com/sudoclue · play free</div>
 </div></body></html>`;
 fs.writeFileSync(path.join(OUT, 'sudoclue-og.html'), html);
