@@ -59,7 +59,7 @@ import { endEfficiency, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 import { PLACES } from '@/lib/sudoclue-places';
-import { solve, sameAnswer, ROLESETS, ROLE_ORDER } from '@/lib/sudoclue-engine';
+import { solve, sameAnswer, ROLESETS, ROLE_ORDER, isRoleClue } from '@/lib/sudoclue-engine';
 import { renderBoard, boardIndex, cellTitle, portraitSVG, COLORS as CAST_COLORS } from '@/lib/sudoclue-art';
 
 const KEY = 'sudoclue';
@@ -177,7 +177,8 @@ function mergeServerStats(s, recent, puzzles) {
 const HAPT = { ok: [6], wrong: [0, 26, 34, 26], win: [10, 40, 20, 40, 20, 60] };
 function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
-const freshState = () => ({ v: 1, place: {}, roles: {}, cross: {}, struck: {}, wrong: 0, checks: 0, status: 'playing', t0: null, tEnd: null });
+// stage: 'place' until the board checks out, then 'accuse' (owner, 2026-10-30: the two-stage case).
+const freshState = () => ({ v: 1, stage: 'place', place: {}, roles: {}, cross: {}, struck: {}, wrong: 0, checks: 0, status: 'playing', t0: null, tEnd: null });
 
 // The role counts a board deals: one victim, one killer, then the roleset.
 function roleCounts(n) {
@@ -203,7 +204,7 @@ function RoleTag({ size = 26 }) {
 
 export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
-  const STORE_KEY = `sot_sudoclue_${PUZZLE.num}`;
+  const STORE_KEY = `sot_sudoclue2_${PUZZLE.num}`;  // v2: the two-stage boards (2026-10-30)
   const LAYOUT = PLACES[PUZZLE.place];
   const N = LAYOUT.rooms.length;
   const CAST = PUZZLE.cast;
@@ -441,6 +442,19 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   }
 
   function commit(next) { gRef.current = next; setG(next); }
+  // UNDO: a short history of board and role states, this visit only.
+  const hist = useRef([]);
+  function remember() { const c = gRef.current; hist.current.push({ place: c.place, roles: c.roles, cross: c.cross }); if (hist.current.length > 80) hist.current.shift(); }
+  function undo() {
+    const cur = gRef.current; if (cur.status !== 'playing') return;
+    const h = hist.current.pop(); if (!h) return;
+    commit({ ...cur, ...(cur.stage === 'accuse' ? { roles: h.roles } : { place: h.place, cross: h.cross, roles: h.roles }) });
+  }
+  function erase() {
+    const cur = gRef.current; if (cur.status !== 'playing' || !sel) return;
+    if (cur.stage === 'accuse') { if (!cur.roles[sel]) return; remember(); const roles = { ...cur.roles }; delete roles[sel]; commit({ ...cur, roles }); return; }
+    if (!cur.place[sel]) return; remember(); const place = { ...cur.place }; delete place[sel]; commit({ ...cur, place });
+  }
   function startGame() {
     const cur = gRef.current;
     if (cur.t0) return;
@@ -463,13 +477,17 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     if (cur.status !== 'playing') return;
     if (!cur.t0) { startGame(); }
     const occ = CAST.find((p) => cur.place[p] && `${cur.place[p][0]},${cur.place[p][1]}` === k);
+    // In the accuse stage the board is settled: a tap only picks the person standing there.
+    if (cur.stage === 'accuse') { if (occ) setSel(occ); return; }
     if (mode === 'mark') {
       if (occ) { setSel(occ); return; }
+      remember();
       commit({ ...gRef.current, cross: { ...cur.cross, [k]: !cur.cross[k] } });
       return;
     }
     if (occ) {
       if (occ === sel) {
+        remember();
         const place = { ...cur.place }; delete place[occ];
         commit({ ...gRef.current, place });
       } else { setSel(occ); }
@@ -479,6 +497,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     if (!sel) return;
     const [r, c] = k.split(',').map(Number);
     const cross = { ...cur.cross }; delete cross[k];
+    remember();
     commit({ ...gRef.current, place: { ...cur.place, [sel]: [r, c] }, cross });
     vibrate(HAPT.ok);
     // Placing someone new moves the pen on to the next person still to place, so a run of taps fills the board.
@@ -500,6 +519,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       }
       roles[p] = r;
     }
+    remember();
     commit({ ...gRef.current, roles });
   }
 
@@ -511,12 +531,23 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   function check() {
     const cur = gRef.current;
     if (cur.status !== 'playing') return;
-    if (CAST.some((p) => !cur.place[p]) || CAST.some((p) => !cur.roles[p])) {
-      say('Place everyone and give each person a role, then check.');
+    const sol = solution();
+    if (cur.stage !== 'accuse') {
+      if (CAST.some((p) => !cur.place[p])) { say('Place everyone first, one in every row and column.'); return; }
+      if (bad.size) { say('Two people share a row or a column. One per row, one per column.'); return; }
+      if (sol && CAST.every((p) => cur.place[p][0] === sol.place[p][0] && cur.place[p][1] === sol.place[p][1])) {
+        vibrate(HAPT.win.slice(0, 2));
+        hist.current = [];
+        commit({ ...cur, stage: 'accuse', checks: cur.checks + 1 });
+        say('The board is right. Now work out who played which part.');
+        return;
+      }
+      vibrate(HAPT.wrong);
+      commit({ ...cur, wrong: cur.wrong + 1, checks: cur.checks + 1 });
+      say('Not right yet. Someone is standing in the wrong square.');
       return;
     }
-    if (bad.size) { say('Two people share a row or a column. One per row, one per column.'); return; }
-    const sol = solution();
+    if (CAST.some((p) => !cur.roles[p])) { say('Give everyone a role, then accuse.'); return; }
     if (sol && sameAnswer(sol, cur.place, cur.roles)) {
       const done = { ...cur, status: 'won', tEnd: Date.now(), checks: cur.checks + 1 };
       vibrate(HAPT.win);
@@ -526,7 +557,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     }
     vibrate(HAPT.wrong);
     commit({ ...cur, wrong: cur.wrong + 1, checks: cur.checks + 1 });
-    say('Not right yet. Something on the board, or a role, is wrong.');
+    say('Not right yet. At least one role is wrong.');
   }
 
   function revealEnd() {
@@ -546,7 +577,8 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       if (Date.now() - armClear < ARM_MIN_MS) return;
       setArmClear(false);
       const cur = gRef.current;
-      commit({ ...cur, place: {}, roles: {}, cross: {}, struck: {} });
+      remember();
+      commit(cur.stage === 'accuse' ? { ...cur, roles: {} } : { ...cur, place: {}, roles: {}, cross: {}, struck: {} });
     } else setArmClear(Date.now());
   }
 
@@ -585,7 +617,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const victim = sol ? CAST.find((p) => sol.roles[p] === 'Victim') : null;
   const killer = sol ? CAST.find((p) => sol.roles[p] === 'Killer') : null;
   const accomplice = sol ? CAST.find((p) => sol.roles[p] === 'Accomplice') : null;
-  const roomName = (p) => { const x = shownPlace[p]; return x ? LAYOUT.rinfo[LAYOUT.rooms[x[0]][x[1]]].at : ''; };
+  const roomName = (p) => { const x = shownPlace[p]; if (!x) return ''; const ri = LAYOUT.rinfo[LAYOUT.rooms[x[0]][x[1]]]; const n = ri.name.replace(/^The /, ''); return ri.out ? `in the ${n} area` : `in the ${n}`; };
 
   const svg = useMemo(() => renderBoard(LAYOUT, {
     place: shownPlace, cross: playing ? g.cross : {}, bad: playing ? bad : new Set(), sel: playing ? sel : null,
@@ -600,17 +632,16 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead={<>Place all <b>{N} people</b> on the floor plan of <b>{LAYOUT.title}</b>, <b>one in every row and one in every column</b>, and work out who played which <b>role</b>.</>}
+      lead={<>A murder at <b>{LAYOUT.title}</b>, solved in two stages. First <b>place</b> all {N} people, <b>one in every row and one in every column</b>. Then <b>accuse</b>: work out who played which part.</>}
       banner={<><b>The killer was alone with the victim.</b> The victim&rsquo;s room holds exactly two people: the victim and the killer.</>}
       steps={[
-        <>People stand on <b>open floor</b> or on a <b>seat</b>: a chair, a bench, a rug, a bed, a boat. Water, trees, tables, statues and the like are not places to stand.</>,
-        <>Every person has one hidden role: the <b>victim</b>, the <b>killer</b>, the <b>accomplice</b>, or one of the day&rsquo;s <b>guests</b>, <b>staff</b> or <b>family</b>. The role chips count how many of each there are.</>,
+        <><b>Stage 1, Place.</b> Each card is one person and what they said about where they stood. Tap a card, then a square. People stand on <b>open floor</b> or on a <b>seat</b> (a chair, a bench, a rug, a bed, a boat); water, trees, tables and statues are not places to stand. Someone who <b>said nothing</b> is found by elimination.</>,
         <>Every labelled area on the board is a <b>room</b>, indoors or out, and a clue that names one (&ldquo;in the Mall area&rdquo;) means any square inside it. <b>Beside</b> means a square that shares an edge with the thing, never a diagonal. <b>On</b> means on the thing itself. Every clue is true.</>,
-        <>Tap a person, then tap a square to place them. Tap them again to pick them up. <b>Mark</b> mode crosses out squares you have ruled out.</>,
+        <><b>Check board</b> when everyone is placed. Once it is right, <b>Stage 2, Accuse</b> opens the detective&rsquo;s notes: clues about the roles. Tap a card and give that person a role: the <b>victim</b>, the <b>killer</b>, the <b>accomplice</b>, or one of the day&rsquo;s <b>guests</b>, <b>staff</b> or <b>family</b>.</>,
       ]}
-      knack={<>Start with clues that name a room or an object that only one square holds. Rows and columns do the rest: once a person is fixed, cross out their whole row and column.</>}
-      note={<><b>Check</b> when everyone is placed and has a role. A solve scores ten, and each wrong check costs two.</>}
-      footer={<>The launch weekend is three 7 by 7 intro boards. After that: 7 by 7 Monday to Wednesday, 8 by 8 on Thursday and Friday, 9 by 9 on Saturday, and the Sunday Edition is 10 by 10. Names are first names only and the portraits are original drawings, not likenesses.</>}
+      knack={<>Placed people shade their row and column, so the squares left open stand out. In Stage 2, find the rooms that hold exactly two people first: the victim and the killer are one of those pairs.</>}
+      note={<>A solve scores ten, and each wrong check, in either stage, costs two. <b>Mark</b> crosses out squares you have ruled out, and <b>Undo</b> takes back your last move.</>}
+      footer={<>The launch weekend is three 7 by 7 intro boards. After that: 7 by 7 Monday to Wednesday, 8 by 8 on Thursday and Friday, 9 by 9 on Saturday, and the Sunday Edition is 10 by 10. Names are first names only and the portraits are original cartoons.</>}
     />
   );
 
@@ -620,6 +651,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   // on one screen ... integrate that and job / role"). The board is capped to the screen height so the
   // dossier card (the cast strip, the selected person's name, their role picker and their clues) shows
   // beneath it on a phone and beside it on a desktop, with no scrolling between them.
+  const accuse = g.stage === 'accuse';
   // Rows and columns already holding someone are shaded, so the next free square is easy to see.
   const takenRC = new Set();
   for (const q of CAST) { const x = g.place[q]; if (!x) continue; for (let i = 0; i < N; i++) { takenRC.add(`${x[0]},${i}`); takenRC.add(`${i},${x[1]}`); } }
@@ -635,7 +667,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
             return (
               <button key={k} type="button" onClick={() => tapCell(k)}
                 aria-label={`${cellTitle(LAYOUT, k)}, row ${r + 1}, column ${c + 1}${occ ? `, ${occ}` : ''}`}
-                className="sc-hit" style={{ background: !occ && takenRC.has(k) ? 'rgba(11,15,26,0.30)' : 'transparent', border: 'none', padding: 0, margin: 0, cursor: IDX.isOpen(k) || occ ? 'pointer' : 'default' }} />
+                className="sc-hit" style={{ background: !occ && !accuse && takenRC.has(k) ? 'rgba(11,15,26,0.30)' : 'transparent', border: 'none', padding: 0, margin: 0, cursor: IDX.isOpen(k) || occ ? 'pointer' : 'default' }} />
             );
           })}
         </div>
@@ -660,75 +692,90 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   );
 
   const selPlace = g.place[sel] ? LAYOUT.rinfo[LAYOUT.rooms[g.place[sel][0]][g.place[sel][1]]].name : null;
-  // ONE PANEL, PHONE AND DESKTOP (owner, 2026-10-30: "revert mobile back to ability to see full list of
-  // clues ... cant figure out how to place players"). A prompt says exactly what the next tap does, the cast
-  // strip picks who, the role buttons sit under it, and every clue is listed with the selected person's first.
-  const ordered = [...mine, ...clueList.filter((c) => !mine.includes(c))];
-  const prompt = mode === 'mark' ? 'Tap squares to cross them out. Tap Mark again to go back to placing.'
-    : g.place[sel] ? `${sel} is ${LAYOUT.rinfo[LAYOUT.rooms[g.place[sel][0]][g.place[sel][1]]].out ? 'in the ' + LAYOUT.rinfo[LAYOUT.rooms[g.place[sel][0]][g.place[sel][1]]].name.replace(/^The /, '') + ' area' : 'in the ' + LAYOUT.rinfo[LAYOUT.rooms[g.place[sel][0]][g.place[sel][1]]].name.replace(/^The /, '')}. Tap another square to move them, or tap them on the board to take them off.`
-      : `Tap a square on the board to place ${sel}.`;
+  // THE CASE FILE (owner, 2026-10-30): Murdoku's one-screen shape, in two stages. PLACE: a card per person
+  // holding their own statement (tap a card, then a square). ACCUSE: once the board checks out, the role
+  // clues open as the detective's notes and each card takes a role. A tool bar sits under it all.
+  const placeClues = clueList.filter((c) => !isRoleClue(c));
+  const roleClueList = clueList.filter((c) => isRoleClue(c));
+  const said = (p) => placeClues.filter((c) => c.p === p);
+  const iconBtn = (label, icon, onClick, opts = {}) => (
+    <button type="button" onClick={onClick} aria-pressed={opts.pressed} disabled={opts.disabled}
+      style={{ flex: opts.grow ? 2 : 1, minWidth: 0, minHeight: 50, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, fontFamily: SANS, fontWeight: 800, fontSize: 11.5, letterSpacing: '0.02em', borderRadius: 10, cursor: opts.disabled ? 'default' : 'pointer', opacity: opts.disabled ? 0.45 : 1,
+        border: `2px solid ${opts.primary ? (STAGE ? STAGE_C_INK : T.cta) : opts.pressed ? ACC : SURF_B}`, background: opts.primary ? (STAGE ? STAGE_C : T.cta) : opts.pressed ? 'var(--stg-surf2, #fff1f2)' : SURF, color: opts.primary ? (STAGE ? 'var(--stg-onramp, #08222e)' : T.white) : opts.pressed ? ACC_INK : INK }}>
+      {icon}<span>{label}</span>
+    </button>
+  );
+  const I = {
+    mark: <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>,
+    erase: <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16l9-9 6 6-6 6H8zM10 19h10" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" /></svg>,
+    undo: <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
+  };
+  const doneN = accuse ? rolesN : placedN;
   const dossier = playing && !preStart && (
     <div className="sc-side" style={{ fontFamily: SANS }}>
-      <div style={{ borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, overflow: 'hidden' }}>
-        <div aria-live="polite" style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 12px', background: 'var(--stg-surf2, #f1f3f7)', borderBottom: `1px solid ${SURF_B}` }}>
-          <Portrait id={sel} size={30} ring={CAST_COLORS[sel]} />
-          <span style={{ fontSize: 13.5, fontWeight: 750, lineHeight: 1.35, color: bad.has(sel) ? BAD : INK }}>{bad.has(sel) ? `${sel} shares a row or column with someone. One per row and column.` : prompt}</span>
-        </div>
-        {/* The cast strip: tap a face to pick who the next tap places. A dimmed face is not placed yet; the word under a name is the role given. */}
-        <div role="listbox" aria-label="People" className="sc-strip" style={{ display: 'flex', gap: 6, padding: '8px 10px 6px', overflowX: 'auto' }}>
-          {CAST.map((p) => {
-            const on = p === sel;
-            return (
-              <button key={p} type="button" role="option" aria-selected={on} aria-label={`${p}${g.place[p] ? ', placed' : ', not placed'}${g.roles[p] ? `, ${g.roles[p]}` : ''}`} onClick={() => { setSel(p); if (mode === 'mark') setMode('place'); }}
-                style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: on ? 'var(--stg-surf2, #fff1f2)' : 'none', border: 'none', padding: '3px 4px', cursor: 'pointer', borderRadius: 9, outline: on ? `2px solid ${ACC}` : 'none' }}>
-                <Portrait id={p} size={34} ring={CAST_COLORS[p]} dim={!g.place[p]} />
-                <span style={{ fontSize: 10.5, fontWeight: 800, color: on ? INK : FADED, lineHeight: 1.1 }}>{p}</span>
-                <span style={{ fontSize: 9.5, fontWeight: 800, color: ACC_INK, lineHeight: 1.1, minHeight: 10 }}>{g.roles[p] ? ROLE_ABBR[g.roles[p]] : ''}</span>
-              </button>
-            );
-          })}
-        </div>
-        <div role="group" aria-label={`${sel}'s role`} className="sc-roles" style={{ display: 'flex', gap: 5, padding: '0 10px 10px', alignItems: 'center' }}>
-          <span style={{ flex: 'none', fontSize: 11.5, fontWeight: 800, color: FADED, marginRight: 2 }}>{sel} was</span>
-          {ROLE_ORDER.filter((r) => COUNTS[r]).map((r) => {
-            const left = COUNTS[r] - CAST.filter((q) => g.roles[q] === r).length;
-            const on = g.roles[sel] === r;
-            return (
-              <button key={r} type="button" onClick={() => setRole(sel, r)} aria-pressed={on}
-                style={{ ...chipBase, flex: 'none', fontSize: 12, padding: '5px 9px', borderColor: on ? ACC : SURF_B, background: on ? ACC : 'transparent', color: on ? ON_ACC : (left > 0 ? INK : FADED) }}>
-                {r}<span style={{ fontWeight: 700, opacity: 0.7 }}>{left}</span>
-              </button>
-            );
-          })}
-        </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, margin: '2px 2px 8px' }}>
+        <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: ACC_INK }}>{accuse ? 'Stage 2 · Accuse' : 'Stage 1 · Place'}</span>
+        <span style={{ fontSize: 12.5, fontWeight: 650, color: FADED }}>{accuse ? 'Tap a card, then pick a role' : mode === 'mark' ? 'Tap squares to cross them out' : 'Tap a card, then a square'}</span>
       </div>
-      <div className="sc-tools" style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 }}>
-        <button type="button" className="pk-btn" onClick={() => setMode(mode === 'place' ? 'mark' : 'place')} aria-pressed={mode === 'mark'}
-          style={mode === 'mark' ? { borderColor: ACC, color: ACC_INK } : undefined}>{mode === 'mark' ? 'Marking' : 'Mark'}</button>
-        <button type="button" className="pk-btn" onClick={check}
-          style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white }}>
-          Check{placedN === N && rolesN === N ? '' : ` · ${CAST.filter((q) => g.place[q] && g.roles[q]).length} of ${N} done`}
-        </button>
-        <button type="button" className="pk-btn" onClick={clearTap} style={armClear ? { color: BAD, borderColor: BAD } : undefined}>{armClear ? 'Tap again to clear' : 'Clear'}</button>
-      </div>
-      <div style={{ marginTop: 10, borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '8px 12px 4px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED, padding: '2px 0 4px' }}>
-          <span>Clues</span><span style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 650 }}>tap one to cross it off</span>
+      {accuse && (
+        <div style={{ borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '9px 12px 4px', marginBottom: 8 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED, marginBottom: 2 }}>Detective&rsquo;s notes</div>
+          <div style={{ fontSize: 13.5, fontWeight: 750, color: INK, padding: '6px 0', borderTop: `1px solid ${SURF_B}` }}>The killer was the only person alone in a room with the victim.</div>
+          {roleClueList.map((c) => (
+            <button key={c.i} type="button" onClick={() => toggleStruck(c.i)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, padding: '7px 0', cursor: 'pointer', fontFamily: SANS }}>
+              <RoleTag size={20} />
+              <span style={{ fontSize: 13.5, fontWeight: 650, lineHeight: 1.35, color: g.struck[c.i] ? FADED : INK, textDecoration: g.struck[c.i] ? 'line-through' : 'none' }}>{c.text}</span>
+            </button>
+          ))}
         </div>
-        <ol className="sc-clues" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {ordered.map((c) => {
-            const hot = mine.includes(c);
-            return (
-              <li key={c.i}>
-                <button type="button" onClick={() => toggleStruck(c.i)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, boxShadow: hot ? `inset 3px 0 0 ${ACC}` : 'none', padding: hot ? '8px 0 8px 8px' : '8px 0', cursor: 'pointer', fontFamily: SANS }}>
-                  {c.p ? <Portrait id={c.p} size={22} ring={CAST_COLORS[c.p]} /> : <RoleTag size={22} />}
-                  <span style={{ fontSize: 14, fontWeight: hot ? 750 : 620, lineHeight: 1.35, color: g.struck[c.i] ? FADED : INK, textDecoration: g.struck[c.i] ? 'line-through' : 'none' }}>{c.text}</span>
+      )}
+      <div className="sc-cards" role="listbox" aria-label="People" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 7 }}>
+        {CAST.map((p) => {
+          const on = p === sel;
+          const lines = said(p);
+          return (
+            <button key={p} type="button" role="option" aria-selected={on} onClick={() => { setSel(p); if (mode === 'mark') setMode('place'); }}
+              style={{ display: 'flex', gap: 8, alignItems: 'flex-start', textAlign: 'left', padding: '8px 9px', borderRadius: 11, cursor: 'pointer', fontFamily: SANS, background: on ? 'var(--stg-surf2, #fff1f2)' : SURF,
+                border: `2px solid ${on ? ACC : SURF_B}`, boxShadow: `inset 4px 0 0 ${CAST_COLORS[p]}` }}>
+              <span style={{ marginLeft: 3 }}><Portrait id={p} size={38} ring={CAST_COLORS[p]} dim={!accuse && !g.place[p]} /></span>
+              <span style={{ minWidth: 0, flex: 1 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ fontSize: 14.5, fontWeight: 800, color: INK }}>{p}</span>
+                  {!accuse && g.place[p] && <span aria-label="placed" style={{ fontSize: 11, fontWeight: 800, color: bad.has(p) ? BAD : FADED }}>{bad.has(p) ? 'clash' : 'placed'}</span>}
+                  {accuse && <span style={{ fontSize: 11, fontWeight: 800, color: g.roles[p] ? ACC_INK : FADED }}>{g.roles[p] || 'role?'}</span>}
+                </span>
+                <span style={{ display: 'block', fontSize: 12.5, fontWeight: 600, lineHeight: 1.3, color: accuse ? FADED : INK, marginTop: 2 }}>
+                  {lines.length ? lines.map((c) => (c.text.startsWith(p + ' ') ? c.text.slice(p.length + 1).replace(/^./, (m) => m.toUpperCase()) : c.text)).join(' ') : <i style={{ color: FADED }}>Said nothing.</i>}
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="sc-barpad" style={{ display: 'none', height: accuse ? 128 : 78 }} />
+      {/* The tool bar: pinned to the bottom of the screen on a phone, so it is always to hand. */}
+      <div className="sc-bar" style={{ marginTop: 9 }}>
+        {accuse && (
+          <div role="group" aria-label={`${sel}'s role`} className="sc-roles" style={{ display: 'flex', gap: 5, alignItems: 'center', padding: '0 0 8px' }}>
+            <span style={{ flex: 'none', fontSize: 12, fontWeight: 800, color: FADED }}>{sel} was</span>
+            {ROLE_ORDER.filter((r) => COUNTS[r]).map((r) => {
+              const left = COUNTS[r] - CAST.filter((q) => g.roles[q] === r).length;
+              const on = g.roles[sel] === r;
+              return (
+                <button key={r} type="button" onClick={() => setRole(sel, r)} aria-pressed={on}
+                  style={{ ...chipBase, flex: 'none', fontSize: 12, padding: '6px 9px', borderColor: on ? ACC : SURF_B, background: on ? ACC : SURF, color: on ? ON_ACC : (left > 0 ? INK : FADED) }}>
+                  {r}<span style={{ fontWeight: 700, opacity: 0.7 }}>{left}</span>
                 </button>
-              </li>
-            );
-          })}
-        </ol>
+              );
+            })}
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 6 }}>
+          {!accuse && iconBtn(mode === 'mark' ? 'Marking' : 'Mark', I.mark, () => setMode(mode === 'place' ? 'mark' : 'place'), { pressed: mode === 'mark' })}
+          {iconBtn('Erase', I.erase, erase, { disabled: accuse ? !g.roles[sel] : !g.place[sel] })}
+          {iconBtn('Undo', I.undo, undo)}
+          {iconBtn(accuse ? `Accuse${doneN === N ? '' : ` ${doneN}/${N}`}` : `Check board${doneN === N ? '' : ` ${doneN}/${N}`}`, null, check, { primary: true, grow: true })}
+        </div>
       </div>
     </div>
   );
@@ -789,7 +836,8 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           .sc-fade{animation:scFade .3s ease-out;}
           .sc-sheet{animation:scUp .25s ease-out;}
           @media (prefers-reduced-motion: reduce){.sc-slide,.sc-fade,.sc-sheet{animation:none;}}
-          @media(max-width:899px){.sc-tools .pk-btn{padding:8px 13px;font-size:13.5px;}}
+          @media(max-width:899px){.sc-bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--stg-ground, #f7f8fa);padding:8px 10px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -6px 16px rgba(0,0,0,0.18);margin:0 !important;} .sc-barpad{display:block !important;}}
+          @media(max-width:360px){.sc-cards{grid-template-columns:1fr !important;}}
           .sc-roles{overflow-x:auto;scrollbar-width:none;} .sc-roles::-webkit-scrollbar{display:none;}
           @media(max-width:899px){
             .sc-play{gap:8px !important;}
@@ -802,7 +850,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
             .sc-board{max-width:none;}
             .sc-side{position:sticky;top:12px;}
             .sc-roles{flex-wrap:wrap;overflow:visible;}
-            .sc-clues{max-height:calc(100vh - 420px);overflow-y:auto;}
+            .sc-cards{max-height:calc(100vh - 260px);overflow-y:auto;}
           }
           .sc-hit:focus-visible{outline:3px solid var(--stg-acc, #be123c);outline-offset:-3px;border-radius:6px;}
         ` }} />
@@ -830,7 +878,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to Play' : `Murder ${LAYOUT.deathAt}`}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>{N} people, {LAYOUT.title}, {LAYOUT.place}. Put one person in every row and every column, then name the victim, the killer, the accomplice and everyone else&rsquo;s role. The killer was the only person alone with the victim.</p>
+                <p style={{ margin: '0 0 6px' }}>{N} people, {LAYOUT.title}, {LAYOUT.place}. First place everyone, one in every row and every column, from what each person said. Then accuse: name the victim, the killer, the accomplice and everyone else&rsquo;s role. The killer was the only person alone with the victim.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>

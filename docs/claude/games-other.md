@@ -1702,6 +1702,15 @@ and `guessesUsed` is the wrong checks. Timer hidden by default.
   open floor or a seat (chair, bench, rug, bed, car, boat, swan boat, Bow Bridge). Every person also has a hidden
   role the player deduces: Victim, Killer (the only other person in the victim's room, which holds exactly two),
   Accomplice (every day), and Guest / Staff / Family (lib/sudoclue-engine.js ROLESETS).
+- **Two stages (owner, 2026-10-30).** Stage 1, Place: a card per person with their own statement (at most one
+  placement clue per person on 7x7 and 8x8, two on 9x9 and 10x10; "Said nothing" otherwise), and the placement
+  clues ALONE fix the board. Check board, then Stage 2, Accuse: the role clues open as the detective's notes and
+  ALONE fix the roles on that board. Wrong checks in either stage cost 2. verify-sudoclue proves both stages.
+  Generator: scratch gen5.py (the two-stage search), role clues weighted away from plain "X was a guest".
+- **Wording.** Room clues name the area exactly as the board labels it: indoor "in the Kitchen", outdoor "in the
+  Conservatory Water area". "Beside" is an object on an edge-sharing square, never a diagonal.
+- **Ratings.** Sudoclue only: stars and easy-to-hard 1 to 5, once per board, 10 s after the game ends, POST/GET
+  /api/sudoclue/rate (one stats_payloads row per board).
 - **Sizes.** Launch weekend (Fri Oct 30 to Sun Nov 1) is three 7x7 intro boards. Then 7x7 Mon to Wed, 8x8 Thu and
   Fri, 9x9 Sat, 10x10 Sunday Edition (Sunday boards carry `sunday: true` from Nov 8; Nov 1 is an intro board).
 - **Files.** `lib/sudoclue-places.js` (places: rooms, landmark items, water cells, clue phrases),
