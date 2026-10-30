@@ -65,7 +65,7 @@ const COLORS = {
   // colours and cannot simply be neutralised — but the 700-weight versions are
   // 3.2 to 3.7:1 on the stage's near-black ground. Each takes a lighter twin
   // there and keeps its own hue, so the sets still read as the same three.
-  cA: `var(--stg-cA, ${T.blue})`, cB: 'var(--stg-cB, #be185d)', cC: 'var(--stg-cC, #0f766e)',
+  cA: `var(--stg-cA, ${T.blue})`, cB: 'var(--stg-cB, #a16207)', cC: 'var(--stg-cC, #0f766e)',
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";

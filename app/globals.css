@@ -364,7 +364,9 @@ button, input, textarea, select { border-radius: 8px; }
   /* Venn's three SETS. Meaning colours that identify a circle, so they keep
      their hue and take a lighter twin rather than being neutralised. */
   --stg-cA: #93b8fb;
-  --stg-cB: #fb7185;
+  /* Set B was rose until Logic took rose (2026-10-30); amber keeps the three
+     sets apart from each other and from the Logic accent. */
+  --stg-cB: #fbbf24;
   --stg-cC: #5eead4;
   --stg-bad: #fb7185;
   --stg-fieldink: 255, 255, 255;
@@ -688,7 +690,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],
   --stg-cool: #0369a1;
   --stg-warn: #9c5d02;
   --stg-cA: #1d4ed8;
-  --stg-cB: #9f1239;
+  --stg-cB: #a16207;
   --stg-cC: #0f766e;
   --stg-bad: #be123c;
   --stg-fieldink: 11, 15, 26;
