@@ -614,7 +614,7 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
         const top = (
           <>
             <style dangerouslySetInnerHTML={{ __html: `
-              .sos-ws{align-self:center;position:relative;display:grid;width:100%;max-width:440px;aspect-ratio:1/1;container-type:inline-size;box-shadow:0 0 0 2px var(--pst-ink);border-radius:14px;background:var(--pst-tint);overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+              .sos-ws{align-self:center;position:relative;display:grid;width:100%;max-width:440px;aspect-ratio:1/1;container-type:inline-size;box-shadow:0 0 0 2px var(--pst-ink);border-radius:14px;background:var(--pst-bg);overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
               .sos-ink{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}
               .sos-c{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:1px;font-weight:800;line-height:1;font-size:calc(100cqw / ${SIZE} * 0.56);}
               .sos-c i{font-style:normal;display:flex;align-items:center;justify-content:center;width:100%;height:100%;}

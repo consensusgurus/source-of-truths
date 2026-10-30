@@ -486,6 +486,11 @@ const CSS = `
   .pc .gsx-gate.gsx-cp .gsx-piece{grid-column:2;grid-row:2;display:flex}
   .pc .gsx-gate.gsx-cp .gsx-bands{grid-column:2;grid-row:3}
   .pc .gsx-gate.gsx-cp .gsx-band{min-height:58px}
+  /* HEADER ON THE COLUMN EDGE (owner report, 2026-10-30): the align-self:center
+     above was for the old two-column start; on the one-column start screen it
+     shrank the title block and centred it, so it sat inset from the register
+     and the buttons. */
+  .pc .gsx-gate.gsx-gs.gsx-cp .gsx-head{align-self:stretch}
 }
 /* Phone: the register box grows into the room the tags leave. */
 @media(max-width:899px){.gsx-gate .gsx-piece .pcg-box{flex:1 1 auto;max-height:200px}.gsx-gate .gsx-piece .pcg{justify-content:center}}

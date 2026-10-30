@@ -626,7 +626,10 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
             <style dangerouslySetInnerHTML={{ __html: `
               .pst .sta-dug{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
               .pst .sta-dug span{font-size:14px;font-weight:800;padding:6px 14px;border-radius:999px;background:var(--pst-ink);color:var(--pst-bg);letter-spacing:.04em;}
-              .pst .sta-dug span.o{background:transparent;color:var(--pst-ink);border:2px solid color-mix(in srgb, var(--pst-ink) 50%, transparent);padding:4px 12px;}
+              .pst .sta-dug span.o{background:transparent;color:var(--pst-ink);border:2px solid color-mix(in srgb, var(--pst-ink) 50%, transparent);padding:4px 10px;display:inline-flex;align-items:center;gap:7px;}
+              .pst .sta-dug span.o i{display:inline-flex;gap:3px;}
+              .pst .sta-dug span.o i u{display:block;width:11px;height:14px;box-sizing:border-box;border-bottom:2.5px solid var(--pst-ink);}
+              .pst .sta-dug span.o b{font-size:12px;font-weight:800;opacity:.7;font-variant-numeric:tabular-nums;}
               .pst .sta-trc{text-align:center;font-size:34px;font-weight:800;letter-spacing:.1em;min-height:44px;line-height:44px;}
               .pst .sta-trc.bad{animation:stash .32s;}
               @keyframes stash{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
@@ -646,7 +649,13 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
             ` }} />
             <div className="sta-dug" aria-label="Words dug out">
               {foundWords.map((f) => <span key={f.word}>{f.word}</span>)}
-              {remaining.map((w) => <span key={w} className="o" aria-label={`Buried word, ${w.length} letters`}>?</span>)}
+              {/* LETTER COUNT ON EVERY BURIED WORD (owner, 2026-10-30): one blank per
+                  letter plus the number, as the original board's dots did. */}
+              {remaining.map((w) => (
+                <span key={w} className="o" aria-label={`Buried word, ${w.length} letters`}>
+                  <i aria-hidden="true">{w.split('').map((_, j) => <u key={j} />)}</i><b aria-hidden="true">{w.length}</b>
+                </span>
+              ))}
             </div>
             <div className={'sta-trc' + (bad ? ' bad' : '')} aria-live="polite" aria-label={trace.length ? `Tracing ${traceWord}` : 'Nothing traced'}>{traceWord}</div>
             <div className="sta-site">

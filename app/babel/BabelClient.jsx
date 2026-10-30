@@ -329,6 +329,22 @@ function deriveStats(stats, todayNum) {
   return { played, won, cur, max };
 }
 
+// A DESKTOP WITH A MOUSE (owner, 2026-10-30): no Zoom / Whole board / Bag tab
+// bar there. The whole board is always shown, with a Show bag button. The same
+// test the on-screen keyboards use, so a landscape tablet keeps the phone tabs.
+function useDeskPointer() {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(min-width: 900px) and (hover: hover) and (pointer: fine)');
+    const f = () => setOn(mq.matches);
+    f();
+    if (mq.addEventListener) mq.addEventListener('change', f); else mq.addListener(f);
+    return () => { if (mq.removeEventListener) mq.removeEventListener('change', f); else mq.removeListener(f); };
+  }, []);
+  return on;
+}
+
 // Phone stage board (owner, 2026-10-25): white page, the tiles carry the
 // category tint, played tiles are ink.
 const BAB_STAGE_CSS = `
@@ -353,6 +369,26 @@ const BAB_STAGE_CSS = `
 .pst .bab-c.f.foe{box-shadow:inset 0 0 0 2px var(--pst-bg);}
 .pst .bab-c.p{background:var(--pst-tint);box-shadow:inset 0 0 0 3px var(--pst-bg),inset 0 0 0 5px var(--pst-ink);}
 .pst .bab-c.sel{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);position:relative;z-index:1;}
+/* PREMIUM SQUARES (owner, 2026-10-30): the old board's four colours and labels
+   are back on the stage, in both views, and empty squares go to the page colour
+   so they read. Played tiles carry their point value again. */
+.bab-board{--bb-tw:#f2b9b9;--bb-tw-ink:#7f1d1d;--bb-dw:#f7d6df;--bb-dw-ink:#8b2346;--bb-tl:#aed0f1;--bb-tl-ink:#0b4a8a;--bb-dl:#dcebf8;--bb-dl-ink:#1d5f99;}
+html:is([data-stage-pastel^='dark'],[data-stage-tone^='dark']) .bab-board{--bb-tw:#6e2a31;--bb-tw-ink:#ffc2c8;--bb-dw:#4f2a40;--bb-dw-ink:#f6c1d6;--bb-tl:#1d4a78;--bb-tl-ink:#b9dcff;--bb-dl:#1b354f;--bb-dl-ink:#a6d1f2;}
+.pst .bab-c:not(.f):not(.p){background:var(--pst-bg);}
+.pst .bab-c.pm.pT{background:var(--bb-tw);color:var(--bb-tw-ink);border-color:var(--bb-tw-ink);}
+.pst .bab-c.pm.pD{background:var(--bb-dw);color:var(--bb-dw-ink);border-color:var(--bb-dw-ink);}
+.pst .bab-c.pm.pt{background:var(--bb-tl);color:var(--bb-tl-ink);border-color:var(--bb-tl-ink);}
+.pst .bab-c.pm.pd{background:var(--bb-dl);color:var(--bb-dl-ink);border-color:var(--bb-dl-ink);}
+.pst .bab-c.sm.pm{font-size:7.5px;letter-spacing:0;}
+.pst .bab-c{position:relative;}
+.pst .bab-c small{position:absolute;right:3px;bottom:2px;font-size:8.5px;font-weight:800;line-height:1;}
+.pst .bab-c.sm small{display:none;}
+.bab-board.whole.dk{max-width:470px;gap:3px;}
+.pst .bab-board.dk .bab-c.sm{font-size:17px;border-width:2px;border-radius:7px;}
+.pst .bab-board.dk .bab-c.sm.pm{font-size:9.5px;letter-spacing:.02em;}
+.pst .bab-board.dk .bab-c.sm small{display:block;font-size:8px;}
+.bab-bagbtn{align-self:center;}
+.pst .bab-bagbtn button{min-height:40px;padding:0 18px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);color:var(--pst-ink);font-size:14px;font-weight:800;}
 .bab-pan{display:flex;justify-content:center;gap:8px;}
 .pst .bab-pan .pst-arr:disabled{opacity:.3;cursor:default;}
 .bab-bag{display:flex;flex-direction:column;gap:10px;}
@@ -415,7 +451,8 @@ export default function BabelClient({ puzzles, forceNum }) {
   // The phone stage (owner, 2026-10-25): which view it shows and where its
   // zoomed window sits. Drawing state only; play state is untouched.
   const phoneStage = usePhoneStage();
-  const [stView, setStView] = useState('zoom');
+  const [stView, setStView] = useState('whole'); // whole board first (owner, 2026-10-30)
+  const deskStage = useDeskPointer();
   const [stOrg, setStOrg] = useState(null);
   // The finished board starts turned OVER, showing what to do next.
   const [revealed, setRevealed] = useState(false);
@@ -704,6 +741,7 @@ export default function BabelClient({ puzzles, forceNum }) {
   }, [sel]);
 
   function babelStage() {
+    const view = deskStage ? (stView === 'bag' ? 'bag' : 'whole') : stView;
     const cellOf = (r, c, big) => {
       const p = pendingAt.get(`${r},${c}`);
       const v = p ? p.L : grid[r][c];
@@ -711,11 +749,12 @@ export default function BabelClient({ puzzles, forceNum }) {
       const isSel = sel && sel.r === r && sel.c === c;
       const wasFoe = !p && grid[r][c] && g.log.length && lastFoeCells.has(`${r},${c}`);
       const label = `Row ${r + 1} column ${c + 1}${v ? `, ${v}${p ? ' pending' : ''}` : pm ? `, ${pm.name}` : ''}${isSel ? `, picked, going ${dir === 'h' ? 'across' : 'down'}` : ''}`;
-      const cls = 'bab-c' + (big ? '' : ' sm') + (v && !p ? ' f' : '') + (p ? ' p' : '') + (wasFoe ? ' foe' : '') + (isSel ? ' sel' : '') + (pm ? ' pm' : '');
-      if (v && !p) return <span key={`${r}-${c}`} className={cls} role="img" aria-label={label}>{v}</span>;
+      const pk = pm ? ' p' + (PREMIUM[r][c] === '*' ? 'D' : PREMIUM[r][c]) : '';
+      const cls = 'bab-c' + (big ? '' : ' sm') + (v && !p ? ' f' : '') + (p ? ' p' : '') + (wasFoe ? ' foe' : '') + (isSel ? ' sel' : '') + (pm ? ' pm' + pk : '');
+      if (v && !p) return <span key={`${r}-${c}`} className={cls} role="img" aria-label={label}>{v}<small aria-hidden="true">{PTS[v]}</small></span>;
       return (
         <button key={`${r}-${c}`} type="button" className={cls} aria-label={label} onClick={() => onCell(r, c)}>
-          {v || (isSel ? (dir === 'h' ? '→' : '↓') : (pm && big ? pm.label : ''))}
+          {v ? <>{v}<small aria-hidden="true">{PTS[v]}</small></> : (isSel ? (dir === 'h' ? '→' : '↓') : (pm ? pm.label : ''))}
         </button>
       );
     };
@@ -734,7 +773,7 @@ export default function BabelClient({ puzzles, forceNum }) {
       const fx = (e.clientX - rc.left) / rc.width, fy = (e.clientY - rc.top) / rc.height;
       const r = Math.floor(fy * SIZE), c = Math.floor(fx * SIZE);
       setStOrg({ r: clampOrg(r - 3), c: clampOrg(c - 3) });
-      setStView('zoom');
+      if (!deskStage) setStView('zoom');
     };
     const pan = (dr, dc) => setStOrg({ r: clampOrg(zo.r + dr), c: clampOrg(zo.c + dc) });
     const where = `${zo.r < 2 ? 'top' : zo.r > SIZE - ZW - 2 ? 'bottom' : 'middle'} ${zo.c < 2 ? 'left' : zo.c > SIZE - ZW - 2 ? 'right' : 'centre'}`;
@@ -742,18 +781,24 @@ export default function BabelClient({ puzzles, forceNum }) {
       <>
         <style dangerouslySetInnerHTML={{ __html: BAB_STAGE_CSS }} />
         <div className="bab-top2">
-          <button type="button" className="bab-mm" onClick={onMap} aria-label="Whole board map. Tap to move the zoomed window there.">{mapCells}</button>
+          {!deskStage && <button type="button" className="bab-mm" onClick={onMap} aria-label="Whole board map. Tap to move the zoomed window there.">{mapCells}</button>}
           <div className="bab-sc">
             <div>Spread<b>{signed(spread)}</b></div>
             <div>Benchmark<b>{signed(BENCH)}</b></div>
           </div>
         </div>
-        <div className="bab-tabs" role="tablist" aria-label="Board view">
-          {[['zoom', 'Zoom'], ['whole', 'Whole board'], ['bag', 'Bag']].map(([k, t]) => (
-            <button key={k} type="button" role="tab" aria-selected={stView === k} className={stView === k ? 'on' : ''} onClick={() => setStView(k)}>{t}</button>
-          ))}
-        </div>
-        {stView === 'zoom' ? (
+        {deskStage ? (
+          <div className="bab-bagbtn">
+            <button type="button" aria-pressed={view === 'bag'} onClick={() => setStView(view === 'bag' ? 'whole' : 'bag')}>{view === 'bag' ? 'Show board' : 'Show bag'}</button>
+          </div>
+        ) : (
+          <div className="bab-tabs" role="tablist" aria-label="Board view">
+            {[['whole', 'Whole board'], ['zoom', 'Zoom'], ['bag', 'Bag']].map(([k, t]) => (
+              <button key={k} type="button" role="tab" aria-selected={view === k} className={view === k ? 'on' : ''} onClick={() => setStView(k)}>{t}</button>
+            ))}
+          </div>
+        )}
+        {view === 'zoom' ? (
           <>
             <div className="bab-board" role="grid" aria-label={`Babel board, ${where}`} style={{ gridTemplateColumns: `repeat(${ZW}, minmax(0, 1fr))` }}>{zoomCells}</div>
             <div className="bab-pan">
@@ -763,8 +808,8 @@ export default function BabelClient({ puzzles, forceNum }) {
               <button type="button" className="pst-arr" aria-label="Move the window right" disabled={zo.c === SIZE - ZW} onClick={() => pan(0, 1)}>{ICON.right}</button>
             </div>
           </>
-        ) : stView === 'whole' ? (
-          <div className="bab-board whole" role="grid" aria-label="Babel board, whole" style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` }}>{wholeCells}</div>
+        ) : view === 'whole' ? (
+          <div className={'bab-board whole' + (deskStage ? ' dk' : '')} role="grid" aria-label="Babel board, whole" style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` }}>{wholeCells}</div>
         ) : (
           <div className="bab-bag">
             <div className="pst-chips">

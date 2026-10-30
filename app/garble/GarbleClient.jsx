@@ -703,11 +703,27 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
           for (const c of typed) if (c === ch) n--;
           return n;
         };
+        // THE BANK SHOWS ON EVERY STOP (owner, 2026-10-30): it used to appear
+        // only on the finale, so a player working words 1 to 5 could not see
+        // what they had banked. Word stops get a small row; the finale keeps
+        // its big one.
         const collected = isFin ? (
           <div className="wst-tiles" style={{ gap: 5, flexWrap: 'wrap', '--wst-sn': Math.max(bank.length, 9) }} aria-label="Your collected letters">
             {bank.map((b, i) => <span key={i} style={{ borderRadius: '50%', aspectRatio: '1', opacity: g.solved[b.wi] ? 1 : 0.35 }}>{g.solved[b.wi] ? b.ch : '?'}</span>)}
           </div>
-        ) : null;
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, flexWrap: 'wrap' }} aria-label={`Banked letters, ${bank.filter((b) => g.solved[b.wi]).length} of ${bank.length}`}>
+            <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', marginRight: 4, opacity: 0.8 }}>Banked</span>
+            {bank.map((b, i) => (
+              <span key={i} style={{ width: 28, height: 28, boxSizing: 'border-box', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800,
+                background: g.solved[b.wi] ? 'var(--wst-ink)' : 'transparent', color: g.solved[b.wi] ? 'var(--wst-bg)' : 'inherit',
+                border: '2px solid var(--wst-ink)', opacity: g.solved[b.wi] ? 1 : 0.4,
+                boxShadow: b.wi === sel ? '0 0 0 2px var(--wst-bg), 0 0 0 4px var(--wst-ink)' : undefined }}>
+                {g.solved[b.wi] ? b.ch : ''}
+              </span>
+            ))}
+          </div>
+        );
         return (
           <WordStage label="Garble"
             eyebrow={isFin ? 'The finale · your collected letters' : `Word ${sel + 1} of ${PUZZLE.words.length} · circled letters build the finale`}

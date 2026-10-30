@@ -839,13 +839,53 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
           const ghost = !letter && j === sp && g.hint === curKey;
           return { ch: letter || (ghost ? row.a[sp] : ''), spine: j === sp, ghost, cur: !done && j === typedR.length };
         })];
+        // THE WHOLE ACROSTIC IN VIEW (owner, 2026-10-30): every clue of the
+        // section is listed under the hidden word, as on the original board, so
+        // a player sees the full set rather than one word at a time. The row
+        // being typed is lit, and tapping any row moves the answer boxes to it.
+        const listEl = (
+          <div className="arc-ls" role="list" aria-label={`Acrostic ${g.round + 1} clues`}>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .arc-ls{display:flex;flex-direction:column;gap:5px;width:100%;max-width:460px;align-self:center;margin-top:4px;}
+              .arc-r{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:8px;width:100%;text-align:left;padding:7px 10px;border-radius:12px;border:2px solid var(--wst-ink);background:var(--wst-bg);color:var(--wst-ink);font:inherit;cursor:pointer;}
+              .arc-r .n{font-size:12px;font-weight:800;opacity:.6;}
+              .arc-r .c{font-size:14px;font-weight:700;line-height:1.3;min-width:0;}
+              .arc-r .a{display:flex;gap:2px;}
+              .arc-r .a i{font-style:normal;width:15px;height:18px;box-sizing:border-box;border-bottom:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;opacity:.85;}
+              .arc-r .a i.sp{border:2px solid currentColor;border-radius:4px;}
+              .arc-r.now{background:var(--wst-tile);box-shadow:0 0 0 2px var(--wst-bg),0 0 0 4px var(--wst-ink);}
+              .arc-r.now .c{font-weight:800;}
+              .arc-r.ok{background:var(--wst-ink);color:var(--wst-bg);}
+              @media (max-width:420px){.arc-r .a i{width:12px;font-size:10px;}.arc-r .c{font-size:13px;}}
+            ` }} />
+            {round.rows.map((rw, i) => {
+              const k = keyOf(g.round, i);
+              const ok = !!g.solved[k];
+              const tp = ok ? rw.a : (g.typed[k] || '');
+              const spi = spineAt(round.kind, rw.a, i);
+              return (
+                <button key={i} type="button" role="listitem" className={'arc-r' + (i === sel ? ' now' : '') + (ok ? ' ok' : '')}
+                  aria-current={i === sel ? 'true' : undefined}
+                  aria-label={`Clue ${i + 1}: ${rw.c}${ok ? `, solved, ${rw.a}` : ''}`}
+                  onClick={() => { if (!busy) { setSel(i); setArmRow(false); } }}>
+                  <span className="n">{i + 1}</span>
+                  <span className="c">{rw.c}</span>
+                  <span className="a" aria-hidden="true">{rw.a.split('').map((_, j) => <i key={j} className={j === spi ? 'sp' : undefined}>{tp[j] || ''}</i>)}</span>
+                </button>
+              );
+            })}
+          </div>
+        );
         const spineEl = (
+          <>
           <div className="wst-spine" aria-label="The hidden word so far">
             {round.word.split('').map((ch, i) => {
               const on = !!g.solved[keyOf(g.round, i)];
               return <span key={i} className={(on ? 'f' : '') + (i === sel ? ' now' : '')}>{on ? ch : ''}</span>;
             })}
           </div>
+          {listEl}
+          </>
         );
         const action = !done ? (
           <div className="wst-acts">
@@ -855,7 +895,7 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
         ) : null;
         return (
           <WordStage label="Arcos" eyebrow={`Acrostic ${g.round + 1} of 3 · ${SUBS[round.kind]}`}
-            spine={spineEl} clue={row.c} slots={stSlots}
+            spine={spineEl} clue={null} slots={stSlots}
             rowState={done ? (g.shown[curKey] ? 'ok shown' : 'ok') : (shakingK(curKey) ? 'bad' : null)}
             rowKey={curKey} slotsKey={shakingK(curKey) ? 'm' + fx.n : 'a'}
             note={toast || null} action={action} nav={nav} onKey={onKey}

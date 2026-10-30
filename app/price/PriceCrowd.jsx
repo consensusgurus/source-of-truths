@@ -61,12 +61,21 @@ export default function PriceCrowd({ quizId, price, first, compact = false, styl
           <div className="pcw-bars" aria-hidden="true">
             {d.bins.map((v, i) => <i key={i} style={{ height: `${Math.max(v ? 6 : 0, Math.round((v / top) * 100))}%` }} />)}
           </div>
+          {/* MARKS WITHOUT WORDS ON THE STRIP (owner report, 2026-10-30: the
+              labels overlapped whenever two marks landed close together). Each
+              mark is a shape on the axis; a legend underneath names them, so
+              nothing can collide however the guesses fall. */}
           <div className="pcw-marks" aria-hidden="true">
-            <span className="pcw-m pcw-price" style={{ left: `${pctOf(0, lo, hi)}%` }}><i /><em>Price</em></span>
-            {midL != null && !near ? <span className="pcw-m pcw-mid" style={{ left: `${pctOf(midL, lo, hi)}%` }}><i /><em>Typical</em></span> : null}
-            <span className="pcw-m pcw-you" style={{ left: `${pctOf(youL, lo, hi)}%` }}><i /><em>You</em></span>
+            <span className="pcw-m pcw-price" style={{ left: `${pctOf(0, lo, hi)}%` }}><i /></span>
+            {midL != null && !near ? <span className="pcw-m pcw-mid" style={{ left: `${pctOf(midL, lo, hi)}%` }}><i /></span> : null}
+            <span className="pcw-m pcw-you" style={{ left: `${pctOf(youL, lo, hi)}%` }}><i /></span>
           </div>
-          <div className="pcw-ax" aria-hidden="true"><span>¼ of it</span><span>The price</span><span>4×</span></div>
+          <div className="pcw-ax" aria-hidden="true"><span>¼ of it</span><span>4×</span></div>
+          <div className="pcw-key" aria-hidden="true">
+            <span className="pcw-price"><i />Price</span>
+            {midL != null && !near ? <span className="pcw-mid"><i />Typical guess</span> : null}
+            <span className="pcw-you"><i />You</span>
+          </div>
         </div>
       ) : null}
       <div className="pcw-stats">
@@ -86,16 +95,17 @@ const CSS = `
 .pcw-bars{display:flex;align-items:flex-end;gap:2px;height:58px;border-bottom:2px solid currentColor}
 .pcw-c .pcw-bars{height:42px}
 .pcw-bars i{flex:1;border:1.5px solid currentColor;border-bottom:0;border-radius:3px 3px 0 0;background:color-mix(in srgb,currentColor 14%,transparent);transform-origin:bottom;animation:pcwG .6s cubic-bezier(.2,.8,.2,1) both}
-.pcw-marks{position:relative;height:40px}
-.pcw-m{position:absolute;top:-3px;transform:translateX(-50%);display:flex;font-style:normal;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:800;white-space:nowrap}
-.pcw-m em{font-style:normal}
-.pcw-m i{display:block;width:12px;height:12px;border-radius:50%;border:2px solid currentColor;box-sizing:border-box}
-.pcw-price i{width:3px;height:16px;border-radius:2px;background:currentColor;border:0;margin-top:-6px}
+.pcw-marks{position:relative;height:16px}
+.pcw-m{position:absolute;top:-1px;transform:translateX(-50%);display:flex}
+.pcw-m i,.pcw-key i{display:block;width:12px;height:12px;border-radius:50%;border:2px solid currentColor;box-sizing:border-box}
+.pcw-price i{width:3px;height:16px;border-radius:2px;background:currentColor;border:0}
+.pcw-m.pcw-price{top:-7px;z-index:1}
 .pcw-mid i{background:transparent}
 .pcw-you i{background:currentColor}
-.pcw-you{top:15px}
-.pcw-you i{order:2}
 .pcw-ax{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;opacity:.7;margin-top:2px}
+.pcw-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;font-weight:800;margin-top:6px}
+.pcw-key span{display:inline-flex;align-items:center;gap:6px}
+.pcw-key .pcw-price i{height:12px}
 .pcw-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px}
 .pcw-stats div{display:flex;flex-direction:column;border-radius:10px;padding:7px 9px;background:color-mix(in srgb,currentColor 9%,transparent)}
 .pcw-stats b{font-size:19px;font-weight:800;line-height:1.1}
