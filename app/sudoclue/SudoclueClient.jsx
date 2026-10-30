@@ -228,7 +228,6 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const [armClear, setArmClear] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
   const [revealed, setRevealed] = useState(false);
-  const [showTime, setShowTime] = useState(false);
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => { if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`); }, []);
   const [hydrated, setHydrated] = useState(false);
@@ -610,16 +609,12 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 
-  const underBoard = playing && !preStart && (
-    <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 8, alignItems: 'center', fontFamily: SANS }}>
-      <button type="button" onClick={() => setMode(mode === 'place' ? 'mark' : 'place')} aria-pressed={mode === 'mark'}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 800, color: mode === 'mark' ? ACC_INK : FADED, textDecoration: 'underline' }}>
-        {mode === 'mark' ? 'Marking squares: on' : 'Mark squares'}
-      </button>
-      <button type="button" onClick={() => setShowTime((v) => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-        {showTime ? `Time ${elapsed}` : 'Show timer'}
-      </button>
-      <button type="button" onClick={giveUpTap} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 800, color: armReveal ? BAD : FADED, textDecoration: 'underline' }}>
+  // THE FOOT, below everything, as on every stage daily: the rule in one line and Give Up. The clock lives
+  // in the cap (hidden by default, the reveal preference), not here.
+  const foot = playing && !preStart && (
+    <div className="sc-foot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 14, padding: '10px 2px 0', borderTop: `1px solid ${SURF_B}`, fontFamily: SANS }}>
+      <span style={{ fontSize: 12.5, fontWeight: 650, color: FADED, lineHeight: 1.4 }}>One per row and column. The killer was alone with the victim.</span>
+      <button type="button" onClick={giveUpTap} style={{ minHeight: 44, flex: 'none', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: armReveal ? BAD : FADED, textDecoration: 'underline', textUnderlineOffset: 3 }}>
         {armReveal ? 'Tap again to give up' : 'Give Up'}
       </button>
     </div>
@@ -629,6 +624,9 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const dossier = playing && !preStart && (
     <div className="sc-side" style={{ fontFamily: SANS }}>
       <div style={{ borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, padding: '8px 12px 0', fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED }}>
+          <span>{LAYOUT.title}</span><span style={{ fontWeight: 700, textTransform: 'none', letterSpacing: 0 }}>{mode === 'mark' ? 'Tap squares to cross out' : 'Pick a person, tap a square'}</span>
+        </div>
         {/* The cast strip: one tap picks a person. A dimmed face is not placed yet; the word under a name is the role given. */}
         <div role="listbox" aria-label="People" className="sc-strip" style={{ display: 'flex', gap: 6, padding: '9px 10px 7px', overflowX: 'auto', borderBottom: `1px solid ${SURF_B}` }}>
           {CAST.map((p) => {
@@ -644,20 +642,20 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           })}
         </div>
         {/* The selected person: name, where they stand, their role, and the clues that name them. */}
-        <div style={{ padding: '10px 12px 4px' }}>
+        <div style={{ padding: '9px 12px 4px' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 19, fontWeight: 800, color: INK, letterSpacing: '-0.01em' }}>{sel}</span>
             <span style={{ fontSize: 12.5, fontWeight: 650, color: bad.has(sel) ? BAD : FADED }}>
               {selPlace ? selPlace : 'not placed: tap a square'}{bad.has(sel) ? ' · shares a row or column' : ''}
             </span>
           </div>
-          <div role="group" aria-label={`${sel}'s role`} style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
+          <div role="group" aria-label={`${sel}'s role`} className="sc-roles" style={{ display: 'flex', gap: 5, marginTop: 7 }}>
             {ROLE_ORDER.filter((r) => COUNTS[r]).map((r) => {
               const left = COUNTS[r] - CAST.filter((q) => g.roles[q] === r).length;
               const on = g.roles[sel] === r;
               return (
                 <button key={r} type="button" onClick={() => setRole(sel, r)} aria-pressed={on}
-                  style={{ ...chipBase, fontSize: 12, padding: '5px 9px', borderColor: on ? ACC : SURF_B, background: on ? ACC : 'transparent', color: on ? ON_ACC : (left > 0 ? INK : FADED) }}>
+                  style={{ ...chipBase, flex: 'none', fontSize: 12, padding: '5px 9px', borderColor: on ? ACC : SURF_B, background: on ? ACC : 'transparent', color: on ? ON_ACC : (left > 0 ? INK : FADED) }}>
                   {r}<span style={{ fontWeight: 700, opacity: 0.7 }}>{left}</span>
                 </button>
               );
@@ -687,10 +685,12 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           </div>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 10 }}>
+      <div className="sc-tools" style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 }}>
+        <button type="button" className="pk-btn" onClick={() => setMode(mode === 'place' ? 'mark' : 'place')} aria-pressed={mode === 'mark'}
+          style={mode === 'mark' ? { borderColor: ACC, color: ACC_INK } : undefined}>{mode === 'mark' ? 'Marking' : 'Mark'}</button>
         <button type="button" className="pk-btn" onClick={check}
           style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white }}>
-          Check{placedN === N && rolesN === N ? '' : ` (${placedN}/${N} placed, ${rolesN}/${N} roles)`}
+          Check{placedN === N && rolesN === N ? '' : ` · ${CAST.filter((q) => g.place[q] && g.roles[q]).length} of ${N} done`}
         </button>
         <button type="button" className="pk-btn" onClick={clearTap} style={armClear ? { color: BAD, borderColor: BAD } : undefined}>{armClear ? 'Tap again to clear' : 'Clear'}</button>
       </div>
@@ -732,6 +732,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
             { v: `${placedN}/${N}`, k: 'placed' },
             { v: `${rolesN}/${N}`, k: 'roles' },
             { v: g.wrong, k: 'wrong' },
+            { v: elapsed, k: 'time' },
           ] : [
             { v: won ? 'Solved' : 'Unsolved', k: 'result' },
             { v: g.wrong, k: 'wrong' },
@@ -739,19 +740,27 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           ]}
         />
       )}
-      <div className="pk-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
+      <div className="pk-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: started ? '8px 38px 80px' : '18px 38px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.pk-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .pk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .pk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .sc-board{max-width:min(560px, calc(100svh - 340px));min-width:min(100%, 300px);}
+          .sc-board{max-width:min(560px, calc(100svh - 420px));min-width:min(100%, 250px);}
+          .sc-roles{overflow-x:auto;scrollbar-width:none;} .sc-roles::-webkit-scrollbar{display:none;}
+          .sc-clues{max-height:26svh;overflow-y:auto;}
+          @media(max-width:899px){
+            .sc-play{gap:8px !important;}
+            .sc-side{position:sticky;bottom:0;z-index:5;padding-bottom:6px;background:var(--stg-ground, #f7f8fa);}
+            .sc-tools .pk-btn{padding:8px 13px;font-size:13.5px;}
+          }
           .sc-strip{scrollbar-width:none;} .sc-strip::-webkit-scrollbar{display:none;}
           .sc-play{display:flex;flex-direction:column;gap:12px;}
           @media(min-width:900px){
             .sc-play{display:grid;grid-template-columns:minmax(0, min(600px, calc(100vh - 170px))) minmax(320px, 400px);justify-content:center;align-items:start;gap:22px;}
             .sc-board{max-width:none;}
             .sc-side{position:sticky;top:12px;}
-            .sc-clues{max-height:calc(100vh - 360px);overflow-y:auto;}
+            .sc-roles{flex-wrap:wrap;overflow:visible;}
+            .sc-clues{max-height:calc(100vh - 380px);}
           }
           .sc-hit:focus-visible{outline:3px solid var(--stg-acc, #be123c);outline-offset:-3px;border-radius:6px;}
         ` }} />
@@ -795,14 +804,17 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
 
         {!preStart && (
           <>
-            <div style={{ textAlign: 'center', margin: '0 0 10px', fontFamily: SANS }}>
-              <div style={{ fontSize: 17, fontWeight: 800, color: INK }}>{LAYOUT.title}</div>
-              <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED }}>{LAYOUT.place} · {N} by {N}{playing ? (mode === 'mark' ? ' · tap a square to cross it out' : ' · tap a person, then a square') : ''}</div>
-            </div>
+            {!playing && (
+              <div style={{ textAlign: 'center', margin: '0 0 10px', fontFamily: SANS }}>
+                <div style={{ fontSize: 17, fontWeight: 800, color: INK }}>{LAYOUT.title}</div>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED }}>{LAYOUT.place} · {N} by {N}</div>
+              </div>
+            )}
             <div className={playing ? 'sc-play' : undefined}>
-              <div>{boardEl}{underBoard}</div>
+              <div>{boardEl}</div>
               {dossier}
             </div>
+            {foot}
             {casePanel}
           </>
         )}
