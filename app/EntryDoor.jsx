@@ -81,6 +81,7 @@ const RUN_TAG = {
   room: 'The crowd games, one read of the room',
   math: 'Five math quizzes back to back, one life each',
   english: 'Five English quizzes back to back, one life each',
+  science: 'Five science quizzes back to back, one life each',
   pricecheck: 'Five price guesses, one card',
   gauntlet: 'Seven trivia categories, one life each',
   triviaencore: 'The four trivia banks that sat out the Gauntlet',

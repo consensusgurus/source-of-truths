@@ -145,6 +145,11 @@ import { PUZZLES as RACECAR_FULL } from '../racecar/puzzles';
 import { PUZZLES as SCRIPT_FULL } from '../script/puzzles';
 import { PUZZLES as QUOTES_FULL } from '../quotes/puzzles';
 import { PUZZLES as SCI_FULL } from '../sci/puzzles';
+import { PUZZLES as PULSE_FULL } from '../pulse/puzzles';
+import { PUZZLES as GENE_FULL } from '../gene/puzzles';
+import { PUZZLES as ORBIT_FULL } from '../orbit/puzzles';
+import { PUZZLES as EUREKA_FULL } from '../eureka/puzzles';
+import { PUZZLES as BOND_FULL } from '../bond/puzzles';
 import { PUZZLES as ART_FULL } from '../art/puzzles';
 import { PUZZLES as HISTORY_FULL } from '../history/puzzles';
 import { PUZZLES as FOODIE_FULL } from '../foodie/puzzles';
@@ -269,6 +274,11 @@ const RIM = RIM_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, q
 const SCRIPT = SCRIPT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const QUOTES = QUOTES_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SCI = SCI_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const PULSE = PULSE_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const GENE = GENE_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const ORBIT = ORBIT_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const EUREKA = EUREKA_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const BOND = BOND_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const ART = ART_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const HISTORY = HISTORY_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const FOODIE = FOODIE_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
@@ -460,6 +470,11 @@ const GAMES = [
   { key: 'rim', name: 'Rim', path: '/rim', tag: 'Nothing printed inside', accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)', src: RIM },
   { key: 'script', name: 'Script', path: '/script', tag: 'Movies and TV, one life', accent: '#4a1d6b', bg: '#f3ecf9', border: 'rgba(74,29,107,0.4)', src: SCRIPT },
   { key: 'sci', name: 'Sci', path: '/sci', tag: 'Science, one life', accent: '#0f766e', bg: '#e8f5f3', border: 'rgba(15,118,110,0.4)', src: SCI },
+  { key: 'pulse', name: 'Pulse', path: '/pulse', tag: 'The human body, one life', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.4)', src: PULSE },
+  { key: 'gene', name: 'Gene', path: '/gene', tag: 'Life science, one life', accent: '#4d7c0f', bg: '#ecfccb', border: 'rgba(77,124,15,0.4)', src: GENE },
+  { key: 'orbit', name: 'Orbit', path: '/orbit', tag: 'Physics and space, one life', accent: '#1e40af', bg: '#dbeafe', border: 'rgba(30,64,175,0.4)', src: ORBIT },
+  { key: 'eureka', name: 'Eureka', path: '/eureka', tag: 'Inventions and scientists, one life', accent: '#b45309', bg: '#fef3c7', border: 'rgba(180,83,9,0.4)', src: EUREKA },
+  { key: 'bond', name: 'Bond', path: '/bond', tag: 'Chemistry, one life', accent: '#047857', bg: '#d1fae5', border: 'rgba(4,120,87,0.4)', src: BOND },
   { key: 'art', name: 'Art', path: '/art', tag: 'Arts and culture, one life', accent: '#9d174d', bg: '#fbeef3', border: 'rgba(157,23,77,0.4)', src: ART },
   { key: 'foodie', name: 'Foodie', path: '/foodie', tag: 'Food and drink, one life', accent: '#c2410c', bg: '#fbefe7', border: 'rgba(194,65,12,0.4)', src: FOODIE },
   { key: 'history', name: 'History', path: '/history', tag: 'History, one life', accent: '#854d0e', bg: '#f8f1e4', border: 'rgba(133,77,14,0.4)', src: HISTORY },

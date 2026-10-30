@@ -468,6 +468,70 @@ function TitleClimb({ ladder, score, shown, landed, pal, heading, onReplay }) {
   );
 }
 
+// THE FLASK CLIMB (owner, 2026-10-30: "the filled flask end animation", the
+// Science Gauntlet). The same climb as TitleClimb, drawn as an Erlenmeyer
+// flask: the liquid rises as the score counts up, taking the colour of each
+// title it passes, and the titles are graduation marks on the glass at their
+// cutoffs. When the count lands the earned mark turns ink and opens to its
+// line, the mark above says how far off it is, and the surface wobbles.
+const FLASK_PATH = 'M84 14 L136 14 L136 112 L206 384 Q210 400 194 400 L26 400 Q10 400 14 384 L84 112 Z';
+function FlaskClimb({ ladder, score, shown, landed, pal, heading, onReplay, max }) {
+  const top = ladder.slice().reverse();
+  const cap = Math.max(Number(max) || 0, (ladder[ladder.length - 1] || {}).min + 6 || 50, score);
+  const yOf = (v) => 398 - (Math.max(0, Math.min(cap, v)) / cap) * 300;
+  let earned = -1;
+  top.forEach((t, i) => { if (earned < 0 && score >= t.min) earned = i; });
+  let climbing = 0;
+  ladder.forEach((t, i) => { if (shown >= t.min) climbing = i; });
+  // The liquid is the title's full colour (not its pastel), taken a little
+  // toward ink, so it reads on the stage even when the ground wears that same
+  // title's pastel.
+  const liqRaw = ladder[climbing] ? ladder[climbing].colour : '#e9edf4';
+  const liq = pal.look === 'color' ? `color-mix(in srgb, ${liqRaw} 90%, var(--gsx-ink))` : `color-mix(in srgb, ${pal.fill(liqRaw)} 60%, var(--gsx-ink))`;
+  const ly = yOf(shown);
+  const H = 420, scale = H / 410;
+  return (
+    <div className="gsx-climb" role="list" aria-label={heading || 'Title ladder'}>
+      <div className="gsx-clh"><b>{heading || 'Your title'}</b>{onReplay ? <button type="button" className="gsx-rp" onClick={onReplay}>Replay</button> : null}</div>
+      <div className="gsx-flask" style={{ height: H }}>
+        <svg className="gsx-fsvg" height={H} viewBox="0 0 220 410" preserveAspectRatio="none" aria-hidden="true">
+          <defs><clipPath id="gsxFlaskClip"><path d={FLASK_PATH} /></clipPath></defs>
+          <path d={FLASK_PATH} fill="color-mix(in srgb, var(--gsx-ink) 6%, transparent)" />
+          <g clipPath="url(#gsxFlaskClip)">
+            <rect x="0" y={ly} width="220" height="420" fill={liq} style={{ transition: 'fill .3s ease' }} />
+            <rect className={landed ? 'gsx-fwob' : undefined} x="0" y={ly} width="220" height="5" fill="var(--gsx-ink)" opacity=".2" />
+            {[60, 110, 150, 90, 132].map((cx, i) => <circle key={i} className={`gsx-bub b${i}`} cx={cx} cy="392" r={[5, 4, 6, 3, 4][i]} fill="#ffffff" opacity=".8" />)}
+          </g>
+          <path d={FLASK_PATH} fill="none" stroke="var(--gsx-ink)" strokeWidth="4" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          <rect x="74" y="4" width="72" height="12" rx="5" fill="var(--gsx-ink)" />
+          {ladder.map((t) => {
+            const y = yOf(t.min);
+            const edge = y < 112 ? 136 : 136 + (y - 112) * (70 / 272);
+            return <line key={t.name} x1={edge - 16} x2={edge + 2} y1={y} y2={y} stroke="var(--gsx-ink)" strokeWidth="4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />;
+          })}
+        </svg>
+        {top.map((t, i) => {
+          const lit = shown >= t.min;
+          const here = landed && i === earned;
+          let tail = `${t.min}+`;
+          if (here) tail = 'You';
+          else if (landed && i === earned - 1) tail = `${t.min - score} to go`;
+          return (
+            <div key={t.name} role="listitem" className={'gsx-fmk' + (lit ? ' lit' : '') + (here ? ' here' : '')}
+              style={{ top: yOf(t.min) * scale, '--rc': here ? 'var(--gsx-ink)' : lit ? pal.fill(t.colour) : 'transparent' }}>
+              <span className="gsx-fmt"><b>{t.name}</b></span>
+              <span className="gsx-rtail">{tail}</span>
+            </div>
+          );
+        })}
+      </div>
+      {landed && earned >= 0 && top[earned] && top[earned].line ? (
+        <div className="gsx-fline"><b>{top[earned].name}.</b> {top[earned].line}</div>
+      ) : null}
+    </div>
+  );
+}
+
 export function GauntletEndStage({
   circuitName, dateLabel, sections = [], results = [], score = 0, title = null,
   rank = null, fieldSize = null, avg = null, top = null, leaderScore = null,
@@ -492,8 +556,13 @@ export function GauntletEndStage({
   // THE PRIZE (owner, 2026-10-25): a picture of what the climb earned (Price
   // Check's payment card), landing under the score when the count does.
   prize = null,
+  // THE FLASK (owner, 2026-10-30, the Science Gauntlet): `climbStyle: 'flask'`
+  // draws the same climb as an Erlenmeyer flask filling to the score, its
+  // graduation marks the titles; `climbMax` is the run's question count.
+  climbStyle = null, climbMax = null,
 }) {
   const [openRow, setOpenRow] = useState(-1);
+  const Climb = climbStyle === 'flask' ? FlaskClimb : TitleClimb;
   // PHONES ROLL (owner, 2026-10-28): see RunRoll.jsx. Desktop is unchanged.
   const [phone, setPhone] = useState(() => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(max-width:899px)').matches);
   useEffect(() => {
@@ -656,8 +725,8 @@ export function GauntletEndStage({
             rank={rank}
             fieldSize={fieldSize}
             titleName={titleName}
-            climbHero={climb ? <TitleClimb ladder={ladder} score={score} shown={shown} landed={landed} pal={pal} heading={ladderHeading} /> : null}
-            climbDone={climb ? <TitleClimb ladder={ladder} score={score} shown={score} landed pal={pal} heading={ladderHeading} /> : title ? (
+            climbHero={climb ? <Climb ladder={ladder} score={score} shown={shown} landed={landed} pal={pal} heading={ladderHeading} max={climbMax} /> : null}
+            climbDone={climb ? <Climb ladder={ladder} score={score} shown={score} landed pal={pal} heading={ladderHeading} max={climbMax} /> : title ? (
               <div className="gsx-title"><b style={{ color: bg }}>{title.name}</b>{title.line ? <span>{title.line}</span> : null}</div>
             ) : null}
             prize={prize}
@@ -723,7 +792,7 @@ export function GauntletEndStage({
             {topNote ? <div className="gsx-rise gsx-note" style={d('1.7s')}>{topNote}</div> : null}
             {climb ? (
               <div className="gsx-rise" style={d0('1.65s')}>
-                <TitleClimb ladder={ladder} score={score} shown={shown} landed={landed} pal={pal} heading={ladderHeading} onReplay={() => setReplays((k) => k + 1)} />
+                <Climb ladder={ladder} score={score} shown={shown} landed={landed} pal={pal} heading={ladderHeading} max={climbMax} onReplay={() => setReplays((k) => k + 1)} />
               </div>
             ) : title ? (
               <div className="gsx-title" style={d('1.9s')}>
@@ -981,6 +1050,26 @@ const CSS = `
 .gsx-rung.here .gsx-rt b{font-size:21px}
 .gsx-rt em{font-style:normal;font-size:13.5px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
 .gsx-rtail{flex:none;font-size:13px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.gsx-flask{position:relative;width:100%;margin-top:6px}
+.gsx-fsvg{position:absolute;left:0;top:0;overflow:visible;width:140px}
+@media(min-width:900px){.gsx-fsvg{width:190px}.gsx-flask .gsx-fmk{left:205px}}
+.gsx-fmk{position:absolute;left:150px;right:0;transform:translateY(-50%);display:flex;align-items:center;gap:8px;min-height:34px;padding:4px 10px;white-space:nowrap;border:2px solid var(--gsx-ink);border-radius:11px;box-sizing:border-box;background:var(--rc);color:var(--gsx-ink);opacity:.45;transition:background .25s,color .25s,opacity .25s,padding .3s}
+.gsx-fmk.lit{opacity:1}
+.gsx-fmk.here{opacity:1;color:var(--gsx-bg);z-index:1;box-shadow:0 0 0 3px var(--gsx-ink)}
+.gsx-fmt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.gsx-fmt{overflow:hidden}
+.gsx-fmt b{font-size:14px;font-weight:800;line-height:1.2;overflow:hidden;text-overflow:ellipsis}
+.gsx-fline{margin-top:10px;font-size:15px;font-weight:600;line-height:1.35;text-align:center;animation:gsxFline .45s ease-out both}
+.gsx-fline b{font-weight:800}
+@keyframes gsxFline{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:380px){.gsx-fmt b{font-size:13px}}
+.gsx-bub{animation:gsxBub 2.6s ease-in infinite;transform-box:fill-box}
+.gsx-bub.b1{animation-delay:.6s;animation-duration:2.2s}.gsx-bub.b2{animation-delay:1.2s;animation-duration:3s}
+.gsx-bub.b3{animation-delay:1.8s;animation-duration:2.4s}.gsx-bub.b4{animation-delay:.3s;animation-duration:2.8s}
+@keyframes gsxBub{0%{transform:translateY(0);opacity:0}15%{opacity:.85}100%{transform:translateY(-260px);opacity:0}}
+.gsx-fwob{animation:gsxWob .9s ease-in-out 3;transform-box:fill-box;transform-origin:center}
+@keyframes gsxWob{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.6)}}
+@media (prefers-reduced-motion: reduce){.gsx-bub,.gsx-fwob{animation:none}}
 .gsx .stb{width:100%}
 
 .gsx-play{min-height:100vh;min-height:100dvh;font-family:Manrope,system-ui,sans-serif;display:flex;flex-direction:column;--stg-ground:var(--gsx-bg);--stg-ink:var(--gsx-ink)}

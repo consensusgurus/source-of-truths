@@ -49,6 +49,18 @@ const ART = {
       </g>
     </>
   ),
+  // SCIENCE GAUNTLET (2026-10-30): an Erlenmeyer flask, half full, five pips.
+  science: (
+    <>
+      <path d="M104 22 H136 M108 22 V52 L76 96 Q70 106 82 106 H158 Q170 106 164 96 L132 52 V22" />
+      <path d="M90 82 H150" strokeWidth="2.5" opacity=".6" />
+      <g stroke="none" fill="currentColor">
+        <circle cx="112" cy="94" r="3" opacity=".5" /><circle cx="126" cy="88" r="2.5" opacity=".5" />
+        <circle cx="96" cy="118" r="4" /><circle cx="108" cy="118" r="4" /><circle cx="120" cy="118" r="4" />
+        <circle cx="132" cy="118" r="4" opacity=".35" /><circle cx="144" cy="118" r="4" opacity=".35" />
+      </g>
+    </>
+  ),
   // ENGLISH GAUNTLET (2026-10-19): an open book, a proofreader's caret, five pips.
   english: (
     <>

@@ -37,6 +37,16 @@ import { PUZZLES as originPuzzles } from '../../../origin/puzzles';
 import { QUESTION_MAP as originQuestions } from '../../../origin/questions';
 import { PUZZLES as idiomPuzzles } from '../../../idiom/puzzles';
 import { QUESTION_MAP as idiomQuestions } from '../../../idiom/questions';
+import { PUZZLES as pulsePuzzles } from '../../../pulse/puzzles';
+import { QUESTION_MAP as pulseQuestions } from '../../../pulse/questions';
+import { PUZZLES as genePuzzles } from '../../../gene/puzzles';
+import { QUESTION_MAP as geneQuestions } from '../../../gene/questions';
+import { PUZZLES as orbitPuzzles } from '../../../orbit/puzzles';
+import { QUESTION_MAP as orbitQuestions } from '../../../orbit/questions';
+import { PUZZLES as eurekaPuzzles } from '../../../eureka/puzzles';
+import { QUESTION_MAP as eurekaQuestions } from '../../../eureka/questions';
+import { PUZZLES as bondPuzzles } from '../../../bond/puzzles';
+import { QUESTION_MAP as bondQuestions } from '../../../bond/questions';
 import { PUZZLES as streakPuzzles } from '../../../streak/puzzles';
 import { QUESTION_MAP as streakQuestions } from '../../../streak/questions';
 
@@ -95,6 +105,11 @@ const BANKS = {
   spell: { puzzles: spellPuzzles, questions: spellQuestions, tiers: ['Easy', 'Tricky', 'Treacherous', 'Notorious', 'Championship'] },
   origin: { puzzles: originPuzzles, questions: originQuestions, tiers: ['Roots', 'Stems', 'Borrowings', 'Lineage', 'Deep Roots'] },
   idiom: { puzzles: idiomPuzzles, questions: idiomQuestions, tiers: ['Everyday', 'Common', 'Colorful', 'Quaint', 'Archaic'] },
+  pulse: { puzzles: pulsePuzzles, questions: pulseQuestions, tiers: ['Checkup', 'Vitals', 'Diagnosis', 'Specialist', 'Surgeon'] },
+  gene: { puzzles: genePuzzles, questions: geneQuestions, tiers: ['Seedling', 'Species', 'Genus', 'Genome', 'Lineage'] },
+  orbit: { puzzles: orbitPuzzles, questions: orbitQuestions, tiers: ['Launch', 'Liftoff', 'Orbit', 'Deep Space', 'Event Horizon'] },
+  eureka: { puzzles: eurekaPuzzles, questions: eurekaQuestions, tiers: ['Spark', 'Prototype', 'Patent', 'Breakthrough', 'Eureka'] },
+  bond: { puzzles: bondPuzzles, questions: bondQuestions, tiers: ['Beaker', 'Bench', 'Reaction', 'Catalyst', 'Synthesis'] },
   streak: { puzzles: streakPuzzles, questions: streakQuestions, tiers: ['Warm-up', 'Easy', 'Medium', 'Hard', 'Brutal'] },
   // THE MATH GAUNTLET (2026-10-09). The Blitz family's banks have the same
   // shape as a trivia bank (q, choices, correct, tier), so the same run deals
@@ -237,6 +252,19 @@ export async function generateMetadata({ params }) {
         url, type: 'website', siteName: 'Mind Loft',
       },
       twitter: { card: 'summary_large_image', title: hook, description: 'One wrong answer ends the game. Then the next one starts. How far do you get?' },
+    };
+  }
+  if (c.id === 'science') {
+    const url = `${SITE_URL}${runHref(c.id)}`;
+    const hook = 'Five science quizzes. One life each.';
+    return {
+      title: 'Science Gauntlet: Physics, Chemistry and Biology Quizzes in One Run | Mind Loft',
+      description:
+        'Five daily science quizzes played back to back as one run: the human body, life science, physics and space, inventions and chemistry. Ten questions each, twenty seconds a question, one life in each. Free, no signup.',
+      alternates: { canonical: runHref(c.id) },
+      robots: { index: false, follow: true },
+      openGraph: { title: hook, description: 'One wrong answer ends that quiz, the next one starts on its own, and you get one scorecard at the end.', url, type: 'website', siteName: 'Mind Loft' },
+      twitter: { card: 'summary_large_image', title: hook, description: 'One wrong answer ends the quiz. Then the next one starts. How far do you get?' },
     };
   }
   if (c.id === 'english') {

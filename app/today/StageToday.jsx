@@ -401,7 +401,7 @@ const TILES_KEY = 'sot_home_tiles';
 // Trivia). All Puzzles shows all five.
 // Math Gauntlet restored beside the Trivia Gauntlet (owner, 2026-10-13 evening).
 // Trivia Encore beside the Gauntlet (owner, 2026-10-14).
-const PILL_CIRCUITS = ['gauntlet', 'triviaencore', 'english', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'crossed', 'room'];
+const PILL_CIRCUITS = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'crossed', 'room'];
 // CIRCUITS-PANE ONLY: a circuit listed here is never offered on the main page
 // (pills, phone runs, the shelf peek), only when the reader opens Circuits.
 // Empty since the Valet Gauntlet was retired (owner, 2026-10-18).
@@ -3152,7 +3152,7 @@ export default function StageToday() {
   // icon. Runs are one piece, so nothing here shows how far into one you are:
   // a run reads as players today until you finish it, then as your place on
   // the site board and in your group.
-  const RUN_SHORT = { gauntlet: 'Trivia', triviaencore: 'Encore', english: 'English', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', crossed: 'Crossed Up', room: 'Room' };
+  const RUN_SHORT = { gauntlet: 'Trivia', triviaencore: 'Encore', english: 'English', science: 'Science', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', crossed: 'Crossed Up', room: 'Room' };
   const runFull = (c) => c.games.length > 0 && c.n === c.games.length;
   const fmtN = (n) => Number(n || 0).toLocaleString('en-US');
   const runLook = (c, cat) => {

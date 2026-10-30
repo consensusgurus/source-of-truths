@@ -618,6 +618,45 @@ named the English Gauntlet.
 - **THE ONLY POP-UP IS THE RUN'S (owner, 2026-10-19):** a PREMIERE_RUNS line for `english` and no
   PREMIERES line for any of the five.
 
+## The Science Gauntlet (`/science`) and Orbit, Bond, Gene, Pulse, Eureka (launched 2026-10-30)
+
+Five new Trivia dailies on the English Gauntlet's shape, TEN questions a day each (five tiers of
+two, one life, twenty seconds, `miss: 'Asked'`, no Sunday Edition and no `sunday` field), and the
+run that plays all fifty back to back. Owner, 2026-10-30: build it with title ladder option A
+("Lab to Laureate") and the filled flask ending.
+
+- **Lanes, two per game, cycled in order inside every tier:** Orbit (Forces & Energy; Space), Bond
+  (Elements; Compounds & Reactions), Gene (Animals & Plants; Cells & Evolution), Pulse (Anatomy;
+  Health & Medicine), Eureka (Inventions; Scientists & Discoveries). Config is
+  `scripts/science-games.mjs`; lane sources `scripts/<game>-lanes/`, written to
+  `scripts/science-lanes-brief.md` and checked with `scripts/trivia-lane-check.mjs`. The brief bans
+  anything already asked by Sci (the 25-question science daily) and every fact that can change.
+- **Scaffolded, not hand-forked:** `scripts/mkscience.mjs` writes the config, `gen-science.mjs` and
+  `science-check-lib.mjs` (sed clones of the English ones), the five `verify-<game>.mjs`, and the five
+  clients and pages from Vocab's. Re-run it only before the banks diverge from the template; after
+  launch, edit the clients directly. `scripts/wire-science.mjs` is the anchored site wiring (Trivia
+  lists, beside Sci).
+- **The run** is circuit `science` on the quiz engine, at `/science` by a rewrite (never create
+  `app/science/page.js`), `score: 'correct'`, `ownerOrder` (Pulse, Gene, Orbit, Eureka, Bond),
+  towers presentation, trophy "Lab Coat" (bronze). Title ladder `science` in lib/run-titles.js:
+  Safety Goggles On, Lab Partner, Science Fair Winner, Grad Student, Professor, Nobel Laureate
+  (0/10/18/26/35/44, provisional).
+- **The ending is the filled flask** (`mode === 'science'` in app/circuits/GauntletFinale.jsx): each
+  quiz pours into a test tube as its count climbs, then the total fills an Erlenmeyer flask whose
+  graduation marks are the titles, the liquid taking each title's colour and wobbling on the earned
+  one. Polymath still ties only Trivia, Math and English.
+- **Only the run gets a pop-up** (PREMIERE_RUNS `science`), as with English.
+
+## The run ladder ramp is OFF the category colours (owner, 2026-10-30)
+
+`LADDER_RAMP` in lib/circuits.js colours every run's per-quiz stage (Trivia Gauntlet, Encore,
+English, Math, Science, and the Dojo/Judged/Passport/Room/Crossed ladders that share `rampFor`). Its
+first eight steps used to BE the category colours, so Atlas played on the Numbers mint and Sci on the
+Logic lime. Each step is now a near neighbour of the colour it replaced ("familiar to existing"),
+moved so its stage pastel sits at least 7 delta-E from every category pastel and every other step,
+while carrying RAMP_INK at 6:1 or better raw and soft. `scripts/verify-ladder-ramp.mjs` is the gate.
+A run's ENTRY and ENDING ground still wears its category on purpose (gateColour).
+
 ## Polymath (`/polymath`): one title for the three gauntlets (launched 2026-10-19)
 
 Owner, 2026-10-19: the Trivia, Math and English Gauntlets tied together as "Polymath", legs weighted

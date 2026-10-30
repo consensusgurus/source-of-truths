@@ -32,6 +32,11 @@ import { PUZZLES as artPuzzles } from '../../art/puzzles';
 import { PUZZLES as historyPuzzles } from '../../history/puzzles';
 import { PUZZLES as foodiePuzzles } from '../../foodie/puzzles';
 import { PUZZLES as streakPuzzles } from '../../streak/puzzles';
+import { PUZZLES as pulsePuzzles } from '../../pulse/puzzles';
+import { PUZZLES as genePuzzles } from '../../gene/puzzles';
+import { PUZZLES as orbitPuzzles } from '../../orbit/puzzles';
+import { PUZZLES as eurekaPuzzles } from '../../eureka/puzzles';
+import { PUZZLES as bondPuzzles } from '../../bond/puzzles';
 import { PUZZLES as gramPuzzles } from '../../gram/puzzles';
 import { PUZZLES as vocabPuzzles } from '../../vocab/puzzles';
 import { PUZZLES as spellPuzzles } from '../../spell/puzzles';
@@ -48,6 +53,7 @@ const DAYS = {
   script: scriptPuzzles, quotes: quotesPuzzles, streak: streakPuzzles,
   sci: sciPuzzles, art: artPuzzles, history: historyPuzzles, foodie: foodiePuzzles,
   gram: gramPuzzles, vocab: vocabPuzzles, spell: spellPuzzles, origin: originPuzzles, idiom: idiomPuzzles,
+  pulse: pulsePuzzles, gene: genePuzzles, orbit: orbitPuzzles, eureka: eurekaPuzzles, bond: bondPuzzles,
   // The Math Gauntlet's five (2026-10-09). Without these the math circuit had
   // no banks, so its share card fell back to the plain quiz card.
   blitz: blitzPuzzles, blitzed: blitzedPuzzles, gap: gapPuzzles,
@@ -111,7 +117,7 @@ export function gauntletCardProps(circuit, banks) {
   return {
     name,
     kind: isMath ? 'math' : (circuit && circuit.id === 'english') ? 'english' : 'trivia',
-    eyebrow: isMath ? 'MIND LOFT · MATH' : (circuit && circuit.id === 'english') ? 'MIND LOFT · ENGLISH' : 'MIND LOFT · TRIVIA',
+    eyebrow: isMath ? 'MIND LOFT · MATH' : (circuit && circuit.id === 'english') ? 'MIND LOFT · ENGLISH' : (circuit && circuit.id === 'science') ? 'MIND LOFT · SCIENCE' : 'MIND LOFT · TRIVIA',
     gateEyebrow: (name + ' · one long quiz').toUpperCase(),
     // The gate's own two lines, counted rather than written down, so a roster
     // change can never leave a figure on the card that nothing else agrees
@@ -122,7 +128,7 @@ export function gauntletCardProps(circuit, banks) {
     // no card or gate names the run's question count. The roster size and the
     // one-life rule are the whole pitch.
     line1: isMath ? `${banks.length} games, one life each.`
-      : (circuit && circuit.id === 'english') ? `${banks.length} quizzes, one life each.`
+      : (circuit && (circuit.id === 'english' || circuit.id === 'science')) ? `${banks.length} quizzes, one life each.`
       : `${banks.length} categories, one life each.`,
     line2: '',
     cta: 'Take your run',

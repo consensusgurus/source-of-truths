@@ -59,6 +59,13 @@ export const RUN_DOORS = {
     go: 'Take the Encore', accent: '#e8b43a',
     tags: [['Encore', '#e8b43a']],
   },
+  // THE SCIENCE GAUNTLET (2026-10-30): once a day on the gate of any of its five.
+  science: {
+    href: '/science', name: 'Science Gauntlet', eyebrow: 'Daily run \u00b7 Five quizzes',
+    body: 'Pulse, Gene, Orbit, Eureka and Bond back to back, ten questions and one life in each: the human body, life science, physics and space, inventions and chemistry.',
+    go: 'Run all five', accent: '#93c5fd',
+    tags: [['Pulse', '#fca5a5'], ['Gene', '#bef264'], ['Orbit', '#93c5fd'], ['Eureka', '#fcd34d'], ['Bond', '#6ee7b7']],
+  },
   // THE ENGLISH GAUNTLET (2026-10-19): once a day on the gate of any of its five.
   english: {
     href: '/english', name: 'English Gauntlet', eyebrow: 'Daily run \u00b7 Five quizzes',

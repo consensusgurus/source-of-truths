@@ -30,7 +30,7 @@ import { circuitKeysFor } from '@/lib/circuits';
 import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 import { gameActive } from '@/lib/game-active';
 
-export const RUN_ORDER = ['gauntlet', 'triviaencore', 'english', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'crossed', 'room'];
+export const RUN_ORDER = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'crossed', 'room'];
 export const RUNS_POP_STORE = 'sot_runs_pop';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";

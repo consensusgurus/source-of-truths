@@ -198,6 +198,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const ENCORE = circuitId === 'triviaencore';
   const GAUNT = circuitId === 'gauntlet';
   const ENGLISH = circuitId === 'english';
+  const SCIENCE = circuitId === 'science';
   const encoreOn = GAUNT && encore && Array.isArray(encore.games) && encore.games.length >= 2;
   const [encoreDone, setEncoreDone] = useState(false);
   const [encoreUp, setEncoreUp] = useState(false);
@@ -209,7 +210,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // Which POP-UPS come after a finished run: on the Gauntlet only when there
   // is no Encore left to offer today, and on the Encore only once the
   // Gauntlet is done (until then its own nudge back takes the slot).
-  const afterCards = (ENCORE && (!backAvail || gauntDone === true)) || circuitId === 'math' || ENGLISH || (GAUNT && (!encoreOn || encoreDone));
+  const afterCards = (ENCORE && (!backAvail || gauntDone === true)) || circuitId === 'math' || ENGLISH || SCIENCE || (GAUNT && (!encoreOn || encoreDone));
   // The inline more-runs LIST is always on the trivia and math endings, so
   // the other trivia run is listed whenever it is unplayed (owner, 2026-10-14).
   const listCards = afterCards || ENCORE || GAUNT;
@@ -316,7 +317,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       // THE GAUNTLETS CLIMB ON THE ENDING ITSELF (owner, 2026-10-25: match the
       // other runs). The stage ending sweeps, counts and climbs the title
       // ladder, so the separate curtain no longer plays before it.
-      if (!(circuitId === 'gauntlet' || circuitId === 'math' || circuitId === 'triviaencore' || circuitId === 'english')) setCurtain(true);
+      if (!(circuitId === 'gauntlet' || circuitId === 'math' || circuitId === 'triviaencore' || circuitId === 'english' || circuitId === 'science')) setCurtain(true);
     }
   }, [hydrated, done]);
 
@@ -876,10 +877,10 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // THE TOWERS (owner approved 2026-10-10) are the Trivia and Math Gauntlets'
   // presentation only. Every other run (Judged, Price Check, Passport) renders
   // exactly as it did: the gutter ladder, the scorecard ladder, all of it.
-  const TOWERS = circuitId === 'gauntlet' || circuitId === 'math' || ENCORE || ENGLISH;
+  const TOWERS = circuitId === 'gauntlet' || circuitId === 'math' || ENCORE || ENGLISH || SCIENCE;
   const MATHRUN = circuitId === 'math';
   // The two Gauntlets end on the board at the top of the card (owner, 2026-10-17).
-  const BTOP = GAUNT || MATHRUN || ENCORE || ENGLISH;
+  const BTOP = GAUNT || MATHRUN || ENCORE || ENGLISH || SCIENCE;
   const upIdx = upNext ? sections.findIndex((s) => s.key === upNext.key) : -1;
 
   // THE RACE PANEL, built once and drawn by both play layouts. Same markup
@@ -1132,7 +1133,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           onDetails={() => setEndOpen(false)}
           sweep
           ladder={!r.practice ? titleLadder(circuitId) : null}
-          ladderHeading={MATHRUN ? 'How quick are you with numbers?' : ENGLISH ? 'How good are you with words?' : 'Where does your trivia rank?'}
+          climbStyle={SCIENCE ? 'flask' : null}
+          climbMax={SCIENCE ? askable : null}
+          ladderHeading={MATHRUN ? 'How quick are you with numbers?' : ENGLISH ? 'How good are you with words?' : SCIENCE ? 'How far up the lab do you go?' : 'Where does your trivia rank?'}
           board={(() => {
             // THE ONE-PAGE ENDING (owner, 2026-10-25): top three, then you.
             const meB = boardQ.data && boardQ.data.me;
@@ -1172,7 +1175,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       <div className="rn-cap">
         {done && <RunBackLink color="#fff" />}
         <div className="rn-cid">
-          <i>{done ? (perfect === N ? 'Run cleared' : 'Run complete') : `${circuitId === 'math' ? 'Math' : ENGLISH ? 'English' : 'Trivia'} · ${dateLabel}`}</i>
+          <i>{done ? (perfect === N ? 'Run cleared' : 'Run complete') : `${circuitId === 'math' ? 'Math' : ENGLISH ? 'English' : SCIENCE ? 'Science' : 'Trivia'} · ${dateLabel}`}</i>
           <b>{circuitName}</b>
         </div>
         {capFigures.length ? (
