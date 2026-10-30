@@ -228,6 +228,13 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const [clueIdx, setClueIdx] = useState(0);
   const [narrow, setNarrow] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  // THE RATING POP-UP (owner, 2026-10-30, Sudoclue only): stars and easy-to-hard, each 1 to 5. Once per
+  // board, 10 seconds after the game ends, never during play (the standing pop-up rule).
+  const [rateOpen, setRateOpen] = useState(false);
+  // Sheets render into the page root, not <body>, so they keep the stage's colour variables.
+  const rootRef = useRef(null);
+  const [rateStars, setRateStars] = useState(0);
+  const [rateHard, setRateHard] = useState(0);
   useEffect(() => {
     try {
       const mq = window.matchMedia('(max-width: 899px)');
@@ -380,6 +387,26 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const RATE_KEY = `sot_sudoclue_rated_${PUZZLE.num}`;
+  useEffect(() => {
+    if (!hydrated || g.status === 'playing') return undefined;
+    try { if (localStorage.getItem(RATE_KEY)) return undefined; } catch (e) { return undefined; }
+    const t = setTimeout(() => setRateOpen(true), 10000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [g.status, hydrated]);
+  function closeRate(send) {
+    try { localStorage.setItem(RATE_KEY, send ? 'sent' : 'skipped'); } catch (e) {}
+    if (send && (rateStars || rateHard)) {
+      try {
+        fetch('/api/sudoclue/rate', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quizId: PUZZLE.quizId, stars: rateStars || null, hard: rateHard || null, anonId: getAnonId() }) }).catch(() => {});
+      } catch (e) {}
+      say('Thanks. That helps tune tomorrow\u2019s case.');
+    }
+    setRateOpen(false);
+  }
 
   function say(msg) {
     setToast(msg);
@@ -721,7 +748,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
         </button>
         <button type="button" className="pk-btn" onClick={clearTap} style={armClear ? { color: BAD, borderColor: BAD } : undefined}>{armClear ? 'Sure?' : 'Clear'}</button>
       </div>
-      {showAll && typeof document !== 'undefined' && createPortal(
+      {showAll && rootRef.current && createPortal(
         <div onClick={() => setShowAll(false)} style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(8,10,16,0.5)', display: 'flex', alignItems: 'flex-end' }}>
           <div onClick={(e) => e.stopPropagation()} className="sc-sheet" style={{ width: '100%', maxHeight: '72svh', overflowY: 'auto', background: STAGE ? 'var(--stg-raise, #0e131f)' : T.white, borderRadius: '16px 16px 0 0', padding: '14px 14px 20px', borderTop: `1px solid ${SURF_B}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
@@ -740,7 +767,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
               ))}
             </ol>
           </div>
-        </div>, document.body
+        </div>, rootRef.current
       )}
     </div>
   );
@@ -834,7 +861,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div ref={rootRef} className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
@@ -1069,6 +1096,37 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       )}
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
+
+      {rateOpen && rootRef.current && createPortal(
+        <div onClick={() => closeRate(false)} style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'rgba(8,10,16,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18 }}>
+          <div role="dialog" aria-label="Rate this case" onClick={(e) => e.stopPropagation()} className="sc-sheet"
+            style={{ width: '100%', maxWidth: 360, background: STAGE ? 'var(--stg-raise, #0e131f)' : T.white, color: INK, border: `1px solid ${SURF_B}`, borderRadius: 16, padding: '20px 20px 16px', fontFamily: SANS, textAlign: 'center' }}>
+            <div style={{ fontSize: 18, fontWeight: 800 }}>How was this case?</div>
+            <div role="radiogroup" aria-label="Stars" style={{ display: 'flex', justifyContent: 'center', gap: 6, margin: '14px 0 4px' }}>
+              {[1, 2, 3, 4, 5].map((k) => (
+                <button key={k} type="button" role="radio" aria-checked={rateStars === k} aria-label={`${k} star${k > 1 ? 's' : ''}`} onClick={() => setRateStars(k)}
+                  style={{ background: 'none', border: 'none', padding: 2, cursor: 'pointer', lineHeight: 0 }}>
+                  <svg width="34" height="34" viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" fill={k <= rateStars ? 'var(--stg-acc, #be123c)' : 'none'} stroke={k <= rateStars ? 'var(--stg-acc, #be123c)' : 'var(--stg-mute, #8b95a8)'} strokeWidth="1.6" strokeLinejoin="round" /></svg>
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: FADED, margin: '12px 0 8px' }}>How hard was it?</div>
+            <div role="radiogroup" aria-label="Easy to hard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: FADED }}>Easy</span>
+              {[1, 2, 3, 4, 5].map((k) => (
+                <button key={k} type="button" role="radio" aria-checked={rateHard === k} onClick={() => setRateHard(k)}
+                  style={{ width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontFamily: SANS, fontWeight: 800, fontSize: 14, border: `1.5px solid ${rateHard === k ? ACC : SURF_B}`, background: rateHard === k ? ACC : 'transparent', color: rateHard === k ? ON_ACC : INK }}>{k}</button>
+              ))}
+              <span style={{ fontSize: 12, fontWeight: 800, color: FADED }}>Hard</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 18 }}>
+              <button type="button" className="pk-btn" onClick={() => closeRate(false)}>No thanks</button>
+              <button type="button" className="pk-btn" disabled={!rateStars && !rateHard} onClick={() => closeRate(true)}
+                style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, opacity: (!rateStars && !rateHard) ? 0.5 : 1 }}>Send</button>
+            </div>
+          </div>
+        </div>, rootRef.current
+      )}
 
       {toast && (
         <div role="status" style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>{toast}</div>
