@@ -620,7 +620,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       steps={[
         <>People stand on <b>open floor</b> or on a <b>seat</b>: a chair, a bench, a rug, a bed, a boat. Water, trees, tables, statues and the like are not places to stand.</>,
         <>Every person has one hidden role: the <b>victim</b>, the <b>killer</b>, the <b>accomplice</b>, or one of the day&rsquo;s <b>guests</b>, <b>staff</b> or <b>family</b>. The role chips count how many of each there are.</>,
-        <><b>Beside</b> means on a square that shares an edge with the thing, not on it. <b>On</b> means on the thing itself. Every clue is true.</>,
+        <>Every labelled area on the board is a <b>room</b>, indoors or out, and a clue that names one (&ldquo;in the Mall area&rdquo;) means any square inside it. <b>Beside</b> means a square that shares an edge with the thing, never a diagonal. <b>On</b> means on the thing itself. Every clue is true.</>,
         <>Tap a person, then tap a square to place them. Tap them again to pick them up. <b>Mark</b> mode crosses out squares you have ruled out.</>,
       ]}
       knack={<>Start with clues that name a room or an object that only one square holds. Rows and columns do the rest: once a person is fixed, cross out their whole row and column.</>}
