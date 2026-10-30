@@ -51,6 +51,15 @@ import ThemePop, { LightOffer } from './ThemePop';
 import { LoftSheet } from './LoftCap';
 import { dailyMeIdentity } from './dailyMeClient';
 import { gameColor, gameCategory, RAMP_INK, STAGE_GROUND } from '@/lib/category-ramp';
+
+// LOGIC WEARS ROSE (owner, 2026-10-30, the Logic and Geography swap), and rose
+// is also the stage's one "wrong" colour (--stg-bad / --stg-dn in globals.css),
+// so on a Logic page an error mark, a refused move or an armed Give Up would read
+// as the accent. Logic pages move the wrong colour to orange, in every register:
+// dark, light, and the pastel and tone looks that force it with !important.
+const LOGIC_BAD = `.stage-page{--stg-bad:#fb923c;--stg-dn:#fb923c}
+html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'],.stage-page[data-stage-theme='light'][data-stage-pin]{--stg-bad:#c2410c;--stg-dn:#c2410c}
+html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page,html[data-stage-tone]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page{--stg-bad:#9a3412 !important;--stg-dn:#9a3412 !important}`;
 import { gameStatsShort } from '@/lib/daily-row-stats';
 import { categoryHrefForGame } from '@/lib/puzzle-categories';
 import { glyphFor, GLYPH_BOX } from '@/lib/game-glyphs';
@@ -419,6 +428,7 @@ export default function StageChrome({
   return (
     <div className="stg-top" ref={topRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      {category === 'Logic' && <style dangerouslySetInnerHTML={{ __html: LOGIC_BAD }} />}
       {footSlot ? createPortal(<StageFoot clock={clockVal} done={ended} bg="var(--stg-ground)" />, footSlot) : null}
 
       {pastelElig ? (
