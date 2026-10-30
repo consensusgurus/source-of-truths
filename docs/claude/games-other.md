@@ -1691,3 +1691,23 @@ beside Hold). Tiles `public/games/btn-mahj.png` and the blue copy from
   board in a scroll port, and a tray of Undo, Hint, Shuffle +30s and Look under. Owner rule: the
   port's scrollbar is INVISIBLE (scrollbar-width none plus ::-webkit-scrollbar display none); the
   minimap is how a player sees where they are.
+
+## Sudoclue (`/sudoclue`): the daily murder-mystery logic grid (launched 2026-10-30)
+
+Owner, 2026-10-30. Key/route `sudoclue`, category **Logic** (rose since the Logic/Geography swap the same
+day), `miss: 'Wrong'`, scored like Alibi: a solve is 10, each wrong Check costs 2 (floor 1), a give-up is 0,
+and `guessesUsed` is the wrong checks. Timer hidden by default.
+
+- **Rules.** N people on an N by N floor plan of a REAL place, north up, one per row and one per column, each on
+  open floor or a seat (chair, bench, rug, bed, car, boat, swan boat, Bow Bridge). Every person also has a hidden
+  role the player deduces: Victim, Killer (the only other person in the victim's room, which holds exactly two),
+  Accomplice (every day), and Guest / Staff / Family (lib/sudoclue-engine.js ROLESETS).
+- **Sizes.** Launch weekend (Fri Oct 30 to Sun Nov 1) is three 7x7 intro boards. Then 7x7 Mon to Wed, 8x8 Thu and
+  Fri, 9x9 Sat, 10x10 Sunday Edition (Sunday boards carry `sunday: true` from Nov 8; Nov 1 is an intro board).
+- **Files.** `lib/sudoclue-places.js` (places: rooms, landmark items, water cells, clue phrases),
+  `lib/sudoclue-art.js` (SVG floors, furniture, landmarks, original portraits, pastel baked in),
+  `lib/sudoclue-engine.js` (the solver), `app/sudoclue/puzzles.js` (place + cast + structured clues).
+- **No answer ships.** The client derives the unique answer with the engine (the Alibi model).
+  `scripts/verify-sudoclue.mjs` re-proves every board unique; boards come from a separate Python generator.
+- **Names.** First names of famous people only, never a likeness: portraits are original drawings with skin tone
+  matched to the namesake; a role never mirrors the namesake and no namesake appears at their famous place.
