@@ -1595,4 +1595,8 @@ html:is([data-stage-pastel^='dark'], [data-stage-tone^='dark']) :is(.stf-curtain
 
 /* THE ENDING TAKES OVER (2026-10-29): stages stay mounted through the finish so
    no old board flashes; once an ending is on screen every stage steps aside. */
-html:has(.loft-back, .stf, .sst-page, .srl) :is(.pst, .wst, .bks){display:none !important;}
+/* THE BOARD VIEW IS THE STAGE (owner, 2026-10-30: "some of the reveal screens
+   looked old style"). Reveal the answers / Back to board puts StageFinish in its
+   board view (.stf-bv); that is not an ending on screen, so the stage stays and
+   the answers are drawn on it instead of on the old page. */
+html:has(.loft-back, .stf:not(.stf-bv), .sst-page, .srl) :is(.pst, .wst, .bks){display:none !important;}

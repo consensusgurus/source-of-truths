@@ -83,7 +83,7 @@ function useStageSlot(anchorRef, on) {
 }
 
 const HOST_CSS = `
-html:not(:has(.loft-back, .stf, .sst-page, .srl)) .stg-hosting > :not(.stg-hslot):not(.stg-top):not(:has(.stg-top)){display:none !important;}
+html:not(:has(.loft-back, .stf:not(.stf-bv), .sst-page, .srl)) .stg-hosting > :not(.stg-hslot):not(.stg-top):not(:has(.stg-top)){display:none !important;}
 .stg-hslot{padding:6px 0 18px;}
 `;
 

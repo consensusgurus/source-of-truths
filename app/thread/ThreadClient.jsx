@@ -795,11 +795,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
             </div>
           </>
         );
-        const bottom = (
-          <div className="pst-tools">
-            <button type="button" className="pst-tb wide" onClick={() => setRevealed(false)}>Back to your result</button>
-          </div>
-        );
+        const bottom = null;
         return (
           <PlayStage bg={gameColor('thread')} label="Thread"
             eyebrow={`Thread · The answers`}

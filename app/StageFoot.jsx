@@ -29,7 +29,7 @@ export default function StageFoot({ clock = undefined, done = undefined, giveUp 
   const ended = done !== undefined && done !== null ? !!done : pub.done;
   const showTime = ended || clockShown;
   const give = giveUp && !ended ? giveUp : null;
-  if (time == null && !help && !give) return null;
+  if (time == null && !help && !give && !ended) return null;
   return (
     <div className={'sft' + (className ? ' ' + className : '')} style={bg ? { '--sft-bg': bg } : undefined}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -48,6 +48,14 @@ export default function StageFoot({ clock = undefined, done = undefined, giveUp 
           <b aria-hidden="true">?</b><span>How to play</span>
         </button>
       ) : null}
+      {ended ? (
+        // BACK TO THE RESULT from the board view (owner, 2026-10-30): the
+        // revealed board is drawn on the stage now, so the stage carries the
+        // way back. It presses the board view's own button, so no game wires it.
+        <button type="button" className="sft-b sft-back" onClick={(e) => { e.stopPropagation(); try { const b = document.querySelector('.stf-bv-b'); if (b) b.click(); } catch (err) {} }}>
+          <span>Your result</span>
+        </button>
+      ) : null}
       {give ? (
         <button type="button" aria-label={give.armed ? (give.armedLabel || 'Tap again to give up') : 'Give up'} className={'sft-b sft-give' + (give.armed ? ' on' : '')} onClick={(e) => { e.stopPropagation(); give.onPress && give.onPress(e); }}>
           <span>{give.armed ? 'Tap again' : 'Give up'}</span>
@@ -60,6 +68,8 @@ export default function StageFoot({ clock = undefined, done = undefined, giveUp 
 const CSS = `
 .sft{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:nowrap;flex:none;}
 .sft .sft-give{min-width:86px;}
+.sft .sft-b.sft-back{display:none;}
+html:has(.stf-bv) .sft .sft-b.sft-back{display:inline-flex;}
 .sft .sft-b{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:34px;box-sizing:border-box;padding:0 12px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;opacity:1;}
 .sft .sft-b b{font-size:14px;font-weight:800;line-height:1;}
 .sft .sft-clock.on span{font-size:13px;font-variant-numeric:tabular-nums;}
