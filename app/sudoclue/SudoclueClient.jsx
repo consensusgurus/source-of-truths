@@ -74,6 +74,7 @@ const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const HELP_KEY = 'sot_sudoclue_help_seen';
 const STATS_KEY = 'sot_sudoclue_stats';
+const ROLE_ABBR = { Victim: 'Victim', Killer: 'Killer', Accomplice: 'Accomp.', Guest: 'Guest', Staff: 'Staff', Family: 'Family' };
 const ROLE_SHORT = { Victim: 'Victim', Killer: 'Killer', Accomplice: 'Accomplice', Guest: 'Guest', Staff: 'Staff', Family: 'Family' };
 
 const isIosDevice = () =>
@@ -586,8 +587,12 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
 
   const chipBase = { fontFamily: SANS, fontWeight: 800, fontSize: 12.5, borderRadius: 999, padding: '6px 11px', cursor: 'pointer', border: `1.5px solid ${SURF_B}`, background: 'transparent', color: INK, display: 'inline-flex', alignItems: 'center', gap: 6 };
 
+  // THE BOARD AND THE DOSSIER SIT TOGETHER (owner, 2026-10-30: "i can't really see the name and the clue
+  // on one screen ... integrate that and job / role"). The board is capped to the screen height so the
+  // dossier card (the cast strip, the selected person's name, their role picker and their clues) shows
+  // beneath it on a phone and beside it on a desktop, with no scrolling between them.
   const boardEl = (
-    <div style={{ position: 'relative', width: '100%', maxWidth: 560, margin: '0 auto', borderRadius: 10, overflow: 'hidden', boxShadow: '0 6px 22px rgba(0,0,0,0.28)' }}>
+    <div className="sc-board" style={{ position: 'relative', width: '100%', margin: '0 auto', borderRadius: 10, overflow: 'hidden', boxShadow: '0 6px 22px rgba(0,0,0,0.28)' }}>
       <div dangerouslySetInnerHTML={{ __html: svg }} />
       {playing && (
         <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: `repeat(${N}, 1fr)`, gridTemplateRows: `repeat(${N}, 1fr)` }}>
@@ -605,87 +610,89 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 
-  const playPanel = playing && !preStart && (
-    <div style={{ maxWidth: 560, margin: '14px auto 0', fontFamily: SANS }}>
-      {/* The cast: tap to select. A tick once placed and given a role. */}
-      <div role="listbox" aria-label="People" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-        {CAST.map((p) => {
-          const on = p === sel;
-          return (
-            <button key={p} type="button" role="option" aria-selected={on} onClick={() => setSel(p)}
-              style={{ ...chipBase, padding: '4px 10px 4px 4px', borderColor: on ? ACC : SURF_B, background: on ? 'var(--stg-surf2, #fff1f2)' : 'transparent' }}>
-              <Portrait id={p} size={26} ring={CAST_COLORS[p]} dim={!g.place[p]} />
-              <span>{p}</span>
-              {g.roles[p] && <span style={{ fontWeight: 700, fontSize: 11, color: FADED }}>{ROLE_SHORT[g.roles[p]]}</span>}
-            </button>
-          );
-        })}
-      </div>
-      {/* The selected person's role. */}
-      <div style={{ marginTop: 12, padding: '12px 12px 10px', borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Portrait id={sel} size={40} ring={CAST_COLORS[sel]} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: INK }}>{sel}</div>
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED }}>
-              {g.place[sel] ? `${LAYOUT.rinfo[LAYOUT.rooms[g.place[sel][0]][g.place[sel][1]]].name}` : 'Not placed yet. Tap a square.'}
-              {bad.has(sel) && <span style={{ color: BAD, fontWeight: 800 }}> · shares a row or column</span>}
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-          {ROLE_ORDER.filter((r) => COUNTS[r]).map((r) => {
-            const left = COUNTS[r] - CAST.filter((q) => g.roles[q] === r).length;
-            const on = g.roles[sel] === r;
+  const underBoard = playing && !preStart && (
+    <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 8, alignItems: 'center', fontFamily: SANS }}>
+      <button type="button" onClick={() => setMode(mode === 'place' ? 'mark' : 'place')} aria-pressed={mode === 'mark'}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 800, color: mode === 'mark' ? ACC_INK : FADED, textDecoration: 'underline' }}>
+        {mode === 'mark' ? 'Marking squares: on' : 'Mark squares'}
+      </button>
+      <button type="button" onClick={() => setShowTime((v) => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
+        {showTime ? `Time ${elapsed}` : 'Show timer'}
+      </button>
+      <button type="button" onClick={giveUpTap} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 800, color: armReveal ? BAD : FADED, textDecoration: 'underline' }}>
+        {armReveal ? 'Tap again to give up' : 'Give Up'}
+      </button>
+    </div>
+  );
+
+  const selPlace = g.place[sel] ? LAYOUT.rinfo[LAYOUT.rooms[g.place[sel][0]][g.place[sel][1]]].name : null;
+  const dossier = playing && !preStart && (
+    <div className="sc-side" style={{ fontFamily: SANS }}>
+      <div style={{ borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, overflow: 'hidden' }}>
+        {/* The cast strip: one tap picks a person. A dimmed face is not placed yet; the word under a name is the role given. */}
+        <div role="listbox" aria-label="People" className="sc-strip" style={{ display: 'flex', gap: 6, padding: '9px 10px 7px', overflowX: 'auto', borderBottom: `1px solid ${SURF_B}` }}>
+          {CAST.map((p) => {
+            const on = p === sel;
             return (
-              <button key={r} type="button" onClick={() => setRole(sel, r)} aria-pressed={on}
-                style={{ ...chipBase, borderColor: on ? ACC : SURF_B, background: on ? ACC : 'transparent', color: on ? ON_ACC : INK }}>
-                {r}<span style={{ fontWeight: 700, opacity: 0.75 }}>{left}</span>
+              <button key={p} type="button" role="option" aria-selected={on} aria-label={`${p}${g.roles[p] ? `, ${g.roles[p]}` : ''}`} onClick={() => setSel(p)}
+                style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', padding: '2px 3px', cursor: 'pointer', borderRadius: 8, outline: on ? `2px solid ${ACC}` : 'none', outlineOffset: 0 }}>
+                <Portrait id={p} size={32} ring={CAST_COLORS[p]} dim={!g.place[p]} />
+                <span style={{ fontSize: 10.5, fontWeight: 800, color: on ? INK : FADED, lineHeight: 1.1 }}>{p}</span>
+                <span style={{ fontSize: 9.5, fontWeight: 800, color: ACC_INK, lineHeight: 1.1, minHeight: 10 }}>{g.roles[p] ? ROLE_ABBR[g.roles[p]] : ''}</span>
               </button>
             );
           })}
         </div>
-      </div>
-      {/* Clues: this person's, the role clues, or all of them. Tap to strike. */}
-      <div style={{ marginTop: 12, padding: '10px 12px 6px', borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}` }}>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-          {[['person', `${sel}`], ['roles', 'Roles'], ['all', `All ${clueList.length}`]].map(([v, l]) => (
-            <button key={v} type="button" onClick={() => setClueView(v)} aria-pressed={clueView === v}
-              style={{ ...chipBase, fontSize: 12, padding: '4px 10px', borderColor: clueView === v ? ACC : SURF_B, color: clueView === v ? ACC_INK : FADED }}>{l}</button>
-          ))}
+        {/* The selected person: name, where they stand, their role, and the clues that name them. */}
+        <div style={{ padding: '10px 12px 4px' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 19, fontWeight: 800, color: INK, letterSpacing: '-0.01em' }}>{sel}</span>
+            <span style={{ fontSize: 12.5, fontWeight: 650, color: bad.has(sel) ? BAD : FADED }}>
+              {selPlace ? selPlace : 'not placed: tap a square'}{bad.has(sel) ? ' · shares a row or column' : ''}
+            </span>
+          </div>
+          <div role="group" aria-label={`${sel}'s role`} style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
+            {ROLE_ORDER.filter((r) => COUNTS[r]).map((r) => {
+              const left = COUNTS[r] - CAST.filter((q) => g.roles[q] === r).length;
+              const on = g.roles[sel] === r;
+              return (
+                <button key={r} type="button" onClick={() => setRole(sel, r)} aria-pressed={on}
+                  style={{ ...chipBase, fontSize: 12, padding: '5px 9px', borderColor: on ? ACC : SURF_B, background: on ? ACC : 'transparent', color: on ? ON_ACC : (left > 0 ? INK : FADED) }}>
+                  {r}<span style={{ fontWeight: 700, opacity: 0.7 }}>{left}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-        {clueView === 'person' && !mine.length && (
-          <div style={{ fontSize: 13.5, fontWeight: 600, color: FADED, padding: '8px 2px 10px' }}>No clue names {sel} directly. These role clues may reach them:</div>
-        )}
-        <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {shownClues.map((c) => (
-            <li key={c.i}>
-              <button type="button" onClick={() => toggleStruck(c.i)}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, padding: '9px 2px', cursor: 'pointer', fontFamily: SANS }}>
-                {c.p ? <Portrait id={c.p} size={24} ring={CAST_COLORS[c.p]} /> : <RoleTag size={24} />}
-                <span style={{ fontSize: 14.5, fontWeight: 650, lineHeight: 1.4, color: g.struck[c.i] ? FADED : INK, textDecoration: g.struck[c.i] ? 'line-through' : 'none' }}>{c.text}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
+        <div style={{ padding: '6px 12px 4px' }}>
+          {clueView === 'person' && !mine.length && (
+            <div style={{ fontSize: 13, fontWeight: 600, color: FADED, padding: '6px 0 4px' }}>No clue names {sel}. The role clues may still reach them:</div>
+          )}
+          <ol className="sc-clues" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {shownClues.map((c) => (
+              <li key={c.i}>
+                <button type="button" onClick={() => toggleStruck(c.i)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, padding: '8px 0', cursor: 'pointer', fontFamily: SANS }}>
+                  {c.p ? <Portrait id={c.p} size={22} ring={CAST_COLORS[c.p]} /> : <RoleTag size={22} />}
+                  <span style={{ fontSize: 14, fontWeight: 650, lineHeight: 1.35, color: g.struck[c.i] ? FADED : INK, textDecoration: g.struck[c.i] ? 'line-through' : 'none' }}>{c.text}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          <div style={{ display: 'flex', gap: 12, padding: '6px 0 8px', borderTop: `1px solid ${SURF_B}` }}>
+            {[['person', `${sel}'s clues`], ['roles', `Role clues (${roleClues.length})`], ['all', `All clues (${clueList.length})`]].map(([v, l]) => (
+              <button key={v} type="button" onClick={() => setClueView(v)} aria-pressed={clueView === v}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 12, fontWeight: 800, color: clueView === v ? ACC_INK : FADED, textDecoration: clueView === v ? 'none' : 'underline' }}>{l}</button>
+            ))}
+          </div>
+        </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 14 }}>
-        <button type="button" className="pk-btn" onClick={() => setMode(mode === 'place' ? 'mark' : 'place')} aria-pressed={mode === 'mark'}>
-          {mode === 'mark' ? 'Mark mode: on' : 'Mark mode: off'}
-        </button>
-        <button type="button" className="pk-btn" onClick={clearTap} style={armClear ? { color: BAD, borderColor: BAD } : undefined}>{armClear ? 'Tap again to clear' : 'Clear board'}</button>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 10 }}>
         <button type="button" className="pk-btn" onClick={check}
           style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white }}>
           Check{placedN === N && rolesN === N ? '' : ` (${placedN}/${N} placed, ${rolesN}/${N} roles)`}
         </button>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 14, marginTop: 14, alignItems: 'center' }}>
-        <button type="button" onClick={() => setShowTime((v) => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-          {showTime ? `Time ${elapsed}` : 'Show timer'}
-        </button>
-        <button type="button" onClick={giveUpTap} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 800, color: armReveal ? BAD : FADED, textDecoration: 'underline' }}>
-          {armReveal ? 'Tap again to give up' : 'Give Up'}
-        </button>
+        <button type="button" className="pk-btn" onClick={clearTap} style={armClear ? { color: BAD, borderColor: BAD } : undefined}>{armClear ? 'Tap again to clear' : 'Clear'}</button>
       </div>
     </div>
   );
@@ -737,10 +744,19 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.pk-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .pk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .pk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
+          .sc-board{max-width:min(560px, calc(100svh - 340px));min-width:min(100%, 300px);}
+          .sc-strip{scrollbar-width:none;} .sc-strip::-webkit-scrollbar{display:none;}
+          .sc-play{display:flex;flex-direction:column;gap:12px;}
+          @media(min-width:900px){
+            .sc-play{display:grid;grid-template-columns:minmax(0, min(600px, calc(100vh - 170px))) minmax(320px, 400px);justify-content:center;align-items:start;gap:22px;}
+            .sc-board{max-width:none;}
+            .sc-side{position:sticky;top:12px;}
+            .sc-clues{max-height:calc(100vh - 360px);overflow-y:auto;}
+          }
           .sc-hit:focus-visible{outline:3px solid var(--stg-acc, #be123c);outline-offset:-3px;border-radius:6px;}
         ` }} />
 
-        <div style={{ maxWidth: 660, margin: '0 auto' }}>
+        <div style={{ maxWidth: started ? 1040 : 660, margin: '0 auto' }}>
 
         {!LOFT && (
         <DailyMasthead
@@ -783,8 +799,10 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
               <div style={{ fontSize: 17, fontWeight: 800, color: INK }}>{LAYOUT.title}</div>
               <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED }}>{LAYOUT.place} · {N} by {N}{playing ? (mode === 'mark' ? ' · tap a square to cross it out' : ' · tap a person, then a square') : ''}</div>
             </div>
-            {boardEl}
-            {playPanel}
+            <div className={playing ? 'sc-play' : undefined}>
+              <div>{boardEl}{underBoard}</div>
+              {dossier}
+            </div>
             {casePanel}
           </>
         )}
