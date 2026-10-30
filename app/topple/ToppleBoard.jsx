@@ -77,6 +77,8 @@ const CSS = `
 .tp-say{flex:1 1 220px;min-width:0;display:flex;flex-direction:column;gap:3px;}
 .tp-say1{font-size:15px;font-weight:700;line-height:1.4;color:var(--stg-ink,#e9edf4);}
 .tp-say2{font-size:12px;font-weight:600;line-height:1.45;color:var(--stg-mute,#8b95a8);}
+/* NO ON-SCREEN CONTROLS ON A DESKTOP WITH A MOUSE (owner, 2026-10-30): the keyboard already does all of this. */
+@media (min-width:900px) and (hover:hover) and (pointer:fine){.tp-pad{display:none !important;}}
 .tp-pad{display:grid;grid-template-columns:repeat(3,50px);grid-template-rows:repeat(3,44px);gap:5px;flex:0 0 auto;}
 .tp-key{font-family:${SANS};border:1.5px solid var(--stg-mute2,#78859d);background:transparent;color:var(--stg-ink,#e9edf4);border-radius:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
 .tp-key:hover:not(:disabled){background:var(--stg-surf2,rgba(255,255,255,.08));}

@@ -149,7 +149,7 @@ export default function PhotoMatchBoard({ items, started, ended, revealed, onMat
           <button onClick={back} title="Go back to the previous painting." style={{ marginLeft: 'auto', flex: 'none', fontFamily: MONO, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, padding: '8px 12px', background: 'transparent', color: `var(--stg-ink,${COLORS.ink})`, borderRadius: 10, border: `1.5px solid var(--stg-line2,${COLORS.ink})`, cursor: 'pointer' }}>&larr; Back</button>
         )}
         {live && cur != null && (
-          <button onClick={skip} title="Skip to the next painting; this one comes back around." style={{ flex: 'none', fontFamily: MONO, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, padding: '8px 12px', background: 'transparent', color: `var(--stg-ink,${COLORS.ink})`, borderRadius: 10, border: `1.5px solid var(--stg-line2,${COLORS.ink})`, cursor: 'pointer' }}>Next &rarr;</button>
+          <button onClick={skip} title="Skip to the next painting; this one comes back around." style={{ flex: 'none', fontFamily: MONO, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, padding: '8px 12px', background: 'transparent', color: `var(--stg-ink,${COLORS.ink})`, borderRadius: 10, border: `1.5px solid var(--stg-line2,${COLORS.ink})`, cursor: 'pointer' }}>Skip &rarr;</button>
         )}
       </div>
 

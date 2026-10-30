@@ -1193,7 +1193,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? cost : null}
-              title={endEfficiency(won, finalScore)}
+              title={endEfficiency(won, finalScore, cost <= perfect)}
               detail={`${cost} cost \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

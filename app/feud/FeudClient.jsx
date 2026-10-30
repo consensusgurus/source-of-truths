@@ -811,7 +811,7 @@ export default function FeudClient({ puzzles = [], forceNum = null }) {
                   {last ? (
                     <button type="button" className="pst-tb on" disabled={!playing || sending || !readyToFace} onClick={faceTheCrowd}>{sending ? 'Facing the crowd…' : 'Lock in'}</button>
                   ) : (
-                    <button type="button" className="pst-tb on" onClick={() => go(step + 1)}>Next</button>
+                    <button type="button" className="pst-tb on" onClick={() => go(step + 1)}>Skip</button>
                   )}
                 </div>
               </>

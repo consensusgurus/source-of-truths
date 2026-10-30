@@ -668,7 +668,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
             ) : null}
             <div className="pst-in">
               <input type="text" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onInputKey}
-                placeholder={`Type a ${U.noun}`} aria-label="Guess a name" autoComplete="off" autoCorrect="off" spellCheck={false} />
+                placeholder={`Type ${/^[aeiou]/i.test(U.noun) ? 'an' : 'a'} ${U.noun}`} aria-label="Guess a name" autoComplete="off" autoCorrect="off" spellCheck={false} />
               <button type="button" className="pst-go" onClick={() => { if (opts.length) pick(opts[0]); }} disabled={!opts.length}>Guess</button>
             </div>
             <div className="pst-tools">
@@ -976,7 +976,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
                 <div className="ds-inrow" style={{ display: 'flex', gap: 8 }}>
                   <input className="ds-in" type="text" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onInputKey}
                     onFocus={(e) => keepBoardInView(e.currentTarget)}
-                    placeholder={`Type a ${U.noun}`} aria-label="Guess a name" autoComplete="off" autoCorrect="off" spellCheck={false} />
+                    placeholder={`Type ${/^[aeiou]/i.test(U.noun) ? 'an' : 'a'} ${U.noun}`} aria-label="Guess a name" autoComplete="off" autoCorrect="off" spellCheck={false} />
                   <button type="button" className="ds-go" onClick={() => { if (opts.length) pick(opts[0]); }} disabled={!opts.length}>Guess</button>
                 </div>
                 {opts.length > 0 && (

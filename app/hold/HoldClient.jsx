@@ -515,9 +515,12 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
     const now = Date.now();
     if (now - lastTap.current < ARM_MIN_MS) return;
     lastTap.current = now;
-    if (cur.shown === null) return;
+    if (cur.status !== 'playing' || cur.shown === null) return;
     if (cur.picks.length >= NH) {
-      const done = { ...cur, shown: null, status: 'done', tEnd: Date.now() };
+      // The last drawn hand STAYS on screen (owner, 2026-10-30): clearing \`shown\`
+      // here dropped the stage back to that hand's original deal for the beat
+      // before the ending, which read as a new set of cards.
+      const done = { ...cur, status: 'done', tEnd: Date.now() };
       vibrate(scoreOf(done.picks) === TOTAL ? HAPT.win : HAPT.ok);
       postResult(done);
       endHold.hold(HOLD_SHORT);
@@ -666,6 +669,10 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
         top={(
           <>
             <style dangerouslySetInnerHTML={{ __html: `
+/* THE SCORE IS PROMINENT (owner, 2026-10-30: the running total was hard to see). */
+.ml-tally{align-self:center;display:inline-flex;align-items:baseline;gap:7px;padding:6px 16px;border-radius:999px;background:var(--pst-ink);color:var(--pst-bg);margin:0 auto 12px;font-variant-numeric:tabular-nums;}
+.ml-tally i{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.8;}
+.ml-tally b{font-size:22px;font-weight:800;line-height:1;}
 .hol-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;padding:14px 0 28px}
 .hol-pc{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:100px;border-radius:10px;background:#fff;border:2px solid var(--pst-ink);font-size:24px;font-weight:800;line-height:1;color:#16181d !important;padding:0;transition:transform .15s}
 .hol-pc i{font-style:normal;font-size:20px;color:inherit}
@@ -684,6 +691,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
 .hol-mini span.red{color:${FACE_RED} !important}
 .hol-v{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;flex:none;padding-right:6px}
 ` }} />
+            <div className="ml-tally" aria-label={`Score ${score} of ${TOTAL}`}><i>Score</i><b>{score}</b><i>of {TOTAL}</i></div>
             <h2 className="pst-q">{q}</h2>
             <div className="hol-row" role="group" aria-label="Your five cards">
               {hand.cards.map((c0, k) => {

@@ -728,7 +728,7 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
             ) : null)}
             <form className="pst-in" onSubmit={(e) => { e.preventDefault(); takeHot(); }}>
               <input ref={stageInRef} value={query}
-                placeholder={sel >= 0 ? `Type a ${U.noun}` : 'Tap an empty cell first'}
+                placeholder={sel >= 0 ? `Type ${/^[aeiou]/i.test(U.noun) ? 'an' : 'a'} ${U.noun}` : 'Tap an empty cell first'}
                 disabled={sel < 0}
                 onChange={(e) => { setQuery(e.target.value); setHot(0); }}
                 onKeyDown={(e) => { if (e.key !== 'Enter') onKey(e); }}

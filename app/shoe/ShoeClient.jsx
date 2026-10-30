@@ -261,7 +261,23 @@ function Fan({ cards, w, room, gap, downAt = -1, dim = false }) {
 
 // Phone stage table: card faces stay white with red suits in a readable red;
 // the table pieces take the category tint.
+// SHOE RANKS ON NET CHIPS (owner, 2026-10-30: "it should be net win value").
+// The 1-10 score still grades the bank against par (IQ Points read it), and
+// the board then orders on the bank itself through \`progress\`, which must be
+// a non-negative integer, so the bank rides offset by CHIP_BASE. Busts no
+// longer rank or display; lib/daily-row-stats.js prints the bank on each row.
+const CHIP_BASE = 1000;
+// The headline speaks blackjack, not puzzle (owner: "solved" made no sense).
+function shoeVerdict(gaveUp, chips) {
+  if (gaveUp) return 'Fail';
+  return chips > 0 ? 'In the black!' : chips < 0 ? 'In the red' : 'Broke even';
+}
+
 const SHO_STAGE_CSS = `
+/* THE BANK IS PROMINENT (owner, 2026-10-30: the running total was hard to see). */
+.ml-tally{align-self:center;display:inline-flex;align-items:baseline;gap:7px;padding:6px 16px;border-radius:999px;background:var(--pst-ink);color:var(--pst-bg);margin:0 auto 12px;font-variant-numeric:tabular-nums;}
+.ml-tally i{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.8;}
+.ml-tally b{font-size:22px;font-weight:800;line-height:1;}
 .sho-sec{display:flex;flex-direction:column;align-items:center;}
 .sho-lab{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;margin-bottom:8px;}
 .sho-rowc{display:flex;justify-content:center;}
@@ -497,7 +513,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
     try {
       fetch('/api/quiz/result', {
         method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quizId: PUZZLE.quizId, score, total: 10, correct: won ? 1 : 0, guessesUsed: r2.busts, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
+        body: JSON.stringify({ quizId: PUZZLE.quizId, score, total: 10, correct: won ? 1 : 0, guessesUsed: r2.busts, progress: r2.chips + CHIP_BASE, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
       })
         .then((r) => r.json())
         .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
@@ -601,6 +617,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
     const top = (
       <>
         <style dangerouslySetInnerHTML={{ __html: SHO_STAGE_CSS }} />
+        <div className="ml-tally" aria-label={`Bank ${fmtChips(chips)} chips`}><i>Bank</i><b>{fmtChips(chips)}</b><i>chips</i></div>
         <div className="sho-sec">
           <div className="sho-lab">Dealer</div>
           <div className="sho-rowc">{cur.d.map((c, i) => pc(c, i, cur.d.length, 64, !cur.reveal && i === 1))}</div>
@@ -697,7 +714,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
         <>The shoe is the skill: <b>{PUZZLE.shoe.length} cards{FULL_SHOE ? `, ${SHOE_WHAT}` : ` ${SHOE_WHAT}`}</b>. Count what you have seen, because it changes what is left.</>,
       ]}
       knack="The book line (basic strategy) banks par exactly. To beat it, deviate when the cards already on the table say so: stand a stiff 15 while the tens are still buried, hit it once they are gone."
-      footer={`Play out every hand to post a result. Fewer busts and a faster time rank higher, and only your first attempt counts. Weekdays deal ten hands off a 72-card, two-deck shoe; Sundays deal fourteen hands off the entire 104-card double deck, so a perfect counter knows exactly what is left.`}
+      footer={`Play out every hand to post a result. The biggest bank ranks highest, then the faster time, and only your first attempt counts. Weekdays deal ten hands off a 72-card, two-deck shoe; Sundays deal fourteen hands off the entire 104-card double deck, so a perfect counter knows exactly what is left.`}
     />
   );
 
@@ -1194,7 +1211,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
             challengeMetric={chips}
-            title={endEfficiency(finalScore > 0, finalScore)}
+            title={shoeVerdict(!!g.gaveUp, chips)}
             detail={`bank ${fmtChips(chips)} · ${elapsed}`}
             iq={iq}
             board={dailyBoard}
@@ -1204,7 +1221,6 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
               : null}
             day={dayStats}
             streak={isTodays ? myStats.cur : null}
-            missLabel="Busts"
             archive={puzzles
               .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
               .sort((a, b) => b.num - a.num)

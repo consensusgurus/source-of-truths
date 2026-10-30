@@ -812,7 +812,7 @@ export default function HerdClient({ puzzles = [], forceNum = null }) {
             </button>
           ) : (
             <button type="button" className={`hd-go ${val != null ? 'hd-go-on' : 'hd-go-off'}`} onClick={goNext}>
-              {val != null ? 'Next question' : 'Skip for now'}
+              {val != null ? 'Next question' : 'Skip'}
             </button>
           )}
         </div>

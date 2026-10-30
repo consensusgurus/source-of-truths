@@ -154,7 +154,7 @@ export default function WordScrambleBoard({ items, started, ended, revealed, onM
               <button onMouseDown={(e) => e.preventDefault()} onClick={back} title="Previous clue." style={{ flex: 'none', fontFamily: SANS, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, padding: '0 13px', background: 'transparent', color: `var(--stg-ink,${COLORS.ink})`, borderRadius: 10, border: `1.5px solid var(--stg-line2,${COLORS.ink})`, cursor: 'pointer' }}>&larr; Back</button>
             )}
             {cur != null && (
-              <button onMouseDown={(e) => e.preventDefault()} onClick={skip} title="Skip to the next clue without spending a guess." style={{ flex: 'none', fontFamily: SANS, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, padding: '0 13px', background: 'transparent', color: `var(--stg-ink,${COLORS.ink})`, borderRadius: 10, border: `1.5px solid var(--stg-line2,${COLORS.ink})`, cursor: 'pointer' }}>Next &rarr;</button>
+              <button onMouseDown={(e) => e.preventDefault()} onClick={skip} title="Skip to the next clue without spending a guess." style={{ flex: 'none', fontFamily: SANS, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, padding: '0 13px', background: 'transparent', color: `var(--stg-ink,${COLORS.ink})`, borderRadius: 10, border: `1.5px solid var(--stg-line2,${COLORS.ink})`, cursor: 'pointer' }}>Skip &rarr;</button>
             )}
           </div>
         )}

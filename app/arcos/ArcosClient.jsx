@@ -1022,7 +1022,8 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
               )}
 
               {started && !mobileUi && (
-                <div style={{ maxWidth: 500, margin: '4px auto 0', width: '100%' }}>
+                <div className="ml-deskkb" style={{ maxWidth: 500, margin: '4px auto 0', width: '100%' }}>
+                  <style>{`@media (min-width:900px) and (hover:hover) and (pointer:fine){.ml-deskkb > :not(p){display:none !important}}`}</style>
                   {keyboardRows}
                   <p style={{ fontSize: 11.5, color: FADED, fontWeight: 600, margin: '6px 0 0', textAlign: 'center' }}>
                     Type on your keyboard too. The up and down arrows move between rows.

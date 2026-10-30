@@ -383,7 +383,7 @@ html:is([data-stage-pastel^='dark'],[data-stage-tone^='dark']) .bab-board{--bb-t
 .pst .bab-c{position:relative;}
 .pst .bab-c small{position:absolute;right:3px;bottom:2px;font-size:8.5px;font-weight:800;line-height:1;}
 .pst .bab-c.sm small{display:none;}
-.bab-board.whole.dk{max-width:470px;gap:3px;}
+.bab-board.whole.dk{max-width:min(620px, calc(100dvh - 330px));gap:3px;}
 .pst .bab-board.dk .bab-c.sm{font-size:17px;border-width:2px;border-radius:7px;}
 .pst .bab-board.dk .bab-c.sm.pm{font-size:9.5px;letter-spacing:.02em;}
 .pst .bab-board.dk .bab-c.sm small{display:block;font-size:8px;}
@@ -861,7 +861,7 @@ export default function BabelClient({ puzzles, forceNum }) {
     );
     const frac = BENCH > 0 ? Math.max(0, Math.min(1, spread / BENCH)) : null;
     return (
-      <PlayStage bg={gameColor('babel')} label="Babel"
+      <PlayStage wide bg={gameColor('babel')} label="Babel"
         eyebrow={`The bag is empty · their ${foeRack.length} tiles are yours to work out`}
         top={top} bottom={bottom} frac={frac}
         foot={thinking ? 'Their move' : `Your move · you ${g.my}, them ${g.foeScore}`} />

@@ -728,7 +728,7 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={won ? used : null}
-              title={endEfficiency(won, finalScore)}
+              title={endEfficiency(won, finalScore, used <= perfect)}
               detail={`${used} rolls \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

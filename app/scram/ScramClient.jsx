@@ -535,10 +535,10 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
     );
   };
   const navBtn = (dir) => (
-    <button className="sc-nav" onClick={() => go(sel + dir)} aria-label={dir < 0 ? 'Previous answer' : 'Next answer'}
+    <button className="sc-nav" onClick={() => go(sel + dir)} aria-label={dir < 0 ? 'Back to the previous answer' : 'Skip to the next answer'}
       style={{ height: 42, minWidth: 44, padding: mobileUi ? 0 : '0 6px', borderRadius: 8, border: 'none', background: 'none', color: FADED, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontFamily: SANS, fontWeight: 800, fontSize: 13 }}>
       {dir < 0 && <ChevronLeft size={18} />}
-      {!mobileUi && (dir < 0 ? 'Back' : 'Next')}
+      {!mobileUi && (dir < 0 ? 'Back' : 'Skip')}
       {dir > 0 && <ChevronRight size={18} />}
     </button>
   );
@@ -550,7 +550,7 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
         <>One broad <b>theme</b> a day, printed above the board once you start. All ten answers belong to it.</>,
         <>Type the answer with the keyboard (or your own, where the arrow keys move between answers). Only the <b>scramble&rsquo;s letters</b> light up, and a small number shows a letter you need more than once.</>,
         <>A full answer <b>checks itself</b>. Right turns it dark; wrong shakes and clears so you can try another order.</>,
-        <>Stuck? <b>Back</b> and <b>Next</b> (or a tap on the progress bar) move between the ten, and <b>Skip</b> jumps to the next one still open.</>,
+        <>Stuck? <b>Skip</b> jumps to the next one still open, <b>Back</b> returns to the one before, and a tap on the progress bar goes straight to any of the ten.</>,
       ]}
       knack="Start with the shortest scrambles. The long ones often fall once you spot a familiar ending."
       footer="Score is answers solved out of ten. Time breaks ties, so the fastest perfect run tops the board."
@@ -701,7 +701,8 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
               </div>
 
               {started && !mobileUi && (
-                <div style={{ alignSelf: 'stretch', maxWidth: 500, margin: '0 auto', width: '100%' }}>
+                <div className="ml-deskkb" style={{ alignSelf: 'stretch', maxWidth: 500, margin: '0 auto', width: '100%' }}>
+                  <style>{`@media (min-width:900px) and (hover:hover) and (pointer:fine){.ml-deskkb{display:none !important}}`}</style>
                   {keyboardRows}
                 </div>
               )}

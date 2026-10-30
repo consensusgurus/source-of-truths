@@ -930,7 +930,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
             </button>
           ) : (
             <button type="button" className={`ow-go ${val != null ? 'ow-go-on' : 'ow-go-off'}`} onClick={goNext}>
-              {val != null ? 'Lock it in · next prompt' : 'Next prompt'}
+              {val != null ? 'Lock it in · next prompt' : 'Skip'}
             </button>
           )}
         </div>

@@ -761,6 +761,53 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
             giveUp={{ armed: false, onPress: giveUp, label: allCalled ? 'Reveal the rest' : 'Give up' }} />
         );
       })()}
+      {phoneStage && !!g.t0 && !playing && revealed && (() => {
+        // THE REVEAL ON THE STAGE (owner, 2026-10-30: "some of the reveal
+        // screens looked old style. threads for instance"). Reveal the answers
+        // used to drop the player onto the old film-strip page; it now draws the
+        // answers on the same stage the day was played on: the thread, then
+        // every film with its title, what you named, and what was planted.
+        const top = (
+          <>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .thr-rv{display:flex;flex-direction:column;gap:6px;}
+              .thr-rv .pst-row{align-items:flex-start;padding-top:8px;padding-bottom:8px;}
+              .thr-rv .pst-row .t b{display:block;font-size:16px;}
+              .thr-rv .pst-row .t small{margin-top:2px;}
+            ` }} />
+            <div className="pst-card">
+              <small>{NTH === 1 ? 'The thread' : 'The threads'}</small>
+              <b>{THREADS.map((th) => th.t).join(' and ')}</b>
+            </div>
+            <div className="thr-rv" role="list" aria-label={`${N} films`}>
+              {TILES.map((t, i) => {
+                const on = solvedSet.has(i);
+                const owner = tileOwner[i];
+                return (
+                  <div key={i} role="listitem" className={'pst-row' + (on ? ' on' : ' e')}>
+                    <span className="n">{i + 1}</span>
+                    <span className="t"><b>{t.t}</b><small>{t.s}</small></span>
+                    {planted.has(i) ? <span className="pst-tag">Planted</span> : null}
+                    {!planted.has(i) && NTH > 1 && THREADS[owner] ? <span className="pst-tag">{THREADS[owner].t}</span> : null}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        );
+        const bottom = (
+          <div className="pst-tools">
+            <button type="button" className="pst-tb wide" onClick={() => setRevealed(false)}>Back to your result</button>
+          </div>
+        );
+        return (
+          <PlayStage bg={gameColor('thread')} label="Thread"
+            eyebrow={`Thread · The answers`}
+            top={top} topKey="reveal" bottom={bottom}
+            foot={`${g.solved.length} of ${N} named · ${score} point${score === 1 ? '' : 's'}`}
+            done />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="thread" name="Thread" collapsed={started} loft={LOFT} />

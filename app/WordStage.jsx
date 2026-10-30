@@ -96,7 +96,7 @@ export default function WordStage({
                 <button key={i} type="button" className={'wst-pip' + (p.done ? ' done' : '') + (p.cur ? ' cur' : '')} onClick={p.onClick} aria-label={p.label} aria-current={p.cur ? 'true' : undefined}><i /></button>
               ))}
             </div>
-            <button type="button" className="wst-nb" onClick={nav.onNext}>{nav.nextLabel || 'Next'}</button>
+            <button type="button" className="wst-nb" onClick={nav.onNext}>{nav.nextLabel || 'Skip'}</button>
           </div>
         ) : null}
         <div className="wst-kb">
@@ -148,12 +148,14 @@ const CSS = `
 .wst-grp{display:flex;gap:6px;}
 .wst-s{--w:min(52px, calc((100vw - 40px - (var(--wst-n) - 1) * 6px) / var(--wst-n)));width:var(--w);aspect-ratio:52/60;box-sizing:border-box;border-radius:12px;border:2px solid var(--wst-ink);background:var(--wst-tile);display:flex;align-items:center;justify-content:center;font-size:calc(var(--w) * .56);font-weight:800;position:relative;transition:background .15s;}
 .wst-s.cur{box-shadow:0 0 0 3px var(--wst-bg),0 0 0 5px var(--wst-ink);}
-.wst-s.mk{padding-bottom:9px;}
-.wst-s.mk::after{content:"";position:absolute;bottom:5px;left:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:4px;background:var(--wst-ink);}
+/* A MARKED CELL IS TINTED, NOT DOTTED (owner, 2026-10-30): the dot pushed the
+   letter up off the row, so circled cells did not line up with the rest. The
+   cell now takes a deeper shade of the tile colour and a thicker rule. */
+.wst-s.mk{background:color-mix(in srgb,var(--wst-ink) 22%,var(--wst-tile));border-width:3px;}
 .wst-s.sp{border-style:solid;border-width:2.5px;}
 .wst-s.gh{opacity:.45;}
 .wst-slots.ok .wst-s{background:var(--wst-ink);color:var(--wst-bg);animation:wstPop .45s ease-out both;}
-.wst-slots.ok .wst-s.mk::after{background:var(--wst-bg);}
+.wst-slots.ok .wst-s.mk{box-shadow:inset 0 0 0 3px var(--wst-bg),inset 0 0 0 5px var(--wst-ink);}
 .wst-slots.shown .wst-s{border-style:solid;}
 .wst-slots.bad{animation:wstShake .4s cubic-bezier(.2,.7,.3,1);}
 .wst-spine{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;}

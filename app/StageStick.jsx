@@ -1202,6 +1202,15 @@ const CSS = `
 .sst-cover .sst-m b{font-size:clamp(60px,6vw,84px);}
 .sst-cover .sst-hl{font-size:24px;}
 .sst-cover .sst-cin{transition:opacity .3s ease;}
+/* THE COVER IS CENTRED, not just its column (owner report, 2026-10-30: "the
+   end animation is off center"). The column was centred but everything in it
+   sat flush left and stopped well short of its right edge, so the result read
+   as pushed left. On the cover the result now stands on the centre line; the
+   in-page band it fades into keeps its own left-aligned layout. */
+.sst-cover .sst-hero{align-items:center;text-align:center;}
+.sst-cover .sst-hero > *{width:100%;max-width:560px;}
+.sst-cover .sst-m,.sst-cover .sst-hbs{justify-content:center;}
+.sst-cover .sst-arc{margin-left:auto;margin-right:auto;}
 .sst-cover.go .sst-cin{opacity:0;}
 /* The in-page ending: hidden under the cover, revealed when it pulls back.
    DIRECTION B (owner, 2026-10-26: "too disjointed" with the page around it).

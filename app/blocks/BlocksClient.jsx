@@ -327,6 +327,8 @@ const STAGE_CSS = `
 .blk-pad.ph .dwn,.blk-pad.ph .slm{grid-column:span 3}
 .blk-pad button{border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);color:var(--pst-ink);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .blk-pad .slm{background:var(--pst-ink);color:var(--pst-bg);font-size:15px}
+/* NO ON-SCREEN CONTROLS ON A DESKTOP WITH A MOUSE (owner, 2026-10-30): the keyboard already does all of this. */
+@media (min-width:900px) and (hover:hover) and (pointer:fine){.blk-pad,.blk-padt,.bl-pad{display:none !important;}}
 .blk-padt{align-self:center;min-height:36px;padding:0 14px;font-size:13px}
 .blk-foot{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
 .blk-bar{display:block;height:6px;border-radius:3px;background:color-mix(in srgb, var(--pst-ink) 18%, transparent);overflow:hidden;flex:1;margin:0 12px}
@@ -1760,6 +1762,7 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         /* the T piece, as a pad: rotate on top, move-left / down / move-right
            across the middle, Drop as the bar beneath. Centered at every width. */
         .bl-dock { display: flex; justify-content: center; margin-top: 12px; }
+        @media (min-width:900px) and (hover:hover) and (pointer:fine) { .bl-pad { display: none !important; } }
         .bl-pad {
           display: grid;
           grid-template-areas: ". rot ." "lft dwn rgt";

@@ -233,7 +233,19 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
   // work): Big tiles by default inside a scrolling port, with a map of the
   // whole board that shows where the port is and jumps on a tap.
   const phoneStage = usePhoneStage();
-  const [bigTiles, setBigTiles] = useState(true);
+  // WHOLE BOARD FIRST (owner, 2026-10-30): every game with a whole-board view
+  // opens on it, and a desktop with a mouse has no zoom at all.
+  const [bigTiles, setBigTilesState] = useState(false);
+  const [deskPtr, setDeskPtr] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(min-width: 900px) and (hover: hover) and (pointer: fine)');
+    const f = () => setDeskPtr(mq.matches);
+    f();
+    if (mq.addEventListener) mq.addEventListener('change', f); else mq.addListener(f);
+    return () => { if (mq.removeEventListener) mq.removeEventListener('change', f); else mq.removeListener(f); };
+  }, []);
+  const setBigTiles = (v) => setBigTilesState(deskPtr ? false : v);
   const [scr, setScr] = useState(null);
   const portRef = useRef(null);
   const readScroll = useCallback((el) => {
@@ -708,7 +720,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
     const msg = toast || (peek != null ? `Showing layer ${peek} and below. Tap Look again to go on.`
       : stuck ? 'No open pairs. Undo is free, or shuffle for 30 seconds.'
       : selInfo ? `${selInfo.label} picked. Tap its match.`
-      : `${open.length} open pair${open.length === 1 ? '' : 's'}. Drag to move around the board.`);
+      : `${open.length} open pair${open.length === 1 ? '' : 's'}.${bigTiles ? ' Drag to move around the board.' : ''}`);
     const jump = (e) => {
       const el = portRef.current;
       if (!el) return;
@@ -719,7 +731,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
     };
     const lookNext = () => { const k = lookOrder.indexOf(peek); setPeek(lookOrder[(k + 1) % lookOrder.length]); setSel(-1); };
     mahjStage = (
-      <PlayStage bg={gameColor(KEY)} label="Mahj" eyebrow={`${LAYOUT.name}${PUZZLE.sunday ? ' · Sunday Edition' : ''} · No. ${PUZZLE.num}`}
+      <PlayStage wide bg={gameColor(KEY)} label="Mahj" eyebrow={`${LAYOUT.name}${PUZZLE.sunday ? ' · Sunday Edition' : ''} · No. ${PUZZLE.num}`}
         top={(
           <>
             <style dangerouslySetInnerHTML={{ __html: `
@@ -730,7 +742,15 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
 .mjp-box{position:absolute;border:2px solid var(--pst-ink);border-radius:3px;z-index:20;pointer-events:none}
 .mjp-note{font-size:12px;font-weight:700;line-height:1.3;opacity:.85}
 .mjp-port::-webkit-scrollbar{display:none;width:0;height:0}
-.mjp-port{height:calc(100dvh - 380px);min-height:260px;overflow:auto;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;border-radius:18px;border:2px solid var(--pst-ink);background:color-mix(in srgb, #ffffff 55%, transparent);padding:10px;touch-action:pan-x pan-y}
+/* NO OUTLINE, AND THE WHOLE BOARD FITS (owner, 2026-10-30). The port used to be a
+   fixed-height box with a 2px rule round it, so a wide layout sat as a thin strip
+   in a tall frame and a tall one ran off the bottom. The rule is gone, and the
+   whole board is sized to fit BOTH the column width and the screen height. Big
+   tiles (phone only) keeps a scrolling port, still without the frame. */
+.mjp-port{height:calc(100dvh - 380px);min-height:260px;overflow:auto;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;border-radius:0;border:0;background:transparent;padding:4px 0;touch-action:pan-x pan-y}
+.mjp-port.fit{height:auto;min-height:0;overflow:visible;display:flex;justify-content:center}
+.mjp-port.fit .mj-board{max-width:100%}
+@media (min-width:900px){.mjp-port.fit .mj-board{--mjp-avail:calc(100dvh - 300px)}}
 .mjp-tray{display:flex;gap:8px}
 .mjp-tray button{flex:1 1 0;min-width:0;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:16px;border:2px solid var(--pst-ink);background:transparent;font-size:12px;font-weight:800;padding:6px 2px}
 .mjp-tray button.on{background:var(--pst-ink);color:var(--pst-bg)}
@@ -741,6 +761,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
               <span>Pairs <b>{pairsDone}/{PAIRS}</b></span>
               <span>Open <b>{open.length}</b></span>
             </div>
+            {deskPtr ? null : (
             <div className="mjp-row">
               <button type="button" className="mjp-map" style={{ aspectRatio: `${wU} / ${hU}` }} onClick={jump} aria-label="Map of the whole board. Tap to jump there.">
                 {minis}
@@ -754,8 +775,9 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
                 </div>
               </div>
             </div>
-            <div className="mjp-port" ref={portRef} onScroll={(e) => readScroll(e.currentTarget)}>
-              <div className="mj-board" style={{ aspectRatio: `${wU} / ${hU}`, width: bigTiles ? `${PHONE_TILE_PX * wU}px` : '100%' }} role="group" aria-label={`The ${LAYOUT.name} layout, ${left} tiles left`}>
+            )}
+            <div className={'mjp-port' + (bigTiles ? '' : ' fit')} ref={portRef} onScroll={(e) => readScroll(e.currentTarget)}>
+              <div className="mj-board" style={{ aspectRatio: `${wU} / ${hU}`, width: bigTiles ? `${PHONE_TILE_PX * wU}px` : `min(100%, calc(var(--mjp-avail, calc(100dvh - 380px)) * ${wU} / ${hU}))` }} role="group" aria-label={`The ${LAYOUT.name} layout, ${left} tiles left`}>
                 {tiles}
               </div>
             </div>

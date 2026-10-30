@@ -211,7 +211,7 @@ export default function BracketStage({
               <div className="bks-pips" aria-label={`${filled} of ${MATCHES} picked`}>
                 {ids.map(([a, b], i) => <span key={i} className={i === cur ? 'on' : (picks[idOf(a, b)] >= 0 ? 'done' : '')} />)}
               </div>
-              <button type="button" className="bks-nb" onClick={() => go(cur + 1)} disabled={!canNext}>Next</button>
+              <button type="button" className="bks-nb" onClick={() => go(cur + 1)} disabled={!canNext}>Skip</button>
             </div>
             <div className="bks-foot">
               <span className="bks-line">Changing a pick clears what it fed. Nothing is scored until the sheet is in.</span>

@@ -272,13 +272,14 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   // Phone view: whole board or one quarter. `narrow` follows the viewport; the
-  // preference is remembered per device and defaults to the zoomed view, which
-  // is the one with full-size squares.
+  // preference is remembered per device. It defaults to the WHOLE BOARD (owner,
+  // 2026-10-30: every game with a whole-board view opens on it); a player who
+  // picked the zoom keeps it.
   const [narrow, setNarrow] = useState(false);
-  const [zoomPref, setZoomPrefState] = useState(true);
+  const [zoomPref, setZoomPrefState] = useState(false);
   const [quad, setQuad] = useState(0);
   useEffect(() => {
-    try { const z = localStorage.getItem(ZOOM_KEY); if (z === '0') setZoomPrefState(false); } catch (e) {}
+    try { const z = localStorage.getItem(ZOOM_KEY); if (z === '1') setZoomPrefState(true); } catch (e) {}
     let mq = null;
     try { mq = window.matchMedia('(max-width: 560px)'); } catch (e) {}
     if (!mq) return undefined;

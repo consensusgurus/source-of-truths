@@ -614,7 +614,8 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
         const top = (
           <>
             <style dangerouslySetInnerHTML={{ __html: `
-              .sos-ws{align-self:center;position:relative;display:grid;width:100%;max-width:440px;aspect-ratio:1/1;container-type:inline-size;box-shadow:0 0 0 2px var(--pst-ink);border-radius:14px;background:var(--pst-bg);overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+              .sos-ws{align-self:center;position:relative;display:grid;width:100%;max-width:min(440px, calc(100dvh - 330px));aspect-ratio:1/1;container-type:inline-size;box-shadow:0 0 0 2px var(--pst-ink);border-radius:14px;background:var(--pst-bg);overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+              @media (min-width:900px){.sos-ws{max-width:min(640px, calc(100dvh - 300px));}.sos-c{font-size:calc(100cqw / ${SIZE} * 0.5);}}
               .sos-ink{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}
               .sos-c{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:1px;font-weight:800;line-height:1;font-size:calc(100cqw / ${SIZE} * 0.56);}
               .sos-c i{font-style:normal;display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
@@ -622,12 +623,25 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
               @keyframes sospop{from{stroke-width:0.4;}to{stroke-width:0.78;}}
               .sos-x{animation:sosx .5s ease-out forwards;}
               @keyframes sosx{to{opacity:0;}}
-              .sos-rd{text-align:center;font-size:13px;font-weight:700;opacity:.75;min-height:22px;line-height:1.4;}
+              /* ONE LINE, FIXED HEIGHT (owner report, 2026-10-30: the board jittered
+                 while letters were selected). The readout grew from a 13px hint to
+                 a 17px tracked word and could wrap to two lines, which moved the
+                 word list and the page under it; it now never changes height. */
+              .sos-rd{text-align:center;font-size:13px;font-weight:700;opacity:.75;height:26px;line-height:26px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
               .sos-rd.on{font-size:17px;font-weight:800;letter-spacing:.14em;opacity:1;}
+              /* THE THEME IS ANNOUNCED (owner, 2026-10-30: the theme in the eyebrow
+                 was very hard to notice). Its own banner above the grid, which drops
+                 in when the board opens and pulses once so the eye goes to it. */
+              .sos-th{align-self:center;display:inline-flex;flex-direction:column;align-items:center;gap:1px;padding:7px 18px 8px;border-radius:14px;background:var(--pst-ink);color:var(--pst-bg);text-align:center;max-width:100%;animation:sosThIn .55s cubic-bezier(.2,.9,.25,1.25) .15s both, sosThPulse 1.4s ease-in-out .9s 2;}
+              .sos-th i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;opacity:.8;}
+              .sos-th b{font-size:19px;font-weight:800;letter-spacing:-.01em;line-height:1.15;}
+              @keyframes sosThIn{from{opacity:0;transform:translateY(-14px) scale(.85);}to{opacity:1;transform:none;}}
+              @keyframes sosThPulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--pst-ink) 45%,transparent);}50%{box-shadow:0 0 0 9px color-mix(in srgb,var(--pst-ink) 0%,transparent);}}
               .sos-w .pst-chip{font-size:12.5px;padding:4px 9px;}
               .sos-w .pst-chip.on{text-decoration:line-through;text-decoration-thickness:2px;color:var(--pst-ink);border-color:transparent;}
-              @media (prefers-reduced-motion: reduce){.sos-pop,.sos-x{animation:none;}}
+              @media (prefers-reduced-motion: reduce){.sos-pop,.sos-x,.sos-th{animation:none;}}
             ` }} />
+            <div className="sos-th" aria-label={`Today's theme: ${PUZZLE.theme}`}><i aria-hidden="true">Today&rsquo;s theme</i><b aria-hidden="true">{PUZZLE.theme}</b></div>
             <div ref={stageBoardRef} className="sos-ws" role="grid" aria-label={`${SIZE} by ${SIZE} word search`}
               onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onCancel}
               style={{ gridTemplateColumns: `repeat(${SIZE}, 1fr)`, touchAction: 'none' }}>
@@ -663,8 +677,8 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
           </div>
         ) : null;
         return (
-          <PlayStage bg={gameColor('scour')} label="Scour"
-            eyebrow={`Theme · ${PUZZLE.theme} · ${dirShort}`}
+          <PlayStage wide bg={gameColor('scour')} label="Scour"
+            eyebrow={`Words run ${dirShort}`}
             top={top} bottom={bottom} foot={`${foundCount} of ${N} words`} frac={N ? foundCount / N : 0} />
         );
       })()}
