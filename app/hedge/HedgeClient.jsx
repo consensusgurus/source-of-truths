@@ -58,6 +58,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 const COLORS = {
   cream: T.surface,
@@ -253,6 +255,10 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
+  // Logic's wrong mark stays ORANGE on the stage (owner brief, 2026-10-31).
+  const LBAD = isDarkLook(stageLook) ? '#fb923c' : '#c2410c';
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -778,6 +784,104 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31 mockup): Hedge plays on the shared white
+          stage at every width: the lattice on a light grey field, the loop in
+          rose cased in ink, loose ends as rose rings, one note, the Mark / Line
+          switch with Undo and Hint, one line, and the foot's Clock, How to play
+          and Give up (the old Reveal link folds into Give up). Every tap goes
+          through the board's own handlers, so scoring, saves and posting are
+          untouched. A line off the loop is solid orange, never dashed. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const stageNote = statusLine
+          .replace('A dashed line is not part', 'An orange line is not part')
+          .replace('dashed lines are not part', 'orange lines are not part');
+        const pieces = loop.pieces;
+        return (
+          <PlayStage bg={gameColor('hedge')} label="Hedge" wide={n >= 10}
+            eyebrow={`Hedge No. ${PUZZLE.num} · ${n}x${n}${PUZZLE.sunday ? ' · Sunday Edition' : ''} · one closed loop`}
+            top={(
+              <div className="hgs" style={{ '--lg-bad': LBAD }}>
+                <style dangerouslySetInnerHTML={{ __html: HGS_CSS }} />
+                <div className={'hgs-board' + (n >= 10 ? ' n10' : '')}>
+                  <svg className="hgs-svg" viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`Hedge loop puzzle, ${n} by ${n}`}>
+                    <rect x={PAD} y={PAD} width={n * CELL} height={n * CELL} rx={6} className="hgs-field" />
+                    {PUZZLE.clues.map((row, i) => row.map((c, j) => {
+                      if (c === null || c === undefined) return null;
+                      const k = cellCount[i][j];
+                      const over = k > c;
+                      const met = k === c;
+                      return (
+                        <g key={`c${i}-${j}`} className={over ? 'hgs-over' : (met ? 'hgs-met' : 'hgs-clue')}>
+                          {over && <circle cx={X(j) + CELL / 2} cy={Y(i) + CELL / 2} r={CELL * 0.3} fill="none" stroke="currentColor" strokeWidth={2.4} />}
+                          <text x={X(j) + CELL / 2} y={Y(i) + CELL / 2 + 1} fill="currentColor" fontFamily={SANS} fontSize={22} fontWeight={800} textAnchor="middle" dominantBaseline="central">{c}</text>
+                        </g>
+                      );
+                    }))}
+                    {segs.map((s2) => {
+                      const st = s2.kind === 'h' ? H[s2.idx] : V[s2.idx];
+                      if (st !== 2) return null;
+                      const mx = (s2.x1 + s2.x2) / 2, my = (s2.y1 + s2.y2) / 2, r = 5;
+                      return <path key={`x${s2.kind}${s2.idx}`} className="hgs-x" d={`M${mx - r} ${my - r}L${mx + r} ${my + r}M${mx + r} ${my - r}L${mx - r} ${my + r}`} stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" fill="none" />;
+                    })}
+                    {segs.map((s2) => {
+                      const st = s2.kind === 'h' ? H[s2.idx] : V[s2.idx];
+                      if (st !== 1) return null;
+                      const ok = (s2.kind === 'h' ? solH[s2.idx] : solV[s2.idx]) === 1;
+                      if (!ok) return <line key={`w${s2.kind}${s2.idx}`} className="hgs-bad" x1={s2.x1} y1={s2.y1} x2={s2.x2} y2={s2.y2} stroke="currentColor" strokeWidth={7} strokeLinecap="round" />;
+                      return <line key={`k${s2.kind}${s2.idx}`} className="hgs-case" x1={s2.x1} y1={s2.y1} x2={s2.x2} y2={s2.y2} stroke="currentColor" strokeWidth={11} strokeLinecap="round" />;
+                    })}
+                    {segs.map((s2) => {
+                      const st = s2.kind === 'h' ? H[s2.idx] : V[s2.idx];
+                      if (st !== 1) return null;
+                      const ok = (s2.kind === 'h' ? solH[s2.idx] : solV[s2.idx]) === 1;
+                      if (!ok) return null;
+                      return <line key={`l${s2.kind}${s2.idx}`} className="hgs-line" x1={s2.x1} y1={s2.y1} x2={s2.x2} y2={s2.y2} stroke="currentColor" strokeWidth={7} strokeLinecap="round" />;
+                    })}
+                    {Array.from({ length: (n + 1) * (n + 1) }).map((_, k) => {
+                      const i = Math.floor(k / (n + 1)), j = k % (n + 1);
+                      const d = loop.deg[k];
+                      if (d === 1) return <circle key={`d${k}`} className="hgs-end" cx={X(j)} cy={Y(i)} r={8} strokeWidth={2.5} />;
+                      if (d > 2) return <circle key={`d${k}`} className="hgs-br" cx={X(j)} cy={Y(i)} r={6} fill="currentColor" />;
+                      return <circle key={`d${k}`} className="hgs-dot" cx={X(j)} cy={Y(i)} r={3.5} fill="currentColor" />;
+                    })}
+                    {playing && segs.map((s2) => (
+                      <polygon key={`h${s2.kind}${s2.idx}`} className="hg-hit" points={s2.hit}
+                        onClick={() => { if (longFired.current) { longFired.current = false; return; } tapSeg(s2.kind, s2.idx); }}
+                        onContextMenu={(e) => { e.preventDefault(); if (longFired.current) { longFired.current = false; return; } drawLineSeg(s2.kind, s2.idx); }}
+                        onPointerDown={(e) => { if (e.pointerType === 'touch') startPress(s2.kind, s2.idx, e); }}
+                        onPointerMove={movePress}
+                        onPointerUp={endPress}
+                        onPointerLeave={endPress}
+                        onPointerCancel={endPress} />
+                    ))}
+                  </svg>
+                </div>
+                {playing && <p className={'hgs-note' + (statusBad ? ' bad' : '')} aria-live="polite">{stageNote}</p>}
+                {playing && (
+                  <div className="hgs-tools">
+                    <div className="hgs-seg" role="group" aria-label="What a tap draws">
+                      <button type="button" className={tool === 'x' ? 'on' : undefined} onClick={() => setTool('x')} aria-pressed={tool === 'x'} title="Mark no-line notes">&times; Mark</button>
+                      <button type="button" className={tool === 'line' ? 'on' : undefined} onClick={() => setTool('line')} aria-pressed={tool === 'line'} title="Draw the loop line">
+                        <svg width="18" height="6" aria-hidden="true"><line x1="2" y1="3" x2="16" y2="3" stroke="currentColor" strokeWidth="4" strokeLinecap="round" /></svg>Line
+                      </button>
+                    </div>
+                    <button type="button" className="hgs-mini" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" aria-label="Undo last move">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5" /><path d="M4 9h10a6 6 0 0 1 0 12h-3" /></svg>Undo
+                    </button>
+                    {hintOk && !g.hintUsed && (
+                      <button type="button" className="hgs-mini" onClick={useHint} aria-label="Hint: draw one segment of the loop">{ICON.bulb}Hint</button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            foot={toast || (playing
+              ? `${loop.settled} of ${loop.clues} numbers settled · ${pieces} ${pieces === 1 ? 'piece' : 'pieces'} of loop${errors ? ` · ${errors} error${errors === 1 ? '' : 's'}` : ''}`
+              : (won ? `Loop closed · ${errors} error${errors === 1 ? '' : 's'}` : 'Gave up'))}
+            giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to give up and see the loop' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1235,3 +1339,33 @@ export default function HedgeClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-31 mockup): the field light grey, the numbers
+// and dots ink, a settled number dimmed, the loop rose in an ink casing, a loose
+// end a rose ring, an x note muted, and Logic's wrong marks solid orange.
+const HGS_CSS = `
+.hgs{display:flex;flex-direction:column;gap:12px;}
+.hgs-board{align-self:center;width:min(100%, 480px);}
+.hgs-board.n10{width:min(100%, 620px);}
+.hgs-svg{display:block;width:100%;height:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+.hgs-field{fill:var(--pst-cell);}
+.hgs-clue,.hgs-met,.hgs-dot,.hgs-case{color:var(--pst-ink);}
+.hgs-met{opacity:.35;}
+.hgs-over,.hgs-bad,.hgs-br{color:var(--lg-bad);}
+.hgs-x{color:var(--pst-mute);opacity:.7;}
+.hgs-line{color:var(--pst-acc);}
+.hgs-end{fill:var(--pst-acc);stroke:var(--pst-ink);}
+.hgs-svg text,.hgs-svg path,.hgs-svg line,.hgs-svg circle{pointer-events:none;}
+.hgs-svg .hg-hit{fill:transparent;stroke:none;cursor:pointer;pointer-events:all;-webkit-tap-highlight-color:transparent;}
+.hgs-note{margin:0;border-radius:14px;background:var(--pst-pale);padding:10px 12px;text-align:center;font-size:14px;font-weight:700;line-height:1.4;}
+.hgs-note.bad{background:var(--pst-cell);box-shadow:inset 0 0 0 2px var(--lg-bad);}
+.hgs-tools{display:flex;gap:8px;align-items:center;}
+.hgs-seg{display:flex;border:2px solid var(--pst-ink);border-radius:999px;overflow:hidden;flex:1;min-width:0;}
+.pst .hgs-seg button{flex:1;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 6px;white-space:nowrap;}
+.pst .hgs-seg button+button{border-left:2px solid var(--pst-ink);}
+.pst .hgs-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .hgs-seg button.on *{color:var(--pst-on-acc);}
+.pst .hgs-mini{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--pst-ink);background:transparent;font-size:14px;font-weight:800;flex:none;}
+.pst .hgs-mini:disabled{opacity:.4;cursor:default;}
+@media (max-width:360px){.pst .hgs-mini{padding:0 10px;}}
+`;

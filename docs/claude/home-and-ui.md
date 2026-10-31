@@ -1787,3 +1787,39 @@ None of the three is in a run or circuit.
   made. Axiom is `wide` on desktop: six words to a row (seven on Sunday) and the rules in three
   columns; on a phone Sunday's 28 words go five to a row. All three Sundays fit 390x844,
   1280x900 and 1280x720 without scrolling.
+## Hedge, Venn and Suffice on the white stage (owner, 2026-10-31)
+
+The three Logic (rose) dailies play on `PlayStage` at every width, with the same
+`STAGE && phoneStage && !!g.t0 && (playing || !<board-view flag>)` mount the Numbers games use
+(Suffice's board-view flag is `loftRevealed`; its `revealed` is the per-item answer panel).
+Each client keeps its old board behind the stage untouched; the stage only draws and calls the
+board's own handlers, so scoring, saves, posting, hints, share text, archives and the finish
+are unchanged. None of the three is in a run or circuit.
+
+- **Hedge:** the lattice is one SVG on a `--pst-cell` field; numbers and dots ink, a settled
+  number at .35 opacity, the loop rose (`--pst-acc`) inside an 11px ink casing, a loose end a
+  rose ring, an x note muted. A line off the loop is SOLID orange with no casing (the old board
+  dashed it; no dashed lines on the stage), and the status note says "orange line" instead of
+  "dashed line". The note sits on the pale tint, or on grey with an orange edge when it reports
+  a problem. Mark / Line switch, Undo and Hint under it; the old Reveal link is the foot's Give up.
+  Sunday 10x10 passes `wide`. The diamond hit areas and hold / right-click to draw are unchanged.
+- **Venn:** the three circles are ink on a light grey wash (the A/B/C hue coding is dropped on
+  the stage, as in the mockup); each region is a white count button (pale rose while a word is
+  held, rose badge when its count is met, orange edge when over). The tray holds the unfiled
+  words; filed words sit in a second row as pale chips with their region and an x (the old
+  phone roster), so lift and unfile still work. The old one-tap Reveal became the foot's
+  two-tap Give up (a local `armGive`, 400ms minimum between taps).
+  **Venn fits the screen with no scroll** (owner, 2026-10-31), down to 360x740 on the longest
+  tray in the bank (No. 108, a Sunday of fifteen element names): every other row keeps its
+  natural height and the diagram takes the height left, MEASURED each render (`stageFit`, the
+  same reasoning as `lib/stage-fit.js`, floor 200px wide); the region buttons and pips scale
+  with it (`--vs`). A long tray (more than 12 items or over 80 letters) drops the chips a size,
+  short screens (max-height 780px) tighten the gaps, the filed row is one line that scrolls
+  sideways, and every row but the diagram is pinned (`flex-shrink:0`, the bar `flex:none`) so
+  nothing clips or steals the room.
+- **Suffice:** pips (rose right, orange wrong, ink current), the question on a pale rose card,
+  two statements on white with a grey rule, the three yes / no rows, Submit, then the reveal card
+  with the counterexample and Next item. "That makes your answer" stays as a quiet note.
+
+**Logic's wrong mark is orange** (#c2410c light, #fb923c dark), not PlayStage's red
+`--pst-bad`: each client reads the look with `useStageLook` and sets `--lg-bad` on its board.
