@@ -433,6 +433,17 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
 
   const placedN = CAST.filter((p) => g.place[p]).length;
   const rolesN = CAST.filter((p) => g.roles[p]).length;
+  // EVERYONE PLACED, NOW WHAT (player report, 2026-10-31: "Once people are placed, it was hard to know what to
+  // do next to get to the role portion"). When the board is full the next step says itself: a card above the
+  // tool bar, a pulsing Check board, and on a right board the notes scroll into view with a how-to line.
+  const readyToCheck = g.status === 'playing' && g.stage !== 'accuse' && placedN === CAST.length;
+  const prevStage = useRef(g.stage);
+  useEffect(() => {
+    if (prevStage.current !== 'accuse' && g.stage === 'accuse') {
+      try { document.querySelector('.sc-side')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+    }
+    prevStage.current = g.stage;
+  }, [g.stage]);
 
   const REC_KEY = `sot_sudoclue_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
@@ -684,7 +695,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const takenRC = new Set();
   for (const q of CAST) { const x = g.place[q]; if (!x) continue; for (let i = 0; i < N; i++) { takenRC.add(`${x[0]},${i}`); takenRC.add(`${i},${x[1]}`); } }
   const boardEl = (
-    <div className="sc-board" style={{ position: 'relative', width: '100%', margin: '12px auto 0' }}>
+    <div className="sc-board" style={{ position: 'relative', width: '100%', margin: '34px auto 0' }}>
     <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', boxShadow: '0 6px 22px rgba(0,0,0,0.28)' }}>
       <div dangerouslySetInnerHTML={{ __html: svg }} />
       {playing && (
@@ -701,8 +712,8 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
         </div>
       )}
     </div>
-      {/* The place, written into the board (owner, 2026-10-30), straddling the top edge so it never covers a square, in the game's own colour. */}
-      <div aria-hidden="true" style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', zIndex: 2, pointerEvents: 'none', whiteSpace: 'nowrap', background: STAGE ? 'var(--stg-acc)' : COLORS.accent, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 'clamp(10px, 2.6vw, 13px)', letterSpacing: '0.06em', textTransform: 'uppercase', borderRadius: 999, padding: '4px 12px', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+      {/* The place, written above the board (owner, 2026-10-30) in the game's own colour. It sits clear of the board's edge because, straddling it, it hid the top row's room names (player report, 2026-10-31: "Some of the room names were blocked by something at the top"). */}
+      <div aria-hidden="true" style={{ position: 'absolute', top: -29, left: '50%', transform: 'translateX(-50%)', zIndex: 2, pointerEvents: 'none', whiteSpace: 'nowrap', background: STAGE ? 'var(--stg-acc)' : COLORS.accent, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 'clamp(10px, 2.6vw, 13px)', letterSpacing: '0.06em', textTransform: 'uppercase', borderRadius: 999, padding: '4px 12px', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
         {LAYOUT.title} · {LAYOUT.place.split(',')[0]}
       </div>
     </div>
@@ -727,7 +738,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const roleClueList = clueList.filter((c) => isRoleClue(c));
   const said = (p) => placeClues.filter((c) => c.p === p);
   const iconBtn = (label, icon, onClick, opts = {}) => (
-    <button type="button" onClick={onClick} aria-pressed={opts.pressed} disabled={opts.disabled}
+    <button type="button" onClick={onClick} className={opts.pulse ? 'sc-pulse' : undefined} aria-pressed={opts.pressed} disabled={opts.disabled}
       style={{ flex: opts.grow ? 2 : 1, minWidth: 0, minHeight: 50, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, fontFamily: SANS, fontWeight: 800, fontSize: 11.5, letterSpacing: '0.02em', borderRadius: 10, cursor: opts.disabled ? 'default' : 'pointer', opacity: opts.disabled ? 0.45 : 1,
         border: `2px solid ${opts.primary ? (STAGE ? STAGE_C_INK : T.cta) : opts.pressed ? ACC : SURF_B}`, background: opts.primary ? (STAGE ? STAGE_C : T.cta) : opts.pressed ? 'var(--stg-surf2, #fff1f2)' : SURF, color: opts.primary ? (STAGE ? 'var(--stg-onramp, #08222e)' : T.white) : opts.pressed ? ACC_INK : INK }}>
       {icon}<span>{label}</span>
@@ -743,11 +754,12 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     <div className="sc-side" style={{ fontFamily: SANS }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, margin: '2px 2px 8px' }}>
         <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: ACC_INK }}>{accuse ? 'Stage 2 · Accuse' : 'Stage 1 · Place'}</span>
-        <span style={{ fontSize: 12.5, fontWeight: 650, color: FADED }}>{accuse ? 'Tap a card, then pick a role' : mode === 'mark' ? 'Tap squares to cross them out' : 'Tap a card, then a square'}</span>
+        <span style={{ fontSize: 12.5, fontWeight: readyToCheck ? 800 : 650, color: readyToCheck ? ACC_INK : FADED }}>{accuse ? 'Tap a card, then pick a role' : readyToCheck ? 'All placed: tap Check board' : mode === 'mark' ? 'Tap squares to cross them out' : 'Tap a card, then a square'}</span>
       </div>
       {accuse && (
         <div style={{ borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '9px 12px 4px', marginBottom: 8 }}>
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED, marginBottom: 2 }}>Detective&rsquo;s notes</div>
+          <div style={{ fontSize: 13, fontWeight: 650, color: FADED, lineHeight: 1.35, padding: '2px 0 7px' }}>The board is right. Now use these notes to give everyone a part: tap a person&rsquo;s card, then pick a role in the row above the buttons. When everyone has one, tap <b style={{ color: INK }}>Accuse</b>.</div>
           <div style={{ fontSize: 13.5, fontWeight: 750, color: INK, padding: '6px 0', borderTop: `1px solid ${SURF_B}` }}>The killer was the only person alone in a room with the victim.</div>
           {roleClueList.map((c) => (
             <button key={c.i} type="button" onClick={() => toggleStruck(c.i)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, padding: '7px 0', cursor: 'pointer', fontFamily: SANS }}>
@@ -788,9 +800,15 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           ))}
         </div>
       </div>
-      <div className="sc-barpad" style={{ display: 'none', height: accuse ? 128 : 78 }} />
+      <div className="sc-barpad" style={{ display: 'none', height: accuse ? 128 : readyToCheck ? 150 : 78 }} />
       {/* The tool bar: pinned to the bottom of the screen on a phone, so it is always to hand. */}
       <div className="sc-bar" style={{ marginTop: 9 }}>
+        {readyToCheck && (
+          <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 9, margin: '0 0 8px', padding: '9px 12px', borderRadius: 12, background: 'var(--stg-surf2, #fff1f2)', border: `2px solid ${ACC}`, fontSize: 13.5, fontWeight: 650, lineHeight: 1.35, color: INK }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style={{ flex: 'none' }}><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <span>{bad.size ? <>Everyone is placed, but two people share a row or a column. Fix that, then tap <b>Check board</b>.</> : <>Everyone is placed. Tap <b>Check board</b>. If the board is right, Stage 2 opens: you give everyone a role.</>}</span>
+          </div>
+        )}
         {accuse && (
           <div role="group" aria-label={`${sel}'s role`} className="sc-roles" style={{ display: 'flex', gap: 5, alignItems: 'center', padding: '0 0 8px' }}>
             <span style={{ flex: 'none', fontSize: 12, fontWeight: 800, color: FADED }}>{sel} was</span>
@@ -810,7 +828,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           {!accuse && iconBtn(mode === 'mark' ? 'Marking' : 'Mark', I.mark, () => setMode(mode === 'place' ? 'mark' : 'place'), { pressed: mode === 'mark' })}
           {iconBtn('Erase', I.erase, erase, { disabled: accuse ? !g.roles[sel] : !g.place[sel] })}
           {iconBtn('Undo', I.undo, undo)}
-          {iconBtn(accuse ? `Accuse${doneN === N ? '' : ` ${doneN}/${N}`}` : `Check board${doneN === N ? '' : ` ${doneN}/${N}`}`, null, check, { primary: true, grow: true })}
+          {iconBtn(accuse ? `Accuse${doneN === N ? '' : ` ${doneN}/${N}`}` : `Check board${doneN === N ? '' : ` ${doneN}/${N}`}`, null, check, { primary: true, grow: true, pulse: (readyToCheck && !bad.size) || (accuse && doneN === N) })}
         </div>
       </div>
     </div>
@@ -864,10 +882,13 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           @media(max-width:560px){.pk-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .pk-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
           .pk-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .sc-board{max-width:min(560px, calc(100svh - 150px));min-width:min(100%, 250px);}
+          .sc-board{max-width:min(560px, calc(100svh - 172px));min-width:min(100%, 250px);}
           @keyframes scSlide{from{transform:translateX(var(--from));}to{transform:none;}}
           @keyframes scFade{from{opacity:0;transform:translateX(14px);}to{opacity:1;transform:none;}}
           @keyframes scUp{from{transform:translateY(100%);}to{transform:none;}}
+          @keyframes scPulse{0%,100%{box-shadow:0 0 0 0 rgba(251,113,133,0.55);}50%{box-shadow:0 0 0 7px rgba(251,113,133,0);}}
+          .sc-pulse{animation:scPulse 1.4s ease-in-out infinite;}
+          @media (prefers-reduced-motion: reduce){.sc-pulse{animation:none;}}
           .sc-slide{animation:scSlide .32s cubic-bezier(.2,.8,.2,1);}
           .sc-fade{animation:scFade .3s ease-out;}
           .sc-sheet{animation:scUp .25s ease-out;}
