@@ -282,8 +282,8 @@ export const SKS_CSS = `
 .sks-cl .nt{position:absolute;inset:2px;display:grid;font-weight:800;color:var(--sks-note);line-height:1;font-size:calc(100cqw / var(--sks-w) * var(--sks-ng, .26));}
 .sks-cl.sel .nt{color:var(--pst-on-acc);}
 .sks-cl .nt i{font-style:normal;display:flex;align-items:center;justify-content:center;}
-.sks-gut{position:absolute;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--pst-ink);line-height:1;font-variant-numeric:tabular-nums;font-size:calc(100cqw / var(--sks-w) * .42);}
-.sks-chip{display:inline-flex;align-items:center;justify-content:center;min-width:calc(100cqw / var(--sks-w) * .7);min-height:calc(100cqw / var(--sks-w) * .7);padding:0 3px;border-radius:7px;box-sizing:border-box;}
+.sks-gut{position:absolute;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--pst-ink);line-height:1;font-variant-numeric:tabular-nums;font-size:min(calc(100cqw / var(--sks-w) * .42), 15px);}
+.sks-chip{display:inline-flex;align-items:center;justify-content:center;min-width:min(calc(100cqw / var(--sks-w) * .7), 26px);min-height:min(calc(100cqw / var(--sks-w) * .7), 26px);padding:0 3px;border-radius:7px;box-sizing:border-box;}
 .sks-chip.on{background:var(--pst-pale);box-shadow:inset 0 0 0 2px var(--pst-deep);color:var(--pst-deep);}
 .sks-chip.done{color:var(--sks-off-ink);}
 .sks-chip.ok{background:var(--pst-acc);box-shadow:inset 0 0 0 2px var(--pst-ink);color:var(--pst-on-acc);border-radius:999px;}
