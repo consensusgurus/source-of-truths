@@ -64,6 +64,9 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow, SK_ICON } from '../SudokuStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 // Giant's legacy slate hue is SLATE INDIGO. The page itself is painted by the
 // Sudoku category ramp (lib/category-ramp.js), so this only tells Giant apart
@@ -112,6 +115,29 @@ const QUAD_CELLS = [0, 1, 2, 3].map((q) => {
 const QUAD_NAME = ['Top left', 'Top right', 'Bottom left', 'Bottom right'];
 const ZOOM_KEY = 'sot_giant_zoom';
 const ALL_CELLS = Array.from({ length: CELLS }, (_, i) => i);
+// The stage's Whole board / Zoom in switch (Giant.dc.html) and its quarter map.
+const GIS_CSS = `
+.gis-row{display:flex;justify-content:center;align-items:center;gap:10px;}
+.gis-seg{display:inline-flex;border:2px solid var(--pst-ink);border-radius:999px;padding:3px;gap:3px;}
+.pst .gis-seg button{height:36px;padding:0 14px;border-radius:999px;border:0;background:transparent;font-size:13px;font-weight:800;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.pst .gis-seg button[aria-pressed="true"]{background:var(--pst-acc);color:var(--pst-on-acc);}
+.gis-seg svg{width:15px;height:15px;}
+.gis-map{position:relative;width:46px;height:46px;flex:none;border:2px solid var(--pst-ink);border-radius:6px;overflow:hidden;background:var(--sks-base);}
+.gis-grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(16,1fr);grid-template-rows:repeat(16,1fr);}
+.gis-grid i{display:block;}
+.gis-grid i.g{background:var(--sks-thin);}
+.gis-grid i.e{background:var(--pst-pale);}
+.gis-grid i.s{background:var(--pst-deep);}
+.pst .gis-q{position:absolute;width:50%;height:50%;padding:0;margin:0;border:0;background:transparent;}
+/* Sixteen keys in two rows: the symbol a size down so a two-digit count fits its corner. */
+.pst[aria-label="Giant"] .sks-pad.wide .sks-dk b{font-size:clamp(16px, 5.2vw, 22px);margin-right:7px;}
+.pst[aria-label="Giant"] .sks-pad.wide .sks-dk small{font-size:10px;right:4px;}
+.gis-q.q0{left:0;top:0;}.gis-q.q1{left:50%;top:0;}.gis-q.q2{left:0;top:50%;}.gis-q.q3{left:50%;top:50%;}
+.pst .gis-q.on{box-shadow:inset 0 0 0 2px var(--pst-deep);background:color-mix(in srgb, var(--pst-acc) 30%, transparent);}
+.gis-map::before,.gis-map::after{content:'';position:absolute;background:var(--pst-ink);pointer-events:none;z-index:1;}
+.gis-map::before{left:calc(50% - .75px);top:0;bottom:0;width:1.5px;}
+.gis-map::after{top:calc(50% - .75px);left:0;right:0;height:1.5px;}
+`;
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -315,6 +341,8 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
   // Inside the Enter the Dojo run (app/RunEmbed.jsx) the page furniture drops
   // away and the board sits on the run's dark ground; the game is unchanged.
   const EMBED = useRunEmbed();
+  const phoneStage = usePhoneStage();
+  const [skLook] = useStageLook();
   useRunHelp(EMBED, () => setShowHelp(true));
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
@@ -843,11 +871,91 @@ export default function GiantClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+
+  // THE SUDOKU STAGE (owner, 2026-10-31, Giant.dc.html): the shared periwinkle
+  // board, pad, tools and one status line on the white PlayStage, at every
+  // width (app/SudokuStage.jsx). Presentation only: every control calls this
+  // client's own handlers (cellClick, padTap, undo, eraseCell, clearBoard,
+  // useHint, revealEnd), so scoring, saves, auto-move, posting and the finish
+  // are unchanged and the old board stays behind the stage. Not inside Enter
+  // the Dojo (EMBED), which keeps its own board and look.
+  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const skDark = isDarkLook(skLook);
+  const skMono = skLook === 'plain' || skLook === 'dark';
+  const skLine = toast || (playing
+    ? `${armed ? `Placing ${SYM(armed)} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
+  // GIANT'S PHONE VIEW (owner ruling): a Whole board / Zoom in switch over
+  // the board under 560px, the same remembered preference and quarter logic
+  // as the old board (zoomPref, quad, pickQuad). Zoomed, the stage draws the
+  // current 8x8 quarter as its own board at full size (notes still run 1 to
+  // G) with a small map beside the switch to move between quarters; a
+  // finished board always shows whole.
+  const skQ = quarterView ? QUAD_CELLS[quad] : null;
+  const skR0 = quad >= 2 ? Q : 0, skC0 = quad % 2 ? Q : 0;
+  const skBoard = skQ
+    ? {
+        n: Q, noteN: N, noteCols: 4, glyph: SYM,
+        region: (r, c) => boxOf(skR0 + r, skC0 + c),
+        given: skQ.map((i) => givenFlat[i]), cells: skQ.map((i) => viewCells[i]), notes: skQ.map((i) => notes[i]),
+        sel: playing ? skQ.indexOf(sel) : -1, hl: playing ? hlVal : 0,
+        onCell: (j) => { if (playing) cellClick(skQ[j]); },
+        cellProps: (j) => ({ onPointerDown: () => startLong(skQ[j]), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        cellLabel: (j) => { const i = skQ[j], v = givenFlat[i] || viewCells[i]; return `Row ${Math.floor(i / N) + 1}, column ${(i % N) + 1}, ${givenFlat[i] ? `printed ${SYM(v)}` : v ? SYM(v) : 'empty'}${i === sel ? ', selected' : ''}`; },
+      }
+    : {
+        n: N, noteCols: 4, glyph: SYM,
+        given: givenFlat, cells: viewCells, notes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+      };
+  const skAbove = narrow && playing ? (
+    <div className="gis-row">
+      <div className="gis-seg" role="group" aria-label="Board view">
+        {[['Whole board', false, SK_ICON.whole], ['Zoom in', true, SK_ICON.zoom]].map(([lab, z, ic]) => (
+          <button key={lab} type="button" aria-pressed={zoom === z} onClick={() => setZoomPref(z)}>{ic}{lab}</button>
+        ))}
+      </div>
+      {zoom ? (
+        <div className="gis-map" aria-label={`${QUAD_NAME[quad]} quarter`}>
+          <span className="gis-grid" aria-hidden="true">
+            {ALL_CELLS.map((i) => <i key={i} className={i === sel ? 's' : givenFlat[i] ? 'g' : viewCells[i] ? 'e' : ''} />)}
+          </span>
+          {[0, 1, 2, 3].map((q) => (
+            <button key={q} type="button" className={'gis-q q' + q + (quad === q ? ' on' : '')} aria-label={`Show the ${QUAD_NAME[q].toLowerCase()} quarter`} aria-pressed={quad === q} onClick={() => pickQuad(q)} />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  ) : null;
+  const stageEl = skStage ? (
+    <SudokuStage gameKey="giant" label="Giant"
+      eyebrow={sudokuEyebrow(PUZZLE, '1 to 9, then A to G')}
+      playing={playing}
+      board={skBoard}
+      pad={{ note: noteMode, onDigit: padTap, cols: 8, glyph: SYM, keys: Array.from({ length: N }, (_, k) => ({ d: k + 1, left: Math.max(0, N - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={skLine}
+      above={skAbove}
+      below={<style dangerouslySetInnerHTML={{ __html: GIS_CSS }} />}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="giant" name="Giant" collapsed={started} loft={LOFT} />

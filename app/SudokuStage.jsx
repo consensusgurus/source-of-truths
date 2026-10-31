@@ -72,9 +72,10 @@ function boardVars(dark) {
  *   under / over SVG children in cell units, or (geom) => children
  *   thin         false to skip the thin separators (Sumo draws its own)
  *   cellLabel(i) optional aria-label
+ *   noteN        optional: candidates per note grid (default n; Giant's zoomed quarter passes 16)
  */
 export function SudokuBoard({
-  n = 9, region = null, given = [], cells = [], notes = [], noteCols = null,
+  n = 9, region = null, given = [], cells = [], notes = [], noteCols = null, noteN = null,
   sel = -1, hl = 0, peer = null, fill = null, cellClass = null, cellProps = null, onCell = null,
   glyph = null, gutter = null, outside = null, under = null, over = null, thin = true,
   cellLabel = null, disabled = false, digitScale = 0.56, noteScale = 0.26, className = '', style = null, boardRef = null,
@@ -104,8 +105,11 @@ export function SudokuBoard({
     if (r < n - 1) ((reg(r, c) !== reg(r + 1, c)) ? wallD : thinD).push(`M${c} ${r + 1}H${c + 1}`);
   }
   const pct = (v, of) => `${(v / of) * 100}%`;
-  const nc = noteCols || Math.ceil(Math.sqrt(n));
-  const nr = Math.ceil(n / nc);
+  // noteN: how many candidates a note grid holds (default n). Giant's zoomed
+  // quarter is an 8 by 8 board whose notes still run 1 to G.
+  const nd = noteN || n;
+  const nc = noteCols || Math.ceil(Math.sqrt(nd));
+  const nr = Math.ceil(nd / nc);
   const g = glyph || ((d) => d);
   const kids = (x) => (typeof x === 'function' ? x(geom) : x);
   return (
@@ -134,7 +138,7 @@ export function SudokuBoard({
               onClick={onCell ? () => onCell(i) : undefined} {...extra}>
               {v ? <span className="d">{g(v)}</span> : nm ? (
                 <span className="nt" style={{ gridTemplateColumns: `repeat(${nc}, 1fr)`, gridTemplateRows: `repeat(${nr}, 1fr)` }}>
-                  {Array.from({ length: n }).map((__, k) => <i key={k}>{nm & (1 << (k + 1)) ? g(k + 1) : ''}</i>)}
+                  {Array.from({ length: nd }).map((__, k) => <i key={k}>{nm & (1 << (k + 1)) ? g(k + 1) : ''}</i>)}
                 </span>
               ) : null}
             </button>

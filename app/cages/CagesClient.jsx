@@ -65,6 +65,9 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 const COLORS = {
   cream: T.surface,
@@ -92,6 +95,9 @@ const STATS_KEY = 'sot_cages_stats';
 // contrast on any of them. Deliberately a spread of hues rather than seven steps
 // of violet: neighbouring cages have to be told apart at a glance, and seven
 // shades of the same colour cannot do that.
+// The stage board's cage pastels (Cages.dc.html, owner: faint pastels),
+// worn by the same greedy colouring (CAGE_TINT) the old board uses.
+const SK_PASTEL = ['#fde4e7', '#e1f1fc', '#fde9d6', '#e0f6e7', '#ece6fb', '#fcf1d2', '#d7f3ee', '#f9e3f0', '#eef3d6'];
 const CAGE_TINTS = ['#ece5fa', '#dfeafc', '#d9f0ee', '#e4f5e2', '#fbeed3', '#fbe3ec', '#e6e9f0'];
 // the cage outline, a neutral dark rather than the accent so it stays visible
 // over every tint including the violet one
@@ -343,6 +349,8 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
   // Inside the Enter the Dojo run (app/RunEmbed.jsx) the page furniture drops
   // away and the board sits on the run's dark ground; the game is unchanged.
   const EMBED = useRunEmbed();
+  const phoneStage = usePhoneStage();
+  const [skLook] = useStageLook();
   // A run that deals the grids back to back starts each one on its own (owner, 2026-10-24: one click per puzzle, no start page).
   useEffect(() => { if (EMBED && EMBED.autostart && preStart) startGame(); }, [EMBED, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   useRunHelp(EMBED, () => setShowHelp(true));
@@ -909,11 +917,95 @@ export default function CagesClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+
+  // THE SUDOKU STAGE (owner, 2026-10-31, Cages.dc.html): the shared periwinkle
+  // board, pad, tools and one status line on the white PlayStage, at every
+  // width (app/SudokuStage.jsx). Presentation only: every control calls this
+  // client's own handlers (cellClick, padTap, undo, eraseCell, clearBoard,
+  // useHint, revealEnd), so scoring, saves, auto-move, posting and the finish
+  // are unchanged and the old board stays behind the stage. Not inside Enter
+  // the Dojo (EMBED), which keeps its own board and look.
+  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const skDark = isDarkLook(skLook);
+  const skMono = skLook === 'plain' || skLook === 'dark';
+  const skLine = toast || (playing
+    ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
+  // Faint pastels (owner ruling): each cage wears one, the selection's
+  // peers lay a third of periwinkle over it, and the dark look sinks the
+  // pastel onto the near-black board. The black-and-white looks drop it.
+  const skPastel = (i) => { const h = SK_PASTEL[CAGE_TINT[CAGE[i]] % SK_PASTEL.length]; return skDark ? `color-mix(in srgb, ${h} 22%, #0f1420)` : h; };
+  const skFill = (i) => {
+    if (skMono) return null;
+    const base = skPastel(i);
+    if (playing && sel >= 0 && i !== sel && (Math.floor(i / 9) === selR || i % 9 === selC || boxOf(Math.floor(i / 9), i % 9) === selB || CAGE[i] === selK)) return `color-mix(in srgb, var(--pst-acc) ${skDark ? 40 : 34}%, ${base})`;
+    return base;
+  };
+  // Cage walls: solid grey on every square edge between two cages (never
+  // dashed, owner), left off where a box wall already runs; and the cage
+  // totals in small white chips in each cage's first square, greyed once
+  // the cage is full (the old board's retirement, counted right or wrong).
+  const SK_CAGE_D = useMemo(() => {
+    const d = [];
+    for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+      const k = CAGE[r * 9 + c];
+      if (c < 8 && CAGE[r * 9 + c + 1] !== k && (c + 1) % 3) d.push(`M${c + 1} ${r}V${r + 1}`);
+      if (r < 8 && CAGE[(r + 1) * 9 + c] !== k && (r + 1) % 3) d.push(`M${c} ${r + 1}H${c + 1}`);
+    }
+    return d.join('');
+  }, [CAGE]);
+  const skCageOver = (
+    <g>
+      <path d={SK_CAGE_D} fill="none" stroke={skDark ? '#8592a4' : '#5b6678'} strokeWidth="1.6" strokeLinecap="square" vectorEffect="non-scaling-stroke" />
+      {SUM_AT.map((v, i) => {
+        if (!v) return null;
+        const r = Math.floor(i / 9), c = i % 9, w = String(v).length > 1 ? 0.482 : 0.328;
+        const full = cageFilled[CAGE[i]] >= CAGE_CELLS[CAGE[i]].length;
+        return (
+          <g key={i}>
+            <rect x={c + 0.062} y={r + 0.062} width={w} height={0.323} rx={0.075} fill="var(--sks-base)" />
+            <text x={c + 0.062 + w / 2} y={r + 0.318} textAnchor="middle" fontSize="0.261" fontWeight="800" fontFamily="Manrope, system-ui, sans-serif" fill={full ? 'var(--sks-off-ink)' : 'var(--pst-ink)'}>{v}</text>
+          </g>
+        );
+      })}
+    </g>
+  );
+  const stageEl = skStage ? (
+    <SudokuStage gameKey="cages" label="Cages"
+      eyebrow={sudokuEyebrow(PUZZLE, `Killer \u00b7 ${SUMS.length} cages`)}
+      playing={playing}
+      board={{
+        given: givenFlat, cells: cells, notes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        peer: (i) => { const r = Math.floor(i / 9), c = i % 9; return r === selR || c === selC || boxOf(r, c) === selB || CAGE[i] === selK; },
+        fill: skFill,
+        over: skCageOver,
+        cellClass: (i) => (SUM_AT[i] ? 'cg' : ''),
+        cellLabel: (i) => `Row ${Math.floor(i / 9) + 1}, column ${(i % 9) + 1}, ${cells[i] || 'empty'}${SUM_AT[i] ? `, cage total ${SUM_AT[i]}` : ''}${i === sel ? ', selected' : ''}`,
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: 9 }, (_, k) => ({ d: k + 1, left: Math.max(0, 9 - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={skLine}
+      above={<style dangerouslySetInnerHTML={{ __html: '.sks-cl.cg{padding-top:calc(100cqw / var(--sks-w) * .22);}.sks-cl.cg .nt{top:calc(100cqw / var(--sks-w) * .3);}' }} />}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

@@ -60,6 +60,9 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 const COLORS = {
   cream: T.surface,
@@ -213,6 +216,8 @@ function freshState() {
 // TOGETHER; half a conversion is worse than none.
 const REGION_HUE = ['#ec4899', '#3b82f6', '#10b981', '#eab308', '#a855f7', '#06b6d4', '#f4643c', '#64748b', '#84cc16'];
 // The Loft page (?stage=0) keeps its own pale literals, byte for byte.
+// The stage board's region pastels (Quilt.dc.html, owner: faint pastels).
+const SK_PASTEL = ['#fde4e7', '#e1f1fc', '#fde9d6', '#e0f6e7', '#ece6fb', '#fcf1d2', '#d7f3ee', '#f9e3f0', '#eef3d6'];
 const REGION_TINT = ['#fdf2f8', '#eff6ff', '#f0fdf4', '#fefce8', '#faf5ff', '#ecfeff', '#fff7ed', '#f1f5f9', '#f7fee7'];
 
 // Light haptics on supported devices (no-op on desktop / unsupported browsers).
@@ -303,6 +308,8 @@ export default function QuiltClient({ puzzles = [], forceNum = null }) {
   // Inside the Enter the Dojo run (app/RunEmbed.jsx) the page furniture drops
   // away and the board sits on the run's dark ground; the game is unchanged.
   const EMBED = useRunEmbed();
+  const phoneStage = usePhoneStage();
+  const [skLook] = useStageLook();
   // A run that deals the grids back to back starts each one on its own (owner, 2026-10-24: one click per puzzle, no start page).
   useEffect(() => { if (EMBED && EMBED.autostart && preStart) startGame(); }, [EMBED, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   useRunHelp(EMBED, () => setShowHelp(true));
@@ -863,11 +870,62 @@ export default function QuiltClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+
+  // THE SUDOKU STAGE (owner, 2026-10-31, Quilt.dc.html): the shared periwinkle
+  // board, pad, tools and one status line on the white PlayStage, at every
+  // width (app/SudokuStage.jsx). Presentation only: every control calls this
+  // client's own handlers (cellClick, padTap, undo, eraseCell, clearBoard,
+  // useHint, revealEnd), so scoring, saves, auto-move, posting and the finish
+  // are unchanged and the old board stays behind the stage. Not inside Enter
+  // the Dojo (EMBED), which keeps its own board and look.
+  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const skDark = isDarkLook(skLook);
+  const skMono = skLook === 'plain' || skLook === 'dark';
+  const skLine = toast || (playing
+    ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
+  // Faint pastels (owner ruling): each region wears one, the selection's
+  // peers lay a third of periwinkle over it, and the dark look sinks the
+  // pastel onto the near-black board. The black-and-white looks drop it.
+  const skPastel = (i) => { const h = SK_PASTEL[REG[i] % SK_PASTEL.length]; return skDark ? `color-mix(in srgb, ${h} 22%, #0f1420)` : h; };
+  const skFill = (i) => {
+    if (skMono) return null;
+    const base = skPastel(i);
+    if (playing && sel >= 0 && i !== sel && (Math.floor(i / 9) === selR || i % 9 === selC || REG[i] === REG[sel])) return `color-mix(in srgb, var(--pst-acc) ${skDark ? 40 : 34}%, ${base})`;
+    return base;
+  };
+  const stageEl = skStage ? (
+    <SudokuStage gameKey="quilt" label="Quilt"
+      eyebrow={sudokuEyebrow(PUZZLE, 'Nine crooked regions')}
+      playing={playing}
+      board={{
+        given: givenFlat, cells: cells, notes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        region: (r, c) => REG[r * 9 + c],
+        fill: skFill,
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: 9 }, (_, k) => ({ d: k + 1, left: Math.max(0, 9 - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={skLine}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
