@@ -61,6 +61,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow, boxRegion } from '../SudokuStage';
 
 // Arrow identity is FUCHSIA, a hue no other sudoku on the slate wears. Every
 // colour the board uses derives from COLORS.accent below rather than a
@@ -305,6 +307,7 @@ export default function ArrowClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('arrow');
   const STAGE = isStage('arrow', searchParams);
+  const phoneStage = usePhoneStage();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('arrow');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('arrow');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -825,11 +828,73 @@ export default function ArrowClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // THE SUDOKU STAGE (owner, 2026-10-31, Arrow.dc.html): the shared periwinkle
+  // board, pad, tools and one status line (app/SudokuStage.jsx) on the white
+  // PlayStage, at every width. Presentation only: every control calls this
+  // client's own handlers, so scoring, saves, auto-move, posting and the finish
+  // are unchanged and the old board stays behind the stage. Not inside Enter
+  // the Dojo (EMBED), which keeps its own board and look.
+  const SK_N = N;
+  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const skLine = toast || (playing
+    ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
+  const stageEl = skStage ? (
+    <SudokuStage gameKey="arrow" label="Arrow"
+      eyebrow={sudokuEyebrow(PUZZLE, 'arrow sums')}
+      playing={playing}
+      board={{
+        n: SK_N, region: boxRegion(BOX_W, BOX_H, SK_N),
+        given: givenFlat, cells, notes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        // Arrows as mocked: a 2px grey ring on the circle square, a shaft
+        // from the ring through the squares, an open chevron head; every
+        // digit carries a halo so it reads over a line.
+        cellClass: () => 'halo',
+        under: PUZZLE.arrows.map((a, k) => {
+          const R = 0.4, H = 0.31;
+          const [br, bc] = a[0];
+          const pts = a.slice(1).map(([r, c]) => [c + 0.5, r + 0.5]);
+          const [fx, fy] = pts[0];
+          const dx = fx - (bc + 0.5), dy = fy - (br + 0.5), L = Math.hypot(dx, dy);
+          const sx = bc + 0.5 + (dx / L) * R, sy = br + 0.5 + (dy / L) * R;
+          const [px, py] = pts.length > 1 ? pts[pts.length - 2] : [bc + 0.5, br + 0.5];
+          const [lx, ly] = pts[pts.length - 1];
+          const ang = Math.atan2(ly - py, lx - px);
+          const ex = lx + 0.36 * Math.cos(ang), ey = ly + 0.36 * Math.sin(ang);
+          const h1 = [ex + H * Math.cos(ang + Math.PI - 0.67), ey + H * Math.sin(ang + Math.PI - 0.67)];
+          const h2 = [ex + H * Math.cos(ang + Math.PI + 0.67), ey + H * Math.sin(ang + Math.PI + 0.67)];
+          const d = `M${sx} ${sy}` + pts.map(([x, y]) => `L${x} ${y}`).join('') + `L${ex} ${ey}M${h1[0]} ${h1[1]}L${ex} ${ey}L${h2[0]} ${h2[1]}`;
+          return (
+            <g key={`ar${k}`} fill="none" stroke="var(--sks-mark2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx={bc + 0.5} cy={br + 0.5} r={R} vectorEffect="non-scaling-stroke" />
+              <path d={d} vectorEffect="non-scaling-stroke" />
+            </g>
+          );
+        }),
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: SK_N }, (_, k) => ({ d: k + 1, left: Math.max(0, SK_N - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={skLine}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="arrow" name="Arrow" collapsed={started} loft={LOFT} />
