@@ -1705,3 +1705,30 @@ the screen (`clamp(15px, 4.9vw, 19px)`) and then ends in an ellipsis. Share is a
 34px round button on phones (aria-label "Share"). Desktop is unchanged. Every stage page that
 draws this bar inherits it: PlayStage, WordStage, BracketStage, GauntletStage and the run
 screens, StageChrome's simple header, and Price Check's week.
+
+## Stands, Snug and Plot on the white stage (owner, 2026-10-31)
+
+Stands, Snug and Plot (Logic, rose) play on `PlayStage` at every width with the Numbers games' mount
+(`STAGE && phoneStage && !!g.t0 && (playing || !revealed)`), drawn from the owner-approved mockups.
+Presentation only: every control calls the board's own handler, so scoring, saves, posting, hints,
+share text, archives, Sunday Editions and the finish are unchanged, and each old board stays behind
+the stage untouched. Wrong marks are Logic ORANGE (`--lg-bad`: #c2410c light, #fb923c dark, on
+`--lg-bad-bg` #ffedd5 / #3a2312), set per look from `useStageLook`, never red.
+
+- **Stands**: one surviving fact at a time on a pale card, **Back / Skip** walk the facts (they wrap),
+  and the pips jump; a pip fills when its beat / drew result is already on the grid (read off the
+  player's own cells, never the answer), and a rejected sheet turns the card to the first fact it
+  breaks. Grid cells: W the full rose, D the pale rose, L an ink outline, blank white with a light
+  rule; tap cycles, hold or right-click steps back. Tools: Hint (the old Nudge, same handler and
+  cost), Clear, File the table. The one-tap "Reveal (ends the day)" became the foot's two-tap Give
+  up (a local `armGive`). A rejected sheet's verdict is the foot line, in orange. **Inside the Judged
+  run (`useRunEmbed()`) the stage does not mount**: the run keeps the old board its `.jd-host` rules
+  dress, so JudgedClient needs nothing. (Stands only sits in the pre-2026-10-11 Judged roster.)
+- **Snug**: the board (open squares light grey, holes absent, a placed piece a step of the rose mixed
+  toward white with ink edges, `SGX_STEPS`), the hand row with Rotate / Flip, and only the pieces still
+  on the pad. Touch aims with a first tap and drops on the second, a mouse previews on hover, exactly
+  as before. Fit It (`/kids/fitit`) has its own client and is unchanged.
+- **Plot**: a call line naming the drag ("Dragging 3 by 2 covers 6 squares around the 6"), the board
+  (grey squares on white; a claimed square goes clear over its plot, the full rose with an ink edge;
+  a wrong plot orange and striped), Undo and Hint. While the stage is up its grid holds `gridRef`, so
+  the board's own `cellFromPoint` measures the stage board (the old grid drops the ref).

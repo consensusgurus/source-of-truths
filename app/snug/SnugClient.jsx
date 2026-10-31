@@ -67,6 +67,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 // Snug's legacy identity is a slate blue, the pre-stage hue only the old
 // tables read. Every colour the board paints on the stage is a token, and on
@@ -291,6 +293,8 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
   const flashTimer = useRef(null);
 
   const [showChrome, setShowChrome] = useState(false);
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
@@ -770,6 +774,111 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), ...PIECE_VARS, minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Snug plays on the shared white stage at
+          every width: the board, the piece in hand with Rotate and Flip, the
+          pieces still on the pad, the tools, one line, and the foot. Open
+          squares are light grey, a placed piece wears a step of the category
+          colour (piece 1 the full rose, the rest paler steps) with ink edges,
+          and the piece in hand is the full rose on the pad. Every tap goes
+          through the board's own handlers (cellClick, padTap, turn, undo,
+          clearBoard, useHint, revealEnd). */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const dark = isDarkLook(stageLook);
+        const left = PIECES.map((_, i) => i).filter((i) => !g.placed[i]);
+        const warn = !!(ghost && ghost.bad != null);
+        const line = toast
+          || (armed >= 0 ? statusText : `${covered} of ${REGION.size} squares · ${placedCount} of ${NP} pieces in`);
+        const mini = (i) => {
+          const o = g.ori[i];
+          const w = Math.max(...o.map((x) => x[1])) + 1, h = Math.max(...o.map((x) => x[0])) + 1;
+          const on = new Set(o.map(([r, c]) => r * 8 + c));
+          const m = Math.max(w, h);
+          const u = m <= 3 ? 13 : m === 4 ? 10 : m === 5 ? 8 : 6;
+          return (
+            <span className="sgx-pc" style={{ gridTemplateColumns: `repeat(${w}, ${u}px)`, gridAutoRows: `${u}px` }} aria-hidden="true">
+              {Array.from({ length: w * h }).map((_, q) => <i key={q} className={on.has(Math.floor(q / w) * 8 + (q % w)) ? 'f' : undefined} />)}
+            </span>
+          );
+        };
+        return (
+          <PlayStage bg={gameColor('snug')} label="Snug"
+            eyebrow={`${PUZZLE.sunday ? `Sunday Edition No. ${PUZZLE.num}` : `Snug No. ${PUZZLE.num}`} · fill every square`}
+            top={(
+              <div className="sgx" style={{ '--sgx-w': W, '--lg-bad': dark ? '#fb923c' : '#c2410c', '--lg-bad-bg': dark ? '#3a2312' : '#ffedd5' }}>
+                <style dangerouslySetInnerHTML={{ __html: SGX_CSS }} />
+                <div className="sgx-board" role="group" aria-label={`Snug board, ${W} by ${H}`}
+                  onPointerDown={(e) => { ptrRef.current = e.pointerType || 'mouse'; }}
+                  onPointerLeave={(e) => { if (e.pointerType === 'mouse') setHover(null); }}>
+                  {Array.from({ length: W * H }).map((_, idx) => {
+                    const r = Math.floor(idx / W), c = idx % W;
+                    const k = K(r, c);
+                    if (!REGION.has(k)) return <span key={idx} className="sgx-cell hole" aria-label={`Row ${r + 1}, column ${c + 1}, not part of the board`} />;
+                    const own = owner.get(k);
+                    if (own != null) {
+                      return (
+                        <span key={idx} className="sgx-cell pc" style={{ background: SGX_SHADE(own) }}
+                          role="button" tabIndex={playing ? 0 : -1}
+                          aria-label={`Row ${r + 1}, column ${c + 1}, piece ${own + 1}${playing ? ', tap to lift it' : ''}`}
+                          onClick={() => cellClick(r, c)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cellClick(r, c); } }}>
+                          {firstOf.get(own) === k ? <b>{own + 1}</b> : null}
+                        </span>
+                      );
+                    }
+                    const gh = !!(ghost && ghost.cells && ghost.cells.has(k));
+                    const bad = (ghost && ghost.bad === k) || flash === k;
+                    return (
+                      <span key={idx} className={'sgx-cell open' + (gh ? ' ghost' : '') + (bad ? ' bad' : '')}
+                        role="button" tabIndex={playing ? 0 : -1}
+                        aria-label={`Row ${r + 1}, column ${c + 1}, ${gh ? `piece ${armed + 1} would land here` : 'empty'}`}
+                        onClick={() => cellClick(r, c)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ptrRef.current = 'mouse'; cellClick(r, c); } }}
+                        onPointerEnter={(e) => { if (armed >= 0 && e.pointerType === 'mouse') setHover([r, c]); }} />
+                    );
+                  })}
+                </div>
+                {playing && (
+                  <>
+                    <div className="sgx-hand">
+                      <span className="sgx-lab">{armed >= 0 ? <>In your hand &middot; piece {armed + 1}</> : 'Pick a piece'}</span>
+                      <div className="sgx-turns">
+                        <button type="button" className="pst-tb" onClick={() => turn('rot')} disabled={armed < 0} aria-label="Rotate the piece (R)" title="Rotate the piece (R)">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7" /><path d="M20 4v5h-5" /></svg>Rotate
+                        </button>
+                        <button type="button" className="pst-tb" onClick={() => turn('flip')} disabled={armed < 0} aria-label="Flip the piece (F)" title="Flip the piece (F)">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v18" /><path d="M8 7L3 12l5 5V7z" /><path d="M16 7l5 5-5 5V7z" /></svg>Flip
+                        </button>
+                      </div>
+                    </div>
+                    <div className={'sgx-tray' + (left.length > 4 ? ' two' : '')} role="toolbar" aria-label="Pieces still on the pad" style={{ gridTemplateColumns: `repeat(${Math.max(1, Math.min(4, left.length))}, minmax(0, 1fr))` }}>
+                      {left.map((i) => (
+                        <button key={i} type="button" className={armed === i ? 'on' : undefined} onClick={() => padTap(i)} aria-pressed={armed === i}
+                          aria-label={`Piece ${i + 1}, ${PIECES[i].length} squares${armed === i ? ', in your hand' : ''}`} title={i < 9 ? `Piece ${i + 1} (key ${i + 1})` : `Piece ${i + 1}`}>
+                          {mini(i)}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+            bottom={playing ? (
+              <div className="pst-tools sgx-tools">
+                <button type="button" className="pst-tb" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5" /><path d="M4 9h10a6 6 0 0 1 0 12h-3" /></svg>Undo
+                </button>
+                <button type="button" className={'pst-tb' + (hasEntries && armClear ? ' on' : '')} onClick={clearBoard} disabled={!hasEntries}
+                  title="Take every piece off the board on the same clock">{armClear ? 'Tap again' : 'Clear'}</button>
+                {hintOk && !g.hintUsed && (
+                  <button type="button" className="pst-tb" onClick={useHint} title="Drop one piece where it belongs (one hint, first play only)">{ICON.bulb}Hint</button>
+                )}
+              </div>
+            ) : null}
+            foot={warn && !toast ? <span className="sgx-bad" style={{ '--lg-bad': dark ? '#fb923c' : '#c2410c' }}>{line}</span> : line}
+            giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="snug" name="Snug" collapsed={started} loft={LOFT} />
@@ -1232,3 +1341,37 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-31 mockup). A placed piece wears a step of
+// the category colour mixed toward white (it stays a pastel in both looks, so
+// the dark ink reads on it), piece 1 the full colour; open squares are light
+// grey with a light rule, holes are simply not there.
+const SGX_STEPS = [100, 42, 22, 72, 32, 58, 14, 86];
+const SGX_SHADE = (i) => `color-mix(in srgb, var(--pst-acc) ${SGX_STEPS[i % SGX_STEPS.length]}%, #ffffff)`;
+const SGX_CSS = `
+.sgx{display:flex;flex-direction:column;gap:14px;width:100%;max-width:480px;align-self:center;}
+.sgx-board{--sgx-c:min(52px, calc((100vw - 28px - (var(--sgx-w) - 1) * 4px) / var(--sgx-w)));align-self:center;display:grid;grid-template-columns:repeat(var(--sgx-w), var(--sgx-c));grid-auto-rows:var(--sgx-c);gap:4px;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+@media (min-width:900px){.sgx-board{--sgx-c:52px;}}
+.sgx-cell{position:relative;border-radius:9px;border:2px solid var(--pst-cell-line);background:var(--pst-cell);box-sizing:border-box;cursor:pointer;outline:none;}
+.sgx-cell:focus-visible{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.sgx-cell.hole{border:0;background:transparent;cursor:default;}
+.sgx-cell.pc{border-color:var(--pst-ink);}
+.sgx-cell.pc b{position:absolute;top:3px;left:6px;font-size:12px;font-weight:800;line-height:1;color:var(--pst-on-acc);}
+.sgx-cell.open.ghost{background:var(--pst-pale);border:2.5px solid var(--pst-ink);}
+.sgx-cell.open.bad{background:var(--lg-bad-bg);border-color:var(--lg-bad);}
+.sgx-hand{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.sgx-lab{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);min-width:0;}
+.sgx-turns{display:flex;gap:8px;flex:none;}
+.pst .sgx-turns .pst-tb,.pst .sgx-tools .pst-tb{font-weight:800;}
+.sgx-tray{display:grid;gap:8px;}
+.pst .sgx-tray button{height:72px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-bg);display:flex;align-items:center;justify-content:center;padding:4px;min-width:0;}
+.pst .sgx-tray.two button{height:62px;}
+.pst .sgx-tray button.on{background:var(--pst-acc);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.sgx-pc{display:inline-grid;gap:2px;}
+.sgx-pc i{border-radius:3px;}
+.sgx-pc i.f{background:var(--pst-ink);}
+.sgx-tray button.on .sgx-pc i.f{background:var(--pst-on-acc);}
+.pst .sgx-tools .pst-tb.on{background:var(--pst-ink);color:var(--pst-bg);}
+.sgx-bad{color:var(--lg-bad);}
+.pst-foot:has(.sgx-bad){opacity:1;}
+`;

@@ -54,6 +54,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 const COLORS = {
   cream: THEME.surface, paper: THEME.paper, ink: THEME.ink, ember: THEME.accent, rust: THEME.danger, faded: THEME.muted,
@@ -219,6 +221,19 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
   const pressTimer = useRef(null);
   const longFired = useRef(false);
   const [showChrome, setShowChrome] = useState(false);
+  // THE STAGE (owner, 2026-10-31). Presentation state only: which fact the
+  // card shows, the two-tap Give up, and whether the line's verdict is a
+  // rejected sheet (orange) or a hint's note (ink).
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
+  const [factAt, setFactAt] = useState(0);
+  const [armGive, setArmGive] = useState(false);
+  const [verdictBad, setVerdictBad] = useState(false);
+  useEffect(() => {
+    if (!armGive) return undefined;
+    const t = setTimeout(() => setArmGive(false), 3500);
+    return () => clearTimeout(t);
+  }, [armGive]);
 
   const playing = g.status === 'playing';
   const LOFT = isLoft('stands');
@@ -496,6 +511,19 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
   };
   const cellIndex = (i, j) => PAIRS.findIndex(([a,b]) => (a === i && b === j) || (a === j && b === i));
 
+  // A rejected sheet turns the stage's fact card to the first fact it breaks,
+  // the same fact the verdict names. Reads only the player's own cells.
+  const rejSeen = useRef(null);
+  useEffect(() => {
+    if (rejSeen.current == null) { rejSeen.current = g.rejected; return; }
+    if (g.rejected > rejSeen.current) {
+      const b = brokenClues(g.cells)[0];
+      if (b) setFactAt(PUZZLE.clues.indexOf(b));
+    }
+    rejSeen.current = g.rejected;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [g.rejected]);
+
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft} accentDeep={COLORS.accentDeep}
@@ -521,6 +549,99 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : THEME.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Stands plays on the shared white stage at
+          every width: one surviving fact at a time on a pale card (Back / Skip
+          walk the facts), the results grid, the table as it stands, the tools,
+          one line, and the foot. A win is the full rose, a draw the pale rose, a
+          loss a plain outlined square. Every tap goes through the board's own
+          handlers. Inside the Judged run (EMBED) the run keeps the old board,
+          which its own .jd-host rules dress. */}
+      {STAGE && phoneStage && !EMBED && !!g.t0 && (playing || !revealed) && (() => {
+        const ab = (t) => t.slice(0, 3).toUpperCase();
+        const WORD = { W: 'win', D: 'draw', L: 'loss' };
+        const NC = PUZZLE.clues.length;
+        const fi = Math.min(Math.max(0, factAt), NC - 1);
+        const idxOf = (x, y) => PAIRS.findIndex(([a, b]) => (a === x && b === y) || (a === y && b === x));
+        // A pip is filled when its remembered result is already on the grid
+        // that way (beat / drew only: a points line cannot be read off a half
+        // sheet). It reads the player's own cells, never the answer.
+        const holds = (c) => {
+          if (c.type === 'beat') { const k = idxOf(c.x, c.y); return cellsShown[k] === (PAIRS[k][0] === c.x ? 0 : 2); }
+          if (c.type === 'drew') return cellsShown[idxOf(c.x, c.y)] === 1;
+          return false;
+        };
+        const dark = isDarkLook(stageLook);
+        const line = verdict
+          ? <span className={verdictBad ? 'sdx-bad' : undefined} style={verdictBad ? { '--lg-bad': dark ? '#fb923c' : '#c2410c' } : undefined}>{verdict.msg}</span>
+          : (toast || `${filled} of ${PAIRS.length} results filled${g.rejected ? ` · ${g.rejected} rejected` : ''}`);
+        return (
+          <PlayStage bg={gameColor('stands')} label="Stands"
+            top={(
+              <div className="sdx" style={{ '--sdx-n': N }}>
+                <style dangerouslySetInnerHTML={{ __html: SDX_CSS }} />
+                <div className="sdx-clue">
+                  <div className="sdx-eb">{PUZZLE.sunday ? 'Sunday Edition' : `Stands No. ${PUZZLE.num}`} &middot; fact {fi + 1} of {NC}</div>
+                  <h2 className="sdx-q" aria-live="polite"><span>{clueText(PUZZLE.clues[fi])}</span></h2>
+                  <div className="sdx-nav">
+                    <button type="button" className="sdx-nb" onClick={() => setFactAt((fi - 1 + NC) % NC)} aria-label="Back, the previous fact">{ICON.left}Back</button>
+                    <div className="sdx-pips" role="group" aria-label={`Fact ${fi + 1} of ${NC}`}>
+                      {PUZZLE.clues.map((c, i) => (
+                        <button key={i} type="button" className={'sdx-pp' + (i === fi ? ' now' : (holds(c) ? ' f' : ''))}
+                          onClick={() => setFactAt(i)} aria-label={`Fact ${i + 1}${holds(c) ? ', on the grid' : ''}`} aria-current={i === fi ? 'true' : undefined}><i /></button>
+                      ))}
+                    </div>
+                    <button type="button" className="sdx-nb" onClick={() => setFactAt((fi + 1) % NC)} aria-label="Skip, the next fact">Skip{ICON.right}</button>
+                  </div>
+                </div>
+                <div className="sdx-gr" role="grid" aria-label="Results grid, read across">
+                  <span className="sdx-h" aria-hidden="true" />
+                  {T.map((t, j) => <span key={j} className="sdx-h" title={t} aria-hidden="true">{ab(t)}</span>)}
+                  {T.map((t, i) => (
+                    <React.Fragment key={i}>
+                      <span className="sdx-rh" title={t} aria-hidden="true">{ab(t)}</span>
+                      {T.map((_, j) => {
+                        if (i === j) return <span key={j} className="sdx-self" aria-hidden="true" />;
+                        const k = cellIndex(i, j);
+                        const lab = cellLabel(k, i);
+                        return (
+                          <button key={j} type="button" className={'sdx-cl' + (lab ? ' ' + lab : '')}
+                            onClick={() => cellClick(i, j)}
+                            onPointerDown={() => playing && cellPressDown(i, j)}
+                            onPointerUp={cellPressUp} onPointerLeave={cellPressUp}
+                            onContextMenu={(e) => { if (playing) { e.preventDefault(); cycleCell(i, j, -1); } }}
+                            disabled={!playing}
+                            aria-label={`${T[i]} v ${T[j]}: ${lab ? WORD[lab] : 'blank'}`}
+                            title={`${T[i]} v ${T[j]}: tap to cycle, hold to step back`}>{lab}</button>
+                        );
+                      })}
+                    </React.Fragment>
+                  ))}
+                </div>
+                <div className="sdx-help">Tap cycles W, D, L, blank. The other half mirrors it.</div>
+                <div className="sdx-tbl" role="table" aria-label="The table as it stands">
+                  <div className="sdx-tr hd" role="row"><span>#</span><span className="nm">As it stands</span><span>P</span><span>W</span><span>D</span><span>L</span><span className="pt">Pts</span></div>
+                  {standing.map((r, pos) => (
+                    <div key={r.i} className="sdx-tr" role="row">
+                      <span>{pos + 1}</span><span className="nm">{r.name}</span>
+                      <span>{r.p}</span><span>{r.w}</span><span>{r.d}</span><span>{r.l}</span>
+                      <span className="pt">{r.pts}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            bottom={playing ? (
+              <div className="sdx-tools">
+                <button type="button" className="pst-tb" onClick={() => { setVerdictBad(false); hint(); }} aria-label="Hint, fills one match, counts against you on the board">{ICON.bulb}Hint</button>
+                <button type="button" className="pst-tb" onClick={clearAll} disabled={filled === 0} aria-label="Clear the grid">Clear</button>
+                <button type="button" className="pst-tb sdx-go" onClick={() => { setVerdictBad(true); submit(); }} disabled={filled !== PAIRS.length}>File the table</button>
+              </div>
+            ) : null}
+            foot={line}
+            giveUp={{ armed: !!armGive, onPress: () => { if (armGive) { if (Date.now() - armGive < 400) return; setArmGive(false); reveal(); } else { setArmGive(Date.now()); } } }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -987,3 +1108,45 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
 }
+
+// The stage board (owner, 2026-10-31 mockup). Plain squares white with a
+// light rule; W the full category colour, D the pale tint, L an ink outline.
+const SDX_CSS = `
+.sdx{display:flex;flex-direction:column;gap:12px;width:100%;max-width:480px;align-self:center;}
+.sdx-clue{border-radius:16px;background:var(--pst-pale);border:2px solid var(--pst-ink);padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center;}
+.sdx-eb{text-align:center;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);}
+.sdx-q{margin:0;text-align:center;font-size:clamp(18px,5.6vw,22px);font-weight:800;line-height:1.25;letter-spacing:-.02em;min-height:2.5em;display:flex;align-items:center;justify-content:center;}
+.sdx-q>span{display:block;}
+.sdx-q b{font-weight:800;}
+.sdx-nav{display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;}
+.pst .sdx-nb{display:inline-flex;align-items:center;gap:4px;height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:14px;font-weight:800;flex:none;}
+.sdx-pips{flex:1;display:flex;justify-content:center;min-width:0;}
+.pst .sdx-pp{flex:0 1 18px;min-width:8px;height:32px;padding:0 2px;border:0;border-radius:0;background:transparent;display:flex;align-items:center;justify-content:center;}
+.sdx-pp i{display:block;width:100%;max-width:14px;height:5px;border-radius:3px;background:color-mix(in srgb, var(--pst-ink) 18%, transparent);}
+.sdx-pp.f i{background:var(--pst-ink);opacity:.5;}
+.sdx-pp.now i{background:var(--pst-ink);}
+.sdx-gr{display:grid;grid-template-columns:44px repeat(var(--sdx-n,5),minmax(0,1fr));gap:4px;}
+.sdx-h{font-size:12px;font-weight:800;text-align:center;align-self:end;color:var(--pst-mute);}
+.sdx-rh{font-size:12px;font-weight:800;align-self:center;color:var(--pst-mute);}
+.sdx-self{height:44px;border-radius:10px;background:var(--pst-cell);}
+.pst .sdx-cl{height:44px;border-radius:10px;border:2px solid var(--pst-cell-line);background:var(--pst-bg);font-size:18px;font-weight:800;padding:0;min-width:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
+.pst .sdx-cl:disabled{cursor:default;}
+.pst .sdx-cl.W{background:var(--pst-acc);border-color:var(--pst-ink);color:var(--pst-on-acc);}
+.pst .sdx-cl.D{background:var(--pst-pale);border-color:var(--pst-ink);}
+.pst .sdx-cl.L{background:var(--pst-bg);border-color:var(--pst-ink);}
+@media (hover:hover){.pst .sdx-cl:not(:disabled):not(.W):not(.D):not(.L):hover{border-color:var(--pst-ink);}}
+.sdx-help{text-align:center;font-size:12px;font-weight:700;color:var(--pst-mute);}
+.sdx-tbl{display:flex;flex-direction:column;}
+.sdx-tr{display:grid;grid-template-columns:22px 1fr 30px 30px 30px 30px 40px;align-items:center;font-size:13px;font-weight:700;min-height:23px;border-bottom:1px solid var(--pst-cell2);font-variant-numeric:tabular-nums;}
+.sdx-tr.hd{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--pst-mute);border-bottom:2px solid var(--pst-ink);}
+.sdx-tr span{text-align:center;}
+.sdx-tr .nm{text-align:left;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sdx-tr .pt{font-weight:800;text-align:right;}
+.sdx-tools{display:flex;gap:8px;width:100%;max-width:480px;align-self:center;}
+.pst .sdx-tools .pst-tb{flex:none;padding:0 14px;font-weight:800;}
+.pst .sdx-tools .sdx-go{flex:1;background:var(--pst-acc);color:var(--pst-on-acc);font-size:15px;}
+.pst .sdx-go:disabled{opacity:.4;}
+.sdx-bad{color:var(--lg-bad);}
+.pst-foot:has(.sdx-bad){opacity:1;}
+.sdx-bad b{color:inherit;}
+`;
