@@ -1713,3 +1713,42 @@ app/StageStick.jsx: text, verdict, metric and arc on the centre line). The owner
 reverted: the cover keeps the left-aligned layout of the in-page band it fades into. The column itself
 stays centred (`.sst-in` max-width 560px, margin auto). The phone ending (StageRoll) was never centred.
 Do not centre the cover's contents again without asking.
+
+## The Judged boards on their own pages (owner, 2026-10-31)
+
+Owner: "alibi for instance still has old format". Ergo, Docket, Alibi, Sworn and Hearsay now
+play on `PlayStage` on their own pages at every width (the same
+`STAGE && phoneStage && !!g.t0 && (playing || !revealed)` mount the Numbers games use; Ergo and
+Docket gate on `loftRevealed`), in the rose look the owner approved for them inside Judged
+(AlibiRose / AlibiRoseDark): white page, rounded tiles with a 2px ink rule, pale rose on what can
+be tapped, full rose with dark ink on what is confirmed, selected or primary, the brief (rules,
+conditions, the story) straight on the page. The shared half is `app/LogicStage.js`
+(`LOGIC_STAGE_CSS`, `lgs-` classes); each client adds its own board rules (`egs-`, `dks-`, `als-`,
+`sws-`, `hss-`). Old progress pips and in-page Reveal / Give up buttons fold into the foot's
+two-tap Give up (Alibi, Sworn and Hearsay gained a local `armGiveUp`; Ergo and Docket use their
+own two-tap `giveUp`). Docket's sketch is the same `DocketSketch`, re-inked onto the stage tokens.
+Presentation only: every control calls the board's own handler.
+
+**Laid out from the mockups (owner, 2026-10-31: "make them look like they did on the mock ups").**
+Ergo, Docket, Sworn and Hearsay follow the Next Wave mockups (drawn in the old Logic lime, built in
+rose), Alibi follows AlibiRose / AlibiRoseDark. Rule numbers are plain ink; the question sits large
+and centred with its answers at the foot (`lgs-fill` / `lgs-grow`); a selected witness and the
+second speaker in Hearsay are ink cards with pale rose type (`lgs-inv`, `--pst-inv`). Ergo: tap a
+rule to flip it, the filed statements fold under "Take one back". Docket: the setup's first line
+(tap for more), the sketch as a slot row over the letters, the cross-off kept at the row's end.
+Sworn: witness cards, the selected one carries True / Lying, one big Accuse. Hearsay: speech
+bubbles, the list as a two-column grid. Alibi: one clue at a time (arrows, pips, Cross off, All
+clues), a Room / Time / Item switch, one board at a time. Deliberate differences from the
+mockups, each to keep existing behaviour reachable: Ergo's bins, Docket's notes and cross-off,
+Sworn's True / Lying marks and hint, Alibi's Undo / Reset / Auto ✗ and Check my accusation, and
+the Judged header (the run's own frame) and the foot row (Clock, How to play, Give up).
+
+**Logic on the stage.** `accentVars` gives rose its approved values: dark-look tile `#4a2a33`,
+full rose carrying `#0b0f1a` in the dark looks, `--pst-deep` (`#be123c` light, rose dark) for rose
+as text, and a wrong mark ORANGE (`#c2410c` light / `#fb923c` dark) via `--pst-bad`.
+
+**One board in Judged.** Embedded (RunEmbed), each client draws the same stage `inline` in the
+run's frame, follows the run's own look (`RunEmbed look`, passed to `PlayStage look`; `plain` and
+`dark` keep the board colourless) and hides its old page column with `lgs-hosted` on its root.
+The `.jd-rose` / `.jd-rosedk` overrides in JudgedClient were retired. Stands is not in today's
+Judged roster and was left alone.

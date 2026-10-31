@@ -64,6 +64,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { LOGIC_STAGE_CSS, embedLook } from '../LogicStage';
 
 const COLORS = {
   cream: T.surface,
@@ -264,6 +266,9 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  // The stage foot's Give up is two taps (the in-page Reveal was one).
+  const [armGiveUp, setArmGiveUp] = useState(0);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -545,6 +550,14 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
     setG(freshState(N)); setVerdict(null); setEndClosed(false);
   }
+  // The stage foot's Give up: the first tap arms it, the second calls reveal().
+  function pressGiveUp() {
+    if (!playing) return;
+    if (!armGiveUp) { setArmGiveUp(Date.now()); setTimeout(() => setArmGiveUp(0), 3500); return; }
+    if (Date.now() - armGiveUp < 250) return;
+    setArmGiveUp(0);
+    reveal();
+  }
 
   function stmtText(st, s) {
     const S = PUZZLE.suspects;
@@ -583,10 +596,72 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={STAGE ? ('stage-page' + (EMBED ? ' lgs-hosted' : '')) : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Sworn plays on the shared white stage
+          at every width, laid out from its approved mockup in the Logic rose
+          look (see the board CSS at the foot of this file and app/LogicStage.js).
+          Every control is the board's own handler, so scoring, saves and
+          posting are untouched. Inside Judged the same stage is drawn inline in
+          the run's frame and follows the run's look. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const markOf = (i) => (hideSol ? (g.pre || [])[i] || 0 : g.marks[i]);
+        const P = Math.min(pick, N - 1);
+        const pName = PUZZLE.suspects[P];
+        const pOut = g.accusedWrong.includes(P);
+        const KW = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
+        return (
+          <PlayStage bg={gameColor('sworn')} label="Sworn" wide inline={!!EMBED} look={embedLook(EMBED)}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: LOGIC_STAGE_CSS + SWS_CSS }} />
+                <div className="sws-head">
+                  <div className="lgs-eb">{PUZZLE.sunday ? 'Sunday Edition · ' : ''}Exactly {KW[PUZZLE.k] || PUZZLE.k} {PUZZLE.k === 1 ? 'is' : 'are'} lying</div>
+                  <h2 className="lgs-q">Who is the thief?</h2>
+                </div>
+                <div className="sws-list lgs-grow">
+                  {PUZZLE.suspects.map((name, i) => {
+                    const m = markOf(i);
+                    const out = g.accusedWrong.includes(i);
+                    const sel = i === P;
+                    const tag = out ? 'Cleared' : m === 1 ? 'True' : m === 2 ? 'Lying' : null;
+                    const ver = g.verified && g.verified.x === i ? (g.verified.honest ? 'Verified truthful' : 'Verified lying') : null;
+                    return (
+                      <div key={name} className={'sws-w' + (sel ? ' lgs-inv on' : ' lgs-tile') + (out ? ' out' : '') + (m === 2 && !sel ? ' lie' : '')}>
+                        <button type="button" className="sws-wb" onClick={() => setPick(i)} aria-pressed={sel} aria-label={`${name}${tag ? `, marked ${tag}` : ''}`}>
+                          <span className="nm">{name}{tag ? <em>{tag}</em> : null}{ver ? <em>{ver}</em> : null}</span>
+                          <span className="st">{stmtText(PUZZLE.statements[i], i)}</span>
+                        </button>
+                        {sel && playing && !out ? (
+                          <div className="sws-seg" role="group" aria-label={`Your scratch verdict on ${name}`}>
+                            <button type="button" className={m === 1 ? 'on' : undefined} aria-pressed={m === 1} onClick={() => setMark(i, 1)}>True</button>
+                            <button type="button" className={m === 2 ? 'on' : undefined} aria-pressed={m === 2} onClick={() => setMark(i, 2)}>Lying</button>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+                {playing && (
+                  <button type="button" className="lgs-big lgs-inv sws-accuse" onClick={() => accuse(P)} disabled={pOut}>{pOut ? `${pName} is cleared` : `Accuse ${pName}`}</button>
+                )}
+                {playing && (
+                  <div className="pst-tools">
+                    <button type="button" className="pst-tb lgs-sm" onClick={clearMarks}>Clear marks</button>
+                    {hintOk && !g.hintUsed && <button type="button" className="pst-tb lgs-sm" onClick={useHint} title="Verify one witness (one hint, first play only)">Hint: verify a witness</button>}
+                  </div>
+                )}
+              </>
+            )}
+            foot={verdict ? <span className="lgs-bad">{verdict.msg}</span> : (toast || (playing
+              ? `Tap a name, mark True or Lying, then accuse · ${liarsMarked} of ${PUZZLE.k} liars marked${liarsMarked > PUZZLE.k ? ', too many' : ''}${g.wrong ? ` · ${g.wrong} wrong` : ''}`
+              : (g.status === 'done' ? `It was ${thiefName}` : (hideSol ? 'The inquest collapsed' : `The inquest collapsed. It was ${thiefName}`))))}
+            giveUp={{ armed: !!armGiveUp, onPress: pressGiveUp, armedLabel: 'Tap again to give up and see the thief' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1106,3 +1181,27 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 }
+
+// The stage board, from the approved Sworn mockup (owner, 2026-10-31): "Who
+// is the thief?" under the lie count, each witness a pale rose card (name,
+// then what they swore), the one you are on an ink card with its True / Lying
+// marks, a cleared witness faded out, and one big Accuse button.
+const SWS_CSS = `
+.pst .sws-head{display:flex;flex-direction:column;gap:6px;padding:6px 0 2px;}
+.pst .sws-list{display:flex;flex-direction:column;gap:8px;}
+@media (min-width:900px){.pst.wide .sws-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));}}
+.pst .sws-w{border:2px solid var(--pst-ink);border-radius:14px;overflow:hidden;}
+.pst .sws-w.out{opacity:.4;background:transparent;}
+.pst .sws-w.lie .sws-wb .st{opacity:.6;}
+.pst .sws-wb{display:flex;flex-direction:column;gap:3px;width:100%;padding:11px 14px;background:transparent;border:0;border-radius:0;text-align:left;color:inherit;}
+.pst .sws-wb .nm{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
+.pst .sws-wb em{font-style:normal;font-size:11px;font-weight:800;opacity:.7;}
+.pst .sws-wb em::before{content:'· ';}
+.pst .sws-wb .st{font-size:16px;font-weight:700;line-height:1.3;}
+.pst .sws-wb .st b{font-weight:800;}
+.pst .sws-seg{display:flex;margin:0 10px 10px;border:2px solid var(--pst-inv);border-radius:999px;overflow:hidden;}
+.pst .sws-seg button{flex:1;height:40px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;color:var(--pst-inv);}
+.pst .sws-seg button+button{border-left:2px solid var(--pst-inv);}
+.pst .sws-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .sws-accuse:disabled{opacity:.45;cursor:not-allowed;}
+`;
