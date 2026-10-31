@@ -1718,5 +1718,14 @@ and `guessesUsed` is the wrong checks. Timer hidden by default.
   `lib/sudoclue-engine.js` (the solver), `app/sudoclue/puzzles.js` (place + cast + structured clues).
 - **No answer ships.** The client derives the unique answer with the engine (the Alibi model).
   `scripts/verify-sudoclue.mjs` re-proves every board unique; boards come from a separate Python generator.
+- **Places never repeat within two weeks** (owner, 2026-10-30: "Why repeat places so quickly"). Ten more real
+  places: Alcatraz, Pike Place Market, Bryant Park, Fenway Park, Forsyth Park, Venice Beach (7x7), Graceland,
+  Monticello (8x8), Hearst Castle (9x9), Winchester Mystery House (10x10). A place may come back as a
+  reshaped variant (key `breakers-2`: walls moved, furniture re-dealt). A room may carry `say`, the phrase a
+  clue uses when "in the X" reads wrong ("on Broadway", "in Times Square").
+- **What the pictures are** (owner, 2026-10-30: "hard to tell what the pictures are ... so hard to decipher the
+  clues"). Every clue that names an object shows its picture inline (`objIcon`, words from `SAY`, both in
+  lib/sudoclue-art.js); the selected person's named objects glow on the board (`renderBoard` `glow`); a Key under
+  the cards names every object on the day's board in the clues' own words.
 - **Names.** First names of famous people only, never a likeness: portraits are original drawings with skin tone
   matched to the namesake; a role never mirrors the namesake and no namesake appears at their famous place.

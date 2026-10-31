@@ -60,7 +60,7 @@ import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 import { PLACES } from '@/lib/sudoclue-places';
 import { solve, sameAnswer, ROLESETS, ROLE_ORDER, isRoleClue } from '@/lib/sudoclue-engine';
-import { renderBoard, boardIndex, cellTitle, portraitSVG, COLORS as CAST_COLORS } from '@/lib/sudoclue-art';
+import { renderBoard, boardIndex, cellTitle, portraitSVG, objIcon, sayBare, COLORS as CAST_COLORS } from '@/lib/sudoclue-art';
 
 const KEY = 'sudoclue';
 const NAME = 'Sudoclue';
@@ -188,6 +188,24 @@ function roleCounts(n) {
 }
 const PLURAL = { Guest: 'guests', Staff: 'staff', Family: 'family' };
 
+// WHAT THE PICTURES ARE (owner, 2026-10-30: "it's hard to tell what the pictures are (what is the patio
+// table etc?)"). A clue that names a thing shows a little picture of it beside the word, the selected
+// person's things glow on the board, and a key under the cards names every picture on today's board.
+const clueObj = (c) => (c && c.pr && (c.pr.k === 'on' || c.pr.k === 'beside') ? c.pr.v : null);
+function ObjIco({ t, dims, size = 22 }) {
+  const [w, h] = dims[t] || [1, 1];
+  const r = Math.min(2, w / h);
+  return <span aria-hidden="true" style={{ display: 'inline-block', verticalAlign: '-0.32em', width: Math.round(size * Math.max(1, r)), height: size, margin: '0 3px 0 1px', borderRadius: 5, background: 'rgba(255,255,255,0.55)', boxShadow: 'inset 0 0 0 1px rgba(8,34,46,0.14)' }} dangerouslySetInnerHTML={{ __html: objIcon(t, w, h) }} />;
+}
+function ClueText({ text, c, dims }) {
+  const t = clueObj(c);
+  if (!t) return text;
+  const word = sayBare(t);
+  const i = text.toLowerCase().indexOf(word.toLowerCase());
+  if (i < 0) return <>{text} <ObjIco t={t} dims={dims} /></>;
+  return <>{text.slice(0, i)}<span style={{ whiteSpace: 'nowrap' }}><ObjIco t={t} dims={dims} />{text.slice(i, i + word.length)}</span>{text.slice(i + word.length)}</>;
+}
+
 function Portrait({ id, size = 34, ring, dim }) {
   return (
     <span aria-hidden="true" style={{ display: 'inline-block', flex: 'none', width: size, height: size, borderRadius: '50%', overflow: 'hidden', boxShadow: `0 0 0 ${size > 30 ? 3 : 2}px ${ring || 'currentColor'}`, opacity: dim ? 0.55 : 1 }}
@@ -207,6 +225,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const STORE_KEY = `sot_sudoclue2_${PUZZLE.num}`;  // v2: the two-stage boards (2026-10-30)
   const LAYOUT = PLACES[PUZZLE.place];
   const N = LAYOUT.rooms.length;
+  const DIMS = useMemo(() => { const d = {}; (LAYOUT.items || []).forEach((it) => { if (!d[it.t]) d[it.t] = [it.w, it.h]; }); return d; }, [LAYOUT]);
   const CAST = PUZZLE.cast;
   const COUNTS = useMemo(() => roleCounts(N), [N]);
   const IDX = useMemo(() => boardIndex(LAYOUT), [LAYOUT]);
@@ -619,10 +638,19 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const accomplice = sol ? CAST.find((p) => sol.roles[p] === 'Accomplice') : null;
   const roomName = (p) => { const x = shownPlace[p]; if (!x) return ''; const ri = LAYOUT.rinfo[LAYOUT.rooms[x[0]][x[1]]]; const n = ri.name.replace(/^The /, ''); return ri.out ? `in the ${n} area` : `in the ${n}`; };
 
+  // The things the selected person's own clues name glow on the board, so "beside the patio table" is easy to find.
+  const glowKey = playing && sel ? PUZZLE.clues.filter((c) => c.p === sel).map(clueObj).filter(Boolean).join('|') : '';
+  const glowCells = useMemo(() => {
+    if (!glowKey) return null;
+    const ts = new Set(glowKey.split('|')); const out = [];
+    (LAYOUT.items || []).forEach((it) => { if (!ts.has(it.t)) return; for (let dr = 0; dr < it.h; dr++) for (let dc = 0; dc < it.w; dc++) out.push([it.r + dr, it.c + dc]); });
+    return out;
+  }, [glowKey, LAYOUT]);
   const svg = useMemo(() => renderBoard(LAYOUT, {
     place: shownPlace, cross: playing ? g.cross : {}, bad: playing ? bad : new Set(), sel: playing ? sel : null,
     hl: sol ? CAST.filter((p) => ['Victim', 'Killer'].includes(sol.roles[p])).map((p) => sol.place[p]) : null,
-  }), [LAYOUT, shownPlace, g.cross, bad, sel, playing, sol, CAST]);
+    glow: playing ? glowCells : null,
+  }), [LAYOUT, shownPlace, g.cross, bad, sel, playing, sol, CAST, glowCells]);
 
   const clueList = PUZZLE.clues.map((c, i) => ({ ...c, i, who: c.p || null }));
   const mine = clueList.filter((c) => c.p === sel || c.q === sel);
@@ -724,7 +752,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           {roleClueList.map((c) => (
             <button key={c.i} type="button" onClick={() => toggleStruck(c.i)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, padding: '7px 0', cursor: 'pointer', fontFamily: SANS }}>
               <RoleTag size={20} />
-              <span style={{ fontSize: 13.5, fontWeight: 650, lineHeight: 1.35, color: g.struck[c.i] ? FADED : INK, textDecoration: g.struck[c.i] ? 'line-through' : 'none' }}>{c.text}</span>
+              <span style={{ fontSize: 13.5, fontWeight: 650, lineHeight: 1.35, color: g.struck[c.i] ? FADED : INK, textDecoration: g.struck[c.i] ? 'line-through' : 'none' }}><ClueText text={c.text} c={c} dims={DIMS} /></span>
             </button>
           ))}
         </div>
@@ -745,12 +773,20 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
                   {accuse && <span style={{ fontSize: 11, fontWeight: 800, color: g.roles[p] ? ACC_INK : FADED }}>{g.roles[p] || 'role?'}</span>}
                 </span>
                 <span style={{ display: 'block', fontSize: 12.5, fontWeight: 600, lineHeight: 1.3, color: accuse ? FADED : INK, marginTop: 2 }}>
-                  {lines.length ? lines.map((c) => (c.text.startsWith(p + ' ') ? c.text.slice(p.length + 1).replace(/^./, (m) => m.toUpperCase()) : c.text)).join(' ') : <i style={{ color: FADED }}>Said nothing.</i>}
+                  {lines.length ? lines.map((c, j) => <span key={c.i}>{j ? ' ' : ''}<ClueText text={c.text.startsWith(p + ' ') ? c.text.slice(p.length + 1).replace(/^./, (m) => m.toUpperCase()) : c.text} c={c} dims={DIMS} /></span>) : <i style={{ color: FADED }}>Said nothing.</i>}
                 </span>
               </span>
             </button>
           );
         })}
+      </div>
+      <div aria-label="Key to the pictures" style={{ marginTop: 10, borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '8px 10px' }}>
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED, marginBottom: 6 }}>Key</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 12px' }}>
+          {Object.keys(DIMS).map((t) => (
+            <span key={t} style={{ display: 'inline-flex', alignItems: 'center', fontSize: 12.5, fontWeight: 650, color: INK }}><ObjIco t={t} dims={DIMS} size={28} />{sayBare(t).replace(/^./, (m) => m.toUpperCase())}</span>
+          ))}
+        </div>
       </div>
       <div className="sc-barpad" style={{ display: 'none', height: accuse ? 128 : 78 }} />
       {/* The tool bar: pinned to the bottom of the screen on a phone, so it is always to hand. */}
