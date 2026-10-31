@@ -1705,3 +1705,32 @@ the screen (`clamp(15px, 4.9vw, 19px)`) and then ends in an ellipsis. Share is a
 34px round button on phones (aria-label "Share"). Desktop is unchanged. Every stage page that
 draws this bar inherits it: PlayStage, WordStage, BracketStage, GauntletStage and the run
 screens, StageChrome's simple header, and Price Check's week.
+
+## Hedge, Venn and Suffice on the white stage (owner, 2026-10-31)
+
+The three Logic (rose) dailies play on `PlayStage` at every width, with the same
+`STAGE && phoneStage && !!g.t0 && (playing || !<board-view flag>)` mount the Numbers games use
+(Suffice's board-view flag is `loftRevealed`; its `revealed` is the per-item answer panel).
+Each client keeps its old board behind the stage untouched; the stage only draws and calls the
+board's own handlers, so scoring, saves, posting, hints, share text, archives and the finish
+are unchanged. None of the three is in a run or circuit.
+
+- **Hedge:** the lattice is one SVG on a `--pst-cell` field; numbers and dots ink, a settled
+  number at .35 opacity, the loop rose (`--pst-acc`) inside an 11px ink casing, a loose end a
+  rose ring, an x note muted. A line off the loop is SOLID orange with no casing (the old board
+  dashed it; no dashed lines on the stage), and the status note says "orange line" instead of
+  "dashed line". The note sits on the pale tint, or on grey with an orange edge when it reports
+  a problem. Mark / Line switch, Undo and Hint under it; the old Reveal link is the foot's Give up.
+  Sunday 10x10 passes `wide`. The diamond hit areas and hold / right-click to draw are unchanged.
+- **Venn:** the three circles are ink on a light grey wash (the A/B/C hue coding is dropped on
+  the stage, as in the mockup); each region is a white count button (pale rose while a word is
+  held, rose badge when its count is met, orange edge when over). The tray holds the unfiled
+  words; filed words sit in a second row as pale chips with their region and an x (the old
+  phone roster), so lift and unfile still work. The old one-tap Reveal became the foot's
+  two-tap Give up (a local `armGive`, 400ms minimum between taps).
+- **Suffice:** pips (rose right, orange wrong, ink current), the question on a pale rose card,
+  two statements on white with a grey rule, the three yes / no rows, Submit, then the reveal card
+  with the counterexample and Next item. "That makes your answer" stays as a quiet note.
+
+**Logic's wrong mark is orange** (#c2410c light, #fb923c dark), not PlayStage's red
+`--pst-bad`: each client reads the look with `useStageLook` and sets `--lg-bad` on its board.

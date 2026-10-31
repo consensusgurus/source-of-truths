@@ -63,6 +63,8 @@ import { T } from '@/lib/theme';
 import { getScenario, decide, linClassify, witness } from './engine';
 import { endGrade } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 const COLORS = {
   ink: T.ink,
@@ -237,6 +239,10 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
   // The three yes/no answers for the item on screen. Local working state only:
   // what posts is the letter derived from them, at Submit.
   const [yn, setYn] = useState({ i: -1, a: NO_YN });
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
+  // Logic's wrong mark stays ORANGE on the stage (owner brief, 2026-10-31).
+  const LBAD = isDarkLook(stageLook) ? '#fb923c' : '#c2410c';
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
@@ -454,6 +460,105 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31 mockup): Suffice plays on the shared white
+          stage at every width: the item's pips, the question card, the two
+          statements, the three yes-or-no rows, Submit (then the reveal and Next
+          item), one line, and the foot's Clock, How to play and Give up. Every
+          control is the board's own handler, so scoring, saves, posting, share
+          text and the finish are untouched. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !loftRevealed) && (
+        <PlayStage bg={gameColor('suffice')} label="Suffice" topKey={playing ? idx : -1}
+          eyebrow={playing
+            ? `Item ${idx + 1} of ${TOTAL}${PUZZLE.sunday ? ' · Sunday Edition' : ''} · decide what is enough`
+            : `Suffice No. ${PUZZLE.num} · ${score} of ${TOTAL} right`}
+          top={(
+            <div className="sfs" style={{ '--lg-bad': LBAD }}>
+              <style dangerouslySetInnerHTML={{ __html: SFS_CSS }} />
+              <div className="sfs-pips" role="img" aria-label={`Item ${Math.min(idx + 1, TOTAL)} of ${TOTAL}`}>
+                {ITEMS.map((_, i) => {
+                  const p = g.picks[i];
+                  const cls = p ? (p === KEY[i] ? ' ok' : ' no') : (playing && i === idx ? ' now' : '');
+                  return <i key={i} className={'sfs-pp' + cls} />;
+                })}
+              </div>
+              {playing ? (
+                <>
+                  <div className="sfs-card">
+                    <p className="sfs-stem">{item.stem}</p>
+                    <h2 className="sfs-q">{item.ask}</h2>
+                  </div>
+                  <div className="sfs-stm">
+                    <div><span>Statement (1)</span><b>{item.s1}</b></div>
+                    <div><span>Statement (2)</span><b>{item.s2}</b></div>
+                  </div>
+                  <div className="sfs-yns">
+                    {YN_QS.map((qt, qi) => {
+                      const off = qi === 2 && !bothNo;
+                      const v = ynCur[qi];
+                      const locked = !playing || showReveal;
+                      const verdict = showReveal && v !== null && truthYN[qi] !== null ? (v === truthYN[qi]) : null;
+                      return (
+                        <div key={qi} className={'sfs-yn' + (off ? ' off' : '')}>
+                          <span className="t">{qt}
+                            {off && !locked && <i>Only asked when neither alone is enough.</i>}
+                            {verdict !== null && (
+                              <em className={verdict ? 'ok' : 'no'}>{verdict ? <Check size={13} /> : <X size={13} />}{verdict ? 'Right' : `Wrong, it is ${truthYN[qi] ? 'yes' : 'no'}`}</em>
+                            )}
+                          </span>
+                          <div className="sfs-seg" role="radiogroup" aria-label={qt}>
+                            {[true, false].map((val) => (
+                              <button key={String(val)} type="button" role="radio" aria-checked={v === val}
+                                className={v === val ? 'on' : undefined}
+                                disabled={off || locked}
+                                onClick={() => setAns(qi, val)}>{val ? 'Yes' : 'No'}</button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {showReveal && ex && (
+                    <div className="sfs-rev" aria-live="polite">
+                      <b className={picked === answerKey ? undefined : 'no'}>{picked === answerKey ? `Correct. ${SUMMARY[answerKey]}` : `Not quite. The answer: ${SUMMARY[answerKey]}`}</b>
+                      {picked && picked !== answerKey && <span className="you">You said: {SUMMARY[picked]}</span>}
+                      <span>(1) alone {ex.enough[0] ? 'settles it' : 'is not enough'}. (2) alone {ex.enough[1] ? 'settles it' : 'is not enough'}. Together they {ex.enough[2] ? 'settle it' : 'still do not'}.</span>
+                      {ex.witness && (
+                        <span className="wit">Both of these fit, and disagree:<br />{ex.witness.a.show} &rarr; {ex.witness.a.answer}<br />{ex.witness.b.show} &rarr; {ex.witness.b.answer}</span>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="sfs-sum">
+                  {ITEMS.map((it, i) => {
+                    const ok = g.picks[i] === KEY[i];
+                    return (
+                      <div key={i} className="sfs-row">
+                        <span className="n">{i + 1}</span>
+                        <span className={'m' + (ok ? ' ok' : ' no')} aria-label={ok ? 'right' : 'wrong'}>{ok ? <Check size={14} /> : (g.picks[i] ? <X size={14} /> : <Minus size={14} />)}</span>
+                        <span className="a">{it.ask}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+          bottom={playing ? (showReveal ? (
+            <button type="button" className="sfs-go" onClick={next}>{idx + 1 >= TOTAL ? 'Finish' : 'Next item'}</button>
+          ) : (
+            <div className="sfs-sub">
+              {derived ? <span className="pst-note" aria-live="polite">That makes your answer: {SUMMARY[derived]}</span> : null}
+              <button type="button" className="sfs-go" disabled={!derived || !playing} onClick={() => { if (derived) answer(derived); }}
+                aria-label={derived ? 'Submit' : 'Submit, once the questions are answered'}>Submit</button>
+            </div>
+          )) : null}
+          foot={playing
+            ? `${g.picks.filter(Boolean).length} of ${TOTAL} answered${correct || wrong ? ` · ${correct} right` : ''}`
+            : `${score} of ${TOTAL} right · ${wrong} wrong`}
+          giveUp={{ armed: !!armGive, onPress: giveUp, armedLabel: 'Tap again to give up. Unanswered items score nothing.' }}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="suffice" name="Suffice" collapsed={!!g.t0} loft={LOFT} />
@@ -826,3 +931,52 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-31 mockup): rose on the picked answer and the
+// primary button, the pale rose on the question card, plain white statements on
+// a grey rule, and Logic's wrong mark in orange (--lg-bad).
+const SFS_CSS = `
+.sfs{display:flex;flex-direction:column;gap:12px;}
+.sfs-pips{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;}
+.sfs-pp{width:22px;height:5px;border-radius:3px;background:var(--pst-cell2);}
+.sfs-pp.now{background:var(--pst-ink);}
+.sfs-pp.ok{background:var(--pst-acc);box-shadow:inset 0 0 0 1px var(--pst-ink);}
+.sfs-pp.no{background:var(--lg-bad);}
+.sfs-card{border-radius:16px;background:var(--pst-pale);border:2px solid var(--pst-ink);padding:16px 14px;display:flex;flex-direction:column;gap:6px;align-items:center;}
+.sfs-stem{margin:0;text-align:center;font-size:14px;font-weight:700;color:var(--pst-mute);line-height:1.4;}
+.sfs-q{margin:0;text-align:center;font-size:clamp(20px,6vw,24px);line-height:1.22;font-weight:800;letter-spacing:-.02em;}
+.sfs-stm{display:flex;flex-direction:column;gap:8px;}
+.sfs-stm div{border:2px solid var(--pst-cell-line);border-radius:14px;padding:10px 14px;background:var(--pst-bg);}
+.sfs-stm span{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);}
+.sfs-stm b{font-size:18px;font-weight:800;line-height:1.3;}
+.sfs-yns{display:flex;flex-direction:column;gap:10px;}
+.sfs-yn{display:flex;align-items:center;gap:10px;}
+.sfs-yn .t{flex:1;min-width:0;font-size:15px;font-weight:800;line-height:1.25;}
+.sfs-yn .t i{display:block;font-style:normal;font-size:12px;font-weight:700;color:var(--pst-mute);}
+.sfs-yn .t em{display:flex;align-items:center;gap:4px;font-style:normal;font-size:12.5px;font-weight:800;margin-top:2px;}
+.sfs-yn .t em.no{color:var(--lg-bad);}
+.sfs-yn.off .t,.sfs-yn.off .sfs-seg{opacity:.4;}
+.sfs-seg{display:flex;border:2px solid var(--pst-ink);border-radius:999px;overflow:hidden;flex:none;}
+.pst .sfs-seg button{width:62px;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;padding:0;}
+.pst .sfs-seg button+button{border-left:2px solid var(--pst-ink);}
+.pst .sfs-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .sfs-seg button:disabled{cursor:default;}
+.sfs-rev{border-radius:14px;background:var(--pst-cell);border:2px solid var(--pst-ink);padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:13.5px;font-weight:600;line-height:1.5;}
+.sfs-rev b{font-size:15px;font-weight:800;line-height:1.35;}
+.sfs-rev b.no{color:var(--lg-bad);}
+.sfs-rev .you{color:var(--pst-mute);font-weight:700;}
+.sfs-rev .wit{border-top:1px solid var(--pst-cell-line);padding-top:6px;font-size:12.5px;}
+.sfs-sub{display:flex;flex-direction:column;gap:8px;}
+.pst .sfs-go{width:100%;min-height:50px;border-radius:999px;border:2px solid var(--pst-ink);background:var(--pst-acc);color:var(--pst-on-acc);font-size:16px;font-weight:800;}
+.pst .sfs-go:disabled{opacity:.4;cursor:default;}
+.sfs-sum{display:flex;flex-direction:column;}
+.sfs-row{display:flex;align-items:center;gap:9px;padding:7px 2px;font-size:14px;font-weight:700;}
+.sfs-row+.sfs-row{border-top:1px solid var(--pst-cell-line);}
+.sfs-row .n{width:20px;flex:none;color:var(--pst-mute);font-weight:800;}
+.sfs-row .m{width:24px;height:24px;flex:none;border-radius:7px;display:flex;align-items:center;justify-content:center;border:2px solid var(--pst-ink);}
+.sfs-row .m.ok{background:var(--pst-acc);}
+.sfs-row .m.ok *{color:var(--pst-on-acc);}
+.sfs-row .m.no{border-color:var(--lg-bad);color:var(--lg-bad);}
+.sfs-row .m.no *{color:var(--lg-bad);}
+.sfs-row .a{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+`;

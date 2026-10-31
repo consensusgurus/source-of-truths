@@ -57,6 +57,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted,
@@ -212,6 +214,18 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   const [showChrome, setShowChrome] = useState(false);
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
+  // Logic's wrong mark stays ORANGE on the stage (owner brief, 2026-10-31).
+  const LBAD = isDarkLook(stageLook) ? '#fb923c' : '#c2410c';
+  // The stage's Give up is two taps (the old Reveal button was one): the first
+  // arms it, the second calls the board's own reveal().
+  const [armGive, setArmGive] = useState(0);
+  useEffect(() => {
+    if (!armGive) return undefined;
+    const t = setTimeout(() => setArmGive(0), 3500);
+    return () => clearTimeout(t);
+  }, [armGive]);
 
   const playing = g.status === 'playing';
   const LOFT = isLoft('venn');
@@ -433,6 +447,100 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31 mockup): Venn plays on the shared white
+          stage at every width: the three rules, the diagram in ink on a light
+          grey wash with one count button per region, the tray, Clear all and
+          File the sheet, one line, and the foot's Clock, How to play and Give
+          up (the old Reveal button folds into Give up, now two taps). Every tap
+          calls the board's own handlers, so scoring, saves and posting are
+          untouched. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const heldName = held != null ? PUZZLE.items[held] : null;
+        const shortTag = (r) => (r === 7 ? 'All three' : ZONE[r].label);
+        const filed = PUZZLE.items.map((w, i) => ({ w, i })).filter(({ i }) => g.place[i]);
+        const wordsOf = (r) => PUZZLE.items.map((w, i) => ({ w, i })).filter(({ i }) => placeShown[i] === r);
+        const lead = PUZZLE.domain ? `${N} items` : `${N} words`;
+        return (
+          <PlayStage bg={gameColor('venn')} label="Venn"
+            eyebrow={`Venn No. ${PUZZLE.num} · ${lead}${PUZZLE.sunday ? ' · Sunday Edition, two counts hidden' : ''}`}
+            top={(
+              <div className="vns" style={{ '--lg-bad': LBAD }}>
+                <style dangerouslySetInnerHTML={{ __html: VNS_CSS }} />
+                <div className="vns-rls">
+                  {PUZZLE.rules.map((r, i) => (
+                    <div key={i} className="vns-rl"><b>{String.fromCharCode(65 + i)}</b><span>{ruleLabel(r, PUZZLE.domain)}</span></div>
+                  ))}
+                  {factNote ? <div className="vns-fact">{factNote}</div> : null}
+                </div>
+                <div className={'vns-dia' + (held != null ? ' arm' : '')}>
+                  <svg viewBox="0 0 358 330" aria-hidden="true">
+                    <g className="vns-c" strokeWidth="2.2">
+                      <circle cx="123" cy="116" r="114" />
+                      <circle cx="235" cy="116" r="114" />
+                      <circle cx="179" cy="213" r="114" />
+                    </g>
+                    <g className="vns-l" fontSize="18" fontWeight="800" fontFamily="Manrope, sans-serif" fill="currentColor">
+                      <text x="4" y="20">A</text><text x="341" y="20">B</text><text x="44" y="318">C</text>
+                    </g>
+                  </svg>
+                  {REGIONS.map((r) => {
+                    const words = wordsOf(r);
+                    const hid = hiddenSet.has(r);
+                    const need = hid && (playing || hideSol) ? '?' : COUNTS[r];
+                    const ready = !hid && words.length === COUNTS[r];
+                    const over = !hid && words.length > COUNTS[r];
+                    const open = !playing ? 0 : (hid ? 1 : Math.max(0, COUNTS[r] - words.length));
+                    const z = PZONE[r];
+                    return (
+                      <button key={r} type="button" className={'vns-pz' + (held != null && playing ? ' arm' : '') + (ready ? ' ready' : '') + (over ? ' over' : '')}
+                        style={{ left: `${(z.x / 358) * 100}%`, top: `${(z.y / 330) * 100}%` }} onClick={() => dropInto(r)}
+                        aria-label={`${ZONE[r].label}, ${words.length} of ${need} filed${words.length ? `: ${words.map((x) => x.w).join(', ')}` : ''}.${held != null ? ` Tap to file ${heldName} here.` : ''}`}>
+                        <span className="bdg">{words.length}/{need}</span>
+                        <span className="ps">
+                          {words.map(({ w, i }) => (
+                            <i key={w} className={!playing ? (TRUTH[i] === placeShown[i] ? 'ok' : 'no') : undefined}>{w.slice(0, 2)}</i>
+                          ))}
+                          {Array.from({ length: open }).map((_, k) => <i key={`o${k}`} className="o" />)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {playing && (
+                  <>
+                    <div className="vns-held" aria-live="polite">{heldName ? <>Holding {heldName} · now tap a region</> : (trayItems.length ? 'Tap a word, then tap its region' : 'Tray empty. Check your counts, then file the sheet.')}</div>
+                    <div className="vns-tray" aria-label="The tray">
+                      {trayItems.map(({ w, i }) => (
+                        <button key={w} type="button" className={'vns-ch' + (held === i ? ' h' : '')} aria-pressed={held === i} onClick={() => liftFrom(i)}>{w}</button>
+                      ))}
+                    </div>
+                    {filed.length > 0 && (
+                      <div className="vns-tray vns-filed" aria-label="Filed words">
+                        {filed.map(({ w, i }) => (
+                          <span key={w} className={'vns-fc' + (held === i ? ' h' : '')}>
+                            <button type="button" className="t" onClick={() => liftFrom(i)} title="Tap to pick this word back up">{w}<small>{shortTag(g.place[i])}</small></button>
+                            <button type="button" className="x" aria-label={`Send ${w} back to the tray`} onClick={() => unfile(i)}>&times;</button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+            bottom={playing ? (
+              <div className="vns-tools">
+                <button type="button" className="vns-tb" onClick={clearAll} disabled={placedCount === 0}>Clear all</button>
+                <button type="button" className="vns-go" onClick={submit} disabled={!canSubmit}>File the sheet</button>
+              </div>
+            ) : null}
+            foot={verdict ? <span style={{ color: LBAD }}>{verdict.msg}</span> : (toast || (playing
+              ? `${placedCount} of ${N} filed · ${N - placedCount} in the tray${placedCount === N ? (countsMatch ? ' · counts match' : ' · counts off') : ''}${g.rejected ? ` · ${g.rejected} sent back` : ''}`
+              : (g.status === 'done' ? (won ? 'Filed clean on the first sheet' : `Filed after ${g.rejected} rejected sheet${g.rejected === 1 ? '' : 's'}`) : 'Gave up')))}
+            giveUp={{ armed: !!armGive, onPress: () => { if (armGive) { if (Date.now() - armGive < 400) return; setArmGive(0); reveal(); } else { setArmGive(Date.now()); } }, armedLabel: 'Tap again to give up and see the filing' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -910,3 +1018,46 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
 }
+
+// The stage board (owner, 2026-10-31 mockup): the three circles in ink on a
+// light grey wash, region buttons white (pale rose while a word is held), filed
+// pips rose, open pips white, the held chip rose with an ink ring, File the
+// sheet the one rose button. An over-full region and a wrong pip are orange.
+const VNS_CSS = `
+.vns{display:flex;flex-direction:column;gap:9px;}
+.vns-rls{display:flex;flex-direction:column;gap:5px;}
+.vns-rl{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;line-height:1.25;}
+.vns-rl b{width:24px;height:24px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none;}
+.vns-fact{font-size:12.5px;font-weight:700;color:var(--pst-mute);}
+.vns-dia{position:relative;width:min(100%, 420px);aspect-ratio:358/330;align-self:center;}
+.vns-dia svg{position:absolute;inset:0;width:100%;height:100%;}
+.vns-c circle{fill:var(--pst-cell);fill-opacity:.7;stroke:var(--pst-ink);}
+.vns-l{color:var(--pst-ink);}
+.pst .vns-pz{position:absolute;transform:translate(-50%,-50%);min-width:58px;min-height:48px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px 6px;z-index:1;}
+.pst .vns-pz.arm{background:var(--pst-pale);}
+.vns-pz .bdg{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;border-radius:7px;padding:0 5px;line-height:16px;}
+.pst .vns-pz.ready .bdg{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .vns-pz.over{border-color:var(--lg-bad);box-shadow:inset 0 0 0 1px var(--lg-bad);}
+.pst .vns-pz.over .bdg{color:var(--lg-bad);}
+.vns-pz .ps{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;max-width:76px;}
+.vns-pz .ps i{font-style:normal;min-width:22px;height:18px;border-radius:9px;background:var(--pst-acc);border:1.5px solid var(--pst-ink);font-size:10px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0 3px;}
+.pst .vns-pz .ps i{color:var(--pst-on-acc);}
+.vns-pz .ps i.o{background:var(--pst-bg);border-color:var(--pst-cell-line);}
+.pst .vns-pz .ps i.no{background:var(--pst-bg);border-color:var(--lg-bad);color:var(--lg-bad);}
+.vns-held{text-align:center;font-size:14px;font-weight:800;}
+.vns-tray{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;}
+.pst .vns-ch{min-height:44px;padding:0 9px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:13.5px;font-weight:800;letter-spacing:.01em;}
+.pst .vns-ch.h{background:var(--pst-acc);color:var(--pst-on-acc);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.vns-fc{display:inline-flex;align-items:stretch;min-height:40px;border-radius:12px;border:2px solid var(--pst-cell-line);background:var(--pst-pale);overflow:hidden;}
+.vns-fc.h{border-color:var(--pst-ink);background:var(--pst-acc);}
+.pst .vns-fc button{border:0;border-radius:0;background:transparent;padding:0;}
+.pst .vns-fc .t{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 4px 0 10px;font-size:13px;font-weight:800;line-height:1.15;}
+.vns-fc .t small{font-size:10px;font-weight:700;color:var(--pst-mute);}
+.pst .vns-fc.h *{color:var(--pst-on-acc);}
+.pst .vns-fc .x{width:30px;font-size:17px;font-weight:700;color:var(--pst-mute);}
+.vns-tools{display:flex;gap:8px;}
+.pst .vns-tb{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 16px;border-radius:999px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:14px;font-weight:800;flex:none;}
+.pst .vns-tb:disabled{opacity:.4;cursor:default;}
+.pst .vns-go{flex:1;min-height:48px;border-radius:999px;border:2px solid var(--pst-ink);background:var(--pst-acc);color:var(--pst-on-acc);font-size:15px;font-weight:800;}
+.pst .vns-go:disabled{opacity:.4;cursor:default;}
+`;
