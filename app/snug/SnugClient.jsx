@@ -816,7 +816,7 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
                     const own = owner.get(k);
                     if (own != null) {
                       return (
-                        <span key={idx} className="sgx-cell pc" style={{ background: SGX_SHADE(own) }}
+                        <span key={idx} className="sgx-cell pc" style={{ background: SGX_SHADE(own), color: sgxStep(own) >= 60 ? 'var(--pst-on-acc)' : 'var(--pst-ink)' }}
                           role="button" tabIndex={playing ? 0 : -1}
                           aria-label={`Row ${r + 1}, column ${c + 1}, piece ${own + 1}${playing ? ', tap to lift it' : ''}`}
                           onClick={() => cellClick(r, c)}
@@ -1342,12 +1342,15 @@ export default function SnugClient({ puzzles = [], forceNum = null }) {
   );
 }
 
-// The stage board (owner, 2026-10-31 mockup). A placed piece wears a step of
-// the category colour mixed toward white (it stays a pastel in both looks, so
-// the dark ink reads on it), piece 1 the full colour; open squares are light
-// grey with a light rule, holes are simply not there.
-const SGX_STEPS = [100, 42, 22, 72, 32, 58, 14, 86];
-const SGX_SHADE = (i) => `color-mix(in srgb, var(--pst-acc) ${SGX_STEPS[i % SGX_STEPS.length]}%, #ffffff)`;
+// The stage board (owner, 2026-10-31 mockup). A placed piece wears a step
+// between the category's full colour (--pst-acc) and its pale tint (--pst-pale),
+// both read from PlayStage per look, so the board follows whatever the tokens
+// are; piece 1 is the full colour. A step from 60% up carries the on-colour ink
+// (--pst-on-acc), a paler one the page ink. Open squares are light grey with a
+// light rule, holes are simply not there.
+const SGX_STEPS = [100, 45, 0, 75, 25, 60, 10, 88];
+const sgxStep = (i) => SGX_STEPS[i % SGX_STEPS.length];
+const SGX_SHADE = (i) => `color-mix(in srgb, var(--pst-acc) ${sgxStep(i)}%, var(--pst-pale))`;
 const SGX_CSS = `
 .sgx{display:flex;flex-direction:column;gap:14px;width:100%;max-width:480px;align-self:center;}
 .sgx-board{--sgx-c:min(52px, calc((100vw - 28px - (var(--sgx-w) - 1) * 4px) / var(--sgx-w)));align-self:center;display:grid;grid-template-columns:repeat(var(--sgx-w), var(--sgx-c));grid-auto-rows:var(--sgx-c);gap:4px;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
@@ -1356,7 +1359,7 @@ const SGX_CSS = `
 .sgx-cell:focus-visible{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
 .sgx-cell.hole{border:0;background:transparent;cursor:default;}
 .sgx-cell.pc{border-color:var(--pst-ink);}
-.sgx-cell.pc b{position:absolute;top:3px;left:6px;font-size:12px;font-weight:800;line-height:1;color:var(--pst-on-acc);}
+.sgx-cell.pc b{position:absolute;top:3px;left:6px;font-size:12px;font-weight:800;line-height:1;color:inherit;}
 .sgx-cell.open.ghost{background:var(--pst-pale);border:2.5px solid var(--pst-ink);}
 .sgx-cell.open.bad{background:var(--lg-bad-bg);border-color:var(--lg-bad);}
 .sgx-hand{display:flex;align-items:center;justify-content:space-between;gap:10px;}

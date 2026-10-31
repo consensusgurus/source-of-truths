@@ -1724,8 +1724,8 @@ the stage untouched. Wrong marks are Logic ORANGE (`--lg-bad`: #c2410c light, #f
   up (a local `armGive`). A rejected sheet's verdict is the foot line, in orange. **Inside the Judged
   run (`useRunEmbed()`) the stage does not mount**: the run keeps the old board its `.jd-host` rules
   dress, so JudgedClient needs nothing. (Stands only sits in the pre-2026-10-11 Judged roster.)
-- **Snug**: the board (open squares light grey, holes absent, a placed piece a step of the rose mixed
-  toward white with ink edges, `SGX_STEPS`), the hand row with Rotate / Flip, and only the pieces still
+- **Snug**: the board (open squares light grey, holes absent, a placed piece a step between `--pst-acc` and `--pst-pale`,
+  read from PlayStage so it follows the tokens; `SGX_STEPS`), the hand row with Rotate / Flip, and only the pieces still
   on the pad. Touch aims with a first tap and drops on the second, a mouse previews on hover, exactly
   as before. Fit It (`/kids/fitit`) has its own client and is unchanged.
 - **Plot**: a call line naming the drag ("Dragging 3 by 2 covers 6 squares around the 6"), the board
