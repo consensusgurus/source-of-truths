@@ -51,6 +51,8 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import SudoclueFinale from './SudoclueFinale';
+import { markEndHold } from '@/lib/finish-beat';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
@@ -71,6 +73,39 @@ const COLORS = {
   accentSoft: '#ffe4e6', green: T.successDeep,
 };
 const TOTAL = 10;
+// CASE POINTS (owner, 2026-10-31: approved the case-closed ending mockup, "Looks great. Implement.").
+// From No. 3 (Nov 1) a case scores in points instead of the old 10-minus-2-per-wrong-check, which printed
+// an arbitrary "x/10". Boards No. 1 and No. 2 were already being played on that scale, and a day's board
+// must never mix the two, so they keep it.
+//   Place         10 per person, banked when the board checks out
+//   Accuse        killer 30, victim 20, accomplice 20, everyone else 5
+//   Clean record  40 with no wrong check, 20 after one, 10 after two, 0 after three or more
+// A 7 by 7 is worth 200, the Sunday 10 by 10 245. A give-up keeps Place if the board had checked out and
+// scores nothing else. lib/daily-games.js reads a row as solved when it lost no more than Clean record.
+// The board ranks on points, then time.
+const CASE_FROM = 3;
+const CLEAN_PTS = [40, 20, 10, 0];
+export function caseMax(n) { return 10 * n + 70 + 5 * (n - 3) + 40; }
+export function casePoints(n, cur) {
+  const won = cur.status === 'won';
+  const place = (won || cur.stage === 'accuse') ? 10 * n : 0;
+  const accuse = won ? 70 + 5 * (n - 3) : 0;
+  const clean = won ? CLEAN_PTS[Math.min(3, cur.wrong || 0)] : 0;
+  return { place, accuse, clean, total: place + accuse + clean, max: caseMax(n), wrong: cur.wrong || 0,
+    legs: [{ k: 'Place', v: place, max: 10 * n }, { k: 'Accuse', v: accuse, max: 70 + 5 * (n - 3) }, { k: 'Clean record', v: clean, max: 40 }] };
+}
+// THE DETECTIVE RANKS: a share of the board's points, so every board size climbs the same ladder. Master
+// Sleuth is a clean case solved faster than half the day's solvers.
+export const CASE_LADDER = [
+  { t: 'Rookie', f: 0, note: 'start' }, { t: 'Beat Cop', f: 0.5, note: 'half' }, { t: 'Sergeant', f: 0.7, note: '70%' },
+  { t: 'Detective', f: 0.85, note: '85%' }, { t: 'Inspector', f: 0.9, note: '90%' }, { t: 'Chief Inspector', f: 1, note: 'clean case' },
+  { t: 'Master Sleuth', f: 1, fast: true, note: 'clean + fast' },
+];
+export function caseRank(pts, fast) {
+  let i = 0;
+  CASE_LADDER.forEach((r, k) => { if (pts.total >= r.f * pts.max && (!r.fast || fast)) i = k; });
+  return i;
+}
 const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const HELP_KEY = 'sot_sudoclue_help_seen';
@@ -178,7 +213,7 @@ const HAPT = { ok: [6], wrong: [0, 26, 34, 26], win: [10, 40, 20, 40, 20, 60] };
 function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
 // stage: 'place' until the board checks out, then 'accuse' (owner, 2026-10-30: the two-stage case).
-const freshState = () => ({ v: 1, stage: 'place', place: {}, roles: {}, cross: {}, struck: {}, wrong: 0, checks: 0, status: 'playing', t0: null, tEnd: null });
+const freshState = () => ({ v: 1, stage: 'place', place: {}, roles: {}, cross: {}, struck: {}, wrong: 0, checks: 0, status: 'playing', t0: null, tEnd: null, rankT: null });
 
 // The role counts a board deals: one victim, one killer, then the roleset.
 function roleCounts(n) {
@@ -295,6 +330,11 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const ON_ACC = STAGE ? 'var(--stg-onramp, #08222e)' : 'var(--white)';
   const BAD = STAGE ? 'var(--stg-bad, #fb923c)' : '#c2410c';
   const finalScore = won ? Math.max(1, TOTAL - 2 * g.wrong) : 0;
+  const CASE = PUZZLE.num >= CASE_FROM;
+  const casePts = casePoints(CAST.length, g);
+  // The finale plays once, on a fresh finish in this tab (or ?ending=1 on a finished board, for review),
+  // and the daily ending waits for it.
+  const [finale, setFinale] = useState(false);
 
   useEffect(() => { gRef.current = g; }, [g]);
   useEffect(() => {
@@ -395,12 +435,12 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
 
   const RATE_KEY = `sot_sudoclue_rated_${PUZZLE.num}`;
   useEffect(() => {
-    if (!hydrated || g.status === 'playing') return undefined;
+    if (!hydrated || g.status === 'playing' || finale) return undefined;
     try { if (localStorage.getItem(RATE_KEY)) return undefined; } catch (e) { return undefined; }
     const t = setTimeout(() => setRateOpen(true), 10000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [g.status, hydrated]);
+  }, [g.status, hydrated, finale]);
   function closeRate(send) {
     try { localStorage.setItem(RATE_KEY, send ? 'sent' : 'skipped'); } catch (e) {}
     if (send && (rateStars || rateHard)) {
@@ -425,6 +465,30 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const nextUp = useNextUnplayed({ self: KEY, active: LOFT && !playing });
   const upNext = useUnplayedSimilar({ self: KEY, active: LOFT && !playing });
   const dailyBoard = useDailyBoard({ quizId: PUZZLE.quizId, active: LOFT && !playing });
+  // The finale reads the day's board late (at the case file), so a fast clean solve can make Master Sleuth.
+  const dayBoardRef = useRef(dailyBoard);
+  dayBoardRef.current = dailyBoard;
+  const reviewEnding = useRef(false);
+  useEffect(() => {
+    if (!hydrated || !CASE || g.status === 'playing') return;
+    try { if (searchParams && searchParams.get('ending') === '1') { reviewEnding.current = true; setFinale(true); } } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
+  function finaleRank() {
+    const cur = gRef.current;
+    const pts = casePoints(CAST.length, cur);
+    const b = dayBoardRef.current;
+    const fast = !!(b && b.myRank != null && b.field && b.myRank <= Math.ceil(b.field / 2));
+    return caseRank(pts, cur.status === 'won' && fast);
+  }
+  function finaleDone(title) {
+    if (!reviewEnding.current && title) commit({ ...gRef.current, rankT: title });
+    reviewEnding.current = false;
+    // The finale held the finished board on screen, so the daily ending opens on its iris and verdict
+    // instead of playing a second beat over the board (lib/finish-beat.js, the end hold).
+    try { markEndHold(); } catch (e) {}
+    setFinale(false);
+  }
   const allTime = useGameAllTime({ game: KEY, active: LOFT && !playing });
   const dayStats = useDayStats();
   const catRank = useCategoryRank({ self: KEY, active: LOFT && !playing });
@@ -452,18 +516,19 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     try { if (localStorage.getItem(REC_KEY)) return null; } catch (e) {}
     const el = Math.min(36000, Math.max(1, Math.round((Date.now() - (cur.t0 || Date.now())) / 1000)));
     try { localStorage.setItem(REC_KEY, '1'); } catch (e) {}
-    return { quizId: PUZZLE.quizId, score: 0, total: TOTAL, correct: 0, guessesUsed: cur.wrong, timeElapsed: el, abandoned: true, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') };
+    return { quizId: PUZZLE.quizId, score: 0, total: PUZZLE.num >= CASE_FROM ? caseMax(CAST.length) : TOTAL, correct: 0, guessesUsed: cur.wrong, timeElapsed: el, abandoned: true, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') };
   });
 
   function postResult(g2, score) {
     abandon.markFlushed();
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
-    try { setStats(recordStat(PUZZLE.num, { s: score, t: TOTAL, g: g2.wrong, won: g2.status === 'won' && g2.wrong === 0 })); } catch (e) {}
+    const tot = CASE ? caseMax(CAST.length) : TOTAL;
+    try { setStats(recordStat(PUZZLE.num, { s: score, t: tot, g: g2.wrong, won: g2.status === 'won' && g2.wrong === 0 })); } catch (e) {}
     try {
       fetch('/api/quiz/result', {
         method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
         // guessesUsed = wrong checks, so the daily board's ties break on them.
-        body: JSON.stringify({ quizId: PUZZLE.quizId, score, total: TOTAL, correct: score === TOTAL ? 1 : 0, guessesUsed: g2.wrong, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
+        body: JSON.stringify({ quizId: PUZZLE.quizId, score, total: tot, correct: (CASE ? g2.status === 'won' : score === TOTAL) ? 1 : 0, guessesUsed: g2.wrong, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
       })
         .then((r) => r.json())
         .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
@@ -581,8 +646,9 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     if (sol && sameAnswer(sol, cur.place, cur.roles)) {
       const done = { ...cur, status: 'won', tEnd: Date.now(), checks: cur.checks + 1 };
       vibrate(HAPT.win);
-      postResult(done, Math.max(1, TOTAL - 2 * done.wrong));
+      postResult(done, CASE ? casePoints(CAST.length, done).total : Math.max(1, TOTAL - 2 * done.wrong));
       commit(done);
+      if (CASE) setFinale(true);
       return;
     }
     vibrate(HAPT.wrong);
@@ -595,8 +661,9 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     if (cur.status !== 'playing') return;
     const g2 = { ...cur, status: 'gaveup', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
-    postResult(g2, 0);
+    postResult(g2, CASE ? casePoints(CAST.length, g2).total : 0);
     commit(g2);
+    if (CASE) setFinale(true);
   }
   function giveUpTap() {
     if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); }
@@ -621,11 +688,11 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
 
   function shareUrl() { return withRef(`mindloftdaily.com/sudoclue${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
   function shareText() {
-    const g5 = won ? Math.max(1, Math.round(finalScore / 2)) : 0;
+    const g5 = CASE ? Math.round(5 * casePts.total / casePts.max) : (won ? Math.max(1, Math.round(finalScore / 2)) : 0);
     const squares = '\u{1F7E5}'.repeat(g5) + '⬜'.repeat(5 - g5);
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const head = won
-      ? `Sudoclue #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · case closed · ${g.wrong ? `${g.wrong} wrong` : 'no wrong checks'} · ${elapsed}${streakBit}`
+      ? `Sudoclue #${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · case closed · ${CASE ? `${casePts.total} points${g.rankT ? ` · ${g.rankT}` : ''}` : (g.wrong ? `${g.wrong} wrong` : 'no wrong checks')} · ${elapsed}${streakBit}`
       : `Sudoclue #${PUZZLE.num} · the case went cold`;
     return `${head}\n${squares}\n${shareUrl()}`;
   }
@@ -990,14 +1057,14 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !finale && (
             <LoftFinish
               name="Sudoclue"
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
               challengeMetric={null}
-              title={endEfficiency(won, finalScore)}
-              detail={`${g.wrong} wrong · ${elapsed}`}
+              title={CASE ? (won ? 'Solved!' : FAIL) : endEfficiency(won, finalScore)}
+              detail={CASE ? `${casePts.total} case points · ${g.rankT || CASE_LADDER[caseRank(casePts, false)].t} · ${elapsed}` : `${g.wrong} wrong · ${elapsed}`}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready
@@ -1078,7 +1145,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
         </div>
       </div>
 
-      {!playing && !endClosed && !LOFT && (
+      {!playing && !endClosed && !LOFT && !finale && (
         <DailyEndCard modal self={KEY} won={won}
           headline={won ? (g.wrong === 0 ? <>Case closed, first try.</> : <>Case closed.</>) : <>{FAIL}</>}
           subline={won ? <>{g.wrong} wrong &middot; {elapsed}</> : <>{killer} did it.</>}
@@ -1087,6 +1154,25 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       )}
 
       <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
+
+      {finale && !playing && (() => {
+        const sol = solution();
+        if (!sol) return null;
+        const vic = CAST.find((p) => sol.roles[p] === 'Victim');
+        const vx = sol.place[vic] || [0, 0];
+        const ri = LAYOUT.rinfo[LAYOUT.rooms[vx[0]][vx[1]]];
+        const bare = ri.name.replace(/^The /, '');
+        return (
+          <SudoclueFinale
+            boardSvg={renderBoard(LAYOUT, { place: sol.place })}
+            N={N} sol={sol} colors={CAST_COLORS} face={portraitSVG} font={SANS}
+            pts={casePts} cold={!won}
+            roomName={{ grid: LAYOUT.rooms, at: ri.say || (ri.out ? `in the ${bare} area` : `in the ${bare}`) }}
+            caseLine={`Case No. ${PUZZLE.num} · ${LAYOUT.title} · ${LAYOUT.place}`}
+            ladder={CASE_LADDER} rankAt={finaleRank} onDone={finaleDone}
+          />
+        );
+      })()}
 
       {rateOpen && rootRef.current && createPortal(
         <div onClick={() => closeRate(false)} style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'rgba(8,10,16,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18 }}>

@@ -1727,5 +1727,13 @@ and `guessesUsed` is the wrong checks. Timer hidden by default.
   clues"). Every clue that names an object shows its picture inline (`objIcon`, words from `SAY`, both in
   lib/sudoclue-art.js); the selected person's named objects glow on the board (`renderBoard` `glow`); a Key under
   the cards names every object on the day's board in the clues' own words.
+- **Case points and the case-closed finale** (owner, 2026-10-31, from the approved mockup). From No. 3 a case
+  scores Place 10 per person, Accuse (killer 30, victim 20, accomplice 20, others 5) and Clean record (40, 20,
+  10, 0 by wrong checks); a 7x7 is 200. A give-up keeps Place if the board had checked out. Ranks by share of
+  the board's points: Rookie, Beat Cop 50%, Sergeant 70%, Detective 85%, Inspector 90%, Chief Inspector 100%,
+  Master Sleuth (clean and in the top half of the day's board). Nos. 1 and 2 stay on the old 10 scale
+  (lib/daily-games.js SCORE_VIEW `legacy`). `app/sudoclue/SudoclueFinale.jsx` plays once on a fresh finish
+  (who did it, recap ring, case file climb and stamp, glide), then marks an end hold so the daily ending
+  opens on its iris. `?ending=1` on a finished board replays it.
 - **Names.** First names of famous people only, never a likeness: portraits are original drawings with skin tone
   matched to the namesake; a role never mirrors the namesake and no namesake appears at their famous place.
