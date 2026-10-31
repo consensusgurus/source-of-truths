@@ -75,7 +75,12 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
 // dark look the pastel stays the pastel (dark ink still reads on it) and the
 // pale and grey steps sink onto the near-black page. --pst-bad / --pst-bad-bg
 // carry a wrong mark in both looks.
-const PALE = { '#fb7185': '#ffe4e6', '#6ee7b7': '#d1fae5', '#e8b43a': '#fdf3d7', '#7dd3fc': '#e0f4fe', '#fb923c': '#ffedd5' };
+const PALE = { '#fb7185': '#ffe4e6', '#6ee7b7': '#d1fae5', '#e8b43a': '#fdf3d7', '#7dd3fc': '#e0f4fe', '#fb923c': '#ffedd5', '#a5b4fc': '#e0e7ff' };
+// SUDOKU ON THE STAGE (owner, 2026-10-31, the periwinkle sudoku mockups): the
+// pale step is #e0e7ff, and the player's own digits are the DEEP periwinkle
+// #3949ab on white (--pst-deep); in the dark looks they are the periwinkle
+// itself, which reads on the near-black board.
+const PERI = '#a5b4fc';
 // LOGIC ON THE STAGE (owner, 2026-10-31, the Judged boards on their own pages):
 // rose's dark-look tile is the approved #4a2a33 and the full rose carries
 // #0b0f1a there; the deep rose #be123c is rose as TEXT on white. A wrong mark
@@ -87,10 +92,11 @@ export function accentVars(pastel, look) {
   const hex = /^#[0-9a-f]{6}$/i.test(String(pastel || '')) ? pastel : null;
   const acc = hex || 'var(--pst-ink)';
   const rose = !!hex && hex.toLowerCase() === ROSE;
+  const peri = !!hex && hex.toLowerCase() === PERI;
   return {
     '--pst-acc': acc,
     '--pst-on-acc': hex ? (rose && dark ? '#0b0f1a' : RAMP_INK) : 'var(--pst-bg)',
-    '--pst-deep': rose ? (dark ? ROSE : '#be123c') : 'var(--pst-ink)',
+    '--pst-deep': rose ? (dark ? ROSE : '#be123c') : peri ? (dark ? PERI : '#3949ab') : 'var(--pst-ink)',
     // Type on an ink-filled card: the pale tint (the mockups' pale on ink).
     '--pst-inv': hex && !dark ? (PALE[hex.toLowerCase()] || 'var(--pst-bg)') : 'var(--pst-bg)',
     '--pst-pale': hex ? (dark ? (rose ? '#4a2a33' : `color-mix(in srgb, ${hex} 30%, #0b0f1a)`) : (PALE[hex.toLowerCase()] || softGround(hex, 0.62))) : 'var(--pst-tint)',
