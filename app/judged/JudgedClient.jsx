@@ -23,6 +23,16 @@
 // gavel and admissions letter; each case plays inside RunPlayFrame; between
 // cases the ruling stays up until the player presses Next (no countdown);
 // the ending climbs today's eight-school ladder to the school that takes you.
+//
+// A WHITE PAGE WITH ROSE TILES (owner, 2026-10-30). Judged wears its
+// category, Logic, which turned rose that day: every screen of the run is a
+// white page (`paper`), the run's own colour is the Logic pastel (`ROSE`)
+// rather than a ladder step per case, and inside the play frame the five
+// boards are re-inked by the .jd-rose / .jd-rosedk rules in CSS below: pale
+// rose tiles with a 2px ink rule, the full rose with dark ink for what is
+// confirmed, selected or primary. Presentation only: no game logic, save,
+// timer, gesture, result row or share line changes. The school ladder keeps
+// its own colours (rampFor), on purpose.
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -35,9 +45,13 @@ import { stageAvg } from '../circuits/RunScorecard';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
 import { isDarkLook } from '@/lib/stage-look';
 import { rampFor } from '@/lib/circuits';
+import { categoryColor } from '@/lib/category-ramp';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { LAW_RUN_ID, LAW_CLOCK, LAW_CASE_MAX, LAW_MAX, lawLadderFor, lawTierOf, lawIndexOf, lawCasePoints, lawAcc, lawSpeed } from '@/lib/law-school';
+
+// The run's one colour: Logic's pastel (rose since 2026-10-30).
+const ROSE = categoryColor('Logic');
 
 const CLIENTS = {
   ergo: dynamic(() => import('../ergo/ErgoClient'), { ssr: false, loading: () => null }),
@@ -92,6 +106,8 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
   // (light register) unless the reader picked one of the black looks.
   const [look] = useGauntletLook();
   const boardTheme = isDarkLook(look) ? 'dark' : 'light';
+  // The black-and-white looks stay colourless; every other look gets rose tiles.
+  const roseCls = look === 'plain' || look === 'dark' ? '' : (isDarkLook(look) ? ' jd-rosedk' : ' jd-rose');
 
   useEffect(() => { rRef.current = r; }, [r]);
   const commit = useCallback((next) => {
@@ -231,7 +247,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
     const g = sf && sf.games && sf.games[s.key];
     const a = avg && avg[s.key] != null ? Number(avg[s.key]) : null;
     return {
-      key: s.key, name: s.name, bg: rampFor(i),
+      key: s.key, name: s.name, bg: ROSE,
       you: counted[i] ? Math.round(parts[i]) : '–',
       field: a != null ? Math.round(a) : '–',
       best: g && Number.isFinite(Number(g.best)) ? Math.round(Number(g.best)) : '–',
@@ -254,7 +270,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
 
   return (
     <>
-      {!hydrated ? <GauntletCover sections={gs} /> : null}
+      {!hydrated ? <GauntletCover sections={gs} paper /> : null}
       <div className="jd" data-sot-wait="">
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
@@ -273,16 +289,18 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
               startLabel={leaving ? 'Order in the court…' : (allBanked ? 'Open your letter' : 'Begin the exam')}
               fieldLine={Object.keys(banked).length ? 'Argued one today? Your first result stands.' : null}
               centerpiece={<Gavel strike={leaving} allBanked={allBanked} top={L[0]} bottom={L[L.length - 1]} n={L.length} onStart={start} />}
+              bandColour={ROSE}
+              paper
               onStart={start}
             />
           </div>
         )}
 
         {hydrated && playing && sec && (
-          <RunPlayFrame sections={gs} idx={r.si} title="Judged" sub={`Case ${r.si + 1} of ${N} · ${sec.name}`}
+          <RunPlayFrame sections={gs} idx={r.si} title="Judged" sub={`Case ${r.si + 1} of ${N} · ${sec.name}`} pastel={ROSE} paper
             foot={<>Run total {Math.round(runSoFar + (secDone ? parts[r.si] : 0))} of {LAW_MAX}{mounted && !between ? <> · <button type="button" className="jd-back" onClick={() => setHelpSeq((x) => x + 1)}>How to play {sec.name}</button></> : null}{between && peek ? <> · <button type="button" className="jd-back" onClick={() => setPeek(false)}>Back to the ruling</button></> : null}</>}>
             {mounted ? (
-              <div className="jd-host">
+              <div className={`jd-host${roseCls}`}>
                 <RunEmbed onResult={onSectionDone} theme={boardTheme} help={helpSeq} autostart>
                   <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
                 </RunEmbed>
@@ -309,6 +327,8 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
               goLabel={nextSec ? `Next: ${nextSec.name}` : 'Send My File In'}
               fine={<>The clock waits: each case&rsquo;s clock starts when you begin it.{mounted ? <><br /><button type="button" className="jd-peek" onClick={() => setPeek(true)}>See your finished board</button></> : null}</>}
               onGo={advance}
+              pastel={ROSE}
+              paper
               leaveHref="/circuits/deduction"
             />
           </div>
@@ -340,6 +360,8 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
             onShare={copyShare}
             copied={copied}
             sweep={doneAtLoad.current === false}
+            pastel={ROSE}
+            paper
           />
         )}
         {/* Every other run on one card, the first time (owner, 2026-10-09). */}
@@ -420,4 +442,88 @@ const CSS = `
   .jd-lt{max-width:280px}
 }
 @media(prefers-reduced-motion:reduce){.jd *{animation:none !important;transition:none !important}}
+/* ROSE TILES ON WHITE (owner, 2026-10-30; the approved Judged mockups for
+   Ergo, Docket, Alibi, Sworn and Hearsay, and AlibiRose / AlibiRoseDark).
+   Only tokens and surfaces move: pale rose #ffe4e6 tiles with a 2px ink rule
+   on a white page, and the full rose #fb7185 carrying dark ink for a
+   confirmed cell, a selected tile and the primary button. On the black looks
+   the tiles are a dark rose #4a2a33 with light ink, and the full rose carries
+   #0b0f1a. Wrong stays ORANGE on Logic: StageChrome's LOGIC_BAD does that on
+   a game's own page, but the embedded board drops its cap, so it is restated
+   here. */
+.gsx-play .jd-host.jd-rose .stage-page{
+  --stg-ink:#08222e !important;--stg-ink2:#1d3a4a !important;--stg-mute:#3b4656 !important;--stg-mute2:#3b4656 !important;--stg-dim:#3b4656 !important;
+  --stg-acc:#fb7185 !important;--stg-acc-lt:#fb7185 !important;--stg-acc-dk:#fb7185 !important;
+  --stg-acc-ink:#08222e !important;--stg-acc-ink-lt:#08222e !important;
+  --stg-onramp:#08222e !important;--stg-onramp-lt:#08222e !important;
+  --stg-acc-tint:#ffe4e6 !important;
+  --stg-surf:#fff1f2 !important;--stg-surf2:#ffe4e6 !important;--stg-raise:#ffffff !important;--stg-panel:#fff1f2 !important;
+  --stg-cell:#ffe4e6 !important;--stg-cell-line:#08222e !important;
+  --stg-line:rgba(8,34,46,.85) !important;--stg-line2:#08222e !important;--stg-line3:#08222e !important;
+  --stg-chip:#ffe4e6 !important;
+  --stg-bad:#c2410c !important;--stg-dn:#c2410c !important;--stg-good:#047857 !important;
+}
+.gsx-play .jd-host.jd-rosedk .stage-page{
+  --stg-ink:#e9edf4 !important;--stg-ink2:#d5dbe6 !important;--stg-mute:#aab3c2 !important;--stg-mute2:#aab3c2 !important;--stg-dim:#aab3c2 !important;
+  --stg-acc:#fb7185 !important;--stg-acc-lt:#fb7185 !important;--stg-acc-dk:#fb7185 !important;
+  --stg-acc-ink:#fb7185 !important;--stg-acc-ink-lt:#fb7185 !important;
+  --stg-onramp:#0b0f1a !important;--stg-onramp-lt:#0b0f1a !important;
+  --stg-acc-tint:#4a2a33 !important;
+  --stg-surf:#2a1a20 !important;--stg-surf2:#4a2a33 !important;--stg-raise:#2a1a20 !important;--stg-panel:#2a1a20 !important;
+  --stg-cell:#4a2a33 !important;--stg-cell-line:#e9edf4 !important;
+  --stg-line:rgba(233,237,244,.75) !important;--stg-line2:#e9edf4 !important;--stg-line3:#e9edf4 !important;
+  --stg-chip:#4a2a33 !important;
+  --stg-bad:#fb923c !important;--stg-dn:#fb923c !important;--stg-good:#6ee7b7 !important;
+}
+/* The shapes: rounded tiles with a 2px ink rule, as drawn. The brief (rules,
+   conditions, the statement in hand) sits straight on the white page. */
+.jd-host:is(.jd-rose,.jd-rosedk) .stage-page :is(.eg-bin,.dk-choice,.dk-x,.dk-tile,.al-clue,.hs-say,.hs-card,.sw-bub,.sw-focus,.sw-foot,.sw-seg,.sw-accuse){border-width:2px !important;border-style:solid !important;border-color:var(--stg-line2) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .stage-page :is(.eg-panel,.eg-card,.dk-panel,.dk-chip,.hs-row){background:transparent !important;border:0 !important;box-shadow:none !important;padding-left:2px;padding-right:2px}
+.jd-host:is(.jd-rose,.jd-rosedk) .stage-page :is(.eg-btn,.dk-btn,.al-btn,.sw-btn,.hs-btn){border-radius:999px;border-color:var(--stg-line2) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .stage-page :is(.eg-btn,.dk-btn,.al-btn,.sw-btn,.hs-btn).primary{background:var(--stg-acc) !important;color:var(--stg-onramp) !important}
+/* Ergo: the three verdicts are pale rose tiles; a filed Must heads in full rose. */
+.jd-host:is(.jd-rose,.jd-rosedk) .eg-go{min-height:56px;border-radius:14px;font-size:17px;background:var(--stg-cell) !important;color:var(--stg-ink) !important;border:2px solid var(--stg-line2) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .eg-bh.b-must,.jd-host:is(.jd-rose,.jd-rosedk) .eg-v.b-must{background:var(--stg-acc) !important;color:var(--stg-onramp) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .eg-bh.b-could,.jd-host:is(.jd-rose,.jd-rosedk) .eg-v.b-could{background:var(--stg-cell) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .eg-st{font-size:24px;text-align:center}
+.jd-host:is(.jd-rose,.jd-rosedk) .eg-rn{background:var(--stg-acc) !important;color:var(--stg-onramp) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .eg-rule{background:transparent !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .eg-item{background:var(--stg-cell) !important;border-color:var(--stg-line2) !important}
+/* Docket: choices and slots on rose, the chosen or right tile full rose. */
+.jd-host:is(.jd-rose,.jd-rosedk) .dk-choice{background:var(--stg-cell) !important;border-radius:13px}
+.jd-host:is(.jd-rose,.jd-rosedk) .dk-choice .k{background:transparent !important;color:var(--stg-ink) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .dk-choice.right{background:var(--stg-acc) !important;color:var(--stg-onramp) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .dk-choice.right .k{color:var(--stg-onramp) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .dk-choice.wrong{border-color:var(--stg-bad) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .dk-choice.wrong .k{background:var(--stg-bad) !important;color:#ffffff !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .dk-pip{background:color-mix(in srgb, var(--stg-ink) 18%, transparent)}
+.jd-host:is(.jd-rose,.jd-rosedk) .dk-pip.miss{background:var(--stg-bad) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) :is(.dk-tile.sel,.dk-x.on,.dk-mark.on){background:var(--stg-acc) !important;color:var(--stg-onramp) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .dk-slot.full{background:var(--stg-raise) !important}
+/* Alibi: pale rose cells, a confirmed cell full rose, a ruled-out cell clear. */
+.jd-host:is(.jd-rose,.jd-rosedk) .al-tbl{background:transparent !important;box-shadow:none !important;border-collapse:separate;border-spacing:4px}
+.jd-host:is(.jd-rose,.jd-rosedk) .al-td{height:44px;border:2px solid var(--stg-line2) !important;border-radius:10px;background:var(--stg-cell) !important;color:var(--stg-ink) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .al-td.x{background:transparent !important;opacity:.45}
+.jd-host:is(.jd-rose,.jd-rosedk) .al-td.dot{background:var(--stg-acc) !important;color:var(--stg-onramp) !important;opacity:1}
+.jd-host:is(.jd-rose,.jd-rosedk) .al-tbl th{background:transparent !important;color:var(--stg-ink) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .al-band td{background:transparent !important;border:0 !important;color:var(--stg-mute) !important;padding-top:8px}
+.jd-host:is(.jd-rose,.jd-rosedk) .al-clue{background:var(--stg-surf) !important;border-radius:12px}
+.jd-host:is(.jd-rose,.jd-rosedk) .al-clue b{color:var(--stg-ink) !important}
+/* Sworn: witness cards on rose; Lying and the liar slots in full rose. */
+.jd-host:is(.jd-rose,.jd-rosedk) :is(.sw-bub,.sw-tail,.sw-focus){background:var(--stg-cell) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .sw-tail{border-color:var(--stg-line2) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .sw-av{border-color:var(--stg-line2) !important;background:var(--stg-cell) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .sw-av.m1{background:var(--stg-ink) !important;color:var(--gsx-bg, #ffffff) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .sw-av.m2{background:var(--stg-acc) !important;color:var(--stg-onramp) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) :is(.sw-segb.l.on,.sw-slot.on){background:var(--stg-acc) !important;color:var(--stg-onramp) !important;border-color:var(--stg-line2) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .sw-accuse{background:var(--stg-raise) !important;color:var(--stg-ink) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .sw-avb.sel{background:var(--stg-cell) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .sw-foot{background:var(--stg-surf) !important}
+/* Hearsay: the list as rose tiles, what was said as rose bubbles. */
+.jd-host:is(.jd-rose,.jd-rosedk) .hs-key{color:var(--stg-ink) !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .hs-card{background:var(--stg-cell) !important;border-radius:12px;min-height:44px}
+.jd-host:is(.jd-rose,.jd-rosedk) .hs-card.off{background:transparent !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .hs-card.wrong{border-color:var(--stg-bad) !important;color:var(--stg-bad) !important;background:transparent !important}
+.jd-host:is(.jd-rose,.jd-rosedk) .hs-say{background:var(--stg-cell) !important;border-radius:16px}
+.jd-host:is(.jd-rose,.jd-rosedk) .hs-num{background:var(--stg-acc) !important;color:var(--stg-onramp) !important}
 `;

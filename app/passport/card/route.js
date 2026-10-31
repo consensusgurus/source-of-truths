@@ -80,7 +80,7 @@ function card(scores) {
     left: [
       chip(res ? 'Passport · Result' : 'Passport · Daily Run', CAT),
       d({ marginTop: 18 },
-        d({ padding: '4px 18px 2px', border: '4px solid #f0718b', borderRadius: 12, transform: 'rotate(-3deg)', fontSize: 56, fontWeight: 800, letterSpacing: 3, lineHeight: 1, textTransform: 'uppercase' }, 'Passport')),
+        d({ padding: '4px 18px 2px', border: '4px solid #1a7f37', borderRadius: 12, transform: 'rotate(-3deg)', fontSize: 56, fontWeight: 800, letterSpacing: 3, lineHeight: 1, textTransform: 'uppercase' }, 'Passport')),
       d({ alignItems: 'center', gap: 24, marginTop: 24 },
         cover(tier, 120, -5),
         d({ flexDirection: 'column', flex: 1 },

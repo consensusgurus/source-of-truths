@@ -151,15 +151,20 @@ export function useStageChrome(color, edges) {
     };
   }, [color, eTop, eBot]);
 }
-function useStagePalette(pastel, edges) {
-  const [look, setLook] = useGauntletLook();
+// A WHITE-PAGE RUN (Judged, owner 2026-10-30: "a white page with
+// category-coloured tiles"). `paper` paints the Color look as White with
+// color, so the page stays white and only the tiles carry the colour. The
+// look switch still reports and cycles the reader's real look.
+function useStagePalette(pastel, edges, paper = false) {
+  const [realLook, setLook] = useGauntletLook();
+  const look = paper && realLook === 'color' ? 'tint' : realLook;
   const p = stagePalette(pastel, look);
   useStageChrome(p.bg, edges);
   return {
-    ...p, look,
+    ...p, look: realLook,
     plain: look === 'plain',
     fill: (c) => (look === 'plain' ? PLAIN.bg : look === 'dark' ? DARK.fill : look === 'darktint' ? `color-mix(in srgb, ${softGround(c)} 34%, ${DARK.bg})` : softGround(c)),
-    flip: () => setLook(nextLook(look)),
+    flip: () => setLook(nextLook(realLook)),
     vars: {
       '--gsx-bg': p.bg, '--gsx-ink': p.ink, '--gsx-tray': look === 'plain' ? PLAIN.ink : isDarkLook(look) ? '#1e2636' : INK,
       // THE TICKET CARD TAKES THE PAGE'S COLOUR, NOT GOLD (owner, 2026-10-25:
@@ -207,9 +212,12 @@ export { TopBar as GauntletTopBar };
 // window and any real photos are left as they are (owner, 2026-10-24); only
 // the chrome around them takes the stage look. A quiet `foot` line can carry
 // the run total and the clock.
-export function RunPlayFrame({ sections = [], idx = 0, title, sub = null, foot = null, children }) {
+// `pastel` puts every leg on one colour (a run in its category's colour, like
+// Judged's Logic rose) instead of each leg's ladder step; `paper` keeps the
+// page white on the Color look (see useStagePalette).
+export function RunPlayFrame({ sections = [], idx = 0, title, sub = null, foot = null, pastel = null, paper = false, children }) {
   const cur = sections[idx];
-  const pal = useStagePalette(rampFor(slotOf(cur, idx)));
+  const pal = useStagePalette(pastel || rampFor(slotOf(cur, idx)), undefined, paper);
   const light = !isDarkLook(pal.look);
   return (
     <div key={pal.look} className="gsx-play" data-stage-theme={light ? 'light' : 'dark'} style={{ ...pal.vars, background: pal.bg, color: pal.ink }}>
@@ -219,7 +227,7 @@ export function RunPlayFrame({ sections = [], idx = 0, title, sub = null, foot =
         <div className="gsx-strip gsx-pstrip" style={{ gridTemplateColumns: `repeat(${sections.length}, minmax(0,1fr))` }} aria-label={`${idx} of ${sections.length} done`}>
           {sections.map((s, i) => (
             <span key={s.key} className="gsx-seg">
-              <span className="gsx-sb" style={{ background: i < idx ? pal.ink : i === idx ? pal.fill(rampFor(slotOf(s, i))) : 'transparent', borderWidth: i === idx ? 3 : 2, animation: 'none' }} />
+              <span className="gsx-sb" style={{ background: i < idx ? pal.ink : i === idx ? pal.fill(pastel || rampFor(slotOf(s, i))) : 'transparent', borderWidth: i === idx ? 3 : 2, animation: 'none' }} />
               <span className="gsx-sn" style={{ opacity: i <= idx ? 1 : 0.55 }}>{s.name}</span>
             </span>
           ))}
@@ -251,19 +259,21 @@ export function gateColour(sections = []) {
 // the old load screen showed for a second). Just the entry's ground, full
 // screen, so the page opens on the colour the entry is about to use. A tiny
 // inline script turns it white at once for a reader on the Plain look.
-export function GauntletCover({ sections = [] }) {
+export function GauntletCover({ sections = [], paper = false }) {
   const c = gateColour(sections);
   return (
     <>
-      <div id="gsx-cover" aria-hidden="true" suppressHydrationWarning style={{ position: 'fixed', inset: 0, zIndex: 90, background: softGround(c) }} />
-      <script dangerouslySetInnerHTML={{ __html: `try{var L=localStorage.getItem('${GAUNTLET_LOOK_KEY}');if(L&&L!=='color'){var D=L==='dark'||L==='darktint';var e=document.getElementById('gsx-cover');if(e)e.style.background=D?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
+      <div id="gsx-cover" aria-hidden="true" suppressHydrationWarning style={{ position: 'fixed', inset: 0, zIndex: 90, background: paper ? '#ffffff' : softGround(c) }} />
+      <script dangerouslySetInnerHTML={{ __html: `try{var L=localStorage.getItem('${GAUNTLET_LOOK_KEY}');if(L&&(L!=='color'||${paper ? 1 : 0})){var D=L==='dark'||L==='darktint';var e=document.getElementById('gsx-cover');if(e)e.style.background=D?'#0b0f1a':'#ffffff'}}catch(e){}` }} />
     </>
   );
 }
 // One line per quiz, name then subject (owner, 2026-10-24).
-export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes', headline = null, bandNote = null, lineup = null, startLabel = null, centerpiece = null, after = null }) {
+// `bandColour` paints every lineup band in one colour (the run's category)
+// instead of each leg's ladder step; `paper` as in useStagePalette.
+export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes', headline = null, bandNote = null, lineup = null, startLabel = null, centerpiece = null, after = null, bandColour = null, paper = false }) {
   const first = sections[0];
-  const pal = useStagePalette(gateColour(sections));
+  const pal = useStagePalette(gateColour(sections), undefined, paper);
   const word = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][sections.length] || String(sections.length);
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Enter' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); onStart && onStart(); } };
@@ -299,7 +309,7 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
           <div className="gsx-bands gsx-bgo" role="button" tabIndex={0} aria-label={`Start with ${first ? first.name : 'the run'}`} onClick={onStart}
             onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault(); onStart && onStart(); } }}>
             {sections.map((s, i) => (
-              <div key={s.key} className="gsx-band" style={{ background: pal.fill(rampFor(slotOf(s, i))), animationDelay: `${0.15 + i * 0.07}s` }}>
+              <div key={s.key} className="gsx-band" style={{ background: pal.fill(bandColour || rampFor(slotOf(s, i))), animationDelay: `${0.15 + i * 0.07}s` }}>
                 <span className="gsx-bn">{i + 1}</span>
                 <span className="gsx-bt"><b>{s.name}</b>{lineFor && lineFor(s) ? <i>{lineFor(s)}</i> : null}</span>
                 <span className="gsx-bq">{bandNote ? bandNote(s) : `${s.questions.length} Qs`}</span>
@@ -337,11 +347,11 @@ function useCountdown(ms, held, resetKey) {
 // drops the countdown and Hold: the page waits for the player's Next (owner,
 // 2026-10-16: Judged and Read the Room must not auto-advance).
 export function GauntletBetween({ circuitName, sections = [], results = [], lastSec, last, lastMiss, upNext, upIdx = -1, lineFor, stand = null, dwellMs = 20000, held = false, resetKey = 0, onGo, onHold, leaveHref, mathText = (x) => x,
-  stepWord = 'Quiz', lastBody = null, lastFig = null, lastExtra = null, nextLine = null, auto = true, doneCount = null, goLabel = null, fine = null }) {
+  stepWord = 'Quiz', lastBody = null, lastFig = null, lastExtra = null, nextLine = null, auto = true, doneCount = null, goLabel = null, fine = null, pastel = null, paper = false }) {
   const secs = useCountdown(dwellMs, held || !auto, resetKey);
-  const fromBg = lastSec ? rampFor(slotOf(lastSec, sections.indexOf(lastSec))) : rampFor(0);
-  const pal = useStagePalette(upNext ? rampFor(slotOf(upNext, upIdx)) : fromBg);
-  const prev = stagePalette(fromBg, pal.look);
+  const fromBg = pastel || (lastSec ? rampFor(slotOf(lastSec, sections.indexOf(lastSec))) : rampFor(0));
+  const pal = useStagePalette(pastel || (upNext ? rampFor(slotOf(upNext, upIdx)) : fromBg), undefined, paper);
+  const prev = stagePalette(fromBg, paper && pal.look === 'color' ? 'tint' : pal.look);
   const doneKeys = new Set(results.map((x) => x && x.key));
   const nDone = doneCount != null ? doneCount : results.length;
   const missed = lastMiss && !lastMiss.cleared;
@@ -560,6 +570,10 @@ export function GauntletEndStage({
   // draws the same climb as an Erlenmeyer flask filling to the score, its
   // graduation marks the titles; `climbMax` is the run's question count.
   climbStyle = null, climbMax = null,
+  // ONE COLOUR FOR THE RUN (Judged, owner 2026-10-30): `pastel` grounds the
+  // page and the sweep in the run's category colour instead of the earned
+  // title's and each leg's ladder step; `paper` as in useStagePalette.
+  pastel = null, paper = false,
 }) {
   const [openRow, setOpenRow] = useState(-1);
   const Climb = climbStyle === 'flask' ? FlaskClimb : TitleClimb;
@@ -591,11 +605,11 @@ export function GauntletEndStage({
   }, []);
   const [lookNow] = useGauntletLook();
   const plainNow = lookNow === 'plain';
-  const sweepEdges = sweeping && lookNow === 'color' ? {
-    top: softGround(rampFor(slotOf(sections[0], 0))),
-    bottom: softGround(rampFor(slotOf(sections[sections.length - 1], sections.length - 1))),
+  const sweepEdges = sweeping && lookNow === 'color' && !paper ? {
+    top: softGround(pastel || rampFor(slotOf(sections[0], 0))),
+    bottom: softGround(pastel || rampFor(slotOf(sections[sections.length - 1], sections.length - 1))),
   } : null;
-  const pal = useStagePalette((title && title.colour) || '#7dd3fc', sweepEdges);
+  const pal = useStagePalette(pastel || (title && title.colour) || '#7dd3fc', sweepEdges, paper);
   const bg = pal.bg;
   const d0 = (s) => ({ animationDelay: anim ? s : `${Math.max(0, parseFloat(s) - 1.4)}s` });
   const d = (s) => d0(`${parseFloat(s) >= 1.9 ? parseFloat(s) + late : parseFloat(s)}s`);
@@ -604,7 +618,7 @@ export function GauntletEndStage({
     const res = byKey[s.key];
     const a = avg && avg[s.key] != null ? Number(avg[s.key]) : null;
     const b = top && top[s.key] != null ? Number(top[s.key]) : null;
-    return { key: s.key, name: s.name, bg: rampFor(slotOf(s, i)), you: res ? res.score : '–', field: a != null ? (a < 10 ? a.toFixed(1) : Math.round(a)) : '–', best: b != null ? b : '–' };
+    return { key: s.key, name: s.name, bg: pastel || rampFor(slotOf(s, i)), you: res ? res.score : '–', field: a != null ? (a < 10 ? a.toFixed(1) : Math.round(a)) : '–', best: b != null ? b : '–' };
   });
   const avgTotal = avg && Object.keys(avg).length ? Math.round(sections.reduce((t, s) => t + (Number(avg[s.key]) || 0), 0)) : null;
   const ahead = rank && fieldSize && fieldSize >= 2 ? Math.max(0, Math.round(((fieldSize - rank) / fieldSize) * 100)) : null;
@@ -712,7 +726,7 @@ export function GauntletEndStage({
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
         {anim ? (
           <div className="gsx-show" aria-hidden="true">
-            {sections.map((s, i) => <span key={s.key} style={{ background: pal.fill(rampFor(slotOf(s, i))), animationDelay: `${i * 0.06}s` }} />)}
+            {sections.map((s, i) => <span key={s.key} style={{ background: pal.fill(pastel || rampFor(slotOf(s, i))), animationDelay: `${i * 0.06}s` }} />)}
           </div>
         ) : null}
         <div className="gsx-col">
@@ -771,7 +785,7 @@ export function GauntletEndStage({
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {anim ? (
         <div className="gsx-show" aria-hidden="true">
-          {sections.map((s, i) => <span key={s.key} style={{ background: pal.fill(rampFor(slotOf(s, i))), animationDelay: `${i * 0.06}s` }} />)}
+          {sections.map((s, i) => <span key={s.key} style={{ background: pal.fill(pastel || rampFor(slotOf(s, i))), animationDelay: `${i * 0.06}s` }} />)}
         </div>
       ) : null}
       <div className="gsx-col gsx-ecol">
