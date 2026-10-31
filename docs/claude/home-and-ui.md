@@ -1849,3 +1849,40 @@ the stage untouched. Wrong marks are Logic ORANGE (`--lg-bad`: #c2410c light, #f
   (grey squares on white; a claimed square goes clear over its plot, the full rose with an ink edge;
   a wrong plot orange and striped), Undo and Hint. While the stage is up its grid holds `gridRef`, so
   the board's own `cellFromPoint` measures the stage board (the old grid drops the ref).
+## Chain, Redact, Dating and Stet on the white stage (owner, 2026-10-31)
+
+All four play on `PlayStage` at every width (the usual
+`STAGE && phoneStage && !!g.t0 && (playing || !revealed)` mount), drawn from the approved
+mockups. The old boards stay behind the stage untouched; every stage control calls the
+board's own handler, so scoring, saves, posting, hints, share text, archives and the finish
+are unchanged. None of the four is dealt into a run or circuit (checked `lib/circuits.js`
+and every `RunEmbed` host), so there is no embedded mode to keep.
+
+- **Chain** (End Game, gold): the box score (You / Them, the side to move on pale gold), the
+  dots and boxes board drawn in board units and placed in percentages, sizes in `cqw` so it
+  scales with the column (no turn-on-its-side on a phone any more: the mockup keeps 3 by 5
+  across). Drawn edges ink, the last edge gold with an ink ring, open edges light grey, your
+  boxes gold, the engine's light grey, open chains on a pale gold band with their count.
+  Hint and Restart (two taps, `restartGame`) as tools; Give up is the foot (`revealEnd`).
+- **Redact** (Trivia, orange): the title with ink blocks for hidden words, the article on a
+  light grey sheet (scrolls inside itself), hidden words ink blocks (tap for the length),
+  the last guess's words orange with an ink ring, misses after a give-up in `--pst-bad`.
+  The guess history is one horizontally scrolling row. The study hold's Keep looking / See
+  results are drawn on the stage (the old StudyBar sits under the overlay). Give up is a
+  local two-tap `armGive` that calls the same `giveUp()` the confirm sheet calls.
+- **Dating** (Trivia, orange): the five slots as cards with their place (1st ... 5th); a
+  card a check confirmed is orange with its year. The mockup's "tap the next earliest" is
+  carried as **tap a card, then tap where it goes**, which is `moveInsert()` (the desktop
+  drag's move), so locks and checks behave exactly as before. Check my order is the one
+  orange button. The check toast lost its em dash.
+- **Stet** (Word, sky): one sentence at a time (`cur` is presentation only), pips for the
+  brief (filed sky, showing ink), Back / Skip between sentences, filing a sentence moves on
+  to the next open one. Tap a word (sky), type the fix, Fix it; or Stet: it is clean. The
+  Sunday flow (stage up to two flags, Lock it in) is kept. A filed sentence shows the struck
+  word with the fix beside it (sky when right, red when missed) and the desk's note.
+
+**Shared bug worked around locally:** `StageTopBar`'s phone rule `.stb.has-t{flex:1 1 auto}`
+(written for a row) makes the bar GROW VERTICALLY inside PlayStage's column whenever the board
+is shorter than the screen, so the header sits 60 to 90px down the page. These four carry
+`.pst-col > .stb.has-t{flex:none;}` in their own stage CSS; the right home for it is
+PlayStage's CSS (every short PlayStage board on a phone has the same gap).
