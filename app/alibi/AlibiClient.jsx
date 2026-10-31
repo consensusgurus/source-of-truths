@@ -728,7 +728,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
                         <button key={c.key} type="button" role="tab" aria-selected={c.key === cat.key} className={c.key === cat.key ? 'on' : undefined} onClick={() => setCatTab(c.key)}>{TAB[c.key] || c.label}</button>
                       ))}
                     </div>
-                    <div className="als-gr" style={{ gridTemplateColumns: `64px repeat(${N}, minmax(0, 1fr))` }}>
+                    <div className="als-gr" style={{ gridTemplateColumns: `minmax(52px, max-content) repeat(${N}, minmax(0, 1fr))` }}>
                       <span />
                       {cat.vals.map((val) => <span key={val} className="h">{val}</span>)}
                       {PUZZLE.suspects.map((name, s) => (
@@ -1250,8 +1250,8 @@ const ALS_CSS = `
 .pst .als-q.done span{opacity:.45;text-decoration:line-through;}
 .pst .als-nav{display:flex;align-items:center;justify-content:space-between;width:100%;}
 .pst .als-nav .pst-arr:disabled{opacity:.3;cursor:default;}
-.pst .als-pips{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:60%;}
-.pst .als-pips i{width:14px;height:5px;border-radius:3px;background:color-mix(in srgb, var(--pst-ink) 18%, transparent);}
+.pst .als-pips{display:flex;gap:4px;flex-wrap:nowrap;justify-content:center;flex:0 1 60%;min-width:0;}
+.pst .als-pips i{flex:0 1 14px;min-width:4px;height:5px;border-radius:3px;background:color-mix(in srgb, var(--pst-ink) 18%, transparent);}
 .pst .als-pips i.f{background:var(--pst-ink);opacity:.5;}
 .pst .als-pips i.now{background:var(--pst-ink);}
 .pst .als-minis{display:flex;gap:8px;justify-content:center;}
@@ -1266,7 +1266,8 @@ const ALS_CSS = `
 .pst .als-gr{display:grid;gap:5px;align-items:center;}
 .pst .als-gr .h{font-size:11px;font-weight:800;text-align:center;line-height:1.15;align-self:end;padding-bottom:2px;min-width:0;overflow-wrap:normal;word-break:normal;letter-spacing:-.01em;}
 @media (max-width:420px){.pst .als-gr .h{font-size:10px;}}
-.pst .als-gr .n{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pst .als-gr .n{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:96px;padding-right:2px;}
+@media (max-width:420px){.pst .als-gr .n{font-size:13.5px;max-width:84px;}}
 .pst .als-c{height:54px;border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-pale);font-size:20px;font-weight:800;padding:0;min-width:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
 .pst .als-c.x{opacity:.4;background:transparent;}
 .pst .als-c.y{background:var(--pst-acc);color:var(--pst-on-acc);}
