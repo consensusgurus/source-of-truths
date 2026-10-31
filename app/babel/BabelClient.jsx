@@ -357,7 +357,7 @@ const BAB_STAGE_CSS = `
 .bab-sc div{border:2px solid var(--pst-ink);border-radius:12px;padding:6px 0;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;background:var(--pst-tint);}
 .bab-sc b{display:block;font-size:24px;letter-spacing:0;}
 .bab-tabs{display:flex;border:2px solid var(--pst-ink);border-radius:12px;overflow:hidden;}
-.pst .bab-tabs button{flex:1;min-height:42px;border:0;background:transparent;font-size:14px;font-weight:800;}
+.pst .bab-tabs button{flex:1;min-height:42px;border:0;border-radius:0;-webkit-appearance:none;appearance:none;outline-offset:-3px;background:transparent;font-size:14px;font-weight:800;}
 .pst .bab-tabs button+button{border-left:2px solid var(--pst-ink);}
 .pst .bab-tabs button.on{background:var(--pst-ink);color:var(--pst-bg);}
 .bab-board{align-self:center;display:grid;gap:3px;width:100%;max-width:356px;}

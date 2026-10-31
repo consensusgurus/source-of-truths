@@ -996,4 +996,17 @@ const RDS_CSS = `
 .rds-study{display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;font-size:14px;font-weight:700;}
 .pst .rds-see{background:var(--pst-acc);color:var(--pst-on-acc);}
 @media (min-width:900px){.rds-art{font-size:16px;max-height:min(460px, 52dvh);}}
+/* THE PUZZLE GETS THE ROOM (owner, 2026-10-31): on the full-screen stage the
+   article fills every spare pixel and scrolls inside itself; the guess area
+   under it is kept tight. Inline (desktop with navigation) is unchanged. */
+.pst:not(.inl) .pst-col:has(.rds-art){height:100%;min-height:0;gap:10px;}
+.pst:not(.inl) .pst-top:has(.rds-art){flex:1 1 auto;min-height:0;justify-content:flex-start;gap:9px;}
+.pst:not(.inl) .rds-art{flex:1 1 auto;min-height:140px;max-height:none;}
+.pst:not(.inl) .pst-top:has(.rds-art) > :not(.rds-art):not(style){flex-shrink:0;}
+.pst .rds-in input{min-height:44px;font-size:16px;}
+.pst .rds-in .rds-go{min-height:44px;}
+.rds-msg{font-size:13px;}
+.rds-msg span{padding:3px 10px;}
+.rds-g{padding:2px 9px;}
+
 `;

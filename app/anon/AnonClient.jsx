@@ -972,7 +972,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-dock{margin:6px 0 0;padding:4px 0 2px;display:flex;flex-direction:column;gap:8px;}
           .an-dockhead{display:flex;align-items:center;gap:8px;}
           .an-segd{display:flex;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};border-radius:10px;overflow:hidden;}
-          .an-segd button{min-height:44px;border:0;background:transparent;color:${STAGE ? 'var(--stg-ink2)' : '#374151'};font-family:${SANS};font-weight:800;font-size:13px;padding:0 16px;cursor:pointer;}
+          .an-segd button{min-height:44px;border:0;border-radius:0;-webkit-appearance:none;appearance:none;background:transparent;color:${STAGE ? 'var(--stg-ink2)' : '#374151'};font-family:${SANS};font-weight:800;font-size:13px;padding:0 16px;cursor:pointer;}
           .an-segd button.on{background:${SLOT_L2};color:${SLOT_ON_INK};}
           .an-nav{margin-left:auto;display:flex;gap:6px;}
           .an-nav button{display:flex;align-items:center;justify-content:center;padding:0;width:44px;height:44px;border-radius:10px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.3)'};background:transparent;color:${INK};cursor:pointer;font-weight:800;font-size:20px;line-height:1;}
@@ -988,7 +988,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-dcell.fl{background:${SLOT_F};border-color:${SLOT_L2};}
           .an-dcell.on{background:${SLOT_L2};border-color:${SLOT_L2};color:${SLOT_ON_INK};}
           .an-dcell.gap{background:none;border:0;width:7px;cursor:default;}
-          .an-seg button{flex:1;border:0;background:transparent;min-height:44px;padding:0;font-family:${SANS};font-weight:800;font-size:13.5px;color:${STAGE ? 'var(--stg-ink2)' : '#4b5563'};cursor:pointer;}
+          .an-seg button{flex:1;border:0;border-radius:0;-webkit-appearance:none;appearance:none;background:transparent;min-height:44px;padding:0;font-family:${SANS};font-weight:800;font-size:13.5px;color:${STAGE ? 'var(--stg-ink2)' : '#4b5563'};cursor:pointer;}
           .an-seg button.on{background:${SLOT_L2};color:${SLOT_ON_INK};}
           .an-input{position:fixed;left:0;right:0;bottom:0;z-index:40;background:${STAGE ? 'var(--stg-raise,#0e131f)' : '#e5e8ef'};
             border-top:1px solid ${STAGE ? 'var(--stg-line2)' : 'rgba(20,22,28,0.14)'};box-shadow:0 -4px 16px rgba(20,22,28,0.12);
