@@ -147,6 +147,8 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
   const [copied, setCopied] = useState(false);
   const [armGive, setArmGive] = useState(false);
   const phoneStage = usePhoneStage();
+  // The stage folds the filed statements away until asked (the mockup).
+  const [showFiled, setShowFiled] = useState(false);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
@@ -331,80 +333,85 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {/* THE STAGE (owner, 2026-10-31): Ergo plays on the shared white stage at
-          every width, in the rose look approved inside Judged: the rules and
-          today's fact on the page, the statement in hand with three pale rose
-          verdict tiles, the three bins below, one line, and the foot's Clock,
-          How to play and Give up (Ergo's own two-tap give up). Every control is
-          the board's own handler. Inside Judged it is drawn inline. */}
-      {STAGE && phoneStage && !!g.t0 && (playing || !loftRevealed) && (
-        <PlayStage bg={gameColor('ergo')} label="Ergo" wide inline={!!EMBED} look={embedLook(EMBED)}
-          eyebrow={playing ? (cur >= 0 ? `Statement ${cur + 1} of ${TOTAL}` : `All ${TOTAL} filed`) : 'Ruled'}
-          top={(
-            <>
-              <style dangerouslySetInnerHTML={{ __html: LOGIC_STAGE_CSS + EGS_CSS }} />
-              <div className="lgs-cols">
-                <div className="lgs-sec">
-                  <div className="lgs-lab">{PUZZLE.title}</div>
-                  <p className="lgs-p">{PUZZLE.setup}</p>
-                  <div className="lgs-rules">
-                    {PUZZLE.rules.map((r, i) => {
-                      const open = !!((g.flips || 0) & (1 << i));
-                      return (
-                        <div key={i} className="lgs-rule">
-                          <span className="lgs-n">{i + 1}</span>
-                          <div className="lgs-rt">
-                            {r.text}
-                            {open && <div className="egs-flipt">Flipped: {r.flip}</div>}
-                          </div>
-                          <button type="button" className={'pst-tb lgs-sm' + (open ? ' on' : '')} aria-pressed={open} aria-label={`${open ? 'Hide' : 'Show'} the flip of rule ${i + 1}`} onClick={() => toggleFlip(i)}>{open ? 'Hide' : 'Flip'}</button>
+      {/* THE STAGE (owner, 2026-10-31): Ergo plays on the shared white stage
+          at every width, laid out from its approved mockup in the Logic rose
+          look (see the board CSS at the foot of this file and app/LogicStage.js).
+          Every control is the board's own handler, so scoring, saves and
+          posting are untouched. Inside Judged the same stage is drawn inline in
+          the run's frame and follows the run's look. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !loftRevealed) && (() => {
+        const tally = BINS.map((b) => `${g.picks.filter((p) => p === b.key).length} ${b.short.toLowerCase()}`).join(' · ');
+        const filedOpen = showFiled || (playing && cur < 0) || !playing;
+        return (
+          <PlayStage bg={gameColor('ergo')} label="Ergo" wide inline={!!EMBED} look={embedLook(EMBED)}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: LOGIC_STAGE_CSS + EGS_CSS }} />
+                <div className="lgs-cols lgs-fill">
+                  <div className="lgs-sec">
+                    <p className="lgs-p">{PUZZLE.setup}</p>
+                    <div className="lgs-rules">
+                      {PUZZLE.rules.map((r, i) => {
+                        const open = !!((g.flips || 0) & (1 << i));
+                        return (
+                          <button key={i} type="button" className={'lgs-rule' + (open ? ' egs-open' : '')} aria-pressed={open} aria-label={`Rule ${i + 1}: ${r.text}. ${open ? 'Hide' : 'Show'} its flip`} onClick={() => toggleFlip(i)}>
+                            <b>{i + 1}</b>
+                            <span>{r.text}{open && <i className="egs-flipt">Flipped: {r.flip}</i>}</span>
+                          </button>
+                        );
+                      })}
+                      <div className="lgs-rule egs-today"><b></b><span>Today, {PUZZLE.givenText}</span></div>
+                      <div className="egs-tip">Tap a rule to see its flip.</div>
+                    </div>
+                  </div>
+                  <div className="lgs-sec egs-hand lgs-grow">
+                    {playing && cur >= 0 ? (
+                      <>
+                        <div className="egs-mid lgs-grow">
+                          <div className="lgs-eb">{cur + 1} of {TOTAL}</div>
+                          <h2 className="lgs-q">{ST[cur].text}</h2>
                         </div>
-                      );
+                        <div className="egs-go">
+                          {BINS.map((b, bi) => (
+                            <button key={b.key} type="button" className="lgs-tile lgs-big" onClick={() => file(b.key)}>
+                              {b.label}<span className="k">{bi + 1}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    ) : playing ? (
+                      <div className="egs-mid">
+                        <div className="lgs-eb">All {TOTAL} filed</div>
+                        <h2 className="lgs-q">Tap any statement to take it back. You get one ruling.</h2>
+                        <button type="button" className="lgs-big lgs-tile on" onClick={ruleOnIt}>Rule on it</button>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                {filedOpen && filed > 0 && (
+                  <div className="egs-bins">
+                    {BINS.map((b) => {
+                      const items = ST.map((x, i) => ({ x, i })).filter(({ i }) => g.picks[i] === b.key);
+                      return items.length ? (
+                        <div key={b.key} className="lgs-sec">
+                          <div className="lgs-lab">{b.label}</div>
+                          {items.map(({ x, i }) => (
+                            <button key={i} type="button" className="lgs-tile egs-item" title={playing ? 'Take it back' : undefined} disabled={!playing} onClick={() => unfile(i)}>{x.text}</button>
+                          ))}
+                        </div>
+                      ) : null;
                     })}
                   </div>
-                  <div className="lgs-box egs-fact"><span className="lgs-lab">Today</span>{PUZZLE.givenText}</div>
-                </div>
-                <div className="lgs-sec">
-                  {playing && cur >= 0 ? (
-                    <>
-                      <div className="lgs-lab">The statement in hand</div>
-                      <div className="egs-st">{ST[cur].text}</div>
-                      <div className="egs-go">
-                        {BINS.map((b, bi) => (
-                          <button key={b.key} type="button" className="lgs-tile" onClick={() => file(b.key)}>
-                            {b.label}<span className="k">{bi + 1}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  ) : playing ? (
-                    <div className="lgs-box egs-all">
-                      <b>All {TOTAL} filed.</b>
-                      <span>Tap any statement to take it back. You get one ruling.</span>
-                      <button type="button" className="pst-tb lgs-pri wide" onClick={ruleOnIt}>Rule on it</button>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-              <div className="egs-bins">
-                {BINS.map((b) => {
-                  const items = ST.map((x, i) => ({ x, i })).filter(({ i }) => g.picks[i] === b.key);
-                  return (
-                    <div key={b.key} className="egs-bin">
-                      <div className="egs-bh">{b.label}<b>{items.length}</b></div>
-                      {items.length ? items.map(({ x, i }) => (
-                        <button key={i} type="button" className="lgs-tile egs-item" title={playing ? 'Take it back' : undefined} disabled={!playing} onClick={() => unfile(i)}>{x.text}</button>
-                      )) : <div className="egs-empty">Nothing yet.</div>}
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-          foot={playing ? `${filed} of ${TOTAL} filed${cur >= 0 ? ' · tap a filed statement to take it back' : ''}` : `${correct} of ${TOTAL} right`}
-          giveUp={{ armed: !!armGive, onPress: giveUp, armedLabel: 'Tap again to rule on what is filed now' }}
-          clock={elapsed} done={!playing} />
-      )}
+                )}
+              </>
+            )}
+            foot={playing ? (
+              <>{tally}{cur >= 0 && filed > 0 ? <> · <button type="button" className="egs-link" aria-expanded={filedOpen} onClick={() => setShowFiled((v) => !v)}>{filedOpen ? 'Hide filed' : 'Take one back'}</button></> : null}</>
+            ) : `${correct} of ${TOTAL} right`}
+            giveUp={{ armed: !!armGive, onPress: giveUp, armedLabel: 'Tap again to rule on what is filed now' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && <DailyChrome slug="ergo" name="Ergo" collapsed={!!g.t0} loft={LOFT} />}
       {LOFT && !EMBED && (
@@ -712,28 +719,25 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
   );
 }
 
-// The stage board (owner, 2026-10-31, the approved Judged look): the three
-// verdicts as pale rose tiles, each bin a white box with a 2px ink rule whose
-// filed statements are pale rose tiles (tap one to take it back).
+// The stage board, from the approved Ergo mockup (owner, 2026-10-31): the
+// rules as plain numbered lines (tap one to flip it), today's fact in bold,
+// the statement in hand large and centred, three pale rose answer tiles and
+// one tally line. The filed statements fold away under "Take one back".
 const EGS_CSS = `
-.pst .egs-flipt{font-size:14px;font-weight:700;color:var(--pst-deep);margin-top:3px;}
-.pst .egs-fact{display:flex;gap:10px;align-items:baseline;font-size:15px;font-weight:800;line-height:1.4;}
-.pst .egs-fact .lgs-lab{color:var(--pst-deep);flex:none;}
-.pst .egs-st{font-size:clamp(20px,5.6vw,24px);font-weight:800;line-height:1.3;text-align:center;padding:4px 2px 6px;}
+.pst .egs-flipt{display:block;font-style:normal;font-size:13.5px;font-weight:700;color:var(--pst-deep);margin-top:2px;}
+.pst .egs-today{margin-top:4px;}
+.pst .egs-today span{font-weight:800;}
+.pst .egs-tip{font-size:12.5px;font-weight:600;color:var(--pst-mute);padding-left:23px;}
+.pst .egs-hand{gap:14px;}
+.pst .egs-mid{display:flex;flex-direction:column;gap:8px;padding:6px 0;}
+.pst .egs-mid .lgs-big{margin-top:8px;}
 .pst .egs-go{display:flex;flex-direction:column;gap:8px;}
-.pst .egs-go .lgs-tile{min-height:56px;font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;}
-.pst .egs-go .k{font-size:11px;font-weight:800;opacity:.7;border:1.5px solid currentColor;border-radius:6px;padding:1px 6px;}
-@media (hover:none){.pst .egs-go .k{display:none;}}
-.pst .egs-all{display:flex;flex-direction:column;gap:6px;text-align:left;}
-.pst .egs-all b{font-size:19px;font-weight:800;}
-.pst .egs-all span{font-size:14px;font-weight:600;color:var(--pst-mute);}
-.pst .egs-all .pst-tb{margin-top:6px;}
-.pst .egs-bins{display:grid;grid-template-columns:1fr;gap:8px;}
+.pst .egs-go .lgs-big{display:flex;align-items:center;justify-content:center;gap:8px;}
+.pst .egs-go .k{font-size:11px;font-weight:800;opacity:.6;border:1.5px solid currentColor;border-radius:6px;padding:1px 6px;}
+@media (hover:none),(pointer:coarse){.pst .egs-go .k{display:none;}}
+.pst .egs-link{background:none;border:0;padding:0;font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px;}
+.pst .egs-bins{display:grid;grid-template-columns:1fr;gap:12px;}
 @media (min-width:640px){.pst .egs-bins{grid-template-columns:repeat(3,minmax(0,1fr));}}
-.pst .egs-bin{border:2px solid var(--pst-ink);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:0;}
-.pst .egs-bh{display:flex;align-items:center;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:2px 4px;}
-.pst .egs-bh b{margin-left:auto;font-size:14px;letter-spacing:0;}
-.pst .egs-item{text-align:left;padding:8px 10px;min-height:40px;font-size:13.5px;font-weight:700;line-height:1.35;border-radius:10px;}
+.pst .egs-item{text-align:left;padding:8px 10px;min-height:42px;font-size:13.5px;font-weight:700;line-height:1.35;border-radius:12px;}
 .pst .egs-item:disabled{cursor:default;}
-.pst .egs-empty{font-size:13px;font-weight:600;color:var(--pst-mute);padding:2px 4px;}
 `;

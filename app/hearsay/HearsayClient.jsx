@@ -559,65 +559,75 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {/* THE STAGE (owner, 2026-10-31): Hearsay plays on the shared white stage
-          at every width, in the rose look approved inside Judged: who knows
-          what on the page, the list as pale rose tiles (tap to cross off, or to
-          name one once Name is on), what was said as pale rose bubbles, one
-          line, and the foot's Clock, How to play and Give up. Every control is
-          the board's own handler. Inside Judged it is drawn inline. */}
-      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (
-        <PlayStage bg={gameColor('hearsay')} label="Hearsay" wide inline={!!EMBED} look={embedLook(EMBED)}
-          eyebrow={PUZZLE.sunday ? 'Sunday Edition · Three voices' : `Find the secret ${PUZZLE.noun}`}
-          top={(
-            <>
-              <style dangerouslySetInnerHTML={{ __html: LOGIC_STAGE_CSS + HSS_CSS }} />
-              <p className="lgs-p">One {PUZZLE.noun} on {PUZZLE.listLabel} is the secret one. {PUZZLE.who.map((w, i) => (
-                <span key={w}><b>{w}</b> has been told only its {PUZZLE.attrs[i]}{i === PUZZLE.who.length - 1 ? '. ' : i === PUZZLE.who.length - 2 ? ', and ' : ', '}</span>
-              ))}Nobody lies, and everybody hears everything said.</p>
-              <div className="lgs-cols">
-                <div className="lgs-sec">
-                  <div className="lgs-lab">{PUZZLE.listLabel}</div>
-                  {groups.map((grp) => (
-                    <div key={grp.a} className="hss-row">
-                      <span className="hss-key">{grp.a}</span>
-                      <span className="hss-cards">
-                        {grp.items.map((i) => {
-                          const c = PUZZLE.cards[i];
-                          const isAns = !playing && ansShown && i === ANSWER;
-                          const st = g.wrong.includes(i) ? ' wrong' : g.crossed.includes(i) ? ' off' : '';
-                          return (
-                            <button key={i} type="button" className={'lgs-tile hss-card' + st + (isAns ? ' on' : '') + (g.naming && !st ? ' pick' : '')}
-                              onClick={() => tapCard(i)} disabled={!playing} title={g.naming ? 'Name this one' : 'Cross it off'}>
-                              {c.b}{c.c ? <span className="c"> &middot; {c.c}</span> : null}
-                            </button>
-                          );
-                        })}
-                      </span>
+          at every width, laid out from its approved mockup in the Logic rose
+          look (see the board CSS at the foot of this file and app/LogicStage.js).
+          Every control is the board's own handler, so scoring, saves and
+          posting are untouched. Inside Judged the same stage is drawn inline in
+          the run's frame and follows the run's look. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const seen = new Set();
+        // Sides by order of first speaking (the mockup): the first voice on the
+        // left in pale rose, the second on the right in ink, a third on the left.
+        const order = [];
+        PUZZLE.script.forEach((st) => { if (!order.includes(st.who)) order.push(st.who); });
+        const left = PUZZLE.cards.length - g.crossed.length - g.wrong.length;
+        return (
+          <PlayStage bg={gameColor('hearsay')} label="Hearsay" wide inline={!!EMBED} look={embedLook(EMBED)}
+            eyebrow={PUZZLE.sunday ? 'Sunday Edition · Three voices' : null}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: LOGIC_STAGE_CSS + HSS_CSS }} />
+                <h2 className="lgs-q hss-q">Which {PUZZLE.noun} is the secret one?</h2>
+                <div className="lgs-cols lgs-fill">
+                  <div className="hss-said lgs-grow">
+                    {PUZZLE.script.map((st, i) => {
+                      const k = order.indexOf(st.who);
+                      const who = speakerOf(PUZZLE, st.who);
+                      const first = !seen.has(st.who);
+                      seen.add(st.who);
+                      const full = statementText(PUZZLE, st);
+                      const said = full.startsWith(`${who}: `) ? full.slice(who.length + 2) : full;
+                      return (
+                        <div key={i} className={'hss-say' + (k === 1 ? ' r lgs-inv' : '')}>
+                          <b>{first ? `${who} knows the ${attrOf(PUZZLE, st.who)}` : who}</b>{said}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="lgs-sec">
+                    <div className="lgs-lab hss-lab">{PUZZLE.listLabel}</div>
+                    <div className="hss-gr">
+                      {groups.flatMap((grp) => grp.items).map((i) => {
+                        const c = PUZZLE.cards[i];
+                        const isAns = !playing && ansShown && i === ANSWER;
+                        const st = g.wrong.includes(i) ? ' wrong' : g.crossed.includes(i) ? ' x' : '';
+                        return (
+                          <button key={i} type="button" className={'lgs-tile hss-o' + st + (isAns ? ' on' : '') + (g.naming && !st ? ' pick' : '')}
+                            onClick={() => tapCard(i)} disabled={!playing} title={g.naming ? 'Name this one' : 'Cross it off'}>
+                            <small>{c.a}</small>{c.b}{c.c ? <> &middot; {c.c}</> : null}
+                          </button>
+                        );
+                      })}
                     </div>
-                  ))}
+                    {playing && (
+                      <div className="pst-tools">
+                        <button type="button" className={'pst-tb' + (g.naming ? ' lgs-pri' : '')} aria-pressed={!!g.naming} onClick={() => setG((cur) => ({ ...cur, naming: !cur.naming }))}>
+                          {g.naming ? `Tap the ${PUZZLE.noun} to name it` : `Name the ${PUZZLE.noun}`}
+                        </button>
+                        {g.crossed.length > 0 && <button type="button" className="pst-tb" onClick={clearCrossed}>Clear cross-outs</button>}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="lgs-sec">
-                  <div className="lgs-lab">What was said</div>
-                  {PUZZLE.script.map((st, i) => (
-                    <div key={i} className="hss-say"><span className="lgs-n">{i + 1}</span><span className="t">{statementText(PUZZLE, st)}</span></div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-          bottom={playing ? (
-            <div className="pst-tools">
-              <button type="button" className={'pst-tb' + (g.naming ? ' lgs-pri' : '')} aria-pressed={!!g.naming} onClick={() => setG((cur) => ({ ...cur, naming: !cur.naming }))}>
-                {g.naming ? `Tap the ${PUZZLE.noun} to name it` : `Name the ${PUZZLE.noun}`}
-              </button>
-              {g.crossed.length > 0 && <button type="button" className="pst-tb" onClick={clearCrossed}>Clear cross-outs</button>}
-            </div>
-          ) : null}
-          foot={verdict ? <span className="lgs-bad">{verdict.msg}</span> : (toast || (playing
-            ? `${PUZZLE.cards.length - g.crossed.length - g.wrong.length} left on the list · ${g.wrong.length} wrong name${g.wrong.length === 1 ? '' : 's'}`
-            : (g.status === 'done' ? `It was ${ansText}` : (ansShown ? `It was ${ansText} all along` : 'Not named'))))}
-          giveUp={{ armed: !!armGiveUp, onPress: pressGiveUp, armedLabel: `Tap again to give up and see the ${PUZZLE.noun}` }}
-          clock={elapsed} done={!playing} />
-      )}
+              </>
+            )}
+            foot={verdict ? <span className="lgs-bad">{verdict.msg}</span> : (toast || (playing
+              ? `${g.naming ? `Tap the ${PUZZLE.noun} you name` : 'Tap to cross out'} · ${left} left${g.wrong.length ? ` · ${g.wrong.length} wrong` : ''}`
+              : (g.status === 'done' ? `It was ${ansText}` : (ansShown ? `It was ${ansText} all along` : 'Not named'))))}
+            giveUp={{ armed: !!armGiveUp, onPress: pressGiveUp, armedLabel: `Tap again to give up and see the ${PUZZLE.noun}` }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1020,20 +1030,24 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
   }
 }
 
-// The stage board (owner, 2026-10-31, the approved Judged look): the list as
-// pale rose tiles with a 2px ink rule, a crossed-off one clear, a wrongly named
-// one ruled in orange, the answer full rose once it is out; what was said as
-// pale rose bubbles numbered in full rose.
+// The stage board, from the approved Hearsay mockup (owner, 2026-10-31): the
+// question large, what was said as speech bubbles (the first speaker pale rose
+// on the left, the second an ink bubble on the right), and the list as a grid
+// of pale rose tiles: a crossed-off one faded and struck, a wrongly named one
+// in orange, the answer full rose once it is out.
 const HSS_CSS = `
-.pst .hss-row{display:flex;gap:10px;align-items:flex-start;padding:2px 0;}
-.pst .hss-key{flex:0 0 92px;min-width:0;overflow-wrap:anywhere;padding-top:12px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-ink);}
-.pst .hss-cards{display:flex;gap:7px;flex-wrap:wrap;flex:1 1 0;min-width:0;}
-.pst .hss-card{min-height:44px;padding:6px 12px;border-radius:12px;font-size:14px;font-weight:800;}
-.pst .hss-card .c{font-weight:600;opacity:.8;}
-.pst .hss-card.off{background:transparent;opacity:.45;text-decoration:line-through;}
-.pst .hss-card.wrong{background:transparent;border-color:var(--pst-bad);color:var(--pst-bad);text-decoration:line-through;}
-.pst .hss-card.pick{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-acc);}
-.pst .hss-card:disabled{cursor:default;}
-.pst .hss-say{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--pst-ink);border-radius:16px;background:var(--pst-pale);padding:10px 12px;}
-.pst .hss-say .t{flex:1;min-width:0;font-size:14.5px;font-weight:700;line-height:1.45;padding-top:2px;}
+.pst .hss-q{font-size:clamp(20px,5.8vw,22px);padding-top:4px;}
+.pst .hss-said{display:flex;flex-direction:column;gap:10px;justify-content:center;}
+.pst .hss-say{max-width:82%;align-self:flex-start;padding:10px 14px;border-radius:16px;border:2px solid var(--pst-ink);background:var(--pst-pale);font-size:16px;font-weight:700;line-height:1.3;}
+.pst .hss-say.r{align-self:flex-end;background:var(--pst-ink);color:var(--pst-inv);}
+.pst .hss-say.r *{color:var(--pst-inv);}
+.pst .hss-say b{display:block;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;opacity:.7;margin-bottom:2px;}
+.pst .hss-lab{text-align:center;}
+.pst .hss-gr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+.pst .hss-o{min-height:50px;border-radius:12px;padding:5px 8px;font-size:14px;font-weight:800;line-height:1.2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-align:center;}
+.pst .hss-o small{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;opacity:.7;}
+.pst .hss-o.x{opacity:.3;background:transparent;text-decoration:line-through;}
+.pst .hss-o.wrong{background:transparent;border-color:var(--pst-bad);color:var(--pst-bad);text-decoration:line-through;}
+.pst .hss-o.pick{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-acc);}
+.pst .hss-o:disabled{cursor:default;}
 `;

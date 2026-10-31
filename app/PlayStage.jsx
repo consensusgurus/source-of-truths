@@ -91,6 +91,8 @@ export function accentVars(pastel, look) {
     '--pst-acc': acc,
     '--pst-on-acc': hex ? (rose && dark ? '#0b0f1a' : RAMP_INK) : 'var(--pst-bg)',
     '--pst-deep': rose ? (dark ? ROSE : '#be123c') : 'var(--pst-ink)',
+    // Type on an ink-filled card: the pale tint (the mockups' pale on ink).
+    '--pst-inv': hex && !dark ? (PALE[hex.toLowerCase()] || 'var(--pst-bg)') : 'var(--pst-bg)',
     '--pst-pale': hex ? (dark ? (rose ? '#4a2a33' : `color-mix(in srgb, ${hex} 30%, #0b0f1a)`) : (PALE[hex.toLowerCase()] || softGround(hex, 0.62))) : 'var(--pst-tint)',
     '--pst-cell': dark ? '#1a2130' : '#f1f4f8',
     '--pst-cell2': dark ? '#242c3d' : '#e3e8ee',

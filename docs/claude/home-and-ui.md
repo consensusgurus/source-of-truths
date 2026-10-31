@@ -1729,6 +1729,20 @@ two-tap Give up (Alibi, Sworn and Hearsay gained a local `armGiveUp`; Ergo and D
 own two-tap `giveUp`). Docket's sketch is the same `DocketSketch`, re-inked onto the stage tokens.
 Presentation only: every control calls the board's own handler.
 
+**Laid out from the mockups (owner, 2026-10-31: "make them look like they did on the mock ups").**
+Ergo, Docket, Sworn and Hearsay follow the Next Wave mockups (drawn in the old Logic lime, built in
+rose), Alibi follows AlibiRose / AlibiRoseDark. Rule numbers are plain ink; the question sits large
+and centred with its answers at the foot (`lgs-fill` / `lgs-grow`); a selected witness and the
+second speaker in Hearsay are ink cards with pale rose type (`lgs-inv`, `--pst-inv`). Ergo: tap a
+rule to flip it, the filed statements fold under "Take one back". Docket: the setup's first line
+(tap for more), the sketch as a slot row over the letters, the cross-off kept at the row's end.
+Sworn: witness cards, the selected one carries True / Lying, one big Accuse. Hearsay: speech
+bubbles, the list as a two-column grid. Alibi: one clue at a time (arrows, pips, Cross off, All
+clues), a Room / Time / Item switch, one board at a time. Deliberate differences from the
+mockups, each to keep existing behaviour reachable: Ergo's bins, Docket's notes and cross-off,
+Sworn's True / Lying marks and hint, Alibi's Undo / Reset / Auto ✗ and Check my accusation, and
+the Judged header (the run's own frame) and the foot row (Clock, How to play, Give up).
+
 **Logic on the stage.** `accentVars` gives rose its approved values: dark-look tile `#4a2a33`,
 full rose carrying `#0b0f1a` in the dark looks, `--pst-deep` (`#be123c` light, rose dark) for rose
 as text, and a wrong mark ORANGE (`#c2410c` light / `#fb923c` dark) via `--pst-bad`.
