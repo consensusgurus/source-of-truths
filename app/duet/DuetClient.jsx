@@ -58,6 +58,7 @@ import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { useStageLook, isDarkLook } from '@/lib/stage-look';
+import usePlayStageFit from '@/lib/play-stage-fit';
 
 // A new game gets no colour of its own: on the stage it wears the Logic step
 // of the category ramp. ACCENT is only the legacy (pre-stage) fallback.
@@ -399,6 +400,9 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('duet'), '--stg-acc-lt': gameColorLight('duet'), '--stg-onramp-lt': gameOnrampLight('duet'), '--stg-acc-ink-lt': gameAccentInkLight('duet') };
   const [stageTheme] = useStageTheme();
+  // The stage board is sized from the room it measurably has (lib/play-stage-fit.js).
+  const dusRef = useRef(null);
+  const dusFit = usePlayStageFit(dusRef, '.dus-bd', STAGE && phoneStage && !!g.t0);
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -907,7 +911,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
           <PlayStage bg={gameColor('duet')} label="Duet" wide={N > 8}
             eyebrow={PUZZLE.sunday ? `Duet No. ${PUZZLE.num} · Sunday · ${N}x${N}` : `Duet No. ${PUZZLE.num} · ${N}x${N} · half dots, half rings`}
             top={(
-              <div className="dus" style={{ '--dus-warn': warn, '--dus-warn-bg': warnBg, '--dus-n': N }}>
+              <div className="dus" ref={dusRef} style={{ '--dus-warn': warn, '--dus-warn-bg': warnBg, '--dus-n': N, ...(dusFit ? { '--dus-fit': `${dusFit}px` } : null) }}>
                 <style dangerouslySetInnerHTML={{ __html: DUS_CSS }} />
                 <div className={'dus-bd' + (N > 8 ? ' n10' : '')} role="grid" aria-label={`Duet board, ${N} by ${N}`} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
                   {Array.from({ length: CELLS }).map((_, idx) => {
@@ -1372,7 +1376,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
 // or mark that breaks a rule is orange (Logic's wrong colour), never red.
 const DUS_CSS = `
 .dus{display:flex;flex-direction:column;gap:12px;}
-.dus-bd{position:relative;display:grid;align-self:center;width:100%;border:3px solid var(--pst-ink);border-radius:14px;overflow:hidden;background:var(--pst-bg);}
+.dus-bd{position:relative;display:grid;align-self:center;width:min(100%, var(--dus-fit, 100%));border:3px solid var(--pst-ink);border-radius:14px;overflow:hidden;background:var(--pst-bg);}
 .pst .dus-c{position:relative;aspect-ratio:1;min-width:0;padding:0;border:0;border-radius:0;border-right:1px solid var(--pst-cell-line);border-bottom:1px solid var(--pst-cell-line);background:var(--pst-bg);display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
 .pst .dus-c:disabled{cursor:default;opacity:1;}
 .pst .dus-c.wr{border-right:3px solid var(--pst-ink);}
@@ -1396,5 +1400,5 @@ const DUS_CSS = `
 .pst .dus-seg button{flex:1;min-width:0;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;}
 .pst .dus-seg button+button{border-left:2px solid var(--pst-ink);}
 .pst .dus-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
-@media (min-width:900px){.dus-bd{width:min(100%, 520px);}.dus-bd.n10{width:min(100%, 540px);}.dus-mk{width:22px;height:22px;border-radius:11px;font-size:14px;}}
+@media (min-width:900px){.dus-need,.dus-seg{width:min(100%, 560px);align-self:center;}.dus-bd{width:min(100%, 520px, var(--dus-fit, 520px));}.dus-bd.n10{width:min(100%, 600px, var(--dus-fit, 600px));}.dus-mk{width:22px;height:22px;border-radius:11px;font-size:14px;}}
 `;

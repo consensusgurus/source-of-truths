@@ -772,7 +772,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
           : fresh ? (mode === 'test' ? 'A tap spends a test. Cross words and rules out for free.' : `A tap crosses a word out, free. ${mobileUi ? 'Hold' : 'Hold or right-click'} a word to test it.`)
           : `${testsUsed} of ${PUZZLE.budget} tests spent · ${candStanding} rule${candStanding === 1 ? '' : 's'} standing${g.wrongPicks.length ? ` · ${namesLeft} name${namesLeft === 1 ? '' : 's'} left` : ''}`);
         return (
-          <PlayStage bg={gameColor('axiom')} label="Axiom"
+          <PlayStage bg={gameColor('axiom')} label="Axiom" wide
             eyebrow={`Axiom No. ${PUZZLE.num} · ${PUZZLE.sunday ? 'Sunday · ' : ''}find the rule`}
             top={(
               <div className={'axs' + (PUZZLE.tiles.length > 24 || PUZZLE.rules.length > 5 ? ' sun' : '')} style={{ '--axs-warn': warn, '--axs-warn-bg': warnBg }}>
@@ -1434,7 +1434,14 @@ const AXS_CSS = `
 .axs.sun .axs-rules{gap:4px;}
 .pst .axs.sun .axs-ru{min-height:38px;font-size:13.5px;padding:3px 12px;}
 .pst .axs.sun .axs-go{height:46px;}
+/* DESKTOP (wide column): six words to a row (seven on Sunday) and the rules
+   in three columns, so a 1280x720 screen holds the whole board. */
 @media (min-width:900px){
+  .axs-tiles{grid-template-columns:repeat(6,minmax(0,1fr));}
+  .axs-rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+  .axs.sun .axs-rules{gap:8px;}
+  .axs-bar{width:min(100%, 560px);align-self:center;}
+  .pst .axs-go{width:min(100%, 420px);align-self:center;}
   .axs.sun .axs-tiles{grid-template-columns:repeat(7,minmax(0,1fr));}
   .pst .axs.sun .axs-tl{height:48px;font-size:13px;}
   .pst .axs.sun .axs-tl.m{font-size:12px;}

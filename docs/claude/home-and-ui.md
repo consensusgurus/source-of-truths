@@ -1734,3 +1734,10 @@ None of the three is in a run or circuit.
   gained a local `armGive` (400ms minimum between taps, like Calc). Fib's digit pad hides on a
   desktop with a fine pointer, where the keyboard types the digits (and N, Backspace, arrows).
   Duet's 10x10 Sunday passes `wide`.
+- **Boards fit the height they measurably have** (`lib/play-stage-fit.js`, the
+  `lib/stage-fit.js` rule for PlayStage hosts). Duet's and Fib's square boards cap their width
+  at the stage height minus everything else in the column, measured, never a constant; a bar
+  the flex column stretches is counted by its contents, so the board cannot shrink into slack it
+  made. Axiom is `wide` on desktop: six words to a row (seven on Sunday) and the rules in three
+  columns; on a phone Sunday's 28 words go five to a row. All three Sundays fit 390x844,
+  1280x900 and 1280x720 without scrolling.

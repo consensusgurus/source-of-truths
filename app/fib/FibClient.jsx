@@ -64,6 +64,7 @@ import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { useStageLook, isDarkLook } from '@/lib/stage-look';
+import usePlayStageFit from '@/lib/play-stage-fit';
 
 const COLORS = {
   cream: T.surface,
@@ -339,6 +340,9 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('fib'), '--stg-acc-lt': gameColorLight('fib'), '--stg-onramp-lt': gameOnrampLight('fib'), '--stg-acc-ink-lt': gameAccentInkLight('fib') };
   const [stageTheme] = useStageTheme();
+  // The stage grid is sized from the room it measurably has (lib/play-stage-fit.js).
+  const fbsRef = useRef(null);
+  const fbsFit = usePlayStageFit(fbsRef, '.fbs-bd', STAGE && phoneStage && !!g.t0);
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -912,7 +916,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
           <PlayStage bg={gameColor('fib')} label="Fib"
             eyebrow={`Fib No. ${PUZZLE.num} · ${PUZZLE.sunday ? 'Sunday · ' : ''}one sign is lying`}
             top={(
-              <div className={'fbs' + (n > 5 ? ' n6' : '')} style={{ '--fbs-warn': warn, '--fbs-warn-bg': warnBg }}>
+              <div className={'fbs' + (n > 5 ? ' n6' : '')} ref={fbsRef} style={{ '--fbs-warn': warn, '--fbs-warn-bg': warnBg, ...(fbsFit ? { '--fbs-fit': `${fbsFit}px` } : null) }}>
                 <style dangerouslySetInnerHTML={{ __html: FBS_CSS }} />
                 <div className="fbs-bd" role="group" aria-label={`The grid, ${n} by ${n}`} style={{ gridTemplateColumns: track, gridTemplateRows: track }}>
                   {cellsOut}
@@ -1399,8 +1403,8 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
 // rose when accused. A digit repeated in its line is struck in orange.
 const FBS_CSS = `
 .fbs{display:flex;flex-direction:column;gap:12px;}
-.fbs-bd{display:grid;align-self:center;width:min(100%, 420px);aspect-ratio:1;}
-.fbs.n6 .fbs-bd{width:min(100%, 440px);}
+.fbs-bd{display:grid;align-self:center;width:min(100%, 420px, var(--fbs-fit, 420px));aspect-ratio:1;}
+.fbs.n6 .fbs-bd{width:min(100%, 440px, var(--fbs-fit, 440px));}
 .pst .fbs-cl{position:relative;min-width:0;min-height:0;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);padding:0;display:flex;align-items:center;justify-content:center;font-size:clamp(20px, 6.6vw, 30px);font-weight:700;touch-action:manipulation;}
 .fbs.n6 .fbs-cl{font-size:clamp(17px, 5.4vw, 26px);border-radius:10px;}
 .pst .fbs-cl:disabled{cursor:default;opacity:1;}
@@ -1432,8 +1436,8 @@ const FBS_CSS = `
 .pst .fbs-go{height:48px;border-radius:16px;border:2px solid var(--pst-ink);background:var(--pst-acc);color:var(--pst-on-acc);font-size:16px;font-weight:800;width:100%;}
 .pst .fbs-go:disabled{opacity:.45;cursor:default;}
 @media (min-width:900px){
-  .fbs-bd{width:min(100%, 470px);}
-  .fbs.n6 .fbs-bd{width:min(100%, 500px);}
+  .fbs-bd{width:min(100%, 470px, var(--fbs-fit, 470px));}
+  .fbs.n6 .fbs-bd{width:min(100%, 500px, var(--fbs-fit, 500px));}
   .pst .fbs-sg{width:34px;height:34px;}
 }
 @media (min-width:900px) and (hover:hover) and (pointer:fine){.fbs-pad{display:none !important;}}
