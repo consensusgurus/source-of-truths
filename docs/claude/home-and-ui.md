@@ -1886,3 +1886,27 @@ and every `RunEmbed` host), so there is no embedded mode to keep.
 is shorter than the screen, so the header sits 60 to 90px down the page. These four carry
 `.pst-col > .stb.has-t{flex:none;}` in their own stage CSS; the right home for it is
 PlayStage's CSS (every short PlayStage board on a phone has the same gap).
+
+## Five, Racecar, Sumo, Giant, Quilt and Cages on the sudoku stage (owner, 2026-10-31)
+
+The six play on the shared `app/SudokuStage.jsx` (board, pad, tools, one status line on
+`PlayStage`) with the same mount as Suds: `STAGE && !EMBED && phoneStage && !!g.t0 &&
+(playing || !revealed)`. Presentation only: every control calls the client's own handlers, so
+scoring, saves, hints, auto-move, posting, share text, archives, Sunday Editions and the finish are
+unchanged; the old board stays behind the stage, and inside Enter the Dojo (Sumo, Quilt) the run
+keeps the old board. The in-page Reveal is the foot's two-tap Give up. Variant marks, all solid:
+
+- **Five / Racecar:** the lines from `PUZZLE.lines` under the thin rules, light green `#bbf7d0`
+  (0.24 of a square) and light grey `#d5dbe3` (0.3). Dark look `#1d5a36` / `#3a4458`.
+- **Sumo:** `thin={false}`; every in-box edge is `signPath(h, v, .17, .2)` in the thin-line grey
+  (`--sks-thin`, 1.8px), bent at the smaller square; box walls stay straight ink.
+- **Giant:** 16 by 16, symbols 1 to G (`glyph`), pad in two rows of eight. Under 560px the
+  **Whole board / Zoom in** switch sits over the board (same `sot_giant_zoom` preference and
+  `pickQuad` logic); zoomed, the stage draws the current 8x8 quarter as its own board (notes still
+  run 1 to G through SudokuBoard's `noteN`) with a 46px quarter map beside the switch.
+- **Quilt / Cages:** faint pastels (`SK_PASTEL`, nine), one per region / per cage colour
+  (`CAGE_TINT`'s greedy colouring), the selection's peers a third of periwinkle over the pastel;
+  dark looks sink the pastel to 22% on the board, the black-and-white looks drop it. Quilt's
+  region walls are the board's ink walls. Cages: solid grey walls (`#5b6678`, 1.6px) between cages,
+  left off where a box wall runs, and the totals in small white chips that grey once the cage is
+  full; a chip square's digit sits a little lower (`.cg`). Cages' peers include its cage.

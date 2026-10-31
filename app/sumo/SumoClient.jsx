@@ -60,6 +60,9 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 // Sumo's legacy slate hue is OCHRE, the clay of the ring. The page itself is painted by the Sudoku
 // category ramp (lib/category-ramp.js), so this pair only tells Sumo apart
@@ -109,7 +112,11 @@ const GRID_MAX = 468;        // px — the same width Suds gives a 9×9
 // share of one square (7px and 8px on a 52px square, the approved mockup).
 const KINK = 0.135;
 const HALF = 0.15;
-function signPath(h, v) {
+// The stage board (app/SudokuStage.jsx, the round 8 Sumo mockup) bends a
+// little further: KINK .17 and HALF .2 of a square, in the thin-line grey.
+const STAGE_KINK = 0.17;
+const STAGE_HALF = 0.2;
+function signPath(h, v, KINK_ = KINK, HALF_ = HALF) {
   if (!Array.isArray(h) || !Array.isArray(v)) return '';
   const f = (x) => Number(x.toFixed(3));
   const parts = [];
@@ -118,12 +125,12 @@ function signPath(h, v) {
   for (let r = 0; r < N; r++) H_COLS.forEach((c, k) => {
     // vertical line between columns c and c+1; '<' = left smaller, point left
     const x = c + 1, dir = h[r] && h[r][k] === '<' ? -1 : 1, m = r + 0.5;
-    parts.push(`M${x} ${r}L${x} ${f(m - HALF)}L${f(x + dir * KINK)} ${m}L${x} ${f(m + HALF)}L${x} ${r + 1}`);
+    parts.push(`M${x} ${r}L${x} ${f(m - HALF_)}L${f(x + dir * KINK_)} ${m}L${x} ${f(m + HALF_)}L${x} ${r + 1}`);
   });
   V_ROWS.forEach((r, k) => { for (let c = 0; c < N; c++) {
     // horizontal line between rows r and r+1; '^' = upper smaller, point up
     const y = r + 1, dir = v[k] && v[k][c] === '^' ? -1 : 1, m = c + 0.5;
-    parts.push(`M${c} ${y}L${f(m - HALF)} ${y}L${m} ${f(y + dir * KINK)}L${f(m + HALF)} ${y}L${c + 1} ${y}`);
+    parts.push(`M${c} ${y}L${f(m - HALF_)} ${y}L${m} ${f(y + dir * KINK_)}L${f(m + HALF_)} ${y}L${c + 1} ${y}`);
   } });
   return parts.join('');
 }
@@ -312,6 +319,8 @@ export default function SumoClient({ puzzles = [], forceNum = null }) {
   // Inside the Enter the Dojo run (app/RunEmbed.jsx) the page furniture drops
   // away and the board sits on the run's dark ground; the game is unchanged.
   const EMBED = useRunEmbed();
+  const phoneStage = usePhoneStage();
+  const [skLook] = useStageLook();
   // A run that deals the grids back to back starts each one on its own (owner, 2026-10-24: one click per puzzle, no start page).
   useEffect(() => { if (EMBED && EMBED.autostart && preStart) startGame(); }, [EMBED, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   useRunHelp(EMBED, () => setShowHelp(true));
@@ -826,11 +835,56 @@ export default function SumoClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+
+  // THE SUDOKU STAGE (owner, 2026-10-31, Sumo.dc.html): the shared periwinkle
+  // board, pad, tools and one status line on the white PlayStage, at every
+  // width (app/SudokuStage.jsx). Presentation only: every control calls this
+  // client's own handlers (cellClick, padTap, undo, eraseCell, clearBoard,
+  // useHint, revealEnd), so scoring, saves, auto-move, posting and the finish
+  // are unchanged and the old board stays behind the stage. Not inside Enter
+  // the Dojo (EMBED), which keeps its own board and look.
+  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const skDark = isDarkLook(skLook);
+  const skMono = skLook === 'plain' || skLook === 'dark';
+  const skLine = toast || (playing
+    ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
+  const SK_SIGN_D = useMemo(() => signPath(PUZZLE.h, PUZZLE.v, STAGE_KINK, STAGE_HALF), [PUZZLE]);
+  const stageEl = skStage ? (
+    <SudokuStage gameKey="sumo" label="Sumo"
+      eyebrow={sudokuEyebrow(PUZZLE, 'Greater-than')}
+      playing={playing}
+      board={{
+        given: givenFlat, cells: viewCells, notes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        // Sumo's signs ARE the in-box lines (owner pick E1): no plain thin
+        // separators, every in-box edge bends into a point at the smaller square,
+        // grey and solid; the box walls stay straight ink.
+        thin: false,
+        under: <path d={SK_SIGN_D} fill="none" stroke="var(--sks-thin)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />,
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: 9 }, (_, k) => ({ d: k + 1, left: Math.max(0, 9 - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={skLine}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="sumo" name="Sumo" collapsed={started} loft={LOFT} />

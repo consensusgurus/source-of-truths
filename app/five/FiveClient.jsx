@@ -56,6 +56,9 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 // Five identity is GREEN. Every colour the board uses derives from
 // COLORS.accent below rather than a literal hex a second time.
@@ -290,6 +293,8 @@ export default function FiveClient({ puzzles = [], forceNum = null }) {
   // Inside the Enter the Dojo run (app/RunEmbed.jsx) the page furniture drops
   // away and the board sits on the run's dark ground; the game is unchanged.
   const EMBED = useRunEmbed();
+  const phoneStage = usePhoneStage();
+  const [skLook] = useStageLook();
   useRunHelp(EMBED, () => setShowHelp(true));
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
@@ -800,11 +805,55 @@ export default function FiveClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+
+  // THE SUDOKU STAGE (owner, 2026-10-31, Five.dc.html): the shared periwinkle
+  // board, pad, tools and one status line on the white PlayStage, at every
+  // width (app/SudokuStage.jsx). Presentation only: every control calls this
+  // client's own handlers (cellClick, padTap, undo, eraseCell, clearBoard,
+  // useHint, revealEnd), so scoring, saves, auto-move, posting and the finish
+  // are unchanged and the old board stays behind the stage. Not inside Enter
+  // the Dojo (EMBED), which keeps its own board and look.
+  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const skDark = isDarkLook(skLook);
+  const skMono = skLook === 'plain' || skLook === 'dark';
+  const skLine = toast || (playing
+    ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
+  const stageEl = skStage ? (
+    <SudokuStage gameKey="five" label="Five"
+      eyebrow={sudokuEyebrow(PUZZLE, 'German whispers')}
+      playing={playing}
+      board={{
+        given: givenFlat, cells: cells, notes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        under: (
+          <g fill="none" stroke={skMono ? 'var(--sks-mark)' : (skDark ? '#1d5a36' : '#bbf7d0')} strokeWidth="0.24" strokeLinecap="round" strokeLinejoin="round">
+            {(PUZZLE.lines || []).map((ln, k) => <path key={k} d={ln.map(([r, col], q) => `${q ? 'L' : 'M'}${col + 0.5} ${r + 0.5}`).join(' ')} />)}
+          </g>
+        ),
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: 9 }, (_, k) => ({ d: k + 1, left: Math.max(0, 9 - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={skLine}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="five" name="Five" collapsed={started} loft={LOFT} />
