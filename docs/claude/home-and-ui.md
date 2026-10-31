@@ -1705,3 +1705,11 @@ the screen (`clamp(15px, 4.9vw, 19px)`) and then ends in an ellipsis. Share is a
 34px round button on phones (aria-label "Share"). Desktop is unchanged. Every stage page that
 draws this bar inherits it: PlayStage, WordStage, BracketStage, GauntletStage and the run
 screens, StageChrome's simple header, and Price Check's week.
+
+## The desktop ending cover is left-aligned, not centred (owner, 2026-10-31)
+
+51ba941d4 (2026-10-30) centred the result on the desktop ending cover (`.sst-cover .sst-hero` in
+app/StageStick.jsx: text, verdict, metric and arc on the centre line). The owner asked for that to be
+reverted: the cover keeps the left-aligned layout of the in-page band it fades into. The column itself
+stays centred (`.sst-in` max-width 560px, margin auto). The phone ending (StageRoll) was never centred.
+Do not centre the cover's contents again without asking.
