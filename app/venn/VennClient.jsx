@@ -16,7 +16,7 @@
 // fifteen words and withhold two of the seven counts, so part of the check has
 // to be reconstructed before it can be used.
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Smartphone, Circle, Eraser } from 'lucide-react';
 import Grain from '../Grain';
@@ -70,6 +70,9 @@ const COLORS = {
   cA: `var(--stg-cA, ${T.blue})`, cB: 'var(--stg-cB, #a16207)', cC: 'var(--stg-cC, #0f766e)',
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
+// The stage diagram's measure runs before paint in the browser; the server has
+// no layout, so it gets the plain effect (and no warning).
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_venn_help_seen';
 const STATS_KEY = 'sot_venn_stats';
@@ -226,6 +229,49 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
     const t = setTimeout(() => setArmGive(0), 3500);
     return () => clearTimeout(t);
   }, [armGive]);
+  // THE STAGE DIAGRAM IS SIZED TO THE ROOM LEFT (owner, 2026-10-31: Venn must
+  // fit a 360x740 phone with no scroll, even on a fifteen-word Sunday of long
+  // names). Everything else on the stage keeps its natural height; the diagram
+  // takes whatever height is left, measured, never a constant. Shrinking the
+  // diagram moves nothing else (the tray is full width), so the measure settles
+  // in one pass. stageFit is the diagram's width in px, null until measured.
+  const vnDiaRef = useRef(null);
+  const [stageFit, setStageFit] = useState(null);
+  useIsoLayoutEffect(() => {
+    const dia = vnDiaRef.current;
+    if (!dia) { setStageFit(null); return undefined; }
+    const pst = dia.closest('.pst');
+    const col = dia.closest('.pst-col');
+    const top = dia.closest('.pst-top');
+    const box = dia.parentElement;
+    if (!pst || !col || !top || !box) return undefined;
+    let raf = 0;
+    const kids = (el) => Array.from(el.children).filter((c) => c.tagName !== 'STYLE' && getComputedStyle(c).display !== 'none' && getComputedStyle(c).position !== 'absolute' && getComputedStyle(c).position !== 'fixed');
+    const measure = () => {
+      raf = 0;
+      const cs = getComputedStyle(col);
+      const gap = parseFloat(cs.rowGap) || 0;
+      const ck = kids(col);
+      let used = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) + gap * Math.max(0, ck.length - 1);
+      for (const c of ck) if (c !== top) used += c.getBoundingClientRect().height;
+      const tk = kids(top);
+      const tgap = parseFloat(getComputedStyle(top).rowGap) || 0;
+      used += tgap * Math.max(0, tk.length - 1);
+      for (const c of tk) used += c.getBoundingClientRect().height;
+      used -= dia.getBoundingClientRect().height;
+      const avail = pst.clientHeight - used - 4;
+      const maxW = Math.min(box.clientWidth, 420);
+      const w = Math.max(200, Math.min(maxW, Math.floor((avail * 358) / 330)));
+      setStageFit((cur) => (cur != null && Math.abs(cur - w) <= 2 ? cur : w));
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(measure); };
+    measure();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(kick) : null;
+    if (ro) { ro.observe(pst); ro.observe(col); kids(top).forEach((c) => ro.observe(c)); Array.from(box.children).forEach((c) => { if (c !== dia) ro.observe(c); }); }
+    window.addEventListener('resize', kick);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(kick).catch(() => {});
+    return () => { if (raf) cancelAnimationFrame(raf); if (ro) ro.disconnect(); window.removeEventListener('resize', kick); };
+  }, [g, held, verdict, toast, revealed, phoneStage, stageLook]);
 
   const playing = g.status === 'playing';
   const LOFT = isLoft('venn');
@@ -460,11 +506,15 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
         const filed = PUZZLE.items.map((w, i) => ({ w, i })).filter(({ i }) => g.place[i]);
         const wordsOf = (r) => PUZZLE.items.map((w, i) => ({ w, i })).filter(({ i }) => placeShown[i] === r);
         const lead = PUZZLE.domain ? `${N} items` : `${N} words`;
+        // A long tray (a Sunday's fifteen, or nine-letter names) drops the
+        // chips a size so the diagram keeps room.
+        const dense = N > 12 || PUZZLE.items.reduce((a, w) => a + w.length, 0) > 80;
+        const vs = stageFit ? stageFit / 358 : 1;
         return (
           <PlayStage bg={gameColor('venn')} label="Venn"
-            eyebrow={`Venn No. ${PUZZLE.num} · ${lead}${PUZZLE.sunday ? ' · Sunday Edition, two counts hidden' : ''}`}
+            eyebrow={`Venn No. ${PUZZLE.num}${PUZZLE.sunday ? ' · Sunday' : ''} · ${lead}`}
             top={(
-              <div className="vns" style={{ '--lg-bad': LBAD }}>
+              <div className={'vns' + (dense ? ' dense' : '')} style={{ '--lg-bad': LBAD }}>
                 <style dangerouslySetInnerHTML={{ __html: VNS_CSS }} />
                 <div className="vns-rls">
                   {PUZZLE.rules.map((r, i) => (
@@ -472,7 +522,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
                   ))}
                   {factNote ? <div className="vns-fact">{factNote}</div> : null}
                 </div>
-                <div className={'vns-dia' + (held != null ? ' arm' : '')}>
+                <div ref={vnDiaRef} className={'vns-dia' + (held != null ? ' arm' : '')} style={stageFit ? { width: stageFit, '--vs': vs.toFixed(3) } : undefined}>
                   <svg viewBox="0 0 358 330" aria-hidden="true">
                     <g className="vns-c" strokeWidth="2.2">
                       <circle cx="123" cy="116" r="114" />
@@ -1024,40 +1074,60 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
 // pips rose, open pips white, the held chip rose with an ink ring, File the
 // sheet the one rose button. An over-full region and a wrong pip are orange.
 const VNS_CSS = `
-.vns{display:flex;flex-direction:column;gap:9px;}
-.vns-rls{display:flex;flex-direction:column;gap:5px;}
-.vns-rl{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;line-height:1.25;}
-.vns-rl b{width:24px;height:24px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none;}
+.pst .pst-col:has(.vns){gap:10px;}
+/* Nothing on the Venn stage shrinks or grows but the diagram, which is sized to
+   the room left (a shrunk row clips instead of scrolling, a grown bar steals the
+   room the measure hands the diagram). */
+.pst .pst-col:has(.vns) > *{flex-shrink:0;}
+.pst .pst-col:has(.vns) > .stb{flex:none;}
+.pst .pst-top:has(.vns){gap:8px;}
+.vns{display:flex;flex-direction:column;gap:8px;}
+.vns-rls{display:flex;flex-direction:column;gap:4px;}
+.vns-rl{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;line-height:1.2;}
+.vns-rl b{width:22px;height:22px;border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-bg);display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex:none;}
 .vns-fact{font-size:12.5px;font-weight:700;color:var(--pst-mute);}
-.vns-dia{position:relative;width:min(100%, 420px);aspect-ratio:358/330;align-self:center;}
+.vns-dia{position:relative;width:min(100%, 420px);aspect-ratio:358/330;align-self:center;--vs:1;}
 .vns-dia svg{position:absolute;inset:0;width:100%;height:100%;}
 .vns-c circle{fill:var(--pst-cell);fill-opacity:.7;stroke:var(--pst-ink);}
 .vns-l{color:var(--pst-ink);}
-.pst .vns-pz{position:absolute;transform:translate(-50%,-50%);min-width:58px;min-height:48px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px 6px;z-index:1;}
+.pst .vns-pz{position:absolute;transform:translate(-50%,-50%);min-width:max(40px, calc(58px * var(--vs)));min-height:max(34px, calc(48px * var(--vs)));border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:3px 5px;z-index:1;}
 .pst .vns-pz.arm{background:var(--pst-pale);}
-.vns-pz .bdg{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;border-radius:7px;padding:0 5px;line-height:16px;}
+.vns-pz .bdg{font-size:max(11px, calc(12px * var(--vs)));font-weight:800;font-variant-numeric:tabular-nums;border-radius:7px;padding:0 5px;line-height:15px;}
 .pst .vns-pz.ready .bdg{background:var(--pst-acc);color:var(--pst-on-acc);}
 .pst .vns-pz.over{border-color:var(--lg-bad);box-shadow:inset 0 0 0 1px var(--lg-bad);}
 .pst .vns-pz.over .bdg{color:var(--lg-bad);}
-.vns-pz .ps{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;max-width:76px;}
-.vns-pz .ps i{font-style:normal;min-width:22px;height:18px;border-radius:9px;background:var(--pst-acc);border:1.5px solid var(--pst-ink);font-size:10px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0 3px;}
+.vns-pz .ps{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;max-width:max(52px, calc(76px * var(--vs)));}
+.vns-pz .ps i{font-style:normal;min-width:max(14px, calc(22px * var(--vs)));height:max(13px, calc(18px * var(--vs)));border-radius:9px;background:var(--pst-acc);border:1.5px solid var(--pst-ink);font-size:max(8px, calc(10px * var(--vs)));font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0 1px;letter-spacing:-.02em;}
 .pst .vns-pz .ps i{color:var(--pst-on-acc);}
 .vns-pz .ps i.o{background:var(--pst-bg);border-color:var(--pst-cell-line);}
 .pst .vns-pz .ps i.no{background:var(--pst-bg);border-color:var(--lg-bad);color:var(--lg-bad);}
-.vns-held{text-align:center;font-size:14px;font-weight:800;}
+.vns-held{text-align:center;font-size:14px;font-weight:800;line-height:18px;min-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .vns-tray{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;}
-.pst .vns-ch{min-height:44px;padding:0 9px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:13.5px;font-weight:800;letter-spacing:.01em;}
+.pst .vns-ch{min-height:42px;padding:0 9px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:13.5px;font-weight:800;letter-spacing:.01em;}
 .pst .vns-ch.h{background:var(--pst-acc);color:var(--pst-on-acc);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
-.vns-fc{display:inline-flex;align-items:stretch;min-height:40px;border-radius:12px;border:2px solid var(--pst-cell-line);background:var(--pst-pale);overflow:hidden;}
+.vns-filed{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:1px 0;margin:0 -2px;}
+.vns-filed::-webkit-scrollbar{display:none;}
+.vns-fc{display:inline-flex;align-items:stretch;flex:none;min-height:36px;border-radius:12px;border:2px solid var(--pst-cell-line);background:var(--pst-pale);overflow:hidden;}
 .vns-fc.h{border-color:var(--pst-ink);background:var(--pst-acc);}
 .pst .vns-fc button{border:0;border-radius:0;background:transparent;padding:0;}
-.pst .vns-fc .t{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 4px 0 10px;font-size:13px;font-weight:800;line-height:1.15;}
-.vns-fc .t small{font-size:10px;font-weight:700;color:var(--pst-mute);}
+.pst .vns-fc .t{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 2px 0 9px;font-size:12.5px;font-weight:800;line-height:1.1;}
+.vns-fc .t small{font-size:9.5px;font-weight:700;color:var(--pst-mute);}
 .pst .vns-fc.h *{color:var(--pst-on-acc);}
-.pst .vns-fc .x{width:30px;font-size:17px;font-weight:700;color:var(--pst-mute);}
+.pst .vns-fc .x{width:28px;font-size:17px;font-weight:700;color:var(--pst-mute);}
+.vns.dense .vns-rl{font-size:13px;}
+.vns.dense .vns-tray{gap:4px;}
+.pst .vns.dense .vns-ch{min-height:36px;padding:0 7px;font-size:12.5px;border-radius:10px;letter-spacing:0;}
+@media (max-height:780px){
+  .pst .pst-col:has(.vns){gap:8px;}
+  .vns{gap:6px;}
+  .pst .vns-tb,.pst .vns-go{min-height:42px;}
+  .vns-rl{font-size:13px;}
+  .pst .vns-ch{min-height:38px;padding:0 8px;font-size:13px;}
+  .pst .vns.dense .vns-ch{min-height:34px;padding:0 6px;font-size:12px;}
+}
 .vns-tools{display:flex;gap:8px;}
-.pst .vns-tb{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 16px;border-radius:999px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:14px;font-weight:800;flex:none;}
+.pst .vns-tb{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 16px;border-radius:999px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:14px;font-weight:800;flex:none;}
 .pst .vns-tb:disabled{opacity:.4;cursor:default;}
-.pst .vns-go{flex:1;min-height:48px;border-radius:999px;border:2px solid var(--pst-ink);background:var(--pst-acc);color:var(--pst-on-acc);font-size:15px;font-weight:800;}
+.pst .vns-go{flex:1;min-height:46px;border-radius:999px;border:2px solid var(--pst-ink);background:var(--pst-acc);color:var(--pst-on-acc);font-size:15px;font-weight:800;}
 .pst .vns-go:disabled{opacity:.4;cursor:default;}
 `;

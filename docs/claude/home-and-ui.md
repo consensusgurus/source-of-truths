@@ -1728,6 +1728,14 @@ are unchanged. None of the three is in a run or circuit.
   words; filed words sit in a second row as pale chips with their region and an x (the old
   phone roster), so lift and unfile still work. The old one-tap Reveal became the foot's
   two-tap Give up (a local `armGive`, 400ms minimum between taps).
+  **Venn fits the screen with no scroll** (owner, 2026-10-31), down to 360x740 on the longest
+  tray in the bank (No. 108, a Sunday of fifteen element names): every other row keeps its
+  natural height and the diagram takes the height left, MEASURED each render (`stageFit`, the
+  same reasoning as `lib/stage-fit.js`, floor 200px wide); the region buttons and pips scale
+  with it (`--vs`). A long tray (more than 12 items or over 80 letters) drops the chips a size,
+  short screens (max-height 780px) tighten the gaps, the filed row is one line that scrolls
+  sideways, and every row but the diagram is pinned (`flex-shrink:0`, the bar `flex:none`) so
+  nothing clips or steals the room.
 - **Suffice:** pips (rose right, orange wrong, ink current), the question on a pale rose card,
   two statements on white with a grey rule, the three yes / no rows, Submit, then the reveal card
   with the counterexample and Next item. "That makes your answer" stays as a quiet note.
