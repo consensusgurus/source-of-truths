@@ -244,7 +244,7 @@ export const GAME_META = {
   calc: { accent: '#be123c', badgeBg: '#be123c', badgeInk: T.white, Fin: Divide },
   encore: { accent: '#1d4ed8', badgeBg: '#1d4ed8', badgeInk: T.white, Fin: TableProperties },
   biz: { accent: '#0f5132', badgeBg: '#0f5132', badgeInk: T.white, Fin: TrendingUp },
-  passport: { accent: '#9f1239', badgeBg: '#9f1239', badgeInk: T.white, Fin: Plane },
+  passport: { accent: '#176e2f', badgeBg: '#176e2f', badgeInk: T.white, Fin: Plane },
   flank: { accent: '#3f6212', badgeBg: '#3f6212', badgeInk: T.white, Fin: Milestone },
   script: { accent: '#4a1d6b', badgeBg: '#4a1d6b', badgeInk: T.white, Fin: Clapperboard },
   quotes: { accent: '#3d4f7c', badgeBg: '#3d4f7c', badgeInk: T.white, Fin: Quote },

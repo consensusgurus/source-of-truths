@@ -408,7 +408,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     <>Played one of the three on its own page today? Your first result stands and the run steps over it. The board ranks your total, then time.</>,
   ];
   const rulesBody = (
-    <DailyRules accent="#be123c" accentSoft="#fdecef"
+    <DailyRules accent="#1a7f37" accentSoft="#e8f5ec"
       lead={ORD[3] !== 3 && !SIZES_FIRST ? `${ORD.map((i) => (i === 3 ? 'a size round' : LEGS[i].n)).join(', ').replace(/^./, (c) => c.toUpperCase()).replace(/, ([^,]*)$/, ' and $1')}: one points total. Your total decides which passport you travel home on.` : SIZES_FIRST ? 'A size round and three geography games, one points total. Your total decides which passport you travel home on.' : 'Three geography games and one size round, one points total. Your total decides which passport you travel home on.'}
       steps={rulesSteps}
       knack={ORD[3] !== 3 && !SIZES_FIRST ? 'The size pairs are close, so trust what you know about each country over a guess at scale.' : SIZES_FIRST ? 'The size pairs are close, so trust what you know about each country over a guess at scale. Then Ping, Flank and Span, in that order.' : "The sizes leg leans on the countries you just met: the road you walked in Span, Flank's country and its ring, and the country Ping's city is in. The pairs are close, so trust what you know over a guess at scale."}

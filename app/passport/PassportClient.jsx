@@ -54,7 +54,9 @@ const NAME = 'Passport';
 const PATH = '/passport';
 const COLORS = {
   cream: T.surface, ink: T.ink, ember: T.accent, rust: T.danger, faded: T.muted,
-  accent: '#be123c', accentSoft: '#fdecef', green: T.successDeep,
+  // Geography's deep green and its soft wash (owner, 2026-10-30: Logic and
+  // Geography swapped colours, so Passport went from rose to lime and green).
+  accent: '#1a7f37', accentSoft: '#e8f5ec', green: T.successDeep,
 };
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -777,7 +779,7 @@ export function usePlaneMap(canvasRef, active, darkReg, dep) {
       ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(-7, -3); ctx.lineTo(-9, 0); ctx.lineTo(-7, 3); ctx.closePath(); ctx.fill();
       ctx.beginPath(); ctx.moveTo(2, 0); ctx.lineTo(-4, -9); ctx.lineTo(-6, -9); ctx.lineTo(-2, 0); ctx.lineTo(-6, 9); ctx.lineTo(-4, 9); ctx.closePath(); ctx.fill();
       ctx.restore();
-      ctx.strokeStyle = '#e11d48'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(B[0], B[1], 6 + 4 * Math.sin(nowT / 300), 0, 7); ctx.stroke();
+      ctx.strokeStyle = darkReg ? '#bef264' : '#1a7f37'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(B[0], B[1], 6 + 4 * Math.sin(nowT / 300), 0, 7); ctx.stroke();
       if (!still) raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
@@ -966,7 +968,7 @@ export const LAUNCH_CSS = `
 .pl{max-width:640px;margin:0 auto;padding:6px 0 20px;text-align:center}
 .pl-eb{font-family:${MONO};font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--stg-mute,#9aa8c4)}
 .pl-title{margin:10px 0 0;font-family:${STAMP_FONT};font-weight:700;font-size:clamp(46px,10vw,84px);letter-spacing:.06em;text-transform:uppercase;line-height:1;color:var(--stg-ink,#e9edf4);display:inline-block;position:relative;animation:plslam .55s cubic-bezier(.2,1.6,.4,1) .15s both}
-.pl-title::after{content:'';position:absolute;inset:-6px -14px;border:3px solid #f0718b;border-radius:10px;opacity:0;transform:rotate(-3deg) scale(1.3);animation:plring .5s .55s ease-out both}
+.pl-title::after{content:'';position:absolute;inset:-6px -14px;border:3px solid #bef264;border-radius:10px;opacity:0;transform:rotate(-3deg) scale(1.3);animation:plring .5s .55s ease-out both}
 @keyframes plslam{from{transform:scale(2.2) rotate(-6deg);opacity:0;filter:blur(3px)}to{transform:none;opacity:1;filter:none}}
 @keyframes plring{to{opacity:.85;transform:rotate(-3deg) scale(1)}}
 .pl-lede{margin:16px auto 0;max-width:520px;font-size:15.5px;font-weight:600;line-height:1.5;color:var(--stg-mute,#9aa8c4);text-wrap:balance}
@@ -1161,8 +1163,8 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
   const darkReg = STAGE && stageTheme !== 'light';
   const inks = darkReg ? INKS : INKS_LIGHT;
   const VARS = darkReg
-    ? { '--pp-sea': '#0a1222', '--pp-land': '#2a3652', '--pp-edge': '#0b0f1a', '--pp-home': '#f0718b', '--pp-hit': '#2f7a64', '--pp-miss': '#5a3340', '--pp-panel': '#181e2d', '--pp-line': 'rgba(255,255,255,0.18)', '--pp-good': '#6ee7b7', '--pp-bad': '#fb7185', '--pp-gold': '#fbbf24', '--pp-label': '#ffffff', '--pp-halo': '#0b0f1a' }
-    : { '--pp-sea': '#dbe7f3', '--pp-land': '#c3cbd8', '--pp-edge': '#ffffff', '--pp-home': '#be123c', '--pp-hit': '#15803d', '--pp-miss': '#d6a2ae', '--pp-panel': '#ffffff', '--pp-line': 'rgba(11,15,26,0.16)', '--pp-good': '#047857', '--pp-bad': '#be123c', '--pp-gold': '#b45309', '--pp-label': '#0b0d12', '--pp-halo': '#ffffff' };
+    ? { '--pp-sea': '#0a1222', '--pp-land': '#2a3652', '--pp-edge': '#0b0f1a', '--pp-home': '#bef264', '--pp-hit': '#2f7a64', '--pp-miss': '#5a3340', '--pp-panel': '#181e2d', '--pp-line': 'rgba(255,255,255,0.18)', '--pp-good': '#6ee7b7', '--pp-bad': '#fb7185', '--pp-gold': '#fbbf24', '--pp-label': '#ffffff', '--pp-halo': '#0b0f1a' }
+    : { '--pp-sea': '#dbe7f3', '--pp-land': '#c3cbd8', '--pp-edge': '#ffffff', '--pp-home': '#4d7c0f', '--pp-hit': '#15803d', '--pp-miss': '#d6a2ae', '--pp-panel': '#ffffff', '--pp-line': 'rgba(11,15,26,0.16)', '--pp-good': '#047857', '--pp-bad': '#be123c', '--pp-gold': '#b45309', '--pp-label': '#0b0d12', '--pp-halo': '#ffffff' };
 
   const sc = g.sc;
   const total = sumScores(sc);
@@ -1590,7 +1592,7 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
           </div>
           {!doneR && <span className="pp-ztag">Frame {z + 1} of 4 · worth {LANDMARK_PTS[z]}</span>}
           {doneR && (
-            <div className="pp-over"><Stamp i={0} big slam label={sc[0] ? 'Arrived' : 'Deported'} score={DAY.name} ink={sc[0] ? '#f0718b' : '#94a3b8'} /></div>
+            <div className="pp-over"><Stamp i={0} big slam label={sc[0] ? 'Arrived' : 'Deported'} score={DAY.name} ink={sc[0] ? '#bef264' : '#94a3b8'} /></div>
           )}
         </div>
         {doneR ? (
