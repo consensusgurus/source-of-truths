@@ -491,8 +491,8 @@ const EXAM_TILES = [
 
 // The IQ tests' own ramp (lib/iq-style.js), both registers, so a tile here
 // wears the colour its test page does.
-const IQ_DARK = ['#7dd3fc', '#6ee7b7', '#bef264', '#e8b43a', '#fb923c', '#fb7185', '#e879f9', '#c084fc', '#fbbf24', '#a5b4fc'];
-const IQ_LIGHT = ['#0369a1', '#046c4e', '#176e2f', '#7c5104', '#a3480d', '#be123c', '#a21caf', '#6d28d9', '#8a5a00', '#3949ab'];
+const IQ_DARK = ['#7dd3fc', '#6ee7b7', '#fb7185', '#e8b43a', '#fb923c', '#bef264', '#e879f9', '#c084fc', '#fbbf24', '#a5b4fc'];
+const IQ_LIGHT = ['#0369a1', '#046c4e', '#be123c', '#7c5104', '#a3480d', '#176e2f', '#a21caf', '#6d28d9', '#8a5a00', '#3949ab'];
 const STAT_ANCHORS = [STAND_ID, GRP_ID, BOARD_ID, LIVE_ID];
 // The Word category's section id, the same shape the render derives for every
 // category (`cat-${cat}` with spaces dashed), named here so the open-by-default
