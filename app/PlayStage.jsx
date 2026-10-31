@@ -119,6 +119,11 @@ const CSS = `
 .pst-tb.on{background:var(--pst-ink);color:var(--pst-bg);}
 .pst-tb:disabled{opacity:.4;cursor:default;}
 .pst-tb.wide{width:100%;min-height:56px;border-radius:14px;font-size:17px;}
+/* The reset above (.pst button, font:inherit) outranks a single class, so the
+   shared buttons lost their size and weight. Restated at .pst scope. */
+.pst .pst-tb{font-size:14px;font-weight:800;}
+.pst .pst-tb.wide{font-size:17px;}
+.pst .pst-go{font-size:16px;font-weight:800;}
 .pst-in{display:flex;gap:8px;}
 .pst-in input{flex:1;min-width:0;min-height:52px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);padding:0 14px;font:inherit;font-size:18px;font-weight:800;color:var(--pst-ink);outline:none;}
 .pst-in input::placeholder{color:var(--pst-ink);opacity:.55;font-weight:700;}
