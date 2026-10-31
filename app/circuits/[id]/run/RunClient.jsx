@@ -189,6 +189,11 @@ function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vi
 
 const freshRun = () => ({ v: 1, si: 0, i: 0, t0: null, sT0: null, phase: 'idle', results: [] });
 
+// ?ending=1 replays the finish over a finished run (review and replay).
+function endingReplay() {
+  try { return new URLSearchParams(window.location.search).get('ending') === '1'; } catch (e) { return false; }
+}
+
 export default function RunClient({ circuitId, circuitName, dateLabel, sections = [], boards = null, encore = null, gauntlet = null }) {
   const N = sections.length;
   // THE TRIVIA ENCORE (owner, 2026-10-14). The Encore is the three banks that
@@ -1048,7 +1053,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           bg={rampFor(sec.slot != null ? sec.slot : r.si)}
           qKey={`${r.si}:${r.i}`}
           label={`${sec.name}, question ${r.i + 1} of ${sec.questions.length}`}
-          kicker={sec.key === 'deep' && sec.topic ? sec.topic : null}
+          kicker={sec.key === 'deep' && sec.topic ? sec.topic : (question.sub || null)}
           question={MATH_RUN_GAMES.includes(sec.key)
             ? <h2>{String(question.q).split('?').map((p, i) => (i === 0 ? <React.Fragment key="h">{mathText(p)}</React.Fragment> : [<span key={i} style={{ borderBottom: '3px solid currentColor', padding: '0 .3em' }}>?</span>, <React.Fragment key={'p' + i}>{mathText(p)}</React.Fragment>]))}</h2>
             : question.line
@@ -1135,6 +1140,18 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           ladder={!r.practice ? titleLadder(circuitId) : null}
           climbStyle={SCIENCE ? 'flask' : null}
           climbMax={SCIENCE ? askable : null}
+          finale={!r.practice && (doneAtLoad.current === false || endingReplay()) ? {
+            key: circuitId, oneLife: true, legWord: MATHRUN ? 'Game' : 'Quiz',
+            legSub: sections.map((s) => s.topic || s.subject || ''),
+            legRanks: sections.map((s, i) => {
+              const res = r.results[i];
+              const got = res && Number.isFinite(res.score) ? res.score : null;
+              return {
+                rank: field && got != null && typeof field.rank === 'function' ? field.rank(s.key, got) : null,
+                plays: field && field.plays && Number.isFinite(field.plays[s.key]) ? field.plays[s.key] : null,
+              };
+            }),
+          } : null}
           ladderHeading={MATHRUN ? 'How quick are you with numbers?' : ENGLISH ? 'How good are you with words?' : SCIENCE ? 'How far up the lab do you go?' : 'Where does your trivia rank?'}
           board={(() => {
             // THE ONE-PAGE ENDING (owner, 2026-10-25): top three, then you.

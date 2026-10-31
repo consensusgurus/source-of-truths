@@ -13,6 +13,7 @@ import { PUZZLES as atlasPuzzles } from '../../../atlas/puzzles';
 import { QUESTION_MAP as atlasQuestions } from '../../../atlas/questions';
 import { PUZZLES as sportPuzzles } from '../../../sport/puzzles';
 import { QUESTION_MAP as sportQuestions } from '../../../sport/questions';
+import { sportTagFor } from '../../../sport/sport-tags';
 import { PUZZLES as bizPuzzles } from '../../../biz/puzzles';
 import { QUESTION_MAP as bizQuestions } from '../../../biz/questions';
 import { PUZZLES as scriptPuzzles } from '../../../script/puzzles';
@@ -408,7 +409,13 @@ export default function CircuitRunPage({ params }) {
       .map((qid) => bank.questions[qid])
       .filter(Boolean)
       // line + ask: a Quotes question shows its quote as its own block (2026-10-17).
-      .map(({ q, choices, correct, cat, tier, line, ask }) => (line ? { q, choices, correct, cat, tier, line, ask } : { q, choices, correct, cat, tier }));
+      .map((full) => {
+        const { q, choices, correct, cat, tier, line, ask } = full;
+        const out = line ? { q, choices, correct, cat, tier, line, ask } : { q, choices, correct, cat, tier };
+        // The sport over every Sport question (owner, 2026-10-31): see app/sport/sport-tags.js.
+        if (key === 'sport') out.sub = sportTagFor(full);
+        return out;
+      });
     if (!questions.length) continue;
     const g = DAILY_GAME_MAP[key] || {};
     sections.push({

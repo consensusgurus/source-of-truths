@@ -29,6 +29,9 @@ export default function RunRoll({
   climbHero = null, climbDone = null, prize = null, topNote = null, board = null, afterBoard = null,
   stats = null, extra = null, challenge = null, polymath = null, meme = null,
   onShare = null, copied = false, onPractice = null, similar = null, more = null, dark = false,
+  // The run finale (app/RunFinale.jsx) played and glides onto the bar: start
+  // rolled, and keep the bar still so the glide can land on it.
+  arrived = false,
 }) {
   const [rolled, setRolled] = useState(!anim);
   const [leaving, setLeaving] = useState(false);
@@ -96,7 +99,7 @@ export default function RunRoll({
   }, [rolled]);
 
   return (
-    <div className={'rrl' + (rolled ? ' in' : '') + (dark ? ' dk' : '') + (anim ? ' sw' : '')}>
+    <div className={'rrl' + (rolled ? ' in' : '') + (dark ? ' dk' : '') + (anim ? ' sw' : '') + (arrived ? ' arr' : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="rrl-top">
         <a className="rrl-tb rrl-home" href="/" aria-label="All Puzzles">
@@ -129,7 +132,7 @@ export default function RunRoll({
         </button>
       ) : (
         <>
-          <button type="button" className={'rrl-bar' + (open ? ' open' : '')} onClick={() => setOpen((o) => !o)}
+          <button type="button" data-rf="bar" className={'rrl-bar' + (open ? ' open' : '')} onClick={() => setOpen((o) => !o)}
             aria-expanded={open} aria-label={`${barText}. Show the climb, the board and the stats`}>
             <span className="tx">
               <b ref={barRef} style={{ fontSize: barFs }}>{barText}</b>
@@ -200,6 +203,7 @@ const CSS = `
 .rrl-meas{position:absolute;left:0;top:0;visibility:hidden;white-space:nowrap;font-weight:800;letter-spacing:-.015em;font-variant-numeric:tabular-nums;pointer-events:none}
 .rrl-bar .ch{flex:none;width:26px;height:26px;display:flex;align-items:center;justify-content:center;opacity:.65;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 .rrl-bar.open .ch{transform:rotate(180deg);opacity:1}
+.rrl.arr .rrl-bar{animation:none}
 .rrl-bar:focus-visible{outline:2px solid var(--gsx-ink);outline-offset:2px}
 .rrl-dd{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:16px;background:var(--rrl-card);animation:rrlDrop .35s ease-out both}
 .rrl-dd .gsx-climb{margin:0}

@@ -22,6 +22,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import GauntletStage from '../GauntletStage';
+import { sportTagFor } from './sport-tags';
 import { rampFor as gstRamp, circuitSlotFor as gstSlot } from '@/lib/circuits';
 import { useHoverStale } from '@/lib/hover-armed';
 import { useSearchParams } from 'next/navigation';
@@ -564,6 +565,7 @@ export default function SportClient({ puzzles = [], questionsByNum = {}, forceNu
           bg={gstRamp(gstSlot('gauntlet', 'sport'))}
           qKey={g.i}
           label={`Question ${g.i + 1} of ${TOTAL_Q}`}
+          kicker={sportTagFor(question) || null}
           question={question.line ? <><blockquote>&ldquo;{question.line}&rdquo;</blockquote><h2>{question.ask}</h2></> : <h2>{question.q}</h2>}
           choices={question.choices.map((c) => (typeof c === 'number' ? c.toLocaleString('en-US') : c))}
           onPick={answer}

@@ -28,6 +28,7 @@ import { rampFor, LADDER_RAMP } from '@/lib/circuits';
 import MindLoftMark from './MindLoftMark';
 import StageTopBar from './StageTopBar';
 import RunRoll from './RunRoll';
+import RunFinale from './RunFinale';
 import { mathText } from '@/app/MathText';
 import { holdRootPaint } from '@/lib/root-paint';
 import { holdThemeColor } from '@/lib/theme-color-hold';
@@ -469,7 +470,7 @@ function TitleClimb({ ladder, score, shown, landed, pal, heading, onReplay }) {
           <div key={t.name} role="listitem" className={cls} style={{ '--rc': here ? pal.ink : lit ? pal.fill(t.colour) : 'transparent' }}>
             {t.card ? <span className="gsx-rcard" aria-hidden="true">{t.card}</span>
               : <i className="gsx-rchip" style={{ background: t.chip || pal.fill(t.colour) }} aria-hidden="true" />}
-            <span className="gsx-rt"><b>{t.name}</b>{here && t.line ? <em>{t.line}</em> : null}</span>
+            <span className="gsx-rt"><b data-rf={here ? 'title' : undefined}>{t.name}</b>{here && t.line ? <em>{t.line}</em> : null}</span>
             <span className="gsx-rtail">{tail}</span>
           </div>
         );
@@ -529,7 +530,7 @@ function FlaskClimb({ ladder, score, shown, landed, pal, heading, onReplay, max 
           return (
             <div key={t.name} role="listitem" className={'gsx-fmk' + (lit ? ' lit' : '') + (here ? ' here' : '')}
               style={{ top: yOf(t.min) * scale, '--rc': here ? 'var(--gsx-ink)' : lit ? pal.fill(t.colour) : 'transparent' }}>
-              <span className="gsx-fmt"><b>{t.name}</b></span>
+              <span className="gsx-fmt"><b data-rf={here ? 'title' : undefined}>{t.name}</b></span>
               <span className="gsx-rtail">{tail}</span>
             </div>
           );
@@ -574,6 +575,12 @@ export function GauntletEndStage({
   // page and the sweep in the run's category colour instead of the earned
   // title's and each leg's ladder step; `paper` as in useStagePalette.
   pastel = null, paper = false,
+  // THE RUN FINALE (owner, 2026-10-31): `finale` plays app/RunFinale.jsx over a
+  // fresh finish (only when `sweep` is on and there is a ladder): the recap
+  // ring, the run's own title piece, then the glide onto this page, which then
+  // arrives already landed. { key, legMax: [per section], legSub?, legRanks?:
+  // [{ rank, plays }], oneLife?, legWord? }.
+  finale = null,
 }) {
   const [openRow, setOpenRow] = useState(-1);
   const Climb = climbStyle === 'flask' ? FlaskClimb : TitleClimb;
@@ -588,12 +595,17 @@ export function GauntletEndStage({
     return () => { if (mq.removeEventListener) mq.removeEventListener('change', on); };
   }, []);
   const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const anim = sweep && !reduce;
-  const [replays, setReplays] = useState(0);
   const climb = !!(ladder && ladder.length);
-  const [shown, landed] = useCountUp(score, anim ? 1500 : 200, !reduce, climb ? 2800 : 900, climb, replays);
+  // The finale replaces this page's own sweep and count: while it plays the
+  // page sits underneath, held (its rises paused, the glide targets hidden);
+  // at the glide it is released and its blocks rise in around the standing.
+  const finOn = !!(finale && sweep && !reduce && climb && sections.length);
+  const [finPhase, setFinPhase] = useState(finOn ? 'play' : 'done');
+  const anim = sweep && !reduce && !finOn;
+  const [replays, setReplays] = useState(0);
+  const [shown, landed] = useCountUp(score, anim ? 1500 : 200, !reduce && !finOn, climb ? 2800 : 900, climb, replays);
   // Everything below the climb waits for it (2.2s more than without one).
-  const late = climb ? 2.3 : 0;
+  const late = climb && !finOn ? 2.3 : 0;
   // While the sweep runs, Safari's bars take the colours under them: the
   // first quiz's stripe along the top, the last quiz's along the bottom.
   const [sweeping, setSweeping] = useState(anim && sections.length > 0);
@@ -622,6 +634,37 @@ export function GauntletEndStage({
   });
   const avgTotal = avg && Object.keys(avg).length ? Math.round(sections.reduce((t, s) => t + (Number(avg[s.key]) || 0), 0)) : null;
   const ahead = rank && fieldSize && fieldSize >= 2 ? Math.max(0, Math.round(((fieldSize - rank) / fieldSize) * 100)) : null;
+  const rankText = rank ? `#${rank}${fieldSize ? ` of ${Number(fieldSize).toLocaleString()}` : ''}${ahead != null ? ` · ahead of ${ahead}%` : ''}` : '';
+  const finaleNode = finOn && finPhase !== 'done' ? (() => {
+    const fx = finale || {};
+    const legs = rows.map((x, i) => {
+      const s = sections[i] || {};
+      const got = Number(x.you);
+      const qn = Array.isArray(s.questions) ? s.questions.length : 0;
+      const max = Number(fx.legMax && fx.legMax[i]) || qn || 0;
+      const lr = fx.legRanks && fx.legRanks[i];
+      return {
+        name: x.name, colour: x.bg, got: Number.isFinite(got) ? got : 0, shown: x.you,
+        max: max > 0 ? max : null,
+        sub: (fx.legSub && fx.legSub[i]) || s.topic || s.subject || '',
+        rank: lr && Number.isFinite(lr.rank) ? lr.rank : null, plays: lr && Number.isFinite(lr.plays) ? lr.plays : null,
+      };
+    });
+    // A leg with no known maximum takes an even share of the best leg seen.
+    const known = legs.filter((g) => g.max);
+    const fallback = known.length ? known.reduce((a, g) => a + g.max, 0) / known.length : Math.max(1, ...legs.map((g) => g.got));
+    legs.forEach((g) => { if (!g.max) g.max = Math.max(fallback, g.got, 1); });
+    return (
+      <RunFinale
+        runKey={fx.key} circuitName={circuitName} dateLabel={dateLabel} unitWord={unitWord}
+        heading={ladderHeading} legWord={fx.legWord || colLabel} legs={legs} oneLife={!!fx.oneLife}
+        score={score} ladder={ladder} rankText={rankText} ink={pal.ink} endBg={pal.bg}
+        colorGround={pal.look === 'color' && !paper}
+        onGlide={() => setFinPhase('glide')} onDone={() => setFinPhase('done')}
+      />
+    );
+  })() : null;
+  const finCls = finPhase === 'play' ? ' gsx-held gsx-fly' : finPhase === 'glide' ? ' gsx-fly' : '';
   const [moveN, setMoveN] = useState(0);
   const leftRef = useRef(null);
   const rightRef = useRef(null);
@@ -722,8 +765,9 @@ export function GauntletEndStage({
       ladder.forEach((t) => { if (score >= t.min) titleName = t.name; });
     }
     return (
-      <div key={pal.look} className="gsx gsx-end gsx-roll" role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
+      <div key={pal.look} className={'gsx gsx-end gsx-roll' + finCls} role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
+        {finaleNode}
         {anim ? (
           <div className="gsx-show" aria-hidden="true">
             {sections.map((s, i) => <span key={s.key} style={{ background: pal.fill(pastel || rampFor(slotOf(s, i))), animationDelay: `${i * 0.06}s` }} />)}
@@ -732,6 +776,7 @@ export function GauntletEndStage({
         <div className="gsx-col">
           <RunRoll
             anim={anim}
+            arrived={finOn}
             landed={landed}
             shown={shown}
             unitWord={unitWord}
@@ -781,8 +826,9 @@ export function GauntletEndStage({
     <div key={t.id} className="gsx-tb" ref={(el) => { tailRefs.current[t.id] = el; }}>{t.node}</div>
   );
   return (
-    <div key={pal.look} className="gsx gsx-end" role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
+    <div key={pal.look} className={'gsx gsx-end' + finCls} role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      {finaleNode}
       {anim ? (
         <div className="gsx-show" aria-hidden="true">
           {sections.map((s, i) => <span key={s.key} style={{ background: pal.fill(pastel || rampFor(slotOf(s, i))), animationDelay: `${i * 0.06}s` }} />)}
@@ -793,24 +839,24 @@ export function GauntletEndStage({
         <div className="gsx-egrid">
           <div className="gsx-eleft" ref={leftRef}>
             <div className="gsx-rise gsx-eye gsx-c" style={d('1.5s')}>{circuitName} · {dateLabel}</div>
-            <div className="gsx-rise gsx-score" style={d('1.6s')}>
-              <span>{shown}</span>
-              <i>{unitWord}</i>
+            <div className={(finOn ? '' : 'gsx-rise ') + 'gsx-score'} style={finOn ? undefined : d('1.6s')}>
+              <span data-rf="score">{shown}</span>
+              <i data-rf="unit">{unitWord}</i>
             </div>
             {rank ? (
-              <div className="gsx-rise gsx-rank" style={d('2.1s')}>
-                #{rank}{fieldSize ? ` of ${Number(fieldSize).toLocaleString()}` : ''}{ahead != null ? ` · ahead of ${ahead}%` : ''}
+              <div className={(finOn ? '' : 'gsx-rise ') + 'gsx-rank'} style={finOn ? undefined : d('2.1s')} data-rf="rank">
+                {rankText}
               </div>
             ) : null}
             {prize ? <div className={'gsx-prize' + (landed ? ' in' : '')} aria-hidden={landed ? undefined : 'true'}>{prize}</div> : null}
             {topNote ? <div className="gsx-rise gsx-note" style={d('1.7s')}>{topNote}</div> : null}
             {climb ? (
-              <div className="gsx-rise" style={d0('1.65s')}>
-                <Climb ladder={ladder} score={score} shown={shown} landed={landed} pal={pal} heading={ladderHeading} max={climbMax} onReplay={() => setReplays((k) => k + 1)} />
+              <div className={finOn ? undefined : 'gsx-rise'} style={finOn ? undefined : d0('1.65s')}>
+                <Climb ladder={ladder} score={score} shown={shown} landed={landed} pal={pal} heading={ladderHeading} max={climbMax} onReplay={() => (finOn ? setFinPhase('play') : setReplays((k) => k + 1))} />
               </div>
             ) : title ? (
               <div className="gsx-title" style={d('1.9s')}>
-                <b style={{ color: bg }}>{title.name}</b>
+                <b data-rf="title" style={{ color: bg }}>{title.name}</b>
                 {title.line ? <span>{title.line}</span> : null}
               </div>
             ) : null}
@@ -852,6 +898,10 @@ const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayout
 const CSS = `
 .gsx{position:fixed;inset:0;z-index:85;background:var(--gsx-bg);color:var(--gsx-ink);overflow-y:auto;overflow-x:hidden;font-family:Manrope,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 .gsx{color:var(--gsx-ink)}
+/* THE FINALE HOLD (app/RunFinale.jsx): under the finale the page waits with its
+   rises paused and the glide targets hidden; the glide releases both. */
+.gsx-held .gsx-rise,.gsx-held .rrl-r1,.gsx-held .rrl-r2,.gsx-held .rrl.sw{animation-play-state:paused}
+.gsx-fly [data-rf]{visibility:hidden}
 .gsx a{color:var(--gsx-ink)}
 .gsx-col{width:100%;max-width:600px;margin:0 auto;box-sizing:border-box;padding:18px 18px 26px;min-height:100%;display:flex;flex-direction:column;gap:18px}
 .gsx-top{display:flex;align-items:center;justify-content:space-between;gap:12px}

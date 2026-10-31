@@ -442,6 +442,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
           onShare={copyShare}
           copied={copied}
           sweep={doneAtLoad.current === false}
+          finale={doneAtLoad.current === false ? { key: 'pricecheck', legWord: 'Tag', legMax: sections.map(() => 10) } : null}
         />
       )}
 
