@@ -1752,3 +1752,38 @@ run's frame, follows the run's own look (`RunEmbed look`, passed to `PlayStage l
 `dark` keep the board colourless) and hides its old page column with `lgs-hosted` on its root.
 The `.jd-rose` / `.jd-rosedk` overrides in JudgedClient were retired. Stands is not in today's
 Judged roster and was left alone.
+## Axiom, Duet and Fib on the white stage (owner, 2026-10-31)
+
+The three Logic dailies play on `PlayStage` at every width with the same
+`STAGE && phoneStage && !!g.t0 && (playing || !revealed)` mount as the Numbers games, built
+from the approved mockups (Axiom.dc.html, Duet.dc.html, Fib.dc.html). Presentation only: every
+control calls the board's own handler, so tests, scoring, saves, posting, hints, share text,
+archives, Sunday Editions and the finish are unchanged, and the old board stays behind the stage.
+None of the three is in a run or circuit.
+
+- **Rose on the picked, the confirmed and the primary button.** Axiom: a word that fits the rule
+  is full rose, one that does not is white with a light rule, a given word carries a small dot,
+  a crossed-out word or rule fades and is struck, the tap switch reads Cross out / Test a word,
+  and Name the rule is the full-width primary. Duet: the picked square is rose, its row, column
+  and room pale rose, printed squares light grey, dots and rings ink, rooms walled in heavy ink,
+  and the = / x marks sit in small white discs on the shared edge. Fib: the picked square rose,
+  its row and column pale rose, printed squares light grey; a sign is white until both ends are
+  filled, grey once the grid keeps it, rose when accused.
+- **Wrong is orange on Logic** (#c2410c on #ffedd5 light, #fb923c on a deep brown dark), set per
+  look from `useStageLook` as `--axs-warn` / `--dus-warn` / `--fbs-warn`: a wrong rule name, a
+  square or mark that breaks a Duet rule, a broken Fib sign, a repeated Fib digit. Duet's old
+  striped and dashed break marks are not used on the stage (no dashed lines).
+- **Duet's pips are replaced by the need card**, as drawn: one pale rose card says what the picked
+  square's row, column and room still need, and turns orange with the rule it breaks when the
+  board breaks one. The pips still draw on the board behind the stage (and with `?stage=0`).
+- **Give up** folds each game's Reveal into the foot's two taps; Axiom had no arm step, so it
+  gained a local `armGive` (400ms minimum between taps, like Calc). Fib's digit pad hides on a
+  desktop with a fine pointer, where the keyboard types the digits (and N, Backspace, arrows).
+  Duet's 10x10 Sunday passes `wide`.
+- **Boards fit the height they measurably have** (`lib/play-stage-fit.js`, the
+  `lib/stage-fit.js` rule for PlayStage hosts). Duet's and Fib's square boards cap their width
+  at the stage height minus everything else in the column, measured, never a constant; a bar
+  the flex column stretches is counted by its contents, so the board cannot shrink into slack it
+  made. Axiom is `wide` on desktop: six words to a row (seven on Sunday) and the rules in three
+  columns; on a phone Sunday's 28 words go five to a row. All three Sundays fit 390x844,
+  1280x900 and 1280x720 without scrolling.

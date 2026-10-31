@@ -56,6 +56,9 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
+import usePlayStageFit from '@/lib/play-stage-fit';
 
 // A new game gets no colour of its own: on the stage it wears the Logic step
 // of the category ramp. ACCENT is only the legacy (pre-stage) fallback.
@@ -375,6 +378,8 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -395,6 +400,9 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('duet'), '--stg-acc-lt': gameColorLight('duet'), '--stg-onramp-lt': gameOnrampLight('duet'), '--stg-acc-ink-lt': gameAccentInkLight('duet') };
   const [stageTheme] = useStageTheme();
+  // The stage board is sized from the room it measurably has (lib/play-stage-fit.js).
+  const dusRef = useRef(null);
+  const dusFit = usePlayStageFit(dusRef, '.dus-bd', STAGE && phoneStage && !!g.t0);
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -665,7 +673,10 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
   // Desktop keyboard: arrows move, Space or Enter cycles, D or 1 a dot, R or 2
   // a ring, 0 / Backspace clears.
   const onKey = useCallback((e) => {
-    if (!playing || !g.t0) return;
+    // The How to play sheet owns the keys while it is open: an Escape that also
+    // cleared the selection re-rendered the sheet mid-event and its own Escape
+    // listener was dropped, so the first Escape never closed it.
+    if (!playing || !g.t0 || showHelp) return;
     const k = e.key;
     if ((k === 'z' || k === 'Z') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); undo(); return; }
     if (k === 'Escape') { setSel(-1); return; }
@@ -681,7 +692,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     if (k === 'r' || k === 'R' || k === '2') { setCell(sel, RING); return; }
     if (k === 'Backspace' || k === 'Delete' || k === '0') { setCell(sel, EMPTY); return; }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing, sel, g]);
+  }, [playing, sel, g, showHelp]);
   useEffect(() => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -866,7 +877,9 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
       steps={[
         <><b>Tap a square</b> to cycle it: dot, then ring, then empty. On desktop the <b>arrow keys</b> move, <b>D</b> or <b>1</b> places a dot, <b>R</b> or <b>2</b> a ring, Space cycles.</>,
         <>Shaded squares are <b>printed</b> and cannot change. Thick lines are the <b>walls</b> between rooms.</>,
-        <>A square is <b>striped</b> when it breaks a rule, and a broken mark gets a <b>dashed</b> ring; a line over its half shows <b>square</b> pips. Printed squares carry a <b>corner notch</b>. <b>Undo</b> (or Ctrl+Z) takes back a move; <b>Clear</b> wipes the board.</>,
+        STAGE
+          ? <>A square or mark that breaks a rule turns <b>orange</b>, and the card under the board names the rule. Tap a square and the card says what its row, column and room still need. <b>Undo</b> (or Ctrl+Z) takes back a move; <b>Clear</b> wipes the board.</>
+          : <>A square is <b>striped</b> when it breaks a rule, and a broken mark gets a <b>dashed</b> ring; a line over its half shows <b>square</b> pips. Printed squares carry a <b>corner notch</b>. <b>Undo</b> (or Ctrl+Z) takes back a move; <b>Clear</b> wipes the board.</>,
       ]}
       knack="Two alike side by side push the opposite onto both ends, and two alike with a gap push the opposite into the gap. A room is just another line with walls for edges: once half of it is dots, the rest are rings."
       footer="Every board has exactly one solution and can always be reached by logic, with no guessing. Solve it for a perfect 10; nothing is counted against you, so the daily leaderboard is a race on the clock. One free hint, on your first ever play, fills a correct square. Boards grow from 6×6 early in the week to 8×8, and the Sunday Edition is 10×10."
@@ -877,6 +890,91 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31 mockup): Duet plays on the shared white
+          stage at every width: the walled board with its = and x marks, one
+          pale rose card saying what the picked square's row, column and room
+          still need, the tap switch, the tools, one line, and the foot. Printed
+          squares are light grey, the picked square rose, its row, column and
+          room pale rose; a square or mark that breaks a rule is orange (Logic's
+          wrong). Every tap goes through the board's own handlers. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const dk = isDarkLook(stageLook);
+        const warn = dk ? '#fb923c' : '#c2410c';
+        const warnBg = dk ? '#3a1f10' : '#ffedd5';
+        const nErr = breaks.bad.size + breaks.badMark.size;
+        const need = (dHave, rHave, size) => {
+          const h = size / 2, dn = Math.max(0, h - dHave), rn = Math.max(0, h - rHave);
+          if (!dn && !rn) return <> is <b>complete</b></>;
+          return <> needs <b>{[dn ? plural(dn, 'dot') : null, rn ? plural(rn, 'ring') : null].filter(Boolean).join(', ')}</b></>;
+        };
+        return (
+          <PlayStage bg={gameColor('duet')} label="Duet" wide={N > 8}
+            eyebrow={PUZZLE.sunday ? `Duet No. ${PUZZLE.num} · Sunday · ${N}x${N}` : `Duet No. ${PUZZLE.num} · ${N}x${N} · half dots, half rings`}
+            top={(
+              <div className="dus" ref={dusRef} style={{ '--dus-warn': warn, '--dus-warn-bg': warnBg, '--dus-n': N, ...(dusFit ? { '--dus-fit': `${dusFit}px` } : null) }}>
+                <style dangerouslySetInnerHTML={{ __html: DUS_CSS }} />
+                <div className={'dus-bd' + (N > 8 ? ' n10' : '')} role="grid" aria-label={`Duet board, ${N} by ${N}`} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+                  {Array.from({ length: CELLS }).map((_, idx) => {
+                    const v = viewCells[idx];
+                    const r = Math.floor(idx / N), c = idx % N, id = PUZZLE.rooms[r][c];
+                    const given = givenSet.has(idx);
+                    const bad = breaks.bad.has(idx);
+                    const isSel = showSel && idx === sel;
+                    const peer = showSel && !isSel && (r === selR || c === selC || id === selRoom);
+                    const wr = c < N - 1 && PUZZLE.rooms[r][c + 1] !== id;
+                    const wb = r < N - 1 && PUZZLE.rooms[r + 1][c] !== id;
+                    const cls = ['dus-c', wr ? 'wr' : '', wb ? 'wb' : '', c === N - 1 ? 'er' : '', r === N - 1 ? 'eb' : '', given ? 'gv' : '', peer ? 'ln' : '', isSel ? 'sel' : '', bad ? 'bad' : ''].filter(Boolean).join(' ');
+                    const word = v === EMPTY ? 'empty' : v === DOT ? 'dot' : 'ring';
+                    return (
+                      <button key={idx} type="button" className={cls} onClick={() => cellClick(idx)} disabled={!playing}
+                        aria-label={`Row ${r + 1}, column ${c + 1}, ${word}${given ? ', printed' : ''}${bad ? ', breaks a rule' : ''}${isSel ? ', selected' : ''}`}>
+                        {v === DOT ? <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" /></svg> : null}
+                        {v === RING ? <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" strokeWidth="3.6" /></svg> : null}
+                      </button>
+                    );
+                  })}
+                  {PUZZLE.edges.map(([a, b, c, d, t], i) => {
+                    const x = a === c ? Math.max(b, d) : b + 0.5;
+                    const y = a === c ? a + 0.5 : Math.max(a, c);
+                    const broken = breaks.badMark.has(i);
+                    return (
+                      <span key={'m' + i} className={'dus-mk' + (broken ? ' bad' : '')} style={{ left: `${(x / N) * 100}%`, top: `${(y / N) * 100}%` }} aria-hidden="true">
+                        {t === '=' ? '=' : '\u00d7'}
+                      </span>
+                    );
+                  })}
+                </div>
+                {playing && (breaks.any ? (
+                  <p className="dus-need bad" aria-live="polite">{breakNote(cells, PUZZLE)}</p>
+                ) : showSel ? (
+                  <p className="dus-need" aria-live="polite">Row {selR + 1}{need(lineCount.rowD[selR], lineCount.rowR[selR], N)}. Column {selC + 1}{need(lineCount.colD[selC], lineCount.colR[selC], N)}. Its room{need(lineCount.roomD[selRoom] || 0, lineCount.roomR[selRoom] || 0, lineCount.roomN[selRoom])}.</p>
+                ) : (
+                  <p className="dus-need">Tap a square to see what its row, column and room still need. Never three alike in a line; <b>=</b> match, <b>&times;</b> differ.</p>
+                ))}
+                {playing && (
+                  <div className="dus-seg" role="group" aria-label="What a tap places">
+                    <button type="button" className={tool === 'cycle' ? 'on' : undefined} aria-pressed={tool === 'cycle'} onClick={() => setTool('cycle')} title="Tap cycles a square: dot, ring, empty">Cycle</button>
+                    <button type="button" className={tool === 'dot' ? 'on' : undefined} aria-pressed={tool === 'dot'} onClick={() => setTool('dot')} title="Tap places a dot; tap a dot again to clear it"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="currentColor" /></svg>Dot</button>
+                    <button type="button" className={tool === 'ring' ? 'on' : undefined} aria-pressed={tool === 'ring'} onClick={() => setTool('ring')} title="Tap places a ring; tap a ring again to clear it"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="2.5" /></svg>Ring</button>
+                  </div>
+                )}
+              </div>
+            )}
+            bottom={playing ? (
+              <div className="pst-tools">
+                <button type="button" className="pst-tb" onClick={undo} disabled={!canUndo} aria-label="Undo last move" title="Undo (Ctrl+Z)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5" /><path d="M4 9h10a6 6 0 0 1 0 12h-3" /></svg>Undo</button>
+                <button type="button" className={'pst-tb' + (hasEntries && armClear ? ' on' : '')} onClick={clearBoard} disabled={!hasEntries}
+                  aria-label={armClear ? 'Tap again to clear the board' : 'Clear the board'}>{armClear ? 'Tap again to clear' : 'Clear'}</button>
+                {hintOk && !g.hintUsed && <button type="button" className="pst-tb" onClick={useHint} aria-label="Hint: fill one square">{ICON.bulb}Hint</button>}
+              </div>
+            ) : null}
+            foot={toast || (playing
+              ? `${filledCount} of ${FREE.length} filled · ${nErr} error${nErr === 1 ? '' : 's'}${g.hintUsed ? ' · hint used' : ''}`
+              : (won ? 'Solved. Every row, column and room is half and half.' : 'The board is ended.'))}
+            giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the day and show the solution' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="duet" name="Duet" collapsed={started} loft={LOFT} />
@@ -1270,3 +1368,37 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-31 mockup): white squares on thin light
+// rules, rooms walled in heavy ink, printed squares light grey, the picked
+// square full rose and its row, column and room pale rose. Dots and rings are
+// ink. The = and x marks sit on the shared edge in small white discs. A square
+// or mark that breaks a rule is orange (Logic's wrong colour), never red.
+const DUS_CSS = `
+.dus{display:flex;flex-direction:column;gap:12px;}
+.dus-bd{position:relative;display:grid;align-self:center;width:min(100%, var(--dus-fit, 100%));border:3px solid var(--pst-ink);border-radius:14px;overflow:hidden;background:var(--pst-bg);}
+.pst .dus-c{position:relative;aspect-ratio:1;min-width:0;padding:0;border:0;border-radius:0;border-right:1px solid var(--pst-cell-line);border-bottom:1px solid var(--pst-cell-line);background:var(--pst-bg);display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+.pst .dus-c:disabled{cursor:default;opacity:1;}
+.pst .dus-c.wr{border-right:3px solid var(--pst-ink);}
+.pst .dus-c.wb{border-bottom:3px solid var(--pst-ink);}
+.pst .dus-c.er{border-right:0;}
+.pst .dus-c.eb{border-bottom:0;}
+.pst .dus-c.gv{background:var(--pst-cell);}
+.pst .dus-c.ln{background:var(--pst-pale);}
+.pst .dus-c.sel{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .dus-c.bad{background:var(--dus-warn-bg);color:var(--dus-warn);}
+.pst .dus-c.sel.bad{box-shadow:inset 0 0 0 3px var(--pst-acc);}
+.pst .dus-c:focus-visible{outline:3px solid var(--pst-ink);outline-offset:-4px;}
+.dus-c svg{width:54%;height:54%;display:block;}
+.dus-mk{position:absolute;z-index:2;width:18px;height:18px;border-radius:9px;background:var(--pst-bg);border:2px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;line-height:1;transform:translate(-50%,-50%);pointer-events:none;}
+.dus-mk.bad{border-color:var(--dus-warn);background:var(--dus-warn-bg);color:var(--dus-warn);}
+.dus-bd.n10 .dus-mk{width:16px;height:16px;font-size:11px;}
+.dus-need{margin:0;border-radius:14px;background:var(--pst-pale);padding:10px 12px;text-align:center;font-size:14px;font-weight:700;line-height:1.4;}
+.dus-need b{font-weight:800;}
+.dus-need.bad{background:var(--dus-warn-bg);color:var(--dus-warn);}
+.dus-seg{display:flex;border:2px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
+.pst .dus-seg button{flex:1;min-width:0;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;}
+.pst .dus-seg button+button{border-left:2px solid var(--pst-ink);}
+.pst .dus-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+@media (min-width:900px){.dus-need,.dus-seg{width:min(100%, 560px);align-self:center;}.dus-bd{width:min(100%, 520px, var(--dus-fit, 520px));}.dus-bd.n10{width:min(100%, 600px, var(--dus-fit, 600px));}.dus-mk{width:22px;height:22px;border-radius:11px;font-size:14px;}}
+`;
