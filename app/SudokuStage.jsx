@@ -198,7 +198,7 @@ export function SudokuTools({ tools = {}, extra = null }) {
   if (extra) for (const x of extra) if (x) row.push(x);
   if (!row.length) return null;
   return (
-    <div className="sks-tools" style={{ gridTemplateColumns: `repeat(${row.length}, minmax(0, 1fr))` }}>
+    <div className="sks-tools" style={{ gridTemplateColumns: `repeat(${row.length}, minmax(0, 1fr))`, '--sks-tn': row.length }}>
       {row.map((x) => (
         <button key={x.key} type="button" className={'sks-tb' + (x.on ? ' on' : '') + (x.soft ? ' soft' : '') + (x.warn ? ' warn' : '')}
           onClick={x.onPress} disabled={x.disabled} title={x.title} aria-pressed={x.pressed != null ? x.pressed : undefined}>
@@ -297,9 +297,12 @@ export const SKS_CSS = `
 .pst .sks-dk.done{background:var(--sks-off);border-color:var(--sks-off-line);color:var(--sks-off-ink);cursor:default;}
 .sks-dk.done b{text-decoration:line-through;}
 .sks-dk.done small{color:var(--sks-off-ink);}
-.sks-tools{display:grid;gap:4px;}
-.sks-tb .l{display:block;max-width:100%;}
-.pst .sks-tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:54px;min-width:0;border-radius:12px;border:2px solid var(--pst-ink);background:var(--sks-base);color:var(--pst-ink);font-size:clamp(10px, 2.7vw, 11px);font-weight:800;letter-spacing:-.04em;padding:0;white-space:nowrap;overflow:visible;touch-action:manipulation;}
+.sks-tools{display:grid;gap:4px;container-type:inline-size;}
+/* The label fits its button (no clipping): sized from the button's own width,
+   which is the row's width over the number of tools (--sks-tn), so "Auto-move"
+   (about 5.15em in Manrope 800 at -.03em) fits a 360px phone as well as a 390px one. */
+.sks-tb .l{display:block;font-size:min(11px, max(8.5px, calc((100cqw / var(--sks-tn, 6) - 8px) / 5.2)));}
+.pst .sks-tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:54px;min-width:0;border-radius:12px;border:2px solid var(--pst-ink);background:var(--sks-base);color:var(--pst-ink);font-size:11px;font-weight:800;letter-spacing:-.03em;padding:0;white-space:nowrap;overflow:visible;touch-action:manipulation;}
 .pst .sks-tb.on{background:var(--pst-acc);color:var(--pst-on-acc);}
 .pst .sks-tb.soft{background:var(--pst-pale);}
 .pst .sks-tb.warn{background:var(--pst-bad-bg);color:var(--pst-bad);border-color:var(--pst-bad);}

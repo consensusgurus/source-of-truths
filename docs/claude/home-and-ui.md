@@ -1886,3 +1886,42 @@ and every `RunEmbed` host), so there is no embedded mode to keep.
 is shorter than the screen, so the header sits 60 to 90px down the page. These four carry
 `.pst-col > .stb.has-t{flex:none;}` in their own stage CSS; the right home for it is
 PlayStage's CSS (every short PlayStage board on a phone has the same gap).
+## The sudokus on the white stage: the shared SudokuStage, and Suds, Sixes, Sando, Mercury, Arrow, Frame, Rim (owner, 2026-10-31)
+
+All nineteen sudokus move onto `PlayStage` from the approved periwinkle mockups (round 8, `<Name>.dc.html`),
+through ONE shared module, `app/SudokuStage.jsx`, so they stay identical and only their variant marks
+differ. The mount is the Numbers one plus `!EMBED`:
+`STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed)`. **Enter the Dojo is untouched**: an
+embedded sudoku (RunEmbed) never mounts the stage and keeps its old board and the run's plain look.
+Presentation only: every control calls the client's own handler (cellClick, padTap, undo, eraseCell,
+clearBoard, useHint, revealEnd, the long-press pencil), so scoring, saves, timers, hints, auto-move (the
+original next-box logic), posting, share text, archives, Sunday Editions and the finish are unchanged,
+and the old board stays behind the stage (`?stage=0` still shows it).
+
+- **`SudokuStage`** = PlayStage + `SudokuBoard` + `SudokuPad` + `SudokuTools` + the one status line +
+  the foot (Clock, How to play, two-tap Give up; the old in-page "Reveal & end" folds into it). The
+  board is ONE SVG painted in CELL UNITS under a CSS grid of real buttons, layered base, fills,
+  `under` marks, thin 1px `#8e9aab` separators, 2.2px ink region walls (drawn wherever `region(r,c)`
+  changes, so boxes, jigsaw regions and 2x3 boxes are one rule), `over` marks, frame. Selected square
+  full periwinkle, its row, column and region pale `#e0e7ff`; printed digits ink 800, player digits deep
+  `#3949ab` 700; same digit elsewhere gets a ring; 3x3 notes. Outside clues sit in gutters measured in
+  cells (`gutter`, `outside` chips: `.on` ringed for the selected line, `.done` grey, `.ok` full
+  periwinkle, `.bad` red). Digit sizes are `cqw`, so the board scales with its column; its width is
+  capped by the measured height (`lib/play-stage-fit.js` on `.sks-bd`). Pad keys are square, one row
+  (Giant two rows of eight), count small in the corner (or "N left" under the digit on six keys);
+  finished digits grey and struck. Tools: Notes, Auto-move, Undo, Erase, Clear (two taps, "Sure?"),
+  Hint (first play only), icon over label. Usage notes for the other clients: the header comment of
+  `app/SudokuStage.jsx`. SOLID strokes only.
+- **`accentVars` knows periwinkle**: `--pst-pale #e0e7ff`, `--pst-deep #3949ab` (light) / `#a5b4fc`
+  (dark, where player digits are the periwinkle on the near-black board). Board tokens per look
+  (`--sks-base`, `--sks-thin`, `--sks-mark`, `--sks-mark2`) come from `useStageLook`; the
+  black-and-white looks draw player digits in `--pst-mute`.
+- **Per game:** Suds (classic) and Sixes (6x6, 3-wide 2-tall boxes, six "N left" keys) are the plain
+  board. Mercury's thermometers are a light grey stem (0.34 of a square) and bulb (0.4) UNDER the grid
+  lines. Arrow's arrows are a 2px grey ring, shaft and open chevron under the lines, and every digit
+  carries a halo. Sando's eighteen sums sit top and left; Frame's thirty-six sums and Rim's printed
+  triples (stacked top and bottom, in a row at the sides) on all four sides.
+  **Deliberate difference from the mockups:** the old gutter readouts (Sando's +3 / 5 short / tick for a
+  line with its 1 and 9 down, Frame's +/- and Rim's tick or cross for a filled triple) are not drawn in
+  the gutter; a filled line that fails turns its chip red, and the readout for the SELECTED square's
+  lines is said in the status line ("row 2: 3 short"), so no information was lost.
