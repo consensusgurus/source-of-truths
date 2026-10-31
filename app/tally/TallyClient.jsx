@@ -69,6 +69,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -272,6 +273,7 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -951,6 +953,95 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-30): Tally plays on the shared white stage at
+          every width: the board with each line's target and what it still
+          needs (a balanced line goes mint), the rack, three tools, one line,
+          and the foot (Reveal is the foot's Give up). Taps, drags and keys all
+          go through the board's own handlers, so moves and scoring are
+          untouched. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const tchip = (i, isRow, key) => {
+          const st = lineState(i, isRow);
+          const need = st.tgt - st.sum;
+          const lit = playing && cur >= 0 && (isRow ? Math.floor(cur / N) === i : cur % N === i);
+          return (
+            <span key={key} className={'tls-tt' + (st.ok ? ' ok' : '') + (st.bad && !st.ok ? ' bad' : '') + (lit ? ' lit' : '')}
+              aria-label={`${isRow ? 'Row' : 'Column'} ${i + 1}: target ${st.tgt}, ${st.ok ? 'balanced' : st.bad ? `${st.over ? 'over' : 'short'} by ${Math.abs(need)}` : `${need} still needed across ${st.empty}`}`}>
+              <b>{st.tgt}</b><i>{st.ok ? 'balanced' : st.bad ? `${st.over ? 'over' : 'short'} ${Math.abs(need)}` : `${need} in ${st.empty}`}</i>
+            </span>
+          );
+        };
+        return (
+          <PlayStage bg={gameColor('tally')} label="Tally"
+            eyebrow={PUZZLE.sunday ? 'Sunday Edition · make every line add up' : 'Make every line add up'}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: TLS_CSS }} />
+                <div className={'tls-grid' + (N === 6 ? ' n6' : '') + (shakeCell >= 0 ? ' shake' : '')} style={{ gridTemplateColumns: gridTemplate }} aria-label="Board, targets at the row ends and column feet">
+                  {Array.from({ length: N }).map((_, r) => (
+                    <React.Fragment key={'r' + r}>
+                      {Array.from({ length: N }).map((__, c) => {
+                        const i = r * N + c;
+                        const peer = playing && cur >= 0 && i !== cur && (Math.floor(cur / N) === r || cur % N === c);
+                        if (BLOCK[r][c]) return <span key={i} className="tls-c out" aria-label="Out of play" />;
+                        if (GIVEN[r][c]) return <span key={i} className={'tls-c gv' + (peer ? ' peer' : '')} aria-label={`Printed ${GIVEN[r][c]}`}>{GIVEN[r][c]}</span>;
+                        if (cells[i]) {
+                          const dv = dragView;
+                          const isDrag = !!dv && dv.i === i;
+                          let tf = null;
+                          if (dv) { const o = isDrag ? { x: dv.dx, y: dv.dy } : dv.offsets[i]; if (o) tf = `translate(${o.x}px, ${o.y}px)`; }
+                          const drop = dv && dv.to === i && !isDrag ? (dv.ok ? ' drop' : ' nodrop') : '';
+                          const same = playing && arm && cells[i] === arm ? ' same' : '';
+                          return (
+                            <button type="button" key={i} className={'tls-c pl' + (i === cur && playing ? ' cur' : '') + (peer ? ' peer' : '') + same + (isDrag ? ' drag' : '') + (isDrag && dv.off ? ' home' : '') + drop}
+                              style={tf ? { transform: tf, transition: isDrag ? 'none' : 'transform .12s ease', zIndex: isDrag ? 3 : 2 } : (dv ? { transition: 'transform .12s ease' } : undefined)}
+                              onClick={() => cellClick(r, c)} onPointerDown={(e) => pressStart(e, r, c)} onPointerMove={pressMove} onPointerUp={pressEnd} onPointerCancel={pressCancel}
+                              onContextMenu={(e) => { e.preventDefault(); pressCancel(); liftTile(i); setCur(-1); }}
+                              aria-label={playing ? `Placed ${cells[i]}, row ${r + 1} column ${c + 1}. Tap to pick it up, tap twice to send it home.` : `${cells[i]}`}>{cells[i]}</button>
+                          );
+                        }
+                        const dropHere = dragView && dragView.to === i && dragView.ok;
+                        const hot = playing && ((arm && left[arm] > 0) || (cur >= 0 && cells[cur]));
+                        return <button type="button" key={i} className={'tls-c em' + (hot ? ' hot' : '') + (i === cur && playing ? ' cur' : '') + (peer ? ' peer' : '') + (dropHere ? ' drop' : '')}
+                          onClick={() => cellClick(r, c)} aria-label={`Empty square, row ${r + 1} column ${c + 1}${i === cur && playing ? ', picked' : ''}`} />;
+                      })}
+                      {tchip(r, true, 'rt' + r)}
+                    </React.Fragment>
+                  ))}
+                  {Array.from({ length: N }).map((_, c) => tchip(c, false, 'ct' + c))}
+                  <span />
+                </div>
+                {playing && (
+                  <>
+                    <div className="tls-lab"><span>Your tiles · use every one</span><span>{rackLeft} left</span></div>
+                    <div className="tls-rack" style={{ gridTemplateColumns: `repeat(${DIGITS.length <= 7 ? DIGITS.length : Math.ceil(DIGITS.length / 2)}, minmax(0, 1fr))` }} aria-label="Your tiles">
+                      {DIGITS.map((d) => {
+                        const n = Math.max(0, left[d]);
+                        return (
+                          <button key={d} type="button" className={'tls-rt' + (n <= 0 ? ' out' : (arm === d ? ' sel' : ''))} onClick={() => pickDigit(d)} disabled={n <= 0} aria-pressed={arm === d} aria-label={`${d}, ${n} left`}>
+                            <b>{d}</b><i>{n > 0 ? `\u00d7${n}` : 'none'}</i>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+            bottom={playing ? (
+              <div className="pst-tools">
+                {hintOk && !g.hintUsed && <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb}Hint</button>}
+                <button type="button" className="pst-tb" onClick={undo} disabled={!hist.length}>Undo</button>
+                <button type="button" className="pst-tb" onClick={clearBoard} disabled={!anyPlaced}>Clear board</button>
+              </div>
+            ) : null}
+            foot={toast || (playing
+              ? `${cur >= 0 && cells[cur] ? `Moving ${cells[cur]}` : arm ? `Placing ${arm}s` : cur >= 0 ? `Row ${Math.floor(cur / N) + 1}, column ${(cur % N) + 1} picked` : 'Tap a tile, then squares'} · ${g.moves} move${g.moves === 1 ? '' : 's'} · fewest ${FEWEST}`
+              : (won ? `Balanced in ${g.moves} moves` : 'The solution is filled in'))}
+            giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to give up and fill the solution' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1482,3 +1573,43 @@ export default function TallyClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-30 mockup). Open squares are white, printed
+// ones light grey, out-of-play squares a flat grey; the picked square's lines
+// are pale mint, a balanced target mint, and the armed rack tile mint.
+const TLS_CSS = `
+.tls-grid{display:grid;gap:5px;width:min(100%, 440px);align-self:center;}
+.tls-grid.n6{width:min(100%, 500px);gap:4px;}
+.tls-grid.shake{animation:tlsShake .35s ease;}
+@keyframes tlsShake{0%,100%{transform:none}25%{transform:translateX(-5px)}60%{transform:translateX(4px)}}
+.pst .tls-c{aspect-ratio:1;border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-bg);display:flex;align-items:center;justify-content:center;font-size:clamp(18px, 6.6vw, 28px);font-weight:800;padding:0;min-width:0;touch-action:none;font-variant-numeric:tabular-nums;position:relative;}
+.tls-grid.n6 .tls-c{font-size:clamp(16px, 5.4vw, 26px);border-radius:9px;}
+.pst .tls-c.out{background:var(--pst-cell2);border-color:transparent;}
+.pst .tls-c.gv{background:var(--pst-cell);border-color:var(--pst-cell-line);}
+.pst .tls-c.em{border-color:var(--pst-cell-line);}
+.pst .tls-c.em.hot{border-color:var(--pst-ink);}
+.pst .tls-c.peer{background:var(--pst-pale);border-color:var(--pst-ink);}
+.pst .tls-c.same{background:var(--pst-pale);}
+.pst .tls-c.cur{background:var(--pst-acc);color:var(--pst-on-acc);border-color:var(--pst-ink);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);z-index:1;}
+.pst .tls-c.drag{box-shadow:0 8px 18px rgba(8,34,46,.25);}
+.pst .tls-c.drag.home{opacity:.5;}
+.pst .tls-c.drop{background:var(--pst-pale);border-color:var(--pst-ink);}
+.pst .tls-c.nodrop{border-color:#b91c1c;}
+.tls-tt{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:11px;font-size:clamp(15px, 5vw, 20px);line-height:1;background:var(--pst-cell);border:2px solid transparent;min-width:0;padding:4px 0;}
+.tls-tt b{font-weight:800;}
+.tls-tt i{font-style:normal;font-size:clamp(8.5px, 2.6vw, 10.5px);font-weight:800;color:var(--pst-mute);margin-top:3px;white-space:nowrap;}
+.tls-tt.lit{border-color:var(--pst-ink);}
+.tls-tt.ok{background:var(--pst-acc);border-color:var(--pst-ink);}
+.tls-tt.ok,.tls-tt.ok *{color:var(--pst-on-acc);}
+.tls-tt.bad{background:#fee2e2;}
+.tls-tt.bad,.tls-tt.bad *{color:#b91c1c;}
+.tls-lab{display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);}
+.tls-rack{display:grid;gap:6px;}
+.pst .tls-rt{height:62px;border-radius:14px;border:2px solid var(--pst-ink);background:transparent;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;touch-action:manipulation;}
+.tls-rt b{font-size:26px;font-weight:800;line-height:1;}
+.tls-rt i{font-style:normal;font-size:11px;font-weight:800;color:var(--pst-mute);}
+.pst .tls-rt.sel{background:var(--pst-acc);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.pst .tls-rt.sel,.pst .tls-rt.sel *{color:var(--pst-on-acc);}
+.pst .tls-rt.out{opacity:.3;border-color:var(--pst-cell-line);cursor:default;}
+@media (prefers-reduced-motion: reduce){.tls-grid.shake{animation:none}}
+`;

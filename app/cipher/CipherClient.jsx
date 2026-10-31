@@ -88,6 +88,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -378,6 +379,15 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
+  // The stage foot's Give up is two taps (the first arms it, the second ends
+  // the day exactly as Reveal does).
+  const [armGive, setArmGive] = useState(false);
+  useEffect(() => {
+    if (!armGive) return undefined;
+    const t = setTimeout(() => setArmGive(false), 3500);
+    return () => clearTimeout(t);
+  }, [armGive]);
   // The dock is really a response to a narrow COLUMN, not to a phone per se, so
   // it tracks the viewport as well as the device. A resized desktop window or a
   // split-screen tablet gets it too, and it follows a rotation live.
@@ -913,6 +923,26 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
     );
   }
 
+  // One row of the sum on the stage: right-aligned letter tiles, each showing
+  // its letter small and its digit big (or the letter big while unassigned).
+  // Called as a plain function, never mounted as a component, so nothing remounts.
+  const stageRow = (word, op, key) => (
+    <div className="cfs-r" key={key}>
+      <span className="op" aria-hidden="true">{op}</span>
+      {Array.from({ length: maxLen - word.length }, (_, i) => <span key={'sp' + i} />)}
+      {word.split('').map((ch, i) => {
+        const d = shownAssign[ch];
+        const conflict = d !== undefined && digitOwners[d] && digitOwners[d].length > 1;
+        return (
+          <button key={i} type="button" className={'cfs-lc' + (d !== undefined ? ' set' : '') + (selected === ch ? ' sel' : '') + (conflict ? ' bad' : '')} onClick={() => tapLetter(ch)}
+            aria-label={`Letter ${ch}${d !== undefined ? `, digit ${d}` : ', unassigned'}`}>
+            <span>{ch}</span>{d !== undefined ? <b>{d}</b> : null}
+          </button>
+        );
+      })}
+    </div>
+  );
+
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
   const strategyLine = (<>There is <b>exactly one solution</b>, and you can reach it by pure logic: start with the leftmost column of the answer, and let the carries do the talking. No guessing required.</>);
   const rulesBody = (
@@ -935,6 +965,96 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-30): Cipher plays on the shared white stage
+          at every width: the sum with its carry row and column checks, the
+          code book, the digit pad (hidden on a desktop with a keyboard, which
+          types the digits), three tools, one line, and the foot. Reveal is the
+          foot's Give up. Every tap goes through the board's own handlers. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (
+        <PlayStage bg={gameColor('cipher')} label="Cipher"
+          eyebrow={`Every letter is a digit · ${opWord}`}
+          top={(
+            <>
+              <style dangerouslySetInnerHTML={{ __html: CFS_CSS }} />
+              <div className="cfs-eq" style={{ '--cfs-n': maxLen }} aria-label="The sum">
+                <div className="cfs-r cy">
+                  <span className="op" aria-hidden="true" />
+                  {Array.from({ length: maxLen }, (_, k) => {
+                    const i = maxLen - 1 - k;
+                    const usable = i >= 1 && i < COLS.length;
+                    const derived = usable && colInfo[i] && colInfo[i].carryIn !== null ? colInfo[i].carryIn : null;
+                    const penciled = g.carry[i];
+                    const shown = derived !== null ? derived : (penciled !== undefined ? penciled : '');
+                    return (
+                      <button key={k} type="button" className={'cfs-cy' + (derived !== null ? ' fixed' : '') + (usable ? '' : ' off')}
+                        disabled={!usable || derived !== null || !playing} onClick={() => cycleCarry(i)}
+                        aria-label={usable ? `${carryWord} into column ${i + 1}${shown === '' ? ', not set' : `, ${shown}`}` : 'No carry'}>{shown}</button>
+                    );
+                  })}
+                </div>
+                {PUZZLE.lhs.concat([null]).map((w, wi) => {
+                  if (w === null) return <div key="rule" className="cfs-rule" />;
+                  const op = (OP === 'sub' ? wi > 0 : wi === PUZZLE.lhs.length - 1) ? opGlyph : '';
+                  return stageRow(w, op, wi);
+                })}
+                {stageRow(PUZZLE.rhs, '=', 'rhs')}
+                <div className="cfs-r mk" aria-hidden="true">
+                  <span className="op" />
+                  {Array.from({ length: maxLen }, (_, k) => {
+                    const i = maxLen - 1 - k;
+                    const ok = i < COLS.length && colInfo[i] ? colInfo[i].ok : null;
+                    return <span key={k} className={ok === true ? 'good' : ok === false ? 'bad' : undefined}>{ok === true ? '\u2713' : ok === false ? '\u2717' : ''}</span>;
+                  })}
+                </div>
+              </div>
+              {playing && (
+                <div className="cfs-book" aria-label="Code book, NOT 0 marks a letter that starts a word">
+                  {LETTERS.map((ch) => {
+                    const d = g.assign[ch];
+                    const ex = (g.excl[ch] || []).slice().sort((a, b) => a - b);
+                    const clash = d !== undefined && digitOwners[d] && digitOwners[d].length > 1;
+                    return (
+                      <button key={ch} type="button" className={'cfs-bk' + (selected === ch ? ' on' : '') + (clash ? ' bad' : '')} onClick={() => tapLetter(ch)}
+                        aria-label={`Letter ${ch}${d !== undefined ? `, digit ${d}` : ', unassigned'}${FIRSTS.has(ch) ? ', starts a word, never 0' : ''}${ex.length ? `, crossed off ${ex.join(' ')}` : ''}`}>
+                        {FIRSTS.has(ch) ? <i>NOT 0</i> : null}
+                        <span>{ch}</span><b>{d !== undefined ? d : '\u00b7'}</b>
+                        {ex.length ? <s aria-hidden="true">{ex.join(' ')}</s> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+          bottom={playing ? (
+            <>
+              <div className={'cfs-pad' + (noteMode ? ' notes' : '')} aria-label="Digits, dim keys are taken">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((d) => {
+                  const owners = digitOwners[d] || [];
+                  const takenByOther = owners.some((l) => l !== selected);
+                  const illegal = selected !== null && d === 0 && FIRSTS.has(selected);
+                  const xed = selected !== null && (g.excl[selected] || []).includes(d);
+                  return (
+                    <button key={d} type="button" disabled={illegal} className={'cfs-dk' + (takenByOther ? ' tk' : '') + (xed ? ' xed' : '')} onClick={() => setDigit(d)}
+                      aria-label={`Digit ${d}${owners.length ? `, taken by ${owners.join(', ')}` : ''}${illegal ? `, not allowed on ${selected}` : ''}`}>
+                      {d}{owners.length ? <i>{owners.join('')}</i> : null}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="pst-tools">
+                <button type="button" className={'pst-tb' + (noteMode ? ' acc' : '')} onClick={() => setNoteMode((v) => !v)} aria-pressed={noteMode}>Notes</button>
+                <button type="button" className="pst-tb" onClick={eraseSelected} disabled={selected === null}>Erase</button>
+                <button type="button" className="pst-tb" onClick={clearAll}>{clearArmed ? 'Tap again to clear' : 'Clear'}</button>
+              </div>
+            </>
+          ) : null}
+          foot={toast || (playing
+            ? ((blocked || badCol) ? dockSay : `${Object.keys(g.assign).length} of ${LETTERS.length} placed${selected !== null ? ` · ${noteMode ? 'notes on' : 'assigning'} ${selected}` : ''}`)
+            : (won ? 'Cracked' : 'The cipher kept its secret'))}
+          giveUp={revealOk ? { armed: armGive, onPress: () => { if (armGive) { setArmGive(false); reveal(); } else { setArmGive(true); } }, armedLabel: 'Tap again to give up and end the day' } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1446,3 +1566,45 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-30 mockup).
+const CFS_CSS = `
+.cfs-eq{align-self:center;display:flex;flex-direction:column;gap:5px;--cfs-w:min(48px, calc((100vw - 64px) / var(--cfs-n) - 5px));}
+.cfs-r{display:grid;grid-template-columns:24px repeat(var(--cfs-n), var(--cfs-w));gap:5px;align-items:center;}
+.cfs-r .op{font-size:24px;font-weight:800;text-align:center;}
+.pst .cfs-lc{height:var(--cfs-w);border-radius:10px;border:2px solid var(--pst-ink);background:var(--pst-cell);padding:0;position:relative;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+.cfs-lc span{font-size:calc(var(--cfs-w) * .44);font-weight:800;}
+.cfs-lc.set span{position:absolute;top:1px;left:5px;font-size:10.5px;color:var(--pst-mute);}
+.cfs-lc b{font-size:calc(var(--cfs-w) * .48);font-weight:800;}
+.pst .cfs-lc.set{background:var(--pst-bg);}
+.pst .cfs-lc.sel{background:var(--pst-acc);}
+.pst .cfs-lc.sel,.pst .cfs-lc.sel *{color:var(--pst-on-acc);}
+.pst .cfs-lc.bad{background:#fee2e2;border-color:#b91c1c;}
+.pst .cfs-lc.bad b{color:#b91c1c;}
+.pst .cfs-cy{height:24px;border-radius:7px;border:2px solid var(--pst-cell-line);background:transparent;padding:0;font-size:13px;font-weight:800;}
+.pst .cfs-cy.fixed{border-color:transparent;background:var(--pst-cell);}
+.pst .cfs-cy.off{visibility:hidden;}
+.cfs-rule{height:3px;background:var(--pst-ink);border-radius:2px;margin:2px 0 2px 29px;}
+.cfs-r.mk span{text-align:center;font-size:15px;font-weight:800;min-height:18px;}
+.cfs-r.mk span.good{color:var(--pst-ink);background:var(--pst-pale);border-radius:6px;}
+.cfs-r.mk span.bad{color:#b91c1c;background:#fee2e2;border-radius:6px;}
+.cfs-book{display:grid;grid-template-columns:repeat(5, minmax(0, 1fr));gap:6px;}
+.pst .cfs-bk{position:relative;min-height:50px;border-radius:12px;border:2px solid var(--pst-ink);background:transparent;padding:0;display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;}
+.cfs-bk span{font-size:19px;font-weight:800;}
+.cfs-bk b{font-size:18px;font-weight:800;min-width:24px;height:28px;border-radius:7px;background:var(--pst-cell);display:flex;align-items:center;justify-content:center;}
+.cfs-bk i{position:absolute;top:1px;left:0;right:0;text-align:center;font-style:normal;font-size:8px;font-weight:800;letter-spacing:.08em;color:var(--pst-mute);}
+.cfs-bk s{position:absolute;bottom:1px;left:0;right:0;text-align:center;font-size:8.5px;font-weight:800;color:var(--pst-mute);}
+.pst .cfs-bk.on{background:var(--pst-acc);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.pst .cfs-bk.on,.pst .cfs-bk.on *{color:var(--pst-on-acc);}
+.pst .cfs-bk.on b{background:var(--pst-pale);}
+.pst .cfs-bk.bad b{background:#fee2e2;color:#b91c1c;}
+.cfs-pad{display:grid;grid-template-columns:repeat(5, minmax(0, 1fr));gap:6px;}
+@media (min-width:900px) and (hover:hover) and (pointer:fine){.cfs-pad{display:none !important;}}
+.pst .cfs-dk{position:relative;height:52px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-pale);font-size:24px;font-weight:800;padding:0;touch-action:manipulation;}
+.cfs-dk i{position:absolute;bottom:3px;right:6px;font-style:normal;font-size:10px;font-weight:800;}
+.pst .cfs-dk.tk{opacity:.4;background:transparent;}
+.pst .cfs-dk.xed{text-decoration:line-through;background:transparent;opacity:.55;}
+.pst .cfs-dk:disabled{opacity:.25;background:transparent;cursor:default;}
+.cfs-pad.notes .cfs-dk{background:transparent;}
+.pst .pst-tb.acc{background:var(--pst-acc);color:var(--pst-on-acc);}
+`;

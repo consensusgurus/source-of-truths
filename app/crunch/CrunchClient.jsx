@@ -62,6 +62,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { endGrade, FAIL, endEfficiency } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -245,6 +246,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
@@ -623,6 +625,63 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-30): Crunch plays on the shared white stage
+          at every width: the target big, the numbers, the four operations,
+          your working, the tools and Lock in, one line, and the foot (Give up
+          is the foot's). Every tap goes through the board's own handlers. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (
+        <PlayStage bg={gameColor('crunch')} label="Crunch"
+          top={(
+            <>
+              <style dangerouslySetInnerHTML={{ __html: CRS_CSS }} />
+              <div className="crs-tgt"><span>Target</span><b>{TARGET}</b><span>needs {need} of the six</span></div>
+              <div key={shake} className={'crs-tiles' + (shake ? ' shake' : '')} aria-label="Your numbers">
+                {dealt.map((d) => {
+                  const t = liveById[d.id];
+                  if (!t) return <button key={d.id} type="button" className="crs-t used" disabled aria-label={`number ${d.v}, used`}>{d.v}</button>;
+                  return <button key={t.id} type="button" className={'crs-t' + (sel === t.id ? ' on' : '')} onClick={() => onTile(t)} disabled={!playing} aria-pressed={sel === t.id} aria-label={`number ${t.v}`}>{t.v}</button>;
+                })}
+                {madeLive.map((t) => (
+                  <button key={t.id} type="button" className={'crs-t made' + (sel === t.id ? ' on' : '')} onClick={() => onTile(t)} disabled={!playing} aria-pressed={sel === t.id} aria-label={`number ${t.v}, made by you`}>{t.v}</button>
+                ))}
+              </div>
+              <div className="crs-ops" role="group" aria-label="Operations">
+                {OPS.map((o) => (
+                  <button key={o} type="button" className={'crs-o' + (op === o ? ' on' : '')} onClick={() => onOp(o)} disabled={!playing} aria-pressed={op === o}
+                    aria-label={`operation ${o === '+' ? 'plus' : o === '-' ? 'minus' : o === 'x' ? 'times' : 'divide'}`}>{mathText(OPL[o])}</button>
+                ))}
+              </div>
+              <div className="crs-wk">
+                <span className="lab">Your working</span>
+                {g.steps.map((st, i) => (
+                  <div key={i} className="r"><span className="n">{i + 1}</span><span>{st[0]} {mathText(OPL[st[1]])} {st[2]} = {st[3]}</span><span className="off">{st[3] === TARGET ? 'exact' : `${Math.abs(st[3] - TARGET)} off`}</span></div>
+                ))}
+                {playing && (
+                  <div className="r now"><span className="n">{used + 1}</span><span>{selTile ? <>{selTile.v} {op ? <>{mathText(OPL[op])} ?</> : null}</> : '?'}</span><span className="off">{sel == null ? 'tap a number' : !op ? 'pick an operation' : 'tap a number'}</span></div>
+                )}
+              </div>
+            </>
+          )}
+          bottom={playing ? (
+            <>
+              <div className="pst-tools">
+                <button type="button" className="pst-tb" onClick={undo} disabled={!used}>Undo</button>
+                <button type="button" className="pst-tb" onClick={startOver} disabled={!used}>Start over</button>
+                {hintOk && !g.hintUsed && <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb}Hint</button>}
+              </div>
+              {bestDiff != null && bestDiff > 0 && (
+                <button type="button" className="pst-tb wide crs-lock" onClick={() => { if (armLock) { if (Date.now() - armLock < ARM_MIN_MS) return; setArmLock(false); lockIn(); } else { setArmLock(Date.now()); } }}>
+                  {armLock ? `Tap again to lock in ${bestDiff} off` : `Lock in my closest, ${bestDiff} off`}
+                </button>
+              )}
+            </>
+          ) : null}
+          foot={toast || (playing
+            ? `${used} step${used === 1 ? '' : 's'}${bestDiff == null ? '' : bestDiff === 0 ? ' · exact' : ` · best so far ${bestDiff} off`}`
+            : statusLine)}
+          giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the board unfinished' }}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1084,3 +1143,29 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-30 mockup).
+const CRS_CSS = `
+.crs-tgt{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.crs-tgt b{font-size:clamp(56px, 18vw, 80px);line-height:1;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.crs-tgt span{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);}
+.crs-tiles{display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:8px;}
+.crs-tiles.shake{animation:crsShake .35s ease;}
+@keyframes crsShake{0%,100%{transform:none}25%{transform:translateX(-6px)}60%{transform:translateX(5px)}}
+.pst .crs-t{height:64px;border-radius:16px;border:2px solid var(--pst-ink);background:var(--pst-cell);font-size:26px;font-weight:800;padding:0;font-variant-numeric:tabular-nums;touch-action:manipulation;}
+.pst .crs-t.used{opacity:.3;background:transparent;border-color:var(--pst-cell-line);text-decoration:line-through;cursor:default;}
+.pst .crs-t.made{background:var(--pst-pale);}
+.pst .crs-t.on{background:var(--pst-acc);color:var(--pst-on-acc);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.crs-ops{display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:8px;}
+.pst .crs-o{height:56px;border-radius:999px;border:2px solid var(--pst-ink);background:transparent;font-size:28px;font-weight:800;padding:0;touch-action:manipulation;}
+.pst .crs-o.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .crs-o.on *{color:var(--pst-on-acc);}
+.crs-wk{border-radius:14px;background:var(--pst-cell);padding:10px 14px;display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;}
+.crs-wk .lab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);}
+.crs-wk .r{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;}
+.crs-wk .n{width:24px;height:24px;border-radius:12px;border:2px solid var(--pst-ink);display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--pst-bg);flex:none;}
+.crs-wk .off{margin-left:auto;font-size:12px;color:var(--pst-mute);}
+.crs-wk .r.now>span:not(.n){color:var(--pst-mute);}
+.pst .pst-tb.crs-lock{background:var(--pst-acc);color:var(--pst-on-acc);}
+@media (prefers-reduced-motion: reduce){.crs-tiles.shake{animation:none}}
+`;

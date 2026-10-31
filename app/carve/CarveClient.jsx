@@ -57,6 +57,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: THEME.surface,
@@ -263,6 +264,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -722,6 +724,68 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : THEME.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-30): Carve plays on the shared white stage at
+          every width: block chips, the board, one guide card, the tools, one
+          line, and the foot. Locked blocks are mint, the block being grown pale
+          mint, uncarved squares white; every cut is a heavy ink rule. Every tap
+          goes through the board's own handlers. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const ed = (idx, j) => j >= 0 && assign[j] !== assign[idx] && (assign[idx] >= 0 || assign[j] >= 0);
+        return (
+          <PlayStage bg={gameColor('carve')} label="Carve" wide={N > 6}
+            eyebrow={`${NUM_WORD[R] || R} blocks · each adds to ${TARGET}`}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: CVS_CSS }} />
+                {playing && (
+                  <div className="cvs-chips" role="group" aria-label="Blocks, tap one to grow it" style={{ gridTemplateColumns: `repeat(${R > 6 ? Math.ceil(R / 2) : R}, minmax(0, 1fr))` }}>
+                    {Array.from({ length: R }).map((_, k) => {
+                      const done = locked.includes(k);
+                      const on = cur === k && !done;
+                      const pct = Math.min(100, Math.round((100 * (done ? TARGET : sums[k])) / TARGET));
+                      return (
+                        <button key={k} type="button" className={'cvs-chip' + (on ? ' on' : '') + (done ? ' done' : '')} onClick={() => { if (!done) setCur(k); }}
+                          aria-pressed={on} aria-label={`Block ${k + 1}${done ? ', locked' : `, ${sums[k]} of ${TARGET}`}${on ? ', growing now' : ''}`}>
+                          <b>{k + 1}</b><span>{done ? TARGET : `${sums[k]}/${TARGET}`}</span><i style={{ width: `${pct}%` }} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className={'cvs-grid' + (N > 6 ? ' n7' : '')} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+                  {Array.from({ length: T }).map((_, idx) => {
+                    const r = Math.floor(idx / N), c = idx % N;
+                    const reg = assign[idx];
+                    const isSeed = seedOf[idx] >= 0;
+                    const isLk = reg >= 0 && locked.includes(reg);
+                    const isCur = reg >= 0 && reg === cur && !isLk && playing;
+                    const wrongFlash = flash && flash.cells.includes(idx);
+                    const cls = ['cvs-c', isLk ? 'lock' : '', isCur ? 'cur' : '', isSeed ? 'anc' : '', wrongFlash ? 'bad' : '', bounce === idx ? 'bnc' : '',
+                      c < N - 1 && ed(idx, idx + 1) ? 'er' : '', r < N - 1 && ed(idx, idx + N) ? 'eb' : ''].filter(Boolean).join(' ');
+                    return (
+                      <button key={idx} type="button" className={cls} onClick={() => cellClick(idx)}
+                        aria-label={`${gridFlat[idx]}${reg >= 0 ? `, block ${reg + 1}${isLk ? ', locked' : ''}` : ', not carved'}${isSeed ? ', anchor' : ''}`}>
+                        {isSeed ? <em>{seedOf[idx] + 1}</em> : null}{gridFlat[idx]}
+                      </button>
+                    );
+                  })}
+                </div>
+                {playing && !locked.includes(cur) && (
+                  <div className="cvs-say" aria-live="polite">
+                    <span className="bi" aria-hidden="true"><span>BLOCK</span><b>{cur + 1}</b></span>
+                    <p><b>Block {cur + 1} holds {sums[cur]}. It needs {TARGET - sums[cur]} more.</b>Tap a touching square to add it. Tap a painted one to take it back.</p>
+                  </div>
+                )}
+              </>
+            )}
+            bottom={playing && hintOk && !g.hintUsed ? (
+              <div className="pst-tools"><button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb}Hint</button></div>
+            ) : null}
+            foot={toast || `${lockedCount} of ${R} blocks · ${errors} error${errors === 1 ? '' : 's'}`}
+            giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1190,3 +1254,38 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-30 mockup).
+const CVS_CSS = `
+.cvs-chips{display:grid;gap:6px;}
+.pst .cvs-chip{position:relative;min-height:52px;border-radius:12px;border:2px solid var(--pst-ink);background:transparent;padding:4px 0 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;min-width:0;}
+.cvs-chip b{font-size:16px;font-weight:800;line-height:1;}
+.cvs-chip span{font-size:11px;font-weight:800;color:var(--pst-mute);font-variant-numeric:tabular-nums;}
+.cvs-chip i{position:absolute;left:0;bottom:0;height:4px;background:var(--pst-acc);}
+.pst .cvs-chip.on{background:var(--pst-pale);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.pst .cvs-chip.done{background:var(--pst-acc);}
+.pst .cvs-chip.done *{color:var(--pst-on-acc);}
+.cvs-chip.done i{background:var(--pst-on-acc);}
+.cvs-grid{display:grid;border:2px solid var(--pst-ink);border-radius:16px;overflow:hidden;background:var(--pst-bg);width:min(100%, 460px);align-self:center;}
+.cvs-grid.n7{width:min(100%, 560px);}
+.pst .cvs-c{position:relative;aspect-ratio:1;border:0;border-radius:0;border-right:1px solid var(--pst-cell-line);border-bottom:1px solid var(--pst-cell-line);background:var(--pst-bg);font-size:clamp(17px, 6vw, 26px);font-weight:700;padding:0;font-variant-numeric:tabular-nums;touch-action:manipulation;min-width:0;}
+.cvs-grid.n7 .cvs-c{font-size:clamp(15px, 5vw, 24px);}
+.pst .cvs-c.er{border-right:3px solid var(--pst-ink);}
+.pst .cvs-c.eb{border-bottom:3px solid var(--pst-ink);}
+.pst .cvs-c.lock{background:var(--pst-acc);font-weight:800;}
+.pst .cvs-c.lock,.pst .cvs-c.lock *{color:var(--pst-on-acc);}
+.pst .cvs-c.cur{background:var(--pst-pale);font-weight:800;}
+.pst .cvs-c.anc::after{content:"";position:absolute;inset:16%;border-radius:50%;border:2px solid currentColor;pointer-events:none;}
+.cvs-c em{position:absolute;top:2px;left:4px;font-style:normal;font-size:10px;font-weight:800;opacity:.75;}
+.pst .cvs-c.bad{background:#fee2e2;color:#b91c1c;}
+.cvs-c.bnc{animation:cvsBnc .4s ease;}
+@keyframes cvsBnc{0%,100%{transform:none}30%{transform:translateX(-4px)}60%{transform:translateX(4px)}}
+.cvs-say{display:flex;gap:10px;align-items:center;border:2px solid var(--pst-ink);border-radius:14px;padding:9px 12px;background:var(--pst-cell);}
+.cvs-say .bi{width:44px;height:44px;border-radius:12px;background:var(--pst-acc);border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;}
+.cvs-say .bi *{color:var(--pst-on-acc);}
+.cvs-say .bi span{font-size:8.5px;font-weight:800;letter-spacing:.08em;}
+.cvs-say .bi b{font-size:19px;line-height:1;}
+.cvs-say p{margin:0;font-size:13px;font-weight:700;line-height:1.35;color:var(--pst-mute);}
+.cvs-say p b{font-size:15px;font-weight:800;display:block;color:var(--pst-ink);}
+@media (prefers-reduced-motion: reduce){.cvs-c.bnc{animation:none}}
+`;

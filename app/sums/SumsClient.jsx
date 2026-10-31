@@ -59,6 +59,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 // Sums identity is ROSE, the one hue absent from the Numbers row (Suds orange,
 // Quilt magenta, Carve violet, Cipher and Sando teal, Tally green, Crunch amber,
@@ -311,6 +312,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -869,6 +871,87 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-30): Sums plays on the shared white stage at
+          every width: the kakuro grid (ink clue squares, white squares, the
+          picked square mint and its runs pale mint), the combo line, the pad
+          (hidden on a desktop with a keyboard), the tools, one line, and the
+          foot (Reveal is the foot's Give up). Every tap goes through the
+          board's own handlers. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (
+        <PlayStage bg={gameColor('sums')} label="Sums" wide={N > 7}
+          eyebrow={PUZZLE.sunday ? 'Sunday Edition · every run adds up' : 'Every run adds up'}
+          top={(
+            <>
+              <style dangerouslySetInnerHTML={{ __html: SUS_CSS }} />
+              <div className={'sus-grid' + (N > 7 ? ' big' : '')} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+                {Array.from({ length: CELLS }).map((_, idx) => {
+                  const r = Math.floor(idx / N), c = idx % N;
+                  if (givenFlat[idx]) {
+                    const a = PUZZLE.across[r][c], dn = PUZZLE.down[r][c];
+                    return (
+                      <span key={idx} className="sus-c blk" aria-label={a || dn ? `Clue${a ? `, ${a} across` : ''}${dn ? `, ${dn} down` : ''}` : 'Black square'}>
+                        {a || dn ? <svg className="dg" viewBox="0 0 10 10" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0L10 10" /></svg> : null}
+                        {a ? <b className="ac">{a}</b> : null}
+                        {dn ? <b className="dn">{dn}</b> : null}
+                      </span>
+                    );
+                  }
+                  const val = boardCells[idx];
+                  const isSel = idx === sel;
+                  const peer = !isSel && peerSet.has(idx);
+                  const same = !isSel && hlVal && val === hlVal;
+                  return (
+                    <button key={idx} type="button" className={'sus-c' + (isSel ? ' sel' : '') + (peer ? ' run' : '') + (same ? ' same' : '')}
+                      aria-label={`Square, row ${r + ROW_OFF} column ${c + COL_OFF}${val ? `, ${val}` : ', empty'}${isSel ? ', selected' : ''}`}
+                      onClick={() => cellClick(idx)} onPointerDown={() => startLong(idx)} onPointerUp={cancelLong} onPointerLeave={cancelLong} onPointerCancel={cancelLong}>
+                      {val ? val : boardNotes[idx] ? <small>{DIGITS.filter((d) => boardNotes[idx] & (1 << d)).join(' ')}</small> : null}
+                    </button>
+                  );
+                })}
+              </div>
+              {playing && (
+                <div className="sus-combo" aria-live="polite">
+                  {comboInfo.length ? comboInfo.map((ci) => {
+                    const live = ci.sets.filter((x) => x.live);
+                    return (
+                      <div key={ci.dir}>
+                        <span className="k">{ci.dir === 'a' ? 'Across' : 'Down'} {ci.total} in {ci.len}</span>
+                        {ci.left === 0 ? <span className="k">{ci.need === 0 ? 'adds up' : 'does not add up'}</span> : null}
+                        {ci.left > 0 && ci.left < ci.len ? <span className="k">{ci.need} left in {ci.left}</span> : null}
+                        {ci.left > 0 && live.slice(0, 5).map((x, i) => <span key={i} className="s">{x.rest.join(' ')}</span>)}
+                        {ci.left > 0 && live.length > 5 ? <span className="k">+{live.length - 5} more</span> : null}
+                        {ci.left > 0 && live.length === 0 ? <span className="k">no set fits what is placed</span> : null}
+                      </div>
+                    );
+                  }) : <div><span className="k">Tap a square to see which digit sets fit its runs.</span></div>}
+                </div>
+              )}
+            </>
+          )}
+          bottom={playing ? (
+            <>
+              <div className="sus-pad" aria-label="Digits">
+                {DIGITS.map((d) => {
+                  const done = !!digitDone[d];
+                  return <button key={d} type="button" className={'sus-dk' + (done ? ' done' : '') + (armed === d ? ' on' : '')} onClick={() => { if (!done) padTap(d); }} aria-pressed={armed === d} aria-label={`Enter ${d}`}>{d}</button>;
+                })}
+              </div>
+              <div className="pst-tools">
+                <button type="button" className="pst-tb" onClick={undo} disabled={!canUndo}>Undo</button>
+                <button type="button" className={'pst-tb' + (noteMode ? ' acc' : '')} onClick={() => setNoteMode((m) => !m)} aria-pressed={noteMode}>Notes</button>
+                <button type="button" className="pst-tb" onClick={() => eraseCell(sel)} disabled={sel < 0}>Erase</button>
+                <button type="button" className="pst-tb" onClick={clearBoard} disabled={!hasEntries}>{armClear ? 'Tap again to clear' : 'Clear board'}</button>
+                <button type="button" className={'pst-tb' + (autoAdv ? ' acc' : '')} onClick={toggleAutoAdv} aria-pressed={autoAdv}>Auto-move</button>
+                {hintOk && !g.hintUsed && <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb}Hint</button>}
+              </div>
+            </>
+          ) : null}
+          foot={toast || (playing
+            ? `${filledCount} of ${FREE.length} filled${armed ? ` · placing ${armed}s` : noteMode ? ' · notes on' : ''}`
+            : (won ? 'Every run adds up' : 'The solution is filled in'))}
+          giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to give up and fill the solution' }}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="sums" name="Sums" collapsed={started} loft={LOFT} />
@@ -1400,3 +1483,34 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-30 mockup). Clue squares are solid ink with
+// the totals in the page colour; white squares are the page; the picked square
+// is mint and its two runs pale mint.
+const SUS_CSS = `
+.sus-grid{display:grid;gap:3px;width:min(100%, 480px);align-self:center;}
+.sus-grid.big{width:min(100%, 640px);gap:2px;}
+.pst .sus-c{position:relative;aspect-ratio:1;border-radius:8px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:clamp(16px, 6vw, 26px);font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;min-width:0;touch-action:manipulation;font-variant-numeric:tabular-nums;}
+.sus-grid.big .sus-c{border-radius:5px;border-width:1.5px;font-size:clamp(12px, 3.8vw, 22px);}
+.pst .sus-c.blk{background:var(--pst-ink);color:var(--pst-bg);}
+.sus-c .dg{position:absolute;inset:0;width:100%;height:100%;}
+.sus-c .dg path{stroke:var(--pst-bg);stroke-width:1;opacity:.45;vector-effect:non-scaling-stroke;}
+.pst .sus-c .ac{position:absolute;top:2px;right:4px;font-size:clamp(9px, 3vw, 13px);color:var(--pst-bg);}
+.pst .sus-c .dn{position:absolute;bottom:2px;left:4px;font-size:clamp(9px, 3vw, 13px);color:var(--pst-bg);}
+.sus-grid.big .sus-c .ac,.sus-grid.big .sus-c .dn{font-size:clamp(7px, 2.1vw, 11px);top:1px;right:2px;}
+.sus-grid.big .sus-c .dn{top:auto;bottom:1px;left:2px;right:auto;}
+.sus-c small{font-size:clamp(8px, 2.4vw, 10px);font-weight:800;color:var(--pst-mute);letter-spacing:.04em;line-height:1.1;padding:0 2px;}
+.pst .sus-c.run{background:var(--pst-pale);}
+.pst .sus-c.same{background:var(--pst-pale);}
+.pst .sus-c.sel{background:var(--pst-acc);color:var(--pst-on-acc);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);z-index:1;}
+.sus-combo{border-radius:14px;background:var(--pst-cell);padding:9px 12px;display:flex;flex-direction:column;gap:6px;}
+.sus-combo>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:800;}
+.sus-combo .k{color:var(--pst-mute);}
+.sus-combo .s{border:2px solid var(--pst-ink);border-radius:999px;padding:1px 9px;background:var(--pst-bg);}
+.sus-pad{display:grid;grid-template-columns:repeat(9, minmax(0, 1fr));gap:4px;}
+@media (min-width:900px) and (hover:hover) and (pointer:fine){.sus-pad{display:none !important;}}
+.pst .sus-dk{height:52px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-pale);font-size:22px;font-weight:800;padding:0;touch-action:manipulation;}
+.pst .sus-dk.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .sus-dk.done{opacity:.3;background:transparent;}
+.pst .pst-tb.acc{background:var(--pst-acc);color:var(--pst-on-acc);}
+`;

@@ -39,7 +39,7 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
   const host = useHostedStage(inline);
   useStageChrome(host.chrome ? pal.bg : null);
   return host.render(
-    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null) }}>
+    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null), ...accentVars(bg, look) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
         {host.inline ? null : <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav || host.nav} title={label} dot={bg} />}
@@ -59,6 +59,29 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
       </div>
     </div>
   );
+}
+
+// THE BOARD ACCENTS (owner, 2026-10-30, the Numbers and Barter restyles):
+// a board on the white page puts the category's FULL pastel on what is picked,
+// active or confirmed (--pst-acc, always with dark ink --pst-on-acc), the PALE
+// tint on secondary highlights (--pst-pale), and leaves plain squares on white
+// or light grey (--pst-cell, --pst-cell-line). Muted type is --pst-mute. In the
+// dark look the pastel stays the pastel (dark ink still reads on it) and the
+// pale and grey steps sink onto the near-black page.
+const PALE = { '#fb7185': '#ffe4e6', '#6ee7b7': '#d1fae5', '#e8b43a': '#fdf3d7', '#7dd3fc': '#e0f4fe', '#fb923c': '#ffedd5' };
+export function accentVars(pastel, look) {
+  const dark = look === 'dark' || look === 'darktint';
+  const hex = /^#[0-9a-f]{6}$/i.test(String(pastel || '')) ? pastel : null;
+  const acc = hex || 'var(--pst-ink)';
+  return {
+    '--pst-acc': acc,
+    '--pst-on-acc': hex ? RAMP_INK : 'var(--pst-bg)',
+    '--pst-pale': hex ? (dark ? `color-mix(in srgb, ${hex} 30%, #0b0f1a)` : (PALE[hex.toLowerCase()] || softGround(hex, 0.62))) : 'var(--pst-tint)',
+    '--pst-cell': dark ? '#1a2130' : '#f1f4f8',
+    '--pst-cell2': dark ? '#242c3d' : '#e3e8ee',
+    '--pst-cell-line': dark ? '#3a4458' : '#c9d2dc',
+    '--pst-mute': dark ? '#a9b3c4' : '#3b4656',
+  };
 }
 
 const CSS = `

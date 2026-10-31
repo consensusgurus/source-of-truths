@@ -69,6 +69,43 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
     try { document.fonts && document.fonts.ready.then(fit); } catch (e) {}
     return () => { try { ro && ro.disconnect(); } catch (e) {} };
   }, [title, share, tight]);
+  // THE PHONE TITLE IS CENTRED ON THE SCREEN (owner, 2026-10-30): under 900px
+  // the name sits on the true centre of the bar, not in the space left between
+  // the pills. Both sides reserve the wider of the two button groups
+  // (--stb-side), so the name never runs under a button; a long name shrinks
+  // with the screen and then ends in an ellipsis. Desktop is unchanged.
+  React.useLayoutEffect(() => {
+    const bar = barRef.current;
+    if (!bar || !title) return undefined;
+    const measure = () => {
+      const home = bar.querySelector('.stb-home');
+      const kids = Array.from(bar.children).filter((c) => c.tagName !== 'STYLE' && !c.classList.contains('stb-tx') && !c.contains(home));
+      if (!home) return;
+      const hr = home.getBoundingClientRect();
+      const br = bar.getBoundingClientRect();
+      const left = hr.right - br.left;
+      let minL = br.right;
+      for (const k of kids) { const r = k.getBoundingClientRect(); if (r.width) minL = Math.min(minL, r.left); }
+      const right = br.right - minL;
+      const side = Math.ceil(Math.max(left, right) + 4);
+      bar.style.setProperty('--stb-side', side + 'px');
+      // Shrink to fit before the ellipsis: 19px down to 13px, then truncate.
+      const h1 = bar.querySelector('.stb-t h1');
+      if (!h1) return;
+      h1.style.fontSize = '';
+      if (!window.matchMedia || !window.matchMedia('(max-width: 899px)').matches) return;
+      const base = parseFloat(getComputedStyle(h1).fontSize) || 19;
+      if (h1.scrollWidth > h1.clientWidth + 1) {
+        const fs = Math.max(13, Math.floor(base * (h1.clientWidth / h1.scrollWidth) * 10) / 10);
+        h1.style.fontSize = fs + 'px';
+      }
+    };
+    measure();
+    let ro;
+    try { ro = new ResizeObserver(measure); ro.observe(bar); Array.from(bar.children).forEach((c) => ro.observe(c)); } catch (e) {}
+    try { document.fonts && document.fonts.ready.then(measure); } catch (e) {}
+    return () => { try { ro && ro.disconnect(); } catch (e) {} };
+  }, [title, share, tight, nav, shareMsg]);
   const next = LOOK_NAMES[allLooks ? nextLook(look) : nextMainLook(look)];
   return (
     <div ref={barRef} className={'stb' + (title ? ' has-t' : '')} style={{ color: ink }}>
@@ -92,7 +129,7 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
       ) : null}
       {share ? (
         <button type="button" className={'stb-share' + (shareMsg ? ' on' : '') + (tight ? ' tight' : '')} onClick={(e) => { e.stopPropagation(); doShare(); }}
-          aria-label="Share this puzzle" title={shareMsg || 'Share this puzzle'}>
+          aria-label="Share" title={shareMsg || 'Share this puzzle'}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="M7 8l5-5 5 5" /><path d="M5 13v7h14v-7" /></svg>
           {tight ? null : <span className="stb-share-l">{shareMsg ? 'Copied' : 'Share'}</span>}
           {shareMsg ? <span className="stb-sr" role="status">{shareMsg}</span> : null}
@@ -126,4 +163,14 @@ const CSS = `
 .stb .stb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
 .stb .stb-nav{flex:none;height:34px;box-sizing:border-box;padding:0 12px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .stb .stb-home:hover > span{text-decoration:underline;text-underline-offset:3px;}
+@media (max-width:899px){
+  .stb.has-t{position:relative;flex:1 1 auto;width:100%;min-width:0;}
+  .stb.has-t .stb-tx{position:absolute;left:var(--stb-side,124px);right:var(--stb-side,124px);top:50%;transform:translateY(-50%);align-items:center;text-align:center;pointer-events:none;}
+  .stb.has-t .stb-tx > *{max-width:100%;pointer-events:auto;}
+  .stb.has-t .stb-t{justify-content:center;max-width:100%;gap:5px;}
+  .stb.has-t .stb-t h1{font-size:clamp(15px, 4.9vw, 19px);}
+  .stb.has-t .stb-tx + *{margin-left:auto;}
+  .stb .stb-share{width:34px;padding:0;}
+  .stb .stb-share .stb-share-l{display:none;}
+}
 `;
