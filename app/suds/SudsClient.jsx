@@ -56,6 +56,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
 
 const COLORS = {
   cream: T.surface,
@@ -277,6 +279,7 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
   useEffect(() => { if (EMBED && EMBED.autostart && preStart) startGame(); }, [EMBED, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   useRunHelp(EMBED, () => setShowHelp(true));
   const STAGE = isStage('suds', searchParams);
+  const phoneStage = usePhoneStage();
   // THE ACCENT AS A VARIABLE. It is only ever used as a CSS colour, so
   // every call site below themes itself and none of them had to be found.
   // The literals are published on the root element instead.
@@ -809,11 +812,48 @@ export default function SudsClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // THE SUDOKU STAGE (owner, 2026-10-31, Suds.dc.html): the shared periwinkle
+  // board, pad, tools and one status line on the white PlayStage, at every
+  // width. Presentation only: every control calls this client's own handlers
+  // (cellClick, padTap, undo, eraseCell, clearBoard, useHint, revealEnd), so
+  // scoring, saves, auto-move, posting and the finish are unchanged and the
+  // old board stays behind the stage. Not inside Enter the Dojo (EMBED), which
+  // keeps its own board and look.
+  const sudsStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const sudsLine = toast || (playing
+    ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
+  const stageEl = sudsStage ? (
+    <SudokuStage gameKey="suds" label="Suds"
+      eyebrow={sudokuEyebrow(PUZZLE, 'classic')}
+      playing={playing}
+      board={{
+        n: 9,
+        given: givenFlat, cells: boardCells, notes: boardNotes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: 9 }, (_, k) => ({ d: k + 1, left: Math.max(0, 9 - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={sudsLine}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

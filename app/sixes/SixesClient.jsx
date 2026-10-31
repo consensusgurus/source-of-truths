@@ -61,6 +61,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow, boxRegion } from '../SudokuStage';
 
 // Sixes identity is BLUE, the one hue absent from the whole Numbers row (Suds
 // orange, Quilt magenta, Carve violet, Cipher and Sando teal, Tally and Pricer
@@ -276,6 +278,7 @@ export default function SixesClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('sixes');
   const STAGE = isStage('sixes', searchParams);
+  const phoneStage = usePhoneStage();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('sixes');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('sixes');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -798,11 +801,48 @@ export default function SixesClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // THE SUDOKU STAGE (owner, 2026-10-31, Sixes.dc.html): the shared periwinkle
+  // board, pad, tools and one status line (app/SudokuStage.jsx) on the white
+  // PlayStage, at every width. Presentation only: every control calls this
+  // client's own handlers, so scoring, saves, auto-move, posting and the finish
+  // are unchanged and the old board stays behind the stage. Not inside Enter
+  // the Dojo (EMBED), which keeps its own board and look.
+  const SK_N = N;
+  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const skLine = toast || (playing
+    ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
+  const stageEl = skStage ? (
+    <SudokuStage gameKey="sixes" label="Sixes"
+      eyebrow={sudokuEyebrow(PUZZLE, 'six by six')}
+      playing={playing}
+      board={{
+        n: SK_N, region: boxRegion(BOX_W, BOX_H, SK_N),
+        given: givenFlat, cells: boardCells, notes: boardNotes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: SK_N }, (_, k) => ({ d: k + 1, left: Math.max(0, SK_N - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={skLine}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="sixes" name="Sixes" collapsed={started} loft={LOFT} />

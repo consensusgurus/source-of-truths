@@ -73,6 +73,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow, boxRegion } from '../SudokuStage';
 
 const COLORS = {
   cream: T.surface,
@@ -310,6 +312,7 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('sando');
   const STAGE = isStage('sando', searchParams);
+  const phoneStage = usePhoneStage();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('sando');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('sando');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -907,11 +910,58 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // THE SUDOKU STAGE (owner, 2026-10-31, Sando.dc.html): the shared periwinkle
+  // board, pad, tools and one status line (app/SudokuStage.jsx) on the white
+  // PlayStage, at every width. Presentation only: every control calls this
+  // client's own handlers, so scoring, saves, auto-move, posting and the finish
+  // are unchanged and the old board stays behind the stage. Not inside Enter
+  // the Dojo (EMBED), which keeps its own board and look.
+  const SK_N = 9;
+  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  // The sandwich readout the old gutter marks carried (+3 over, 5 short, a
+  // tick), for the selected square's row and column, in the status line.
+  const skRead = (s) => (!s ? null : s.ok ? 'checks out' : s.diff > 0 ? `${s.diff} over` : s.diff === 0 ? 'totals with squares open' : `${-s.diff} short`);
+  const skSand = playing && sel >= 0 ? [skRead(sandwich.rows[selR]) && `row ${selR + 1}: ${skRead(sandwich.rows[selR])}`, skRead(sandwich.cols[selC]) && `column ${selC + 1}: ${skRead(sandwich.cols[selC])}`].filter(Boolean).join(', ') : '';
+  const skLine = toast || (playing
+    ? `${armed ? `Placing ${armed} · ` : ''}${noteMode ? 'Notes on · ' : ''}${filledCount} of ${FREE.length} filled${skSand ? ` · ${skSand}` : ''}`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled · gave up`));
+  const stageEl = skStage ? (
+    <SudokuStage gameKey="sando" label="Sando"
+      eyebrow={sudokuEyebrow(PUZZLE, 'sandwich sums')}
+      playing={playing}
+      board={{
+        n: SK_N,
+        given: givenFlat, cells, notes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        gutter: { t: 0.81, l: 0.81 },
+        outside: [
+          ...COL_SUMS.map((v, c) => ({ side: 't', i: c, content: v, state: playing && selC === c ? 'on' : (lineFull.cols[c] ? (sandwich.cols[c] && !sandwich.cols[c].ok ? 'bad' : 'done') : null), label: `Column ${c + 1} sandwich ${v}` })),
+          ...ROW_SUMS.map((v, r) => ({ side: 'l', i: r, content: v, state: playing && selR === r ? 'on' : (lineFull.rows[r] ? (sandwich.rows[r] && !sandwich.rows[r].ok ? 'bad' : 'done') : null), label: `Row ${r + 1} sandwich ${v}` })),
+        ],
+        digitScale: 0.57, noteScale: 0.26,
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: SK_N }, (_, k) => ({ d: k + 1, left: Math.max(0, SK_N - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={skLine}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

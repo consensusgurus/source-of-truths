@@ -68,6 +68,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow, boxRegion } from '../SudokuStage';
 
 // Frame's legacy slate hue is AMBER. The page itself is painted by the Sudoku
 // category ramp (lib/category-ramp.js), so this pair only tells Frame apart
@@ -310,6 +312,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('frame');
   const STAGE = isStage('frame', searchParams);
+  const phoneStage = usePhoneStage();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('frame');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('frame');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -865,11 +868,64 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // THE SUDOKU STAGE (owner, 2026-10-31, Frame.dc.html): the shared periwinkle
+  // board, pad, tools and one status line (app/SudokuStage.jsx) on the white
+  // PlayStage, at every width. Presentation only: every control calls this
+  // client's own handlers, so scoring, saves, auto-move, posting and the finish
+  // are unchanged and the old board stays behind the stage. Not inside Enter
+  // the Dojo (EMBED), which keeps its own board and look.
+  const SK_N = N;
+  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  // The old gutter marks (+3, -2, a tick) for the gutters that speak about
+  // the selected square, read into the status line.
+  const skGut = playing && sel >= 0 ? GUTTERS_OF[sel].map(([side, k]) => { const st = tripleState(side, k); if (!st || !st.full) return null; return `${side} ${k + 1}: ${st.ok ? 'adds up' : st.diff > 0 ? `${st.diff} over` : `${-st.diff} short`}`; }).filter(Boolean).join(', ') : '';
+  const skLine = toast || (playing
+    ? `${armed ? `Placing ${armed} · ` : ''}${noteMode ? 'Notes on · ' : ''}${filledCount} of ${FREE.length} filled${skGut ? ` · ${skGut}` : ''}`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled · gave up`));
+  const stageEl = skStage ? (
+    <SudokuStage gameKey="frame" label="Frame"
+      eyebrow={sudokuEyebrow(PUZZLE, 'frame sums')}
+      playing={playing}
+      board={{
+        n: SK_N, region: boxRegion(BOX_W, BOX_H, SK_N),
+        given: givenFlat, cells: viewCells, notes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        gutter: { t: 0.79, r: 0.79, b: 0.79, l: 0.79 },
+        // The thirty-six sums: ringed when they speak about the selected
+        // square, grey once their three squares are filled and add up, red
+        // when filled and they do not (the old +/- mark, said in the line).
+        outside: ['top', 'right', 'bottom', 'left'].flatMap((side) => Array.from({ length: N }, (_, k) => {
+          const clue = GUTTER[side][k];
+          if (clue == null) return null;
+          const st = tripleState(side, k);
+          const on = playing && selGutters.has(`${side}:${k}`);
+          return { side: side[0], i: k, content: clue, state: on ? 'on' : (st && st.full ? (st.ok ? 'done' : 'bad') : null),
+            label: `${side === 'top' || side === 'bottom' ? 'Column' : 'Row'} ${k + 1}, the three squares nearest the ${side} edge total ${clue}` };
+        })).filter(Boolean),
+        digitScale: 0.56, noteScale: 0.26,
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: SK_N }, (_, k) => ({ d: k + 1, left: Math.max(0, SK_N - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={skLine}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="frame" name="Frame" collapsed={started} loft={LOFT} />

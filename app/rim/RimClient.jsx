@@ -67,6 +67,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow, boxRegion } from '../SudokuStage';
 
 // Rim's legacy slate hue is MOSS. The page itself is painted by the Sudoku
 // category ramp (lib/category-ramp.js), so this pair only tells Rim apart
@@ -308,6 +310,7 @@ export default function RimClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('rim');
   const STAGE = isStage('rim', searchParams);
+  const phoneStage = usePhoneStage();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('rim');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('rim');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -856,10 +859,65 @@ export default function RimClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // THE SUDOKU STAGE (owner, 2026-10-31, Rim.dc.html): the shared periwinkle
+  // board, pad, tools and one status line (app/SudokuStage.jsx) on the white
+  // PlayStage, at every width. Presentation only: every control calls this
+  // client's own handlers, so scoring, saves, auto-move, posting and the finish
+  // are unchanged and the old board stays behind the stage. Not inside Enter
+  // the Dojo (EMBED), which keeps its own board and look.
+  const SK_N = N;
+  const skStage = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  // The old gutter marks (a tick or a cross) for the gutters that speak about
+  // the selected square, read into the status line.
+  const skGut = playing && sel >= 0 ? GUTTERS_OF[sel].map(([side, k]) => { const st = tripleState(side, k); if (!st || !st.full) return null; return `${side} ${k + 1}: ${st.ok ? 'holds its triple' : 'does not hold its triple'}`; }).filter(Boolean).join(', ') : '';
+  const skLine = toast || (playing
+    ? `${armed ? `Placing ${armed} · ` : ''}${noteMode ? 'Notes on · ' : ''}${filledCount} of ${FREE.length} filled${skGut ? ` · ${skGut}` : ''}`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled · gave up`));
+  const stageEl = skStage ? (
+    <SudokuStage gameKey="rim" label="Rim"
+      eyebrow={sudokuEyebrow(PUZZLE, 'outside sudoku')}
+      playing={playing}
+      board={{
+        n: SK_N, region: boxRegion(BOX_W, BOX_H, SK_N),
+        given: givenFlat, cells, notes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        gutter: { t: 1.13, r: 0.89, b: 1.13, l: 0.89 },
+        // The printed triples: stacked on the top and bottom, in a row at the
+        // sides; ringed when they speak about the selected square, grey once
+        // their three squares hold them, red when filled and they do not.
+        outside: ['top', 'right', 'bottom', 'left'].flatMap((side) => Array.from({ length: N }, (_, k) => {
+          const clue = GUTTER[side][k];
+          if (clue == null) return null;
+          const st = tripleState(side, k);
+          const on = playing && selGutters.has(`${side}:${k}`);
+          const vert = side === 'top' || side === 'bottom';
+          return { side: side[0], i: k, content: <span className={'sks-tri' + (vert ? ' v' : '')}>{clue.split('').map((ch, j) => <span key={j}>{ch}</span>)}</span>,
+            state: on ? 'on' : (st && st.full ? (st.ok ? 'done' : 'bad') : null),
+            label: `${vert ? 'Column' : 'Row'} ${k + 1}, the three squares nearest the ${side} edge hold ${clue.split('').join(', ')}` };
+        })).filter(Boolean),
+        digitScale: 0.56, noteScale: 0.26,
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: SK_N }, (_, k) => ({ d: k + 1, left: Math.max(0, SK_N - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={skLine}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="rim" name="Rim" collapsed={started} loft={LOFT} />
