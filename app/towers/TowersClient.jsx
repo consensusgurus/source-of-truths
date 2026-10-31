@@ -60,6 +60,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
 
 // Towers identity is STEEL SKY (#075985), glass and girders, clear of Towers's
 // royal blue and Ping's brighter sky. Every colour the board uses derives from
@@ -275,6 +277,7 @@ export default function TowersClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('towers');
   const STAGE = isStage('towers', searchParams);
+  const phoneStage = usePhoneStage();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('towers');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('towers');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -817,10 +820,62 @@ export default function TowersClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // THE SUDOKU STAGE (owner, 2026-10-31, Towers.dc.html): the shared periwinkle
+  // board, pad, tools and one status line on the white PlayStage (app/SudokuStage.jsx),
+  // at every width. Presentation only: every control calls this client's own
+  // handlers (cellClick, padTap, undo, eraseCell, clearBoard, useHint, revealEnd),
+  // so scoring, saves, auto-move, posting and the finish are unchanged and the
+  // old board stays behind the stage.
+  // The border clues as chips in the gutters: ringed while the selected square
+  // sits on their line, a full periwinkle circle once a finished line checks out,
+  // red when a finished line does not (the old OK / OFF marks).
+  const SIDE = { top: 't', right: 'r', bottom: 'b', left: 'l' };
+  const towersOut = [];
+  for (const side of ['top', 'right', 'bottom', 'left']) for (let i = 0; i < N; i++) {
+    const st = clueState(side, i);
+    if (!st) continue;
+    const state = st.mark === 'ok' ? 'ok' : st.mark === 'off' ? 'bad' : (playing && st.on ? 'on' : null);
+    towersOut.push({ side: SIDE[side], i, content: st.v, state, label: `${side} clue ${st.v}${st.mark === 'ok' ? ', checks out' : st.mark === 'off' ? ', does not check out' : ''}` });
+  }
+  const towersStage = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const towersLine = toast || (playing
+    ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
+  const stageEl = towersStage ? (
+    <SudokuStage gameKey="towers" label="Towers"
+      eyebrow={sudokuEyebrow(PUZZLE, 'skyscrapers')}
+      playing={playing}
+      board={{
+        n: N,
+        given: givenFlat, cells: boardCells, notes: boardNotes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        // No boxes: one region, so only the thin lines and the frame are drawn.
+        region: () => 0,
+        peer: (i) => Math.floor(i / N) === selR || i % N === selC,
+        gutter: { t: 0.66, r: 0.66, b: 0.66, l: 0.66 },
+        outside: towersOut,
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: N }, (_, k) => ({ d: k + 1, left: Math.max(0, N - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={towersLine}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="towers" name="Towers" collapsed={started} loft={LOFT} />

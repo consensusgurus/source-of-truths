@@ -67,6 +67,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
 
 // Window's legacy slate hue is ROSE. The page itself is painted by the Sudoku
 // category ramp (lib/category-ramp.js), so this pair only tells Window apart
@@ -299,6 +301,7 @@ export default function WindowClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('window');
   const STAGE = isStage('window', searchParams);
+  const phoneStage = usePhoneStage();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('window');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('window');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -829,11 +832,53 @@ export default function WindowClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // THE SUDOKU STAGE (owner, 2026-10-31, Window.dc.html): the shared periwinkle
+  // board, pad, tools and one status line on the white PlayStage (app/SudokuStage.jsx),
+  // at every width. Presentation only: every control calls this client's own
+  // handlers (cellClick, padTap, undo, eraseCell, clearBoard, useHint, revealEnd),
+  // so scoring, saves, auto-move, posting and the finish are unchanged and the
+  // old board stays behind the stage. Not inside Enter the Dojo (EMBED), which keeps its own board and look.
+  const windowStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const windowLine = toast || (playing
+    ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
+    : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
+  const stageEl = windowStage ? (
+    <SudokuStage gameKey="window" label="Window"
+      eyebrow={sudokuEyebrow(PUZZLE, 'four windows')}
+      playing={playing}
+      board={{
+        n: N,
+        given: givenFlat, cells: viewCells, notes: notes,
+        sel: playing ? sel : -1, hl: playing ? hlVal : 0,
+        onCell: (i) => { if (playing) cellClick(i); },
+        cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        // A window is a house: its squares join the selection's pale peers.
+        peer: (i) => { const r = Math.floor(i / N), c = i % N; return r === selR || c === selC || boxOf(r, c) === selB || selDiag.has(i); },
+        // The four windows: light grey squares at rest (the pale peer tint wins
+        // while one is lit), each framed in periwinkle over the walls.
+        fill: (i) => { if (winOf(i) < 0) return null; const r = Math.floor(i / N), c = i % N; if (sel >= 0 && i !== sel && (r === selR || c === selC || boxOf(r, c) === selB || selDiag.has(i))) return null; return 'color-mix(in srgb, var(--pst-ink) 8%, var(--sks-base))'; },
+        over: WINDOW_TOPS.flatMap((r0) => WINDOW_TOPS.map((c0) => <rect key={`${r0}-${c0}`} x={c0} y={r0} width="3" height="3" fill="none" stroke="var(--pst-deep)" strokeOpacity=".75" strokeWidth="2.4" vectorEffect="non-scaling-stroke" />)),
+      }}
+      pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: N }, (_, k) => ({ d: k + 1, left: Math.max(0, N - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
+      tools={{
+        notes: { on: noteMode, onPress: () => setNoteMode((m) => !m) },
+        auto: { on: autoAdv, onPress: toggleAutoAdv },
+        undo: { onPress: undo, disabled: !canUndo },
+        erase: { onPress: () => eraseCell(sel) },
+        clear: { armed: armClear, onPress: clearBoard, disabled: !hasEntries },
+        hint: hintOk && !g.hintUsed ? { onPress: useHint } : null,
+      }}
+      line={windowLine}
+      giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and fill the solution' }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="window" name="Window" collapsed={started} loft={LOFT} />
