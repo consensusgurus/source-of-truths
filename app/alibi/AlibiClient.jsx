@@ -65,6 +65,8 @@ import RunDoorPop from '../circuits/RunDoorPop';
 import { endSolved } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { LOGIC_STAGE_CSS, embedLook } from '../LogicStage';
 
 const COLORS = {
   cream: T.surface,
@@ -290,6 +292,9 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  // The stage foot's Give up is two taps (the in-page Reveal was one).
+  const [armGiveUp, setArmGiveUp] = useState(0);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -586,7 +591,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
         if (g.marks[cat][s][v] === 2) { placed++; if (SOLUTION[cat][s] !== v) wrong++; }
       }
     }
-    if (placed < TOTAL) { setVerdict({ soft: true, msg: `You've confirmed ${placed} of ${TOTAL} facts — keep deducing before you accuse.` }); return; }
+    if (placed < TOTAL) { setVerdict({ soft: true, msg: `You've confirmed ${placed} of ${TOTAL} facts. Keep deducing before you accuse.` }); return; }
     if (wrong > 0) {
       setG((cur) => ({ ...cur, wrong: cur.wrong + 1, t0: cur.t0 || Date.now() }));
       // Deliberately vague: naming HOW MANY marks are wrong hands back a slice
@@ -615,6 +620,14 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   function resetGame() {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
     setG(freshState(N)); setVerdict(null); setEndClosed(false); clearHist();
+  }
+  // The stage foot's Give up: the first tap arms it, the second calls reveal().
+  function pressGiveUp() {
+    if (!playing) return;
+    if (!armGiveUp) { setArmGiveUp(Date.now()); setTimeout(() => setArmGiveUp(0), 3500); return; }
+    if (Date.now() - armGiveUp < 250) return;
+    setArmGiveUp(0);
+    reveal();
   }
 
   function clueText(c) {
@@ -652,10 +665,90 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={STAGE ? ('stage-page' + (EMBED ? ' lgs-hosted' : '')) : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Alibi plays on the shared white stage
+          at every width, in the rose look approved inside Judged: the story
+          and the statements on the page, the board as pale rose cells (a
+          confirmed cell full rose), one line, and the foot's Clock, How to
+          play and Give up. Every control is the board's own handler. Inside
+          Judged the same stage is drawn inline in the run's frame. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (
+        <PlayStage bg={gameColor('alibi')} label="Alibi" wide inline={!!EMBED} look={embedLook(EMBED)}
+          eyebrow={PUZZLE.sunday ? 'Sunday Edition · Five suspects' : 'Who was where, when, and with what'}
+          top={(
+            <>
+              <style dangerouslySetInnerHTML={{ __html: LOGIC_STAGE_CSS + ALS_CSS }} />
+              <p className="lgs-p">Last night at {PUZZLE.venue}, {PUZZLE.stolen} vanished. {N === 5 ? 'Five' : 'Four'} guests, {PUZZLE.suspects.slice(0, -1).join(', ')} and {PUZZLE.suspects[N - 1]}, were each alone in a different room, each left at a different hour, and each carried one curious item. <b>Every statement is true.</b></p>
+              <div className="lgs-cols">
+                <div className="lgs-sec">
+                  <div className="lgs-lab">Witness statements</div>
+                  {PUZZLE.clues.map((c, i) => {
+                    const off = g.struck.includes(i);
+                    return (
+                      <button key={i} type="button" className={'als-clue lgs-tile' + (off ? ' done' : '')} aria-pressed={off} onClick={() => toggleClue(i)}>
+                        <b>{i + 1}.</b> {clueText(c)}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="lgs-sec">
+                  <div className="lgs-lab">Detective&rsquo;s board</div>
+                  <table className="als-tbl">
+                    <tbody>
+                      <tr>
+                        <th className="rowh" aria-hidden="true"></th>
+                        {PUZZLE.suspects.map((name) => <th key={name} className="colh">{name}</th>)}
+                      </tr>
+                      {CAT_META.map((cat) => (
+                        <React.Fragment key={cat.key}>
+                          <tr className="als-band"><td colSpan={N + 1}>{cat.label}</td></tr>
+                          {cat.vals.map((val, v) => (
+                            <tr key={val}>
+                              <th className="rowh">{val}</th>
+                              {PUZZLE.suspects.map((name, s) => {
+                                const m = shownMarks[cat.key][s][v];
+                                return (
+                                  <td key={name}
+                                    className={'als-td' + (m === 1 ? ' x' : m === 2 ? ' dot' : '')}
+                                    onClick={() => { if (longFired.current) { longFired.current = false; return; } tapCell(cat.key, s, v); }}
+                                    onContextMenu={(e) => { e.preventDefault(); if (longFired.current) return; toggleDot(cat.key, s, v); }}
+                                    onTouchStart={() => startPress(cat.key, s, v)}
+                                    onTouchEnd={endPress}
+                                    onTouchMove={endPress}
+                                    onTouchCancel={endPress}
+                                    role="button"
+                                    aria-label={`${name} / ${val}: ${m === 0 ? 'blank' : m === 1 ? 'impossible' : 'confirmed'}. Tap to toggle impossible; long-press or right-click to confirm.`}
+                                  >{m === 1 ? '✗' : m === 2 ? '●' : ''}</td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </table>
+                  {playing && <div className="pst-note">Tap a cell to cross it off. Hold it, or right-click, to confirm a &#9679;.</div>}
+                </div>
+              </div>
+            </>
+          )}
+          bottom={playing ? (
+            <div className="pst-tools">
+              <button type="button" className="pst-tb lgs-pri wide" onClick={accuse}>Check my accusation</button>
+              <button type="button" className="pst-tb" onClick={undo} disabled={!canUndo} aria-label="Undo last move">Undo</button>
+              <button type="button" className="pst-tb" onClick={resetBoards}>Reset boards</button>
+              <button type="button" className={'pst-tb' + (autoX ? ' on' : '')} aria-pressed={autoX} onClick={() => setAutoX((v) => !v)}>Auto ✗ {autoX ? 'on' : 'off'}</button>
+            </div>
+          ) : null}
+          foot={verdict ? <span className={verdict.soft ? undefined : 'lgs-bad'}>{verdict.msg}</span> : (toast || (playing
+            ? `${placedCount} of ${TOTAL} confirmed · ${g.wrong} wrong accusation${g.wrong === 1 ? '' : 's'}`
+            : (g.status === 'done' ? (won ? 'Case closed on the first accusation' : `Case closed after ${g.wrong} wrong accusation${g.wrong === 1 ? '' : 's'}`) : 'The trail went cold')))}
+          giveUp={{ armed: !!armGiveUp, onPress: pressGiveUp, armedLabel: 'Tap again to give up and see the solution' }}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1119,3 +1212,20 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 }
+
+// The stage board (owner, 2026-10-31, the approved Judged look): statements as
+// pale rose tiles (tap to cross one off), the board as rounded pale rose cells
+// with a 2px ink rule, a ruled-out cell clear, a confirmed cell full rose.
+const ALS_CSS = `
+.pst .als-clue{display:block;width:100%;text-align:left;padding:9px 12px;font-size:14.5px;font-weight:700;line-height:1.45;border-radius:12px;}
+.pst .als-clue b{color:var(--pst-ink);font-weight:800;}
+.pst .als-clue.done{background:transparent;opacity:.45;text-decoration:line-through;}
+.pst .als-tbl{width:100%;border-collapse:separate;border-spacing:4px;table-layout:fixed;margin:0 -4px;width:calc(100% + 8px);}
+.pst .als-tbl th{font-size:12px;font-weight:800;padding:2px 2px 4px;color:var(--pst-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pst .als-tbl th.rowh{text-align:right;width:30%;padding-right:6px;font-weight:700;color:var(--pst-mute);}
+.pst .als-band td{padding:8px 2px 0;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--pst-mute);}
+.pst .als-td{height:44px;padding:0;border:2px solid var(--pst-ink);border-radius:10px;background:var(--pst-pale);color:var(--pst-ink);text-align:center;font-size:17px;font-weight:800;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
+.pst .als-td.x{background:transparent;opacity:.45;}
+.pst .als-td.dot{background:var(--pst-acc);color:var(--pst-on-acc);opacity:1;}
+@media (max-width:400px){.pst .als-tbl th{font-size:11px;}.pst .als-td{height:40px;}}
+`;

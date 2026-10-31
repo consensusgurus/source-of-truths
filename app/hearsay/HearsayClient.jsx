@@ -62,6 +62,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { LOGIC_STAGE_CSS, embedLook } from '../LogicStage';
 
 const COLORS = {
   cream: T.surface,
@@ -274,6 +276,9 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  // The stage foot's Give up is two taps (the in-page Reveal was one).
+  const [armGiveUp, setArmGiveUp] = useState(0);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -501,6 +506,14 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
     setG(freshState()); setVerdict(null); setEndClosed(false);
   }
+  // The stage foot's Give up: the first tap arms it, the second calls reveal().
+  function pressGiveUp() {
+    if (!playing) return;
+    if (!armGiveUp) { setArmGiveUp(Date.now()); setTimeout(() => setArmGiveUp(0), 3500); return; }
+    if (Date.now() - armGiveUp < 250) return;
+    setArmGiveUp(0);
+    reveal();
+  }
 
   // cards grouped by the first attribute, which is how a shortlist like this
   // reads on paper
@@ -541,10 +554,70 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={STAGE ? ('stage-page' + (EMBED ? ' lgs-hosted' : '')) : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Hearsay plays on the shared white stage
+          at every width, in the rose look approved inside Judged: who knows
+          what on the page, the list as pale rose tiles (tap to cross off, or to
+          name one once Name is on), what was said as pale rose bubbles, one
+          line, and the foot's Clock, How to play and Give up. Every control is
+          the board's own handler. Inside Judged it is drawn inline. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (
+        <PlayStage bg={gameColor('hearsay')} label="Hearsay" wide inline={!!EMBED} look={embedLook(EMBED)}
+          eyebrow={PUZZLE.sunday ? 'Sunday Edition · Three voices' : `Find the secret ${PUZZLE.noun}`}
+          top={(
+            <>
+              <style dangerouslySetInnerHTML={{ __html: LOGIC_STAGE_CSS + HSS_CSS }} />
+              <p className="lgs-p">One {PUZZLE.noun} on {PUZZLE.listLabel} is the secret one. {PUZZLE.who.map((w, i) => (
+                <span key={w}><b>{w}</b> has been told only its {PUZZLE.attrs[i]}{i === PUZZLE.who.length - 1 ? '. ' : i === PUZZLE.who.length - 2 ? ', and ' : ', '}</span>
+              ))}Nobody lies, and everybody hears everything said.</p>
+              <div className="lgs-cols">
+                <div className="lgs-sec">
+                  <div className="lgs-lab">{PUZZLE.listLabel}</div>
+                  {groups.map((grp) => (
+                    <div key={grp.a} className="hss-row">
+                      <span className="hss-key">{grp.a}</span>
+                      <span className="hss-cards">
+                        {grp.items.map((i) => {
+                          const c = PUZZLE.cards[i];
+                          const isAns = !playing && ansShown && i === ANSWER;
+                          const st = g.wrong.includes(i) ? ' wrong' : g.crossed.includes(i) ? ' off' : '';
+                          return (
+                            <button key={i} type="button" className={'lgs-tile hss-card' + st + (isAns ? ' on' : '') + (g.naming && !st ? ' pick' : '')}
+                              onClick={() => tapCard(i)} disabled={!playing} title={g.naming ? 'Name this one' : 'Cross it off'}>
+                              {c.b}{c.c ? <span className="c"> &middot; {c.c}</span> : null}
+                            </button>
+                          );
+                        })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="lgs-sec">
+                  <div className="lgs-lab">What was said</div>
+                  {PUZZLE.script.map((st, i) => (
+                    <div key={i} className="hss-say"><span className="lgs-n">{i + 1}</span><span className="t">{statementText(PUZZLE, st)}</span></div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          bottom={playing ? (
+            <div className="pst-tools">
+              <button type="button" className={'pst-tb' + (g.naming ? ' lgs-pri' : '')} aria-pressed={!!g.naming} onClick={() => setG((cur) => ({ ...cur, naming: !cur.naming }))}>
+                {g.naming ? `Tap the ${PUZZLE.noun} to name it` : `Name the ${PUZZLE.noun}`}
+              </button>
+              {g.crossed.length > 0 && <button type="button" className="pst-tb" onClick={clearCrossed}>Clear cross-outs</button>}
+            </div>
+          ) : null}
+          foot={verdict ? <span className="lgs-bad">{verdict.msg}</span> : (toast || (playing
+            ? `${PUZZLE.cards.length - g.crossed.length - g.wrong.length} left on the list · ${g.wrong.length} wrong name${g.wrong.length === 1 ? '' : 's'}`
+            : (g.status === 'done' ? `It was ${ansText}` : (ansShown ? `It was ${ansText} all along` : 'Not named'))))}
+          giveUp={{ armed: !!armGiveUp, onPress: pressGiveUp, armedLabel: `Tap again to give up and see the ${PUZZLE.noun}` }}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -946,3 +1019,21 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 }
+
+// The stage board (owner, 2026-10-31, the approved Judged look): the list as
+// pale rose tiles with a 2px ink rule, a crossed-off one clear, a wrongly named
+// one ruled in orange, the answer full rose once it is out; what was said as
+// pale rose bubbles numbered in full rose.
+const HSS_CSS = `
+.pst .hss-row{display:flex;gap:10px;align-items:flex-start;padding:2px 0;}
+.pst .hss-key{flex:0 0 92px;min-width:0;overflow-wrap:anywhere;padding-top:12px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-ink);}
+.pst .hss-cards{display:flex;gap:7px;flex-wrap:wrap;flex:1 1 0;min-width:0;}
+.pst .hss-card{min-height:44px;padding:6px 12px;border-radius:12px;font-size:14px;font-weight:800;}
+.pst .hss-card .c{font-weight:600;opacity:.8;}
+.pst .hss-card.off{background:transparent;opacity:.45;text-decoration:line-through;}
+.pst .hss-card.wrong{background:transparent;border-color:var(--pst-bad);color:var(--pst-bad);text-decoration:line-through;}
+.pst .hss-card.pick{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-acc);}
+.pst .hss-card:disabled{cursor:default;}
+.pst .hss-say{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--pst-ink);border-radius:16px;background:var(--pst-pale);padding:10px 12px;}
+.pst .hss-say .t{flex:1;min-width:0;font-size:14.5px;font-weight:700;line-height:1.45;padding-top:2px;}
+`;

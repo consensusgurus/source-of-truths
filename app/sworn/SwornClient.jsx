@@ -64,6 +64,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { LOGIC_STAGE_CSS, embedLook } from '../LogicStage';
 
 const COLORS = {
   cream: T.surface,
@@ -264,6 +266,9 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  // The stage foot's Give up is two taps (the in-page Reveal was one).
+  const [armGiveUp, setArmGiveUp] = useState(0);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -545,6 +550,14 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
     setG(freshState(N)); setVerdict(null); setEndClosed(false);
   }
+  // The stage foot's Give up: the first tap arms it, the second calls reveal().
+  function pressGiveUp() {
+    if (!playing) return;
+    if (!armGiveUp) { setArmGiveUp(Date.now()); setTimeout(() => setArmGiveUp(0), 3500); return; }
+    if (Date.now() - armGiveUp < 250) return;
+    setArmGiveUp(0);
+    reveal();
+  }
 
   function stmtText(st, s) {
     const S = PUZZLE.suspects;
@@ -583,10 +596,111 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={STAGE ? ('stage-page' + (EMBED ? ' lgs-hosted' : '')) : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Sworn plays on the shared white stage at
+          every width, in the rose look approved inside Judged: the story on the
+          page, the witnesses on pale rose cards (a witness marked Lying full
+          rose), the liars meter, one line, and the foot's Clock, How to play
+          and Give up. Phone: one witness large, desktop: the whole stand.
+          Every control is the board's own handler. Inside Judged it is drawn
+          inline in the run's frame. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const markOf = (i) => (hideSol ? (g.pre || [])[i] || 0 : g.marks[i]);
+        const tagOf = (i) => {
+          if (g.accusedWrong.includes(i)) return 'Cleared';
+          const m = markOf(i);
+          return m === 1 ? 'True' : m === 2 ? 'Lying' : 'Unmarked';
+        };
+        const verifiedTag = (i) => (g.verified && g.verified.x === i ? (
+          <span className={'sws-ver' + (g.verified.honest ? '' : ' lgs-bad')}>Verified {g.verified.honest ? 'truthful' : 'lying'}</span>
+        ) : null);
+        const toggle = (i, name) => {
+          const m = markOf(i);
+          return (
+            <div className="sws-seg" role="group" aria-label={`Your scratch verdict on ${name}`}>
+              <button type="button" className={'t' + (m === 1 ? ' on' : '')} aria-pressed={m === 1} disabled={!playing} onClick={() => setMark(i, 1)}>True</button>
+              <button type="button" className={'l' + (m === 2 ? ' on' : '')} aria-pressed={m === 2} disabled={!playing} onClick={() => setMark(i, 2)}>Lying</button>
+            </div>
+          );
+        };
+        const accuseBtn = (i) => (playing ? (
+          <button type="button" className="sws-accuse" onClick={() => accuse(i)} disabled={g.accusedWrong.includes(i)}>Accuse</button>
+        ) : null);
+        const P = Math.min(pick, N - 1);
+        const pName = PUZZLE.suspects[P];
+        return (
+          <PlayStage bg={gameColor('sworn')} label="Sworn" wide inline={!!EMBED} look={embedLook(EMBED)}
+            eyebrow={PUZZLE.sunday ? 'Sunday Edition · Grand Inquest' : `Exactly ${PUZZLE.k} of ${N} are lying`}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: LOGIC_STAGE_CSS + SWS_CSS }} />
+                <p className="lgs-p">Last night at {PUZZLE.venue}, {PUZZLE.stolen} vanished. {N === 6 ? 'Six' : 'Five'} locals were sworn in, and one of them is the thief. Each gave one statement, and <b>exactly {PUZZLE.k} of the {N} are lying</b>. Liars&rsquo; statements are false; everyone else&rsquo;s are true.</p>
+                <div className="sws-meter">
+                  <span className="lgs-lab">Liars marked</span>
+                  <span className="sws-slots" aria-label={`${liarsMarked} of ${PUZZLE.k} liars marked`}>
+                    {Array.from({ length: PUZZLE.k }, (_, k) => <span key={k} className={'sws-slot' + (k < liarsMarked ? ' on' : '')} />)}
+                  </span>
+                  {liarsMarked > PUZZLE.k && <span className="sws-over lgs-bad">{liarsMarked} marked, only {PUZZLE.k} lie</span>}
+                </div>
+                <div className="sws-stand" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+                  {PUZZLE.suspects.map((name, i) => {
+                    const m = markOf(i);
+                    return (
+                      <div key={name} className={`sws-wit m${m}`}>
+                        <div className="sws-bub"><span>{stmtText(PUZZLE.statements[i], i)}</span><i aria-hidden="true" /></div>
+                        <span className={`sws-av m${m}`} aria-hidden="true">{name.charAt(0)}</span>
+                        <span className="sws-name">{name}</span>
+                        {verifiedTag(i)}
+                        {g.accusedWrong.includes(i) && <span className="sws-ver">Cleared</span>}
+                        {toggle(i, name)}
+                        {accuseBtn(i)}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="sws-ph">
+                  <div className="sws-avrow">
+                    {PUZZLE.suspects.map((name, i) => (
+                      <button key={name} type="button" className={'sws-avb' + (i === P ? ' sel' : '')} onClick={() => setPick(i)} aria-pressed={i === P} aria-label={`${name}, ${tagOf(i)}`}>
+                        <span className={`sws-av sm m${markOf(i)}`}>{name.charAt(0)}</span>
+                        <span className="n">{name}</span>
+                        <span className="t">{tagOf(i)}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="lgs-tile sws-focus">
+                    <div className="sws-fh"><b>{pName}</b><span className="lgs-lab">Swore</span>{verifiedTag(P)}</div>
+                    <span className={`sws-fq m${markOf(P)}`}>{stmtText(PUZZLE.statements[P], P)}</span>
+                    <div className="sws-fact">{toggle(P, pName)}{accuseBtn(P)}</div>
+                  </div>
+                  <div className="lgs-lab">All testimony</div>
+                  <div className="sws-list">
+                    {PUZZLE.suspects.map((name, i) => (
+                      <button key={name} type="button" className={'sws-trow' + (i === P ? ' sel' : '')} onClick={() => setPick(i)}>
+                        <span className={`sws-av xs m${markOf(i)}`} aria-hidden="true">{name.charAt(0)}</span>
+                        <span className={'q' + (markOf(i) === 2 ? ' lie' : '')}><b>{name}:</b> {stmtText(PUZZLE.statements[i], i)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+            bottom={playing ? (
+              <div className="pst-tools">
+                <button type="button" className="pst-tb" onClick={clearMarks}>Clear marks</button>
+                {hintOk && !g.hintUsed && <button type="button" className="pst-tb" onClick={useHint} title="Verify one witness (one hint, first play only)">Hint: verify a witness</button>}
+              </div>
+            ) : null}
+            foot={verdict ? <span className="lgs-bad">{verdict.msg}</span> : (toast || (playing
+              ? `${g.wrong} wrong accusation${g.wrong === 1 ? '' : 's'}${g.hintUsed ? ' · hint used' : ''} · marks are notes and never score`
+              : (g.status === 'done' ? `It was ${thiefName}` : (hideSol ? 'The inquest collapsed' : `The inquest collapsed. It was ${thiefName}`))))}
+            giveUp={{ armed: !!armGiveUp, onPress: pressGiveUp, armedLabel: 'Tap again to give up and see the thief' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1106,3 +1220,56 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 }
+
+// The stage board (owner, 2026-10-31, the approved Judged look): each witness
+// a pale rose speech card over a letter avatar (ink when marked True, full
+// rose when marked Lying), the True / Lying toggle with Lying in full rose,
+// Accuse a white button with an ink rule, and the liars meter in rose.
+const SWS_CSS = `
+.pst .sws-meter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.pst .sws-slots{display:inline-flex;gap:6px;}
+.pst .sws-slot{width:22px;height:22px;border-radius:6px;border:2px solid var(--pst-ink);}
+.pst .sws-slot.on{background:var(--pst-acc);}
+.pst .sws-over{font-size:13px;font-weight:700;}
+.pst .sws-av{width:64px;height:64px;flex:none;border-radius:50%;border:2px solid var(--pst-ink);background:var(--pst-pale);color:var(--pst-ink);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;}
+.pst .sws-av.m1{background:var(--pst-ink);color:var(--pst-bg);}
+.pst .sws-av.m2{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .sws-av.sm{width:48px;height:48px;font-size:19px;}
+.pst .sws-av.xs{width:28px;height:28px;font-size:12px;}
+.pst .sws-ver{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:1px 8px;}
+.pst .sws-seg{display:flex;width:100%;border:2px solid var(--pst-ink);border-radius:12px;overflow:hidden;}
+.pst .sws-seg button{flex:1 1 0;min-width:0;min-height:44px;border:0;border-radius:0;background:var(--pst-bg);font-size:13px;font-weight:800;padding:0 4px;}
+.pst .sws-seg button+button{border-left:2px solid var(--pst-ink);}
+.pst .sws-seg button.t.on{background:var(--pst-ink);color:var(--pst-bg);}
+.pst .sws-seg button.l.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .sws-seg button:disabled{cursor:default;}
+.pst .sws-accuse{width:100%;min-height:44px;border:2px solid var(--pst-ink);border-radius:12px;background:var(--pst-bg);font-size:14px;font-weight:800;}
+.pst .sws-accuse:disabled{opacity:.45;cursor:not-allowed;text-decoration:line-through;}
+.pst .sws-stand{display:none;gap:12px;align-items:start;}
+.pst .sws-wit{display:flex;flex-direction:column;align-items:center;gap:9px;min-width:0;}
+.pst .sws-bub{position:relative;width:100%;min-height:112px;border:2px solid var(--pst-ink);border-radius:16px;background:var(--pst-pale);padding:12px;display:flex;align-items:center;font-size:15px;font-weight:700;line-height:1.35;margin-bottom:8px;overflow-wrap:anywhere;}
+.pst .sws-bub i{position:absolute;left:50%;bottom:-9px;width:16px;height:16px;background:var(--pst-pale);border-right:2px solid var(--pst-ink);border-bottom:2px solid var(--pst-ink);transform:translateX(-50%) rotate(45deg);}
+.pst .sws-wit.m2 .sws-bub span{opacity:.7;}
+.pst .sws-name{font-size:15px;font-weight:800;text-align:center;overflow-wrap:anywhere;}
+.pst .sws-ph{display:flex;flex-direction:column;gap:12px;}
+.pst .sws-avrow{display:flex;justify-content:space-between;gap:4px;}
+.pst .sws-avb{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid transparent;border-radius:14px;background:transparent;padding:6px 0;}
+.pst .sws-avb.sel{border-color:var(--pst-ink);}
+.pst .sws-avb .n{font-size:12px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pst .sws-avb .t{font-size:9px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--pst-mute);max-width:100%;overflow:hidden;white-space:nowrap;}
+.pst .sws-focus{padding:14px;display:flex;flex-direction:column;gap:12px;border-radius:16px;}
+.pst .sws-fh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.pst .sws-fh b{font-size:17px;font-weight:800;}
+.pst .sws-fq{font-size:21px;font-weight:700;line-height:1.3;}
+.pst .sws-fq.m2{opacity:.7;}
+.pst .sws-fact{display:flex;gap:8px;}
+.pst .sws-fact .sws-seg{flex:2 1 0;}
+.pst .sws-fact .sws-accuse{flex:1 1 0;width:auto;}
+.pst .sws-list{display:flex;flex-direction:column;}
+.pst .sws-trow{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:8px 6px;border:0;border-bottom:1px solid var(--pst-cell-line);border-radius:0;background:transparent;text-align:left;}
+.pst .sws-trow.sel{background:var(--pst-cell);}
+.pst .sws-trow .q{flex:1;min-width:0;font-size:15px;font-weight:600;line-height:1.35;}
+.pst .sws-trow .q.lie{color:var(--pst-mute);}
+.pst .sws-trow .q b{font-weight:800;}
+@media (min-width:900px){.pst.wide .sws-stand{display:grid;}.pst.wide .sws-ph{display:none;}}
+`;

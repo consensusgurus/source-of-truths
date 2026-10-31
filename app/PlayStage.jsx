@@ -28,8 +28,14 @@ import { useHostedStage } from './StageHost';
 
 export { usePhoneStage } from './WordStage';
 
-export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null, done = null, inline = false, wide = false }) {
-  const [look, setLook] = useStageLook();
+export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null, done = null, inline = false, wide = false, look: lookIn = null }) {
+  const [storedLook, setLook] = useStageLook();
+  // A RUN'S LOOK (owner, 2026-10-31, Judged): a board embedded in a run follows
+  // the run's own look switch (five looks, its own key) rather than the site's
+  // two, so the run frame and the board never disagree. The black-and-white
+  // looks ('plain', 'dark') keep the board colourless, as the run's do.
+  const look = lookIn || storedLook;
+  const mono = look === 'plain' || look === 'dark';
   // WHITE PAGE, COLOURED TILES (owner, 2026-10-25).
   const pal = stagePalette(bg, look);
   // INLINE (owner, 2026-10-28): on desktop with the site navigation showing, the
@@ -39,7 +45,7 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
   const host = useHostedStage(inline);
   useStageChrome(host.chrome ? pal.bg : null);
   return host.render(
-    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null), ...accentVars(bg, look) }}>
+    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null), ...accentVars(mono ? null : bg, look) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
         {host.inline ? null : <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav || host.nav} title={label} dot={bg} />}
@@ -70,21 +76,29 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
 // pale and grey steps sink onto the near-black page. --pst-bad / --pst-bad-bg
 // carry a wrong mark in both looks.
 const PALE = { '#fb7185': '#ffe4e6', '#6ee7b7': '#d1fae5', '#e8b43a': '#fdf3d7', '#7dd3fc': '#e0f4fe', '#fb923c': '#ffedd5' };
+// LOGIC ON THE STAGE (owner, 2026-10-31, the Judged boards on their own pages):
+// rose's dark-look tile is the approved #4a2a33 and the full rose carries
+// #0b0f1a there; the deep rose #be123c is rose as TEXT on white. A wrong mark
+// on a rose board is ORANGE, never red, because red reads as the accent
+// (StageChrome's LOGIC_BAD rule, restated for the stage board).
+const ROSE = '#fb7185';
 export function accentVars(pastel, look) {
   const dark = look === 'dark' || look === 'darktint';
   const hex = /^#[0-9a-f]{6}$/i.test(String(pastel || '')) ? pastel : null;
   const acc = hex || 'var(--pst-ink)';
+  const rose = !!hex && hex.toLowerCase() === ROSE;
   return {
     '--pst-acc': acc,
-    '--pst-on-acc': hex ? RAMP_INK : 'var(--pst-bg)',
-    '--pst-pale': hex ? (dark ? `color-mix(in srgb, ${hex} 30%, #0b0f1a)` : (PALE[hex.toLowerCase()] || softGround(hex, 0.62))) : 'var(--pst-tint)',
+    '--pst-on-acc': hex ? (rose && dark ? '#0b0f1a' : RAMP_INK) : 'var(--pst-bg)',
+    '--pst-deep': rose ? (dark ? ROSE : '#be123c') : 'var(--pst-ink)',
+    '--pst-pale': hex ? (dark ? (rose ? '#4a2a33' : `color-mix(in srgb, ${hex} 30%, #0b0f1a)`) : (PALE[hex.toLowerCase()] || softGround(hex, 0.62))) : 'var(--pst-tint)',
     '--pst-cell': dark ? '#1a2130' : '#f1f4f8',
     '--pst-cell2': dark ? '#242c3d' : '#e3e8ee',
     '--pst-cell-line': dark ? '#3a4458' : '#c9d2dc',
     '--pst-mute': dark ? '#a9b3c4' : '#3b4656',
     // Wrong / error marks: red on pale red in light, pale red on deep red in dark.
-    '--pst-bad': dark ? '#fca5a5' : '#b91c1c',
-    '--pst-bad-bg': dark ? '#3b1518' : '#fee2e2',
+    '--pst-bad': rose ? (dark ? '#fb923c' : '#c2410c') : (dark ? '#fca5a5' : '#b91c1c'),
+    '--pst-bad-bg': rose ? (dark ? '#3a200e' : '#ffedd5') : (dark ? '#3b1518' : '#fee2e2'),
   };
 }
 

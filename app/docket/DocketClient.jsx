@@ -72,6 +72,8 @@ import { T } from '@/lib/theme';
 import { solveDay, CHOICE_KEYS, showSolution, WORD } from './engine';
 import { endGrade } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { LOGIC_STAGE_CSS, embedLook } from '../LogicStage';
 
 const COLORS = {
   ink: T.ink,
@@ -346,6 +348,7 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
   const [copied, setCopied] = useState(false);
   const [armGive, setArmGive] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
   const [setupOpen, setSetupOpen] = useState(true);
   // Bumped by a replay so the sketch (keyed on it) starts clean.
   const [sketchGen, setSketchGen] = useState(0);
@@ -582,10 +585,103 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
   const hyb = PUZZLE.spec.k === 'hyb';
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={STAGE ? ('stage-page' + (EMBED ? ' lgs-hosted' : '')) : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Docket plays on the shared white stage
+          at every width, in the rose look approved inside Judged: the setup and
+          conditions on the page, the question with its choices as pale rose
+          tiles (the right one full rose at the reveal, a wrong pick in orange),
+          the sketch, one line, and the foot's Clock, How to play and Give up
+          (Docket's own two-tap give up). The progress pips are gone. Every
+          control is the board's own handler. Inside Judged it is drawn inline. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !loftRevealed) && (
+        <PlayStage bg={gameColor('docket')} label="Docket" wide inline={!!EMBED} look={embedLook(EMBED)}
+          eyebrow={playing ? `Question ${idx + 1} of ${TOTAL}${PUZZLE.sunday ? ' · Sunday Edition' : ''}` : 'Docket closed'}
+          top={(
+            <>
+              <style dangerouslySetInnerHTML={{ __html: LOGIC_STAGE_CSS + DKS_CSS }} />
+              <div className="dks-grid">
+                <div className="lgs-sec dks-brief">
+                  <div className="dks-head">
+                    <span className="lgs-lab">{PUZZLE.title}</span>
+                    <button type="button" className="pst-tb lgs-sm" aria-expanded={setupOpen} onClick={() => setSetupOpen((v) => !v)}>{setupOpen ? 'Hide setup' : 'Show setup'}</button>
+                  </div>
+                  {setupOpen && <p className="lgs-p">{PUZZLE.setup}</p>}
+                  <div className="lgs-rules" role="list" aria-label="Conditions">
+                    {PUZZLE.rules.map((r, i) => (
+                      <div className="lgs-rule" role="listitem" key={i}><span className="lgs-n">{i + 1}</span><span className="lgs-rt">{r}</span></div>
+                    ))}
+                  </div>
+                </div>
+                {playing && (
+                  <div className="lgs-sec dks-q">
+                    <div className="dks-qt">{q.q}</div>
+                    {q.choices.map((c, ci) => {
+                      const off = isCrossed(idx, ci);
+                      let cls = 'lgs-tile dks-choice';
+                      if (off && !revealed) cls += ' off';
+                      if (revealed) {
+                        if (ci === answerKey) cls += ' on';
+                        else if (ci === picked) cls += ' wrong';
+                      }
+                      const mono = q.kind === 'accept' || q.kind === 'list';
+                      const boxes = q.kind === 'accept' && (PUZZLE.spec.k === 'seq' || PUZZLE.spec.k === 'hyb');
+                      return (
+                        <div className="dks-row" key={ci}>
+                          <button type="button" className={cls} disabled={revealed || picked !== null} onClick={() => answer(ci)}>
+                            <span className="k">{CHOICE_KEYS[ci]}</span>
+                            {boxes ? (
+                              <span className="t dks-seq" aria-label={c}>
+                                {seqBoxes(c).map((b, bi) => (
+                                  <span key={bi} className="dks-sbox" aria-hidden="true">{b.l}{b.star && <sup>*</sup>}</span>
+                                ))}
+                              </span>
+                            ) : (
+                              <span className={mono ? 't mono' : 't'}>{c}</span>
+                            )}
+                            {revealed && ci === answerKey && <Check size={18} className="m" />}
+                            {revealed && ci === picked && ci !== answerKey && <X size={18} className="m" />}
+                          </button>
+                          <button type="button" className={'dks-x' + (off ? ' on' : '')} disabled={revealed || picked !== null} aria-pressed={off}
+                            title={off ? `Bring ${CHOICE_KEYS[ci]} back` : `Cross off ${CHOICE_KEYS[ci]}`}
+                            aria-label={off ? `Bring choice ${CHOICE_KEYS[ci]} back` : `Cross off choice ${CHOICE_KEYS[ci]}`}
+                            onClick={() => toggleCross(ci)}><X size={16} /></button>
+                        </div>
+                      );
+                    })}
+                    {revealed && (
+                      <div className="lgs-box dks-note">
+                        <b className={picked === answerKey ? undefined : 'lgs-bad'}>{picked === answerKey ? 'Correct.' : `Not quite. The answer is ${CHOICE_KEYS[answerKey]}.`}</b>
+                        <span>{q.note}</span>
+                        <button type="button" className="pst-tb lgs-pri wide" onClick={next}>{idx + 1 >= TOTAL ? 'Finish' : 'Next question'}</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {playing && (
+                  <div className="dks-sk">
+                    <DocketSketch
+                      key={`${PUZZLE.num}:${sketchGen}:stage`}
+                      spec={PUZZLE.spec}
+                      total={TOTAL}
+                      notes={g.notes}
+                      notesOpen={!!g.notesOpen}
+                      onNotes={(v) => setG((cur) => ({ ...cur, notes: v }))}
+                      onToggleNotes={() => setG((cur) => ({ ...cur, notesOpen: !cur.notesOpen }))}
+                    />
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+          foot={playing
+            ? `${correct} right · ${wrong} wrong · ${TOTAL - correct - wrong} to go`
+            : `${score} of ${TOTAL} right`}
+          giveUp={{ armed: !!armGive, onPress: giveUp, armedLabel: 'Tap again to end the docket now' }}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="docket" name="Docket" collapsed={!!g.t0} loft={LOFT} />
@@ -1025,3 +1121,47 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-31, the approved Judged look): the
+// conditions on the page, each choice a pale rose tile with its cross-off
+// beside it (lit full rose when crossed), the right answer full rose at the
+// reveal and a wrong pick ruled in orange. The sketch keeps its own markup and
+// is re-inked onto the stage's tokens here.
+const DKS_CSS = `
+.pst .dks-grid{display:flex;flex-direction:column;gap:18px;}
+@media (min-width:900px){.pst.wide .dks-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"brief q" "sk q";gap:20px 24px;align-items:start;}
+  .pst.wide .dks-brief{grid-area:brief;}.pst.wide .dks-q{grid-area:q;}.pst.wide .dks-sk{grid-area:sk;}}
+.pst .dks-head{display:flex;align-items:center;gap:8px;justify-content:space-between;}
+.pst .dks-qt{font-size:clamp(18px,5vw,21px);font-weight:800;line-height:1.35;}
+.pst .dks-row{display:flex;gap:6px;align-items:stretch;}
+.pst .dks-choice{flex:1;min-width:0;display:flex;gap:10px;align-items:center;text-align:left;padding:9px 12px;min-height:52px;font-size:15px;font-weight:700;line-height:1.4;border-radius:13px;}
+.pst .dks-choice .k{flex:none;width:26px;height:26px;border-radius:7px;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;}
+.pst .dks-choice .t{flex:1;min-width:0;}
+.pst .dks-choice .m{flex:none;margin-left:auto;}
+.pst .dks-choice:disabled{cursor:default;}
+.pst .dks-choice.off{background:transparent;opacity:.5;}
+.pst .dks-choice.off .t{text-decoration:line-through;}
+.pst .dks-choice.wrong{background:var(--pst-bg);border-color:var(--pst-bad);color:var(--pst-bad);}
+.pst .dks-choice.wrong .k{background:var(--pst-bad);border-color:var(--pst-bad);color:var(--pst-bg);}
+.pst .dks-seq{display:inline-flex;flex-wrap:wrap;gap:4px;}
+.pst .dks-sbox{width:28px;height:32px;border:2px solid currentColor;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;background:var(--pst-bg);color:var(--pst-ink);}
+.pst .dks-choice.on .dks-sbox{background:transparent;color:var(--pst-on-acc);}
+.pst .dks-x{flex:none;width:46px;border:2px solid var(--pst-ink);border-radius:13px;background:var(--pst-bg);display:flex;align-items:center;justify-content:center;padding:0;}
+.pst .dks-x.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .dks-x:disabled{cursor:default;opacity:.35;}
+.pst .dks-x.on:disabled{opacity:.8;}
+.pst .dks-note{display:flex;flex-direction:column;gap:6px;text-align:left;}
+.pst .dks-note b{font-size:15px;font-weight:800;}
+.pst .dks-note span{font-size:14px;font-weight:600;line-height:1.55;}
+.pst .dks-note .pst-tb{margin-top:6px;}
+.pst .dks-sk{--stg-ink:var(--pst-ink);--stg-ink2:var(--pst-ink);--stg-mute:var(--pst-mute);--stg-acc:var(--pst-acc);--stg-acc-ink:var(--pst-deep);--stg-onramp:var(--pst-on-acc);--stg-surf:transparent;--stg-surf2:var(--pst-pale);--stg-raise:var(--pst-bg);--stg-cell:var(--pst-pale);--stg-cell-line:var(--pst-ink);--stg-line:var(--pst-cell-line);--stg-line2:var(--pst-ink);--stg-line3:var(--pst-ink);}
+.pst .dks-sk .dk-panel{background:transparent;border:0;box-shadow:none;padding:0;margin:0;}
+.pst .dks-sk .dk-sklab,.pst .dks-sk .dk-skfree,.pst .dks-sk .dk-traylab,.pst .dks-sk .dk-zlab,.pst .dks-sk .dk-slotn{font-family:inherit;}
+.pst .dks-sk :is(.dk-tile,.dk-slot,.dk-mark):not(.fr){border-width:2px;border-style:solid;border-color:var(--pst-ink);font-family:inherit;font-weight:800;}
+.pst .dks-sk .dk-tile:not(.fr){background:var(--pst-pale);border-radius:10px;}
+.pst .dks-sk .dk-slot:not(.fr),.pst .dks-sk .dk-zone{border-radius:12px;}
+.pst .dks-sk .dk-slot.full:not(.fr){background:var(--pst-bg);}
+.pst .dks-sk :is(.dk-tile.sel,.dk-mark.on){background:var(--pst-acc);border-color:var(--pst-ink);color:var(--pst-on-acc);}
+.pst .dks-sk .dk-notes{border:2px solid var(--pst-ink);border-radius:12px;background:var(--pst-bg);font-family:inherit;}
+.pst .dks-sk .dk-fold{font-family:inherit;min-height:36px;}
+`;

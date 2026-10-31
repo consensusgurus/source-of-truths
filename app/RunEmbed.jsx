@@ -73,7 +73,7 @@ function playRunBeat(host, res) {
   } catch (e) { return null; }
 }
 
-export default function RunEmbed({ onResult, theme, help = 0, autostart = false, children }) {
+export default function RunEmbed({ onResult, theme, look = null, help = 0, autostart = false, children }) {
   const hostRef = useRef(null);
   const beatRef = useRef(null);
   const stopBeat = () => {
@@ -90,6 +90,9 @@ export default function RunEmbed({ onResult, theme, help = 0, autostart = false,
   useEffect(() => { stopBeat(); }, [childKey]);
   const value = useMemo(() => ({
     theme: theme === 'light' ? 'light' : 'dark',
+    // The run's own look (lib/stage-look.js), for a board drawn on the white
+    // stage (app/PlayStage.jsx), which follows the run rather than the site.
+    look: look || null,
     help,
     // The run deals its grids straight in: the client skips its own start page.
     autostart: !!autostart,
@@ -106,7 +109,7 @@ export default function RunEmbed({ onResult, theme, help = 0, autostart = false,
         try { onResult && onResult(res ? { ...res, beatMs } : res); } catch (e) {}
       }, 0);
     },
-  }), [onResult, theme, help, autostart]);
+  }), [onResult, theme, look, help, autostart]);
   return (
     <RunEmbedContext.Provider value={value}>
       <div ref={hostRef} style={{ display: 'contents' }}>{children}</div>
