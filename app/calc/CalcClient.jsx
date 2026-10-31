@@ -70,6 +70,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { FAIL } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 // Calc identity is ROSE. The Numbers row is crowded and every neighbouring hue
 // was already spoken for: Suds orange, Quilt magenta, Carve violet, Cages
@@ -289,6 +290,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -709,6 +711,32 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
     window.addEventListener('resize', measure);
     return () => { window.removeEventListener('resize', measure); if (ro) ro.disconnect(); };
   }, [shownRoute, CELLS, hydrated]);
+  // The same route line on the stage board (its own grid, its own measure).
+  const stageGridRef = useRef(null);
+  const [stageLink, setStageLink] = useState(null);
+  useEffect(() => {
+    const el = stageGridRef.current;
+    if (!el) { setStageLink(null); return undefined; }
+    const measure = () => {
+      const kids = el.children;
+      if (!kids || kids.length < CELLS || shownRoute.length < 2) { setStageLink(null); return; }
+      const bb = el.getBoundingClientRect();
+      if (!bb.width) { setStageLink(null); return; }
+      const next = {
+        w: bb.width, h: bb.height,
+        pts: shownRoute.map((i) => {
+          const r = kids[i].getBoundingClientRect();
+          return `${(r.left - bb.left + r.width / 2).toFixed(1)},${(r.top - bb.top + r.height / 2).toFixed(1)}`;
+        }).join(' '),
+      };
+      setStageLink((cur) => (cur && cur.w === next.w && cur.h === next.h && cur.pts === next.pts ? cur : next));
+    };
+    measure();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    if (ro) ro.observe(el);
+    window.addEventListener('resize', measure);
+    return () => { window.removeEventListener('resize', measure); if (ro) ro.disconnect(); };
+  }, [shownRoute, CELLS, phoneStage, g.t0, g.status, revealed]);
 
   // Shared rules body — rendered in both the how-to-play modal and the start gate.
   const rulesBody = (
@@ -735,6 +763,78 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-30): Calc plays on the shared white stage at
+          every width: the target and the tape, the keys, three tools, one line,
+          and the foot's Clock, How to play and Give up. Every control is the
+          board's own handler, so scoring, saves and posting are untouched. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (
+        <PlayStage bg={gameColor('calc')} label="Calc"
+          eyebrow={PUZZLE.sunday ? 'Sunday Edition · three targets on one board' : 'Walk the keys from start to end'}
+          top={(
+            <>
+              <style dangerouslySetInnerHTML={{ __html: CLS_CSS }} />
+              {TARGETS.length > 1 && (
+                <div className="cls-tgts" role="group" aria-label="Targets">
+                  {TARGETS.map((t, k) => {
+                    const got = !!g.routes[k];
+                    const act = k === g.slot;
+                    return (
+                      <button key={k} type="button" className={'cls-tg' + (got ? ' got' : '') + (act ? ' on' : '')} onClick={() => (playing ? pickSlot(k) : setG((cur) => ({ ...cur, slot: k })))}
+                        aria-pressed={act} aria-label={`Target ${k + 1}, ${t.target}${got ? ', landed' : (act ? ', walking now' : '')}`}>
+                        {t.target}{got ? ICON.check : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="cls-tape">
+                <div className="tg"><i>Target</i><b>{TARGETS[g.slot].target}</b></div>
+                <div className="mid"><i>The tape</i><b className={tapeRoute.length === 1 && playing ? 'hint' : undefined}>{tapeRoute.length === 1 && playing ? 'Tap a key touching Start' : mathText(tapeText)}</b></div>
+                <div className={'hd' + (tapeAtEnd ? (tapeTotal === TARGETS[g.slot].target ? ' good' : ' bad') : '')}><i>{tapeAtEnd ? 'Ends on' : 'Holding'}</i>
+                  <b>{tapeAtNumber ? tapeTotal : <>{evalRoute(N, PUZZLE.cells, tapeRoute.slice(0, -1))} {mathText(glyphOf(PUZZLE.cells[tapeHead]))}</>}</b>
+                </div>
+              </div>
+              <div className={'cls-board' + (N > 6 ? ' n7' : '')}>
+                {stageLink && (
+                  <svg width={stageLink.w} height={stageLink.h} viewBox={`0 0 ${stageLink.w} ${stageLink.h}`} aria-hidden="true">
+                    <polyline points={stageLink.pts} fill="none" stroke="var(--pst-ink)" strokeWidth={N > 6 ? 5 : 6} strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+                <div ref={stageGridRef} className="cls-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+                  {Array.from({ length: CELLS }).map((_, idx) => {
+                    const v = PUZZLE.cells[idx];
+                    const num = isNumCell(N, idx);
+                    const on = shownRoute.includes(idx);
+                    const isHead = playing && idx === head;
+                    const term = idx === 0 || idx === END;
+                    const canGo = playing && reachable.has(idx);
+                    const blocked = playing && !on && neighboursOf(N, head).includes(idx) && !reachable.has(idx);
+                    const cls = ['cls-k', num ? 'n' : 'o', term ? 'term' : '', on ? 'on' : '', isHead ? 'head' : '', canGo ? 'reach' : '', blocked ? 'blk' : ''].filter(Boolean).join(' ');
+                    return (
+                      <button key={idx} type="button" className={cls} onClick={() => tap(idx)}
+                        aria-label={`${num ? 'number' : 'operator'} ${glyphOf(v)}${term ? (idx === 0 ? ', start' : ', end') : ''}${canGo ? ', you can step here' : ''}${isHead ? ', you are here' : ''}`}>
+                        <span>{mathText(glyphOf(v))}</span>
+                        {term && <em>{idx === 0 ? 'Start' : 'End'}</em>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+          bottom={playing ? (
+            <div className="pst-tools">
+              {hintOk && !g.hintUsed && <button type="button" className="pst-tb" onClick={useHint}>{ICON.bulb}Hint</button>}
+              <button type="button" className="pst-tb" onClick={stepBack} disabled={path.length < 2}>Undo</button>
+              <button type="button" className="pst-tb" onClick={clearRoute} disabled={path.length < 2}>Start over</button>
+            </div>
+          ) : null}
+          foot={toast ? mathText(toast) : (playing
+            ? `${path.length} key${path.length === 1 ? '' : 's'} walked · ${reachable.size} way${reachable.size === 1 ? '' : 's'} on · ${g.tries} ${g.tries === 1 ? 'try' : 'tries'} spent${TARGETS.length > 1 ? ` · ${landed} of ${TARGETS.length} landed` : ''}`
+            : (won ? 'Every target landed' : `${landed} of ${TARGETS.length} landed`))}
+          giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to give up and see a route' }}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="calc" name="Calc" collapsed={started} loft={LOFT} />
@@ -1253,3 +1353,43 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-30 mockup): number keys are light grey
+// squares, operators white circles, the route mint, the keys you can step to
+// pale mint, and the line through the route in ink.
+const CLS_CSS = `
+.cls-tgts{display:flex;justify-content:center;gap:8px;}
+.pst .cls-tg{min-height:44px;min-width:76px;padding:0 14px;border-radius:999px;border:2px solid var(--pst-ink);background:transparent;font-size:18px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-variant-numeric:tabular-nums;}
+.pst .cls-tg.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .cls-tg.got{background:var(--pst-pale);}
+.pst .cls-tg.on svg,.pst .cls-tg.on *{color:var(--pst-on-acc);}
+.cls-tape{display:flex;gap:8px;}
+.cls-tape>div{border:2px solid var(--pst-ink);border-radius:14px;padding:7px 12px;display:flex;flex-direction:column;gap:1px;min-width:0;}
+.cls-tape .tg{background:var(--pst-acc);flex:0 0 auto;min-width:84px;}
+.cls-tape .tg *{color:var(--pst-on-acc);}
+.cls-tape .mid{flex:1;}
+.cls-tape .hd{flex:0 0 auto;min-width:84px;background:var(--pst-cell);text-align:right;}
+.cls-tape .hd.good{background:var(--pst-acc);}
+.cls-tape .hd.good *{color:var(--pst-on-acc);}
+.cls-tape .hd.bad{background:var(--pst-bad-bg);border-color:var(--pst-bad);}
+.cls-tape .hd.bad *{color:var(--pst-bad);}
+.cls-tape i{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);}
+.cls-tape b{font-size:22px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;overflow:hidden;direction:rtl;text-align:left;unicode-bidi:plaintext;}
+.cls-tape .hd b{direction:ltr;text-align:right;}
+.cls-tape b.hint{font-size:14px;line-height:1.3;white-space:normal;direction:ltr;padding-top:4px;}
+.cls-board{position:relative;align-self:center;width:min(100%, 440px);}
+.cls-board.n7{width:min(100%, 480px);}
+.cls-board svg{position:absolute;left:0;top:0;z-index:1;pointer-events:none;}
+.cls-grid{display:grid;gap:clamp(4px, 1.6vw, 10px);}
+.pst .cls-k{position:relative;aspect-ratio:1;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-cell);font-size:clamp(17px, 5.6vw, 26px);font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;touch-action:manipulation;min-width:0;}
+.cls-board.n7 .cls-k{font-size:clamp(15px, 4.8vw, 22px);border-radius:10px;}
+.pst .cls-k.o{border-radius:50%;background:var(--pst-bg);border-color:var(--pst-cell-line);font-size:clamp(15px, 5vw, 22px);}
+.pst .cls-k > span{position:relative;z-index:2;}
+.pst .cls-k em{position:absolute;bottom:1px;left:0;right:0;font-style:normal;font-size:8px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;z-index:2;}
+.pst .cls-k.term:not(.on){background:var(--pst-cell2);}
+.pst .cls-k.reach{background:var(--pst-pale);border-color:var(--pst-ink);}
+.pst .cls-k.on{background:var(--pst-acc);border-color:var(--pst-ink);}
+.pst .cls-k.on *{color:var(--pst-on-acc);}
+.pst .cls-k.head{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.pst .cls-k.blk{opacity:.4;cursor:default;}
+`;

@@ -1676,3 +1676,32 @@ The **?** opens it from every header: StageChrome's cap, the phone StageTopBar (
 `lib/stage-help.js`, which the cap registers its `onHelp` into), and the desktop Layout C cap
 (`useStageHelp`). The How to play link at the foot of the page is gone (`ReportIssue` no longer
 draws it; `onHelp` is still accepted). The page foot keeps Report an issue.
+
+## The Numbers dailies and the board accents on the stage (owner, 2026-10-30)
+
+Calc, Carve, Cipher, Crunch, Sums and Tally play on `PlayStage` at every width (the same
+`STAGE && phoneStage && !!g.t0 && (playing || !revealed)` mount the other stage games use),
+drawn from the owner-approved mockups. Each client keeps its old board behind the stage
+untouched; the stage only draws and calls the board's own handlers, so scoring, saves,
+posting, hints, share text, archives and the finish are unchanged. In-page Reveal buttons
+became the foot's two-tap Give up (Cipher had no arm step, so it gained a local `armGive`).
+On-screen digit pads (Cipher, Sums) hide on a desktop with a fine pointer, where the keyboard
+types the digits.
+
+**Board accents.** `PlayStage` now sets, from the game's pastel and the look: `--pst-acc`
+(the full pastel: picked, active, confirmed; always carries `--pst-on-acc`, the dark ink),
+`--pst-pale` (the pale tint: secondary highlights, from the brief's table: mint #d1fae5, sky
+#e0f4fe, rose #ffe4e6, gold #fdf3d7, orange #ffedd5), and `--pst-cell` / `--pst-cell2` /
+`--pst-cell-line` / `--pst-mute` for grey squares, rules and muted type. Dark looks sink the
+pale and grey steps onto the near-black page. Plain squares stay white or light grey, never
+coloured. Errors use `--pst-bad` on `--pst-bad-bg` (red #b91c1c on #fee2e2 in light, pale red on deep red in dark).
+
+## The phone stage title is centred on the screen (owner, 2026-10-30)
+
+`app/StageTopBar.jsx`, under 900px: the title block is absolutely positioned on the bar's true
+centre; both sides reserve `--stb-side`, the wider of the back pill and the right-hand button
+group (measured with a ResizeObserver), so the name never runs under a button, shrinks with
+the screen (`clamp(15px, 4.9vw, 19px)`) and then ends in an ellipsis. Share is an icon-only
+34px round button on phones (aria-label "Share"). Desktop is unchanged. Every stage page that
+draws this bar inherits it: PlayStage, WordStage, BracketStage, GauntletStage and the run
+screens, StageChrome's simple header, and Price Check's week.
