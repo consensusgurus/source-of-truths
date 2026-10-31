@@ -562,3 +562,49 @@ color** (`darktint`) only (`lib/stage-look.js`: `MAIN_LOOKS`, `mainLook`, `nextM
 `app/layout.js`. The gauntlet and run stages (Trivia Gauntlet etc.) keep all five looks on their own key
 (`GAUNTLET_LOOK_KEY`); `StageTopBar` takes `allLooks` there. In those two looks `--stg-acc` is ink, so a
 grid's selected cell must not use it alone: the crossword cursor (Emcee, Encore) takes `--sp-g`.
+
+## The run finale: one centred screen, then the glide (owner, 2026-10-31)
+
+Every run's fresh finish now opens on `app/RunFinale.jsx`, mounted BY `GauntletEndStage`
+(app/GauntletScreens.jsx) when it is handed a `finale` prop, `sweep` is on, the run has a ladder
+and motion is allowed. Approved on the "Run Ending Mockups" artifact (option A, the Ring). It
+replaced the end page's own sweep + count-up + climb, Crossed Up's ripple curtain
+(`curtainOn` is forced false) and, for the gauntlets, nothing else (they had no curtain since
+2026-10-25).
+
+- **Part one, the recap ring.** One arc per leg, sized by `finale.legMax[i]` (the gauntlets use
+  the section's question count; Dojo `dojoWeight`, Crossed `crossedWeight`, Judged
+  `lawCaseMaxFor`, Room the part, Price Check 10, Passport the leg's `max`). The ground takes
+  each leg's colour in the Color look only (`pal.look === 'color' && !paper`); every other look,
+  and Judged's white page, keep the page ground. The total counts up DEAD CENTRE (nothing else
+  sits under it in part one). One-life runs (`oneLife`, the RunClient gauntlets) get the red
+  miss tick; `legRanks` (RunClient only) draws "#14 of 218 on History today" under the ring.
+- **Part two, the run's own title piece** (`FINALE_PIECE` in RunFinale): books (Trivia
+  Gauntlet, Encore), flask (Science), calculator (Math), dictionary (English), belt (Dojo, belt
+  colours from the ladder `chip`), name tag (Room), school letters (Judged, `short` + `chip`),
+  wallet (Price Check, card colours), passport (Passport, `chip` cover + `vf` visa-free count),
+  morning papers (Crossed Up). The ring clears, the score rises to the top, the piece climbs the
+  ladder, then the title and standing land under it.
+- **The glide.** Score, unit, title and standing fly to `[data-rf="score|unit|title|rank"]` on
+  the desktop page (the title target is the earned rung's name in TitleClimb / FlaskClimb), or
+  into the rolled bar `[data-rf="bar"]` on a phone (RunRoll starts rolled, `arrived`). While the
+  finale plays the page underneath is `.gsx-held` (rises paused) and `.gsx-fly` (targets hidden);
+  the glide releases the rises, the end hides the targets no more. The page arrives LANDED: no
+  second count, no second climb.
+- **Any tap or key skips to the glide.** Pop-ups (MoreRunsPop, GauntletMorePop, EncorePop,
+  RunNudgePop) are hidden while `html.rfx-on` is set and show once the finale hands over.
+- **Fresh finishes only.** Each client passes `finale` only when `doneAtLoad.current === false`;
+  the gauntlets also on `?ending=1` (review). Practice passes never get it.
+- **Adding a run:** pass `finale={{ key, legWord, legMax }}` on its GauntletEndStage and add its
+  piece to `FINALE_PIECE` (anything unlisted gets the books).
+
+## Sport and Deep questions carry a tag (owner, 2026-10-31)
+
+`GauntletStage`'s kicker is a full-ink pill now (it was 12px at 42% ink and nobody saw it).
+Deep shows its day topic as before. Sport shows its sport: NFL, NBA, MLB and Soccer from the
+question's lane, and the "Everything Else" lane from `app/sport/sport-tags.js` (`SPORT_TAG`, one
+entry per question id; F1, Snooker, Olympics, College football...). `sportTagFor(q)` never gives
+the answer away: a question that asks which sport it is, or whose choices contain the sport (for
+a lane, a choice that IS the lane), reads "Other sports" (or "Sports" for a lane). New Everything
+Else questions read "Other sports" until they are added to the map. Both the Sport daily
+(SportClient) and the runs (run page.js sets `question.sub`) show it.

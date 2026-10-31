@@ -499,7 +499,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   const runSecs = g.t0 && g.tEnd ? Math.round((g.tEnd - g.t0) / 1000) : null;
   // The ladder is lib/passport.js TIERS, bottom to top: each passport its own
   // rung, its cover colour on the chip.
-  const ladder = TIERS.map((t, i) => ({ min: t.min, name: t.name, line: t.line, colour: rampFor(i), chip: t.cv }));
+  const ladder = TIERS.map((t, i) => ({ min: t.min, name: t.name, short: t.short, vf: t.vf, line: t.line, colour: rampFor(i), chip: t.cv }));
   const endBoard = (() => {
     const rows = data && Array.isArray(data.overall) ? data.overall.filter((x) => Number.isFinite(Number(x.total))) : [];
     const isMe = (row) => !!(me && row && me.userKey && row.userKey === me.userKey);
@@ -634,6 +634,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           rowsIn={rowsIn}
           avg={legAvg}
           colLabel="Leg"
+          finale={doneAtLoad.current === false ? { key: 'passport', legWord: 'Leg', legMax: stageSecs.map((s) => (LEGS[s.li] && LEGS[s.li].max) || null) } : null}
           leaderScore={leaderScore}
           topNote={!isTodays ? `${PUZZLE.dateLabel} archive` : null}
           challenge={<>

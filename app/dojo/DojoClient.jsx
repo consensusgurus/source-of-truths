@@ -38,7 +38,7 @@ import RunNextSlot from '../circuits/RunNextSlot';
 import { rampFor } from '@/lib/circuits';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { DOJO_RUN_ID, DOJO_BELTS, DOJO_CLOCK, DOJO_MAX, dojoTierOf, dojoGridPoints, dojoAcc, dojoSpeed } from '@/lib/dojo';
+import { DOJO_RUN_ID, DOJO_BELTS, DOJO_CLOCK, DOJO_MAX, dojoTierOf, dojoGridPoints, dojoAcc, dojoSpeed, dojoWeight } from '@/lib/dojo';
 import RunBackLink from '../circuits/RunBackLink';
 import DyeCurtain from './DyeCurtain';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
@@ -263,7 +263,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
     return out.length ? { rows: out, field: djBd.overallField || djBd.uniquePlayers || null, href: '/dojo/leaderboard' } : null;
   })();
   // The belts, white at the bottom to black at the top.
-  const beltLadder = [...B].reverse().map((t, i) => ({ min: t[0], name: t[1], line: t[5], colour: rampFor(i) }));
+  const beltLadder = [...B].reverse().map((t, i) => ({ min: t[0], name: t[1], line: t[5], colour: rampFor(i), chip: t[3] }));
 
   return (
     <div className="stage-page dj" data-sot-wait="" data-stage-theme="dark" style={{ ...VARS, minHeight: '100vh', background: 'var(--dj-ground)', color: 'var(--dj-ink)', fontFamily: SANS, overflowX: 'hidden', position: 'relative' }}>
@@ -384,6 +384,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           copied={copied}
           onDetails={() => { setEndOpen(false); setSettled(true); }}
           sweep={doneAtLoad.current === false}
+          finale={doneAtLoad.current === false ? { key: 'dojo', legWord: 'Form', legMax: sections.map((s) => dojoWeight(s.key)) } : null}
         />
       )}
       {hydrated && done && !endOpen && (

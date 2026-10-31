@@ -43,7 +43,7 @@ import { isDarkLook } from '@/lib/stage-look';
 import { rampFor } from '@/lib/circuits';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { CROSSED_RUN_ID, CROSSED_BELTS, CROSSED_CLOCK, CROSSED_MAX, crossedTierOf, crossedGridPoints, crossedAcc, crossedSpeed } from '@/lib/crossed';
+import { CROSSED_RUN_ID, CROSSED_BELTS, CROSSED_CLOCK, CROSSED_MAX, crossedTierOf, crossedGridPoints, crossedAcc, crossedSpeed, crossedWeight } from '@/lib/crossed';
 import CrossedCurtain, { gridOf } from './CrossedCurtain';
 import Week, { WEEK_CSS } from './Week';
 
@@ -246,7 +246,10 @@ export default function CrossedClient({ day = null, dateLabel, dateShort, sectio
   // The curtain plays once, on the finish itself: never for reduced motion or a
   // run restored already finished. Tap or any key skips it.
   const reduce = useMemo(() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }, []);
-  const curtainOn = hydrated && done && doneAtLoad.current === false && !reduce && !curtainDone;
+  // THE RUN FINALE REPLACED THE CURTAIN (owner, 2026-10-31): the ending's own
+  // finale (app/RunFinale.jsx, via GauntletEndStage) plays the recap and the
+  // papers, so the old ripple curtain no longer runs first.
+  const curtainOn = false && hydrated && done && doneAtLoad.current === false && !reduce && !curtainDone;
   useEffect(() => {
     if (!hydrated || !done || curtainOn) return undefined;
     const t = setTimeout(() => setSettled(true), doneAtLoad.current === false ? 6500 : 0);
@@ -414,6 +417,7 @@ export default function CrossedClient({ day = null, dateLabel, dateShort, sectio
             onShare={copyShare}
             copied={copied}
             sweep={doneAtLoad.current === false}
+            finale={doneAtLoad.current === false ? { key: 'crossed', legWord: 'Puzzle', legMax: sections.map((s) => crossedWeight(s.key, etToday())) } : null}
           />
         )}
         {/* Every other run on one card, the first time (owner, 2026-10-09). */}

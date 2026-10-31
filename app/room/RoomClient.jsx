@@ -531,6 +531,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
             onShare={copyShare}
             copied={copied}
             sweep={doneAtLoad.current === false}
+            finale={doneAtLoad.current === false ? { key: 'room', legWord: 'Room', legMax: sections.map(() => PART), legSub: sections.map((s) => ({ herd: 'Run with the herd', outwit: 'Dodge it', outrank: 'Call its order', feud: 'Say what it said' }[s.key] || '')) } : null}
           />
         );
       })()}

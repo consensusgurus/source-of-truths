@@ -53,7 +53,7 @@ import { rampFor } from '@/lib/circuits';
 import { categoryColor } from '@/lib/category-ramp';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { LAW_RUN_ID, LAW_CLOCK, LAW_CASE_MAX, LAW_MAX, lawLadderFor, lawTierOf, lawIndexOf, lawCasePoints, lawAcc, lawSpeed } from '@/lib/law-school';
+import { LAW_RUN_ID, LAW_CLOCK, LAW_CASE_MAX, LAW_MAX, lawLadderFor, lawTierOf, lawIndexOf, lawCasePoints, lawAcc, lawSpeed, lawCaseMaxFor } from '@/lib/law-school';
 
 // The run's one colour: Logic's pastel (rose since 2026-10-30).
 const ROSE = categoryColor('Logic');
@@ -272,7 +272,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
     return out.length ? { rows: out, field: bd.overallField || bd.uniquePlayers || null, href: '/judged/leaderboard' } : null;
   })();
   // Today's eight schools, bottom to top, each rung in the school's colour.
-  const ladder = [...L].reverse().map((t, i) => ({ min: t[0], name: t[1], line: t[4], colour: rampFor(i), chip: t[5] }));
+  const ladder = [...L].reverse().map((t, i) => ({ min: t[0], name: t[1], short: t[2], line: t[4], colour: rampFor(i), chip: t[5] }));
 
   return (
     <>
@@ -366,6 +366,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
             onShare={copyShare}
             copied={copied}
             sweep={doneAtLoad.current === false}
+            finale={doneAtLoad.current === false ? { key: 'judged', legWord: 'Case', legMax: sections.map(() => lawCaseMaxFor(etToday())) } : null}
             pastel={ROSE}
             paper
           />
