@@ -59,6 +59,7 @@ import { acceptsAnswer } from '@/lib/dialect-variants';
 import { meRequest } from '@/app/quizMeClient';
 import { endGrade } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -252,6 +253,13 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   const fixRef = useRef(null);
+  // THE STAGE shows one sentence at a time (owner, 2026-10-31 mockup). `cur` is
+  // only which sentence is on screen; Back / Skip move it, and filing a
+  // sentence moves on to the next open one. Nothing about the brief changes.
+  const phoneStage = usePhoneStage();
+  const [cur, setCur] = useState(0);
+  const stFixRef = useRef(null);
+  const filedRef = useRef(null);
 
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
@@ -280,6 +288,18 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
   const started = playing && !!g.t0;
   const focusMode = playing && !showChrome;
   const solvedCount = Object.keys(g.sub).length;
+  useEffect(() => {
+    const prev = filedRef.current;
+    filedRef.current = solvedCount;
+    if (prev == null || solvedCount <= prev || g.status !== 'playing') return;
+    const n = ITEMS.length;
+    for (let k = 1; k <= n; k++) { const j = (cur + k) % n; if (!g.sub[j]) { setCur(j); return; } }
+  }, [solvedCount]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!sel || sel.item !== cur) return;
+    const t = setTimeout(() => { try { stFixRef.current && stFixRef.current.focus(); } catch (e) {} }, 40);
+    return () => clearTimeout(t);
+  }, [sel, cur]);
 
   // tokenized sentences: [{ raw, isWord }] — whitespace kept as its own parts
   const TOKS = useMemo(
@@ -792,6 +812,142 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Stet plays on the shared white stage at
+          every width, from the approved mockup: one sentence at a time on a
+          light grey card, its words to tap (the picked word sky), the fix box
+          or Stet, Back / Skip between sentences, one line, and the foot's
+          Clock, How to play and Give up (two taps, the board's own giveTap).
+          Every control is the board's handler (tapWord, submitFix, stetItem,
+          unstage, finalizeItem), so scoring, saves and posting are unchanged. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const n = ITEMS.length;
+        const i = Math.min(Math.max(0, cur), n - 1);
+        const it = ITEMS[i];
+        const sub = g.sub[i] || null;
+        const staged = pending[i] || [];
+        const armed = sel && sel.item === i ? sel.tok : null;
+        const r = sub ? scoreItem(i, sub) : null;
+        const errTok = WRONG_TOKS[i];
+        const go = (j) => { if (j < 0 || j >= n) return; setSel(null); setFixVal(''); setCur(j); };
+        const words = TOKS[i].map((t, j) => {
+          if (!t.isWord) return <span key={j}>{t.raw}</span>;
+          if (!sub) {
+            const on = armed === j;
+            const st = staged.some((x) => x.tok === j);
+            return (
+              <button key={j} type="button" className={'sts-w' + (on ? ' sel' : '') + (st ? ' stg' : '')} onClick={() => tapWord(i, j)} disabled={!playing}
+                aria-pressed={on} aria-label={`${stripTok(t.raw)}${on ? ', picked' : ''}${st ? ', flagged' : ''}`}>{t.raw}</button>
+            );
+          }
+          const eIdx = errTok.indexOf(j);
+          if (eIdx >= 0) {
+            const e = it.errors[eIdx];
+            const x = (sub.staged || []).find((y) => y.tok === j);
+            const accepted = [e.fix, ...(e.alts || [])].map(normFix);
+            const ok = !!x && acceptsAnswer(accepted, normFix(x.fix));
+            return (
+              <span key={j} className="sts-fx">
+                <s className={x ? undefined : 'bad'}>{t.raw}</s>
+                <span className={'fix' + (ok ? ' ok' : ' bad')}>{ok ? x.fix : e.fix}</span>
+              </span>
+            );
+          }
+          const wasFlag = (sub.staged || []).some((y) => y.tok === j);
+          return <span key={j} className={wasFlag ? 'sts-mis' : 'sts-d'}>{t.raw}</span>;
+        });
+        let note = null;
+        if (sub) {
+          if (!it.errors.length) {
+            note = <>{sub.stet ? 'Clean copy, rightly stetted. ' : <>Nothing was wrong here{(sub.staged || []).length && TOKS[i][sub.staged[0].tok] ? <>, but you flagged &ldquo;{stripTok(TOKS[i][sub.staged[0].tok].raw)}&rdquo;</> : null}. </>}{it.cleanNote}</>;
+          } else {
+            note = (
+              <>
+                {sub.stet ? <>You let it stand, but the desk didn&rsquo;t. </> : null}
+                {it.errors.map((e, k) => {
+                  const x = (sub.staged || []).find((y) => y.tok === errTok[k]);
+                  const ok = acceptsAnswer([e.fix, ...(e.alts || [])].map(normFix), normFix(x ? x.fix : ''));
+                  return (
+                    <span key={k}>
+                      {!x && !sub.stet ? <>Missed: <b>{e.wrong}</b> to <b>{e.fix}</b>. </> : null}
+                      {x && !ok ? <>Right word, but the fix is <b>{e.fix}</b>, not &ldquo;{x.fix}&rdquo;. </> : null}
+                      {e.note}{' '}
+                    </span>
+                  );
+                })}
+              </>
+            );
+          }
+        }
+        const line = toast || (playing
+          ? `Sentence ${i + 1} of ${n} · ${solvedCount} filed`
+          : `${score} ${score === 1 ? 'point' : 'points'} · ${misses} mis-flag${misses === 1 ? '' : 's'}`);
+        return (
+          <PlayStage bg={gameColor('stet')} label="Stet"
+            eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · up to two errors, ' : ''}${PUZZLE.sunday ? 'or pass it clean' : 'Tap the error, or pass it clean'}`}
+            topKey={i}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: STS_CSS }} />
+                <div className="sts-pips" role="group" aria-label={`Sentence ${i + 1} of ${n}`}>
+                  {ITEMS.map((_, k) => (
+                    <button key={k} type="button" className={'sts-pip' + (k === i ? ' now' : '') + (g.sub[k] ? ' done' : '')} onClick={() => go(k)}
+                      aria-label={`Sentence ${k + 1}${g.sub[k] ? ', filed' : ''}${k === i ? ', showing' : ''}`}><i /></button>
+                  ))}
+                </div>
+                <div className={'sts-card' + (sub ? ' filed' : '')}>
+                  <p className="sts-sent">{words}</p>
+                  {sub ? (
+                    <div className="sts-mark">
+                      {sub.stet ? <span className={'sts-stamp' + (it.errors.length ? ' bad' : '')}>Stet</span> : (r && it.errors.length && r.pts === r.value ? <span className="sts-stamp">Fixed</span> : null)}
+                      <b className={r && r.pts === r.value ? 'ok' : (r && r.pts > 0 ? '' : 'bad')}>+{r ? r.pts : 0}</b>
+                    </div>
+                  ) : null}
+                </div>
+                {sub && note ? <div className="pst-note sts-note">{note}</div> : null}
+                {!sub && playing && armed != null ? (
+                  <div className="sts-fixbox">
+                    <div className="sts-lab">Replace <b>&ldquo;{stripTok(TOKS[i][armed].raw)}&rdquo;</b> with</div>
+                    <div className="pst-in">
+                      <input ref={stFixRef} type="text" value={fixVal} autoCapitalize="off" autoCorrect="off" autoComplete="off" spellCheck={false}
+                        placeholder="the correct word" aria-label="Your correction"
+                        onChange={(e) => setFixVal(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') submitFix(); }} />
+                      <button type="button" className="pst-go sts-go" onClick={submitFix}>{MAX_FLAGS === 1 ? 'Fix it' : 'Flag it'}</button>
+                    </div>
+                  </div>
+                ) : null}
+                {!sub && playing && armed == null && staged.length > 0 ? (
+                  <div className="sts-ch">
+                    <div className="pst-chips">
+                      {staged.map((x) => (
+                        <span key={x.tok} className="pst-chip sts-chip"><s>{stripTok(TOKS[i][x.tok].raw)}</s> {x.fix}
+                          <button type="button" className="sts-x" onClick={() => unstage(i, x.tok)} aria-label="Remove this flag">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    <button type="button" className="sts-c fill" onClick={() => finalizeItem(i, staged, false)}>Lock it in</button>
+                    {staged.length < MAX_FLAGS ? <div className="pst-note">Or tap another word if you smell a second error.</div> : null}
+                  </div>
+                ) : null}
+                {!sub && playing && armed == null && staged.length === 0 ? (
+                  <div className="sts-ch">
+                    <button type="button" className="sts-c" onClick={() => stetItem(i)}>Stet: it is clean</button>
+                  </div>
+                ) : null}
+              </>
+            )}
+            bottom={(
+              <div className="pst-tools">
+                <button type="button" className="pst-tb" onClick={() => go(i - 1)} disabled={i === 0}>{ICON.left}Back</button>
+                <button type="button" className="pst-tb" onClick={() => go(i + 1)} disabled={i >= n - 1}>Skip{ICON.right}</button>
+              </div>
+            )}
+            foot={line}
+            giveUp={{ armed: !!armGive, onPress: () => giveTap(), armedLabel: 'Tap again to give up. Filed sentences keep their points' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1158,3 +1314,49 @@ export default function StetClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+
+// The stage board (owner, 2026-10-31 mockup): pips for the five sentences
+// (filed sky, the one showing ink), the sentence big on a light grey card with
+// every word a tap target underlined in light grey, the picked word sky with
+// an ink ring, white answer buttons with an ink border, the primary sky.
+const STS_CSS = `
+/* The shared top bar's phone rule (.stb.has-t{flex:1 1 auto}) is meant for a row; in the
+   stage's column it grew the bar tall and pushed the header down on a short board. */
+.pst-col > .stb.has-t{flex:none;}
+.sts-pips{display:flex;justify-content:center;gap:2px;}
+.pst .sts-pip{border:0;background:transparent;padding:10px 2px;display:flex;}
+.sts-pip i{display:block;width:22px;height:5px;border-radius:3px;background:var(--pst-cell2);}
+.sts-pip.done i{background:var(--pst-acc);}
+.sts-pip.now i{background:var(--pst-ink);}
+.sts-card{border-radius:18px;background:var(--pst-cell);padding:18px 14px;position:relative;}
+.sts-sent{margin:0;text-align:center;font-size:clamp(20px,6.4vw,25px);line-height:1.6;font-weight:800;letter-spacing:-.01em;}
+.pst .sts-w{font:inherit;background:transparent;border:0;padding:0 1px;min-height:40px;text-decoration:underline;text-decoration-color:var(--pst-cell-line);text-decoration-thickness:2px;text-underline-offset:6px;border-radius:7px;touch-action:manipulation;}
+.pst .sts-w:disabled{cursor:default;}
+.pst .sts-w.sel{background:var(--pst-acc);color:var(--pst-on-acc);text-decoration:none;padding:0 6px;box-shadow:inset 0 0 0 2px var(--pst-ink);}
+.pst .sts-w.stg{background:var(--pst-pale);text-decoration:line-through;text-decoration-color:var(--pst-ink);padding:0 6px;}
+.sts-d{opacity:.85;}
+.sts-fx{display:inline-flex;align-items:baseline;gap:6px;}
+.sts-fx s{text-decoration-thickness:3px;color:var(--pst-mute);}
+.pst .sts-fx s.bad{text-decoration-color:var(--pst-bad);}
+.sts-fx .fix{border-radius:7px;padding:0 6px;}
+.sts-fx .fix.ok{background:var(--pst-acc);box-shadow:inset 0 0 0 2px var(--pst-ink);}
+.pst .sts-fx .fix.ok{color:var(--pst-on-acc);}
+.pst .sts-fx .fix.bad{background:var(--pst-bad-bg);color:var(--pst-bad);}
+.pst .sts-mis{background:var(--pst-bad-bg);color:var(--pst-bad);border-radius:6px;padding:0 4px;}
+.sts-mark{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:10px;}
+.sts-stamp{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;border:2px solid var(--pst-ink);border-radius:6px;padding:3px 8px;transform:rotate(-5deg);display:inline-block;}
+.pst .sts-stamp.bad{border-color:var(--pst-bad);color:var(--pst-bad);}
+.sts-mark b{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;}
+.pst .sts-mark b.bad{color:var(--pst-bad);}
+.sts-note{line-height:1.5;}
+.sts-fixbox{display:flex;flex-direction:column;gap:8px;}
+.sts-lab{text-align:center;font-size:14px;font-weight:700;}
+.pst .sts-in input,.pst .sts-fixbox input{background:var(--pst-bg);}
+.pst .sts-go{background:var(--pst-acc);color:var(--pst-on-acc) !important;font-size:16px;font-weight:800;}
+.sts-ch{display:flex;flex-direction:column;gap:10px;}
+.pst .sts-c{display:flex;align-items:center;justify-content:center;min-height:60px;width:100%;box-sizing:border-box;border-radius:16px;padding:12px 18px;background:var(--pst-bg);border:2px solid var(--pst-ink);font-size:18px;font-weight:800;}
+.pst .sts-c.fill{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .sts-chip{display:inline-flex;align-items:center;gap:6px;background:var(--pst-pale);padding:2px 4px 2px 12px;font-size:15px;}
+.pst .sts-x{width:36px;height:36px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;padding:0;}
+`;

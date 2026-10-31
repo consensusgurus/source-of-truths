@@ -67,6 +67,7 @@ import { FREEBIES, norm, tokenize, titleTargets, guessMatches } from './words';
 import { endSolved } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 
 const COLORS = {
   ink: T.ink,
@@ -197,6 +198,11 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
   const [lastNorms, setLastNorms] = useState([]);  // token norms the last guess uncovered (amber flash)
   const [peek, setPeek] = useState(-1);            // index of a hidden token showing its length
   const [confirmGiveUp, setConfirmGiveUp] = useState(false);
+  // The stage's two-tap Give up (owner, 2026-10-31): the foot arms, the second
+  // tap calls the same giveUp() the confirm sheet calls.
+  const [armGive, setArmGive] = useState(false);
+  useEffect(() => { if (!armGive) return undefined; const t = setTimeout(() => setArmGive(false), 3500); return () => clearTimeout(t); }, [armGive]);
+  const phoneStage = usePhoneStage();
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
@@ -498,6 +504,84 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Redact plays on the shared white stage
+          at every width, from the approved mockup: the hidden title, the
+          article on a light grey sheet with every hidden word an ink block,
+          the last guess's words in orange, the guess box, one line, and the
+          foot's Clock, How to play and Give up (two taps, the same giveUp()
+          the old confirm sheet called). Guessing, the % uncovered, saves,
+          posting and the study hold are the board's own. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        let ti = -1;
+        const tok = (tk, key) => {
+          if (!tk.w) return <span key={key}>{tk.t}</span>;
+          ti++;
+          const idx = ti;
+          if (isRevealed(tk)) {
+            const missed = unmasked && !solved && !FREEBIES.has(tk.n) && !revealedNorms.has(tk.n) && tk.n.length >= 3;
+            const fresh = !missed && lastNorms.includes(tk.n);
+            return <span key={key} className={missed ? 'rds-miss' : fresh ? 'rds-w hit' : (FREEBIES.has(tk.n) ? 'rds-fw' : 'rds-w')}>{tk.t}</span>;
+          }
+          const showLen = peek === idx;
+          return (
+            <button key={key} type="button" className={'rds-bk' + (showLen ? ' peek' : '')} onClick={() => setPeek(showLen ? -1 : idx)}
+              aria-label={showLen ? `${tk.t.length} letters` : 'Hidden word, tap for its length'}
+              style={{ width: `${Math.max(1.4, tk.t.length * 0.62).toFixed(2)}em` }}>{showLen ? tk.t.length : ''}</button>
+          );
+        };
+        const line = !playing
+          ? (solved ? `Named in ${g.guesses.length} guesses · ${pct}% uncovered` : unmasked ? `The subject was ${DAY.answer}` : `Not named · ${pct}% uncovered`)
+          : `${pct}% uncovered · ${g.guesses.length} ${g.guesses.length === 1 ? 'guess' : 'guesses'} · tap a block for its length`;
+        return (
+          <PlayStage bg={gameColor('redact')} label="Redact"
+            eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}${PUZZLE.cat || 'Subject'} · ${DIFF_LABEL[PUZZLE.diff] || 'Fair'} · guess the title`}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: RDS_CSS }} />
+                <div className="rds-hd" aria-label={`Title, ${headCount} ${headCount === 1 ? 'word' : 'words'} to uncover`}>
+                  {TITLE_TOKENS.map((tk, i) => {
+                    if (!tk.w) return tk.t.trim() ? <span key={i}>{tk.t}</span> : null;
+                    if (unmasked || FREEBIES.has(tk.n) || tk.n.length < 3 || revealedNorms.has(tk.n)) {
+                      return <span key={i} className={!FREEBIES.has(tk.n) && tk.n.length >= 3 && (solved || revealedNorms.has(tk.n)) ? 'rds-tw on' : 'rds-tw'}>{tk.t}</span>;
+                    }
+                    return <span key={i} className="rds-tbk" aria-label={`Hidden title word, ${tk.t.length} letters`} style={{ width: `${Math.max(1.2, tk.t.length * 0.62).toFixed(2)}em` }} />;
+                  })}
+                </div>
+                <div className="rds-art" aria-label="The article">
+                  {paragraphs.map((para, pi) => <p key={pi}>{para.map((tk, k) => tok(tk, `${pi}-${k}`))}</p>)}
+                </div>
+                {flashText ? <div className="rds-msg" aria-live="polite"><span className={flash && flash.hits > 0 ? 'hit' : undefined}>{flashText}</span></div> : null}
+                {playing ? (
+                  <div className="pst-in rds-in">
+                    <input type="text" value={input} maxLength={40} autoCapitalize="off" autoCorrect="off" autoComplete="off" spellCheck={false}
+                      placeholder="Guess a word" aria-label="Guess a word"
+                      onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') submitGuess(); }} />
+                    <button type="button" className="pst-go rds-go" onClick={submitGuess}>Guess</button>
+                  </div>
+                ) : null}
+                {g.guesses.length > 0 ? (
+                  <div className="rds-hist" aria-label="Your guesses, newest first">
+                    {[...g.guesses].reverse().map((gu, i) => (
+                      <span key={i} className={'rds-g' + (gu.hits > 0 ? ' hit' : '')}>{gu.w}{gu.hits > 0 ? <b>{gu.hits}</b> : null}</span>
+                    ))}
+                  </div>
+                ) : null}
+                {study.active ? (
+                  <div className="rds-study" role="status">
+                    <span>{solved ? 'Here is the whole article.' : 'Here is the whole article. Words you missed are in red.'} {study.staying ? 'Take your time.' : `Your results open in ${study.left || 1}s.`}</span>
+                    <span className="pst-tools">
+                      {!study.staying ? <button type="button" className="pst-tb" onClick={study.stay}>Keep looking</button> : null}
+                      <button type="button" className="pst-tb rds-see" onClick={study.done}>See results</button>
+                    </span>
+                  </div>
+                ) : null}
+              </>
+            )}
+            foot={line}
+            giveUp={{ armed: !!armGive, onPress: () => { if (armGive) { setArmGive(false); giveUp(); } else { setArmGive(true); } }, armedLabel: 'Tap again to give up and reveal the article' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="redact" name="Redact" collapsed={!!g.t0} loft={LOFT} />
@@ -877,3 +961,39 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+
+// The stage board (owner, 2026-10-31 mockup): the title in big type with ink
+// blocks for its hidden words, the article on a light grey sheet with ink
+// blocks for hidden words, found words bold, the last guess's words in orange
+// with an ink ring, the guess box and an orange Guess button.
+const RDS_CSS = `
+/* The shared top bar's phone rule (.stb.has-t{flex:1 1 auto}) is meant for a row; in the
+   stage's column it grew the bar tall and pushed the header down on a short board. */
+.pst-col > .stb.has-t{flex:none;}
+.rds-hd{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 8px;font-size:clamp(22px,6.6vw,30px);font-weight:800;line-height:1.2;letter-spacing:-.01em;text-align:center;}
+.rds-tbk{display:inline-block;height:1em;border-radius:6px;background:var(--pst-ink);}
+.rds-tw.on{background:var(--pst-pale);border-radius:6px;padding:0 4px;}
+.rds-art{border-radius:16px;background:var(--pst-cell);padding:12px 14px;font-size:15px;line-height:1.85;font-weight:500;max-height:min(400px, 46dvh);overflow-y:auto;overscroll-behavior:contain;}
+.rds-art p{margin:0 0 8px;}
+.rds-art p:last-child{margin-bottom:0;}
+.rds-fw{color:var(--pst-mute);}
+.rds-w{font-weight:800;}
+.rds-w.hit{background:var(--pst-acc);border-radius:4px;padding:0 3px;box-shadow:inset 0 0 0 1.5px var(--pst-ink);}
+.pst .rds-w.hit{color:var(--pst-on-acc);}
+.pst .rds-miss{color:var(--pst-bad);font-weight:800;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;}
+.pst .rds-bk{display:inline-block;height:15px;min-width:0;border:0;border-radius:4px;background:var(--pst-ink);vertical-align:-2px;padding:0;font-size:10px;font-weight:800;line-height:15px;text-align:center;color:var(--pst-bg);cursor:pointer;}
+.pst .rds-bk.peek{background:var(--pst-acc);color:var(--pst-on-acc);box-shadow:inset 0 0 0 1.5px var(--pst-ink);}
+.rds-msg{text-align:center;font-size:14px;font-weight:800;}
+.rds-msg span{display:inline-block;background:var(--pst-cell);border-radius:999px;padding:5px 12px;}
+.rds-msg span.hit{background:var(--pst-pale);}
+.pst .rds-in input{background:var(--pst-bg);}
+.pst .rds-go{background:var(--pst-acc);color:var(--pst-on-acc) !important;padding:0 22px;font-size:16px;font-weight:800;}
+.rds-hist{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin;}
+.rds-g{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px;background:var(--pst-cell);white-space:nowrap;}
+.rds-g.hit{background:var(--pst-pale);font-weight:800;}
+.rds-g b{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;}
+.rds-study{display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;font-size:14px;font-weight:700;}
+.pst .rds-see{background:var(--pst-acc);color:var(--pst-on-acc);}
+@media (min-width:900px){.rds-art{font-size:16px;max-height:min(460px, 52dvh);}}
+`;

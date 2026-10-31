@@ -62,6 +62,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endGrade } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -285,6 +286,10 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
   const rowRefs = useRef([]);
   const dragRef = useRef(null);
   const [drag, setDrag] = useState(null); // {from, dy, target} while a desktop drag is live
+  // The stage's tap-to-move (owner, 2026-10-31): the slot of the card picked
+  // up, or null. Presentation only; the move itself is moveInsert().
+  const [pick, setPick] = useState(null);
+  const phoneStage = usePhoneStage();
 
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
@@ -628,7 +633,7 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
     }
     setShake(true);
     setTimeout(() => setShake(false), 500);
-    say(`${right} of ${N} locked in — ${MAX_CHECKS - g2.rows.length} check${MAX_CHECKS - g2.rows.length === 1 ? '' : 's'} left.`);
+    say(`${right} of ${N} locked in, ${MAX_CHECKS - g2.rows.length} check${MAX_CHECKS - g2.rows.length === 1 ? '' : 's'} left.`);
     setG(g2);
   }
 
@@ -730,6 +735,66 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Dating plays on the shared white stage
+          at every width, from the approved mockup: the theme, the five slots
+          in order (1st at the top), cards confirmed by a check filled orange
+          with their year, the card you picked up on pale orange, the Check
+          button, one line, and the foot's Clock, How to play and Give up.
+          Tap a card, then tap the slot it belongs in: that is moveInsert(),
+          the same move the desktop drag makes, so checks, locks, hints,
+          scoring, saves and posting are the board's own. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const ORD = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th'];
+        const pk = pick != null && playing && !lockedSlots[pick] ? pick : null;
+        const tapRow = (slot) => {
+          if (!playing || lockedSlots[slot]) return;
+          if (pk == null) { setPick(slot); return; }
+          if (pk === slot) { setPick(null); return; }
+          moveInsert(pk, slot);
+          setPick(null);
+        };
+        const line = toast || (playing
+          ? `${lockedCount} of ${N} placed · ${checksLeft} check${checksLeft === 1 ? '' : 's'} left · ${pk == null ? 'tap a card to move it' : 'tap where it goes'}`
+          : (won ? `Dated in ${checksUsed} check${checksUsed === 1 ? '' : 's'}` : `${lockedCount} of ${N} placed`));
+        return (
+          <PlayStage bg={gameColor('dating')} label="Dating"
+            eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}${PUZZLE.theme || `${N === 6 ? 'Six' : 'Five'} moments`}`}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: DTS_CSS }} />
+                <h2 className="pst-q dts-q">{!playing ? (won ? 'In order.' : 'The timeline.') : pk == null ? 'Earliest at the top.' : 'Where does it go?'}</h2>
+                <div className={'dts-rail' + (shake ? ' shake' : '')} role="list" aria-label="Your order, earliest first">
+                  {shownOrder.map((ev, slot) => {
+                    const locked = lockedSlots[slot];
+                    const hinted = g.hintUsed && g.hintIdx === ev;
+                    const showYear = locked || (!playing && solShown) || hinted;
+                    const cls = 'dts-c' + (locked ? ' lk' : '') + (pk === slot ? ' pk' : '') + (pk != null && pk !== slot && !locked ? ' to' : '') + (!playing ? ' end' : '');
+                    return (
+                      <button key={ev} type="button" role="listitem" className={cls} onClick={() => tapRow(slot)} disabled={!playing || locked}
+                        aria-pressed={pk === slot}
+                        aria-label={`${ORD[slot]}: ${PUZZLE.events[ev].t}${showYear ? `, ${PUZZLE.events[ev].y}` : ''}${locked ? ', locked' : ''}${pk === slot ? ', picked up' : (pk != null && !locked ? ', tap to move it here' : '')}`}>
+                        <b className="o">{ORD[slot]}</b>
+                        <span className="t">{PUZZLE.events[ev].t}</span>
+                        {showYear ? <span className={'y' + (hinted && !locked ? ' h' : '')}>{PUZZLE.events[ev].y}</span> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+            bottom={playing ? (
+              <div className="dts-acts">
+                {hintOk && !g.hintUsed ? <div className="pst-tools"><button type="button" className="pst-tb" onClick={() => { setPick(null); useHint(); }}>{ICON.bulb}Hint</button></div> : null}
+                <button type="button" className="pst-tb wide dts-ck" onClick={() => { setPick(null); checkOrder(); }} disabled={checksLeft <= 0}>
+                  {ICON.check}Check my order · {checksLeft} left
+                </button>
+              </div>
+            ) : null}
+            foot={line}
+            giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end and show the timeline' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1225,3 +1290,34 @@ export default function DatingClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+
+// The stage board (owner, 2026-10-31 mockup): each slot a white card with an
+// ink border and its place (1st, 2nd, ...); a card a check confirmed is filled
+// orange and shows its year; the card picked up sits on pale orange with a
+// heavy ink ring; the Check button is the one orange control.
+const DTS_CSS = `
+/* The shared top bar's phone rule (.stb.has-t{flex:1 1 auto}) is meant for a row; in the
+   stage's column it grew the bar tall and pushed the header down on a short board. */
+.pst-col > .stb.has-t{flex:none;}
+.pst .dts-q{font-size:clamp(22px,7vw,28px);}
+.dts-rail{display:flex;flex-direction:column;gap:8px;}
+.pst .dts-c{display:flex;align-items:center;gap:10px;min-height:58px;width:100%;box-sizing:border-box;border-radius:16px;padding:8px 14px 8px 12px;background:var(--pst-bg);border:2px solid var(--pst-ink);font-size:16px;line-height:1.25;font-weight:800;text-align:left;touch-action:manipulation;}
+.dts-c .o{flex:none;width:34px;font-size:12px;letter-spacing:.04em;color:var(--pst-mute);}
+.dts-c .t{flex:1;min-width:0;}
+.dts-c .y{flex:none;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;padding:3px 8px;border-radius:999px;background:var(--pst-cell);}
+.dts-c .y.h{background:var(--pst-pale);}
+.pst .dts-c.lk{background:var(--pst-acc);opacity:1;cursor:default;}
+.pst .dts-c.lk *{color:var(--pst-on-acc);}
+.pst .dts-c.lk .y{background:color-mix(in srgb, var(--pst-bg) 55%, transparent);}
+.pst .dts-c.pk{background:var(--pst-pale);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 5px var(--pst-ink);}
+.pst .dts-c.to{background:var(--pst-cell);}
+.pst .dts-c:disabled{opacity:1;cursor:default;}
+.pst .dts-c.end:not(.lk){background:var(--pst-cell);border-color:var(--pst-cell-line);}
+.dts-acts{display:flex;flex-direction:column;gap:8px;}
+.pst .dts-ck{background:var(--pst-acc);color:var(--pst-on-acc);font-weight:800;}
+.pst .dts-ck svg{color:var(--pst-on-acc);}
+.dts-rail.shake{animation:dtsShake .45s ease;}
+@keyframes dtsShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+@media (prefers-reduced-motion: reduce){.dts-rail.shake{animation:none}}
+`;

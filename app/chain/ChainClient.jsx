@@ -53,6 +53,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 
 const COLORS = {
   cream: T.surface,
@@ -241,6 +242,7 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
+  const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -852,6 +854,133 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Chain plays on the shared white stage at
+          every width, drawn from the approved mockup: the box score, the dots
+          and edges, Hint and Restart, one line, and the foot's Clock, How to
+          play and Give up. Drawn edges are ink, the last edge gold, open edges
+          light grey, your boxes gold and the engine's grey; the open chains
+          keep their pale band and count. Every tap is the board's own handler
+          (onEdge, useHint, restartGame, revealEnd), so the engine, scoring,
+          saves and posting are untouched. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const SU = 66, SP = 16;
+        const WS = 2 * SP + cols * SU, HS = 2 * SP + rows * SU;
+        const px = (x) => `${((x / WS) * 100).toFixed(3)}%`;
+        const py = (y) => `${((y / HS) * 100).toFixed(3)}%`;
+        const cq = (u) => `${((u / WS) * 100).toFixed(3)}cqw`;
+        const at = (x, y, w, h) => ({ left: px(x), top: py(y), width: px(w), height: py(h) });
+        const dot = (r, c) => ({ x: SP + c * SU, y: SP + r * SU });
+        const els = [];
+        // the open chains: a pale band from box centre to box centre, and a count
+        {
+          const nb = rows * cols, par = Array.from({ length: nb }, (_, k) => k);
+          const fd = (k) => { while (par[k] !== k) { par[k] = par[par[k]]; k = par[k]; } return k; };
+          const lk = [], deg = new Array(nb).fill(0);
+          let stubs = new Map();
+          const ctr = (k) => ({ x: SP + ((k % cols) + 0.5) * SU, y: SP + (Math.floor(k / cols) + 0.5) * SU });
+          for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+            const k = r * cols + c;
+            if (owner[k] !== 0) continue;
+            if (c + 1 < cols && owner[k + 1] === 0 && isOpenEdge(geo.v(r, c + 1))) { lk.push([k, k + 1]); deg[k]++; deg[k + 1]++; par[fd(k)] = fd(k + 1); }
+            if (r + 1 < rows && owner[k + cols] === 0 && isOpenEdge(geo.h(r + 1, c))) { lk.push([k, k + cols]); deg[k]++; deg[k + cols]++; par[fd(k)] = fd(k + cols); }
+            const st = (r === 0 && isOpenEdge(geo.h(0, c)) ? 1 : 0) + (r === rows - 1 && isOpenEdge(geo.h(rows, c)) ? 1 : 0) + (c === 0 && isOpenEdge(geo.v(r, 0)) ? 1 : 0) + (c === cols - 1 && isOpenEdge(geo.v(r, cols)) ? 1 : 0);
+            if (st) stubs.set(k, st);
+          }
+          const BW = 24;
+          const band = (p, q, key) => els.push(<span key={key} aria-hidden="true" className="chs-band" style={at(Math.min(p.x, q.x) - BW / 2, Math.min(p.y, q.y) - BW / 2, Math.abs(p.x - q.x) + BW, Math.abs(p.y - q.y) + BW)} />);
+          lk.forEach(([a, b], n) => band(ctr(a), ctr(b), `cb${n}`));
+          const comps = new Map();
+          for (let k = 0; k < nb; k++) {
+            if (owner[k] !== 0) continue;
+            const rt = fd(k);
+            if (!comps.has(rt)) comps.set(rt, { boxes: [], links: 0, stubs: 0 });
+            comps.get(rt).boxes.push(k);
+          }
+          lk.forEach(([a]) => { comps.get(fd(a)).links++; });
+          stubs.forEach((n, k) => { comps.get(fd(k)).stubs += n; });
+          comps.forEach((cp, rt) => {
+            if (cp.boxes.length === 1) band(ctr(cp.boxes[0]), ctr(cp.boxes[0]), `co${cp.boxes[0]}`);
+            const loop = cp.stubs === 0 && cp.links === cp.boxes.length && cp.boxes.length > 1;
+            const k0 = cp.boxes.slice().sort((p, q) => deg[p] - deg[q] || p - q)[0];
+            const p = ctr(k0);
+            els.push(<span key={`ct${rt}`} className="chs-tag" style={{ ...at(p.x - 26, p.y - 18, 52, 36), fontSize: cq(9) }}><i>{loop ? 'Loop' : 'Chain'}</i><b style={{ fontSize: cq(15) }}>{cp.boxes.length}</b></span>);
+          });
+        }
+        // the boxes already taken
+        for (let k = 0; k < rows * cols; k++) {
+          const o = owner[k];
+          if (o === 0) continue;
+          const x = SP + (k % cols) * SU + 5, y = SP + Math.floor(k / cols) * SU + 5;
+          els.push(<span key={`cx${k}`} className={'chs-box ' + (o === 1 ? 'mine' : 'foe')} style={{ ...at(x, y, SU - 10, SU - 10), fontSize: cq(12) }}>{o === 1 ? 'You' : 'Them'}</span>);
+        }
+        // every edge: drawn (ink, the last one gold) or open (grey, tappable on your move)
+        const edge = (e, hz, r, c) => {
+          const a = dot(r, c);
+          const i = view.slotOf(e);
+          const open = i !== undefined && view.openIdx.has(i);
+          const isLast = i !== undefined && i === view.last;
+          const isKey = revealKey && i === keySlot;
+          const hinted = playing && g.hintUsed && open && hintSet.has(i);
+          const hot = open && myTurn && hoverEdge === i;
+          const T2 = 30, GAP = 8, LEN = SU - 2 * GAP;
+          const box = hz ? at(a.x + GAP, a.y - T2 / 2, LEN, T2) : at(a.x - T2 / 2, a.y + GAP, T2, LEN);
+          const bar = hz ? { width: '100%', height: cq(6) } : { width: cq(6), height: '100%' };
+          const cls = 'chs-ed' + (open && !isKey ? '' : ' on') + (isLast ? ' last' : '') + (isKey ? ' key' : '') + (hinted ? ' hint' : '') + (hot ? ' hot' : '') + (open && myTurn ? ' live' : '');
+          const where = hz ? `Top edge, row ${r + 1}, box ${c + 1}` : `Side edge, row ${r + 1}, line ${c + 1}`;
+          if (open && playing && started && !isKey) {
+            els.push(
+              <button key={`ce${e}`} type="button" className={cls} style={box}
+                aria-label={`${where}${hinted ? ', one of the three hinted' : ''}`}
+                onMouseEnter={() => setHoverEdge(i)} onMouseLeave={() => setHoverEdge(null)}
+                onClick={() => onEdge(i)}><i style={bar} /></button>
+            );
+          } else {
+            els.push(<span key={`ce${e}`} className={cls} style={box} role="img" aria-label={`${where}, ${open ? 'open' : 'drawn'}${isLast ? ', the last line' : ''}`}><i style={bar} /></span>);
+          }
+        };
+        for (let r = 0; r <= rows; r++) for (let c = 0; c < cols; c++) edge(geo.h(r, c), true, r, c);
+        for (let r = 0; r < rows; r++) for (let c = 0; c <= cols; c++) edge(geo.v(r, c), false, r, c);
+        for (let r = 0; r <= rows; r++) for (let c = 0; c <= cols; c++) {
+          const p = dot(r, c);
+          els.push(<span key={`cd${r}-${c}`} aria-hidden="true" className="chs-dt" style={{ ...at(p.x - 6, p.y - 6, 12, 12) }} />);
+        }
+        const left = totalBoxes - view.score.mine - view.score.theirs;
+        const engineUp = playing && (thinking || view.turn === 2);
+        const line = toast || (playing
+          ? (engineUp ? `${left} box${left === 1 ? '' : 'es'} left · The engine is answering`
+            : g.moves.length === 0 ? `${left} boxes left · No take-back, one edge keeps this` : `${left} box${left === 1 ? '' : 'es'} left · Close a box to go again`)
+          : (won ? (PUZZLE.motif || statusLine()) : statusLine()));
+        return (
+          <PlayStage bg={gameColor('chain')} label="Chain"
+            eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Dots and boxes · ${!playing ? 'Boxes counted' : engineUp ? 'Engine’s move' : 'Your move'}`}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: CHS_CSS }} />
+                <h2 className="pst-q chs-q">{playing ? 'Take more boxes than the engine.' : statusLine()}</h2>
+                <div className="chs-score" aria-label={`Boxes: you ${view.score.mine}, the engine ${view.score.theirs}, first to ${need} wins`}>
+                  <div className={'chs-sc' + (playing && !engineUp ? ' on' : '')}><span>You</span><b>{view.score.mine}</b></div>
+                  <div className={'chs-sc' + (engineUp ? ' on' : '')}><span>Them</span><b>{view.score.theirs}</b></div>
+                </div>
+                <div key={shake} className={'chs-board' + (shake ? ' shake' : '')} role="group" aria-label={`Dots and boxes, ${rows} by ${cols}`}
+                  style={{ aspectRatio: `${WS} / ${HS}`, width: `min(100%, ${Math.round(WS * (rows > 3 ? 1.25 : 1.4))}px)` }}>
+                  {els}
+                </div>
+              </>
+            )}
+            bottom={playing ? (
+              <div className="pst-tools">
+                {hintOk && !g.hintUsed && g.moves.length === 0 ? <button type="button" className="pst-tb chs-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
+                <button type="button" className={'pst-tb chs-tl' + (armRestart ? ' on' : '')} onClick={restartGame} aria-label={armRestart ? 'Tap again to restart. This counts as a loss' : 'Restart this board'}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+                  {armRestart ? 'Tap again' : 'Restart'}
+                </button>
+              </div>
+            ) : null}
+            foot={line}
+            giveUp={{ armed: !!armReveal, onPress: () => revealEnd(), armedLabel: 'Tap again to give up' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="chain" name="Chain" collapsed={started} loft={LOFT} />
@@ -1282,3 +1411,47 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+
+// The stage board (owner, 2026-10-31 mockup): ink dots, ink drawn edges, the
+// last edge gold with an ink ring, open edges light grey, your boxes gold and
+// the engine's light grey, open chains on a pale gold band with their count.
+// Sizes inside the board are in container units so it scales with the column.
+const CHS_CSS = `
+/* The shared top bar's phone rule (.stb.has-t{flex:1 1 auto}) is meant for a row; in the
+   stage's column it grew the bar tall and pushed the header down on a short board. */
+.pst-col > .stb.has-t{flex:none;}
+.pst .chs-q{font-size:clamp(20px,6vw,23px);}
+.chs-score{display:flex;justify-content:center;gap:10px;}
+.chs-sc{display:flex;align-items:center;gap:10px;min-width:128px;height:48px;box-sizing:border-box;padding:0 14px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-bg);}
+.chs-sc.on{background:var(--pst-pale);}
+.chs-sc span{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}
+.chs-sc b{font-size:24px;font-weight:800;margin-left:auto;font-variant-numeric:tabular-nums;}
+.chs-board{position:relative;align-self:center;container-type:inline-size;touch-action:manipulation;}
+.chs-board > *{position:absolute;box-sizing:border-box;}
+.chs-band{background:var(--pst-pale);border-radius:999px;}
+.chs-tag{display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;line-height:1;gap:1px;}
+.chs-tag i{font-style:normal;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--pst-mute);}
+.chs-tag b{font-weight:800;font-variant-numeric:tabular-nums;}
+.chs-box{border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;text-transform:uppercase;letter-spacing:.04em;}
+.chs-box.foe{background:var(--pst-cell);}
+.chs-box.foe{color:var(--pst-mute);}
+.chs-box.mine{background:var(--pst-acc);box-shadow:inset 0 0 0 2px var(--pst-ink);}
+.pst .chs-box.mine{color:var(--pst-on-acc);}
+.chs-ed{border:0;padding:0;margin:0;background:transparent;display:flex;align-items:center;justify-content:center;z-index:2;-webkit-tap-highlight-color:transparent;}
+.pst button.chs-ed{cursor:default;}
+.pst button.chs-ed.live{cursor:pointer;}
+.chs-ed i{display:block;border-radius:3px;background:var(--pst-cell2);transition:background .12s;}
+.chs-ed.on i{background:var(--pst-ink);}
+.chs-ed.last i{background:var(--pst-acc);box-shadow:0 0 0 2px var(--pst-ink);}
+.chs-ed.hint i{background:var(--pst-pale);box-shadow:0 0 0 2px var(--pst-ink);}
+.chs-ed.hot i{background:color-mix(in srgb, var(--pst-ink) 45%, var(--pst-bg));}
+.chs-ed.key i{background:var(--pst-acc);box-shadow:0 0 0 2px var(--pst-ink);animation:chsKey 1.15s ease-in-out infinite;}
+.chs-ed.on.last i,.chs-ed.on.key i{background:var(--pst-acc);}
+.chs-dt{border-radius:50%;background:var(--pst-ink);z-index:3;pointer-events:none;}
+.chs-board.shake{animation:chsShake .34s ease;}
+@keyframes chsShake{0%,100%{transform:translateX(0)}22%{transform:translateX(-6px)}55%{transform:translateX(6px)}80%{transform:translateX(-3px)}}
+@keyframes chsKey{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.pst .chs-tl.on{background:var(--pst-ink);color:var(--pst-bg);}
+@media (prefers-reduced-motion: reduce){.chs-board.shake,.chs-ed.key i{animation:none}}
+`;
