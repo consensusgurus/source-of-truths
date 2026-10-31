@@ -18,7 +18,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { HelpCircle, X, Lightbulb, Eye, Smartphone, ChevronLeft, ChevronRight, Delete, Check, ArrowLeftRight } from 'lucide-react';
+import { HelpCircle, X, Lightbulb, Eye, Smartphone, Delete, Check, ArrowLeftRight } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
 import DailyGamesPromo from '../DailyGamesPromo';
@@ -59,6 +59,7 @@ import { T as THEME } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endGrade } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import XwSide, { XW_CLUE_CSS } from '../XwClues';
 
 const COLORS = {
   cream: THEME.surface,
@@ -237,8 +238,6 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
   const [toast, setToast] = useState(null);
   const [copied, setCopied] = useState(false);
   const [armReveal, setArmReveal] = useState(false);
-  // Phone: the full clue list sits behind the clue bar, one tap away.
-  const [cluesOpen, setCluesOpen] = useState(false);
   const [justWon, setJustWon] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
   // The finished board starts turned OVER, showing what to do next.
@@ -685,22 +684,6 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
   }
 
   const filledWord = (w) => w.cells.every((c) => letters[c] !== '');
-  const clueRow = (w, i) => {
-    const active = i === curWordIdx && playing;
-    // the crossing clue through the selected square is outlined in the accent
-    const cross = i === crossWordIdx && playing && !active;
-    // a fully filled clue fades to muted text (colour, never opacity)
-    const done = playing && !active && !cross && filledWord(w);
-    return (
-      <button key={`${w.dir}${w.n}`} type="button" onClick={() => { if (playing) selectWord(i); }}
-        aria-current={active ? 'true' : undefined}
-        className={`mc-cluerow${active ? ' on' : ''}${cross ? ' cross' : ''}${done ? ' done' : ''}`}>
-        <span className="mc-cn">{w.n}</span>
-        <span className="mc-ct">{w.clue}</span>
-      </button>
-    );
-  };
-
   const kbRows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
   // Letter and number sizes follow the square, measured off the grid's own
   // width (container units), so one rule serves 5x5, 7x7, desktop and phone.
@@ -813,26 +796,6 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
           /* A MISS IS STRUCK THROUGH IN EVERY LOOK (owner, 2026-10-25): a diagonal slash, not the tint alone. */
           .mc-cell.mc-wrongmark::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top right, transparent calc(50% - 1.5px), var(--stg-bad, ${COLORS.rust}) calc(50% - 1.5px), var(--stg-bad, ${COLORS.rust}) calc(50% + 1.5px), transparent calc(50% + 1.5px));opacity:.85;}
           .mc-num{position:absolute;top:.4em;left:.55em;font-family:${SANS};font-weight:800;line-height:1;color:var(--stg-ink2, rgba(28,30,36,0.7));pointer-events:none;}
-          .mc-bar{width:100%;margin-top:16px;display:flex;align-items:stretch;gap:8px;}
-          .mc-step{flex:0 0 48px;min-height:52px;border-radius:12px;border:1.5px solid var(--stg-line2, rgba(28,30,36,0.35));background:transparent;color:var(--stg-ink2, ${COLORS.ink});font-family:${SANS};cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
-          .mc-step:hover{background:var(--stg-surf2, ${COLORS.paper});}
-          .mc-clue{flex:1 1 auto;min-width:0;border:0;border-radius:12px;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);display:flex;align-items:center;gap:10px;padding:8px 14px;font-family:${SANS};text-align:left;cursor:pointer;}
-          .mc-clue-k{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
-          .mc-clue-t{font-size:17px;font-weight:800;line-height:1.25;}
-          .mc-hint-line{align-self:flex-start;margin:8px 2px 0;font-family:${SANS};font-size:12px;font-weight:600;color:var(--stg-mute, ${COLORS.faded});}
-          .mc-cols{width:100%;margin-top:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;}
-          .mc-colhd{font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});padding:0 10px 4px;}
-          .mc-collist{display:flex;flex-direction:column;gap:4px;}
-          .mc-cluerow{display:flex;gap:10px;align-items:baseline;width:100%;min-height:44px;box-sizing:border-box;padding:10px;border:1.5px solid transparent;border-radius:9px;cursor:pointer;background:transparent;font-family:${SANS};text-align:left;color:var(--stg-ink, ${COLORS.ink});}
-          .mc-cluerow:hover{background:var(--stg-surf2, ${COLORS.paper});}
-          .mc-cluerow .mc-cn{font-size:12px;font-weight:800;min-width:16px;color:var(--stg-mute, ${COLORS.faded});}
-          .mc-cluerow .mc-ct{font-size:14px;font-weight:600;line-height:1.35;}
-          .mc-cluerow.done{color:var(--stg-mute, ${COLORS.faded});}
-          .mc-cluerow.done .mc-ct{text-decoration:line-through;text-decoration-thickness:1px;}
-          .mc-cluerow.cross{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
-          .mc-cluerow.on,.mc-cluerow.on:hover{background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);}
-          .mc-cluerow.on .mc-cn{color:var(--stg-onramp, #fff);}
-          .mc-cluerow.on .mc-ct{font-weight:800;}
           .mc-acts{width:100%;margin-top:18px;display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid var(--stg-line, rgba(28,30,36,0.15));padding-top:14px;}
           .mc-acts-note{flex:1;font-family:${SANS};font-size:12px;font-weight:600;color:var(--stg-mute, ${COLORS.faded});}
           .mc-act{font-family:${SANS};font-size:14px;min-height:48px;border-radius:12px;padding:0 16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
@@ -854,12 +817,6 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
             .mc-segs{gap:2px;}
             .mc-segs span{height:6px;}
             .mc-panel{background:transparent;border:0;border-radius:0;padding:0;}
-            .mc-bar{margin-top:14px;gap:6px;padding:0 4px;box-sizing:border-box;}
-            .mc-step{flex-basis:44px;min-height:54px;}
-            .mc-clue{flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:6px 12px;}
-            .mc-clue-k{font-size:10px;}
-            .mc-hint-line{margin:8px 8px 0;}
-            .mc-cols{grid-template-columns:1fr;gap:12px;margin-top:12px;padding:0 4px;box-sizing:border-box;}
             .mc-acts{border-top:0;padding:0 4px;margin-top:12px;box-sizing:border-box;}
             .mc-acts .mc-act{flex:1;}
             .mc-acts .mc-act.go{flex:1.4;}
@@ -867,9 +824,11 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
             .mc-foot{padding:10px 8px 0;}
             .mc-kb{padding:0 2px;box-sizing:border-box;}
           }
+          ${XW_CLUE_CSS}
+          .mc-panel .xw-side{font-family:${SANS};}
         ` }} />
 
-        <div style={{ maxWidth: 620, margin: '0 auto' }}>
+        <div className={`xw-page${started ? ' xw-on' : ''}`} style={{ maxWidth: 620, margin: '0 auto' }}>
 
         {/* puzzle-native top strip: quiet nav + player chip */}
 
@@ -945,9 +904,11 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
-          <div className="mc-panel">
+          <div className="xw-host" style={{ '--xw-bcol': N === 7 ? '520px' : '480px' }}>
+          <div className="mc-panel xw-play">
             {/* the grid */}
-            <div className="mc-gridbox" style={{ maxWidth: N === 7 ? 476 : 420 }}>
+            <div className="xw-board">
+            <div className="mc-gridbox xw-gb" style={{ maxWidth: N === 7 ? 476 : 420 }}>
               <div className="mc-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
                 {Array.from({ length: T }).map((_, idx) => {
                   if (isBlock(idx)) return <div key={idx} className="mc-cell mc-blk" />;
@@ -966,45 +927,17 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
                 })}
               </div>
             </div>
+            </div>
 
-            {/* the active clue: previous, the clue in the accent, next */}
-            {playing && (
-              <div className="mc-bar" style={{ maxWidth: N === 7 ? 476 : 420 }}>
-                <button type="button" aria-label="Previous clue" onClick={() => stepWord(-1)} className="mc-step">
-                  <ChevronLeft size={20} strokeWidth={2.5} />
-                </button>
-                <button type="button" className="mc-clue"
-                  aria-expanded={mobileUi ? cluesOpen : undefined}
-                  title={mobileUi ? (cluesOpen ? 'Hide the clue list' : 'Show every clue') : 'Flip Across and Down'}
-                  onClick={() => { if (mobileUi) setCluesOpen((v) => !v); else setDir((d) => (d === 'A' ? 'D' : 'A')); }}>
-                  <span className="mc-clue-k">{curWord.n} {curWord.dir === 'A' ? 'Across' : 'Down'}</span>
-                  <span className="mc-clue-t">{curWord.clue}</span>
-                </button>
-                <button type="button" aria-label="Next clue" onClick={() => stepWord(1)} className="mc-step">
-                  <ChevronRight size={20} strokeWidth={2.5} />
-                </button>
-              </div>
-            )}
-            {playing && mobileUi && (
-              <span className="mc-hint-line">
-                {cluesOpen ? 'Tap the clue to hide the list.' : `Tap the clue to see all ${TOTAL}.`} Tap a square again to turn {dir === 'A' ? 'Down' : 'Across'}.
-              </span>
-            )}
-
-            {/* Across and Down, side by side. On a phone with the on-screen
-                keyboard they sit behind the clue bar, one tap away. */}
-            {(!playing || !mobileUi || cluesOpen) && (
-              <div className="mc-cols">
-                <div className="mc-collist">
-                  <div className="mc-colhd">Across</div>
-                  {WORDS.map((w, i) => (w.dir === 'A' ? clueRow(w, i) : null))}
-                </div>
-                <div className="mc-collist">
-                  <div className="mc-colhd">Down</div>
-                  {WORDS.map((w, i) => (w.dir === 'D' ? clueRow(w, i) : null))}
-                </div>
-              </div>
-            )}
+            {/* THE CLUES (owner, 2026-10-30, app/XwClues.jsx): on a phone or a
+                narrow window the active clue with Back and Skip and the crossing
+                clue under it; on a wide window the board on the left and the
+                active clue over the full Across and Down lists on the right. */}
+            <XwSide words={WORDS} curIdx={curWordIdx} crossIdx={crossWordIdx} playing={playing}
+              isFilled={filledWord} onPick={(i) => selectWord(i)}
+              onBack={() => stepWord(-1)} onSkip={() => stepWord(1)}
+              onSwitch={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}
+              maxWidth={N === 7 ? 476 : 420}>
 
             {/* on-screen keyboard (mobile): QWERTY, flip direction, delete */}
             {playing && mobileUi && (
@@ -1042,6 +975,8 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
                 </div>
               );
             })()}
+            </XwSide>
+          </div>
           </div>
 
           {/* the foot: how Check works, and the small Reveal link */}
