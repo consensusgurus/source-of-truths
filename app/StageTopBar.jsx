@@ -164,7 +164,7 @@ const CSS = `
 .stb .stb-nav{flex:none;height:34px;box-sizing:border-box;padding:0 12px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .stb .stb-home:hover > span{text-decoration:underline;text-underline-offset:3px;}
 @media (max-width:899px){
-  .stb.has-t{position:relative;flex:1 1 auto;width:100%;min-width:0;}
+  .stb.has-t{position:relative;flex:0 1 auto;width:100%;min-width:0;}
   .stb.has-t .stb-tx{position:absolute;left:var(--stb-side,124px);right:var(--stb-side,124px);top:50%;transform:translateY(-50%);align-items:center;text-align:center;pointer-events:none;}
   .stb.has-t .stb-tx > *{max-width:100%;pointer-events:auto;}
   .stb.has-t .stb-t{justify-content:center;max-width:100%;gap:5px;}
