@@ -1594,15 +1594,15 @@ const TLS_CSS = `
 .pst .tls-c.drag{box-shadow:0 8px 18px rgba(8,34,46,.25);}
 .pst .tls-c.drag.home{opacity:.5;}
 .pst .tls-c.drop{background:var(--pst-pale);border-color:var(--pst-ink);}
-.pst .tls-c.nodrop{border-color:#b91c1c;}
+.pst .tls-c.nodrop{border-color:var(--pst-bad);}
 .tls-tt{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:11px;font-size:clamp(15px, 5vw, 20px);line-height:1;background:var(--pst-cell);border:2px solid transparent;min-width:0;padding:4px 0;}
 .tls-tt b{font-weight:800;}
 .tls-tt i{font-style:normal;font-size:clamp(8.5px, 2.6vw, 10.5px);font-weight:800;color:var(--pst-mute);margin-top:3px;white-space:nowrap;}
 .tls-tt.lit{border-color:var(--pst-ink);}
 .tls-tt.ok{background:var(--pst-acc);border-color:var(--pst-ink);}
 .tls-tt.ok,.tls-tt.ok *{color:var(--pst-on-acc);}
-.tls-tt.bad{background:#fee2e2;}
-.tls-tt.bad,.tls-tt.bad *{color:#b91c1c;}
+.tls-tt.bad{background:var(--pst-bad-bg);}
+.tls-tt.bad,.tls-tt.bad *{color:var(--pst-bad);}
 .tls-lab{display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);}
 .tls-rack{display:grid;gap:6px;}
 .pst .tls-rt{height:62px;border-radius:14px;border:2px solid var(--pst-ink);background:transparent;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;touch-action:manipulation;}

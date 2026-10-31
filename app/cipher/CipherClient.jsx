@@ -1579,15 +1579,15 @@ const CFS_CSS = `
 .pst .cfs-lc.set{background:var(--pst-bg);}
 .pst .cfs-lc.sel{background:var(--pst-acc);}
 .pst .cfs-lc.sel,.pst .cfs-lc.sel *{color:var(--pst-on-acc);}
-.pst .cfs-lc.bad{background:#fee2e2;border-color:#b91c1c;}
-.pst .cfs-lc.bad b{color:#b91c1c;}
+.pst .cfs-lc.bad{background:var(--pst-bad-bg);border-color:var(--pst-bad);}
+.pst .cfs-lc.bad b{color:var(--pst-bad);}
 .pst .cfs-cy{height:24px;border-radius:7px;border:2px solid var(--pst-cell-line);background:transparent;padding:0;font-size:13px;font-weight:800;}
 .pst .cfs-cy.fixed{border-color:transparent;background:var(--pst-cell);}
 .pst .cfs-cy.off{visibility:hidden;}
 .cfs-rule{height:3px;background:var(--pst-ink);border-radius:2px;margin:2px 0 2px 29px;}
 .cfs-r.mk span{text-align:center;font-size:15px;font-weight:800;min-height:18px;}
 .cfs-r.mk span.good{color:var(--pst-ink);background:var(--pst-pale);border-radius:6px;}
-.cfs-r.mk span.bad{color:#b91c1c;background:#fee2e2;border-radius:6px;}
+.cfs-r.mk span.bad{color:var(--pst-bad);background:var(--pst-bad-bg);border-radius:6px;}
 .cfs-book{display:grid;grid-template-columns:repeat(5, minmax(0, 1fr));gap:6px;}
 .pst .cfs-bk{position:relative;min-height:50px;border-radius:12px;border:2px solid var(--pst-ink);background:transparent;padding:0;display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;}
 .cfs-bk span{font-size:19px;font-weight:800;}
@@ -1597,7 +1597,7 @@ const CFS_CSS = `
 .pst .cfs-bk.on{background:var(--pst-acc);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
 .pst .cfs-bk.on,.pst .cfs-bk.on *{color:var(--pst-on-acc);}
 .pst .cfs-bk.on b{background:var(--pst-pale);}
-.pst .cfs-bk.bad b{background:#fee2e2;color:#b91c1c;}
+.pst .cfs-bk.bad b{background:var(--pst-bad-bg);color:var(--pst-bad);}
 .cfs-pad{display:grid;grid-template-columns:repeat(5, minmax(0, 1fr));gap:6px;}
 @media (min-width:900px) and (hover:hover) and (pointer:fine){.cfs-pad{display:none !important;}}
 .pst .cfs-dk{position:relative;height:52px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-pale);font-size:24px;font-weight:800;padding:0;touch-action:manipulation;}

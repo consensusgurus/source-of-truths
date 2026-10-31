@@ -1277,7 +1277,7 @@ const CVS_CSS = `
 .pst .cvs-c.cur{background:var(--pst-pale);font-weight:800;}
 .pst .cvs-c.anc::after{content:"";position:absolute;inset:16%;border-radius:50%;border:2px solid currentColor;pointer-events:none;}
 .cvs-c em{position:absolute;top:2px;left:4px;font-style:normal;font-size:10px;font-weight:800;opacity:.75;}
-.pst .cvs-c.bad{background:#fee2e2;color:#b91c1c;}
+.pst .cvs-c.bad{background:var(--pst-bad-bg);color:var(--pst-bad);}
 .cvs-c.bnc{animation:cvsBnc .4s ease;}
 @keyframes cvsBnc{0%,100%{transform:none}30%{transform:translateX(-4px)}60%{transform:translateX(4px)}}
 .cvs-say{display:flex;gap:10px;align-items:center;border:2px solid var(--pst-ink);border-radius:14px;padding:9px 12px;background:var(--pst-cell);}

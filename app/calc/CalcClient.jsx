@@ -1371,8 +1371,8 @@ const CLS_CSS = `
 .cls-tape .hd{flex:0 0 auto;min-width:84px;background:var(--pst-cell);text-align:right;}
 .cls-tape .hd.good{background:var(--pst-acc);}
 .cls-tape .hd.good *{color:var(--pst-on-acc);}
-.cls-tape .hd.bad{background:#fee2e2;border-color:#b91c1c;}
-.cls-tape .hd.bad *{color:#b91c1c;}
+.cls-tape .hd.bad{background:var(--pst-bad-bg);border-color:var(--pst-bad);}
+.cls-tape .hd.bad *{color:var(--pst-bad);}
 .cls-tape i{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);}
 .cls-tape b{font-size:22px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;overflow:hidden;direction:rtl;text-align:left;unicode-bidi:plaintext;}
 .cls-tape .hd b{direction:ltr;text-align:right;}

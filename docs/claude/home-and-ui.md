@@ -1694,7 +1694,7 @@ types the digits.
 #e0f4fe, rose #ffe4e6, gold #fdf3d7, orange #ffedd5), and `--pst-cell` / `--pst-cell2` /
 `--pst-cell-line` / `--pst-mute` for grey squares, rules and muted type. Dark looks sink the
 pale and grey steps onto the near-black page. Plain squares stay white or light grey, never
-coloured. Errors are red #b91c1c on #fee2e2.
+coloured. Errors use `--pst-bad` on `--pst-bad-bg` (red #b91c1c on #fee2e2 in light, pale red on deep red in dark).
 
 ## The phone stage title is centred on the screen (owner, 2026-10-30)
 

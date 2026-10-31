@@ -67,7 +67,8 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
 // tint on secondary highlights (--pst-pale), and leaves plain squares on white
 // or light grey (--pst-cell, --pst-cell-line). Muted type is --pst-mute. In the
 // dark look the pastel stays the pastel (dark ink still reads on it) and the
-// pale and grey steps sink onto the near-black page.
+// pale and grey steps sink onto the near-black page. --pst-bad / --pst-bad-bg
+// carry a wrong mark in both looks.
 const PALE = { '#fb7185': '#ffe4e6', '#6ee7b7': '#d1fae5', '#e8b43a': '#fdf3d7', '#7dd3fc': '#e0f4fe', '#fb923c': '#ffedd5' };
 export function accentVars(pastel, look) {
   const dark = look === 'dark' || look === 'darktint';
@@ -81,6 +82,9 @@ export function accentVars(pastel, look) {
     '--pst-cell2': dark ? '#242c3d' : '#e3e8ee',
     '--pst-cell-line': dark ? '#3a4458' : '#c9d2dc',
     '--pst-mute': dark ? '#a9b3c4' : '#3b4656',
+    // Wrong / error marks: red on pale red in light, pale red on deep red in dark.
+    '--pst-bad': dark ? '#fca5a5' : '#b91c1c',
+    '--pst-bad-bg': dark ? '#3b1518' : '#fee2e2',
   };
 }
 
