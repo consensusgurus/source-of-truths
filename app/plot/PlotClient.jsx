@@ -59,6 +59,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 const COLORS = {
   cream: T.surface,
@@ -255,6 +257,8 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const [drag, setDrag] = useState(null);
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -706,6 +710,9 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
   }
 
   const preview = drag ? rectOf(drag) : null;
+  // THE STAGE is up from Start until the ending's board view, and while it is
+  // up ITS grid is the one the pointer maths (cellFromPoint) measures.
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
   const previewOk = useMemo(() => {
     if (!preview) return false;
     const [r, c, w, h] = preview;
@@ -764,6 +771,81 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31): Plot plays on the shared white stage at
+          every width: one line naming the drag, the board, the tools, one
+          line, and the foot. Open squares are light grey; a claimed plot is the
+          full category colour with an ink edge, the plot being dragged the pale
+          tint with a colour rule, and a plot in the wrong place stays orange
+          and striped (never hue alone). The board's own pointer handlers
+          (onGridDown / Move / Up, claim, release) do every move. */}
+      {stageOn && (() => {
+        const dark = isDarkLook(stageLook);
+        const off = !!(drag && drag.off);
+        let inside = 0, numIn = null;
+        if (preview && !off) {
+          for (let rr = preview[0]; rr < preview[0] + preview[3]; rr++) for (let cc = preview[1]; cc < preview[1] + preview[2]; cc++) {
+            const j = clueAt.get(rr * N + cc);
+            if (j !== undefined) { inside++; numIn = CLUES[j][2]; }
+          }
+        }
+        const A = preview ? areaOf(preview) : 0;
+        const call = !preview
+          ? <span className="plx-idle">Drag across the board to claim a plot</span>
+          : off ? <span className="plx-idle">Off the board. Let go to cancel.</span>
+            : <>Dragging <b>{preview[2]} by {preview[3]}</b> covers {A} square{A === 1 ? '' : 's'}{inside === 1 ? ` around the ${numIn}` : inside === 0 ? ', no number inside' : `, ${inside} numbers inside`}</>;
+        const line = toast || `${claimed} of ${CELLS} squares · ${plots.length} plot${plots.length === 1 ? '' : 's'} · ${errors} error${errors === 1 ? '' : 's'}`;
+        const box = (p) => ({ left: `calc(${pct(p[1])} + 1px)`, top: `calc(${pct(p[0])} + 1px)`, width: `calc(${pct(p[2])} - 2px)`, height: `calc(${pct(p[3])} - 2px)` });
+        return (
+          <PlayStage bg={gameColor('plot')} label="Plot"
+            eyebrow={`${PUZZLE.sunday ? `Sunday Edition No. ${PUZZLE.num}` : `Plot No. ${PUZZLE.num}`} · cut the board into plots`}
+            top={(
+              <div className="plx" style={{ '--plx-n': N, '--lg-bad': dark ? '#fb923c' : '#c2410c', '--lg-bad-bg': dark ? '#3a2312' : '#ffedd5' }}>
+                <style dangerouslySetInnerHTML={{ __html: PLX_CSS }} />
+                <div className="plx-call" aria-live="polite">{call}</div>
+                <div className="plx-pb">
+                  <div ref={gridRef} className="plx-grid" data-n={N} role="grid" aria-label={`The plot board, ${N} by ${N}`}
+                    onPointerDown={onGridDown} onPointerMove={onGridMove} onPointerUp={onGridUp}
+                    style={{ cursor: playing ? 'crosshair' : 'default' }}>
+                    {plots.map((p, i) => (
+                      <i key={`p${i}`} className={'plx-plot' + (wrongSet.has(i) ? ' bad' : '')} style={box(p)} aria-hidden="true" />
+                    ))}
+                    {preview && (
+                      <i className={'plx-dr' + (off ? ' off' : previewOk ? ' ok' : '')} style={box(preview)} aria-hidden="true" />
+                    )}
+                    {Array.from({ length: CELLS }).map((_, idx) => {
+                      const r = Math.floor(idx / N), c = idx % N;
+                      const own = owner[idx];
+                      const inDrag = !!(preview && !off && inRect(preview, r, c));
+                      const k = clueAt.get(idx);
+                      const bad = own >= 0 && wrongSet.has(own);
+                      return (
+                        <span key={idx} className={'plx-c' + (own >= 0 || inDrag ? ' in' : '') + (own >= 0 ? (bad ? ' bad' : ' cl') : '')}
+                          style={{ left: `calc(${pct(c)} + 1px)`, top: `calc(${pct(r)} + 1px)` }}
+                          aria-label={`Row ${r + 1}, column ${c + 1}${k !== undefined ? `, clue ${CLUES[k][2]}` : ''}${own >= 0 ? (bad ? ', claimed in the wrong place' : ', claimed') : inDrag ? ', in the drag' : ''}`}>
+                          {k !== undefined ? CLUES[k][2] : null}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+                {playing && (
+                  <div className="pst-tools plx-tools">
+                    <button type="button" className="pst-tb" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5" /><path d="M4 9h10a6 6 0 0 1 0 12h-3" /></svg>Undo
+                    </button>
+                    {hintOk && !g.hintUsed && (
+                      <button type="button" className="pst-tb" onClick={useHint} title="Survey one plot for you (one hint, first play only)">{ICON.bulb}Hint</button>
+                    )}
+                  </div>
+                )}
+                {playing && <div className="plx-help">Drag a rectangle over one number, sized to match it. Tap a plot to hand it back.</div>}
+              </div>
+            )}
+            foot={line}
+            giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="plot" name="Plot" collapsed={started} loft={LOFT} />
@@ -931,7 +1013,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
                 {Array.from({ length: N }).map((_, r) => <span key={r} style={{ color: FADED }}>{r + 1}</span>)}
               </div>
             <div
-              ref={gridRef}
+              ref={stageOn ? undefined : gridRef}
               onPointerDown={onGridDown}
               onPointerMove={onGridMove}
               onPointerUp={onGridUp}
@@ -1264,3 +1346,29 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-31 mockup). Each square is a light grey tile
+// on the white board; a claimed square goes clear so the plot under it shows:
+// the full category colour with an ink edge, or orange and striped when it is
+// in the wrong place. The plot being dragged is the pale tint with a colour
+// rule (grey when it cannot be claimed as drawn).
+const PLX_CSS = `
+.plx{display:flex;flex-direction:column;gap:14px;width:100%;max-width:520px;align-self:center;}
+.plx-call{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;text-align:center;font-size:15px;font-weight:800;min-height:44px;line-height:1.3;}
+.plx-call b{min-width:40px;height:40px;border-radius:12px;background:var(--pst-pale);border:2px solid var(--pst-ink);display:inline-flex;align-items:center;justify-content:center;font-size:17px;padding:0 10px;box-sizing:border-box;}
+.plx-idle{color:var(--pst-mute);font-weight:700;font-size:14px;}
+.plx-pb{align-self:center;width:min(100%, 520px);border:2px solid var(--pst-ink);border-radius:14px;background:var(--pst-bg);overflow:hidden;}
+.plx-grid{position:relative;width:100%;aspect-ratio:1/1;touch-action:none;user-select:none;-webkit-user-select:none;container-type:inline-size;}
+.plx-c{position:absolute;width:calc(100% / var(--plx-n) - 2px);height:calc(100% / var(--plx-n) - 2px);border-radius:6px;background:var(--pst-cell);display:flex;align-items:center;justify-content:center;font-size:clamp(11px, calc(100cqw / var(--plx-n) * .48), 22px);font-weight:800;color:var(--pst-ink);z-index:1;pointer-events:none;font-variant-numeric:tabular-nums;}
+.plx-c.in{background:transparent;}
+.plx-c.cl{color:var(--pst-on-acc);}
+.plx-c.bad{color:var(--lg-bad);}
+.plx-plot,.plx-dr{position:absolute;border-radius:8px;box-sizing:border-box;pointer-events:none;}
+.plx-plot{background:var(--pst-acc);border:2px solid var(--pst-ink);}
+.plx-plot.bad{background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--lg-bad) 30%, transparent) 0 3px, transparent 3px 9px), var(--lg-bad-bg);border:2px solid var(--lg-bad);}
+.plx-dr{background:var(--pst-cell2);border:3px solid var(--pst-mute);}
+.plx-dr.ok{background:var(--pst-pale);border-color:var(--pst-acc);}
+.plx-dr.off{opacity:.35;}
+.plx-tools .pst-tb{font-weight:800;}
+.plx-help{text-align:center;font-size:12px;font-weight:700;color:var(--pst-mute);}
+`;
