@@ -24,7 +24,7 @@
 // on the server (app/alibi/page.js), per-puzzle localStorage saves, /alibi?p=N
 // archive pinning, streaks + stats, and the shared /api/quiz/* board flow.
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Smartphone, Search, Eraser, Undo2 } from 'lucide-react';
 import Grain from '../Grain';
@@ -299,6 +299,26 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   const [clueAt, setClueAt] = useState(0);
   const [catTab, setCatTab] = useState('room');
   const [allClues, setAllClues] = useState(false);
+  // THE BOARD GIVES UP HEIGHT, NOT THE FOOT (2026-10-31): a Sunday's fifth
+  // suspect (or a short phone) can push the foot off the full-screen stage.
+  // The cells shrink by the measured overflow, never below 36px, and start
+  // over at full height on a resize. Inline (desktop with navigation, or inside
+  // Judged) the page scrolls, so nothing is measured there.
+  const [alsH, setAlsH] = useState(54);
+  useLayoutEffect(() => {
+    // The All clues list is meant to scroll, so it never squeezes the board.
+    if (allClues) return;
+    const pst = document.querySelector('.pst:not(.inl)');
+    if (!pst || !pst.querySelector('.als-gr')) return;
+    const over = pst.scrollHeight - pst.clientHeight;
+    if (over > 1 && alsH > 36) setAlsH((h) => Math.max(36, h - Math.ceil(over / Math.max(1, PUZZLE.suspects.length))));
+  });
+  useEffect(() => { setAlsH(54); }, [allClues, PUZZLE.num]);
+  useEffect(() => {
+    const reset = () => setAlsH(54);
+    window.addEventListener('resize', reset);
+    return () => window.removeEventListener('resize', reset);
+  }, []);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -728,7 +748,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
                         <button key={c.key} type="button" role="tab" aria-selected={c.key === cat.key} className={c.key === cat.key ? 'on' : undefined} onClick={() => setCatTab(c.key)}>{TAB[c.key] || c.label}</button>
                       ))}
                     </div>
-                    <div className="als-gr" style={{ gridTemplateColumns: `minmax(52px, max-content) repeat(${N}, minmax(0, 1fr))` }}>
+                    <div className="als-gr" style={{ gridTemplateColumns: `minmax(52px, max-content) repeat(${N}, minmax(0, 1fr))`, '--als-h': `${alsH}px` }}>
                       <span />
                       {cat.vals.map((val) => <span key={val} className="h">{val}</span>)}
                       {PUZZLE.suspects.map((name, s) => (
@@ -1268,7 +1288,7 @@ const ALS_CSS = `
 @media (max-width:420px){.pst .als-gr .h{font-size:10px;}}
 .pst .als-gr .n{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:96px;padding-right:2px;}
 @media (max-width:420px){.pst .als-gr .n{font-size:13.5px;max-width:84px;}}
-.pst .als-c{height:54px;border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-pale);font-size:20px;font-weight:800;padding:0;min-width:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
+.pst .als-c{height:var(--als-h,54px);border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-pale);font-size:20px;font-weight:800;padding:0;min-width:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
 .pst .als-c.x{opacity:.4;background:transparent;}
 .pst .als-c.y{background:var(--pst-acc);color:var(--pst-on-acc);}
 .pst .als-acc{margin-top:6px;}

@@ -1014,7 +1014,7 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: 0 }}>{PUZZLE.tiles.length} words and {PUZZLE.rules.length} rules. <b>Exactly one rule fits every word.</b> Spend a test to see if a word is <b style={{ color: `var(--stg-ink, ${COLORS.green})` }}>green</b> or <b style={{ color: `var(--stg-ink, ${COLORS.redInk})` }}>red</b>; you have {PUZZLE.budget}. You score the rules you rule out.</p>
+                <p style={{ margin: 0 }}>{PUZZLE.tiles.length} words and {PUZZLE.rules.length} rules. <b>Exactly one rule fits every word.</b> Spend a test to see if a word is {STAGE ? <><b>rose</b> or <b>white</b></> : <><b style={{ color: `var(--stg-ink, ${COLORS.green})` }}>green</b> or <b style={{ color: `var(--stg-ink, ${COLORS.redInk})` }}>red</b></>}; you have {PUZZLE.budget}. You score the rules you rule out.</p>
               </div>
             )}
             <div style={{ marginTop: 'auto', paddingTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
