@@ -1925,3 +1925,30 @@ and the old board stays behind the stage (`?stage=0` still shows it).
   line with its 1 and 9 down, Frame's +/- and Rim's tick or cross for a filled triple) are not drawn in
   the gutter; a filled line that fails turns its chip red, and the readout for the SELECTED square's
   lines is said in the status line ("row 2: 3 short"), so no information was lost.
+
+## Polka, Whittle, Towers, Knight, Diag and Window on the sudoku stage (owner, 2026-10-31)
+
+All six play on the shared `SudokuStage` (app/SudokuStage.jsx) at every width, from the approved
+periwinkle mockups (Polka/Whittle/Towers/Knight/Diag/Window.dc.html), with the Suds mount
+(`STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed)`; Towers and Whittle have no
+run embed, so no `!EMBED`). Presentation only: every control calls the client's own handler, the
+old board stays behind the stage, and Enter the Dojo (Polka, Knight, Diag) keeps its own board.
+
+- **Polka:** the dots are `over` marks ON the grid lines, r 0.15 of a square, 1.8px stroke: white
+  disc with an ink ring, ink disc ringed in the page ink (so it still reads on the dark board).
+- **Knight:** the eight knight squares of the selection are a deeper periwinkle (`--pst-acc` 55% on
+  the board base, the mockup's #c7d2fe) with a small deep dot in the top-right corner; they win
+  over the row / column / box pale.
+- **Diag:** the two diagonals are faint deep-periwinkle lines under the grid lines, and a diagonal
+  is a house, so its squares join the selection's pale peers (`peer`).
+- **Window:** window squares are light grey at rest (the pale peer tint wins while lit), each window
+  framed in periwinkle over the walls; window squares join the pale peers (a window is a house).
+- **Towers:** one region (no box walls), peers are the row and column only, the border clues are
+  gutter chips (0.66 of a square): ringed on the selected line, a full periwinkle circle once a
+  finished line checks out (the old OK), red when it does not (the old OFF).
+- **Whittle** (no pad, no Notes, no Undo): a standing clue is a pale square with a bold ink digit,
+  a lifted one a faint grey digit on white; the pips over the board (lifted full periwinkle, can
+  still come out pale, can never come out grey, the perfect pip ringed) and "N of M out"; "Tap a
+  bold clue to take it out." under the board, then Hint and End here (the same two-tap `giveUp` as
+  the foot's Give up, sharing its `armGive`). The line: "N clues standing · perfect is P · S slips".
+  A slip still nudges the square (`whs-shake`).

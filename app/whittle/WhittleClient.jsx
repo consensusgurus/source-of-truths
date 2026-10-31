@@ -75,6 +75,8 @@ import { CELLS, boxOf, legalRemovals, bestRemoval, scoreFor } from '@/lib/whittl
 import { endGrade, endEfficiency } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import { usePhoneStage } from '../PlayStage';
+import SudokuStage, { sudokuEyebrow, SK_ICON } from '../SudokuStage';
 
 // Whittle's identity is the bronze end of the Sudoku row, the one warm dark
 // step none of the other nine wears (Suds orange, Quilt magenta, Cages purple,
@@ -264,6 +266,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
   const focusMode = playing && !showChrome;
   const LOFT = isLoft('whittle');
   const STAGE = isStage('whittle', searchParams);
+  const phoneStage = usePhoneStage();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('whittle');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('whittle');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -627,10 +630,72 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
 
   const detail = `${left} left${perfectHit ? ' · perfect' : ` · perfect is ${PERFECT}`}`;
 
+  // THE SUDOKU STAGE (owner, 2026-10-31, Whittle.dc.html): the shared periwinkle
+  // board on the white PlayStage (app/SudokuStage.jsx), at every width. Whittle
+  // is played backwards, so it has no pad, no Notes and no Undo: a standing
+  // clue is a pale periwinkle square with a bold ink digit, a lifted one shows
+  // its digit faint grey on white, a tapped blank square is the full periwinkle.
+  // Over the board the pips (one per clue that can come out, the perfect mark
+  // ringed); under it the one line, then Hint and End here. Presentation only:
+  // every control calls this client's own handlers (cellClick, useHint, giveUp),
+  // so legality, slips, scoring, saves, posting and the finish are unchanged and
+  // the old board stays behind the stage. End here and the foot's Give up are
+  // the same two-tap giveUp (the day ends at the clues still standing).
+  const whStage = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const whOut = OPEN_CLUES - PERFECT;
+  const whTap = () => { if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; setArmGive(false); giveUp(); } else { setArmGive(Date.now()); } };
+  const whLine = toast || `${left} clue${left === 1 ? '' : 's'} standing · ${perfectHit ? 'perfect' : `perfect is ${PERFECT}`}${g.slips ? ` · ${g.slips} slip${g.slips === 1 ? '' : 's'}` : ''}`;
+  const stageEl = whStage ? (
+    <SudokuStage gameKey="whittle" label="Whittle"
+      eyebrow={sudokuEyebrow(PUZZLE, 'sudoku backwards')}
+      playing={playing}
+      above={(
+        <div className="whs-meter" aria-label={`${g.gone.length} of ${whOut} possible clues lifted`}>
+          <style dangerouslySetInnerHTML={{ __html: WHS_CSS }} />
+          <span className="whs-pips">
+            {Array.from({ length: OPEN_CLUES }).map((_, k) => (
+              <i key={k} className={(k < g.gone.length ? 'out' : (k >= whOut ? 'never' : '')) + (k === whOut - 1 ? ' perf' : '')} />
+            ))}
+          </span>
+          <b>{g.gone.length} of {whOut} out</b>
+        </div>
+      )}
+      board={{
+        n: N,
+        region: (r, c) => boxOf(r, c),
+        given: cur, cells: solFlat, notes: [],
+        sel: playing ? sel : -1, hl: 0,
+        peer: () => false,
+        fill: (i) => (cur[i] ? 'var(--pst-pale)' : null),
+        cellClass: (i) => [cur[i] ? '' : 'whs-gone', shake === i ? 'whs-shake' : ''].filter(Boolean).join(' '),
+        cellLabel: (i) => `Row ${Math.floor(i / N) + 1}, column ${(i % N) + 1}, ${cur[i] ? `clue ${solFlat[i]}, tap to take it out` : `${solFlat[i]}, taken out`}`,
+        onCell: (i) => { if (playing) cellClick(i); },
+        digitScale: 0.5,
+      }}
+      between={playing ? <div className="whs-say">Tap a bold clue to take it out.</div> : null}
+      below={playing ? (
+        <div className="whs-acts">
+          {hintOk && !g.hintUsed ? (
+            <button type="button" className="whs-act soft" onClick={useHint} disabled={thinking} title="Lift a clue that keeps the best finish open (one hint, first play only)">
+              {SK_ICON.hint}<span>{thinking ? 'Looking…' : 'Hint'}</span>
+            </button>
+          ) : null}
+          <button type="button" className={'whs-act' + (armGive ? ' warn' : '')} onClick={whTap} title="End the day with the clues still standing (two taps)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 21V4" /><path d="M5 4h11l-2 4 2 4H5" /></svg>
+            <span>{armGive ? `Tap again: end at ${left}` : 'End here'}</span>
+          </button>
+        </div>
+      ) : null}
+      line={whLine}
+      giveUp={{ armed: !!armGive, onPress: whTap, armedLabel: `Tap again to end the day at ${left}` }}
+      clock={elapsed} done={!playing} />
+  ) : null;
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageEl}
       {!STAGE && <Grain />}
       {!STAGE && <DailyChrome slug="whittle" name="Whittle" collapsed={started} loft={LOFT} />}
       {LOFT && (
@@ -965,3 +1030,26 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// Whittle's own stage pieces (the pips, the line, Hint / End here, the lifted
+// digits and the slip nudge), on the shared SudokuStage tokens.
+const WHS_CSS = `
+.whs-meter{display:flex;align-items:center;gap:10px;}
+.whs-pips{display:flex;gap:3px;align-items:center;flex:1;flex-wrap:wrap;min-width:0;}
+.whs-pips i{width:11px;height:11px;border-radius:3px;box-sizing:border-box;background:var(--pst-pale);box-shadow:inset 0 0 0 1.5px var(--pst-deep);}
+.whs-pips i.out{background:var(--pst-acc);box-shadow:inset 0 0 0 2px var(--pst-ink);}
+.whs-pips i.never{background:var(--sks-off);box-shadow:inset 0 0 0 1.5px var(--sks-off-line);}
+.whs-pips i.perf{outline:2px solid var(--pst-deep);outline-offset:2px;}
+.whs-meter b{margin-left:auto;font-size:13px;font-weight:800;color:var(--pst-ink);white-space:nowrap;}
+.pst .sks-cl.whs-gone{color:var(--sks-off-ink);font-weight:500;}
+.pst .sks-cl.whs-gone.sel{color:var(--pst-on-acc);}
+.whs-shake{animation:whs-nudge .4s;}
+@keyframes whs-nudge{0%,100%{transform:translateX(0)}18%{transform:translateX(-4px)}38%{transform:translateX(4px)}58%{transform:translateX(-3px)}78%{transform:translateX(2px)}}
+.whs-say{text-align:center;font-size:13px;font-weight:800;color:var(--pst-ink);}
+.whs-acts{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;}
+.pst .whs-act{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:54px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--sks-base);color:var(--pst-ink);font:inherit;font-size:14px;font-weight:800;padding:0 10px;white-space:nowrap;overflow:hidden;touch-action:manipulation;}
+.pst .whs-act.soft{background:var(--pst-pale);}
+.pst .whs-act.warn{background:var(--pst-bad-bg);color:var(--pst-bad);border-color:var(--pst-bad);}
+.pst .whs-act:disabled{opacity:.6;}
+@media (hover:hover) and (pointer:fine){.pst .whs-act:not(.warn):not(:disabled):hover{background:var(--pst-pale);}}
+`;
