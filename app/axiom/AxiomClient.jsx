@@ -64,6 +64,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 const COLORS = {
   cream: T.surface,
@@ -90,6 +92,7 @@ const TOTAL = 12;
 const WRONG_COST = 4;      // a wrong name
 const UNPROVEN_COST = 4;   // per rule still standing when you name the right one
 const MAX_WRONG = 2;       // wrong names allowed before the day is over
+const ARM_MIN_MS = 400;    // a Give up confirm faster than this was a double tap, not a decision
 
 // ─── the rule language ──────────────────────────────────────────────────────
 // Specs are data in puzzles.js; the predicate and the reader-facing label both
@@ -381,6 +384,15 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
+  // Give up is two taps on the stage foot (Axiom's old Reveal link had no arm step).
+  const [armGive, setArmGive] = useState(false);
+  useEffect(() => {
+    if (!armGive) return undefined;
+    const t = setTimeout(() => setArmGive(false), 3500);
+    return () => clearTimeout(t);
+  }, [armGive]);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -711,16 +723,18 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
       accent={COLORS.accent} accentSoft={COLORS.accentSoft} accentDeep={COLORS.accentDeep}
       lead="Work out the hidden rule."
       chips={[
-        { label: 'EFFORT', style: { fontSize: 12, letterSpacing: '0.04em', background: `var(--stg-surf, ${COLORS.greenSoft})`, border: `1.5px solid var(--stg-line, ${COLORS.green})`, color: 'var(--stg-good, #14532d)' } },
-        { label: 'FALSE', style: { fontSize: 12, letterSpacing: '0.04em', background: `var(--stg-surf, ${COLORS.redSoft})`, border: `1.5px solid var(--stg-line, ${COLORS.redInk})`, color: 'var(--stg-bad, #7f1d1d)' } },
+        { label: 'EFFORT', style: STAGE ? AXS_CHIP_YES : { fontSize: 12, letterSpacing: '0.04em', background: `var(--stg-surf, ${COLORS.greenSoft})`, border: `1.5px solid var(--stg-line, ${COLORS.green})`, color: 'var(--stg-good, #14532d)' } },
+        { label: 'FALSE', style: STAGE ? AXS_CHIP_NO : { fontSize: 12, letterSpacing: '0.04em', background: `var(--stg-surf, ${COLORS.redSoft})`, border: `1.5px solid var(--stg-line, ${COLORS.redInk})`, color: 'var(--stg-bad, #7f1d1d)' } },
         { label: 'TRAIL', style: { fontSize: 12, letterSpacing: '0.04em', background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : '1.5px solid rgba(28,30,36,0.18)', color: INK } },
       ]}
-      sub="Green: the rule is true of that word. Red: it is not. Grey: already one or the other, but you have not uncovered it."
+      sub={STAGE
+        ? 'Rose: the rule is true of that word. White: it is not. Grey: already one or the other, but you have not uncovered it.'
+        : 'Green: the rule is true of that word. Red: it is not. Grey: already one or the other, but you have not uncovered it.'}
       steps={[
         <>{PUZZLE.rules.length} candidate rules sit under the board. <b>Exactly one</b> fits every tile.</>,
-        <>Tapping a tile crosses it out as a free note. To <b>spend a test</b> and flip its colour, switch to <b>Test</b> or hold the tile. You get <b>{PUZZLE.budget}</b>.</>,
+        <>Tapping a tile crosses it out as a free note. To <b>spend a test</b> and flip its colour, switch to <b>{STAGE ? 'Test a word' : 'Test'}</b> or hold the tile. You get <b>{PUZZLE.budget}</b>.</>,
         <>Cross out each rule as the colours kill it. This is a free note for your own benefit and never changes your score.</>,
-        <>Hit the <b>Name it</b> button and pick the one still standing.</>,
+        <>Hit the <b>{STAGE ? 'Name the rule' : 'Name it'}</b> button and pick the one still standing.</>,
       ]}
       knackLabel="The knack: only test words the surviving rules disagree about."
       knack="Work out what each live rule predicts for a tile before you spend on it. If they all predict the same colour, that tile teaches you nothing whichever way it flips. The useful tiles are the ones that split the field, and most tiles are not useful."
@@ -740,6 +754,96 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31 mockup): Axiom plays on the shared white
+          stage at every width: the words, the tap switch, the candidate rules,
+          Name the rule, one line, and the foot's Clock, How to play and Give
+          up. Every control calls the board's own handler, so tests, scoring,
+          saves and posting are untouched. A word that fits the rule is rose, a
+          word that does not is white; a wrong name is orange (Logic's wrong). */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !loftRevealed) && (() => {
+        const dk = isDarkLook(stageLook);
+        const warn = dk ? '#fb923c' : '#c2410c';
+        const warnBg = dk ? '#3a1f10' : '#ffedd5';
+        const fresh = testsUsed === 0 && struckCount === 0 && !(g.marks || []).length;
+        const line = toast || (verdict ? verdict.msg
+          : g.naming ? 'Pick the rule that fits every word on the board.'
+          : !playing ? (g.status === 'done' ? `Named it on ${testsUsed} test${testsUsed === 1 ? '' : 's'}` : 'The board kept its rule')
+          : testsLeft === 0 ? 'Out of tests. Name the rule.'
+          : fresh ? (mode === 'test' ? 'A tap spends a test. Cross words and rules out for free.' : `A tap crosses a word out, free. ${mobileUi ? 'Hold' : 'Hold or right-click'} a word to test it.`)
+          : `${testsUsed} of ${PUZZLE.budget} tests spent · ${candStanding} rule${candStanding === 1 ? '' : 's'} standing${g.wrongPicks.length ? ` · ${namesLeft} name${namesLeft === 1 ? '' : 's'} left` : ''}`);
+        return (
+          <PlayStage bg={gameColor('axiom')} label="Axiom"
+            eyebrow={`Axiom No. ${PUZZLE.num} · ${PUZZLE.sunday ? 'Sunday · ' : ''}find the rule`}
+            top={(
+              <div className={'axs' + (PUZZLE.tiles.length > 24 || PUZZLE.rules.length > 5 ? ' sun' : '')} style={{ '--axs-warn': warn, '--axs-warn-bg': warnBg }}>
+                <style dangerouslySetInnerHTML={{ __html: AXS_CSS }} />
+                <div className="axs-tiles" role="group" aria-label="The words">
+                  {PUZZLE.tiles.map((t, i) => {
+                    const shown = revealed(i);
+                    const tested = g.tested.includes(i);
+                    const marked = !shown && (g.marks || []).includes(i);
+                    const len = t.w.length;
+                    const cls = ['axs-tl', shown ? (t.t ? 'y' : 'n') : '', marked ? 'off' : '', t.g ? 'g' : '', len >= 11 ? 'xl' : (len >= 9 ? 'l' : (len === 8 ? 'm' : ''))].filter(Boolean).join(' ');
+                    const state = shown ? (t.t ? 'fits the rule' : 'does not fit') : marked ? 'crossed out' : 'untested';
+                    return (
+                      <button key={t.w} type="button" className={cls}
+                        onClick={() => tapTile(i)}
+                        onContextMenu={(e) => { e.preventDefault(); if (longFired.current) { longFired.current = false; return; } testTile(i); }}
+                        onPointerDown={(e) => { if (e.pointerType === 'touch') startPress(i, e); }}
+                        onPointerMove={movePress}
+                        onPointerUp={endPress}
+                        onPointerLeave={endPress}
+                        onPointerCancel={endPress}
+                        disabled={shown || !playing}
+                        aria-label={`${t.w}, ${state}${t.g ? ', given' : ''}${tested ? ', tested' : ''}`}
+                        title={t.g ? 'Given' : shown ? 'Tested' : mode === 'test' ? 'Spend a test on this word' : 'Cross this word out (free). Hold or right-click to spend a test.'}>
+                        {t.w}
+                      </button>
+                    );
+                  })}
+                </div>
+                {playing && (
+                  <div className="axs-bar">
+                    <div className="axs-seg" role="group" aria-label="What a tap does">
+                      <button type="button" className={mode === 'mark' ? 'on' : undefined} aria-pressed={mode === 'mark'} onClick={() => setMode('mark')} title="Cross words out. Free, and it changes nothing on the board.">Cross out</button>
+                      <button type="button" className={mode === 'test' ? 'on' : undefined} aria-pressed={mode === 'test'} onClick={() => setMode('test')} title="Tap a word to spend a test and uncover it.">Test a word</button>
+                    </div>
+                    <button type="button" className="axs-mini" onClick={clearNotes} disabled={!hasNotes}>Clear notes</button>
+                  </div>
+                )}
+                <div className={'axs-rules' + (playing && g.naming ? ' naming' : '')} role="group" aria-label={g.naming ? 'Pick the rule' : 'Candidate rules, tap to cross one out'}>
+                  {PUZZLE.rules.map((r, i) => {
+                    const wrong = g.wrongPicks.includes(i);
+                    const struck = g.struck.includes(i);
+                    const dead = !playing && solShown && i !== ANSWER;
+                    const winner = !playing && solShown && i === ANSWER;
+                    const cls = ['axs-ru', winner ? 'win' : '', wrong ? 'wrong' : ((dead || struck) ? 'dead' : ''), playing && g.naming && !wrong ? 'pick' : ''].filter(Boolean).join(' ');
+                    return (
+                      <button key={i} type="button" className={cls}
+                        onClick={() => (g.naming ? nameRule(i) : toggleStrike(i))}
+                        disabled={!playing}
+                        aria-pressed={playing && !g.naming ? struck : undefined}
+                        aria-label={`Rule ${String.fromCharCode(65 + i)}: ${ruleLabel(r)}${wrong ? ', wrong name' : struck ? ', crossed out' : ''}${winner ? ', the rule' : ''}`}>
+                        <b>{String.fromCharCode(65 + i)}</b><span>{ruleLabel(r)}</span>
+                        {winner ? <i>{ICON.check}</i> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+                {playing && (
+                  <button type="button" className={'axs-go' + (g.naming ? ' armed' : '')}
+                    onClick={() => { if (namesLeft <= 0) { say('No names left today.'); return; } setG((cur) => ({ ...cur, naming: !cur.naming })); }}
+                    aria-pressed={g.naming}>
+                    {g.naming ? 'Pick a rule above, or tap to cancel' : 'Name the rule'}{g.wrongPicks.length && !g.naming ? ` (${namesLeft} left)` : ''}
+                  </button>
+                )}
+              </div>
+            )}
+            foot={verdict && !toast ? <span style={{ color: warn }}>{line}</span> : line}
+            giveUp={{ armed: !!armGive, onPress: () => { if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; setArmGive(false); reveal(); } else { setArmGive(Date.now()); } }, armedLabel: 'Tap again to give up and see the rule' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1275,3 +1379,70 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 }
+
+// The stage board (owner, 2026-10-31 mockup): untested words light grey, a word
+// that fits the rule full rose, one that does not white with a light rule, a
+// given word carries a small dot, a crossed-out word fades and is struck. The
+// rules are white rows with a pale rose letter chip; a crossed-out rule fades
+// and is struck, a wrong name is orange.
+// The How to play chips on the stage match the stage board: a word that fits
+// is full rose with dark ink, a word that does not is white with a light rule.
+const AXS_CHIP_YES = { fontSize: 12, letterSpacing: '0.04em', background: 'var(--stg-acc-dk, #fb7185)', border: '2px solid #08222e', color: '#08222e' };
+const AXS_CHIP_NO = { fontSize: 12, letterSpacing: '0.04em', background: 'transparent', border: '1.5px solid #c9d2dc', color: 'var(--stg-mute, #3b4656)' };
+const AXS_CSS = `
+.axs{display:flex;flex-direction:column;gap:12px;}
+.axs-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;}
+.pst .axs-tl{position:relative;height:40px;border-radius:10px;border:2px solid var(--pst-ink);background:var(--pst-cell);font-size:12px;font-weight:800;letter-spacing:.02em;padding:0 2px;min-width:0;overflow:hidden;white-space:nowrap;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
+.pst .axs-tl.l{font-size:10.5px;letter-spacing:0;}
+.pst .axs-tl.xl{font-size:9px;letter-spacing:0;}
+.pst .axs-tl:disabled{cursor:default;opacity:1;}
+.pst .axs-tl.y{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .axs-tl.n{background:var(--pst-bg);border-color:var(--pst-cell-line);color:var(--pst-mute);}
+.pst .axs-tl.off{opacity:.35;text-decoration:line-through;text-decoration-thickness:1.5px;}
+.pst .axs-tl.g::after{content:"";position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:3px;background:currentColor;opacity:.7;}
+.axs-bar{display:flex;align-items:center;gap:8px;}
+.axs-seg{display:flex;flex:1;min-width:0;border:2px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
+.pst .axs-seg button{flex:1;min-width:0;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;padding:0 6px;white-space:nowrap;}
+.pst .axs-seg button+button{border-left:2px solid var(--pst-ink);}
+.pst .axs-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .axs-mini{flex:none;height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--pst-ink);background:transparent;font-size:13px;font-weight:800;white-space:nowrap;}
+.pst .axs-mini:disabled{opacity:.4;cursor:default;}
+.axs-rules{display:flex;flex-direction:column;gap:5px;}
+.pst .axs-ru{display:flex;align-items:center;gap:10px;min-height:44px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:14.5px;font-weight:800;line-height:1.25;text-align:left;padding:5px 12px;width:100%;}
+.pst .axs-ru:disabled{cursor:default;opacity:1;}
+.pst .axs-ru b{width:24px;height:24px;border-radius:12px;background:var(--pst-pale);box-shadow:inset 0 0 0 2px var(--pst-ink);display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none;}
+.pst .axs-ru span{flex:1;min-width:0;}
+.pst .axs-ru i{display:inline-flex;flex:none;font-style:normal;}
+.pst .axs-ru.dead{opacity:.4;border-color:var(--pst-cell-line);}
+.pst .axs-ru.dead span{text-decoration:line-through;}
+.pst .axs-ru.wrong{border-color:var(--axs-warn);background:var(--axs-warn-bg);color:var(--axs-warn);}
+.pst .axs-ru.wrong b{background:transparent;box-shadow:inset 0 0 0 2px var(--axs-warn);color:var(--axs-warn);}
+.pst .axs-ru.wrong span{text-decoration:line-through;}
+.pst .axs-ru.pick{background:var(--pst-pale);}
+.pst .axs-ru.win{background:var(--pst-acc);}
+.pst .axs-ru.win,.pst .axs-ru.win *{color:var(--pst-on-acc);}
+.pst .axs-ru.win b{background:var(--pst-bg);color:var(--pst-ink);}
+.pst .axs-go{height:48px;border-radius:16px;border:2px solid var(--pst-ink);background:var(--pst-acc);color:var(--pst-on-acc);font-size:16px;font-weight:800;width:100%;}
+.pst .axs-go.armed{background:transparent;color:var(--pst-ink);}
+/* The Sunday Edition's wider field (28 words, 7 rules) fits a 390x844 phone:
+   five words to a row and slimmer rows. */
+.axs.sun{gap:10px;}
+.axs.sun .axs-tiles{grid-template-columns:repeat(5,minmax(0,1fr));}
+.pst .axs.sun .axs-tl{height:36px;font-size:11px;letter-spacing:0;padding:0 1px;}
+.pst .axs.sun .axs-tl.m{font-size:10px;}
+.pst .axs.sun .axs-tl.l{font-size:9px;}
+.axs.sun .axs-rules{gap:4px;}
+.pst .axs.sun .axs-ru{min-height:38px;font-size:13.5px;padding:3px 12px;}
+.pst .axs.sun .axs-go{height:46px;}
+@media (min-width:900px){
+  .axs.sun .axs-tiles{grid-template-columns:repeat(7,minmax(0,1fr));}
+  .pst .axs.sun .axs-tl{height:48px;font-size:13px;}
+  .pst .axs.sun .axs-tl.m{font-size:12px;}
+  .pst .axs.sun .axs-tl.l{font-size:11px;}
+  .pst .axs.sun .axs-ru{min-height:44px;font-size:14.5px;}
+  .axs-tiles{gap:8px;}
+  .pst .axs-tl{height:48px;font-size:14px;}
+  .pst .axs-tl.l{font-size:12.5px;}
+  .pst .axs-tl.xl{font-size:11px;}
+}
+`;

@@ -62,6 +62,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 const COLORS = {
   cream: T.surface,
@@ -309,6 +311,8 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
@@ -704,9 +708,9 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="Solve the grid, then name the one sign that is lying."
       chips={[
-        { label: 'Dashed sign: not yet tested', style: { background: 'transparent', border: '1.5px solid var(--fb-btn)' } },
-        { label: 'Shaded sign: your grid satisfies it', tone: 'grey' },
-        { label: 'Striped sign: your grid breaks it', tone: 'warn', style: { background: 'var(--fb-warn-stripe)', border: '2.5px solid var(--stg-warn, #b45309)' } },
+        { label: STAGE ? 'White sign: not yet tested' : 'Dashed sign: not yet tested', style: { background: 'transparent', border: '1.5px solid var(--fb-btn)' } },
+        { label: STAGE ? 'Grey sign: your grid keeps it' : 'Shaded sign: your grid satisfies it', tone: 'grey' },
+        { label: STAGE ? 'Orange sign: your grid breaks it' : 'Striped sign: your grid breaks it', tone: 'warn', style: STAGE ? { background: 'var(--fb-warn-soft)', border: '2px solid var(--stg-bad, #c2410c)' } : { background: 'var(--fb-warn-stripe)', border: '2.5px solid var(--stg-warn, #b45309)' } },
         { label: 'Struck digit: repeated in its line', tone: 'bad', style: { textDecoration: 'line-through' } },
       ]}
       steps={[
@@ -715,7 +719,7 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
         <>Tap a square then a number, or type. <b>Notes</b> (press N) pencils candidates, <b>Undo</b> is Ctrl+Z, and one free <b>hint</b>, on your first ever play, fills a correct square.</>,
         <>Fill the grid, then <b>tap the sign you are accusing</b> and hit <b>Submit</b>.</>,
       ]}
-      knack="The sign markings are free and only report what you could read off the board yourself. Finish with exactly one striped sign and that is your liar."
+      knack={`The sign markings are free and only report what you could read off the board yourself. Finish with exactly one ${STAGE ? 'orange' : 'striped'} sign and that is your liar.`}
       footer="One grid and one liar fit the board, so the answer is provable, never a guess. Fewer wrong submissions, then a faster time, rank higher on the board. Sundays are a bigger 6×6 Edition."
     />
   );
@@ -839,6 +843,116 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), ...FIB_VARS, minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-10-31 mockup): Fib plays on the shared white
+          stage at every width: the grid with its signs, the digit pad, the
+          tools, Submit, one line, and the foot. Printed squares are light grey,
+          the picked square rose and its row and column pale rose. A sign is
+          white until both ends are filled, grey once your grid keeps it, orange
+          once your grid breaks it (Logic's wrong), and rose when accused. Every
+          tap goes through the board's own handlers; the pad hides on a desktop
+          with a mouse, where the keyboard types the digits. */}
+      {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+        const dk = isDarkLook(stageLook);
+        const warn = dk ? '#fb923c' : '#c2410c';
+        const warnBg = dk ? '#3a1f10' : '#ffedd5';
+        const track = Array(n).fill('minmax(0, 1fr)').join(' minmax(0, 0.34fr) ');
+        const cellsOut = [];
+        for (let i = 0; i < SIDE * SIDE; i++) {
+          const gr = Math.floor(i / SIDE), gc = i % SIDE;
+          const rowIsCell = gr % 2 === 0, colIsCell = gc % 2 === 0;
+          if (rowIsCell && colIsCell) {
+            const r = gr / 2, c = gc / 2, idx = r * n + c;
+            const v = viewVals[idx];
+            const isGiven = GIVEN[idx] !== undefined;
+            const isSel = playing && sel === idx;
+            const isPeer = playing && !isSel && sel !== null && (r === selR || c === selC);
+            const isDup = dups.has(idx);
+            const noteMask = viewNotes[idx];
+            const cls = ['fbs-cl', isGiven ? 'gv' : '', isPeer ? 'peer' : '', isSel ? 'sel' : '', isDup ? 'dup' : ''].filter(Boolean).join(' ');
+            cellsOut.push(
+              <button key={i} type="button" className={cls} onClick={() => { if (playing) { setSel(idx); if (!gRef.current.t0) startGame(); } }} disabled={!playing}
+                aria-label={`Row ${r + 1}, column ${c + 1}${v ? `, ${v}` : ', empty'}${isGiven ? ', given' : ''}${isDup ? ', repeated in its line' : ''}${isSel ? ', selected' : ''}`}>
+                {v ? <span className="v">{v}</span> : noteMask ? (
+                  <span className="nt">{Array.from({ length: n }).map((_, k) => <span key={k}>{noteMask & (1 << (k + 1)) ? k + 1 : ''}</span>)}</span>
+                ) : null}
+              </button>
+            );
+            continue;
+          }
+          if (!rowIsCell && !colIsCell) { cellsOut.push(<span key={i} aria-hidden="true" />); continue; }
+          const r1 = rowIsCell ? gr / 2 : (gr - 1) / 2;
+          const c1 = colIsCell ? gc / 2 : (gc - 1) / 2;
+          const r2 = rowIsCell ? r1 : r1 + 1;
+          const c2 = colIsCell ? c1 : c1 + 1;
+          const ci = CLUE_AT[`${r1},${c1},${r2},${c2}`];
+          if (ci === undefined) { cellsOut.push(<span key={i} aria-hidden="true" />); continue; }
+          const cl = PUZZLE.clues[ci];
+          const st = clueStates[ci];
+          const accused = viewAcc === ci;
+          const isLiar = !playing && !hideAns && ci === PUZZLE.liar;
+          const stateWord = st === 'idle' ? 'not yet tested' : st === 'ok' ? 'your grid keeps it' : 'your grid breaks it';
+          const cls = ['fbs-sg', st === 'ok' ? 'ok' : '', st === 'broken' ? 'bad' : '', (accused || isLiar) ? 'acc' : ''].filter(Boolean).join(' ');
+          cellsOut.push(
+            <span key={i} className="fbs-gap">
+              <button type="button" className={cls} onClick={() => accuse(ci)} disabled={!playing}
+                aria-pressed={playing ? accused : undefined}
+                aria-label={`Sign between row ${cl[0] + 1} column ${cl[1] + 1} and row ${cl[2] + 1} column ${cl[3] + 1}, ${stateWord}${accused ? ', accused' : ''}${isLiar ? ', the sign that lied' : ''}`}
+                title={playing ? (accused ? 'Accused. Tap again to withdraw.' : 'Accuse this sign of lying') : undefined}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points={chevronPts(cl)} /></svg>
+              </button>
+            </span>
+          );
+        }
+        const line = toast || (!playing
+          ? (won ? `Liar caught${errors ? ` · ${errors} wrong submission${errors === 1 ? '' : 's'}` : ''}` : 'The fib got away')
+          : gridFull
+            ? (g.acc === null ? 'Grid full. Tap the sign that lied.' : brokenCount !== 1 ? 'Only one sign lies. Check your grid before you submit.' : 'Submit when you are sure.')
+            : `${liveFilled} of ${N} filled · ${g.acc === null ? 'tap a sign to accuse it' : (brokenCount === 0 ? 'no sign broken' : brokenCount === 1 ? 'one sign broken' : `${brokenCount} signs broken`)}${errors ? ` · ${errors} wrong` : ''}`);
+        return (
+          <PlayStage bg={gameColor('fib')} label="Fib"
+            eyebrow={`Fib No. ${PUZZLE.num} · ${PUZZLE.sunday ? 'Sunday · ' : ''}one sign is lying`}
+            top={(
+              <div className={'fbs' + (n > 5 ? ' n6' : '')} style={{ '--fbs-warn': warn, '--fbs-warn-bg': warnBg }}>
+                <style dangerouslySetInnerHTML={{ __html: FBS_CSS }} />
+                <div className="fbs-bd" role="group" aria-label={`The grid, ${n} by ${n}`} style={{ gridTemplateColumns: track, gridTemplateRows: track }}>
+                  {cellsOut}
+                </div>
+                {playing && (
+                  <div className="fbs-pad" style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}>
+                    {Array.from({ length: n }).map((_, k) => (
+                      <button key={k} type="button" className={'fbs-k' + (mode === 'note' ? ' note' : '')} onClick={() => writeDigit(k + 1)} aria-label={mode === 'note' ? `Pencil ${k + 1}` : `Write ${k + 1}`}>{k + 1}</button>
+                    ))}
+                  </div>
+                )}
+                {playing && (
+                  <div className="fbs-tools">
+                    <button type="button" className={'fbs-mini' + (mode === 'note' ? ' on' : '')} aria-pressed={mode === 'note'} onClick={() => setMode((m) => (m === 'note' ? 'write' : 'note'))} title="Pencil small candidates (N)">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z" /></svg>Notes
+                    </button>
+                    <button type="button" className="fbs-mini" onClick={() => writeDigit(0)} title="Erase (Backspace)">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6H9l-5 6 5 6h11z" /><path d="M12 9l6 6M18 9l-6 6" /></svg>Erase
+                    </button>
+                    <button type="button" className="fbs-mini" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5" /><path d="M4 9h10a6 6 0 0 1 0 12h-3" /></svg>Undo
+                    </button>
+                    {hintOk && !g.hintUsed && (
+                      <button type="button" className="fbs-mini" onClick={useHint} title="Fill one correct square (one hint, first play only)">{ICON.bulb}Hint</button>
+                    )}
+                  </div>
+                )}
+                {playing && (
+                  <button type="button" className="fbs-go" onClick={submit} disabled={!canSubmit}
+                    aria-label={canSubmit ? 'Submit your grid and your accused sign' : 'Submit, available once the grid is full and a sign is accused'}>
+                    Submit
+                  </button>
+                )}
+              </div>
+            )}
+            foot={line}
+            giveUp={{ armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }, armedLabel: 'Tap again to end the puzzle and show the answer' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1277,3 +1391,50 @@ export default function FibClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-10-31 mockup): white squares with an ink rule,
+// printed squares light grey, the picked square full rose and its row and
+// column pale rose. The signs sit in the gaps: white with a light rule while
+// untested, grey once your grid keeps them, orange once it breaks them, full
+// rose when accused. A digit repeated in its line is struck in orange.
+const FBS_CSS = `
+.fbs{display:flex;flex-direction:column;gap:12px;}
+.fbs-bd{display:grid;align-self:center;width:min(100%, 420px);aspect-ratio:1;}
+.fbs.n6 .fbs-bd{width:min(100%, 440px);}
+.pst .fbs-cl{position:relative;min-width:0;min-height:0;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);padding:0;display:flex;align-items:center;justify-content:center;font-size:clamp(20px, 6.6vw, 30px);font-weight:700;touch-action:manipulation;}
+.fbs.n6 .fbs-cl{font-size:clamp(17px, 5.4vw, 26px);border-radius:10px;}
+.pst .fbs-cl:disabled{cursor:default;opacity:1;}
+.pst .fbs-cl.gv{background:var(--pst-cell);font-weight:800;}
+.pst .fbs-cl.peer{background:var(--pst-pale);}
+.pst .fbs-cl.sel{background:var(--pst-acc);}
+.pst .fbs-cl.sel,.pst .fbs-cl.sel *{color:var(--pst-on-acc);}
+.pst .fbs-cl.dup .v{color:var(--fbs-warn);text-decoration:line-through;text-decoration-thickness:2px;}
+.fbs-cl .v{line-height:1;}
+.fbs-cl .nt{display:grid;grid-template-columns:repeat(3,1fr);width:84%;font-size:11px;font-weight:800;line-height:13px;text-align:center;color:var(--pst-mute);}
+.fbs.n6 .fbs-cl .nt{font-size:10px;line-height:11px;}
+.fbs-gap{position:relative;min-width:0;min-height:0;}
+.pst .fbs-sg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;width:30px;height:30px;border-radius:9px;border:1.5px solid var(--pst-cell-line);background:var(--pst-bg);padding:0;display:flex;align-items:center;justify-content:center;}
+.fbs.n6 .fbs-sg{width:26px;height:26px;border-radius:8px;}
+.pst .fbs-sg:disabled{cursor:default;opacity:1;}
+.fbs-sg svg{width:62%;height:62%;display:block;}
+.pst .fbs-sg.ok{background:var(--pst-cell);border-color:var(--pst-cell);}
+.pst .fbs-sg.bad{background:var(--fbs-warn-bg);border:2px solid var(--fbs-warn);color:var(--fbs-warn);}
+.pst .fbs-sg.acc{background:var(--pst-acc);border:2px solid var(--pst-ink);color:var(--pst-on-acc);}
+.pst .fbs-sg.acc.bad{box-shadow:0 0 0 3px var(--fbs-warn);}
+.fbs-pad{display:grid;gap:6px;}
+.pst .fbs-k{height:56px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-cell);font-size:26px;font-weight:800;padding:0;touch-action:manipulation;}
+.pst .fbs-k.note{background:var(--pst-pale);font-size:20px;}
+.fbs-tools{display:flex;justify-content:center;gap:6px;}
+.pst .fbs-mini{flex:1;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:5px;height:44px;padding:0 6px;border-radius:999px;border:2px solid var(--pst-ink);background:transparent;font-size:14px;font-weight:800;white-space:nowrap;}
+.pst .fbs-mini svg{flex:none;width:15px;height:15px;}
+.pst .fbs-mini.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .fbs-mini:disabled{opacity:.4;cursor:default;}
+.pst .fbs-go{height:48px;border-radius:16px;border:2px solid var(--pst-ink);background:var(--pst-acc);color:var(--pst-on-acc);font-size:16px;font-weight:800;width:100%;}
+.pst .fbs-go:disabled{opacity:.45;cursor:default;}
+@media (min-width:900px){
+  .fbs-bd{width:min(100%, 470px);}
+  .fbs.n6 .fbs-bd{width:min(100%, 500px);}
+  .pst .fbs-sg{width:34px;height:34px;}
+}
+@media (min-width:900px) and (hover:hover) and (pointer:fine){.fbs-pad{display:none !important;}}
+`;
