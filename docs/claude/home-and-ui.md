@@ -1464,7 +1464,15 @@ own category colour. The page wears the skill's ramp step at 45% on white.
 
 From a subtle-to-big range of mockups, the owner picked "Nudge": the phone home's category, skill,
 All Puzzles and My Puzzles tiles keep their layout, with names at 18.5px (was 15.5) and counts at
-13px (was 12); the sideways sizes moved up in step. A long name wraps (balanced) rather than clips.
+13px (was 12); the sideways sizes moved up in step.
+
+**One line per name (owner, 2026-11-01).** A tile name never wraps and grows its row: when the full
+name will not fit on one line the tile shows its short form, "Crowd" for Crowd Psychology and the
+skills' own `short` (Spatial, Focus, People). `catShortLabel()` supplies it; the tile renders both
+(`.lf` / `.sf`), a layout effect measures the full name against the tile's room and sets `sh` (short)
+or `fl` (full) before the first client paint, and a CSS container query keyed on the name's length
+(`lwNNN`) guesses before hydration. `lib/tile-flood.js` flies the label's `innerText`, so only the
+visible form travels.
 
 ## The page look menu: light/dark plus Balanced/Full color (owner, 2026-10-19)
 

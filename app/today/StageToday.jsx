@@ -426,6 +426,9 @@ const skillOfId = (id) => (isSkillId(id) ? SKILL_MAP[id.slice(SK_PRE.length)] ||
 // The category whose colour a pane wears: itself, or its skill's ramp step.
 const rampCat = (id) => { const s = skillOfId(id); return s ? RAMP_ORDER[s.ramp] || id : id; };
 const catLabel = (c) => { const s = skillOfId(c); return s ? s.name : c === 'Word' ? 'Words' : c; };
+// The phone tile's fallback when the full name will not fit on one line
+// (owner, 2026-11-01: "Crowd" when Crowd Psychology won't fit). Null: no short form.
+const catShortLabel = (c) => { const s = skillOfId(c); return s ? (s.short || null) : c === 'Crowd Psychology' ? 'Crowd' : null; };
 const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
 // THE REST OF THE PAGE IS PANES TOO (owner, 2026-10-07). Each id is also the
 // section's DOM id, so a #hash that names one opens it.
@@ -2049,6 +2052,32 @@ export default function StageToday() {
   // changes (a turn of the phone), never when the bars slide, so nothing
   // resizes under a thumb mid-scroll.
   const foldRef = useRef(null);
+  // ONE LINE PER NAME (owner, 2026-11-01: "call it Crowd when Crowd Psychology
+  // won't fit"). A tile whose name has a short form measures the full name and
+  // shows the short one ('sh') when it would wrap, or pins the full one ('fl')
+  // when it fits, so no tile grows its row. Before hydration a CSS container
+  // query guesses from the name's length (lwNNN, below); this settles it before
+  // the first client paint, and again on a width change or once fonts land.
+  useIsoLayoutEffect(() => {
+    if (picked) return undefined;
+    const check = () => {
+      const el = foldRef.current;
+      if (!el) return;
+      for (const t of el.querySelectorAll('.mph-t')) {
+        const lf = t.querySelector('.lf');
+        if (!lf) continue;
+        t.classList.remove('sh'); t.classList.add('fl');
+        const cs = getComputedStyle(t);
+        const room = t.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+        if (lf.offsetWidth > room + 0.5) { t.classList.remove('fl'); t.classList.add('sh'); }
+      }
+    };
+    check();
+    try { document.fonts.ready.then(check); } catch (e) {}
+    window.addEventListener('resize', check);
+    window.addEventListener('orientationchange', check);
+    return () => { window.removeEventListener('resize', check); window.removeEventListener('orientationchange', check); };
+  }, [picked, ixLens, runsMq]);
   useEffect(() => {
     if (!runsMq || picked) return undefined;
     let lastW = 0;
@@ -4126,8 +4155,8 @@ export default function StageToday() {
                     const rc = rampCat(cat);
                     const nd = games.filter((g) => done.has(g.key)).length;
                     return (
-                      <button key={cat} type="button" className="mph-t" style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat), { label: 'b', target: '.mph-htx .t > span', toTop: true, color: paneGround(rc) })}>
-                        <b>{catLabel(cat)}</b>
+                      <button key={cat} type="button" className={'mph-t' + (catShortLabel(cat) ? ' lw' + Math.min(200, Math.max(120, Math.ceil(catLabel(cat).length) * 10)) : '')} style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat), { label: 'b', target: '.mph-htx .t > span', toTop: true, color: paneGround(rc) })}>
+                        <b>{catShortLabel(cat) ? <><span className="lf">{catLabel(cat)}</span><span className="sf">{catShortLabel(cat)}</span></> : catLabel(cat)}</b>
                         <em>{ixLens === 'cat' ? `${games.length} ${games.length === 1 ? 'game' : 'games'}${nd ? ` \u00b7 ${nd} played` : ''}` : `${nd} of ${games.length}`}</em>
                       </button>
                     );
@@ -6996,6 +7025,21 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      same layout. A long name (Crowd Psychology) wraps rather than clips. */
   .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:18.5px;font-weight:800;line-height:1.18;letter-spacing:-0.01em;text-wrap:balance;padding-bottom:.08em;}
   .sty-mph .mph-grid > .mph-t em,.sty-mph .mph-grid > .mph-big em{font-size:13px;}
+  .sty-mph .mph-grid > .mph-t[class*=' lw']{container-type:inline-size;}
+  .sty-mph .mph-grid > .mph-t b .lf{white-space:nowrap;}
+  .sty-mph .mph-grid > .mph-t b .sf,.sty-mph .mph-grid > .mph-t.sh b .lf{display:none;}
+  .sty-mph .mph-grid > .mph-t.sh b .sf{display:inline;}
+  .sty-mph .mph-grid > .mph-t.fl b .lf{display:inline;}
+  .sty-mph .mph-grid > .mph-t.fl b .sf{display:none;}
+  @container (max-width:119.5px){.sty-mph .mph-grid > .mph-t.lw120:not(.fl) b .lf{display:none;}.sty-mph .mph-grid > .mph-t.lw120:not(.fl) b .sf{display:inline;}}
+  @container (max-width:129.5px){.sty-mph .mph-grid > .mph-t.lw130:not(.fl) b .lf{display:none;}.sty-mph .mph-grid > .mph-t.lw130:not(.fl) b .sf{display:inline;}}
+  @container (max-width:139.5px){.sty-mph .mph-grid > .mph-t.lw140:not(.fl) b .lf{display:none;}.sty-mph .mph-grid > .mph-t.lw140:not(.fl) b .sf{display:inline;}}
+  @container (max-width:149.5px){.sty-mph .mph-grid > .mph-t.lw150:not(.fl) b .lf{display:none;}.sty-mph .mph-grid > .mph-t.lw150:not(.fl) b .sf{display:inline;}}
+  @container (max-width:159.5px){.sty-mph .mph-grid > .mph-t.lw160:not(.fl) b .lf{display:none;}.sty-mph .mph-grid > .mph-t.lw160:not(.fl) b .sf{display:inline;}}
+  @container (max-width:169.5px){.sty-mph .mph-grid > .mph-t.lw170:not(.fl) b .lf{display:none;}.sty-mph .mph-grid > .mph-t.lw170:not(.fl) b .sf{display:inline;}}
+  @container (max-width:179.5px){.sty-mph .mph-grid > .mph-t.lw180:not(.fl) b .lf{display:none;}.sty-mph .mph-grid > .mph-t.lw180:not(.fl) b .sf{display:inline;}}
+  @container (max-width:189.5px){.sty-mph .mph-grid > .mph-t.lw190:not(.fl) b .lf{display:none;}.sty-mph .mph-grid > .mph-t.lw190:not(.fl) b .sf{display:inline;}}
+  @container (max-width:199.5px){.sty-mph .mph-grid > .mph-t.lw200:not(.fl) b .lf{display:none;}.sty-mph .mph-grid > .mph-t.lw200:not(.fl) b .sf{display:inline;}}
   .sty-mph .mph-grid > .mph-big{padding:10px 12px 11px;}
   .sty-mph .mph-fold > .mph-seg button{padding:9px 0 10px;font-size:13.5px;}
   /* The drawing in the top bar is for a phone turned sideways only. */
