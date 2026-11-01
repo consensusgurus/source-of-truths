@@ -62,6 +62,7 @@ import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import { usePhoneStage } from '../PlayStage';
 import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
+import { embedLook } from '../LogicStage';
 import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 // Sumo's legacy slate hue is OCHRE, the clay of the ring. The page itself is painted by the Sudoku
@@ -841,9 +842,9 @@ export default function SumoClient({ puzzles = [], forceNum = null }) {
   // width (app/SudokuStage.jsx). Presentation only: every control calls this
   // client's own handlers (cellClick, padTap, undo, eraseCell, clearBoard,
   // useHint, revealEnd), so scoring, saves, auto-move, posting and the finish
-  // are unchanged and the old board stays behind the stage. Not inside Enter
-  // the Dojo (EMBED), which keeps its own board and look.
-  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  // are unchanged and the old board stays behind the stage. Inside Enter
+  // the Dojo (EMBED) it draws inline in the run frame, in the run's look (2026-11-01).
+  const skStage = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
   const skDark = isDarkLook(skLook);
   const skMono = skLook === 'plain' || skLook === 'dark';
   const skLine = toast || (playing
@@ -851,7 +852,7 @@ export default function SumoClient({ puzzles = [], forceNum = null }) {
     : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
   const SK_SIGN_D = useMemo(() => signPath(PUZZLE.h, PUZZLE.v, STAGE_KINK, STAGE_HALF), [PUZZLE]);
   const stageEl = skStage ? (
-    <SudokuStage gameKey="sumo" label="Sumo"
+    <SudokuStage inline={!!EMBED} look={embedLook(EMBED)} gameKey="sumo" label="Sumo"
       eyebrow={sudokuEyebrow(PUZZLE, 'Greater-than')}
       playing={playing}
       board={{

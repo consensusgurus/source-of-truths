@@ -63,6 +63,7 @@ import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import { usePhoneStage } from '../PlayStage';
 import SudokuStage, { sudokuEyebrow, boxRegion } from '../SudokuStage';
+import { embedLook } from '../LogicStage';
 
 // Arrow identity is FUCHSIA, a hue no other sudoku on the slate wears. Every
 // colour the board uses derives from COLORS.accent below rather than a
@@ -832,15 +833,15 @@ export default function ArrowClient({ puzzles = [], forceNum = null }) {
   // board, pad, tools and one status line (app/SudokuStage.jsx) on the white
   // PlayStage, at every width. Presentation only: every control calls this
   // client's own handlers, so scoring, saves, auto-move, posting and the finish
-  // are unchanged and the old board stays behind the stage. Not inside Enter
-  // the Dojo (EMBED), which keeps its own board and look.
+  // are unchanged and the old board stays behind the stage. Inside Enter
+  // the Dojo (EMBED) it draws inline in the run frame, in the run's look (2026-11-01).
   const SK_N = N;
-  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const skStage = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
   const skLine = toast || (playing
     ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
     : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
   const stageEl = skStage ? (
-    <SudokuStage gameKey="arrow" label="Arrow"
+    <SudokuStage inline={!!EMBED} look={embedLook(EMBED)} gameKey="arrow" label="Arrow"
       eyebrow={sudokuEyebrow(PUZZLE, 'arrow sums')}
       playing={playing}
       board={{

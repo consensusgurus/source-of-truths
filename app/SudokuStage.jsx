@@ -248,11 +248,12 @@ export function SudokuTools({ tools = {}, extra = null }) {
  *   giveUp, clock, done   passed to PlayStage's foot (two-tap Give up)
  *   above / between / below   optional nodes: above the board, between board and pad, under the tools
  *   wide             a wider desktop column (PlayStage wide)
+ *   inline           drawn in the page flow (a run's embedded grid: Enter the Dojo)
  */
 export default function SudokuStage({
   gameKey, label, eyebrow = null, board = {}, pad = null, tools = null, extraTools = null,
   playing = true, line = null, giveUp = null, clock = null, done = null,
-  above = null, between = null, below = null, wide = false, nav = null, look = null,
+  above = null, between = null, below = null, wide = false, nav = null, look = null, inline = false,
 }) {
   const [storedLook] = useStageLook();
   const lk = look || storedLook;
@@ -266,7 +267,7 @@ export default function SudokuStage({
   const H = (board.gutter ? (board.gutter.t || 0) + (board.gutter.b || 0) : 0) + (board.n || 9);
   const fitW = fit ? Math.floor(fit * W / H) : null;
   return (
-    <PlayStage bg={gameColor(gameKey)} label={label} eyebrow={eyebrow} nav={nav} look={look} wide={wide}
+    <PlayStage bg={gameColor(gameKey)} label={label} eyebrow={eyebrow} nav={nav} look={look} wide={wide} inline={inline}
       top={(
         <div className="sks" ref={ref} style={{ ...boardVars(dark), '--sks-ent': mono ? 'var(--pst-mute)' : 'var(--pst-deep)', ...(fitW ? { '--sks-fit': `${fitW}px` } : null) }}>
           <style dangerouslySetInnerHTML={{ __html: SKS_CSS }} />

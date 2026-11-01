@@ -70,6 +70,7 @@ import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import { usePhoneStage } from '../PlayStage';
 import SudokuStage, { sudokuEyebrow, boxRegion } from '../SudokuStage';
+import { embedLook } from '../LogicStage';
 
 // Frame's legacy slate hue is AMBER. The page itself is painted by the Sudoku
 // category ramp (lib/category-ramp.js), so this pair only tells Frame apart
@@ -872,10 +873,10 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
   // board, pad, tools and one status line (app/SudokuStage.jsx) on the white
   // PlayStage, at every width. Presentation only: every control calls this
   // client's own handlers, so scoring, saves, auto-move, posting and the finish
-  // are unchanged and the old board stays behind the stage. Not inside Enter
-  // the Dojo (EMBED), which keeps its own board and look.
+  // are unchanged and the old board stays behind the stage. Inside Enter
+  // the Dojo (EMBED) it draws inline in the run frame, in the run's look (2026-11-01).
   const SK_N = N;
-  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const skStage = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
   // The old gutter marks (+3, -2, a tick) for the gutters that speak about
   // the selected square, read into the status line.
   const skGut = playing && sel >= 0 ? GUTTERS_OF[sel].map(([side, k]) => { const st = tripleState(side, k); if (!st || !st.full) return null; return `${side} ${k + 1}: ${st.ok ? 'adds up' : st.diff > 0 ? `${st.diff} over` : `${-st.diff} short`}`; }).filter(Boolean).join(', ') : '';
@@ -883,7 +884,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
     ? `${armed ? `Placing ${armed} · ` : ''}${noteMode ? 'Notes on · ' : ''}${filledCount} of ${FREE.length} filled${skGut ? ` · ${skGut}` : ''}`
     : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled · gave up`));
   const stageEl = skStage ? (
-    <SudokuStage gameKey="frame" label="Frame"
+    <SudokuStage inline={!!EMBED} look={embedLook(EMBED)} gameKey="frame" label="Frame"
       eyebrow={sudokuEyebrow(PUZZLE, 'frame sums')}
       playing={playing}
       board={{

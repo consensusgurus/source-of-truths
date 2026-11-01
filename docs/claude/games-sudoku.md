@@ -8,7 +8,8 @@
 Picked from four mockups (https://claude.ai/artifact/MN4RpGWCuj6CrjvhYADkWE): "Turnover for this and all
 sudokus". `turnover` in `lib/finish-beat.js`. `playBeat` swaps it in for ANY `cat: 'Sudoku'` game whose
 `.sks-bd` (app/SudokuStage.jsx) is on screen, whatever its `lib/finish-beats.js` def says; that def stays as
-the fallback for boards off the stage (Enter the Dojo keeps the old board). Every square flips over to the
+the fallback for a board off the stage. Since 2026-11-01 Enter the Dojo plays the stage board too
+(inline, see circuits-and-runs.md), so Turn over plays there, ending on the run's ground with no iris. Every square flips over to the
 ending's pastel (`ctx.ground`, the same colour as the iris) in a wave from the last tap, the SVG paint and
 outside clues (`.sks-paint`, `.sks-gut`) melt, the digits fade, and the finale opens that pastel tile into the
 ending (`ctx.irisRect`: a clip-path from the `.sks-cells` outline instead of the round iris). The light show

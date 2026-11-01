@@ -58,6 +58,7 @@ import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import { usePhoneStage } from '../PlayStage';
 import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
+import { embedLook } from '../LogicStage';
 import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 // Five identity is GREEN. Every colour the board uses derives from
@@ -811,16 +812,16 @@ export default function FiveClient({ puzzles = [], forceNum = null }) {
   // width (app/SudokuStage.jsx). Presentation only: every control calls this
   // client's own handlers (cellClick, padTap, undo, eraseCell, clearBoard,
   // useHint, revealEnd), so scoring, saves, auto-move, posting and the finish
-  // are unchanged and the old board stays behind the stage. Not inside Enter
-  // the Dojo (EMBED), which keeps its own board and look.
-  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  // are unchanged and the old board stays behind the stage. Inside Enter
+  // the Dojo (EMBED) it draws inline in the run frame, in the run's look (2026-11-01).
+  const skStage = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
   const skDark = isDarkLook(skLook);
   const skMono = skLook === 'plain' || skLook === 'dark';
   const skLine = toast || (playing
     ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
     : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
   const stageEl = skStage ? (
-    <SudokuStage gameKey="five" label="Five"
+    <SudokuStage inline={!!EMBED} look={embedLook(EMBED)} gameKey="five" label="Five"
       eyebrow={sudokuEyebrow(PUZZLE, 'German whispers')}
       playing={playing}
       board={{

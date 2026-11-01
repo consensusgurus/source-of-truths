@@ -74,6 +74,7 @@ import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import { usePhoneStage } from '../PlayStage';
 import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
+import { embedLook } from '../LogicStage';
 
 // Knight identity is INDIGO. The Numbers row already runs Suds orange, Quilt
 // magenta, Cages purple, Sando teal, Knight deep red, Polka kelly green,
@@ -843,13 +844,13 @@ export default function KnightClient({ puzzles = [], forceNum = null }) {
   // at every width. Presentation only: every control calls this client's own
   // handlers (cellClick, padTap, undo, eraseCell, clearBoard, useHint, revealEnd),
   // so scoring, saves, auto-move, posting and the finish are unchanged and the
-  // old board stays behind the stage. Not inside Enter the Dojo (EMBED), which keeps its own board and look.
-  const knightStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  // old board stays behind the stage. Inside Enter the Dojo (EMBED) it draws inline in the run frame, in the run's look (2026-11-01).
+  const knightStage = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
   const knightLine = toast || (playing
     ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
     : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
   const stageEl = knightStage ? (
-    <SudokuStage gameKey="knight" label="Knight"
+    <SudokuStage inline={!!EMBED} look={embedLook(EMBED)} gameKey="knight" label="Knight"
       eyebrow={sudokuEyebrow(PUZZLE, 'anti-knight')}
       playing={playing}
       board={{

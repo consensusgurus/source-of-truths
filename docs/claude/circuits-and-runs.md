@@ -447,6 +447,12 @@ Circuit id `dojo`, engine `dojo`, scorer `dojo`, `scoreFrom: '2026-10-12'`.
 - **Belts:** Black 96, Brown 90, Purple 84, Blue 77, Green 70, Orange 62, Yellow 50, White.
 - **The ten sudoku clients read `useRunEmbed()`** exactly as the five Judged clients do, and each
   carries a once-per-game `RunDoorPop id="dojo"` gated `!EMBED`.
+- **The grids play on the white sudoku stage (owner, 2026-11-01).** Every SudokuStage client draws its
+  stage when EMBED too, as `<SudokuStage inline={!!EMBED} look={embedLook(EMBED)}>` (the Judged pattern),
+  and DojoClient passes the run look (`look={boardLook}`) to RunEmbed. The client's pre-stage `<xx>-wrap`
+  column is hidden under an inline stage by one rule in DojoClient's CSS
+  (`.dj-host .stage-page:has(> .pst.inl) > [class$="-wrap"]`). The finish is Turn over (games-sudoku.md),
+  which in a run ends on the run's own ground with no iris.
 - Files: `app/dojo/{page.js,DojoClient.jsx,leaderboard/page.js,card/route.js}`, `lib/dojo.js`.
   Pregame: paper doors that are the Start button and three hanging scrolls. Ending: a grading
   sheet scores form by form while the belt is dyed up the ladder, then the seal and the knot.

@@ -69,6 +69,7 @@ import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import { usePhoneStage } from '../PlayStage';
 import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
+import { embedLook } from '../LogicStage';
 
 // Window's legacy slate hue is ROSE. The page itself is painted by the Sudoku
 // category ramp (lib/category-ramp.js), so this pair only tells Window apart
@@ -837,13 +838,13 @@ export default function WindowClient({ puzzles = [], forceNum = null }) {
   // at every width. Presentation only: every control calls this client's own
   // handlers (cellClick, padTap, undo, eraseCell, clearBoard, useHint, revealEnd),
   // so scoring, saves, auto-move, posting and the finish are unchanged and the
-  // old board stays behind the stage. Not inside Enter the Dojo (EMBED), which keeps its own board and look.
-  const windowStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  // old board stays behind the stage. Inside Enter the Dojo (EMBED) it draws inline in the run frame, in the run's look (2026-11-01).
+  const windowStage = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
   const windowLine = toast || (playing
     ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
     : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
   const stageEl = windowStage ? (
-    <SudokuStage gameKey="window" label="Window"
+    <SudokuStage inline={!!EMBED} look={embedLook(EMBED)} gameKey="window" label="Window"
       eyebrow={sudokuEyebrow(PUZZLE, 'four windows')}
       playing={playing}
       board={{

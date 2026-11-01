@@ -131,6 +131,8 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   // the header are gone.
   const [look] = useGauntletLook();
   const boardTheme = isDarkLook(look) ? 'dark' : 'light';
+  // The grids draw on the sudoku stage in the run's own look (2026-11-01).
+  const boardLook = look === 'color' ? 'tint' : look;
   const doneAtLoad = useRef(null);
   const [settled, setSettled] = useState(false);
   // THE PHONE DOJO (owner, 2026-10-24): on a phone the grids play on the
@@ -310,7 +312,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           </>}>
           {!between && Game && !banked[sec.key] ? (
             <div className="dj-host">
-              <RunEmbed onResult={onSectionDone} theme={boardTheme} help={helpSeq} autostart>
+              <RunEmbed onResult={onSectionDone} theme={boardTheme} look={boardLook} help={helpSeq} autostart>
                 <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />
               </RunEmbed>
             </div>
@@ -725,6 +727,9 @@ const CSS = `
 .dj-run{margin-left:auto;font-family:${MONO};font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dj-mute)}
 .dj-host{animation:djrise .45s ease both}
 .dj-host .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
+/* THE STAGE BOARD IN THE DOJO (owner, 2026-11-01): each grid draws on the white sudoku stage
+   (app/SudokuStage.jsx, inline), so the client's pre-stage board column is not shown under it. */
+.dj-host .stage-page:has(> .pst.inl) > [class$="-wrap"]{display:none !important}
 .dj-host.lt{background:#eef1f6;border-radius:16px;margin:12px 12px 0;padding:6px 0 18px}
 .dj-host.lt .stage-page{color:var(--stg-ink) !important}
 @media(max-width:760px){.dj-host.lt{margin:10px 0 0;border-radius:0}}

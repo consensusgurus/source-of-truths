@@ -75,6 +75,7 @@ import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import { usePhoneStage } from '../PlayStage';
 import SudokuStage, { sudokuEyebrow, boxRegion } from '../SudokuStage';
+import { embedLook } from '../LogicStage';
 
 const COLORS = {
   cream: T.surface,
@@ -914,10 +915,10 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
   // board, pad, tools and one status line (app/SudokuStage.jsx) on the white
   // PlayStage, at every width. Presentation only: every control calls this
   // client's own handlers, so scoring, saves, auto-move, posting and the finish
-  // are unchanged and the old board stays behind the stage. Not inside Enter
-  // the Dojo (EMBED), which keeps its own board and look.
+  // are unchanged and the old board stays behind the stage. Inside Enter
+  // the Dojo (EMBED) it draws inline in the run frame, in the run's look (2026-11-01).
   const SK_N = 9;
-  const skStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const skStage = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
   // The sandwich readout the old gutter marks carried (+3 over, 5 short, a
   // tick), for the selected square's row and column, in the status line.
   const skRead = (s) => (!s ? null : s.ok ? 'checks out' : s.diff > 0 ? `${s.diff} over` : s.diff === 0 ? 'totals with squares open' : `${-s.diff} short`);
@@ -938,7 +939,7 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
     ? `${armed ? `Placing ${armed} · ` : ''}${noteMode ? 'Notes on · ' : ''}${filledCount} of ${FREE.length} filled${skSand ? ` · ${skSand}` : ''}`
     : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled · gave up`));
   const stageEl = skStage ? (
-    <SudokuStage gameKey="sando" label="Sando"
+    <SudokuStage inline={!!EMBED} look={embedLook(EMBED)} gameKey="sando" label="Sando"
       eyebrow={sudokuEyebrow(PUZZLE, 'sandwich sums')}
       playing={playing}
       board={{

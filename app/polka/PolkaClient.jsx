@@ -62,6 +62,7 @@ import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import { usePhoneStage } from '../PlayStage';
 import SudokuStage, { sudokuEyebrow } from '../SudokuStage';
+import { embedLook } from '../LogicStage';
 
 // Polka identity is KELLY GREEN, clear of every other sudoku (Suds orange,
 // Quilt magenta, Cages purple, Sando teal, Polka blue, Mercury red) and a
@@ -831,7 +832,7 @@ export default function PolkaClient({ puzzles = [], forceNum = null }) {
   // at every width. Presentation only: every control calls this client's own
   // handlers (cellClick, padTap, undo, eraseCell, clearBoard, useHint, revealEnd),
   // so scoring, saves, auto-move, posting and the finish are unchanged and the
-  // old board stays behind the stage. Not inside Enter the Dojo (EMBED), which keeps its own board and look.
+  // old board stays behind the stage. Inside Enter the Dojo (EMBED) it draws inline in the run frame, in the run's look (2026-11-01).
   const polkaDots = [];
   for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
     const h = c < N - 1 ? PUZZLE.dots.h[r][c] : 0;
@@ -839,12 +840,12 @@ export default function PolkaClient({ puzzles = [], forceNum = null }) {
     if (h) polkaDots.push(<circle key={`h${r}-${c}`} cx={c + 1} cy={r + 0.5} r={0.15} strokeWidth="1.8" vectorEffect="non-scaling-stroke" fill={h === 2 ? '#08222e' : '#ffffff'} stroke={h === 2 ? 'var(--pst-ink)' : '#08222e'} />);
     if (v) polkaDots.push(<circle key={`v${r}-${c}`} cx={c + 0.5} cy={r + 1} r={0.15} strokeWidth="1.8" vectorEffect="non-scaling-stroke" fill={v === 2 ? '#08222e' : '#ffffff'} stroke={v === 2 ? 'var(--pst-ink)' : '#08222e'} />);
   }
-  const polkaStage = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const polkaStage = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
   const polkaLine = toast || (playing
     ? `${armed ? `Placing ${armed} \u00b7 ` : ''}${noteMode ? 'Notes on \u00b7 ' : ''}${filledCount} of ${FREE.length} filled`
     : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled \u00b7 gave up`));
   const stageEl = polkaStage ? (
-    <SudokuStage gameKey="polka" label="Polka"
+    <SudokuStage inline={!!EMBED} look={embedLook(EMBED)} gameKey="polka" label="Polka"
       eyebrow={sudokuEyebrow(PUZZLE, 'dots only')}
       playing={playing}
       board={{
