@@ -828,6 +828,9 @@ export default function FiveClient({ puzzles = [], forceNum = null }) {
         sel: playing ? sel : -1, hl: playing ? hlVal : 0,
         onCell: (i) => { if (playing) cellClick(i); },
         cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        // Lines inside a lit row/column/box or the selected square repaint a
+        // step stronger so a highlight never swallows them (owner, 2026-11-01).
+        hiMarks: skMono ? true : (skDark ? { pale: '#34a065', acc: '#14532d' } : { pale: '#4ade80', acc: '#15803d' }),
         under: (
           <g fill="none" stroke={skMono ? 'var(--sks-mark)' : (skDark ? '#1d5a36' : '#bbf7d0')} strokeWidth="0.24" strokeLinecap="round" strokeLinejoin="round">
             {(PUZZLE.lines || []).map((ln, k) => <path key={k} d={ln.map(([r, col], q) => `${q ? 'L' : 'M'}${col + 0.5} ${r + 0.5}`).join(' ')} />)}

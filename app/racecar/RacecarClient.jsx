@@ -829,8 +829,11 @@ export default function RacecarClient({ puzzles = [], forceNum = null }) {
         sel: playing ? sel : -1, hl: playing ? hlVal : 0,
         onCell: (i) => { if (playing) cellClick(i); },
         cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
+        // Lines inside a lit row/column/box or the selected square repaint a
+        // step stronger so a highlight never swallows them (owner, 2026-11-01).
+        hiMarks: skMono ? true : (skDark ? { pale: '#7a86a0', acc: '#55638f' } : { pale: '#a3aec2', acc: '#6f7cb4' }),
         under: (
-          <g fill="none" stroke={skMono ? 'var(--sks-mark)' : (skDark ? '#3a4458' : '#d5dbe3')} strokeWidth="0.3" strokeLinecap="round" strokeLinejoin="round">
+          <g fill="none" stroke={skMono ? 'var(--sks-mark)' : (skDark ? '#4b566a' : '#d5dbe3')} strokeWidth="0.3" strokeLinecap="round" strokeLinejoin="round">
             {(PUZZLE.lines || []).map((ln, k) => <path key={k} d={ln.map(([r, col], q) => `${q ? 'L' : 'M'}${col + 0.5} ${r + 0.5}`).join(' ')} />)}
           </g>
         ),

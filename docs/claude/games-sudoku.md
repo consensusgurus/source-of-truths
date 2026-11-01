@@ -19,6 +19,23 @@ which on the stage is the pre-stage board kept hidden behind the PlayStage, so o
 grid. Turn over appends a face span to each cell button and turns the button (transform and opacity only),
 so it cannot drift. Faces go in ctx.nodes and are removed by cancel().
 
+## Marks stay visible through highlights; outside clues keep score (owner, 2026-11-01)
+
+Feedback on Arrow and Racecar in dark: once a square was picked, the lit row/column/box and the
+selected square swallowed the arrows and lines (fills paint under the marks, in near-matching greys).
+`SudokuBoard` now takes `hiMarks`: it repaints the `under` marks a second time, clipped to the lit
+squares (`--sks-hi-pale`) and to the selected square (`--sks-hi-acc`), with a CSS stroke/fill override.
+Arrow uses the defaults; Racecar, Five and Mercury pass their own `{ pale, acc }` so thick bands keep
+their weight. Any new variant with marks in `under` should pass `hiMarks`. Racecar's dark line was
+also lifted to `#4b566a`.
+
+Outside clues: an `outside[]` entry may carry `tick: true` for a small green tick (`--sks-good`) in the
+gutter's outer corner. Rim and Frame tick a filled, correct triple (owner liked Rim's old green ticks).
+Sando's clue carries the old readout under the number again (`.sks-sw`): -11 / +2 once both crusts are
+down, and a green tick plus the grey-out the moment the sandwich totals the clue, even with the rest
+of the line still open (owner: "it doesn't show if you've got the correct values between the 1 and 9").
+Red only when the whole line is filled and the sandwich is wrong.
+
 ## The sudoku trio (Towers, Mercury, Polka) and the ROTATING Sudoku circuit (owner, 2026-08-23)
 
 Three sudoku-family dailies launched 2026-08-24: **Towers** (skyscrapers: border clues count

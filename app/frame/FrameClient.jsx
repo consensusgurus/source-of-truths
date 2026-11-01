@@ -901,7 +901,7 @@ export default function FrameClient({ puzzles = [], forceNum = null }) {
           if (clue == null) return null;
           const st = tripleState(side, k);
           const on = playing && selGutters.has(`${side}:${k}`);
-          return { side: side[0], i: k, content: clue, state: on ? 'on' : (st && st.full ? (st.ok ? 'done' : 'bad') : null),
+          return { side: side[0], i: k, content: clue, state: on ? 'on' : (st && st.full ? (st.ok ? 'done' : 'bad') : null), tick: !!(st && st.full && st.ok),
             label: `${side === 'top' || side === 'bottom' ? 'Column' : 'Row'} ${k + 1}, the three squares nearest the ${side} edge total ${clue}` };
         })).filter(Boolean),
         digitScale: 0.56, noteScale: 0.26,

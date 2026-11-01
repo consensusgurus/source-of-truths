@@ -895,6 +895,7 @@ export default function RimClient({ puzzles = [], forceNum = null }) {
           const vert = side === 'top' || side === 'bottom';
           return { side: side[0], i: k, content: <span className={'sks-tri' + (vert ? ' v' : '')}>{clue.split('').map((ch, j) => <span key={j}>{ch}</span>)}</span>,
             state: on ? 'on' : (st && st.full ? (st.ok ? 'done' : 'bad') : null),
+            tick: !!(st && st.full && st.ok),
             label: `${vert ? 'Column' : 'Row'} ${k + 1}, the three squares nearest the ${side} edge hold ${clue.split('').join(', ')}` };
         })).filter(Boolean),
         digitScale: 0.56, noteScale: 0.26,

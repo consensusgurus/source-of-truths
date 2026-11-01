@@ -840,6 +840,7 @@ export default function MercuryClient({ puzzles = [], forceNum = null }) {
         cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
         // Thermometers as mocked: a light grey stem 0.34 of a square and a
         // round bulb, painted UNDER the grid lines so the lines stay on top.
+        hiMarks: { pale: 'var(--sks-mark2)' },
         under: PUZZLE.thermos.map((t, k) => (
           <g key={`th${k}`} opacity="0.85">
             <polyline points={t.map(([r, c]) => `${c + 0.5},${r + 0.5}`).join(' ')} fill="none" stroke="var(--sks-mark)" strokeWidth="0.34" strokeLinecap="round" strokeLinejoin="round" />

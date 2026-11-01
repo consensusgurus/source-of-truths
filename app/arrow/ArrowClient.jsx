@@ -853,6 +853,7 @@ export default function ArrowClient({ puzzles = [], forceNum = null }) {
         // from the ring through the squares, an open chevron head; every
         // digit carries a halo so it reads over a line.
         cellClass: () => 'halo',
+        hiMarks: true,
         under: PUZZLE.arrows.map((a, k) => {
           const R = 0.4, H = 0.31;
           const [br, bc] = a[0];

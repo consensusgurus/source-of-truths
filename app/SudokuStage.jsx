@@ -16,7 +16,7 @@
 // Outside clues (Sando, Frame, Rim, Towers) sit in gutters measured in cells.
 // SOLID strokes only, anywhere (owner: no dotted or dashed lines).
 
-import React, { useRef } from 'react';
+import React, { useRef, useId } from 'react';
 import PlayStage from './PlayStage';
 import { useStageLook, isDarkLook } from '@/lib/stage-look';
 import usePlayStageFit from '@/lib/play-stage-fit';
@@ -51,8 +51,8 @@ export const SK_ICON = {
 // player digits the periwinkle itself (PlayStage's --pst-deep).
 function boardVars(dark) {
   return dark
-    ? { '--sks-base': '#0f1420', '--sks-thin': '#4b566a', '--sks-wall': 'var(--pst-ink)', '--sks-note': '#a9b3c4', '--sks-mark': '#5b6680', '--sks-mark2': '#8592a4', '--sks-off': '#1a2130', '--sks-off-line': '#3a4458', '--sks-off-ink': '#6b7588', '--sks-halo': '#0f1420' }
-    : { '--sks-base': '#ffffff', '--sks-thin': '#8e9aab', '--sks-wall': 'var(--pst-ink)', '--sks-note': '#3b4656', '--sks-mark': '#c9d1dc', '--sks-mark2': '#8592a4', '--sks-off': '#f1f4f8', '--sks-off-line': '#c5cdd8', '--sks-off-ink': '#8e9aab', '--sks-halo': '#ffffff' };
+    ? { '--sks-base': '#0f1420', '--sks-thin': '#4b566a', '--sks-wall': 'var(--pst-ink)', '--sks-note': '#a9b3c4', '--sks-mark': '#5b6680', '--sks-mark2': '#8592a4', '--sks-off': '#1a2130', '--sks-off-line': '#3a4458', '--sks-off-ink': '#6b7588', '--sks-halo': '#0f1420', '--sks-good': '#4ade80', '--sks-hi-pale': '#b4bed0', '--sks-hi-acc': '#1a2130' }
+    : { '--sks-base': '#ffffff', '--sks-thin': '#8e9aab', '--sks-wall': 'var(--pst-ink)', '--sks-note': '#3b4656', '--sks-mark': '#c9d1dc', '--sks-mark2': '#8592a4', '--sks-off': '#f1f4f8', '--sks-off-line': '#c5cdd8', '--sks-off-ink': '#8e9aab', '--sks-halo': '#ffffff', '--sks-good': '#15803d', '--sks-hi-pale': '#7b879b', '--sks-hi-acc': '#3b4656' };
 }
 
 /**
@@ -73,12 +73,19 @@ function boardVars(dark) {
  *   thin         false to skip the thin separators (Sumo draws its own)
  *   cellLabel(i) optional aria-label
  *   noteN        optional: candidates per note grid (default n; Giant's zoomed quarter passes 16)
+ *   hiMarks      true to repaint the `under` marks inside highlighted squares in a
+ *                contrasting colour (--sks-hi-pale on the lit row/column/box,
+ *                --sks-hi-acc on the selected square), so arrows and lines never
+ *                vanish into a highlight (owner, 2026-11-01: Arrow and Racecar in
+ *                dark). A client may pass { pale, acc } to keep its own hue.
+ *   outside[].tick  true adds a small green tick in the gutter's outer corner
+ *                (a clue that checks out; owner liked Rim's old green ticks)
  */
 export function SudokuBoard({
   n = 9, region = null, given = [], cells = [], notes = [], noteCols = null, noteN = null,
   sel = -1, hl = 0, peer = null, fill = null, cellClass = null, cellProps = null, onCell = null,
   glyph = null, gutter = null, outside = null, under = null, over = null, thin = true,
-  cellLabel = null, disabled = false, digitScale = 0.56, noteScale = 0.26, className = '', style = null, boardRef = null,
+  cellLabel = null, hiMarks = false, disabled = false, digitScale = 0.56, noteScale = 0.26, className = '', style = null, boardRef = null,
 }) {
   const reg = region || boxRegion(n === 6 ? 3 : Math.round(Math.sqrt(n)), n === 6 ? 2 : Math.round(Math.sqrt(n)), n);
   const gt = (gutter && gutter.t) || 0, gr = (gutter && gutter.r) || 0, gb = (gutter && gutter.b) || 0, gl = (gutter && gutter.l) || 0;
@@ -94,11 +101,16 @@ export function SudokuBoard({
   };
   const geom = { n, W, H, gt, gr, gb, gl, region: reg };
   const fills = [];
+  const paleRects = [];
+  const uid = String(useId()).replace(/[^a-zA-Z0-9]/g, '');
   for (let i = 0; i < N; i++) {
     const custom = fill ? fill(i) : null;
     const col = i === sel ? 'var(--pst-acc)' : (custom || (isPeer(i) ? 'var(--pst-pale)' : null));
     if (col) fills.push(<rect key={i} x={i % n} y={Math.floor(i / n)} width="1" height="1" fill={col} />);
+    if (hiMarks && i !== sel && !custom && isPeer(i)) paleRects.push(<rect key={i} x={i % n} y={Math.floor(i / n)} width="1" height="1" />);
   }
+  const hiPale = hiMarks && typeof hiMarks === 'object' && hiMarks.pale ? hiMarks.pale : 'var(--sks-hi-pale)';
+  const hiAcc = hiMarks && typeof hiMarks === 'object' && hiMarks.acc ? hiMarks.acc : 'var(--sks-hi-acc)';
   const thinD = [], wallD = [];
   for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
     if (c < n - 1) ((reg(r, c) !== reg(r, c + 1)) ? wallD : thinD).push(`M${c + 1} ${r}V${r + 1}`);
@@ -119,6 +131,16 @@ export function SudokuBoard({
         <rect x="0" y="0" width={n} height={n} fill="var(--sks-base)" />
         {fills}
         {kids(under)}
+        {hiMarks && under && (paleRects.length || sel >= 0) ? (
+          <>
+            <defs>
+              <clipPath id={`skp${uid}`}>{paleRects}</clipPath>
+              {sel >= 0 ? <clipPath id={`ska${uid}`}><rect x={sel % n} y={Math.floor(sel / n)} width="1" height="1" /></clipPath> : null}
+            </defs>
+            {paleRects.length ? <g className="sks-hi" clipPath={`url(#skp${uid})`} style={{ '--sks-hc': hiPale }}>{kids(under)}</g> : null}
+            {sel >= 0 ? <g className="sks-hi" clipPath={`url(#ska${uid})`} style={{ '--sks-hc': hiAcc }}>{kids(under)}</g> : null}
+          </>
+        ) : null}
         {thin ? <path d={thinD.join('')} stroke="var(--sks-thin)" strokeWidth="1" fill="none" vectorEffect="non-scaling-stroke" /> : null}
         <path d={wallD.join('')} stroke="var(--sks-wall)" strokeWidth="2.2" fill="none" strokeLinecap="square" vectorEffect="non-scaling-stroke" />
         {kids(over)}
@@ -154,6 +176,7 @@ export function SudokuBoard({
         return (
           <div key={k} className={'sks-gut ' + o.side} style={{ left: pct(x, W), top: pct(y, H), width: pct(w, W), height: pct(h, H) }} aria-label={o.label || undefined} role={o.label ? 'note' : undefined}>
             <span className={'sks-chip' + (o.state ? ' ' + o.state : '')}>{o.content}</span>
+            {o.tick ? <span className="sks-tick" aria-hidden="true">{'\u2713'}</span> : null}
           </div>
         );
       }) : null}
@@ -288,6 +311,18 @@ export const SKS_CSS = `
 .sks-chip.done{color:var(--sks-off-ink);}
 .sks-chip.ok{background:var(--pst-acc);box-shadow:inset 0 0 0 2px var(--pst-ink);color:var(--pst-on-acc);border-radius:999px;}
 .sks-chip.bad{color:var(--pst-bad);}
+.sks-hi [stroke]:not([stroke="none"]),.sks-hi[stroke]{stroke:var(--sks-hc);}
+.sks-hi [fill]:not([fill="none"]){fill:var(--sks-hc);}
+.sks-tick{position:absolute;font-weight:900;line-height:1;color:var(--sks-good);font-size:min(calc(100cqw / var(--sks-w) * .3), 12px);pointer-events:none;}
+.sks-gut.t .sks-tick{top:1px;right:2px;}
+.sks-gut.b .sks-tick{bottom:1px;right:2px;}
+.sks-gut.l .sks-tick{top:1px;left:1px;}
+.sks-gut.r .sks-tick{top:1px;right:1px;}
+.sks-sw{display:flex;flex-direction:column;align-items:center;line-height:1;gap:1px;}
+.sks-sw small{font-size:.74em;font-weight:800;color:var(--pst-mute);}
+.sks-sw small.ok{color:var(--sks-good);font-size:.85em;}
+.sks-chip.on .sks-sw small{color:var(--pst-deep);}
+.sks-chip.on .sks-sw small.ok{color:var(--sks-good);}
 .sks-tri{display:flex;gap:1px;font-size:calc(100cqw / var(--sks-w) * .32);font-weight:800;line-height:1;}
 .sks-tri.v{flex-direction:column;gap:0;line-height:1.05;}
 .sks-pad{display:grid;gap:3px;}

@@ -922,6 +922,18 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
   // tick), for the selected square's row and column, in the status line.
   const skRead = (s) => (!s ? null : s.ok ? 'checks out' : s.diff > 0 ? `${s.diff} over` : s.diff === 0 ? 'totals with squares open' : `${-s.diff} short`);
   const skSand = playing && sel >= 0 ? [skRead(sandwich.rows[selR]) && `row ${selR + 1}: ${skRead(sandwich.rows[selR])}`, skRead(sandwich.cols[selC]) && `column ${selC + 1}: ${skRead(sandwich.cols[selC])}`].filter(Boolean).join(', ') : '';
+  // THE CLUE KEEPS SCORE AGAIN (owner, 2026-11-01): once a line has both its
+  // 1 and its 9 down, the clue carries the old readout under the number, the
+  // shortfall or overshoot (-11, +2) while the sandwich fills, and a green tick
+  // the moment the squares between the crusts total it, when the clue also
+  // greys out like Rim's do, even if the rest of the line is still open.
+  // Red only when the whole line is filled and the sandwich is wrong.
+  const skClue = (side, i, v, s, full, on, word) => {
+    const sub = !s ? null : s.ok ? <small className="ok">{'\u2713'}</small> : <small>{s.diff > 0 ? `+${s.diff}` : String(s.diff)}</small>;
+    const state = on ? 'on' : (full && s && !s.ok ? 'bad' : ((s && s.ok) || full ? 'done' : null));
+    return { side, i, content: sub ? <span className="sks-sw"><b>{v}</b>{sub}</span> : v, state,
+      label: `${word} ${i + 1} sandwich ${v}${s ? (s.ok ? ', checks out' : s.diff > 0 ? `, ${s.diff} over` : s.diff === 0 ? ', totals with squares open' : `, ${-s.diff} short`) : ''}` };
+  };
   const skLine = toast || (playing
     ? `${armed ? `Placing ${armed} · ` : ''}${noteMode ? 'Notes on · ' : ''}${filledCount} of ${FREE.length} filled${skSand ? ` · ${skSand}` : ''}`
     : (won ? `Solved in ${elapsed}` : `${filledCount} of ${FREE.length} filled · gave up`));
@@ -937,8 +949,8 @@ export default function SandoClient({ puzzles = [], forceNum = null }) {
         cellProps: (i) => ({ onPointerDown: () => startLong(i), onPointerUp: cancelLong, onPointerLeave: cancelLong, onPointerCancel: cancelLong }),
         gutter: { t: 0.81, l: 0.81 },
         outside: [
-          ...COL_SUMS.map((v, c) => ({ side: 't', i: c, content: v, state: playing && selC === c ? 'on' : (lineFull.cols[c] ? (sandwich.cols[c] && !sandwich.cols[c].ok ? 'bad' : 'done') : null), label: `Column ${c + 1} sandwich ${v}` })),
-          ...ROW_SUMS.map((v, r) => ({ side: 'l', i: r, content: v, state: playing && selR === r ? 'on' : (lineFull.rows[r] ? (sandwich.rows[r] && !sandwich.rows[r].ok ? 'bad' : 'done') : null), label: `Row ${r + 1} sandwich ${v}` })),
+          ...COL_SUMS.map((v, c) => skClue('t', c, v, sandwich.cols[c], lineFull.cols[c], playing && selC === c, 'Column')),
+          ...ROW_SUMS.map((v, r) => skClue('l', r, v, sandwich.rows[r], lineFull.rows[r], playing && selR === r, 'Row')),
         ],
         digitScale: 0.57, noteScale: 0.26,
       }}
