@@ -165,6 +165,12 @@ const GAMES = [
   { key: 'crib', href: '/crib', name: 'Crib', tag: 'Six cards, throw two', img: '/games/btn-crib.png' },
   { key: 'hold', href: '/hold', name: 'Hold', tag: 'Video poker hold', img: '/games/btn-hold.png' },
   { key: 'mahj', href: '/mahj', name: 'Mahj', tag: 'The daily mahjong solitaire', img: '/games/btn-mahj.png' },
+  { key: 'swap', href: '/swap', name: 'Swap', tag: 'Swap the photo back together', img: '/games/btn-swap.png' },
+  { key: 'slide', href: '/slide', name: 'Slide', tag: 'The sliding photo puzzle', img: '/games/btn-slide.png' },
+  { key: 'spin', href: '/spin', name: 'Spin', tag: 'Turn every square straight', img: '/games/btn-spin.png' },
+  { key: 'connect', href: '/connect', name: 'Connect', tag: 'Join the dots, fill the board', img: '/games/btn-connect.png' },
+  { key: 'fill', href: '/fill', name: 'Fill', tag: 'Fit every word in the grid', img: '/games/btn-fill.png' },
+  { key: 'pairs', href: '/pairs', name: 'Pairs', tag: 'Concentration with a real deck', img: '/games/btn-pairs.png' },
   { key: 'cell', href: '/cell', name: 'Cell', tag: 'The daily FreeCell', img: '/games/btn-cell.png' },
   { key: 'fib', href: '/fib', name: 'Fib', tag: 'One clue is lying', img: '/games/btn-fib.png' },
   { key: 'streak', href: '/streak', name: 'Streak', tag: 'Forty questions, one life', img: '/games/btn-streak.png' },
@@ -211,7 +217,7 @@ const GAMES_BY_KEY = Object.fromEntries(GAMES.map((g) => [g.key, g]));
 // Within each group the order is popularity (yesterday's plays), same as
 // everywhere else.
 const CATEGORIES = [
-  { key: 'word', label: 'Word', keys: ['crux', 'strata', 'lode', 'encore', 'emcee', 'shards', 'garble', 'scram', 'scour', 'arcos', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'links', 'stet', 'tuck', 'warmer', 'glyph', 'anon', 'rung', 'hinge', 'babel', 'barter'] },
+  { key: 'word', label: 'Word', keys: ['crux', 'strata', 'lode', 'encore', 'emcee', 'shards', 'garble', 'scram', 'scour', 'arcos', 'fill', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'links', 'stet', 'tuck', 'warmer', 'glyph', 'anon', 'rung', 'hinge', 'babel', 'barter'] },
   { key: 'geography', label: 'Geography', keys: ['atlas', 'flank', 'span', 'ping'] },
   { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'gap', 'series', 'back', 'sums', 'pricer', 'dealer', 'realtor', 'agent', 'curator'] },
   // Sudoku split out of Numbers on 2026-09-01. The nine keys are exactly the
@@ -220,9 +226,9 @@ const CATEGORIES = [
   { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sixes', 'towers', 'quilt', 'cages', 'sando', 'mercury', 'arrow', 'polka', 'knight', 'diag', 'frame', 'rim', 'giant', 'sumo', 'window', 'five', 'racecar', 'whittle'] },
   { key: 'crowd', label: 'Crowd Psychology', keys: ['herd', 'outwit', 'outrank', 'feud'] },
   { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'redact', 'dating', 'extra'] },
-  { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'topple', 'roll', 'sudoclue', 'snug', 'jig', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'ergo', 'docket', 'plot'] },
+  { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'topple', 'roll', 'sudoclue', 'snug', 'jig', 'swap', 'slide', 'spin', 'connect', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'ergo', 'docket', 'plot'] },
   { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
-  { key: 'cards', label: 'Cards', keys: ['taire', 'cell', 'mahj', 'hands', 'hold', 'shoe', 'finesse', 'crib'] },
+  { key: 'cards', label: 'Cards', keys: ['taire', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib'] },
   { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'squash', 'dario', 'sweep'] },
 ];
 

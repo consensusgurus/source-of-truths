@@ -59,7 +59,10 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
       if (lab && btn && !btn.classList.contains('tight')) labW.current = btn.offsetWidth - 34 + 4;
       setTight((t) => {
         if (!t) return h.scrollWidth > h.clientWidth + 1;
-        const room = tx.clientWidth - (h.offsetLeft - tx.offsetLeft) - h.scrollWidth;
+        // Measured against the whole title slot (.stb-tx): the name is centred
+        // in it now, so .stb-t is only as wide as the name itself.
+        const slot = bar.querySelector('.stb-tx') || tx;
+        const room = slot.clientWidth - (h.offsetLeft - tx.offsetLeft) - h.scrollWidth;
         return room < (labW.current || 64);
       });
     };
@@ -73,7 +76,8 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
   // the name sits on the true centre of the bar, not in the space left between
   // the pills. Both sides reserve the wider of the two button groups
   // (--stb-side), so the name never runs under a button; a long name shrinks
-  // with the screen and then ends in an ellipsis. Desktop is unchanged.
+  // with the screen and then ends in an ellipsis. On desktop the name is centred
+  // in the space between the two button groups (2026-11-01, CSS below).
   React.useLayoutEffect(() => {
     const bar = barRef.current;
     if (!bar || !title) return undefined;
@@ -163,6 +167,14 @@ const CSS = `
 .stb .stb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
 .stb .stb-nav{flex:none;height:34px;box-sizing:border-box;padding:0 12px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .stb .stb-home:hover > span{text-decoration:underline;text-underline-offset:3px;}
+/* THE DESKTOP TITLE IS CENTRED IN THE SPACE BETWEEN THE BUTTONS (owner,
+   2026-11-01: "puzzle title on desktop not being centered in empty space ...
+   blocks for instance, it is left aligned"). The phone keeps its true-centre
+   rule below. */
+@media (min-width:900px){
+  .stb.has-t .stb-tx{align-items:center;text-align:center;}
+  .stb.has-t .stb-t{justify-content:center;max-width:100%;}
+}
 @media (max-width:899px){
   .stb.has-t{position:relative;flex:0 1 auto;width:100%;min-width:0;}
   .stb.has-t .stb-tx{position:absolute;left:var(--stb-side,124px);right:var(--stb-side,124px);top:50%;transform:translateY(-50%);align-items:center;text-align:center;pointer-events:none;}

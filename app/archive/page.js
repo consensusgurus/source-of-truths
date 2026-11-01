@@ -101,6 +101,12 @@ import { PUZZLES as YOSE_FULL } from '../yose/puzzles';
 import { PUZZLES as CRIB_FULL } from '../crib/puzzles';
 import { PUZZLES as HOLD_FULL } from '../hold/puzzles';
 import { PUZZLES as MAHJ_FULL } from '../mahj/puzzles';
+import { PUZZLES as SWAP_FULL } from '../swap/puzzles';
+import { PUZZLES as SLIDE_FULL } from '../slide/puzzles';
+import { PUZZLES as SPIN_FULL } from '../spin/puzzles';
+import { PUZZLES as CONNECT_FULL } from '../connect/puzzles';
+import { PUZZLES as FILL_FULL } from '../fill/puzzles';
+import { PUZZLES as PAIRS_FULL } from '../pairs/puzzles';
 import { PUZZLES as CELL_FULL } from '../cell/puzzles';
 import { PUZZLES as SWINDLE_FULL } from '../swindle/puzzles';
 import { PUZZLES as GIFT_FULL } from '../gift/puzzles';
@@ -223,6 +229,12 @@ const YOSE = YOSE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const CRIB = CRIB_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const HOLD = HOLD_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const MAHJ = MAHJ_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const SWAP = SWAP_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const SLIDE = SLIDE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const SPIN = SPIN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const CONNECT = CONNECT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const FILL = FILL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const PAIRS = PAIRS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CELL = CELL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SWINDLE = SWINDLE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const GIFT = GIFT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -431,6 +443,12 @@ const GAMES = [
   { key: 'crib', name: 'Crib', path: '/crib', tag: 'Six cards, throw two', accent: '#a16207', bg: '#fbf3dd', border: 'rgba(161,98,7,0.4)', src: CRIB },
   { key: 'hold', name: 'Hold', path: '/hold', tag: 'Video poker hold', accent: '#b91c1c', bg: '#fdecec', border: 'rgba(185,28,28,0.4)', src: HOLD },
   { key: 'mahj', name: 'Mahj', path: '/mahj', tag: 'The daily mahjong solitaire', accent: '#a21caf', bg: '#fbe8fd', border: 'rgba(162,28,175,0.4)', src: MAHJ },
+  { key: 'swap', name: 'Swap', path: '/swap', tag: 'Swap the photo back together', accent: '#9a3412', bg: '#ffedd5', border: 'rgba(154,52,18,0.4)', src: SWAP },
+  { key: 'slide', name: 'Slide', path: '/slide', tag: 'The sliding photo puzzle', accent: '#1e40af', bg: '#dbeafe', border: 'rgba(30,64,175,0.4)', src: SLIDE },
+  { key: 'spin', name: 'Spin', path: '/spin', tag: 'Turn every square straight', accent: '#6d28d9', bg: '#ede9fe', border: 'rgba(109,40,217,0.4)', src: SPIN },
+  { key: 'connect', name: 'Connect', path: '/connect', tag: 'Join the dots, fill the board', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: CONNECT },
+  { key: 'fill', name: 'Fill', path: '/fill', tag: 'Fit every word in the grid', accent: '#047857', bg: '#d1fae5', border: 'rgba(4,120,87,0.4)', src: FILL },
+  { key: 'pairs', name: 'Pairs', path: '/pairs', tag: 'Concentration with a real deck', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.4)', src: PAIRS },
   { key: 'cell', name: 'Cell', path: '/cell', tag: 'The daily FreeCell', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.4)', src: CELL },
   { key: 'chain', name: 'Chain', path: '/chain', tag: 'Take them, or leave them', accent: '#4a044e', bg: '#f6ecf8', border: 'rgba(74,4,78,0.4)', src: CHAIN },
   { key: 'turn', name: 'Turn', path: '/turn', tag: 'Ten squares left', accent: '#226218', bg: '#e9f3e6', border: 'rgba(34,98,24,0.4)', src: TURN },

@@ -1756,3 +1756,59 @@ and `guessesUsed` is the wrong checks. Timer hidden by default.
   new name fits the phone people card on one line beside its "placed" tag, measured in Manrope 800 at 14.5 px
   (owner: "if the name can't fit without wrapping, delete that one"). A role never mirrors the namesake and no
   namesake appears at their famous place (Elvis and Cash never at Graceland, Arnold never at Venice Beach).
+
+## Swap, Slide, Spin, Fill, Connect and Pairs: six simple dailies on one shell (launched 2026-11-01)
+
+Owner, 2026-11-01: Jig and Scour are the most popular dailies, so six more "simple puzzles that are easy to
+author", mocked up first, then built "bigger / harder even on easy days". The fifth was first called Link and
+renamed **Connect** (owner: "link needs a different name", then "connect"; Links already exists). All six share
+**`app/SimpleDaily.jsx`**: saves (`sot_<key>_<num>`), the day breadcrumb, the start gate, the white stage at every
+width (`PlayStage`), the cap, the foot's two-tap Give up, posting and the abandon flush, the held finish,
+LoftFinish, share, How to play and the About prose. Each game is one `GAME` object in its client (`fresh`,
+`solved`, `result`, `Board`, copy); the Board only draws and calls `setS`, the shell decides the finish.
+Wired by `scripts/wire-six.mjs`. Tile art `scripts/gen-six-tiles.py`; share cards `scripts/bake-og.mjs`.
+
+- **Scoring.** All six are in `SOLVE_ONLY` (10 on a solve, 0 on a give-up, total 10, printed Solved /
+  Unfinished). `guessesUsed` carries the game's own count, so the default board order is solved, then fewer,
+  then the clock: Swap **Swaps**, Slide **Moves** (squares moved), Spin **Taps**, Pairs **Turns** (registry
+  `miss`, and `lib/challenge-metric.js` with `field: 'guesses'`). Fill and Connect post 0 and rank on the clock.
+- **The photo trio (Logic).** Banks from `scripts/gen-photo-trio.mjs`, nothing authored: each borrows a Jig
+  photograph that has ALREADY been live, through `/api/jig/img?n=` (which refuses a day not yet live): Swap
+  Jig's photo from 7 days earlier, Slide 14, Spin 21. **Swap, Slide, Spin and Jig never show the same
+  picture on the same day** (owner, 2026-11-01); `verify-swap` checks all four banks by Commons file, date by date.
+  `app/usePhotoSquare.js` cuts the centre square on a canvas. **Swap** 6x6 (Sunday 7x7): no square starts
+  home, tap two or drag one onto another; par (n*n minus the cycles) is printed only in the rules. **Slide**
+  5x5 (Sunday 6x6): a random solvable permutation, gap home bottom right; tap any square in the gap's line
+  to slide the run, arrow keys too. **Spin** 6x6 (Sunday 8x8): tap turns a quarter clockwise; once the photo
+  loads, a square that looks the same turned 90/180/270 (mean grey difference under 9) is LOCKED straight
+  and marked, because nobody can tell which way up clear sky goes. The locks are computed in the browser
+  (the sandbox cannot reach Commons), stored in the save, and the solve waits for them.
+  Banks end when Jig's does (2026-12-31 for now): extend Jig first, then `--until`.
+- **Connect (Logic, numberlink).** `scripts/gen-connect.mjs` lays random winding paths that cover the board (no
+  path touches itself, every path 3+ squares, a pair's dots never side by side), keeps the ends, and
+  `scripts/connect-solver.mjs` must count exactly one solution; of the first eight unique boards the one that
+  cost the solver most is kept. About one pair per eleven squares. Ramp Mon/Tue 9x9, Wed/Thu 10x10, Fri/Sat
+  11x11, Sunday 12x12. The client checks the RULES (every pair joined, every square used), not an answer.
+- **Fill (Word, fill-in).** `scripts/gen-fill.mjs` deals from Scram's pools (`scripts/scram-pools.mjs`), never
+  the day's Scour or Scram theme, no word again inside 30 days. 16/16/17/17/18/18 words on at most 15x15,
+  Sunday 22 on at most 17x17. One whole word is printed to start (plus up to three letters if uniqueness
+  needs them); the fill is proved UNIQUE, so slots and words ship UNPAIRED (slots in reading order) and the
+  client checks a finished grid from the list alone. Group Crosswords (on /crosswords), finish set Theme fits.
+- **Pairs (Cards, Concentration).** `scripts/gen-pairs.mjs`: 36 cards (Sunday 48), a pair is the same rank AND
+  colour, at least four ranks dealt in both colours (the trap). The deal is lightly encoded
+  (`app/pairs/deal.js`) so the page source does not read as a list of cards. Group Card tables.
+- **Placement.** Logic group Grid filling is now duet, lamps, snug, connect; Jig moved to a new Logic group
+  **Photo puzzles** (jig, swap, slide, spin) with its own set page `/logic-puzzles/photo-puzzles`. Skills:
+  swap and slide Spatial + Planning, spin Spatial, connect Spatial + Deduction, fill Language + Deduction, pairs
+  Memory. Premiere window 2026-11-01 to 11-05 (one card, all six).
+- **Checkers.** `verify-swap`, `verify-slide` (solvability by two independent parity forms), `verify-spin`,
+  `verify-connect` (re-counts uniqueness), `verify-fill` (its own fill search), `verify-pairs`; shared date
+  checks in `scripts/six-verify-common.mjs` (named so verify-all does not run it as a game).
+
+## Blocks: the Next box is always three rows (owner report, 2026-11-01)
+
+"The jitter that occurs constantly on Blocks, when a block hits the ground." The stage's Next preview
+(`StageMini`) was as tall as the coming shape: two rows for most, three for the plus (an extra, spliced into
+most bags). Each landing deals a new Next, so whenever the plus came up or went away the score row grew or
+shrank by a row and the well under it jumped about 11px. The box is now always three rows. Any preview, chip
+or readout above a board must keep a fixed height whatever it shows (the Scour readout rule, same family).

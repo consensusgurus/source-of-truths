@@ -1325,6 +1325,12 @@ before today's Eastern midnight, or has no birth stamp because it predates the s
 or was adopted) AND a play signal. A per-puzzle save written by today's first game is
 not evidence of a return visit. `?premiere=1` still previews.
 
+**Its look is the site's sheet (owner, 2026-11-01: "update the pop-up to match new site style").** Drawn like
+the How to play sheet (`app/HelpSheet.jsx`): Manrope only (the mono labels are gone), a 2px ink rule round a 16px
+card, a round 2px-ruled close button, the eyebrow as a pastel pill, each game a 2px-ruled tile with its glyph on
+the category pastel and a pastel Play pill in dark ink, and a single-game or run card ends in one full-width
+pastel pill. The 4px accent rail down each row is gone. Behaviour is unchanged; only markup classes and CSS.
+
 ## THE DAILY CLOCK IS HIDDEN BY DEFAULT (owner rule, 2026-10-13)
 
 Players said the running clock made them nervous. On every DAILY puzzle page the

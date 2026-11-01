@@ -342,7 +342,13 @@ function StageMini({ k }) {
   let x0 = 9, x1 = -1, y0 = 9, y1 = -1;
   if (m) m.forEach((row, y) => row.forEach((v, x) => { if (v) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); } }));
   const w = m ? x1 - x0 + 1 : 0, h = m ? y1 - y0 + 1 : 0;
-  const rows = Math.max(2, h), ox = Math.floor((4 - w) / 2), oy = Math.floor((rows - h) / 2);
+  // ALWAYS THREE ROWS (owner report, 2026-11-01: "the jitter that occurs
+  // constantly on Blocks, when a block hits the ground"). The box used to be as
+  // tall as the next shape, two rows for most and three for the plus, so every
+  // time a piece landed and the plus came up next (or went away) the Next box
+  // grew or shrank by a row, the score row with it, and the whole well jumped
+  // 11px. Three rows fits every shape, so the row never changes height.
+  const rows = 3, ox = Math.floor((4 - w) / 2), oy = Math.floor((rows - h) / 2);
   const cells = [];
   for (let y = 0; y < rows; y++) for (let x = 0; x < 4; x++) {
     const sx = x - ox + x0, sy = y - oy + y0;

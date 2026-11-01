@@ -34,13 +34,20 @@
 //
 // ?premiere=0 suppresses, ?premiere=1 previews without stamping, matching
 // ?welcome=. Stage tokens only, so it follows the light switch.
+//
+// THE SITE'S SHEET LOOK (owner, 2026-11-01: "update the pop-up to match new
+// site style"). Drawn like the How to play sheet (app/HelpSheet.jsx) and the
+// white stage: one Manrope face (no mono labels), a 2px ink rule round a 16px
+// card, round 2px-ruled buttons, each game a ruled tile with its glyph on its
+// category's pastel and a pastel Play pill with dark ink, and a full-width
+// pill for the one action of a single-game or run card. No accent rail.
 
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { DAILY_GAME_MAP, PREMIERES, PREMIERE_RUNS, NO_PREMIERE } from '@/lib/daily-games';
 import { PRICE_GAMES } from '@/lib/price-games';
 import { runDoneToday } from './circuits/RunDoorPop';
-import { RAMP_INK, RAMP_INK_LIGHT, categoryColor, categoryColorLight, categoryAccentInkLight, rampIndexFor } from '@/lib/category-ramp';
+import { RAMP_INK, categoryColor, categoryAccentInkLight } from '@/lib/category-ramp';
 import GameGlyph from './GameGlyph';
 import { fetchDayStatus, etToday } from './useDayStats';
 import { seenBeforeToday } from '@/lib/visitor';
@@ -58,7 +65,7 @@ function daysAgo(iso, today) {
   const a = Date.parse(`${iso}T12:00:00Z`), b = Date.parse(`${today}T12:00:00Z`);
   return Number.isFinite(a) && Number.isFinite(b) ? Math.round((b - a) / 86400000) : 99;
 }
-const NUM = ['', 'One', 'Two', 'Three', 'Four', 'Five'];
+const NUM = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
 
 function returning() {
   try {
@@ -183,17 +190,18 @@ export default function PremierePop() {
     let lightR = true;
     try { const el = document.querySelector('.stage-page'); lightR = !el || el.getAttribute('data-stage-theme') !== 'dark'; } catch (e) {}
     const catR = run.cat || 'Numbers';
-    const accR = lightR ? categoryColorLight(catR) : categoryColor(catR);
-    const riR = rampIndexFor(catR);
-    const onR = lightR ? (riR >= 0 ? RAMP_INK_LIGHT[riR] : RAMP_INK) : RAMP_INK;
+    const accR = categoryColor(catR);
+    const onR = RAMP_INK;
     const varsR = { '--prm-acci': lightR ? categoryAccentInkLight(catR) : accR, '--prm-acc': accR, '--prm-on': onR, '--prm-tint': `color-mix(in srgb, ${accR} 16%, transparent)` };
     const whenR = run.from === etToday() ? 'today' : dateLabel(run.from);
     return (
       <div className="prm-scrim" onClick={() => setRun(null)}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
         <div className="prm" role="dialog" aria-labelledby="prm-t" style={varsR} onClick={(e) => e.stopPropagation()}>
-          <button className="prm-x" aria-label="Close" onClick={() => setRun(null)}><X size={16} /></button>
-          <div className="prm-eye"><i /><span>{whenR === 'today' ? 'New today' : 'New this week'} · Daily run</span></div>
+          <div className="prm-top">
+            <div className="prm-eye"><i /><span>{whenR === 'today' ? 'New today' : 'New this week'} · Daily run</span></div>
+            <button className="prm-x" aria-label="Close" onClick={() => setRun(null)}><X size={16} strokeWidth={2.8} /></button>
+          </div>
           <h2 id="prm-t">{run.name}</h2>
           <p className="prm-lede">{run.lede}</p>
           <div className="prm-tags">
@@ -233,10 +241,12 @@ export default function PremierePop() {
   // game beside a sudoku beside a chess puzzle) painted every row in the first
   // game's colour. The dialog keeps a category colour only when every row
   // shares it; otherwise its eyebrow dot falls back to plain ink.
+  // THE STAGE'S PASTEL IN BOTH LOOKS (2026-11-01): the white stage puts the
+  // category's full pastel under dark ink on what can be pressed, light or dark,
+  // so the pop-up's tiles and Play pills do the same rather than the deep step.
   const varsFor = (c) => {
-    const acc = light ? categoryColorLight(c) : categoryColor(c);
-    const ri = rampIndexFor(c);
-    const onAcc = light ? (ri >= 0 ? RAMP_INK_LIGHT[ri] : RAMP_INK) : RAMP_INK;
+    const acc = categoryColor(c);
+    const onAcc = RAMP_INK;
     return { '--prm-acci': light ? categoryAccentInkLight(c) : acc, '--prm-acc': acc, '--prm-on': onAcc, '--prm-tint': `color-mix(in srgb, ${acc} 16%, transparent)` };
   };
   const vars = oneCat ? varsFor(cat) : { '--prm-acc': 'var(--stg-ink, #0b0d12)' };
@@ -245,8 +255,10 @@ export default function PremierePop() {
     <div className="prm-scrim" onClick={() => setGames(null)}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="prm" role="dialog" aria-labelledby="prm-t" style={vars} onClick={(e) => e.stopPropagation()}>
-        <button className="prm-x" aria-label="Close" onClick={() => setGames(null)}><X size={16} /></button>
-        <div className="prm-eye"><i /><span>{when === 'today' ? 'New today' : 'New this week'}{oneCat ? ` · ${cat}` : ''}</span></div>
+        <div className="prm-top">
+          <div className="prm-eye"><i /><span>{when === 'today' ? 'New today' : 'New this week'}{oneCat ? ` · ${cat}` : ''}</span></div>
+          <button className="prm-x" aria-label="Close" onClick={() => setGames(null)}><X size={16} strokeWidth={2.8} /></button>
+        </div>
         <h2 id="prm-t">{many ? `${NUM[rows.length] || rows.length} new dailies` : 'A new daily'}</h2>
         <p className="prm-lede">
           {many ? `${allOf} premiered ${when}. You have not played ${neither} yet.`
@@ -257,10 +269,11 @@ export default function PremierePop() {
             <div className="prm-row" key={g.key} style={varsFor(g.cat || 'Trivia')}>
               <div className="prm-gl"><GameGlyph gameKey={g.key} size={26} /></div>
               <div className="prm-t"><b>{g.name}</b><span>{g.tag}</span></div>
-              <a className="prm-play" href={g.href} onClick={() => setGames(null)}>Play</a>
+              {many ? <a className="prm-play" href={g.href} onClick={() => setGames(null)}>Play</a> : null}
             </div>
           ))}
         </div>
+        {!many ? <a className="prm-go" style={varsFor(rows[0].cat || 'Trivia')} href={rows[0].href} onClick={() => setGames(null)}>Play {rows[0].name}</a> : null}
         <div className="prm-foot">{many ? `${allOf} are in ${shelves} every day.` : `It is in ${shelves} every day.`}</div>
       </div>
     </div>
@@ -277,41 +290,43 @@ function dateLabel(iso) {
 }
 
 const CSS = `
-.prm-tags{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px;}
-.prm-tags span{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:5px 9px;border-radius:5px;}
-.prm-go{display:block;margin-top:14px;text-align:center;text-decoration:none;font-weight:800;font-size:15px;padding:13px;border-radius:11px;background:var(--prm-acc);color:var(--prm-on);}
-
-.prm-scrim{position:fixed;inset:0;z-index:8000;display:flex;align-items:center;justify-content:center;padding:18px;
-  background:rgba(11,15,26,.55);}
-.prm{width:min(440px,100%);background:var(--stg-raise,#fff);color:var(--stg-ink,#0b0d12);
-  border:1px solid var(--stg-line2,rgba(11,15,26,.24));border-radius:16px;padding:22px 22px 18px;position:relative;
-  box-shadow:0 24px 60px -20px rgba(0,0,0,.45);animation:prm-in .28s ease-out;font-family:Manrope,system-ui,sans-serif;}
+.prm-scrim{position:fixed;inset:0;z-index:8000;display:flex;align-items:center;justify-content:center;padding:16px;
+  background:rgba(6,10,18,.58);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
+.prm{width:min(460px,100%);max-height:88vh;overflow-y:auto;box-sizing:border-box;position:relative;
+  background:var(--stg-surf,#ffffff);color:var(--stg-ink,#08222e);border:2px solid var(--stg-ink,#08222e);border-radius:16px;
+  padding:18px 20px 18px;box-shadow:0 18px 50px rgba(0,0,0,.28);animation:prm-in .28s ease-out;
+  font-family:'Manrope',system-ui,-apple-system,sans-serif;}
 @keyframes prm-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.prm{animation:none}}
-.prm-x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:8px;border:0;background:transparent;
-  color:var(--stg-mute,#5f6774);cursor:pointer;display:grid;place-items:center;}
-.prm-x:hover{background:var(--stg-surf2,#e4e9f1);color:var(--stg-ink,#0b0d12);}
-.prm-eye{font:500 11px "Manrope",ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--stg-mute,#5f6774);display:flex;align-items:center;gap:8px;}
-.prm-eye i{width:8px;height:8px;border-radius:2px;background:var(--prm-acci,var(--prm-acc,#fb923c));display:inline-block;}
-.prm h2{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:6px 0 4px;line-height:1.15;}
-.prm-lede{color:var(--stg-ink2,#3f4757);margin:0 0 16px;font-size:13.5px;line-height:1.45;}
+.prm-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.prm-x{flex:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;
+  border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;}
+.prm-eye{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  padding:6px 11px;border-radius:999px;background:var(--prm-tint,color-mix(in srgb, currentColor 8%, transparent));}
+.prm-eye i{width:8px;height:8px;border-radius:50%;background:var(--prm-acc,currentColor);box-shadow:0 0 0 1.5px var(--stg-ink,#08222e);display:inline-block;}
+.prm h2{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:14px 0 4px;line-height:1.15;text-wrap:balance;}
+.prm-lede{margin:0 0 14px;font-size:14px;line-height:1.5;font-weight:600;opacity:.85;}
 .prm-rows{display:flex;flex-direction:column;gap:8px;}
-.prm-row{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--stg-surf,#fff);
-  border:1px solid var(--stg-line,rgba(11,15,26,.14));border-radius:12px;padding:10px;position:relative;overflow:hidden;}
-.prm-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--prm-acci,var(--prm-acc,#fb923c));}
-.prm-gl{width:44px;height:44px;border-radius:10px;background:var(--prm-tint,rgba(251,146,60,.16));display:grid;
-  place-items:center;color:var(--stg-ink,#0b0d12);}
-.prm-t b{display:block;font-size:15px;font-weight:800;}
-.prm-t span{display:block;font-size:12px;color:var(--stg-mute,#5f6774);line-height:1.3;}
-.prm-play{font:500 12px "Manrope",ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
-  background:var(--prm-acc,#fb923c);color:var(--prm-on,${RAMP_INK});border-radius:8px;padding:9px 14px;text-decoration:none;white-space:nowrap;}
-.prm-play:hover{filter:brightness(1.05);}
-.prm-play:focus-visible,.prm-x:focus-visible{outline:2px solid var(--stg-ink,#0b0d12);outline-offset:2px;}
-.prm-foot{margin-top:14px;font:400 11px "Manrope",ui-monospace,Menlo,monospace;letter-spacing:.06em;
-  color:var(--stg-mute,#5f6774);text-transform:uppercase;}
-@media (max-width:480px){
-  .prm-row{grid-template-columns:40px 1fr;}
-  .prm-play{grid-column:1/-1;text-align:center;}
+.prm-row{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;border:2px solid var(--stg-ink,#08222e);
+  border-radius:14px;padding:8px 8px 8px 10px;background:var(--stg-surf,#ffffff);}
+.prm-gl{width:44px;height:44px;border-radius:12px;background:var(--prm-acc,#7dd3fc);display:grid;place-items:center;color:var(--prm-on,#0b0f1a);}
+.prm-t b{display:block;font-size:16px;font-weight:800;line-height:1.2;}
+.prm-t span{display:block;font-size:12.5px;font-weight:600;opacity:.75;line-height:1.3;margin-top:1px;}
+.prm-play{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:999px;
+  border:2px solid var(--stg-ink,#08222e);background:var(--prm-acc,#7dd3fc);color:var(--prm-on,${RAMP_INK});
+  font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap;}
+.prm-play:hover,.prm-go:hover{filter:brightness(1.04);}
+.prm-go{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;margin-top:14px;box-sizing:border-box;
+  border-radius:999px;border:2px solid var(--stg-ink,#08222e);background:var(--prm-acc,#7dd3fc);color:var(--prm-on,${RAMP_INK});
+  font-size:16px;font-weight:800;text-decoration:none;}
+.prm-tags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px;}
+.prm-tags span{font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;border:2px solid var(--stg-ink,#08222e);}
+.prm-foot{margin-top:12px;font-size:12.5px;font-weight:600;opacity:.7;line-height:1.4;text-align:center;}
+.prm-play:focus-visible,.prm-go:focus-visible,.prm-x:focus-visible{outline:3px solid var(--stg-acc-ink,var(--stg-acc,#2563eb));outline-offset:2px;}
+@media (max-width:420px){
+  .prm{padding:16px 14px 16px;}
+  .prm-row{grid-template-columns:40px 1fr auto;gap:10px;}
+  .prm-gl{width:40px;height:40px;}
+  .prm-play{padding:0 13px;}
 }
 `;

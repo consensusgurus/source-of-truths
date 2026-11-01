@@ -116,7 +116,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['mixtape', 'mishmash', 'sudoclue', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'mahj', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'foodie', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
+const LAUNCH_PIN = { keys: ['swap', 'slide', 'spin', 'connect', 'fill', 'pairs', 'mixtape', 'mishmash', 'sudoclue', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'mahj', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'foodie', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -206,6 +206,12 @@ export const GAME_META = {
   crib: { accent: '#a16207', badgeBg: '#a16207', badgeInk: T.white, Fin: Layers },
   hold: { accent: '#b91c1c', badgeBg: '#b91c1c', badgeInk: T.white, Fin: Layers },
   mahj: { accent: '#a21caf', badgeBg: '#a21caf', badgeInk: T.white, Fin: Layers },
+  swap: { accent: '#9a3412', badgeBg: '#9a3412', badgeInk: T.white, Fin: Puzzle },
+  slide: { accent: '#1e40af', badgeBg: '#1e40af', badgeInk: T.white, Fin: Puzzle },
+  spin: { accent: '#6d28d9', badgeBg: '#6d28d9', badgeInk: T.white, Fin: Puzzle },
+  connect: { accent: '#be123c', badgeBg: '#be123c', badgeInk: T.white, Fin: Puzzle },
+  fill: { accent: '#047857', badgeBg: '#047857', badgeInk: T.white, Fin: Trophy },
+  pairs: { accent: '#b91c1c', badgeBg: '#b91c1c', badgeInk: T.white, Fin: Layers },
   cell: { accent: '#0e7490', badgeBg: '#0e7490', badgeInk: T.white, Fin: Club },
   swindle: { accent: '#9a3412', badgeBg: '#9a3412', badgeInk: T.white, Fin: Swords },
   gift: { accent: '#7c3aed', badgeBg: '#7c3aed', badgeInk: T.white, Fin: Swords },
@@ -450,6 +456,12 @@ const ALL_DAILY_GAMES = [
   { key: 'crib',  cat: 'cards',     name: 'Crib',  tag: 'Six cards, throw two', blurb: 'Five cribbage hands, one choice each: which two cards go to the crib. Every throw is worked out exactly, so the best one is a fact. Seven hands on Sundays.', href: '/crib' },
   { key: 'hold',  cat: 'cards',     name: 'Hold',  tag: 'Video poker hold', blurb: 'Ten video poker hands a day, and one question each: which cards do you keep? Every hold is valued exactly over every draw. Fifteen hands on Sundays.', href: '/hold' },
   { key: 'mahj',  cat: 'cards',     name: 'Mahj',  tag: 'The daily mahjong solitaire', blurb: 'All 144 mahjong tiles, cleared two of a kind at a time, against the clock. A new layout each weekday and the Pyramid on Sunday.', href: '/mahj' },
+  { key: 'swap', cat: 'logic', name: 'Swap', tag: 'Swap the photo back together', blurb: 'A photograph cut into squares, every one out of place. Swap two at a time until the picture is whole, in as few swaps as you can.', href: '/swap' },
+  { key: 'slide', cat: 'logic', name: 'Slide', tag: 'The sliding photo puzzle', blurb: 'The classic sliding puzzle on a 5x5 photograph. Slide the squares through the one gap until the picture is whole.', href: '/slide' },
+  { key: 'spin', cat: 'logic', name: 'Spin', tag: 'Turn every square straight', blurb: 'A photograph cut into squares, nearly every one turned. Tap each round, a quarter at a time, until the picture is straight.', href: '/spin' },
+  { key: 'connect', cat: 'logic', name: 'Connect', tag: 'Join the dots, fill the board', blurb: 'Pairs of matching dots on a big board. Join each pair with one line, never crossing, until every square is used.', href: '/connect' },
+  { key: 'fill', cat: 'word', name: 'Fill', tag: 'Fit every word in the grid', blurb: 'An empty crossword grid and a list of themed words. Fit every one in, with the lengths and crossings as your only clues.', href: '/fill' },
+  { key: 'pairs', cat: 'cards', name: 'Pairs', tag: 'Concentration with a real deck', blurb: 'Thirty-six cards face down. Turn two at a time and pair each card with its twin, same rank and colour, in the fewest turns.', href: '/pairs' },
   { key: 'cell',  cat: 'cards',     name: 'Cell',  tag: 'The daily FreeCell', blurb: 'FreeCell on a small deck, every card face up, and a perfect line proven to be the fewest moves. Forty cards on Sundays.', href: '/cell' },
   { key: 'finesse',  cat: 'cards',     name: 'Finesse',  tag: 'The daily double dummy', blurb: 'All four hands face up and a defence that never errs. Play South and the dummy, and take the tricks the contract asks for. Three rules, no bidding, no luck.', href: '/finesse' },
   { key: 'shoe',  cat: 'cards',     name: 'Shoe',  tag: 'The daily blackjack shoe', blurb: 'Ten hands of blackjack off one fixed shoe, the same cards for everybody. Keep the count and play it better than the book.', href: '/shoe' },

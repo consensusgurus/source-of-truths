@@ -400,6 +400,12 @@ archive and hub chips use the short form `Sun`.
 | Hold | fifteen hands instead of ten, at least five of them traps where the rule of thumb is wrong (from launch, 2026-10-18) |
 | Cell | forty cards (ace to ten) in seven columns on two free cells, against the weekday thirty-two in six (from launch, 2026-10-18) |
 | Mahj | the classic Pyramid layout, and the hardest deal of the week by measured ease (from launch, 2026-10-25) |
+| Swap | a 7x7 photo against the weekday 6x6 (from launch, 2026-11-01) |
+| Slide | a 6x6 photo against the weekday 5x5 (from launch, 2026-11-01) |
+| Spin | an 8x8 photo against the weekday 6x6 (from launch, 2026-11-01) |
+| Connect | a 12x12 board, the top of a ramp from 9x9 on Monday (from launch, 2026-11-01) |
+| Fill | 22 words on a board up to 17x17, against 16 to 18 on 15x15 (from launch, 2026-11-01) |
+| Pairs | 48 cards (24 pairs) on an 8x6 table, against 36 (from launch, 2026-11-01) |
 | Swindle | the deepest draw of the week, five White moves or more (from launch, 2026-10-18) |
 | Gift | a win in five where the last piece on the board decides it, against the weekday wins in two to four (from launch, 2026-10-16) |
 | Duet | a 10x10 board against the weekday 6x6 and 8x8 (from launch, 2026-10-03) |
