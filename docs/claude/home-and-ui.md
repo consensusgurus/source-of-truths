@@ -1768,16 +1768,23 @@ shared half: `useClueView()`, the `One at a time | Full view` switch (`ClueViewS
 - **Width:** `PlayStage full` widens the column to `min(1180px, 96vw)`; the top bar lives in the
   column, so its ends line up with the play area (owner, 2026-10-31: header elements expand to
   match width).
-- **Alibi:** Room, Time and Item in ONE grid (a 14px gap column between groups), every clue in
-  the sheet; click crosses off (the save's own `struck`), hover lights the suspects it names
-  (`s`, `s1`, `s2`). A group whose names will not sit level (a word wider than its column, or
-  more than two lines) stands its names on end, measured per case and on resize (`alfRot`).
+- **Alibi, ONE LONG GRID (owner, 2026-11-01: "names should be on x axis", "why repeat names
+  for each grid, make them one long grid"):** the suspects run across the top ONCE and Room,
+  Time and Item stack beneath them as labelled row groups (`alf-gl`, a full-width rule). The
+  one-at-a-time board is transposed the same way: suspects across, that board's options down
+  the side. Every clue in the sheet; click crosses off (the save's own `struck`), hover lights
+  the suspects it names (`s`, `s1`, `s2`) in the name row. The old side-by-side groups with
+  names stood on end (`alfRot`) are gone; do not bring back a per-board name column.
 - **Stands:** grid, table and tools on the left, every fact on the right. Crossing off a fact is
   presentation only (localStorage `sdx-off-<quizId>`). Hover: a beat / drew fact lights its one
   square and both club labels; a club fact lights that club's row; the table row tints.
-- **Below 1000px (and inline):** unchanged stage, plus the card's **All clues / All facts** swaps
-  the full list in where the single clue sat, above the board, with One at a time to go back.
-  On a full-screen desktop that same button switches to Full view.
+- **Below 1000px (and inline): THE SWITCH SHOWS TOO (owner, 2026-11-01).** Full view there
+  STACKS (`useClueView().stack`): every clue / fact as a list, then the whole board, and the
+  stage scrolls. Alibi's stacked long grid pins its name row (`alf-gr.sm`, sticky). `side` is
+  the beside-the-board desktop layout, and only `side` sets `PlayStage full`. The narrow choice
+  is its own key, `ml_clue_view_sm`, defaulting to One at a time, so a desktop full-view
+  player is not handed the long page on a phone. The card's **All clues / All facts** still
+  swaps the list in for one-at-a-time play; on a full-screen desktop it switches to Full view.
 - **Audit (2026-10-31):** Sworn, Ergo, Docket and Hearsay already show every statement / rule;
   Stet, Feud, Outwit, Dating and the gauntlets are one item at a time by nature. Sudoclue is not
   on the stage yet; when it moves, give it full view. Jesters, Venn, Plot, Judges and Duet not yet

@@ -681,12 +681,12 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
           </div>
         ) : null;
         return (
-          <PlayStage bg={gameColor('stands')} label="Stands" full={fullV}
+          <PlayStage bg={gameColor('stands')} label="Stands" full={clueView.side}
             top={(
               <>
                 <style dangerouslySetInnerHTML={{ __html: CLUE_VIEW_CSS + SDX_CSS }} />
                 <ClueViewSwitch view={clueView} />
-                {fullV ? (
+                {clueView.side ? (
                   <div className="cvs-wrap sdx-full" style={{ '--sdx-n': N }}>
                     <div className="cvs-board sdx">{board}{tools}</div>
                     <div className="cvs-side">
@@ -702,13 +702,26 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
                   </div>
                 ) : (
                   <div className="sdx" style={{ '--sdx-n': N }}>
-                    {card}
+                    {/* Full view on the phone (owner, 2026-11-01): every fact
+                        listed above the board, and the page scrolls. */}
+                    {clueView.stack ? (
+                      <div>
+                        <div className="cvs">
+                          <div className="cvs-hd">
+                            <span className="lb">All {NC} facts</span>
+                            <span className="ct">{factsOff.length} of {NC} crossed off</span>
+                          </div>
+                          {factRows}
+                        </div>
+                        <div className="cvs-note">Tap a fact to cross it off.</div>
+                      </div>
+                    ) : card}
                     {board}
                   </div>
                 )}
               </>
             )}
-            bottom={fullV ? null : tools}
+            bottom={clueView.side ? null : tools}
             foot={line}
             giveUp={{ armed: !!armGive, onPress: () => { if (armGive) { if (Date.now() - armGive < 400) return; setArmGive(false); reveal(); } else { setArmGive(Date.now()); } } }}
             clock={elapsed} done={!playing} />

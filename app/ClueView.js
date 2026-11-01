@@ -15,8 +15,13 @@
 // too narrow for the board and the clues side by side, so it keeps one clue at
 // a time there and the card's All clues swaps the list in.
 //
-// Below 1000px nothing changes: one clue at a time, and the card's All clues
-// button swaps the full list in where the single clue sat, above the board.
+// THE SWITCH ON THE PHONE TOO (owner, 2026-11-01): below 1000px, and on a
+// desktop with the navigation showing, the same switch sits under the eyebrow.
+// Full view there STACKS: every clue as a list above the whole board, and the
+// page scrolls (`stack`). Beside-the-board is `side`. The narrow choice is kept
+// apart from the desktop one (KEY_SM) and starts at One at a time, so a player
+// who likes full view on the computer is not handed a long page on the phone.
+// The card's All clues button still swaps the list in for one-at-a-time play.
 //
 // Presentation only. Nothing here touches a save, a score or a result.
 
@@ -24,6 +29,7 @@ import { useEffect, useState } from 'react';
 import { useStageMode } from './StageHost';
 
 const KEY = 'ml_clue_view';
+const KEY_SM = 'ml_clue_view_sm';
 const WIDE = '(min-width: 1000px)';
 
 export function useClueView() {
@@ -31,8 +37,12 @@ export function useClueView() {
   const stageMode = useStageMode();
   const desk = wide && stageMode === 'full';
   const [mode, setMode] = useState('full');
+  const [modeSm, setModeSm] = useState('one');
   useEffect(() => {
-    try { const v = window.localStorage.getItem(KEY); if (v === 'one' || v === 'full') setMode(v); } catch (e) {}
+    try {
+      const v = window.localStorage.getItem(KEY); if (v === 'one' || v === 'full') setMode(v);
+      const w = window.localStorage.getItem(KEY_SM); if (w === 'one' || w === 'full') setModeSm(w);
+    } catch (e) {}
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
     const mq = window.matchMedia(WIDE);
     const f = () => setWide(mq.matches);
@@ -41,15 +51,16 @@ export function useClueView() {
     return () => { if (mq.removeEventListener) mq.removeEventListener('change', f); else mq.removeListener(f); };
   }, []);
   const set = (m) => {
-    setMode(m);
-    try { window.localStorage.setItem(KEY, m); } catch (e) {}
+    if (desk) setMode(m); else setModeSm(m);
+    try { window.localStorage.setItem(desk ? KEY : KEY_SM, m); } catch (e) {}
   };
-  return { desk, full: desk && mode === 'full', setFull: (on) => set(on ? 'full' : 'one') };
+  const full = (desk ? mode : modeSm) === 'full';
+  return { desk, full, side: desk && full, stack: !desk && full, setFull: (on) => set(on ? 'full' : 'one') };
 }
 
-// The One at a time | Full view switch, drawn under the eyebrow on a desktop.
+// The One at a time | Full view switch, drawn under the eyebrow at every width.
 export function ClueViewSwitch({ view }) {
-  if (!view || !view.desk) return null;
+  if (!view) return null;
   return (
     <div className="cvw" role="group" aria-label="Clue view">
       <button type="button" className={view.full ? undefined : 'on'} aria-pressed={!view.full} onClick={() => view.setFull(false)}>One at a time</button>
@@ -80,4 +91,6 @@ export const CLUE_VIEW_CSS = `
 .pst .cvs-wrap{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start;justify-content:center;width:100%;}
 .pst .cvs-board{flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:12px;}
 .pst .cvs-side{flex:1 1 360px;min-width:0;max-width:460px;}
+.pst .cvs-stack{display:flex;flex-direction:column;gap:12px;width:100%;}
+@media (max-width:640px){.pst .cvs-hd{padding:11px 14px 9px;}.pst .cvs-r{padding:10px 14px;gap:10px;}.pst .cvs-r>span{font-size:14.5px;}}
 `;
