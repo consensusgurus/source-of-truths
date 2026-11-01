@@ -62,7 +62,7 @@ import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 import { PLACES } from '@/lib/sudoclue-places';
 import { solve, sameAnswer, ROLESETS, ROLE_ORDER, isRoleClue } from '@/lib/sudoclue-engine';
-import { renderBoard, boardIndex, cellTitle, portraitSVG, objIcon, sayBare, COLORS as CAST_COLORS } from '@/lib/sudoclue-art';
+import { renderBoard, boardIndex, cellTitle, portraitSVG, objIcon, sayBare, COLORS as CAST_COLORS, ROLE_COLORS } from '@/lib/sudoclue-art';
 
 const KEY = 'sudoclue';
 const NAME = 'Sudoclue';
@@ -257,7 +257,10 @@ function RoleTag({ size = 26 }) {
 
 export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
-  const STORE_KEY = `sot_sudoclue2_${PUZZLE.num}`;  // v2: the two-stage boards (2026-10-30)
+  // A board rebuilt after it went live carries `rev` (No. 3, 2026-11-01: grown to a harder 10x10 Sunday), so a
+  // save, rating or record from the old board on this device never loads into the new one.
+  const REV = PUZZLE.rev ? `_r${PUZZLE.rev}` : '';
+  const STORE_KEY = `sot_sudoclue2_${PUZZLE.num}${REV}`;  // v2: the two-stage boards (2026-10-30)
   const LAYOUT = PLACES[PUZZLE.place];
   const N = LAYOUT.rooms.length;
   const DIMS = useMemo(() => { const d = {}; (LAYOUT.items || []).forEach((it) => { if (!d[it.t]) d[it.t] = [it.w, it.h]; }); return d; }, [LAYOUT]);
@@ -433,7 +436,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const RATE_KEY = `sot_sudoclue_rated_${PUZZLE.num}`;
+  const RATE_KEY = `sot_sudoclue_rated_${PUZZLE.num}${REV}`;
   useEffect(() => {
     if (!hydrated || g.status === 'playing' || finale) return undefined;
     try { if (localStorage.getItem(RATE_KEY)) return undefined; } catch (e) { return undefined; }
@@ -509,7 +512,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     prevStage.current = g.stage;
   }, [g.stage]);
 
-  const REC_KEY = `sot_sudoclue_rec_${PUZZLE.num}`;
+  const REC_KEY = `sot_sudoclue_rec_${PUZZLE.num}${REV}`;
   const abandon = useAbandonFlush(() => {
     const cur = gRef.current;
     if (cur.status !== 'playing' || !cur.t0 || !Object.keys(cur.place).length) return null;
@@ -728,7 +731,8 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     place: shownPlace, cross: playing ? g.cross : {}, bad: playing ? bad : new Set(), sel: playing ? sel : null,
     hl: sol ? CAST.filter((p) => ['Victim', 'Killer'].includes(sol.roles[p])).map((p) => sol.place[p]) : null,
     glow: playing ? glowCells : null,
-  }), [LAYOUT, shownPlace, g.cross, bad, sel, playing, sol, CAST, glowCells]);
+    roles: g.stage === 'accuse' || sol ? shownRoles : null,
+  }), [LAYOUT, shownPlace, g.cross, bad, sel, playing, sol, CAST, glowCells, g.stage, shownRoles]);
 
   const clueList = PUZZLE.clues.map((c, i) => ({ ...c, i, who: c.p || null }));
   const mine = clueList.filter((c) => c.p === sel || c.q === sel);
@@ -747,7 +751,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       ]}
       knack={<>Placed people shade their row and column, so the squares left open stand out. In Stage 2, find the rooms that hold exactly two people first: the victim and the killer are one of those pairs.</>}
       note={<>A solve scores ten, and each wrong check, in either stage, costs two. <b>Mark</b> crosses out squares you have ruled out, and <b>Undo</b> takes back your last move.</>}
-      footer={<>The launch weekend is three 7 by 7 intro boards. After that: 7 by 7 Monday to Wednesday, 8 by 8 on Thursday and Friday, 9 by 9 on Saturday, and the Sunday Edition is 10 by 10. Names are first names only and the portraits are original cartoons.</>}
+      footer={<>Boards are 8 by 8 Monday to Wednesday, 9 by 9 on Thursday and Friday, and 10 by 10 on the weekend, with the Sunday Edition on Sunday. Most clues leave a person a few squares, so rows and columns do the rest. Names are famous first or last names and the portraits are original cartoons.</>}
     />
   );
 
@@ -849,7 +853,9 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
                 <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <span style={{ fontSize: 14.5, fontWeight: 800, color: INK }}>{p}</span>
                   {!accuse && g.place[p] && <span aria-label="placed" style={{ fontSize: 11, fontWeight: 800, color: bad.has(p) ? BAD : FADED }}>{bad.has(p) ? 'clash' : 'placed'}</span>}
-                  {accuse && <span style={{ fontSize: 11, fontWeight: 800, color: g.roles[p] ? ACC_INK : FADED }}>{g.roles[p] || 'role?'}</span>}
+                  {accuse && (g.roles[p]
+                    ? <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.03em', textTransform: 'uppercase', color: '#fff', background: ROLE_COLORS[g.roles[p]], borderRadius: 999, padding: '2px 8px', lineHeight: 1.3 }}>{g.roles[p]}</span>
+                    : <span style={{ fontSize: 11, fontWeight: 800, color: FADED, border: `1.5px solid ${SURF_B}`, borderRadius: 999, padding: '1px 7px', lineHeight: 1.3 }}>No role yet</span>)}
                 </span>
                 <span style={{ display: 'block', fontSize: 12.5, fontWeight: 600, lineHeight: 1.3, color: accuse ? FADED : INK, marginTop: 2 }}>
                   {lines.length ? lines.map((c, j) => <span key={c.i}>{j ? ' ' : ''}<ClueText text={c.text.startsWith(p + ' ') ? c.text.slice(p.length + 1).replace(/^./, (m) => m.toUpperCase()) : c.text} c={c} dims={DIMS} /></span>) : <i style={{ color: FADED }}>Said nothing.</i>}
@@ -884,8 +890,9 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
               const on = g.roles[sel] === r;
               return (
                 <button key={r} type="button" onClick={() => setRole(sel, r)} aria-pressed={on}
-                  style={{ ...chipBase, flex: 'none', fontSize: 12, padding: '6px 9px', borderColor: on ? ACC : SURF_B, background: on ? ACC : SURF, color: on ? ON_ACC : (left > 0 ? INK : FADED) }}>
-                  {r}<span style={{ fontWeight: 700, opacity: 0.7 }}>{left}</span>
+                  style={{ ...chipBase, flex: 'none', fontSize: 12, padding: '6px 9px', borderColor: on ? ROLE_COLORS[r] : SURF_B, background: on ? ROLE_COLORS[r] : SURF, color: on ? '#fff' : (left > 0 ? INK : FADED) }}>
+                  {!on && <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: ROLE_COLORS[r], opacity: left > 0 ? 1 : 0.4 }} />}
+                  {r}<span style={{ fontWeight: 700, opacity: 0.75 }}>{left}</span>
                 </button>
               );
             })}
@@ -1222,7 +1229,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           Sudoclue is a free daily murder-mystery logic puzzle from Mind Loft. Each case is set in a real place drawn as a floor plan, north up, with its real landmarks on the squares: the Bow Bridge and the Bethesda fountain in Central Park, the Swan Boats in the Boston Public Garden, the Foucault pendulum at Griffith Observatory. Place every person so there is exactly one in each row and each column, as in a sudoku, then deduce each person&rsquo;s hidden role. The killer is the one person who was alone in a room with the victim.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Every case is machine generated and then proved by an independent solver to have exactly one answer, so pure deduction always cracks it. The board grows through the week: 7 by 7 Monday to Wednesday, 8 by 8 on Thursday and Friday, 9 by 9 on Saturday, and the Sunday Edition is 10 by 10.
+          Every case is machine generated and then proved by an independent solver to have exactly one answer, so pure deduction always cracks it. The board grows through the week: 8 by 8 Monday to Wednesday, 9 by 9 on Thursday and Friday, and 10 by 10 on Saturday and Sunday, the Sunday Edition.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           A new case opens every day at midnight Eastern. No app, no signup, play free in your browser, keep a streak, and race the daily leaderboard. More whodunits: <a href="/alibi" style={{ color: INK, fontWeight: 800 }}>Alibi</a>, our nightly deduction grid, and <a href="/sworn" style={{ color: INK, fontWeight: 800 }}>Sworn</a>.

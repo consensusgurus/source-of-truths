@@ -1711,8 +1711,23 @@ and `guessesUsed` is the wrong checks. Timer hidden by default.
   Conservatory Water area". "Beside" is an object on an edge-sharing square, never a diagonal.
 - **Ratings.** Sudoclue only: stars and easy-to-hard 1 to 5, once per board, 10 s after the game ends, POST/GET
   /api/sudoclue/rate (one stats_payloads row per board).
-- **Sizes.** Launch weekend (Fri Oct 30 to Sun Nov 1) is three 7x7 intro boards. Then 7x7 Mon to Wed, 8x8 Thu and
-  Fri, 9x9 Sat, 10x10 Sunday Edition (Sunday boards carry `sunday: true` from Nov 8; Nov 1 is an intro board).
+- **Sizes.** Launch weekend: Fri Oct 30 and Sat Oct 31 are 7x7 intro boards. No. 3 (Sun Nov 1) went live as a 7x7
+  and was rebuilt the same morning as a 10x10 Sunday Edition (owner, 2026-11-01: "replace today's puzzle, can start
+  the stats over"); Griffith grew an East Terrace, a Parking Lot and the Mount Hollywood Trail. It carries `rev: 2`,
+  which the client adds to its save, rating and record keys so an old save never loads into the new board. From Mon Nov 2 (owner,
+  2026-11-01: "the 7x7 seems too easy to place people"): 8x8 Mon to Wed, 9x9 Thu and Fri, 10x10 Sat and Sun
+  (Sunday boards carry `sunday: true`). Every place scheduled Nov 2 to 15 was grown one row and one column
+  (east and south) to fit its new day, with real rooms: Alcatraz D-Block, Kitchen and Warden's Office, the
+  Bryant Park library lions, Fenway's Jersey Street, Monticello's Mulberry Row, Graceland's Trophy Building.
+- **Harder placement (owner, 2026-11-01).** A person's own clue leaves them 2 to N+2 squares, never one, so the
+  board only comes out by crossing rows and columns; relational clues (north of, east of, same room) top up when
+  that is not enough. Up to two placement clues per person on every size. `scripts/gen-sudoclue.mjs` builds
+  both stages with the engine and keeps the least "easy" of 40 tries per board.
+- **Solver speed.** The client solves each board in the browser, so `solve()` forward-checks pair clues and
+  prunes when an empty row or column can no longer be reached. Same answers, far fewer dead ends; keep both.
+- **Roles are visible (owner, 2026-11-01: "much easier to tell when you attach a role").** A role given in
+  Stage 2 draws a coloured ring and a role tag on the person on the board, a filled role pill on their card
+  ("No role yet" until then), and colour dots on the picker chips. Colours: `ROLE_COLORS` in sudoclue-art.js.
 - **Files.** `lib/sudoclue-places.js` (places: rooms, landmark items, water cells, clue phrases),
   `lib/sudoclue-art.js` (SVG floors, furniture, landmarks, original portraits, pastel baked in),
   `lib/sudoclue-engine.js` (the solver), `app/sudoclue/puzzles.js` (place + cast + structured clues).
@@ -1735,5 +1750,9 @@ and `guessesUsed` is the wrong checks. Timer hidden by default.
   (lib/daily-games.js SCORE_VIEW `legacy`). `app/sudoclue/SudoclueFinale.jsx` plays once on a fresh finish
   (who did it, recap ring, case file climb and stamp, glide), then marks an end hold so the daily ending
   opens on its iris. `?ending=1` on a finished board replays it.
-- **Names.** First names of famous people only, never a likeness: portraits are original drawings with skin tone
-  matched to the namesake; a role never mirrors the namesake and no namesake appears at their famous place.
+- **Names.** Famous first or last names (owner, 2026-11-01: Gandhi, Mao, Winston, Marco Rubio; "pop culture and
+  recent politicians are a must"), never a likeness: portraits are original drawings with skin tone matched to the
+  namesake and one cue (round glasses and a shawl, a top hat, a jersey number). The old bank always stays. Every
+  new name fits the phone people card on one line beside its "placed" tag, measured in Manrope 800 at 14.5 px
+  (owner: "if the name can't fit without wrapping, delete that one"). A role never mirrors the namesake and no
+  namesake appears at their famous place (Elvis and Cash never at Graceland, Arnold never at Venice Beach).
