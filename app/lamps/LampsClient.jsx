@@ -83,6 +83,8 @@ const EMPTY = 0, LAMP = 1, CROSS = 2;
 // the register's own cell, or the established two-value form keyed off
 // --stg-dk (100% dark, 0% light; see Sweep and Shards), so there is no
 // attribute selector here and nothing can flash the wrong register on boot.
+// Blocked squares on the dark stage are a LIGHT slate (owner, 2026-11-01): the old
+// near-black slab and stripes could not be told from the near-black unlit squares.
 // Set once on the board wrapper; everything inside reads var(--lm-*).
 const dk = (darkVal, lightVal) => `color-mix(in srgb, ${darkVal} var(--stg-dk, 100%), ${lightVal})`;
 const LIGHT_VARS = {
@@ -90,10 +92,10 @@ const LIGHT_VARS = {
   '--lm-lit': 'color-mix(in srgb, #f5c542 calc(28% - var(--stg-dk, 100%) * 0.1), var(--stg-cell, #ffffff))',
   '--lm-dark': dk('#10151f', '#c9d0dc'),
   '--lm-beam': dk('#c9a233', '#c98f0a'),
-  '--lm-slab': dk('#2c3549', '#1e2433'),
+  '--lm-slab': dk('#64708c', '#1e2433'),
   '--lm-slab-ink': dk('#e8ecf4', '#ffffff'),
-  '--lm-hatch': dk('#1f2635', '#363e52'),
-  '--lm-pip': dk('#5f6b85', '#7d889e'),
+  '--lm-hatch': dk('#808ca8', '#363e52'),
+  '--lm-pip': dk('#c3cad8', '#7d889e'),
   '--lm-pip-ok': 'color-mix(in srgb, var(--stg-acc, #1a7f37) calc(55% + var(--stg-dk, 100%) * 0.45), #ffffff)',
   '--lm-pip-bad': 'color-mix(in srgb, var(--stg-bad, #be123c) calc(55% + var(--stg-dk, 100%) * 0.45), #ffffff)',
   '--lm-dot': dk('#8b95a8', '#1e2433'),
@@ -913,6 +915,7 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
               <span><i style={{ borderRadius: '50%', background: 'var(--lm-glow)' }} />Lamp</span>
               <span><i style={{ background: 'var(--lm-lit)' }} />Lit</span>
               <span><i style={{ background: 'var(--lm-dark)', boxShadow: 'inset 0 0 0 1px var(--stg-line2, rgba(28,30,36,0.25))' }} />Dark</span>
+              <span><i style={{ background: 'repeating-linear-gradient(45deg, var(--lm-slab) 0 3px, var(--lm-hatch) 3px 6px)' }} />Blocked</span>
             </div>
           </div>
 
