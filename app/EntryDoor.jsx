@@ -42,6 +42,17 @@
 // the gentler choice (/api/quiz/entry-boards); a returning reader knows the
 // week and gets the level buttons alone.
 //
+// STEP 2: THE SKILL'S PICKS (owner, 2026-11-01). A skill tile no longer goes
+// straight to the home: it opens one more page in the door, the skill's runs
+// (the same majority-primary rule as before) and then its most played puzzles
+// over the last seven days, as many as FIT above the foot. The foot matches
+// the skill page's: a full-width pill ("Show All N <Skill> Puzzles", or "Go to
+// <Skill>" when every puzzle is already on screen) that opens the skill's pane
+// on the home, and the "Loft your Mind" line. The fit is MEASURED: long rows
+// (name + tagLong) when five or more fit or the whole skill fits, otherwise
+// two-across short tiles (name + tag), at most eight. Nothing scrolls. The list
+// waits for the week's plays so it never paints in one order and re-sorts.
+//
 // A NEW VISITOR LANDS IN DARK. Picking a tile from the door on a browser with
 // no play footprint and no stored register, or proceeding to the home, stores
 // 'dark' and leaves a pending light offer (LIGHT_OFFER_KEY), which
@@ -49,7 +60,7 @@
 // play) until it is answered. Anyone who has played
 // before keeps the register they have.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 import { CATEGORY_RAMP, RAMP_INK, RAMP_ORDER, categoryColor } from '@/lib/category-ramp';
 import { SKILLS, SKILL_MAP, skillPool, primarySkill } from '@/lib/daily-skills';
@@ -138,6 +149,8 @@ export default function EntryDoor({ onPick }) {
   const headRef = useRef(null);
   const stRef = useRef(null);
   const asked = useRef(false);
+  const fitRef = useRef(null);
+  const [fit, setFit] = useState(null);   // { h, w } of the picks list area
 
   const today = useMemo(() => { try { return etToday(); } catch (e) { return null; } }, [phase]);
   const phaseRef = useRef(null);
@@ -246,7 +259,7 @@ export default function EntryDoor({ onPick }) {
     if (phase === 'page' && btnRef.current) {
       try { btnRef.current.focus({ preventScroll: true }); } catch (e) {}
     }
-    if ((phase === 'level' || phase === 'tiles')) {
+    if ((phase === 'level' || phase === 'tiles' || phase === 'picks')) {
       try { if (stRef.current) stRef.current.scrollTop = 0; } catch (e) {}
       try { if (headRef.current) headRef.current.focus({ preventScroll: true }); } catch (e) {}
     }
@@ -275,7 +288,7 @@ export default function EntryDoor({ onPick }) {
   // Escape steps back a page, and closes the door from the skill page.
   function back() {
     const p = phaseRef.current;
-    if (p === 'tiles') setPhase('page');
+    if (p === 'tiles' || p === 'picks') setPhase('page');
     else if (p === 'level') setPhase('page');
     else close();
   }
@@ -286,8 +299,11 @@ export default function EntryDoor({ onPick }) {
   // closes the door onto the main page with that skill's pane open. The door's
   // own level and puzzle steps were retired; they were never routes, so no
   // search page went with them.
+  // Since 2026-11-01 it opens the skill's picks first (step 2, below); the
+  // picks page's foot is what goes to the home.
   function pickSkill(id) {
-    toHome('sk:' + id);
+    setSkill(id);
+    setPhase('picks');
   }
   function toHome(id) {
     close();
@@ -343,6 +359,36 @@ export default function EntryDoor({ onPick }) {
   const shown = showNew ? list.concat(unrated) : list;
   const shownRuns = monOn ? [] : runs;
 
+  // ---- step 2: the picks, fitted to the space above the foot ----
+  useLayoutEffect(() => {
+    if (phase !== 'picks') return undefined;
+    const el = fitRef.current;
+    if (!el) return undefined;
+    const read = () => setFit((f) => {
+      const h = el.clientHeight; const w = el.clientWidth;
+      return f && f.h === h && f.w === w ? f : { h, w };
+    });
+    read();
+    let ro = null;
+    try { ro = new ResizeObserver(read); ro.observe(el); } catch (e) { window.addEventListener('resize', read); }
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener('resize', read); };
+  }, [phase, skill]);
+
+  const picksAll = useMemo(() => all.slice().sort(byPlays), [all, week]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const pickRuns = runs.slice(0, 2);
+  let pickMode = 'long'; let pickN = 0;
+  if (fit && data) {
+    const LONG = 84, SHORT = 92, GAP = 8;
+    const cols = fit.w >= 640 ? 2 : 1;
+    const longFit = Math.max(0, Math.floor((fit.h + GAP) / (LONG + GAP))) * cols;
+    const gridFit = Math.max(0, Math.floor((fit.h + GAP) / (SHORT + GAP))) * cols * 2;
+    if (picksAll.length <= longFit) { pickMode = 'long'; pickN = picksAll.length; }
+    else if (longFit >= 5) { pickMode = 'long'; pickN = Math.min(longFit, 12); }
+    else { pickMode = 'short'; pickN = Math.min(gridFit, 8 * cols); }
+  }
+  const picks = picksAll.slice(0, pickN);
+  const pickAll = !!data && !!fit && pickN >= picksAll.length;
+
   if (!phase) return null;
   const curtain = phase === 'cur' || phase === 'lift';
   
@@ -350,7 +396,7 @@ export default function EntryDoor({ onPick }) {
     <div className="ent-door" role="dialog" aria-modal="true" aria-label="Welcome to Mind Loft">
       <style dangerouslySetInnerHTML={{ __html: CSS + CSS2 }} />
       {(
-        <div className={'ent-pg' + (phase === 'page' ? ' rise' : '')} aria-hidden={curtain ? 'true' : undefined}>
+        <div className={'ent-pg' + (phase === 'page' || phase === 'picks' ? ' rise' : '')} aria-hidden={curtain || phase === 'picks' ? 'true' : undefined}>
           <h2 className="ent-ask">What do you want to sharpen today?</h2>
           <ul className="ent-tiles">
             {SKILLS.map((x, i) => {
@@ -387,6 +433,71 @@ export default function EntryDoor({ onPick }) {
         </div>
       )}
 
+      {phase === 'picks' && sk ? (
+        <div className="ent-pk" style={{ '--c': CATEGORY_RAMP[sk.ramp] }}>
+          <div className="ent-pk-top">
+            <button type="button" className="ent-pk-back" onClick={() => setPhase('page')}>
+              <span aria-hidden="true">&larr;</span> All Skills
+            </button>
+            <span className="ent-pk-brand">
+              <span className="ent-mk"><MindLoftMark size="1em" ink="#08222e" accent="#ffffff" title="" /></span>
+              Mind Loft
+            </span>
+          </div>
+          <div className="ent-pk-hd">
+            <h2 className="ent-pk-h" ref={headRef} tabIndex={-1}>{sk.name}</h2>
+            <p className="ent-pk-sub">
+              {!data || !fit ? '\u00a0' : pickAll ? `All ${picksAll.length} Puzzles, Most Played First` : `The ${pickN} Most Played This Week`}
+            </p>
+          </div>
+          {pickRuns.length ? (
+            <ul className="ent-pk-runs">
+              {pickRuns.map((r) => (
+                <li key={r.id}>
+                  <button type="button" className="ent-pk-run" onClick={() => go(r.href)} aria-label={`${r.name}: start the run`}>
+                    <span className="ent-pk-nm"><b>{r.name}</b><span className="ent-pk-pill">Run</span></span>
+                    <span className="ent-pk-ds ent-pk-one">{r.tag || r.names.join(' \u00b7 ')}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <div className="ent-pk-fit" ref={fitRef}>
+            {data && fit ? (
+              <ul className={'ent-pk-list ' + pickMode}>
+                {picks.map((k, i) => {
+                  const g = DAILY_GAME_MAP[k];
+                  if (!g) return null;
+                  return (
+                    <li key={k} style={{ '--i': i }}>
+                      <button type="button" className="ent-pk-g" onClick={() => go(g.href)} aria-label={`${g.name}: play today's puzzle`}>
+                        <span className="ent-pk-nm">
+                          <b><i style={{ background: categoryColor(g.cat) }} aria-hidden="true" />{g.name}</b>
+                          <span className="ent-pk-rk">#{i + 1}</span>
+                        </span>
+                        <span className="ent-pk-ds">{pickMode === 'long' ? (g.tagLong || g.tag) : g.tag}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </div>
+          <div className="ent-foot ent-pk-foot">
+            <button type="button" className="ent-go-all" onClick={() => toHome('sk:' + sk.id)}>
+              {pickAll ? `Go to ${sk.name}` : `Show All ${picksAll.length || ''} ${sk.name} Puzzles`.replace('  ', ' ')} <span aria-hidden="true">&rarr;</span>
+            </button>
+            <p className="ent-h">
+              Loft your Mind in the{' '}
+              <span className="ent-bn">
+                <span className="ent-mk"><MindLoftMark size="1em" ink="#08222e" accent="#7dd3fc" title="" /></span>
+                Mind <span className="ent-loft">Loft</span>
+              </span>
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       {curtain ? (
         <div className={'ent-cur run' + (phase === 'lift' ? ' lift' : '')} onClick={skip} aria-hidden="true">
           <div className="ent-bands">
@@ -412,6 +523,44 @@ export default function EntryDoor({ onPick }) {
 }
 
 const CSS2 = `
+/* STEP 2: THE SKILL'S PICKS (owner, 2026-11-01). One screen, never scrolls:
+   the list area is measured and filled, the foot is the skill page's foot. */
+.ent-pk{position:absolute;inset:0;z-index:1;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;
+  background:color-mix(in srgb, var(--c) 45%, #ffffff);color:#08222e;
+  padding:max(14px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  animation:ent-up .35s cubic-bezier(.2,.7,.2,1) both}
+.ent-pk > *{width:100%;max-width:820px;margin-left:auto;margin-right:auto}
+.ent-pk-top{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.ent-pk-back{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 16px 0 12px;border:2px solid #08222e;border-radius:999px;background:transparent;color:#08222e;font:inherit;font-weight:800;font-size:15px;cursor:pointer}
+.ent-pk-brand{display:inline-flex;align-items:center;font-size:18px;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.ent-pk-hd{flex:none;display:flex;flex-direction:column;gap:2px}
+.ent-pk-h{margin:0;font-size:clamp(30px,8.4vw,40px);font-weight:800;letter-spacing:-.03em;line-height:1.15;padding-bottom:.06em;outline:none}
+.ent-pk-sub{margin:0;font-size:15px;font-weight:700;color:#08222e}
+.ent-pk-runs{flex:none;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ent-pk-runs li{display:flex}
+.ent-pk-fit{flex:1 1 auto;min-height:0;overflow:hidden}
+.ent-pk-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ent-pk-list.long{grid-template-columns:minmax(0,1fr);grid-auto-rows:84px}
+.ent-pk-list.short{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:92px}
+@media (min-width:640px){.ent-pk-list.long{grid-template-columns:repeat(2,minmax(0,1fr))}.ent-pk-list.short{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.ent-pk-list li{display:flex;min-width:0;animation:ent-up .4s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i) * .03s)}
+.ent-pk-g,.ent-pk-run{flex:1;min-width:0;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;gap:3px;text-align:left;padding:10px 14px;border:2px solid #08222e;border-radius:12px;background:#ffffff;color:#08222e;font:inherit;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+.ent-pk-run{min-height:60px;padding:8px 14px}
+.ent-pk-list.short .ent-pk-g{justify-content:space-between;padding:10px 12px}
+.ent-pk-g:hover,.ent-pk-run:hover{transform:translateY(-2px);box-shadow:0 10px 22px -14px rgba(0,0,0,.6)}
+.ent-pk-g:focus-visible,.ent-pk-run:focus-visible,.ent-pk-back:focus-visible{outline:3px solid #08222e;outline-offset:3px}
+.ent-pk-nm{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.ent-pk-nm b{display:inline-flex;align-items:center;gap:7px;min-width:0;font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.2;white-space:nowrap}
+.ent-pk-nm b i{flex:none;width:9px;height:9px;border-radius:50%}
+.ent-pk-run .ent-pk-nm b{font-size:17px}
+.ent-pk-rk{flex:none;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.ent-pk-pill{flex:none;background:#08222e;color:#ffffff;font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px}
+.ent-pk-ds{font-size:14px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.ent-pk-one{-webkit-line-clamp:1;font-size:13px}
+.ent-pk-foot{flex:none;width:100%}
+.ent-pk-foot .ent-go-all{width:100%;padding:15px 18px}
+@media (max-height:640px){.ent-pk{gap:10px}.ent-pk-h{font-size:28px}}
+@media (prefers-reduced-motion:reduce){.ent-pk,.ent-pk-list li{animation:none!important}}
 .ent-st{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .ent-stp{box-sizing:border-box;min-height:100%;display:flex;flex-direction:column;gap:20px;max-width:1080px;margin:0 auto;
   padding:max(22px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));

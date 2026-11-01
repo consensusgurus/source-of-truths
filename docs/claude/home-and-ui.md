@@ -1443,6 +1443,29 @@ offers light on the home once the door clears, and on a game's start gate only, 
 "Switch to light", "Keep dark" or the switch itself answers it. Existing readers keep
 whatever register they had.
 
+## The door's step 2: a skill's picks, fitted to the screen (owner, 2026-11-01)
+
+A skill tile on `app/EntryDoor.jsx` opens one more page (phase `picks`) instead of going straight
+to the home. Top to bottom: an "All Skills" back pill and the mark, the skill's name, a line
+("The N Most Played This Week" or "All N Puzzles, Most Played First"), the skill's runs (the
+majority-primary `runs` memo, at most two, full width, a black "Run" pill), then the puzzles, then
+the SAME foot as the skill page: a full-width ink pill and the "Loft your Mind" line. The pill reads
+"Show All N <Skill> Puzzles" and opens the skill's pane on the home (`toHome('sk:' + id)`); when
+every puzzle is already on screen it reads "Go to <Skill>".
+
+**The list is fitted, never scrolled.** `.ent-pk-fit` is measured (ResizeObserver): long rows
+(84px, name + `tagLong`) when five or more fit or the whole skill fits; otherwise two-across short
+tiles (92px, name + `tag`), at most eight (twice that two columns wider at 640px and up). Puzzles
+are ordered by the site's plays over seven days (`/api/quiz/my-plays` `week`), and the list waits
+for that read so it never paints in one order and re-sorts. Each tile carries a small dot in its
+own category colour. The page wears the skill's ramp step at 45% on white.
+
+## The phone home's type nudge (owner, 2026-11-01)
+
+From a subtle-to-big range of mockups, the owner picked "Nudge": the phone home's category, skill,
+All Puzzles and My Puzzles tiles keep their layout, with names at 18.5px (was 15.5) and counts at
+13px (was 12); the sideways sizes moved up in step. A long name wraps (balanced) rather than clips.
+
 ## The page look menu: light/dark plus Balanced/Full color (owner, 2026-10-19)
 
 The one-tap light/dark switch in every cap is RETIRED. The same icon (marked `data-look`) now opens

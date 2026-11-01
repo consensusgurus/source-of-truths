@@ -6992,7 +6992,10 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-fold > .mph-seg{flex:none;}
   .sty-mph .mph-grid{--mcols:2;flex:1 1 auto;grid-template-columns:repeat(var(--mcols),minmax(0,1fr));grid-auto-rows:minmax(48px,auto);align-content:stretch;}
   .sty-mph .mph-grid > .mph-t,.sty-mph .mph-grid > .mph-big{justify-content:space-between;gap:4px;min-height:48px;box-sizing:border-box;}
-  .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:15.5px;font-weight:800;line-height:1.2;}
+  /* THE NUDGE (owner, 2026-11-01): names a few px bigger, counts a touch bigger,
+     same layout. A long name (Crowd Psychology) wraps rather than clips. */
+  .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:18.5px;font-weight:800;line-height:1.18;letter-spacing:-0.01em;text-wrap:balance;padding-bottom:.08em;}
+  .sty-mph .mph-grid > .mph-t em,.sty-mph .mph-grid > .mph-big em{font-size:13px;}
   .sty-mph .mph-grid > .mph-big{padding:10px 12px 11px;}
   .sty-mph .mph-fold > .mph-seg button{padding:9px 0 10px;font-size:13.5px;}
   /* The drawing in the top bar is for a phone turned sideways only. */
@@ -7011,8 +7014,8 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mtop{gap:8px;padding-top:max(8px, env(safe-area-inset-top));padding-left:max(16px, env(safe-area-inset-left));padding-right:max(16px, env(safe-area-inset-right));}
   .sty-mph .mph-fold{gap:8px;}
   .sty-mph .mph-grid > .mph-t,.sty-mph .mph-grid > .mph-big{padding:7px 11px 8px;gap:2px;}
-  .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:14.5px;}
-  .sty-mph .mph-grid > .mph-t em,.sty-mph .mph-grid > .mph-big em{font-size:11.5px;}
+  .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:16.5px;}
+  .sty-mph .mph-grid > .mph-t em,.sty-mph .mph-grid > .mph-big em{font-size:12px;}
   .sty-mph .mph-grid{grid-auto-rows:minmax(44px,auto);}
   .sty-mph .mph-grid > .mph-t,.sty-mph .mph-grid > .mph-big{min-height:44px;}
   .sty-mph .mph-fold > .mph-seg button{padding:7px 0 8px;font-size:13px;}
@@ -7021,7 +7024,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
    still, so the switch keeps its place on the first screen. */
 @media (max-width:900px) and (orientation:landscape) and (max-height:360px){
   .sty-mph .mph-grid > .mph-t,.sty-mph .mph-grid > .mph-big{padding:5px 10px 6px;gap:0;min-height:38px;}
-  .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:13.5px;line-height:1.15;}
+  .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:15px;line-height:1.15;}
   .sty-mph .mph-grid > .mph-t em,.sty-mph .mph-grid > .mph-big em{font-size:11px;line-height:1.2;}
   .sty-mph .mph-grid{grid-auto-rows:minmax(38px,auto);gap:6px;}
   .sty-mph .mph-fold{gap:6px;}
