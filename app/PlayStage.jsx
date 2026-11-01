@@ -28,7 +28,7 @@ import { useHostedStage } from './StageHost';
 
 export { usePhoneStage } from './WordStage';
 
-export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null, done = null, inline = false, wide = false, look: lookIn = null }) {
+export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null, done = null, inline = false, wide = false, full = false, look: lookIn = null }) {
   const [storedLook, setLook] = useStageLook();
   // A RUN'S LOOK (owner, 2026-10-31, Judged): a board embedded in a run follows
   // the run's own look switch (five looks, its own key) rather than the site's
@@ -45,7 +45,7 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
   const host = useHostedStage(inline);
   useStageChrome(host.chrome ? pal.bg : null);
   return host.render(
-    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null), ...accentVars(mono ? null : bg, look) }}>
+    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '') + (full ? ' full' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null), ...accentVars(mono ? null : bg, look) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
         {host.inline ? null : <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav || host.nav} title={label} dot={bg} />}
@@ -180,6 +180,10 @@ const CSS = `
    mobile"). A board game passes \`wide\` and on a desktop its column grows past
    the phone's 520px; the phone is unchanged. */
 @media (min-width:900px){.pst.wide .pst-col{max-width:min(1000px, 94vw);}.pst.inl.wide{max-width:min(1040px, 100%);}}
+/* FULL VIEW (owner, 2026-10-31): a board that shows every clue beside it
+   (app/ClueView.js) takes the desktop's width, and the top bar, which sits in
+   the column, stretches with it so its ends line up with the play area. */
+@media (min-width:1000px){.pst.full .pst-col{max-width:min(1180px, 96vw);padding-left:24px;padding-right:24px;}.pst.inl.full{max-width:min(1220px, 100%);}}
 .pst.inl{position:relative;inset:auto;z-index:auto;overflow:visible;border-radius:22px;margin:0 auto;max-width:640px;}
 .pst.inl .pst-col{min-height:max(600px, calc(100vh - 150px));padding:18px 14px 18px;}
 @keyframes pstRise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}

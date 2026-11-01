@@ -55,6 +55,7 @@ import { endSolved } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useClueView, ClueViewSwitch, CLUE_VIEW_CSS } from '../ClueView';
 import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 const COLORS = {
@@ -227,6 +228,22 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
   const phoneStage = usePhoneStage();
   const [stageLook] = useStageLook();
   const [factAt, setFactAt] = useState(0);
+  // FULL VIEW (app/ClueView.js, owner 2026-10-31): on a wide desktop the grid,
+  // the table and every fact side by side. A fact can be crossed off (kept on
+  // this browser for this board, presentation only) and hovering one lights
+  // the clubs it names. Below 1000px the card's All facts swaps the list in.
+  const clueView = useClueView();
+  const [allFacts, setAllFacts] = useState(false);
+  const [hoverFact, setHoverFact] = useState(-1);
+  const [factsOff, setFactsOff] = useState([]);
+  useEffect(() => {
+    try { const v = JSON.parse(window.localStorage.getItem('sdx-off-' + PUZZLE.quizId) || '[]'); if (Array.isArray(v)) setFactsOff(v); else setFactsOff([]); } catch (e) { setFactsOff([]); }
+  }, [PUZZLE.quizId]);
+  const toggleFact = (i) => setFactsOff((cur) => {
+    const next = cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i];
+    try { window.localStorage.setItem('sdx-off-' + PUZZLE.quizId, JSON.stringify(next)); } catch (e) {}
+    return next;
+  });
   const [armGive, setArmGive] = useState(false);
   const [verdictBad, setVerdictBad] = useState(false);
   useEffect(() => {
@@ -574,69 +591,124 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
         const line = verdict
           ? <span className={verdictBad ? 'sdx-bad' : undefined} style={verdictBad ? { '--lg-bad': dark ? '#fb923c' : '#c2410c' } : undefined}>{verdict.msg}</span>
           : (toast || `${filled} of ${PAIRS.length} results filled${g.rejected ? ` · ${g.rejected} rejected` : ''}`);
+        const fullV = clueView.full;
+        // The clubs a fact names, lit in the grid and the table while hovered.
+        const named = (c) => (!c ? [] : [c.x, c.y].filter((x) => Number.isInteger(x)));
+        const lit = hoverFact >= 0 ? named(PUZZLE.clues[hoverFact]) : [];
+        const isLit = (i) => lit.includes(i);
+        // A match fact (beat, drew) lights its one square, both halves; a club
+        // fact (points, wins, draws, above) lights that club's row.
+        const litCell = (i, j) => (lit.length === 2 ? ((i === lit[0] && j === lit[1]) || (i === lit[1] && j === lit[0])) && ['beat', 'drew'].includes(PUZZLE.clues[hoverFact].type) : (lit.length === 1 && i === lit[0]));
+        const factRows = PUZZLE.clues.map((c, i) => {
+          const off = factsOff.includes(i);
+          return (
+            <button key={i} type="button" className={'cvs-r' + (off ? ' off' : '') + (hoverFact === i ? ' hov' : '')} aria-pressed={off}
+              onClick={() => toggleFact(i)} onMouseEnter={() => setHoverFact(i)} onMouseLeave={() => setHoverFact(-1)}
+              onFocus={() => setHoverFact(i)} onBlur={() => setHoverFact(-1)}>
+              <b>{i + 1}</b><span>{clueText(c)}</span>
+            </button>
+          );
+        });
+        const card = allFacts && !fullV ? (
+          <div className="cvs">
+            <div className="cvs-hd">
+              <span className="lb">All {NC} facts</span>
+              <button type="button" className="pst-tb sdx-mini" onClick={() => setAllFacts(false)}>One at a time</button>
+            </div>
+            {factRows}
+          </div>
+        ) : (
+          <div className="sdx-clue">
+            <div className="sdx-eb">{PUZZLE.sunday ? 'Sunday Edition' : `Stands No. ${PUZZLE.num}`} &middot; fact {fi + 1} of {NC}</div>
+            <h2 className="sdx-q" aria-live="polite"><span>{clueText(PUZZLE.clues[fi])}</span></h2>
+            <div className="sdx-nav">
+              <button type="button" className="sdx-nb" onClick={() => setFactAt((fi - 1 + NC) % NC)} aria-label="Back, the previous fact">{ICON.left}Back</button>
+              <div className="sdx-pips" role="group" aria-label={`Fact ${fi + 1} of ${NC}`}>
+                {PUZZLE.clues.map((c, i) => (
+                  <button key={i} type="button" className={'sdx-pp' + (i === fi ? ' now' : (holds(c) ? ' f' : ''))}
+                    onClick={() => setFactAt(i)} aria-label={`Fact ${i + 1}${holds(c) ? ', on the grid' : ''}`} aria-current={i === fi ? 'true' : undefined}><i /></button>
+                ))}
+              </div>
+              <button type="button" className="sdx-nb" onClick={() => setFactAt((fi + 1) % NC)} aria-label="Skip, the next fact">Skip{ICON.right}</button>
+            </div>
+            <button type="button" className="pst-tb sdx-mini" onClick={() => { if (clueView.desk) clueView.setFull(true); else setAllFacts(true); }}>All facts</button>
+          </div>
+        );
+        const board = (
+          <>
+            <div className="sdx-gr" role="grid" aria-label="Results grid, read across">
+              <span className="sdx-h" aria-hidden="true" />
+              {T.map((t, j) => <span key={j} className={'sdx-h' + (isLit(j) ? ' lit' : '')} title={t} aria-hidden="true">{ab(t)}</span>)}
+              {T.map((t, i) => (
+                <React.Fragment key={i}>
+                  <span className={'sdx-rh' + (isLit(i) ? ' lit' : '')} title={t} aria-hidden="true">{ab(t)}</span>
+                  {T.map((_, j) => {
+                    if (i === j) return <span key={j} className="sdx-self" aria-hidden="true" />;
+                    const k = cellIndex(i, j);
+                    const lab = cellLabel(k, i);
+                    return (
+                      <button key={j} type="button" className={'sdx-cl' + (lab ? ' ' + lab : '') + (litCell(i, j) ? ' lit' : '')}
+                        onClick={() => cellClick(i, j)}
+                        onPointerDown={() => playing && cellPressDown(i, j)}
+                        onPointerUp={cellPressUp} onPointerLeave={cellPressUp}
+                        onContextMenu={(e) => { if (playing) { e.preventDefault(); cycleCell(i, j, -1); } }}
+                        disabled={!playing}
+                        aria-label={`${T[i]} v ${T[j]}: ${lab ? WORD[lab] : 'blank'}`}
+                        title={`${T[i]} v ${T[j]}: tap to cycle, hold to step back`}>{lab}</button>
+                    );
+                  })}
+                </React.Fragment>
+              ))}
+            </div>
+            <div className="sdx-help">Tap cycles W, D, L, blank. The other half mirrors it.</div>
+            <div className="sdx-tbl" role="table" aria-label="The table as it stands">
+              <div className="sdx-tr hd" role="row"><span>#</span><span className="nm">As it stands</span><span>P</span><span>W</span><span>D</span><span>L</span><span className="pt">Pts</span></div>
+              {standing.map((r, pos) => (
+                <div key={r.i} className={'sdx-tr' + (isLit(r.i) ? ' lit' : '')} role="row">
+                  <span>{pos + 1}</span><span className="nm">{r.name}</span>
+                  <span>{r.p}</span><span>{r.w}</span><span>{r.d}</span><span>{r.l}</span>
+                  <span className="pt">{r.pts}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        );
+        const tools = playing ? (
+          <div className="sdx-tools">
+            <button type="button" className="pst-tb" onClick={() => { setVerdictBad(false); hint(); }} aria-label="Hint, fills one match, counts against you on the board">{ICON.bulb}Hint</button>
+            <button type="button" className="pst-tb" onClick={clearAll} disabled={filled === 0} aria-label="Clear the grid">Clear</button>
+            <button type="button" className="pst-tb sdx-go" onClick={() => { setVerdictBad(true); submit(); }} disabled={filled !== PAIRS.length}>File the table</button>
+          </div>
+        ) : null;
         return (
-          <PlayStage bg={gameColor('stands')} label="Stands"
+          <PlayStage bg={gameColor('stands')} label="Stands" full={fullV}
             top={(
-              <div className="sdx" style={{ '--sdx-n': N }}>
-                <style dangerouslySetInnerHTML={{ __html: SDX_CSS }} />
-                <div className="sdx-clue">
-                  <div className="sdx-eb">{PUZZLE.sunday ? 'Sunday Edition' : `Stands No. ${PUZZLE.num}`} &middot; fact {fi + 1} of {NC}</div>
-                  <h2 className="sdx-q" aria-live="polite"><span>{clueText(PUZZLE.clues[fi])}</span></h2>
-                  <div className="sdx-nav">
-                    <button type="button" className="sdx-nb" onClick={() => setFactAt((fi - 1 + NC) % NC)} aria-label="Back, the previous fact">{ICON.left}Back</button>
-                    <div className="sdx-pips" role="group" aria-label={`Fact ${fi + 1} of ${NC}`}>
-                      {PUZZLE.clues.map((c, i) => (
-                        <button key={i} type="button" className={'sdx-pp' + (i === fi ? ' now' : (holds(c) ? ' f' : ''))}
-                          onClick={() => setFactAt(i)} aria-label={`Fact ${i + 1}${holds(c) ? ', on the grid' : ''}`} aria-current={i === fi ? 'true' : undefined}><i /></button>
-                      ))}
+              <>
+                <style dangerouslySetInnerHTML={{ __html: CLUE_VIEW_CSS + SDX_CSS }} />
+                <ClueViewSwitch view={clueView} />
+                {fullV ? (
+                  <div className="cvs-wrap sdx-full" style={{ '--sdx-n': N }}>
+                    <div className="cvs-board sdx">{board}{tools}</div>
+                    <div className="cvs-side">
+                      <div className="cvs">
+                        <div className="cvs-hd">
+                          <span className="lb">All {NC} facts</span>
+                          <span className="ct">{factsOff.length} of {NC} crossed off</span>
+                        </div>
+                        {factRows}
+                      </div>
+                      <div className="cvs-note">Click a fact to cross it off. Hover one to light its clubs.</div>
                     </div>
-                    <button type="button" className="sdx-nb" onClick={() => setFactAt((fi + 1) % NC)} aria-label="Skip, the next fact">Skip{ICON.right}</button>
                   </div>
-                </div>
-                <div className="sdx-gr" role="grid" aria-label="Results grid, read across">
-                  <span className="sdx-h" aria-hidden="true" />
-                  {T.map((t, j) => <span key={j} className="sdx-h" title={t} aria-hidden="true">{ab(t)}</span>)}
-                  {T.map((t, i) => (
-                    <React.Fragment key={i}>
-                      <span className="sdx-rh" title={t} aria-hidden="true">{ab(t)}</span>
-                      {T.map((_, j) => {
-                        if (i === j) return <span key={j} className="sdx-self" aria-hidden="true" />;
-                        const k = cellIndex(i, j);
-                        const lab = cellLabel(k, i);
-                        return (
-                          <button key={j} type="button" className={'sdx-cl' + (lab ? ' ' + lab : '')}
-                            onClick={() => cellClick(i, j)}
-                            onPointerDown={() => playing && cellPressDown(i, j)}
-                            onPointerUp={cellPressUp} onPointerLeave={cellPressUp}
-                            onContextMenu={(e) => { if (playing) { e.preventDefault(); cycleCell(i, j, -1); } }}
-                            disabled={!playing}
-                            aria-label={`${T[i]} v ${T[j]}: ${lab ? WORD[lab] : 'blank'}`}
-                            title={`${T[i]} v ${T[j]}: tap to cycle, hold to step back`}>{lab}</button>
-                        );
-                      })}
-                    </React.Fragment>
-                  ))}
-                </div>
-                <div className="sdx-help">Tap cycles W, D, L, blank. The other half mirrors it.</div>
-                <div className="sdx-tbl" role="table" aria-label="The table as it stands">
-                  <div className="sdx-tr hd" role="row"><span>#</span><span className="nm">As it stands</span><span>P</span><span>W</span><span>D</span><span>L</span><span className="pt">Pts</span></div>
-                  {standing.map((r, pos) => (
-                    <div key={r.i} className="sdx-tr" role="row">
-                      <span>{pos + 1}</span><span className="nm">{r.name}</span>
-                      <span>{r.p}</span><span>{r.w}</span><span>{r.d}</span><span>{r.l}</span>
-                      <span className="pt">{r.pts}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                ) : (
+                  <div className="sdx" style={{ '--sdx-n': N }}>
+                    {card}
+                    {board}
+                  </div>
+                )}
+              </>
             )}
-            bottom={playing ? (
-              <div className="sdx-tools">
-                <button type="button" className="pst-tb" onClick={() => { setVerdictBad(false); hint(); }} aria-label="Hint, fills one match, counts against you on the board">{ICON.bulb}Hint</button>
-                <button type="button" className="pst-tb" onClick={clearAll} disabled={filled === 0} aria-label="Clear the grid">Clear</button>
-                <button type="button" className="pst-tb sdx-go" onClick={() => { setVerdictBad(true); submit(); }} disabled={filled !== PAIRS.length}>File the table</button>
-              </div>
-            ) : null}
+            bottom={fullV ? null : tools}
             foot={line}
             giveUp={{ armed: !!armGive, onPress: () => { if (armGive) { if (Date.now() - armGive < 400) return; setArmGive(false); reveal(); } else { setArmGive(Date.now()); } } }}
             clock={elapsed} done={!playing} />
@@ -1147,6 +1219,17 @@ const SDX_CSS = `
 .pst .sdx-tools .sdx-go{flex:1;background:var(--pst-acc);color:var(--pst-on-acc);font-size:15px;}
 .pst .sdx-go:disabled{opacity:.4;}
 .sdx-bad{color:var(--lg-bad);}
+.pst .sdx-mini{min-height:32px;padding:0 12px;font-size:12px;font-weight:800;align-self:center;white-space:nowrap;flex:none;}
+.sdx-h.lit,.sdx-rh.lit{background:var(--pst-acc);color:var(--pst-on-acc);border-radius:6px;}
+.pst .sdx-cl.lit{box-shadow:0 0 0 3px color-mix(in srgb, var(--pst-acc) 45%, transparent);}
+.sdx-tr.lit{background:var(--pst-pale);}
+.sdx-full .sdx{max-width:none;}
+.pst .sdx-full .cvs-board.sdx{align-self:flex-start;}
+.pst .sdx-full .sdx-gr{grid-template-columns:48px repeat(var(--sdx-n,5),minmax(0,1fr));gap:6px;}
+.pst .sdx-full .sdx-cl,.pst .sdx-full .sdx-self{height:56px;}
+.pst .sdx-full .sdx-rh{padding-left:4px;}
+.pst .sdx-full .sdx-tr{font-size:14px;min-height:30px;}
+.pst .sdx-full .sdx-tools{max-width:none;}
 .pst-foot:has(.sdx-bad){opacity:1;}
 .sdx-bad b{color:inherit;}
 `;

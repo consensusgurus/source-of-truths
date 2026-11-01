@@ -67,6 +67,7 @@ import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { LOGIC_STAGE_CSS, embedLook } from '../LogicStage';
+import { useClueView, ClueViewSwitch, CLUE_VIEW_CSS } from '../ClueView';
 
 const COLORS = {
   cream: T.surface,
@@ -299,6 +300,34 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
   const [clueAt, setClueAt] = useState(0);
   const [catTab, setCatTab] = useState('room');
   const [allClues, setAllClues] = useState(false);
+  // FULL VIEW on a wide desktop (app/ClueView.js): all three boards side by
+  // side with every clue beside them. `hoverClue` lights the suspects a clue
+  // names. Not inside Judged, whose run frame keeps the one-board stage.
+  const clueView = useClueView();
+  const [hoverClue, setHoverClue] = useState(-1);
+  // A full-view group whose names will not sit level in their columns (a
+  // single word wider than the column, or more than two lines) stands its
+  // names on end. Measured, and measured again on a resize or a new case.
+  const [alfRot, setAlfRot] = useState([]);
+  useLayoutEffect(() => {
+    const hs = Array.from(document.querySelectorAll('.alf-gr .h[data-cat]:not(.v)'));
+    if (!hs.length) return;
+    const add = [];
+    for (const h of hs) {
+      const k = h.getAttribute('data-cat');
+      if (add.includes(k) || alfRot.includes(k)) continue;
+      const t = h.firstChild;
+      if (!t) continue;
+      if (h.scrollWidth > h.clientWidth + 1 || t.getBoundingClientRect().height > 32) add.push(k);
+    }
+    if (add.length) setAlfRot((cur) => [...cur, ...add]);
+  });
+  useEffect(() => {
+    setAlfRot([]);
+    const reset = () => setAlfRot([]);
+    window.addEventListener('resize', reset);
+    return () => window.removeEventListener('resize', reset);
+  }, [PUZZLE.num]);
   // THE BOARD GIVES UP HEIGHT, NOT THE FOOT (2026-10-31): a Sunday's fifth
   // suspect (or a short phone) can push the foot off the full-screen stage.
   // The cells shrink by the measured overflow, never below 36px, and start
@@ -704,12 +733,100 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
         const ci = Math.min(clueAt, nC - 1);
         const cat = CAT_META.find((c) => c.key === catTab) || CAT_META[0];
         const TAB = { room: 'Room', time: 'Time', obj: 'Item' };
+        const fullV = clueView.full && !EMBED;
+        // The suspects a clue names (by index), lit on the board while hovered.
+        const named = (c) => (!c ? [] : [c.s, c.s1, c.s2].filter((x) => Number.isInteger(x)));
+        const lit = hoverClue >= 0 ? named(PUZZLE.clues[hoverClue]) : [];
+        const cellBtn = (catKey, val, s, v) => {
+          const m = shownMarks[catKey][s][v];
+          const name = PUZZLE.suspects[s];
+          return (
+            <button key={catKey + v} type="button"
+              className={'als-c' + (m === 1 ? ' x' : m === 2 ? ' y' : '')}
+              onClick={() => { if (longFired.current) { longFired.current = false; return; } tapCell(catKey, s, v); }}
+              onContextMenu={(e) => { e.preventDefault(); if (longFired.current) return; toggleDot(catKey, s, v); }}
+              onTouchStart={() => startPress(catKey, s, v)}
+              onTouchEnd={endPress}
+              onTouchMove={endPress}
+              onTouchCancel={endPress}
+              aria-label={`${name}, ${val}${m === 1 ? ', ruled out' : m === 2 ? ', confirmed' : ''}. Tap to toggle ruled out; long-press or right-click to confirm.`}
+            >{m === 1 ? '✗' : m === 2 ? '●' : ''}</button>
+          );
+        };
+        const tools = playing ? (
+          <>
+            <button type="button" className="lgs-big lgs-tile on als-acc" onClick={accuse}>Check my accusation</button>
+            <div className="pst-tools">
+              <button type="button" className="pst-tb lgs-sm" onClick={undo} disabled={!canUndo} aria-label="Undo last move">Undo</button>
+              <button type="button" className="pst-tb lgs-sm" onClick={resetBoards}>Reset boards</button>
+              <button type="button" className={'pst-tb lgs-sm' + (autoX ? ' on' : '')} aria-pressed={autoX} onClick={() => setAutoX((v) => !v)}>Auto ✗ {autoX ? 'on' : 'off'}</button>
+            </div>
+          </>
+        ) : null;
+        // FULL VIEW: one grid holding Room, Time and Item side by side (a thin
+        // gap column between the groups), and the clue sheet beside it.
+        const fullTop = (() => {
+          const cols = `minmax(64px, max-content) ${CAT_META.map(() => `repeat(${N}, minmax(0, 1fr))`).join(' 14px ')}`;
+          const gapCell = (k) => <span key={k} aria-hidden="true" />;
+          return (
+            <div className="cvs-wrap">
+              <div className="cvs-board">
+                <div className="alf-gr" style={{ gridTemplateColumns: cols }}>
+                  <span />
+                  {CAT_META.map((c, gi) => (
+                    <React.Fragment key={c.key}>
+                      {gi > 0 ? gapCell('g' + gi) : null}
+                      <span className="alf-gl" style={{ gridColumn: `span ${N}` }}>{TAB[c.key] || c.label}</span>
+                    </React.Fragment>
+                  ))}
+                  <span />
+                  {CAT_META.map((c, gi) => (
+                    <React.Fragment key={c.key}>
+                      {gi > 0 ? gapCell('h' + gi) : null}
+                      {c.vals.map((val) => <span key={val} data-cat={c.key} className={'h' + (alfRot.includes(c.key) ? ' v' : '')} title={val}><span>{val}</span></span>)}
+                    </React.Fragment>
+                  ))}
+                  {PUZZLE.suspects.map((name, s) => (
+                    <React.Fragment key={name}>
+                      <span className={'n' + (lit.includes(s) ? ' lit' : '')}>{name}</span>
+                      {CAT_META.map((c, gi) => (
+                        <React.Fragment key={c.key}>
+                          {gi > 0 ? gapCell('s' + s + gi) : null}
+                          {c.vals.map((val, v) => cellBtn(c.key, val, s, v))}
+                        </React.Fragment>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </div>
+                {tools}
+              </div>
+              <div className="cvs-side">
+                <div className="cvs">
+                  <div className="cvs-hd"><span className="lb">All clues</span><span className="ct">{g.struck.length} of {nC} crossed off</span></div>
+                  {PUZZLE.clues.map((c, i) => {
+                    const off = g.struck.includes(i);
+                    return (
+                      <button key={i} type="button" className={'cvs-r' + (off ? ' off' : '') + (hoverClue === i ? ' hov' : '')} aria-pressed={off}
+                        onClick={() => toggleClue(i)} onMouseEnter={() => setHoverClue(i)} onMouseLeave={() => setHoverClue(-1)}
+                        onFocus={() => setHoverClue(i)} onBlur={() => setHoverClue(-1)}>
+                        <b>{i + 1}</b><span>{clueText(c)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="cvs-note">Click a clue to cross it off. Hover one to light its suspects.</div>
+              </div>
+            </div>
+          );
+        })();
         return (
-          <PlayStage bg={gameColor('alibi')} label="Alibi" wide inline={!!EMBED} look={embedLook(EMBED)}
+          <PlayStage bg={gameColor('alibi')} label="Alibi" wide full={fullV} inline={!!EMBED} look={embedLook(EMBED)}
             eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}${PUZZLE.venue} · ${N} suspects`}
             top={(
               <>
-                <style dangerouslySetInnerHTML={{ __html: LOGIC_STAGE_CSS + ALS_CSS }} />
+                <style dangerouslySetInnerHTML={{ __html: LOGIC_STAGE_CSS + CLUE_VIEW_CSS + ALS_CSS }} />
+                {EMBED ? null : <ClueViewSwitch view={clueView} />}
+                {fullV ? fullTop : (
                 <div className="lgs-cols">
                   <div className="lgs-sec">
                     {allClues ? (
@@ -737,7 +854,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
                         </div>
                         <div className="als-minis">
                           <button type="button" className="pst-tb lgs-sm" aria-pressed={g.struck.includes(ci)} onClick={() => toggleClue(ci)}>{g.struck.includes(ci) ? 'Bring back' : 'Cross off'}</button>
-                          <button type="button" className="pst-tb lgs-sm" onClick={() => setAllClues(true)}>All clues</button>
+                          <button type="button" className="pst-tb lgs-sm" onClick={() => { if (clueView.desk && !EMBED) clueView.setFull(true); else setAllClues(true); }}>All clues</button>
                         </div>
                       </div>
                     )}
@@ -754,36 +871,14 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
                       {PUZZLE.suspects.map((name, s) => (
                         <React.Fragment key={name}>
                           <span className="n">{name}</span>
-                          {cat.vals.map((val, v) => {
-                            const m = shownMarks[cat.key][s][v];
-                            return (
-                              <button key={val} type="button"
-                                className={'als-c' + (m === 1 ? ' x' : m === 2 ? ' y' : '')}
-                                onClick={() => { if (longFired.current) { longFired.current = false; return; } tapCell(cat.key, s, v); }}
-                                onContextMenu={(e) => { e.preventDefault(); if (longFired.current) return; toggleDot(cat.key, s, v); }}
-                                onTouchStart={() => startPress(cat.key, s, v)}
-                                onTouchEnd={endPress}
-                                onTouchMove={endPress}
-                                onTouchCancel={endPress}
-                                aria-label={`${name}, ${val}${m === 1 ? ', ruled out' : m === 2 ? ', confirmed' : ''}. Tap to toggle ruled out; long-press or right-click to confirm.`}
-                              >{m === 1 ? '✗' : m === 2 ? '●' : ''}</button>
-                            );
-                          })}
+                          {cat.vals.map((val, v) => cellBtn(cat.key, val, s, v))}
                         </React.Fragment>
                       ))}
                     </div>
-                    {playing && (
-                      <>
-                        <button type="button" className="lgs-big lgs-tile on als-acc" onClick={accuse}>Check my accusation</button>
-                        <div className="pst-tools">
-                          <button type="button" className="pst-tb lgs-sm" onClick={undo} disabled={!canUndo} aria-label="Undo last move">Undo</button>
-                          <button type="button" className="pst-tb lgs-sm" onClick={resetBoards}>Reset boards</button>
-                          <button type="button" className={'pst-tb lgs-sm' + (autoX ? ' on' : '')} aria-pressed={autoX} onClick={() => setAutoX((v) => !v)}>Auto ✗ {autoX ? 'on' : 'off'}</button>
-                        </div>
-                      </>
-                    )}
+                    {tools}
                   </div>
                 </div>
+                )}
               </>
             )}
             foot={verdict ? <span className={verdict.soft ? undefined : 'lgs-bad'}>{verdict.msg}</span> : (toast || (playing
@@ -1292,4 +1387,16 @@ const ALS_CSS = `
 .pst .als-c.x{opacity:.4;background:transparent;}
 .pst .als-c.y{background:var(--pst-acc);color:var(--pst-on-acc);}
 .pst .als-acc{margin-top:6px;}
+.pst .alf-gr{display:grid;column-gap:6px;row-gap:6px;align-items:center;}
+.pst .alf-gr .alf-gl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:center;padding-bottom:6px;border-bottom:2px solid var(--pst-ink);}
+.pst .alf-gr .h{font-size:11.5px;font-weight:800;text-align:center;line-height:1.15;align-self:end;padding-bottom:2px;min-width:0;overflow:hidden;}
+.pst .alf-gr .h>span{display:block;}
+/* Room and item names run long (a Sunday seats five, and "embroidered
+   handkerchief" will not fit a 40px column), so they stand on end, read from
+   the foot up, as in a puzzle book's grid. Times stay level. */
+.pst .alf-gr .h.v{display:flex;justify-content:center;align-items:flex-end;height:142px;padding-bottom:4px;}
+.pst .alf-gr .h.v>span{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-height:138px;text-align:left;}
+.pst .alf-gr .n{font-size:15px;font-weight:800;white-space:nowrap;padding:0 8px;border-radius:10px;height:52px;display:flex;align-items:center;}
+.pst .alf-gr .n.lit{background:var(--pst-acc);color:var(--pst-on-acc);}
+.pst .alf-gr .als-c{height:52px;}
 `;

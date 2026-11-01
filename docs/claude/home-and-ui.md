@@ -1752,6 +1752,37 @@ run's frame, follows the run's own look (`RunEmbed look`, passed to `PlayStage l
 `dark` keep the board colourless) and hides its old page column with `lgs-hosted` on its root.
 The `.jd-rose` / `.jd-rosedk` overrides in JudgedClient were retired. Stands is not in today's
 Judged roster and was left alone.
+## Full view: every clue beside the board (owner, 2026-10-31)
+
+Owner: "a fuller view option on desktop to show all clues for alibi and others"; players had
+complained about **Alibi** and **Stands**, whose clues only work side by side (Alibi's chained
+clues, Stands' points facts) but showed one at a time on the stage. `app/ClueView.js` holds the
+shared half: `useClueView()`, the `One at a time | Full view` switch (`ClueViewSwitch`) and
+`CLUE_VIEW_CSS` (the switch, the `cvs` clue sheet, the `cvs-wrap` two-column layout).
+
+- **When:** desktop FULL SCREEN only (`useStageMode() === 'full'`, i.e. `html.lc-focus`) at
+  1000px and up. Full view is the default there (whole board by default, 2026-10-30); the
+  player's choice is remembered on the browser under `ml_clue_view`, one key for every game.
+  With the site navigation showing (inline) the column is too narrow, so it keeps one clue at a
+  time. Not inside Judged (RunEmbed keeps the one-board stage).
+- **Width:** `PlayStage full` widens the column to `min(1180px, 96vw)`; the top bar lives in the
+  column, so its ends line up with the play area (owner, 2026-10-31: header elements expand to
+  match width).
+- **Alibi:** Room, Time and Item in ONE grid (a 14px gap column between groups), every clue in
+  the sheet; click crosses off (the save's own `struck`), hover lights the suspects it names
+  (`s`, `s1`, `s2`). A group whose names will not sit level (a word wider than its column, or
+  more than two lines) stands its names on end, measured per case and on resize (`alfRot`).
+- **Stands:** grid, table and tools on the left, every fact on the right. Crossing off a fact is
+  presentation only (localStorage `sdx-off-<quizId>`). Hover: a beat / drew fact lights its one
+  square and both club labels; a club fact lights that club's row; the table row tints.
+- **Below 1000px (and inline):** unchanged stage, plus the card's **All clues / All facts** swaps
+  the full list in where the single clue sat, above the board, with One at a time to go back.
+  On a full-screen desktop that same button switches to Full view.
+- **Audit (2026-10-31):** Sworn, Ergo, Docket and Hearsay already show every statement / rule;
+  Stet, Feud, Outwit, Dating and the gauntlets are one item at a time by nature. Sudoclue is not
+  on the stage yet; when it moves, give it full view. Jesters, Venn, Plot, Judges and Duet not yet
+  checked for hidden constraints.
+
 ## Axiom, Duet and Fib on the white stage (owner, 2026-10-31)
 
 The three Logic dailies play on `PlayStage` at every width with the same
