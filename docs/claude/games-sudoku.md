@@ -3,6 +3,22 @@
 > Split out of CLAUDE.md on 2026-10-29 to keep the auto-loaded file small. Rules here are verbatim and still binding.
 > Scope: The sudoku family: Suds-adjacent variants (Cages, Sando, Knight, Diag, Frame/Rim, Arrow, Giant, Sumo, Window, Five/Racecar, Towers/Mercury/Polka) and the rotating Sudoku circuit
 
+## Every sudoku on the white stage finishes with TURN OVER (owner, 2026-11-01)
+
+Picked from four mockups (https://claude.ai/artifact/MN4RpGWCuj6CrjvhYADkWE): "Turnover for this and all
+sudokus". `turnover` in `lib/finish-beat.js`. `playBeat` swaps it in for ANY `cat: 'Sudoku'` game whose
+`.sks-bd` (app/SudokuStage.jsx) is on screen, whatever its `lib/finish-beats.js` def says; that def stays as
+the fallback for boards off the stage (Enter the Dojo keeps the old board). Every square flips over to the
+ending's pastel (`ctx.ground`, the same colour as the iris) in a wave from the last tap, the SVG paint and
+outside clues (`.sks-paint`, `.sks-gut`) melt, the digits fade, and the finale opens that pastel tile into the
+ending (`ctx.irisRect`: a clip-path from the `.sks-cells` outline instead of the round iris). The light show
+(ground painting and "squares lit" count) does not run with it.
+
+**Why it is drawn INSIDE the board:** the old ripple drew position:fixed overlays measured off `.stg-board`,
+which on the stage is the pre-stage board kept hidden behind the PlayStage, so on Sixes it landed off the
+grid. Turn over appends a face span to each cell button and turns the button (transform and opacity only),
+so it cannot drift. Faces go in ctx.nodes and are removed by cancel().
+
 ## The sudoku trio (Towers, Mercury, Polka) and the ROTATING Sudoku circuit (owner, 2026-08-23)
 
 Three sudoku-family dailies launched 2026-08-24: **Towers** (skyscrapers: border clues count
