@@ -1189,7 +1189,7 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
 const SWS_CSS = `
 .pst .sws-head{display:flex;flex-direction:column;gap:6px;padding:6px 0 2px;}
 .pst .sws-list{display:flex;flex-direction:column;gap:8px;}
-@media (min-width:900px){.pst.wide .sws-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));}}
+@media (min-width:900px){.pst.wide .sws-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));align-content:center;}}
 .pst .sws-w{border:1px solid var(--pst-ink);border-radius:14px;overflow:hidden;}
 .pst .sws-w.out{opacity:.4;background:transparent;}
 .pst .sws-w.lie .sws-wb .st{opacity:.6;}
