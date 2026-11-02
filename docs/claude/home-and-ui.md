@@ -2069,3 +2069,14 @@ their Turn over (`.sks-bd`), which runs after this step.
 Carve's stage at the same time: the guide card under the board ("Block N holds ...") is gone, the
 block chips sit under the board, and each block wears its own site pastel (`CARVE_PASTELS`, the
 REGION_RAMP order without amber): full with dark ink when locked, a pale mix while it grows.
+
+## Ink outlines are 1px sitewide (owner, 2026-11-02)
+
+Every ink box line (`--dk`, `--mb`, and any literal `border: 2px solid var(--stg-ink...)`, `#08222e`,
+`#0b0d12`, `currentColor` on chrome) is **1px**, shipped 352defabd across 30 files: the home (desktop and
+phone looks, crowd strip top line, ledger, rail, Everything Else box), the puzzle-page chrome
+(LayoutCInner, StageTopBar, StageFoot, HelpSheet), pop-ups (PremierePop, RunDoorPop, GateScreen,
+MemeShare, LossHold), endings (StageStick, StageFinish), EntryDoor, the Stat Hub and the game 404 cards.
+NOT changed on purpose: focus rings (`outline:2px` / `box-shadow 0 0 0 2px`), accent selection borders
+(`--stg-acc-ink`), and in-game board lines (chain dashes, docket tiles, sudoku box edges, price bars).
+New chrome takes `border:1px solid var(--stg-ink)` or `var(--dk)`; never reintroduce a 2px ink box.
