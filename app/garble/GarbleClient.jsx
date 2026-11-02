@@ -514,7 +514,13 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
     try { still = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
     const canFly = !still && typeof Element !== 'undefined' && Element.prototype.animate
       && document.visibilityState === 'visible'
-      && !(window.matchMedia && window.matchMedia('(max-width: 899px)').matches); // the phone stage covers both ends of the flight
+      // The full-screen word stage covers both ends of the flight, and it is up
+      // at EVERY width now (desktop included since the stage went full screen),
+      // so a width test alone let the clones fly across the stage from the
+      // hidden board underneath (owner report, 2026-11-02: letters drifting off
+      // to the bottom left). Whenever the stage is up, the letter lands in place.
+      && !phoneStage
+      && !(window.matchMedia && window.matchMedia('(max-width: 899px)').matches);
     if (!canFly) { land(); return undefined; }
     const clones = [];
     // The flip runs first (80ms a cell); the flight leaves once the row has
