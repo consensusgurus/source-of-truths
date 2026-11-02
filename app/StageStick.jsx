@@ -1000,7 +1000,7 @@ const CSS = `
 .sst-in{width:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px;
   padding:max(10px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));}
 .sst-top{display:flex;align-items:center;gap:12px;padding:2px 2px 0;}
-.sst-tb{display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 12px;border:2px solid var(--sst-ink);border-radius:99px;
+.sst-tb{display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 12px;border:1px solid var(--sst-ink);border-radius:99px;
   color:var(--sst-ink);font-size:13px;font-weight:800;text-decoration:none;}
 .sst-brand{color:var(--sst-ink);font-size:16px;font-weight:800;text-decoration:none;}
 .sst-hero{display:flex;flex-direction:column;gap:18px;padding:6px 8px 4px;}
@@ -1019,7 +1019,7 @@ const CSS = `
 .sst-cnt > span{grid-area:1/1;white-space:nowrap;}
 .sst-cnt-hold{visibility:hidden;}
 .sst-hbs{display:flex;gap:8px;margin-top:14px;}
-.sst-hb{flex:1;max-width:200px;height:40px;display:flex;align-items:center;justify-content:center;padding:0 14px;border:2px solid var(--sst-ink);border-radius:12px;
+.sst-hb{flex:1;max-width:200px;height:40px;display:flex;align-items:center;justify-content:center;padding:0 14px;border:1px solid var(--sst-ink);border-radius:12px;
   background:transparent;color:var(--sst-ink);font:inherit;font-size:14px;font-weight:800;text-decoration:none;cursor:pointer;white-space:nowrap;}
 .sst-hb:hover{background:var(--sst-wash);}
 .sst-arc{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:408px;min-height:46px;margin-top:8px;padding:0 16px;border-radius:12px;
@@ -1150,7 +1150,7 @@ const CSS = `
 .sst-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .sst-row.one{grid-template-columns:1fr;}
 .sst-ob{display:flex;align-items:center;gap:10px;min-width:0;min-height:60px;padding:9px 12px;border-radius:14px;
-  border:2px solid var(--sst-ink);color:var(--sst-ink);text-decoration:none;}
+  border:1px solid var(--sst-ink);color:var(--sst-ink);text-decoration:none;}
 .sst-ob.pri{background:var(--sst-ink);color:var(--sst-bg);}
 .sst-ob .g{flex:none;display:flex;}
 .sst-ob .g:empty{display:none;}

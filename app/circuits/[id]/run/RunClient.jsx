@@ -2308,7 +2308,7 @@ body:has(.rn)::before{background:${T.ground};}
 .rn-pfg u{text-decoration:none;color:#66748f;}
 
 .rn-tabs{display:flex;gap:2px;min-width:0;}
-.rn-tab{background:none;border:0;border-bottom:2px solid transparent;cursor:pointer;
+.rn-tab{background:none;border:0;border-bottom:1px solid transparent;cursor:pointer;
   font-family:${MONO};font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#66748f;
   padding:8px 12px;margin-bottom:-1px;}
 .rn-tab:hover{color:#9aa8c4;}

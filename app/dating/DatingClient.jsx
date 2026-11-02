@@ -1302,7 +1302,7 @@ const DTS_CSS = `
 .pst-col > .stb.has-t{flex:none;}
 .pst .dts-q{font-size:clamp(22px,7vw,28px);}
 .dts-rail{display:flex;flex-direction:column;gap:8px;}
-.pst .dts-c{display:flex;align-items:center;gap:10px;min-height:58px;width:100%;box-sizing:border-box;border-radius:16px;padding:8px 14px 8px 12px;background:var(--pst-bg);border:2px solid var(--pst-ink);font-size:16px;line-height:1.25;font-weight:800;text-align:left;touch-action:manipulation;}
+.pst .dts-c{display:flex;align-items:center;gap:10px;min-height:58px;width:100%;box-sizing:border-box;border-radius:16px;padding:8px 14px 8px 12px;background:var(--pst-bg);border:1px solid var(--pst-ink);font-size:16px;line-height:1.25;font-weight:800;text-align:left;touch-action:manipulation;}
 .dts-c .o{flex:none;width:34px;font-size:12px;letter-spacing:.04em;color:var(--pst-mute);}
 .dts-c .t{flex:1;min-width:0;}
 .dts-c .y{flex:none;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;padding:3px 8px;border-radius:999px;background:var(--pst-cell);}

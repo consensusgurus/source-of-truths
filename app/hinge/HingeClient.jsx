@@ -707,7 +707,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
             <style dangerouslySetInnerHTML={{ __html: `
               .hgs-chain{display:flex;flex-direction:column;align-items:center;gap:4px;--hgs-n:${maxLen};}
               .hgs-sl{display:flex;gap:5px;padding:0;border:0;background:transparent;}
-              .hgs-sl span{width:min(44px, calc((100vw - 40px) / var(--hgs-n) - 5px));height:${tight ? 36 : 42}px;border-radius:10px;border:2px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:${tight ? 20 : 24}px;font-weight:800;background:var(--pst-tint);}
+              .hgs-sl span{width:min(44px, calc((100vw - 40px) / var(--hgs-n) - 5px));height:${tight ? 36 : 42}px;border-radius:10px;border:1px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:${tight ? 20 : 24}px;font-weight:800;background:var(--pst-tint);}
               .hgs-sl.given span{background:var(--pst-ink);color:var(--pst-bg);}
               .hgs-sl.now span{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
               .hgs-sl.open span{border-style:solid;background:transparent;opacity:.55;}
@@ -721,7 +721,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
               .hgs-shake{animation:hgsShake .42s cubic-bezier(.36,.07,.19,.97) both;}
               .hgs-kb{display:flex;flex-direction:column;gap:7px;}
               .hgs-kr{display:flex;justify-content:center;gap:5px;}
-              .hgs-k{flex:1 1 0;max-width:38px;height:50px;border-radius:9px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:17px;font-weight:800;padding:0;touch-action:manipulation;}
+              .hgs-k{flex:1 1 0;max-width:38px;height:50px;border-radius:9px;border:1px solid var(--pst-ink);background:var(--pst-tint);font-size:17px;font-weight:800;padding:0;touch-action:manipulation;}
               .hgs-k.w{max-width:60px;flex:1.6 1 0;font-size:13px;}
               .hgs-k:active{transform:scale(.94);}
               @media (prefers-reduced-motion: reduce){.hgs-shake{animation:none}}
@@ -950,7 +950,7 @@ export default function HingeClient({ puzzles = [], forceNum = null }) {
               <style dangerouslySetInnerHTML={{ __html: `
                 .hgd{display:flex;flex-direction:column;align-items:center;padding:6px 0 4px;color:var(--stg-ink,#08222e);}
                 .hgd-sl{display:flex;gap:5px;}
-                .hgd-sl span{width:42px;height:44px;border-radius:10px;border:2px solid currentColor;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;font-family:${SANS};}
+                .hgd-sl span{width:42px;height:44px;border-radius:10px;border:1px solid currentColor;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;font-family:${SANS};}
                 .hgd-sl.given span{background:var(--stg-ink,#08222e);color:var(--stg-ground,#fff);}
                 .hgd-sl.mine span{background:var(--sp-g,#b1e5fd);color:#08222e;}
                 .hgd-sl.open span{opacity:.35;}

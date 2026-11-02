@@ -999,13 +999,13 @@ const WMS_CSS = `
 .wms-g .m i{display:block;height:100%;background:${RAMP_INK}}
 .wms-g .r{font-size:14px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
 .wms-g .b{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;text-align:right}
-.wms-inp{min-height:52px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;padding:0 14px;font-size:22px;font-weight:800;overflow:hidden}
+.wms-inp{min-height:52px;border-radius:14px;border:1px solid var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;padding:0 14px;font-size:22px;font-weight:800;overflow:hidden}
 .wms-inp i{width:2px;height:26px;background:var(--pst-ink);margin-left:2px;animation:wmsBlink 1s steps(1) infinite}
 @keyframes wmsBlink{50%{opacity:0}}
 .wms-kb{display:flex;flex-direction:column;gap:7px}
 @media (min-width:900px) and (hover:hover) and (pointer:fine){.wms-kb{display:none !important}}
 .wms-kr{display:flex;justify-content:center;gap:5px}
-.pst .wms-k{flex:0 1 33px;min-width:0;height:50px;border-radius:9px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:17px;font-weight:800;padding:0}
+.pst .wms-k{flex:0 1 33px;min-width:0;height:50px;border-radius:9px;border:1px solid var(--pst-ink);background:var(--pst-tint);font-size:17px;font-weight:800;padding:0}
 .pst .wms-k.w{flex:0 1 56px;font-size:13px}
 .wms-k:active{background:var(--pst-ink);color:var(--pst-bg)}
 @media (prefers-reduced-motion: reduce){.wms-inp i{animation:none}}

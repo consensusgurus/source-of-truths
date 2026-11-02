@@ -717,7 +717,7 @@ export default function GarbleClient({ puzzles = [], forceNum = null }) {
             {bank.map((b, i) => (
               <span key={i} style={{ width: 28, height: 28, boxSizing: 'border-box', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800,
                 background: g.solved[b.wi] ? 'var(--wst-ink)' : 'transparent', color: g.solved[b.wi] ? 'var(--wst-bg)' : 'inherit',
-                border: '2px solid var(--wst-ink)', opacity: g.solved[b.wi] ? 1 : 0.4,
+                border: '1px solid var(--wst-ink)', opacity: g.solved[b.wi] ? 1 : 0.4,
                 boxShadow: b.wi === sel ? '0 0 0 2px var(--wst-bg), 0 0 0 4px var(--wst-ink)' : undefined }}>
                 {g.solved[b.wi] ? b.ch : ''}
               </span>

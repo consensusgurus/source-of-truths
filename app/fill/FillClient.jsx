@@ -109,7 +109,7 @@ function Board({ P, s, setS, active, done }) {
 .fil-tt{font-size:20px;font-weight:800;letter-spacing:-.01em;margin-top:-4px;}
 .fil-grp{display:flex;flex-wrap:wrap;gap:5px;align-items:baseline;}
 .fil-grp>b{font-size:11px;font-weight:800;opacity:.7;min-width:24px;}
-.fil-grp span{font-size:12.5px;font-weight:800;padding:3px 8px;border-radius:999px;border:2px solid var(--pst-ink);background:var(--pst-tint);}
+.fil-grp span{font-size:12.5px;font-weight:800;padding:3px 8px;border-radius:999px;border:1px solid var(--pst-ink);background:var(--pst-tint);}
 .fil-grp span.on{text-decoration:line-through;text-decoration-thickness:2px;opacity:.5;background:transparent;}
 ` }} />
       <div>

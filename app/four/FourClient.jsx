@@ -954,7 +954,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
               data-out={g.status}
               style={STAGE
                 ? { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, background: 'var(--fr-board)', boxShadow: 'inset 0 0 0 1.5px var(--stg-line2)', borderRadius: 14, padding: 10, touchAction: 'manipulation' }
-                : { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, background: `linear-gradient(180deg, ${BOARD_BLUE}, ${BOARD_BLUE_DARK}), ${BOARD_BLUE}`, border: `2px solid ${COLORS.ink}`, borderRadius: 10, padding: 6, touchAction: 'manipulation' }}
+                : { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, background: `linear-gradient(180deg, ${BOARD_BLUE}, ${BOARD_BLUE_DARK}), ${BOARD_BLUE}`, border: `1px solid ${COLORS.ink}`, borderRadius: 10, padding: 6, touchAction: 'manipulation' }}
             >
               {Array.from({ length: COLS }).map((_, c) => {
                 const full = pos.heights[c] >= ROWS;

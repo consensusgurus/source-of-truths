@@ -2387,7 +2387,7 @@ export default function QuizClient({ quizId }) {
           onClick={() => setQOpen(false)}
           style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(26,22,17,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6vh 16px' }}
         >
-          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: `var(--stg-panel,${COLORS.cream})`, borderRadius: 10, border: `2px solid ${COLORS.ink}`, padding: 24 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: `var(--stg-panel,${COLORS.cream})`, borderRadius: 10, border: `1px solid ${COLORS.ink}`, padding: 24 }}>
             {qSent ? (
               <>
                 <h3 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: 22, margin: '0 0 10px' }}>Thanks, noted.</h3>

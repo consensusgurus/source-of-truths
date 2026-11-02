@@ -738,8 +738,8 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
 .mjp-stats{display:flex;align-items:center;justify-content:center;gap:16px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .mjp-stats b{font-size:16px;letter-spacing:0;margin-left:3px;font-variant-numeric:tabular-nums}
 .mjp-row{display:flex;align-items:center;gap:10px}
-.mjp-map{position:relative;height:58px;flex:none;border-radius:10px;border:2px solid var(--pst-ink);background:var(--pst-tint);padding:0;overflow:hidden}
-.mjp-box{position:absolute;border:2px solid var(--pst-ink);border-radius:3px;z-index:20;pointer-events:none}
+.mjp-map{position:relative;height:58px;flex:none;border-radius:10px;border:1px solid var(--pst-ink);background:var(--pst-tint);padding:0;overflow:hidden}
+.mjp-box{position:absolute;border:1px solid var(--pst-ink);border-radius:3px;z-index:20;pointer-events:none}
 .mjp-note{font-size:12px;font-weight:700;line-height:1.3;opacity:.85}
 .mjp-port::-webkit-scrollbar{display:none;width:0;height:0}
 /* NO OUTLINE, AND THE WHOLE BOARD FITS (owner, 2026-10-30). The port used to be a
@@ -752,7 +752,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
 .mjp-port.fit .mj-board{max-width:100%}
 @media (min-width:900px){.mjp-port.fit .mj-board{--mjp-avail:calc(100dvh - 300px)}}
 .mjp-tray{display:flex;gap:8px}
-.mjp-tray button{flex:1 1 0;min-width:0;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:16px;border:2px solid var(--pst-ink);background:transparent;font-size:12px;font-weight:800;padding:6px 2px}
+.mjp-tray button{flex:1 1 0;min-width:0;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:16px;border:1px solid var(--pst-ink);background:transparent;font-size:12px;font-weight:800;padding:6px 2px}
 .mjp-tray button.on{background:var(--pst-ink);color:var(--pst-bg)}
 .mjp-tray button:disabled{opacity:.4;cursor:default}
 ` }} />

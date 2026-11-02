@@ -325,7 +325,7 @@ export default function CrossedCurtain({ sections = [], counted = [], parts = []
                 <div key={s.key} className="dc-sc" style={{
                   background: on ? stageFill(look, rampFor(i)) : 'transparent',
                   color: ink, opacity: on || i === step ? 1 : 0.5,
-                  border: `2px solid ${ink}`,
+                  border: `1px solid ${ink}`,
                 }}>
                   <span>{s.name}</span><b>{on ? pts[i] : ''}</b>
                 </div>

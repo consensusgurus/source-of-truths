@@ -757,7 +757,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
             <style dangerouslySetInnerHTML={{ __html: `
               .rgs-lad{display:flex;flex-direction:column;align-items:center;gap:6px;}
               .rgs-rw{display:flex;gap:6px;}
-              .rgs-rw span{width:min(50px, calc((100vw - 60px) / 5 - 6px));height:44px;border-radius:10px;border:2px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;background:var(--pst-tint);}
+              .rgs-rw span{width:min(50px, calc((100vw - 60px) / 5 - 6px));height:44px;border-radius:10px;border:1px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;background:var(--pst-tint);}
               .rgs-rw.start span,.rgs-rw.mine span.ch{background:var(--pst-ink);color:var(--pst-bg);}
               .rgs-rw.now span{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
               .rgs-rw.goal span{border-style:solid;background:transparent;}
@@ -768,7 +768,7 @@ export default function RungClient({ puzzles = [], forceNum = null }) {
               .rgs-kb{display:flex;flex-direction:column;gap:7px;}
               @media (min-width:900px) and (hover:hover) and (pointer:fine){.rgs-kb{display:none !important;}}
               .rgs-kr{display:flex;justify-content:center;gap:5px;}
-              .rgs-k{flex:1 1 0;max-width:38px;height:50px;border-radius:9px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:17px;font-weight:800;padding:0;touch-action:manipulation;}
+              .rgs-k{flex:1 1 0;max-width:38px;height:50px;border-radius:9px;border:1px solid var(--pst-ink);background:var(--pst-tint);font-size:17px;font-weight:800;padding:0;touch-action:manipulation;}
               .rgs-k.w{max-width:60px;flex:1.6 1 0;font-size:13px;}
               .rgs-k:active{transform:scale(.94);}
               @media (prefers-reduced-motion: reduce){.rgs-shake{animation:none}}

@@ -915,7 +915,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
                 <div key={shake} className={`yo-board${shake ? ' shake' : ''}`}
                   style={STAGE
                     ? { background: 'var(--yo-board)', boxShadow: 'inset 0 0 0 1.5px var(--stg-line2)', borderRadius: 14, overflow: 'hidden', maxWidth: 480, margin: '0 auto' }
-                    : { background: BOARD, border: `2px solid ${COLORS.ink}`, borderRadius: 10, overflow: 'hidden', maxWidth: 480, margin: '0 auto' }}>
+                    : { background: BOARD, border: `1px solid ${COLORS.ink}`, borderRadius: 10, overflow: 'hidden', maxWidth: 480, margin: '0 auto' }}>
                   <svg className="yo-svg" viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`Go board, ${N} by ${N}`}>
                     {lines}
                     {pieces}

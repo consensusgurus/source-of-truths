@@ -42,7 +42,7 @@ function Board({ P, s, setS, active, done }) {
 .prs{align-self:center;width:100%;max-width:min(560px, calc((100dvh - 300px) * ${P.cols / P.rows} / 1.38));}
 @media (min-width:900px){.prs{max-width:min(${P.cols > 6 ? 760 : 600}px, calc((100dvh - 260px) * ${P.cols / P.rows} / 1.38));}}
 .prs-g{display:grid;gap:clamp(4px, 1.2vw, 8px);}
-.prs-c{position:relative;aspect-ratio:5/7;border-radius:clamp(5px,1.4vw,9px);border:2px solid var(--pst-ink);padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;container-type:inline-size;background:var(--pst-acc,#7dd3fc);transition:transform .18s ease;}
+.prs-c{position:relative;aspect-ratio:5/7;border-radius:clamp(5px,1.4vw,9px);border:1px solid var(--pst-ink);padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;container-type:inline-size;background:var(--pst-acc,#7dd3fc);transition:transform .18s ease;}
 .prs-c::before{content:"";position:absolute;inset:12%;border-radius:4px;border:2px solid color-mix(in srgb, var(--pst-ink) 30%, transparent);}
 .prs-c.up,.prs-c.got{background:#ffffff;cursor:default;}
 .prs-c.up::before,.prs-c.got::before{display:none;}

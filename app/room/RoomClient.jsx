@@ -643,7 +643,7 @@ const CSS = `
 .gsx-play .rr-host .stage-page{color:var(--stg-ink) !important}
 .rr-under{pointer-events:none}
 /* entry centerpiece: tonight's room */
-.rr-fill{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;width:100%;padding:12px 14px;border:2px solid var(--gsx-ink);border-radius:18px;background:color-mix(in srgb, var(--gsx-ink) 6%, transparent);color:var(--gsx-ink);font:inherit;text-align:left;cursor:pointer}
+.rr-fill{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;width:100%;padding:12px 14px;border:1px solid var(--gsx-ink);border-radius:18px;background:color-mix(in srgb, var(--gsx-ink) 6%, transparent);color:var(--gsx-ink);font:inherit;text-align:left;cursor:pointer}
 .rr-fh,.rr-ff{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .rr-fh span{font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 .rr-fh em{font-style:normal;font-size:12px;font-weight:800;opacity:.75}
@@ -665,7 +665,7 @@ const CSS = `
   .rr .gsx-gate.gsx-cp .gsx-bands{grid-column:2;grid-row:3}
 }
 /* the morning strip (gate banner and end page) */
-.rr-morn{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 12px;border:2px solid var(--gsx-ink);border-radius:14px;color:var(--gsx-ink);background:color-mix(in srgb, var(--gsx-ink) 7%, transparent)}
+.rr-morn{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 12px;border:1px solid var(--gsx-ink);border-radius:14px;color:var(--gsx-ink);background:color-mix(in srgb, var(--gsx-ink) 7%, transparent)}
 .rr-mt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;font-size:13px;font-weight:600;line-height:1.3}
 .rr-mt i{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
 .rr-mt b{font-weight:800}
@@ -684,18 +684,18 @@ const CSS = `
 .rr-rooms2{display:flex;flex-direction:column;gap:8px}
 .rr-r2h{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .rr-r2g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.rr-gt{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;padding:10px 12px;border:2px solid var(--gsx-ink);border-radius:12px;background:transparent;color:var(--gsx-ink);font:inherit;text-align:left;cursor:pointer;overflow:hidden}
-.rr-gt>i{position:absolute;left:0;top:0;bottom:0;width:7px;border-right:2px solid var(--gsx-ink)}
+.rr-gt{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;padding:10px 12px;border:1px solid var(--gsx-ink);border-radius:12px;background:transparent;color:var(--gsx-ink);font:inherit;text-align:left;cursor:pointer;overflow:hidden}
+.rr-gt>i{position:absolute;left:0;top:0;bottom:0;width:7px;border-right:1px solid var(--gsx-ink)}
 .rr-gt>*:not(i){padding-left:6px}
 .rr-gt.on{background:color-mix(in srgb, var(--gsx-ink) 10%, transparent)}
 .rr-gtn{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .rr-gt b{font-size:22px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
 .rr-gt small{font-size:11.5px;font-weight:700;opacity:.8;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rr-gt em{margin-top:4px;font-style:normal;font-size:12px;font-weight:800;text-decoration:underline;text-underline-offset:3px}
-.rr-ans{border:2px solid var(--gsx-ink);border-radius:14px;padding:10px 0 4px;overflow:hidden;background:color-mix(in srgb, #fff 35%, transparent)}
+.rr-ans{border:1px solid var(--gsx-ink);border-radius:14px;padding:10px 0 4px;overflow:hidden;background:color-mix(in srgb, #fff 35%, transparent)}
 .rr-ansh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px 6px}
 .rr-ansh span{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
-.rr-ansh button{border:2px solid var(--gsx-ink);background:transparent;color:var(--gsx-ink);font:800 12.5px ${SANS};padding:5px 12px;border-radius:999px;cursor:pointer}
+.rr-ansh button{border:1px solid var(--gsx-ink);background:transparent;color:var(--gsx-ink);font:800 12.5px ${SANS};padding:5px 12px;border-radius:999px;cursor:pointer}
 .rr-ans .stage-page{color:var(--stg-ink) !important}
 /* the $100 drawing / challenge card runs the full width of the tray */
 .gsx-tray .tkd,.gsx-tray .rch-door{width:100%;box-sizing:border-box}

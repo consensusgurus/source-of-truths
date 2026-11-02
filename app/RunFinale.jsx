@@ -472,7 +472,7 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .fmark.lit{opacity:1}.rfx .fmark.here{font-size:18px}
 .rfx .fwob{animation:rfxWob .9s ease-in-out 2}
 @keyframes rfxWob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-.rfx .bub{position:absolute;width:10px;height:10px;border-radius:50%;border:2px solid currentColor;opacity:0}
+.rfx .bub{position:absolute;width:10px;height:10px;border-radius:50%;border:1px solid currentColor;opacity:0}
 .rfx .bub.go{animation:rfxBub 1.1s ease-out both}
 @keyframes rfxBub{0%{opacity:0;transform:translateY(0)}20%{opacity:.8}100%{opacity:0;transform:translateY(-120px)}}
 /* calculator */
@@ -482,13 +482,13 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .lcd.blink span{animation:rfxBlink .3s steps(2) 4}
 @keyframes rfxBlink{50%{opacity:0}}
 .rfx .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
-.rfx .keys i{font-style:normal;height:36px;border-radius:8px;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800}
+.rfx .keys i{font-style:normal;height:36px;border-radius:8px;border:1px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800}
 .rfx .keys i.hit{animation:rfxKey .35s ease both}
 @keyframes rfxKey{40%{background:currentColor;transform:scale(.9)}100%{transform:none}}
 /* dictionary */
 .rfx .dict{position:absolute;left:40px;right:40px;top:0;bottom:0;background:#fffdf6;border:3px solid ${DINK};border-radius:6px;padding:12px 16px;text-align:left;color:${DINK}}
 .rfx .dict *{color:${DINK}}
-.rfx .dh{display:flex;justify-content:space-between;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;border-bottom:2px solid ${DINK};padding-bottom:5px;margin-bottom:6px;opacity:.75}
+.rfx .dh{display:flex;justify-content:space-between;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid ${DINK};padding-bottom:5px;margin-bottom:6px;opacity:.75}
 .rfx .de{padding:4px 6px;border-radius:4px;font-size:13px;line-height:1.25;opacity:.32;transition:opacity .2s ease,background .3s ease}
 .rfx .de b{font-size:15px;font-weight:800}.rfx .de i{font-weight:700;opacity:.7}
 .rfx .de span{display:block;font-size:11.5px;font-weight:600;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -506,7 +506,7 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 @keyframes rfxSwl{0%{transform:rotate(14deg)}30%{transform:rotate(32deg)}60%{transform:rotate(6deg)}100%{transform:rotate(14deg)}}
 @keyframes rfxSwr{0%{transform:rotate(-14deg)}30%{transform:rotate(-32deg)}60%{transform:rotate(-6deg)}100%{transform:rotate(-14deg)}}
 .rfx .belt .sw{position:absolute;left:24px;right:24px;top:266px;display:flex;gap:6px}
-.rfx .belt .sw i{flex:1;height:14px;border-radius:3px;border:2px solid currentColor;opacity:.25;transition:opacity .2s ease,transform .3s ease}
+.rfx .belt .sw i{flex:1;height:14px;border-radius:3px;border:1px solid currentColor;opacity:.25;transition:opacity .2s ease,transform .3s ease}
 .rfx .belt .sw i.lit{opacity:1}.rfx .belt .sw i.here{transform:scaleY(1.6)}
 /* name tag */
 .rfx .ntag{position:absolute;left:40px;right:40px;top:18px;height:262px;border:3px solid ${DINK};border-radius:18px;background:#fff;overflow:hidden;transform-origin:50% 0}
@@ -539,7 +539,7 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .wal{position:absolute;left:62px;right:62px;top:166px;height:128px;background:${DINK};border-radius:18px;z-index:20}
 .rfx .wal::after{content:'';position:absolute;left:14px;right:14px;top:12px;height:3px;border-radius:2px;background:rgba(255,255,255,.18)}
 .rfx .cd{position:absolute;left:50%;width:230px;height:120px;margin-left:-115px;top:168px;border:2.5px solid ${DINK};border-radius:13px;transition:top .45s cubic-bezier(.2,1.3,.4,1),transform .5s cubic-bezier(.2,1.2,.4,1);overflow:hidden}
-.rfx .cd::before{content:'';position:absolute;left:16px;top:34px;width:30px;height:22px;border-radius:4px;background:#e3c77a;border:2px solid ${DINK}}
+.rfx .cd::before{content:'';position:absolute;left:16px;top:34px;width:30px;height:22px;border-radius:4px;background:#e3c77a;border:1px solid ${DINK}}
 .rfx .cd b{position:absolute;right:14px;bottom:12px;font-size:14px;font-weight:800;letter-spacing:.14em;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
 .rfx .cd.up{top:var(--up)}
 .rfx .cd.win{top:14px;transform:scale(1.14);z-index:30;box-shadow:0 20px 40px rgba(8,34,46,.3)}

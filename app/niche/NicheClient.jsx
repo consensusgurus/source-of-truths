@@ -652,7 +652,7 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
               .nch-ch,.nch-rh{font-size:11px;font-weight:800;line-height:1.2;display:flex;}
               .nch-ch{align-items:flex-end;justify-content:center;text-align:center;padding:0 2px 4px;}
               .nch-rh{align-items:center;justify-content:flex-start;text-align:left;border-left:4px solid var(--pst-ink);padding:0 0 0 8px;}
-              .nch-c{aspect-ratio:1;border-radius:13px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px;min-width:0;overflow:hidden;}
+              .nch-c{aspect-ratio:1;border-radius:13px;border:1px solid var(--pst-ink);background:var(--pst-tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px;min-width:0;overflow:hidden;}
               .nch-c b{font-size:15px;font-weight:800;text-align:center;line-height:1.1;overflow-wrap:anywhere;}
               .nch-c i{font-style:normal;font-size:11px;font-weight:800;opacity:.85;}
               .nch-g.g4 .nch-c{border-radius:11px;}

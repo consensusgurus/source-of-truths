@@ -1116,7 +1116,7 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           .cf-play.dock .cf-cell{border-radius:9px;}
           .cf-play.dock .cf-cell .cf-ch{font-size:16px;}
           .cf-play.dock .cf-cell .cf-dg{font-size:18px;}
-          .cf-rule{position:relative;margin:2px 0 2px calc(var(--cf-opw) + var(--cf-gap));height:8px;box-sizing:border-box;border-top:2px solid ${INK};border-bottom:2px solid ${INK};}
+          .cf-rule{position:relative;margin:2px 0 2px calc(var(--cf-opw) + var(--cf-gap));height:8px;box-sizing:border-box;border-top:1px solid ${INK};border-bottom:1px solid ${INK};}
           .cf-carrow,.cf-mkrow{margin:0;}
           .cf-carry{width:var(--cf-cw);height:44px;flex:0 0 auto;border:0;background:transparent;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
           .cf-carry span{width:34px;height:28px;max-width:100%;box-sizing:border-box;border-radius:7px;border:1.5px solid ${STAGE ? 'var(--stg-cell-line)' : 'rgba(28,30,36,0.35)'};display:flex;align-items:center;justify-content:center;font-family:${MONO};font-size:16px;font-weight:700;color:${FADED};}
@@ -1572,7 +1572,7 @@ const CFS_CSS = `
 .cfs-eq{align-self:center;display:flex;flex-direction:column;gap:5px;--cfs-w:min(48px, calc((100vw - 64px) / var(--cfs-n) - 5px));}
 .cfs-r{display:grid;grid-template-columns:24px repeat(var(--cfs-n), var(--cfs-w));gap:5px;align-items:center;}
 .cfs-r .op{font-size:24px;font-weight:800;text-align:center;}
-.pst .cfs-lc{height:var(--cfs-w);border-radius:10px;border:2px solid var(--pst-ink);background:var(--pst-cell);padding:0;position:relative;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+.pst .cfs-lc{height:var(--cfs-w);border-radius:10px;border:1px solid var(--pst-ink);background:var(--pst-cell);padding:0;position:relative;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
 .cfs-lc span{font-size:calc(var(--cfs-w) * .44);font-weight:800;}
 .cfs-lc.set span{position:absolute;top:1px;left:5px;font-size:10.5px;color:var(--pst-mute);}
 .cfs-lc b{font-size:calc(var(--cfs-w) * .48);font-weight:800;}
@@ -1589,7 +1589,7 @@ const CFS_CSS = `
 .cfs-r.mk span.good{color:var(--pst-ink);background:var(--pst-pale);border-radius:6px;}
 .cfs-r.mk span.bad{color:var(--pst-bad);background:var(--pst-bad-bg);border-radius:6px;}
 .cfs-book{display:grid;grid-template-columns:repeat(5, minmax(0, 1fr));gap:6px;}
-.pst .cfs-bk{position:relative;min-height:50px;border-radius:12px;border:2px solid var(--pst-ink);background:transparent;padding:0;display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;}
+.pst .cfs-bk{position:relative;min-height:50px;border-radius:12px;border:1px solid var(--pst-ink);background:transparent;padding:0;display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;}
 .cfs-bk span{font-size:19px;font-weight:800;}
 .cfs-bk b{font-size:18px;font-weight:800;min-width:24px;height:28px;border-radius:7px;background:var(--pst-cell);display:flex;align-items:center;justify-content:center;}
 .cfs-bk i{position:absolute;top:1px;left:0;right:0;text-align:center;font-style:normal;font-size:8px;font-weight:800;letter-spacing:.08em;color:var(--pst-mute);}
@@ -1600,7 +1600,7 @@ const CFS_CSS = `
 .pst .cfs-bk.bad b{background:var(--pst-bad-bg);color:var(--pst-bad);}
 .cfs-pad{display:grid;grid-template-columns:repeat(5, minmax(0, 1fr));gap:6px;}
 @media (min-width:900px) and (hover:hover) and (pointer:fine){.cfs-pad{display:none !important;}}
-.pst .cfs-dk{position:relative;height:52px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-pale);font-size:24px;font-weight:800;padding:0;touch-action:manipulation;}
+.pst .cfs-dk{position:relative;height:52px;border-radius:12px;border:1px solid var(--pst-ink);background:var(--pst-pale);font-size:24px;font-weight:800;padding:0;touch-action:manipulation;}
 .cfs-dk i{position:absolute;bottom:3px;right:6px;font-style:normal;font-size:10px;font-weight:800;}
 .pst .cfs-dk.tk{opacity:.4;background:transparent;}
 .pst .cfs-dk.xed{text-decoration:line-through;background:transparent;opacity:.55;}

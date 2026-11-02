@@ -742,7 +742,7 @@ export default function OutrankClient({ puzzles = [], forceNum = null }) {
         const toCall = () => { if (g.fav == null) { say('Cast your vote first: tap your favorite.'); return; } commitOrder(); setOrkStepPick('call'); };
         const list = fullOrder(g.order);
         const css = `.ork-ps-steps{display:flex;justify-content:center;gap:6px;}
-.ork-ps-steps button{border:2px solid var(--pst-ink);border-radius:999px;padding:4px 12px;min-height:32px;font-size:12px;font-weight:800;background:transparent;}
+.ork-ps-steps button{border:1px solid var(--pst-ink);border-radius:999px;padding:4px 12px;min-height:32px;font-size:12px;font-weight:800;background:transparent;}
 .ork-ps-steps button.on{background:var(--pst-ink);color:var(--pst-bg);}
 .ork-ps-steps button:disabled{opacity:.45;cursor:default;}
 .ork-ps .pst-row{min-height:60px;padding:0 6px 0 12px;}

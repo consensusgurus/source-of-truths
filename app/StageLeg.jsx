@@ -67,15 +67,15 @@ export const LEG_CSS = `
 .lg-kick{text-align:center;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.6;margin-bottom:-10px;color:var(--lg-ink)}
 .lg-q{text-align:center;font-size:28px;line-height:1.18;font-weight:800;letter-spacing:-.02em;text-wrap:balance;margin:0;color:var(--lg-ink);animation:lgIn .45s ease-out both}
 .lg-q small{display:block;margin-top:8px;font-size:16px;font-weight:700;letter-spacing:0;opacity:.78}
-.lg-chip{align-self:center;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:2px solid var(--lg-ink);font-size:14px;font-weight:800;color:var(--lg-ink);background:var(--lg-tile)}
-.lg-in{position:relative;display:flex;align-items:center;gap:10px;min-height:62px;border:2px solid var(--lg-ink);border-radius:18px;background:var(--lg-tile);padding:0 8px 0 18px}
+.lg-chip{align-self:center;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1px solid var(--lg-ink);font-size:14px;font-weight:800;color:var(--lg-ink);background:var(--lg-tile)}
+.lg-in{position:relative;display:flex;align-items:center;gap:10px;min-height:62px;border:1px solid var(--lg-ink);border-radius:18px;background:var(--lg-tile);padding:0 8px 0 18px}
 .lg-in:focus-within{box-shadow:0 0 0 3px color-mix(in srgb,var(--lg-ink) 22%,transparent)}
 .lg-in.shake{animation:lgShake .4s}
 .lg-in input{flex:1;min-width:0;border:0;background:transparent;outline:none;font:800 21px 'Manrope',system-ui,sans-serif;color:var(--lg-ink);padding:14px 0;-webkit-appearance:none;border-radius:0}
 .lg-in input::placeholder{color:var(--lg-ink);opacity:.45;font-weight:700}
 .lg-go{flex:none;min-height:46px;padding:0 16px;border-radius:12px;border:0;background:var(--lg-ink);color:var(--lg-on);font:800 14px 'Manrope',system-ui,sans-serif;cursor:pointer}
 .lg-go:active{transform:translateY(1px)}
-.lg-sug{position:absolute;left:-2px;right:-2px;top:calc(100% + 6px);z-index:6;background:var(--lg-paper);border:2px solid var(--lg-ink);border-radius:16px;overflow:hidden;box-shadow:0 12px 28px rgba(0,0,0,.18)}
+.lg-sug{position:absolute;left:-2px;right:-2px;top:calc(100% + 6px);z-index:6;background:var(--lg-paper);border:1px solid var(--lg-ink);border-radius:16px;overflow:hidden;box-shadow:0 12px 28px rgba(0,0,0,.18)}
 .lg-sug button{border-radius:0;display:flex;gap:8px;align-items:baseline;width:100%;text-align:left;padding:12px 16px;min-height:46px;border:0;border-bottom:1px solid var(--lg-line);background:transparent;color:var(--lg-ink);font:700 16px 'Manrope',system-ui,sans-serif;cursor:pointer}
 .lg-sug button:last-child{border-bottom:0}
 .lg-sug button.on,.lg-sug button:hover{background:var(--lg-tile)}
@@ -88,7 +88,7 @@ export const LEG_CSS = `
 
 .lg-pbody{display:flex;flex-direction:column;gap:12px}
 .lg-rows{display:flex;flex-direction:column;gap:8px}
-.lg-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:8px 14px;min-height:46px;border:2px solid var(--lg-ink);border-radius:14px;background:var(--lg-tile);color:var(--lg-ink)}
+.lg-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:8px 14px;min-height:46px;border:1px solid var(--lg-ink);border-radius:14px;background:var(--lg-tile);color:var(--lg-ink)}
 .lg-row b{font-size:17px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:inherit}
 .lg-row b small{font-weight:600;opacity:.68;font-size:13px}
 .lg-row span{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;color:inherit;white-space:nowrap}
@@ -96,27 +96,27 @@ export const LEG_CSS = `
 .lg-num{width:22px;height:22px;border-radius:11px;border:1px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-style:normal;font-variant-numeric:tabular-nums}
 .lg-new{animation:lgIn .45s cubic-bezier(.2,.8,.2,1) both}
 
-.lg-map{position:relative;margin:0;border:2px solid var(--lg-ink);border-radius:16px;overflow:hidden;background:var(--lg-paper)}
+.lg-map{position:relative;margin:0;border:1px solid var(--lg-ink);border-radius:16px;overflow:hidden;background:var(--lg-paper)}
 .lg-map svg{display:block;width:100%;height:auto}
 .lg-map figcaption{position:absolute;left:10px;top:8px;right:90px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.8;color:var(--lg-ink);pointer-events:none}
 .lg-zoom{position:absolute;right:8px;bottom:8px;display:flex;gap:6px}
-.lg-zoom button{width:38px;height:38px;border-radius:19px;border:2px solid var(--lg-ink);background:var(--lg-paper);color:var(--lg-ink);font:800 18px 'Manrope',system-ui,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.lg-zoom button{width:38px;height:38px;border-radius:19px;border:1px solid var(--lg-ink);background:var(--lg-paper);color:var(--lg-ink);font:800 18px 'Manrope',system-ui,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .lg-zoom button:disabled{opacity:.35;cursor:default}
 
 .lg-slots{display:grid;grid-template-columns:repeat(var(--lg-cols,3),minmax(0,1fr));gap:8px;width:100%;max-width:calc(var(--lg-cols,3) * 200px);margin:0 auto}
-.lg-slot{min-height:52px;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px;border-radius:14px;font-size:15px;font-weight:800;line-height:1.15;border:2px solid var(--lg-ink);color:var(--lg-ink);overflow-wrap:anywhere}
+.lg-slot{min-height:52px;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px;border-radius:14px;font-size:15px;font-weight:800;line-height:1.15;border:1px solid var(--lg-ink);color:var(--lg-ink);overflow-wrap:anywhere}
 .lg-slot.f{background:var(--lg-ink);color:var(--lg-on)}
 .lg-slot.e{border-color:var(--lg-line)}
 .lg-slot.m{background:var(--lg-tile);opacity:.62}
 .lg-slot.flash{animation:lgPop .5s ease-out}
 .lg-strikes{display:flex;gap:6px;justify-content:center;align-items:center}
-.lg-strikes i{width:24px;height:24px;border-radius:12px;border:2px solid var(--lg-ink);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:13px;font-weight:800;color:var(--lg-ink)}
+.lg-strikes i{width:24px;height:24px;border-radius:12px;border:1px solid var(--lg-ink);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:13px;font-weight:800;color:var(--lg-ink)}
 .lg-strikes i.x{background:var(--lg-ink);color:var(--lg-on)}
 .lg-struck{text-decoration:line-through;font-weight:700}
 
 .lg-road{display:flex;flex-direction:column}
 .lg-road.shake{animation:lgShake .4s}
-.lg-stop{display:flex;align-items:center;gap:12px;min-height:50px;padding:6px 16px;border-radius:14px;font-size:19px;font-weight:800;border:2px solid var(--lg-ink);background:var(--lg-tile);color:var(--lg-ink)}
+.lg-stop{display:flex;align-items:center;gap:12px;min-height:50px;padding:6px 16px;border-radius:14px;font-size:19px;font-weight:800;border:1px solid var(--lg-ink);background:var(--lg-tile);color:var(--lg-ink)}
 .lg-stop .n{width:24px;flex:none;font-size:12px;font-weight:800;opacity:.6;font-variant-numeric:tabular-nums}
 .lg-stop .tag{margin-left:auto;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.7;white-space:nowrap}
 .lg-stop.s{background:var(--lg-ink);color:var(--lg-on)}
@@ -124,13 +124,13 @@ export const LEG_CSS = `
 .lg-link{width:2px;height:12px;background:var(--lg-ink);margin-left:28px;opacity:.5}
 .lg-gap{width:2px;height:24px;background:var(--lg-ink);margin-left:28px;opacity:.2}
 .lg-row2{display:flex;gap:10px}
-.lg-btn{flex:1;min-height:48px;border-radius:14px;border:2px solid var(--lg-ink);background:var(--lg-tile);color:var(--lg-ink);font:800 15px 'Manrope',system-ui,sans-serif;cursor:pointer}
+.lg-btn{flex:1;min-height:48px;border-radius:14px;border:1px solid var(--lg-ink);background:var(--lg-tile);color:var(--lg-ink);font:800 15px 'Manrope',system-ui,sans-serif;cursor:pointer}
 
-.lg-known{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 16px;border-radius:14px;border:2px solid var(--lg-ink);font-weight:800;color:var(--lg-ink)}
+.lg-known{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 16px;border-radius:14px;border:1px solid var(--lg-ink);font-weight:800;color:var(--lg-ink)}
 .lg-known b{font-size:17px;min-width:0}
 .lg-known span{font-size:20px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .lg-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.lg-ans{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:96px;padding:10px;border-radius:18px;border:2px solid var(--lg-ink);background:var(--lg-tile);color:var(--lg-ink);font:800 24px 'Manrope',system-ui,sans-serif;text-align:center;cursor:pointer;transition:transform .1s,background .15s}
+.lg-ans{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:96px;padding:10px;border-radius:18px;border:1px solid var(--lg-ink);background:var(--lg-tile);color:var(--lg-ink);font:800 24px 'Manrope',system-ui,sans-serif;text-align:center;cursor:pointer;transition:transform .1s,background .15s}
 .lg-ans em{font-style:normal;font-size:14px;font-weight:700;margin-top:4px;color:inherit}
 .lg-ans:active{transform:scale(.99)}
 .lg-ans:disabled{cursor:default}
@@ -138,7 +138,7 @@ export const LEG_CSS = `
 .lg-ans.dim{opacity:.4}
 @media(hover:hover){.lg-ans:not(:disabled):hover{background:color-mix(in srgb,var(--lg-ink) 16%,var(--lg-tile))}}
 .lg-dots{display:flex;gap:7px;justify-content:center;align-items:center}
-.lg-dots i{display:block;width:11px;height:11px;border-radius:6px;border:2px solid var(--lg-ink);box-sizing:border-box}
+.lg-dots i{display:block;width:11px;height:11px;border-radius:6px;border:1px solid var(--lg-ink);box-sizing:border-box}
 .lg-dots i.ok{background:var(--lg-ink)}
 .lg-dots i.ko{background:color-mix(in srgb,var(--lg-ink) 25%,transparent);border-color:color-mix(in srgb,var(--lg-ink) 45%,transparent)}
 .lg-dots i.cur{width:24px}

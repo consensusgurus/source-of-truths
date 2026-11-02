@@ -72,7 +72,7 @@ function groupByDept(quizzes) {
 const CSS = `
 .qa-wrap{max-width:1100px;margin:0 auto;padding:28px 20px 64px;position:relative;z-index:2}
 .qa-back{font-family:${F};font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:${T.ink};text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 0}
-.qa-head{border-bottom:2px solid ${T.ink};padding-bottom:22px;margin:16px 0 28px}
+.qa-head{border-bottom:1px solid ${T.ink};padding-bottom:22px;margin:16px 0 28px}
 .qa-eyebrow{font-family:${F};font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:${T.accent};font-weight:700;margin-bottom:12px}
 .qa-h1{font-family:${F};font-weight:800;font-size:clamp(34px,6vw,58px);line-height:1.02;letter-spacing:-.02em;margin:0;color:${T.ink}}
 .qa-sub{font-family:${F};font-size:17px;line-height:1.6;color:${T.muted};max-width:660px;margin:18px 0 0}

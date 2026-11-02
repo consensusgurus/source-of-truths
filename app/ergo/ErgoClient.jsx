@@ -451,7 +451,7 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
           .b-must{background:var(--stg-acc, ${COLORS.accent});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) !important;color:var(--stg-onramp, #fff) !important;}
           .b-could{background:var(--stg-acc-tint, ${COLORS.accentSoft});border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) !important;color:${INK} !important;}
           .b-cannot{background:transparent;border-color:var(--stg-line3, rgba(28,30,36,0.45)) !important;color:${INK} !important;}
-          .eg-go{border:2px solid transparent;border-radius:10px;padding:14px 8px;min-height:48px;font-family:${SANS};font-size:15.5px;font-weight:800;cursor:pointer;}
+          .eg-go{border:1px solid transparent;border-radius:10px;padding:14px 8px;min-height:48px;font-family:${SANS};font-size:15.5px;font-weight:800;cursor:pointer;}
           .eg-go .k{opacity:1;font-size:11px;font-weight:700;margin-left:6px;}
           @media(hover:none){.eg-go .k{display:none;}}
           .eg-bin{background:${STAGE ? 'var(--stg-surf)' : 'var(--white)'};border:1px solid var(--stg-line, rgba(28,30,36,0.14));border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0;}

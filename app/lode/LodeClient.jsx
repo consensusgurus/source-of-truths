@@ -694,10 +694,10 @@ export default function LodeClient({ puzzles = [], forceNum = null }) {
                 .lds-steps i.on{background:var(--pst-ink);}
                 .lds-found{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-height:134px;overflow-y:auto;overscroll-behavior:contain;padding:2px 0;}
                 .lds-found-n{font-size:12px;font-weight:800;text-align:center;opacity:.7;margin-bottom:-4px;}
-                .lds-found span{font-size:13px;font-weight:800;padding:5px 10px;border:2px solid var(--pst-ink);border-radius:999px;display:flex;gap:6px;background:var(--pst-tint);}
+                .lds-found span{font-size:13px;font-weight:800;padding:5px 10px;border:1px solid var(--pst-ink);border-radius:999px;display:flex;gap:6px;background:var(--pst-tint);}
                 .lds-found span.new{background:var(--pst-ink);color:var(--pst-bg);}
                 .lds-found b{opacity:.6;}
-                .pst .lds-entry{width:100%;text-align:center;font:inherit;font-size:34px;font-weight:800;letter-spacing:.08em;min-height:52px;border:0;border-bottom:2px solid var(--pst-ink);background:transparent;color:var(--pst-ink);outline:none;border-radius:0;padding:0 4px;text-transform:uppercase;}
+                .pst .lds-entry{width:100%;text-align:center;font:inherit;font-size:34px;font-weight:800;letter-spacing:.08em;min-height:52px;border:0;border-bottom:1px solid var(--pst-ink);background:transparent;color:var(--pst-ink);outline:none;border-radius:0;padding:0 4px;text-transform:uppercase;}
                 .pst .lds-entry::placeholder{font-size:15px;letter-spacing:0;font-weight:700;opacity:.55;color:var(--pst-ink);text-transform:none;}
                 .lds-comb{position:relative;align-self:center;}
                 .pst .lds-hx{position:absolute;width:84px;height:80px;clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%);border:0;background:var(--pst-tint);font-size:30px;font-weight:800;color:var(--pst-ink);padding:0;touch-action:manipulation;}

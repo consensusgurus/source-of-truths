@@ -1379,12 +1379,12 @@ const TKS_CSS = `
 .tks-board{align-self:center;width:100%;max-width:366px;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:3px}
 .pst .tks-c{position:relative;aspect-ratio:1;border:2px solid color-mix(in srgb, var(--pst-ink) 30%, transparent);border-radius:8px;background:var(--pst-tint);font-size:19px;font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;line-height:1}
 .pst .tks-c.f{background:var(--pst-ink);color:var(--pst-bg);border-color:var(--pst-ink)}
-.pst .tks-c.bad{background:var(--pst-bg);color:var(--pst-ink);border:2px solid var(--pst-ink);text-decoration:underline wavy;text-underline-offset:3px}
+.pst .tks-c.bad{background:var(--pst-bg);color:var(--pst-ink);border:1px solid var(--pst-ink);text-decoration:underline wavy;text-underline-offset:3px}
 .pst .tks-c.now{border-color:var(--pst-ink);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink)}
 .tks-c .x{position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.8}
 .tks-c .d{font-size:16px;opacity:.7}
 .tks-rack{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-.pst .tks-t{position:relative;height:50px;border-radius:10px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:22px;font-weight:800;padding:0}
+.pst .tks-t{position:relative;height:50px;border-radius:10px;border:1px solid var(--pst-ink);background:var(--pst-tint);font-size:22px;font-weight:800;padding:0}
 .tks-t em{position:absolute;right:4px;bottom:2px;font-style:normal;font-size:10px}
 .pst .tks-t.on{background:var(--pst-ink);color:var(--pst-bg)}
 .tks-gone{height:50px;border-radius:10px;border:2px solid color-mix(in srgb, var(--pst-ink) 30%, transparent)}

@@ -35,13 +35,13 @@ export const LOGIC_STAGE_CSS = `
 .pst .lgs-rule>b{flex:none;width:14px;font-weight:800;opacity:.6;}
 .pst .lgs-rule>span{flex:1;min-width:0;}
 .pst button.lgs-rule{background:transparent;border:0;border-radius:0;padding:0;width:100%;}
-.pst .lgs-tile{border:2px solid var(--pst-ink);border-radius:14px;background:var(--pst-pale);color:var(--pst-ink);}
+.pst .lgs-tile{border:1px solid var(--pst-ink);border-radius:14px;background:var(--pst-pale);color:var(--pst-ink);}
 .pst .lgs-tile.on{background:var(--pst-acc);}
 .pst .lgs-tile.on,.pst .lgs-tile.on *{color:var(--pst-on-acc);}
 .pst .lgs-inv{background:var(--pst-ink);color:var(--pst-inv);}
 .pst .lgs-inv *{color:var(--pst-inv);}
-.pst .lgs-box{border:2px solid var(--pst-ink);border-radius:14px;background:var(--pst-bg);padding:12px 14px;}
-.pst .lgs-big{min-height:56px;border-radius:14px;border:2px solid var(--pst-ink);font-size:17px;font-weight:800;width:100%;}
+.pst .lgs-box{border:1px solid var(--pst-ink);border-radius:14px;background:var(--pst-bg);padding:12px 14px;}
+.pst .lgs-big{min-height:56px;border-radius:14px;border:1px solid var(--pst-ink);font-size:17px;font-weight:800;width:100%;}
 .pst .pst-tb.lgs-pri{background:var(--pst-acc);color:var(--pst-on-acc);}
 .pst .pst-tb.lgs-pri *{color:var(--pst-on-acc);}
 .pst .pst-tb.lgs-sm{min-height:34px;padding:0 12px;font-size:13px;}

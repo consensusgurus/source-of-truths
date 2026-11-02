@@ -87,17 +87,17 @@ export default function PriceCrowd({ quizId, price, first, compact = false, styl
 }
 
 const CSS = `
-.pcw{border:2px solid currentColor;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:9px;text-align:left;font-size:13px;line-height:1.35}
+.pcw{border:1px solid currentColor;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:9px;text-align:left;font-size:13px;line-height:1.35}
 .pcw-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .pcw-h b{font-size:15px;font-weight:800}
 .pcw-h span{font-size:11.5px;font-weight:700;opacity:.75}
 .pcw-strip{display:flex;flex-direction:column}
-.pcw-bars{display:flex;align-items:flex-end;gap:2px;height:58px;border-bottom:2px solid currentColor}
+.pcw-bars{display:flex;align-items:flex-end;gap:2px;height:58px;border-bottom:1px solid currentColor}
 .pcw-c .pcw-bars{height:42px}
 .pcw-bars i{flex:1;border:1.5px solid currentColor;border-bottom:0;border-radius:3px 3px 0 0;background:color-mix(in srgb,currentColor 14%,transparent);transform-origin:bottom;animation:pcwG .6s cubic-bezier(.2,.8,.2,1) both}
 .pcw-marks{position:relative;height:16px}
 .pcw-m{position:absolute;top:-1px;transform:translateX(-50%);display:flex}
-.pcw-m i,.pcw-key i{display:block;width:12px;height:12px;border-radius:50%;border:2px solid currentColor;box-sizing:border-box}
+.pcw-m i,.pcw-key i{display:block;width:12px;height:12px;border-radius:50%;border:1px solid currentColor;box-sizing:border-box}
 .pcw-price i{width:3px;height:16px;border-radius:2px;background:currentColor;border:0}
 .pcw-m.pcw-price{top:-7px;z-index:1}
 .pcw-mid i{background:transparent}

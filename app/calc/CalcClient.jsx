@@ -1359,12 +1359,12 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
 // pale mint, and the line through the route in ink.
 const CLS_CSS = `
 .cls-tgts{display:flex;justify-content:center;gap:8px;}
-.pst .cls-tg{min-height:44px;min-width:76px;padding:0 14px;border-radius:999px;border:2px solid var(--pst-ink);background:transparent;font-size:18px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-variant-numeric:tabular-nums;}
+.pst .cls-tg{min-height:44px;min-width:76px;padding:0 14px;border-radius:999px;border:1px solid var(--pst-ink);background:transparent;font-size:18px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-variant-numeric:tabular-nums;}
 .pst .cls-tg.on{background:var(--pst-acc);color:var(--pst-on-acc);}
 .pst .cls-tg.got{background:var(--pst-pale);}
 .pst .cls-tg.on svg,.pst .cls-tg.on *{color:var(--pst-on-acc);}
 .cls-tape{display:flex;gap:8px;}
-.cls-tape>div{border:2px solid var(--pst-ink);border-radius:14px;padding:7px 12px;display:flex;flex-direction:column;gap:1px;min-width:0;}
+.cls-tape>div{border:1px solid var(--pst-ink);border-radius:14px;padding:7px 12px;display:flex;flex-direction:column;gap:1px;min-width:0;}
 .cls-tape .tg{background:var(--pst-acc);flex:0 0 auto;min-width:84px;}
 .cls-tape .tg *{color:var(--pst-on-acc);}
 .cls-tape .mid{flex:1;}
@@ -1381,7 +1381,7 @@ const CLS_CSS = `
 .cls-board.n7{width:min(100%, 480px);}
 .cls-board svg{position:absolute;left:0;top:0;z-index:1;pointer-events:none;}
 .cls-grid{display:grid;gap:clamp(4px, 1.6vw, 10px);}
-.pst .cls-k{position:relative;aspect-ratio:1;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-cell);font-size:clamp(17px, 5.6vw, 26px);font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;touch-action:manipulation;min-width:0;}
+.pst .cls-k{position:relative;aspect-ratio:1;border-radius:12px;border:1px solid var(--pst-ink);background:var(--pst-cell);font-size:clamp(17px, 5.6vw, 26px);font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;touch-action:manipulation;min-width:0;}
 .cls-board.n7 .cls-k{font-size:clamp(15px, 4.8vw, 22px);border-radius:10px;}
 .pst .cls-k.o{border-radius:50%;background:var(--pst-bg);border-color:var(--pst-cell-line);font-size:clamp(15px, 5vw, 22px);}
 .pst .cls-k > span{position:relative;z-index:2;}

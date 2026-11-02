@@ -633,9 +633,9 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
               .pst .sta-trc{text-align:center;font-size:34px;font-weight:800;letter-spacing:.1em;min-height:44px;line-height:44px;}
               .pst .sta-trc.bad{animation:stash .32s;}
               @keyframes stash{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-              .pst .sta-site{align-self:center;padding:8px;border:2px solid var(--pst-ink);border-top-style:solid;border-radius:18px;}
+              .pst .sta-site{align-self:center;padding:8px;border:1px solid var(--pst-ink);border-top-style:solid;border-radius:18px;}
               .pst .sta-b{position:relative;touch-action:none;user-select:none;-webkit-user-select:none;}
-              .pst .sta-b .st-tile{position:absolute;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:800;border-radius:12px;cursor:pointer;box-sizing:border-box;background:var(--pst-tint);border:2px solid var(--pst-ink);color:var(--pst-ink);transition:top ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),left ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),background 120ms,color 120ms,transform 160ms,opacity ${LIFT_MS}ms;}
+              .pst .sta-b .st-tile{position:absolute;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:800;border-radius:12px;cursor:pointer;box-sizing:border-box;background:var(--pst-tint);border:1px solid var(--pst-ink);color:var(--pst-ink);transition:top ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),left ${FALL_MS}ms cubic-bezier(.4,.05,.35,1),background 120ms,color 120ms,transform 160ms,opacity ${LIFT_MS}ms;}
               .pst .sta-b .st-tile em{position:absolute;top:3px;left:6px;font-style:normal;font-size:10px;font-weight:800;}
               .pst .sta-b .st-tile.on{background:var(--pst-ink);color:var(--pst-bg);transform:scale(1.04);}
               .pst .sta-b .st-tile.bad{background:transparent;border-style:solid;}

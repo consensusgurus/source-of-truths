@@ -1258,7 +1258,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
 // The stage board (owner, 2026-10-30 mockup).
 const CVS_CSS = `
 .cvs-chips{display:grid;gap:6px;}
-.pst .cvs-chip{position:relative;min-height:52px;border-radius:12px;border:2px solid var(--pst-ink);background:transparent;padding:4px 0 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;min-width:0;}
+.pst .cvs-chip{position:relative;min-height:52px;border-radius:12px;border:1px solid var(--pst-ink);background:transparent;padding:4px 0 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;min-width:0;}
 .cvs-chip b{font-size:16px;font-weight:800;line-height:1;}
 .cvs-chip span{font-size:11px;font-weight:800;color:var(--pst-mute);font-variant-numeric:tabular-nums;}
 .cvs-chip i{position:absolute;left:0;bottom:0;height:5px;background:var(--cvh, var(--pst-acc));}
@@ -1268,7 +1268,7 @@ const CVS_CSS = `
 .pst .cvs-chip.done *{color:#08222e;}
 .pst .cvs-chip.on span{color:var(--pst-ink);}
 .cvs-chip.done i{display:none;}
-.cvs-grid{display:grid;border:2px solid var(--pst-ink);border-radius:16px;overflow:hidden;background:var(--pst-bg);width:min(100%, 460px);align-self:center;}
+.cvs-grid{display:grid;border:1px solid var(--pst-ink);border-radius:16px;overflow:hidden;background:var(--pst-bg);width:min(100%, 460px);align-self:center;}
 .cvs-grid.n7{width:min(100%, 560px);}
 .pst .cvs-c{position:relative;aspect-ratio:1;border:0;border-radius:0;border-right:1px solid var(--pst-cell-line);border-bottom:1px solid var(--pst-cell-line);background:var(--pst-bg);font-size:clamp(17px, 6vw, 26px);font-weight:700;padding:0;font-variant-numeric:tabular-nums;touch-action:manipulation;min-width:0;}
 .cvs-grid.n7 .cvs-c{font-size:clamp(15px, 5vw, 24px);}
@@ -1278,7 +1278,7 @@ const CVS_CSS = `
 .pst .cvs-c.lock{background:var(--cvh, var(--pst-acc));font-weight:800;}
 .pst .cvs-c.lock,.pst .cvs-c.lock *{color:#08222e;}
 .pst .cvs-c.cur{background:color-mix(in srgb, var(--cvh, var(--pst-acc)) 52%, var(--pst-bg));font-weight:800;}
-.pst .cvs-c.anc::after{content:"";position:absolute;inset:16%;border-radius:50%;border:2px solid currentColor;pointer-events:none;}
+.pst .cvs-c.anc::after{content:"";position:absolute;inset:16%;border-radius:50%;border:1px solid currentColor;pointer-events:none;}
 .cvs-c em{position:absolute;top:2px;left:4px;font-style:normal;font-size:10px;font-weight:800;opacity:.75;}
 .pst .cvs-c.bad{background:var(--pst-bad-bg);color:var(--pst-bad);}
 .cvs-c.bnc{animation:cvsBnc .4s ease;}

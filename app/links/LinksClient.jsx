@@ -630,14 +630,14 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
                 .lks-band b{display:block;font-size:13px;letter-spacing:.08em;text-transform:uppercase;}
                 .lks-band span{display:block;font-size:16px;font-weight:800;margin-top:2px;line-height:1.25;}
                 .lks-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
-                .pst .lks-t{min-height:72px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-weight:800;color:var(--pst-ink);padding:0 4px;line-height:1.15;letter-spacing:.02em;touch-action:manipulation;transition:transform .1s;}
+                .pst .lks-t{min-height:72px;border-radius:14px;border:1px solid var(--pst-ink);background:var(--pst-tint);font-weight:800;color:var(--pst-ink);padding:0 4px;line-height:1.15;letter-spacing:.02em;touch-action:manipulation;transition:transform .1s;}
                 .pst .lks-t:active{transform:scale(.97);}
                 .pst .lks-t.on{background:var(--pst-ink);color:var(--pst-bg);}
                 @keyframes lksshake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-4px);}40%,80%{transform:translateX(4px);}}
                 .pst .lks-t.shake{animation:lksshake .45s ease;}
                 .lks-miss{display:flex;justify-content:center;align-items:center;gap:8px;font-size:13px;font-weight:800;}
                 .lks-miss i{width:12px;height:12px;border-radius:6px;background:var(--pst-ink);box-sizing:border-box;}
-                .lks-miss i.u{background:transparent;border:2px solid var(--pst-ink);}
+                .lks-miss i.u{background:transparent;border:1px solid var(--pst-ink);}
               ` }} />
               {g.solved.map((ci) => (
                 <div key={ci} className="lks-band">

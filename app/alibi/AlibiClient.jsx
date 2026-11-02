@@ -1341,7 +1341,7 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
 // grid of rounded pale rose cells, suspects down and the options across: a
 // ruled-out cell clear, a confirmed cell full rose.
 const ALS_CSS = `
-.pst .als-clue{border-radius:16px;background:color-mix(in srgb, var(--pst-pale) 55%, var(--pst-bg));border:2px solid var(--pst-ink);padding:14px 12px 12px;display:flex;flex-direction:column;gap:12px;align-items:center;}
+.pst .als-clue{border-radius:16px;background:color-mix(in srgb, var(--pst-pale) 55%, var(--pst-bg));border:1px solid var(--pst-ink);padding:14px 12px 12px;display:flex;flex-direction:column;gap:12px;align-items:center;}
 .pst .als-clue .lgs-eb{font-size:11px;}
 .pst .als-q{margin:0;text-align:center;font-size:22px;font-weight:800;line-height:1.25;letter-spacing:-.02em;min-height:56px;display:flex;align-items:center;justify-content:center;}
 .pst .als-q b{font-weight:800;}
@@ -1357,16 +1357,16 @@ const ALS_CSS = `
 .pst .als-cl{display:flex;gap:9px;align-items:baseline;width:100%;text-align:left;background:transparent;border:0;border-radius:0;padding:3px 2px;font-size:14.5px;font-weight:700;line-height:1.4;}
 .pst .als-cl>b{flex:none;width:18px;font-weight:800;opacity:.6;}
 .pst .als-cl.done span{opacity:.45;text-decoration:line-through;}
-.pst .als-seg{display:flex;border:2px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
+.pst .als-seg{display:flex;border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
 .pst .als-seg button{flex:1;height:40px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;}
-.pst .als-seg button+button{border-left:2px solid var(--pst-ink);}
+.pst .als-seg button+button{border-left:1px solid var(--pst-ink);}
 .pst .als-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
 .pst .als-gr{display:grid;gap:5px;align-items:center;}
 .pst .als-gr .h{font-size:13.5px;font-weight:800;text-align:center;line-height:1.15;align-self:end;padding-bottom:2px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 @media (max-width:420px){.pst .als-gr .h{font-size:12.5px;}}
 .pst .als-gr .n{font-size:13.5px;font-weight:700;line-height:1.2;max-width:112px;padding-right:4px;overflow-wrap:break-word;}
 @media (max-width:420px){.pst .als-gr .n{font-size:12.5px;max-width:92px;}}
-.pst .als-c{height:var(--als-h,54px);border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-pale);font-size:20px;font-weight:800;padding:0;min-width:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
+.pst .als-c{height:var(--als-h,54px);border-radius:11px;border:1px solid var(--pst-ink);background:var(--pst-pale);font-size:20px;font-weight:800;padding:0;min-width:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
 .pst .als-c.x{opacity:.4;background:transparent;}
 .pst .als-c.y{background:var(--pst-acc);color:var(--pst-on-acc);}
 .pst .als-acc{margin-top:6px;}

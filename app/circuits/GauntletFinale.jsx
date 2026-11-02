@@ -722,7 +722,7 @@ const CSS = `
 .gfin-pip.r{animation:gfinPip .14s ease both}
 @keyframes gfinPip{from{background:transparent;border-color:rgba(11,15,26,.25)}to{background:#0b0f1a;border-color:#0b0f1a}}
 .gfin-pip .xk{position:absolute;inset:-2px;border-radius:6px;display:flex;align-items:center;justify-content:center;
-  background:#b4232a;border:2px solid #0b0f1a;color:#fff;font-size:15px;font-weight:800;line-height:1;
+  background:#b4232a;border:1px solid #0b0f1a;color:#fff;font-size:15px;font-weight:800;line-height:1;
   animation:gfinCrack .4s ease both}
 @keyframes gfinCrack{0%{opacity:0;transform:scale(1)}1%{opacity:1}40%{opacity:1;transform:scale(1.5) rotate(-8deg)}100%{opacity:1;transform:scale(1.2) rotate(0)}}
 

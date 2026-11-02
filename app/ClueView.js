@@ -72,11 +72,11 @@ export function ClueViewSwitch({ view }) {
 // Shared styles: the switch, and the clue sheet (every clue as a row you can
 // cross off; hovering one lights what it names on the board).
 export const CLUE_VIEW_CSS = `
-.pst .cvw{display:flex;align-self:center;width:min(360px,100%);border:2px solid var(--pst-ink);border-radius:999px;overflow:hidden;flex:none;}
+.pst .cvw{display:flex;align-self:center;width:min(360px,100%);border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;flex:none;}
 .pst .cvw button{flex:1;height:40px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;padding:0 14px;white-space:nowrap;}
-.pst .cvw button+button{border-left:2px solid var(--pst-ink);}
+.pst .cvw button+button{border-left:1px solid var(--pst-ink);}
 .pst .cvw button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
-.pst .cvs{border-radius:16px;background:var(--pst-pale);border:2px solid var(--pst-ink);overflow:hidden;}
+.pst .cvs{border-radius:16px;background:var(--pst-pale);border:1px solid var(--pst-ink);overflow:hidden;}
 .pst .cvs-hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 16px 11px;}
 .pst .cvs-hd .lb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);}
 .pst .cvs-hd .ct{white-space:nowrap;flex:none;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;}

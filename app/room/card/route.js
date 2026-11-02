@@ -80,7 +80,7 @@ function invite() {
       chip('Read the Room · Daily Run', CAT),
       d({ fontSize: 52, fontWeight: 800, lineHeight: 1.04, letterSpacing: -2, marginTop: 22 }, 'Can you read the room?'),
       d({ fontSize: 21, fontWeight: 600, color: W.ink2, marginTop: 10, lineHeight: 1.35 }, 'Four crowd games with no answer key: run with the herd, dodge it, call its order, say what it said.'),
-      d({ flexDirection: 'column', marginTop: 14, marginBottom: 18, padding: '12px 16px', borderRadius: 16, border: `2px solid ${W.ink}` },
+      d({ flexDirection: 'column', marginTop: 14, marginBottom: 18, padding: '12px 16px', borderRadius: 16, border: `1px solid ${W.ink}` },
         d({ fontSize: 17, fontWeight: 800 }, `${top[1]} · ${top[0]}+`),
         d({ fontSize: 19, fontWeight: 600, color: W.ink2, marginTop: 4, lineHeight: 1.35 }, 'Knows what the crowd will say before it says it, and which way the herd will run.')),
       cta(),

@@ -304,14 +304,14 @@ function MiniShape({ k, light, cell = 7 }) {
 const STAGE_CSS = `
 .blk-hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .blk-box{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
-.blk-mini{display:grid;grid-template-columns:repeat(4,9px);grid-auto-rows:9px;gap:2px;padding:6px;border:2px solid var(--pst-ink);border-radius:9px}
+.blk-mini{display:grid;grid-template-columns:repeat(4,9px);grid-auto-rows:9px;gap:2px;padding:6px;border:1px solid var(--pst-ink);border-radius:9px}
 .blk-pause{min-height:40px;padding:0 14px;font-size:13px}
 .blk-mini i{border-radius:2px}
 .blk-mini i.p{background:var(--pst-ink)}
 .blk-score{display:flex;align-items:baseline;gap:6px}
 .blk-score b{font-size:34px;line-height:1;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .blk-score span{font-size:13px;font-weight:800;opacity:.75}
-.blk-well{align-self:center;padding:5px;border:2px solid var(--pst-ink);border-radius:14px;background:color-mix(in srgb, var(--pst-ink) 6%, transparent)}
+.blk-well{align-self:center;padding:5px;border:1px solid var(--pst-ink);border-radius:14px;background:color-mix(in srgb, var(--pst-ink) 6%, transparent)}
 .blk-paused{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:16px;background:color-mix(in srgb, var(--pst-bg) 88%, transparent);border-radius:9px;z-index:4}
 .blk-paused b{font-size:24px;font-weight:800}
 .blk-paused span{font-size:13px;font-weight:700;opacity:.8}
@@ -325,7 +325,7 @@ const STAGE_CSS = `
 .blk-pad.ph{grid-auto-rows:48px;gap:7px;grid-template-columns:repeat(6,minmax(0,1fr))}
 .blk-pad.ph .lft,.blk-pad.ph .rot,.blk-pad.ph .rgt{grid-column:span 2}
 .blk-pad.ph .dwn,.blk-pad.ph .slm{grid-column:span 3}
-.blk-pad button{border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);color:var(--pst-ink);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.blk-pad button{border-radius:14px;border:1px solid var(--pst-ink);background:var(--pst-tint);color:var(--pst-ink);font-size:22px;font-weight:800;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .blk-pad .slm{background:var(--pst-ink);color:var(--pst-bg);font-size:15px}
 /* NO ON-SCREEN CONTROLS ON A DESKTOP WITH A MOUSE (owner, 2026-10-30): the keyboard already does all of this. */
 @media (min-width:900px) and (hover:hover) and (pointer:fine){.blk-pad,.blk-padt,.bl-pad{display:none !important;}}

@@ -166,7 +166,7 @@ function SubmitView({ mode = 'list', onBack, onSubmit }) {
         {COPY.back}
       </button>
 
-      <div style={{ borderBottom: `2px solid ${T.ink}`, paddingBottom: 20, marginTop: 16, marginBottom: 32 }}>
+      <div style={{ borderBottom: `1px solid ${T.ink}`, paddingBottom: 20, marginTop: 16, marginBottom: 32 }}>
         <div
           style={{
             fontFamily: 'Manrope, monospace',

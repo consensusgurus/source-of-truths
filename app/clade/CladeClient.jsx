@@ -601,9 +601,9 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
               .cld-d{width:18px;height:18px;border-radius:9px;background:var(--pst-ink);flex:none;position:relative;z-index:1;box-sizing:border-box;}
               .cld-l{font-size:16px;font-weight:800;}
               .cld-g{font-size:12px;font-weight:700;opacity:.75;margin-left:auto;text-align:right;}
-              .cld-rg.un .cld-d{background:var(--pst-bg);border:2px solid var(--pst-ink);}
+              .cld-rg.un .cld-d{background:var(--pst-bg);border:1px solid var(--pst-ink);}
               .cld-rg.un .cld-l{opacity:.6;}
-              .cld-rg.ans .cld-d{border-radius:5px;background:var(--pst-bg);border:2px solid var(--pst-ink);}
+              .cld-rg.ans .cld-d{border-radius:5px;background:var(--pst-bg);border:1px solid var(--pst-ink);}
               .cld-rg.ans::before{bottom:50%;}
             ` }} />
             <h2 className="pst-q">The tree so far</h2>
@@ -677,7 +677,7 @@ export default function CladeClient({ puzzles = [], forceNum = null }) {
           .cl-lab{font-size:11.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:${FADED};margin:0 0 6px;}
           .cl-lab b{color:${INK};}
           .cl-inwrap{margin-top:14px;}
-          .cl-in{flex:1 1 auto;min-width:0;height:46px;box-sizing:border-box;border:2px solid var(--stg-ink2, ${COLORS.ink});border-radius:8px;padding:0 12px;font-family:${SANS};font-size:16px;font-weight:700;color:${INK};background:var(--stg-cell, #ffffff);}
+          .cl-in{flex:1 1 auto;min-width:0;height:46px;box-sizing:border-box;border:1px solid var(--stg-ink2, ${COLORS.ink});border-radius:8px;padding:0 12px;font-family:${SANS};font-size:16px;font-weight:700;color:${INK};background:var(--stg-cell, #ffffff);}
           .cl-in:focus{outline:3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:1px;}
           .cl-go{height:46px;padding:0 18px;border:none;border-radius:8px;background:${STAGE ? STAGE_C : T.cta};color:${STAGE ? 'var(--stg-onramp, #08222e)' : T.white};font-family:${SANS};font-weight:800;font-size:15px;cursor:pointer;}
           .cl-opts{display:flex;flex-direction:column;margin-top:6px;border:1px solid var(--stg-cell-line, rgba(11,15,26,0.3));border-radius:8px;overflow:hidden;}

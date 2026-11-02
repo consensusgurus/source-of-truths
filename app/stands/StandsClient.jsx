@@ -1198,13 +1198,13 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
 // light rule; W the full category colour, D the pale tint, L an ink outline.
 const SDX_CSS = `
 .sdx{display:flex;flex-direction:column;gap:12px;width:100%;max-width:480px;align-self:center;}
-.sdx-clue{border-radius:16px;background:var(--pst-pale);border:2px solid var(--pst-ink);padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center;}
+.sdx-clue{border-radius:16px;background:var(--pst-pale);border:1px solid var(--pst-ink);padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center;}
 .sdx-eb{text-align:center;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);}
 .sdx-q{margin:0;text-align:center;font-size:clamp(18px,5.6vw,22px);font-weight:800;line-height:1.25;letter-spacing:-.02em;min-height:2.5em;display:flex;align-items:center;justify-content:center;}
 .sdx-q>span{display:block;}
 .sdx-q b{font-weight:800;}
 .sdx-nav{display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;}
-.pst .sdx-nb{display:inline-flex;align-items:center;gap:4px;height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:14px;font-weight:800;flex:none;}
+.pst .sdx-nb{display:inline-flex;align-items:center;gap:4px;height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--pst-ink);background:var(--pst-bg);font-size:14px;font-weight:800;flex:none;}
 .sdx-pips{flex:1;display:flex;justify-content:center;min-width:0;}
 .pst .sdx-pp{flex:0 1 18px;min-width:8px;height:32px;padding:0 2px;border:0;border-radius:0;background:transparent;display:flex;align-items:center;justify-content:center;}
 .sdx-pp i{display:block;width:100%;max-width:14px;height:5px;border-radius:3px;background:color-mix(in srgb, var(--pst-ink) 18%, transparent);}
@@ -1223,7 +1223,7 @@ const SDX_CSS = `
 .sdx-help{text-align:center;font-size:12px;font-weight:700;color:var(--pst-mute);}
 .sdx-tbl{display:flex;flex-direction:column;}
 .sdx-tr{display:grid;grid-template-columns:22px 1fr 30px 30px 30px 30px 40px;align-items:center;font-size:13px;font-weight:700;min-height:23px;border-bottom:1px solid var(--pst-cell2);font-variant-numeric:tabular-nums;}
-.sdx-tr.hd{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--pst-mute);border-bottom:2px solid var(--pst-ink);}
+.sdx-tr.hd{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--pst-mute);border-bottom:1px solid var(--pst-ink);}
 .sdx-tr span{text-align:center;}
 .sdx-tr .nm{text-align:left;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sdx-tr .pt{font-weight:800;text-align:right;}

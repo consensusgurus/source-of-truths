@@ -1390,15 +1390,15 @@ const DUS_CSS = `
 .pst .dus-c.sel.bad{box-shadow:inset 0 0 0 3px var(--pst-acc);}
 .pst .dus-c:focus-visible{outline:3px solid var(--pst-ink);outline-offset:-4px;}
 .dus-c svg{width:54%;height:54%;display:block;}
-.dus-mk{position:absolute;z-index:2;width:18px;height:18px;border-radius:9px;background:var(--pst-bg);border:2px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;line-height:1;transform:translate(-50%,-50%);pointer-events:none;}
+.dus-mk{position:absolute;z-index:2;width:18px;height:18px;border-radius:9px;background:var(--pst-bg);border:1px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;line-height:1;transform:translate(-50%,-50%);pointer-events:none;}
 .dus-mk.bad{border-color:var(--dus-warn);background:var(--dus-warn-bg);color:var(--dus-warn);}
 .dus-bd.n10 .dus-mk{width:16px;height:16px;font-size:11px;}
 .dus-need{margin:0;border-radius:14px;background:var(--pst-pale);padding:10px 12px;text-align:center;font-size:14px;font-weight:700;line-height:1.4;}
 .dus-need b{font-weight:800;}
 .dus-need.bad{background:var(--dus-warn-bg);color:var(--dus-warn);}
-.dus-seg{display:flex;border:2px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
+.dus-seg{display:flex;border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
 .pst .dus-seg button{flex:1;min-width:0;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;}
-.pst .dus-seg button+button{border-left:2px solid var(--pst-ink);}
+.pst .dus-seg button+button{border-left:1px solid var(--pst-ink);}
 .pst .dus-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
 @media (min-width:900px){.dus-need,.dus-seg{width:min(100%, 560px);align-self:center;}.dus-bd{width:min(100%, 520px, var(--dus-fit, 520px));}.dus-bd.n10{width:min(100%, 600px, var(--dus-fit, 600px));}.dus-mk{width:22px;height:22px;border-radius:11px;font-size:14px;}}
 `;

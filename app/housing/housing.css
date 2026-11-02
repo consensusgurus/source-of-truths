@@ -57,7 +57,7 @@
 .hw .brand-mark { width: 34px; height: 34px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; }
 .hw .brand-name { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
 .hw .nav { display: flex; gap: 28px; flex-wrap: wrap; }
-.hw .nav a { color: var(--header-mute); font-size: 15px; font-weight: 600; padding: 8px 0; border-bottom: 2px solid transparent; }
+.hw .nav a { color: var(--header-mute); font-size: 15px; font-weight: 600; padding: 8px 0; border-bottom: 1px solid transparent; }
 .hw .nav a:hover { color: #fff; }
 .hw .nav a[aria-current='page'] { color: #fff; border-bottom-color: var(--accent); }
 /* Page head */

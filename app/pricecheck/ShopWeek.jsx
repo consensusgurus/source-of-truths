@@ -88,7 +88,7 @@ const STRIP_CSS = `
 .pcwk .gsx-ch a{font-size:13px;font-weight:800;color:inherit}
 .pcwk-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
 .pcwk-d{display:flex;flex-direction:column;align-items:center;gap:3px}
-.pcwk-d b{width:100%;height:34px;border-radius:8px;border:2px solid currentColor;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#08222e;background:transparent}
+.pcwk-d b{width:100%;height:34px;border-radius:8px;border:1px solid currentColor;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#08222e;background:transparent}
 .pcwk-d.miss b,.pcwk-d.fut b{border-style:solid;color:inherit;opacity:.6}
 .pcwk-d.on b{outline:3px solid currentColor;outline-offset:2px}
 .pcwk-d i{font-style:normal;font-size:11px;font-weight:800}
@@ -180,7 +180,7 @@ const PAGE_CSS = `
 .pwk-eye{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
 .pwk-head h2{margin:4px 0;font-size:32px;line-height:1.05;font-weight:800;letter-spacing:-.02em}
 .pwk-head p{margin:0;font-size:15px;font-weight:700}
-.pwk-card{border:2px solid currentColor;border-radius:16px;padding:12px 14px;background:var(--pwk-card);display:flex;flex-direction:column;gap:8px}
+.pwk-card{border:1px solid currentColor;border-radius:16px;padding:12px 14px;background:var(--pwk-card);display:flex;flex-direction:column;gap:8px}
 .pwk-ch{display:flex;justify-content:space-between;align-items:baseline}
 .pwk-ch b,.pwk-lh{font-size:16px;font-weight:800}
 .pwk-ch span{font-size:12px;font-weight:800;opacity:.75}
@@ -188,18 +188,18 @@ const PAGE_CSS = `
 .pwk-day{display:flex;align-items:center;gap:8px}
 .pwk-dn{width:34px;font-size:13px}
 .pwk-dv{width:26px;text-align:right;font-size:15px}
-.pwk-bar{flex:1;position:relative;height:32px;border:2px solid currentColor;border-radius:8px;overflow:hidden;box-sizing:border-box}
+.pwk-bar{flex:1;position:relative;height:32px;border:1px solid currentColor;border-radius:8px;overflow:hidden;box-sizing:border-box}
 .pwk-bar i{position:absolute;left:0;top:0;bottom:0;transform-origin:left;animation:pwkF .8s cubic-bezier(.2,.8,.2,1) both}
 .pwk-bar em{position:absolute;left:8px;top:0;bottom:0;display:flex;align-items:center;font-style:normal;font-size:13px;font-weight:800}
 .pwk-note{margin:2px 0 0;font-size:13px;font-weight:700;opacity:.85}
 .pwk-ladder{display:flex;flex-direction:column;gap:6px}
-.pwk-rung{display:flex;align-items:center;gap:12px;min-height:44px;padding:6px 14px;border:2px solid currentColor;border-radius:12px;box-sizing:border-box;opacity:.55}
+.pwk-rung{display:flex;align-items:center;gap:12px;min-height:44px;padding:6px 14px;border:1px solid currentColor;border-radius:12px;box-sizing:border-box;opacity:.55}
 .pwk-rung[style]{opacity:1}
 .pwk-rung b{flex:1;font-size:15px}
 .pwk-rung span:last-child{font-size:13px;font-weight:800;white-space:nowrap}
 .pwk-rung.here{padding:12px 14px}
 .pwk-rung.here b{font-size:18px}
-.pwk-chip{flex:0 0 auto;width:34px;height:22px;border-radius:4px;border:2px solid currentColor;box-sizing:border-box}
+.pwk-chip{flex:0 0 auto;width:34px;height:22px;border-radius:4px;border:1px solid currentColor;box-sizing:border-box}
 .pwk-row{display:grid;grid-template-columns:28px minmax(0,1fr) 64px 44px;align-items:center;gap:6px;min-height:36px;font-size:14px;font-weight:700;border-top:1px solid color-mix(in srgb,currentColor 30%,transparent)}
 .pwk-row span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pwk-row > :last-child{text-align:right}

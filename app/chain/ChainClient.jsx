@@ -1027,7 +1027,7 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
           .ch-rc{flex:1 1 0;height:22px;border-radius:5px;box-sizing:border-box;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.3));}
           .ch-rc.mine{border:0;background:${EDGE_MINE};}
           .ch-rc.foe{border:0;background:${EDGE_FOE};}
-          .ch-rc.goal:not(.mine):not(.foe){border:2px solid var(--stg-ink2, ${COLORS.ink});}
+          .ch-rc.goal:not(.mine):not(.foe){border:1px solid var(--stg-ink2, ${COLORS.ink});}
           .ch-frame{max-width:var(--mw);margin:0 auto;}
           .ch-board{position:relative;width:100%;aspect-ratio:var(--ar);background:var(--stg-surf, ${COLORS.paper});border-radius:20px;overflow:hidden;clip-path:inset(0 round 20px);touch-action:manipulation;}
           .ch-p{position:absolute;left:var(--a);top:var(--b);width:var(--c);height:var(--d);box-sizing:border-box;}
@@ -1423,7 +1423,7 @@ const CHS_CSS = `
 .pst-col > .stb.has-t{flex:none;}
 .pst .chs-q{font-size:clamp(20px,6vw,23px);}
 .chs-score{display:flex;justify-content:center;gap:10px;}
-.chs-sc{display:flex;align-items:center;gap:10px;min-width:128px;height:48px;box-sizing:border-box;padding:0 14px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-bg);}
+.chs-sc{display:flex;align-items:center;gap:10px;min-width:128px;height:48px;box-sizing:border-box;padding:0 14px;border-radius:14px;border:1px solid var(--pst-ink);background:var(--pst-bg);}
 .chs-sc.on{background:var(--pst-pale);}
 .chs-sc span{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}
 .chs-sc b{font-size:24px;font-weight:800;margin-left:auto;font-variant-numeric:tabular-nums;}

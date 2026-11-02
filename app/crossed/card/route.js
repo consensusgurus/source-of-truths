@@ -29,7 +29,7 @@ function week(ti, size, me = true) {
       crossedDayTag(i),
       me && i === ti ? d({ position: 'absolute', left: -Math.round(size * 0.16), top: -Math.round(size * 0.16), width: Math.round(size * 1.32), height: Math.round(size * 1.32), border: '3px solid #ef4444', borderRadius: 999, transform: 'rotate(-9deg)' }) : null));
   }
-  return d({ border: `2px solid ${W.ink}`, borderRadius: 3, flexShrink: 0 }, ...cells);
+  return d({ border: `1px solid ${W.ink}`, borderRadius: 3, flexShrink: 0 }, ...cells);
 }
 function tagCell(t, i) {
   return d({ width: 58, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 4, background: t[3], border: `1.5px solid ${W.line}`, fontSize: 14, fontWeight: 800, color: crossedInkOn(t[3]), flexShrink: 0 }, crossedDayTag(i));

@@ -425,7 +425,7 @@ const CSS = `
 .jd-gate .gsx-bt i{overflow:visible;text-overflow:clip;line-height:1.2}
 .jd-gate .gsx-band{padding-top:5px;padding-bottom:5px}
 /* ENTRY CENTERPIECE */
-.jd-gv{flex:1;display:flex;align-items:center;justify-content:center;gap:12px;overflow:hidden;width:100%;margin:0;padding:12px 14px;border:2px solid var(--gsx-ink);border-radius:18px;background:transparent;color:var(--gsx-ink);font:inherit;cursor:pointer;text-align:left}
+.jd-gv{flex:1;display:flex;align-items:center;justify-content:center;gap:12px;overflow:hidden;width:100%;margin:0;padding:12px 14px;border:1px solid var(--gsx-ink);border-radius:18px;background:transparent;color:var(--gsx-ink);font:inherit;cursor:pointer;text-align:left}
 .jd-gv:focus-visible{outline:3px solid var(--gsx-ink);outline-offset:3px}
 .jd-gvs{flex:none;width:96px;height:64px;overflow:visible}
 .jd-arm{transform-origin:60px 56px;transform:rotate(-24deg);transition:transform .25s cubic-bezier(.6,0,.8,.4)}
@@ -433,7 +433,7 @@ const CSS = `
 .jd-gv.strike .jd-arm,.jd-gv:active .jd-arm{transform:rotate(4deg);transition:transform .12s cubic-bezier(.7,0,1,.6)}
 .jd-gv.strike{animation:jdthud .3s .12s ease-out}
 @keyframes jdthud{30%{transform:translateY(3px)}}
-.jd-lt{flex:0 1 210px;min-width:0;max-width:210px;display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:8px;background:#fffdf7;color:#08222e;border:2px solid var(--gsx-ink);box-shadow:4px 4px 0 var(--gsx-ink);transform:rotate(-1.5deg)}
+.jd-lt{flex:0 1 210px;min-width:0;max-width:210px;display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:8px;background:#fffdf7;color:#08222e;border:1px solid var(--gsx-ink);box-shadow:4px 4px 0 var(--gsx-ink);transform:rotate(-1.5deg)}
 .jd-ltf{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .jd-lts{font-size:15px;font-weight:800;line-height:1.2}
 .jd-ltl{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;min-width:0}

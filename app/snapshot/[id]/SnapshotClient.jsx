@@ -398,7 +398,7 @@ export default function SnapshotClient({ listId, embedded, list: listProp, voteD
         </>
 
         {/* ─── Instagram automation image (server-rendered poster) ────── */}
-        <div style={{ marginTop: 52, borderTop: `2px solid ${T.ink}`, paddingTop: 28 }}>
+        <div style={{ marginTop: 52, borderTop: `1px solid ${T.ink}`, paddingTop: 28 }}>
           <h2 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontStyle: 'italic', fontSize: 24, margin: '0 0 6px', color: T.ink, fontVariationSettings: '"SOFT" 100' }}>Instagram image</h2>
           <p style={{ fontFamily: 'Manrope, sans-serif', fontSize: 14, color: T.slate, margin: '0 0 16px', maxWidth: 560 }}>
             The ready-to-post 1080 × 1350 image the Instagram automation uses. Copy the image itself, or a direct link to it, to share anywhere.

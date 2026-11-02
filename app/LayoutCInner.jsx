@@ -193,7 +193,7 @@ html[data-stage-chrome] .lc-cap{background:var(--chrome-bg) !important;color:var
 /* The tab bar is exactly as tall as the game's subheader (.stg-fg, measured
    into --lc-fgh), so its rule and the subheader's are one line. */
 .lc-tabs{display:flex;border-bottom:1px solid var(--stg-line);padding:0 8px;flex:none;height:var(--lc-fgh,41px);}
-.lc-tab{flex:1;height:100%;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--stg-mute);font:700 12.5px Manrope,system-ui,sans-serif;cursor:pointer;}
+.lc-tab{flex:1;height:100%;border:0;border-bottom:1px solid transparent;background:transparent;color:var(--stg-mute);font:700 12.5px Manrope,system-ui,sans-serif;cursor:pointer;}
 .lc-tab.on{color:var(--stg-ink);border-bottom-color:var(--stg-acc-ink, var(--stg-acc));}
 .lc-body{padding:16px 20px;font-size:13px;}
 .lc-cap2{display:flex;justify-content:space-between;font-size:12px;color:var(--stg-mute);margin-bottom:6px;}

@@ -172,12 +172,12 @@ export const KIDS_CSS = `
 .kd-side > h2{order:20;font-size:17px;font-weight:700;margin:22px 0 0;padding-top:16px;border-top:2px solid var(--kline);width:100%;color:var(--kink2)}
 .kd-side > h2::before{content:'How to play';display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--kink2);opacity:.8;margin-bottom:2px}
 .kd-side > .kd-how{order:21;color:var(--kink2);margin:6px 0 0;max-width:40ch;font-size:15px}
-.kd-btn{font-family:var(--kdisp);font-weight:600;font-size:15px;border:2px solid var(--kink);background:var(--kpaper);color:var(--kink);border-radius:999px;padding:8px 16px;cursor:pointer;box-shadow:0 3px 0 var(--kink);transition:transform .08s}
+.kd-btn{font-family:var(--kdisp);font-weight:600;font-size:15px;border:1px solid var(--kink);background:var(--kpaper);color:var(--kink);border-radius:999px;padding:8px 16px;cursor:pointer;box-shadow:0 3px 0 var(--kink);transition:transform .08s}
 .kd-btn.pri{background:var(--kink);color:#fff}
 .kd-btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--kink)}
 .kd-btn:disabled{opacity:.45;cursor:default}
 .kd-ctrls{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
-.kd-seg{display:inline-flex;border:2px solid var(--kink);border-radius:999px;overflow:hidden}
+.kd-seg{display:inline-flex;border:1px solid var(--kink);border-radius:999px;overflow:hidden}
 .kd-seg button{font-family:var(--kdisp);font-weight:600;font-size:14px;border:0;background:var(--kpaper);padding:7px 14px;cursor:pointer;color:var(--kink)}
 .kd-seg button.on{background:var(--kink);color:#fff}
 .kd-stats{display:flex;gap:18px;margin-top:18px;font-family:var(--kdisp);font-weight:600;color:var(--kink2);font-size:14px;font-variant-numeric:tabular-nums;flex-wrap:wrap}

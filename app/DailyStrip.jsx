@@ -3262,7 +3262,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
             scrollbar-width:thin;scrollbar-color:#bb9226 transparent;}
           .dhome.slate .dh-cprog.open::-webkit-scrollbar{width:9px;}
           .dhome.slate .dh-cprog.open::-webkit-scrollbar-track{background:transparent;}
-          .dhome.slate .dh-cprog.open::-webkit-scrollbar-thumb{background:rgba(42,31,4,.3);border-radius:5px;border:2px solid transparent;background-clip:content-box;}
+          .dhome.slate .dh-cprog.open::-webkit-scrollbar-thumb{background:rgba(42,31,4,.3);border-radius:5px;border:1px solid transparent;background-clip:content-box;}
           .dhome.slate .dh-cprog.open::-webkit-scrollbar-thumb:hover{background:rgba(42,31,4,.45);background-clip:content-box;}
           /* The desktop cut: four cards, two rows of two. */
           .dh-cell.cap-hd{display:none;}
@@ -3431,7 +3431,7 @@ export default function DailyStrip({ board = null, layout = 'tiles', quizCats = 
         .sl-fnav:focus-visible{outline:2px solid var(--white);outline-offset:1px;}
         .sl-fnav.l{left:4px;}
         .sl-fnav.r{right:4px;}
-        .sl-filt button{border:0;border-radius:0;background:transparent;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#b9cbec;padding:9px 13px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;}
+        .sl-filt button{border:0;border-radius:0;background:transparent;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#b9cbec;padding:9px 13px;cursor:pointer;border-bottom:1px solid transparent;margin-bottom:-2px;white-space:nowrap;}
         .sl-filt button:hover{color:var(--white);}
         /* Still an UNDERLINE, not a pill: navy simply changed what colour the
            tab and its rule have to be. -2px above pulls the rule down onto the

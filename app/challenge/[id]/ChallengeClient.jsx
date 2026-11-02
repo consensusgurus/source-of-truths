@@ -141,7 +141,7 @@ export default function ChallengeClient({ id }) {
 
         {/* Total */}
         {allDone && (
-          <div style={{ marginTop: 16, padding: '16px 18px', borderRadius: 12, border: `2px solid ${COLORS.ink}`, background: T.white, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ marginTop: 16, padding: '16px 18px', borderRadius: 12, border: `1px solid ${COLORS.ink}`, background: T.white, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: FONT, fontSize: 12, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, color: COLORS.faded }}>Challenge total</span>
             <span style={{ fontFamily: FONT, fontWeight: 800, fontSize: 22, color: COLORS.ink }}>
               {totalCorrect}<span style={{ fontSize: 15, color: COLORS.faded }}> / {totalPossible}</span>

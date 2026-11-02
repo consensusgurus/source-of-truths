@@ -136,7 +136,7 @@ export default function WordStage({
 const CSS = `
 .wst{position:fixed;inset:0;z-index:85;background:var(--wst-bg);color:var(--wst-ink);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
 .wst *{color:var(--wst-ink);}
-.wst-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--wst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
+.wst-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:1px solid var(--wst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
 .wst-col{width:100%;max-width:520px;box-sizing:border-box;padding:max(12px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px;min-height:100%;}
 .wst-top{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;animation:wstRise .35s ease-out both;}
 .wst-eb{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;max-width:100%;}
@@ -146,7 +146,7 @@ const CSS = `
 .wst-tiles span{width:min(52px, calc((100vw - 40px - (var(--wst-sn) - 1) * 7px) / var(--wst-sn)));aspect-ratio:52/60;border-radius:12px;background:var(--wst-ink);color:var(--wst-bg);display:flex;align-items:center;justify-content:center;font-size:min(30px, calc((100vw - 40px) / var(--wst-sn) * .55));font-weight:800;}
 .wst-slots{display:flex;justify-content:center;flex-wrap:nowrap;gap:calc(min(52px, (100vw - 40px) / var(--wst-n)) * .45);}
 .wst-grp{display:flex;gap:6px;}
-.wst-s{--w:min(52px, calc((100vw - 40px - (var(--wst-n) - 1) * 6px) / var(--wst-n)));width:var(--w);aspect-ratio:52/60;box-sizing:border-box;border-radius:12px;border:2px solid var(--wst-ink);background:var(--wst-tile);display:flex;align-items:center;justify-content:center;font-size:calc(var(--w) * .56);font-weight:800;position:relative;transition:background .15s;}
+.wst-s{--w:min(52px, calc((100vw - 40px - (var(--wst-n) - 1) * 6px) / var(--wst-n)));width:var(--w);aspect-ratio:52/60;box-sizing:border-box;border-radius:12px;border:1px solid var(--wst-ink);background:var(--wst-tile);display:flex;align-items:center;justify-content:center;font-size:calc(var(--w) * .56);font-weight:800;position:relative;transition:background .15s;}
 .wst-s.cur{box-shadow:0 0 0 3px var(--wst-bg),0 0 0 5px var(--wst-ink);}
 /* A MARKED CELL IS TINTED, NOT DOTTED (owner, 2026-10-30): the dot pushed the
    letter up off the row, so circled cells did not line up with the rest. The
@@ -159,32 +159,32 @@ const CSS = `
 .wst-slots.shown .wst-s{border-style:solid;}
 .wst-slots.bad{animation:wstShake .4s cubic-bezier(.2,.7,.3,1);}
 .wst-spine{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;}
-.wst-spine span{width:36px;height:36px;box-sizing:border-box;border-radius:9px;border:2px solid var(--wst-ink);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;}
+.wst-spine span{width:36px;height:36px;box-sizing:border-box;border-radius:9px;border:1px solid var(--wst-ink);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;}
 .wst-spine span.f{background:var(--wst-ink);color:var(--wst-bg);}
 .wst-spine span.now{box-shadow:0 0 0 3px var(--wst-bg),0 0 0 5px var(--wst-ink);}
 .wst-acts{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;}
 .wst-combo{display:flex;flex-direction:column;align-items:center;gap:10px;font-size:22px;font-weight:800;letter-spacing:.08em;}
 .wst-combo i{font-style:normal;opacity:.55;}
-.wst-line1{min-width:min(320px,100%);min-height:60px;box-sizing:border-box;border-radius:14px;border:2px solid var(--wst-ink);background:var(--wst-tile);display:flex;align-items:center;justify-content:center;padding:0 14px;font-size:28px;font-weight:800;letter-spacing:.12em;white-space:nowrap;overflow:hidden;}
+.wst-line1{min-width:min(320px,100%);min-height:60px;box-sizing:border-box;border-radius:14px;border:1px solid var(--wst-ink);background:var(--wst-tile);display:flex;align-items:center;justify-content:center;padding:0 14px;font-size:28px;font-weight:800;letter-spacing:.12em;white-space:nowrap;overflow:hidden;}
 .wst-line1.ok{background:var(--wst-ink);color:var(--wst-bg);}
 .wst-tries{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:13px;font-weight:800;letter-spacing:.06em;}
 .wst-tries s{opacity:.7;}
 .wst-note{text-align:center;font-size:14px;font-weight:700;opacity:.8;max-width:340px;}
-.wst-act{align-self:center;min-height:44px;padding:0 18px;border-radius:999px;border:2px solid var(--wst-ink);background:transparent;font:inherit;font-size:14px;font-weight:800;cursor:pointer;}
+.wst-act{align-self:center;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--wst-ink);background:transparent;font:inherit;font-size:14px;font-weight:800;cursor:pointer;}
 .wst-act.on{background:var(--wst-ink);color:var(--wst-bg);}
 .wst-act:disabled{opacity:.4;cursor:default;}
 .wst-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;}
-.wst-nb{min-height:44px;min-width:70px;padding:0 14px;border-radius:999px;border:2px solid var(--wst-ink);background:transparent;font:inherit;font-size:14px;font-weight:800;cursor:pointer;}
+.wst-nb{min-height:44px;min-width:70px;padding:0 14px;border-radius:999px;border:1px solid var(--wst-ink);background:transparent;font:inherit;font-size:14px;font-weight:800;cursor:pointer;}
 .wst-nb:active{transform:scale(.97);}
 .wst-pips{display:flex;flex-wrap:nowrap;justify-content:center;gap:1px;min-width:0;}
 .wst-pip{width:18px;height:28px;padding:0;border:none;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-.wst-pip i{display:block;width:13px;height:13px;border-radius:7px;border:2px solid var(--wst-ink);box-sizing:border-box;}
+.wst-pip i{display:block;width:13px;height:13px;border-radius:7px;border:1px solid var(--wst-ink);box-sizing:border-box;}
 .wst-pip.done i{background:var(--wst-ink);}
 .wst-pip.cur i{width:15px;height:15px;box-shadow:0 0 0 2px var(--wst-bg),0 0 0 4px var(--wst-ink);}
 .wst-kb{display:flex;flex-direction:column;gap:7px;}
 @media (min-width:900px) and (hover:hover) and (pointer:fine){.wst-kb{display:none !important;}}
 .wst-kr{display:flex;justify-content:center;gap:5px;}
-.wst-k{position:relative;flex:1 1 0;max-width:40px;height:50px;border-radius:9px;border:2px solid var(--wst-ink);background:var(--wst-tile);font-family:inherit;font-size:17px;font-weight:800;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+.wst-k{position:relative;flex:1 1 0;max-width:40px;height:50px;border-radius:9px;border:1px solid var(--wst-ink);background:var(--wst-tile);font-family:inherit;font-size:17px;font-weight:800;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
 .wst-k b{position:absolute;top:2px;right:4px;font-size:10px;font-weight:800;}
 .wst-k:active{background:color-mix(in srgb, var(--wst-ink) 20%, transparent);}
 .wst-k.d{opacity:.22;border-color:transparent;cursor:default;}

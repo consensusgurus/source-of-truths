@@ -1387,12 +1387,12 @@ export default function AxiomClient({ puzzles = [], forceNum = null }) {
 // and is struck, a wrong name is orange.
 // The How to play chips on the stage match the stage board: a word that fits
 // is full rose with dark ink, a word that does not is white with a light rule.
-const AXS_CHIP_YES = { fontSize: 12, letterSpacing: '0.04em', background: 'var(--stg-acc-dk, #fb7185)', border: '2px solid #08222e', color: '#08222e' };
+const AXS_CHIP_YES = { fontSize: 12, letterSpacing: '0.04em', background: 'var(--stg-acc-dk, #fb7185)', border: '1px solid #08222e', color: '#08222e' };
 const AXS_CHIP_NO = { fontSize: 12, letterSpacing: '0.04em', background: 'transparent', border: '1.5px solid #c9d2dc', color: 'var(--stg-mute, #3b4656)' };
 const AXS_CSS = `
 .axs{display:flex;flex-direction:column;gap:12px;}
 .axs-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;}
-.pst .axs-tl{position:relative;height:40px;border-radius:10px;border:2px solid var(--pst-ink);background:var(--pst-cell);font-size:12px;font-weight:800;letter-spacing:.02em;padding:0 2px;min-width:0;overflow:hidden;white-space:nowrap;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
+.pst .axs-tl{position:relative;height:40px;border-radius:10px;border:1px solid var(--pst-ink);background:var(--pst-cell);font-size:12px;font-weight:800;letter-spacing:.02em;padding:0 2px;min-width:0;overflow:hidden;white-space:nowrap;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
 .pst .axs-tl.l{font-size:10.5px;letter-spacing:0;}
 .pst .axs-tl.xl{font-size:9px;letter-spacing:0;}
 .pst .axs-tl:disabled{cursor:default;opacity:1;}
@@ -1401,14 +1401,14 @@ const AXS_CSS = `
 .pst .axs-tl.off{opacity:.35;text-decoration:line-through;text-decoration-thickness:1.5px;}
 .pst .axs-tl.g::after{content:"";position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:3px;background:currentColor;opacity:.7;}
 .axs-bar{display:flex;align-items:center;gap:8px;}
-.axs-seg{display:flex;flex:1;min-width:0;border:2px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
+.axs-seg{display:flex;flex:1;min-width:0;border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
 .pst .axs-seg button{flex:1;min-width:0;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;padding:0 6px;white-space:nowrap;}
-.pst .axs-seg button+button{border-left:2px solid var(--pst-ink);}
+.pst .axs-seg button+button{border-left:1px solid var(--pst-ink);}
 .pst .axs-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
-.pst .axs-mini{flex:none;height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--pst-ink);background:transparent;font-size:13px;font-weight:800;white-space:nowrap;}
+.pst .axs-mini{flex:none;height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--pst-ink);background:transparent;font-size:13px;font-weight:800;white-space:nowrap;}
 .pst .axs-mini:disabled{opacity:.4;cursor:default;}
 .axs-rules{display:flex;flex-direction:column;gap:5px;}
-.pst .axs-ru{display:flex;align-items:center;gap:10px;min-height:44px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:14.5px;font-weight:800;line-height:1.25;text-align:left;padding:5px 12px;width:100%;}
+.pst .axs-ru{display:flex;align-items:center;gap:10px;min-height:44px;border-radius:12px;border:1px solid var(--pst-ink);background:var(--pst-bg);font-size:14.5px;font-weight:800;line-height:1.25;text-align:left;padding:5px 12px;width:100%;}
 .pst .axs-ru:disabled{cursor:default;opacity:1;}
 .pst .axs-ru b{width:24px;height:24px;border-radius:12px;background:var(--pst-pale);box-shadow:inset 0 0 0 2px var(--pst-ink);display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none;}
 .pst .axs-ru span{flex:1;min-width:0;}
@@ -1422,7 +1422,7 @@ const AXS_CSS = `
 .pst .axs-ru.win{background:var(--pst-acc);}
 .pst .axs-ru.win,.pst .axs-ru.win *{color:var(--pst-on-acc);}
 .pst .axs-ru.win b{background:var(--pst-bg);color:var(--pst-ink);}
-.pst .axs-go{height:48px;border-radius:16px;border:2px solid var(--pst-ink);background:var(--pst-acc);color:var(--pst-on-acc);font-size:16px;font-weight:800;width:100%;}
+.pst .axs-go{height:48px;border-radius:16px;border:1px solid var(--pst-ink);background:var(--pst-acc);color:var(--pst-on-acc);font-size:16px;font-weight:800;width:100%;}
 .pst .axs-go.armed{background:transparent;color:var(--pst-ink);}
 /* The Sunday Edition's wider field (28 words, 7 rules) fits a 390x844 phone:
    five words to a row and slimmer rows. */

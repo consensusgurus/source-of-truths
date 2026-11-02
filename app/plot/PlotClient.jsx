@@ -1355,16 +1355,16 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
 const PLX_CSS = `
 .plx{display:flex;flex-direction:column;gap:14px;width:100%;max-width:520px;align-self:center;}
 .plx-call{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;text-align:center;font-size:15px;font-weight:800;min-height:44px;line-height:1.3;}
-.plx-call b{min-width:40px;height:40px;border-radius:12px;background:var(--pst-pale);border:2px solid var(--pst-ink);display:inline-flex;align-items:center;justify-content:center;font-size:17px;padding:0 10px;box-sizing:border-box;}
+.plx-call b{min-width:40px;height:40px;border-radius:12px;background:var(--pst-pale);border:1px solid var(--pst-ink);display:inline-flex;align-items:center;justify-content:center;font-size:17px;padding:0 10px;box-sizing:border-box;}
 .plx-idle{color:var(--pst-mute);font-weight:700;font-size:14px;}
-.plx-pb{align-self:center;width:min(100%, 520px);border:2px solid var(--pst-ink);border-radius:14px;background:var(--pst-bg);overflow:hidden;}
+.plx-pb{align-self:center;width:min(100%, 520px);border:1px solid var(--pst-ink);border-radius:14px;background:var(--pst-bg);overflow:hidden;}
 .plx-grid{position:relative;width:100%;aspect-ratio:1/1;touch-action:none;user-select:none;-webkit-user-select:none;container-type:inline-size;}
 .plx-c{position:absolute;width:calc(100% / var(--plx-n) - 2px);height:calc(100% / var(--plx-n) - 2px);border-radius:6px;background:var(--pst-cell);display:flex;align-items:center;justify-content:center;font-size:clamp(11px, calc(100cqw / var(--plx-n) * .48), 22px);font-weight:800;color:var(--pst-ink);z-index:1;pointer-events:none;font-variant-numeric:tabular-nums;}
 .plx-c.in{background:transparent;}
 .plx-c.cl{color:var(--pst-on-acc);}
 .plx-c.bad{color:var(--lg-bad);}
 .plx-plot,.plx-dr{position:absolute;border-radius:8px;box-sizing:border-box;pointer-events:none;}
-.plx-plot{background:var(--pst-acc);border:2px solid var(--pst-ink);}
+.plx-plot{background:var(--pst-acc);border:1px solid var(--pst-ink);}
 .plx-plot.bad{background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--lg-bad) 30%, transparent) 0 3px, transparent 3px 9px), var(--lg-bad-bg);border:2px solid var(--lg-bad);}
 .plx-dr{background:var(--pst-cell2);border:3px solid var(--pst-mute);}
 .plx-dr.ok{background:var(--pst-pale);border-color:var(--pst-acc);}

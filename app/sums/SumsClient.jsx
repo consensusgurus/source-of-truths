@@ -1490,7 +1490,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
 const SUS_CSS = `
 .sus-grid{display:grid;gap:3px;width:min(100%, 480px);align-self:center;}
 .sus-grid.big{width:min(100%, 640px);gap:2px;}
-.pst .sus-c{position:relative;aspect-ratio:1;border-radius:8px;border:2px solid var(--pst-ink);background:var(--pst-bg);font-size:clamp(16px, 6vw, 26px);font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;min-width:0;touch-action:manipulation;font-variant-numeric:tabular-nums;}
+.pst .sus-c{position:relative;aspect-ratio:1;border-radius:8px;border:1px solid var(--pst-ink);background:var(--pst-bg);font-size:clamp(16px, 6vw, 26px);font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;min-width:0;touch-action:manipulation;font-variant-numeric:tabular-nums;}
 .sus-grid.big .sus-c{border-radius:5px;border-width:1.5px;font-size:clamp(12px, 3.8vw, 22px);}
 .pst .sus-c.blk{background:var(--pst-ink);color:var(--pst-bg);}
 .sus-c .dg{position:absolute;inset:0;width:100%;height:100%;}
@@ -1506,10 +1506,10 @@ const SUS_CSS = `
 .sus-combo{border-radius:14px;background:var(--pst-cell);padding:9px 12px;display:flex;flex-direction:column;gap:6px;}
 .sus-combo>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:800;}
 .sus-combo .k{color:var(--pst-mute);}
-.sus-combo .s{border:2px solid var(--pst-ink);border-radius:999px;padding:1px 9px;background:var(--pst-bg);}
+.sus-combo .s{border:1px solid var(--pst-ink);border-radius:999px;padding:1px 9px;background:var(--pst-bg);}
 .sus-pad{display:grid;grid-template-columns:repeat(9, minmax(0, 1fr));gap:4px;}
 @media (min-width:900px) and (hover:hover) and (pointer:fine){.sus-pad{display:none !important;}}
-.pst .sus-dk{height:52px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--pst-pale);font-size:22px;font-weight:800;padding:0;touch-action:manipulation;}
+.pst .sus-dk{height:52px;border-radius:12px;border:1px solid var(--pst-ink);background:var(--pst-pale);font-size:22px;font-weight:800;padding:0;touch-action:manipulation;}
 .pst .sus-dk.on{background:var(--pst-acc);color:var(--pst-on-acc);}
 .pst .sus-dk.done{opacity:.3;background:transparent;}
 .pst .pst-tb.acc{background:var(--pst-acc);color:var(--pst-on-acc);}

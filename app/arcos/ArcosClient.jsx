@@ -847,12 +847,12 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
           <div className="arc-ls" role="list" aria-label={`Acrostic ${g.round + 1} clues`}>
             <style dangerouslySetInnerHTML={{ __html: `
               .arc-ls{display:flex;flex-direction:column;gap:5px;width:100%;max-width:460px;align-self:center;margin-top:4px;}
-              .arc-r{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:8px;width:100%;text-align:left;padding:7px 10px;border-radius:12px;border:2px solid var(--wst-ink);background:var(--wst-bg);color:var(--wst-ink);font:inherit;cursor:pointer;}
+              .arc-r{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:8px;width:100%;text-align:left;padding:7px 10px;border-radius:12px;border:1px solid var(--wst-ink);background:var(--wst-bg);color:var(--wst-ink);font:inherit;cursor:pointer;}
               .arc-r .n{font-size:12px;font-weight:800;opacity:.6;}
               .arc-r .c{font-size:14px;font-weight:700;line-height:1.3;min-width:0;}
               .arc-r .a{display:flex;gap:2px;}
-              .arc-r .a i{font-style:normal;width:15px;height:18px;box-sizing:border-box;border-bottom:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;opacity:.85;}
-              .arc-r .a i.sp{border:2px solid currentColor;border-radius:4px;}
+              .arc-r .a i{font-style:normal;width:15px;height:18px;box-sizing:border-box;border-bottom:1px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;opacity:.85;}
+              .arc-r .a i.sp{border:1px solid currentColor;border-radius:4px;}
               .arc-r.now{background:var(--wst-tile);box-shadow:0 0 0 2px var(--wst-bg),0 0 0 4px var(--wst-ink);}
               .arc-r.now .c{font-weight:800;}
               .arc-r.ok{background:var(--wst-ink);color:var(--wst-bg);}

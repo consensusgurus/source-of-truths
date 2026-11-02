@@ -620,7 +620,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
         const CSS_C = `
 .crb-wrap{--crb-w:min(54px, calc((100vw - 28px - 5 * 6px) / 6));display:flex;flex-direction:column;gap:16px;}
 .crb-row{display:grid;grid-template-columns:repeat(${hand.cards.length},var(--crb-w));justify-content:space-between;padding-top:12px;}
-.crb-pc{box-sizing:border-box;width:var(--crb-w);height:calc(var(--crb-w) * 1.52);border-radius:8px;background:#fff;border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:#16181d !important;padding:0;font-size:calc(var(--crb-w) * .37);transition:transform .14s,opacity .14s;}
+.crb-pc{box-sizing:border-box;width:var(--crb-w);height:calc(var(--crb-w) * 1.52);border-radius:8px;background:#fff;border:1px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:#16181d !important;padding:0;font-size:calc(var(--crb-w) * .37);transition:transform .14s,opacity .14s;}
 .crb-pc i{font-style:normal;font-size:calc(var(--crb-w) * .31);margin-top:3px;color:inherit !important;}
 .crb-pc.red{color:#b4232c !important;}
 .crb-pc.held{transform:translateY(-12px);background:var(--pst-ink);color:var(--pst-bg) !important;}
@@ -632,16 +632,16 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
 .crb-crib{display:flex;align-items:center;justify-content:center;gap:12px;}
 .crb-lab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
 .crb-stack{display:flex;gap:6px;}
-.crb-down{box-sizing:border-box;width:40px;height:58px;border-radius:7px;border:2px solid var(--pst-ink);background:repeating-linear-gradient(45deg,var(--pst-ink) 0 5px,var(--pst-tint) 5px 10px);}
-.crb-slot{box-sizing:border-box;width:40px;height:58px;border-radius:7px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+.crb-down{box-sizing:border-box;width:40px;height:58px;border-radius:7px;border:1px solid var(--pst-ink);background:repeating-linear-gradient(45deg,var(--pst-ink) 0 5px,var(--pst-tint) 5px 10px);}
+.crb-slot{box-sizing:border-box;width:40px;height:58px;border-radius:7px;border:1px solid var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
 .crb-slot.red{color:#b4232c !important;}
 .crb-how{text-align:center;font-size:13px;font-weight:700;opacity:.85;line-height:1.4;min-height:2.8em;}
-.crb-go{display:flex;align-items:center;justify-content:center;gap:8px;min-height:64px;width:100%;border-radius:18px;padding:12px;background:var(--pst-ink);border:2px solid var(--pst-ink);font-size:21px;font-weight:800;color:var(--pst-bg) !important;}
+.crb-go{display:flex;align-items:center;justify-content:center;gap:8px;min-height:64px;width:100%;border-radius:18px;padding:12px;background:var(--pst-ink);border:1px solid var(--pst-ink);font-size:21px;font-weight:800;color:var(--pst-bg) !important;}
 .crb-go:disabled{background:var(--pst-tint);color:var(--pst-ink) !important;opacity:.6;cursor:default;}
 .crb-q2{border-color:transparent !important;background:transparent !important;opacity:.8;}
 .crb-q2.on{border-color:currentColor !important;opacity:1;}
 .crb-peg{display:flex;gap:6px;justify-content:center;}
-.crb-peg i{width:30px;height:12px;border-radius:6px;border:2px solid var(--pst-ink);background:var(--pst-tint);}
+.crb-peg i{width:30px;height:12px;border-radius:6px;border:1px solid var(--pst-ink);background:var(--pst-tint);}
 .crb-peg i.on{background:var(--pst-ink);}
 .crb-peg i.half{background:linear-gradient(90deg,var(--pst-ink) 50%,var(--pst-tint) 50%);}
 .crb-peg i.cur{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
@@ -930,7 +930,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
             // The crib: their two face down (never seen), your two as you lift them.
             const SW = narrow ? 34 : 46;
             const SH = narrow ? 48 : 66;
-            const backCard = (i) => <span key={`b${i}`} aria-hidden="true" style={{ width: SW, height: SH, boxSizing: 'border-box', borderRadius: narrow ? 5 : 6, border: `2px solid ${A_FILL_INK}`, background: `repeating-linear-gradient(45deg, ${BACK} 0 ${narrow ? 4 : 5}px, ${A_FILL} ${narrow ? 4 : 5}px ${narrow ? 6 : 7}px)` }} />;
+            const backCard = (i) => <span key={`b${i}`} aria-hidden="true" style={{ width: SW, height: SH, boxSizing: 'border-box', borderRadius: narrow ? 5 : 6, border: `1px solid ${A_FILL_INK}`, background: `repeating-linear-gradient(45deg, ${BACK} 0 ${narrow ? 4 : 5}px, ${A_FILL} ${narrow ? 4 : 5}px ${narrow ? 6 : 7}px)` }} />;
             const slot = (i) => {
               const k = thrownKs[i];
               return (

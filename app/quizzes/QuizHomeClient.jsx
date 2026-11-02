@@ -1840,7 +1840,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
     .qzh .qflow{column-width:310px;column-gap:18px;}
     .qzh .qflow > a{display:flex;break-inside:avoid;-webkit-column-break-inside:avoid;}
     @media(max-width:680px){.qzh .qfull{column-count:1;}}
-    .qzh .colhead{display:flex;align-items:center;gap:9px;padding:8px 11px;background:var(--white);border-bottom:2px solid ${C.ink};border-radius:8px 8px 0 0;margin-bottom:3px;}
+    .qzh .colhead{display:flex;align-items:center;gap:9px;padding:8px 11px;background:var(--white);border-bottom:1px solid ${C.ink};border-radius:8px 8px 0 0;margin-bottom:3px;}
     .qzh .viewall{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
     .qzh .qrow{display:flex;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid rgba(20,22,28,0.07);text-decoration:none;color:${C.ink};min-width:0;overflow:hidden;}
     .qzh .qrow:hover .qtitle{color:${C.accent};}

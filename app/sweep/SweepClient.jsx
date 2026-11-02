@@ -1123,7 +1123,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
         .sw-mk.next { font-weight: 800; }
         .sw-mk.lead .sw-dot { background: var(--sw-acc); }
         .sw-mk.par { left: 0; font-weight: 800; }
-        .sw-pardash { width: 26px; flex: none; border-top: 2px solid currentColor; }
+        .sw-pardash { width: 26px; flex: none; border-top: 1px solid currentColor; }
         .sw-mk.me { left: 0; z-index: 2; }
         .sw-mechip { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 6px; border-radius: 999px; background: var(--sw-acc); color: var(--sw-on); font-weight: 800; font-size: 13px; }
         .sw-mechip::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--sw-on); }

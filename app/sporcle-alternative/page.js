@@ -55,7 +55,7 @@ export default function SporcleAlternativePage() {
           <ArrowLeft size={14} strokeWidth={2.5} /> Back to Mind Loft
         </Link>
 
-        <div style={{ borderBottom: `2px solid ${C.ink}`, paddingBottom: 24, marginTop: 16, marginBottom: 32 }}>
+        <div style={{ borderBottom: `1px solid ${C.ink}`, paddingBottom: 24, marginTop: 16, marginBottom: 32 }}>
           <div style={{ fontFamily: F, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.blue, fontWeight: 700, marginBottom: 14 }}>The Quizzes</div>
           <h1 style={{ fontFamily: F, fontWeight: 800, fontSize: 'clamp(38px, 8vw, 74px)', lineHeight: 1.0, letterSpacing: '-0.02em', margin: 0, color: C.ink }}>
             Trivia without<br /><span style={{ color: C.blue }}>the ad circus.</span>

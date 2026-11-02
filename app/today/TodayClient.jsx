@@ -1957,7 +1957,7 @@ const CSS = `
    96px wide instead of 130, which is nine across where six used to fit. */
 .tdy-t{flex:none;width:var(--tile-w);min-height:var(--tile-h);background:none;border:0;border-radius:0;padding:11px 3px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none;box-shadow:none;}
 .tdy-pl{position:relative;width:66px;height:66px;flex:none;border-radius:19px;background:var(--white);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(16,24,40,.08),0 10px 22px rgba(16,24,40,.10);}
-.tdy-pl::before{content:"";position:absolute;inset:-4px;border-radius:23px;border:2px solid transparent;pointer-events:none;}
+.tdy-pl::before{content:"";position:absolute;inset:-4px;border-radius:23px;border:1px solid transparent;pointer-events:none;}
 .tdy-t.done .tdy-pl::before,.tdy-ct.done .tdy-pl::before{border-color:var(--success-deep);}
 .tdy-t.paused .tdy-pl::before{border-color:var(--gold);}
 /* Behind hover:hover with the pin star, and for the same reason: a tap applies

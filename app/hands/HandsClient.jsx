@@ -739,7 +739,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           .hst-side{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:800;min-width:72px;}
           .hst-side.r{align-items:flex-end;text-align:right;}
           .hst-lab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
-          .hst-pc{box-sizing:border-box;border-radius:8px;background:#ffffff !important;border:2px solid var(--pst-ink);color:#16181d !important;padding:0;position:relative;container-type:inline-size;}
+          .hst-pc{box-sizing:border-box;border-radius:8px;background:#ffffff !important;border:1px solid var(--pst-ink);color:#16181d !important;padding:0;position:relative;container-type:inline-size;}
           .hst-pc.red{color:#b91c1c !important;}
           .hst-pc *{color:inherit !important;}
           .hst-pf{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;font-size:20px;font-size:32cqw;}
@@ -749,7 +749,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
           .hst-mini .hst-pf{font-size:12px;font-size:36cqw;}
           .hst-board{display:grid;grid-template-columns:repeat(5,minmax(0,62px));gap:8px;justify-content:center;}
           .hst-cell{aspect-ratio:62/74;width:100%;}
-          .hst-slot{box-sizing:border-box;aspect-ratio:62/74;width:100%;border-radius:8px;border:2px solid var(--pst-ink);background:var(--pst-tint);padding:0;}
+          .hst-slot{box-sizing:border-box;aspect-ratio:62/74;width:100%;border-radius:8px;border:1px solid var(--pst-ink);background:var(--pst-tint);padding:0;}
           .hst-slot:active{transform:translateY(1px);}
           .hst-q2{border-color:transparent !important;background:transparent !important;opacity:.8;} .hst-q2.on{border-color:currentColor !important;opacity:1;}
         `;

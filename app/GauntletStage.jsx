@@ -78,7 +78,7 @@ const CSS = `
 .gst{position:fixed;inset:0;z-index:85;background:var(--gst-bg);color:var(--gst-ink);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
 .gst *{color:var(--gst-ink);}
 .gst-top{position:fixed;top:max(12px, env(safe-area-inset-top));left:14px;right:12px;z-index:2;color:var(--gst-ink)}
-.gst-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:2px solid var(--gst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
+.gst-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:1px solid var(--gst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
 .gst-look:hover{opacity:1}
 /* SITE NAVIGATION SHOWN (owner, 2026-10-30: the light/dark, back and share
    buttons showed twice above the question). With the frame's own header up,
@@ -90,7 +90,7 @@ html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
 .gst-brand{position:fixed;top:max(12px, env(safe-area-inset-top));left:14px;z-index:2;display:inline-flex;align-items:center;gap:8px;height:40px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:-.01em;}
 .gst-col{width:100%;max-width:600px;box-sizing:border-box;padding:max(68px, calc(env(safe-area-inset-top) + 56px)) 16px 22px;display:flex;flex-direction:column;justify-content:center;gap:28px;min-height:100%;}
 .gst-q{text-align:center;font-size:30px;line-height:1.18;font-weight:800;letter-spacing:-0.02em;animation:gstRise .45s ease-out both;}
-.gst-kick{align-self:center;display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:5px 13px 5px 10px;border:2px solid var(--gst-ink);border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;line-height:1.2;margin-bottom:-10px;animation:gstRise .45s ease-out both;}
+.gst-kick{align-self:center;display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:5px 13px 5px 10px;border:1px solid var(--gst-ink);border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;line-height:1.2;margin-bottom:-10px;animation:gstRise .45s ease-out both;}
 .gst-kick::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--gst-ink);}
 .gst-q h2{margin:0;font:inherit;letter-spacing:inherit;}
 .gst-q blockquote{margin:0 0 12px;font-size:20px;font-weight:700;line-height:1.35;font-style:italic;}
@@ -100,7 +100,7 @@ html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
 .gst-q:has(blockquote) blockquote{font-size:28px;line-height:1.25;font-weight:800;margin-bottom:14px;letter-spacing:-.015em}
 .gst-q .gst-sub{display:block;margin-top:10px;font-size:17px;font-weight:700;}
 .gst-ch{display:flex;flex-direction:column;gap:12px;}
-.gst-c{position:relative;display:flex;align-items:center;justify-content:center;min-height:72px;width:100%;box-sizing:border-box;border-radius:18px;padding:14px 16px;text-align:center;cursor:pointer;background:var(--gst-tile);border:2px solid var(--gst-ink);font-family:inherit;font-size:22px;line-height:1.2;font-weight:800;animation:gstIn .5s cubic-bezier(.2,.8,.2,1) both;transition:background .15s, transform .1s;}
+.gst-c{position:relative;display:flex;align-items:center;justify-content:center;min-height:72px;width:100%;box-sizing:border-box;border-radius:18px;padding:14px 16px;text-align:center;cursor:pointer;background:var(--gst-tile);border:1px solid var(--gst-ink);font-family:inherit;font-size:22px;line-height:1.2;font-weight:800;animation:gstIn .5s cubic-bezier(.2,.8,.2,1) both;transition:background .15s, transform .1s;}
 .gst-ch.many .gst-c{min-height:58px;font-size:19px;padding:10px 14px;}
 .gst-ch.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
 .gst-ch.grid .gst-c{min-height:84px;font-size:20px;padding:10px 10px;}

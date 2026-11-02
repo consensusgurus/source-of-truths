@@ -498,10 +498,10 @@ const DEP_CSS = `
 .dp-stop span{margin-left:8px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9aa8c4}
 .dp-stop em{flex:1 1 auto;height:2px;margin:0 12px;background:rgba(255,255,255,.14)}
 .dp-stop.last em{background:transparent}
-.dp-stop.f b{background:var(--si);border:2px solid #0b0f1a}
+.dp-stop.f b{background:var(--si);border:1px solid #0b0f1a}
 .dp-stop.f span{color:#e9edf4}
 .dp.paint .dp-stop b{border-color:rgba(11,15,26,.45)}
-.dp.paint .dp-stop.f b{border:2px solid #0b0f1a}
+.dp.paint .dp-stop.f b{border:1px solid #0b0f1a}
 .dp.paint .dp-stop span{color:#0b0f1a}
 .dp.paint .dp-stop em{background:rgba(11,15,26,.3)}
 .dp.paint .dp-stop.last em{background:transparent}

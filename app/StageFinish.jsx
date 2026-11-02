@@ -2872,7 +2872,7 @@ const CSS = `
    padding, so with align-items:end the opponent figure sat 9px lower. The
    opponent border is transparent; a won box trades 1px of padding for its
    3px border so the two stay the same height. */
-.stf-rvf .them{border:2px solid transparent;border-radius:9px;padding:7px 10px;}
+.stf-rvf .them{border:1px solid transparent;border-radius:9px;padding:7px 10px;}
 .stf-rvf small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .stf-rvf .you{text-align:right;border:1px solid currentColor;border-radius:9px;padding:7px 10px;}
 .stf-rvf .you.won{border-width:3px;padding:6px 9px;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 22%,transparent);}

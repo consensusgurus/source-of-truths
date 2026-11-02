@@ -815,7 +815,7 @@ export function ListOverviewPoster({ list, voteData, extras, variant }) {
   return (
     <div style={{ width: 1080, background: T.surface, color: T.ink, boxSizing: 'border-box', padding: compact ? '38px 48px 28px' : '52px 60px 40px', position: 'relative' }}>
       {/* Masthead */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${T.ink}`, paddingBottom: 14, marginBottom: compact ? 20 : 28, fontFamily: 'Manrope, monospace', fontSize: 14, letterSpacing: '0.3em', textTransform: 'uppercase', color: T.ink }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${T.ink}`, paddingBottom: 14, marginBottom: compact ? 20 : 28, fontFamily: 'Manrope, monospace', fontSize: 14, letterSpacing: '0.3em', textTransform: 'uppercase', color: T.ink }}>
         <span style={{ fontWeight: 600 }}>Mind Loft</span>
         <span style={{ color: T.slate, fontSize: 11 }}>{SITE_HOST}</span>
       </div>
@@ -873,7 +873,7 @@ export function ListOverviewPoster({ list, voteData, extras, variant }) {
       {/* Ledger rows (mirror the live list page): rank / hero photo on the
           top 3 / name + description / action column. No responsive classes in a
           static capture; the social share card adds compact rows for 4-10. */}
-      <div style={{ marginTop: compact ? 18 : 26, borderTop: `2px solid ${T.ink}` }}>
+      <div style={{ marginTop: compact ? 18 : 26, borderTop: `1px solid ${T.ink}` }}>
         {fullItems.map((item, i) => (
           <LedgerRow
             key={item}
@@ -901,7 +901,7 @@ export function ListOverviewPoster({ list, voteData, extras, variant }) {
       </div>
 
       {/* Footer */}
-      <div style={{ marginTop: compact ? 20 : 28, borderTop: `2px solid ${T.ink}`, paddingTop: 14, display: 'flex', justifyContent: 'space-between', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate }}>
+      <div style={{ marginTop: compact ? 20 : 28, borderTop: `1px solid ${T.ink}`, paddingTop: 14, display: 'flex', justifyContent: 'space-between', fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: T.slate }}>
         <span>Consensus · {top3 ? 'Top 3' : `Top ${Math.min(items.length, 10)}`}</span>
         <span>{SITE_HOST}/list/{list.id}</span>
       </div>
@@ -1160,7 +1160,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
 
         {/* Ledger rows: rank / photo (ranks 1-3) / name + full description /
             action column. Top-3 block closes with a heavy rule. */}
-        <div style={{ marginTop: embedded ? 0 : 26, borderTop: `2px solid ${T.ink}` }}>
+        <div style={{ marginTop: embedded ? 0 : 26, borderTop: `1px solid ${T.ink}` }}>
           {items.map((item, i) => (
             <LedgerRow
               key={item}
@@ -1182,7 +1182,7 @@ export default function ListOverview({ list, voteData, extras, viewCount, onBack
           onClick={() => setComplainOpen(false)}
           style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(26,22,17,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6vh 16px' }}
         >
-          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: T.surface, border: `2px solid ${T.ink}`, padding: 24 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: T.surface, border: `1px solid ${T.ink}`, padding: 24 }}>
             {complainSent ? (
               <>
                 <h3 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 22, margin: '0 0 10px' }}>Thanks — noted.</h3>

@@ -193,7 +193,7 @@ export default function MatchGame({ items, pairs, title, intro, quizId, cols = 5
           .mm-start{border:none;background:${C.accent};color:var(--white);font-family:${FONT};font-weight:800;font-size:16px;padding:12px 34px;border-radius:12px;cursor:pointer;}
           .mm-start:hover{background:var(--accent);}
           .mm-scores{display:flex;gap:10px;margin:0 0 16px;flex-wrap:wrap;}
-          .mm-pl{flex:1 1 120px;background:var(--white);border:2px solid transparent;border-radius:12px;padding:9px 13px;}
+          .mm-pl{flex:1 1 120px;background:var(--white);border:1px solid transparent;border-radius:12px;padding:9px 13px;}
           .mm-pl.on{border-color:${C.accent};background:#eef3fe;}
           .mm-pl .l{font-size:12px;font-weight:700;color:${C.soft};margin:0;text-transform:uppercase;letter-spacing:.05em;}
           .mm-pl.on .l{color:${C.accent};}

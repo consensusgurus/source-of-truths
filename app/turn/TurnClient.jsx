@@ -963,7 +963,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
                   className={`tn-board${shake ? ' shake' : ''}`}
                   style={STAGE
                     ? { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gridTemplateRows: 'repeat(8, 1fr)', gap: 2, aspectRatio: '1 / 1', background: 'var(--tn-grid)', padding: 2, borderRadius: 6, boxShadow: '0 0 0 2px var(--tn-frame)', touchAction: 'manipulation', overflow: 'hidden', margin: 2 }
-                    : { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gridTemplateRows: 'repeat(8, 1fr)', gap: 2, aspectRatio: '1 / 1', background: FELT_LINE, border: `2px solid ${COLORS.ink}`, borderRadius: 10, padding: 3, touchAction: 'manipulation', overflow: 'hidden' }}
+                    : { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gridTemplateRows: 'repeat(8, 1fr)', gap: 2, aspectRatio: '1 / 1', background: FELT_LINE, border: `1px solid ${COLORS.ink}`, borderRadius: 10, padding: 3, touchAction: 'manipulation', overflow: 'hidden' }}
                 >
                   {squares}
                 </div>

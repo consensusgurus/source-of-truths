@@ -655,7 +655,7 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
           <>
             <style dangerouslySetInnerHTML={{ __html: `
               .thr-tg{display:grid;gap:5px;}
-              .thr-tg button{height:44px;border-radius:10px;border:2px solid var(--pst-ink);background:var(--pst-tint);font-size:15px;font-weight:800;padding:0;}
+              .thr-tg button{height:44px;border-radius:10px;border:1px solid var(--pst-ink);background:var(--pst-tint);font-size:15px;font-weight:800;padding:0;}
               .pst .thr-tg button.s{background:var(--pst-ink);color:var(--pst-bg);}
               .thr-tg button.now{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--pst-ink);}
               .thr-lg{display:flex;align-items:center;gap:8px;}
@@ -663,12 +663,12 @@ export default function ThreadClient({ puzzles = [], dayByNum = {}, forceNum = n
               .thr-lg .s small{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
               .thr-sol{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
               .thr-sol span{background:var(--pst-ink);color:var(--pst-bg);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800;}
-              .thr-call{display:flex;align-items:center;justify-content:space-between;gap:10px;border:2px solid var(--pst-ink);border-radius:16px;padding:10px 10px 10px 14px;}
+              .thr-call{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--pst-ink);border-radius:16px;padding:10px 10px 10px 14px;}
               .thr-call.done{border-style:solid;}
               .thr-call .t{font-size:14px;font-weight:800;line-height:1.3;}
               .thr-call .t small{display:block;font-size:12px;font-weight:700;opacity:.75;}
               .thr-strk{display:flex;gap:4px;margin-top:4px;}
-              .thr-strk i{width:10px;height:10px;border-radius:5px;border:2px solid var(--pst-ink);}
+              .thr-strk i{width:10px;height:10px;border-radius:5px;border:1px solid var(--pst-ink);}
               .thr-strk i.x{background:var(--pst-ink);}
             ` }} />
             <div className="thr-tg" role="group" aria-label={`${N} films`} style={{ gridTemplateColumns: `repeat(${N > 9 ? Math.ceil(N / 2) : N}, 1fr)` }}>

@@ -327,7 +327,7 @@ export const SKS_CSS = `
 .sks-tri{display:flex;gap:1px;font-size:calc(100cqw / var(--sks-w) * .32);font-weight:800;line-height:1;}
 .sks-tri.v{flex-direction:column;gap:0;line-height:1.05;}
 .sks-pad{display:grid;gap:3px;}
-.pst .sks-dk{position:relative;aspect-ratio:1/1;min-width:0;border-radius:10px;border:2px solid var(--pst-ink);background:var(--sks-base);color:var(--pst-ink);padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;touch-action:manipulation;}
+.pst .sks-dk{position:relative;aspect-ratio:1/1;min-width:0;border-radius:10px;border:1px solid var(--pst-ink);background:var(--sks-base);color:var(--pst-ink);padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;touch-action:manipulation;}
 .sks-dk b{font-size:clamp(18px, 6.4vw, 26px);font-weight:800;line-height:1;}
 .sks-dk small{font-size:11px;font-weight:800;line-height:1;color:var(--pst-deep);}
 .sks-pad.wide .sks-dk b{margin-right:4px;}
@@ -342,7 +342,7 @@ export const SKS_CSS = `
    which is the row's width over the number of tools (--sks-tn), so "Auto-move"
    (about 5.15em in Manrope 800 at -.03em) fits a 360px phone as well as a 390px one. */
 .sks-tb .l{display:block;font-size:min(11px, max(8.5px, calc((100cqw / var(--sks-tn, 6) - 8px) / 5.2)));}
-.pst .sks-tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:54px;min-width:0;border-radius:12px;border:2px solid var(--pst-ink);background:var(--sks-base);color:var(--pst-ink);font-size:11px;font-weight:800;letter-spacing:-.03em;padding:0;white-space:nowrap;overflow:visible;touch-action:manipulation;}
+.pst .sks-tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:54px;min-width:0;border-radius:12px;border:1px solid var(--pst-ink);background:var(--sks-base);color:var(--pst-ink);font-size:11px;font-weight:800;letter-spacing:-.03em;padding:0;white-space:nowrap;overflow:visible;touch-action:manipulation;}
 .pst .sks-tb.on{background:var(--pst-acc);color:var(--pst-on-acc);}
 .pst .sks-tb.soft{background:var(--pst-pale);}
 .pst .sks-tb.warn{background:var(--pst-bad-bg);color:var(--pst-bad);border-color:var(--pst-bad);}

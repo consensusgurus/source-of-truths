@@ -456,7 +456,7 @@ const CSS = WEEK_CSS + `
 .cr-g i{background:#fffdf7;font-style:normal;display:flex;align-items:center;justify-content:center;font-size:var(--fs);font-weight:800;color:#08222e;line-height:1;overflow:hidden}
 .cr-g i.b{background:#08222e}
 .cr-bq{display:inline-flex;align-items:center;gap:10px}
-.cr-ink{display:flex;align-items:center;justify-content:center;gap:14px;padding:12px;border:2px solid var(--gsx-ink);border-radius:16px;height:100%}
+.cr-ink{display:flex;align-items:center;justify-content:center;gap:14px;padding:12px;border:1px solid var(--gsx-ink);border-radius:16px;height:100%}
 .cr-g.cr-gbig{height:auto;width:min(150px,34vw);max-width:none;border-width:2.5px}
 .cr-gbig,.cr-gbig i{overflow:hidden}
 .cr-gbig i{animation:crpaper .35s ease both}
@@ -479,7 +479,7 @@ const CSS = WEEK_CSS + `
 .cr-gate .gsx-bt i{overflow:visible;text-overflow:clip;line-height:1.2}
 .cr-gate .gsx-band{padding-top:5px;padding-bottom:5px}
 /* ENTRY CENTERPIECE: 1 Across, the old start button, on paper in the stage ink. */
-.cr-xw{display:block;width:100%;margin:0;padding:0;border:2px solid var(--gsx-ink);border-radius:16px;background:#fffdf7;color:#1b1a17;box-shadow:4px 4px 0 var(--gsx-ink);overflow:hidden;cursor:pointer;font:inherit;text-align:left}
+.cr-xw{display:block;width:100%;margin:0;padding:0;border:1px solid var(--gsx-ink);border-radius:16px;background:#fffdf7;color:#1b1a17;box-shadow:4px 4px 0 var(--gsx-ink);overflow:hidden;cursor:pointer;font:inherit;text-align:left}
 .cr-xw:focus-visible{outline:3px solid var(--gsx-ink);outline-offset:3px}
 .cr-xwc{display:block;padding:11px 14px 0;font:600 14px/1.35 'Newsreader',Georgia,serif;color:#3b352b}
 .cr-xwc b{font:800 10.5px Manrope,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#b4232a;margin-right:6px}

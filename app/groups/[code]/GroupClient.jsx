@@ -590,7 +590,7 @@ const CSS = `
 .gp-head{padding:20px 22px 0;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;}
 .gp-invite{align-self:flex-start;}
 .gp-tabs{display:flex;gap:4px;padding:16px 22px 0;border-bottom:1px solid var(--stg-line);overflow-x:auto;}
-.grp-tab{border:0;background:none;padding:10px 12px 12px;font:inherit;font-weight:700;font-size:14px;color:var(--stg-mute);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;cursor:pointer;}
+.grp-tab{border:0;background:none;padding:10px 12px 12px;font:inherit;font-weight:700;font-size:14px;color:var(--stg-mute);border-bottom:1px solid transparent;margin-bottom:-1px;white-space:nowrap;cursor:pointer;}
 .grp-tab[aria-selected=true]{color:var(--stg-ink);border-bottom-color:var(--stg-acc-ink, var(--stg-acc));}
 .gp-pane{padding:18px 22px 22px;}
 .gp-dayline{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}

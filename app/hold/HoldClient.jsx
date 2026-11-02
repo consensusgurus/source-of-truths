@@ -674,7 +674,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
 .ml-tally i{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.8;}
 .ml-tally b{font-size:22px;font-weight:800;line-height:1;}
 .hol-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;padding:14px 0 28px}
-.hol-pc{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:100px;border-radius:10px;background:#fff;border:2px solid var(--pst-ink);font-size:24px;font-weight:800;line-height:1;color:#16181d !important;padding:0;transition:transform .15s}
+.hol-pc{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:100px;border-radius:10px;background:#fff;border:1px solid var(--pst-ink);font-size:24px;font-weight:800;line-height:1;color:#16181d !important;padding:0;transition:transform .15s}
 .hol-pc i{font-style:normal;font-size:20px;color:inherit}
 .hol-pc.red{color:${FACE_RED} !important}
 .hol-pc.held{transform:translateY(-10px);box-shadow:0 6px 0 var(--pst-ink)}
@@ -683,7 +683,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
 .hol-pc.held.ring{box-shadow:0 6px 0 var(--pst-ink),0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink)}
 .hol-pc:disabled{cursor:default}
 .hol-tag{position:absolute;bottom:-26px;left:0;right:0;text-align:center;font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--pst-ink) !important}
-.hol-c{display:flex;align-items:center;justify-content:center;gap:8px;min-height:72px;width:100%;border-radius:18px;padding:12px;background:var(--pst-ink);border:2px solid var(--pst-ink);font-size:22px;font-weight:800;color:var(--pst-bg) !important}
+.hol-c{display:flex;align-items:center;justify-content:center;gap:8px;min-height:72px;width:100%;border-radius:18px;padding:12px;background:var(--pst-ink);border:1px solid var(--pst-ink);font-size:22px;font-weight:800;color:var(--pst-bg) !important}
 .hol-ev{display:flex;flex-direction:column;gap:5px}
 .hol-ev .pst-row{min-height:44px}
 .hol-mini{display:inline-flex;gap:3px;flex-wrap:wrap}
@@ -857,7 +857,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
               }
               if (playing && i === current) {
                 return (
-                  <div key={i} role="listitem" aria-current="step" title={`Hand ${i + 1}, in play`} style={{ ...base, background: 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #b91c1c)) 12%, var(--stg-cell, #ffffff))', border: `2px solid ${A_FILL_INK}` }}>
+                  <div key={i} role="listitem" aria-current="step" title={`Hand ${i + 1}, in play`} style={{ ...base, background: 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, #b91c1c)) 12%, var(--stg-cell, #ffffff))', border: `1px solid ${A_FILL_INK}` }}>
                     {narrow
                       ? <b style={{ fontSize: big ? 9 : 11, fontWeight: 800, letterSpacing: '.04em', color: A_INK }}>NOW</b>
                       : <><span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', color: A_INK }}>NOW</span><b style={{ fontSize: 13, fontWeight: 800, color: A_INK }}>H{i + 1}</b></>}
@@ -1017,7 +1017,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 12, flexWrap: 'wrap' }} aria-label={`You were dealt: ${hand.cards.map(cardWords).join(', ')}`}>
                   <span style={{ fontFamily: SANS, fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase', color: S_MUTE, marginRight: 6 }}>You were dealt</span>
                   {hand.cards.map((c, k) => (
-                    <span key={k} style={{ display: 'inline-flex', borderRadius: 7, padding: 1, border: '2px solid transparent', opacity: (pickM >> k) & 1 ? 1 : 0.55 }}>
+                    <span key={k} style={{ display: 'inline-flex', borderRadius: 7, padding: 1, border: '1px solid transparent', opacity: (pickM >> k) & 1 ? 1 : 0.55 }}>
                       <MiniCard card={c} w={narrow ? 30 : 34} h={narrow ? 40 : 46} />
                     </span>
                   ))}

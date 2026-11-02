@@ -455,7 +455,7 @@ export function XpPanel({ me, titleById, viewing, stage }) {
           <div className="hrow"><span style={{ flex: 1 }}>Games Counted</span><span style={{ fontWeight: 700 }}>{prog.matches}</span></div>
           <div className="hrow"><span style={{ flex: 1 }}>IQ Points This Week</span><span className="score" style={{ color: weekGain > 0 ? C.accent : C.muted }}>{weekGain > 0 ? `+${weekGain.toLocaleString()}` : '0'}</span></div>
           <div className="hrow"><span style={{ flex: 1 }}>Next Level At</span><span style={{ fontWeight: 700 }}>{nextLevelAt.toLocaleString()} IQ</span></div>
-          <div className="hrow" style={{ borderTop: `2px solid ${C.ink}` }}><span style={{ flex: 1, fontWeight: 700 }}>Total IQ Points</span><span style={{ fontWeight: 800, color: C.accent }}>{xp.toLocaleString()}</span></div>
+          <div className="hrow" style={{ borderTop: `1px solid ${C.ink}` }}><span style={{ flex: 1, fontWeight: 700 }}>Total IQ Points</span><span style={{ fontWeight: 800, color: C.accent }}>{xp.toLocaleString()}</span></div>
         </div>
       </div>
     </div>

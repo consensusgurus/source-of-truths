@@ -1367,7 +1367,7 @@ const SGX_CSS = `
 .sgx-turns{display:flex;gap:8px;flex:none;}
 .pst .sgx-turns .pst-tb,.pst .sgx-tools .pst-tb{font-weight:800;}
 .sgx-tray{display:grid;gap:8px;}
-.pst .sgx-tray button{height:72px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-bg);display:flex;align-items:center;justify-content:center;padding:4px;min-width:0;}
+.pst .sgx-tray button{height:72px;border-radius:14px;border:1px solid var(--pst-ink);background:var(--pst-bg);display:flex;align-items:center;justify-content:center;padding:4px;min-width:0;}
 .pst .sgx-tray.two button{height:62px;}
 .pst .sgx-tray button.on{background:var(--pst-acc);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
 .sgx-pc{display:inline-grid;gap:2px;}

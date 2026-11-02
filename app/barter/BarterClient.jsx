@@ -661,7 +661,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
             <>
               <style dangerouslySetInnerHTML={{ __html: `
                 .bts-grid{display:grid;grid-template-columns:repeat(${S}, minmax(0, 1fr));gap:${S === 7 ? 5 : 7}px;width:min(100%, ${S === 7 ? 380 : 340}px);margin:0 auto;aspect-ratio:1/1;}
-                .bts-t{box-sizing:border-box;border-radius:${S === 7 ? 9 : 11}px;border:2px solid var(--pst-ink);display:flex;align-items:center;justify-content:center;font-weight:800;text-transform:uppercase;font-size:${S === 7 ? 'clamp(15px, 4.6vw, 24px)' : 'clamp(20px, 6vw, 30px)'};user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;background:transparent;}
+                .bts-t{box-sizing:border-box;border-radius:${S === 7 ? 9 : 11}px;border:1px solid var(--pst-ink);display:flex;align-items:center;justify-content:center;font-weight:800;text-transform:uppercase;font-size:${S === 7 ? 'clamp(15px, 4.6vw, 24px)' : 'clamp(20px, 6vw, 30px)'};user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;background:transparent;}
                 .bts-t.play{cursor:pointer;}
                 .bts-t.home{background:var(--pst-ink);color:var(--pst-bg);}
                 .bts-t.near{background:var(--pst-tint);}
@@ -807,7 +807,7 @@ export default function BarterClient({ puzzles = [], forceNum = null }) {
             <div style={{ '--pst-ink': 'var(--stg-ink, #08222e)', '--pst-bg': 'var(--stg-ground, #fff)', '--pst-tint': 'var(--sp-g, #b1e5fd)', color: 'var(--stg-ink, #08222e)', fontFamily: SANS, padding: '4px 0' }}>
               <style dangerouslySetInnerHTML={{ __html: `
                 .btd-grid{display:grid;grid-template-columns:repeat(${S}, minmax(0, 1fr));gap:${S === 7 ? 5 : 7}px;width:min(100%, ${S === 7 ? 380 : 340}px);margin:0 auto;aspect-ratio:1/1;}
-                .btd-t{box-sizing:border-box;border-radius:${S === 7 ? 9 : 11}px;border:2px solid var(--pst-ink);display:flex;align-items:center;justify-content:center;font-weight:800;text-transform:uppercase;font-size:${S === 7 ? 'clamp(15px, 4.6vw, 24px)' : 'clamp(20px, 6vw, 30px)'};}
+                .btd-t{box-sizing:border-box;border-radius:${S === 7 ? 9 : 11}px;border:1px solid var(--pst-ink);display:flex;align-items:center;justify-content:center;font-weight:800;text-transform:uppercase;font-size:${S === 7 ? 'clamp(15px, 4.6vw, 24px)' : 'clamp(20px, 6vw, 30px)'};}
                 .btd-t.home{background:var(--pst-ink);color:var(--pst-bg);}
                 .btd-t.near{background:var(--pst-tint);color:#08222e;}
                 .btd-t.plain{border-color:color-mix(in srgb, var(--pst-ink) 35%, transparent);}

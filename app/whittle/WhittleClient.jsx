@@ -1047,7 +1047,7 @@ const WHS_CSS = `
 @keyframes whs-nudge{0%,100%{transform:translateX(0)}18%{transform:translateX(-4px)}38%{transform:translateX(4px)}58%{transform:translateX(-3px)}78%{transform:translateX(2px)}}
 .whs-say{text-align:center;font-size:13px;font-weight:800;color:var(--pst-ink);}
 .whs-acts{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;}
-.pst .whs-act{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:54px;border-radius:12px;border:2px solid var(--pst-ink);background:var(--sks-base);color:var(--pst-ink);font:inherit;font-size:14px;font-weight:800;padding:0 10px;white-space:nowrap;overflow:hidden;touch-action:manipulation;}
+.pst .whs-act{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:54px;border-radius:12px;border:1px solid var(--pst-ink);background:var(--sks-base);color:var(--pst-ink);font:inherit;font-size:14px;font-weight:800;padding:0 10px;white-space:nowrap;overflow:hidden;touch-action:manipulation;}
 .pst .whs-act.soft{background:var(--pst-pale);}
 .pst .whs-act.warn{background:var(--pst-bad-bg);color:var(--pst-bad);border-color:var(--pst-bad);}
 .pst .whs-act:disabled{opacity:.6;}

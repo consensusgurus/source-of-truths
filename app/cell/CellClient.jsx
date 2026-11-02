@@ -823,14 +823,14 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
 .cst-lab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
 .cst-tab{display:grid;justify-content:space-between;align-items:start}
 .cst-col{position:relative}
-.cst-pc{box-sizing:border-box;border-radius:8px;background:#fff;border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:${BLACK_PIP} !important;padding:0;transition:transform .12s}
+.cst-pc{box-sizing:border-box;border-radius:8px;background:#fff;border:1px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:${BLACK_PIP} !important;padding:0;transition:transform .12s}
 .cst-pc i{font-style:normal;margin-top:3px;color:inherit}
 .cst-pc.red{color:${RED_PIP} !important}
 .cst-pc.cov{justify-content:flex-start;padding-top:4px}
 .cst-pc.lift{transform:translateY(-10px);background:var(--pst-ink);color:var(--pst-bg) !important}
 .cst-pc.hint{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--pst-ink)}
 .cst-pc.drop,.cst-slot.drop{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 6px var(--pst-ink);border-style:solid}
-.cst-slot{box-sizing:border-box;border-radius:8px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-weight:800;padding:0}
+.cst-slot{box-sizing:border-box;border-radius:8px;border:1px solid var(--pst-ink);background:var(--pst-tint);display:flex;align-items:center;justify-content:center;font-weight:800;padding:0}
 .cst-slot:disabled{cursor:default}
 .cst-say{text-align:center;font-size:15px;font-weight:800;line-height:1.35}
 ` }} />

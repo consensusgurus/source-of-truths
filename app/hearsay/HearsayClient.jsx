@@ -1038,7 +1038,7 @@ export default function HearsayClient({ puzzles = [], forceNum = null }) {
 const HSS_CSS = `
 .pst .hss-q{font-size:clamp(20px,5.8vw,22px);padding-top:4px;}
 .pst .hss-said{display:flex;flex-direction:column;gap:10px;justify-content:center;}
-.pst .hss-say{max-width:82%;align-self:flex-start;padding:10px 14px;border-radius:16px;border:2px solid var(--pst-ink);background:var(--pst-pale);font-size:16px;font-weight:700;line-height:1.3;}
+.pst .hss-say{max-width:82%;align-self:flex-start;padding:10px 14px;border-radius:16px;border:1px solid var(--pst-ink);background:var(--pst-pale);font-size:16px;font-weight:700;line-height:1.3;}
 .pst .hss-say.r{align-self:flex-end;background:var(--pst-ink);color:var(--pst-inv);}
 .pst .hss-say.r *{color:var(--pst-inv);}
 .pst .hss-say b{display:block;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;opacity:.7;margin-bottom:2px;}

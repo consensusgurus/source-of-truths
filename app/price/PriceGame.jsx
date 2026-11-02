@@ -750,7 +750,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           .pg-miss{padding:12px;text-align:center;font-size:12.5px;font-weight:800;color:${FADED};}
           .pg-lab{position:absolute;left:10px;bottom:10px;font-family:${MONO};font-size:10px;letter-spacing:.12em;text-transform:uppercase;background:rgba(6,10,20,.66);color:#fff;padding:4px 8px;border-radius:5px;}
           .pg-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;}
-          .pg-thumbs button{position:relative;padding:0;border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:var(--pr-mat);height:62px;}
+          .pg-thumbs button{position:relative;padding:0;border:1px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:var(--pr-mat);height:62px;}
           .pg-thumbs button.on{border-color:var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
           .pg-thumbs img{width:100%;height:100%;object-fit:cover;display:block;opacity:.8;}
           .pg-thumbs button.on img{opacity:1;}
@@ -774,7 +774,7 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
           .pr-slot{height:86px;box-sizing:border-box;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;border:1.5px solid color-mix(in srgb, ${INK} 16%, transparent);background:color-mix(in srgb, ${INK} 4%, transparent);}
           .pr-slot .sk{font-family:${SANS};font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:${FADED};}
           .pr-slot .sw{font-size:14px;font-weight:800;color:${FADED};}
-          .pr-slot.next{border:2px solid ${INK};background:var(--pr-panel);}
+          .pr-slot.next{border:1px solid ${INK};background:var(--pr-panel);}
           .pr-slot.next .sk,.pr-slot.next .sw{color:${INK};}
           .pr-slot.used{border:2px solid var(--row-c);background:color-mix(in srgb, var(--row-c) 13%, var(--pr-panel));animation:prslot .5s cubic-bezier(.2,.9,.25,1.25) both;}
           .pr-slot>*{flex:none;}

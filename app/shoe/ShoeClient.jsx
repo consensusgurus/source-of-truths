@@ -281,18 +281,18 @@ const SHO_STAGE_CSS = `
 .sho-sec{display:flex;flex-direction:column;align-items:center;}
 .sho-lab{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;margin-bottom:8px;}
 .sho-rowc{display:flex;justify-content:center;}
-.sho-pc{flex:none;border-radius:10px;background:#ffffff;border:2px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:#16181d !important;box-shadow:0 2px 0 rgba(0,0,0,.08);}
+.sho-pc{flex:none;border-radius:10px;background:#ffffff;border:1px solid var(--pst-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1;color:#16181d !important;box-shadow:0 2px 0 rgba(0,0,0,.08);}
 .sho-pc i{font-style:normal;font-size:.85em;margin-top:4px;color:inherit !important;}
 .sho-pc.red{color:#b91c1c !important;}
 .sho-pc.down{background:repeating-linear-gradient(45deg,var(--pst-ink) 0 6px,var(--pst-tint) 6px 12px);}
 .sho-mid{display:flex;justify-content:center;}
 .sho-tot{display:inline-block;margin-top:10px;min-width:48px;padding:4px 12px;border-radius:999px;background:var(--pst-ink);color:var(--pst-bg) !important;font-size:15px;font-weight:800;text-align:center;}
 .sho-seats{display:flex;justify-content:center;gap:14px;}
-.sho-seat{padding:6px;border-radius:14px;border:2px solid transparent;}
+.sho-seat{padding:6px;border-radius:14px;border:1px solid transparent;}
 .sho-seat.on{border-color:var(--pst-ink);background:var(--pst-tint);}
 .sho-seat.dim{opacity:.55;}
 .sho-ch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
-.sho-c{display:flex;align-items:center;justify-content:center;min-height:72px;width:100%;border-radius:18px;padding:12px;background:var(--pst-tint);border:2px solid var(--pst-ink);font-size:21px;font-weight:800;}
+.sho-c{display:flex;align-items:center;justify-content:center;min-height:72px;width:100%;border-radius:18px;padding:12px;background:var(--pst-tint);border:1px solid var(--pst-ink);font-size:21px;font-weight:800;}
 .sho-c:disabled{opacity:.35;cursor:default;}
 `;
 

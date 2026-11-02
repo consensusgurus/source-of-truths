@@ -120,7 +120,7 @@ const CSS = `
 .pst-q{margin:0;text-align:center;font-size:clamp(21px,6.4vw,26px);line-height:1.22;font-weight:800;letter-spacing:-.02em;padding-bottom:.08em;}
 .pst-end{display:flex;justify-content:space-between;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.7;padding:0 4px;}
 .pst-list{display:flex;flex-direction:column;gap:5px;}
-.pst-row{display:flex;align-items:center;gap:8px;min-height:48px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);padding:0 6px 0 10px;text-align:left;width:100%;}
+.pst-row{display:flex;align-items:center;gap:8px;min-height:48px;border-radius:14px;border:1px solid var(--pst-ink);background:var(--pst-tint);padding:0 6px 0 10px;text-align:left;width:100%;}
 .pst-row .n{width:22px;font-size:15px;font-weight:800;opacity:.7;flex:none;}
 .pst-row .t{flex:1;min-width:0;font-size:16px;font-weight:800;line-height:1.18;padding:4px 0;}
 .pst-row .t small{display:block;font-size:12px;font-weight:700;opacity:.8;}
@@ -134,10 +134,10 @@ const CSS = `
 .pst-tag.f{border-style:solid;background:var(--pst-ink);color:var(--pst-bg);}
 .pst-row.on .pst-tag.f{background:var(--pst-bg);color:var(--pst-ink);}
 .pst-mv{display:flex;gap:4px;flex:none;}
-.pst-mv button{width:44px;height:44px;border-radius:12px;border:2px solid var(--pst-ink);background:transparent;padding:0;display:flex;align-items:center;justify-content:center;}
+.pst-mv button{width:44px;height:44px;border-radius:12px;border:1px solid var(--pst-ink);background:transparent;padding:0;display:flex;align-items:center;justify-content:center;}
 .pst-mv button:disabled{opacity:.3;cursor:default;}
 .pst-tools{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
-.pst-tb{min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--pst-ink);background:transparent;font-size:14px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+.pst-tb{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--pst-ink);background:transparent;font-size:14px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
 .pst-tb.on{background:var(--pst-ink);color:var(--pst-bg);}
 .pst-tb:disabled{opacity:.4;cursor:default;}
 .pst-tb.wide{width:100%;min-height:56px;border-radius:14px;font-size:17px;}
@@ -147,12 +147,12 @@ const CSS = `
 .pst .pst-tb.wide{font-size:17px;}
 .pst .pst-go{font-size:16px;font-weight:800;}
 .pst-in{display:flex;gap:8px;}
-.pst-in input{flex:1;min-width:0;min-height:52px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-tint);padding:0 14px;font:inherit;font-size:18px;font-weight:800;color:var(--pst-ink);outline:none;}
+.pst-in input{flex:1;min-width:0;min-height:52px;border-radius:14px;border:1px solid var(--pst-ink);background:var(--pst-tint);padding:0 14px;font:inherit;font-size:18px;font-weight:800;color:var(--pst-ink);outline:none;}
 .pst-in input::placeholder{color:var(--pst-ink);opacity:.55;font-weight:700;}
 .pst-in input:focus{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--pst-ink);}
-.pst-go{min-height:52px;padding:0 18px;border-radius:14px;border:2px solid var(--pst-ink);background:var(--pst-ink);color:var(--pst-bg) !important;font-size:16px;font-weight:800;flex:none;}
+.pst-go{min-height:52px;padding:0 18px;border-radius:14px;border:1px solid var(--pst-ink);background:var(--pst-ink);color:var(--pst-bg) !important;font-size:16px;font-weight:800;flex:none;}
 .pst-go:disabled{opacity:.45;cursor:default;}
-.pst-sug{display:flex;flex-direction:column;border:2px solid var(--pst-ink);border-radius:14px;overflow-x:hidden;overflow-y:auto;flex:none;max-height:min(280px, 42dvh);overscroll-behavior:contain;}
+.pst-sug{display:flex;flex-direction:column;border:1px solid var(--pst-ink);border-radius:14px;overflow-x:hidden;overflow-y:auto;flex:none;max-height:min(280px, 42dvh);overscroll-behavior:contain;}
 /* The list never shrinks (owner, 2026-10-30: Dossier "stopped giving answers
    after the 2nd or 3rd guess"). As a flex child with overflow:hidden it was
    squeezed by every guess row above it and the names past the cut were simply
@@ -166,9 +166,9 @@ const CSS = `
 .pst-card small{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.85;}
 .pst-card b{display:block;font-size:24px;font-weight:800;margin-top:4px;line-height:1.2;}
 .pst-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
-.pst-chip{border:2px solid var(--pst-ink);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:800;background:var(--pst-tint);}
+.pst-chip{border:1px solid var(--pst-ink);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:800;background:var(--pst-tint);}
 .pst-chip.on{background:var(--pst-ink);color:var(--pst-bg);}
-.pst-arr{width:44px;height:44px;border-radius:22px;border:2px solid var(--pst-ink);background:transparent;display:flex;align-items:center;justify-content:center;padding:0;flex:none;}
+.pst-arr{width:44px;height:44px;border-radius:22px;border:1px solid var(--pst-ink);background:transparent;display:flex;align-items:center;justify-content:center;padding:0;flex:none;}
 .pst-note{text-align:center;font-size:13px;font-weight:700;opacity:.8;line-height:1.4;}
 .pst-foot{display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.75;}
 .pst-bar{display:block;width:120px;height:4px;border-radius:2px;background:color-mix(in srgb, var(--pst-ink) 22%, transparent);overflow:hidden;}

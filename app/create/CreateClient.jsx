@@ -401,7 +401,7 @@ const Board = forwardRef(function Board({ tiles, format, title, voteData, extras
             gridTemplateColumns: '1fr auto 1fr',
             alignItems: 'baseline',
             gap: 16,
-            borderBottom: `2px solid ${T.ink}`,
+            borderBottom: `1px solid ${T.ink}`,
             paddingBottom: 20,
             marginBottom: 28,
             fontFamily: 'Manrope, monospace',

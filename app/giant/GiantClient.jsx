@@ -119,11 +119,11 @@ const ALL_CELLS = Array.from({ length: CELLS }, (_, i) => i);
 // The stage's Whole board / Zoom in switch (Giant.dc.html) and its quarter map.
 const GIS_CSS = `
 .gis-row{display:flex;justify-content:center;align-items:center;gap:10px;}
-.gis-seg{display:inline-flex;border:2px solid var(--pst-ink);border-radius:999px;padding:3px;gap:3px;}
+.gis-seg{display:inline-flex;border:1px solid var(--pst-ink);border-radius:999px;padding:3px;gap:3px;}
 .pst .gis-seg button{height:36px;padding:0 14px;border-radius:999px;border:0;background:transparent;font-size:13px;font-weight:800;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
 .pst .gis-seg button[aria-pressed="true"]{background:var(--pst-acc);color:var(--pst-on-acc);}
 .gis-seg svg{width:15px;height:15px;}
-.gis-map{position:relative;width:46px;height:46px;flex:none;border:2px solid var(--pst-ink);border-radius:6px;overflow:hidden;background:var(--sks-base);}
+.gis-map{position:relative;width:46px;height:46px;flex:none;border:1px solid var(--pst-ink);border-radius:6px;overflow:hidden;background:var(--sks-base);}
 .gis-grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(16,1fr);grid-template-rows:repeat(16,1fr);}
 .gis-grid i{display:block;}
 .gis-grid i.g{background:var(--sks-thin);}

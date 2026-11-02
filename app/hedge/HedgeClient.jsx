@@ -1360,12 +1360,12 @@ const HGS_CSS = `
 .hgs-note{margin:0;border-radius:14px;background:var(--pst-pale);padding:10px 12px;text-align:center;font-size:14px;font-weight:700;line-height:1.4;}
 .hgs-note.bad{background:var(--pst-cell);box-shadow:inset 0 0 0 2px var(--lg-bad);}
 .hgs-tools{display:flex;gap:8px;align-items:center;}
-.hgs-seg{display:flex;border:2px solid var(--pst-ink);border-radius:999px;overflow:hidden;flex:1;min-width:0;}
+.hgs-seg{display:flex;border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;flex:1;min-width:0;}
 .pst .hgs-seg button{flex:1;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 6px;white-space:nowrap;}
-.pst .hgs-seg button+button{border-left:2px solid var(--pst-ink);}
+.pst .hgs-seg button+button{border-left:1px solid var(--pst-ink);}
 .pst .hgs-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
 .pst .hgs-seg button.on *{color:var(--pst-on-acc);}
-.pst .hgs-mini{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--pst-ink);background:transparent;font-size:14px;font-weight:800;flex:none;}
+.pst .hgs-mini{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--pst-ink);background:transparent;font-size:14px;font-weight:800;flex:none;}
 .pst .hgs-mini:disabled{opacity:.4;cursor:default;}
 @media (max-width:360px){.pst .hgs-mini{padding:0 10px;}}
 `;

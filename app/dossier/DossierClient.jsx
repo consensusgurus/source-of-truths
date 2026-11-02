@@ -613,7 +613,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
               .dos-gq{display:flex;flex-direction:column;gap:5px;}
               .dos-nm{font-size:15px;font-weight:800;}
               .dos-cells{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
-              .dos-cell{min-height:58px;border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-sizing:border-box;padding:3px 2px;min-width:0;}
+              .dos-cell{min-height:58px;border-radius:11px;border:1px solid var(--pst-ink);background:var(--pst-tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-sizing:border-box;padding:3px 2px;min-width:0;}
               .dos-cell b{font-size:16px;font-weight:800;line-height:1.1;text-align:center;overflow-wrap:anywhere;}
               .dos-cell.sm b{font-size:12px;}
               .dos-cell i{font-style:normal;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;opacity:.75;display:flex;align-items:center;gap:2px;}
@@ -622,7 +622,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
               .dos-cell.hit *{color:var(--pst-bg);}
               .dos-cell.hit i{opacity:.9;}
               .dos-cell.no{opacity:.55;}
-              .dos-pin{border:2px solid var(--pst-ink);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;line-height:1.45;}
+              .dos-pin{border:1px solid var(--pst-ink);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:700;line-height:1.45;}
               .dos-pin b{font-weight:800;}
             ` }} />
             <h2 className="pst-q">Name the hidden {U.noun}</h2>
@@ -717,7 +717,7 @@ export default function DossierClient({ puzzles = [], forceNum = null }) {
           .ds-lab b{color:${INK};}
           .ds-none{font-size:13px;font-weight:600;color:${FADED};}
           .ds-inwrap{margin-top:14px;}
-          .ds-in{flex:1 1 auto;min-width:0;height:46px;box-sizing:border-box;border:2px solid var(--stg-ink2, ${COLORS.ink});border-radius:8px;padding:0 12px;font-family:${SANS};font-size:16px;font-weight:700;color:${INK};background:var(--stg-cell, #ffffff);}
+          .ds-in{flex:1 1 auto;min-width:0;height:46px;box-sizing:border-box;border:1px solid var(--stg-ink2, ${COLORS.ink});border-radius:8px;padding:0 12px;font-family:${SANS};font-size:16px;font-weight:700;color:${INK};background:var(--stg-cell, #ffffff);}
           .ds-in:focus{outline:3px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));outline-offset:1px;}
           .ds-go{height:46px;padding:0 18px;border:none;border-radius:8px;background:${STAGE ? STAGE_C : T.cta};color:${STAGE ? 'var(--stg-onramp, #08222e)' : T.white};font-family:${SANS};font-weight:800;font-size:15px;cursor:pointer;}
           .ds-opts{display:flex;flex-direction:column;margin-top:6px;border:1px solid var(--stg-cell-line, rgba(11,15,26,0.3));border-radius:8px;overflow:hidden;}

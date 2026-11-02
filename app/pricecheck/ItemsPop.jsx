@@ -211,19 +211,19 @@ const CSS = `
 .ip-scrim{position:absolute;inset:0;background:rgba(5,7,13,.45);backdrop-filter:blur(3px)}
 .ip-card{position:relative;width:100%;max-width:430px;max-height:92vh;overflow-y:auto;scrollbar-width:none;background:var(--ip-panel);border:2px solid var(--ip-line);border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,.28);animation:iprise .45s cubic-bezier(.2,1.3,.4,1) both}
 .ip-card::-webkit-scrollbar{display:none}
-.ip-x{position:absolute;top:10px;right:10px;z-index:3;width:34px;height:34px;border-radius:50%;border:2px solid var(--ip-ink);background:var(--ip-panel);color:var(--ip-ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.ip-x{position:absolute;top:10px;right:10px;z-index:3;width:34px;height:34px;border-radius:50%;border:1px solid var(--ip-ink);background:var(--ip-panel);color:var(--ip-ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .ip-tabwrap{position:relative;margin-right:46px}
 .ip-tabs{display:flex;gap:6px;padding:12px 12px 0;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth}
 .ip-tabs::-webkit-scrollbar{display:none}
-.ip-tabs button{flex:0 0 auto;font:800 11px ${SANS};letter-spacing:.05em;text-transform:uppercase;border:2px solid transparent;border-radius:999px;padding:6px 12px;cursor:pointer;color:#0b0f1a;opacity:.5;transition:opacity .2s,transform .2s}
+.ip-tabs button{flex:0 0 auto;font:800 11px ${SANS};letter-spacing:.05em;text-transform:uppercase;border:1px solid transparent;border-radius:999px;padding:6px 12px;cursor:pointer;color:#0b0f1a;opacity:.5;transition:opacity .2s,transform .2s}
 .ip-tabs button.on{opacity:1;border-color:var(--ip-ink)}
-.ip-arr{position:absolute;top:10px;width:30px;height:30px;border-radius:50%;border:2px solid var(--ip-ink);background:var(--ip-panel);color:var(--ip-ink);font:800 16px ${SANS};box-shadow:none;cursor:pointer;z-index:2;padding:0}
+.ip-arr{position:absolute;top:10px;width:30px;height:30px;border-radius:50%;border:1px solid var(--ip-ink);background:var(--ip-panel);color:var(--ip-ink);font:800 16px ${SANS};box-shadow:none;cursor:pointer;z-index:2;padding:0}
 .ip-arr.l{left:4px}.ip-arr.r{right:-4px}
 .ip-tabwrap:before,.ip-tabwrap:after{content:"";position:absolute;top:0;bottom:0;width:34px;pointer-events:none;opacity:0;transition:opacity .2s;z-index:1}
 .ip-tabwrap:before{left:0;background:linear-gradient(90deg,var(--ip-panel),transparent)}
 .ip-tabwrap:after{right:0;background:linear-gradient(270deg,var(--ip-panel),transparent)}
 .ip-tabwrap.fl:before,.ip-tabwrap.fr:after{opacity:1}
-.ip-img{margin:12px 12px 0;height:220px;border-radius:14px;border:2px solid var(--ip-ink);background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ip-img{margin:12px 12px 0;height:220px;border-radius:14px;border:1px solid var(--ip-ink);background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .ip-img img{max-width:92%;max-height:92%;object-fit:contain}
 .ip-img.cover img{max-width:none;max-height:none;width:100%;height:100%;object-fit:cover}
 .ip-body{padding:14px 16px 14px;text-align:left}

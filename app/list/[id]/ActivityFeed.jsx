@@ -813,7 +813,7 @@ export default function ActivityFeed({ list, voteData, extras }) {
       </div>
 
       {/* Public comments */}
-      <div style={{ borderTop: `2px solid ${T.ink}`, marginTop: 28, paddingTop: 16 }}>
+      <div style={{ borderTop: `1px solid ${T.ink}`, marginTop: 28, paddingTop: 16 }}>
         <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600 }}>Join the conversation</div>
         <div style={{ fontSize: 12, color: T.slate, marginBottom: 12 }}>
           Public comment. Name is optional, posts as "Guest" if left blank.

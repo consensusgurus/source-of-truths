@@ -953,7 +953,7 @@ export default function HomeRails({
              looks like a different one. Tightened until five fit (9px, .03em,
              2px side padding), which they do inside 340px with room over. */
           .hrb-subs{display:flex;flex-wrap:nowrap;flex:none;background:#eef2f8;border-bottom:1px solid var(--border);}
-          .hrb-subs button{flex:1 1 auto;min-width:0;border:none;border-radius:0;background:transparent;color:#5b6478;font:inherit;font-size:9px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;padding:9px 2px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .hrb-subs button{flex:1 1 auto;min-width:0;border:none;border-radius:0;background:transparent;color:#5b6478;font:inherit;font-size:9px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;padding:9px 2px;cursor:pointer;border-bottom:1px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
           .hrb-subs button:hover{color:var(--ink);}
           .hrb-subs button.on{color:var(--blue-dark);border-bottom-color:var(--blue);background:var(--white);}
           .hrb-pane{display:flex;flex-direction:column;min-height:0;}
