@@ -1591,6 +1591,16 @@ Logic ramp like Topple (the die is `--stg-acc`, pips `--stg-onramp`). Wired by `
   bold number and a breathing halo (a solid stroke, never dashed); the die presses it flush as it lands with the
   right face up, and it lights pastel with a tick and a pastel ring. Cracked squares break into shards as the die
   leaves. The win hops the die and throws confetti.
+- **The peek (2026-11-02, owner: "we need a way to show what would flip onto the top when the user moves a die
+  down")**: each square next to the still die wears a small die face lying on the floor in a top corner (top
+  LEFT for the square to the left, which the die's lean covers on its right; top right otherwise, clear of a
+  square's centred number and bottom-right lock), showing the face that roll would bring up. It comes from the
+  engine's own `step()` (`peekOf` in RollBoard), never a separate guess. Pips, not a digit, so it cannot be read
+  as a numbered square. Quiet (pale filled face) for an ordinary roll; pastel with full ink when the roll would
+  LIGHT the next square; an empty faint outline when the rules refuse the roll (shut square, or wrong face for
+  the next one). No peek off the floor or onto a crumbled square, none during a roll, none once the game is
+  over. Always on, no hint. The canvas carries `data-top` and `data-peek` (e.g. `U3 D4 L1x R6*`, x refused,
+  * lights) for checks. Roll is in no circuit or run.
 
 ## Crossed Up (`/crossed`): the crossword run, and only designed runs remain (owner, 2026-10-20)
 

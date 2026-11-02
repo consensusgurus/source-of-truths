@@ -66,7 +66,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import PlayStage, { usePhoneStage } from '../PlayStage';
-import { SlateBoard, SlateMan, SlateTools, SLATE_CROWN, COUNT_WORDS } from '../SlateStage';
+import { SlateBoard, useEgDesk, SlateMan, SlateTools, SLATE_CROWN, COUNT_WORDS } from '../SlateStage';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -252,6 +252,8 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
   const phoneStage = usePhoneStage();
+  // The desktop rail beside the board (app/SlateStage.jsx, owner 2026-11-02).
+  const egDesk = useEgDesk();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -695,13 +697,17 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
       : engineUp ? 'Black is forced to answer'
       : sel != null ? 'Now tap where it goes'
       : jumpOn ? 'A jump is on, so you must take' : 'Jumps are forced');
+    const eb = `${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Clear in ${BUDGET} · ${!playing ? (won ? 'Swept' : 'Ended') : engineUp ? 'Black to move' : 'Your move'}`;
+    const q = <h2 className="pst-q slb-q">{playing ? `Take every black piece in ${N} move${BUDGET === 1 ? '' : 's'}.` : statusLine()}</h2>;
+    const tools = playing ? <SlateTools hint={hintOk && !g.hintUsed ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null;
+    const footLine = `${playing ? `Move ${moveNo} of ${BUDGET}` : `${redMovesMade} of ${BUDGET} moves played`} · ${blkLeft} black piece${blkLeft === 1 ? '' : 's'} left · ${detail}`;
     return (
-      <PlayStage bg={gameColor('check')} label="Check"
-        eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Clear in ${BUDGET} · ${!playing ? (won ? 'Swept' : 'Ended') : engineUp ? 'Black to move' : 'Your move'}`}
+      <PlayStage bg={gameColor('check')} label="Check" wide={egDesk} full={egDesk}
+        eyebrow={egDesk ? null : eb}
         top={(
           <>
-            <h2 className="pst-q slb-q">{playing ? `Take every black piece in ${N} move${BUDGET === 1 ? '' : 's'}.` : statusLine()}</h2>
-            <SlateBoard label="Draughts board" coords={false} kind="draughts" on={stageUp}
+            {egDesk ? null : q}
+            <SlateBoard label="Draughts board" coords={false} kind="draughts" on={stageUp} desk={egDesk} rail={{ eb, q, tools, foot: footLine }}
               cell={(sq) => {
                 const v = pos[sq];
                 const r = Math.floor(sq / SIZE), c = sq % SIZE;
@@ -728,8 +734,8 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
             </SlateBoard>
           </>
         )}
-        bottom={playing ? <SlateTools hint={hintOk && !g.hintUsed ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null}
-        foot={`${playing ? `Move ${moveNo} of ${BUDGET}` : `${redMovesMade} of ${BUDGET} moves played`} · ${blkLeft} black piece${blkLeft === 1 ? '' : 's'} left · ${detail}`}
+        bottom={egDesk ? null : tools}
+        foot={egDesk ? null : footLine}
         giveUp={{ armed: !!armReveal, onPress: stageGive, armedLabel: 'Tap again to give up' }}
         clock={elapsed} done={!playing} />
     );

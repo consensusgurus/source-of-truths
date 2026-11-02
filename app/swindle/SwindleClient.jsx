@@ -71,7 +71,7 @@ import { SwBoard } from './SwBoard';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import PlayStage, { usePhoneStage } from '../PlayStage';
-import { SlateBoard, SlatePiece, SlateTools, PIECE_NAMES, COUNT_WORDS } from '../SlateStage';
+import { SlateBoard, useEgDesk, SlatePiece, SlateTools, PIECE_NAMES, COUNT_WORDS } from '../SlateStage';
 
 const COLORS = {
   cream: T.surface,
@@ -285,6 +285,8 @@ export default function SwindleClient({ puzzles = [], forceNum = null }) {
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
   const phoneStage = usePhoneStage();
+  // The desktop rail beside the board (app/SlateStage.jsx, owner 2026-11-02).
+  const egDesk = useEgDesk();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -714,18 +716,25 @@ export default function SwindleClient({ puzzles = [], forceNum = null }) {
       : selPiece ? (nT ? `${selName} on ${squareName(sel)} has ${COUNT_WORDS[nT] || nT} legal square${nT === 1 ? '' : 's'}` : `The ${selName.toLowerCase()} on ${squareName(sel)} cannot move`)
       : movesLeft <= 1 ? 'Your last move' : 'Tap a white piece to see its moves');
     const hintShown = playing && hintOk && !g.hintUsed && !moves.length;
+    const eb = `${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Draw in ${BUDGET} · ${!playing ? (won ? 'Drawn' : 'Ended') : awaitingReply ? 'Black to reply' : 'White to move'}`;
+    const q = <h2 className="pst-q slb-q">{playing ? 'You are lost. Find the draw.' : verdict}</h2>;
+    const chips = (
+      <div className="slb-chips" role="list" aria-label="Four ways to draw">
+        {[['Stalemate', 'your turn, no legal move, not in check'], ['Perpetual check', 'check after check, forever'], ['Threefold', 'the same position three times'], ['Bare kings', 'too little left for anyone to mate']].map(([n, t]) => (
+          <span key={n} role="listitem" title={t}>{n}</span>
+        ))}
+      </div>
+    );
+    const tools = playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null;
+    const footLine = `${playing ? 'Move' : 'Moves played'} ${playing ? moveNo : W.wMoves} of ${BUDGET} · ${detail}`;
     return (
-      <PlayStage bg={gameColor('swindle')} label="Swindle"
-        eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Draw in ${BUDGET} · ${!playing ? (won ? 'Drawn' : 'Ended') : awaitingReply ? 'Black to reply' : 'White to move'}`}
+      <PlayStage bg={gameColor('swindle')} label="Swindle" wide={egDesk} full={egDesk}
+        eyebrow={egDesk ? null : eb}
         top={(
           <>
-            <h2 className="pst-q slb-q">{playing ? 'You are lost. Find the draw.' : verdict}</h2>
-            <div className="slb-chips" role="list" aria-label="Four ways to draw">
-              {[['Stalemate', 'your turn, no legal move, not in check'], ['Perpetual check', 'check after check, forever'], ['Threefold', 'the same position three times'], ['Bare kings', 'too little left for anyone to mate']].map(([n, t]) => (
-                <span key={n} role="listitem" title={t}>{n}</span>
-              ))}
-            </div>
-            <SlateBoard label="Chess board" on={stageUp}
+            {egDesk ? null : q}
+            {egDesk ? null : chips}
+            <SlateBoard label="Chess board" on={stageUp} desk={egDesk} rail={{ eb, q, above: chips, tools, foot: footLine }}
               cell={(sq) => {
                 const piece = pos[sq];
                 const white = piece && colorOf(piece) === 'w';
@@ -745,8 +754,8 @@ export default function SwindleClient({ puzzles = [], forceNum = null }) {
               }} />
           </>
         )}
-        bottom={playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null}
-        foot={`${playing ? 'Move' : 'Moves played'} ${playing ? moveNo : W.wMoves} of ${BUDGET} · ${detail}`}
+        bottom={egDesk ? null : tools}
+        foot={egDesk ? null : footLine}
         giveUp={{ armed: !!armReveal, onPress: stageGive, armedLabel: 'Tap again to give up' }}
         clock={elapsed} done={!playing} />
     );

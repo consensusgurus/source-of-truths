@@ -67,7 +67,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import PlayStage, { usePhoneStage } from '../PlayStage';
-import { SlateBoard, SlatePiece, SlateTools, useSlateLook } from '../SlateStage';
+import { SlateBoard, useEgDesk, SlatePiece, SlateTools, useSlateLook } from '../SlateStage';
 
 const COLORS = {
   cream: T.surface,
@@ -297,6 +297,8 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
   const phoneStage = usePhoneStage();
+  // The desktop rail beside the board (app/SlateStage.jsx, owner 2026-11-02).
+  const egDesk = useEgDesk();
   const { mono: slateMono } = useSlateLook();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -825,13 +827,17 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
       : awaitingReply ? 'Black is thinking'
       : selName ? (targets.length ? `${selName} on ${squareName(sel)} picked, tap ${dotWord}` : `The ${selName.toLowerCase()} on ${squareName(sel)} cannot move`)
       : movesLeft <= 1 ? 'This move has to queen' : 'The black king answers perfectly');
+    const eb = `${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Win in ${PUZZLE.winIn} · ${!playing ? meterRight[1] : awaitingReply ? 'Black to reply' : 'White to move'}`;
+    const q = <h2 className="pst-q slb-q">{playing ? 'Walk the pawn home to queen.' : sayLine}</h2>;
+    const tools = playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null;
+    const footLine = `${playing ? 'Move' : 'Moves played'} ${playing ? moveNo : whitePlayed} of ${PUZZLE.winIn} · ${detail}`;
     return (
-      <PlayStage bg={gameColor('queen')} label="Queen"
-        eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Win in ${PUZZLE.winIn} · ${!playing ? meterRight[1] : awaitingReply ? 'Black to reply' : 'White to move'}`}
+      <PlayStage bg={gameColor('queen')} label="Queen" wide={egDesk} full={egDesk}
+        eyebrow={egDesk ? null : eb}
         top={(
           <>
-            <h2 className="pst-q slb-q">{playing ? 'Walk the pawn home to queen.' : sayLine}</h2>
-            <SlateBoard label="Chess board" on={stageUp}
+            {egDesk ? null : q}
+            <SlateBoard label="Chess board" on={stageUp} desk={egDesk} rail={{ eb, q, tools, foot: footLine }}
               cell={(sq) => {
                 const piece = sq === pos.wk ? 'K' : sq === pos.bk ? 'k' : sq === pos.p ? (view.promoted ? 'Q' : 'P') : null;
                 const white = !!piece && piece !== 'k';
@@ -850,8 +856,8 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
               }} />
           </>
         )}
-        bottom={playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null}
-        foot={`${playing ? 'Move' : 'Moves played'} ${playing ? moveNo : whitePlayed} of ${PUZZLE.winIn} · ${detail}`}
+        bottom={egDesk ? null : tools}
+        foot={egDesk ? null : footLine}
         giveUp={{ armed: !!armReveal, onPress: stageGive, armedLabel: 'Tap again to give up' }}
         clock={elapsed} done={!playing} />
     );

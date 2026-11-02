@@ -75,7 +75,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import PlayStage, { usePhoneStage } from '../PlayStage';
-import { SlateBoard, SlatePiece, SlateTools, useSlateLook, PIECE_NAMES, COUNT_WORDS } from '../SlateStage';
+import { SlateBoard, useEgDesk, SlatePiece, SlateTools, useSlateLook, PIECE_NAMES, COUNT_WORDS } from '../SlateStage';
 
 const COLORS = {
   cream: T.surface,
@@ -409,6 +409,8 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
   const phoneStage = usePhoneStage();
+  // The desktop rail beside the board (app/SlateStage.jsx, owner 2026-11-02).
+  const egDesk = useEgDesk();
   const { mono: slateMono } = useSlateLook();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -1012,13 +1014,17 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
       : awaitingReply ? 'Black answers with its stiffest defence'
       : selPiece ? (targets.length ? `${selName} on ${squareName(sel)} picked, tap ${dotWord}` : `The ${selName.toLowerCase()} on ${squareName(sel)} cannot move`)
       : movesLeft <= 1 ? 'This move has to mate' : 'Tap a white piece to see its moves');
+    const eb = `${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Mate in ${PUZZLE.mateIn} · ${!playing ? meterRight[1] : awaitingReply ? 'Black to reply' : 'White to move'}`;
+    const q = <h2 className="pst-q slb-q">{playing ? `Mate the king in ${N} move${PUZZLE.mateIn === 1 ? '' : 's'}.` : sayLine}</h2>;
+    const tools = playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null;
+    const footLine = `${playing ? 'Move' : 'Moves played'} ${playing ? moveNo : whitePlayed} of ${PUZZLE.mateIn} · ${detail}`;
     return (
-      <PlayStage bg={gameColor('mate')} label="Mate"
-        eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Mate in ${PUZZLE.mateIn} · ${!playing ? meterRight[1] : awaitingReply ? 'Black to reply' : 'White to move'}`}
+      <PlayStage bg={gameColor('mate')} label="Mate" wide={egDesk} full={egDesk}
+        eyebrow={egDesk ? null : eb}
         top={(
           <>
-            <h2 className="pst-q slb-q">{playing ? `Mate the king in ${N} move${PUZZLE.mateIn === 1 ? '' : 's'}.` : sayLine}</h2>
-            <SlateBoard label="Chess board" on={stageUp}
+            {egDesk ? null : q}
+            <SlateBoard label="Chess board" on={stageUp} desk={egDesk} rail={{ eb, q, tools, foot: footLine }}
               cell={(sq) => {
                 const piece = pos[sq];
                 const white = piece && colorOf(piece) === 'w';
@@ -1038,8 +1044,8 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
               }} />
           </>
         )}
-        bottom={playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null}
-        foot={`${playing ? 'Move' : 'Moves played'} ${playing ? moveNo : whitePlayed} of ${PUZZLE.mateIn} · ${detail}`}
+        bottom={egDesk ? null : tools}
+        foot={egDesk ? null : footLine}
         giveUp={{ armed: !!armReveal, onPress: stageGive, armedLabel: 'Tap again to give up' }}
         clock={elapsed} done={!playing} />
     );

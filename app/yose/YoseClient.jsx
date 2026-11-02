@@ -53,6 +53,7 @@ import LoftFinish from '../LoftFinish';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { useStageLook } from '../GauntletScreens';
 import usePlayStageFit from '@/lib/play-stage-fit';
+import { useEgDesk, EgDesk, EgRail } from '../SlateStage';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import DailyRules from '../DailyRules';
@@ -100,24 +101,24 @@ const STATS_KEY = 'sot_yose_stats';
 // colours are set per look on .yos; neutrals are PlayStage tokens.
 const YOS_CSS = `
 .yos{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;}
-.yos-bd{position:relative;width:var(--yos-w);aspect-ratio:1/1;border:2px solid var(--yos-edge);border-radius:10px;background:var(--yos-board);box-sizing:border-box;touch-action:manipulation;}
+.yos-bd{position:relative;width:var(--yos-w);aspect-ratio:1/1;border:calc(2px * var(--yos-s,1)) solid var(--yos-edge);border-radius:10px;background:var(--yos-board);box-sizing:border-box;touch-action:manipulation;}
 .yos-ln{position:absolute;inset:0;width:100%;height:100%;}
-.yos-ln line{stroke:var(--yos-grid);stroke-width:1.5;vector-effect:non-scaling-stroke;}
+.yos-ln line{stroke:var(--yos-grid);stroke-width:calc(1.5px * var(--yos-s,1));vector-effect:non-scaling-stroke;}
 .pst .yos-pt{position:absolute;display:flex;align-items:center;justify-content:center;border:0;padding:0;background:transparent;border-radius:50%;cursor:default;}
 .pst .yos-pt.lg{cursor:pointer;}
 .yos-stn{display:block;width:82%;height:82%;border-radius:50%;box-sizing:border-box;}
-.yos-stn.b{background:var(--yos-b);border:2px solid var(--yos-b-b);}
-.yos-stn.w{background:var(--yos-w-f);border:2.5px solid var(--yos-w-b);}
-.yos-stn.last{box-shadow:0 0 0 3px var(--yos-gold),0 0 0 5px var(--pst-ink);}
+.yos-stn.b{background:var(--yos-b);border:calc(2px * var(--yos-s,1)) solid var(--yos-b-b);}
+.yos-stn.w{background:var(--yos-w-f);border:calc(2.5px * var(--yos-s,1)) solid var(--yos-w-b);}
+.yos-stn.last{box-shadow:0 0 0 calc(3px * var(--yos-s,1)) var(--yos-gold),0 0 0 calc(5px * var(--yos-s,1)) var(--pst-ink);}
 .yos-tb,.yos-tw{display:block;width:23%;height:23%;box-sizing:border-box;opacity:var(--yos-t-op);}
-.yos-tb{background:var(--yos-b);border:2px solid var(--yos-b-b);}
-.yos-tw{background:var(--yos-w-f);border:2px solid var(--yos-w-b);}
-.yos-op{display:block;width:36%;height:36%;border-radius:50%;background:var(--yos-gold);box-shadow:inset 0 0 0 2px #08222e;}
+.yos-tb{background:var(--yos-b);border:calc(2px * var(--yos-s,1)) solid var(--yos-b-b);}
+.yos-tw{background:var(--yos-w-f);border:calc(2px * var(--yos-s,1)) solid var(--yos-w-b);}
+.yos-op{display:block;width:36%;height:36%;border-radius:50%;background:var(--yos-gold);box-shadow:inset 0 0 0 calc(2px * var(--yos-s,1)) #08222e;}
 @media (hover:hover) and (pointer:fine){.pst .yos-pt.lg:hover .yos-op{width:56%;height:56%;}}
-.yos-cap{position:absolute;inset:22%;border-radius:50%;border:1.5px solid var(--pst-mute);pointer-events:none;}
-.yos-ring{position:absolute;inset:4%;border-radius:50%;border:2.5px solid var(--pst-ink);pointer-events:none;}
+.yos-cap{position:absolute;inset:22%;border-radius:50%;border:calc(1.5px * var(--yos-s,1)) solid var(--pst-mute);pointer-events:none;}
+.yos-ring{position:absolute;inset:4%;border-radius:50%;border:calc(2.5px * var(--yos-s,1)) solid var(--pst-ink);pointer-events:none;}
 .yos-bd.shake{animation:yosShake .34s ease;}
-.yos-leg{display:flex;gap:16px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:13px;font-weight:700;color:var(--pst-mute);}
+.yos-leg{--yos-s:1;display:flex;gap:16px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:13px;font-weight:700;color:var(--pst-mute);}
 .yos-leg span{display:inline-flex;align-items:center;gap:6px;}
 .yos-leg i{flex:none;}
 .yos-leg i.yos-op{width:14px;height:14px;}
@@ -289,6 +290,8 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const phoneStage = usePhoneStage();
+  // The desktop rail beside the board (app/SlateStage.jsx, owner 2026-11-02).
+  const egDesk = useEgDesk();
   const [stageLook] = useStageLook();
   const yosRef = useRef(null);
   const searchParams = useSearchParams();
@@ -335,7 +338,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
 
   const myTurn = playing && started && view.toMove === BLACK && !view.over;
   const yosOn = STAGE && phoneStage && !!g.t0;
-  const yosFit = usePlayStageFit(yosRef, '.yos-bd', yosOn);
+  const yosFit = usePlayStageFit(yosRef, '.yos-bd', yosOn, egDesk);
 
   // Warm the value table while the player reads the board. The first search is
   // the expensive one (a Sunday board is a hundred thousand positions); every
@@ -823,7 +826,10 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
         const whitePassed = view.last && view.last.p < 0 && view.last.by === WHITE;
         const whiteAnswered = view.last && view.last.p >= 0 && view.last.by === WHITE;
         const vars = {
-          '--yos-w': yosFit ? `min(100%, ${Math.min(440, yosFit)}px)` : 'min(100%, 440px)',
+          // On the desktop rail the board takes the stage's height, and its
+          // lines and rims grow with it (--yos-s); the phone keeps its 440px cap.
+          '--yos-w': egDesk ? '100%' : yosFit ? `min(100%, ${Math.min(440, yosFit)}px)` : 'min(100%, 440px)',
+          ...(egDesk ? { '--yos-s': String(Math.max(1, Math.min(1.9, (yosFit || 440) / 440))) } : null),
           '--yos-board': dark ? '#1d2638' : mono ? 'var(--pst-cell)' : '#f6f1e7',
           '--yos-edge': dark ? '#5a6680' : 'var(--pst-ink)',
           '--yos-grid': dark ? '#8b95a8' : 'rgba(8,34,46,.45)',
@@ -873,42 +879,59 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
           lines.push(<line key={`v${k}`} x1={k + 0.5} y1={0.5} x2={k + 0.5} y2={N - 0.5} />);
         }
         const need = needText(PUZZLE.komi);
+        const eb = `${PUZZLE.sunday ? `Sunday Edition · ${N}×${N} · ` : ''}Go endgame · ${!playing ? 'Board counted' : engineUp ? 'White to play' : 'Black to play'}`;
+        const q = <h2 className="pst-q yos-q">{playing ? `${need.charAt(0).toUpperCase()}${need.slice(1)}.` : statusLine()}</h2>;
+        const bd = (
+          <div key={shake} className={'yos-bd' + (shake ? ' shake' : '')} role="group" aria-label={`Go board, ${N} by ${N}`}>
+            <svg className="yos-ln" viewBox={`0 0 ${N} ${N}`} preserveAspectRatio="none" aria-hidden="true">{lines}</svg>
+            {pts}
+          </div>
+        );
+        const leg = (
+          <div className="yos-leg">
+            <span><i className="yos-op" />Open point</span>
+            <span><i className="yos-tb" />Settled territory</span>
+            <span><i className="yos-stn w last" />Last move</span>
+          </div>
+        );
+        const bot = playing ? (
+          <div className="yos-bot" style={vars}>
+            <div className="pst-tools">
+              {hintOk && !g.hintUsed ? <button type="button" className="pst-tb yos-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
+              <button type="button" className={'pst-tb yos-tl' + (armPass ? ' on' : '')} onClick={passTurn} disabled={!myTurn} aria-label={armPass ? 'Tap again to pass' : 'Pass'}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v6M10 10.5V6a2 2 0 0 0-4 0v8a8 8 0 0 0 16 0v-3a2 2 0 0 0-4 0" /></svg>
+                {armPass ? 'Tap again' : 'Pass'}
+              </button>
+              <button type="button" className={'pst-tb yos-tl' + (armRestart ? ' on' : '')} onClick={restartGame} aria-label={armRestart ? 'Tap again to restart. This records a 0' : 'Restart this board'}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+                {armRestart ? 'Tap again' : 'Restart'}
+              </button>
+            </div>
+          </div>
+        ) : null;
         return (
-          <PlayStage bg={gameColor('yose')} label="Yose"
-            eyebrow={`${PUZZLE.sunday ? `Sunday Edition · ${N}×${N} · ` : ''}Go endgame · ${!playing ? 'Board counted' : engineUp ? 'White to play' : 'Black to play'}`}
-            top={(
+          <PlayStage bg={gameColor('yose')} label="Yose" wide={egDesk} full={egDesk}
+            eyebrow={egDesk ? null : eb}
+            top={egDesk ? (
               <>
                 <style dangerouslySetInnerHTML={{ __html: YOS_CSS }} />
-                <h2 className="pst-q yos-q">{playing ? `${need.charAt(0).toUpperCase()}${need.slice(1)}.` : statusLine()}</h2>
+                <EgDesk mainRef={yosRef} mainClass="yos" mainW={yosFit ? `${yosFit}px` : 'min(560px, 62vh)'} vars={vars}
+                  side={<EgRail eb={eb} q={q} foot={line}>{leg}{bot}</EgRail>}>
+                  {bd}
+                </EgDesk>
+              </>
+            ) : (
+              <>
+                <style dangerouslySetInnerHTML={{ __html: YOS_CSS }} />
+                {q}
                 <div ref={yosRef} className="yos" style={vars}>
-                  <div key={shake} className={'yos-bd' + (shake ? ' shake' : '')} role="group" aria-label={`Go board, ${N} by ${N}`}>
-                    <svg className="yos-ln" viewBox={`0 0 ${N} ${N}`} preserveAspectRatio="none" aria-hidden="true">{lines}</svg>
-                    {pts}
-                  </div>
-                  <div className="yos-leg">
-                    <span><i className="yos-op" />Open point</span>
-                    <span><i className="yos-tb" />Settled territory</span>
-                    <span><i className="yos-stn w last" />Last move</span>
-                  </div>
+                  {bd}
+                  {leg}
                 </div>
               </>
             )}
-            bottom={playing ? (
-              <div className="yos-bot" style={vars}>
-                <div className="pst-tools">
-                  {hintOk && !g.hintUsed ? <button type="button" className="pst-tb yos-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
-                  <button type="button" className={'pst-tb yos-tl' + (armPass ? ' on' : '')} onClick={passTurn} disabled={!myTurn} aria-label={armPass ? 'Tap again to pass' : 'Pass'}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v6M10 10.5V6a2 2 0 0 0-4 0v8a8 8 0 0 0 16 0v-3a2 2 0 0 0-4 0" /></svg>
-                    {armPass ? 'Tap again' : 'Pass'}
-                  </button>
-                  <button type="button" className={'pst-tb yos-tl' + (armRestart ? ' on' : '')} onClick={restartGame} aria-label={armRestart ? 'Tap again to restart. This records a 0' : 'Restart this board'}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
-                    {armRestart ? 'Tap again' : 'Restart'}
-                  </button>
-                </div>
-              </div>
-            ) : null}
-            foot={line}
+            bottom={egDesk ? null : bot}
+            foot={egDesk ? null : line}
             giveUp={{ armed: !!armReveal, onPress: () => revealEnd(), armedLabel: 'Tap again to give up' }}
             clock={elapsed} done={!playing} />
         );

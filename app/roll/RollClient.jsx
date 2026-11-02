@@ -580,7 +580,7 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
       lead={<>Roll the <b>die</b> across the floor and light the <b>numbered squares</b> 1 to {P.N} <b>in order</b>. A square lights when the die lands on it with <b>that number on top</b>.</>}
       banner={<><b>Par is {par}</b> on this board, the number a clean solve lands on. <b>Perfect is {perfect}</b>, the fewest rolls that exist here, found by exhaustive search, and nobody gets under it.</>}
       steps={[
-        <>Each roll <b>tips the die over one edge</b>, so the face that was on the side comes up on top. Use the <b>arrow keys</b>, a <b>swipe</b>, or the pad. You can see three faces: the top, the front and the right side.</>,
+        <>Each roll <b>tips the die over one edge</b>, so the face that was on the side comes up on top. Use the <b>arrow keys</b>, a <b>swipe</b>, or the pad. You can see three faces: the top, the front and the right side. Each square beside the die shows, as a small die face in its corner, the number that roll would bring up on top.</>,
         <>A numbered square is <b>shut</b> until it is the <b>next one</b> and your roll would land <b>its number on top</b>. A shut square, or a roll off the floor, is refused and costs nothing. Once lit, a square is ordinary floor.</>,
         <><b>Cracked squares</b>, drawn with crack lines, they hold the die once and crumble as soon as it rolls off. A crumbled square is gone, so a careless line can wall you in.</>,
       ]}

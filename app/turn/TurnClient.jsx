@@ -52,6 +52,7 @@ import LoftFinish from '../LoftFinish';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { useStageLook } from '../GauntletScreens';
 import usePlayStageFit from '@/lib/play-stage-fit';
+import { useEgDesk, EgDesk, EgRail } from '../SlateStage';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import DailyRules from '../DailyRules';
@@ -120,14 +121,16 @@ const TNS_CSS = `
 .tns-sc i{width:18px;height:18px;border-radius:9px;box-sizing:border-box;flex:none;}
 .tns-sc i.y,.tns-ds.y{background:var(--tns-you);border:2px solid var(--tns-you-b);}
 .tns-sc i.e,.tns-ds.e{background:var(--tns-foe);border:2.5px solid var(--tns-foe-b);}
-.tns-bd{width:var(--tns-w);aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));gap:1px;background:var(--tns-line);border:2px solid var(--tns-edge);border-radius:8px;overflow:hidden;box-sizing:border-box;touch-action:manipulation;}
+.tns-bd{width:var(--tns-w);aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));gap:calc(1px * var(--tns-s,1));background:var(--tns-line);border:calc(2px * var(--tns-s,1)) solid var(--tns-edge);border-radius:8px;overflow:hidden;box-sizing:border-box;touch-action:manipulation;}
 .pst .tns-sq{position:relative;border:0;padding:0;background:var(--tns-cell);display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;border-radius:0;cursor:default;}
 .pst .tns-sq.lg{cursor:pointer;}
 .tns-ds{width:77%;height:77%;border-radius:50%;box-sizing:border-box;display:block;}
-.tns-ds.last{box-shadow:0 0 0 3px var(--tns-gold);}
+.tns-bd .tns-ds.y{border-width:calc(2px * var(--tns-s,1));}
+.tns-bd .tns-ds.e{border-width:calc(2.5px * var(--tns-s,1));}
+.tns-ds.last{box-shadow:0 0 0 calc(3px * var(--tns-s,1)) var(--tns-gold);}
 .tns-ds.flip{animation:tnsFlip .42s ease-out;}
-.tns-lg{width:33%;height:33%;border-radius:50%;background:var(--tns-gold);box-shadow:inset 0 0 0 2px #08222e;display:block;}
-.tns-sq.ring::after{content:"";position:absolute;inset:8%;border-radius:50%;border:2.5px solid var(--pst-ink);pointer-events:none;}
+.tns-lg{width:33%;height:33%;border-radius:50%;background:var(--tns-gold);box-shadow:inset 0 0 0 calc(2px * var(--tns-s,1)) #08222e;display:block;}
+.tns-sq.ring::after{content:"";position:absolute;inset:8%;border-radius:50%;border:calc(2.5px * var(--tns-s,1)) solid var(--pst-ink);pointer-events:none;}
 @media (hover:hover) and (pointer:fine){.pst .tns-sq.lg:hover .tns-lg{width:56%;height:56%;}}
 .tns-bd.shake{animation:tnsShake .34s ease;}
 .tns-bot{display:flex;flex-direction:column;gap:14px;flex:none;}
@@ -277,6 +280,8 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const phoneStage = usePhoneStage();
+  // The desktop rail beside the board (app/SlateStage.jsx, owner 2026-11-02).
+  const egDesk = useEgDesk();
   const [stageLook] = useStageLook();
   const tnsRef = useRef(null);
   const searchParams = useSearchParams();
@@ -353,7 +358,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
 
   const myTurn = playing && started && view.turn === 1 && !view.over;
   const tnsOn = STAGE && phoneStage && !!g.t0;
-  const tnsFit = usePlayStageFit(tnsRef, '.tns-bd', tnsOn);
+  const tnsFit = usePlayStageFit(tnsRef, '.tns-bd', tnsOn, egDesk);
 
   // A hint marks three squares, one of which is the key. Deterministic from the
   // puzzle id so everyone who spends their one hint sees the same three.
@@ -844,7 +849,10 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
         const engineUp = playing && (thinking || view.turn === 2);
         const legalN = myTurn ? view.legalSet.size : 0;
         const vars = {
-          '--tns-w': tnsFit ? `min(100%, ${Math.min(440, tnsFit)}px)` : 'min(100%, 440px)',
+          // On the desktop rail the board takes the stage's height, and its
+          // lines and rims grow with it (--tns-s); the phone keeps its 440px cap.
+          '--tns-w': egDesk ? '100%' : tnsFit ? `min(100%, ${Math.min(440, tnsFit)}px)` : 'min(100%, 440px)',
+          ...(egDesk ? { '--tns-s': String(Math.max(1, Math.min(1.9, (tnsFit || 440) / 440))) } : null),
           '--tns-line': dark ? '#232a39' : '#9aa5b8',
           '--tns-cell': dark ? '#353d4f' : 'var(--pst-cell)',
           '--tns-edge': dark ? '#5a6680' : 'var(--pst-ink)',
@@ -876,36 +884,53 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
             </button>
           );
         }
+        const eb = `${PUZZLE.sunday ? 'Sunday Edition · ' : ''}${countWord(empties)} square${empties === 1 ? '' : 's'} left · ${!playing ? 'Board counted' : engineUp ? 'Engine’s move' : 'Your move'}`;
+        const q = <h2 className="pst-q tns-q">{playing ? 'Finish with more discs.' : statusLine()}</h2>;
+        const score = (
+          <div className="tns-score" aria-label={`Discs: you ${view.score.mine}, the engine ${view.score.theirs}`}>
+            <div className={'tns-sc' + (playing && !engineUp ? ' on' : '')}><i className="y" /><span>You</span><b>{view.score.mine}</b></div>
+            <div className={'tns-sc' + (engineUp ? ' on' : '')}><i className="e" /><span>Them</span><b>{view.score.theirs}</b></div>
+          </div>
+        );
+        const bd = (
+          <div key={shake} className={'tns-bd' + (shake ? ' shake' : '')} role="grid" aria-label="Board, 8 by 8">
+            {sqs}
+          </div>
+        );
+        const bot = playing ? (
+          <div className="tns-bot" style={vars}>
+            <div className="pst-tools">
+              {hintOk && !g.hintUsed ? <button type="button" className="pst-tb tns-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
+              <button type="button" className={'pst-tb tns-tl' + (armRestart ? ' on' : '')} onClick={restartGame} aria-label={armRestart ? 'Tap again to restart. This records a 0' : 'Restart this board'}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+                {armRestart ? 'Tap again' : 'Restart'}
+              </button>
+            </div>
+          </div>
+        ) : null;
         return (
-          <PlayStage bg={gameColor('turn')} label="Turn"
-            eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}${countWord(empties)} square${empties === 1 ? '' : 's'} left · ${!playing ? 'Board counted' : engineUp ? 'Engine’s move' : 'Your move'}`}
-            top={(
+          <PlayStage bg={gameColor('turn')} label="Turn" wide={egDesk} full={egDesk}
+            eyebrow={egDesk ? null : eb}
+            top={egDesk ? (
               <>
                 <style dangerouslySetInnerHTML={{ __html: TNS_CSS }} />
-                <h2 className="pst-q tns-q">{playing ? 'Finish with more discs.' : statusLine()}</h2>
+                <EgDesk mainRef={tnsRef} mainClass="tns" mainW={tnsFit ? `${tnsFit}px` : 'min(560px, 62vh)'} vars={vars}
+                  side={<EgRail eb={eb} q={q} foot={line}>{score}{bot}</EgRail>}>
+                  {bd}
+                </EgDesk>
+              </>
+            ) : (
+              <>
+                <style dangerouslySetInnerHTML={{ __html: TNS_CSS }} />
+                {q}
                 <div ref={tnsRef} className="tns" style={vars}>
-                  <div className="tns-score" aria-label={`Discs: you ${view.score.mine}, the engine ${view.score.theirs}`}>
-                    <div className={'tns-sc' + (playing && !engineUp ? ' on' : '')}><i className="y" /><span>You</span><b>{view.score.mine}</b></div>
-                    <div className={'tns-sc' + (engineUp ? ' on' : '')}><i className="e" /><span>Them</span><b>{view.score.theirs}</b></div>
-                  </div>
-                  <div key={shake} className={'tns-bd' + (shake ? ' shake' : '')} role="grid" aria-label="Board, 8 by 8">
-                    {sqs}
-                  </div>
+                  {score}
+                  {bd}
                 </div>
               </>
             )}
-            bottom={playing ? (
-              <div className="tns-bot" style={vars}>
-                <div className="pst-tools">
-                  {hintOk && !g.hintUsed ? <button type="button" className="pst-tb tns-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
-                  <button type="button" className={'pst-tb tns-tl' + (armRestart ? ' on' : '')} onClick={restartGame} aria-label={armRestart ? 'Tap again to restart. This records a 0' : 'Restart this board'}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
-                    {armRestart ? 'Tap again' : 'Restart'}
-                  </button>
-                </div>
-              </div>
-            ) : null}
-            foot={line}
+            bottom={egDesk ? null : bot}
+            foot={egDesk ? null : line}
             giveUp={{ armed: !!armReveal, onPress: () => revealEnd(), armedLabel: 'Tap again to give up' }}
             clock={elapsed} done={!playing} />
         );

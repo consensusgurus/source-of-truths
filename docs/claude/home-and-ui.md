@@ -2156,3 +2156,42 @@ Give up folds into the foot's two taps; Restart stays a two-tap tool (`Tap again
 - **`usePlayStageFit` cannot see a `display:contents` child** (its box is 0px tall, and
   `natural()` takes the smaller of box and contents), so a bottom row wrapped that way is
   left out of the sum and the board overflows. Wrap stage controls in a real flex column.
+
+## The End Game boards fill the desktop: the board beside a rail (owner, 2026-11-02)
+
+Owner: "can we make the boards a bit bigger to fill the space? mobile should be unchanged if it
+already fills the space." Applies to the nine End Game boards above (Mate, Queen, Defend, Swindle,
+Check, Four, Gift, Turn, Yose). In the 520px column the board was capped near 490px (chess, height
+and width both), and Four ~350-410, Gift 320-400, Turn and Yose 440 by their own caps; at 1280x800
+there was no height left to grow into, so widening the column alone could not help.
+
+- **From 900px wide (`useEgDesk()`, the same line as PlayStage's phone/desktop split) the board
+  stands on the left and a rail beside it** (`EgDesk` + `EgRail` + `EGD_CSS` in
+  `app/SlateStage.jsx`): eyebrow, brief, the game's own rows (Swindle's chips, Defend's tag,
+  Check's / Four's / Yose's legend, Turn's score cards, Gift's gift card, label and tray), the
+  go button and tools, then the foot line. The host passes PlayStage `wide` and `full` only in
+  that mode, so the top bar spans the Full view width. The foot row (Clock, How to play, Give up)
+  stays under everything. `SlateBoard` takes `desk` and `rail={{ eb, q, above, tools, foot }}`;
+  the four board clients build the same pieces as consts and choose the tree.
+- **Phones (under 900px) take the old tree, unchanged** (same elements, same caps, same fit).
+- **Fit:** `usePlayStageFit(ref, sel, on, beside)` gained an opt-in fourth argument. With it, the
+  hook walks every wrapper from the board up to `.pst-col` and counts only siblings stacked above
+  or below the path (the rail shares the board's rows, so it costs no height); inline (desktop
+  with the site navigation, 900-1279px by default) it fits the window below the stage's top edge
+  instead of returning null, and `.pst.inl .pst-col:has(.egd)` drops the inline min-height, so
+  Give up is on screen at 1024x768 without scrolling. Without the argument the hook is unchanged
+  for every other game.
+- **Line weights grow with the board, never below the phone's:** Slate frame `--slb-fw`
+  (w/230, min 2px), marks and rims `max(<phone px>, k·cqw)` inside the board container; Four's
+  gap, pad, frame, hole rims and pick ring scale by `s0` (cell/48); Gift, Turn and Yose scale
+  their rims, grid lines and rings by `--gfs-s` / `--tns-s` / `--yos-s` (fit/400 or fit/440,
+  capped 1.8-1.9), set only on the desktop path. Yose's legend pins `--yos-s:1`.
+- **Column width:** Full view's 1180px at 1000-1499px; past 1500px `EGD_CSS` lets the column
+  reach 1400px (`.pst.full:not(.inl) .pst-col:has(.egd)`), or a 1920x1080 board stops at ~746px
+  with 180px of height unused.
+- Measured 2026-11-02, light and dark, board width (Four: well width): 1280x800 676 (was chess 492,
+  Four 408, Gift 320, Turn/Yose 440); 1440x900 750; 1600x900 776; 1920x1080 956 (Four 953; was
+  492 / 440 / 400 / 440); inline 1024x768 503 (Four 499) with Give up on screen (it was below the
+  fold before). Phones 390x844, 375x667, 430x932 measure exactly as before. Known and unchanged:
+  at 375x667 Four (26px) and Gift (56px) still overflow the stage, as on origin, because the
+  board sits at the hook's 260px floor.

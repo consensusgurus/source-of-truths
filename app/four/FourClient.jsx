@@ -61,6 +61,7 @@ import LoftFinish from '../LoftFinish';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { useStageLook } from '../GauntletScreens';
 import usePlayStageFit from '@/lib/play-stage-fit';
+import { useEgDesk, EgDesk, EgRail } from '../SlateStage';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
@@ -125,16 +126,16 @@ const STATS_KEY = 'sot_four_stats';
 const FRS_CSS = `
 .frs{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
 .frs-gh,.frs-bd{width:var(--frs-w);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--frs-gap);box-sizing:border-box;}
-.frs-gh{padding:0 calc(var(--frs-pad) + 2px);}
+.frs-gh{padding:0 calc(var(--frs-pad) + var(--frs-eb,2px));}
 .frs-gh span{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;border-radius:50%;box-sizing:border-box;}
-.frs-gh span.on{background:var(--frs-you);border:2px solid var(--frs-you-b);animation:frsHover .25s ease-out;}
+.frs-gh span.on{background:var(--frs-you);border:var(--frs-hb,2px) solid var(--frs-you-b);animation:frsHover .25s ease-out;}
 .frs-gh span.on i{width:28%;height:28%;border-radius:50%;background:#08222e;}
-.frs-bd{padding:var(--frs-pad);border:2px solid var(--frs-edge);border-radius:16px;background:var(--frs-well);touch-action:manipulation;}
+.frs-bd{padding:var(--frs-pad);border:var(--frs-eb,2px) solid var(--frs-edge);border-radius:16px;background:var(--frs-well);touch-action:manipulation;}
 .pst .frs-col{display:flex;flex-direction:column;gap:var(--frs-gap);border:0;background:transparent;padding:0;border-radius:999px;min-width:0;cursor:default;}
 .pst .frs-col.live{cursor:pointer;}
-.frs-col.on{background:var(--frs-hov);box-shadow:0 0 0 3px var(--frs-ring);}
+.frs-col.on{background:var(--frs-hov);box-shadow:0 0 0 var(--frs-rw,3px) var(--frs-ring);}
 .frs-col.grey{opacity:.4;}
-.frs-dk{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;border-radius:50%;box-sizing:border-box;background:var(--frs-hole);border:2px solid var(--frs-hole-b);}
+.frs-dk{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;border-radius:50%;box-sizing:border-box;background:var(--frs-hole);border:var(--frs-hb,2px) solid var(--frs-hole-b);}
 .frs-dk.y{background:var(--frs-you);border-color:var(--frs-you-b);}
 .frs-dk.e{background:var(--frs-foe);border-color:var(--frs-foe);}
 .frs-dk i{width:26%;height:26%;border-radius:50%;background:var(--frs-mark);}
@@ -328,6 +329,8 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const phoneStage = usePhoneStage();
+  // The desktop rail beside the board (app/SlateStage.jsx, owner 2026-11-02).
+  const egDesk = useEgDesk();
   const [stageLook] = useStageLook();
   // THE STAGE'S PICKED COLUMN (presentation only): a tap picks, a second tap
   // or the Drop button drops through the board's own drop().
@@ -410,7 +413,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
 
   useEffect(() => { gRef.current = g; }, [g]);
   const frsOn = STAGE && phoneStage && !!g.t0;
-  const frsFit = usePlayStageFit(frsRef, '.frs-bd', frsOn);
+  const frsFit = usePlayStageFit(frsRef, '.frs-bd', frsOn, egDesk);
   useEffect(() => { setFrsPick(null); }, [moves.length, g.status]);
   useEffect(() => {
     if (!armReveal) return undefined;
@@ -805,11 +808,15 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
         const made = Math.ceil(moves.length / 2);
         const engineUp = playing && (thinking || awaitingReply);
         const pick = myTurn && frsPick != null && pos.heights[frsPick] < ROWS ? frsPick : null;
-        const PAD = 8, GAP = 4;
-        const cell = frsFit ? Math.floor((frsFit - 5 * GAP - 2 * PAD - 4) / 6) : null;
-        const bw = cell ? Math.min(440, 7 * cell + 6 * GAP + 2 * PAD + 4) : 440;
+        // On the desktop rail the well grows with the stage's height, and its
+        // gaps, rims and frame grow with it (s), so a big board has no hairlines.
+        const s0 = egDesk && frsFit ? Math.max(1, (frsFit - 40) / 6 / 48) : 1;
+        const PAD = Math.round(8 * s0), GAP = Math.round(4 * s0), EB = Math.round(2 * s0);
+        const cell = frsFit ? Math.floor((frsFit - 5 * GAP - 2 * PAD - 2 * EB) / 6) : null;
+        const bw = cell ? (egDesk ? 7 * cell + 6 * GAP + 2 * PAD + 2 * EB : Math.min(440, 7 * cell + 6 * GAP + 2 * PAD + 4)) : (egDesk ? 520 : 440);
         const vars = {
           '--frs-w': `min(100%, ${bw}px)`, '--frs-pad': `${PAD}px`, '--frs-gap': `${GAP}px`,
+          ...(egDesk ? { '--frs-eb': `${EB}px`, '--frs-hb': `${Math.max(2, Math.round(2 * s0))}px`, '--frs-rw': `${Math.round(3 * s0)}px` } : null),
           '--frs-well': dark ? '#6f7b90' : 'var(--pst-cell)',
           '--frs-edge': dark ? '#a9b3c4' : 'var(--pst-ink)',
           '--frs-hole': dark ? '#c9d1de' : '#ffffff',
@@ -863,42 +870,63 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
             </button>
           );
         }
+        const eb = `${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Win in ${PUZZLE.winIn} · ${!playing ? 'Board settled' : engineUp ? 'Engine’s drop' : 'Your drop'}`;
+        const q = <h2 className="pst-q frs-q">{playing ? 'Connect four before the engine does.' : statusLine()}</h2>;
+        const gh = (
+          <div className="frs-gh" aria-hidden="true">
+            {Array.from({ length: COLS }).map((_, c) => <span key={c} className={pick === c ? 'on' : undefined}>{pick === c && mono ? <i /> : null}</span>)}
+          </div>
+        );
+        const bd = (
+          <div key={shake} className={'frs-bd' + (shake ? ' shake' : '') + (winLine ? ' won' : '')} role="group" aria-label="Board, seven columns">
+            {cols}
+          </div>
+        );
+        const leg = (
+          <div className="frs-leg">
+            <span><i className="y">{mono ? <b /> : null}</i>{mono ? 'You, dotted' : 'You, gold'}</span>
+            <span><i className="e" />Engine, black</span>
+          </div>
+        );
+        const bot = playing ? (
+          <div className="frs-bot" style={vars}>
+            <button type="button" className="pst-tb wide frs-go" disabled={pick == null} onClick={() => { if (pick != null) { setFrsPick(null); drop(pick); } }}>
+              {engineUp ? 'The engine is answering' : pick != null ? `Drop in column ${pick + 1}` : 'Tap a column to pick it'}
+            </button>
+            <div className="pst-tools">
+              {canHint ? <button type="button" className="pst-tb frs-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
+              <button type="button" className={'pst-tb frs-tl' + (armRestart ? ' on' : '')} onClick={pressRestart} aria-label={armRestart ? 'Tap again to restart. This records a 0' : 'Restart this board'}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+                {armRestart ? 'Tap again' : 'Restart'}
+              </button>
+            </div>
+          </div>
+        ) : null;
         return (
-          <PlayStage bg={gameColor('four')} label="Four"
-            eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Win in ${PUZZLE.winIn} · ${!playing ? 'Board settled' : engineUp ? 'Engine’s drop' : 'Your drop'}`}
-            top={(
+          <PlayStage bg={gameColor('four')} label="Four" wide={egDesk} full={egDesk}
+            eyebrow={egDesk ? null : eb}
+            top={egDesk ? (
               <>
                 <style dangerouslySetInnerHTML={{ __html: FRS_CSS }} />
-                <h2 className="pst-q frs-q">{playing ? 'Connect four before the engine does.' : statusLine()}</h2>
+                <EgDesk mainRef={frsRef} mainClass="frs" mainW={`${bw}px`} vars={vars}
+                  side={<EgRail eb={eb} q={q} foot={line}>{leg}{bot}</EgRail>}>
+                  {gh}
+                  {bd}
+                </EgDesk>
+              </>
+            ) : (
+              <>
+                <style dangerouslySetInnerHTML={{ __html: FRS_CSS }} />
+                {q}
                 <div ref={frsRef} className="frs" style={vars}>
-                  <div className="frs-gh" aria-hidden="true">
-                    {Array.from({ length: COLS }).map((_, c) => <span key={c} className={pick === c ? 'on' : undefined}>{pick === c && mono ? <i /> : null}</span>)}
-                  </div>
-                  <div key={shake} className={'frs-bd' + (shake ? ' shake' : '') + (winLine ? ' won' : '')} role="group" aria-label="Board, seven columns">
-                    {cols}
-                  </div>
-                  <div className="frs-leg">
-                    <span><i className="y">{mono ? <b /> : null}</i>{mono ? 'You, dotted' : 'You, gold'}</span>
-                    <span><i className="e" />Engine, black</span>
-                  </div>
+                  {gh}
+                  {bd}
+                  {leg}
                 </div>
               </>
             )}
-            bottom={playing ? (
-              <div className="frs-bot" style={vars}>
-                <button type="button" className="pst-tb wide frs-go" disabled={pick == null} onClick={() => { if (pick != null) { setFrsPick(null); drop(pick); } }}>
-                  {engineUp ? 'The engine is answering' : pick != null ? `Drop in column ${pick + 1}` : 'Tap a column to pick it'}
-                </button>
-                <div className="pst-tools">
-                  {canHint ? <button type="button" className="pst-tb frs-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
-                  <button type="button" className={'pst-tb frs-tl' + (armRestart ? ' on' : '')} onClick={pressRestart} aria-label={armRestart ? 'Tap again to restart. This records a 0' : 'Restart this board'}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
-                    {armRestart ? 'Tap again' : 'Restart'}
-                  </button>
-                </div>
-              </div>
-            ) : null}
-            foot={line}
+            bottom={egDesk ? null : bot}
+            foot={egDesk ? null : line}
             giveUp={{ armed: !!armReveal, onPress: pressGive, armedLabel: 'Tap again to give up' }}
             clock={elapsed} done={!playing} />
         );

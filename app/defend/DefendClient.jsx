@@ -80,7 +80,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import PlayStage, { usePhoneStage } from '../PlayStage';
-import { SlateBoard, SlatePiece, SlateTools, PIECE_NAMES, COUNT_WORDS } from '../SlateStage';
+import { SlateBoard, useEgDesk, SlatePiece, SlateTools, PIECE_NAMES, COUNT_WORDS } from '../SlateStage';
 
 const COLORS = {
   cream: T.surface,
@@ -328,6 +328,8 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
   const phoneStage = usePhoneStage();
+  // The desktop rail beside the board (app/SlateStage.jsx, owner 2026-11-02).
+  const egDesk = useEgDesk();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -880,13 +882,17 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
       : awaitingReply ? 'White is thinking'
       : selPiece ? (targets.length ? `${selName} on ${squareName(sel)} picked` : `The ${selName.toLowerCase()} on ${squareName(sel)} cannot move`)
       : `${blackInCheck ? 'Check. ' : ''}Tap a black piece to move`);
+    const eb = `${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Hold for ${HOLD} · ${!playing ? meterRight[1] : awaitingReply ? 'White to move' : 'Black to move'}`;
+    const q = <h2 className="pst-q slb-q">{playing ? `Survive ${N} move${HOLD === 1 ? '' : 's'} without being mated.` : sayLine}</h2>;
+    const tools = playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null;
+    const footLine = `Survived ${Math.floor(moves.length / 2)} of ${HOLD} move${HOLD === 1 ? '' : 's'} · ${detail}`;
     return (
-      <PlayStage bg={gameColor('defend')} label="Defend"
-        eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Hold for ${HOLD} · ${!playing ? meterRight[1] : awaitingReply ? 'White to move' : 'Black to move'}`}
+      <PlayStage bg={gameColor('defend')} label="Defend" wide={egDesk} full={egDesk}
+        eyebrow={egDesk ? null : eb}
         top={(
           <>
-            <h2 className="pst-q slb-q">{playing ? `Survive ${N} move${HOLD === 1 ? '' : 's'} without being mated.` : sayLine}</h2>
-            <SlateBoard label="Chess board, drawn from Black's side" flipped on={stageUp}
+            {egDesk ? null : q}
+            <SlateBoard label="Chess board, drawn from Black's side" flipped on={stageUp} desk={egDesk} rail={{ eb, q, tools, foot: footLine }}
               cell={(sq) => {
                 const piece = pos[sq];
                 const white = piece && colorOf(piece) === 'w';
@@ -908,8 +914,8 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
             </SlateBoard>
           </>
         )}
-        bottom={playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null}
-        foot={`Survived ${Math.floor(moves.length / 2)} of ${HOLD} move${HOLD === 1 ? '' : 's'} · ${detail}`}
+        bottom={egDesk ? null : tools}
+        foot={egDesk ? null : footLine}
         giveUp={{ armed: !!armReveal, onPress: stageGive, armedLabel: 'Tap again to give up' }}
         clock={elapsed} done={!playing} />
     );

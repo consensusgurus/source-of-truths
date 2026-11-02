@@ -54,6 +54,7 @@ import LoftFinish from '../LoftFinish';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { useStageLook } from '../GauntletScreens';
 import usePlayStageFit from '@/lib/play-stage-fit';
+import { useEgDesk, EgDesk, EgRail } from '../SlateStage';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
@@ -277,16 +278,16 @@ const GFS_CSS = `
 .gfs-gift .gfs-pc.s{width:24px;height:24px;}
 .gfs-hand p{margin:0;font-size:15px;font-weight:800;line-height:1.3;min-width:0;}
 .gfs-hand small{display:block;font-size:12px;font-weight:700;color:var(--pst-mute);}
-.gfs-bd{width:var(--gfs-w);aspect-ratio:1/1;border-radius:50%;border:2px solid var(--gfs-board-b);background:var(--gfs-board);display:flex;align-items:center;justify-content:center;box-sizing:border-box;}
+.gfs-bd{width:var(--gfs-w);aspect-ratio:1/1;border-radius:50%;border:calc(2px * var(--gfs-s,1)) solid var(--gfs-board-b);background:var(--gfs-board);display:flex;align-items:center;justify-content:center;box-sizing:border-box;}
 .gfs-grid{width:78.6%;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:3%;touch-action:manipulation;}
-.pst .gfs-well{border-radius:50%;border:2px solid var(--gfs-well-b);background:var(--gfs-well);padding:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:0;cursor:default;}
+.pst .gfs-well{border-radius:50%;border:calc(2px * var(--gfs-s,1)) solid var(--gfs-well-b);background:var(--gfs-well);padding:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:0;cursor:default;}
 .pst .gfs-well.open{cursor:pointer;}
 .gfs-well .gfs-pc.t{width:53%;height:53%;}
 .gfs-well .gfs-pc.s{width:37%;height:37%;}
-.pst .gfs-well.sel{border:3px solid var(--gfs-sel-b);background:var(--gfs-sel);}
-.pst .gfs-well.hint{box-shadow:0 0 0 3px var(--gfs-ring);}
-.pst .gfs-well.last{border:2.5px solid var(--pst-ink);}
-.pst .gfs-well.line{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--gfs-ring);}
+.pst .gfs-well.sel{border:calc(3px * var(--gfs-s,1)) solid var(--gfs-sel-b);background:var(--gfs-sel);}
+.pst .gfs-well.hint{box-shadow:0 0 0 calc(3px * var(--gfs-s,1)) var(--gfs-ring);}
+.pst .gfs-well.last{border:calc(2.5px * var(--gfs-s,1)) solid var(--pst-ink);}
+.pst .gfs-well.line{box-shadow:0 0 0 calc(3px * var(--gfs-s,1)) var(--pst-bg),0 0 0 calc(5px * var(--gfs-s,1)) var(--gfs-ring);}
 .gfs-lab{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--pst-mute);text-align:center;}
 .gfs-tray{width:100%;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));align-items:center;justify-items:center;min-height:48px;padding:4px 6px;border-radius:14px;background:var(--gfs-tray);box-sizing:border-box;}
 .pst .gfs-tp{width:40px;height:40px;max-width:100%;display:flex;align-items:center;justify-content:center;border:0;background:transparent;padding:0;border-radius:10px;cursor:default;}
@@ -375,6 +376,8 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const phoneStage = usePhoneStage();
+  // The desktop rail beside the board (app/SlateStage.jsx, owner 2026-11-02).
+  const egDesk = useEgDesk();
   const [stageLook] = useStageLook();
   // THE STAGE'S STEP (presentation only): 1 place the gift, 2 choose the piece.
   const [gfsStep, setGfsStep] = useState(1);
@@ -415,7 +418,7 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
   const myTurn = playing && started && !awaitingReply;
   const pool = useMemo(() => poolOf(pos, hand), [pos, hand]);
   const gfsOn = STAGE && phoneStage && !!g.t0;
-  const gfsFit = usePlayStageFit(gfsRef, '.gfs-bd', gfsOn);
+  const gfsFit = usePlayStageFit(gfsRef, '.gfs-bd', gfsOn, egDesk);
   useEffect(() => { setGfsStep(1); }, [moves.length, g.status]);
   useEffect(() => { if (selSq == null) setGfsStep(1); }, [selSq]);
   const lineCells = useMemo(() => {
@@ -854,7 +857,10 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
         const step = myTurn && selSq != null && !fills ? gfsStep : 1;
         const filled = pos.filter((p) => p >= 0).length;
         const vars = {
-          '--gfs-w': gfsFit ? `min(93%, ${Math.min(400, gfsFit)}px)` : 'min(93%, 400px)',
+          // On the desktop rail the round board takes the stage's height and its
+          // rims thicken with it (--gfs-s); the phone keeps its 400px cap.
+          '--gfs-w': egDesk ? '100%' : gfsFit ? `min(93%, ${Math.min(400, gfsFit)}px)` : 'min(93%, 400px)',
+          ...(egDesk ? { '--gfs-s': String(Math.max(1, Math.min(1.8, (gfsFit || 400) / 400))) } : null),
           '--gfs-board': dark ? '#1a2130' : 'var(--pst-cell)',
           '--gfs-board-b': dark ? '#5a6680' : 'var(--pst-ink)',
           '--gfs-well': dark ? '#242c3d' : '#ffffff',
@@ -891,61 +897,80 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
           : armRestart ? 'Tap Restart again: it records a 0 and resets the board'
           : `${filled} of 16 wells filled · Four in a line sharing a trait wins`);
         const eb = `${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Win in ${WIN_IN} · ${!playing ? 'Game over' : awaitingReply ? 'Your opponent’s turn' : fills ? 'Last well: place the gift' : step === 1 ? 'Step 1 of 2: place the gift' : 'Step 2 of 2: choose what they get'}`;
+        const handCard = (
+          <div className="gfs-hand" role="status" aria-live="polite">
+            <span className="gfs-gift">{playing && !awaitingReply ? <GfsPiece p={hand} /> : null}</span>
+            <p>{!playing ? 'Game over' : awaitingReply ? 'Your opponent is choosing' : 'Your gift'}<small>{!playing ? verdict : awaitingReply ? 'They place your piece, then hand you one' : nameOf(hand)}</small></p>
+          </div>
+        );
+        const bd = (
+          <div className="gfs-bd" role="grid" aria-label="The board, 4 by 4">
+            <div className="gfs-grid">
+              {pos.map((p, sq) => {
+                const empty = p < 0;
+                const sel = myTurn && selSq === sq;
+                const cls = 'gfs-well' + (empty && myTurn ? ' open' : '') + (sel ? ' sel' : '') + (hintSq === sq && !sel ? ' hint' : '') + (lineCells.has(sq) ? ' line' : '') + (lastSq === sq ? ' last' : '');
+                return (
+                  <button key={sq} type="button" className={cls} onClick={() => onWell(sq)} aria-disabled={!empty || !myTurn}
+                    aria-label={`Well ${sq + 1}, ${empty ? (sel ? 'picked for your gift' : 'empty') : pieceName(p)}${lastSq === sq ? ', just placed' : ''}`}>
+                    {!empty ? <GfsPiece p={p} /> : (sel && step === 2 ? <GfsPiece p={hand} /> : null)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+        const lab = <div className="gfs-lab">{step === 2 ? 'Tap the piece your opponent gets' : 'Still to give · you hand one over next'}</div>;
+        const tray = (
+          <div className={'gfs-tray' + (pool.length > 8 ? ' two' : '')} role="group" aria-label="Pieces still off the board">
+            {pool.map((p) => {
+              const live = step === 2 && myTurn;
+              return (
+                <button key={p} type="button" className={'gfs-tp' + (live ? ' live' : '') + (live && selGive === p ? ' on' : '')}
+                  onClick={() => { if (live) onChip(p); }} aria-disabled={!live} aria-pressed={live ? selGive === p : undefined}
+                  aria-label={`${live ? 'Hand over the ' : ''}${pieceName(p)} piece`}>
+                  <GfsPiece p={p} />
+                </button>
+              );
+            })}
+          </div>
+        );
+        const bot = playing ? (
+          <div className="gfs-bot" style={vars}>
+            <button type="button" className="pst-tb wide gfs-go" disabled={!goOk} onClick={go}>{goLabel}</button>
+            <div className="pst-tools">
+              {step === 2 ? <button type="button" className="pst-tb gfs-tl" onClick={() => setGfsStep(1)}>{ICON.left}Back</button> : null}
+              {hintOk && !g.hintUsed && opening && step === 1 ? <button type="button" className="pst-tb gfs-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
+              <button type="button" className={'pst-tb gfs-tl' + (armRestart ? ' on' : '')} onClick={pressRestart} aria-label={armRestart ? 'Tap again to restart. This records a 0' : 'Restart this board'}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+                {armRestart ? 'Tap again' : 'Restart'}
+              </button>
+            </div>
+          </div>
+        ) : null;
         return (
-          <PlayStage bg={gameColor('gift')} label="Gift" eyebrow={eb}
-            top={(
+          <PlayStage bg={gameColor('gift')} label="Gift" eyebrow={egDesk ? null : eb} wide={egDesk} full={egDesk}
+            top={egDesk ? (
+              <>
+                <style dangerouslySetInnerHTML={{ __html: GFS_CSS }} />
+                <EgDesk mainRef={gfsRef} mainClass="gfs" mainW={gfsFit ? `${gfsFit}px` : 'min(520px, 60vh)'} vars={vars}
+                  side={<EgRail eb={eb} foot={line}>{handCard}{lab}{tray}{bot}</EgRail>}>
+                  {bd}
+                </EgDesk>
+              </>
+            ) : (
               <>
                 <style dangerouslySetInnerHTML={{ __html: GFS_CSS }} />
                 <div ref={gfsRef} className="gfs" style={vars}>
-                  <div className="gfs-hand" role="status" aria-live="polite">
-                    <span className="gfs-gift">{playing && !awaitingReply ? <GfsPiece p={hand} /> : null}</span>
-                    <p>{!playing ? 'Game over' : awaitingReply ? 'Your opponent is choosing' : 'Your gift'}<small>{!playing ? verdict : awaitingReply ? 'They place your piece, then hand you one' : nameOf(hand)}</small></p>
-                  </div>
-                  <div className="gfs-bd" role="grid" aria-label="The board, 4 by 4">
-                    <div className="gfs-grid">
-                      {pos.map((p, sq) => {
-                        const empty = p < 0;
-                        const sel = myTurn && selSq === sq;
-                        const cls = 'gfs-well' + (empty && myTurn ? ' open' : '') + (sel ? ' sel' : '') + (hintSq === sq && !sel ? ' hint' : '') + (lineCells.has(sq) ? ' line' : '') + (lastSq === sq ? ' last' : '');
-                        return (
-                          <button key={sq} type="button" className={cls} onClick={() => onWell(sq)} aria-disabled={!empty || !myTurn}
-                            aria-label={`Well ${sq + 1}, ${empty ? (sel ? 'picked for your gift' : 'empty') : pieceName(p)}${lastSq === sq ? ', just placed' : ''}`}>
-                            {!empty ? <GfsPiece p={p} /> : (sel && step === 2 ? <GfsPiece p={hand} /> : null)}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div className="gfs-lab">{step === 2 ? 'Tap the piece your opponent gets' : 'Still to give · you hand one over next'}</div>
-                  <div className={'gfs-tray' + (pool.length > 8 ? ' two' : '')} role="group" aria-label="Pieces still off the board">
-                    {pool.map((p) => {
-                      const live = step === 2 && myTurn;
-                      return (
-                        <button key={p} type="button" className={'gfs-tp' + (live ? ' live' : '') + (live && selGive === p ? ' on' : '')}
-                          onClick={() => { if (live) onChip(p); }} aria-disabled={!live} aria-pressed={live ? selGive === p : undefined}
-                          aria-label={`${live ? 'Hand over the ' : ''}${pieceName(p)} piece`}>
-                          <GfsPiece p={p} />
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {handCard}
+                  {bd}
+                  {lab}
+                  {tray}
                 </div>
               </>
             )}
-            bottom={playing ? (
-              <div className="gfs-bot" style={vars}>
-                <button type="button" className="pst-tb wide gfs-go" disabled={!goOk} onClick={go}>{goLabel}</button>
-                <div className="pst-tools">
-                  {step === 2 ? <button type="button" className="pst-tb gfs-tl" onClick={() => setGfsStep(1)}>{ICON.left}Back</button> : null}
-                  {hintOk && !g.hintUsed && opening && step === 1 ? <button type="button" className="pst-tb gfs-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
-                  <button type="button" className={'pst-tb gfs-tl' + (armRestart ? ' on' : '')} onClick={pressRestart} aria-label={armRestart ? 'Tap again to restart. This records a 0' : 'Restart this board'}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
-                    {armRestart ? 'Tap again' : 'Restart'}
-                  </button>
-                </div>
-              </div>
-            ) : null}
-            foot={line}
+            bottom={egDesk ? null : bot}
+            foot={egDesk ? null : line}
             giveUp={{ armed: !!armReveal, onPress: pressGive, armedLabel: 'Tap again to give up' }}
             clock={elapsed} done={!playing} />
         );

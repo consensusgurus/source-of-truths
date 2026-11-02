@@ -22,6 +22,11 @@
 // and a ring. State is said three ways (number, height and lock or tick), so
 // nothing rests on colour alone, and nothing is dashed (owner, 2026-10-25).
 //
+// THE PEEK (2026-11-02): each square next to the still die wears a small die
+// face in a top corner, the face that roll would bring up (see
+// peekOf and step 5 of draw). Pastel when that roll lights the next square,
+// an empty faint outline when the rules refuse it.
+//
 // The roll is a real quarter turn about the die's leading bottom edge, with
 // a squash and a puff of dust as it lands. A refused roll tips the die a few
 // degrees and settles back. A cracked square breaks into shards as the die
@@ -162,6 +167,29 @@ function rotAbout(p, dir, a, x0, x1, y0, y1) {
   return [x, y, z];
 }
 
+
+// What each roll from `s` would bring up on top, read off the engine's own
+// step(): one entry per neighbouring square the die could stand on. A roll off
+// the floor or onto a crumbled square ('edge') gets nothing; a refused roll
+// ('order', 'face') still says what would land, so the refusal can be read.
+// The canvas also carries it as data-peek (e.g. "U3 D4 R5x"; x = refused,
+// * = lights), so a check can compare it with what actually lands.
+const DIR_SAY = { U: 'up', D: 'down', L: 'left', R: 'right' };
+const DSTEP = { U: [0, -1], D: [0, 1], L: [-1, 0], R: [1, 0] };
+function peekOf(P, s) {
+  const out = [];
+  for (const d of ['U', 'D', 'L', 'R']) {
+    const r = step(P, s, d);
+    if (r.result === 'edge') continue;
+    const ok = r.result === 'ok' || r.result === 'win';
+    out.push({
+      d, x: s.x + DSTEP[d][0], y: s.y + DSTEP[d][1],
+      top: ok ? r.state.t : r.top,
+      kind: !ok ? 'refused' : (r.lit || r.result === 'win') ? 'lights' : 'quiet',
+    });
+  }
+  return out;
+}
 
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const smooth = (t) => { const k = Math.max(0, Math.min(1, t)); return k * k * (3 - 2 * k); };
@@ -405,8 +433,50 @@ export default function RollBoard({
       if (job && y === jobRow) { job(); job = null; }
     }
     if (job) job();
+
+    // 5. THE PEEK (owner, 2026-11-02: "we need a way to show what would flip
+    // onto the top when the user moves a die down"). Each square next to the
+    // die carries, in a top corner, a small die face lying on the floor: the
+    // face that would be on top if the die rolled there. It is the engine's
+    // own roll (peekOf, from step()), never a separate guess. Pips, not a
+    // digit, so it can never be read as a numbered square. The square to the
+    // LEFT takes its top left corner, because the die's lean covers the right
+    // edge of that square; the others take the top right, clear of a square's
+    // number (centred) and lock (bottom right). Drawn after the die, only
+    // while the die is still and the game is on. Three looks:
+    //   quiet    an ordinary roll: a pale filled face, ink pips at low strength
+    //   lights   the roll would light the next square: a pastel face with full
+    //            ink pips and edge, the die's own colours
+    //   refused  the rules refuse the roll (a shut square, or the wrong face
+    //            for the next one): an empty outline with faint pips, which
+    //            explains the refusal without inviting the roll
+    if (playing && !won && !anim) {
+      for (const pk of peekOf(P, state)) {
+        const { x, y, top, kind, d } = pk;
+        const c = P.grid[y][x];
+        const raised = c >= '1' && c <= '6' && +c >= state.k;
+        const z = raised ? RAISE : 0;
+        const u0 = x + (d === 'L' ? 0.08 : 0.63), u1 = u0 + 0.29, v0 = y + 0.08, v1 = y + 0.4;
+        const q = [pr(u0, v0, z), pr(u1, v0, z), pr(u1, v1, z), pr(u0, v1, z)];
+        roundQuad(ctx, q, 3.2);
+        if (kind === 'lights') ctx.fillStyle = css(C.body);
+        else if (kind === 'quiet') ctx.fillStyle = css(mix(C.tileTop, C.ink, C.dark ? 0.12 : 0.05));
+        if (kind !== 'refused') ctx.fill();
+        ctx.strokeStyle = kind === 'lights' ? css(C.line) : css(C.ink, kind === 'refused' ? 0.3 : (C.dark ? 0.45 : 0.4));
+        ctx.lineWidth = kind === 'lights' ? 1.8 : 1.1;
+        ctx.stroke();
+        const pw = q[1][0] - q[0][0], ph = q[3][1] - q[0][1];
+        ctx.fillStyle = kind === 'lights' ? css(C.line) : css(C.ink, kind === 'refused' ? 0.38 : (C.dark ? 0.8 : 0.7));
+        const pipR = Math.min(pw, ph) * 0.105;
+        for (const [pu, pq] of PIPS[top]) {
+          ctx.beginPath();
+          ctx.ellipse(q[0][0] + pw * (0.12 + pu * 0.76), q[0][1] + ph * (0.12 + pq * 0.76), pipR * 1.08, pipR, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
     fx.current.draw(ctx, now, C.dark ? null : css(C.line, 0.5));
-  }, [P, anim, state, pr, W, H, won]);
+  }, [P, anim, state, pr, W, H, won, playing]);
 
   useEffect(() => { readColors(); force((n) => n + 1); }, [readColors, themeKey]);
   useEffect(() => {
@@ -469,6 +539,9 @@ export default function RollBoard({
   };
 
   const nextNum = state.k;
+  const peeks = playing && !won ? peekOf(P, state) : [];
+  const peekAttr = peeks.map((p) => `${p.d}${p.top}${p.kind === 'refused' ? 'x' : p.kind === 'lights' ? '*' : ''}`).join(' ');
+  const peekSay = peeks.length ? ` Rolling ${peeks.map((p) => `${DIR_SAY[p.d]} brings up ${p.top}${p.kind === 'refused' ? ' (refused)' : p.kind === 'lights' ? ` (lights ${nextNum})` : ''}`).join(', ')}.` : '';
   const say1 = !playing ? doneLine
     : nextNum <= P.N ? `Light square ${nextNum} next: roll onto it with a ${nextNum} on top.` : 'Every square is lit.';
   const say2 = playing
@@ -509,7 +582,8 @@ export default function RollBoard({
           </div>
           <canvas ref={cvRef} className="rl-canvas"
             style={{ maxWidth: W * 1.4, aspectRatio: `${W} / ${H}` }}
-            role="img" aria-label={`Roll board, ${P.w} by ${P.h}. The die shows ${state.t} on top. Square ${Math.min(nextNum, P.N)} is next.`}
+            role="img" aria-label={`Roll board, ${P.w} by ${P.h}. The die shows ${state.t} on top. Square ${Math.min(nextNum, P.N)} is next.${peekSay}`}
+            data-top={state.t} data-peek={peekAttr}
             onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => { sw.current = null; }} />
           <div className="rl-row">
             <div className="rl-say">
