@@ -203,13 +203,13 @@ export default function RunFinale({
       const got = Math.max(0, Math.min(max, Number(g.got) || 0));
       const shown = g.shown != null ? g.shown : Math.round(Number(g.got) || 0);
       const showMax = Number.isFinite(Number(g.max)) && Number(g.max) > 0 && Number(g.max) === Math.round(Number(g.max));
-      return `<div class="rw" id="rw${i}"><div class="rt"><span class="rn"><b>${esc(g.name)}</b>${g.sub ? `<small>${esc(g.sub)}</small>` : ''}</span><span class="rv">${esc(shown)}${showMax ? `<em> / ${esc(g.max)}</em>` : ''}</span></div>
-        <div class="trk"><div class="fl" id="fl${i}" style="background:${g.colour}" data-f="${(got / max).toFixed(4)}"></div></div><div class="rr" id="rr${i}"></div></div>`;
+      return `<div class="rfr" id="rfr${i}"><div class="rfr-t"><span class="rfr-n"><b>${esc(g.name)}</b>${g.sub ? `<small>${esc(g.sub)}</small>` : ''}</span><span class="rfr-v">${esc(shown)}${showMax ? `<em> / ${esc(g.max)}</em>` : ''}</span></div>
+        <div class="rfr-k"><div class="rfr-f" id="rfrf${i}" style="background:${g.colour}" data-f="${(got / max).toFixed(4)}"></div></div><div class="rfr-r" id="rfrr${i}"></div></div>`;
     }).join('');
     root.innerHTML = `<div class="cap"><span>${esc(circuitName)}${dateLabel ? ` · ${esc(dateLabel)}` : ''}</span><span id="capR"></span></div>
       <div class="rcol">
         <div class="rhero" id="rhero"><span class="num" id="f-score">0</span><span class="unit" id="f-unit">${esc(unitWord)}</span></div>
-        <div class="rws" id="rws">${rowsHtml}</div>
+        <div class="rfr-s" id="rfrs">${rowsHtml}</div>
         <div class="pbox"><div class="piece">${P.html(L, X)}</div></div>
         <div class="tblock"><span class="ttl" id="f-title">${esc(earned.name)}</span>${rankText ? `<span class="rank" id="f-rank">${esc(rankText)}</span>` : ''}</div>
       </div>`;
@@ -339,18 +339,18 @@ export default function RunFinale({
           const g = legs[i];
           paint(gOf(g.colour));
           q('#capR').textContent = `${legWord} ${i + 1} of ${legs.length}`;
-          q(`#rw${i}`).classList.add('in');
-          const fl = q(`#fl${i}`); fl.style.width = `${Number(fl.dataset.f) * 100}%`;
+          q(`#rfr${i}`).classList.add('in');
+          const fl = q(`#rfrf${i}`); fl.style.width = `${Number(fl.dataset.f) * 100}%`;
           const add = Number(g.got) || 0;
           count(num, Math.round(sum), Math.round(sum + add), 620);
           sum += add;
           await wait(360);
-          if (g.rank != null && g.plays != null) { const rr = q(`#rr${i}`); rr.textContent = `#${g.rank} of ${g.plays} today`; rr.classList.add('in'); }
+          if (g.rank != null && g.plays != null) { const rr = q(`#rfrr${i}`); rr.textContent = `#${g.rank} of ${g.plays} today`; rr.classList.add('in'); }
           await wait(480);
         }
         num.textContent = String(score);
         await wait(900);
-        q('#rws').classList.add('gone');
+        q('#rfrs').classList.add('gone');
         await wait(300);
         // part two
         q('#capR').textContent = heading || 'Your title';
@@ -415,19 +415,20 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .cap{position:absolute;top:max(18px, env(safe-area-inset-top));left:24px;right:24px;display:flex;justify-content:space-between;gap:12px;white-space:nowrap;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
 .rfx .rcol{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:0 16px}
 .rfx .rhero{display:flex;flex-direction:column;align-items:center;gap:6px}
-.rfx .rws{width:min(540px,100%);display:flex;flex-direction:column;gap:14px;text-align:left;transition:opacity .3s ease}
-.rfx .rws.gone{opacity:0}
-.rfx.p2 .rws{display:none}
-.rfx .rw{display:flex;flex-direction:column;gap:6px;opacity:.28;transition:opacity .3s ease}
-.rfx .rw.in{opacity:1}
-.rfx .rt{display:flex;justify-content:space-between;align-items:baseline;gap:10px;white-space:nowrap}
-.rfx .rn{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.rfx .rn b{font-size:17px;font-weight:800}.rfx .rn small{font-size:12.5px;font-weight:700;opacity:.65;margin-left:8px}
-.rfx .rv{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;flex:none}.rfx .rv em{font-style:normal;font-size:14px;opacity:.55}
-.rfx .trk{position:relative;height:12px;border-radius:6px;background:rgba(8,34,46,.1)}
-.rfx .fl{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;box-shadow:inset 0 0 0 2px currentColor;transition:width .6s cubic-bezier(.2,.8,.2,1)}
-.rfx .rr{font-size:12.5px;font-weight:700;opacity:0;text-align:right;min-height:15px;line-height:15px;margin-top:-2px;transition:opacity .3s ease;font-variant-numeric:tabular-nums}
-.rfx .rr.in{opacity:.7}
+.rfx .rfr-s{width:min(540px,100%);display:flex;flex-direction:column;gap:14px;text-align:left;transition:opacity .3s ease}
+.rfx .rfr-s.gone{opacity:0}
+.rfx.p2 .rfr-s{display:none}
+.rfx .rfr,.rfx .rfr *{color:inherit}
+.rfx .rfr{display:flex;flex-direction:column;gap:6px;opacity:.28;transition:opacity .3s ease}
+.rfx .rfr.in{opacity:1}
+.rfx .rfr-t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;white-space:nowrap}
+.rfx .rfr-n{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.rfx .rfr-n b{font-size:17px;font-weight:800}.rfx .rfr-n small{font-size:12.5px;font-weight:700;opacity:.78;margin-left:8px}
+.rfx .rfr-v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;flex:none}.rfx .rfr-v em{font-style:normal;font-size:14px;opacity:.7}
+.rfx .rfr-k{position:relative;height:12px;border-radius:6px;background:rgba(120,132,144,.24)}
+.rfx .rfr-f{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;box-shadow:inset 0 0 0 2px currentColor;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.rfx .rfr-r{font-size:12.5px;font-weight:700;opacity:0;text-align:right;min-height:15px;line-height:15px;margin-top:-2px;transition:opacity .3s ease;font-variant-numeric:tabular-nums}
+.rfx .rfr-r.in{opacity:.82}
 .rfx .rhero .num{font-size:120px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;display:inline-block;transition:font-size .6s cubic-bezier(.2,.8,.2,1)}
 .rfx .rhero .unit{font-size:17px;font-weight:800;line-height:1;display:inline-block}
 .rfx.p2 .rhero .num{font-size:78px}
@@ -445,10 +446,10 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
   .rfx .cap{left:16px;right:16px;font-size:11.5px;letter-spacing:.1em}
   .rfx .cap span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis}.rfx .cap span:last-child{flex:none}
   .rfx .rhero .num{font-size:72px}.rfx .rhero .unit{font-size:16px}
-  .rfx .rws{gap:11px}
-  .rfx .rn b,.rfx .rv{font-size:15px}.rfx .rn small{font-size:11.5px;margin-left:6px}.rfx .rv em{font-size:12.5px}
-  .rfx .trk{height:10px}.rfx .rr{font-size:11.5px;min-height:13px;line-height:13px}
-  .rfx.tight .rws{gap:7px}.rfx.tight .rhero .num{font-size:60px}.rfx.tight .rw{gap:4px}
+  .rfx .rfr-s{gap:11px}
+  .rfx .rfr-n b,.rfx .rfr-v{font-size:15px}.rfx .rfr-n small{font-size:11.5px;margin-left:6px}.rfx .rfr-v em{font-size:12.5px}
+  .rfx .rfr-k{height:10px}.rfx .rfr-r{font-size:11.5px;min-height:13px;line-height:13px}
+  .rfx.tight .rfr-s{gap:7px}.rfx.tight .rhero .num{font-size:60px}.rfx.tight .rfr{gap:4px}
   .rfx.p2 .rhero .num{font-size:68px}
   .rfx .rcol{gap:16px}
   .rfx .pbox{width:calc(420px * var(--ps,.85));height:calc(300px * var(--ps,.85))}
@@ -457,7 +458,7 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 }
 
 /* books */
-.rfx .shelf .plank{position:absolute;left:0;right:0;bottom:0;height:10px;border-radius:3px;background:currentColor}
+.rfx .shelf .plank{position:absolute;left:12px;right:12px;bottom:6px;height:5px;border-radius:3px;background:currentColor;opacity:.3}
 .rfx .bk{position:absolute;left:50%;height:38px;border:2.5px solid currentColor;border-radius:5px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:15px;font-weight:800;color:${DINK};opacity:.18;transform:translateX(-50%);transition:transform .5s cubic-bezier(.2,1.3,.4,1),opacity .2s ease,box-shadow .3s ease}
 .rfx .bk small{font-size:12px;font-weight:800;opacity:.75}
 .rfx .bk.drop{opacity:1;animation:rfxBk .45s cubic-bezier(.3,1.4,.5,1) both}

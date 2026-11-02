@@ -587,6 +587,10 @@ replaced the end page's own sweep + count-up + climb, Crossed Up's ripple curtai
   only (`pal.look === 'color' && !paper`). `legRanks` (RunClient only) puts "#14 of 218 today"
   under that leg's row. NO red miss marks (owner: "the bars themselves show length"). Same on
   desktop and phone; seven legs on a phone under 740px tall tighten a step (`.tight`).
+  Its classes are all `rfr-*` on purpose: RunClient's global `.rn{color:#eef2fa}` (and Room's `.rr`)
+  leaked into the first build's short `.rn/.rr` names and printed the quiz names white on the light
+  looks (2026-11-02). Every class the finale adds must carry an `rfx`/`rfr` prefix. The empty track
+  is a mid grey (reads on light and dark looks), never dark ink at low alpha.
 - **Part two, the run's own title piece** (`FINALE_PIECE` in RunFinale): books (Trivia
   Gauntlet, Encore), flask (Science), calculator (Math), dictionary (English), belt (Dojo, belt
   colours from the ladder `chip`), name tag (Room), school letters (Judged, `short` + `chip`),
