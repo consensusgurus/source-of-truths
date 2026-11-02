@@ -578,18 +578,20 @@ replaced the end page's own sweep + count-up + climb, Crossed Up's ripple curtai
 (`curtainOn` is forced false) and, for the gauntlets, nothing else (they had no curtain since
 2026-10-25).
 
-- **Part one, the recap ring.** One arc per leg, sized by `finale.legMax[i]` (the gauntlets use
-  the section's question count; Dojo `dojoWeight`, Crossed `crossedWeight`, Judged
-  `lawCaseMaxFor`, Room the part, Price Check 10, Passport the leg's `max`). The ground takes
-  each leg's colour in the Color look only (`pal.look === 'color' && !paper`); every other look,
-  and Judged's white page, keep the page ground. The total counts up DEAD CENTRE (nothing else
-  sits under it in part one). One-life runs (`oneLife`, the RunClient gauntlets) get the red
-  miss tick; `legRanks` (RunClient only) draws "#14 of 218 on History today" under the ring.
+- **Part one, the scoreboard** (owner, 2026-11-02; it replaced the recap ring, whose labels
+  crowded the circle on a phone). The total sits on top; under it one full-width row per leg:
+  name, subject, `got / max` (max from `finale.legMax[i]`: the gauntlets use the section's
+  question count; Dojo `dojoWeight`, Crossed `crossedWeight`, Judged `lawCaseMaxFor`, Room the
+  part, Price Check 10, Passport the leg's `max`), and a bar in the leg's colour. Rows light and
+  fill in turn while the total counts up; the ground takes each leg's colour in the Color look
+  only (`pal.look === 'color' && !paper`). `legRanks` (RunClient only) puts "#14 of 218 today"
+  under that leg's row. NO red miss marks (owner: "the bars themselves show length"). Same on
+  desktop and phone; seven legs on a phone under 740px tall tighten a step (`.tight`).
 - **Part two, the run's own title piece** (`FINALE_PIECE` in RunFinale): books (Trivia
   Gauntlet, Encore), flask (Science), calculator (Math), dictionary (English), belt (Dojo, belt
   colours from the ladder `chip`), name tag (Room), school letters (Judged, `short` + `chip`),
   wallet (Price Check, card colours), passport (Passport, `chip` cover + `vf` visa-free count),
-  morning papers (Crossed Up). The ring clears, the score rises to the top, the piece climbs the
+  morning papers (Crossed Up). The rows clear, the score settles, the piece climbs the
   ladder, then the title and standing land under it.
 - **The glide.** Score, unit, title and standing fly to `[data-rf="score|unit|title|rank"]` on
   the desktop page (the title target is the earned rung's name in TitleClimb / FlaskClimb), or
@@ -597,7 +599,7 @@ replaced the end page's own sweep + count-up + climb, Crossed Up's ripple curtai
   finale plays the page underneath is `.gsx-held` (rises paused) and `.gsx-fly` (targets hidden);
   the glide releases the rises, the end hides the targets no more. The page arrives LANDED: no
   second count, no second climb.
-- **Phone sizes are measured** (owner, 2026-11-01, "too small on mobile"): the ring is 80% of the visible width (capped by 46% of the height, 260 to 400px), its labels sit 36px outside the arc and are nudged back on screen, the title piece scales to the width (`--ps`, 0.6 to 1), and the type is larger (score `--rd * .3`, title 27px). Never go back to fixed phone sizes. Labels are anchored BY SIDE (each grows away from the ring from a point 8px (phone) / 12px (desktop) outside the arc, `--tx/--ty`), and on a phone the ring is the largest that keeps every label fully on screen (`placeLabels`); the per-leg rank line sits at the foot of the screen. The flask's ticks follow the glass (`edge(y)`, the same wall formula as FlaskClimb) and each name starts just outside the wall.
+- **Phone sizes are measured** (owner, 2026-11-01, "too small on mobile"): the title piece scales to the visible width (`--ps`, 0.6 to 1). Never go back to fixed phone sizes. NOTHING in a piece may move sideways past its 420px box: the books' reveal is PULL FORWARD (owner, 2026-11-02: the earned book lifts up and scales 1.07, the books above it fade; it used to slide right and tilt, off the edge of a phone), and the calculator's screen wraps a long title onto two lines instead of clipping it. The flask's ticks follow the glass (`edge(y)`, the same wall formula as FlaskClimb) and each name starts just outside the wall. Check every piece at 375 and 390 wide before shipping a change to one.
 - **Any tap or key skips to the glide.** Pop-ups (MoreRunsPop, GauntletMorePop, EncorePop,
   RunNudgePop) are hidden while `html.rfx-on` is set and show once the finale hands over.
 - **Fresh finishes only.** Each client passes `finale` only when `doneAtLoad.current === false`;

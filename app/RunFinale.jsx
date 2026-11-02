@@ -7,13 +7,14 @@
 // One full-screen, centred sequence in two parts, played once over a freshly
 // finished run, then handed to the end page underneath (GauntletEndStage):
 //
-//   1. THE RECAP RING. Every leg of the run is one arc of a ring, sized by
-//      what the leg could score. Each arc fills in turn while the ground takes
-//      that leg's colour, its label pops (name, score, subject), and the total
-//      counts up dead centre. One-life quizzes mark the question that ended them
-//      with a red tick; the line under the ring is the rank on that leg today.
-//   2. THE TITLE, IN THE RUN'S OWN PIECE. The ring clears, the score rises to
-//      the top, and the run plays its own title climb (PIECES below): books for
+//   1. THE SCOREBOARD (owner, 2026-11-02, replacing the recap ring, which
+//      crowded its labels on a phone). The total sits on top and every leg is
+//      one full-width row under it: name, subject, score of what it could
+//      score, and a bar. Each row lights and its bar fills in turn while the
+//      ground takes that leg's colour and the total counts up; the leg's rank
+//      today lands under its row. No miss marks: the bar's length says it.
+//   2. THE TITLE, IN THE RUN'S OWN PIECE. The rows clear, the score settles,
+//      and the run plays its own title climb (PIECES below): books for
 //      the Trivia Gauntlet and Encore, the flask for Science, a calculator for
 //      Math, the dictionary for English, a belt for the Dojo, a name tag for
 //      Read the Room, school letters for Judged, a wallet for Price Check, the
@@ -40,12 +41,6 @@ import { useStageChrome } from './GauntletScreens';
 const DINK = '#08222e';
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const ease = (p) => 1 - Math.pow(1 - p, 3);
-const C = 250, RAD = 192, SW = 30;
-const pt = (r, deg) => [C + r * Math.cos(deg * Math.PI / 180), C + r * Math.sin(deg * Math.PI / 180)];
-function arcD(r, a0, a1) {
-  const [x0, y0] = pt(r, a0), [x1, y1] = pt(r, a1);
-  return `M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
-}
 const FLASK = 'M84 14 L136 14 L136 112 L206 384 Q210 400 194 400 L26 400 Q10 400 14 384 L84 112 Z';
 const firstWord = (s) => String(s || '').split(/\s+/)[0];
 
@@ -62,9 +57,15 @@ export const FINALE_PIECE = {
 // finale. X carries the score and the run's maximum.
 const PIECES = {
   shelf: {
-    html: (L) => `<div class="shelf">${L.map((t, i) => `<div class="bk" id="pk${i}" style="bottom:${14 + i * 44}px;width:${Math.max(220, 400 - i * 26)}px;background:${softGround(t.colour)}"><span>${esc(t.name)}</span><small>${t.min}+</small></div>`).join('')}<div class="plank"></div></div>`,
+    html: (L) => `<div class="shelf">${L.map((t, i) => `<div class="bk" id="pk${i}" style="bottom:${14 + i * 44}px;width:${Math.max(220, 372 - i * 24)}px;background:${softGround(t.colour)}"><span>${esc(t.name)}</span><small>${t.min}+</small></div>`).join('')}<div class="plank"></div></div>`,
     step: (q, L, k) => q(`#pk${k}`).classList.add('drop'),
-    land: (q, L, K) => { const b = q(`#pk${K}`); b.classList.remove('drop'); b.style.opacity = '1'; void b.offsetWidth; b.classList.add('out'); },
+    // PULL FORWARD (owner, 2026-11-02): the earned book lifts straight up and
+    // toward the reader, and the books above it fade back. It used to slide
+    // right and tilt, which ran off the side of a phone.
+    land: (q, L, K) => {
+      L.forEach((t, j) => { if (j > K) { const o = q(`#pk${j}`); if (o) o.classList.add('dim'); } });
+      const b = q(`#pk${K}`); b.classList.remove('drop'); b.style.opacity = '1'; void b.offsetWidth; b.classList.add('out');
+    },
   },
   flask: {
     html: (L, X) => {
@@ -185,90 +186,35 @@ export default function RunFinale({
     const X = { score, cap: pieceKey === 'flask' ? Math.max(capMax, 1) : capMax, earned };
     const phone = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width:899px)').matches;
     // PHONE SIZES ARE MEASURED (owner, 2026-11-01: "the end animation elements
-    // appear too small on mobile"). The ring takes most of the screen width, the
-    // labels sit just outside it whatever its size, and the title piece scales to
-    // the width it has, instead of the fixed 280px ring and 0.68 piece.
+    // appear too small on mobile"): the title piece scales to the width it has.
     // The visible width: the page under the finale can carry a scrollbar.
     const vw = typeof window !== 'undefined' ? Math.min(window.innerWidth, (root.parentElement && root.parentElement.clientWidth) || window.innerWidth) : 390;
     const vh = typeof window !== 'undefined' ? window.innerHeight : 780;
-    const ringPx = phone ? Math.round(Math.max(260, Math.min(vw * 0.8, vh * 0.46, 400))) : 480;
     const pieceScale = phone ? Math.max(0.6, Math.min(1, (vw - 28) / 420, (vh * 0.42) / 300)) : 1;
-    if (phone) {
-      root.style.setProperty('--rd', `${ringPx}px`);
-      root.style.setProperty('--ps', String(pieceScale));
-    }
-    // LABELS SIT OUTSIDE THE RING, ANCHORED BY SIDE (owner, 2026-11-01: "words
-    // overlapping with the circle"). Each label touches a point just outside the
-    // arc and grows away from the ring (rightward on the right, upward at the
-    // top), so a long name never reaches back over the arc.
-    const LAB_GAP = phone ? 8 : 12;
+    if (phone) root.style.setProperty('--ps', String(pieceScale));
+    // Seven legs on a short phone tighten the rows a step.
+    if (phone && legs.length > 5 && vh < 740) root.classList.add('tight');
     const gOf = (c) => (colorGround && c ? softGround(c) : endBg);
     const paint = (c) => { root.style.background = c; groundRef.current = c; setGround(c); };
 
     // ── build ──
-    const maxSum = legs.reduce((a, g) => a + Math.max(0.0001, Number(g.max) || 0), 0) || 1;
-    const GAP = legs.length > 1 ? 3.2 : 0;
-    const usable = 360 - legs.length * GAP;
-    let a = -90 + GAP / 2;
-    const segs = [], labs = [];
-    legs.forEach((g, i) => {
+    const rowsHtml = legs.map((g, i) => {
       const max = Math.max(0.0001, Number(g.max) || 0);
-      const span = usable * max / maxSum, a0 = a, a1 = a + span; a = a1 + GAP;
-      const d = arcD(RAD, a0, a1); const len = RAD * span * Math.PI / 180;
       const got = Math.max(0, Math.min(max, Number(g.got) || 0));
-      const frac = got / max;
-      const am = a0 + span * frac; const [mx1, my1] = pt(RAD - SW / 2 - 4, am), [mx2, my2] = pt(RAD + SW / 2 + 4, am);
-      segs.push(`<path d="${d}" fill="none" stroke="${softGround(g.colour)}" stroke-width="${SW}"/><path d="${d}" fill="none" stroke="currentColor" stroke-opacity=".14" stroke-width="${SW}"/>
-        <path class="sf" id="sf${i}" d="${d}" fill="none" stroke="currentColor" stroke-width="${SW}" stroke-dasharray="${len} ${len}" stroke-dashoffset="${len}" data-l="${len}" data-f="${frac}"/>
-        ${oneLife && got < max ? `<line class="miss" id="mx${i}" x1="${mx1}" y1="${my1}" x2="${mx2}" y2="${my2}" stroke="#b4232a" stroke-width="5" stroke-linecap="round"/>` : ''}`);
-      const mid = (a0 + a1) / 2;
-      const c = Math.cos(mid * Math.PI / 180), sn = Math.sin(mid * Math.PI / 180);
-      const al = c > 0.35 ? 'left' : c < -0.35 ? 'right' : 'center';
-      labs.push(`<div class="lab" id="lb${i}" data-a="${mid}" style="--tx:${(-50 + 50 * c).toFixed(1)}%;--ty:${(-50 + 50 * sn).toFixed(1)}%;transform-origin:${(50 - 50 * c).toFixed(0)}% ${(50 - 50 * sn).toFixed(0)}%;text-align:${al}"><b>${esc(g.name)}</b><i>${esc(g.shown != null ? g.shown : Math.round(Number(g.got) || 0))}</i>${g.sub ? `<small>${esc(g.sub)}</small>` : ''}</div>`);
-    });
+      const shown = g.shown != null ? g.shown : Math.round(Number(g.got) || 0);
+      const showMax = Number.isFinite(Number(g.max)) && Number(g.max) > 0 && Number(g.max) === Math.round(Number(g.max));
+      return `<div class="rw" id="rw${i}"><div class="rt"><span class="rn"><b>${esc(g.name)}</b>${g.sub ? `<small>${esc(g.sub)}</small>` : ''}</span><span class="rv">${esc(shown)}${showMax ? `<em> / ${esc(g.max)}</em>` : ''}</span></div>
+        <div class="trk"><div class="fl" id="fl${i}" style="background:${g.colour}" data-f="${(got / max).toFixed(4)}"></div></div><div class="rr" id="rr${i}"></div></div>`;
+    }).join('');
     root.innerHTML = `<div class="cap"><span>${esc(circuitName)}${dateLabel ? ` · ${esc(dateLabel)}` : ''}</span><span id="capR"></span></div>
-      <div class="ringw" id="ringw"><svg viewBox="0 0 500 500" aria-hidden="true">${segs.join('')}</svg>${labs.join('')}</div>
-      <div class="tline" id="tline"></div>
       <div class="rcol">
         <div class="rhero" id="rhero"><span class="num" id="f-score">0</span><span class="unit" id="f-unit">${esc(unitWord)}</span></div>
+        <div class="rws" id="rws">${rowsHtml}</div>
         <div class="pbox"><div class="piece">${P.html(L, X)}</div></div>
         <div class="tblock"><span class="ttl" id="f-title">${esc(earned.name)}</span>${rankText ? `<span class="rank" id="f-rank">${esc(rankText)}</span>` : ''}</div>
       </div>`;
     const q = (s) => root.querySelector(s);
     let alive = true;
-    // Place the labels, and on a phone pick the largest ring that keeps every
-    // label (at its full size) on screen and clear of the caption.
-    const placeLabels = () => {
-      const labsEl = Array.from(root.querySelectorAll('.lab'));
-      const sizes = labsEl.map((lb) => {
-        const tr = lb.style.transition;
-        lb.style.transition = 'none'; lb.style.transform = 'none';
-        const r = lb.getBoundingClientRect();
-        lb.style.transform = ''; void lb.offsetWidth; lb.style.transition = tr;
-        return { w: r.width, h: r.height, a: Number(lb.dataset.a) * Math.PI / 180 };
-      });
-      let D = ringPx;
-      if (phone) {
-        const cx = vw / 2, cy = vh / 2;
-        const fits = (d) => sizes.every(({ w, h, a }) => {
-          const R = (RAD + SW / 2) / 500 * d + LAB_GAP;
-          const c = Math.cos(a), sn = Math.sin(a);
-          const left = cx + c * R - w / 2 + (c * w) / 2;
-          const top = cy + sn * R - h / 2 + (sn * h) / 2;
-          return left >= 4 && left + w <= vw - 4 && top >= 46 && top + h <= vh - 60;
-        });
-        while (D > 220 && !fits(D)) D -= 6;
-        root.style.setProperty('--rd', `${D}px`);
-      }
-      const labR = RAD + SW / 2 + LAB_GAP * (500 / D);
-      labsEl.forEach((lb) => {
-        const [lx, ly] = pt(labR, Number(lb.dataset.a));
-        lb.style.left = `${lx / 5}%`; lb.style.top = `${ly / 5}%`;
-      });
-    };
-    placeLabels();
-    try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (alive && !root.classList.contains('p2')) placeLabels(); }); } catch (e) { /* older browsers */ }
-
     let skipped = false;
     const timers = [];
     const wait = (ms) => new Promise((res, rej) => { timers.push(setTimeout(() => (alive && !skipped ? res() : rej(new Error('stop'))), ms)); });
@@ -297,10 +243,6 @@ export default function RunFinale({
 
     const landNow = () => {
       q('#f-score').textContent = String(score);
-      legs.forEach((g, i) => {
-        const sf = q(`#sf${i}`); if (sf) { sf.style.transition = 'none'; sf.style.strokeDashoffset = String(sf.dataset.l * (1 - sf.dataset.f)); }
-      });
-      const tl = q('#tline'); if (tl) tl.classList.remove('in');
       q('#capR').textContent = '';
       if (!root.classList.contains('p2')) toPart2(false);
       if (!root.dataset.landed) {
@@ -397,20 +339,19 @@ export default function RunFinale({
           const g = legs[i];
           paint(gOf(g.colour));
           q('#capR').textContent = `${legWord} ${i + 1} of ${legs.length}`;
-          const sf = q(`#sf${i}`); sf.style.strokeDashoffset = String(sf.dataset.l * (1 - sf.dataset.f));
-          const mx = q(`#mx${i}`); if (mx) mx.classList.add('in');
-          q(`#lb${i}`).classList.add('in');
-          const tl = q('#tline'); tl.classList.remove('in');
+          q(`#rw${i}`).classList.add('in');
+          const fl = q(`#fl${i}`); fl.style.width = `${Number(fl.dataset.f) * 100}%`;
           const add = Number(g.got) || 0;
           count(num, Math.round(sum), Math.round(sum + add), 620);
           sum += add;
           await wait(360);
-          if (g.rank != null && g.plays != null) { tl.textContent = `#${g.rank} of ${g.plays} on ${g.name} today`; tl.classList.add('in'); }
+          if (g.rank != null && g.plays != null) { const rr = q(`#rr${i}`); rr.textContent = `#${g.rank} of ${g.plays} today`; rr.classList.add('in'); }
           await wait(480);
         }
         num.textContent = String(score);
-        q('#tline').classList.remove('in');
-        await wait(280);
+        await wait(900);
+        q('#rws').classList.add('gone');
+        await wait(300);
         // part two
         q('#capR').textContent = heading || 'Your title';
         toPart2(true);
@@ -472,19 +413,21 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx.out{opacity:0;pointer-events:none}
 .rfx-fly{position:fixed;z-index:97;transform-origin:0 0;white-space:nowrap;pointer-events:none;font-family:Manrope,system-ui,sans-serif;font-variant-numeric:tabular-nums}
 .rfx .cap{position:absolute;top:max(18px, env(safe-area-inset-top));left:24px;right:24px;display:flex;justify-content:space-between;gap:12px;white-space:nowrap;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
-.rfx .ringw{position:absolute;left:50%;top:50%;width:480px;height:480px;transform:translate(-50%,-50%);transition:opacity .5s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
-.rfx.p2 .ringw{opacity:0;transform:translate(-50%,-50%) scale(.82)}
-.rfx .ringw svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.rfx .sf{transition:stroke-dashoffset .7s cubic-bezier(.2,.8,.2,1)}
-.rfx .miss{opacity:0;transition:opacity .25s ease .55s}.rfx .miss.in{opacity:1}
-.rfx .lab{position:absolute;transform:translate(var(--tx,-50%),var(--ty,-50%)) scale(.6);opacity:0;transition:transform .45s cubic-bezier(.2,1.4,.4,1),opacity .3s ease;text-align:center;line-height:1.15;white-space:nowrap}
-.rfx .lab.in{opacity:1;transform:translate(var(--tx,-50%),var(--ty,-50%)) scale(1)}
-.rfx .lab b{font-size:15px;font-weight:800}.rfx .lab i{font-style:normal;font-size:15px;font-weight:800;margin-left:5px;font-variant-numeric:tabular-nums}
-.rfx .lab small{display:block;font-size:11px;font-weight:700;opacity:.65;letter-spacing:.02em}
-.rfx .tline{position:absolute;left:0;right:0;top:auto;bottom:40px;height:22px;font-size:15px;font-weight:800;opacity:0;transition:opacity .3s ease;text-align:center}
-.rfx .tline.in{opacity:.85}
 .rfx .rcol{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:0 16px}
 .rfx .rhero{display:flex;flex-direction:column;align-items:center;gap:6px}
+.rfx .rws{width:min(540px,100%);display:flex;flex-direction:column;gap:14px;text-align:left;transition:opacity .3s ease}
+.rfx .rws.gone{opacity:0}
+.rfx.p2 .rws{display:none}
+.rfx .rw{display:flex;flex-direction:column;gap:6px;opacity:.28;transition:opacity .3s ease}
+.rfx .rw.in{opacity:1}
+.rfx .rt{display:flex;justify-content:space-between;align-items:baseline;gap:10px;white-space:nowrap}
+.rfx .rn{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.rfx .rn b{font-size:17px;font-weight:800}.rfx .rn small{font-size:12.5px;font-weight:700;opacity:.65;margin-left:8px}
+.rfx .rv{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;flex:none}.rfx .rv em{font-style:normal;font-size:14px;opacity:.55}
+.rfx .trk{position:relative;height:12px;border-radius:6px;background:rgba(8,34,46,.1)}
+.rfx .fl{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;box-shadow:inset 0 0 0 2px currentColor;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.rfx .rr{font-size:12.5px;font-weight:700;opacity:0;text-align:right;min-height:15px;line-height:15px;margin-top:-2px;transition:opacity .3s ease;font-variant-numeric:tabular-nums}
+.rfx .rr.in{opacity:.7}
 .rfx .rhero .num{font-size:120px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;display:inline-block;transition:font-size .6s cubic-bezier(.2,.8,.2,1)}
 .rfx .rhero .unit{font-size:17px;font-weight:800;line-height:1;display:inline-block}
 .rfx.p2 .rhero .num{font-size:78px}
@@ -501,10 +444,11 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 @media (max-width:899px){
   .rfx .cap{left:16px;right:16px;font-size:11.5px;letter-spacing:.1em}
   .rfx .cap span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis}.rfx .cap span:last-child{flex:none}
-  .rfx .ringw{width:var(--rd,320px);height:var(--rd,320px)}
-  .rfx .lab b,.rfx .lab i{font-size:13.5px}.rfx .lab small{font-size:10.5px;max-width:78px;white-space:normal}
-  .rfx .tline{top:auto;bottom:max(22px, env(safe-area-inset-bottom));font-size:15px}
-  .rfx .rhero .num{font-size:calc(var(--rd,320px) * .3)}.rfx .rhero .unit{font-size:16px}
+  .rfx .rhero .num{font-size:72px}.rfx .rhero .unit{font-size:16px}
+  .rfx .rws{gap:11px}
+  .rfx .rn b,.rfx .rv{font-size:15px}.rfx .rn small{font-size:11.5px;margin-left:6px}.rfx .rv em{font-size:12.5px}
+  .rfx .trk{height:10px}.rfx .rr{font-size:11.5px;min-height:13px;line-height:13px}
+  .rfx.tight .rws{gap:7px}.rfx.tight .rhero .num{font-size:60px}.rfx.tight .rw{gap:4px}
   .rfx.p2 .rhero .num{font-size:68px}
   .rfx .rcol{gap:16px}
   .rfx .pbox{width:calc(420px * var(--ps,.85));height:calc(300px * var(--ps,.85))}
@@ -517,7 +461,8 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .bk{position:absolute;left:50%;height:38px;border:2.5px solid currentColor;border-radius:5px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:15px;font-weight:800;color:${DINK};opacity:.18;transform:translateX(-50%);transition:transform .5s cubic-bezier(.2,1.3,.4,1),opacity .2s ease,box-shadow .3s ease}
 .rfx .bk small{font-size:12px;font-weight:800;opacity:.75}
 .rfx .bk.drop{opacity:1;animation:rfxBk .45s cubic-bezier(.3,1.4,.5,1) both}
-.rfx .bk.out{opacity:1;transform:translateX(calc(-50% + 46px)) rotate(-3deg);box-shadow:0 0 0 3px ${DINK},0 14px 28px rgba(8,34,46,.25)}
+.rfx .bk.dim{opacity:.1}
+.rfx .bk.out{opacity:1;z-index:2;transform:translateX(-50%) translateY(-12px) scale(1.07);box-shadow:0 0 0 3px ${DINK},0 16px 28px rgba(8,34,46,.28)}
 @keyframes rfxBk{from{transform:translate(-50%,-70px);opacity:0}to{transform:translateX(-50%);opacity:1}}
 /* flask */
 .rfx .flk svg{position:absolute;left:96px;top:0;overflow:visible}
@@ -532,7 +477,7 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 /* calculator */
 .rfx .calc{position:absolute;left:90px;top:6px;width:240px;height:288px;border:3px solid currentColor;border-radius:22px;padding:16px;background:rgba(8,34,46,.06)}
 .rfx .lcd{height:70px;border-radius:10px;background:#131c12;display:flex;align-items:center;justify-content:flex-end;padding:0 14px;overflow:hidden}
-.rfx .lcd span{color:#bef264;font-size:17px;font-weight:800;letter-spacing:.08em;white-space:nowrap;text-shadow:0 0 12px rgba(190,242,100,.5)}
+.rfx .lcd span{color:#bef264;font-size:17px;font-weight:800;letter-spacing:.08em;line-height:1.15;text-align:right;text-shadow:0 0 12px rgba(190,242,100,.5)}
 .rfx .lcd.blink span{animation:rfxBlink .3s steps(2) 4}
 @keyframes rfxBlink{50%{opacity:0}}
 .rfx .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
