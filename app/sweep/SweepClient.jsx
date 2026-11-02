@@ -176,6 +176,10 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const PAR = PUZZLE.par;
   const FIELD = useMemo(() => decodeField(PUZZLE.field), [PUZZLE.field]);
+  // Every safe cell on the field. The 200 rows ARE reachable (a player swept
+  // all of them on 2026-11-02 and had no way to finish), so opening the last
+  // safe cell ends the run as a clean clear and posts it.
+  const SAFE = useMemo(() => { let n = 0; for (let i = 0; i < FIELD.length; i++) if (!FIELD[i]) n++; return n; }, [FIELD]);
   const STORE_KEY = `sot_sweep_${PUZZLE.num}`;
   const REC_KEY = `sot_sweep_rec_${PUZZLE.num}`;
   const isTodays = PUZZLE.num === pickPuzzle(puzzles, null).num;
@@ -264,7 +268,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
   // Modelled on Babel's verdictTone/verdictWord, the other benchmark-scored
   // game.
   const verdictTone = won ? 'won' : 'part';
-  const verdictWord = ARCADE_RUN;
+  const verdictWord = g.cleared ? 'Field cleared' : ARCADE_RUN;
   const myStats = useMemo(() => deriveStats(stats || { rec: {} }, PUZZLE.num), [stats, PUZZLE.num]);
 
   // How deep the dig has reached, which is what the viewport follows.
@@ -401,8 +405,10 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
       commit(g2); postResult(g2); return;
     }
     const { open, gained, added } = openFrom({ ...cur, t0 }, i);
-    commit({ ...cur, t0, open, last: added, score: cur.score + gained, digs: cur.digs + 1 });
-  }, [FIELD, flagSet, openSet, openFrom, commit, postResult]);
+    const next = { ...cur, t0, open, last: added, score: cur.score + gained, digs: cur.digs + 1 };
+    if (open.length >= SAFE) { const g2 = { ...next, status: 'over', cleared: true, tEnd: Date.now() }; commit(g2); postResult(g2); return; }
+    commit(next);
+  }, [FIELD, SAFE, flagSet, openSet, openFrom, commit, postResult]);
 
   // Clicking a number whose mines are all flagged opens the rest of its
   // neighbors at once. It is how an experienced player moves, and it is also
@@ -435,8 +441,10 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
       added = added.concat(res.added);
       open = res.open;
     }
-    commit({ ...cur, open, last: added, score: cur.score + gained, digs: cur.digs + 1 });
-  }, [FIELD, openSet, flagSet, openFrom, commit, postResult]);
+    const next = { ...cur, open, last: added, score: cur.score + gained, digs: cur.digs + 1 };
+    if (open.length >= SAFE) { const g2 = { ...next, status: 'over', cleared: true, tEnd: Date.now() }; commit(g2); postResult(g2); return; }
+    commit(next);
+  }, [FIELD, SAFE, openSet, flagSet, openFrom, commit, postResult]);
 
   const toggleFlag = useCallback((i) => {
     const cur = gRef.current;
@@ -452,6 +460,31 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
     commit(st);
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
   }, [commit]);
+
+  // Give up: END the run where it stands and post it, so the cells already
+  // uncovered count. This replaced "Restart run" (2026-11-02), which wiped a
+  // run in progress without posting it and cost a player a full-depth score.
+  // Giving up can never beat playing on (the score is cells uncovered), so it
+  // keeps the score rather than posting 0. The end card offers Play again.
+  const giveUp = useCallback(() => {
+    const cur = gRef.current;
+    setArmRestart(false);
+    if (cur.status !== 'playing' || !cur.t0) return;
+    const g2 = { ...cur, status: 'over', tEnd: Date.now() };
+    commit(g2);
+    if (cur.score > 0) postResult(g2);
+  }, [commit, postResult]);
+
+  // A run saved before the clear-ends-the-run fix can sit fully swept and still
+  // "playing". Finish it on load so that player's score posts.
+  useEffect(() => {
+    if (!hydrated) return;
+    const cur = gRef.current;
+    if (cur.status === 'playing' && cur.t0 && cur.open.length >= SAFE) {
+      const g2 = { ...cur, status: 'over', cleared: true, tEnd: Date.now() };
+      commit(g2); postResult(g2);
+    }
+  }, [hydrated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // A fresh run on the SAME field. It clears nothing that records the day: the
   // stats entry and the posted rows stay, because every finished run posts and
@@ -902,10 +935,10 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
               <div style={{ textAlign: 'center', marginTop: 10 }}>
                 <button
                   type="button"
-                  onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; replayRun(); } else setArmRestart(Date.now()); }}
+                  onClick={() => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; giveUp(); } else setArmRestart(Date.now()); }}
                   style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontWeight: 700, fontSize: 12, color: armRestart ? `var(--stg-acc-ink, ${COLORS.accent})` : '#9aa2b1', textDecoration: 'underline', textUnderlineOffset: 3, display: 'inline-flex', alignItems: 'center', gap: 5 }}
                 >
-                  <RotateCcw size={13} /> {armRestart ? 'Press again to start over' : 'Restart run'}
+                  <X size={13} /> {armRestart ? `Press again to end with ${nf(g.score)} cell${g.score === 1 ? '' : 's'}` : 'Give up'}
                 </button>
               </div>
             )}

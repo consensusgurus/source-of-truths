@@ -300,7 +300,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
   const ladder = useMemo(() => RANKS.slice().reverse().map((t, k) => {
     const ti = RANKS.length - 1 - k;
     const min = t[0] <= 0 ? 0 : Math.ceil((t[0] - 0.5) * MAX / 50);
-    return { min, name: `${t[1]} \u00b7\u00a0${t[3]}\u00a0card`, line: t[2], colour: rampFor(k), chip: CARD_COL[ti] ? CARD_COL[ti][0] : undefined, ti, card: <PayCard ti={ti} mini /> };
+    return { min, name: `${t[1]}\u00a0\u00b7 ${t[3]}\u00a0card`, line: t[2], colour: rampFor(k), chip: CARD_COL[ti] ? CARD_COL[ti][0] : undefined, ti, card: <PayCard ti={ti} mini /> };
   }), [RANKS, MAX]);
   const earned = ladder.find((x) => x.ti === tier) || ladder[0];
 
