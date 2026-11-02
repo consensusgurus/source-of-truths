@@ -39,6 +39,11 @@ for (const t of THEMES) {
 let prev = null;
 const seenAnswer = new Map();
 const lastTheme = {};
+// The names family (owner, 2026-11-02), from 2026-11-03 on: a names day at
+// least 10 days after the last names day of either kind, and a names Monday
+// at least 21 days after the last names Monday.
+const FAMILY = { mens: 'names', womens: 'names' }, FAMILY_RULE_FROM = '2026-11-03';
+const famLast = {}, famMon = {};
 for (const p of PUZZLES) {
   const d = new Date(p.live + 'T12:00:00Z');
   // the chain
@@ -64,6 +69,14 @@ for (const p of PUZZLES) {
     if (gap < 5) fail(p, `${p.themeId} back after ${gap} days (min 5)`);
   }
   lastTheme[p.themeId] = p.live;
+  const fam = FAMILY[p.themeId];
+  if (fam) {
+    if (p.live >= FAMILY_RULE_FROM) {
+      if (famLast[fam]) { const g = (d - new Date(famLast[fam] + 'T12:00:00Z')) / 864e5; if (g < 10) fail(p, `names day back after ${g} days (min 10)`); }
+      if (dow === 1 && famMon[fam]) { const g = (d - new Date(famMon[fam] + 'T12:00:00Z')) / 864e5; if (g < 21) fail(p, `names Monday back after ${g} days (min 21)`); }
+    }
+    famLast[fam] = p.live; if (dow === 1) famMon[fam] = p.live;
+  }
 
   // the answers
   if (!Array.isArray(p.words) || p.words.length !== 10) { fail(p, 'needs exactly ten answers'); prev = p; continue; }

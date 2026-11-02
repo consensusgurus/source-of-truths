@@ -3,6 +3,8 @@
 //   node scripts/gen-scram.mjs                     # whole bank, 2026-10-14 .. --until
 //   node scripts/gen-scram.mjs --until 2027-03-31  # EXTEND: boards already in the
 //                                                  # bank are kept byte for byte
+//   node scripts/gen-scram.mjs --keep-through 2026-11-02  # RE-DEAL every board
+//                                                  # after that date (unplayed only)
 //
 // One theme a day, ten answers, every answer scrambled. The rules it deals by,
 // all re-checked independently by scripts/verify-scram.mjs:
@@ -15,6 +17,12 @@
 //      MIN_GAP days before it comes back.
 //   3. ONE RIGHT ANSWER PER SCRAMBLE. A word whose letters also spell another
 //      member of its theme (pool words plus alsoValid) is never dealt.
+//   2b. THE NAMES FAMILY (owner, 2026-11-02). Men's Names and Women's Names
+//      count as ONE family: a names day waits at least FAMILY_GAP days after
+//      the last names day of either kind, and a names theme takes a Monday at
+//      most one Monday in three (MONDAY_GAP days since the last names Monday).
+//      The short Monday band was funnelling both names pools onto Mondays.
+//      Applies from RULE_FROM on; boards played before it stay as they were.
 //   4. THE SCRAMBLE HIDES THE ANSWER: never the answer itself, never the same
 //      first letter, at most a quarter of the letters left in place, and (from
 //      five letters) no three-letter run of the answer left intact.
@@ -33,6 +41,10 @@ const START = '2026-10-14';
 const UNTIL = opt('--until', '2026-12-31');
 const SEED = Number(opt('--seed', '20261014'));
 export const MIN_GAP = 5;
+export const FAMILY = { mens: 'names', womens: 'names' };
+export const FAMILY_GAP = 10;
+export const MONDAY_GAP = 21;
+export const RULE_FROM = '2026-11-03';
 export const BANDS = { 1: [5, 6], 2: [5, 7], 3: [6, 7], 4: [6, 8], 5: [7, 8], 6: [7, 9], 0: [8, 12] };
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -97,20 +109,44 @@ async function existing() {
   return mod.PUZZLES || [];
 }
 
+// Scour (the word search) deals from these same pools and must never share
+// Scram's theme that day or a word within three days. When a Scram re-deal
+// lands under an existing Scour bank, steer around Scour's boards.
+async function scourBank() {
+  const f = path.join(ROOT, 'app', 'scour', 'puzzles.js');
+  if (!fs.existsSync(f)) return new Map();
+  const mod = await import(pathToFileURL(f).href + '?t=' + Date.now());
+  return new Map((mod.PUZZLES || []).map((p) => [p.live, p]));
+}
+const SCOUR = await scourBank();
+
 function deal(pools, kept, seed) {
   const r = rng(seed);
   const used = new Set(kept.flatMap((p) => p.words.map((w) => w.a)));
-  const last = {}, uses = {};
-  for (const p of kept) { last[p.themeId] = p.live; uses[p.themeId] = (uses[p.themeId] || 0) + 1; }
+  const last = {}, uses = {}, famLast = {}, famMon = {};
+  const note = (id, live, dow) => {
+    last[id] = live; uses[id] = (uses[id] || 0) + 1;
+    const f = FAMILY[id]; if (f) { famLast[f] = live; if (dow === 1) famMon[f] = live; }
+  };
+  for (const p of kept) note(p.themeId, p.live, new Date(p.live + 'T12:00:00Z').getUTCDay());
   const from = kept.length ? iso(new Date(new Date(kept[kept.length - 1].live + 'T12:00:00Z').getTime() + 864e5)) : START;
   const out = [];
   let num = kept.length ? kept[kept.length - 1].num + 1 : 1;
   for (const d of days(from, UNTIL)) {
     const dow = d.getUTCDay(), [lo, hi] = BANDS[dow], live = iso(d);
-    const gap = (id) => (last[id] ? (d - new Date(last[id] + 'T12:00:00Z')) / 864e5 : 999);
+    const since = (x) => (x ? (d - new Date(x + 'T12:00:00Z')) / 864e5 : 999);
+    const gap = (id) => since(last[id]);
+    const famOk = (id) => {
+      const f = FAMILY[id]; if (!f || live < RULE_FROM) return true;
+      if (since(famLast[f]) < FAMILY_GAP) return false;
+      return dow !== 1 || since(famMon[f]) >= MONDAY_GAP;
+    };
+    const near = new Set();
+    for (let k = -3; k <= 3; k++) { const sp = SCOUR.get(iso(new Date(d.getTime() + k * 864e5))); if (sp) for (const w of sp.words) near.add(letters(w)); }
+    const scourTheme = SCOUR.get(live)?.themeId;
     const cands = pools
-      .filter((t) => (dow !== 0 || t.sunday) && gap(t.id) >= MIN_GAP)
-      .map((t) => ({ t, avail: t.words.filter((w) => !used.has(w) && letters(w).length >= lo && letters(w).length <= hi) }))
+      .filter((t) => (dow !== 0 || t.sunday) && gap(t.id) >= MIN_GAP && famOk(t.id) && t.id !== scourTheme)
+      .map((t) => ({ t, avail: t.words.filter((w) => !used.has(w) && !near.has(letters(w)) && letters(w).length >= lo && letters(w).length <= hi) }))
       .filter((c) => c.avail.length >= 10);
     if (!cands.length) return null;
     const pick = cands
@@ -131,7 +167,7 @@ function deal(pools, kept, seed) {
     if (chosen.length < 10) return null;
     chosen.sort((a, b) => letters(a).length - letters(b).length || (r() - 0.5));
     for (const w of chosen) used.add(w);
-    last[pick.t.id] = live; uses[pick.t.id] = (uses[pick.t.id] || 0) + 1;
+    note(pick.t.id, live, dow);
     const p = { num: num++, quizId: quizId(d), live, dateLabel: dateLabel(d), themeId: pick.t.id, theme: pick.t.label };
     if (dow === 0) p.sunday = true;
     p.words = chosen.map((a) => ({ a, s: scramble(a, r) }));
@@ -157,7 +193,10 @@ const HEADER = `// Puzzle data for Scram, the daily themed word scramble. Import
 const pools = loadPools();
 if (process.argv[1] && process.argv[1].endsWith('gen-scram.mjs')) {
   const all = await existing();
-  const kept = all.filter((p) => p.live < (args.includes('--rebuild') ? START : '9999'));
+  // --keep-through <date>: keep boards up to and including that date and
+  // re-deal everything after it (only ever for dates nobody has played yet).
+  const keepThrough = opt('--keep-through', '9999');
+  const kept = all.filter((p) => p.live < (args.includes('--rebuild') ? START : '9999') && p.live <= keepThrough);
   const keepUpTo = kept.length && !args.includes('--rebuild') ? kept : [];
   let fresh = null, seed = SEED;
   for (let k = 0; k < 400 && !fresh; k++) fresh = deal(pools, keepUpTo, seed + k * 7919);

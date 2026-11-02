@@ -201,6 +201,15 @@ Input Options" canvas, the LIT KEYBOARD.
 - **The ramp is answer length**: Mon 5-6, Tue 5-7, Wed 6-7, Thu 6-8, Fri 7-8, Sat 7-9, Sunday Edition 8-12,
   dealt only from themes flagged `sunday` (the names pools are too thin in long names). No answer is dealt
   twice in the bank, and a theme waits five days before it returns.
+- **The names family (owner, 2026-11-02).** Men's Names and Women's Names count as ONE family: a names
+  day waits 10 days after the last names day of either kind, and a names theme takes a Monday at most one
+  Monday in three (21 days since the last names Monday). Before this the short Monday band funnelled both
+  pools onto Mondays (6 of 11 Mondays, plus Oct 19/20 back to back) and Scram "always felt like names".
+  Enforced from 2026-11-03 by `FAMILY` / `FAMILY_GAP` / `MONDAY_GAP` in gen-scram and restated in
+  verify-scram; boards through 11/2 are grandfathered.
+- **A re-deal avoids Scour.** gen-scram reads `app/scour/puzzles.js` and never deals Scour's theme that day
+  or a word on a Scour board within three days. `--keep-through <date>` keeps boards through that date and
+  re-deals the rest (unplayed dates only); run verify-scour and verify-fill after.
 - **The scramble hides the answer**: never the answer, never its first letter first, at most a quarter of the
   letters in place, and no three-letter run of the answer intact. A word no shuffle can hide (REFEREE) is
   dropped from the pool rather than dealt weakly.
