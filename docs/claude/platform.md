@@ -615,3 +615,12 @@ and rolling referrers (7 days vs the week before).
   columns (and their `views` / `quiz_views` reads), `visitor_active_counts()`, Return
   Play, the Player Map, and the full-history Time Played / New Users charts. The
   builders stay in `lib/admin-data.js` for `scripts/verify-admin-data.mjs`.
+- **All-time highs (owner, 2026-11-02)** sit under the Pulse table: best ET day ever for
+  DAU, visitors, page views, games finished, new players, sign-ups and time played, plus
+  the best rolling 7-day (WAU) and 30-day (MAU) count, each with the day it was set and
+  today's figure against it (today counts, partial). The play highs come from the same
+  pass over the whole row history (`playHighs` in `lib/admin-pulse.js`). Visitors and
+  page views come from `site_view_daily(p_since, p_until)` (migration 63); the daily
+  history is stored in `stats_payloads` as `admin:viewdaily:v1` with a `done` day, so
+  after a one-time backfill in 31-day slices from 2026-01-01 each build reads only
+  yesterday and today. Do not replace that with a full-history read per build.

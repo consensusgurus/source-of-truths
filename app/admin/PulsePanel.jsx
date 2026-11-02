@@ -110,6 +110,66 @@ function MetricRow({ label, sub, data, fmt, ratio, spark, sparkColor, single }) 
   );
 }
 
+// All-time highs (owner, 2026-11-02): one card per measure, the record, the
+// day it was set, and where today stands against it. WAU and MAU are the best
+// rolling 7- and 30-day counts, dated by the day the window ends.
+const HIGHS = [
+  ['dau', 'Daily active players', 'day', nf],
+  ['wau', 'Weekly active players', 7, nf],
+  ['mau', 'Monthly active players', 30, nf],
+  ['visitors', 'Visitors in a day', 'day', nf],
+  ['pageViews', 'Page views in a day', 'day', nf],
+  ['plays', 'Games finished in a day', 'day', nf],
+  ['newPlayers', 'New players in a day', 'day', nf],
+  ['signups', 'Sign-ups in a day', 'day', nf],
+  ['seconds', 'Time played in a day', 'day', fmtTime],
+];
+function highDate(ymd, today) {
+  if (ymd === today) return 'today';
+  const [y] = ymd.split('-');
+  return `${dayLabel(ymd)}${today && y !== today.slice(0, 4) ? `, ${y}` : ''}`;
+}
+function Highs({ highs, today, error }) {
+  const cards = HIGHS.filter(([k]) => highs && highs[k]);
+  if (!cards.length) return null;
+  const missingViews = !highs.visitors;
+  return (
+    <div style={{ marginTop: 34 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
+        <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, color: C.ink }}>All-time highs</div>
+        <div style={{ fontFamily: SANS, fontSize: 11.5, color: C.faded }}>
+          Best Eastern calendar day ever (weekly and monthly: best rolling 7 and 30 days). Today counts as it fills.
+          {missingViews ? ` Visitor and page-view highs unavailable${error ? ` (${error})` : ''}.` : ''}
+        </div>
+      </div>
+      <div className="pl-highs">
+        {cards.map(([k, label, span, fmt]) => {
+          const h = highs[k];
+          const isToday = h.day === today;
+          const share = h.value > 0 ? h.latest / h.value : null;
+          const when = span === 'day' ? `Set ${highDate(h.day, today)}` : `${span} days ending ${highDate(h.day, today)}`;
+          const nowLabel = span === 'day' ? 'Today so far' : `Last ${span} days`;
+          return (
+            <div key={k} className="pl-high" style={isToday ? { borderColor: C.up, boxShadow: `inset 0 0 0 1px ${C.up}` } : null}>
+              <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 12, color: C.faded }}>{label}</div>
+              <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: 24, color: C.ink, lineHeight: 1.15, marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>{fmt(h.value)}</div>
+              <div style={{ fontFamily: MONO, fontSize: 10.5, marginTop: 3, color: isToday ? C.up : C.slate, fontWeight: isToday ? 700 : 400 }}>
+                {isToday ? 'New record today' : h.latest >= h.value ? `Tied today · first ${when.toLowerCase()}` : when}
+              </div>
+              <div style={{ height: 4, background: C.grid, borderRadius: 2, marginTop: 10, overflow: 'hidden' }}>
+                <div style={{ width: `${Math.min(100, Math.round((share || 0) * 100))}%`, height: '100%', background: isToday ? C.up : C.accent, borderRadius: 2 }} />
+              </div>
+              <div style={{ fontFamily: MONO, fontSize: 10.5, marginTop: 5, color: C.slate, fontVariantNumeric: 'tabular-nums' }}>
+                {nowLabel}: <b style={{ color: C.ink }}>{fmt(h.latest)}</b>{share != null ? ` · ${Math.round(share * 100)}% of record` : ''}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Section({ title, children }) {
   return (
     <>
@@ -207,6 +267,8 @@ export default function PulsePanel({ part }) {
         .pl-head{border-top:none;background:${C.surface};padding:9px 16px}
         .pl-sec{padding:14px 16px 4px;font-family:${MONO};font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:${C.faded};font-weight:700;border-top:1px solid ${C.line}}
         .pl-grid>.pl-sec:nth-child(2){border-top:none}
+        .pl-highs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+        .pl-high{border:1px solid ${C.line};border-radius:12px;background:${C.paper};padding:13px 15px 12px}
         @media(max-width:900px){.pl-row,.pl-head{grid-template-columns:minmax(120px,1.2fr) repeat(3,minmax(80px,1fr))}.pl-spark,.pl-head .pl-spark{display:none}}
       `}</style>
 
@@ -269,6 +331,8 @@ export default function PulsePanel({ part }) {
           Stickiness (DAU ÷ MAU) yesterday: <b style={{ color: C.ink }}>{fmtPct(stick.now)}</b>, against {fmtPct(stick.prev)} a week before. <Delta c={stick} ratio /> 
         </div>
       ) : null}
+
+      <Highs highs={d.highs} today={d.today} error={d.highsError} />
 
       <div style={{ marginTop: 34 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap', marginBottom: 8 }}>
