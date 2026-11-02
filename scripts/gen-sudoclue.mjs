@@ -13,7 +13,7 @@ const FROM = Number(process.argv[3]), TO = Number(process.argv[4]);
 const imp = (p) => import(pathToFileURL(path.join(REPO, p)).href);
 const { PLACES } = await imp('lib/sudoclue-places.js');
 const { CAST, SAY } = await imp('lib/sudoclue-art.js');
-const { prepare, solvePlacement, solveRoles, ROLESETS } = await imp('lib/sudoclue-engine.js');
+const { prepare, solvePlacement, solveRoles, ROLESETS, gradePlacement, DAY_BAND } = await imp('lib/sudoclue-engine.js');
 const NEWNAMES = Object.keys(CAST).filter((n) => n !== 'Tiger');
 
 // ---- seeded random
@@ -250,8 +250,13 @@ function buildPlacement(G, L, cast, pool) {
   return chosen;
 }
 
-const ATTEMPTS = Number(process.env.ATTEMPTS || 40); let T0 = Date.now();
-function generate(L, cast) {
+const ATTEMPTS = Number(process.env.ATTEMPTS || 400); let T0 = Date.now();
+// GRADED BOARDS (owner, 2026-11-02: boards were "either near impossible without guessing, or too easy"). A board is
+// kept only when gradePlacement() says the hardest move it needs sits in its day's band (DAY_BAND in the engine):
+// Monday needs nothing past a Link, midweek adds Squeezes, Friday and Saturday bigger ones, Sunday at most one
+// What-if, and no day ever needs a guess. Among boards in the band, one that needs a Link is preferred, so people
+// depend on each other.
+function generate(L, cast, band) {
   T0 = Date.now();
   const G = prepare(L); const N = G.N;
   let best = null;
@@ -275,9 +280,11 @@ function generate(L, cast) {
     const rpool = rolePool(G, L, cast, place, roles);
     const rc = buildStage(rpool, (cl, cap) => solveRoles(L, cast, place, cl.map(strip), cap).length, { perP: 99, rooms: 99 });
     if (!rc) continue;
-    const e = easiness(G, cast, pc);
-    if (!best || e < best.e || (e === best.e && pc.length < best.pc.length)) best = { e, pc, rc, place, roles };
-    if (best.e === 0 && attempt > 10) break;
+    const gr = gradePlacement(L, cast, pc.map(strip));
+    if (gr.rank < band[0] || gr.rank > band[1]) continue;
+    const e = (gr.link ? 0 : 10) + easiness(G, cast, pc);
+    if (!best || e < best.e) best = { e, pc, rc, place, roles, gr };
+    if (best.gr.link) break;
   }
   return best;
 }
@@ -291,7 +298,8 @@ for (let i = 0; i < lines.length; i++) {
   const m = lines[i].match(/^(\s*)(\{"num".*\})(,?)$/);
   if (!m) continue;
   const d = JSON.parse(m[2]);
-  if (d.num < FROM || d.num > TO) { recent.push(...d.cast); continue; }
+  const ONLY = process.env.ONLY ? process.env.ONLY.split(',').map(Number) : null;
+  if (d.num < FROM || d.num > TO || (ONLY && !ONLY.includes(d.num))) { recent.push(...d.cast); continue; }
   const dow = new Date(d.live + 'T12:00:00Z').getUTCDay();
   const N = SIZE_BY_DOW[dow];
   const L = PLACES[d.place];
@@ -302,14 +310,15 @@ for (let i = 0; i < lines.length; i++) {
   while (cast.length < N) cast.push(fresh.shift());
   cast = cast.slice(0, N);
   const t0 = Date.now();
-  const g = generate(L, cast);
+  seed = 20261102 + d.num * 7919;
+  const g = generate(L, cast, DAY_BAND[dow]);
   if (!g) throw new Error(`#${d.num} no board`);
   const clues = [...g.pc, ...g.rc].map((c) => { const o = strip(c); return { text: clueText(L, o), ...o }; });
   d.cast = cast; d.clues = clues;
   lines[i] = m[1] + JSON.stringify(d).replace(/":/g, '": ').replace(/,"/g, ', "') + m[3];
   recent.push(...cast);
   const rooms = g.pc.filter((c) => c.tag === 'room').length;
-  report.push(`#${d.num} ${d.live} ${L.title} ${N}x${N}: ${g.pc.length} placement clues (${rooms} room-naming, easiness ${g.e}), ${g.rc.length} role clues, ${Date.now() - t0}ms`);
+  report.push(`#${d.num} ${d.live} ${L.title} ${N}x${N}: ${g.pc.length} placement clues (${rooms} room-naming), grade ${g.gr.rank}${g.gr.link ? ' with a Link' : ''}${g.gr.whatifs ? `, ${g.gr.whatifs} what-if` : ''}, ${g.rc.length} role clues, ${Date.now() - t0}ms`);
 }
 fs.writeFileSync(PZ, lines.join('\n'));
 console.log(report.join('\n'));

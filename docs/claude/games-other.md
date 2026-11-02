@@ -1773,6 +1773,33 @@ and `guessesUsed` is the wrong checks. Timer hidden by default.
   (owner: "if the name can't fit without wrapping, delete that one"). A role never mirrors the namesake and no
   namesake appears at their famous place (Elvis and Cash never at Graceland, Arnold never at Venice Beach).
 
+- **The 3D board (owner, 2026-11-02).** The board is a realistic diorama in WebGL: `app/sudoclue/Board3D.jsx` mounts
+  `lib/sudoclue-3d.js` (floors painted as materials with darkened wall edges, a real model per object, low plaster
+  walls, one sun, a walnut table under the model). three.js is the `three` already in the tree for the globe
+  (0.185.1, pinned in package.json); never add a second copy. Camera angled at 68 degrees (owner: "reduce the tilt");
+  drag turns the room and it springs back; a tap raycasts to a square. ALL TEXT IS FLAT HTML over the canvas (owner:
+  "that should still be flat"): room names try the left then right end of their back wall, then a step lower, and
+  fade only when every spot covers a person or another name. The cast are painted miniature figures built from each
+  CAST entry's cues, and the cast cards show the same figures (Board3D photographs them once); they are figurines,
+  never a likeness of the namesake (photo-real faces of the real people cast as killers were declined). No WebGL, or
+  `?flat=1`, falls back to the flat SVG board. A new object type needs a MODELS entry in lib/sudoclue-3d.js, or it
+  shows its drawing, muted, on a block.
+- **Placed people are crossed off (owner, 2026-11-02).** A placed person's card goes grey with a red X over the face
+  and a struck-through name. The "show where they can go" squares were mocked up and REJECTED (owner: "i dont like
+  showing the blue blocks that give you the exact spots"); the selected person's named objects glow instead.
+- **Graded boards (owner, 2026-11-02: "near impossible without guessing, or too easy").** `gradePlacement()` in the
+  engine solves the placement the way a person would (Lock, Last reach, Link, Squeeze of 2 to 4, What-if) and ranks
+  the hardest move 0 to 7. `DAY_BAND`: Mon 0-1, Tue 1-2, Wed 2-3, Thu 2-3, Fri 3-4, Sat 3-4, Sun 4-5 (one What-if at
+  most); nothing needs a guess. `scripts/gen-sudoclue.mjs` keeps only boards in their band (preferring one that
+  needs a Link; `ONLY=5,6 node scripts/gen-sudoclue.mjs . 5 6` rebuilds chosen boards) and verify-sudoclue fails
+  any board from No. 5 (Nov 3) outside its band. Nos. 5, 6, 7, 8, 10, 11, 13, 14 and 17 were rebuilt with their
+  casts kept; Nos. 1 to 4 had gone live and were left alone.
+- **Nudge and Clear all (owner, 2026-11-02).** Nudge (Stage 1, case boards) shows the next move from `stepLog()` in
+  words and marks its squares on the board, one step per press, and never places anyone; a placed person whose own
+  clue rules their square out is flagged first. Each press takes 10 off Clean record (never below 0), so a nudged
+  solve still counts as solved (daily-games solveGap 40). `g.nudges` lives in the save. Clear all is the armed
+  tap-twice clear of the stage (roles only in Stage 2).
+
 ## Swap, Slide, Spin, Fill, Connect and Pairs: six simple dailies on one shell (launched 2026-11-01)
 
 Owner, 2026-11-01: Jig and Scour are the most popular dailies, so six more "simple puzzles that are easy to

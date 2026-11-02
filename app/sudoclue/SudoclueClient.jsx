@@ -61,7 +61,8 @@ import { endEfficiency, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 import { PLACES } from '@/lib/sudoclue-places';
-import { solve, sameAnswer, ROLESETS, ROLE_ORDER, isRoleClue } from '@/lib/sudoclue-engine';
+import { solve, sameAnswer, ROLESETS, ROLE_ORDER, isRoleClue, stepLog } from '@/lib/sudoclue-engine';
+import Board3D from './Board3D';
 import { renderBoard, boardIndex, cellTitle, portraitSVG, objIcon, sayBare, COLORS as CAST_COLORS, ROLE_COLORS } from '@/lib/sudoclue-art';
 
 const KEY = 'sudoclue';
@@ -90,8 +91,10 @@ export function casePoints(n, cur) {
   const won = cur.status === 'won';
   const place = (won || cur.stage === 'accuse') ? 10 * n : 0;
   const accuse = won ? 70 + 5 * (n - 3) : 0;
-  const clean = won ? CLEAN_PTS[Math.min(3, cur.wrong || 0)] : 0;
-  return { place, accuse, clean, total: place + accuse + clean, max: caseMax(n), wrong: cur.wrong || 0,
+  // NUDGES (owner, 2026-11-02: "case points make sense"): each Nudge takes 10 off Clean record, never below 0, so a
+  // nudged solve still reads as solved on the board (lib/daily-games.js solveGap is Clean record's 40).
+  const clean = won ? Math.max(0, CLEAN_PTS[Math.min(3, cur.wrong || 0)] - 10 * (cur.nudges || 0)) : 0;
+  return { place, accuse, clean, total: place + accuse + clean, max: caseMax(n), wrong: cur.wrong || 0, nudges: cur.nudges || 0,
     legs: [{ k: 'Place', v: place, max: 10 * n }, { k: 'Accuse', v: accuse, max: 70 + 5 * (n - 3) }, { k: 'Clean record', v: clean, max: 40 }] };
 }
 // THE DETECTIVE RANKS: a share of the board's points, so every board size climbs the same ladder. Master
@@ -213,7 +216,7 @@ const HAPT = { ok: [6], wrong: [0, 26, 34, 26], win: [10, 40, 20, 40, 20, 60] };
 function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
 // stage: 'place' until the board checks out, then 'accuse' (owner, 2026-10-30: the two-stage case).
-const freshState = () => ({ v: 1, stage: 'place', place: {}, roles: {}, cross: {}, struck: {}, wrong: 0, checks: 0, status: 'playing', t0: null, tEnd: null, rankT: null });
+const freshState = () => ({ v: 1, stage: 'place', place: {}, roles: {}, cross: {}, struck: {}, wrong: 0, checks: 0, nudges: 0, status: 'playing', t0: null, tEnd: null, rankT: null });
 
 // The role counts a board deals: one victim, one killer, then the roleset.
 function roleCounts(n) {
@@ -241,10 +244,18 @@ function ClueText({ text, c, dims }) {
   return <>{text.slice(0, i)}<span style={{ whiteSpace: 'nowrap' }}><ObjIco t={t} dims={dims} />{text.slice(i, i + word.length)}</span>{text.slice(i + word.length)}</>;
 }
 
-function Portrait({ id, size = 34, ring, dim }) {
+// THE CAST AS FIGURES (owner, 2026-11-02: "realistic portraits too"): on the 3D board each card shows the same
+// painted miniature that stands on the board, photographed once by Board3D. `crossed` greys a placed person out
+// with an X (owner, 2026-11-02: "need more clear 'grey out' or 'x' of that character").
+function Portrait({ id, size = 34, ring, dim, src, crossed }) {
+  const face = src
+    ? <img src={src} alt="" width={size} height={size} style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover', background: 'var(--stg-surf2, #e9e4da)' }} />
+    : <span style={{ display: 'block', width: '100%', height: '100%' }} dangerouslySetInnerHTML={{ __html: portraitSVG(id) }} />;
   return (
-    <span aria-hidden="true" style={{ display: 'inline-block', flex: 'none', width: size, height: size, borderRadius: '50%', overflow: 'hidden', boxShadow: `0 0 0 ${size > 30 ? 3 : 2}px ${ring || 'currentColor'}`, opacity: dim ? 0.55 : 1 }}
-      dangerouslySetInnerHTML={{ __html: portraitSVG(id) }} />
+    <span aria-hidden="true" style={{ position: 'relative', display: 'inline-block', flex: 'none', width: size, height: size }}>
+      <span style={{ display: 'block', width: size, height: size, borderRadius: '50%', overflow: 'hidden', boxShadow: `0 0 0 ${size > 30 ? 3 : 2}px ${crossed ? '#9aa4b6' : (ring || 'currentColor')}`, opacity: crossed ? 0.45 : dim ? 0.55 : 1, filter: crossed ? 'grayscale(1)' : undefined }}>{face}</span>
+      {crossed && <svg viewBox="0 0 44 44" width={size} height={size} style={{ position: 'absolute', inset: 0 }}><path d="M11 11L33 33M33 11L11 33" stroke="#fff" strokeWidth="8" strokeLinecap="round" /><path d="M11 11L33 33M33 11L11 33" stroke="#be123c" strokeWidth="4.5" strokeLinecap="round" /></svg>}
+    </span>
   );
 }
 function RoleTag({ size = 26 }) {
@@ -278,6 +289,10 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const gRef = useRef(g);
   const [sel, setSel] = useState(CAST[0]);
   const [mode, setMode] = useState('place');
+  // THE 3D BOARD (owner, 2026-11-02). ?flat=1, or a device that cannot draw it, keeps the flat board.
+  const [flat3d, setFlat3d] = useState(false);
+  const [thumbs, setThumbs] = useState(null);
+  const [nudge, setNudge] = useState(null);
   const [clueView, setClueView] = useState('person');
   // THE RATING POP-UP (owner, 2026-10-30, Sudoclue only): stars and easy-to-hard, each 1 to 5. Once per
   // board, 10 seconds after the game ends, never during play (the standing pop-up rule).
@@ -308,6 +323,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
+  const use3d = !flat3d && searchParams.get('flat') !== '1';
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -682,6 +698,35 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     } else setArmClear(Date.now());
   }
 
+  // NUDGE (owner, 2026-11-02): the next logical move, in words, with its squares marked on the board. It walks the
+  // same move log the generator grades with (lib/sudoclue-engine.js stepLog), one step per press, and never places
+  // anyone. Each press that shows a step takes 10 off Clean record.
+  const LOGIC = useMemo(() => { try { return stepLog(LAYOUT, CAST, PUZZLE.clues); } catch (e) { return null; } }, [LAYOUT, CAST, PUZZLE]);
+  const nudgeAt = useRef(null);
+  useEffect(() => { setNudge(null); }, [g.place, g.stage]);
+  function nudgeTap() {
+    const cur = gRef.current; if (cur.status !== 'playing' || cur.stage === 'accuse' || !LOGIC) return;
+    if (!cur.t0) startGame();
+    const sol0 = solution(); if (!sol0) return;
+    const idx = (x) => x[0] * N + x[1]; const toRC = (i) => [Math.floor(i / N), i % N];
+    const okp = (p) => cur.place[p] && idx(cur.place[p]) === idx(sol0.place[p]);
+    const wrongOwn = CAST.find((p) => cur.place[p] && LOGIC.own[p] && !LOGIC.own[p].includes(idx(cur.place[p])));
+    let shown;
+    if (wrongOwn) shown = { tech: 'Check', text: `${wrongOwn}'s square does not fit what ${wrongOwn} said.`, cells: [cur.place[wrongOwn]] };
+    else {
+      const log = LOGIC.log; let start = 0, end = -1;
+      for (let i = 0; i < log.length; i++) { const st = log[i]; const pins = st.pins || [];
+        if (pins.length && pins.every(([p]) => okp(p))) { start = i + 1; continue; }
+        if (pins.some(([p]) => !okp(p))) { end = i; break; } }
+      if (end < 0) { setNudge({ tech: null, text: CAST.every((p) => cur.place[p]) ? 'Everyone follows from the clues. Tap Check board.' : 'Everyone you have placed follows from the clues. Keep going.', cells: [] }); return; }
+      const i = (nudgeAt.current != null && nudgeAt.current >= start && nudgeAt.current < end) ? nudgeAt.current + 1 : start; nudgeAt.current = i;
+      const st = log[i]; const pins = (st.pins || []).filter(([p]) => !okp(p)).map(([p]) => p);
+      shown = { tech: st.tech, text: st.text, cells: st.area.map(toRC), pins, step: i - start + 1, of: end - start + 1 };
+    }
+    commit({ ...gRef.current, nudges: (gRef.current.nudges || 0) + 1 });
+    setNudge(shown);
+  }
+
   function resetGame() {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
     commit(freshState());
@@ -750,8 +795,8 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
         <><b>Check board</b> when everyone is placed. Once it is right, <b>Stage 2, Accuse</b> opens the detective&rsquo;s notes: clues about the roles. Tap a card and give that person a role: the <b>victim</b>, the <b>killer</b>, the <b>accomplice</b>, or one of the day&rsquo;s <b>guests</b>, <b>staff</b> or <b>family</b>.</>,
       ]}
       knack={<>Placed people shade their row and column, so the squares left open stand out. In Stage 2, find the rooms that hold exactly two people first: the victim and the killer are one of those pairs.</>}
-      note={<>A solve scores ten, and each wrong check, in either stage, costs two. <b>Mark</b> crosses out squares you have ruled out, and <b>Undo</b> takes back your last move.</>}
-      footer={<>Boards are 8 by 8 Monday to Wednesday, 9 by 9 on Thursday and Friday, and 10 by 10 on the weekend, with the Sunday Edition on Sunday. Most clues leave a person a few squares, so rows and columns do the rest. Names are famous first or last names and the portraits are original cartoons.</>}
+      note={<>A case scores points for placing, for accusing, and a Clean record bonus that each wrong check cuts. <b>Mark</b> crosses out squares you have ruled out, <b>Undo</b> takes back your last move, <b>Clear all</b> starts the stage over, and <b>Nudge</b> explains the next logical move in words (each one takes 10 off Clean record). Drag the board to look around it.</>}
+      footer={<>Boards are 8 by 8 Monday to Wednesday, 9 by 9 on Thursday and Friday, and 10 by 10 on the weekend, with the Sunday Edition on Sunday. Every board can be solved by logic alone, no guessing: Monday is the gentlest and the weekend the longest. Names are famous first or last names, and the cast are original painted figures, not likenesses.</>}
     />
   );
 
@@ -768,8 +813,16 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const boardEl = (
     <div className="sc-board" style={{ position: 'relative', width: '100%', margin: '34px auto 0' }}>
     <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', boxShadow: '0 6px 22px rgba(0,0,0,0.28)' }}>
-      <div dangerouslySetInnerHTML={{ __html: svg }} />
-      {playing && (
+      {use3d ? (
+        <Board3D layout={LAYOUT} cast={CAST} colors={CAST_COLORS} place={shownPlace} sel={playing ? sel : null}
+          roles={g.stage === 'accuse' || sol ? shownRoles : null} cross={playing ? g.cross : {}} bad={playing ? bad : new Set()}
+          glow={playing ? glowCells : null} nudge={playing && nudge ? nudge.cells : null}
+          shade={playing && !accuse ? [...takenRC].filter((k) => !occupantAt(k) && IDX.isOpen(k)) : null}
+          hl={sol ? CAST.filter((p) => ['Victim', 'Killer'].includes(sol.roles[p])).map((p) => sol.place[p]) : null}
+          interactive={playing} isOpen={(k) => IDX.isOpen(k)} onTap={tapCell} onThumbs={setThumbs} onFail={() => setFlat3d(true)}
+          cellLabel={(k, r, c) => `${cellTitle(LAYOUT, k)}, row ${r + 1}, column ${c + 1}${occupantAt(k) ? `, ${occupantAt(k)}` : ''}`} />
+      ) : <div dangerouslySetInnerHTML={{ __html: svg }} />}
+      {playing && !use3d && (
         <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: `repeat(${N}, 1fr)`, gridTemplateRows: `repeat(${N}, 1fr)` }}>
           {Array.from({ length: N * N }, (_, i) => {
             const r = Math.floor(i / N), c = i % N, k = `${r},${c}`;
@@ -846,12 +899,12 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           const lines = said(p);
           return (
             <button key={p} type="button" role="option" aria-selected={on} onClick={() => { setSel(p); if (mode === 'mark') setMode('place'); }}
-              style={{ display: 'flex', gap: 8, alignItems: 'flex-start', textAlign: 'left', padding: '8px 9px', borderRadius: 11, cursor: 'pointer', fontFamily: SANS, background: on ? 'var(--stg-surf2, #fff1f2)' : SURF,
+              style={{ display: 'flex', gap: 8, alignItems: 'flex-start', textAlign: 'left', padding: '8px 9px', borderRadius: 11, cursor: 'pointer', fontFamily: SANS, background: on ? 'var(--stg-surf2, #fff1f2)' : (!accuse && g.place[p] ? 'var(--stg-surf2, #eef1f6)' : SURF),
                 border: `2px solid ${on ? ACC : SURF_B}`, boxShadow: `inset 4px 0 0 ${CAST_COLORS[p]}` }}>
-              <span style={{ marginLeft: 3 }}><Portrait id={p} size={38} ring={CAST_COLORS[p]} dim={!accuse && !g.place[p]} /></span>
+              <span style={{ marginLeft: 3 }}><Portrait id={p} size={38} ring={CAST_COLORS[p]} src={use3d && thumbs ? thumbs[p] : null} crossed={!accuse && !!g.place[p]} /></span>
               <span style={{ minWidth: 0, flex: 1 }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{ fontSize: 14.5, fontWeight: 800, color: INK }}>{p}</span>
+                  <span style={{ fontSize: 14.5, fontWeight: 800, color: !accuse && g.place[p] ? FADED : INK, textDecoration: !accuse && g.place[p] ? 'line-through' : 'none', textDecorationThickness: 2 }}>{p}</span>
                   {!accuse && g.place[p] && <span aria-label="placed" style={{ fontSize: 11, fontWeight: 800, color: bad.has(p) ? BAD : FADED }}>{bad.has(p) ? 'clash' : 'placed'}</span>}
                   {accuse && (g.roles[p]
                     ? <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.03em', textTransform: 'uppercase', color: '#fff', background: ROLE_COLORS[g.roles[p]], borderRadius: 999, padding: '2px 8px', lineHeight: 1.3 }}>{g.roles[p]}</span>
@@ -873,13 +926,25 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           ))}
         </div>
       </div>
-      <div className="sc-barpad" style={{ display: 'none', height: accuse ? 128 : readyToCheck ? 150 : 78 }} />
+      <div className="sc-barpad" style={{ display: 'none', height: (accuse ? 128 : readyToCheck ? 150 : 78) + 42 + (nudge && !accuse ? 110 : 0) }} />
       {/* The tool bar: pinned to the bottom of the screen on a phone, so it is always to hand. */}
       <div className="sc-bar" style={{ marginTop: 9 }}>
         {readyToCheck && (
           <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 9, margin: '0 0 8px', padding: '9px 12px', borderRadius: 12, background: 'var(--stg-surf2, #fff1f2)', border: `2px solid ${ACC}`, fontSize: 13.5, fontWeight: 650, lineHeight: 1.35, color: INK }}>
             <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style={{ flex: 'none' }}><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
             <span>{bad.size ? <>Everyone is placed, but two people share a row or a column. Fix that, then tap <b>Check board</b>.</> : <>Everyone is placed. Tap <b>Check board</b>. If the board is right, Stage 2 opens: you give everyone a role.</>}</span>
+          </div>
+        )}
+        {nudge && !accuse && (
+          <div role="status" style={{ margin: '0 0 8px', padding: '9px 12px', borderRadius: 12, background: 'var(--stg-surf2, #fff1f2)', border: `2px solid ${ACC}`, fontSize: 13.5, fontWeight: 650, lineHeight: 1.4, color: INK }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              {nudge.tech && <span style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: ON_ACC, background: ACC, borderRadius: 999, padding: '2px 9px' }}>{nudge.tech}</span>}
+              {nudge.of > 1 && <span style={{ fontSize: 12, fontWeight: 700, color: FADED }}>Step {nudge.step} of {nudge.of}</span>}
+              <button type="button" onClick={() => setNudge(null)} aria-label="Close the nudge" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: FADED, fontSize: 18, lineHeight: 1, padding: 2 }}>&times;</button>
+            </div>
+            <div>{nudge.text}{nudge.cells && nudge.cells.length ? ' The marked squares show where.' : ''}</div>
+            {nudge.pins && nudge.pins.length > 0 && <div style={{ marginTop: 4, fontWeight: 800 }}>That settles {nudge.pins.join(' and ')}. Find the square yourself.</div>}
+            {nudge.pins && !nudge.pins.length && nudge.tech && nudge.tech !== 'Check' && <div style={{ marginTop: 4, color: FADED }}>Nudge again for the next step.</div>}
           </div>
         )}
         {accuse && (
@@ -898,6 +963,10 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
             })}
           </div>
         )}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+          {!accuse && CASE && <button type="button" onClick={nudgeTap} style={{ ...chipBase, flex: 1, justifyContent: 'center', minHeight: 36 }}>Nudge<span style={{ fontWeight: 700, opacity: 0.7 }}>{g.nudges ? `${g.nudges} used · ` : ''}&minus;10</span></button>}
+          <button type="button" onClick={clearTap} style={{ ...chipBase, flex: 1, justifyContent: 'center', minHeight: 36, color: armClear ? BAD : INK, borderColor: armClear ? BAD : SURF_B }}>{armClear ? 'Tap again to clear' : accuse ? 'Clear all roles' : 'Clear all'}</button>
+        </div>
         <div style={{ display: 'flex', gap: 6 }}>
           {!accuse && iconBtn(mode === 'mark' ? 'Marking' : 'Mark', I.mark, () => setMode(mode === 'place' ? 'mark' : 'place'), { pressed: mode === 'mark' })}
           {iconBtn('Erase', I.erase, erase, { disabled: accuse ? !g.roles[sel] : !g.place[sel] })}
