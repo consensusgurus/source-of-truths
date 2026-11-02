@@ -573,4 +573,279 @@ export const POOL = [
       ['Ammonia', -33, '-33 °C'], ['Propane', -42, '-42 °C'], ['Oxygen', -183, '-183 °C'], ['Nitrogen', -196, '-196 °C'], ['Hydrogen', -253, '-253 °C'], ['Helium', -269, '-269 °C'],
     ],
   },
+  // Added 2026-11-02 for the November restock; each subject fact-checked by a
+  // reviewer that did not author it.
+
+  {
+    id: 'waterfalls-height', axis: 'Waterfalls by height', top: 'Tallest', bottom: 'Shortest', unit: 'meters', dir: 'desc', fam: 'geo',
+    source: 'Total height of the falls (Kaieteur: main drop), Wikipedia',
+    items: [
+      ['Angel Falls, Venezuela', 979, '979 m'], ['Yosemite Falls, California', 739, '739 m'], ['Sutherland Falls, New Zealand', 580, '580 m'], ['Kaieteur Falls, Guyana', 226, '226 m'],
+      ['Multnomah Falls, Oregon', 189, '189 m'], ['Victoria Falls, Zambia and Zimbabwe', 108, '108 m'], ['Iguazu Falls, Argentina and Brazil', 82, '82 m'], ['Horseshoe Falls, Niagara', 57, '57 m'],
+      ['Gullfoss, Iceland', 32, '32 m'], ['Rhine Falls, Switzerland', 23, '23 m'],
+    ],
+  },
+  {
+    id: 'us-national-parks-area', axis: 'US national parks by area', top: 'Largest', bottom: 'Smallest', unit: 'acres', dir: 'desc', fam: 'geo',
+    source: 'National Park Service acreage, 2023',
+    items: [
+      ['Wrangell-St. Elias', 8323146, '8.32 million acres'], ['Denali', 4740911, '4.74 million acres'], ['Death Valley', 3408396, '3.41 million acres'], ['Yellowstone', 2219791, '2.22 million acres'],
+      ['Everglades', 1508939, '1.51 million acres'], ['Grand Canyon', 1201647, '1.20 million acres'], ['Glacier', 1013126, '1.01 million acres'], ['Yosemite', 761748, '761,748 acres'],
+      ['Great Smoky Mountains', 522427, '522,427 acres'], ['Zion', 147243, '147,243 acres'], ['Acadia', 49071, '49,071 acres'], ['Gateway Arch', 193, '193 acres'],
+    ],
+  },
+  {
+    id: 'us-state-high-points', axis: 'US states by highest point', top: 'Highest summit', bottom: 'Lowest summit', unit: 'feet', dir: 'desc', fam: 'geo',
+    source: 'Elevation of each state high point, USGS figures',
+    items: [
+      ['Alaska', 20310, '20,310 ft (Denali)'], ['California', 14505, '14,505 ft (Mount Whitney)'], ['Hawaii', 13796, '13,796 ft (Mauna Kea)'], ['Utah', 13528, '13,528 ft (Kings Peak)'],
+      ['New Mexico', 13161, '13,161 ft (Wheeler Peak)'], ['Montana', 12799, '12,799 ft (Granite Peak)'], ['Oregon', 11249, '11,249 ft (Mount Hood)'], ['Texas', 8751, '8,751 ft (Guadalupe Peak)'],
+      ['North Carolina', 6684, '6,684 ft (Mount Mitchell)'], ['New Hampshire', 6288, '6,288 ft (Mount Washington)'], ['New York', 5344, '5,344 ft (Mount Marcy)'], ['Florida', 345, '345 ft (Britton Hill)'],
+    ],
+  },
+  {
+    id: 'cities-latitude', axis: 'World cities by latitude', top: 'Farthest north', bottom: 'Farthest south', unit: 'degrees', dir: 'desc', fam: 'geo',
+    source: 'City-center coordinates, Wikipedia',
+    items: [
+      ['Reykjavik', 64.14, '64.1° N'], ['Oslo', 59.91, '59.9° N'], ['London', 51.51, '51.5° N'], ['Paris', 48.86, '48.9° N'],
+      ['Seattle', 47.60, '47.6° N'], ['New York', 40.71, '40.7° N'], ['Tokyo', 35.69, '35.7° N'], ['Cairo', 30.04, '30.0° N'],
+      ['Miami', 25.77, '25.8° N'], ['Honolulu', 21.30, '21.3° N'], ['Singapore', 1.28, '1.3° N'], ['Sydney', -33.87, '33.9° S'],
+    ],
+  },
+  {
+    id: 'canals-length', axis: 'Canals by length', top: 'Longest', bottom: 'Shortest', unit: 'km', dir: 'desc', fam: 'geo',
+    source: 'Canal length (Erie: original 1825 route), Wikipedia',
+    items: [
+      ['Grand Canal, China', 1776, '1,776 km'], ['Erie Canal, New York', 584, '584 km'], ['Rideau Canal, Canada', 202, '202 km'], ['Suez Canal, Egypt', 193.3, '193 km'],
+      ['Kiel Canal, Germany', 98.3, '98 km'], ['Panama Canal', 82, '82 km'], ['Welland Canal, Canada', 43, '43 km'],
+      ['Chesapeake and Delaware Canal', 22.5, '22.5 km'], ['Cape Cod Canal, Massachusetts', 11.9, '11.9 km'], ['Corinth Canal, Greece', 6.34, '6.3 km'],
+    ],
+  },
+  {
+    id: 'us-universities-founded', exact: true, axis: 'US universities by year founded', top: 'Oldest', bottom: 'Newest', unit: 'year', dir: 'asc', fam: 'history',
+    source: 'Year of founding or charter, per each institution',
+    items: [
+      ['Harvard', 1636, '1636'], ['Yale', 1701, '1701'], ['Princeton', 1746, '1746'], ['Columbia', 1754, '1754'],
+      ['Dartmouth', 1769, '1769'], ['Georgetown', 1789, '1789'], ['West Point', 1802, '1802'], ['University of Virginia', 1819, '1819'],
+      ['MIT', 1861, '1861'], ['Cornell', 1865, '1865'], ['Johns Hopkins', 1876, '1876'], ['Stanford', 1885, '1885'],
+    ],
+  },
+  {
+    id: 'countries-independence', exact: true, axis: 'Countries by year of independence', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'history',
+    source: 'Year independence was declared or took effect',
+    items: [
+      ['United States', 1776, '1776'], ['Haiti', 1804, '1804'], ['Brazil', 1822, '1822'], ['Belgium', 1830, '1830'],
+      ['Norway', 1905, '1905'], ['Finland', 1917, '1917'], ['Iraq', 1932, '1932'], ['India', 1947, '1947'],
+      ['Israel', 1948, '1948'], ['Ghana', 1957, '1957'], ['Jamaica', 1962, '1962'], ['South Sudan', 2011, '2011'],
+    ],
+  },
+  {
+    id: 'documents-signed', exact: true, axis: 'Landmark documents by year', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'history',
+    source: 'Year signed, issued or adopted',
+    items: [
+      ['Magna Carta', 1215, '1215'], ['Mayflower Compact', 1620, '1620'], ['Peace of Westphalia', 1648, '1648'], ['Declaration of Independence', 1776, '1776'],
+      ['US Constitution', 1787, '1787'], ['Louisiana Purchase treaty', 1803, '1803'], ['Emancipation Proclamation', 1863, '1863'], ['Treaty of Versailles', 1919, '1919'],
+      ['United Nations Charter', 1945, '1945'], ['Universal Declaration of Human Rights', 1948, '1948'], ['Helsinki Accords', 1975, '1975'], ['Maastricht Treaty', 1992, '1992'],
+    ],
+  },
+  {
+    id: 'first-ascents', exact: true, axis: 'Mountains by year first climbed', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'history',
+    source: 'Year of the first recorded ascent, Encyclopaedia Britannica',
+    items: [
+      ['Mont Blanc', 1786, '1786'], ['Matterhorn', 1865, '1865'], ['Mount Rainier', 1870, '1870'], ['Mount Whitney', 1873, '1873'],
+      ['Kilimanjaro', 1889, '1889'], ['Aconcagua', 1897, '1897'], ['Denali', 1913, '1913'], ['Annapurna', 1950, '1950'],
+      ['Everest', 1953, '1953'], ['K2', 1954, '1954'], ['Kangchenjunga', 1955, '1955'], ['Vinson Massif, Antarctica', 1966, '1966'],
+    ],
+  },
+  {
+    id: 'subways-opened', exact: true, axis: 'Subway systems by year the first line opened', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'history',
+    source: 'Year the first underground line opened',
+    items: [
+      ['London', 1863, '1863'], ['Budapest', 1896, '1896'], ['Boston', 1897, '1897'], ['Paris', 1900, '1900'],
+      ['Berlin', 1902, '1902'], ['New York', 1904, '1904'], ['Buenos Aires', 1913, '1913'], ['Tokyo', 1927, '1927'],
+      ['Moscow', 1935, '1935'], ['Toronto', 1954, '1954'], ['Montreal', 1966, '1966'], ['Washington, DC', 1976, '1976'],
+    ],
+  },
+
+  {
+    id: 'moons-diameter', axis: 'Natural satellites by diameter', top: 'Widest', bottom: 'Narrowest', unit: 'km', dir: 'desc', fam: 'science',
+    source: 'NASA JPL Solar System Dynamics, mean radius doubled',
+    items: [
+      ['Ganymede (Jupiter)', 5262.4, '5,262 km'], ['Titan (Saturn)', 5149.5, '5,150 km'], ['Callisto (Jupiter)', 4820.6, '4,821 km'], ['Io (Jupiter)', 3643.0, '3,643 km'],
+      ["Earth's Moon", 3474.8, '3,475 km'], ['Europa (Jupiter)', 3121.6, '3,122 km'], ['Triton (Neptune)', 2705.2, '2,705 km'], ['Rhea (Saturn)', 1527.0, '1,527 km'],
+      ['Charon (Pluto)', 1212.0, '1,212 km'], ['Enceladus (Saturn)', 504.2, '504 km'], ['Mimas (Saturn)', 396.4, '396 km'], ['Phobos (Mars)', 22.16, '22 km'],
+    ],
+  },
+  {
+    id: 'isotopes-half-life', axis: 'Radioactive isotopes by half-life', top: 'Longest-lived', bottom: 'Shortest-lived', unit: 'years', dir: 'desc', fam: 'science',
+    source: 'Evaluated nuclear half-lives (NUBASE2020 / NNDC)',
+    items: [
+      ['Uranium-238', 4468000000, '4.47 billion years'], ['Uranium-235', 703800000, '704 million years'], ['Plutonium-239', 24110, '24,110 years'], ['Carbon-14', 5700, '5,700 years'],
+      ['Radium-226', 1600, '1,600 years'], ['Americium-241', 432.6, '433 years'], ['Cesium-137', 30.08, '30.1 years'], ['Tritium (hydrogen-3)', 12.32, '12.3 years'],
+      ['Cobalt-60', 5.2714, '5.27 years'], ['Polonium-210', 0.37886, '138 days'], ['Iodine-131', 0.021958, '8.02 days'], ['Radon-222', 0.010468, '3.82 days'],
+    ],
+  },
+  {
+    id: 'earthquakes-magnitude', exact: true, axis: 'Earthquakes by moment magnitude', top: 'Strongest', bottom: 'Weakest', unit: 'magnitude', dir: 'desc', fam: 'science',
+    source: 'US Geological Survey earthquake catalog',
+    items: [
+      ['Chile, 1960', 9.5, 'M9.5'], ['Southern Alaska, 1964', 9.2, 'M9.2'], ['Japan (Tohoku), 2011', 9.1, 'M9.1'], ['Chile, 2010', 8.8, 'M8.8'],
+      ['Mexico City (Michoacan), 1985', 8.0, 'M8.0'], ['San Francisco, 1906', 7.9, 'M7.9'], ['Nepal, 2015', 7.8, 'M7.8'], ['Ridgecrest, California, 2019', 7.1, 'M7.1'],
+      ['Haiti, 2010', 7.0, 'M7.0'], ['Loma Prieta, California, 1989', 6.9, 'M6.9'], ['Northridge, California, 1994', 6.7, 'M6.7'], ['South Napa, California, 2014', 6.0, 'M6.0'],
+    ],
+  },
+  {
+    id: 'chromosome-count', exact: true, axis: 'Living things by number of chromosomes', top: 'Most', bottom: 'Fewest', unit: 'chromosomes', dir: 'desc', fam: 'science',
+    source: 'Diploid chromosome number of the standard karyotype',
+    items: [
+      ['Dog', 78, '78'], ['Horse', 64, '64'], ['Cow', 60, '60'], ['Sheep', 54, '54'],
+      ['Chimpanzee', 48, '48'], ['Human', 46, '46'], ['Rabbit', 44, '44'], ['House mouse', 40, '40'],
+      ['Cat', 38, '38'], ['Corn', 20, '20'], ['Garden pea', 14, '14'], ['Fruit fly', 8, '8'],
+    ],
+  },
+  {
+    id: 'solar-day-length', axis: 'Worlds by the length of one solar day', top: 'Longest day', bottom: 'Shortest day', unit: 'hours', dir: 'desc', fam: 'science',
+    source: 'NASA Planetary Fact Sheet, length of day (sunrise to sunrise)',
+    items: [
+      ['Mercury', 4222.6, '176 Earth days'], ['Venus', 2802.0, '117 Earth days'], ["Earth's Moon", 708.7, '29.5 Earth days'], ['Pluto', 153.3, '6.4 Earth days'],
+      ['Mars', 24.7, '24.7 hours'], ['Earth', 24.0, '24.0 hours'], ['Uranus', 17.2, '17.2 hours'], ['Neptune', 16.1, '16.1 hours'],
+      ['Saturn', 10.7, '10.7 hours'], ['Jupiter', 9.9, '9.9 hours'],
+    ],
+  },
+  {
+    id: 'solar-system-discovered', exact: true, axis: 'Solar system worlds by year discovered', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'science',
+    source: 'Year of discovery, NASA and IAU discovery records',
+    items: [
+      ['Io, moon of Jupiter', 1610, '1610'], ['Titan, moon of Saturn', 1655, '1655'], ['Uranus', 1781, '1781'], ['Enceladus, moon of Saturn', 1789, '1789'],
+      ['Ceres, dwarf planet', 1801, '1801'], ['Neptune', 1846, '1846'], ['Phobos, moon of Mars', 1877, '1877'], ['Pluto', 1930, '1930'],
+      ['Charon, moon of Pluto', 1978, '1978'], ['Eris, dwarf planet', 2005, '2005'],
+    ],
+  },
+  {
+    id: 'nhl-goalie-wins', axis: 'Retired NHL goaltenders by career wins', top: 'Most wins', bottom: 'Fewest', unit: 'wins', dir: 'desc', fam: 'sport',
+    source: 'Regular season career totals, Hockey-Reference, retired players only',
+    items: [
+      ['Martin Brodeur', 691, '691'], ['Patrick Roy', 551, '551'], ['Roberto Luongo', 489, '489'], ['Henrik Lundqvist', 459, '459'],
+      ['Terry Sawchuk', 445, '445'], ['Jacques Plante', 437, '437'], ['Tony Esposito', 423, '423'], ['Glenn Hall', 407, '407'],
+      ['Dominik Hasek', 389, '389'], ['Pekka Rinne', 369, '369'], ['Tuukka Rask', 308, '308'], ['Ken Dryden', 258, '258'],
+    ],
+  },
+  {
+    id: 'nba-career-assists', axis: 'Retired NBA players by career assists', top: 'Most assists', bottom: 'Fewest', unit: 'assists', dir: 'desc', fam: 'sport',
+    source: 'Regular season career totals, Basketball-Reference, retired players only',
+    items: [
+      ['John Stockton', 15806, '15,806'], ['Jason Kidd', 12091, '12,091'], ['Steve Nash', 10335, '10,335'], ['Magic Johnson', 10141, '10,141'],
+      ['Oscar Robertson', 9887, '9,887'], ['Isiah Thomas', 9061, '9,061'], ['Bob Cousy', 6955, '6,955'], ['Kobe Bryant', 6306, '6,306'],
+      ['Michael Jordan', 5633, '5,633'], ['Wilt Chamberlain', 4643, '4,643'], ['Tim Duncan', 4225, '4,225'], ["Shaquille O'Neal", 3026, '3,026'],
+    ],
+  },
+  {
+    id: 'mlb-career-strikeouts', axis: 'Retired MLB pitchers by career strikeouts', top: 'Most strikeouts', bottom: 'Fewest', unit: 'strikeouts', dir: 'desc', fam: 'sport',
+    source: 'Regular season career totals, Baseball-Reference, retired players only',
+    items: [
+      ['Nolan Ryan', 5714, '5,714'], ['Randy Johnson', 4875, '4,875'], ['Roger Clemens', 4672, '4,672'], ['Steve Carlton', 4136, '4,136'],
+      ['Bert Blyleven', 3701, '3,701'], ['Tom Seaver', 3640, '3,640'], ['Walter Johnson', 3509, '3,509'], ['Greg Maddux', 3371, '3,371'],
+      ['Pedro Martinez', 3154, '3,154'], ['John Smoltz', 3084, '3,084'], ['Cy Young', 2803, '2,803'], ['Sandy Koufax', 2396, '2,396'],
+    ],
+  },
+  {
+    id: 'nfl-rushing-yards', axis: 'Retired NFL running backs by career rushing yards', top: 'Most yards', bottom: 'Fewest', unit: 'yards', dir: 'desc', fam: 'sport',
+    source: 'Regular season career totals, Pro-Football-Reference, retired players only',
+    items: [
+      ['Emmitt Smith', 18355, '18,355'], ['Walter Payton', 16726, '16,726'], ['Frank Gore', 16000, '16,000'], ['Barry Sanders', 15269, '15,269'],
+      ['Curtis Martin', 14101, '14,101'], ['LaDainian Tomlinson', 13684, '13,684'], ['Eric Dickerson', 13259, '13,259'], ['Tony Dorsett', 12739, '12,739'],
+      ['Jim Brown', 12312, '12,312'], ['Earl Campbell', 9407, '9,407'], ['Gale Sayers', 4956, '4,956'], ['Bo Jackson', 2782, '2,782'],
+    ],
+  },
+
+  {
+    id: 'candy-introduced', exact: true, axis: 'Candies by year introduced', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'Year first sold, Wikipedia brand articles',
+    items: [
+      ["Hershey's Milk Chocolate Bar", 1900, '1900'], ['Life Savers', 1912, '1912'], ['Milky Way', 1923, '1923'], ["Reese's Peanut Butter Cups", 1928, '1928'],
+      ['Snickers', 1930, '1930'], ['3 Musketeers', 1932, '1932'], ['Kit Kat', 1935, '1935'], ["M&M's", 1941, '1941'],
+      ['Almond Joy', 1946, '1946'], ['Jolly Rancher', 1949, '1949'], ["Reese's Pieces", 1978, '1978'], ['Nerds', 1982, '1982'],
+    ],
+  },
+  {
+    id: 'toys-introduced', exact: true, axis: 'Toys by year introduced', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'Year first on sale, Wikipedia toy articles',
+    items: [
+      ['Crayola crayons', 1903, '1903'], ['View-Master', 1939, '1939'], ['Slinky', 1945, '1945'], ['Mr. Potato Head', 1952, '1952'],
+      ['Hula Hoop (Wham-O)', 1958, '1958'], ['Barbie', 1959, '1959'], ['Etch A Sketch', 1960, '1960'], ['Easy-Bake Oven', 1963, '1963'],
+      ['G.I. Joe', 1964, '1964'], ['Hot Wheels', 1968, '1968'], ['Teddy Ruxpin', 1985, '1985'], ['Tickle Me Elmo', 1996, '1996'],
+    ],
+  },
+  {
+    id: 'sitcoms-episodes', exact: true, axis: 'Finished sitcoms by total episodes', top: 'Most episodes', bottom: 'Fewest', unit: 'episodes', dir: 'desc', fam: 'pop',
+    source: 'Episodes aired over the full original run, Wikipedia episode lists',
+    items: [
+      ['The Big Bang Theory', 279, '279 episodes'], ['Cheers', 275, '275 episodes'], ['Married... with Children', 259, '259 episodes'], ['M*A*S*H', 256, '256 episodes'],
+      ['Modern Family', 250, '250 episodes'], ['Friends', 236, '236 episodes'], ['Everybody Loves Raymond', 210, '210 episodes'], ['The Office (US)', 201, '201 episodes'],
+      ["That '70s Show", 200, '200 episodes'], ['The Fresh Prince of Bel-Air', 148, '148 episodes'], ['The Brady Bunch', 117, '117 episodes'], ["Gilligan's Island", 98, '98 episodes'],
+    ],
+  },
+  {
+    id: 'disney-animated-released', exact: true, axis: 'Disney animated features by release year', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'Original US release, Walt Disney Animation Studios filmography',
+    items: [
+      ['Snow White and the Seven Dwarfs', 1937, '1937'], ['Pinocchio', 1940, '1940'], ['Bambi', 1942, '1942'], ['Cinderella', 1950, '1950'],
+      ['Peter Pan', 1953, '1953'], ['Sleeping Beauty', 1959, '1959'], ['The Jungle Book', 1967, '1967'], ['The Little Mermaid', 1989, '1989'],
+      ['Aladdin', 1992, '1992'], ['The Lion King', 1994, '1994'], ['Mulan', 1998, '1998'], ['Frozen', 2013, '2013'],
+    ],
+  },
+  {
+    id: 'broadway-performances', axis: 'Closed Broadway musicals by total performances', top: 'Most performances', bottom: 'Fewest', unit: 'performances', dir: 'desc', fam: 'pop',
+    source: 'Original Broadway run, The Broadway League long-run list',
+    items: [
+      ['The Phantom of the Opera', 13981, '13,981 performances'], ['Cats', 7485, '7,485 performances'], ['Les Misérables', 6680, '6,680 performances'], ['A Chorus Line', 6137, '6,137 performances'],
+      ['Beauty and the Beast', 5461, '5,461 performances'], ['Rent', 5123, '5,123 performances'], ['Jersey Boys', 4642, '4,642 performances'], ['Miss Saigon', 4092, '4,092 performances'],
+      ['Grease', 3388, '3,388 performances'], ['Fiddler on the Roof', 3242, '3,242 performances'], ['Hello, Dolly!', 2844, '2,844 performances'], ['Annie', 2377, '2,377 performances'],
+    ],
+  },
+  {
+    id: 'cereals-introduced', exact: true, axis: 'Breakfast cereals by year introduced', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'Year introduced, Wikipedia brand articles',
+    items: [
+      ['Grape-Nuts', 1897, '1897'], ['Wheaties', 1924, '1924'], ['Rice Krispies', 1928, '1928'], ['Cheerios', 1941, '1941'],
+      ['Frosted Flakes', 1951, '1951'], ['Trix', 1954, '1954'], ["Cap'n Crunch", 1963, '1963'], ['Lucky Charms', 1964, '1964'],
+      ['Count Chocula', 1971, '1971'], ['Cinnamon Toast Crunch', 1984, '1984'],
+    ],
+  },
+  {
+    id: 'board-games-published', exact: true, axis: 'Board games by year first published', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'First publication under the current name, Wikipedia game articles',
+    items: [
+      ['Monopoly', 1935, '1935'], ['Scrabble', 1948, '1948'], ['Candy Land', 1949, '1949'], ['Yahtzee', 1956, '1956'],
+      ['Mouse Trap', 1963, '1963'], ['Operation', 1965, '1965'], ['Twister', 1966, '1966'], ['Connect Four', 1974, '1974'],
+      ['Hungry Hungry Hippos', 1978, '1978'], ['Trivial Pursuit', 1981, '1981'], ['Pictionary', 1985, '1985'], ['Catan', 1995, '1995'],
+    ],
+  },
+  {
+    id: 'comic-characters-debut', exact: true, axis: 'Comic characters by year of first appearance', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'First appearance in print, Wikipedia character articles',
+    items: [
+      ['Popeye', 1929, '1929'], ['Superman', 1938, '1938'], ['Batman', 1939, '1939'], ['Wonder Woman', 1941, '1941'],
+      ['Charlie Brown', 1950, '1950'], ['Fantastic Four', 1961, '1961'], ['Spider-Man', 1962, '1962'], ['X-Men', 1963, '1963'],
+      ['Black Panther', 1966, '1966'], ['Wolverine', 1974, '1974'], ['Teenage Mutant Ninja Turtles', 1984, '1984'], ['Venom (Eddie Brock)', 1988, '1988'],
+    ],
+  },
+  {
+    id: 'fast-food-founded', exact: true, axis: 'Fast food chains by founding year', top: 'Oldest', bottom: 'Newest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'Year the first location opened, Wikipedia company articles',
+    items: [
+      ['A&W', 1919, '1919'], ['White Castle', 1921, '1921'], ['Dairy Queen', 1940, '1940'], ['In-N-Out Burger', 1948, '1948'],
+      ["Dunkin'", 1950, '1950'], ['Jack in the Box', 1951, '1951'], ['Pizza Hut', 1958, '1958'], ['Taco Bell', 1962, '1962'],
+      ['Subway', 1965, '1965'], ["Wendy's", 1969, '1969'], ['Popeyes', 1972, '1972'], ['Chipotle', 1993, '1993'],
+    ],
+  },
+  {
+    id: 'tv-series-premiered', exact: true, axis: 'TV series by premiere year', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'Original US premiere date, Wikipedia series articles',
+    items: [
+      ['I Love Lucy', 1951, '1951'], ['The Twilight Zone', 1959, '1959'], ['Star Trek', 1966, '1966'], ['Happy Days', 1974, '1974'],
+      ['Dallas', 1978, '1978'], ['The Golden Girls', 1985, '1985'], ['Seinfeld', 1989, '1989'], ['The X-Files', 1993, '1993'],
+      ['The Sopranos', 1999, '1999'], ['Lost', 2004, '2004'], ['Breaking Bad', 2008, '2008'], ['Game of Thrones', 2011, '2011'],
+    ],
+  },
 ];

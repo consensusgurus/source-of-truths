@@ -35,10 +35,30 @@ if (ten.length < weekdays) throw new Error(`need ${weekdays} 10x10 boards, have 
 // six bands by score; the k-th weekday (Mon=1..Sat=6) draws from band k-1
 const bands = [[], [], [], [], [], []];
 ten.forEach((b, i) => bands[Math.min(5, Math.floor((i * 6) / ten.length))].push(b));
+// On a 12x12, courts k and k+10 share a stage hue, so they must not touch.
+// Relabel (a pure renaming of court ids; the seating is unchanged): pick two
+// pairs of non-touching courts and give them ids 0/10 and 1/11.
+function relabel(b) {
+  const n = b.size; if (n <= 10) return b;
+  const adj = Array.from({ length: n }, () => new Set());
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) for (const [dr, dc] of [[1, 0], [0, 1]]) {
+    const a = r + dr, d = c + dc; if (a < n && d < n && b.regions[r][c] !== b.regions[a][d]) { adj[b.regions[r][c]].add(b.regions[a][d]); adj[b.regions[a][d]].add(b.regions[r][c]); }
+  }
+  const pairs = []; for (let x = 0; x < n; x++) for (let y = x + 1; y < n; y++) if (!adj[x].has(y)) pairs.push([x, y]);
+  for (const p of pairs) for (const q of pairs) {
+    if (new Set([...p, ...q]).size < 4) continue;
+    const order = [p[0], q[0]]; const rest = [...Array(n).keys()].filter((k) => !p.includes(k) && !q.includes(k));
+    order.push(...rest.slice(0, 8), p[1], q[1]);
+    const map = new Map(order.map((old, neu) => [old, neu]));
+    return { ...b, regions: b.regions.map((row) => row.map((x) => map.get(x))) };
+  }
+  throw new Error('no non-touching hue pairs on a 12x12');
+}
+
 const rows = []; let num = PUZZLES.length, s12 = 0;
 for (const d of dates) {
   const w = dow(d); let b;
-  if (w === 0) b = twelve[s12++];
+  if (w === 0) b = relabel(twelve[s12++]);
   else { const band = bands[w - 1]; if (!band.length) throw new Error(`band ${w} empty`); b = band.splice(Math.floor(band.length / 2), 1)[0]; }
   num++;
   rows.push(`  {\n    num: ${num}, quizId: "${qid(d)}", live: "${d}", dateLabel: "${label(d)}", sunday: ${w === 0}, stars: 2,\n    size: ${b.size},\n    regions: [\n${b.regions.map((r) => `      [${r.join(',')}],`).join('\n')}\n    ],\n    solution: [${b.solution.map((p) => `[${p.join(',')}]`).join(',')}],\n  },\n`);

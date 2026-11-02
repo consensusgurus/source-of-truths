@@ -33,6 +33,12 @@ const FROM = opt('--from', '2026-09-04');
 const DAYS = Number(opt('--days', '61'));
 const SEED = Number(opt('--seed', '20260904'));
 const FIRST = opt('--first', 'countries-population');
+// --append (added 2026-11-02): extend the bank instead of rewriting it. Reads
+// the banked boards, leaves every one of them byte for byte, draws only from
+// subjects the bank has never used, keeps the family rule across the seam,
+// and splices the new rows in before the closing bracket. --from must be the
+// day after the last banked board.
+const APPEND = args.includes('--append');
 const OUT = opt('--out', path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'app', 'slot', 'puzzles.js'));
 
 export const BAND = { 1: 0.85, 2: 0.70, 3: 0.55, 4: 0.40, 5: 0.28, 6: 0.15, 0: 0.30 };
@@ -45,19 +51,28 @@ function dateLabel(iso) { const [y, m, d] = iso.split('-').map(Number); return `
 function quizId(iso) { const [y, m, d] = iso.split('-').map(Number); return `slot-${m}-${d}-${String(y).slice(2)}`; }
 
 // Assign subjects to dates: randomized greedy with restarts, seeded.
+let BANKED = [];
+if (APPEND) {
+  BANKED = (await import(path.resolve(OUT))).PUZZLES;
+  const last = BANKED[BANKED.length - 1];
+  if (addDays(last.live, 1) !== FROM) throw new Error(`--append: --from must be ${addDays(last.live, 1)}`);
+}
+const USED = new Set(BANKED.map((b) => b.subject));
+const SEAM_FAM = BANKED.length ? POOL.find((s) => s.id === BANKED[BANKED.length - 1].subject).fam : null;
+
 function assign() {
   const dates = Array.from({ length: DAYS }, (_, i) => addDays(FROM, i));
   const r = rng(SEED);
   for (let attempt = 0; attempt < 2000; attempt++) {
-    const left = POOL.slice();
+    const left = POOL.filter((s) => !USED.has(s.id));
     const plan = [];
     let ok = true;
     for (let i = 0; i < dates.length; i++) {
       const sun = dow(dates[i]) === 0;
       const sundaysLeft = dates.slice(i).filter((d) => dow(d) === 0).length;
-      const prevFam = plan.length ? plan[plan.length - 1].fam : null;
+      const prevFam = plan.length ? plan[plan.length - 1].fam : SEAM_FAM;
       let cands = left.filter((s) => (!sun || s.items.length >= SUNDAY_N) && s.fam !== prevFam);
-      if (i === 0 && FIRST) cands = cands.filter((s) => s.id === FIRST);
+      if (i === 0 && FIRST && !APPEND) cands = cands.filter((s) => s.id === FIRST);
       // Keep enough twelve-item subjects back for the Sundays still to come.
       if (!sun) {
         const twelves = left.filter((s) => s.items.length >= SUNDAY_N).length;
@@ -90,7 +105,7 @@ function buildBoard(subject, iso, num) {
 }
 
 const { dates, plan } = assign();
-const boards = dates.map((iso, i) => buildBoard(plan[i], iso, i + 1));
+const boards = dates.map((iso, i) => buildBoard(plan[i], iso, BANKED.length + i + 1));
 
 const header = `// Puzzle data for Slot, the daily blind ranking: ten things arrive one at a
 // time and each has to be placed in a slot before the next is shown.
@@ -122,6 +137,10 @@ export const PUZZLES = [
 `;
 const rows = boards.map((b) => '  ' + JSON.stringify(b) + ',').join('\n');
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
-fs.writeFileSync(OUT, header + rows + '\n];\n');
+if (APPEND) {
+  const src = fs.readFileSync(OUT, 'utf8');
+  const end = src.lastIndexOf('];');
+  fs.writeFileSync(OUT, src.slice(0, end) + rows + '\n' + src.slice(end));
+} else fs.writeFileSync(OUT, header + rows + '\n];\n');
 console.log(`gen-slot: ${boards.length} boards, ${dates[0]} to ${dates[dates.length - 1]}, written to ${path.relative(process.cwd(), OUT)}`);
 for (const b of boards) console.log(`  ${b.live} ${b.sunday ? 'SUN' : '   '} ${b.subject.padEnd(26)} par ${b.parMean} of ${b.items.length}  range ${b.range.join('..')}`);
