@@ -179,6 +179,21 @@ export default function RunFinale({
     const capMax = Math.max(score, L[L.length - 1].min + 6, legs.reduce((a, g) => a + (Number(g.max) || 0), 0) || 0);
     const X = { score, cap: pieceKey === 'flask' ? Math.max(capMax, 1) : capMax, earned };
     const phone = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width:899px)').matches;
+    // PHONE SIZES ARE MEASURED (owner, 2026-11-01: "the end animation elements
+    // appear too small on mobile"). The ring takes most of the screen width, the
+    // labels sit just outside it whatever its size, and the title piece scales to
+    // the width it has, instead of the fixed 280px ring and 0.68 piece.
+    // The visible width: the page under the finale can carry a scrollbar.
+    const vw = typeof window !== 'undefined' ? Math.min(window.innerWidth, (root.parentElement && root.parentElement.clientWidth) || window.innerWidth) : 390;
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 780;
+    const ringPx = phone ? Math.round(Math.max(260, Math.min(vw * 0.8, vh * 0.46, 400))) : 480;
+    const pieceScale = phone ? Math.max(0.6, Math.min(1, (vw - 28) / 420, (vh * 0.42) / 300)) : 1;
+    if (phone) {
+      root.style.setProperty('--rd', `${ringPx}px`);
+      root.style.setProperty('--ps', String(pieceScale));
+    }
+    // The labels' radius in ring units: the arc's outer edge plus ~36 screen px.
+    const labR = phone ? RAD + SW / 2 + 36 * (500 / ringPx) : RAD + 70;
     const gOf = (c) => (colorGround && c ? softGround(c) : endBg);
     const paint = (c) => { root.style.background = c; groundRef.current = c; setGround(c); };
 
@@ -198,7 +213,7 @@ export default function RunFinale({
       segs.push(`<path d="${d}" fill="none" stroke="${softGround(g.colour)}" stroke-width="${SW}"/><path d="${d}" fill="none" stroke="currentColor" stroke-opacity=".14" stroke-width="${SW}"/>
         <path class="sf" id="sf${i}" d="${d}" fill="none" stroke="currentColor" stroke-width="${SW}" stroke-dasharray="${len} ${len}" stroke-dashoffset="${len}" data-l="${len}" data-f="${frac}"/>
         ${oneLife && got < max ? `<line class="miss" id="mx${i}" x1="${mx1}" y1="${my1}" x2="${mx2}" y2="${my2}" stroke="#b4232a" stroke-width="5" stroke-linecap="round"/>` : ''}`);
-      const [lx, ly] = pt(phone ? RAD + 92 : RAD + 70, (a0 + a1) / 2);
+      const [lx, ly] = pt(labR, (a0 + a1) / 2);
       labs.push(`<div class="lab" id="lb${i}" style="left:${lx / 5}%;top:${ly / 5}%"><b>${esc(g.name)}</b><i>${esc(g.shown != null ? g.shown : Math.round(Number(g.got) || 0))}</i>${g.sub ? `<small>${esc(g.sub)}</small>` : ''}</div>`);
     });
     root.innerHTML = `<div class="cap"><span>${esc(circuitName)}${dateLabel ? ` · ${esc(dateLabel)}` : ''}</span><span id="capR"></span></div>
@@ -210,8 +225,21 @@ export default function RunFinale({
         <div class="tblock"><span class="ttl" id="f-title">${esc(earned.name)}</span>${rankText ? `<span class="rank" id="f-rank">${esc(rankText)}</span>` : ''}</div>
       </div>`;
     const q = (s) => root.querySelector(s);
-
+    // Keep every ring label on screen (long names near the left and right edges).
     let alive = true;
+    const fitLab = (lb) => {
+      // Measured at full size (the pop starts at scale .6), then nudged in.
+      const tr = lb.style.transition;
+      lb.style.transition = 'none'; lb.style.transform = 'translate(-50%,-50%)'; lb.style.marginLeft = '0px';
+      const r = lb.getBoundingClientRect();
+      lb.style.transform = ''; void lb.offsetWidth; lb.style.transition = tr;
+      const over = Math.max(0, r.right - (vw - 6)) - Math.max(0, 6 - r.left);
+      if (over) lb.style.marginLeft = `${-over}px`;
+    };
+    const fitLabs = () => { if (phone) root.querySelectorAll('.lab').forEach(fitLab); };
+    fitLabs();
+    try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (alive) fitLabs(); }); } catch (e) { /* older browsers */ }
+
     let skipped = false;
     const timers = [];
     const wait = (ms) => new Promise((res, rej) => { timers.push(setTimeout(() => (alive && !skipped ? res() : rej(new Error('stop'))), ms)); });
@@ -414,7 +442,7 @@ const CSS = `
 html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{visibility:hidden !important}
 .rfx.out{opacity:0;pointer-events:none}
 .rfx-fly{position:fixed;z-index:97;transform-origin:0 0;white-space:nowrap;pointer-events:none;font-family:Manrope,system-ui,sans-serif;font-variant-numeric:tabular-nums}
-.rfx .cap{position:absolute;top:max(18px, env(safe-area-inset-top));left:24px;right:24px;display:flex;justify-content:space-between;gap:12px;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+.rfx .cap{position:absolute;top:max(18px, env(safe-area-inset-top));left:24px;right:24px;display:flex;justify-content:space-between;gap:12px;white-space:nowrap;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
 .rfx .ringw{position:absolute;left:50%;top:50%;width:480px;height:480px;transform:translate(-50%,-50%);transition:opacity .5s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
 .rfx.p2 .ringw{opacity:0;transform:translate(-50%,-50%) scale(.82)}
 .rfx .ringw svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
@@ -442,15 +470,17 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .rank.in{opacity:1}
 @keyframes rfxFlip{from{transform:translateY(60%);opacity:0}to{transform:none;opacity:1}}
 @media (max-width:899px){
-  .rfx .cap{left:18px;right:18px;font-size:10.5px;letter-spacing:.1em}
-  .rfx .ringw{width:280px;height:280px}
-  .rfx .lab b,.rfx .lab i{font-size:11.5px}.rfx .lab small{font-size:9px;max-width:84px;white-space:normal}
-  .rfx .tline{top:calc(50% + 205px);font-size:12.5px}
-  .rfx .rhero .num{font-size:74px}.rfx .rhero .unit{font-size:13px}
-  .rfx.p2 .rhero .num{font-size:52px}
-  .rfx .pbox{width:286px;height:204px}
-  .rfx .piece{transform:scale(.68)}
-  .rfx .ttl{font-size:21px}.rfx .rank{font-size:12px}
+  .rfx .cap{left:16px;right:16px;font-size:11.5px;letter-spacing:.1em}
+  .rfx .cap span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis}.rfx .cap span:last-child{flex:none}
+  .rfx .ringw{width:var(--rd,320px);height:var(--rd,320px)}
+  .rfx .lab b,.rfx .lab i{font-size:14px}.rfx .lab small{font-size:11px;max-width:100px;white-space:normal}
+  .rfx .tline{top:calc(50% + var(--rd,320px) / 2 + 58px);font-size:15px}
+  .rfx .rhero .num{font-size:calc(var(--rd,320px) * .3)}.rfx .rhero .unit{font-size:16px}
+  .rfx.p2 .rhero .num{font-size:68px}
+  .rfx .rcol{gap:16px}
+  .rfx .pbox{width:calc(420px * var(--ps,.85));height:calc(300px * var(--ps,.85))}
+  .rfx .piece{transform:scale(var(--ps,.85))}
+  .rfx .ttl{font-size:27px}.rfx .rank{font-size:15px}
 }
 
 /* books */

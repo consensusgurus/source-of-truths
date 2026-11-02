@@ -597,6 +597,7 @@ replaced the end page's own sweep + count-up + climb, Crossed Up's ripple curtai
   finale plays the page underneath is `.gsx-held` (rises paused) and `.gsx-fly` (targets hidden);
   the glide releases the rises, the end hides the targets no more. The page arrives LANDED: no
   second count, no second climb.
+- **Phone sizes are measured** (owner, 2026-11-01, "too small on mobile"): the ring is 80% of the visible width (capped by 46% of the height, 260 to 400px), its labels sit 36px outside the arc and are nudged back on screen, the title piece scales to the width (`--ps`, 0.6 to 1), and the type is larger (score `--rd * .3`, title 27px). Never go back to fixed phone sizes.
 - **Any tap or key skips to the glide.** Pop-ups (MoreRunsPop, GauntletMorePop, EncorePop,
   RunNudgePop) are hidden while `html.rfx-on` is set and show once the finale hands over.
 - **Fresh finishes only.** Each client passes `finale` only when `doneAtLoad.current === false`;
