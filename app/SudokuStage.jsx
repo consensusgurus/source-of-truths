@@ -323,6 +323,8 @@ export const SKS_CSS = `
 .sks-sw small{font-size:.74em;font-weight:800;color:var(--pst-mute);}
 .sks-sw small.ok{color:var(--sks-good);font-size:.85em;}
 .sks-chip.on .sks-sw small{color:var(--pst-deep);}
+/* A two-line clue (Sando's sum over its running mark) is taller than the chip box, so the active one drops the box and reads by colour alone (owner, 2026-11-02). */
+.sks-chip.on:has(.sks-sw){background:none;box-shadow:none;}
 .sks-chip.on .sks-sw small.ok{color:var(--sks-good);}
 .sks-tri{display:flex;gap:1px;font-size:calc(100cqw / var(--sks-w) * .32);font-weight:800;line-height:1;}
 .sks-tri.v{flex-direction:column;gap:0;line-height:1.05;}
