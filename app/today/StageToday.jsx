@@ -7343,7 +7343,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   /* Runs in the tile grid: the lead run, the deck, and the unfurled cards. */
   .sty-grun .sty-gn::before,.sty-gdeck .sty-gn::before{border-radius:3px !important;background:var(--stg-ink) !important;}
   .sty-gdeck{font:inherit;text-align:left;cursor:pointer;background:var(--stg-surf);color:var(--stg-ink);margin:0 7px 7px 0;
-    box-shadow:3px 3px 0 -1px var(--stg-surf),3px 3px 0 1px var(--stg-ink),7px 7px 0 -1px var(--stg-surf),7px 7px 0 1px var(--stg-ink);}
+    box-shadow:3px 3px 0 0 var(--stg-surf),3px 3px 0 1px var(--stg-ink),7px 7px 0 0 var(--stg-surf),7px 7px 0 1px var(--stg-ink);}
   .sty-gdeck.on{box-shadow:none;margin:0;}
   .sty-gdeck .sty-gn em{font-style:normal;font-size:12px;font-weight:700;margin-left:4px;}
   .sty-gdl{display:flex;justify-content:space-between;gap:6px;font-size:12px;line-height:1.35;min-width:0;}
