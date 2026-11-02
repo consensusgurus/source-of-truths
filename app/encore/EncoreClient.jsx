@@ -800,6 +800,11 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
              selected square read as one more black square. */
           html[data-stage-tone='tint'] .ec-cell.ec-sel,html[data-stage-pastel='tint'] .ec-cell.ec-sel,html[data-stage-tone='darktint'] .ec-cell.ec-sel,html[data-stage-pastel='darktint'] .ec-cell.ec-sel{background:var(--sp-g, #bae6fd) !important;box-shadow:inset 0 0 0 3px var(--stg-ink, #08222e) !important;}
           html[data-stage-tone='tint'] .ec-cell.ec-sel .ec-l,html[data-stage-pastel='tint'] .ec-cell.ec-sel .ec-l,html[data-stage-tone='darktint'] .ec-cell.ec-sel .ec-l,html[data-stage-pastel='darktint'] .ec-cell.ec-sel .ec-l,html[data-stage-tone='tint'] .ec-cell.ec-sel .ec-num,html[data-stage-pastel='tint'] .ec-cell.ec-sel .ec-num,html[data-stage-tone='darktint'] .ec-cell.ec-sel .ec-num,html[data-stage-pastel='darktint'] .ec-cell.ec-sel .ec-num{color:#08222e !important;}
+          /* THE RUN'S COLOUR LOOK (owner, 2026-11-02): on /crossed the accent is ink
+             and carries no tone attribute, so the cursor painted the exact colour of
+             the black squares. In the run it takes the run's colour with an ink ring. */
+          .gsx-play[data-stage-theme='light'] .ec-cell.ec-sel{background:var(--gsx-bg, #bae6fd);box-shadow:inset 0 0 0 3px var(--stg-ink, #08222e);}
+          .gsx-play[data-stage-theme='light'] .ec-cell.ec-sel .ec-l,.gsx-play[data-stage-theme='light'] .ec-cell.ec-sel .ec-num{color:var(--stg-ink, #08222e);}
           html[data-stage-tone='tint'] .ec-cell.ec-inword,html[data-stage-pastel='tint'] .ec-cell.ec-inword{background:color-mix(in srgb, var(--sp-g, #bae6fd) 45%, var(--xw-cell, #fff)) !important;}
           html[data-stage-tone='darktint'] .ec-cell.ec-inword,html[data-stage-pastel='darktint'] .ec-cell.ec-inword{background:color-mix(in srgb, var(--sp-g, #bae6fd) 30%, var(--xw-cell, #1b2130)) !important;}
           .ec-num{position:absolute;top:3px;left:4px;line-height:1;font-family:${SANS};font-weight:800;color:var(--stg-ink2, rgba(28,30,36,0.7));pointer-events:none;}

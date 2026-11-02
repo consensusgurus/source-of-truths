@@ -791,6 +791,11 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
              selected square read as one more black square. */
           html[data-stage-tone='tint'] .mc-cell.mc-sel,html[data-stage-pastel='tint'] .mc-cell.mc-sel,html[data-stage-tone='darktint'] .mc-cell.mc-sel,html[data-stage-pastel='darktint'] .mc-cell.mc-sel{background:var(--sp-g, #bae6fd) !important;box-shadow:inset 0 0 0 3px var(--stg-ink, #08222e) !important;}
           html[data-stage-tone='tint'] .mc-cell.mc-sel .mc-ch,html[data-stage-pastel='tint'] .mc-cell.mc-sel .mc-ch,html[data-stage-tone='darktint'] .mc-cell.mc-sel .mc-ch,html[data-stage-pastel='darktint'] .mc-cell.mc-sel .mc-ch,html[data-stage-tone='tint'] .mc-cell.mc-sel .mc-num,html[data-stage-pastel='tint'] .mc-cell.mc-sel .mc-num,html[data-stage-tone='darktint'] .mc-cell.mc-sel .mc-num,html[data-stage-pastel='darktint'] .mc-cell.mc-sel .mc-num{color:#08222e !important;}
+          /* THE RUN'S COLOUR LOOK (owner, 2026-11-02): on /crossed the accent is ink
+             and carries no tone attribute, so the cursor painted the exact colour of
+             the black squares. In the run it takes the run's colour with an ink ring. */
+          .gsx-play[data-stage-theme='light'] .mc-cell.mc-sel{background:var(--gsx-bg, #bae6fd);box-shadow:inset 0 0 0 3px var(--stg-ink, #08222e);}
+          .gsx-play[data-stage-theme='light'] .mc-cell.mc-sel .mc-ch,.gsx-play[data-stage-theme='light'] .mc-cell.mc-sel .mc-num{color:var(--stg-ink, #08222e);}
           html[data-stage-tone='tint'] .mc-cell.mc-inword,html[data-stage-pastel='tint'] .mc-cell.mc-inword{background:color-mix(in srgb, var(--sp-g, #bae6fd) 45%, var(--xw-cell, #fff)) !important;}
           html[data-stage-tone='darktint'] .mc-cell.mc-inword,html[data-stage-pastel='darktint'] .mc-cell.mc-inword{background:color-mix(in srgb, var(--sp-g, #bae6fd) 30%, var(--xw-cell, #1b2130)) !important;}
           /* A MISS IS STRUCK THROUGH IN EVERY LOOK (owner, 2026-10-25): a diagonal slash, not the tint alone. */
