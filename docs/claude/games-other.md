@@ -1776,7 +1776,9 @@ Wired by `scripts/wire-six.mjs`. Tile art `scripts/gen-six-tiles.py`; share card
   photograph that has ALREADY been live, through `/api/jig/img?n=` (which refuses a day not yet live): Swap
   Jig's photo from 7 days earlier, Slide 14, Spin 21. **Swap, Slide, Spin and Jig never show the same
   picture on the same day** (owner, 2026-11-01); `verify-swap` checks all four banks by Commons file, date by date.
-  `app/usePhotoSquare.js` cuts the centre square on a canvas. **Swap** 6x6 (Sunday 7x7): no square starts
+  `app/usePhotoSquare.js` cuts the centre square on a canvas. The squares sit edge to edge with square corners (owner,
+  2026-11-01: one solid picture; the global `button` radius is reset on `.ph-t`), and only the board's four outer
+  corners are rounded. **Swap** 6x6 (Sunday 7x7): no square starts
   home, tap two or drag one onto another; par (n*n minus the cycles) is printed only in the rules. **Slide**
   5x5 (Sunday 6x6): a random solvable permutation, gap home bottom right; tap any square in the gap's line
   to slide the run, arrow keys too. **Spin** 6x6 (Sunday 8x8): tap turns a quarter clockwise; once the photo

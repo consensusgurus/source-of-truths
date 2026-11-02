@@ -48,12 +48,14 @@ export function tileStyle(url, t, n) {
 
 // The square board's CSS, shared by the three photo games: as wide as the
 // column allows and short enough to leave the tools and the foot on screen.
+// ONE SOLID PICTURE (owner, 2026-11-01): the squares sit edge to edge with
+// square corners (the site's global button radius is reset here), so the photo
+// reads as one image; only the board's own four outer corners are rounded.
 export const PHOTO_CSS = `
 .ph-wrap{align-self:center;width:100%;max-width:min(560px, calc(100dvh - 300px));}
 @media (min-width:900px){.ph-wrap{max-width:min(640px, calc(100dvh - 280px));}}
-.ph-board{position:relative;display:grid;width:100%;aspect-ratio:1/1;gap:2px;border-radius:12px;overflow:hidden;box-shadow:0 0 0 2px var(--pst-ink, #0b0f1a);background:var(--pst-ink, #0b0f1a);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;transition:gap .35s ease;}
-.ph-board.solved{gap:0;}
-.ph-t{position:relative;border:0;padding:0;margin:0;background-color:var(--pst-cell, #f1f4f8);background-repeat:no-repeat;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.ph-board{position:relative;display:grid;width:100%;aspect-ratio:1/1;gap:0;border-radius:12px;overflow:hidden;box-shadow:0 0 0 2px var(--pst-ink, #0b0f1a);background:var(--pst-cell, #f1f4f8);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
+.ph-t{position:relative;border:0;border-radius:0;padding:0;margin:0;background-color:var(--pst-cell, #f1f4f8);background-repeat:no-repeat;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .ph-board.solved .ph-t{cursor:default;}
 .ph-t:focus-visible{outline:3px solid var(--pst-acc, #7dd3fc);outline-offset:-3px;z-index:2;}
 .ph-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;opacity:.75;background:var(--pst-cell, #f1f4f8);z-index:5;}
