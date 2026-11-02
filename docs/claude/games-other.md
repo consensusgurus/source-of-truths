@@ -1789,8 +1789,25 @@ Wired by `scripts/wire-six.mjs`. Tile art `scripts/gen-six-tiles.py`; share card
 - **Connect (Logic, numberlink).** `scripts/gen-connect.mjs` lays random winding paths that cover the board (no
   path touches itself, every path 3+ squares, a pair's dots never side by side), keeps the ends, and
   `scripts/connect-solver.mjs` must count exactly one solution; of the first eight unique boards the one that
-  cost the solver most is kept. About one pair per eleven squares. Ramp Mon/Tue 9x9, Wed/Thu 10x10, Fri/Sat
-  11x11, Sunday 12x12. The client checks the RULES (every pair joined, every square used), not an answer.
+  cost the solver most is kept. The client checks the RULES (every pair joined, every open square used), not
+  an answer. Board No. 1 (2026-11-01) ran the first ramp (about one pair per eleven squares, Sunday 12x12) and
+  is kept as dealt.
+  **Harder from No. 2 (owner, 2026-11-01: "far too easy, even on a sunday ... obstacles?").** Blocked squares
+  (`walls: [[r,c]]`, dark on the board, no line enters, not counted as squares to fill) in pairs mirrored through
+  the centre, the open area kept connected, and fewer, longer lines: Mon/Tue 9x9 with 4 blocked and 6 pairs,
+  Wed/Thu 10x10 with 6 and 7, Fri/Sat 11x11 with 8 and 8, Sunday 12x12 with 10 and 9 (13x13 was tried: too
+  slow to prove). **Unique under the player's rules:** the client accepts any fill, so a line may run alongside
+  itself; the first ramp only proved uniqueness among self-avoiding lines, and some launch boards had 50+ ways
+  to finish (wiggle a line into a gap). From No. 2 the solver re-proves with `touch: true` (it also now works
+  from whichever end of a line has fewer ways on, and checks chessboard balance per region). Of the first
+  6/4/2/1 such boards (9/10/11/12) the generator keeps the one with the most `branches` (nodes that still had
+  a real choice after every forced move). Never more than nine pairs (amber, too close to gold, is the tenth pastel and so never shows from No. 2). The full bank takes about half an hour
+  to deal and `verify-connect` several minutes to re-prove.
+  **Colours are the ten site pastels** (`CATEGORY_RAMP` in ramp order, amber moved last), each line drawn as a pastel tube with a
+  `RAMP_INK` edge and each dot pastel with an ink ring (an ink centre once the pair is joined), so pastels stay
+  apart on white. Four extra pastels exist only for No. 1's 12 to 14 pairs. `verify-connect` checks No. 1 under
+  the first ramp and everything after under the new one (sizes, block and pair counts, mirror, connectivity,
+  uniqueness with the walls).
 - **Fill (Word, fill-in).** `scripts/gen-fill.mjs` deals from Scram's pools (`scripts/scram-pools.mjs`), never
   the day's Scour or Scram theme, no word again inside 30 days. 16/16/17/17/18/18 words on at most 15x15,
   Sunday 22 on at most 17x17. One whole word is printed to start (plus up to three letters if uniqueness

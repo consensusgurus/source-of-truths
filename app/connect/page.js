@@ -14,12 +14,12 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: "Free Daily Dot-Joining Puzzle (Numberlink): Connect | Mind Loft",
   description:
-    "A free daily numberlink puzzle: join every pair of matching dots with a line, never crossing, and use every square. 9x9 to 12x12, one solution each.",
+    "A free daily numberlink puzzle: join every pair of matching dots with a line, never crossing and never through a blocked square, and use every open square. 9x9 to 12x12, one solution each.",
   alternates: { canonical: '/connect' },
   openGraph: {
     images: [{ url: '/og/connect.png', width: 1200, height: 630, alt: "Connect, a daily dot-joining puzzle from Mind Loft" }],
     title: "Connect: The Daily Dot-Joining Puzzle",
-    description: "Join every pair of dots, never cross a line, and fill every square. One solution, a bigger board every couple of days.",
+    description: "Join every pair of dots, never cross a line, and fill every open square. One solution, a bigger board every couple of days.",
     url: '/connect',
     type: 'website',
     siteName: 'Mind Loft',
@@ -28,7 +28,7 @@ export const metadata = {
     images: ['/og/connect.png'],
     card: 'summary_large_image',
     title: "Connect: The Daily Dot-Joining Puzzle",
-    description: "Join every pair of dots, never cross a line, and fill every square. One solution, a bigger board every couple of days.",
+    description: "Join every pair of dots, never cross a line, and fill every open square. One solution, a bigger board every couple of days.",
   },
 };
 
@@ -39,7 +39,7 @@ const gameJsonLd = {
   alternateName: "Connect: The Daily Dot-Joining Puzzle",
   url: `${SITE_URL}/connect`,
   description:
-    "A free daily numberlink puzzle: join every pair of matching dots with one line, lines never cross, and every square must be used. Boards run 9x9 on Monday up to 11x11 on Saturday and 12x12 on Sunday, each proved to have exactly one solution; the clock decides the leaderboard.",
+    "A free daily numberlink puzzle: join every pair of matching dots with one line, lines never cross or pass a blocked square, and every open square must be used. Boards run 9x9 on Monday up to 11x11 on Saturday and 12x12 on Sunday, each proved to have exactly one solution; the clock decides the leaderboard.",
   genre: ["Logic puzzle", "Numberlink", "Puzzle"],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
