@@ -3,6 +3,15 @@
 // still some US, push the US surplus out to future inventory, delete nothing).
 //
 //   node scripts/sport-global-mix.mjs [--from 2026-10-31] [--extra lane.mjs ...]
+//   node scripts/sport-global-mix.mjs --append [--through YYYY-MM-DD] --extra lane.mjs ...
+//
+// --append (added 2026-11-02 for the 11-14..11-30 restock) re-plans NOTHING:
+// every day already in the bank is kept byte for byte, and new days are laid
+// out after the last one from the inventory plus the --extra files only.
+// --through stops it at a date (it fails if the pool cannot reach it). An
+// --extra entry may carry `from: '<game>:<id>'` (a recycled never-answered
+// question, scripts/trivia-recycle.mjs); it is carried into questions.js and,
+// if no day takes it, into the inventory, so the claim is never lost.
 //
 // WHAT IT DOES. Days before --from are frozen and kept byte for byte. Every
 // question on a day at or after --from, plus everything waiting in
@@ -22,7 +31,7 @@
 import fs from 'fs';
 import path from 'path';
 import url from 'url';
-import { rulesHit, MIX_PATTERN, isUSQuestion, usKind } from './sport-mix.mjs';
+import { rulesHit, MIX_PATTERN, isUSQuestion, usKind, SPORT_COPY_FROM, ANSWER_CAP } from './sport-mix.mjs';
 
 const HERE = path.dirname(url.fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -31,37 +40,54 @@ const P_FILE = path.join(ROOT, 'app/sport/puzzles.js');
 const INV_FILE = path.join(HERE, 'sport-lanes/sport-inventory.mjs');
 const argv = process.argv.slice(2);
 const arg = (k, d) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : d; };
-const FROM = arg('--from', '2026-10-31');
+const APPEND = argv.includes('--append');
+const THROUGH = arg('--through', null);
+const FROM = APPEND ? null : arg('--from', '2026-10-31');
 const EXTRA = argv.flatMap((a, i) => (argv[i - 1] === '--extra' ? [a] : []));
 const die = (m) => { console.error(`sport-global-mix: ${m}`); process.exit(1); };
 
 const { QUESTIONS } = await import(url.pathToFileURL(Q_FILE).href);
 const { PUZZLES } = await import(url.pathToFileURL(P_FILE).href);
 const byId = new Map(QUESTIONS.map((q) => [q.id, q]));
-const firstIdx = PUZZLES.findIndex((p) => p.live >= FROM);
+const addDays = (iso, n) => new Date(Date.parse(`${iso}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
+const lastDay = PUZZLES[PUZZLES.length - 1];
+const firstIdx = APPEND ? PUZZLES.length : PUZZLES.findIndex((p) => p.live >= FROM);
 if (firstIdx < 0) die(`no day on or after ${FROM}`);
 const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
-if (FROM <= today) die(`--from ${FROM} is not in the future (today is ${today}); a live board is frozen`);
+if (!APPEND && FROM <= today) die(`--from ${FROM} is not in the future (today is ${today}); a live board is frozen`);
 const keep = PUZZLES.slice(0, firstIdx);
-const startNum = PUZZLES[firstIdx].num;
+const startNum = APPEND ? lastDay.num + 1 : PUZZLES[firstIdx].num;
+const firstLive = APPEND ? addDays(lastDay.live, 1) : PUZZLES[firstIdx].live;
+if (APPEND && firstLive <= today) die(`the first new day ${firstLive} is not in the future (today is ${today})`);
+const SEED_TAG = APPEND ? firstLive : FROM;
 
 // ---- the pool --------------------------------------------------------------
 const norm = (s) => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 const pool = [];
 let order = 0;
 const push = (e) => { e.order = order++; e.ans = e.choices[e.correct]; e.us = isUSQuestion(e); e.kind = e.us ? usKind(e) : (e.cat === 'Soccer' ? 'Soccer' : 'World other'); pool.push(e); };
-for (const p of PUZZLES.slice(firstIdx)) for (const id of p.qids) { const q = byId.get(id); if (!q) die(`missing ${id}`); push({ cat: q.cat, tier: q.tier, q: q.q, choices: q.choices.slice(), correct: q.correct, was: id }); }
-const fromLane = (e, src) => ({ cat: e.c, tier: e.t, q: e.q, choices: [e.a, ...e.d], correct: 0, was: e.was || src });
+for (const p of PUZZLES.slice(firstIdx)) for (const id of p.qids) { const q = byId.get(id); if (!q) die(`missing ${id}`); push({ cat: q.cat, tier: q.tier, q: q.q, choices: q.choices.slice(), correct: q.correct, was: id, from: q.from }); }
+const fromLane = (e, src) => ({ cat: e.c, tier: e.t, q: e.q, choices: [e.a, ...e.d], correct: 0, was: e.was || src, from: e.from });
 if (fs.existsSync(INV_FILE)) { const { INVENTORY } = await import(url.pathToFileURL(INV_FILE).href + '?t=' + Date.now()); for (const e of INVENTORY) push(fromLane(e, 'inventory')); }
 for (const f of EXTRA) { const { LANE_DAYS, INVENTORY } = await import(url.pathToFileURL(path.resolve(f)).href); for (const e of (INVENTORY || (LANE_DAYS || []).flat())) push(fromLane(e, path.basename(f))); }
 const seenText = new Set();
 for (const e of pool) { const k = norm(e.q); if (seenText.has(k)) die(`the pool holds the same question twice: "${e.q}"`); seenText.add(k); }
+const keptText = new Set(keep.flatMap((p) => p.qids.map((id) => norm(byId.get(id).q))));
+for (const e of pool) if (e.from == null && keptText.has(norm(e.q))) die(`"${e.q}" is already on a kept day (only a declared recycle may repeat)`);
+for (const e of pool) if (e.from != null && !/^sport:d\d{2,3}q\d\d$/.test(String(e.from))) die(`bad from "${e.from}" on "${e.q}"`);
+
+// The answer ceiling (verify-sport: no answer correct more than ANSWER_CAP
+// times on days live from SPORT_COPY_FROM). Counted over the kept days, then
+// grown as days are laid out, so the planner never deals a day the gate fails.
+const ansKey = (a) => norm(a).replace(/^the /, '');
+const ansUse = new Map();
+for (const p of keep) if (p.live >= SPORT_COPY_FROM) for (const id of p.qids) { const k = ansKey(byId.get(id).choices[byId.get(id).correct]); ansUse.set(k, (ansUse.get(k) || 0) + 1); }
 
 // ---- deterministic column plan (gen-sport's, reseeded for this plan) -------
 function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 function seedOf(s) { let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 function columnPlan(dayNum) {
-  const rnd = rng(seedOf(`sport:globalcols:${FROM}:${dayNum}`));
+  const rnd = rng(seedOf(`sport:globalcols:${SEED_TAG}:${dayNum}`));
   const long = (dayNum - 1) % 4;
   const bag = []; for (let c = 0; c < 4; c++) for (let i = 0; i < (c === long ? 7 : 6); i++) bag.push(c);
   for (let n = 0; n < 5000; n++) {
@@ -84,7 +110,7 @@ function planDay(attempt) {
       const want = MIX_PATTERN[s];
       const worldLeft = MIX_PATTERN.slice(s + 1).filter((w) => w === 'world').length;
       let cand = pool.filter((e) => !used.has(e) && !picks.includes(e) && e.tier === t && e.us === (want === 'us')
-        && !answers.has(norm(e.ans)) && !(rulesHit(e.q) && rules >= 1));
+        && !answers.has(norm(e.ans)) && !(rulesHit(e.q) && rules >= 1) && (ansUse.get(ansKey(e.ans)) || 0) < ANSWER_CAP);
       if (want === 'us') cand = cand.filter((e) => !tierKinds.has(e.kind));
       else {
         // Each tier's world slots need at least one Soccer question; a
@@ -94,8 +120,12 @@ function planDay(attempt) {
       }
       if (!cand.length) return null;
       // Earliest authored first, nudged toward the US kind used least today,
-      // with a little jitter on retries.
-      const bias = (e) => (want === 'us' ? (kindCount[e.kind] || 0) * 40 : (tierKinds.has(e.kind) ? 300 : 0));
+      // with a little jitter on retries. A world kind already in this tier
+      // block is pushed back by more than any retry jitter can undo (it was
+      // 300, which the jitter of a late retry outweighed, so retries spent a
+      // second and third Soccer question per tier and starved later days of
+      // the one each tier must have; changed 2026-11-02 for --append).
+      const bias = (e) => (want === 'us' ? (kindCount[e.kind] || 0) * 40 : (tierKinds.has(e.kind) ? 100000 : 0));
       cand.sort((a, b) => (bias(a) - bias(b)) + (a.order - b.order) + (attempt ? (rnd() - 0.5) * 60 * attempt : 0));
       const e = cand[0];
       picks.push(e); answers.add(norm(e.ans)); if (rulesHit(e.q)) rules++;
@@ -108,21 +138,21 @@ function planDay(attempt) {
 }
 const days = [];
 for (let num = startNum; ; num++) {
+  if (THROUGH && addDays(firstLive, num - startNum) > THROUGH) break;
   let picks = null;
   for (let attempt = 0; attempt < 40 && !picks; attempt++) picks = planDay(attempt);
   if (!picks) break;
-  picks.forEach((e) => used.add(e));
+  picks.forEach((e) => { used.add(e); const k = ansKey(e.ans); ansUse.set(k, (ansUse.get(k) || 0) + 1); });
   days.push({ num, picks });
 }
 if (!days.length) die('not one day could be laid out');
+if (THROUGH && addDays(firstLive, days.length - 1) !== THROUGH) die(`the pool ran out at ${addDays(firstLive, days.length - 1)}, short of --through ${THROUGH}; nothing written`);
 
 // ---- write ------------------------------------------------------------------
 const pad2 = (n) => String(n).padStart(2, '0');
 const qidFor = (day, slot) => `d${day < 100 ? pad2(day) : String(day)}q${pad2(slot)}`;
 const esc = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const addDays = (iso, n) => new Date(Date.parse(`${iso}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
-const firstLive = PUZZLES[firstIdx].live;
 
 const qLines = []; const pBlocks = [];
 days.forEach((d, i) => {
@@ -135,26 +165,38 @@ days.forEach((d, i) => {
     qids.push(id);
     const wrong = e.choices.filter((_, j) => j !== e.correct);
     const choices = wrong.slice(); choices.splice(cols[k], 0, e.ans);
-    qLines.push(`  { id: '${id}', cat: '${esc(e.cat)}', tier: ${e.tier}, q: '${esc(e.q)}', choices: [${choices.map((c) => `'${esc(c)}'`).join(', ')}], correct: ${cols[k]} },`);
+    qLines.push(`  { id: '${id}', cat: '${esc(e.cat)}', tier: ${e.tier}, q: '${esc(e.q)}', choices: [${choices.map((c) => `'${esc(c)}'`).join(', ')}], correct: ${cols[k]}${e.from ? `, from: '${e.from}'` : ''} },`);
   });
   pBlocks.push(`  {\n    num: ${d.num},\n    quizId: 'sport-${Number(m)}-${Number(dd)}-${y.slice(2)}',\n    live: '${live}',\n    dateLabel: '${MONTHS[Number(m) - 1]} ${Number(dd)}, ${y}',\n    qids: [${qids.map((x) => `'${x}'`).join(', ')}],\n  },`);
 });
 
-// questions.js: keep every line before the first re-planned id, then the new ones.
+// questions.js: keep every line before the first re-planned id (or, with
+// --append, everything before the closing bracket), then the new ones.
 const qText = fs.readFileSync(Q_FILE, 'utf8');
+const pText = fs.readFileSync(P_FILE, 'utf8');
+if (APPEND) {
+  const qEnd = qText.lastIndexOf('\n];');
+  const pEnd = pText.lastIndexOf('\n];');
+  if (qEnd < 0 || pEnd < 0) die('could not find the closing brackets');
+  const qOut = qText.slice(0, qEnd + 1) + qLines.join('\n') + qText.slice(qEnd);
+  const pOut = pText.slice(0, pEnd + 1) + pBlocks.join('\n') + pText.slice(pEnd);
+  if (!qOut.startsWith(qText.slice(0, qEnd + 1)) || !pOut.startsWith(pText.slice(0, pEnd + 1))) die('the frozen prefix changed');
+  fs.writeFileSync(Q_FILE, qOut);
+  fs.writeFileSync(P_FILE, pOut);
+} else {
 const qCut = qText.indexOf(`  { id: '${PUZZLES[firstIdx].qids[0]}',`);
 const qEnd = qText.indexOf('\n];', qCut);
 if (qCut < 0 || qEnd < 0) die('could not find the splice points in questions.js');
 fs.writeFileSync(Q_FILE, qText.slice(0, qCut) + qLines.join('\n') + qText.slice(qEnd));
-const pText = fs.readFileSync(P_FILE, 'utf8');
 const pCut = pText.indexOf(`  {\n    num: ${startNum},\n`);
 const pEnd = pText.lastIndexOf('\n];');
 if (pCut < 0 || pEnd < 0) die('could not find the splice points in puzzles.js');
 fs.writeFileSync(P_FILE, pText.slice(0, pCut) + pBlocks.join('\n') + pText.slice(pEnd));
+}
 
 // inventory: every pooled question no day took, in the lane shape.
 const left = pool.filter((e) => !used.has(e));
-const inv = left.map((e) => `  { c: '${esc(e.cat)}', t: ${e.tier}, q: '${esc(e.q)}', a: '${esc(e.ans)}', d: [${e.choices.filter((_, j) => j !== e.correct).map((c) => `'${esc(c)}'`).join(', ')}], us: ${e.us}, was: '${esc(e.was)}' },`);
+const inv = left.map((e) => `  { c: '${esc(e.cat)}', t: ${e.tier}, q: '${esc(e.q)}', a: '${esc(e.ans)}', d: [${e.choices.filter((_, j) => j !== e.correct).map((c) => `'${esc(c)}'`).join(', ')}], us: ${e.us}, was: '${esc(e.was)}'${e.from ? `, from: '${e.from}'` : ''} },`);
 fs.writeFileSync(INV_FILE, `// scripts/sport-lanes/sport-inventory.mjs: Sport questions waiting for a day.
 // WRITTEN by scripts/sport-global-mix.mjs; do not hand-edit order, re-run it.
 //
@@ -172,4 +214,4 @@ ${inv.join('\n')}
 ];
 `);
 const usLeft = left.filter((e) => e.us).length;
-console.log(`sport-global-mix: re-planned ${days.length} days from ${firstLive} (day ${startNum}) to ${addDays(firstLive, days.length - 1)}; pool ${pool.length} (${pool.filter((e) => e.us).length} US, ${pool.filter((e) => !e.us).length} world); inventory ${left.length} (${usLeft} US, ${left.length - usLeft} world)`);
+console.log(`sport-global-mix: ${APPEND ? 'appended' : 're-planned'} ${days.length} days from ${firstLive} (day ${startNum}) to ${addDays(firstLive, days.length - 1)}; pool ${pool.length} (${pool.filter((e) => e.us).length} US, ${pool.filter((e) => !e.us).length} world); inventory ${left.length} (${usLeft} US, ${left.length - usLeft} world)`);

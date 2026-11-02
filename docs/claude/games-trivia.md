@@ -134,6 +134,19 @@ future inventory." The calendar from day 68 (2026-10-31) was re-planned by
   days on or after 2026-10-31.
 - `rulesHit()` moved, unchanged, from verify-sport into `scripts/sport-mix.mjs` so the planner
   can keep the one-rules-question-a-day cap.
+- **Restock of 2026-11-02 (days 82-98, 11-14 to 11-30): use `--append`.** `--from` can only
+  re-plan days already in the bank, so the planner gained
+  `node scripts/sport-global-mix.mjs --append --through <date> --extra <lane file>`, which keeps
+  every existing day byte for byte and lays new days out from the inventory plus the extras. It
+  now carries `from:` (recycles) through to questions.js and the inventory, respects the
+  answer ceiling (`SPORT_COPY_FROM`/`ANSWER_CAP`, moved into sport-mix.mjs and shared with the
+  verifier), and pushes a repeated world kind back past any retry jitter (the old bias of 300 let
+  late retries spend extra Soccer questions). The extras were
+  `scripts/sport-lanes/sport-world-2026-11.mjs`: 78 never-answered world recycles (73 placed) and
+  183 authored world questions (142 placed); leftovers went to the inventory. isUSQuestion also
+  learned North America, US Women's Open and Megan Rapinoe (no earlier day changes class). The binding
+  constraint is tier 1 and 2 world questions, and the easy world facts are largely used up, so
+  check every new one against the bank for the same fact asked from the other end.
 
 ## Biz (`/biz`) — the daily business gauntlet (launched 2026-08-27)
 

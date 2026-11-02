@@ -13,6 +13,8 @@
 // Soccer, Everything Else: 60% US leagues before counting the US questions in
 // the last two lanes, about two thirds US in all). A question is US when its
 // lane is NFL, NBA or MLB, or when a Soccer / Everything Else question is about
+// (North America, US Women's Open and Megan Rapinoe added 2026-11-02; they change
+// no day before 11-14, proved by comparing every question's classification)
 // an American team, player, event or league (isUSQuestion, below: MLS, the NHL,
 // US college sport, an American skater or sprinter, the US Open, the Masters).
 // Each tier's world slots hold at least one Soccer question (the rest lean to
@@ -22,10 +24,15 @@
 // they wait in scripts/sport-lanes/sport-inventory.mjs for later days.
 
 export const SPORT_GLOBAL_FROM = '2026-10-31';
+// The answer ceiling, shared so the planner cannot deal a day the gate fails:
+// no answer correct more than ANSWER_CAP times on days live from SPORT_COPY_FROM
+// (day 42, the first day the copy rules applied to). verify-sport.mjs imports both.
+export const SPORT_COPY_FROM = '2026-10-05';
+export const ANSWER_CAP = 4;
 export const MIX_PATTERN = ['world', 'us', 'world', 'us', 'world'];
 export const US_LEAGUES = new Set(['NFL', 'NBA', 'MLB']);
 
-export const US_RE = /\b(American|Americans|United States|U\.S\.|USA|US Open|NHL|NCAA|college|Heisman|Super Bowl|Kentucky Derby|Indianapolis|Indy|NASCAR|Daytona|Masters|Augusta|Stanley Cup|MLS|Major League Soccer|USMNT|USWNT|WNBA|Rose Bowl|Final Four|Boston|New York|Chicago|Los Angeles|Atlanta|Pebble Beach|Belmont|Preakness|Triple Crown|Harlem|PGA|North American)\b/;
+export const US_RE = /\b(American|Americans|United States|U\.S\.|USA|US Open|NHL|NCAA|college|Heisman|Super Bowl|Kentucky Derby|Indianapolis|Indy|NASCAR|Daytona|Masters|Augusta|Stanley Cup|MLS|Major League Soccer|USMNT|USWNT|WNBA|Rose Bowl|Final Four|Boston|New York|Chicago|Los Angeles|Atlanta|Pebble Beach|Belmont|Preakness|Triple Crown|Harlem|PGA|North American|North America|US Women's Open|Megan Rapinoe)\b/;
 
 /** Is this question US-centric? Its lane, or its stem and answer. */
 export function isUSQuestion(q) {

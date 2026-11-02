@@ -44,8 +44,8 @@
   },
   "sport": {
     "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "on": "2026-11-02",
+    "note": "whole bank, review rounds rv-a..rv-p; 2026-11-14..11-30 restock (75 recycles + 137 authored) reviewed 2026-11-02 by two separate fact-check passes (13 fixes applied)"
   },
   "biz": {
     "through": "2026-11-30",
@@ -53,9 +53,9 @@
     "note": "whole bank, review rounds rv-a..rv-p"
   },
   "script": {
-    "through": "2026-11-12",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-11-30",
+    "on": "2026-11-02",
+    "note": "whole bank, review rounds rv-a..rv-p; 2026-11-13..11-30 restock (212 recycles + 238 authored) reviewed 2026-11-02 by three separate fact-check passes (31 fixes applied)"
   },
   "quotes": {
     "through": "2026-11-12",
@@ -168,9 +168,9 @@
     "note": "whole bank, review rounds rv-a..rv-p"
   },
   "thread": {
-    "through": "2026-11-12",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-11-30",
+    "on": "2026-11-02",
+    "note": "whole bank, review rounds rv-a..rv-p; 2026-11-13..11-30 restock reviewed 2026-11-02 by a separate fact-check pass (10 fixes applied)"
   },
   "clade": {
     "through": "2026-12-20",

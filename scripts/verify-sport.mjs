@@ -80,14 +80,15 @@ import { QUESTIONS, QUESTION_MAP } from '../app/sport/questions.js';
 import { PUZZLES } from '../app/sport/puzzles.js';
 import { scanUS } from './us-spellings.mjs';
 import { checkRecycled } from './trivia-recycle.mjs';
-import { rulesHit, SPORT_GLOBAL_FROM, MIX_PATTERN, isUSQuestion, usKind } from './sport-mix.mjs';
+import { rulesHit, SPORT_GLOBAL_FROM, MIX_PATTERN, isUSQuestion, usKind, SPORT_COPY_FROM, ANSWER_CAP } from './sport-mix.mjs';
 
 // The first live date the US-spelling screen and the answer-reuse ceiling apply
 // to. It is day 42, the first day of the 2026-10-05..2026-11-30 segment;
 // everything before it is frozen.
-const SPORT_COPY_FROM = '2026-10-05';
-// No answer may be correct more than this many times at or after the floor.
-const ANSWER_CAP = 4;
+// SPORT_COPY_FROM = '2026-10-05', exported from scripts/sport-mix.mjs (moved
+// 2026-11-02, unchanged) so the planner shares it.
+// No answer may be correct more than ANSWER_CAP (4, also from sport-mix.mjs)
+// times at or after the floor.
 // The first live date the one-rules-question-a-day cap applies to.
 const RULES_CAP_FROM = '2026-09-24';
 const RULES_CAP = 1;
