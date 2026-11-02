@@ -58,6 +58,9 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook } from '../GauntletScreens';
+import usePlayStageFit from '@/lib/play-stage-fit';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
@@ -116,6 +119,47 @@ const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const HELP_KEY = 'sot_four_help_seen';
 const STATS_KEY = 'sot_four_stats';
+
+// THE STAGE BOARD (owner, 2026-11-02, Four / FourDark mockups). Colours come in
+// as --frs-* per look (set on .frs), every neutral is a PlayStage token.
+const FRS_CSS = `
+.frs{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
+.frs-gh,.frs-bd{width:var(--frs-w);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--frs-gap);box-sizing:border-box;}
+.frs-gh{padding:0 calc(var(--frs-pad) + 2px);}
+.frs-gh span{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;border-radius:50%;box-sizing:border-box;}
+.frs-gh span.on{background:var(--frs-you);border:2px solid var(--frs-you-b);animation:frsHover .25s ease-out;}
+.frs-gh span.on i{width:28%;height:28%;border-radius:50%;background:#08222e;}
+.frs-bd{padding:var(--frs-pad);border:2px solid var(--frs-edge);border-radius:16px;background:var(--frs-well);touch-action:manipulation;}
+.pst .frs-col{display:flex;flex-direction:column;gap:var(--frs-gap);border:0;background:transparent;padding:0;border-radius:999px;min-width:0;cursor:default;}
+.pst .frs-col.live{cursor:pointer;}
+.frs-col.on{background:var(--frs-hov);box-shadow:0 0 0 3px var(--frs-ring);}
+.frs-col.grey{opacity:.4;}
+.frs-dk{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;border-radius:50%;box-sizing:border-box;background:var(--frs-hole);border:2px solid var(--frs-hole-b);}
+.frs-dk.y{background:var(--frs-you);border-color:var(--frs-you-b);}
+.frs-dk.e{background:var(--frs-foe);border-color:var(--frs-foe);}
+.frs-dk i{width:26%;height:26%;border-radius:50%;background:var(--frs-mark);}
+.frs-dk i.me{background:#08222e;width:28%;height:28%;}
+.frs-dk.fresh{animation:frsDrop .34s cubic-bezier(.35,.05,.55,1);}
+.frs-dk.lit{position:relative;z-index:1;box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--pst-ink);}
+.frs-bd.won .frs-dk:not(.lit){opacity:.4;}
+.frs-bd.shake{animation:frsShake .34s ease;}
+.frs-leg{display:flex;gap:18px;justify-content:center;align-items:center;font-size:13px;font-weight:700;color:var(--pst-mute);}
+.frs-leg span{display:inline-flex;align-items:center;gap:6px;}
+.frs-leg i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:8px;box-sizing:border-box;}
+.frs-leg i.y{background:var(--frs-you);border:2px solid var(--frs-you-b);}
+.frs-leg i.y b{width:5px;height:5px;border-radius:50%;background:#08222e;}
+.frs-leg i.e{background:var(--frs-foe);box-shadow:0 0 0 2px var(--frs-mark);}
+.pst .frs-go{background:var(--pst-acc);color:var(--pst-on-acc);border-color:var(--frs-go-b);}
+.pst .frs-go:disabled{opacity:1;background:transparent;color:var(--pst-mute);border-color:var(--pst-cell-line);}
+.frs-bot{display:flex;flex-direction:column;gap:14px;flex:none;}
+.pst .frs-tl{background:transparent;}
+.pst .frs-tl.on{background:var(--pst-ink);color:var(--pst-bg);}
+.pst-col > .stb.has-t{flex:none;}
+@keyframes frsDrop{from{transform:translateY(-120%);opacity:.3}to{transform:none;opacity:1}}
+@keyframes frsHover{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
+@keyframes frsShake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media (prefers-reduced-motion: reduce){.frs-dk.fresh,.frs-gh span.on,.frs-bd.shake{animation:none}}
+`;
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -283,6 +327,12 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
+  // THE STAGE'S PICKED COLUMN (presentation only): a tap picks, a second tap
+  // or the Drop button drops through the board's own drop().
+  const [frsPick, setFrsPick] = useState(null);
+  const frsRef = useRef(null);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -359,6 +409,9 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
   }, [playing, pos, lastCol, lastRow]);
 
   useEffect(() => { gRef.current = g; }, [g]);
+  const frsOn = STAGE && phoneStage && !!g.t0;
+  const frsFit = usePlayStageFit(frsRef, '.frs-bd', frsOn);
+  useEffect(() => { setFrsPick(null); }, [moves.length, g.status]);
   useEffect(() => {
     if (!armReveal) return undefined;
     const t = setTimeout(() => setArmReveal(false), 3500);
@@ -705,7 +758,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead={<>You drop the <b>solid</b> discs, the engine the <b>ringed</b> ones, you move first, and the position is already won for you: a forced <b>win in {PUZZLE.winIn}</b> of your moves.</>}
+      lead={<>You drop the {STAGE ? (stageLook === 'plain' || stageLook === 'dark' ? <><b>dotted</b> discs, the engine the <b>black</b> ones</> : <><b>gold</b> discs, the engine the <b>black</b> ones</>) : <><b>solid</b> discs, the engine the <b>ringed</b> ones</>}, you move first, and the position is already won for you: a forced <b>win in {PUZZLE.winIn}</b> of your moves.</>}
       chips={[
         { label: 'Win = 10', tone: 'good' },
         { label: 'Draw = 4', tone: 'warn' },
@@ -738,6 +791,118 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-11-02, the approved Four / FourDark mockups):
+          Four plays on the shared white stage at every width. The well, your
+          discs End Game gold with an ink edge, the engine's discs solid ink, a
+          tap picks a column (gold ring, the disc waits above it) and a second
+          tap or Drop in column N drops it. Every tap is the board's own handler
+          (drop, useHint, restartGame, revealEnd), so the engine, scoring, saves
+          and posting are untouched. The black and white looks keep the board
+          colourless: your discs go light with an ink dot. */}
+      {frsOn && (playing || !revealed) && (() => {
+        const mono = stageLook === 'plain' || stageLook === 'dark';
+        const dark = stageLook === 'dark' || stageLook === 'darktint';
+        const made = Math.ceil(moves.length / 2);
+        const engineUp = playing && (thinking || awaitingReply);
+        const pick = myTurn && frsPick != null && pos.heights[frsPick] < ROWS ? frsPick : null;
+        const PAD = 8, GAP = 4;
+        const cell = frsFit ? Math.floor((frsFit - 5 * GAP - 2 * PAD - 4) / 6) : null;
+        const bw = cell ? Math.min(440, 7 * cell + 6 * GAP + 2 * PAD + 4) : 440;
+        const vars = {
+          '--frs-w': `min(100%, ${bw}px)`, '--frs-pad': `${PAD}px`, '--frs-gap': `${GAP}px`,
+          '--frs-well': dark ? '#6f7b90' : 'var(--pst-cell)',
+          '--frs-edge': dark ? '#a9b3c4' : 'var(--pst-ink)',
+          '--frs-hole': dark ? '#c9d1de' : '#ffffff',
+          '--frs-hole-b': dark ? '#c9d1de' : '#9aa5b8',
+          '--frs-you': mono ? '#fbfaf6' : '#e8b43a',
+          '--frs-you-b': '#08222e',
+          '--frs-foe': '#08222e',
+          '--frs-mark': dark ? '#c9d1de' : '#ffffff',
+          '--frs-hov': mono ? 'var(--pst-cell2)' : 'var(--pst-pale)',
+          '--frs-ring': mono ? 'var(--pst-ink)' : '#e8b43a',
+          '--frs-go-b': dark && !mono ? '#e8b43a' : 'var(--pst-ink)',
+        };
+        const tapCol = (c) => {
+          if (!myTurn) return;
+          if (pos.heights[c] >= ROWS) { setShake((k) => k + 1); return; }
+          if (pick === c) { setFrsPick(null); drop(c); } else setFrsPick(c);
+        };
+        const pressRestart = () => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } };
+        const pressGive = () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } };
+        const canHint = playing && hintOk && !g.hintUsed;
+        const dropN = made + 1;
+        const line = toast || (!playing ? null
+          : engineUp ? `Drop ${made}${made <= PUZZLE.winIn ? ` of ${PUZZLE.winIn}` : ''} made · The engine is answering`
+          : armRestart ? 'Tap Restart again: it records a 0 and deals the same board'
+          : `Drop ${dropN}${dropN <= PUZZLE.winIn ? ` of ${PUZZLE.winIn}` : ''} · ${pick != null ? `Column ${pick + 1} picked` : moves.length === 0 ? 'One column keeps the win' : 'Tap a column'}`);
+        const cols = [];
+        for (let c = 0; c < COLS; c++) {
+          const full = pos.heights[c] >= ROWS;
+          const greyed = hintCols.includes(c) && playing;
+          const discs = [];
+          for (let i = 0; i < ROWS; i++) {
+            const r = ROWS - 1 - i;
+            const idx = c * ROWS + r;
+            const v = pos.cells[idx];
+            const isLast = lastCol === c && lastRow === r;
+            const lit = winLine && winLine.includes(idx);
+            const engMark = v === 2 && engLast && engLast.col === c && engLast.row === r;
+            discs.push(
+              <span key={r} className={'frs-dk' + (v === 1 ? ' y' : v === 2 ? ' e' : '') + (isLast && playing ? ' fresh' : '') + (lit ? ' lit' : '')}>
+                {engMark || (v === 1 && mono) ? <i className={v === 1 ? 'me' : undefined} /> : null}
+              </span>
+            );
+          }
+          cols.push(
+            <button key={c} type="button" className={'frs-col' + (pick === c ? ' on' : '') + (greyed ? ' grey' : '') + (myTurn && !full ? ' live' : '')}
+              aria-label={full ? `Column ${c + 1}, full` : pick === c ? `Column ${c + 1}, picked, tap again to drop` : `Column ${c + 1}${greyed ? ', dimmed by the hint' : ''}`}
+              aria-disabled={!myTurn || full}
+              onPointerMove={(e) => { if (e.pointerType === 'mouse' && myTurn && !full && frsPick !== c) setFrsPick(c); }}
+              onClick={() => tapCol(c)}>
+              {discs}
+            </button>
+          );
+        }
+        return (
+          <PlayStage bg={gameColor('four')} label="Four"
+            eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Win in ${PUZZLE.winIn} · ${!playing ? 'Board settled' : engineUp ? 'Engine’s drop' : 'Your drop'}`}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: FRS_CSS }} />
+                <h2 className="pst-q frs-q">{playing ? 'Connect four before the engine does.' : statusLine()}</h2>
+                <div ref={frsRef} className="frs" style={vars}>
+                  <div className="frs-gh" aria-hidden="true">
+                    {Array.from({ length: COLS }).map((_, c) => <span key={c} className={pick === c ? 'on' : undefined}>{pick === c && mono ? <i /> : null}</span>)}
+                  </div>
+                  <div key={shake} className={'frs-bd' + (shake ? ' shake' : '') + (winLine ? ' won' : '')} role="group" aria-label="Board, seven columns">
+                    {cols}
+                  </div>
+                  <div className="frs-leg">
+                    <span><i className="y">{mono ? <b /> : null}</i>{mono ? 'You, dotted' : 'You, gold'}</span>
+                    <span><i className="e" />Engine, black</span>
+                  </div>
+                </div>
+              </>
+            )}
+            bottom={playing ? (
+              <div className="frs-bot" style={vars}>
+                <button type="button" className="pst-tb wide frs-go" disabled={pick == null} onClick={() => { if (pick != null) { setFrsPick(null); drop(pick); } }}>
+                  {engineUp ? 'The engine is answering' : pick != null ? `Drop in column ${pick + 1}` : 'Tap a column to pick it'}
+                </button>
+                <div className="pst-tools">
+                  {canHint ? <button type="button" className="pst-tb frs-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
+                  <button type="button" className={'pst-tb frs-tl' + (armRestart ? ' on' : '')} onClick={pressRestart} aria-label={armRestart ? 'Tap again to restart. This records a 0' : 'Restart this board'}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+                    {armRestart ? 'Tap again' : 'Restart'}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            foot={line}
+            giveUp={{ armed: !!armReveal, onPress: pressGive, armedLabel: 'Tap again to give up' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

@@ -79,6 +79,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { SlateBoard, SlatePiece, SlateTools, PIECE_NAMES, COUNT_WORDS } from '../SlateStage';
 
 const COLORS = {
   cream: T.surface,
@@ -325,6 +327,7 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
+  const phoneStage = usePhoneStage();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -863,10 +866,60 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
 
   const fileLabels = 'abcdefgh'.split('');
 
+  // THE WHITE STAGE (owner, 2026-11-02, the End Game mockups Defend /
+  // DefendDark): the Slate board (app/SlateStage.jsx) on PlayStage, drawn
+  // from Black's side as the old board is, with the "You play Black" tag under
+  // it. Every tap is the board's own handler (onSquare, useHint, restartGame,
+  // revealEnd), so the defence search, scoring, saves and posting are untouched.
+  const stageGive = () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } };
+  const stageRestart = () => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } };
+  const stageUp = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const stageBoard = () => {
+    const N = COUNT_WORDS[HOLD] || String(HOLD);
+    const detail = toast || (!playing ? (won ? 'You held' : 'The save is still in the position')
+      : awaitingReply ? 'White is thinking'
+      : selPiece ? (targets.length ? `${selName} on ${squareName(sel)} picked` : `The ${selName.toLowerCase()} on ${squareName(sel)} cannot move`)
+      : `${blackInCheck ? 'Check. ' : ''}Tap a black piece to move`);
+    return (
+      <PlayStage bg={gameColor('defend')} label="Defend"
+        eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Hold for ${HOLD} · ${!playing ? meterRight[1] : awaitingReply ? 'White to move' : 'Black to move'}`}
+        top={(
+          <>
+            <h2 className="pst-q slb-q">{playing ? `Survive ${N} move${HOLD === 1 ? '' : 's'} without being mated.` : sayLine}</h2>
+            <SlateBoard label="Chess board, drawn from Black's side" flipped on={stageUp}
+              cell={(sq) => {
+                const piece = pos[sq];
+                const white = piece && colorOf(piece) === 'w';
+                const checked = piece && piece.toUpperCase() === 'K' && ((white && whiteInCheck) || (!white && blackInCheck));
+                const isTarget = targets.includes(sq);
+                return {
+                  piece: piece ? <SlatePiece code={piece} /> : null,
+                  sel: sel === sq,
+                  last: !!(lastMove && (lastMove.from === sq || lastMove.to === sq)),
+                  target: isTarget,
+                  hint: hintPiece === sq,
+                  check: checked,
+                  live: myTurn && ((piece && !white) || isTarget),
+                  label: squareName(sq) + (piece ? `, ${white ? 'white' : 'black'} ${PIECE_NAMES[piece.toUpperCase()].toLowerCase()}` : '') + (isTarget ? ', can move here' : '') + (sel === sq ? ', picked' : ''),
+                  onClick: () => onSquare(sq),
+                };
+              }}>
+            <div className="slb-tag"><span className="slb-dk" aria-hidden="true" />You play Black · board drawn from your side</div>
+            </SlateBoard>
+          </>
+        )}
+        bottom={playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null}
+        foot={`Survived ${Math.floor(moves.length / 2)} of ${HOLD} move${HOLD === 1 ? '' : 's'} · ${detail}`}
+        giveUp={{ armed: !!armReveal, onPress: stageGive, armedLabel: 'Tap again to give up' }}
+        clock={elapsed} done={!playing} />
+    );
+  };
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageUp && stageBoard()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="defend" name="Defend" collapsed={started} loft={LOFT} />

@@ -621,3 +621,12 @@ the answer away: a question that asks which sport it is, or whose choices contai
 a lane, a choice that IS the lane), reads "Other sports" (or "Sports" for a lane). New Everything
 Else questions read "Other sports" until they are added to the map. Both the Sport daily
 (SportClient) and the runs (run page.js sets `question.sub`) show it.
+
+## Run finale: one beat per title (2026-11-02)
+
+The title climb in `app/RunFinale.jsx` gives every title crossing the same STEP (520ms): the value runs
+cutoff to cutoff, one segment a title, and only the flask (which shows the value) gets a last segment
+from the earned cutoff up to the score. It used to sweep 0 to the score at a steady rate after a 600ms
+hold on the first title, so a wide first rung (0 to 19 on the Trivia Gauntlet) left the screen still
+for about 1.5s before title two (owner: "pauses after the first title fills"). Do not go back to a
+score-proportional sweep.

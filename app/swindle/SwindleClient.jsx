@@ -70,6 +70,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { SwBoard } from './SwBoard';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { SlateBoard, SlatePiece, SlateTools, PIECE_NAMES, COUNT_WORDS } from '../SlateStage';
 
 const COLORS = {
   cream: T.surface,
@@ -282,6 +284,7 @@ export default function SwindleClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
+  const phoneStage = usePhoneStage();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -692,10 +695,68 @@ export default function SwindleClient({ puzzles = [], forceNum = null }) {
 
   const verdict = !playing ? (END_LINE[g.end] || (won ? 'A draw.' : END_LINE.revealed)) : null;
 
+  // THE WHITE STAGE (owner, 2026-11-02, the End Game mockups Swindle /
+  // SwindleDark): the Slate board (app/SlateStage.jsx) on PlayStage, the four
+  // ways to draw as chips over it. Every tap is the board's own handler
+  // (onSquare, useHint, restartGame, revealEnd), so the defence, the draw
+  // rules, scoring, saves and posting are untouched. SwBoard still draws the
+  // old board behind the stage.
+  const stageGive = () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } };
+  const stageRestart = () => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } };
+  const stageUp = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const stageBoard = () => {
+    const moveNo = Math.min(BUDGET, W.wMoves + (playing && !awaitingReply ? 1 : 0));
+    const selPiece = sel != null ? pos[sel] : null;
+    const selName = selPiece ? PIECE_NAMES[selPiece.toUpperCase()] : '';
+    const nT = targets.length;
+    const detail = toast || (!playing ? (won ? 'A draw saves it' : 'The draw is still in the position')
+      : awaitingReply ? 'Black is thinking'
+      : selPiece ? (nT ? `${selName} on ${squareName(sel)} has ${COUNT_WORDS[nT] || nT} legal square${nT === 1 ? '' : 's'}` : `The ${selName.toLowerCase()} on ${squareName(sel)} cannot move`)
+      : movesLeft <= 1 ? 'Your last move' : 'Tap a white piece to see its moves');
+    const hintShown = playing && hintOk && !g.hintUsed && !moves.length;
+    return (
+      <PlayStage bg={gameColor('swindle')} label="Swindle"
+        eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Draw in ${BUDGET} · ${!playing ? (won ? 'Drawn' : 'Ended') : awaitingReply ? 'Black to reply' : 'White to move'}`}
+        top={(
+          <>
+            <h2 className="pst-q slb-q">{playing ? 'You are lost. Find the draw.' : verdict}</h2>
+            <div className="slb-chips" role="list" aria-label="Four ways to draw">
+              {[['Stalemate', 'your turn, no legal move, not in check'], ['Perpetual check', 'check after check, forever'], ['Threefold', 'the same position three times'], ['Bare kings', 'too little left for anyone to mate']].map(([n, t]) => (
+                <span key={n} role="listitem" title={t}>{n}</span>
+              ))}
+            </div>
+            <SlateBoard label="Chess board" on={stageUp}
+              cell={(sq) => {
+                const piece = pos[sq];
+                const white = piece && colorOf(piece) === 'w';
+                const checked = piece && piece.toUpperCase() === 'K' && ((white && whiteInCheck) || (!white && blackInCheck));
+                const isTarget = targets.includes(sq);
+                return {
+                  piece: piece ? <SlatePiece code={piece} /> : null,
+                  sel: sel === sq,
+                  last: !!(lastMove && (lastMove.from === sq || lastMove.to === sq)),
+                  target: isTarget,
+                  hint: hintPiece === sq,
+                  check: checked,
+                  live: myTurn && (white || isTarget),
+                  label: squareName(sq) + (piece ? `, ${white ? 'white' : 'black'} ${PIECE_NAMES[piece.toUpperCase()].toLowerCase()}` : '') + (isTarget ? ', can move here' : '') + (sel === sq ? ', picked' : ''),
+                  onClick: () => onSquare(sq),
+                };
+              }} />
+          </>
+        )}
+        bottom={playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null}
+        foot={`${playing ? 'Move' : 'Moves played'} ${playing ? moveNo : W.wMoves} of ${BUDGET} · ${detail}`}
+        giveUp={{ armed: !!armReveal, onPress: stageGive, armedLabel: 'Tap again to give up' }}
+        clock={elapsed} done={!playing} />
+    );
+  };
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageUp && stageBoard()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="swindle" name="Swindle" collapsed={started} loft={LOFT} />

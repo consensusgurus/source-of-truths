@@ -74,6 +74,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { SlateBoard, SlatePiece, SlateTools, useSlateLook, PIECE_NAMES, COUNT_WORDS } from '../SlateStage';
 
 const COLORS = {
   cream: T.surface,
@@ -406,6 +408,8 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
+  const phoneStage = usePhoneStage();
+  const { mono: slateMono } = useSlateLook();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -992,10 +996,60 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
 
   const fileLabels = 'abcdefgh'.split('');
 
+  // THE WHITE STAGE (owner, 2026-11-02, the End Game mockups Mate /
+  // MateDark): the Slate board (app/SlateStage.jsx) on PlayStage, the brief
+  // over it, Hint and Restart under it, one line, and the foot's two-tap Give
+  // up. Every tap is the board's own handler (onSquare, useHint, restartGame,
+  // revealEnd), so the engine, scoring, saves and posting are untouched.
+  const stageGive = () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } };
+  const stageRestart = () => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } };
+  const stageUp = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const stageBoard = () => {
+    const N = COUNT_WORDS[PUZZLE.mateIn] || String(PUZZLE.mateIn);
+    const moveNo = Math.min(PUZZLE.mateIn, whitePlayed + (playing && !awaitingReply ? 1 : 0));
+    const dotWord = slateMono ? 'a dot' : 'a gold dot';
+    const detail = toast || (!playing ? (slowMate ? `${slowMate.san} mates too, but in ${slowMate.depth}, not ${PUZZLE.mateIn}` : (won ? `The key: ${PUZZLE.keySan}` : 'The mate is still in the position'))
+      : awaitingReply ? 'Black answers with its stiffest defence'
+      : selPiece ? (targets.length ? `${selName} on ${squareName(sel)} picked, tap ${dotWord}` : `The ${selName.toLowerCase()} on ${squareName(sel)} cannot move`)
+      : movesLeft <= 1 ? 'This move has to mate' : 'Tap a white piece to see its moves');
+    return (
+      <PlayStage bg={gameColor('mate')} label="Mate"
+        eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Mate in ${PUZZLE.mateIn} · ${!playing ? meterRight[1] : awaitingReply ? 'Black to reply' : 'White to move'}`}
+        top={(
+          <>
+            <h2 className="pst-q slb-q">{playing ? `Mate the king in ${N} move${PUZZLE.mateIn === 1 ? '' : 's'}.` : sayLine}</h2>
+            <SlateBoard label="Chess board" on={stageUp}
+              cell={(sq) => {
+                const piece = pos[sq];
+                const white = piece && colorOf(piece) === 'w';
+                const checked = piece && piece.toUpperCase() === 'K' && ((white && whiteInCheck) || (!white && blackInCheck));
+                const isTarget = targets.includes(sq);
+                return {
+                  piece: piece ? <SlatePiece code={piece} /> : null,
+                  sel: sel === sq,
+                  last: !!(lastMove && (lastMove.from === sq || lastMove.to === sq)),
+                  target: isTarget,
+                  hint: hintPiece === sq,
+                  check: checked,
+                  live: myTurn && (white || isTarget),
+                  label: squareName(sq) + (piece ? `, ${white ? 'white' : 'black'} ${PIECE_NAMES[piece.toUpperCase()].toLowerCase()}` : '') + (isTarget ? ', can move here' : '') + (sel === sq ? ', picked' : ''),
+                  onClick: () => onSquare(sq),
+                };
+              }} />
+          </>
+        )}
+        bottom={playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null}
+        foot={`${playing ? 'Move' : 'Moves played'} ${playing ? moveNo : whitePlayed} of ${PUZZLE.mateIn} · ${detail}`}
+        giveUp={{ armed: !!armReveal, onPress: stageGive, armedLabel: 'Tap again to give up' }}
+        clock={elapsed} done={!playing} />
+    );
+  };
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageUp && stageBoard()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

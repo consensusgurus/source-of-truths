@@ -66,6 +66,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { SlateBoard, SlatePiece, SlateTools, useSlateLook } from '../SlateStage';
 
 const COLORS = {
   cream: T.surface,
@@ -294,6 +296,8 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
+  const phoneStage = usePhoneStage();
+  const { mono: slateMono } = useSlateLook();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -807,10 +811,57 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
 
   const fileLabels = 'abcdefgh'.split('');
 
+  // THE WHITE STAGE (owner, 2026-11-02, the End Game mockups Queen /
+  // QueenDark): the Slate board (app/SlateStage.jsx) on PlayStage. Every tap
+  // is the board's own handler (onSquare, useHint, restartGame, revealEnd), so
+  // the tablebase, scoring, saves and posting are untouched.
+  const stageGive = () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } };
+  const stageRestart = () => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } };
+  const stageUp = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const stageBoard = () => {
+    const moveNo = Math.min(PUZZLE.winIn, whitePlayed + (playing && !awaitingReply ? 1 : 0));
+    const dotWord = slateMono ? 'a dot' : 'a gold dot';
+    const detail = toast || (!playing ? (won ? 'Promoted safely' : 'The win is still in the position')
+      : awaitingReply ? 'Black is thinking'
+      : selName ? (targets.length ? `${selName} on ${squareName(sel)} picked, tap ${dotWord}` : `The ${selName.toLowerCase()} on ${squareName(sel)} cannot move`)
+      : movesLeft <= 1 ? 'This move has to queen' : 'The black king answers perfectly');
+    return (
+      <PlayStage bg={gameColor('queen')} label="Queen"
+        eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Win in ${PUZZLE.winIn} · ${!playing ? meterRight[1] : awaitingReply ? 'Black to reply' : 'White to move'}`}
+        top={(
+          <>
+            <h2 className="pst-q slb-q">{playing ? 'Walk the pawn home to queen.' : sayLine}</h2>
+            <SlateBoard label="Chess board" on={stageUp}
+              cell={(sq) => {
+                const piece = sq === pos.wk ? 'K' : sq === pos.bk ? 'k' : sq === pos.p ? (view.promoted ? 'Q' : 'P') : null;
+                const white = !!piece && piece !== 'k';
+                const isTarget = targets.includes(sq);
+                const name = { K: 'king', k: 'king', P: 'pawn', Q: 'queen' }[piece];
+                return {
+                  piece: piece ? <SlatePiece code={piece} /> : null,
+                  sel: sel === sq,
+                  last: !!(lastMove && (lastMove.from === sq || lastMove.to === sq)),
+                  target: isTarget,
+                  hint: hintPiece === sq,
+                  live: myTurn && (white || isTarget),
+                  label: squareName(sq) + (piece ? `, ${white ? 'white' : 'black'} ${name}` : '') + (isTarget ? ', can move here' : '') + (sel === sq ? ', picked' : ''),
+                  onClick: () => onSquare(sq),
+                };
+              }} />
+          </>
+        )}
+        bottom={playing ? <SlateTools hint={hintShown ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null}
+        foot={`${playing ? 'Move' : 'Moves played'} ${playing ? moveNo : whitePlayed} of ${PUZZLE.winIn} · ${detail}`}
+        giveUp={{ armed: !!armReveal, onPress: stageGive, armedLabel: 'Tap again to give up' }}
+        clock={elapsed} done={!playing} />
+    );
+  };
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageUp && stageBoard()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="queen" name="Queen" collapsed={started} loft={LOFT} />

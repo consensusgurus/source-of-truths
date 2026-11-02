@@ -51,6 +51,9 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook } from '../GauntletScreens';
+import usePlayStageFit from '@/lib/play-stage-fit';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
@@ -245,6 +248,60 @@ function Piece({ p, small, ghost }) {
   );
 }
 
+// THE STAGE PIECE (owner, 2026-11-02, Gift / GiftDark mockups): drawn as an
+// SVG so the fill, the rim and the hollow read the per-look --gfs-* colours.
+// Tall pieces are the big square or disc, short ones the small; dark pieces
+// keep a dark fill (a light rim in the dark look), light pieces stay light.
+function GfsPiece({ p }) {
+  if (p == null || p < 0) return null;
+  const tall = p & 1, dark = p & 2, square = p & 4, hollow = p & 8;
+  const v = tall ? 32 : 22, e = 2, z = v - 4;
+  const cls = dark ? 'dk' : 'lt';
+  return (
+    <svg className={'gfs-pc ' + (tall ? 't' : 's')} viewBox={`0 0 ${v} ${v}`} aria-hidden="true">
+      {square ? <rect className={cls} x={e} y={e} width={z} height={z} rx="3" strokeWidth="2.4" /> : <circle className={cls} cx={v / 2} cy={v / 2} r={v / 2 - e} strokeWidth="2.4" />}
+      {hollow ? <circle className="ho" cx={v / 2} cy={v / 2} r={tall ? 5.8 : 4} strokeWidth="2" /> : null}
+    </svg>
+  );
+}
+
+const GFS_CSS = `
+.gfs{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;}
+.gfs-pc{display:block;flex:none;}
+.gfs-pc .dk{fill:var(--gfs-dk);stroke:var(--gfs-dk-s);}
+.gfs-pc .lt{fill:var(--gfs-lt);stroke:var(--gfs-lt-s);}
+.gfs-pc .ho{fill:var(--gfs-hole);stroke:#08222e;}
+.gfs-hand{display:flex;align-items:center;gap:12px;padding:8px 14px 8px 8px;border-radius:16px;background:var(--gfs-hand);max-width:100%;box-sizing:border-box;}
+.gfs-gift{width:58px;height:58px;border-radius:29px;border:2.5px solid var(--pst-ink);display:flex;align-items:center;justify-content:center;background:var(--gfs-gift);box-sizing:border-box;flex:none;}
+.gfs-gift .gfs-pc.t{width:34px;height:34px;}
+.gfs-gift .gfs-pc.s{width:24px;height:24px;}
+.gfs-hand p{margin:0;font-size:15px;font-weight:800;line-height:1.3;min-width:0;}
+.gfs-hand small{display:block;font-size:12px;font-weight:700;color:var(--pst-mute);}
+.gfs-bd{width:var(--gfs-w);aspect-ratio:1/1;border-radius:50%;border:2px solid var(--gfs-board-b);background:var(--gfs-board);display:flex;align-items:center;justify-content:center;box-sizing:border-box;}
+.gfs-grid{width:78.6%;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:3%;touch-action:manipulation;}
+.pst .gfs-well{border-radius:50%;border:2px solid var(--gfs-well-b);background:var(--gfs-well);padding:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:0;cursor:default;}
+.pst .gfs-well.open{cursor:pointer;}
+.gfs-well .gfs-pc.t{width:53%;height:53%;}
+.gfs-well .gfs-pc.s{width:37%;height:37%;}
+.pst .gfs-well.sel{border:3px solid var(--gfs-sel-b);background:var(--gfs-sel);}
+.pst .gfs-well.hint{box-shadow:0 0 0 3px var(--gfs-ring);}
+.pst .gfs-well.last{border:2.5px solid var(--pst-ink);}
+.pst .gfs-well.line{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--gfs-ring);}
+.gfs-lab{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--pst-mute);text-align:center;}
+.gfs-tray{width:100%;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));align-items:center;justify-items:center;min-height:48px;padding:4px 6px;border-radius:14px;background:var(--gfs-tray);box-sizing:border-box;}
+.pst .gfs-tp{width:40px;height:40px;max-width:100%;display:flex;align-items:center;justify-content:center;border:0;background:transparent;padding:0;border-radius:10px;cursor:default;}
+.pst .gfs-tp.live{cursor:pointer;}
+.pst .gfs-tp.on{background:var(--gfs-sel);box-shadow:0 0 0 2px var(--gfs-sel-b);}
+.gfs-tp .gfs-pc.t{width:32px;height:32px;}
+.gfs-tp .gfs-pc.s{width:22px;height:22px;}
+.gfs-bot{display:flex;flex-direction:column;gap:14px;flex:none;}
+.pst .gfs-go{background:var(--pst-acc);color:var(--pst-on-acc);border-color:var(--gfs-go-b);}
+.pst .gfs-go:disabled{opacity:1;background:transparent;color:var(--pst-mute);border-color:var(--pst-cell-line);}
+.pst .gfs-tl{background:transparent;}
+.pst .gfs-tl.on{background:var(--pst-ink);color:var(--pst-bg);}
+.pst-col > .stb.has-t{flex:none;}
+`;
+
 const GF_CSS = `
 .gf-root{--gf-piece-lt:#f6eedc;--gf-piece-dk:#1f2433;--gf-well:#cdd4e0;--gf-lt-edge:0 0 0 2px #2a2f3d;--gf-board:#ffffff;--gf-frame:0 0 0 1px rgba(11,15,26,.10),0 14px 34px rgba(11,15,26,.14);--gf-gold-ink:#8a6206;}
 .stage-page:not([data-stage-theme='light']) .gf-root,
@@ -317,6 +374,11 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
+  // THE STAGE'S STEP (presentation only): 1 place the gift, 2 choose the piece.
+  const [gfsStep, setGfsStep] = useState(1);
+  const gfsRef = useRef(null);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -352,6 +414,10 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
   const errors = W.threw;
   const myTurn = playing && started && !awaitingReply;
   const pool = useMemo(() => poolOf(pos, hand), [pos, hand]);
+  const gfsOn = STAGE && phoneStage && !!g.t0;
+  const gfsFit = usePlayStageFit(gfsRef, '.gfs-bd', gfsOn);
+  useEffect(() => { setGfsStep(1); }, [moves.length, g.status]);
+  useEffect(() => { if (selSq == null) setGfsStep(1); }, [selSq]);
   const lineCells = useMemo(() => {
     if (playing) return new Set();
     return new Set(winningLines(pos).flat());
@@ -774,6 +840,116 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-11-02, the approved Gift / GiftDark mockups):
+          Gift plays on the shared white stage at every width. The gift in a
+          pale gold card, the round board of sixteen wells, the pieces still to
+          give in a tray, and one gold button that walks the two steps: place
+          the gift (tap a well, Place it in well N), then choose what they get
+          (tap a piece, Hand it over). The steps are presentation only: the
+          wells and pieces call the board's own onWell / onChip, the button its
+          handOver, so the solver, scoring, saves and posting are untouched. */}
+      {gfsOn && (playing || !revealed) && (() => {
+        const mono = stageLook === 'plain' || stageLook === 'dark';
+        const dark = stageLook === 'dark' || stageLook === 'darktint';
+        const step = myTurn && selSq != null && !fills ? gfsStep : 1;
+        const filled = pos.filter((p) => p >= 0).length;
+        const vars = {
+          '--gfs-w': gfsFit ? `min(93%, ${Math.min(400, gfsFit)}px)` : 'min(93%, 400px)',
+          '--gfs-board': dark ? '#1a2130' : 'var(--pst-cell)',
+          '--gfs-board-b': dark ? '#5a6680' : 'var(--pst-ink)',
+          '--gfs-well': dark ? '#242c3d' : '#ffffff',
+          '--gfs-well-b': dark ? '#5a6680' : '#9aa5b8',
+          '--gfs-sel': mono ? 'var(--pst-cell2)' : '#e8b43a',
+          '--gfs-sel-b': dark && mono ? 'var(--pst-ink)' : '#08222e',
+          '--gfs-ring': mono ? 'var(--pst-ink)' : '#e8b43a',
+          '--gfs-tray': dark ? '#1a2130' : 'var(--pst-cell)',
+          '--gfs-hand': mono ? 'var(--pst-cell)' : 'var(--pst-pale)',
+          '--gfs-gift': dark ? '#242c3d' : '#ffffff',
+          '--gfs-dk': dark ? '#1a1d24' : '#08222e',
+          '--gfs-dk-s': dark ? '#c9d1de' : '#08222e',
+          '--gfs-lt': dark ? '#fbfaf6' : '#ffffff',
+          '--gfs-lt-s': dark ? '#1a1d24' : '#08222e',
+          '--gfs-hole': dark ? '#8b95a8' : '#c9d2dc',
+          '--gfs-go-b': dark && !mono ? '#e8b43a' : 'var(--pst-ink)',
+        };
+        const nameOf = (p) => { const n = pieceName(p); return n.charAt(0).toUpperCase() + n.slice(1); };
+        const pressRestart = () => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } };
+        const pressGive = () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } };
+        const go = () => {
+          if (!myTurn || selSq == null) return;
+          if (step === 1 && !fills) { setGfsStep(2); return; }
+          handOver();
+        };
+        const goLabel = !playing ? null
+          : awaitingReply ? 'Your opponent is placing it'
+          : selSq == null ? 'Tap a well for your gift'
+          : step === 1 ? `Place it in well ${selSq + 1}`
+          : selGive == null ? 'Tap the piece they get'
+          : 'Hand it over';
+        const goOk = myTurn && selSq != null && (step === 1 || selGive != null);
+        const line = toast || (!playing ? `${filled} of 16 wells filled`
+          : armRestart ? 'Tap Restart again: it records a 0 and resets the board'
+          : `${filled} of 16 wells filled · Four in a line sharing a trait wins`);
+        const eb = `${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Win in ${WIN_IN} · ${!playing ? 'Game over' : awaitingReply ? 'Your opponent’s turn' : fills ? 'Last well: place the gift' : step === 1 ? 'Step 1 of 2: place the gift' : 'Step 2 of 2: choose what they get'}`;
+        return (
+          <PlayStage bg={gameColor('gift')} label="Gift" eyebrow={eb}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: GFS_CSS }} />
+                <div ref={gfsRef} className="gfs" style={vars}>
+                  <div className="gfs-hand" role="status" aria-live="polite">
+                    <span className="gfs-gift">{playing && !awaitingReply ? <GfsPiece p={hand} /> : null}</span>
+                    <p>{!playing ? 'Game over' : awaitingReply ? 'Your opponent is choosing' : 'Your gift'}<small>{!playing ? verdict : awaitingReply ? 'They place your piece, then hand you one' : nameOf(hand)}</small></p>
+                  </div>
+                  <div className="gfs-bd" role="grid" aria-label="The board, 4 by 4">
+                    <div className="gfs-grid">
+                      {pos.map((p, sq) => {
+                        const empty = p < 0;
+                        const sel = myTurn && selSq === sq;
+                        const cls = 'gfs-well' + (empty && myTurn ? ' open' : '') + (sel ? ' sel' : '') + (hintSq === sq && !sel ? ' hint' : '') + (lineCells.has(sq) ? ' line' : '') + (lastSq === sq ? ' last' : '');
+                        return (
+                          <button key={sq} type="button" className={cls} onClick={() => onWell(sq)} aria-disabled={!empty || !myTurn}
+                            aria-label={`Well ${sq + 1}, ${empty ? (sel ? 'picked for your gift' : 'empty') : pieceName(p)}${lastSq === sq ? ', just placed' : ''}`}>
+                            {!empty ? <GfsPiece p={p} /> : (sel && step === 2 ? <GfsPiece p={hand} /> : null)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="gfs-lab">{step === 2 ? 'Tap the piece your opponent gets' : 'Still to give · you hand one over next'}</div>
+                  <div className={'gfs-tray' + (pool.length > 8 ? ' two' : '')} role="group" aria-label="Pieces still off the board">
+                    {pool.map((p) => {
+                      const live = step === 2 && myTurn;
+                      return (
+                        <button key={p} type="button" className={'gfs-tp' + (live ? ' live' : '') + (live && selGive === p ? ' on' : '')}
+                          onClick={() => { if (live) onChip(p); }} aria-disabled={!live} aria-pressed={live ? selGive === p : undefined}
+                          aria-label={`${live ? 'Hand over the ' : ''}${pieceName(p)} piece`}>
+                          <GfsPiece p={p} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+            bottom={playing ? (
+              <div className="gfs-bot" style={vars}>
+                <button type="button" className="pst-tb wide gfs-go" disabled={!goOk} onClick={go}>{goLabel}</button>
+                <div className="pst-tools">
+                  {step === 2 ? <button type="button" className="pst-tb gfs-tl" onClick={() => setGfsStep(1)}>{ICON.left}Back</button> : null}
+                  {hintOk && !g.hintUsed && opening && step === 1 ? <button type="button" className="pst-tb gfs-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
+                  <button type="button" className={'pst-tb gfs-tl' + (armRestart ? ' on' : '')} onClick={pressRestart} aria-label={armRestart ? 'Tap again to restart. This records a 0' : 'Restart this board'}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+                    {armRestart ? 'Tap again' : 'Restart'}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            foot={line}
+            giveUp={{ armed: !!armReveal, onPress: pressGive, armedLabel: 'Tap again to give up' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="gift" name="Gift" collapsed={started} loft={LOFT} />

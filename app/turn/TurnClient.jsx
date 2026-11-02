@@ -49,6 +49,9 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook } from '../GauntletScreens';
+import usePlayStageFit from '@/lib/play-stage-fit';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import DailyRules from '../DailyRules';
@@ -102,6 +105,39 @@ const ARM_MIN_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const HELP_KEY = 'sot_turn_help_seen';
 const STATS_KEY = 'sot_turn_stats';
+
+// THE STAGE BOARD (owner, 2026-11-02, Turn / TurnDark mockups). The --tns-*
+// colours are set per look on .tns; neutrals are PlayStage tokens.
+const COUNT_WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty'];
+const countWord = (n) => COUNT_WORDS[n] || String(n);
+const TNS_CSS = `
+.tns{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;}
+.tns-score{display:flex;justify-content:center;gap:10px;}
+.tns-sc{display:flex;align-items:center;gap:10px;min-width:128px;height:48px;box-sizing:border-box;padding:0 14px;border-radius:14px;border:1px solid var(--pst-ink);background:transparent;}
+.tns-sc.on{background:var(--tns-on);border-color:var(--tns-on-b);}
+.tns-sc b{font-size:24px;font-weight:800;margin-left:auto;font-variant-numeric:tabular-nums;}
+.tns-sc span{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}
+.tns-sc i{width:18px;height:18px;border-radius:9px;box-sizing:border-box;flex:none;}
+.tns-sc i.y,.tns-ds.y{background:var(--tns-you);border:2px solid var(--tns-you-b);}
+.tns-sc i.e,.tns-ds.e{background:var(--tns-foe);border:2.5px solid var(--tns-foe-b);}
+.tns-bd{width:var(--tns-w);aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));gap:1px;background:var(--tns-line);border:2px solid var(--tns-edge);border-radius:8px;overflow:hidden;box-sizing:border-box;touch-action:manipulation;}
+.pst .tns-sq{position:relative;border:0;padding:0;background:var(--tns-cell);display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;border-radius:0;cursor:default;}
+.pst .tns-sq.lg{cursor:pointer;}
+.tns-ds{width:77%;height:77%;border-radius:50%;box-sizing:border-box;display:block;}
+.tns-ds.last{box-shadow:0 0 0 3px var(--tns-gold);}
+.tns-ds.flip{animation:tnsFlip .42s ease-out;}
+.tns-lg{width:33%;height:33%;border-radius:50%;background:var(--tns-gold);box-shadow:inset 0 0 0 2px #08222e;display:block;}
+.tns-sq.ring::after{content:"";position:absolute;inset:8%;border-radius:50%;border:2.5px solid var(--pst-ink);pointer-events:none;}
+@media (hover:hover) and (pointer:fine){.pst .tns-sq.lg:hover .tns-lg{width:56%;height:56%;}}
+.tns-bd.shake{animation:tnsShake .34s ease;}
+.tns-bot{display:flex;flex-direction:column;gap:14px;flex:none;}
+.pst .tns-tl{background:transparent;}
+.pst .tns-tl.on{background:var(--pst-ink);color:var(--pst-bg);}
+.pst-col > .stb.has-t{flex:none;}
+@keyframes tnsFlip{0%{transform:scaleX(1)}50%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+@keyframes tnsShake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media (prefers-reduced-motion: reduce){.tns-ds.flip,.tns-bd.shake{animation:none}}
+`;
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -240,6 +276,9 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
+  const tnsRef = useRef(null);
   const searchParams = useSearchParams();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
@@ -313,6 +352,8 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
   }, [PUZZLE, g.moves]);
 
   const myTurn = playing && started && view.turn === 1 && !view.over;
+  const tnsOn = STAGE && phoneStage && !!g.t0;
+  const tnsFit = usePlayStageFit(tnsRef, '.tns-bd', tnsOn);
 
   // A hint marks three squares, one of which is the key. Deterministic from the
   // puzzle id so everyone who spends their one hint sees the same three.
@@ -789,6 +830,86 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-11-02, the approved Turn / TurnDark mockups):
+          Turn plays on the shared white stage at every width. The disc score
+          (the side to move on pale gold), the 8 by 8 board on light grey with
+          grey grid lines, your discs black and the engine's white, the legal
+          squares marked with a gold dot, the last disc ringed gold. Every tap
+          is the board's own handler (onSquare, useHint, restartGame,
+          revealEnd), so the engine, scoring, saves and posting are untouched. */}
+      {tnsOn && (playing || !revealed) && (() => {
+        const mono = stageLook === 'plain' || stageLook === 'dark';
+        const dark = stageLook === 'dark' || stageLook === 'darktint';
+        const empties = view.cells.filter((v) => v === 0).length;
+        const engineUp = playing && (thinking || view.turn === 2);
+        const legalN = myTurn ? view.legalSet.size : 0;
+        const vars = {
+          '--tns-w': tnsFit ? `min(100%, ${Math.min(440, tnsFit)}px)` : 'min(100%, 440px)',
+          '--tns-line': dark ? '#232a39' : '#9aa5b8',
+          '--tns-cell': dark ? '#353d4f' : 'var(--pst-cell)',
+          '--tns-edge': dark ? '#5a6680' : 'var(--pst-ink)',
+          '--tns-you': dark ? '#1a1d24' : '#08222e',
+          '--tns-you-b': dark ? '#c9d1de' : '#08222e',
+          '--tns-foe': dark ? '#fbfaf6' : '#ffffff',
+          '--tns-foe-b': dark ? '#1a1d24' : '#08222e',
+          '--tns-gold': mono ? 'var(--pst-ink)' : '#e8b43a',
+          '--tns-on': mono ? 'var(--pst-cell2)' : 'var(--pst-pale)',
+          '--tns-on-b': dark && !mono ? '#e8b43a' : 'var(--pst-ink)',
+        };
+        const line = toast || (!playing ? `You ${view.score.mine}, the engine ${view.score.theirs}`
+          : engineUp ? `${empties} empty · The engine is answering`
+          : armRestart ? 'Tap Restart again: it records a 0 and deals the same board'
+          : `${empties} empty · ${legalN} legal move${legalN === 1 ? '' : 's'}, marked${mono ? '' : ' in gold'}`);
+        const sqs = [];
+        for (let sq = 0; sq < 64; sq++) {
+          const v = view.cells[sq];
+          const open = view.legalSet.has(sq) && myTurn;
+          const isKey = revealKey && sq === PUZZLE.key;
+          const hinted = playing && g.hintUsed && view.legalSet.has(sq) && hintSet.has(sq);
+          const flipped = view.lastFlips.has(sq);
+          const fresh = sq === view.lastSq;
+          sqs.push(
+            <button key={sq} type="button" className={'tns-sq' + (open ? ' lg' : '') + (hinted || isKey ? ' ring' : '')}
+              onClick={() => onSquare(sq)} aria-disabled={!open}
+              aria-label={`${SQ_NAME(sq)}${v === 1 ? ', your disc' : v === 2 ? ', engine disc' : open ? ', you can play here' : ', empty'}${fresh ? ', last move' : ''}${hinted ? ', ringed by the hint' : ''}`}>
+              {v !== 0 ? <span className={'tns-ds ' + (v === 1 ? 'y' : 'e') + (fresh ? ' last' : '') + (flipped ? ' flip' : '')} /> : open ? <span className="tns-lg" /> : null}
+            </button>
+          );
+        }
+        return (
+          <PlayStage bg={gameColor('turn')} label="Turn"
+            eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}${countWord(empties)} square${empties === 1 ? '' : 's'} left · ${!playing ? 'Board counted' : engineUp ? 'Engine’s move' : 'Your move'}`}
+            top={(
+              <>
+                <style dangerouslySetInnerHTML={{ __html: TNS_CSS }} />
+                <h2 className="pst-q tns-q">{playing ? 'Finish with more discs.' : statusLine()}</h2>
+                <div ref={tnsRef} className="tns" style={vars}>
+                  <div className="tns-score" aria-label={`Discs: you ${view.score.mine}, the engine ${view.score.theirs}`}>
+                    <div className={'tns-sc' + (playing && !engineUp ? ' on' : '')}><i className="y" /><span>You</span><b>{view.score.mine}</b></div>
+                    <div className={'tns-sc' + (engineUp ? ' on' : '')}><i className="e" /><span>Them</span><b>{view.score.theirs}</b></div>
+                  </div>
+                  <div key={shake} className={'tns-bd' + (shake ? ' shake' : '')} role="grid" aria-label="Board, 8 by 8">
+                    {sqs}
+                  </div>
+                </div>
+              </>
+            )}
+            bottom={playing ? (
+              <div className="tns-bot" style={vars}>
+                <div className="pst-tools">
+                  {hintOk && !g.hintUsed ? <button type="button" className="pst-tb tns-tl" onClick={useHint}>{ICON.bulb}Hint</button> : null}
+                  <button type="button" className={'pst-tb tns-tl' + (armRestart ? ' on' : '')} onClick={restartGame} aria-label={armRestart ? 'Tap again to restart. This records a 0' : 'Restart this board'}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+                    {armRestart ? 'Tap again' : 'Restart'}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            foot={line}
+            giveUp={{ armed: !!armReveal, onPress: () => revealEnd(), armedLabel: 'Tap again to give up' }}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="turn" name="Turn" collapsed={started} loft={LOFT} />

@@ -358,18 +358,34 @@ export default function RunFinale({
         await wait(720);
         paint(gOf(L[0].colour));
         P.step(q, L, 0);
-        await wait(600);
-        const DUR = 600 + K * 600;
+        // ONE BEAT PER TITLE (owner, 2026-11-02: "pauses after the first title
+        // fills"). The climb used to sweep 0 to the score at a steady rate and
+        // light a title when the sweep crossed its cutoff, after a 600ms hold
+        // on the first. A title ladder's first rung is wide (0 to 19 on the
+        // Trivia Gauntlet), so the screen sat still for a second and a half
+        // before title two, and only the flask showed the sweep at all. Now
+        // every crossing gets the same STEP: the value runs cutoff to cutoff,
+        // one segment a title, and the flask alone gets a last segment from
+        // the earned cutoff up to the score. A first-rung finish holds one
+        // STEP so the title is seen before it lands.
+        const STEP = 520;
+        const pts = L.slice(0, K + 1).map((t) => t.min);
+        if (P.prog && score > L[K].min) pts.push(score);
+        const segs = pts.length - 1;
+        const DUR = Math.max(1, segs) * STEP;
         let k = 0;
         const t0 = performance.now();
         await new Promise((res) => {
           const tick = (now) => {
             if (!alive || skipped) { res(); return; }
-            const p = Math.min(1, (now - t0) / DUR);
-            const v = score * (pieceKey === 'flask' ? ease(p) : p);
-            if (P.prog) P.prog(q, v, X);
-            while (k < K && v >= L[k + 1].min) { k += 1; paint(gOf(L[k].colour)); P.step(q, L, k); }
-            if (p < 1) requestAnimationFrame(tick); else res();
+            const el = Math.min(DUR, now - t0);
+            if (P.prog && segs > 0) {
+              const i = Math.min(segs - 1, Math.floor(el / STEP));
+              const f = Math.min(1, el / STEP - i);
+              P.prog(q, pts[i] + (pts[i + 1] - pts[i]) * ease(f), X);
+            }
+            while (k < K && el >= (k + 1) * STEP) { k += 1; paint(gOf(L[k].colour)); P.step(q, L, k); }
+            if (el < DUR) requestAnimationFrame(tick); else res();
           };
           requestAnimationFrame(tick);
         });

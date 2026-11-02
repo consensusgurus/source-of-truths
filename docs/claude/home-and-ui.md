@@ -2080,3 +2080,79 @@ MemeShare, LossHold), endings (StageStick, StageFinish), EntryDoor, the Stat Hub
 NOT changed on purpose: focus rings (`outline:2px` / `box-shadow 0 0 0 2px`), accent selection borders
 (`--stg-acc-ink`), and in-game board lines (chain dashes, docket tiles, sudoku box edges, price bars).
 New chrome takes `border:1px solid var(--stg-ink)` or `var(--dk)`; never reintroduce a 2px ink box.
+
+## Mate, Queen, Defend, Swindle and Check on the white stage: the shared Slate board (owner, 2026-11-02)
+
+The four chess dailies and Check (draughts) play on `PlayStage` at every width with the usual mount
+(`STAGE && phoneStage && !!g.t0 && (playing || !revealed)`; none of the five is dealt into a run or
+circuit, so there is no `!EMBED`), drawn from the approved End Game mockups (`Mate.dc.html` /
+`MateDark.dc.html` and the same pairs for Queen, Defend, Swindle, Check). Presentation only: every
+stage control calls the client's own handler (`onSquare`, `useHint`, `restartGame`, `revealEnd`), so
+engines, tablebase, defence searches, scoring, saves, posting, share text, archives, Sunday Editions
+and the finish are unchanged, and the old board stays behind the stage (`?stage=0` shows it; Swindle's
+`SwBoard` still draws that one).
+
+- **`app/SlateStage.jsx`** is the one shared board: `SlateBoard` (64 real buttons in a 2px frame, the
+  host passes `cell(sq)` returning `{ piece, sel, last, target, hint, check, lift, live, label, onClick }`;
+  `flipped` draws from Black's side for Defend; `coords={false}` for draughts; children render under the
+  board inside the wrapper that carries the piece colours), `SlatePiece` (the mockups' piece drawings),
+  `SlateMan` (Check's men), `SlateTools` (Hint + two-tap Restart) and `SLATE_CSS`. Its width is capped by
+  the measured height (`lib/play-stage-fit.js` on `.slb-board`).
+- **Colours.** Light look: squares `#f4f6f9` / `#d3dbe4`, 2px ink frame, white pieces white with an ink
+  line, black pieces ink. Dark look (the Slate dark board): `#353d4f` / `#232a39`, frame `#5a6680`, white
+  pieces `#fbfaf6` lined `#1a1d24`, black pieces `#1a1d24` with the `#c9d1de` rim. Picked square full End
+  Game gold (`--pst-acc`, coordinates in its ink), last move the pale gold (`--pst-pale`), a legal empty
+  square a small gold dot with an ink ring, a capture a gold ring, the hint a gold-and-ink inset ring, a
+  checked king `--pst-bad` on `--pst-bad-bg`. Coordinates sit small inside the edge squares. The plain
+  black-and-white looks swap the gold for a grey pick and ink dots (`slateVars`).
+- **Per game.** Mate: "Mate the king in N moves." Queen: "Walk the pawn home to queen." (the mockup
+  said "and mate"; the win is a safe promotion, so the copy says so). Defend: flipped board, "Survive N
+  moves without being mated.", the "You play Black" pale gold tag. Swindle: "You are lost. Find the
+  draw." with the four draw chips. Check: white men are yours, ink men Black's, a crown for a king, the
+  Yours / Black / King legend; a piece that can move carries a faint ring while nothing is picked (the
+  old board's lift ring, kept because captures are compulsory).
+- **Deliberate differences.** The old "line so far" move chips and the meter segments are not on the
+  stage (the mockups drop them; the last move is lit on the board and the foot line counts moves). The
+  hint and Check's "no move" notices, which were toasts under the overlay, are said in the foot line.
+  Restart stays two taps (it records a 0), as before.
+## Four, Gift, Turn and Yose on the white stage (owner, 2026-11-02)
+
+The four board End Game dailies play on `PlayStage` at every width with the usual
+`STAGE && phoneStage && !!g.t0 && (playing || !revealed)` mount, drawn from the approved
+Four / FourDark, Gift / GiftDark, Turn / TurnDark and Yose / YoseDark mockups. Presentation
+only: every stage control calls the board's own handler (Four `drop`, Gift `onWell` /
+`onChip` / `handOver`, Turn `onSquare`, Yose `onPoint` / `passTurn`, plus each game's
+`useHint`, `restartGame` and `revealEnd`), so the engines, scoring, saves, timers, hints,
+posting, share text, archives, Sunday Editions and the endings are unchanged, and each old
+board stays behind the stage. None of the four is in a run or circuit (checked
+`lib/circuits.js` and every RunEmbed host), so there is no embedded mode to keep. In-page
+Give up folds into the foot's two taps; Restart stays a two-tap tool (`Tap again`).
+
+- **Colours per look.** Each client reads the look with `useStageLook` and sets game-local
+  `--frs-*` / `--gfs-*` / `--tns-*` / `--yos-*` on its board (and on its bottom controls
+  through a wrapper column, since the bottom row is not inside the board). The
+  neutrals are PlayStage tokens (`--pst-cell`, `--pst-pale`, `--pst-mute`, `--pst-acc`).
+  End Game gold is `#e8b43a` with `#08222e` ink on it. The plain black-and-white looks keep
+  every board colourless (gold becomes ink or grey; Four's discs go light with an ink dot).
+- **Four:** your discs gold with a 2px ink edge, the engine's solid ink (its last disc
+  carries a small light dot), empty holes white with a `#9aa5b8` rim on a light grey well;
+  dark: a `#6f7b90` slate well with `#c9d1de` holes. A tap PICKS a column (gold ring, the
+  disc waits above it); a second tap or **Drop in column N** drops it. A mouse picks on hover,
+  so a desktop click drops in one go. Legend "You, gold" / "Engine, black".
+- **Gift:** the gift in a pale gold card, the round board of sixteen white wells (`#9aa5b8`
+  rims), the pieces still to give in a grey tray, all pieces drawn as SVG (`GfsPiece`): dark
+  pieces ink (dark look: `#1a1d24` with a `#c9d1de` rim), light pieces white, hollows grey.
+  One gold button walks two stage-only steps: **Place it in well N**, then tap a piece and
+  **Hand it over** (`handOver`), with **Back** to return to step 1. The last well skips step 2.
+- **Turn:** the score cards (side to move on pale gold), the 8 by 8 board on light grey with
+  `#9aa5b8` grid lines (dark: `#353d4f` squares on `#232a39`), your discs black and the
+  engine's white, legal squares a gold dot, the last disc ringed gold, the hint ring ink.
+- **Yose:** the warm paper board (`#f6f1e7`, dark `#1d2638`) with ink grid lines at .45,
+  your stones black and White's white, settled territory as small squares, open points as
+  gold dots, White's last stone ringed gold; Hint, Pass (two taps, `passTurn`) and Restart.
+  The captured-stone mark is a thin solid ring (the old board's was dashed).
+- **Fit:** each board's width is capped by `lib/play-stage-fit.js` (Four from its 7 by 6
+  aspect), so 390x844 and the Sundays (Turn's 12 empties, Yose's 9x9) fit without scrolling.
+- **`usePlayStageFit` cannot see a `display:contents` child** (its box is 0px tall, and
+  `natural()` takes the smaller of box and contents), so a bottom row wrapped that way is
+  left out of the sum and the board overflows. Wrap stage controls in a real flex column.

@@ -65,6 +65,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { SlateBoard, SlateMan, SlateTools, SLATE_CROWN, COUNT_WORDS } from '../SlateStage';
 
 const COLORS = {
   cream: T.surface, paper: T.paper, ink: T.ink, ember: T.accent,
@@ -249,6 +251,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
+  const phoneStage = usePhoneStage();
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -651,7 +654,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead={<>You are <b>red</b>, moving up the board. Capture <b>every black piece</b> within <b>{BUDGET} of your moves</b>.</>}
+      lead={<>You are <b>{STAGE ? 'white' : 'red'}</b>, moving up the board. Capture <b>every black piece</b> within <b>{BUDGET} of your moves</b>.</>}
       steps={[
         <>Tap one of your pieces and its legal squares light up, then tap one to play it.</>,
         <>Standard checkers: men step one square diagonally forward, kings go both ways, and reaching the far row crowns you and ends the turn.</>,
@@ -674,10 +677,69 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
     return left === 1 ? 'Last move. It has to take everything left.' : `Your move. ${left} left to clear ${blkLeft}.`;
   };
 
+  // THE WHITE STAGE (owner, 2026-11-02, the End Game mockups Check /
+  // CheckDark): the draughts board moves onto the Slate board the chess
+  // dailies share (app/SlateStage.jsx), with your men white and Black's ink,
+  // and a legend under it. Every tap is the board's own handler (onSquare,
+  // useHint, restartGame, revealEnd), so the forced replies, scoring, saves
+  // and posting are untouched.
+  const stageGive = () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmRestart(false); setArmReveal(Date.now()); } };
+  const stageRestart = () => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartGame(); } else { setArmReveal(false); setArmRestart(Date.now()); } };
+  const stageUp = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const stageBoard = () => {
+    const N = COUNT_WORDS[BUDGET] || String(BUDGET);
+    const moveNo = Math.min(BUDGET, redMovesMade + (playing ? 1 : 0));
+    const jumpOn = myMoves.some((m) => m.caught.length > 0);
+    const engineUp = playing && (thinking || awaitingReply);
+    const detail = toast || (!playing ? statusLine()
+      : engineUp ? 'Black is forced to answer'
+      : sel != null ? 'Now tap where it goes'
+      : jumpOn ? 'A jump is on, so you must take' : 'Jumps are forced');
+    return (
+      <PlayStage bg={gameColor('check')} label="Check"
+        eyebrow={`${PUZZLE.sunday ? 'Sunday Edition · ' : ''}Clear in ${BUDGET} · ${!playing ? (won ? 'Swept' : 'Ended') : engineUp ? 'Black to move' : 'Your move'}`}
+        top={(
+          <>
+            <h2 className="pst-q slb-q">{playing ? `Take every black piece in ${N} move${BUDGET === 1 ? '' : 's'}.` : statusLine()}</h2>
+            <SlateBoard label="Draughts board" coords={false} kind="draughts" on={stageUp}
+              cell={(sq) => {
+                const v = pos[sq];
+                const r = Math.floor(sq / SIZE), c = sq % SIZE;
+                const mine = !!v && isRed(v);
+                const king = !!v && isKing(v);
+                const mv = targets.get(sq);
+                return {
+                  piece: v ? <SlateMan mine={mine} king={king} /> : null,
+                  sel: sel === sq,
+                  last: lastPath.includes(sq),
+                  target: !!mv,
+                  hint: hintSq === sq,
+                  lift: myTurn && sel == null && movable.has(sq),
+                  live: playing && playable(r, c),
+                  label: `Row ${r + 1}, column ${c + 1}, ${v ? `${mine ? 'your' : 'black'} ${king ? 'king' : 'man'}` : 'empty'}${mv ? ', can move here' : ''}${sel === sq ? ', picked' : ''}`,
+                  onClick: () => onSquare(sq),
+                };
+              }}>
+            <div className="slb-leg" aria-hidden="true">
+              <span><span className="slb-sw y" />Yours</span>
+              <span><span className="slb-sw b" />Black</span>
+              <span>{SLATE_CROWN}King</span>
+            </div>
+            </SlateBoard>
+          </>
+        )}
+        bottom={playing ? <SlateTools hint={hintOk && !g.hintUsed ? useHint : null} restartArmed={!!armRestart} onRestart={stageRestart} /> : null}
+        foot={`${playing ? `Move ${moveNo} of ${BUDGET}` : `${redMovesMade} of ${BUDGET} moves played`} · ${blkLeft} black piece${blkLeft === 1 ? '' : 's'} left · ${detail}`}
+        giveUp={{ armed: !!armReveal, onPress: stageGive, armedLabel: 'Tap again to give up' }}
+        clock={elapsed} done={!playing} />
+    );
+  };
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageUp && stageBoard()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
