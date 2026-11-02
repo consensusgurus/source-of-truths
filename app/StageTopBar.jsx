@@ -153,19 +153,19 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
 
 const CSS = `
 .stb{display:flex;align-items:center;gap:10px;flex:none;}
-.stb .stb-home{flex:none;display:inline-flex;align-items:center;gap:5px;height:34px;box-sizing:border-box;padding:0 11px 0 7px;border-radius:999px;border:2px solid currentColor;color:inherit;text-decoration:none;font-weight:800;font-size:13px;line-height:1;white-space:nowrap;}
+.stb .stb-home{flex:none;display:inline-flex;align-items:center;gap:5px;height:34px;box-sizing:border-box;padding:0 11px 0 7px;border-radius:999px;border:1px solid currentColor;color:inherit;text-decoration:none;font-weight:800;font-size:13px;line-height:1;white-space:nowrap;}
 .stb .stb-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
 .stb .stb-t{display:flex;align-items:center;gap:7px;min-width:0;}
 .stb .stb-t h1{margin:0;font:inherit;font-size:19px;font-weight:800;line-height:1.3;letter-spacing:-.01em;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:2px;margin-bottom:-2px;}
 .stb .stb-dot{flex:none;width:11px;height:11px;border-radius:50%;background:var(--sp-g,#b1e5fd);box-shadow:inset 0 0 0 1.5px currentColor;}
 .stb .stb-tx em{font-style:normal;font-size:12px;font-weight:600;line-height:1.3;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:1px;}
 .stb .stb-sp{flex:1;}
-.stb .stb-look{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:17px;border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;flex:none;}
+.stb .stb-look{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:17px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;flex:none;}
 .stb .stb-help{font:inherit;font-size:16px;font-weight:800;line-height:1;}
-.stb .stb-share{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;height:34px;box-sizing:border-box;padding:0 11px 0 9px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;}
+.stb .stb-share{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;height:34px;box-sizing:border-box;padding:0 11px 0 9px;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;}
 .stb .stb-share.tight{width:34px;padding:0;}
 .stb .stb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
-.stb .stb-nav{flex:none;height:34px;box-sizing:border-box;padding:0 12px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.stb .stb-nav{flex:none;height:34px;box-sizing:border-box;padding:0 12px;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .stb .stb-home:hover > span{text-decoration:underline;text-underline-offset:3px;}
 /* THE DESKTOP TITLE IS CENTRED IN THE SPACE BETWEEN THE BUTTONS (owner,
    2026-11-01: "puzzle title on desktop not being centered in empty space ...

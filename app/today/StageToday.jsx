@@ -5634,7 +5634,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
    of the cards above it, and on the same tokens the cap button already proved in
    both registers: the accent as the fill and the ink published for it. */
 .sty-join{display:flex;align-items:center;gap:18px;text-decoration:none;
-  background:var(--stg-raise,#ffffff);color:var(--stg-ink);border:2px solid var(--stg-ink);border-radius:12px;padding:18px 20px;}
+  background:var(--stg-raise,#ffffff);color:var(--stg-ink);border:1px solid var(--stg-ink);border-radius:12px;padding:18px 20px;}
 .sty-join .sty-go{background:var(--stg-ink);color:var(--stg-raise,#ffffff);border-color:var(--stg-ink);}
 .sty-join .sty-eb{color:inherit;margin-bottom:5px;}
 .sty-join .sty-jn{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.1;}
@@ -5716,7 +5716,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-qxtools{flex:1 1 100%;display:flex;align-items:center;gap:10px;min-width:0;margin:2px 0 14px;}
 .sty-qxtools .sty-sort{margin-left:0;}
 .sty-qxfind{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;
-  border:2px solid var(--stg-ink);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);cursor:text;}
+  border:1px solid var(--stg-ink);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);cursor:text;}
 .sty-qxfind input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:600 14px/1 ${SANS};color:var(--stg-ink);}
 .sty-qxfind input::placeholder{color:color-mix(in srgb, var(--stg-ink) 55%, transparent);}
 .sty-qxfind:focus-within{box-shadow:0 0 0 2px var(--stg-surf),0 0 0 4px var(--stg-ink);}
@@ -5728,7 +5728,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-qxh span{font-size:11.5px;font-weight:600;color:var(--stg-ink2, var(--stg-ink));}
 /* the tile */
 .sty-qxtiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;}
-.sty-qxt{display:flex;flex-direction:column;min-width:0;min-height:96px;background:var(--stg-surf);border:2px solid var(--stg-ink);
+.sty-qxt{display:flex;flex-direction:column;min-width:0;min-height:96px;background:var(--stg-surf);border:1px solid var(--stg-ink);
   border-radius:12px;overflow:hidden;text-decoration:none;color:var(--stg-ink);transition:transform .12s cubic-bezier(.2,.7,.3,1);}
 .sty-qxt:hover{transform:translateY(-1px);}
 .sty-qxt:hover .sty-qxn > span{color:var(--cci, var(--stg-ink));}
@@ -5739,7 +5739,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-qxg{flex:none;color:var(--cci, var(--stg-ink));}
 .sty-qxn .sty-qxg{margin-top:2px;}
 .sty-qxs{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px 6px 12px;
-  border-top:2px solid var(--stg-ink);background:color-mix(in srgb, var(--cfull, #ffffff) 60%, #fff);color:#0b0d12;
+  border-top:1px solid var(--stg-ink);background:color-mix(in srgb, var(--cfull, #ffffff) 60%, #fff);color:#0b0d12;
   font-size:12.5px;font-weight:600;white-space:nowrap;}
 .sty-qxs .ld{min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .sty-qxs .ld b{font-weight:800;}
@@ -5748,11 +5748,11 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-qxt.ph .sty-qxs{height:31px;border-top-color:var(--stg-line2);background:color-mix(in srgb, var(--stg-ink) 6%, transparent);}
 /* the topic cards */
 .sty-qxcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:start;}
-.sty-qxc{display:flex;flex-direction:column;min-width:0;background:var(--stg-surf);border:2px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
-.sty-qxch{border-radius:0;display:flex;align-items:center;gap:10px;width:100%;border:0;border-bottom:2px solid var(--stg-ink);padding:10px 14px;
+.sty-qxc{display:flex;flex-direction:column;min-width:0;background:var(--stg-surf);border:1px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
+.sty-qxch{border-radius:0;display:flex;align-items:center;gap:10px;width:100%;border:0;border-bottom:1px solid var(--stg-ink);padding:10px 14px;
   background:color-mix(in srgb, var(--cfull, #ffffff) 60%, #fff);color:#0b0d12;font-family:inherit;text-align:left;cursor:pointer;}
 .sty-qxch:focus-visible{outline:2px solid var(--stg-ink);outline-offset:-4px;}
-.sty-qxch .dc{flex:none;width:30px;height:30px;border-radius:999px;border:2px solid #0b0d12;background:#fff;display:grid;place-items:center;}
+.sty-qxch .dc{flex:none;width:30px;height:30px;border-radius:999px;border:1px solid #0b0d12;background:#fff;display:grid;place-items:center;}
 .sty-qxch .dc .sty-qxg{color:var(--cdk, #0b0d12);}
 .sty-qxch .nm{flex:1;min-width:0;line-height:1.2;}
 .sty-qxch .nm b{display:block;font-size:15px;font-weight:800;}
@@ -5770,15 +5770,15 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-qxc li b{font-weight:800;font-variant-numeric:tabular-nums;}
 .sty-qxc li.ph{height:33px;border-top:1px solid var(--stg-line);}
 .sty-qxc li.ph:first-child{border-top:0;}
-.sty-qxall{display:block;width:calc(100% - 24px);margin:8px 12px 12px;height:36px;border:2px solid var(--stg-ink);border-radius:8px;
+.sty-qxall{display:block;width:calc(100% - 24px);margin:8px 12px 12px;height:36px;border:1px solid var(--stg-ink);border-radius:8px;
   background:var(--stg-surf);color:var(--stg-ink);font:800 12.5px/1 ${SANS};cursor:pointer;}
 .sty-qxall:hover{background:var(--stg-ink);color:var(--stg-ground);}
 .sty-qxblk > .sty-qxall{width:100%;margin:12px 0 0;height:40px;}
 /* the ledger (List view) */
-.sty-qxled{background:var(--stg-surf);border:2px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
+.sty-qxled{background:var(--stg-surf);border:1px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
 .sty-qxlh,.sty-qxl{display:grid;grid-template-columns:28px minmax(0,1fr) 160px 70px;gap:10px;align-items:center;padding:0 14px;}
 .sty-qxlh{height:30px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-ink2, var(--stg-ink));
-  border-bottom:2px solid var(--stg-ink);}
+  border-bottom:1px solid var(--stg-ink);}
 .sty-qxlh span:last-child{text-align:right;}
 .sty-qxl{border-radius:0;box-sizing:border-box;width:100%;min-height:38px;margin:0;border:0;border-top:1px solid var(--stg-line);background:transparent;
   font:700 13px/1.3 ${SANS};color:var(--stg-ink);text-decoration:none;text-align:left;cursor:pointer;}
@@ -5801,13 +5801,13 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-qxtl .sty-qxl .t{font-weight:800;}
 /* an open topic */
 .sty-qxth{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;}
-.sty-qxback{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px 0 10px;border:2px solid var(--stg-ink);border-radius:999px;
+.sty-qxback{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px 0 10px;border:1px solid var(--stg-ink);border-radius:999px;
   background:var(--stg-surf);color:var(--stg-ink);font:800 12.5px/1 ${SANS};cursor:pointer;}
 .sty-qxback:hover{background:var(--stg-ink);color:var(--stg-ground);}
 .sty-qxth > span{font-size:14px;font-weight:800;color:var(--stg-ink);}
 /* the topic rail */
-.sty-qxr{position:sticky;top:12px;background:var(--stg-surf);border:2px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
-.sty-qxr .h{display:flex;justify-content:space-between;padding:10px 12px;border-bottom:2px solid var(--stg-ink);font-size:10.5px;
+.sty-qxr{position:sticky;top:12px;background:var(--stg-surf);border:1px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
+.sty-qxr .h{display:flex;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--stg-ink);font-size:10.5px;
   font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-ink);}
 .sty-qxr .h span{letter-spacing:0;text-transform:none;font-weight:700;color:var(--stg-mute);}
 .sty-qxr .r{border-radius:0;display:flex;align-items:center;gap:8px;width:100%;margin:0;border:0;border-top:1px solid var(--stg-line);background:transparent;
@@ -5824,7 +5824,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 /* the topic chips (phone) */
 .sty-qxchips{display:none;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -14px 14px;padding:2px 14px;}
 .sty-qxchips::-webkit-scrollbar{display:none;}
-.sty-qxchips button{flex:none;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 13px;border:2px solid var(--stg-ink);
+.sty-qxchips button{flex:none;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 13px;border:1px solid var(--stg-ink);
   border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);font:800 12.5px/1 ${SANS};cursor:pointer;white-space:nowrap;}
 .sty-qxchips button i{width:10px;height:10px;border-radius:999px;border:1.5px solid #0b0d12;box-sizing:border-box;
   background:color-mix(in srgb, var(--cfull, #ffffff) 60%, #fff);}
@@ -5836,7 +5836,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 /* A tile still loading has no topic yet, so its strip is a faint band, not white. */
 .sty:not([data-stage-theme=light]) .sty-qxt.ph .sty-qxs{background:color-mix(in srgb, var(--stg-ink) 8%, transparent);}
 /* your best topics */
-.sty-qbest{max-width:680px;background:var(--stg-surf);border:2px solid var(--stg-ink);border-radius:12px;padding:14px 18px;}
+.sty-qbest{max-width:680px;background:var(--stg-surf);border:1px solid var(--stg-ink);border-radius:12px;padding:14px 18px;}
 .sty-qbest table{width:100%;border-collapse:collapse;font-size:13px;}
 .sty-qbest td{padding:8px 0;border-top:1px solid var(--stg-line);font-weight:800;color:var(--stg-ink);}
 .sty-qbest td span{font-weight:600;color:var(--stg-mute);}
@@ -5846,7 +5846,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 /* search results (this pane and the head-row search on every pane) */
 .sty-findq{margin-top:16px;}
 .sty-findq .sty-qres{max-height:420px;overflow-y:auto;}
-.sty-qres{list-style:none;margin:0;padding:0;background:var(--stg-surf);border:2px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
+.sty-qres{list-style:none;margin:0;padding:0;background:var(--stg-surf);border:1px solid var(--stg-ink);border-radius:12px;overflow:hidden;}
 .sty-qres li+li{border-top:1px solid var(--stg-line);}
 .sty-qres a{display:flex;align-items:center;gap:12px;padding:11px 14px;text-decoration:none;color:var(--stg-ink);font-size:13.5px;}
 .sty-qres a:hover .t{text-decoration:underline;text-underline-offset:3px;}
@@ -5856,7 +5856,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-ixqc{display:none !important;}
 @media (min-width:901px){
   .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixq.on{order:-2;display:flex;flex-direction:column;align-items:stretch;gap:5px;
-    padding:13px 14px 14px;border:2px solid var(--stg-ink);border-radius:14px;margin:0 0 8px;background:var(--stg-ink);color:var(--stg-ground);}
+    padding:13px 14px 14px;border:1px solid var(--stg-ink);border-radius:14px;margin:0 0 8px;background:var(--stg-ink);color:var(--stg-ground);}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixq.on > span{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.25;white-space:normal;}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixq.on .sty-ixqc{display:block !important;font-size:13px;font-weight:700;}
 }
@@ -6854,7 +6854,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
 /* PHONE HOME, OPTION A IN FULL (owner, 2026-10-24). Desktop draws none of it. */
 .sty-mtop,.sty-mph{display:none;}
 @media (max-width:900px){
-  .sty-mtop{display:flex;flex-direction:column;gap:12px;padding:max(12px, env(safe-area-inset-top)) 16px 2px;--mi:var(--stg-ink);--mb:2px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
+  .sty-mtop{display:flex;flex-direction:column;gap:12px;padding:max(12px, env(safe-area-inset-top)) 16px 2px;--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
   .stage-page .sty-cap,.stage-page .sty-rhome,.stage-page .sty-pins{display:none !important;}
   .dbn{display:none !important;}
   .sty-mtop a{color:var(--mi);text-decoration:none;}
@@ -6890,15 +6890,15 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
     --mink:#08222e;--mline:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
   .sty-mph :where(button){font:inherit;cursor:pointer;}
   .sty-mph :where(a){text-decoration:none;color:inherit;}
-  .mph-seg{display:flex;border:2px solid var(--stg-ink);border-radius:999px;padding:3px;}
+  .mph-seg{display:flex;border:1px solid var(--stg-ink);border-radius:999px;padding:3px;}
   .mph-seg button{flex:1;border:0;background:transparent;color:var(--stg-ink);border-radius:999px;padding:7px 0 8px;font-weight:800;font-size:12.5px;line-height:1.26;}
   .mph-seg button[aria-pressed="true"],.mph-srt button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground, var(--stg-bg, #fff));}
   .mph-duo{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .mph-big{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border:2px solid var(--stg-ink);border-radius:14px;background:transparent;color:var(--stg-ink);padding:10px 12px;font-weight:800;font-size:14.5px;line-height:1.26;}
+  .mph-big{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border:1px solid var(--stg-ink);border-radius:14px;background:transparent;color:var(--stg-ink);padding:10px 12px;font-weight:800;font-size:14.5px;line-height:1.26;}
   .mph-big em,.mph-t em,.mph-g em,.mph-run em,.mph-band em{font-style:normal;font-weight:600;font-size:12px;line-height:1.35;}
   /* THE TONE (owner, 2026-10-24): every fill is the lighter intensity, the
      category step taken 40% toward white, with dark ink, in both registers. */
-  .sty-mph .mph-t,.sty-mph .mph-g,.sty-mph .mph-run,.sty-mph .mph-band{background:color-mix(in srgb, var(--mc) 60%, #fff);border:2px solid var(--mink);color:var(--mink);}
+  .sty-mph .mph-t,.sty-mph .mph-g,.sty-mph .mph-run,.sty-mph .mph-band{background:color-mix(in srgb, var(--mc) 60%, #fff);border:1px solid var(--mink);color:var(--mink);}
   .stage-page:not([data-stage-theme=light]) .mph-t,.stage-page:not([data-stage-theme=light]) .mph-g,
   .stage-page:not([data-stage-theme=light]) .mph-run,.stage-page:not([data-stage-theme=light]) .mph-band{border-color:color-mix(in srgb, var(--mc) 60%, #fff);}
   /* WHITE AND BLACK, BLACK AND WHITE (owner, 2026-10-25): the two no-colour
@@ -6911,7 +6911,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .mph-t b{font-size:14px;font-weight:800;line-height:1.26;}
   .mph-t small{font-size:10.5px;font-weight:700;line-height:1.3;margin-top:4px;}
   .mph-lab{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-top:6px;}
-  .mph-list{display:flex;flex-direction:column;border:2px solid var(--stg-ink);border-radius:14px;overflow:hidden;}
+  .mph-list{display:flex;flex-direction:column;border:1px solid var(--stg-ink);border-radius:14px;overflow:hidden;}
   .mph-list > *{border-radius:0;display:flex;justify-content:space-between;align-items:center;width:100%;border:0;border-top:1.5px solid var(--mline);background:transparent;color:var(--stg-ink);padding:11px 12px 12px;font-weight:700;font-size:14px;line-height:1.26;text-align:left;}
   .mph-list > :first-child{border-top:0;}
   .mph-back{align-self:flex-start;border:0;background:transparent;color:var(--stg-ink);font-weight:800;font-size:13px;padding:2px 0;}
@@ -6929,9 +6929,9 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-run.done,.sty-mph .mph-g.done{background:#fff;}
   .stage-page:not([data-stage-theme=light]) .sty-mph .mph-run.done,.stage-page:not([data-stage-theme=light]) .sty-mph .mph-g.done{background:#1a2130;color:#e9edf4;}
   .stage-page:not([data-stage-theme=light]) .mph-run.done .go{color:#e9edf4;}
-  .mph-run.done .go{background:transparent;color:inherit;border:2px solid currentColor;padding:7px 0 8px;}
+  .mph-run.done .go{background:transparent;color:inherit;border:1px solid currentColor;padding:7px 0 8px;}
   .mph-srt{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
-  .mph-srt button{border:2px solid var(--stg-ink);background:transparent;color:var(--stg-ink);border-radius:999px;padding:5px 11px 6px;font-size:12px;font-weight:800;line-height:1.26;}
+  .mph-srt button{border:1px solid var(--stg-ink);background:transparent;color:var(--stg-ink);border-radius:999px;padding:5px 11px 6px;font-size:12px;font-weight:800;line-height:1.26;}
   .mph-g{position:relative;display:flex;flex-direction:column;gap:1px;border-radius:12px;padding:9px 10px 10px;min-width:0;}
   .mph-g b{font-size:14.5px;font-weight:800;line-height:1.26;padding-right:18px;}
   .mph-g em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -6939,7 +6939,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .mph-g .st.on{opacity:1;color:inherit;}
   /* A pane is its own page: only the top bar stays above it. */
   .mph-pane .sty-mst,.mph-pane .sty-mdraw,.mph-pane .sty-mprog,.mph-pane .mph-back{display:none !important;}
-  .sty-mback{border:2px solid var(--stg-ink);background:transparent;color:var(--stg-ink);border-radius:999px;padding:6px 13px 7px;font:inherit;font-weight:800;font-size:13px;line-height:1.26;cursor:pointer;}
+  .sty-mback{border:1px solid var(--stg-ink);background:transparent;color:var(--stg-ink);border-radius:999px;padding:6px 13px 7px;font:inherit;font-weight:800;font-size:13px;line-height:1.26;cursor:pointer;}
   /* The recoloured page: the ground is the category, so tiles go white. */
   .mph-tint .sty-mph .mph-band{background:transparent;border:0;padding:4px 2px 2px;}
   .mph-tint .sty-mph .mph-band b{font-size:26px;}
@@ -6956,7 +6956,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
 .sty-tailbtn{display:none;}
 @media (max-width:900px){
   .sty-tailbtn{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;margin:4px 0 22px;
-    border:2px solid var(--stg-ink);border-radius:14px;background:transparent;color:var(--stg-ink);
+    border:1px solid var(--stg-ink);border-radius:14px;background:transparent;color:var(--stg-ink);
     padding:11px 12px 12px;font:inherit;font-weight:800;font-size:14px;line-height:1.26;text-align:left;cursor:pointer;}
   .sty-tailbtn svg{flex:none;transition:transform .18s ease;}
   .sty-tailbtn[aria-expanded="true"]{margin-bottom:14px;}
@@ -6997,7 +6997,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-srt button{flex:1 1 0;min-width:0;padding:8px 6px 9px;font-size:12.5px;white-space:nowrap;}
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */
-  .sty-mph{--mi:var(--stg-ink);--mb:2px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
+  .sty-mph{--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
 
   .sty-tailbtn[aria-expanded="true"] svg{transform:rotate(180deg);}
   .sty-tail:not(.on){display:none;}
@@ -7088,7 +7088,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
    the name as a pill the height of the look switch. Desktop only: every rule
    sits above 900px, so the phone is untouched. */
 @media (min-width:901px){
-  .sty{--dk:2px solid var(--stg-ink);}
+  .sty{--dk:1px solid var(--stg-ink);}
   /* THE CAP */
   .sty-cap.v2 .sty-figs{align-items:center;gap:24px;}
   .sty-cap.v2 .sty-figs > *{order:5;}
@@ -7144,7 +7144,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-g .sty-gi,.sty-g.grp .sty-gi,.sty-g.grp.done .sty-gi,.sty-g.done.res .sty-gi{color:var(--cci, var(--cc));opacity:1;}
   .sty-g.mx .sty-gn > .sty-gi{display:none;}
   .sty-g.mx .sty-gn::before,.sty-lr.mx .ic::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;box-sizing:border-box;
-    border:2px solid var(--stg-ink);background:var(--cfull, var(--cc));}
+    border:1px solid var(--stg-ink);background:var(--cfull, var(--cc));}
   .sty-lr.mx .ic > *{display:none;}
   .sty-g .sty-gn{font-size:16px;}
   .sty-g .sty-gld{display:block;font-size:12px;font-weight:600;line-height:1.4;color:var(--stg-ink2, var(--stg-ink));opacity:.85;
@@ -7157,7 +7157,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      mixed panes goes; a played tile still swaps its mark for the check. */
   .sty-ix .sty-g{overflow:hidden;padding-bottom:0;}
   .sty-g .sty-gpl.sty-gcs{max-width:none;width:auto;align-self:stretch;margin:auto -10px 0 -12px;padding:6px 10px 6px 12px;gap:8px;align-items:center;
-    border-top:2px solid var(--stg-ink);background:color-mix(in srgb, var(--cfull, var(--cc)) 60%, #fff);color:#0b0d12;
+    border-top:1px solid var(--stg-ink);background:color-mix(in srgb, var(--cfull, var(--cc)) 60%, #fff);color:#0b0d12;
     font-size:12.5px;font-weight:600;white-space:nowrap;}
   .sty:not([data-stage-theme=light]) .sty-g .sty-gpl.sty-gcs{background:var(--cfull, var(--cc));}
   .sty-gcs .ld{min-width:0;overflow:hidden;text-overflow:ellipsis;}
@@ -7175,11 +7175,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-star.on,.sty-star.on:hover{color:var(--stg-ink);}
   /* The ledger */
   .sty-led{border:var(--dk);}
-  .sty-lh{background:var(--stg-surf);border-bottom:2px solid var(--stg-ink);font-family:inherit;font-size:10.5px;font-weight:800;color:var(--stg-ink);}
+  .sty-lh{background:var(--stg-surf);border-bottom:1px solid var(--stg-ink);font-family:inherit;font-size:10.5px;font-weight:800;color:var(--stg-ink);}
   .sty-lh+.sty-lr{border-top:0;}
   .sty-lr .ic{background:transparent;}
   .sty-lr .ic .sty-gi{color:var(--cci, var(--cc));}
-  .sty-lr .ct{background:var(--stg-ink);color:var(--stg-ground);border:2px solid var(--stg-ink);}
+  .sty-lr .ct{background:var(--stg-ink);color:var(--stg-ground);border:1px solid var(--stg-ink);}
   .sty-lr.run .ct{color:var(--stg-ground);}
   .sty-lr.done .ct,.sty-lr.run.done .ct{background:transparent;color:var(--stg-ink);}
   .sty-lr:hover .ct,.sty-lr.open .ct{border-color:var(--stg-ink);}
@@ -7190,7 +7190,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-rbig .go{background:var(--stg-ink);color:var(--stg-ground);border-radius:8px;}
   /* The rail */
   .sty-rlb{border:var(--dk);border-radius:12px;overflow:hidden;background:var(--stg-surf);}
-  .sty-rlb .sty-eb{height:auto;padding:9px 12px;margin:0;border-bottom:2px solid var(--stg-ink);font-family:inherit;
+  .sty-rlb .sty-eb{height:auto;padding:9px 12px;margin:0;border-bottom:1px solid var(--stg-ink);font-family:inherit;
     font-size:11px;font-weight:800;color:var(--stg-ink);}
   .sty-rlb li{padding:0 12px;}
   .sty-rail .cbr{border:var(--dk);}
@@ -7226,14 +7226,14 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   /* Everything Else: a label, then one outlined box of plain rows. */
   .sty-ixsep.sty-ixee{height:auto;margin:10px 0 0;background:none;}
   .sty-ixsep.sty-ixee::before{content:"Everything Else";display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-ink);}
-  .sty-ixn .sty-ixee ~ .sty-ixb{margin-top:-8px;border:2px solid var(--stg-ink);border-width:1.5px 2px 0;
+  .sty-ixn .sty-ixee ~ .sty-ixb{margin-top:-8px;border:1px solid var(--stg-ink);border-width:1px 1px 0;
     border-top-color:color-mix(in srgb, var(--stg-ink) 16%, transparent);border-radius:0;background:var(--stg-surf);
     padding:7px 13px;font-size:13.5px;font-weight:700;}
   .sty-ixn .sty-ixee ~ .sty-ixb.on{background:var(--stg-ink);color:var(--stg-ground);}
-  .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixe1{margin-top:0;border-top:2px solid var(--stg-ink);border-radius:12px 12px 0 0;}
+  .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixe1{margin-top:0;border-top:1px solid var(--stg-ink);border-radius:12px 12px 0 0;}
   .sty-ixn .sty-ixee ~ .sty-ixsep{display:none;}
-  .sty-ixn .sty-ixee ~ .sty-ixsep + .sty-ixb{border-top:2px solid var(--stg-ink);}
-  .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixma{border-bottom-width:2px;border-radius:0 0 12px 12px;}
+  .sty-ixn .sty-ixee ~ .sty-ixsep + .sty-ixb{border-top:1px solid var(--stg-ink);}
+  .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixma{border-bottom-width:1px;border-radius:0 0 12px 12px;}
   .sty-ixn .sty-ixee ~ .sty-ixre{margin-top:8px;}
   /* The pane head: the title with its subtitle under it. */
   .sty-cht{display:flex;flex-direction:column;min-width:0;}

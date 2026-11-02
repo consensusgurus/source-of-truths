@@ -120,7 +120,7 @@ html .stage-page .stg-gate > div:last-child > button:first-child:not([type=butto
   font-size:25px !important;font-weight:800 !important;letter-spacing:.01em;
   padding:16px 22px !important;border-radius:18px !important;
   background:var(--stg-gate-acc, var(--stg-acc, #7dd3fc)) !important;color:#08222e !important;
-  border:2px solid #08222e !important;box-shadow:none !important;
+  border:1px solid #08222e !important;box-shadow:none !important;
 }
 html .stage-page .stg-gate > div:last-child > div{text-align:center;}
 /* NO HOW TO PLAY LINK UNDER START (owner, 2026-10-27): the ? in the header

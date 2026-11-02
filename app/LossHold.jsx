@@ -107,7 +107,7 @@ const CSS = `
 .lsh{position:fixed;left:0;right:0;bottom:0;z-index:1000;isolation:isolate;cursor:pointer;
   font-family:'Manrope',system-ui,sans-serif;
   background:var(--stg-ground,#ffffff);color:var(--stg-ink,#08222e);
-  border:2px solid var(--stg-ink,#08222e);border-bottom:0;
+  border:1px solid var(--stg-ink,#08222e);border-bottom:0;
   border-radius:22px 22px 0 0;
   padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));
   transform:translateY(105%);transition:transform .42s cubic-bezier(.2,.8,.2,1);}
@@ -119,7 +119,7 @@ const CSS = `
 .lsh-v{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-top:4px;}
 .lsh-d{font-size:13px;font-weight:700;opacity:.8;margin-top:3px;font-variant-numeric:tabular-nums;}
 .lsh-acts{display:flex;gap:8px;align-items:center;}
-.lsh-re,.lsh-card{flex:1;min-width:0;height:52px;box-sizing:border-box;border-radius:999px;border:2px solid var(--stg-ink,#08222e);
+.lsh-re,.lsh-card{flex:1;min-width:0;height:52px;box-sizing:border-box;border-radius:999px;border:1px solid var(--stg-ink,#08222e);
   font:inherit;font-size:16px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;}
 .lsh-re{background:var(--stg-ink,#08222e);color:var(--stg-ground,#ffffff);}
 .lsh-card{background:transparent;color:var(--stg-ink,#08222e);}

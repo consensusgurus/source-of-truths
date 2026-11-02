@@ -130,7 +130,7 @@ const CSS = `
 .pst-row.e{border-style:solid;background:transparent;}
 .pst-row.e .t{opacity:.6;font-weight:700;}
 .pst-row.sel{box-shadow:0 0 0 3px var(--pst-bg),0 0 0 5px var(--pst-ink);}
-.pst-tag{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:2px 8px;flex:none;}
+.pst-tag{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border:1px solid currentColor;border-radius:999px;padding:2px 8px;flex:none;}
 .pst-tag.f{border-style:solid;background:var(--pst-ink);color:var(--pst-bg);}
 .pst-row.on .pst-tag.f{background:var(--pst-bg);color:var(--pst-ink);}
 .pst-mv{display:flex;gap:4px;flex:none;}

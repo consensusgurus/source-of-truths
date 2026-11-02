@@ -49,12 +49,12 @@ export default function HelpSheet({ onClose, self = null, name = null, report = 
 const CSS = `
 .hsh-scrim{position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(6,10,18,.58);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
 .hsh{width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-sizing:border-box;padding:20px 22px 18px;border-radius:16px;
-  background:var(--stg-surf,#ffffff);color:var(--stg-ink,#08222e);border:2px solid var(--stg-ink,#08222e);
+  background:var(--stg-surf,#ffffff);color:var(--stg-ink,#08222e);border:1px solid var(--stg-ink,#08222e);
   font-family:'Manrope',system-ui,-apple-system,sans-serif;box-shadow:0 18px 50px rgba(0,0,0,.28);}
 .hsh-top{display:flex;align-items:center;gap:10px;margin:0 0 12px;}
-.hsh-q{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:2px solid currentColor;font-size:17px;font-weight:800;line-height:1;}
+.hsh-q{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid currentColor;font-size:17px;font-weight:800;line-height:1;}
 .hsh-top h2{margin:0;font:inherit;font-size:22px;font-weight:800;letter-spacing:-.01em;line-height:1.2;flex:1;min-width:0;}
-.hsh-x{flex:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;}
+.hsh-x{flex:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;}
 .hsh-body{font-size:14px;line-height:1.55;}
 .hsh-close{display:block;width:100%;height:48px;margin:16px 0 0;border:0;border-radius:999px;cursor:pointer;
   background:var(--stg-ink,#08222e);color:var(--stg-surf,#ffffff);font-family:inherit;font-size:15px;font-weight:800;letter-spacing:.01em;}

@@ -100,8 +100,8 @@ html.lc-on.lc-focus .lc-host .stg-fg{padding-right:20px;}
    (owner, 2026-10-27: "where is show full screen?"). It used to ride in the
    figures row, which the start screen hides. */
 .sty-rt>.lc-subs{position:static;transform:none;}
-.sty-rt>.lc-subs .lc-sub-btn{height:34px;padding:0 14px;border:2px solid currentColor;color:var(--stg-ink);font-size:12px;font-weight:800;}
-.stb>.lc-subs .lc-sub-btn{height:34px;box-sizing:border-box;padding:0 12px;border:2px solid currentColor;color:inherit;font-size:13px;font-weight:800;line-height:1;}
+.sty-rt>.lc-subs .lc-sub-btn{height:34px;padding:0 14px;border:1px solid currentColor;color:var(--stg-ink);font-size:12px;font-weight:800;}
+.stb>.lc-subs .lc-sub-btn{height:34px;box-sizing:border-box;padding:0 12px;border:1px solid currentColor;color:inherit;font-size:13px;font-weight:800;line-height:1;}
 .stb>.lc-subs .lc-sub-btn:hover{border-color:currentColor;color:inherit;text-decoration:underline;text-underline-offset:3px;}
 .lc-subs,.stg-fg>.lc-subs{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:row;align-items:center;gap:8px;}
 .lc-shw{position:relative;display:inline-flex;}
@@ -232,7 +232,7 @@ html[data-stage-chrome] .lc-cap{background:var(--chrome-bg) !important;color:var
    figures plain, the name a pill the height of the look switch), the index as
    outlined tiles, ink pills for the subheader's controls, and the right panel
    one outlined box with its tabs along the top. */
-.lc-cap{--dk:2px solid var(--stg-ink);}
+.lc-cap{--dk:1px solid var(--stg-ink);}
 /* Under the desktop tone (app/SudokuPastel.jsx) the frame's tiles and panel sit on the raised step, not the tinted surface. */
 html[data-stage-tone] .lc-cap,html[data-stage-tone] .lc-nav,html[data-stage-tone] .lc-side{--stg-surf:var(--stg-raise);}
 .lc-cap .sty-cap{border-bottom:0;padding:14px 28px 8px;}
@@ -268,7 +268,7 @@ html[data-stage-tone] .lc-cap,html[data-stage-tone] .lc-nav,html[data-stage-tone
 .lc-cap a.sty-who:hover{background:var(--stg-ink);color:var(--stg-ground);}
 .lc-cap .sty-tg{width:40px;height:40px;padding:0;border:var(--dk);border-radius:50%;color:var(--stg-ink);}
 .lc-cap .lc-help{font-family:Manrope,ui-sans-serif,system-ui,sans-serif;font-size:17px;font-weight:800;letter-spacing:0;text-transform:none;line-height:1;margin-right:-12px;}
-.lc-nav{--dk:2px solid var(--stg-ink);padding-top:10px;}
+.lc-nav{--dk:1px solid var(--stg-ink);padding-top:10px;}
 .lc-nav .sty-ixn{gap:8px;width:236px;}
 .lc-nav .sty-ixsep{margin:2px 0;background:transparent;}
 .lc-nav .sty-ixb{grid-template-columns:minmax(0,1fr);border:var(--dk);border-radius:12px;padding:7px 12px;
@@ -288,7 +288,7 @@ html[data-stage-tone] .lc-cap,html[data-stage-tone] .lc-nav,html[data-stage-tone
 .lc-nav .lc-g.now{background:var(--stg-ink);color:var(--stg-ground);box-shadow:none;}
 .lc-nav .lc-g s.up,.lc-nav .lc-g s.pz{color:inherit;}
 html.lc-on .lc-host{padding-left:290px !important;}
-.lc-sub-btn,.lc-reveal-btn{border:2px solid var(--stg-ink) !important;color:var(--stg-ink) !important;font-size:13px;height:34px;}
+.lc-sub-btn,.lc-reveal-btn{border:1px solid var(--stg-ink) !important;color:var(--stg-ink) !important;font-size:13px;height:34px;}
 .lc-sub-btn:hover,.lc-reveal-btn:hover{filter:brightness(.96);}
 .lc-shr{color:var(--stg-ink) !important;}
 /* EVERYTHING ELSE: the home's label and one outlined box of plain rows. */
@@ -300,8 +300,8 @@ html.lc-on .lc-host{padding-left:290px !important;}
 .lc-nav .lc-eebox > .lc-eecut{height:2px;background:var(--stg-ink);flex:none;}
 .lc-nav .lc-eebox > .lc-eecut + .sty-ixb.sty-ixb{border-top:0;}
 .lc-nav .lc-eebox > .sty-ixb.sty-ixb:hover{background:color-mix(in srgb, var(--stg-ink) 6%, transparent);filter:none;}
-.lc-side{--dk:2px solid var(--stg-ink);right:22px;width:300px;top:calc(var(--lc-hh,62px) + 10px);border:var(--dk);border-radius:12px;overflow:hidden;background:var(--stg-surf);}
-.lc-tabs{height:auto;padding:0;border-bottom:2px solid var(--stg-ink);}
+.lc-side{--dk:1px solid var(--stg-ink);right:22px;width:300px;top:calc(var(--lc-hh,62px) + 10px);border:var(--dk);border-radius:12px;overflow:hidden;background:var(--stg-surf);}
+.lc-tabs{height:auto;padding:0;border-bottom:1px solid var(--stg-ink);}
 .lc-tab{padding:10px 0;border-bottom:0;color:var(--stg-ink);font-weight:800;}
 .lc-tab{border-radius:0 !important;margin:0;}
 .lc-tab.on{background:var(--stg-ink);color:var(--stg-ground);}
@@ -311,7 +311,7 @@ html.lc-on .lc-host{padding-left:290px !important;}
 .lc-row.me{background:color-mix(in srgb, var(--stg-ink) 8%, transparent);box-shadow:none;}
 .lc-stat{border:var(--dk);background:var(--stg-surf);}
 .lc-stat i{color:var(--stg-ink);font-weight:700;}
-.lc-day{border:2px solid var(--stg-ink);background:var(--stg-surf);color:var(--stg-ink);border-radius:8px;}
+.lc-day{border:1px solid var(--stg-ink);background:var(--stg-surf);color:var(--stg-ink);border-radius:8px;}
 .lc-day.x{border:0;}
 .lc-day.p{background:var(--stg-ink);color:var(--stg-ground);}
 .lc-day.t{box-shadow:inset 0 0 0 2px var(--stg-ink);}
@@ -324,7 +324,7 @@ html.lc-on .lc-host .stg-fg b{font-family:inherit;font-size:18px;font-weight:800
 html.lc-on .lc-host .stg-fg i{font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.07em;color:var(--stg-ink);}
 html.lc-on .lc-host .stg-gate > div:first-child{font-size:26px !important;line-height:1.3;}
 html.lc-on .lc-host .stg-gate > div:last-child > button:first-child:not([type=button]){background:var(--stg-gate-acc, var(--stg-acc, #7dd3fc)) !important;color:#08222e !important;
-  border:2px solid #08222e !important;border-radius:18px !important;font-weight:800 !important;}
+  border:1px solid #08222e !important;border-radius:18px !important;font-weight:800 !important;}
 `;
 
 export default function LayoutCInner({ gameKey }) {

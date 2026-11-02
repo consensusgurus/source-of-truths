@@ -2874,7 +2874,7 @@ const CSS = `
    3px border so the two stay the same height. */
 .stf-rvf .them{border:2px solid transparent;border-radius:9px;padding:7px 10px;}
 .stf-rvf small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
-.stf-rvf .you{text-align:right;border:2px solid currentColor;border-radius:9px;padding:7px 10px;}
+.stf-rvf .you{text-align:right;border:1px solid currentColor;border-radius:9px;padding:7px 10px;}
 .stf-rvf .you.won{border-width:3px;padding:6px 9px;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 22%,transparent);}
 .stf-rvf .x{font-family:${SANS};font-size:12px;opacity:.7;padding-bottom:6px;}
 .stf-bars{display:flex;align-items:flex-end;gap:3px;height:clamp(40px,7vh,64px);}
@@ -3182,7 +3182,7 @@ const BV_CSS = `
 .stf-bv-b{min-height:50px;padding:0 18px;border:0;border-radius:14px;cursor:pointer;
   font-family:Manrope,ui-sans-serif,system-ui,sans-serif;font-size:15.5px;font-weight:800;
   background:var(--stg-ink,#08222e);color:var(--stg-ground,#ffffff);}
-.stf-bv-a{display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:14px;border:2px solid var(--stg-ink,#08222e);
+.stf-bv-a{display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:14px;border:1px solid var(--stg-ink,#08222e);
   font-family:Manrope,ui-sans-serif,system-ui,sans-serif;font-size:14.5px;font-weight:800;color:var(--stg-ink,#08222e);text-decoration:none;}
 .stf-bv-b:focus-visible,.stf-bv-a:focus-visible{outline:2px solid var(--stg-ink,#08222e);outline-offset:3px;}
 /* The client's own Hide game board would leave only this pill and no board. */

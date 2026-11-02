@@ -40,7 +40,7 @@ const CSS = `
 .gcl-c{width:32px;height:32px;box-sizing:border-box;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;border:1.5px solid var(--stg-line3);background:transparent;color:var(--stg-mute);}
 .gcl-c.ok{border:0;background:var(--stg-acc);color:var(--stg-onramp);}
 .gcl-c.cur{border:2.5px solid var(--stg-acc-ink);background:var(--stg-acc-tint);color:var(--stg-acc-ink);}
-.gcl-c.miss{border:2px solid var(--stg-ink);background:var(--stg-bad);color:var(--stg-ground);}
+.gcl-c.miss{border:1px solid var(--stg-ink);background:var(--stg-bad);color:var(--stg-ground);}
 .gcl-under{display:none;font-size:10.5px;font-weight:700;color:var(--stg-ink2);}
 .gcl-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px;}
 .gcl-fine{font-size:11.5px;font-weight:600;color:var(--stg-mute);line-height:1.4;}

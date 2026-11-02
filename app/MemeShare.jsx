@@ -47,7 +47,7 @@ const CSS = `
   font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
 .msh-chip.on{background:#0b0d12;border-color:#0b0d12;color:#fff;}
 .msh-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
-.msh-ob{min-height:50px;border-radius:14px;border:2px solid #0b0d12;background:#fff;color:#0b0d12;font:inherit;font-size:15px;font-weight:800;cursor:pointer;}
+.msh-ob{min-height:50px;border-radius:14px;border:1px solid #0b0d12;background:#fff;color:#0b0d12;font:inherit;font-size:15px;font-weight:800;cursor:pointer;}
 .msh-go{display:block;width:100%;margin-top:10px;min-height:56px;border:0;border-radius:14px;font:inherit;font-size:17px;font-weight:800;cursor:pointer;color:#fff;}
 .msh-go:disabled{opacity:.6;cursor:progress;}
 .msh-note{margin-top:10px;text-align:center;font-size:12.5px;font-weight:700;color:#5b6475;min-height:17px;}

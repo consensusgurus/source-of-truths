@@ -293,34 +293,34 @@ const CSS = `
 .prm-scrim{position:fixed;inset:0;z-index:8000;display:flex;align-items:center;justify-content:center;padding:16px;
   background:rgba(6,10,18,.58);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
 .prm{width:min(460px,100%);max-height:88vh;overflow-y:auto;box-sizing:border-box;position:relative;
-  background:var(--stg-surf,#ffffff);color:var(--stg-ink,#08222e);border:2px solid var(--stg-ink,#08222e);border-radius:16px;
+  background:var(--stg-surf,#ffffff);color:var(--stg-ink,#08222e);border:1px solid var(--stg-ink,#08222e);border-radius:16px;
   padding:18px 20px 18px;box-shadow:0 18px 50px rgba(0,0,0,.28);animation:prm-in .28s ease-out;
   font-family:'Manrope',system-ui,-apple-system,sans-serif;}
 @keyframes prm-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.prm{animation:none}}
 .prm-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .prm-x{flex:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;
-  border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;}
+  border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:0;}
 .prm-eye{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
   padding:6px 11px;border-radius:999px;background:var(--prm-tint,color-mix(in srgb, currentColor 8%, transparent));}
 .prm-eye i{width:8px;height:8px;border-radius:50%;background:var(--prm-acc,currentColor);box-shadow:0 0 0 1.5px var(--stg-ink,#08222e);display:inline-block;}
 .prm h2{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:14px 0 4px;line-height:1.15;text-wrap:balance;}
 .prm-lede{margin:0 0 14px;font-size:14px;line-height:1.5;font-weight:600;opacity:.85;}
 .prm-rows{display:flex;flex-direction:column;gap:8px;}
-.prm-row{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;border:2px solid var(--stg-ink,#08222e);
+.prm-row{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;border:1px solid var(--stg-ink,#08222e);
   border-radius:14px;padding:8px 8px 8px 10px;background:var(--stg-surf,#ffffff);}
 .prm-gl{width:44px;height:44px;border-radius:12px;background:var(--prm-acc,#7dd3fc);display:grid;place-items:center;color:var(--prm-on,#0b0f1a);}
 .prm-t b{display:block;font-size:16px;font-weight:800;line-height:1.2;}
 .prm-t span{display:block;font-size:12.5px;font-weight:600;opacity:.75;line-height:1.3;margin-top:1px;}
 .prm-play{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:999px;
-  border:2px solid var(--stg-ink,#08222e);background:var(--prm-acc,#7dd3fc);color:var(--prm-on,${RAMP_INK});
+  border:1px solid var(--stg-ink,#08222e);background:var(--prm-acc,#7dd3fc);color:var(--prm-on,${RAMP_INK});
   font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap;}
 .prm-play:hover,.prm-go:hover{filter:brightness(1.04);}
 .prm-go{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;margin-top:14px;box-sizing:border-box;
-  border-radius:999px;border:2px solid var(--stg-ink,#08222e);background:var(--prm-acc,#7dd3fc);color:var(--prm-on,${RAMP_INK});
+  border-radius:999px;border:1px solid var(--stg-ink,#08222e);background:var(--prm-acc,#7dd3fc);color:var(--prm-on,${RAMP_INK});
   font-size:16px;font-weight:800;text-decoration:none;}
 .prm-tags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px;}
-.prm-tags span{font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;border:2px solid var(--stg-ink,#08222e);}
+.prm-tags span{font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;border:1px solid var(--stg-ink,#08222e);}
 .prm-foot{margin-top:12px;font-size:12.5px;font-weight:600;opacity:.7;line-height:1.4;text-align:center;}
 .prm-play:focus-visible,.prm-go:focus-visible,.prm-x:focus-visible{outline:3px solid var(--stg-acc-ink,var(--stg-acc,#2563eb));outline-offset:2px;}
 @media (max-width:420px){

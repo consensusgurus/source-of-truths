@@ -1213,7 +1213,7 @@ const CSS = `
    only on the result band across its top. No pastel cards on a pastel ground;
    the sections inside are divided by rules, not boxed. */
 .sst-page{color:var(--sst-ink);width:100%;max-width:1240px;margin:14px auto 28px;display:flex;flex-direction:column;gap:0;padding:0;
-  visibility:hidden;container-type:inline-size;background:var(--stg-raise,#fff);border:2px solid var(--stg-ink,#0b0d12);border-radius:12px;overflow:hidden;}
+  visibility:hidden;container-type:inline-size;background:var(--stg-raise,#fff);border:1px solid var(--stg-ink,#0b0d12);border-radius:12px;overflow:hidden;}
 .sst-page.in{visibility:visible;}
 /* THE HAND-OFF IS ONE MOVE (owner, 2026-10-26: "make sure the animations still
    work in harmony"). While the colour pulls back, the sheet and its band are
@@ -1222,7 +1222,7 @@ const CSS = `
    below the band then rise in once the colour has gone, as before. */
 .sst-page.rt{visibility:visible;}
 .sst-page.rt .sst-band .sst-b{opacity:1;transform:none;transition:opacity .35s ease .15s;}
-.sst-band{background:var(--sst-bg);border-radius:0;padding:22px 26px;border-bottom:2px solid var(--stg-ink,#0b0d12);}
+.sst-band{background:var(--sst-bg);border-radius:0;padding:22px 26px;border-bottom:1px solid var(--stg-ink,#0b0d12);}
 .sst-band .sst-hero{padding:0;}
 /* Below the band the sheet speaks the page's ink, not the pastel's. */
 .sst-page .sst-cards{--sst-ink:var(--stg-ink,#0b0d12);--sst-bg:var(--stg-raise,#fff);--sst-rule:var(--stg-line,#e2e5ea);
@@ -1252,7 +1252,7 @@ const CSS = `
   .sst-page .sst-pn{grid-column:1 / -1;}
 }
 /* KEEP PLAYING: categories, then more puzzles beside quizzes. */
-.sst-kp{margin:18px -20px -18px;padding:16px 20px 20px;border-top:2px solid var(--stg-ink,#0b0d12);background:color-mix(in srgb,var(--stg-ink,#0b0d12) 3%,var(--stg-raise,#fff));
+.sst-kp{margin:18px -20px -18px;padding:16px 20px 20px;border-top:1px solid var(--stg-ink,#0b0d12);background:color-mix(in srgb,var(--stg-ink,#0b0d12) 3%,var(--stg-raise,#fff));
   display:flex;flex-direction:column;gap:14px;}
 .sst-kph{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
 .sst-kph b{font-size:20px;font-weight:800;letter-spacing:-.01em;}
@@ -1263,7 +1263,7 @@ const CSS = `
 .sst-shd2 a{font-size:12.5px;font-weight:800;color:inherit;}
 .sst-kpt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
 .sst-kpq{display:flex;flex-direction:column;gap:8px;}
-.sst-kpc{display:flex;align-items:center;gap:9px;min-width:0;padding:9px 11px;border:2px solid var(--stg-ink,#0b0d12);border-radius:12px;
+.sst-kpc{display:flex;align-items:center;gap:9px;min-width:0;padding:9px 11px;border:1px solid var(--stg-ink,#0b0d12);border-radius:12px;
   background:var(--stg-raise,#fff);color:var(--stg-ink,#0b0d12);text-decoration:none;}
 .sst-kpc .gl{flex:none;width:30px;height:30px;border-radius:8px;background:var(--sst-wash);display:flex;align-items:center;justify-content:center;}
 .sst-kpc .tx{display:flex;flex-direction:column;min-width:0;flex:1;}
@@ -1282,7 +1282,7 @@ html.lc-on .lc-side:has(> .sst-rail) > :not(.sst-rail){display:none !important;}
 .sst-rail{font-family:${SANS};color:var(--stg-ink,#0b0d12);opacity:0;transform:translateY(8px);
   transition:opacity .45s ease .25s,transform .45s cubic-bezier(.2,.8,.2,1) .25s;}
 .sst-rail.in{opacity:1;transform:none;}
-.sst-rh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:2px solid var(--stg-ink,#0b0d12);}
+.sst-rh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--stg-ink,#0b0d12);}
 .sst-rh b{font-size:17px;font-weight:800;letter-spacing:-.01em;}
 .sst-rh span{font-size:12px;font-weight:700;opacity:.75;}
 .sst-rs{padding:12px 14px 10px;border-top:1.5px solid color-mix(in srgb,var(--stg-ink,#0b0d12) 14%,transparent);}

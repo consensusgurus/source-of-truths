@@ -432,7 +432,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
 
         {showA2hsHelp && (
           <div onClick={() => setShowA2hsHelp(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-            <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--stg-raise,#fff)', border: '2px solid var(--stg-ink,#08222e)', borderRadius: 16, padding: 20, maxWidth: 380, fontFamily: SANS }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--stg-raise,#fff)', border: '1px solid var(--stg-ink,#08222e)', borderRadius: 16, padding: 20, maxWidth: 380, fontFamily: SANS }}>
               <div style={{ fontSize: 17, fontWeight: 800, color: INK, marginBottom: 8 }}>Add {NAME} to your home screen</div>
               <p style={{ fontSize: 13.5, fontWeight: 600, color: INK, lineHeight: 1.55, margin: '0 0 14px' }}>
                 {isIosDevice() ? 'Tap the Share button in Safari, scroll down, and choose Add to Home Screen.' : 'Open your browser menu and choose Install app, or Add to Home screen.'}

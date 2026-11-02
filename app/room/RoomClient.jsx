@@ -679,7 +679,7 @@ const CSS = `
 .rr-peekbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;gap:10px;justify-content:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(to top, var(--rr-pbg, rgba(0,0,0,.18)), transparent)}
 .rr-peekbar button{min-height:52px;border-radius:14px;font:800 16px ${SANS};cursor:pointer}
 .rr-pb1{flex:1;max-width:420px;border:0;background:#08222e;color:#fff}
-.rr-pb2{flex:none;padding:0 18px;border:2px solid #08222e;background:#ffffffcc;color:#08222e}
+.rr-pb2{flex:none;padding:0 18px;border:1px solid #08222e;background:#ffffffcc;color:#08222e}
 /* end page: room by room, each room's answers open below */
 .rr-rooms2{display:flex;flex-direction:column;gap:8px}
 .rr-r2h{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}

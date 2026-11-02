@@ -93,7 +93,7 @@ export const LEG_CSS = `
 .lg-row b small{font-weight:600;opacity:.68;font-size:13px}
 .lg-row span{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;color:inherit;white-space:nowrap}
 .lg-row.best{background:var(--lg-ink);color:var(--lg-on)}
-.lg-num{width:22px;height:22px;border-radius:11px;border:2px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-style:normal;font-variant-numeric:tabular-nums}
+.lg-num{width:22px;height:22px;border-radius:11px;border:1px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-style:normal;font-variant-numeric:tabular-nums}
 .lg-new{animation:lgIn .45s cubic-bezier(.2,.8,.2,1) both}
 
 .lg-map{position:relative;margin:0;border:2px solid var(--lg-ink);border-radius:16px;overflow:hidden;background:var(--lg-paper)}

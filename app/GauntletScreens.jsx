@@ -284,7 +284,7 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
   // THE START BUTTON WEARS THE RUN'S CATEGORY, as on every daily's start
   // screen; the two black-and-white looks keep the ink button.
   const cat = gateColour(sections);
-  const goStyle = pal.look === 'plain' || pal.look === 'dark' ? undefined : { background: cat, color: '#08222e', border: '2px solid #08222e' };
+  const goStyle = pal.look === 'plain' || pal.look === 'dark' ? undefined : { background: cat, color: '#08222e', border: '1px solid #08222e' };
   const go = <button type="button" className="gsx-go gsx-startgo" style={goStyle} onClick={onStart}>{startLabel || `Start with ${first ? first.name : 'the run'}`}</button>;
   return (
     <div key={pal.look} className={`gsx gsx-gate gsx-gs${centerpiece ? ' gsx-cp' : ''}`} role="dialog" aria-label={`${circuitName}, start`} style={pal.vars}>
@@ -1108,7 +1108,7 @@ const CSS = `
 .gsx-prize{align-self:center;width:min(250px,72%);opacity:0;transform:translateY(40px) rotate(-10deg) scale(.7)}
 .gsx-prize.in{opacity:1;transform:rotate(-3deg);animation:gsxLand .8s cubic-bezier(.2,.9,.25,1) both}
 @keyframes gsxLand{0%{opacity:0;transform:translateY(40px) rotate(-10deg) scale(.7)}70%{opacity:1;transform:translateY(-4px) rotate(-2deg) scale(1.02)}100%{opacity:1;transform:rotate(-3deg)}}
-.gsx-rchip{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid currentColor;box-sizing:border-box}
+.gsx-rchip{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid currentColor;box-sizing:border-box}
 .gsx-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .gsx-rt b{font-size:15px;font-weight:800;line-height:1.28;overflow-wrap:anywhere}
 .gsx-rung.here .gsx-rt b{font-size:21px}

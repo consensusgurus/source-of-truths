@@ -38,10 +38,10 @@ html:is([data-stage-tone^='dark'],[data-stage-pastel^='dark']) .xw-host{--xw-pal
 .xw-board{width:100%;}
 .xw-side{width:100%;margin:14px auto 0;display:flex;flex-direction:column;}
 .xw-clues{display:flex;flex-direction:column;gap:6px;}
-.xw-act{display:flex;align-items:center;gap:8px;box-sizing:border-box;border-radius:14px;background:var(--xw-pale);border:2px solid var(--stg-ink, #08222e);padding:6px;color:var(--stg-ink, #08222e);}
+.xw-act{display:flex;align-items:center;gap:8px;box-sizing:border-box;border-radius:14px;background:var(--xw-pale);border:1px solid var(--stg-ink, #08222e);padding:6px;color:var(--stg-ink, #08222e);}
 .xw-act-tx{flex:1;min-width:0;padding:2px 4px;font-size:17px;font-weight:800;line-height:1.25;overflow-wrap:anywhere;}
 .xw-act-k{display:block;margin-bottom:1px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--stg-mute, #3b4656);}
-.xw-nav{flex:none;height:40px;min-width:52px;padding:0 10px;box-sizing:border-box;border-radius:11px;border:2px solid var(--stg-ink, #08222e);background:transparent;color:var(--stg-ink, #08222e);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.xw-nav{flex:none;height:40px;min-width:52px;padding:0 10px;box-sizing:border-box;border-radius:11px;border:1px solid var(--stg-ink, #08222e);background:transparent;color:var(--stg-ink, #08222e);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .xw-nav:hover{background:var(--stg-surf2, rgba(8,34,46,.08));}
 .xw-x{display:flex;align-items:baseline;gap:10px;width:100%;min-height:44px;box-sizing:border-box;padding:9px 12px;border-radius:12px;border:2px solid color-mix(in srgb, var(--stg-ink, #08222e) 22%, transparent);background:transparent;color:var(--stg-mute, #3b4656);font-family:inherit;font-size:14px;font-weight:700;line-height:1.3;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .xw-x b{flex:none;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}

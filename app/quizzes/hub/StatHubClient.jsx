@@ -990,7 +990,7 @@ export default function StatHubClient() {
        shares ProfileShared's sheet, is untouched. Both registers: --dk reads
        --stg-ink, so it is near-black on light and near-white on dark, exactly
        as on the home. */
-    .qzhub-stage{--dk:2px solid var(--stg-ink);
+    .qzhub-stage{--dk:1px solid var(--stg-ink);
       --hub-me:color-mix(in srgb, #a5b4fc 42%, #fff);
       --hub-gold:color-mix(in srgb, #e8b43a 38%, #fff);
       --hpm1:color-mix(in srgb, #e8b43a 55%, #fff);--hpm2:color-mix(in srgb, #b8bcc4 55%, #fff);--hpm3:color-mix(in srgb, #c8814b 50%, #fff);}
@@ -1061,13 +1061,13 @@ export default function StatHubClient() {
     .qzhub-stage:not([data-stage-theme=light]) .hubpod{border-color:transparent;}
     .qzhub-stage .hubpod.mine{box-shadow:inset 0 0 0 2px #0b0d12;}
     .qzhub-stage .hubpod-sub{color:#2b313c;}
-    .qzhub-stage .hubpod-av > span{border:2px solid #0b0d12;box-sizing:border-box;}
+    .qzhub-stage .hubpod-av > span{border:1px solid #0b0d12;box-sizing:border-box;}
     .qzhub-stage .hubpod .hubyoupill{color:#fff;background:#0b0d12;}
     /* the board: one ink-outlined box, medal chips on the top three */
     .qzhub-stage .hubtbl{border:var(--dk);border-radius:12px;background:var(--stg-surf);}
     .qzhub-stage .hubtbl th{position:sticky;top:0;z-index:1;background:var(--stg-surf);}
     .qzhub-stage .hubmed{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;box-sizing:border-box;
-      border:2px solid var(--stg-ink);color:#0b0d12;font-size:11.5px;font-weight:800;}
+      border:1px solid var(--stg-ink);color:#0b0d12;font-size:11.5px;font-weight:800;}
     .qzhub-stage:not([data-stage-theme=light]) .hubmed{border-color:transparent;}
     .qzhub-stage .hubmed.m1{background:var(--hpm1);}
     .qzhub-stage .hubmed.m2{background:var(--hpm2);}
@@ -1456,7 +1456,7 @@ function UserBaseBody({ board, boardTotal, myName, myAnonKey, onSelectPlayer, vi
             <div key={p.userKey} className={'hubpod m' + (i + 1) + (mine ? ' mine' : '')} style={{ padding: '14px 12px 12px' }}>
               <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
                 <span className="hubpod-av"><Avatar name={p.name} bg="#fff" fg="#0b0d12" size={40} /></span>
-                {i === 0 ? <span style={{ position: 'absolute', top: -7, right: -9, width: 21, height: 21, borderRadius: '50%', background: '#fff', border: '2px solid #0b0d12', color: '#0b0d12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Crown size={11} /></span> : null}
+                {i === 0 ? <span style={{ position: 'absolute', top: -7, right: -9, width: 21, height: 21, borderRadius: '50%', background: '#fff', border: '1px solid #0b0d12', color: '#0b0d12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Crown size={11} /></span> : null}
               </span>
               <div style={{ marginTop: 7, fontSize: 13, fontWeight: 800, lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>
                 <button onClick={() => onSelectPlayer && onSelectPlayer(p.userKey)} style={{ border: 'none', background: 'transparent', padding: 0, font: 'inherit', fontFamily: FONT, fontWeight: 800, color: 'inherit', cursor: 'pointer' }}>{p.name}</button>

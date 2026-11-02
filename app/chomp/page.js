@@ -71,7 +71,7 @@ function etTodayServer() {
 function ComingSoon({ first }) {
   return (
     <div style={{ minHeight: '100vh', background: '#f7f8fa', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "'Manrope', system-ui, sans-serif" }}>
-      <div style={{ maxWidth: 420, width: '100%', background: '#fff', border: '2px solid #0b0d12', borderRadius: 12, padding: 24, textAlign: 'center' }}>
+      <div style={{ maxWidth: 420, width: '100%', background: '#fff', border: '1px solid #0b0d12', borderRadius: 12, padding: 24, textAlign: 'center' }}>
         <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Chomp</div>
         <p style={{ fontSize: 14, lineHeight: 1.55, color: '#3f4757', margin: '0 0 16px' }}>
           Chomp launches {first.dateLabel}. Eat them in order, and mind your own trail.

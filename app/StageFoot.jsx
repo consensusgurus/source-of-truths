@@ -70,7 +70,7 @@ const CSS = `
 .sft .sft-give{min-width:86px;}
 .sft .sft-b.sft-back{display:none;}
 html:has(.stf-bv) .sft .sft-b.sft-back{display:inline-flex;}
-.sft .sft-b{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:34px;box-sizing:border-box;padding:0 12px;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;opacity:1;}
+.sft .sft-b{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:34px;box-sizing:border-box;padding:0 12px;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;opacity:1;}
 .sft .sft-b b{font-size:14px;font-weight:800;line-height:1;}
 .sft .sft-clock.on span{font-size:13px;font-variant-numeric:tabular-nums;}
 .sft .sft-give.on{background:currentColor;}
