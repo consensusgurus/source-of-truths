@@ -1117,7 +1117,9 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
               challengeMetric={done ? total : null}
-              title={endEfficiency(finalScore > 0, finalScore)}
+              // SCORED, NOT SOLVED (owner, 2026-11-01: "I got a score above par but far
+              // from perfect, it shouldn't say solved"): Hands is graded on its 10.
+              title={endGrade(finalScore, 10, 'Perfect!')}
               detail={`${total} points \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

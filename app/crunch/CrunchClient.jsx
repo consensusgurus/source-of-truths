@@ -1008,7 +1008,7 @@ export default function CrunchClient({ puzzles = [], forceNum = null }) {
               catRank={catRank}
               outcome={won ? 'won' : (finalScore > 0 ? 'part' : 'lost')}
               challengeMetric={won ? used : null}
-              title={endEfficiency(finalScore >= 10, finalScore)}
+              title={finalScore >= 10 ? 'Perfect!' : endGrade(finalScore, 10, 'Perfect!')}
               detail={`${scoreText('crunch', finalScore, 10)} \u00b7 ${used} steps \u00b7 ${bestDiff == null ? '—' : (bestDiff === 0 ? 'exact' : `${bestDiff} off`)} closest \u00b7 ${elapsed}`}
               iq={iq}
               board={dailyBoard}

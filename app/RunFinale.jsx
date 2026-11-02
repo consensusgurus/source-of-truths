@@ -70,11 +70,16 @@ const PIECES = {
     html: (L, X) => {
       const cap = X.cap;
       const y = (v) => 398 - (Math.min(cap, v) / cap) * 300;
+      // The marks sit ON the glass (owner, 2026-11-01: "the flask lines are out
+      // of whack"): each tick crosses the wall where the wall actually is at that
+      // height, and its name starts just outside it.
+      const S = 160 / 220;
+      const edge = (yy) => (yy < 112 ? 136 : 136 + (yy - 112) * (70 / 272));
       return `<div class="flk"><svg viewBox="0 0 220 410" width="160" height="300" aria-hidden="true"><defs><clipPath id="rfxFc"><path d="${FLASK}"/></clipPath></defs>
         <path d="${FLASK}" fill="rgba(8,34,46,.07)"/><g clip-path="url(#rfxFc)"><rect id="liq" x="0" y="398" width="220" height="420" fill="${L[0].colour}"/><rect id="liqs" x="0" y="398" width="220" height="6" fill="${DINK}" opacity=".22"/></g>
-        ${L.map((t) => `<line x1="150" x2="180" y1="${y(t.min)}" y2="${y(t.min)}" stroke="currentColor" stroke-width="3" opacity=".5"/>`).join('')}
+        ${L.map((t) => `<line x1="${edge(y(t.min)) - 16}" x2="${edge(y(t.min)) + 4}" y1="${y(t.min)}" y2="${y(t.min)}" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>`).join('')}
         <path d="${FLASK}" fill="none" stroke="currentColor" stroke-width="5"/></svg>
-        ${L.map((t, i) => `<div class="fmark" id="fm${i}" style="top:${y(t.min) * 300 / 410}px">${esc(t.name)}</div>`).join('')}
+        ${L.map((t, i) => `<div class="fmark" id="fm${i}" style="top:${y(t.min) * S + (300 - 410 * S) / 2}px;left:${96 + (edge(y(t.min)) + 8) * S}px">${esc(t.name)}</div>`).join('')}
         ${[0, 1, 2, 3].map((i) => `<i class="bub" id="bb${i}" style="left:${150 + i * 14}px;top:200px"></i>`).join('')}</div>`;
     },
     prog: (q, v, X) => { const y = 398 - (Math.min(X.cap, v) / X.cap) * 300; q('#liq').setAttribute('y', y); q('#liqs').setAttribute('y', y); },
@@ -192,8 +197,11 @@ export default function RunFinale({
       root.style.setProperty('--rd', `${ringPx}px`);
       root.style.setProperty('--ps', String(pieceScale));
     }
-    // The labels' radius in ring units: the arc's outer edge plus ~36 screen px.
-    const labR = phone ? RAD + SW / 2 + 36 * (500 / ringPx) : RAD + 70;
+    // LABELS SIT OUTSIDE THE RING, ANCHORED BY SIDE (owner, 2026-11-01: "words
+    // overlapping with the circle"). Each label touches a point just outside the
+    // arc and grows away from the ring (rightward on the right, upward at the
+    // top), so a long name never reaches back over the arc.
+    const LAB_GAP = phone ? 8 : 12;
     const gOf = (c) => (colorGround && c ? softGround(c) : endBg);
     const paint = (c) => { root.style.background = c; groundRef.current = c; setGround(c); };
 
@@ -213,8 +221,10 @@ export default function RunFinale({
       segs.push(`<path d="${d}" fill="none" stroke="${softGround(g.colour)}" stroke-width="${SW}"/><path d="${d}" fill="none" stroke="currentColor" stroke-opacity=".14" stroke-width="${SW}"/>
         <path class="sf" id="sf${i}" d="${d}" fill="none" stroke="currentColor" stroke-width="${SW}" stroke-dasharray="${len} ${len}" stroke-dashoffset="${len}" data-l="${len}" data-f="${frac}"/>
         ${oneLife && got < max ? `<line class="miss" id="mx${i}" x1="${mx1}" y1="${my1}" x2="${mx2}" y2="${my2}" stroke="#b4232a" stroke-width="5" stroke-linecap="round"/>` : ''}`);
-      const [lx, ly] = pt(labR, (a0 + a1) / 2);
-      labs.push(`<div class="lab" id="lb${i}" style="left:${lx / 5}%;top:${ly / 5}%"><b>${esc(g.name)}</b><i>${esc(g.shown != null ? g.shown : Math.round(Number(g.got) || 0))}</i>${g.sub ? `<small>${esc(g.sub)}</small>` : ''}</div>`);
+      const mid = (a0 + a1) / 2;
+      const c = Math.cos(mid * Math.PI / 180), sn = Math.sin(mid * Math.PI / 180);
+      const al = c > 0.35 ? 'left' : c < -0.35 ? 'right' : 'center';
+      labs.push(`<div class="lab" id="lb${i}" data-a="${mid}" style="--tx:${(-50 + 50 * c).toFixed(1)}%;--ty:${(-50 + 50 * sn).toFixed(1)}%;transform-origin:${(50 - 50 * c).toFixed(0)}% ${(50 - 50 * sn).toFixed(0)}%;text-align:${al}"><b>${esc(g.name)}</b><i>${esc(g.shown != null ? g.shown : Math.round(Number(g.got) || 0))}</i>${g.sub ? `<small>${esc(g.sub)}</small>` : ''}</div>`);
     });
     root.innerHTML = `<div class="cap"><span>${esc(circuitName)}${dateLabel ? ` · ${esc(dateLabel)}` : ''}</span><span id="capR"></span></div>
       <div class="ringw" id="ringw"><svg viewBox="0 0 500 500" aria-hidden="true">${segs.join('')}</svg>${labs.join('')}</div>
@@ -225,20 +235,39 @@ export default function RunFinale({
         <div class="tblock"><span class="ttl" id="f-title">${esc(earned.name)}</span>${rankText ? `<span class="rank" id="f-rank">${esc(rankText)}</span>` : ''}</div>
       </div>`;
     const q = (s) => root.querySelector(s);
-    // Keep every ring label on screen (long names near the left and right edges).
     let alive = true;
-    const fitLab = (lb) => {
-      // Measured at full size (the pop starts at scale .6), then nudged in.
-      const tr = lb.style.transition;
-      lb.style.transition = 'none'; lb.style.transform = 'translate(-50%,-50%)'; lb.style.marginLeft = '0px';
-      const r = lb.getBoundingClientRect();
-      lb.style.transform = ''; void lb.offsetWidth; lb.style.transition = tr;
-      const over = Math.max(0, r.right - (vw - 6)) - Math.max(0, 6 - r.left);
-      if (over) lb.style.marginLeft = `${-over}px`;
+    // Place the labels, and on a phone pick the largest ring that keeps every
+    // label (at its full size) on screen and clear of the caption.
+    const placeLabels = () => {
+      const labsEl = Array.from(root.querySelectorAll('.lab'));
+      const sizes = labsEl.map((lb) => {
+        const tr = lb.style.transition;
+        lb.style.transition = 'none'; lb.style.transform = 'none';
+        const r = lb.getBoundingClientRect();
+        lb.style.transform = ''; void lb.offsetWidth; lb.style.transition = tr;
+        return { w: r.width, h: r.height, a: Number(lb.dataset.a) * Math.PI / 180 };
+      });
+      let D = ringPx;
+      if (phone) {
+        const cx = vw / 2, cy = vh / 2;
+        const fits = (d) => sizes.every(({ w, h, a }) => {
+          const R = (RAD + SW / 2) / 500 * d + LAB_GAP;
+          const c = Math.cos(a), sn = Math.sin(a);
+          const left = cx + c * R - w / 2 + (c * w) / 2;
+          const top = cy + sn * R - h / 2 + (sn * h) / 2;
+          return left >= 4 && left + w <= vw - 4 && top >= 46 && top + h <= vh - 60;
+        });
+        while (D > 220 && !fits(D)) D -= 6;
+        root.style.setProperty('--rd', `${D}px`);
+      }
+      const labR = RAD + SW / 2 + LAB_GAP * (500 / D);
+      labsEl.forEach((lb) => {
+        const [lx, ly] = pt(labR, Number(lb.dataset.a));
+        lb.style.left = `${lx / 5}%`; lb.style.top = `${ly / 5}%`;
+      });
     };
-    const fitLabs = () => { if (phone) root.querySelectorAll('.lab').forEach(fitLab); };
-    fitLabs();
-    try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (alive) fitLabs(); }); } catch (e) { /* older browsers */ }
+    placeLabels();
+    try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (alive && !root.classList.contains('p2')) placeLabels(); }); } catch (e) { /* older browsers */ }
 
     let skipped = false;
     const timers = [];
@@ -448,11 +477,11 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .ringw svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .rfx .sf{transition:stroke-dashoffset .7s cubic-bezier(.2,.8,.2,1)}
 .rfx .miss{opacity:0;transition:opacity .25s ease .55s}.rfx .miss.in{opacity:1}
-.rfx .lab{position:absolute;transform:translate(-50%,-50%) scale(.6);opacity:0;transition:transform .45s cubic-bezier(.2,1.4,.4,1),opacity .3s ease;text-align:center;line-height:1.15;white-space:nowrap}
-.rfx .lab.in{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.rfx .lab{position:absolute;transform:translate(var(--tx,-50%),var(--ty,-50%)) scale(.6);opacity:0;transition:transform .45s cubic-bezier(.2,1.4,.4,1),opacity .3s ease;text-align:center;line-height:1.15;white-space:nowrap}
+.rfx .lab.in{opacity:1;transform:translate(var(--tx,-50%),var(--ty,-50%)) scale(1)}
 .rfx .lab b{font-size:15px;font-weight:800}.rfx .lab i{font-style:normal;font-size:15px;font-weight:800;margin-left:5px;font-variant-numeric:tabular-nums}
 .rfx .lab small{display:block;font-size:11px;font-weight:700;opacity:.65;letter-spacing:.02em}
-.rfx .tline{position:absolute;left:0;right:0;top:calc(50% + 300px);height:22px;font-size:15px;font-weight:800;opacity:0;transition:opacity .3s ease;text-align:center}
+.rfx .tline{position:absolute;left:0;right:0;top:auto;bottom:40px;height:22px;font-size:15px;font-weight:800;opacity:0;transition:opacity .3s ease;text-align:center}
 .rfx .tline.in{opacity:.85}
 .rfx .rcol{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:0 16px}
 .rfx .rhero{display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -473,8 +502,8 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
   .rfx .cap{left:16px;right:16px;font-size:11.5px;letter-spacing:.1em}
   .rfx .cap span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis}.rfx .cap span:last-child{flex:none}
   .rfx .ringw{width:var(--rd,320px);height:var(--rd,320px)}
-  .rfx .lab b,.rfx .lab i{font-size:14px}.rfx .lab small{font-size:11px;max-width:100px;white-space:normal}
-  .rfx .tline{top:calc(50% + var(--rd,320px) / 2 + 58px);font-size:15px}
+  .rfx .lab b,.rfx .lab i{font-size:13.5px}.rfx .lab small{font-size:10.5px;max-width:78px;white-space:normal}
+  .rfx .tline{top:auto;bottom:max(22px, env(safe-area-inset-bottom));font-size:15px}
   .rfx .rhero .num{font-size:calc(var(--rd,320px) * .3)}.rfx .rhero .unit{font-size:16px}
   .rfx.p2 .rhero .num{font-size:68px}
   .rfx .rcol{gap:16px}
@@ -492,9 +521,9 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 @keyframes rfxBk{from{transform:translate(-50%,-70px);opacity:0}to{transform:translateX(-50%);opacity:1}}
 /* flask */
 .rfx .flk svg{position:absolute;left:96px;top:0;overflow:visible}
-.rfx .fmark{position:absolute;left:262px;transform:translateY(-50%);font-size:13px;font-weight:800;white-space:nowrap;opacity:.35;transition:opacity .25s ease;text-align:left}
-.rfx .fmark::before{content:'';display:inline-block;width:18px;height:2.5px;background:currentColor;vertical-align:middle;margin-right:7px}
-.rfx .fmark.lit{opacity:1}.rfx .fmark.here{font-size:16px}
+.rfx .fmark{position:absolute;transform:translateY(-50%);font-size:15px;font-weight:800;white-space:nowrap;opacity:.35;transition:opacity .25s ease;text-align:left}
+.rfx .fmark::before{content:'';display:inline-block;width:10px;height:2.5px;background:currentColor;vertical-align:middle;margin-right:6px}
+.rfx .fmark.lit{opacity:1}.rfx .fmark.here{font-size:18px}
 .rfx .fwob{animation:rfxWob .9s ease-in-out 2}
 @keyframes rfxWob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 .rfx .bub{position:absolute;width:10px;height:10px;border-radius:50%;border:2px solid currentColor;opacity:0}

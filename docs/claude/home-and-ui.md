@@ -1542,6 +1542,8 @@ Ending" design canvas.
 - A reopened finish (not fresh, per `pageAge() < BEAT_FRESH`) and reduced motion land straight on
   the final view. `?flood=1` forces the full sequence on an archive replay for review.
 
+**Scored games never say Solved (owner, 2026-11-01):** a game graded on a score (Hands, Whittle, Crunch when it misses the target) headlines through `endGrade(score, 10, 'Perfect!')` (Perfect!, Great job!, Good job!, Good effort, Fail), never `endEfficiency`/`endSolved`, which are for real solves. Hands above par but short of ace reads 'Great job!'.
+
 **Verdict words (owner, 2026-10-28):** `FAIL` ('Fail') in `lib/end-verdict.js` is the word for an
 unsolved solve-or-not game and for a scored run that got nothing. 'Good effort' is only for a scored
 run that got something (1 of 35 on trivia is Good effort, 0 of 35 is Fail). No client writes

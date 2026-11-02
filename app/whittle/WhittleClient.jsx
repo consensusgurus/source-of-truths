@@ -891,7 +891,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={perfectHit ? 'won' : 'lost'}
             challengeMetric={left}
-            title={perfectHit ? 'Perfect!' : endEfficiency(score > 0, score)}
+            title={perfectHit ? 'Perfect!' : endGrade(score, 10, 'Perfect!')}
             detail={`${detail} · ${elapsed}`}
             missLabel="Slips"
             iq={iq}
