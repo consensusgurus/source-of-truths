@@ -792,7 +792,7 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
         const call = !preview
           ? <span className="plx-idle">Drag across the board to claim a plot</span>
           : off ? <span className="plx-idle">Off the board. Let go to cancel.</span>
-            : <>Dragging <b>{preview[2]} by {preview[3]}</b> covers {A} square{A === 1 ? '' : 's'}{inside === 1 ? ` around the ${numIn}` : inside === 0 ? ', no number inside' : `, ${inside} numbers inside`}</>;
+            : <><span className="plx-lead">Dragging</span><b>{preview[2]} by {preview[3]}</b><span className="plx-tail"><span className="plx-lead">covers </span>{A} square{A === 1 ? '' : 's'}{inside === 1 ? ` around the ${numIn}` : inside === 0 ? ', no number inside' : `, ${inside} numbers inside`}</span></>;
         const line = toast || `${claimed} of ${CELLS} squares · ${plots.length} plot${plots.length === 1 ? '' : 's'} · ${errors} error${errors === 1 ? '' : 's'}`;
         const box = (p) => ({ left: `calc(${pct(p[1])} + 1px)`, top: `calc(${pct(p[0])} + 1px)`, width: `calc(${pct(p[2])} - 2px)`, height: `calc(${pct(p[3])} - 2px)` });
         return (
@@ -1354,7 +1354,14 @@ export default function PlotClient({ puzzles = [], forceNum = null }) {
 // rule (grey when it cannot be claimed as drawn).
 const PLX_CSS = `
 .plx{display:flex;flex-direction:column;gap:14px;width:100%;max-width:520px;align-self:center;}
-.plx-call{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;text-align:center;font-size:15px;font-weight:800;min-height:44px;line-height:1.3;}
+/* The call line is ONE row at a fixed height at every width (player report,
+   2026-11-02): it used to wrap to two rows on a phone the moment a drag
+   started, which pushed the board down mid-drag. On a phone the words
+   "Dragging" and "covers" drop out, and anything still too long ellipsizes
+   rather than wrapping. */
+.plx-call{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:10px;text-align:center;font-size:15px;font-weight:800;height:44px;flex-shrink:0;line-height:1.3;white-space:nowrap;overflow:hidden;}
+.plx-call b{flex-shrink:0;}
+.plx-tail,.plx-idle{min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .plx-call b{min-width:40px;height:40px;border-radius:12px;background:var(--pst-pale);border:1px solid var(--pst-ink);display:inline-flex;align-items:center;justify-content:center;font-size:17px;padding:0 10px;box-sizing:border-box;}
 .plx-idle{color:var(--pst-mute);font-weight:700;font-size:14px;}
 .plx-pb{align-self:center;width:min(100%, 520px);border:1px solid var(--pst-ink);border-radius:14px;background:var(--pst-bg);overflow:hidden;}
@@ -1371,4 +1378,5 @@ const PLX_CSS = `
 .plx-dr.off{opacity:.35;}
 .plx-tools .pst-tb{font-weight:800;}
 .plx-help{text-align:center;font-size:12px;font-weight:700;color:var(--pst-mute);}
+@media (max-width:520px){.plx-call{font-size:13.5px;gap:8px;}.plx-call b{font-size:16px;}.plx-lead{display:none;}.plx-idle{font-size:13px;}}
 `;
