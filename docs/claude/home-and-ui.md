@@ -2053,3 +2053,19 @@ keeps the old board. The in-page Reveal is the foot's two-tap Give up. Variant m
   region walls are the board's ink walls. Cages: solid grey walls (`#5b6678`, 1.6px) between cages,
   left off where a box wall runs, and the totals in small white chips that grey once the cage is
   full; a chip square's digit sits a little lower (`.cg`). Cages' peers include its cage.
+
+## The finish beat works on the white stage overlay, not the board behind it (owner report, 2026-11-01)
+
+Owner: "the Carve end animation sits the box far above the actual puzzle". Every game on
+`PlayStage` draws its board in a fixed `.pst` overlay while its pre-stage board stays mounted
+behind it down the page, and `lib/finish-beat.js` found that hidden board, so the game's own beat
+and the iris landed off the grid on all 71 PlayStage dailies. Now, when a `.pst:not(.inl)` overlay
+is up: a def with a `stage` block (`{ board, cell, ... }`, merged over the def) plays its own beat
+on the stage board; every other def plays the iris alone, opened from the stage column
+(`.pst-top`). Carve is the first with a `stage` block (`.cvs-grid` / `.cvs-c`, Snap). To give
+another game its own beat back on the stage, add its stage selectors the same way. Sudokus keep
+their Turn over (`.sks-bd`), which runs after this step.
+
+Carve's stage at the same time: the guide card under the board ("Block N holds ...") is gone, the
+block chips sit under the board, and each block wears its own site pastel (`CARVE_PASTELS`, the
+REGION_RAMP order without amber): full with dark ink when locked, a pale mix while it grows.
