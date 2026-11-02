@@ -1547,6 +1547,17 @@ puzzles), finish set Slide and shift.
 - **The board** (`app/topple/ToppleBoard.jsx`) is a canvas in a three-quarter view where up on the screen
   is up on the board (the isometric mockup made the arrow keys read as diagonals). Colours are stage tokens
   resolved through a hidden probe at draw time, so it follows the light switch. Arrows/WASD, swipe, or the pad.
+- **The look (rebuilt 2026-11-02, owner: "greatly improve the visuals of roll and topple")** is shared with Roll
+  through `lib/roll-toy-kit.js`: white (light) or slate (dark) tiles edged in the stage ink, a pastel block with
+  bevelled faces and a seam across its long faces, cracked tiles and the spring pad in the category pastel.
+  **The piece is NOT `--stg-acc`:** on the light register that token is the INK (navy) and `--stg-onramp` is the
+  pastel, the other way round on dark, so the old block was navy and no category colour reached the board.
+  `readPalette()` reads both and paints the LIGHTER as the body, the darker as line and pips. No lean on Topple
+  (KX 0: any lean tilts a two-high block off its tile). Dust on landing, a squash, shards when a cracked tile
+  goes, a tip over the edge on a fall, confetti and a motion trail when the spring fires. The idle pad bobs.
+  One rAF loop per board draws the roll, the particles and the ~30fps idle motion, and calls `onAnimEnd`;
+  reduced motion gets no idle motion, no particles, and rolls that end at once. The canvas draws at its SHOWN
+  width (ResizeObserver), so it is sharp at any size.
 
 ## Roll (`/roll`): the daily die-rolling puzzle (launched 2026-10-20)
 
@@ -1575,6 +1586,11 @@ Logic ramp like Topple (the die is `--stg-acc`, pips `--stg-onramp`). Wired by `
 - **The board** (`app/roll/RollBoard.jsx`) is Topple's canvas with a LEAN (`KX`) so the die shows its top,
   front and right faces (owner, 2026-10-20: "a diagonal view so can see 3 sides at once"); rows and columns
   stay square to the screen so the arrows read straight.
+- **The look (2026-11-02)** is Topple's kit (above). The numbered squares are BUTTONS: unlit ones stand
+  `RAISE` proud of the floor; a waiting one shows a muted number and a lock; the NEXT one is pastel-tinted with a
+  bold number and a breathing halo (a solid stroke, never dashed); the die presses it flush as it lands with the
+  right face up, and it lights pastel with a tick and a pastel ring. Cracked squares break into shards as the die
+  leaves. The win hops the die and throws confetti.
 
 ## Crossed Up (`/crossed`): the crossword run, and only designed runs remain (owner, 2026-10-20)
 

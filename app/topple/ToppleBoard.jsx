@@ -7,55 +7,51 @@
 // here Up rolls it up the screen, Left rolls it left, and a swipe goes the way
 // it looks.
 //
-// Every colour is a stage token, read off the page at draw time, so the board
-// follows the light switch and wears its category: the block is the Logic
-// accent, the floor is the stage ink mixed into the ground, and the fragile
-// tiles are the same category colour held well below the block's strength, with
-// cracks drawn on them so they never rely on colour alone (owner, 2026-10-20:
-// the cracked squares and the rolls bar match the category colour).
+// THE LOOK (rebuilt 2026-11-02, owner: "can we greatly improve the visuals of
+// roll and topple?"), shared with Roll through lib/roll-toy-kit.js: white or
+// slate tiles edged in the stage ink, a pastel block in the category colour with
+// bevelled faces, and the category colour again on the cracked tiles and the
+// spring pad. The view does not lean (a lean tilts a
+// two-high block off its tile), so depth comes from thick tile fronts, the
+// bevels and the shadows; rows and columns stay square to the screen, so the
+// arrows read straight. The old board painted the block with --stg-acc,
+// which is the INK on the light register, so the block was navy and the
+// category colour never reached the board; the kit reads the pastel instead.
 //
 // The roll is a real quarter turn about the block's leading bottom edge
 // (drawBlock), so a standing block tips flat and a flat one stands up, the way
-// a domino does. A fall drops it and fades it. A win lands it on the SPRING
-// (owner, 2026-10-19, in place of the original's hole): the pad squashes under
-// it and fires it off the top of the board. A one-tile spring takes the block
-// standing; a two-tile spring takes it lying flat across both tiles.
+// a domino does, and it squashes a touch and puffs dust as it lands. A fall
+// tips it off the edge; a cracked tile breaks into shards under it. A win lands
+// it on the SPRING (owner, 2026-10-19, in place of the original's hole): the pad
+// squashes under it and fires it off the top of the board with a burst of
+// confetti. A one-tile spring takes the block standing (marked with an X); a
+// two-tile spring takes it lying flat across both (marked with the outline of
+// a lying block). Idle, the pad bobs gently so the goal is easy to find.
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { RotateCcw, Lightbulb, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { onSpring } from '@/lib/topple-engine';
+import { readPalette, slab, cracks, contact, face, roundQuad, quad, inset, css, mix, Fx, prefersReduced } from '@/lib/roll-toy-kit';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const TW = 44;            // one square, left to right
-const TH = 30;            // one square, top to bottom (depth is foreshortened)
-const KX = 0;             // no sideways lean: a slanted view made a standing block look
-                          // like it stood off its own tile (looked at, 2026-10-19)
-const TZ = 26;            // how far one unit of height rises
-const SLAB = 0.34;        // tile thickness, in block units
-const GAP = 0.045;        // the seam between two tiles, so the floor reads as tiles
-const PAD_UP = 0.62;      // a spring pad at rest stands this far proud of the floor, coil showing
+const TW = 48;            // one square, left to right
+const TH = 38;            // one square, top to bottom (depth is foreshortened)
+const KX = 0;             // no sideways lean: on a block two units tall any lean reads as the block
+                          // tilting off its tile (looked at 2026-10-19, and again 2026-11-02)
+const TZ = 28;            // how far one unit of height rises
+const SLAB = 0.42;        // tile thickness, in block units
+const GAP = 0.05;         // the seam between two tiles, so the floor reads as tiles
+const PAD_UP = 0.56;      // a spring pad at rest stands this far proud of the floor, coil showing
 const PAD_DOWN = 0.1;     // and sinks to here under the block
-const PAD = 14;
+const PAD = 16;
 const ROLL_MS = 190;
-const DROP_MS = 520;
+const DROP_MS = 560;
 const LAUNCH_MS = 900;
+const SQUASH_MS = 150;
 
 const VIEW = (() => { const v = [KX / TW, TZ / TH, 1]; const m = Math.hypot(...v); return v.map((c) => c / m); })();
-const LIGHT = (() => { const v = [-0.35, -0.55, 1]; const m = Math.hypot(...v); return v.map((c) => c / m); })();
+const LIGHT = (() => { const v = [0.3, -0.5, 1]; const m = Math.hypot(...v); return v.map((c) => c / m); })();
 const FACES = [[0, 1, 3, 2], [4, 5, 7, 6], [0, 1, 5, 4], [2, 3, 7, 6], [0, 2, 6, 4], [1, 3, 7, 5]];
-
-const TOKENS = {
-  ground: 'var(--stg-ground, #0b0f1a)',
-  tile: 'color-mix(in srgb, var(--stg-ink, #e9edf4) 24%, var(--stg-ground, #0b0f1a))',
-  tileEdge: 'color-mix(in srgb, var(--stg-ink, #e9edf4) 40%, var(--stg-ground, #0b0f1a))',
-  // the category colour, held well below the block's full strength so the two never read as one
-  frag: 'color-mix(in srgb, var(--stg-acc, #bef264) 42%, var(--stg-ground, #0b0f1a))',
-  block: 'var(--stg-acc, #bef264)',
-  pad: 'color-mix(in srgb, var(--stg-acc, #bef264) 40%, var(--stg-ground, #0b0f1a))',
-  mark: 'var(--stg-acc-ink, var(--stg-acc, #bef264))',
-  metal: 'color-mix(in srgb, var(--stg-ink, #e9edf4) 72%, var(--stg-ground, #0b0f1a))',
-  socket: 'color-mix(in srgb, var(--stg-ink, #e9edf4) 10%, var(--stg-ground, #0b0f1a))',
-};
 
 const CSS = `
 .tp{font-family:${SANS};}
@@ -139,13 +135,7 @@ function cellsOfBlock(b) {
   if (b.o === 'H') return [[b.x, b.y], [b.x + 1, b.y]];
   return [[b.x, b.y], [b.x, b.y + 1]];
 }
-// Is a resolved rgb() colour dark? Decides the shadow strength per register.
-function isDark(rgb) {
-  const m = String(rgb).match(/[\d.]+/g);
-  if (!m || m.length < 3) return true;
-  const [r, g, b] = m.slice(0, 3).map(Number);
-  return (0.299 * r + 0.587 * g + 0.114 * b) < 128;
-}
+
 const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
 export default function ToppleBoard({
@@ -155,51 +145,38 @@ export default function ToppleBoard({
   const cvRef = useRef(null);
   const probeRef = useRef(null);
   const colors = useRef(null);
-  const frame = useRef(null);
+  const fx = useRef(new Fx());
+  const seen = useRef({ land: null, crack: null, fire: null });
+  const squash = useRef(null);
+  const shown = useRef(0);
+  const dirty = useRef(true);
   const [, force] = useState(0);
 
-  const W = P.w * TW + KX * 2 + PAD * 2 + 6;
-  const H = P.h * TH + TZ * 2.6 + SLAB * TZ + PAD * 2 + 16;
-  const OX = PAD + KX * 2 + 2;
-  const OY = PAD + TZ * 2.6;
+  const W = Math.round(P.w * TW + KX * 2.4 + SLAB * KX + PAD * 2 + 4);
+  const H = Math.round(P.h * TH + TZ * 2.4 + SLAB * TZ + PAD * 2 + 6);
+  const OX = PAD + KX * 2.4 + 2;
+  const OY = PAD + TZ * 2.4;
   const pr = useCallback((x, y, z) => [OX + x * TW - z * KX, OY + y * TH - z * TZ], [OX, OY]);
 
-  // Resolve every token to a real colour by letting the browser compute it on
-  // a hidden probe (a custom property alone would hand back the unresolved
-  // color-mix text, which a canvas cannot paint).
   const readColors = useCallback(() => {
-    const el = probeRef.current;
-    if (!el) return;
-    const out = {};
-    for (const [k, v] of Object.entries(TOKENS)) { el.style.color = v; out[k] = getComputedStyle(el).color; }
-    colors.current = out;
+    if (probeRef.current) colors.current = readPalette(probeRef.current);
+    dirty.current = true;
   }, []);
 
   const draw = useCallback((now) => {
     const cv = cvRef.current;
     if (!cv || !colors.current) return;
     const C = colors.current;
-    const dark = isDark(C.ground);
     const dpr = Math.min(3, window.devicePixelRatio || 1);
-    if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    const cw = shown.current || cv.clientWidth || W;
+    const bw = Math.max(1, Math.round(cw * dpr)), bh = Math.max(1, Math.round((cw * H / W) * dpr));
+    if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
     const ctx = cv.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, bw, bh);
+    ctx.setTransform(bw / W, 0, 0, bh / H, 0, 0);
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-    const path = (pts) => { ctx.beginPath(); pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.closePath(); };
-    const poly = (pts, fill, shade, stroke, sw) => {
-      path(pts);
-      ctx.fillStyle = fill; ctx.fill();
-      if (shade > 0) { ctx.fillStyle = `rgba(0,0,0,${shade})`; ctx.fill(); }
-      if (shade < 0) { ctx.fillStyle = `rgba(255,255,255,${-shade})`; ctx.fill(); }
-      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = sw || 1; ctx.stroke(); }
-    };
-    // a soft vertical sheen over a shape already on the path
-    const sheen = (y0, y1, top, bottom) => {
-      const gr = ctx.createLinearGradient(0, y0, 0, y1);
-      gr.addColorStop(0, top); gr.addColorStop(1, bottom);
-      ctx.fillStyle = gr; ctx.fill();
-    };
+    const reduce = prefersReduced();
 
     // the animation's phase
     let a = null;
@@ -218,95 +195,122 @@ export default function ToppleBoard({
     const fromFoot = anim ? footKeys(anim.from) : [];
     const toFoot = anim ? footKeys(anim.to) : footKeys(block);
     const restFoot = footKeys(block);
+    const bob = reduce ? 0 : Math.sin(now / 280) * 0.035;
     const padLift = (key) => {
       if (a && a.phase === 'launch' && toFoot.includes(key)) {
         const k = a.k;
         return k < 0.22 ? PAD_DOWN - (k / 0.22) * PAD_DOWN : Math.min(1.1, ((k - 0.22) / 0.1) * 1.1);
       }
-      if (!anim && launched) return PAD_UP;
+      if (!anim && launched) return PAD_UP + bob;
       if (a && a.phase === 'roll') {
         const f = fromFoot.includes(key) ? PAD_DOWN : PAD_UP, t2 = toFoot.includes(key) ? PAD_DOWN : PAD_UP;
         return f + (t2 - f) * a.k;
       }
-      if (a && a.phase === 'drop') return PAD_UP;
-      return restFoot.includes(key) && !launched ? PAD_DOWN : PAD_UP;
+      if (a && a.phase === 'drop') return PAD_UP + bob;
+      return restFoot.includes(key) && !launched ? PAD_DOWN : PAD_UP + bob;
     };
     const onSpringCells = (keys) => keys.some((k) => { const [x, y] = k.split(',').map(Number); return P.grid[y] && P.grid[y][x] === 'G'; });
 
+    // effects keyed to the animation's moments, each fired once
+    if (anim && !reduce) {
+      const t = now - anim.t0;
+      if (t >= ROLL_MS && seen.current.land !== anim.id && (anim.result === 'ok' || anim.result === 'win' || anim.result === 'crack')) {
+        seen.current.land = anim.id;
+        const [x0, y0, x1, y1] = boxOf(anim.to);
+        const dz = anim.result === 'win' ? PAD_DOWN : 0;
+        fx.current.dust(now, [pr(x0 + 0.05, y1, dz), pr(x1 - 0.05, y1, dz), pr(x0, (y0 + y1) / 2, dz), pr(x1, (y0 + y1) / 2, dz)], css(C.dust), 2);
+        if (anim.result === 'ok') squash.current = { t: now, id: anim.id };
+      }
+      if (anim.result === 'crack' && t >= ROLL_MS + 70 && seen.current.crack !== anim.id) {
+        seen.current.crack = anim.id;
+        const { x, y } = anim.to;
+        const top = css(C.frag), edge = css(C.tileLine, C.tileLineA + 0.2);
+        const parts = [[0, 0, 0.5, 0.46], [0.5, 0, 1, 0.56], [0, 0.46, 0.55, 1], [0.55, 0.56, 1, 1]];
+        parts.forEach(([u0, v0, u1, v1], i) => {
+          const q = [pr(x + u0 + 0.04, y + v0 + 0.04, 0), pr(x + u1 - 0.04, y + v0 + 0.04, 0), pr(x + u1 - 0.04, y + v1 - 0.04, 0), pr(x + u0 + 0.04, y + v1 - 0.04, 0)];
+          fx.current.shard(now, q, top, edge, (u0 - 0.4) * 0.05, -0.03 - Math.random() * 0.03, (Math.random() - 0.5) * 0.008, i * 25);
+        });
+      }
+      if (anim.result === 'win' && t >= ROLL_MS + LAUNCH_MS * 0.3 && seen.current.fire !== anim.id) {
+        seen.current.fire = anim.id;
+        const [x0, y0, x1, y1] = boxOf(anim.to);
+        const c = pr((x0 + x1) / 2, (y0 + y1) / 2, 0.8);
+        fx.current.confetti(now, c[0], c[1], [css(C.body), css(C.line), css(C.bodyTop), css(mix(C.body, [255, 255, 255], 0.55))], 46);
+      }
+    }
+
     // 1. one soft shadow under the whole floor, so the board sits on the page
     ctx.save();
-    ctx.shadowColor = dark ? 'rgba(0,0,0,.55)' : 'rgba(20,30,50,.22)';
-    ctx.shadowBlur = 18; ctx.shadowOffsetY = 10;
-    ctx.fillStyle = C.ground;
+    ctx.shadowColor = `rgba(0,0,0,${C.shadowA})`;
+    ctx.shadowBlur = 22; ctx.shadowOffsetY = 12;
+    ctx.fillStyle = css(C.tileFront);
     ctx.beginPath();
     for (let y = 0; y < P.h; y++) for (let x = 0; x < P.w; x++) {
       if (P.grid[y][x] === '.') continue;
-      const p0 = pr(x + GAP, y + GAP, 0), p1 = pr(x + 1 - GAP, y + 1 - GAP, -SLAB);
-      ctx.rect(p0[0], p0[1], p1[0] - p0[0], p1[1] - p0[1]);
+      const q = [pr(x + GAP, y + GAP, 0), pr(x + 1 - GAP, y + GAP, 0), pr(x + 1 - GAP, y + 1 - GAP, -SLAB), pr(x + GAP, y + 1 - GAP, -SLAB)];
+      ctx.moveTo(...q[0]); ctx.lineTo(...q[1]); ctx.lineTo(...q[2]); ctx.lineTo(...q[3]); ctx.closePath();
     }
     ctx.fill();
     ctx.restore();
 
     // 2. the tiles, back row first
     const cracked = a && anim.result === 'crack' && a.phase === 'drop' ? `${anim.to.x},${anim.to.y}` : null;
-    const tile = (x, y, top, z = 0, opts = {}) => {
-      const g = GAP;
-      // front face, darker toward the bottom
-      const f = [pr(x + g, y + 1 - g, z), pr(x + 1 - g, y + 1 - g, z), pr(x + 1 - g, y + 1 - g, z - SLAB), pr(x + g, y + 1 - g, z - SLAB)];
-      poly(f, top, 0.34);
-      sheen(f[0][1], f[2][1], 'rgba(0,0,0,0)', 'rgba(0,0,0,.22)');
-      // top face with a light sheen from the back edge and a bevel highlight
-      const t = [pr(x + g, y + g, z), pr(x + 1 - g, y + g, z), pr(x + 1 - g, y + 1 - g, z), pr(x + g, y + 1 - g, z)];
-      poly(t, top, 0);
-      sheen(t[0][1], t[3][1], dark ? 'rgba(255,255,255,.10)' : 'rgba(255,255,255,.35)', 'rgba(255,255,255,0)');
-      ctx.strokeStyle = dark ? 'rgba(255,255,255,.16)' : 'rgba(255,255,255,.7)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(t[0][0] + 1, t[0][1] + 0.5); ctx.lineTo(t[1][0] - 1, t[1][1] + 0.5); ctx.stroke();
-      ctx.strokeStyle = 'rgba(0,0,0,.28)';
-      ctx.beginPath(); ctx.moveTo(t[3][0], t[3][1]); ctx.lineTo(t[2][0], t[2][1]); ctx.stroke();
-      if (opts.cracks) {
-        ctx.strokeStyle = dark ? 'rgba(0,0,0,.55)' : 'rgba(0,0,0,.42)'; ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        ctx.moveTo(...pr(x + 0.18, y + 0.28, z)); ctx.lineTo(...pr(x + 0.42, y + 0.46, z)); ctx.lineTo(...pr(x + 0.38, y + 0.62, z)); ctx.lineTo(...pr(x + 0.5, y + 0.84, z));
-        ctx.moveTo(...pr(x + 0.42, y + 0.46, z)); ctx.lineTo(...pr(x + 0.66, y + 0.38, z)); ctx.lineTo(...pr(x + 0.84, y + 0.5, z));
-        ctx.moveTo(...pr(x + 0.66, y + 0.38, z)); ctx.lineTo(...pr(x + 0.7, y + 0.18, z));
-        ctx.stroke();
-      }
-    };
+    const tile = (x, y, top, opts = {}) => slab(ctx, pr, C, x + GAP, y + GAP, x + 1 - GAP, y + 1 - GAP, 0, SLAB, top, opts);
 
-    // THE SPRING: a sunken socket, a metal coil, and a pad on top marked with an
-    // X. The coil is a real helix, its back half drawn behind and dimmer, so it
-    // reads as a spring from straight on.
+    // THE SPRING: a sunken socket, a metal coil, and a pastel pad on top. The
+    // coil is a real helix, its back half drawn behind and dimmer, so it reads
+    // as a spring from straight on. A one-tile spring's pad carries an X; a
+    // two-tile spring's pads carry the outline of a block lying across both.
+    const pair = P.goal.length === 2;
+    const metal = C.dark ? mix(C.ink, C.ground, 0.18) : C.line;
     const spring = (x, y, lift) => {
-      tile(x, y, C.socket);
-      const cx = x + 0.5, cy = y + 0.5, rx = 0.3, ry = 0.24;
+      const tp = tile(x, y, C.tileTop);
+      roundQuad(ctx, inset(tp, 0.78), 6);
+      ctx.fillStyle = C.dark ? 'rgba(0,0,0,.5)' : css(mix(C.ink, [255, 255, 255], 0.62)); ctx.fill();
+      const cx = x + 0.5, cy = y + 0.5, rx = 0.27, ry = 0.22;
       const turns = 4, steps = turns * 28;
-      const zTop = Math.max(0.02, lift - 0.06);
+      const zTop = Math.max(0.02, lift - 0.08);
       const pt = (i) => { const t = (i / steps) * turns * Math.PI * 2; return [cx + rx * Math.cos(t), cy + ry * Math.sin(t), 0.02 + (zTop - 0.02) * (i / steps), Math.sin(t)]; };
       const coil = (front) => {
-        ctx.strokeStyle = C.metal; ctx.lineWidth = front ? 2.4 : 2;
-        ctx.globalAlpha = front ? 1 : 0.45;
+        ctx.strokeStyle = front ? css(metal) : css(metal, 0.4); ctx.lineWidth = front ? 2.8 : 2.2;
+        ctx.beginPath();
         for (let i = 0; i < steps; i++) {
-          const p = pt(i), q = pt(i + 1);
+          const p = pt(i), q2 = pt(i + 1);
           if ((p[3] >= 0) !== front) continue;
-          ctx.beginPath(); ctx.moveTo(...pr(p[0], p[1], p[2])); ctx.lineTo(...pr(q[0], q[1], q[2])); ctx.stroke();
+          ctx.moveTo(...pr(p[0], p[1], p[2])); ctx.lineTo(...pr(q2[0], q2[1], q2[2]));
         }
-        ctx.globalAlpha = 1;
+        ctx.stroke();
       };
       coil(false);
-      // the pad: a plate a little inside the tile, edged, with an X on it
-      const m = 0.13, th = 0.09, z1 = lift, z0 = lift - th;
-      const front = [pr(x + m, y + 1 - m, z1), pr(x + 1 - m, y + 1 - m, z1), pr(x + 1 - m, y + 1 - m, z0), pr(x + m, y + 1 - m, z0)];
       coil(true);
-      poly(front, C.pad, 0.35);
-      const top = [pr(x + m, y + m, z1), pr(x + 1 - m, y + m, z1), pr(x + 1 - m, y + 1 - m, z1), pr(x + m, y + 1 - m, z1)];
-      poly(top, C.pad, 0, C.mark, 1.6);
-      sheen(top[0][1], top[3][1], 'rgba(255,255,255,.18)', 'rgba(255,255,255,0)');
-      const i = 0.27;
-      ctx.strokeStyle = C.mark; ctx.lineWidth = 3.2;
-      ctx.beginPath();
-      ctx.moveTo(...pr(x + i, y + i, z1)); ctx.lineTo(...pr(x + 1 - i, y + 1 - i, z1));
-      ctx.moveTo(...pr(x + 1 - i, y + i, z1)); ctx.lineTo(...pr(x + i, y + 1 - i, z1));
-      ctx.stroke();
+      // the pad: a pastel plate a little inside the tile, edged in ink
+      const m = 0.15, th = 0.12;
+      slab(ctx, pr, { ...C, tileLine: C.line, tileLineA: 1, dark: C.dark }, x + m, y + m, x + 1 - m, y + 1 - m, lift, th, C.bodyTop,
+        { front: C.bodyFront, side: C.bodySide, lw: 1.8, r: 4 });
+      ctx.strokeStyle = css(C.line); ctx.lineCap = 'round';
+      if (!pair) {
+        const i = 0.29;
+        ctx.lineWidth = 3.4;
+        ctx.beginPath();
+        ctx.moveTo(...pr(x + i, y + i, lift)); ctx.lineTo(...pr(x + 1 - i, y + 1 - i, lift));
+        ctx.moveTo(...pr(x + 1 - i, y + i, lift)); ctx.lineTo(...pr(x + i, y + 1 - i, lift));
+        ctx.stroke();
+      } else {
+        // half of a lying block's outline, open toward the partner tile
+        const [gx0, gy0] = P.goal[0], [gx1, gy1] = P.goal[1];
+        const ox = gx1 !== gx0, first = ox ? x === Math.min(gx0, gx1) : y === Math.min(gy0, gy1);
+        const i = 0.24;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        if (ox) {
+          const xa = first ? x + 1 : x, xb = first ? x + i : x + 1 - i;
+          ctx.moveTo(...pr(xa - (first ? 0.1 : -0.1), y + i, lift)); ctx.lineTo(...pr(xb, y + i, lift)); ctx.lineTo(...pr(xb, y + 1 - i, lift)); ctx.lineTo(...pr(xa - (first ? 0.1 : -0.1), y + 1 - i, lift));
+        } else {
+          const ya = first ? y + 1 : y, yb = first ? y + i : y + 1 - i;
+          ctx.moveTo(...pr(x + i, ya - (first ? 0.1 : -0.1), lift)); ctx.lineTo(...pr(x + i, yb, lift)); ctx.lineTo(...pr(x + 1 - i, yb, lift)); ctx.lineTo(...pr(x + 1 - i, ya - (first ? 0.1 : -0.1), lift));
+        }
+        ctx.stroke();
+      }
     };
 
     const drawRow = (y) => {
@@ -314,18 +318,22 @@ export default function ToppleBoard({
         const c = P.grid[y][x];
         if (c === '.') continue;
         if (c === 'G') { spring(x, y, padLift(`${x},${y}`)); continue; }
-        if (cracked === `${x},${y}` && a.k > 0.15) continue;   // it gives way under the block
-        if (c === 'F') tile(x, y, C.frag, 0, { cracks: true });
-        else tile(x, y, C.tile);
+        if (cracked === `${x},${y}` && (reduce || now - anim.t0 >= ROLL_MS + 70)) continue;   // it gives way under the block
+        if (c === 'F') {
+          tile(x, y, C.frag, { front: mix(C.frag, C.line, 0.18), side: mix(C.frag, C.line, 0.26) });
+          cracks(ctx, pr, x, y, 0, css(C.line, C.dark ? 0.9 : 0.75), 1.7);
+        } else tile(x, y, (x + y) % 2 ? C.tileTop : mix(C.tileTop, C.ink, C.dark ? 0.03 : 0.025));
       }
     };
 
     // 3. the block
-    const drawBlock = (b, dir, th, dz, alpha) => {
+    const drawBlock = (b, dir, th, dz, alpha, sq = 1) => {
       const [x0, y0, x1, y1, h] = boxOf(b);
       const c = Math.cos(th), s = Math.sin(th);
+      const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, spread = 1 + (1 - sq) * 0.6;
       const rot = (p) => {
         let [x, y, z] = p;
+        if (sq !== 1) { x = mx + (x - mx) * spread; y = my + (y - my) * spread; z *= sq; }
         if (dir === 'R') { const u = x - x1; x = x1 + u * c + z * s; z = -u * s + z * c; }
         else if (dir === 'L') { const u = x - x0; x = x0 + u * c - z * s; z = u * s + z * c; }
         else if (dir === 'D') { const u = y - y1; y = y1 + u * c + z * s; z = -u * s + z * c; }
@@ -335,17 +343,10 @@ export default function ToppleBoard({
       const V = [];
       for (const z of [0, h]) for (const y of [y0, y1]) for (const x of [x0, x1]) V.push(rot([x, y, z]));
       const ctr = V.reduce((q, p) => [q[0] + p[0] / 8, q[1] + p[1] / 8, q[2] + p[2] / 8], [0, 0, 0]);
-      // contact shadow on the floor, fading as the block rises
-      if (alpha > 0.5 && dz < 1) {
+      // contact shadow on the floor, thinning as the block rises
+      if (alpha > 0.5 && dz > -0.2 && dz < 1.6) {
         const xs = V.map((p) => p[0]), ys = V.map((p) => p[1]);
-        const sx0 = Math.min(...xs), sx1 = Math.max(...xs), sy0 = Math.min(...ys), sy1 = Math.max(...ys);
-        const q0 = pr(sx0 - 0.04, sy0 + 0.05, 0), q1 = pr(sx1 + 0.04, sy1 + 0.12, 0);
-        ctx.save();
-        ctx.globalAlpha = (dark ? 0.5 : 0.28) * Math.max(0, 1 - dz);
-        ctx.fillStyle = '#000';
-        ctx.filter = 'blur(3px)';
-        ctx.fillRect(q0[0], q0[1], q1[0] - q0[0], q1[1] - q0[1]);
-        ctx.restore();
+        contact(ctx, pr, C, Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys), Math.max(0, dz));
       }
       ctx.globalAlpha = alpha;
       const faces = [];
@@ -359,26 +360,30 @@ export default function ToppleBoard({
       }
       for (const { pts, n } of faces) {
         const lit = n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2];
+        const k = Math.max(0, Math.min(1, (lit + 0.15) / 1.0));
+        const fill = mix(C.bodySide, C.bodyTop, k);
         const sp = pts.map((p) => pr(p[0], p[1], p[2]));
-        poly(sp, C.block, lit > 0.7 ? 0 : 0.14 + (0.7 - Math.max(0, lit)) * 0.42);
-        const ys2 = sp.map((p) => p[1]);
-        // the top catches the light; the sides darken toward the floor
-        if (n[2] > 0.7) sheen(Math.min(...ys2), Math.max(...ys2), 'rgba(255,255,255,.34)', 'rgba(255,255,255,.08)');
-        else sheen(Math.min(...ys2), Math.max(...ys2), 'rgba(255,255,255,.06)', 'rgba(0,0,0,.18)');
-        ctx.strokeStyle = 'rgba(0,0,0,.42)'; ctx.lineWidth = 1.1;
-        path(sp); ctx.stroke();
-      }
-      // a bright rim along the top face's back and left edges
-      const topFace = faces.find((f) => f.n[2] > 0.7);
-      if (topFace) {
-        const sp = topFace.pts.map((p) => pr(p[0], p[1], p[2]));
-        ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.2;
-        ctx.beginPath(); ctx.moveTo(...sp[3]); ctx.lineTo(...sp[0]); ctx.lineTo(...sp[1]); ctx.stroke();
+        face(ctx, sp, fill, `rgba(255,255,255,${(0.08 + Math.max(0, n[2]) * 0.2).toFixed(3)})`, C.line, 2);
+        // the middle seam across a long face, so a lying block reads as two squares long
+        const L = (i, j) => Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1], pts[i][2] - pts[j][2]);
+        const mid = (i, j) => [(sp[i][0] + sp[j][0]) / 2, (sp[i][1] + sp[j][1]) / 2];
+        let seg = null;
+        if (L(0, 1) > 1.5) seg = [mid(0, 1), mid(3, 2)];
+        else if (L(1, 2) > 1.5) seg = [mid(1, 2), mid(0, 3)];
+        if (seg) {
+          ctx.strokeStyle = css(C.line, 0.28); ctx.lineWidth = 1.6;
+          ctx.beginPath(); ctx.moveTo(...seg[0]); ctx.lineTo(...seg[1]); ctx.stroke();
+        }
       }
       ctx.globalAlpha = 1;
     };
     const restDz = (b) => (onSpringCells(footKeys(b)) ? PAD_DOWN : 0);
     const lastRow = (b) => (b ? Math.max(...cellsOfBlock(b).map(([, y]) => y)) : -1);
+    let sq = 1;
+    if (!anim && squash.current && !reduce) {
+      const t = now - squash.current.t;
+      if (t < SQUASH_MS) sq = 1 - 0.075 * Math.sin(Math.PI * t / SQUASH_MS);
+    }
 
     // 4. PAINT BACK TO FRONT, ROW BY ROW, and put the block in right after the
     // last row it stands on. Drawn on top of everything, a block standing behind
@@ -388,19 +393,32 @@ export default function ToppleBoard({
     let job = null, jobRow = P.h;
     if (a && a.phase === 'roll') {
       const d0 = onSpringCells(fromFoot) ? PAD_DOWN : 0, d1 = onSpringCells(toFoot) ? PAD_DOWN : 0;
-      job = () => drawBlock(anim.from, anim.dir, a.k * Math.PI / 2, d0 + (d1 - d0) * a.k, 1);
+      // a little hop at the top of the turn, so the roll has weight
+      const hop = Math.sin(a.k * Math.PI) * 0.06;
+      job = () => drawBlock(anim.from, anim.dir, a.k * Math.PI / 2, d0 + (d1 - d0) * a.k + hop, 1);
       jobRow = Math.max(lastRow(anim.from), lastRow(anim.to));
     } else if (a && a.phase === 'drop') {
-      job = () => drawBlock(anim.to, null, 0, -a.k * a.k * 5, Math.max(0, 1 - a.k * 1.3));
+      // tip on over the edge and fall away, fading
+      const k = a.k;
+      job = () => drawBlock(anim.to, anim.result === 'fall' ? anim.dir : null, anim.result === 'fall' ? k * 1.1 : 0, -k * k * 6, Math.max(0, 1 - k * 1.25));
+      jobRow = lastRow(anim.to);
     } else if (a && a.phase === 'launch') {
       // squash with the pad, then fire straight up and out of the top of the board
       const k = a.k;
       const lift = k < 0.22 ? PAD_DOWN - (k / 0.22) * PAD_DOWN : Math.min(1.1, ((k - 0.22) / 0.1) * 1.1);
       const fly = k < 0.32 ? 0 : Math.pow((k - 0.32) / 0.68, 1.7) * 18;
-      job = () => drawBlock(anim.to, null, 0, lift + fly, 1);
+      const sqz = k < 0.22 ? 1 - 0.12 * (k / 0.22) : k < 0.32 ? 0.88 + 0.2 * ((k - 0.22) / 0.1) : 1.08 - Math.min(0.08, (k - 0.32) * 0.3);
+      job = () => {
+        if (fly > 0.4) {
+          // a short motion trail under the block as it leaves
+          drawBlock(anim.to, null, 0, lift + fly * 0.55, 0.12, sqz);
+          drawBlock(anim.to, null, 0, lift + fly * 0.78, 0.22, sqz);
+        }
+        drawBlock(anim.to, null, 0, lift + fly, 1, sqz);
+      };
       jobRow = k < 0.32 ? lastRow(anim.to) : P.h;
     } else if (!(launched || onSpring(P, block))) {
-      job = () => drawBlock(block, null, 0, restDz(block), 1);
+      job = () => drawBlock(block, null, 0, restDz(block), 1, sq);
       jobRow = lastRow(block);
     }
     for (let y = 0; y < P.h; y++) {
@@ -408,32 +426,59 @@ export default function ToppleBoard({
       if (job && y === jobRow) { job(); job = null; }
     }
     if (job) job();
+    fx.current.draw(ctx, now, C.dark ? null : css(C.line, 0.5));
   }, [P, anim, block, pr, W, H, playing, launched]);
 
   // colours follow the light switch
   useEffect(() => { readColors(); force((n) => n + 1); }, [readColors, themeKey]);
   useEffect(() => {
     const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-    const on = () => { readColors(); draw(performance.now()); };
+    const on = () => { readColors(); };
     mq && mq.addEventListener && mq.addEventListener('change', on);
     return () => { mq && mq.removeEventListener && mq.removeEventListener('change', on); };
-  }, [readColors, draw]);
-
-  // the animation loop
+  }, [readColors]);
+  // draw at the size the canvas is SHOWN, so it stays sharp at any width
   useEffect(() => {
-    if (!anim) { draw(performance.now()); return undefined; }
-    const total = ROLL_MS + (anim.result === 'fall' || anim.result === 'crack' ? DROP_MS : anim.result === 'win' ? LAUNCH_MS : 0);
-    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) { draw(anim.t0 + total); const id = setTimeout(() => onAnimEnd(anim.id), 60); return () => clearTimeout(id); }
-    const tick = (now) => {
-      draw(now);
-      if (now - anim.t0 < total) frame.current = requestAnimationFrame(tick);
-      else onAnimEnd(anim.id);
+    const cv = cvRef.current;
+    if (!cv || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver((es) => {
+      const w = es[0] && es[0].contentRect ? es[0].contentRect.width : cv.clientWidth;
+      if (w && Math.abs(w - shown.current) > 0.25) { shown.current = w; dirty.current = true; }
+    });
+    ro.observe(cv);
+    return () => ro.disconnect();
+  }, [shake]);
+
+  // ONE LOOP for the board: it plays the roll and its aftermath, keeps the
+  // particles moving, bobs the spring at about 30 frames a second while the
+  // board is idle, and tells the client when a roll has finished. With reduced
+  // motion there is no bob, no particles, and a roll ends at once.
+  const live = useRef(null);
+  live.current = { anim, draw, onAnimEnd };
+  useEffect(() => { dirty.current = true; });
+  useEffect(() => {
+    let raf = 0, idleAt = 0, ended = null;
+    const loop = (now) => {
+      const { anim: an, draw: dr, onAnimEnd: done } = live.current;
+      const reduce = prefersReduced();
+      const total = an ? ROLL_MS + (an.result === 'fall' || an.result === 'crack' ? DROP_MS : an.result === 'win' ? LAUNCH_MS : 0) : 0;
+      if (an && ended !== an.id && (reduce || now - an.t0 >= total)) {
+        ended = an.id;
+        dr(reduce ? an.t0 + total : now);
+        dirty.current = false;
+        done(an.id);
+      } else if ((an && ended !== an.id) || fx.current.busy(now) || (squash.current && now - squash.current.t < SQUASH_MS + 20)) {
+        dr(now); dirty.current = false;
+      } else if (dirty.current || (!reduce && now - idleAt > 33)) {
+        dr(now); dirty.current = false; idleAt = now;
+      }
+      raf = requestAnimationFrame(loop);
     };
-    frame.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame.current);
-  }, [anim, draw, onAnimEnd]);
-  useEffect(() => { draw(performance.now()); });
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  // a restart or a new board clears the air
+  useEffect(() => { fx.current.clear(); squash.current = null; }, [P]);
 
   // swipe on the board
   const sw = useRef(null);

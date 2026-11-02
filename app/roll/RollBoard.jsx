@@ -7,52 +7,48 @@
 // the left; the board's rows and columns stay square to the screen, so Up still
 // rolls up the screen and a swipe goes the way it looks (Topple's rule).
 //
-// Every colour is a stage token, read off the page through a hidden probe at
-// draw time, so the board follows the light switch and wears the Logic
-// category, Topple's look: the die is the category accent with pips in its
-// on-ramp ink, the floor is the ink mixed into the ground, cracked squares are
-// the accent held well below the die's strength with cracks drawn on, and the
-// numbered squares say their state three ways (number, outline, lock or tick)
-// so nothing rests on colour alone.
+// THE LOOK (rebuilt 2026-11-02, owner: "can we greatly improve the visuals of
+// roll and topple?"), shared with Topple through lib/roll-toy-kit.js: white or
+// slate tiles edged in the stage ink, a pastel die in the category colour with
+// bevelled faces and ink pips. The old board painted the die with --stg-acc,
+// the INK on the light register, so the die was navy; the kit reads the pastel.
 //
-// The roll is a real quarter turn about the die's leading bottom edge. A
-// refused roll (off the floor, or a numbered square that is not ready) tips the
-// die a few degrees and settles back. A cracked square crumbles as the die
-// leaves it. A win hops the die on the last square.
+// THE NUMBERED SQUARES ARE BUTTONS. A square not yet lit stands a little
+// proud of the floor, so a shut square looks like something the die cannot
+// roll onto; the NEXT one is tinted in the category colour, carries its number
+// in bold and breathes with a soft halo; a square still waiting its turn shows
+// a muted number and a small lock. The die presses the next square flush as it
+// lands on it with the right face up, and the square lights pastel with a tick
+// and a ring. State is said three ways (number, height and lock or tick), so
+// nothing rests on colour alone, and nothing is dashed (owner, 2026-10-25).
+//
+// The roll is a real quarter turn about the die's leading bottom edge, with
+// a squash and a puff of dust as it lands. A refused roll tips the die a few
+// degrees and settles back. A cracked square breaks into shards as the die
+// leaves it. A win hops the die and throws confetti.
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { RotateCcw, Undo2, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { step } from '@/lib/roll-engine';
+import { readPalette, slab, cracks, contact, face, roundQuad, inset, css, mix, Fx, prefersReduced } from '@/lib/roll-toy-kit';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const TW = 54;            // one square, left to right
-const TH = 39;            // one square, top to bottom (depth is foreshortened)
+const TH = 42;            // one square, top to bottom (depth is foreshortened)
 const KX = 13;            // the lean: one unit of height shifts this far LEFT
 const TZ = 34;            // how far one unit of height rises
-const SLAB = 0.3;         // tile thickness, in die units
+const SLAB = 0.38;        // tile thickness, in die units
 const GAP = 0.05;         // the seam between two tiles
-const PAD = 14;
+const RAISE = 0.13;       // how proud an unlit numbered square stands
+const PAD = 16;
 const INSET = 0.06;       // the die sits this far inside its square on every side
 const ROLL_MS = 170;
 const BUMP_MS = 200;
-const CRUMBLE_MS = 560;
+const SQUASH_MS = 140;
 const WIN_MS = 1100;
 
 const VIEW = (() => { const v = [KX / TW, TZ / TH, 1]; const m = Math.hypot(...v); return v.map((c) => c / m); })();
 const LIGHT = (() => { const v = [0.35, -0.55, 1]; const m = Math.hypot(...v); return v.map((c) => c / m); })();
-
-const TOKENS = {
-  ground: 'var(--stg-ground, #0b0f1a)',
-  tile: 'color-mix(in srgb, var(--stg-ink, #e9edf4) 24%, var(--stg-ground, #0b0f1a))',
-  frag: 'color-mix(in srgb, var(--stg-acc, #bef264) 42%, var(--stg-ground, #0b0f1a))',
-  next: 'color-mix(in srgb, var(--stg-acc, #bef264) 22%, color-mix(in srgb, var(--stg-ink, #e9edf4) 24%, var(--stg-ground, #0b0f1a)))',
-  lit: 'color-mix(in srgb, var(--stg-acc, #bef264) 62%, var(--stg-ground, #0b0f1a))',
-  die: 'var(--stg-acc, #bef264)',
-  pip: 'var(--stg-onramp, #08222e)',
-  mark: 'var(--stg-acc-ink, var(--stg-acc, #bef264))',
-  mute: 'var(--stg-mute, #8b95a8)',
-  ink: 'var(--stg-ink, #e9edf4)',
-};
 
 const CSS = `
 .rl{font-family:${SANS};}
@@ -155,14 +151,6 @@ function RollMeter({ used, par, perfect }) {
   );
 }
 
-function isDark(rgb) {
-  const m = String(rgb).match(/[\d.]+/g);
-  if (!m || m.length < 3) return true;
-  const [r, g, b] = m.slice(0, 3).map(Number);
-  return (0.299 * r + 0.587 * g + 0.114 * b) < 128;
-}
-const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-
 // Rotate a point about the die's leading bottom edge for a roll in `dir`.
 function rotAbout(p, dir, a, x0, x1, y0, y1) {
   const c = Math.cos(a), s = Math.sin(a);
@@ -174,6 +162,10 @@ function rotAbout(p, dir, a, x0, x1, y0, y1) {
   return [x, y, z];
 }
 
+
+const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const smooth = (t) => { const k = Math.max(0, Math.min(1, t)); return k * k * (3 - 2 * k); };
+
 export default function RollBoard({
   P, state, anim, onAnimEnd, playing, used, par, perfect,
   onMove, onUndo, onRestart, canUndo, armed, onGiveUp, doneLine, themeKey, won,
@@ -181,9 +173,13 @@ export default function RollBoard({
   const cvRef = useRef(null);
   const probeRef = useRef(null);
   const colors = useRef(null);
-  const frame = useRef(null);
-  const crumbs = useRef([]);
+  const fx = useRef(new Fx());
+  const seen = useRef({ land: null, crumble: null });
+  const crumbled = useRef(new Set());
+  const squash = useRef(null);
   const winT = useRef(null);
+  const shown = useRef(0);
+  const dirty = useRef(true);
   const [, force] = useState(0);
 
   const W = Math.round(P.w * TW + KX * 1.4 + PAD * 2 + SLAB * KX + 6);
@@ -191,32 +187,26 @@ export default function RollBoard({
   const OX = PAD + KX * 1.4 + 2;
   const OY = PAD + TZ * 1.4;
   const pr = useCallback((x, y, z) => [OX + x * TW - z * KX, OY + y * TH - z * TZ], [OX, OY]);
-  // the canvas is drawn at the size it is SHOWN, never scaled up by CSS
-  const shown = useRef(0);
 
   const readColors = useCallback(() => {
-    const el = probeRef.current;
-    if (!el) return;
-    const out = {};
-    for (const [k, v] of Object.entries(TOKENS)) { el.style.color = v; out[k] = getComputedStyle(el).color; }
-    colors.current = out;
+    if (probeRef.current) colors.current = readPalette(probeRef.current);
+    dirty.current = true;
   }, []);
 
-  // a crumble starts the moment the roll that leaves the square starts
-  useEffect(() => {
-    if (anim && anim.crumble) crumbs.current = [...crumbs.current.filter((c) => c.id !== anim.id), { id: anim.id, x: anim.crumble[0], y: anim.crumble[1], t0: anim.t0 }];
-  }, [anim]);
   useEffect(() => { if (won && winT.current == null) winT.current = performance.now(); if (!won) winT.current = null; }, [won]);
-  // a restart or an undo can mend a crumbled square; drop any crumble for a square still whole
+  // a restart or an undo can mend a crumbled square: forget it, so it draws whole
   useEffect(() => {
-    crumbs.current = crumbs.current.filter((c) => (state.broken >> P.crackBit[c.y * P.w + c.x]) & 1);
+    for (const key of [...crumbled.current]) {
+      const [x, y] = key.split(',').map(Number);
+      if (!((state.broken >> P.crackBit[y * P.w + x]) & 1)) crumbled.current.delete(key);
+    }
   }, [state, P]);
 
   const draw = useCallback((now) => {
     const cv = cvRef.current;
     if (!cv || !colors.current) return;
     const C = colors.current;
-    const dark = isDark(C.ground);
+    const reduce = prefersReduced();
     const dpr = Math.min(3, window.devicePixelRatio || 1);
     const cw = shown.current || cv.clientWidth || W;
     const bw = Math.max(1, Math.round(cw * dpr)), bh = Math.max(1, Math.round((cw * H / W) * dpr));
@@ -226,88 +216,100 @@ export default function RollBoard({
     ctx.clearRect(0, 0, bw, bh);
     ctx.setTransform(bw / W, 0, 0, bh / H, 0, 0);
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-    const path = (pts) => { ctx.beginPath(); pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.closePath(); };
-    const poly = (pts, fill, shade, stroke, sw) => {
-      path(pts);
-      ctx.fillStyle = fill; ctx.fill();
-      if (shade > 0) { ctx.fillStyle = `rgba(0,0,0,${shade})`; ctx.fill(); }
-      if (shade < 0) { ctx.fillStyle = `rgba(255,255,255,${-shade})`; ctx.fill(); }
-      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = sw || 1; ctx.stroke(); }
-    };
-    const sheen = (y0, y1, top, bottom) => {
-      const gr = ctx.createLinearGradient(0, y0, 0, y1);
-      gr.addColorStop(0, top); gr.addColorStop(1, bottom);
-      ctx.fillStyle = gr; ctx.fill();
-    };
 
     let a = null;
     if (anim) {
       const t = now - anim.t0;
       if (anim.result === 'bump') a = { phase: 'bump', k: Math.min(1, t / BUMP_MS) };
-      else a = { phase: 'roll', k: ease(Math.min(1, t / ROLL_MS)) };
+      else a = { phase: 'roll', k: ease(Math.min(1, t / ROLL_MS)), t };
     }
     // what the board shows: during a roll, the state it is rolling FROM, so a
     // square does not light before the die has landed on it
     const S = anim && anim.from ? anim.from : state;
     const broken = (x, y) => P.crackBit[y * P.w + x] != null && (S.broken >> P.crackBit[y * P.w + x]) & 1;
+    const lighting = a && a.phase === 'roll' && anim.to && anim.to.k > anim.from.k;
+
+    // effects keyed to the roll's moments, each fired once
+    if (a && a.phase === 'roll' && !reduce) {
+      if (anim.crumble && seen.current.crumble !== anim.id && a.t >= ROLL_MS * 0.35) {
+        seen.current.crumble = anim.id;
+        const [x, y] = anim.crumble;
+        crumbled.current.add(`${x},${y}`);
+        const top = css(C.frag), edge = css(C.tileLine, Math.min(1, C.tileLineA + 0.2));
+        [[0, 0, 0.5, 0.45], [0.5, 0, 1, 0.55], [0, 0.45, 0.52, 1], [0.52, 0.55, 1, 1]].forEach(([u0, v0, u1, v1], i) => {
+          const q = [pr(x + u0 + 0.05, y + v0 + 0.05, 0), pr(x + u1 - 0.05, y + v0 + 0.05, 0), pr(x + u1 - 0.05, y + v1 - 0.05, 0), pr(x + u0 + 0.05, y + v1 - 0.05, 0)];
+          fx.current.shard(now, q, top, edge, (u0 - 0.4) * 0.05, -0.02 - Math.random() * 0.03, (Math.random() - 0.5) * 0.008, i * 30);
+        });
+      }
+      if (a.t >= ROLL_MS && seen.current.land !== anim.id) {
+        seen.current.land = anim.id;
+        const { x, y } = anim.to;
+        fx.current.dust(now, [pr(x + 0.1, y + 1 - INSET, 0), pr(x + 0.9, y + 1 - INSET, 0), pr(x + INSET, y + 0.5, 0)], css(C.dust), 2);
+        squash.current = { t: now };
+        if (lighting) {
+          fx.current.ring(now, [pr(x, y, 0), pr(x + 1, y, 0), pr(x + 1, y + 1, 0), pr(x, y + 1, 0)], css(C.body), 520);
+          if (anim.result === 'win') {
+            const c = pr(x + 0.5, y + 0.5, 1.2);
+            fx.current.confetti(now, c[0], c[1], [css(C.body), css(C.line), css(C.bodyTop), css(mix(C.body, [255, 255, 255], 0.55))], 50);
+          }
+        }
+      }
+    }
 
     // 1. one soft shadow under the whole floor
     ctx.save();
-    ctx.shadowColor = dark ? 'rgba(0,0,0,.55)' : 'rgba(20,30,50,.22)';
-    ctx.shadowBlur = 18; ctx.shadowOffsetY = 10;
-    ctx.fillStyle = C.ground;
+    ctx.shadowColor = `rgba(0,0,0,${C.shadowA})`;
+    ctx.shadowBlur = 22; ctx.shadowOffsetY = 12;
+    ctx.fillStyle = css(C.tileFront);
     ctx.beginPath();
     for (let y = 0; y < P.h; y++) for (let x = 0; x < P.w; x++) {
-      if (P.grid[y][x] === '.' || broken(x, y)) continue;
+      if (P.grid[y][x] === '.' || broken(x, y) || crumbled.current.has(`${x},${y}`)) continue;
       const q = [pr(x + GAP, y + GAP, 0), pr(x + 1 - GAP, y + GAP, 0), pr(x + 1 - GAP, y + 1 - GAP, -SLAB), pr(x + GAP, y + 1 - GAP, -SLAB)];
       ctx.moveTo(...q[0]); ctx.lineTo(...q[1]); ctx.lineTo(...q[2]); ctx.lineTo(...q[3]); ctx.closePath();
     }
     ctx.fill();
     ctx.restore();
 
-    // 2. a tile: right side, front, top
-    const tile = (x, y, top, z = 0, opts = {}) => {
-      const g = GAP, x0 = x + g, x1 = x + 1 - g, y0 = y + g, y1 = y + 1 - g;
-      const side = [pr(x1, y0, z), pr(x1, y1, z), pr(x1, y1, z - SLAB), pr(x1, y0, z - SLAB)];
-      poly(side, top, 0.46);
-      const f = [pr(x0, y1, z), pr(x1, y1, z), pr(x1, y1, z - SLAB), pr(x0, y1, z - SLAB)];
-      poly(f, top, 0.32);
-      sheen(f[0][1], f[2][1], 'rgba(0,0,0,0)', 'rgba(0,0,0,.22)');
-      const t = [pr(x0, y0, z), pr(x1, y0, z), pr(x1, y1, z), pr(x0, y1, z)];
-      poly(t, top, 0);
-      sheen(t[0][1], t[3][1], dark ? 'rgba(255,255,255,.10)' : 'rgba(255,255,255,.35)', 'rgba(255,255,255,0)');
-      ctx.strokeStyle = dark ? 'rgba(255,255,255,.16)' : 'rgba(255,255,255,.7)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(t[0][0] + 1, t[0][1] + 0.5); ctx.lineTo(t[1][0] - 1, t[1][1] + 0.5); ctx.stroke();
-      if (opts.cracks) {
-        ctx.strokeStyle = dark ? 'rgba(0,0,0,.55)' : 'rgba(0,0,0,.42)'; ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        ctx.moveTo(...pr(x + 0.18, y + 0.28, z)); ctx.lineTo(...pr(x + 0.42, y + 0.46, z)); ctx.lineTo(...pr(x + 0.38, y + 0.62, z)); ctx.lineTo(...pr(x + 0.5, y + 0.84, z));
-        ctx.moveTo(...pr(x + 0.42, y + 0.46, z)); ctx.lineTo(...pr(x + 0.66, y + 0.38, z)); ctx.lineTo(...pr(x + 0.84, y + 0.5, z));
-        ctx.moveTo(...pr(x + 0.66, y + 0.38, z)); ctx.lineTo(...pr(x + 0.7, y + 0.18, z));
-        ctx.stroke();
+    // 2. the squares
+    const tile = (x, y, top, z = 0, opts = {}) => slab(ctx, pr, C, x + GAP, y + GAP, x + 1 - GAP, y + 1 - GAP, z, SLAB + z, top, opts);
+    const breathe = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(now / 420);
+    const lock = (cx, cy, color) => {
+      ctx.fillStyle = color; ctx.strokeStyle = color; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(cx, cy - 2.5, 2.6, Math.PI, 0); ctx.stroke();
+      roundQuad(ctx, [[cx - 4, cy - 2.5], [cx + 4, cy - 2.5], [cx + 4, cy + 3.5], [cx - 4, cy + 3.5]], 1.4); ctx.fill();
+    };
+    const numbered = (x, y, v) => {
+      const kind = v < S.k ? 'lit' : v === S.k ? 'next' : 'lock';
+      if (kind === 'lit') {
+        tile(x, y, C.body, 0, { front: mix(C.body, C.line, 0.2), side: mix(C.body, C.line, 0.28) });
+        const [cx, cy] = pr(x + 0.5, y + 0.5, 0);
+        ctx.strokeStyle = css(C.line); ctx.lineWidth = 3.2;
+        ctx.beginPath(); ctx.moveTo(cx - 9, cy + 0.5); ctx.lineTo(cx - 2.5, cy + 6.5); ctx.lineTo(cx + 10, cy - 6); ctx.stroke();
+        return;
       }
-      const [cx, cy] = pr(x + 0.5, y + 0.5, z);
-      if (opts.num) {
+      // the die presses the next square flush as it lands on it
+      let z = RAISE;
+      if (kind === 'next' && lighting && anim.to.x === x && anim.to.y === y) z = RAISE * (1 - smooth((a.k - 0.55) / 0.45));
+      if (kind === 'next') {
+        // a halo that breathes, so the square to aim for is found at a glance
+        const t = [pr(x + GAP, y + GAP, z), pr(x + 1 - GAP, y + GAP, z), pr(x + 1 - GAP, y + 1 - GAP, z), pr(x + GAP, y + 1 - GAP, z)];
+        roundQuad(ctx, inset(t, 1.1 + breathe * 0.08), 8);
+        ctx.strokeStyle = css(C.dark ? C.body : C.body, 0.35 + 0.35 * breathe); ctx.lineWidth = 4; ctx.stroke();
+        tile(x, y, C.next, z, { front: mix(C.next, C.line, 0.16), side: mix(C.next, C.line, 0.24), lw: 2 });
+        const [cx, cy] = pr(x + 0.5, y + 0.5, z);
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        if (opts.kind === 'lit') {
-          ctx.strokeStyle = C.pip; ctx.lineWidth = 3;
-          ctx.beginPath(); ctx.moveTo(cx - 9, cy + 1); ctx.lineTo(cx - 2, cy + 7); ctx.lineTo(cx + 10, cy - 6); ctx.stroke();
-        } else {
-          ctx.font = `800 ${opts.kind === 'next' ? 22 : 18}px Manrope, system-ui, sans-serif`;
-          ctx.fillStyle = opts.kind === 'next' ? C.mark : C.mute;
-          ctx.fillText(opts.num, cx, cy + 1);
-          if (opts.kind === 'next') {
-            ctx.strokeStyle = C.mark; ctx.lineWidth = 2; ctx.setLineDash([4, 3]);
-            path([pr(x0 + 0.07, y0 + 0.07, z), pr(x1 - 0.07, y0 + 0.07, z), pr(x1 - 0.07, y1 - 0.07, z), pr(x0 + 0.07, y1 - 0.07, z)]);
-            ctx.stroke(); ctx.setLineDash([]);
-          } else {
-            // a small lock beside a number that is not ready yet
-            ctx.fillStyle = C.mute; ctx.fillRect(cx + 9, cy + 4, 7, 5);
-            ctx.strokeStyle = C.mute; ctx.lineWidth = 1.4;
-            ctx.beginPath(); ctx.arc(cx + 12.5, cy + 4, 2.4, Math.PI, 0); ctx.stroke();
-          }
-        }
+        ctx.font = `800 24px Manrope, system-ui, sans-serif`;
+        ctx.fillStyle = css(C.line);
+        ctx.fillText(String(v), cx, cy + 1);
+        return;
       }
+      tile(x, y, C.tileTop, z);
+      const [cx, cy] = pr(x + 0.5, y + 0.5, z);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = `800 19px Manrope, system-ui, sans-serif`;
+      ctx.fillStyle = css(C.mute, 0.75);
+      ctx.fillText(String(v), cx - 3, cy + 1);
+      lock(cx + 11, cy + 4, css(C.mute, 0.75));
     };
 
     const drawRow = (y) => {
@@ -315,30 +317,16 @@ export default function RollBoard({
         const c = P.grid[y][x];
         if (c === '.') continue;
         if (c === 'C') {
-          if (broken(x, y)) {
-            const cr = crumbs.current.find((q) => q.x === x && q.y === y);
-            if (cr) {
-              const t = Math.max(0, Math.min(1, (now - cr.t0 - ROLL_MS * 0.4) / CRUMBLE_MS));
-              if (t < 1) { ctx.globalAlpha = 1 - t; tile(x, y, C.frag, -t * t * 2.2, { cracks: true }); ctx.globalAlpha = 1; }
-            }
+          if (broken(x, y) || crumbled.current.has(`${x},${y}`)) {
+            // reduced motion has no shards, so the square simply goes
             continue;
           }
-          // the square the die is rolling off crumbles as it goes
-          if (a && a.phase === 'roll' && anim.crumble && anim.crumble[0] === x && anim.crumble[1] === y) {
-            const t = Math.max(0, (now - anim.t0 - ROLL_MS * 0.4) / CRUMBLE_MS);
-            ctx.globalAlpha = Math.max(0, 1 - t); tile(x, y, C.frag, -t * t * 2.2, { cracks: true }); ctx.globalAlpha = 1;
-            continue;
-          }
-          tile(x, y, C.frag, 0, { cracks: true });
+          tile(x, y, C.frag, 0, { front: mix(C.frag, C.line, 0.18), side: mix(C.frag, C.line, 0.26) });
+          cracks(ctx, pr, x, y, 0, css(C.line, C.dark ? 0.9 : 0.72), 1.7);
           continue;
         }
-        if (c >= '1' && c <= '6') {
-          const v = +c;
-          const kind = v < S.k ? 'lit' : v === S.k ? 'next' : 'lock';
-          tile(x, y, kind === 'lit' ? C.lit : kind === 'next' ? C.next : C.tile, 0, { num: c, kind });
-          continue;
-        }
-        tile(x, y, C.tile);
+        if (c >= '1' && c <= '6') { numbered(x, y, +c); continue; }
+        tile(x, y, (x + y) % 2 ? C.tileTop : mix(C.tileTop, C.ink, C.dark ? 0.03 : 0.025));
       }
     };
 
@@ -347,31 +335,22 @@ export default function RollBoard({
     // is drawn a little inside it, so it starts and lands exactly on its square.
     const h = 1 - 2 * INSET;
     const pv = (d) => [d[0] * TW - d[2] * KX, d[1] * TH - d[2] * TZ];
-    const drawDie = (s, dir, th, dz) => {
+    const drawDie = (s, dir, th, dz, sq = 1) => {
       const M = orient(s);
       const R = (v) => (dir && th ? rotAbout(v, dir, th, 0, 0, 0, 0) : v);
       const c0 = [s.x + 0.5, s.y + 0.5, 0.5];
       const cc = dir && th ? rotAbout(c0, dir, th, s.x, s.x + 1, s.y, s.y + 1) : c0;
       const ctr = [cc[0], cc[1], cc[2] - INSET + dz];
-      const W3 = (b) => { const r = R(M(b)); return [ctr[0] + r[0] * h, ctr[1] + r[1] * h, ctr[2] + r[2] * h]; };
-      const Wv = (b) => { const r = R(M(b)); return [r[0] * h, r[1] * h, r[2] * h]; };
+      // a landing squash: shorter and a touch wider, about the die's foot
+      const SQ = (r) => [r[0] * (1 + (1 - sq) * 0.5), r[1] * (1 + (1 - sq) * 0.5), r[2] * sq];
+      const foot = (1 - sq) * h / 2;
+      const W3 = (b) => { const r = SQ(R(M(b))); return [ctr[0] + r[0] * h, ctr[1] + r[1] * h, ctr[2] - foot + r[2] * h]; };
+      const Wv = (b) => { const r = SQ(R(M(b))); return [r[0] * h, r[1] * h, r[2] * h]; };
 
-      // contact shadow: a die-sized footprint under the centre, pushed away
-      // from the light, fading as the die rises. Two soft passes, no filter.
       let mnz = 1e9;
       for (const sx of [-0.5, 0.5]) for (const sy of [-0.5, 0.5]) for (const sz of [-0.5, 0.5]) mnz = Math.min(mnz, W3([sx, sy, sz])[2]);
-      const lift = Math.max(0, mnz) + Math.max(0, ctr[2] - h / 2) * 0.5;
-      const sa = Math.max(0.05, (dark ? 0.3 : 0.15) * (1 - lift * 1.6));
-      const off = 0.05 + lift * 0.15;
-      const fx0 = ctr[0] - h / 2 - off, fx1 = ctr[0] + h / 2 - off * 0.3;
-      const fy0 = ctr[1] - h / 2 + off * 0.5, fy1 = ctr[1] + h / 2 + off * 1.4;
-      for (const [grow, al] of [[0.06, 0.4], [-0.02, 0.8]]) {
-        ctx.fillStyle = `rgba(0,0,0,${(sa * al).toFixed(3)})`;
-        path([pr(fx0 - grow, fy0 - grow, 0), pr(fx1 + grow, fy0 - grow, 0), pr(fx1 + grow, fy1 + grow, 0), pr(fx0 - grow, fy1 + grow, 0)]);
-        ctx.fill();
-      }
+      contact(ctx, pr, C, ctr[0] - h / 2, ctr[1] - h / 2, ctr[0] + h / 2, ctr[1] + h / 2, Math.max(0, mnz) * 1.4);
 
-      const edge = dark ? 'rgba(0,0,0,.5)' : 'rgba(0,0,0,.34)';
       for (let v = 1; v <= 6; v++) {
         const F = BODY[v];
         const nw = R(M(F.n));
@@ -380,15 +359,12 @@ export default function RollBoard({
         const corner = (a1, a2) => W3([c[0] + F.u[0] * a1 + F.v[0] * a2, c[1] + F.u[1] * a1 + F.v[1] * a2, c[2] + F.u[2] * a1 + F.v[2] * a2]);
         const sp = [corner(-0.5, -0.5), corner(0.5, -0.5), corner(0.5, 0.5), corner(-0.5, 0.5)].map((q) => pr(q[0], q[1], q[2]));
         const lit = nw[0] * LIGHT[0] + nw[1] * LIGHT[1] + nw[2] * LIGHT[2];
-        poly(sp, C.die, lit > 0.8 ? -0.05 : Math.max(0, (0.74 - lit) * 0.42), edge, 1.2);
-        if (nw[2] > 0.7) {
-          const ys2 = sp.map((q) => q[1]);
-          path(sp); sheen(Math.min(...ys2), Math.max(...ys2), 'rgba(255,255,255,.26)', 'rgba(255,255,255,.04)');
-        }
+        const k = Math.max(0, Math.min(1, (lit + 0.1) / 1.0));
+        face(ctx, sp, mix(C.bodySide, C.bodyTop, k), `rgba(255,255,255,${(0.08 + Math.max(0, nw[2]) * 0.2).toFixed(3)})`, C.line, 2);
         // pips: each a true circle on its face, drawn through the face's own frame
         const A = pv(Wv(F.u)), B = pv(Wv(F.v));
-        const r = 0.095;
-        ctx.fillStyle = C.pip;
+        const r = 0.1;
+        ctx.fillStyle = css(C.line);
         for (const [pu, pq] of PIPS[v]) {
           const q = W3([c[0] + F.u[0] * (pu - 0.5) + F.v[0] * (pq - 0.5), c[1] + F.u[1] * (pu - 0.5) + F.v[1] * (pq - 0.5), c[2] + F.u[2] * (pu - 0.5) + F.v[2] * (pq - 0.5)]);
           const p0 = pr(q[0], q[1], q[2]);
@@ -405,19 +381,23 @@ export default function RollBoard({
     let job = null, jobRow = P.h - 1;
     if (a && a.phase === 'roll') {
       const k = a.k;
-      job = () => drawDie(anim.from, anim.dir, k * Math.PI / 2, 0);
+      job = () => drawDie(anim.from, anim.dir, k * Math.PI / 2, Math.sin(k * Math.PI) * 0.05);
       jobRow = Math.max(anim.from.y, anim.to.y);
     } else if (a && a.phase === 'bump') {
-      const k = Math.sin(a.k * Math.PI) * 0.18;
+      const k = Math.sin(a.k * Math.PI) * 0.2;
       job = () => drawDie(state, anim.dir, k, 0);
       jobRow = state.y;
     } else {
-      let dz = 0;
-      if (won && winT.current != null) {
+      let dz = 0, sq = 1;
+      if (won && winT.current != null && !reduce) {
         const t = (now - winT.current) / 1000;
-        dz = t < WIN_MS / 1000 ? Math.abs(Math.sin(t * Math.PI * 2.7)) * Math.max(0, 0.38 - t * 0.3) : 0;
+        dz = t < WIN_MS / 1000 ? Math.abs(Math.sin(t * Math.PI * 2.7)) * Math.max(0, 0.42 - t * 0.33) : 0;
       }
-      job = () => drawDie(state, null, 0, dz);
+      if (squash.current && !reduce) {
+        const t = now - squash.current.t;
+        if (t < SQUASH_MS) sq = 1 - 0.08 * Math.sin(Math.PI * t / SQUASH_MS);
+      }
+      job = () => drawDie(state, null, 0, dz, sq);
       jobRow = state.y;
     }
     for (let y = 0; y < P.h; y++) {
@@ -425,6 +405,7 @@ export default function RollBoard({
       if (job && y === jobRow) { job(); job = null; }
     }
     if (job) job();
+    fx.current.draw(ctx, now, C.dark ? null : css(C.line, 0.5));
   }, [P, anim, state, pr, W, H, won]);
 
   useEffect(() => { readColors(); force((n) => n + 1); }, [readColors, themeKey]);
@@ -433,40 +414,48 @@ export default function RollBoard({
     if (!cv || typeof ResizeObserver === 'undefined') return undefined;
     const ro = new ResizeObserver((es) => {
       const w = es[0] && es[0].contentRect ? es[0].contentRect.width : cv.clientWidth;
-      if (w && Math.abs(w - shown.current) > 0.25) { shown.current = w; force((n) => n + 1); }
+      if (w && Math.abs(w - shown.current) > 0.25) { shown.current = w; dirty.current = true; }
     });
     ro.observe(cv);
     return () => ro.disconnect();
   }, []);
   useEffect(() => {
     const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-    const on = () => { readColors(); draw(performance.now()); };
+    const on = () => { readColors(); };
     mq && mq.addEventListener && mq.addEventListener('change', on);
     return () => { mq && mq.removeEventListener && mq.removeEventListener('change', on); };
-  }, [readColors, draw]);
+  }, [readColors]);
 
-  // the animation loop: runs while a roll plays, a square crumbles, or the die hops
+  // ONE LOOP for the board: it plays the roll, keeps the shards, dust and
+  // confetti moving, breathes the next square's halo at about 30 frames a
+  // second while idle, and tells the client when a roll has finished. With
+  // reduced motion nothing moves on its own and a roll ends at once.
+  const live = useRef(null);
+  live.current = { anim, draw, onAnimEnd, won };
+  useEffect(() => { dirty.current = true; });
   useEffect(() => {
-    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const total = anim ? (anim.result === 'bump' ? BUMP_MS : ROLL_MS) : 0;
-    if (reduce) {
-      crumbs.current = [];
-      if (won) winT.current = -1e9;
-      draw(performance.now() + 1e6);
-      if (anim) { const id = setTimeout(() => onAnimEnd(anim.id), 40); return () => clearTimeout(id); }
-      return undefined;
-    }
-    let ended = false;
-    const tick = (now) => {
-      draw(now);
-      if (anim && !ended && now - anim.t0 >= total) { ended = true; onAnimEnd(anim.id); return; }
-      const busy = (anim && !ended) || crumbs.current.some((c) => now - c.t0 < CRUMBLE_MS + ROLL_MS) || (won && winT.current != null && now - winT.current < WIN_MS);
-      if (busy) frame.current = requestAnimationFrame(tick);
+    let raf = 0, idleAt = 0, ended = null;
+    const loop = (now) => {
+      const { anim: an, draw: dr, onAnimEnd: done, won: w } = live.current;
+      const reduce = prefersReduced();
+      const total = an ? (an.result === 'bump' ? BUMP_MS : ROLL_MS) : 0;
+      if (an && ended !== an.id && (reduce || now - an.t0 >= total)) {
+        ended = an.id;
+        dr(reduce ? an.t0 + total : now);
+        dirty.current = false;
+        done(an.id);
+      } else if ((an && ended !== an.id) || fx.current.busy(now) || (squash.current && now - squash.current.t < SQUASH_MS + 20)
+        || (w && winT.current != null && now - winT.current < WIN_MS)) {
+        dr(now); dirty.current = false;
+      } else if (dirty.current || (!reduce && now - idleAt > 33)) {
+        dr(now); dirty.current = false; idleAt = now;
+      }
+      raf = requestAnimationFrame(loop);
     };
-    frame.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame.current);
-  }, [anim, draw, onAnimEnd, won]);
-  useEffect(() => { draw(performance.now()); });
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  useEffect(() => { fx.current.clear(); squash.current = null; crumbled.current.clear(); }, [P]);
 
   // swipe on the board
   const sw = useRef(null);
