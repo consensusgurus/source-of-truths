@@ -45,7 +45,8 @@ import { SUDOKU_POOL, DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryH
 import GameGlyph from '../GameGlyph';
 import CircuitArt from '../CircuitArt';
 import { softGround, gameColor, RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
-import PolymathRunCard from './PolymathRunCard';
+// PolymathRunCard left the home on 2026-11-03 (Multiple Choice replaced Polymath); the file stays.
+import { MC_RUNS, MC_HREF, MC_IDS } from '@/lib/multiple-choice';
 import { POLY_LEGS, localPolymath } from '@/lib/polymath';
 import { SKILLS, SKILL_MAP, hasSkill } from '@/lib/daily-skills';
 import { TIERS as DIFF_TIERS } from '@/lib/daily-difficulty';
@@ -3055,6 +3056,26 @@ export default function StageToday() {
       </div>
     );
   };
+  // THE RAIL'S MULTIPLE CHOICE TAB (owner, 2026-11-03, mockup D): the rail's
+  // board gets a two-way toggle, the pane's own board or Multiple Choice.
+  // Multiple Choice is the default until the reader picks the other, and the
+  // choice is kept (sot_rail_tab). Its data is one /api/quiz/multiple-choice
+  // read, made while the tab is selected; the phone's Multiple Choice button
+  // after the runs reads the same answer (the rail itself is desktop only).
+  const [railTab, setRailTab] = useState('mc');
+  useEffect(() => { try { const v = localStorage.getItem('sot_rail_tab'); if (v === 'all' || v === 'mc') setRailTab(v); } catch (e) { /* private window */ } }, []);
+  const pickRailTab = (v) => { setRailTab(v); try { localStorage.setItem('sot_rail_tab', v); } catch (e) { /* private window */ } };
+  const [mcRail, setMcRail] = useState(null);
+  const mcAsked = useRef(false);
+  useEffect(() => {
+    if (!ix || railTab !== 'mc' || mcAsked.current) return;
+    mcAsked.current = true;
+    const qs = identityQs();
+    fetch(`/api/quiz/multiple-choice?period=today${qs ? '&' + qs : ''}`)
+      .then((r) => r.json())
+      .then((d) => { if (d && !d.error) setMcRail(d); else mcAsked.current = false; })
+      .catch(() => { mcAsked.current = false; });
+  }, [ix, railTab]);
   const railLabel = railCat ? catLabel(railCat.cat) : 'All Puzzles';
   const railEl = (() => {
     if (!ix || !gamePane) return null;
@@ -3088,6 +3109,49 @@ export default function StageToday() {
         slots.push(<li key={i} className="em" aria-hidden="true"><i /><span /><b /></li>);
       }
     }
+    const tabs = (
+      <div className="sty-rtab" role="group" aria-label="Which board">
+        <button type="button" aria-pressed={railTab === 'all'} onClick={() => pickRailTab('all')}>{railLabel}</button>
+        <button type="button" aria-pressed={railTab === 'mc'} onClick={() => pickRailTab('mc')}>Multiple Choice</button>
+      </div>
+    );
+    const mcEl = (() => {
+      const d = mcRail;
+      const champ = d && d.champions ? d.champions.all : null;
+      const nTop = Math.max(3, n - 9);
+      const top = d && d.boards ? d.boards.all.slice(0, nTop) : [];
+      const me = d && d.me && d.me.rank ? d.me : null;
+      const meIn = me && top.some((r) => r.name === me.name);
+      return (
+        <div className="sty-rlb sty-mcr">
+          {tabs}
+          <div className="sty-mcc">
+            <span className="e">Combined Champion · Today</span>
+            <span className="n"><b>{champ ? champ.name : d ? 'Nobody yet' : '\u00a0'}</b><b>{champ ? champ.total : ''}</b></span>
+            <span className="mb" aria-hidden="true">
+              {champ ? MC_RUNS.filter((r) => champ.by[r.id] > 0).map((r) => <i key={r.id} style={{ flexGrow: champ.by[r.id], background: r.colour }} />) : null}
+            </span>
+          </div>
+          <ol className="sty-mcl">
+            {MC_RUNS.map((r) => {
+              const c = d && d.champions ? d.champions[r.id] : null;
+              return (
+                <li key={r.id}><i className="sw" style={{ background: r.colour }} /><span><em>{r.short}</em>{c ? c.name : d ? 'Nobody yet' : ''}</span><b>{c ? c.value : ''}</b></li>
+              );
+            })}
+          </ol>
+          <div className="sty-eb">Top · Five Runs{d && d.field ? <em>{' · '}{d.field.all} ranked</em> : null}</div>
+          <ol style={{ '--rh': rh.toFixed(2) + 'px' }}>
+            {d ? (top.length ? top.map((r) => (
+              <li key={r.rank + r.name} className={me && r.name === me.name ? 'me' : ''}><i>{r.rank}</i><span>{r.name}</span><b>{r.total}</b></li>
+            )) : <li className="nt"><i /><span>Nobody yet today</span><b /></li>)
+              : [0, 1, 2, 3, 4].map((i) => <li key={i} className="ph" aria-hidden="true"><i>{i + 1}</i><span /><b /></li>)}
+            {me && !meIn ? <li className="me"><i>{me.rank}</i><span>{me.name || 'You'}</span><b>{me.total}</b></li> : null}
+          </ol>
+          <a className="sty-mcf" href={withTq(MC_HREF)}>Multiple Choice Leaders</a>
+        </div>
+      );
+    })();
     return (
       <aside className="sty-rail" aria-label="Leaderboards" style={{ '--cc': railCat ? hueFor(railCat.cat) : 'var(--stg-ink2)', '--cci': railCat ? inkFor(railCat.cat) : 'var(--stg-ink2)' }}>
         <ChallengeRail />
@@ -3103,10 +3167,13 @@ export default function StageToday() {
             </ol>
           </div>
         ) : null}
-        <div className="sty-rlb">
-          <div className="sty-eb">{railLabel} today{rd && rd.field ? <em>{' · '}{rd.field} {rd.field === 1 ? 'player' : 'players'}</em> : null}</div>
-          <ol style={{ '--rh': rh.toFixed(2) + 'px' }}>{slots}</ol>
-        </div>
+        {railTab === 'mc' ? mcEl : (
+          <div className="sty-rlb">
+            {tabs}
+            <div className="sty-eb">{railLabel} today{rd && rd.field ? <em>{' · '}{rd.field} {rd.field === 1 ? 'player' : 'players'}</em> : null}</div>
+            <ol style={{ '--rh': rh.toFixed(2) + 'px' }}>{slots}</ol>
+          </div>
+        )}
       </aside>
     );
   })();
@@ -3230,6 +3297,17 @@ export default function StageToday() {
   // big one and the next most played takes its place, until every run is a
   // tile. Nothing shows how far into a run you are: it reads as players today
   // until you finish it, then as your place on the site board and the group.
+  const mcPhoneBtn = () => (
+    <a className="sty-mcb" href={withTq(MC_HREF)}>
+      <span className="t"><b>Multiple Choice Leaders</b><small>{mcRail && mcRail.me && mcRail.me.rank ? `You #${mcRail.me.rank} \u00b7 ` : ''}{mcRail && mcRail.field ? `${fmtN(mcRail.field.all)} ranked` : 'Five runs, one board'}</small></span>
+      <span className="five">
+        {MC_RUNS.map((r) => {
+          const c = mcRail && mcRail.champions ? mcRail.champions[r.id] : null;
+          return <span key={r.id} style={{ background: r.colour }}><b>{r.short}</b><i>{c ? c.name : '\u2013'}</i></span>;
+        })}
+      </span>
+    </a>
+  );
   const runsMobile = (list, cat) => {
     // MOST PLAYED is the run's own player count, the figure the reader sees on
     // it. Until every run has answered, the summed plays of its games stand
@@ -3284,6 +3362,10 @@ export default function StageToday() {
           </div>
         ) : null}
         {polyOn ? <div id={'pmd-' + poly.id} className="sty-pmd">{deckDrawer(poly, cat, 0, 0)}</div> : null}
+        {/* MULTIPLE CHOICE LEADERS (owner, 2026-11-03, mockup E): a full-width
+            button after the runs, wherever one of the five multiple choice runs
+            shows, with each run's champion on a strip of five. */}
+{list.some((c) => MC_IDS.includes(c.id)) ? mcPhoneBtn() : null}
       </div>
     );
   };
@@ -3361,12 +3443,11 @@ export default function StageToday() {
   // carries today's title off this device's run saves (no request).
   const [polyLocal, setPolyLocal] = useState(null);
   useEffect(() => { try { setPolyLocal(localPolymath()); } catch (e) { setPolyLocal(null); } }, [day, done]);
-  const polyRun = useMemo(() => {
-    const legs = POLY_LEGS.map((l) => circuits.find((c) => c.id === l.id)).filter(Boolean);
-    if (legs.length !== POLY_LEGS.length) return null;
-    return { id: 'polymath', poly: true, name: 'Polymath', blurb: 'Trivia, Math and English Gauntlets. One title for all three.',
-      legs, games: legs.flatMap((c) => c.games), n: legs.reduce((t, c) => t + c.n, 0) };
-  }, [circuits]);
+  // POLYMATH LEFT THE HOME (owner, 2026-11-03: Multiple Choice "will fully
+  // replace polymath. remove that from site but keep wiring"). polyRun is
+  // null, which switches off the grid deck, the phone strip tile and the
+  // drawer; the code behind them stays so it can be turned back on here.
+  const polyRun = useMemo(() => null, []);
   const [polyStand, setPolyStand] = useState(null);
   const polyFinNow = !!polyRun && polyRun.legs.every((x) => runFull(x));
   const polyAsked = useRef('');
@@ -4191,6 +4272,7 @@ export default function StageToday() {
                   <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<span>&rarr;</span></button>
                   <button type="button" onClick={() => goPane(QUIZ_ID)}>Quizzes<span>&rarr;</span></button>
                   <button type="button" onClick={() => goPane(BOARD_ID)}>Leaderboards + Stats<span>&rarr;</span></button>
+                  <a href={withTq(MC_HREF)}>Multiple Choice Leaders<span>&rarr;</span></a>
                   <a href={withTq('/archive')}>Puzzle Archive<span>&rarr;</span></a>
                   <button type="button" onClick={() => goPane(COMM_ID)}>Most Appreciated<span>&rarr;</span></button>
                   <button type="button" onClick={() => goPane(IQ_ID)}>IQ Tests<span>&rarr;</span></button>
@@ -4237,6 +4319,9 @@ export default function StageToday() {
                       })}
                     </div>
                   ) : null}
+                  {/* MULTIPLE CHOICE LEADERS (owner, 2026-11-03, mockup E): a full-width
+                      button right after the runs, in any pane that lists one of the five. */}
+                  {runs.length && !isRuns && runs.some((c) => MC_IDS.includes(c.id)) ? <div className="mph-mcb">{mcPhoneBtn()}</div> : null}
                   {isRuns ? runs.map((c) => {
                     const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
                     const fin = runFull(c);
@@ -4435,8 +4520,6 @@ export default function StageToday() {
                 is, players today, and once finished your place on the site
                 board and in your group. */}
             <div className={'sty-rcards' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
-              <PolymathRunCard hueFor={hueFor} href={withTq('/polymath')}
-                style={{ '--ph': hueFor('Trivia'), '--phi': inkFor('Trivia'), '--phf': categoryColor('Trivia'), '--stg-onramp': light ? categoryOnrampLight('Trivia') : RAMP_INK }} />
               {(allCircs || circPane ? circuits : circLead).map((c) => runCard(c, null, null,
                 <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />, circPane))}
             </div>
@@ -6283,6 +6366,35 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-rlb li.ph span{height:8px;width:58%;border-radius:4px;background:var(--stg-chip);}
 .sty-rlb li.nt span{color:var(--stg-mute);font-weight:600;}
 .sty-rlb li.em{border-bottom-color:transparent;}
+/* MULTIPLE CHOICE ON THE RAIL (owner, 2026-11-03, mockup D). */
+.sty-rtab{display:flex;gap:4px;padding:5px;border-bottom:1px solid var(--stg-line);}
+.sty-rtab button{flex:1;min-width:0;border:0;background:transparent;border-radius:999px;padding:6px 8px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;color:var(--stg-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sty-rtab button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground);}
+.sty-mcc{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-bottom:1px solid var(--stg-line);}
+.sty-mcc .e{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-mute);}
+.sty-mcc .n{display:flex;justify-content:space-between;align-items:baseline;gap:8px;min-width:0;}
+.sty-mcc .n b{font-size:18px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.12em;}
+.sty-mcc .n b + b{flex:none;font-variant-numeric:tabular-nums;}
+.sty-mcc .mb{display:flex;height:10px;border:1px solid var(--stg-ink);border-radius:999px;overflow:hidden;margin-top:4px;}
+.sty-mcc .mb:empty{border-color:var(--stg-line);}
+.sty-mcc .mb i{display:block;height:100%;flex-basis:0;}
+.sty-mcc .mb i + i{border-left:1px solid #08222e;}
+.sty-rlb .sty-mcl li{grid-template-columns:14px minmax(0,1fr) auto;height:30px;}
+.sty-rlb .sty-mcl li .sw{width:12px;height:12px;border-radius:3px;border:1px solid #08222e;box-sizing:border-box;}
+.sty-rlb .sty-mcl li em{font-style:normal;font-size:11.5px;font-weight:700;color:var(--stg-mute);margin-right:7px;}
+.sty-mcr > .sty-eb{border-top:1px solid var(--stg-line);}
+.sty-mcf{display:block;text-align:center;padding:9px;border-top:1px solid var(--stg-line);font-size:12.5px;font-weight:800;color:var(--stg-ink);text-decoration:underline;text-underline-offset:3px;}
+/* MULTIPLE CHOICE AFTER THE PHONE'S RUNS (owner, 2026-11-03, mockup E). */
+.mph-mcb{margin:10px 0 4px;}
+.sty-mcb{display:flex;flex-direction:column;border:1px solid var(--stg-ink);border-radius:14px;overflow:hidden;background:var(--stg-surf);color:var(--stg-ink);text-decoration:none;}
+.sty-mcb .t{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;}
+.sty-mcb .t b{font-size:15px;font-weight:800;}
+.sty-mcb .t small{font-size:12px;font-weight:700;color:var(--stg-mute);white-space:nowrap;}
+.sty-mcb .five{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid var(--stg-ink);}
+.sty-mcb .five span{display:block;padding:6px 6px 7px;border-left:1px solid #08222e;min-width:0;color:#08222e;}
+.sty-mcb .five span:first-child{border-left:0;}
+.sty-mcb .five b{display:block;font-size:10px;font-weight:800;opacity:.75;}
+.sty-mcb .five i{display:block;font-style:normal;font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.12em;}
 .sty-ixbk{display:none;}
 .sty-ixg,.sty-ixct{display:none;}
 .sty-ixs{display:none;}

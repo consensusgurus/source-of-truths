@@ -14,8 +14,12 @@ export async function generateMetadata({ searchParams }) {
   const img = q ? `/polymath/card?${q}` : '/polymath/card';
   const title = 'Polymath: Trivia, Math and English, One Daily Title | Mind Loft';
   const description = 'Play the day’s Trivia, Math and English Gauntlets free. Each counts a third, and the three together earn your title, Dabbler to Polymath.';
+  // OFF THE SITE (owner, 2026-11-03): Multiple Choice Leaders replaced Polymath.
+  // The page still answers old share links, but nothing links here and it is
+  // out of the sitemap and the index.
   return {
     title, description,
+    robots: { index: false, follow: true },
     alternates: { canonical: '/polymath' },
     openGraph: { title: 'Polymath · Mind Loft', description, url: '/polymath', type: 'website', siteName: 'Mind Loft', images: [{ url: img, width: 1200, height: 630, alt: 'Polymath, the daily title for three gauntlets at Mind Loft' }] },
     twitter: { card: 'summary_large_image', title: 'Polymath · Mind Loft', description, images: [img] },

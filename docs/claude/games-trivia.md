@@ -736,6 +736,9 @@ A run's ENTRY and ENDING ground still wears its category on purpose (gateColour)
 
 ## Polymath (`/polymath`): one title for the three gauntlets (launched 2026-10-19)
 
+**OFF THE SITE from 2026-11-03** (owner): Multiple Choice Leaders replaced it on every surface
+(circuits-and-runs.md). The route, API, library and meter still work; nothing links to them.
+
 Owner, 2026-10-19: the Trivia, Math and English Gauntlets tied together as "Polymath", legs weighted
 the same. **A lens, never a new score**: the three runs play and post exactly as before; nothing is
 stored, no IQ Points move, no gauntlet board changes.

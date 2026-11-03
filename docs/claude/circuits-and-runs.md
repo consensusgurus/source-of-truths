@@ -630,3 +630,44 @@ from the earned cutoff up to the score. It used to sweep 0 to the score at a ste
 hold on the first title, so a wide first rung (0 to 19 on the Trivia Gauntlet) left the screen still
 for about 1.5s before title two (owner: "pauses after the first title fills"). Do not go back to a
 score-proportional sweep.
+
+## Multiple Choice Leaders (`/multiple-choice`): one board for the five multiple choice runs (owner, 2026-11-03)
+
+Every correct answer from the Trivia Gauntlet, Trivia Encore, Math Gauntlet, Science Gauntlet and
+English Gauntlet, ranked for Today, Last Week (the last 7 ET days, today included), Last Month (30)
+and All Time (from 2026-08-27, the day THE RUN launched). **It replaced Polymath on every surface a
+player sees** (owner: "this will fully replace polymath. remove that from site but keep wiring").
+Approved on the "Multiple Choice Leaders" and "Multiple Choice in the Runs" mockups.
+
+- **A lens, nothing stored.** `app/api/quiz/multiple-choice/route.js` takes each day's games per run
+  from `circuitKeysFor`, scores each game with the shared `scoreGame` (first attempt, exactly the row
+  every per-game board keeps) and sums each player's scores, which on these runs are questions right.
+  A quizId counts once a day even if two rosters name it. Guests count in the day's totals (players,
+  runs played, correct answers); the boards list named players only. Ranked on correct answers, then
+  FEWER runs played, then the shorter clock. Movement compares with yesterday / the 7 or 30 days
+  before / the all-time board as it stood a week ago.
+- **Cost.** Today's rows come through `loadDailyResultsCached` with exactly each run's quizId set, so
+  the slices are shared with the run boards. Finished days are read once per server (scoped `.in`
+  reads, 60 ids a chunk, four at a time), reduced to per-player sums and kept; the rows are not held.
+  Edge cache 30s for today, 5 minutes for the longer windows; `fresh=1` is no-store.
+- **`less=<runId>`** adds `me.before`, the combined rank the player held without that run's answers,
+  so an ending can show the climb the run bought. `me.toPass` is the next rank up and what it takes.
+- **Shared definitions** live in `lib/multiple-choice.js`: `MC_RUNS` (id, name, short, href, the
+  pastel each run is drawn in, `climb` order shortest first), periods, `localMc` (this device's runs
+  today off `sot_run_<id>_<day>`, the same saves Polymath read) and `nextMcRun`.
+- **Surfaces:**
+  - The page: `app/multiple-choice/` (Back only; period switch; CHAMPIONS is the default view, the
+    combined champion then one per run, and tapping one ranks the podium and field on it alone; Top
+    Three towers; The Field with run lanes). noindex, not in the sitemap.
+  - Run endings: `app/circuits/McCard.jsx` `McCard` in the slot the Polymath meter held (all three
+    RunClient mounts: the end stage's tray, the board top, and the scorecard). It fills this run's
+    slot, climbs the rank from `me.before`, and its button is "Climb: <shortest open run>".
+  - Run start screens: `McGateBar` as GauntletGate's `after`, under Start, on the five runs only.
+  - Desktop home rail: an All Puzzles (or the pane's category) / Multiple Choice toggle on the board;
+    **Multiple Choice is the default until the reader picks the other** (`sot_rail_tab`).
+  - Phone home: a full-width Multiple Choice Leaders button after the runs in any pane that lists one
+    of the five, with each run's champion; and a row in Everything Else.
+- **Polymath is off the site, wiring kept.** `polyRun` in StageToday is null (deck tile, phone strip
+  tile and drawer off), PolymathRunCard is unmounted, RunNextSlot has no poly mode, `/polymath` is
+  noindex and out of the sitemap. `lib/polymath.js`, `/api/quiz/polymath`, `/polymath` and
+  `PolymathMeter.jsx` all still work if linked again.

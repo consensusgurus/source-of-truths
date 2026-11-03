@@ -67,8 +67,10 @@ import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, Ru
 import RunOtherDeviceBar from '../../../RunOtherDeviceBar';
 import { isChallengeableRun } from '@/lib/challenge';
 import RunBackLink from '../../RunBackLink';
-import PolymathMeter from '../../PolymathMeter';
-import { POLY_IDS } from '@/lib/polymath';
+// MULTIPLE CHOICE REPLACED POLYMATH on every run ending (owner, 2026-11-03).
+// PolymathMeter and lib/polymath stay in the tree, unmounted.
+import McCard, { McGateBar } from '../../McCard';
+import { MC_IDS } from '@/lib/multiple-choice';
 import GauntletStage from '../../../GauntletStage';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover } from '../../../GauntletScreens';
 
@@ -1089,6 +1091,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
             ? `${fieldToday.toLocaleString()} played today${leaderScore != null ? ` \u00B7 the leader has ${leaderScore} ${scoreWord}` : ''}`
             : null}
           banner={<>{otherDevice}{isChallengeableRun(circuitId) ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}</>}
+          after={MC_IDS.includes(circuitId) ? <McGateBar /> : null}
         />
       ) : null}
       {TOWERS && hydrated && r.phase === 'verdict' && last && upNext ? (
@@ -1131,7 +1134,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           meme={isChallengeableRun(circuitId) && !r.practice
             ? <RunMeme gameKey={circuitId} score={cleared} total={askable} n={runToken()} t={runSecs > 0 ? Math.round(runSecs) : null} cat={MATHRUN ? 'Numbers' : ENGLISH ? 'Word' : 'Trivia'} />
             : null}
-          polymath={POLY_IDS.includes(circuitId) && !r.practice ? <PolymathMeter circuitId={circuitId} right={cleared} /> : null}
+          polymath={MC_IDS.includes(circuitId) && !r.practice ? <McCard circuitId={circuitId} right={cleared} /> : null}
           similar={similarRun}
           onShare={shareRun}
           copied={copied}
@@ -1825,8 +1828,8 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     similar={GAUNT || ENCORE ? similarRun : null}
                     boardHref={runSummaryHref(circuitId)}
                     boardState={boardQ.state}
-                    polymath={POLY_IDS.includes(circuitId) && !r.practice
-                      ? <PolymathMeter circuitId={circuitId} right={cleared} /> : null}
+                    polymath={MC_IDS.includes(circuitId) && !r.practice
+                      ? <McCard circuitId={circuitId} right={cleared} /> : null}
                   />
                 ) : null}
                 {!TOWERS ? (
@@ -2095,8 +2098,8 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
 
                 {/* POLYMATH SITS UNDER PLAY SIMILAR in the board top (owner, 2026-10-19);
                     a run with no board top keeps it here. */}
-                {!BTOP && POLY_IDS.includes(circuitId) && !r.practice ? (
-                  <PolymathMeter circuitId={circuitId} right={cleared} />
+                {!BTOP && MC_IDS.includes(circuitId) && !r.practice ? (
+                  <McCard circuitId={circuitId} right={cleared} />
                 ) : null}
 
                 {GAUNT || ENCORE ? (
