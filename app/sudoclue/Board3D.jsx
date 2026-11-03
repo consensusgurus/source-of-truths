@@ -143,10 +143,21 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
     const placed = [];
     const cost = (r) => { let k = 0; for (const q of taken) k += ov(r, q, 3) * (q.person ? 300 : 60); for (const q of placed) k += ov(r, q, 3) * 40; for (const q of furn) k += ov(r, q, 2) * 15;
       if (r.x < 2) k += (2 - r.x) * 200; if (r.y < 2) k += (2 - r.y) * 200; if (r.x + r.w > W - 2) k += (r.x + r.w - W + 2) * 200; if (r.y + r.h > H - 2) k += (r.y + r.h - H + 2) * 200; return k; };
-    const R = s.P.rooms, N = s.N; const base = W < 500 ? 9.5 : 11;
-    for (const l of s.roomLabels) { const e = l.el; const [ax, ay] = proj(l.a), [bx] = proj(l.b); const maxw = Math.max(24, bx - ax);
-      e.classList.remove('wrap'); e.style.fontSize = base + 'px'; e.style.maxWidth = ''; e.style.opacity = 1;
-      if (e.offsetWidth > maxw) { e.style.fontSize = Math.max(8, base * maxw / e.offsetWidth) + 'px'; if (e.offsetWidth > maxw && e.textContent.includes(' ')) { e.classList.add('wrap'); e.style.maxWidth = Math.max(maxw, 40) + 'px'; } }
+    // PHONES (owner, 2026-11-03: "the room labels cover up too much on mobile"): smaller, slimmer, see-through
+    // pills that may run a little past their room before they shrink or wrap.
+    const phone = W < 500; labRef.current.classList.toggle('sm', phone);
+    const R = s.P.rooms, N = s.N; const base = phone ? 8 : 11, minF = phone ? 7 : 8, give = phone ? 1.3 : 1;
+    for (const l of s.roomLabels) { const e = l.el; const [ax, ay] = proj(l.a), [bx] = proj(l.b); const maxw = Math.max(24, (bx - ax) * give);
+      // too wide for its room: break the name into 2 or 3 balanced lines (so the pill hugs its words), then shrink
+      const words = (e.dataset.t || (e.dataset.t = e.textContent)).split(' ');
+      const lines = (k) => { if (k === 1) return [words.join(' ')]; let best = null;
+        const cut = (from, left) => { if (left === 1) return [[words.slice(from).join(' ')]]; const out = [];
+          for (let i = from + 1; i <= words.length - left + 1; i++) for (const rest of cut(i, left - 1)) out.push([words.slice(from, i).join(' '), ...rest]); return out; };
+        for (const ls of cut(0, k)) { const m = Math.max(...ls.map((x) => x.length)); if (!best || m < best.m) best = { m, ls }; } return best.ls; };
+      const setK = (k) => { e.textContent = ''; lines(k).forEach((t, i) => { if (i) e.appendChild(document.createElement('br')); e.appendChild(document.createTextNode(t)); }); };
+      e.style.fontSize = base + 'px'; e.style.opacity = 1; setK(1);
+      for (let k = 2; k <= Math.min(3, words.length) && e.offsetWidth > maxw; k++) setK(k);
+      if (e.offsetWidth > maxw) e.style.fontSize = Math.max(minF, base * maxw / e.offsetWidth) + 'px';
       const w = e.offsetWidth, h = e.offsetHeight;
       // candidate spots: on the back wall first, then the top-left / top-right / middle of every row of the room
       const spots = [[ax, ay - h], [bx - w, ay - h], [ax, ay + 2], [bx - w, ay + 2]];
@@ -182,7 +193,7 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
         .b3 canvas{display:block;width:100%;height:100%;}
         .b3-lab{position:absolute;inset:0;pointer-events:none;overflow:hidden;font-family:Manrope,system-ui,sans-serif;}
         .b3-room{position:absolute;background:#fffdf8;color:#1f2229;border:1px solid rgba(8,34,46,.45);border-radius:6px;padding:2px 6px;font-weight:800;line-height:1.15;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;box-shadow:0 2px 4px rgba(8,34,46,.3);}
-        .b3-room.out{background:#f1f7ee;} .b3-room.wrap{white-space:normal;}
+        .b3-room.out{background:#f1f7ee;} .b3-lab.sm .b3-room{padding:1px 4px;border-radius:4px;border-color:rgba(8,34,46,.25);letter-spacing:.02em;line-height:1.1;background:rgba(255,253,248,.82);box-shadow:0 1px 2px rgba(8,34,46,.25);} .b3-lab.sm .b3-room.out{background:rgba(241,247,238,.82);} .b3-lab.sm .b3-tag{font-size:10.5px;padding:0 6px;} .b3-room.wrap{white-space:normal;}
         .b3-tag{position:absolute;z-index:1;transform:translate(-50%,0);background:rgba(11,13,18,.88);color:#fff;border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:700;line-height:1.5;white-space:nowrap;}
         .b3-tag.on{background:#be123c;}
         .b3-role{position:absolute;z-index:1;transform:translate(-50%,-100%);color:#fff;border:1.5px solid #fff;border-radius:999px;padding:0 7px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;line-height:1.6;white-space:nowrap;}
