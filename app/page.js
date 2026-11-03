@@ -22,7 +22,7 @@ export function generateMetadata() {
     openGraph: {
       // A page-level openGraph REPLACES the layout's, so the baked card has to
       // be named here too or `/` ships with no og:image at all.
-      images: [{ url: '/og/brand.png?v=20261012', width: 1200, height: 630, alt: 'Mind Loft: Sharpen your mind. Gain IQ points. Elevate your thinking.' }],
+      images: [{ url: '/og/brand.png?v=20261102', width: 1200, height: 630, alt: 'Mind Loft: Sharpen your mind. Gain IQ points. Elevate your thinking.' }],
       title: ogTitle,
       description,
       url: '/',
@@ -31,7 +31,7 @@ export function generateMetadata() {
     },
     twitter: {
       card: 'summary_large_image',
-      images: ['/og/brand.png?v=20261012'],
+      images: ['/og/brand.png?v=20261102'],
       title: ogTitle,
       description,
     },

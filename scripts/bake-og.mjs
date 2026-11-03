@@ -36,6 +36,8 @@ async function write(name, res) {
   return buf.length;
 }
 
+const FILE_ALIAS = { jester: 'jesters', park: 'parker' };
+
 const argv = process.argv.slice(2);
 const wantSite = argv.includes('--site');
 const only = argv.filter((a) => !a.startsWith('--'));
@@ -50,6 +52,9 @@ const missing = [];
 for (const key of keys) {
   if (!DAILY_GAME_MAP[key]) { missing.push(key); continue; }
   bytes += await write(key, cards.renderGameCard(key));
+  // Two pages link a file named for their ROUTE, not their registry key
+  // (Jesters = jester, Parker = park), so write that name too or it goes stale.
+  if (FILE_ALIAS[key]) bytes += await write(FILE_ALIAS[key], cards.renderGameCard(key));
   n += 1;
   if (n % 20 === 0) process.stdout.write('  ' + n + ' of ' + keys.length + '\n');
 }
