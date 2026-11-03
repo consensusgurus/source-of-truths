@@ -61,7 +61,7 @@ import { endEfficiency, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 import { PLACES } from '@/lib/sudoclue-places';
-import { solve, sameAnswer, ROLESETS, ROLE_ORDER, isRoleClue, stepLog } from '@/lib/sudoclue-engine';
+import { solve, sameAnswer, ROLESETS, ROLE_ORDER, ROLES3, isRoleClue, stepLog } from '@/lib/sudoclue-engine';
 import Board3D from './Board3D';
 import { renderBoard, boardIndex, cellTitle, portraitSVG, objIcon, sayBare, COLORS as CAST_COLORS, ROLE_COLORS } from '@/lib/sudoclue-art';
 
@@ -86,16 +86,19 @@ const TOTAL = 10;
 // The board ranks on points, then time.
 const CASE_FROM = 3;
 const CLEAN_PTS = [40, 20, 10, 0];
-export function caseMax(n) { return 10 * n + 70 + 5 * (n - 3) + 40; }
-export function casePoints(n, cur) {
+// THREE-ROLE BOARDS (No. 6 on, owner 2026-11-03): only the victim, the killer and the accomplice are named, so
+// Accuse is a flat 70 (30 + 20 + 20) with no 5 per other person.
+const accuseMax = (n, three) => (three ? 70 : 70 + 5 * (n - 3));
+export function caseMax(n, three) { return 10 * n + accuseMax(n, three) + 40; }
+export function casePoints(n, cur, three) {
   const won = cur.status === 'won';
   const place = (won || cur.stage === 'accuse') ? 10 * n : 0;
-  const accuse = won ? 70 + 5 * (n - 3) : 0;
+  const accuse = won ? accuseMax(n, three) : 0;
   // NUDGES (owner, 2026-11-02: "case points make sense"): each Nudge takes 10 off Clean record, never below 0, so a
   // nudged solve still reads as solved on the board (lib/daily-games.js solveGap is Clean record's 40).
   const clean = won ? Math.max(0, CLEAN_PTS[Math.min(3, cur.wrong || 0)] - 10 * (cur.nudges || 0)) : 0;
-  return { place, accuse, clean, total: place + accuse + clean, max: caseMax(n), wrong: cur.wrong || 0, nudges: cur.nudges || 0,
-    legs: [{ k: 'Place', v: place, max: 10 * n }, { k: 'Accuse', v: accuse, max: 70 + 5 * (n - 3) }, { k: 'Clean record', v: clean, max: 40 }] };
+  return { place, accuse, clean, total: place + accuse + clean, max: caseMax(n, three), wrong: cur.wrong || 0, nudges: cur.nudges || 0,
+    legs: [{ k: 'Place', v: place, max: 10 * n }, { k: 'Accuse', v: accuse, max: accuseMax(n, three) }, { k: 'Clean record', v: clean, max: 40 }] };
 }
 // THE DETECTIVE RANKS: a share of the board's points, so every board size climbs the same ladder. Master
 // Sleuth is a clean case solved faster than half the day's solvers.
@@ -230,7 +233,11 @@ const PLURAL = { Guest: 'guests', Staff: 'staff', Family: 'family' };
 // table etc?)"). A clue that names a thing shows a little picture of it beside the word, the selected
 // person's things glow on the board, and a key under the cards names every picture on today's board.
 const clueObj = (c) => (c && c.pr && (c.pr.k === 'on' || c.pr.k === 'beside') ? c.pr.v : null);
+// When the 3D board is up it photographs each piece's own model, and every icon (the key and the clues)
+// shows that picture instead of the flat drawing, so the key always matches the board.
+let ITEM_PICS = null;
 function ObjIco({ t, dims, size = 22 }) {
+  if (ITEM_PICS && ITEM_PICS[t]) return <span aria-hidden="true" style={{ display: 'inline-block', verticalAlign: '-0.32em', width: size, height: size, margin: '0 3px 0 1px', borderRadius: 5, background: 'rgba(255,255,255,0.55)', boxShadow: 'inset 0 0 0 1px rgba(8,34,46,0.14)', backgroundImage: `url(${ITEM_PICS[t]})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }} />;
   const [w, h] = dims[t] || [1, 1];
   const r = Math.min(2, w / h);
   return <span aria-hidden="true" style={{ display: 'inline-block', verticalAlign: '-0.32em', width: Math.round(size * Math.max(1, r)), height: size, margin: '0 3px 0 1px', borderRadius: 5, background: 'rgba(255,255,255,0.55)', boxShadow: 'inset 0 0 0 1px rgba(8,34,46,0.14)' }} dangerouslySetInnerHTML={{ __html: objIcon(t, w, h) }} />;
@@ -276,12 +283,13 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const N = LAYOUT.rooms.length;
   const DIMS = useMemo(() => { const d = {}; (LAYOUT.items || []).forEach((it) => { if (!d[it.t]) d[it.t] = [it.w, it.h]; }); return d; }, [LAYOUT]);
   const CAST = PUZZLE.cast;
-  const COUNTS = useMemo(() => roleCounts(N), [N]);
+  const THREE = !!PUZZLE.three;
+  const COUNTS = useMemo(() => (THREE ? { Victim: 1, Killer: 1, Accomplice: 1 } : roleCounts(N)), [N, THREE]);
   const IDX = useMemo(() => boardIndex(LAYOUT), [LAYOUT]);
   // The answer, derived from the clues on first need and kept.
   const solRef = useRef(null);
   const solution = () => {
-    if (!solRef.current) solRef.current = solve(LAYOUT, CAST, PUZZLE.clues, 1)[0] || null;
+    if (!solRef.current) solRef.current = solve(LAYOUT, CAST, PUZZLE.clues, 1, { three: THREE })[0] || null;
     return solRef.current;
   };
 
@@ -292,6 +300,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   // THE 3D BOARD (owner, 2026-11-02). ?flat=1, or a device that cannot draw it, keeps the flat board.
   const [flat3d, setFlat3d] = useState(false);
   const [thumbs, setThumbs] = useState(null);
+  const [itemPics, setItemPics] = useState(null);
   const [nudge, setNudge] = useState(null);
   const [clueView, setClueView] = useState('person');
   // THE RATING POP-UP (owner, 2026-10-30, Sudoclue only): stars and easy-to-hard, each 1 to 5. Once per
@@ -324,6 +333,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
   const use3d = !flat3d && searchParams.get('flat') !== '1';
+  ITEM_PICS = use3d ? itemPics : null;
   const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
@@ -350,7 +360,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const BAD = STAGE ? 'var(--stg-bad, #fb923c)' : '#c2410c';
   const finalScore = won ? Math.max(1, TOTAL - 2 * g.wrong) : 0;
   const CASE = PUZZLE.num >= CASE_FROM;
-  const casePts = casePoints(CAST.length, g);
+  const casePts = casePoints(CAST.length, g, THREE);
   // The finale plays once, on a fresh finish in this tab (or ?ending=1 on a finished board, for review),
   // and the daily ending waits for it.
   const [finale, setFinale] = useState(false);
@@ -495,7 +505,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   }, [hydrated]);
   function finaleRank() {
     const cur = gRef.current;
-    const pts = casePoints(CAST.length, cur);
+    const pts = casePoints(CAST.length, cur, THREE);
     const b = dayBoardRef.current;
     const fast = !!(b && b.myRank != null && b.field && b.myRank <= Math.ceil(b.field / 2));
     return caseRank(pts, cur.status === 'won' && fast);
@@ -535,13 +545,13 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     try { if (localStorage.getItem(REC_KEY)) return null; } catch (e) {}
     const el = Math.min(36000, Math.max(1, Math.round((Date.now() - (cur.t0 || Date.now())) / 1000)));
     try { localStorage.setItem(REC_KEY, '1'); } catch (e) {}
-    return { quizId: PUZZLE.quizId, score: 0, total: PUZZLE.num >= CASE_FROM ? caseMax(CAST.length) : TOTAL, correct: 0, guessesUsed: cur.wrong, timeElapsed: el, abandoned: true, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') };
+    return { quizId: PUZZLE.quizId, score: 0, total: PUZZLE.num >= CASE_FROM ? caseMax(CAST.length, THREE) : TOTAL, correct: 0, guessesUsed: cur.wrong, timeElapsed: el, abandoned: true, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') };
   });
 
   function postResult(g2, score) {
     abandon.markFlushed();
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
-    const tot = CASE ? caseMax(CAST.length) : TOTAL;
+    const tot = CASE ? caseMax(CAST.length, THREE) : TOTAL;
     try { setStats(recordStat(PUZZLE.num, { s: score, t: tot, g: g2.wrong, won: g2.status === 'won' && g2.wrong === 0 })); } catch (e) {}
     try {
       fetch('/api/quiz/result', {
@@ -661,11 +671,11 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       say('Not right yet. Someone is standing in the wrong square.');
       return;
     }
-    if (CAST.some((p) => !cur.roles[p])) { say('Give everyone a role, then accuse.'); return; }
+    if (THREE ? ROLES3.some((r) => !CAST.some((p) => cur.roles[p] === r)) : CAST.some((p) => !cur.roles[p])) { say(THREE ? 'Name the victim, the killer and the accomplice, then accuse.' : 'Give everyone a role, then accuse.'); return; }
     if (sol && sameAnswer(sol, cur.place, cur.roles)) {
       const done = { ...cur, status: 'won', tEnd: Date.now(), checks: cur.checks + 1 };
       vibrate(HAPT.win);
-      postResult(done, CASE ? casePoints(CAST.length, done).total : Math.max(1, TOTAL - 2 * done.wrong));
+      postResult(done, CASE ? casePoints(CAST.length, done, THREE).total : Math.max(1, TOTAL - 2 * done.wrong));
       commit(done);
       if (CASE) setFinale(true);
       return;
@@ -680,7 +690,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     if (cur.status !== 'playing') return;
     const g2 = { ...cur, status: 'gaveup', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
-    postResult(g2, CASE ? casePoints(CAST.length, g2).total : 0);
+    postResult(g2, CASE ? casePoints(CAST.length, g2, THREE).total : 0);
     commit(g2);
     if (CASE) setFinale(true);
   }
@@ -788,13 +798,13 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead={<>A murder at <b>{LAYOUT.title}</b>, solved in two stages. First <b>place</b> all {N} people, <b>one in every row and one in every column</b>. Then <b>accuse</b>: work out who played which part.</>}
-      banner={<><b>The killer was alone with the victim.</b> The victim&rsquo;s room holds exactly two people: the victim and the killer.</>}
+      banner={THREE ? <><b>Three people had a part:</b> the victim, the killer and the accomplice. Everyone else was a bystander, and only the detective&rsquo;s notes say who is who.</> : <><b>The killer was alone with the victim.</b> The victim&rsquo;s room holds exactly two people: the victim and the killer.</>}
       steps={[
         <><b>Stage 1, Place.</b> Each card is one person and what they said about where they stood. Tap a card, then a square. People stand on <b>open floor</b> or on a <b>seat</b> (a chair, a bench, a rug, a bed, a boat); water, trees, tables and statues are not places to stand. Someone who <b>said nothing</b> is found by elimination.</>,
         <>Every labelled area on the board is a <b>room</b>, indoors or out, and a clue that names one (&ldquo;in the Mall area&rdquo;) means any square inside it. <b>Beside</b> means a square that shares an edge with the thing, never a diagonal. <b>On</b> means on the thing itself. Every clue is true.</>,
-        <><b>Check board</b> when everyone is placed. Once it is right, <b>Stage 2, Accuse</b> opens the detective&rsquo;s notes: clues about the roles. Tap a card and give that person a role: the <b>victim</b>, the <b>killer</b>, the <b>accomplice</b>, or one of the day&rsquo;s <b>guests</b>, <b>staff</b> or <b>family</b>.</>,
+        <><b>Check board</b> when everyone is placed. Once it is right, <b>Stage 2, Accuse</b> opens the detective&rsquo;s notes: clues about the roles. {THREE ? <>Pick someone on the board, then tap their part: the <b>victim</b>, the <b>killer</b> or the <b>accomplice</b>. Name all three and accuse.</> : <>Tap a card and give that person a role: the <b>victim</b>, the <b>killer</b>, the <b>accomplice</b>, or one of the day&rsquo;s <b>guests</b>, <b>staff</b> or <b>family</b>.</>}</>,
       ]}
-      knack={<>Placed people shade their row and column, so the squares left open stand out. In Stage 2, find the rooms that hold exactly two people first: the victim and the killer are one of those pairs.</>}
+      knack={THREE ? <>Placed people shade their row and column, so the squares left open stand out. In Stage 2, no single note names anyone: cross people off one note at a time, and use what one note settles to read the next.</> : <>Placed people shade their row and column, so the squares left open stand out. In Stage 2, find the rooms that hold exactly two people first: the victim and the killer are one of those pairs.</>}
       note={<>A case scores points for placing, for accusing, and a Clean record bonus that each wrong check cuts. <b>Mark</b> crosses out squares you have ruled out, <b>Undo</b> takes back your last move, <b>Clear all</b> starts the stage over, and <b>Nudge</b> explains the next logical move in words (each one takes 10 off Clean record). Drag the board to look around it.</>}
       footer={<>Boards are 8 by 8 Monday to Wednesday, 9 by 9 on Thursday and Friday, and 10 by 10 on the weekend, with the Sunday Edition on Sunday. Every board can be solved by logic alone, no guessing: Monday is the gentlest and the weekend the longest. Names are famous first or last names, and the cast are original painted figures, not likenesses.</>}
     />
@@ -819,7 +829,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           glow={playing ? glowCells : null} nudge={playing && nudge ? nudge.cells : null}
           shade={playing && !accuse ? [...takenRC].filter((k) => !occupantAt(k) && IDX.isOpen(k)) : null}
           hl={sol ? CAST.filter((p) => ['Victim', 'Killer'].includes(sol.roles[p])).map((p) => sol.place[p]) : null}
-          interactive={playing} isOpen={(k) => IDX.isOpen(k)} onTap={tapCell} onThumbs={setThumbs} onFail={() => setFlat3d(true)}
+          interactive={playing} isOpen={(k) => IDX.isOpen(k)} onTap={tapCell} onThumbs={setThumbs} onItemThumbs={setItemPics} onFail={() => setFlat3d(true)}
           cellLabel={(k, r, c) => `${cellTitle(LAYOUT, k)}, row ${r + 1}, column ${c + 1}${occupantAt(k) ? `, ${occupantAt(k)}` : ''}`} />
       ) : <div dangerouslySetInnerHTML={{ __html: svg }} />}
       {playing && !use3d && (
@@ -847,7 +857,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   // in the cap (hidden by default, the reveal preference), not here.
   const foot = playing && !preStart && (
     <div className="sc-foot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 14, padding: '10px 2px 0', borderTop: `1px solid ${SURF_B}`, fontFamily: SANS }}>
-      <span style={{ fontSize: 12.5, fontWeight: 650, color: FADED, lineHeight: 1.4 }}>One per row and column. The killer was alone with the victim.</span>
+      <span style={{ fontSize: 12.5, fontWeight: 650, color: FADED, lineHeight: 1.4 }}>{THREE ? 'One per row and column. The notes name the victim, the killer and the accomplice.' : 'One per row and column. The killer was alone with the victim.'}</span>
       <button type="button" onClick={giveUpTap} style={{ minHeight: 44, flex: 'none', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: armReveal ? BAD : FADED, textDecoration: 'underline', textUnderlineOffset: 3 }}>
         {armReveal ? 'Tap again to give up' : 'Give Up'}
       </button>
@@ -874,17 +884,25 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     undo: <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   };
   const doneN = accuse ? rolesN : placedN;
+  const doneTotal = accuse && THREE ? 3 : N;
+  const showCards = !(accuse && THREE);
+  const cardList = accuse ? CAST : CAST.filter((p) => !g.place[p]);
+  const placedList = accuse ? [] : CAST.filter((p) => g.place[p]);
   const dossier = playing && !preStart && (
     <div className="sc-side" style={{ fontFamily: SANS }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, margin: '2px 2px 8px' }}>
         <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: ACC_INK }}>{accuse ? 'Stage 2 · Accuse' : 'Stage 1 · Place'}</span>
-        <span style={{ fontSize: 12.5, fontWeight: readyToCheck ? 800 : 650, color: readyToCheck ? ACC_INK : FADED }}>{accuse ? 'Tap a card, then pick a role' : readyToCheck ? 'All placed: tap Check board' : mode === 'mark' ? 'Tap squares to cross them out' : 'Tap a card, then a square'}</span>
+        <span style={{ fontSize: 12.5, fontWeight: readyToCheck ? 800 : 650, color: readyToCheck ? ACC_INK : FADED }}>{accuse ? (THREE ? 'Pick someone, then their part' : 'Tap a card, then pick a role') : readyToCheck ? 'All placed: tap Check board' : mode === 'mark' ? 'Tap squares to cross them out' : 'Tap a card, then a square'}</span>
       </div>
       {accuse && (
         <div style={{ borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '9px 12px 4px', marginBottom: 8 }}>
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED, marginBottom: 2 }}>Detective&rsquo;s notes</div>
-          <div style={{ fontSize: 13, fontWeight: 650, color: FADED, lineHeight: 1.35, padding: '2px 0 7px' }}>The board is right. Now use these notes to give everyone a part: tap a person&rsquo;s card, then pick a role in the row above the buttons. When everyone has one, tap <b style={{ color: INK }}>Accuse</b>.</div>
-          <div style={{ fontSize: 13.5, fontWeight: 750, color: INK, padding: '6px 0', borderTop: `1px solid ${SURF_B}` }}>The killer was the only person alone in a room with the victim.</div>
+          {THREE ? <>
+            <div style={{ fontSize: 13, fontWeight: 650, color: FADED, lineHeight: 1.35, padding: '2px 0 7px' }}>The board is right. Only three people had a part: the <b style={{ color: INK }}>victim</b>, the <b style={{ color: INK }}>killer</b> and the <b style={{ color: INK }}>accomplice</b>. Everyone else was a bystander. Work them out from these notes, name all three, then tap <b style={{ color: INK }}>Accuse</b>.</div>
+          </> : <>
+            <div style={{ fontSize: 13, fontWeight: 650, color: FADED, lineHeight: 1.35, padding: '2px 0 7px' }}>The board is right. Now use these notes to give everyone a part: tap a person&rsquo;s card, then pick a role in the row above the buttons. When everyone has one, tap <b style={{ color: INK }}>Accuse</b>.</div>
+            <div style={{ fontSize: 13.5, fontWeight: 750, color: INK, padding: '6px 0', borderTop: `1px solid ${SURF_B}` }}>The killer was the only person alone in a room with the victim.</div>
+          </>}
           {roleClueList.map((c) => (
             <button key={c.i} type="button" onClick={() => toggleStruck(c.i)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, padding: '7px 0', cursor: 'pointer', fontFamily: SANS }}>
               <RoleTag size={20} />
@@ -893,8 +911,14 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           ))}
         </div>
       )}
+      {/* PLACED PEOPLE STEP ASIDE (owner, 2026-11-03: "make it even more obvious which characters have already been
+          placed ... sort them to bottom right ... i dont think we need player tiles once everyone placed"). Stage 1
+          cards are only the people still to place; a placed person drops to a small chip in the Placed strip, where a
+          tap picks them up again and shows what they said. On a three-role board Stage 2 has no cards at all: the
+          board is the cast, and a Who's who card holds the three parts. */}
+      {showCards && cardList.length > 0 && (
       <div className="sc-cards" role="listbox" aria-label="People" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 7 }}>
-        {CAST.map((p) => {
+        {cardList.map((p) => {
           const on = p === sel;
           const lines = said(p);
           return (
@@ -918,6 +942,63 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           );
         })}
       </div>
+      )}
+      {!accuse && placedList.length > 0 && (
+        <div aria-label="Placed people" style={{ marginTop: cardList.length ? 9 : 0, borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '8px 10px' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED }}>Placed &middot; {placedList.length} of {N}</span>
+            <span style={{ fontSize: 11.5, fontWeight: 650, color: FADED }}>Tap one to move them</span>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 7 }}>
+            {placedList.map((p) => {
+              const on = p === sel, clash = bad.has(p);
+              return (
+                <button key={p} type="button" aria-pressed={on} onClick={() => { setSel(p); if (mode === 'mark') setMode('place'); }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px 3px 3px', borderRadius: 999, cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 800,
+                    border: `2px solid ${on ? ACC : clash ? BAD : SURF_B}`, background: on ? 'var(--stg-surf2, #fff1f2)' : 'transparent', color: clash ? BAD : on ? INK : FADED }}>
+                  <Portrait id={p} size={24} ring={CAST_COLORS[p]} src={use3d && thumbs ? thumbs[p] : null} />{p}{clash ? ' · clash' : ''}
+                </button>
+              );
+            })}
+          </div>
+          {sel && g.place[sel] && (
+            <div style={{ marginTop: 7, paddingTop: 7, borderTop: `1px solid ${SURF_B}`, fontSize: 12.5, fontWeight: 600, lineHeight: 1.35, color: INK }}>
+              <b>{sel}</b>{' '}{said(sel).length ? said(sel).map((c, j) => <span key={c.i}>{j ? ' ' : ''}<ClueText text={c.text.startsWith(sel + ' ') ? c.text.slice(sel.length + 1) : c.text} c={c} dims={DIMS} /></span>) : <i style={{ color: FADED }}>said nothing.</i>}
+            </div>
+          )}
+        </div>
+      )}
+      {accuse && THREE && (
+        <div aria-label="Who's who" style={{ borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '9px 12px' }}>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED }}>Who&rsquo;s who</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 7, marginTop: 7 }}>
+            {ROLES3.map((r) => {
+              const who = CAST.find((q) => g.roles[q] === r);
+              return (
+                <button key={r} type="button" onClick={() => sel && setRole(sel, r)} aria-label={`${r}: ${who || 'not named'}. Tap to name ${sel}.`}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '8px 4px', borderRadius: 11, cursor: 'pointer', fontFamily: SANS, border: `2px solid ${who ? ROLE_COLORS[r] : SURF_B}`, background: who ? `${ROLE_COLORS[r]}1f` : SURF }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#fff', background: ROLE_COLORS[r], borderRadius: 999, padding: '2px 9px', lineHeight: 1.3 }}>{r}</span>
+                  {who ? <><Portrait id={who} size={36} ring={CAST_COLORS[who]} src={use3d && thumbs ? thumbs[who] : null} /><span style={{ fontSize: 13, fontWeight: 800, color: INK }}>{who}</span></>
+                    : <span style={{ fontSize: 12, fontWeight: 700, color: FADED, padding: '10px 0' }}>Not named</span>}
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 12.5, fontWeight: 650, color: FADED, lineHeight: 1.35, margin: '9px 0 6px' }}>Pick someone on the board or here, then tap their part.</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+            {CAST.map((p) => {
+              const on = p === sel, r = g.roles[p];
+              return (
+                <button key={p} type="button" aria-pressed={on} onClick={() => setSel(p)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 999, cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 800,
+                    border: `2px solid ${on ? ACC : r ? ROLE_COLORS[r] : SURF_B}`, background: on ? 'var(--stg-surf2, #fff1f2)' : 'transparent', color: INK }}>
+                  {r && <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: ROLE_COLORS[r] }} />}{p}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
       <div aria-label="Key to the pictures" style={{ marginTop: 10, borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '8px 10px' }}>
         <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED, marginBottom: 6 }}>Key</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 12px' }}>
@@ -971,7 +1052,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           {!accuse && iconBtn(mode === 'mark' ? 'Marking' : 'Mark', I.mark, () => setMode(mode === 'place' ? 'mark' : 'place'), { pressed: mode === 'mark' })}
           {iconBtn('Erase', I.erase, erase, { disabled: accuse ? !g.roles[sel] : !g.place[sel] })}
           {iconBtn('Undo', I.undo, undo)}
-          {iconBtn(accuse ? `Accuse${doneN === N ? '' : ` ${doneN}/${N}`}` : `Check board${doneN === N ? '' : ` ${doneN}/${N}`}`, null, check, { primary: true, grow: true, pulse: (readyToCheck && !bad.size) || (accuse && doneN === N) })}
+          {iconBtn(accuse ? `Accuse${doneN === doneTotal ? '' : ` ${doneN}/${doneTotal}`}` : `Check board${doneN === N ? '' : ` ${doneN}/${N}`}`, null, check, { primary: true, grow: true, pulse: (readyToCheck && !bad.size) || (accuse && doneN === doneTotal) })}
         </div>
       </div>
     </div>
@@ -1010,7 +1091,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
           figures={playing ? [
             { v: `${placedN}/${N}`, k: 'placed' },
-            { v: `${rolesN}/${N}`, k: 'roles' },
+            { v: `${rolesN}/${THREE ? 3 : N}`, k: 'roles' },
             { v: g.wrong, k: 'wrong' },
             { v: elapsed, k: 'time' },
           ] : [
@@ -1078,7 +1159,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to Play' : `Murder ${LAYOUT.deathAt}`}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>{N} people, {LAYOUT.title}, {LAYOUT.place}. First place everyone, one in every row and every column, from what each person said. Then accuse: name the victim, the killer, the accomplice and everyone else&rsquo;s role. The killer was the only person alone with the victim.</p>
+                <p style={{ margin: '0 0 6px' }}>{N} people, {LAYOUT.title}, {LAYOUT.place}. First place everyone, one in every row and every column, from what each person said. {THREE ? 'Then accuse: from the detective\u2019s notes, name the victim, the killer and the accomplice.' : <>Then accuse: name the victim, the killer, the accomplice and everyone else&rsquo;s role. The killer was the only person alone with the victim.</>}</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -1295,7 +1376,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Sudoclue</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Sudoclue is a free daily murder-mystery logic puzzle from Mind Loft. Each case is set in a real place drawn as a floor plan, north up, with its real landmarks on the squares: the Bow Bridge and the Bethesda fountain in Central Park, the Swan Boats in the Boston Public Garden, the Foucault pendulum at Griffith Observatory. Place every person so there is exactly one in each row and each column, as in a sudoku, then deduce each person&rsquo;s hidden role. The killer is the one person who was alone in a room with the victim.
+          Sudoclue is a free daily murder-mystery logic puzzle from Mind Loft. Each case is set in a real place drawn as a floor plan, north up, with its real landmarks on the squares: the Bow Bridge and the Bethesda fountain in Central Park, the Swan Boats in the Boston Public Garden, the Foucault pendulum at Griffith Observatory. Place every person so there is exactly one in each row and each column, as in a sudoku, then work out from the detective&rsquo;s notes who was the victim, who was the killer and who was the accomplice.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Every case is machine generated and then proved by an independent solver to have exactly one answer, so pure deduction always cracks it. The board grows through the week: 8 by 8 Monday to Wednesday, 9 by 9 on Thursday and Friday, and 10 by 10 on Saturday and Sunday, the Sunday Edition.

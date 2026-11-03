@@ -18,7 +18,7 @@ import { createKit, placeData, buildRoom } from '@/lib/sudoclue-3d';
 const ANG = 68, DIST = 2.45, FOV = 26;
 const k2 = (r, c) => `${r},${c}`;
 
-export default function Board3D({ layout, cast, colors, place, sel, roles, cross, bad, glow, shade, nudge, hl, interactive, isOpen, onTap, onThumbs, onFail, cellLabel }) {
+export default function Board3D({ layout, cast, colors, place, sel, roles, cross, bad, glow, shade, nudge, hl, interactive, isOpen, onTap, onThumbs, onItemThumbs, onFail, cellLabel }) {
   const boxRef = useRef(null), labRef = useRef(null);
   const S = useRef({});                     // three.js state, outside React
   const props = useRef({}); props.current = { place, sel, roles, cross, bad, glow, shade, nudge, hl, interactive, onTap, cast, colors };
@@ -62,6 +62,8 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
         return { el, k: l.k, a: new THREE.Vector3(...l.a), b: new THREE.Vector3(...l.b) }; });
       Object.assign(s, { THREE, renderer, scene, cam, kit, P, N, room, overlay, people, roomLabels, tags: [], figs: {}, az: 0, el: ANG, raf: 0 });
       // figures for the cast cards
+      if (onItemThumbs) { try { onItemThumbs(await kit.itemThumbs(room.foot)); } catch (e) {} }
+      if (dead) return;
       if (onThumbs) { try { onThumbs(await kit.figureThumbs(cast.map((id) => ({ id, look: LOOKS[id], color: colors[id] })))); } catch (e) {} }
       if (dead) return;
       const ro = new ResizeObserver(() => size()); ro.observe(box); s.ro = ro;
@@ -114,7 +116,7 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
       const nt = document.createElement('div'); nt.className = 'b3-tag' + (p.sel === id && p.interactive ? ' on' : ''); nt.textContent = id; lab.appendChild(nt);
       tags.push({ el: nt, at: new THREE.Vector3(X(c), y + .02, Z(r) + .3), base: new THREE.Vector3(X(c), y + .05, Z(r)), top: new THREE.Vector3(X(c), y + .74, Z(r)), up: false });
       if (p.roles && p.roles[id]) { const rt = document.createElement('div'); rt.className = 'b3-role'; rt.textContent = p.roles[id]; rt.style.background = ROLE_COLORS[p.roles[id]] || '#1f2229'; lab.appendChild(rt);
-        tags.push({ el: rt, at: new THREE.Vector3(X(c), y + .8, Z(r) + .05), up: true }); } }
+        tags.push({ el: rt, at: new THREE.Vector3(X(c), y + .8, Z(r) + .05), up: true, name: nt }); } }
     s.tags = tags; render();
   }
 
@@ -125,7 +127,12 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
     const taken = [];
     for (const t of s.tags) { const [x, y] = proj(t.at); t.el.style.left = x + 'px'; t.el.style.top = y + 'px';
       if (t.base) { const [, yb] = proj(t.base), [, yt] = proj(t.top); const w = (yb - yt) * 1.2; taken.push({ x: x - w / 2, y: yt - 4, w, h: yb - yt + 24, person: 1 }); } }
-    for (const t of s.tags) { const r = t.el.getBoundingClientRect(), bx = box.getBoundingClientRect(); taken.push({ x: r.left - bx.left, y: r.top - bx.top, w: r.width, h: r.height }); }
+    // a role tag that would cover someone else's name tag drops to just under its own name instead
+    const bx0 = box.getBoundingClientRect(); const rectOf = (el) => { const r = el.getBoundingClientRect(); return { x: r.left - bx0.left, y: r.top - bx0.top, w: r.width, h: r.height }; };
+    const meet = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    for (const t of s.tags) if (t.up && t.name) { const me = rectOf(t.el);
+      if (s.tags.some((o) => o !== t && o.el !== t.name && meet(me, rectOf(o.el)))) { const nr = rectOf(t.name); t.el.style.top = (nr.y + nr.h + 2 + me.h) + 'px'; } }
+    for (const t of s.tags) taken.push(rectOf(t.el));
     // furniture: the screen box of every standing piece, so a room name never sits on a bench or a stall
     const X = (c) => c - s.N / 2 + 0.5, Z = (r) => r - s.N / 2 + 0.5;
     const furn = (s.P.items || []).map((it) => { const ht = s.room.cellTop[it.r * s.N + it.c] || .3; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;

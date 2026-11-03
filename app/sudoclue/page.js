@@ -20,14 +20,14 @@ export const metadata = {
   openGraph: {
     images: [{ url: '/og/sudoclue.png', width: 1200, height: 630, alt: 'Sudoclue, a daily murder mystery logic puzzle from Mind Loft' }],
     title: 'Sudoclue: A Daily Murder Mystery Logic Grid',
-    description: 'One person per row and column, a real place, and a killer who was alone with the victim. One case a day, exactly one answer.',
+    description: 'One person per row and column, a real place, and a victim, a killer and an accomplice to unmask. One case a day, exactly one answer.',
     url: '/sudoclue', type: 'website', siteName: 'Mind Loft',
   },
   twitter: {
     images: ['/og/sudoclue.png'],
     card: 'summary_large_image',
     title: 'Sudoclue: A Daily Murder Mystery Logic Grid',
-    description: 'One person per row and column, a real place, and a killer who was alone with the victim.',
+    description: 'One person per row and column, a real place, and a victim, a killer and an accomplice to unmask.',
   },
 };
 
@@ -36,7 +36,7 @@ const gameJsonLd = {
   alternateName: 'Sudoclue: Daily Murder Mystery Logic Puzzle',
   url: `${SITE_URL}/sudoclue`,
   description:
-    'A free daily murder mystery logic puzzle set in real places drawn as floor plans, from Central Park to Griffith Observatory. Place every person so there is exactly one in each row and each column, then deduce each hidden role: the victim, the killer (the only person alone in a room with the victim), the accomplice, and the guests, staff and family. Every case is machine verified to have exactly one answer. 7 by 7 early in the week, up to a 10 by 10 Sunday Edition.',
+    'A free daily murder mystery logic puzzle set in real places drawn as floor plans, from Central Park to Griffith Observatory. Place every person so there is exactly one in each row and each column, then use the detective\'s notes to name the victim, the killer and the accomplice. Every case is machine verified to have exactly one answer. 7 by 7 early in the week, up to a 10 by 10 Sunday Edition.',
   genre: ['Logic puzzle', 'Deduction puzzle', 'Mystery puzzle', 'Puzzle'],
   gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
   numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },

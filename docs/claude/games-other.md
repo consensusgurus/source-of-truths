@@ -1819,6 +1819,27 @@ and `guessesUsed` is the wrong checks. Timer hidden by default.
   solve still counts as solved (daily-games solveGap 40). `g.nudges` lives in the save. Clear all is the armed
   tap-twice clear of the stage (roles only in Stage 2).
 
+- **Three roles, notes only (owner, 2026-11-03, from No. 6, Wed Nov 4).** "let's just keep killer, victim, accomplice
+  ... make the deduction a bit more involved ... maybe the victim and killer aren't in the same room", then he picked
+  **notes only** over "next door" and "keep same room". A board marked `three: true` has exactly three roles and
+  everyone else is a bystander; NOTHING ties the killer to the victim's room. The Stage 2 notes alone decide all
+  three and they chain: `rrel` (the killer north of the victim), `prel` (the victim south of Zohran), `count` (of
+  the three, exactly two were outdoors), `some`/`none` with the new `alone` / `company` predicates, `notrole`.
+  `scripts/gen-sudoclue-notes.mjs . <from> <to>` keeps a board's graded placement clues and searches fresh notes:
+  never `isrole`, no single note read alone pins anyone (`gradeRoles().firstPin`), a reader crossing people off
+  one note at a time gets there with no guess, and the rounds that takes meet the day (`NOTE_BAND`: 2 Mon to Wed,
+  3 Thu to Sun). Pass `{ three: true }` to `solve` / `solveRoles`. Accuse is a flat 70 (30 + 20 + 20), so a three
+  board's max is 10N + 110. Nos. 1 to 5 had gone live and keep the old rules; verify-sudoclue fails a board from
+  No. 6 that is not `three`, or one before it that is.
+- **Placed people step aside (owner, 2026-11-03: "even more obvious which characters have already been placed ...
+  sort them to bottom right ... i dont think we need player tiles once everyone placed").** Stage 1 cards are only
+  the people still to place; a placed person becomes a chip in a Placed strip under them (tap to pick them up; the
+  strip shows what the selected person said), so a full board has no cards left. On a three-role board Stage 2 has
+  no cards at all: a Who's who card holds the three parts and a row of name pills picks a person (as does a tap on
+  the board). A role tag that would cover another person's name tag drops under its own name.
+- **The key is the board (owner, 2026-11-03: "the key does not match the board").** Board3D photographs every
+  modelled piece once (`kit.itemThumbs`, from `buildRoom`'s `foot`) and every icon, the Key and the inline clue
+  pictures, shows that photo; a piece with no model keeps its drawing, which is also what its block shows.
 ## Swap, Slide, Spin, Fill, Connect and Pairs: six simple dailies on one shell (launched 2026-11-01)
 
 Owner, 2026-11-01: Jig and Scour are the most popular dailies, so six more "simple puzzles that are easy to

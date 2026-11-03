@@ -11,13 +11,15 @@
 //   node scripts/verify-sudoclue.mjs
 import { PUZZLES } from '../app/sudoclue/puzzles.js';
 import { PLACES } from '../lib/sudoclue-places.js';
-import { solve, solvePlacement, solveRoles, ROLESETS, gradePlacement, DAY_BAND } from '../lib/sudoclue-engine.js';
+import { solve, solvePlacement, solveRoles, ROLESETS, gradePlacement, gradeRoles, isRoleClue, DAY_BAND } from '../lib/sudoclue-engine.js';
 import { CAST, OBJ } from '../lib/sudoclue-art.js';
 
 let fail = 0;
 const GRADED_FROM = 5;
+// THREE ROLES, NOTES ONLY (owner, 2026-11-03) from No. 6 (Wed Nov 4): victim, killer, accomplice, nobody else.
+const THREE_FROM = 6;
 const bad = (m) => { fail++; console.log('✗ ' + m); };
-const KINDS = new Set(['at', 'with', 'notwith', 'north', 'east', 'col', 'isrole', 'notrole', 'same', 'some', 'every', 'none']);
+const KINDS = new Set(['at', 'with', 'notwith', 'north', 'east', 'col', 'isrole', 'notrole', 'same', 'some', 'every', 'none', 'rrel', 'prel', 'count']);
 
 for (const [key, L] of Object.entries(PLACES)) {
   const N = L.rooms.length;
@@ -62,15 +64,24 @@ PUZZLES.forEach((p, i) => {
     for (const who of [c.p, c.q]) if (who && !p.cast.includes(who)) bad(`${tag}: clue names ${who}, not in the cast`);
   }
   const t0 = Date.now();
-  const sols = solve(L, p.cast, p.clues, 2);
+  const opt = { three: !!p.three };
+  if (p.num >= THREE_FROM && !p.three) bad(`${tag}: from No. ${THREE_FROM} a board must be a three-role board`);
+  if (p.num < THREE_FROM && p.three) bad(`${tag}: went live before three roles, must stay as it was`);
+  const sols = solve(L, p.cast, p.clues, 2, opt);
   if (sols.length !== 1) { bad(`${tag}: ${sols.length} answers (need exactly 1)`); return; }
   // The two stages stand on their own: placement clues alone fix the board, role clues alone fix the roles.
   const pl = solvePlacement(L, p.cast, p.clues, 2);
   if (pl.length !== 1) bad(`${tag}: placement clues allow ${pl.length} boards (need exactly 1)`);
-  const rl = solveRoles(L, p.cast, sols[0].place, p.clues, 2);
+  const rl = solveRoles(L, p.cast, sols[0].place, p.clues, 2, opt);
+  if (p.three) {
+    if (p.clues.some((c) => c.k === 'isrole')) bad(`${tag}: a note names someone's role outright`);
+    const gro = gradeRoles(L, p.cast, sols[0].place, p.clues);
+    if (!gro.solved) bad(`${tag}: the notes need a guess`);
+    if (gro.firstPin) bad(`${tag}: one note alone names someone`);
+  }
   if (rl.length !== 1) bad(`${tag}: role clues allow ${rl.length} role sets on the board (need exactly 1)`);
   const per = {};
-  for (const c of p.clues) if (c.p && !['isrole', 'notrole', 'same', 'some', 'every', 'none'].includes(c.k)) per[c.p] = (per[c.p] || 0) + 1;
+  for (const c of p.clues) if (c.p && !isRoleClue(c)) per[c.p] = (per[c.p] || 0) + 1;
   if (Object.values(per).some((n) => n > (N <= 8 ? 1 : 2))) bad(`${tag}: a person has more than ${N <= 8 ? 1 : 2} placement clues`);
   // THE DAY'S BAND (owner, 2026-11-02): from No. 5 (Tue Nov 3) a board's hardest move must sit in its day's band
   // and no board may need a guess. Earlier boards went live before the rule and are reported, not failed.
