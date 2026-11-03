@@ -59,7 +59,7 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
       // flat room names
       const lab = labRef.current; lab.innerHTML = '';
       const roomLabels = room.labels.map((l) => { const el = document.createElement('div'); el.className = 'b3-room' + (l.out ? ' out' : ''); el.textContent = l.name; lab.appendChild(el);
-        return { el, a: new THREE.Vector3(...l.a), b: new THREE.Vector3(...l.b) }; });
+        return { el, k: l.k, a: new THREE.Vector3(...l.a), b: new THREE.Vector3(...l.b) }; });
       Object.assign(s, { THREE, renderer, scene, cam, kit, P, N, room, overlay, people, roomLabels, tags: [], figs: {}, az: 0, el: ANG, raf: 0 });
       // figures for the cast cards
       if (onThumbs) { try { onThumbs(await kit.figureThumbs(cast.map((id) => ({ id, look: LOOKS[id], color: colors[id] })))); } catch (e) {} }
@@ -91,7 +91,13 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
     const tile = (r, c, color, op) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(.94, .94), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(X(c), top(r, c) + .01, Z(r)); m.renderOrder = 2; overlay.add(m); };
     const outline = (r, c, color, w) => { const m = new THREE.Mesh(new THREE.RingGeometry(.4, .4 + (w || .06), 4, 1, Math.PI / 4), new THREE.MeshBasicMaterial({ color, depthWrite: false, side: THREE.DoubleSide })); m.rotation.x = -Math.PI / 2; m.scale.set(1.41, 1.41, 1); m.position.set(X(c), top(r, c) + .016, Z(r)); m.renderOrder = 3; overlay.add(m); };
     const ring = (r, c, color, rad) => { const m = new THREE.Mesh(new THREE.TorusGeometry(rad, .028, 8, 40), new THREE.MeshBasicMaterial({ color })); m.rotation.x = -Math.PI / 2; m.position.set(X(c), top(r, c) + .03, Z(r) + .05); overlay.add(m); };
-    if (p.shade) p.shade.forEach((k) => { const [r, c] = k.split(',').map(Number); tile(r, c, 0x0b0f1a, .26); });
+    if (p.shade) { p.shade.forEach((k) => { const [r, c] = k.split(',').map(Number); tile(r, c, 0x05070d, .55); });
+      // each placed person's row and column also gets two solid light edges, so the strip reads at a glance
+      const edgeM = new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: .85, depthWrite: false });
+      const edge = (x, z, w, d) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), edgeM); m.rotation.x = -Math.PI / 2; m.position.set(x, .014, z); m.renderOrder = 3; overlay.add(m); };
+      const rows = new Set(), cols = new Set(); for (const id of p.cast) { const x = p.place[id]; if (x) { rows.add(x[0]); cols.add(x[1]); } }
+      rows.forEach((r) => { if (!rows.has(r - 1)) edge(0, Z(r) - .5, N, .045); if (!rows.has(r + 1)) edge(0, Z(r) + .5, N, .045); });
+      cols.forEach((c) => { if (!cols.has(c - 1)) edge(X(c) - .5, 0, .045, N); if (!cols.has(c + 1)) edge(X(c) + .5, 0, .045, N); }); }
     if (p.nudge) p.nudge.forEach(([r, c]) => tile(r, c, 0xfb7185, .3));
     if (p.glow) p.glow.forEach(([r, c]) => outline(r, c, 0xfacc15));
     if (p.cross) Object.keys(p.cross).forEach((k) => { if (!p.cross[k]) return; const [r, c] = k.split(',').map(Number); const mat = new THREE.MeshStandardMaterial({ color: 0x1f2229, roughness: .6 });
@@ -118,15 +124,30 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
     const proj = (v) => { const q = v.clone().project(s.cam); return [(q.x + 1) / 2 * W, (1 - q.y) / 2 * H]; };
     const taken = [];
     for (const t of s.tags) { const [x, y] = proj(t.at); t.el.style.left = x + 'px'; t.el.style.top = y + 'px';
-      if (t.base) { const [, yb] = proj(t.base), [, yt] = proj(t.top); const w = (yb - yt) * .95; taken.push({ x: x - w / 2, y: yt, w, h: yb - yt + 20 }); } }
-    const hit = (r) => taken.some((q) => r.x < q.x + q.w + 2 && q.x < r.x + r.w + 2 && r.y < q.y + q.h + 2 && q.y < r.y + r.h + 2);
-    const base = W < 500 ? 9.5 : 11;
+      if (t.base) { const [, yb] = proj(t.base), [, yt] = proj(t.top); const w = (yb - yt) * 1.2; taken.push({ x: x - w / 2, y: yt - 4, w, h: yb - yt + 24, person: 1 }); } }
+    for (const t of s.tags) { const r = t.el.getBoundingClientRect(), bx = box.getBoundingClientRect(); taken.push({ x: r.left - bx.left, y: r.top - bx.top, w: r.width, h: r.height }); }
+    // furniture: the screen box of every standing piece, so a room name never sits on a bench or a stall
+    const X = (c) => c - s.N / 2 + 0.5, Z = (r) => r - s.N / 2 + 0.5;
+    const furn = (s.P.items || []).map((it) => { const ht = s.room.cellTop[it.r * s.N + it.c] || .3; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+      for (const xx of [X(it.c) - .45, X(it.c + it.w - 1) + .45]) for (const zz of [Z(it.r) - .45, Z(it.r + it.h - 1) + .45]) for (const yy of [0, ht]) {
+        const [px, py] = proj(new s.THREE.Vector3(xx, yy, zz)); x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px); y1 = Math.max(y1, py); }
+      return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; });
+    const ov = (a, q, pad) => Math.max(0, Math.min(a.x + a.w, q.x + q.w) - Math.max(a.x, q.x) + pad) * Math.max(0, Math.min(a.y + a.h, q.y + q.h) - Math.max(a.y, q.y) + pad);
+    const placed = [];
+    const cost = (r) => { let k = 0; for (const q of taken) k += ov(r, q, 3) * (q.person ? 300 : 60); for (const q of placed) k += ov(r, q, 3) * 40; for (const q of furn) k += ov(r, q, 0) * 6;
+      if (r.x < 2) k += (2 - r.x) * 200; if (r.y < 2) k += (2 - r.y) * 200; if (r.x + r.w > W - 2) k += (r.x + r.w - W + 2) * 200; if (r.y + r.h > H - 2) k += (r.y + r.h - H + 2) * 200; return k; };
+    const R = s.P.rooms, N = s.N; const base = W < 500 ? 9.5 : 11;
     for (const l of s.roomLabels) { const e = l.el; const [ax, ay] = proj(l.a), [bx] = proj(l.b); const maxw = Math.max(24, bx - ax);
-      e.classList.remove('wrap'); e.style.fontSize = base + 'px'; e.style.maxWidth = '';
+      e.classList.remove('wrap'); e.style.fontSize = base + 'px'; e.style.maxWidth = ''; e.style.opacity = 1;
       if (e.offsetWidth > maxw) { e.style.fontSize = Math.max(8, base * maxw / e.offsetWidth) + 'px'; if (e.offsetWidth > maxw && e.textContent.includes(' ')) { e.classList.add('wrap'); e.style.maxWidth = Math.max(maxw, 40) + 'px'; } }
-      const w = e.offsetWidth, h = e.offsetHeight; const spots = [[ax, ay - h], [bx - w, ay - h], [ax, ay + 2], [bx - w, ay + 2]];
-      let pick = spots.find(([x, y]) => !hit({ x, y, w, h })); e.style.opacity = pick ? 1 : .4; pick = pick || spots[0];
-      e.style.left = pick[0] + 'px'; e.style.top = pick[1] + 'px'; taken.push({ x: pick[0], y: pick[1], w, h }); }
+      const w = e.offsetWidth, h = e.offsetHeight;
+      // candidate spots: on the back wall first, then the top-left / top-right / middle of every row of the room
+      const spots = [[ax, ay - h], [bx - w, ay - h], [ax, ay + 2], [bx - w, ay + 2]];
+      for (let r = 0; r < N; r++) { let c = 0; while (c < N) { if (R[r][c] !== l.k) { c++; continue; } let e2 = c; while (e2 + 1 < N && R[r][e2 + 1] === l.k) e2++;
+        const [lx, ly] = proj(new s.THREE.Vector3(X(c) - .43, .02, Z(r) - .45)), [rx] = proj(new s.THREE.Vector3(X(e2) + .43, .02, Z(r) - .45)), [, my] = proj(new s.THREE.Vector3(X(c), .02, Z(r))), [, by] = proj(new s.THREE.Vector3(X(c), .02, Z(r) + .45));
+        spots.push([lx, ly], [rx - w, ly], [(lx + rx - w) / 2, ly], [lx, my - h / 2], [rx - w, my - h / 2], [(lx + rx - w) / 2, my - h / 2], [lx, by - h], [rx - w, by - h]); c = e2 + 1; } }
+      let best = null, bk = Infinity; spots.forEach(([x, y], i) => { const k = cost({ x, y, w, h }) + i * 2; if (k < bk) { bk = k; best = [x, y]; } });
+      e.style.left = best[0] + 'px'; e.style.top = best[1] + 'px'; placed.push({ x: best[0], y: best[1], w, h }); }
   }
 
   // ---- drag to turn, tap to play
