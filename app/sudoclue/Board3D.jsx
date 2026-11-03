@@ -134,7 +134,7 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
       return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; });
     const ov = (a, q, pad) => Math.max(0, Math.min(a.x + a.w, q.x + q.w) - Math.max(a.x, q.x) + pad) * Math.max(0, Math.min(a.y + a.h, q.y + q.h) - Math.max(a.y, q.y) + pad);
     const placed = [];
-    const cost = (r) => { let k = 0; for (const q of taken) k += ov(r, q, 3) * (q.person ? 300 : 60); for (const q of placed) k += ov(r, q, 3) * 40; for (const q of furn) k += ov(r, q, 0) * 6;
+    const cost = (r) => { let k = 0; for (const q of taken) k += ov(r, q, 3) * (q.person ? 300 : 60); for (const q of placed) k += ov(r, q, 3) * 40; for (const q of furn) k += ov(r, q, 2) * 15;
       if (r.x < 2) k += (2 - r.x) * 200; if (r.y < 2) k += (2 - r.y) * 200; if (r.x + r.w > W - 2) k += (r.x + r.w - W + 2) * 200; if (r.y + r.h > H - 2) k += (r.y + r.h - H + 2) * 200; return k; };
     const R = s.P.rooms, N = s.N; const base = W < 500 ? 9.5 : 11;
     for (const l of s.roomLabels) { const e = l.el; const [ax, ay] = proj(l.a), [bx] = proj(l.b); const maxw = Math.max(24, bx - ax);
