@@ -69,6 +69,8 @@ export default function StageRoll({
   // second beat is the three ranks (the stats move to the bar's dropdown), and
   // the final view leads with their card.
   standRows = null, beatRows = null, standGo = true, noCount = false,
+  // WHO'S NEXT TO PASS and the next play (owner, 2026-11-03, B2).
+  passNode = null, playNode = null,
 }) {
   const [fresh] = useState(() => {
     try {
@@ -104,7 +106,7 @@ export default function StageRoll({
   // ── THE BAR'S TEXT, fitted to its width ────────────────────────────────
   const head = [verdict, metric && metric.text].filter(Boolean).join(' ');
   const gs = groupStanding(grp, gameKey);
-  const variants = phase < 2 ? [head]
+  const variants = phase < 2 || standRows ? [head]
     : gs ? [`${head} · #${gs.rank} of ${gs.n} in ${gs.name}`, `${head} · #${gs.rank} of ${gs.n}`]
     : rankHead ? [`${head} · ${rankHead}`] : [head];
   const [barText, setBarText] = useState(variants[0]);
@@ -213,13 +215,24 @@ export default function StageRoll({
 
       <div className="srl-stack">
         <div className="srl-sum">
-          <button type="button" className={'srl-bar' + (open ? ' open' : '')} onClick={tapBar}
+          <button type="button" className={'srl-bar' + (open ? ' open' : '') + (standRows && phase >= 2 ? ' chips' : '')} onClick={tapBar}
             aria-expanded={open} aria-label={`${barText}. Show result and standings`}>
-            <span className="tx">
-              <b ref={barRef} style={{ fontSize: barFs }}>{barText}</b>
-              <span ref={measRef} className="srl-meas" aria-hidden="true" />
+            <span className="srl-br1">
+              <span className="tx">
+                <b ref={barRef} style={{ fontSize: barFs }}>{barText}</b>
+                <span ref={measRef} className="srl-meas" aria-hidden="true" />
+              </span>
+              <span className="ch" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg></span>
             </span>
-            <span className="ch" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg></span>
+            {/* WHERE YOU STAND, NESTED IN THE BAR (owner, 2026-11-03): the
+                three ranks ride under the result; the bar opens them. */}
+            {standRows && phase >= 2 ? (
+              <span className="srl-chips" aria-hidden="true">
+                {standRows.map((r) => (
+                  <span key={r.id} className="srl-chip2"><i>{r.name}</i><b>#{r.rank.toLocaleString('en-US')}{r.up ? <small> &uarr;{r.up}</small> : null}</b></span>
+                ))}
+              </span>
+            ) : null}
           </button>
         </div>
 
@@ -230,6 +243,14 @@ export default function StageRoll({
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16M15 4v16" /></svg>
                 {showBoardLabel || 'Show Board'}
               </button>
+            </div>
+          </section>
+        ) : null}
+
+        {standRows ? (
+          <section className={'srl-beat ' + (phase >= 2 && open ? 'focus' : phase >= 2 ? 'gone' : 'pend')}>
+            <div className="srl-full">
+              <div className="sst-card srl-land"><StandCard rows={standRows} /></div>
             </div>
           </section>
         ) : null}
@@ -280,7 +301,9 @@ export default function StageRoll({
                 </button>
               ) : null}
 
-              {standRows ? <div className="sst-card srl-land d1"><StandCard rows={standRows} /></div> : null}
+              {passNode ? <div className="srl-land d1">{passNode}</div> : null}
+              {playNode ? <div className="srl-land d1">{playNode}</div> : null}
+              {passNode && chalNode ? <div className="srl-land d2">{chalNode}</div> : null}
 
               <section className="sst-card sst-pn srl-land d1">
                 <div className="sst-sl">Play next</div>
@@ -326,7 +349,7 @@ export default function StageRoll({
                 {allHref ? <a className="sst-all" href={allHref}>See all Daily Puzzles</a> : null}
               </section>
 
-              {chalNode ? <div className="srl-land d2">{chalNode}</div> : null}
+              {chalNode && !passNode ? <div className="srl-land d2">{chalNode}</div> : null}
             </div>
           </div>
         </section>
@@ -359,7 +382,7 @@ const CSS = `
 .srl.p0 .srl-stack{padding-top:min(26vh,190px);}
 
 .srl-sum{overflow:hidden;max-height:0;opacity:0;transition:max-height .55s cubic-bezier(.2,.8,.2,1),opacity .3s ease;}
-.srl.p1 .srl-sum,.srl.p2 .srl-sum{max-height:60px;opacity:1;transition-delay:.1s;}
+.srl.p1 .srl-sum,.srl.p2 .srl-sum{max-height:150px;opacity:1;transition-delay:.1s;}
 .srl.p1 .srl-bar{animation:srl-take1 .6s cubic-bezier(.2,.9,.25,1.2) .38s both;}
 .srl.p2 .srl-bar{animation:srl-take2 .6s cubic-bezier(.2,.9,.25,1.2) .38s both;}
 @keyframes srl-take1{0%{transform:translateY(10px) scale(.97)}55%{transform:translateY(-3px) scale(1.02)}100%{transform:none}}
@@ -368,6 +391,14 @@ const CSS = `
   background:var(--sst-card);color:var(--sst-ink);font:inherit;text-align:left;cursor:pointer;}
 .srl-bar .tx{flex:1;min-width:0;position:relative;}
 .srl-meas{position:absolute;left:0;top:0;visibility:hidden;white-space:nowrap;font-weight:800;letter-spacing:-.015em;font-variant-numeric:tabular-nums;pointer-events:none;}
+.srl-bar.chips{height:auto;flex-direction:column;align-items:stretch;gap:8px;padding:10px 10px 10px 16px;}
+.srl-br1{display:flex;align-items:center;gap:4px;width:100%;min-width:0;}
+.srl-bar:not(.chips) .srl-br1{height:100%;}
+.srl-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding-right:6px;}
+.srl-chip2{display:flex;align-items:baseline;justify-content:space-between;gap:4px;min-width:0;padding:6px 9px;border-radius:10px;background:var(--sst-wash);}
+.srl-chip2 i{font-style:normal;font-size:11.5px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.srl-bar .srl-chip2 b{display:inline;width:auto;padding:0;margin:0;font-size:15px;font-weight:800;letter-spacing:0;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:visible;}
+.srl-chip2 small{font-size:10.5px;font-weight:800;}
 .srl-bar b{display:block;width:100%;font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.15;padding:.08em 0 .2em;margin:-.08em 0 -.2em;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums;}
 .srl-bar .ch{flex:none;width:26px;height:26px;display:flex;align-items:center;justify-content:center;opacity:.65;transition:transform .35s cubic-bezier(.2,.8,.2,1);}
 .srl-bar.open .ch{transform:rotate(180deg);opacity:1;}

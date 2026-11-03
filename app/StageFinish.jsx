@@ -1134,6 +1134,7 @@ export default function StageFinish({
   const [chal, setChal] = useState(null);
   const [chalMsg, setChalMsg] = useState('');
   const [memeOpen, setMemeOpen] = useState(false);
+  const [memePick, setMemePick] = useState(null);
   const memeCtxRef = useRef(null);
   // The board number on screen, kept even when this browser holds no save for
   // it, so the challenge can still be built off the board row.
@@ -1751,7 +1752,7 @@ export default function StageFinish({
       route: String(me.href || `/${me.key}`).replace(/^\//, ''),
     };
   })() : null;
-  const openMeme = memeCtx ? () => setMemeOpen(true) : null;
+  const openMeme = memeCtx ? (p) => { setMemePick(p && p.key ? p : null); setMemeOpen(true); } : null;
   memeCtxRef.current = memeCtx;
   const playedN = new Set([...played, ...(me ? [me.key] : [])]).size;
   const smallDoors = [];
@@ -2206,7 +2207,7 @@ export default function StageFinish({
     <div className={'stf' + (outcome ? ' stf-' + outcome : '') + (tone === 'lost' ? ' stf-miss' : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
-      <MemeShare open={memeOpen} onClose={() => setMemeOpen(false)} ctx={memeCtx} getLink={challengeLink} />
+      <MemeShare open={memeOpen} onClose={() => setMemeOpen(false)} ctx={memeCtx} getLink={challengeLink} pick={memePick} />
       {stickProps ? (
         <StageStick {...stickProps} ready={stickReady} onLeave={leaveStick} onBack={backToBoard}
           archiveHref={me ? `/archive?game=${encodeURIComponent(me.key)}` : null}

@@ -36,14 +36,14 @@ import { useMyTickets } from './TicketDoor';
 import { gameStats, mmss } from '@/lib/daily-row-stats';
 import GameGlyph from './GameGlyph';
 import StageRoll from './StageRoll';
-import { MemePeek } from './MemeShare';
+import { MemeStack } from './MemeShare';
 import FinishGroupLine from './groups/FinishGroupLine';
 import { dailyMeIdentity } from './dailyMeClient';
 import { sharedGet } from './sharedGet';
 import { useStageChrome } from './GauntletScreens';
 import { dailyDept, DAILY_GAME_MAP } from '@/lib/daily-games';
 import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref } from '@/lib/circuits';
-import { usePuzzleStandings, StandBeat, StandRows, beatDuration } from './WhereYouStand';
+import { usePuzzleStandings, StandBeat, StandCard, PassCard, PassPlay, beatDuration } from './WhereYouStand';
 
 // RUNS, NOT THEIR PARTS (owner, 2026-10-26: "don't send users to individual
 // run components. show runs in place of those"). A game that is one question
@@ -238,6 +238,18 @@ export default function StageStick({
     on: !!(standing && standing.game), gameKey: standing && standing.gameKey, gameName: standing && standing.gameName,
     cat: standing && standing.cat, game: standing && standing.game,
     board: sRows.map((r) => (r.gap ? { gap: true } : r.empty ? null : { rank: r.rank, name: r.username, fig: gameStats(r, sheet.missLabel, sheet.gameKey), me: !!r.me })).filter(Boolean),
+    next: (() => {
+      // The player just above on this puzzle's board, and the clock between you
+      // on a race (else just their figure).
+      const i = sRows.findIndex((r) => r && r.me);
+      const up = i > 0 ? sRows[i - 1] : null;
+      if (!up || up.gap || up.empty || !up.username) return null;
+      const mine = sRows[i];
+      const a = Number(up.timeElapsed), b = Number(mine && mine.timeElapsed);
+      const race = !!(standing && standing.game && standing.game.race) && Number.isFinite(a) && Number.isFinite(b) && b >= a;
+      const d = race ? Math.round(b - a) : null;
+      return { name: up.username, fig: gameStats(up, sheet.missLabel, sheet.gameKey) || '', gapText: race ? `${d < 60 ? `${d}s` : mmss(d)} behind` : `#${up.rank} next`, fill: race && b > 0 ? Math.max(0.05, Math.min(1, a / b)) : 0.85 };
+    })(),
   });
   const standRows = stand.rows && stand.rows.length >= 2 ? stand.rows : null;
   // The beat waits for its figures, but never long: past STAND_WAIT_MS the
@@ -558,7 +570,7 @@ export default function StageStick({
         <div className="sst-scope" role="tablist" aria-label="Leaderboard">
           <button type="button" role="tab" aria-selected={scope === 'today'} className={scope === 'today' ? 'on' : ''} onClick={() => setScope('today')}>Today</button>
           {desk && standRows ? standRows.slice(1).map((r) => (
-            <button key={r.id} type="button" role="tab" aria-selected={scope === r.id} className={scope === r.id ? 'on' : ''} onClick={() => setScope(r.id)}>{r.id === 'day' ? 'All Puzzles' : r.name}</button>
+            <button key={r.id} type="button" role="tab" aria-selected={scope === r.id} className={scope === r.id ? 'on' : ''} onClick={() => setScope(r.id)}>{r.name}</button>
           )) : null}
           <button type="button" role="tab" aria-selected={scope === 'all'} className={scope === 'all' ? 'on' : ''} onClick={() => setScope('all')}>All time</button>
         </div>
@@ -586,12 +598,7 @@ export default function StageStick({
   // its own so the phone's rolling ending can play it as its own beat.
   const resultStats = (live) => (
     <div className="sst-h2">
-      {desk && standRows ? (
-        <section className={on(2)}>
-          <div className="sst-lab">Where You Stand</div>
-          <StandRows rows={standRows} />
-        </section>
-      ) : (
+      {(
       <section className={on(2)}>
         <div className="sst-lab">Today&rsquo;s field</div>
         <div className="sst-hl">{field && field.line ? field.line : 'The board is still filling'}</div>
@@ -768,6 +775,48 @@ export default function StageStick({
     </div>
   );
 
+  // ── WHO'S NEXT TO PASS and THE EASIEST POINTS LEFT (owner, 2026-11-03) ───
+  // The picks come from the day board (lib: daily-combined `stand.picks`):
+  // expected points per minute, never a puzzle most players don't finish or
+  // one that runs past 10 minutes. Run parts are left out (a run is not a
+  // quick play), and so is anything played today.
+  const liveBy = new Map((allGames || []).map((g) => [g.key, g]));
+  const usable = (list) => (list || []).filter((p) => p && p.key !== s.gameKey && !RUN_OF.has(p.key) && liveBy.has(p.key) && !liveBy.get(p.key).done)
+    .map((p) => ({ ...p, g: liveBy.get(p.key) }));
+  const dayPicks = usable(stand.dayPicks);
+  const catPicks = usable(stand.catPicks);
+  const dayRow = standRows ? standRows.find((r) => r.id === 'day') : null;
+  const catRow = standRows ? standRows.find((r) => r.id === 'cat') : null;
+  const mainPick = dayPicks[0] || catPicks[0] || null;
+  const catPick = catPicks.find((p) => !mainPick || p.key !== mainPick.key) || null;
+  const otherPick = catPick || dayPicks.find((p) => !mainPick || p.key !== mainPick.key) || null;
+  const passLine = (p) => {
+    if (!p || !dayRow) return '';
+    const head = `A typical finish (~${p.pts} ${p.pts === 1 ? 'pt' : 'pts'})`;
+    if (!p.after || p.after >= dayRow.rank) return `${head} adds to your day in All.`;
+    if (dayRow.next && p.pts >= dayRow.next.gap) return `${head} passes ${dayRow.next.name} and moves you to about #${p.after} in All.`;
+    return `${head} moves you to about #${p.after} in All.`;
+  };
+  const toGifs = (e) => {
+    const el = document.getElementById(desk ? 'sst-rail-gifs' : 'sst-gifs');
+    if (!el) return;
+    if (e) e.preventDefault();
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (x) { el.scrollIntoView(); }
+  };
+  const small = [];
+  if (otherPick) {
+    const nx = otherPick === catPick && catRow && catRow.next && otherPick.pts >= catRow.next.gap ? `passes ${catRow.next.name}` : `${otherPick.mins} min \u00b7 ~${otherPick.pts} pts`;
+    small.push({ title: `Play ${otherPick.g.name}`, sub: `${otherPick.g.cat} \u00b7 ${nx}`, href: otherPick.g.href });
+  }
+  if (chal && meme && meme.ctx) small.push({ title: 'Challenge', sub: `${s.gameName || 'This puzzle'} \u00b7 ${desk ? 'GIFs at right' : '3 GIFs below'}`, href: '#sst-gifs', onClick: toGifs });
+  const playNode = mainPick || small.length ? (
+    <PassPlay main={mainPick ? { key: mainPick.key, name: mainPick.g.name, href: mainPick.g.href, mins: mainPick.mins, line: passLine(mainPick) } : null} small={small} />
+  ) : null;
+  const passNode = standRows ? <PassCard rows={standRows} wide={desk} /> : null;
+  // The standing GIF's caption: the day, and what this puzzle moved.
+  const standCaption = dayRow ? `#${dayRow.rank} of ${dayRow.of.toLocaleString('en-US')} today.${dayRow.up ? ` Up ${dayRow.up} with ${s.gameName || 'this puzzle'}.` : ''}` : null;
+  const ezList = desk ? dayPicks.slice(0, 5) : [];
+
   // ── 2-5. THE CARDS ─────────────────────────────────────────────────────
   const rankCard = (s.rows && s.rows.length) || s.gameKey ? (
         <section className={'sst-card sst-rk ' + on(4)}>
@@ -875,9 +924,39 @@ export default function StageStick({
               <span className="ar" aria-hidden="true">{share.label === 'Copied' ? '✓' : '→'}</span>
             </button>
           ) : null}
-          {meme && meme.ctx ? <div className="sst-gif"><MemePeek ctx={meme.ctx} onOpen={meme.onOpen} /></div> : null}
+          {meme && meme.ctx ? <div className="sst-gif" id="sst-gifs"><MemeStack ctx={meme.ctx} onOpen={meme.onOpen} standing={standCaption} /></div> : null}
         </section>
       ) : null;
+  // THE GIF RAIL (owner, 2026-11-03, desktop): with the side rail present the
+  // challenge and the three GIFs take the rail, and the sheet's challenge slot
+  // lists the easiest points left instead.
+  const gifRail = (chal || (meme && meme.ctx)) ? (
+    <div className={'sst-rail sst-grail' + (phase !== 'show' ? ' in' : '')}>
+      <div className="sst-rh"><b>Send a GIF</b><span>tap one to share</span></div>
+      <div className="sst-rs" id="sst-rail-gifs">
+        {chal ? (
+          <button type="button" className="sst-chal" onClick={chal.onSend}>
+            <span className="tx"><b>{chal.title}</b><i>{chalSub}</i></span>
+            <span className="ar" aria-hidden="true">{chal.copied ? '\u2713' : '\u2192'}</span>
+          </button>
+        ) : null}
+        {share ? (
+          <button type="button" className="sst-shr" onClick={share.onClick}>
+            <span className="tx"><b>{share.label}</b><i>{share.sub || 'Your result, no spoilers'}</i></span>
+            <span className="ar" aria-hidden="true">{share.label === 'Copied' ? '\u2713' : '\u2192'}</span>
+          </button>
+        ) : null}
+        {meme && meme.ctx ? <div className="sst-gif"><MemeStack ctx={meme.ctx} onOpen={meme.onOpen} standing={standCaption} /></div> : null}
+      </div>
+    </div>
+  ) : null;
+  const ezCard = ezList.length ? (
+    <section className={'sst-card sst-ch sst-ez ' + on(4)}>
+      <div className="sst-sl">Easiest Points Left</div>
+      {ezList.map((p) => railRow({ key: p.key, name: p.g.name, href: p.g.href }, `${p.g.cat} \u00b7 ${p.mins} min \u00b7 ${p.finish}% finish \u00b7 ~${p.pts} pts`))}
+    </section>
+  ) : null;
+  const railGifs = !!(desk && rail && gifRail);
   const runLink = run ? (
             <a className="sst-run" href={run.href}>
               <span className="top">
@@ -947,14 +1026,18 @@ export default function StageStick({
 
   const cards = (
     <div className="sst-cards">
+      {/* WHO'S NEXT TO PASS and the next play (owner, 2026-11-03) */}
+      {desk && (passNode || playNode) ? <section className={'sst-card sst-pass ' + on(3)}>{passNode}{playNode}</section> : null}
+
       {/* 2. RANKINGS */}
       {rankCard}
 
       {/* 3. CHALLENGE, with the GIF itself on show. Crux also keeps its
           emoji result grid as a plain text Share (owner, 2026-10-26: a Crux
           player reported the board could no longer be shared once the
-          one-page ending replaced the old door grid). */}
-      {chalCard}
+          one-page ending replaced the old door grid). With the GIF rail
+          on, the rail carries it and this slot lists the easiest points. */}
+      {railGifs ? ezCard : chalCard}
 
       {/* 4. PLAY NEXT */}
       <section className={'sst-card sst-pn ' + on(5)}>
@@ -978,7 +1061,7 @@ export default function StageStick({
             </div>
           ) : null}
         </div>
-        {desk ? (rail ? null : keepPlaying) : (
+        {desk ? (rail && !railGifs ? null : keepPlaying) : (
           <>
           {shelfNode}
           {catsNode}
@@ -1016,6 +1099,7 @@ export default function StageStick({
           onShowBoard={back} showBoardLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show Board'}
           retry={retry} homeHref={allHref || '/'}
           standRows={standRows} beatRows={beatRows} standGo={standGo} noCount={noCount}
+          passNode={passNode} playNode={playNode}
           {...replayProps}
         />
       </div>
@@ -1031,7 +1115,7 @@ export default function StageStick({
         <div className="sst-band" ref={heroRef}>{result(phase === 'inline')}</div>
         {cards}
       </div>
-      {rail ? createPortal(upNext, rail) : null}
+      {rail ? createPortal(railGifs ? gifRail : upNext, rail) : null}
       {phase !== 'inline' ? createPortal((
         <div ref={rootRef} className={'sst sst-cover' + toneCls + (phase === 'retract' ? ' go' : '') + (beatRows ? ' wys-on' : '')}
           style={clip ? { clipPath: clip, WebkitClipPath: clip } : undefined}
@@ -1137,6 +1221,14 @@ const CSS = `
 .sst-cover.wys-on .sst-h2{display:none;}
 .sst-cover.wys-on .sst-cin{padding-top:max(36px,calc(50vh - 380px));}
 .sst-wysf{font-size:12.5px;font-weight:700;margin:8px 6px 0;opacity:.8;}
+.sst .wys-pass,.sst .wys-pp,.sst-page .wys-pass,.sst-page .wys-pp{--wys-ink:var(--sst-ink);--wys-bg:var(--sst-bg);--wys-card:var(--sst-card);--wys-wash:var(--sst-wash);}
+.sst-page .sst-pass{grid-column:1 / -1;display:flex;flex-direction:column;gap:14px;}
+.sst-page .sst-pass .wys-pass{padding:0;}
+@container (min-width:700px){ .sst-page .sst-pass .wys-pp{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:stretch;} .sst-page .sst-pass .wys-sm{grid-template-columns:minmax(0,1fr);} }
+.sst-grail{--sst-ink:var(--stg-ink,#0b0d12);--sst-bg:var(--sp-g,#b1e5fd);}
+.sst-grail .sst-rs{display:flex;flex-direction:column;gap:12px;}
+.sst-grail .sst-gif{margin-top:0;}
+.sst-ez .sst-rr{margin:0;}
 .sst-band .wys-rows{margin-top:10px;}
 
 /* THE CARDS: a quieter step of the colour, no shadow, ink text. */

@@ -34,6 +34,7 @@ import { MC_IDS } from '@/lib/multiple-choice';
 import { dailyMeIdentity } from './dailyMeClient';
 import { resultPostsSettled } from './ResultQueue';
 import { sharedGet } from './sharedGet';
+import GameGlyph from './GameGlyph';
 
 // The daily points ladder (lib/daily-combined LADDER), by registered place.
 const LADDER = [15, 12, 10, 8, 7, 6, 5, 4, 3, 2];
@@ -105,7 +106,18 @@ function pointsRow(d, { id, lab, name, word, plus = 0 }) {
     cap: `${fmt(r1(total))} pts from ${plural(games, word, word + 's')}`,
     foot: up ? `Up ${up} ${up === 1 ? 'place' : 'places'} with this finish` : `${plural(of, 'player', 'players')} today`,
     board: pointsBoard(st, rank, total, inRead ? st.nearRank : (plus > 0 ? st.nearPlus : st.nearRank)),
+    next: nextOf(inRead ? st.nearRank : (plus > 0 ? st.nearPlus : st.nearRank), total, rank),
+    picks: Array.isArray(st.picks) ? st.picks : [],
   };
+}
+
+// WHO'S NEXT TO PASS (owner, 2026-11-03, option B2): the named player just
+// above, and the points between you.
+function nextOf(near, total, rank) {
+  if (!near || !near.up || rank <= 1) return null;
+  const them = Number(near.up.total) || 0;
+  const gap = r1(Math.max(0, them - total));
+  return { name: near.up.username, fig: `${fmt(them)} pts`, gap, gapText: `${fmt(gap || 0.1)} ${gap === 1 ? 'pt' : 'pts'} behind`, fill: them > 0 ? Math.max(0.05, Math.min(1, total / them)) : 1 };
 }
 
 function mcRow(d) {
@@ -127,8 +139,11 @@ function mcRow(d) {
     rows.push({ gap: true });
     rows.push(mine);
   }
+  const above = others.filter((r) => Number(r.value) > Number(me.total)).pop();
+  const next = above ? { name: above.name, fig: `${fmt(above.value)} right`, gap: above.value - me.total, gapText: `${fmt(above.value - me.total)} right behind`, fill: Math.max(0.05, Math.min(1, me.total / above.value)) } : null;
   return {
-    id: 'cat', lab: 'MC Runs Today', name: 'MC Runs', rank: me.rank, of, from: me.before || of, up, pct: pctOf(me.rank, of),
+    next, picks: [],
+    id: 'cat', lab: 'MC Runs', name: 'MC Runs', rank: me.rank, of, from: me.before || of, up, pct: pctOf(me.rank, of),
     cap: `${fmt(me.total)} right across ${plural(me.runs || 1, 'run', 'runs')}`,
     foot: up ? `Up ${up} ${up === 1 ? 'place' : 'places'} in MC Runs with this run` : `${plural(of, 'player', 'players')} in MC Runs today`,
     board: rows,
@@ -138,7 +153,7 @@ function mcRow(d) {
 // ── THE PUZZLE ENDING'S THREE ROWS ─────────────────────────────────────────
 // game: { rank, n, guest, race } from the ending's own board read.
 // board: today's board for the game, [{ rank, name, fig, me, gap }].
-export function usePuzzleStandings({ on, gameKey, gameName, cat, game, board }) {
+export function usePuzzleStandings({ on, gameKey, gameName, cat, game, board, next = null }) {
   const [rows2, setRows2] = useState(null);
   const [ready, setReady] = useState(false);
   const asked = useRef(false);
@@ -158,10 +173,10 @@ export function usePuzzleStandings({ on, gameKey, gameName, cat, game, board }) 
       if (!alive) return;
       const out = [];
       if (c && (Number(c.gameCount) || 0) >= 2) {
-        const r = pointsRow(c, { id: 'cat', lab: `${cat} Puzzles Today`, name: cat, word: 'puzzle', plus });
+        const r = pointsRow(c, { id: 'cat', lab: `${cat} Puzzles`, name: cat, word: 'puzzle', plus });
         if (r) out.push(r);
       }
-      const r3 = pointsRow(d, { id: 'day', lab: 'All Puzzles Today', name: 'Today', word: 'puzzle', plus });
+      const r3 = pointsRow(d, { id: 'day', lab: 'All Puzzles', name: 'All', word: 'puzzle', plus });
       if (r3) out.push(r3);
       setRows2(out);
       setReady(true);
@@ -177,8 +192,12 @@ export function usePuzzleStandings({ on, gameKey, gameName, cat, game, board }) 
     cap: of < 2 ? 'First on the board today' : game.rank === 1 ? 'Top of the board' : `${game.race ? 'Faster than' : 'Ahead of'} ${pct}%`,
     foot: of < 2 ? 'First on the board today' : `${game.race ? 'Faster than' : 'Ahead of'} ${pct}% of ${plural(of, 'player', 'players')}`,
     board: board || [],
+    next, picks: [],
   };
-  return { rows: ready ? [first, ...(rows2 || [])] : null, ready, first };
+  const all = rows2 || [];
+  const day = all.find((r) => r.id === 'day');
+  const catRow = all.find((r) => r.id === 'cat');
+  return { rows: ready ? [first, ...all] : null, ready, first, dayPicks: day ? day.picks : [], catPicks: catRow ? catRow.picks : [] };
 }
 
 // ── THE RUN ENDING'S THREE ROWS ────────────────────────────────────────────
@@ -213,9 +232,9 @@ export function useRunStandings({ on, runId, runName, keys, run, board, unitWord
     }).then(([c, d]) => {
       if (!alive) return;
       const out = [];
-      const rc = isMc ? mcRow(c) : (c ? pointsRow(c, { id: 'cat', lab: `${cat} Puzzles Today`, name: cat, word: 'puzzle' }) : null);
+      const rc = isMc ? mcRow(c) : (c ? pointsRow(c, { id: 'cat', lab: `${cat} Puzzles`, name: cat, word: 'puzzle' }) : null);
       if (rc) out.push(rc);
-      const rd = pointsRow(d, { id: 'day', lab: 'All Puzzles Today', name: 'Today', word: 'puzzle' });
+      const rd = pointsRow(d, { id: 'day', lab: 'All Puzzles', name: 'All', word: 'puzzle' });
       if (rd) out.push(rd);
       setRows2(out);
       setReady(true);
@@ -383,6 +402,96 @@ const ROWS_CSS = `
 .wys-rk span{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--wys-ink,#08222e)}
 .wys-rr{text-align:right;white-space:nowrap;font-size:12px;font-weight:700}
 .wys-rr b{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+`;
+
+// ── WHO'S NEXT TO PASS (owner, 2026-11-03, B2 on phones, the cards on
+// desktop): All, the category, then this puzzle, each naming the player just
+// above and the gap, with a bar for how close you are.
+export function PassCard({ rows, wide = false }) {
+  if (!rows || !rows.length) return null;
+  const list = rows.slice().reverse();
+  return (
+    <section className={'wys-pass' + (wide ? ' wide' : '')}>
+      <style dangerouslySetInnerHTML={{ __html: PASS_CSS }} />
+      <div className="wys-sl">Who&rsquo;s Next to Pass</div>
+      <div className="wys-pl">
+        {list.map((r) => (
+          <div key={r.id} className="wys-pr">
+            <div className="wys-ph"><span><b>{r.name}</b> #{fmt(r.rank)}</span><span>{r.next ? r.next.gapText : 'You lead'}</span></div>
+            <div className="wys-pb">
+              <span className="wys-pk"><span style={{ width: `${Math.round((r.next ? r.next.fill : 1) * 100)}%` }} /></span>
+              <span className="wys-pt">{r.next ? `${r.next.name} ${r.next.fig}` : 'Top of the board'}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// The one big play and the two small ones under it.
+// main: { key, name, href, mins, line }; small: [{ title, sub, href, onClick }].
+export function PassPlay({ main, small = [] }) {
+  if (!main && !small.length) return null;
+  return (
+    <div className="wys-pp">
+      <style dangerouslySetInnerHTML={{ __html: PASS_CSS }} />
+      {main ? (
+        <a className="wys-cta" href={main.href}>
+          <span className="top">
+            <span className="gl">{main.key ? <GameGlyph gameKey={main.key} size={26} /> : null}</span>
+            <span className="tx"><small>Easiest points left{main.mins ? ` \u00b7 ${main.mins} min` : ''}</small><b>Play {main.name}</b></span>
+            <span className="ar" aria-hidden="true">&rarr;</span>
+          </span>
+          {main.line ? <span className="ln">{main.line}</span> : null}
+        </a>
+      ) : null}
+      {small.length ? (
+        <div className={'wys-sm' + (small.length === 1 ? ' one' : '')}>
+          {small.map((x) => (
+            <a key={x.title} className="wys-sb" href={x.href || '#'} onClick={x.onClick || undefined}>
+              <b>{x.title}</b><span>{x.sub}</span>
+            </a>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+const PASS_CSS = `
+.wys-pass{color:var(--wys-ink,#08222e);background:var(--wys-card,rgba(255,255,255,.5));border-radius:18px;padding:13px 14px 4px;font-family:Manrope,ui-sans-serif,system-ui,sans-serif;min-width:0}
+.wys-pass .wys-sl{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.82;margin-bottom:2px}
+.wys-pr{padding:10px 0 11px;border-top:1px solid color-mix(in srgb,var(--wys-ink,#08222e) 14%,transparent)}
+.wys-pr:first-child{border-top:0}
+.wys-ph{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:800}
+.wys-ph b{font-size:15px;font-weight:800}
+.wys-pb{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;margin-top:7px}
+.wys-pk{position:relative;height:10px;border-radius:99px;background:color-mix(in srgb,var(--wys-ink,#08222e) 16%,transparent);overflow:hidden}
+.wys-pk span{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--wys-ink,#08222e);animation:wysFill .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wysFill{from{width:0}}
+.wys-pt{font-size:12.5px;font-weight:700;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis}
+.wys-pass.wide .wys-pl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.wys-pass.wide .wys-pr{border-top:0;padding:4px 0 10px}
+.wys-pass.wide .wys-pt{max-width:none}
+.wys-pp{display:flex;flex-direction:column;gap:10px;font-family:Manrope,ui-sans-serif,system-ui,sans-serif}
+.wys-cta{display:flex;flex-direction:column;gap:8px;padding:14px 16px;border-radius:16px;background:var(--wys-ink,#08222e);color:var(--wys-bg,#fff);text-decoration:none;animation:wysNudge 2.6s ease-in-out 1.6s 2}
+@keyframes wysNudge{0%,100%{transform:none}50%{transform:scale(1.02)}}
+.wys-cta .top{display:flex;align-items:center;gap:12px}
+.wys-cta .gl{flex:none;width:46px;height:46px;border-radius:12px;background:var(--wys-bg,#fff);color:var(--wys-ink,#08222e);display:flex;align-items:center;justify-content:center}
+.wys-cta .tx{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.wys-cta small{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.wys-cta b{font-size:20px;font-weight:800;line-height:1.15}
+.wys-cta .ar{flex:none;font-size:22px;font-weight:800}
+.wys-cta .ln{font-size:13px;font-weight:700;line-height:1.35}
+.wys-cta:hover{filter:brightness(1.08)}
+.wys-sm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.wys-sm.one{grid-template-columns:minmax(0,1fr)}
+.wys-sb{display:flex;flex-direction:column;gap:2px;min-width:0;padding:10px 12px;border-radius:14px;border:1px solid var(--wys-ink,#08222e);color:var(--wys-ink,#08222e);text-decoration:none}
+.wys-sb b{font-size:15px;font-weight:800}
+.wys-sb span{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em}
+.wys-sb:hover{background:color-mix(in srgb,var(--wys-ink,#08222e) 6%,transparent)}
+@media (prefers-reduced-motion:reduce){.wys-pk span,.wys-cta{animation:none}}
 `;
 
 // The colours come from the surface: --wys-ink, --wys-bg (the ground the

@@ -69,22 +69,50 @@ const PEEK_CSS = `
 .msh-peek:focus-visible{outline:2px solid currentColor;outline-offset:3px;}
 `;
 
-export function MemePeek({ ctx, onOpen }) {
+export function MemePeek({ ctx, onOpen, memeKey = null, caption = null, foot = null }) {
   const [dark, setDark] = useState(false);
   useEffect(() => { setDark(isDarkPage()); }, []);
   if (!ctx) return null;
-  const k = memeOrder(ctx)[0];
+  const k = memeKey || memeOrder(ctx)[0];
   if (!k || !MEMES[k]) return null;
   const pal = sharePalette(ctx.cat, dark);
+  const cap = caption || memeCaption(k, ctx);
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: PEEK_CSS }} />
-      <button type="button" className="msh-peek" onClick={onOpen} aria-label={`Share with a meme: ${MEMES[k].name}`}>
-        <span className="cap">{memeCaption(k, ctx)}</span>
+      <button type="button" className="msh-peek" onClick={() => onOpen({ key: k, caption: cap })} aria-label={`Share with a meme: ${MEMES[k].name}`}>
+        <span className="cap">{cap}</span>
         <img src={MEMES[k].src} alt={`${MEMES[k].name} reaction GIF`} loading="lazy" />
-        <span className="ft" style={{ background: pal.fill, color: pal.onFill }}>Share with this or another GIF <span aria-hidden="true">→</span></span>
+        <span className="ft" style={{ background: pal.fill, color: pal.onFill }}>{foot || 'Share with this or another GIF'} <span aria-hidden="true">→</span></span>
       </button>
     </>
+  );
+}
+
+// THREE GIFS, STACKED (owner, 2026-11-03: the phone stacks them vertically,
+// the desktop rail carries them): the result, the standing, and Good luck.
+// `standing` is a caption line for the standing GIF ("#19 of 893 today. Up 6
+// with Crux."); without it that GIF is left out.
+export function memePicks(ctx, standing) {
+  if (!ctx) return [];
+  const order = memeOrder(ctx);
+  const first = order[0];
+  const out = [{ key: first, caption: null, foot: 'Share your result' }];
+  if (standing) {
+    const sk = ['pointing', 'cheers', 'stopit', 'halpert', 'bigdeal'].find((k) => k !== first && MEMES[k]);
+    if (sk) out.push({ key: sk, caption: standing, foot: 'Share your standing' });
+  }
+  const lk = first === 'luck' ? 'halpert' : 'luck';
+  out.push({ key: lk, caption: null, foot: lk === 'luck' ? 'Wish them luck' : 'Your move' });
+  return out;
+}
+export function MemeStack({ ctx, onOpen, standing = null }) {
+  const picks = memePicks(ctx, standing);
+  if (!picks.length) return null;
+  return (
+    <div className="msh-stack" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {picks.map((p) => <MemePeek key={p.key} ctx={ctx} onOpen={onOpen} memeKey={p.key} caption={p.caption} foot={p.foot} />)}
+    </div>
   );
 }
 
@@ -105,15 +133,18 @@ function download(blob, filename) {
 
 // ctx: { gameKey, game, cat, hue, fig, timed, won, pb, slow?, blank?, line1, route }
 // getLink(source): returns the player's challenge link (records the send).
-export default function MemeShare({ open, onClose, ctx, getLink }) {
-  const order = ctx ? memeOrder(ctx) : [];
+export default function MemeShare({ open, onClose, ctx, getLink, pick = null }) {
+  const base = ctx ? memeOrder(ctx) : [];
+  const order = pick && pick.key && !base.includes(pick.key) ? [pick.key, ...base] : base;
   const [key, setKey] = useState(null);
   const [blob, setBlob] = useState(null);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
   const linkRef = useRef(null);
   const k = key && order.includes(key) ? key : order[0];
-  const caption = ctx && k ? memeCaption(k, ctx) : '';
+  const caption = ctx && k ? (pick && pick.caption && k === pick.key ? pick.caption : memeCaption(k, ctx)) : '';
+  // A tapped GIF opens the sheet ON that GIF (and its caption).
+  useEffect(() => { if (open) setKey(pick && pick.key ? pick.key : null); }, [open, pick && pick.key]);   // eslint-disable-line react-hooks/exhaustive-deps
   // The caption takes the reader's register, light or dark; the strip under
   // the clip is a black bar with the Mind Loft row (owner, 2026-10-23). The
   // puzzle's name and description are on the link card beside the GIF.

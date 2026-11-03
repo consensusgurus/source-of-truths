@@ -2224,3 +2224,31 @@ shared with RunFinale), `StandBeat`, `StandCard` (three tabs + the chosen board)
   the read; the client picks `rank`+`before` if so, else `plus`+`rank`. Do not add fresh=1 to puzzle
   endings: that recomputes the whole day per finish. Run endings (far rarer) do read fresh=1.
 - Today only: an archive replay passes no `standing`. Sudokus land ranks whole (no counting).
+
+### Where You Stand, round two: in the bar, Who's Next to Pass, GIF rail (owner, 2026-11-03)
+
+Approved on the canvas as B2 (phone) and "GIFs in the right rail" (desktop), plus the full phone
+sequence ("Phone · Full sequence").
+
+- **Names:** the day scope is **All** (never "Today", which read as today's puzzle); labels are
+  `All Puzzles`, `<Cat> Puzzles`, `MC Runs`.
+- **Phone (StageRoll):** message, then the standings beat, then everything rolls into the ONE top
+  bar, which keeps the three ranks as chips (`.srl-chip2`). Tapping the bar opens Where You Stand
+  (StandCard) above the old dropdown contents. The final view is: `PassCard` (Who's Next to Pass:
+  All, category, this puzzle; gap to the named player just above), `PassPlay` (the big "Play <easiest>"
+  button plus two small ones: the category's easiest pick and Challenge, which scrolls to the GIFs),
+  the Challenge tray with THREE GIFS STACKED VERTICALLY (owner: never a side scroller on phones),
+  then Play next.
+- **Desktop (StageStick):** the pass card spans the sheet under the band with PassPlay beside it.
+  With the side rail present, the rail is "Send a GIF" (challenge + the three GIFs) and the sheet's
+  challenge slot lists **Easiest Points Left**; Keep playing stays in the sheet. The band is back to
+  Today's field + Against yourself.
+- **The three GIFs** (`MemeStack` / `memePicks` in app/MemeShare.jsx): the result meme, the
+  STANDING meme (caption "#19 of 893 today. Up 6 with Crux."), and Good luck (Your move if the
+  result meme already is Good luck). A tapped GIF opens the share sheet on that GIF and caption
+  (`MemeShare pick`).
+- **Easiest points** (`stand.picks` in /api/quiz/daily-combined, only when `less`/`plus` is sent):
+  unplayed games today with 3+ plays, half or more finishing, a typical finish clock of 10 minutes
+  or less; expected points = the ladder at the middle of today's named field; ranked on points per
+  minute; `after` = the rank those points would buy. The client drops run parts and anything played.
+- Runs keep the standings beat and card (renamed to All); B2 and the GIF rail are puzzle endings only.

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadDailyResultsCached } from '@/lib/daily-results-cache';
 import { findQuizIdentity } from '@/lib/quiz-identity';
-import { scoreGame, combineDaily, guestProvisional, rankByCorrect, rankByTime, DAILY_KEYS, DAILY_MAX, GAME_MAX, bestNForSuffix, usesLadder, dayIsFrozen, etDayEndMs, isoOfSuffix, rowsWithinDay, rescoreField } from '@/lib/daily-combined';
+import { ladderAt, scoreGame, combineDaily, guestProvisional, rankByCorrect, rankByTime, DAILY_KEYS, DAILY_MAX, GAME_MAX, bestNForSuffix, usesLadder, dayIsFrozen, etDayEndMs, isoOfSuffix, rowsWithinDay, rescoreField } from '@/lib/daily-combined';
 import { scoreOutwitGame } from '@/lib/outwit-score';
 import { scoreOutrankGame } from '@/lib/outrank-score';
 import { scoreFeudGame } from '@/lib/feud-score';
@@ -842,6 +842,46 @@ export async function GET(request) {
       };
       if (stand.rank) stand.nearRank = near(base);
       if (stand.plus) stand.nearPlus = near(base + plusN);
+      // EASIEST POINTS LEFT (owner, 2026-11-03: "easiest points but also
+      // weighing quick to finish ... don't serve up a 2 hour puzzle that no one
+      // has finished"). For every game in this read the viewer has not played:
+      // how many finish it, the typical finisher's clock, and the ladder points
+      // a typical finisher lands (the middle of today's named field, so a small
+      // field pays more). Ranked on expected points per minute; a game that
+      // fewer than half finish, that typically runs past 10 minutes, or that
+      // fewer than three have played is never offered. `after` is where those
+      // points would put the viewer on this board.
+      const playedKeys = new Set([...lessKeys, ...(me && me.perGame ? Object.keys(me.perGame) : [])]);
+      const picks = [];
+      for (const g of gameResults || []) {
+        if (!g || playedKeys.has(g.key) || !g.players) continue;
+        const rowsG = [...g.players.values()];
+        const plays = rowsG.length;
+        if (plays < 3) continue;
+        let solved = 0, named = 0;
+        const clocks = [];
+        for (const p of rowsG) {
+          if (p.username) named += 1;
+          if (p.abandoned) continue;
+          const sc = Number(p.score) || 0, tt = Number(p.total) || 0;
+          const ok = tt > 0 ? sc / tt >= 0.5 : sc > 0;
+          if (!ok) continue;
+          solved += 1;
+          const te = Number(p.timeElapsed);
+          if (Number.isFinite(te) && te > 0) clocks.push(te);
+        }
+        const rate = solved / plays;
+        if (rate < 0.5 || clocks.length < 2) continue;
+        clocks.sort((a, b) => a - b);
+        const secs = clocks[Math.floor(clocks.length / 2)];
+        if (secs > 600) continue;
+        const mins = Math.max(1, Math.round(secs / 60));
+        const pts = ladderAt(Math.floor(named / 2) + 1);
+        picks.push({ key: g.key, pts, mins, finish: Math.round(rate * 100), plays, v: (pts * rate) / Math.max(1, secs / 60) });
+      }
+      picks.sort((a, b) => b.v - a.v || a.mins - b.mins);
+      const baseNow = base + (stand.have.length ? 0 : plusN);
+      stand.picks = picks.slice(0, 8).map((x) => ({ key: x.key, pts: x.pts, mins: x.mins, finish: x.finish, plays: x.plays, after: at(baseNow + x.pts) }));
     }
     // ?top=N asks for a longer board (the home's side column), capped at 30.
     const topN = Math.min(30, Math.max(DISPLAY, parseInt(searchParams.get('top') || '', 10) || DISPLAY));
