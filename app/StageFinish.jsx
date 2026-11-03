@@ -2117,6 +2117,8 @@ export default function StageFinish({
     const archiveCal = archiveRows.map((r) => ({ num: r.num, dateLabel: r.dateLabel, done: !!r.done, href: r.href }));
     return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet, replayNow: replayOpt || null, meme, shelf, cats, allGames,
       archive: archiveCal, curISO: archived ? null : etTodayISO(), rankHead, retry: retryOffer || null,
+      // WHERE YOU STAND (owner, 2026-11-03): today's finishes only.
+      standing: !archived && fr && me ? { gameKey: me.key, gameName: me.name, cat: me.cat, game: { rank: fr.rank, n: fr.n, guest: !!fr.guest, race } } : null,
       // CRUX KEEPS ITS EMOJI TEXT SHARE on the one-page ending (owner, 2026-10-26).
       share: me.key === 'crux' && goldOpt ? { label: goldOpt.label, sub: goldOpt.sub, onClick: goldOpt.onClick } : null };
   })();

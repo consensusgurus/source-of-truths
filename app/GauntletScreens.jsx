@@ -29,6 +29,7 @@ import MindLoftMark from './MindLoftMark';
 import StageTopBar from './StageTopBar';
 import RunRoll from './RunRoll';
 import RunFinale from './RunFinale';
+import { useRunStandings, StandCard } from './WhereYouStand';
 import { mathText } from '@/app/MathText';
 import { holdRootPaint } from '@/lib/root-paint';
 import { holdThemeColor } from '@/lib/theme-color-hold';
@@ -581,6 +582,11 @@ export function GauntletEndStage({
   // arrives already landed. { key, legMax: [per section], legSub?, legRanks?:
   // [{ rank, plays }], oneLife?, legWord? }.
   finale = null,
+  // WHERE YOU STAND (owner, 2026-11-03): the run's id. The finale's own key
+  // stands in when it is not passed. The run, its category (MC Runs for the
+  // five multiple choice runs) and the whole day, as a beat at the end of the
+  // finale and a card on this page.
+  runId = null,
 }) {
   const [openRow, setOpenRow] = useState(-1);
   const Climb = climbStyle === 'flask' ? FlaskClimb : TitleClimb;
@@ -635,6 +641,14 @@ export function GauntletEndStage({
   const avgTotal = avg && Object.keys(avg).length ? Math.round(sections.reduce((t, s) => t + (Number(avg[s.key]) || 0), 0)) : null;
   const ahead = rank && fieldSize && fieldSize >= 2 ? Math.max(0, Math.round(((fieldSize - rank) / fieldSize) * 100)) : null;
   const rankText = rank ? `#${rank}${fieldSize ? ` of ${Number(fieldSize).toLocaleString()}` : ''}${ahead != null ? ` · ahead of ${ahead}%` : ''}` : '';
+  const standId = runId || (finale && finale.key) || null;
+  const stand = useRunStandings({
+    on: !!standId, runId: standId, runName: circuitName, keys: sections.map((x) => x.key), unitWord,
+    run: rank ? { rank, n: fieldSize } : null,
+    board: board && Array.isArray(board.rows) ? board.rows.map((r) => (r.gap ? { gap: true } : { rank: r.rank, name: r.name, fig: r.score != null ? String(r.score) : '', me: !!r.me })) : [],
+  });
+  const standRows = stand.rows && stand.rows.length >= 2 ? stand.rows : null;
+  const standCard = standRows ? <StandCard rows={standRows} className="gsx-card gsx-wys" /> : null;
   const finaleNode = finOn && finPhase !== 'done' ? (() => {
     const fx = finale || {};
     const legs = rows.map((x, i) => {
@@ -660,6 +674,7 @@ export function GauntletEndStage({
         heading={ladderHeading} legWord={fx.legWord || colLabel} legs={legs} oneLife={!!fx.oneLife}
         score={score} ladder={ladder} rankText={rankText} ink={pal.ink} endBg={pal.bg}
         colorGround={pal.look === 'color' && !paper}
+        getStand={() => stand.promise}
         onGlide={() => setFinPhase('glide')} onDone={() => setFinPhase('done')}
       />
     );
@@ -803,6 +818,7 @@ export function GauntletEndStage({
               </div>
             ) : null}
             afterBoard={afterBoard}
+            stand={standCard}
             stats={<div className="rrl-stats">{statsNode}</div>}
             extra={extra}
             challenge={challenge}
@@ -860,7 +876,8 @@ export function GauntletEndStage({
                 {title.line ? <span>{title.line}</span> : null}
               </div>
             ) : null}
-            {boardCard ? <div className={meme ? 'gsx-bdl' : undefined}>{boardCard}</div> : null}
+            {standCard ? <div className={'gsx-rise' + (meme ? ' gsx-bdl' : '')} style={d('2.2s')}>{standCard}</div>
+              : boardCard ? <div className={meme ? 'gsx-bdl' : undefined}>{boardCard}</div> : null}
             {afterBoard}
             {/* 3. CHALLENGE (+ Polymath), and sharing the score */}
             <div className="gsx-rise gsx-tray" style={d('2.4s')}>
@@ -877,7 +894,7 @@ export function GauntletEndStage({
             {meme ? <div className="gsx-rise gsx-meme" style={d('2.45s')}>{meme}</div> : null}
             {/* With the GIF on show, today's board sits under it on the right,
                 so the two columns come out even (owner, 2026-10-25). */}
-            {meme && boardCard ? <div className="gsx-bdr">{boardCard}</div> : null}
+            {meme && (standCard || boardCard) ? <div className="gsx-bdr">{standCard || boardCard}</div> : null}
             {/* 4. PLAY NEXT */}
             {similar && similar.href ? (
               <a className="gsx-rise gsx-next" href={similar.href} style={{ ...d('2.5s'), background: pal.fill('#6ee7b7') }}>
@@ -1015,6 +1032,7 @@ const CSS = `
 .gsx-ib{border:0;background:var(--gsx-ink);color:var(--gsx-bg)}
 .gsx-ib:hover{filter:brightness(.86)}
 .gsx-card{border:1px solid var(--gsx-ink);border-radius:16px;padding:12px 14px}
+.gsx .wys-card{--wys-ink:var(--gsx-ink);--wys-bg:var(--gsx-bg);--wys-wash:color-mix(in srgb,var(--gsx-ink) 9%,transparent)}
 .gsx-ch{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
 .gsx-ch a{font-size:13px;letter-spacing:0;text-transform:none;text-decoration:underline;text-underline-offset:3px}
 .gsx-br{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid color-mix(in srgb, var(--gsx-ink) 25%, transparent);font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}

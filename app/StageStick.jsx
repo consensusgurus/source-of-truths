@@ -43,6 +43,7 @@ import { sharedGet } from './sharedGet';
 import { useStageChrome } from './GauntletScreens';
 import { dailyDept, DAILY_GAME_MAP } from '@/lib/daily-games';
 import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref } from '@/lib/circuits';
+import { usePuzzleStandings, StandBeat, StandRows, beatDuration } from './WhereYouStand';
 
 // RUNS, NOT THEIR PARTS (owner, 2026-10-26: "don't send users to individual
 // run components. show runs in place of those"). A game that is one question
@@ -93,6 +94,10 @@ const RETRACT_MS = 900;
 // they have not arrived after this long, it lands anyway and fills in place.
 const READY_WAIT_MS = 1600;
 const DESK_MQ = '(min-width: 901px)';
+// How long the ending waits for the standings before going on without the beat.
+const STAND_WAIT_MS = 2600;
+// Desktop: the standings beat starts this long after the mount, under the result.
+const BEAT_AT_MS = 1300;
 
 const ease = (t) => 1 - Math.pow(1 - t, 3);
 
@@ -181,6 +186,7 @@ export default function StageStick({
   tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, run = null, allHref = '/#all',
   sheet = {}, onLeave, onBack = null, archiveHref = null, archiveLabel = 'Past puzzles', replayNow = null, meme = null, shelf = null, cats = null,
   ready = true, allGames = null, share = null, retry = null, archive = null, curISO = null, rankHead = null,
+  standing = null,
 }) {
   const [host] = useState(() => (typeof document === 'undefined' ? null : (document.querySelector('.stage-page') || document.body)));
   const [step, setStep] = useState(0);        // 0..6, how many blocks have landed
@@ -224,6 +230,32 @@ export default function StageStick({
   const [allTime, setAllTime] = useState(null);
   const askedAll = useRef(false);
   const boardGame = sheet && sheet.gameKey;
+  // WHERE YOU STAND (owner, 2026-11-03): this puzzle, its category and the
+  // whole day, as a beat after the result and a card on the page. The first
+  // row's board is the game's own board this ending already holds.
+  const sRows = sheet && Array.isArray(sheet.rows) ? sheet.rows : [];
+  const stand = usePuzzleStandings({
+    on: !!(standing && standing.game), gameKey: standing && standing.gameKey, gameName: standing && standing.gameName,
+    cat: standing && standing.cat, game: standing && standing.game,
+    board: sRows.map((r) => (r.gap ? { gap: true } : r.empty ? null : { rank: r.rank, name: r.username, fig: gameStats(r, sheet.missLabel, sheet.gameKey), me: !!r.me })).filter(Boolean),
+  });
+  const standRows = stand.rows && stand.rows.length >= 2 ? stand.rows : null;
+  // The beat waits for its figures, but never long: past STAND_WAIT_MS the
+  // ending goes on without it and the card simply fills in when they land.
+  const [standGo, setStandGo] = useState(!(standing && standing.game));
+  const standGoAt = useRef(0);
+  const [beatRows, setBeatRows] = useState(null);
+  useEffect(() => {
+    if (standGo) return undefined;
+    if (stand.ready) {
+      standGoAt.current = Date.now();
+      setBeatRows(standRows);
+      setStandGo(true);
+      return undefined;
+    }
+    const t = setTimeout(() => { standGoAt.current = Date.now(); setStandGo(true); }, STAND_WAIT_MS);
+    return () => clearTimeout(t);
+  }, [stand.ready, standGo]);   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (scope !== 'all' || askedAll.current || !boardGame) return;
     askedAll.current = true;
@@ -358,12 +390,14 @@ export default function StageStick({
     let reduced = false;
     try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduced = false; }
     if (reduced) { setPhase('inline'); return undefined; }
-    if (!go) return undefined;
+    if (!go || !standGo) return undefined;
     const since = Date.now() - (mountAt.current || Date.now());
-    const t = setTimeout(() => retract(), Math.max(HOLD_MS - since, T.more - T.s2 + 600));
+    // With the standings beat on the cover, the colour holds until it has played.
+    const beatEnd = beatRows ? Math.max(BEAT_AT_MS, (standGoAt.current || 0) - (mountAt.current || 0)) + beatDuration(beatRows.length) + 1100 : 0;
+    const t = setTimeout(() => retract(), Math.max(HOLD_MS - since, T.more - T.s2 + 600, beatEnd - since));
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [desk, go]);
+  }, [desk, go, standGo]);
 
   // The page under the colour does not scroll while the colour is up.
   const covering = phase !== 'inline';
@@ -523,6 +557,9 @@ export default function StageStick({
       {s.gameKey && !s.boardLabel ? (
         <div className="sst-scope" role="tablist" aria-label="Leaderboard">
           <button type="button" role="tab" aria-selected={scope === 'today'} className={scope === 'today' ? 'on' : ''} onClick={() => setScope('today')}>Today</button>
+          {desk && standRows ? standRows.slice(1).map((r) => (
+            <button key={r.id} type="button" role="tab" aria-selected={scope === r.id} className={scope === r.id ? 'on' : ''} onClick={() => setScope(r.id)}>{r.id === 'day' ? 'All Puzzles' : r.name}</button>
+          )) : null}
           <button type="button" role="tab" aria-selected={scope === 'all'} className={scope === 'all' ? 'on' : ''} onClick={() => setScope('all')}>All time</button>
         </div>
       ) : null}
@@ -549,6 +586,12 @@ export default function StageStick({
   // its own so the phone's rolling ending can play it as its own beat.
   const resultStats = (live) => (
     <div className="sst-h2">
+      {desk && standRows ? (
+        <section className={on(2)}>
+          <div className="sst-lab">Where You Stand</div>
+          <StandRows rows={standRows} />
+        </section>
+      ) : (
       <section className={on(2)}>
         <div className="sst-lab">Today&rsquo;s field</div>
         <div className="sst-hl">{field && field.line ? field.line : 'The board is still filling'}</div>
@@ -560,6 +603,7 @@ export default function StageStick({
           <span>{field && field.hi ? field.hi : ' '}</span>
         </div>
       </section>
+      )}
       <section className={on(3)}>
         <div className="sst-lab">Against yourself</div>
         <div className="sst-hl">{self ? self.head : ' '}</div>
@@ -728,7 +772,26 @@ export default function StageStick({
   const rankCard = (s.rows && s.rows.length) || s.gameKey ? (
         <section className={'sst-card sst-rk ' + on(4)}>
           <div className="sst-rkb">
-            {scope === 'all' ? (
+            {(scope === 'cat' || scope === 'day') && standRows && standRows.find((r) => r.id === scope) ? (() => {
+              const sr = standRows.find((r) => r.id === scope);
+              return (
+                <>
+                  {boardHead(`${sr.lab} \u00b7 ${sr.of.toLocaleString('en-US')} ${sr.of === 1 ? 'player' : 'players'}`)}
+                  <table className="sst-tbl"><tbody>
+                    {sr.board.map((r, i) => (r.gap ? (
+                      <tr key={'g' + i} className="gap"><td colSpan={3}>&middot;&middot;&middot;</td></tr>
+                    ) : (
+                      <tr key={(r.name || '') + r.rank + i} className={r.me ? 'me' : undefined}>
+                        <td className="p">#{r.rank}</td>
+                        <td className="w">{r.me ? 'You' : (r.name || 'Guest')}</td>
+                        <td className="st">{r.fig}</td>
+                      </tr>
+                    )))}
+                  </tbody></table>
+                  <div className="sst-wysf">{sr.foot}</div>
+                </>
+              );
+            })() : scope === 'all' ? (
               <>
                 {boardHead(`All-time board${allTime && allTime.field ? ` · ${allTime.field} ${allTime.field === 1 ? 'player' : 'players'}` : ''}`)}
                 {allTime ? (
@@ -952,6 +1015,7 @@ export default function StageStick({
           similar={similar} another={another} archive={archive} curISO={curISO}
           onShowBoard={back} showBoardLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show Board'}
           retry={retry} homeHref={allHref || '/'}
+          standRows={standRows} beatRows={beatRows} standGo={standGo} noCount={noCount}
           {...replayProps}
         />
       </div>
@@ -969,11 +1033,19 @@ export default function StageStick({
       </div>
       {rail ? createPortal(upNext, rail) : null}
       {phase !== 'inline' ? createPortal((
-        <div ref={rootRef} className={'sst sst-cover' + toneCls + (phase === 'retract' ? ' go' : '')}
+        <div ref={rootRef} className={'sst sst-cover' + toneCls + (phase === 'retract' ? ' go' : '') + (beatRows ? ' wys-on' : '')}
           style={clip ? { clipPath: clip, WebkitClipPath: clip } : undefined}
           onClick={bgTap} role="dialog" aria-modal="true" aria-label={`${eyebrow}: ${verdict}`}>
           <style dangerouslySetInnerHTML={{ __html: CSS }} />
-          <div className="sst-in sst-cin">{result(true)}</div>
+          <div className="sst-in sst-cin">
+            {result(true)}
+            {beatRows ? (
+              <div className="sst-wys">
+                <StandBeat rows={beatRows} wide noCount={noCount}
+                  delay={Math.max(0, BEAT_AT_MS - ((standGoAt.current || 0) - (mountAt.current || 0)))} />
+              </div>
+            ) : null}
+          </div>
         </div>
       ), host) : null}
     </>
@@ -1057,6 +1129,15 @@ const CSS = `
 .sst-strip s.w{background:var(--sst-ink);}
 .sst-strip s.l{border:2.5px solid var(--sst-ink);}
 .sst-strip s.now{box-shadow:0 0 0 3px var(--sst-bg),0 0 0 5px var(--sst-ink);}
+
+/* WHERE YOU STAND (app/WhereYouStand.jsx) takes this surface's colours, read
+   where it sits, so the band's pastel and the sheet's page ink both carry. */
+.sst .wys-host,.sst .wys-card,.sst-page .wys-rows,.sst-page .wys-card{--wys-ink:var(--sst-ink);--wys-bg:var(--sst-bg);--wys-card:var(--sst-card);--wys-wash:var(--sst-wash);}
+.sst-wys{margin-top:34px;}
+.sst-cover.wys-on .sst-h2{display:none;}
+.sst-cover.wys-on .sst-cin{padding-top:max(36px,calc(50vh - 380px));}
+.sst-wysf{font-size:12.5px;font-weight:700;margin:8px 6px 0;opacity:.8;}
+.sst-band .wys-rows{margin-top:10px;}
 
 /* THE CARDS: a quieter step of the colour, no shadow, ink text. */
 .sst-cards{display:flex;flex-direction:column;gap:12px;}

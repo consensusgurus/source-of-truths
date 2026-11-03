@@ -37,6 +37,7 @@
 import React, { useEffect, useRef } from 'react';
 import { softGround } from '@/lib/category-ramp';
 import { useStageChrome } from './GauntletScreens';
+import { beatHtml, playBeat, BEAT_CSS } from './WhereYouStand';
 
 const DINK = '#08222e';
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -161,6 +162,10 @@ export default function RunFinale({
   runKey, circuitName = '', dateLabel = '', unitWord = 'right', heading = '', legWord = 'Quiz',
   legs = [], oneLife = false, score = 0, ladder = [], rankText = '', ink = DINK, endBg = '#ffffff',
   colorGround = true, onGlide, onDone,
+  // WHERE YOU STAND (owner, 2026-11-03): a function returning a promise of the
+  // standings rows (app/WhereYouStand.jsx). Part three plays them after the
+  // title lands, then the glide. No rows in time, no part three.
+  getStand = null,
 }) {
   const rootRef = useRef(null);
   const groundRef = useRef(endBg);
@@ -212,11 +217,13 @@ export default function RunFinale({
         <div class="rfr-s" id="rfrs">${rowsHtml}</div>
         <div class="pbox"><div class="piece">${P.html(L, X)}</div></div>
         <div class="tblock"><span class="ttl" id="f-title">${esc(earned.name)}</span>${rankText ? `<span class="rank" id="f-rank">${esc(rankText)}</span>` : ''}</div>
+        <div class="rfs" id="rfs"></div>
       </div>`;
     const q = (s) => root.querySelector(s);
     let alive = true;
     let skipped = false;
     const timers = [];
+    let beat = null;
     const wait = (ms) => new Promise((res, rej) => { timers.push(setTimeout(() => (alive && !skipped ? res() : rej(new Error('stop'))), ms)); });
     const count = (el, from, to, ms) => new Promise((res) => {
       const t0 = performance.now();
@@ -399,7 +406,28 @@ export default function RunFinale({
         await wait(320);
         const fr = q('#f-rank'); if (fr) fr.classList.add('in');
         q('#capR').textContent = '';
-        await wait(1700);
+        // PART THREE, WHERE YOU STAND (owner, 2026-11-03): the piece folds
+        // away, the title and standing rise under the score, and the run, its
+        // category and the day land in turn. Then the glide, as before.
+        await wait(900);
+        let srows = null;
+        try {
+          const sp = getStand ? getStand() : null;
+          if (sp) srows = await Promise.race([sp, new Promise((res) => { timers.push(setTimeout(() => res(null), 1500)); })]);
+        } catch (e) { srows = null; }
+        if (!alive || skipped) return;
+        if (Array.isArray(srows) && srows.length >= 2) {
+          root.style.setProperty('--wys-bg', endBg);
+          root.classList.add('p3');
+          const box = q('#rfs');
+          box.innerHTML = beatHtml(srows, { wide: !phone });
+          beat = playBeat(box, srows, { delay: 450 });
+          await beat.done;
+          if (!alive || skipped) return;
+          await wait(1200);
+        } else {
+          await wait(800);
+        }
         glide();
       } catch (e) { /* skipped or unmounted */ }
     })();
@@ -407,6 +435,7 @@ export default function RunFinale({
     return () => {
       alive = false;
       timers.forEach(clearTimeout);
+      if (beat) beat.stop();
       root.removeEventListener('click', skip);
       window.removeEventListener('keydown', onKey);
       document.querySelectorAll('.rfx-fly').forEach((n) => n.remove());
@@ -416,7 +445,7 @@ export default function RunFinale({
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: CSS + BEAT_CSS }} />
       <div ref={rootRef} className="rfx" role="dialog" aria-label={`${circuitName} results`} style={{ background: ground, color: ink, '--rfx-ink': ink }} />
     </>
   );
@@ -451,6 +480,12 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .pbox,.rfx .tblock{display:none}
 .rfx.p2 .pbox{display:block}.rfx.p2 .tblock{display:flex}
 .rfx .pbox{width:420px;height:300px;position:relative}
+/* PART THREE (Where You Stand): the piece folds to nothing and the standings
+   take its room, so the score and the title rise without a jump. */
+.rfx .rfs{display:none;width:min(760px,100%);text-align:left;--wys-ink:var(--rfx-ink);--wys-card:color-mix(in srgb,var(--rfx-ink) 8%,transparent)}
+.rfx.p3 .rfs{display:block}
+.rfx.p3 .pbox{height:0 !important;opacity:0;overflow:hidden;transition:height .6s cubic-bezier(.4,0,.2,1),opacity .3s ease}
+.rfx.p3 .rhero .num{font-size:60px;transition:font-size .5s ease}
 .rfx .piece{position:absolute;left:0;top:0;width:420px;height:300px;transform-origin:0 0;perspective:900px}
 .rfx .tblock{flex-direction:column;align-items:center;gap:8px;min-height:62px}
 .rfx .ttl{font-size:30px;font-weight:800;letter-spacing:-.01em;line-height:1.1;display:inline-block;opacity:0;max-width:90vw}

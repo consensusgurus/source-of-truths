@@ -364,6 +364,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
       <RunChallengeCapture gameKey={DOJO_RUN_ID} />
       {hydrated && done && endOpen && (
         <GauntletEndStage
+          runId='dojo'
           circuitName="Enter the Dojo"
           dateLabel={dateShort}
           sections={sections.map((s, i) => ({ ...s, slot: i }))}

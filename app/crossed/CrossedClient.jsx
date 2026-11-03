@@ -393,6 +393,7 @@ export default function CrossedClient({ day = null, dateLabel, dateShort, sectio
         ) : null}
         {hydrated && done && !curtainOn && (
           <GauntletEndStage
+            runId='crossed'
             circuitName="Crossed Up"
             dateLabel={dateShort}
             sections={gs}

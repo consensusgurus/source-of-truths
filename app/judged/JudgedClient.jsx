@@ -343,6 +343,7 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
         <RunChallengeCapture gameKey={LAW_RUN_ID} />
         {hydrated && done && (
           <GauntletEndStage
+            runId='judged'
             circuitName="Judged"
             dateLabel={dateShort}
             sections={gs}

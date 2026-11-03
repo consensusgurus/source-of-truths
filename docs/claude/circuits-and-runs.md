@@ -671,3 +671,9 @@ Approved on the "Multiple Choice Leaders" and "Multiple Choice in the Runs" mock
   tile and drawer off), PolymathRunCard is unmounted, RunNextSlot has no poly mode, `/polymath` is
   noindex and out of the sitemap. `lib/polymath.js`, `/api/quiz/polymath`, `/polymath` and
   `PolymathMeter.jsx` all still work if linked again.
+
+## Run endings: Where You Stand after the title (owner, 2026-11-03)
+
+RunFinale's part three plays the run, its category (MC Runs for the five multiple choice runs, else
+the category most legs belong to) and the day, then glides. Full notes: home-and-ui.md, "Where You
+Stand". New runs: pass `runId` on GauntletEndStage.

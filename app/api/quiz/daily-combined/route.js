@@ -800,6 +800,49 @@ export async function GET(request) {
         overallRankByKey.set(r.userKey, dr);
       }
     }
+    // WHERE YOU STAND (owner, 2026-11-03): an ending's category and day rows.
+    // ?less=a,b names the games just finished, so `stand.before` is where the
+    // viewer stood without their points; ?plus=N is the points a just-finished
+    // game is worth when its row is not in this (shared, briefly memoized) read
+    // yet, so `stand.plus` is where the viewer stands once it lands. Both count
+    // only named rows above the figure, the same set the public board ranks, so
+    // the three ranks an ending shows are measured one way. Points boards only.
+    let stand = null;
+    if (!circuitOn && (searchParams.has('less') || searchParams.has('plus'))) {
+      const lessKeys = [...new Set((searchParams.get('less') || '').split(',').map((k) => k.trim()).filter(Boolean))].slice(0, 40);
+      const plusN = Math.max(0, Math.min(GAME_MAX * 40, Number(searchParams.get('plus')) || 0));
+      const mineKey = me ? me.userKey : null;
+      const base = me ? (Number(me.total) || 0) : 0;
+      const at = (x) => {
+        let n = 1;
+        for (const r of overallNamed) if (r.userKey !== mineKey && (Number(r.total) || 0) > x + 1e-9) n += 1;
+        return n;
+      };
+      const have = lessKeys.filter((k) => me && me.perGame && me.perGame[k] && !me.perGame[k].abandoned);
+      const lessPts = have.reduce((t, k) => t + (Number(me.perGame[k].points) || 0), 0);
+      const named = overallNamed.filter((r) => r.userKey !== mineKey);
+      stand = {
+        base: Math.round(base * 10) / 10,
+        have,
+        lessPts: Math.round(lessPts * 10) / 10,
+        rank: me && base > 0 ? at(base) : null,
+        before: me && base - lessPts > 0 ? at(base - lessPts) : null,
+        plus: plusN > 0 ? at(base + plusN) : null,
+        games: me && me.perGame ? Object.values(me.perGame).filter((x) => x && !x.abandoned).length : 0,
+        field: overallFull.length,
+        top: named.slice(0, 5).map((r) => ({ username: r.username, total: Math.round((Number(r.total) || 0) * 10) / 10 })),
+      };
+      // The named rows either side of each figure, so a board can show the
+      // viewer between real neighbours without a second read.
+      const near = (x) => {
+        const i = named.findIndex((r) => (Number(r.total) || 0) <= x + 1e-9);
+        const cut = i < 0 ? named.length : i;
+        const row = (r) => (r ? { username: r.username, total: Math.round((Number(r.total) || 0) * 10) / 10 } : null);
+        return { up: row(named[cut - 1]), down: row(named[cut]) };
+      };
+      if (stand.rank) stand.nearRank = near(base);
+      if (stand.plus) stand.nearPlus = near(base + plusN);
+    }
     // ?top=N asks for a longer board (the home's side column), capped at 30.
     const topN = Math.min(30, Math.max(DISPLAY, parseInt(searchParams.get('top') || '', 10) || DISPLAY));
     // THE RUN SCORECARD (owner, 2026-10-20): every run ends on one table of
@@ -1031,6 +1074,7 @@ export async function GET(request) {
       me,
       meProvisional,
       rival,
+      stand,
     }, { headers: fresh ? NO_STORE_HEADERS : CACHE_HEADERS });
   } catch (e) {
     console.error('daily-combined exception', e);

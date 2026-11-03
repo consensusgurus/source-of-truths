@@ -32,6 +32,9 @@ export default function RunRoll({
   // The run finale (app/RunFinale.jsx) played and glides onto the bar: start
   // rolled, and keep the bar still so the glide can land on it.
   arrived = false,
+  // WHERE YOU STAND (owner, 2026-11-03): the run / category / day card, shown
+  // right under the bar as the page's first block.
+  stand = null,
 }) {
   const [rolled, setRolled] = useState(!anim);
   const [leaving, setLeaving] = useState(false);
@@ -152,6 +155,8 @@ export default function RunRoll({
             </div>
           ) : null}
 
+          {stand ? <div className="rrl-wys">{stand}</div> : null}
+
           <section className="rrl-card rrl-r1" aria-label="Play next">
             <div className="rrl-k">Play next</div>
             {similar && similar.href ? (
@@ -182,6 +187,7 @@ export default function RunRoll({
 
 const CSS = `
 .gsx-roll .gsx-col{gap:12px;padding:12px 14px 26px}
+.rrl-wys .wys-card{background:var(--rrl-card)}
 .rrl{display:flex;flex-direction:column;gap:12px;--rrl-card:var(--gsx-card)}
 /* NOTHING SHOWS UNDER THE SWEEP (owner, 2026-10-28): the page waits until the
    colour bands have crossed, the way the desktop ending's rises do. */

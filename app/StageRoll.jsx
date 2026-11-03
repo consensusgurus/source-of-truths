@@ -30,6 +30,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { shareForCredit } from '@/lib/share-credit';
 import { pageAge, BEAT_FRESH } from '@/lib/finish-beat';
 import GameGlyph from './GameGlyph';
+import { StandBeat, StandCard } from './WhereYouStand';
 
 const useIso = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -64,6 +65,10 @@ export default function StageRoll({
   eyebrow, verdict, metric, self, rankHead, go = true, gameKey, gameName, grp,
   statsNode, rankNode, recordNode, chalNode, runNode, shelfNode, catsNode, allHref,
   similar, another, archive, curISO, onShowBoard, showBoardLabel, onReplay, replayHref, retry, homeHref,
+  // WHERE YOU STAND (owner, 2026-11-03): when the standings are in, the
+  // second beat is the three ranks (the stats move to the bar's dropdown), and
+  // the final view leads with their card.
+  standRows = null, beatRows = null, standGo = true, noCount = false,
 }) {
   const [fresh] = useState(() => {
     try {
@@ -82,10 +87,11 @@ export default function StageRoll({
   // stats wait for the figures (go) and then hold their own beat.
   useEffect(() => {
     if (!go || phase >= 2) return undefined;
+    if (phase === 0 && !standGo) return undefined;
     const delay = phase === 0 ? Math.max(0, MSG_MS - (Date.now() - mountAt.current)) : STATS_MS;
     const t = setTimeout(() => setPhase((p) => (p === phase ? p + 1 : p)), delay);
     return () => clearTimeout(t);
-  }, [go, phase]);
+  }, [go, phase, standGo]);
   const advance = () => {
     if (phase >= 2) { setOpen(false); return; }
     setPhase(phase + 1);
@@ -241,7 +247,17 @@ export default function StageRoll({
           </div>
         </section>
 
-        <section className={beat(1)}>
+        {beatRows ? (
+          <section className={'srl-beat ' + (phase === 1 ? 'focus' : phase > 1 ? 'gone' : 'pend')}>
+            <div className="srl-full">
+              <div className="srl-wys" onClick={(e) => { if (!(e.target.closest && e.target.closest('a,button'))) advance(); }}>
+                {phase >= 1 ? <StandBeat rows={beatRows} noCount={noCount} delay={420} /> : null}
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        <section className={beatRows ? 'srl-beat ' + (phase >= 2 && open ? 'focus' : phase >= 1 ? 'gone' : 'pend') : beat(1)}>
           <div className="srl-full">
             <div className="srl-stats" onClick={(e) => { if (!(e.target.closest && e.target.closest('a,button'))) advance(); }}>
               <div className="sst-card srl-land">{statsNode}</div>
@@ -263,6 +279,8 @@ export default function StageRoll({
                   {retry.sub ? <span className="ft"><span className="sb srl-wrapsub">{retry.sub}</span></span> : null}
                 </button>
               ) : null}
+
+              {standRows ? <div className="sst-card srl-land d1"><StandCard rows={standRows} /></div> : null}
 
               <section className="sst-card sst-pn srl-land d1">
                 <div className="sst-sl">Play next</div>

@@ -620,6 +620,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       {/* 4. END */}
       {hydrated && done ? (
         <GauntletEndStage
+          runId='passport'
           circuitName="Passport"
           dateLabel={dateLine}
           sections={stageSecs}

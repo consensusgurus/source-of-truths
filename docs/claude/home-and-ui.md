@@ -2195,3 +2195,32 @@ there was no height left to grow into, so widening the column alone could not he
   fold before). Phones 390x844, 375x667, 430x932 measure exactly as before. Known and unchanged:
   at 375x667 Four (26px) and Gift (56px) still overflow the stage, as on origin, because the
   board sits at the hook's 260px floor.
+
+## Where You Stand: puzzle, category and day standings on every ending (owner, 2026-11-03)
+
+Approved on the "Standings Ending Mockups" canvas. `app/WhereYouStand.jsx` holds all of it: the
+data hooks (`usePuzzleStandings`, `useRunStandings`), the imperative beat (`beatHtml` + `playBeat`,
+shared with RunFinale), `StandBeat`, `StandCard` (three tabs + the chosen board) and `StandRows`.
+
+- **Three rows:** this puzzle (or run), the category today (`<Cat> Puzzles Today`; the five multiple
+  choice runs use **MC Runs** from `/api/quiz/multiple-choice`, owner's name for it), All Puzzles Today.
+  Category and day count from the rank held BEFORE this finish and show an `Up N` chip.
+- **Puzzle ending, phone (StageRoll):** the second beat is the three ranks when they are in; the old
+  stats beat (field, against yourself, board) moves to the result bar's dropdown. The final view leads
+  with StandCard. The message beat waits for the standings at most `STAND_WAIT_MS` (2.6s); later
+  standings skip the beat and only fill the card.
+- **Puzzle ending, desktop (StageStick):** the beat plays on the full-screen colour under the result
+  (the cover's field/against-yourself block hides while it plays) and the colour holds until it ends.
+  On the sheet the band's "Today's field" becomes StandRows, and the board's scope switch gains the
+  category and All Puzzles beside Today / All time.
+- **Runs:** RunFinale part three (after the title lands, before the glide): the piece folds away and
+  the beat plays. `getStand()` must answer within 1.5s or part three is skipped. On the end page
+  StandCard takes today's board slot (desktop) and sits under the bar (RunRoll). GauntletEndStage
+  takes `runId` (each run client passes it; RunClient only off practice); `finale.key` stands in.
+- **Cost rule.** Puzzle endings read `/api/quiz/daily-combined` (day, and `keys=` for the category)
+  WITHOUT fresh=1, with `less=<game>&plus=<ladder points>`. The route's `stand` block answers
+  `rank` / `before` (without the `less` games) / `plus` (with the finish added when its row is not in
+  the shared memoized read yet) plus `top` and the neighbours. `have` says whether the game was in
+  the read; the client picks `rank`+`before` if so, else `plus`+`rank`. Do not add fresh=1 to puzzle
+  endings: that recomputes the whole day per finish. Run endings (far rarer) do read fresh=1.
+- Today only: an archive replay passes no `standing`. Sudokus land ranks whole (no counting).

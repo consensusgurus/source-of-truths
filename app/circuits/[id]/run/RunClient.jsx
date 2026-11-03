@@ -1117,6 +1117,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       ) : null}
       {TOWERS && hydrated && done && !curtain && endOpen ? (
         <GauntletEndStage
+          runId={!r.practice ? circuitId : null}
           circuitName={circuitName}
           dateLabel={dateLabel}
           sections={sections}

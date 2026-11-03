@@ -411,6 +411,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
 
       {hydrated && done && (
         <GauntletEndStage
+          runId='pricecheck'
           circuitName="Price Check"
           dateLabel={dateLabel}
           sections={sections}

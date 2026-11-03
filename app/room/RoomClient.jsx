@@ -474,6 +474,7 @@ export default function RoomClient({ dateLabel, dateShort, sections = [] }) {
         const OpenGame = openSec ? CLIENTS[openSec.key] : null;
         return (
           <GauntletEndStage
+            runId='room'
             circuitName="Read the Room"
             dateLabel={dateShort}
             sections={stageSecs}
