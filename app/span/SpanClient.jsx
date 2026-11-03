@@ -70,7 +70,7 @@ import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved, FAIL } from '@/lib/end-verdict';
-import { scoreText } from '@/lib/daily-games';
+import { scoreText, packProgressFig } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 
 const COLORS = {
@@ -580,7 +580,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
         method: 'POST',
         keepalive: true,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quizId: PUZZLE.quizId, score, total: 10, correct: g2.status === 'won' ? 1 : 0, guessesUsed: g2.misses, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
+        body: JSON.stringify({ quizId: PUZZLE.quizId, score, total: 10, correct: g2.status === 'won' ? 1 : 0, guessesUsed: g2.misses, progress: g2.status === 'won' ? packProgressFig('span', PUZZLE.live, g2.chain.length - 1, g2.misses) : undefined, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
       })
         .then((r) => r.json())
         .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
@@ -1332,7 +1332,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
                 : null}
               day={dayStats}
               streak={isTodays ? myStats.cur : null}
-              missLabel="Miss"
+              missLabel="Hops"
               archive={puzzles
                 .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
                 .sort((x, y) => y.num - x.num)

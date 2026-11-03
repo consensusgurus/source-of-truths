@@ -49,7 +49,7 @@ import { useStageTheme } from '@/lib/stage-theme';
 // and what the player actually did, and only the second means anything next to
 // the game they just played.
 import { gameStats, mmss, missWord, scoreFig as runFig } from '@/lib/daily-row-stats';
-import { isSolveOnly as isSolveOnlyRaw, scoreView, scoreText } from '@/lib/daily-games';
+import { isSolveOnly as isSolveOnlyRaw, scoreView, scoreText, hasProgressFig, progressFig, progressFigCell } from '@/lib/daily-games';
 // NO ARBITRARY FRACTIONS (owner, 2026-10-26): a game whose 10 is a scale, not a
 // count, reads like a solve-or-not game everywhere on the ending, and its own
 // figure (moves, errors, clock) carries the comparison.
@@ -1198,6 +1198,13 @@ export default function StageFinish({
   // solved (or tied on score) and both have one, else the score for both.
   const scoreFig = (r) => runFig(r, me && me.key) || '\u2014';
   const pairFigs = (x, y) => {
+    // A game ranked on a figure in `progress` (Hands points, Shoe chips, Whittle clues
+    // left, Span hops; owner 2026-11-03) compares on that figure, never the clock.
+    const pk = me && me.key;
+    if (hasProgressFig(pk) && progressFigCell(pk, x) != null && progressFigCell(pk, y) != null) {
+      const w = (r) => `${progressFigCell(pk, r)} ${missWord(missLabel, Math.abs(progressFig(pk, r))) || ''}`.trim();
+      return [w(x), w(y)];
+    }
     const solved = (r) => r && r.score != null && r.total != null && Number(r.score) >= Number(r.total);
     const hasT = (r) => r && r.timeElapsed != null;
     const level = x && y && x.score != null && y.score != null && Number(x.score) === Number(y.score);
@@ -1209,7 +1216,15 @@ export default function StageFinish({
     // them on misses: say the misses (the clock would read backwards, since a
     // slower clean run outranks a faster one with a miss). Else the clock,
     // else points.
-    if (a.score != null && b.score != null && Number(a.score) === Number(b.score)
+    const gk = me && me.key;
+    if (hasProgressFig(gk)) {
+      const fa = progressFig(gk, a), fb = progressFig(gk, b);
+      if (fa != null && fb != null && fa !== fb && missLabel) {
+        const d = Math.abs(fb - fa);
+        return `${d} ${missWord(missLabel, d)}`;
+      }
+    }
+    if (!hasProgressFig(gk) && a.score != null && b.score != null && Number(a.score) === Number(b.score)
       && a.guessesUsed != null && b.guessesUsed != null && Number(a.guessesUsed) !== Number(b.guessesUsed) && missLabel) {
       const d = Math.abs(Number(b.guessesUsed) - Number(a.guessesUsed));
       return `${d} ${missWord(missLabel, d)}`;

@@ -797,18 +797,12 @@ export default function StageStick({
     if (dayRow.next && p.pts >= dayRow.next.gap) return `${head} passes ${dayRow.next.name} and moves you to about #${p.after} in All.`;
     return `${head} moves you to about #${p.after} in All.`;
   };
-  const toGifs = (e) => {
-    const el = document.getElementById(desk ? 'sst-rail-gifs' : 'sst-gifs');
-    if (!el) return;
-    if (e) e.preventDefault();
-    try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (x) { el.scrollIntoView(); }
-  };
   const small = [];
   if (otherPick) {
     const nx = otherPick === catPick && catRow && catRow.next && otherPick.pts >= catRow.next.gap ? `passes ${catRow.next.name}` : `${otherPick.mins} min \u00b7 ~${otherPick.pts} pts`;
     small.push({ title: `Play ${otherPick.g.name}`, sub: `${otherPick.g.cat} \u00b7 ${nx}`, href: otherPick.g.href });
   }
-  if (chal && meme && meme.ctx) small.push({ title: 'Challenge', sub: `${s.gameName || 'This puzzle'} \u00b7 ${desk ? 'GIFs at right' : '3 GIFs below'}`, href: '#sst-gifs', onClick: toGifs });
+  // The Challenge button ("GIFs at right") is gone (owner, 2026-11-03); the GIFs keep their own card.
   const playNode = mainPick || small.length ? (
     <PassPlay main={mainPick ? { key: mainPick.key, name: mainPick.g.name, href: mainPick.g.href, mins: mainPick.mins, line: passLine(mainPick) } : null} small={small} />
   ) : null;
@@ -1224,7 +1218,7 @@ const CSS = `
 .sst .wys-pass,.sst .wys-pp,.sst-page .wys-pass,.sst-page .wys-pp{--wys-ink:var(--sst-ink);--wys-bg:var(--sst-bg);--wys-card:var(--sst-card);--wys-wash:var(--sst-wash);}
 .sst-page .sst-pass{grid-column:1 / -1;display:flex;flex-direction:column;gap:14px;}
 .sst-page .sst-pass .wys-pass{padding:0;}
-@container (min-width:700px){ .sst-page .sst-pass .wys-pp{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:stretch;} .sst-page .sst-pass .wys-sm{grid-template-columns:minmax(0,1fr);} }
+@container (min-width:700px){ .sst-page .sst-pass .wys-pp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;} .sst-page .sst-pass .wys-sm{grid-template-columns:minmax(0,1fr);} }
 .sst-grail{--sst-ink:var(--stg-ink,#0b0d12);--sst-bg:var(--sp-g,#b1e5fd);}
 .sst-grail .sst-rs{display:flex;flex-direction:column;gap:12px;}
 .sst-grail .sst-gif{margin-top:0;}

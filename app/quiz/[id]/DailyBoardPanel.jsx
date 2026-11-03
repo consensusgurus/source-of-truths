@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 import { DAILY_GAME_MAP, dailyAttemptRule, scoreText } from '@/lib/daily-games';
+import { missCell } from '@/lib/daily-row-stats';
 import { fetchDailyMe, dailyMeQuery, invalidateDailyMe } from '../../dailyMeClient';
 // EVERYONE / <group> over This Puzzle's board (owner, 2026-09-17).
 import useGroupStanding from '../../groups/groupStanding';
@@ -543,7 +544,7 @@ export default function DailyBoardPanel({
                                 report, so it reads as a dash. Every other game
                                 has no `tries` and falls through to guessesUsed
                                 exactly as before. */}
-                            {missLabel ? <span className="num">{r.tries != null ? r.tries : (r.egTier != null ? '—' : (r.guessesUsed == null ? '—' : r.guessesUsed))}</span> : null}
+                            {missLabel ? <span className="num">{missCell(r, self)}</span> : null}
                             <span className="pts">{fmtNum(r.points)}</span>
                           </div>
                         );

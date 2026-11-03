@@ -119,8 +119,12 @@ for (const rel of SHARED) {
 // still ignored its argument.
 const row = (o) => ({ score: 4, total: 10, timeElapsed: 131, ...o });
 const cases = [
-  ['hands',  row({ guessesUsed: 3 }), '3 busts'],
-  ['hands',  row({ guessesUsed: 1 }), '1 bust'],
+  // PROGRESS_FIG games print the figure that ranks (owner, 2026-11-03).
+  ['hands',  row({ guessesUsed: 3, progress: 142 * 100 + 96 }), '142 points'],
+  ['hands',  row({ guessesUsed: 3, progress: 1 * 100 + 99 }), '1 point'],
+  ['whittle', row({ guessesUsed: 2, progress: (500 - 14) * 100 + 97 }), '14 clues left'],
+  ['span',   row({ guessesUsed: 1, progress: (500 - 7) * 100 + 98 }), '7 hops'],
+  ['shoe',   row({ guessesUsed: 2, progress: 1040 }), '+40 chips'],
   ['sweep',  row({ guessesUsed: 7 }), '7 digs'],
   ['tuck',   row({ guessesUsed: 2 }), '2 unused'],
   ['crux',   row({ guessesUsed: 5 }), '5 guesses'],
@@ -130,7 +134,7 @@ const cases = [
 for (const [key, r, want] of cases) {
   const g = DAILY_GAMES.find((x) => x.key === key);
   if (!g) { note(`sample game ${key} is not in the registry any more`); continue; }
-  const out = gameStats(r, g.miss);
+  const out = gameStats(r, g.miss, key);
   if (!out || !out.includes(want)) fail(`gameStats for ${key} reads "${out}" — expected it to contain "${want}"`);
 }
 // A game that posts no miss figure says nothing rather than something borrowed.
@@ -153,6 +157,14 @@ for (const key of ['suds', 'cages', 'bracket']) {
 if (missWord('Tries', 1) !== 'try' || missWord('Tries', 2) !== 'tries') fail('missWord mishandles Tries');
 if (missWord(null, 2) !== null) fail('missWord should return null with no label');
 
+// A PROGRESS_FIG row from before the switch carries busts/slips/misses in guessesUsed and
+// no figure. It must print no middle term, never the old count under the new word.
+for (const key of ['hands', 'whittle', 'span']) {
+  const g = DAILY_GAMES.find((x) => x.key === key);
+  const out = gameStats(row({ guessesUsed: 3 }), g.miss, key);
+  if (/\b3\b/.test(String(out))) fail(`gameStats for a pre-switch ${key} row prints "${out}"`);
+}
+
 // ── 6. The figure has to SURVIVE THE COMBINE ───────────────────────────────
 // "Your standing" on the home reads board.me.perGame, which combineDaily builds
 // in two hops: scoreGame's player -> u.games -> perGame. The first version of
@@ -167,7 +179,7 @@ if (missWord(null, 2) !== null) fail('missWord should return null with no label'
     completion: 0, placement: o.pts, points: o.pts, rank: o.rank, rankedPos: o.rank,
     field: o.field, abandoned: false });
   const rows = combineDaily([
-    { key: 'hands', quizId: 'hands-9-1-26', field: 94, players: new Map([['a:me', p({ s: 4, g: 3, pts: 8, rank: 4, field: 94 })]]) },
+    { key: 'hands', quizId: 'hands-9-1-26', field: 94, players: new Map([['a:me', { ...p({ s: 4, g: 3, pts: 8, rank: 4, field: 94 }), progress: 14296 }]]) },
     { key: 'mate',  quizId: 'mate-9-1-26',  field: 40, players: new Map([['a:me', p({ s: 10, tries: 2, pts: 15, rank: 1, field: 40 })]]) },
   ], 25);
   const me = rows.find((r) => r.userKey === 'a:me');
@@ -177,8 +189,9 @@ if (missWord(null, 2) !== null) fail('missWord should return null with no label'
     if (!h || h.guessesUsed !== 3) fail(`combineDaily drops guessesUsed from perGame (got ${h && h.guessesUsed}); Your standing loses its middle term`);
     if (!m || m.tries !== 2) fail(`combineDaily drops tries from perGame (got ${m && m.tries})`);
     const hands = DAILY_GAMES.find((g) => g.key === 'hands');
-    if (h && hands && !String(gameStats(h, hands.miss)).includes('3 busts')) {
-      fail(`the home would print "${gameStats(h, hands.miss)}" for a Hands row that busted three times`);
+    if (h && hands && h.progress !== 14296) fail(`combineDaily drops progress from perGame (got ${h && h.progress}); Hands points vanish from Your standing`);
+    if (h && hands && !String(gameStats(h, hands.miss, 'hands')).includes('142 points')) {
+      fail(`the home would print "${gameStats(h, hands.miss, 'hands')}" for a Hands row of 142 points`);
     }
   }
 }

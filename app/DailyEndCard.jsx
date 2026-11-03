@@ -96,6 +96,7 @@ import MindLoftMark from './MindLoftMark';
 import { notifyTrophies } from './TrophyPop';
 import { fetchDailyMe, dailyMeQuery, invalidateDailyMe } from './dailyMeClient';
 import { isRetiredDaily, DAILY_GAME_MAP, dailyAttemptRule, attemptsMode, isArcade, scoreText } from '@/lib/daily-games';
+import { missCell } from '@/lib/daily-row-stats';
 import { circuitKeysFor, circuitHref, circuitName, readRunParam, runSummaryHref, isMarquee } from '@/lib/circuits';
 import { T } from '@/lib/theme';
 import { CONTEST, COPY, contestIsLive } from '@/lib/contest';
@@ -2486,7 +2487,7 @@ export default function DailyEndCard({
                             count. A run that never solved has no attempt number
                             to report and reads as a dash. Mirrors the same cell
                             in DailyBoardPanel. */}
-                        {missLabel ? <span className="num">{r.tries != null ? r.tries : (r.egTier != null ? '—' : (r.guessesUsed == null ? '—' : r.guessesUsed))}</span> : null}
+                        {missLabel ? <span className="num">{missCell(r, self)}</span> : null}
                         <span className="pts">{fmtNum(r.points)}</span>
                       </div>
                     ))}

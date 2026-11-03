@@ -437,13 +437,14 @@ export function PassPlay({ main, small = [] }) {
     <div className="wys-pp">
       <style dangerouslySetInnerHTML={{ __html: PASS_CSS }} />
       {main ? (
-        <a className="wys-cta" href={main.href}>
+        // ONE BUTTON HIGH (owner, 2026-11-03): the black play button is the same height as the
+        // small play button beside it. The "typical finish" sentence rides as its tooltip.
+        <a className="wys-cta" href={main.href} title={main.line || undefined}>
           <span className="top">
-            <span className="gl">{main.key ? <GameGlyph gameKey={main.key} size={26} /> : null}</span>
-            <span className="tx"><small>Easiest points left{main.mins ? ` \u00b7 ${main.mins} min` : ''}</small><b>Play {main.name}</b></span>
+            <span className="gl">{main.key ? <GameGlyph gameKey={main.key} size={18} /> : null}</span>
+            <span className="tx"><b>Play {main.name}</b><small>Easiest points left{main.mins ? ` \u00b7 ${main.mins} min` : ''}</small></span>
             <span className="ar" aria-hidden="true">&rarr;</span>
           </span>
-          {main.line ? <span className="ln">{main.line}</span> : null}
         </a>
       ) : null}
       {small.length ? (
@@ -475,15 +476,14 @@ const PASS_CSS = `
 .wys-pass.wide .wys-pr{border-top:0;padding:4px 0 10px}
 .wys-pass.wide .wys-pt{max-width:none}
 .wys-pp{display:flex;flex-direction:column;gap:10px;font-family:Manrope,ui-sans-serif,system-ui,sans-serif}
-.wys-cta{display:flex;flex-direction:column;gap:8px;padding:14px 16px;border-radius:16px;background:var(--wys-ink,#08222e);color:var(--wys-bg,#fff);text-decoration:none;animation:wysNudge 2.6s ease-in-out 1.6s 2}
+.wys-cta{display:flex;flex-direction:column;justify-content:center;padding:10px 12px;border-radius:14px;border:1px solid var(--wys-ink,#08222e);min-width:0;background:var(--wys-ink,#08222e);color:var(--wys-bg,#fff);text-decoration:none;animation:wysNudge 2.6s ease-in-out 1.6s 2}
 @keyframes wysNudge{0%,100%{transform:none}50%{transform:scale(1.02)}}
-.wys-cta .top{display:flex;align-items:center;gap:12px}
-.wys-cta .gl{flex:none;width:46px;height:46px;border-radius:12px;background:var(--wys-bg,#fff);color:var(--wys-ink,#08222e);display:flex;align-items:center;justify-content:center}
+.wys-cta .top{display:flex;align-items:center;gap:10px;min-width:0}
+.wys-cta .gl{flex:none;width:30px;height:30px;border-radius:8px;background:var(--wys-bg,#fff);color:var(--wys-ink,#08222e);display:flex;align-items:center;justify-content:center}
 .wys-cta .tx{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
-.wys-cta small{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
-.wys-cta b{font-size:20px;font-weight:800;line-height:1.15}
-.wys-cta .ar{flex:none;font-size:22px;font-weight:800}
-.wys-cta .ln{font-size:13px;font-weight:700;line-height:1.35}
+.wys-cta small{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em}
+.wys-cta b{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wys-cta .ar{flex:none;font-size:18px;font-weight:800}
 .wys-cta:hover{filter:brightness(1.08)}
 .wys-sm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .wys-sm.one{grid-template-columns:minmax(0,1fr)}

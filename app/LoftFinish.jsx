@@ -69,6 +69,7 @@ import useDailyRoster from './useDailyRoster';
 import { Brain } from 'lucide-react';
 import { circuitKeysFor, circuitHref, circuitName, readRunParam, runSummaryHref, isMarquee } from '@/lib/circuits';
 import { DAILY_GAMES, DAILY_GAME_MAP, attemptsMode, isArcade, wantsFastRetry, dailyAttemptRule, scoreView, scoreText } from '@/lib/daily-games';
+import { missCell } from '@/lib/daily-row-stats';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 import { savedIdentity } from '@/lib/saved-identity';
@@ -525,7 +526,7 @@ export default function LoftFinish({
           a column of zeroes. Every other game has no `tries` and falls through
           to guessesUsed, so their column is unchanged. Same expression as
           DailyEndCard and DailyBoardPanel: keep the three in step. */}
-      {missLabel ? <span className="c">{r.tries != null ? r.tries : (r.egTier != null ? '—' : (r.guessesUsed == null ? '—' : r.guessesUsed))}</span> : null}
+      {missLabel ? <span className="c">{missCell(r, selfKey)}</span> : null}
       <span className="c">{fmtTime(r.timeElapsed) || '—'}</span>
     </div>
   );

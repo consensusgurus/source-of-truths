@@ -1213,6 +1213,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
             challengeMetric={chips}
             title={shoeVerdict(!!g.gaveUp, chips)}
             detail={`bank ${fmtChips(chips)} · ${elapsed}`}
+            missLabel="Chips"
             iq={iq}
             board={dailyBoard}
             gameRank={allTime && allTime.ready

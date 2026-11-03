@@ -49,7 +49,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import StageToday from './StageToday';
 import { useStageTheme } from '@/lib/stage-theme';
-import { DAILY_GAMES, DAILY_GAME_MAP, scoreText, keyOfQuizId } from '@/lib/daily-games';
+import { DAILY_GAMES, DAILY_GAME_MAP, scoreText, keyOfQuizId, hasProgressFig, progressFigCell } from '@/lib/daily-games';
 import { CIRCUITS, ALL_CIRCUITS, DISPLAY_CIRCUITS, CIRCUIT_BASE, SUDOKU_POOL, circuitById, circuitKeysFor, circuitPageHref, circuitEntryHref } from '@/lib/circuits';
 import { catBlue } from '@/lib/home-blues';
 import StageLadder from '../StageLadder';
@@ -1625,7 +1625,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
                             <b>{(r && r.rank) || i + 1}</b>
                             <span className="nm">{i === 0 ? CROWN : null}{(r && r.username) || 'Player'}{meKey && r && r.userKey === meKey ? ' · You' : ''}</span>
                             <span className="cell">{r && r.score != null ? scoreText(pickGame, r.score, r.total) : ''}</span>
-                            {missLabel ? <span className="cell">{eg ? (r && r.tries != null ? r.tries : '—') : (r && r.guessesUsed != null ? r.guessesUsed : '—')}</span> : null}
+                            {missLabel ? <span className="cell">{eg ? (r && r.tries != null ? r.tries : '—') : hasProgressFig(pickGame) ? (progressFigCell(pickGame, r) ?? '—') : (r && r.guessesUsed != null ? r.guessesUsed : '—')}</span> : null}
                             <span className="cell">{fmtClock(r && r.timeElapsed)}</span>
                             <span className="cell pts">{fmtPts(r && r.points)}</span>
                           </div>

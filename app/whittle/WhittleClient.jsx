@@ -73,7 +73,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { CELLS, boxOf, legalRemovals, bestRemoval, scoreFor } from '@/lib/whittle-core';
 import { endGrade, endEfficiency } from '@/lib/end-verdict';
-import { scoreText } from '@/lib/daily-games';
+import { scoreText, packProgressFig } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
 import { usePhoneStage } from '../PlayStage';
 import SudokuStage, { sudokuEyebrow, SK_ICON } from '../SudokuStage';
@@ -438,7 +438,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
         headers: { 'Content-Type': 'application/json' },
         // guessesUsed carries the SLIPS, which is what the registry's
         // miss column prints and what the board's second term sorts on.
-        body: JSON.stringify({ quizId: PUZZLE.quizId, score: sc, total: 10, correct: won ? 1 : 0, guessesUsed: g2.slips, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
+        body: JSON.stringify({ quizId: PUZZLE.quizId, score: sc, total: 10, correct: won ? 1 : 0, guessesUsed: g2.slips, progress: sc > 0 ? packProgressFig('whittle', PUZZLE.live, clueLeft, g2.slips) : undefined, timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
       })
         .then((r) => r.json())
         .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
@@ -893,7 +893,7 @@ export default function WhittleClient({ puzzles = [], forceNum = null }) {
             challengeMetric={left}
             title={perfectHit ? 'Perfect!' : endGrade(score, 10, 'Perfect!')}
             detail={`${detail} · ${elapsed}`}
-            missLabel="Slips"
+            missLabel="Clues left"
             iq={iq}
             board={dailyBoard}
             gameRank={allTime && allTime.ready

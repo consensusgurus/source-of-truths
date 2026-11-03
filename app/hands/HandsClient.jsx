@@ -68,7 +68,7 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { endGrade, endEfficiency } from '@/lib/end-verdict';
-import { scoreText } from '@/lib/daily-games';
+import { scoreText, packProgressFig } from '@/lib/daily-games';
 import {
   RANK_LABEL, SUIT_PIP, rankOf, suitOf, isRed, cardName,
   lineScores, totalOf, bustsOf, scoreForPoints, rowCells, colCells,
@@ -478,7 +478,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
     try {
       fetch('/api/quiz/result', {
         method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quizId: PUZZLE.quizId, score, total: 10, correct: tot >= par ? 1 : 0, guessesUsed: bustsOf(finalGrid), timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
+        body: JSON.stringify({ quizId: PUZZLE.quizId, score, total: 10, correct: tot >= par ? 1 : 0, guessesUsed: bustsOf(finalGrid), progress: packProgressFig('hands', PUZZLE.live, tot, bustsOf(finalGrid)), timeElapsed: el, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
       })
         .then((r) => r.json())
         .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
@@ -1129,7 +1129,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
                 : null}
               day={dayStats}
               streak={isTodays ? myStats.cur : null}
-              missLabel="Busts"
+              missLabel="Points"
               archive={puzzles
                 .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
                 .sort((x, y) => y.num - x.num)

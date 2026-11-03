@@ -918,3 +918,40 @@ move games' registry `miss` is now **Moves** (their rows print "14 moves · 1:20
 count), and `endEfficiency` reads **Solved!** for any solve, **Perfect!** only at the proven
 minimum. The comparator lives once in `attemptsRanker`; the guest copy in `guestGameResult` mirrors
 it under `eg.order`. Gate: `node scripts/verify-scale-off.mjs`, shown to fail on a swapped order.
+
+## A board shows the stat that decides it (owner, 2026-11-03)
+
+"Hands needs to show points, not busts. Are there any other puzzles where we show stats that
+aren't the first deciding criteria? Fix those." Audited every daily against `CHALLENGE_METRIC`
+(the per-game figure that decides a head-to-head) and the board comparator
+(`score DESC -> progress -> guesses_used -> time`). Six games printed a tiebreak where the
+result should be:
+
+| Game | Was shown | Ranks on | Fix |
+|---|---|---|---|
+| Hands | Solved · busts | points (1-10 read from them) | Points column, from `progress` |
+| Shoe | Solved, no column | chips | Chips column, from `progress` (already posted) |
+| Whittle | Solved · slips | clues left | Clues left column, from `progress` |
+| Span | Solved · misses | hops | Hops column, from `progress` (solves only) |
+| Stands | Solved · rejects | 12-point read (rejects AND hints) | `SCORE_VIEW` points: "11 points" |
+| Axiom | Solved · tests | 12-point read (tests, wrong picks, unproven) | `SCORE_VIEW` points |
+
+**`PROGRESS_FIG` in `lib/daily-games.js`** is the mechanism for the first four. The figure is
+packed into `progress` (`packProgressFig`), which the comparator already reads straight after
+the score, with the OLD guesses_used figure folded in as its tiebreak, so the order among equal
+figures is unchanged: `high` = fig*100 + (99 - tie), `low` = (500 - fig)*100 + (99 - tie),
+`base` = fig + 1000 (Shoe). `progressFig` / `progressFigCell` read it back; `missCell` in
+`lib/daily-row-stats.js` is the ONE cell expression for DailyEndCard, DailyBoardPanel and
+LoftFinish; `gameStats` / `gameStatsShort` print "142 points"; StageFinish's rival pair and gap
+line compare on it. `combineDaily` now carries `progress` through both hops.
+
+Rules: (1) `guesses_used` keeps its old meaning on these games, so nothing else moves. (2) A row
+with no figure prints a DASH, never the old busts/slips/misses under the new word. (3) Posting is
+date-gated by `since` (2026-11-04) so no board already played is reordered; earlier boards show a
+dash in the new column. Shoe has posted chips since launch. (4) A new game whose score is a read
+built from a figure other than its miss term joins `PROGRESS_FIG` (or `SCORE_VIEW` points when
+the posted score IS the figure) at launch. Gate: `scripts/verify-miss-labels.mjs` checks the
+round trip, the pre-switch dash, and the combine carry.
+
+Left as is, deliberately: Focus (frame = misses + 1, so misses IS the figure), Circa (an exact
+year is worth one guess; guesses still lead), the TIME_FIRST move games (time is its own column).
