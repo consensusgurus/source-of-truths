@@ -410,11 +410,11 @@ const ROWS_CSS = `
 // white letters, flipped in dark mode), the rank in that scope, and the
 // player just above with the gap, with a bar for how close you are.
 const passScope = (r) => (r.id === 'day' ? 'All today' : `${r.name} today`);
-export function PassCard({ rows, wide = false }) {
+export function PassCard({ rows, wide = false, band = false }) {
   if (!rows || !rows.length) return null;
   const list = rows.slice().reverse();
   return (
-    <section className={'wys-pass' + (wide ? ' wide' : '')}>
+    <section className={'wys-pass' + (band ? ' band' : wide ? ' wide' : '')}>
       <style dangerouslySetInnerHTML={{ __html: PASS_CSS }} />
       <div className="wys-sl">Where You Stand &middot; Who&rsquo;s Next to Pass</div>
       <div className="wys-pl">
@@ -505,6 +505,11 @@ const PASS_CSS = `
 .wys-sb b{font-size:15px;font-weight:800}
 .wys-sb span{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em}
 .wys-sb:hover{background:color-mix(in srgb,var(--wys-ink,#08222e) 6%,transparent)}
+.wys-pass.band{background:transparent;padding:0}
+.wys-pass.band .wys-pl{display:flex;flex-direction:column;gap:10px}
+.wys-pass.band .wys-pr{border:1px solid color-mix(in srgb,var(--wys-ink,#08222e) 22%,transparent);border-radius:14px;padding:11px 14px 12px;background:var(--wys-wash,rgba(255,255,255,.5))}
+.wys-pass.band .wys-sl{margin-bottom:10px}
+.wys-pass.band .wys-prk b{font-size:20px}
 @media (prefers-reduced-motion:reduce){.wys-pk span,.wys-cta{animation:none}}
 `;
 

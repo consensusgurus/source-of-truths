@@ -647,7 +647,10 @@ export default function StageStick({
       </section>
     </div>
   );
-  const result = (live) => (
+  // THE BAND ON A DESKTOP (owner, 2026-11-04): the three standings boxes,
+  // each naming who is next to pass, take the place of Today's field and
+  // Against yourself once they are in.
+  const result = (live, band = false) => (
     <div className="sst-hero">
       <section className={on(1) + ' sst-h1'}>
         <div className="sst-eb">{eyebrow}</div>
@@ -672,7 +675,7 @@ export default function StageStick({
           </a>
         ) : null}
       </section>
-      {resultStats(live)}
+      {band && desk && standRows ? <div className={'sst-h2 sst-bandwys ' + on(2)}><PassCard rows={standRows} band /></div> : resultStats(live)}
     </div>
   );
 
@@ -808,26 +811,33 @@ export default function StageStick({
   const curCat = (DAILY_GAME_MAP[s.gameKey] && DAILY_GAME_MAP[s.gameKey].cat) || null;
   const pool = [];
   const seen = new Set();
-  [...dayPicks, ...catPicks].forEach((p, i) => { if (!seen.has(p.key)) { seen.add(p.key); pool.push({ ...p, ease: i }); } });
+  [...dayPicks.map((p) => ({ ...p, from: 'day' })), ...catPicks.map((p) => ({ ...p, from: 'cat' }))].forEach((p, i) => { if (!seen.has(p.key)) { seen.add(p.key); pool.push({ ...p, ease: i }); } });
   const affinity = (p) => {
     const t = SKILL_TAGS[p.key] || [];
     const shared = t.filter((x) => curTags.includes(x));
     const sameCat = !!curCat && p.g.cat === curCat;
     const score = (t[0] && t[0] === curTags[0] ? 3 : 0) + 2 * shared.length + (sameCat ? 2 : 0);
     const sk = shared.length ? SKILL_MAP[shared[0]] : null;
-    const why = sk ? `${sk.short || sk.name}, like ${s.gameName || 'this one'}` : sameCat ? `${curCat}, like ${s.gameName || 'this one'}` : 'Easiest points left';
-    return { score, why };
+    const nm = s.gameName || 'this one';
+    const why = sk ? `${sk.short || sk.name}, like ${nm}` : sameCat ? `${curCat}, like ${nm}` : 'Easiest points left';
+    const whyLong = sk ? `Trains ${sk.name.toLowerCase()}, like ${nm}${sameCat ? `, and it is another ${curCat} puzzle` : ''}.`
+      : sameCat ? `Another ${curCat} puzzle, like ${nm}.` : 'Nothing closer to this one is left today, and these are the quickest points.';
+    return { score, why, whyLong };
   };
   const ranked = pool.map((p) => ({ ...p, ...affinity(p) })).sort((a, b) => b.score - a.score || a.ease - b.ease);
   const mainPick = ranked[0] || null;
   const catPick = ranked.find((p) => p !== mainPick && p.g.cat === curCat) || null;
   const otherPick = catPick || ranked.find((p) => p !== mainPick) || null;
+  // A pick's `after` is a rank on the board it came from: All today, or the
+  // category today for a pick only the category read offered.
   const passLine = (p) => {
-    if (!p || !dayRow) return '';
+    const row = p && p.from === 'cat' ? catRow : dayRow;
+    if (!p || !row) return '';
+    const where = p.from === 'cat' && curCat ? `${curCat} today` : 'All today';
     const head = `A typical finish (~${p.pts} ${p.pts === 1 ? 'pt' : 'pts'})`;
-    if (!p.after || p.after >= dayRow.rank) return `${head} adds to your day in All today.`;
-    if (dayRow.next && p.pts >= dayRow.next.gap) return `${head} passes ${dayRow.next.name} and moves you to about #${p.after} in All today.`;
-    return `${head} moves you to about #${p.after} in All today.`;
+    if (!p.after || p.after >= row.rank) return `${head} adds to your day in ${where}.`;
+    if (row.next && p.pts >= row.next.gap) return `${head} passes ${row.next.name} and moves you to about #${p.after} in ${where}.`;
+    return `${head} moves you to about #${p.after} in ${where}.`;
   };
   const small = [];
   if (otherPick) {
@@ -839,6 +849,32 @@ export default function StageStick({
     <PassPlay main={mainPick ? { key: mainPick.key, name: mainPick.g.name, href: mainPick.g.href, mins: mainPick.mins, why: mainPick.why, line: passLine(mainPick) } : null} small={small} />
   ) : null;
   const passNode = standRows ? <PassCard rows={standRows} wide={desk} /> : null;
+  // PLAY NEXT, desktop (owner, 2026-11-04): with the standings up in the band,
+  // the row below is three big picks, each with the game's own description,
+  // why it is suggested and what a typical finish would do for you today.
+  const nextList = ranked.slice(0, 3);
+  const nextCards = nextList.length ? (
+    <div className="sst-nx">
+      <div className="sst-sl">Play Next</div>
+      <div className="sst-nxl">
+        {nextList.map((p, i) => {
+          const d = DAILY_GAME_MAP[p.key] || {};
+          const fx = passLine(p);
+          return (
+            <a key={p.key} className={'sst-nxc' + (i === 0 ? ' main' : '')} href={p.g.href}>
+              <span className="hd">
+                <span className="gl"><GameGlyph gameKey={p.key} size={20} /></span>
+                <span className="nm"><b>Play {p.g.name}</b><small>{p.g.cat} &middot; {p.mins} min &middot; {p.finish}% finish &middot; ~{p.pts} pts</small></span>
+                <span className="ar" aria-hidden="true">&rarr;</span>
+              </span>
+              {d.tagLong || d.tag ? <span className="ds">{d.tagLong || d.tag}</span> : null}
+              <span className="wy"><em>Why</em>{p.whyLong}{fx ? ` ${fx}` : ''}</span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  ) : null;
   // The standing GIF's caption: the day, and what this puzzle moved.
   const standCaption = dayRow ? `#${dayRow.rank} of ${dayRow.of.toLocaleString('en-US')} today.${dayRow.up ? ` Up ${dayRow.up} with ${s.gameName || 'this puzzle'}.` : ''}` : null;
   const ezList = desk ? dayPicks.slice(0, 5) : [];
@@ -1053,7 +1089,8 @@ export default function StageStick({
   const cards = (
     <div className="sst-cards">
       {/* WHO'S NEXT TO PASS and the next play (owner, 2026-11-03) */}
-      {desk && (passNode || playNode) ? <section className={'sst-card sst-pass ' + on(3)}>{passNode}{playNode}</section> : null}
+      {desk && standRows && nextCards ? <section className={'sst-card sst-pass ' + on(3)}>{nextCards}</section>
+        : desk && (passNode || playNode) ? <section className={'sst-card sst-pass ' + on(3)}>{passNode}{playNode}</section> : null}
 
       {/* 2. RANKINGS */}
       {rankCard}
@@ -1138,7 +1175,7 @@ export default function StageStick({
     <>
       <div ref={inlineRef} className={'sst-page' + toneCls + (phase === 'inline' ? ' in' : phase === 'retract' ? ' rt' : '')}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
-        <div className="sst-band" ref={heroRef}>{result(phase === 'inline')}</div>
+        <div className="sst-band" ref={heroRef}>{result(phase === 'inline', true)}</div>
         {cards}
       </div>
       {rail ? createPortal(railGifs ? gifRail : upNext, rail) : null}
@@ -1250,6 +1287,23 @@ const CSS = `
 .sst .wys-pass,.sst .wys-pp,.sst-page .wys-pass,.sst-page .wys-pp{--wys-ink:var(--sst-ink);--wys-bg:var(--sst-bg);--wys-card:var(--sst-card);--wys-wash:var(--sst-wash);}
 .sst-page .sst-pass{grid-column:1 / -1;display:flex;flex-direction:column;gap:14px;}
 .sst-page .sst-pass .wys-pass{padding:0;}
+.sst-band .sst-bandwys .wys-pass{--wys-ink:var(--sst-ink);--wys-wash:var(--sst-wash);}
+.sst-nxl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px;}
+.sst-nxc{display:flex;flex-direction:column;gap:9px;min-width:0;padding:14px 16px 15px;border-radius:16px;border:1px solid var(--sst-ink);color:var(--sst-ink);text-decoration:none;}
+.sst-nxc.main{background:var(--sst-ink);color:var(--sst-bg);}
+.sst-nxc:hover{filter:brightness(1.06);}
+.sst-nxc:not(.main):hover{background:color-mix(in srgb,var(--sst-ink) 5%,transparent);}
+.sst-nxc .hd{display:flex;align-items:center;gap:10px;min-width:0;}
+.sst-nxc .gl{flex:none;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--sst-ink) 8%,transparent);}
+.sst-nxc.main .gl{background:var(--sst-bg);color:var(--sst-ink);}
+.sst-nxc .nm{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
+.sst-nxc .nm b{font-size:17px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sst-nxc .nm small{font-size:12px;font-weight:700;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
+.sst-nxc .ar{flex:none;font-size:18px;font-weight:800;}
+.sst-nxc .ds{font-size:14px;font-weight:600;line-height:1.4;}
+.sst-nxc .wy{font-size:12.5px;font-weight:700;line-height:1.45;opacity:.9;}
+.sst-nxc .wy em{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-right:7px;}
+@container (max-width:699px){ .sst-nxl{grid-template-columns:minmax(0,1fr);} }
 @container (min-width:700px){ .sst-page .sst-pass .wys-pp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;} .sst-page .sst-pass .wys-sm{grid-template-columns:minmax(0,1fr);} }
 .sst-grail{--sst-ink:var(--stg-ink,#0b0d12);--sst-bg:var(--sp-g,#b1e5fd);}
 .sst-grail .sst-rs{display:flex;flex-direction:column;gap:12px;}
