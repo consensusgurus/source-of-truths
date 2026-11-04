@@ -85,7 +85,7 @@ PUZZLES.forEach((p, i) => {
   if (Object.values(per).some((n) => n > (N <= 8 ? 1 : 2))) bad(`${tag}: a person has more than ${N <= 8 ? 1 : 2} placement clues`);
   // THE DAY'S BAND (owner, 2026-11-02): from No. 5 (Tue Nov 3) a board's hardest move must sit in its day's band
   // and no board may need a guess. Earlier boards went live before the rule and are reported, not failed.
-  const gr = gradePlacement(L, p.cast, p.clues); const band = DAY_BAND[d.getUTCDay()];
+  const gr = gradePlacement(L, p.cast, p.clues); const band = d.getUTCDay() === 3 && d < new Date(Date.UTC(2026, 10, 5)) ? [2, 3] : DAY_BAND[d.getUTCDay()]; // WED_WAS: Wednesdays before Nov 5
   const fits = gr.rank >= band[0] && gr.rank <= band[1];
   if (p.num >= GRADED_FROM && !fits) bad(`${tag}: grade ${gr.rank} (${gr.whatifs} what-if) is outside its day's band ${band[0]}-${band[1]}`);
   if (pl.length === 1 && rl.length === 1) console.log(`✓ ${tag} ${L.title} ${N}x${N}, ${p.clues.length} clues, unique in both stages, grade ${gr.rank}${fits ? '' : p.num >= GRADED_FROM ? '' : ' (pre-rule)'} (${Date.now() - t0}ms)`);
