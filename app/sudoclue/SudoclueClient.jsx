@@ -63,7 +63,7 @@ import HelpSheet from '../HelpSheet';
 import { PLACES } from '@/lib/sudoclue-places';
 import { solve, sameAnswer, ROLESETS, ROLE_ORDER, ROLES3, isRoleClue, stepLog } from '@/lib/sudoclue-engine';
 import Board3D from './Board3D';
-import { OBJ, renderBoard, boardIndex, cellTitle, portraitSVG, objIcon, sayBare, COLORS as CAST_COLORS, ROLE_COLORS } from '@/lib/sudoclue-art';
+import { OBJ, renderBoard, boardIndex, cellTitle, portraitSVG, objIcon, sayBare, COLORS as BASE_COLORS, ROLE_COLORS } from '@/lib/sudoclue-art';
 
 const KEY = 'sudoclue';
 const NAME = 'Sudoclue';
@@ -236,6 +236,20 @@ const clueObj = (c) => (c && c.pr && (c.pr.k === 'on' || c.pr.k === 'beside') ? 
 // When the 3D board is up it photographs each piece's own model, and every icon (the key and the clues)
 // shows that picture instead of the flat drawing, so the key always matches the board.
 let ITEM_PICS = null;
+// ONE COLOUR PER PERSON ON A BOARD (owner, 2026-11-04: "two characters both have orange"): each person keeps their
+// own ring colour unless an earlier cast member already has a near match; then they take whichever spare colour is
+// furthest from every colour already in use. Notes, card rings and figures all read this, so a colour names one person.
+const SPARE = ['#5fc08a', '#e6c34d', '#3fb5a6', '#c98a5a', '#9bd05a', '#4dcbee', '#a87cf3', '#6282dd', '#f691c6', '#e86868', '#f19956', '#2f7fb8', '#d65fa0'];
+function hsl(hex) { const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn; if (!d) return [0, 0, l];
+  const sat = d / (1 - Math.abs(2 * l - 1)); let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [(h * 60 + 360) % 360, sat, l]; }
+function colourGap(a, b) { const [h1, s1, l1] = hsl(a), [h2, s2, l2] = hsl(b);
+  if (s1 < .25 || s2 < .25) return s1 < .25 && s2 < .25 ? Math.abs(l1 - l2) * 100 : 90; const dh = Math.abs(h1 - h2); return Math.min(dh, 360 - dh) + Math.abs(l1 - l2) * 60; }
+function boardColours(cast) { const out = {}, used = [];
+  for (const p of cast) { let c = BASE_COLORS[p] || '#838e9d';
+    if (used.some((u) => colourGap(u, c) < 30)) c = SPARE.filter((x) => !used.includes(x)).sort((a, b) => Math.min(...used.map((u) => colourGap(u, b))) - Math.min(...used.map((u) => colourGap(u, a))))[0] || c;
+    out[p] = c; used.push(c); }
+  return out; }
 function ObjIco({ t, dims, size = 22 }) {
   if (ITEM_PICS && ITEM_PICS[t]) return <span aria-hidden="true" style={{ display: 'inline-block', verticalAlign: '-0.32em', width: size, height: size, margin: '0 3px 0 1px', borderRadius: 5, background: 'rgba(255,255,255,0.55)', boxShadow: 'inset 0 0 0 1px rgba(8,34,46,0.14)', backgroundImage: `url(${ITEM_PICS[t]})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }} />;
   const [w, h] = dims[t] || [1, 1];
@@ -283,6 +297,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const N = LAYOUT.rooms.length;
   const DIMS = useMemo(() => { const d = {}; (LAYOUT.items || []).forEach((it) => { if (!d[it.t]) d[it.t] = [it.w, it.h]; }); return d; }, [LAYOUT]);
   const CAST = PUZZLE.cast;
+  const CAST_COLORS = useMemo(() => boardColours(CAST), [CAST]);
   const THREE = !!PUZZLE.three;
   const COUNTS = useMemo(() => (THREE ? { Victim: 1, Killer: 1, Accomplice: 1 } : roleCounts(N)), [N, THREE]);
   const IDX = useMemo(() => boardIndex(LAYOUT), [LAYOUT]);
