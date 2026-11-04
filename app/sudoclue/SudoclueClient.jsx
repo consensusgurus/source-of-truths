@@ -827,7 +827,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       lead={<>A murder at <b>{LAYOUT.title}</b>, solved in two stages. First <b>place</b> all {N} people, <b>one in every row and one in every column</b>. Then <b>accuse</b>: work out who played which part.</>}
       banner={THREE ? <><b>Three people had a part:</b> the victim, the killer and the accomplice. Everyone else was a bystander, and only the detective&rsquo;s notes say who is who.</> : <><b>The killer was alone with the victim.</b> The victim&rsquo;s room holds exactly two people: the victim and the killer.</>}
       steps={[
-        <><b>Stage 1, Place.</b> Each card is one person and what they said about where they stood. Tap a card, then a square. People stand on <b>open floor</b> or on a <b>seat</b> (a chair, a bench, a rug, a bed, a boat); water, trees, tables and statues are not places to stand. The Key sorts every picture into the two, and a white ring on the board marks each seat still free. Someone who <b>said nothing</b> is found by elimination. <b>Note</b> lets you outline the squares a person might be on in their colour: pick their card, tap Note, then tap squares (tap again to rub one out).</>,
+        <><b>Stage 1, Place.</b> Each card is one person and what they said about where they stood. Tap a card, then a square. People stand on <b>open floor</b> or on a <b>seat</b> (a chair, a bench, a rug, a bed, a boat); water, trees, tables and statues are not places to stand. The Key sorts every picture into the two, and a white ring on the board marks each seat still free. Someone who <b>said nothing</b> is found by elimination. <b>Note</b> lets you outline the squares a person might be on in their colour: pick their card, tap Note, then tap squares (tap again to rub one out). Notes fade once a placed person&rsquo;s row or column, or a Mark, rules their square out, and a person&rsquo;s last note left lights up.</>,
         <>Every labelled area on the board is a <b>room</b>, indoors or out, and a clue that names one (&ldquo;in the Mall area&rdquo;) means any square inside it. <b>Beside</b> means a square that shares an edge with the thing, never a diagonal. <b>On</b> means on the thing itself. Every clue is true.</>,
         <><b>Check board</b> when everyone is placed. Once it is right, <b>Stage 2, Accuse</b> opens the detective&rsquo;s notes: clues about the roles. {THREE ? <>Pick someone on the board, then tap their part: the <b>victim</b>, the <b>killer</b> or the <b>accomplice</b>. Name all three and accuse.</> : <>Tap a card and give that person a role: the <b>victim</b>, the <b>killer</b>, the <b>accomplice</b>, or one of the day&rsquo;s <b>guests</b>, <b>staff</b> or <b>family</b>.</>}</>,
       ]}
@@ -848,6 +848,12 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const takenRC = new Set();
   for (const q of CAST) { const x = g.place[q]; if (!x) continue; for (let i = 0; i < N; i++) { takenRC.add(`${x[0]},${i}`); takenRC.add(`${i},${x[1]}`); } }
   const shownNotes = {}; if (playing && !accuse) Object.entries(g.notes || {}).forEach(([k, ids]) => { const v = ids.filter((q) => !g.place[q]); if (v.length && !occupantAt(k)) shownNotes[k] = v; });
+  // THE LAST NOTE STANDING (owner, 2026-11-04: "if only one note after deduction, that note gets extra highlight"):
+  // a note is spent once its square is in a placed person's row or column, or crossed out with Mark; spent notes
+  // fade, and when a person who pencilled two or more squares has exactly one live note left, that note lights up.
+  const noteState = {}; { const live = {}, total = {};
+    Object.entries(shownNotes).forEach(([k, ids]) => ids.forEach((q) => { total[q] = (total[q] || 0) + 1; const dead = takenRC.has(k) || !!(g.cross || {})[k]; noteState[k + '|' + q] = dead ? 'dead' : 'live'; if (!dead) (live[q] = live[q] || []).push(k); }));
+    Object.keys(live).forEach((q) => { if (live[q].length === 1 && total[q] > 1) noteState[live[q][0] + '|' + q] = 'only'; }); }
   const boardEl = (
     <div className="sc-board" style={{ position: 'relative', width: '100%', margin: '34px auto 0' }}>
     <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', boxShadow: '0 6px 22px rgba(0,0,0,0.28)' }}>
@@ -856,7 +862,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           roles={g.stage === 'accuse' || sol ? shownRoles : null} cross={playing ? g.cross : {}} bad={playing ? bad : new Set()}
           glow={playing ? glowCells : null} nudge={playing && nudge ? nudge.cells : null}
           shade={playing && !accuse ? [...takenRC].filter((k) => !occupantAt(k) && IDX.isOpen(k)) : null}
-          notes={shownNotes} noteSel={mode === 'note' ? sel : null}
+          notes={shownNotes} noteState={noteState} noteSel={mode === 'note' ? sel : null}
           spots={playing && !accuse ? Object.keys(IDX.cellObj).filter((k) => IDX.isOpen(k) && !takenRC.has(k) && !occupantAt(k)) : null}
           hl={sol ? CAST.filter((p) => ['Victim', 'Killer'].includes(sol.roles[p])).map((p) => sol.place[p]) : null}
           interactive={playing} isOpen={(k) => IDX.isOpen(k)} onTap={tapCell} onThumbs={setThumbs} onItemThumbs={setItemPics} onFail={() => setFlat3d(true)}
@@ -871,7 +877,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
               <button key={k} type="button" onClick={() => tapCell(k)}
                 aria-label={`${cellTitle(LAYOUT, k)}, row ${r + 1}, column ${c + 1}${occ ? `, ${occ}` : ''}`}
                 className="sc-hit" style={{ position: 'relative', background: !occ && !accuse && takenRC.has(k) ? 'rgba(11,15,26,0.30)' : 'transparent', border: 'none', padding: 0, margin: 0, cursor: IDX.isOpen(k) || occ ? 'pointer' : 'default' }}>
-                {(shownNotes[k] || []).slice(0, 4).map((q, j) => <span key={q} aria-hidden="true" style={{ position: 'absolute', inset: `${4 + j * 9.5}%`, border: `${q === sel && mode === 'note' ? 3 : 2}px solid ${CAST_COLORS[q]}`, boxShadow: '0 0 0 1px rgba(11,15,26,0.5)' }} />)}
+                {(shownNotes[k] || []).slice(0, 4).map((q, j) => { const st = noteState[k + '|' + q]; return <span key={q} aria-hidden="true" style={{ position: 'absolute', inset: `${4 + j * 9.5}%`, border: `${st === 'only' ? 4 : q === sel && mode === 'note' ? 3 : 2}px solid ${CAST_COLORS[q]}`, background: st === 'only' ? `${CAST_COLORS[q]}66` : 'transparent', opacity: st === 'dead' ? 0.3 : 1, boxShadow: st === 'only' ? '0 0 0 2px #fff, 0 0 10px 2px #fff' : '0 0 0 1px rgba(11,15,26,0.5)' }} />; })}
               </button>
             );
           })}

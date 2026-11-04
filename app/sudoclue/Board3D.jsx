@@ -18,10 +18,10 @@ import { createKit, placeData, buildRoom } from '@/lib/sudoclue-3d';
 const ANG = 68, DIST = 2.45, FOV = 26;
 const k2 = (r, c) => `${r},${c}`;
 
-export default function Board3D({ layout, cast, colors, place, sel, roles, cross, bad, glow, shade, spots, notes, noteSel, nudge, hl, interactive, isOpen, onTap, onThumbs, onItemThumbs, onFail, cellLabel }) {
+export default function Board3D({ layout, cast, colors, place, sel, roles, cross, bad, glow, shade, spots, notes, noteState, noteSel, nudge, hl, interactive, isOpen, onTap, onThumbs, onItemThumbs, onFail, cellLabel }) {
   const boxRef = useRef(null), labRef = useRef(null);
   const S = useRef({});                     // three.js state, outside React
-  const props = useRef({}); props.current = { place, sel, roles, cross, bad, glow, shade, spots, notes, noteSel, nudge, hl, interactive, onTap, cast, colors };
+  const props = useRef({}); props.current = { place, sel, roles, cross, bad, glow, shade, spots, notes, noteState, noteSel, nudge, hl, interactive, onTap, cast, colors };
 
   // ---- mount: renderer, camera, lights, the room
   useEffect(() => {
@@ -116,9 +116,14 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
     if (p.notes) { const under = new THREE.MeshBasicMaterial({ color: 0x0b0f1a, transparent: true, opacity: .5, depthWrite: false });
       const sq = (r, c, a, w, m, y, ro) => { const g = new THREE.Mesh(new THREE.RingGeometry(a - w, a, 4, 1, Math.PI / 4), m); g.rotation.x = -Math.PI / 2; g.scale.set(1.414, 1.414, 1); g.position.set(X(c), y, Z(r)); g.renderOrder = ro; overlay.add(g); };
       Object.keys(p.notes).forEach((k) => { const [r, c] = k.split(',').map(Number); const y = top(r, c) + .026;
-        p.notes[k].slice(0, 4).forEach((id, j) => { const a = .45 - j * .095, w = id === p.noteSel ? .06 : .042;
-          sq(r, c, a + .012, w + .024, under, y, 6);
-          sq(r, c, a, w, new THREE.MeshBasicMaterial({ color: new THREE.Color(p.colors[id] || '#888'), transparent: true, depthWrite: false }), y + .002, 7); }); }); }
+        p.notes[k].slice(0, 4).forEach((id, j) => { const st = (p.noteState || {})[k + '|' + id], col = new THREE.Color(p.colors[id] || '#888');
+          const a = st === 'only' ? .47 : .45 - j * .095, w = st === 'only' ? .085 : id === p.noteSel ? .06 : .042;
+          // spent: faded, no dark hairline; the last one left: a white halo, a thick outline and a wash of their colour
+          if (st === 'dead') { sq(r, c, a, w, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .3, depthWrite: false }), y + .002, 7); return; }
+          if (st === 'only') { sq(r, c, a + .06, .075, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1, depthWrite: false }), y + .001, 6);
+            const f = new THREE.Mesh(new THREE.PlaneGeometry(.86, .86), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .55, depthWrite: false })); f.rotation.x = -Math.PI / 2; f.position.set(X(c), y - .001, Z(r)); f.renderOrder = 5; overlay.add(f); }
+          else sq(r, c, a + .012, w + .024, under, y, 6);
+          sq(r, c, a, w, new THREE.MeshBasicMaterial({ color: col, transparent: true, depthWrite: false }), y + .002, 7); }); }); }
     if (p.nudge) p.nudge.forEach(([r, c]) => tile(r, c, 0xfb7185, .3));
     if (p.glow) p.glow.forEach(([r, c]) => outline(r, c, 0xfacc15));
     if (p.cross) Object.keys(p.cross).forEach((k) => { if (!p.cross[k]) return; const [r, c] = k.split(',').map(Number); const mat = new THREE.MeshStandardMaterial({ color: 0x1f2229, roughness: .6 });
