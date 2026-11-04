@@ -91,7 +91,7 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
     const clear = (g) => { for (const o of [...g.children]) { g.remove(o); o.traverse((x) => { if (x.geometry) x.geometry.dispose(); if (x.material && !Array.isArray(x.material)) x.material.dispose(); }); } };
     clear(overlay); for (const o of [...people.children]) people.remove(o);
     const tile = (r, c, color, op) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(.94, .94), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(X(c), top(r, c) + .01, Z(r)); m.renderOrder = 2; overlay.add(m); };
-    const outline = (r, c, color, w) => { const m = new THREE.Mesh(new THREE.RingGeometry(.4, .4 + (w || .06), 4, 1, Math.PI / 4), new THREE.MeshBasicMaterial({ color, depthWrite: false, side: THREE.DoubleSide })); m.rotation.x = -Math.PI / 2; m.scale.set(1.41, 1.41, 1); m.position.set(X(c), top(r, c) + .016, Z(r)); m.renderOrder = 3; overlay.add(m); };
+    const outline = (r, c, color, w) => { const m = new THREE.Mesh(new THREE.RingGeometry(.4, .4 + (w || .06), 4, 1, Math.PI / 4), new THREE.MeshBasicMaterial({ color, transparent: true, depthWrite: false, side: THREE.DoubleSide })); m.rotation.x = -Math.PI / 2; m.scale.set(1.41, 1.41, 1); m.position.set(X(c), top(r, c) + .016, Z(r)); m.renderOrder = 3; overlay.add(m); };
     const ring = (r, c, color, rad) => { const m = new THREE.Mesh(new THREE.TorusGeometry(rad, .028, 8, 40), new THREE.MeshBasicMaterial({ color })); m.rotation.x = -Math.PI / 2; m.position.set(X(c), top(r, c) + .03, Z(r) + .05); overlay.add(m); };
     if (p.shade) { p.shade.forEach((k) => { const [r, c] = k.split(',').map(Number); tile(r, c, 0x05070d, .55); });
       // each placed person's row and column also gets two solid light edges, so the strip reads at a glance
@@ -102,17 +102,21 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
       cols.forEach((c) => { if (!cols.has(c - 1)) edge(X(c) - .5, 0, .045, N); if (!cols.has(c + 1)) edge(X(c) + .5, 0, .045, N); }); }
     // a free seat (owner, 2026-11-04: "tough to tell where you can and can't place someone. the carousel for
     // example"): every seat nobody has taken, in a row and column still open, wears a white standing ring
-    if (p.spots) { const ringM = new THREE.MeshBasicMaterial({ color: 0xffffff, depthWrite: false }), discM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .32, depthWrite: false });
+    if (p.spots) { // transparent so they draw AFTER see-through tops like the carousel's (an opaque mark with no depth
+      // write was painted over by them, so the carousel showed no ring); a dark rim keeps the ring visible on pale tops
+      const ringM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false }), rimM = new THREE.MeshBasicMaterial({ color: 0x0b0f1a, transparent: true, opacity: .55, depthWrite: false }), discM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .32, depthWrite: false });
       p.spots.forEach((k) => { const [r, c] = k.split(',').map(Number); const y = top(r, c) + .022;
-        const rg = new THREE.Mesh(new THREE.RingGeometry(.15, .19, 40), ringM); rg.rotation.x = -Math.PI / 2; rg.position.set(X(c), y, Z(r)); rg.renderOrder = 4; overlay.add(rg);
-        const dc = new THREE.Mesh(new THREE.CircleGeometry(.15, 40), discM); dc.rotation.x = -Math.PI / 2; dc.position.set(X(c), y - .002, Z(r)); dc.renderOrder = 4; overlay.add(dc); }); }
-    // pencilled notes: each person's colour dot in a corner of the square (centre stays free for a figure);
-    // the person being noted gets a white rim so their own dots stand out
-    if (p.notes) { const rim = new THREE.MeshBasicMaterial({ color: 0xffffff, depthWrite: false }); const OFF = [[-.29, -.29], [.29, -.29], [-.29, .29], [.29, .29]];
-      Object.keys(p.notes).forEach((k) => { const [r, c] = k.split(',').map(Number); const y = top(r, c) + .026;
-        p.notes[k].slice(0, 4).forEach((id, j) => { const [ox, oz] = OFF[j]; const big = id === p.noteSel;
-          const rg = new THREE.Mesh(new THREE.CircleGeometry(big ? .125 : .105, 28), rim); rg.rotation.x = -Math.PI / 2; rg.position.set(X(c) + ox, y, Z(r) + oz); rg.renderOrder = 5; overlay.add(rg);
-          const dt = new THREE.Mesh(new THREE.CircleGeometry(big ? .1 : .085, 28), new THREE.MeshBasicMaterial({ color: new THREE.Color(p.colors[id] || '#888'), depthWrite: false })); dt.rotation.x = -Math.PI / 2; dt.position.set(X(c) + ox, y + .002, Z(r) + oz); dt.renderOrder = 6; overlay.add(dt); }); }); }
+        const rm = new THREE.Mesh(new THREE.RingGeometry(.135, .205, 40), rimM); rm.rotation.x = -Math.PI / 2; rm.position.set(X(c), y - .001, Z(r)); rm.renderOrder = 4; overlay.add(rm);
+        const rg = new THREE.Mesh(new THREE.RingGeometry(.15, .19, 40), ringM); rg.rotation.x = -Math.PI / 2; rg.position.set(X(c), y, Z(r)); rg.renderOrder = 5; overlay.add(rg);
+        const dc = new THREE.Mesh(new THREE.CircleGeometry(.135, 40), discM); dc.rotation.x = -Math.PI / 2; dc.position.set(X(c), y - .002, Z(r)); dc.renderOrder = 4; overlay.add(dc); }); }
+    // pencilled notes: each person's colour dot in a row along the BOTTOM of the square, clear of the room names that
+    // sit on a room's top edge (owner, 2026-11-04: "I can't see my note under the area label") and of a figure's
+    // centre; the person being noted gets a bigger white rim so their own dots stand out
+    if (p.notes) { const rim = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false }); const OFF = [-.3, -.1, .1, .3];
+      Object.keys(p.notes).forEach((k) => { const [r, c] = k.split(',').map(Number); const y = top(r, c) + .026; const ids = p.notes[k].slice(0, 4); const x0 = (4 - ids.length) * .1;
+        ids.forEach((id, j) => { const ox = OFF[j] + x0, oz = .31; const big = id === p.noteSel;
+          const rg = new THREE.Mesh(new THREE.CircleGeometry(big ? .1 : .088, 28), rim); rg.rotation.x = -Math.PI / 2; rg.position.set(X(c) + ox, y, Z(r) + oz); rg.renderOrder = 6; overlay.add(rg);
+          const dt = new THREE.Mesh(new THREE.CircleGeometry(big ? .078 : .07, 28), new THREE.MeshBasicMaterial({ color: new THREE.Color(p.colors[id] || '#888'), transparent: true, depthWrite: false })); dt.rotation.x = -Math.PI / 2; dt.position.set(X(c) + ox, y + .002, Z(r) + oz); dt.renderOrder = 7; overlay.add(dt); }); }); }
     if (p.nudge) p.nudge.forEach(([r, c]) => tile(r, c, 0xfb7185, .3));
     if (p.glow) p.glow.forEach(([r, c]) => outline(r, c, 0xfacc15));
     if (p.cross) Object.keys(p.cross).forEach((k) => { if (!p.cross[k]) return; const [r, c] = k.split(',').map(Number); const mat = new THREE.MeshStandardMaterial({ color: 0x1f2229, roughness: .6 });

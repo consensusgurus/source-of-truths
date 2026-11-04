@@ -856,7 +856,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
               <button key={k} type="button" onClick={() => tapCell(k)}
                 aria-label={`${cellTitle(LAYOUT, k)}, row ${r + 1}, column ${c + 1}${occ ? `, ${occ}` : ''}`}
                 className="sc-hit" style={{ position: 'relative', background: !occ && !accuse && takenRC.has(k) ? 'rgba(11,15,26,0.30)' : 'transparent', border: 'none', padding: 0, margin: 0, cursor: IDX.isOpen(k) || occ ? 'pointer' : 'default' }}>
-                {(shownNotes[k] || []).slice(0, 4).map((q, j) => <span key={q} aria-hidden="true" style={{ position: 'absolute', width: '22%', height: '22%', borderRadius: '50%', background: CAST_COLORS[q], border: '1px solid #fff', top: j < 2 ? '6%' : 'auto', bottom: j < 2 ? 'auto' : '6%', left: j % 2 ? 'auto' : '6%', right: j % 2 ? '6%' : 'auto' }} />)}
+                {(shownNotes[k] || []).slice(0, 4).map((q, j) => <span key={q} aria-hidden="true" style={{ position: 'absolute', width: '18%', height: '18%', borderRadius: '50%', background: CAST_COLORS[q], border: '1px solid #fff', bottom: '6%', left: `${6 + j * 23}%` }} />)}
               </button>
             );
           })}
