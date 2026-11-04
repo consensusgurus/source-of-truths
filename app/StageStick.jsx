@@ -43,6 +43,7 @@ import { sharedGet } from './sharedGet';
 import { useStageChrome } from './GauntletScreens';
 import { dailyDept, DAILY_GAME_MAP } from '@/lib/daily-games';
 import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref } from '@/lib/circuits';
+import { SKILL_TAGS, SKILL_MAP } from '@/lib/daily-skills';
 import { usePuzzleStandings, StandBeat, StandCard, PassCard, PassPlay, beatDuration } from './WhereYouStand';
 
 // RUNS, NOT THEIR PARTS (owner, 2026-10-26: "don't send users to individual
@@ -254,11 +255,20 @@ export default function StageStick({
   const standRows = stand.rows && stand.rows.length >= 2 ? stand.rows : null;
   // The beat waits for its figures, but never long: past STAND_WAIT_MS the
   // ending goes on without it and the card simply fills in when they land.
-  const [standGo, setStandGo] = useState(!(standing && standing.game));
+  // A board read that lands after the mount (owner report, 2026-11-04: Roll's
+  // ending showed no Where You Stand boxes) still gets its beat: without a
+  // standing the ending waits up to STAND_WAIT_MS for one before going on.
+  const hasStanding = !!(standing && standing.game);
+  const [standGo, setStandGo] = useState(false);
   const standGoAt = useRef(0);
   const [beatRows, setBeatRows] = useState(null);
   useEffect(() => {
-    if (standGo) return undefined;
+    if (standGo || hasStanding) return undefined;
+    const t = setTimeout(() => { standGoAt.current = Date.now(); setStandGo(true); }, STAND_WAIT_MS);
+    return () => clearTimeout(t);
+  }, [hasStanding, standGo]);   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (standGo || !hasStanding) return undefined;
     if (stand.ready) {
       standGoAt.current = Date.now();
       setBeatRows(standRows);
@@ -267,7 +277,7 @@ export default function StageStick({
     }
     const t = setTimeout(() => { standGoAt.current = Date.now(); setStandGo(true); }, STAND_WAIT_MS);
     return () => clearTimeout(t);
-  }, [stand.ready, standGo]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [stand.ready, standGo, hasStanding]);   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (scope !== 'all' || askedAll.current || !boardGame) return;
     askedAll.current = true;
@@ -787,15 +797,37 @@ export default function StageStick({
   const catPicks = usable(stand.catPicks);
   const dayRow = standRows ? standRows.find((r) => r.id === 'day') : null;
   const catRow = standRows ? standRows.find((r) => r.id === 'cat') : null;
-  const mainPick = dayPicks[0] || catPicks[0] || null;
-  const catPick = catPicks.find((p) => !mainPick || p.key !== mainPick.key) || null;
-  const otherPick = catPick || dayPicks.find((p) => !mainPick || p.key !== mainPick.key) || null;
+  // THE NEXT PLAY IS LIKE THIS ONE (owner, 2026-11-04: "people playing Jig
+  // would not play Defend"). Every quick, finishable pick from the day and the
+  // category is scored on how close it is to the puzzle just played: the same
+  // primary skill counts most, then each shared skill, then the same category.
+  // The ease order from the server (expected points per minute) only breaks
+  // ties, so the easiest points still win among equally close games, and a
+  // game with nothing in common is offered only when nothing closer is left.
+  const curTags = SKILL_TAGS[s.gameKey] || [];
+  const curCat = (DAILY_GAME_MAP[s.gameKey] && DAILY_GAME_MAP[s.gameKey].cat) || null;
+  const pool = [];
+  const seen = new Set();
+  [...dayPicks, ...catPicks].forEach((p, i) => { if (!seen.has(p.key)) { seen.add(p.key); pool.push({ ...p, ease: i }); } });
+  const affinity = (p) => {
+    const t = SKILL_TAGS[p.key] || [];
+    const shared = t.filter((x) => curTags.includes(x));
+    const sameCat = !!curCat && p.g.cat === curCat;
+    const score = (t[0] && t[0] === curTags[0] ? 3 : 0) + 2 * shared.length + (sameCat ? 2 : 0);
+    const sk = shared.length ? SKILL_MAP[shared[0]] : null;
+    const why = sk ? `${sk.short || sk.name}, like ${s.gameName || 'this one'}` : sameCat ? `${curCat}, like ${s.gameName || 'this one'}` : 'Easiest points left';
+    return { score, why };
+  };
+  const ranked = pool.map((p) => ({ ...p, ...affinity(p) })).sort((a, b) => b.score - a.score || a.ease - b.ease);
+  const mainPick = ranked[0] || null;
+  const catPick = ranked.find((p) => p !== mainPick && p.g.cat === curCat) || null;
+  const otherPick = catPick || ranked.find((p) => p !== mainPick) || null;
   const passLine = (p) => {
     if (!p || !dayRow) return '';
     const head = `A typical finish (~${p.pts} ${p.pts === 1 ? 'pt' : 'pts'})`;
-    if (!p.after || p.after >= dayRow.rank) return `${head} adds to your day in All.`;
-    if (dayRow.next && p.pts >= dayRow.next.gap) return `${head} passes ${dayRow.next.name} and moves you to about #${p.after} in All.`;
-    return `${head} moves you to about #${p.after} in All.`;
+    if (!p.after || p.after >= dayRow.rank) return `${head} adds to your day in All today.`;
+    if (dayRow.next && p.pts >= dayRow.next.gap) return `${head} passes ${dayRow.next.name} and moves you to about #${p.after} in All today.`;
+    return `${head} moves you to about #${p.after} in All today.`;
   };
   const small = [];
   if (otherPick) {
@@ -804,7 +836,7 @@ export default function StageStick({
   }
   // The Challenge button ("GIFs at right") is gone (owner, 2026-11-03); the GIFs keep their own card.
   const playNode = mainPick || small.length ? (
-    <PassPlay main={mainPick ? { key: mainPick.key, name: mainPick.g.name, href: mainPick.g.href, mins: mainPick.mins, line: passLine(mainPick) } : null} small={small} />
+    <PassPlay main={mainPick ? { key: mainPick.key, name: mainPick.g.name, href: mainPick.g.href, mins: mainPick.mins, why: mainPick.why, line: passLine(mainPick) } : null} small={small} />
   ) : null;
   const passNode = standRows ? <PassCard rows={standRows} wide={desk} /> : null;
   // The standing GIF's caption: the day, and what this puzzle moved.
@@ -1138,7 +1170,7 @@ const CSS = `
   --sst-card:color-mix(in srgb,var(--sst-bg) 58%,#ffffff);--sst-rule:color-mix(in srgb,var(--sst-ink) 14%,transparent);
   --sst-wash:color-mix(in srgb,#ffffff 55%,transparent);font-family:${SANS};-webkit-tap-highlight-color:transparent;}
 .sst.ink-l,.sst-page.ink-l{--sst-card:color-mix(in srgb,var(--sst-bg) 82%,#000000);--sst-wash:color-mix(in srgb,#ffffff 12%,transparent);}
-.sst.t-lost,.sst-page.t-lost{--sst-bg:color-mix(in srgb,var(--stg-bad) 13%,var(--stg-raise));--sst-ink:var(--stg-ink);}
+.sst.t-lost,.sst-page.t-lost{--sst-bg:color-mix(in srgb,var(--stg-bad) 13%,var(--stg-raise));--sst-ink:var(--stg-ink);--wys-chip-tx:var(--stg-raise,#ffffff);}
 .sst{position:fixed;inset:0;z-index:9000;height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior:contain;
   background:var(--sst-bg);color:var(--sst-ink);}
 /* THE WHITE STRIP (owner report, 2026-10-25): iOS Safari can leave a band of
@@ -1392,7 +1424,7 @@ const CSS = `
 .sst-band{background:var(--sst-bg);border-radius:0;padding:22px 26px;border-bottom:1px solid var(--stg-ink,#0b0d12);}
 .sst-band .sst-hero{padding:0;}
 /* Below the band the sheet speaks the page's ink, not the pastel's. */
-.sst-page .sst-cards{--sst-ink:var(--stg-ink,#0b0d12);--sst-bg:var(--stg-raise,#fff);--sst-rule:var(--stg-line,#e2e5ea);
+.sst-page .sst-cards{--wys-chip-tx:var(--stg-raise,#ffffff);--sst-ink:var(--stg-ink,#0b0d12);--sst-bg:var(--stg-raise,#fff);--sst-rule:var(--stg-line,#e2e5ea);
   --sst-wash:color-mix(in srgb,var(--sp-g,#b1e5fd) 45%,var(--stg-raise,#fff));--sst-card:transparent;color:var(--stg-ink,#0b0d12);
   display:grid;grid-template-columns:minmax(0,1fr);gap:0;align-items:stretch;}
 .sst-page .sst-card{background:transparent;border-radius:0;padding:18px 20px;border-top:2px solid var(--stg-line,#e2e5ea);}

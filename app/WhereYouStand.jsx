@@ -176,7 +176,7 @@ export function usePuzzleStandings({ on, gameKey, gameName, cat, game, board, ne
         const r = pointsRow(c, { id: 'cat', lab: `${cat} Puzzles`, name: cat, word: 'puzzle', plus });
         if (r) out.push(r);
       }
-      const r3 = pointsRow(d, { id: 'day', lab: 'All Puzzles', name: 'All', word: 'puzzle', plus });
+      const r3 = pointsRow(d, { id: 'day', lab: 'All Puzzles', name: 'All today', word: 'puzzle', plus });
       if (r3) out.push(r3);
       setRows2(out);
       setReady(true);
@@ -234,7 +234,7 @@ export function useRunStandings({ on, runId, runName, keys, run, board, unitWord
       const out = [];
       const rc = isMc ? mcRow(c) : (c ? pointsRow(c, { id: 'cat', lab: `${cat} Puzzles`, name: cat, word: 'puzzle' }) : null);
       if (rc) out.push(rc);
-      const rd = pointsRow(d, { id: 'day', lab: 'All Puzzles', name: 'All', word: 'puzzle' });
+      const rd = pointsRow(d, { id: 'day', lab: 'All Puzzles', name: 'All today', word: 'puzzle' });
       if (rd) out.push(rd);
       setRows2(out);
       setReady(true);
@@ -405,22 +405,32 @@ const ROWS_CSS = `
 `;
 
 // ── WHO'S NEXT TO PASS (owner, 2026-11-03, B2 on phones, the cards on
-// desktop): All, the category, then this puzzle, each naming the player just
-// above and the gap, with a bar for how close you are.
+// desktop): All today, the category today, then this puzzle today. Each box
+// names its scope on an ink chip (owner, 2026-11-04: "add today", black with
+// white letters, flipped in dark mode), the rank in that scope, and the
+// player just above with the gap, with a bar for how close you are.
+const passScope = (r) => (r.id === 'day' ? 'All today' : `${r.name} today`);
 export function PassCard({ rows, wide = false }) {
   if (!rows || !rows.length) return null;
   const list = rows.slice().reverse();
   return (
     <section className={'wys-pass' + (wide ? ' wide' : '')}>
       <style dangerouslySetInnerHTML={{ __html: PASS_CSS }} />
-      <div className="wys-sl">Who&rsquo;s Next to Pass</div>
+      <div className="wys-sl">Where You Stand &middot; Who&rsquo;s Next to Pass</div>
       <div className="wys-pl">
         {list.map((r) => (
           <div key={r.id} className="wys-pr">
-            <div className="wys-ph"><span><b>{r.name}</b> #{fmt(r.rank)}</span><span>{r.next ? r.next.gapText : 'You lead'}</span></div>
+            <div className="wys-ph">
+              <span className="wys-chip">{passScope(r)}</span>
+              <span className="wys-prk"><b>#{fmt(r.rank)}</b> of {fmt(r.of)}</span>
+            </div>
             <div className="wys-pb">
               <span className="wys-pk"><span style={{ width: `${Math.round((r.next ? r.next.fill : 1) * 100)}%` }} /></span>
-              <span className="wys-pt">{r.next ? `${r.next.name} ${r.next.fig}` : 'Top of the board'}</span>
+            </div>
+            <div className="wys-pt">
+              {r.next
+                ? <>Next to pass: <b>{r.next.name}</b>{/ behind$/.test(r.next.gapText) ? `, ${r.next.gapText.replace(/ behind$/, '')} ahead of you` : (r.next.fig ? ` \u00b7 ${r.next.fig}` : '')}</>
+                : <>You lead {passScope(r)}</>}
             </div>
           </div>
         ))}
@@ -442,7 +452,7 @@ export function PassPlay({ main, small = [] }) {
         <a className="wys-cta" href={main.href} title={main.line || undefined}>
           <span className="top">
             <span className="gl">{main.key ? <GameGlyph gameKey={main.key} size={18} /> : null}</span>
-            <span className="tx"><b>Play {main.name}</b><small>Easiest points left{main.mins ? ` \u00b7 ${main.mins} min` : ''}</small></span>
+            <span className="tx"><b>Play {main.name}</b><small>{main.why || 'Easiest points left'}{main.mins ? ` \u00b7 ${main.mins} min` : ''}</small></span>
             <span className="ar" aria-hidden="true">&rarr;</span>
           </span>
         </a>
@@ -465,15 +475,19 @@ const PASS_CSS = `
 .wys-pass .wys-sl{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.82;margin-bottom:2px}
 .wys-pr{padding:10px 0 11px;border-top:1px solid color-mix(in srgb,var(--wys-ink,#08222e) 14%,transparent)}
 .wys-pr:first-child{border-top:0}
-.wys-ph{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:800}
-.wys-ph b{font-size:15px;font-weight:800}
-.wys-pb{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;margin-top:7px}
-.wys-pk{position:relative;height:10px;border-radius:99px;background:color-mix(in srgb,var(--wys-ink,#08222e) 16%,transparent);overflow:hidden}
+.wys-ph{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:700}
+.wys-chip{flex:none;display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:99px;background:var(--wys-ink,#08222e);color:var(--wys-chip-tx,#ffffff);font-size:12.5px;font-weight:800;white-space:nowrap;max-width:62%;overflow:hidden;text-overflow:ellipsis}
+.wys-prk{white-space:nowrap}
+.wys-prk b{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.wys-pb{margin-top:8px}
+.wys-pk{display:block;position:relative;height:10px;border-radius:99px;background:color-mix(in srgb,var(--wys-ink,#08222e) 16%,transparent);overflow:hidden}
 .wys-pk span{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--wys-ink,#08222e);animation:wysFill .9s cubic-bezier(.2,.8,.2,1) both}
 @keyframes wysFill{from{width:0}}
-.wys-pt{font-size:12.5px;font-weight:700;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis}
+.wys-pt{margin-top:6px;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em}
+.wys-pt b{font-weight:800}
 .wys-pass.wide .wys-pl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.wys-pass.wide .wys-pr{border-top:0;padding:4px 0 10px}
+.wys-pass.wide .wys-pr{border-top:0;padding:12px 14px 13px;border-radius:14px;border:1px solid color-mix(in srgb,var(--wys-ink,#08222e) 18%,transparent)}
+.wys-pass.wide .wys-sl{margin-bottom:10px}
 .wys-pass.wide .wys-pt{max-width:none}
 .wys-pp{display:flex;flex-direction:column;gap:10px;font-family:Manrope,ui-sans-serif,system-ui,sans-serif}
 .wys-cta{display:flex;flex-direction:column;justify-content:center;padding:10px 12px;border-radius:14px;border:1px solid var(--wys-ink,#08222e);min-width:0;background:var(--wys-ink,#08222e);color:var(--wys-bg,#fff);text-decoration:none;animation:wysNudge 2.6s ease-in-out 1.6s 2}
