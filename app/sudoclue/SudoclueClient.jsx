@@ -604,7 +604,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     // In the accuse stage the board is settled: a tap only picks the person standing there.
     if (cur.stage === 'accuse') { if (occ) setSel(occ); return; }
     // NOTES BY PERSON (owner, 2026-11-04: "we need a mechanism to make notes by player"): with a card picked, a tap
-    // pencils that person's colour dot onto the square, a second tap rubs it out. Dots never count as placing.
+    // outlines the square in that person's colour, a second tap rubs it out. Notes never count as placing.
     if (mode === 'note') {
       if (occ) { setSel(occ); return; }
       if (!IDX.isOpen(k)) { vibrate(HAPT.wrong); say(`Nobody can stand there: ${cellTitle(LAYOUT, k)}.`); return; }
@@ -812,7 +812,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       lead={<>A murder at <b>{LAYOUT.title}</b>, solved in two stages. First <b>place</b> all {N} people, <b>one in every row and one in every column</b>. Then <b>accuse</b>: work out who played which part.</>}
       banner={THREE ? <><b>Three people had a part:</b> the victim, the killer and the accomplice. Everyone else was a bystander, and only the detective&rsquo;s notes say who is who.</> : <><b>The killer was alone with the victim.</b> The victim&rsquo;s room holds exactly two people: the victim and the killer.</>}
       steps={[
-        <><b>Stage 1, Place.</b> Each card is one person and what they said about where they stood. Tap a card, then a square. People stand on <b>open floor</b> or on a <b>seat</b> (a chair, a bench, a rug, a bed, a boat); water, trees, tables and statues are not places to stand. The Key sorts every picture into the two, and a white ring on the board marks each seat still free. Someone who <b>said nothing</b> is found by elimination. <b>Note</b> lets you pencil a person&rsquo;s colour dot onto the squares they might be on: pick their card, tap Note, then tap squares (tap again to rub one out).</>,
+        <><b>Stage 1, Place.</b> Each card is one person and what they said about where they stood. Tap a card, then a square. People stand on <b>open floor</b> or on a <b>seat</b> (a chair, a bench, a rug, a bed, a boat); water, trees, tables and statues are not places to stand. The Key sorts every picture into the two, and a white ring on the board marks each seat still free. Someone who <b>said nothing</b> is found by elimination. <b>Note</b> lets you outline the squares a person might be on in their colour: pick their card, tap Note, then tap squares (tap again to rub one out).</>,
         <>Every labelled area on the board is a <b>room</b>, indoors or out, and a clue that names one (&ldquo;in the Mall area&rdquo;) means any square inside it. <b>Beside</b> means a square that shares an edge with the thing, never a diagonal. <b>On</b> means on the thing itself. Every clue is true.</>,
         <><b>Check board</b> when everyone is placed. Once it is right, <b>Stage 2, Accuse</b> opens the detective&rsquo;s notes: clues about the roles. {THREE ? <>Pick someone on the board, then tap their part: the <b>victim</b>, the <b>killer</b> or the <b>accomplice</b>. Name all three and accuse.</> : <>Tap a card and give that person a role: the <b>victim</b>, the <b>killer</b>, the <b>accomplice</b>, or one of the day&rsquo;s <b>guests</b>, <b>staff</b> or <b>family</b>.</>}</>,
       ]}
@@ -856,7 +856,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
               <button key={k} type="button" onClick={() => tapCell(k)}
                 aria-label={`${cellTitle(LAYOUT, k)}, row ${r + 1}, column ${c + 1}${occ ? `, ${occ}` : ''}`}
                 className="sc-hit" style={{ position: 'relative', background: !occ && !accuse && takenRC.has(k) ? 'rgba(11,15,26,0.30)' : 'transparent', border: 'none', padding: 0, margin: 0, cursor: IDX.isOpen(k) || occ ? 'pointer' : 'default' }}>
-                {(shownNotes[k] || []).slice(0, 4).map((q, j) => <span key={q} aria-hidden="true" style={{ position: 'absolute', width: '18%', height: '18%', borderRadius: '50%', background: CAST_COLORS[q], border: '1px solid #fff', bottom: '6%', left: `${6 + j * 23}%` }} />)}
+                {(shownNotes[k] || []).slice(0, 4).map((q, j) => <span key={q} aria-hidden="true" style={{ position: 'absolute', inset: `${4 + j * 9.5}%`, border: `${q === sel && mode === 'note' ? 3 : 2}px solid ${CAST_COLORS[q]}`, boxShadow: '0 0 0 1px rgba(11,15,26,0.5)' }} />)}
               </button>
             );
           })}

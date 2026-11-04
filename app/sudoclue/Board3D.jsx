@@ -109,14 +109,16 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
         const rm = new THREE.Mesh(new THREE.RingGeometry(.135, .205, 40), rimM); rm.rotation.x = -Math.PI / 2; rm.position.set(X(c), y - .001, Z(r)); rm.renderOrder = 4; overlay.add(rm);
         const rg = new THREE.Mesh(new THREE.RingGeometry(.15, .19, 40), ringM); rg.rotation.x = -Math.PI / 2; rg.position.set(X(c), y, Z(r)); rg.renderOrder = 5; overlay.add(rg);
         const dc = new THREE.Mesh(new THREE.CircleGeometry(.135, 40), discM); dc.rotation.x = -Math.PI / 2; dc.position.set(X(c), y - .002, Z(r)); dc.renderOrder = 4; overlay.add(dc); }); }
-    // pencilled notes: each person's colour dot in a row along the BOTTOM of the square, clear of the room names that
-    // sit on a room's top edge (owner, 2026-11-04: "I can't see my note under the area label") and of a figure's
-    // centre; the person being noted gets a bigger white rim so their own dots stand out
-    if (p.notes) { const rim = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false }); const OFF = [-.3, -.1, .1, .3];
-      Object.keys(p.notes).forEach((k) => { const [r, c] = k.split(',').map(Number); const y = top(r, c) + .026; const ids = p.notes[k].slice(0, 4); const x0 = (4 - ids.length) * .1;
-        ids.forEach((id, j) => { const ox = OFF[j] + x0, oz = .31; const big = id === p.noteSel;
-          const rg = new THREE.Mesh(new THREE.CircleGeometry(big ? .1 : .088, 28), rim); rg.rotation.x = -Math.PI / 2; rg.position.set(X(c) + ox, y, Z(r) + oz); rg.renderOrder = 6; overlay.add(rg);
-          const dt = new THREE.Mesh(new THREE.CircleGeometry(big ? .078 : .07, 28), new THREE.MeshBasicMaterial({ color: new THREE.Color(p.colors[id] || '#888'), transparent: true, depthWrite: false })); dt.rotation.x = -Math.PI / 2; dt.position.set(X(c) + ox, y + .002, Z(r) + oz); dt.renderOrder = 7; overlay.add(dt); }); }); }
+    // pencilled notes: each person is a square outline in their colour, nested inward, the first person outermost
+    // (owner, 2026-11-04: dots were lost under room names; "maybe the squares could get outlines, with interior
+    // outlines as go smaller with more individuals"). A dark hairline under each keeps it readable on any floor;
+    // the person being noted draws thicker.
+    if (p.notes) { const under = new THREE.MeshBasicMaterial({ color: 0x0b0f1a, transparent: true, opacity: .5, depthWrite: false });
+      const sq = (r, c, a, w, m, y, ro) => { const g = new THREE.Mesh(new THREE.RingGeometry(a - w, a, 4, 1, Math.PI / 4), m); g.rotation.x = -Math.PI / 2; g.scale.set(1.414, 1.414, 1); g.position.set(X(c), y, Z(r)); g.renderOrder = ro; overlay.add(g); };
+      Object.keys(p.notes).forEach((k) => { const [r, c] = k.split(',').map(Number); const y = top(r, c) + .026;
+        p.notes[k].slice(0, 4).forEach((id, j) => { const a = .45 - j * .095, w = id === p.noteSel ? .06 : .042;
+          sq(r, c, a + .012, w + .024, under, y, 6);
+          sq(r, c, a, w, new THREE.MeshBasicMaterial({ color: new THREE.Color(p.colors[id] || '#888'), transparent: true, depthWrite: false }), y + .002, 7); }); }); }
     if (p.nudge) p.nudge.forEach(([r, c]) => tile(r, c, 0xfb7185, .3));
     if (p.glow) p.glow.forEach(([r, c]) => outline(r, c, 0xfacc15));
     if (p.cross) Object.keys(p.cross).forEach((k) => { if (!p.cross[k]) return; const [r, c] = k.split(',').map(Number); const mat = new THREE.MeshStandardMaterial({ color: 0x1f2229, roughness: .6 });
