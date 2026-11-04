@@ -18,10 +18,10 @@ import { createKit, placeData, buildRoom } from '@/lib/sudoclue-3d';
 const ANG = 68, DIST = 2.45, FOV = 26;
 const k2 = (r, c) => `${r},${c}`;
 
-export default function Board3D({ layout, cast, colors, place, sel, roles, cross, bad, glow, shade, nudge, hl, interactive, isOpen, onTap, onThumbs, onItemThumbs, onFail, cellLabel }) {
+export default function Board3D({ layout, cast, colors, place, sel, roles, cross, bad, glow, shade, spots, nudge, hl, interactive, isOpen, onTap, onThumbs, onItemThumbs, onFail, cellLabel }) {
   const boxRef = useRef(null), labRef = useRef(null);
   const S = useRef({});                     // three.js state, outside React
-  const props = useRef({}); props.current = { place, sel, roles, cross, bad, glow, shade, nudge, hl, interactive, onTap, cast, colors };
+  const props = useRef({}); props.current = { place, sel, roles, cross, bad, glow, shade, spots, nudge, hl, interactive, onTap, cast, colors };
 
   // ---- mount: renderer, camera, lights, the room
   useEffect(() => {
@@ -100,6 +100,12 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
       const rows = new Set(), cols = new Set(); for (const id of p.cast) { const x = p.place[id]; if (x) { rows.add(x[0]); cols.add(x[1]); } }
       rows.forEach((r) => { if (!rows.has(r - 1)) edge(0, Z(r) - .5, N, .045); if (!rows.has(r + 1)) edge(0, Z(r) + .5, N, .045); });
       cols.forEach((c) => { if (!cols.has(c - 1)) edge(X(c) - .5, 0, .045, N); if (!cols.has(c + 1)) edge(X(c) + .5, 0, .045, N); }); }
+    // a free seat (owner, 2026-11-04: "tough to tell where you can and can't place someone. the carousel for
+    // example"): every seat nobody has taken, in a row and column still open, wears a white standing ring
+    if (p.spots) { const ringM = new THREE.MeshBasicMaterial({ color: 0xffffff, depthWrite: false }), discM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .32, depthWrite: false });
+      p.spots.forEach((k) => { const [r, c] = k.split(',').map(Number); const y = top(r, c) + .022;
+        const rg = new THREE.Mesh(new THREE.RingGeometry(.15, .19, 40), ringM); rg.rotation.x = -Math.PI / 2; rg.position.set(X(c), y, Z(r)); rg.renderOrder = 4; overlay.add(rg);
+        const dc = new THREE.Mesh(new THREE.CircleGeometry(.15, 40), discM); dc.rotation.x = -Math.PI / 2; dc.position.set(X(c), y - .002, Z(r)); dc.renderOrder = 4; overlay.add(dc); }); }
     if (p.nudge) p.nudge.forEach(([r, c]) => tile(r, c, 0xfb7185, .3));
     if (p.glow) p.glow.forEach(([r, c]) => outline(r, c, 0xfacc15));
     if (p.cross) Object.keys(p.cross).forEach((k) => { if (!p.cross[k]) return; const [r, c] = k.split(',').map(Number); const mat = new THREE.MeshStandardMaterial({ color: 0x1f2229, roughness: .6 });

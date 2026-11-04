@@ -63,7 +63,7 @@ import HelpSheet from '../HelpSheet';
 import { PLACES } from '@/lib/sudoclue-places';
 import { solve, sameAnswer, ROLESETS, ROLE_ORDER, ROLES3, isRoleClue, stepLog } from '@/lib/sudoclue-engine';
 import Board3D from './Board3D';
-import { renderBoard, boardIndex, cellTitle, portraitSVG, objIcon, sayBare, COLORS as CAST_COLORS, ROLE_COLORS } from '@/lib/sudoclue-art';
+import { OBJ, renderBoard, boardIndex, cellTitle, portraitSVG, objIcon, sayBare, COLORS as CAST_COLORS, ROLE_COLORS } from '@/lib/sudoclue-art';
 
 const KEY = 'sudoclue';
 const NAME = 'Sudoclue';
@@ -800,7 +800,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       lead={<>A murder at <b>{LAYOUT.title}</b>, solved in two stages. First <b>place</b> all {N} people, <b>one in every row and one in every column</b>. Then <b>accuse</b>: work out who played which part.</>}
       banner={THREE ? <><b>Three people had a part:</b> the victim, the killer and the accomplice. Everyone else was a bystander, and only the detective&rsquo;s notes say who is who.</> : <><b>The killer was alone with the victim.</b> The victim&rsquo;s room holds exactly two people: the victim and the killer.</>}
       steps={[
-        <><b>Stage 1, Place.</b> Each card is one person and what they said about where they stood. Tap a card, then a square. People stand on <b>open floor</b> or on a <b>seat</b> (a chair, a bench, a rug, a bed, a boat); water, trees, tables and statues are not places to stand. Someone who <b>said nothing</b> is found by elimination.</>,
+        <><b>Stage 1, Place.</b> Each card is one person and what they said about where they stood. Tap a card, then a square. People stand on <b>open floor</b> or on a <b>seat</b> (a chair, a bench, a rug, a bed, a boat); water, trees, tables and statues are not places to stand. The Key sorts every picture into the two, and a white ring on the board marks each seat still free. Someone who <b>said nothing</b> is found by elimination.</>,
         <>Every labelled area on the board is a <b>room</b>, indoors or out, and a clue that names one (&ldquo;in the Mall area&rdquo;) means any square inside it. <b>Beside</b> means a square that shares an edge with the thing, never a diagonal. <b>On</b> means on the thing itself. Every clue is true.</>,
         <><b>Check board</b> when everyone is placed. Once it is right, <b>Stage 2, Accuse</b> opens the detective&rsquo;s notes: clues about the roles. {THREE ? <>Pick someone on the board, then tap their part: the <b>victim</b>, the <b>killer</b> or the <b>accomplice</b>. Name all three and accuse.</> : <>Tap a card and give that person a role: the <b>victim</b>, the <b>killer</b>, the <b>accomplice</b>, or one of the day&rsquo;s <b>guests</b>, <b>staff</b> or <b>family</b>.</>}</>,
       ]}
@@ -828,6 +828,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           roles={g.stage === 'accuse' || sol ? shownRoles : null} cross={playing ? g.cross : {}} bad={playing ? bad : new Set()}
           glow={playing ? glowCells : null} nudge={playing && nudge ? nudge.cells : null}
           shade={playing && !accuse ? [...takenRC].filter((k) => !occupantAt(k) && IDX.isOpen(k)) : null}
+          spots={playing && !accuse ? Object.keys(IDX.cellObj).filter((k) => IDX.isOpen(k) && !takenRC.has(k) && !occupantAt(k)) : null}
           hl={sol ? CAST.filter((p) => ['Victim', 'Killer'].includes(sol.roles[p])).map((p) => sol.place[p]) : null}
           interactive={playing} isOpen={(k) => IDX.isOpen(k)} onTap={tapCell} onThumbs={setThumbs} onItemThumbs={setItemPics} onFail={() => setFlat3d(true)}
           cellLabel={(k, r, c) => `${cellTitle(LAYOUT, k)}, row ${r + 1}, column ${c + 1}${occupantAt(k) ? `, ${occupantAt(k)}` : ''}`} />
@@ -1001,11 +1002,18 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       )}
       <div aria-label="Key to the pictures" style={{ marginTop: 10, borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '8px 10px' }}>
         <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED, marginBottom: 6 }}>Key</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 12px' }}>
-          {Object.keys(DIMS).map((t) => (
-            <span key={t} style={{ display: 'inline-flex', alignItems: 'center', fontSize: 12.5, fontWeight: 650, color: INK }}><ObjIco t={t} dims={DIMS} size={28} />{sayBare(t).replace(/^./, (m) => m.toUpperCase())}</span>
-          ))}
-        </div>
+        {/* Two groups (owner, 2026-11-04): what a person can stand on, and what they cannot */}
+        {[['Can stand on', Object.keys(DIMS).filter((t) => OBJ[t] && OBJ[t].seat)], ['Nobody stands on', Object.keys(DIMS).filter((t) => !(OBJ[t] && OBJ[t].seat))]].map(([head, ts]) => ts.length ? (
+          <div key={head} style={{ marginTop: 4 }}>
+            <div style={{ fontSize: 11.5, fontWeight: 750, color: FADED, marginBottom: 3 }}>{head}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 12px' }}>
+              {ts.map((t) => (
+                <span key={t} style={{ display: 'inline-flex', alignItems: 'center', fontSize: 12.5, fontWeight: 650, color: INK }}><ObjIco t={t} dims={DIMS} size={28} />{sayBare(t).replace(/^./, (m) => m.toUpperCase())}</span>
+              ))}
+            </div>
+          </div>
+        ) : null)}
+        {use3d && !accuse && <div style={{ marginTop: 6, fontSize: 12, fontWeight: 600, color: FADED }}>A white ring on the board marks a seat that is still free. Open floor is always fine.</div>}
       </div>
       <div className="sc-barpad" style={{ display: 'none', height: (accuse ? 128 : readyToCheck ? 150 : 78) + 42 + (nudge && !accuse ? 110 : 0) }} />
       {/* The tool bar: pinned to the bottom of the screen on a phone, so it is always to hand. */}
