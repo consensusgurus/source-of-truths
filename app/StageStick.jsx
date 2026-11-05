@@ -680,6 +680,30 @@ export default function StageStick({
     </div>
   );
 
+  // THE SLIM BAND, desktop (owner, 2026-11-05, ending direction C): the result
+  // on one line, the three standings as small boxes beside it, and Replay /
+  // Back to board / the archive as plain links at the right edge.
+  const bandC = (live) => (
+    <div className="sst-hero sst-hc">
+      <section className={on(1) + ' sst-h1'}>
+        <div className="sst-eb">{eyebrow}</div>
+        <div className="sst-vm">
+          <span className="sst-v">{verdict}</span>
+          {metric ? <b className="sst-mc">{live && !noCount ? <Count fig={metric} run={step >= 1} /> : metric.text}</b> : null}
+          {metric && metric.label ? <i className="sst-ml">{metric.label}</i> : null}
+        </div>
+      </section>
+      {standRows ? <div className={'sst-h2 sst-bandwys ' + on(2)}><PassCard rows={standRows} band /></div> : <div className="sst-hsp" />}
+      <section className={on(1) + ' sst-hl3'}>
+        {replayNow ? (replayNow.href
+          ? <a className="sst-tl" href={replayNow.href} onClick={replayNow.onClick || undefined}>Replay</a>
+          : <button type="button" className="sst-tl" onClick={(e) => { if (onLeave) onLeave(); if (replayNow.onClick) replayNow.onClick(e); }}>Replay</button>) : null}
+        {back ? <button type="button" className="sst-tl" onClick={back}>{s.backLabel || 'Return to board'}</button> : null}
+        {archiveHref ? <a className="sst-tl" href={archiveHref}>{archiveLabel}</a> : null}
+      </section>
+    </div>
+  );
+
   // KEEP PLAYING, desktop (owner, 2026-10-26, direction B). The categories
   // first, then the rest of this category and a few quizzes side by side. It
   // stands in for the record card, which the desktop no longer shows: the
@@ -1107,10 +1131,53 @@ export default function StageStick({
         </section>
       ) : null;
 
+  // WHO'S NEXT TO PASS LEADS THE SHEET (owner, 2026-11-05, direction C): one
+  // big next play with its Start, six more picks under it, and the run, the
+  // challenge and the GIF beside it. The right rail folds away.
+  const moveOf = (p) => { const fx = passInfo(p); return fx && fx.to ? `#${fx.from} \u2192 #${fx.to}` : (p.g.cat || ''); };
+  const nextC = mainPick ? (() => {
+    const fx = passInfo(mainPick);
+    const d = DAILY_GAME_MAP[mainPick.key] || {};
+    const head = fx && fx.passes ? `Pass ${fx.passes} in ${fx.where}` : fx && fx.to ? `Up to #${fx.to} in ${fx.where}` : mainPick.why;
+    const more = ranked.slice(1, 7);
+    return (
+      <section className={'sst-card sst-nc ' + on(3)}>
+        <div className="sst-ncm">
+          <div className="sst-sl">Who&rsquo;s Next to Pass</div>
+          <a className="sst-ncb" href={mainPick.g.href} style={{ '--nxp': softGround(categoryColor(mainPick.g.cat)) }}>
+            <span className="tx">
+              <small>{head}</small>
+              <b>Play {mainPick.g.name}</b>
+              <span className="ds">{[d.tagLong || d.tag, mainPick.mins ? `${mainPick.mins} min` : null, mainPick.finish != null ? `${mainPick.finish}% finish` : null].filter(Boolean).join(' \u00b7 ')}</span>
+            </span>
+            <span className="rt">
+              <b>+{mainPick.pts}</b>
+              {fx && fx.to ? <em>#{fx.from} &rarr; #{fx.to}</em> : null}
+              <span className="go">Start</span>
+            </span>
+          </a>
+          {more.length ? (
+            <div className="sst-ncl">
+              {more.map((p) => (
+                <a key={p.key} href={p.g.href} className="sst-ncr">
+                  <span className="nm"><b>{p.g.name}</b>{p.mins ? <small> {p.mins} min</small> : null}</span>
+                  <span className="mv">{moveOf(p)}</span>
+                  <b className="pt">+{p.pts}</b>
+                </a>
+              ))}
+            </div>
+          ) : null}
+        </div>
+        <div className="sst-ncs">{runLink}{chalCard}</div>
+      </section>
+    );
+  })() : null;
+
   const cards = (
-    <div className="sst-cards">
+    <div className={'sst-cards' + (nextC ? ' sst-cC' : '')}>
+      {nextC}
       {/* WHO'S NEXT TO PASS and the next play (owner, 2026-11-03) */}
-      {desk && standRows && nextCards ? <section className={'sst-card sst-pass ' + on(3)}>{nextCards}</section>
+      {nextC ? null : desk && standRows && nextCards ? <section className={'sst-card sst-pass ' + on(3)}>{nextCards}</section>
         : desk && (passNode || playNode) ? <section className={'sst-card sst-pass ' + on(3)}>{passNode}{playNode}</section> : null}
 
       {/* 2. RANKINGS */}
@@ -1121,13 +1188,13 @@ export default function StageStick({
           player reported the board could no longer be shared once the
           one-page ending replaced the old door grid). With the GIF rail
           on, the rail carries it and this slot lists the easiest points. */}
-      {railGifs ? ezCard : chalCard}
+      {nextC ? null : chalCard}
 
       {/* 4. PLAY NEXT */}
       <section className={'sst-card sst-pn ' + on(5)}>
-        <div className="sst-sl">Play next</div>
+        {nextC ? null : <div className="sst-sl">Play next</div>}
         <div className="sst-acts">
-          {runLink}
+          {nextC ? null : runLink}
           {(similar || another) ? (
             <div className={'sst-row' + (similar && another ? '' : ' one')}>
               {similar ? (
@@ -1145,7 +1212,7 @@ export default function StageStick({
             </div>
           ) : null}
         </div>
-        {desk ? (rail && !railGifs ? null : keepPlaying) : (
+        {desk ? keepPlaying : (
           <>
           {shelfNode}
           {catsNode}
@@ -1194,12 +1261,13 @@ export default function StageStick({
   // it pulls back onto the band.
   return (
     <>
-      <div ref={inlineRef} className={'sst-page' + toneCls + (phase === 'inline' ? ' in' : phase === 'retract' ? ' rt' : '')}>
+      <div ref={inlineRef} className={'sst-page sst-pc' + toneCls + (phase === 'inline' ? ' in' : phase === 'retract' ? ' rt' : '')}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
-        <div className="sst-band" ref={heroRef}>{result(phase === 'inline', true)}</div>
+        <div className="sst-band" ref={heroRef}>{bandC(phase === 'inline')}</div>
         {cards}
       </div>
-      {rail ? createPortal(railGifs ? gifRail : upNext, rail) : null}
+      {/* The rail folds away while the ending is up (direction C). */}
+      {rail ? createPortal(<div className="sst-fold" aria-hidden="true" />, rail) : null}
       {phase !== 'inline' ? createPortal((
         <div ref={rootRef} className={'sst sst-cover' + toneCls + (phase === 'retract' ? ' go' : '') + (beatRows ? ' wys-on' : '')}
           style={clip ? { clipPath: clip, WebkitClipPath: clip } : undefined}
@@ -1605,4 +1673,64 @@ html.lc-on .lc-side:has(> .sst-rail) > :not(.sst-rail){display:none !important;}
   .sst-run::after{animation:none;}
   .sst-page.in .sst-card{animation:none;}
 }
+/* ── ENDING DIRECTION C (owner, 2026-11-05): a slim result band, the next play
+   leading the sheet, the rail folded away. ── */
+html.lc-on .lc-side:has(> .sst-fold){display:none !important;}
+html.lc-on:has(.lc-side > .sst-fold) .lc-host{padding-right:22px !important;}
+html.lc-on:has(.lc-side > .sst-fold) .lc-host .stg-fg{padding-right:20px;}
+.sst-page.sst-pc{max-width:1500px;}
+.sst-band .sst-hero.sst-hc{display:flex !important;flex-direction:row;align-items:center;gap:28px;}
+.sst-hc .sst-h1{flex:none;}
+.sst-hc .sst-vm{display:flex;align-items:baseline;gap:16px;margin-top:4px;}
+.sst-hc .sst-v{font-size:40px;margin:0;}
+.sst-hc .sst-mc{font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1.02;font-variant-numeric:tabular-nums;}
+.sst-hc .sst-ml{font-style:normal;font-size:14px;font-weight:700;}
+.sst-hc .sst-bandwys,.sst-hc .sst-hsp{flex:1;min-width:0;}
+.sst-hc .wys-pass .wys-sl{display:none;}
+.sst-hc .wys-pass.band .wys-pl{flex-direction:row;gap:10px;}
+.sst-hc .wys-pass.band .wys-pr{flex:1 1 0;min-width:0;padding:9px 12px 10px;}
+.sst-hc .wys-pass.band .wys-ph{display:grid;grid-template-columns:minmax(0,1fr) auto;row-gap:4px;align-items:center;}
+.sst-hc .wys-pass.band .wys-chip{justify-self:start;max-width:100%;}
+.sst-hc .wys-pass.band .wys-ph .wys-pt{grid-column:1 / -1;grid-row:2;}
+.sst-hc .wys-pass.band .wys-prk{grid-column:2;grid-row:1;}
+.sst-hc .wys-pass.band .wys-pb{margin-top:7px;}
+.sst-hc .wys-pass.band .wys-pk{height:6px;}
+.sst-hc .sst-hl3{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:7px;}
+.sst-hc .sst-tl{background:none;border:0;padding:0;font:inherit;font-size:13.5px;font-weight:800;color:var(--sst-ink);cursor:pointer;text-decoration:none;white-space:nowrap;}
+.sst-hc .sst-tl:hover{text-decoration:underline;text-underline-offset:3px;}
+.sst-hc .sst-tl:focus-visible{outline:2px solid var(--sst-ink);outline-offset:2px;}
+.sst-page .sst-cards.sst-cC{grid-template-columns:minmax(0,1fr) !important;}
+.sst-page .sst-cards.sst-cC > section{grid-column:1 / -1 !important;}
+.sst-page .sst-cC .sst-rk{grid-template-columns:minmax(0,2fr) minmax(0,1fr);}
+.sst-page .sst-nc{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);padding:0;}
+.sst-ncm{padding:18px 20px;min-width:0;}
+.sst-ncs{padding:18px 20px;border-left:2px solid var(--stg-line,#e2e5ea);display:flex;flex-direction:column;gap:12px;min-width:0;}
+.sst-page .sst-ncs > .sst-card{padding:0;border:0;display:block;animation:none;}
+.sst-page .sst-ncs .sst-gif{margin-top:12px;}
+.sst-ncb{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;margin-top:10px;padding:18px 20px;border:2px solid var(--sst-ink);
+  border-radius:16px;color:var(--sst-ink);text-decoration:none;background:var(--stg-raise,#fff);transition:background .15s;}
+.sst-ncb:hover{background:color-mix(in srgb,var(--nxp) 35%,var(--stg-raise,#fff));}
+.sst-ncb:focus-visible{outline:2px solid var(--sst-ink);outline-offset:2px;}
+.sst-ncb .tx{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.sst-ncb .tx small{font-size:13px;font-weight:700;opacity:.75;}
+.sst-ncb .tx b{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1.12;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.08em;}
+.sst-ncb .ds{font-size:14px;font-weight:600;line-height:1.4;}
+.sst-ncb .rt{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.sst-ncb .rt > b{font-size:38px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
+.sst-ncb .rt em{font-style:normal;font-size:13px;font-weight:800;white-space:nowrap;}
+.sst-ncb .go{margin-top:8px;background:var(--sst-ink);color:var(--stg-raise,#fff);border-radius:10px;padding:10px 26px;font-size:15px;font-weight:800;}
+.sst-ncl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:28px;margin-top:14px;}
+.sst-ncr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;align-items:baseline;padding:10px 0;border-top:1px solid var(--stg-line,#e2e5ea);
+  color:var(--sst-ink);text-decoration:none;font-size:14px;}
+.sst-ncr .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-ncr b{font-weight:800;}
+.sst-ncr small{font-size:12.5px;font-weight:600;opacity:.7;}
+.sst-ncr .mv{font-size:12.5px;font-weight:700;opacity:.75;white-space:nowrap;}
+.sst-ncr:hover .nm b{text-decoration:underline;text-underline-offset:3px;}
+@container (max-width:999px){
+  .sst-page .sst-nc,.sst-page .sst-cC .sst-rk{grid-template-columns:minmax(0,1fr);}
+  .sst-ncs{border-left:0;border-top:2px solid var(--stg-line,#e2e5ea);}
+  .sst-band .sst-hero.sst-hc{flex-wrap:wrap;}
+}
+
 `;

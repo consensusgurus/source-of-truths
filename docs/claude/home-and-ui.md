@@ -2281,3 +2281,16 @@ unless noted. The phone is untouched.
 - **Puzzle-page frame matches** (`app/LayoutCInner.jsx`): flat index rows with a hairline, `k of n` counts
   and the played fill; underlined Categories/Skills and panel tabs; neutral empty strip pieces; the cap's
   group figure hidden (the panel's Group tab carries it).
+
+## Desktop ending, direction C (owner, 2026-11-05)
+
+`app/StageStick.jsx`, desktop only (the phone's rolling ending is untouched):
+- **Slim band** (`bandC`, `.sst-hc`): eyebrow, verdict and the metric on one line; the three Where You
+  Stand boxes in a row (chip + rank, who is next, a thin bar); Replay, Back to board and the archive as
+  text links at the right.
+- **Who's Next to Pass leads the sheet** (`nextC`, `.sst-nc`): one big next play (head line, Play
+  <game>, description, minutes and finish rate; +pts, the rank move and a Start button), then six more
+  picks in two columns; the run link, the challenge and the GIF beside it. Falls back to the older
+  layout when there are no standings (guest, no data).
+- **The right rail folds away** while the ending is up: a `.sst-fold` marker is portalled into
+  `.lc-side`, which hides it and narrows the host's right padding; the sheet widens to 1500px.
