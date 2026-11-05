@@ -44,6 +44,7 @@ import { useStageChrome } from './GauntletScreens';
 import { dailyDept, DAILY_GAME_MAP } from '@/lib/daily-games';
 import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref } from '@/lib/circuits';
 import { SKILL_TAGS, SKILL_MAP } from '@/lib/daily-skills';
+import { categoryColor, softGround } from '@/lib/category-ramp';
 import { usePuzzleStandings, StandBeat, StandCard, PassCard, PassPlay, beatDuration } from './WhereYouStand';
 
 // RUNS, NOT THEIR PARTS (owner, 2026-10-26: "don't send users to individual
@@ -822,7 +823,9 @@ export default function StageStick({
     const why = sk ? `${sk.short || sk.name}, like ${nm}` : sameCat ? `${curCat}, like ${nm}` : 'Easiest points left';
     const whyLong = sk ? `Trains ${sk.name.toLowerCase()}, like ${nm}${sameCat ? `, and it is another ${curCat} puzzle` : ''}.`
       : sameCat ? `Another ${curCat} puzzle, like ${nm}.` : 'Nothing closer to this one is left today, and these are the quickest points.';
-    return { score, why, whyLong };
+    // Short tags for the Play Next cards (owner, 2026-11-05, direction B).
+    const tags = sk ? [sk.short || sk.name, `Like ${nm}`, p.g.cat] : sameCat ? [`Like ${nm}`, p.g.cat] : ['Easiest points left', p.g.cat];
+    return { score, why, whyLong, tags };
   };
   const ranked = pool.map((p) => ({ ...p, ...affinity(p) })).sort((a, b) => b.score - a.score || a.ease - b.ease);
   const mainPick = ranked[0] || null;
@@ -838,6 +841,15 @@ export default function StageStick({
     if (!p.after || p.after >= row.rank) return `${head} adds to your day in ${where}.`;
     if (row.next && p.pts >= row.next.gap) return `${head} passes ${row.next.name} and moves you to about #${p.after} in ${where}.`;
     return `${head} moves you to about #${p.after} in ${where}.`;
+  };
+  // The same read as passLine, in parts, for the Play Next rank ladder.
+  const passInfo = (p) => {
+    const row = p && p.from === 'cat' ? catRow : dayRow;
+    if (!p || !row) return null;
+    const where = p.from === 'cat' && curCat ? `${curCat} today` : 'All today';
+    const moves = !!p.after && p.after < row.rank;
+    const passes = moves && row.next && p.pts >= row.next.gap ? row.next.name : null;
+    return { from: row.rank, to: moves ? p.after : null, where, passes };
   };
   const small = [];
   if (otherPick) {
@@ -859,16 +871,25 @@ export default function StageStick({
       <div className="sst-nxl">
         {nextList.map((p, i) => {
           const d = DAILY_GAME_MAP[p.key] || {};
-          const fx = passLine(p);
+          const fx = passInfo(p);
+          const base = categoryColor(p.g.cat);
           return (
-            <a key={p.key} className={'sst-nxc' + (i === 0 ? ' main' : '')} href={p.g.href}>
+            <a key={p.key} className={'sst-nxc' + (i === 0 ? ' main' : '')} href={p.g.href}
+              style={{ '--nxp': softGround(base), '--nxl': softGround(base, 0.62) }}>
               <span className="hd">
                 <span className="gl"><GameGlyph gameKey={p.key} size={20} /></span>
-                <span className="nm"><b>Play {p.g.name}</b><small>{p.g.cat} &middot; {p.mins} min &middot; {p.finish}% finish &middot; ~{p.pts} pts</small></span>
-                <span className="ar" aria-hidden="true">&rarr;</span>
+                <span className="nm"><b>Play {p.g.name}</b><small>{p.mins} min &middot; {p.finish}% finish</small></span>
+                <span className="pt"><b>+{p.pts}</b><i>pts</i></span>
               </span>
+              {fx ? (
+                <span className="ld">
+                  {fx.to ? (<><span className="r fr">#{fx.from}</span><svg width="22" height="14" viewBox="0 0 22 14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M1 7h18M14 2l5 5-5 5" /></svg><span className="r">#{fx.to}</span></>)
+                    : <span className="r">#{fx.from}</span>}
+                  <small>{fx.where}{fx.passes ? <><br />passes <em>{fx.passes}</em></> : fx.to ? null : <><br />adds to your day</>}</small>
+                </span>
+              ) : null}
               {d.tagLong || d.tag ? <span className="ds">{d.tagLong || d.tag}</span> : null}
-              <span className="wy"><em>Why</em>{p.whyLong}{fx ? ` ${fx}` : ''}</span>
+              {p.tags && p.tags.length ? <span className="tg">{p.tags.map((t) => <span key={t}>{t}</span>)}</span> : null}
             </a>
           );
         })}
@@ -1289,20 +1310,31 @@ const CSS = `
 .sst-page .sst-pass .wys-pass{padding:0;}
 .sst-band .sst-bandwys .wys-pass{--wys-ink:var(--sst-ink);--wys-wash:var(--sst-wash);}
 .sst-nxl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px;}
-.sst-nxc{display:flex;flex-direction:column;gap:9px;min-width:0;padding:14px 16px 15px;border-radius:16px;border:1px solid var(--sst-ink);color:var(--sst-ink);text-decoration:none;}
+.sst-nxc{display:flex;flex-direction:column;gap:12px;min-width:0;padding:16px;border-radius:16px;border:1px solid var(--sst-ink);color:var(--sst-ink);text-decoration:none;transition:transform .15s;}
 .sst-nxc.main{background:var(--sst-ink);color:var(--sst-bg);}
-.sst-nxc:hover{filter:brightness(1.06);}
-.sst-nxc:not(.main):hover{background:color-mix(in srgb,var(--sst-ink) 5%,transparent);}
-.sst-nxc .hd{display:flex;align-items:center;gap:10px;min-width:0;}
-.sst-nxc .gl{flex:none;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--sst-ink) 8%,transparent);}
-.sst-nxc.main .gl{background:var(--sst-bg);color:var(--sst-ink);}
-.sst-nxc .nm{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
-.sst-nxc .nm b{font-size:17px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sst-nxc .nm small{font-size:12px;font-weight:700;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
-.sst-nxc .ar{flex:none;font-size:18px;font-weight:800;}
-.sst-nxc .ds{font-size:14px;font-weight:600;line-height:1.4;}
-.sst-nxc .wy{font-size:12.5px;font-weight:700;line-height:1.45;opacity:.9;}
-.sst-nxc .wy em{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-right:7px;}
+.sst-nxc:hover{transform:translateY(-2px);}
+.sst-nxc:not(.main):hover{background:color-mix(in srgb,var(--sst-ink) 4%,transparent);}
+.sst-nxc:focus-visible{outline:2px solid var(--sst-ink);outline-offset:2px;}
+.sst-nxc .hd{display:flex;align-items:center;gap:11px;min-width:0;}
+.sst-nxc .gl{flex:none;width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:var(--nxp);color:#08222e;border:1px solid var(--sst-ink);}
+.sst-nxc.main .gl{border-color:var(--sst-bg);}
+.sst-nxc .nm{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;}
+.sst-nxc .nm b{font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sst-nxc .nm small{font-size:12.5px;font-weight:700;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
+.sst-nxc .pt{flex:none;display:flex;flex-direction:column;align-items:flex-end;line-height:1;}
+.sst-nxc .pt b{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;}
+.sst-nxc .pt i{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.7;margin-top:3px;}
+.sst-nxc .ld{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--nxl);color:#08222e;}
+.sst-nxc .ld .r{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;}
+.sst-nxc .ld .r.fr{opacity:.45;}
+.sst-nxc .ld svg{flex:none;}
+.sst-nxc .ld small{flex:1;min-width:0;font-size:12.5px;font-weight:700;line-height:1.3;text-align:right;}
+.sst-nxc .ld small em{font-style:normal;font-weight:800;}
+.sst-nxc .ds{font-size:14px;font-weight:600;line-height:1.42;}
+.sst-nxc .tg{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;}
+.sst-nxc .tg span{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:99px;font-size:11.5px;font-weight:800;white-space:nowrap;background:color-mix(in srgb,var(--sst-ink) 7%,transparent);}
+.sst-nxc.main .tg span{background:color-mix(in srgb,var(--sst-bg) 14%,transparent);}
+@media (prefers-reduced-motion:reduce){ .sst-nxc{transition:none;} }
 @container (max-width:699px){ .sst-nxl{grid-template-columns:minmax(0,1fr);} }
 @container (min-width:700px){ .sst-page .sst-pass .wys-pp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;} .sst-page .sst-pass .wys-sm{grid-template-columns:minmax(0,1fr);} }
 .sst-grail{--sst-ink:var(--stg-ink,#0b0d12);--sst-bg:var(--sp-g,#b1e5fd);}

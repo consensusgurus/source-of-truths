@@ -23,7 +23,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { holdRootPaint } from '@/lib/root-paint';
 import { DAILY_GAMES, liveDailyKeys, dailyUnit } from '@/lib/daily-games';
-import { RAMP_ORDER, RAMP_INK, categoryColor, categoryColorLight, categoryOnrampLight, categoryAccentInkLight } from '@/lib/category-ramp';
+import { RAMP_ORDER, RAMP_INK, categoryColor, categoryColorLight, categoryOnrampLight, categoryAccentInkLight, softGround } from '@/lib/category-ramp';
 import { finishPick } from '@/lib/finish-sets';
 // THE REGISTER PICKS THE HUE, and this file is why that rule needs saying a
 // second time. Every other stage surface publishes BOTH twins of its category
@@ -2121,7 +2121,7 @@ export default function StageFinish({
     const cats = RAMP_ORDER.map((c) => {
       const gs = LIVE().filter((x) => x.cat === c);
       // To the home with the category open (owner, 2026-10-26), not the old category page.
-      return { name: c, total: gs.length, n: gs.filter((x) => played.has(x.key) || x.key === me.key).length, href: `/#cat=${encodeURIComponent(c)}`, bg: categoryColor(c) };
+      return { name: c, total: gs.length, n: gs.filter((x) => played.has(x.key) || x.key === me.key).length, href: `/#cat=${encodeURIComponent(c)}`, bg: softGround(categoryColor(c)) }; // the page's own pastel, not the full step (owner, 2026-11-05: chips read too bright)
     }).filter((c) => c.total > 0);
     const meme = memeCtx && openMeme ? { ctx: memeCtx, onOpen: openMeme } : null;
     // UP NEXT (owner, 2026-10-26): every live daily, for the desktop rail's
