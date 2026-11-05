@@ -400,6 +400,10 @@ export function StandTiles({ rows, claim = null }) {
   const e = ease(p);
   const list = rows.slice(0, 3);
   const meRank = list[0] && list[0].rank;
+  // ONE SIZE FOR ALL THREE (owner, 2026-11-04: "the numbers should be horizontally
+  // aligned across the three"): the longest figure any tile passes through picks it.
+  const longest = Math.max(...list.map((r) => `#${fmt(Math.max(Number(r.fromLast ? r.of : r.from) || r.rank, r.rank))}`.length));
+  const fs = longest <= 4 ? 38 : longest === 5 ? 33 : 28;
   return (
     <section className="wys-tiles" aria-label="Where You Stand">
       <style dangerouslySetInnerHTML={{ __html: TILES_CSS }} />
@@ -408,8 +412,6 @@ export function StandTiles({ rows, claim = null }) {
         {list.map((r, i) => {
           const from = Math.max(Number(r.fromLast ? r.of : r.from) || r.rank, r.rank);
           const up = from - r.rank;
-          const longest = `#${fmt(from)}`.length;
-          const fs = longest <= 4 ? 38 : longest === 5 ? 33 : 28;
           return (
             <div key={r.id} className="wys-tl" style={{ background: TILE_TONES[i % TILE_TONES.length] }}>
               <div className="nm">{r.name}</div>
@@ -417,7 +419,7 @@ export function StandTiles({ rows, claim = null }) {
                 <div className="rk" style={{ fontSize: fs }} aria-label={`#${fmt(r.rank)} of ${fmt(r.of)}`}>#{fmt(Math.round(from - up * e))}</div>
                 <div className="of">of {fmt(r.of)}</div>
               </div>
-              <div>
+              <div className="ft">
                 {up > 0 ? (
                   <span className="up">
                     <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10V2.5M2.8 5.5L6 2.3l3.2 3.2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -444,8 +446,10 @@ const TILES_CSS = `
 .wys-tiles{display:flex;flex-direction:column;gap:10px;color:var(--wys-ink,#08222e);font-family:Manrope,ui-sans-serif,system-ui,sans-serif}
 .wys-tiles .wys-sl{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.82;padding-left:4px}
 .wys-tg{display:grid;gap:8px}
-.wys-tl{display:flex;flex-direction:column;justify-content:space-between;gap:8px;min-width:0;min-height:178px;box-sizing:border-box;padding:14px 10px 14px 12px;border:1px solid #0f1f2b;border-radius:20px;color:#0f1f2b}
-.wys-tl .nm{font-size:13px;font-weight:800;line-height:1.2}
+.wys-tl{display:flex;flex-direction:column;gap:14px;min-width:0;min-height:178px;box-sizing:border-box;padding:14px 10px 14px 12px;border:1px solid #0f1f2b;border-radius:20px;color:#0f1f2b}
+/* The name always takes two lines of room, so every rank sits on the same line. */
+.wys-tl .nm{font-size:13px;font-weight:800;line-height:1.2;height:2.4em;overflow:hidden}
+.wys-tl .ft{margin-top:auto}
 .wys-tl .rk{font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
 .wys-tl .of{margin-top:4px;font-size:12px;font-weight:700;opacity:.85;font-variant-numeric:tabular-nums}
 .wys-tl .up{display:inline-flex;align-items:center;gap:4px;padding:5px 9px 5px 7px;border-radius:99px;background:#0f1f2b;color:#fff}
