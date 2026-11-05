@@ -85,9 +85,13 @@ function Row({ id, cls = 'mr' }) {
 // tokens. The defaults are the dark run stage's.
 // SHARE SITS UNDER THE LIST (owner, 2026-10-18): every run ending passes its own
 // share handler and the button closes the ending, below the other runs.
-export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = 'rgba(255,255,255,.14)', style, onShare = null, copied = false, shareLabel = 'Share your score' }) {
-  const ids = useOpenRuns(self);
-  if (!ids) return null;
+// `skip`: a run's href already offered above the list (the ending's "One quick
+// play next" card), so it is not listed twice (owner, 2026-11-04).
+export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = 'rgba(255,255,255,.14)', style, onShare = null, copied = false, shareLabel = 'Share your score', skip = null }) {
+  const open = useOpenRuns(self);
+  if (!open) return null;
+  const ids = skip ? open.filter((id) => !(RUN_DOORS[id] && RUN_DOORS[id].href === skip)) : open;
+  if (open.length && !ids.length && !onShare) return null;   // the only open run is the one offered above
   return (
     <div className="mr" style={{ '--mr-ink': ink, '--mr-mute': mute, '--mr-line': line, ...style }}>
       <style dangerouslySetInnerHTML={{ __html: LIST_CSS }} />

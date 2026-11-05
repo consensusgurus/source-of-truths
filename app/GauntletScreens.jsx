@@ -643,6 +643,10 @@ export function GauntletEndStage({
   const avgTotal = avg && Object.keys(avg).length ? Math.round(sections.reduce((t, s) => t + (Number(avg[s.key]) || 0), 0)) : null;
   const ahead = rank && fieldSize && fieldSize >= 2 ? Math.max(0, Math.round(((fieldSize - rank) / fieldSize) * 100)) : null;
   const rankText = rank ? `#${rank}${fieldSize ? ` of ${Number(fieldSize).toLocaleString()}` : ''}${ahead != null ? ` · ahead of ${ahead}%` : ''}` : '';
+  // The run offered as "One quick play next" is not listed again under it (owner, 2026-11-04).
+  if (more && similar && similar.href && React.isValidElement(more) && more.props && 'self' in more.props) {
+    more = React.cloneElement(more, { skip: similar.href });
+  }
   const standId = runId || (finale && finale.key) || null;
   const stand = useRunStandings({
     on: !!standId, runId: standId, runName: circuitName, keys: sections.map((x) => x.key), unitWord,
