@@ -1145,7 +1145,8 @@ export default function StageStick({
         {inC ? null : <div className="sst-sl">Play next</div>}
         <div className="sst-acts">
           {inC ? null : runLink}
-          {(similar || another) ? (
+          {/* No Play similar / Play another on the desktop ending (owner, 2026-11-05). */}
+          {!inC && (similar || another) ? (
             <div className={'sst-row' + (similar && another ? '' : ' one')}>
               {similar ? (
                 <a className="sst-ob pri" href={similar.href} onClick={similar.onClick || undefined}>
