@@ -123,7 +123,11 @@ function nextOf(near, total, rank) {
 function mcRow(d) {
   const me = d && d.me;
   if (!me || !me.rank) return null;
-  const of = Math.max(Number(d.field && d.field.all) || 0, me.rank);
+  // OUT OF EVERY PLAYER, GUESTS TOO (owner, 2026-11-04: "if 319 did the Science
+  // Gauntlet, how is the total who did runs less than 319?"). field.all counts the
+  // named board only; `players` is everyone who played a multiple choice run today.
+  // The rank stays on the named board, the way the day row ranks against its field.
+  const of = Math.max(Number(d.players) || 0, Number(d.field && d.field.all) || 0, me.rank);
   const up = me.before && me.before > me.rank ? me.before - me.rank : 0;
   const all = (d.boards && d.boards.all) || [];
   const rows = [];
