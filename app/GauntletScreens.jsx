@@ -29,7 +29,7 @@ import MindLoftMark from './MindLoftMark';
 import StageTopBar from './StageTopBar';
 import RunRoll from './RunRoll';
 import RunFinale from './RunFinale';
-import { useRunStandings, StandCard } from './WhereYouStand';
+import { useRunStandings, StandCard, StandTiles } from './WhereYouStand';
 import { mathText } from '@/app/MathText';
 import { holdRootPaint } from '@/lib/root-paint';
 import { holdThemeColor } from '@/lib/theme-color-hold';
@@ -556,6 +556,8 @@ export function GauntletEndStage({
   board = null, misses = null, more = null, onPractice = null,
   // A run's own card right under today's board (Price Check's week, owner 2026-10-25).
   afterBoard = null,
+  // A guest's "Save my spot" under the phone tiles (owner, 2026-11-04).
+  onClaim = null,
   // THE CLIMB (owner, 2026-10-25): every run's ending builds up its title
   // ladder. `ladder` is bottom to top; `ladderHeading` names it ("Which
   // shopper are you?"). `rows` overrides the per-leg table for runs whose legs
@@ -649,6 +651,9 @@ export function GauntletEndStage({
   });
   const standRows = stand.rows && stand.rows.length >= 2 ? stand.rows : null;
   const standCard = standRows ? <StandCard rows={standRows} className="gsx-card gsx-wys" /> : null;
+  // PHONES (owner, 2026-11-04): the page shows three big tiles with the move up;
+  // the leaderboard (the card above) lives in the top bar's dropdown instead.
+  const standTiles = standRows ? <StandTiles rows={standRows} claim={onClaim} /> : null;
   const finaleNode = finOn && finPhase !== 'done' ? (() => {
     const fx = finale || {};
     const legs = rows.map((x, i) => {
@@ -805,7 +810,7 @@ export function GauntletEndStage({
             ) : null}
             prize={prize}
             topNote={topNote}
-            board={board && board.rows && board.rows.length ? (
+            board={standCard ? <div className="rrl-ddwys">{standCard}</div> : board && board.rows && board.rows.length ? (
               <div className="gsx-card gsx-board">
                 <div className="gsx-ch"><span>Today&rsquo;s board{board.field ? ` · ${Number(board.field).toLocaleString()}` : ''}</span>{board.href ? <a href={board.href}>See all</a> : null}</div>
                 {board.rows.map((r, i) => (r.gap ? (
@@ -818,7 +823,7 @@ export function GauntletEndStage({
               </div>
             ) : null}
             afterBoard={afterBoard}
-            stand={standCard}
+            stand={standTiles}
             stats={<div className="rrl-stats">{statsNode}</div>}
             extra={extra}
             challenge={challenge}

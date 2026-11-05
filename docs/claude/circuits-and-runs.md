@@ -677,3 +677,17 @@ Approved on the "Multiple Choice Leaders" and "Multiple Choice in the Runs" mock
 RunFinale's part three plays the run, its category (MC Runs for the five multiple choice runs, else
 the category most legs belong to) and the day, then glides. Full notes: home-and-ui.md, "Where You
 Stand". New runs: pass `runId` on GauntletEndStage.
+
+## Run endings on phones: three tiles, the leaderboard in the bar (owner, 2026-11-04)
+
+- The rolled phone ending (RunRoll) no longer prints the Where You Stand leaderboard on the page.
+  The tabbed StandCard sits in the top bar's dropdown (in place of today's board). The page shows
+  `StandTiles`: three big full-pastel tiles (run, category, day), each with rank, "of N" and the
+  move up. A first run of the day counts up from last place ("from last"); a later one shows this
+  run's gain ("with this run"). Desktop is unchanged.
+- Labels on run endings: the MC row is "Today's Runs", the day row "Today's Puzzles". Puzzle
+  endings keep "All today".
+- A guest (RunClient `guest && !claimed`) gets a "Save my spot" strip under the tiles via
+  `onClaim` on GauntletEndStage.
+- One quick play next is a full-pastel card (the run's accent mixed 55% with white) naming the
+  run's parts from RUN_DOORS tags, and it must stay above the fold under the tiles.

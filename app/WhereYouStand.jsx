@@ -102,7 +102,7 @@ function pointsRow(d, { id, lab, name, word, plus = 0 }) {
   const of = Math.max(Number(st.field) || 0, rank) + (inRead || st.base > 0 || plus <= 0 ? 0 : 1);
   const up = before && before > rank ? before - rank : 0;
   return {
-    id, lab, name, rank, of, from: before || of, up, pct: pctOf(rank, of),
+    id, lab, name, rank, of, from: before || of, fromLast: !before, up, pct: pctOf(rank, of),
     cap: `${fmt(r1(total))} pts from ${plural(games, word, word + 's')}`,
     foot: up ? `Up ${up} ${up === 1 ? 'place' : 'places'} with this finish` : `${plural(of, 'player', 'players')} today`,
     board: pointsBoard(st, rank, total, inRead ? st.nearRank : (plus > 0 ? st.nearPlus : st.nearRank)),
@@ -143,9 +143,9 @@ function mcRow(d) {
   const next = above ? { name: above.name, fig: `${fmt(above.value)} right`, gap: above.value - me.total, gapText: `${fmt(above.value - me.total)} right behind`, fill: Math.max(0.05, Math.min(1, me.total / above.value)) } : null;
   return {
     next, picks: [],
-    id: 'cat', lab: 'MC Runs', name: 'MC Runs', rank: me.rank, of, from: me.before || of, up, pct: pctOf(me.rank, of),
+    id: 'cat', lab: 'MC Runs', name: 'Today\u2019s Runs', rank: me.rank, of, from: me.before || of, fromLast: !me.before, up, pct: pctOf(me.rank, of),
     cap: `${fmt(me.total)} right across ${plural(me.runs || 1, 'run', 'runs')}`,
-    foot: up ? `Up ${up} ${up === 1 ? 'place' : 'places'} in MC Runs with this run` : `${plural(of, 'player', 'players')} in MC Runs today`,
+    foot: up ? `Up ${up} ${up === 1 ? 'place' : 'places'} in today\u2019s runs with this run` : `${plural(of, 'player', 'players')} in today\u2019s runs`,
     board: rows,
   };
 }
@@ -234,7 +234,8 @@ export function useRunStandings({ on, runId, runName, keys, run, board, unitWord
       const out = [];
       const rc = isMc ? mcRow(c) : (c ? pointsRow(c, { id: 'cat', lab: `${cat} Puzzles`, name: cat, word: 'puzzle' }) : null);
       if (rc) out.push(rc);
-      const rd = pointsRow(d, { id: 'day', lab: 'All Puzzles', name: 'All today', word: 'puzzle' });
+      // THE RUN ENDING'S LABELS (owner, 2026-11-04): Today's Runs, Today's Puzzles.
+      const rd = pointsRow(d, { id: 'day', lab: 'All Puzzles', name: 'Today\u2019s Puzzles', word: 'puzzle' });
       if (rd) out.push(rd);
       setRows2(out);
       setReady(true);
@@ -246,7 +247,7 @@ export function useRunStandings({ on, runId, runName, keys, run, board, unitWord
     const of = Math.max(Number(run.n) || 0, run.rank);
     const pct = pctOf(run.rank, of);
     first = {
-      id: 'game', lab: 'This Run', name: runName || 'This run', rank: run.rank, of, from: of, up: 0, pct,
+      id: 'game', lab: 'This Run', name: runName || 'This run', rank: run.rank, of, from: of, fromLast: true, up: 0, pct,
       cap: of < 2 ? 'First on the board today' : run.rank === 1 ? 'Top of the board' : `${unitWord === 'right' ? 'More right than' : 'Ahead of'} ${pct}%`,
       foot: of < 2 ? 'First on the board today' : `Ahead of ${pct}% of ${plural(of, 'run', 'runs')}`,
       board: board || [],
@@ -369,6 +370,93 @@ export function StandCard({ rows, label = 'Where You Stand', className = '' }) {
     </section>
   );
 }
+
+// ── THE RUN ENDING'S THREE TILES (owner, 2026-11-04, phones) ────────────────
+// The leaderboard moved into the top bar's dropdown; the page keeps three big
+// full-pastel tiles, each with its rank and the move up. A first run of the day
+// counts up from last place ("from last"); a later one shows what this run
+// moved ("with this run"). A guest gets one strip under them to save the spot.
+const TILE_TONES = ['#8fdcbb', '#d6c8ff', '#ffcfa8'];
+export function StandTiles({ rows, claim = null }) {
+  const [p, setP] = useState(0);
+  const key = rows ? rows.map((r) => `${r.id}:${r.rank}:${r.from}`).join('|') : '';
+  useEffect(() => {
+    if (!rows || !rows.length) return undefined;
+    let reduced = false;
+    try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduced = false; }
+    if (reduced) { setP(1); return undefined; }
+    let raf = 0;
+    let t0 = null;
+    const tick = (t) => {
+      if (t0 === null) t0 = t;
+      const q = Math.max(0, Math.min(1, (t - t0 - 250) / 1400));
+      setP(q);
+      if (q < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [key]);   // eslint-disable-line react-hooks/exhaustive-deps
+  if (!rows || !rows.length) return null;
+  const e = ease(p);
+  const list = rows.slice(0, 3);
+  const meRank = list[0] && list[0].rank;
+  return (
+    <section className="wys-tiles" aria-label="Where You Stand">
+      <style dangerouslySetInnerHTML={{ __html: TILES_CSS }} />
+      <div className="wys-sl">Where You Stand</div>
+      <div className="wys-tg" style={{ gridTemplateColumns: `repeat(${list.length}, minmax(0, 1fr))` }}>
+        {list.map((r, i) => {
+          const from = Math.max(Number(r.fromLast ? r.of : r.from) || r.rank, r.rank);
+          const up = from - r.rank;
+          const longest = `#${fmt(from)}`.length;
+          const fs = longest <= 4 ? 38 : longest === 5 ? 33 : 28;
+          return (
+            <div key={r.id} className="wys-tl" style={{ background: TILE_TONES[i % TILE_TONES.length] }}>
+              <div className="nm">{r.name}</div>
+              <div>
+                <div className="rk" style={{ fontSize: fs }} aria-label={`#${fmt(r.rank)} of ${fmt(r.of)}`}>#{fmt(Math.round(from - up * e))}</div>
+                <div className="of">of {fmt(r.of)}</div>
+              </div>
+              <div>
+                {up > 0 ? (
+                  <span className="up">
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10V2.5M2.8 5.5L6 2.3l3.2 3.2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <b>{fmt(Math.round(up * e))}</b>
+                  </span>
+                ) : null}
+                <div className="nt">{up > 0 ? (r.fromLast ? 'from last' : 'with this run') : 'held your spot'}{claim ? ' · not saved' : ''}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {claim ? (
+        <div className="wys-claim">
+          <span><b>These spots aren&rsquo;t saved yet</b><small>Pick a name to keep #{fmt(meRank)} on the board</small></span>
+          <button type="button" onClick={claim}>Save my spot</button>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+const TILES_CSS = `
+.wys-tiles{display:flex;flex-direction:column;gap:10px;color:var(--wys-ink,#08222e);font-family:Manrope,ui-sans-serif,system-ui,sans-serif}
+.wys-tiles .wys-sl{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.82;padding-left:4px}
+.wys-tg{display:grid;gap:8px}
+.wys-tl{display:flex;flex-direction:column;justify-content:space-between;gap:8px;min-width:0;min-height:178px;box-sizing:border-box;padding:14px 10px 14px 12px;border:1px solid #0f1f2b;border-radius:20px;color:#0f1f2b}
+.wys-tl .nm{font-size:13px;font-weight:800;line-height:1.2}
+.wys-tl .rk{font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.wys-tl .of{margin-top:4px;font-size:12px;font-weight:700;opacity:.85;font-variant-numeric:tabular-nums}
+.wys-tl .up{display:inline-flex;align-items:center;gap:4px;padding:5px 9px 5px 7px;border-radius:99px;background:#0f1f2b;color:#fff}
+.wys-tl .up b{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.wys-tl .nt{margin-top:5px;font-size:12px;font-weight:700;opacity:.85}
+.wys-claim{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;border:1px solid #0f1f2b;border-radius:18px;background:#fff6c9;color:#0f1f2b}
+.wys-claim span{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.wys-claim b{font-size:15px;font-weight:800}
+.wys-claim small{font-size:13px;font-weight:600}
+.wys-claim button{flex:none;min-height:44px;padding:0 16px;border:0;border-radius:12px;background:#0f1f2b;color:#fff;font:inherit;font-size:15px;font-weight:800;cursor:pointer}
+`;
 
 // The three ranks as quiet rows (the desktop band, after the beat has played).
 export function StandRows({ rows }) {

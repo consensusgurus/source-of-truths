@@ -160,9 +160,9 @@ export default function RunRoll({
           <section className="rrl-card rrl-r1" aria-label="Play next">
             <div className="rrl-k">Play next</div>
             {similar && similar.href ? (
-              <a className="rrl-next" href={similar.href}>
-                <span><i>One quick play next</i><b>{similar.name}</b></span>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              <a className="rrl-next" href={similar.href} style={similar.fill ? { background: similar.fill } : undefined}>
+                <span><i>One quick play next</i><b>{similar.name}</b>{similar.parts ? <small>{similar.parts}</small> : null}</span>
+                <span className="go" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
               </a>
             ) : null}
             {more ? <div ref={moreRef} className={'rrl-more' + (allRuns ? '' : ' cap')}>{more}</div> : null}
@@ -217,10 +217,15 @@ const CSS = `
 .rrl-stats{display:flex;flex-direction:column;gap:10px}
 .rrl-card{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:var(--rrl-card)}
 .rrl-k{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
-.gsx .rrl-next{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:var(--gsx-ink);color:var(--gsx-bg);text-decoration:none}
-.rrl-next>span{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
-.rrl-next i{font-style:normal;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;opacity:.8}
-.rrl-next b{font-size:19px;font-weight:800}
+/* ONE QUICK PLAY NEXT IN FULL PASTEL (owner, 2026-11-04). */
+.gsx .rrl-next{display:flex;align-items:center;gap:14px;padding:16px 14px 16px 18px;border:1px solid #0f1f2b;border-radius:20px;background:#a9c4ff;color:#0f1f2b;text-decoration:none}
+.rrl-next>span:first-child{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.rrl-next i{font-style:normal;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.rrl-next b{font-size:26px;font-weight:800;letter-spacing:-.015em;line-height:1.1}
+.rrl-next small{font-size:13px;font-weight:700;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em}
+.rrl-next .go{flex:none;width:50px;height:50px;border-radius:99px;background:#0f1f2b;color:#fff;display:flex;align-items:center;justify-content:center;animation:rrlNudge 1.4s ease-in-out 2s 3}
+@keyframes rrlNudge{0%,100%{transform:none}50%{transform:translateX(4px)}}
+.rrl-dd .wys-card{background:transparent;padding:0}
 .rrl-more .mr{margin:0}
 .rrl-more.cap .mr-rows>:nth-child(n+3){display:none}
 .rrl-show{align-self:center;min-height:36px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--gsx-ink);font:inherit;font-size:14px;font-weight:800;cursor:pointer}
@@ -233,5 +238,5 @@ const CSS = `
 @keyframes rrlTake{0%{transform:translateY(46px) scale(.9);opacity:0}55%{transform:translateY(-3px) scale(1.02);opacity:1}100%{transform:none}}
 @keyframes rrlRise{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
 @keyframes rrlDrop{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion: reduce){.rrl.sw,.rrl-bar,.rrl-r1,.rrl-r2,.rrl-dd{animation:none}}
+@media (prefers-reduced-motion: reduce){.rrl.sw,.rrl-bar,.rrl-r1,.rrl-r2,.rrl-dd,.rrl-next .go{animation:none}}
 `;

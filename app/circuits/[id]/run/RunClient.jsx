@@ -61,6 +61,8 @@ import MoreRunsPop, { MoreRunsList, TriviaMoreList, otherRuns } from '../../More
 import EncorePop from '../../EncorePop';
 import GauntletBackPop from '../../GauntletBackPop';
 import { runDoneToday, RUN_DOORS } from '../../RunDoorPop';
+// A run's accent as the full pastel its Play next card takes.
+const pastelOf = (hex) => (hex ? `color-mix(in srgb, ${hex} 55%, #ffffff)` : null);
 import NextDrop from '../../../NextDrop';
 import ChallengeStrip from '../../../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../../../RunChallenge';
@@ -289,11 +291,15 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   useEffect(() => {
     if (!done) return;
     if (encoreOn && !runDoneToday('triviaencore')) {
-      setSimilarRun({ name: 'Trivia Encore', href: (encore && encore.href) || '/triviaencore' });
+      setSimilarRun({ name: 'Trivia Encore', href: (encore && encore.href) || '/triviaencore', parts: RUN_DOORS.triviaencore.eyebrow.replace(/^Daily run \u00b7 /, ''), fill: pastelOf(RUN_DOORS.triviaencore.accent) });
       return;
     }
     const id = otherRuns(circuitId).find((x) => x !== 'triviaencore' && !runDoneToday(x));
-    setSimilarRun(id && RUN_DOORS[id] ? { name: RUN_DOORS[id].name, href: RUN_DOORS[id].href } : null);
+    // The pastel card names the run's parts (owner, 2026-11-04: Gram · Vocab · Spell ...).
+    setSimilarRun(id && RUN_DOORS[id] ? {
+      name: RUN_DOORS[id].name, href: RUN_DOORS[id].href, fill: pastelOf(RUN_DOORS[id].accent),
+      parts: (RUN_DOORS[id].tags || []).map((t) => t[0]).join(' \u00b7 '),
+    } : null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done, encoreOn, circuitId]);
 
@@ -1175,6 +1181,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           extra={guest && !claimed ? (
             <button type="button" className="gsx-lb" onClick={() => setEndOpen(false)}>Claim a free name to hold your spot</button>
           ) : null}
+          onClaim={guest && !claimed ? () => setEndOpen(false) : null}
         />
       ) : null}
       {isChallengeableRun(circuitId) && !done && !(TOWERS && hydrated && r.phase === 'idle') ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}
