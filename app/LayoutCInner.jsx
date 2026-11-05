@@ -325,6 +325,26 @@ html.lc-on .lc-host .stg-fg i{font-family:inherit;font-size:11px;font-weight:700
 html.lc-on .lc-host .stg-gate > div:first-child{font-size:26px !important;line-height:1.3;}
 html.lc-on .lc-host .stg-gate > div:last-child > button:first-child:not([type=button]){background:var(--stg-gate-acc, var(--stg-acc, #7dd3fc)) !important;color:#08222e !important;
   border:1px solid #08222e !important;border-radius:18px !important;font-weight:800 !important;}
+/* ── NOV 5 QUIETER FRAME (owner, 2026-11-05), in step with the home: colour
+   arrives as puzzles are played, every toggle is underlined text, the group's
+   place lives in the panel. ── */
+.lc-nav .lc-ixct{display:none;}
+.lc-nav .sty-ixb.ct:not(.on){grid-template-columns:minmax(0,1fr) auto;column-gap:8px;color:var(--stg-ink);
+  border-color:color-mix(in srgb, var(--stg-ink) 20%, transparent);
+  background:linear-gradient(to right, color-mix(in srgb, var(--cfull) 60%, #fff) var(--ixf, 0%), var(--stg-surf) 0);}
+.lc-nav:not(.lt) .sty-ixb.ct:not(.on){background:linear-gradient(to right, color-mix(in srgb, var(--cfull) 34%, var(--stg-surf)) var(--ixf, 0%), var(--stg-surf) 0);}
+.lc-nav .sty-ixb.ct:not(.on) .lc-ixct{display:block;font-style:normal;font-size:12px;font-weight:600;color:color-mix(in srgb, var(--stg-ink) 72%, transparent);white-space:nowrap;}
+.lc-nav .sty-ixb.ct.on{grid-template-columns:minmax(0,1fr);}
+.lc-nav .sty-ixsw{border:0;padding:0;gap:18px;justify-content:center;background:transparent;margin:2px 0;}
+.lc-nav .sty-ixsw button{flex:none;border-radius:0;padding:6px 0 4px;font-weight:600;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+.lc-nav .sty-ixsw button[aria-pressed="true"]{background:transparent;color:var(--stg-ink);font-weight:800;box-shadow:inset 0 -2px 0 var(--stg-ink);}
+.lc-cap .sty-spl i.e{background:color-mix(in srgb, var(--stg-ink) 10%, transparent);box-shadow:none;}
+.lc-cap .sty-figs > .lc-fg{display:none;}
+.lc-tabs{gap:16px;padding:0 14px;}
+.lc-tab,.lc-tab.on{flex:none;background:transparent;padding:10px 0 8px;}
+.lc-tab{color:color-mix(in srgb, var(--stg-ink) 62%, transparent);font-weight:600;}
+.lc-tab.on{color:var(--stg-ink);font-weight:800;box-shadow:inset 0 -2px 0 var(--stg-ink);}
+
 `;
 
 export default function LayoutCInner({ gameKey }) {
@@ -787,15 +807,23 @@ export default function LayoutCInner({ gameKey }) {
         </div>
       </div>
 
-      <nav className={'lc-nav' + (isColorLook(siteLook) ? ' slc' : '')} aria-label="Sections">
+      <nav className={'lc-nav' + (isColorLook(siteLook) ? ' slc' : '') + (light ? ' lt' : '')} aria-label="Sections">
         <div className="sty-ixn">
           {ixLink('all', 'All Puzzles', 'var(--stg-ink)')}
           {lensCats.map(({ cat, games: gs }) => (
             <React.Fragment key={cat}>
-              <button type="button" className={'sty-ixb ct' + (cat === shownCat || cat === myCat ? ' on' : '')} style={{ '--cc': inkFor(swatchCat(cat)), '--cfull': categoryColor(swatchCat(cat)) }}
-                aria-expanded={cat === shownCat} onClick={() => toggleCat(cat)}>
-                <i aria-hidden="true" /><span>{ixLabel(cat)}</span>
-              </button>
+              {(() => {
+                // COLOUR ARRIVES AS PUZZLES ARE PLAYED (owner, 2026-11-05), as on
+                // the home: a flat row that fills with its colour as games are done.
+                const k = gs.filter((g) => done.has(g.key)).length;
+                return (
+                  <button type="button" className={'sty-ixb ct' + (cat === shownCat || cat === myCat ? ' on' : '')}
+                    style={{ '--cc': inkFor(swatchCat(cat)), '--cfull': categoryColor(swatchCat(cat)), '--ixf': (gs.length ? Math.round((100 * k) / gs.length) : 0) + '%' }}
+                    aria-expanded={cat === shownCat} onClick={() => toggleCat(cat)}>
+                    <i aria-hidden="true" /><span>{ixLabel(cat)}</span><em className="lc-ixct">{k} of {gs.length}</em>
+                  </button>
+                );
+              })()}
               {cat === shownCat ? subList(gs) : null}
             </React.Fragment>
           ))}

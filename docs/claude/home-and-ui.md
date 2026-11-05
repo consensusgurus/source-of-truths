@@ -2278,3 +2278,6 @@ unless noted. The phone is untouched.
 - **Stars:** once a reader has starred any game (`.fav1` on the root), empty stars show only on hover.
 - **The rail has one shape:** Your challenges is one line (`app/ChallengeBack.jsx`), Top Five Runs is its
   own box.
+- **Puzzle-page frame matches** (`app/LayoutCInner.jsx`): flat index rows with a hairline, `k of n` counts
+  and the played fill; underlined Categories/Skills and panel tabs; neutral empty strip pieces; the cap's
+  group figure hidden (the panel's Group tab carries it).
