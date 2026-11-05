@@ -88,6 +88,7 @@ const COLORS = {
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const HELP_KEY = 'sot_babel_help_seen';
 const STATS_KEY = 'sot_babel_stats';
+const VIEW_KEY = 'sot_babel_view';
 
 
 // ─── the board's own look (owner-approved round six mockup) ───────────────
@@ -362,6 +363,17 @@ const BAB_STAGE_CSS = `
 .pst .bab-tabs button.on{background:var(--pst-ink);color:var(--pst-bg);}
 .bab-board{align-self:center;display:grid;gap:3px;width:100%;max-width:356px;}
 .bab-board.whole{gap:2px;}
+/* BIGGER WHOLE BOARD (owner, 2026-11-05, after a player with a visual
+   impairment asked for the larger grid back): off a mouse-driven desktop the
+   whole board fills the column instead of stopping at 356px, the type scales
+   with the board (cqi, the board is its own container), point values show, and
+   the outlines are 1px ink like everywhere else. A tablet gets a wider column
+   so the board can grow to 720px; the height cap keeps it on screen. */
+.bab-board.whole:not(.dk){container-type:inline-size;max-width:max(356px, min(720px, calc(100dvh - 330px)));}
+.pst .bab-board.whole:not(.dk) .bab-c.sm{border-width:1px;border-radius:clamp(5px,1.7cqi,9px);font-size:clamp(14px,5.2cqi,32px);}
+.pst .bab-board.whole:not(.dk) .bab-c.sm.pm{font-size:clamp(9px,2.75cqi,15px);letter-spacing:0;}
+.pst .bab-board.whole:not(.dk) .bab-c.sm small{display:block;right:2px;bottom:2px;font-size:clamp(7px,2.05cqi,12px);}
+@media (min-width:600px) and (max-width:899.98px){.pst.wide .pst-col{max-width:min(760px, 94vw);}}
 .pst .bab-c{aspect-ratio:1;border:1px solid var(--pst-ink);border-radius:9px;background:var(--pst-tint);font-size:22px;font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;line-height:1;min-width:0;}
 .pst .bab-c.pm{font-size:10px;letter-spacing:.02em;}
 .pst .bab-c.sm{border-width:1.5px;border-radius:5px;font-size:13px;}
@@ -452,6 +464,16 @@ export default function BabelClient({ puzzles, forceNum }) {
   // zoomed window sits. Drawing state only; play state is untouched.
   const phoneStage = usePhoneStage();
   const [stView, setStView] = useState('whole'); // whole board first (owner, 2026-10-30)
+  // REMEMBER THE VIEW (owner, 2026-11-05): a new player opens on Whole board,
+  // but a player who picks Whole board or Zoom from the tabs opens on that view
+  // from then on. Bag is a glance, never remembered.
+  useEffect(() => {
+    try { const v = localStorage.getItem(VIEW_KEY); if (v === 'zoom' || v === 'whole') setStView(v); } catch (e) {}
+  }, []);
+  const pickView = (k) => {
+    setStView(k);
+    if (k === 'zoom' || k === 'whole') { try { localStorage.setItem(VIEW_KEY, k); } catch (e) {} }
+  };
   const deskStage = useDeskPointer();
   const [stOrg, setStOrg] = useState(null);
   // The finished board starts turned OVER, showing what to do next.
@@ -781,7 +803,7 @@ export default function BabelClient({ puzzles, forceNum }) {
       <>
         <style dangerouslySetInnerHTML={{ __html: BAB_STAGE_CSS }} />
         <div className="bab-top2">
-          {!deskStage && <button type="button" className="bab-mm" onClick={onMap} aria-label="Whole board map. Tap to move the zoomed window there.">{mapCells}</button>}
+          {!deskStage && view !== 'whole' && <button type="button" className="bab-mm" onClick={onMap} aria-label="Whole board map. Tap to move the zoomed window there.">{mapCells}</button>}
           <div className="bab-sc">
             <div>Spread<b>{signed(spread)}</b></div>
             <div>Benchmark<b>{signed(BENCH)}</b></div>
@@ -794,7 +816,7 @@ export default function BabelClient({ puzzles, forceNum }) {
         ) : (
           <div className="bab-tabs" role="tablist" aria-label="Board view">
             {[['whole', 'Whole board'], ['zoom', 'Zoom'], ['bag', 'Bag']].map(([k, t]) => (
-              <button key={k} type="button" role="tab" aria-selected={view === k} className={view === k ? 'on' : ''} onClick={() => setStView(k)}>{t}</button>
+              <button key={k} type="button" role="tab" aria-selected={view === k} className={view === k ? 'on' : ''} onClick={() => pickView(k)}>{t}</button>
             ))}
           </div>
         )}

@@ -1914,3 +1914,12 @@ Wired by `scripts/wire-six.mjs`. Tile art `scripts/gen-six-tiles.py`; share card
 most bags). Each landing deals a new Next, so whenever the plus came up or went away the score row grew or
 shrank by a row and the well under it jumped about 11px. The box is now always three rows. Any preview, chip
 or readout above a board must keep a fixed height whatever it shows (the Scour readout rule, same family).
+
+## Babel board size and remembered view (owner, 2026-11-05)
+
+A player with a visual impairment asked for the larger grid back after Whole board became the phone default
+(2026-10-30), which had squeezed 11x11 into 356px (13px letters, 7.5px labels, no point values). Now, off a
+mouse-driven desktop: the whole board fills the stage column (tablet column widens to 760px, board up to 720px,
+height-capped by `100dvh - 330px`), its type scales with the board in `cqi`, point values show, outlines are 1px,
+and the small map is hidden while the whole board is on screen. A player's Whole board / Zoom tab choice is kept in
+`localStorage` `sot_babel_view` and reopens next time; Bag is never remembered. Desktop (`.dk`) is unchanged.
