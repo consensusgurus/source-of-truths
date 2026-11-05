@@ -2273,8 +2273,8 @@ unless noted. The phone is untouched.
   "You #N of M" (links to the group page). The group chip is a plain text toggle with no count.
 - **Every toggle is text with the choice underlined** (Tiles/List, sort, Categories/Skills, the group,
   the rail tabs). Solid black is reserved for the open pane's block.
-- **"Today" is said once:** a "Plays today" label beside the sort; strips show the bare number in bold,
-  the leader's name in regular weight.
+- **Tile strips** show the bare play count in bold (no "today", and no "Plays today" label: owner
+  removed it 2026-11-05), the leader's name in regular weight.
 - **Stars:** once a reader has starred any game (`.fav1` on the root), empty stars show only on hover.
 - **The rail has one shape:** Your challenges is one line (`app/ChallengeBack.jsx`), Top Five Runs is its
   own box.
@@ -2288,7 +2288,7 @@ unless noted. The phone is untouched.
 - **Slim band** (`bandC`, `.sst-hc`): eyebrow, verdict and the metric on one line; the three Where You
   Stand boxes in a row (chip + rank, who is next, a thin bar); Replay, Back to board and the archive as
   text links at the right.
-- **Who's Next to Pass leads the sheet** (`nextC`, `.sst-nc`): one big next play (head line, Play
+- **Who's Next to Pass leads the sheet** (`nextC`, `.sst-nc`; the sheet fills the content area, `fitWide`, and today's board + group sit under the picks in the left column): one big next play (head line, Play
   <game>, description, minutes and finish rate; +pts, the rank move and a Start button), then six more
   picks in two columns; the run link, the challenge and the GIF beside it. Falls back to the older
   layout when there are no standings (guest, no data).

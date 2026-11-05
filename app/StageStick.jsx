@@ -526,20 +526,27 @@ export default function StageStick({
     const L = hb.left + (parseFloat(cs.paddingLeft) || 0);
     const R = hb.right - (parseFloat(cs.paddingRight) || 0);
     const pb = par.getBoundingClientRect();
-    const Wd = Math.min(1240, R - L);
+    // FILL THE WIDTH (owner, 2026-11-05, direction C): with the rail folded the
+    // ending takes the whole content area between the left index and the edge.
+    const Wd = R - L;
     if (Wd <= pb.width + 1) return;
-    const left = Math.max(L, Math.min(pb.left + pb.width / 2 - Wd / 2, R - Wd));
+    const left = L;
     el.style.maxWidth = 'none';
     el.style.width = `${Math.round(Wd)}px`;
     el.style.marginLeft = `${Math.round(left - pb.left)}px`;
   };
-  useIsoLayout(() => { if (desk) fitWide(); }, [host, desk, phase]);   // eslint-disable-line react-hooks/exhaustive-deps
+  useIsoLayout(() => { if (desk) fitWide(); }, [host, desk, phase, rail]);   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!desk) return undefined;
     const re = () => fitWide();
     window.addEventListener('resize', re);
-    return () => window.removeEventListener('resize', re);
-  }, [host, desk]);   // eslint-disable-line react-hooks/exhaustive-deps
+    // The rail folding away changes the page's padding without a resize.
+    const pg = inlineRef.current && inlineRef.current.closest('.stage-page');
+    let ro = null;
+    if (pg && typeof ResizeObserver !== 'undefined') { ro = new ResizeObserver(re); ro.observe(pg); }
+    const t = setTimeout(re, 400);
+    return () => { window.removeEventListener('resize', re); if (ro) ro.disconnect(); clearTimeout(t); };
+  }, [host, desk, rail]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const el = fillRef.current;
@@ -1167,6 +1174,7 @@ export default function StageStick({
               ))}
             </div>
           ) : null}
+          {rankCard}
         </div>
         <div className="sst-ncs">{runLink}{chalCard}</div>
       </section>
@@ -1180,8 +1188,8 @@ export default function StageStick({
       {nextC ? null : desk && standRows && nextCards ? <section className={'sst-card sst-pass ' + on(3)}>{nextCards}</section>
         : desk && (passNode || playNode) ? <section className={'sst-card sst-pass ' + on(3)}>{passNode}{playNode}</section> : null}
 
-      {/* 2. RANKINGS */}
-      {rankCard}
+      {/* 2. RANKINGS (inside the next-play column under direction C) */}
+      {nextC ? null : rankCard}
 
       {/* 3. CHALLENGE, with the GIF itself on show. Crux also keeps its
           emoji result grid as a plain text Share (owner, 2026-10-26: a Crux
@@ -1681,16 +1689,18 @@ html.lc-on:has(.lc-side > .sst-fold) .lc-host .stg-fg{padding-right:20px;}
 .sst-page.sst-pc{max-width:1500px;}
 .sst-band .sst-hero.sst-hc{display:flex !important;flex-direction:row;align-items:center;gap:28px;}
 .sst-hc .sst-h1{flex:none;}
-.sst-hc .sst-vm{display:flex;align-items:baseline;gap:16px;margin-top:4px;}
-.sst-hc .sst-v{font-size:40px;margin:0;}
-.sst-hc .sst-mc{font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1.02;font-variant-numeric:tabular-nums;}
+.sst-hc .sst-vm{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-top:4px;}
+.sst-hc .sst-v{font-size:40px;margin:0;line-height:1.05;white-space:nowrap;}
+.sst-hc .sst-mc{font-size:30px;white-space:nowrap;font-weight:800;letter-spacing:-.035em;line-height:1.02;font-variant-numeric:tabular-nums;}
 .sst-hc .sst-ml{font-style:normal;font-size:14px;font-weight:700;}
 .sst-hc .sst-bandwys,.sst-hc .sst-hsp{flex:1;min-width:0;}
 .sst-hc .wys-pass .wys-sl{display:none;}
 .sst-hc .wys-pass.band .wys-pl{flex-direction:row;gap:10px;}
-.sst-hc .wys-pass.band .wys-pr{flex:1 1 0;min-width:0;padding:9px 12px 10px;}
+.sst-hc .wys-pass.band .wys-pr{flex:1 1 0;min-width:0;padding:10px 14px 11px;}
 .sst-hc .wys-pass.band .wys-ph{display:grid;grid-template-columns:minmax(0,1fr) auto;row-gap:4px;align-items:center;}
-.sst-hc .wys-pass.band .wys-chip{justify-self:start;max-width:100%;}
+.sst-hc .wys-pass.band .wys-chip{justify-self:start;max-width:none;overflow:visible;}
+.sst-hc .wys-pass.band .wys-prk{white-space:nowrap;}
+.sst-hc .wys-pass.band .wys-ph .wys-pt{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3;}
 .sst-hc .wys-pass.band .wys-ph .wys-pt{grid-column:1 / -1;grid-row:2;}
 .sst-hc .wys-pass.band .wys-prk{grid-column:2;grid-row:1;}
 .sst-hc .wys-pass.band .wys-pb{margin-top:7px;}
@@ -1701,7 +1711,9 @@ html.lc-on:has(.lc-side > .sst-fold) .lc-host .stg-fg{padding-right:20px;}
 .sst-hc .sst-tl:focus-visible{outline:2px solid var(--sst-ink);outline-offset:2px;}
 .sst-page .sst-cards.sst-cC{grid-template-columns:minmax(0,1fr) !important;}
 .sst-page .sst-cards.sst-cC > section{grid-column:1 / -1 !important;}
-.sst-page .sst-cC .sst-rk{grid-template-columns:minmax(0,2fr) minmax(0,1fr);}
+.sst-page .sst-cC .sst-rk{grid-template-columns:minmax(0,3fr) minmax(0,2fr);}
+.sst-page .sst-ncm > .sst-rk{margin:20px -20px -18px;border-top:2px solid var(--stg-line,#e2e5ea);animation:none;}
+.sst-page.sst-pc{max-width:none;}
 .sst-page .sst-nc{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);padding:0;}
 .sst-ncm{padding:18px 20px;min-width:0;}
 .sst-ncs{padding:18px 20px;border-left:2px solid var(--stg-line,#e2e5ea);display:flex;flex-direction:column;gap:12px;min-width:0;}

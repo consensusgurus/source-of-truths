@@ -3847,7 +3847,6 @@ export default function StageToday() {
           {viewCtl(cat)}
           {findBox}
           {sortCtl(false)}
-          {mid && viewOf(cat) === 'tile' ? <span className="sty-ptd">Plays today</span> : null}
         </div>
         {s ? <p className="sty-skw">{s.what}. {games.length} daily puzzles.</p> : null}
         {circPills(cat, true)}
@@ -4512,7 +4511,6 @@ export default function StageToday() {
             {grpChips()}
             {findBox}
             {sortCtl(false)}
-            {mid && viewOf(ALL_ID) === 'tile' ? <span className="sty-ptd">Plays today</span> : null}
           </div>
           {circPills(null, true)}
           {grpBanners()}
