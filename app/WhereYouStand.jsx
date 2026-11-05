@@ -418,22 +418,30 @@ export function PassCard({ rows, wide = false, band = false }) {
       <style dangerouslySetInnerHTML={{ __html: PASS_CSS }} />
       <div className="wys-sl">Where You Stand &middot; Who&rsquo;s Next to Pass</div>
       <div className="wys-pl">
-        {list.map((r) => (
-          <div key={r.id} className="wys-pr">
-            <div className="wys-ph">
-              <span className="wys-chip">{passScope(r)}</span>
-              <span className="wys-prk"><b>#{fmt(r.rank)}</b> of {fmt(r.of)}</span>
-            </div>
-            <div className="wys-pb">
-              <span className="wys-pk"><span style={{ width: `${Math.round((r.next ? r.next.fill : 1) * 100)}%` }} /></span>
-            </div>
+        {list.map((r) => {
+          // ONE LINE ABOVE THE BAR in the desktop band (owner, 2026-11-04: "condense the three boxes on the right by
+          // removing three rows and placing stats above the line"): chip, who is next, rank; then the bar alone.
+          const pt = (
             <div className="wys-pt">
               {r.next
                 ? <>Next to pass: <b>{r.next.name}</b>{/ behind$/.test(r.next.gapText) ? `, ${r.next.gapText.replace(/ behind$/, '')} ahead of you` : (r.next.fig ? ` \u00b7 ${r.next.fig}` : '')}</>
                 : <>You lead {passScope(r)}</>}
             </div>
-          </div>
-        ))}
+          );
+          return (
+            <div key={r.id} className="wys-pr">
+              <div className="wys-ph">
+                <span className="wys-chip">{passScope(r)}</span>
+                {band ? pt : null}
+                <span className="wys-prk"><b>#{fmt(r.rank)}</b> of {fmt(r.of)}</span>
+              </div>
+              <div className="wys-pb">
+                <span className="wys-pk"><span style={{ width: `${Math.round((r.next ? r.next.fill : 1) * 100)}%` }} /></span>
+              </div>
+              {band ? null : pt}
+            </div>
+          );
+        })}
       </div>
     </section>
   );
@@ -510,6 +518,9 @@ const PASS_CSS = `
 .wys-pass.band .wys-pr{border:1px solid color-mix(in srgb,var(--wys-ink,#08222e) 22%,transparent);border-radius:14px;padding:11px 14px 12px;background:var(--wys-wash,rgba(255,255,255,.5))}
 .wys-pass.band .wys-sl{margin-bottom:10px}
 .wys-pass.band .wys-prk b{font-size:20px}
+.wys-pass.band .wys-ph .wys-pt{flex:1;min-width:0;margin:0;padding:0 0 .12em}
+.wys-pass.band .wys-pr{padding:10px 14px 11px}
+.wys-pass.band .wys-pb{margin-top:9px}
 @media (prefers-reduced-motion:reduce){.wys-pk span,.wys-cta{animation:none}}
 `;
 

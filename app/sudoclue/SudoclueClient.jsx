@@ -172,13 +172,20 @@ const EMPTY_BOARD = { plays: 0, best: null, topTime: null, leaderboard: [], lead
 function getStats() {
   try {
     const s = JSON.parse(localStorage.getItem(STATS_KEY));
-    if (s && s.v === 1 && s.rec) return s;
+    if (s && s.v === 1 && s.rec) {
+      // A case board (No. 3 on) never scores out of 10. A record there that does came from the old server merge
+      // (below), which also took an ABANDONED start as the first play: Bryant Park, 2026-11-04, read "Unfinished"
+      // under "Solved!". Drop those so the real finish, or a correct merge, takes the slot.
+      const bad = Object.keys(s.rec).filter((n) => Number(n) >= CASE_FROM && s.rec[n] && Number(s.rec[n].t) === 10);
+      if (bad.length) { const rec = { ...s.rec }; bad.forEach((n) => delete rec[n]); const s2 = { ...s, rec }; try { localStorage.setItem(STATS_KEY, JSON.stringify(s2)); } catch (e) {} return s2; }
+      return s;
+    }
   } catch (e) {}
   return { v: 1, rec: {} };
 }
 function recordStat(num, entry) {
   const s = getStats();
-  if (s.rec[num]) return s;
+  if (s.rec[num] && !s.rec[num].m) return s; // write-once, except a merged stand-in, which this browser's own finish replaces
   const s2 = { ...s, rec: { ...s.rec, [num]: entry } };
   try { localStorage.setItem(STATS_KEY, JSON.stringify(s2)); } catch (e) {}
   return s2;
@@ -203,11 +210,12 @@ function mergeServerStats(s, recent, puzzles) {
   let rec = s.rec, changed = false;
   for (const m of recent) {
     const p = m && byQuiz[m.quizId];
-    if (!p || m.attempt !== 1) continue;
+    if (!p || m.attempt !== 1 || m.abandoned) continue; // an abandoned start is not a play
     if (rec[p.num]) continue;
-    const sc = Math.max(0, Math.min(10, Math.round(((m.scorePct || 0) / 100) * 10)));
+    const t = p.num >= CASE_FROM ? caseMax(p.cast.length, !!p.three) : 10; // the board's own scale
+    const sc = Math.max(0, Math.min(t, Math.round(((m.scorePct || 0) / 100) * t)));
     if (!changed) { rec = { ...rec }; changed = true; }
-    rec[p.num] = { s: sc, t: 10, g: null, won: !!m.perfect };
+    rec[p.num] = { s: sc, t, g: null, won: !!m.perfect, m: 1 };
   }
   if (!changed) return s;
   const s2 = { ...s, rec };
