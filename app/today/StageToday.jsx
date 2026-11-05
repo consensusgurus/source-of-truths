@@ -7522,7 +7522,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty .sty-ixb.ct:not(.on) > i{display:none;}
   /* FLAT ROWS, HAIRLINE EDGE (owner, 2026-11-05): a faint ink hairline marks the
      row against the page; the played fill is the only colour. */
-  .sty .sty-ixb.ct:not(.on),.sty.slc:not([data-stage-theme=light]) .sty-ixb.ct:not(.on){border-color:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
+  .sty .sty-ixb.ct:not(.on),.sty.slc:not([data-stage-theme=light]) .sty-ixb.ct:not(.on){border:1px solid var(--stg-ink);background-clip:padding-box;}
   .sty .sty-ixb.ct.sk:not(.on){grid-template-columns:minmax(0,1fr) auto;padding-left:12px;}
   .sty .sty-ixb.ct.sk:not(.on) > i{display:none;}
   .sty .sty-ixb.ct:not(.on) .sty-ixct{color:color-mix(in srgb, var(--stg-ink) 72%, transparent);}

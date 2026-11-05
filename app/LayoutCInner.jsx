@@ -330,9 +330,9 @@ html.lc-on .lc-host .stg-gate > div:last-child > button:first-child:not([type=bu
    place lives in the panel. ── */
 .lc-nav .lc-ixct{display:none;}
 .lc-nav .sty-ixb.ct:not(.on){grid-template-columns:minmax(0,1fr) auto;column-gap:8px;color:var(--stg-ink);
-  border-color:color-mix(in srgb, var(--stg-ink) 20%, transparent);
+  border:1px solid var(--stg-ink);background-clip:padding-box;
   background:linear-gradient(to right, color-mix(in srgb, var(--cfull) 60%, #fff) var(--ixf, 0%), var(--stg-surf) 0);}
-.lc-nav:not(.lt) .sty-ixb.ct:not(.on){background:linear-gradient(to right, color-mix(in srgb, var(--cfull) 34%, var(--stg-surf)) var(--ixf, 0%), var(--stg-surf) 0);}
+.lc-nav:not(.lt) .sty-ixb.ct:not(.on){background-clip:padding-box;background:linear-gradient(to right, color-mix(in srgb, var(--cfull) 34%, var(--stg-surf)) var(--ixf, 0%), var(--stg-surf) 0);}
 .lc-nav .sty-ixb.ct:not(.on) .lc-ixct{display:block;font-style:normal;font-size:12px;font-weight:600;color:color-mix(in srgb, var(--stg-ink) 72%, transparent);white-space:nowrap;}
 .lc-nav .sty-ixb.ct.on{grid-template-columns:minmax(0,1fr);}
 .lc-nav .sty-ixsw{border:0;padding:0;gap:18px;justify-content:center;background:transparent;margin:2px 0;}

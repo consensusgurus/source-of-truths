@@ -1138,6 +1138,40 @@ export default function StageStick({
         </section>
       ) : null;
 
+  // PLAY SIMILAR / ANOTHER and KEEP PLAYING. Under direction C (owner,
+  // 2026-11-05) they sit in the left column beside the GIFs, not below them.
+  const pnNode = (inC) => (
+      <section className={'sst-card sst-pn ' + on(5)}>
+        {inC ? null : <div className="sst-sl">Play next</div>}
+        <div className="sst-acts">
+          {inC ? null : runLink}
+          {(similar || another) ? (
+            <div className={'sst-row' + (similar && another ? '' : ' one')}>
+              {similar ? (
+                <a className="sst-ob pri" href={similar.href} onClick={similar.onClick || undefined}>
+                  <span className="g">{similar.key ? <GameGlyph gameKey={similar.key} size={24} /> : null}</span>
+                  <span className="t"><b>Play similar</b><i>{similar.name}{similar.time ? <small> · {similar.time}</small> : null}</i></span>
+                </a>
+              ) : null}
+              {another ? (
+                <a className="sst-ob" href={another.href}>
+                  <span className="g">{another.key ? <GameGlyph gameKey={another.key} size={24} /> : null}</span>
+                  <span className="t"><b>Play another</b><i>{another.name}</i></span>
+                </a>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+        {desk ? keepPlaying : (
+          <>
+          {shelfNode}
+          {catsNode}
+          </>
+        )}
+        {allHref ? <a className="sst-all" href={allHref}>See all Daily Puzzles</a> : null}
+      </section>
+  );
+
   // WHO'S NEXT TO PASS LEADS THE SHEET (owner, 2026-11-05, direction C): one
   // big next play with its Start, six more picks under it, and the run, the
   // challenge and the GIF beside it. The right rail folds away.
@@ -1175,6 +1209,7 @@ export default function StageStick({
             </div>
           ) : null}
           {rankCard}
+          {pnNode(true)}
         </div>
         <div className="sst-ncs">{runLink}{chalCard}</div>
       </section>
@@ -1198,36 +1233,8 @@ export default function StageStick({
           on, the rail carries it and this slot lists the easiest points. */}
       {nextC ? null : chalCard}
 
-      {/* 4. PLAY NEXT */}
-      <section className={'sst-card sst-pn ' + on(5)}>
-        {nextC ? null : <div className="sst-sl">Play next</div>}
-        <div className="sst-acts">
-          {nextC ? null : runLink}
-          {(similar || another) ? (
-            <div className={'sst-row' + (similar && another ? '' : ' one')}>
-              {similar ? (
-                <a className="sst-ob pri" href={similar.href} onClick={similar.onClick || undefined}>
-                  <span className="g">{similar.key ? <GameGlyph gameKey={similar.key} size={24} /> : null}</span>
-                  <span className="t"><b>Play similar</b><i>{similar.name}{similar.time ? <small> · {similar.time}</small> : null}</i></span>
-                </a>
-              ) : null}
-              {another ? (
-                <a className="sst-ob" href={another.href}>
-                  <span className="g">{another.key ? <GameGlyph gameKey={another.key} size={24} /> : null}</span>
-                  <span className="t"><b>Play another</b><i>{another.name}</i></span>
-                </a>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-        {desk ? keepPlaying : (
-          <>
-          {shelfNode}
-          {catsNode}
-          </>
-        )}
-        {allHref ? <a className="sst-all" href={allHref}>See all Daily Puzzles</a> : null}
-      </section>
+      {/* 4. PLAY NEXT (inside the next-play column under direction C) */}
+      {nextC ? null : pnNode(false)}
 
       {/* 5. FULL STATS, at the bottom */}
       {recordCard}
@@ -1712,7 +1719,10 @@ html.lc-on:has(.lc-side > .sst-fold) .lc-host .stg-fg{padding-right:20px;}
 .sst-page .sst-cards.sst-cC{grid-template-columns:minmax(0,1fr) !important;}
 .sst-page .sst-cards.sst-cC > section{grid-column:1 / -1 !important;}
 .sst-page .sst-cC .sst-rk{grid-template-columns:minmax(0,3fr) minmax(0,2fr);}
-.sst-page .sst-ncm > .sst-rk{margin:20px -20px -18px;border-top:2px solid var(--stg-line,#e2e5ea);animation:none;}
+.sst-page .sst-ncm > .sst-rk{margin:20px -20px 0;border-top:2px solid var(--stg-line,#e2e5ea);animation:none;}
+.sst-page .sst-ncm > .sst-pn{margin:0 -20px -18px;border-top:2px solid var(--stg-line,#e2e5ea);animation:none;}
+.sst-page .sst-ncm > .sst-pn:has(.sst-acts:empty){padding-top:0;}
+.sst-page .sst-ncm .sst-acts:empty{display:none;}
 .sst-page.sst-pc{max-width:none;}
 .sst-page .sst-nc{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);padding:0;}
 .sst-ncm{padding:18px 20px;min-width:0;}
