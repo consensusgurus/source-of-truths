@@ -2263,8 +2263,9 @@ unless noted. The phone is untouched.
   (`foldKeys`). Tile view only, never while searching; category panes, skills and List view still list
   every game. Run tiles wear their main category's strip (`runCatOf`, `.sty-grunc`), with short tags in
   `RUN_TAGS`.
-- **Colour means progress.** Index rows are white with a category dot, filling left to right with the
-  category pastel as games are played (`--ixf`). Skill rows (`.sk`) carry no dot. The cap strip's empty
+- **Colour arrives as puzzles are played** (the home's guiding idea). Index rows are white with an ink
+  outline (no category dot, no coloured outline in dark), filling left to right with the category pastel
+  as games are played (`--ixf`). The cap strip's empty
   pieces are neutral grey. The rail has no colour key or colour bar.
 - **No "one life" on tiles.** Dropped from every `tag` in `lib/daily-games.js` and `app/DailyEndCard.jsx`
   (`tagLong` and How to play still explain it).

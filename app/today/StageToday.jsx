@@ -7516,10 +7516,13 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
 .sty-ptd{display:none;}
 @media (min-width:901px){
   /* The index: white rows that fill with the category as they are played. */
-  .sty .sty-ixb.ct:not(.on){grid-template-columns:auto minmax(0,1fr) auto;column-gap:7px;padding-left:10px;color:var(--stg-ink);border-color:var(--stg-ink);
+  .sty .sty-ixb.ct:not(.on){grid-template-columns:minmax(0,1fr) auto;padding-left:12px;color:var(--stg-ink);border-color:var(--stg-ink);
     background:linear-gradient(to right, color-mix(in srgb, var(--cfull) 60%, #fff) var(--ixf, 0%), var(--stg-surf) 0);}
   .sty:not([data-stage-theme=light]) .sty-ixb.ct:not(.on){background:linear-gradient(to right, color-mix(in srgb, var(--cfull) 34%, var(--stg-surf)) var(--ixf, 0%), var(--stg-surf) 0);}
-  .sty .sty-ixb.ct:not(.on) > i{display:block;width:9px;height:9px;border-radius:50%;box-sizing:border-box;border:1px solid var(--stg-ink);background:var(--cfull);}
+  /* COLOUR ARRIVES AS PUZZLES ARE PLAYED (owner, 2026-11-05): no category dot
+     and no coloured outline on a row; its only colour is the played fill. */
+  .sty .sty-ixb.ct:not(.on) > i{display:none;}
+  .sty.slc:not([data-stage-theme=light]) .sty-ixb.ct:not(.on){border-color:var(--stg-ink);}
   .sty .sty-ixb.ct.sk:not(.on){grid-template-columns:minmax(0,1fr) auto;padding-left:12px;}
   .sty .sty-ixb.ct.sk:not(.on) > i{display:none;}
   .sty .sty-ixb.ct:not(.on) .sty-ixct{color:color-mix(in srgb, var(--stg-ink) 72%, transparent);}
