@@ -138,6 +138,8 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .cbk{--
 .cbr-fg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px;text-align:center;}
 .cbr-fg b{display:block;font-size:18px;font-weight:800;color:var(--stg-ink,#e9edf4);}
 .cbr-fg i{display:block;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.1em;color:var(--stg-mute,#8b95a8);text-transform:uppercase;}
+.cbr-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:8px;font-size:13.5px;font-weight:700;color:var(--stg-ink,#e9edf4);}
+.cbr-row b{font-weight:800;}
 .cbr-ln{font-size:12px;font-weight:600;color:var(--stg-mute,#8b95a8);margin-top:10px;line-height:1.4;}
 .sty-tix b{color:#e8b43a;}
 .stage-page[data-stage-theme=light] .sty-tix b{color:#a97b12;}
@@ -271,12 +273,9 @@ export function ChallengeRail() {
     <div className="cbr">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="cbr-hd">Your challenges<a href="/challenges">See all ›</a></div>
-      <div className="cbr-fg">
-        <div><b>{t.sent}</b><i>Sent</i></div>
-        <div><b>{t.played}</b><i>Played</i></div>
-        <div><b style={{ color: 'var(--stg-good,#6ee7b7)' }}>{t.won}–{t.lost}</b><i>Record</i></div>
-      </div>
-      {pending ? <div className="cbr-ln">{pending.name} opened your {gameName(pending.c.game)} link, still playing.</div>
+      {/* ONE LINE (owner, 2026-11-05): sent and played, the record at the right. */}
+      <div className="cbr-row"><span>{t.sent} sent · {t.played} played</span><b title="Won and lost">{t.won}–{t.lost}</b></div>
+      {pending ? <div className="cbr-ln">{pending.name} is playing your {gameName(pending.c.game)} link</div>
         : t.sent && !t.opened ? <div className="cbr-ln">Nobody has opened your links yet. Send one to someone who will.</div> : null}
     </div>
   );

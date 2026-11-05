@@ -392,6 +392,14 @@ const SHELF_OPEN_KEY = 'sot_shelf_open';
 // 'sty-mine', 'sty-circs' or a category name. Per browser, like the keys above.
 const PANE_KEY = 'sot_home_pane';
 const ALL_ID = 'all';
+// THE QUIZ RUNS THAT FOLD THEIR GAMES ON ALL PUZZLES (owner, 2026-11-05).
+const FOLD_RUNS = ['gauntlet', 'triviaencore', 'science', 'english'];
+const RUN_TAGS = {
+  gauntlet: 'Seven trivia categories back to back',
+  triviaencore: 'The four that sat out the Gauntlet',
+  science: 'Body, life, space, chemistry, inventors',
+  english: 'Spelling, vocab, idioms, origins, grammar',
+};
 // Set when a phone reader goes back to the category tiles by hand, so the
 // next visit opens on the tiles rather than their last pane.
 const TILES_KEY = 'sot_home_tiles';
@@ -684,7 +692,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       {day ? (
         <span className="sty-gpl sty-gcs">
           <span className="ld">{lead ? <>#1 <b>{lead.username}</b></> : plays ? 'No solve yet' : 'Open. Be first.'}</span>
-          <span className="ct">{Number(plays).toLocaleString('en-US')} today</span>
+          <span className="ct" title="Plays today">{Number(plays).toLocaleString('en-US')}</span>
         </span>
       ) : null}
       {canPin ? (
@@ -2496,7 +2504,7 @@ export default function StageToday() {
     const rp = RAMP_ORDER.includes(id) || isSkillId(id);
     return (
       <button key={id} type="button" aria-pressed={paneOn === id}
-        className={'sty-ixb' + (rp ? ' ct' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
+        className={'sty-ixb' + (rp ? ' ct' : '') + (isSkillId(id) ? ' sk' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
         style={{ '--cc': hue, '--cci': rp ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(rp && !light ? { '--ixp': categoryColor(rampCat(id)) } : null), ...(rp ? { '--cfull': categoryColor(rampCat(id)) } : null), '--ixo': ixPos.has(id) ? ixPos.get(id) : undefined, '--ixf': prog && prog[1] ? `${Math.min(100, (prog[0] / prog[1]) * 100).toFixed(1)}%` : '0%', '--i': ixSeq++ }}
         onClick={(e) => { if (!runsMq) { deskGo(e, id); return; } if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
@@ -2753,7 +2761,7 @@ export default function StageToday() {
     let shown = rows.slice(0, 6);
     const mine = rows.find((r) => r.me);
     if (mine && !shown.includes(mine)) shown = [...rows.slice(0, 5), mine];
-    return { name: g0.name, rows: shown };
+    return { name: g0.name, code: g0.code || null, field: rows.length, mine: mine || null, rows: shown };
   }, [grp, grpOne, railKeys]);
   // WHERE THE NAVIGATION ENDS, and where the open pane's tiles start. Read in
   // a layout effect so the first painted frame already has the fitted sizes.
@@ -3118,11 +3126,12 @@ export default function StageToday() {
     const mcEl = (() => {
       const d = mcRail;
       const champ = d && d.champions ? d.champions.all : null;
-      const nTop = Math.max(3, n - 9);
+      const nTop = Math.max(3, n - 10);
       const top = d && d.boards ? d.boards.all.slice(0, nTop) : [];
       const me = d && d.me && d.me.rank ? d.me : null;
       const meIn = me && top.some((r) => r.name === me.name);
       return (
+        <>
         <div className="sty-rlb sty-mcr">
           {tabs}
           <div className="sty-mcc">
@@ -3140,6 +3149,8 @@ export default function StageToday() {
               );
             })}
           </ol>
+        </div>
+        <div className="sty-rlb sty-mct">
           <div className="sty-eb">Top · Five Runs{d && d.field ? <em>{' · '}{d.field.all} ranked</em> : null}</div>
           <ol style={{ '--rh': rh.toFixed(2) + 'px' }}>
             {d ? (top.length ? top.map((r) => (
@@ -3150,6 +3161,7 @@ export default function StageToday() {
           </ol>
           <a className="sty-mcf" href={withTq(MC_HREF)}>Multiple Choice Leaders</a>
         </div>
+        </>
       );
     })();
     return (
@@ -3157,7 +3169,13 @@ export default function StageToday() {
         <ChallengeRail />
         {railGrp ? (
           <div className="sty-rlb">
-            <div className="sty-eb">{railGrp.name}<em>{' · '}{railLabel}</em></div>
+            <div className="sty-eb">{railGrp.name}<em>{' · '}{railLabel}</em>
+              {/* ONE PLACE FOR THE GROUP (owner, 2026-11-05): the cap's group
+                  figure went; the reader's place in the group rides here. */}
+              {railGrp.mine ? (railGrp.code
+                ? <a className="sty-ebr" href={withTq(`/groups/${railGrp.code}`)}>You #{railGrp.mine.rank} of {railGrp.field}</a>
+                : <span className="sty-ebr">You #{railGrp.mine.rank} of {railGrp.field}</span>) : null}
+            </div>
             <ol>
               {railGrp.rows.map((r) => (
                 <li key={r.userKey} className={r.me ? 'me' : ''}>
@@ -3738,25 +3756,47 @@ export default function StageToday() {
   // cards as they were (the runStrip cards) on a full-width row under it.
   // List view keeps the run block above the ledger.
   const [runsOpen, setRunsOpen] = useState(false);
+  // The category a run wears: the one most of its games belong to.
+  const runCatOf = (c) => {
+    if (!c || c.poly || !c.games || !c.games.length) return null;
+    const t = {};
+    for (const g of c.games) t[g.cat] = (t[g.cat] || 0) + 1;
+    return Object.keys(t).sort((a, b) => t[b] - t[a])[0] || null;
+  };
+  // Which games leave the All Puzzles grid because their run's tile is there.
+  const foldKeys = (() => {
+    if (!mid || findOn || viewOf(ALL_ID) !== 'tile' || (deckOn(ALL_ID) && paneOn === ALL_ID)) return null;
+    const ks = new Set();
+    for (const c of deckRuns(null)) if (FOLD_RUNS.includes(c.id)) for (const g of c.games) ks.add(g.key);
+    return ks.size ? ks : null;
+  })();
   useEffect(() => { setRunsOpen(false); }, [paneOn]);
   const runCells = (cat) => {
     if (!mid || findOn) return null;
     const runs = deckRuns(cat);
     if (!runs.length) return null;
     const pl = (c) => ((runStat[c.id] || {}).players || 0);
-    const lead = runs.filter((c) => !c.poly && !runFull(c)).sort((a, b) => pl(b) - pl(a))[0] || null;
-    const rest = runs.filter((c) => c !== lead);
+    // THE QUIZ RUNS STAND IN FOR THEIR GAMES ON ALL PUZZLES (owner, 2026-11-05).
+    // Every folded run gets its own tile at the head of the grid, and the games
+    // inside it leave the grid (foldKeys, below). Elsewhere one lead run.
+    const folds = cat == null ? runs.filter((c) => FOLD_RUNS.includes(c.id)) : [];
+    const leads = folds.length ? folds
+      : [runs.filter((c) => !c.poly && !runFull(c)).sort((a, b) => pl(b) - pl(a))[0]].filter(Boolean);
+    const lead = leads[0] || null;
+    const rest = runs.filter((c) => !leads.includes(c));
     const cells = [];
-    if (lead) {
-      const st = runStat[lead.id];
+    for (const c of leads) {
+      const st = runStat[c.id];
+      const rc = runCatOf(c);
+      const fin = runFull(c);
       cells.push(
-        <a key={'rl-' + lead.id} className="sty-g mx sty-grun" href={withTq(circuitEntryHref(lead.id))} data-fk={'rl:' + lead.id}
-          style={{ '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} title={lead.blurb || lead.name}>
-          <span className="sty-gn">{lead.name}</span>
-          <span className="sty-gt">{lead.blurb || `Run \u00b7 ${lead.games.length} games`}</span>
+        <a key={'rl-' + c.id} className={'sty-g mx sty-grun' + (rc ? ' sty-grunc' : '')} href={withTq(circuitEntryHref(c.id))} data-fk={'rl:' + c.id}
+          style={rc ? { '--cfull': categoryColor(rc), '--cc': hueFor(rc) } : { '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} title={c.blurb || c.name}>
+          <span className="sty-gn">{c.name}</span>
+          <span className="sty-gt">{RUN_TAGS[c.id] || c.blurb || `Run \u00b7 ${c.games.length} games`}</span>
           <span className="sty-gpl sty-gcs">
-            <span className="ld"><b>{lead.n ? `${lead.n} of ${lead.games.length} played` : `${lead.games.length} games`}</b></span>
-            <span className="ct">{fmtN(st && st.players)} today</span>
+            <span className="ld"><b>{fin ? 'Finished' : c.n ? `${c.n} of ${c.games.length} played` : `${c.games.length} games`}</b></span>
+            <span className="ct" title="Plays today">{fmtN(st && st.players)}</span>
           </span>
         </a>
       );
@@ -3807,6 +3847,7 @@ export default function StageToday() {
           {viewCtl(cat)}
           {findBox}
           {sortCtl(false)}
+          {mid && viewOf(cat) === 'tile' ? <span className="sty-ptd">Plays today</span> : null}
         </div>
         {s ? <p className="sty-skw">{s.what}. {games.length} daily puzzles.</p> : null}
         {circPills(cat, true)}
@@ -3943,7 +3984,7 @@ export default function StageToday() {
   const mGroup = grp && Array.isArray(grp.groups) && grp.groups.length ? grp.groups[0] : null;
   const mPlayed = DAILY_GAMES.reduce((n, g) => n + (done.has(g.key) ? 1 : 0), 0);
   return (
-    <div className={'sty stage-page' + (mph ? ' mph-on' : '') + (mPane ? ' mph-pane' : '') + (mTintBg ? ' mph-tint' : '') + (dTintBg ? ' dsk-tint' : '') + (isColorLook(siteLook) ? ' slc' : ' sln')} data-stage-theme={stageTheme} style={tintBg ? { '--stg-ground': tintBg, '--stg-raise': tintBg } : undefined} ref={snapRef}>
+    <div className={'sty stage-page' + (mph ? ' mph-on' : '') + (mPane ? ' mph-pane' : '') + (mTintBg ? ' mph-tint' : '') + (dTintBg ? ' dsk-tint' : '') + (isColorLook(siteLook) ? ' slc' : ' sln') + (favorites && favorites.some((k) => !String(k).startsWith('c:')) ? ' fav1' : '')} data-stage-theme={stageTheme} style={tintBg ? { '--stg-ground': tintBg, '--stg-raise': tintBg } : undefined} ref={snapRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {/* THE ENTRY DOOR: first visit then weekly, always dark, replaced the daily arrival. See app/EntryDoor.jsx. */}
       {/* A SKILL TILE OPENS THAT SKILL'S PANE (owner, 2026-10-18), and shows the
@@ -4471,6 +4512,7 @@ export default function StageToday() {
             {grpChips()}
             {findBox}
             {sortCtl(false)}
+            {mid && viewOf(ALL_ID) === 'tile' ? <span className="sty-ptd">Plays today</span> : null}
           </div>
           {circPills(null, true)}
           {grpBanners()}
@@ -4487,7 +4529,7 @@ export default function StageToday() {
           ) : null}
           <div className={'sty-games' + (mid && viewOf(ALL_ID) === 'list' ? ' sty-vhid' : '') + (runsOpen && sortBy !== 'diff' && paneOn === ALL_ID ? ' ropen' : '')} ref={deckOn(ALL_ID) && paneOn === ALL_ID ? deckGridRef : undefined}>
             {(() => {
-              const nodes = tileRun(playedLast(sortGames(alpha), done), (g, i) => (
+              const nodes = tileRun(playedLast(sortGames(foldKeys ? alpha.filter((g) => !foldKeys.has(g.key)) : alpha), done), (g, i) => (
               // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
               // card carries its own hue (owner, 2026-08-31).
               <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
@@ -7466,5 +7508,68 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-runsu .sty-rt3s{margin-bottom:2px;}
   @keyframes styRunsU{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
   @media (prefers-reduced-motion:reduce){ .sty-runsu{animation:none;} .sty-spl i{transition:none;} }
+}
+
+/* ── NOV 5 QUIETER HOME (owner, 2026-11-05): colour means progress, one look
+   for every toggle, one shape for the rail, stars on hover once used, and
+   "today" said once. Desktop only. ── */
+.sty-ptd{display:none;}
+@media (min-width:901px){
+  /* The index: white rows that fill with the category as they are played. */
+  .sty .sty-ixb.ct:not(.on){grid-template-columns:auto minmax(0,1fr) auto;column-gap:7px;padding-left:10px;color:var(--stg-ink);border-color:var(--stg-ink);
+    background:linear-gradient(to right, color-mix(in srgb, var(--cfull) 60%, #fff) var(--ixf, 0%), var(--stg-surf) 0);}
+  .sty:not([data-stage-theme=light]) .sty-ixb.ct:not(.on){background:linear-gradient(to right, color-mix(in srgb, var(--cfull) 34%, var(--stg-surf)) var(--ixf, 0%), var(--stg-surf) 0);}
+  .sty .sty-ixb.ct:not(.on) > i{display:block;width:9px;height:9px;border-radius:50%;box-sizing:border-box;border:1px solid var(--stg-ink);background:var(--cfull);}
+  .sty .sty-ixb.ct.sk:not(.on){grid-template-columns:minmax(0,1fr) auto;padding-left:12px;}
+  .sty .sty-ixb.ct.sk:not(.on) > i{display:none;}
+  .sty .sty-ixb.ct:not(.on) .sty-ixct{color:color-mix(in srgb, var(--stg-ink) 72%, transparent);}
+  /* The cap's strip: an unplayed piece is neutral, only played pieces carry colour. */
+  .sty-spl i.e{background:color-mix(in srgb, var(--stg-ink) 10%, transparent);box-shadow:none;}
+  /* The group lives in the rail. */
+  .sty-cap.v2 .sty-figs > .sty-fg{display:none;}
+  .sty-rlb .sty-eb{display:flex;align-items:baseline;gap:0;}
+  .sty-rlb .sty-eb .sty-ebr{margin-left:auto;padding-left:8px;letter-spacing:0;text-transform:none;font-weight:800;color:var(--stg-ink);text-decoration:none;white-space:nowrap;}
+  .sty-rlb .sty-eb a.sty-ebr:hover{text-decoration:underline;text-underline-offset:3px;}
+  /* Every toggle is text with the choice underlined; black is for the open pane. */
+  .sty-ix .sty-sort,.sty-ix > .sty-cat > .sty-cathead > .sty-sort{border:0;padding:0;gap:16px;border-radius:0;align-self:center;}
+  .sty-ix .sty-sort button,.sty-ix > .sty-cat > .sty-cathead > .sty-sort button{padding:6px 0 4px;border-radius:0;background:transparent;font-size:13px;font-weight:600;
+    color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+  .sty-ix .sty-sort button[aria-pressed="true"],.sty-ix > .sty-cat > .sty-cathead > .sty-sort button[aria-pressed="true"]{background:transparent;color:var(--stg-ink);font-weight:800;box-shadow:inset 0 -2px 0 var(--stg-ink);}
+  .sty-ix .sty-sort button:hover{color:var(--stg-ink);}
+  .sty-ix .sty-ixsw{border:0;padding:0;gap:18px;justify-content:center;background:transparent;}
+  .sty-ix .sty-ixsw button{flex:none;padding:6px 0 4px;border-radius:0;background:transparent;font-weight:600;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+  .sty-ix .sty-ixsw button[aria-pressed="true"]{background:transparent;color:var(--stg-ink);font-weight:800;box-shadow:inset 0 -2px 0 var(--stg-ink);}
+  .sty-ix .sty-mgc,.sty-ix .sty-mgc.on{border:0;border-radius:0;background:transparent;padding:6px 0 4px;align-self:center;font-weight:600;
+    color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+  .sty-ix .sty-mgc.on{color:var(--stg-ink);font-weight:800;box-shadow:inset 0 -2px 0 var(--stg-ink);}
+  .sty-ix .sty-mgc i{display:none;}
+  .sty-ix .sty-rtab{justify-content:flex-start;gap:16px;padding:8px 12px 0;}
+  .sty-ix .sty-rtab button{flex:none;padding:0 0 6px;border-radius:0;background:transparent;font-weight:600;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+  .sty-ix .sty-rtab button[aria-pressed="true"]{background:transparent;color:var(--stg-ink);font-weight:800;box-shadow:inset 0 -2px 0 var(--stg-ink);}
+  .sty-ptd{display:block;flex:none;align-self:center;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
+    color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+  /* The crowd strip: the play count leads, the leader's name steps back. */
+  .sty-gcs .ld b{font-weight:500;}
+  .sty-g .sty-gpl.sty-gcs .ct{font-weight:800;font-size:13px;}
+  .sty-grun .sty-gcs .ld b,.sty-gdeck .sty-gcs .ld b{font-weight:700;}
+  /* A run wears its category's strip like any puzzle. */
+  .sty-grun.sty-grunc .sty-gpl.sty-gcs{background:color-mix(in srgb, var(--cfull) 60%, #fff);color:#0b0d12;}
+  .sty:not([data-stage-theme=light]) .sty-grun.sty-grunc .sty-gpl.sty-gcs{background:var(--cfull);color:#0b0d12;}
+  /* Stars: once a reader has starred something, empty stars wait for a hover. */
+  @media (hover:hover){
+    html:not([data-stage-boot=dark]) .sty.fav1[data-stage-theme=light] .sty-ix .sty-g:not(:hover) .sty-star:not(.on):not(:focus-visible),
+    .sty.fav1 .sty-ix .sty-g:not(:hover) .sty-star:not(.on):not(:focus-visible){opacity:0;}
+  }
+  /* The rail: one shape. No colour key, no colour bar, plain ink rows. */
+  .sty-mcc .mb,.sty-rlb .sty-mcl li .sw{display:none;}
+  .sty-rlb .sty-mcl li{grid-template-columns:minmax(0,1fr) auto;}
+  .sty-rlb .sty-mcl li em{display:inline-block;min-width:54px;}
+  .sty-mcc .n b{font-size:16px;}
+  .sty-rail .cbr{padding:0;overflow:hidden;}
+  .sty-rail .cbr-hd{padding:9px 12px;border-bottom:1px solid var(--stg-ink);font-size:11px;letter-spacing:.08em;color:var(--stg-ink);}
+  .sty-rail .cbr-hd a{color:var(--stg-ink);}
+  .sty-rail .cbr-row{padding:8px 12px 0;}
+  .sty-rail .cbr-ln{padding:0 12px 10px;margin-top:3px;}
+  .sty-rail .cbr-row:last-child{padding-bottom:10px;}
 }
 `;

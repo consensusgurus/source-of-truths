@@ -2252,3 +2252,28 @@ sequence ("Phone · Full sequence").
   or less; expected points = the ladder at the middle of today's named field; ranked on points per
   minute; `after` = the rank those points would buy. The client drops run parts and anything played.
 - Runs keep the standings beat and card (renamed to All); B2 and the GIF rail are puzzle endings only.
+
+## The quieter desktop home (owner, 2026-11-05)
+
+Ten cleanups to the desktop home, all inside `@media (min-width:901px)` in `app/today/StageToday.jsx`
+unless noted. The phone is untouched.
+
+- **Quiz runs stand in for their games on All Puzzles.** `FOLD_RUNS` (gauntlet, triviaencore, science,
+  english) each get a tile at the head of the grid, and the games inside them leave the grid
+  (`foldKeys`). Tile view only, never while searching; category panes, skills and List view still list
+  every game. Run tiles wear their main category's strip (`runCatOf`, `.sty-grunc`), with short tags in
+  `RUN_TAGS`.
+- **Colour means progress.** Index rows are white with a category dot, filling left to right with the
+  category pastel as games are played (`--ixf`). Skill rows (`.sk`) carry no dot. The cap strip's empty
+  pieces are neutral grey. The rail has no colour key or colour bar.
+- **No "one life" on tiles.** Dropped from every `tag` in `lib/daily-games.js` and `app/DailyEndCard.jsx`
+  (`tagLong` and How to play still explain it).
+- **The group lives in the rail.** The cap's group figure is hidden; the rail's group box head reads
+  "You #N of M" (links to the group page). The group chip is a plain text toggle with no count.
+- **Every toggle is text with the choice underlined** (Tiles/List, sort, Categories/Skills, the group,
+  the rail tabs). Solid black is reserved for the open pane's block.
+- **"Today" is said once:** a "Plays today" label beside the sort; strips show the bare number in bold,
+  the leader's name in regular weight.
+- **Stars:** once a reader has starred any game (`.fav1` on the root), empty stars show only on hover.
+- **The rail has one shape:** Your challenges is one line (`app/ChallengeBack.jsx`), Top Five Runs is its
+  own box.
