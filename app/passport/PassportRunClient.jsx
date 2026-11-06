@@ -69,7 +69,6 @@ const SHORT = { ping: 'Find the secret city', passport: 'Nine size calls', flank
 // The trip's lines (owner, 2026-11-06): each leg says what it does for the trip.
 const SHORT_TRIP = { ping: 'Find where you depart', span: 'Cross to the destination', flank: 'Name where you landed', passport: 'Stamp each capital' };
 // Stamps: at most this many countries are asked, the destination always last.
-const STAMPS_MAX = 8;
 
 // A small seeded shuffle, so a day's Stamps options are the same on every
 // device and on a reload (the list is also kept in the save once dealt).
@@ -83,25 +82,29 @@ function shuffled(arr, rnd) {
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
-// THE STAMPS LEG (owner, 2026-11-06). The countries the player's own road
-// crossed after the start (the perfect road when they did not reach the
-// destination), each asked for its capital with four choices: the answer and
-// three capitals from its neighbors, the near ring filled out by the next one.
+// THE STAMPS LEG (owner, 2026-11-06). EVERY country the trip touched after the
+// start: the countries the player's own road crossed (the perfect road when
+// they did not reach the destination), then the destination's neighbors that
+// were not on the road ("every country flanking and spanning"). Each is asked
+// for its capital with four choices: the capital, a large city of the same
+// country (the trap: Istanbul for Turkey), and neighbors' capitals to fill.
 function dealStamps(trip, spanRes, num) {
   if (!trip) return [];
   const adj = spanAdj();
   const own = spanRes && spanRes.won && Array.isArray(spanRes.chain) && spanRes.chain[0] === trip.from && spanRes.chain[spanRes.chain.length - 1] === trip.to ? spanRes.chain : null;
   const road = own || trip.road || [trip.from, trip.to];
-  let crossed = road.slice(1).filter((n, i, a) => a.indexOf(n) === i && trip.caps[n]);
-  if (crossed.length > STAMPS_MAX) crossed = [...crossed.slice(0, STAMPS_MAX - 1), crossed[crossed.length - 1]];
+  const crossed = [...road.slice(1), ...(trip.ring || [])].filter((n, i, a) => a.indexOf(n) === i && n !== trip.from && trip.caps[n]);
+  const big = trip.big || {};
   return crossed.map((n) => {
     const rnd = seeded(`${num}:${n}`);
+    const cap = trip.caps[n];
     const ring = [...(adj[n] || [])].filter((x) => trip.caps[x]);
     const ring2 = [...new Set(ring.flatMap((x) => [...(adj[x] || [])]))].filter((x) => x !== n && !ring.includes(x) && trip.caps[x]);
     const pool = [...shuffled(ring, rnd), ...shuffled(ring2, rnd), ...shuffled(Object.keys(trip.caps).filter((x) => x !== n), rnd)];
     const wrong = [];
-    for (const x of pool) { const c = trip.caps[x]; if (c && c !== trip.caps[n] && !wrong.includes(c)) wrong.push(c); if (wrong.length === 3) break; }
-    return { n, cap: trip.caps[n], opts: shuffled([trip.caps[n], ...wrong], rnd) };
+    if (big[n] && big[n] !== cap) wrong.push(big[n]);
+    for (const x of pool) { const c = trip.caps[x]; if (c && c !== cap && !wrong.includes(c)) wrong.push(c); if (wrong.length === 3) break; }
+    return { n, cap, opts: shuffled([cap, ...wrong], rnd), ring: !road.includes(n) };
   });
 }
 const theName = (n) => String(n || '').replace(/^The /, 'the ');
@@ -530,7 +533,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     <><b>Ping.</b> Find the secret city by how far each guess lands from it. It is where the trip departs from. Up to {LEGS[0].max} points.</>,
     <><b>Span.</b> Cross the map from that city&rsquo;s country to the day&rsquo;s destination by the shortest chain of land borders. Up to {LEGS[1].max} points.</>,
     <><b>Flank.</b> You have arrived. Name every country that borders the destination. The share you name is worth up to {LEGS[2].max} points.</>,
-    <><b>Stamps.</b> The capital of each country your road crossed, four choices each, for its stamp. Miss the destination in Span and the stamps follow the shortest road instead. Up to {LEGS[3].max} points.</>,
+    <><b>Stamps.</b> The capital of every country on your road and every neighbor of your destination, four choices each, one of them a big city of that country, for its stamp. Miss the destination in Span and the stamps follow the shortest road instead. Up to {LEGS[3].max} points.</>,
     <>These are Passport&rsquo;s own boards, not the day&rsquo;s Ping, Span and Flank, so playing those first gives nothing away. The board ranks your total, then time.</>,
   ] : [
     ...ORD.map((i) => (i === 3 ? sizesStep : gameSteps[i])),
@@ -631,7 +634,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     const picked = (g.sz.picks || [])[i];
     return (
       <LegShell embed game="passport">
-        <div className="lg-kick">Stamps · {doneR ? `${STAMPS.length} countries` : `Country ${i + 1} of ${STAMPS.length}`}{st.n === trip.to ? ' · Your destination' : ''}</div>
+        <div className="lg-kick">Stamps · {doneR ? `${STAMPS.length} countries` : `Country ${i + 1} of ${STAMPS.length}`}{st.n === trip.to ? ' · Your destination' : st.ring ? ` · Borders ${theName(trip.to)}` : ' · On your road'}</div>
         <h2 className="lg-q" key={`s${i}`}>What is the capital of {theName(st.n)}?</h2>
         <div className="pr-stgrid">
           {st.opts.map((o) => {
@@ -705,7 +708,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   function tripNext(k2) {
     if (k2 === 'span') return `From ${theName(trip.from)} to ${theName(trip.to)} by land borders: the shortest road is ${trip.perfect}.`;
     if (k2 === 'flank') return `You have landed in ${theName(trip.to)}. Name every country that borders it.`;
-    if (k2 === 'passport') return 'Name the capital of each country your road crossed, for its stamp.';
+    if (k2 === 'passport') return 'Name the capital of every country on your road and around your destination, for its stamp.';
     return '';
   }
   // THE TRIP CARD on the ending: the road, one stamp per country crossed.
@@ -719,7 +722,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
         <div className="pr-trip-k">Today&rsquo;s trip</div>
         <div className="pr-trip-h">{trip.city} to {theName(trip.to)}</div>
         <ol className="pr-road">
-          {road.map((n, k) => (
+          {[...road, ...STAMPS.filter((x) => x.ring).map((x) => x.n)].map((n, k) => (
             <li key={n} className={`pr-stop${byN[n] === true ? ' ok' : byN[n] === false ? ' ko' : ''}${k === 0 ? ' start' : ''}`} style={{ '--ink': INKS_DEEP[k % 4], '--rot': `${[-5, 4, -2, 6][k % 4]}deg`, animationDelay: `${0.4 + k * 0.12}s` }}>
               <b>{n}</b><i>{k === 0 ? trip.city : byN[n] === true ? 'Stamped' : byN[n] === false ? 'Missed' : ''}</i>
             </li>
@@ -866,7 +869,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       <section className="pr-about" style={{ display: started ? 'none' : 'block' }}>
         <h2>About Passport</h2>
         <p>
-          {TRIP ? <>Passport is a free daily geography trip from Mind Loft, four legs that each set up the next: Ping finds the secret city you depart from, Span crosses the map from its country to the day&rsquo;s destination by land borders, Flank names every country that borders where you landed, and Stamps asks the capital of each country your road crossed. Each leg is worth 12 or 13 points, one points total.</> : ORD[0] === 2 ? <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Ping, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Flank and Span, each game worth {LEGS[0].max}. One points total.</> : SIZES_FIRST ? <>Passport is a free daily geography run from Mind Loft: nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Ping, Flank and Span played back to back, each worth {LEGS[0].max}. One points total.</> : <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth {LEGS[0].max}, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on countries from those three games set against others close to them in size. One points total.</>}
+          {TRIP ? <>Passport is a free daily geography trip from Mind Loft, four legs that each set up the next: Ping finds the secret city you depart from, Span crosses the map from its country to the day&rsquo;s destination by land borders, Flank names every country that borders where you landed, and Stamps asks the capital of every country on your road and around your destination. Each leg is worth 12 or 13 points, one points total.</> : ORD[0] === 2 ? <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Ping, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Flank and Span, each game worth {LEGS[0].max}. One points total.</> : SIZES_FIRST ? <>Passport is a free daily geography run from Mind Loft: nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Ping, Flank and Span played back to back, each worth {LEGS[0].max}. One points total.</> : <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth {LEGS[0].max}, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on countries from those three games set against others close to them in size. One points total.</>}
         </p>
         <p>
           Your total decides the passport you travel home on, from the Sierra Leonean passport up to the Japanese, ranked by the visa-free destinations each opens in the {HENLEY_EDITION}. Everyone plays the same boards, and the leaderboard ranks your total, then time. A new run boards every day at midnight Eastern.

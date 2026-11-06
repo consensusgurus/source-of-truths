@@ -52,7 +52,7 @@ export async function generateMetadata({ searchParams }) {
   };
 }
 
-const TRIP_DESC = "A free daily geography trip in four legs, each set up by the one before it. Ping: find the secret city you depart from by the distance each guess lands from it. Span: cross the map from that city's country to the day's destination by the shortest chain of land borders. Flank: name every country that borders the destination. Stamps: name the capital of each country your road crossed. Each leg is worth 12 or 13 points; the score out of 50 decides which real passport, from the Henley Passport Index, the player travels home on. Everyone plays the same trip each day.";
+const TRIP_DESC = "A free daily geography trip in four legs, each set up by the one before it. Ping: find the secret city you depart from by the distance each guess lands from it. Span: cross the map from that city's country to the day's destination by the shortest chain of land borders. Flank: name every country that borders the destination. Stamps: name the capital of every country on your road and around your destination. Each leg is worth 12 or 13 points; the score out of 50 decides which real passport, from the Henley Passport Index, the player travels home on. Everyone plays the same trip each day.";
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Passport',
   alternateName: 'Passport: Daily Geography Game', url: `${SITE_URL}/passport`,

@@ -10,7 +10,8 @@
 //   2 Span    cross the map by land borders, from that city's country to the
 //             day's destination
 //   3 Flank   name every land neighbor of the destination you reached
-//   4 Stamps  the capital of each country your road crossed, for its stamp
+//   4 Stamps  the capital of every country on the road and around the
+//             destination, for its stamp
 // The legs are RUN-ONLY boards: they file no row of their own and never touch
 // the standalone Ping, Span or Flank pages, so playing those first spoils
 // nothing here and the reverse.

@@ -1134,11 +1134,14 @@ up by the one before it**:
 1. **Ping** (12): find the secret city. It is where the trip departs from.
 2. **Span** (13): from that city's country to the day's destination, by land borders.
 3. **Flank** (12): name every neighbor of the destination you arrived in.
-4. **Stamps** (13): the capital of each country the player's own Span road crossed after the start
-   (the perfect road when they did not reach the destination), four choices each; at most 8, the
-   destination always last. Distractors are capitals of that country's neighbors, then the next
-   ring, seeded by `${num}:${country}` so every device deals the same options; the dealt list is
-   kept in the save (`g.st`). Sizes is retired on trip days.
+4. **Stamps** (13): every country the trip touched after the start (owner, 2026-11-06: "every
+   country flanking and spanning"): the player's own Span road (the perfect road when they did not
+   reach the destination), then the destination's neighbors not on the road. No cap. Four choices
+   each: the capital, a large NON-capital city of the same country (`lib/passport-cities.js`
+   BIG_CITY, hand-picked; never a city with a claim to being the capital, e.g. Cotonou, Abidjan,
+   Dar es Salaam, Yangon, La Paz, The Hague, Cape Town, Tel Aviv), and neighbors' capitals to fill,
+   seeded by `${num}:${country}`; the dealt list is kept in the save (`g.st`). Two-tap Give up
+   counts the rest as missed. Sizes is retired on trip days.
 
 Rules that hold the trip together:
 
