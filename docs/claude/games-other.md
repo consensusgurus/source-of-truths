@@ -1923,3 +1923,18 @@ mouse-driven desktop: the whole board fills the stage column (tablet column wide
 height-capped by `100dvh - 330px`), its type scales with the board in `cqi`, point values show, outlines are 1px,
 and the small map is hidden while the whole board is on screen. A player's Whole board / Zoom tab choice is kept in
 `localStorage` `sot_babel_view` and reopens next time; Bag is never remembered. Desktop (`.dk`) is unchanged.
+
+## Dealer, Agent and Curator are run-only (owner, 2026-11-06)
+
+Retired as standalone dailies, effective immediately: they are in `RUN_ONLY` in
+`lib/daily-games.js` (beside Passport), so no daily list, grid, strip, rail, promo,
+category page, count or end-card pick offers them, while `circuitKeysFor` still deals
+them into the current five-tag Price Check run. Their pages stay up for archived days.
+The five hand-kept lineups (DailyGamesGrid, DailyStrip, DailySlateRail, DailyGamesPromo,
+DailyEndCard's DAILY_GAMES) now filter `isRunOnly` as well as `isRetiredDaily`; any new
+hand-kept lineup must do both. Finish sets Big tickets and Prices on the move became one
+set, Price tags (Pricer, Realtor).
+
+Planned next (not built): Price Check becomes everyday item (typed guess), a middle of
+which-costs-more picks (the pricier item stays on screen, crowd split, streak meter, gap
+shown on reveal), then the house (typed guess). No day theme.

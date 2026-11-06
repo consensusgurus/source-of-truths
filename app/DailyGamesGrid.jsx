@@ -49,7 +49,7 @@ import ReportIssue from './ReportIssue';
 import { fetchDailyMe, dailyMeQuery } from './dailyMeClient';
 import { T } from '@/lib/theme';
 import { CONTEST, COPY, contestIsLive } from '@/lib/contest';
-import { isRetiredDaily, dailyAttemptRule } from '@/lib/daily-games';
+import { isRetiredDaily, isRunOnly, dailyAttemptRule } from '@/lib/daily-games';
 
 const GAMES = [
   { key: 'crux', href: '/crux', name: 'Crux', tag: 'A clueless crossword', img: '/games/btn-crux.png' },
@@ -209,7 +209,7 @@ const GAMES = [
 // (RETIRED_DAILY in lib/daily-games); it stays playable, just not on today's
 // board. The CATEGORIES key lists below can keep naming it: they resolve through
 // GAMES_BY_KEY and drop whatever no longer resolves.
-].filter((g) => !isRetiredDaily(g.key));
+].filter((g) => !isRetiredDaily(g.key) && !isRunOnly(g.key));
 const GAMES_BY_KEY = Object.fromEntries(GAMES.map((g) => [g.key, g]));
 
 // Games grouped by category, matching the five families in the end-of-game

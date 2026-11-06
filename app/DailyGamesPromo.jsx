@@ -8,7 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { T } from '@/lib/theme';
-import { isRetiredDaily } from '@/lib/daily-games';
+import { isRetiredDaily, isRunOnly } from '@/lib/daily-games';
 import { sharedGet } from './sharedGet';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -169,7 +169,7 @@ export const DAILY_GAMES = [
   { key: 'barter', href: '/barter', name: 'Barter', tag: 'trade the letters home', store: 'sot_barter_day', accent: '#be123c', bg: '#fdeef2', border: 'rgba(190,18,60,0.4)' },
 // Retired games (RETIRED_DAILY in lib/daily-games) are never promoted: their
 // bank has no next drop to sell.
-].filter((g) => !isRetiredDaily(g.key));
+].filter((g) => !isRetiredDaily(g.key) && !isRunOnly(g.key));
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }

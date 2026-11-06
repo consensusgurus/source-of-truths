@@ -95,7 +95,7 @@ import ReportIssue from './ReportIssue';
 import MindLoftMark from './MindLoftMark';
 import { notifyTrophies } from './TrophyPop';
 import { fetchDailyMe, dailyMeQuery, invalidateDailyMe } from './dailyMeClient';
-import { isRetiredDaily, DAILY_GAME_MAP, dailyAttemptRule, attemptsMode, isArcade, scoreText } from '@/lib/daily-games';
+import { isRetiredDaily, isRunOnly, DAILY_GAME_MAP, dailyAttemptRule, attemptsMode, isArcade, scoreText } from '@/lib/daily-games';
 import { missCell } from '@/lib/daily-row-stats';
 import { circuitKeysFor, circuitHref, circuitName, readRunParam, runSummaryHref, isMarquee } from '@/lib/circuits';
 import { T } from '@/lib/theme';
@@ -488,7 +488,7 @@ const ALL_DAILY_GAMES = [
 // lib/daily-games), and this card's "N done" totals follow from this list.
 // Lookups for the game being PLAYED go through ALL_DAILY_GAMES instead, so a
 // retired game's own end card still knows its name and family.
-export const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => !isRetiredDaily(g.key));
+export const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => !isRetiredDaily(g.key) && !isRunOnly(g.key));
 
 const AUTO_SECONDS = 30;
 const REVEAL_MS = 2000; // win only: MIN time the finished board + confetti shows before the popup

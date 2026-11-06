@@ -32,7 +32,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { DAILY_GAME_MAP, isRetiredDaily } from '@/lib/daily-games';
+import { DAILY_GAME_MAP, isRetiredDaily, isRunOnly } from '@/lib/daily-games';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
 
 // Manrope, matching the header's own micro-labels (PLAYER / RANK / IQ POINTS).
@@ -49,7 +49,7 @@ const SLATE_KEYS = [
 // A retired game leaves the rail on its own the morning after its bank's last
 // drop (RETIRED_DAILY in lib/daily-games). Its key stays listed above so the
 // home board's order is unbroken if the bank is ever extended.
-].filter((k) => !isRetiredDaily(k));
+].filter((k) => !isRetiredDaily(k) && !isRunOnly(k));
 
 export default function DailySlateRail({ current = null }) {
   const railRef = useRef(null);

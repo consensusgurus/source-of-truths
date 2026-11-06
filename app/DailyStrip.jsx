@@ -49,7 +49,7 @@ import { T } from '@/lib/theme';
 import { fetchDayStatus } from './useDayStats';
 import { catBlue, deptBlue } from '@/lib/home-blues';
 import { isSundayET, hasSundayEdition } from '@/lib/sunday-editions';
-import { isRetiredDaily, dailyScoreText, KEEPS_ANSWER } from '@/lib/daily-games';
+import { isRetiredDaily, isRunOnly, dailyScoreText, KEEPS_ANSWER } from '@/lib/daily-games';
 import { CIRCUIT_NAME_LISTS } from '@/lib/circuits';
 
 const GAMES = [
@@ -209,7 +209,7 @@ const GAMES = [
 // Retired games leave the board by themselves the morning after their bank's
 // last drop (RETIRED_DAILY in lib/daily-games). Every count on this strip is
 // derived from GAMES, so the "all N done" copy follows along.
-].filter((g) => !isRetiredDaily(g.key));
+].filter((g) => !isRetiredDaily(g.key) && !isRunOnly(g.key));
 
 const NAME_BY_KEY = GAMES.reduce((m, g) => { m[g.key] = g.name; return m; }, {});
 // Recent Champions list length (yesterday plus the prior days), sized to fill
