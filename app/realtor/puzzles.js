@@ -888,5 +888,166 @@ export const PUZZLES = [
       "https://ssl.cdn-redfin.com/photo/45/bigphoto/371/P1-29371_12_0.jpg",
       "https://ssl.cdn-redfin.com/photo/45/bigphoto/371/P1-29371_6_0.jpg"
     ]
+  },
+  {
+    "num": 39,
+    "quizId": "realtor-11-8-26",
+    "live": "2026-11-08",
+    "dateLabel": "November 8, 2026",
+    "gathered": "2026-11-06",
+    "city": "Nashville",
+    "state": "TN",
+    "zip": "37204",
+    "address": "4409 Lealand Ln",
+    "price": 119900000,
+    "beds": 4,
+    "baths": 3,
+    "sqft": 3971,
+    "year": 1930,
+    "broker": "Compass RE",
+    "href": "https://www.redfin.com/TN/Nashville/4409-Lealand-Ln-37204/home/60683684",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/145/bigphoto/537/3631537_8.jpg",
+      "https://ssl.cdn-redfin.com/photo/145/bigphoto/537/3631537_10_7.jpg",
+      "https://ssl.cdn-redfin.com/photo/145/bigphoto/537/3631537_5_7.jpg"
+    ]
+  },
+  {
+    "num": 40,
+    "quizId": "realtor-11-9-26",
+    "live": "2026-11-09",
+    "dateLabel": "November 9, 2026",
+    "gathered": "2026-11-06",
+    "city": "Seattle",
+    "state": "WA",
+    "zip": "98133",
+    "address": "11704 Palatine Ave N",
+    "price": 137700000,
+    "beds": 5,
+    "baths": 3.5,
+    "sqft": 3960,
+    "year": 1950,
+    "broker": "Coldwell Banker Danforth",
+    "href": "https://www.redfin.com/WA/Seattle/11704-Palatine-Ave-N-98133/home/96878",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/1/bigphoto/287/2595287_1.jpg",
+      "https://ssl.cdn-redfin.com/photo/1/bigphoto/287/2595287_10_1.jpg",
+      "https://ssl.cdn-redfin.com/photo/1/bigphoto/287/2595287_29_0.jpg"
+    ]
+  },
+  {
+    "num": 41,
+    "quizId": "realtor-11-10-26",
+    "live": "2026-11-10",
+    "dateLabel": "November 10, 2026",
+    "gathered": "2026-11-06",
+    "city": "Boston",
+    "state": "MA",
+    "zip": "02132",
+    "address": "21 Sidley Rd",
+    "price": 97500000,
+    "beds": 4,
+    "baths": 2.5,
+    "sqft": 1552,
+    "year": 1929,
+    "broker": "Cameron Prestige, LLC",
+    "href": "https://www.redfin.com/MA/West-Roxbury/21-Sidley-Rd-02132/home/9203289",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/52/bigphoto/604/73598604_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/52/bigphoto/604/73598604_4_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/52/bigphoto/604/73598604_1_0.jpg"
+    ]
+  },
+  {
+    "num": 42,
+    "quizId": "realtor-11-11-26",
+    "live": "2026-11-11",
+    "dateLabel": "November 11, 2026",
+    "gathered": "2026-11-06",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94117",
+    "address": "919 Fell St",
+    "price": 479500000,
+    "beds": 4,
+    "baths": 3.5,
+    "sqft": 2520,
+    "year": 1900,
+    "broker": "Vanguard Properties",
+    "href": "https://www.redfin.com/CA/San-Francisco/919-Fell-St-94117/home/577584",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/9/bigphoto/843/426168843_7.jpg",
+      "https://ssl.cdn-redfin.com/photo/9/bigphoto/843/426168843_8_5.jpg",
+      "https://ssl.cdn-redfin.com/photo/9/bigphoto/843/426168843_2_7.jpg"
+    ]
+  },
+  {
+    "num": 43,
+    "quizId": "realtor-11-12-26",
+    "live": "2026-11-12",
+    "dateLabel": "November 12, 2026",
+    "gathered": "2026-11-06",
+    "city": "Denver",
+    "state": "CO",
+    "zip": "80249",
+    "address": "20723 E 43rd Ave",
+    "price": 45000000,
+    "beds": 3,
+    "baths": 2,
+    "sqft": 1408,
+    "year": 1984,
+    "broker": "Century 21 Signature Realty, Inc",
+    "href": "https://www.redfin.com/CO/Denver/20723-E-43rd-Ave-80249/home/34040684",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/94/bigphoto/283/6872283_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/94/bigphoto/283/6872283_3_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/94/bigphoto/283/6872283_9_0.jpg"
+    ]
+  },
+  {
+    "num": 44,
+    "quizId": "realtor-11-13-26",
+    "live": "2026-11-13",
+    "dateLabel": "November 13, 2026",
+    "gathered": "2026-11-06",
+    "city": "Washington",
+    "state": "DC",
+    "zip": "20015",
+    "address": "3239 Beech St NW",
+    "price": 129500000,
+    "beds": 4,
+    "baths": 3,
+    "sqft": 2817,
+    "year": 1942,
+    "broker": "Washington Fine Properties, LLC",
+    "href": "https://www.redfin.com/DC/Washington/3239-Beech-St-NW-20015/home/9996354",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/235/bigphoto/528/DCDC2290528_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/235/bigphoto/528/DCDC2290528_10_0.jpg",
+      "https://ssl.cdn-redfin.com/photo/235/bigphoto/528/DCDC2290528_7_0.jpg"
+    ]
+  },
+  {
+    "num": 45,
+    "quizId": "realtor-11-14-26",
+    "live": "2026-11-14",
+    "dateLabel": "November 14, 2026",
+    "gathered": "2026-11-06",
+    "city": "New Orleans",
+    "state": "LA",
+    "zip": "70115",
+    "address": "2808 Octavia St",
+    "price": 69900000,
+    "beds": 4,
+    "baths": 4,
+    "sqft": 3550,
+    "year": 1940,
+    "broker": "NOLA Living Realty",
+    "href": "https://www.redfin.com/LA/New-Orleans/2808-Octavia-St-70115/home/85526019",
+    "imgs": [
+      "https://ssl.cdn-redfin.com/photo/643/bigphoto/MWD/200MWD_1.jpg",
+      "https://ssl.cdn-redfin.com/photo/643/bigphoto/MWD/200MWD_13_1.jpg",
+      "https://ssl.cdn-redfin.com/photo/643/bigphoto/MWD/200MWD_20_1.jpg"
+    ]
   }
 ];

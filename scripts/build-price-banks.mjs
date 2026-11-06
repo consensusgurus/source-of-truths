@@ -294,7 +294,7 @@ const CURATOR = [
   AU('Young Lion Resting, a chalk drawing', 'Rembrandt van Rijn', 'about 1638–42', "Sotheby's", 'New York', '2026-02-04', 1786000000, 'https://www.theleidencollection.com/news-media/rembrandt-drawing-roars-to-17-9-million-at-auction/', 'Young Lion Resting.jpg', pd),
   RT('Leica M11 Camera Body, Glossy Black', 'Leica', 'leicacamerausa.com', 10400, 'https://leicacamerausa.com/leica-m11-in-glossy-black-finish.html', 'Leica M11 with Summicron-M 50mm F2 lens.jpg', 'Peachyeung316', 'CC BY-SA 4.0'),
   RT('Jaeger-LeCoultre Reverso Tribute Monoface Small Seconds, Steel', 'Jaeger-LeCoultre', 'jaeger-lecoultre.com', 11700, 'https://www.jaeger-lecoultre.com/us-en/watches/reverso/reverso-tribute/reverso-tribute-monoface-small-seconds-stainless-steel-q397848j', 'JLC Reverso Tribute Monoface.jpg', 'Provo rossi', 'CC BY-SA 4.0'),
-  AU('Laboureur dans un champ (Ploughman in a Field)', 'Vincent van Gogh', '1889', "Christie's", 'New York', '2017-11-13', 8130000000, 'https://vietnamnews.vn/life-style/417500/81-3-million-van-gogh-kicks-off-ny-art-auction-season.html', "Laboureur dans un champ - van Gogh (1889-1890, Christie's).jpg", pd),
+  AU('Laboureur dans un champ (Plowman in a Field)', 'Vincent van Gogh', '1889', "Christie's", 'New York', '2017-11-13', 8131250000, 'https://www.christies.com.cn/en/stories/labourer-dans-un-champ-by-vincent-van-gogh-b803fcc5d6684694a1ab2bb25c6547ba', "Laboureur dans un champ - van Gogh (1889-1890, Christie's).jpg", pd),
   AU('Magna Carta, the 1297 issue', 'King Edward I', '1297', "Sotheby's", 'New York', '2007-12-18', 2132100000, 'https://www.aljazeera.com/news/2007/12/19/magna-carta-copy-sold-for-21m', 'Magna Carta (1297 version with seal, owned by David M Rubenstein).jpg', pd),
   AU("Shakespeare's First Folio", 'William Shakespeare', '1623', "Christie's", 'New York', '2020-10-14', 997800000, 'https://www.smithsonianmag.com/smart-news/shakespeares-first-folio-sells-ten-million-dollars-180976074/', 'William Shakespeare - First Folio 1623.jpg', pd),
   AU('Nu couché (Reclining Nude)', 'Amedeo Modigliani', '1917–18', "Christie's", 'New York', '2015-11-09', 17040500000, 'https://en.wikipedia.org/wiki/Nu_couch%C3%A9', 'Modigliani - Nu couché.jpg', pd),
@@ -361,6 +361,9 @@ const CITY_AGENT = READ('2026-10-25', [
   F('United', 'ORD', 'Chicago', 'LAX', 'Los Angeles', '2027-02-11', '7:00 AM', 'First', 'first class', 725, 'United Airlines Boeing 787-9 Dreamliner (33047122154).jpg', 'Bill Abbott', 'CC BY-SA 2.0'),
 ]);
 const CITY_AT = 31; // 2026-11-01 is the 32nd day from START
+// Re-read 2026-11-05 before it went live: United ORD-LAX first was $725, now $707.
+// (Fairmont Vancouver, 11/06, was live before this shipped and stays as read.)
+CITY_AGENT[6] = { ...CITY_AGENT[6], price: 70700, gathered: '2026-11-05' };
 REALTOR.splice(CITY_AT, CITY_REALTOR.length, ...CITY_REALTOR);
 AGENT.splice(CITY_AT, CITY_AGENT.length, ...CITY_AGENT);
 // Dealer and Curator: banked rows moved onto the city they fit (unpublished
@@ -377,11 +380,45 @@ swap(CURATOR, CITY_AT + 6, at(CURATOR, "Kurt Cobain's MTV Unplugged guitar, a 19
 // that day (The Night Watch), so Magna Carta takes Nov 4 and the drawing Nov 5.
 swap(CURATOR, CITY_AT + 3, CITY_AT + 4);
 
+// ── THE SECOND CITY WEEK, read 2026-11-06 ────────────────────────────────
+// Nov 8 to 14: Nashville, Seattle, Boston, San Francisco, Denver, Washington,
+// New Orleans. (Review 2026-11-06: Boston moved off Nov 8, where Dossier's
+// answer is Massachusetts; Denver stays off Nov 14, where it is Colorado.) Same pattern as the first week (hotel, flight, alternating;
+// a home for sale in the same city). San Francisco is a flight day because
+// every SF hotel that week asked for a 3-night minimum. Hotels are one night,
+// Mon Jan 11 2027, two guests, nightly price with fees on Google Hotels.
+const CITY2_REALTOR = READ('2026-11-06', [
+  HG({ city: 'Nashville', state: 'TN', zip: '37204', address: '4409 Lealand Ln', dollars: 1199000, beds: 4, baths: 3, sqft: 3971, year: 1930, broker: 'Compass RE', href: 'https://www.redfin.com/TN/Nashville/4409-Lealand-Ln-37204/home/60683684', imgs: ['145/bigphoto/537/3631537_8.jpg', '145/bigphoto/537/3631537_10_7.jpg', '145/bigphoto/537/3631537_5_7.jpg'].map(RF) }),
+  HG({ city: 'Seattle', state: 'WA', zip: '98133', address: '11704 Palatine Ave N', dollars: 1377000, beds: 5, baths: 3.5, sqft: 3960, year: 1950, broker: 'Coldwell Banker Danforth', href: 'https://www.redfin.com/WA/Seattle/11704-Palatine-Ave-N-98133/home/96878', imgs: ['1/bigphoto/287/2595287_1.jpg', '1/bigphoto/287/2595287_10_1.jpg', '1/bigphoto/287/2595287_29_0.jpg'].map(RF) }),
+  HG({ city: 'Boston', state: 'MA', zip: '02132', address: '21 Sidley Rd', dollars: 975000, beds: 4, baths: 2.5, sqft: 1552, year: 1929, broker: 'Cameron Prestige, LLC', href: 'https://www.redfin.com/MA/West-Roxbury/21-Sidley-Rd-02132/home/9203289', imgs: ['52/bigphoto/604/73598604_0.jpg', '52/bigphoto/604/73598604_4_0.jpg', '52/bigphoto/604/73598604_1_0.jpg'].map(RF) }),
+  HG({ city: 'San Francisco', state: 'CA', zip: '94117', address: '919 Fell St', dollars: 4795000, beds: 4, baths: 3.5, sqft: 2520, year: 1900, broker: 'Vanguard Properties', href: 'https://www.redfin.com/CA/San-Francisco/919-Fell-St-94117/home/577584', imgs: ['9/bigphoto/843/426168843_7.jpg', '9/bigphoto/843/426168843_8_5.jpg', '9/bigphoto/843/426168843_2_7.jpg'].map(RF) }),
+  HG({ city: 'Denver', state: 'CO', zip: '80249', address: '20723 E 43rd Ave', dollars: 450000, beds: 3, baths: 2, sqft: 1408, year: 1984, broker: 'Century 21 Signature Realty, Inc', href: 'https://www.redfin.com/CO/Denver/20723-E-43rd-Ave-80249/home/34040684', imgs: ['94/bigphoto/283/6872283_0.jpg', '94/bigphoto/283/6872283_3_0.jpg', '94/bigphoto/283/6872283_9_0.jpg'].map(RF) }),
+  HG({ city: 'Washington', state: 'DC', zip: '20015', address: '3239 Beech St NW', dollars: 1295000, beds: 4, baths: 3, sqft: 2817, year: 1942, broker: 'Washington Fine Properties, LLC', href: 'https://www.redfin.com/DC/Washington/3239-Beech-St-NW-20015/home/9996354', imgs: ['235/bigphoto/528/DCDC2290528_0.jpg', '235/bigphoto/528/DCDC2290528_10_0.jpg', '235/bigphoto/528/DCDC2290528_7_0.jpg'].map(RF) }),
+  HG({ city: 'New Orleans', state: 'LA', zip: '70115', address: '2808 Octavia St', dollars: 699000, beds: 4, baths: 4, sqft: 3550, year: 1940, broker: 'NOLA Living Realty', href: 'https://www.redfin.com/LA/New-Orleans/2808-Octavia-St-70115/home/85526019', imgs: ['643/bigphoto/MWD/200MWD_1.jpg', '643/bigphoto/MWD/200MWD_13_1.jpg', '643/bigphoto/MWD/200MWD_20_1.jpg'].map(RF) }),
+]);
+const CITY2_AGENT = READ('2026-11-06', [
+  HT('The Hermitage Hotel', 'Nashville, TN', '2027-01-11', 1, 'Deluxe King', 396, 'The Hermitage Hotel Nashville', 'HermitageHotelNashville.jpg', 'Andrew Jameson', 'CC BY-SA 3.0'),
+  F('Delta', 'JFK', 'New York', 'SEA', 'Seattle', '2027-02-08', '4:15 PM', 'First', 'first class', 919, 'Delta Boeing 757-200 N699DL BWI MD1.jpg', 'Acroterion', 'CC BY-SA 4.0'),
+  HT('Omni Parker House', 'Boston, MA', '2027-01-11', 1, 'Traditional Room, 1 Queen Bed', 213, 'Omni Parker House Boston', 'Omni Parker House, School St, Boston (493546) (11061641034).jpg', 'Robert Linsdell', 'CC BY 2.0'),
+  F('United', 'EWR', 'Newark', 'SFO', 'San Francisco', '2027-02-10', '11:55 AM', 'Business', 'business class', 2476, 'United Airlines Boeing 787-9 Dreamliner (33047122154).jpg', 'Bill Abbott', 'CC BY-SA 2.0'),
+  HT('The Brown Palace Hotel and Spa', 'Denver, CO', '2027-01-11', 1, 'Classic Room, 1 Queen Bed, City View', 221, 'The Brown Palace Hotel Denver', 'Brown-Palace-Hotel Denver.jpg', 'Patrick Pelster', 'CC BY-SA 3.0 de'),
+  F('Southwest', 'ATL', 'Atlanta', 'DCA', 'Washington National', '2027-02-12', '10:35 AM', 'Economy', 'economy', 149, 'Southwest Boeing 737-8 MAX N8847Q BWI MD2.jpg', 'Acroterion', 'CC BY-SA 4.0'),
+  HT('The Roosevelt New Orleans, a Waldorf Astoria Hotel', 'New Orleans, LA', '2027-01-11', 1, 'Deluxe Room, 1 King Bed', 319, 'The Roosevelt New Orleans Waldorf Astoria', 'Roosevelt Hotel New Orleans 1 July 2009 Lobby - 02.jpg', 'Infrogmation of New Orleans', 'CC BY 2.0'),
+]);
+const CITY2_AT = CITY_AT + 7; // 2026-11-08
+REALTOR.splice(CITY2_AT, CITY2_REALTOR.length, ...CITY2_REALTOR);
+AGENT.splice(CITY2_AT, CITY2_AGENT.length, ...CITY2_AGENT);
+// Curator: the Bay Psalm Book (printed in Cambridge, Mass.) takes Boston day
+// (Nov 10); the Leica moves to its slot. Two list prices in the week re-read 2026-11-06,
+// unchanged ($6,100 and $945).
+swap(CURATOR, CITY2_AT + 2, at(CURATOR, 'The Bay Psalm Book, the first book printed in British North America'));
+for (const n of ['Lalique Bacchantes Vase, Clear Crystal', 'Christian Louboutin Kate 100 mm Pump, Black Patent Leather']) CURATOR[at(CURATOR, n)].gathered = '2026-11-06';
+
 const START = '2026-10-01'; // opened a day early, same day as Pricer (owner, 2026-10-01)
 // Boards are PUBLISHED only through END. Rows past it stay banked here for the next
 // top-up, so a perishable price (a listing, a fare) is re-read before it ships rather
 // than going live weeks after it was read (owner, 2026-10-07: stock to Oct 31).
-const END = '2026-11-07'; // a week more, the first city week (owner, 2026-10-25)
+const END = '2026-11-14'; // the second city week, read 2026-11-06 (was 2026-11-07, the first city week)
 const banks = { dealer: DEALER, realtor: REALTOR, agent: AGENT, curator: CURATOR };
 const HEAD = {
   dealer: 'Dealer: one vehicle a day at its maker\'s starting MSRP, read on the maker\'s own site on `gathered`.',

@@ -138,29 +138,29 @@
     "note": "whole bank, review rounds rv-a..rv-p"
   },
   "pricer": {
-    "through": "2026-11-07",
-    "on": "2026-10-25",
-    "note": "whole bank; item names and copy read, prices not re-checked live since the 2026-10-05 recheck"
+    "through": "2026-11-14",
+    "on": "2026-11-06",
+    "note": "Nov 8-14 second city week read live on Amazon 2026-11-06; separate reviewer read names, copy and same-day spoilers"
   },
   "dealer": {
-    "through": "2026-11-07",
-    "on": "2026-10-25",
-    "note": "whole bank; item names and copy read, prices not re-checked live since the 2026-10-05 recheck"
+    "through": "2026-11-14",
+    "on": "2026-11-06",
+    "note": "Nov 8-14 rows read separately for copy and spoilers; MSRPs as read 2026-10-03, not re-read live"
   },
   "realtor": {
-    "through": "2026-11-07",
-    "on": "2026-10-25",
-    "note": "whole bank; item names and copy read, prices not re-checked live since the 2026-10-05 recheck"
+    "through": "2026-11-14",
+    "on": "2026-11-06",
+    "note": "Nov 8-14 second city week read live on Redfin 2026-11-06; separate reviewer read every row; Boston moved off Nov 8 (Dossier answer Massachusetts)"
   },
   "agent": {
-    "through": "2026-11-07",
-    "on": "2026-10-25",
-    "note": "whole bank; item names and copy read, prices not re-checked live since the 2026-10-05 recheck"
+    "through": "2026-11-14",
+    "on": "2026-11-06",
+    "note": "Nov 8-14 read live on Google Hotels/Flights 2026-11-06; separate reviewer read every row; 11/07 United fare re-read 2026-11-05"
   },
   "curator": {
-    "through": "2026-11-07",
-    "on": "2026-10-25",
-    "note": "whole bank; item names and copy read, prices not re-checked live since the 2026-10-05 recheck"
+    "through": "2026-11-14",
+    "on": "2026-11-06",
+    "note": "Nov 8-14 read by a separate reviewer; Laboureur price corrected to $81,312,500 and Plowman spelling; two list prices re-read 2026-11-06"
   },
   "glyph": {
     "through": "2027-01-13",

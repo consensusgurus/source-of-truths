@@ -29,6 +29,16 @@ const A = {
   BAGEL: ['Einstein Bros. Bagels Everything Bagel Seasoning, 5 oz', 'Pantry', 437, 'B09YMM6PTS', '61AIvsZo8oL', '2026-10-25'],
   MAPLE: ['Escuminac Extra Rare Amber Maple Syrup, Canada, 16.9 fl oz', 'Pantry', 2595, 'B01N5Y20XD', '51U09-7WWWL', '2026-10-25'],
   RAYBAN: ['Ray-Ban Original Wayfarer Polarized Sunglasses', 'Fashion', 24400, 'B00KVBP17K', '51DU1Hs8jgL', '2026-10-25'],
+  // Restock read 2026-11-06 for Nov 8 to 14, the second city week: Nashville,
+  // Seattle (Amazon's home), Boston, San Francisco (Anova), Colorado
+  // (Celestial Seasonings, Boulder), Washington (National Geographic), New Orleans.
+  DUNK: ["Dunkin' Original Blend K-Cup Pods, 60 Count", 'Pantry', 3918, 'B00XA1075Y', '819ojLgtOIL', '2026-11-06'],
+  ECHO: ['Amazon Echo Show 8, Graphite', 'Electronics', 19999, 'B0DC8ZMR1P', '61AOoOLP3VL', '2026-11-06'],
+  GOOGOO: ['Goo Goo Cluster Original Candy Bars, 12 Count', 'Pantry', 2799, 'B0053GFRSQ', '61NnBY0DAKL', '2026-11-06'],
+  ANOVA: ['Anova Precision Cooker 3.0 Sous Vide', 'Kitchen', 16900, 'B0BQ9F56WV', '61ufN4G1TeL', '2026-11-06'],
+  SLEEPY: ['Celestial Seasonings Sleepytime Tea, 6 Boxes of 20 Bags', 'Pantry', 1569, 'B000E65OF6', '91RlnGkZR-L', '2026-11-06'],
+  SCOPE: ['National Geographic StarApp 70mm Telescope', 'Toys', 14999, 'B09FYNP4JZ', '71TfB-OIzLL', '2026-11-06'],
+  CDM: ['Cafe Du Monde Coffee and Chicory, 15 oz', 'Pantry', 1669, 'B0000E5JIU', '81nJnlLPcpL', '2026-11-06'],
   R: ['Apple Watch Series 11, GPS, 42mm', 'Electronics', 34999, 'B0FQF9ZX7P', '61T8W7-25IL'],
   S: ['Samsung 65-Inch Crystal UHD 4K Smart TV (2026)', 'Electronics', 37799, 'B0H3L589W7', '61GSarr1eSL'],
   T: ['KitchenAid Artisan 5-Quart Tilt-Head Stand Mixer', 'Kitchen', 37995, 'B004GUVD6K', '711fcF6OfnL'],
@@ -47,9 +57,9 @@ const A = {
 // No Sunday Edition (owner, 2026-10-01): the big tickets moved to Dealer, and
 // Pricer is Amazon every day, with a wider range up to the larger-ticket items.
 const S = {};
-// One slot per day from Thursday 2026-10-01 (opened early, owner) to Saturday 2026-11-07. Weekdays
+// One slot per day from Thursday 2026-10-01 (opened early, owner) to Saturday 2026-11-14. Weekdays
 // alternate cheap and dear so no stretch of the week reads as a pattern.
-const ORDER = ['M','O','N','NINJA','E','A','T','H','W','C','PODS','L','S','F','Y','I','R','SONY','D','X','K','Z','B','P','IPAD','J','V','G','U','POST','Q','TEA','BOSE','SUN','UKE','BAGEL','MAPLE','RAYBAN'];
+const ORDER = ['M','O','N','NINJA','E','A','T','H','W','C','PODS','L','S','F','Y','I','R','SONY','D','X','K','Z','B','P','IPAD','J','V','G','U','POST','Q','TEA','BOSE','SUN','UKE','BAGEL','MAPLE','RAYBAN','GOOGOO','ECHO','DUNK','ANOVA','SLEEPY','SCOPE','CDM'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const out = [];
 let d = new Date(Date.UTC(2026, 9, 1));
