@@ -5,7 +5,7 @@
 // place (the other Origin lane), and not idioms or phrases. Only origins that
 // Merriam-Webster or Etymonline state plainly; no folk etymologies.
 const c = 'Word Origins';
-export const LANE_DAYS = [
+const LAUNCH_DAYS = [
   // day 1
   [
     { c, t: 1, q: "'Telephone' joins Greek roots meaning 'far' and what?", a: 'Sound', d: ['Wire', 'Signal', 'Line'] },
@@ -295,3 +295,321 @@ export const LANE_DAYS = [
     { c, t: 5, q: "'Siesta' comes from the Latin for which hour of the day?", a: 'The sixth', d: ['The third', 'The ninth', 'The twelfth'] },
   ],
 ];
+
+// ---------------------------------------------------------------------------
+// SEGMENT 2: days 37-74, live 2026-11-24 to 2026-12-31 (restock of 2026-11-06).
+// gen-english appends whatever LANE_DAYS holds after the bank's last day, and
+// its --check rewinds by LANE_DAYS.length, so LANE_DAYS is always the LATEST
+// segment only. The launch segment above stays in the file for reference and
+// for duplicate checks when authoring, but is no longer exported as LANE_DAYS.
+// Every origin here was checked against Merriam-Webster or Etymonline; any
+// whose source hedges ("probably", "perhaps", "uncertain") was left out, and
+// so was any fact another trivia bank on the site already asks.
+export const LANE_DAYS = [
+  // day 37 (2026-11-24)
+  [
+    { c, t: 1, q: "The 'cycle' in 'motorcycle' and 'bicycle' comes from a Greek word for what?", a: "Wheel", d: ["Pedal", "Road", "Speed"] },
+    { c, t: 2, q: "The 'fid' in 'fidelity' comes from the Latin word for what?", a: "Faith", d: ["Sound", "Dog", "Love"] },
+    { c, t: 3, q: "'Cab' is short for which word, the name of a light horse-drawn carriage?", a: "Cabriolet", d: ["Caboose", "Cabinet", "Caravan"] },
+    { c, t: 4, q: "In Middle English, 'girl' meant what?", a: "A child of either sex", d: ["A married woman", "A young nun", "A female cousin"] },
+    { c, t: 5, q: "'Nickname' began as 'ekename.' What did 'eke' mean?", a: "Increase", d: ["Little", "Funny", "Secret"] },
+  ],
+  // day 38 (2026-11-25)
+  [
+    { c, t: 1, q: "The 're' in 'rewrite' and 'replay' means what?", a: "Again", d: ["Before", "Not", "Fast"] },
+    { c, t: 2, q: "The 'osteo' in 'osteoporosis' comes from the Greek word for what?", a: "Bone", d: ["Joint", "Muscle", "Age"] },
+    { c, t: 3, q: "'Neighbor' comes from Old English words meaning what?", a: "Near dweller", d: ["Fence sharer", "Fellow farmer", "Close friend"] },
+    { c, t: 4, q: "'Porcupine' comes from Old French words meaning what?", a: "Spiny pig", d: ["Thorny rat", "Prickly cat", "Needle fox"] },
+    { c, t: 5, q: "In the American Civil War, a 'deadline' was what?", a: "A prison camp boundary", d: ["A firing squad's order", "A final supply run", "A hangman's rope"] },
+  ],
+  // day 39 (2026-11-26)
+  [
+    { c, t: 1, q: "The 'cardio' in 'cardiology' comes from the Greek word for what?", a: "Heart", d: ["Blood", "Lung", "Muscle"] },
+    { c, t: 2, q: "The 'spect' in 'spectator' and 'inspect' comes from the Latin for what?", a: "To watch", d: ["To cheer", "To judge", "To pay"] },
+    { c, t: 3, q: "'Pilgrim' traces back to a Latin word meaning what?", a: "Foreigner", d: ["Believer", "Settler", "Farmer"] },
+    { c, t: 4, q: "'Bonfire' comes from what?", a: "A fire of bones", d: ["A good fire", "A fire for a feast", "A border fire"] },
+    { c, t: 5, q: "'Ostracize' comes from the Greek word for what, used as ballots in Athens?", a: "Pottery shards", d: ["Pebbles", "Oyster shells", "Bronze tokens"] },
+  ],
+  // day 40 (2026-11-27)
+  [
+    { c, t: 1, q: "The 'mono' in 'monorail' and 'monologue' means what?", a: "One", d: ["Two", "Many", "High"] },
+    { c, t: 2, q: "The 'bell' in 'belligerent' and 'rebel' comes from the Latin word for what?", a: "War", d: ["Noise", "Beauty", "Anger"] },
+    { c, t: 3, q: "Which author coined 'chortle' by blending 'chuckle' and 'snort'?", a: "Lewis Carroll", d: ["Edward Lear", "Dr. Seuss", "Roald Dahl"] },
+    { c, t: 4, q: "'Utopia,' coined by Thomas More, literally means what?", a: "No place", d: ["Perfect city", "Happy land", "Far island"] },
+    { c, t: 5, q: "'Treacle' first named what?", a: "An antidote to poison", d: ["A honey wine", "A sugar loaf", "A baking spice"] },
+  ],
+  // day 41 (2026-11-28)
+  [
+    { c, t: 1, q: "'Ego' is the Latin word for what?", a: "I", d: ["Pride", "Soul", "Mind"] },
+    { c, t: 2, q: "The 'chrom' in 'chromatic' and 'monochrome' comes from the Greek word for what?", a: "Color", d: ["Light", "Tone", "Shine"] },
+    { c, t: 3, q: "'Flamingo' traces back to an old word for what, after the bird's color?", a: "Flame", d: ["Rose", "Sunset", "Coral"] },
+    { c, t: 4, q: "'Zero' traces back to an Arabic word meaning what?", a: "Empty", d: ["Circle", "Number", "Egg"] },
+    { c, t: 5, q: "'Encyclopedia' comes from Greek words meaning what?", a: "General education", d: ["Book of all", "Circle of books", "Great library"] },
+  ],
+  // day 42 (2026-11-29)
+  [
+    { c, t: 1, q: "The 'aqua' in 'aquarium' comes from the Latin word for what?", a: "Water", d: ["Fish", "Glass", "Blue"] },
+    { c, t: 2, q: "The 'viv' in 'vivid' and 'revive' comes from the Latin for what?", a: "To live", d: ["To see", "To shine", "To wake"] },
+    { c, t: 3, q: "'Agenda' is Latin for what?", a: "Things to be done", d: ["Items to discuss", "Notes for a meeting", "Rules of order"] },
+    { c, t: 4, q: "'Influenza' is the Italian word for what?", a: "Influence", d: ["Infection", "Fever", "Cold wind"] },
+    { c, t: 5, q: "'Gymnasium' comes from a Greek word meaning what?", a: "Naked", d: ["Strong", "Running", "Young"] },
+  ],
+  // day 43 (2026-11-30)
+  [
+    { c, t: 1, q: "'Holiday' comes from which two words?", a: "Holy day", d: ["Hollow day", "Whole day", "Holly day"] },
+    { c, t: 2, q: "The 'mit' in 'transmit' and 'submit' comes from the Latin for what?", a: "To send", d: ["To give", "To hold", "To join"] },
+    { c, t: 3, q: "'Landscape' was borrowed by English painters from which language?", a: "Dutch", d: ["French", "Italian", "German"] },
+    { c, t: 4, q: "'Avatar' comes from a Sanskrit word meaning what?", a: "Descent", d: ["Spirit", "Image", "Rebirth"] },
+    { c, t: 5, q: "'Apron' was once 'napron.' How did it lose its 'n'?", a: "A napron was heard as an apron", d: ["A printer dropped it", "French spelling rules", "A royal decree"] },
+  ],
+  // day 44 (2026-12-01)
+  [
+    { c, t: 1, q: "The 'oct' in 'octagon' and 'octet' means what?", a: "Eight", d: ["Six", "Seven", "Ten"] },
+    { c, t: 2, q: "The 'cide' in 'pesticide' and 'homicide' comes from the Latin for what?", a: "To kill", d: ["To spray", "To harm", "To stop"] },
+    { c, t: 3, q: "A 'plumber' was originally named for working with which metal?", a: "Lead", d: ["Copper", "Iron", "Tin"] },
+    { c, t: 4, q: "'Canyon' comes from a Spanish word whose basic meaning is what?", a: "Tube", d: ["Valley", "Cliff", "Stone wall"] },
+    { c, t: 5, q: "'Quorum' is a Latin word meaning what?", a: "Of whom", d: ["Enough", "The many", "Seated"] },
+  ],
+  // day 45 (2026-12-02)
+  [
+    { c, t: 1, q: "'Bonus' is a Latin word meaning what?", a: "Good", d: ["Extra", "Gift", "More"] },
+    { c, t: 2, q: "The 'pseudo' in 'pseudonym' means what?", a: "False", d: ["Pen", "Secret", "Short"] },
+    { c, t: 3, q: "'Calligraphy' comes from Greek words meaning what?", a: "Beautiful writing", d: ["Careful writing", "Ink drawing", "Pen art"] },
+    { c, t: 4, q: "In the old phrase 'the quick and the dead,' 'quick' means what?", a: "Alive", d: ["Fast", "Brave", "Young"] },
+    { c, t: 5, q: "'Gung ho' comes from a Chinese phrase meaning what?", a: "Work together", d: ["Charge ahead", "Never retreat", "Fight hard"] },
+  ],
+  // day 46 (2026-12-03)
+  [
+    { c, t: 1, q: "'Infomercial' blends 'information' with which word?", a: "Commercial", d: ["Merchant", "Media", "Marketing"] },
+    { c, t: 2, q: "The 'ami' in 'amicable' comes from the Latin word for what?", a: "Friend", d: ["Peace", "Calm", "Neighbor"] },
+    { c, t: 3, q: "'Graffiti' comes from an Italian word meaning what?", a: "Scratched", d: ["Painted", "Sprayed", "Signed"] },
+    { c, t: 4, q: "The 'eco' in 'economy' and 'ecology' comes from the Greek word for what?", a: "House", d: ["Nature", "Money", "Earth"] },
+    { c, t: 5, q: "'Lord' comes from Old English words meaning what?", a: "Loaf keeper", d: ["Land holder", "Great man", "Sword bearer"] },
+  ],
+  // day 47 (2026-12-04)
+  [
+    { c, t: 1, q: "The 'bi' in 'bicycle' and 'bilingual' means what?", a: "Two", d: ["One", "Three", "Half"] },
+    { c, t: 2, q: "The 'cred' in 'credible' and 'credit' comes from the Latin for what?", a: "To believe", d: ["To lend", "To pay", "To earn"] },
+    { c, t: 3, q: "'Nostril' comes from Old English words meaning what?", a: "Nose hole", d: ["Nose hair", "Breath gate", "Smell pipe"] },
+    { c, t: 4, q: "'Kowtow' comes from a Chinese phrase meaning what?", a: "Knock the head", d: ["Honor the king", "Kneel and pray", "Lower the eyes"] },
+    { c, t: 5, q: "'Mandarin,' for an official, traces back to a Sanskrit word for what?", a: "Counselor", d: ["Priest", "Merchant", "Soldier"] },
+  ],
+  // day 48 (2026-12-05)
+  [
+    { c, t: 1, q: "'December' comes from the Latin word for which number?", a: "Ten", d: ["Twelve", "Nine", "Seven"] },
+    { c, t: 2, q: "'Origami' combines Japanese words for 'fold' and what?", a: "Paper", d: ["Art", "Hand", "Crane"] },
+    { c, t: 3, q: "'Manufacture' comes from Latin words meaning what?", a: "Made by hand", d: ["Made in bulk", "Built by machine", "Many factories"] },
+    { c, t: 4, q: "'Placebo' is Latin for what?", a: "I shall please", d: ["I shall heal", "I shall pretend", "I shall cure"] },
+    { c, t: 5, q: "In Latin, the source of 'explode' meant what?", a: "To drive off the stage by clapping", d: ["To blow out a candle", "To break a seal", "To burst into flames"] },
+  ],
+  // day 49 (2026-12-06)
+  [
+    { c, t: 1, q: "The 'scrib' in 'scribble' and 'describe' comes from the Latin for what?", a: "To write", d: ["To draw", "To read", "To speak"] },
+    { c, t: 2, q: "The 'gastro' in 'gastric' and 'gastronomy' comes from the Greek word for what?", a: "Stomach", d: ["Food", "Gas", "Fire"] },
+    { c, t: 3, q: "The word 'amok,' as in running amok, comes from which language?", a: "Malay", d: ["Hindi", "Zulu", "Maori"] },
+    { c, t: 4, q: "'Grenade' comes from the French word for which fruit?", a: "Pomegranate", d: ["Pineapple", "Lemon", "Melon"] },
+    { c, t: 5, q: "'Paradise' comes from an Old Persian word for what?", a: "An enclosed park", d: ["A heavenly city", "A golden throne", "A desert spring"] },
+  ],
+  // day 50 (2026-12-07)
+  [
+    { c, t: 1, q: "The 'terr' in 'terrain' and 'territory' comes from the Latin word for what?", a: "Land", d: ["Fear", "Rock", "Field"] },
+    { c, t: 2, q: "The 'rupt' in 'erupt' and 'rupture' comes from the Latin for what?", a: "To break", d: ["To burn", "To shake", "To pour"] },
+    { c, t: 3, q: "'Guerrilla' is Spanish for what?", a: "Little war", d: ["Hidden army", "Forest fighter", "Ambush"] },
+    { c, t: 4, q: "'Shampoo' comes from a Hindi word meaning what?", a: "To massage", d: ["To wash", "To rinse", "To comb"] },
+    { c, t: 5, q: "'Tinsel' comes from an Old French word meaning what?", a: "Spark", d: ["Silver thread", "Star", "Ribbon"] },
+  ],
+  // day 51 (2026-12-08)
+  [
+    { c, t: 1, q: "The 'tri' in 'tricycle' and 'triangle' means what?", a: "Three", d: ["Two", "Four", "Six"] },
+    { c, t: 2, q: "The 'ject' in 'eject' and 'project' comes from the Latin for what?", a: "To throw", d: ["To push", "To shine", "To show"] },
+    { c, t: 3, q: "'Pterodactyl' comes from Greek words meaning what?", a: "Wing finger", d: ["Flying lizard", "Feathered claw", "Sky hunter"] },
+    { c, t: 4, q: "'Gossip' comes from an Old English word for what?", a: "Godparent", d: ["Midwife", "Village crier", "Neighbor"] },
+    { c, t: 5, q: "'Geranium' comes from the Greek word for which bird?", a: "Crane", d: ["Stork", "Heron", "Swan"] },
+  ],
+  // day 52 (2026-12-09)
+  [
+    { c, t: 1, q: "The 'homo' in 'homophone' and 'homonym' means what?", a: "Same", d: ["Human", "Home", "Sound"] },
+    { c, t: 2, q: "The 'mort' in 'mortal' and 'mortuary' comes from the Latin word for what?", a: "Death", d: ["Earth", "Flesh", "Fate"] },
+    { c, t: 3, q: "'Giraffe' came into English, by way of Italian, from which language?", a: "Arabic", d: ["Swahili", "Latin", "Greek"] },
+    { c, t: 4, q: "'Honcho,' as in head honcho, comes from a Japanese word meaning what?", a: "Squad leader", d: ["Strong man", "Senior monk", "Shop owner"] },
+    { c, t: 5, q: "'Mustang' comes from a Spanish word for what?", a: "A stray animal", d: ["A war horse", "A painted pony", "A fast runner"] },
+  ],
+  // day 53 (2026-12-10)
+  [
+    { c, t: 1, q: "The 'penta' in 'pentagon' and 'pentathlon' means what?", a: "Five", d: ["Four", "Six", "Seven"] },
+    { c, t: 2, q: "'Veto' is a Latin word meaning what?", a: "I forbid", d: ["I decide", "I choose", "I approve"] },
+    { c, t: 3, q: "'Gospel' comes from Old English words meaning what?", a: "Good news", d: ["Holy book", "True story", "Church song"] },
+    { c, t: 4, q: "A 'carol' was originally what?", a: "A ring dance", d: ["A shepherd's pipe", "A winter feast", "A bell ringing"] },
+    { c, t: 5, q: "When 'bully' entered English in the 1500s, it meant what?", a: "Sweetheart", d: ["Coward", "Bull keeper", "Soldier"] },
+  ],
+  // day 54 (2026-12-11)
+  [
+    { c, t: 1, q: "The 'quad' in 'quadruple' and 'quadrant' means what?", a: "Four", d: ["Three", "Double", "Eight"] },
+    { c, t: 2, q: "The 'tract' in 'tractor' and 'traction' comes from the Latin for what?", a: "To pull", d: ["To plow", "To grip", "To turn"] },
+    { c, t: 3, q: "In 'ZIP code,' what does ZIP stand for?", a: "Zone Improvement Plan", d: ["Zonal Index Program", "Zone Identification Post", "Zip Identification Plan"] },
+    { c, t: 4, q: "'Calendar' comes from the Latin name for which day of the month?", a: "The first", d: ["The last", "The ninth", "The fifteenth"] },
+    { c, t: 5, q: "'Porpoise' comes from Latin words meaning what?", a: "Pig fish", d: ["Sea dog", "Round nose", "Little whale"] },
+  ],
+  // day 55 (2026-12-12)
+  [
+    { c, t: 1, q: "The 'equi' in 'equilateral' and 'equinox' means what?", a: "Equal", d: ["Night", "Side", "Horse"] },
+    { c, t: 2, q: "The 'ver' in 'verify' and 'verdict' comes from the Latin word for what?", a: "True", d: ["Speech", "Judge", "Green"] },
+    { c, t: 3, q: "'Pundit' comes from a Sanskrit word for what?", a: "Learned man", d: ["Royal adviser", "Village elder", "Storyteller"] },
+    { c, t: 4, q: "'Myriad' comes from the Greek word for which number?", a: "Ten thousand", d: ["One thousand", "One hundred", "One million"] },
+    { c, t: 5, q: "The Old English 'bridd,' ancestor of 'bird,' meant what?", a: "A young bird", d: ["A songbird", "A hen", "A feather"] },
+  ],
+  // day 56 (2026-12-13)
+  [
+    { c, t: 1, q: "'Smog' blends 'smoke' with what?", a: "Fog", d: ["Mist", "Grime", "Haze"] },
+    { c, t: 2, q: "The 'voc' in 'vocal' comes from the Latin word for what?", a: "Voice", d: ["Song", "Breath", "Throat"] },
+    { c, t: 3, q: "'Ballot' comes from an Italian word meaning what?", a: "Little ball", d: ["Secret choice", "Paper slip", "Wooden box"] },
+    { c, t: 4, q: "In Old English, 'deer' meant what?", a: "Any animal", d: ["Any bird", "A young horse", "Wild meat"] },
+    { c, t: 5, q: "'Ignoramus' is a Latin word meaning what?", a: "We do not know", d: ["He is a fool", "We ignore it", "I am unaware"] },
+  ],
+  // day 57 (2026-12-14)
+  [
+    { c, t: 1, q: "The 'dorm' in 'dormitory' comes from the Latin for what?", a: "To sleep", d: ["To eat", "To study", "To live"] },
+    { c, t: 2, q: "'Casino' is the Italian word for what?", a: "Little house", d: ["Gaming hall", "Lucky place", "Little bank"] },
+    { c, t: 3, q: "The 'ortho' in 'orthodontist' comes from the Greek word for what?", a: "Straight", d: ["Tooth", "Bright", "Strong"] },
+    { c, t: 4, q: "'Tulip' traces back to a Turkish word for which headwear?", a: "Turban", d: ["Fez", "Veil", "Crown"] },
+    { c, t: 5, q: "'Sky' comes from an Old Norse word meaning what?", a: "Cloud", d: ["Heaven", "Blue", "Air"] },
+  ],
+  // day 58 (2026-12-15)
+  [
+    { c, t: 1, q: "'Circus' is the Latin word for what?", a: "Circle", d: ["Tent", "Show", "Crowd"] },
+    { c, t: 2, q: "The 'ann' in 'annual' and 'anniversary' comes from the Latin word for what?", a: "Year", d: ["Day", "Feast", "Ring"] },
+    { c, t: 3, q: "'Sleigh' came into American English from which language?", a: "Dutch", d: ["German", "Norwegian", "Russian"] },
+    { c, t: 4, q: "'Bonsai' comes from Japanese words meaning what?", a: "Tray planting", d: ["Patient garden", "Dwarf forest", "Bent branch"] },
+    { c, t: 5, q: "'Pumpkin' traces back to a Greek word meaning what?", a: "Large melon", d: ["Orange gourd", "Harvest fruit", "Field squash"] },
+  ],
+  // day 59 (2026-12-16)
+  [
+    { c, t: 1, q: "The 'hemi' in 'hemisphere' means what?", a: "Half", d: ["Round", "Upper", "Whole"] },
+    { c, t: 2, q: "The 'pac' in 'pacify' and 'Pacific' comes from the Latin word for what?", a: "Peace", d: ["Ocean", "Treaty", "Rest"] },
+    { c, t: 3, q: "'Zucchini' is Italian for what?", a: "Little squashes", d: ["Green fingers", "Summer gourds", "Garden cucumbers"] },
+    { c, t: 4, q: "'Symposium' comes from a Greek word meaning what?", a: "Drinking together", d: ["Speaking together", "Thinking together", "Sitting together"] },
+    { c, t: 5, q: "'Enthusiasm' first meant what?", a: "Possession by a god", d: ["Great joy", "Love of country", "Youthful energy"] },
+  ],
+  // day 60 (2026-12-17)
+  [
+    { c, t: 1, q: "The 'vita' in 'vitamin' comes from the Latin word for what?", a: "Life", d: ["Health", "Food", "Energy"] },
+    { c, t: 2, q: "The 'hemo' in 'hemoglobin' comes from the Greek word for what?", a: "Blood", d: ["Iron", "Heart", "Red"] },
+    { c, t: 3, q: "The 'stetho' in 'stethoscope' comes from the Greek word for what?", a: "Chest", d: ["Heart", "Sound", "Breath"] },
+    { c, t: 4, q: "The Old English ancestor of 'knight' meant what?", a: "Boy", d: ["Horseman", "Warrior", "Noble"] },
+    { c, t: 5, q: "In Old English, 'sad' meant what?", a: "Full", d: ["Alone", "Cold", "Lost"] },
+  ],
+  // day 61 (2026-12-18)
+  [
+    { c, t: 1, q: "The 'sub' in 'subway' and 'submerge' means what?", a: "Under", d: ["Through", "Inside", "Across"] },
+    { c, t: 2, q: "The 'liber' in 'liberty' and 'liberate' comes from the Latin word for what?", a: "Free", d: ["Book", "Brave", "Law"] },
+    { c, t: 3, q: "The 'morph' in 'metamorphosis' comes from the Greek word for what?", a: "Shape", d: ["Change", "Sleep", "Insect"] },
+    { c, t: 4, q: "'Ransack' comes from an Old Norse word meaning what?", a: "To search a house", d: ["To burn a village", "To steal cattle", "To sack a city"] },
+    { c, t: 5, q: "Who coined 'googol,' the number written as 1 followed by 100 zeros?", a: "A mathematician's young nephew", d: ["A Google engineer", "An ancient Greek", "A Victorian astronomer"] },
+  ],
+  // day 62 (2026-12-19)
+  [
+    { c, t: 1, q: "The 'dict' in 'dictate' and 'predict' comes from the Latin for what?", a: "To say", d: ["To write", "To hear", "To rule"] },
+    { c, t: 2, q: "The 'duct' in 'conduct' and 'aqueduct' comes from the Latin for what?", a: "To lead", d: ["To flow", "To join", "To carry"] },
+    { c, t: 3, q: "The 'loqu' in 'eloquent' and 'loquacious' comes from the Latin for what?", a: "To speak", d: ["To charm", "To argue", "To sing"] },
+    { c, t: 4, q: "Which poet coined 'pandemonium' as the name of the capital of Hell?", a: "John Milton", d: ["Dante Alighieri", "William Blake", "Edmund Spenser"] },
+    { c, t: 5, q: "'Ugly' comes from an Old Norse word meaning what?", a: "Dreadful", d: ["Crooked", "Dirty", "Old"] },
+  ],
+  // day 63 (2026-12-20)
+  [
+    { c, t: 1, q: "'Glamping' blends 'camping' with which word?", a: "Glamorous", d: ["Glossy", "Glittering", "Global"] },
+    { c, t: 2, q: "'Safari' is a Swahili word meaning what?", a: "Journey", d: ["Hunt", "Wild animal", "Grassland"] },
+    { c, t: 3, q: "The 'urb' in 'urban' and 'suburb' comes from the Latin word for what?", a: "City", d: ["Street", "Crowd", "Wall"] },
+    { c, t: 4, q: "'Fiasco' comes from an Italian word whose literal meaning is what?", a: "Bottle", d: ["Mask", "Song", "Stage"] },
+    { c, t: 5, q: "Before it meant to mix up a story, 'garble' meant what?", a: "To sift", d: ["To shout", "To swallow", "To stir"] },
+  ],
+  // day 64 (2026-12-21)
+  [
+    { c, t: 1, q: "The 'super' in 'superhuman' and 'superstar' means what?", a: "Above", d: ["Strong", "Great", "Very"] },
+    { c, t: 2, q: "The 'corp' in 'corpse' and 'corporation' comes from the Latin word for what?", a: "Body", d: ["Group", "Army", "Spirit"] },
+    { c, t: 3, q: "The 'pedi' in 'pediatrician' comes from the Greek word for what?", a: "Child", d: ["Foot", "Doctor", "Care"] },
+    { c, t: 4, q: "'Vanilla' comes from a Spanish word meaning what?", a: "Little pod", d: ["Sweet bean", "Pale flower", "Little seed"] },
+    { c, t: 5, q: "Which humorist coined the word 'blurb' in 1907?", a: "Gelett Burgess", d: ["Mark Twain", "Ambrose Bierce", "O. Henry"] },
+  ],
+  // day 65 (2026-12-22)
+  [
+    { c, t: 1, q: "The 'multi' in 'multicolored' and 'multiply' means what?", a: "Many", d: ["Bright", "Mixed", "Double"] },
+    { c, t: 2, q: "The 'neuro' in 'neurology' comes from the Greek word for what?", a: "Nerve", d: ["Brain", "Mind", "Spine"] },
+    { c, t: 3, q: "The 'anthrop' in 'anthropology' comes from the Greek word for what?", a: "Human", d: ["Ancient", "Culture", "Society"] },
+    { c, t: 4, q: "'Recipe' was originally a Latin command meaning what?", a: "Take", d: ["Mix", "Stir", "Measure"] },
+    { c, t: 5, q: "The word 'gas' was coined by a Flemish chemist from which Greek word?", a: "Chaos", d: ["Pneuma", "Aether", "Kosmos"] },
+  ],
+  // day 66 (2026-12-23)
+  [
+    { c, t: 1, q: "The 'nav' in 'navy' and 'navigate' comes from the Latin word for what?", a: "Ship", d: ["Sea", "Sailor", "Star"] },
+    { c, t: 2, q: "The 'theo' in 'theology' comes from the Greek word for what?", a: "God", d: ["Truth", "Faith", "Thought"] },
+    { c, t: 3, q: "'Quarantine' comes from Italian words for how long a period?", a: "Forty days", d: ["Ten days", "Thirty days", "Seven days"] },
+    { c, t: 4, q: "'Etiquette' comes from a French word that first meant what?", a: "A label", d: ["A court dance", "A bow", "A dinner party"] },
+    { c, t: 5, q: "'Ciao' comes from a Venetian phrase meaning what?", a: "I am your servant", d: ["Go with God", "Good health", "Until later"] },
+  ],
+  // day 67 (2026-12-24)
+  [
+    { c, t: 1, q: "'Moped' blends 'motor' with what?", a: "Pedal", d: ["Speed", "Moving", "Road"] },
+    { c, t: 2, q: "The 'fort' in 'fortify' and 'fortitude' comes from the Latin word for what?", a: "Strong", d: ["Wall", "Castle", "Lucky"] },
+    { c, t: 3, q: "'Virus' comes from the Latin word for what?", a: "Poison", d: ["Fever", "Germ", "Plague"] },
+    { c, t: 4, q: "'Kiosk' comes from a Turkish word for what?", a: "Pavilion", d: ["Market", "Window", "Fountain"] },
+    { c, t: 5, q: "'Dashboard' first named a board on a carriage that blocked what?", a: "Mud", d: ["Wind", "Rain", "Sunlight"] },
+  ],
+  // day 68 (2026-12-25)
+  [
+    { c, t: 1, q: "The 'mas' in 'Christmas' is short for what?", a: "Mass", d: ["Master", "Mark", "Message"] },
+    { c, t: 2, q: "The 'frater' behind 'fraternity' is the Latin word for what?", a: "Brother", d: ["Friend", "Father", "Club"] },
+    { c, t: 3, q: "'Rodeo' comes from a Spanish word meaning what?", a: "Roundup", d: ["Bullfight", "Horse race", "Lasso"] },
+    { c, t: 4, q: "A 'chauffeur' was originally what?", a: "A stoker", d: ["A footman", "A mechanic", "A messenger"] },
+    { c, t: 5, q: "'Mob' is short for a Latin phrase meaning what?", a: "The fickle crowd", d: ["The angry crowd", "The armed band", "The loud mass"] },
+  ],
+  // day 69 (2026-12-26)
+  [
+    { c, t: 1, q: "'Motel' blends 'hotel' with which word?", a: "Motor", d: ["Mobile", "Model", "Modern"] },
+    { c, t: 2, q: "The 'sci' in 'science' comes from the Latin for what?", a: "To know", d: ["To test", "To cut", "To see"] },
+    { c, t: 3, q: "'Hors d'oeuvre' is French for what?", a: "Outside the work", d: ["Before the meal", "Small bite", "Chef's gift"] },
+    { c, t: 4, q: "'Hurricane' came into English through Spanish from the language of which Caribbean people?", a: "Taino", d: ["Maya", "Aztec", "Inca"] },
+    { c, t: 5, q: "'Stimulus' was the Latin word for what?", a: "A cattle prod", d: ["A shout", "A spark", "A drumbeat"] },
+  ],
+  // day 70 (2026-12-27)
+  [
+    { c, t: 1, q: "The 'ambi' in 'ambidextrous' means what?", a: "Both", d: ["Neither", "Left", "Quick"] },
+    { c, t: 2, q: "The 'S' in 'scuba' stands for what?", a: "Self-contained", d: ["Surface", "Submarine", "Safety"] },
+    { c, t: 3, q: "'Triceratops' comes from Greek words meaning what?", a: "Three-horned face", d: ["Three-toed lizard", "Horned giant", "Armored head"] },
+    { c, t: 4, q: "In Old English, 'wife' meant simply what?", a: "Woman", d: ["Mother", "Servant", "Bride"] },
+    { c, t: 5, q: "'Anger' comes from an Old Norse word meaning what?", a: "Grief", d: ["Fire", "Hunger", "Pride"] },
+  ],
+  // day 71 (2026-12-28)
+  [
+    { c, t: 1, q: "'Spork' blends 'spoon' with what?", a: "Fork", d: ["Knife", "Sporting", "Scoop"] },
+    { c, t: 2, q: "The 'peri' in 'perimeter' and 'periscope' means what?", a: "Around", d: ["Above", "Beyond", "Near"] },
+    { c, t: 3, q: "'Mammoth' came into English from which language?", a: "Russian", d: ["Latin", "Greek", "Norwegian"] },
+    { c, t: 4, q: "'Slogan' comes from a Gaelic word for what?", a: "Battle cry", d: ["Family motto", "Clan banner", "Drinking song"] },
+    { c, t: 5, q: "'Leopard' comes from Greek words meaning what?", a: "Lion-panther", d: ["Spotted cat", "Swift hunter", "Tree cat"] },
+  ],
+  // day 72 (2026-12-29)
+  [
+    { c, t: 1, q: "'Brunch' blends 'breakfast' with which other meal?", a: "Lunch", d: ["Dinner", "Supper", "Snack"] },
+    { c, t: 2, q: "The 'pan' in 'pandemic' and 'panorama' means what?", a: "All", d: ["Wide", "Sick", "Great"] },
+    { c, t: 3, q: "'Cul-de-sac' is French for what?", a: "Bottom of the sack", d: ["Dead end", "Closed circle", "Quiet street"] },
+    { c, t: 4, q: "The 'check' in 'checkmate' traces back to a Persian word for what?", a: "King", d: ["Danger", "Attack", "Board"] },
+    { c, t: 5, q: "'Sarcophagus' comes from Greek words meaning what?", a: "Flesh eating", d: ["Stone box", "Royal bed", "Eternal home"] },
+  ],
+  // day 73 (2026-12-30)
+  [
+    { c, t: 1, q: "'Sitcom' is short for what?", a: "Situation comedy", d: ["Sitting comedian", "Studio comedy", "Situation commentary"] },
+    { c, t: 2, q: "The 'arch' in 'monarch' and 'patriarch' comes from a Greek word meaning what?", a: "Ruler", d: ["Father", "Old", "Single"] },
+    { c, t: 3, q: "'Asteroid' comes from a Greek word meaning what?", a: "Star-like", d: ["Space rock", "Small planet", "Falling stone"] },
+    { c, t: 4, q: "Which novelist coined the word 'cyberspace'?", a: "William Gibson", d: ["Isaac Asimov", "Philip K. Dick", "Neal Stephenson"] },
+    { c, t: 5, q: "In Middle English, 'buxom' meant what?", a: "Obedient", d: ["Strong", "Wealthy", "Tall"] },
+  ],
+  // day 74 (2026-12-31)
+  [
+    { c, t: 1, q: "The 'eve' in 'New Year's Eve' is short for what?", a: "Evening", d: ["Event", "Eleventh hour", "Everlasting"] },
+    { c, t: 2, q: "The 'lith' in 'monolith' and 'lithograph' comes from the Greek word for what?", a: "Stone", d: ["Print", "Pillar", "Ancient"] },
+    { c, t: 3, q: "'Opera' is the Latin word for what?", a: "Work", d: ["Song", "Stage", "Voice"] },
+    { c, t: 4, q: "'Admiral' traces back to an Arabic title meaning what?", a: "Commander", d: ["Sailor", "Merchant", "Navigator"] },
+    { c, t: 5, q: "In Old English, 'lewd' meant what?", a: "Not of the clergy", d: ["Drunk", "Wealthy", "Foreign"] },
+  ],
+];
+// Every authored day, launch first; nothing reads this today.
+export const ALL_DAYS = [...LAUNCH_DAYS, ...LANE_DAYS];
