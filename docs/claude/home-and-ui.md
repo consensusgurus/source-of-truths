@@ -2294,3 +2294,39 @@ unless noted. The phone is untouched.
   layout when there are no standings (guest, no data).
 - **The right rail folds away** while the ending is up: a `.sst-fold` marker is portalled into
   `.lc-side`, which hides it and narrows the host's right padding; the sheet widens to 1500px.
+
+## Chomp, Etch, Impound, Junkyard, Parker, Jesters and Judges on the white stage; Carve's full pastels (owner, 2026-11-06)
+
+All seven play on `PlayStage` at every width with the usual mount
+(`STAGE && phoneStage && !!g.t0 && (playing || !revealed)`), drawn from the "Unchanged Puzzles on
+the Stage" canvas after its pastel pass. Presentation only: every control calls the board's own
+handler, the old board stays behind the stage untouched, and the in-page Reveal / Give up is the
+foot's two-tap Give up. Logic wrong marks are orange (`--lg-bad`).
+
+**THE PASTEL RULING (owner, 2026-11-06): no washed tints for regions or pieces.** Courts, blocks
+and carved regions wear the FULL site pastel (`regionHue(k).dk`), never a color-mix wash or a
+#ffe4e6-style pale fill; a picked piece keeps its pastel and gains the ink ring. Plain squares stay
+white or `--pst-cell` grey.
+
+- **Chomp:** cast rail (eaten faded with a rose tick, next ink-ringed), grey field, trail squares
+  full rose, the gator in rose with an ink casing (geometry from `chompTrail` / `chompHead` /
+  `chompGator`, shared with the page board). Bleachers are solid ink with two bench bars. D-pad
+  (`holdProps`), Restart / Try again two-tap, foot Give up calls `giveUp`. No swipe (the client has
+  none since 2026-08-08).
+- **Etch:** one grid with clue strips top and left (the aimed line's strips full rose, finished lines
+  struck through), filled squares rose, marks grey with an ink x, a solid heavier rule every five.
+  Clue gutters are sized from the clues' digits, not their count. 20x20 fits at 15px squares.
+  Commit-on-lift and hold-to-aim are the board's own (`data-i` on every square).
+- **Impound, Junkyard, Parker** (one shared look, `JX_CSS` + `JX_FLEET` duplicated per client): white
+  lot on grey squares, exit gap with an ink chevron, your block full rose with an arrow, every other
+  block a full pastel keyed on its index (never rose), landing squares white with a rose edge.
+  Taps go to each client's `onCell`.
+- **Jesters, Judges:** each court its full pastel (`COURT_SLOTS`, the same slots as the live board),
+  3px ink walls, seats solid ink with the glyph in the page colour, court chips (pastel, heavier
+  edge half full, ink when full, orange when over). Fitted by `usePlayStageFit`.
+- **Carve:** a block wears its full pastel from its first square, growing or locked (the 30% / 52%
+  mixes are gone); chips are always their block's full pastel, the block being grown has the ink
+  ring, a locked block's chip shows a tick.
+- **Finish beats:** `lib/finish-beats.js` gained `stage` blocks for park / impound / junkyard
+  (`.jx-lot`, `.jx-blk`), jester / judges (`.jsx-bd`, `.jsx-c`, seat = class `s`) and etch
+  (`.ets-grid`, filled = class `f`). Chomp has no beat def and plays the iris.

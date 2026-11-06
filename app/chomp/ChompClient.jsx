@@ -84,6 +84,9 @@ import { DIRS, DIR_KEYS, freshState, applyMove, anyLegal, isCleared, fillOf, can
 import { endSolved } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
+import usePlayStageFit from '@/lib/play-stage-fit';
 
 // The arm-then-confirm controls do not move when armed, so the second tap of
 // an accidental double-tap used to land on the armed state long before the
@@ -190,6 +193,59 @@ function mergeServerStats(s, recent, puzzles) {
   return s2;
 }
 
+// THE GATOR'S GEOMETRY, as pure functions of the body and the square pitch
+// (PITCH = square plus gap, SQ = the square). The page board and the white
+// stage board (2026-11-06) both draw from these, each at its own pitch, so the
+// two can never disagree about where the head, legs or tail sit.
+function chompTrail(body, PITCH, SQ) {
+  const ctr = (v) => v * PITCH + SQ / 2;
+  return body.map(([x, y], i) => `${i ? 'L' : 'M'}${ctr(x)} ${ctr(y)}`).join(' ');
+}
+function chompHead(body, facing, PITCH, SQ) {
+  const g = { body, facing };
+  const [hx, hy] = g.body[0];
+  const f = g.facing && (g.facing[0] || g.facing[1]) ? g.facing : [1, 0];
+  const cx = hx * PITCH + SQ / 2, cy = hy * PITCH + SQ / 2;
+  const fw = SQ * 0.15, sd = SQ * 0.14;
+  const px = -f[1], py = f[0];
+  return {
+    cx, cy, er: Math.max(2.5, SQ * 0.068), deg: Math.round(Math.atan2(f[1], f[0]) * 180 / Math.PI),
+    eyes: [[cx + f[0] * fw + px * sd, cy + f[1] * fw + py * sd], [cx + f[0] * fw - px * sd, cy + f[1] * fw - py * sd]],
+  };
+}
+function chompGator(body, PITCH, SQ) {
+  const g = { body };
+  const b = g.body, n = b.length, legs = [];
+  const c = (v) => v * PITCH + SQ / 2;
+  const legAt = (i) => {
+    const [x, y] = b[i], [qx, qy] = b[i - 1];
+    const dx = qx - x, dy = qy - y, px = -dy, py = dx, X = c(x), Y = c(y);
+    const nx = i < n - 1 ? b[i + 1][0] - x : 0, ny = i < n - 1 ? b[i + 1][1] - y : 0;
+    for (const sd of [1, -1]) {
+      if (px * sd === nx && py * sd === ny) continue; // this side runs into the body at a bend
+      const ax = X + px * sd * SQ * 0.1, ay = Y + py * sd * SQ * 0.1;
+      const kx = X + px * sd * SQ * 0.3 + dx * SQ * 0.06, ky = Y + py * sd * SQ * 0.3 + dy * SQ * 0.06;
+      const fx = X + px * sd * SQ * 0.38 - dx * SQ * 0.12, fy = Y + py * sd * SQ * 0.38 - dy * SQ * 0.12;
+      legs.push({ d: `M${ax} ${ay}L${kx} ${ky}L${fx} ${fy}`, fx, fy });
+    }
+  };
+  // a leg pair hidden under a bend reads as a stray bracket, so each pair
+  // takes the nearest square where the body runs straight
+  const straight = (i) => i > 0 && i < n - 1
+    && b[i - 1][0] - b[i][0] === b[i][0] - b[i + 1][0] && b[i - 1][1] - b[i][1] === b[i][1] - b[i + 1][1];
+  const pick = (from, to, step) => { for (let i = from; step > 0 ? i <= to : i >= to; i += step) if (straight(i)) return i; return from; };
+  let front = -1;
+  if (n >= 2) { front = n >= 3 ? pick(1, Math.min(3, n - 2), 1) : 1; legAt(front); }
+  if (n >= 5) { const back = pick(n - 2, Math.max(front + 2, n - 4), -1); if (back > front + 1) legAt(back); }
+  let tail = null;
+  if (n >= 2) {
+    const [x, y] = b[n - 1], [qx, qy] = b[n - 2];
+    const dx = x - qx, dy = y - qy, px = -dy, py = dx, X = c(x), Y = c(y), w = SQ * 0.185;
+    tail = `M${X + px * w} ${Y + py * w}L${X + dx * SQ * 0.48} ${Y + dy * SQ * 0.48}L${X - px * w} ${Y - py * w}Z`;
+  }
+  return { legs, tail };
+}
+
 export default function ChompClient({ puzzles = [], forceNum = null }) {
   const searchParams = useSearchParams();
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
@@ -249,6 +305,14 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('chomp'), '--stg-acc-lt': gameColorLight('chomp'), '--stg-onramp-lt': gameOnrampLight('chomp'), '--stg-acc-ink-lt': gameAccentInkLight('chomp') };
   const [stageTheme] = useStageTheme();
+  // THE WHITE STAGE (owner, 2026-11-06, Chomp.dc.html): up from Start until
+  // the ending's board view. It only draws; every control below calls the
+  // board's own handlers (move via holdProps, restartRun, tryAgain, giveUp).
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const chxRef = useRef(null);
+  const chxFit = usePlayStageFit(chxRef, '.chx-bd', stageOn);
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -460,55 +524,15 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
   const playable = PUZZLE.w * PUZZLE.h - (PUZZLE.walls ? PUZZLE.walls.length : 0);
   const railFrac = NPEL > 1 ? Math.min(g.pi, NPEL - 1) / (NPEL - 1) : 0;
   const ctr = (v) => v * PITCH + SQ / 2;
-  const trailD = g.body.map(([x, y], i) => `${i ? 'L' : 'M'}${ctr(x)} ${ctr(y)}`).join(' ');
+  const trailD = chompTrail(g.body, PITCH, SQ);
   // the head: eyes sit forward of centre, either side of the line of travel
-  const head = useMemo(() => {
-    const [hx, hy] = g.body[0];
-    const f = g.facing && (g.facing[0] || g.facing[1]) ? g.facing : [1, 0];
-    const cx = hx * PITCH + SQ / 2, cy = hy * PITCH + SQ / 2;
-    const fw = SQ * 0.15, sd = SQ * 0.14;
-    const px = -f[1], py = f[0];
-    return {
-      cx, cy, er: Math.max(2.5, SQ * 0.068), deg: Math.round(Math.atan2(f[1], f[0]) * 180 / Math.PI),
-      eyes: [[cx + f[0] * fw + px * sd, cy + f[1] * fw + py * sd], [cx + f[0] * fw - px * sd, cy + f[1] * fw - py * sd]],
-    };
-  }, [g.body, g.facing, PITCH, SQ]);
+  const head = useMemo(() => chompHead(g.body, g.facing, PITCH, SQ), [g.body, g.facing, PITCH, SQ]);
   const dead = over && !cleared;
   // THE GATOR'S LEGS AND TAIL (owner, 2026-10-14: make it look like an
   // alligator). A front pair sits on the square behind the head, a back pair on
   // the square before the tail, each splayed out sideways and swept back; the
   // tail tapers to a point off the last square. Short bodies get what fits.
-  const gator = useMemo(() => {
-    const b = g.body, n = b.length, legs = [];
-    const c = (v) => v * PITCH + SQ / 2;
-    const legAt = (i) => {
-      const [x, y] = b[i], [qx, qy] = b[i - 1];
-      const dx = qx - x, dy = qy - y, px = -dy, py = dx, X = c(x), Y = c(y);
-      const nx = i < n - 1 ? b[i + 1][0] - x : 0, ny = i < n - 1 ? b[i + 1][1] - y : 0;
-      for (const sd of [1, -1]) {
-        if (px * sd === nx && py * sd === ny) continue; // this side runs into the body at a bend
-        const ax = X + px * sd * SQ * 0.1, ay = Y + py * sd * SQ * 0.1;
-        const kx = X + px * sd * SQ * 0.3 + dx * SQ * 0.06, ky = Y + py * sd * SQ * 0.3 + dy * SQ * 0.06;
-        const fx = X + px * sd * SQ * 0.38 - dx * SQ * 0.12, fy = Y + py * sd * SQ * 0.38 - dy * SQ * 0.12;
-        legs.push({ d: `M${ax} ${ay}L${kx} ${ky}L${fx} ${fy}`, fx, fy });
-      }
-    };
-    // a leg pair hidden under a bend reads as a stray bracket, so each pair
-    // takes the nearest square where the body runs straight
-    const straight = (i) => i > 0 && i < n - 1
-      && b[i - 1][0] - b[i][0] === b[i][0] - b[i + 1][0] && b[i - 1][1] - b[i][1] === b[i][1] - b[i + 1][1];
-    const pick = (from, to, step) => { for (let i = from; step > 0 ? i <= to : i >= to; i += step) if (straight(i)) return i; return from; };
-    let front = -1;
-    if (n >= 2) { front = n >= 3 ? pick(1, Math.min(3, n - 2), 1) : 1; legAt(front); }
-    if (n >= 5) { const back = pick(n - 2, Math.max(front + 2, n - 4), -1); if (back > front + 1) legAt(back); }
-    let tail = null;
-    if (n >= 2) {
-      const [x, y] = b[n - 1], [qx, qy] = b[n - 2];
-      const dx = x - qx, dy = y - qy, px = -dy, py = dx, X = c(x), Y = c(y), w = SQ * 0.185;
-      tail = `M${X + px * w} ${Y + py * w}L${X + dx * SQ * 0.48} ${Y + dy * SQ * 0.48}L${X - px * w} ${Y - py * w}Z`;
-    }
-    return { legs, tail };
-  }, [g.body, PITCH, SQ]);
+  const gator = useMemo(() => chompGator(g.body, PITCH, SQ), [g.body, PITCH, SQ]);
   const stillOpen = useMemo(() => {
     if (cleared) return false;
     const [hx, hy] = g.body[0];
@@ -719,6 +743,158 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', fontFamily: SANS, background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-11-06, Chomp.dc.html): the cast rail, the
+          field and the pad on the shared white stage. Squares are grey on a
+          white board with a 1px ink edge; the squares your trail covers are the
+          full rose, with the gator drawn over them (rose inside an ink casing).
+          A mascot not yet due sits on a white square with an ink number; the
+          next one is full rose with an ink ring. Bleachers are solid ink with
+          two bench bars. Every control is the board's own: holdProps (the pad),
+          the window keydown handler (arrows, WASD), restartRun / tryAgain behind
+          the same two-tap arm as the page's Restart, and giveUp. */}
+      {stageOn && (() => {
+        const dark = isDarkLook(stageLook);
+        const W = PUZZLE.w, H = PUZZLE.h;
+        // board units: one square plus its gap is U, the gap is G
+        const U = 100, G = 8, S = U - G;
+        const sTrail = chompTrail(g.body, U, S);
+        const sHead = chompHead(g.body, g.facing, U, S);
+        const sGator = chompGator(g.body, U, S);
+        const pctX = (v) => `${(v / (W * U)) * 100}%`;
+        const pctY = (v) => `${(v / (H * U)) * 100}%`;
+        const sq = (x, y) => ({ left: pctX(x * U + G / 2), top: pctY(y * U + G / 2), width: pctX(S), height: pctY(S) });
+        const pelAt = new Map();
+        PUZZLE.pellets.forEach(([mx, my], i) => { if (i >= g.pi) pelAt.set(my * W + mx, i); });
+        const live = playing ? g.ms + Math.min(120000, Math.max(0, (nowTick || Date.now()) - (g.tMark || Date.now()))) : g.ms;
+        const line = `${g.body.length} of ${playable} squares covered · ${nf(g.moves)} move${g.moves === 1 ? '' : 's'}`;
+        const n = CAST.length;
+        const pressRestart = () => { if (armRestart) { if (Date.now() - armRestart < ARM_MIN_MS) return; setArmRestart(false); restartRun(); } else { setArmGive(false); setArmRestart(Date.now()); } };
+        const pressGive = () => { if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; setArmGive(false); giveUp(); } else { setArmRestart(false); setArmGive(Date.now()); } };
+        const arrow = (d) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>;
+        return (
+          <PlayStage bg={gameColor('chomp')} label="Chomp"
+            eyebrow={`${PUZZLE.sunday ? `Sunday Edition No. ${PUZZLE.num}` : `Chomp No. ${PUZZLE.num}`} · eat them in order`}
+            top={(
+              <div ref={chxRef} className="chx" style={{ '--chx-n': n, '--chx-w': W, '--lg-bad': dark ? '#fb923c' : '#c2410c', '--lg-bad-bg': dark ? '#3a2312' : '#ffedd5' }}>
+                <style dangerouslySetInnerHTML={{ __html: CHX_CSS }} />
+                <div className="chx-cast">
+                  <div className="chx-head">
+                    <span>{cleared ? 'All eaten' : <>Next &middot; <b>{LABEL[CAST[g.pi]]}</b></>}</span>
+                    <span><b>{g.pi}</b> of {NPEL} eaten</span>
+                  </div>
+                  <div className="chx-rail">
+                    <i className="chx-rl" aria-hidden="true" />
+                    <i className="chx-rf" aria-hidden="true" style={{ width: `calc((100% - var(--chx-tk)) * ${railFrac})` }} />
+                    {CAST.map((m, i) => {
+                      const done = i < g.pi, next = i === g.pi;
+                      return (
+                        <span key={m} className={'chx-tok' + (done ? ' done' : '') + (next ? ' nx' : '')} role="img" aria-label={`${i + 1}. ${LABEL[m]}${done ? ', eaten' : next ? ', next' : ''}`}>
+                          {!loaded[m] && <span className="chx-tn">{i + 1}</span>}
+                          {!broken[m] && <img src={`/games/chomp/${m}.png`} alt="" onLoad={() => markLoaded(m)} onError={() => markBroken(m)} className={'chx-ti' + (loaded[m] ? '' : ' ch-wait')} />}
+                          {done && (
+                            <span className="chx-ck" aria-hidden="true">
+                              <svg viewBox="0 0 12 12" width="100%" height="100%" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6.2l2 2 4-4.4" /></svg>
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="chx-bd" style={{ width: chxFit ? `min(100%, ${chxFit}px)` : '100%' }}>
+                  <div className="chx-field" role="img" aria-label={boardLabel} style={{ aspectRatio: `${W} / ${H}` }}>
+                    {Array.from({ length: W * H }, (_, idx) => {
+                      const x = idx % W, y = Math.floor(idx / W);
+                      if (wallSet.has(idx)) {
+                        return <span key={idx} className="chx-sq wall" style={sq(x, y)}><i /><i /></span>;
+                      }
+                      const pi = pelAt.get(idx);
+                      if (pi !== undefined) return null;
+                      return <span key={idx} className={'chx-sq' + (g.occ[idx] ? ' mine' : '')} style={sq(x, y)} />;
+                    })}
+                    <svg className="chx-gt" viewBox={`0 0 ${W * U} ${H * U}`} preserveAspectRatio="none" aria-hidden="true">
+                      <g transform={`translate(${G / 2} ${G / 2})`}>
+                        {sGator.legs.map((l, k) => (
+                          <g key={'c' + k}>
+                            <path d={l.d} fill="none" strokeWidth={S * 0.2} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--pst-ink)' }} />
+                            <circle cx={l.fx} cy={l.fy} r={S * 0.12} style={{ fill: 'var(--pst-ink)' }} />
+                          </g>
+                        ))}
+                        <path d={sTrail} fill="none" strokeWidth={S * 0.5} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--pst-ink)' }} />
+                        {sGator.tail && <path d={sGator.tail} strokeWidth={S * 0.07} strokeLinejoin="round" style={{ fill: 'var(--pst-ink)', stroke: 'var(--pst-ink)' }} />}
+                        {sGator.legs.map((l, k) => (
+                          <g key={'r' + k}>
+                            <path d={l.d} fill="none" strokeWidth={S * 0.1} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--pst-acc)' }} />
+                            <circle cx={l.fx} cy={l.fy} r={S * 0.07} style={{ fill: 'var(--pst-acc)' }} />
+                          </g>
+                        ))}
+                        <path d={sTrail} fill="none" strokeWidth={S * 0.38} strokeLinecap="round" strokeLinejoin="round" style={{ stroke: 'var(--pst-acc)' }} />
+                        {sGator.tail && <path d={sGator.tail} style={{ fill: 'var(--pst-acc)' }} />}
+                        <g transform={`translate(${sHead.cx} ${sHead.cy}) rotate(${sHead.deg}) scale(${S})`}>
+                          <path d="M-0.34 -0.22 Q-0.34 -0.31 -0.2 -0.31 L0.08 -0.25 L0.42 -0.16 Q0.53 -0.13 0.53 0 Q0.53 0.13 0.42 0.16 L0.08 0.25 L-0.2 0.31 Q-0.34 0.31 -0.34 0.22 Z" strokeWidth="0.05" strokeLinejoin="round" style={{ fill: 'var(--pst-acc)', stroke: 'var(--pst-ink)' }} />
+                          <path d="M0.52 0 L0.04 0" fill="none" strokeWidth="0.03" strokeLinecap="round" style={{ stroke: 'var(--pst-on-acc)' }} />
+                          <path d="M0.14 -0.235 L0.2 -0.22 L0.17 -0.17 Z M0.25 -0.21 L0.31 -0.195 L0.28 -0.145 Z M0.36 -0.18 L0.41 -0.165 L0.39 -0.12 Z M0.14 0.235 L0.2 0.22 L0.17 0.17 Z M0.25 0.21 L0.31 0.195 L0.28 0.145 Z M0.36 0.18 L0.41 0.165 L0.39 0.12 Z" style={{ fill: 'var(--pst-on-acc)' }} />
+                          <circle cx="0.47" cy="-0.05" r="0.022" style={{ fill: 'var(--pst-on-acc)' }} />
+                          <circle cx="0.47" cy="0.05" r="0.022" style={{ fill: 'var(--pst-on-acc)' }} />
+                          {[-1, 1].map((sd) => (
+                            <g key={sd}>
+                              <circle cx="-0.1" cy={sd * 0.2} r="0.115" strokeWidth="0.05" style={{ fill: 'var(--pst-acc)', stroke: 'var(--pst-ink)' }} />
+                              {dead ? (
+                                <path d={`M-0.16 ${sd * 0.2 - 0.06}L-0.04 ${sd * 0.2 + 0.06}M-0.04 ${sd * 0.2 - 0.06}L-0.16 ${sd * 0.2 + 0.06}`} fill="none" strokeWidth="0.035" strokeLinecap="round" style={{ stroke: 'var(--pst-on-acc)' }} />
+                              ) : (
+                                <>
+                                  <circle cx="-0.09" cy={sd * 0.2} r="0.07" style={{ fill: '#ffffff' }} />
+                                  <ellipse cx="-0.075" cy={sd * 0.2} rx="0.022" ry="0.05" style={{ fill: 'var(--pst-on-acc)' }} />
+                                </>
+                              )}
+                            </g>
+                          ))}
+                        </g>
+                      </g>
+                    </svg>
+                    {PUZZLE.pellets.map(([mx, my], i) => {
+                      if (i < g.pi) return null;
+                      const m = CAST[i];
+                      const next = i === g.pi;
+                      return (
+                        <span key={m} className={'chx-ms' + (next ? ' nx' : '')} style={sq(mx, my)} role="img" aria-label={`${LABEL[m]}, number ${i + 1}${next ? ', next' : ', solid until its turn'}`}>
+                          {!loaded[m] && <span className="chx-mf">{i + 1}</span>}
+                          {!broken[m] && <img src={`/games/chomp/${m}.png`} alt="" onLoad={() => markLoaded(m)} onError={() => markBroken(m)} className={'chx-mi' + (loaded[m] ? '' : ' ch-wait')} />}
+                          <em>{i + 1}</em>
+                        </span>
+                      );
+                    })}
+                    {blocked && blocked.x >= 0 && blocked.y >= 0 && blocked.x < W && blocked.y < H && (
+                      <span className="chx-blk" style={sq(blocked.x, blocked.y)} aria-hidden="true" />
+                    )}
+                  </div>
+                </div>
+                <div className="chx-ctl">
+                  <div className="chx-pad">
+                    <button type="button" className="u" {...holdProps('up')} aria-label="Move up">{arrow('M6 15l6-6 6 6')}</button>
+                    <button type="button" className="l" {...holdProps('left')} aria-label="Move left">{arrow('M15 6l-6 6 6 6')}</button>
+                    <button type="button" className="d" {...holdProps('down')} aria-label="Move down">{arrow('M6 9l6 6 6-6')}</button>
+                    <button type="button" className="r" {...holdProps('right')} aria-label="Move right">{arrow('M9 6l6 6-6 6')}</button>
+                  </div>
+                  {playing ? (
+                    <button type="button" className={'pst-tb chx-rs' + (armRestart ? ' on' : '')} onClick={pressRestart}
+                      title={armRestart ? 'Records this run as it stands, then deals the board again' : 'Record this run as it stands and start the board over'}>
+                      <RotateCcw size={15} aria-hidden="true" />{armRestart ? 'Press again' : 'Restart'}
+                    </button>
+                  ) : (
+                    <button type="button" className="pst-tb chx-rs" onClick={tryAgain} title="Play this board again. Your recorded result stands.">
+                      <RotateCcw size={15} aria-hidden="true" />Try again
+                    </button>
+                  )}
+                </div>
+                <span className="ch-sr" aria-live="polite">{statusMain}{statusSub ? ` ${statusSub}` : ''}</span>
+              </div>
+            )}
+            foot={armRestart ? 'Records this run as it stands, then deals the board again.' : line}
+            giveUp={playing ? { armed: !!armGive, onPress: pressGive } : null}
+            clock={fmtTime(live)} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="chomp" name="Chomp" collapsed={started} loft={LOFT} />
@@ -1199,3 +1375,51 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-11-06, Chomp.dc.html). Grey squares on a white
+// board with a 1px ink edge; the trail's squares the full rose; a mascot not
+// yet due on white with an ink number, the next one full rose with an ink ring;
+// bleachers solid ink with two bench bars in the page colour. Every size inside
+// the field is a share of the field's width (cqw), so the 7x7 weekday and the
+// 8x8 Sunday draw from the same rules at whatever width usePlayStageFit allows.
+const CHX_CSS = `
+.chx{display:flex;flex-direction:column;gap:12px;width:100%;max-width:520px;align-self:center;}
+.chx-cast{display:flex;flex-direction:column;gap:8px;container-type:inline-size;flex-shrink:0;}
+.chx-head{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:700;color:var(--pst-mute);padding:0 2px;white-space:nowrap;}
+.chx-head b{color:var(--pst-ink);font-weight:800;}
+.chx-rail{--chx-tk:min(40px, calc((100cqw - (var(--chx-n) - 1) * 4px) / var(--chx-n)));position:relative;display:flex;justify-content:space-between;align-items:center;height:calc(var(--chx-tk) + 4px);}
+.chx-rl,.chx-rf{position:absolute;left:calc(var(--chx-tk) / 2);top:calc(50% - 1.5px);height:3px;border-radius:2px;}
+.chx-rl{right:calc(var(--chx-tk) / 2);background:var(--pst-cell2);}
+.chx-rf{background:var(--pst-acc);}
+.chx-tok{position:relative;flex:none;width:var(--chx-tk);height:var(--chx-tk);border-radius:50%;background:var(--pst-bg);border:1px solid var(--pst-cell-line);box-sizing:border-box;display:flex;align-items:center;justify-content:center;}
+.chx-tok.nx{border-color:var(--pst-ink);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.chx-ti{display:block;width:75%;height:75%;object-fit:contain;}
+.chx-tok.done .chx-ti{opacity:.4;}
+.chx-tn{font-size:12px;font-weight:800;}
+.chx-ck{position:absolute;right:-4px;bottom:-4px;width:17px;height:17px;padding:2px;box-sizing:border-box;border-radius:50%;background:var(--pst-acc);color:var(--pst-on-acc);border:1px solid var(--pst-ink);display:flex;}
+.chx-bd{align-self:center;flex-shrink:0;border:1px solid var(--pst-ink);border-radius:14px;background:var(--pst-bg);padding:3px;box-sizing:border-box;}
+.chx-field{position:relative;width:100%;container-type:inline-size;user-select:none;-webkit-user-select:none;}
+.chx-sq,.chx-ms,.chx-blk{position:absolute;box-sizing:border-box;border-radius:14%;}
+.chx-sq{background:var(--pst-cell);}
+.chx-sq.mine{background:var(--pst-acc);}
+.chx-sq.wall{background:var(--pst-ink);z-index:2;}
+.chx-sq.wall i{position:absolute;left:18%;right:18%;height:11%;border-radius:999px;background:var(--pst-bg);}
+.chx-sq.wall i:first-child{top:30%;}
+.chx-sq.wall i:last-child{top:59%;}
+.chx-gt{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:1;}
+.chx-ms{z-index:2;background:var(--pst-bg);border:1px solid var(--pst-cell-line);display:flex;align-items:center;justify-content:center;}
+.chx-ms.nx{background:var(--pst-acc);border-color:var(--pst-ink);box-shadow:inset 0 0 0 1px var(--pst-ink);}
+.chx-mi{display:block;width:80%;height:80%;object-fit:contain;}
+.chx-mf{font-size:calc(100cqw / var(--chx-w) * .3);font-weight:800;}
+.chx-ms em{position:absolute;left:-4%;top:-4%;min-width:calc(100cqw / var(--chx-w) * .3);height:calc(100cqw / var(--chx-w) * .3);padding:0 3px;box-sizing:border-box;border-radius:999px;background:var(--pst-ink);color:var(--pst-bg);font-style:normal;font-size:calc(100cqw / var(--chx-w) * .19);font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;}
+.chx-ms.nx em{background:var(--pst-acc);color:var(--pst-on-acc);border:1px solid var(--pst-ink);}
+.chx-blk{z-index:3;border:2px solid var(--lg-bad);background:transparent;pointer-events:none;}
+.chx-ctl{display:flex;align-items:center;justify-content:center;gap:18px;flex-shrink:0;}
+.chx-pad{display:grid;grid-template-columns:repeat(3,60px);grid-template-rows:repeat(2,50px);gap:6px;}
+.pst .chx-pad button{border-radius:14px;border:1px solid var(--pst-ink);background:var(--pst-cell);color:var(--pst-ink);padding:0;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+.chx-pad button:active{background:var(--pst-acc);color:var(--pst-on-acc);}
+.chx-pad .u{grid-column:2;grid-row:1;}.chx-pad .l{grid-column:1;grid-row:2;}.chx-pad .d{grid-column:2;grid-row:2;}.chx-pad .r{grid-column:3;grid-row:2;}
+.pst .chx-rs{min-width:128px;}
+@media (min-width:901px) and (hover:hover) and (pointer:fine){.chx-pad{display:none;}}
+@media (max-height:700px){.chx{gap:8px;}.chx-pad{grid-template-rows:repeat(2,44px);}}
+`;

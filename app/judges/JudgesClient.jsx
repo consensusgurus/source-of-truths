@@ -65,6 +65,12 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 
+// THE WHITE STAGE (owner, 2026-11-06, the Judges mockup): see STAGE_COURT below.
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
+import { regionHue, REGION_RAMP } from '@/lib/category-ramp';
+import usePlayStageFit from '@/lib/play-stage-fit';
+
 const COLORS = {
   cream: T.surface,
   paper: T.paper,
@@ -94,6 +100,14 @@ const STATS_KEY = 'sot_judges_stats';
 const TOOL_KEY = 'sot_judges_tool';   // remembered marking tool: 'x' | 'judges'
 const TOTAL = 10;
 const UNDO_MAX = 50;
+
+// The stage's two-tap Give up: the second tap is refused for this long after
+// the first, so a double tap cannot end the day by accident (Plot's rule).
+const ARM_MIN_MS = 400;
+// The REGION_RAMP slots a court may wear, in lib/court-colors.js's order (no
+// lime, no periwinkle). courtColors() hands back a position in this list, so
+// regionHue(COURT_SLOTS[pos]) is the very hue the live board paints that court.
+const COURT_SLOTS = REGION_RAMP.map((_, i) => i).filter((i) => !['lime', 'periwinkle'].includes(REGION_RAMP[i].name));
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -881,10 +895,116 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 
+
+  // THE STAGE (owner, 2026-11-06, the approved Judges mockup): the court plays
+  // on the shared white PlayStage at every width, from Start until the
+  // ending's board view. Each court wears its FULL site pastel (the same
+  // REGION_RAMP slot the live board gives it, so the colours match), heavy
+  // 3px ink walls between courts and a light rule inside one. A seated
+  // judge is a solid ink square with the glyph in the page colour; the
+  // player's own x marks are ink, the dots a seat rules out ink at .6.
+  // Presentation only: every tap calls the board's own handlers (tapCell,
+  // toggleJudge on hold or right-click, undo, clearBoard, useHint, reveal).
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const stageRef = useRef(null);
+  const stageFit = usePlayStageFit(stageRef, '.jsx-bd', stageOn);
+  const giveArmAt = useRef(0);
+  const courtHue = (id) => regionHue(COURT_SLOTS[COURTS[id] ?? 0]).dk;
+  let stageNode = null;
+  if (stageOn) {
+    const dark = isDarkLook(stageLook);
+    const BAD = dark ? '#fb923c' : '#c2410c';
+    const courts = courtOrder;
+    const errs = conflictSet.size;
+    const line = toast || <span style={errs ? { color: BAD, fontWeight: 800 } : undefined}>{seated} of {SEATS} seated &middot; {errs} error{errs === 1 ? '' : 's'}</span>;
+    const xMark = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>;
+    stageNode = (
+      <PlayStage bg={gameColor('judges')} label="Judges"
+        eyebrow={`${PUZZLE.sunday ? `Sunday Edition No. ${PUZZLE.num}` : `Judges No. ${PUZZLE.num}`} · ${N}x${N} · ${STARS} per court`}
+        top={(
+          <div className="jsx" ref={stageRef} style={{ '--jsx-n': N, '--lg-bad': BAD, '--lg-bad-bg': dark ? '#3a2312' : '#ffedd5', ...(stageFit ? { '--jsx-fit': `${stageFit}px` } : null) }}>
+            <style dangerouslySetInnerHTML={{ __html: STAGE_COURT_CSS }} />
+            <div className="jsx-bd" role="grid" aria-label={`The court, ${N} by ${N}`}>
+              {PUZZLE.regions.map((row, r) => row.map((id, c) => {
+                const v = cellsView[r][c];
+                const conflict = v === 2 && conflictSet.has(r * N + c);
+                const autoMark = autoX && v === 0 && attackedSet.has(r * N + c);
+                const locked = isLocked(r, c);
+                const cls = 'jsx-c'
+                  + (c < N - 1 && PUZZLE.regions[r][c + 1] !== id ? ' wr' : '')
+                  + (r < N - 1 && PUZZLE.regions[r + 1][c] !== id ? ' wb' : '')
+                  + (c === N - 1 ? ' er' : '') + (r === N - 1 ? ' eb' : '')
+                  + (v === 2 ? ' s' : '') + (conflict ? ' bad' : '') + (locked ? ' lk' : '');
+                return (
+                  <button key={`${r}-${c}`} type="button" className={cls}
+                    style={v === 2 ? undefined : { background: courtHue(id) }}
+                    onClick={() => { if (longFired.current) { longFired.current = false; return; } tapCell(r, c); }}
+                    onContextMenu={(e) => { e.preventDefault(); if (longFired.current) return; toggleJudge(r, c); }}
+                    onTouchStart={() => startPress(r, c)}
+                    onTouchEnd={endPress}
+                    onTouchMove={endPress}
+                    onTouchCancel={endPress}
+                    aria-label={`Row ${r + 1}, column ${c + 1}, court ${courts.indexOf(id) + 1}: ${v === 2 ? 'seated' : v === 1 ? 'ruled out by you' : autoMark ? 'ruled out' : 'open'}${conflict ? ', quarrelling' : ''}${locked ? ', seated by the hint' : ''}`}>
+                    {v === 1 && xMark}
+                    {v === 0 && autoMark && <i className="jsx-dot" />}
+                    {v === 2 && <JudgeMark size={24} color="currentColor" />}
+                  </button>
+                );
+              }))}
+            </div>
+            <div className="jsx-key" aria-hidden="true">
+              <span><span className="jsx-kx">{xMark}</span>Your mark</span>
+              {autoX && <span><i className="jsx-kd" />Ruled out by a seat</span>}
+            </div>
+            <div className="jsx-chips" aria-label="Courts">
+              {courts.map((id, i) => {
+                const k = courtHeld[id] || 0;
+                const over = k > STARS, full = k === STARS, half = k > 0 && k < STARS;
+                return (
+                  <span key={id} className={'jsx-chip' + (over ? ' over' : full ? ' on' : half ? ' half' : '')}
+                    style={over || full ? undefined : { background: courtHue(id) }}
+                    aria-label={`Court ${i + 1}: ${k} of ${STARS} seated${over ? ', too many' : ''}`}>
+                    {STARS === 1 ? i + 1 : `${i + 1}\u00a0·\u00a0${k}/${STARS}`}
+                  </span>
+                );
+              })}
+            </div>
+            {playing && (
+              <div className="jsx-seg" role="group" aria-label="What a tap places">
+                <button type="button" className={tool === 'x' ? 'on' : undefined} aria-pressed={tool === 'x'} onClick={() => setTool('x')}>
+                  <span className="jsx-ki">{xMark}</span>Rule out
+                </button>
+                <button type="button" className={tool === 'judges' ? 'on' : undefined} aria-pressed={tool === 'judges'} onClick={() => setTool('judges')}>
+                  <JudgeMark size={18} color="currentColor" />Seat a judge
+                </button>
+              </div>
+            )}
+            {playing && (
+              <div className="pst-tools jsx-tools">
+                <button type="button" className="pst-tb" onClick={undo} disabled={!canUndo} aria-label="Undo last move">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5" /><path d="M4 9h10a6 6 0 0 1 0 12h-3" /></svg>Undo
+                </button>
+                <button type="button" className="pst-tb" onClick={clearBoard} aria-label="Clear marks: empty the board">Clear marks</button>
+                {hintOk && !g.hintUsed && (
+                  <button type="button" className="pst-tb" onClick={useHint} title="Seat one correct judge (one hint, first play only)">{ICON.bulb}Hint</button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+        foot={line}
+        giveUp={playing ? { armed: !!revealArmed, onPress: () => { if (!revealArmed) { giveArmAt.current = Date.now(); reveal(); } else if (Date.now() - giveArmAt.current >= ARM_MIN_MS) { reveal(); } } } : null}
+        clock={elapsed} done={!playing} />
+    );
+  }
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageNode}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1374,3 +1494,42 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 }
+
+// The stage court (owner, 2026-11-06 mockup). Courts are the full site
+// pastels with dark ink on them in both looks; walls 3px ink, the rule inside
+// a court a light ink line; a seat is a solid ink square. A quarrel is Logic
+// ORANGE and striped (--lg-bad), never red. The board's width is capped by the
+// measured stage height (usePlayStageFit), so 8x8 to 12x12 fits a 390x844 phone.
+const STAGE_COURT_CSS = `
+.jsx{display:flex;flex-direction:column;gap:12px;width:100%;--jsx-rule:color-mix(in srgb, var(--pst-on-acc) 22%, transparent);}
+.jsx-bd{display:grid;grid-template-columns:repeat(var(--jsx-n), minmax(0,1fr));align-self:center;width:min(100%, var(--jsx-fit, 100%));border:3px solid var(--pst-ink);border-radius:12px;overflow:hidden;background:var(--pst-ink);container-type:inline-size;user-select:none;-webkit-user-select:none;flex:none;}
+.pst .jsx-c{aspect-ratio:1;min-width:0;padding:0;margin:0;border:0;border-radius:0;border-right:1px solid var(--jsx-rule);border-bottom:1px solid var(--jsx-rule);color:var(--pst-on-acc);display:flex;align-items:center;justify-content:center;box-sizing:border-box;touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;cursor:pointer;}
+.pst .jsx-c.wr{border-right:3px solid var(--pst-ink);}
+.pst .jsx-c.wb{border-bottom:3px solid var(--pst-ink);}
+.pst .jsx-c.er{border-right:0;}
+.pst .jsx-c.eb{border-bottom:0;}
+.pst .jsx-c svg{width:56%;height:56%;display:block;}
+.pst .jsx-c.s{background:var(--pst-ink);color:var(--pst-bg);}
+.pst .jsx-c.s svg{width:64%;height:64%;}
+.pst .jsx-c.lk{box-shadow:inset 0 0 0 2px var(--pst-acc);}
+.pst .jsx-c.bad{background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--lg-bad) 34%, transparent) 0 3px, transparent 3px 8px), var(--lg-bad-bg);color:var(--lg-bad);}
+.jsx-dot{display:block;width:22%;height:22%;border-radius:50%;background:currentColor;opacity:.6;}
+.jsx-key{display:flex;justify-content:center;gap:16px;font-size:12px;font-weight:700;color:var(--pst-mute);align-items:center;flex-wrap:wrap;}
+.jsx-key>span{display:inline-flex;align-items:center;gap:6px;}
+.jsx-kx{display:inline-flex;width:13px;height:13px;color:var(--pst-ink);}
+.jsx-kx svg,.jsx-ki svg{width:100%;height:100%;display:block;}
+.jsx-kd{width:7px;height:7px;border-radius:50%;background:var(--pst-ink);opacity:.6;display:block;}
+.jsx-chips{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;}
+.jsx-chip{height:28px;min-width:30px;border-radius:14px;border:1px solid var(--pst-ink);color:var(--pst-on-acc);box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;padding:0 7px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.jsx-chip.half{box-shadow:inset 0 0 0 1px var(--pst-ink);}
+.jsx-chip.on{background:var(--pst-ink);color:var(--pst-bg);}
+.jsx-chip.over{background:var(--lg-bad-bg);border-color:var(--lg-bad);color:var(--lg-bad);box-shadow:inset 0 0 0 1px var(--lg-bad);}
+.jsx-seg{display:flex;border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;flex:none;}
+.pst .jsx-seg button{flex:1;min-width:0;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;color:var(--pst-ink);display:flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;white-space:nowrap;}
+.pst .jsx-seg button+button{border-left:1px solid var(--pst-ink);}
+.pst .jsx-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.jsx-ki{display:inline-flex;width:15px;height:15px;}
+.jsx-tools{flex:none;}
+.pst .jsx-tools .pst-tb{min-height:44px;padding:0 14px;}
+@media (max-height:760px){.jsx{gap:8px;}.pst .jsx-seg button{height:40px;}.pst .jsx-tools .pst-tb{min-height:40px;}}
+`;

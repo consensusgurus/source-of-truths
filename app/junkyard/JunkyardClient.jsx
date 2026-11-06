@@ -73,6 +73,9 @@ import StageFold from '../StageFold';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import JamLot from '../JamLot';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
+import { regionHue } from '@/lib/category-ramp';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { regionStyle, REGION_INK } from '@/lib/category-ramp';
@@ -178,6 +181,32 @@ function blockTones(pieces) {
 // an accidental double-tap used to land on the armed state long before the
 // label change could be read. A confirm this fast was never a decision.
 const ARM_MIN_MS = 400;
+// THE STAGE FLEET (owner, 2026-11-06): the REGION_RAMP indices a block other
+// than yours may wear, cycled by block index, rose (3) left out so only your
+// block is rose. Shared verbatim by Parker, Impound and Junkyard.
+const JX_FLEET = [0, 1, 2, 3, 4, 6, 7, 8, 9];   // slot 5 holds rose since the 2026-10-30 Logic/Geography swap (the names in REGION_RAMP were not swapped)
+const JX_CSS = `
+.jx{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;}
+.jx-tip{margin:0;text-align:center;font-size:14px;font-weight:700;line-height:1.35;min-height:1.35em;}
+.jx-wrap{position:relative;width:min(calc(100% - 22px), 440px, calc(100dvh - 380px));min-width:240px;margin-right:18px;}
+.jx-lot{position:relative;width:100%;aspect-ratio:1 / 1;border:1px solid var(--pst-ink);border-radius:14px;background:var(--pst-bg);touch-action:manipulation;}
+.jx-lot.shake{animation:jxshake .34s ease;}
+@keyframes jxshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
+.jx-in{position:absolute;inset:var(--jx-pad);}
+.jx-cell{position:absolute;border-radius:calc(var(--jx-r) - 2px);background:var(--pst-cell);pointer-events:none;}
+.jx-gap{position:absolute;right:-1px;width:1px;background:var(--pst-bg);z-index:1;}
+.jx-exit{position:absolute;right:-19px;width:16px;display:flex;align-items:center;justify-content:center;color:var(--pst-ink);pointer-events:none;}
+.jx-tgt{position:absolute;box-sizing:border-box;border-radius:var(--jx-r);border:1px solid var(--pst-acc);background:var(--pst-bg);pointer-events:none;z-index:1;}
+.jx-blk{position:absolute;box-sizing:border-box;border-radius:var(--jx-r);border:1px solid var(--pst-ink);display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2;color:var(--pst-on-acc);transition:left .18s cubic-bezier(.3,.7,.4,1), top .18s cubic-bezier(.3,.7,.4,1), box-shadow .12s;}
+.jx-blk.me{background:var(--pst-acc);}
+.jx-blk.sel{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);z-index:3;}
+.jx-blk svg{width:min(60%, 24px);height:auto;}
+.pst .jx-tap{position:absolute;z-index:4;background:transparent;border:0;padding:0;margin:0;border-radius:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.pst .jx-tap:focus-visible{outline:2px solid var(--pst-ink);outline-offset:-2px;}
+.jx-tools{width:100%;display:flex;gap:8px;}
+.pst .jx-tools .pst-tb{flex:1 1 0;min-height:48px;}
+@media (prefers-reduced-motion: reduce){.jx-blk{transition:none;}.jx-lot.shake{animation:none;}}
+`;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_junkyard_help_seen';
@@ -346,6 +375,8 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('junkyard'), '--stg-acc-lt': gameColorLight('junkyard'), '--stg-onramp-lt': gameOnrampLight('junkyard'), '--stg-acc-ink-lt': gameAccentInkLight('junkyard') };
   const [stageTheme] = useStageTheme();
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -675,11 +706,96 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
   );
 
   const cellPct = 100 / N;
+  // THE STAGE is up from Start until the ending's board view.
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-11-06): Junkyard plays on the shared white stage
+          at every width, the one look Parker, Impound and Junkyard share. The lot
+          is white with a 1px ink edge on grey squares; the exit is an open gap in
+          the right wall with an ink chevron outside it. Your block is the full
+          rose with an ink arrow; every other block wears a full site pastel,
+          keyed on its index (so it keeps its colour as it slides) and never rose.
+          The held block gains the ink ring; the squares it can reach are white
+          with a rose edge. Every tap goes to the board's own onCell, and the
+          tools to its restart / useHint / giveUpTap. */}
+      {stageOn && (() => {
+        const dark = isDarkLook(stageLook);
+        const cp = 100 / N;
+        const gp = N >= 8 ? 2.5 : 3;
+        const box = (r, c, w, h) => ({ left: `calc(${c * cp}% + ${gp / 2}px)`, top: `calc(${r * cp}% + ${gp / 2}px)`, width: `calc(${w * cp}% - ${gp}px)`, height: `calc(${h * cp}% - ${gp}px)` });
+        const holding = playing && sel != null;
+        const tip = !playing ? null
+          : holding ? (sel === 0 ? 'Tap a rose-edged square to slide your block there.' : 'Tap a rose-edged square to slide it there.')
+            : 'Get the arrow block out through the gap on the right.';
+        const shown = toast ? toast.replace('The block ringed in dashes moves next.', 'The ringed block moves next.') : null;
+        const line = !playing
+          ? (won ? (used === perfect ? `Out in ${used}. That is perfect.` : `Out in ${used} moves.`) : 'You left it in the Junkyard.')
+          : (shown || `${used} move${used === 1 ? '' : 's'} · par ${par}`);
+        return (
+          <PlayStage bg={gameColor('junkyard')} label="Junkyard"
+            eyebrow={`${PUZZLE.sunday ? 'Sunday Edition' : 'Junkyard'} No. ${PUZZLE.num} · ${N} by ${N} lot · ${blocks.length} blocks`}
+            top={(
+              <div className="jx" style={{ '--jx-pad': N >= 8 ? '2px' : '3px', '--jx-r': N >= 8 ? '7px' : '9px', '--lg-bad': dark ? '#fb923c' : '#c2410c', '--lg-bad-bg': dark ? '#3a2312' : '#ffedd5' }}>
+                <style dangerouslySetInnerHTML={{ __html: JX_CSS }} />
+                {tip ? <p className="jx-tip" aria-live="polite">{tip}</p> : null}
+                <div className="jx-wrap">
+                  <div key={shake} className={'jx-lot' + (shake ? ' shake' : '')} role="grid" aria-label={`The lot, ${N} by ${N}`}>
+                    <span className="jx-gap" style={{ top: `calc(${EXIT_ROW * cp}% + 1px)`, height: `calc(${cp}% - 2px)` }} aria-hidden="true" />
+                    <span className="jx-exit" role="img" aria-label="Exit" style={{ top: `${EXIT_ROW * cp}%`, height: `${cp}%` }}>
+                      <svg width="12" height="14" viewBox="0 0 12 14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 2l6 5-6 5" /></svg>
+                    </span>
+                    <div className="jx-in">
+                      {Array.from({ length: N * N }).map((_, cell) => (
+                        <span key={`c${cell}`} className="jx-cell" style={box(Math.floor(cell / N), cell % N, 1, 1)} />
+                      ))}
+                      {holding ? Array.from(targets.keys()).map((cell) => (
+                        <span key={`t${cell}`} className="jx-tgt" style={box(Math.floor(cell / N), cell % N, 1, 1)} />
+                      )) : null}
+                      {blocks.map((p, i) => {
+                        const me = i === 0;
+                        const r = p.horiz ? p.fixed : p.pos, c = p.horiz ? p.pos : p.fixed;
+                        const w = p.horiz ? p.len : 1, h = p.horiz ? 1 : p.len;
+                        return (
+                          <span key={`b${i}`} className={'jx-blk' + (me ? ' me' : '') + (sel === i && playing ? ' sel' : '')}
+                            style={{ ...box(r, c, w, h), ...(me ? null : { background: regionHue(JX_FLEET[(i - 1) % JX_FLEET.length]).dk }) }}>
+                            {me ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg> : null}
+                          </span>
+                        );
+                      })}
+                      {Array.from({ length: N * N }).map((_, cell) => {
+                        const r = Math.floor(cell / N), c = cell % N;
+                        const b = occ ? occ[r][c] : -1;
+                        const tgt = holding && targets.has(cell);
+                        return (
+                          <button key={`x${cell}`} type="button" className="jx-tap" style={{ left: `${c * cp}%`, top: `${r * cp}%`, width: `${cp}%`, height: `${cp}%` }}
+                            onClick={() => onCell(cell)} disabled={!playing} tabIndex={tgt || b >= 0 ? 0 : -1}
+                            aria-label={`Row ${r + 1}, column ${c + 1}${tgt ? ', slide here' : b === 0 ? ', the arrow block' : b > 0 ? `, block ${b}` : ''}${b >= 0 && b === sel ? ', picked up' : ''}`} />
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                {playing && (
+                  <div className="jx-tools">
+                    <button type="button" className="pst-tb" onClick={restart} disabled={!used} title="Put every block back and zero the move count">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 3v6h6" /></svg>Restart
+                    </button>
+                    {hintOk && !g.hintUsed && (
+                      <button type="button" className="pst-tb" onClick={useHint} title="Name the block to move next (one hint, first play only)">{ICON.bulb}Hint</button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            foot={line}
+            giveUp={playing ? { armed: !!armReveal, onPress: giveUpTap } : null}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside

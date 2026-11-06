@@ -61,6 +61,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 
 const COLORS = {
   cream: T.surface,
@@ -370,6 +372,8 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('etch');
   const STAGE = isStage('etch', searchParams);
+  const phoneStage = usePhoneStage();
+  const [stageLook] = useStageLook();
   // A give-up writes the solution into cells; on the loft the board keeps the
   // player's own position until the end card's Reveal answer tile is pressed.
   const viewCells = g.status === 'revealed' && LOFT && !revealed ? (g.playerCells || cells.map(() => 0)) : cells;
@@ -1074,6 +1078,105 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
     return out;
   }, [viewCells, pendSet, pendVal, rowDone, colDone, SOL, W, H, gridRows, gridCols, maxRowClue, maxColClue, clueFs, PUZZLE, soFar, showThumb]);
 
+  // THE STAGE (owner, 2026-11-06, the Etch mockup) is up from Start until the
+  // ending's board view. It draws the same board in one grid: a clue strip per
+  // column on top and per row on the left, white squares with a light rule and
+  // a heavier one every five lines, filled squares the full rose, marks grey
+  // with an ink x. Every square carries data-i, so the board's own pointer
+  // handlers (onCellDown via cellFnRef, onGridMove, the window pointerup that
+  // commits a touch stroke on lift) and cellFromPoint work on it unchanged.
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  // The clue gutters are sized from the clues THEMSELVES, in squares: a single
+  // run of 10 needs more room than three runs of 1, so a gutter counted in
+  // clue slots clipped (No. 121's lone 10 at 10x10). ETS_K is the clue font as
+  // a fraction of a square; a Manrope 800 tabular digit is ~0.6em, with 10%
+  // headroom on top for the metric.
+  const ETS_K = W >= 18 ? 0.54 : W > 12 ? 0.56 : 0.6;
+  const stageGut = useMemo(() => {
+    const dw = 0.6 * ETS_K;
+    let gw = 0, gh = 0;
+    for (const r of PUZZLE.rows) {
+      const d = r.reduce((a, v) => a + String(v).length, 0);
+      gw = Math.max(gw, d * dw + (r.length - 1) * 0.32 * ETS_K + 0.4 * ETS_K);
+    }
+    for (const c of PUZZLE.cols) gh = Math.max(gh, c.length * 1.05 * ETS_K + 0.25 * ETS_K);
+    return { w: Math.max(1, +(gw * 1.1 + 0.15).toFixed(3)), h: Math.max(1, +(gh * 1.1 + 0.1).toFixed(3)) };
+  }, [PUZZLE, ETS_K]);
+  const stageUW = stageGut.w + W, stageUH = stageGut.h + H;
+  const stageCells = useMemo(() => {
+    if (!stageOn) return null;
+    const out = [];
+    out.push(<i key="corner" className="ets-corner" aria-hidden="true" style={{ gridColumn: 1, gridRow: 1 }} />);
+    for (let c = 0; c < W; c++) {
+      const list = PUZZLE.cols[c];
+      out.push(
+        <div key={`cc${c}`} className={`ets-clue ets-ccl ets-cc${c}${colDone[c] ? ' dn' : ''}`} style={{ gridColumn: c + 2, gridRow: 1 }}
+          aria-label={`Column ${c + 1}: ${list.join(' ')}${colDone[c] ? ', done' : ''}`}>
+          {list.map((v, j) => <span key={j}>{v}</span>)}
+        </div>
+      );
+    }
+    for (let r = 0; r < H; r++) {
+      const list = PUZZLE.rows[r];
+      out.push(
+        <div key={`rc${r}`} className={`ets-clue ets-rcl ets-cr${r}${rowDone[r] ? ' dn' : ''}`} style={{ gridColumn: 1, gridRow: r + 2 }}
+          aria-label={`Row ${r + 1}: ${list.join(' ')}${rowDone[r] ? ', done' : ''}`}>
+          {list.map((v, j) => <span key={j}>{v}</span>)}
+        </div>
+      );
+      for (let c = 0; c < W; c++) {
+        const idx = r * W + c;
+        const v = viewCells[idx];
+        const wrong = v === 1 && SOL[idx] === 0;
+        const pv = pendSet && pendSet.has(idx) ? pendVal : null;
+        const st = pv !== null ? ` p${pv}` : wrong ? ' bad' : v === 1 ? ' f' : v === 2 ? ' m' : '';
+        const edge = (c % 5 === 4 && c !== W - 1 ? ' v5' : '') + (r % 5 === 4 && r !== H - 1 ? ' h5' : '')
+          + (c === 0 ? ' l' : '') + (r === 0 ? ' t' : '') + (c === W - 1 ? ' r' : '') + (r === H - 1 ? ' b' : '');
+        const glyph = pv === 2 || (pv === null && v === 2) ? '×' : (pv === null && wrong) ? '✗' : null;
+        out.push(
+          <div key={idx} data-i={idx}
+            className={`ets-cell ets-i${idx}${st}${edge}`}
+            style={{ gridColumn: c + 2, gridRow: r + 2 }}
+            aria-label={`Row ${r + 1}, column ${c + 1}${wrong ? ', wrong fill' : v === 1 ? ', filled' : v === 2 ? ', marked' : ', empty'}`}
+            onPointerDown={(e) => cellFnRef.current.down(e, idx)}
+            onContextMenu={(e) => { e.preventDefault(); cellFnRef.current.fill(idx); }}>
+            {glyph}
+          </div>
+        );
+      }
+    }
+    return out;
+  }, [stageOn, viewCells, pendSet, pendVal, rowDone, colDone, SOL, W, H, PUZZLE]);
+  // The crosshair on the stage: the aimed or hovered square's two clue strips
+  // fill with the full rose, and the square itself takes an ink inset ring.
+  // One generated rule, like the old board's, so the memoized squares stay put.
+  const stageCrossCss = stageOn && focusIdx >= 0
+    ? `.ets-grid .ets-cr${focusR},.ets-grid .ets-cc${focusC}{background:var(--pst-acc);color:var(--pst-on-acc);opacity:1;}`
+      + `.ets-grid .ets-i${focusIdx}{box-shadow:inset 0 0 0 2px var(--pst-ink);}`
+    : '';
+
+  // The aim callout, drawn once: on the stage when it is up (the stage sits
+  // over the old board, so a callout left there would be hidden), else in the
+  // old board's place. Inside the stage it reads the stage's ink and ground.
+  const aimCallout = aim ? (
+            <div ref={aimElRef} aria-hidden style={{
+              position: 'fixed', zIndex: 60, pointerEvents: 'none',
+              left: aimLeft(aimPosRef.current.x),
+              top: aimTop(aimPosRef.current.y),
+              transform: 'translateX(-50%)',
+              background: 'var(--pst-ink, var(--stg-ink, #0b0d12))', color: 'var(--pst-bg, var(--stg-ground, #ffffff))', borderRadius: 10,
+              padding: '6px 10px', textAlign: 'center', whiteSpace: 'nowrap',
+              boxShadow: '0 6px 16px rgba(0,0,0,0.35)', fontFamily: SANS,
+            }}>
+              <div style={{ fontSize: 12.5, fontWeight: 800, lineHeight: 1.3 }}>
+                R{Math.floor(aim.idx / W) + 1} &middot; C{(aim.idx % W) + 1} &middot; {AIM_LABEL[aim.val]}
+              </div>
+              {aim.aiming && (
+                <div style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1.3 }}>slide to aim</div>
+              )}
+            </div>
+  ) : null;
+
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
@@ -1099,6 +1202,55 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-11-06): Etch plays on the shared white stage at
+          every width, from the approved mockup: the clue strips and the board,
+          the Fill / Mark switch with Undo and Hint, one status line, and the
+          foot's two-tap Give up (the old Reveal link's own armReveal and
+          revealEnd). Presentation only: the old board stays behind it. */}
+      {stageOn && (() => {
+        const dark = isDarkLook(stageLook);
+        const line = toast || `${filledRight} of ${TOTAL} filled · ${errors} error${errors === 1 ? '' : 's'}`;
+        return (
+          <PlayStage bg={gameColor('etch')} label="Etch" wide={W > 12}
+            eyebrow={`${PUZZLE.sunday ? 'Sunday Edition' : 'Etch'} No. ${PUZZLE.num} · ${W}x${H} · hidden picture`}
+            top={(
+              <div className="ets" style={{ '--ets-uw': stageUW, '--ets-uh': stageUH, '--ets-k': ETS_K, '--lg-bad': dark ? '#fb923c' : '#c2410c', '--lg-bad-bg': dark ? '#3a2312' : '#ffedd5' }}>
+                <style dangerouslySetInnerHTML={{ __html: ETS_CSS }} />
+                <style dangerouslySetInnerHTML={{ __html: stageCrossCss }} />
+                <div className="ets-pb">
+                  <div className="ets-grid" role="grid" aria-label={`The Etch board, ${W} by ${H}`}
+                    onPointerMove={onGridMove}
+                    onPointerLeave={(e) => { if (e.pointerType === 'mouse') setHoverIdx(-1); }}
+                    style={{ gridTemplateColumns: `${stageGut.w}fr repeat(${W}, minmax(0, 1fr))`, gridTemplateRows: `${stageGut.h}fr repeat(${H}, minmax(0, 1fr))`, cursor: playing ? 'pointer' : 'default' }}>
+                    {stageCells}
+                  </div>
+                </div>
+                {aimCallout}
+                {playing && (
+                  <div className="ets-tools">
+                    <div className="ets-seg" role="group" aria-label="What a tap does">
+                      <button type="button" className={mode === 'fill' ? 'on' : undefined} onClick={() => setMode('fill')} aria-pressed={mode === 'fill'} title="Fill squares (F)">
+                        <span className="ets-sw" aria-hidden="true" />Fill
+                      </button>
+                      <button type="button" className={mode === 'mark' ? 'on' : undefined} onClick={() => setMode('mark')} aria-pressed={mode === 'mark'} title="Mark a square blank (M)">
+                        <span aria-hidden="true" className="ets-x">&times;</span>Mark
+                      </button>
+                    </div>
+                    <button type="button" className="pst-tb" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" aria-label="Undo last stroke">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5" /><path d="M4 9h10a6 6 0 0 1 0 12h-3" /></svg>Undo
+                    </button>
+                    {hintOk && !g.hintUsed && (
+                      <button type="button" className="pst-tb" onClick={useHint} title="Fill one correct square (one hint, first play only)" aria-label="Hint: fill one correct square">{ICON.bulb}Hint</button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            foot={line}
+            giveUp={playing ? { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } } : null}
+            clock={elapsed} done={!playing} />
+        );
+      })()}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1303,24 +1455,7 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
           {/* The aim callout. A fingertip hides the square it is on, so the
               square it is on is named ABOVE the finger, along with what will
               happen when it lifts. Touch only: it is only ever set there. */}
-          {aim && (
-            <div ref={aimElRef} aria-hidden style={{
-              position: 'fixed', zIndex: 60, pointerEvents: 'none',
-              left: aimLeft(aimPosRef.current.x),
-              top: aimTop(aimPosRef.current.y),
-              transform: 'translateX(-50%)',
-              background: 'var(--stg-ink, #0b0d12)', color: 'var(--stg-ground, #ffffff)', borderRadius: 10,
-              padding: '6px 10px', textAlign: 'center', whiteSpace: 'nowrap',
-              boxShadow: '0 6px 16px rgba(0,0,0,0.35)', fontFamily: SANS,
-            }}>
-              <div style={{ fontSize: 12.5, fontWeight: 800, lineHeight: 1.3 }}>
-                R{Math.floor(aim.idx / W) + 1} &middot; C{(aim.idx % W) + 1} &middot; {AIM_LABEL[aim.val]}
-              </div>
-              {aim.aiming && (
-                <div style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1.3 }}>slide to aim</div>
-              )}
-            </div>
-          )}
+          {!stageOn && aimCallout}
 
         {/* The status line and its helper, the tool switch on a phone, Undo,
             the hint, and Reveal as a small link. These sit INSIDE the board
@@ -1558,3 +1693,46 @@ export default function EtchClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 }
+
+// The stage board (owner, 2026-11-06 mockup). One CSS grid: the corner, a clue
+// strip per column (numbers stacked, bottom aligned) and per row (numbers in a
+// line, right aligned), then the squares. Sizes ride the grid's own width
+// (cqw), so the same board fits a 390px phone at 10x10, 15x15 and 20x20; the
+// board also shrinks to the screen's height so nothing scrolls. Rules are
+// solid: a light one between squares, a heavier one every five lines, ink round
+// the edge. Filled is the full rose, marked is grey with an ink x, a wrong fill
+// is Logic orange with a ring and a cross. A pending touch stroke (nothing is
+// written until the finger lifts) wears an ink ring over what it will place.
+const ETS_CSS = `
+.ets{--ets-rule5:color-mix(in srgb, var(--pst-mute) 55%, var(--pst-bg));display:flex;flex-direction:column;gap:12px;width:100%;align-self:center;}
+.ets-pb{align-self:center;width:min(100%, max(240px, calc((100dvh - 330px) * var(--ets-uw) / var(--ets-uh))));}
+.ets-grid{display:grid;width:100%;aspect-ratio:var(--ets-uw) / var(--ets-uh);touch-action:none;user-select:none;-webkit-user-select:none;container-type:inline-size;}
+.ets-corner{display:block;}
+.ets-clue{display:flex;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05;color:var(--pst-ink);min-width:0;min-height:0;font-size:min(16px, calc(100cqw / var(--ets-uw) * var(--ets-k)));letter-spacing:-.02em;}
+.ets-ccl{flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:.25em;border-radius:6px 6px 0 0;}
+.ets-rcl{flex-direction:row;align-items:center;justify-content:flex-end;gap:.32em;padding-right:.4em;border-radius:6px 0 0 6px;white-space:nowrap;}
+.ets-clue.dn{color:var(--pst-mute);opacity:.55;text-decoration:line-through;text-decoration-thickness:max(1px, .12em);text-decoration-skip-ink:none;}
+.ets-cell{box-sizing:border-box;position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background:var(--pst-bg);color:var(--pst-ink);font-weight:800;line-height:1;font-size:calc(100cqw / var(--ets-uw) * .72);cursor:inherit;-webkit-tap-highlight-color:transparent;
+  border-right:1px solid var(--pst-cell-line);border-bottom:1px solid var(--pst-cell-line);}
+.ets-cell.v5{border-right:2px solid var(--ets-rule5);}
+.ets-cell.h5{border-bottom:2px solid var(--ets-rule5);}
+.ets-cell.l{border-left:1px solid var(--pst-ink);}
+.ets-cell.t{border-top:1px solid var(--pst-ink);}
+.ets-cell.r{border-right:1px solid var(--pst-ink);}
+.ets-cell.b{border-bottom:1px solid var(--pst-ink);}
+.ets-cell.f{background:var(--pst-acc);color:var(--pst-on-acc);}
+.ets-cell.m{background:var(--pst-cell);color:var(--pst-ink);}
+.ets-cell.bad{background:var(--lg-bad-bg);color:var(--lg-bad);box-shadow:inset 0 0 0 2px var(--lg-bad);}
+.ets-cell.p1{background:var(--pst-acc);box-shadow:inset 0 0 0 2px var(--pst-ink);}
+.ets-cell.p2{background:var(--pst-cell);box-shadow:inset 0 0 0 2px var(--pst-ink);}
+.ets-cell.p0{background:var(--pst-bg);box-shadow:inset 0 0 0 2px var(--pst-ink);}
+.ets-tools{display:flex;gap:8px;align-items:center;}
+.ets-seg{display:flex;flex:1;min-width:0;border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
+.pst .ets-seg button{flex:1;min-width:0;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;}
+.pst .ets-seg button+button{border-left:1px solid var(--pst-ink);}
+.pst .ets-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
+.ets-sw{width:12px;height:12px;border-radius:2px;background:currentColor;flex:none;}
+.ets-x{font-size:1.2em;line-height:1;}
+.ets-tools .pst-tb{padding:0 13px;flex:none;}
+@media (max-width:360px){.ets-tools{gap:6px;}.ets-tools .pst-tb{padding:0 10px;}}
+`;

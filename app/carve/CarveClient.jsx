@@ -80,8 +80,11 @@ const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const PAPER = '#fbf9f4';
 // THE CARVED BLOCKS ON THE STAGE (owner, 2026-11-01): each block wears its own
 // site pastel (the category ramp in the REGION_RAMP spread order, amber left
-// out so a nine-block Sunday never shows two near-golds). A locked block is the
-// full pastel with dark ink, a block still growing a pale mix of it.
+// out so a nine-block Sunday never shows two near-golds). FULL PASTELS ONLY
+// (owner, 2026-11-06): a block wears its full pastel with dark ink from its
+// first square, growing or locked; the old pale mixes did not match the site.
+// A locked block reads by its closed ink walls and the tick on its chip; the
+// block being grown wears the ink ring on its chip.
 const CARVE_PASTELS = ['#7dd3fc', '#e8b43a', '#6ee7b7', '#fb7185', '#c084fc', '#bef264', '#e879f9', '#a5b4fc', '#fb923c'];
 const NUM_WORD = { 4: 'Four', 5: 'Five', 6: 'Six', 7: 'Seven', 8: 'Eight', 9: 'Nine' };
 const HELP_KEY = 'sot_carve_help_seen';
@@ -732,8 +735,8 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
       {/* THE STAGE (owner, 2026-10-30): Carve plays on the shared white stage at
           every width: the board, the block chips under it, the tools, one line
           and the foot (the guide card was dropped 2026-11-01 to save space).
-          Each block wears its own pastel (CARVE_PASTELS): full when locked,
-          a pale mix while it grows; uncarved squares white; every cut is a
+          Each block wears its own full pastel (CARVE_PASTELS) from its first
+          square (owner, 2026-11-06: no pale mixes); uncarved squares white; every cut is a
           heavy ink rule. Every tap goes through the board's own handlers. */}
       {STAGE && phoneStage && !!g.t0 && (playing || !revealed) && (() => {
         const ed = (idx, j) => j >= 0 && assign[j] !== assign[idx] && (assign[idx] >= 0 || assign[j] >= 0);
@@ -770,7 +773,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
                       return (
                         <button key={k} type="button" className={'cvs-chip' + (on ? ' on' : '') + (done ? ' done' : '')} style={{ '--cvh': CARVE_PASTELS[k % CARVE_PASTELS.length] }} onClick={() => { if (!done) setCur(k); }}
                           aria-pressed={on} aria-label={`Block ${k + 1}${done ? ', locked' : `, ${sums[k]} of ${TARGET}`}${on ? ', growing now' : ''}`}>
-                          <b>{k + 1}</b><span>{done ? TARGET : `${sums[k]}/${TARGET}`}</span><i style={{ width: `${pct}%` }} />
+                          <b>{k + 1}</b><span>{done ? <>{CVS_TICK}{TARGET}</> : `${sums[k]}/${TARGET}`}</span>
                         </button>
                       );
                     })}
@@ -1256,17 +1259,17 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
 }
 
 // The stage board (owner, 2026-10-30 mockup).
+const CVS_TICK = <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.5 6.2l2.2 2.2 4.8-5" /></svg>;
 const CVS_CSS = `
 .cvs-chips{display:grid;gap:6px;}
 .pst .cvs-chip{position:relative;min-height:52px;border-radius:12px;border:1px solid var(--pst-ink);background:transparent;padding:4px 0 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;min-width:0;}
 .cvs-chip b{font-size:16px;font-weight:800;line-height:1;}
 .cvs-chip span{font-size:11px;font-weight:800;color:var(--pst-mute);font-variant-numeric:tabular-nums;}
 .cvs-chip i{position:absolute;left:0;bottom:0;height:5px;background:var(--cvh, var(--pst-acc));}
-.pst .cvs-chip{background:color-mix(in srgb, var(--cvh, var(--pst-acc)) 22%, var(--pst-bg));}
-.pst .cvs-chip.on{background:color-mix(in srgb, var(--cvh, var(--pst-acc)) 45%, var(--pst-bg));box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
-.pst .cvs-chip.done{background:var(--cvh, var(--pst-acc));}
-.pst .cvs-chip.done *{color:#08222e;}
-.pst .cvs-chip.on span{color:var(--pst-ink);}
+.pst .cvs-chip{background:var(--cvh, var(--pst-acc));}
+.pst .cvs-chip,.pst .cvs-chip *{color:#08222e;}
+.pst .cvs-chip.on{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.cvs-chip span{display:inline-flex;align-items:center;gap:3px;}
 .cvs-chip.done i{display:none;}
 .cvs-grid{display:grid;border:1px solid var(--pst-ink);border-radius:16px;overflow:hidden;background:var(--pst-bg);width:min(100%, 460px);align-self:center;}
 .cvs-grid.n7{width:min(100%, 560px);}
@@ -1274,10 +1277,8 @@ const CVS_CSS = `
 .cvs-grid.n7 .cvs-c{font-size:clamp(15px, 5vw, 24px);}
 .pst .cvs-c.er{border-right:3px solid var(--pst-ink);}
 .pst .cvs-c.eb{border-bottom:3px solid var(--pst-ink);}
-.pst .cvs-c.cut{background:color-mix(in srgb, var(--cvh) 30%, var(--pst-bg));}
-.pst .cvs-c.lock{background:var(--cvh, var(--pst-acc));font-weight:800;}
-.pst .cvs-c.lock,.pst .cvs-c.lock *{color:#08222e;}
-.pst .cvs-c.cur{background:color-mix(in srgb, var(--cvh, var(--pst-acc)) 52%, var(--pst-bg));font-weight:800;}
+.pst .cvs-c.cut{background:var(--cvh, var(--pst-acc));font-weight:800;}
+.pst .cvs-c.cut,.pst .cvs-c.cut *{color:#08222e;}
 .pst .cvs-c.anc::after{content:"";position:absolute;inset:16%;border-radius:50%;border:1px solid currentColor;pointer-events:none;}
 .cvs-c em{position:absolute;top:2px;left:4px;font-style:normal;font-size:10px;font-weight:800;opacity:.75;}
 .pst .cvs-c.bad{background:var(--pst-bad-bg);color:var(--pst-bad);}

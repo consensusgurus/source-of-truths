@@ -130,7 +130,26 @@ const U_RUNGS = [
   { w: 7, h: 7, cast: 9, forks: 22, red: 4 },
   { w: 7, h: 7, cast: 8, forks: 23, red: 1 },    // Sat
 ];
-const uRungOf = (p) => U_RUNGS[dowOf(p)];
+// THE OBSTACLE ERA (2026-11-07, owner: "can we make chomp harder? maybe some
+// obstacles?"). Still ONE route and full coverage, but the board now carries 3
+// (Sunday 4) bleachers AND two fewer mascots than the open rung, while keeping
+// at least the open rung's FORKS. The 2026-08-31 ruling stands: a bleacher alone
+// removes branching and makes the route easier to read. That is why the walls
+// come paired with fewer signposts and a forks floor that does not move: the
+// player gets less help and exactly as many chances to go wrong. Measured
+// before writing: with 3 walls the carve reaches forks 21-27 at cast 7-8.
+const OBST_FROM = '2026-11-07';
+const O_RUNGS = [
+  { w: 8, h: 8, cast: 9, forks: 28, red: 1, walls: 4 },   // Sun
+  { w: 7, h: 7, cast: 8, forks: 18, red: 4, walls: 3 },   // Mon
+  { w: 7, h: 7, cast: 8, forks: 19, red: 4, walls: 3 },
+  { w: 7, h: 7, cast: 7, forks: 20, red: 3, walls: 3 },
+  { w: 7, h: 7, cast: 7, forks: 21, red: 3, walls: 3 },
+  { w: 7, h: 7, cast: 7, forks: 22, red: 3, walls: 3 },
+  { w: 7, h: 7, cast: 7, forks: 23, red: 1, walls: 3 },   // Sat
+];
+const isObst = (p) => p.live >= OBST_FROM;
+const uRungOf = (p) => (isObst(p) ? O_RUNGS : U_RUNGS)[dowOf(p)];
 const isUnique = (p) => p.live >= UNIQUE_FROM;
 
 const FIRST_MASCOT = 'bulldog';
@@ -175,7 +194,7 @@ const RAMP = [
 
 const LEG_CAP = 6;        // longest hop between consecutive mascots
 const RUN_CAP = 2.4;      // squares per straight run on the TIDIEST optimum
-const CAST_MIN = 8, CAST_MAX = 11;
+const CAST_MIN = 7, CAST_MAX = 11;   // 7 from the obstacle era (2026-11-07)
 const SOLVER_CAP = 4000000;
 const TURN_CAP = 800000;
 
@@ -412,14 +431,15 @@ function carefulClears(p) {
       if (seen.has(idxOf(p, c[0], c[1]))) why.push(`pellet ${c} repeated or sitting on the start`);
       seen.add(idxOf(p, c[0], c[1]));
     }
-    if (isUnique(p)) {
+    if (isUnique(p) && !isObst(p)) {
       // No bleachers at all from here: they were the thing making the route
       // readable, so the era that gates on one path carries none.
       if (p.walls && p.walls.length) why.push(`carries ${p.walls.length} bleacher(s); the uniqueness era has none`);
     } else if (p.live >= WALLED_FROM) {
       const walls = wallsOf(p);
-      if (!Array.isArray(p.walls) || walls.length < WALLS_MIN || walls.length > WALLS_MAX) {
-        why.push(`carries ${walls.length} wall(s), outside ${WALLS_MIN}-${WALLS_MAX}`);
+      const [wMin, wMax] = isObst(p) ? [uRungOf(p).walls, uRungOf(p).walls] : [WALLS_MIN, WALLS_MAX];
+      if (!Array.isArray(p.walls) || walls.length < wMin || walls.length > wMax) {
+        why.push(`carries ${walls.length} wall(s), outside ${wMin}-${wMax}`);
       }
       const wseen = new Set();
       for (const c of walls) {
@@ -512,7 +532,10 @@ const MINS = new Map();
     const sun = uni.filter((p) => p.sunday), wk = uni.filter((p) => !p.sunday);
     if (!sun.length) bad.push('the uniqueness era authors no Sunday Edition at all');
     for (const p of sun) {
-      if (p.cast.length !== MASCOTS.length) bad.push(`#${p.num} Sunday is not the full cast of ${MASCOTS.length}`);
+      // From the obstacle era the Sunday is the peak by SIZE, BLEACHERS and FORKS
+      // (8x8, 4 walls, forks >= 28), and its cast is the O_RUNGS nine.
+      const sunCast = isObst(p) ? uRungOf(p).cast : MASCOTS.length;
+      if (p.cast.length !== sunCast) bad.push(`#${p.num} Sunday fields ${p.cast.length}, not its ${sunCast}`);
       if (p.w !== 8 || p.h !== 8) bad.push(`#${p.num} Sunday is ${p.w}x${p.h}, not the 8x8 Edition`);
     }
     if (wk.some((p) => p.cast.length >= MASCOTS.length)) bad.push('a weekday fields the full cast, so Sunday is not the peak');
@@ -537,7 +560,7 @@ const MINS = new Map();
     const allSun = PUZZLES.filter((p) => p.sunday && p.live >= REBUILT_FROM);
     const sizes = [...new Set(allSun.map((p) => `${p.w}x${p.h}`))].join(' and ');
     const covs = allSun.map((p) => coverOf(p, MINS.get(p.num))).filter(Number.isFinite);
-    ok('sunday', `${allSun.length} Sunday Editions (${sizes}), every one with the full cast of ${MASCOTS.length}, forcing ${Math.round(Math.min(...covs) * 100)}-${Math.round(Math.max(...covs) * 100)}% of the playable board`);
+    ok('sunday', `${allSun.length} Sunday Editions (${sizes}), the full cast of ${MASCOTS.length} until 2026-11-07, nine with four bleachers after, forcing ${Math.round(Math.min(...covs) * 100)}-${Math.round(Math.max(...covs) * 100)}% of the playable board`);
   }
 })();
 

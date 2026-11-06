@@ -427,7 +427,7 @@ archive and hub chips use the short form `Sun`.
 | Hedge | a 10x10 loop lattice instead of the weekday 7x7 |
 | Flank | a giant country with 8 to 14 borders instead of the weekday ramp's 1 to 7, and a fourth strike to spend (from launch, 2026-08-28) |
 | Passport | to 2026-10-14 a country with eight or more land neighbors for the borders round; from 2026-10-15 the run carries Span's, Flank's and Ping's own Sunday Editions; from 2026-11-07 (the trip) a Sunday is a trickier start city, an 8-11 hop road and a destination with 6+ neighbors (Flank's four strikes) |
-| Chomp | the full cast of eleven mascots and 0-2 spare squares (and from 2026-08-22 every Chomp board carries 5-7 bolted-down bleacher walls; see app/chomp/puzzles.js) |
+| Chomp | an 8x8 board instead of 7x7 (from 2026-09-01, the uniqueness era: one route, eleven mascots); from 2026-11-07 (the obstacle era) the 8x8 carries 4 bleachers and nine mascots, the weekdays 3 bleachers and seven or eight. See app/chomp/puzzles.js |
 | Niche | a 4x4 grid instead of the weekday 3x3, sixteen cells and twenty guesses, always on Countries, the deepest universe (from launch, 2026-08-23) |
 | Shoe | fourteen hands of blackjack instead of ten, dealt off the entire 104-card double deck instead of a 72-card cut, so a perfect counter knows exactly what is left (from 2026-10-04; before 2026-09-30 it was single-deck, seven hands off 52 against five off 36) |
 | Queen | a win in twelve, the longest walk against the weekday five to nine (from launch, 2026-08-21) |
