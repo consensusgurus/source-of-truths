@@ -1,298 +1,315 @@
-// Idiom (English Gauntlet), lane 'What It Means'. 36 days x 5 tiers (tier 1 gimme .. tier 5 expert).
-// What an idiom or set phrase means. From tier 3 up, also foreign phrases used in
-// English and older or regional idioms. No proverbs, no similes, no origins (the
-// other Idiom lane, 'Finish the Saying', has proverbs and similes). One choice in
-// each set is the literal reading of the phrase.
+// Idiom gauntlet, lane 'What It Means': idioms and foreign phrases, asked for
+// their meaning. THIS FILE HOLDS THE LATEST SEGMENT ONLY: bank days 37..74
+// (2026-11-24 to 2026-12-31), five tiers a day (tier 1 gimme .. tier 5 expert).
+// Days 1..36 were built from the launch version of this file (commit 25faa9aa)
+// and live frozen in app/idiom/questions.js. Proverbs, sayings and similes belong
+// to the other Idiom lane. No idiom repeats one already in the bank.
 const L = 'What It Means';
 const D = (t, q, a, d) => ({ c: L, t, q, a, d });
 
 export const LANE_DAYS = [
-  // day 1
+  // day 37 (2026-11-24)
   [
-    D(1, "What does it mean if a task is 'a piece of cake'?", "It is very easy to do", ["It is a slice of dessert", "It is a small part of a bigger job", "It is a reward for hard work"]),
-    D(2, "If a builder 'cuts corners', what does he do?", "Does the job cheaply or carelessly", ["Trims the edges off the boards", "Finishes well ahead of schedule", "Spends more money than needed"]),
-    D(3, "If you get 'the lion's share' of something, what do you get?", "The largest part of it", ["The portion fed to a big cat", "A small, fair portion", "The part nobody else wanted"]),
-    D(4, "If a new recruit 'can't cut the mustard', what is true?", "He isn't good enough for the job", ["He can't cook a simple meal", "He refuses to follow orders", "He isn't brave enough to fight"]),
-    D(5, "If a critic calls a book 'sui generis', what does she mean?", "It is one of a kind", ["It is a copy of another", "It is written for children", "It belongs to a popular genre"]),
+    D(1, "If you have to 'hit the books' tonight, what will you do?", 'Study hard', ['Read a novel for fun', 'Sell your old textbooks', 'Tidy up your bookshelf']),
+    D(2, "If a guest 'puts his foot in his mouth', what has he done?", 'Said something embarrassing by mistake', ['Eaten too quickly', 'Refused to speak', 'Made a rash promise']),
+    D(3, "If an antique is 'the real McCoy', what is it?", 'The genuine article, not a copy', ['A cheap imitation', 'A family heirloom', "A collector's rare find"]),
+    D(4, "If a debt is 'an albatross around your neck', what is it?", 'A burden you cannot shake off', ['A lucky charm', 'A sign of success', 'A gift from a friend']),
+    D(5, "If black tie is 'de rigueur' at a gala, what is it?", 'Required by custom or fashion', ['Strictly forbidden', 'Optional but welcome', 'Out of style']),
   ],
-  // day 2
+  // day 38 (2026-11-25)
   [
-    D(1, "At a party, what does it mean to 'break the ice'?", "Ease the awkwardness between strangers", ["Crack the ice cubes for drinks", "Leave before everyone else", "Start an argument on purpose"]),
-    D(2, "What does it mean to 'let off steam'?", "Release pent-up anger or energy", ["Open the valve on a kettle", "Lose your temper at a friend", "Calm down and fall asleep"]),
-    D(3, "What is 'a white elephant'?", "A costly possession that is of little use", ["A rare albino animal", "A gift that brings good luck", "A big secret that everyone knows"]),
-    D(4, "What is a 'non sequitur'?", "A remark that doesn't follow logically", ["A follow-up question in a debate", "A statement that repeats itself", "An argument with no flaws"]),
-    D(5, "If a schemer is 'hoist with his own petard', what has happened?", "His own plot has backfired on him", ["He has been lifted up by a crane", "He has been rewarded for his scheme", "He has escaped without punishment"]),
+    D(1, "What does it mean to 'let the cat out of the bag'?", 'Reveal a secret by accident', ['Cause trouble on purpose', 'Free someone from a tight spot', 'Start an argument at home']),
+    D(2, "Who is 'the big cheese' at a company?", 'The most important person in charge', ['The newest employee', 'The best salesperson', 'The person who plans parties']),
+    D(3, "What is 'a red-letter day'?", 'A memorable, special day', ['A day of bad news', 'A day when bills are due', 'A day of mourning']),
+    D(4, "Who is 'a dog in the manger'?", "Someone who keeps from others what he can't use", ['Someone who sleeps through the holidays', 'A loyal servant to a family', 'A guard who takes bribes']),
+    D(5, "If a reporter is 'au courant', what is she?", 'Up to date and well informed', ['Running late', 'In a hurry', 'Out of the loop']),
   ],
-  // day 3
+  // day 39 (2026-11-26)
   [
-    D(1, "If you are feeling 'under the weather', how are you feeling?", "Slightly ill or unwell", ["Soaked from a sudden storm", "Angry about a small problem", "Too tired to get out of bed"]),
-    D(2, "If a company 'jumps the gun' on an announcement, what has it done?", "Acted before the right time", ["Leaped over a weapon", "Made it louder than needed", "Delayed it for far too long"]),
-    D(3, "At a dinner party, what is a 'faux pas'?", "An embarrassing social blunder", ["A misstep in a dance", "A polite toast to the host", "A small after-dinner gift"]),
-    D(4, "What does it mean to 'buy a pig in a poke'?", "Buy something without inspecting it first", ["Buy a farm animal in a sack", "Pay a fair price for food", "Buy something you already own"]),
-    D(5, "What does it mean to 'beard the lion in his den'?", "Confront someone formidable on their own turf", ["Shave a big cat at the zoo", "Hide from a powerful enemy", "Flatter a boss in his office"]),
+    D(1, "At Thanksgiving, what does it mean to 'lend a hand' in the kitchen?", 'Help out with the work', ['Taste the food as it cooks', 'Give advice from a distance', 'Borrow a cooking tool']),
+    D(2, "If a smoker quits 'cold turkey', how does he quit?", 'All at once, with no tapering off', ['Slowly, a little each week', 'With help from a doctor', 'For one holiday only']),
+    D(3, "If a deal is signed 'at the eleventh hour', when is it signed?", 'At the last possible moment', ['Late at night', 'Just before lunch', 'After the deadline']),
+    D(4, "What does 'the Peter principle' claim?", 'Workers rise until they reach a job they cannot do', ['The first to speak is usually wrong', 'Teams grow to fill any budget', 'Those who rise fastest fall hardest']),
+    D(5, "What does 'noblesse oblige' mean?", 'The privileged owe generosity to others', ['Nobles must be obeyed', 'Good manners are always required', 'Wealth must be inherited']),
   ],
-  // day 4
+  // day 40 (2026-11-27)
   [
-    D(1, "What does it mean to 'spill the beans'?", "Give away a secret", ["Knock over a pot of food", "Waste money on small things", "Make a mess of a simple job"]),
-    D(2, "What is 'the elephant in the room'?", "An obvious problem nobody wants to discuss", ["A large animal kept indoors", "The most important guest present", "A secret that only one person knows"]),
-    D(3, "If a parent tells you to 'mind your p's and q's', what should you do?", "Watch your manners and behavior", ["Practice writing your letters", "Keep careful track of your money", "Stop asking so many questions"]),
-    D(4, "What does it mean to 'tilt at windmills'?", "Fight enemies that are imaginary", ["Lean against a strong wind", "Work hard on a farm", "Give up before even trying"]),
-    D(5, "If something is a 'sine qua non' for success, it is...?", "An absolutely essential condition", ["A nice but optional extra", "A major obstacle to overcome", "A lucky accident"]),
+    D(1, "If you are 'on cloud nine', how do you feel?", 'Extremely happy', ['Confused and dreamy', 'Sleepy and tired', 'Nervous and jumpy']),
+    D(2, "If a patient is 'out of the woods', what is true?", 'She is past the worst danger', ['She is lost and confused', 'She has left the hospital early', 'She has a new illness']),
+    D(3, "What does 'Murphy's law' say?", 'Anything that can go wrong will', ['Hard work always pays off', 'The simplest answer is best', 'Work expands to fill the time']),
+    D(4, "In a debate, what is 'a straw man'?", 'A distorted version of a view, easy to knock down', ['A witness paid to lie', 'A candidate with no chance', 'A fact that cannot be checked']),
+    D(5, "In law, what does 'non compos mentis' mean?", 'Not of sound mind', ['Not present in court', 'Not guilty of a crime', 'Not able to pay']),
   ],
-  // day 5
+  // day 41 (2026-11-28)
   [
-    D(1, "If a new car 'costs an arm and a leg', it is...?", "Extremely expensive to buy", ["Likely to cause a serious injury", "A real bargain for the price", "Paid off in small monthly amounts"]),
-    D(2, "If you are 'barking up the wrong tree', what are you doing?", "Seeking answers in a mistaken place", ["Howling at the base of a tree", "Making too much noise in public", "Climbing higher than is safe"]),
-    D(3, "In a mystery novel, what is 'a red herring'?", "A false clue that distracts from the truth", ["A smoked fish served at dinner", "The key piece of evidence", "The detective's lucky guess"]),
-    D(4, "If a decision is presented as 'a fait accompli', what is true?", "It is already done and can't be undone", ["It is still open for debate", "It is a mistake that needs fixing", "It is a proposal put to a vote"]),
-    D(5, "If you face 'Hobson's choice', what are you offered?", "No real choice, just one option", ["Two equally good options", "A choice made for you by a judge", "A free choice of anything at all"]),
+    D(1, "What does it mean to 'get the ball rolling'?", 'Get something started', ['Speed up a slow game', 'Pass a job to someone else', 'Keep things as they are']),
+    D(2, "If voters 'jump on the bandwagon', what do they do?", 'Join in because it is popular', ['Leave a party in protest', 'Vote against the leader', 'Start a new movement']),
+    D(3, "What is 'a Pandora's box'?", 'A source of many unforeseen troubles', ['A gift of great value', 'A hiding place for secrets', 'A puzzle with no solution']),
+    D(4, "If volunteers are 'gung ho', what are they?", 'Extremely eager and enthusiastic', ['Tired and reluctant', 'Untrained and clumsy', 'Quiet and obedient']),
+    D(5, "If a novel opens 'in medias res', where does it begin?", 'In the middle of the action', ['At the very end of the story', 'With a long prologue', "At the hero's birth"]),
   ],
-  // day 6
+  // day 42 (2026-11-29)
   [
-    D(1, "When someone says they are going to 'hit the sack', what are they going to do?", "Go to bed for the night", ["Punch a heavy bag at the gym", "Quit their job right away", "Pack their bags for a trip"]),
-    D(2, "When a bully 'gets a taste of his own medicine', what happens?", "He is treated the way he treats others", ["He is forced to swallow his pills", "He is sent to see a doctor", "He is finally forgiven by everyone"]),
-    D(3, "If you experience 'deja vu', what do you feel?", "That you have lived this moment before", ["That you are seeing something brand new", "That you are about to faint", "That you can predict the future"]),
-    D(4, "If a household is 'at sixes and sevens', it is...?", "In a state of confusion", ["Divided into two teams", "Counting down to an event", "Running exactly on schedule"]),
-    D(5, "What is 'a sword of Damocles' hanging over someone?", "A constant threat of looming disaster", ["A medal for great bravery", "A blade hung above a chair", "A secret that protects them"]),
+    D(1, "If help arrives 'in the nick of time', when does it arrive?", 'Just before it is too late', ['Much later than planned', 'Right at the start of the day', 'Long before anyone needed it']),
+    D(2, "If you 'take a rumor with a grain of salt', what do you do?", 'Treat it with some doubt', ['Spread it around quickly', 'Believe every word of it', 'Add your own details']),
+    D(3, "What is 'a Freudian slip'?", 'A slip of the tongue that reveals a hidden thought', ['A small mistake in spelling', 'A sudden loss of memory', 'A dream that predicts the future']),
+    D(4, "If a complaint gets 'short shrift', what happens to it?", 'It gets little attention or sympathy', ['It is settled very quickly in your favor', 'It is sent to a higher court', 'It is written up in full']),
+    D(5, "What is a 'cri de coeur'?", 'A passionate appeal or outcry', ['A broken heart', 'A battle cry', 'A love letter']),
   ],
-  // day 7
+  // day 43 (2026-11-30)
   [
-    D(1, "Something that happens 'once in a blue moon' happens how often?", "Very rarely, hardly ever", ["Only on nights when the moon is full", "About once every month", "Every single evening"]),
-    D(2, "If you 'burn the midnight oil', what are you doing?", "Working or studying late into the night", ["Lighting an old oil lamp", "Wasting money on fuel", "Waking up very early"]),
-    D(3, "If winning an award is 'a feather in your cap', it is...?", "An achievement to be proud of", ["A decoration for a hat", "A small, meaningless prize", "A reason to feel embarrassed"]),
-    D(4, "What is 'the hair of the dog'?", "A drink taken to cure a hangover", ["A strand of fur on your clothes", "A small sign of trouble ahead", "A bite from an angry animal"]),
-    D(5, "What is 'esprit de l'escalier'?", "Thinking of the perfect reply too late", ["A cheerful mood after climbing stairs", "A quick, witty comeback on the spot", "A fear of speaking in public"]),
+    D(1, "If your friend says 'I'm all ears', what does she mean?", 'She is ready to listen closely', ['She cannot hear you well', 'She has heard enough', 'She wants you to speak louder']),
+    D(2, "If someone has 'lost their marbles', what is true?", 'They have gone a bit crazy', ['They have lost their money', 'They have given up a game', 'They have lost their temper']),
+    D(3, "Who is 'a wet blanket' at a party?", 'Someone who spoils the fun', ['Someone who arrives late', 'Someone who drinks too much', 'Someone who cries easily']),
+    D(4, "Who is an 'enfant terrible'?", 'A brash newcomer who shocks the establishment', ['A badly behaved small child', 'A frightening villain in a play', 'A shy young genius']),
+    D(5, "What does 'Sturm und Drang' describe?", 'Turmoil and emotional upheaval', ['Calm after a crisis', 'Order and discipline', 'Wealth and comfort']),
   ],
-  // day 8
+  // day 44 (2026-12-01)
   [
-    D(1, "Why would an actor be told to 'break a leg' before a show?", "To wish them good luck", ["To hope they get hurt on stage", "To tell them to leave quickly", "To ask them to dance harder"]),
-    D(2, "What does it mean to 'turn a blind eye' to a problem?", "Pretend not to notice it", ["Close one eye to see better", "Lose your sight because of it", "Report it to the authorities"]),
-    D(3, "Who is 'a wolf in sheep's clothing'?", "A dangerous person who seems harmless", ["A wild animal in disguise", "A leader who follows the crowd", "A loner who dislikes company"]),
-    D(4, "If an actor says a line 'sotto voce', how is it said?", "Quietly, under one's breath", ["In a loud, booming shout", "In a strong foreign accent", "In a high singing tone"]),
-    D(5, "To 'cut the Gordian knot' is to do what?", "Solve a tangled problem with bold action", ["Slice through a knotted rope", "Untangle a problem slowly, step by step", "Avoid a hard problem entirely"]),
+    D(1, "When someone asks 'Cat got your tongue?', what are they asking?", "Why aren't you saying anything?", ['Why are you being so rude?', 'Did you eat something strange?', 'Why are you talking so much?']),
+    D(2, "If you 'give someone a piece of your mind', what do you do?", 'Tell them off angrily', ['Share a helpful idea', 'Teach them a lesson in school', 'Tell them a secret']),
+    D(3, "Who is 'a loose cannon'?", 'An unpredictable person who may cause harm', ['A loyal but clumsy helper', 'A retired soldier', 'A person who talks too fast']),
+    D(4, "What is a 'cause celebre'?", 'A case that draws wide public attention', ['A charity for famous people', 'A party for a big win', 'A reason to celebrate']),
+    D(5, "To 'clean the Augean stables' is to do what?", 'Clear away a huge mess or corruption', ['Do a small chore well', 'Break a wild horse', 'Hide evidence of a crime']),
   ],
-  // day 9
+  // day 45 (2026-12-02)
   [
-    D(1, "If a thief is 'caught red-handed', what is true?", "Discovered in the middle of the crime", ["His hands were stained with paint", "He confessed to the police", "He got away without a trace"]),
-    D(2, "If you 'bite off more than you can chew', what have you done?", "Taken on more than you can handle", ["Stuffed too much food in your mouth", "Spoken rudely to someone older", "Asked for more pay than you deserve"]),
-    D(3, "When people want to keep 'the status quo', what do they want?", "Things to stay as they are", ["Things to change quickly", "A higher social standing", "A vote on the matter"]),
-    D(4, "What is 'a busman's holiday'?", "Free time spent doing your usual work", ["A long trip on a bus tour", "A day off with full pay", "A short break between shifts"]),
-    D(5, "If coworkers 'send someone to Coventry', what do they do?", "Refuse to speak to them", ["Ship them off to an English city", "Give them all the worst jobs", "Report them to the boss"]),
+    D(1, "If a loud neighbor 'drives you up the wall', what does he do?", 'Annoys you a great deal', ['Keeps you awake all night', 'Makes you laugh a lot', 'Scares you badly']),
+    D(2, "When someone says 'a penny for your thoughts', what are they asking?", 'What are you thinking about?', ['Can you lend me money?', 'Will you sell me your idea?', 'Do you have any spare change?']),
+    D(3, "Who is 'a Johnny-come-lately'?", 'A recent arrival or newcomer', ['A smooth talker', 'A loyal follower', 'A seasoned veteran']),
+    D(4, "What is 'the coup de grace'?", 'A final blow that ends something', ['A graceful exit from power', 'A sudden military takeover', 'A charming act of kindness']),
+    D(5, "What does it mean to 'keep your powder dry'?", 'Stay ready for action', ['Avoid a quarrel', 'Save your money', 'Keep a secret']),
   ],
-  // day 10
+  // day 46 (2026-12-03)
   [
-    D(1, "If a voter is 'on the fence' about a choice, what are they?", "Unable to make up their mind", ["Sitting on a wooden railing", "Strongly against the idea", "Refusing to vote at all"]),
-    D(2, "If a coworker 'steals your thunder', what has happened?", "They took the attention you deserved", ["They made a loud noise during your talk", "They borrowed your idea with permission", "They praised you in front of the boss"]),
-    D(3, "What is a person's 'Achilles heel'?", "A weak point that can bring them down", ["An old injury to the foot", "Their greatest hidden talent", "A habit of running away"]),
-    D(4, "If one company 'steals a march on' another, what does it do?", "Gains an edge by acting first", ["Takes over its parade route", "Copies its products exactly", "Hires away its best workers"]),
-    D(5, "What is 'Weltschmerz'?", "Sadness at the state of the world", ["A thirst for world travel", "Pain in the joints from age", "Joy in the beauty of nature"]),
+    D(1, "A celebrity described as 'down to earth' is...?", 'Practical and unpretentious', ['Shy and very private', 'Strict and serious', 'Clumsy and awkward']),
+    D(2, "If a gruff boss's 'bark is worse than his bite', what is true?", 'He is less harsh than he sounds', ['He shouts and also punishes', 'He is meaner than he seems', 'He never speaks to anyone']),
+    D(3, "If a decision is 'cut and dried', what is it?", 'Already settled and routine', ['Unfinished and messy', 'Secret and hidden', 'Hasty and rash']),
+    D(4, "Who is a 'Walter Mitty'?", 'A meek daydreamer who imagines heroic feats', ['A bold real-life adventurer', 'A bumbling detective', 'A grumpy old neighbor']),
+    D(5, "If you 'spike someone's guns', what do you do?", 'Thwart their plans', ['Arm them for battle', 'Make them angry', 'Repair their mistakes']),
   ],
-  // day 11
+  // day 47 (2026-12-04)
   [
-    D(1, "If you are 'over the moon' about some news, how do you feel?", "Absolutely thrilled and delighted", ["Floating high above the earth", "Confused about what it means", "Calm and not very surprised"]),
-    D(2, "If a few complaints are only 'the tip of the iceberg', what are they?", "A small part of a bigger problem", ["The very top of a block of ice", "The most important part of it", "Nothing to worry about at all"]),
-    D(3, "A pop star who is 'a flash in the pan' is...?", "A brief success that quickly fades", ["A spark from a frying pan", "A star with lasting fame", "A sudden overnight scandal"]),
-    D(4, "When a politician offers a 'mea culpa', what is she offering?", "An admission that she was wrong", ["A formal word of thanks", "A promise to try harder", "A denial of all blame"]),
-    D(5, "What does it mean to 'kick against the pricks'?", "Resist uselessly, hurting only yourself", ["Step barefoot on thorns", "Stand up to bullies and win", "Complain about petty rules"]),
+    D(1, "If a student has 'his head in the clouds', what is true?", 'He is daydreaming, not paying attention', ['He is very tall for his age', 'He is proud of his grades', 'He is afraid of heights']),
+    D(2, "If a worker 'gets the sack', what happens?", 'He is fired from his job', ['He gets a bonus', 'He gets a heavy task', 'He gets a promotion']),
+    D(3, "If two runners are 'neck and neck', what is true?", 'They are exactly even', ['They are about to collide', 'They are far apart', 'They are both injured']),
+    D(4, "Who is a 'bon vivant'?", 'Someone who loves good food and fine living', ['A traveler who never settles', 'A cheerful party host', 'A gifted amateur cook']),
+    D(5, "What is 'the distaff side' of a family?", 'The female side', ['The poorer side', 'The side by marriage', 'The oldest branch']),
   ],
-  // day 12
+  // day 48 (2026-12-05)
   [
-    D(1, "A groom who 'gets cold feet' before the wedding has done what?", "Lost his nerve about going ahead", ["Felt a chill in his toes", "Argued with the best man", "Shown up late to the church"]),
-    D(2, "What does it mean to 'add insult to injury'?", "Make a bad situation even worse", ["Apologize after causing harm", "Treat a wound with ointment", "Blame someone for your own mistake"]),
-    D(3, "If an offer is 'bona fide', it is...?", "Genuine and made in good faith", ["Fake and likely a scam", "Good only for a short time", "Made by a famous person"]),
-    D(4, "If you are left to 'cool your heels' in a lobby, what are you doing?", "Being kept waiting for some time", ["Soaking your sore feet", "Storming out in a temper", "Hiding from someone important"]),
-    D(5, "If a project is left to 'hang fire', what happens to it?", "It is delayed and put on hold", ["It is shut down in anger", "It is set ablaze", "It moves ahead at full speed"]),
+    D(1, "If a classmate 'gives you the cold shoulder', what does she do?", 'Deliberately ignores you', ['Blames you for a mistake', 'Shares a secret with you', 'Asks you for a favor']),
+    D(2, "If a remark 'hits below the belt', what is it?", 'Unfair and cruel', ['Clever and funny', 'Quiet and shy', 'Honest and fair']),
+    D(3, "What is 'a shot in the dark'?", 'A wild guess', ['A hidden danger', 'A secret plan', 'A late-night call']),
+    D(4, "If a host has 'savoir faire', what does she have?", 'Social poise and know-how', ['A large fortune', 'A fine singing voice', 'Strong political views']),
+    D(5, "If a reformer 'plows a lonely furrow', what does he do?", 'Works alone without support', ['Farms land no one wants', 'Lives far from the city', 'Fails again and again']),
   ],
-  // day 13
+  // day 49 (2026-12-06)
   [
-    D(1, "What does it mean to 'bite the bullet'?", "Face something unpleasant with courage", ["Chew on a piece of ammunition", "Refuse to admit a mistake", "Speak before thinking it through"]),
-    D(2, "What does it mean to 'cry wolf'?", "Raise a false alarm", ["Howl like a wild animal", "Admit that you are afraid", "Warn of a real danger"]),
-    D(3, "In a business deal, what is 'a Trojan horse'?", "Something harmless-looking that undermines from within", ["A large wooden statue", "A generous gift with no strings", "A rival that attacks openly"]),
-    D(4, "If fans are 'on tenterhooks' before a verdict, they are...?", "Anxious and in suspense", ["Hanging from sharp hooks", "Bored and losing interest", "Angry and ready to riot"]),
-    D(5, "Who is an 'eminence grise'?", "A hidden power behind the throne", ["A respected gray-haired elder", "A retired head of state", "A famous painter's patron"]),
+    D(1, "If you have 'butterflies in your stomach' before a speech, how do you feel?", 'Nervous and jittery', ['Sick from bad food', 'Hungry and weak', 'Calm and ready']),
+    D(2, "If a cheater gets only 'a slap on the wrist', what does he get?", 'A very mild punishment', ['A harsh punishment', 'A painful injury', 'A large fine']),
+    D(3, "What is 'the acid test' of something?", 'A decisive test of its worth', ['A chemistry exam', 'A first rough draft', 'A test that cannot be passed']),
+    D(4, "What is a 'double entendre'?", 'A phrase with two meanings, one often risque', ['A promise made twice', 'A word spelled two ways', 'An argument with two sides']),
+    D(5, "If a canoe 'turns turtle', what happens?", 'It flips upside down', ['It slows to a crawl', 'It sinks to the bottom', 'It drifts out to sea']),
   ],
-  // day 14
+  // day 50 (2026-12-07)
   [
-    D(1, "If skills like yours are 'a dime a dozen', they are...?", "Common and not worth much", ["Sold at ten cents for twelve", "Rare and highly valued", "Useful only in small doses"]),
-    D(2, "A search that turns out to be 'a wild goose chase' is...?", "A pointless search that leads nowhere", ["A hunt for birds in the woods", "A fast race against the clock", "A search that ends in a surprise"]),
-    D(3, "If you 'see the writing on the wall', what do you notice?", "Clear signs that trouble is coming", ["Graffiti on a city building", "Rules posted for everyone", "A message from an old friend"]),
-    D(4, "A diplomat declared 'persona non grata' is...?", "No longer welcome in the country", ["Given a special honor", "Promoted to ambassador", "Granted legal immunity"]),
-    D(5, "What is 'a curate's egg'?", "Something that is partly good, partly bad", ["A gift from a clergyman", "Something perfect in every way", "A rare and costly treasure"]),
+    D(1, "If someone explains a plan 'in a nutshell', how do they explain it?", 'Briefly, in just a few words', ['Slowly, step by step', 'Secretly, in a whisper', 'Badly, leaving things out']),
+    D(2, "If a host 'bends over backwards' for guests, what does she do?", 'Tries very hard to please them', ['Tells them to leave', 'Ignores what they want', 'Shows off for them']),
+    D(3, "What is someone's 'swan song'?", 'Their final performance or work', ['Their greatest hit', 'Their first big success', 'Their love song']),
+    D(4, "In 'our position vis-a-vis the union', what does 'vis-a-vis' mean?", 'In relation to', ['In opposition to', 'In agreement with', 'In place of']),
+    D(5, "In old usage, who was said to 'sit below the salt'?", 'A person of lower social standing', ['A guest of honor', 'A person with poor table manners', 'A cook at a banquet']),
   ],
-  // day 15
+  // day 51 (2026-12-08)
   [
-    D(1, "When it is 'raining cats and dogs', what is the weather doing?", "Pouring down very heavily", ["Dropping animals from the sky", "Drizzling on and off", "Thundering with no rain at all"]),
-    D(2, "If you 'burn your bridges' with an employer, what have you done?", "Ruined the relationship for good", ["Set fire to a crossing", "Asked for a raise too soon", "Left on very friendly terms"]),
-    D(3, "What attitude does 'carpe diem' urge?", "Make the most of the present", ["Plan carefully for the future", "Learn from the mistakes of the past", "Wait patiently for good things"]),
-    D(4, "If a family is living 'high on the hog', how are they living?", "In luxury, with plenty of money", ["On a farm raising pigs", "On the top floor of a building", "In fear of losing everything"]),
-    D(5, "In old American slang, what does it mean to 'put on the dog'?", "Make a flashy show of wealth", ["Dress up a pet in clothes", "Act grumpy and rude", "Work like a tireless laborer"]),
+    D(1, "If you are 'green with envy', how do you feel?", 'Very jealous', ['Slightly sick', 'Calm and peaceful', 'Young and inexperienced']),
+    D(2, "If a shop is 'a stone's throw' from your house, where is it?", 'Very close by', ['Hard to reach', 'Built of stone', 'In a dangerous area']),
+    D(3, "If you go 'the whole nine yards', what do you do?", 'Go all the way, holding nothing back', ['Walk a short distance', 'Give up partway through', 'Do the bare minimum']),
+    D(4, "What is 'la dolce vita'?", 'A life of pleasure and luxury', ['A sweet Italian dessert', 'A simple country life', 'A life of hard work']),
+    D(5, "What does it mean to 'throw a sprat to catch a mackerel'?", 'Risk a little to gain a lot', ['Waste a big chance', 'Fish without a license', 'Trade evenly with a rival']),
   ],
-  // day 16
+  // day 52 (2026-12-09)
   [
-    D(1, "If someone tells you 'the ball is in your court', what do they mean?", "It is now your turn to act", ["You are holding the tennis ball", "You have lost the argument", "You should stay out of it"]),
-    D(2, "A new hire who 'hits the ground running' does what?", "Starts quickly and with energy", ["Falls down on the first day", "Jogs to the office each morning", "Makes a lot of early mistakes"]),
-    D(3, "In an election, who is 'a dark horse'?", "A little-known contender who may win", ["A black horse in a race", "The heavy favorite to win", "A candidate with a shady past"]),
-    D(4, "If someone is 'three sheets to the wind', what is true of them?", "They are quite drunk", ["They are sailing in a storm", "They are completely exhausted", "They are hopelessly lost"]),
-    D(5, "If a writer has an 'idee fixe', what does he have?", "An obsession he cannot shake", ["A fixed weekly routine", "A clever but simple plot", "A firm deadline to meet"]),
+    D(1, "When people 'see red', what happens to them?", 'They become very angry', ['They become embarrassed', 'They feel suddenly faint', 'They spot danger ahead']),
+    D(2, "If reporters 'get wind of' a scandal, what happens?", 'They hear a hint of it', ['They cover it up', 'They make it up', 'They lose interest in it']),
+    D(3, "What is 'a baptism of fire'?", 'A tough first experience', ['A dramatic religious rite', 'A punishment for a crime', 'A narrow escape from a blaze']),
+    D(4, "If two rivals settle it 'mano a mano', how do they settle it?", 'One on one, head to head', ['Through lawyers', 'By shaking hands', 'With a vote']),
+    D(5, "In politics, what is 'a stalking horse'?", 'A front used to hide real intentions', ['A candidate who cannot lose', 'A long, slow campaign', 'A loyal party worker']),
   ],
-  // day 17
+  // day 53 (2026-12-10)
   [
-    D(1, "What does it mean to 'throw in the towel'?", "Give up and admit defeat", ["Toss laundry into a hamper", "Clean up after someone else", "Offer to help with chores"]),
-    D(2, "If you 'missed the boat' on a deal, what happened?", "You lost your chance at it", ["You arrived too late for a ferry", "You paid too much for it", "You made a lot of money"]),
-    D(3, "When managers 'pass the buck', what do they do?", "Shift the blame to someone else", ["Hand over a dollar bill", "Share the profits fairly", "Take full responsibility"]),
-    D(4, "What does the warning 'caveat emptor' tell a shopper?", "The buyer takes the risk", ["The seller guarantees quality", "Prices may change without notice", "Pay in cash only"]),
-    D(5, "If a guest leaves 'in high dudgeon', how does he leave?", "In a state of angry resentment", ["In a great hurry", "In high spirits", "In fancy formal dress"]),
+    D(1, "If a grandchild is 'the apple of your eye', who is she?", 'The person you cherish most', ['The one who causes you worry', 'The youngest in the family', 'The one who looks like you']),
+    D(2, "If you 'cut a new worker some slack', what do you do?", 'Go easier on him than usual', ['Reduce his pay', 'Give him extra work', 'Watch him very closely']),
+    D(3, "In politics, what is 'a hot potato'?", 'An issue too touchy to handle', ['A rising new candidate', 'A popular spending bill', 'A heated live debate']),
+    D(4, "What is a 'bon mot'?", 'A clever, witty remark', ['A polite greeting', 'A good luck charm', 'A sweet treat']),
+    D(5, "What is 'a sop to Cerberus'?", 'A bribe to quiet a troublesome person', ['A warning to an enemy', 'A meal for a guard dog', 'A gift to the gods']),
   ],
-  // day 18
+  // day 54 (2026-12-11)
   [
-    D(1, "If your friend says it is time to 'hit the road', what do they want to do?", "Leave and get going", ["Strike the pavement with a hand", "Repair a pothole outside", "Take a nap before driving"]),
-    D(2, "If an employee is 'on thin ice', what is true?", "They are in a risky position", ["They are skating on a frozen pond", "They are about to be promoted", "They are feeling quite nervous"]),
-    D(3, "What is 'a quid pro quo'?", "A favor given in exchange for another", ["A gift given with no strings", "A fine paid for a mistake", "A formal written apology"]),
-    D(4, "When a Brit finishes explaining a task with 'and Bob's your uncle', what is meant?", "And there you have it, done", ["And a relative will help you", "And then you ask for help", "And you will need to start again"]),
-    D(5, "What does it mean to 'nail your colors to the mast'?", "Commit openly to a position", ["Hang a flag on a ship", "Change sides when it suits you", "Keep your views private"]),
+    D(1, "If you feel like 'a fish out of water' at a new job, how do you feel?", 'Out of place and uncomfortable', ['Overworked and tired', 'Excited and eager', 'Underpaid and bored']),
+    D(2, "Who is 'the black sheep' of a family?", 'The member seen as a disgrace', ['The oldest child', "The family's favorite", 'The one who stays home']),
+    D(3, "If an economy is 'in the doldrums', what is it?", 'Stagnant and sluggish', ['Booming and growing', 'In total collapse', 'Ruled by sea trade']),
+    D(4, "If a field is 'terra incognita' to a scholar, what is it?", 'Unknown territory', ['Familiar ground', 'Forbidden land', 'A buried city']),
+    D(5, "What is a 'Damascene conversion'?", 'A sudden, dramatic change of belief', ['A slow change of habits', 'A trade of foreign money', 'A move to a new city']),
   ],
-  // day 19
+  // day 55 (2026-12-12)
   [
-    D(1, "If someone is 'pulling your leg', what are they doing?", "Teasing you with a playful lie", ["Tugging on your limb", "Asking you for a big favor", "Tripping you on purpose"]),
-    D(2, "If a donation is 'a drop in the bucket', it is...?", "Too small to make a difference", ["A spill into a pail", "The final amount needed", "A generous and helpful gift"]),
-    D(3, "If a bakery gives you 'a baker's dozen', how many do you get?", "Thirteen, one more than twelve", ["Exactly twelve, no more", "Ten, a nice round number", "As many as you can carry"]),
-    D(4, "If two council members are 'at loggerheads', what is true?", "They are in fierce disagreement", ["They are cutting logs together", "They are close political allies", "They are tied in a vote"]),
-    D(5, "When a government does 'a volte-face', what does it do?", "Completely reverses its position", ["Holds a surprise election", "Doubles down on a policy", "Quietly ignores a problem"]),
+    D(1, "Who is 'a night owl'?", 'Someone who stays up late', ['Someone who sees in the dark', 'Someone who is very wise', 'Someone who works as a guard']),
+    D(2, "If a singer has 'a frog in her throat', what is wrong?", 'Her voice is hoarse', ['She is too nervous to sing', 'She sings off key', 'She has forgotten the words']),
+    D(3, "If an investor has 'the Midas touch', what does he have?", 'A knack for making money from anything', ['A habit of losing everything', 'A gentle, calming manner', 'A love of gold jewelry']),
+    D(4, "What is the 'Zeitgeist'?", 'The spirit of an age', ['A ghost from the past', 'A fear of time running out', 'A clock in a town square']),
+    D(5, "If an answer is 'Delphic', what is it?", 'Deliberately vague and ambiguous', ['Wise and plainly stated', 'Rude and insulting', 'Ancient and forgotten']),
   ],
-  // day 20
+  // day 56 (2026-12-13)
   [
-    D(1, "At five o'clock the team decides to 'call it a day'. What do they do?", "Stop working for now", ["Name the date of a meeting", "Plan the next day's tasks", "Start a long overtime shift"]),
-    D(2, "If you 'take a rain check' on dinner, what are you saying?", "Not now, but maybe another time", ["You will come only if it rains", "You will pay for the meal", "You never want to go again"]),
-    D(3, "If you 'pay through the nose' for tickets, what do you do?", "Pay far more than they are worth", ["Pay while holding your nose", "Pay a fair, reasonable price", "Pay someone else to buy them"]),
-    D(4, "If your boss gives you 'carte blanche', what do you get?", "Complete freedom to act as you wish", ["A blank card to sign", "A strict list of rules", "A small cash bonus"]),
-    D(5, "In old usage, what did it mean to 'show the white feather'?", "To act like a coward", ["To display a hat decoration", "To wave a flag of truce", "To prove that you were honest"]),
+    D(1, "If your aunt 'eats like a bird', what is true?", 'She eats very little', ['She eats very fast', 'She eats only seeds and nuts', 'She eats very early']),
+    D(2, "If an employee 'jumps ship', what does he do?", 'Leaves suddenly for another job', ['Takes a vacation cruise', 'Gets fired in public', 'Takes over the company']),
+    D(3, "If someone says 'mum's the word', what do they mean?", 'Keep it a secret', ['Ask your mother first', 'Speak only when spoken to', 'Say it politely']),
+    D(4, "Who is a 'Wunderkind'?", 'A young person who succeeds early', ['A child who asks many questions', 'A magician in a fairy tale', 'A bright student who fails']),
+    D(5, "In sailors' lore, what is 'a Jonah'?", 'Someone who brings bad luck', ['A sailor lost at sea', 'A ship that cannot sink', 'A large whale']),
   ],
-  // day 21
+  // day 57 (2026-12-14)
   [
-    D(1, "If you are 'in hot water' with your boss, you are...?", "In serious trouble", ["Taking a long warm bath", "Feeling very embarrassed", "Due for a pay raise"]),
-    D(2, "What does it mean to 'pull strings' to get a job?", "Use your influence or connections", ["Tug on a puppet's cords", "Work hard to earn it fairly", "Apply for many jobs at once"]),
-    D(3, "What do you feel if you feel 'schadenfreude'?", "Joy at someone else's misfortune", ["Sorrow at someone else's pain", "Guilt over your own success", "Fear of being left out"]),
-    D(4, "If you sell 'the whole kit and caboodle', what do you sell?", "Everything, the entire lot", ["Just the tools in the kit", "Only the most valuable part", "A set of camping equipment"]),
-    D(5, "What is 'a Parthian shot'?", "A cutting remark made while leaving", ["An arrow fired at full gallop", "A lucky shot from far away", "An opening insult in a debate"]),
+    D(1, "If a team is 'on the same page', what is true?", 'They share the same understanding', ['They are reading the same book', 'They have the same job title', 'They are all equally behind']),
+    D(2, "If friends 'twist your arm' to come along, what do they do?", 'Pressure you into it', ['Hurt you by accident', 'Help you to your feet', 'Leave you behind']),
+    D(3, "Who is 'a bull in a china shop'?", 'A clumsy person in a delicate situation', ['A bully who picks on the weak', 'A shopper who buys too much', 'A stubborn salesman']),
+    D(4, "What are 'halcyon days'?", 'A happy, peaceful time in the past', ['The coldest days of winter', 'Days of war and hardship', 'The last days before a deadline']),
+    D(5, "What does 'mutatis mutandis' mean?", 'With the necessary changes made', ['All things being equal', 'Against all odds', 'From the very beginning']),
   ],
-  // day 22
+  // day 58 (2026-12-15)
   [
-    D(1, "When a small problem is 'the last straw', what is it?", "The final annoyance that ends your patience", ["The final drinking straw in the box", "A last-minute chance to fix things", "The least important part of a plan"]),
-    D(2, "If you escape 'by the skin of your teeth', how did you escape?", "Just barely, by a narrow margin", ["With a painful mouth injury", "Easily and without any effort", "By lying your way out"]),
-    D(3, "If kids are 'champing at the bit' to go outside, they are...?", "Impatient and eager to start", ["Chewing on a horse's bridle", "Too tired to go anywhere", "Scared of the dark outside"]),
-    D(4, "If you'll finish a job 'by hook or by crook', how will you finish it?", "By any means at all", ["By fishing and by stealing", "Only by honest methods", "With help from a partner"]),
-    D(5, "A soldier who is 'hors de combat' is...?", "Out of action and unable to fight", ["Riding into battle on horseback", "Leading the charge", "Hiding behind enemy lines"]),
+    D(1, "If plans for the trip are 'up in the air', what are they?", 'Still undecided', ['Ruined by bad weather', 'Made by an airline', 'Finished and booked']),
+    D(2, "When does someone say 'speak of the devil'?", 'When the person being discussed shows up', ['When someone tells a lie', 'When something goes badly wrong', 'When a storm is coming']),
+    D(3, "If you 'wear your heart on your sleeve', what do you do?", 'Show your feelings openly', ['Dress in bright colors', 'Fall in love easily', 'Hide your true motives']),
+    D(4, "What is 'a Judas kiss'?", 'An act of betrayal disguised as friendship', ['A sign of forgiveness', 'A greeting between rivals', 'A farewell before a journey']),
+    D(5, "What is a 'mare's nest'?", 'A confused, disorderly mess', ['A cozy hiding place', 'A source of good luck', "A horse's stall"]),
   ],
-  // day 23
+  // day 59 (2026-12-16)
   [
-    D(1, "If two partners 'see eye to eye', what do they do?", "Agree with each other completely", ["Stand at exactly the same height", "Stare each other down", "Meet face to face in person"]),
-    D(2, "What does it mean to 'face the music'?", "Accept the consequences of your actions", ["Turn toward the band", "Listen closely to a song", "Avoid blame by running away"]),
-    D(3, "If your grandmother calls something 'the bee's knees', what does she think of it?", "That it is excellent", ["That it is part of an insect", "That it is busy and noisy", "That it is sweet but useless"]),
-    D(4, "What is someone's 'raison d'etre'?", "Their main reason for existing", ["Their excuse for being late", "Their sense of good taste", "Their place of birth"]),
-    D(5, "A trader who 'sails close to the wind' is...?", "Taking risks that border on improper", ["Steering a boat into a gale", "Playing it completely safe", "Sticking to a strict budget"]),
+    D(1, "If two new coworkers 'hit it off', what happens?", 'They get along well right away', ['They argue right away', 'They compete for one job', 'They avoid each other']),
+    D(2, "If you are 'down in the dumps', how do you feel?", 'Gloomy and depressed', ['Dirty and messy', 'Poor and in debt', 'Tired and sleepy']),
+    D(3, "If a salesman has 'the gift of gab', what does he have?", 'A talent for easy, fluent talk', ['A habit of telling lies', 'A generous nature', 'A loud, booming voice']),
+    D(4, "If a hero has 'feet of clay', what does he have?", 'A hidden flaw or weakness', ['Great endurance', 'A humble background', 'A slow, steady pace']),
+    D(5, "If a sunset 'beggars description', what is true?", 'It is too fine to describe well', ['It is dull and ordinary', 'It is hard to see', 'It is described too often']),
   ],
-  // day 24
+  // day 60 (2026-12-17)
   [
-    D(1, "If a friend is 'feeling blue', how are they feeling?", "Sad and low in spirits", ["Cold enough to change color", "Calm and fully relaxed", "Jealous of someone else"]),
-    D(2, "If two rivals 'bury the hatchet', what do they do?", "Make peace and end the feud", ["Hide a weapon in the yard", "Agree to meet in secret", "Start a new argument"]),
-    D(3, "If a committee is formed 'ad hoc', it is formed...?", "For one specific purpose only", ["To last for many years", "Without anyone's permission", "By a popular vote"]),
-    D(4, "If a merger is 'in the offing', it is...?", "Likely to happen soon", ["Out at sea and far away", "Already completed and signed", "Unlikely ever to happen"]),
-    D(5, "What does it mean to 'bell the cat'?", "Take on a risky task for others", ["Put a bell on a pet's collar", "Make a big fuss over nothing", "Blame someone weaker than you"]),
+    D(1, "If twins are 'two peas in a pod', what is true?", 'They are very much alike', ['They share one small room', 'They are both very short', 'They are always arguing']),
+    D(2, "If a couple 'goes Dutch' on a date, what happens?", 'Each pays for their own share', ['They eat foreign food', 'They split up afterward', 'One pays for both']),
+    D(3, "Who is 'a Monday morning quarterback'?", 'Someone who criticizes with hindsight', ['Someone who hates the start of the week', 'Someone who leads a weekly meeting', 'Someone who plays sports badly']),
+    D(4, "What does it mean to 'cast pearls before swine'?", 'Offer something fine to those who cannot value it', ['Waste money on luxuries', 'Bribe a corrupt official', 'Reward people for bad work']),
+    D(5, "What is a 'Fabian' strategy?", 'Wearing down a foe by delay, avoiding battle', ['Striking first with all your force', 'Splitting the enemy in two', 'Making peace at any cost']),
   ],
-  // day 25
+  // day 61 (2026-12-18)
   [
-    D(1, "What kind of person is called a 'couch potato'?", "Someone who lazes around watching TV", ["A vegetable kept on the sofa", "Someone who loves to cook dinner", "Someone who naps every afternoon"]),
-    D(2, "If someone says 'cut to the chase', what do they want?", "Get to the main point quickly", ["Skip ahead to the action scene", "Stop running from the problem", "Make the story more exciting"]),
-    D(3, "What does it mean to 'throw down the gauntlet'?", "Issue a bold challenge", ["Drop a glove on the floor", "Admit defeat in public", "Refuse to fight back"]),
-    D(4, "If a supplier has you 'over a barrel', what is true?", "You are at their mercy", ["You are bent over a cask", "You owe them a small favor", "You have the upper hand"]),
-    D(5, "If a hotel is called the 'ne plus ultra' of luxury, it is...?", "The very height of excellence", ["A little too fancy", "A poor imitation", "Newly opened and untested"]),
+    D(1, "If someone says 'I wasn't born yesterday', what do they mean?", "I'm not easily fooled", ["I'm older than I look", "I don't like surprises", 'I remember the old days']),
+    D(2, "If a name 'rings a bell', what is true?", 'It seems familiar', ['It sounds pleasant', 'It is a warning', 'It is hard to say']),
+    D(3, "If a job makes you 'jump through hoops', what does it make you do?", 'Complete many tiresome steps to satisfy others', ['Exercise during the workday', 'Take big risks for little pay', 'Switch tasks every hour']),
+    D(4, "If a team must 'gird its loins', what must it do?", 'Prepare for a difficult effort', ['Rest before a long trip', 'Accept defeat with grace', 'Celebrate a narrow win']),
+    D(5, "What is the 'dernier cri' in fashion?", 'The very latest style', ['An outdated trend', "A designer's last show", 'A cheap imitation']),
   ],
-  // day 26
+  // day 62 (2026-12-19)
   [
-    D(1, "If you and your neighbors are 'in the same boat', what is true?", "You share the same difficult situation", ["You all went sailing together", "You are rivals for the same prize", "You live on the same street"]),
-    D(2, "If a friend tells you to 'keep your chin up', what do they mean?", "Stay cheerful in a hard time", ["Hold your head at a proud angle", "Stop talking back to people", "Be ready to take a punch"]),
-    D(3, "If a champion 'rests on her laurels', what does she do?", "Stops trying after past success", ["Naps on a bed of leaves", "Trains harder than ever", "Retires while at the top"]),
-    D(4, "If a critic calls a rival his 'bete noire', what is the rival to him?", "Someone he especially dislikes", ["His closest and oldest friend", "A black animal he keeps", "His secret business partner"]),
-    D(5, "Who is 'a cat's paw'?", "Someone used as a tool by another", ["A clever and sneaky thief", "A gentle but firm leader", "A small print left on a car"]),
+    D(1, "If you are 'in the doghouse' with your spouse, what is true?", 'You are in disgrace with them', ['You are sleeping in the yard', 'You owe them money', 'You are minding the pets']),
+    D(2, "If dessert is 'on the house', what is true?", 'The restaurant pays for it', ['It is served on the roof', "It is the chef's favorite", 'It costs extra']),
+    D(3, "If a critic 'has an ax to grind', what does he have?", 'A personal grudge or motive', ['A sharp writing style', 'A busy schedule', 'An honest opinion']),
+    D(4, "What is 'the fourth estate'?", 'The press and news media', ['The courts and judges', 'The working class', 'The church and clergy']),
+    D(5, "Who are the 'jeunesse doree'?", 'Wealthy, fashionable young people', ['Golden-haired children', 'Young soldiers', 'Poor students']),
   ],
-  // day 27
+  // day 63 (2026-12-20)
   [
-    D(1, "What does it mean to 'go the extra mile' for a customer?", "Make more effort than expected", ["Drive farther to make a delivery", "Charge extra for the service", "Take the long way around"]),
-    D(2, "If you say you will 'play it by ear', what will you do?", "Decide as things happen, without a plan", ["Hold an instrument up to your ear", "Listen carefully before speaking", "Follow the plan to the letter"]),
-    D(3, "If the job is 'not difficult per se', what does 'per se' mean?", "By itself, in itself", ["At first glance", "For now, at least", "According to the boss"]),
-    D(4, "What is 'a Pyrrhic victory'?", "A win so costly it feels like defeat", ["A win earned by trickery", "A narrow win in overtime", "A win nobody expected"]),
-    D(5, "If someone seems 'to the manner born', what is true?", "They seem naturally suited to it", ["They have very good manners", "They were born into poverty", "They act older than they are"]),
+    D(1, "What does it mean to 'keep your fingers crossed'?", 'Hope for good luck', ['Promise to keep a secret', 'Hold back from acting', 'Wait without speaking']),
+    D(2, "If a teammate doesn't 'pull his weight', what is wrong?", "He doesn't do his share", ['He is out of shape', 'He is too heavy', "He doesn't follow the rules"]),
+    D(3, "What does it mean to 'take the bull by the horns'?", 'Face a problem head-on', ['Act with reckless anger', 'Brag about your strength', 'Avoid a hard decision']),
+    D(4, "What is 'a hue and cry'?", 'A loud public outcry', ['A burst of bright color', 'A quiet sob of grief', 'A secret signal']),
+    D(5, "What is a 'pied-a-terre'?", 'A small second home in a city', ['A ground-floor shop', 'A country estate', 'A walking tour']),
   ],
-  // day 28
+  // day 64 (2026-12-21)
   [
-    D(1, "Why would someone tell you to 'hold your horses'?", "To get you to slow down and wait", ["To have you grip the reins tightly", "To ask you to keep a secret", "To make you stop complaining"]),
-    D(2, "If a new employee 'rocks the boat', what does he do?", "Stirs up trouble in a settled situation", ["Tips over a small canoe", "Brings fresh energy to the team", "Keeps everyone calm and steady"]),
-    D(3, "To 'eat humble pie' means to do what?", "Admit a mistake and apologize", ["Enjoy a plain, simple dessert", "Refuse to apologize", "Brag about your success"]),
-    D(4, "What does it mean to 'cross the Rubicon'?", "Pass a point of no return", ["Ford a river in Italy", "Betray a trusted friend", "Change your mind at the last minute"]),
-    D(5, "What is a 'pis aller'?", "A last resort when all else fails", ["A first choice made eagerly", "A quick trip out of town", "A clever shortcut to success"]),
+    D(1, "If a new manager is 'a breath of fresh air', what is she?", 'A refreshing, welcome change', ['A person who loves the outdoors', 'A short break from work', 'A strict new boss']),
+    D(2, "If you are told to 'sit tight', what should you do?", 'Wait patiently and stay put', ['Hold on to your seat', 'Keep a secret', 'Sit up straight']),
+    D(3, "If you 'play devil's advocate', what do you do?", 'Argue the other side just for argument', ['Defend someone who is guilty', 'Tempt someone into wrongdoing', 'Agree with everyone present']),
+    D(4, "If a robber is 'on the lam', what is he doing?", 'Running from the law', ['Hiding in a barn', 'Serving a prison sentence', 'Planning another job']),
+    D(5, "What does 'a fortiori' mean in an argument?", 'With even stronger reason', ['By force', 'Before the facts', 'By chance']),
   ],
-  // day 29
+  // day 65 (2026-12-22)
   [
-    D(1, "What is 'a blessing in disguise'?", "A setback that turns out to be good", ["A prayer said while wearing a costume", "A gift given in secret", "A compliment that hides an insult"]),
-    D(2, "What does 'sour grapes' mean?", "Pretending not to want what you can't have", ["Fruit that has gone bad", "Refusing to share with others", "Complaining about bad service"]),
-    D(3, "What is 'a Catch-22'?", "A no-win trap of contradictory rules", ["A great play in baseball", "A lucky break that pays off", "A choice between two good options"]),
-    D(4, "If a singer has 'a certain je ne sais quoi', what does she have?", "An appealing quality hard to describe", ["A strong French accent", "A habit of being unsure", "A well-known stage name"]),
-    D(5, "If guards are 'on the qui vive', what are they?", "Alert and watchful", ["Lively and cheerful", "Off duty for the night", "Confused and disorganized"]),
+    D(1, "If a boxer is 'saved by the bell', what happened?", 'He was rescued at the last moment', ['He won the fight on points', 'He was disqualified', 'He was knocked out cold']),
+    D(2, "If an underdog's win is 'a long shot', what is it?", 'Unlikely to happen', ['Far in the future', 'A risky strategy', 'Very likely to happen']),
+    D(3, "If a fan is 'dyed-in-the-wool', what is he?", 'Firmly set in his loyalty', ['New to the sport', 'Fond of team sweaters', 'Fickle and easily swayed']),
+    D(4, "If a company 'puts out feelers', what does it do?", 'Quietly tests the waters', ['Fires its sales staff', 'Launches a big advertising push', 'Makes a firm offer']),
+    D(5, "What is a 'casus belli'?", 'An act used to justify war', ['A peace treaty', 'A wartime hero', 'A military court case']),
   ],
-  // day 30
+  // day 66 (2026-12-23)
   [
-    D(1, "When a couple 'ties the knot', what do they do?", "Get married to each other", ["Fasten a rope on their boat", "Break up for good", "Sign a lease on a home"]),
-    D(2, "Someone with 'a chip on their shoulder' has what?", "A lasting grudge or grievance", ["A small wood splinter on their arm", "A great deal of confidence", "A habit of eating snacks"]),
-    D(3, "Someone full of 'joie de vivre' has what?", "A cheerful zest for life", ["A great love of fine wine", "A deep fear of growing old", "A habit of speaking French"]),
-    D(4, "If someone's behavior is 'beyond the pale', it is...?", "Far outside what is acceptable", ["Too pale to be healthy", "Hard to see or notice", "Unusual but harmless"]),
-    D(5, "What is 'a Potemkin village'?", "An impressive front hiding a poor reality", ["A model town built for tourists", "A remote farming community", "A town named after a general"]),
+    D(1, "If you 'have a sweet tooth', what is true?", 'You love sugary foods', ['You have a cavity', 'You are very kind', 'You smile a lot']),
+    D(2, "If a manager 'steps up to the plate', what does he do?", 'Takes responsibility when it matters', ['Takes credit for others', 'Goes out for lunch', 'Avoids a hard job']),
+    D(3, "What is a 'cloak-and-dagger' operation?", 'One full of secrecy and intrigue', ['One that is openly violent', 'One run on a tiny budget', 'One that fails badly']),
+    D(4, "If your grandfather is 'in the pink', how is he?", 'In very good health', ['Blushing with embarrassment', 'Short of money', 'Angry and red-faced']),
+    D(5, "What is the 'mot juste'?", 'The exactly right word', ['A fair judgment', 'A witty insult', 'A final word']),
   ],
-  // day 31
+  // day 67 (2026-12-24)
   [
-    D(1, "If a boss says she will 'sleep on it', what does she plan to do?", "Wait a night before deciding", ["Take a nap on top of the papers", "Forget about it entirely", "Decide on the spot"]),
-    D(2, "What does it mean to 'kick the bucket'?", "To die or pass away", ["To knock over a pail", "To quit a bad habit", "To lose your temper"]),
-    D(3, "If a promise is 'pie in the sky', it is...?", "An unrealistic hope that won't happen", ["A dessert served on a plane", "A small but certain gain", "A plan that is easy to keep"]),
-    D(4, "What does it mean to 'carry coals to Newcastle'?", "Supply something where it's already plentiful", ["Deliver fuel to a distant city", "Do hard work for little pay", "Bring bad news to a friend"]),
-    D(5, "What does the term 'Realpolitik' describe?", "Politics driven by practical, not moral, aims", ["Politics based on strict honesty", "Government by the common people", "Politics of a royal court"]),
+    D(1, "What is 'a bookworm'?", 'Someone who loves to read', ['A person who sells books', 'A writer of short books', 'A student who copies others']),
+    D(2, "If a surgery was 'touch and go', what was it?", 'Risky, with an uncertain outcome', ['Very quick and simple', 'Done without any pain relief', 'Painful but routine']),
+    D(3, "If you 'turn the tables' on a rival, what do you do?", 'Reverse the situation to gain the upper hand', ['Refuse to play by the rules', 'Offer to share the prize', 'Walk away from the contest']),
+    D(4, "What does it mean to 'sow your wild oats'?", 'Behave wildly while young', ['Start a farm from scratch', 'Spread rumors about others', 'Save money for later']),
+    D(5, "What does 'fin de siecle' describe?", 'The end of the 1800s and its mood', ['The start of a new era', 'A grand finale', 'A long war']),
   ],
-  // day 32
+  // day 68 (2026-12-25)
   [
-    D(1, "If a failed plan sends you 'back to square one', where are you?", "Starting over from the beginning", ["On the first space of a board game", "Almost finished with the job", "Stuck with no way forward"]),
-    D(2, "If news arrives 'out of the blue', how does it arrive?", "Suddenly and without any warning", ["Straight from the sky above", "Slowly over several weeks", "Through official channels"]),
-    D(3, "What is 'a sacred cow'?", "Something held above criticism", ["A farm animal treated as holy", "An old and outdated custom", "A leader who is widely disliked"]),
-    D(4, "In a story, what is 'a deus ex machina'?", "An unlikely event that suddenly solves everything", ["A villain who is secretly a robot", "A hero's long-lost twin", "A twist that ruins the ending"]),
-    D(5, "What does it mean to 'kick over the traces'?", "Throw off restraint and rebel", ["Knock over a horse's harness", "Cover up the evidence", "Follow the rules exactly"]),
+    D(1, "If a holiday gift is 'just what the doctor ordered', what is it?", 'Exactly what was needed', ['A gift of medicine', 'Something you were told to buy', 'A gift that came too late']),
+    D(2, "If your boss 'flies off the handle', what does he do?", 'Suddenly loses his temper', ['Leaves the office early', 'Quits his job', 'Takes a business trip']),
+    D(3, "If a question comes 'out of left field', what is it?", 'Unexpected and odd', ['Hostile and rude', 'Simple and obvious', 'About sports']),
+    D(4, "If a boss 'hauls you over the coals', what does he do?", 'Scolds you severely', ['Gives you a hard job', 'Promotes you quickly', 'Sends you away']),
+    D(5, "What is a 'cordon sanitaire'?", 'A buffer zone to contain a threat', ['A hospital ward', 'A ribbon for a medal', 'A rope around a stage']),
   ],
-  // day 33
+  // day 69 (2026-12-26)
   [
-    D(1, "If you 'hit the nail on the head', what have you done?", "Described something exactly right", ["Hammered a nail in one blow", "Made a painful mistake", "Finished a job too quickly"]),
-    D(2, "If you 'walk on eggshells' around your boss, what do you do?", "Act very carefully to avoid upsetting him", ["Tiptoe across broken shells", "Avoid him as much as possible", "Flatter him to win his favor"]),
-    D(3, "What is a 'tete-a-tete'?", "A private talk between two people", ["A head-to-head sports match", "A crowded public meeting", "A heated argument in public"]),
-    D(4, "If a negotiator is 'in the catbird seat', what is true?", "She is in a commanding position", ["She is sitting up in a tree", "She is about to be fired", "She is watching from the side"]),
-    D(5, "What is 'a nine days' wonder'?", "A sensation quickly forgotten", ["A miracle that took nine days", "A lasting work of genius", "A rare natural event"]),
+    D(1, "If a meal is 'out of this world', what is it?", 'Wonderfully good', ['Strange and foreign', 'Too expensive to buy', 'Made from odd ingredients']),
+    D(2, "If a detective 'smells a rat', what does he do?", 'Suspects that something is wrong', ['Finds a hidden clue', 'Catches a thief', 'Notices a bad odor']),
+    D(3, "If an attempt is 'a Hail Mary', what is it?", 'A desperate last-chance try', ['A carefully planned move', 'A prayer before a meal', 'A safe, cautious choice']),
+    D(4, "If houses stand 'cheek by jowl', how do they stand?", 'Crowded very close together', ['In neat, even rows', 'Facing away from each other', 'Far apart on big lots']),
+    D(5, "Who is an 'agent provocateur'?", 'Someone who goads others into crimes', ['A spy who steals secrets', 'A loud protest leader', 'A theatrical agent']),
   ],
-  // day 34
+  // day 70 (2026-12-27)
   [
-    D(1, "What does it mean to 'kill two birds with one stone'?", "Get two things done with one action", ["Hunt two birds with a single throw", "Ruin two plans with one mistake", "Do two jobs badly at once"]),
-    D(2, "A trainee who is 'learning the ropes' is doing what?", "Finding out how the job works", ["Practicing knots on a sailboat", "Climbing ropes in gym class", "Getting into trouble at work"]),
-    D(3, "If a comment was made 'tongue in cheek', it was...?", "Said as a joke, not seriously", ["Mumbled with a full mouth", "Spoken in anger", "Meant as a strong warning"]),
-    D(4, "When a buyer says 'let's talk turkey', what does he want?", "To speak frankly about the deal", ["To plan a holiday dinner", "To make small talk first", "To delay the discussion"]),
-    D(5, "What is someone's 'amour propre'?", "Their self-esteem and pride", ["Their proper romantic partner", "Their love of good manners", "Their devotion to their country"]),
+    D(1, "What does it mean to 'hold your tongue'?", 'Stay quiet and not speak', ['Taste something carefully', 'Speak in a foreign language', 'Stick your tongue out']),
+    D(2, "If you 'get your feet wet' at a new job, what are you doing?", 'Trying it out for the first time', ['Making many mistakes', 'Working in the rain', 'Getting into trouble']),
+    D(3, "If a nutty uncle at the holiday table 'takes the cake', what has he done?", 'Outdone everyone, usually in a bad way', ['Eaten more than his share', 'Won a baking contest', 'Left the party early']),
+    D(4, "If a deal is done 'on the q.t.', how is it done?", 'Quietly and in secret', ['Quickly and carelessly', 'Fairly and openly', 'At a quarter past two']),
+    D(5, "What is 'reductio ad absurdum'?", 'Disproving a claim by showing its absurd results', ['Cutting a text down to its shortest form', 'Mocking an opponent', 'Reducing a price to almost nothing']),
   ],
-  // day 35
+  // day 71 (2026-12-28)
   [
-    D(1, "If someone says something will happen 'when pigs fly', what do they mean?", "It will never, ever happen", ["It will happen once farm animals take off", "It will happen by springtime", "It will happen very suddenly"]),
-    D(2, "What is 'red tape'?", "Slow, excessive official paperwork", ["Colored tape for sealing boxes", "A warning sign at a crime scene", "A strict deadline for a project"]),
-    D(3, "What is 'a fly in the ointment'?", "A small flaw that spoils something", ["An insect stuck in a cream", "A quick and easy cure", "A rival who wants to win"]),
-    D(4, "A pilot who shows 'sang-froid' in a crisis shows what?", "Cool calm under pressure", ["Cold sweat and panic", "Hot-headed anger", "Deep sadness and regret"]),
-    D(5, "What does it mean to 'gild the lily'?", "Add needless decoration to something fine", ["Paint a flower gold", "Praise someone who doesn't deserve it", "Hide a flaw with a cover-up"]),
+    D(1, "If a detective 'puts two and two together', what does he do?", 'Works out the truth from the clues', ['Does simple math in his head', 'Introduces two friends', 'Pairs up with a partner']),
+    D(2, "What are 'crocodile tears'?", 'Fake tears of sorrow', ['Tears of great joy', 'Tears from an eye infection', 'Tears shed in secret']),
+    D(3, "If friends 'chew the fat', what do they do?", 'Chat in a relaxed way', ['Argue about money', 'Eat a heavy meal', 'Complain about their weight']),
+    D(4, "What is a 'Faustian bargain'?", 'Trading your principles for power or gain', ['A deal that is too good to be true', 'A contract signed under protest', 'A trade between two rivals']),
+    D(5, "Who acts 'in loco parentis'?", 'Someone in the place of a parent', ['A parent who has lost a child', 'A child caring for a parent', 'A relative far away']),
   ],
-  // day 36
+  // day 72 (2026-12-29)
   [
-    D(1, "What does it mean to 'beat around the bush'?", "Avoid getting to the main point", ["Strike the shrubs in a garden", "Win an argument quickly", "Talk loudly over others"]),
-    D(2, "If a family struggles to 'make ends meet', what is hard for them?", "Having enough money to live on", ["Tying two pieces of rope together", "Finishing a project on time", "Getting along with relatives"]),
-    D(3, "If someone says your uncle is 'no spring chicken', what do they mean?", "He is no longer young", ["He was not born in spring", "He is a very brave man", "He is not a good cook"]),
-    D(4, "If a much-hyped launch is 'a damp squib', it is...?", "A disappointing letdown", ["A firework that won't light", "A huge, surprising success", "A costly legal mistake"]),
-    D(5, "If you are caught 'between Scylla and Charybdis', what is your situation?", "Stuck between two equal dangers", ["Lost at sea in a storm", "Choosing between two good things", "Torn between two lovers"]),
+    D(1, "If you promise to 'keep someone posted', what will you do?", 'Keep them informed', ['Keep them waiting', 'Keep them on the team', 'Keep them from leaving']),
+    D(2, "What does it mean to 'beat a dead horse'?", 'Keep arguing a point already settled', ['Punish someone unfairly', 'Win a contest easily', 'Work an old machine too hard']),
+    D(3, "If you are 'dressed to the nines', how are you dressed?", 'In your finest clothes', ['In many layers', 'In a sports uniform', 'In old, worn clothes']),
+    D(4, "What is a 'tabula rasa'?", 'A blank slate', ['A round table', 'A list of rules', 'A record of debts']),
+    D(5, "What does 'prima facie' evidence mean?", 'Evidence that seems sufficient at first sight', ['Evidence that is final and proven', 'Evidence from a face-to-face witness', 'Evidence that was hidden']),
+  ],
+  // day 73 (2026-12-30)
+  [
+    D(1, "What is 'a no-brainer'?", 'An easy decision', ['A foolish person', 'A boring job', 'A hard puzzle']),
+    D(2, "What is 'a skeleton in the closet'?", 'A shameful secret from the past', ['An unsolved crime', 'A scary story', 'An old friend you forgot']),
+    D(3, "If you 'curry favor' with the boss, what do you do?", 'Seek approval through flattery', ['Cook a meal for him', 'Ask him for a raise', 'Complain about coworkers']),
+    D(4, "If a supplier cites 'force majeure', what is it claiming?", 'An event beyond its control stopped it', ['It has the right to raise prices', 'It is the largest firm in its field', 'It was forced to sell']),
+    D(5, "What is a person's 'Weltanschauung'?", 'Their overall view of the world', ['Their fear of travel', 'Their love of nature', 'Their family history']),
+  ],
+  // day 74 (2026-12-31)
+  [
+    D(1, "If you 'turn over a new leaf' for the new year, what do you do?", 'Make a fresh start and do better', ['Start a garden in the spring', 'Read a new book', 'Change your mind about a plan']),
+    D(2, "What is 'a labor of love'?", 'Work done for pleasure, not pay', ['A job in a hospital', 'A long romantic letter', 'A task done by force']),
+    D(3, "If a family is 'the salt of the earth', what are they?", 'Good, honest and decent people', ['Farmers who work the land', 'Rich and powerful people', 'Grumpy and hard to please']),
+    D(4, "What is an 'ad hominem' attack?", 'Attacking the person instead of the argument', ['Attacking with no warning', 'Attacking many people at once', 'Attacking in self-defense']),
+    D(5, "On New Year's Eve, singers toast 'auld lang syne'. What does it mean?", 'Times long past', ['Old friends and family', 'A happy new year', 'The end of a long song']),
   ],
 ];

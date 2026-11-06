@@ -1,296 +1,315 @@
 // Idiom gauntlet, lane 'Finish the Saying': proverbs, sayings and similes.
-// 36 days x 5 tiers (tier 1 gimme .. tier 5 expert). Each saying is used once,
-// in one form; idioms and foreign phrases belong to the other Idiom lane.
+// THIS FILE HOLDS THE LATEST SEGMENT ONLY: bank days 37..74 (2026-11-24 to
+// 2026-12-31), five tiers a day (tier 1 gimme .. tier 5 expert). Days 1..36 were
+// built from the launch version of this file (commit 25faa9aa) and live frozen in
+// app/idiom/questions.js. Each saying is used once, in one form; idioms and
+// foreign phrases belong to the other Idiom lane.
 const L = 'Finish the Saying';
 const D = (t, q, a, d) => ({ c: L, t, q, a, d });
 
 export const LANE_DAYS = [
-  // day 1
+  // day 37 (2026-11-24)
   [
-    D(1, "How does the proverb end: 'The early bird...'?", 'catches the worm', ['gets the seed', 'sings the loudest', 'flies the farthest']),
-    D(2, 'According to the proverb, what does a rolling stone gather none of?', 'Moss', ['Dust', 'Speed', 'Mud']),
-    D(3, "Complete the simile: 'As poor as a church...'?", 'mouse', ['cat', 'bell', 'pew']),
-    D(4, "Which word completes the saying: 'Possession is nine-tenths of the ___'?", 'law', ['battle', 'game', 'argument']),
-    D(5, "How does the proverb end: 'Fine words butter...'?", 'no parsnips', ['no bread', 'no muffins', 'few biscuits']),
+    D(1, "Which word completes the saying: 'No pain, no ___'?", 'gain', ['loss', 'win', 'glory']),
+    D(2, "How does the proverb end: 'Waste not...'?", 'want not', ['need not', 'lose not', 'fear not']),
+    D(3, "Which word completes the saying: 'Barking dogs seldom ___'?", 'bite', ['sleep', 'growl', 'run']),
+    D(4, "In the magpie rhyme, which word completes: 'One for sorrow, two for ___'?", 'joy', ['gold', 'luck', 'love']),
+    D(5, "How does the proverb end: 'He who excuses himself...'?", 'accuses himself', ['forgives himself', 'fools himself', 'shames himself']),
   ],
-  // day 2
+  // day 38 (2026-11-25)
   [
-    D(1, "How does the proverb end: 'Practice makes...'?", 'perfect', ['heroes', 'champions', 'masters']),
-    D(2, "Which word completes the saying: 'Don't cry over spilled ___'?", 'milk', ['wine', 'tea', 'water']),
-    D(3, 'According to the proverb, what goes before a fall?', 'Pride', ['Greed', 'Haste', 'Envy']),
-    D(4, "How does the proverb end: 'Many a true word...'?", 'is spoken in jest', ['is spoken in anger', 'is lost in translation', 'is written in stone']),
-    D(5, "Complete the simile: 'As pleased as...'?", 'Punch', ['Judy', 'a king', 'a puppy']),
+    D(1, "Which word completes the saying: 'The more, the ___'?", 'merrier', ['better', 'happier', 'louder']),
+    D(2, "How does the proverb end: 'Out of the frying pan...'?", 'into the fire', ['onto the plate', 'into the pot', 'off the stove']),
+    D(3, "Which word completes the saying: 'Laugh, and the world laughs with you; weep, and you weep ___'?", 'alone', ['together', 'twice', 'forever']),
+    D(4, "Which word completes the saying: 'Constant dripping wears away the ___'?", 'stone', ['roof', 'paint', 'wood']),
+    D(5, "Which word completes the saying: 'A golden key opens every ___'?", 'door', ['heart', 'chest', 'gate']),
   ],
-  // day 3
+  // day 39 (2026-11-26)
   [
-    D(1, "How does the proverb end: 'If it ain't broke...'?", "don't fix it", ["don't touch it", 'leave it be', "don't sell it"]),
-    D(2, "Which word completes the saying: 'You can't teach an old dog new ___'?", 'tricks', ['words', 'games', 'habits']),
-    D(3, "How does the proverb end: 'An ounce of prevention...'?", 'is worth a pound of cure', ['is worth a ton of trouble', 'saves a pound of flesh', 'is worth its weight in gold']),
-    D(4, 'Which proverb means that narrowly failing is still failing?', 'A miss is as good as a mile', ['Every little bit helps', 'Patience is a virtue', 'Practice what you preach']),
-    D(5, "Complete the simile: 'As merry as a...'?", 'cricket', ['sparrow', 'fiddler', 'sailor']),
+    D(1, "Complete the simile: 'As American as apple...'?", 'pie', ['cider', 'butter', 'sauce']),
+    D(2, "How does the proverb end: 'The way to a man's heart...'?", 'is through his stomach', ['is through his wallet', 'is through his ego', 'is a mystery']),
+    D(3, "Which word completes the saying: 'You can't fight city ___'?", 'hall', ['police', 'traffic', 'taxes']),
+    D(4, "Which word completes the saying: 'Ill-gotten gains never ___'?", 'prosper', ['last', 'satisfy', 'grow']),
+    D(5, "Complete the American simile: 'As poor as Job's...'?", 'turkey', ['goat', 'mule', 'hen']),
   ],
-  // day 4
+  // day 40 (2026-11-27)
   [
-    D(1, 'According to the proverb, what wins the race?', 'Slow and steady', ['Fast and furious', 'Quick and clever', 'Strong and bold']),
-    D(2, "How does the proverb end: 'People who live in glass houses...'?", "shouldn't throw stones", ["shouldn't light candles", 'should close the curtains', 'should mind the weather']),
-    D(3, "Which simile describes two very close friends: 'As thick as...'?", 'thieves', ['brothers', 'twins', 'neighbors']),
-    D(4, "Which proverb means that good deeds, not good looks, show a person's worth?", 'Handsome is as handsome does', ['Clothes make the man', 'Love is blind', 'Practice what you preach']),
-    D(5, "Which word completes the saying: 'Comparisons are ___'?", 'odious', ['useless', 'unfair', 'tedious']),
+    D(1, "Which word completes the saying: 'Seeing is ___'?", 'believing', ['knowing', 'trusting', 'learning']),
+    D(2, "Which word completes the saying: 'A leopard can't change its ___'?", 'spots', ['stripes', 'claws', 'roar']),
+    D(3, "How does the saying end: 'Old soldiers never die...'?", 'they just fade away', ['they just march on', 'they just retire', 'they just tell stories']),
+    D(4, "Which word completes the saying: 'Even a worm will ___'?", 'turn', ['bite', 'fight', 'hide']),
+    D(5, "Which word completes the saying: 'Needs must when the devil ___'?", 'drives', ['calls', 'laughs', 'pays']),
   ],
-  // day 5
+  // day 41 (2026-11-28)
   [
-    D(1, "Complete the simile: 'As blind as a...'?", 'bat', ['cat', 'owl', 'fish']),
-    D(2, "Complete the simile: 'As good as...'?", 'gold', ['silver', 'honey', 'bread']),
-    D(3, "Which word completes the saying: 'Once bitten, twice ___'?", 'shy', ['wise', 'careful', 'sorry']),
-    D(4, "How does the proverb end: 'Penny wise...'?", 'and pound foolish', ['and dollar poor', 'and pocket empty', 'and purse proud']),
-    D(5, 'Which proverb warns that small children overhear more than adults realize?', 'Little pitchers have big ears', ['Children should be seen and not heard', 'Out of the mouths of babes', 'Spare the rod and spoil the child']),
+    D(1, "Which word completes the saying: 'Knowledge is ___'?", 'power', ['wealth', 'freedom', 'beauty']),
+    D(2, "Which word completes the saying: 'You reap what you ___'?", 'sow', ['earn', 'take', 'give']),
+    D(3, "Which word completes the saying: 'Spare the rod and spoil the ___'?", 'child', ['horse', 'harvest', 'servant']),
+    D(4, "Which word completes the saying: 'Empty vessels make the most ___'?", 'noise', ['trouble', 'room', 'water']),
+    D(5, "Which word completes the saying: 'Every why has a ___'?", 'wherefore', ['because', 'whence', 'therefore']),
   ],
-  // day 6
+  // day 42 (2026-11-29)
   [
-    D(1, "Which word completes the saying: 'Better late than ___'?", 'never', ['sorry', 'early', 'absent']),
-    D(2, 'Which proverb means you should make the most of good conditions before they pass?', 'Make hay while the sun shines', ['Waste not, want not', 'Every little bit helps', 'Patience is a virtue']),
-    D(3, "How does the proverb end: 'It takes two...'?", 'to tango', ['to tangle', 'to waltz', 'to tie a knot']),
-    D(4, "Complete the simile: 'As slow as molasses in...'?", 'January', ['July', 'October', 'a jar']),
-    D(5, "Which word completes the saying: 'Good wine needs no ___'?", 'bush', ['bottle', 'cork', 'label']),
+    D(1, "Which word completes the saying: 'Money doesn't grow on ___'?", 'trees', ['bushes', 'vines', 'farms']),
+    D(2, "Which word completes the saying: 'You can't make an omelet without breaking ___'?", 'eggs', ['bowls', 'rules', 'pans']),
+    D(3, "Which word completes the saying: 'A chain is only as strong as its weakest ___'?", 'link', ['lock', 'hook', 'part']),
+    D(4, "Which word completes the saying: 'Cut your coat according to your ___'?", 'cloth', ['size', 'needs', 'purse']),
+    D(5, "Which word completes the saying: 'All cats are gray in the ___'?", 'dark', ['rain', 'barn', 'alley']),
   ],
-  // day 7
+  // day 43 (2026-11-30)
   [
-    D(1, "Complete the simile: 'As happy as a...'?", 'clam', ['crab', 'cow', 'fish']),
-    D(2, "Which word completes the saying: 'Let sleeping ___ lie'?", 'dogs', ['cats', 'bears', 'lions']),
-    D(3, "Which word completes the saying: 'Discretion is the better part of ___'?", 'valor', ['wisdom', 'honor', 'glory']),
-    D(4, "How does the proverb end: 'A new broom...'?", 'sweeps clean', ['sweeps wide', 'lasts longest', 'sweeps the floor']),
-    D(5, "How does the proverb end: 'One might as well be hanged for a sheep...'?", 'as a lamb', ['as a goat', 'as a fleece', 'as a cow']),
+    D(1, "Which word completes the saying: 'Two's company, three's a ___'?", 'crowd', ['party', 'team', 'problem']),
+    D(2, "Which word completes the saying: 'Like father, like ___'?", 'son', ['brother', 'uncle', 'friend']),
+    D(3, "Which word completes the saying: 'Desperate times call for desperate ___'?", 'measures', ['leaders', 'prayers', 'friends']),
+    D(4, "Which word completes the saying: 'Many are called, but few are ___'?", 'chosen', ['saved', 'ready', 'worthy']),
+    D(5, "Which word completes the saying: 'Don't keep a dog and bark ___'?", 'yourself', ['at night', 'in vain', 'too loudly']),
   ],
-  // day 8
+  // day 44 (2026-12-01)
   [
-    D(1, "How does the proverb end: 'Beggars can't be...'?", 'choosers', ['bankers', 'givers', 'winners']),
-    D(2, "Which word completes the saying: 'Many hands make ___ work'?", 'light', ['quick', 'short', 'good']),
-    D(3, 'Which proverb means that a problem is easier to solve with a partner?', 'Two heads are better than one', ['Clothes make the man', 'Opposites attract', 'Seeing is believing']),
-    D(4, "How does the proverb end: 'One man's meat...'?", "is another man's poison", ["is another man's bread", "is another man's treasure", "feeds another man's dog"]),
-    D(5, "Complete the simile: 'As mad as a wet...'?", 'hen', ['dog', 'duck', 'goose']),
+    D(1, "Which word completes the saying: 'When it rains, it ___'?", 'pours', ['floods', 'storms', 'drips']),
+    D(2, "Which word completes the saying: 'The best things in life are ___'?", 'free', ['rare', 'earned', 'shared']),
+    D(3, "Which word completes the saying: 'Brevity is the soul of ___'?", 'wit', ['poetry', 'wisdom', 'kindness']),
+    D(4, "Which word completes the saying: 'In the land of the blind, the one-eyed man is ___'?", 'king', ['lost', 'feared', 'wise']),
+    D(5, "Which word completes the saying: 'A creaking door hangs ___'?", 'longest', ['crooked', 'loose', 'heavy']),
   ],
-  // day 9
+  // day 45 (2026-12-02)
   [
-    D(1, "Which word completes the saying: 'Time ___ all wounds'?", 'heals', ['opens', 'closes', 'hides']),
-    D(2, 'According to the proverb, what is next to godliness?', 'Cleanliness', ['Kindness', 'Patience', 'Charity']),
-    D(3, "Complete the simile: 'As mad as a...'?", 'hatter', ['tailor', 'baker', 'miller']),
-    D(4, "How does the proverb end: 'Forewarned...'?", 'is forearmed', ['is forgiven', 'is fortunate', 'is foretold']),
-    D(5, "Which word completes the saying: 'Self-praise is no ___'?", 'recommendation', ['virtue', 'reward', 'compliment']),
+    D(1, "Which word completes the saying: 'Rules are made to be ___'?", 'broken', ['followed', 'changed', 'written']),
+    D(2, "Which word completes the saying: 'Don't throw the baby out with the ___'?", 'bathwater', ['laundry', 'blanket', 'crib']),
+    D(3, "Which word completes the saying: 'The best-laid plans of mice and men often go ___'?", 'awry', ['unfinished', 'unnoticed', 'unpaid']),
+    D(4, 'According to Ben Franklin, fish and visitors stink after three what?', 'Days', ['Weeks', 'Hours', 'Meals']),
+    D(5, "Which word completes the saying: 'Hunger drives the wolf out of the ___'?", 'wood', ['den', 'hills', 'cave']),
   ],
-  // day 10
+  // day 46 (2026-12-03)
   [
-    D(1, "How does the proverb end: 'The pen is mightier...'?", 'than the sword', ['than the tongue', 'than the crown', 'than the spear']),
-    D(2, 'According to the proverb, what do birds of a feather do?', 'Flock together', ['Fly south', 'Sing together', 'Nest apart']),
-    D(3, "Which word completes the saying: 'Hope springs ___'?", 'eternal', ['anew', 'early', 'upward']),
-    D(4, "Complete the simile: 'As naked as a...'?", 'jaybird', ['blackbird', 'bluebird', 'mockingbird']),
-    D(5, "Complete the simile: 'As nervous as a long-tailed cat in a room full of...'?", 'rocking chairs', ['mousetraps', 'dogs', 'rocking horses']),
+    D(1, "Which word completes the saying: 'Great minds think ___'?", 'alike', ['deeply', 'quickly', 'freely']),
+    D(2, "Which word completes the saying: 'Talk is ___'?", 'cheap', ['easy', 'harmless', 'useless']),
+    D(3, "Which word completes the saying: 'Imitation is the sincerest form of ___'?", 'flattery', ['respect', 'praise', 'friendship']),
+    D(4, "Which word completes the saying: 'Little things please little ___'?", 'minds', ['children', 'people', 'hearts']),
+    D(5, "Which word completes the saying: 'Let the cobbler stick to his ___'?", 'last', ['trade', 'bench', 'awl']),
   ],
-  // day 11
+  // day 47 (2026-12-04)
   [
-    D(1, "How does the proverb end: 'A bird in the hand is worth...'?", 'two in the bush', ['three in the tree', 'one in the nest', 'two in the sky']),
-    D(2, 'Which proverb means that a careless spender is quickly left broke?', 'A fool and his money are soon parted', ['Time is money', 'Every man has his price', 'Home is where the heart is']),
-    D(3, "Complete the simile: 'As sober as a...'?", 'judge', ['priest', 'monk', 'nun']),
-    D(4, 'According to the proverb, what is better than none?', 'Half a loaf', ['A crust of bread', 'Half a cake', 'A little luck']),
-    D(5, "Which word completes the saying: 'The mills of God grind ___'?", 'slowly', ['loudly', 'quickly', 'silently']),
+    D(1, "Which word completes the saying: 'Patience is a ___'?", 'virtue', ['gift', 'skill', 'choice']),
+    D(2, "Which word completes the saying: 'Every rose has its ___'?", 'thorn', ['petal', 'season', 'scent']),
+    D(3, "Which word completes the saying: 'A rising tide lifts all ___'?", 'boats', ['spirits', 'docks', 'nets']),
+    D(4, "Which word completes the saying: 'There is honor among ___'?", 'thieves', ['soldiers', 'sailors', 'rivals']),
+    D(5, "Which word completes the saying: 'Tell the truth and shame the ___'?", 'devil', ['liar', 'crowd', 'family']),
   ],
-  // day 12
+  // day 48 (2026-12-05)
   [
-    D(1, 'According to the proverb, what is the best policy?', 'Honesty', ['Patience', 'Kindness', 'Silence']),
-    D(2, "How does the proverb end: 'You can't have your cake...'?", 'and eat it too', ['and share it too', 'without the frosting', 'and save it too']),
-    D(3, "How does the proverb end: 'Lightning never strikes...'?", 'twice in the same place', ['the same tree', 'without thunder', 'a moving target']),
-    D(4, "Which word completes the saying: 'One swallow does not make a ___'?", 'summer', ['song', 'nest', 'flock']),
-    D(5, "Complete the simile: 'As deaf as a...'?", 'post', ['pillar', 'brick', 'beam']),
+    D(1, "Which word completes the saying: 'First come, first ___'?", 'served', ['paid', 'chosen', 'seated']),
+    D(2, "Which word completes the saying: 'Never put off till tomorrow what you can do ___'?", 'today', ['later', 'alone', 'well']),
+    D(3, "Complete the simile: 'As pale as a...'?", 'ghost', ['candle', 'cloud', 'pearl']),
+    D(4, "Which word completes the saying: 'Never trouble trouble till trouble troubles ___'?", 'you', ['twice', 'all', 'others']),
+    D(5, "Which word completes the saying: 'Short reckonings make long ___'?", 'friends', ['debts', 'lives', 'memories']),
   ],
-  // day 13
+  // day 49 (2026-12-06)
   [
-    D(1, "Which word completes the saying: 'The grass is always ___ on the other side of the fence'?", 'greener', ['taller', 'softer', 'thicker']),
-    D(2, "Complete the simile: 'As fit as a...'?", 'fiddle', ['drum', 'bell', 'trumpet']),
-    D(3, 'According to the proverb, what do still waters do?', 'Run deep', ['Run cold', 'Stand clear', 'Hide stones']),
-    D(4, "How does the proverb end: 'Least said...'?", 'soonest mended', ['quickest forgotten', 'safest kept', 'soonest healed']),
-    D(5, "How does the proverb end: 'Hope deferred...'?", 'makes the heart sick', ['makes the spirit strong', 'is hope denied', 'breaks the will']),
+    D(1, "Which word completes the saying: 'Finders keepers, losers ___'?", 'weepers', ['sleepers', 'seekers', 'creepers']),
+    D(2, "Complete the simile: 'As sick as a...'?", 'dog', ['cat', 'goat', 'mule']),
+    D(3, "Complete the simile: 'As steady as a...'?", 'rock', ['tree', 'wall', 'ship']),
+    D(4, "Which word completes the saying: 'The cobbler's children go ___'?", 'barefoot', ['hungry', 'unschooled', 'ragged']),
+    D(5, "Which word completes Francis Bacon's line: 'Hope is a good breakfast, but it is a bad ___'?", 'supper', ['habit', 'master', 'lunch']),
   ],
-  // day 14
+  // day 50 (2026-12-07)
   [
-    D(1, "Which word completes the saying: 'Two wrongs don't make a ___'?", 'right', ['difference', 'friend', 'promise']),
-    D(2, 'According to the proverb, what gets the grease?', 'The squeaky wheel', ['The rusty hinge', 'The loudest engine', 'The oldest cart']),
-    D(3, "Complete the simile: 'As clean as a...'?", 'whistle', ['whisker', 'window', 'plate']),
-    D(4, 'Which proverb means that even a misfortune usually benefits someone?', "It's an ill wind that blows nobody any good", ['Every man has his price', 'Seeing is believing', 'Patience is a virtue']),
-    D(5, "How does the proverb end: 'A soft answer...'?", 'turns away wrath', ['wins the argument', 'cools the soup', 'calms the sea']),
+    D(1, "Which word completes the saying: 'Opposites ___'?", 'attract', ['repel', 'argue', 'collide']),
+    D(2, "Complete the simile: 'As cute as a...'?", 'button', ['penny', 'ribbon', 'peach']),
+    D(3, "Complete the simile: 'As warm as...'?", 'toast', ['soup', 'bread', 'wool']),
+    D(4, "How does the proverb end: 'None so blind...'?", 'as those who will not see', ['as a mole in the sun', 'as love at first sight', 'as a judge with a bribe']),
+    D(5, "Which word completes the saying: 'Better to wear out than to ___ out'?", 'rust', ['burn', 'sell', 'die']),
   ],
-  // day 15
+  // day 51 (2026-12-08)
   [
-    D(1, "Which word completes the saying: 'Absence makes the heart grow ___'?", 'fonder', ['stronger', 'colder', 'wiser']),
-    D(2, "Which word completes the saying: 'A watched ___ never boils'?", 'pot', ['pan', 'cup', 'stew']),
-    D(3, "Complete the simile: 'As neat as a...'?", 'pin', ['nail', 'bow', 'kitten']),
-    D(4, 'Which proverb means that whoever pays for something gets to decide how it is done?', 'He who pays the piper calls the tune', ['Every man has his price', 'Time is money', 'Clothes make the man']),
-    D(5, "How does the proverb end: 'Necessity knows...'?", 'no law', ['no limit', 'no mercy', 'no master']),
+    D(1, "Which word completes the saying: 'Home is where the ___ is'?", 'heart', ['family', 'money', 'dog']),
+    D(2, "Complete the simile: 'As fresh as a...'?", 'daisy', ['tulip', 'lily', 'pansy']),
+    D(3, 'According to the proverb, what do you catch more flies with than vinegar?', 'Honey', ['Jam', 'Bread', 'Wine']),
+    D(4, "Which word completes the saying: 'Silence gives ___'?", 'consent', ['offense', 'comfort', 'away']),
+    D(5, "Which word completes the saying: 'Second thoughts are ___'?", 'best', ['wasted', 'safer', 'slower']),
   ],
-  // day 16
+  // day 52 (2026-12-09)
   [
-    D(1, "Complete the simile: 'As quiet as a...'?", 'mouse', ['cat', 'owl', 'rabbit']),
-    D(2, "Complete the simile: 'As dead as a...'?", 'doornail', ['doorstop', 'hinge', 'tombstone']),
-    D(3, "How does the proverb end: 'A penny saved...'?", 'is a penny earned', ['is a penny spent', 'is a dollar earned', 'is a lesson learned']),
-    D(4, "Which word completes the saying: 'There's many a slip twixt the cup and the ___'?", 'lip', ['saucer', 'table', 'spoon']),
-    D(5, "Which word completes the saying: 'Set a beggar on horseback and he'll ride to the ___'?", 'devil', ['castle', 'market', 'city']),
+    D(1, "Which word completes the saying: 'Old habits die ___'?", 'hard', ['slowly', 'young', 'quietly']),
+    D(2, "Complete the simile: 'As high as a...'?", 'kite', ['hawk', 'ladder', 'tree']),
+    D(3, 'According to the proverb, a jack of all trades is also what?', 'Master of none', ['Friend to all', 'King of the market', 'Servant of many']),
+    D(4, "How does the proverb end: 'There's many a good tune...'?", 'played on an old fiddle', ['sung by a tired voice', 'lost to the wind', 'whistled in the dark']),
+    D(5, "Which word completes the saying: 'Even Homer ___'?", 'nods', ['errs', 'sleeps', 'weeps']),
   ],
-  // day 17
+  // day 53 (2026-12-10)
   [
-    D(1, "Which word completes the saying: 'Laughter is the best ___'?", 'medicine', ['policy', 'gift', 'teacher']),
-    D(2, 'According to the proverb, what is the spice of life?', 'Variety', ['Laughter', 'Adventure', 'Love']),
-    D(3, 'Which proverb means that people judge you by those you spend time with?', 'A man is known by the company he keeps', ['Clothes make the man', 'No man is an island', 'Every man has his price']),
-    D(4, "Complete the simile: 'As phony as a...'?", 'three-dollar bill', ['paper crown', 'plastic flower', 'cardboard box']),
-    D(5, "How does the proverb end: 'If wishes were horses...'?", 'beggars would ride', ['kings would walk', 'fools would gallop', 'we would all be riders']),
+    D(1, "Which word completes the saying: 'Monkey see, monkey ___'?", 'do', ['say', 'try', 'play']),
+    D(2, "Complete the simile: 'As plain as the nose on your...'?", 'face', ['head', 'hand', 'chin']),
+    D(3, 'According to the proverb, if speech is silver, what is golden?', 'Silence', ['Wisdom', 'Kindness', 'Patience']),
+    D(4, "How does the proverb end: 'Ask no questions...'?", 'and hear no lies', ['and make no friends', 'and learn nothing', 'and keep the peace']),
+    D(5, "Which word completes the saying, from the Latin 'festina lente': 'Make haste ___'?", 'slowly', ['carefully', 'wisely', 'quietly']),
   ],
-  // day 18
+  // day 54 (2026-12-11)
   [
-    D(1, "Which word completes the saying: 'Don't count your ___ before they hatch'?", 'chickens', ['ducks', 'geese', 'turkeys']),
-    D(2, "Complete the simile: 'As snug as a bug in a...'?", 'rug', ['mug', 'jug', 'hug']),
-    D(3, 'According to the proverb, what do great oaks grow from?', 'Little acorns', ['Deep roots', 'Tall saplings', 'Old stumps']),
-    D(4, "How does the proverb end: 'In for a penny...'?", 'in for a pound', ['in for a dollar', 'out for a shilling', 'in for a dime']),
-    D(5, "How does the proverb end: 'The perfect is the enemy...'?", 'of the good', ['of the bold', 'of the wise', 'of the patient']),
+    D(1, "Which word completes the saying: 'There's no such thing as a free ___'?", 'lunch', ['pass', 'prize', 'gift']),
+    D(2, "Which word completes the saying: 'When life gives you lemons, make ___'?", 'lemonade', ['pie', 'juice', 'tea']),
+    D(3, "Which proverb means you shouldn't worry about a problem before it arrives?", 'Cross that bridge when you come to it', ['Look before you leap', 'A watched pot never boils', 'Every cloud has a silver lining']),
+    D(4, "How does Shakespeare's line end: 'Uneasy lies the head...'?", 'that wears a crown', ['that sleeps alone', 'that thinks too much', 'that bows to none']),
+    D(5, "Which word completes the saying: 'Distance lends ___ to the view'?", 'enchantment', ['clarity', 'color', 'depth']),
   ],
-  // day 19
+  // day 55 (2026-12-12)
   [
-    D(1, 'Which proverb means that people soon forget what they no longer see?', 'Out of sight, out of mind', ['Ignorance is bliss', 'Silence is golden', 'Seeing is believing']),
-    D(2, "Which word completes the saying: 'Don't look a gift ___ in the mouth'?", 'horse', ['dog', 'cow', 'mule']),
-    D(3, "Which word completes the saying: 'Fools rush in where ___ fear to tread'?", 'angels', ['kings', 'giants', 'soldiers']),
-    D(4, "Complete the simile: 'As regular as...'?", 'clockwork', ['a metronome', 'the mailman', 'a calendar']),
-    D(5, "How does the proverb end: 'Don't teach your grandmother...'?", 'to suck eggs', ['to knit', 'to boil water', 'to bake bread']),
+    D(1, "Complete the simile: 'As brave as a...'?", 'lion', ['tiger', 'bear', 'knight']),
+    D(2, "How does the proverb end: 'Early to bed and early to rise...'?", 'makes a man healthy, wealthy, and wise', ['keeps a man fit, rich, and happy', 'makes the day long and bright', 'gives a man more time to work']),
+    D(3, 'Which proverb means people value something only once it is gone?', 'You never miss the water till the well runs dry', ['Still waters run deep', 'Good fences make good neighbors', 'Time heals all wounds']),
+    D(4, "How does Alexander Pope's saying end: 'A little learning...'?", 'is a dangerous thing', ['goes a long way', 'is better than none', 'makes a proud fool']),
+    D(5, "Which word completes the saying: 'Every man for himself, and the devil take the ___'?", 'hindmost', ['weakest', 'stragglers', 'rest']),
   ],
-  // day 20
+  // day 56 (2026-12-13)
   [
-    D(1, "How does the proverb end: 'Don't put all your eggs...'?", 'in one basket', ['in one pan', 'on one plate', 'in the nest']),
-    D(2, "Which word completes the saying: 'Where there's a will, there's a ___'?", 'way', ['wish', 'road', 'lawyer']),
-    D(3, 'Which proverb means that what is gained without effort is lost just as lightly?', 'Easy come, easy go', ['Time is money', 'Waste not, want not', 'Every little bit helps']),
-    D(4, 'According to the proverb, what is the thief of time?', 'Procrastination', ['Idleness', 'Distraction', 'Sleep']),
-    D(5, "Complete the simile: 'As ugly as a mud...'?", 'fence', ['puddle', 'pie', 'hut']),
+    D(1, "Which word completes the saying: 'Every dog has its ___'?", 'day', ['bone', 'home', 'master']),
+    D(2, "How does the saying end: 'You win some...'?", 'you lose some', ['you learn some', 'you share some', 'you miss some']),
+    D(3, "How does the saying end: 'Let the punishment...'?", 'fit the crime', ['come swiftly', 'be public', 'end the matter']),
+    D(4, "How does the proverb end: 'Set a thief...'?", 'to catch a thief', ['to guard the gold', 'free and he will steal', 'on the right path']),
+    D(5, "Which word completes the saying: 'A burnt child dreads the ___'?", 'fire', ['stove', 'dark', 'rod']),
   ],
-  // day 21
+  // day 57 (2026-12-14)
   [
-    D(1, "How does the proverb end: 'Where there's smoke...'?", "there's fire", ["there's ash", "there's heat", "there's a chimney"]),
-    D(2, 'Which proverb means that a small fix done early prevents bigger work later?', 'A stitch in time saves nine', ['Every little bit helps', 'Practice what you preach', 'Patience is a virtue']),
-    D(3, "Complete the simile: 'As right as...'?", 'rain', ['day', 'time', 'gold']),
-    D(4, 'According to the proverb, what will a drowning man clutch at?', 'A straw', ['A rope', 'A branch', 'A plank']),
-    D(5, "Which word completes the saying: 'Every ___ has his Jill'?", 'Jack', ['John', 'Tom', 'Will']),
+    D(1, "Which word completes the saying: 'Don't bite the hand that ___ you'?", 'feeds', ['helps', 'leads', 'warns']),
+    D(2, "How does the saying end: 'If you can't beat them...'?", 'join them', ['leave them', 'outlast them', 'ignore them']),
+    D(3, "How does the proverb end: 'Seek, and ye...'?", 'shall find', ['shall be rewarded', 'shall be lost', 'shall wait']),
+    D(4, "Complete the simile: 'As welcome as the flowers in...'?", 'May', ['June', 'spring', 'a vase']),
+    D(5, "Which word completes the saying: 'Every tub must stand on its own ___'?", 'bottom', ['feet', 'base', 'legs']),
   ],
-  // day 22
+  // day 58 (2026-12-15)
   [
-    D(1, "Complete the simile: 'As busy as a...'?", 'bee', ['bird', 'cat', 'squirrel']),
-    D(2, "How does the proverb end: 'A picture is worth...'?", 'a thousand words', ['a hundred stories', 'a million dollars', 'a thousand pictures']),
-    D(3, "Which word completes the saying: 'The devil is in the ___'?", 'details', ['corners', 'shadows', 'margins']),
-    D(4, "How does the proverb end: 'There's no fool...'?", 'like an old fool', ['like a young fool', 'like a proud fool', 'like a rich fool']),
-    D(5, 'According to the proverb, what is the best sauce?', 'Hunger', ['Patience', 'Butter', 'Laughter']),
+    D(1, "Which word completes the saying: 'A cat has nine ___'?", 'lives', ['tails', 'toes', 'friends']),
+    D(2, "Which word completes the saying: 'All roads lead to ___'?", 'Rome', ['home', 'glory', 'Paris']),
+    D(3, "How does the proverb end: 'A house divided against itself...'?", 'cannot stand', ['will be sold', 'has no roof', 'needs a master']),
+    D(4, "Complete the simile: 'As brown as a...'?", 'berry', ['bear', 'leaf', 'loaf']),
+    D(5, "Which word completes Robert Browning's line: 'A man's reach should exceed his ___'?", 'grasp', ['height', 'means', 'dreams']),
   ],
-  // day 23
+  // day 59 (2026-12-16)
   [
-    D(1, "Complete the simile: 'As cool as a...'?", 'cucumber', ['breeze', 'penguin', 'pickle']),
-    D(2, "Which word completes the saying: 'Misery loves ___'?", 'company', ['silence', 'sympathy', 'rain']),
-    D(3, "How does the proverb end: 'Good fences...'?", 'make good neighbors', ['keep good cattle', 'make strong houses', 'last for years']),
-    D(4, "Which word completes the saying: 'Feed a cold, starve a ___'?", 'fever', ['flu', 'cough', 'chill']),
-    D(5, 'According to the proverb, what lies at the bottom of a well?', 'Truth', ['Gold', 'Wishes', 'Silence']),
+    D(1, "Which word completes the saying: 'Third time's the ___'?", 'charm', ['winner', 'lucky one', 'try']),
+    D(2, "Which word completes the saying: 'That's the pot calling the ___ black'?", 'kettle', ['pan', 'stove', 'skillet']),
+    D(3, "How does the saying end: 'Even a stopped clock...'?", 'is right twice a day', ['can be fixed', 'still keeps its hands', 'has its uses']),
+    D(4, "Complete the simile: 'As bald as a...'?", 'coot', ['crow', 'duck', 'loon']),
+    D(5, "How does Thomas Gray's line end: 'Where ignorance is bliss...'?", "'tis folly to be wise", ["'tis wise to stay silent", "'tis kind to say nothing", "'tis cruel to teach"]),
   ],
-  // day 24
+  // day 60 (2026-12-17)
   [
-    D(1, "Complete the simile: 'As stubborn as a...'?", 'mule', ['goat', 'sheep', 'cat']),
-    D(2, 'Which proverb means that children tend to turn out like their parents?', "The apple doesn't fall far from the tree", ['Home is where the heart is', 'Spare the rod and spoil the child', 'Children should be seen and not heard']),
-    D(3, "How does the proverb end: 'Nothing ventured...'?", 'nothing gained', ['nothing lost', 'nothing learned', 'nothing risked']),
-    D(4, "Which word completes the saying: 'Little strokes fell great ___'?", 'oaks', ['trees', 'walls', 'men']),
-    D(5, "How does the proverb end: 'Man proposes...'?", 'God disposes', ['woman decides', 'fate opposes', 'time reveals']),
+    D(1, "Which word completes the saying: 'April showers bring May ___'?", 'flowers', ['rainbows', 'gardens', 'harvests']),
+    D(2, "Which word completes the saying: 'Good things come to those who ___'?", 'wait', ['ask', 'give', 'dream']),
+    D(3, "Complete the simile: 'As nutty as a...'?", 'fruitcake', ['pecan pie', 'walnut', 'cookie jar']),
+    D(4, "Complete the simile: 'Like ships that pass in the...'?", 'night', ['harbor', 'fog', 'channel']),
+    D(5, "How does Shakespeare's line end: 'Cowards die many times...'?", 'before their deaths', ['in their dreams', 'and never live', 'for want of nerve']),
   ],
-  // day 25
+  // day 61 (2026-12-18)
   [
-    D(1, 'Which proverb means you should think carefully before you act?', 'Look before you leap', ['He who hesitates is lost', 'Fortune favors the bold', 'Time is money']),
-    D(2, "How does the proverb end: 'You can lead a horse to water...'?", "but you can't make it drink", ["but you can't make it swim", 'but it may not be thirsty', 'but it will find its own way']),
-    D(3, "How does the proverb end: 'What can't be cured...'?", 'must be endured', ['must be forgotten', 'must be hidden', 'must be ignored']),
-    D(4, "Complete the simile: 'As sound as a...'?", 'dollar', ['nickel', 'penny', 'bank']),
-    D(5, "Which word completes the saying: 'You can't make a silk purse out of a sow's ___'?", 'ear', ['hide', 'tail', 'snout']),
+    D(1, "Which word completes the saying: 'You are what you ___'?", 'eat', ['wear', 'own', 'say']),
+    D(2, "Complete the simile: 'Like a moth to a...'?", 'flame', ['star', 'moon', 'flower']),
+    D(3, "How does the saying end: 'Speak softly...'?", 'and carry a big stick', ['and be heard by all', 'and wear a kind smile', 'and walk a long road']),
+    D(4, "Which word completes the saying: 'An army marches on its ___'?", 'stomach', ['boots', 'pride', 'orders']),
+    D(5, "How does the Bible verse end: 'A prophet is not without honor...'?", 'save in his own country', ['among his own people', 'in the eyes of God', 'until he is gone']),
   ],
-  // day 26
+  // day 62 (2026-12-19)
   [
-    D(1, "How does the proverb end: 'When in Rome...'?", 'do as the Romans do', ['do as you please', 'see the Colosseum', 'speak as the Romans speak']),
-    D(2, "Which word completes the saying: 'There's no place like ___'?", 'home', ['heaven', 'school', 'Paris']),
-    D(3, "How does the proverb end: 'The road to hell...'?", 'is paved with good intentions', ['is paved with gold', 'is lined with excuses', 'is shorter than you think']),
-    D(4, "Which word completes the saying: 'Fair exchange is no ___'?", 'robbery', ['bargain', 'crime', 'favor']),
-    D(5, "Complete the simile: 'As crooked as a dog's...'?", 'hind leg', ['ear', 'collar', 'bone']),
+    D(1, "Which word completes the saying: 'Look on the bright ___'?", 'side', ['path', 'light', 'spot']),
+    D(2, "Complete the simile: 'Like water off a duck's...'?", 'back', ['wing', 'beak', 'tail']),
+    D(3, "Which word completes the saying: 'Red sky at night, sailor's ___'?", 'delight', ['luck', 'prize', 'dream']),
+    D(4, "Which word completes Ben Franklin's saying: 'A small leak will sink a great ___'?", 'ship', ['nation', 'fortune', 'dam']),
+    D(5, "How does the proverb end: 'It's an ill bird...'?", 'that fouls its own nest', ['that sings at night', 'that flies alone', 'that steals its food']),
   ],
-  // day 27
+  // day 63 (2026-12-20)
   [
-    D(1, "Which word completes the saying: 'You can't judge a book by its ___'?", 'cover', ['title', 'author', 'spine']),
-    D(2, 'Which proverb means that true loyalty shows when someone is in trouble?', 'A friend in need is a friend indeed', ['No man is an island', 'Love is blind', 'Every man has his price']),
-    D(3, "How does the proverb end: 'The proof of the pudding...'?", 'is in the eating', ['is in the recipe', 'is in the baking', 'is in the bowl']),
-    D(4, "Complete the simile: 'As scarce as hen's...'?", 'teeth', ['eggs', 'feathers', 'nests']),
-    D(5, "Which word completes the saying: 'Grasp all, ___ all'?", 'lose', ['win', 'risk', 'keep']),
+    D(1, "Which word completes the saying: 'Don't make a mountain out of a ___'?", 'molehill', ['hill', 'pebble', 'anthill']),
+    D(2, "Complete the simile: 'Like shooting fish in a...'?", 'barrel', ['pond', 'net', 'tank']),
+    D(3, "Which word completes the saying: 'There's no accounting for ___'?", 'taste', ['luck', 'fools', 'weather']),
+    D(4, "How does the proverb end: 'Marry in haste...'?", 'repent at leisure', ['divorce in a hurry', 'and live in love', 'and pay the price']),
+    D(5, "How does the proverb end: 'Every man is the architect...'?", 'of his own fortune', ['of his own house', 'of his own grief', 'of his own name']),
   ],
-  // day 28
+  // day 64 (2026-12-21)
   [
-    D(1, "Complete the simile: 'As light as a...'?", 'feather', ['cloud', 'bubble', 'leaf']),
-    D(2, "How does the proverb end: 'Strike while...'?", 'the iron is hot', ['the sun is high', 'the fire is lit', 'the crowd is cheering']),
-    D(3, "Which word completes the saying: 'Revenge is a dish best served ___'?", 'cold', ['hot', 'alone', 'slowly']),
-    D(4, "How does the proverb end: 'The exception...'?", 'proves the rule', ['breaks the rule', 'bends the rule', 'makes the rule']),
-    D(5, 'According to the proverb, what should a liar have?', 'A good memory', ['A straight face', 'A quick tongue', 'A long nose']),
+    D(1, "Which word completes the saying: 'Good things come in small ___'?", 'packages', ['doses', 'numbers', 'ways']),
+    D(2, "Complete the simile: 'Like a dog with a...'?", 'bone', ['ball', 'stick', 'bowl']),
+    D(3, "Which word completes the saying: 'You can't unring a ___'?", 'bell', ['phone', 'alarm', 'chime']),
+    D(4, "Which word completes the Bible verse: 'Ye cannot serve God and ___'?", 'mammon', ['Caesar', 'kings', 'Baal']),
+    D(5, "How does the proverb end: 'Who chatters to you...'?", 'will chatter of you', ['will tire of you', 'will never listen', 'is a true friend']),
   ],
-  // day 29
+  // day 65 (2026-12-22)
   [
-    D(1, 'According to the proverb, what is the mother of invention?', 'Necessity', ['Curiosity', 'Imagination', 'Laziness']),
-    D(2, "How does the proverb end: 'When the cat's away...'?", 'the mice will play', ['the dog will bark', 'the birds will sing', 'the mice will hide']),
-    D(3, "Complete the simile: 'As dry as a...'?", 'bone', ['stick', 'brick', 'leaf']),
-    D(4, "Complete the simile: 'As bold as...'?", 'brass', ['bronze', 'iron', 'copper']),
-    D(5, "Which word completes the saying: 'Whom the gods would destroy, they first make ___'?", 'mad', ['rich', 'blind', 'famous']),
+    D(1, "Complete the simile: 'Like looking for a needle in a...'?", 'haystack', ['barn', 'garden', 'desert']),
+    D(2, "Complete the simile: 'Like a hot knife through...'?", 'butter', ['cheese', 'cake', 'bread']),
+    D(3, "Which word completes the saying: 'More haste, less ___'?", 'speed', ['time', 'care', 'waste']),
+    D(4, "Which word completes the proverb: 'Love me, love my ___'?", 'dog', ['cat', 'home', 'horse']),
+    D(5, "Complete the American simile: 'Like Grant took...'?", 'Richmond', ['Atlanta', 'Vicksburg', 'Gettysburg']),
   ],
-  // day 30
+  // day 66 (2026-12-23)
   [
-    D(1, 'Which proverb means that rushing a job leads to careless mistakes?', 'Haste makes waste', ['Time is money', 'Waste not, want not', 'Seeing is believing']),
-    D(2, "How does the proverb end: 'Too many cooks...'?", 'spoil the broth', ['burn the bread', 'ruin the feast', 'empty the pantry']),
-    D(3, "Which word completes the saying: 'Don't put the ___ before the horse'?", 'cart', ['saddle', 'plow', 'rider']),
-    D(4, "Which word completes the saying: 'A cat may look at a ___'?", 'king', ['queen', 'mouse', 'dog']),
-    D(5, "Complete the simile: 'As busy as a one-armed...'?", 'paperhanger', ['bricklayer', 'barber', 'fiddler']),
+    D(1, "Complete the simile: 'Like a deer caught in the...'?", 'headlights', ['woods', 'rain', 'net']),
+    D(2, "Complete the simile: 'As honest as the day is...'?", 'long', ['bright', 'clear', 'warm']),
+    D(3, "How does the saying end: 'The cure is worse...'?", 'than the disease', ['than the doctor', 'than the pain', 'than the bill']),
+    D(4, "How does the proverb end: 'Whom the gods love...'?", 'die young', ['live long', 'grow wise', 'never weep']),
+    D(5, "Which word completes the Bible verse: 'The wicked flee when no man ___'?", 'pursueth', ['watcheth', 'calleth', 'judgeth']),
   ],
-  // day 31
+  // day 67 (2026-12-24)
   [
-    D(1, "Complete the simile: 'As sly as a...'?", 'fox', ['cat', 'snake', 'crow']),
-    D(2, "How does the proverb end: 'All that glitters...'?", 'is not gold', ['is not silver', 'will soon fade', 'is not real']),
-    D(3, "How does the proverb end: 'Hell hath no fury...'?", 'like a woman scorned', ['like a man betrayed', 'like a mother wronged', 'like a king deposed']),
-    D(4, "Which word completes the saying: 'Physician, heal ___'?", 'thyself', ['the sick', 'thy neighbor', 'the poor']),
-    D(5, "Which saying, from a Wordsworth poem, means that a grown person's character is shaped early in life?", 'The child is father of the man', ['Like father, like son', 'Spare the rod and spoil the child', 'Children should be seen and not heard']),
+    D(1, "Complete the simile: 'Like a broken...'?", 'record', ['radio', 'bell', 'toy']),
+    D(2, "Which word completes the saying: 'A bad workman blames his ___'?", 'tools', ['boss', 'luck', 'helpers']),
+    D(3, "Which word completes the saying: 'There's always room at the ___'?", 'top', ['table', 'inn', 'back']),
+    D(4, "Which word completes the saying: 'Out of the mouths of ___'?", 'babes', ['fools', 'kings', 'prophets']),
+    D(5, "How does the proverb end: 'Early ripe...'?", 'early rotten', ['early picked', 'late eaten', 'soon sweet']),
   ],
-  // day 32
+  // day 68 (2026-12-25)
   [
-    D(1, 'According to the proverb, what keeps the doctor away?', 'An apple a day', ['A walk a day', 'An orange a day', 'A nap a day']),
-    D(2, "Complete the simile: 'As strong as an...'?", 'ox', ['owl', 'eel', 'emu']),
-    D(3, "Which word completes the saying: 'If the ___ fits, wear it'?", 'shoe', ['coat', 'glove', 'crown']),
-    D(4, 'Which proverb means that a familiar risk is safer than an unknown one?', "Better the devil you know than the devil you don't", ['Fortune favors the bold', 'Opposites attract', 'He who hesitates is lost']),
-    D(5, "How does the proverb end: 'It is a long lane...'?", 'that has no turning', ['that leads nowhere', 'that has no end', 'that has no inn']),
+    D(1, "Complete the simile: 'Stick out like a sore...'?", 'thumb', ['toe', 'finger', 'nose']),
+    D(2, 'Which proverb means that a thoughtful gift matters more than its price?', "It's the thought that counts", ['Charity begins at home', 'Money talks', 'Good things come in small packages']),
+    D(3, "Complete the simile: 'Running around like a chicken with its head cut...'?", 'off', ['short', 'loose', 'open']),
+    D(4, "Which word completes the saying: 'He that lies down with dogs shall rise up with ___'?", 'fleas', ['fur', 'bones', 'mud']),
+    D(5, "How does the proverb end: 'The wish is father...'?", 'to the thought', ['to the deed', 'to the dream', 'to the plan']),
   ],
-  // day 33
+  // day 69 (2026-12-26)
   [
-    D(1, "How does the proverb end: 'Every cloud has...'?", 'a silver lining', ['a golden edge', 'a rainbow behind it', 'a bright side']),
-    D(2, "Complete the simile: 'As flat as a...'?", 'pancake', ['tortilla', 'cracker', 'pizza']),
-    D(3, 'Which proverb means that knowing someone too well can cost them your respect?', 'Familiarity breeds contempt', ['Opposites attract', 'Love is blind', 'Like father, like son']),
-    D(4, "Which word completes the saying: 'Faint heart never won fair ___'?", 'lady', ['prize', 'battle', 'fortune']),
-    D(5, 'According to the proverb, what does a cat in gloves catch?', 'No mice', ['No birds', 'No fish', 'Cold paws']),
+    D(1, "How does the proverb end: 'If at first you don't succeed...'?", 'try, try again', ['give up for good', 'ask for help', 'blame someone else']),
+    D(2, "Which word completes the saying: 'Dead men tell no ___'?", 'tales', ['lies', 'jokes', 'secrets']),
+    D(3, "Complete the simile: 'Like a cat on a hot tin...'?", 'roof', ['plate', 'stove', 'can']),
+    D(4, "How does the proverb end: 'Of two evils...'?", 'choose the lesser', ['choose neither', 'expect the worse', 'blame the first']),
+    D(5, "How does the ancient saying end: 'Call no man happy...'?", 'until he is dead', ['who is rich', 'who has no friends', 'before breakfast']),
   ],
-  // day 34
+  // day 70 (2026-12-27)
   [
-    D(1, "Which word completes the saying: 'Actions speak louder than ___'?", 'words', ['thoughts', 'promises', 'voices']),
-    D(2, "Complete the simile: 'As old as the...'?", 'hills', ['mountains', 'oceans', 'stars']),
-    D(3, "Which word completes the saying: 'Beauty is in the eye of the ___'?", 'beholder', ['artist', 'lover', 'storm']),
-    D(4, 'According to the proverb, what should you never change in midstream?', 'Horses', ['Boats', 'Oars', 'Saddles']),
-    D(5, "How does the proverb end: 'He who sups with the devil...'?", 'should have a long spoon', ['should count his teeth', 'will pay the bill', 'should sit by the door']),
+    D(1, "How does the proverb end: 'What goes around...'?", 'comes around', ['goes away', 'must come down', 'stays around']),
+    D(2, "Which word completes the saying: 'A man's home is his ___'?", 'castle', ['kingdom', 'treasure', 'temple']),
+    D(3, "Complete the simile: 'Like a lamb to the...'?", 'slaughter', ['shepherd', 'meadow', 'fold']),
+    D(4, "Which word completes the saying: 'Better to light a candle than to curse the ___'?", 'darkness', ['wind', 'night', 'cold']),
+    D(5, "Which word completes the saying: 'Fine feathers make fine ___'?", 'birds', ['hats', 'beds', 'pillows']),
   ],
-  // day 35
+  // day 71 (2026-12-28)
   [
-    D(1, "How does the proverb end: 'Curiosity killed...'?", 'the cat', ['the dog', 'the fox', 'the crow']),
-    D(2, "Which word completes the saying: 'The bigger they are, the harder they ___'?", 'fall', ['fight', 'work', 'swing']),
-    D(3, 'Which proverb means that generosity should start with your own family?', 'Charity begins at home', ['Home is where the heart is', 'No man is an island', 'Love is blind']),
-    D(4, "Complete the simile: 'As thin as a...'?", 'rail', ['ribbon', 'spoon', 'ladder']),
-    D(5, 'According to the proverb, what does the cowl not make?', 'The monk', ['The priest', 'The saint', 'The bishop']),
+    D(1, "How does the proverb end: 'No news...'?", 'is good news', ['is old news', 'is a mystery', 'travels slowly']),
+    D(2, "Which word completes the saying: 'Time and tide wait for no ___'?", 'man', ['ship', 'king', 'clock']),
+    D(3, "Complete the simile: 'Getting along like a house on...'?", 'fire', ['a hill', 'stilts', 'the market']),
+    D(4, "Complete the simile: 'Like a red rag to a...'?", 'bull', ['horse', 'goat', 'boar']),
+    D(5, "Which word completes the saying: 'Old sins cast long ___'?", 'shadows', ['nets', 'roots', 'chains']),
   ],
-  // day 36
+  // day 72 (2026-12-29)
   [
-    D(1, "How does the proverb end: 'Rome wasn't built...'?", 'in a day', ['in a week', 'by one man', 'without stone']),
-    D(2, "Complete the simile: 'As proud as a...'?", 'peacock', ['lion', 'rooster', 'swan']),
-    D(3, "How does the proverb end: 'Give him an inch...'?", "and he'll take a mile", ["and he'll want a foot", "and he'll ask for two", "and he'll take the ruler"]),
-    D(4, "Which word completes the saying: 'What's good for the goose is good for the ___'?", 'gander', ['gosling', 'duck', 'swan']),
-    D(5, 'According to the proverb, what do ill weeds do?', 'Grow apace', ['Choke the roses', 'Bloom in winter', 'Spread at night']),
+    D(1, "Which word completes the saying: 'One man's trash is another man's ___'?", 'treasure', ['problem', 'dinner', 'burden']),
+    D(2, "Which word completes the saying: 'Nothing is certain but death and ___'?", 'taxes', ['debt', 'rain', 'love']),
+    D(3, "Complete the simile: 'Grinning like the cat that ate the...'?", 'canary', ['mouse', 'goldfish', 'cream']),
+    D(4, "Complete the simile: 'As mad as a March...'?", 'hare', ['wind', 'storm', 'rabbit']),
+    D(5, "Which word completes the Bible verse: 'Stolen waters are ___'?", 'sweet', ['bitter', 'cold', 'deep']),
+  ],
+  // day 73 (2026-12-30)
+  [
+    D(1, "Which word completes the saying: 'Keep your friends close and your enemies ___'?", 'closer', ['farther', 'guessing', 'watched']),
+    D(2, "Which word completes the saying: 'Children should be seen and not ___'?", 'heard', ['scolded', 'spoiled', 'touched']),
+    D(3, "Complete the simile: 'As wise as...'?", 'Solomon', ['Moses', 'Merlin', 'Socrates']),
+    D(4, "How does the proverb end: 'Give a dog a bad name...'?", 'and hang him', ['and he will bite', 'and he will run', 'and feed him less']),
+    D(5, "Which word completes the saying: 'He that would eat the kernel must crack the ___'?", 'nut', ['stone', 'seed', 'pod']),
+  ],
+  // day 74 (2026-12-31)
+  [
+    D(1, "Which word completes the saying: 'Out with the old, in with the ___'?", 'new', ['young', 'best', 'next']),
+    D(2, 'Which proverb tells someone to accept the results of their own choices?', "You've made your bed, now lie in it", ['Let sleeping dogs lie', 'Every dog has its day', 'Rome was not built in a day']),
+    D(3, "How does the proverb end: 'Better to be a big fish...'?", 'in a small pond', ['than a small fry', 'in the deep sea', 'than none at all']),
+    D(4, "Which word completes the saying: 'Idle hands are the devil's ___'?", 'workshop', ['garden', 'kitchen', 'choir']),
+    D(5, "Which word completes Ben Franklin's saying: 'The used key is always ___'?", 'bright', ['worn', 'lost', 'cold']),
   ],
 ];
