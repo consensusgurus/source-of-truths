@@ -71,7 +71,7 @@ import { isChallengeableRun } from '@/lib/challenge';
 import RunBackLink from '../../RunBackLink';
 // MULTIPLE CHOICE REPLACED POLYMATH on every run ending (owner, 2026-11-03).
 // PolymathMeter and lib/polymath stay in the tree, unmounted.
-import McCard, { McGateBar } from '../../McCard';
+import McCard from '../../McCard';
 import { MC_IDS } from '@/lib/multiple-choice';
 import GauntletStage from '../../../GauntletStage';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover } from '../../../GauntletScreens';
@@ -1097,7 +1097,6 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
             ? `${fieldToday.toLocaleString()} played today${leaderScore != null ? ` \u00B7 the leader has ${leaderScore} ${scoreWord}` : ''}`
             : null}
           banner={<>{otherDevice}{isChallengeableRun(circuitId) ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}</>}
-          after={MC_IDS.includes(circuitId) ? <McGateBar /> : null}
         />
       ) : null}
       {TOWERS && hydrated && r.phase === 'verdict' && last && upNext ? (

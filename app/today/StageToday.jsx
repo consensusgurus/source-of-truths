@@ -46,7 +46,7 @@ import GameGlyph from '../GameGlyph';
 import CircuitArt from '../CircuitArt';
 import { softGround, gameColor, RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
 // PolymathRunCard left the home on 2026-11-03 (Multiple Choice replaced Polymath); the file stays.
-import { MC_RUNS, MC_HREF, MC_IDS } from '@/lib/multiple-choice';
+import { MC_RUNS, MC_IDS } from '@/lib/multiple-choice';
 import { POLY_LEGS, localPolymath } from '@/lib/polymath';
 import { SKILLS, SKILL_MAP, hasSkill } from '@/lib/daily-skills';
 import { TIERS as DIFF_TIERS } from '@/lib/daily-difficulty';
@@ -3160,7 +3160,6 @@ export default function StageToday() {
               : [0, 1, 2, 3, 4].map((i) => <li key={i} className="ph" aria-hidden="true"><i>{i + 1}</i><span /><b /></li>)}
             {me && !meIn ? <li className="me"><i>{me.rank}</i><span>{me.name || 'You'}</span><b>{me.total}</b></li> : null}
           </ol>
-          <a className="sty-mcf" href={withTq(MC_HREF)}>Multiple Choice Leaders</a>
         </div>
         </>
       );
@@ -3316,17 +3315,6 @@ export default function StageToday() {
   // big one and the next most played takes its place, until every run is a
   // tile. Nothing shows how far into a run you are: it reads as players today
   // until you finish it, then as your place on the site board and the group.
-  const mcPhoneBtn = () => (
-    <a className="sty-mcb" href={withTq(MC_HREF)}>
-      <span className="t"><b>Multiple Choice Leaders</b><small>{mcRail && mcRail.me && mcRail.me.rank ? `You #${mcRail.me.rank} \u00b7 ` : ''}{mcRail && mcRail.field ? `${fmtN(mcRail.field.all)} ranked` : 'Five runs, one board'}</small></span>
-      <span className="five">
-        {MC_RUNS.map((r) => {
-          const c = mcRail && mcRail.champions ? mcRail.champions[r.id] : null;
-          return <span key={r.id} style={{ background: r.colour }}><b>{r.short}</b><i>{c ? c.name : '\u2013'}</i></span>;
-        })}
-      </span>
-    </a>
-  );
   const runsMobile = (list, cat) => {
     // MOST PLAYED is the run's own player count, the figure the reader sees on
     // it. Until every run has answered, the summed plays of its games stand
@@ -3381,10 +3369,6 @@ export default function StageToday() {
           </div>
         ) : null}
         {polyOn ? <div id={'pmd-' + poly.id} className="sty-pmd">{deckDrawer(poly, cat, 0, 0)}</div> : null}
-        {/* MULTIPLE CHOICE LEADERS (owner, 2026-11-03, mockup E): a full-width
-            button after the runs, wherever one of the five multiple choice runs
-            shows, with each run's champion on a strip of five. */}
-{list.some((c) => MC_IDS.includes(c.id)) ? mcPhoneBtn() : null}
       </div>
     );
   };
@@ -4314,7 +4298,6 @@ export default function StageToday() {
                   <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<span>&rarr;</span></button>
                   <button type="button" onClick={() => goPane(QUIZ_ID)}>Quizzes<span>&rarr;</span></button>
                   <button type="button" onClick={() => goPane(BOARD_ID)}>Leaderboards + Stats<span>&rarr;</span></button>
-                  <a href={withTq(MC_HREF)}>Multiple Choice Leaders<span>&rarr;</span></a>
                   <a href={withTq('/archive')}>Puzzle Archive<span>&rarr;</span></a>
                   <button type="button" onClick={() => goPane(COMM_ID)}>Most Appreciated<span>&rarr;</span></button>
                   <button type="button" onClick={() => goPane(IQ_ID)}>IQ Tests<span>&rarr;</span></button>
@@ -4361,9 +4344,6 @@ export default function StageToday() {
                       })}
                     </div>
                   ) : null}
-                  {/* MULTIPLE CHOICE LEADERS (owner, 2026-11-03, mockup E): a full-width
-                      button right after the runs, in any pane that lists one of the five. */}
-                  {runs.length && !isRuns && runs.some((c) => MC_IDS.includes(c.id)) ? <div className="mph-mcb">{mcPhoneBtn()}</div> : null}
                   {isRuns ? runs.map((c) => {
                     const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
                     const fin = runFull(c);
@@ -6425,18 +6405,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-rlb .sty-mcl li .sw{width:12px;height:12px;border-radius:3px;border:1px solid #08222e;box-sizing:border-box;}
 .sty-rlb .sty-mcl li em{font-style:normal;font-size:11.5px;font-weight:700;color:var(--stg-mute);margin-right:7px;}
 .sty-mcr > .sty-eb{border-top:1px solid var(--stg-line);}
-.sty-mcf{display:block;text-align:center;padding:9px;border-top:1px solid var(--stg-line);font-size:12.5px;font-weight:800;color:var(--stg-ink);text-decoration:underline;text-underline-offset:3px;}
 /* MULTIPLE CHOICE AFTER THE PHONE'S RUNS (owner, 2026-11-03, mockup E). */
-.mph-mcb{margin:10px 0 4px;}
-.sty-mcb{display:flex;flex-direction:column;border:1px solid var(--stg-ink);border-radius:14px;overflow:hidden;background:var(--stg-surf);color:var(--stg-ink);text-decoration:none;}
-.sty-mcb .t{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;}
-.sty-mcb .t b{font-size:15px;font-weight:800;}
-.sty-mcb .t small{font-size:12px;font-weight:700;color:var(--stg-mute);white-space:nowrap;}
-.sty-mcb .five{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid var(--stg-ink);}
-.sty-mcb .five span{display:block;padding:6px 6px 7px;border-left:1px solid #08222e;min-width:0;color:#08222e;}
-.sty-mcb .five span:first-child{border-left:0;}
-.sty-mcb .five b{display:block;font-size:10px;font-weight:800;opacity:.75;}
-.sty-mcb .five i{display:block;font-style:normal;font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.12em;}
 .sty-ixbk{display:none;}
 .sty-ixg,.sty-ixct{display:none;}
 .sty-ixs{display:none;}

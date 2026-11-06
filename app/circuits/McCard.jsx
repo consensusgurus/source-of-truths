@@ -10,14 +10,12 @@
 //   to where it stands now. Five slots show what is left today, and one button
 //   offers the shortest run still open ("Climb").
 //
-//   McGateBar: a full-width outlined bar under Start on the same five runs'
-//   start screens: today's combined champion and the reader's rank.
 //
 // Local saves draw the card at once (lib/multiple-choice localMc); the ranks
 // come from /api/quiz/multiple-choice once this tab's result rows have landed.
 
 import { useEffect, useRef, useState } from 'react';
-import { MC_RUNS, MC_HREF, MC_INK, localMc, nextMcRun, mcQuery, etTodayIso } from '@/lib/multiple-choice';
+import { MC_RUNS, MC_INK, localMc, nextMcRun, mcQuery, etTodayIso } from '@/lib/multiple-choice';
 import { dailyMeIdentity } from '../dailyMeClient';
 import { resultPostsSettled } from '../ResultQueue';
 
@@ -57,14 +55,7 @@ const CSS = `
 @media (max-width:560px){.mcc-rank{font-size:40px}.mcc-strip > *{padding:7px 6px 8px}.mcc-strip b{font-size:10.5px}.mcc-strip i{font-size:15px}}
 @media (prefers-reduced-motion:reduce){.mcc-strip .f,.mcc-up{transition:none}}
 
-.mcg{display:flex;align-items:center;gap:12px;margin-top:10px;width:100%;box-sizing:border-box;border:1px solid var(--gsx-ink,${MC_INK});border-radius:18px;padding:11px 16px;
   color:var(--gsx-ink,${MC_INK});text-decoration:none;font-family:Manrope,system-ui,-apple-system,sans-serif}
-.mcg:hover{background:color-mix(in srgb, var(--gsx-ink,${MC_INK}) 8%, transparent)}
-.mcg .l{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left}
-.mcg .l b{font-size:15px;font-weight:800}
-.mcg .l span{font-size:12.5px;font-weight:600;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mcg .y{font-size:13px;font-weight:800;text-align:right;line-height:1.15;flex:none}
-.mcg svg{width:14px;height:14px;flex:none}
 `;
 
 function countTo(from, to, ms, set) {
@@ -132,7 +123,6 @@ export default function McCard({ circuitId, right = 0 }) {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="mcc-top">
         <span className="mcc-eb">Multiple Choice · Today</span>
-        <a className="mcc-lnk" href={MC_HREF}>See all leaders</a>
       </div>
       <div className="mcc-hd">
         <span className="mcc-rank">{shown != null ? `#${shown}` : me && me.rank ? `#${me.rank}` : '–'}</span>
@@ -167,34 +157,7 @@ export default function McCard({ circuitId, right = 0 }) {
       ) : null}
       {next ? (
         <a className="mcc-go" href={next.href}>Climb: {next.name}</a>
-      ) : (
-        <a className="mcc-go" href={MC_HREF}>See Multiple Choice Leaders</a>
-      )}
+      ) : null}
     </section>
-  );
-}
-
-export function McGateBar() {
-  const [d, setD] = useState(null);
-  useEffect(() => {
-    let alive = true;
-    fetch(`/api/quiz/multiple-choice?${mcQuery('today', dailyMeIdentity())}`)
-      .then((r) => r.json())
-      .then((x) => { if (alive && x && !x.error) setD(x); })
-      .catch(() => {});
-    return () => { alive = false; };
-  }, []);
-  const champ = d && d.champions ? d.champions.all : null;
-  const rank = d && d.me && d.me.rank ? d.me.rank : null;
-  return (
-    <a className="mcg" href={MC_HREF} onClick={(e) => e.stopPropagation()}>
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <span className="l">
-        <b>Multiple Choice Leaders</b>
-        <span>{champ ? `Champion ${champ.name} · ${fmt(champ.total)} across five runs` : d ? 'No leader yet today' : 'Five runs, one board'}</span>
-      </span>
-      <span className="y">{d ? (rank ? <>You<br />#{rank}</> : <>Not ranked<br />yet</>) : null}</span>
-      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M5 2.5 9.5 7 5 11.5" /></svg>
-    </a>
   );
 }

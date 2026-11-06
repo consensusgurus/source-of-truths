@@ -633,6 +633,16 @@ score-proportional sweep.
 
 ## Multiple Choice Leaders (`/multiple-choice`): one board for the five multiple choice runs (owner, 2026-11-03)
 
+**THE PAGE IS OFF THE SITE from 2026-11-06 (owner: "get rid of the page and links to").**
+`app/multiple-choice/` is deleted and `/multiple-choice` 307s to `/` (next.config.js). Every link to it
+went too: McCard's "See all leaders" and its no-next-run "See Multiple Choice Leaders" button (with no
+open run left, the card now ends with no button), the run start screens' `McGateBar` (removed), the
+desktop rail's "Multiple Choice Leaders" link under the board, the phone home's full-width button
+(`mcPhoneBtn`, both mounts) and its Everything Else row. **Kept:** the API, `lib/multiple-choice.js`,
+the McCard standings on run endings, the desktop rail's Multiple Choice board and toggle, and the MC
+Runs row in Where You Stand. Do not add a link to `/multiple-choice` again without the owner asking.
+The surface notes below describe the page as it was.
+
 Every correct answer from the Trivia Gauntlet, Trivia Encore, Math Gauntlet, Science Gauntlet and
 English Gauntlet, ranked for Today, Last Week (the last 7 ET days, today included), Last Month (30)
 and All Time (from 2026-08-27, the day THE RUN launched). **It replaced Polymath on every surface a

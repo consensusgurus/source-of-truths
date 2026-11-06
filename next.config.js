@@ -161,6 +161,14 @@ const nextConfig = {
         destination: '/archive',
         permanent: true,
       },
+      // 2026-11-06 (owner): the Multiple Choice Leaders page came off the site,
+      // with every link to it. Old links land on the home. Not permanent, so
+      // browsers do not cache it if the page ever comes back.
+      {
+        source: '/multiple-choice',
+        destination: '/',
+        permanent: false,
+      },
       {
         source: '/crosslock',
         destination: '/crux',
