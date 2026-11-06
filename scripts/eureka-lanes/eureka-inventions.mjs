@@ -1,291 +1,222 @@
-// Eureka (Inventions & Scientists), lane: Inventions. 36 days x 5 tiers.
+// Eureka (Inventions & Scientists), lane: Inventions. Days 37 to 63
+// (2026-12-05 to 2026-12-31), 27 days x 5 tiers. gen-science.mjs appends
+// whatever this file holds after the bank's last day, so it carries ONLY the
+// newest segment; days 1 to 36 live on, frozen, in the -d01-36 file beside it.
 export const LANE_DAYS = [
-  // day 1
+  // day 37 (2026-12-05)
   [
-    { c: "Inventions", t: 1, q: "What does sonar send out to detect objects underwater?", a: "Sound waves", d: ["Radio waves","Light pulses","Magnetic fields"] },
-    { c: "Inventions", t: 2, q: "To whom did Alexander Graham Bell speak the first words over a telephone, in 1876?", a: "Thomas Watson", d: ["Elisha Gray","Thomas Edison","Emile Berliner"] },
-    { c: "Inventions", t: 3, q: "Who received a US patent in 1846 for a lockstitch sewing machine?", a: "Elias Howe", d: ["Isaac Singer","Walter Hunt","Barthélemy Thimonnier"] },
-    { c: "Inventions", t: 4, q: "Which US Navy officer wrote the A-0, an early compiler, in 1952?", a: "Grace Hopper", d: ["Ada Lovelace","Jean Bartik","Margaret Hamilton"] },
-    { c: "Inventions", t: 5, q: "Which Scottish engineer invented the steam hammer, patented in 1842?", a: "James Nasmyth", d: ["Henry Maudslay","William Fairbairn","Joseph Whitworth"] },
+    { c: "Inventions", t: 1, q: "What does a thermometer measure?", a: "Temperature", d: ["Air pressure", "Humidity", "Wind speed"] },
+    { c: "Inventions", t: 2, q: "Ole Evinrude's detachable motor of the early 1900s was made to push what?", a: "Rowboats", d: ["Bicycles", "Lawn mowers", "Sleds"] },
+    { c: "Inventions", t: 3, q: "Percy Spencer's microwave oven grew out of his work at Raytheon with which radar tube?", a: "Magnetron", d: ["Iconoscope", "Thyratron", "Photomultiplier"] },
+    { c: "Inventions", t: 4, q: "Augustus Siebe, a German-born engineer in London, is famous for designing what in the 1830s?", a: "A diving helmet and suit", d: ["A lifeboat", "A fire engine", "A steam hammer"] },
+    { c: "Inventions", t: 5, q: "Which Greek engineer of Alexandria improved the water clock and built a force pump in the 200s BC?", a: "Ctesibius", d: ["Archytas", "Philo of Byzantium", "Eratosthenes"] },
   ],
-  // day 2
+  // day 38 (2026-12-06)
   [
-    { c: "Inventions", t: 1, q: "Which Founding Father devised the lightning rod in the 1750s?", a: "Benjamin Franklin", d: ["Thomas Jefferson","John Adams","Alexander Hamilton"] },
-    { c: "Inventions", t: 2, q: "Noise-canceling headphones quiet the world around you by playing what?", a: "Inverted copies of the noise", d: ["Soft white noise","Very low hums","Ultrasonic tones"] },
-    { c: "Inventions", t: 3, q: "Ralph Teetor, who invented cruise control in the 1940s, was notable for being what?", a: "Blind", d: ["Deaf","A teenager","A racing driver"] },
-    { c: "Inventions", t: 4, q: "Which RCA engineer developed the iconoscope camera tube for electronic television?", a: "Vladimir Zworykin", d: ["Philo Farnsworth","David Sarnoff","Allen DuMont"] },
-    { c: "Inventions", t: 5, q: "Jacques de Vaucanson's famous automaton of 1739 appeared to eat and digest grain. What animal was it?", a: "A duck", d: ["A goose","A chicken","A swan"] },
+    { c: "Inventions", t: 1, q: "What does a snorkel let a swimmer do?", a: "Breathe with their face underwater", d: ["See in murky water", "Swim faster", "Stay warm"] },
+    { c: "Inventions", t: 2, q: "Chester Greenwood of Maine patented an improved version of what in 1877?", a: "Earmuffs", d: ["Snowshoes", "Mittens", "Ice skates"] },
+    { c: "Inventions", t: 3, q: "John Spilsbury's 'dissected maps' of the 1760s were an early form of which puzzle?", a: "Jigsaw puzzle", d: ["Crossword", "Tangram", "Sliding puzzle"] },
+    { c: "Inventions", t: 4, q: "Besides his famous lock, Joseph Bramah patented which powerful machine in 1795?", a: "Hydraulic press", d: ["Steam hammer", "Screw-cutting lathe", "Power loom"] },
+    { c: "Inventions", t: 5, q: "Ma Jun, of China's Three Kingdoms era, is credited with building which direction-keeping vehicle?", a: "South-pointing chariot", d: ["Wheelbarrow", "Paddle boat", "Kite carriage"] },
   ],
-  // day 3
+  // day 39 (2026-12-07)
   [
-    { c: "Inventions", t: 1, q: "What does a pedometer count?", a: "Steps", d: ["Heartbeats","Calories burned","Breaths"] },
-    { c: "Inventions", t: 2, q: "In older TVs, what did the letters CRT stand for?", a: "Cathode-ray tube", d: ["Color relay transmitter","Central receiver tube","Current rectifier terminal"] },
-    { c: "Inventions", t: 3, q: "In which state did Robert Goddard launch the first liquid-fueled rocket, in 1926?", a: "Massachusetts", d: ["New Mexico","California","Ohio"] },
-    { c: "Inventions", t: 4, q: "Which two engineers published the design of TCP, a basis of internet protocols, in 1974?", a: "Vint Cerf and Bob Kahn", d: ["Bill Gates and Paul Allen","Ken Thompson and Dennis Ritchie","Larry Page and Sergey Brin"] },
-    { c: "Inventions", t: 5, q: "Which English engineer built an influential screw-cutting lathe around 1800?", a: "Henry Maudslay", d: ["Joseph Bramah","Joseph Whitworth","Marc Brunel"] },
+    { c: "Inventions", t: 1, q: "What does a sundial use to tell the time?", a: "A shadow", d: ["Dripping water", "A swinging weight", "Burning wax"] },
+    { c: "Inventions", t: 2, q: "Japan's first Shinkansen bullet train line, opened in 1964, linked Tokyo with which city?", a: "Osaka", d: ["Sapporo", "Hiroshima", "Sendai"] },
+    { c: "Inventions", t: 3, q: "Hiram Codd's 1872 bottle for fizzy drinks was sealed by what?", a: "A glass marble", d: ["A cork", "A metal cap", "A rubber plug"] },
+    { c: "Inventions", t: 4, q: "Whose 1712 atmospheric engine pumped water out of mines, decades before James Watt improved on it?", a: "Thomas Newcomen", d: ["Thomas Savery", "Richard Arkwright", "Matthew Boulton"] },
+    { c: "Inventions", t: 5, q: "Thomas Davenport, a Vermont blacksmith, received the first US patent for an electric motor in which year?", a: "1837", d: ["1807", "1867", "1887"] },
   ],
-  // day 4
+  // day 40 (2026-12-08)
   [
-    { c: "Inventions", t: 1, q: "Which handheld device with two eyepieces makes distant things look closer?", a: "Binoculars", d: ["Periscope","Microscope","Kaleidoscope"] },
-    { c: "Inventions", t: 2, q: "Which German count gave his name to rigid airships, the first of which flew in 1900?", a: "Ferdinand von Zeppelin", d: ["Otto Lilienthal","Gottlieb Daimler","Ferdinand Porsche"] },
-    { c: "Inventions", t: 3, q: "Who co-developed the Aqua-Lung with engineer Émile Gagnan in 1943?", a: "Jacques Cousteau", d: ["Auguste Piccard","Jacques Piccard","Hans Hass"] },
-    { c: "Inventions", t: 4, q: "Which IBM programmer led the team that created FORTRAN, released in 1957?", a: "John Backus", d: ["John von Neumann","Grace Hopper","Niklaus Wirth"] },
-    { c: "Inventions", t: 5, q: "Which Frenchman patented a machine in 1799 for making paper in a continuous sheet?", a: "Louis-Nicolas Robert", d: ["Henry Fourdrinier","Nicolas Appert","Joseph Montgolfier"] },
+    { c: "Inventions", t: 1, q: "What does a parachute do for a falling person?", a: "Slows the fall", d: ["Steers them upward", "Keeps them warm", "Measures their height"] },
+    { c: "Inventions", t: 2, q: "What kind of lens does a magnifying glass use?", a: "Convex", d: ["Concave", "Flat", "Cylindrical"] },
+    { c: "Inventions", t: 3, q: "The early video game Spacewar!, of 1962, was written at which university?", a: "MIT", d: ["Stanford", "Harvard", "Caltech"] },
+    { c: "Inventions", t: 4, q: "John Fitch ran an early steamboat passenger service in 1790 on which river?", a: "Delaware River", d: ["Hudson River", "Ohio River", "Charles River"] },
+    { c: "Inventions", t: 5, q: "Which American-born inventor patented a vapor-compression refrigeration machine in London in 1834?", a: "Jacob Perkins", d: ["John Gorrie", "Carl von Linde", "Ferdinand Carré"] },
   ],
-  // day 5
+  // day 41 (2026-12-09)
   [
-    { c: "Inventions", t: 1, q: "The magnetic compass was first used for navigation in which country?", a: "China", d: ["Greece","Egypt","Portugal"] },
-    { c: "Inventions", t: 2, q: "What does a car's alternator do while the engine runs?", a: "Charges the battery", d: ["Cools the engine","Mixes air and fuel","Turns the wheels"] },
-    { c: "Inventions", t: 3, q: "The Waring Blendor of the late 1930s was promoted by Fred Waring, famous as what?", a: "A bandleader", d: ["A baseball star","A radio chef","A senator"] },
-    { c: "Inventions", t: 4, q: "From 1790 Joseph Bramah displayed a lock in his London shop window with a reward for anyone who could do what?", a: "Pick it", d: ["Lift it","Melt it","Copy its key"] },
-    { c: "Inventions", t: 5, q: "Whose steam-powered fardier of 1769 is often called the first self-propelled road vehicle?", a: "Nicolas-Joseph Cugnot", d: ["Denis Papin","Richard Trevithick","Joseph Montgolfier"] },
+    { c: "Inventions", t: 1, q: "Where does the needle of an ordinary magnetic compass point?", a: "Toward magnetic north", d: ["Toward the Sun", "Toward the equator", "Toward the Moon"] },
+    { c: "Inventions", t: 2, q: "Which toy, introduced in 1939, shows 3D pictures from paper reels?", a: "View-Master", d: ["Etch A Sketch", "Kaleidoscope", "Zoetrope"] },
+    { c: "Inventions", t: 3, q: "Benjamin Franklin's armonica, invented in 1761, made music using what?", a: "Spinning glass bowls", d: ["Vibrating reeds", "Plucked strings", "Steel tongues"] },
+    { c: "Inventions", t: 4, q: "Which English inventor patented the first portable pressurized fire extinguisher, in 1818?", a: "George Manby", d: ["Joseph Bramah", "Humphry Davy", "William Congreve"] },
+    { c: "Inventions", t: 5, q: "Francis Ronalds built a working electric telegraph in 1816, with about 8 miles of wire, in what setting?", a: "His garden", d: ["A coal mine", "A canal tunnel", "A church tower"] },
   ],
-  // day 6
+  // day 42 (2026-12-10)
   [
-    { c: "Inventions", t: 1, q: "In a gasoline engine, which part fires the fuel and air with an electric jolt?", a: "Spark plug", d: ["Alternator","Fuel injector","Piston"] },
-    { c: "Inventions", t: 2, q: "Which English mathematician designed the Difference Engine, a mechanical calculator, in the 1820s?", a: "Charles Babbage", d: ["Alan Turing","George Boole","Isaac Newton"] },
-    { c: "Inventions", t: 3, q: "At which battle did tanks first go into action, in September 1916?", a: "The Somme", d: ["Verdun","Ypres","Cambrai"] },
-    { c: "Inventions", t: 4, q: "Which Welsh scientist built the gas voltaic battery, the first fuel cell, around 1840?", a: "William Grove", d: ["Michael Faraday","Humphry Davy","Joseph Swan"] },
-    { c: "Inventions", t: 5, q: "Which Swedish inventor patented an improved adjustable wrench in 1892?", a: "Johan Petter Johansson", d: ["Lars Magnus Ericsson","Gustaf de Laval","Baltzar von Platen"] },
+    { c: "Inventions", t: 1, q: "What do doctors mainly use an X-ray machine to look at?", a: "Bones inside the body", d: ["Blood sugar levels", "Body temperature", "Brain waves"] },
+    { c: "Inventions", t: 2, q: "Samuel Morse's code spells out letters using what?", a: "Dots and dashes", d: ["Colored flags", "Musical notes", "Numbers only"] },
+    { c: "Inventions", t: 3, q: "Instead of a spark, what ignites the fuel in Rudolf Diesel's engine?", a: "Heat from compressed air", d: ["A gas pilot flame", "A chemical catalyst", "An electric arc"] },
+    { c: "Inventions", t: 4, q: "Samuel Slater, who built a cotton-spinning mill at Pawtucket, Rhode Island, in 1793, learned the trade in which country?", a: "England", d: ["Scotland", "France", "The Netherlands"] },
+    { c: "Inventions", t: 5, q: "Which Danish engineer made the first magnetic sound recordings on steel wire, in 1898?", a: "Valdemar Poulsen", d: ["Fritz Pfleumer", "Peder Oluf Pedersen", "Niels Finsen"] },
   ],
-  // day 7
+  // day 43 (2026-12-11)
   [
-    { c: "Inventions", t: 1, q: "What is the main job of a car's radiator?", a: "Cooling the engine", d: ["Charging the battery","Filtering the oil","Heating the fuel"] },
-    { c: "Inventions", t: 2, q: "A metal detector senses buried metal using what?", a: "An electromagnetic field", d: ["Sound waves","X-rays","Heat sensors"] },
-    { c: "Inventions", t: 3, q: "Which English inventor demonstrated a carbon-filament lamp in Newcastle in 1879, later partnering with Edison?", a: "Joseph Swan", d: ["Humphry Davy","William Armstrong","Charles Parsons"] },
-    { c: "Inventions", t: 4, q: "Alastair Pilkington's float glass process of the 1950s floats newly made glass on a bath of what?", a: "Molten tin", d: ["Molten lead","Salt water","Mercury"] },
-    { c: "Inventions", t: 5, q: "Which Glasgow obstetrician pioneered medical ultrasound scanning in the late 1950s?", a: "Ian Donald", d: ["Joseph Lister","Godfrey Hounsfield","Patrick Steptoe"] },
+    { c: "Inventions", t: 1, q: "What could Thomas Edison's phonograph of 1877 do?", a: "Record and play back sound", d: ["Send telegrams", "Project moving pictures", "Light up a room"] },
+    { c: "Inventions", t: 2, q: "In Paris in 1895, the Lumière brothers held one of the first public screenings of what?", a: "Projected films", d: ["Color photographs", "Radio broadcasts", "Sound recordings"] },
+    { c: "Inventions", t: 3, q: "Katharine Burr Blodgett invented which kind of glass at General Electric in 1938?", a: "Non-reflective glass", d: ["Bulletproof glass", "Shatterproof glass", "Fiberglass"] },
+    { c: "Inventions", t: 4, q: "Which Frenchman made the oldest surviving camera photograph, a view from a window, in the 1820s?", a: "Nicéphore Niépce", d: ["Louis Daguerre", "Hippolyte Bayard", "Henry Fox Talbot"] },
+    { c: "Inventions", t: 5, q: "John Hadley's reflecting octant of 1731 was the forerunner of which navigation instrument?", a: "Sextant", d: ["Astrolabe", "Compass", "Chronometer"] },
   ],
-  // day 8
+  // day 44 (2026-12-12)
   [
-    { c: "Inventions", t: 1, q: "Wi-Fi lets devices join a network without what?", a: "Cables", d: ["Electricity","Antennas","Software"] },
-    { c: "Inventions", t: 2, q: "Who received a US patent in 1844 for vulcanized rubber?", a: "Charles Goodyear", d: ["John Dunlop","Charles Macintosh","Harvey Firestone"] },
-    { c: "Inventions", t: 3, q: "Which kind of jet engine, with a big front fan pushing much of its air around the core, powers most modern airliners?", a: "Turbofan", d: ["Turbojet","Ramjet","Turboprop"] },
-    { c: "Inventions", t: 4, q: "Who patented the most commercially successful barbed wire design, in 1874?", a: "Joseph Glidden", d: ["Jacob Haish","Charles Goodyear","Levi Strauss"] },
-    { c: "Inventions", t: 5, q: "Bob Gore found in 1969 that rapidly stretching which polymer made a waterproof, breathable material?", a: "PTFE", d: ["Nylon","Polyester","Polyurethane"] },
+    { c: "Inventions", t: 1, q: "What does a hearing aid do?", a: "Makes sounds louder", d: ["Blocks out all noise", "Translates speech", "Measures heart rate"] },
+    { c: "Inventions", t: 2, q: "What shape is the slot in the head of a Phillips screw?", a: "A cross", d: ["A single line", "A hexagon", "A square"] },
+    { c: "Inventions", t: 3, q: "Ezra Warner of Connecticut patented an early version of which kitchen tool in 1858?", a: "Can opener", d: ["Egg beater", "Corkscrew", "Potato peeler"] },
+    { c: "Inventions", t: 4, q: "Frank Sprague's electric streetcar system of 1888 opened in which city?", a: "Richmond, Virginia", d: ["Boston", "Baltimore", "Cleveland"] },
+    { c: "Inventions", t: 5, q: "Barnes Wallis designed the 'bouncing bomb' for which 1943 RAF raid on German dams?", a: "Operation Chastise", d: ["Operation Overlord", "Operation Market Garden", "Operation Torch"] },
   ],
-  // day 9
+  // day 45 (2026-12-13)
   [
-    { c: "Inventions", t: 1, q: "What kind of aircraft was Igor Sikorsky's VS-300, first flown in 1939?", a: "Helicopter", d: ["Seaplane","Jet fighter","Glider"] },
-    { c: "Inventions", t: 2, q: "On a sewing machine, what does the bobbin hold?", a: "The lower thread", d: ["The needle","The fabric","The motor belt"] },
-    { c: "Inventions", t: 3, q: "When heated, what does the bimetallic strip in a thermostat do?", a: "It bends", d: ["It shrinks evenly","It melts","It glows"] },
-    { c: "Inventions", t: 4, q: "Which Belgian-born engineer built the first commercially successful internal combustion engine, a gas engine, in 1860?", a: "Étienne Lenoir", d: ["Nicolaus Otto","Gottlieb Daimler","Rudolf Diesel"] },
-    { c: "Inventions", t: 5, q: "Benjamin Huntsman's 1740s method of making cast steel in Sheffield is called what?", a: "The crucible process", d: ["The puddling process","The Bessemer process","The open-hearth process"] },
+    { c: "Inventions", t: 1, q: "What does a weather vane show?", a: "Wind direction", d: ["Wind speed", "Air pressure", "Rainfall"] },
+    { c: "Inventions", t: 2, q: "George de Mestral got the idea for Velcro from burrs stuck to his clothes and to what?", a: "His dog's fur", d: ["His horse's mane", "His wool hat", "His boots"] },
+    { c: "Inventions", t: 3, q: "The Xerox Alto computer of 1973 pioneered which way of using a computer?", a: "A graphical user interface", d: ["Voice commands", "Punched cards", "A touchscreen"] },
+    { c: "Inventions", t: 4, q: "Which engineer, who called himself a 'civil engineer', built the third Eddystone Lighthouse in 1759?", a: "John Smeaton", d: ["Thomas Telford", "John Rennie", "James Brindley"] },
+    { c: "Inventions", t: 5, q: "Alice H. Parker's 1919 patent described a home heating furnace burning which fuel?", a: "Natural gas", d: ["Coal", "Wood", "Heating oil"] },
   ],
-  // day 10
+  // day 46 (2026-12-14)
   [
-    { c: "Inventions", t: 1, q: "What does a car's catalytic converter cut down?", a: "Harmful exhaust gases", d: ["Engine noise","Fuel use","Tire wear"] },
-    { c: "Inventions", t: 2, q: "The first website went online in 1991 at which European research center?", a: "CERN", d: ["Oxford University","Fraunhofer Institute","European Space Agency"] },
-    { c: "Inventions", t: 3, q: "Hero of Alexandria described a coin-operated machine that dispensed what?", a: "Holy water", d: ["Wine","Olive oil","Incense"] },
-    { c: "Inventions", t: 4, q: "The world's first traffic signal, a gas-lit semaphore of 1868, stood in which city?", a: "London", d: ["Paris","New York","Cleveland"] },
-    { c: "Inventions", t: 5, q: "What did Bell and Charles Sumner Tainter call their 1880 device for sending speech on a beam of light?", a: "Photophone", d: ["Graphophone","Radiophone","Lumiphone"] },
+    { c: "Inventions", t: 1, q: "What does a ship's rudder do?", a: "Steers it", d: ["Anchors it", "Pumps out water", "Measures its speed"] },
+    { c: "Inventions", t: 2, q: "What did a magic lantern, popular from the 1600s on, do?", a: "Projected pictures onto a wall", d: ["Lit streets with gas", "Told the time at night", "Recorded sounds"] },
+    { c: "Inventions", t: 3, q: "Cyrus McCormick is famous for which farm machine, built in the 1830s?", a: "Mechanical reaper", d: ["Steel plow", "Cotton gin", "Grain elevator"] },
+    { c: "Inventions", t: 4, q: "Marc Brunel's tunneling shield was first used to dig a tunnel, opened in 1843, under which river?", a: "The Thames", d: ["The Seine", "The Mersey", "The Hudson"] },
+    { c: "Inventions", t: 5, q: "Paul Cornu made a brief free flight in 1907 in an early version of which aircraft?", a: "Helicopter", d: ["Seaplane", "Autogyro", "Biplane glider"] },
   ],
-  // day 11
+  // day 47 (2026-12-15)
   [
-    { c: "Inventions", t: 1, q: "Which navigation system works out your position from satellite signals?", a: "GPS", d: ["Sonar","Radar","Morse code"] },
-    { c: "Inventions", t: 2, q: "Which machine tool spins a workpiece while a fixed cutter shapes it?", a: "Lathe", d: ["Drill press","Milling machine","Bandsaw"] },
-    { c: "Inventions", t: 3, q: "Garrett Morgan's 1914 patented safety hood was an early form of what?", a: "Gas mask", d: ["Hard hat","Diving helmet","Fire blanket"] },
-    { c: "Inventions", t: 4, q: "Under license from Edison, which Chicago company began selling the mimeograph in 1887?", a: "A. B. Dick", d: ["Western Electric","Remington","Burroughs"] },
-    { c: "Inventions", t: 5, q: "Which Scottish clockmaker patented an early fax machine design in 1843?", a: "Alexander Bain", d: ["Alexander Graham Bell","Charles Wheatstone","James Bowman Lindsay"] },
+    { c: "Inventions", t: 1, q: "What does a spinning wheel make from wool or cotton fiber?", a: "Yarn", d: ["Cloth", "Felt", "Lace"] },
+    { c: "Inventions", t: 2, q: "John Landis Mason's glass jar of 1858 was sealed with what?", a: "A screw-on lid", d: ["A cork", "A wax seal", "A clamp and wire"] },
+    { c: "Inventions", t: 3, q: "Norwegian engineer Erik Rotheim patented which kind of container in 1927?", a: "Aerosol spray can", d: ["Tin can", "Milk carton", "Thermos flask"] },
+    { c: "Inventions", t: 4, q: "Jack Kilby built the first integrated circuit in 1958 while working at which company?", a: "Texas Instruments", d: ["Fairchild Semiconductor", "Intel", "IBM"] },
+    { c: "Inventions", t: 5, q: "James West and Gerhard Sessler invented which kind of microphone at Bell Labs in 1962?", a: "Electret microphone", d: ["Ribbon microphone", "Carbon microphone", "Dynamic microphone"] },
   ],
-  // day 12
+  // day 48 (2026-12-16)
   [
-    { c: "Inventions", t: 1, q: "What does a seismograph record?", a: "Earthquake waves", d: ["Wind speed","Air pressure","Rainfall"] },
-    { c: "Inventions", t: 2, q: "Andrew Hallidie's cable car line opened in 1873 in which city?", a: "San Francisco", d: ["Chicago","Seattle","Pittsburgh"] },
-    { c: "Inventions", t: 3, q: "Thomas Midgley Jr., who developed CFC refrigerants, also introduced which fuel additive?", a: "Tetraethyl lead", d: ["Ethanol","MTBE","Benzene"] },
-    { c: "Inventions", t: 4, q: "William Horner's 1834 daedaleum, a spinning drum that made pictures seem to move, is better known by what name?", a: "Zoetrope", d: ["Praxinoscope","Phenakistiscope","Kinetoscope"] },
-    { c: "Inventions", t: 5, q: "What nickname was given to the electric lap steel guitar George Beauchamp developed with Rickenbacker in the early 1930s?", a: "Frying Pan", d: ["The Log","Broadcaster","Black Beauty"] },
+    { c: "Inventions", t: 1, q: "What is a car jack used for?", a: "Lifting the car", d: ["Starting the engine", "Locking the doors", "Pumping up tires"] },
+    { c: "Inventions", t: 2, q: "Motorola's DynaTAC 8000X of 1983 was the first commercial handheld what?", a: "Cell phone", d: ["Calculator", "Video camera", "Music player"] },
+    { c: "Inventions", t: 3, q: "Theophilus Van Kannel patented which kind of door in 1888?", a: "Revolving door", d: ["Sliding door", "Automatic door", "Trap door"] },
+    { c: "Inventions", t: 4, q: "Potter Josiah Wedgwood devised a pyrometer in the 1780s to measure what?", a: "Very high kiln temperatures", d: ["The weight of clay", "The hardness of glazes", "Humidity in his works"] },
+    { c: "Inventions", t: 5, q: "Which valley in England's Lake District had a famous graphite deposit that supplied early pencils?", a: "Borrowdale", d: ["Langdale", "Wasdale", "Eskdale"] },
   ],
-  // day 13
+  // day 49 (2026-12-17)
   [
-    { c: "Inventions", t: 1, q: "To dive, what does a submarine let into its ballast tanks?", a: "Seawater", d: ["Compressed air","Fuel","Sand"] },
-    { c: "Inventions", t: 2, q: "What did the Leyden jar, devised in the 1740s, store?", a: "Electric charge", d: ["Compressed air","Heat","Magnetism"] },
-    { c: "Inventions", t: 3, q: "The word robot was introduced in a 1920 play by a writer from which country?", a: "Czechoslovakia", d: ["Poland","Hungary","Austria"] },
-    { c: "Inventions", t: 4, q: "What was the first nuclear-powered submarine, launched in 1954?", a: "USS Nautilus", d: ["USS Seawolf","USS Triton","USS Thresher"] },
-    { c: "Inventions", t: 5, q: "Which Bell Labs engineer built the first quartz clock, in 1927?", a: "Warren Marrison", d: ["Louis Essen","Harold Black","Ralph Hartley"] },
+    { c: "Inventions", t: 1, q: "What was an old-fashioned quill pen made from?", a: "A bird's feather", d: ["A reed", "A bone", "A twig"] },
+    { c: "Inventions", t: 2, q: "Orville Wright's first powered flight, on December 17, 1903, lasted about how long?", a: "12 seconds", d: ["3 seconds", "2 minutes", "1 hour"] },
+    { c: "Inventions", t: 3, q: "Which American salesman patented a safety razor with thin disposable blades in 1904?", a: "King C. Gillette", d: ["Jacob Schick", "Gail Borden", "Walter Hunt"] },
+    { c: "Inventions", t: 4, q: "Lewis Paul and John Wyatt's spinning machine, patented in 1738, drew out cotton fiber using what?", a: "Pairs of rollers", d: ["Spinning spindles only", "A flying shuttle", "Punched cards"] },
+    { c: "Inventions", t: 5, q: "Which Scottish engineer lit his house in Redruth, Cornwall, with coal gas in 1792?", a: "William Murdoch", d: ["James Watt", "Matthew Boulton", "Richard Trevithick"] },
   ],
-  // day 14
+  // day 50 (2026-12-18)
   [
-    { c: "Inventions", t: 1, q: "Before steam engines, what powered most early textile mills?", a: "Water wheels", d: ["Windmills","Electric motors","Gas engines"] },
-    { c: "Inventions", t: 2, q: "Laurens Hammond's electric instrument of 1935 was a type of what?", a: "Organ", d: ["Piano","Guitar","Accordion"] },
-    { c: "Inventions", t: 3, q: "Most vinyl records are pressed from which plastic?", a: "PVC", d: ["Polystyrene","Nylon","Acrylic"] },
-    { c: "Inventions", t: 4, q: "Which Swedish-born engineer designed the ironclad USS Monitor of 1862?", a: "John Ericsson", d: ["Robert Fulton","Alfred Nobel","Gustaf de Laval"] },
-    { c: "Inventions", t: 5, q: "Which French physicist invented the rechargeable lead-acid battery in 1859?", a: "Gaston Planté", d: ["Georges Leclanché","Alessandro Volta","André-Marie Ampère"] },
+    { c: "Inventions", t: 1, q: "Which goggles let soldiers see in the dark by boosting faint light?", a: "Night-vision goggles", d: ["Swimming goggles", "Ski goggles", "Welding goggles"] },
+    { c: "Inventions", t: 2, q: "Melville Bissell patented which cleaning device in 1876?", a: "Carpet sweeper", d: ["Feather duster", "Floor polisher", "Mop wringer"] },
+    { c: "Inventions", t: 3, q: "Peter Cooper's small locomotive of 1830, which famously raced a horse, was called what?", a: "Tom Thumb", d: ["Best Friend of Charleston", "John Bull", "DeWitt Clinton"] },
+    { c: "Inventions", t: 4, q: "Hilaire de Chardonnet's 'artificial silk', shown in Paris in 1889, was the ancestor of which fiber?", a: "Rayon", d: ["Nylon", "Polyester", "Acrylic"] },
+    { c: "Inventions", t: 5, q: "James Ritty, who patented the first mechanical cash register in 1879, ran what kind of business?", a: "A saloon", d: ["A grocery store", "A bank", "A hotel"] },
   ],
-  // day 15
+  // day 51 (2026-12-19)
   [
-    { c: "Inventions", t: 1, q: "What did Samuel Colt patent in 1836?", a: "A revolver", d: ["A machine gun","A bolt-action rifle","A hand grenade"] },
-    { c: "Inventions", t: 2, q: "What powered the Wright brothers' 1903 Flyer?", a: "A gasoline engine", d: ["A steam engine","An electric motor","A diesel engine"] },
-    { c: "Inventions", t: 3, q: "Which American engineer patented FM radio in 1933?", a: "Edwin Armstrong", d: ["Lee de Forest","Guglielmo Marconi","David Sarnoff"] },
-    { c: "Inventions", t: 4, q: "Which French physicist designed a stepped lens for lighthouses in the 1820s?", a: "Augustin Fresnel", d: ["Léon Foucault","Louis Daguerre","Blaise Pascal"] },
-    { c: "Inventions", t: 5, q: "Under the stands of which sports field was the first nuclear reactor built, in 1942?", a: "Stagg Field", d: ["Soldier Field","Wrigley Field","Franklin Field"] },
+    { c: "Inventions", t: 1, q: "What is the main job of a lighthouse?", a: "To warn ships of danger", d: ["To forecast storms", "To measure the tides", "To guide airplanes"] },
+    { c: "Inventions", t: 2, q: "In the 1760s and 1770s, James Watt greatly improved which machine by adding a separate condenser?", a: "The steam engine", d: ["The water wheel", "The spinning jenny", "The telescope"] },
+    { c: "Inventions", t: 3, q: "Charles Macintosh's waterproof cloth of 1823 sandwiched which material between two layers of fabric?", a: "Rubber", d: ["Wax", "Tar", "Linseed oil"] },
+    { c: "Inventions", t: 4, q: "Arthur Pitney patented which mail machine in 1902?", a: "Postage meter", d: ["Letter sorter", "Envelope sealer", "Mailbox lock"] },
+    { c: "Inventions", t: 5, q: "Which German engineer built a gyrocompass for ships in 1908?", a: "Hermann Anschütz-Kaempfe", d: ["Ernst Abbe", "Werner von Siemens", "Hugo Junkers"] },
   ],
-  // day 16
+  // day 52 (2026-12-20)
   [
-    { c: "Inventions", t: 1, q: "What does a Geiger counter detect?", a: "Radiation", d: ["Earthquakes","Magnetism","Sound"] },
-    { c: "Inventions", t: 2, q: "On a manual typewriter, what does each key strike to print a letter?", a: "An inked ribbon", d: ["A wax stencil","A carbon rod","A heated wire"] },
-    { c: "Inventions", t: 3, q: "Which English engineer developed the first self-propelled torpedo, at Fiume in the 1860s?", a: "Robert Whitehead", d: ["Robert Fulton","David Bushnell","Hiram Maxim"] },
-    { c: "Inventions", t: 4, q: "Gary Starkweather built the first laser printer in 1969 at which company?", a: "Xerox", d: ["IBM","Hewlett-Packard","Canon"] },
-    { c: "Inventions", t: 5, q: "Which company demonstrated the first practical videotape recorder, in 1956?", a: "Ampex", d: ["RCA","Sony","3M"] },
+    { c: "Inventions", t: 1, q: "What does a gristmill grind grain into?", a: "Flour", d: ["Sugar", "Salt", "Oil"] },
+    { c: "Inventions", t: 2, q: "In 1947 Edward Lowe began selling absorbent clay for which new use?", a: "Cat litter", d: ["Potting soil", "Pottery", "Road salt"] },
+    { c: "Inventions", t: 3, q: "Patricia Bath patented a laser device in 1988 for removing what from the eye?", a: "Cataracts", d: ["Tears", "Eyelashes", "Contact lenses"] },
+    { c: "Inventions", t: 4, q: "Which German engineer designed the Leica, an early 35mm camera, around 1913?", a: "Oskar Barnack", d: ["Carl Zeiss", "Ernst Abbe", "Ludwig Bertele"] },
+    { c: "Inventions", t: 5, q: "Which English scientist invented the calotype, a negative-to-positive photographic process, in 1841?", a: "Henry Fox Talbot", d: ["John Herschel", "Frederick Scott Archer", "David Brewster"] },
   ],
-  // day 17
+  // day 53 (2026-12-21)
   [
-    { c: "Inventions", t: 1, q: "What is an aircraft with fixed wings but no engine called?", a: "A glider", d: ["A blimp","A biplane","A gyrocopter"] },
-    { c: "Inventions", t: 2, q: "The name Taser comes from the title of a book about which boy inventor?", a: "Tom Swift", d: ["Danny Dunn","Jimmy Neutron","Encyclopedia Brown"] },
-    { c: "Inventions", t: 3, q: "Earle Dickson invented the Band-Aid in 1920 while working for which company?", a: "Johnson & Johnson", d: ["3M","Procter & Gamble","Bayer"] },
-    { c: "Inventions", t: 4, q: "Maurice Wilkes led the team that built which early stored-program computer at Cambridge in 1949?", a: "EDSAC", d: ["EDVAC","ENIAC","LEO"] },
-    { c: "Inventions", t: 5, q: "Édouard Bénédictus invented which kind of safety glass after dropping a coated flask in 1903?", a: "Laminated glass", d: ["Tempered glass","Wired glass","Float glass"] },
+    { c: "Inventions", t: 1, q: "What does a stopwatch measure?", a: "Elapsed time", d: ["Distance", "Speed", "Heart rate"] },
+    { c: "Inventions", t: 2, q: "Which keyboard layout came from Christopher Latham Sholes's typewriters of the 1870s?", a: "QWERTY", d: ["AZERTY", "Dvorak", "Colemak"] },
+    { c: "Inventions", t: 3, q: "Which British airliner became the first jet airliner in passenger service, in 1952?", a: "de Havilland Comet", d: ["Vickers Viscount", "Boeing 707", "Sud Aviation Caravelle"] },
+    { c: "Inventions", t: 4, q: "Wilson Greatbatch is known for developing an implantable version of which device around 1960?", a: "Pacemaker", d: ["Insulin pump", "Hearing aid", "Artificial heart"] },
+    { c: "Inventions", t: 5, q: "Which car, built by Ransom Olds from 1901, was the first mass-produced on a stationary assembly line?", a: "Curved Dash Oldsmobile", d: ["Ford Model N", "Cadillac Model A", "Rambler"] },
   ],
-  // day 18
+  // day 54 (2026-12-22)
   [
-    { c: "Inventions", t: 1, q: "Concorde was built jointly by Britain and which country?", a: "France", d: ["Germany","Italy","United States"] },
-    { c: "Inventions", t: 2, q: "Silly Putty came out of a 1940s search for a substitute for what?", a: "Rubber", d: ["Glue","Plastic wrap","Chewing gum"] },
-    { c: "Inventions", t: 3, q: "Which record company introduced the 33 1/3 rpm long-playing record in 1948?", a: "Columbia", d: ["RCA Victor","Decca","Capitol"] },
-    { c: "Inventions", t: 4, q: "John Froelich built an early working gasoline tractor in 1892 in which state?", a: "Iowa", d: ["Illinois","Ohio","Nebraska"] },
-    { c: "Inventions", t: 5, q: "Scottish millwright Andrew Meikle patented a machine in 1788 that did what?", a: "Threshed grain", d: ["Sowed seed","Spun flax","Sawed timber"] },
+    { c: "Inventions", t: 1, q: "What does a ski lift do?", a: "Carries skiers up the slope", d: ["Grooms the snow", "Makes snow", "Times the races"] },
+    { c: "Inventions", t: 2, q: "Nikola Tesla is best known for his work on which kind of electric current?", a: "Alternating current", d: ["Direct current", "Static electricity", "Pulsed current"] },
+    { c: "Inventions", t: 3, q: "The Junkers J 1 of 1915 was the first practical airplane built almost entirely of what?", a: "Metal", d: ["Wood", "Canvas", "Bamboo"] },
+    { c: "Inventions", t: 4, q: "Charles Strite patented which kitchen appliance in 1921, first sold to restaurants?", a: "Pop-up toaster", d: ["Electric blender", "Microwave oven", "Electric kettle"] },
+    { c: "Inventions", t: 5, q: "Christian Hülsmeyer's 1904 'telemobiloscope' used radio echoes to detect what?", a: "Ships", d: ["Storms", "Aircraft", "Icebergs"] },
   ],
-  // day 19
+  // day 55 (2026-12-23)
   [
-    { c: "Inventions", t: 1, q: "Why does a hot-air balloon rise?", a: "Hot air is less dense than cool air", d: ["The burner's flame pushes it up","Helium is sealed in its fabric","Wind blows up under the basket"] },
-    { c: "Inventions", t: 2, q: "Which 1994 IBM handset is often called the first smartphone?", a: "Simon", d: ["Nova","Echo","Ion"] },
-    { c: "Inventions", t: 3, q: "James Murray Spangler, who patented a portable electric vacuum cleaner in 1908, sold his rights to which family?", a: "The Hoovers", d: ["The Bissells","The Maytags","The Fords"] },
-    { c: "Inventions", t: 4, q: "Eyeglasses for reading first appeared around 1286 in which country?", a: "Italy", d: ["France","England","Netherlands"] },
-    { c: "Inventions", t: 5, q: "Which French physicist built and named the gyroscope in 1852?", a: "Léon Foucault", d: ["Augustin Fresnel","Hippolyte Fizeau","Gaspard-Gustave Coriolis"] },
+    { c: "Inventions", t: 1, q: "What do firefighters get from a fire hydrant?", a: "Water", d: ["Air", "Sand", "Electricity"] },
+    { c: "Inventions", t: 2, q: "A camera obscura, a dark room with a tiny hole, shows what on its far wall?", a: "An upside-down view of outside", d: ["A rainbow", "A shadow of the hole", "A copy of the room"] },
+    { c: "Inventions", t: 3, q: "Alexander Miles patented an improvement to elevators in 1887 that automatically did what?", a: "Opened and closed the doors", d: ["Played music", "Counted passengers", "Lit the cabin"] },
+    { c: "Inventions", t: 4, q: "Which French inventor's arithmometer, patented in 1820, became the first mass-produced mechanical calculator?", a: "Thomas de Colmar", d: ["Blaise Pascal", "Charles Babbage", "Gottfried Leibniz"] },
+    { c: "Inventions", t: 5, q: "Thomas Saint, an English cabinetmaker, patented an early design for which machine in 1790?", a: "Sewing machine", d: ["Typewriter", "Lathe", "Loom"] },
   ],
-  // day 20
+  // day 56 (2026-12-24)
   [
-    { c: "Inventions", t: 1, q: "What does an electrical fuse do when too much current flows?", a: "Melts and breaks the circuit", d: ["Stores the extra charge","Speeds up the current","Turns into a magnet"] },
-    { c: "Inventions", t: 2, q: "Super Soaker inventor Lonnie Johnson worked as an engineer at which agency's Jet Propulsion Laboratory?", a: "NASA", d: ["NOAA","DARPA","The CIA"] },
-    { c: "Inventions", t: 3, q: "William Addis is said to have made an early mass-produced toothbrush around 1780 while he was where?", a: "In prison", d: ["At sea","In the army","At university"] },
-    { c: "Inventions", t: 4, q: "Which Eastman Kodak chemist developed Super Glue?", a: "Harry Coover", d: ["Roy Plunkett","Spencer Silver","Stephanie Kwolek"] },
-    { c: "Inventions", t: 5, q: "Which Berkeley police officer built a polygraph lie detector in 1921?", a: "John Larson", d: ["Leonarde Keeler","William Marston","August Vollmer"] },
+    { c: "Inventions", t: 1, q: "Before they built airplanes, the Wright brothers ran a shop selling and repairing what?", a: "Bicycles", d: ["Clocks", "Cars", "Sewing machines"] },
+    { c: "Inventions", t: 2, q: "Sarah Boone received an 1892 patent for an improved what?", a: "Ironing board", d: ["Washboard", "Clothes wringer", "Sewing table"] },
+    { c: "Inventions", t: 3, q: "William Painter patented which bottle closure in 1892?", a: "The crown cap", d: ["The screw cap", "The cork stopper", "The swing top"] },
+    { c: "Inventions", t: 4, q: "Carl Auer von Welsbach invented which device in the 1880s that made gas lamps glow far brighter?", a: "The gas mantle", d: ["The Bunsen burner", "The arc lamp", "The safety lamp"] },
+    { c: "Inventions", t: 5, q: "Hippolyte Mège-Mouriès created margarine in 1869 for a prize offered by which French ruler?", a: "Napoleon III", d: ["Louis-Philippe", "Charles X", "Napoleon I"] },
   ],
-  // day 21
+  // day 57 (2026-12-25)
   [
-    { c: "Inventions", t: 1, q: "The LEGO brick was patented in 1958 by a company from which country?", a: "Denmark", d: ["Sweden","Norway","Germany"] },
-    { c: "Inventions", t: 2, q: "The IMAX film format, first shown at Expo '70 in Osaka, was developed in which country?", a: "Canada", d: ["United States","Japan","Sweden"] },
-    { c: "Inventions", t: 3, q: "Which famous physicist co-patented a refrigerator with no moving parts with Leo Szilard in 1930?", a: "Albert Einstein", d: ["Niels Bohr","Enrico Fermi","Max Planck"] },
-    { c: "Inventions", t: 4, q: "Lewis Urry developed the long-life alkaline battery in the 1950s while working for which brand?", a: "Eveready", d: ["Duracell","Rayovac","Varta"] },
-    { c: "Inventions", t: 5, q: "Which Indiana police scientist invented the Breathalyzer in 1954?", a: "Robert Borkenstein", d: ["Rolla Harger","Leonarde Keeler","August Vollmer"] },
+    { c: "Inventions", t: 1, q: "Which fastener joins two rows of interlocking teeth with a slider?", a: "Zipper", d: ["Velcro", "Button", "Snap"] },
+    { c: "Inventions", t: 2, q: "Edward H. Johnson, who showed off the first electrically lit Christmas tree in 1882, was a business partner of which inventor?", a: "Thomas Edison", d: ["George Westinghouse", "Nikola Tesla", "Alexander Graham Bell"] },
+    { c: "Inventions", t: 3, q: "Marie Van Brittan Brown's home security system of the 1960s let people see visitors using what?", a: "A camera and TV monitor", d: ["A peephole mirror", "A periscope", "An infrared beam"] },
+    { c: "Inventions", t: 4, q: "Thaddeus Lowe led a Union Army corps that used which aircraft during the Civil War?", a: "Observation balloons", d: ["Gliders", "Airships", "Kites"] },
+    { c: "Inventions", t: 5, q: "Jan Ernst Matzeliger's patented lasting machine of 1883 sped up the making of what?", a: "Shoes", d: ["Hats", "Gloves", "Barrels"] },
   ],
-  // day 22
+  // day 58 (2026-12-26)
   [
-    { c: "Inventions", t: 1, q: "What does a car's tachometer show?", a: "Engine speed", d: ["Road speed","Fuel level","Oil pressure"] },
-    { c: "Inventions", t: 2, q: "Wolfgang von Kempelen's Mechanical Turk of 1770 appeared to play which game?", a: "Chess", d: ["Checkers","Backgammon","Go"] },
-    { c: "Inventions", t: 3, q: "Which German engineer led the technical development of the V-2 rocket?", a: "Wernher von Braun", d: ["Hermann Oberth","Hans von Ohain","Ferdinand Porsche"] },
-    { c: "Inventions", t: 4, q: "Which inventor patented the metronome in 1815, a device Beethoven championed?", a: "Johann Maelzel", d: ["Carl Czerny","Antonio Salieri","Ignaz Pleyel"] },
-    { c: "Inventions", t: 5, q: "Which Edison employee did most of the design work on the Kinetoscope?", a: "William Kennedy Dickson", d: ["Edwin S. Porter","Eadweard Muybridge","Louis Le Prince"] },
+    { c: "Inventions", t: 1, q: "What did an electric telegraph send along its wires?", a: "Coded messages", d: ["Live video", "Small parcels", "Recorded music"] },
+    { c: "Inventions", t: 2, q: "Wham-O's 1958 craze, a plastic ring spun around the waist, was called what?", a: "Hula hoop", d: ["Frisbee", "Slinky", "Yo-yo"] },
+    { c: "Inventions", t: 3, q: "Almon Strowger, who patented an automatic telephone exchange in 1891, was by trade what?", a: "An undertaker", d: ["A barber", "A pharmacist", "A banker"] },
+    { c: "Inventions", t: 4, q: "Thomas Jennings, believed to be the first Black American to receive a US patent, in 1821, invented a method of doing what?", a: "Dry cleaning clothes", d: ["Canning food", "Tanning leather", "Bleaching paper"] },
+    { c: "Inventions", t: 5, q: "Elijah McCoy's 1872 patent was for an automatic oil lubricator for what kind of machine?", a: "Steam engines", d: ["Sewing machines", "Clocks", "Printing presses"] },
   ],
-  // day 23
+  // day 59 (2026-12-27)
   [
-    { c: "Inventions", t: 1, q: "What does a car's muffler reduce?", a: "Exhaust noise", d: ["Engine heat","Fuel use","Brake wear"] },
-    { c: "Inventions", t: 2, q: "Hymen Lipman's 1858 US patent attached what to the end of a pencil?", a: "An eraser", d: ["A clip","A sharpener","A cap"] },
-    { c: "Inventions", t: 3, q: "Which English scientist described the stereoscope, which makes paired pictures look three-dimensional, in 1838?", a: "Charles Wheatstone", d: ["David Brewster","William Fox Talbot","Michael Faraday"] },
-    { c: "Inventions", t: 4, q: "What was the first commercial transistor radio, sold from 1954?", a: "Regency TR-1", d: ["Sony TR-55","Zenith Royal 500","Philco T-7"] },
-    { c: "Inventions", t: 5, q: "Richard Hoe's rotary printing press of 1843 held its type on what?", a: "A revolving cylinder", d: ["A flat sliding bed","A moving belt","A hinged platen"] },
+    { c: "Inventions", t: 1, q: "What does a vacuum flask, or Thermos, do?", a: "Keeps drinks hot or cold", d: ["Filters water", "Adds fizz to drinks", "Makes ice"] },
+    { c: "Inventions", t: 2, q: "Earl Tupper's plastic food containers became famous through what kind of sales event?", a: "Home parties", d: ["County fairs", "Drive-in movies", "Church bazaars"] },
+    { c: "Inventions", t: 3, q: "Robert Stirling, who patented a hot-air engine in 1816, was by profession what?", a: "A church minister", d: ["A blacksmith", "A sea captain", "A schoolteacher"] },
+    { c: "Inventions", t: 4, q: "Norbert Rillieux's multiple-effect evaporator of the 1840s transformed the refining of what?", a: "Sugar", d: ["Oil", "Salt", "Silver"] },
+    { c: "Inventions", t: 5, q: "Frank Hornby patented which construction toy, first called 'Mechanics Made Easy', in 1901?", a: "Meccano", d: ["Erector Set", "Tinkertoy", "Lincoln Logs"] },
   ],
-  // day 24
+  // day 60 (2026-12-28)
   [
-    { c: "Inventions", t: 1, q: "What does a dehumidifier remove from the air?", a: "Moisture", d: ["Dust","Smoke","Pollen"] },
-    { c: "Inventions", t: 2, q: "Which French physicist flew the first crewed hydrogen balloon, in December 1783?", a: "Jacques Charles", d: ["Joseph Montgolfier","Pilâtre de Rozier","Jean-Pierre Blanchard"] },
-    { c: "Inventions", t: 3, q: "Obninsk, which in 1954 became the first nuclear plant to feed a power grid, was in which country?", a: "Soviet Union", d: ["United States","United Kingdom","France"] },
-    { c: "Inventions", t: 4, q: "In 1880 Stéphane Tarnier introduced which device at a Paris maternity hospital?", a: "Baby incubator", d: ["Baby bottle","Breast pump","Hearing trumpet"] },
-    { c: "Inventions", t: 5, q: "Frank Zybach's 1952 patent covered which farm system?", a: "Center-pivot irrigation", d: ["Drip irrigation","Contour plowing","Hydroponics"] },
+    { c: "Inventions", t: 1, q: "Which car part lets a driver see the road behind without turning around?", a: "Rear-view mirror", d: ["Dashboard", "Sun visor", "Steering column"] },
+    { c: "Inventions", t: 2, q: "Ermal Fraze's tab top of the early 1960s let people open what without a tool?", a: "Cans", d: ["Jars", "Corked bottles", "Envelopes"] },
+    { c: "Inventions", t: 3, q: "The transistor was invented in 1947 at which company's laboratories?", a: "Bell Labs", d: ["IBM", "General Electric", "RCA"] },
+    { c: "Inventions", t: 4, q: "Which Yorkshireman patented the 'cat's eye' road reflector in 1934?", a: "Percy Shaw", d: ["Frank Hornby", "Herbert Austin", "Percy Spencer"] },
+    { c: "Inventions", t: 5, q: "Which French instrument maker built an early hand-cranked dynamo, in 1832?", a: "Hippolyte Pixii", d: ["André-Marie Ampère", "Zénobe Gramme", "Gustave Trouvé"] },
   ],
-  // day 25
+  // day 61 (2026-12-29)
   [
-    { c: "Inventions", t: 1, q: "Gunpowder was first made in which country, by alchemists around the 9th century?", a: "China", d: ["India","Persia","Byzantium"] },
-    { c: "Inventions", t: 2, q: "Which brothers built one of the first American gasoline cars, in Springfield, Massachusetts, in 1893?", a: "The Duryea brothers", d: ["The Dodge brothers","The Studebaker brothers","The Fisher brothers"] },
-    { c: "Inventions", t: 3, q: "Which Harvard physicist designed the Harvard Mark I, built by IBM in 1944?", a: "Howard Aiken", d: ["John Mauchly","Vannevar Bush","John Atanasoff"] },
-    { c: "Inventions", t: 4, q: "Who sold the first commercial lithium-ion battery, in 1991?", a: "Sony", d: ["Panasonic","Toshiba","Samsung"] },
-    { c: "Inventions", t: 5, q: "What was Zenith's first TV remote control of 1950, wired to the set by a cable, called?", a: "Lazy Bones", d: ["Space Command","Flash-Matic","Clicker"] },
+    { c: "Inventions", t: 1, q: "What does the turntable inside a microwave oven do?", a: "Turns food so it heats evenly", d: ["Weighs the food", "Cools the food", "Measures the time"] },
+    { c: "Inventions", t: 2, q: "Guglielmo Marconi is famous for pioneering long-distance what?", a: "Radio", d: ["Television", "Telephone", "Radar"] },
+    { c: "Inventions", t: 3, q: "Frederick McKinley Jones developed portable refrigeration units in the 1930s and 1940s for what?", a: "Trucks", d: ["Homes", "Ships", "Airplanes"] },
+    { c: "Inventions", t: 4, q: "George Pullman made his name in the 1860s with luxurious what?", a: "Railroad sleeping cars", d: ["Steamships", "Hotels", "Horse carriages"] },
+    { c: "Inventions", t: 5, q: "Wilhelm Bauer's Brandtaucher, built in 1850, was an early what?", a: "Submarine", d: ["Steam tractor", "Diving bell", "Ironclad warship"] },
   ],
-  // day 26
+  // day 62 (2026-12-30)
   [
-    { c: "Inventions", t: 1, q: "What does a Zamboni machine resurface?", a: "Ice rinks", d: ["Tennis courts","Roads","Running tracks"] },
-    { c: "Inventions", t: 2, q: "A standard Braille cell has how many dot positions?", a: "Six", d: ["Four","Eight","Nine"] },
-    { c: "Inventions", t: 3, q: "How many keys does a standard modern piano have?", a: "88", d: ["64","76","100"] },
-    { c: "Inventions", t: 4, q: "John Whinfield and James Dickson patented which synthetic fiber in Britain in 1941?", a: "Polyester", d: ["Nylon","Acrylic","Rayon"] },
-    { c: "Inventions", t: 5, q: "Which German polymath built the Stepped Reckoner, a calculating machine that could multiply, in the 1670s?", a: "Gottfried Leibniz", d: ["Wilhelm Schickard","Johannes Kepler","Christiaan Huygens"] },
+    { c: "Inventions", t: 1, q: "What does a doctor listen to through a stethoscope?", a: "Heart and lung sounds", d: ["Radio signals", "Brain waves", "Bone density"] },
+    { c: "Inventions", t: 2, q: "Trevor Baylis's 1990s radio needed no batteries or mains power. What powered it?", a: "A hand-wound spring", d: ["A tiny gas engine", "Body heat", "Static electricity"] },
+    { c: "Inventions", t: 3, q: "Eli Terry pioneered the mass production of what in Connecticut in the early 1800s?", a: "Clocks", d: ["Guns", "Shoes", "Bicycles"] },
+    { c: "Inventions", t: 4, q: "Which American engineer built an automated flour mill near Wilmington, Delaware, in the 1780s?", a: "Oliver Evans", d: ["Eli Terry", "Samuel Slater", "Jacob Perkins"] },
+    { c: "Inventions", t: 5, q: "Which Italian engineer tested hydrofoil boats on Lake Maggiore in the early 1900s?", a: "Enrico Forlanini", d: ["Alessandro Cruto", "Galileo Ferraris", "Ascanio Sobrero"] },
   ],
-  // day 27
+  // day 63 (2026-12-31)
   [
-    { c: "Inventions", t: 1, q: "What does an airliner's black box record?", a: "Flight data and cockpit sounds", d: ["Passenger seat bookings","Weather radar maps","Duty-free sales"] },
-    { c: "Inventions", t: 2, q: "Ray Dolby's noise reduction system of the 1960s was designed to cut what from tape recordings?", a: "Hiss", d: ["Echo","Crosstalk","Wow and flutter"] },
-    { c: "Inventions", t: 3, q: "Kodachrome color film of 1935 was developed by Leopold Mannes and Leopold Godowsky, who were by training what?", a: "Concert musicians", d: ["Chemists","Painters","Doctors"] },
-    { c: "Inventions", t: 4, q: "Which English engineer patented the two-electrode vacuum tube, or valve, in 1904?", a: "John Ambrose Fleming", d: ["Lee de Forest","Oliver Lodge","Joseph Swan"] },
-    { c: "Inventions", t: 5, q: "Which German engineer patented the Enigma cipher machine in 1918?", a: "Arthur Scherbius", d: ["Marian Rejewski","Hans-Thilo Schmidt","Rudolf Hell"] },
-  ],
-  // day 28
-  [
-    { c: "Inventions", t: 1, q: "Before digital cameras, what did most cameras record pictures on?", a: "Film", d: ["Glass beads","Magnetic tape","Paper cards"] },
-    { c: "Inventions", t: 2, q: "In older gasoline engines, what does a carburetor mix?", a: "Air and fuel", d: ["Oil and water","Fuel and coolant","Air and oil"] },
-    { c: "Inventions", t: 3, q: "In 1888 Louis Le Prince filmed the Roundhay Garden Scene, among the oldest surviving motion pictures, in which English city?", a: "Leeds", d: ["Manchester","Birmingham","Sheffield"] },
-    { c: "Inventions", t: 4, q: "Henri Fabre made the first flight in a powered seaplane, in 1910, in which country?", a: "France", d: ["Italy","United States","Monaco"] },
-    { c: "Inventions", t: 5, q: "Tolbert Lanston patented which type-casting machine in 1887, a rival to the Linotype?", a: "Monotype", d: ["Intertype","Ludlow","Teletype"] },
-  ],
-  // day 29
-  [
-    { c: "Inventions", t: 1, q: "Humphry Davy's safety lamp of 1815 was designed to protect whom?", a: "Coal miners", d: ["Lighthouse keepers","Sailors","Railroad workers"] },
-    { c: "Inventions", t: 2, q: "Which engine part turns the pistons' up-and-down motion into rotation?", a: "Crankshaft", d: ["Camshaft","Carburetor","Radiator"] },
-    { c: "Inventions", t: 3, q: "Which aviation entrepreneur, maker of a famous business jet, developed the 8-track tape cartridge in 1964?", a: "Bill Lear", d: ["Howard Hughes","William Boeing","Glenn Curtiss"] },
-    { c: "Inventions", t: 4, q: "Which American added a grid to the vacuum tube in 1906, creating the Audion?", a: "Lee de Forest", d: ["Reginald Fessenden","Edwin Armstrong","Philo Farnsworth"] },
-    { c: "Inventions", t: 5, q: "William Stanley lit the main street of which Massachusetts town with an AC transformer system in 1886?", a: "Great Barrington", d: ["Lowell","Pittsfield","Springfield"] },
-  ],
-  // day 30
-  [
-    { c: "Inventions", t: 1, q: "Which device turns electrical signals back into sound?", a: "Loudspeaker", d: ["Microphone","Transformer","Antenna"] },
-    { c: "Inventions", t: 2, q: "Which Brazilian aviator flew his 14-bis airplane in Paris in 1906?", a: "Alberto Santos-Dumont", d: ["Louis Blériot","Henri Farman","Gabriel Voisin"] },
-    { c: "Inventions", t: 3, q: "Which French electrician invented the drawing toy later sold as the Etch A Sketch?", a: "André Cassagnes", d: ["Pierre Michaux","Georges Claude","Henri Coanda"] },
-    { c: "Inventions", t: 4, q: "Henri Giffard flew the first powered airship in 1852, driven by what kind of engine?", a: "A steam engine", d: ["A gasoline engine","An electric motor","A diesel engine"] },
-    { c: "Inventions", t: 5, q: "Lewis Waterman's 1884 patent improved the fountain pen with what?", a: "A capillary ink feed", d: ["A ballpoint tip","A steel nib","A cartridge refill"] },
-  ],
-  // day 31
-  [
-    { c: "Inventions", t: 1, q: "What does a car's cruise control do?", a: "Holds a steady speed", d: ["Steers between lanes","Locks the doors","Cools the engine"] },
-    { c: "Inventions", t: 2, q: "In a mechanical clock, which part releases the gear train one tick at a time?", a: "Escapement", d: ["Mainspring","Winding crown","Dial"] },
-    { c: "Inventions", t: 3, q: "Lawrence Sperry showed off which aircraft device in Paris in 1914 by flying with his hands off the controls?", a: "Autopilot", d: ["Ejection seat","Jet engine","Radio altimeter"] },
-    { c: "Inventions", t: 4, q: "The first industrial robot, Unimate, went to work in 1961 for which carmaker?", a: "General Motors", d: ["Ford","Chrysler","Toyota"] },
-    { c: "Inventions", t: 5, q: "Which French physicist developed ultrasonic submarine detection, a forerunner of sonar, during World War I?", a: "Paul Langevin", d: ["Pierre Curie","Louis de Broglie","Jean Perrin"] },
-  ],
-  // day 32
-  [
-    { c: "Inventions", t: 1, q: "What does a camera's flash provide?", a: "A brief burst of light", d: ["A sound to make people smile","A sharper focus","A wider view"] },
-    { c: "Inventions", t: 2, q: "On a bicycle, which part shifts the chain between sprockets?", a: "Derailleur", d: ["Crank","Hub","Headset"] },
-    { c: "Inventions", t: 3, q: "Polyethylene was first made in a practical form, by accident in 1933, at which British chemical company?", a: "ICI", d: ["BP","Courtaulds","Unilever"] },
-    { c: "Inventions", t: 4, q: "Which Scottish engineer patented an air-filled tire in 1845, decades before Dunlop?", a: "Robert William Thomson", d: ["Kirkpatrick Macmillan","Charles Macintosh","John McAdam"] },
-    { c: "Inventions", t: 5, q: "With Max Knoll, which German engineer built the first electron microscope, in 1931?", a: "Ernst Ruska", d: ["Dennis Gabor","Manfred von Ardenne","Ernst Abbe"] },
-  ],
-  // day 33
-  [
-    { c: "Inventions", t: 1, q: "A dynamo converts mechanical motion into what?", a: "Electric current", d: ["Heat","Light","Magnetism"] },
-    { c: "Inventions", t: 2, q: "The 40 in the name WD-40 refers to what?", a: "Its 40th formula attempt", d: ["Its 1940 launch year","Its 40 ingredients","Its 40 percent oil"] },
-    { c: "Inventions", t: 3, q: "Which heat-resistant glassware brand did Corning launch in 1915?", a: "Pyrex", d: ["Tupperware","Duralex","Anchor Hocking"] },
-    { c: "Inventions", t: 4, q: "Which General Electric scientist created the first visible-light LED, in 1962?", a: "Nick Holonyak", d: ["Shuji Nakamura","Jack Kilby","Herbert Kroemer"] },
-    { c: "Inventions", t: 5, q: "Ralph Baer's Brown Box prototype became which home video game console in 1972?", a: "Magnavox Odyssey", d: ["Atari 2600","Fairchild Channel F","Coleco Telstar"] },
-  ],
-  // day 34
-  [
-    { c: "Inventions", t: 1, q: "What does a document scanner make from a paper page?", a: "A digital image", d: ["A laminated copy","A carbon copy","A printed copy"] },
-    { c: "Inventions", t: 2, q: "What does a smartphone's accelerometer sense?", a: "Movement and tilt", d: ["Air pressure","Battery charge","Signal strength"] },
-    { c: "Inventions", t: 3, q: "Otto Wichterle built the first soft contact lenses in 1961 with a machine made from what?", a: "A children's building set", d: ["A sewing machine","A clock spring","A pottery wheel"] },
-    { c: "Inventions", t: 4, q: "Henry Mill received an English patent in 1714 for an early idea of which machine?", a: "Typewriter", d: ["Calculator","Sewing machine","Pocket watch"] },
-    { c: "Inventions", t: 5, q: "E. A. Johnson described a capacitive touchscreen in 1965 while working at which British research center?", a: "Royal Radar Establishment", d: ["Bletchley Park","Rutherford Appleton Laboratory","National Physical Laboratory"] },
-  ],
-  // day 35
-  [
-    { c: "Inventions", t: 1, q: "What does a scuba diver breathe from?", a: "A tank of compressed air", d: ["A hose to the surface","A chemical sponge","A pocket of seawater"] },
-    { c: "Inventions", t: 2, q: "Hubert Cecil Booth's engine-powered machine of 1901 was an early what?", a: "Vacuum cleaner", d: ["Lawn mower","Washing machine","Dishwasher"] },
-    { c: "Inventions", t: 3, q: "Which English geologist developed a horizontal seismograph while working in Japan in the 1880s?", a: "John Milne", d: ["Charles Richter","Robert Mallet","Giuseppe Mercalli"] },
-    { c: "Inventions", t: 4, q: "Which Irish astronomer invented the cup anemometer in 1846?", a: "Thomas Romney Robinson", d: ["William Parsons","Francis Beaufort","William Rowan Hamilton"] },
-    { c: "Inventions", t: 5, q: "In 1938 Chester Carlson made the first xerographic copy in which New York neighborhood?", a: "Astoria, Queens", d: ["Harlem","Flatbush","Greenwich Village"] },
-  ],
-  // day 36
-  [
-    { c: "Inventions", t: 1, q: "What does a dimmer switch change?", a: "How bright a light is", d: ["The color of a light","How hot a stove is","The volume of a radio"] },
-    { c: "Inventions", t: 2, q: "Linus Yale Jr. patented a compact cylinder version of which kind of lock in the 1860s?", a: "Pin tumbler lock", d: ["Warded lock","Lever lock","Disc detainer lock"] },
-    { c: "Inventions", t: 3, q: "In 1888 Bertha Benz made the first long-distance car journey, driving from Mannheim to which town?", a: "Pforzheim", d: ["Stuttgart","Heidelberg","Frankfurt"] },
-    { c: "Inventions", t: 4, q: "Hiram Moore built an early combine harvester in the 1830s in which state?", a: "Michigan", d: ["Ohio","Illinois","Iowa"] },
-    { c: "Inventions", t: 5, q: "Which EMI engineer patented stereo sound recording in 1931?", a: "Alan Blumlein", d: ["John Logie Baird","Isaac Shoenberg","Alec Reeves"] },
+    { c: "Inventions", t: 1, q: "What does an electric blanket do?", a: "Keeps you warm in bed", d: ["Cools the bedroom", "Rocks you to sleep", "Cleans the sheets"] },
+    { c: "Inventions", t: 2, q: "In 1901 the Wright brothers built what to test the shapes of wings?", a: "A wind tunnel", d: ["A catapult", "A water tank", "A spinning arm"] },
+    { c: "Inventions", t: 3, q: "Time balls, like the one dropped daily at Greenwich from 1833, were first meant to help whom set their clocks?", a: "Ships' navigators", d: ["Railway guards", "Factory workers", "Church bell ringers"] },
+    { c: "Inventions", t: 4, q: "Which English scientist built the first electromagnet, in 1825?", a: "William Sturgeon", d: ["Joseph Henry", "Michael Faraday", "Humphry Davy"] },
+    { c: "Inventions", t: 5, q: "William Perkin was trying to make which drug in 1856 when he created mauveine, the first synthetic dye?", a: "Quinine", d: ["Aspirin", "Morphine", "Penicillin"] },
   ],
 ];
