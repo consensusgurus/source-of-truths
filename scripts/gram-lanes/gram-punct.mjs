@@ -8,7 +8,9 @@
 // (possessives of names ending in s, colon capitalization, title case of
 // prepositions, numbers style, hyphens after "to be").
 const L = 'Punctuation & Structure';
-export const LANE_DAYS = [
+// Days 1-36 (2026-10-19 to 2026-11-23), already in the bank. Kept for the record;
+// gen-english.mjs reads only LANE_DAYS below, which holds the newest segment.
+export const LANE_DAYS_D01_D36 = [
   // day 1
   [
     { c: L, t: 1, q: "In 'Let's eat, Grandma,' what does the comma tell you?", a: 'Grandma is being spoken to', d: ['Grandma is on the menu', 'Two sentences are joined', 'A list is starting'] },
@@ -296,5 +298,318 @@ export const LANE_DAYS = [
     { c: L, t: 3, q: "In 'The run was long and hard,' what part of speech is 'run'?", a: 'noun', d: ['verb', 'adjective', 'adverb'] },
     { c: L, t: 4, q: "In 'Call me if you need help,' what part of speech is 'if'?", a: 'conjunction', d: ['preposition', 'adverb', 'pronoun'] },
     { c: L, t: 5, q: "In 'She seems tired,' what is 'tired'?", a: 'a predicate adjective', d: ['a direct object', 'an adverb', 'a predicate nominative'] },
+  ],
+];
+
+// Days 37-74 (2026-11-24 to 2026-12-31), appended 2026-11-06. Same scope and
+// bans as above. Each item is new to the bank. Choices that differ only in
+// punctuation would collapse to one string under the checker's normalizer, so
+// every punctuation question offers four different sentences (or forms whose
+// letters differ). No choice or stem carries a three-item series, so no item
+// turns on the serial comma.
+export const LANE_DAYS = [
+  // day 37
+  [
+    { c: L, t: 1, q: "Which is the correct contraction of 'cannot'?", a: "can't", d: ["cant'", "ca'nt", "cann't"] },
+    { c: L, t: 2, q: 'Which sentence is punctuated correctly?', a: `You're coming tonight, aren't you?`, d: [`She's ready isn't she?`, `It's cold, isn't, it?`, `They left, didn't they.`] },
+    { c: L, t: 3, q: 'Which sentence has a dangling modifier?', a: 'While brushing my teeth, the phone rang.', d: ['While I was brushing my teeth, the phone rang.', 'The phone rang while I brushed my teeth.', 'While brushing my teeth, I heard the phone ring.'] },
+    { c: L, t: 4, q: "In 'You might want a coat,' what kind of verb is 'might'?", a: 'a modal verb', d: ['a linking verb', 'an action verb', 'a phrasal verb'] },
+    { c: L, t: 5, q: "In 'I myself fixed the sink,' what kind of pronoun is 'myself'?", a: 'an intensive pronoun', d: ['a reflexive pronoun', 'a relative pronoun', 'a possessive pronoun'] },
+  ],
+  // day 38
+  [
+    { c: L, t: 1, q: 'Which sentence is capitalized correctly?', a: `My best friend's name is Maya.`, d: [`my sister's name is Rosa.`, `Our dog's name is buster.`, `His Cat's name is Tiger.`] },
+    { c: L, t: 2, q: 'Which sentence is punctuated correctly?', a: 'Oh, I forgot my umbrella.', d: ['Wow that, was close.', 'Hey you forgot, your keys.', 'Ouch, that, hurt.'] },
+    { c: L, t: 3, q: "In 'By noon she had eaten lunch,' what tense is 'had eaten'?", a: 'past perfect', d: ['present perfect', 'simple past', 'past progressive'] },
+    { c: L, t: 4, q: 'Which sentence has a misplaced modifier?', a: 'She nearly drove her kids to school every day.', d: ['She drove her kids to school nearly every day.', 'Nearly every day, she drove her kids to school.', 'She drove her two kids to school every day.'] },
+    { c: L, t: 5, q: "In 'It rained; however, we played,' what is 'however'?", a: 'a conjunctive adverb', d: ['a coordinating conjunction', 'a preposition', 'an interjection'] },
+  ],
+  // day 39
+  [
+    { c: L, t: 1, q: 'Which of these should end with a question mark?', a: 'Can you help me carry this box', d: ['I can help you carry this box', 'Please help me carry this box', 'She asked me to carry this box'] },
+    { c: L, t: 2, q: 'Which sentence uses an apostrophe correctly?', a: 'The blue towel is yours.', d: [`The red one is her's.`, `That seat is our's.`, `Is this book your's?`] },
+    { c: L, t: 3, q: "What kind of sentence is 'What a great game that was!'?", a: 'exclamatory', d: ['interrogative', 'imperative', 'declarative'] },
+    { c: L, t: 4, q: 'Which sentence uses an apostrophe correctly?', a: `She gave two weeks' notice at work.`, d: [`He took a days' rest.`, `We paid three month's rent.`, `I need an hours' sleep.`] },
+    { c: L, t: 5, q: "What is the term for using 'and' between every item, as in 'red and white and blue'?", a: 'polysyndeton', d: ['asyndeton', 'anaphora', 'alliteration'] },
+  ],
+  // day 40
+  [
+    { c: L, t: 1, q: "In 'The baby giggled,' what part of speech is 'giggled'?", a: 'verb', d: ['noun', 'adjective', 'adverb'] },
+    { c: L, t: 2, q: "Which sentence uses 'let's' correctly?", a: `Let's go to the beach tomorrow.`, d: [`Lets go to the park later.`, `Mom let's us stay up late.`, `The teacher let's us read.`] },
+    { c: L, t: 3, q: "In 'Dad drove us home,' what case is the pronoun 'us'?", a: 'objective', d: ['subjective', 'possessive', 'reflexive'] },
+    { c: L, t: 4, q: 'Which sentence is punctuated correctly?', a: 'We visited Austin, Texas; Reno, Nevada; and Salem, Oregon.', d: ['The tour stops in Mesa, Arizona, Provo, Utah, and Eugene, Oregon.', 'She lived in Tulsa; Oklahoma, Boise; Idaho, and Erie; Pennsylvania.', 'The band played in: Dover, Delaware; Akron, Ohio; and Ames, Iowa.'] },
+    { c: L, t: 5, q: "In 'She left early to catch the train,' how is 'to catch the train' used?", a: 'as an adverb', d: ['as a noun', 'as an adjective', 'as a subject'] },
+  ],
+  // day 41
+  [
+    { c: L, t: 1, q: "Which mark shows that letters are missing in a word like 'don't'?", a: 'an apostrophe', d: ['a comma', 'a hyphen', 'a period'] },
+    { c: L, t: 2, q: 'Which sentence uses parentheses correctly?', a: 'The museum (the one downtown) opens at ten.', d: ['The (old) museum, opens at ten.', 'The library opens (at nine.', 'The zoo opens at (eight on Sundays.'] },
+    { c: L, t: 3, q: "What is the term for nouns like 'joy' and 'courage' that name ideas or feelings?", a: 'abstract nouns', d: ['concrete nouns', 'collective nouns', 'proper nouns'] },
+    { c: L, t: 4, q: 'Which sentence is NOT parallel?', a: 'The coach told us to run hard and that we should stretch.', d: ['The coach told us to run hard and to stretch.', 'The coach told us to run hard and stretch.', 'The coach said that we should run and that we should stretch.'] },
+    { c: L, t: 5, q: "What is the term for opening clause after clause with the same words, as in King's repeated 'I have a dream'?", a: 'anaphora', d: ['epistrophe', 'polysyndeton', 'chiasmus'] },
+  ],
+  // day 42
+  [
+    { c: L, t: 1, q: 'Which of these words is a verb?', a: 'climb', d: ['ladder', 'tall', 'quickly'] },
+    { c: L, t: 2, q: 'Which sentence uses a comma correctly to show contrast?', a: 'I asked for tea, not coffee.', d: ['She wanted, red not blue.', 'He ordered soup not, salad.', 'We, chose the beach not the lake.'] },
+    { c: L, t: 3, q: "In 'Max and Lily built a fort,' what is 'Max and Lily'?", a: 'a compound subject', d: ['a compound predicate', 'a direct object', 'an appositive'] },
+    { c: L, t: 4, q: 'Which word is hyphenated correctly?', a: 'pre-Columbian', d: ['non-smoker', 'anti-freeze', 'mid-night'] },
+    { c: L, t: 5, q: "What is the term for a verb that takes both a direct and an indirect object, like 'give'?", a: 'a ditransitive verb', d: ['an intransitive verb', 'a linking verb', 'a modal verb'] },
+  ],
+  // day 43
+  [
+    { c: L, t: 1, q: "What do you call a word that names a place, like 'school'?", a: 'a noun', d: ['a verb', 'an adverb', 'an adjective'] },
+    { c: L, t: 2, q: 'Which sentence uses a hyphen correctly?', a: 'Her ex-husband lives in Denver.', d: ['She is a self taught-painter.', 'He wore a bright-red, hat.', 'They live in a well kept-house.'] },
+    { c: L, t: 3, q: 'Which sentence follows American style for a comma and a quotation?', a: `We sang "Happy Birthday," and then we ate cake.`, d: [`He yelled "Stop", and the car stopped.`, `She called it "a mess", then she left.`, `The sign said "Exit", so we left.`] },
+    { c: L, t: 4, q: "What are words like 'very' and 'extremely' called when they strengthen an adjective?", a: 'intensifiers', d: ['articles', 'conjunctions', 'interjections'] },
+    { c: L, t: 5, q: "What is the term for an adjective that follows its noun, as in 'attorney general'?", a: 'postpositive', d: ['predicate', 'appositive', 'attributive'] },
+  ],
+  // day 44
+  [
+    { c: L, t: 1, q: 'Which contraction is written correctly?', a: "they're", d: ["theyr'e", "the'yre", "theyre'"] },
+    { c: L, t: 2, q: "Without its hyphen, 'a man-eating shark' could be misread as what?", a: 'a man who is eating shark', d: ['a shark that eats people', 'a shark with no teeth', 'a man shaped like a shark'] },
+    { c: L, t: 3, q: 'Which sentence is punctuated correctly?', a: 'This is, of course, only a test.', d: ['It is of course, too late.', 'We are, of course too tired.', 'She, of course is right.'] },
+    { c: L, t: 4, q: "In 'We left when the bell rang,' what is 'when the bell rang'?", a: 'an adverb clause', d: ['a noun clause', 'an adjective clause', 'an independent clause'] },
+    { c: L, t: 5, q: "In 'Had I known, I would have called,' which word does the inverted 'Had I' stand in for?", a: 'if', d: ['then', 'when', 'because'] },
+  ],
+  // day 45
+  [
+    { c: L, t: 1, q: 'Which sentence has the right end mark?', a: 'Please feed the cat.', d: ['Is the cat hungry.', 'Who fed the cat.', 'Did you feed the cat.'] },
+    { c: L, t: 2, q: 'Which sentence uses quotation marks correctly?', a: `Ana whispered, "The baby is asleep."`, d: [`Leo shouted "Come here"!`, `Mom said, "dinner is ready."`, `"I am hungry, said Max."`] },
+    { c: L, t: 3, q: "What is the problem in 'When Jo met Ann, she smiled'?", a: 'It is unclear who smiled', d: ['The verb is in the wrong tense', 'It needs a semicolon', 'It is a sentence fragment'] },
+    { c: L, t: 4, q: "In 'I'd already left,' what does 'I'd' stand for?", a: 'I had', d: ['I would', 'I did', 'I should'] },
+    { c: L, t: 5, q: "What is the term for one word applied to two others in different senses, as in 'She lost her keys and her temper'?", a: 'zeugma', d: ['chiasmus', 'anaphora', 'litotes'] },
+  ],
+  // day 46
+  [
+    { c: L, t: 1, q: 'In the middle of a sentence, which of these always needs a capital letter?', a: 'Florida', d: ['ocean', 'city', 'mountain'] },
+    { c: L, t: 2, q: 'Which sentence uses a comma correctly after an introductory word?', a: 'Finally, the bus arrived.', d: ['Suddenly the lights, went out.', 'Later, we, ate dinner.', 'Sadly the, game was canceled.'] },
+    { c: L, t: 3, q: "In 'Sam's leaving early,' what does 'Sam's' mean?", a: "a contraction of 'Sam is'", d: ["a possessive of 'Sam'", "a contraction of 'Sam was'", "a plural of 'Sam'"] },
+    { c: L, t: 4, q: 'Which mark shows that words were left out of a quotation?', a: 'an ellipsis', d: ['a bracket', 'a slash', 'an asterisk'] },
+    { c: L, t: 5, q: "In 'She has been working all day,' what tense is 'has been working'?", a: 'present perfect progressive', d: ['past perfect', 'present progressive', 'simple past'] },
+  ],
+  // day 47
+  [
+    { c: L, t: 1, q: 'Which of these words is an adverb?', a: 'loudly', d: ['noise', 'listen', 'noisy'] },
+    { c: L, t: 2, q: 'Which sentence correctly ends with a question mark?', a: 'Where is the nearest bus stop?', d: ['I wonder where the bus stop is?', 'Tell me where the bus stop is?', 'She asked where the bus stop was?'] },
+    { c: L, t: 3, q: "What are 'a' and 'an' called?", a: 'indefinite articles', d: ['definite articles', 'pronouns', 'prepositions'] },
+    { c: L, t: 4, q: 'Which sentence uses an apostrophe correctly?', a: `Everyone else's bags arrived on time.`, d: [`Everyones' bags arrived late.`, `Everyone's else bags were lost.`, `Everyone elses bags were wet.`] },
+    { c: L, t: 5, q: "In 'Unfortunately, it rained,' what is 'Unfortunately'?", a: 'a sentence adverb', d: ['a conjunction', 'an interjection', 'a preposition'] },
+  ],
+  // day 48
+  [
+    { c: L, t: 1, q: "Which is the correct short form of 'Mister' before a name?", a: 'Mr.', d: ['Mis.', 'Mst.', 'Mtr.'] },
+    { c: L, t: 2, q: 'Which sentence is capitalized correctly?', a: 'My cousin is a Buddhist.', d: ['Our neighbors are catholic.', 'She reads the bible every night.', 'He is learning about islam.'] },
+    { c: L, t: 3, q: 'Which sentence correctly joins two complete thoughts?', a: 'The bell rang, and the students left.', d: ['The rain stopped, we went out.', 'The dog barked the cat ran.', 'Jo sang, and, Ann danced.'] },
+    { c: L, t: 4, q: "In 'Who called you?' what kind of pronoun is 'Who'?", a: 'an interrogative pronoun', d: ['a relative pronoun', 'a demonstrative pronoun', 'a personal pronoun'] },
+    { c: L, t: 5, q: "What is the term for words like 'the' and 'my' that come before a noun to specify it?", a: 'determiners', d: ['conjunctions', 'complements', 'auxiliaries'] },
+  ],
+  // day 49
+  [
+    { c: L, t: 1, q: 'Which of these is a complete sentence?', a: 'The puppy chased its tail.', d: ['Chasing its tail in circles.', 'The puppy with brown spots.', 'When the puppy ran away.'] },
+    { c: L, t: 2, q: 'Which word has its apostrophe in the right place?', a: "o'clock", d: ["oc'lock", "oclock'", "o'cloc'k"] },
+    { c: L, t: 3, q: "In the command 'Sing louder!' what is the subject?", a: "an understood 'you'", d: ['Sing', 'louder', 'there is none'] },
+    { c: L, t: 4, q: "What is the term for a verb plus a small word that together act as one verb, like 'give up'?", a: 'a phrasal verb', d: ['a modal verb', 'a linking verb', 'an infinitive'] },
+    { c: L, t: 5, q: "In 'The coach said that we won,' what mood is 'won'?", a: 'indicative', d: ['subjunctive', 'imperative', 'conditional'] },
+  ],
+  // day 50
+  [
+    { c: L, t: 1, q: 'Which of these words is a pronoun?', a: 'they', d: ['window', 'jump', 'green'] },
+    { c: L, t: 2, q: 'Which of these sentences gives a command?', a: 'Put your shoes by the door.', d: ['Your shoes are by the door.', 'Are your shoes by the door?', 'Where are your shoes?'] },
+    { c: L, t: 3, q: "Which of these nouns cannot be counted, so it takes 'much' rather than 'many'?", a: 'furniture', d: ['chair', 'table', 'lamp'] },
+    { c: L, t: 4, q: "In 'The girl with red hair waved,' what is 'with red hair'?", a: 'an adjective phrase', d: ['an adverb phrase', 'a noun phrase', 'a verb phrase'] },
+    { c: L, t: 5, q: "What is the term for turning a statement around for emphasis, as in 'Never have I seen such rain'?", a: 'inversion', d: ['ellipsis', 'apposition', 'asyndeton'] },
+  ],
+  // day 51
+  [
+    { c: L, t: 1, q: "What do you call a word that describes a noun, like 'tall' or 'shiny'?", a: 'an adjective', d: ['a verb', 'a pronoun', 'a preposition'] },
+    { c: L, t: 2, q: 'Which phrase is hyphenated correctly?', a: 'a sugar-free drink', d: ['a fast moving-train', 'a well dressed-man', 'a hard working-crew'] },
+    { c: L, t: 3, q: 'Which sentence wrongly puts a comma between a subject and its verb?', a: 'The tall man in the gray coat, waved at us.', d: ['The short woman in the red hat waved at us.', 'Smiling, the tall man waved at us.', 'The man waved, and we waved back.'] },
+    { c: L, t: 4, q: "In 'She taught herself to knit,' what kind of pronoun is 'herself'?", a: 'a reflexive pronoun', d: ['an intensive pronoun', 'a relative pronoun', 'a demonstrative pronoun'] },
+    { c: L, t: 5, q: "In 'They are swimming,' what is 'swimming'?", a: 'a present participle', d: ['a gerund', 'an infinitive', 'a past participle'] },
+  ],
+  // day 52
+  [
+    { c: L, t: 1, q: 'Which sentence is written correctly?', a: 'I have a dog and a cat.', d: ['i have a fish and a bird.', 'We have a Hamster.', 'my brother has a turtle.'] },
+    { c: L, t: 2, q: "In 'Grandpa snored all night,' what is 'Grandpa'?", a: 'the subject', d: ['the verb', 'the object', 'the predicate'] },
+    { c: L, t: 3, q: "What is the term for the form of a pronoun that shows its job, like 'he' versus 'him'?", a: 'case', d: ['tense', 'mood', 'voice'] },
+    { c: L, t: 4, q: 'Which sentence punctuates an interrupted quotation correctly?', a: `"If you hurry," she said, "we can catch the bus."`, d: [`"When it rains" he said, "we stay in."`, `"If you call," she said. "we can talk."`, `"Before you go," Mom said, "Grab a coat."`] },
+    { c: L, t: 5, q: "In 'Whom did you invite?' what is 'Whom'?", a: 'the direct object', d: ['the subject', 'the indirect object', 'the predicate nominative'] },
+  ],
+  // day 53
+  [
+    { c: L, t: 1, q: 'Which sentence is capitalized correctly?', a: 'Dr. Patel works at the hospital.', d: ['dr. Lee works at the clinic.', 'Dr. Kim works at the Hospital.', 'The Doctor works at the clinic.'] },
+    { c: L, t: 2, q: 'Which mark can join two complete sentences into one without a conjunction?', a: 'a semicolon', d: ['a comma', 'an apostrophe', 'a hyphen'] },
+    { c: L, t: 3, q: "In 'The kids are playing outside,' what is 'are'?", a: 'a helping verb', d: ['a linking verb', 'an adverb', 'a pronoun'] },
+    { c: L, t: 4, q: 'Which word means to put your name on a contract once more?', a: 're-sign', d: ['resign', 'resigned', 'design'] },
+    { c: L, t: 5, q: "What is the term for reversing the order of words in two parallel phrases, as in 'Fair is foul, and foul is fair'?", a: 'chiasmus', d: ['anaphora', 'asyndeton', 'zeugma'] },
+  ],
+  // day 54
+  [
+    { c: L, t: 1, q: "Which is the correct contraction of 'should not'?", a: "shouldn't", d: ["should'nt", "shoul'dnt", "shouldnt'"] },
+    { c: L, t: 2, q: 'What is the term for the form of a verb that shows time, like past or future?', a: 'tense', d: ['mood', 'voice', 'case'] },
+    { c: L, t: 3, q: 'Which sentence is capitalized correctly?', a: 'We studied the Middle Ages in history class.', d: ['She loves the Spring and the Fall.', 'He took Biology last year.', 'I read about the renaissance in art class.'] },
+    { c: L, t: 4, q: "In 'Her goal is to win,' how is 'to win' used?", a: 'as a noun', d: ['as an adverb', 'as an adjective', 'as a verb'] },
+    { c: L, t: 5, q: "What is the term for a pronoun like 'each other'?", a: 'a reciprocal pronoun', d: ['a reflexive pronoun', 'an intensive pronoun', 'a relative pronoun'] },
+  ],
+  // day 55
+  [
+    { c: L, t: 1, q: 'What do you call a group of words that expresses a complete thought?', a: 'a sentence', d: ['a phrase', 'a fragment', 'a syllable'] },
+    { c: L, t: 2, q: 'Which sentence is capitalized correctly?', a: 'We saw the Statue of Liberty in New York.', d: ['We climbed the eiffel Tower in Paris.', 'Our class visited the white house.', 'We hiked the grand Canyon last May.'] },
+    { c: L, t: 3, q: "What is the rule that makes us write 'She runs' but 'They run'?", a: 'subject-verb agreement', d: ['parallel structure', 'pronoun case', 'verb tense'] },
+    { c: L, t: 4, q: 'Which greeting is punctuated correctly for a formal business letter?', a: 'Dear Ms. Park:', d: ['Dear Mr. Shaw;', 'Dear: Dr. Reyes', 'Dear Mrs. Diaz.'] },
+    { c: L, t: 5, q: "In 'This coat is warm,' what is 'This'?", a: 'a demonstrative adjective', d: ['a demonstrative pronoun', 'a relative pronoun', 'a personal pronoun'] },
+  ],
+  // day 56
+  [
+    { c: L, t: 1, q: 'Which of these contractions is spelled correctly?', a: "you'll", d: ["youl'l", "yo'ull", "you'l"] },
+    { c: L, t: 2, q: 'What is the term for a group of words that has its own subject and verb?', a: 'a clause', d: ['a phrase', 'an article', 'a modifier'] },
+    { c: L, t: 3, q: "In 'Someone left the gate open,' what kind of pronoun is 'Someone'?", a: 'an indefinite pronoun', d: ['a personal pronoun', 'a relative pronoun', 'a reflexive pronoun'] },
+    { c: L, t: 4, q: "In 'The dog barked and ran away,' what is 'barked and ran away'?", a: 'a compound predicate', d: ['a compound subject', 'a direct object', 'a dependent clause'] },
+    { c: L, t: 5, q: "What is the term for a noun used to modify another noun, as in 'chicken soup'?", a: 'a noun adjunct', d: ['a gerund', 'an appositive', 'a determiner'] },
+  ],
+  // day 57
+  [
+    { c: L, t: 1, q: 'Which of these words is a preposition?', a: 'beneath', d: ['happy', 'sing', 'slowly'] },
+    { c: L, t: 2, q: "What do you call a word that takes the place of a noun, like 'he' or 'it'?", a: 'a pronoun', d: ['an adverb', 'a conjunction', 'an article'] },
+    { c: L, t: 3, q: 'What is the term for a question asked for effect, with no answer expected?', a: 'a rhetorical question', d: ['an indirect question', 'a tag question', 'a leading question'] },
+    { c: L, t: 4, q: "What is the term for a clause beginning with 'if,' as in 'if it rains'?", a: 'a conditional clause', d: ['a relative clause', 'a noun clause', 'an independent clause'] },
+    { c: L, t: 5, q: "What is the term for using more words than needed, as in 'free gift'?", a: 'pleonasm', d: ['oxymoron', 'euphemism', 'malapropism'] },
+  ],
+  // day 58
+  [
+    { c: L, t: 1, q: "Which is the correct contraction of 'we have'?", a: "we've", d: ["wev'e", "w'eve", "we'v"] },
+    { c: L, t: 2, q: 'Which sentence is capitalized correctly?', a: 'My uncle is a doctor in Ohio.', d: ['Her Aunt is a Teacher.', 'My cousin is a nurse in texas.', 'Our Grandpa was a Farmer.'] },
+    { c: L, t: 3, q: "In 'That bike is mine,' what kind of pronoun is 'mine'?", a: 'a possessive pronoun', d: ['a demonstrative pronoun', 'a reflexive pronoun', 'an indefinite pronoun'] },
+    { c: L, t: 4, q: "In 'It's cold, isn't it?' what is 'isn't it'?", a: 'a tag question', d: ['a rhetorical question', 'an indirect question', 'an appositive'] },
+    { c: L, t: 5, q: "What mood is the verb in 'Long live the king'?", a: 'subjunctive', d: ['indicative', 'conditional', 'interrogative'] },
+  ],
+  // day 59
+  [
+    { c: L, t: 1, q: 'Which of these is a compound word?', a: 'sunflower', d: ['sunny', 'flowers', 'sundae'] },
+    { c: L, t: 2, q: "What is 'Dr.' in 'Dr. Lee' an example of?", a: 'an abbreviation', d: ['an acronym', 'an initial', 'a compound word'] },
+    { c: L, t: 3, q: 'Which sentence has a dangling or misplaced modifier?', a: 'Covered in mud, Mom made the dog stay outside.', d: ['Covered in mud, the dog had to stay outside.', 'Mom made the muddy dog stay outside.', 'The dog was covered in mud, so Mom kept it outside.'] },
+    { c: L, t: 4, q: "In 'Whose coat is this?' what case is 'Whose'?", a: 'possessive', d: ['objective', 'subjective', 'reflexive'] },
+    { c: L, t: 5, q: "In 'I have three dogs, all of whom bark,' what is 'all of whom bark'?", a: 'a relative clause', d: ['an absolute phrase', 'an appositive', 'an independent clause'] },
+  ],
+  // day 60
+  [
+    { c: L, t: 1, q: `Which sentence uses a capital letter correctly for a pet's name?`, a: 'Our dog Rex loves the park.', d: ['Our cat fluffy sleeps all day.', 'My Fish is named Bubbles.', 'Her bird named pip sings.'] },
+    { c: L, t: 2, q: "What is 'NASA' an example of?", a: 'an acronym', d: ['a contraction', 'a compound word', 'a prefix'] },
+    { c: L, t: 3, q: 'Which of these is a complex sentence?', a: 'We stayed inside because it was raining.', d: ['We stayed inside, and it rained.', 'It rained all day long.', 'It rained; we stayed inside.'] },
+    { c: L, t: 4, q: "How many clauses are in 'When the rain stopped, we went out and played'?", a: 'two', d: ['one', 'three', 'four'] },
+    { c: L, t: 5, q: "In 'It is snowing,' what is 'It'?", a: 'a dummy subject', d: ['an antecedent', 'an appositive', 'a gerund'] },
+  ],
+  // day 61
+  [
+    { c: L, t: 1, q: 'Which of these words is a conjunction?', a: 'and', d: ['table', 'quickly', 'blue'] },
+    { c: L, t: 2, q: "In 'We met on Friday,' what kind of noun is 'Friday'?", a: 'a proper noun', d: ['a common noun', 'a plural noun', 'a collective noun'] },
+    { c: L, t: 3, q: "In 'She is reading a book,' what tense is 'is reading'?", a: 'present progressive', d: ['simple present', 'past progressive', 'present perfect'] },
+    { c: L, t: 4, q: "Which sentence uses commas correctly around 'however'?", a: 'The plan, however, was never tried.', d: ['The trip however, was fun.', 'Her idea, however was bold.', 'The cost, however was, high.'] },
+    { c: L, t: 5, q: "What is the term for a verb like 'know' or 'own' that describes a state, not an action?", a: 'a stative verb', d: ['a dynamic verb', 'a modal verb', 'a phrasal verb'] },
+  ],
+  // day 62
+  [
+    { c: L, t: 1, q: "Which is the correct contraction of 'does not'?", a: "doesn't", d: ["does'nt", "doesnt'", "doe'snt"] },
+    { c: L, t: 2, q: 'Which sentence uses an exclamation point correctly?', a: 'Look out for that car!', d: ['Is it raining outside!', 'Could you pass the salt!', 'What time does the store open!'] },
+    { c: L, t: 3, q: 'Which sentence capitalizes a quotation correctly?', a: `Mom asked, "Where are my keys?"`, d: [`Dad said, "we are late."`, `She yelled, "Watch Out!"`, `Tom asked, "Can I Come?"`] },
+    { c: L, t: 4, q: 'Which sentence places the period correctly with parentheses?', a: 'I left early (I was tired).', d: ['She called (twice.)', 'We won (barely.)', 'He laughed. (loudly)'] },
+    { c: L, t: 5, q: "What is the term for an adverb with no '-ly' ending, like 'fast' in 'She runs fast'?", a: 'a flat adverb', d: ['a sentence adverb', 'a conjunctive adverb', 'a relative adverb'] },
+  ],
+  // day 63
+  [
+    { c: L, t: 1, q: "Which is the abbreviation for 'Street' in an address?", a: 'St.', d: ['Str.', 'Sr.', 'Stt.'] },
+    { c: L, t: 2, q: 'Which contraction is written the standard way?', a: "would've", d: ["would of", "wouldv'e", "woul'dve"] },
+    { c: L, t: 3, q: "In 'a little-used road,' what does the hyphen tell you?", a: 'The road is rarely used', d: ['The road is small', 'The road is old and worn', 'The road is narrow'] },
+    { c: L, t: 4, q: 'Which sentence contains a linking verb?', a: 'Grandpa became a pilot.', d: ['Grandpa flew a plane.', 'Grandpa landed safely.', 'Grandpa waved at us.'] },
+    { c: L, t: 5, q: "In 'Having finished the race, she rested,' what is 'Having finished'?", a: 'a perfect participle', d: ['a present participle', 'a past participle', 'a gerund'] },
+  ],
+  // day 64
+  [
+    { c: L, t: 1, q: 'Which of these names one specific place, so it needs capital letters?', a: 'Yellowstone National Park', d: ['a national park', 'the big park', 'a park ranger'] },
+    { c: L, t: 2, q: 'Which of these is NOT a complete sentence?', a: 'Since the store closed early.', d: ['The store closed early.', 'We left when the store closed.', 'Close the store early.'] },
+    { c: L, t: 3, q: "In 'Jo is taller than her brother,' what degree is 'taller'?", a: 'comparative', d: ['superlative', 'positive', 'absolute'] },
+    { c: L, t: 4, q: 'Which sentence has a misplaced modifier?', a: 'I saw a deer driving to work this morning.', d: ['Driving to work this morning, I saw a deer.', 'I saw a deer while I was driving to work.', 'This morning on my drive to work, I saw a deer.'] },
+    { c: L, t: 5, q: "In 'The letter was written by my uncle,' what is 'by my uncle'?", a: 'the agent', d: ['the patient', 'the complement', 'the antecedent'] },
+  ],
+  // day 65
+  [
+    { c: L, t: 1, q: 'Which of these words is a noun?', a: 'friendship', d: ['friendly', 'befriend', 'kindly'] },
+    { c: L, t: 2, q: 'What is the term for the part of a sentence that tells what the subject does or is?', a: 'the predicate', d: ['the object', 'the modifier', 'the article'] },
+    { c: L, t: 3, q: 'What does a colon usually tell a reader?', a: 'An explanation or list follows', d: ['The sentence is over', 'A question is coming', 'A quotation has ended'] },
+    { c: L, t: 4, q: "In 'The baby slept,' what kind of verb is 'slept'?", a: 'an intransitive verb', d: ['a transitive verb', 'a linking verb', 'a helping verb'] },
+    { c: L, t: 5, q: "What is the term for a question reported inside a statement, like 'where he went' in 'I wonder where he went'?", a: 'an indirect question', d: ['a rhetorical question', 'a tag question', 'an echo question'] },
+  ],
+  // day 66
+  [
+    { c: L, t: 1, q: 'Which of these is best ended with an exclamation point?', a: 'What a huge wave that was', d: ['I wonder how big the wave was', 'The wave was about six feet tall', 'She asked how big the wave was'] },
+    { c: L, t: 2, q: "In 'Kim's dog barks,' what does the apostrophe show?", a: 'The dog belongs to Kim', d: ['Kim is a dog', 'There are many Kims', 'A letter is missing'] },
+    { c: L, t: 3, q: "What kind of sentence is 'The library opens at nine'?", a: 'declarative', d: ['imperative', 'exclamatory', 'interrogative'] },
+    { c: L, t: 4, q: "What do you call a describing word formed from a name, like 'Texan' or 'Victorian'?", a: 'a proper adjective', d: ['a common adjective', 'a collective adjective', 'a compound adjective'] },
+    { c: L, t: 5, q: "What is the term for adjectives that each modify a noun equally, like 'cold' and 'rainy' in 'a cold, rainy day'?", a: 'coordinate adjectives', d: ['cumulative adjectives', 'compound adjectives', 'predicate adjectives'] },
+  ],
+  // day 67
+  [
+    { c: L, t: 1, q: "What do you call a shortened word like 'isn't' or 'we'll'?", a: 'a contraction', d: ['a compound word', 'an acronym', 'a prefix'] },
+    { c: L, t: 2, q: 'Which sentence is capitalized correctly?', a: 'We hung stockings on Christmas Eve.', d: ['We open gifts on christmas morning.', 'Santa comes on Christmas eve.', 'We sang Carols by the tree.'] },
+    { c: L, t: 3, q: "In 'Snow fell, and the children cheered,' what joins the two clauses?", a: 'a comma and a conjunction', d: ['a semicolon', 'a colon', 'a comma alone'] },
+    { c: L, t: 4, q: 'Which sentence has its subject after the verb?', a: 'Here comes the bus.', d: ['The bus comes here.', 'The bus is here now.', 'We see the bus.'] },
+    { c: L, t: 5, q: "In 'Let him go,' what is 'go'?", a: 'a bare infinitive', d: ['a gerund', 'a participle', 'an imperative'] },
+  ],
+  // day 68
+  [
+    { c: L, t: 1, q: "Which is the correct contraction of 'is not'?", a: "isn't", d: ["is'nt", "isnt'", "i'snt"] },
+    { c: L, t: 2, q: 'Which sentence uses an apostrophe correctly?', a: `We left cookies on Santa's plate.`, d: [`The elf's were busy.`, `We wrapped the gift's.`, `The reindeers' bell rang.`] },
+    { c: L, t: 3, q: 'Which of these is an interrogative sentence?', a: 'Did you lock the door?', d: ['Lock the door.', 'I locked the door.', 'What a heavy door that is!'] },
+    { c: L, t: 4, q: "In 'The gift, which came late, was lovely,' what is 'which came late'?", a: 'a nonrestrictive clause', d: ['a restrictive clause', 'an independent clause', 'a noun clause'] },
+    { c: L, t: 5, q: "What is the term for ending clause after clause with the same words, as in 'of the people, by the people, for the people'?", a: 'epistrophe', d: ['anaphora', 'chiasmus', 'zeugma'] },
+  ],
+  // day 69
+  [
+    { c: L, t: 1, q: 'Which of these is a plural noun?', a: 'boxes', d: ['box', 'boxing', 'boxy'] },
+    { c: L, t: 2, q: 'Which sentence is capitalized correctly?', a: 'We read a poem by Robert Frost.', d: ['She loves books by roald Dahl.', 'My Teacher read us a story.', 'we read a play by Shakespeare.'] },
+    { c: L, t: 3, q: 'Which sentence uses commas correctly around the name of the person spoken to?', a: `I think, Ben, that you're right.`, d: ['Please Ben, sit down.', 'Thank you Ben, for coming.', 'Ben, listen, to me.'] },
+    { c: L, t: 4, q: "What is the term for nouns like 'water' and 'rice' that cannot be counted?", a: 'mass nouns', d: ['abstract nouns', 'collective nouns', 'proper nouns'] },
+    { c: L, t: 5, q: "What is the term for an ending like the '-ed' in 'walked' that marks tense?", a: 'an inflection', d: ['a prefix', 'a root', 'a compound'] },
+  ],
+  // day 70
+  [
+    { c: L, t: 1, q: 'Which sentence uses capital letters correctly?', a: 'My teacher is Mrs. Lopez.', d: ['Our coach is mr. Brown.', 'My aunt is named sara.', 'Our neighbor is Mr. reed.'] },
+    { c: L, t: 2, q: "Which is the correct contraction of 'I would'?", a: "I'd", d: ["Id'", "I'ld", "I'wd"] },
+    { c: L, t: 3, q: 'Which of these is a prepositional phrase?', a: 'across the busy street', d: ['running very fast', 'because it rained', 'the busy old street'] },
+    { c: L, t: 4, q: "What is the term for a main verb plus its helpers, like 'will have gone'?", a: 'a verb phrase', d: ['a noun phrase', 'a clause', 'a predicate adjective'] },
+    { c: L, t: 5, q: "In 'It rained all night,' what is the term for a verb like 'rained' that has no real doer?", a: 'an impersonal verb', d: ['a reflexive verb', 'a modal verb', 'a phrasal verb'] },
+  ],
+  // day 71
+  [
+    { c: L, t: 1, q: 'Which of these words is an adjective?', a: 'noisy', d: ['noise', 'noisily', 'noises'] },
+    { c: L, t: 2, q: 'Which sentence uses an apostrophe correctly?', a: `The students' desks were in rows.`, d: [`The student's are in class.`, `Our teachers's desk is tidy.`, `The class'es desks are new.`] },
+    { c: L, t: 3, q: 'Which sentence is in the passive voice?', a: 'The window was broken by the storm.', d: ['The storm broke the window.', 'The window broke in the storm.', 'The storm is breaking windows.'] },
+    { c: L, t: 4, q: "In 'I want to go,' what is 'to'?", a: 'an infinitive marker', d: ['a preposition', 'an adverb', 'a conjunction'] },
+    { c: L, t: 5, q: "What is the term for a sentence like 'It was Jo who called,' which splits a statement to stress one part?", a: 'a cleft sentence', d: ['a periodic sentence', 'a fused sentence', 'a loose sentence'] },
+  ],
+  // day 72
+  [
+    { c: L, t: 1, q: 'Which sentence begins and ends correctly?', a: 'The bus is late.', d: ['my bus is late.', 'Our bus is late', 'the train is late'] },
+    { c: L, t: 2, q: 'Which of these sentences is in the past tense?', a: 'We walked to school.', d: ['We walk to school.', 'We will walk to school.', 'We are walking to school.'] },
+    { c: L, t: 3, q: 'Which of these words is a coordinating conjunction?', a: 'yet', d: ['because', 'although', 'unless'] },
+    { c: L, t: 4, q: 'Which sentence correctly sets off a nonessential appositive at the end?', a: 'I met my neighbor, a retired pilot.', d: ['We saw my uncle a, baker.', 'She called, her friend a nurse.', 'He thanked his coach a, former star.'] },
+    { c: L, t: 5, q: "In 'We will be traveling all day,' what tense is 'will be traveling'?", a: 'future progressive', d: ['future perfect', 'present progressive', 'simple future'] },
+  ],
+  // day 73
+  [
+    { c: L, t: 1, q: "Which is the correct contraction of 'had not'?", a: "hadn't", d: ["had'nt", "hadnt'", "ha'dnt"] },
+    { c: L, t: 2, q: 'Which sentence has a plural subject?', a: 'The dogs bark at night.', d: ['The dog barks at night.', 'My cat sleeps all day.', 'A bird sings outside.'] },
+    { c: L, t: 3, q: "In 'We left early,' what person is 'We'?", a: 'first person', d: ['second person', 'third person', 'plural person'] },
+    { c: L, t: 4, q: 'Which sentence uses apostrophes correctly?', a: `It's time for the dog's walk.`, d: [`Its time for the dog's walk.`, `It's time for the dogs's walk.`, `It's time for the dogs walk.`] },
+    { c: L, t: 5, q: "What is the term for a noun like 'scissors' that is used only in the plural?", a: 'plurale tantum', d: ['a collective noun', 'a mass noun', 'a proper noun'] },
+  ],
+  // day 74
+  [
+    { c: L, t: 1, q: 'Which of these words always starts with a capital letter?', a: 'Saturday', d: ['weekend', 'sunset', 'midnight'] },
+    { c: L, t: 2, q: 'Which sentence is written correctly?', a: `We stayed up late on New Year's Eve.`, d: [`Our party is on new year's eve.`, `We stayed up for New Years' Eve.`, `Fireworks lit up New Years Eve.`] },
+    { c: L, t: 3, q: 'Which sentence uses a semicolon correctly?', a: 'The road was icy; we drove slowly.', d: ['The road; was icy.', 'Because it snowed; we stayed in.', 'We drove slowly; and carefully.'] },
+    { c: L, t: 4, q: 'Which sentence uses a colon correctly?', a: 'We made two resolutions: read more and sleep more.', d: ['My goals are: run and swim.', 'We need: hats and horns.', 'Bring: snacks and drinks.'] },
+    { c: L, t: 5, q: "In 'By midnight the old year will have ended,' what tense is 'will have ended'?", a: 'future perfect', d: ['future progressive', 'present perfect', 'past perfect'] },
   ],
 ];
