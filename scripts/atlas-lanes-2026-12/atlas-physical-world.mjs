@@ -60,7 +60,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-08
   [
-    { c: 'Physical World', t: 1, q: 'Which river flows through the Brazilian rainforest city of Manaus?', a: 'The Amazon', d: ['The Orinoco', 'The Parana', 'The Congo'] },
+    { c: 'Physical World', t: 1, q: 'Manaus, the largest city of the Brazilian rainforest, lies in the basin of which river?', a: 'The Amazon', d: ['The Orinoco', 'The Parana', 'The Congo'] },
     { c: 'Physical World', t: 2, q: 'Which range of volcanic peaks, including Mount Hood and Mount Shasta, runs through the Pacific Northwest?', a: 'The Cascade Range', d: ['The Coast Mountains', 'The Sierra Nevada', 'The Bitterroot Range'] },
     { c: 'Physical World', t: 3, q: 'Which is the highest mountain in Africa?', a: 'Mount Kilimanjaro', d: ['Mount Kenya', 'Mount Stanley', 'Ras Dashen'], from: 'atlas:d41q12' },
     { c: 'Physical World', t: 4, q: 'Which is the highest mountain in Ireland?', a: 'Carrauntoohil', d: ['Slieve Donard', 'Lugnaquilla', 'Croagh Patrick'] },
@@ -109,7 +109,7 @@ export const LANE_DAYS = [
   // 2026-12-14
   [
     { c: 'Physical World', t: 1, q: 'Which large lake lies on the border of California and Nevada high in the Sierra Nevada?', a: 'Lake Tahoe', d: ['Lake Mead', 'Mono Lake', 'The Great Salt Lake'] },
-    { c: 'Physical World', t: 2, q: 'Which island off the coast of Tanzania is famous for its spice plantations?', a: 'Zanzibar', d: ['Pemba', 'Mafia', 'Lamu'] },
+    { c: 'Physical World', t: 2, q: 'Which island off the coast of Tanzania is famous for its spice plantations?', a: 'Zanzibar', d: ['Socotra', 'Mafia', 'Lamu'] },
     { c: 'Physical World', t: 3, q: 'Which bay, fed by the Susquehanna, is the largest estuary in the United States?', a: 'Chesapeake Bay', d: ['Delaware Bay', 'Tampa Bay', 'Mobile Bay'] },
     { c: 'Physical World', t: 4, q: 'What is the highest peak in the Rocky Mountains?', a: 'Mount Elbert', d: ['Mount Robson', 'Longs Peak', 'Pikes Peak'], from: 'atlas:d22q17' },
     { c: 'Physical World', t: 5, q: 'Which cape is the southernmost point of the African continent?', a: 'Cape Agulhas', d: ['The Cape of Good Hope', 'Cape Point', 'Cape Recife'], from: 'atlas:d13q22' },
@@ -124,7 +124,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-16
   [
-    { c: 'Physical World', t: 1, q: 'Which famous limestone rock rises at the southern tip of Spain at the entrance to the Mediterranean?', a: 'The Rock of Gibraltar', d: ['Mount Teide', 'Cape Trafalgar', 'The Rock of Cashel'] },
+    { c: 'Physical World', t: 1, q: 'Which mountain range forms most of the border between Chile and Argentina?', a: 'The Andes', d: ['The Rockies', 'The Alps', 'The Atlas Mountains'] },
     { c: 'Physical World', t: 2, q: 'Which long river flows past Omaha and Kansas City before joining the Mississippi?', a: 'The Missouri', d: ['The Platte', 'The Arkansas', 'The Ohio'] },
     { c: 'Physical World', t: 3, q: 'Which narrow strait separates the island of Anglesey from mainland Wales?', a: 'The Menai Strait', d: ['The Solent', 'The Pentland Firth', 'The North Channel'] },
     { c: 'Physical World', t: 4, q: 'Which mountain range walls off the Iranian plateau from the Caspian Sea?', a: 'The Alborz', d: ['The Zagros', 'The Taurus', 'The Hindu Kush'], from: 'atlas:d41q17' },
@@ -156,7 +156,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-20
   [
-    { c: 'Physical World', t: 1, q: 'Which narrow neck of land joins North America to South America?', a: 'The Isthmus of Panama', d: ['The Isthmus of Suez', 'The Isthmus of Corinth', 'The Isthmus of Kra'] },
+    { c: 'Physical World', t: 1, q: 'Which vast Florida wetland, called the river of grass, is a national park at the state\'s southern tip?', a: 'The Everglades', d: ['The Okefenokee', 'The Great Dismal Swamp', 'The Atchafalaya'] },
     { c: 'Physical World', t: 2, q: 'Which hill range runs down northern England and is often called the backbone of England?', a: 'The Pennines', d: ['The Cheviots', 'The Cotswolds', 'The Grampians'] },
     { c: 'Physical World', t: 3, q: 'Which mountain range in northeastern Italy is famous for its pale, jagged limestone peaks?', a: 'The Dolomites', d: ['The Apennines', 'The Julian Alps', 'The Maritime Alps'] },
     { c: 'Physical World', t: 4, q: 'Which is the longest river lying entirely within France?', a: 'The Loire', d: ['The Garonne', 'The Dordogne', 'The Charente'], from: 'atlas:d17q17' },
@@ -220,7 +220,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-28
   [
-    { c: 'Physical World', t: 1, q: 'Which river flows past New Orleans on its way to the Gulf of Mexico?', a: 'The Mississippi', d: ['The Missouri', 'The Ohio', 'The Rio Grande'] },
+    { c: 'Physical World', t: 1, q: 'Which river flows past St. Louis, Memphis and New Orleans?', a: 'The Mississippi', d: ['The Missouri', 'The Ohio', 'The Rio Grande'] },
     { c: 'Physical World', t: 2, q: 'Mount Rushmore is carved into a granite peak in which range of hills?', a: 'The Black Hills', d: ['The Ozarks', 'The Badlands', 'The Bighorn Mountains'] },
     { c: 'Physical World', t: 3, q: 'Which bay between New Brunswick and Nova Scotia is famous for the highest tides in the world?', a: 'The Bay of Fundy', d: ['Hudson Bay', 'Cape Cod Bay', 'Chaleur Bay'] },
     { c: 'Physical World', t: 4, q: 'Which Alpine pass on the Austria-Italy border is the lowest of the major routes across the Alps?', a: 'The Brenner Pass', d: ['The Simplon Pass', 'The Stelvio Pass', 'The Great St Bernard Pass'] },
@@ -230,7 +230,7 @@ export const LANE_DAYS = [
   [
     { c: 'Physical World', t: 1, q: 'Which ocean lies off the west coast of South America?', a: 'The Pacific Ocean', d: ['The Atlantic Ocean', 'The Indian Ocean', 'The Southern Ocean'] },
     { c: 'Physical World', t: 2, q: 'Which river flows through Hanoi?', a: 'The Red River', d: ['The Mekong', 'The Perfume River', 'The Saigon River'] },
-    { c: 'Physical World', t: 3, q: 'Which river flows through Delhi and past the Taj Mahal at Agra?', a: 'The Yamuna', d: ['The Ganges', 'The Indus', 'The Godavari'] },
+    { c: 'Physical World', t: 3, q: 'Which river flows through Moscow?', a: 'The Moskva', d: ['The Volga', 'The Neva', 'The Don'] },
     { c: 'Physical World', t: 4, q: 'Which mountain range runs between the Deccan Plateau and the Bay of Bengal?', a: 'The Eastern Ghats', d: ['The Aravalli Range', 'The Western Ghats', 'The Satpura Range'], from: 'atlas:d47q17' },
     { c: 'Physical World', t: 5, q: 'What is the highest peak in the Atlas Mountains?', a: 'Toubkal', d: ['Jbel Ouanoukrim', 'Mount Ayachi', 'Jbel Mgoun'], from: 'atlas:d18q22' },
   ],

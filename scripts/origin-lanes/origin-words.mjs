@@ -318,7 +318,7 @@ export const LANE_DAYS = [
   [
     { c, t: 1, q: "The 're' in 'rewrite' and 'replay' means what?", a: "Again", d: ["Before", "Not", "Fast"] },
     { c, t: 2, q: "The 'osteo' in 'osteoporosis' comes from the Greek word for what?", a: "Bone", d: ["Joint", "Muscle", "Age"] },
-    { c, t: 3, q: "'Neighbor' comes from Old English words meaning what?", a: "Near dweller", d: ["Fence sharer", "Fellow farmer", "Close friend"] },
+    { c, t: 3, q: "'Neighbor' comes from Old English words meaning what?", a: "Near dweller", d: ["Fence sharer", "Gate keeper", "Close friend"] },
     { c, t: 4, q: "'Porcupine' comes from Old French words meaning what?", a: "Spiny pig", d: ["Thorny rat", "Prickly cat", "Needle fox"] },
     { c, t: 5, q: "In the American Civil War, a 'deadline' was what?", a: "A prison camp boundary", d: ["A firing squad's order", "A final supply run", "A hangman's rope"] },
   ],
@@ -328,14 +328,14 @@ export const LANE_DAYS = [
     { c, t: 2, q: "The 'spect' in 'spectator' and 'inspect' comes from the Latin for what?", a: "To watch", d: ["To cheer", "To judge", "To pay"] },
     { c, t: 3, q: "'Pilgrim' traces back to a Latin word meaning what?", a: "Foreigner", d: ["Believer", "Settler", "Farmer"] },
     { c, t: 4, q: "'Bonfire' comes from what?", a: "A fire of bones", d: ["A good fire", "A fire for a feast", "A border fire"] },
-    { c, t: 5, q: "'Ostracize' comes from the Greek word for what, used as ballots in Athens?", a: "Pottery shards", d: ["Pebbles", "Oyster shells", "Bronze tokens"] },
+    { c, t: 5, q: "'Hearse' traces back to an old French word for which farm tool?", a: "A harrow", d: ["A plow", "A scythe", "A pitchfork"] },
   ],
   // day 40 (2026-11-27)
   [
     { c, t: 1, q: "The 'mono' in 'monorail' and 'monologue' means what?", a: "One", d: ["Two", "Many", "High"] },
     { c, t: 2, q: "The 'bell' in 'belligerent' and 'rebel' comes from the Latin word for what?", a: "War", d: ["Noise", "Beauty", "Anger"] },
     { c, t: 3, q: "Which author coined 'chortle' by blending 'chuckle' and 'snort'?", a: "Lewis Carroll", d: ["Edward Lear", "Dr. Seuss", "Roald Dahl"] },
-    { c, t: 4, q: "'Utopia,' coined by Thomas More, literally means what?", a: "No place", d: ["Perfect city", "Happy land", "Far island"] },
+    { c, t: 4, q: "'Utopia,' coined by Thomas More, literally means what?", a: "No place", d: ["Perfect city", "New world", "Far island"] },
     { c, t: 5, q: "'Treacle' first named what?", a: "An antidote to poison", d: ["A honey wine", "A sugar loaf", "A baking spice"] },
   ],
   // day 41 (2026-11-28)
@@ -366,7 +366,7 @@ export const LANE_DAYS = [
   [
     { c, t: 1, q: "The 'oct' in 'octagon' and 'octet' means what?", a: "Eight", d: ["Six", "Seven", "Ten"] },
     { c, t: 2, q: "The 'cide' in 'pesticide' and 'homicide' comes from the Latin for what?", a: "To kill", d: ["To spray", "To harm", "To stop"] },
-    { c, t: 3, q: "A 'plumber' was originally named for working with which metal?", a: "Lead", d: ["Copper", "Iron", "Tin"] },
+    { c, t: 3, q: "'Lunatic' comes from the Latin word for what?", a: "Moon", d: ["Madness", "Night", "Wolf"] },
     { c, t: 4, q: "'Canyon' comes from a Spanish word whose basic meaning is what?", a: "Tube", d: ["Valley", "Cliff", "Stone wall"] },
     { c, t: 5, q: "'Quorum' is a Latin word meaning what?", a: "Of whom", d: ["Enough", "The many", "Seated"] },
   ],
@@ -480,7 +480,7 @@ export const LANE_DAYS = [
     { c, t: 2, q: "The 'ann' in 'annual' and 'anniversary' comes from the Latin word for what?", a: "Year", d: ["Day", "Feast", "Ring"] },
     { c, t: 3, q: "'Sleigh' came into American English from which language?", a: "Dutch", d: ["German", "Norwegian", "Russian"] },
     { c, t: 4, q: "'Bonsai' comes from Japanese words meaning what?", a: "Tray planting", d: ["Patient garden", "Dwarf forest", "Bent branch"] },
-    { c, t: 5, q: "'Pumpkin' traces back to a Greek word meaning what?", a: "Large melon", d: ["Orange gourd", "Harvest fruit", "Field squash"] },
+    { c, t: 5, q: "'Khaki' comes from an Urdu word meaning what?", a: "Dusty", d: ["Muddy", "Faded", "Soldierly"] },
   ],
   // day 59 (2026-12-16)
   [
@@ -565,7 +565,7 @@ export const LANE_DAYS = [
   // day 69 (2026-12-26)
   [
     { c, t: 1, q: "'Motel' blends 'hotel' with which word?", a: "Motor", d: ["Mobile", "Model", "Modern"] },
-    { c, t: 2, q: "The 'sci' in 'science' comes from the Latin for what?", a: "To know", d: ["To test", "To cut", "To see"] },
+    { c, t: 2, q: "The 'sci' in 'science' comes from the Latin for what?", a: "To know", d: ["To test", "To prove", "To see"] },
     { c, t: 3, q: "'Hors d'oeuvre' is French for what?", a: "Outside the work", d: ["Before the meal", "Small bite", "Chef's gift"] },
     { c, t: 4, q: "'Hurricane' came into English through Spanish from the language of which Caribbean people?", a: "Taino", d: ["Maya", "Aztec", "Inca"] },
     { c, t: 5, q: "'Stimulus' was the Latin word for what?", a: "A cattle prod", d: ["A shout", "A spark", "A drumbeat"] },
@@ -596,7 +596,7 @@ export const LANE_DAYS = [
   ],
   // day 73 (2026-12-30)
   [
-    { c, t: 1, q: "'Sitcom' is short for what?", a: "Situation comedy", d: ["Sitting comedian", "Studio comedy", "Situation commentary"] },
+    { c, t: 1, q: "'Podcast' blends 'iPod' with which word?", a: "Broadcast", d: ["Forecast", "Telecast", "Typecast"] },
     { c, t: 2, q: "The 'arch' in 'monarch' and 'patriarch' comes from a Greek word meaning what?", a: "Ruler", d: ["Father", "Old", "Single"] },
     { c, t: 3, q: "'Asteroid' comes from a Greek word meaning what?", a: "Star-like", d: ["Space rock", "Small planet", "Falling stone"] },
     { c, t: 4, q: "Which novelist coined the word 'cyberspace'?", a: "William Gibson", d: ["Isaac Asimov", "Philip K. Dick", "Neal Stephenson"] },

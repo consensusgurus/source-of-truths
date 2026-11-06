@@ -61,7 +61,7 @@ export const LANE_DAYS = [
     D(1, "If your friend says 'I'm all ears', what does she mean?", 'She is ready to listen closely', ['She cannot hear you well', 'She has heard enough', 'She wants you to speak louder']),
     D(2, "If someone has 'lost their marbles', what is true?", 'They have gone a bit crazy', ['They have lost their money', 'They have given up a game', 'They have lost their temper']),
     D(3, "Who is 'a wet blanket' at a party?", 'Someone who spoils the fun', ['Someone who arrives late', 'Someone who drinks too much', 'Someone who cries easily']),
-    D(4, "Who is an 'enfant terrible'?", 'A brash newcomer who shocks the establishment', ['A badly behaved small child', 'A frightening villain in a play', 'A shy young genius']),
+    D(4, "Who is an 'enfant terrible'?", 'A brash newcomer who shocks the establishment', ['A quiet, obedient pupil', 'A frightening villain in a play', 'A shy young genius']),
     D(5, "What does 'Sturm und Drang' describe?", 'Turmoil and emotional upheaval', ['Calm after a crisis', 'Order and discipline', 'Wealth and comfort']),
   ],
   // day 44 (2026-12-01)

@@ -79,7 +79,7 @@ export const LANE_DAYS = [
     { c: 'Founders & Bosses', t: 1, q: 'Which artificial intelligence lab did Sam Altman and others set up as a nonprofit in 2015?', a: 'OpenAI', d: ['DeepMind', 'Neuralink', 'Palantir'] },
     { c: 'Founders & Bosses', t: 2, q: 'Which Pittsburgh banker served as United States Treasury secretary from 1921 to 1932?', a: 'Andrew Mellon', d: ['Henry Morgenthau', 'Ogden Mills', 'William McAdoo'] },
     { c: 'Founders & Bosses', t: 3, q: 'Which French trunk maker opened a workshop in Paris in 1854 and gave his name to a luggage house?', a: 'Louis Vuitton', d: ['Thierry Hermes', 'Guccio Gucci', 'Emile-Maurice Goyard'], from: 'biz:d35q13' },
-    { c: 'Founders & Bosses', t: 4, q: 'Who founded Japan\'s largest carmaker in 1937 as an offshoot of his father\'s automatic loom business?', a: 'Kiichiro Toyoda', d: ['Yataro Iwasaki', 'Jujiro Matsuda', 'Yoshisuke Aikawa'], from: 'biz:d19q18' },
+    { c: 'Founders & Bosses', t: 4, q: 'Who founded a Japanese tire maker in 1931 and named it with an English rendering of his own surname?', a: 'Shojiro Ishibashi', d: ['Konosuke Matsushita', 'Soichiro Honda', 'Masaru Ibuka'] },
     { c: 'Founders & Bosses', t: 5, q: 'Which pair of brothers-in-law started a soap and candle business in Cincinnati in 1837 after marrying two sisters?', a: 'William Procter and James Gamble', d: ['Ernest and Julio Gallo', 'Charles and Frank Duryea', 'Cornelius and Alexander Colgate'], from: 'biz:d35q23' },
   ],
   // day 11
@@ -100,7 +100,7 @@ export const LANE_DAYS = [
   ],
   // day 13
   [
-    { c: 'Founders & Bosses', t: 1, q: 'Which entrepreneur sold Broadcast.com to Yahoo in 1999 and bought the Dallas Mavericks in 2000?', a: 'Mark Cuban', d: ['Ross Perot Jr.', 'Michael Dell', 'Steve Case'] },
+    { c: 'Founders & Bosses', t: 1, q: 'Which entrepreneur sold Broadcast.com to Yahoo in 1999 and bought the Dallas Mavericks in 2000?', a: 'Mark Cuban', d: ['Ross Perot Jr.', 'Michael Dell', 'Jerry Jones'] },
     { c: 'Founders & Bosses', t: 2, q: 'Who co-founded Netscape in 1994 after co-writing the Mosaic web browser?', a: 'Marc Andreessen', d: ['Tim Berners-Lee', 'Marc Benioff', 'Jerry Yang'] },
     { c: 'Founders & Bosses', t: 3, q: 'Who co-founded America Online and served as its chairman through the 1990s boom?', a: 'Steve Case', d: ['Bob Pittman', 'Jim Barksdale', 'Ted Leonsis'], from: 'biz:d21q13' },
     { c: 'Founders & Bosses', t: 4, q: 'Coco Chanel shut her couture house at the outbreak of war and staged her comeback collection in which year?', a: '1954', d: ['1947', '1950', '1959'], from: 'biz:d53q18' },
@@ -120,7 +120,7 @@ export const LANE_DAYS = [
     { c: 'Founders & Bosses', t: 2, q: 'Which oilman did Fortune magazine name the richest living American in 1957?', a: 'J. Paul Getty', d: ['H. L. Hunt', 'Howard Hughes', 'Armand Hammer'] },
     { c: 'Founders & Bosses', t: 3, q: 'Which haircare entrepreneur, born Sarah Breedlove, became one of America\'s first self-made female millionaires?', a: 'Madam C.J. Walker', d: ['Annie Turnbo Malone', 'Maggie Lena Walker', 'Sarah Spencer Washington'], from: 'biz:d18q13' },
     { c: 'Founders & Bosses', t: 4, q: 'Which Ukrainian-born programmer co-founded WhatsApp with Brian Acton in 2009?', a: 'Jan Koum', d: ['Jan Kodes', 'Pavel Durov', 'Nikolai Durov'], from: 'biz:d22q18' },
-    { c: 'Founders & Bosses', t: 5, q: 'Which French tire company was founded in 1889 by the brothers Andre and Edouard?', a: 'Michelin', d: ['Pirelli', 'Continental', 'Dunlop'], from: 'biz:d12q23' },
+    { c: 'Founders & Bosses', t: 5, q: 'Which Scottish superintendent of the P&O shipping line founded the Hongkong and Shanghai Banking Corporation in 1865?', a: 'Thomas Sutherland', d: ['William Jardine', 'John Swire', 'Robert Hart'] },
   ],
   // day 16
   [

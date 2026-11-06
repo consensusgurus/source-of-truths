@@ -9,7 +9,7 @@ export const LANE_DAYS = [
     { c: "Animals & Plants", t: 1, q: "Which shaggy, humped animal, named the US national mammal in 2016, once roamed the Great Plains in huge herds?", a: "Bison", d: ["Moose", "Elk", "Musk ox"] },
     { c: "Animals & Plants", t: 2, q: "Which burrowing rodents of the Great Plains live in huge colonies called towns?", a: "Prairie dogs", d: ["Gophers", "Chipmunks", "Meerkats"] },
     { c: "Animals & Plants", t: 3, q: "Which big cat cannot fully pull in its claws, giving it extra grip when it sprints?", a: "Cheetah", d: ["Leopard", "Jaguar", "Lynx"] },
-    { c: "Animals & Plants", t: 4, q: "What is the see-through third eyelid that sweeps sideways across the eyes of birds and sharks called?", a: "Nictitating membrane", d: ["Tapetum lucidum", "Conjunctiva", "Sclera"] },
+    { c: "Animals & Plants", t: 4, q: "What is the see-through third eyelid that sweeps across the eyes of birds and some sharks called?", a: "Nictitating membrane", d: ["Tapetum lucidum", "Conjunctiva", "Sclera"] },
     { c: "Animals & Plants", t: 5, q: "What waxy band in the walls of a root's endodermis forces water to pass through the cells themselves?", a: "Casparian strip", d: ["Hartig net", "Middle lamella", "Pericycle"] },
   ],
   // day 2 (2026-12-06)
@@ -95,7 +95,7 @@ export const LANE_DAYS = [
   // day 12 (2026-12-16)
   [
     { c: "Animals & Plants", t: 1, q: "Which warty, dry-skinned amphibian is often found in gardens eating slugs and insects?", a: "Toad", d: ["Newt", "Salamander", "Gecko"] },
-    { c: "Animals & Plants", t: 2, q: "Which small African mongoose stands up on its hind legs to keep watch for danger?", a: "Meerkat", d: ["Lemur", "Aardvark", "Hyrax"] },
+    { c: "Animals & Plants", t: 2, q: "Which small African mongoose stands up on its hind legs to keep watch for danger?", a: "Meerkat", d: ["Lemur", "Dik-dik", "Hyrax"] },
     { c: "Animals & Plants", t: 3, q: "Which African burrowing mammal, which feeds on ants and termites, has a name meaning 'earth pig'?", a: "Aardvark", d: ["Anteater", "Pangolin", "Warthog"] },
     { c: "Animals & Plants", t: 4, q: "Which fish knocks insects off overhanging leaves by spitting jets of water at them?", a: "Archerfish", d: ["Mudskipper", "Pufferfish", "Butterflyfish"] },
     { c: "Animals & Plants", t: 5, q: "What term describes animals, like moles and wombats, that are adapted for digging and living underground?", a: "Fossorial", d: ["Arboreal", "Cursorial", "Volant"] },
@@ -152,7 +152,7 @@ export const LANE_DAYS = [
   [
     { c: "Animals & Plants", t: 1, q: "Which small, nearly blind mammal digs tunnels underground with its big front paws?", a: "Mole", d: ["Rabbit", "Hamster", "Squirrel"] },
     { c: "Animals & Plants", t: 2, q: "Which sacred water flower, a symbol in Hinduism and Buddhism, rises clean from muddy ponds?", a: "Lotus", d: ["Orchid", "Jasmine", "Marigold"] },
-    { c: "Animals & Plants", t: 3, q: "Which insect spends a year or more underwater as a nymph, then lives only a day or so as a winged adult?", a: "Mayfly", d: ["Dragonfly", "Caddisfly", "Damselfly"] },
+    { c: "Animals & Plants", t: 3, q: "Which insect spends months or years underwater as a nymph, then lives only a day or so as a winged adult?", a: "Mayfly", d: ["Dragonfly", "Caddisfly", "Damselfly"] },
     { c: "Animals & Plants", t: 4, q: "What is a plant's growth in response to gravity, such as roots growing downward, called?", a: "Gravitropism", d: ["Phototropism", "Hydrotropism", "Thigmotropism"] },
     { c: "Animals & Plants", t: 5, q: "What are the pigment-filled skin cells that let octopuses change color in an instant?", a: "Chromatophores", d: ["Melanosomes", "Photophores", "Statocysts"] },
   ],
@@ -214,7 +214,7 @@ export const LANE_DAYS = [
   ],
   // day 27 (2026-12-31)
   [
-    { c: "Animals & Plants", t: 1, q: "Which reptile crawls up sandy beaches at night to bury its eggs, then returns to the ocean?", a: "Sea turtle", d: ["Crocodile", "Iguana", "Tortoise"] },
+    { c: "Animals & Plants", t: 1, q: "Which reptile crawls up sandy beaches at night to bury its eggs, then returns to the ocean?", a: "Sea turtle", d: ["Crocodile", "Komodo dragon", "Tortoise"] },
     { c: "Animals & Plants", t: 2, q: "Which large green lizard, with a row of spines down its back, basks in the trees of Central and South America?", a: "Iguana", d: ["Gecko", "Chameleon", "Gila monster"] },
     { c: "Animals & Plants", t: 3, q: "Which large amphibian, brought to Australia in 1935 to eat beetles in sugar fields, became a notorious invasive pest?", a: "Cane toad", d: ["Bullfrog", "Tree frog", "Mudpuppy"] },
     { c: "Animals & Plants", t: 4, q: "Where does a male platypus carry its venom?", a: "Spurs on its hind legs", d: ["Glands in its bill", "Fangs in its mouth", "Spines on its tail"] },

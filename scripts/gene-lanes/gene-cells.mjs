@@ -50,7 +50,7 @@ export const LANE_DAYS = [
     { c: "Cells & Evolution", t: 2, q: "What is a person called who has one copy of a recessive disease allele but no symptoms?", a: "A carrier", d: ["A mutant", "A donor", "A clone"] },
     { c: "Cells & Evolution", t: 3, q: "What is the pocket on an enzyme where its substrate binds called?", a: "Active site", d: ["Allosteric site", "Prosthetic group", "Cofactor"] },
     { c: "Cells & Evolution", t: 4, q: "What three-base sequence on a transfer RNA pairs with a codon on the messenger RNA?", a: "Anticodon", d: ["Promoter", "Exon", "Primer"] },
-    { c: "Cells & Evolution", t: 5, q: "What are the channels through plant cell walls that connect the cytoplasm of neighboring cells?", a: "Plasmodesmata", d: ["Desmosomes", "Tight junctions", "Lenticels"] },
+    { c: "Cells & Evolution", t: 5, q: "What are the channels through plant cell walls that connect the cytoplasm of neighboring cells?", a: "Plasmodesmata", d: ["Desmosomes", "Tight junctions", "Gap junctions"] },
   ],
   // day 7 (2026-12-11)
   [
@@ -96,7 +96,7 @@ export const LANE_DAYS = [
   [
     { c: "Cells & Evolution", t: 1, q: "Which plant-eating dinosaur had three horns on its face and a big bony frill?", a: "Triceratops", d: ["Stegosaurus", "Ankylosaurus", "Brachiosaurus"] },
     { c: "Cells & Evolution", t: 2, q: "In undisturbed layers of sedimentary rock, what is generally true of the fossils found deeper down?", a: "They are older", d: ["They are younger", "They are larger", "They are all marine"] },
-    { c: "Cells & Evolution", t: 3, q: "What are the large Ice Age animals, such as mammoths and giant ground sloths, collectively called?", a: "Megafauna", d: ["Microfauna", "Macrophytes", "Dinosaurs"] },
+    { c: "Cells & Evolution", t: 3, q: "What are the large Ice Age animals, such as mammoths and woolly rhinos, collectively called?", a: "Megafauna", d: ["Microfauna", "Macrophytes", "Dinosaurs"] },
     { c: "Cells & Evolution", t: 4, q: "What kind of animal was Megatherium, which roamed South America during the Ice Age?", a: "A giant ground sloth", d: ["A giant armadillo", "A giant beaver", "A cave bear"] },
     { c: "Cells & Evolution", t: 5, q: "A Western blot is a lab test used to detect which kind of molecule?", a: "Proteins", d: ["DNA", "RNA", "Lipids"] },
   ],

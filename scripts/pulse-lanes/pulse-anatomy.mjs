@@ -310,7 +310,7 @@ export const LANE_DAYS = [
   [
     { c: "Anatomy", t: 1, q: "Which part of the body has a palm?", a: "Hand", d: ["Foot","Ear","Knee"] },
     { c: "Anatomy", t: 2, q: "What is the anatomical name for the belly button?", a: "Umbilicus", d: ["Uvula","Sternum","Coccyx"] },
-    { c: "Anatomy", t: 3, q: "The outermost layer of the skin is made mostly of what?", a: "Dead cells", d: ["Fat cells","Muscle fibers","Blood vessels"] },
+    { c: "Anatomy", t: 3, q: "The tough top surface of the skin, the part you can touch, is made mostly of what?", a: "Dead cells", d: ["Fat cells","Muscle fibers","Blood vessels"] },
     { c: "Anatomy", t: 4, q: "What is the pouch-like first section of the large intestine called?", a: "Cecum", d: ["Sigmoid colon","Rectum","Ileum"] },
     { c: "Anatomy", t: 5, q: "Which white blood cells specialize in fighting parasitic worms?", a: "Eosinophils", d: ["Neutrophils","Basophils","Monocytes"] },
   ],
@@ -438,7 +438,7 @@ export const LANE_DAYS = [
   [
     { c: "Anatomy", t: 1, q: "What is the back of the neck called?", a: "Nape", d: ["Brow","Crown","Collar"] },
     { c: "Anatomy", t: 2, q: "What is the medical name for the throat behind the mouth and nose?", a: "Pharynx", d: ["Larynx","Trachea","Esophagus"] },
-    { c: "Anatomy", t: 3, q: "What is the medical name for body fat tissue?", a: "Adipose tissue", d: ["Areolar tissue","Connective tissue","Epithelial tissue"] },
+    { c: "Anatomy", t: 3, q: "What is the medical name for body fat tissue?", a: "Adipose tissue", d: ["Areolar tissue","Nervous tissue","Epithelial tissue"] },
     { c: "Anatomy", t: 4, q: "What is the thick first milk a mother produces after giving birth called?", a: "Colostrum", d: ["Lactose","Casein","Whey"] },
     { c: "Anatomy", t: 5, q: "Which light, spongy skull bone between the eyes forms the roof of the nasal cavity?", a: "Ethmoid bone", d: ["Vomer","Lacrimal bone","Sphenoid bone"] },
   ],
@@ -470,7 +470,7 @@ export const LANE_DAYS = [
   [
     { c: "Anatomy", t: 1, q: "What is a bubble of fluid under the skin, often caused by rubbing shoes, called?", a: "Blister", d: ["Callus","Bruise","Rash"] },
     { c: "Anatomy", t: 2, q: "Which organ does the word \"hepatic\" refer to?", a: "Liver", d: ["Heart","Spleen","Stomach"] },
-    { c: "Anatomy", t: 3, q: "In anatomy, which part of the body does \"palmar\" describe?", a: "Palm of the hand", d: ["Back of the hand","Fingertips","Sole of the foot"] },
+    { c: "Anatomy", t: 3, q: "In anatomy, which part of the body does \"plantar\" describe?", a: "Sole of the foot", d: ["Palm of the hand","Back of the hand","Top of the foot"] },
     { c: "Anatomy", t: 4, q: "Which pituitary hormone stimulates the breasts to produce milk?", a: "Prolactin", d: ["Oxytocin","Progesterone","Relaxin"] },
     { c: "Anatomy", t: 5, q: "What is the fine, soft hair that covers a fetus called?", a: "Lanugo", d: ["Vellus hair","Vernix","Terminal hair"] },
   ],

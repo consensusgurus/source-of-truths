@@ -29,7 +29,7 @@ export const LANE_DAYS = [
     D(1, "Complete the simile: 'As American as apple...'?", 'pie', ['cider', 'butter', 'sauce']),
     D(2, "How does the proverb end: 'The way to a man's heart...'?", 'is through his stomach', ['is through his wallet', 'is through his ego', 'is a mystery']),
     D(3, "Which word completes the saying: 'You can't fight city ___'?", 'hall', ['police', 'traffic', 'taxes']),
-    D(4, "Which word completes the saying: 'Ill-gotten gains never ___'?", 'prosper', ['last', 'satisfy', 'grow']),
+    D(4, "Which word completes the saying: 'Ill-gotten gains never ___'?", 'prosper', ['shrink', 'satisfy', 'grow']),
     D(5, "Complete the American simile: 'As poor as Job's...'?", 'turkey', ['goat', 'mule', 'hen']),
   ],
   // day 40 (2026-11-27)
@@ -134,7 +134,7 @@ export const LANE_DAYS = [
     D(2, "Complete the simile: 'As high as a...'?", 'kite', ['hawk', 'ladder', 'tree']),
     D(3, 'According to the proverb, a jack of all trades is also what?', 'Master of none', ['Friend to all', 'King of the market', 'Servant of many']),
     D(4, "How does the proverb end: 'There's many a good tune...'?", 'played on an old fiddle', ['sung by a tired voice', 'lost to the wind', 'whistled in the dark']),
-    D(5, "Which word completes the saying: 'Even Homer ___'?", 'nods', ['errs', 'sleeps', 'weeps']),
+    D(5, "Which word completes the saying: 'Even Homer ___'?", 'nods', ['errs', 'sings', 'weeps']),
   ],
   // day 53 (2026-12-10)
   [
@@ -173,7 +173,7 @@ export const LANE_DAYS = [
     D(1, "Which word completes the saying: 'Don't bite the hand that ___ you'?", 'feeds', ['helps', 'leads', 'warns']),
     D(2, "How does the saying end: 'If you can't beat them...'?", 'join them', ['leave them', 'outlast them', 'ignore them']),
     D(3, "How does the proverb end: 'Seek, and ye...'?", 'shall find', ['shall be rewarded', 'shall be lost', 'shall wait']),
-    D(4, "Complete the simile: 'As welcome as the flowers in...'?", 'May', ['June', 'spring', 'a vase']),
+    D(4, "Complete the simile: 'As welcome as the flowers in...'?", 'May', ['June', 'winter', 'a vase']),
     D(5, "Which word completes the saying: 'Every tub must stand on its own ___'?", 'bottom', ['feet', 'base', 'legs']),
   ],
   // day 58 (2026-12-15)
@@ -206,7 +206,7 @@ export const LANE_DAYS = [
     D(2, "Complete the simile: 'Like a moth to a...'?", 'flame', ['star', 'moon', 'flower']),
     D(3, "How does the saying end: 'Speak softly...'?", 'and carry a big stick', ['and be heard by all', 'and wear a kind smile', 'and walk a long road']),
     D(4, "Which word completes the saying: 'An army marches on its ___'?", 'stomach', ['boots', 'pride', 'orders']),
-    D(5, "How does the Bible verse end: 'A prophet is not without honor...'?", 'save in his own country', ['among his own people', 'in the eyes of God', 'until he is gone']),
+    D(5, "How does the Bible verse end: 'A prophet is not without honor...'?", 'save in his own country', ['until his words come true', 'in the eyes of God', 'until he is gone']),
   ],
   // day 62 (2026-12-19)
   [
@@ -259,7 +259,7 @@ export const LANE_DAYS = [
   // day 68 (2026-12-25)
   [
     D(1, "Complete the simile: 'Stick out like a sore...'?", 'thumb', ['toe', 'finger', 'nose']),
-    D(2, 'Which proverb means that a thoughtful gift matters more than its price?', "It's the thought that counts", ['Charity begins at home', 'Money talks', 'Good things come in small packages']),
+    D(2, 'Which proverb means that a thoughtful gift matters more than its price?', "It's the thought that counts", ['Charity begins at home', 'Money talks', 'Easy come, easy go']),
     D(3, "Complete the simile: 'Running around like a chicken with its head cut...'?", 'off', ['short', 'loose', 'open']),
     D(4, "Which word completes the saying: 'He that lies down with dogs shall rise up with ___'?", 'fleas', ['fur', 'bones', 'mud']),
     D(5, "How does the proverb end: 'The wish is father...'?", 'to the thought', ['to the deed', 'to the dream', 'to the plan']),
@@ -292,7 +292,7 @@ export const LANE_DAYS = [
   [
     D(1, "Which word completes the saying: 'One man's trash is another man's ___'?", 'treasure', ['problem', 'dinner', 'burden']),
     D(2, "Which word completes the saying: 'Nothing is certain but death and ___'?", 'taxes', ['debt', 'rain', 'love']),
-    D(3, "Complete the simile: 'Grinning like the cat that ate the...'?", 'canary', ['mouse', 'goldfish', 'cream']),
+    D(3, "Complete the simile: 'Grinning like the cat that ate the...'?", 'canary', ['mouse', 'goldfish', 'cheese']),
     D(4, "Complete the simile: 'As mad as a March...'?", 'hare', ['wind', 'storm', 'rabbit']),
     D(5, "Which word completes the Bible verse: 'Stolen waters are ___'?", 'sweet', ['bitter', 'cold', 'deep']),
   ],

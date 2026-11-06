@@ -4,7 +4,7 @@
 export const LANE_DAYS = [
   // 2026-12-01
   [
-    { c: 'Places & Landmarks', t: 1, q: 'The Grand Ole Opry, the home of country music radio, is in which city?', a: 'Nashville', d: ['Memphis', 'Austin', 'Atlanta'] },
+    { c: 'Places & Landmarks', t: 1, q: 'Which American city is nicknamed the Big Apple?', a: 'New York City', d: ['Chicago', 'Boston', 'Philadelphia'] },
     { c: 'Places & Landmarks', t: 2, q: 'Which Moroccan city is home to al-Qarawiyyin, often called the oldest university in the world?', a: 'Fez', d: ['Marrakesh', 'Rabat', 'Meknes'] },
     { c: 'Places & Landmarks', t: 3, q: 'In which German city did Johann Sebastian Bach lead the choir of St. Thomas Church?', a: 'Leipzig', d: ['Dresden', 'Weimar', 'Eisenach'] },
     { c: 'Places & Landmarks', t: 4, q: 'Which German city hosts the annual Oktoberfest?', a: 'Munich', d: ['Stuttgart', 'Cologne', 'Frankfurt'], from: 'atlas:d05q19' },
@@ -21,7 +21,7 @@ export const LANE_DAYS = [
   // 2026-12-03
   [
     { c: 'Places & Landmarks', t: 1, q: 'The Beatles first played to big crowds at the Cavern Club in which English city?', a: 'Liverpool', d: ['Manchester', 'London', 'Birmingham'] },
-    { c: 'Places & Landmarks', t: 2, q: 'Which Kenyan game reserve adjoins the Serengeti across the Tanzanian border?', a: 'The Maasai Mara', d: ['Amboseli', 'Tsavo', 'Samburu'] },
+    { c: 'Places & Landmarks', t: 2, q: 'Which Swiss city is home to the European headquarters of the United Nations?', a: 'Geneva', d: ['Zurich', 'Basel', 'Lausanne'] },
     { c: 'Places & Landmarks', t: 3, q: 'Which Austrian city in the Alps is known for its Golden Roof?', a: 'Innsbruck', d: ['Salzburg', 'Graz', 'Linz'] },
     { c: 'Places & Landmarks', t: 4, q: 'Which Indian city is called the Pink City for the terracotta wash on its old buildings?', a: 'Jaipur', d: ['Udaipur', 'Jodhpur', 'Agra'], from: 'atlas:d36q19' },
     { c: 'Places & Landmarks', t: 5, q: 'The Naqsh-e Jahan Square, ringed by blue tiled mosques, lies in which Iranian city?', a: 'Isfahan', d: ['Shiraz', 'Tabriz', 'Mashhad'], from: 'atlas:d35q24' },
@@ -44,7 +44,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-06
   [
-    { c: 'Places & Landmarks', t: 1, q: 'The Art Deco hotels of South Beach belong to which Florida city?', a: 'Miami', d: ['Tampa', 'Orlando', 'Jacksonville'] },
+    { c: 'Places & Landmarks', t: 1, q: 'The Art Deco district of South Beach lies just across Biscayne Bay from which Florida city?', a: 'Miami', d: ['Tampa', 'Orlando', 'Jacksonville'] },
     { c: 'Places & Landmarks', t: 2, q: 'The Rock and Roll Hall of Fame stands on the shore of Lake Erie in which city?', a: 'Cleveland', d: ['Detroit', 'Buffalo', 'Toledo'] },
     { c: 'Places & Landmarks', t: 3, q: 'The Valley of the Kings lies across the Nile from which town in Upper Egypt?', a: 'Luxor', d: ['Aswan', 'Giza', 'Abydos'], from: 'atlas:d41q14' },
     { c: 'Places & Landmarks', t: 4, q: 'The Victoria Memorial stands in which Indian city, the seat of the British Raj until 1911?', a: 'Kolkata', d: ['Mumbai', 'Chennai', 'Bengaluru'], from: 'atlas:d33q19' },
@@ -125,22 +125,22 @@ export const LANE_DAYS = [
   // 2026-12-16
   [
     { c: 'Places & Landmarks', t: 1, q: 'Which French city on the Riviera hosts a famous film festival every May?', a: 'Cannes', d: ['Nice', 'Monaco', 'Marseille'] },
-    { c: 'Places & Landmarks', t: 2, q: 'Stonehenge stands on the plain near which English cathedral city?', a: 'Salisbury', d: ['Winchester', 'Bath', 'Exeter'] },
-    { c: 'Places & Landmarks', t: 3, q: 'Which French cave is famous for prehistoric paintings of horses, bulls and deer?', a: 'Lascaux', d: ['Altamira', 'Chauvet', 'Font-de-Gaume'] },
+    { c: 'Places & Landmarks', t: 2, q: 'Which Spanish city is home to the futuristic City of Arts and Sciences?', a: 'Valencia', d: ['Seville', 'Malaga', 'Alicante'] },
+    { c: 'Places & Landmarks', t: 3, q: 'Which French cave, found by teenagers in 1940, is famous for its Hall of the Bulls?', a: 'Lascaux', d: ['Altamira', 'Chauvet', 'Font-de-Gaume'] },
     { c: 'Places & Landmarks', t: 4, q: 'The Chand Baori, a stepwell descending some thirteen levels in a great inverted pyramid of stairs, lies in which Indian state?', a: 'Rajasthan', d: ['Bihar', 'Gujarat', 'Kerala'], from: 'atlas:d58q19' },
     { c: 'Places & Landmarks', t: 5, q: 'The Registan, a square framed by three tiled madrasas, lies in which Uzbek city?', a: 'Samarkand', d: ['Bukhara', 'Khiva', 'Ashgabat'], from: 'atlas:d02q24' },
   ],
   // 2026-12-17
   [
     { c: 'Places & Landmarks', t: 1, q: 'Which island south of Cape Cod is a summer retreat reached by ferry, with the towns of Edgartown and Oak Bluffs?', a: 'Martha\'s Vineyard', d: ['Nantucket', 'Block Island', 'Long Island'] },
-    { c: 'Places & Landmarks', t: 2, q: 'Positano, Amalfi and Ravello are towns on which stretch of Italian coastline?', a: 'The Amalfi Coast', d: ['The Cinque Terre', 'The Italian Riviera', 'The Costa Smeralda'] },
+    { c: 'Places & Landmarks', t: 2, q: 'Positano and Ravello are towns on which stretch of Italian coastline?', a: 'The Amalfi Coast', d: ['The Cinque Terre', 'The Italian Riviera', 'The Costa Smeralda'] },
     { c: 'Places & Landmarks', t: 3, q: 'Which Austrian lakeside village of pastel houses is one of the most photographed places in the Alps?', a: 'Hallstatt', d: ['Zell am See', 'St. Wolfgang', 'Kitzbuhel'] },
     { c: 'Places & Landmarks', t: 4, q: 'Which Nigerian city, built around a lagoon, served as the country\'s capital until 1991?', a: 'Lagos', d: ['Kano', 'Ibadan', 'Benin City'], from: 'atlas:d20q19' },
     { c: 'Places & Landmarks', t: 5, q: 'Which Peruvian city was the imperial seat of the Inca?', a: 'Cusco', d: ['Lima', 'Arequipa', 'Trujillo'], from: 'atlas:d32q24' },
   ],
   // 2026-12-18
   [
-    { c: 'Places & Landmarks', t: 1, q: 'The Brooklyn Bridge crosses the East River in which city?', a: 'New York City', d: ['Boston', 'Philadelphia', 'Chicago'] },
+    { c: 'Places & Landmarks', t: 1, q: 'Which hilly California city is famous for its historic cable cars?', a: 'San Francisco', d: ['Los Angeles', 'San Diego', 'Sacramento'] },
     { c: 'Places & Landmarks', t: 2, q: 'Which Thai island in the Andaman Sea is the country\'s largest and a famous beach resort?', a: 'Phuket', d: ['Ko Samui', 'Ko Phi Phi', 'Ko Chang'] },
     { c: 'Places & Landmarks', t: 3, q: 'Which walled Bavarian town on the Romantic Road is one of the best preserved medieval towns in Germany?', a: 'Rothenburg ob der Tauber', d: ['Bamberg', 'Regensburg', 'Nuremberg'] },
     { c: 'Places & Landmarks', t: 4, q: 'The running of the bulls during the San Fermin festival takes place in which Spanish city?', a: 'Pamplona', d: ['Salamanca', 'Logrono', 'Burgos'], from: 'atlas:d22q19' },
@@ -197,7 +197,7 @@ export const LANE_DAYS = [
   // 2026-12-25
   [
     { c: 'Places & Landmarks', t: 1, q: 'Which city hosts the Australian Open tennis tournament every January?', a: 'Melbourne', d: ['Sydney', 'Brisbane', 'Adelaide'] },
-    { c: 'Places & Landmarks', t: 2, q: 'Which geothermal spa of milky blue water lies in a lava field near Reykjavik?', a: 'The Blue Lagoon', d: ['The Secret Lagoon', 'Myvatn Nature Baths', 'Geysir'] },
+    { c: 'Places & Landmarks', t: 2, q: 'Which Norwegian city is famous for the colorful wooden wharf of Bryggen?', a: 'Bergen', d: ['Trondheim', 'Stavanger', 'Tromso'] },
     { c: 'Places & Landmarks', t: 3, q: 'Which Slovenian lake is famous for a church on its tiny island and a castle on a cliff above?', a: 'Lake Bled', d: ['Lake Bohinj', 'Lake Ohrid', 'Lake Balaton'] },
     { c: 'Places & Landmarks', t: 4, q: 'The Iron Bridge of 1779, the first large bridge cast in that metal, spans which English river?', a: 'The Severn', d: ['The Trent', 'The Tyne', 'The Mersey'], from: 'atlas:d50q19' },
     { c: 'Places & Landmarks', t: 5, q: 'Nan Madol, a ruined city of basalt log walls raised on artificial islets, lies off which Micronesian island?', a: 'Pohnpei', d: ['Yap', 'Kosrae', 'Chuuk'], from: 'atlas:d44q24' },
@@ -220,7 +220,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-28
   [
-    { c: 'Places & Landmarks', t: 1, q: 'Which Vietnamese bay is famous for its thousands of limestone islands rising from the sea?', a: 'Ha Long Bay', d: ['Cam Ranh Bay', 'Nha Trang Bay', 'Lan Ha Bay'] },
+    { c: 'Places & Landmarks', t: 1, q: 'Which Mexican Pacific resort is famous for its cliff divers at La Quebrada?', a: 'Acapulco', d: ['Cancun', 'Puerto Vallarta', 'Mazatlan'] },
     { c: 'Places & Landmarks', t: 2, q: 'Which crater, a huge collapsed volcano full of wildlife, lies in northern Tanzania?', a: 'The Ngorongoro Crater', d: ['The Menengai Crater', 'Crater Lake', 'The Ramon Crater'] },
     { c: 'Places & Landmarks', t: 3, q: 'The Palace of the Popes, seat of the papacy in the 1300s, stands in which French city?', a: 'Avignon', d: ['Arles', 'Nimes', 'Lyon'] },
     { c: 'Places & Landmarks', t: 4, q: 'The locks of the Panama Canal lift ships up to which artificial lake in the middle of the crossing?', a: 'Gatun Lake', d: ['Culebra Lake', 'Lake Chagres', 'Miraflores Lake'], from: 'atlas:d57q19' },

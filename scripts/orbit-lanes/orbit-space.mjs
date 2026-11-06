@@ -55,7 +55,7 @@ export const LANE_DAYS = [
   [
     E(1, "What are the twinkling points of light in the night sky, which are really distant suns?", "Stars", "Planets", "Comets", "Satellites"),
     E(2, "On most flights, what color was the space shuttle's huge external fuel tank?", "Orange", "White", "Black", "Silver"),
-    E(3, "Orbiting about every 90 minutes, roughly how many sunrises do ISS crews see each day?", "About 16", "About 2", "About 6", "About 48"),
+    E(3, "Roughly how many sunrises do ISS crews see in a single day?", "About 16", "About 2", "About 6", "About 48"),
     E(4, "Which space shuttle orbiter was used only for test flights in the atmosphere and never reached space?", "Enterprise", "Endeavour", "Discovery", "Challenger"),
     E(5, "Which NASA lander recorded marsquakes from 2018 to 2022?", "InSight", "Phoenix", "Viking 2", "Spirit"),
   ],
@@ -63,7 +63,7 @@ export const LANE_DAYS = [
   [
     E(1, "What happens during a solar eclipse?", "The Moon passes between Earth and the Sun", "Earth passes between the Sun and the Moon", "The Sun goes dark for a day", "Clouds hide the Sun"),
     E(2, "In US folklore, what name is often given to the full moon of December?", "The Cold Moon", "The Wolf Moon", "The Harvest Moon", "The Pink Moon"),
-    E(3, "What is the NASA aircraft that flies steep arcs to give trainees brief weightlessness nicknamed?", "The Vomit Comet", "The Air Bubble", "The Zero Hero", "The Float Boat"),
+    E(3, "What was the NASA aircraft that flew steep arcs to give trainees brief weightlessness nicknamed?", "The Vomit Comet", "The Air Bubble", "The Zero Hero", "The Float Boat"),
     E(4, "What are the extra-large tides that come near new moon and full moon called?", "Spring tides", "Neap tides", "Ebb tides", "Slack tides"),
     E(5, "Earth's axis slowly wobbles like a top's, tracing a full circle about once every how many years?", "About 26,000", "About 2,600", "About 260,000", "About 260"),
   ],
@@ -111,7 +111,7 @@ export const LANE_DAYS = [
   [
     E(1, "What does a rocket engine shoot out of its back to push the rocket forward?", "Hot exhaust gas", "Cold water", "Electric sparks", "Magnetic waves"),
     E(2, "What is the name of the Russian crew capsule that has flown people to orbit since 1967?", "Soyuz", "Vostok", "Mir", "Salyut"),
-    E(3, "What is the robotic arm on the International Space Station, built by Canada, called?", "Canadarm2", "Dextre Arm", "Maple Arm", "Northstar"),
+    E(3, "What is the robotic arm on the International Space Station, built by Canada, called?", "Canadarm2", "Beaver Arm", "Maple Arm", "Northstar"),
     E(4, "Which small rover, carried by Mars Pathfinder in 1997, was the first to roam Mars?", "Sojourner", "Spirit", "Lunokhod 2", "Zhurong"),
     E(5, "What is the feared cascade of orbital collisions, each creating debris that causes more, called?", "Kessler syndrome", "Roche cascade", "Lagrange effect", "Carrington cascade"),
   ],
@@ -199,7 +199,7 @@ export const LANE_DAYS = [
   [
     E(1, "Which part of a spacecraft unfolds to turn sunlight into electricity?", "Its solar panels", "Its heat shield", "Its antenna", "Its thrusters"),
     E(2, "Which bright yellow star leads Auriga, the Charioteer, high in winter skies?", "Capella", "Vega", "Deneb", "Altair"),
-    E(3, "What is the name of Pluto's large, bright heart-shaped region?", "Tombaugh Regio", "Lowell Planitia", "Sputnik Mons", "Charon Basin"),
+    E(3, "What is the name of Pluto's large, bright heart-shaped region?", "Tombaugh Regio", "Lowell Planitia", "Cthulhu Macula", "Charon Basin"),
     E(4, "By Kepler's second law, when does a planet move fastest along its orbit?", "When it is closest to the Sun", "When it is farthest from the Sun", "At the equinoxes", "Never; its speed is constant"),
     E(5, "Which faint red dwarf, about 6 light-years away, moves across our sky faster than any other star?", "Barnard's Star", "Proxima Centauri", "Wolf 359", "Sirius B"),
   ],

@@ -38,9 +38,9 @@ export const LANE_DAYS = [
   // day 41 (2026-12-09)
   [
     { c: "Inventions", t: 1, q: "Where does the needle of an ordinary magnetic compass point?", a: "Toward magnetic north", d: ["Toward the Sun", "Toward the equator", "Toward the Moon"] },
-    { c: "Inventions", t: 2, q: "Which toy, introduced in 1939, shows 3D pictures from paper reels?", a: "View-Master", d: ["Etch A Sketch", "Kaleidoscope", "Zoetrope"] },
+    { c: "Inventions", t: 2, q: "Which toy, introduced in 1939, shows 3D pictures from cardboard reels?", a: "View-Master", d: ["Etch A Sketch", "Kaleidoscope", "Zoetrope"] },
     { c: "Inventions", t: 3, q: "Benjamin Franklin's armonica, invented in 1761, made music using what?", a: "Spinning glass bowls", d: ["Vibrating reeds", "Plucked strings", "Steel tongues"] },
-    { c: "Inventions", t: 4, q: "Which English inventor patented the first portable pressurized fire extinguisher, in 1818?", a: "George Manby", d: ["Joseph Bramah", "Humphry Davy", "William Congreve"] },
+    { c: "Inventions", t: 4, q: "Which English inventor created the first portable pressurized fire extinguisher, in 1818?", a: "George Manby", d: ["Joseph Bramah", "Humphry Davy", "William Congreve"] },
     { c: "Inventions", t: 5, q: "Francis Ronalds built a working electric telegraph in 1816, with about 8 miles of wire, in what setting?", a: "His garden", d: ["A coal mine", "A canal tunnel", "A church tower"] },
   ],
   // day 42 (2026-12-10)
@@ -129,7 +129,7 @@ export const LANE_DAYS = [
     { c: "Inventions", t: 2, q: "In 1947 Edward Lowe began selling absorbent clay for which new use?", a: "Cat litter", d: ["Potting soil", "Pottery", "Road salt"] },
     { c: "Inventions", t: 3, q: "Patricia Bath patented a laser device in 1988 for removing what from the eye?", a: "Cataracts", d: ["Tears", "Eyelashes", "Contact lenses"] },
     { c: "Inventions", t: 4, q: "Which German engineer designed the Leica, an early 35mm camera, around 1913?", a: "Oskar Barnack", d: ["Carl Zeiss", "Ernst Abbe", "Ludwig Bertele"] },
-    { c: "Inventions", t: 5, q: "Which English scientist invented the calotype, a negative-to-positive photographic process, in 1841?", a: "Henry Fox Talbot", d: ["John Herschel", "Frederick Scott Archer", "David Brewster"] },
+    { c: "Inventions", t: 5, q: "Which English scientist patented the calotype, a negative-to-positive photographic process, in 1841?", a: "Henry Fox Talbot", d: ["John Herschel", "Frederick Scott Archer", "David Brewster"] },
   ],
   // day 53 (2026-12-21)
   [

@@ -7,7 +7,7 @@ const E = (t, q, a, ...d) => ({ c: C, t, q, a, d });
 
 const T1 = [
   E(1, 'Which is the only element whose name begins with the letter X?', 'Xenon', 'Krypton', 'Neon', 'Radon'),
-  E(1, "Superman's weakness, kryptonite, borrows its name from which real element?", 'Krypton', 'Xenon', 'Radon', 'Neon'),
+  E(1, "Which noble gas shares its name with Superman's home planet?", 'Krypton', 'Xenon', 'Radon', 'Neon'),
   E(1, 'Water is made of how many different elements?', 'Two', 'One', 'Three', 'Four'),
   E(1, 'Most of the volume of an atom is what?', 'Empty space', 'Protons', 'Neutrons', 'Solid matter'),
   E(1, "In a battery labeled 'NiCd', which metal does 'Ni' stand for?", 'Nickel', 'Niobium', 'Neon', 'Nitrogen'),
@@ -72,7 +72,7 @@ const T3 = [
   E(3, 'How many elements are in the second row (period 2) of the periodic table?', '8', '2', '10', '18'),
   E(3, "Which element's name comes from the Greek word for 'stench'?", 'Bromine', 'Iodine', 'Chlorine', 'Astatine'),
   E(3, 'Elements 57 to 71, from lanthanum to lutetium, are called what?', 'Lanthanides', 'Actinides', 'Halogens', 'Transition metals'),
-  E(3, 'Which element is named after the Americas?', 'Americium', 'Californium', 'Europium', 'Columbium'),
+  E(3, 'Which element is named after the Americas?', 'Americium', 'Californium', 'Europium', 'Francium'),
   E(3, 'Which is the lightest of the halogens?', 'Fluorine', 'Chlorine', 'Bromine', 'Iodine'),
   E(3, 'What is the atomic number of sodium?', '11', '9', '13', '23'),
   E(3, 'Heavy water is made with which isotope of hydrogen?', 'Deuterium', 'Tritium', 'Protium', 'Helium-3'),
@@ -108,7 +108,7 @@ const T4 = [
   E(4, 'Which group of the periodic table, headed by oxygen, holds the chalcogens?', '16', '14', '15', '17'),
   E(4, 'Pitchblende is the main ore of which element?', 'Uranium', 'Radium', 'Thorium', 'Plutonium'),
   E(4, "The vivid 'Paris green' pigment of the 1800s was deadly because it contained which element?", 'Arsenic', 'Lead', 'Mercury', 'Cadmium'),
-  E(4, "Which element's name comes from the Greek word for 'smell'?", 'Osmium', 'Bromine', 'Arsenic', 'Selenium'),
+  E(4, "Which element's name comes from the Greek word for 'smell'?", 'Osmium', 'Iridium', 'Arsenic', 'Selenium'),
   E(4, 'How many valence electrons does a nitrogen atom have?', '5', '3', '7', '4'),
   E(4, 'Which alkali metal is named for the sky-blue lines in its spectrum?', 'Cesium', 'Rubidium', 'Lithium', 'Francium'),
   E(4, 'What is the atomic number of mercury?', '80', '78', '82', '88'),

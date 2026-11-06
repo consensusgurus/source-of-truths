@@ -101,7 +101,7 @@ export const LANE_DAYS = [
   // day 13
   [
     { c: 'Brands & Products', t: 1, q: 'Which block-building video game, created by Markus Persson, had its full release in 2011?', a: 'Minecraft', d: ['Roblox', 'Fortnite', 'Terraria'] },
-    { c: 'Brands & Products', t: 2, q: 'Which Danish butter cookie brand is famous for its round blue tin?', a: 'Royal Dansk', d: ['Kelsen', 'Walkers', 'Delacre'] },
+    { c: 'Brands & Products', t: 2, q: 'Which Danish butter cookie brand is famous for its round blue tin?', a: 'Royal Dansk', d: ['Pepperidge Farm', 'Walkers', 'Delacre'] },
     { c: 'Brands & Products', t: 3, q: 'Which American toy company made the original Star Wars action figures from 1978?', a: 'Kenner', d: ['Mego', 'Hasbro', 'Mattel'] },
     { c: 'Brands & Products', t: 4, q: 'Which orange juice brand was founded in Florida in 1947 by the Italian immigrant Anthony Rossi?', a: 'Tropicana', d: ['Minute Maid', 'Florida\'s Natural', 'Simply Orange'], from: 'biz:d05q16' },
     { c: 'Brands & Products', t: 5, q: 'Which brand of pen, launched in France in 1950, popularized the cheap disposable ballpoint under a shortened founder surname?', a: 'Bic Cristal', d: ['Papermate Write Bros', 'Parker Jotter', 'Reynolds 400'], from: 'biz:d23q21' },
@@ -143,7 +143,7 @@ export const LANE_DAYS = [
     { c: 'Brands & Products', t: 1, q: 'Which yellow mustard brand made its debut at the 1904 World\'s Fair in St. Louis?', a: 'French\'s', d: ['Gulden\'s', 'Plochman\'s', 'Koops\''] },
     { c: 'Brands & Products', t: 2, q: 'Which Japanese company released the arcade game Pac-Man in 1980?', a: 'Namco', d: ['Taito', 'Sega', 'Konami'] },
     { c: 'Brands & Products', t: 3, q: 'Which luxury car brand, launched in the United States in 1986, was the first from a Japanese carmaker?', a: 'Acura', d: ['Lexus', 'Infiniti', 'Genesis'] },
-    { c: 'Brands & Products', t: 4, q: 'Which clear cola did Coca-Cola put on sale in December 1992 and pull from the market by 1994?', a: 'Tab Clear', d: ['Surge', 'OK Soda', 'Fruitopia'], from: 'biz:d02q16' },
+    { c: 'Brands & Products', t: 4, q: 'Which gummy candy maker, founded in 1920, takes its name from the first letters of its founder\'s name and his home city of Bonn?', a: 'Haribo', d: ['Trolli', 'Katjes', 'Storck'] },
     { c: 'Brands & Products', t: 5, q: 'Which sugar-free drink did the Coca-Cola Company launch in 1963, its first?', a: 'Tab', d: ['Sprite Zero', 'Diet Rite', 'Fresca'], from: 'biz:d54q21' },
   ],
   // day 19
@@ -191,7 +191,7 @@ export const LANE_DAYS = [
     { c: 'Brands & Products', t: 1, q: 'Which carmaker builds the Corvette sports car?', a: 'Chevrolet', d: ['Ford', 'Dodge', 'Pontiac'] },
     { c: 'Brands & Products', t: 2, q: 'Which frozen waffle brand was advertised with the line \'Leggo my\' followed by its name?', a: 'Eggo', d: ['Aunt Jemima', 'Van\'s', 'Kodiak Cakes'] },
     { c: 'Brands & Products', t: 3, q: 'Which rum brand is named after a 17th century Welsh privateer?', a: 'Captain Morgan', d: ['Bacardi', 'Malibu', 'Kraken'] },
-    { c: 'Brands & Products', t: 4, q: 'The 1960s print campaign built on the two-word headline \'Think Small\' was selling which car?', a: 'The Volkswagen Beetle', d: ['The Fiat 500', 'The Austin Mini', 'The Citroen 2CV'], from: 'biz:d28q16' },
+    { c: 'Brands & Products', t: 4, q: 'Which crayon brand did the New York firm Binney and Smith launch in 1903?', a: 'Crayola', d: ['RoseArt', 'Prang', 'Faber-Castell'] },
     { c: 'Brands & Products', t: 5, q: 'Which cola was created by a North Carolina pharmacist as Brad\'s Drink and given its lasting name in 1898?', a: 'Pepsi-Cola', d: ['RC Cola', 'Double Cola', 'Cheerwine'], from: 'biz:d10q21' },
   ],
   // day 25
@@ -214,7 +214,7 @@ export const LANE_DAYS = [
   [
     { c: 'Brands & Products', t: 1, q: 'Which American toy company sold both the Hula Hoop and the Frisbee in the 1950s?', a: 'Wham-O', d: ['Kenner', 'Ideal', 'Tonka'] },
     { c: 'Brands & Products', t: 2, q: 'Which department store has staged a Thanksgiving Day parade in New York since 1924?', a: 'Macy\'s', d: ['Gimbels', 'Bloomingdale\'s', 'Saks Fifth Avenue'] },
-    { c: 'Brands & Products', t: 3, q: 'Which Ohio toy company launched the Etch A Sketch in 1960?', a: 'The Ohio Art Company', d: ['Kenner', 'Ideal Toy Company', 'Tonka'] },
+    { c: 'Brands & Products', t: 3, q: 'Which toy company launched the Etch A Sketch in 1960?', a: 'The Ohio Art Company', d: ['Kenner', 'Ideal Toy Company', 'Tonka'] },
     { c: 'Brands & Products', t: 4, q: 'Which luggage brand, founded in Denver in 1910, is named after a biblical strongman?', a: 'Samsonite', d: ['Tumi', 'Rimowa', 'Delsey'], from: 'biz:d24q16' },
     { c: 'Brands & Products', t: 5, q: 'Which arms maker turned typewriter manufacturer sold the 1874 machine that introduced the QWERTY key layout?', a: 'Remington', d: ['Underwood', 'Smith Corona', 'Olivetti'], from: 'biz:d47q21' },
   ],
@@ -224,7 +224,7 @@ export const LANE_DAYS = [
     { c: 'Brands & Products', t: 2, q: 'Which breakfast cereal did W. K. Kellogg begin selling through his own company in 1906?', a: 'Corn Flakes', d: ['Rice Krispies', 'Raisin Bran', 'Special K'] },
     { c: 'Brands & Products', t: 3, q: 'Which appliance brand, launched by General Motors in 1919, became a common byword for any refrigerator?', a: 'Frigidaire', d: ['Kelvinator', 'Westinghouse', 'Amana'] },
     { c: 'Brands & Products', t: 4, q: 'Which brand of cigarette lighter, made in Pennsylvania since 1933, carries an unconditional lifetime repair guarantee?', a: 'Zippo', d: ['Ronson', 'Bic', 'Colibri'], from: 'biz:d37q16' },
-    { c: 'Brands & Products', t: 5, q: 'What did the Finnish company Nokia produce when it was founded in 1865?', a: 'Wood pulp for paper', d: ['Hunting rifles', 'Rubber galoshes', 'Telephone cable'], from: 'biz:d44q21' },
+    { c: 'Brands & Products', t: 5, q: 'Which coffee filter brand takes its name from the Dresden housewife who patented a paper filter system in 1908?', a: 'Melitta', d: ['Bodum', 'Tchibo', 'Chemex'] },
   ],
   // day 29
   [

@@ -370,7 +370,7 @@ export const LANE_DAYS = [
   // day 47
   [
     { c: 'MLB', t: 1, q: 'Which Mets outfielder won the 1983 National League Rookie of the Year award?', a: 'Darryl Strawberry', d: ['Mookie Wilson', 'Lenny Dykstra', 'Kevin McReynolds'] },
-    { c: 'MLB', t: 2, q: 'Which club won its first World Series title in 2023, in its 52nd season?', a: 'The Texas Rangers', d: ['The Arizona Diamondbacks', 'The Philadelphia Phillies', 'The Houston Astros'] },
+    { c: 'MLB', t: 2, q: 'Which club won its first World Series title in 2023?', a: 'The Texas Rangers', d: ['The Arizona Diamondbacks', 'The Philadelphia Phillies', 'The Houston Astros'] },
     { c: 'MLB', t: 3, q: 'Which broadcaster called the first televised major league game, in 1939?', a: 'Red Barber', d: ['Mel Allen', 'Graham McNamee', 'Ted Husing'] },
     { c: 'MLB', t: 4, q: 'Which Cardinals pitcher struck out a World Series record 17 batters in Game 1 of the 1968 series?', a: 'Bob Gibson', d: ['Steve Carlton', 'Nelson Briles', 'Ray Washburn'] },
     { c: 'MLB', t: 5, q: 'Which St. Louis ballpark was shared by two major league clubs until 1953?', a: 'Sportsman\'s Park', d: ['Robison Field', 'League Park', 'Busch Memorial Stadium'] },

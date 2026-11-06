@@ -73,13 +73,13 @@ export const LANE_DAYS = [
     E(2, "Why do ice cubes float in a drink?", "Ice is less dense than liquid water", "Ice is more dense than liquid water", "Cold things always rise", "The drink's sugar holds them up"),
     E(3, "A figure skater pulls her arms in tight during a spin. What happens?", "She spins faster", "She spins slower", "She stops spinning", "She tips over"),
     E(4, "Which floating instrument measures a liquid's density, as when checking antifreeze or brewing beer?", "A hydrometer", "A hygrometer", "A barometer", "A manometer"),
-    E(5, "In electronics, what does the Q in a circuit's Q factor stand for?", "Quality", "Quantity", "Quotient", "Quartz"),
+    E(5, "What is the SI unit of electrical conductance, the reciprocal of the ohm?", "The siemens", "The tesla", "The weber", "The coulomb"),
   ],
   // day 45 (Dec 13)
   [
     E(1, "What does a car's odometer measure?", "Distance traveled", "Speed", "Fuel level", "Engine heat"),
     E(2, "What do we call a material, like frosted glass, that lets light through but scatters it so you cannot see clearly?", "Translucent", "Transparent", "Opaque", "Reflective"),
-    E(3, "In Ohm's law, written V = IR, what does the I stand for?", "Current", "Inductance", "Intensity", "Impedance"),
+    E(3, "In Ohm's law, written V = IR, which quantity does the symbol I represent?", "Current", "Inductance", "Insulation", "Impedance"),
     E(4, "Road signs and bike reflectors that send light straight back toward its source are called what?", "Retroreflectors", "Diffusers", "Polarizers", "Prisms"),
     E(5, "Blowing across the mouth of an empty bottle makes a tone. What kind of resonator is the bottle acting as?", "A Helmholtz resonator", "A Fabry-Perot resonator", "A Kundt's tube", "A cavity magnetron"),
   ],

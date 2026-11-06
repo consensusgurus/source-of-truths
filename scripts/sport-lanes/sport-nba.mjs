@@ -403,7 +403,7 @@ export const LANE_DAYS = [
   [
     { c: 'NBA', t: 1, q: 'Which country is Dirk Nowitzki from?', a: 'Germany', d: ['Austria', 'Switzerland', 'Denmark'] },
     { c: 'NBA', t: 2, q: 'Which annual honor did Dirk Nowitzki collect in 2007, the first European to do so?', a: 'Most Valuable Player', d: ['Defensive Player of the Year', 'Sixth Man of the Year', 'Most Improved Player'] },
-    { c: 'NBA', t: 3, q: 'Which country took the silver medal in mens basketball at the 1992 Olympics?', a: 'Croatia', d: ['Lithuania', 'Brazil', 'Australia'] },
+    { c: 'NBA', t: 3, q: 'Which country took the silver medal in men\'s basketball at the 1992 Olympics?', a: 'Croatia', d: ['Lithuania', 'Brazil', 'Australia'] },
     { c: 'NBA', t: 4, q: 'Who became the first European trained NBA Rookie of the Year, in 2002?', a: 'Pau Gasol', d: ['Andrei Kirilenko', 'Peja Stojakovic', 'Vladimir Radmanovic'] },
     { c: 'NBA', t: 5, q: 'Which player was named Most Valuable Player of the first NBA All-Star Game?', a: 'Ed Macauley', d: ['George Mikan', 'Bob Cousy', 'Dolph Schayes'] },
   ],
@@ -452,7 +452,7 @@ export const LANE_DAYS = [
     { c: 'NBA', t: 1, q: 'Which forward with a famous unibrow is nicknamed the Brow?', a: 'Anthony Davis', d: ['Karl-Anthony Towns', 'Bam Adebayo', 'Julius Randle'] },
     { c: 'NBA', t: 2, q: 'Which club did Michael Jordan play for in his last two seasons, beginning in 2001?', a: 'The Washington Wizards', d: ['The Charlotte Hornets', 'The Chicago Bulls', 'The Miami Heat'] },
     { c: 'NBA', t: 3, q: 'Which club won the NBA championship in 2023?', a: 'The Denver Nuggets', d: ['The Miami Heat', 'The Boston Celtics', 'The Phoenix Suns'] },
-    { c: 'NBA', t: 4, q: 'In what year did the NBA and its players first agree to a cap on any one player earnings?', a: '1999', d: ['1995', '2005', '2011'] },
+    { c: 'NBA', t: 4, q: 'In what year did the NBA and its players first agree to a cap on any one player\'s earnings?', a: '1999', d: ['1995', '2005', '2011'] },
     { c: 'NBA', t: 5, q: 'With what overall pick did San Antonio select Manu Ginobili in 1999?', a: '57th', d: ['28th', '41st', '49th'] },
   ],
 ];

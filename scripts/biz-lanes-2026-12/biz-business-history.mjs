@@ -63,7 +63,7 @@ export const LANE_DAYS = [
     { c: 'Business History', t: 1, q: 'In which Canadian territory did the Klondike gold rush begin in 1896?', a: 'The Yukon', d: ['British Columbia', 'Alberta', 'The Northwest Territories'] },
     { c: 'Business History', t: 2, q: 'Which Canadian-born economist wrote The Affluent Society, published in 1958?', a: 'John Kenneth Galbraith', d: ['Milton Friedman', 'Paul Samuelson', 'Thorstein Veblen'] },
     { c: 'Business History', t: 3, q: 'John Kay\'s 1733 device doubled the speed of handloom weaving and helped set off the mechanization of textiles. What was it called?', a: 'The flying shuttle', d: ['The water frame', 'The carding engine', 'The spinning jenny'], from: 'biz:d40q15' },
-    { c: 'Business History', t: 4, q: 'Which Chicago mail-order house sold complete kit houses by catalog in the early 20th century?', a: 'Sears Roebuck', d: ['Montgomery Ward', 'Spiegel', 'Marshall Field\'s'], from: 'biz:d13q20' },
+    { c: 'Business History', t: 4, q: 'Which Chicago mail-order house sold complete kit houses by catalog in the early 20th century?', a: 'Sears Roebuck', d: ['Butler Brothers', 'Spiegel', 'Marshall Field\'s'], from: 'biz:d13q20' },
     { c: 'Business History', t: 5, q: 'Which northern English town gave its name to the 1844 society whose rules became the worldwide model for cooperative retailing?', a: 'Rochdale', d: ['Bury', 'Halifax', 'Oldham'], from: 'biz:d45q25' },
   ],
   // day 9
@@ -84,7 +84,7 @@ export const LANE_DAYS = [
   ],
   // day 11
   [
-    { c: 'Business History', t: 1, q: 'What was the name of the 1851 show of the world\'s manufactures held in London\'s Crystal Palace?', a: 'The Great Exhibition', d: ['The World\'s Fair', 'The Festival of Britain', 'The Empire Exhibition'] },
+    { c: 'Business History', t: 1, q: 'What was the name of the 1851 show of the world\'s manufactures held in London\'s Crystal Palace?', a: 'The Great Exhibition', d: ['The Exposition Universelle', 'The Festival of Britain', 'The Empire Exhibition'] },
     { c: 'Business History', t: 2, q: 'Which silver coin, nicknamed \'pieces of eight\', circulated widely in the Americas and Asia from the 16th century?', a: 'The Spanish dollar', d: ['The Dutch guilder', 'The English crown', 'The French louis'] },
     { c: 'Business History', t: 3, q: 'Whose improved steam engine, made in partnership with Matthew Boulton, powered Britain\'s factories from the 1770s?', a: 'James Watt', d: ['Thomas Newcomen', 'Richard Trevithick', 'George Stephenson'], from: 'biz:d05q15' },
     { c: 'Business History', t: 4, q: 'Which fertilizer, scraped from bird-covered islands off the Peruvian coast, paid for that country\'s government for decades after 1840?', a: 'Guano', d: ['Rubber', 'Nitrate', 'Copper ore'], from: 'biz:d46q20' },
@@ -205,7 +205,7 @@ export const LANE_DAYS = [
   // day 26
   [
     { c: 'Business History', t: 1, q: 'Which island did Peter Minuit buy for the Dutch West India Company in 1626?', a: 'Manhattan', d: ['Long Island', 'Staten Island', 'Nantucket'] },
-    { c: 'Business History', t: 2, q: 'Which 1890 law was the first federal antitrust statute in the United States?', a: 'The Sherman Act', d: ['The Clayton Act', 'The Taft-Hartley Act', 'The Wagner Act'] },
+    { c: 'Business History', t: 2, q: 'Which 1890 law was the first federal antitrust statute in the United States?', a: 'The Sherman Act', d: ['The Clayton Act', 'The Interstate Commerce Act', 'The Wagner Act'] },
     { c: 'Business History', t: 3, q: 'Which 1901 Texas gusher near Beaumont launched the modern American petroleum industry?', a: 'Spindletop', d: ['Signal Hill', 'Yates Field', 'Burkburnett'], from: 'biz:d26q15' },
     { c: 'Business History', t: 4, q: 'Which 1947 American law banned the closed shop and let states forbid compulsory union membership?', a: 'The Taft-Hartley Act', d: ['The Norris-LaGuardia Act', 'The Landrum-Griffin Act', 'The Wagner Act'], from: 'biz:d57q20' },
     { c: 'Business History', t: 5, q: 'Which 1855 British statute let shareholders in registered companies escape personal responsibility for company debts?', a: 'The Limited Liability Act', d: ['The Joint Stock Companies Act', 'The Companies Clauses Consolidation Act', 'The Partnership Act'], from: 'biz:d19q25' },

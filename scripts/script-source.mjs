@@ -3170,7 +3170,7 @@ export const DAYS = [
 { c: 'Television', t: 1, q: 'Which children\'s television host changed into a cardigan and sneakers at the start of every episode?', a: 'Fred Rogers', d: ['Bob Keeshan', 'Jim Henson', 'Bill Nye'] },
 { c: 'Actors & Directors', t: 1, q: 'Which director made the 2023 film Barbie?', a: 'Greta Gerwig', d: ['Sofia Coppola', 'Olivia Wilde', 'Noah Baumbach'] },
 { c: 'Awards & Box Office', t: 1, q: 'What is the BAFTA film award trophy shaped like?', a: 'A theatrical mask', d: ['A golden globe', 'A winged woman', 'A film camera'] },
-{ c: 'Behind the Scenes', t: 1, q: 'Which network first aired I Love Lucy?', a: 'CBS', d: ['NBC', 'ABC', 'DuMont'] },
+{ c: 'Behind the Scenes', t: 1, q: 'In Pixar\'s opening logo, what hops on screen and squashes the letter I?', a: 'A desk lamp', d: ['A rubber ball', 'A toy robot', 'A wind-up mouse'] },
 
 { c: 'Movies', t: 2, q: 'In The Shawshank Redemption, what hides the hole Andy digs in his cell wall?', a: 'A pin-up poster', d: ['A Bible', 'A chess board', 'A painting of the sea'] },
 { c: 'Television', t: 2, q: 'In which city is the sitcom Frasier set?', a: 'Seattle', d: ['Boston', 'Portland', 'Chicago'] },
@@ -3274,7 +3274,7 @@ export const DAYS = [
 { c: 'Movies', t: 2, q: 'In Up, what is the name of the famous explorer Carl idolized as a boy?', a: 'Charles Muntz', d: ['Russell Fredricksen', 'Kevin Muntz', 'Alpha Muntz'] },
 { c: 'Television', t: 2, q: 'In Breaking Bad, which fried chicken chain does Gus Fring run as a front?', a: 'Los Pollos Hermanos', d: ['Pollo Loco', 'Chicken Shack', 'El Gallo de Oro'] },
 { c: 'Actors & Directors', t: 2, q: 'Which actress played Arya Stark in Game of Thrones?', a: 'Maisie Williams', d: ['Sophie Turner', 'Emilia Clarke', 'Natalie Dormer'] },
-{ c: 'Awards & Box Office', t: 2, q: 'Which 1979 divorce drama was the top-grossing release in North America that year?', a: 'Kramer vs. Kramer', d: ['The Amityville Horror', 'Rocky II', 'Apocalypse Now'] },
+{ c: 'Awards & Box Office', t: 2, q: 'Which film won Dustin Hoffman his first Academy Award for Best Actor?', a: 'Kramer vs. Kramer', d: ['The Graduate', 'Midnight Cowboy', 'Tootsie'] },
 { c: 'Behind the Scenes', t: 2, q: 'Which Rome studio complex was nicknamed Hollywood on the Tiber?', a: 'Cinecitta', d: ['Titanus', 'Lux Film', 'Dear Studios'] },
 
 { c: 'Movies', t: 3, q: 'In Star Wars, in which spaceport cantina do Luke and Obi-Wan hire Han Solo?', a: 'Mos Eisley', d: ['Cloud City', 'Mos Espa', 'Jabba\'s palace'] },
@@ -3341,7 +3341,7 @@ export const DAYS = [
 { c: 'Television', t: 2, q: 'In The Mandalorian, what is the name of the child the hero protects?', a: 'Grogu', d: ['Ahsoka', 'Moff', 'Cara'] },
 { c: 'Actors & Directors', t: 2, q: 'Which actor played Jack Ryan in The Hunt for Red October?', a: 'Alec Baldwin', d: ['Harrison Ford', 'Ben Affleck', 'Kevin Costner'] },
 { c: 'Awards & Box Office', t: 2, q: 'Which song from Disney\'s Pocahontas won Best Original Song?', a: 'Colors of the Wind', d: ['Just Around the Riverbend', 'Savages', 'Mine, Mine, Mine'] },
-{ c: 'Behind the Scenes', t: 2, q: 'Which cable network first aired It\'s Always Sunny in Philadelphia?', a: 'FX', d: ['Comedy Central', 'HBO', 'AMC'] },
+{ c: 'Behind the Scenes', t: 2, q: 'Which 1960 film is often cited as the first American feature to show a toilet being flushed?', a: 'Psycho', d: ['The Apartment', 'Spartacus', 'Elmer Gantry'] },
 
 { c: 'Movies', t: 3, q: 'In The Maltese Falcon, what does the prized falcon statuette turn out to be?', a: 'A lead fake', d: ['Solid gold', 'Hollow and full of diamonds', 'A wooden carving'] },
 { c: 'Television', t: 3, q: 'In Mad Men, which advertising agency do Don, Roger and Bert found at the end of season three?', a: 'Sterling Cooper Draper Pryce', d: ['McCann Erickson', 'Cutler Gleason and Chaough', 'Putnam, Powell and Lowe'] },
@@ -3373,7 +3373,7 @@ export const DAYS = [
 { c: 'Movies', t: 2, q: 'In Disney\'s Aladdin, what is the name of Jafar\'s parrot?', a: 'Iago', d: ['Abu', 'Rajah', 'Zazu'] },
 { c: 'Television', t: 2, q: 'In The Walking Dead, what is Rick Grimes\'s job before the outbreak?', a: 'A sheriff\'s deputy', d: ['A paramedic', 'A soldier', 'A schoolteacher'] },
 { c: 'Actors & Directors', t: 2, q: 'Which director made The Exorcist and The French Connection?', a: 'William Friedkin', d: ['Sidney Lumet', 'Francis Ford Coppola', 'Peter Bogdanovich'] },
-{ c: 'Awards & Box Office', t: 2, q: 'Which 2005 Star Wars prequel was the top-grossing release in North America that year?', a: 'Star Wars: Episode III, Revenge of the Sith', d: ['Star Wars: Episode II, Attack of the Clones', 'Star Wars: Episode I, The Phantom Menace', 'Rogue One'] },
+{ c: 'Awards & Box Office', t: 2, q: 'Which film was the top-grossing release in North America in 2005?', a: 'Star Wars: Episode III, Revenge of the Sith', d: ['Harry Potter and the Goblet of Fire', 'The Chronicles of Narnia: The Lion, the Witch and the Wardrobe', 'War of the Worlds'] },
 { c: 'Behind the Scenes', t: 2, q: 'What is a match cut?', a: 'A cut that links two shots by a shared shape or movement', d: ['A cut made with scissors on set', 'A cut that removes a whole scene', 'A cut agreed with the censor'] },
 
 { c: 'Movies', t: 3, q: 'In Apocalypse Now, which renegade officer is Captain Willard sent to find and kill?', a: 'Colonel Kurtz', d: ['Colonel Kilgore', 'Major Kong', 'Sergeant Elias'] },
@@ -3418,7 +3418,7 @@ export const DAYS = [
 { c: 'Movies', t: 4, q: 'In Metropolis, whose likeness is given to the robot?', a: 'Maria', d: ['Freder', 'Joh Fredersen', 'Rotwang'] },
 { c: 'Television', t: 4, q: 'Which 1966 Japanese series featured a giant silver and red hero who could only fight on Earth for three minutes at a time?', a: 'Ultraman', d: ['Kamen Rider', 'Ultra Q', 'Giant Robo'], from: 'script:d32q17' },
 { c: 'Actors & Directors', t: 4, q: 'Which twenty-five year old directed and starred in Citizen Kane?', a: 'Orson Welles', d: ['John Huston', 'Elia Kazan', 'Nicholas Ray'], from: 'script:d04q18' },
-{ c: 'Awards & Box Office', t: 4, q: 'Which series won the Emmy for Outstanding Drama Series four years running from 2008 to 2011?', a: 'Mad Men', d: ['The West Wing', 'Lost', 'Breaking Bad'], from: 'script:d40q19' },
+{ c: 'Awards & Box Office', t: 4, q: 'Which series won the Emmy for Outstanding Drama Series four years running from 2008 to 2011?', a: 'Mad Men', d: ['Dexter', 'Lost', 'Breaking Bad'], from: 'script:d40q19' },
 { c: 'Behind the Scenes', t: 4, q: 'Which decommissioned Lithuanian nuclear plant stood in for the reactor site in the 2019 miniseries Chernobyl?', a: 'Ignalina', d: ['Kozloduy', 'Temelin', 'Paks'], from: 'script:d52q20' },
 
 { c: 'Movies', t: 5, q: 'Which tinned fruit does the lovesick policeman keep buying in Chungking Express?', a: 'Pineapple', d: ['Lychees', 'Peaches', 'Mandarins'], from: 'script:d22q21' },
@@ -3434,7 +3434,7 @@ export const DAYS = [
 { c: 'Television', t: 1, q: 'Which 1970s sitcom starred Carroll O\'Connor as the bigoted Archie Bunker?', a: 'All in the Family', d: ['Sanford and Son', 'The Jeffersons', 'Maude'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actor played Jon Snow in Game of Thrones?', a: 'Kit Harington', d: ['Richard Madden', 'Nikolaj Coster-Waldau', 'Alfie Allen'] },
 { c: 'Awards & Box Office', t: 1, q: 'Which former child star of Indiana Jones won Best Supporting Actor for Everything Everywhere All at Once?', a: 'Ke Huy Quan', d: ['James Hong', 'Brendan Fraser', 'Barry Keoghan'] },
-{ c: 'Behind the Scenes', t: 1, q: 'Which premium channel first aired The Sopranos?', a: 'HBO', d: ['Showtime', 'Starz', 'Cinemax'] },
+{ c: 'Behind the Scenes', t: 1, q: 'Which Hollywood movie palace, opened in 1927, keeps stars\' handprints and footprints set in cement in its forecourt?', a: 'The Chinese Theater', d: ['The Egyptian Theater', 'The Pantages Theater', 'The El Capitan Theater'] },
 
 { c: 'Movies', t: 2, q: 'In Mary Poppins, what is Bert\'s job in the rooftop dance number?', a: 'Chimney sweep', d: ['Lamplighter', 'Window cleaner', 'Roofer'] },
 { c: 'Television', t: 2, q: 'In Gilmore Girls, what is the name of Lorelai\'s daughter?', a: 'Rory', d: ['Paris', 'Lane', 'Sookie'] },
@@ -3464,7 +3464,7 @@ export const DAYS = [
 // ── Day 105 ────────────────────────────────────────────────────────────
 [
 { c: 'Movies', t: 1, q: 'In Ratatouille, what is the name of the rat who dreams of becoming a chef?', a: 'Remy', d: ['Emile', 'Linguini', 'Gusteau'] },
-{ c: 'Television', t: 1, q: 'In I Love Lucy, what is the name of Lucy\'s bandleader husband?', a: 'Ricky Ricardo', d: ['Fred Mertz', 'Desi Arnaz', 'Ralph Kramden'] },
+{ c: 'Television', t: 1, q: 'In I Love Lucy, what is the name of Lucy\'s bandleader husband?', a: 'Ricky Ricardo', d: ['Fred Mertz', 'Danny Williams', 'Ralph Kramden'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actress played Monica Geller in Friends?', a: 'Courteney Cox', d: ['Lisa Kudrow', 'Jennifer Aniston', 'Helen Hunt'] },
 { c: 'Awards & Box Office', t: 1, q: 'Which actress won Best Actress for playing the televangelist in The Eyes of Tammy Faye?', a: 'Jessica Chastain', d: ['Olivia Colman', 'Nicole Kidman', 'Kristen Stewart'] },
 { c: 'Behind the Scenes', t: 1, q: 'Which home video format beat Betamax in the 1980s format war?', a: 'VHS', d: ['LaserDisc', 'DVD', 'Video 2000'] },
@@ -3472,7 +3472,7 @@ export const DAYS = [
 { c: 'Movies', t: 2, q: 'In Disney\'s Mulan, what is the name of the small dragon sent to protect her?', a: 'Mushu', d: ['Cri-Kee', 'Khan', 'Shan Yu'] },
 { c: 'Television', t: 2, q: 'In Twin Peaks, at which diner does Agent Cooper enjoy cherry pie and coffee?', a: 'The Double R Diner', d: ['Monk\'s Cafe', 'Luke\'s Diner', 'Al\'s Diner'] },
 { c: 'Actors & Directors', t: 2, q: 'Which actress played Princess Buttercup in The Princess Bride?', a: 'Robin Wright', d: ['Meg Ryan', 'Kelly McGillis', 'Daryl Hannah'] },
-{ c: 'Awards & Box Office', t: 2, q: 'Which 1987 comedy about three bachelors and an infant was the top-grossing release in North America that year?', a: 'Three Men and a Baby', d: ['Fatal Attraction', 'Beverly Hills Cop II', 'Good Morning, Vietnam'] },
+{ c: 'Awards & Box Office', t: 2, q: 'Which 1987 box office hit about three bachelors and an infant remade the French comedy Three Men and a Cradle?', a: 'Three Men and a Baby', d: ['Fatal Attraction', 'Beverly Hills Cop II', 'Good Morning, Vietnam'] },
 { c: 'Behind the Scenes', t: 2, q: 'What is a squib in special effects?', a: 'A small explosive charge that simulates a bullet hit', d: ['A puff of fake smoke', 'A fake blood capsule held in the mouth', 'A spring that launches props'] },
 
 { c: 'Movies', t: 3, q: 'In The Sixth Sense, what is Malcolm Crowe\'s profession?', a: 'Child psychologist', d: ['Priest', 'Police detective', 'Schoolteacher'] },
@@ -3500,12 +3500,12 @@ export const DAYS = [
 { c: 'Television', t: 1, q: 'In Game of Thrones, what is the name of the Stark family castle?', a: 'Winterfell', d: ['Storm\'s End', 'Casterly Rock', 'Highgarden'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actor played the young chocolatier in the 2023 film Wonka?', a: 'Timothee Chalamet', d: ['Tom Holland', 'Ansel Elgort', 'Dev Patel'] },
 { c: 'Awards & Box Office', t: 1, q: 'At the Oscars, what do presenters open to reveal each winner?', a: 'An envelope', d: ['A scroll', 'A sealed box', 'A tablet'] },
-{ c: 'Behind the Scenes', t: 1, q: 'Which company produces the official James Bond films?', a: 'Eon Productions', d: ['Working Title', 'Hammer Films', 'Amblin Entertainment'] },
+{ c: 'Behind the Scenes', t: 1, q: 'Which company produced the James Bond films from Dr. No onward?', a: 'Eon Productions', d: ['Working Title', 'Hammer Films', 'Amblin Entertainment'] },
 
 { c: 'Movies', t: 2, q: 'In Dirty Dancing, in which mountains is the summer resort where Baby meets Johnny?', a: 'The Catskills', d: ['The Poconos', 'The Berkshires', 'The Adirondacks'] },
 { c: 'Television', t: 2, q: 'In Schitt\'s Creek, what is the name of the motel where the Roses end up living?', a: 'The Rosebud Motel', d: ['The Bates Motel', 'The Shady Rest', 'The Pine Lodge'] },
 { c: 'Actors & Directors', t: 2, q: 'Which actor played Dumbledore in the first two Harry Potter films?', a: 'Richard Harris', d: ['Michael Gambon', 'Ian McKellen', 'Christopher Lee'] },
-{ c: 'Awards & Box Office', t: 2, q: 'Who won Best Director for Platoon?', a: 'Oliver Stone', d: ['David Lynch', 'James Ivory', 'Woody Allen'] },
+{ c: 'Awards & Box Office', t: 2, q: 'Who won Best Director for Amadeus?', a: 'Milos Forman', d: ['Roland Joffe', 'David Lean', 'Robert Benton'] },
 { c: 'Behind the Scenes', t: 2, q: 'Which sound company did George Lucas found at his ranch in Marin County?', a: 'Skywalker Sound', d: ['Dolby Laboratories', 'THX Sound', 'Lucas Audio'] },
 
 { c: 'Movies', t: 3, q: 'In Some Like It Hot, how do the two musicians hide from the mob?', a: 'They disguise themselves as women in an all-female band', d: ['They join the navy', 'They pose as priests', 'They take jobs as hotel waiters'] },
@@ -3610,7 +3610,7 @@ export const DAYS = [
 { c: 'Movies', t: 3, q: 'In Chinatown, what is Jake Gittes\'s line of work?', a: 'Private investigator', d: ['Water engineer', 'Police detective', 'Newspaper reporter'] },
 { c: 'Television', t: 3, q: 'In 30 Rock, what is the name of the sketch show Liz Lemon runs?', a: 'TGS', d: ['SNL', 'Studio 60', 'The Kenneth Show'] },
 { c: 'Actors & Directors', t: 3, q: 'Which actress played Lisbeth Salander in the 2011 American film of The Girl with the Dragon Tattoo?', a: 'Rooney Mara', d: ['Noomi Rapace', 'Claire Foy', 'Mia Wasikowska'] },
-{ c: 'Awards & Box Office', t: 3, q: 'Which Martin Scorsese film took the Palme d\'Or at Cannes in 1976?', a: 'Taxi Driver', d: ['Mean Streets', 'Raging Bull', 'Alice Doesn\'t Live Here Anymore'] },
+{ c: 'Awards & Box Office', t: 3, q: 'Which actor won Best Supporting Actor for Goodfellas?', a: 'Joe Pesci', d: ['Ray Liotta', 'Robert De Niro', 'Paul Sorvino'] },
 { c: 'Behind the Scenes', t: 3, q: 'Which transition, much loved in Star Wars, pushes one shot off screen with a moving line?', a: 'The wipe', d: ['The dissolve', 'The fade', 'The iris'] },
 
 { c: 'Movies', t: 4, q: 'In Amores Perros, what event links the film\'s three stories?', a: 'A car crash', d: ['A bank robbery', 'A dog show', 'A wedding'] },
@@ -3631,7 +3631,7 @@ export const DAYS = [
 { c: 'Movies', t: 1, q: 'In Titanic, what is the name of the blue diamond necklace?', a: 'The Heart of the Ocean', d: ['The Star of India', 'The Blue Lagoon', 'The Eye of the Sea'] },
 { c: 'Television', t: 1, q: 'Which series follows a young chef who comes home to run his family\'s Chicago sandwich shop?', a: 'The Bear', d: ['Chef\'s Table', 'Boiling Point', 'Kitchen Confidential'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actress played Phoebe Buffay in Friends?', a: 'Lisa Kudrow', d: ['Courteney Cox', 'Jennifer Aniston', 'Hank Azaria'] },
-{ c: 'Awards & Box Office', t: 1, q: 'Which 1984 Eddie Murphy comedy was the top-grossing release in North America that year?', a: 'Beverly Hills Cop', d: ['Ghostbusters', 'Gremlins', 'The Karate Kid'] },
+{ c: 'Awards & Box Office', t: 1, q: 'Which 1984 box office smash starred Eddie Murphy as the Detroit detective Axel Foley?', a: 'Beverly Hills Cop', d: ['Ghostbusters', 'Gremlins', 'The Karate Kid'] },
 { c: 'Behind the Scenes', t: 1, q: 'Which studio made the animated film Shrek?', a: 'DreamWorks Animation', d: ['Pixar', 'Blue Sky Studios', 'Illumination'] },
 
 { c: 'Movies', t: 2, q: 'In Disney\'s Beauty and the Beast, which vain hunter wants to marry Belle?', a: 'Gaston', d: ['LeFou', 'Maurice', 'Lumiere'] },
@@ -3649,7 +3649,7 @@ export const DAYS = [
 { c: 'Movies', t: 4, q: 'Which real killing spree of the late 1950s loosely inspired Badlands?', a: 'Charles Starkweather\'s', d: ['Bonnie and Clyde\'s', 'The Zodiac Killer\'s', 'Dick Hickock and Perry Smith\'s'] },
 { c: 'Television', t: 4, q: 'Whose Texaco Star Theater earned him the nickname Mr. Television?', a: 'Milton Berle', d: ['Sid Caesar', 'Ed Sullivan', 'Jackie Gleason'] },
 { c: 'Actors & Directors', t: 4, q: 'Which actor played the press agent Sidney Falco in Sweet Smell of Success?', a: 'Tony Curtis', d: ['Burt Lancaster', 'Jack Lemmon', 'Ben Gazzara'] },
-{ c: 'Awards & Box Office', t: 4, q: 'Which Michael Haneke film about an elderly couple took the Palme d\'Or in 2012?', a: 'Amour', d: ['The White Ribbon', 'Cache', 'Funny Games'] },
+{ c: 'Awards & Box Office', t: 4, q: 'Which Michael Haneke film about an elderly couple won the Academy Award for Best Foreign Language Film for 2012?', a: 'Amour', d: ['The White Ribbon', 'Cache', 'Funny Games'] },
 { c: 'Behind the Scenes', t: 4, q: 'Which production designer created the War Room for Dr. Strangelove?', a: 'Ken Adam', d: ['Richard Sylbert', 'John Box', 'Anton Furst'], from: 'script:d39q20' },
 
 { c: 'Movies', t: 5, q: 'In Jean Cocteau\'s Orpheus, what does the poet pass through to reach the underworld?', a: 'A mirror', d: ['A well', 'A locked wardrobe', 'A wall of flame'], from: 'script:d46q21' },
@@ -3715,7 +3715,7 @@ export const DAYS = [
 { c: 'Movies', t: 4, q: 'Where does Antoine run to in the final shot of The 400 Blows?', a: 'The sea', d: ['His mother\'s house', 'A cinema', 'The Eiffel Tower'] },
 { c: 'Television', t: 4, q: 'Which 1980s British sitcom followed four student housemates including the punk Vyvyan and the poet Rick?', a: 'The Young Ones', d: ['Bottom', 'Red Dwarf', 'Spaced'] },
 { c: 'Actors & Directors', t: 4, q: 'Which actor played the insurance man Walter Neff in Double Indemnity?', a: 'Fred MacMurray', d: ['Edward G. Robinson', 'Dana Andrews', 'Robert Mitchum'] },
-{ c: 'Awards & Box Office', t: 4, q: 'Which Ken Loach film about the Irish War of Independence took the Palme d\'Or in 2006?', a: 'The Wind That Shakes the Barley', d: ['Hidden Agenda', 'Land and Freedom', 'Jimmy\'s Hall'] },
+{ c: 'Awards & Box Office', t: 4, q: 'Which Martin McDonagh film about a friendship ending on an Irish island won the BAFTA for Outstanding British Film in 2023?', a: 'The Banshees of Inisherin', d: ['In Bruges', 'Three Billboards Outside Ebbing, Missouri', 'Seven Psychopaths'] },
 { c: 'Behind the Scenes', t: 4, q: 'On a film crew, what does the clapper loader do?', a: 'Loads film magazines and works the slate', d: ['Hands out lunch', 'Fires prop guns', 'Loads trucks at the end of the day'] },
 
 { c: 'Movies', t: 5, q: 'Roughly how long does Satantango run?', a: 'About seven hours', d: ['About three hours', 'About ten hours', 'About five hours'], from: 'script:d29q21' },
@@ -3737,7 +3737,7 @@ export const DAYS = [
 { c: 'Television', t: 2, q: 'In Doctor Who, what does the TARDIS look like from the outside?', a: 'A blue police box', d: ['A red telephone box', 'A London bus', 'A grandfather clock'] },
 { c: 'Actors & Directors', t: 2, q: 'Which actor played Hawkeye Pierce in the television series M*A*S*H?', a: 'Alan Alda', d: ['Mike Farrell', 'Jamie Farr', 'Donald Sutherland'] },
 { c: 'Awards & Box Office', t: 2, q: 'Which Pixar film won the first Golden Globe for Best Animated Feature, for 2006?', a: 'Cars', d: ['Ratatouille', 'Happy Feet', 'Monster House'] },
-{ c: 'Behind the Scenes', t: 2, q: 'Which premium channel first aired Dexter?', a: 'Showtime', d: ['HBO', 'Starz', 'Cinemax'] },
+{ c: 'Behind the Scenes', t: 2, q: 'Which English castle stood in for the outside of Hogwarts in the first two Harry Potter films?', a: 'Alnwick Castle', d: ['Windsor Castle', 'Warwick Castle', 'Leeds Castle'] },
 
 { c: 'Movies', t: 3, q: 'In The Matrix, what is Neo\'s name in his ordinary life?', a: 'Thomas Anderson', d: ['Thomas Reese', 'John Connor', 'Lloyd Carver'] },
 { c: 'Television', t: 3, q: 'In Twin Peaks, to whom does Agent Cooper dictate his tape recordings?', a: 'Diane', d: ['Audrey', 'Laura', 'Shelly'] },
@@ -3764,7 +3764,7 @@ export const DAYS = [
 { c: 'Television', t: 1, q: 'In Scooby-Doo, who is Scooby\'s always-hungry best friend?', a: 'Shaggy', d: ['Fred', 'Velma', 'Scrappy'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actor played Walter White in Breaking Bad?', a: 'Bryan Cranston', d: ['Aaron Paul', 'Bob Odenkirk', 'Dean Norris'] },
 { c: 'Awards & Box Office', t: 1, q: 'Which actress won Best Supporting Actress for playing a divorce lawyer in Marriage Story?', a: 'Laura Dern', d: ['Scarlett Johansson', 'Florence Pugh', 'Kathy Bates'] },
-{ c: 'Behind the Scenes', t: 1, q: 'Which streaming service released The Mandalorian?', a: 'Disney+', d: ['Netflix', 'Paramount+', 'Peacock'] },
+{ c: 'Behind the Scenes', t: 1, q: 'To keep a twist secret on the set of The Empire Strikes Back, what false line was Darth Vader\'s actor given to say?', a: 'Obi-Wan killed your father', d: ['Leia is your sister', 'The Emperor is your father', 'Han Solo is your brother'] },
 
 { c: 'Movies', t: 2, q: 'In the first Home Alone, what do the two burglars call themselves?', a: 'The Wet Bandits', d: ['The Night Raiders', 'The Mud Bandits', 'The Christmas Crooks'] },
 { c: 'Television', t: 2, q: 'In Game of Thrones, what is the name of Jon Snow\'s white direwolf?', a: 'Ghost', d: ['Summer', 'Nymeria', 'Grey Wind'] },
@@ -3781,7 +3781,7 @@ export const DAYS = [
 { c: 'Movies', t: 4, q: 'In Easy Rider, which New Orleans celebration are the two bikers heading for?', a: 'Mardi Gras', d: ['The Jazz Festival', 'Bastille Day', 'Halloween'] },
 { c: 'Television', t: 4, q: 'Which Japanese game show sent hordes of contestants through obstacle courses toward a mock castle?', a: 'Takeshi\'s Castle', d: ['Sasuke', 'Iron Chef', 'Silent Library'] },
 { c: 'Actors & Directors', t: 4, q: 'Which American actress starred opposite Jean-Paul Belmondo in Breathless?', a: 'Jean Seberg', d: ['Jane Fonda', 'Anna Karina', 'Shirley MacLaine'] },
-{ c: 'Awards & Box Office', t: 4, q: 'Which Lars von Trier musical starring Bjork took the Palme d\'Or in 2000?', a: 'Dancer in the Dark', d: ['Breaking the Waves', 'Dogville', 'Melancholia'] },
+{ c: 'Awards & Box Office', t: 4, q: 'For which Lars von Trier musical did Bjork win Best Actress at Cannes in 2000?', a: 'Dancer in the Dark', d: ['Breaking the Waves', 'Dogville', 'Melancholia'] },
 { c: 'Behind the Scenes', t: 4, q: 'What was the computer-controlled camera rig built by Industrial Light and Magic for Star Wars called?', a: 'The Dykstraflex', d: ['The Lucascam', 'The Skywalker rig', 'The Trumbull mount'] },
 
 { c: 'Movies', t: 5, q: 'Which country did Carl Theodor Dreyer, the director of Vampyr, come from?', a: 'Denmark', d: ['Norway', 'Germany', 'Sweden'], from: 'script:d20q21' },
@@ -3797,7 +3797,7 @@ export const DAYS = [
 { c: 'Television', t: 1, q: 'In How I Met Your Mother, what is the name of the architect telling the story to his children?', a: 'Ted Mosby', d: ['Barney Stinson', 'Marshall Eriksen', 'Robin Scherbatsky'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actor played Gollum in The Lord of the Rings films?', a: 'Andy Serkis', d: ['Dominic Monaghan', 'Billy Boyd', 'Hugo Weaving'] },
 { c: 'Awards & Box Office', t: 1, q: 'Which stop-motion retelling of a classic puppet tale won Best Animated Feature for 2022?', a: 'Guillermo del Toro\'s Pinocchio', d: ['Marcel the Shell with Shoes On', 'Turning Red', 'The Sea Beast'] },
-{ c: 'Behind the Scenes', t: 1, q: 'Which streaming service produced Stranger Things?', a: 'Netflix', d: ['Hulu', 'Amazon Prime Video', 'HBO Max'] },
+{ c: 'Behind the Scenes', t: 1, q: 'Which streaming service released Stranger Things?', a: 'Netflix', d: ['Hulu', 'Amazon Prime Video', 'HBO Max'] },
 
 { c: 'Movies', t: 2, q: 'In Back to the Future, what is the name of the bully who torments George McFly?', a: 'Biff Tannen', d: ['Marty McFly', 'Needles', 'Strickland'] },
 { c: 'Television', t: 2, q: 'In Better Call Saul, what is Saul Goodman\'s real name?', a: 'Jimmy McGill', d: ['Chuck McGill', 'Howard Hamlin', 'Kim Wexler'] },
@@ -3900,8 +3900,8 @@ export const DAYS = [
 
 { c: 'Movies', t: 2, q: 'In Top Gun, what is the call sign of Maverick\'s radar intercept officer and best friend?', a: 'Goose', d: ['Iceman', 'Viper', 'Jester'] },
 { c: 'Television', t: 2, q: 'In Parks and Recreation, what is the name of the beloved miniature horse of Pawnee?', a: 'Li\'l Sebastian', d: ['Champion', 'Little Joe', 'Buttercup'] },
-{ c: 'Actors & Directors', t: 2, q: 'Which actor played Gimli in The Lord of the Rings films?', a: 'John Rhys-Davies', d: ['Sean Astin', 'Billy Boyd', 'Brett McKenzie'] },
-{ c: 'Awards & Box Office', t: 2, q: 'Which 2007 superhero sequel was the top-grossing release in North America that year?', a: 'Spider-Man 3', d: ['Transformers', 'Shrek the Third', 'Pirates of the Caribbean: At World\'s End'] },
+{ c: 'Actors & Directors', t: 2, q: 'Which actor played Gimli in The Lord of the Rings films?', a: 'John Rhys-Davies', d: ['Sean Astin', 'Billy Boyd', 'Bret McKenzie'] },
+{ c: 'Awards & Box Office', t: 2, q: 'Which film was the top-grossing release in North America in 2007?', a: 'Spider-Man 3', d: ['Transformers', 'Shrek the Third', 'Pirates of the Caribbean: At World\'s End'] },
 { c: 'Behind the Scenes', t: 2, q: 'What is a red herring in a mystery film?', a: 'A false clue meant to mislead', d: ['A hidden cameo', 'A continuity error', 'A scene shot in red light'] },
 
 { c: 'Movies', t: 3, q: 'In Parasite, what gift does Min-hyuk bring the Kim family at the start?', a: 'A scholar\'s rock', d: ['A bottle of whisky', 'A peach', 'A smartphone'] },
@@ -3928,7 +3928,7 @@ export const DAYS = [
 { c: 'Movies', t: 1, q: 'In Jurassic Park, on which fictional island is the park built?', a: 'Isla Nublar', d: ['Isla Sorna', 'Skull Island', 'Amity Island'] },
 { c: 'Television', t: 1, q: 'In The Simpsons, what is the name of Bart and Lisa\'s school bus driver?', a: 'Otto', d: ['Apu', 'Moe', 'Willie'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actor played Hawkeye in the Marvel films?', a: 'Jeremy Renner', d: ['Paul Rudd', 'Anthony Mackie', 'Chris Pratt'] },
-{ c: 'Awards & Box Office', t: 1, q: 'Which 1983 film concluding the original Star Wars trilogy was the top-grossing release in North America that year?', a: 'Return of the Jedi', d: ['Terms of Endearment', 'Flashdance', 'Trading Places'] },
+{ c: 'Awards & Box Office', t: 1, q: 'Which film was the top-grossing release in North America in 1983?', a: 'Return of the Jedi', d: ['Terms of Endearment', 'Flashdance', 'Trading Places'] },
 { c: 'Behind the Scenes', t: 1, q: 'What is the scrolling list of cast and crew names at the end of a film called?', a: 'The closing credits', d: ['The call sheet', 'The shot list', 'The slate'] },
 
 { c: 'Movies', t: 2, q: 'In Frozen, which prince turns out to be the villain?', a: 'Hans', d: ['Kristoff', 'Eric', 'Naveen'] },
@@ -3945,7 +3945,7 @@ export const DAYS = [
 
 { c: 'Movies', t: 4, q: 'In Sweet Smell of Success, what is J.J. Hunsecker\'s job?', a: 'Newspaper columnist', d: ['Nightclub owner', 'Theater producer', 'Senator'] },
 { c: 'Television', t: 4, q: 'Which 1950s CBS documentary series hosted by Edward R. Murrow took on Senator Joseph McCarthy?', a: 'See It Now', d: ['Person to Person', '60 Minutes', 'Meet the Press'] },
-{ c: 'Actors & Directors', t: 4, q: 'Which actor played J.J. Hunsecker in Sweet Smell of Success?', a: 'Burt Lancaster', d: ['Tony Curtis', 'Kirk Douglas', 'Edward G. Robinson'] },
+{ c: 'Actors & Directors', t: 4, q: 'Which actor played the fast-talking con man Harold Hill in the 1962 film The Music Man?', a: 'Robert Preston', d: ['Howard Keel', 'Gene Kelly', 'Dick Van Dyke'] },
 { c: 'Awards & Box Office', t: 4, q: 'Which Roman Polanski film took the Palme d\'Or in 2002?', a: 'The Pianist', d: ['Chinatown', 'Tess', 'Frantic'] },
 { c: 'Behind the Scenes', t: 4, q: 'On a camera report, what does the abbreviation MOS mean?', a: 'The shot was filmed without sound', d: ['The take is marked as the best one', 'The shot uses a moving camera', 'The film stock is out of date'] },
 
@@ -3962,7 +3962,7 @@ export const DAYS = [
 { c: 'Television', t: 1, q: 'In SpongeBob SquarePants, what is the name of SpongeBob\'s starfish best friend?', a: 'Patrick Star', d: ['Squidward Tentacles', 'Sandy Cheeks', 'Mr. Krabs'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actor played Bilbo Baggins in The Hobbit films?', a: 'Martin Freeman', d: ['Ian Holm', 'Elijah Wood', 'James McAvoy'] },
 { c: 'Awards & Box Office', t: 1, q: 'Which actor won Best Supporting Actor for A Real Pain?', a: 'Kieran Culkin', d: ['Edward Norton', 'Yura Borisov', 'Guy Pearce'] },
-{ c: 'Behind the Scenes', t: 1, q: 'Which American public broadcaster airs the drama strand Masterpiece?', a: 'PBS', d: ['NPR', 'C-SPAN', 'CBS'] },
+{ c: 'Behind the Scenes', t: 1, q: 'Which American public broadcaster has carried the drama strand Masterpiece since 1971?', a: 'PBS', d: ['NPR', 'C-SPAN', 'CBS'] },
 
 { c: 'Movies', t: 2, q: 'In the Harry Potter films, what is the name of Ron Weasley\'s pet rat?', a: 'Scabbers', d: ['Crookshanks', 'Errol', 'Trevor'] },
 { c: 'Television', t: 2, q: 'In Squid Game, what is the first game the contestants play?', a: 'Red Light, Green Light', d: ['Tug of war', 'Marbles', 'Glass bridge'] },
@@ -3995,7 +3995,7 @@ export const DAYS = [
 { c: 'Television', t: 1, q: 'Which reality competition searches for America\'s next drag superstar?', a: 'RuPaul\'s Drag Race', d: ['Queer Eye', 'Project Runway', 'Making the Cut'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actor voiced Olaf the snowman in Frozen?', a: 'Josh Gad', d: ['Jonathan Groff', 'Jack Black', 'Alan Tudyk'] },
 { c: 'Awards & Box Office', t: 1, q: 'Which actress won Best Supporting Actress for playing a grieving school cook in The Holdovers?', a: 'Da\'Vine Joy Randolph', d: ['Emily Blunt', 'Danielle Brooks', 'America Ferrera'] },
-{ c: 'Behind the Scenes', t: 1, q: 'Which cable channel first aired Breaking Bad?', a: 'AMC', d: ['HBO', 'FX', 'Showtime'] },
+{ c: 'Behind the Scenes', t: 1, q: 'What does a director call out to stop the camera at the end of a take?', a: 'Cut!', d: ['Action!', 'Rolling!', 'Places!'] },
 
 { c: 'Movies', t: 2, q: 'In Toy Story 3, what is the name of the daycare center where the toys are taken?', a: 'Sunnyside', d: ['Little Acorns', 'Happy Hollow', 'Rainbow Corner'] },
 { c: 'Television', t: 2, q: 'In Lost, which flight number crashes on the island?', a: 'Oceanic 815', d: ['Pan Am 103', 'Ajira 316', 'Oceanic 42'] },
@@ -4028,7 +4028,7 @@ export const DAYS = [
 { c: 'Television', t: 1, q: 'In The Brady Bunch, how many children are there in the blended family?', a: 'Six', d: ['Four', 'Five', 'Eight'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actress played Eleven in Stranger Things?', a: 'Millie Bobby Brown', d: ['Sadie Sink', 'Natalia Dyer', 'Maya Hawke'] },
 { c: 'Awards & Box Office', t: 1, q: 'Which 2004 Clint Eastwood boxing drama won Best Picture?', a: 'Million Dollar Baby', d: ['The Aviator', 'Sideways', 'Ray'] },
-{ c: 'Behind the Scenes', t: 1, q: 'Which television network first aired Friends?', a: 'NBC', d: ['CBS', 'ABC', 'Fox'] },
+{ c: 'Behind the Scenes', t: 1, q: 'Which Magnum, P.I. star was first choice to play Indiana Jones but could not get out of his television contract?', a: 'Tom Selleck', d: ['Burt Reynolds', 'Nick Nolte', 'Jeff Bridges'] },
 
 { c: 'Movies', t: 2, q: 'In The Wizard of Oz, what is the name of the woman who raises Dorothy on the Kansas farm?', a: 'Aunt Em', d: ['Aunt May', 'Aunt Bee', 'Aunt Polly'] },
 { c: 'Television', t: 2, q: 'In the American version of The Office, what is Dwight\'s family farm called?', a: 'Schrute Farms', d: ['Beet Acres', 'Mose Manor', 'Scranton Fields'] },
@@ -4036,7 +4036,7 @@ export const DAYS = [
 { c: 'Awards & Box Office', t: 2, q: 'Which comedy about a veteran Las Vegas comedian won the Emmy for Outstanding Comedy Series in 2024?', a: 'Hacks', d: ['The Bear', 'Abbott Elementary', 'Only Murders in the Building'] },
 { c: 'Behind the Scenes', t: 2, q: 'Which 1939 film was shot by three directors, with Victor Fleming finishing it?', a: 'Gone with the Wind', d: ['Stagecoach', 'Wuthering Heights', 'Ninotchka'] },
 
-{ c: 'Movies', t: 3, q: 'In The Shining, which room number is Danny warned never to enter?', a: '237', d: ['217', '101', '42'] },
+{ c: 'Movies', t: 3, q: 'In Stanley Kubrick\'s The Shining, which room number is Danny warned never to enter?', a: '237', d: ['217', '101', '42'] },
 { c: 'Television', t: 3, q: 'In The Wire, whom does Omar Little make a career of robbing?', a: 'Drug dealers', d: ['Banks', 'Dock workers', 'Politicians'] },
 { c: 'Actors & Directors', t: 3, q: 'Which actor played the title villain Bill in Kill Bill?', a: 'David Carradine', d: ['Michael Madsen', 'Gordon Liu', 'Michael Parks'] },
 { c: 'Awards & Box Office', t: 3, q: 'Which comedian won Best Supporting Actress for Precious?', a: 'Mo\'Nique', d: ['Queen Latifah', 'Mariah Carey', 'Wanda Sykes'] },
@@ -4045,7 +4045,7 @@ export const DAYS = [
 { c: 'Movies', t: 4, q: 'In which city and year is Blade Runner set?', a: 'Los Angeles, 2019', d: ['New York, 2049', 'Tokyo, 2020', 'Chicago, 2032'] },
 { c: 'Television', t: 4, q: 'What was the original 1975 cast of Saturday Night Live billed as?', a: 'The Not Ready for Prime Time Players', d: ['The Second City Troupe', 'The Midnight Irregulars', 'The Studio 8H Gang'] },
 { c: 'Actors & Directors', t: 4, q: 'Which actress starred in Godard\'s Contempt?', a: 'Brigitte Bardot', d: ['Anna Karina', 'Jeanne Moreau', 'Catherine Deneuve'] },
-{ c: 'Awards & Box Office', t: 4, q: 'Which Mike Leigh family drama took the Palme d\'Or in 1996?', a: 'Secrets and Lies', d: ['Naked', 'Vera Drake', 'Topsy-Turvy'] },
+{ c: 'Awards & Box Office', t: 4, q: 'Which Mike Leigh family drama won Brenda Blethyn the BAFTA for Best Actress?', a: 'Secrets and Lies', d: ['Naked', 'Vera Drake', 'Topsy-Turvy'] },
 { c: 'Behind the Scenes', t: 4, q: 'Which Disney artist, inspired by Chinese landscape painting, set the visual style of Bambi?', a: 'Tyrus Wong', d: ['Ub Iwerks', 'Mary Blair', 'Marc Davis'] },
 
 { c: 'Movies', t: 5, q: 'What is the family name of the Sicilian prince in Visconti\'s The Leopard?', a: 'Salina', d: ['Falconeri', 'Sedara', 'Corbera'] },
@@ -4061,7 +4061,7 @@ export const DAYS = [
 { c: 'Television', t: 1, q: 'In Seinfeld, what is the name of Jerry\'s neighbor across the hall?', a: 'Kramer', d: ['George', 'Elaine', 'Puddy'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actress played the title role in the 2022 Netflix series Wednesday?', a: 'Jenna Ortega', d: ['Christina Ricci', 'Millie Bobby Brown', 'Sadie Sink'] },
 { c: 'Awards & Box Office', t: 1, q: 'What does a performer receive on the Hollywood Walk of Fame?', a: 'A star set into the sidewalk', d: ['A bronze statue', 'A handprint in a wall', 'A plaque on a lamppost'] },
-{ c: 'Behind the Scenes', t: 1, q: 'Which television network has aired The Simpsons since 1989?', a: 'Fox', d: ['NBC', 'ABC', 'CBS'] },
+{ c: 'Behind the Scenes', t: 1, q: 'Lassie is a female collie on screen, but who usually played her?', a: 'Male collies', d: ['Female collies only', 'A puppet', 'A trained wolf'] },
 
 { c: 'Movies', t: 2, q: 'In The Terminator, what is Sarah Connor working as when the cyborg comes for her?', a: 'A waitress', d: ['A nurse', 'A student', 'A bank teller'] },
 { c: 'Television', t: 2, q: 'In Gilligan\'s Island, what is the name of the boat that runs aground?', a: 'The S.S. Minnow', d: ['The Sea Breeze', 'The Lucky Lady', 'The Mary Ann'] },
@@ -4111,14 +4111,14 @@ export const DAYS = [
 { c: 'Movies', t: 4, q: 'In Heat, where does the final confrontation between Hanna and McCauley take place?', a: 'Beside the runways at LAX', d: ['On the Santa Monica Pier', 'In a downtown bank', 'At a freight yard'] },
 { c: 'Television', t: 4, q: 'Which 2019 South Korean drama follows an heiress who paraglides by accident into North Korea?', a: 'Crash Landing on You', d: ['Descendants of the Sun', 'Goblin', 'Itaewon Class'] },
 { c: 'Actors & Directors', t: 4, q: 'Which Indian director made Pather Panchali?', a: 'Satyajit Ray', d: ['Ritwik Ghatak', 'Mrinal Sen', 'Guru Dutt'] },
-{ c: 'Awards & Box Office', t: 4, q: 'Which Ruben Ostlund satire about a luxury cruise took the Palme d\'Or in 2022?', a: 'Triangle of Sadness', d: ['The Square', 'Force Majeure', 'Close'] },
+{ c: 'Awards & Box Office', t: 4, q: 'Which Ruben Ostlund satire about a luxury cruise was nominated for Best Picture for 2022?', a: 'Triangle of Sadness', d: ['The Square', 'Force Majeure', 'Close'] },
 { c: 'Behind the Scenes', t: 4, q: 'Which 1903 Edwin S. Porter film is an early landmark of narrative editing and the western?', a: 'The Great Train Robbery', d: ['Life of an American Fireman', 'The Kiss', 'Rescued by Rover'] },
 
 { c: 'Movies', t: 5, q: 'In which city do the angels of Wings of Desire watch over people?', a: 'Berlin', d: ['Vienna', 'Munich', 'Hamburg'] },
 { c: 'Television', t: 5, q: 'Which German television epic by Edgar Reitz follows the village of Schabbach across the twentieth century?', a: 'Heimat', d: ['Berlin Alexanderplatz', 'Das Boot', 'Babylon Berlin'] },
 { c: 'Actors & Directors', t: 5, q: 'Which director made The Umbrellas of Cherbourg and The Young Girls of Rochefort?', a: 'Jacques Demy', d: ['Jacques Rivette', 'Claude Lelouch', 'Louis Malle'] },
 { c: 'Awards & Box Office', t: 5, q: 'Which Visconti film took the Palme d\'Or in 1963?', a: 'The Leopard', d: ['Rocco and His Brothers', 'Senso', 'Death in Venice'] },
-{ c: 'Behind the Scenes', t: 5, q: 'Which British two-color process, first shown publicly in 1908, was the first commercially successful natural color system for film?', a: 'Kinemacolor', d: ['Technicolor', 'Prizma', 'Chronochrome'] },
+{ c: 'Behind the Scenes', t: 5, q: 'Which British two-color process, developed by George Albert Smith and promoted by Charles Urban, was the first commercially successful natural color system for film?', a: 'Kinemacolor', d: ['Technicolor', 'Prizma', 'Chronochrome'] },
 ],
 
 ];

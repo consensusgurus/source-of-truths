@@ -85,7 +85,7 @@ export const LANE_DAYS = [
   // day 11
   [
     { c: 'Markets & Money', t: 1, q: 'What is the everyday word for an increase in an employee\'s pay?', a: 'A raise', d: ['A bonus', 'A perk', 'A stipend'] },
-    { c: 'Markets & Money', t: 2, q: 'What is the name for shares a company has bought back and holds in its own treasury?', a: 'Treasury stock', d: ['Preferred stock', 'Common stock', 'Restricted stock'] },
+    { c: 'Markets & Money', t: 2, q: 'What is the name for shares a company has bought back and kept rather than canceled?', a: 'Treasury stock', d: ['Preferred stock', 'Common stock', 'Restricted stock'] },
     { c: 'Markets & Money', t: 3, q: 'What term describes the difference between the buying and selling price quoted for a security?', a: 'The bid-ask spread', d: ['The margin call', 'The tick size', 'The float gap'], from: 'biz:d07q12' },
     { c: 'Markets & Money', t: 4, q: 'The London interbank lending benchmark that was phased out after a rigging scandal was abbreviated how?', a: 'LIBOR', d: ['EURIBOR', 'SONIA', 'TIBOR'], from: 'biz:d05q17' },
     { c: 'Markets & Money', t: 5, q: 'The Japanese stock index that is capitalization weighted, rather than price weighted like its more famous rival, is called what?', a: 'TOPIX', d: ['JASDAQ', 'MOTHERS', 'NIKKEI 500'], from: 'biz:d15q22' },
@@ -167,7 +167,7 @@ export const LANE_DAYS = [
     { c: 'Markets & Money', t: 1, q: 'What is the currency of Thailand?', a: 'The baht', d: ['The ringgit', 'The rupiah', 'The kip'] },
     { c: 'Markets & Money', t: 2, q: 'Along with Equifax and Experian, which company is one of the three big American credit bureaus?', a: 'TransUnion', d: ['Fitch', 'FICO', 'Dun and Bradstreet'] },
     { c: 'Markets & Money', t: 3, q: 'Who became the first woman to chair the Federal Reserve, in 2014?', a: 'Janet Yellen', d: ['Lael Brainard', 'Sheila Bair', 'Christine Lagarde'] },
-    { c: 'Markets & Money', t: 4, q: 'The Bank of Amsterdam, an early public bank whose deposit receipts circulated as money, was established in which year?', a: '1609', d: ['1531', '1721', '1657'], from: 'biz:d41q17' },
+    { c: 'Markets & Money', t: 4, q: 'What is the name for a yield curve on which short-term rates sit above long-term rates, often read as a recession warning?', a: 'An inverted yield curve', d: ['A steep yield curve', 'A humped yield curve', 'A normal yield curve'] },
     { c: 'Markets & Money', t: 5, q: 'The dilemma that a country supplying the world reserve currency faces conflicting domestic and international obligations is named after which economist?', a: 'Robert Triffin', d: ['Jacob Viner', 'Ragnar Nurkse', 'Gottfried Haberler'], from: 'biz:d41q22' },
   ],
   // day 22

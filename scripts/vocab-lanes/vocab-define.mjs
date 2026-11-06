@@ -560,7 +560,7 @@ export const LANE_DAYS = [
     { c: L, t: 1, q: "What is an 'edge'?", a: "the outer border of something", d: ["the very center", "a deep hole", "a small piece"] },
     { c: L, t: 2, q: "A 'lofty' tower is...?", a: "very high", d: ["very lonely", "very heavy", "very soft"] },
     { c: L, t: 3, q: "What is a 'debacle'?", a: "a sudden, humiliating failure", d: ["a public debate", "a wild party", "a narrow escape"] },
-    { c: L, t: 4, q: "A 'baleful' look is...?", a: "threatening harm", d: ["full of hay", "deeply grieving", "pale and sickly"] },
+    { c: L, t: 4, q: "A 'baleful' look is...?", a: "threatening harm", d: ["full of hay", "softly pleading", "pale and sickly"] },
     { c: L, t: 5, q: "What is a 'gerontocracy'?", a: "rule by elders", d: ["rule by the wealthy", "rule by priests", "rule by one family"] },
   ],
   // day 70
@@ -575,7 +575,7 @@ export const LANE_DAYS = [
   [
     { c: L, t: 1, q: "What does 'drench' mean?", a: "to soak completely", d: ["to dry", "to dig", "to drink"] },
     { c: L, t: 2, q: "Someone 'adept' at chess is...?", a: "highly skilled", d: ["adopted", "clumsy", "willing"] },
-    { c: L, t: 3, q: "A 'flippant' remark is...?", a: "not showing proper seriousness", d: ["easily flipped", "overly formal", "physically agile"] },
+    { c: L, t: 3, q: "A 'flippant' remark is...?", a: "not showing proper seriousness", d: ["easily flipped", "overly formal", "deeply heartfelt"] },
     { c: L, t: 4, q: "What does 'ersatz' mean?", a: "artificial and inferior", d: ["upright and stiff", "eager and keen", "genuine"] },
     { c: L, t: 5, q: "What does 'hortatory' mean?", a: "urging or encouraging", d: ["relating to gardens", "relating to time", "warning of disaster"] },
   ],

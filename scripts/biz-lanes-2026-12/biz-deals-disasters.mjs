@@ -31,7 +31,7 @@ export const LANE_DAYS = [
     { c: 'Deals & Disasters', t: 1, q: 'Which stockbroker\'s fraud was the subject of the 2013 film The Wolf of Wall Street?', a: 'Jordan Belfort', d: ['Bernard Madoff', 'Ivan Boesky', 'Michael Milken'] },
     { c: 'Deals & Disasters', t: 2, q: 'Which workplace messaging company did Salesforce buy in 2021 for about 27.7 billion dollars?', a: 'Slack', d: ['Zoom', 'Asana', 'Atlassian'] },
     { c: 'Deals & Disasters', t: 3, q: 'Which Indian airline, once the country\'s largest private carrier, grounded its whole fleet in 2019 after running out of cash?', a: 'Jet Airways', d: ['Kingfisher Airlines', 'GoAir', 'Air Sahara'], from: 'biz:d37q14' },
-    { c: 'Deals & Disasters', t: 4, q: 'Which city filed the largest US municipal bankruptcy in 2013?', a: 'Detroit', d: ['Stockton', 'Chicago', 'Cleveland'], from: 'biz:d20q19' },
+    { c: 'Deals & Disasters', t: 4, q: 'Which city\'s 1975 brush with default prompted the Daily News headline \'Ford to City: Drop Dead\'?', a: 'New York City', d: ['Cleveland', 'Detroit', 'Philadelphia'] },
     { c: 'Deals & Disasters', t: 5, q: 'Which satellite telephone venture filed for bankruptcy in 1999, months after switching on a constellation that had cost about 5 billion dollars?', a: 'Iridium', d: ['Teledesic', 'ICO Global Communications', 'Globalstar'], from: 'biz:d53q24' },
   ],
   // day 5
@@ -79,7 +79,7 @@ export const LANE_DAYS = [
     { c: 'Deals & Disasters', t: 1, q: 'Which online pet supply store collapsed in November 2000 despite its famous sock puppet mascot?', a: 'Pets.com', d: ['Petco', 'Chewy', 'PetSmart'] },
     { c: 'Deals & Disasters', t: 2, q: 'Which Brazilian mining company owned the tailings dam that burst at Brumadinho in January 2019?', a: 'Vale', d: ['BHP', 'Anglo American', 'Rio Tinto'] },
     { c: 'Deals & Disasters', t: 3, q: 'Which hedge fund manager brought Kmart out of bankruptcy and merged it with Sears in 2005, then chaired the combined retailer for years?', a: 'Edward Lampert', d: ['Carl Icahn', 'Daniel Loeb', 'Bill Ackman'], from: 'biz:d53q14' },
-    { c: 'Deals & Disasters', t: 4, q: 'In which year did Apple launch the Newton MessagePad, whose handwriting recognition became a running joke?', a: '1993', d: ['1996', '1989', '1991'], from: 'biz:d50q19' },
+    { c: 'Deals & Disasters', t: 4, q: 'Which Danish shipping group had its container terminals around the world disrupted by the NotPetya cyberattack in June 2017?', a: 'Maersk', d: ['Hapag-Lloyd', 'CMA CGM', 'Evergreen'] },
     { c: 'Deals & Disasters', t: 5, q: 'Which 1985 Delaware decision upheld a selective self-tender as a proportionate defense to a coercive two-tier bid?', a: 'Unocal v. Mesa Petroleum', d: ['Revlon v. MacAndrews and Forbes', 'Moran v. Household International', 'Paramount v. QVC'], from: 'biz:d08q24' },
   ],
   // day 11

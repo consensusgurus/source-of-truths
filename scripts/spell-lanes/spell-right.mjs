@@ -343,7 +343,7 @@ export const LANE_DAYS = [
     { c: 'Spelled Right', t: 2, q: "Which spelling would win a spelling bee?", a: "athlete", d: ["athelete", "athleet", "athlette"] },
     { c: 'Spelled Right', t: 3, q: "Which is the correct spelling?", a: "boundary", d: ["boundry", "boundery", "boundarey"] },
     { c: 'Spelled Right', t: 4, q: "Which is spelled correctly?", a: "asthma", d: ["asma", "asthmah", "astma"] },
-    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'cooked with tomatoes, mushrooms and herbs' is right?", a: "cacciatore", d: ["cacciatori", "caciatore", "cacciatorre"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'cooked with tomatoes and herbs, as in a chicken dish' is right?", a: "cacciatore", d: ["cacciatori", "caciatore", "cacciatorre"] },
   ],
   // day 42
   [
@@ -403,7 +403,7 @@ export const LANE_DAYS = [
   ],
   // day 49
   [
-    { c: 'Spelled Right', t: 1, q: "Which one is the right spelling?", a: "double", d: ["dubble", "doubel", "duble"] },
+    { c: 'Spelled Right', t: 1, q: "Which one is the right spelling?", a: "ankle", d: ["ankel", "ankkle", "anckle"] },
     { c: 'Spelled Right', t: 2, q: "Which spelling would win a spelling bee?", a: "decision", d: ["decission", "desicion", "decisoin"] },
     { c: 'Spelled Right', t: 3, q: "Which is the correct spelling?", a: "equipment", d: ["equiptment", "equipmint", "equippment"] },
     { c: 'Spelled Right', t: 4, q: "Which is spelled correctly?", a: "diaphragm", d: ["diaphram", "diafragm", "diaphragme"] },
@@ -436,7 +436,7 @@ export const LANE_DAYS = [
   // day 53
   [
     { c: 'Spelled Right', t: 1, q: "Which of these is spelled correctly?", a: "eight", d: ["eaght", "eihgt", "eiht"] },
-    { c: 'Spelled Right', t: 2, q: "Which spelling is correct in American English?", a: "guard", d: ["gaurd", "guarde", "guaard"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling is correct in American English?", a: "favorite", d: ["favorit", "favrite", "favoritte"] },
     { c: 'Spelled Right', t: 3, q: "Which spelling would a careful copy editor approve?", a: "gauge", d: ["guage", "gaige", "gaugue"] },
     { c: 'Spelled Right', t: 4, q: "Which spelling is correct for the word meaning 'an exact copy'?", a: "facsimile", d: ["facsimilie", "facsimily", "facksimile"] },
     { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'a casual lack of concern' is right?", a: "insouciance", d: ["insousiance", "insouciense", "insousciance"] },
@@ -451,7 +451,7 @@ export const LANE_DAYS = [
   ],
   // day 55
   [
-    { c: 'Spelled Right', t: 1, q: "Which is the correct spelling?", a: "enemy", d: ["enimy", "enemey", "enemmy"] },
+    { c: 'Spelled Right', t: 1, q: "Which is the correct spelling?", a: "carrot", d: ["carot", "carrit", "karrot"] },
     { c: 'Spelled Right', t: 2, q: "Which is spelled correctly?", a: "lonely", d: ["lonley", "lonly", "lonelly"] },
     { c: 'Spelled Right', t: 3, q: "Which of these is spelled correctly?", a: "ignorance", d: ["ignorence", "ignorrance", "ignorannce"] },
     { c: 'Spelled Right', t: 4, q: "Which spelling is correct in American English?", a: "genealogy", d: ["geneology", "genealagy", "geneaology"] },
@@ -459,7 +459,7 @@ export const LANE_DAYS = [
   ],
   // day 56
   [
-    { c: 'Spelled Right', t: 1, q: "Which spelling is correct in American English?", a: "every", d: ["evry", "everey", "evrey"] },
+    { c: 'Spelled Right', t: 1, q: "Which spelling is correct in American English?", a: "gallon", d: ["galon", "gallin", "gallun"] },
     { c: 'Spelled Right', t: 2, q: "Which spelling would a careful copy editor approve?", a: "actually", d: ["actualy", "acctually", "actully"] },
     { c: 'Spelled Right', t: 3, q: "Which of these words is spelled right?", a: "incidentally", d: ["incidentaly", "insidentally", "incidentilly"] },
     { c: 'Spelled Right', t: 4, q: "Which one is the right spelling?", a: "glockenspiel", d: ["glockenspeil", "glokenspiel", "glockenspeel"] },
@@ -515,7 +515,7 @@ export const LANE_DAYS = [
   ],
   // day 63
   [
-    { c: 'Spelled Right', t: 1, q: "Which is the correct spelling?", a: "heard", d: ["heared", "haerd", "heerd"] },
+    { c: 'Spelled Right', t: 1, q: "Which is the correct spelling?", a: "circus", d: ["circis", "sircus", "curcus"] },
     { c: 'Spelled Right', t: 2, q: "Which is spelled correctly?", a: "fourteen", d: ["forteen", "fourtean", "fourtine"] },
     { c: 'Spelled Right', t: 3, q: "Which of these is spelled correctly?", a: "arctic", d: ["arktic", "arctik", "arcttic"] },
     { c: 'Spelled Right', t: 4, q: "Which spelling is correct in American English?", a: "labyrinth", d: ["labrynth", "labyrynth", "labirinth"] },
@@ -547,7 +547,7 @@ export const LANE_DAYS = [
   ],
   // day 67
   [
-    { c: 'Spelled Right', t: 1, q: "Which spelling would a careful copy editor approve?", a: "jacket", d: ["jackit", "jaket", "jackett"] },
+    { c: 'Spelled Right', t: 1, q: "Which spelling is correct in American English?", a: "jacket", d: ["jackit", "jaket", "jackett"] },
     { c: 'Spelled Right', t: 2, q: "Which of these words is spelled right?", a: "careful", d: ["carefull", "carefle", "carefool"] },
     { c: 'Spelled Right', t: 3, q: "Which one is the right spelling?", a: "dumbbell", d: ["dumbell", "dumbel", "dummbell"] },
     { c: 'Spelled Right', t: 4, q: "Which spelling would win a spelling bee?", a: "commemorate", d: ["comemorate", "commemmorate", "comemmorate"] },
@@ -555,7 +555,7 @@ export const LANE_DAYS = [
   ],
   // day 68
   [
-    { c: 'Spelled Right', t: 1, q: "Which spelling would win a spelling bee?", a: "Christmas", d: ["Chrismas", "Christmass", "Cristmas"] },
+    { c: 'Spelled Right', t: 1, q: "Which spelling would win a spelling bee?", a: "candy", d: ["candey", "candee", "canndy"] },
     { c: 'Spelled Right', t: 2, q: "Which is the correct spelling?", a: "excitement", d: ["exitement", "excitment", "excitemint"] },
     { c: 'Spelled Right', t: 3, q: "Which is spelled correctly?", a: "gorgeous", d: ["gorgous", "gorjeous", "gorgeus"] },
     { c: 'Spelled Right', t: 4, q: "Which of these is spelled correctly?", a: "eccentric", d: ["eccentrick", "ecentric", "eccentryc"] },

@@ -56,7 +56,7 @@ export const LANE_DAYS = [
     { c: 'Countries & Peoples', t: 2, q: 'Which stew of black beans and pork is the national dish of Brazil?', a: 'Feijoada', d: ['Moqueca', 'Churrasco', 'Vatapa'] },
     { c: 'Countries & Peoples', t: 3, q: 'Which long-necked Indian stringed instrument was made famous in the West by Ravi Shankar?', a: 'The sitar', d: ['The sarod', 'The tabla', 'The veena'] },
     { c: 'Countries & Peoples', t: 4, q: 'Which country was formerly known as Nyasaland?', a: 'Malawi', d: ['Zambia', 'Mozambique', 'Tanzania'], from: 'atlas:d22q20' },
-    { c: 'Countries & Peoples', t: 5, q: 'The Kingdom of Eswatini was known by which name until 2018?', a: 'Swaziland', d: ['Basutoland', 'Bechuanaland', 'Nyasaland'], from: 'atlas:d11q25' },
+    { c: 'Countries & Peoples', t: 5, q: 'The Kingdom of Eswatini was known by which name until 2018?', a: 'Swaziland', d: ['Basutoland', 'Bechuanaland', 'Rhodesia'], from: 'atlas:d11q25' },
   ],
   // 2026-12-08
   [
@@ -142,7 +142,7 @@ export const LANE_DAYS = [
   [
     { c: 'Countries & Peoples', t: 1, q: 'Which afternoon rest is a traditional part of the day in Spain?', a: 'The siesta', d: ['The fiesta', 'The paseo', 'The tapeo'] },
     { c: 'Countries & Peoples', t: 2, q: 'Which Japanese martial art, founded by Jigoro Kano in 1882, became an Olympic sport?', a: 'Judo', d: ['Karate', 'Aikido', 'Kendo'] },
-    { c: 'Countries & Peoples', t: 3, q: 'What is the currency of Saudi Arabia?', a: 'The riyal', d: ['The dinar', 'The dirham', 'The rial'] },
+    { c: 'Countries & Peoples', t: 3, q: 'What is the currency of Saudi Arabia?', a: 'The riyal', d: ['The dinar', 'The dirham', 'The pound'] },
     { c: 'Countries & Peoples', t: 4, q: 'In which country is Catalan the sole official language?', a: 'Andorra', d: ['Monaco', 'San Marino', 'Malta'], from: 'atlas:d28q20' },
     { c: 'Countries & Peoples', t: 5, q: 'Mkhedruli is the everyday alphabet used to write which language of the Caucasus?', a: 'Georgian', d: ['Ossetian', 'Chechen', 'Armenian'], from: 'atlas:d54q25' },
   ],
@@ -172,7 +172,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-22
   [
-    { c: 'Countries & Peoples', t: 1, q: 'Which creamy Italian rice dish is cooked slowly with stock, as in the saffron version from Milan?', a: 'Risotto', d: ['Paella', 'Pilaf', 'Congee'] },
+    { c: 'Countries & Peoples', t: 1, q: 'Which creamy Italian rice dish is cooked slowly by stirring in hot stock a ladle at a time?', a: 'Risotto', d: ['Paella', 'Pilaf', 'Congee'] },
     { c: 'Countries & Peoples', t: 2, q: 'Which smoked sausage is a traditional food of Poland?', a: 'Kielbasa', d: ['Chorizo', 'Bratwurst', 'Salami'] },
     { c: 'Countries & Peoples', t: 3, q: 'Which French-speaking people of the Louisiana bayous descend from settlers expelled from Acadia?', a: 'The Cajuns', d: ['The Creoles', 'The Metis', 'The Huguenots'] },
     { c: 'Countries & Peoples', t: 4, q: 'Which country was formerly known as Dahomey?', a: 'Benin', d: ['Togo', 'Ghana', 'Ivory Coast'], from: 'atlas:d18q20' },

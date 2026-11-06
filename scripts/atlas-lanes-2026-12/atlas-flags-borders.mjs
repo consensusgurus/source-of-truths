@@ -24,11 +24,11 @@ export const LANE_DAYS = [
     { c: 'Flags & Borders', t: 2, q: 'Which country lies between Ecuador and Venezuela?', a: 'Colombia', d: ['Peru', 'Panama', 'Guyana'] },
     { c: 'Flags & Borders', t: 3, q: 'Which Mexican state borders Arizona and lies along the Gulf of California?', a: 'Sonora', d: ['Chihuahua', 'Sinaloa', 'Baja California Sur'] },
     { c: 'Flags & Borders', t: 4, q: 'The yellow, blue and red flags of Venezuela and Ecuador descend from the banner of which republic, dissolved in 1831?', a: 'Gran Colombia', d: ['The United Provinces of Central America', 'The Viceroyalty of New Granada', 'The Empire of Brazil'], from: 'atlas:d59q18' },
-    { c: 'Flags & Borders', t: 5, q: 'Which country has the only national flag to feature purple, in the plumage of a parrot?', a: 'Dominica', d: ['Saint Lucia', 'Grenada', 'Barbados'], from: 'atlas:d22q23' },
+    { c: 'Flags & Borders', t: 5, q: 'Which country\'s flag shows a Sisserou parrot with purple plumage at its center?', a: 'Dominica', d: ['Saint Lucia', 'Grenada', 'Barbados'] },
   ],
   // 2026-12-04
   [
-    { c: 'Flags & Borders', t: 1, q: 'What color is the star on the flag of Vietnam?', a: 'Yellow', d: ['White', 'Red', 'Blue'] },
+    { c: 'Flags & Borders', t: 1, q: 'What color is the cross on the flag of Greece?', a: 'White', d: ['Yellow', 'Red', 'Black'] },
     { c: 'Flags & Borders', t: 2, q: 'Which island kingdom in the Persian Gulf is linked to Saudi Arabia by a causeway?', a: 'Bahrain', d: ['Qatar', 'Kuwait', 'Oman'] },
     { c: 'Flags & Borders', t: 3, q: 'Which US state shares the Delmarva Peninsula with Maryland and Virginia?', a: 'Delaware', d: ['New Jersey', 'Pennsylvania', 'West Virginia'] },
     { c: 'Flags & Borders', t: 4, q: 'Which US state\'s flag shows a ship, a plow and three sheaves of wheat flanked by two horses?', a: 'Pennsylvania', d: ['Delaware', 'New Jersey', 'Ohio'] },
@@ -39,7 +39,7 @@ export const LANE_DAYS = [
     { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly south of Indiana, across the Ohio River?', a: 'Kentucky', d: ['Tennessee', 'Illinois', 'West Virginia'] },
     { c: 'Flags & Borders', t: 2, q: 'Along with Texas, Arizona and California, which US state borders Mexico?', a: 'New Mexico', d: ['Nevada', 'Colorado', 'Oklahoma'] },
     { c: 'Flags & Borders', t: 3, q: 'Which Mexican state contains the resort city of Cancun?', a: 'Quintana Roo', d: ['Yucatan', 'Campeche', 'Tabasco'] },
-    { c: 'Flags & Borders', t: 4, q: 'Which US state\'s entire northern border is with the Canadian province of Quebec?', a: 'Vermont', d: ['Maine', 'New Hampshire', 'New York'] },
+    { c: 'Flags & Borders', t: 4, q: 'Which is the only New England state with no coastline on the Atlantic?', a: 'Vermont', d: ['Maine', 'New Hampshire', 'Massachusetts'] },
     { c: 'Flags & Borders', t: 5, q: 'Which US state\'s flag shows three white stars inside a blue circle on a crimson field?', a: 'Tennessee', d: ['Kentucky', 'Louisiana', 'Missouri'], from: 'atlas:d02q23' },
   ],
   // 2026-12-06
@@ -52,7 +52,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-07
   [
-    { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly north of Utah?', a: 'Idaho', d: ['Wyoming', 'Montana', 'Oregon'] },
+    { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly north of Utah?', a: 'Idaho', d: ['Washington', 'Montana', 'Oregon'] },
     { c: 'Flags & Borders', t: 2, q: 'Which country sits at the head of the Persian Gulf between Iraq and Saudi Arabia?', a: 'Kuwait', d: ['Qatar', 'Bahrain', 'Jordan'] },
     { c: 'Flags & Borders', t: 3, q: 'Which US state\'s flag shows a beehive?', a: 'Utah', d: ['Idaho', 'Kansas', 'Nevada'] },
     { c: 'Flags & Borders', t: 4, q: 'Which US state\'s flag shows a sailor and a miner flanking a shield, with a badger above it?', a: 'Wisconsin', d: ['Minnesota', 'Michigan', 'Iowa'], from: 'atlas:d41q18' },
@@ -61,8 +61,8 @@ export const LANE_DAYS = [
   // 2026-12-08
   [
     { c: 'Flags & Borders', t: 1, q: 'Which two US states border Florida?', a: 'Alabama and Georgia', d: ['Georgia and South Carolina', 'Alabama and Mississippi', 'Georgia and Tennessee'] },
-    { c: 'Flags & Borders', t: 2, q: 'Which country lies between Nigeria and the Central African Republic?', a: 'Cameroon', d: ['Chad', 'Gabon', 'Niger'] },
-    { c: 'Flags & Borders', t: 3, q: 'Which Mexican state borders Texas along the lower Rio Grande?', a: 'Tamaulipas', d: ['Coahuila', 'Nuevo Leon', 'Veracruz'] },
+    { c: 'Flags & Borders', t: 2, q: 'Which country lies between Nigeria and the Central African Republic?', a: 'Cameroon', d: ['Benin', 'Gabon', 'Niger'] },
+    { c: 'Flags & Borders', t: 3, q: 'Which Mexican state borders Texas at the mouth of the Rio Grande?', a: 'Tamaulipas', d: ['Coahuila', 'Nuevo Leon', 'Veracruz'] },
     { c: 'Flags & Borders', t: 4, q: 'In which year did Canada replace the Red Ensign with the maple leaf flag?', a: '1965', d: ['1972', '1949', '1931'], from: 'atlas:d43q18' },
     { c: 'Flags & Borders', t: 5, q: 'Which is the only mainland Central American country with no Pacific coastline?', a: 'Belize', d: ['Honduras', 'El Salvador', 'Nicaragua'], from: 'atlas:d23q23' },
   ],
@@ -76,7 +76,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-10
   [
-    { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly north of Louisiana?', a: 'Arkansas', d: ['Mississippi', 'Oklahoma', 'Missouri'] },
+    { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly north of Louisiana?', a: 'Arkansas', d: ['Tennessee', 'Oklahoma', 'Missouri'] },
     { c: 'Flags & Borders', t: 2, q: 'Which US state lies between Louisiana and Alabama on the Gulf Coast?', a: 'Mississippi', d: ['Arkansas', 'Georgia', 'Tennessee'] },
     { c: 'Flags & Borders', t: 3, q: 'Which US state\'s flag shows a sunflower above the state seal?', a: 'Kansas', d: ['Nebraska', 'Iowa', 'Oklahoma'] },
     { c: 'Flags & Borders', t: 4, q: 'Which two countries share the small Caribbean island of Saint Martin?', a: 'France and the Netherlands', d: ['Britain and France', 'Spain and the Netherlands', 'France and the United States'] },
@@ -85,7 +85,7 @@ export const LANE_DAYS = [
   // 2026-12-11
   [
     { c: 'Flags & Borders', t: 1, q: 'How many countries share a land border with the United States?', a: 'Two', d: ['One', 'Three', 'Four'] },
-    { c: 'Flags & Borders', t: 2, q: 'Which country lies between Ethiopia and the Red Sea?', a: 'Eritrea', d: ['Djibouti', 'Somalia', 'Sudan'] },
+    { c: 'Flags & Borders', t: 2, q: 'Which Australian state lies directly north of New South Wales?', a: 'Queensland', d: ['The Northern Territory', 'South Australia', 'Victoria'] },
     { c: 'Flags & Borders', t: 3, q: 'Which US state\'s flag shows a buff field with a seal of the goddesses Liberty and Ceres?', a: 'New Jersey', d: ['New York', 'Delaware', 'Connecticut'] },
     { c: 'Flags & Borders', t: 4, q: 'Which narrow West African country lies between Ghana and Benin?', a: 'Togo', d: ['Burkina Faso', 'Ivory Coast', 'Sierra Leone'], from: 'atlas:d05q18' },
     { c: 'Flags & Borders', t: 5, q: 'Which country\'s flag shows a sun of forty rays with the crossed roof-poles of a yurt at its center?', a: 'Kyrgyzstan', d: ['Kazakhstan', 'Uzbekistan', 'Tajikistan'], from: 'atlas:d48q23' },
@@ -100,7 +100,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-13
   [
-    { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly south of Wyoming?', a: 'Colorado', d: ['Utah', 'Nebraska', 'Kansas'] },
+    { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly south of Wyoming?', a: 'Colorado', d: ['New Mexico', 'Nebraska', 'Kansas'] },
     { c: 'Flags & Borders', t: 2, q: 'Which Canadian province borders the US states of Washington, Idaho and Montana?', a: 'British Columbia', d: ['Alberta', 'Saskatchewan', 'Yukon'] },
     { c: 'Flags & Borders', t: 3, q: 'Which roughly triangular country borders only Croatia, Serbia and Montenegro?', a: 'Bosnia and Herzegovina', d: ['Slovenia', 'North Macedonia', 'Kosovo'] },
     { c: 'Flags & Borders', t: 4, q: 'Which Mexican state lies directly south of San Diego?', a: 'Baja California', d: ['Sonora', 'Baja California Sur', 'Sinaloa'] },
@@ -111,14 +111,14 @@ export const LANE_DAYS = [
     { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly north of Texas\'s panhandle?', a: 'Oklahoma', d: ['Kansas', 'Colorado', 'Nebraska'] },
     { c: 'Flags & Borders', t: 2, q: 'Which Canadian territory was carved out of the Northwest Territories in 1999?', a: 'Nunavut', d: ['Yukon', 'Labrador', 'Nunavik'] },
     { c: 'Flags & Borders', t: 3, q: 'Which US state\'s flag shows a bald eagle holding a banner reading State Sovereignty, National Union?', a: 'Illinois', d: ['Indiana', 'Iowa', 'Missouri'] },
-    { c: 'Flags & Borders', t: 4, q: 'Which Canadian territory borders Yukon, Nunavut, British Columbia, Alberta and Saskatchewan?', a: 'The Northwest Territories', d: ['Manitoba', 'Nunavut', 'Yukon'] },
+    { c: 'Flags & Borders', t: 4, q: 'Which Canadian territory has British Columbia, Alberta and Saskatchewan along its southern border?', a: 'The Northwest Territories', d: ['Manitoba', 'Nunavut', 'Yukon'] },
     { c: 'Flags & Borders', t: 5, q: 'Which country\'s flag shows a golden sun with twenty-four rays over bands of blue, yellow and green?', a: 'Rwanda', d: ['Burundi', 'Gabon', 'Cameroon'], from: 'atlas:d06q23' },
   ],
   // 2026-12-15
   [
     { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly east of New Mexico?', a: 'Texas', d: ['Arizona', 'Kansas', 'Colorado'] },
     { c: 'Flags & Borders', t: 2, q: 'The Mason-Dixon Line was surveyed to settle the border between Pennsylvania and which colony?', a: 'Maryland', d: ['Virginia', 'New Jersey', 'New York'] },
-    { c: 'Flags & Borders', t: 3, q: 'Which river forms the border between Indiana and Kentucky?', a: 'The Ohio', d: ['The Wabash', 'The Tennessee', 'The Cumberland'] },
+    { c: 'Flags & Borders', t: 3, q: 'Which river forms the border between Illinois and Kentucky?', a: 'The Ohio', d: ['The Wabash', 'The Tennessee', 'The Cumberland'] },
     { c: 'Flags & Borders', t: 4, q: 'Which Canadian province borders Vermont and New Hampshire?', a: 'Quebec', d: ['Ontario', 'New Brunswick', 'Nova Scotia'] },
     { c: 'Flags & Borders', t: 5, q: 'Which country\'s flag has orange and white diagonal stripes with a twenty-four-pointed white star?', a: 'Marshall Islands', d: ['Palau', 'Kiribati', 'Micronesia'], from: 'atlas:d08q23' },
   ],
@@ -140,10 +140,10 @@ export const LANE_DAYS = [
   ],
   // 2026-12-18
   [
-    { c: 'Flags & Borders', t: 1, q: 'Which tiny principality on the Mediterranean coast is surrounded on land by France?', a: 'Monaco', d: ['Andorra', 'San Marino', 'Liechtenstein'] },
+    { c: 'Flags & Borders', t: 1, q: 'Which tiny European principality\'s flag is two equal bands, red over white?', a: 'Monaco', d: ['Andorra', 'San Marino', 'Liechtenstein'] },
     { c: 'Flags & Borders', t: 2, q: 'Which US state lies between North Carolina and Georgia on the Atlantic coast?', a: 'South Carolina', d: ['Virginia', 'Tennessee', 'Alabama'] },
     { c: 'Flags & Borders', t: 3, q: 'Which Mexican state lies across the border from Texas\'s Big Bend and also borders New Mexico?', a: 'Chihuahua', d: ['Sonora', 'Coahuila', 'Durango'] },
-    { c: 'Flags & Borders', t: 4, q: 'Which national flag and which US state flag both show a single white star on a blue square beside a white band and a red band?', a: 'Chile and Texas', d: ['Liberia and Georgia', 'Cuba and Puerto Rico', 'Panama and Ohio'], from: 'atlas:d54q18' },
+    { c: 'Flags & Borders', t: 4, q: 'Which national flag and which US state flag both show a single white star on blue at the hoist, beside a white band above a red band?', a: 'Chile and Texas', d: ['Liberia and Georgia', 'Cuba and Puerto Rico', 'Panama and Ohio'] },
     { c: 'Flags & Borders', t: 5, q: 'Which country\'s flag is quartered, with a blue star on the upper hoist white quarter and a red star on the lower fly white quarter?', a: 'Panama', d: ['Cuba', 'Dominican Republic', 'Costa Rica'], from: 'atlas:d28q23' },
   ],
   // 2026-12-19
@@ -220,7 +220,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-28
   [
-    { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly south of Oregon?', a: 'California', d: ['Nevada', 'Idaho', 'Washington'] },
+    { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly south of Oregon?', a: 'California', d: ['Utah', 'Idaho', 'Washington'] },
     { c: 'Flags & Borders', t: 2, q: 'Which Australian state lies directly north of Victoria?', a: 'New South Wales', d: ['Queensland', 'South Australia', 'Tasmania'] },
     { c: 'Flags & Borders', t: 3, q: 'Which US state\'s flag is green and bears a portrait of the first American president?', a: 'Washington', d: ['Virginia', 'Delaware', 'Pennsylvania'] },
     { c: 'Flags & Borders', t: 4, q: 'The two blue stripes on the flag of Israel were taken from which garment?', a: 'A prayer shawl', d: ['A desert tent', 'A burial shroud', 'A Torah mantle'], from: 'atlas:d52q18' },
@@ -228,10 +228,10 @@ export const LANE_DAYS = [
   ],
   // 2026-12-29
   [
-    { c: 'Flags & Borders', t: 1, q: 'Which body of water forms the southern border of the US state of Texas east of the Rio Grande\'s mouth?', a: 'The Gulf of Mexico', d: ['The Pacific Ocean', 'The Caribbean Sea', 'The Atlantic Ocean'] },
-    { c: 'Flags & Borders', t: 2, q: 'Which US state meets Arizona, Colorado and New Mexico at the Four Corners?', a: 'Utah', d: ['Nevada', 'Wyoming', 'Kansas'] },
+    { c: 'Flags & Borders', t: 1, q: 'Which body of water lies along the southeastern coast of Texas?', a: 'The Gulf of Mexico', d: ['The Pacific Ocean', 'The Caribbean Sea', 'The Atlantic Ocean'] },
+    { c: 'Flags & Borders', t: 2, q: 'Which country lies between Montenegro and Greece on the Adriatic and Ionian coasts?', a: 'Albania', d: ['North Macedonia', 'Bulgaria', 'Kosovo'] },
     { c: 'Flags & Borders', t: 3, q: 'Which US state\'s flag shows an Osage shield on a sky blue field, crossed by a peace pipe and an olive branch?', a: 'Oklahoma', d: ['Kansas', 'Nebraska', 'New Mexico'] },
-    { c: 'Flags & Borders', t: 4, q: 'How many countries share a land border with Germany?', a: 'Nine', d: ['Seven', 'Eight', 'Ten'] },
+    { c: 'Flags & Borders', t: 4, q: 'Which landlocked country has eight land neighbors, among them Angola, Tanzania and Namibia?', a: 'Zambia', d: ['Botswana', 'Zimbabwe', 'Uganda'] },
     { c: 'Flags & Borders', t: 5, q: 'Which US state\'s flag shows a white bison with the state seal branded on its flank?', a: 'Wyoming', d: ['Kansas', 'Montana', 'North Dakota'], from: 'atlas:d27q23' },
   ],
   // 2026-12-30
@@ -244,7 +244,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-31
   [
-    { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly south of Virginia?', a: 'North Carolina', d: ['South Carolina', 'Tennessee', 'Georgia'] },
+    { c: 'Flags & Borders', t: 1, q: 'Which US state lies directly south of Virginia?', a: 'North Carolina', d: ['South Carolina', 'Alabama', 'Georgia'] },
     { c: 'Flags & Borders', t: 2, q: 'Which small landlocked country lies directly south of Rwanda?', a: 'Burundi', d: ['Malawi', 'Uganda', 'Zambia'] },
     { c: 'Flags & Borders', t: 3, q: 'Which US state\'s flag shows two grizzly bears holding the state seal inside a ring of twenty-four stars?', a: 'Missouri', d: ['California', 'Montana', 'Arkansas'] },
     { c: 'Flags & Borders', t: 4, q: 'Which country\'s flag shows a golden steppe eagle beneath a sun on a sky blue field?', a: 'Kazakhstan', d: ['Uzbekistan', 'Kyrgyzstan', 'Azerbaijan'], from: 'atlas:d13q18' },

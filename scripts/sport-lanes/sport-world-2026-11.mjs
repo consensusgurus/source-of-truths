@@ -297,5 +297,5 @@ export const INVENTORY = [
   { c: 'Soccer', t: 4, q: 'Which Russian striker scored five goals in a single match against Cameroon at the 1994 World Cup?', a: 'Oleg Salenko', d: ['Igor Kolyvanov', 'Andrei Kanchelskis', 'Vladimir Beschastnykh'] },
   { c: 'Everything Else', t: 5, q: 'The Holmenkollen ski festival, famous for its ski jump overlooking the capital, is held in which country?', a: 'Norway', d: ['Sweden', 'Finland', 'Austria'] },
   { c: 'Everything Else', t: 5, q: 'India marks its National Sports Day on the birthday of which field hockey great, a gold medalist at three Olympics?', a: 'Dhyan Chand', d: ['Balbir Singh', 'Dhanraj Pillay', 'Leslie Claudius'] },
-  { c: 'Soccer', t: 5, q: 'Which club won the Copa Libertadores four years running, from 1972 to 1975?', a: 'Independiente', d: ['Penarol', 'Estudiantes', 'Nacional'] },
+  { c: 'Soccer', t: 5, q: 'Which Ecuadorian club won the 2008 Copa Libertadores, the first from its country to do so?', a: 'LDU Quito', d: ['Emelec', 'Barcelona SC', 'Independiente del Valle'] },
 ];

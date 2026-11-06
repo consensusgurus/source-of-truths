@@ -341,7 +341,7 @@ export const LANE_DAYS = [
   ],
   // day 39
   [
-    { c: "Spot the Error", t: 1, q: "Which word is misspelled?", a: "pilgram", d: ["garlic", "goblin", "gravel"] }, // pilgrim
+    { c: "Spot the Error", t: 1, q: "Which word is misspelled?", a: "picnik", d: ["garlic", "goblin", "gravel"] }, // picnic
     { c: "Spot the Error", t: 2, q: "Only one of these is misspelled. Which is it?", a: "marrage", d: ["errand", "fashion", "festival"] }, // marriage
     { c: "Spot the Error", t: 3, q: "Which of these words is spelled wrong?", a: "negociate", d: ["courteous", "crucial", "dependable"] }, // negotiate
     { c: "Spot the Error", t: 4, q: "Which spelling would a copy editor flag?", a: "nonchalent", d: ["erroneous", "exuberant", "fallacious"] }, // nonchalant
@@ -365,7 +365,7 @@ export const LANE_DAYS = [
   ],
   // day 42
   [
-    { c: "Spot the Error", t: 1, q: "Spot the error: which word is spelled incorrectly?", a: "offen", d: ["quilt", "rattle", "robin"] }, // often
+    { c: "Spot the Error", t: 1, q: "Spot the error: which word is spelled incorrectly?", a: "offten", d: ["quilt", "rattle", "robin"] }, // often
     { c: "Spot the Error", t: 2, q: "Which word is misspelled?", a: "mystry", d: ["pattern", "plastic", "portrait"] }, // mystery
     { c: "Spot the Error", t: 3, q: "Only one of these is misspelled. Which is it?", a: "ommission", d: ["operation", "parachute", "peninsula"] }, // omission
     { c: "Spot the Error", t: 4, q: "Which of these words is spelled wrong?", a: "pistacchio", d: ["parable", "reciprocal", "rigorous"] }, // pistachio
@@ -413,7 +413,7 @@ export const LANE_DAYS = [
   ],
   // day 48
   [
-    { c: "Spot the Error", t: 1, q: "Which of these words is misspelled?", a: "sevin", d: ["jigsaw", "kennel", "ladle"] }, // seven
+    { c: "Spot the Error", t: 1, q: "Which of these words is misspelled?", a: "thum", d: ["jigsaw", "kennel", "ladle"] }, // thumb
     { c: "Spot the Error", t: 2, q: "Which word contains a spelling error?", a: "opinon", d: ["diamond", "dolphin", "elegant"] }, // opinion
     { c: "Spot the Error", t: 3, q: "Spot the error: which word is spelled incorrectly?", a: "proffesor", d: ["competent", "controversy", "corroborate"] }, // professor
     { c: "Spot the Error", t: 4, q: "Which word is misspelled?", a: "rendevous", d: ["fluctuate", "gregarious", "hemisphere"] }, // rendezvous
@@ -463,13 +463,13 @@ export const LANE_DAYS = [
   [
     { c: "Spot the Error", t: 1, q: "Which one has a spelling mistake?", a: "twelv", d: ["barrel", "beetle", "blossom"] }, // twelve
     { c: "Spot the Error", t: 2, q: "Which of these is NOT spelled correctly?", a: "prehaps", d: ["trumpet", "twilight", "volcano"] }, // perhaps
-    { c: "Spot the Error", t: 3, q: "Which of these words is misspelled?", a: "subtel", d: ["vacancy", "abundance", "adequate"] }, // subtle
+    { c: "Spot the Error", t: 3, q: "Which of these words is misspelled?", a: "nieghbor", d: ["vacancy", "abundance", "adequate"] }, // neighbor
     { c: "Spot the Error", t: 4, q: "Which word contains a spelling error?", a: "vaudville", d: ["bankruptcy", "beleaguer", "bequeath"] }, // vaudeville
     { c: "Spot the Error", t: 5, q: "Spot the error: which word is spelled incorrectly?", a: "ubiquitious", d: ["dalliance", "deleterious", "desultory"] }, // ubiquitous
   ],
   // day 55
   [
-    { c: "Spot the Error", t: 1, q: "Which word contains a spelling error?", a: "wahter", d: ["cradle", "crayon", "dentist"] }, // water
+    { c: "Spot the Error", t: 1, q: "Which word contains a spelling error?", a: "needel", d: ["cradle", "crayon", "dentist"] }, // needle
     { c: "Spot the Error", t: 2, q: "Spot the error: which word is spelled incorrectly?", a: "phisical", d: ["whisper", "wrinkle", "accident"] }, // physical
     { c: "Spot the Error", t: 3, q: "Which word is misspelled?", a: "succede", d: ["advantageous", "aggravate", "approximate"] }, // succeed
     { c: "Spot the Error", t: 4, q: "Only one of these is misspelled. Which is it?", a: "vinegrette", d: ["catechism", "cenotaph", "chasm"] }, // vinaigrette
@@ -541,7 +541,7 @@ export const LANE_DAYS = [
   ],
   // day 64
   [
-    { c: "Spot the Error", t: 1, q: "Which one has a spelling mistake?", a: "quik", d: ["falcon", "fiddle", "garlic"] }, // quick
+    { c: "Spot the Error", t: 1, q: "Which one has a spelling mistake?", a: "rular", d: ["falcon", "fiddle", "garlic"] }, // ruler
     { c: "Spot the Error", t: 2, q: "Which of these is NOT spelled correctly?", a: "sevral", d: ["voyage", "wander", "warrior"] }, // several
     { c: "Spot the Error", t: 3, q: "Which of these words is misspelled?", a: "prevelant", d: ["absorption", "accumulate", "alcohol"] }, // prevalent
     { c: "Spot the Error", t: 4, q: "Which word contains a spelling error?", a: "tarrantula", d: ["cognizant", "colloquial", "complacent"] }, // tarantula
@@ -598,7 +598,7 @@ export const LANE_DAYS = [
   // day 71
   [
     { c: "Spot the Error", t: 1, q: "Which of these is NOT spelled correctly?", a: "tomatoe", d: ["dentist", "donkey", "helmet"] }, // tomato
-    { c: "Spot the Error", t: 2, q: "Which of these words is misspelled?", a: "tounge", d: ["portrait", "pottery", "pyramid"] }, // tongue
+    { c: "Spot the Error", t: 2, q: "Which of these words is misspelled?", a: "rist", d: ["portrait", "pottery", "pyramid"] }, // wrist
     { c: "Spot the Error", t: 3, q: "Which word contains a spelling error?", a: "warrent", d: ["quantity", "rebellious", "significant"] }, // warrant
     { c: "Spot the Error", t: 4, q: "Spot the error: which word is spelled incorrectly?", a: "pinacle", d: ["allotment", "amethyst", "apparatus"] }, // pinnacle
     { c: "Spot the Error", t: 5, q: "Which word is misspelled?", a: "psychadelic", d: ["desultory", "diaphanous", "exiguous"] }, // psychedelic

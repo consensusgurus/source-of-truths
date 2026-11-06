@@ -28,7 +28,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-04
   [
-    { c: 'Capitals', t: 1, q: 'Which capital city is home to the Reichstag building with its glass dome?', a: 'Berlin', d: ['Vienna', 'Bern', 'Prague'] },
+    { c: 'Capitals', t: 1, q: 'Which capital city is home to Checkpoint Charlie, the old Cold War border crossing?', a: 'Berlin', d: ['Vienna', 'Bern', 'Prague'] },
     { c: 'Capitals', t: 2, q: 'Which city is the capital of the Japanese island of Hokkaido?', a: 'Sapporo', d: ['Hakodate', 'Sendai', 'Asahikawa'] },
     { c: 'Capitals', t: 3, q: 'Which capital city did Francisco Pizarro found in 1535 as the City of Kings?', a: 'Lima', d: ['Quito', 'Bogota', 'Santiago'] },
     { c: 'Capitals', t: 4, q: 'Which city is the capital of Wisconsin?', a: 'Madison', d: ['Milwaukee', 'Green Bay', 'Kenosha'], from: 'atlas:d06q16' },
@@ -70,7 +70,7 @@ export const LANE_DAYS = [
   [
     { c: 'Capitals', t: 1, q: 'Which capital city hosted the 1980 Summer Olympics, boycotted by the United States?', a: 'Moscow', d: ['Berlin', 'Warsaw', 'Prague'] },
     { c: 'Capitals', t: 2, q: 'Which city is the capital of the Canadian province of Nova Scotia?', a: 'Halifax', d: ['Sydney', 'Truro', 'Dartmouth'] },
-    { c: 'Capitals', t: 3, q: 'Which city is the capital of the Canadian province of New Brunswick?', a: 'Fredericton', d: ['Moncton', 'Saint John', 'Halifax'] },
+    { c: 'Capitals', t: 3, q: 'Which city is the capital of the Canadian province of New Brunswick?', a: 'Fredericton', d: ['Moncton', 'Saint John', 'Bathurst'] },
     { c: 'Capitals', t: 4, q: 'Which purpose-built city became Malaysia\'s federal administrative center in the 1990s?', a: 'Putrajaya', d: ['Johor Bahru', 'Ipoh', 'Shah Alam'], from: 'atlas:d57q16' },
     { c: 'Capitals', t: 5, q: 'Port Vila is the capital of which country?', a: 'Vanuatu', d: ['Fiji', 'Solomon Islands', 'Palau'], from: 'atlas:d20q21' },
   ],
@@ -205,7 +205,7 @@ export const LANE_DAYS = [
   // 2026-12-26
   [
     { c: 'Capitals', t: 1, q: 'Which capital city hosted the 1988 Summer Olympics?', a: 'Seoul', d: ['Tokyo', 'Beijing', 'Bangkok'] },
-    { c: 'Capitals', t: 2, q: 'Which capital city hosted the 1964 Summer Olympics, the first held in Asia?', a: 'Tokyo', d: ['Seoul', 'Beijing', 'Manila'] },
+    { c: 'Capitals', t: 2, q: 'Which capital city hosted the 1964 Summer Olympics, the first held in Asia?', a: 'Tokyo', d: ['New Delhi', 'Beijing', 'Manila'] },
     { c: 'Capitals', t: 3, q: 'Which city is the capital of the German state of North Rhine-Westphalia?', a: 'Dusseldorf', d: ['Cologne', 'Dortmund', 'Essen'] },
     { c: 'Capitals', t: 4, q: 'Which city is Benin\'s official capital, although the government sits elsewhere?', a: 'Porto-Novo', d: ['Abomey', 'Parakou', 'Cotonou'], from: 'atlas:d54q16' },
     { c: 'Capitals', t: 5, q: 'Bishkek is the capital of which country?', a: 'Kyrgyzstan', d: ['Tajikistan', 'Turkmenistan', 'Uzbekistan'], from: 'atlas:d16q21' },
@@ -236,8 +236,8 @@ export const LANE_DAYS = [
   ],
   // 2026-12-30
   [
-    { c: 'Capitals', t: 1, q: 'Which capital city is home to the United States Capitol and the Supreme Court?', a: 'Washington, D.C.', d: ['New York City', 'Philadelphia', 'Boston'] },
-    { c: 'Capitals', t: 2, q: 'Which city is the capital of the German state of Bavaria?', a: 'Munich', d: ['Nuremberg', 'Augsburg', 'Stuttgart'] },
+    { c: 'Capitals', t: 1, q: 'Which capital city is home to the Smithsonian Institution and the Library of Congress?', a: 'Washington, D.C.', d: ['New York City', 'Philadelphia', 'Boston'] },
+    { c: 'Capitals', t: 2, q: 'Which city is the capital of the German state of Bavaria?', a: 'Munich', d: ['Nuremberg', 'Augsburg', 'Regensburg'] },
     { c: 'Capitals', t: 3, q: 'Which city is the capital of the German state of Baden-Wurttemberg?', a: 'Stuttgart', d: ['Karlsruhe', 'Mannheim', 'Freiburg'] },
     { c: 'Capitals', t: 4, q: 'Kigali is the capital of which country?', a: 'Rwanda', d: ['Burundi', 'Uganda', 'Tanzania'], from: 'atlas:d40q16' },
     { c: 'Capitals', t: 5, q: 'Apia is the capital of which country?', a: 'Samoa', d: ['Fiji', 'Tuvalu', 'Solomon Islands'], from: 'atlas:d05q21' },

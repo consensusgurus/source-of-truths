@@ -355,7 +355,7 @@ export const LANE_DAYS = [
   [
     { c: "Health & Medicine", t: 1, q: "Laryngitis often causes the loss of what?", a: "Voice", d: ["Hearing","Taste","Balance"] },
     { c: "Health & Medicine", t: 2, q: "Which lifelong condition is a reaction to gluten that damages the small intestine?", a: "Celiac disease", d: ["Crohn's disease","Lactose intolerance","Gastritis"] },
-    { c: "Health & Medicine", t: 3, q: "What is the medical term for an abnormally fast heartbeat?", a: "Tachycardia", d: ["Arrhythmia","Hypertension","Fibrillation"] },
+    { c: "Health & Medicine", t: 3, q: "What is the medical term for an abnormally fast heartbeat?", a: "Tachycardia", d: ["Bradycardia","Hypertension","Fibrillation"] },
     { c: "Health & Medicine", t: 4, q: "What does a doctor mean by hematuria?", a: "Blood in the urine", d: ["Blood in the stool","Blood in the lungs","Blood in the eye"] },
     { c: "Health & Medicine", t: 5, q: "Burke and Hare murdered people in 1828 to sell their bodies to anatomists in which city?", a: "Edinburgh", d: ["London","Glasgow","Dublin"] },
   ],

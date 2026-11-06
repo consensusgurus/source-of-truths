@@ -328,7 +328,7 @@ export const LANE_DAYS = [
   // day 39 (2026-11-26)
   [
     Q(1, "Epsom salt is named after a town in which country?", "England", ["Scotland", "Wales", "Ireland"]),
-    Q(2, "Which Thanksgiving bird got its English name from a mix-up with guinea fowl imported through Ottoman lands?", "Turkey", ["Goose", "Pheasant", "Duck"]),
+    Q(2, "Pittsburgh is named after William Pitt, a statesman of which country?", "Britain", ["France", "Netherlands", "Spain"]),
     Q(3, "The mackintosh raincoat honors Charles Macintosh, a chemist from which country?", "Scotland", ["Ireland", "England", "Wales"]),
     Q(4, "Which word for wacky comes from a clown servant in Italian commedia dell'arte?", "Zany", ["Goofy", "Loony", "Madcap"]),
     Q(5, "Which word for a sanctimonious hypocrite comes from the title character of a Molière play?", "Tartuffe", ["Harpagon", "Scaramouche", "Pantaloon"]),
@@ -338,7 +338,7 @@ export const LANE_DAYS = [
     Q(1, "Which knee-length shorts are named after a British island territory in the Atlantic?", "Bermuda shorts", ["Cargo shorts", "Board shorts", "Gym shorts"]),
     Q(2, "The Molotov cocktail is named after a foreign minister of which country?", "Soviet Union", ["Germany", "Finland", "Poland"]),
     Q(3, "Mocha coffee is named after a port in which country?", "Yemen", ["Ethiopia", "Oman", "Egypt"]),
-    Q(4, "The color magenta is named after an 1859 battle in which country?", "Italy", ["France", "Austria", "Spain"]),
+    Q(4, "The color magenta is named after an 1859 battle at a town in what is now which country?", "Italy", ["France", "Austria", "Spain"]),
     Q(5, "The boysenberry was popularized by which Californian farmer, founder of a theme park?", "Walter Knott", ["Walt Disney", "Luther Burbank", "John Muir"]),
   ],
   // day 41 (2026-11-28)
@@ -471,7 +471,7 @@ export const LANE_DAYS = [
   ],
   // day 57 (2026-12-14)
   [
-    Q(1, "Which brimless red hat is named after a city in Morocco?", "Fez", ["Beret", "Turban", "Skullcap"]),
+    Q(1, "The Charleston, a 1920s dance craze, is named after a city in which state?", "South Carolina", ["North Carolina", "Georgia", "Virginia"]),
     Q(2, "Waldorf salad was first served at a hotel in which city?", "New York City", ["Chicago", "Boston", "Philadelphia"]),
     Q(3, "The jalapeño pepper is named after the capital of which Mexican state?", "Veracruz", ["Oaxaca", "Sonora", "Puebla"]),
     Q(4, "Maryland is named after the wife of which English king?", "Charles I", ["James I", "Charles II", "William III"]),
@@ -491,7 +491,7 @@ export const LANE_DAYS = [
     Q(2, "Worcestershire sauce is named after an English what?", "County", ["Lord", "Abbey", "Ship"]),
     Q(3, "Which word for a final, crushing defeat comes from a battle in present-day Belgium?", "Waterloo", ["Armageddon", "Dunkirk", "Agincourt"]),
     Q(4, "To 'cut the Gordian knot' recalls a knot tied by a king of which ancient land?", "Phrygia", ["Lydia", "Macedonia", "Persia"]),
-    Q(5, "The Gregorian calendar is named after which pope?", "Gregory XIII", ["Gregory VII", "Gregory the Great", "Gregory XVI"]),
+    Q(5, "Mercerized cotton is named after John Mercer, an Englishman who worked in which trade?", "Calico printing", ["Shipbuilding", "Coal mining", "Brewing"]),
   ],
   // day 60 (2026-12-17)
   [
@@ -538,7 +538,7 @@ export const LANE_DAYS = [
     Q(1, "Which 26.2-mile race is named after the site of an ancient Greek battle?", "Marathon", ["Triathlon", "Decathlon", "Relay"]),
     Q(2, "Which name for a man of great strength comes from a biblical judge whose power lay in his hair?", "Samson", ["Goliath", "Hercules", "Atlas"]),
     Q(3, "The US state of Georgia is named after which British king?", "George II", ["George I", "George III", "George V"]),
-    Q(4, "Nicolas Chauvin, who gave us 'chauvinism,' was a soldier famed for his devotion to whom?", "Napoleon", ["Louis XVI", "Joan of Arc", "Charles de Gaulle"]),
+    Q(4, "The zinnia honors the German botanist Johann Zinn, whose name is also on a structure in which part of the body?", "The eye", ["The ear", "The heart", "The brain"]),
     Q(5, "Tulle, a fine netting used in veils, is named after a town in which country?", "France", ["Belgium", "Italy", "Switzerland"]),
   ],
   // day 66 (2026-12-23)
@@ -553,7 +553,7 @@ export const LANE_DAYS = [
   [
     Q(1, "Which ice-resurfacing machine takes its name from its California inventor?", "Zamboni", ["Snowcat", "Bulldozer", "Skid steer"]),
     Q(2, "Which word for posh and luxurious comes from a Swiss hotelier?", "Ritzy", ["Swanky", "Plush", "Classy"]),
-    Q(3, "Which word for extra large was popularized by an elephant exhibited by P. T. Barnum?", "Jumbo", ["Mammoth", "Titanic", "Colossal"]),
+    Q(3, "Before Morse code made his name, Samuel Morse was best known as what?", "A painter", ["A sea captain", "A banker", "A senator"]),
     Q(4, "Cobalt is named after what kind of creature in German folklore?", "Goblin", ["Dragon", "Witch", "Giant"]),
     Q(5, "Kir, an aperitif of white wine and cassis, is named after a priest who was mayor of which city?", "Dijon", ["Lyon", "Reims", "Bordeaux"]),
   ],

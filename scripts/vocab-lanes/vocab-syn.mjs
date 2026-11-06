@@ -303,7 +303,7 @@ export const LANE_DAYS = [
     { c: L, t: 1, q: "Which word is the opposite of 'never'?", a: "always", d: ["rarely", "later", "sometimes"] },
     { c: L, t: 2, q: "Which word is closest in meaning to 'perilous'?", a: "risky", d: ["peaceful", "tiresome", "precious"] },
     { c: L, t: 3, q: "Which word is closest in meaning to 'malleable'?", a: "pliable", d: ["brittle", "mellow", "harmful"] },
-    { c: L, t: 4, q: "Which word is closest in meaning to 'maudlin'?", a: "mawkish", d: ["moldy", "stoic", "muddled"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'maudlin'?", a: "mawkish", d: ["moldy", "stoic", "mundane"] },
     { c: L, t: 5, q: "Which word is the opposite of 'maladroit'?", a: "deft", d: ["clumsy", "awkward", "malicious"] },
   ],
   // day 38
@@ -381,7 +381,7 @@ export const LANE_DAYS = [
   // day 47
   [
     { c: L, t: 1, q: "Which word is closest in meaning to 'often'?", a: "frequently", d: ["rarely", "never", "slowly"] },
-    { c: L, t: 2, q: "Which word is closest in meaning to 'remote'?", a: "distant", d: ["nearby", "crowded", "ancient"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'remote'?", a: "distant", d: ["nearby", "crowded", "rapid"] },
     { c: L, t: 3, q: "Which word is closest in meaning to 'partisan'?", a: "biased", d: ["neutral", "temporary", "courteous"] },
     { c: L, t: 4, q: "Which word is closest in meaning to 'penurious'?", a: "impoverished", d: ["wealthy", "penitent", "punctual"] },
     { c: L, t: 5, q: "Which word is closest in meaning to 'puerile'?", a: "childish", d: ["pure", "mature", "sickly"] },

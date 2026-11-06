@@ -384,7 +384,7 @@ export const LANE_DAYS = [
     { c: 'NFL', t: 2, q: 'Which team did the San Francisco 49ers beat in Super Bowl XXIII?', a: 'The Cincinnati Bengals', d: ['The Denver Broncos', 'The Miami Dolphins', 'The Buffalo Bills'] },
     { c: 'NFL', t: 3, q: 'In what year did Detroit host its first Thanksgiving Day NFL game?', a: '1934', d: ['1926', '1945', '1952'] },
     { c: 'NFL', t: 4, q: 'Which quarterback rushed for 1,039 yards in the 2006 season?', a: 'Michael Vick', d: ['Donovan McNabb', 'Steve McNair', 'Vince Young'] },
-    { c: 'NFL', t: 5, q: 'Who founded the film unit that has shot and narrated the league games since the 1960s, working alongside his son?', a: 'Ed Sabol', d: ['Bill MacPhail', 'Roone Arledge', 'Chris Schenkel'] },
+    { c: 'NFL', t: 5, q: 'Who founded the film unit that has shot and narrated the league\'s games since the 1960s, working alongside his son?', a: 'Ed Sabol', d: ['Bill MacPhail', 'Roone Arledge', 'Chris Schenkel'] },
   ],
 
   // day 49

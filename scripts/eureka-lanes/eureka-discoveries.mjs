@@ -16,7 +16,7 @@ export const LANE_DAYS = [
     { c: "Scientists & Discoveries", t: 1, q: "Sigmund Freud founded which method of treating the mind through talk?", a: "Psychoanalysis", d: ["Behaviorism", "Phrenology", "Neurosurgery"] },
     { c: "Scientists & Discoveries", t: 2, q: "Edwin Hubble's observations of 1929 showed that the universe is doing what?", a: "Expanding", d: ["Shrinking", "Standing still", "Spinning"] },
     { c: "Scientists & Discoveries", t: 3, q: "In 1600 Johannes Kepler went to Prague to work as an assistant to which astronomer?", a: "Tycho Brahe", d: ["Galileo Galilei", "Nicolaus Copernicus", "Christoph Clavius"] },
-    { c: "Scientists & Discoveries", t: 4, q: "Ole Rømer first estimated the speed of light, in 1676, by timing eclipses of a moon of which planet?", a: "Jupiter", d: ["Saturn", "Mars", "Uranus"] },
+    { c: "Scientists & Discoveries", t: 4, q: "Ole Rømer showed in 1676 that light travels at a finite speed by timing eclipses of a moon of which planet?", a: "Jupiter", d: ["Saturn", "Mars", "Uranus"] },
     { c: "Scientists & Discoveries", t: 5, q: "In 1963 Maarten Schmidt showed that the 'star' 3C 273 was actually a very distant what?", a: "Quasar", d: ["Pulsar", "Nebula", "Comet"] },
   ],
   // day 39 (2026-12-07)
