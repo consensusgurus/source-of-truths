@@ -356,13 +356,13 @@ export const LANE_DAYS = [
     { c: 'Ancient World', t: 1, q: 'Which cloth did the ancient Egyptians mostly wear, and use to wrap their mummies?', a: 'Linen', d: ['Silk', 'Wool', 'Cotton'] },
     { c: 'Ancient World', t: 2, q: 'What was the large public hall in Roman towns used for law courts and business called?', a: 'A basilica', d: ['A curia', 'A thermopolium', 'A triclinium'] },
     { c: 'Ancient World', t: 3, q: 'Which animal did Egyptians worship at Memphis as the living god Apis?', a: 'A bull', d: ['A ram', 'A crocodile', 'An ibis'] },
-    { c: 'Ancient World', t: 4, q: 'Which Roman biographer wrote The Lives of the Twelve Caesars?', a: 'Suetonius', d: ['Tacitus', 'Plutarch', 'Cassius Dio'] },
+    { c: 'Ancient World', t: 4, q: 'Which Roman emperor\'s two giant pleasure ships were recovered by draining Lake Nemi between 1928 and 1932?', a: 'Caligula', d: ['Domitian', 'Nero', 'Tiberius'] },
     { c: 'Ancient World', t: 5, q: 'Which great ziggurat of Babylon is often linked with the biblical Tower of Babel?', a: 'Etemenanki', d: ['Eanna', 'Ekur', 'E-ninnu'] },
   ],
   // day 46
   [
     { c: 'Ancient World', t: 1, q: 'What is the stone coffin that held an Egyptian mummy called?', a: 'A sarcophagus', d: ['A canopic jar', 'An obelisk', 'A stela'] },
-    { c: 'Ancient World', t: 2, q: 'Which Greek god of medicine carried a staff with a single snake coiled around it?', a: 'Asclepius', d: ['Hermes', 'Apollo', 'Hypnos'] },
+    { c: 'Ancient World', t: 2, q: 'What are the underground burial tunnels outside ancient Rome, used by early Christians, called?', a: 'The catacombs', d: ['The aqueducts', 'The cloisters', 'The sewers'] },
     { c: 'Ancient World', t: 3, q: 'Which town at the mouth of the Tiber served as the original seaport of ancient Rome?', a: 'Ostia', d: ['Puteoli', 'Brundisium', 'Misenum'] },
     { c: 'Ancient World', t: 4, q: 'Which Roman novel describes the extravagant feast of the freedman Trimalchio?', a: 'The Satyricon', d: ['The Golden Ass', 'The Aeneid', 'The Georgics'] },
     { c: 'Ancient World', t: 5, q: 'Which Jewish philosopher of Alexandria tried to blend the Hebrew scriptures with the ideas of Plato?', a: 'Philo', d: ['Josephus', 'Plotinus', 'Origen'] },

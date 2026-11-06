@@ -320,7 +320,7 @@ export const LANE_DAYS = [
   // day 38 (2026-11-25)
   [
     Q(1, "Which Texas city is named after the hero of the Battle of San Jacinto?", "Houston", ["Austin", "Dallas", "San Antonio"]),
-    Q(2, "Germanium is named after which country?", "Germany", ["Austria", "Denmark", "Switzerland"]),
+    Q(2, "The Mason-Dixon Line is named after two surveyors from which country?", "England", ["Scotland", "The Netherlands", "France"]),
     Q(3, "Gorgonzola cheese is named after a town near which Italian city?", "Milan", ["Turin", "Venice", "Genoa"]),
     Q(4, "'Bunk,' meaning nonsense, comes from a congressman's speech for a county in which state?", "North Carolina", ["Virginia", "Kentucky", "Tennessee"]),
     Q(5, "Which word for a long, mournful complaint comes from a biblical prophet?", "Jeremiad", ["Philippic", "Harangue", "Tirade"]),
@@ -560,7 +560,7 @@ export const LANE_DAYS = [
   // day 68 (2026-12-25)
   [
     Q(1, "Which slang word for coffee comes from an Indonesian island?", "Java", ["Joe", "Brew", "Mud"]),
-    Q(2, "'Santa Claus' comes from a Dutch name for which saint?", "Saint Nicholas", ["Saint Christopher", "Saint Patrick", "Saint Stephen"]),
+    Q(2, "The Doberman pinscher is named after a dog breeder from which country?", "Germany", ["Austria", "Switzerland", "The Netherlands"]),
     Q(3, "Beef Stroganoff honors a noble family from which country?", "Russia", ["Austria", "Hungary", "Poland"]),
     Q(4, "Angora wool is named after an old name for which capital city?", "Ankara", ["Athens", "Cairo", "Tehran"]),
     Q(5, "The Rorschach inkblot test is named after a psychiatrist from which country?", "Switzerland", ["Austria", "Germany", "Sweden"]),

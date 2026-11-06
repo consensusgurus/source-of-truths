@@ -420,7 +420,7 @@ export const LANE_DAYS = [
     { c: "Architecture & Design", t: 5, q: "Which Dutch architect designed both the Rijksmuseum (1885) and the city's Centraal Station (1889)?", a: "Pierre Cuypers", d: ["Hendrik Petrus Berlage", "Michel de Klerk", "Willem Dudok"] },
   ],
   [
-    { c: "Books", t: 1, q: "In 'Cinderella', what does the fairy godmother turn a pumpkin into?", a: "A coach", d: ["A castle", "A ball gown", "A horse"] },
+    { c: "Books", t: 1, q: "In 'The Polar Express', where does the train take the boy on Christmas Eve?", a: "The North Pole", d: ["The moon", "Lapland", "The South Pole"] },
     { c: "Music", t: 2, q: "Which musical, based on a comic strip, features Daddy Warbucks?", a: "Annie", d: ["Oliver!", "Matilda", "Gypsy"] },
     { c: "Architecture & Design", t: 3, q: "Which Venetian bridge did Lord Byron help make famous in 'Childe Harold's Pilgrimage'?", a: "The Bridge of Sighs", d: ["The Rialto Bridge", "The Accademia Bridge", "The Scalzi Bridge"] },
     { c: "Music", t: 4, q: "Which German group released 'Trans-Europe Express' (1977)?", a: "Kraftwerk", d: ["Tangerine Dream", "Can", "Neu!"] },

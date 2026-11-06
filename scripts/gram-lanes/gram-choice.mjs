@@ -370,7 +370,7 @@ export const LANE_DAYS = [
     { c, t: 1, q: "Which word completes the sentence: 'The ___ carrier brought three letters today'?", a: "mail", d: ["male", "mall", "meal"] },
     { c, t: 2, q: "Which sentence is correct?", a: "I look forward to seeing you.", d: ["I look forward to see you.", "I look forward to saw you.", "I look forward seeing you."] },
     { c, t: 3, q: "Which word completes the sentence: 'The detective studied photos of the ___ crime scene'?", a: "grisly", d: ["grizzly", "gristly", "grizzled"] },
-    { c, t: 4, q: "Which word completes the sentence: 'The ___ carved on the tombstone was a line from her favorite poem'?", a: "epitaph", d: ["epithet", "epiphany", "episode"] },
+    { c, t: 4, q: "Which word completes the sentence: 'Drivers who ___ the speed limit should expect a fine'?", a: "flout", d: ["flaunt", "flounder", "float"] },
     { c, t: 5, q: "Which word completes the sentence: 'Strong early sales ___ well for the new store'?", a: "augur", d: ["auger", "augment", "augury"] },
   ],
   // day 45

@@ -171,7 +171,7 @@ export const LANE_DAYS = [
   ],
   // day 57, 2026-12-22
   [
-    { c: "Ingredients", t: 1, q: "Which shellfish with two big claws is famous for walking sideways?", a: "Crab", d: ["Lobster","Shrimp","Crayfish"] },
+    { c: "Ingredients", t: 1, q: "Hass is a well-known variety of which fruit?", a: "Avocado", d: ["Mango", "Pear", "Plum"] },
     { c: "Ingredients", t: 2, q: "Which is the largest citrus fruit?", a: "Pomelo", d: ["Grapefruit","Orange","Lemon"] },
     { c: "Ingredients", t: 3, q: "Traditional British mincemeat for mince pies contains which hard animal fat?", a: "Suet", d: ["Lard","Ghee","Duck fat"] },
     { c: "Ingredients", t: 4, q: "Speck, a smoked cured ham, is a specialty of which Italian region?", a: "South Tyrol", d: ["Tuscany","Sardinia","Calabria"] },

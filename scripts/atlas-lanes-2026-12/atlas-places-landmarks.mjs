@@ -68,7 +68,7 @@ export const LANE_DAYS = [
   ],
   // 2026-12-09
   [
-    { c: 'Places & Landmarks', t: 1, q: 'Which London suburb hosts the oldest tennis tournament in the world, played on grass each summer?', a: 'Wimbledon', d: ['Richmond', 'Greenwich', 'Hampstead'] },
+    { c: 'Places & Landmarks', t: 1, q: 'Which London square, guarded by four bronze lions, has Nelson\'s Column at its center?', a: 'Trafalgar Square', d: ['Russell Square', 'Leicester Square', 'Parliament Square'] },
     { c: 'Places & Landmarks', t: 2, q: 'Which Chinese city is famous for the karst peaks along the Li River?', a: 'Guilin', d: ['Chengdu', 'Kunming', 'Lhasa'] },
     { c: 'Places & Landmarks', t: 3, q: 'Which salt mine near Krakow has chapels and statues carved from rock salt deep underground?', a: 'Wieliczka', d: ['Bochnia', 'Kutna Hora', 'Hallein'] },
     { c: 'Places & Landmarks', t: 4, q: 'Which Maya ruin in the Peten rainforest is dominated by a steep pyramid called the Temple of the Great Jaguar?', a: 'Tikal', d: ['Palenque', 'Calakmul', 'Copan'], from: 'atlas:d44q19' },

@@ -402,7 +402,7 @@ export const LANE_DAYS = [
   // day 51
   [
     { c: 'Capitals', t: 1, q: 'Which capital city hosted the 2012 Summer Olympics?', a: 'London', d: ['Paris', 'Madrid', 'Rome'] },
-    { c: 'Capitals', t: 2, q: 'Which capital city contains the National Mall and the Lincoln Memorial?', a: 'Washington, D.C.', d: ['Ottawa', 'Mexico City', 'Havana'] },
+    { c: 'Capitals', t: 2, q: 'Which capital city contains the National Mall and the Jefferson Memorial?', a: 'Washington, D.C.', d: ['Ottawa', 'Mexico City', 'Havana'] },
     { c: 'Capitals', t: 3, q: 'Which capital city stands on the Danube between Bratislava and Belgrade?', a: 'Budapest', d: ['Vienna', 'Bucharest', 'Zagreb'] },
     { c: 'Capitals', t: 4, q: 'Which capital city hosts the headquarters of OPEC?', a: 'Vienna', d: ['Riyadh', 'Brussels', 'Kuwait City'] },
     { c: 'Capitals', t: 5, q: "Which Pacific port is Ecuador's most populous city, ahead of the national capital?", a: 'Guayaquil', d: ['Cuenca', 'Manta', 'Machala'] },

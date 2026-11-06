@@ -110,7 +110,7 @@ export const LANE_DAYS = [
   ],
   // day 62
   [
-    e(1, "Which vast temple complex in Cambodia was built by the Khmer and later became Buddhist?", "Angkor Wat", ["Borobudur", "Bagan", "Wat Phra Kaew"]),
+    e(1, "What did the medieval Church call the penalty of cutting a person off from its sacraments and community?", "Excommunication", ["Heresy", "Penance", "Exile"]),
     e(2, "What was a medieval trial in which the accused carried hot iron or was thrown into water to show guilt or innocence?", "Trial by ordeal", ["Trial by jury", "Trial by combat", "Compurgation"]),
     e(3, "Who was the last native Prince of Wales, killed in 1282?", "Llywelyn ap Gruffudd", ["Owain Glyndwr", "Rhodri the Great", "Gruffudd ap Cynan"]),
     e(4, "Which Songhay emperor made a pilgrimage to Mecca in 1496 and returned with the title of caliph?", "Askia Muhammad", ["Sonni Ali", "Mansa Musa", "Askia Daoud"]),

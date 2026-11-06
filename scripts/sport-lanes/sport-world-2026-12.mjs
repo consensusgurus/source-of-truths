@@ -364,7 +364,7 @@ export const INVENTORY = [
   { c: 'Everything Else', t: 2, q: 'Which Ukrainian boxer won Olympic gold medals in 2008 and 2012 before turning professional?', a: 'Vasiliy Lomachenko', d: ['Oleksandr Usyk', 'Vasyl Lomachenko Sr.', 'Wladimir Klitschko'] },
   { c: 'Everything Else', t: 2, q: 'Which British boxer won an Olympic silver medal at Athens 2004 aged just seventeen?', a: 'Amir Khan', d: ['Kell Brook', 'Carl Froch', 'Ricky Hatton'] },
   { c: 'Everything Else', t: 2, q: 'Which Japanese boxer is nicknamed the Monster?', a: 'Naoya Inoue', d: ['Kazuto Ioka', 'Ryota Murata', 'Takuma Inoue'] },
-  { c: 'Everything Else', t: 2, q: 'Which flanker became South Africa\'s first black Test captain and lifted the Rugby World Cup in 2019 and 2023?', a: 'Siya Kolisi', d: ['Eben Etzebeth', 'Pieter-Steph du Toit', 'Duane Vermeulen'] },
+  { c: 'Everything Else', t: 2, q: 'Which flanker became the Springboks\' first black Test captain, in 2018?', a: 'Siya Kolisi', d: ['Eben Etzebeth', 'Pieter-Steph du Toit', 'Duane Vermeulen'] },
   { c: 'Everything Else', t: 2, q: 'Which French scrum-half won Olympic rugby sevens gold on home soil at Paris 2024?', a: 'Antoine Dupont', d: ['Romain Ntamack', 'Gael Fickou', 'Damian Penaud'] },
   { c: 'Everything Else', t: 2, q: 'Which lock captained England to the Rugby World Cup title in 2003?', a: 'Martin Johnson', d: ['Lawrence Dallaglio', 'Will Carling', 'Ben Kay'] },
   { c: 'Everything Else', t: 2, q: 'Which captain received the Webb Ellis Cup from Nelson Mandela in 1995?', a: 'Francois Pienaar', d: ['Joost van der Westhuizen', 'John Smit', 'Naas Botha'] },
@@ -537,7 +537,7 @@ export const INVENTORY = [
   // ---- tier 4 world, Everything Else
   { c: 'Everything Else', t: 4, q: 'Which New Zealander won the Olympic 1500 meters at Montreal in 1976?', a: 'John Walker', d: ['Dick Quax', 'Rod Dixon', 'Peter Snell'] },
   { c: 'Everything Else', t: 4, q: 'Which Cuban won both the 400 and 800 meters at the 1976 Olympic Games?', a: 'Alberto Juantorena', d: ['Javier Sotomayor', 'Anier Garcia', 'Ana Fidelia Quirot'] },
-  { c: 'Everything Else', t: 4, q: 'Which Ethiopian, nicknamed Yifter the Shifter, won the 5000 and 10,000 meters at Moscow 1980?', a: 'Miruts Yifter', d: ['Mamo Wolde', 'Mohamed Kedir', 'Eshetu Tura'] },
+  { c: 'Everything Else', t: 4, q: 'Which Ethiopian runner, famed for his sudden finishing kick, won the 5000 and 10,000 meters at the 1980 Olympics?', a: 'Miruts Yifter', d: ['Mamo Wolde', 'Mohamed Kedir', 'Eshetu Tura'] },
   { c: 'Everything Else', t: 4, q: 'Which Portuguese runner won the women\'s marathon at the Seoul 1988 Olympics?', a: 'Rosa Mota', d: ['Fernanda Ribeiro', 'Aurora Cunha', 'Manuela Machado'] },
   { c: 'Everything Else', t: 4, q: 'Which Soviet swimmer won the 1500 meters freestyle at both Moscow 1980 and Seoul 1988?', a: 'Vladimir Salnikov', d: ['Alexander Popov', 'Yevgeny Sadovyi', 'Sergei Fesenko'] },
   { c: 'Everything Else', t: 4, q: 'Which West German swimmer, nicknamed the Albatross for his huge arm span, won two golds at the 1984 Olympics?', a: 'Michael Gross', d: ['Rainer Henkel', 'Thomas Fahrner', 'Roland Matthes'] },

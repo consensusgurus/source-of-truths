@@ -37,7 +37,7 @@ export const LANE_DAYS = [
   ],
   // day 40, 2026-12-05
   [
-    { c: "Food History", t: 1, q: "In \"Jack and the Beanstalk\", what does Jack trade for the magic beans?", a: "A cow", d: ["A pig","A hen","A goat"] },
+    { c: "Food History", t: 1, q: "Fortune cookies, a fixture of Chinese restaurants, first became popular in which country?", a: "The United States", d: ["China", "Hong Kong", "Taiwan"] },
     { c: "Food History", t: 2, q: "Which amendment to the US Constitution began Prohibition in 1920?", a: "The Eighteenth", d: ["The Nineteenth","The Twenty-first","The Sixteenth"] },
     { c: "Food History", t: 3, q: "Who painted \"The Potato Eaters\" in 1885?", a: "Vincent van Gogh", d: ["Paul Cézanne","Jean-François Millet","Camille Pissarro"] },
     { c: "Food History", t: 4, q: "Which First Lady planted a vegetable garden on the White House South Lawn in 2009?", a: "Michelle Obama", d: ["Laura Bush","Hillary Clinton","Jill Biden"] },

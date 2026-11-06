@@ -366,7 +366,7 @@ export const LANE_DAYS = [
   [
     { c, t: 1, q: "The 'oct' in 'octagon' and 'octet' means what?", a: "Eight", d: ["Six", "Seven", "Ten"] },
     { c, t: 2, q: "The 'cide' in 'pesticide' and 'homicide' comes from the Latin for what?", a: "To kill", d: ["To spray", "To harm", "To stop"] },
-    { c, t: 3, q: "'Lunatic' comes from the Latin word for what?", a: "Moon", d: ["Madness", "Night", "Wolf"] },
+    { c, t: 3, q: "'Sabotage' comes from the French word 'sabot', meaning what?", a: "A wooden shoe", d: ["A hammer", "A wrench", "A spark"] },
     { c, t: 4, q: "'Canyon' comes from a Spanish word whose basic meaning is what?", a: "Tube", d: ["Valley", "Cliff", "Stone wall"] },
     { c, t: 5, q: "'Quorum' is a Latin word meaning what?", a: "Of whom", d: ["Enough", "The many", "Seated"] },
   ],

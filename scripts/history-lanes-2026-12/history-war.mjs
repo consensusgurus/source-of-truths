@@ -219,7 +219,7 @@ export const LANE_DAYS = [
     e(2, "Which British commander-in-chief in the Crimea gave his name to a sleeve style?", "Lord Raglan", ["Lord Cardigan", "Lord Lucan", "Lord Cathcart"]),
     e(3, "Which cavalry officer led the Light Brigade at Balaclava and gave his name to a knitted jacket?", "Lord Cardigan", ["Lord Raglan", "Lord Lucan", "Captain Nolan"]),
     e(4, "Which river battle of September 1854 was the first major clash of the Crimean War?", "The Alma", ["Inkerman", "Balaclava", "The Chernaya"]),
-    e(5, "Which foggy November 1854 battle near Sevastopol was called the soldiers' battle?", "Inkerman", ["The Alma", "Balaclava", "The Redan"]),
+    e(5, "Which foggy November 1854 battle of the Crimean War was called the soldiers' battle?", "Inkerman", ["The Alma", "Balaclava", "The Redan"]),
   ],
   // day 76
   [

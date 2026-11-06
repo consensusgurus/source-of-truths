@@ -477,7 +477,7 @@ export const LANE_DAYS = [
     { c: "Music", t: 2, q: "Which singer won an Oscar for playing Maggio in From Here to Eternity (1953)?", a: "Frank Sinatra", d: ["Dean Martin", "Tony Bennett", "Perry Como"] },
     { c: "Music", t: 3, q: "Which composer wrote the opera 'Madama Butterfly' (1904)?", a: "Giacomo Puccini", d: ["Giuseppe Verdi", "Pietro Mascagni", "Umberto Giordano"] },
     { c: "Music", t: 4, q: "Which Bach collection holds 48 preludes and fugues, one in every key, in two books?", a: "The Well-Tempered Clavier", d: ["The Art of Fugue", "The Goldberg Variations", "The Clavier-Ubung"] },
-    { c: "Music", t: 5, q: "Which composer wrote 'In C' (1964), a founding work of minimalism?", a: "Terry Riley", d: ["Steve Reich", "La Monte Young", "Tony Conrad"] },
+    { c: "Music", t: 5, q: "Which composer wrote the opera 'Nixon in China' (1987)?", a: "John Adams", d: ["Philip Glass", "Steve Reich", "John Corigliano"] },
   ],
   [
     { c: "Music", t: 1, q: "What is a singing group in a church, often robed and seated near the altar, called?", a: "A choir", d: ["A quartet", "An orchestra", "A brass band"] },

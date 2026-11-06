@@ -154,7 +154,7 @@ export const LANE_DAYS = [
   ],
   // day 67
   [
-    e(1, "Which Chinese emperor was buried with an army of life-size terracotta warriors?", "Qin Shi Huang", ["Emperor Wu", "Liu Bang", "Kublai Khan"]),
+    e(1, "Which oil, pressed from the fruit of their most important crop tree, did the ancient Greeks use for food, lamps and athletes' skin?", "Olive oil", ["Sesame oil", "Coconut oil", "Palm oil"]),
     e(2, "Which great-nephew did Julius Caesar adopt as his heir in his will?", "Octavian", ["Mark Antony", "Brutus", "Lepidus"]),
     e(3, "Which Athenian comic playwright mocked Socrates in The Clouds?", "Aristophanes", ["Menander", "Euripides", "Aeschylus"]),
     e(4, "Which Greek king's costly wins over Rome gave us a phrase for a victory not worth winning?", "Pyrrhus", ["Antiochus III", "Demetrius I", "Philip V"]),
@@ -220,7 +220,7 @@ export const LANE_DAYS = [
   [
     e(1, "What do we call the long stretch of the human past before writing was invented?", "Prehistory", ["Antiquity", "The Middle Ages", "The Classical era"]),
     e(2, "Which Gulf Coast people of Mexico are often called the mother culture of Mesoamerica?", "The Olmecs", ["The Toltecs", "The Aztecs", "The Zapotecs"]),
-    e(3, "What was the title of the priestess who gave Apollo's answers at Delphi?", "The Pythia", ["A vestal", "A maenad", "The Muse"]),
+    e(3, "What was the title of the priestess who spoke the oracle's answers at Delphi?", "The Pythia", ["A vestal", "A maenad", "The Muse"]),
     e(4, "Which philosopher of Miletus taught that water is the source of all things?", "Thales", ["Anaximenes", "Heraclitus", "Anaximander"]),
     e(5, "Which Greek writer of the 2nd century AD wrote the Anabasis of Alexander?", "Arrian", ["Curtius Rufus", "Diodorus Siculus", "Plutarch"]),
   ],

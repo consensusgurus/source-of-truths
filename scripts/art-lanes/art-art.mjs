@@ -528,7 +528,7 @@ export const LANE_DAYS = [
     { c: "Art", t: 1, q: "What do you call an artist who carves or models statues?", a: "A sculptor", d: ["A potter", "A weaver", "An engraver"] },
     { c: "Art", t: 2, q: "In which Italian city is the Uffizi Gallery?", a: "Florence", d: ["Rome", "Venice", "Naples"] },
     { c: "Art", t: 3, q: "Which American photographer made Identical Twins, Roselle, New Jersey (1967)?", a: "Diane Arbus", d: ["Lisette Model", "Mary Ellen Mark", "Nan Goldin"] },
-    { c: "Art", t: 4, q: "Who made the oldest surviving camera photograph, View from the Window at Le Gras, in the 1820s?", a: "Nicephore Niepce", d: ["Louis Daguerre", "William Henry Fox Talbot", "Hippolyte Bayard"] },
+    { c: "Art", t: 4, q: "Which photographer made 'The Steerage' (1907), showing passengers aboard a transatlantic liner?", a: "Alfred Stieglitz", d: ["Paul Strand", "Edward Steichen", "Lewis Hine"] },
     { c: "Art", t: 5, q: "Which Venetian painter frescoed the vast staircase ceiling of the Wurzburg Residence?", a: "Giovanni Battista Tiepolo", d: ["Sebastiano Ricci", "Giovanni Antonio Pellegrini", "Jacopo Amigoni"] },
   ],
   [

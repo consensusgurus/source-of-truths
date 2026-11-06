@@ -55,7 +55,7 @@ export const LANE_DAYS = [
   ],
   // day 55
   [
-    e(1, "How many countries signed the 1957 Treaty of Rome founding the European Economic Community?", "Six", ["Four", "Nine", "Twelve"]),
+    e(1, "Which country voted in a 2016 referendum to leave the European Union?", "The United Kingdom", ["France", "Greece", "Denmark"]),
     e(2, "Which French businessman drew up the coal and steel plan and became the first president of its High Authority?", "Jean Monnet", ["Robert Schuman", "Paul-Henri Spaak", "Konrad Adenauer"]),
     e(3, "Which French foreign minister proposed pooling coal and steel in a 1950 declaration?", "Robert Schuman", ["Jean Monnet", "Charles de Gaulle", "Georges Pompidou"]),
     e(4, "Which French official was president of the European Commission from 1985 to 1995?", "Jacques Delors", ["Jacques Santer", "Gaston Thorn", "Valery Giscard d'Estaing"]),
@@ -233,7 +233,7 @@ export const LANE_DAYS = [
   [
     e(1, "What name is given to the peaceful 1989 overthrow of communism in Czechoslovakia?", "The Velvet Revolution", ["The Prague Spring", "The Carnation Revolution", "The Singing Revolution"]),
     e(2, "Which Czechoslovak leader led the reforms of the 1968 Prague Spring?", "Alexander Dubcek", ["Gustav Husak", "Antonin Novotny", "Ludvik Svoboda"]),
-    e(3, "Which Hungarian prime minister was executed after the 1956 uprising?", "Imre Nagy", ["Janos Kadar", "Matyas Rakosi", "Erno Gero"]),
+    e(3, "Which prime minister was executed in 1958 after leading his country's 1956 revolt against Soviet control?", "Imre Nagy", ["Janos Kadar", "Matyas Rakosi", "Erno Gero"]),
     e(4, "Which Czech student burned himself to death in Prague in January 1969 in protest?", "Jan Palach", ["Jan Zajic", "Jan Patocka", "Vaclav Benda"]),
     e(5, "Which 1977 Czechoslovak human rights manifesto did Vaclav Havel help write?", "Charter 77", ["Two Thousand Words", "Civic Forum", "The Prague Appeal"]),
   ],

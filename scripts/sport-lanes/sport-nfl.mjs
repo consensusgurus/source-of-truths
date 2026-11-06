@@ -431,7 +431,7 @@ export const LANE_DAYS = [
   [
     { c: 'NFL', t: 1, q: 'What are the two main colors of the Chicago Bears uniform?', a: 'Navy blue and orange', d: ['Black and gold', 'Green and white', 'Maroon and silver'] },
     { c: 'NFL', t: 2, q: 'Which city did the Chargers move to in 2017?', a: 'Los Angeles', d: ['Las Vegas', 'Portland', 'Phoenix'] },
-    { c: 'NFL', t: 3, q: 'Which head coach led the Pittsburgh Steelers to the Super Bowl XLIII title?', a: 'Mike Tomlin', d: ['Bill Cowher', 'Chuck Noll', 'Ken Whisenhunt'] },
+    { c: 'NFL', t: 3, q: 'Which head coach won Super Bowl XLIII, in which his team beat the Arizona Cardinals?', a: 'Mike Tomlin', d: ['Bill Cowher', 'Chuck Noll', 'Ken Whisenhunt'] },
     { c: 'NFL', t: 4, q: 'Which college did the Minnesota Vikings take Randy Moss from in the 1998 draft?', a: 'Marshall', d: ['West Virginia', 'Florida State', 'Notre Dame'] },
     { c: 'NFL', t: 5, q: 'Which Cleveland owner moved his club to Baltimore after the 1995 season?', a: 'Art Modell', d: ['Al Lerner', 'Bud Adams', 'Georgia Frontiere'] },
   ],

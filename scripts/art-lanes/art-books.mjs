@@ -509,13 +509,13 @@ export const LANE_DAYS = [
   ],
   [
     { c: "Books", t: 1, q: "Which hobbit finds the One Ring in 'The Hobbit'?", a: "Bilbo Baggins", d: ["Samwise Gamgee", "Peregrin Took", "Meriadoc Brandybuck"] },
-    { c: "Books", t: 2, q: "Who wrote 'Emma' (1815) and 'Persuasion' (1817)?", a: "Jane Austen", d: ["Charlotte Bronte", "Fanny Burney", "Maria Edgeworth"] },
+    { c: "Books", t: 2, q: "Who wrote 'The Mill on the Floss' (1860)?", a: "George Eliot", d: ["Elizabeth Gaskell", "Charlotte Bronte", "Anne Bronte"] },
     { c: "Books", t: 3, q: "Who wrote 'Lord Jim' (1900) and 'Nostromo' (1904)?", a: "Joseph Conrad", d: ["Rudyard Kipling", "E. M. Forster", "H. Rider Haggard"] },
     { c: "Books", t: 4, q: "In 'Great Expectations', who is Pip's secret benefactor?", a: "Abel Magwitch", d: ["Miss Havisham", "Mr. Jaggers", "Joe Gargery"] },
     { c: "Books", t: 5, q: "Which Portuguese author wrote 'The Gospel According to Jesus Christ' (1991)?", a: "Jose Saramago", d: ["Antonio Lobo Antunes", "Eca de Queiroz", "Miguel Torga"] },
   ],
   [
-    { c: "Books", t: 1, q: "In 'Charlotte's Web', what is the name of the pig Charlotte saves?", a: "Wilbur", d: ["Babe", "Napoleon", "Arnold"] },
+    { c: "Books", t: 1, q: "In the books by H. A. and Margret Rey, who looks after Curious George?", a: "The Man with the Yellow Hat", d: ["The Zookeeper", "The Doorman", "Professor Wiseman"] },
     { c: "Books", t: 2, q: "Who wrote 'To Kill a Mockingbird' (1960)?", a: "Harper Lee", d: ["Carson McCullers", "Eudora Welty", "Truman Capote"] },
     { c: "Books", t: 3, q: "Which author wrote 'On the Road' (1957)?", a: "Jack Kerouac", d: ["William S. Burroughs", "Neal Cassady", "Ken Kesey"] },
     { c: "Books", t: 4, q: "Which poet co-founded Dublin's national theater, the Abbey, in 1904?", a: "W. B. Yeats", d: ["Seamus Heaney", "Patrick Kavanagh", "Louis MacNeice"] },
@@ -550,7 +550,7 @@ export const LANE_DAYS = [
     { c: "Books", t: 5, q: "Which Austrian author wrote 'The Confusions of Young Torless' (1906)?", a: "Robert Musil", d: ["Hermann Broch", "Joseph Roth", "Arthur Schnitzler"] },
   ],
   [
-    { c: "Books", t: 1, q: "Which English author created Peter Rabbit?", a: "Beatrix Potter", d: ["Kenneth Grahame", "A. A. Milne", "Enid Blyton"] },
+    { c: "Books", t: 1, q: "In Don Freeman's picture book Corduroy, what is the toy missing from his overalls?", a: "A button", d: ["A shoe", "A pocket", "A bow tie"] },
     { c: "Books", t: 2, q: "Who wrote 'Of Mice and Men' (1937)?", a: "John Steinbeck", d: ["Erskine Caldwell", "Sherwood Anderson", "Thornton Wilder"] },
     { c: "Books", t: 3, q: "In 'The Iliad', who kills Hector outside the walls of Troy?", a: "Achilles", d: ["Ajax", "Odysseus", "Agamemnon"] },
     { c: "Books", t: 4, q: "Which author won the 1921 Pulitzer Prize for 'The Age of Innocence'?", a: "Edith Wharton", d: ["Willa Cather", "Ellen Glasgow", "Pearl S. Buck"] },

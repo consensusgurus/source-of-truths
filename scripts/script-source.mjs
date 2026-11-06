@@ -3311,7 +3311,7 @@ export const DAYS = [
 { c: 'Behind the Scenes', t: 2, q: 'In filmmaking, what is blocking?', a: 'Planning the actors\' positions and movements for a scene', d: ['Hiding the crew from the camera', 'Banning a film in a country', 'Covering lights with black cloth'] },
 
 { c: 'Movies', t: 3, q: 'In Back to the Future, what is the theme of the school dance where Marty\'s parents must kiss?', a: 'Enchantment Under the Sea', d: ['A Night in Paris', 'Under the Stars', 'Moonlight Masquerade'] },
-{ c: 'Television', t: 3, q: 'In Atlanta, whom does Earn manage as a rapper?', a: 'His cousin Alfred', d: ['His brother Darius', 'His girlfriend Van', 'His uncle Willy'] },
+{ c: 'Television', t: 3, q: 'In Frasier, what is the name of Martin Crane\'s Jack Russell terrier?', a: 'Eddie', d: ['Buster', 'Max', 'Murray'] },
 { c: 'Actors & Directors', t: 3, q: 'Which actor played the consigliere Tom Hagen in The Godfather?', a: 'Robert Duvall', d: ['James Caan', 'Sterling Hayden', 'Richard Castellano'] },
 { c: 'Awards & Box Office', t: 3, q: 'Which actress won Best Actress for Cabaret?', a: 'Liza Minnelli', d: ['Diana Ross', 'Maggie Smith', 'Liv Ullmann'] },
 { c: 'Behind the Scenes', t: 3, q: 'Which 1977 film was shot partly at Tikal in Guatemala for the rebel base on Yavin 4?', a: 'Star Wars', d: ['Raiders of the Lost Ark', 'Close Encounters of the Third Kind', 'Sorcerer'] },
@@ -3634,7 +3634,7 @@ export const DAYS = [
 { c: 'Awards & Box Office', t: 1, q: 'Which 1984 box office smash starred Eddie Murphy as the Detroit detective Axel Foley?', a: 'Beverly Hills Cop', d: ['Ghostbusters', 'Gremlins', 'The Karate Kid'] },
 { c: 'Behind the Scenes', t: 1, q: 'Which studio made the animated film Shrek?', a: 'DreamWorks Animation', d: ['Pixar', 'Blue Sky Studios', 'Illumination'] },
 
-{ c: 'Movies', t: 2, q: 'In Disney\'s Beauty and the Beast, which vain hunter wants to marry Belle?', a: 'Gaston', d: ['LeFou', 'Maurice', 'Lumiere'] },
+{ c: 'Movies', t: 2, q: 'In Pixar\'s Cars (2006), what racing number does Lightning McQueen carry?', a: '95', d: ['42', '7', '3'] },
 { c: 'Television', t: 2, q: 'In Downton Abbey, what is the name of the head butler?', a: 'Carson', d: ['Bates', 'Barrow', 'Molesley'] },
 { c: 'Actors & Directors', t: 2, q: 'Which actor played Saul Goodman in Breaking Bad and Better Call Saul?', a: 'Bob Odenkirk', d: ['Jonathan Banks', 'Giancarlo Esposito', 'Michael McKean'] },
 { c: 'Awards & Box Office', t: 2, q: 'Which Polish film about a young nun won Best Foreign Language Film for 2014?', a: 'Ida', d: ['Leviathan', 'Wild Tales', 'Timbuktu'] },
@@ -3814,7 +3814,7 @@ export const DAYS = [
 { c: 'Movies', t: 4, q: 'In Wild Strawberries, why is the elderly professor traveling to Lund?', a: 'To receive an honorary degree', d: ['To attend a funeral', 'To see a doctor', 'To visit his son\'s new home'] },
 { c: 'Television', t: 4, q: 'In Cowboy Bebop, what is the name of the laid-back bounty hunter at the center of the series?', a: 'Spike Spiegel', d: ['Vash the Stampede', 'Jet Black', 'Faye Valentine'] },
 { c: 'Actors & Directors', t: 4, q: 'Which actor played the brainwashed Raymond Shaw in the 1962 Manchurian Candidate?', a: 'Laurence Harvey', d: ['Frank Sinatra', 'James Gregory', 'Henry Silva'] },
-{ c: 'Awards & Box Office', t: 4, q: 'Which Mati Diop documentary about returning looted art won the Golden Bear at Berlin in 2024?', a: 'Dahomey', d: ['Atlantics', 'On the Adamant', 'Alcarras'] },
+{ c: 'Awards & Box Office', t: 4, q: 'Which Jafar Panahi film won the Palme d\'Or at Cannes in 2025?', a: 'It Was Just an Accident', d: ['Taxi', 'No Bears', 'The Circle'] },
 { c: 'Behind the Scenes', t: 4, q: 'Which producer and director wired cinema seats to buzz audiences during The Tingler?', a: 'William Castle', d: ['Roger Corman', 'Samuel Z. Arkoff', 'Ed Wood'] },
 
 { c: 'Movies', t: 5, q: 'Whose son is mistakenly kidnapped in Kurosawa\'s High and Low?', a: 'The chauffeur\'s', d: ['The executive\'s', 'The detective\'s', 'The maid\'s'] },
@@ -3928,7 +3928,7 @@ export const DAYS = [
 { c: 'Movies', t: 1, q: 'In Jurassic Park, on which fictional island is the park built?', a: 'Isla Nublar', d: ['Isla Sorna', 'Skull Island', 'Amity Island'] },
 { c: 'Television', t: 1, q: 'In The Simpsons, what is the name of Bart and Lisa\'s school bus driver?', a: 'Otto', d: ['Apu', 'Moe', 'Willie'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actor played Hawkeye in the Marvel films?', a: 'Jeremy Renner', d: ['Paul Rudd', 'Anthony Mackie', 'Chris Pratt'] },
-{ c: 'Awards & Box Office', t: 1, q: 'Which film was the top-grossing release in North America in 1983?', a: 'Return of the Jedi', d: ['Terms of Endearment', 'Flashdance', 'Trading Places'] },
+{ c: 'Awards & Box Office', t: 1, q: 'Who votes for the People\'s Choice Award, the top prize at the Toronto International Film Festival?', a: 'Festival audiences', d: ['A jury of directors', 'Film critics', 'The festival\'s programmers'] },
 { c: 'Behind the Scenes', t: 1, q: 'What is the scrolling list of cast and crew names at the end of a film called?', a: 'The closing credits', d: ['The call sheet', 'The shot list', 'The slate'] },
 
 { c: 'Movies', t: 2, q: 'In Frozen, which prince turns out to be the villain?', a: 'Hans', d: ['Kristoff', 'Eric', 'Naveen'] },
@@ -4028,7 +4028,7 @@ export const DAYS = [
 { c: 'Television', t: 1, q: 'In The Brady Bunch, how many children are there in the blended family?', a: 'Six', d: ['Four', 'Five', 'Eight'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actress played Eleven in Stranger Things?', a: 'Millie Bobby Brown', d: ['Sadie Sink', 'Natalia Dyer', 'Maya Hawke'] },
 { c: 'Awards & Box Office', t: 1, q: 'Which 2004 Clint Eastwood boxing drama won Best Picture?', a: 'Million Dollar Baby', d: ['The Aviator', 'Sideways', 'Ray'] },
-{ c: 'Behind the Scenes', t: 1, q: 'Which Magnum, P.I. star was first choice to play Indiana Jones but could not get out of his television contract?', a: 'Tom Selleck', d: ['Burt Reynolds', 'Nick Nolte', 'Jeff Bridges'] },
+{ c: 'Behind the Scenes', t: 1, q: 'Which actor was first choice for the lead in a 1981 Steven Spielberg adventure but was held to his television contract?', a: 'Tom Selleck', d: ['Burt Reynolds', 'Nick Nolte', 'Jeff Bridges'] },
 
 { c: 'Movies', t: 2, q: 'In The Wizard of Oz, what is the name of the woman who raises Dorothy on the Kansas farm?', a: 'Aunt Em', d: ['Aunt May', 'Aunt Bee', 'Aunt Polly'] },
 { c: 'Television', t: 2, q: 'In the American version of The Office, what is Dwight\'s family farm called?', a: 'Schrute Farms', d: ['Beet Acres', 'Mose Manor', 'Scranton Fields'] },
@@ -4058,7 +4058,7 @@ export const DAYS = [
 // ── Day 123 ────────────────────────────────────────────────────────────
 [
 { c: 'Movies', t: 1, q: 'In the Harry Potter films, which Quidditch position does Harry play?', a: 'Seeker', d: ['Keeper', 'Chaser', 'Beater'] },
-{ c: 'Television', t: 1, q: 'In Seinfeld, what is the name of Jerry\'s neighbor across the hall?', a: 'Kramer', d: ['George', 'Elaine', 'Puddy'] },
+{ c: 'Television', t: 1, q: 'In The Flintstones, where does Fred Flintstone work?', a: 'A rock quarry', d: ['A bowling alley', 'A dinosaur ranch', 'A car wash'] },
 { c: 'Actors & Directors', t: 1, q: 'Which actress played the title role in the 2022 Netflix series Wednesday?', a: 'Jenna Ortega', d: ['Christina Ricci', 'Millie Bobby Brown', 'Sadie Sink'] },
 { c: 'Awards & Box Office', t: 1, q: 'What does a performer receive on the Hollywood Walk of Fame?', a: 'A star set into the sidewalk', d: ['A bronze statue', 'A handprint in a wall', 'A plaque on a lamppost'] },
 { c: 'Behind the Scenes', t: 1, q: 'Lassie is a female collie on screen, but who usually played her?', a: 'Male collies', d: ['Female collies only', 'A puppet', 'A trained wolf'] },
