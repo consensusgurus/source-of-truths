@@ -1,291 +1,223 @@
-// scripts/gene-lanes/gene-cells.mjs - Gene (Life Science), lane 'Cells & Evolution'. 36 days x 5 tiers.
+// scripts/gene-lanes/gene-cells.mjs - Gene (Life Science), lane 'Cells & Evolution'.
+// APPEND SEGMENT: 27 days x 5 tiers, live 2026-12-05 to 2026-12-31 (bank days 37..63).
+// gen-science.mjs appends whatever days these lanes carry, so the lane files hold
+// only the newest segment; days 1..36 are frozen in app/gene/questions.js and in
+// git history (commit 1260977a). Written 2026-11-06.
 export const LANE_DAYS = [
-  // day 1
+  // day 1 (2026-12-05)
   [
-    { c: 'Cells & Evolution', t: 1, q: "Which molecule carries the genetic instructions in nearly every living thing?", a: "DNA", d: ["Starch", "Cholesterol", "Collagen"] },
-    { c: 'Cells & Evolution', t: 2, q: "In which year was \"On the Origin of Species\" first published?", a: "1859", d: ["1809", "1882", "1905"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which period of giant insects and vast swamp forests is named for the coal it left behind?", a: "Carboniferous", d: ["Devonian", "Silurian", "Ordovician"] },
-    { c: 'Cells & Evolution', t: 4, q: "The two strands of DNA run in opposite directions. What is this arrangement called?", a: "Antiparallel", d: ["Perpendicular", "Concentric", "Semiparallel"] },
-    { c: 'Cells & Evolution', t: 5, q: "What are the short DNA pieces made on the lagging strand during replication called?", a: "Okazaki fragments", d: ["Sanger fragments", "Klenow fragments", "Hayflick fragments"] },
+    { c: "Cells & Evolution", t: 1, q: "Fossil seashells found high up in mountains show that the rock there was once what?", a: "The seafloor", d: ["A desert", "A glacier", "A volcano"] },
+    { c: "Cells & Evolution", t: 2, q: "What is walking upright on two legs, a key step in human evolution, called?", a: "Bipedalism", d: ["Quadrupedalism", "Brachiation", "Knuckle-walking"] },
+    { c: "Cells & Evolution", t: 3, q: "Which network of folded membranes, described as rough or smooth, makes proteins and lipids in a cell?", a: "Endoplasmic reticulum", d: ["Golgi apparatus", "Nuclear envelope", "Cell wall"] },
+    { c: "Cells & Evolution", t: 4, q: "What is the stage of photosynthesis that fixes carbon dioxide into sugar, named after a 1961 Nobel winner, called?", a: "Calvin cycle", d: ["Krebs cycle", "Cori cycle", "Urea cycle"] },
+    { c: "Cells & Evolution", t: 5, q: "Which idea, formalized by W. D. Hamilton in 1964, explains why animals help relatives at a cost to themselves?", a: "Kin selection", d: ["Group selection", "Reciprocal altruism", "Sexual selection"] },
   ],
-  // day 2
+  // day 2 (2026-12-06)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What is the smallest unit that can be called alive?", a: "The cell", d: ["The atom", "The tissue", "The molecule"] },
-    { c: 'Cells & Evolution', t: 2, q: "What is fossilized dung called?", a: "Coprolite", d: ["Gastrolith", "Geode", "Trilobite"] },
-    { c: 'Cells & Evolution', t: 3, q: "In which year was the Human Genome Project declared complete?", a: "2003", d: ["1990", "1997", "2012"] },
-    { c: 'Cells & Evolution', t: 4, q: "The 1958 Meselson-Stahl experiment showed that DNA replication is what?", a: "Semiconservative", d: ["Conservative", "Dispersive", "Random"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which German chemist proposed the lock-and-key model of enzyme action in 1894?", a: "Emil Fischer", d: ["Fritz Haber", "Otto Hahn", "Hans Krebs"] },
+    { c: "Cells & Evolution", t: 1, q: "Which plants did Gregor Mendel grow to work out the basic rules of heredity?", a: "Peas", d: ["Beans", "Corn", "Tomatoes"] },
+    { c: "Cells & Evolution", t: 2, q: "What is ancient wood whose tissue has been replaced by minerals and turned to stone called?", a: "Petrified wood", d: ["Driftwood", "Bog oak", "Ironwood"] },
+    { c: "Cells & Evolution", t: 3, q: "What network of protein fibers gives a cell its shape and helps it move?", a: "Cytoskeleton", d: ["Cell wall", "Nucleolus", "Cytoplasm"] },
+    { c: "Cells & Evolution", t: 4, q: "Which American biologist championed the idea that mitochondria and chloroplasts began as bacteria living inside other cells?", a: "Lynn Margulis", d: ["Rachel Carson", "Barbara McClintock", "Dian Fossey"] },
+    { c: "Cells & Evolution", t: 5, q: "What is the cap on how many times a normal human cell can divide in culture called?", a: "Hayflick limit", d: ["Weismann barrier", "Cell cycle arrest", "Apoptotic threshold"] },
   ],
-  // day 3
+  // day 3 (2026-12-07)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What kind of organism is E. coli?", a: "A bacterium", d: ["A fungus", "A protist", "A worm"] },
-    { c: 'Cells & Evolution', t: 2, q: "What are the building blocks of proteins?", a: "Amino acids", d: ["Nucleotides", "Fatty acids", "Simple sugars"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which two scientists shared the 2020 Nobel Prize in Chemistry for CRISPR gene editing?", a: "Charpentier and Doudna", d: ["Watson and Crick", "Jacob and Monod", "Blackburn and Greider"] },
-    { c: 'Cells & Evolution', t: 4, q: "Who coined the phrase \"central dogma\" for the flow of information from DNA to RNA to protein?", a: "Francis Crick", d: ["James Watson", "Linus Pauling", "Erwin Chargaff"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which two French scientists described the lac operon of gene regulation in 1961?", a: "Jacob and Monod", d: ["Lwoff and Pasteur", "Curie and Joliot", "Becquerel and Pasteur"] },
+    { c: "Cells & Evolution", t: 1, q: "What is a developing animal in its earliest stages, before birth or hatching, called?", a: "Embryo", d: ["Larva", "Pupa", "Spore"] },
+    { c: "Cells & Evolution", t: 2, q: "What is the spreading of molecules from where they are crowded to where they are scarce called?", a: "Diffusion", d: ["Condensation", "Active transport", "Evaporation"] },
+    { c: "Cells & Evolution", t: 3, q: "Human AB blood type, where both alleles show fully, is an example of what?", a: "Codominance", d: ["Incomplete dominance", "Epistasis", "Linkage"] },
+    { c: "Cells & Evolution", t: 4, q: "What dense region inside the nucleus assembles the subunits of ribosomes?", a: "Nucleolus", d: ["Centrosome", "Nucleosome", "Centriole"] },
+    { c: "Cells & Evolution", t: 5, q: "Homo naledi, described in 2015, was found in which South African cave system?", a: "Rising Star", d: ["Sterkfontein", "Blombos", "Border Cave"] },
   ],
-  // day 4
+  // day 4 (2026-12-08)
   [
-    { c: 'Cells & Evolution', t: 1, q: "Tyrannosaurus and Triceratops belong to which group of extinct reptiles?", a: "Dinosaurs", d: ["Mammoths", "Trilobites", "Ammonites"] },
-    { c: 'Cells & Evolution', t: 2, q: "Fats, oils and waxes belong to which class of biological molecules?", a: "Lipids", d: ["Proteins", "Carbohydrates", "Nucleic acids"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which of Mendel's laws says the two alleles of a gene separate when sex cells form?", a: "Law of segregation", d: ["Law of dominance", "Law of conservation", "Law of averages"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which enzyme, carried by retroviruses, builds DNA from an RNA template?", a: "Reverse transcriptase", d: ["DNA ligase", "RNA polymerase", "Topoisomerase"] },
-    { c: 'Cells & Evolution', t: 5, q: "What string of adenine nucleotides is added to the 3' end of most eukaryotic messenger RNA?", a: "Poly-A tail", d: ["TATA box", "5' cap", "Shine-Dalgarno"] },
+    { c: "Cells & Evolution", t: 1, q: "What is a characteristic, like eye color or height, that can be passed from parents to children called?", a: "A trait", d: ["A tissue", "A habitat", "A mineral"] },
+    { c: "Cells & Evolution", t: 2, q: "In DNA, guanine always pairs with which base?", a: "Cytosine", d: ["Adenine", "Thymine", "Uracil"] },
+    { c: "Cells & Evolution", t: 3, q: "What is a family-tree chart that tracks a genetic trait through generations called?", a: "Pedigree", d: ["Karyotype", "Punnett square", "Cladogram"] },
+    { c: "Cells & Evolution", t: 4, q: "What is the final splitting of the cytoplasm that creates two daughter cells called?", a: "Cytokinesis", d: ["Karyokinesis", "Interphase", "Prophase"] },
+    { c: "Cells & Evolution", t: 5, q: "Which rotating enzyme in the inner mitochondrial membrane makes most of a cell's ATP?", a: "ATP synthase", d: ["Cytochrome c oxidase", "Hexokinase", "NADH dehydrogenase"] },
   ],
-  // day 5
+  // day 5 (2026-12-09)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What gives blue cheese its blue-green veins?", a: "Mold", d: ["Algae", "Rust", "Moss"] },
-    { c: 'Cells & Evolution', t: 2, q: "Besides DNA, which nucleic acid can serve as a virus's genome?", a: "RNA", d: ["Protein", "Lipid", "Starch"] },
-    { c: 'Cells & Evolution', t: 3, q: "What is the pinched region where two sister chromatids are held together?", a: "Centromere", d: ["Telomere", "Nucleolus", "Centriole"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which American chemist invented the polymerase chain reaction (PCR) in 1983?", a: "Kary Mullis", d: ["Craig Venter", "Paul Berg", "Walter Gilbert"] },
-    { c: 'Cells & Evolution', t: 5, q: "The first codon cracked, UUU in 1961, codes for which amino acid?", a: "Phenylalanine", d: ["Leucine", "Tryptophan", "Methionine"] },
+    { c: "Cells & Evolution", t: 1, q: "What is the offspring of two different species, such as a lion and a tiger, called?", a: "A hybrid", d: ["A clone", "A mutant", "A fossil"] },
+    { c: "Cells & Evolution", t: 2, q: "What process in cells uses oxygen to release the energy stored in glucose?", a: "Cellular respiration", d: ["Photosynthesis", "Fermentation", "Digestion"] },
+    { c: "Cells & Evolution", t: 3, q: "What is it called when a cell uses energy to move substances across its membrane against a concentration gradient?", a: "Active transport", d: ["Diffusion", "Osmosis", "Facilitated diffusion"] },
+    { c: "Cells & Evolution", t: 4, q: "What is an ordered picture of all of a cell's chromosomes, used to spot extra or missing ones, called?", a: "Karyotype", d: ["Genotype", "Phenotype", "Pedigree"] },
+    { c: "Cells & Evolution", t: 5, q: "Which principle says allele frequencies stay constant in a large, randomly mating population with no evolution at work?", a: "Hardy-Weinberg equilibrium", d: ["Founder principle", "Mendelian ratio", "Wright-Fisher drift"] },
   ],
-  // day 6
+  // day 6 (2026-12-10)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What is the complete set of an organism's DNA called?", a: "Genome", d: ["Proteome", "Biome", "Chromosome"] },
-    { c: 'Cells & Evolution', t: 2, q: "What does the abbreviation DNA stand for?", a: "Deoxyribonucleic acid", d: ["Dinitrogen acid", "Diribonuclear acid", "Deoxynitric acid"] },
-    { c: 'Cells & Evolution', t: 3, q: "Crossing red and white snapdragons gives pink flowers. What is this pattern called?", a: "Incomplete dominance", d: ["Codominance", "Epistasis", "Linkage"] },
-    { c: 'Cells & Evolution', t: 4, q: "The heat-loving bacterium that gave PCR its Taq enzyme was found in hot springs in which park?", a: "Yellowstone", d: ["Yosemite", "Glacier", "Death Valley"] },
-    { c: 'Cells & Evolution', t: 5, q: "About how long ago did the Great Oxidation Event first build up oxygen in the atmosphere?", a: "2.4 billion years", d: ["540 million years", "4.5 billion years", "66 million years"] },
+    { c: "Cells & Evolution", t: 1, q: "Which kind of cell has a rigid cell wall and green chloroplasts?", a: "A plant cell", d: ["An animal cell", "A nerve cell", "A blood cell"] },
+    { c: "Cells & Evolution", t: 2, q: "What is a person called who has one copy of a recessive disease allele but no symptoms?", a: "A carrier", d: ["A mutant", "A donor", "A clone"] },
+    { c: "Cells & Evolution", t: 3, q: "What is the pocket on an enzyme where its substrate binds called?", a: "Active site", d: ["Allosteric site", "Prosthetic group", "Cofactor"] },
+    { c: "Cells & Evolution", t: 4, q: "What three-base sequence on a transfer RNA pairs with a codon on the messenger RNA?", a: "Anticodon", d: ["Promoter", "Exon", "Primer"] },
+    { c: "Cells & Evolution", t: 5, q: "What are the channels through plant cell walls that connect the cytoplasm of neighboring cells?", a: "Plasmodesmata", d: ["Desmosomes", "Tight junctions", "Lenticels"] },
   ],
-  // day 7
+  // day 7 (2026-12-11)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What is the study of bacteria, viruses and other tiny life forms called?", a: "Microbiology", d: ["Mineralogy", "Meteorology", "Morphology"] },
-    { c: 'Cells & Evolution', t: 2, q: "Which base replaces thymine in RNA?", a: "Uracil", d: ["Adenine", "Guanine", "Cytosine"] },
-    { c: 'Cells & Evolution', t: 3, q: "Long-necked giant plant-eaters such as Brachiosaurus belong to which dinosaur group?", a: "Sauropods", d: ["Theropods", "Ceratopsians", "Hadrosaurs"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which British biochemist won two Chemistry Nobels, for the structure of insulin and for DNA sequencing?", a: "Frederick Sanger", d: ["Francis Crick", "Max Perutz", "John Kendrew"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which German biologist proposed a third kingdom, Protista, in 1866?", a: "Ernst Haeckel", d: ["Rudolf Virchow", "August Weismann", "Matthias Schleiden"] },
+    { c: "Cells & Evolution", t: 1, q: "What kind of organism is the fuzzy mold that grows on old bread?", a: "A fungus", d: ["A plant", "A bacterium", "An animal"] },
+    { c: "Cells & Evolution", t: 2, q: "What is it called when bacteria evolve so that a drug like penicillin no longer kills them?", a: "Antibiotic resistance", d: ["Herd immunity", "Vaccination", "Remission"] },
+    { c: "Cells & Evolution", t: 3, q: "In which phase of mitosis are the sister chromatids pulled apart to opposite ends of the cell?", a: "Anaphase", d: ["Prophase", "Metaphase", "Interphase"] },
+    { c: "Cells & Evolution", t: 4, q: "Which amino acid does the start codon AUG code for?", a: "Methionine", d: ["Glycine", "Leucine", "Tryptophan"] },
+    { c: "Cells & Evolution", t: 5, q: "Which car-sized armored relative of the armadillo roamed Ice Age South America?", a: "Glyptodon", d: ["Ankylosaurus", "Megatherium", "Toxodon"] },
   ],
-  // day 8
+  // day 8 (2026-12-12)
   [
-    { c: 'Cells & Evolution', t: 1, q: "Which organelle is nicknamed the powerhouse of the cell?", a: "Mitochondrion", d: ["Nucleus", "Ribosome", "Golgi body"] },
-    { c: 'Cells & Evolution', t: 2, q: "In DNA, adenine always pairs with which base?", a: "Thymine", d: ["Guanine", "Cytosine", "Uracil"] },
-    { c: 'Cells & Evolution', t: 3, q: "A human arm and a whale flipper share one bone layout inherited from a common ancestor. What are such structures called?", a: "Homologous", d: ["Analogous", "Vestigial", "Convergent"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which DNA-cutting enzyme is most often paired with CRISPR guide RNA in gene editing?", a: "Cas9", d: ["EcoRI", "Taq", "Dicer"] },
-    { c: 'Cells & Evolution', t: 5, q: "Raymond Dart's 1924 Taung Child was the first fossil found of which genus?", a: "Australopithecus", d: ["Paranthropus", "Ardipithecus", "Homo"] },
+    { c: "Cells & Evolution", t: 1, q: "What is a group of tissues working together to do a job, such as the heart or the stomach, called?", a: "An organ", d: ["A cell", "An organelle", "A species"] },
+    { c: "Cells & Evolution", t: 2, q: "What are all the different species living and interacting in one area called?", a: "Community", d: ["Population", "Habitat", "Genome"] },
+    { c: "Cells & Evolution", t: 3, q: "Malaria is caused by what kind of single-celled organism?", a: "A protist", d: ["A bacterium", "A virus", "A fungus"] },
+    { c: "Cells & Evolution", t: 4, q: "What is a slimy, organized community of bacteria stuck to a surface, like dental plaque, called?", a: "Biofilm", d: ["Capsule", "Plasmid", "Endospore"] },
+    { c: "Cells & Evolution", t: 5, q: "Which family of master regulators, each holding a homeobox, lays out the head-to-tail body plan in animals?", a: "Hox genes", d: ["Oncogenes", "Housekeeping genes", "Pseudogenes"] },
   ],
-  // day 9
+  // day 9 (2026-12-13)
   [
-    { c: 'Cells & Evolution', t: 1, q: "Yogurt is made by adding which kind of microbe to milk?", a: "Bacteria", d: ["Viruses", "Amoebas", "Algae"] },
-    { c: 'Cells & Evolution', t: 2, q: "In which year did Watson and Crick publish their model of DNA's structure?", a: "1953", d: ["1928", "1944", "1969"] },
-    { c: 'Cells & Evolution', t: 3, q: "In which 1871 book did Darwin apply his theory to human origins and sexual selection?", a: "The Descent of Man", d: ["The Voyage of the Beagle", "The Expression of the Emotions", "The Power of Movement in Plants"] },
-    { c: 'Cells & Evolution', t: 4, q: "Crossing two plants heterozygous for two unlinked traits gives what classic ratio of offspring types?", a: "9:3:3:1", d: ["1:2:1", "3:1", "1:1:1:1"] },
-    { c: 'Cells & Evolution', t: 5, q: "Denisovans are named after a cave in which mountain range?", a: "Altai Mountains", d: ["Ural Mountains", "Caucasus", "Carpathians"] },
+    { c: "Cells & Evolution", t: 1, q: "What are the four chemical 'letters' of DNA, A, C, G and T, called?", a: "Bases", d: ["Codons", "Amino acids", "Chromosomes"] },
+    { c: "Cells & Evolution", t: 2, q: "What is the organism that a parasite or a virus lives on or in called?", a: "The host", d: ["The predator", "The prey", "The scavenger"] },
+    { c: "Cells & Evolution", t: 3, q: "Red-green color blindness is more common in men because its gene is carried on which of these?", a: "The X chromosome", d: ["The Y chromosome", "Chromosome 1", "Chromosome 21"] },
+    { c: "Cells & Evolution", t: 4, q: "Which giant marine lizards, first found near Maastricht in the Netherlands, ruled the seas of the late Cretaceous?", a: "Mosasaurs", d: ["Ichthyosaurs", "Plesiosaurs", "Pliosaurs"] },
+    { c: "Cells & Evolution", t: 5, q: "The first non-bird dinosaur found with traces of feathers, described in 1996, came from which country?", a: "China", d: ["Mongolia", "Canada", "Argentina"] },
   ],
-  // day 10
+  // day 10 (2026-12-14)
   [
-    { c: 'Cells & Evolution', t: 1, q: "Which of these is usually the smallest?", a: "A virus", d: ["A bacterium", "A yeast cell", "An amoeba"] },
-    { c: 'Cells & Evolution', t: 2, q: "What grid diagram is used to predict the possible offspring of a genetic cross?", a: "Punnett square", d: ["Venn diagram", "Pedigree chart", "Food web"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which lab technique sorts DNA fragments by size by pulling them through a gel with an electric current?", a: "Gel electrophoresis", d: ["Centrifugation", "Chromatography", "Distillation"] },
-    { c: 'Cells & Evolution', t: 4, q: "Crossing an organism with a homozygous recessive partner to reveal its genotype is called what?", a: "Test cross", d: ["Dihybrid cross", "Reciprocal cross", "Outcross"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which geological period just before the Cambrian is named after hills in South Australia?", a: "Ediacaran", d: ["Cryogenian", "Tonian", "Silurian"] },
+    { c: "Cells & Evolution", t: 1, q: "Tyrannosaurus rex is famous for having very short what?", a: "Arms", d: ["Legs", "Tail", "Teeth"] },
+    { c: "Cells & Evolution", t: 2, q: "Which level of organization is made of several organs working together, like the stomach, intestines and liver?", a: "Organ system", d: ["Tissue", "Organelle", "Population"] },
+    { c: "Cells & Evolution", t: 3, q: "In evolution, what does an organism's 'fitness' actually measure?", a: "Its reproductive success", d: ["Its strength", "Its speed", "Its lifespan"] },
+    { c: "Cells & Evolution", t: 4, q: "Which plant-eating dinosaur, named in 1825, has a spiky thumb that was first mistaken for a nose horn?", a: "Iguanodon", d: ["Megalosaurus", "Hadrosaurus", "Hylaeosaurus"] },
+    { c: "Cells & Evolution", t: 5, q: "What large complex of RNA and protein cuts the introns out of a newly made RNA?", a: "Spliceosome", d: ["Proteasome", "Ribosome", "Nucleosome"] },
   ],
-  // day 11
+  // day 11 (2026-12-15)
   [
-    { c: 'Cells & Evolution', t: 1, q: "Which shaggy relative of the elephant roamed prehistoric Europe and North America?", a: "Woolly mammoth", d: ["Giant sloth", "Cave bear", "Saber-toothed cat"] },
-    { c: 'Cells & Evolution', t: 2, q: "What term describes an organism's observable traits, as opposed to its genetic makeup?", a: "Phenotype", d: ["Genotype", "Karyotype", "Haplotype"] },
-    { c: 'Cells & Evolution', t: 3, q: "The 1925 Scopes \"Monkey Trial\" over teaching evolution took place in which state?", a: "Tennessee", d: ["Georgia", "Kansas", "Alabama"] },
-    { c: 'Cells & Evolution', t: 4, q: "In which year was Mendel's work on inheritance rediscovered by other botanists?", a: "1900", d: ["1859", "1880", "1925"] },
-    { c: 'Cells & Evolution', t: 5, q: "Dinosaurs are split by hip structure into Ornithischia and which other group?", a: "Saurischia", d: ["Pterosauria", "Plesiosauria", "Synapsida"] },
+    { c: "Cells & Evolution", t: 1, q: "Which geological period, between the Triassic and the Cretaceous, gave its name to a 1993 dinosaur movie?", a: "Jurassic", d: ["Permian", "Devonian", "Silurian"] },
+    { c: "Cells & Evolution", t: 2, q: "What is the total collection of all the gene versions in a population called?", a: "Gene pool", d: ["Gene flow", "Genotype", "Gene map"] },
+    { c: "Cells & Evolution", t: 3, q: "Which geological period, when fish diversified enormously, is nicknamed the Age of Fishes?", a: "Devonian", d: ["Silurian", "Ordovician", "Permian"] },
+    { c: "Cells & Evolution", t: 4, q: "The sail-backed Dimetrodon was not a dinosaur. Which living group is it more closely related to?", a: "Mammals", d: ["Lizards", "Crocodiles", "Turtles"] },
+    { c: "Cells & Evolution", t: 5, q: "Which spiny Burgess Shale animal was first reconstructed upside down and back to front?", a: "Hallucigenia", d: ["Opabinia", "Marrella", "Wiwaxia"] },
   ],
-  // day 12
+  // day 12 (2026-12-16)
   [
-    { c: 'Cells & Evolution', t: 1, q: "Sue, a famous skeleton at Chicago's Field Museum, is what kind of dinosaur?", a: "Tyrannosaurus rex", d: ["Triceratops", "Stegosaurus", "Brachiosaurus"] },
-    { c: 'Cells & Evolution', t: 2, q: "Which three-lobed sea arthropods are among the most common fossils of the Paleozoic?", a: "Trilobites", d: ["Ammonites", "Sea scorpions", "Crinoids"] },
-    { c: 'Cells & Evolution', t: 3, q: "When one ancestor gives rise to many species filling different niches, as with Darwin's finches, what is it called?", a: "Adaptive radiation", d: ["Coevolution", "Genetic drift", "Gene flow"] },
-    { c: 'Cells & Evolution', t: 4, q: "Traits such as human height, shaped by many genes at once, are described as what?", a: "Polygenic", d: ["Pleiotropic", "Sex-linked", "Codominant"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which oxygen-storing muscle protein was the first to have its 3D structure solved, in 1958?", a: "Myoglobin", d: ["Hemoglobin", "Insulin", "Lysozyme"] },
+    { c: "Cells & Evolution", t: 1, q: "Which plant-eating dinosaur had three horns on its face and a big bony frill?", a: "Triceratops", d: ["Stegosaurus", "Ankylosaurus", "Brachiosaurus"] },
+    { c: "Cells & Evolution", t: 2, q: "In undisturbed layers of sedimentary rock, what is generally true of the fossils found deeper down?", a: "They are older", d: ["They are younger", "They are larger", "They are all marine"] },
+    { c: "Cells & Evolution", t: 3, q: "What are the large Ice Age animals, such as mammoths and giant ground sloths, collectively called?", a: "Megafauna", d: ["Microfauna", "Macrophytes", "Dinosaurs"] },
+    { c: "Cells & Evolution", t: 4, q: "What kind of animal was Megatherium, which roamed South America during the Ice Age?", a: "A giant ground sloth", d: ["A giant armadillo", "A giant beaver", "A cave bear"] },
+    { c: "Cells & Evolution", t: 5, q: "A Western blot is a lab test used to detect which kind of molecule?", a: "Proteins", d: ["DNA", "RNA", "Lipids"] },
   ],
-  // day 13
+  // day 13 (2026-12-17)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What word describes a species that has died out completely?", a: "Extinct", d: ["Endangered", "Dormant", "Invasive"] },
-    { c: 'Cells & Evolution', t: 2, q: "In which country was the 3.2-million-year-old skeleton nicknamed \"Lucy\" found in 1974?", a: "Ethiopia", d: ["Kenya", "South Africa", "Egypt"] },
-    { c: 'Cells & Evolution', t: 3, q: "The burst of animal diversity that began about 540 million years ago is named after which period?", a: "Cambrian", d: ["Jurassic", "Devonian", "Carboniferous"] },
-    { c: 'Cells & Evolution', t: 4, q: "What is the loss of genetic variety when a few individuals start a new, isolated population called?", a: "Founder effect", d: ["Bottleneck shift", "Hardy-Weinberg effect", "Baldwin effect"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which amino acid forms the disulfide bridges that help hold proteins in shape?", a: "Cysteine", d: ["Methionine", "Glycine", "Lysine"] },
+    { c: "Cells & Evolution", t: 1, q: "Where do at-home DNA test kits usually collect cells with a cotton swab?", a: "Inside the cheek", d: ["Behind the ear", "Under the nails", "Between the toes"] },
+    { c: "Cells & Evolution", t: 2, q: "What is the two-part naming system for species, as in Homo sapiens, called?", a: "Binomial nomenclature", d: ["Cladistics", "Phylogeny", "Trinomial taxonomy"] },
+    { c: "Cells & Evolution", t: 3, q: "What are round, ball-shaped bacteria called?", a: "Cocci", d: ["Bacilli", "Spirilla", "Vibrios"] },
+    { c: "Cells & Evolution", t: 4, q: "Peking Man, found near Beijing in the 1920s, belongs to which human species?", a: "Homo erectus", d: ["Homo habilis", "Homo neanderthalensis", "Homo floresiensis"] },
+    { c: "Cells & Evolution", t: 5, q: "Which proteins, discovered by Tim Hunt in sea urchin eggs, rise and fall to drive the cell cycle?", a: "Cyclins", d: ["Histones", "Kinesins", "Integrins"] },
   ],
-  // day 14
+  // day 14 (2026-12-18)
   [
-    { c: 'Cells & Evolution', t: 1, q: "Twins that develop from a single fertilized egg and share the same DNA are called what?", a: "Identical twins", d: ["Fraternal twins", "Paternal twins", "Parallel twins"] },
-    { c: 'Cells & Evolution', t: 2, q: "Which geological era is known as the Age of Reptiles?", a: "Mesozoic", d: ["Paleozoic", "Cenozoic", "Precambrian"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which mass extinction, about 252 million years ago, is known as the Great Dying?", a: "End-Permian", d: ["End-Cretaceous", "End-Triassic", "End-Ordovician"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which grandfather of Charles Darwin set out early evolutionary ideas in \"Zoonomia\"?", a: "Erasmus Darwin", d: ["Robert Darwin", "Joseph Banks", "Francis Galton"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which small organelles break down fatty acids and hydrogen peroxide?", a: "Peroxisomes", d: ["Ribosomes", "Centrioles", "Plastids"] },
+    { c: "Cells & Evolution", t: 1, q: "What does the abbreviation GMO stand for?", a: "Genetically modified organism", d: ["Genetically mixed organism", "Growth-modified organism", "Genetically mutated organism"] },
+    { c: "Cells & Evolution", t: 2, q: "What are organisms whose cells have a nucleus, such as plants, animals and fungi, called?", a: "Eukaryotes", d: ["Prokaryotes", "Archaea", "Viruses"] },
+    { c: "Cells & Evolution", t: 3, q: "What is a single chain of amino acids joined by peptide bonds called?", a: "Polypeptide", d: ["Polysaccharide", "Nucleotide", "Fatty acid"] },
+    { c: "Cells & Evolution", t: 4, q: "Humans, chimpanzees, gorillas and orangutans together make up which family?", a: "Hominids", d: ["Hominins", "Hylobatids", "Cercopithecids"] },
+    { c: "Cells & Evolution", t: 5, q: "What is the system bacteria use to detect how many of their kind are nearby, through signal molecules?", a: "Quorum sensing", d: ["Chemotaxis", "Conjugation", "Sporulation"] },
   ],
-  // day 15
+  // day 15 (2026-12-19)
   [
-    { c: 'Cells & Evolution', t: 1, q: "The word \"dinosaur\" comes from Greek words meaning what?", a: "Terrible lizard", d: ["Ancient beast", "Giant reptile", "Thunder foot"] },
-    { c: 'Cells & Evolution', t: 2, q: "Cells with no nucleus, such as bacteria, are known as what?", a: "Prokaryotes", d: ["Eukaryotes", "Gametes", "Protists"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which fossil hunter of Lyme Regis found the first complete plesiosaur skeleton in 1823?", a: "Mary Anning", d: ["Gideon Mantell", "William Buckland", "Richard Owen"] },
-    { c: 'Cells & Evolution', t: 4, q: "The Burgess Shale, rich in soft-bodied Cambrian fossils, is in which Canadian province?", a: "British Columbia", d: ["Alberta", "Ontario", "Quebec"] },
-    { c: 'Cells & Evolution', t: 5, q: "What is the failure of chromosomes to separate properly during cell division called?", a: "Nondisjunction", d: ["Translocation", "Inversion", "Crossing over"] },
+    { c: "Cells & Evolution", t: 1, q: "Fossils show that many small meat-eating dinosaurs closely related to birds had what covering their bodies?", a: "Feathers", d: ["Fur", "Shells", "Smooth scales"] },
+    { c: "Cells & Evolution", t: 2, q: "How many sets of chromosomes does a typical human body cell carry?", a: "Two", d: ["One", "Three", "Four"] },
+    { c: "Cells & Evolution", t: 3, q: "Which tiny eight-legged animals, nicknamed water bears, can survive drying out, freezing and even open space?", a: "Tardigrades", d: ["Rotifers", "Nematodes", "Copepods"] },
+    { c: "Cells & Evolution", t: 4, q: "What are spiral-shaped bacteria with rigid bodies called?", a: "Spirilla", d: ["Cocci", "Bacilli", "Vibrios"] },
+    { c: "Cells & Evolution", t: 5, q: "What German term names a fossil site of exceptional preservation, like the Burgess Shale?", a: "Lagerstätte", d: ["Leitfossil", "Grabfeld", "Steinbruch"] },
   ],
-  // day 16
+  // day 16 (2026-12-20)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What is reproduction that needs only one parent called?", a: "Asexual reproduction", d: ["Sexual reproduction", "Pollination", "Fertilization"] },
-    { c: 'Cells & Evolution', t: 2, q: "What is the science of naming and classifying living things called?", a: "Taxonomy", d: ["Ecology", "Anatomy", "Cytology"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which coiled-shell relatives of squid, common as fossils, died out along with the dinosaurs?", a: "Ammonites", d: ["Nautiluses", "Trilobites", "Brachiopods"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which was the first dinosaur genus to be scientifically named, in 1824?", a: "Megalosaurus", d: ["Iguanodon", "Brachiosaurus", "Stegosaurus"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which student of Thomas Hunt Morgan drew the first genetic linkage map in 1913?", a: "Alfred Sturtevant", d: ["Hermann Muller", "Calvin Bridges", "George Beadle"] },
+    { c: "Cells & Evolution", t: 1, q: "Which male sex cell swims with a whiplike tail to reach an egg?", a: "Sperm", d: ["Ovum", "Zygote", "Neuron"] },
+    { c: "Cells & Evolution", t: 2, q: "Who wrote the 1976 book 'The Selfish Gene'?", a: "Richard Dawkins", d: ["Stephen Jay Gould", "E. O. Wilson", "Carl Sagan"] },
+    { c: "Cells & Evolution", t: 3, q: "Which single-celled pond organism has a red eyespot and can both photosynthesize and eat food?", a: "Euglena", d: ["Amoeba", "Paramecium", "Volvox"] },
+    { c: "Cells & Evolution", t: 4, q: "What is the specific position of a gene on a chromosome called?", a: "Locus", d: ["Allele", "Codon", "Centromere"] },
+    { c: "Cells & Evolution", t: 5, q: "What is the study of trace fossils, such as footprints, burrows and bite marks, called?", a: "Ichnology", d: ["Taphonomy", "Palynology", "Stratigraphy"] },
   ],
-  // day 17
+  // day 17 (2026-12-21)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What is the passing of traits from parents to their offspring called?", a: "Heredity", d: ["Metabolism", "Migration", "Respiration"] },
-    { c: 'Cells & Evolution', t: 2, q: "In a two-part scientific name such as Canis lupus, what does the first word name?", a: "Genus", d: ["Species", "Family", "Kingdom"] },
-    { c: 'Cells & Evolution', t: 3, q: "Cells with a single set of chromosomes, such as sperm and eggs, are described as what?", a: "Haploid", d: ["Diploid", "Triploid", "Polyploid"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which fake \"missing link\" fossil from an English gravel pit was exposed as a hoax in 1953?", a: "Piltdown Man", d: ["Java Man", "Peking Man", "Taung Child"] },
-    { c: 'Cells & Evolution', t: 5, q: "What is it called when one gene masks the effect of a different gene?", a: "Epistasis", d: ["Pleiotropy", "Codominance", "Penetrance"] },
+    { c: "Cells & Evolution", t: 1, q: "Which tangy bread rises thanks to a 'starter' of wild yeast and bacteria?", a: "Sourdough", d: ["Brioche", "Focaccia", "Soda bread"] },
+    { c: "Cells & Evolution", t: 2, q: "What is a species that has changed little over many millions of years, like the horseshoe crab, often called?", a: "A living fossil", d: ["A missing link", "A ghost lineage", "A transitional form"] },
+    { c: "Cells & Evolution", t: 3, q: "Which armored dinosaur swung a heavy bony club at the end of its tail?", a: "Ankylosaurus", d: ["Stegosaurus", "Triceratops", "Iguanodon"] },
+    { c: "Cells & Evolution", t: 4, q: "What DNA region just before a gene is where RNA polymerase binds to start transcription?", a: "Promoter", d: ["Terminator", "Operator", "Intron"] },
+    { c: "Cells & Evolution", t: 5, q: "Which American chemist described the alpha helix, a key shape in protein structure, in 1951?", a: "Linus Pauling", d: ["Erwin Chargaff", "Maurice Wilkins", "Phoebus Levene"] },
   ],
-  // day 18
+  // day 18 (2026-12-22)
   [
-    { c: 'Cells & Evolution', t: 1, q: "About what share of a child's nuclear DNA comes from each parent?", a: "Half", d: ["A quarter", "A tenth", "Three quarters"] },
-    { c: 'Cells & Evolution', t: 2, q: "What is the simple splitting in two by which bacteria reproduce called?", a: "Binary fission", d: ["Budding", "Meiosis", "Conjugation"] },
-    { c: 'Cells & Evolution', t: 3, q: "What is it called when heat or acid unravels a protein so it stops working?", a: "Denaturation", d: ["Oxidation", "Hydrolysis", "Polymerization"] },
-    { c: 'Cells & Evolution', t: 4, q: "Fossils of widespread, short-lived species used to date and match rock layers are called what?", a: "Index fossils", d: ["Trace fossils", "Living fossils", "Body fossils"] },
-    { c: 'Cells & Evolution', t: 5, q: "What are tiny infectious circles of bare RNA with no protein coat, which attack plants, called?", a: "Viroids", d: ["Prions", "Plasmids", "Phages"] },
+    { c: "Cells & Evolution", t: 1, q: "What thin piece of glass holds a specimen under a microscope?", a: "A slide", d: ["A lens", "A dish", "A filter"] },
+    { c: "Cells & Evolution", t: 2, q: "What does the Latin name Homo sapiens mean?", a: "Wise man", d: ["Upright man", "Handy man", "Thinking ape"] },
+    { c: "Cells & Evolution", t: 3, q: "What is anything, like X-rays or tobacco smoke, that causes changes in DNA called?", a: "Mutagen", d: ["Antigen", "Allergen", "Pathogen"] },
+    { c: "Cells & Evolution", t: 4, q: "Broccoli, kale, kohlrabi and cauliflower were all bred from which single wild plant?", a: "Wild cabbage", d: ["Wild lettuce", "Wild radish", "Wild spinach"] },
+    { c: "Cells & Evolution", t: 5, q: "Which British biochemist won the 1978 Nobel Prize for explaining how a proton gradient across a membrane drives ATP production?", a: "Peter Mitchell", d: ["Hans Krebs", "Fred Sanger", "John Kendrew"] },
   ],
-  // day 19
+  // day 19 (2026-12-23)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What is the whole community of microbes living in the human gut called?", a: "Microbiome", d: ["Biosphere", "Plankton", "Ecosystem"] },
-    { c: 'Cells & Evolution', t: 2, q: "What are the different versions of the same gene called?", a: "Alleles", d: ["Codons", "Clones", "Chromatids"] },
-    { c: 'Cells & Evolution', t: 3, q: "In taxonomy, which rank comes between class and family?", a: "Order", d: ["Phylum", "Genus", "Kingdom"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which striped marsupial predator's last known individual died in a Hobart zoo in 1936?", a: "Thylacine", d: ["Quagga", "Dingo", "Numbat"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which wolf-sized land mammal of about 50 million years ago is among the earliest known whale ancestors?", a: "Pakicetus", d: ["Basilosaurus", "Dorudon", "Livyatan"] },
+    { c: "Cells & Evolution", t: 1, q: "Which shallow, lidded dish is used to grow bacteria in labs?", a: "Petri dish", d: ["Test tube", "Beaker", "Flask"] },
+    { c: "Cells & Evolution", t: 2, q: "What word describes a species that is still alive today, the opposite of extinct?", a: "Extant", d: ["Endemic", "Dormant", "Native"] },
+    { c: "Cells & Evolution", t: 3, q: "Which organelle pumps excess water out of freshwater protists like the paramecium?", a: "Contractile vacuole", d: ["Food vacuole", "Lysosome", "Nucleolus"] },
+    { c: "Cells & Evolution", t: 4, q: "What nickname is given to the most recent woman from whom all living humans descend through the mother's line?", a: "Mitochondrial Eve", d: ["Lucy", "Ardi", "Selam"] },
+    { c: "Cells & Evolution", t: 5, q: "Which German biologist described cell division in detail and named it mitosis in 1882?", a: "Walther Flemming", d: ["Robert Koch", "Rudolf Virchow", "Theodor Boveri"] },
   ],
-  // day 20
+  // day 20 (2026-12-24)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What is a scientist who studies fossils called?", a: "Paleontologist", d: ["Archaeologist", "Astronomer", "Meteorologist"] },
-    { c: 'Cells & Evolution', t: 2, q: "What is an allele called when its effect is masked by a dominant one?", a: "Recessive", d: ["Mutant", "Neutral", "Lethal"] },
-    { c: 'Cells & Evolution', t: 3, q: "Roughly how many base pairs make up one copy of the human genome?", a: "3 billion", d: ["3 million", "300 million", "30 billion"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which American microbiologist identified the archaea as a separate group of life in 1977?", a: "Carl Woese", d: ["Robert Whittaker", "Ernst Mayr", "Stanley Miller"] },
-    { c: 'Cells & Evolution', t: 5, q: "On which Arctic island did woolly mammoths survive until about 4,000 years ago?", a: "Wrangel Island", d: ["Svalbard", "Greenland", "Baffin Island"] },
+    { c: "Cells & Evolution", t: 1, q: "What word means any single living thing, from a bacterium to a blue whale?", a: "Organism", d: ["Molecule", "Element", "Compound"] },
+    { c: "Cells & Evolution", t: 2, q: "What is the copying of a cell's DNA before it divides called?", a: "Replication", d: ["Transcription", "Translation", "Mutation"] },
+    { c: "Cells & Evolution", t: 3, q: "Which five-carbon sugar is found in RNA?", a: "Ribose", d: ["Glucose", "Fructose", "Sucrose"] },
+    { c: "Cells & Evolution", t: 4, q: "Geologists now use which name for the old 'K-T' layer that marks the dinosaurs' extinction?", a: "K-Pg boundary", d: ["P-T boundary", "Moho discontinuity", "Great Unconformity"] },
+    { c: "Cells & Evolution", t: 5, q: "Which Soviet biochemist proposed in 1924 that life arose in a 'primordial soup' of simple chemicals?", a: "Alexander Oparin", d: ["J. B. S. Haldane", "Trofim Lysenko", "Nikolai Vavilov"] },
   ],
-  // day 21
+  // day 21 (2026-12-25)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What is a group of similar cells working together, such as muscle, called?", a: "Tissue", d: ["Organ", "Organelle", "Molecule"] },
-    { c: 'Cells & Evolution', t: 2, q: "What repeating units are strung together to make DNA and RNA?", a: "Nucleotides", d: ["Amino acids", "Fatty acids", "Monosaccharides"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which enzyme seals breaks in the DNA backbone, joining fragments into one strand?", a: "DNA ligase", d: ["DNA helicase", "Amylase", "Lipase"] },
-    { c: 'Cells & Evolution', t: 4, q: "A branching diagram that groups organisms by shared derived traits is called what?", a: "Cladogram", d: ["Pedigree", "Karyogram", "Histogram"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which element, rare in Earth's crust but common in asteroids, did the Alvarezes find in a thin clay layer in 1980?", a: "Iridium", d: ["Uranium", "Titanium", "Cobalt"] },
+    { c: "Cells & Evolution", t: 1, q: "Long before birds and bats, which animals were the first to fly?", a: "Insects", d: ["Pterosaurs", "Fish", "Frogs"] },
+    { c: "Cells & Evolution", t: 2, q: "What word describes a membrane that lets some substances pass through but not others?", a: "Semipermeable", d: ["Impermeable", "Opaque", "Insoluble"] },
+    { c: "Cells & Evolution", t: 3, q: "In which era did the Cambrian explosion, the first land plants and the first reptiles all appear?", a: "Paleozoic", d: ["Mesozoic", "Cenozoic", "Proterozoic"] },
+    { c: "Cells & Evolution", t: 4, q: "What are 'jumping genes', the stretches of DNA that can move to new places in a genome, called?", a: "Transposons", d: ["Plasmids", "Exons", "Telomeres"] },
+    { c: "Cells & Evolution", t: 5, q: "Which idea says early life used RNA both to store genetic information and to speed up reactions, before DNA and proteins?", a: "RNA world hypothesis", d: ["Iron-sulfur world", "Panspermia", "Clay hypothesis"] },
   ],
-  // day 22
+  // day 22 (2026-12-26)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What thin outer layer surrounds every cell and controls what goes in and out?", a: "Cell membrane", d: ["Nucleus", "Cytoplasm", "Chromosome"] },
-    { c: 'Cells & Evolution', t: 2, q: "Which five-carbon sugar forms part of the backbone of DNA?", a: "Deoxyribose", d: ["Glucose", "Fructose", "Sucrose"] },
-    { c: 'Cells & Evolution', t: 3, q: "What are rod-shaped bacteria called?", a: "Bacilli", d: ["Cocci", "Spirilla", "Vibrios"] },
-    { c: 'Cells & Evolution', t: 4, q: "Hans Christian Gram's 1884 staining method sorts bacteria by differences in which structure?", a: "Cell wall", d: ["Flagellum", "Nucleoid", "Ribosome"] },
-    { c: 'Cells & Evolution', t: 5, q: "Roy Chapman Andrews's team found famous nests of dinosaur eggs in 1923 in which desert?", a: "Gobi", d: ["Sahara", "Atacama", "Mojave"] },
+    { c: "Cells & Evolution", t: 1, q: "Ichthyosaurs and plesiosaurs, which swam in dinosaur-age seas, were what kind of animal?", a: "Reptiles", d: ["Fish", "Mammals", "Amphibians"] },
+    { c: "Cells & Evolution", t: 2, q: "What word describes microbes that can live without oxygen?", a: "Anaerobic", d: ["Aerobic", "Autotrophic", "Thermophilic"] },
+    { c: "Cells & Evolution", t: 3, q: "What are matching pairs of chromosomes, one from each parent, called?", a: "Homologous chromosomes", d: ["Sister chromatids", "Sex chromosomes", "Plasmids"] },
+    { c: "Cells & Evolution", t: 4, q: "Which mesh-like polymer of sugars and amino acids makes up the cell walls of bacteria?", a: "Peptidoglycan", d: ["Cellulose", "Chitin", "Lignin"] },
+    { c: "Cells & Evolution", t: 5, q: "Which flat, ribbed Ediacaran fossil was shown in 2018 to be an animal, from traces of cholesterol?", a: "Dickinsonia", d: ["Charnia", "Spriggina", "Kimberella"] },
   ],
-  // day 23
+  // day 23 (2026-12-27)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What is the scientific name for modern humans?", a: "Homo sapiens", d: ["Homo erectus", "Homo habilis", "Pan troglodytes"] },
-    { c: 'Cells & Evolution', t: 2, q: "Which suffix ends the names of most enzymes?", a: "-ase", d: ["-ose", "-ide", "-ine"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which dog-sized early horse ancestor of more than 50 million years ago is nicknamed the \"dawn horse\"?", a: "Eohippus", d: ["Smilodon", "Glyptodon", "Megatherium"] },
-    { c: 'Cells & Evolution', t: 4, q: "When a phage's DNA joins the host's genome and lies dormant, what is that cycle called?", a: "Lysogenic", d: ["Lytic", "Mitotic", "Meiotic"] },
-    { c: 'Cells & Evolution', t: 5, q: "In which year did Linnaeus first publish \"Systema Naturae\"?", a: "1735", d: ["1660", "1798", "1859"] },
+    { c: "Cells & Evolution", t: 1, q: "What does a typical gene carry the instructions to make?", a: "A protein", d: ["A fat", "A sugar", "A vitamin"] },
+    { c: "Cells & Evolution", t: 2, q: "What is the variety of different gene versions within one species called?", a: "Genetic diversity", d: ["Gene flow", "Genetic drift", "Speciation"] },
+    { c: "Cells & Evolution", t: 3, q: "Which enzyme builds an RNA copy of a gene during transcription?", a: "RNA polymerase", d: ["DNA polymerase", "Helicase", "Ligase"] },
+    { c: "Cells & Evolution", t: 4, q: "What is the idea that the seeds of life reached Earth from space called?", a: "Panspermia", d: ["Abiogenesis", "Spontaneous generation", "Endosymbiosis"] },
+    { c: "Cells & Evolution", t: 5, q: "What is the forming of a new species within the same area, with no geographic barrier, called?", a: "Sympatric speciation", d: ["Allopatric speciation", "Peripatric speciation", "Anagenesis"] },
   ],
-  // day 24
+  // day 24 (2026-12-28)
   [
-    { c: 'Cells & Evolution', t: 1, q: "During which cold stretch of Earth history did saber-toothed cats roam North America?", a: "The Ice Age", d: ["The Jurassic", "The Cambrian", "The Bronze Age"] },
-    { c: 'Cells & Evolution', t: 2, q: "What is the single cell formed when a sperm fertilizes an egg called?", a: "Zygote", d: ["Embryo", "Gamete", "Blastocyst"] },
-    { c: 'Cells & Evolution', t: 3, q: "What kind of chemical bond links amino acids together in a protein chain?", a: "Peptide bond", d: ["Ionic bond", "Glycosidic bond", "Disulfide bond"] },
-    { c: 'Cells & Evolution', t: 4, q: "Adenine and guanine belong to which class of double-ring bases?", a: "Purines", d: ["Pyrimidines", "Pentoses", "Peptides"] },
-    { c: 'Cells & Evolution', t: 5, q: "What name is given to the 1972 Singer-Nicolson model of the cell membrane?", a: "Fluid mosaic model", d: ["Sliding filament model", "Lock-and-key model", "Unit sandwich model"] },
+    { c: "Cells & Evolution", t: 1, q: "When a buried bone slowly turns into a fossil, what replaces its material?", a: "Minerals", d: ["Ice", "Oil", "Sand"] },
+    { c: "Cells & Evolution", t: 2, q: "Roughly how old is Earth?", a: "4.5 billion years", d: ["450 million years", "45 billion years", "4.5 million years"] },
+    { c: "Cells & Evolution", t: 3, q: "Which Ice Age elephant relative had cone-shaped cusps on its teeth, unlike the flat, ridged teeth of a mammoth?", a: "Mastodon", d: ["Woolly rhinoceros", "Irish elk", "Cave bear"] },
+    { c: "Cells & Evolution", t: 4, q: "What is the loss of genetic variety after a population is drastically cut down, as happened to cheetahs, called?", a: "Bottleneck effect", d: ["Founder effect", "Hybrid vigor", "Gene flow"] },
+    { c: "Cells & Evolution", t: 5, q: "Carriers of the sickle cell allele being protected from malaria is a classic example of what?", a: "Heterozygote advantage", d: ["Genetic drift", "Founder effect", "Epistasis"] },
   ],
-  // day 25
+  // day 25 (2026-12-29)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What is a trait called that evolves to help a species survive, like a polar bear's white fur?", a: "Adaptation", d: ["Mutation", "Migration", "Mimicry"] },
-    { c: 'Cells & Evolution', t: 2, q: "What is the movement of water across a membrane toward a higher concentration of solutes called?", a: "Osmosis", d: ["Diffusion", "Filtration", "Evaporation"] },
-    { c: 'Cells & Evolution', t: 3, q: "What kind of bonds hold the two strands of the DNA double helix together?", a: "Hydrogen bonds", d: ["Ionic bonds", "Peptide bonds", "Metallic bonds"] },
-    { c: 'Cells & Evolution', t: 4, q: "Glycolysis splits one glucose molecule into two molecules of what?", a: "Pyruvate", d: ["Lactose", "Acetone", "Glycerol"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which giant kelp-eating marine mammal of the Bering Sea was hunted to extinction by 1768?", a: "Steller's sea cow", d: ["Caribbean monk seal", "Atlantic gray whale", "Sea mink"] },
+    { c: "Cells & Evolution", t: 1, q: "Which hard parts of animals most often survive to become fossils?", a: "Bones and teeth", d: ["Skin and hair", "Eyes and ears", "Muscles and fat"] },
+    { c: "Cells & Evolution", t: 2, q: "What is treating a disease by adding or repairing genes in a patient's cells called?", a: "Gene therapy", d: ["Chemotherapy", "Vaccination", "Dialysis"] },
+    { c: "Cells & Evolution", t: 3, q: "Early modern humans of Ice Age Europe are often named after which French rock shelter, where their remains were found in 1868?", a: "Cro-Magnon", d: ["Lascaux", "Chauvet", "La Chapelle"] },
+    { c: "Cells & Evolution", t: 4, q: "Which of Mendel's laws says the genes for different traits are passed on separately from one another?", a: "Law of independent assortment", d: ["Law of segregation", "Law of dominance", "Law of conservation"] },
+    { c: "Cells & Evolution", t: 5, q: "What is the reappearance of a long-lost ancestral trait, like a whale born with small hind legs, called?", a: "Atavism", d: ["Exaptation", "Convergence", "Vestigiality"] },
   ],
-  // day 26
+  // day 26 (2026-12-30)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What word describes an organism made of just one cell?", a: "Unicellular", d: ["Multicellular", "Bicellular", "Acellular"] },
-    { c: 'Cells & Evolution', t: 2, q: "What material was Robert Hooke looking at when he coined the word \"cells\" in 1665?", a: "Cork", d: ["Pond water", "Onion skin", "Blood"] },
-    { c: 'Cells & Evolution', t: 3, q: "The citric acid cycle is also named after which German-born biochemist?", a: "Hans Krebs", d: ["Otto Warburg", "Emil Fischer", "Melvin Calvin"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which hollow protein tubes form the spindle that pulls chromosomes apart during division?", a: "Microtubules", d: ["Microfilaments", "Cilia", "Intermediate filaments"] },
-    { c: 'Cells & Evolution', t: 5, q: "The last confirmed pair of which flightless North Atlantic seabird was killed on Eldey, Iceland, in 1844?", a: "Great auk", d: ["Labrador duck", "Spectacled cormorant", "Moa"] },
+    { c: "Cells & Evolution", t: 1, q: "What are disease-causing microbes, such as some bacteria and viruses, called?", a: "Pathogens", d: ["Antibodies", "Probiotics", "Enzymes"] },
+    { c: "Cells & Evolution", t: 2, q: "What do scientists add to a sample to make cell parts easier to see under a microscope?", a: "A stain", d: ["A coverslip", "A solvent", "An enzyme"] },
+    { c: "Cells & Evolution", t: 3, q: "What is the study of how species are spread across the globe, and why, called?", a: "Biogeography", d: ["Cartography", "Topography", "Demography"] },
+    { c: "Cells & Evolution", t: 4, q: "What is the mix of DNA and proteins that makes up chromosomes called?", a: "Chromatin", d: ["Chitin", "Cytosol", "Collagen"] },
+    { c: "Cells & Evolution", t: 5, q: "What is the inactivated, tightly packed X chromosome seen in a female mammal's cells called?", a: "Barr body", d: ["Polar body", "Golgi body", "Nissl body"] },
   ],
-  // day 27
+  // day 27 (2026-12-31)
   [
-    { c: 'Cells & Evolution', t: 1, q: "What do enzymes do to the chemical reactions in living things?", a: "Speed them up", d: ["Slow them down", "Reverse them", "Stop them"] },
-    { c: 'Cells & Evolution', t: 2, q: "What is the genus name of the best-known saber-toothed cat?", a: "Smilodon", d: ["Megatherium", "Glyptodon", "Diprotodon"] },
-    { c: 'Cells & Evolution', t: 3, q: "In what form do animals store glucose in the liver and muscles?", a: "Glycogen", d: ["Starch", "Cellulose", "Chitin"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which German physiologist extended cell theory to animals in 1839?", a: "Theodor Schwann", d: ["Rudolf Virchow", "Robert Koch", "Hermann von Helmholtz"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which two Americans showed with bread mold in 1941 that each gene directs one enzyme?", a: "Beadle and Tatum", d: ["Hershey and Chase", "Luria and Delbruck", "Avery and MacLeod"] },
-  ],
-  // day 28
-  [
-    { c: 'Cells & Evolution', t: 1, q: "Humans belong to which kingdom of life?", a: "Animals", d: ["Plants", "Fungi", "Protists"] },
-    { c: 'Cells & Evolution', t: 2, q: "Breeding dogs or pigeons for traits that people choose is called what?", a: "Artificial selection", d: ["Natural selection", "Kin selection", "Genetic drift"] },
-    { c: 'Cells & Evolution', t: 3, q: "Cell membranes are built mainly from a double layer of which molecules?", a: "Phospholipids", d: ["Carbohydrates", "Nucleic acids", "Steroids"] },
-    { c: 'Cells & Evolution', t: 4, q: "How many different three-letter codons make up the genetic code?", a: "64", d: ["20", "32", "128"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which large Cambrian predator with grasping front limbs is a star of the Burgess Shale?", a: "Anomalocaris", d: ["Hallucigenia", "Opabinia", "Pikaia"] },
-  ],
-  // day 29
-  [
-    { c: 'Cells & Evolution', t: 1, q: "Which pair of sex chromosomes does a typical human male carry?", a: "XY", d: ["XX", "YY", "XO"] },
-    { c: 'Cells & Evolution', t: 2, q: "What is the copying of a gene from DNA into RNA called?", a: "Transcription", d: ["Translation", "Replication", "Mutation"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which organelle, named after an Italian scientist, packages and ships proteins?", a: "Golgi apparatus", d: ["Endoplasmic reticulum", "Lysosome", "Peroxisome"] },
-    { c: 'Cells & Evolution', t: 4, q: "What are the noncoding stretches cut out of an RNA transcript before translation called?", a: "Introns", d: ["Exons", "Codons", "Operons"] },
-    { c: 'Cells & Evolution', t: 5, q: "Richard Lenski's long-term evolution experiment, begun in 1988, follows which bacterium?", a: "E. coli", d: ["B. subtilis", "S. aureus", "V. cholerae"] },
-  ],
-  // day 30
-  [
-    { c: 'Cells & Evolution', t: 1, q: "Which group of living animals is descended from dinosaurs?", a: "Birds", d: ["Lizards", "Frogs", "Turtles"] },
-    { c: 'Cells & Evolution', t: 2, q: "Which kind of microscope first let scientists see individual viruses, in 1939?", a: "Electron microscope", d: ["Compound microscope", "Stereo microscope", "Hand lens"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which organelle holds digestive enzymes that break down worn-out cell parts?", a: "Lysosome", d: ["Ribosome", "Centriole", "Nucleolus"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which 1950s experiment made amino acids by sending sparks through gases meant to mimic early Earth?", a: "Miller-Urey", d: ["Meselson-Stahl", "Hershey-Chase", "Luria-Delbruck"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which enzyme that lengthens chromosome ends did Carol Greider and Elizabeth Blackburn discover in 1984?", a: "Telomerase", d: ["Topoisomerase", "Integrase", "Primase"] },
-  ],
-  // day 31
-  [
-    { c: 'Cells & Evolution', t: 1, q: "Hair, muscle and enzymes are made mostly of which kind of molecule?", a: "Proteins", d: ["Sugars", "Fats", "Minerals"] },
-    { c: 'Cells & Evolution', t: 2, q: "During which geological period did Tyrannosaurus rex live?", a: "Cretaceous", d: ["Jurassic", "Triassic", "Permian"] },
-    { c: 'Cells & Evolution', t: 3, q: "What are the protective caps of repeated DNA at the ends of chromosomes called?", a: "Telomeres", d: ["Centromeres", "Histones", "Introns"] },
-    { c: 'Cells & Evolution', t: 4, q: "What are the layered rock mounds built by mats of microbes, among the oldest fossils, called?", a: "Stromatolites", d: ["Stalagmites", "Oolites", "Concretions"] },
-    { c: 'Cells & Evolution', t: 5, q: "Which American biochemist first isolated DNA polymerase, in 1956?", a: "Arthur Kornberg", d: ["Har Gobind Khorana", "Marshall Nirenberg", "Severo Ochoa"] },
-  ],
-  // day 32
-  [
-    { c: 'Cells & Evolution', t: 1, q: "What is a scientist who studies how traits are inherited called?", a: "Geneticist", d: ["Geologist", "Ecologist", "Zoologist"] },
-    { c: 'Cells & Evolution', t: 2, q: "Which infectious agents can reproduce only by hijacking a living cell?", a: "Viruses", d: ["Bacteria", "Yeasts", "Amoebas"] },
-    { c: 'Cells & Evolution', t: 3, q: "What method dates the split between two species by counting the DNA differences that have built up?", a: "Molecular clock", d: ["Carbon dating", "Tree-ring dating", "Index fossil dating"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which married biologists measured the beaks of Galapagos finches on Daphne Major for decades?", a: "Peter and Rosemary Grant", d: ["Louis and Mary Leakey", "Pierre and Marie Curie", "Carl and Gerty Cori"] },
-    { c: 'Cells & Evolution', t: 5, q: "What is the unit of DNA wound around a core of eight histone proteins called?", a: "Nucleosome", d: ["Centrosome", "Chromomere", "Plasmid"] },
-  ],
-  // day 33
-  [
-    { c: 'Cells & Evolution', t: 1, q: "What general name is given to living things too small to see with the naked eye?", a: "Microorganisms", d: ["Macromolecules", "Particles", "Crystals"] },
-    { c: 'Cells & Evolution', t: 2, q: "Mitochondrial DNA is normally inherited from which parent?", a: "The mother", d: ["The father", "Both equally", "Either at random"] },
-    { c: 'Cells & Evolution', t: 3, q: "What is programmed, orderly cell death called?", a: "Apoptosis", d: ["Necrosis", "Lysis", "Mitosis"] },
-    { c: 'Cells & Evolution', t: 4, q: "Alpha helices and beta sheets belong to which level of protein structure?", a: "Secondary", d: ["Primary", "Tertiary", "Quaternary"] },
-    { c: 'Cells & Evolution', t: 5, q: "Bacterial ribosomes are described by which sedimentation size?", a: "70S", d: ["80S", "40S", "120S"] },
-  ],
-  // day 34
-  [
-    { c: 'Cells & Evolution', t: 1, q: "What is a genetically identical copy of an organism called?", a: "Clone", d: ["Hybrid", "Mutant", "Chimera"] },
-    { c: 'Cells & Evolution', t: 2, q: "Which tiny cell structures build proteins by reading the genetic message?", a: "Ribosomes", d: ["Lysosomes", "Vacuoles", "Centrioles"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which early human species has a name meaning \"handy man\"?", a: "Homo habilis", d: ["Homo erectus", "Homo ergaster", "Homo heidelbergensis"] },
-    { c: 'Cells & Evolution', t: 4, q: "Which archaea give off a flammable gas as waste in swamps and cattle stomachs?", a: "Methanogens", d: ["Halophiles", "Acidophiles", "Cyanobacteria"] },
-    { c: 'Cells & Evolution', t: 5, q: "What is a group called that vanishes from the fossil record and later reappears, sometimes alive today?", a: "Lazarus taxon", d: ["Elvis taxon", "Zombie taxon", "Relict taxon"] },
-  ],
-  // day 35
-  [
-    { c: 'Cells & Evolution', t: 1, q: "What is the gradual change in living things over many generations called?", a: "Evolution", d: ["Migration", "Metamorphosis", "Hibernation"] },
-    { c: 'Cells & Evolution', t: 2, q: "The La Brea Tar Pits, full of Ice Age fossils, are in which city?", a: "Los Angeles", d: ["Denver", "Houston", "Salt Lake City"] },
-    { c: 'Cells & Evolution', t: 3, q: "Olduvai Gorge, a famous site of early human fossils explored by the Leakeys, is in which country?", a: "Tanzania", d: ["Kenya", "Ethiopia", "Uganda"] },
-    { c: 'Cells & Evolution', t: 4, q: "What is bacteria passing DNA to one another through a bridge-like pilus called?", a: "Conjugation", d: ["Transformation", "Transduction", "Translation"] },
-    { c: 'Cells & Evolution', t: 5, q: "The small human species nicknamed the \"hobbit,\" described in 2004, lived on which Indonesian island?", a: "Flores", d: ["Java", "Sumatra", "Borneo"] },
-  ],
-  // day 36
-  [
-    { c: 'Cells & Evolution', t: 1, q: "What threadlike structures in the nucleus carry an organism's genes?", a: "Chromosomes", d: ["Ribosomes", "Vacuoles", "Membranes"] },
-    { c: 'Cells & Evolution', t: 2, q: "What is the jelly-like fluid that fills a cell around its organelles called?", a: "Cytoplasm", d: ["Plasma", "Lymph", "Chromatin"] },
-    { c: 'Cells & Evolution', t: 3, q: "Which English biologist was nicknamed \"Darwin's Bulldog\" for defending evolution?", a: "Thomas Henry Huxley", d: ["Herbert Spencer", "Joseph Hooker", "Francis Galton"] },
-    { c: 'Cells & Evolution', t: 4, q: "What tough, dormant structures let bacteria such as Bacillus survive boiling and drought?", a: "Endospores", d: ["Cysts", "Plasmids", "Biofilms"] },
-    { c: 'Cells & Evolution', t: 5, q: "What are RNA molecules that act as enzymes, discovered by Thomas Cech and Sidney Altman, called?", a: "Ribozymes", d: ["Riboswitches", "Ribosomes", "Isozymes"] },
+    { c: "Cells & Evolution", t: 1, q: "Which dinosaur, made famous by a 1993 movie, was in reality only about the size of a turkey?", a: "Velociraptor", d: ["Tyrannosaurus", "Spinosaurus", "Allosaurus"] },
+    { c: "Cells & Evolution", t: 2, q: "What are unspecialized cells that can develop into many different types of cell called?", a: "Stem cells", d: ["Germ cells", "Blood cells", "Nerve cells"] },
+    { c: "Cells & Evolution", t: 3, q: "Which view of evolution holds that species change slowly and steadily through many tiny steps?", a: "Gradualism", d: ["Punctuated equilibrium", "Catastrophism", "Saltationism"] },
+    { c: "Cells & Evolution", t: 4, q: "In which last phase of mitosis do new nuclear envelopes form around the two sets of chromosomes?", a: "Telophase", d: ["Prophase", "Metaphase", "Anaphase"] },
+    { c: "Cells & Evolution", t: 5, q: "What protein structure on a chromosome's centromere attaches it to the spindle fibers?", a: "Kinetochore", d: ["Centrosome", "Nucleosome", "Telomere"] },
   ],
 ];
