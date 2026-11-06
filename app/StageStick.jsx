@@ -42,7 +42,7 @@ import { dailyMeIdentity } from './dailyMeClient';
 import { sharedGet } from './sharedGet';
 import { useStageChrome } from './GauntletScreens';
 import { dailyDept, DAILY_GAME_MAP } from '@/lib/daily-games';
-import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref } from '@/lib/circuits';
+import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref, circuitKeysFor } from '@/lib/circuits';
 import { SKILL_TAGS, SKILL_MAP } from '@/lib/daily-skills';
 import { relativesOf } from '@/lib/daily-families';
 import { categoryColor, softGround } from '@/lib/category-ramp';
@@ -60,7 +60,10 @@ const RUN_OF = (() => {
   for (const c of CIRCUITS) {
     if (!PART_ENGINES.has(runEngine(c.id))) continue;
     const serve = runGamesFor(c.id);
-    for (const k of c.keys || []) if (serve.includes(k) && !m.has(k)) m.set(k, c);
+    // Passport's trip (2026-11-07) deals its own boards, so from then Ping,
+    // Span and Flank are themselves again: fold only today's roster.
+    const keys = c.id === 'passport' ? circuitKeysFor(c.id) : (c.keys || []);
+    for (const k of keys) if (serve.includes(k) && !m.has(k)) m.set(k, c);
   }
   return m;
 })();

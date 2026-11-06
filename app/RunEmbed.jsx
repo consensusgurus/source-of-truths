@@ -73,7 +73,15 @@ function playRunBeat(host, res) {
   } catch (e) { return null; }
 }
 
-export default function RunEmbed({ onResult, theme, look = null, help = 0, autostart = false, children }) {
+// DETACHED (Passport's trip, owner 2026-11-06): the run deals a RUN-ONLY board
+// that is not the game's daily. A detached client plays exactly as usual but
+// files nothing of its own: no /api/quiz/result row, no abandon row, no view,
+// no stats or streak record, no day breadcrumb, and its save lives under
+// sot_<game>_pp<num> so it never collides with the standalone puzzle of the
+// same number. The run reports the result through onResult and files its own row.
+export const detachedKey = (game, num) => `sot_${game}_pp${num}`;
+
+export default function RunEmbed({ onResult, theme, look = null, help = 0, autostart = false, detached = false, children }) {
   const hostRef = useRef(null);
   const beatRef = useRef(null);
   const stopBeat = () => {
@@ -96,6 +104,7 @@ export default function RunEmbed({ onResult, theme, look = null, help = 0, autos
     help,
     // The run deals its grids straight in: the client skips its own start page.
     autostart: !!autostart,
+    detached: !!detached,
     onResult: (res) => {
       setTimeout(() => {
         stopBeat();
@@ -109,7 +118,7 @@ export default function RunEmbed({ onResult, theme, look = null, help = 0, autos
         try { onResult && onResult(res ? { ...res, beatMs } : res); } catch (e) {}
       }, 0);
     },
-  }), [onResult, theme, look, help, autostart]);
+  }), [onResult, theme, look, help, autostart, detached]);
   return (
     <RunEmbedContext.Provider value={value}>
       <div ref={hostRef} style={{ display: 'contents' }}>{children}</div>

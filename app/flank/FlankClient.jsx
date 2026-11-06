@@ -35,7 +35,7 @@ import { notifyShareCredit } from '../ShareCreditPop';
 import DailyMasthead from '../DailyMasthead';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
-import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import { useRunEmbed, useRunHelp, detachedKey } from '../RunEmbed';
 import { LEG_ON, LegShell, LEG_PAGE_CSS } from '../StageLeg';
 import RunDoorPop from '../circuits/RunDoorPop';
 import LoftCap from '../LoftCap';
@@ -188,7 +188,9 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
   const ANSWERS = DAY.a;
   const TOTAL = ANSWERS.length;
   const STRIKES = PUZZLE.sunday ? 4 : 3;
-  const STORE_KEY = `sot_flank_${PUZZLE.num}`;
+  // A run-only board (Passport's trip) files nothing and saves under its own key.
+  const DETACHED = !!(useRunEmbed() || {}).detached;
+  const STORE_KEY = DETACHED ? detachedKey('flank', PUZZLE.num) : `sot_flank_${PUZZLE.num}`;
 
   const [g, setG] = useState(() => freshState());
   const gRef = useRef(g);
@@ -339,7 +341,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
     if (!hydrated) return;
     try { localStorage.setItem(STORE_KEY, JSON.stringify(g)); } catch (e) {}
     try {
-      if (PUZZLE.num === pickPuzzle(puzzles, null).num) {
+      if (!DETACHED && PUZZLE.num === pickPuzzle(puzzles, null).num) {
         const done = g.status !== 'playing';
         if (done || g.t0) localStorage.setItem('sot_flank_day', JSON.stringify({ d: etToday(), done }));
         else localStorage.removeItem('sot_flank_day');
@@ -356,6 +358,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
   }, [g.status]);
 
   useEffect(() => {
+    if (DETACHED) return;
     try {
       const id = JSON.parse(localStorage.getItem('sot_quiz_identity'));
       if (id && id.email) setIdentity(id);
@@ -409,6 +412,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
 
   const REC_KEY = `sot_flank_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
+    if (DETACHED) return null;
     const cur = gRef.current;
     if (!cur.t0 || cur.status !== 'playing') return null;
     try { if (localStorage.getItem(REC_KEY)) return null; } catch (e) {}
@@ -421,6 +425,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
     abandon.markFlushed();
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     const score = g2.found.length;
+    if (DETACHED) { if (EMBED) EMBED.onResult({ key: 'flank', score, total: TOTAL, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() }); return; }
     try { setStats(recordStat(PUZZLE.num, { s: score, t: TOTAL, won: g2.status === 'won' })); } catch (e) {}
     if (EMBED) EMBED.onResult({ key: 'flank', score, total: TOTAL, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
     try {

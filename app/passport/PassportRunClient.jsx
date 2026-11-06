@@ -49,6 +49,7 @@ import { PP_CSS } from './PassportClient';
 import { LegShell } from '../StageLeg';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
 import HelpSheet from '../HelpSheet';
+import { buildAdj as spanAdj } from '../span/borders';
 
 const CLIENTS = {
   span: dynamic(() => import('../span/SpanClient'), { ssr: false, loading: () => null }),
@@ -65,6 +66,45 @@ const SRC_NAME = { span: 'Span', flank: 'Flank', ping: 'Ping' };
 // One short line per leg for the entry's lineup bands (the long lines in
 // lib/passport.js LEGS wrap under the big name on the handover instead).
 const SHORT = { ping: 'Find the secret city', passport: 'Nine size calls', flank: 'Name every neighbor', span: 'Cross the map by borders' };
+// The trip's lines (owner, 2026-11-06): each leg says what it does for the trip.
+const SHORT_TRIP = { ping: 'Find where you depart', span: 'Cross to the destination', flank: 'Name where you landed', passport: 'Stamp each capital' };
+// Stamps: at most this many countries are asked, the destination always last.
+const STAMPS_MAX = 8;
+
+// A small seeded shuffle, so a day's Stamps options are the same on every
+// device and on a reload (the list is also kept in the save once dealt).
+function seeded(seed) {
+  let h = 2166136261;
+  for (const ch of String(seed)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+  return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; };
+}
+function shuffled(arr, rnd) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+// THE STAMPS LEG (owner, 2026-11-06). The countries the player's own road
+// crossed after the start (the perfect road when they did not reach the
+// destination), each asked for its capital with four choices: the answer and
+// three capitals from its neighbors, the near ring filled out by the next one.
+function dealStamps(trip, spanRes, num) {
+  if (!trip) return [];
+  const adj = spanAdj();
+  const own = spanRes && spanRes.won && Array.isArray(spanRes.chain) && spanRes.chain[0] === trip.from && spanRes.chain[spanRes.chain.length - 1] === trip.to ? spanRes.chain : null;
+  const road = own || trip.road || [trip.from, trip.to];
+  let crossed = road.slice(1).filter((n, i, a) => a.indexOf(n) === i && trip.caps[n]);
+  if (crossed.length > STAMPS_MAX) crossed = [...crossed.slice(0, STAMPS_MAX - 1), crossed[crossed.length - 1]];
+  return crossed.map((n) => {
+    const rnd = seeded(`${num}:${n}`);
+    const ring = [...(adj[n] || [])].filter((x) => trip.caps[x]);
+    const ring2 = [...new Set(ring.flatMap((x) => [...(adj[x] || [])]))].filter((x) => x !== n && !ring.includes(x) && trip.caps[x]);
+    const pool = [...shuffled(ring, rnd), ...shuffled(ring2, rnd), ...shuffled(Object.keys(trip.caps).filter((x) => x !== n), rnd)];
+    const wrong = [];
+    for (const x of pool) { const c = trip.caps[x]; if (c && c !== trip.caps[n] && !wrong.includes(c)) wrong.push(c); if (wrong.length === 3) break; }
+    return { n, cap: trip.caps[n], opts: shuffled([trip.caps[n], ...wrong], rnd) };
+  });
+}
+const theName = (n) => String(n || '').replace(/^The /, 'the ');
 const BETWEEN_MS = 15000;
 const HOLD_PING_MS = 10000;
 
@@ -91,7 +131,7 @@ function recordStat(num, entry) {
   } catch (e) {}
 }
 
-const freshState = () => ({ v: 2, status: 'playing', t0: null, tEnd: null, round: 0, fin: false, sc: [null, null, null, null], res: {}, sz: { i: 0, res: [], t0: null, tEnd: null } });
+const freshState = () => ({ v: 2, status: 'playing', t0: null, tEnd: null, round: 0, fin: false, sc: [null, null, null, null], res: {}, sz: { i: 0, res: [], t0: null, tEnd: null }, st: null });
 const sumScores = (sc) => sc.reduce((t, v) => t + (v || 0), 0);
 
 // A game finished today on its own page: its first result, read off that
@@ -120,13 +160,14 @@ function bankedOf(sec) {
 // never pulled out from under a player mid-leg.
 const CHECK_MS = 4000;
 
-export default function PassportRunClient({ puzzles = [], puzzle, sections = [], calls = [], isTodays = true }) {
+export default function PassportRunClient({ puzzles = [], puzzle, sections = [], calls = [], isTodays = true, trip = null }) {
   const PUZZLE = puzzle;
   // The leg weights this day runs on (even legs from 2026-10-21).
   const LEGS = legsFor(PUZZLE && PUZZLE.live);
   const STORE_KEY = `sot_${KEY}_${PUZZLE.num}`;
   const REC_KEY = `sot_${KEY}_rec_${PUZZLE.num}`;
-  const NC = calls.length || 9;
+  // THE TRIP (owner, 2026-11-06): one journey, run-only legs, one row.
+  const TRIP = !!trip;
   // Play order: ORD[step] is an index into LEGS (the storage order). The order
   // a run was STARTED under travels in its save (`ord`), so a run begun before
   // a reorder keeps the order it was played in: g.round is a step in ORD, and
@@ -136,6 +177,9 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   const ordOf = (st) => (st && Array.isArray(st.ord) && st.ord.length === 4 ? st.ord : BASE_ORD);
   const [g, setG] = useState(() => fresh());
   const ORD = ordOf(g);
+  // The Stamps leg's countries, dealt when the run reaches it and kept in the save.
+  const STAMPS = (TRIP && Array.isArray(g.st)) ? g.st : [];
+  const NC = TRIP ? (STAMPS.length || 1) : (calls.length || 9);
   const SIZES_FIRST = ORD[0] === 3;
   // On days that deal the sizes from anywhere (not from the day's games).
   const OPEN_SIZES = calls.some((c) => c && c.src === 'open');
@@ -159,10 +203,13 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   useEffect(() => {
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) {}
-    const b = {};
-    for (const sec of sections) { const x = bankedOf(sec); if (x) b[sec.key] = x; }
-    setBanked(b);
-    checkServer();
+    // A trip's legs are run-only boards: nothing to have played elsewhere.
+    if (!TRIP) {
+      const b = {};
+      for (const sec of sections) { const x = bankedOf(sec); if (x) b[sec.key] = x; }
+      setBanked(b);
+      checkServer();
+    } else { srvDone.current = true; setChecking(false); }
     if (saved && saved.v === 2 && Array.isArray(saved.sc)) {
       // A save written before `ord` existed was started under the order of
       // its day as it stood then (legOrderBefore); one never started takes
@@ -257,7 +304,9 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     const sec = sections[li];
     if (!sec || !res || res.key !== sec.key || cur.sc[li] != null) return;
     const ms = res.t0 ? Math.max(1000, (res.tEnd || Date.now()) - res.t0) : 0;
-    award(cur, li, legPoints(sec.key, res.score, res.total, PUZZLE.live), { res: { ...cur.res, [sec.key]: { score: res.score, total: res.total, ms } } });
+    const keep = { score: res.score, total: res.total, ms };
+    if (sec.key === 'span' && Array.isArray(res.chain)) { keep.chain = res.chain; keep.won = !!res.won; }
+    award(cur, li, legPoints(sec.key, res.score, res.total, PUZZLE.live), { res: { ...cur.res, [sec.key]: keep } });
     setHolding(sec.key);
     // PING HOLDS LONGER (owner, 2026-10-26: the answer was gone before it
     // could be read). Its finished board names the city and zooms in on it,
@@ -280,6 +329,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     if (cur.round >= 3) return;
     const next = { ...cur, round: cur.round + 1 };
     if (ordOf(next)[next.round] === 3 && !next.sz.t0) next.sz = { ...next.sz, t0: Date.now() };
+    if (TRIP && ordOf(next)[next.round] === 3 && !Array.isArray(next.st)) next.st = dealStamps(trip, next.res && next.res.span, PUZZLE.num);
     commit(next);
     toTop();
   }
@@ -297,6 +347,15 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
 
   const abandon = useAbandonFlush(() => {
     const cur = gRef.current;
+    if (TRIP) {
+      // A trip left part way files the points so far, out of 50, once.
+      if (cur.status !== 'playing' || !cur.sc.some((v) => v != null)) return null;
+      try { if (localStorage.getItem(REC_KEY)) return null; } catch (e) {}
+      try { localStorage.setItem(REC_KEY, '1'); } catch (e) {}
+      const s2 = sumScores(cur.sc);
+      const el2 = Math.min(36000, Math.max(1, Math.round((Date.now() - (cur.t0 || Date.now())) / 1000)));
+      return { quizId: PUZZLE.quizId, score: s2, total: 50, correct: s2, guessesUsed: 0, timeElapsed: el2, abandoned: true, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') };
+    }
     if (cur.status !== 'playing' || !cur.sz.res.length) return null;
     try { if (localStorage.getItem(REC_KEY)) return null; } catch (e) {}
     try { localStorage.setItem(REC_KEY, '1'); } catch (e) {}
@@ -316,6 +375,21 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   // the sizes leg ends, which on a sizes-first day is the start of the run.
   function postRow(g2) {
     abandon.markFlushed();
+    if (TRIP) {
+      // THE TRIP'S ONE ROW: the run's points out of 50 on the run's own clock.
+      const s2 = sumScores(g2.sc);
+      const el2 = Math.max(1, Math.round(((g2.tEnd || Date.now()) - (g2.t0 || Date.now())) / 1000));
+      // Its own once-key: a part-way row filed on leaving (abandon) does not
+      // stop the finished run from filing, as on every daily's own page.
+      try { if (localStorage.getItem(`${REC_KEY}_f`)) return; localStorage.setItem(`${REC_KEY}_f`, '1'); localStorage.setItem(REC_KEY, '1'); } catch (e) {}
+      try {
+        fetch('/api/quiz/result', {
+          method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quizId: PUZZLE.quizId, score: s2, total: 50, correct: s2, guessesUsed: 0, timeElapsed: el2, email: identity?.email || undefined, anonId: getAnonId(), isMobile: isMobileDevice(), referrer: (typeof document !== 'undefined' ? document.referrer : '') }),
+        }).catch(() => {});
+      } catch (e) {}
+      return;
+    }
     const right = g2.sz.res.filter(Boolean).length;
     const el = Math.max(1, Math.round(((g2.sz.tEnd || Date.now()) - (g2.sz.t0 || g2.t0 || Date.now())) / 1000));
     try { if (localStorage.getItem(REC_KEY)) return; localStorage.setItem(REC_KEY, '1'); } catch (e) {}
@@ -361,6 +435,25 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     }, reducedMotion() ? 500 : 1500);
   }
 
+  function callStamp(pick) {
+    const cur = gRef.current;
+    if (!TRIP || ordOf(cur)[cur.round] !== 3 || cur.sc[3] != null || numShow != null) return;
+    const list = Array.isArray(cur.st) ? cur.st : [];
+    const i = cur.sz.i;
+    const st = list[i]; if (!st) return;
+    const ok = pick === st.cap;
+    commit({ ...cur, sz: { ...cur.sz, res: [...cur.sz.res, ok], picks: [...(cur.sz.picks || []), pick] } });
+    setNumShow(i);
+    setTimeout(() => {
+      setNumShow(null);
+      const c2 = gRef.current;
+      if (i + 1 >= list.length) {
+        const right = c2.sz.res.filter(Boolean).length;
+        award(c2, 3, legPoints('passport', right, list.length, PUZZLE.live), { sz: { ...c2.sz, i: i + 1, tEnd: Date.now() } });
+      } else commit({ ...c2, sz: { ...c2.sz, i: i + 1 } });
+    }, reducedMotion() ? 600 : 1400);
+  }
+
   function finish() {
     const cur = gRef.current;
     if (cur.status !== 'playing') return;
@@ -386,8 +479,20 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     if (withScores) q.push(`s=${sc.map((v) => v || 0).join('-')}`);
     return withRef(`mindloftdaily.com${PATH}${q.length ? `?${q.join('&')}` : ''}`);
   }
+  // One line for the share: where the trip went and how it got there.
+  function tripLine() {
+    if (!TRIP) return null;
+    const r = g.res.span;
+    const hops = r && r.won && Array.isArray(r.chain) ? r.chain.length - 1 : null;
+    const stamped = g.sz.res.filter(Boolean).length;
+    return `${trip.city} to ${theName(trip.to)}${hops != null ? `, ${hops} border${hops === 1 ? '' : 's'}` : ''}${STAMPS.length ? `, ${stamped} of ${STAMPS.length} stamps` : ''}`;
+  }
   function copyShare() {
-    const text = playing
+    const text = TRIP
+      ? (playing
+        ? `Passport #${PUZZLE.num}: one trip. Find the city you leave from, cross the map, name where you land, stamp the capitals.\n${shareUrl()}`
+        : shareLinesRun(PUZZLE.num, total, sc, elapsed, shareUrl(true), PUZZLE.live, tripLine()))
+      : playing
       ? `Passport #${PUZZLE.num}: ${ORD[0] === 2 ? "the day's Ping, nine size calls, then Flank and Span" : SIZES_FIRST ? "nine size calls, then the day's Ping, Flank and Span" : "the day's Span, Flank and Ping, then nine size calls"}. One points total, one passport.\n${shareUrl()}`
       : shareLinesRun(PUZZLE.num, total, sc, elapsed, shareUrl(true));
     if (notifyShareCredit(text)) return;
@@ -403,16 +508,22 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     <><b>Flank.</b> The day&rsquo;s Flank: name every land neighbor of one country. The share you name is worth up to {LEGS[1].max} points.</>,
     <><b>Ping.</b> The day&rsquo;s Ping: find a secret city by how far each guess lands from it. Its score is worth up to {LEGS[2].max} points.</>,
   ];
-  const rulesSteps = [
+  const rulesSteps = TRIP ? [
+    <><b>Ping.</b> Find the secret city by how far each guess lands from it. It is where the trip departs from. Up to {LEGS[0].max} points.</>,
+    <><b>Span.</b> Cross the map from that city&rsquo;s country to the day&rsquo;s destination by the shortest chain of land borders. Up to {LEGS[1].max} points.</>,
+    <><b>Flank.</b> You have arrived. Name every country that borders the destination. The share you name is worth up to {LEGS[2].max} points.</>,
+    <><b>Stamps.</b> The capital of each country your road crossed, four choices each, for its stamp. Miss the destination in Span and the stamps follow the shortest road instead. Up to {LEGS[3].max} points.</>,
+    <>These are Passport&rsquo;s own boards, not the day&rsquo;s Ping, Span and Flank, so playing those first gives nothing away. The board ranks your total, then time.</>,
+  ] : [
     ...ORD.map((i) => (i === 3 ? sizesStep : gameSteps[i])),
     <>Played one of the three on its own page today? Your first result stands and the run steps over it. The board ranks your total, then time.</>,
   ];
   const rulesBody = (
     <DailyRules accent="#1a7f37" accentSoft="#e8f5ec"
-      lead={ORD[3] !== 3 && !SIZES_FIRST ? `${ORD.map((i) => (i === 3 ? 'a size round' : LEGS[i].n)).join(', ').replace(/^./, (c) => c.toUpperCase()).replace(/, ([^,]*)$/, ' and $1')}: one points total. Your total decides which passport you travel home on.` : SIZES_FIRST ? 'A size round and three geography games, one points total. Your total decides which passport you travel home on.' : 'Three geography games and one size round, one points total. Your total decides which passport you travel home on.'}
+      lead={TRIP ? 'One trip, four legs, each set up by the one before it: one points total. Your total decides which passport you travel home on.' : ORD[3] !== 3 && !SIZES_FIRST ? `${ORD.map((i) => (i === 3 ? 'a size round' : LEGS[i].n)).join(', ').replace(/^./, (c) => c.toUpperCase()).replace(/, ([^,]*)$/, ' and $1')}: one points total. Your total decides which passport you travel home on.` : SIZES_FIRST ? 'A size round and three geography games, one points total. Your total decides which passport you travel home on.' : 'Three geography games and one size round, one points total. Your total decides which passport you travel home on.'}
       steps={rulesSteps}
-      knack={ORD[3] !== 3 && !SIZES_FIRST ? 'The size pairs are close, so trust what you know about each country over a guess at scale.' : SIZES_FIRST ? 'The size pairs are close, so trust what you know about each country over a guess at scale. Then Ping, Flank and Span, in that order.' : "The sizes leg leans on the countries you just met: the road you walked in Span, Flank's country and its ring, and the country Ping's city is in. The pairs are close, so trust what you know over a guess at scale."}
-      footer={`Areas are from the CIA World Factbook, checked against a second table so no call turns on a disputed figure. The passports and their visa-free counts are the ${HENLEY_EDITION}.`} />
+      knack={TRIP ? 'Span ends in the country Flank asks about, so the last border you cross is your first neighbor. A short road also means fewer stamps to collect.' : ORD[3] !== 3 && !SIZES_FIRST ? 'The size pairs are close, so trust what you know about each country over a guess at scale.' : SIZES_FIRST ? 'The size pairs are close, so trust what you know about each country over a guess at scale. Then Ping, Flank and Span, in that order.' : "The sizes leg leans on the countries you just met: the road you walked in Span, Flank's country and its ring, and the country Ping's city is in. The pairs are close, so trust what you know over a guess at scale."}
+      footer={TRIP ? `Borders follow Span's map: sovereign states, mainland land borders only. The passports and their visa-free counts are the ${HENLEY_EDITION}.` : `Areas are from the CIA World Factbook, checked against a second table so no call turns on a disputed figure. The passports and their visa-free counts are the ${HENLEY_EDITION}.`} />
   );
 
   const LI = ORD[Math.min(3, g.round)];
@@ -490,6 +601,40 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     );
   };
 
+  // THE STAMPS LEG ON THE STAGE (owner, 2026-11-06): the sizes leg's shape,
+  // one country a call, four capitals; the right one fills in ink.
+  const stampsLeg = () => {
+    const doneR = sc[3] != null;
+    const i = Math.min(g.sz.i, Math.max(0, STAMPS.length - 1));
+    const st = STAMPS[i] || { n: '', cap: '', opts: [] };
+    const shown = numShow === i || doneR;
+    const right = g.sz.res.filter(Boolean).length;
+    const ok = g.sz.res[i];
+    const picked = (g.sz.picks || [])[i];
+    return (
+      <LegShell embed game="passport">
+        <div className="lg-kick">Stamps · {doneR ? `${STAMPS.length} countries` : `Country ${i + 1} of ${STAMPS.length}`}{st.n === trip.to ? ' · Your destination' : ''}</div>
+        <h2 className="lg-q" key={`s${i}`}>What is the capital of {theName(st.n)}?</h2>
+        <div className="pr-stgrid">
+          {st.opts.map((o) => {
+            const truth = shown && o === st.cap;
+            const miss = shown && !truth && o === picked;
+            return (
+              <button key={o} type="button" className={`lg-ans${truth ? ' ok' : ''}${shown && !truth ? ' dim' : ''}${miss ? ' pr-miss' : ''}`}
+                disabled={doneR || numShow != null} onClick={() => callStamp(o)}>{o}</button>
+            );
+          })}
+        </div>
+        <div className="lg-say" role="status" aria-live="polite">
+          {doneR ? `${right} of ${STAMPS.length} stamped.` : (numShow === i ? (ok ? `Stamped. ${st.cap} it is.` : `Not this time: it is ${st.cap}.`) : '')}
+        </div>
+        <div className="lg-dots" aria-label={`${g.sz.res.length} of ${STAMPS.length} asked, ${right} right`}>
+          {STAMPS.map((_, k) => <i key={k} className={g.sz.res[k] === true ? 'ok' : g.sz.res[k] === false ? 'ko' : (k === g.sz.i && !doneR ? 'cur' : '')} />)}
+        </div>
+      </LegShell>
+    );
+  };
+
   // ── THE ENDING ─────────────────────────────────────────────────────────
   const k = tierIndex(total);
   const tier = TIERS[k];
@@ -511,10 +656,11 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     return out.length ? { rows: out, field, href: `${PATH}/leaderboard` } : null;
   })();
   const sf = data && data.stageField;
-  const legAvg = stageAvg(sf, stageSecs.map((s) => ({ key: s.key })));
+  // A trip day's board holds one row, so there are no per-leg field figures.
+  const legAvg = TRIP ? null : stageAvg(sf, stageSecs.map((s) => ({ key: s.key })));
   const fmtF = (a) => (a == null ? '–' : (a < 10 ? Number(a).toFixed(1) : Math.round(a)));
   const rowsIn = stageSecs.map((s, step) => {
-    const best = sf && sf.games && sf.games[s.key] && sf.games[s.key].best != null ? sf.games[s.key].best : null;
+    const best = !TRIP && sf && sf.games && sf.games[s.key] && sf.games[s.key].best != null ? sf.games[s.key].best : null;
     return { key: s.key, name: s.name, bg: rampFor(step), you: sc[s.li] == null ? '–' : sc[s.li], field: legAvg && legAvg[s.key] != null ? fmtF(Number(legAvg[s.key])) : '–', best: best != null ? best : '–' };
   });
   const topRow = data && Array.isArray(data.overall) && data.overall[0];
@@ -527,6 +673,33 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   }, [done]);
 
   const doneNames = sections.filter((s) => banked[s.key]).map((s) => s.name);
+  // The handover's line for the trip's next leg, naming the places it is about.
+  function tripNext(k2) {
+    if (k2 === 'span') return `From ${theName(trip.from)} to ${theName(trip.to)} by land borders: the shortest road is ${trip.perfect}.`;
+    if (k2 === 'flank') return `You have landed in ${theName(trip.to)}. Name every country that borders it.`;
+    if (k2 === 'passport') return 'Name the capital of each country your road crossed, for its stamp.';
+    return '';
+  }
+  // THE TRIP CARD on the ending: the road, one stamp per country crossed.
+  const tripCard = TRIP && done ? (() => {
+    const r = g.res.span;
+    const road = r && r.won && Array.isArray(r.chain) && r.chain[0] === trip.from ? r.chain : trip.road;
+    const byN = {};
+    STAMPS.forEach((st, k) => { byN[st.n] = g.sz.res[k]; });
+    return (
+      <div className="pr-trip">
+        <div className="pr-trip-k">Today&rsquo;s trip</div>
+        <div className="pr-trip-h">{trip.city} to {theName(trip.to)}</div>
+        <ol className="pr-road">
+          {road.map((n, k) => (
+            <li key={n} className={`pr-stop${byN[n] === true ? ' ok' : byN[n] === false ? ' ko' : ''}${k === 0 ? ' start' : ''}`} style={{ '--ink': INKS_DEEP[k % 4], '--rot': `${[-5, 4, -2, 6][k % 4]}deg`, animationDelay: `${0.4 + k * 0.12}s` }}>
+              <b>{n}</b><i>{k === 0 ? trip.city : byN[n] === true ? 'Stamped' : byN[n] === false ? 'Missed' : ''}</i>
+            </li>
+          ))}
+        </ol>
+      </div>
+    );
+  })() : null;
 
   return (
     <div className="pr-root" style={{ fontFamily: SANS }}>
@@ -539,10 +712,10 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           circuitName="Passport"
           dateLabel={dateLine}
           sections={stageSecs}
-          lineFor={(s) => SHORT[s.key]}
+          lineFor={(s) => (TRIP ? SHORT_TRIP : SHORT)[s.key]}
           bandNote={(s) => (banked[s.key] ? 'Done' : `${LEGS[s.li].max} pts`)}
-          headline={<>Four Legs.<br />One Passport.</>}
-          rule="One points total decides the passport you travel home on."
+          headline={TRIP ? <>One Trip.<br />One Passport.</> : <>Four Legs.<br />One Passport.</>}
+          rule={TRIP ? 'Each leg sets up the next. One points total decides the passport you travel home on.' : 'One points total decides the passport you travel home on.'}
           lineup={null}
           unit="legs"
           startLabel={`Board Now: Start With ${stageSecs[0] ? stageSecs[0].name : 'Ping'}`}
@@ -561,7 +734,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           <div className="pr-play">
             {sec && showGame && Game ? (
               <div className="pr-host">
-                <RunEmbed onResult={onSectionDone} theme={darkLook ? 'dark' : 'light'} autostart>
+                <RunEmbed onResult={onSectionDone} theme={darkLook ? 'dark' : 'light'} autostart detached={TRIP}>
                   {sec.key === 'flank'
                     ? <Game key={`flank-${sec.num}`} puzzles={[sec.light]} dayByNum={{ [sec.num]: sec.day }} forceNum={null} />
                     : <Game key={`${sec.key}-${sec.num}`} puzzles={[sec.puzzle]} forceNum={null} />}
@@ -572,7 +745,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
               <button type="button" className="pr-next" onClick={() => setHolding(null)}>Continue to the next leg</button>
             ) : null}
             {sec && checking && g.sc[LI] == null ? <p className="pr-note">Checking whether you already played {sec.name} today.</p> : null}
-            {LI === 3 ? sizesLeg() : null}
+            {LI === 3 ? (TRIP ? stampsLeg() : sizesLeg()) : null}
             {g.round === 3 && g.sc[LI] != null && !(sec && showGame) ? <p className="pr-note">Landing your passport&hellip;</p> : null}
           </div>
         </RunPlayFrame>
@@ -599,14 +772,15 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
             doneCount={g.round + 1}
             lastBody={(
               <>
-                <b>{key === 'passport' ? `Sizes: ${right} of ${NC} called right` : (r.unknown ? `${l.n}: result on file` : `${l.n}: ${scoreText(key, r.score, r.total)}`)}</b>
-                {key === 'ping' && sections[i] && sections[i].puzzle && sections[i].puzzle.city ? <span>The city was {sections[i].puzzle.city}{sections[i].puzzle.country ? `, ${sections[i].puzzle.country}` : ''}.</span> : null}
+                <b>{key === 'passport' ? (TRIP ? `Stamps: ${right} of ${NC} stamped` : `Sizes: ${right} of ${NC} called right`) : (r.unknown ? `${l.n}: result on file` : `${l.n}: ${scoreText(key, r.score, r.total)}`)}</b>
+                {key === 'ping' && sections[i] && sections[i].puzzle && sections[i].puzzle.city ? <span>{TRIP ? `You depart from ${sections[i].puzzle.city}, ${theName(sections[i].puzzle.country)}.` : `The city was ${sections[i].puzzle.city}${sections[i].puzzle.country ? `, ${sections[i].puzzle.country}` : ''}.`}</span> : null}
+                {TRIP && key === 'span' ? <span>{r.won && Array.isArray(r.chain) ? `You reached ${theName(trip.to)} by ${r.chain.slice(1, -1).map(theName).join(', ') || 'one border'}.` : `The shortest road to ${theName(trip.to)} ran ${trip.road.slice(1, -1).map(theName).join(', ')}.`}</span> : null}
                 <span>{wasBanked ? 'Played earlier today, so that first result stands. ' : ''}Worth {sc[i]} point{sc[i] === 1 ? '' : 's'} here.</span>
                 <span>Run total: {total} point{total === 1 ? '' : 's'}</span>
               </>
             )}
             lastFig={{ v: sc[i], unit: sc[i] === 1 ? 'point' : 'points' }}
-            nextLine={nx.key === 'passport' && OPEN_SIZES ? 'Nine close pairs of countries, bigger or smaller by area or by population.' : nl.line}
+            nextLine={TRIP ? tripNext(nx.key) : nx.key === 'passport' && OPEN_SIZES ? 'Nine close pairs of countries, bigger or smaller by area or by population.' : nl.line}
             dwellMs={BETWEEN_MS}
             held={held}
             resetKey={`${g.round}:${resumes}`}
@@ -637,6 +811,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           colLabel="Leg"
           finale={doneAtLoad.current === false ? { key: 'passport', legWord: 'Leg', legMax: stageSecs.map((s) => (LEGS[s.li] && LEGS[s.li].max) || null) } : null}
           leaderScore={leaderScore}
+          afterBoard={tripCard}
           topNote={!isTodays ? `${PUZZLE.dateLabel} archive` : null}
           challenge={<>
             <RunChallengeLine gameKey="passport" score={total} n={PUZZLE.num} style={{ margin: 0 }} />
@@ -663,7 +838,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
       <section className="pr-about" style={{ display: started ? 'none' : 'block' }}>
         <h2>About Passport</h2>
         <p>
-          {ORD[0] === 2 ? <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Ping, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Flank and Span, each game worth {LEGS[0].max}. One points total.</> : SIZES_FIRST ? <>Passport is a free daily geography run from Mind Loft: nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Ping, Flank and Span played back to back, each worth {LEGS[0].max}. One points total.</> : <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth {LEGS[0].max}, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on countries from those three games set against others close to them in size. One points total.</>}
+          {TRIP ? <>Passport is a free daily geography trip from Mind Loft, four legs that each set up the next: Ping finds the secret city you depart from, Span crosses the map from its country to the day&rsquo;s destination by land borders, Flank names every country that borders where you landed, and Stamps asks the capital of each country your road crossed. Each leg is worth 12 or 13 points, one points total.</> : ORD[0] === 2 ? <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Ping, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Flank and Span, each game worth {LEGS[0].max}. One points total.</> : SIZES_FIRST ? <>Passport is a free daily geography run from Mind Loft: nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on pairs of countries close in size, then the day&rsquo;s Ping, Flank and Span played back to back, each worth {LEGS[0].max}. One points total.</> : <>Passport is a free daily geography run from Mind Loft: the day&rsquo;s Span, Flank and Ping played back to back, each worth {LEGS[0].max}, then nine bigger-or-smaller calls on area or population, worth {LEGS[3].max}, on countries from those three games set against others close to them in size. One points total.</>}
         </p>
         <p>
           Your total decides the passport you travel home on, from the Sierra Leonean passport up to the Japanese, ranked by the visa-free destinations each opens in the {HENLEY_EDITION}. Everyone plays the same boards, and the leaderboard ranks your total, then time. A new run boards every day at midnight Eastern.
@@ -714,6 +889,18 @@ const RUN_CSS = `
 .pr-note{max-width:520px;margin:10px auto;text-align:center;font-size:14px;font-weight:700;opacity:.8;padding:0 16px}
 .pr-rules{background:none;border:0;padding:0;font:inherit;font-weight:800;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .pr-back{margin-top:14px;width:100%;min-height:48px;border-radius:14px;border:0;background:#08222e;color:#ffffff;font:800 16px Manrope,system-ui,sans-serif;cursor:pointer}
+.pr-stgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:568px;margin:0 auto}
+.pr-stgrid .lg-ans{min-height:58px}
+.pr-stgrid .lg-ans.pr-miss{text-decoration:line-through;opacity:.7}
+.pr-trip{margin:4px 0 0;padding:16px 16px 14px;border-radius:16px;background:var(--gsx-card-paper,#ffffff);color:var(--gsx-card-ink,#08222e);border:1px solid color-mix(in srgb,var(--gsx-card-ink,#08222e) 18%,transparent)}
+.pr-trip-k{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+.pr-trip-h{font-size:19px;font-weight:800;margin:2px 0 10px}
+.pr-road{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.pr-stop{--stc:color-mix(in srgb,var(--ink) 60%,var(--gsx-card-ink,#08222e));display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:86px;padding:7px 9px;border:2px solid var(--stc);color:var(--stc);border-radius:9px;transform:rotate(var(--rot));line-height:1.15;text-align:center;animation:ppbStamp .4s cubic-bezier(.2,1.4,.3,1) both}
+.pr-stop b{font-size:12.5px;font-weight:800}
+.pr-stop i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-top:2px;opacity:.85}
+.pr-stop.ko{--stc:color-mix(in srgb,var(--gsx-card-ink,#08222e) 38%,transparent)}
+.pr-stop.start{border-width:1.5px}
 .pr-about{position:relative;z-index:1;max-width:620px;margin:0 auto;padding:10px 24px 42px}
 .pr-about h2{margin:0 0 8px;font-size:15px;font-weight:800}
 .pr-about p{margin:0 0 8px;font-size:13px;line-height:1.65;font-weight:600}
@@ -762,5 +949,5 @@ const RUN_CSS = `
   .gsx-piece .ppb-no{font-size:30px}
 }
 @keyframes prrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.pr-host,.ppb-book,.ppb-cover,.ppb-st{animation:none !important}.ppb-cover{transform:rotateY(-180deg)}}
+@media(prefers-reduced-motion:reduce){.pr-host,.ppb-book,.ppb-cover,.ppb-st,.pr-stop{animation:none !important}.ppb-cover{transform:rotateY(-180deg)}}
 `;

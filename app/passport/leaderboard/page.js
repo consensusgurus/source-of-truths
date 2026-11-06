@@ -7,7 +7,7 @@ import PriceCheckBoard from '../../pricecheck/leaderboard/PriceCheckBoard';
 
 export const metadata = {
   title: 'Passport Leaderboard | Mind Loft',
-  description: "Today's Passport board, every crowned day, and the all-time champions. Span, Flank, Ping and nine size calls, one score out of 50.",
+  description: "Today's Passport board, every crowned day, and the all-time champions. One trip a day: Ping, Span, Flank and Stamps, one score out of 50.",
   alternates: { canonical: '/passport/leaderboard' },
   openGraph: {
     title: 'Passport Leaderboard | Mind Loft',

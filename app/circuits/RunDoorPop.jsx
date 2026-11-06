@@ -116,11 +116,13 @@ export const RUN_DOORS = {
   // and Ping plus nine size calls, so those three offer it on today's start
   // gate. Once per game like Judged, but `everyone`: a player who already
   // knows Span still gets told Passport changed, once.
+  // THE TRIP (owner, 2026-11-06): `v` re-arms the once-per-game door, so a
+  // player who saw the October notice hears about the trip once too.
   passport: {
-    href: '/passport', name: 'Passport', eyebrow: 'Passport changed a bit', once: 'game', everyone: true, from: '2026-10-15',
-    body: 'Passport now opens on today\u2019s Ping, then nine calls on which country is bigger by area or by population, then Flank and Span. One page, one score out of 50, and a passport to match.',
+    href: '/passport', name: 'Passport', eyebrow: 'Passport is now one trip', once: 'game', everyone: true, from: '2026-11-07', v: 2,
+    body: 'Find the secret city you leave from, cross the map by land borders to today\u2019s destination, name every neighbor of where you land, then stamp each capital on the way. Its own boards, so nothing here spoils today\u2019s Ping, Span or Flank.',
     go: 'Start Passport', accent: '#6ee7b7',
-    tags: [['Ping', '#34d399'], ['Bigger or smaller', '#fbbf24'], ['Flank', '#60a5fa'], ['Span', '#a78bfa']],
+    tags: [['Ping', '#34d399'], ['Span', '#a78bfa'], ['Flank', '#60a5fa'], ['Stamps', '#fbbf24']],
   },
 };
 
@@ -158,7 +160,7 @@ function neverPlayed(game) {
 
 function doorKey(id, game) {
   const D = RUN_DOORS[id];
-  return D && D.once === 'game' ? `sot_${id}_door_${game}` : `sot_${id}_door`;
+  return D && D.once === 'game' ? `sot_${id}_door_${D.v ? `v${D.v}_` : ''}${game}` : `sot_${id}_door`;
 }
 
 function shouldOffer(id, game) {

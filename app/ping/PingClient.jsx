@@ -38,7 +38,7 @@ import { notifyShareCredit } from '../ShareCreditPop';
 import DailyMasthead from '../DailyMasthead';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
-import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import { useRunEmbed, useRunHelp, detachedKey } from '../RunEmbed';
 import { LEG_ON, LegShell, LEG_PAGE_CSS } from '../StageLeg';
 import RunDoorPop from '../circuits/RunDoorPop';
 import LoftCap from '../LoftCap';
@@ -318,7 +318,9 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
     () => findCity(PUZZLE.city) || { name: PUZZLE.city, country: PUZZLE.country, lat: PUZZLE.lat, lng: PUZZLE.lng },
     [PUZZLE]
   );
-  const STORE_KEY = `sot_ping_${PUZZLE.num}`;
+  // A run-only board (Passport's trip) files nothing and saves under its own key.
+  const DETACHED = !!(useRunEmbed() || {}).detached;
+  const STORE_KEY = DETACHED ? detachedKey('ping', PUZZLE.num) : `sot_ping_${PUZZLE.num}`;
 
   const [g, setG] = useState(freshState);
   const [val, setVal] = useState('');
@@ -345,7 +347,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   // for a returning player on a new device.
   const [hintOk, setHintOk] = useState(false);
   useEffect(() => { if (stats) setHintOk(hintAllowed('ping', stats)); }, [stats]);
-  useEffect(() => { if (g.hintUsed) spendHint('ping'); }, [g.hintUsed]);
+  useEffect(() => { if (g.hintUsed && !DETACHED) spendHint('ping'); }, [g.hintUsed]); // eslint-disable-line react-hooks/exhaustive-deps
   const [player, setPlayer] = useState(null);
   const [countdown, setCountdown] = useState('');
   const [installEvt, setInstallEvt] = useState(null);
@@ -559,7 +561,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
     if (!hydrated) return;
     try { localStorage.setItem(STORE_KEY, JSON.stringify(g)); } catch (e) {}
     try {
-      if (PUZZLE.num === pickPuzzle(puzzles, null).num) {
+      if (!DETACHED && PUZZLE.num === pickPuzzle(puzzles, null).num) {
         (function(){ var _dn = g.status !== 'playing'; if (_dn || g.t0) localStorage.setItem('sot_ping_day', JSON.stringify({ d: etToday(), done: _dn })); else localStorage.removeItem('sot_ping_day'); })();
       }
     } catch (e) {}
@@ -589,6 +591,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
 
   // ---- metrics + leaderboard (same /api/quiz/* flow as every other board) ----
   useEffect(() => {
+    if (DETACHED) return;
     try {
       const id = JSON.parse(localStorage.getItem('sot_quiz_identity'));
       if (id && id.email) setIdentity(id);
@@ -653,6 +656,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
 
   const REC_KEY = `sot_ping_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
+    if (DETACHED) return null;
     // A play counts only once the player actually guesses (or takes a hint).
     // Opening the puzzle and dismissing the start gate does not log a 0-score.
     const acted = g.guesses.length > 0 || g.hintUsed;
@@ -666,6 +670,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   function postResult(g2, score) {
     abandon.markFlushed();
     if (EMBED) EMBED.onResult({ key: 'ping', score, total: TOTAL, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
+    if (DETACHED) return;
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     const solved = g2.status === 'won';
     try { setStats(recordStat(PUZZLE.num, { s: score, t: TOTAL, g: solved ? g2.guesses.length : null, won: solved })); } catch (e) {}

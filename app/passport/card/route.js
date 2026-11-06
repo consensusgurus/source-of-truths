@@ -2,7 +2,7 @@ import { createElement as h } from 'react';
 import { ImageResponse } from 'next/og';
 import { stageFonts } from '@/lib/og-stage-card';
 import { W, d, chip, cta, frame } from '@/lib/og-run-card';
-import { ROUNDS, TIERS, tierIndex, LEGS, legsFor, isLegsDay } from '@/lib/passport';
+import { ROUNDS, TIERS, tierIndex, LEGS, legsFor, isLegsDay, isTripDay } from '@/lib/passport';
 
 // PASSPORT'S SHARE CARD (owner, 2026-10-03: a link to Passport must not look
 // like a daily puzzle). The run's own picture, on the Price Check pattern:
@@ -87,7 +87,7 @@ function card(scores) {
           d({ fontSize: 20, fontWeight: 700, color: W.ink2 }, res ? 'I traveled on the' : 'Score 48 and earn the'),
           d({ fontSize: 32, fontWeight: 800, lineHeight: 1.05, letterSpacing: -1, marginTop: 6 }, tier.name),
           d({ fontSize: 18, fontWeight: 700, color: W.ink2, marginTop: 8 }, `Visa-free to ${tier.vf} countries`),
-          res ? null : d({ fontSize: 18, fontWeight: 600, color: W.ink2, marginTop: 8 }, 'Ping, nine size calls, Flank and Span.'))),
+          res ? null : d({ fontSize: 18, fontWeight: 600, color: W.ink2, marginTop: 8 }, isTripDay(etToday()) ? 'One trip: Ping, Span, Flank and Stamps.' : 'Ping, nine size calls, Flank and Span.'))),
       cta(),
     ],
     right: board,

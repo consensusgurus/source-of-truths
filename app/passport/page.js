@@ -3,7 +3,8 @@ import StageTail from '../StageTail';
 import { runBreadcrumbJsonLd } from '@/lib/run-seo';
 import PassportClient from './PassportClient';
 import PassportRunClient from './PassportRunClient';
-import { passportRunDay } from '@/lib/passport-run';
+import { passportRunDay, passportTripDay } from '@/lib/passport-run';
+import { isTripDay } from '@/lib/passport';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { PUZZLES } from './puzzles';
 import { DAYS } from './days';
@@ -35,9 +36,14 @@ export async function generateMetadata({ searchParams }) {
   const ok = /^\d{1,2}(-\d{1,2}){3,4}$/.test(s);
   const img = ok ? `/passport/card?s=${s}` : '/passport/card';
   const title = 'Passport: A Daily Geography Run | Mind Loft';
-  const description = 'A free daily geography run: the day\'s Ping, nine bigger-or-smaller size calls, then Flank and Span. Score out of 50 and earn a passport.';
+  const trip = isTripDay(etTodayServer());
+  const description = trip
+    ? 'A free daily geography trip: find the secret city you leave from, cross the map by land borders, name every neighbor of where you land, then stamp each capital. Score out of 50 and earn a passport.'
+    : 'A free daily geography run: the day\'s Ping, nine bigger-or-smaller size calls, then Flank and Span. Score out of 50 and earn a passport.';
   const shareTitle = 'Passport · Mind Loft';
-  const shareDesc = 'Ping, nine size calls, Flank and Span, one score out of 50. Which passport do you travel home on?';
+  const shareDesc = trip
+    ? 'One trip a day: Ping, Span, Flank and Stamps, one score out of 50. Which passport do you travel home on?'
+    : 'Ping, nine size calls, Flank and Span, one score out of 50. Which passport do you travel home on?';
   return {
     title, description,
     alternates: { canonical: '/passport' },
@@ -46,6 +52,7 @@ export async function generateMetadata({ searchParams }) {
   };
 }
 
+const TRIP_DESC = "A free daily geography trip in four legs, each set up by the one before it. Ping: find the secret city you depart from by the distance each guess lands from it. Span: cross the map from that city's country to the day's destination by the shortest chain of land borders. Flank: name every country that borders the destination. Stamps: name the capital of each country your road crossed. Each leg is worth 12 or 13 points; the score out of 50 decides which real passport, from the Henley Passport Index, the player travels home on. Everyone plays the same trip each day.";
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Passport',
   alternateName: 'Passport: Daily Geography Game', url: `${SITE_URL}/passport`,
@@ -84,7 +91,7 @@ function ComingSoon({ first }) {
         </div>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: '0 0 8px' }}>Passport launches {first ? first.dateLabel : 'soon'}.</h1>
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
-          The daily geography run: Ping, nine size calls, Flank and Span, 50 points. Come back when the first flight boards.
+          The daily geography trip: Ping, Span, Flank and Stamps, 50 points. Come back when the first flight boards.
         </p>
         <a href="/" style={{ color: '#7d1d2c', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>
@@ -100,18 +107,22 @@ export default function PassportPage({ searchParams }) {
   const forceNum = Number.isInteger(n) && n > 0 && visible.some((p) => p.num === n) ? n : null;
   const picked = (forceNum && visible.find((p) => p.num === forceNum)) || visible[visible.length - 1];
   if (picked.v === 2) {
-    const run = passportRunDay(picked.live, picked.quizId);
+    // THE TRIP (owner, 2026-11-06): from TRIP_FROM a day is one journey from
+    // app/passport/trips.js, its legs run-only boards (lib/passport-run.js).
+    const trip = isTripDay(picked.live);
+    const run = trip ? passportTripDay(picked.live) : passportRunDay(picked.live, picked.quizId);
     if (!run) return <ComingSoon first={null} />;
+    const tripLd = trip ? { ...gameJsonLd, description: TRIP_DESC } : gameJsonLd;
     const sections = run.sections.map((sec) => {
       const g = DAILY_GAME_MAP[sec.key] || {};
       return { ...sec, name: g.name || sec.key, tag: g.tag || '', color: g.colorNavy || '#93c5fd', path: g.href || `/${sec.key}` };
     });
     return (
       <>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(gameJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(tripLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
         <Suspense fallback={null}>
-          <PassportRunClient key={picked.num} puzzles={visible} puzzle={picked} sections={sections} calls={run.calls} isTodays={picked.num === visible[visible.length - 1].num} />
+          <PassportRunClient trip={run.trip || null} key={picked.num} puzzles={visible} puzzle={picked} sections={sections} calls={run.calls} isTodays={picked.num === visible[visible.length - 1].num} />
         </Suspense>
         <StageTail run="passport" theme="dark" />
       </>

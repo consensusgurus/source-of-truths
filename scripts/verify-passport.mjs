@@ -9,7 +9,12 @@ import { DAYS } from '../app/passport/days.js';
 import { BORDERS } from '../app/flank/borders.js';
 import { PUZZLES as FLANK } from '../app/flank/puzzles.js';
 import { TIERS, TOTAL, ROUNDS, unproject, haversineKm, capStep, LEGS, LEGS_FROM, legPoints, legsFor, WEIGHTS_FROM } from '../lib/passport.js';
-import { passportRunDay } from '../lib/passport-run.js';
+import { passportRunDay, passportTripDay } from '../lib/passport-run.js';
+import { TRIP_FROM, isTripDay, TRIP_LEGS } from '../lib/passport.js';
+import { TRIPS } from '../app/passport/trips.js';
+import { buildAdj as spanAdjOf, distancesFrom as spanDist } from '../app/span/borders.js';
+import { CITIES as PING_CITIES } from '../lib/ping-cities.js';
+import { PUZZLES as PING_BANK } from '../app/ping/puzzles.js';
 import { fairPair, SIZES_N, SIZES_WIDE_FROM, SIZES_MAX_RATIO, SIZES_OPEN_FROM } from '../lib/passport-sizes.js';
 import { flagSteps, FLAG_LAYOUTS, SUBTLE_FROM, SUBTLE_COLORS_FROM, TWINS_FROM, TWINS } from '../app/passport/flagkit.js';
 
@@ -44,6 +49,28 @@ const flankByDate = new Map(FLANK.map((f) => [f.live, f.c]));
 const addDays = (iso, n) => new Date(Date.parse(iso + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
 for (const p of PUZZLES) {
   const at = `#${p.num} ${p.live}`;
+  if (p.v === 2 && isTripDay(p.live)) {
+    // A TRIP day (owner, 2026-11-06): one journey from app/passport/trips.js,
+    // re-derived here rather than trusted from the generator.
+    if (DAYS[p.num]) fail(`${at}: a trip day carries a five-round day`);
+    const r = passportTripDay(p.live);
+    if (!r) { fail(`${at}: no trip (run scripts/gen-passport-trips.mjs)`); continue; }
+    const t = TRIPS.find((x) => x.live === p.live);
+    if (t.num !== p.num) fail(`${at}: trip num ${t.num}`);
+    if (t.sunday !== p.sunday) fail(`${at}: trip Sunday flag ${t.sunday}`);
+    const SA = spanAdjOf();
+    const city = PING_CITIES.find((c) => c.name === t.city && c.country === t.from);
+    if (!city || city.lat !== t.lat || city.lng !== t.lng) fail(`${at}: ${t.city} does not match lib/ping-cities.js`);
+    if (PING_BANK.some((x) => x.city === t.city)) fail(`${at}: ${t.city} is a Ping bank answer`);
+    if (spanDist(SA, t.from)[t.to] !== t.perfect) fail(`${at}: perfect ${t.perfect} is not the BFS minimum`);
+    const B = BORDERS[t.c];
+    if (!B || B.name !== t.to || B.noSubject) fail(`${at}: Flank country ${t.c} is not ${t.to}`);
+    else if ([...B.n].sort().join() !== [...t.a].sort().join()) fail(`${at}: Flank answers differ from borders.js`);
+    if (!r.trip.road || r.trip.road[0] !== t.from || r.trip.road[r.trip.road.length - 1] !== t.to || r.trip.road.length - 1 !== t.perfect) fail(`${at}: the shortest road is wrong`);
+    for (const n of r.trip.road) if (typeof r.trip.caps[n] !== "string" || !r.trip.caps[n]) fail(`${at}: no single capital for ${n}`);
+    if (new Set(r.sections.map((x) => x.quizId)).size !== 3 || r.sections.some((x) => !/^passport-(ping|span|flank)-/.test(x.quizId))) fail(`${at}: leg quizIds must be run-only`);
+    continue;
+  }
   if (p.v === 2) {
     // A run day: all three games have a board, and nine fair size calls with
     // no country asked twice.
@@ -200,6 +227,17 @@ TIERS.forEach((t, i) => {
   if (i > 0 && !(t.min > TIERS[i - 1].min && t.vf >= TIERS[i - 1].vf)) fail(`tier ${t.short} is out of order`);
 });
 if (TIERS[TIERS.length - 1].min !== TOTAL) fail('the top passport must be a perfect run');
+
+// THE TRIP (owner, 2026-11-06): four legs out of 50, no leg two points off another.
+{
+  if (TRIP_LEGS.reduce((t, l) => t + l.max, 0) !== TOTAL) fail(`the trip legs do not add up to ${TOTAL}`);
+  const mx = TRIP_LEGS.map((l) => l.max);
+  if (Math.max(...mx) - Math.min(...mx) > 2) fail(`the trip legs are not even: ${mx.join('/')}`);
+  if (legsFor(TRIP_FROM).map((l) => l.k).join() !== 'ping,span,flank,passport') fail('the trip legs are out of order');
+  if (legsFor('2026-11-06').map((l) => l.max).join('/') !== '12/12/12/14') fail('days before TRIP_FROM must keep 12/12/12/14');
+  const tripDays = PUZZLES.filter((p) => isTripDay(p.live)).length;
+  if (TRIPS.length !== tripDays) fail(`${TRIPS.length} trips for ${tripDays} trip days`);
+}
 
 const last = PUZZLES[PUZZLES.length - 1].live;
 const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });

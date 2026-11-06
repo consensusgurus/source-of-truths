@@ -49,7 +49,7 @@ import DailyMasthead from '../DailyMasthead';
 import { isLoft } from '@/lib/loft';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
-import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import { useRunEmbed, useRunHelp, detachedKey } from '../RunEmbed';
 import { LEG_ON, LegShell, LEG_PAGE_CSS } from '../StageLeg';
 import RunDoorPop from '../circuits/RunDoorPop';
 import LoftCap from '../LoftCap';
@@ -338,7 +338,9 @@ function freshState() {
 
 export default function SpanClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
-  const STORE_KEY = `sot_span_${PUZZLE.num}`;
+  // A run-only board (Passport's trip) files nothing and saves under its own key.
+  const DETACHED = !!(useRunEmbed() || {}).detached;
+  const STORE_KEY = DETACHED ? detachedKey('span', PUZZLE.num) : `sot_span_${PUZZLE.num}`;
   const ADJ = useMemo(() => buildAdj(), []);
   const LOOKUP = useMemo(() => buildLookup(), []);
   const [g, setG] = useState(() => freshState());
@@ -367,7 +369,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   // for a returning player on a new device.
   const [hintOk, setHintOk] = useState(false);
   useEffect(() => { if (stats) setHintOk(hintAllowed('span', stats)); }, [stats]);
-  useEffect(() => { if (g.hintUsed) spendHint('span'); }, [g.hintUsed]);
+  useEffect(() => { if (g.hintUsed && !DETACHED) spendHint('span'); }, [g.hintUsed]); // eslint-disable-line react-hooks/exhaustive-deps
   const [player, setPlayer] = useState(null);
   const [countdown, setCountdown] = useState('');
   const [installEvt, setInstallEvt] = useState(null);
@@ -473,7 +475,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
     // same-device day breadcrumb for cross-puzzle recommendations — only for
     // TODAY'S puzzle (archive replays must not mark today as played)
     try {
-      if (PUZZLE.num === pickPuzzle(puzzles, null).num) {
+      if (!DETACHED && PUZZLE.num === pickPuzzle(puzzles, null).num) {
         (function(){ var _dn = g.status !== 'playing'; if (_dn || g.t0) localStorage.setItem('sot_span_day', JSON.stringify({ d: etToday(), done: _dn })); else localStorage.removeItem('sot_span_day'); })();
       }
     } catch (e) {}
@@ -503,6 +505,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
 
   // ---- metrics + leaderboard (same /api/quiz/* flow as every other board) ----
   useEffect(() => {
+    if (DETACHED) return;
     try {
       const id = JSON.parse(localStorage.getItem('sot_quiz_identity'));
       if (id && id.email) setIdentity(id);
@@ -560,6 +563,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
 
   const REC_KEY = `sot_span_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
+    if (DETACHED) return null;
     // A play counts only once the player actually acts (a step, a miss, or a
     // hint). Opening the puzzle and dismissing the start gate does not log.
     const acted = (Array.isArray(g.chain) && g.chain.length > 1) || g.misses > 0 || g.hintUsed;
@@ -572,7 +576,8 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
 
   function postResult(g2, score) {
     abandon.markFlushed();
-    if (EMBED) EMBED.onResult({ key: 'span', score, total: 10, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
+    if (EMBED) EMBED.onResult({ key: 'span', score, total: 10, t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now(), chain: Array.isArray(g2 && g2.chain) ? g2.chain.slice() : null, won: g2 ? g2.status === 'won' : undefined });
+    if (DETACHED) return;
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     try { setStats(recordStat(PUZZLE.num, { s: score, t: 10, g: g2.misses, won: g2.status === 'won' && (g2.chain.length - 1) === PUZZLE.perfect })); } catch (e) {}
     try {
