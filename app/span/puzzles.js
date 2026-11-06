@@ -1273,7 +1273,7 @@ export const PUZZLES = [
     start: 'Croatia',
     end: 'Central African Republic',
     perfect: 8,
-    note: 'One shortest road runs through Serbia, Bulgaria, Turkey, Syria, Israel, Egypt and Sudan before reaching Central African Republic.',
+    note: 'One shortest road runs through Serbia, Bulgaria, Turkey, Syria, Israel, Egypt and Sudan before reaching the Central African Republic.',
   },
   {
     num: 123,

@@ -464,7 +464,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     return (
       <LegShell embed game="passport">
         <div className="lg-kick">Sizes · {doneR ? `${NC} calls` : `Call ${i + 1} of ${NC}`} · {pop ? 'By population' : 'By area'}{SRC_NAME[c.src] ? ` · From ${SRC_NAME[c.src]}` : ''}</div>
-        <h2 className="lg-q" key={`q${i}`}>{pop ? <>Does {c.bName} have more or fewer people than {c.aName}?</> : <>Is {c.bName} bigger or smaller than {c.aName} by area?</>}</h2>
+        <h2 className="lg-q" key={`q${i}`}>{pop ? <>Does {String(c.bName || '').replace(/^The /, 'the ')} have more or fewer people than {String(c.aName || '').replace(/^The /, 'the ')}?</> : <>Is {String(c.bName || '').replace(/^The /, 'the ')} bigger or smaller than {String(c.aName || '').replace(/^The /, 'the ')} by area?</>}</h2>
         <div className="lg-known"><b>{c.aName}</b><span>{fmtSize(aV, pop)}</span></div>
         <div className="lg-pair">
           {[true, false].map((big) => {

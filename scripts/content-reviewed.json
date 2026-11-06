@@ -78,9 +78,9 @@
     "note": "whole bank, review rounds rv-a..rv-p"
   },
   "passport": {
-    "through": "2026-11-02",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-11-09",
+    "on": "2026-11-06",
+    "note": "11-03..11-14 read by a separate reviewer (four-leg run via passportRunDay); fixed 'The Bahamas' mid-sentence and a Span note; held at 11-09 because 11-10 shows Palestine at 5,860 km2 (West Bank only) and the lib/country-areas.js fix needs a no-drift check on past days"
   },
   "focus": {
     "through": "2026-11-30",
