@@ -466,7 +466,7 @@ export const LANE_DAYS = [
     { c: "Art", t: 2, q: "Whose Blue Period, begun around 1901, includes The Old Guitarist?", a: "Pablo Picasso", d: ["Joan Miro", "Salvador Dali", "Juan Gris"] },
     { c: "Art", t: 3, q: "In which present-day country did the old Kingdom of Benin, source of the Benin Bronzes, lie?", a: "Nigeria", d: ["Benin", "Ghana", "Cameroon"] },
     { c: "Art", t: 4, q: "What is a full-size preparatory drawing for a fresco or tapestry called?", a: "A cartoon", d: ["A sinopia", "A pounce", "A maquette"] },
-    { c: "Art", t: 5, q: "Which Persian miniaturist ran the royal library in Herat under Sultan Husayn Bayqara?", a: "Kamal ud-Din Behzad", d: ["Reza Abbasi", "Sultan Muhammad", "Mir Sayyid Ali"] },
+    { c: "Art", t: 5, q: "Which Persian miniaturist worked in Herat under Sultan Husayn Bayqara and later directed the Safavid royal library in Tabriz?", a: "Kamal ud-Din Behzad", d: ["Reza Abbasi", "Sultan Muhammad", "Mir Sayyid Ali"] },
   ],
   [
     { c: "Art", t: 1, q: "Which colorful modeling compound for children began life as a wallpaper cleaner?", a: "Play-Doh", d: ["Silly Putty", "Plasticine", "Slime"] },
@@ -514,7 +514,7 @@ export const LANE_DAYS = [
     { c: "Art", t: 1, q: "What is the very hot oven used to fire pottery called?", a: "A kiln", d: ["A forge", "A loom", "A lathe"] },
     { c: "Art", t: 2, q: "Which Japanese artist began the print series Thirty-six Views of Mount Fuji around 1830?", a: "Katsushika Hokusai", d: ["Utagawa Hiroshige", "Kitagawa Utamaro", "Toshusai Sharaku"] },
     { c: "Art", t: 3, q: "What is three-dimensional art made by combining found objects, as in Louise Nevelson's wall pieces, called?", a: "Assemblage", d: ["Montage", "Decoupage", "Frottage"] },
-    { c: "Art", t: 4, q: "Which Venetian painter sold views of the Grand Canal to British Grand Tourists?", a: "Canaletto", d: ["Francesco Guardi", "Michele Marieschi", "Luca Carlevarijs"] },
+    { c: "Art", t: 4, q: "Which Venetian view painter sold his Grand Canal scenes to British Grand Tourists through the merchant Joseph Smith?", a: "Canaletto", d: ["Francesco Guardi", "Michele Marieschi", "Luca Carlevarijs"] },
     { c: "Art", t: 5, q: "Which Luminist painter made Lake George (1869), now in the Metropolitan Museum of Art?", a: "John Frederick Kensett", d: ["Fitz Henry Lane", "Martin Johnson Heade", "Sanford Robinson Gifford"] },
   ],
   [

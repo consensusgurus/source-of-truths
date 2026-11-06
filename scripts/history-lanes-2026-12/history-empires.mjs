@@ -50,19 +50,19 @@ export const LANE_DAYS = [
     e(2, "From near which river city did the Lewis and Clark expedition set out in May 1804?", "St. Louis", ["Pittsburgh", "New Orleans", "Louisville"]),
     e(3, "Which 1823 statement warned European powers against new colonies in the Americas?", "The Monroe Doctrine", ["The Truman Doctrine", "The Northwest Ordinance", "The Ostend Manifesto"]),
     e(4, "Which Shawnee leader's brother was the religious figure known as the Prophet?", "Tecumseh", ["Pontiac", "Black Hawk", "Little Turtle"]),
-    e(5, "Which US minister in Paris opened the 1803 talks with France over buying New Orleans?", "Robert Livingston", ["John Jay", "Thomas Pinckney", "Albert Gallatin"]),
+    e(5, "Which US minister to France negotiated the Louisiana Purchase with James Monroe in 1803?", "Robert Livingston", ["John Jay", "Thomas Pinckney", "Albert Gallatin"]),
   ],
   // day 55
   [
     e(1, "In which country was Simon Bolivar born?", "Venezuela", ["Colombia", "Bolivia", "Peru"]),
     e(2, "Which general proclaimed the independence of Peru in Lima in July 1821?", "Jose de San Martin", ["Simon Bolivar", "Antonio Jose de Sucre", "Bernardo O'Higgins"]),
     e(3, "On which date do Mexicans celebrate Independence Day, recalling Hidalgo's call to arms of 1810?", "September 16", ["May 5", "July 4", "November 20"]),
-    e(4, "Which Chilean leader, son of an Irish-born viceroy, became the country's first head of state in 1817?", "Bernardo O'Higgins", ["Jose Miguel Carrera", "Ramon Freire", "Diego Portales"]),
+    e(4, "Which Chilean leader, son of an Irish-born viceroy, became Supreme Director of Chile in 1817?", "Bernardo O'Higgins", ["Jose Miguel Carrera", "Ramon Freire", "Diego Portales"]),
     e(5, "Which 1822 meeting in Ecuador between Bolivar and San Martin ended with San Martin stepping aside?", "The Guayaquil conference", ["The Congress of Angostura", "The Congress of Panama", "The Cucuta Congress"]),
   ],
   // day 56
   [
-    e(1, "Which former slave led the revolt in Saint-Domingue that began in 1791?", "Toussaint Louverture", ["Jean-Jacques Dessalines", "Henri Christophe", "Alexandre Petion"]),
+    e(1, "Which former slave led the Saint-Domingue revolution until he was seized and deported in 1802?", "Toussaint Louverture", ["Jean-Jacques Dessalines", "Henri Christophe", "Alexandre Petion"]),
     e(2, "From which European country did Haiti win its independence?", "France", ["Spain", "Britain", "Portugal"]),
     e(3, "In which year did Haiti become independent?", "1804", ["1791", "1815", "1825"]),
     e(4, "Which French general led Napoleon's 1802 expedition to retake Saint-Domingue?", "Charles Leclerc", ["Jean Lannes", "Louis Desaix", "Jean-Baptiste Kleber"]),
@@ -71,7 +71,7 @@ export const LANE_DAYS = [
   // day 57
   [
     e(1, "What color shirts did Garibaldi's volunteers famously wear?", "Red", ["Black", "Blue", "Green"]),
-    e(2, "Which Italian patriot was called the Hero of Two Worlds for fighting in South America and Italy?", "Giuseppe Garibaldi", ["Giuseppe Mazzini", "Camillo di Cavour", "Nino Bixio"]),
+    e(2, "On which island did Garibaldi's Expedition of the Thousand land in May 1860?", "Sicily", ["Sardinia", "Corsica", "Elba"]),
     e(3, "Which prime minister of Piedmont-Sardinia steered the unification of Italy?", "Camillo di Cavour", ["Giuseppe Mazzini", "Francesco Crispi", "Giovanni Giolitti"]),
     e(4, "Which region, along with Nice, did Piedmont hand to France in 1860 in return for its help?", "Savoy", ["Lombardy", "Corsica", "Liguria"]),
     e(5, "Which Austrian-ruled region did Italy gain in 1866?", "Venetia", ["Lombardy", "Trentino", "Istria"]),
@@ -94,7 +94,7 @@ export const LANE_DAYS = [
   ],
   // day 60
   [
-    e(1, "In which country did the Mughal emperors rule?", "India", ["Persia", "Afghanistan", "Egypt"]),
+    e(1, "In which country did the Mughal emperors rule?", "India", ["Persia", "Egypt", "Turkey"]),
     e(2, "For which wife did Shah Jahan build the Taj Mahal?", "Mumtaz Mahal", ["Nur Jahan", "Jodha Bai", "Jahanara"]),
     e(3, "Which Mughal emperor, son of Shah Jahan, ruled from 1658 to 1707 and pushed the empire to its widest extent?", "Aurangzeb", ["Bahadur Shah I", "Jahangir", "Farrukhsiyar"]),
     e(4, "Which Afghan ruler founded the Durrani Empire in 1747?", "Ahmad Shah Durrani", ["Nader Shah", "Dost Mohammad Khan", "Shah Shuja"]),
@@ -137,7 +137,7 @@ export const LANE_DAYS = [
     e(1, "Which two men wrote The Communist Manifesto in 1848?", "Marx and Engels", ["Lenin and Trotsky", "Proudhon and Bakunin", "Owen and Fourier"]),
     e(2, "Which crop failed in Ireland from 1845, causing a great famine?", "The potato", ["Wheat", "Oats", "Barley"]),
     e(3, "What is the wave of uprisings across Europe in 1848 often called?", "The Springtime of Peoples", ["The Velvet Revolution", "The Glorious Revolution", "The Carnation Revolution"]),
-    e(4, "Which British prime minister four times over led the Liberal Party and backed Irish Home Rule?", "William Gladstone", ["Lord Palmerston", "Lord Salisbury", "Henry Campbell-Bannerman"]),
+    e(4, "Which Liberal served four times as British prime minister and backed Irish Home Rule?", "William Gladstone", ["Lord Palmerston", "Lord Salisbury", "Henry Campbell-Bannerman"]),
     e(5, "Which 1846 repeal, pushed by Robert Peel, ended taxes on imported grain in Britain?", "The Corn Laws", ["The Navigation Acts", "The Test Acts", "The Poor Laws"]),
   ],
   // day 66
@@ -151,7 +151,7 @@ export const LANE_DAYS = [
   // day 67
   [
     e(1, "Which English queen's reign saw the defeat of the Spanish Armada in 1588?", "Elizabeth I", ["Mary I", "Anne", "Victoria"]),
-    e(2, "What was the name of the ship Francis Drake sailed around the world?", "The Golden Hind", ["The Revenge", "The Pelican Royal", "The Ark Royal"]),
+    e(2, "What was the name of the ship Francis Drake sailed around the world?", "The Golden Hind", ["The Revenge", "The Victory", "The Ark Royal"]),
     e(3, "Which Scottish queen was executed in 1587 on the orders of her English cousin?", "Mary, Queen of Scots", ["Mary of Guise", "Margaret Tudor", "Mary I"]),
     e(4, "Which royal favorite sponsored the failed Roanoke colony in the 1580s?", "Walter Raleigh", ["Robert Dudley", "Francis Walsingham", "William Cecil"]),
     e(5, "Which royal spymaster uncovered the Babington Plot of 1586?", "Francis Walsingham", ["William Cecil", "Robert Cecil", "Christopher Hatton"]),
@@ -194,7 +194,7 @@ export const LANE_DAYS = [
     e(2, "Which actor shot Abraham Lincoln?", "John Wilkes Booth", ["Edwin Booth", "Lewis Powell", "Charles Guiteau"]),
     e(3, "Which amendment, ratified in 1865, abolished slavery in the United States?", "The Thirteenth Amendment", ["The Fourteenth Amendment", "The Fifteenth Amendment", "The Twelfth Amendment"]),
     e(4, "Which federal agency of 1865 helped former slaves with food, schooling and labor contracts?", "The Freedmen's Bureau", ["The Bureau of Indian Affairs", "The Sanitary Commission", "The Homestead Office"]),
-    e(5, "Which 1868 amendment granted citizenship to everyone born in the United States?", "The Fourteenth Amendment", ["The Thirteenth Amendment", "The Fifteenth Amendment", "The Sixteenth Amendment"]),
+    e(5, "Which 1868 amendment defined US citizenship and promised equal protection of the laws?", "The Fourteenth Amendment", ["The Thirteenth Amendment", "The Fifteenth Amendment", "The Sixteenth Amendment"]),
   ],
   // day 73
   [
@@ -215,7 +215,7 @@ export const LANE_DAYS = [
   // day 75
   [
     e(1, "Which English Puritan general ruled as Lord Protector in the 1650s?", "Oliver Cromwell", ["Thomas Fairfax", "John Pym", "Richard Cromwell"]),
-    e(2, "Which English king raised his royal standard at Nottingham in 1642, starting the Civil War?", "Charles I", ["James I", "Charles II", "James II"]),
+    e(2, "Which Dutch prince took the English throne with his wife Mary in 1689?", "William III", ["George I", "James II", "Charles II"]),
     e(3, "Which 1689 English law limited royal power and set out the rights of Parliament?", "The Bill of Rights", ["Magna Carta", "The Petition of Right", "The Act of Union"]),
     e(4, "Which Stuart queen was on the throne when England and Scotland united in 1707?", "Queen Anne", ["Mary II", "Queen Victoria", "Elizabeth I"]),
     e(5, "Which Scottish scheme to found a colony on the Isthmus of Panama in the 1690s ended in ruin?", "The Darien scheme", ["The Mississippi scheme", "The Nova Scotia scheme", "The South Sea scheme"]),
@@ -224,7 +224,7 @@ export const LANE_DAYS = [
   [
     e(1, "In which city did the Great Fire of 1666 destroy the old St Paul's Cathedral?", "London", ["Paris", "Edinburgh", "York"]),
     e(2, "In which street did the Great Fire of 1666 start, in a bakery?", "Pudding Lane", ["Fleet Street", "Cheapside", "Drury Lane"]),
-    e(3, "Which English diarist described the Great Fire of 1666 as he watched it spread?", "Samuel Pepys", ["John Evelyn", "John Aubrey", "Daniel Defoe"]),
+    e(3, "Which English diarist described the Great Fire of 1666 as he watched it spread?", "Samuel Pepys", ["James Boswell", "John Aubrey", "Daniel Defoe"]),
     e(4, "Which Stuart king became a Catholic and was driven from his throne in 1688?", "James II", ["Charles II", "Charles I", "William III"]),
     e(5, "Which learned body, chartered in 1662, did Isaac Newton later lead as president?", "The Royal Society", ["The Royal Institution", "The Society of Antiquaries", "The Lunar Society"]),
   ],
@@ -241,7 +241,7 @@ export const LANE_DAYS = [
     e(1, "What name is given to the 16th-century movement that split Western Christianity into Catholic and Protestant churches?", "The Reformation", ["The Renaissance", "The Enlightenment", "The Great Schism"]),
     e(2, "Which reformer married the former nun Katharina von Bora in 1525?", "Martin Luther", ["John Calvin", "Huldrych Zwingli", "Thomas Cranmer"]),
     e(3, "Which 1598 decree by Henry IV gave French Protestants freedom of worship?", "The Edict of Nantes", ["The Edict of Fontainebleau", "The Peace of Augsburg", "The Edict of Worms"]),
-    e(4, "Which Spanish soldier founded the Society of Jesus?", "Ignatius of Loyola", ["Francis Xavier", "Teresa of Avila", "John of the Cross"]),
+    e(4, "Which Spanish soldier founded the Society of Jesus?", "Ignatius of Loyola", ["Francis Borgia", "Teresa of Avila", "John of the Cross"]),
     e(5, "Which Scottish reformer wrote The First Blast of the Trumpet Against the Monstrous Regiment of Women?", "John Knox", ["George Wishart", "Andrew Melville", "Patrick Hamilton"]),
   ],
   // day 79

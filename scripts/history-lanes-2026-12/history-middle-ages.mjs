@@ -6,7 +6,7 @@ const e = (t, q, a, d) => ({ c: C, t, q, a, d });
 export const LANE_DAYS = [
   // day 49
   [
-    e(1, "What was the everyday drink, brewed from malted barley, that most medieval English people drank instead of water?", "Ale", ["Mead", "Cider", "Wine"]),
+    e(1, "Which drink, brewed from malted barley and usually made without hops, was the everyday drink of medieval England?", "Ale", ["Mead", "Cider", "Wine"]),
     e(2, "In which French town is the long embroidered tapestry of the Norman conquest kept?", "Bayeux", ["Rouen", "Caen", "Falaise"]),
     e(3, "At which meadow beside the Thames was Magna Carta sealed in 1215?", "Runnymede", ["Windsor Great Park", "Hampton Court", "Smithfield"]),
     e(4, "Which Byzantine empress, wife of Justinian, urged him to stand firm during the Nika riots of 532?", "Theodora", ["Irene", "Zoe", "Eudocia"]),
@@ -18,7 +18,7 @@ export const LANE_DAYS = [
     e(2, "What was Genghis Khan's name before he took his famous title?", "Temujin", ["Tolui", "Jochi", "Subutai"]),
     e(3, "Which Venetian traveler dictated his story to Rustichello of Pisa while they were prisoners in Genoa?", "Marco Polo", ["Niccolo de' Conti", "Giovanni da Pian del Carpine", "William of Rubruck"]),
     e(4, "Which traveler from Tangier served as a judge in Delhi and in the Maldives during the 1300s?", "Ibn Battuta", ["Ibn Khaldun", "Ibn Jubayr", "al-Masudi"]),
-    e(5, "Which eunuch general completed Justinian's reconquest of Italy from the Ostrogoths in 552?", "Narses", ["Belisarius", "Mundus", "Germanus"]),
+    e(5, "Which eunuch general crushed the Ostrogoths at Taginae in 552 during Justinian's reconquest of Italy?", "Narses", ["Belisarius", "Mundus", "Germanus"]),
   ],
   // day 51
   [
@@ -31,7 +31,7 @@ export const LANE_DAYS = [
   // day 52
   [
     e(1, "Which Norse god, called Woden by the Anglo-Saxons, gives his name to Wednesday?", "Odin", ["Thor", "Loki", "Freyr"]),
-    e(2, "Which king of Wessex, the only English king called the Great, defeated the Danes at Edington in 878?", "Alfred", ["Athelstan", "Edgar", "Egbert"]),
+    e(2, "Which king of Wessex defeated the Danes at the Battle of Edington in 878?", "Alfred", ["Athelstan", "Edgar", "Egbert"]),
     e(3, "What was the tax English kings raised to pay off Viking raiders called?", "Danegeld", ["Scutage", "Tallage", "Peter's Pence"]),
     e(4, "Which Danish king raised a great rune stone at Jelling boasting that he made the Danes Christian?", "Harald Bluetooth", ["Gorm the Old", "Sweyn Forkbeard", "Cnut the Great"]),
     e(5, "What was the name of Erik the Red's farm, the center of the Norse settlement in Greenland?", "Brattahlid", ["Thingvellir", "Gardar", "Hvalsey"]),
@@ -89,14 +89,14 @@ export const LANE_DAYS = [
     e(1, "In medieval Europe, what was a person who swore loyalty to a lord in return for land called?", "A vassal", ["A serf", "A squire", "A friar"]),
     e(2, "When it was founded in 762, what shape was the Abbasid capital of Baghdad laid out in?", "A circle", ["A square", "A star", "A crescent"]),
     e(3, "Which Arab thinker of the 800s is known as the Philosopher of the Arabs?", "al-Kindi", ["al-Farabi", "Averroes", "al-Ghazali"]),
-    e(4, "Whose Arabic book on calculation, written in Baghdad, gave us the word algebra?", "al-Khwarizmi", ["al-Battani", "Thabit ibn Qurra", "al-Karaji"]),
+    e(4, "Which Christian physician of Baghdad led the translation of Greek medical works into Arabic in the 800s?", "Hunayn ibn Ishaq", ["Thabit ibn Qurra", "al-Razi", "al-Battani"]),
     e(5, "Which Abbasid caliph, a son of Harun al-Rashid, was the great patron of the House of Wisdom?", "al-Mamun", ["al-Amin", "al-Mutawakkil", "al-Mutasim"]),
   ],
   // day 60
   [
     e(1, "What was the crime of betraying one's king or country called in medieval law?", "Treason", ["Heresy", "Perjury", "Usury"]),
     e(2, "What was the council of leading men that advised Anglo-Saxon kings called?", "The witan", ["The thing", "The moot", "The curia"]),
-    e(3, "Which illuminated Gospel book, made around 800, is kept at Trinity College Dublin?", "The Book of Kells", ["The Lindisfarne Gospels", "The Book of Durrow", "The Codex Amiatinus"]),
+    e(3, "In Anglo-Saxon law, what was the price set on a man's life, paid by his killer to his family?", "Wergild", ["Danegeld", "Tithe", "Heriot"]),
     e(4, "Which abbot of Clairvaux was the leading voice of the Cistercian order and preached the Second Crusade?", "Bernard of Clairvaux", ["Peter the Hermit", "Robert of Molesme", "Peter the Venerable"]),
     e(5, "Which king of Mercia gave his name to a great earthwork along the Welsh border?", "Offa", ["Penda", "Aethelbald", "Coenwulf"]),
   ],
@@ -105,7 +105,7 @@ export const LANE_DAYS = [
     e(1, "Which real mayor of London became the hero of a folk tale about a poor boy whose cat made his fortune?", "Dick Whittington", ["Jack Cade", "Wat Tyler", "Tom Thumb"]),
     e(2, "Which Scottish leader defeated the English at Stirling Bridge in 1297?", "William Wallace", ["Robert the Bruce", "John Balliol", "James Douglas"]),
     e(3, "Which English king was killed by an arrow while hunting in the New Forest in 1100?", "William II", ["Henry I", "Stephen", "Harold II"]),
-    e(4, "Which Japanese shogunate did Minamoto no Yoritomo set up in 1192?", "The Kamakura shogunate", ["The Ashikaga shogunate", "The Tokugawa shogunate", "The Heian shogunate"]),
+    e(4, "Which shogunate did Minamoto no Yoritomo found after his victory in the Genpei War?", "The Kamakura shogunate", ["The Ashikaga shogunate", "The Tokugawa shogunate", "The Heian shogunate"]),
     e(5, "Which Song general, put to death in 1142, became a lasting Chinese symbol of loyalty?", "Yue Fei", ["Qin Hui", "Han Shizhong", "Zong Ze"]),
   ],
   // day 62
@@ -127,7 +127,7 @@ export const LANE_DAYS = [
   // day 64
   [
     e(1, "Who was the legendary British king who gathered his knights at the Round Table?", "King Arthur", ["King Alfred", "King Lear", "King Harold"]),
-    e(2, "Which grand prince of Moscow stopped paying tribute to the Golden Horde in 1480?", "Ivan III", ["Ivan IV", "Dmitry Donskoy", "Vasily II"]),
+    e(2, "Which grand prince of Moscow ended the Golden Horde's overlordship after the standoff on the Ugra River in 1480?", "Ivan III", ["Ivan IV", "Dmitry Donskoy", "Vasily II"]),
     e(3, "Which Holy Roman Emperor founded the university at Prague in 1348?", "Charles IV", ["Sigismund", "Wenceslaus", "Rudolf I"]),
     e(4, "Which grand duchy joined Poland in 1386 when its ruler Jogaila married the Polish queen?", "Lithuania", ["Muscovy", "Livonia", "Hungary"]),
     e(5, "Which Serbian ruler had himself crowned emperor in 1346?", "Stefan Dusan", ["Stefan Nemanja", "Lazar Hrebeljanovic", "Stefan Milutin"]),
@@ -144,14 +144,14 @@ export const LANE_DAYS = [
   [
     e(1, "Who made horseshoes and iron tools in a medieval village?", "The blacksmith", ["The cooper", "The miller", "The tanner"]),
     e(2, "What was the crusader state set up in Constantinople after it was sacked in 1204 called?", "The Latin Empire", ["The Kingdom of Jerusalem", "The Despotate of Epirus", "The Empire of Nicaea"]),
-    e(3, "Which Mongol khan's death in 1241 led the armies invading Europe to turn back?", "Ogedei Khan", ["Genghis Khan", "Mongke Khan", "Batu Khan"]),
+    e(3, "Which Mongol great khan died in December 1241, while his armies were ravaging Hungary?", "Ogedei Khan", ["Genghis Khan", "Mongke Khan", "Batu Khan"]),
     e(4, "Which Mamluk sultan took Antioch from the crusaders in 1268?", "Baybars", ["Qalawun", "Qutuz", "Aybak"]),
     e(5, "Which queen of Jerusalem ruled the crusader kingdom with and after her husband Fulk in the 1130s and 1140s?", "Melisende", ["Sibylla", "Isabella I", "Alice of Antioch"]),
   ],
   // day 67
   [
     e(1, "After about 1100, what were most new European castles built of?", "Stone", ["Wood", "Earth", "Iron"]),
-    e(2, "Which Spanish pilgrimage city is said to hold the tomb of the apostle James?", "Santiago de Compostela", ["Toledo", "Burgos", "Leon"]),
+    e(2, "Which Spanish city was the capital of the Visigothic kingdom?", "Toledo", ["Seville", "Cordoba", "Leon"]),
     e(3, "Which Berber dynasty, founded by followers of Ibn Tumart, ruled North Africa and Spain in the 1100s?", "The Almohads", ["The Marinids", "The Zirids", "The Hafsids"]),
     e(4, "Which Persian poet wrote the romance Layla and Majnun in 1188?", "Nizami", ["Hafez", "Ferdowsi", "Omar Khayyam"]),
     e(5, "Which poet's followers founded the Mevlevi order, known for the whirling dervishes?", "Rumi", ["Attar", "Saadi", "Jami"]),
@@ -184,7 +184,7 @@ export const LANE_DAYS = [
   [
     e(1, "What was the long wooden pole a knight aimed at an opponent in a joust?", "A lance", ["A halberd", "A mace", "A pike"]),
     e(2, "Which Frankish king became a Christian around 496?", "Clovis I", ["Pepin the Short", "Dagobert I", "Childeric I"]),
-    e(3, "Which Frankish leader, grandfather of Charlemagne, defeated an Umayyad army near Tours in 732?", "Charles Martel", ["Pepin the Short", "Carloman", "Louis the Pious"]),
+    e(3, "Which Frankish leader, grandfather of Charlemagne, defeated an Umayyad army near Poitiers in 732?", "Charles Martel", ["Pepin the Short", "Carloman", "Louis the Pious"]),
     e(4, "Which bishop wrote the History of the Franks in the 500s?", "Gregory of Tours", ["Isidore of Seville", "Venantius Fortunatus", "Einhard"]),
     e(5, "Which Ostrogothic king ruled Italy from Ravenna from 493 to 526?", "Theodoric the Great", ["Odoacer", "Totila", "Alaric II"]),
   ],
@@ -198,7 +198,7 @@ export const LANE_DAYS = [
   ],
   // day 73
   [
-    e(1, "Which 4th-century bishop of Myra inspired the figure of Santa Claus?", "Saint Nicholas", ["Saint Martin", "Saint Stephen", "Saint Ambrose"]),
+    e(1, "Which spiced ale drink, named from an Old English toast meaning be in good health, was shared at medieval Christmas feasts?", "Wassail", ["Mead", "Posset", "Cider"]),
     e(2, "Which Italian saint is said to have staged the first live nativity scene, at Greccio in 1223?", "Francis of Assisi", ["Anthony of Padua", "Dominic", "Bernardino of Siena"]),
     e(3, "Which pope crowned Charlemagne emperor in Rome on Christmas Day 800?", "Leo III", ["Gregory the Great", "Adrian I", "Stephen II"]),
     e(4, "Which king was crowned in Westminster Abbey on Christmas Day 1066?", "William the Conqueror", ["Harold Godwinson", "Edgar the Atheling", "Edward the Confessor"]),
@@ -214,7 +214,7 @@ export const LANE_DAYS = [
   ],
   // day 75
   [
-    e(1, "What was a castle's dungeon mainly used for?", "Holding prisoners", ["Storing wine", "Stabling horses", "Hiding treasure"]),
+    e(1, "What did medieval people call a traveler journeying to a holy shrine?", "A pilgrim", ["A pardoner", "A friar", "A herald"]),
     e(2, "Which son of Osman I captured Bursa in 1326 and made it the Ottoman capital?", "Orhan", ["Murad I", "Bayezid I", "Ertugrul"]),
     e(3, "Which Ottoman sultan was captured by Timur at the Battle of Ankara in 1402?", "Bayezid I", ["Murad I", "Mehmed I", "Murad II"]),
     e(4, "Which Albanian lord led a long revolt against the Ottomans from 1443 until his death in 1468?", "Skanderbeg", ["Vlad III", "Stephen the Great", "John Hunyadi"]),
@@ -231,7 +231,7 @@ export const LANE_DAYS = [
   // day 77
   [
     e(1, "Which number, unknown to Roman numerals, came to Europe along with the Hindu-Arabic digits?", "Zero", ["One", "Ten", "Pi"]),
-    e(2, "Which Italian mathematician promoted the new numerals in his Liber Abaci of 1202?", "Fibonacci", ["Luca Pacioli", "Gerard of Cremona", "Gerbert of Aurillac"]),
+    e(2, "What were the medieval seekers who tried to turn lead into gold called?", "Alchemists", ["Astrologers", "Apothecaries", "Herbalists"]),
     e(3, "Which Indian mathematician of the 600s gave rules for calculating with zero?", "Brahmagupta", ["Bhaskara II", "Madhava", "Mahavira"]),
     e(4, "Which Persian scholar ran the observatory at Maragheh founded under Hulagu in 1259?", "Nasir al-Din al-Tusi", ["Ulugh Beg", "al-Biruni", "Omar Khayyam"]),
     e(5, "Which Arab scholar of Cairo wrote the Book of Optics in the early 1000s?", "Ibn al-Haytham", ["al-Kindi", "Ibn Sina", "al-Jazari"]),

@@ -43,7 +43,7 @@ export const LANE_DAYS = [
     e(2, "Which Anglican archbishop chaired South Africa's Truth and Reconciliation Commission?", "Desmond Tutu", ["Trevor Huddleston", "Allan Boesak", "Beyers Naude"]),
     e(3, "In which year was Mandela released from prison?", "1990", ["1985", "1988", "1994"]),
     e(4, "Which 1960 shooting of protesters outside a police station led to the ANC being banned?", "The Sharpeville massacre", ["The Soweto uprising", "The Bisho massacre", "The Langa march"]),
-    e(5, "Which 1955 statement of principles, adopted at Kliptown, opened with the words the people shall govern?", "The Freedom Charter", ["The Rivonia Statement", "The Bill of Rights for Africa", "The Kliptown Declaration of Unity"]),
+    e(5, "Which 1955 statement of principles, adopted at Kliptown, made The People Shall Govern its first demand?", "The Freedom Charter", ["The Rivonia Statement", "The Bill of Rights for Africa", "The Kliptown Declaration of Unity"]),
   ],
   // day 54
   [
@@ -56,7 +56,7 @@ export const LANE_DAYS = [
   // day 55
   [
     e(1, "How many countries signed the 1957 Treaty of Rome founding the European Economic Community?", "Six", ["Four", "Nine", "Twelve"]),
-    e(2, "Which French businessman, often called the Father of Europe, inspired the coal and steel community?", "Jean Monnet", ["Robert Schuman", "Paul-Henri Spaak", "Konrad Adenauer"]),
+    e(2, "Which French businessman drew up the coal and steel plan and became the first president of its High Authority?", "Jean Monnet", ["Robert Schuman", "Paul-Henri Spaak", "Konrad Adenauer"]),
     e(3, "Which French foreign minister proposed pooling coal and steel in a 1950 declaration?", "Robert Schuman", ["Jean Monnet", "Charles de Gaulle", "Georges Pompidou"]),
     e(4, "Which French official was president of the European Commission from 1985 to 1995?", "Jacques Delors", ["Jacques Santer", "Gaston Thorn", "Valery Giscard d'Estaing"]),
     e(5, "Which three countries joined the European Communities in 1973?", "Britain, Ireland and Denmark", ["Britain, Norway and Denmark", "Spain, Portugal and Greece", "Austria, Sweden and Finland"]),
@@ -67,7 +67,7 @@ export const LANE_DAYS = [
     e(2, "To which island did China's Nationalist government retreat in 1949?", "Taiwan", ["Hainan", "Okinawa", "Luzon"]),
     e(3, "Which Nationalist leader lost mainland China to the Communists in 1949?", "Chiang Kai-shek", ["Sun Yat-sen", "Yuan Shikai", "Wang Jingwei"]),
     e(4, "Which Chinese leader made a famous tour of southern China in 1992 to push economic reform forward?", "Deng Xiaoping", ["Jiang Zemin", "Zhao Ziyang", "Hu Yaobang"]),
-    e(5, "Which city became China's first Special Economic Zone in 1980?", "Shenzhen", ["Shanghai", "Tianjin", "Guangzhou"]),
+    e(5, "Which city next to Hong Kong became one of China's first Special Economic Zones in 1980?", "Shenzhen", ["Shanghai", "Tianjin", "Guangzhou"]),
   ],
   // day 57
   [
@@ -154,7 +154,7 @@ export const LANE_DAYS = [
     e(1, "Which Iranian king was overthrown in the revolution of 1979?", "Mohammad Reza Pahlavi", ["Reza Shah", "Ahmad Shah Qajar", "Mohammad Mosaddegh"]),
     e(2, "Which oil producers' cartel was founded in Baghdad in 1960?", "OPEC", ["NATO", "ASEAN", "OAPEC"]),
     e(3, "Which Iranian prime minister nationalized the country's oil industry in 1951?", "Mohammad Mosaddegh", ["Fazlollah Zahedi", "Amir-Abbas Hoveyda", "Mehdi Bazargan"]),
-    e(4, "What was the code name of the failed 1980 US mission to rescue the hostages in Iran?", "Operation Eagle Claw", ["Operation Ajax", "Operation Desert One", "Operation Just Cause"]),
+    e(4, "What was the code name of the failed 1980 US mission to rescue the hostages in Iran?", "Operation Eagle Claw", ["Operation Ajax", "Operation Urgent Fury", "Operation Just Cause"]),
     e(5, "Which US-backed coup of 1953 restored the Shah's power in Iran?", "Operation Ajax", ["Operation Northwoods", "Operation Mongoose", "Operation Condor"]),
   ],
   // day 68
@@ -193,7 +193,7 @@ export const LANE_DAYS = [
   [
     e(1, "What name is given to the 1967 gathering of hippies in San Francisco's Haight-Ashbury?", "The Summer of Love", ["The Summer of Peace", "The Flower Season", "The Haight Summer"]),
     e(2, "Which singer, the King of Rock and Roll, was drafted into the US Army in 1958?", "Elvis Presley", ["Buddy Holly", "Johnny Cash", "Chuck Berry"]),
-    e(3, "Which New York bar's 1969 police raid set off protests that launched the gay rights movement?", "The Stonewall Inn", ["The Black Cat", "Julius'", "The Mattachine"]),
+    e(3, "Which New York bar's 1969 police raid set off riots that became a turning point for gay rights?", "The Stonewall Inn", ["The Black Cat", "Julius'", "The Mattachine"]),
     e(4, "Which feminist magazine did Gloria Steinem co-found in 1972?", "Ms.", ["Bust", "Mother Jones", "Ramparts"]),
     e(5, "Which 1969 rock concert in California ended in violence at a speedway?", "Altamont", ["Monterey Pop", "Woodstock", "Newport Folk"]),
   ],
@@ -227,7 +227,7 @@ export const LANE_DAYS = [
     e(2, "Which country's African colonies, including Angola and Mozambique, became independent in 1975?", "Portugal's", ["Spain's", "France's", "Belgium's"]),
     e(3, "Who ruled Portugal as dictator from 1932 to 1968?", "Antonio Salazar", ["Marcelo Caetano", "Manuel Gomes da Costa", "Mario Soares"]),
     e(4, "Which country was ruled by a military junta known as the Colonels from 1967 to 1974?", "Greece", ["Turkey", "Cyprus", "Argentina"]),
-    e(5, "Which Spanish prime minister, Franco's chosen successor, was killed by an ETA bomb in 1973?", "Luis Carrero Blanco", ["Adolfo Suarez", "Carlos Arias Navarro", "Manuel Fraga"]),
+    e(5, "Which Spanish prime minister, a close ally of Franco, was killed by an ETA car bomb in Madrid in 1973?", "Luis Carrero Blanco", ["Adolfo Suarez", "Carlos Arias Navarro", "Manuel Fraga"]),
   ],
   // day 77
   [

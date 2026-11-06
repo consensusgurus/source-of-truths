@@ -561,7 +561,7 @@ export const LANE_DAYS = [
     { c: "Architecture & Design", t: 2, q: "Which Cambodian temple complex appears on the national flag of Cambodia?", a: "Angkor Wat", d: ["Borobudur", "Bagan", "Wat Arun"] },
     { c: "Architecture & Design", t: 3, q: "Which Greek column order has capitals decorated with acanthus leaves?", a: "Corinthian", d: ["Ionic", "Doric", "Tuscan"] },
     { c: "Architecture & Design", t: 4, q: "Which American architect designed the Salk Institute and the Kimbell Art Museum?", a: "Louis Kahn", d: ["Paul Rudolph", "Edward Durell Stone", "Marcel Breuer"] },
-    { c: "Architecture & Design", t: 5, q: "Which Italian-born architect designed the Winter Palace in St. Petersburg?", a: "Bartolomeo Rastrelli", d: ["Carlo Rossi", "Giacomo Quarenghi", "Antonio Rinaldi"] },
+    { c: "Architecture & Design", t: 5, q: "Which architect designed the Baroque Winter Palace in St. Petersburg, completed in 1762?", a: "Bartolomeo Rastrelli", d: ["Carlo Rossi", "Giacomo Quarenghi", "Antonio Rinaldi"] },
   ],
   [
     { c: "Architecture & Design", t: 1, q: "Which New York skyscraper was hit by a B-25 bomber in fog in July 1945?", a: "The Empire State Building", d: ["The Chrysler Building", "The Woolworth Building", "Rockefeller Center"] },

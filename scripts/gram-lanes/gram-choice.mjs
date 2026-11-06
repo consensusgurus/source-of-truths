@@ -322,7 +322,7 @@ export const LANE_DAYS = [
     { c, t: 1, q: "Which word completes the sentence: 'We go to the library once a ___'?", a: "week", d: ["weak", "wick", "wake"] },
     { c, t: 2, q: "Which sentence is correct?", a: "I can hardly hear you over the music.", d: ["I can't hardly hear you over the music.", "I can hard hear you over the music.", "I can't barely hear you over the music."] },
     { c, t: 3, q: "Which sentence is correct?", a: "One of my friends lives in Texas.", d: ["One of my friends live in Texas.", "One of my friends are living in Texas.", "One of my friends have lived in Texas."] },
-    { c, t: 4, q: "Which word completes the sentence: 'The rookie proved her ___ in the playoffs'?", a: "mettle", d: ["medal", "meddle", "metal"] },
+    { c, t: 4, q: "Which word completes the sentence: 'The rookie proved her ___ in the playoffs'?", a: "mettle", d: ["medal", "meddle", "mantle"] },
     { c, t: 5, q: "Which word completes the sentence: 'Only a ___ reader would fall for such an obvious hoax'?", a: "credulous", d: ["credible", "creditable", "incredible"] },
   ],
   // day 39
@@ -347,7 +347,7 @@ export const LANE_DAYS = [
     { c, t: 2, q: "Which word completes the sentence: 'The ___ of the novel saves her village from a flood'?", a: "heroine", d: ["heroin", "heroic", "heron"] },
     { c, t: 3, q: "Which sentence is correct?", a: "If it rains tomorrow, we will stay home.", d: ["If it will rain tomorrow, we will stay home.", "If it would rain tomorrow, we will stay home.", "If it rained tomorrow, we will stay home."] },
     { c, t: 4, q: "Which word completes the sentence: 'A ___ city like Tokyo has millions of residents'?", a: "populous", d: ["populace", "population", "popularly"] },
-    { c, t: 5, q: "Which word completes the sentence: 'I am ___ to admit it, but you were right'?", a: "loath", d: ["loathe", "loathed", "loathing"] },
+    { c, t: 5, q: "Which word completes the sentence: 'A ___ investor, she saw the crash coming months before anyone else'?", a: "perspicacious", d: ["perspicuous", "pernicious", "precocious"] },
   ],
   // day 42
   [
@@ -528,7 +528,7 @@ export const LANE_DAYS = [
   // day 64
   [
     { c, t: 1, q: "Which word completes the sentence: 'We set traps because we heard ___ in the attic'?", a: "mice", d: ["mouses", "mices", "mouse's"] },
-    { c, t: 2, q: "Which word completes the sentence: 'The egg ___ was bright orange'?", a: "yolk", d: ["yoke", "yuck", "folk"] },
+    { c, t: 2, q: "Which word completes the sentence: 'The egg ___ was bright orange'?", a: "yolk", d: ["yak", "yuck", "folk"] },
     { c, t: 3, q: "Which word completes the sentence: 'She is used to ___ up early for work'?", a: "getting", d: ["get", "got", "gets"] },
     { c, t: 4, q: "Which word completes the sentence: 'The novel is now part of the American literary ___'?", a: "canon", d: ["cannon", "canyon", "cannons"] },
     { c, t: 5, q: "Which word completes the sentence: 'Write the date down, lest you ___ it'?", a: "forget", d: ["forgot", "forgets", "forgetting"] },

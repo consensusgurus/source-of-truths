@@ -394,7 +394,7 @@ export const LANE_DAYS = [
   [
     { c: "Music", t: 1, q: "Which instrument did Jimi Hendrix famously play upside down and left-handed?", a: "The guitar", d: ["The bass", "The drums", "The keyboard"] },
     { c: "Art", t: 2, q: "Which holiday, on November 1 and 2, is marked with home altars called ofrendas?", a: "The Day of the Dead", d: ["Cinco de Mayo", "Las Posadas", "Carnival"] },
-    { c: "Books", t: 3, q: "Which poet eloped with Robert Browning to Italy in 1846?", a: "Elizabeth Barrett Browning", d: ["Christina Rossetti", "Emily Bronte", "Felicia Hemans"] },
+    { c: "Books", t: 3, q: "Which poet, who wrote 'How do I love thee? Let me count the ways', eloped to Italy in 1846?", a: "Elizabeth Barrett Browning", d: ["Christina Rossetti", "Emily Bronte", "Felicia Hemans"] },
     { c: "Books", t: 4, q: "Which novelist wrote 'The Luck of Barry Lyndon' (1844)?", a: "William Makepeace Thackeray", d: ["Anthony Trollope", "Charles Reade", "Wilkie Collins"] },
     { c: "Books", t: 5, q: "Which Chinese author of 'Red Sorghum' won the 2012 Nobel Prize in Literature?", a: "Mo Yan", d: ["Yu Hua", "Gao Xingjian", "Su Tong"] },
   ],
@@ -442,7 +442,7 @@ export const LANE_DAYS = [
   ],
   [
     { c: "Music", t: 1, q: "What is a group of musicians that plays while parading, as at a school football game?", a: "A marching band", d: ["A string quartet", "A jazz trio", "A chamber orchestra"] },
-    { c: "Art", t: 2, q: "What are the sets of wooden Russian dolls that fit inside one another called?", a: "Matryoshka", d: ["Babushka", "Kokeshi", "Pysanka"] },
+    { c: "Art", t: 2, q: "What are the sets of wooden Russian dolls that fit inside one another called?", a: "Matryoshka", d: ["Kachina", "Kokeshi", "Pysanka"] },
     { c: "Books", t: 3, q: "Which author created the detective Sam Spade in 'The Maltese Falcon' (1930)?", a: "Dashiell Hammett", d: ["Raymond Chandler", "Erle Stanley Gardner", "Mickey Spillane"] },
     { c: "Art", t: 4, q: "Which painter, a grandson of Sigmund Freud, made a small portrait of Queen Elizabeth II in 2001?", a: "Lucian Freud", d: ["Frank Auerbach", "Leon Kossoff", "David Hockney"] },
     { c: "Art", t: 5, q: "Which Joseon painter pioneered true-view landscapes of Korea, such as Inwang Mountain After Rain (1751)?", a: "Jeong Seon", d: ["Kim Hong-do", "Sin Yun-bok", "An Gyeon"] },
@@ -521,7 +521,7 @@ export const LANE_DAYS = [
     { c: "Music", t: 1, q: "Which instrument is central to Louisiana zydeco, as played by Clifton Chenier?", a: "The accordion", d: ["The harmonica", "The bagpipes", "The harmonium"] },
     { c: "Architecture & Design", t: 2, q: "Which Manhattan avenue, lined with luxury stores, runs past Central Park?", a: "Fifth Avenue", d: ["Park Avenue", "Lexington Avenue", "Broadway"] },
     { c: "Music", t: 3, q: "What is the leading first violinist of an orchestra, who tunes the players, called?", a: "The concertmaster", d: ["The principal conductor", "The kapellmeister", "The repetiteur"] },
-    { c: "Art", t: 4, q: "Which French artist made Art Nouveau glass vases at his workshops in Nancy?", a: "Emile Galle", d: ["Rene Lalique", "Louis Majorelle", "Antonin Daum"] },
+    { c: "Art", t: 4, q: "Which French artist made Art Nouveau glass vases at his workshops in Nancy?", a: "Emile Galle", d: ["Rene Lalique", "Louis Majorelle", "Louis Comfort Tiffany"] },
     { c: "Art", t: 5, q: "Which Sienese painter made the Maesta fresco in Siena's Palazzo Pubblico and later worked at the papal court in Avignon?", a: "Simone Martini", d: ["Ambrogio Lorenzetti", "Pietro Lorenzetti", "Lippo Memmi"] },
   ],
   [

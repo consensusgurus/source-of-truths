@@ -19,7 +19,7 @@ export const LANE_DAYS = [
     e(2, "In which Virginia village did Robert E. Lee surrender to Grant in April 1865?", "Appomattox Court House", ["Petersburg", "Fredericksburg", "Manassas"]),
     e(3, "Which Union general led the March to the Sea through Georgia in 1864?", "William T. Sherman", ["Ulysses S. Grant", "Philip Sheridan", "George Thomas"]),
     e(4, "At which 1863 Virginia battle did Lee win but lose Stonewall Jackson?", "Chancellorsville", ["Fredericksburg", "Second Manassas", "The Wilderness"]),
-    e(5, "Which Union colonel held Little Round Top at Gettysburg with the 20th Maine?", "Joshua Chamberlain", ["Strong Vincent", "John Buford", "Winfield Hancock"]),
+    e(5, "Which colonel commanded the 20th Maine in its defense of Little Round Top at Gettysburg?", "Joshua Chamberlain", ["Strong Vincent", "John Buford", "Winfield Hancock"]),
   ],
   // day 51
   [
@@ -34,7 +34,7 @@ export const LANE_DAYS = [
     e(1, "On which date in 1944 did the Allied landings in Normandy take place?", "June 6", ["May 8", "July 4", "August 25"]),
     e(2, "Which American general was supreme commander of the Allied forces on D-Day?", "Dwight D. Eisenhower", ["Omar Bradley", "George Marshall", "Mark Clark"]),
     e(3, "Which German field marshal, the Desert Fox, was badly hurt when his car was strafed in Normandy in July 1944?", "Erwin Rommel", ["Gerd von Rundstedt", "Walter Model", "Heinz Guderian"]),
-    e(4, "What was the 1944 deception plan that convinced Germany the main landing would come at Calais?", "Operation Fortitude", ["Operation Bodyguard Light", "Operation Mincemeat", "Operation Jubilee"]),
+    e(4, "What was the 1944 deception plan that convinced Germany the main landing would come at Calais?", "Operation Fortitude", ["Operation Overlord", "Operation Mincemeat", "Operation Jubilee"]),
     e(5, "Which bridge over the Caen Canal was taken by British glider troops in the first minutes of D-Day?", "Pegasus Bridge", ["Horsa Bridge", "Arnhem Bridge", "Merderet Bridge"]),
   ],
   // day 53
@@ -64,7 +64,7 @@ export const LANE_DAYS = [
   // day 56
   [
     e(1, "What was the nickname of the German flying ace Manfred von Richthofen?", "The Red Baron", ["The Black Knight", "The Iron Eagle", "The Flying Dutchman"]),
-    e(2, "What were the giant German airships that bombed Britain in the First World War called?", "Zeppelins", ["Blimps", "Gothas", "Dirigibles of Krupp"]),
+    e(2, "What were the giant German airships that bombed Britain in the First World War called?", "Zeppelins", ["Blimps", "Gothas", "Taubes"]),
     e(3, "Who was the top-scoring American fighter ace of the First World War?", "Eddie Rickenbacker", ["Frank Luke", "Raoul Lufbery", "Billy Bishop"]),
     e(4, "Which British nurse was shot by the Germans in 1915 for helping Allied soldiers escape occupied Belgium?", "Edith Cavell", ["Elsie Inglis", "Flora Sandes", "Mabel St Clair Stobart"]),
     e(5, "Which Dutch dancer was executed by the French as a German spy in 1917?", "Mata Hari", ["Fraulein Doktor", "Louise de Bettignies", "Marthe Richard"]),
@@ -207,8 +207,8 @@ export const LANE_DAYS = [
   ],
   // day 74
   [
-    e(1, "At which 1876 battle in Montana was Custer's command wiped out?", "The Little Bighorn", ["Wounded Knee", "Sand Creek", "Rosebud"]),
-    e(2, "Which Hunkpapa Lakota leader toured with Buffalo Bill's Wild West show in 1885?", "Sitting Bull", ["Red Cloud", "Spotted Tail", "Gall"]),
+    e(1, "The near extermination of which animal in the 1870s and 1880s undermined the way of life of the Plains tribes?", "The buffalo", ["The elk", "The horse", "The beaver"]),
+    e(2, "Which Seminole leader resisted the US Army in Florida until he was seized under a flag of truce in 1837?", "Osceola", ["Black Hawk", "Red Jacket", "Billy Bowlegs"]),
     e(3, "Which Chiricahua Apache chief made peace with the United States in 1872?", "Cochise", ["Geronimo", "Mangas Coloradas", "Victorio"]),
     e(4, "Which Nez Perce leader led his people on a long flight toward Canada in 1877?", "Chief Joseph", ["Looking Glass", "White Bird", "Ollokot"]),
     e(5, "Which Oglala Lakota leader won the war of 1866 to 1868 over the Bozeman Trail?", "Red Cloud", ["Crazy Horse", "American Horse", "Young Man Afraid of His Horses"]),

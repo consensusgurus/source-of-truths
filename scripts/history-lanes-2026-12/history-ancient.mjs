@@ -179,7 +179,7 @@ export const LANE_DAYS = [
   // day 70
   [
     e(1, "According to the Bible, which shepherd boy killed the giant Goliath with a sling?", "David", ["Samson", "Saul", "Solomon"]),
-    e(2, "Which kingdom north of Greece did Philip II and his son Alexander rule?", "Macedon", ["Thrace", "Epirus", "Illyria"]),
+    e(2, "Which Greek city-state led the alliance that defeated Athens in the Peloponnesian War?", "Sparta", ["Corinth", "Thebes", "Argos"]),
     e(3, "Which Greek philosopher founded the Academy in Athens?", "Plato", ["Aristotle", "Socrates", "Zeno"]),
     e(4, "What was the Roman name for the city of York?", "Eboracum", ["Deva", "Londinium", "Camulodunum"]),
     e(5, "Which Legalist thinker, a student of Xunzi, died in a Qin prison in 233 BC?", "Han Fei", ["Shang Yang", "Li Si", "Gongsun Long"]),
@@ -203,7 +203,7 @@ export const LANE_DAYS = [
   // day 73
   [
     e(1, "According to the Gospels of Matthew and Luke, in which town was Jesus born?", "Bethlehem", ["Nazareth", "Jerusalem", "Jericho"]),
-    e(2, "According to Luke's Gospel, which Roman emperor ordered the census that took Joseph and Mary to Bethlehem?", "Augustus", ["Tiberius", "Claudius", "Nero"]),
+    e(2, "According to Luke's Gospel, which Roman emperor ordered the census at the time of Jesus's birth?", "Augustus", ["Tiberius", "Claudius", "Nero"]),
     e(3, "What name is given to the era of Chinese history from about 475 to 221 BC, before the Qin unified China?", "The Warring States period", ["The Three Kingdoms period", "The Spring and Autumn period", "The Five Dynasties period"]),
     e(4, "Which Athenian soldier helped lead the Ten Thousand home from Persia and told the story in his Anabasis?", "Xenophon", ["Thucydides", "Ctesias", "Clearchus"]),
     e(5, "Which Mesopotamian goddess of love and war did the Sumerians call Inanna?", "Ishtar", ["Ereshkigal", "Tiamat", "Ninhursag"]),
@@ -212,7 +212,7 @@ export const LANE_DAYS = [
   [
     e(1, "Which empire built Hadrian's Wall across northern England?", "The Roman Empire", ["The Byzantine Empire", "The Persian Empire", "The Carolingian Empire"]),
     e(2, "Which Germanic people, led by Alaric, sacked Rome in AD 410?", "The Visigoths", ["The Vandals", "The Ostrogoths", "The Huns"]),
-    e(3, "Which Roman general was killed in Egypt in 48 BC after fleeing his defeat by Caesar?", "Pompey", ["Crassus", "Mark Antony", "Lepidus"]),
+    e(3, "Which Roman dictator gave up his power in 79 BC and retired to his country estate?", "Sulla", ["Marius", "Cinna", "Crassus"]),
     e(4, "Who was traditionally the seventh and last king of Rome before the Republic?", "Tarquin the Proud", ["Servius Tullius", "Numa Pompilius", "Ancus Marcius"]),
     e(5, "Which Roman emperor was killed by his own troops in 235, opening the Crisis of the Third Century?", "Severus Alexander", ["Maximinus Thrax", "Elagabalus", "Gordian I"]),
   ],
@@ -250,7 +250,7 @@ export const LANE_DAYS = [
   ],
   // day 79
   [
-    e(1, "Which Roman leader gave his name to the calendar brought in during 46 BC?", "Julius Caesar", ["Augustus", "Pompey", "Cicero"]),
+    e(1, "What was the two-wheeled, horse-drawn cart raced in Rome's Circus Maximus called?", "A chariot", ["A litter", "A wagon", "A sledge"]),
     e(2, "Which goddess's great temple at Ephesus was one of the Seven Wonders?", "Artemis", ["Athena", "Hera", "Aphrodite"]),
     e(3, "Which Athenian tragedian wrote The Trojan Women?", "Euripides", ["Sophocles", "Aeschylus", "Agathon"]),
     e(4, "What did the Romans call the first day of each month, the source of our word calendar?", "The Kalends", ["The Nones", "The Ides", "The Nundinae"]),

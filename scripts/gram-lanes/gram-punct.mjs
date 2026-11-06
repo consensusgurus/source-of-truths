@@ -350,7 +350,7 @@ export const LANE_DAYS = [
   ],
   // day 42
   [
-    { c: L, t: 1, q: 'Which of these words is a verb?', a: 'climb', d: ['ladder', 'tall', 'quickly'] },
+    { c: L, t: 1, q: 'Which of these words is a verb?', a: 'climb', d: ['mountain', 'tall', 'quickly'] },
     { c: L, t: 2, q: 'Which sentence uses a comma correctly to show contrast?', a: 'I asked for tea, not coffee.', d: ['She wanted, red not blue.', 'He ordered soup not, salad.', 'We, chose the beach not the lake.'] },
     { c: L, t: 3, q: "In 'Max and Lily built a fort,' what is 'Max and Lily'?", a: 'a compound subject', d: ['a compound predicate', 'a direct object', 'an appositive'] },
     { c: L, t: 4, q: 'Which word is hyphenated correctly?', a: 'pre-Columbian', d: ['non-smoker', 'anti-freeze', 'mid-night'] },
@@ -559,7 +559,7 @@ export const LANE_DAYS = [
   // day 68
   [
     { c: L, t: 1, q: "Which is the correct contraction of 'is not'?", a: "isn't", d: ["is'nt", "isnt'", "i'snt"] },
-    { c: L, t: 2, q: 'Which sentence uses an apostrophe correctly?', a: `We left cookies on Santa's plate.`, d: [`The elf's were busy.`, `We wrapped the gift's.`, `The reindeers' bell rang.`] },
+    { c: L, t: 2, q: 'Which sentence uses an apostrophe correctly?', a: `We left cookies on Santa's plate.`, d: [`The elf's were busy.`, `We wrapped the gift's.`, `Rudolphs nose was bright red.`] },
     { c: L, t: 3, q: 'Which of these is an interrogative sentence?', a: 'Did you lock the door?', d: ['Lock the door.', 'I locked the door.', 'What a heavy door that is!'] },
     { c: L, t: 4, q: "In 'The gift, which came late, was lovely,' what is 'which came late'?", a: 'a nonrestrictive clause', d: ['a restrictive clause', 'an independent clause', 'a noun clause'] },
     { c: L, t: 5, q: "What is the term for ending clause after clause with the same words, as in 'of the people, by the people, for the people'?", a: 'epistrophe', d: ['anaphora', 'chiasmus', 'zeugma'] },

@@ -410,7 +410,7 @@ export const LANE_DAYS = [
     { c: "Music", t: 5, q: "Which American composer's 'Three Places in New England' quotes marching bands and hymns?", a: "Charles Ives", d: ["Carl Ruggles", "Henry Cowell", "Edward MacDowell"] },
   ],
   [
-    { c: "Music", t: 1, q: "What do you call a Mexican band of trumpets, violins and guitars, often in wide sombreros?", a: "Mariachi", d: ["Banda", "Norteno", "Zydeco"] },
+    { c: "Music", t: 1, q: "What do you call a traditional Mexican band of trumpets, violins and guitars, often dressed in charro suits?", a: "Mariachi", d: ["Banda", "Norteno", "Zydeco"] },
     { c: "Music", t: 2, q: "Which composer wrote the orchestral piece 'An American in Paris' (1928)?", a: "George Gershwin", d: ["Cole Porter", "Irving Berlin", "Jerome Kern"] },
     { c: "Music", t: 3, q: "Which French singer, nicknamed the Little Sparrow, made 'La Vie en rose' famous?", a: "Edith Piaf", d: ["Juliette Greco", "Barbara", "Dalida"] },
     { c: "Music", t: 4, q: "Which Brazilian composer wrote 'Desafinado' and 'Waters of March'?", a: "Antonio Carlos Jobim", d: ["Joao Gilberto", "Luiz Bonfa", "Baden Powell"] },
@@ -434,7 +434,7 @@ export const LANE_DAYS = [
     { c: "Music", t: 1, q: "Which stringed instrument with a round, drum-like body is a mainstay of bluegrass?", a: "The banjo", d: ["The mandolin", "The fiddle", "The dobro"] },
     { c: "Music", t: 2, q: "Which Motown singer recorded 'I Heard It Through the Grapevine' (1968) and 'Sexual Healing' (1982)?", a: "Marvin Gaye", d: ["Smokey Robinson", "Otis Redding", "Al Green"] },
     { c: "Music", t: 3, q: "Which singer was born Gordon Sumner?", a: "Sting", d: ["Seal", "Bono", "Peter Gabriel"] },
-    { c: "Music", t: 4, q: "In which opera does Leonore rescue her husband Florestan from a political prison?", a: "Fidelio", d: ["Egmont", "The Creatures of Prometheus", "Leonore Overture"] },
+    { c: "Music", t: 4, q: "In which opera does Leonore rescue her husband Florestan from a political prison?", a: "Fidelio", d: ["Der Freischutz", "Euryanthe", "Oberon"] },
     { c: "Music", t: 5, q: "Which Spanish composer wrote the ballet 'El amor brujo', with its 'Ritual Fire Dance'?", a: "Manuel de Falla", d: ["Joaquin Turina", "Enrique Granados", "Federico Mompou"] },
   ],
   [
@@ -564,7 +564,7 @@ export const LANE_DAYS = [
     { c: "Music", t: 5, q: "Which composer made the tape piece 'It's Gonna Rain' (1965) from a looped street sermon?", a: "Steve Reich", d: ["Terry Riley", "Michael Nyman", "Gavin Bryars"] },
   ],
   [
-    { c: "Music", t: 1, q: "Which band played a famous set at Live Aid at Wembley Stadium in 1985?", a: "Queen", d: ["The Who", "Genesis", "Supertramp"] },
+    { c: "Music", t: 1, q: "Which band played a famous set at Live Aid at Wembley Stadium in 1985?", a: "Queen", d: ["Fleetwood Mac", "Genesis", "Supertramp"] },
     { c: "Music", t: 2, q: "Which Los Angeles band, fronted by Anthony Kiedis, released 'Under the Bridge' in 1992?", a: "Red Hot Chili Peppers", d: ["Jane's Addiction", "Faith No More", "Weezer"] },
     { c: "Music", t: 3, q: "Which composer wrote the 'Slavonic Dances' and the 'Humoresque' No. 7?", a: "Antonin Dvorak", d: ["Bedrich Smetana", "Leos Janacek", "Bohuslav Martinu"] },
     { c: "Music", t: 4, q: "Which composer, blind from the age of three, wrote 'Fantasia para un gentilhombre' for Andres Segovia?", a: "Joaquin Rodrigo", d: ["Manuel de Falla", "Enrique Granados", "Joaquin Turina"] },
