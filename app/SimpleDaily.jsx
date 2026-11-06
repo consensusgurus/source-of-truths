@@ -280,6 +280,9 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
     if (s2 === cur.s) return;
     const next = { ...cur, s: s2 };
     if (GAME.solved(PUZZLE, s2)) { finish(next, true); return; }
+    // A game that can be lost by play (Tape: a miss with every clue open) ends
+    // in the same update too, unsolved.
+    if (GAME.failed && GAME.failed(PUZZLE, s2)) { finish(next, false); return; }
     gRef.current = next;
     setG(next);
   }

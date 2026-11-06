@@ -84,6 +84,7 @@ import { PUZZLES as DUET_FULL } from '../duet/puzzles';
 import { PUZZLES as LAMPS_FULL } from '../lamps/puzzles';
 import { PUZZLES as CLADE_FULL } from '../clade/puzzles';
 import { PUZZLES as DOSSIER_FULL } from '../dossier/puzzles';
+import { PUZZLES as TAPE_FULL } from '../tape/puzzles';
 import { PUZZLES as JUDGES_FULL } from '../judges/puzzles';
 import { PUZZLES as CHECK_FULL } from '../check/puzzles';
 import { PUZZLES as RUNG_FULL } from '../rung/puzzles';
@@ -211,6 +212,7 @@ const JUDGES = JUDGES_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ 
 const LAMPS = LAMPS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CLADE = CLADE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DOSSIER = DOSSIER_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const TAPE = TAPE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DUET = DUET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SNUG = SNUG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const JIG = JIG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -427,6 +429,7 @@ const GAMES = [
   { key: 'lamps', name: 'Lamps', path: '/lamps', tag: 'Light every square', accent: '#9a6700', bg: '#fdf3d7', border: 'rgba(154,103,0,0.35)', src: LAMPS },
   { key: 'clade', name: 'Clade', path: '/clade', tag: 'Guess the animal by its family tree', accent: '#0f6b6b', bg: '#e3f3f1', border: 'rgba(15,107,107,0.35)', src: CLADE },
   { key: 'dossier', name: 'Dossier', path: '/dossier', tag: 'Five clues on every guess', accent: '#5b3a8c', bg: '#efe9f7', border: 'rgba(91,58,140,0.35)', src: DOSSIER },
+  { key: 'tape', name: 'Tape', path: '/tape', tag: 'Name the company from its chart', accent: '#1e5a8a', bg: '#e2eef7', border: 'rgba(30,90,138,0.35)', src: TAPE },
   { key: 'duet', name: 'Duet', path: '/duet', tag: 'Half dots, half rings', accent: '#1a7f37', bg: '#e8f5ec', border: 'rgba(26,127,55,0.35)', src: DUET },
   { key: 'snug', name: 'Snug', path: '/snug', tag: 'Fit the pieces, one way only', accent: '#3b5bdb', bg: '#e8ecfb', border: 'rgba(59,91,219,0.35)', src: SNUG },
   { key: 'jig', name: 'Jig', path: '/jig', tag: 'The daily jigsaw', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.38)', src: JIG },

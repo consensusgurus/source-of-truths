@@ -399,6 +399,7 @@ archive and hub chips use the short form `Sun`.
 | Crib | seven hands instead of five, three of them decided by the crib (from launch, 2026-09-20) |
 | Hold | fifteen hands instead of ten, at least five of them traps where the rule of thumb is wrong (from launch, 2026-10-18) |
 | Cell | forty cards (ace to ten) in seven columns on two free cells, against the weekday thirty-two in six (from launch, 2026-10-18) |
+| Tape | a smaller company, from deeper in the Russell 3000 (rank 300 or below by market value, against 1 to 700 on weekdays) (from launch, 2026-11-06) |
 | Mahj | the classic Pyramid layout, and the hardest deal of the week by measured ease (from launch, 2026-10-25) |
 | Swap | a 7x7 photo against the weekday 6x6 (from launch, 2026-11-01) |
 | Slide | a 6x6 photo against the weekday 5x5 (from launch, 2026-11-01) |

@@ -2004,3 +2004,34 @@ Realtor (the house), scored 15/20/15 out of 50. Days before keep the five tags a
   the score); `/api/quiz/picks-crowd` returns the share right per call. Shown only at 3+ players.
 - **Shopper cards:** `RUN_RANKS_V4` (43/35/27/20), modeled for the new scale. Re-cut after a week.
 - No abandon beacon on Picks: a player who leaves mid-leg resumes from `sot_picks_<num>`.
+## Tape (`/tape`): name the company from its stock chart (launched 2026-11-06)
+
+Owner picked it from a list of five new-game ideas on 2026-11-06 and asked for the guess universe
+to be the Russell 3000. Runs on the shared stage shell (`app/SimpleDaily.jsx`, which gained an
+optional `GAME.failed(P, s)` that ends the day unsolved in the same update, for games that can be
+lost by play). Category Trivia, skills Memory and Deduction, group and set "Picture and story trivia" (its set prose
+updated by hand), finish set "Guessing games".
+
+- **Board:** five years of weekly closes, split- and dividend-adjusted, drawn with no price axis
+  and no dates until the day ends. One pin (always numbered 4) sits on the week of a dated event.
+- **Six clues** open one at a time: sector (free), year it went public, headquarters, the pin's
+  headline, what it does (our own words, never the name), the first letter of the ticker. A wrong
+  guess opens the next clue; a wrong guess with all six open ends the day. Score 11 minus clues
+  used (VERDICT, so it reads Solved), miss label `Clues`; ranks on clues, then time.
+- **Universe:** every common stock in the iShares IWV holdings file (about 2,600), largest first,
+  in `app/tape/universe.js`. Guess by name or ticker. `accept` lists a second share class
+  (GOOG for GOOGL) and `alt` lists other names (Facebook, Google, MicroStrategy).
+- **Sunday Edition:** a smaller company, rank 300 or deeper by market value. Weekdays rank 1 to 700.
+- **Typeahead rows are SQUARE** (owner, 2026-11-06, on the mockup): the suggestion box has no
+  rounded corners at all, so the highlighted row is never rounded. Tape-only override of `.pst-sug`.
+- **Data:** stooq.com now refuses CSV downloads ("Access denied"), so prices come from Yahoo
+  Finance's chart endpoint (`/v8/finance/chart/<T>?range=5y&interval=1wk`, `adjclose`), fetched from
+  a finance.yahoo.com tab in the owner's Chrome; the Russell list from the ishares.com IWV page
+  (`latest-holdings.csv`, same-origin fetch). Neither host is reachable from the sandbox shell.
+  The browser saves both files to Downloads; the owner moves them into the repo folder.
+- **Authoring:** clues in `scripts/tape-boards.mjs` (one row per day from `TAPE_START`), built by
+  `scripts/gen-tape.mjs <russell.txt> <prices.json>` (append-only, live boards frozen), checked by
+  `scripts/verify-tape.mjs` (dates, universe membership, series scaling, pin week recomputed, no
+  clue names the company, pool variety, size bands). Bank runs to 2026-12-20. Headlines and IPO
+  years were written from memory and fact-checked once; pins after mid-2026 are not possible
+  until a later restock pulls fresh prices.

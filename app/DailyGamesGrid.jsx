@@ -152,6 +152,7 @@ const GAMES = [
   { key: 'lamps', href: '/lamps', name: 'Lamps', tag: 'Light every square', img: '/games/btn-lamps.png' },
   { key: 'clade', href: '/clade', name: 'Clade', tag: 'Guess the animal by its family tree', img: '/games/btn-clade.png' },
   { key: 'dossier', href: '/dossier', name: 'Dossier', tag: 'Five clues on every guess', img: '/games/btn-dossier.png' },
+  { key: 'tape', href: '/tape', name: 'Tape', tag: 'Name the company from its chart', img: '/games/btn-tape.png' },
   { key: 'duet', href: '/duet', name: 'Duet', tag: 'Half dots, half rings', img: '/games/btn-duet.png' },
   { key: 'snug', href: '/snug', name: 'Snug', tag: 'Fit the pieces, one way only', img: '/games/btn-snug.png' },
   { key: 'jig', href: '/jig', name: 'Jig', tag: 'The daily jigsaw', img: '/games/btn-jig.png' },
@@ -226,7 +227,7 @@ const CATEGORIES = [
   // list and cannot drift apart.
   { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sixes', 'towers', 'quilt', 'cages', 'sando', 'mercury', 'arrow', 'polka', 'knight', 'diag', 'frame', 'rim', 'giant', 'sumo', 'window', 'five', 'racecar', 'whittle'] },
   { key: 'crowd', label: 'Crowd Psychology', keys: ['herd', 'outwit', 'outrank', 'feud'] },
-  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'redact', 'dating', 'extra'] },
+  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'redact', 'dating', 'extra'] },
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'topple', 'roll', 'sudoclue', 'snug', 'jig', 'saw', 'swap', 'slide', 'spin', 'connect', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'ergo', 'docket', 'plot'] },
   { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
   { key: 'cards', label: 'Cards', keys: ['taire', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib'] },

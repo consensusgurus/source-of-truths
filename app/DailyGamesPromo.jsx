@@ -73,6 +73,7 @@ export const DAILY_GAMES = [
   { key: 'lamps', href: '/lamps', name: 'Lamps', tag: 'light every square', store: 'sot_lamps_day', accent: '#9a6700', bg: '#fdf3d7', border: 'rgba(154,103,0,0.35)' },
   { key: 'clade', href: '/clade', name: 'Clade', tag: 'guess the animal by its family tree', store: 'sot_clade_day', accent: '#0f6b6b', bg: '#e3f3f1', border: 'rgba(15,107,107,0.35)' },
   { key: 'dossier', href: '/dossier', name: 'Dossier', tag: 'five clues on every guess', store: 'sot_dossier_day', accent: '#5b3a8c', bg: '#efe9f7', border: 'rgba(91,58,140,0.35)' },
+  { key: 'tape', href: '/tape', name: 'Tape', tag: 'name the company from its chart', store: 'sot_tape_day', accent: '#1e5a8a', bg: '#e2eef7', border: 'rgba(30,90,138,0.35)' },
   { key: 'duet', href: '/duet', name: 'Duet', tag: 'half dots, half rings', store: 'sot_duet_day', accent: '#1a7f37', bg: '#e8f5ec', border: 'rgba(26,127,55,0.35)' },
   { key: 'snug', href: '/snug', name: 'Snug', tag: 'fit the pieces, one way only', store: 'sot_snug_day', accent: '#3b5bdb', bg: '#e8ecfb', border: 'rgba(59,91,219,0.35)' },
   { key: 'jig', href: '/jig', name: 'Jig', tag: 'the daily jigsaw', store: 'sot_jig_day', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.38)' },
