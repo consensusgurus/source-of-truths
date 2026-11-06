@@ -14,14 +14,14 @@ export const LANE_DAYS = [
   // day 37, 2026-12-02
   [
     { c: "Food History", t: 1, q: "In \"Charlie and the Chocolate Factory\", which greedy boy falls into the chocolate river?", a: "Augustus Gloop", d: ["Mike Teavee","Charlie Bucket","Grandpa Joe"] },
-    { c: "Food History", t: 2, q: "Which pizza chain grew from a single pizzeria that brothers Tom and James Monaghan bought in Ypsilanti, Michigan, in 1960?", a: "Domino's", d: ["Little Caesars","Pizza Hut","Papa John's"] },
+    { c: "Food History", t: 2, q: "Which pizza chain grew from a single pizzeria that brothers Tom and James Monaghan bought in Ypsilanti in 1960?", a: "Domino's", d: ["Little Caesars","Pizza Hut","Papa John's"] },
     { c: "Food History", t: 3, q: "Which TV cook was known as \"The Galloping Gourmet\"?", a: "Graham Kerr", d: ["Justin Wilson","Jeff Smith","Keith Floyd"] },
     { c: "Food History", t: 4, q: "Bavaria's beer purity law, the Reinheitsgebot, dates from which year?", a: "1516", d: ["1066","1789","1215"] },
     { c: "Food History", t: 5, q: "Which Sumerian goddess of beer is honored in a hymn that doubles as a brewing recipe?", a: "Ninkasi", d: ["Tiamat","Ereshkigal","Nisaba"] },
   ],
   // day 38, 2026-12-03
   [
-    { c: "Food History", t: 1, q: "Which blue, googly-eyed Sesame Street Muppet is famous for gobbling baked treats?", a: "Cookie Monster", d: ["Grover","Elmo","Oscar the Grouch"] },
+    { c: "Food History", t: 1, q: "In the folk tale, what does the Little Red Hen bake after none of the other animals will help her?", a: "Bread", d: ["A pie","A cake","Cookies"] },
     { c: "Food History", t: 2, q: "In \"Cloudy with a Chance of Meatballs\", food falls from where?", a: "The sky", d: ["The trees","A volcano","A factory"] },
     { c: "Food History", t: 3, q: "Starbucks opened its first store in 1971 in which city?", a: "Seattle", d: ["Portland","San Francisco","Vancouver"] },
     { c: "Food History", t: 4, q: "The line usually rendered \"Let them eat cake\" first appears in whose \"Confessions\", not in anything Marie Antoinette is known to have said?", a: "Jean-Jacques Rousseau", d: ["Voltaire","Molière","Denis Diderot"] },
@@ -128,7 +128,7 @@ export const LANE_DAYS = [
     { c: "Food History", t: 1, q: "In the nursery rhyme that goes \"One a penny, two a penny\", hot cross what?", a: "Buns", d: ["Pies","Cakes","Rolls"] },
     { c: "Food History", t: 2, q: "James Dole built his pineapple business in which US state, then a territory?", a: "Hawaii", d: ["Florida","California","Alaska"] },
     { c: "Food History", t: 3, q: "The 1959 \"Kitchen Debate\" between Richard Nixon and Nikita Khrushchev took place in which city?", a: "Moscow", d: ["Washington","New York","Berlin"] },
-    { c: "Food History", t: 4, q: "Who wrote \"The Compleat Housewife\" (1727), the first cookbook printed in the American colonies?", a: "Eliza Smith", d: ["Hannah Glasse","Amelia Simmons","Hannah Woolley"] },
+    { c: "Food History", t: 4, q: "Which English author's \"The Compleat Housewife\", reprinted in Williamsburg in 1742, became the first cookbook printed in the American colonies?", a: "Eliza Smith", d: ["Hannah Glasse","Amelia Simmons","Hannah Woolley"] },
     { c: "Food History", t: 5, q: "Which explorer brought chili peppers back to Spain from the Caribbean in 1493?", a: "Christopher Columbus", d: ["Vasco da Gama","Hernán Cortés","Ferdinand Magellan"] },
   ],
   // day 52, 2026-12-17
@@ -151,14 +151,14 @@ export const LANE_DAYS = [
   [
     { c: "Food History", t: 1, q: "Sonny, a bird who is cuckoo for chocolate cereal, is the mascot of which brand?", a: "Cocoa Puffs", d: ["Cocoa Krispies","Count Chocula","Cookie Crisp"] },
     { c: "Food History", t: 2, q: "The smorgasbord, a buffet of many small dishes, comes from which country?", a: "Sweden", d: ["Norway","Finland","Iceland"] },
-    { c: "Food History", t: 3, q: "Which candy, first sold in Austria in 1927 as a peppermint, comes in a flip-top dispenser?", a: "PEZ", d: ["Tic Tac","Mentos","Altoids"] },
+    { c: "Food History", t: 3, q: "Which gelatin dessert was trademarked in 1897 by Pearle and May Wait of Le Roy, New York?", a: "Jell-O", d: ["Knox","Junket","Royal"] },
     { c: "Food History", t: 4, q: "In which year was the French culinary encyclopedia \"Larousse Gastronomique\" first published?", a: "1938", d: ["1903","1956","1972"] },
     { c: "Food History", t: 5, q: "Which Roman general's name became a byword for lavish feasting?", a: "Lucullus", d: ["Crassus","Pompey","Sulla"] },
   ],
   // day 55, 2026-12-20
   [
     { c: "Food History", t: 1, q: "Which yellow cartoon dad is famous for his love of donuts?", a: "Homer Simpson", d: ["Peter Griffin","Fred Flintstone","Hank Hill"] },
-    { c: "Food History", t: 2, q: "Which fast-food chain did Glen Bell open in Downey, California, in 1962?", a: "Taco Bell", d: ["Del Taco","Chipotle","Taco John's"] },
+    { c: "Food History", t: 2, q: "The Whopper is the signature burger of which fast-food chain?", a: "Burger King", d: ["McDonald's","Wendy's","Jack in the Box"] },
     { c: "Food History", t: 3, q: "During World War II, a British campaign urged people to grow vegetables with the slogan \"Dig for\" what?", a: "Victory", d: ["Freedom","Britain","Peace"] },
     { c: "Food History", t: 4, q: "Massimo Bottura's restaurant Osteria Francescana is in which Italian city?", a: "Modena", d: ["Parma","Ferrara","Verona"] },
     { c: "Food History", t: 5, q: "The Boar's Head Carol is still sung at a December feast at which Oxford college?", a: "The Queen's College", d: ["Christ Church","Magdalen College","Balliol College"] },
@@ -181,7 +181,7 @@ export const LANE_DAYS = [
   ],
   // day 58, 2026-12-23
   [
-    { c: "Food History", t: 1, q: "Which Dr. Seuss character steals the Whos' Christmas roast beast?", a: "The Grinch", d: ["The Lorax","The Cat in the Hat","Horton"] },
+    { c: "Food History", t: 1, q: "In \"The Night Before Christmas\", visions of what danced in the children's heads?", a: "Sugar plums", d: ["Gingerbread men","Candy canes","Christmas cookies"] },
     { c: "Food History", t: 2, q: "Chester Cheetah is the mascot of which snack?", a: "Cheetos", d: ["Doritos","Fritos","Funyuns"] },
     { c: "Food History", t: 3, q: "Which ring-shaped sweet bread, hiding a tiny baby figurine, is eaten in Mexico on Three Kings' Day?", a: "Rosca de reyes", d: ["Pan de muerto","Concha","Bolillo"] },
     { c: "Food History", t: 4, q: "Which London confectioner invented the Christmas cracker in the 1840s?", a: "Tom Smith", d: ["Henry Cole","John Cadbury","Joseph Fry"] },
@@ -222,7 +222,7 @@ export const LANE_DAYS = [
   // day 63, 2026-12-28
   [
     { c: "Food History", t: 1, q: "In \"Alice's Adventures in Wonderland\", what happens when Alice drinks from the bottle labeled \"Drink me\"?", a: "She shrinks", d: ["She grows","She falls asleep","She can fly"] },
-    { c: "Food History", t: 2, q: "Which cookie brand's ads show elves baking in a hollow tree?", a: "Keebler", d: ["Nabisco","Pepperidge Farm","Famous Amos"] },
+    { c: "Food History", t: 2, q: "Which Japanese company introduced Cup Noodles in 1971?", a: "Nissin", d: ["Maruchan","Nongshim","Sapporo Ichiban"] },
     { c: "Food History", t: 3, q: "Which food writer wrote the cookbook \"How to Cook Everything\" (1998)?", a: "Mark Bittman", d: ["Alton Brown","Christopher Kimball","Ina Garten"] },
     { c: "Food History", t: 4, q: "Which restaurant critic wrote \"Garlic and Sapphires\" (2005) about dining in disguise?", a: "Ruth Reichl", d: ["Mimi Sheraton","Gael Greene","Frank Bruni"] },
     { c: "Food History", t: 5, q: "Which 19th-century German chemist sold a commercial meat extract and an early infant formula?", a: "Justus von Liebig", d: ["Fritz Haber","Robert Koch","Friedrich Wöhler"] },

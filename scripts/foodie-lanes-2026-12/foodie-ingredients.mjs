@@ -11,7 +11,7 @@ export const LANE_DAYS = [
   ],
   // day 37, 2026-12-02
   [
-    { c: "Ingredients", t: 1, q: "Which vegetable is famous for making people cry when they chop it?", a: "Onion", d: ["Celery","Carrot","Potato"] },
+    { c: "Ingredients", t: 1, q: "Which fruit grows in bunches on vines and is pressed to make wine?", a: "Grapes", d: ["Plums","Cherries","Figs"] },
     { c: "Ingredients", t: 2, q: "Greek feta is made from sheep's milk, sometimes blended with the milk of which other animal?", a: "Goat", d: ["Cow","Water buffalo","Camel"] },
     { c: "Ingredients", t: 3, q: "Gremolata, sprinkled over osso buco, is parsley, garlic and the grated zest of which fruit?", a: "Lemon", d: ["Orange","Lime","Grapefruit"] },
     { c: "Ingredients", t: 4, q: "Which southern Italian stretched-curd cheese is tied in pairs and hung over a pole to age?", a: "Caciocavallo", d: ["Burrata","Scamorza","Stracchino"] },
@@ -69,7 +69,7 @@ export const LANE_DAYS = [
   [
     { c: "Ingredients", t: 1, q: "Which fresh herb is muddled into a mojito?", a: "Mint", d: ["Basil","Parsley","Dill"] },
     { c: "Ingredients", t: 2, q: "Which spice is often called the queen of spices?", a: "Cardamom", d: ["Cumin","Star anise","Fenugreek"] },
-    { c: "Ingredients", t: 3, q: "Greek dolmades are rice fillings wrapped in which leaves?", a: "Grape leaves", d: ["Cabbage leaves","Banana leaves","Fig leaves"] },
+    { c: "Ingredients", t: 3, q: "Japanese sakura mochi is wrapped in a salt-pickled leaf from which tree?", a: "Cherry", d: ["Oak","Bamboo","Persimmon"] },
     { c: "Ingredients", t: 4, q: "The geoduck, prized in Pacific Northwest and Asian cooking, is a giant what?", a: "Clam", d: ["Oyster","Crab","Sea cucumber"] },
     { c: "Ingredients", t: 5, q: "Which Basque sheep's milk cheese is often lightly smoked?", a: "Idiazabal", d: ["Manchego","Mahón","Torta del Casar"] },
   ],
@@ -117,7 +117,7 @@ export const LANE_DAYS = [
   [
     { c: "Ingredients", t: 1, q: "Which white vegetable has a head of tightly packed florets?", a: "Cauliflower", d: ["Cabbage","Turnip","Celery"] },
     { c: "Ingredients", t: 2, q: "Which tiny blue-black seeds go into a classic lemon muffin?", a: "Poppy seeds", d: ["Chia seeds","Flax seeds","Sesame seeds"] },
-    { c: "Ingredients", t: 3, q: "An Austrian Linzer torte is traditionally filled with jam made from which fruit?", a: "Raspberries", d: ["Strawberries","Blueberries","Apricots"] },
+    { c: "Ingredients", t: 3, q: "Which aromatic laurel herb is simmered whole in stews and fished out before serving?", a: "Bay leaves", d: ["Curry leaves","Sage leaves","Lime leaves"] },
     { c: "Ingredients", t: 4, q: "Which bright yellow Japanese pickle is made from daikon?", a: "Takuan", d: ["Gari","Fukujinzuke","Shibazuke"] },
     { c: "Ingredients", t: 5, q: "Indonesia's kecap manis is a soy sauce sweetened with what?", a: "Palm sugar", d: ["Honey","Molasses","Tamarind"] },
   ],
@@ -243,7 +243,7 @@ export const LANE_DAYS = [
   ],
   // day 66, 2026-12-31
   [
-    { c: "Ingredients", t: 1, q: "In Spain, how many grapes do people eat at the stroke of midnight on New Year's Eve?", a: "Twelve", d: ["Seven","Ten","Three"] },
+    { c: "Ingredients", t: 1, q: "In many Spanish-speaking countries, how many grapes do people eat at the stroke of midnight on New Year's Eve?", a: "Twelve", d: ["Seven","Ten","Three"] },
     { c: "Ingredients", t: 2, q: "Which legume, said to look like little coins, is eaten in Italy on New Year's for good fortune?", a: "Lentils", d: ["Chickpeas","Fava beans","Peas"] },
     { c: "Ingredients", t: 3, q: "Which leafy greens are eaten on New Year's Day in the American South to bring money in the year ahead?", a: "Collard greens", d: ["Romaine","Arugula","Watercress"] },
     { c: "Ingredients", t: 4, q: "In Pennsylvania Dutch tradition, pork is eaten on New Year's Day with which fermented food for luck?", a: "Sauerkraut", d: ["Scrapple","Chow-chow","Apple butter"] },

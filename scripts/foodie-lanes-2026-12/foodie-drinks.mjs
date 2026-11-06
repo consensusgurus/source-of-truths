@@ -61,7 +61,7 @@ export const LANE_DAYS = [
   [
     { c: "Drinks", t: 1, q: "In France, coffee with hot milk is called café au what?", a: "Lait", d: ["Crème","Noir","Sucre"] },
     { c: "Drinks", t: 2, q: "Which bright orange Italian bitter gives the classic Venetian spritz its color?", a: "Aperol", d: ["Cynar","Galliano","Strega"] },
-    { c: "Drinks", t: 3, q: "Which cocktail stirs whiskey with sweet vermouth and bitters and is garnished with a cherry?", a: "Manhattan", d: ["Rob Roy","Boulevardier","Sidecar"] },
+    { c: "Drinks", t: 3, q: "Which cocktail stirs rye or bourbon with sweet vermouth and bitters and is garnished with a cherry?", a: "Manhattan", d: ["Rob Roy","Boulevardier","Sidecar"] },
     { c: "Drinks", t: 4, q: "Which white grape is Austria's signature variety?", a: "Grüner Veltliner", d: ["Zweigelt","Blaufränkisch","Welschriesling"] },
     { c: "Drinks", t: 5, q: "Which is the smallest Scotch whisky region, once called the whisky capital of the world?", a: "Campbeltown", d: ["Lowlands","Islay","Islands"] },
   ],
@@ -91,7 +91,7 @@ export const LANE_DAYS = [
   ],
   // day 47, 2026-12-12
   [
-    { c: "Drinks", t: 1, q: "What is water called when it is naturally fizzy from a spring?", a: "Mineral water", d: ["Tap water","Distilled water","Tonic water"] },
+    { c: "Drinks", t: 1, q: "Which bottled water comes from an underground source and naturally carries dissolved minerals?", a: "Mineral water", d: ["Tap water","Distilled water","Tonic water"] },
     { c: "Drinks", t: 2, q: "Which Mexican beer cocktail mixes lager with lime juice, salt and hot sauce?", a: "Michelada", d: ["Paloma","Shandy","Sangrita"] },
     { c: "Drinks", t: 3, q: "Which Amazonian berry, rich in caffeine, flavors a popular Brazilian soft drink?", a: "Guaraná", d: ["Açaí","Cupuaçu","Acerola"] },
     { c: "Drinks", t: 4, q: "Sri Lankan arrack is distilled from what?", a: "Coconut palm sap", d: ["Rice","Sugarcane juice","Dates"] },
@@ -171,7 +171,7 @@ export const LANE_DAYS = [
   ],
   // day 57, 2026-12-22
   [
-    { c: "Drinks", t: 1, q: "Which purple juice is pressed from Concord grapes?", a: "Grape juice", d: ["Cranberry juice","Prune juice","Cherry juice"] },
+    { c: "Drinks", t: 1, q: "Which juice is pressed from Concord grapes?", a: "Grape juice", d: ["Cranberry juice","Prune juice","Cherry juice"] },
     { c: "Drinks", t: 2, q: "Which very short, concentrated espresso shot is pulled with less water?", a: "Ristretto", d: ["Lungo","Americano","Doppio"] },
     { c: "Drinks", t: 3, q: "Which light, slightly fizzy Portuguese wine has a name meaning green wine?", a: "Vinho Verde", d: ["Port","Madeira","Moscatel"] },
     { c: "Drinks", t: 4, q: "Mount Gay rum comes from which Caribbean island?", a: "Barbados", d: ["Martinique","Antigua","Grenada"] },
@@ -230,7 +230,7 @@ export const LANE_DAYS = [
     { c: "Drinks", t: 1, q: "Which coffee maker steeps grounds in hot water, then presses them down with a mesh plunger?", a: "French press", d: ["Moka pot","Percolator","Drip machine"] },
     { c: "Drinks", t: 2, q: "Classic cream soda is flavored mainly with what?", a: "Vanilla", d: ["Cherry","Ginger","Lemon"] },
     { c: "Drinks", t: 3, q: "Which cocktail tops gin, lemon juice and sugar with Champagne?", a: "French 75", d: ["Tom Collins","Bellini","Kir Royale"] },
-    { c: "Drinks", t: 4, q: "Tea from Sri Lanka is sold under which old name for the island?", a: "Ceylon", d: ["Assam","Darjeeling","Keemun"] },
+    { c: "Drinks", t: 4, q: "Which tea from the Himalayan foothills of West Bengal is nicknamed the Champagne of teas?", a: "Darjeeling", d: ["Assam","Nilgiri","Keemun"] },
     { c: "Drinks", t: 5, q: "Which Champagne bottle holds 15 liters, as much as 20 standard bottles?", a: "Nebuchadnezzar", d: ["Balthazar","Salmanazar","Melchior"] },
   ],
   // day 65, 2026-12-30

@@ -45,7 +45,7 @@ export const LANE_DAYS = [
   [
     { c: "World Dishes", t: 1, q: "Which American sandwich is known by three letters for bacon, lettuce and tomato?", a: "BLT", d: ["PBJ","BBQ","TLC"] },
     { c: "World Dishes", t: 2, q: "Which Spanish tapa is fried potato chunks served with a spicy tomato sauce?", a: "Patatas bravas", d: ["Croquetas","Gambas al ajillo","Pimientos de Padrón"] },
-    { c: "World Dishes", t: 3, q: "Which Japanese rice bowl is topped with a breaded pork cutlet simmered with egg and onion?", a: "Katsudon", d: ["Gyudon","Tendon","Unadon"] },
+    { c: "World Dishes", t: 3, q: "Which Japanese rice bowl is topped with a breaded pork cutlet simmered in a sweet broth with egg?", a: "Katsudon", d: ["Gyudon","Tendon","Unadon"] },
     { c: "World Dishes", t: 4, q: "Which Sichuan noodle dish is topped with spicy minced pork, chili oil and preserved vegetables?", a: "Dan dan noodles", d: ["Chow mein","Lo mein","Zhajiangmian"] },
     { c: "World Dishes", t: 5, q: "Cepelinai, large potato dumplings stuffed with meat, are the national dish of which country?", a: "Lithuania", d: ["Latvia","Estonia","Belarus"] },
   ],
@@ -93,7 +93,7 @@ export const LANE_DAYS = [
   [
     { c: "World Dishes", t: 1, q: "Which Italian pasta is made of small filled squares or circles of dough?", a: "Ravioli", d: ["Penne","Fusilli","Linguine"] },
     { c: "World Dishes", t: 2, q: "Which dish of grape leaves wrapped around rice is eaten across Greece, Turkey and the Middle East?", a: "Dolmas", d: ["Börek","Pide","Kofta"] },
-    { c: "World Dishes", t: 3, q: "Which green sauce of parsley, garlic, oil and vinegar is served with grilled meat in Argentina?", a: "Chimichurri", d: ["Salsa criolla","Pebre","Mojo verde"] },
+    { c: "World Dishes", t: 3, q: "Which Mexican dish is poblano peppers stuffed with cheese, dipped in egg batter and fried?", a: "Chiles rellenos", d: ["Flautas","Sopes","Tamales"] },
     { c: "World Dishes", t: 4, q: "Which Ethiopian dish is raw minced beef seasoned with spiced butter and chili?", a: "Kitfo", d: ["Shiro","Tibs","Injera firfir"] },
     { c: "World Dishes", t: 5, q: "Bryndzové halušky, potato dumplings with sheep's cheese, is the national dish of which country?", a: "Slovakia", d: ["Slovenia","Czech Republic","Hungary"] },
   ],
@@ -108,7 +108,7 @@ export const LANE_DAYS = [
   // day 49, 2026-12-14
   [
     { c: "World Dishes", t: 1, q: "Which square, powdered-sugar-covered fried pastries are a New Orleans favorite?", a: "Beignets", d: ["Churros","Funnel cakes","Crullers"] },
-    { c: "World Dishes", t: 2, q: "Which thin, crisp South Indian crepe is made from a fermented rice and lentil batter?", a: "Dosa", d: ["Idli","Appam","Uttapam"] },
+    { c: "World Dishes", t: 2, q: "Which North Indian dish is puréed spinach cooked with cubes of fresh cheese?", a: "Palak paneer", d: ["Saag aloo","Matar paneer","Paneer tikka"] },
     { c: "World Dishes", t: 3, q: "Which Greek dish is tomatoes and peppers stuffed with herbed rice and baked?", a: "Gemista", d: ["Briam","Fasolada","Kleftiko"] },
     { c: "World Dishes", t: 4, q: "Which Japanese soup with rice cakes is traditionally eaten on New Year's morning?", a: "Ozoni", d: ["Oden","Zenzai","Tonjiru"] },
     { c: "World Dishes", t: 5, q: "Which Hungarian sponge cake is layered with chocolate buttercream and topped with a hard caramel slab?", a: "Dobos torte", d: ["Esterházy torte","Rigó Jancsi","Zserbó"] },
@@ -135,12 +135,12 @@ export const LANE_DAYS = [
     { c: "World Dishes", t: 2, q: "Pesto alla genovese, made with basil and pine nuts, comes from which Italian city?", a: "Genoa", d: ["Naples","Florence","Bologna"] },
     { c: "World Dishes", t: 3, q: "Which Spanish city is famous for its bars full of pintxos, small snacks often served on bread?", a: "San Sebastián", d: ["Seville","Valencia","Málaga"] },
     { c: "World Dishes", t: 4, q: "Which Cantonese barbecued pork has a sticky, sweet red glaze?", a: "Char siu", d: ["Siu yuk","Lap cheong","Dongpo pork"] },
-    { c: "World Dishes", t: 5, q: "Which Swedish holiday casserole of potatoes, onions and sprats in cream is named for a man's temptation?", a: "Jansson's temptation", d: ["Pyttipanna","Kalops","Raggmunk"] },
+    { c: "World Dishes", t: 5, q: "Which Swedish Christmas casserole layers potatoes, onions and pickled sprats in cream?", a: "Jansson's temptation", d: ["Pyttipanna","Kalops","Raggmunk"] },
   ],
   // day 53, 2026-12-18
   [
-    { c: "World Dishes", t: 1, q: "Which long, thin French bread has a crisp crust?", a: "Baguette", d: ["Brioche","Ciabatta","Bagel"] },
-    { c: "World Dishes", t: 2, q: "Which Austrian pastry wraps spiced apples in many layers of paper-thin dough?", a: "Strudel", d: ["Kaiserschmarrn","Linzer torte","Krapfen"] },
+    { c: "World Dishes", t: 1, q: "Which crescent-shaped French pastry is made from flaky, buttery layered dough?", a: "Croissant", d: ["Brioche","Baguette","Éclair"] },
+    { c: "World Dishes", t: 2, q: "Which Austrian dessert is a large yeast dumpling filled with plum jam and topped with poppy seeds and butter?", a: "Germknödel", d: ["Kaiserschmarrn","Marillenknödel","Krapfen"] },
     { c: "World Dishes", t: 3, q: "Which Thai salad is made from shredded green papaya pounded with lime, chili and fish sauce?", a: "Som tam", d: ["Yam nua","Miang kham","Pad see ew"] },
     { c: "World Dishes", t: 4, q: "Which Yucatán chicken soup gets its sour flavor from a local lime?", a: "Sopa de lima", d: ["Pozole","Menudo","Caldo tlalpeño"] },
     { c: "World Dishes", t: 5, q: "Reganmian, hot dry noodles tossed in sesame paste, are the signature breakfast of which Chinese city?", a: "Wuhan", d: ["Chongqing","Changsha","Xi'an"] },
@@ -181,7 +181,7 @@ export const LANE_DAYS = [
   [
     { c: "World Dishes", t: 1, q: "Which Italian salad layers sliced tomato, mozzarella and fresh basil?", a: "Caprese", d: ["Panzanella","Minestrone","Insalata russa"] },
     { c: "World Dishes", t: 2, q: "Which Japanese noodles are made from buckwheat and often served cold with a dipping sauce?", a: "Soba", d: ["Udon","Ramen","Somen"] },
-    { c: "World Dishes", t: 3, q: "Nashville's signature dish is fried poultry coated in a fiery cayenne paste. What is it called?", a: "Hot chicken", d: ["Chicken and waffles","Chicken fried steak","Chicken bog"] },
+    { c: "World Dishes", t: 3, q: "What is fried poultry coated after frying in a fiery cayenne paste and served on white bread with pickles called?", a: "Hot chicken", d: ["Chicken and waffles","Chicken fried steak","Chicken bog"] },
     { c: "World Dishes", t: 4, q: "Which Spanish rice dish is colored black with squid ink?", a: "Arroz negro", d: ["Arroz a banda","Fideuà","Arroz caldoso"] },
     { c: "World Dishes", t: 5, q: "Which crown-shaped Portuguese Christmas cake is decorated with candied fruit and nuts?", a: "Bolo rei", d: ["Pão de ló","Bolo de mel","Queijada"] },
   ],
@@ -212,7 +212,7 @@ export const LANE_DAYS = [
   // day 62, 2026-12-27
   [
     { c: "World Dishes", t: 1, q: "Which thick Italian vegetable soup often includes beans and small pasta?", a: "Minestrone", d: ["Gazpacho","Vichyssoise","Bouillabaisse"] },
-    { c: "World Dishes", t: 2, q: "Which Southeast Asian dish of grilled meat skewers is served with a peanut sauce?", a: "Satay", d: ["Rendang","Laksa","Kerabu"] },
+    { c: "World Dishes", t: 2, q: "Which dish of poached chicken over rice cooked in chicken stock and fat is a favorite in Singapore and Malaysia?", a: "Hainanese chicken rice", d: ["Nasi lemak","Char kway teow","Mee goreng"] },
     { c: "World Dishes", t: 3, q: "Which Catalan sauce is made from roasted red peppers, almonds or hazelnuts, garlic and bread?", a: "Romesco", d: ["Sofrito","Allioli","Mojo picón"] },
     { c: "World Dishes", t: 4, q: "Which Czech dish is braised beef sirloin in a creamy root vegetable sauce with dumplings?", a: "Svíčková", d: ["Guláš","Vepřo knedlo zelo","Smažený sýr"] },
     { c: "World Dishes", t: 5, q: "George Town, famous for char kway teow and assam laksa, is the capital of which Malaysian state?", a: "Penang", d: ["Malacca","Sabah","Johor"] },
@@ -222,7 +222,7 @@ export const LANE_DAYS = [
     { c: "World Dishes", t: 1, q: "Which Indian dish is chicken marinated in spiced yogurt and roasted in a clay oven?", a: "Tandoori chicken", d: ["Chicken korma","Chicken saag","Chicken biryani"] },
     { c: "World Dishes", t: 2, q: "Which Roman dish of veal with sage and prosciutto has a name meaning \"jumps in the mouth\"?", a: "Saltimbocca", d: ["Piccata","Ossobuco","Scaloppine"] },
     { c: "World Dishes", t: 3, q: "Which Hawaiian dish is rice topped with a hamburger patty, a fried egg and brown gravy?", a: "Loco moco", d: ["Spam musubi","Kalua pig","Laulau"] },
-    { c: "World Dishes", t: 4, q: "Which small meat-filled dumplings, often served with sour cream, come from Siberia?", a: "Pelmeni", d: ["Vareniki","Blini","Pirozhki"] },
+    { c: "World Dishes", t: 4, q: "Which small meat-filled dumplings, often served with sour cream, are especially associated with Siberia and the Urals?", a: "Pelmeni", d: ["Vareniki","Blini","Pirozhki"] },
     { c: "World Dishes", t: 5, q: "Lablabi, a garlicky chickpea soup poured over stale bread, is a breakfast staple of which country?", a: "Tunisia", d: ["Algeria","Libya","Morocco"] },
   ],
   // day 64, 2026-12-29
@@ -243,7 +243,7 @@ export const LANE_DAYS = [
   ],
   // day 66, 2026-12-31
   [
-    { c: "World Dishes", t: 1, q: "In the party snack pigs in a blanket, small sausages are wrapped in what?", a: "Pastry", d: ["Bacon","Lettuce","Cabbage leaves"] },
+    { c: "World Dishes", t: 1, q: "In the American party snack pigs in a blanket, small sausages are wrapped in what?", a: "Pastry", d: ["Tortillas","Lettuce","Cabbage leaves"] },
     { c: "World Dishes", t: 2, q: "Which dish of black-eyed peas and rice is a Southern US New Year's Day tradition?", a: "Hoppin' John", d: ["Red beans and rice","Jambalaya","Dirty rice"] },
     { c: "World Dishes", t: 3, q: "Black bun, a rich fruitcake baked inside pastry, is traditionally eaten at which Scottish celebration?", a: "Hogmanay", d: ["Burns Night","Beltane","Up Helly Aa"] },
     { c: "World Dishes", t: 4, q: "What are the lacquered boxes of special dishes eaten at Japanese New Year called?", a: "Osechi", d: ["Bento","Ekiben","Kaiseki"] },

@@ -27,7 +27,7 @@ export const LANE_DAYS = [
   ],
   // day 39, 2026-12-04
   [
-    { c: "Kitchen Craft", t: 1, q: "Which kitchen tool is used to roll dough out flat?", a: "Rolling pin", d: ["Whisk","Ladle","Grater"] },
+    { c: "Kitchen Craft", t: 1, q: "Which kitchen tool is pushed down into boiled potatoes to make them smooth and fluffy?", a: "Potato masher", d: ["Whisk","Ladle","Grater"] },
     { c: "Kitchen Craft", t: 2, q: "Which tool tells you when the inside of a roast has reached a safe temperature?", a: "Meat thermometer", d: ["Kitchen timer","Kitchen scale","Hydrometer"] },
     { c: "Kitchen Craft", t: 3, q: "Why do cooks slice cooked steak against the grain?", a: "To shorten the muscle fibers", d: ["To keep in the juices","To make it cook faster","To remove the fat"] },
     { c: "Kitchen Craft", t: 4, q: "What is the unsharpened top of a knife blade, opposite the cutting side, called?", a: "The spine", d: ["The heel","The tip","The rivet"] },
