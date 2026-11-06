@@ -4,7 +4,7 @@
 // wrong place. Tap two squares (or drag one onto another) to trade them. Every
 // board starts with no square at home; the fewest swaps that can fix it is
 // printed only in the rules. Score: solved or not; fewer swaps then the clock
-// decide the board. The photo is Jig's from a week earlier (scripts/gen-photo-trio.mjs).
+// decide the board. The photo is Jig's or Saw's from a week earlier (scripts/gen-photo-trio.mjs).
 
 import React, { useState, useRef } from 'react';
 import SimpleDaily from '../SimpleDaily';
@@ -18,7 +18,7 @@ function par(perm) {
 
 function Board({ P, s, setS, active, done }) {
   const n = P.size;
-  const photo = usePhotoSquare(P.jig);
+  const photo = usePhotoSquare(P.jig, undefined, P.saw);
   const [sel, setSel] = useState(-1);
   const drag = useRef(null);
   const lastDrag = useRef(0);
@@ -93,8 +93,8 @@ const GAME = {
   aboutTitle: 'About Swap',
   about: [
     'Swap is a free daily photo puzzle from Mind Loft. Each day a photograph is cut into a six by six grid of squares and shuffled so that not one square starts in its place, and you put it back together by swapping squares two at a time.',
-    'Every board has a known fewest number of swaps, and a finished picture ranks on how many swaps you took, then on the clock. The photos are the same Wikimedia Commons pictures as the daily jigsaw, Jig, from a week earlier. The Sunday Edition is a seven by seven grid.',
-    <>More photo puzzles: <a href="/jig" style={{ color: 'inherit', fontWeight: 800 }}>Jig</a>, <a href="/slide" style={{ color: 'inherit', fontWeight: 800 }}>Slide</a> and <a href="/spin" style={{ color: 'inherit', fontWeight: 800 }}>Spin</a>.</>,
+    'Every board has a known fewest number of swaps, and a finished picture ranks on how many swaps you took, then on the clock. The photos are the same Wikimedia Commons pictures as the two daily jigsaws, Jig and Saw, from a week earlier. The Sunday Edition is a seven by seven grid.',
+    <>More photo puzzles: <a href="/jig" style={{ color: 'inherit', fontWeight: 800 }}>Jig</a>, <a href="/saw" style={{ color: 'inherit', fontWeight: 800 }}>Saw</a>, <a href="/slide" style={{ color: 'inherit', fontWeight: 800 }}>Slide</a> and <a href="/spin" style={{ color: 'inherit', fontWeight: 800 }}>Spin</a>.</>,
   ],
 };
 

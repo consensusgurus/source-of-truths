@@ -1,7 +1,8 @@
 'use client';
 
-// The photo for Swap, Slide and Spin: a Jig photograph that has already been
-// live, fetched through /api/jig/img (same origin, so its pixels can be read)
+// The photo for Swap, Slide and Spin: a Jig or Saw photograph that has already
+// been live, fetched through /api/jig/img or /api/saw/img (same origin, so its
+// pixels can be read; a board row carries `saw` when it borrows Saw's photo)
 // and cut to its centre square on a canvas. Returns { url, canvas } once ready,
 // or { error } when the photo could not be loaded.
 
@@ -9,8 +10,8 @@ import { useEffect, useState } from 'react';
 
 const cache = new Map();
 
-export default function usePhotoSquare(jigNum, size = 720) {
-  const key = `${jigNum}:${size}`;
+export default function usePhotoSquare(jigNum, size = 720, sawNum = null) {
+  const key = `${sawNum != null ? `s${sawNum}` : jigNum}:${size}`;
   const [st, setSt] = useState(() => cache.get(key) || null);
   useEffect(() => {
     if (cache.get(key)) { setSt(cache.get(key)); return undefined; }
@@ -30,9 +31,9 @@ export default function usePhotoSquare(jigNum, size = 720) {
       } catch (e) { if (alive) setSt({ error: true }); }
     };
     img.onerror = () => { if (alive) setSt({ error: true }); };
-    img.src = `/api/jig/img?n=${jigNum}&w=960`;
+    img.src = sawNum != null ? `/api/saw/img?n=${sawNum}&w=960` : `/api/jig/img?n=${jigNum}&w=960`;
     return () => { alive = false; };
-  }, [key, jigNum, size]);
+  }, [key, jigNum, size, sawNum]);
   return st || {};
 }
 

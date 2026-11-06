@@ -2,7 +2,7 @@
 
 // Spin: the daily photo puzzle where every square is turned. Tap a square to
 // turn it a quarter clockwise; set the whole picture straight. Score: solved or
-// not; fewer taps, then the clock, decide the board. The photo is Jig's from
+// not; fewer taps, then the clock, decide the board. The photo is Jig's or Saw's from
 // three weeks earlier (scripts/gen-photo-trio.mjs).
 //
 // SQUARES THAT LOOK THE SAME TURNED ARE SET STRAIGHT FOR YOU. A patch of clear
@@ -43,7 +43,7 @@ function lockedSquares(canvas, n) {
 
 function Board({ P, s, setS, active, done }) {
   const n = P.size;
-  const photo = usePhotoSquare(P.jig);
+  const photo = usePhotoSquare(P.jig, undefined, P.saw);
   const locks = useMemo(() => (photo.canvas ? lockedSquares(photo.canvas, n) : null), [photo.canvas, n]);
   // Hand the locks to the state once, so the solve check and the save know them.
   useEffect(() => {
@@ -110,7 +110,7 @@ const GAME = {
   about: [
     'Spin is a free daily photo puzzle from Mind Loft. Each day a photograph is cut into a six by six grid and nearly every square is turned, and you tap each square round, a quarter turn at a time, until the whole picture is straight.',
     'Taps only turn clockwise, so a square turned a quarter the wrong way costs three taps to fix: read the square before you tap it. A finished picture ranks on taps, then on the clock, and squares that would look the same at any angle are locked straight for you. The Sunday Edition is eight by eight.',
-    <>The photos come from the daily jigsaw, <a href="/jig" style={{ color: 'inherit', fontWeight: 800 }}>Jig</a>, three weeks earlier. More photo puzzles: <a href="/swap" style={{ color: 'inherit', fontWeight: 800 }}>Swap</a> and <a href="/slide" style={{ color: 'inherit', fontWeight: 800 }}>Slide</a>.</>,
+    <>The photos come from the daily jigsaws, <a href="/jig" style={{ color: 'inherit', fontWeight: 800 }}>Jig</a> and <a href="/saw" style={{ color: 'inherit', fontWeight: 800 }}>Saw</a>, three weeks earlier. More photo puzzles: <a href="/swap" style={{ color: 'inherit', fontWeight: 800 }}>Swap</a> and <a href="/slide" style={{ color: 'inherit', fontWeight: 800 }}>Slide</a>.</>,
   ],
 };
 

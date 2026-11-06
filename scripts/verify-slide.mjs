@@ -10,6 +10,12 @@
 import { checker, checkDays, dowOf } from './six-verify-common.mjs';
 const { PUZZLES } = await import(new URL('../app/slide/puzzles.js', import.meta.url));
 const { PUZZLES: JIG } = await import(new URL('../app/jig/puzzles.js', import.meta.url));
+const { PUZZLES: SAW } = await import(new URL('../app/saw/puzzles.js', import.meta.url));
+// Saw's photos are recycled too (owner, 2026-11-06): a borrowed day on which
+// Saw had an ODD-numbered board lends Saw's photo (`saw`) instead of Jig's.
+const sawOn = Object.fromEntries(SAW.map((p) => [p.live, p]));
+const sawLive = Object.fromEntries(SAW.map((p) => [p.num, p.live]));
+const back = (iso, n) => new Date(Date.parse(iso + 'T12:00:00Z') - n * 86400000).toISOString().slice(0, 10);
 const { bad, done } = checker('slide');
 checkDays('slide', PUZZLES, bad);
 const jigLive = Object.fromEntries(JIG.map((p) => [p.num, p.live]));
@@ -33,10 +39,18 @@ function parity2(t, n) {
 for (const p of PUZZLES) {
   const n = dowOf(p.live) === 0 ? 6 : 5;
   if (p.size !== n) bad(p.num, `size ${p.size}, should be ${n}`);
-  if (!jigLive[p.jig]) bad(p.num, `Jig board ${p.jig} does not exist`);
-  else if (jigLive[p.jig] >= p.live) bad(p.num, `Jig photo ${p.jig} is not live before ${p.live}`);
-  if (p.jig !== jigNumOn(p.live) - 14) bad(p.num, `photo should be Jig's from 14 days earlier`);
-  if (seen.has(p.jig)) bad(p.num, `photo ${p.jig} used twice`); seen.add(p.jig);
+  const lend = sawOn[back(p.live, 14)];
+  if (lend && lend.num % 2 === 1) {
+    if (p.saw !== lend.num || p.jig != null) bad(p.num, `photo should be Saw's from 14 days earlier (No. ${lend.num})`);
+    else if (sawLive[p.saw] >= p.live) bad(p.num, `Saw photo ${p.saw} is not live before ${p.live}`);
+    if (seen.has('s' + p.saw)) bad(p.num, `Saw photo ${p.saw} used twice`); seen.add('s' + p.saw);
+  } else {
+    if (p.saw != null) bad(p.num, `borrows Saw ${p.saw}, but Saw had no odd-numbered board 14 days earlier`);
+    if (!jigLive[p.jig]) bad(p.num, `Jig board ${p.jig} does not exist`);
+    else if (jigLive[p.jig] >= p.live) bad(p.num, `Jig photo ${p.jig} is not live before ${p.live}`);
+    if (p.jig !== jigNumOn(p.live) - 14) bad(p.num, `photo should be Jig's from 14 days earlier (${jigNumOn(p.live) - 14})`);
+    if (seen.has(p.jig)) bad(p.num, `photo ${p.jig} used twice`); seen.add(p.jig);
+  }
   const N = p.size * p.size;
   if (!Array.isArray(p.tiles) || p.tiles.length !== N || [...p.tiles].sort((a, b) => a - b).some((v, i) => v !== i)) { bad(p.num, 'tiles is not a permutation'); continue; }
   if (!parityOk(p.tiles, p.size)) bad(p.num, 'unsolvable by the parity rule');

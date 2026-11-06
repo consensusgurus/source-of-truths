@@ -12,6 +12,12 @@
 import { checker, checkDays, dowOf } from './six-verify-common.mjs';
 const { PUZZLES } = await import(new URL('../app/swap/puzzles.js', import.meta.url));
 const { PUZZLES: JIG } = await import(new URL('../app/jig/puzzles.js', import.meta.url));
+const { PUZZLES: SAW } = await import(new URL('../app/saw/puzzles.js', import.meta.url));
+// Saw's photos are recycled too (owner, 2026-11-06): a borrowed day on which
+// Saw had an ODD-numbered board lends Saw's photo (`saw`) instead of Jig's.
+const sawOn = Object.fromEntries(SAW.map((p) => [p.live, p]));
+const sawLive = Object.fromEntries(SAW.map((p) => [p.num, p.live]));
+const back = (iso, n) => new Date(Date.parse(iso + 'T12:00:00Z') - n * 86400000).toISOString().slice(0, 10);
 const { bad, done } = checker('swap');
 checkDays('swap', PUZZLES, bad);
 const jigLive = Object.fromEntries(JIG.map((p) => [p.num, p.live]));
@@ -20,10 +26,18 @@ const seen = new Set();
 for (const p of PUZZLES) {
   const n = dowOf(p.live) === 0 ? 7 : 6;
   if (p.size !== n) bad(p.num, `size ${p.size}, should be ${n}`);
-  if (!jigLive[p.jig]) bad(p.num, `Jig board ${p.jig} does not exist`);
-  else if (jigLive[p.jig] >= p.live) bad(p.num, `Jig photo ${p.jig} is not live before ${p.live}`);
-  if (p.jig !== jigNumOn(p.live) - 7) bad(p.num, `photo should be Jig's from 7 days earlier (${jigNumOn(p.live) - 7})`);
-  if (seen.has(p.jig)) bad(p.num, `photo ${p.jig} used twice`); seen.add(p.jig);
+  const lend = sawOn[back(p.live, 7)];
+  if (lend && lend.num % 2 === 1) {
+    if (p.saw !== lend.num || p.jig != null) bad(p.num, `photo should be Saw's from 7 days earlier (No. ${lend.num})`);
+    else if (sawLive[p.saw] >= p.live) bad(p.num, `Saw photo ${p.saw} is not live before ${p.live}`);
+    if (seen.has('s' + p.saw)) bad(p.num, `Saw photo ${p.saw} used twice`); seen.add('s' + p.saw);
+  } else {
+    if (p.saw != null) bad(p.num, `borrows Saw ${p.saw}, but Saw had no odd-numbered board 7 days earlier`);
+    if (!jigLive[p.jig]) bad(p.num, `Jig board ${p.jig} does not exist`);
+    else if (jigLive[p.jig] >= p.live) bad(p.num, `Jig photo ${p.jig} is not live before ${p.live}`);
+    if (p.jig !== jigNumOn(p.live) - 7) bad(p.num, `photo should be Jig's from 7 days earlier (${jigNumOn(p.live) - 7})`);
+    if (seen.has(p.jig)) bad(p.num, `photo ${p.jig} used twice`); seen.add(p.jig);
+  }
   const N = p.size * p.size;
   if (!Array.isArray(p.perm) || p.perm.length !== N || [...p.perm].sort((a, b) => a - b).some((v, i) => v !== i)) { bad(p.num, 'perm is not a permutation'); continue; }
   if (p.perm.some((t, i) => t === i)) bad(p.num, 'a tile starts home');
@@ -36,11 +50,13 @@ const { PUZZLES: SLIDE } = await import(new URL('../app/slide/puzzles.js', impor
 const { PUZZLES: SPIN } = await import(new URL('../app/spin/puzzles.js', import.meta.url));
 const titleOf = Object.fromEntries(JIG.map((p) => [p.num, p.t]));
 const jigOnDay = Object.fromEntries(JIG.map((p) => [p.live, p.t]));
-const onDay = (bank) => Object.fromEntries(bank.map((p) => [p.live, titleOf[p.jig]]));
+const sawTitle = Object.fromEntries(SAW.map((p) => [p.num, p.t]));
+const sawOnDay = Object.fromEntries(SAW.map((p) => [p.live, p.t]));
+const onDay = (bank) => Object.fromEntries(bank.map((p) => [p.live, p.saw != null ? sawTitle[p.saw] : titleOf[p.jig]]));
 const sw = onDay(PUZZLES), sl = onDay(SLIDE), sp = onDay(SPIN);
 for (const p of PUZZLES) {
   const d = p.live;
-  const shown = [['Jig', jigOnDay[d]], ['Swap', sw[d]], ['Slide', sl[d]], ['Spin', sp[d]]].filter(([, t]) => t);
+  const shown = [['Jig', jigOnDay[d]], ['Saw', sawOnDay[d]], ['Swap', sw[d]], ['Slide', sl[d]], ['Spin', sp[d]]].filter(([, t]) => t);
   const seenT = new Map();
   for (const [g, t] of shown) {
     if (seenT.has(t)) bad(p.num, `${g} and ${seenT.get(t)} show the same photo on ${d}`);

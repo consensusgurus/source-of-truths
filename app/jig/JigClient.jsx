@@ -1458,7 +1458,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           Drag a piece from the tray onto the board and it snaps in when it is near its own spot; a wrong drop just sends it back, at no cost. Pieces never need turning. Sort the tray into two bins, edge pieces and the middle or one of the picture&rsquo;s colors and the rest, to build the frame first and then fill it a color at a time. Peek shows the whole picture for a moment and adds 15 seconds to the clock. Full screen gives the board and the tray the whole screen, on a computer, a tablet or a phone, and on a phone See more opens the tray into a taller grid.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Finish the picture for a perfect 10; the fastest time tops the board. No app, no signup, play free in your browser on a phone or a computer, and keep a streak. Like fitting things together? Try <a href="/snug" style={{ color: INK, fontWeight: 800 }}>Snug</a>, the daily shape-fitting puzzle, and <a href="/etch" style={{ color: INK, fontWeight: 800 }}>Etch</a>, which draws a picture from number clues.
+          Finish the picture for a perfect 10; the fastest time tops the board. No app, no signup, play free in your browser on a phone or a computer, and keep a streak. Want the jigsaw with no frame? <a href="/saw" style={{ color: INK, fontWeight: 800 }}>Saw</a> is Jig&rsquo;s tall sibling, built anywhere on the table. Like fitting things together? Try <a href="/snug" style={{ color: INK, fontWeight: 800 }}>Snug</a>, the daily shape-fitting puzzle, and <a href="/etch" style={{ color: INK, fontWeight: 800 }}>Etch</a>, which draws a picture from number clues.
         </p>
       </section>
 

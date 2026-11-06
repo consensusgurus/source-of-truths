@@ -263,6 +263,9 @@ if (!staleFound && BAD === 0) ok('junkyard pool', `${PUZZLES.length} boards, ${s
       if (!DAILY_KEYS.includes(k)) { fail('family', `${fam}: '${k}' is not in lib/daily-games.js DAILY_KEYS`); famBad = true; }
       if (!endCardSrc.includes(`key: '${k}'`)) { fail('family', `${fam}: '${k}' is missing from app/DailyEndCard.jsx, so the up-next ladder skips it silently`); famBad = true; }
     }
+    // Only the jam family is a size ladder; another family (jigsaw: Jig and Saw,
+    // 2026-11-06) is two sibling games handing each other along, with no order.
+    if (fam !== 'jam') { if (!famBad) ok('family', `${fam} in both rosters: ${members.join(', ')}`); continue; }
     const sizes = members.map((k) => SIZES[k]);
     if (sizes.some((v) => v === undefined)) {
       fail('family', `${fam}: a member has no known board size here, so the ladder cannot be checked for order`); famBad = true;

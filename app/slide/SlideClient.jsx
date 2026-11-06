@@ -4,7 +4,7 @@
 // square of the photo is missing; tap any square in the gap's row or column to
 // slide it, and every square between, into the gap. Arrow keys work too. Score:
 // solved or not; fewer squares moved, then the clock, decide the board. The
-// photo is Jig's from two weeks earlier (scripts/gen-photo-trio.mjs).
+// photo is Jig's or Saw's from two weeks earlier (scripts/gen-photo-trio.mjs).
 
 import React, { useEffect } from 'react';
 import SimpleDaily from '../SimpleDaily';
@@ -28,7 +28,7 @@ export function slideFrom(cur, n, i) {
 
 function Board({ P, s, setS, active, done }) {
   const n = P.size, gap = n * n - 1;
-  const photo = usePhotoSquare(P.jig);
+  const photo = usePhotoSquare(P.jig, undefined, P.saw);
   const solved = s.cur.every((t, i) => t === i);
   const tap = (i) => {
     if (!active || done) return;
@@ -101,7 +101,7 @@ const GAME = {
   about: [
     'Slide is a free daily sliding-tile puzzle from Mind Loft, the classic fifteen puzzle grown to a five by five photograph. One square is missing, and you slide the others through the gap until the picture is whole.',
     'Tap any square in line with the gap to slide a whole row or column at once, or use the arrow keys. Every board is checked to be solvable before it ships, and a finished picture ranks on how many squares you moved, then on the clock. The Sunday Edition is six by six.',
-    <>The photos come from the daily jigsaw, <a href="/jig" style={{ color: 'inherit', fontWeight: 800 }}>Jig</a>, two weeks earlier. More photo puzzles: <a href="/swap" style={{ color: 'inherit', fontWeight: 800 }}>Swap</a> and <a href="/spin" style={{ color: 'inherit', fontWeight: 800 }}>Spin</a>.</>,
+    <>The photos come from the daily jigsaws, <a href="/jig" style={{ color: 'inherit', fontWeight: 800 }}>Jig</a> and <a href="/saw" style={{ color: 'inherit', fontWeight: 800 }}>Saw</a>, two weeks earlier. More photo puzzles: <a href="/swap" style={{ color: 'inherit', fontWeight: 800 }}>Swap</a> and <a href="/spin" style={{ color: 'inherit', fontWeight: 800 }}>Spin</a>.</>,
   ],
 };
 
