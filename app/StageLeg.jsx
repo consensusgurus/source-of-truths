@@ -115,6 +115,7 @@ export const LEG_CSS = `
 .lg-struck{text-decoration:line-through;font-weight:700}
 
 .lg-road{display:flex;flex-direction:column}
+.lg-map{width:100%;max-width:560px;margin:2px auto 0}
 .lg-road.shake{animation:lgShake .4s}
 .lg-stop{display:flex;align-items:center;gap:12px;min-height:50px;padding:6px 16px;border-radius:14px;font-size:19px;font-weight:800;border:1px solid var(--lg-ink);background:var(--lg-tile);color:var(--lg-ink)}
 .lg-stop .n{width:24px;flex:none;font-size:12px;font-weight:800;opacity:.6;font-variant-numeric:tabular-nums}

@@ -890,7 +890,10 @@ const RUN_CSS = `
 .pr-host{animation:prrise .45s ease both}
 .pr-play .stage-page{min-height:0 !important;background:transparent !important;overflow-x:visible !important}
 .gsx-play .pr-host .stg-board{margin-left:0 !important;margin-right:0 !important}
-.pr-next{display:block;width:calc(100% - 32px);max-width:568px;margin:6px auto 0;min-height:52px;border-radius:14px;border:0;background:var(--gsx-ink,#08222e);color:var(--gsx-bg,#ffffff);font:800 16px Manrope,system-ui,sans-serif;cursor:pointer}
+/* ALWAYS ON SCREEN (owner, 2026-11-06: a long Ping guess list pushed it below
+   the fold). It rides the bottom of the viewport while the finished board
+   holds, and settles under the board when the board is short. */
+.pr-next{position:sticky;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:6;box-shadow:0 6px 22px rgba(8,34,46,.28);display:block;width:calc(100% - 32px);max-width:568px;margin:6px auto 0;min-height:52px;border-radius:14px;border:0;background:var(--gsx-ink,#08222e);color:var(--gsx-bg,#ffffff);font:800 16px Manrope,system-ui,sans-serif;cursor:pointer}
 .pr-note{max-width:520px;margin:10px auto;text-align:center;font-size:14px;font-weight:700;opacity:.8;padding:0 16px}
 .pr-rules{background:none;border:0;padding:0;font:inherit;font-weight:800;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .pr-back{margin-top:14px;width:100%;min-height:48px;border-radius:14px;border:0;background:#08222e;color:#ffffff;font:800 16px Manrope,system-ui,sans-serif;cursor:pointer}

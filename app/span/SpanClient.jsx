@@ -191,34 +191,40 @@ function mapAnchors(countries) {
   }
   return anchors;
 }
-function SpanMap({ chain, best, alts }) {
+// `goal` (owner, 2026-11-06: "show the map too, instead of just names"): the
+// stage leg draws this map DURING play, so the destination is shaded and kept
+// in frame before the road reaches it, and `wide` widens the frame a little so
+// the neighbors around the road are visible to choose from.
+function SpanMap({ chain, best, alts, goal = null, wide = false }) {
   const view = useMemo(() => {
     const chainArr = (chain || []).filter((c) => MAP.c[c]);
     const bestArr = (best || []).filter((c) => MAP.c[c]);
     const altArr = (alts || []).filter((c) => MAP.c[c]);
+    const goalArr = goal && MAP.c[goal] && !chainArr.includes(goal) ? [goal] : [];
     if (!chainArr.length && !bestArr.length) return null;
     const cA = mapAnchors(chainArr);
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-    for (const p of [...cA, ...mapAnchors(bestArr)]) {
+    for (const p of [...cA, ...mapAnchors(bestArr), ...mapAnchors(goalArr)]) {
       if (!p) continue;
       x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]);
       x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]);
     }
     // small countries stay fully in frame; big ones are represented by anchors
-    for (const c of new Set([...chainArr, ...bestArr, ...altArr])) {
+    for (const c of new Set([...chainArr, ...bestArr, ...altArr, ...goalArr])) {
       const b = MAP.bb[c];
       if (b && mapDiag(b) < 45) { x0 = Math.min(x0, b[0]); y0 = Math.min(y0, b[1]); x1 = Math.max(x1, b[2]); y1 = Math.max(y1, b[3]); }
     }
     let w = Math.max(1, x1 - x0), h = Math.max(1, y1 - y0);
-    const padX = w * 0.16 + 8, padY = h * 0.16 + 8;
+    const padX = w * (wide ? 0.3 : 0.16) + 8, padY = h * (wide ? 0.3 : 0.16) + 8;
     x0 -= padX; y0 -= padY; x1 += padX; y1 += padY; w = x1 - x0; h = y1 - y0;
     if (w < 90) { const a = (90 - w) / 2; x0 -= a; x1 += a; w = 90; }
     if (h < w * 0.52) { const a = (w * 0.52 - h) / 2; y0 -= a; y1 += a; h = w * 0.52; }
     if (h > w * 0.85) { const a = (h / 0.85 - w) / 2; x0 -= a; x1 += a; w = h / 0.85; }
-    return { x0, y0, w, h, cA, chainArr, bestArr, altArr };
-  }, [chain, best, alts]);
+    return { x0, y0, w, h, cA, chainArr, bestArr, altArr, goalArr };
+  }, [chain, best, alts, goal, wide]);
   if (!view) return null;
-  const { x0, y0, w, h, cA, chainArr, bestArr, altArr } = view;
+  const { x0, y0, w, h, cA, chainArr, bestArr, altArr, goalArr } = view;
+  const goalName = goalArr[0] || null;
   const chainSet = new Set(chainArr);
   const bestSet = new Set(bestArr);
   const altSet = new Set(altArr);
@@ -237,7 +243,7 @@ function SpanMap({ chain, best, alts }) {
           const onBest = !onChain && showBest && bestSet.has(name);
           const onAlt = !onChain && !onBest && showBest && altSet.has(name);
           const ends = onChain && (name === chainArr[0] || (chainArr.length > 1 && name === chainArr[chainArr.length - 1]));
-          const fill = onChain ? (ends ? T.successDeep : '#8fdcab') : onBest ? '#a7cbf3' : onAlt ? '#d9e7fa' : '#dfe3e8';
+          const fill = onChain ? (ends ? T.successDeep : '#8fdcab') : name === goalName ? '#f4b860' : onBest ? '#a7cbf3' : onAlt ? '#d9e7fa' : '#dfe3e8';
           return <path key={name} d={d} fill={fill} stroke={T.white} strokeWidth={k} />;
         })}
         {showRoad && (
@@ -258,6 +264,11 @@ function SpanMap({ chain, best, alts }) {
         {showRoad && (
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
             <span style={swatch('#8fdcab')} /> your road
+          </span>
+        )}
+        {goalName && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <span style={swatch('#f4b860')} /> {goalName}, the destination
           </span>
         )}
         {showBest && (
@@ -904,6 +915,12 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
               <div role="listitem" className="lg-stop dst"><span className="n">?</span>{PUZZLE.end}<span className="tag">Destination</span></div>
             </>
           )}
+        </div>
+        {/* THE MAP DURING PLAY (owner, 2026-11-06): the road so far, the
+            destination shaded; once it ends, a shortest road as on the result. */}
+        <div className="lg-map">
+          <SpanMap chain={chain} goal={reached ? null : PUZZLE.end} wide={playing}
+            best={playing || !showBest || (won && hops === PUZZLE.perfect) ? null : bestRoute} alts={!playing && showBest ? altRoads : null} />
         </div>
         {started && (chain.length > 1 || (hintOk && !g.hintUsed)) && (
           <div className="lg-row2">
