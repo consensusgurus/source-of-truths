@@ -3,7 +3,7 @@
 // sense. Split: every target word starts with A through L (the other Vocab lane
 // takes M through Z). No target word is asked twice.
 const L = 'Definitions';
-export const LANE_DAYS = [
+export const LANE_DAYS_1_36 = [
   // day 1
   [
     { c: L, t: 1, q: "What does 'ancient' mean?", a: "very old", d: ["very large", "very rare", "very distant"] },
@@ -291,5 +291,316 @@ export const LANE_DAYS = [
     { c: L, t: 3, q: "What does 'insipid' mean?", a: "lacking flavor", d: ["highly spiced", "stupidly foolish", "deeply inspired"] },
     { c: L, t: 4, q: "What does 'bucolic' mean?", a: "of rural country life", d: ["of the cheeks", "of city life", "of stomach pain"] },
     { c: L, t: 5, q: "What is 'gasconade'?", a: "extravagant boasting", d: ["a fizzy drink", "a modest silence", "a slow procession"] },
+  ],
+];
+
+// Days 37 to 74 (2026-11-24 to 2026-12-31). gen-english.mjs appends every day in
+// LANE_DAYS after the bank's last day, so the segment already shipped (days 1 to
+// 36, above) is kept under its own name and only this segment is exported as LANE_DAYS.
+// Every target word is new to the lane, and the A-L / M-Z split still holds.
+export const LANE_DAYS = [
+  // day 37
+  [
+    { c: L, t: 1, q: "To 'borrow' something is to...?", a: "take it to use and give back", d: ["keep it forever", "buy it outright", "throw it away"] },
+    { c: L, t: 2, q: "Someone described as 'arrogant' is...?", a: "overly proud of oneself", d: ["shy and modest", "angry and loud", "rich and famous"] },
+    { c: L, t: 3, q: "To 'abhor' something is to...?", a: "hate it deeply", d: ["adore it", "ignore it", "fear it slightly"] },
+    { c: L, t: 4, q: "An 'anodyne' remark is...?", a: "bland and inoffensive", d: ["sharply cutting", "anonymous", "oddly specific"] },
+    { c: L, t: 5, q: "What is an 'amanuensis'?", a: "a scribe or secretary", d: ["a church officer", "a handwritten amendment", "a love letter"] },
+  ],
+  // day 38
+  [
+    { c: L, t: 1, q: "If the weather is 'chilly', it is...?", a: "rather cold", d: ["very hot", "very windy", "rather damp"] },
+    { c: L, t: 2, q: "What does 'conceal' mean?", a: "to keep out of sight", d: ["to reveal", "to agree", "to seal shut"] },
+    { c: L, t: 3, q: "A 'banal' remark is...?", a: "dull and unoriginal", d: ["shocking and rude", "clever and witty", "forbidden by law"] },
+    { c: L, t: 4, q: "What is 'acrimony'?", a: "bitterness of feeling", d: ["a dispute over land", "a sharp taste", "a formal agreement"] },
+    { c: L, t: 5, q: "An 'anfractuous' path is...?", a: "full of twists and turns", d: ["broken into pieces", "perfectly straight", "steep and rocky"] },
+  ],
+  // day 39
+  [
+    { c: L, t: 1, q: "What is a 'harvest'?", a: "the gathering of crops", d: ["the planting of seeds", "a heavy rainstorm", "a farm animal"] },
+    { c: L, t: 2, q: "To 'cherish' something is to...?", a: "hold it dear", d: ["sell it quickly", "share it freely", "forget it"] },
+    { c: L, t: 3, q: "Someone described as 'altruistic' is...?", a: "selflessly concerned for others", d: ["fond of heights", "stubbornly old-fashioned", "driven by self-interest"] },
+    { c: L, t: 4, q: "What is 'largesse'?", a: "generous giving", d: ["great size", "a lazy manner", "a sum owed"] },
+    { c: L, t: 5, q: "What does 'gustatory' mean?", a: "relating to taste", d: ["relating to wind", "relating to smell", "relating to hearing"] },
+  ],
+  // day 40
+  [
+    { c: L, t: 1, q: "Someone described as 'clever' is...?", a: "quick to learn and understand", d: ["slow and clumsy", "loud and bossy", "kind and gentle"] },
+    { c: L, t: 2, q: "A 'blunt' reply is...?", a: "direct and plain-spoken", d: ["vague and evasive", "long and flowery", "late and lazy"] },
+    { c: L, t: 3, q: "What does 'castigate' mean?", a: "to scold severely", d: ["to cast aside", "to praise lavishly", "to build a castle"] },
+    { c: L, t: 4, q: "Someone described as 'bellicose' is...?", a: "eager to fight", d: ["beautifully shaped", "loud as a bell", "peace-loving"] },
+    { c: L, t: 5, q: "What is 'apophasis'?", a: "raising a point by claiming not to mention it", d: ["a sudden loss of speech", "a speech of farewell", "the omission of a final sound"] },
+  ],
+  // day 41
+  [
+    { c: L, t: 1, q: "To 'damage' something is to...?", a: "harm it", d: ["clean it", "build it", "name it"] },
+    { c: L, t: 2, q: "An 'avid' reader is...?", a: "keen and enthusiastic", d: ["slow and careful", "bored and restless", "young and new"] },
+    { c: L, t: 3, q: "What is a 'cacophony'?", a: "a harsh mix of sounds", d: ["a pleasing melody", "a choir of voices", "a coughing fit"] },
+    { c: L, t: 4, q: "Someone described as 'craven' is...?", a: "contemptibly cowardly", d: ["deeply longing", "carved from stone", "boldly heroic"] },
+    { c: L, t: 5, q: "What does 'desuetude' mean?", a: "a state of disuse", d: ["sweetness", "a formal lawsuit", "a sudden revival"] },
+  ],
+  // day 42
+  [
+    { c: L, t: 1, q: "What is an 'ancestor'?", a: "a relative from long ago", d: ["a distant neighbor", "a newborn child", "a family friend"] },
+    { c: L, t: 2, q: "Someone described as 'courteous' is...?", a: "polite and respectful", d: ["brave and bold", "rude and careless", "shy and quiet"] },
+    { c: L, t: 3, q: "To 'censure' someone is to...?", a: "criticize them formally", d: ["count them in a survey", "silence them by force", "praise them publicly"] },
+    { c: L, t: 4, q: "What is 'calumny'?", a: "a false and damaging statement", d: ["a period of calm", "a support column", "a sincere apology"] },
+    { c: L, t: 5, q: "Text written 'boustrophedon' runs...?", a: "in alternate directions line by line", d: ["from bottom to top", "in a spiral from the center", "in a single column"] },
+  ],
+  // day 43
+  [
+    { c: L, t: 1, q: "Someone who is 'gentle' is...?", a: "kind and mild", d: ["loud and rough", "tall and strong", "fast and clever"] },
+    { c: L, t: 2, q: "Something 'flimsy' is...?", a: "thin and easily damaged", d: ["heavy and solid", "shiny and smooth", "old and valuable"] },
+    { c: L, t: 3, q: "Someone described as 'cantankerous' is...?", a: "bad-tempered and quarrelsome", d: ["fond of singing", "easily tired", "cheerfully agreeable"] },
+    { c: L, t: 4, q: "To 'excoriate' a plan is to...?", a: "criticize it harshly", d: ["remove it from the record", "carry it out fully", "explain it in detail"] },
+    { c: L, t: 5, q: "What is a 'cynosure'?", a: "a center of attention", d: ["a cynical remark", "a sure cure", "a dog kennel"] },
+  ],
+  // day 44
+  [
+    { c: L, t: 1, q: "Something 'invisible' is...?", a: "unable to be seen", d: ["unable to be heard", "unable to be moved", "unable to be broken"] },
+    { c: L, t: 2, q: "What does 'genuine' mean?", a: "real and authentic", d: ["fake and copied", "old and worn", "rare and costly"] },
+    { c: L, t: 3, q: "What does 'deride' mean?", a: "to mock with contempt", d: ["to ride away", "to agree warmly", "to remove from office"] },
+    { c: L, t: 4, q: "Something that is 'anathema' to you is...?", a: "something you vehemently dislike", d: ["something you cannot explain", "something you deeply admire", "something you were born with"] },
+    { c: L, t: 5, q: "What is a 'farrago'?", a: "a confused mixture", d: ["a long journey", "a fierce argument", "a Spanish dance"] },
+  ],
+  // day 45
+  [
+    { c: L, t: 1, q: "Someone who is 'healthy' is...?", a: "in good physical condition", d: ["very tired", "very busy", "badly hurt"] },
+    { c: L, t: 2, q: "A 'hostile' crowd is...?", a: "unfriendly and aggressive", d: ["warm and welcoming", "quiet and shy", "hosting guests"] },
+    { c: L, t: 3, q: "An 'eclectic' collection is...?", a: "drawn from many sources", d: ["electric and lively", "strictly traditional", "rigidly uniform"] },
+    { c: L, t: 4, q: "To 'dissemble' is to...?", a: "conceal one's true motives", d: ["take apart a machine", "gather in a crowd", "speak at great length"] },
+    { c: L, t: 5, q: "What is a 'logomachy'?", a: "a dispute over words", d: ["a machine for logging", "a study of logic", "a written record"] },
+  ],
+  // day 46
+  [
+    { c: L, t: 1, q: "To 'leap' is to...?", a: "jump", d: ["crawl", "sleep", "lean"] },
+    { c: L, t: 2, q: "What does 'deceive' mean?", a: "to mislead deliberately", d: ["to receive politely", "to decide quickly", "to cease completely"] },
+    { c: L, t: 3, q: "A 'fortuitous' meeting is...?", a: "happening by chance", d: ["strongly fortified", "carefully planned", "forty years old"] },
+    { c: L, t: 4, q: "What does 'evanescent' mean?", a: "quickly fading away", d: ["evenly balanced", "bright and glowing", "long-lasting"] },
+    { c: L, t: 5, q: "To 'immolate' something is to...?", a: "sacrifice it, often by fire", d: ["make it immortal", "copy it exactly", "seal it in stone"] },
+  ],
+  // day 47
+  [
+    { c: L, t: 1, q: "What is an 'exit'?", a: "a way out", d: ["a way in", "a dead end", "a long hall"] },
+    { c: L, t: 2, q: "To 'endure' hardship is to...?", a: "put up with it", d: ["bring it to an end", "give in to it", "look forward to it"] },
+    { c: L, t: 3, q: "What does 'elicit' mean?", a: "to draw out a response", d: ["to make illegal", "to choose by vote", "to remove"] },
+    { c: L, t: 4, q: "To 'importune' someone is to...?", a: "beg them persistently", d: ["bring them luck", "bring them in from abroad", "interrupt them rudely"] },
+    { c: L, t: 5, q: "What does 'hypnagogic' mean?", a: "relating to the drowsy state before sleep", d: ["relating to hypnosis", "relating to waking up", "relating to deep sleep"] },
+  ],
+  // day 48
+  [
+    { c: L, t: 1, q: "What is a 'chuckle'?", a: "a quiet laugh", d: ["a loud cry", "a deep sigh", "a sharp cough"] },
+    { c: L, t: 2, q: "What does 'jeopardy' mean?", a: "danger of loss or harm", d: ["great joy", "a court verdict", "jealousy"] },
+    { c: L, t: 3, q: "A 'furtive' glance is...?", a: "sly and secretive", d: ["fast and furious", "open and frank", "bitterly angry"] },
+    { c: L, t: 4, q: "An 'egregious' error is...?", a: "conspicuously bad", d: ["unusually sociable", "easily overlooked", "faintly amusing"] },
+    { c: L, t: 5, q: "What is 'legerdemain'?", a: "sleight of hand", d: ["a knight's estate", "light housekeeping", "a legal ruling"] },
+  ],
+  // day 49
+  [
+    { c: L, t: 1, q: "What is a 'feast'?", a: "a large, festive meal", d: ["a small snack", "a long fast", "a quiet nap"] },
+    { c: L, t: 2, q: "Someone described as 'frantic' is...?", a: "wildly hurried and worried", d: ["calm and slow", "happy and relaxed", "sad and sleepy"] },
+    { c: L, t: 3, q: "What is a 'harbinger'?", a: "a sign of what is coming", d: ["a harbor master", "a bitter enemy", "a trusted servant"] },
+    { c: L, t: 4, q: "What does 'insidious' mean?", a: "harmful in a subtle, gradual way", d: ["openly hostile", "deeply unwise", "sudden and violent"] },
+    { c: L, t: 5, q: "What does 'divagate' mean?", a: "to wander or stray from a course", d: ["to split in two", "to predict the future", "to reveal a secret"] },
+  ],
+  // day 50
+  [
+    { c: L, t: 1, q: "What does 'gather' mean?", a: "to bring together", d: ["to throw away", "to break apart", "to hide away"] },
+    { c: L, t: 2, q: "What does 'imitate' mean?", a: "to copy", d: ["to invite", "to irritate", "to begin"] },
+    { c: L, t: 3, q: "What is 'guile'?", a: "sly cunning", d: ["a guilty feeling", "a guided tour", "open honesty"] },
+    { c: L, t: 4, q: "What does 'inimical' mean?", a: "harmful or hostile", d: ["impossible to copy", "friendly and helpful", "very small"] },
+    { c: L, t: 5, q: "What is an 'agelast'?", a: "a person who never laughs", d: ["a person who never ages", "a person who hates crowds", "a person who never sleeps"] },
+  ],
+  // day 51
+  [
+    { c: L, t: 1, q: "What does 'injure' mean?", a: "to hurt", d: ["to heal", "to judge", "to enjoy"] },
+    { c: L, t: 2, q: "What does 'exaggerate' mean?", a: "to overstate", d: ["to understate", "to explain clearly", "to leave out"] },
+    { c: L, t: 3, q: "An 'implacable' enemy is...?", a: "impossible to appease", d: ["easy to place", "calm and peaceful", "impossible to locate"] },
+    { c: L, t: 4, q: "What is a 'harangue'?", a: "a long, ranting speech", d: ["a hanging tapestry", "a short prayer", "a polite request"] },
+    { c: L, t: 5, q: "What is 'hendiadys'?", a: "one idea expressed by two nouns joined by 'and'", d: ["a line of eleven syllables", "a pair of rhyming lines", "a word read the same backward"] },
+  ],
+  // day 52
+  [
+    { c: L, t: 1, q: "What is a 'grin'?", a: "a broad smile", d: ["a loud groan", "a sad frown", "a quick wink"] },
+    { c: L, t: 2, q: "If the air is 'humid', it is...?", a: "moist and muggy", d: ["dry and crisp", "cold and windy", "clear and sunny"] },
+    { c: L, t: 3, q: "What does 'incessant' mean?", a: "never stopping", d: ["very innocent", "rarely heard", "growing quieter"] },
+    { c: L, t: 4, q: "To 'ingratiate' oneself is to...?", a: "work to win someone's favor", d: ["show a lack of gratitude", "pay a debt in full", "move to another country"] },
+    { c: L, t: 5, q: "A 'lapidary' writing style is...?", a: "elegantly precise", d: ["rambling and loose", "rocky and uneven", "hurried and careless"] },
+  ],
+  // day 53
+  [
+    { c: L, t: 1, q: "A 'fancy' dress is...?", a: "elaborate and decorative", d: ["plain and simple", "old and torn", "short and tight"] },
+    { c: L, t: 2, q: "What does 'illuminate' mean?", a: "to light up", d: ["to cover up", "to dry out", "to make illegal"] },
+    { c: L, t: 3, q: "Someone described as 'irascible' is...?", a: "easily angered", d: ["easily amused", "easily persuaded", "easily erased"] },
+    { c: L, t: 4, q: "Someone living an 'ascetic' life practices...?", a: "strict self-denial", d: ["refined artistic taste", "constant travel", "lavish entertaining"] },
+    { c: L, t: 5, q: "What does 'adumbrate' mean?", a: "to outline or foreshadow", d: ["to add up figures", "to praise highly", "to grow larger"] },
+  ],
+  // day 54
+  [
+    { c: L, t: 1, q: "What does 'locate' mean?", a: "to find", d: ["to lose", "to lock", "to sell"] },
+    { c: L, t: 2, q: "What does 'dubious' mean?", a: "doubtful", d: ["delightful", "double", "certain"] },
+    { c: L, t: 3, q: "A 'garish' sign is...?", a: "crudely bright", d: ["pale and faded", "tasteful and subtle", "rough and hairy"] },
+    { c: L, t: 4, q: "What does 'expiate' mean?", a: "to atone for", d: ["to breathe out", "to die", "to explain"] },
+    { c: L, t: 5, q: "What is the 'empyrean'?", a: "the highest heaven", d: ["a vast empire", "a funeral pyre", "an emperor's crown"] },
+  ],
+  // day 55
+  [
+    { c: L, t: 1, q: "What is an 'enemy'?", a: "a person who opposes you", d: ["a person who helps you", "a person you live with", "a person you hire"] },
+    { c: L, t: 2, q: "An 'intrepid' explorer is...?", a: "fearless", d: ["nervous", "intelligent", "clumsy"] },
+    { c: L, t: 3, q: "What does 'esoteric' mean?", a: "understood by only a few", d: ["widely popular", "easy to grasp", "related to the east"] },
+    { c: L, t: 4, q: "To 'impute' a fault to someone is to...?", a: "attribute it to them", d: ["forgive them for it", "conceal it from them", "fine them for it"] },
+    { c: L, t: 5, q: "What is an 'imprecation'?", a: "a curse", d: ["a blessing", "an inaccuracy", "a prayer of thanks"] },
+  ],
+  // day 56
+  [
+    { c: L, t: 1, q: "What is a 'glance'?", a: "a quick look", d: ["a long stare", "a soft touch", "a loud call"] },
+    { c: L, t: 2, q: "Someone 'fluent' in French is...?", a: "able to speak it smoothly and easily", d: ["unable to read it", "fond of its food", "slow to answer in it"] },
+    { c: L, t: 3, q: "What is 'jargon'?", a: "the specialized language of a group", d: ["a large clay jar", "a formal greeting", "a regional accent"] },
+    { c: L, t: 4, q: "What is 'lassitude'?", a: "weariness", d: ["generosity", "great width", "eagerness"] },
+    { c: L, t: 5, q: "What is a 'kenning'?", a: "a poetic compound like 'whale-road' for the sea", d: ["a Scottish song", "a hunting dog", "a family name"] },
+  ],
+  // day 57
+  [
+    { c: L, t: 1, q: "A 'brilliant' light is...?", a: "very bright", d: ["very dull", "very cold", "very small"] },
+    { c: L, t: 2, q: "Someone described as 'irate' is...?", a: "very angry", d: ["very late", "very rich", "very calm"] },
+    { c: L, t: 3, q: "What is an 'idiosyncrasy'?", a: "a peculiar personal habit", d: ["a foolish idea", "a set of beliefs", "a speech defect"] },
+    { c: L, t: 4, q: "A 'glib' answer is...?", a: "fluent but insincere", d: ["shy and halting", "glowing with health", "bitter and sour"] },
+    { c: L, t: 5, q: "What does 'irenic' mean?", a: "aiming at peace", d: ["angry and hostile", "ironic in tone", "relating to Ireland"] },
+  ],
+  // day 58
+  [
+    { c: L, t: 1, q: "What does 'blend' mean?", a: "to mix together", d: ["to pull apart", "to lend", "to blink"] },
+    { c: L, t: 2, q: "What does 'linger' mean?", a: "to stay longer than needed", d: ["to leave early", "to sing softly", "to grow longer"] },
+    { c: L, t: 3, q: "An 'insular' community is...?", a: "narrowly isolated in outlook", d: ["well insulated", "widely traveled", "friendly to outsiders"] },
+    { c: L, t: 4, q: "What does 'fecund' mean?", a: "highly fertile", d: ["foul-smelling", "barren", "fearful"] },
+    { c: L, t: 5, q: "What is 'concinnity'?", a: "elegant harmony of parts", d: ["a council of churches", "a state of confusion", "a stubborn quarrel"] },
+  ],
+  // day 59
+  [
+    { c: L, t: 1, q: "What does 'frighten' mean?", a: "to scare", d: ["to calm", "to fight", "to amuse"] },
+    { c: L, t: 2, q: "A 'fragrant' rose is...?", a: "sweet-smelling", d: ["sweet-tasting", "easily broken", "brightly colored"] },
+    { c: L, t: 3, q: "What is 'heresy'?", a: "a belief against accepted doctrine", d: ["a family inheritance", "a public announcement", "a hurried decision"] },
+    { c: L, t: 4, q: "What does 'filch' mean?", a: "to steal something small", d: ["to fill up", "to scrub clean", "to file away"] },
+    { c: L, t: 5, q: "What is a 'demiurge'?", a: "a creator of the material world", d: ["a sudden craving", "a demagogue's speech", "a minor religious feast"] },
+  ],
+  // day 60
+  [
+    { c: L, t: 1, q: "What is a 'cottage'?", a: "a small house", d: ["a large castle", "a tall tower", "a city office"] },
+    { c: L, t: 2, q: "A 'hazardous' road is...?", a: "full of risk", d: ["full of fog", "full of cars", "full of curves"] },
+    { c: L, t: 3, q: "What does 'alleviate' mean?", a: "to ease or lessen", d: ["to raise up", "to make worse", "to leave behind"] },
+    { c: L, t: 4, q: "What is 'circumlocution'?", a: "roundabout speech", d: ["a voyage around the world", "a precise statement", "a local custom"] },
+    { c: L, t: 5, q: "What is 'eudaemonia'?", a: "happiness or flourishing", d: ["a demonic possession", "a form of insomnia", "a deep melancholy"] },
+  ],
+  // day 61
+  [
+    { c: L, t: 1, q: "What is a 'dwelling'?", a: "a home", d: ["a well", "a shop", "a road"] },
+    { c: L, t: 2, q: "Two 'distinct' ideas are...?", a: "clearly different", d: ["far away", "nearly gone", "closely related"] },
+    { c: L, t: 3, q: "What does 'admonish' mean?", a: "to warn or scold gently", d: ["to admire", "to appoint", "to forgive"] },
+    { c: L, t: 4, q: "An 'ignoble' act is...?", a: "base and dishonorable", d: ["unaware", "newly titled", "noble by birth"] },
+    { c: L, t: 5, q: "What does 'exiguous' mean?", a: "scanty", d: ["urgent", "outward-facing", "abundant"] },
+  ],
+  // day 62
+  [
+    { c: L, t: 1, q: "A 'bitter' taste is...?", a: "sharp and unpleasant", d: ["sweet and sugary", "salty and dry", "soft and creamy"] },
+    { c: L, t: 2, q: "Someone described as 'dejected' is...?", a: "low in spirits", d: ["thrown out", "eager and hopeful", "tired and sleepy"] },
+    { c: L, t: 3, q: "An 'ardent' supporter is...?", a: "passionately eager", d: ["hard and stiff", "coldly indifferent", "deeply confused"] },
+    { c: L, t: 4, q: "A 'draconian' law is...?", a: "excessively harsh", d: ["dragon-shaped", "mild and lenient", "old-fashioned"] },
+    { c: L, t: 5, q: "What is a 'lagniappe'?", a: "a small bonus gift", d: ["a lazy afternoon", "a shallow lagoon", "a Cajun stew"] },
+  ],
+  // day 63
+  [
+    { c: L, t: 1, q: "If a sound is 'faint', it is...?", a: "barely heard", d: ["very loud", "very sharp", "very sweet"] },
+    { c: L, t: 2, q: "What does 'boast' mean?", a: "to brag", d: ["to toast", "to apologize", "to whisper"] },
+    { c: L, t: 3, q: "What does 'condone' mean?", a: "to overlook or accept wrongdoing", d: ["to condemn strongly", "to apologize", "to sympathize"] },
+    { c: L, t: 4, q: "Someone described as 'contrite' is...?", a: "feeling sincere remorse", d: ["trite and overused", "proud and defiant", "bound by contract"] },
+    { c: L, t: 5, q: "What does 'fuliginous' mean?", a: "sooty or dusky", d: ["full of rage", "shining brightly", "short-lived"] },
+  ],
+  // day 64
+  [
+    { c: L, t: 1, q: "Someone who is 'kind' is...?", a: "caring and helpful", d: ["selfish and cruel", "clever and quick", "tall and strong"] },
+    { c: L, t: 2, q: "What does 'devour' mean?", a: "to eat hungrily", d: ["to pray devoutly", "to refuse food", "to cook slowly"] },
+    { c: L, t: 3, q: "What does 'debilitate' mean?", a: "to weaken", d: ["to argue", "to pay off a debt", "to strengthen"] },
+    { c: L, t: 4, q: "What is 'hegemony'?", a: "dominance over others", d: ["a type of hedge", "equal partnership", "a holy relic"] },
+    { c: L, t: 5, q: "A 'labile' mood is...?", a: "readily changing", d: ["fixed and stable", "deeply sorrowful", "tied to work"] },
+  ],
+  // day 65
+  [
+    { c: L, t: 1, q: "What is a 'giant'?", a: "a person or thing of great size", d: ["a tiny creature", "a magic spell", "a castle guard"] },
+    { c: L, t: 2, q: "What is 'compassion'?", a: "sympathy for others' suffering", d: ["a sense of direction", "harsh criticism", "a deep passion"] },
+    { c: L, t: 3, q: "What does 'expedite' mean?", a: "to speed up", d: ["to send on an expedition", "to slow down", "to expel"] },
+    { c: L, t: 4, q: "What does 'indefatigable' mean?", a: "tireless", d: ["unable to be defeated", "undefined", "exhausted"] },
+    { c: L, t: 5, q: "What does 'ineffable' mean?", a: "too great to be expressed in words", d: ["unable to be erased", "not effective", "unable to be eaten"] },
+  ],
+  // day 66
+  [
+    { c: L, t: 1, q: "What does 'arrive' mean?", a: "to reach a place", d: ["to leave a place", "to drive a car", "to stay home"] },
+    { c: L, t: 2, q: "A 'credible' story is...?", a: "believable", d: ["foolishly trusting", "edible", "wealthy"] },
+    { c: L, t: 3, q: "What does 'emulate' mean?", a: "to imitate in order to equal", d: ["to rescue", "to dissolve in water", "to spread rumors"] },
+    { c: L, t: 4, q: "A 'diaphanous' veil is...?", a: "light and see-through", d: ["having two layers", "widely spread", "painted on glass"] },
+    { c: L, t: 5, q: "What does 'apotropaic' mean?", a: "intended to ward off evil", d: ["turning toward the sun", "relating to the tropics", "speaking in riddles"] },
+  ],
+  // day 67
+  [
+    { c: L, t: 1, q: "What does 'combine' mean?", a: "to join together", d: ["to split up", "to brush hair", "to compare"] },
+    { c: L, t: 2, q: "A 'boisterous' party is...?", a: "noisy and lively", d: ["calm and quiet", "proud and boastful", "sad and tearful"] },
+    { c: L, t: 3, q: "A 'fervent' prayer is...?", a: "intensely passionate", d: ["coldly polite", "feverish and ill", "slightly amused"] },
+    { c: L, t: 4, q: "What is 'kismet'?", a: "fate or destiny", d: ["a kiss of greeting", "a curse", "a small gift"] },
+    { c: L, t: 5, q: "What is a 'cenotaph'?", a: "a monument to someone buried elsewhere", d: ["a written epitaph", "a central chapel", "a list of the dead"] },
+  ],
+  // day 68
+  [
+    { c: L, t: 1, q: "A 'festive' mood is...?", a: "cheerful and celebratory", d: ["dull and gloomy", "busy and tired", "cold and snowy"] },
+    { c: L, t: 2, q: "Someone described as 'gleeful' is...?", a: "full of delight", d: ["full of worry", "full of food", "full of doubt"] },
+    { c: L, t: 3, q: "What does 'benign' mean?", a: "gentle and harmless", d: ["dangerously harmful", "oddly bent", "widely known"] },
+    { c: L, t: 4, q: "A 'beatific' smile is...?", a: "blissfully happy", d: ["beaten down", "beautifully dressed", "sternly serious"] },
+    { c: L, t: 5, q: "What is an 'inglenook'?", a: "a corner by a fireplace", d: ["a hidden garden", "a small inn", "a forest hollow"] },
+  ],
+  // day 69
+  [
+    { c: L, t: 1, q: "What is an 'edge'?", a: "the outer border of something", d: ["the very center", "a deep hole", "a small piece"] },
+    { c: L, t: 2, q: "A 'lofty' tower is...?", a: "very high", d: ["very lonely", "very heavy", "very soft"] },
+    { c: L, t: 3, q: "What is a 'debacle'?", a: "a sudden, humiliating failure", d: ["a public debate", "a wild party", "a narrow escape"] },
+    { c: L, t: 4, q: "A 'baleful' look is...?", a: "threatening harm", d: ["full of hay", "deeply grieving", "pale and sickly"] },
+    { c: L, t: 5, q: "What is a 'gerontocracy'?", a: "rule by elders", d: ["rule by the wealthy", "rule by priests", "rule by one family"] },
+  ],
+  // day 70
+  [
+    { c: L, t: 1, q: "Something 'cheap' is...?", a: "low in price", d: ["high in price", "well made", "hard to find"] },
+    { c: L, t: 2, q: "What does 'flourish' mean?", a: "to grow well and thrive", d: ["to wilt", "to bake", "to complain"] },
+    { c: L, t: 3, q: "What does 'acquiesce' mean?", a: "to accept without protest", d: ["to acquire", "to object loudly", "to become quiet"] },
+    { c: L, t: 4, q: "A plan held in 'abeyance' is in...?", a: "temporary suspension", d: ["obedience", "a monastery", "a permanent end"] },
+    { c: L, t: 5, q: "What is a 'cognomen'?", a: "a surname or nickname", d: ["an educated guess", "a known fact", "a code word"] },
+  ],
+  // day 71
+  [
+    { c: L, t: 1, q: "What does 'drench' mean?", a: "to soak completely", d: ["to dry", "to dig", "to drink"] },
+    { c: L, t: 2, q: "Someone 'adept' at chess is...?", a: "highly skilled", d: ["adopted", "clumsy", "willing"] },
+    { c: L, t: 3, q: "A 'flippant' remark is...?", a: "not showing proper seriousness", d: ["easily flipped", "overly formal", "physically agile"] },
+    { c: L, t: 4, q: "What does 'ersatz' mean?", a: "artificial and inferior", d: ["upright and stiff", "eager and keen", "genuine"] },
+    { c: L, t: 5, q: "What does 'hortatory' mean?", a: "urging or encouraging", d: ["relating to gardens", "relating to time", "warning of disaster"] },
+  ],
+  // day 72
+  [
+    { c: L, t: 1, q: "What is 'autumn'?", a: "the season after summer", d: ["the season after winter", "the season before summer", "the rainy season"] },
+    { c: L, t: 2, q: "What does 'hesitate' mean?", a: "to pause before acting", d: ["to rush ahead", "to hate", "to heal"] },
+    { c: L, t: 3, q: "What is an 'enigma'?", a: "a puzzling mystery", d: ["an energetic person", "an enemy", "a mild illness"] },
+    { c: L, t: 4, q: "A 'lithe' dancer is...?", a: "flexible and graceful", d: ["stiff and clumsy", "bright and lit", "quiet and still"] },
+    { c: L, t: 5, q: "What is a 'hierophant'?", a: "an interpreter of sacred mysteries", d: ["a carver of hieroglyphs", "a ruler of a holy city", "a writer of hymns"] },
+  ],
+  // day 73
+  [
+    { c: L, t: 1, q: "A 'crowded' room is...?", a: "full of people", d: ["empty of people", "full of crows", "quiet and dark"] },
+    { c: L, t: 2, q: "An 'arid' land is...?", a: "very dry", d: ["very windy", "very cold", "very green"] },
+    { c: L, t: 3, q: "What is 'hubris'?", a: "excessive pride", d: ["a central point", "great humility", "a sense of humor"] },
+    { c: L, t: 4, q: "What is 'invective'?", a: "insulting, abusive language", d: ["an invention", "a formal invitation", "a sincere prayer"] },
+    { c: L, t: 5, q: "What is a 'deipnosophist'?", a: "a master of dinner conversation", d: ["an expert on sleep", "a student of deep-sea life", "a writer of dictionaries"] },
+  ],
+  // day 74
+  [
+    { c: L, t: 1, q: "What does 'celebrate' mean?", a: "to mark a happy occasion", d: ["to mourn a loss", "to forget a date", "to cancel a plan"] },
+    { c: L, t: 2, q: "An 'annual' event is...?", a: "happening once a year", d: ["happening every day", "happening twice a year", "happening by chance"] },
+    { c: L, t: 3, q: "An 'auspicious' start is...?", a: "showing signs of future success", d: ["suspicious and wary", "ancient and sacred", "loud and showy"] },
+    { c: L, t: 4, q: "What does 'burgeon' mean?", a: "to grow rapidly", d: ["to burglarize", "to bury", "to fade"] },
+    { c: L, t: 5, q: "What is a 'chiliad'?", a: "a group of one thousand", d: ["a cold spell", "a group of a hundred", "a children's rhyme"] },
   ],
 ];

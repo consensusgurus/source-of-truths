@@ -2,7 +2,7 @@
 // and opposite-of questions on single words, plus occasional fill-the-blank.
 // Every target word starts with a letter M through Z (the other lane takes A to L).
 const L = 'Synonyms & Opposites';
-export const LANE_DAYS = [
+export const LANE_DAYS_1_36 = [
   // day 1
   [
     { c: L, t: 1, q: "Which word is closest in meaning to 'whole'?", a: "entire", d: ["half", "large", "solid"] },
@@ -290,5 +290,316 @@ export const LANE_DAYS = [
     { c: L, t: 3, q: "Which word is closest in meaning to 'paramount'?", a: "foremost", d: ["trivial", "ancient", "popular"] },
     { c: L, t: 4, q: "Which word is closest in meaning to 'quixotic'?", a: "idealistic", d: ["practical", "quick", "cautious"] },
     { c: L, t: 5, q: "Which word is closest in meaning to 'pusillanimous'?", a: "cowardly", d: ["valiant", "petty", "cunning"] },
+  ],
+];
+
+// Days 37 to 74 (2026-11-24 to 2026-12-31). gen-english.mjs appends every day in
+// LANE_DAYS after the bank's last day, so the segment already shipped (days 1 to
+// 36, above) is kept under its own name and only this segment is exported as LANE_DAYS.
+// Every target word is new to the lane, and the A-L / M-Z split still holds.
+export const LANE_DAYS = [
+  // day 37
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'never'?", a: "always", d: ["rarely", "later", "sometimes"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'perilous'?", a: "risky", d: ["peaceful", "tiresome", "precious"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'malleable'?", a: "pliable", d: ["brittle", "mellow", "harmful"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'maudlin'?", a: "mawkish", d: ["moldy", "stoic", "muddled"] },
+    { c: L, t: 5, q: "Which word is the opposite of 'maladroit'?", a: "deft", d: ["clumsy", "awkward", "malicious"] },
+  ],
+  // day 38
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'tidy'?", a: "messy", d: ["clean", "small", "quiet"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'nimble'?", a: "agile", d: ["clumsy", "tiny", "noble"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'mitigate'?", a: "lessen", d: ["worsen", "migrate", "imitate"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'mendicant'?", a: "beggar", d: ["liar", "healer", "merchant"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'manumit'?", a: "emancipate", d: ["handwrite", "manipulate", "imprison"] },
+  ],
+  // day 39
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'smile'?", a: "frown", d: ["grin", "laugh", "wink"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'savor'?", a: "relish", d: ["waste", "refuse", "gulp"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'prolific'?", a: "productive", d: ["barren", "professional", "proud"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'mercurial'?", a: "erratic", d: ["merciful", "metallic", "steadfast"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'meretricious'?", a: "tawdry", d: ["meritorious", "modest", "venerable"] },
+  ],
+  // day 40
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'sour'?", a: "sweet", d: ["bitter", "tart", "sharp"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'meager'?", a: "scanty", d: ["generous", "eager", "bitter"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'morose'?", a: "gloomy", d: ["cheerful", "moral", "lively"] },
+    { c: L, t: 4, q: "Which word is the opposite of 'nadir'?", a: "zenith", d: ["bottom", "depth", "trough"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'mountebank'?", a: "charlatan", d: ["banker", "mountaineer", "philanthropist"] },
+  ],
+  // day 41
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'soft'?", a: "hard", d: ["gentle", "quiet", "smooth"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'mournful'?", a: "sorrowful", d: ["joyful", "hopeful", "restful"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'negligent'?", a: "careless", d: ["careful", "negative", "elegant"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'nascent'?", a: "emerging", d: ["fading", "nasty", "mature"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'nescience'?", a: "ignorance", d: ["wisdom", "newness", "science"] },
+  ],
+  // day 42
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'tall'?", a: "short", d: ["thin", "wide", "heavy"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'peculiar'?", a: "odd", d: ["plain", "pleasant", "precise"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'nonchalant'?", a: "casual", d: ["anxious", "eager", "formal"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'nebulous'?", a: "vague", d: ["starry", "distinct", "noble"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'oleaginous'?", a: "oily", d: ["aged", "leafy", "dry"] },
+  ],
+  // day 43
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'stop'?", a: "halt", d: ["go", "turn", "hurry"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'persuade'?", a: "convince", d: ["pursue", "forbid", "confuse"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'oblivious'?", a: "unaware", d: ["obvious", "alert", "envious"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'noisome'?", a: "foul", d: ["noisy", "pleasant", "quiet"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'operose'?", a: "laborious", d: ["operatic", "effortless", "open"] },
+  ],
+  // day 44
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'remember'?", a: "forget", d: ["recall", "repeat", "learn"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'predict'?", a: "forecast", d: ["prevent", "protect", "pretend"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'opulent'?", a: "luxurious", d: ["shabby", "opaque", "optimistic"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'onerous'?", a: "burdensome", d: ["honorable", "effortless", "solitary"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'plangent'?", a: "resounding", d: ["muffled", "planned", "pleasant"] },
+  ],
+  // day 45
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'wealthy'?", a: "rich", d: ["poor", "famous", "kind"] },
+    { c: L, t: 2, q: "Which word is the opposite of 'prohibit'?", a: "allow", d: ["forbid", "ban", "block"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'ostracize'?", a: "exclude", d: ["welcome", "applaud", "examine"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'paragon'?", a: "model", d: ["paradox", "rival", "failure"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'objurgate'?", a: "berate", d: ["object", "beseech", "exonerate"] },
+  ],
+  // day 46
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'pick'?", a: "choose", d: ["drop", "lose", "refuse"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'quarrel'?", a: "argument", d: ["agreement", "question", "quarter"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'outlandish'?", a: "bizarre", d: ["ordinary", "tasteful", "hopeful"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'penchant'?", a: "fondness", d: ["pendant", "penalty", "aversion"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'propinquity'?", a: "nearness", d: ["propriety", "distance", "prosperity"] },
+  ],
+  // day 47
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'often'?", a: "frequently", d: ["rarely", "never", "slowly"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'remote'?", a: "distant", d: ["nearby", "crowded", "ancient"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'partisan'?", a: "biased", d: ["neutral", "temporary", "courteous"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'penurious'?", a: "impoverished", d: ["wealthy", "penitent", "punctual"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'puerile'?", a: "childish", d: ["pure", "mature", "sickly"] },
+  ],
+  // day 48
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'under'?", a: "below", d: ["above", "beside", "behind"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'reliable'?", a: "dependable", d: ["fickle", "available", "likable"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'paucity'?", a: "scarcity", d: ["abundance", "pause", "caution"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'perfidious'?", a: "treacherous", d: ["perfect", "loyal", "fearful"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'quiescent'?", a: "dormant", d: ["active", "quizzical", "agitated"] },
+  ],
+  // day 49
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'mad'?", a: "angry", d: ["sleepy", "hungry", "proud"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'rotate'?", a: "spin", d: ["rot", "slide", "stop"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'perpetual'?", a: "everlasting", d: ["occasional", "perplexing", "brief"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'petulant'?", a: "peevish", d: ["patient", "perky", "generous"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'quidnunc'?", a: "busybody", d: ["miser", "coin collector", "hermit"] },
+  ],
+  // day 50
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'terrible'?", a: "awful", d: ["great", "strange", "silly"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'seize'?", a: "grab", d: ["release", "cease", "drop"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'placate'?", a: "appease", d: ["provoke", "decorate", "replace"] },
+    { c: L, t: 4, q: "Which word is the opposite of 'plethora'?", a: "dearth", d: ["glut", "surplus", "plenty"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'refulgent'?", a: "shining", d: ["refreshing", "dull", "rebellious"] },
+  ],
+  // day 51
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'ready'?", a: "prepared", d: ["late", "tired", "busy"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'serene'?", a: "peaceful", d: ["noisy", "severe", "sincere"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'pompous'?", a: "self-important", d: ["humble", "generous", "timid"] },
+    { c: L, t: 4, q: "Which word is the opposite of 'probity'?", a: "dishonesty", d: ["integrity", "rectitude", "decency"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'sangfroid'?", a: "composure", d: ["bloodlust", "panic", "sorrow"] },
+  ],
+  // day 52
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'night'?", a: "day", d: ["evening", "dark", "moon"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'solemn'?", a: "serious", d: ["playful", "solid", "lonely"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'precarious'?", a: "unstable", d: ["secure", "precious", "cautious"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'profligate'?", a: "wasteful", d: ["prophetic", "thrifty", "profitable"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'sapient'?", a: "wise", d: ["juicy", "foolish", "sleepy"] },
+  ],
+  // day 53
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'win'?", a: "lose", d: ["gain", "play", "score"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'spacious'?", a: "roomy", d: ["cramped", "special", "speedy"] },
+    { c: L, t: 3, q: "Which word is the opposite of 'profound'?", a: "shallow", d: ["deep", "thoughtful", "serious"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'punctilious'?", a: "scrupulous", d: ["slapdash", "prickly", "pugnacious"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'senescent'?", a: "aging", d: ["sensible", "youthful", "fragrant"] },
+  ],
+  // day 54
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'sharp'?", a: "dull", d: ["pointed", "quick", "keen"] },
+    { c: L, t: 2, q: "Which word is the opposite of 'stale'?", a: "fresh", d: ["old", "dry", "moldy"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'rebuke'?", a: "reprimand", d: ["praise", "rebuild", "rebound"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'quell'?", a: "suppress", d: ["inflame", "question", "quarrel"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'sententious'?", a: "moralizing", d: ["sensitive", "sentimental", "sedentary"] },
+  ],
+  // day 55
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'pretty'?", a: "lovely", d: ["plain", "silly", "strong"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'summit'?", a: "peak", d: ["valley", "base", "slope"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'reclusive'?", a: "solitary", d: ["sociable", "reckless", "exclusive"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'rapacious'?", a: "greedy", d: ["rapid", "generous", "rapturous"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'stentorian'?", a: "booming", d: ["whispered", "stern", "stony"] },
+  ],
+  // day 56
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'take'?", a: "give", d: ["grab", "hold", "keep"] },
+    { c: L, t: 2, q: "Which word is the opposite of 'tame'?", a: "wild", d: ["gentle", "meek", "trained"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'remorse'?", a: "regret", d: ["pleasure", "reward", "rumor"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'recant'?", a: "retract", d: ["recount", "affirm", "decant"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'susurrus'?", a: "murmur", d: ["shriek", "sunrise", "syrup"] },
+  ],
+  // day 57
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'wrong'?", a: "right", d: ["false", "bad", "late"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'option'?", a: "choice", d: ["answer", "opinion", "problem"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'reticent'?", a: "reserved", d: ["outspoken", "resentful", "repetitive"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'remonstrate'?", a: "protest", d: ["demonstrate", "agree", "remember"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'tatterdemalion'?", a: "ragamuffin", d: ["tattletale", "daredevil", "dandy"] },
+  ],
+  // day 58
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'rest'?", a: "relax", d: ["work", "run", "rush"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'vow'?", a: "promise", d: ["threat", "question", "whisper"] },
+    { c: L, t: 3, q: "Which word is the opposite of 'revere'?", a: "despise", d: ["respect", "honor", "admire"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'reprobate'?", a: "scoundrel", d: ["saint", "prophet", "reporter"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'threnody'?", a: "lament", d: ["triumph", "threat", "limerick"] },
+  ],
+  // day 59
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'unhappy'?", a: "sad", d: ["glad", "calm", "rich"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'yield'?", a: "surrender", d: ["resist", "attack", "defend"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'rudimentary'?", a: "basic", d: ["advanced", "rude", "ornate"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'repudiate'?", a: "reject", d: ["endorse", "repeat", "restore"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'peculate'?", a: "embezzle", d: ["speculate", "peel", "donate"] },
+  ],
+  // day 60
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'student'?", a: "pupil", d: ["teacher", "coach", "parent"] },
+    { c: L, t: 2, q: "Which word is the opposite of 'recede'?", a: "advance", d: ["retreat", "withdraw", "ebb"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'solace'?", a: "comfort", d: ["sunlight", "sorrow", "isolation"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'sanctimonious'?", a: "self-righteous", d: ["humble", "sanitary", "generous"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'venial'?", a: "pardonable", d: ["venal", "mortal", "venomous"] },
+  ],
+  // day 61
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'speedy'?", a: "fast", d: ["slow", "late", "loud"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'novel' in 'a novel idea'?", a: "original", d: ["fictional", "lengthy", "outdated"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'stoic'?", a: "impassive", d: ["emotional", "excitable", "stocky"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'sardonic'?", a: "mocking", d: ["sorrowful", "sincere", "sedate"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'verisimilitude'?", a: "plausibility", d: ["falsehood", "verbosity", "variety"] },
+  ],
+  // day 62
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'weird'?", a: "strange", d: ["normal", "boring", "gentle"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'plump'?", a: "chubby", d: ["skinny", "plain", "tall"] },
+    { c: L, t: 3, q: "Which word is the opposite of 'subtle'?", a: "blatant", d: ["delicate", "faint", "understated"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'scurrilous'?", a: "slanderous", d: ["scurrying", "flattering", "scrupulous"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'parvenu'?", a: "upstart", d: ["aristocrat", "newborn", "traveler"] },
+  ],
+  // day 63
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'wise'?", a: "foolish", d: ["clever", "old", "kind"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'radiant'?", a: "glowing", d: ["gloomy", "rapid", "radical"] },
+    { c: L, t: 3, q: "Which word is the opposite of 'succinct'?", a: "rambling", d: ["brief", "pithy", "terse"] },
+    { c: L, t: 4, q: "Which word is the opposite of 'sedentary'?", a: "active", d: ["seated", "idle", "inert"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'nostrum'?", a: "panacea", d: ["diagnosis", "nostalgia", "proverb"] },
+  ],
+  // day 64
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'stay'?", a: "leave", d: ["remain", "wait", "sit"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'tremble'?", a: "quiver", d: ["shout", "stumble", "freeze"] },
+    { c: L, t: 3, q: "Which word is the opposite of 'tenuous'?", a: "substantial", d: ["flimsy", "slight", "tenacious"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'soporific'?", a: "sleep-inducing", d: ["sophisticated", "stimulating", "soapy"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'refractory'?", a: "unmanageable", d: ["reflective", "obedient", "refreshing"] },
+  ],
+  // day 65
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'rock'?", a: "stone", d: ["sand", "wood", "leaf"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'precious'?", a: "valuable", d: ["worthless", "previous", "common"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'thwart'?", a: "frustrate", d: ["assist", "throw", "wander"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'spurious'?", a: "counterfeit", d: ["authentic", "spirited", "hasty"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'poltroon'?", a: "coward", d: ["hero", "jester", "peasant"] },
+  ],
+  // day 66
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'nap'?", a: "doze", d: ["eat", "run", "sing"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'stern'?", a: "strict", d: ["gentle", "silly", "starry"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'transient'?", a: "fleeting", d: ["permanent", "transparent", "translated"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'trenchant'?", a: "incisive", d: ["vague", "trembling", "muddy"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'oppugn'?", a: "dispute", d: ["support", "oppress", "pursue"] },
+  ],
+  // day 67
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'sell'?", a: "buy", d: ["trade", "pay", "give"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'shabby'?", a: "worn-out", d: ["brand-new", "stylish", "costly"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'tumultuous'?", a: "turbulent", d: ["tranquil", "tuneful", "timid"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'unctuous'?", a: "smarmy", d: ["sincere", "uncouth", "clumsy"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'quondam'?", a: "former", d: ["future", "quarrelsome", "quiet"] },
+  ],
+  // day 68
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'merry'?", a: "joyful", d: ["sleepy", "grumpy", "quiet"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'twinkle'?", a: "sparkle", d: ["fade", "glare", "dim"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'whimsical'?", a: "playful", d: ["serious", "wistful", "wheezing"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'winsome'?", a: "charming", d: ["victorious", "sullen", "lonesome"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'sempiternal'?", a: "eternal", d: ["seasonal", "semiannual", "fleeting"] },
+  ],
+  // day 69
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'pal'?", a: "friend", d: ["rival", "stranger", "boss"] },
+    { c: L, t: 2, q: "Which word is the opposite of 'transparent'?", a: "opaque", d: ["clear", "glassy", "see-through"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'vehement'?", a: "forceful", d: ["mild", "hesitant", "vague"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'upbraid'?", a: "scold", d: ["praise", "uplift", "entangle"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'tenebrous'?", a: "shadowy", d: ["tender", "tenacious", "sunny"] },
+  ],
+  // day 70
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'wake'?", a: "sleep", d: ["rise", "yawn", "stand"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'mumble'?", a: "mutter", d: ["shout", "sing", "giggle"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'vex'?", a: "annoy", d: ["soothe", "vote", "explain"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'tirade'?", a: "rant", d: ["parade", "whisper", "tribute"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'tyro'?", a: "neophyte", d: ["tyrant", "expert", "typist"] },
+  ],
+  // day 71
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'outside'?", a: "inside", d: ["outdoors", "beside", "around"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'reside'?", a: "inhabit", d: ["visit", "travel", "depart"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'volatile' in 'a volatile temper'?", a: "explosive", d: ["steady", "voluntary", "valuable"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'veracity'?", a: "truthfulness", d: ["voracity", "falsehood", "bravery"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'volte-face'?", a: "reversal", d: ["volley", "salute", "stalemate"] },
+  ],
+  // day 72
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'top'?", a: "bottom", d: ["peak", "side", "front"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'urgent'?", a: "pressing", d: ["trivial", "urban", "gentle"] },
+    { c: L, t: 3, q: "Which word is the opposite of 'wane'?", a: "wax", d: ["fade", "ebb", "dwindle"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'verdant'?", a: "green", d: ["barren", "truthful", "ancient"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'mephitic'?", a: "noxious", d: ["fragrant", "mythical", "medicinal"] },
+  ],
+  // day 73
+  [
+    { c: L, t: 1, q: "Which word is closest in meaning to 'yummy'?", a: "delicious", d: ["bitter", "stale", "raw"] },
+    { c: L, t: 2, q: "Which word is the opposite of 'thrive'?", a: "wither", d: ["flourish", "prosper", "bloom"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'wily'?", a: "crafty", d: ["naive", "wild", "weary"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'vilify'?", a: "defame", d: ["glorify", "vitalize", "verify"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'perspicuous'?", a: "lucid", d: ["perceptive", "perspiring", "murky"] },
+  ],
+  // day 74
+  [
+    { c: L, t: 1, q: "Which word is the opposite of 'new'?", a: "old", d: ["fresh", "modern", "recent"] },
+    { c: L, t: 2, q: "Which word is closest in meaning to 'sufficient'?", a: "enough", d: ["scarce", "efficient", "lacking"] },
+    { c: L, t: 3, q: "Which word is closest in meaning to 'zest'?", a: "gusto", d: ["boredom", "zenith", "lethargy"] },
+    { c: L, t: 4, q: "Which word is closest in meaning to 'wan'?", a: "pallid", d: ["rosy", "wanton", "eager"] },
+    { c: L, t: 5, q: "Which word is closest in meaning to 'traduce'?", a: "slander", d: ["translate", "introduce", "praise"] },
   ],
 ];
