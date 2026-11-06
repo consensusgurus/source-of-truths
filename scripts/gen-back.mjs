@@ -23,8 +23,12 @@
 // own parser and requires exactly one to equal the target.
 //
 //   node scripts/gen-back.mjs --force              (whole bank, scratch only)
+//   node scripts/gen-back.mjs --from <date> --days N --startnum <n> --avoid app/back --seed <new> --out /tmp/x
+//       --avoid folds the live bank's lines into the dedupe set and refuses a
+//       range that would reuse a num or date; a new --seed keeps the range from
+//       replaying the launch run's draws. Then splice the range onto the bank.
 
-import { makeRng, makeChooser, buildDays, emitBank, parseArgs, isTight } from './mathrun-core.mjs';
+import { makeRng, makeChooser, buildDays, emitBank, parseArgs, isTight, loadAvoid } from './mathrun-core.mjs';
 
 const A = parseArgs(process.argv.slice(2), { from: '2026-10-09', days: 78, out: 'app/back', seed: 20261011 });
 const { R, pick, shuffle } = makeRng(A.seed);
@@ -97,6 +101,7 @@ const TIERS = [
 ];
 
 const seen = new Set();
+for (const p of await loadAvoid(A)) seen.add(p.choices[p.correct]);   // --avoid: no answer line the live bank already used
 function makeOne(fam, usedSigs) {
   const f = FAM[fam];
   if (usedSigs.has(f.sig)) return null;

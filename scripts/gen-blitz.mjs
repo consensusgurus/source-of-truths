@@ -199,7 +199,9 @@ F.div1 = () => {                                   // quotient into the teens, t
   // has to outlast the bank. Widened UPWARD on purpose, never down: pulling a
   // tier's numbers smaller is how a round stops being harder than the one below
   // it, which the verifier's ladder check would then fail.
-  const y = ri(3, 9), q = ri(12, 26), x = y * q;
+  // Widened again (q to 30) on 2026-11-06 for the December range: with the
+  // 11s and 12s spent, tier 2 could not fill four families a day. Upward only.
+  const y = ri(3, 9), q = ri(12, 30), x = y * q;
   return { q: `${x} ÷ ${y}`, a: q, ds: [q + 1, q - 1, q + 2, q - 2, q + 10, q - 10] };
 };
 F.div2 = () => {                                   // two-digit quotient, tier 3
@@ -213,7 +215,9 @@ F.div2 = () => {                                   // two-digit quotient, tier 3
 // this went in. Families return a `sig`, and a round takes each sig once.
 const fracSig = (n, d) => ((n * 100) % d === 0 ? `pct${(n * 100) / d}` : `frac${n}/${d}`);
 F.pctEasy = () => {                                // 10 / 25 / 50 of a round number
-  const p = pick([10, 25, 50]), x = pick([40, 60, 80, 90, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 360, 400, 420, 440, 480]);
+  // Widened UPWARD (500 to 800) on 2026-11-06: the original twenty bases were
+  // nearly spent, and the 11s and 12s already were. Still round numbers.
+  const p = pick([10, 25, 50]), x = pick([40, 60, 80, 90, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 360, 400, 420, 440, 480, 500, 520, 560, 600, 640, 680, 720, 800]);
   const a = (x * p) / 100;
   return { q: `${p}% of ${x}`, a, sig: `pct${p}`, ds: [
     a * 2, a / 2, a + 10, a - 10, a + x / 10,
@@ -256,7 +260,9 @@ F.pctChange = () => {                              // increase / decrease
 };
 F.fracEasy = () => {                               // half / third / quarter of
   const [n, d] = pick([[1, 2], [1, 3], [1, 4], [2, 3], [3, 4]]);
-  const x = d * ri(6, 36);
+  // Widened UPWARD (multiplier to 44) on 2026-11-06 with div1 and pctEasy, so
+  // tier 2 keeps four live families through December.
+  const x = d * ri(6, 44);
   const a = (x / d) * n;
   return { q: `${n}/${d} of ${x}`, a, sig: fracSig(n, d), ds: [
     (x / d) * (n + 1), n > 1 ? (x / d) * (n - 1) : x / (d + 1),

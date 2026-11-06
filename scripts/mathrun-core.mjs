@@ -17,6 +17,7 @@
 
 import { writeFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 export function parseArgs(argv, dflt) {
   const arg = (name, d) => {
@@ -30,7 +31,25 @@ export function parseArgs(argv, dflt) {
     out: arg('out', dflt.out),
     seed: Number(arg('seed', dflt.seed)),
     force: argv.includes('--force'),
+    avoid: arg('avoid', null),
   };
+}
+
+// --avoid <dir>: load an already-published bank so a generated range can be
+// spliced onto it. The generator folds every live line into its dedupe set
+// BEFORE generating, so the merged bank repeats no line the verifier would
+// reject, and the guards refuse a range that would reuse a day number or date.
+export async function loadAvoid(A) {
+  if (!A.avoid) return [];
+  const dir = resolve(A.avoid);
+  const { PROBLEMS } = await import(pathToFileURL(`${dir}/problems.js`).href);
+  const { PUZZLES } = await import(pathToFileURL(`${dir}/puzzles.js`).href);
+  const lastNum = Math.max(...PUZZLES.map((d) => d.num));
+  const lastLive = PUZZLES.map((d) => d.live).sort().at(-1);
+  if (A.startNum <= lastNum) throw new Error(`--startnum ${A.startNum} would reuse day numbers; the avoided bank already runs to num ${lastNum}`);
+  if (A.from <= lastLive) throw new Error(`--from ${A.from} is not after the avoided bank's last live date ${lastLive}`);
+  console.log(`avoiding ${PROBLEMS.length} problems over ${PUZZLES.length} days (through num ${lastNum}, ${lastLive})`);
+  return PROBLEMS;
 }
 
 // mulberry32, as in every other bank generator here.

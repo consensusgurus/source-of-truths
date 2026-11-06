@@ -15,9 +15,12 @@
 // and requires EXACTLY ONE to make the equation true.
 //
 //   node scripts/gen-gap.mjs --force               (whole bank, scratch only)
-//   node scripts/gen-gap.mjs --from <date> --days N --startnum <n> --out /tmp/x
+//   node scripts/gen-gap.mjs --from <date> --days N --startnum <n> --avoid app/gap --seed <new> --out /tmp/x
+//       --avoid folds the live bank's lines into the dedupe set and refuses a
+//       range that would reuse a num or date; a new --seed keeps the range from
+//       replaying the launch run's draws. Then splice the range onto the bank.
 
-import { makeRng, makeChooser, buildDays, emitBank, parseArgs } from './mathrun-core.mjs';
+import { makeRng, makeChooser, buildDays, emitBank, parseArgs, loadAvoid } from './mathrun-core.mjs';
 
 const A = parseArgs(process.argv.slice(2), { from: '2026-10-09', days: 78, out: 'app/gap', seed: 20261009 });
 const { R, ri, pick } = makeRng(A.seed);
@@ -108,6 +111,7 @@ const TIERS = [
 for (const t of TIERS) for (const f of t.fams) if (!F[f]) throw new Error(`no family ${f}`);
 
 const seenQ = new Set();
+for (const p of await loadAvoid(A)) seenQ.add(p.q);   // --avoid: no line the live bank already used
 function makeOne(fam, usedSigs) {
   for (let attempt = 0; attempt < 400; attempt++) {
     const m = F[fam]();
