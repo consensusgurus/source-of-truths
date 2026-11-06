@@ -44,6 +44,7 @@ import { useStageChrome } from './GauntletScreens';
 import { dailyDept, DAILY_GAME_MAP } from '@/lib/daily-games';
 import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref } from '@/lib/circuits';
 import { SKILL_TAGS, SKILL_MAP } from '@/lib/daily-skills';
+import { relativesOf } from '@/lib/daily-families';
 import { categoryColor, softGround } from '@/lib/category-ramp';
 import { usePuzzleStandings, StandBeat, StandCard, PassCard, PassPlay, beatDuration } from './WhereYouStand';
 
@@ -858,10 +859,21 @@ export default function StageStick({
     const tags = sk ? [sk.short || sk.name, `Like ${nm}`, p.g.cat] : sameCat ? [`Like ${nm}`, p.g.cat] : ['Easiest points left', p.g.cat];
     return { score, why, whyLong, tags };
   };
-  const ranked = pool.map((p) => ({ ...p, ...affinity(p) })).sort((a, b) => b.score - a.score || a.ease - b.ease);
-  const mainPick = ranked[0] || null;
+  const byAff = pool.map((p) => ({ ...p, ...affinity(p) })).sort((a, b) => b.score - a.score || a.ease - b.ease);
+  // THE CLOSEST RELATIVE SITS BESIDE THE BIG PLAY (owner, 2026-11-05: "why
+  // wouldn't this show Encore anywhere? that's the most closely aligned";
+  // chose both: the big play keeps the easiest points, the relative sits
+  // beside it). The relative is the nearest family member (lib/daily-families)
+  // the server offered; it is priced from your own place on this puzzle.
+  const nm0 = s.gameName || 'this one';
+  const sibKey = relativesOf(s.gameKey).find((k) => byAff.some((p) => p.key === k)) || null;
+  const sibRaw = sibKey ? byAff.find((p) => p.key === sibKey) : null;
+  const sibPick = sibRaw ? { ...sibRaw, sib: true, why: `Like ${nm0}`, whyLong: `The closest puzzle to ${nm0}, priced from how you did on it.`, tags: [`Like ${nm0}`, sibRaw.g.cat] } : null;
+  const mainPick = byAff.find((p) => p.key !== sibKey) || sibPick || null;
+  const sibBeside = sibPick && mainPick && mainPick.key !== sibPick.key ? sibPick : null;
+  const ranked = [mainPick, sibBeside, ...byAff.filter((p) => p.key !== sibKey && p !== mainPick)].filter(Boolean);
   const catPick = ranked.find((p) => p !== mainPick && p.g.cat === curCat) || null;
-  const otherPick = catPick || ranked.find((p) => p !== mainPick) || null;
+  const otherPick = sibBeside || catPick || ranked.find((p) => p !== mainPick) || null;
   // A pick's `after` is a rank on the board it came from: All today, or the
   // category today for a pick only the category read offered.
   const passLine = (p) => {
@@ -885,7 +897,7 @@ export default function StageStick({
   const small = [];
   if (otherPick) {
     const nx = otherPick === catPick && catRow && catRow.next && otherPick.pts >= catRow.next.gap ? `passes ${catRow.next.name}` : `${otherPick.mins} min \u00b7 ~${otherPick.pts} pts`;
-    small.push({ title: `Play ${otherPick.g.name}`, sub: `${otherPick.g.cat} \u00b7 ${nx}`, href: otherPick.g.href });
+    small.push({ title: `Play ${otherPick.g.name}`, sub: `${otherPick === sibBeside ? `Like ${nm0}` : otherPick.g.cat} \u00b7 ${nx}`, href: otherPick.g.href });
   }
   // The Challenge button ("GIFs at right") is gone (owner, 2026-11-03); the GIFs keep their own card.
   const playNode = mainPick || small.length ? (
@@ -1181,7 +1193,8 @@ export default function StageStick({
     const fx = passInfo(mainPick);
     const d = DAILY_GAME_MAP[mainPick.key] || {};
     const head = fx && fx.passes ? `Pass ${fx.passes} in ${fx.where}` : fx && fx.to ? `Up to #${fx.to} in ${fx.where}` : mainPick.why;
-    const more = ranked.slice(1, 7);
+    const more = ranked.filter((p) => p !== mainPick && p !== sibBeside).slice(0, 6);
+    const sd = sibBeside ? DAILY_GAME_MAP[sibBeside.key] || {} : null;
     return (
       <section className={'sst-card sst-nc ' + on(3)}>
         <div className="sst-ncm">
@@ -1198,6 +1211,15 @@ export default function StageStick({
               <span className="go">Start</span>
             </span>
           </a>
+          {sibBeside ? (
+            <a className="sst-ncsib" href={sibBeside.g.href} style={{ '--nxp': softGround(categoryColor(sibBeside.g.cat)) }}>
+              <span className="lk">Like {nm0}</span>
+              <span className="nm"><b>Play {sibBeside.g.name}</b><small>{[sd.tag, sibBeside.mins ? `${sibBeside.mins} min` : null].filter(Boolean).join(' \u00b7 ')}</small></span>
+              <span className="mv">{moveOf(sibBeside)}</span>
+              <b className="pt">+{sibBeside.pts}</b>
+              <span className="ar" aria-hidden="true">&rarr;</span>
+            </a>
+          ) : null}
           {more.length ? (
             <div className="sst-ncl">
               {more.map((p) => (
@@ -1742,6 +1764,17 @@ html.lc-on:has(.lc-side > .sst-fold) .lc-host .stg-fg{padding-right:20px;}
 .sst-ncb .rt > b{font-size:38px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
 .sst-ncb .rt em{font-style:normal;font-size:13px;font-weight:800;white-space:nowrap;}
 .sst-ncb .go{margin-top:8px;background:var(--sst-ink);color:var(--stg-raise,#fff);border-radius:10px;padding:10px 26px;font-size:15px;font-weight:800;}
+.sst-ncsib{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;gap:14px;align-items:center;margin-top:10px;padding:12px 20px;border:2px solid var(--sst-ink);border-radius:14px;background:color-mix(in srgb,var(--nxp) 45%,var(--stg-raise,#fff));color:var(--sst-ink);text-decoration:none;}
+.sst-ncsib:hover{background:color-mix(in srgb,var(--nxp) 75%,var(--stg-raise,#fff));}
+.sst-ncsib:focus-visible{outline:2px solid var(--sst-ink);outline-offset:2px;}
+.sst-ncsib .lk{background:var(--sst-ink);color:var(--stg-raise,#fff);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800;white-space:nowrap;}
+.sst-ncsib .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-ncsib .nm b{font-size:18px;font-weight:800;}
+.sst-ncsib .nm small{font-size:13px;font-weight:600;opacity:.75;margin-left:8px;}
+.sst-ncsib .mv{font-size:13px;font-weight:700;opacity:.8;white-space:nowrap;}
+.sst-ncsib .pt{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;}
+.sst-ncsib .ar{font-size:18px;font-weight:800;}
+@media (max-width:560px){.sst-ncsib{grid-template-columns:auto minmax(0,1fr) auto;}.sst-ncsib .mv,.sst-ncsib .ar{display:none;}}
 .sst-ncl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:28px;margin-top:14px;}
 .sst-ncr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;align-items:baseline;padding:10px 0;border-top:1px solid var(--stg-line,#e2e5ea);
   color:var(--sst-ink);text-decoration:none;font-size:14px;}

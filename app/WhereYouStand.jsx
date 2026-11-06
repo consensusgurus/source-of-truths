@@ -167,10 +167,14 @@ export function usePuzzleStandings({ on, gameKey, gameName, cat, game, board, ne
     let alive = true;
     const plus = ladderPts(game.guest ? null : game.rank);
     const keys = cat ? categoryKeys(cat) : [];
+    // Your place on this puzzle, 0 to 1 in steps of 0.05, so the server can
+    // price this game's relatives (Encore after Emcee) from how you did here.
+    const nAll = Math.max(Number(game.n) || 0, game.rank);
+    const pr = nAll >= 3 ? Math.min(1, Math.max(0.05, Math.round((game.rank / nAll) * 20) / 20)) : null;
     resultPostsSettled(4000).then(() => {
-      const day = sharedGet('/api/quiz/daily-combined?' + qsOf({ less: gameKey, plus })).catch(() => null);
+      const day = sharedGet('/api/quiz/daily-combined?' + qsOf({ less: gameKey, plus, pr })).catch(() => null);
       const catP = keys.length >= 2
-        ? sharedGet('/api/quiz/daily-combined?' + qsOf({ keys: keys.join(','), less: gameKey, plus })).catch(() => null)
+        ? sharedGet('/api/quiz/daily-combined?' + qsOf({ keys: keys.join(','), less: gameKey, plus, pr })).catch(() => null)
         : Promise.resolve(null);
       return Promise.all([catP, day]);
     }).then(([c, d]) => {

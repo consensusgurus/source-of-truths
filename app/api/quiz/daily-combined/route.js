@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadDailyResultsCached } from '@/lib/daily-results-cache';
 import { findQuizIdentity } from '@/lib/quiz-identity';
+import { sameFamily } from '@/lib/daily-families';
 import { ladderAt, scoreGame, combineDaily, guestProvisional, rankByCorrect, rankByTime, DAILY_KEYS, DAILY_MAX, GAME_MAX, bestNForSuffix, usesLadder, dayIsFrozen, etDayEndMs, isoOfSuffix, rowsWithinDay, rescoreField } from '@/lib/daily-combined';
 import { scoreOutwitGame } from '@/lib/outwit-score';
 import { scoreOutrankGame } from '@/lib/outrank-score';
@@ -851,6 +852,16 @@ export async function GET(request) {
       // fewer than half finish, that typically runs past 10 minutes, or that
       // fewer than three have played is never offered. `after` is where those
       // points would put the viewer on this board.
+      //
+      // A RELATIVE OF THE PUZZLE JUST PLAYED (owner, 2026-11-05: "why wouldn't
+      // this show Encore anywhere? that's the most closely aligned"). A game in
+      // the same family (lib/daily-families.js) as a `less` game is priced from
+      // the player's own place there, `pr` (their rank over that board's field,
+      // 0 to 1), instead of the middle of the field: a quick Emcee predicts a
+      // strong Encore. It passes the same filters, is flagged `sib`, and is
+      // always returned even when it ranks outside the top eight.
+      const prRaw = parseFloat(searchParams.get('pr') || '');
+      const pr = Number.isFinite(prRaw) && prRaw > 0 && prRaw <= 1 ? prRaw : null;
       const playedKeys = new Set([...lessKeys, ...(me && me.perGame ? Object.keys(me.perGame) : [])]);
       const picks = [];
       for (const g of gameResults || []) {
@@ -876,12 +887,16 @@ export async function GET(request) {
         const secs = clocks[Math.floor(clocks.length / 2)];
         if (secs > 600) continue;
         const mins = Math.max(1, Math.round(secs / 60));
-        const pts = ladderAt(Math.floor(named / 2) + 1);
-        picks.push({ key: g.key, pts, mins, finish: Math.round(rate * 100), plays, v: (pts * rate) / Math.max(1, secs / 60) });
+        const sib = lessKeys.some((k) => sameFamily(k, g.key));
+        const pos = sib && pr != null ? Math.min(named + 1, Math.max(1, Math.ceil(pr * named))) : Math.floor(named / 2) + 1;
+        const pts = ladderAt(pos);
+        picks.push({ key: g.key, pts, mins, finish: Math.round(rate * 100), plays, sib, v: (pts * rate) / Math.max(1, secs / 60) });
       }
       picks.sort((a, b) => b.v - a.v || a.mins - b.mins);
       const baseNow = base + (stand.have.length ? 0 : plusN);
-      stand.picks = picks.slice(0, 8).map((x) => ({ key: x.key, pts: x.pts, mins: x.mins, finish: x.finish, plays: x.plays, after: at(baseNow + x.pts) }));
+      const shown = picks.slice(0, 8);
+      for (const x of picks.slice(8)) if (x.sib && shown.filter((y) => y.sib).length < 2) shown.push(x);
+      stand.picks = shown.map((x) => ({ key: x.key, pts: x.pts, mins: x.mins, finish: x.finish, plays: x.plays, after: at(baseNow + x.pts), ...(x.sib ? { sib: true } : {}) }));
     }
     // ?top=N asks for a longer board (the home's side column), capped at 30.
     const topN = Math.min(30, Math.max(DISPLAY, parseInt(searchParams.get('top') || '', 10) || DISPLAY));
