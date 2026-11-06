@@ -2015,6 +2015,55 @@ export default function StageFinish({
       }
     } else self = strip();
 
+    // VS YOUR <WEEKDAY> (owner, 2026-11-06, option B of the "Roll ending:
+    // standings only" canvas). The avg/best/today line with its markers read
+    // as busy; it is replaced by one plain comparison against the same
+    // weekday: a headline, one sentence against that weekday's average, and a
+    // bar per recent same-weekday finish with today's in ink. Time on a solve
+    // (faster is better), else the score. Fewer than two earlier finishes on
+    // this weekday is not a comparison: the card stays off and the standings
+    // boxes stand alone (option A).
+    const week = (() => {
+      if (todayDow == null || !today) return null;
+      const tMode = !arcade && outcome === 'won' && myT != null;
+      const sMode = !tMode && !meSolveOnly && today.total > 0;
+      if (!tMode && !sMode) return null;
+      const T0 = sMode ? today.total : 0;
+      const valOf = (r) => (tMode ? (r.won && r.time != null ? Number(r.time) : null) : (r.total > 0 ? (r.score / r.total) * T0 : null));
+      const same = priors.filter((r) => r.dow === todayDow).map((r) => ({ r, v: valOf(r) })).filter((x) => x.v != null && Number.isFinite(x.v)).slice(0, 4).reverse();
+      if (same.length < 2) return null;
+      const v0 = tMode ? Number(myT) : Number(today.score);
+      const day = DOW[todayDow];
+      const nf = (v) => (T0 >= 100 || Number.isInteger(v) ? Math.round(v).toLocaleString('en-US') : (Math.round(v * 10) / 10).toFixed(1).replace(/\.0$/, ''));
+      const fig = (v) => (tMode ? mmss(Math.round(v)) : nf(v));
+      const vs = same.map((x) => x.v);
+      const avg = vs.reduce((t, v) => t + v, 0) / vs.length;
+      const better = (a, b) => (tMode ? a < b : a > b);
+      const best = tMode ? Math.min(...vs) : Math.max(...vs);
+      const avgR = tMode ? Math.round(avg) : avg;
+      const head = better(v0, best) ? `Your best ${day} yet`
+        : v0 === best ? `Level with your ${day} best`
+        : better(v0, avgR) ? (tMode ? `Faster than your usual ${day}` : `Above your usual ${day}`)
+        : v0 === avgR ? `Right on your ${day} average`
+        : (tMode ? `Slower than your usual ${day}` : `Below your usual ${day}`);
+      const diff = Math.abs(v0 - avgR);
+      const sub = (tMode ? Math.round(diff) === 0 : nf(diff) === '0')
+        ? `Your ${day} average is ${fig(avgR)}`
+        : tMode ? `${fmtD(Math.round(diff))} ${v0 < avgR ? 'faster' : 'slower'} than your ${day} average of ${fig(avgR)}`
+        : `${nf(diff)} ${v0 > avgR ? 'above' : 'below'} your ${day} average of ${fig(avgR)}`;
+      const rows = [...same.map((x) => ({ lab: short(x.r.dateLabel), v: x.v })), { lab: 'Today', v: v0, now: true }];
+      // Heights against a floor below the lowest bar, so close finishes still
+      // read as different without the chart inventing an axis.
+      const mx = Math.max(...rows.map((b) => b.v));
+      const mn = Math.min(...rows.map((b) => b.v));
+      const base = mx > mn ? mn - (mx - mn) * 0.5 : 0;
+      const bars = rows.map((b) => ({ ...b, fig: fig(b.v), h: mx > base ? Math.max(0.08, (b.v - base) / (mx - base)) : 1 }));
+      return {
+        lab: `Vs your ${day}s`, head, sub, bars,
+        aria: `Your last ${bars.length} ${day} results: ${bars.map((b) => `${b.lab} ${b.fig}`).join(', ')}. ${tMode ? 'Faster' : 'Higher'} is better.`,
+      };
+    })();
+
     // THE FOUR ROWS.
     const chalRow = canChallenge ? {
       title: duel ? `Challenge ${chal.name} back` : 'Challenge a friend',
@@ -2131,7 +2180,7 @@ export default function StageFinish({
     // for Play another's calendar, the rank line for its result bar, and the
     // replay offer on the games whose replay pop-up it replaces on a phone.
     const archiveCal = archiveRows.map((r) => ({ num: r.num, dateLabel: r.dateLabel, done: !!r.done, href: r.href }));
-    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, chal: chalRow, similar, another, run: runOffer, sheet, replayNow: replayOpt || null, meme, shelf, cats, allGames,
+    return { tone, eyebrow, verdict: title, metric, field: fieldInfo, self, week, chal: chalRow, similar, another, run: runOffer, sheet, replayNow: replayOpt || null, meme, shelf, cats, allGames,
       archive: archiveCal, curISO: archived ? null : etTodayISO(), rankHead, retry: retryOffer || null,
       // WHERE YOU STAND (owner, 2026-11-03): today's finishes only.
       standing: !archived && fr && me ? { gameKey: me.key, gameName: me.name, cat: me.cat, game: { rank: fr.rank, n: fr.n, guest: !!fr.guest, race } } : null,

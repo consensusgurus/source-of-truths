@@ -185,8 +185,31 @@ function fillRows(list, pool, n) {
   return head.concat([{ gap: true }], tail);
 }
 
+// VS YOUR <WEEKDAY> (owner, 2026-11-06): one headline, one sentence, and a
+// plain bar per recent same-weekday finish, today's in ink. No markers.
+function WeekCard({ week, delay = 0, flat = false }) {
+  return (
+    <div className={'sst-wk' + (flat ? ' flat' : '')} style={{ '--wk-d': `${delay}ms` }}>
+      <div className="sst-lab">{week.lab}</div>
+      <div className="sst-wkb">
+        <div className="sst-wkt">
+          <div className="sst-hl">{week.head}</div>
+          <div className="sst-sub">{week.sub}</div>
+        </div>
+        <div className="sst-wkc" role="img" aria-label={week.aria}>
+          {week.bars.map((b, i) => (
+            <span key={i} className={'c' + (b.now ? ' now' : '')} style={{ '--h': b.h, '--i': i }}>
+              <small>{b.fig}</small><s /><em>{b.lab}</em>
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StageStick({
-  tone = '', eyebrow, verdict, metric, field, self, chal = null, similar = null, another = null, run = null, allHref = '/#all',
+  tone = '', eyebrow, verdict, metric, field, self, week = null, chal = null, similar = null, another = null, run = null, allHref = '/#all',
   sheet = {}, onLeave, onBack = null, archiveHref = null, archiveLabel = 'Past puzzles', replayNow = null, meme = null, shelf = null, cats = null,
   ready = true, allGames = null, share = null, retry = null, archive = null, curISO = null, rankHead = null,
   standing = null,
@@ -615,9 +638,13 @@ export default function StageStick({
   // see, so the measured track and the counted figure belong to it.
   // Today's field and you against yourself: the second half of the result, on
   // its own so the phone's rolling ending can play it as its own beat.
+  // VS YOUR <WEEKDAY> (owner, 2026-11-06): the busy avg/best/today line is
+  // gone. With the standings boxes in, Today's field repeats them, so the
+  // stats keep only the comparison against yourself: the weekday card when
+  // there are enough same-weekday finishes, else the one-line headline.
   const resultStats = (live) => (
     <div className="sst-h2">
-      {(
+      {!standRows ? (
       <section className={on(2)}>
         <div className="sst-lab">Today&rsquo;s field</div>
         <div className="sst-hl">{field && field.line ? field.line : 'The board is still filling'}</div>
@@ -629,29 +656,23 @@ export default function StageStick({
           <span>{field && field.hi ? field.hi : ' '}</span>
         </div>
       </section>
-      )}
+      ) : null}
       <section className={on(3)}>
-        <div className="sst-lab">Against yourself</div>
-        <div className="sst-hl">{self ? self.head : ' '}</div>
-        {self && self.track ? (
-          <div className="sst-track" ref={live ? trackRef : undefined} aria-hidden="true">
-            <span className="ln" />
-            {self.track.map((p) => (
-              <span key={p.k} className={'pt ' + p.k + (p.edge ? ' ' + p.edge : '') + (marks ? ' on' : '')} style={{ left: pos(p.x) }}>
-                <s />
-                <span className="lb"><em>{p.label}</em><small>{p.fig}</small></span>
-              </span>
-            ))}
-          </div>
-        ) : self && self.strip ? (
-          <div className="sst-strip" aria-hidden="true">
-            {self.strip.map((w, i) => (
-              <s key={i} className={(w ? 'w' : 'l') + (marks ? ' on' : '') + (i === self.strip.length - 1 ? ' now' : '')}
-                style={{ transitionDelay: `${i * 60}ms` }} />
-            ))}
-          </div>
-        ) : (
-          <div className="sst-sub">{self && self.sub ? self.sub : ' '}</div>
+        {week ? <WeekCard week={week} flat /> : (
+          <>
+            <div className="sst-lab">Against yourself</div>
+            <div className="sst-hl">{self ? self.head : ' '}</div>
+            {self && self.strip ? (
+              <div className="sst-strip" aria-hidden="true">
+                {self.strip.map((w, i) => (
+                  <s key={i} className={(w ? 'w' : 'l') + (marks ? ' on' : '') + (i === self.strip.length - 1 ? ' now' : '')}
+                    style={{ transitionDelay: `${i * 60}ms` }} />
+                ))}
+              </div>
+            ) : self && self.sub ? (
+              <div className="sst-sub">{self.sub}</div>
+            ) : null}
+          </>
         )}
       </section>
     </div>
@@ -1307,7 +1328,7 @@ export default function StageStick({
       {/* The rail folds away while the ending is up (direction C). */}
       {rail ? createPortal(<div className="sst-fold" aria-hidden="true" />, rail) : null}
       {phase !== 'inline' ? createPortal((
-        <div ref={rootRef} className={'sst sst-cover' + toneCls + (phase === 'retract' ? ' go' : '') + (beatRows ? ' wys-on' : '')}
+        <div ref={rootRef} className={'sst sst-cover' + toneCls + (phase === 'retract' ? ' go' : '') + ((beatRows || (hasStanding && !standGo)) ? ' wys-on' : '')}
           style={clip ? { clipPath: clip, WebkitClipPath: clip } : undefined}
           onClick={bgTap} role="dialog" aria-modal="true" aria-label={`${eyebrow}: ${verdict}`}>
           <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -1317,6 +1338,8 @@ export default function StageStick({
               <div className="sst-wys">
                 <StandBeat rows={beatRows} wide noCount={noCount}
                   delay={Math.max(0, BEAT_AT_MS - ((standGoAt.current || 0) - (mountAt.current || 0)))} />
+                {week ? <WeekCard week={week}
+                  delay={Math.max(0, BEAT_AT_MS - ((standGoAt.current || 0) - (mountAt.current || 0))) + beatDuration(beatRows.length)} /> : null}
               </div>
             ) : null}
           </div>
@@ -1705,6 +1728,28 @@ html.lc-on .lc-side:has(> .sst-rail) > :not(.sst-rail){display:none !important;}
 /* While the one-page ending is on, it IS the finish: the older band, doors and
    drawers StageFinish draws stay mounted (their reads still run) but hidden. */
 .stf:has(> .sst-page) > :not(.sst-page):not(style):not(.msh):not(.msh-scrim){display:none !important;}
+
+/* VS YOUR <WEEKDAY> (owner, 2026-11-06). */
+.sst-wk{background:var(--wys-card,var(--sst-card));border-radius:18px;padding:16px 18px 14px;margin-top:14px;
+  animation:sstWkIn .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--wk-d,0ms);}
+.sst-wk.flat{background:none;padding:0;margin:0;}
+.sst-wkb{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:6px;}
+.sst-wys .sst-wkb{grid-template-columns:minmax(200px,1fr) minmax(260px,1.4fr);gap:28px;align-items:end;}
+@media (max-width:720px){.sst-wys .sst-wkb{grid-template-columns:minmax(0,1fr);}}
+.sst-wkt{align-self:center;min-width:0;}
+.sst-wkt .sst-hl{margin-top:0;}
+.sst-wkc{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:10px;align-items:end;height:132px;}
+.sst-wkc .c{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;min-width:0;}
+.sst-wkc s{display:block;width:100%;height:calc((100% - 44px) * var(--h));min-height:6px;border-radius:7px 7px 3px 3px;
+  background:color-mix(in srgb,var(--sst-ink) 18%,transparent);transform-origin:bottom;
+  animation:sstWkGrow .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--wk-d,0ms) + 250ms + var(--i) * 90ms);}
+.sst-wkc .now s{background:var(--sst-ink);}
+.sst-wkc small{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.sst-wkc em{font-style:normal;font-size:11px;font-weight:700;white-space:nowrap;}
+.sst-wkc .now small,.sst-wkc .now em{font-weight:800;}
+@keyframes sstWkIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes sstWkGrow{from{transform:scaleY(0)}}
+@media (prefers-reduced-motion:reduce){.sst-wk,.sst-wkc s{animation:none;}}
 
 @media (prefers-reduced-motion:reduce){
   .sst-b,.sst-bar span,.sst-track .pt,.sst-strip s,.sst-cover,.sst-cover .sst-cin{transition:none;}
