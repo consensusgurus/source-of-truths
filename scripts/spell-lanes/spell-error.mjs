@@ -26,7 +26,9 @@
 // like mischievous and onomatopoeia among look-wrong-but-right fillers such as
 // sacrilegious, desiccate and idiosyncrasy.
 
-export const LANE_DAYS = [
+// Days 1-36 (2026-10-19 to 2026-11-23), already in the bank. Kept for the record;
+// gen-english.mjs reads only LANE_DAYS below, which holds the newest segment.
+export const LANE_DAYS_D01_D36 = [
   // day 1
   [
     { c: "Spot the Error", t: 1, q: "Which spelling would a copy editor flag?", a: "strenth", d: ["guitar", "chicken", "whale"] }, // strength
@@ -314,5 +316,315 @@ export const LANE_DAYS = [
     { c: "Spot the Error", t: 3, q: "Only one of these is misspelled. Which is it?", a: "nusiance", d: ["criticism", "forty", "irritable"] }, // nuisance
     { c: "Spot the Error", t: 4, q: "Which word is misspelled?", a: "potpouri", d: ["indict", "exhilarate", "gazebo"] }, // potpourri
     { c: "Spot the Error", t: 5, q: "Which spelling would a copy editor flag?", a: "tarmigan", d: ["apartheid", "inveigle", "lugubrious"] }, // ptarmigan
+  ],
+];
+
+// Days 37-74 (2026-11-24 to 2026-12-31), appended 2026-11-06. Same rules as above:
+// every target new to this lane, every wrong version screened as a non-word against
+// en_US hunspell and the public/ word lists, fillers at most twice in the segment and never within 15 days of their last use.
+export const LANE_DAYS = [
+  // day 37
+  [
+    { c: "Spot the Error", t: 1, q: "Three of these are spelled correctly. Which one is not?", a: "minnit", d: ["banjo", "barrel", "beetle"] }, // minute
+    { c: "Spot the Error", t: 2, q: "Which one has a spelling mistake?", a: "machene", d: ["cabinet", "calcium", "canyon"] }, // machine
+    { c: "Spot the Error", t: 3, q: "Which of these is NOT spelled correctly?", a: "managable", d: ["approximate", "attendance", "believable"] }, // manageable
+    { c: "Spot the Error", t: 4, q: "Which of these words is misspelled?", a: "marashino", d: ["catechism", "cenotaph", "chasm"] }, // maraschino
+    { c: "Spot the Error", t: 5, q: "Which word contains a spelling error?", a: "malfeasence", d: ["contretemps", "dalliance", "deleterious"] }, // malfeasance
+  ],
+  // day 38
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these words is misspelled?", a: "mountian", d: ["chimney", "cradle", "crayon"] }, // mountain
+    { c: "Spot the Error", t: 2, q: "Which word contains a spelling error?", a: "magasine", d: ["crystal", "curtain", "decade"] }, // magazine
+    { c: "Spot the Error", t: 3, q: "Spot the error: which word is spelled incorrectly?", a: "mediocer", d: ["ceremony", "circumstance", "colossal"] }, // mediocre
+    { c: "Spot the Error", t: 4, q: "Which word is misspelled?", a: "minestroni", d: ["conflagration", "crevasse", "deterrent"] }, // minestrone
+    { c: "Spot the Error", t: 5, q: "Only one of these is misspelled. Which is it?", a: "naptha", d: ["esoteric", "etiquette", "euphemism"] }, // naphtha
+  ],
+  // day 39
+  [
+    { c: "Spot the Error", t: 1, q: "Which word is misspelled?", a: "pilgram", d: ["garlic", "goblin", "gravel"] }, // pilgrim
+    { c: "Spot the Error", t: 2, q: "Only one of these is misspelled. Which is it?", a: "marrage", d: ["errand", "fashion", "festival"] }, // marriage
+    { c: "Spot the Error", t: 3, q: "Which of these words is spelled wrong?", a: "negociate", d: ["courteous", "crucial", "dependable"] }, // negotiate
+    { c: "Spot the Error", t: 4, q: "Which spelling would a copy editor flag?", a: "nonchalent", d: ["erroneous", "exuberant", "fallacious"] }, // nonchalant
+    { c: "Spot the Error", t: 5, q: "Three of these are spelled correctly. Which one is not?", a: "phlegmetic", d: ["hegemony", "hyperbole", "impecunious"] }, // phlegmatic
+  ],
+  // day 40
+  [
+    { c: "Spot the Error", t: 1, q: "Which spelling would a copy editor flag?", a: "muzic", d: ["marble", "nugget", "orbit"] }, // music
+    { c: "Spot the Error", t: 2, q: "Three of these are spelled correctly. Which one is not?", a: "minumum", d: ["harvest", "holiday", "hollow"] }, // minimum
+    { c: "Spot the Error", t: 3, q: "Which one has a spelling mistake?", a: "occasionaly", d: ["further", "hesitate", "hilarious"] }, // occasionally
+    { c: "Spot the Error", t: 4, q: "Which of these is NOT spelled correctly?", a: "parishoner", d: ["idyllic", "impasse", "incandescent"] }, // parishioner
+    { c: "Spot the Error", t: 5, q: "Which of these words is misspelled?", a: "prestidigatation", d: ["laconic", "magniloquent", "nadir"] }, // prestidigitation
+  ],
+  // day 41
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these is NOT spelled correctly?", a: "nefew", d: ["pebble", "pepper", "pillar"] }, // nephew
+    { c: "Spot the Error", t: 2, q: "Which of these words is misspelled?", a: "mischeif", d: ["mammal", "narrow", "nectar"] }, // mischief
+    { c: "Spot the Error", t: 3, q: "Which word contains a spelling error?", a: "occured", d: ["influential", "jewel", "legitimate"] }, // occurred
+    { c: "Spot the Error", t: 4, q: "Spot the error: which word is spelled incorrectly?", a: "picturesk", d: ["liturgy", "luminous", "meticulous"] }, // picturesque
+    { c: "Spot the Error", t: 5, q: "Which word is misspelled?", a: "prosenium", d: ["parsimonious", "quotidian", "querulous"] }, // proscenium
+  ],
+  // day 42
+  [
+    { c: "Spot the Error", t: 1, q: "Spot the error: which word is spelled incorrectly?", a: "offen", d: ["quilt", "rattle", "robin"] }, // often
+    { c: "Spot the Error", t: 2, q: "Which word is misspelled?", a: "mystry", d: ["pattern", "plastic", "portrait"] }, // mystery
+    { c: "Spot the Error", t: 3, q: "Only one of these is misspelled. Which is it?", a: "ommission", d: ["operation", "parachute", "peninsula"] }, // omission
+    { c: "Spot the Error", t: 4, q: "Which of these words is spelled wrong?", a: "pistacchio", d: ["parable", "reciprocal", "rigorous"] }, // pistachio
+    { c: "Spot the Error", t: 5, q: "Which spelling would a copy editor flag?", a: "soriasis", d: ["soporific", "spurious", "taciturn"] }, // psoriasis
+  ],
+  // day 43
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these words is spelled wrong?", a: "peenut", d: ["spinach", "statue", "tablet"] }, // peanut
+    { c: "Spot the Error", t: 2, q: "Which spelling would a copy editor flag?", a: "naturaly", d: ["salmon", "scholar", "shelter"] }, // naturally
+    { c: "Spot the Error", t: 3, q: "Three of these are spelled correctly. Which one is not?", a: "percieve", d: ["recipe", "residential", "sanitary"] }, // perceive
+    { c: "Spot the Error", t: 4, q: "Which one has a spelling mistake?", a: "precocius", d: ["scrupulous", "sedentary", "serendipity"] }, // precocious
+    { c: "Spot the Error", t: 5, q: "Which of these is NOT spelled correctly?", a: "terodactyl", d: ["recidivism", "vicarious", "abstemious"] }, // pterodactyl
+  ],
+  // day 44
+  [
+    { c: "Spot the Error", t: 1, q: "Which one has a spelling mistake?", a: "piza", d: ["wallet", "walrus", "wizard"] }, // pizza
+    { c: "Spot the Error", t: 2, q: "Which of these is NOT spelled correctly?", a: "niether", d: ["timid", "tissue", "tropical"] }, // neither
+    { c: "Spot the Error", t: 3, q: "Which of these words is misspelled?", a: "personel", d: ["sufficient", "superior", "suspicious"] }, // personnel
+    { c: "Spot the Error", t: 4, q: "Which word contains a spelling error?", a: "propriator", d: ["vehement", "whimsical", "accolade"] }, // proprietor
+    { c: "Spot the Error", t: 5, q: "Spot the error: which word is spelled incorrectly?", a: "quixottic", d: ["aplomb", "apoplectic", "arpeggio"] }, // quixotic
+  ],
+  // day 45
+  [
+    { c: "Spot the Error", t: 1, q: "Which word contains a spelling error?", a: "pleese", d: ["anchor", "apron", "bakery"] }, // please
+    { c: "Spot the Error", t: 2, q: "Spot the error: which word is spelled incorrectly?", a: "nervus", d: ["wander", "warrior", "welfare"] }, // nervous
+    { c: "Spot the Error", t: 3, q: "Which word is misspelled?", a: "phenomenom", d: ["vigilant", "absorption", "accumulate"] }, // phenomenon
+    { c: "Spot the Error", t: 4, q: "Only one of these is misspelled. Which is it?", a: "quandry", d: ["aqueduct", "arraign", "assiduous"] }, // quandary
+    { c: "Spot the Error", t: 5, q: "Which of these words is spelled wrong?", a: "shadenfreude", d: ["chicanery", "circumlocution", "clandestine"] }, // schadenfreude
+  ],
+  // day 46
+  [
+    { c: "Spot the Error", t: 1, q: "Only one of these is misspelled. Which is it?", a: "purpel", d: ["bucket", "cactus", "cherry"] }, // purple
+    { c: "Spot the Error", t: 2, q: "Which of these words is spelled wrong?", a: "obvius", d: ["advice", "attempt", "balcony"] }, // obvious
+    { c: "Spot the Error", t: 3, q: "Which spelling would a copy editor flag?", a: "prefered", d: ["alcohol", "apology", "appropriate"] }, // preferred
+    { c: "Spot the Error", t: 4, q: "Three of these are spelled correctly. Which one is not?", a: "queu", d: ["cognizant", "colloquial", "complacent"] }, // queue
+    { c: "Spot the Error", t: 5, q: "Which one has a spelling mistake?", a: "shilelagh", d: ["diaphanous", "egregious", "epiphany"] }, // shillelagh
+  ],
+  // day 47
+  [
+    { c: "Spot the Error", t: 1, q: "Three of these are spelled correctly. Which one is not?", a: "rainbo", d: ["donkey", "falcon", "fiddle"] }, // rainbow
+    { c: "Spot the Error", t: 2, q: "Which one has a spelling mistake?", a: "ocur", d: ["cellar", "clumsy", "comfort"] }, // occur
+    { c: "Spot the Error", t: 3, q: "Which of these is NOT spelled correctly?", a: "presense", d: ["bulletin", "calculator", "cannibal"] }, // presence
+    { c: "Spot the Error", t: 4, q: "Which of these words is misspelled?", a: "rambuncious", d: ["dignitary", "dilapidated", "efficacious"] }, // rambunctious
+    { c: "Spot the Error", t: 5, q: "Which word contains a spelling error?", a: "sphygnomanometer", d: ["fastidious", "garrulous", "grandiloquent"] }, // sphygmomanometer
+  ],
+  // day 48
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these words is misspelled?", a: "sevin", d: ["jigsaw", "kennel", "ladle"] }, // seven
+    { c: "Spot the Error", t: 2, q: "Which word contains a spelling error?", a: "opinon", d: ["diamond", "dolphin", "elegant"] }, // opinion
+    { c: "Spot the Error", t: 3, q: "Spot the error: which word is spelled incorrectly?", a: "proffesor", d: ["competent", "controversy", "corroborate"] }, // professor
+    { c: "Spot the Error", t: 4, q: "Which word is misspelled?", a: "rendevous", d: ["fluctuate", "gregarious", "hemisphere"] }, // rendezvous
+    { c: "Spot the Error", t: 5, q: "Only one of these is misspelled. Which is it?", a: "strychnyne", d: ["inchoate", "intransigent", "juxtapose"] }, // strychnine
+  ],
+  // day 49
+  [
+    { c: "Spot the Error", t: 1, q: "Which word is misspelled?", a: "sholder", d: ["paddle", "pirate", "pony"] }, // shoulder
+    { c: "Spot the Error", t: 2, q: "Only one of these is misspelled. Which is it?", a: "oposite", d: ["frontier", "gallery", "gesture"] }, // opposite
+    { c: "Spot the Error", t: 3, q: "Which of these words is spelled wrong?", a: "refered", d: ["envelope", "fortunate", "fragile"] }, // referred
+    { c: "Spot the Error", t: 4, q: "Which spelling would a copy editor flag?", a: "sacrafice", d: ["indigenous", "jubilant", "judicious"] }, // sacrifice
+    { c: "Spot the Error", t: 5, q: "Three of these are spelled correctly. Which one is not?", a: "supercillious", d: ["onerous", "palimpsest", "panacea"] }, // supercilious
+  ],
+  // day 50
+  [
+    { c: "Spot the Error", t: 1, q: "Which spelling would a copy editor flag?", a: "swetter", d: ["pretzel", "puddle", "saucer"] }, // sweater
+    { c: "Spot the Error", t: 2, q: "Three of these are spelled correctly. Which one is not?", a: "ordinery", d: ["journal", "leather", "liberty"] }, // ordinary
+    { c: "Spot the Error", t: 3, q: "Which one has a spelling mistake?", a: "reminise", d: ["illusion", "immense", "incredible"] }, // reminisce
+    { c: "Spot the Error", t: 4, q: "Which of these is NOT spelled correctly?", a: "salmonela", d: ["nefarious", "oblivious", "omniscient"] }, // salmonella
+    { c: "Spot the Error", t: 5, q: "Which of these words is misspelled?", a: "sycophent", d: ["sanguine", "truculent", "vociferous"] }, // sycophant
+  ],
+  // day 51
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these is NOT spelled correctly?", a: "teecher", d: ["shovel", "skunk", "sparrow"] }, // teacher
+    { c: "Spot the Error", t: 2, q: "Which of these words is misspelled?", a: "origional", d: ["message", "monarch", "pottery"] }, // original
+    { c: "Spot the Error", t: 3, q: "Which word contains a spelling error?", a: "ryhme", d: ["nostalgia", "obstacle", "occupation"] }, // rhyme
+    { c: "Spot the Error", t: 4, q: "Spot the error: which word is spelled incorrectly?", a: "seive", d: ["perimeter", "plethora", "precipice"] }, // sieve
+    { c: "Spot the Error", t: 5, q: "Which word is misspelled?", a: "terpsicorean", d: ["wunderkind", "zeugma", "acquiescence"] }, // terpsichorean
+  ],
+  // day 52
+  [
+    { c: "Spot the Error", t: 1, q: "Spot the error: which word is spelled incorrectly?", a: "thougt", d: ["tennis", "acorn", "bonnet"] }, // thought
+    { c: "Spot the Error", t: 2, q: "Which word is misspelled?", a: "particuler", d: ["pyramid", "radius", "rescue"] }, // particular
+    { c: "Spot the Error", t: 3, q: "Only one of these is misspelled. Which is it?", a: "sustinance", d: ["pioneer", "quantity", "rebellious"] }, // sustenance
+    { c: "Spot the Error", t: 4, q: "Which of these words is spelled wrong?", a: "soliloquey", d: ["sinister", "tenacious", "acquittal"] }, // soliloquy
+    { c: "Spot the Error", t: 5, q: "Which spelling would a copy editor flag?", a: "tintinabulation", d: ["allegorical", "anachronism", "anomalous"] }, // tintinnabulation
+  ],
+  // day 53
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these words is spelled wrong?", a: "turky", d: ["hamster", "lobster", "banjo"] }, // turkey
+    { c: "Spot the Error", t: 2, q: "Which spelling would a copy editor flag?", a: "peculier", d: ["sketch", "spirit", "stadium"] }, // peculiar
+    { c: "Spot the Error", t: 3, q: "Three of these are spelled correctly. Which one is not?", a: "sargeant", d: ["significant", "tremendous", "ultimately"] }, // sergeant
+    { c: "Spot the Error", t: 4, q: "Which one has a spelling mistake?", a: "tortise", d: ["allotment", "amethyst", "apparatus"] }, // tortoise
+    { c: "Spot the Error", t: 5, q: "Which of these is NOT spelled correctly?", a: "triskadekaphobia", d: ["bucolic", "cajole", "cantilever"] }, // triskaidekaphobia
+  ],
+  // day 54
+  [
+    { c: "Spot the Error", t: 1, q: "Which one has a spelling mistake?", a: "twelv", d: ["barrel", "beetle", "blossom"] }, // twelve
+    { c: "Spot the Error", t: 2, q: "Which of these is NOT spelled correctly?", a: "prehaps", d: ["trumpet", "twilight", "volcano"] }, // perhaps
+    { c: "Spot the Error", t: 3, q: "Which of these words is misspelled?", a: "subtel", d: ["vacancy", "abundance", "adequate"] }, // subtle
+    { c: "Spot the Error", t: 4, q: "Which word contains a spelling error?", a: "vaudville", d: ["bankruptcy", "beleaguer", "bequeath"] }, // vaudeville
+    { c: "Spot the Error", t: 5, q: "Spot the error: which word is spelled incorrectly?", a: "ubiquitious", d: ["dalliance", "deleterious", "desultory"] }, // ubiquitous
+  ],
+  // day 55
+  [
+    { c: "Spot the Error", t: 1, q: "Which word contains a spelling error?", a: "wahter", d: ["cradle", "crayon", "dentist"] }, // water
+    { c: "Spot the Error", t: 2, q: "Spot the error: which word is spelled incorrectly?", a: "phisical", d: ["whisper", "wrinkle", "accident"] }, // physical
+    { c: "Spot the Error", t: 3, q: "Which word is misspelled?", a: "succede", d: ["advantageous", "aggravate", "approximate"] }, // succeed
+    { c: "Spot the Error", t: 4, q: "Only one of these is misspelled. Which is it?", a: "vinegrette", d: ["catechism", "cenotaph", "chasm"] }, // vinaigrette
+    { c: "Spot the Error", t: 5, q: "Which of these words is spelled wrong?", a: "verisimilatude", d: ["etiquette", "euphemism", "exiguous"] }, // verisimilitude
+  ],
+  // day 56
+  [
+    { c: "Spot the Error", t: 1, q: "Only one of these is misspelled. Which is it?", a: "womun", d: ["goblin", "gravel", "helmet"] }, // woman
+    { c: "Spot the Error", t: 2, q: "Which of these words is spelled wrong?", a: "plesant", d: ["bargain", "cabinet", "calcium"] }, // pleasant
+    { c: "Spot the Error", t: 3, q: "Which spelling would a copy editor flag?", a: "tendancy", d: ["attendance", "believable", "benevolent"] }, // tendency
+    { c: "Spot the Error", t: 4, q: "Three of these are spelled correctly. Which one is not?", a: "manequin", d: ["conflagration", "crevasse", "deterrent"] }, // mannequin
+    { c: "Spot the Error", t: 5, q: "Which one has a spelling mistake?", a: "vermecelli", d: ["hyperbole", "impecunious", "ineffable"] }, // vermicelli
+  ],
+  // day 57
+  [
+    { c: "Spot the Error", t: 1, q: "Three of these are spelled correctly. Which one is not?", a: "wrold", d: ["meadow", "medal", "melon"] }, // world
+    { c: "Spot the Error", t: 2, q: "Which one has a spelling mistake?", a: "poisen", d: ["cottage", "crystal", "curtain"] }, // poison
+    { c: "Spot the Error", t: 3, q: "Which of these is NOT spelled correctly?", a: "unneccessary", d: ["circumstance", "colossal", "compelling"] }, // unnecessary
+    { c: "Spot the Error", t: 4, q: "Which of these words is misspelled?", a: "nuptual", d: ["erroneous", "exuberant", "fallacious"] }, // nuptial
+    { c: "Spot the Error", t: 5, q: "Which word contains a spelling error?", a: "zietgeist", d: ["magniloquent", "nadir", "obfuscate"] }, // zeitgeist
+  ],
+  // day 58
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these words is misspelled?", a: "yung", d: ["pepper", "pillar", "quilt"] }, // young
+    { c: "Spot the Error", t: 2, q: "Which word contains a spelling error?", a: "populer", d: ["entrance", "errand", "fashion"] }, // popular
+    { c: "Spot the Error", t: 3, q: "Spot the error: which word is spelled incorrectly?", a: "xylaphone", d: ["crucial", "dependable", "dissolve"] }, // xylophone
+    { c: "Spot the Error", t: 4, q: "Which word is misspelled?", a: "perpindicular", d: ["idyllic", "impasse", "incandescent"] }, // perpendicular
+    { c: "Spot the Error", t: 5, q: "Only one of these is misspelled. Which is it?", a: "magnanamous", d: ["peripatetic", "perfunctory", "quotidian"] }, // magnanimous
+  ],
+  // day 59
+  [
+    { c: "Spot the Error", t: 1, q: "Which word is misspelled?", a: "noyse", d: ["rattle", "robin", "spinach"] }, // noise
+    { c: "Spot the Error", t: 2, q: "Only one of these is misspelled. Which is it?", a: "possition", d: ["glimpse", "harvest", "holiday"] }, // position
+    { c: "Spot the Error", t: 3, q: "Which of these words is spelled wrong?", a: "nautious", d: ["hesitate", "hilarious", "hospitable"] }, // nauseous
+    { c: "Spot the Error", t: 4, q: "Which spelling would a copy editor flag?", a: "pharmacuetical", d: ["liturgy", "luminous", "meticulous"] }, // pharmaceutical
+    { c: "Spot the Error", t: 5, q: "Three of these are spelled correctly. Which one is not?", a: "merangue", d: ["spurious", "taciturn", "recidivism"] }, // meringue
+  ],
+  // day 60
+  [
+    { c: "Spot the Error", t: 1, q: "Which spelling would a copy editor flag?", a: "pickel", d: ["statue", "tablet", "tadpole"] }, // pickle
+    { c: "Spot the Error", t: 2, q: "Three of these are spelled correctly. Which one is not?", a: "promis", d: ["luggage", "mammal", "mansion"] }, // promise
+    { c: "Spot the Error", t: 3, q: "Which one has a spelling mistake?", a: "outragous", d: ["jewel", "legitimate", "luxurious"] }, // outrageous
+    { c: "Spot the Error", t: 4, q: "Which of these is NOT spelled correctly?", a: "porcelin", d: ["parable", "reciprocal", "rigorous"] }, // porcelain
+    { c: "Spot the Error", t: 5, q: "Which of these words is misspelled?", a: "nonparail", d: ["vicarious", "abstemious", "aplomb"] }, // nonpareil
+  ],
+  // day 61
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these is NOT spelled correctly?", a: "plenti", d: ["walrus", "wizard", "anchor"] }, // plenty
+    { c: "Spot the Error", t: 2, q: "Which of these words is misspelled?", a: "reguler", d: ["nectar", "pattern", "plastic"] }, // regular
+    { c: "Spot the Error", t: 3, q: "Which word contains a spelling error?", a: "pamflet", d: ["optimistic", "parachute", "recipe"] }, // pamphlet
+    { c: "Spot the Error", t: 4, q: "Spot the error: which word is spelled incorrectly?", a: "prestigous", d: ["scrupulous", "sedentary", "serendipity"] }, // prestigious
+    { c: "Spot the Error", t: 5, q: "Which word is misspelled?", a: "obstreporous", d: ["apoplectic", "arpeggio", "asinine"] }, // obstreperous
+  ],
+  // day 62
+  [
+    { c: "Spot the Error", t: 1, q: "Spot the error: which word is spelled incorrectly?", a: "potatoe", d: ["apron", "bakery", "bucket"] }, // potato
+    { c: "Spot the Error", t: 2, q: "Which word is misspelled?", a: "releif", d: ["salmon", "scholar", "shelter"] }, // relief
+    { c: "Spot the Error", t: 3, q: "Only one of these is misspelled. Which is it?", a: "persistant", d: ["residential", "sanitary", "scenery"] }, // persistent
+    { c: "Spot the Error", t: 4, q: "Which of these words is spelled wrong?", a: "rethoric", d: ["vehement", "whimsical", "accolade"] }, // rhetoric
+    { c: "Spot the Error", t: 5, q: "Which spelling would a copy editor flag?", a: "paparrazi", d: ["circumlocution", "clandestine", "contretemps"] }, // paparazzi
+  ],
+  // day 63
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these words is spelled wrong?", a: "pupy", d: ["cactus", "cherry", "chimney"] }, // puppy
+    { c: "Spot the Error", t: 2, q: "Which spelling would a copy editor flag?", a: "religous", d: ["surface", "timid", "tissue"] }, // religious
+    { c: "Spot the Error", t: 3, q: "Three of these are spelled correctly. Which one is not?", a: "plagerism", d: ["superior", "suspicious", "sympathy"] }, // plagiarism
+    { c: "Spot the Error", t: 4, q: "Which one has a spelling mistake?", a: "solem", d: ["aqueduct", "arraign", "assiduous"] }, // solemn
+    { c: "Spot the Error", t: 5, q: "Which of these is NOT spelled correctly?", a: "phosphorescense", d: ["egregious", "epiphany", "esoteric"] }, // phosphorescence
+  ],
+  // day 64
+  [
+    { c: "Spot the Error", t: 1, q: "Which one has a spelling mistake?", a: "quik", d: ["falcon", "fiddle", "garlic"] }, // quick
+    { c: "Spot the Error", t: 2, q: "Which of these is NOT spelled correctly?", a: "sevral", d: ["voyage", "wander", "warrior"] }, // several
+    { c: "Spot the Error", t: 3, q: "Which of these words is misspelled?", a: "prevelant", d: ["absorption", "accumulate", "alcohol"] }, // prevalent
+    { c: "Spot the Error", t: 4, q: "Which word contains a spelling error?", a: "tarrantula", d: ["cognizant", "colloquial", "complacent"] }, // tarantula
+    { c: "Spot the Error", t: 5, q: "Spot the error: which word is spelled incorrectly?", a: "plenipotentary", d: ["garrulous", "grandiloquent", "hegemony"] }, // plenipotentiary
+  ],
+  // day 65
+  [
+    { c: "Spot the Error", t: 1, q: "Which word contains a spelling error?", a: "ribon", d: ["kennel", "ladle", "marble"] }, // ribbon
+    { c: "Spot the Error", t: 2, q: "Spot the error: which word is spelled incorrectly?", a: "sheild", d: ["admire", "advice", "attempt"] }, // shield
+    { c: "Spot the Error", t: 3, q: "Which word is misspelled?", a: "rubarb", d: ["apology", "appropriate", "bulletin"] }, // rhubarb
+    { c: "Spot the Error", t: 4, q: "Only one of these is misspelled. Which is it?", a: "tsunammi", d: ["dignitary", "dilapidated", "efficacious"] }, // tsunami
+    { c: "Spot the Error", t: 5, q: "Which of these words is spelled wrong?", a: "resind", d: ["intransigent", "juxtapose", "laconic"] }, // rescind
+  ],
+  // day 66
+  [
+    { c: "Spot the Error", t: 1, q: "Only one of these is misspelled. Which is it?", a: "sadle", d: ["orbit", "paddle", "pebble"] }, // saddle
+    { c: "Spot the Error", t: 2, q: "Which of these words is spelled wrong?", a: "signiture", d: ["canyon", "cellar", "clumsy"] }, // signature
+    { c: "Spot the Error", t: 3, q: "Which spelling would a copy editor flag?", a: "renaisance", d: ["calculator", "cannibal", "ceremony"] }, // renaissance
+    { c: "Spot the Error", t: 4, q: "Three of these are spelled correctly. Which one is not?", a: "vigilantee", d: ["fluctuate", "gregarious", "hemisphere"] }, // vigilante
+    { c: "Spot the Error", t: 5, q: "Which one has a spelling mistake?", a: "septagenarian", d: ["palimpsest", "panacea", "parsimonious"] }, // septuagenarian
+  ],
+  // day 67
+  [
+    { c: "Spot the Error", t: 1, q: "Three of these are spelled correctly. Which one is not?", a: "sleve", d: ["pretzel", "puddle", "saucer"] }, // sleeve
+    { c: "Spot the Error", t: 2, q: "Which one has a spelling mistake?", a: "surley", d: ["decade", "diamond", "dolphin"] }, // surely
+    { c: "Spot the Error", t: 3, q: "Which of these is NOT spelled correctly?", a: "resistence", d: ["controversy", "corroborate", "courteous"] }, // resistance
+    { c: "Spot the Error", t: 4, q: "Which of these words is misspelled?", a: "ventriloquest", d: ["indigenous", "jubilant", "judicious"] }, // ventriloquist
+    { c: "Spot the Error", t: 5, q: "Which word contains a spelling error?", a: "trousseu", d: ["sanguine", "sesquicentennial", "soporific"] }, // trousseau
+  ],
+  // day 68
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these words is misspelled?", a: "spune", d: ["skunk", "tennis", "timber"] }, // spoon
+    { c: "Spot the Error", t: 2, q: "Which word contains a spelling error?", a: "swiming", d: ["festival", "frontier", "gallery"] }, // swimming
+    { c: "Spot the Error", t: 3, q: "Spot the error: which word is spelled incorrectly?", a: "sensable", d: ["fortunate", "fragile", "further"] }, // sensible
+    { c: "Spot the Error", t: 4, q: "Which word is misspelled?", a: "mosqueto", d: ["nefarious", "oblivious", "omniscient"] }, // mosquito
+    { c: "Spot the Error", t: 5, q: "Only one of these is misspelled. Which is it?", a: "pharyngytis", d: ["wunderkind", "zeugma", "acquiescence"] }, // pharyngitis
+  ],
+  // day 69
+  [
+    { c: "Spot the Error", t: 1, q: "Which word is misspelled?", a: "straigt", d: ["tulip", "wallet", "acorn"] }, // straight
+    { c: "Spot the Error", t: 2, q: "Only one of these is misspelled. Which is it?", a: "terible", d: ["hollow", "journal", "leather"] }, // terrible
+    { c: "Spot the Error", t: 3, q: "Which of these words is spelled wrong?", a: "symetry", d: ["immense", "incredible", "influential"] }, // symmetry
+    { c: "Spot the Error", t: 4, q: "Which spelling would a copy editor flag?", a: "nuematic", d: ["perimeter", "sabbatical", "sinister"] }, // pneumatic
+    { c: "Spot the Error", t: 5, q: "Three of these are spelled correctly. Which one is not?", a: "pacyderm", d: ["anachronism", "anomalous", "bucolic"] }, // pachyderm
+  ],
+  // day 70
+  [
+    { c: "Spot the Error", t: 1, q: "Which spelling would a copy editor flag?", a: "tickel", d: ["hamster", "lobster", "blossom"] }, // tickle
+    { c: "Spot the Error", t: 2, q: "Three of these are spelled correctly. Which one is not?", a: "theif", d: ["marathon", "message", "monarch"] }, // thief
+    { c: "Spot the Error", t: 3, q: "Which one has a spelling mistake?", a: "vinager", d: ["obstacle", "occupation", "operation"] }, // vinegar
+    { c: "Spot the Error", t: 4, q: "Which of these is NOT spelled correctly?", a: "stacato", d: ["stalactite", "tenacious", "acquittal"] }, // staccato
+    { c: "Spot the Error", t: 5, q: "Which of these words is misspelled?", a: "sarsaparila", d: ["cajole", "cantilever", "chicanery"] }, // sarsaparilla
+  ],
+  // day 71
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these is NOT spelled correctly?", a: "tomatoe", d: ["dentist", "donkey", "helmet"] }, // tomato
+    { c: "Spot the Error", t: 2, q: "Which of these words is misspelled?", a: "tounge", d: ["portrait", "pottery", "pyramid"] }, // tongue
+    { c: "Spot the Error", t: 3, q: "Which word contains a spelling error?", a: "warrent", d: ["quantity", "rebellious", "significant"] }, // warrant
+    { c: "Spot the Error", t: 4, q: "Spot the error: which word is spelled incorrectly?", a: "pinacle", d: ["allotment", "amethyst", "apparatus"] }, // pinnacle
+    { c: "Spot the Error", t: 5, q: "Which word is misspelled?", a: "psychadelic", d: ["desultory", "diaphanous", "exiguous"] }, // psychedelic
+  ],
+  // day 72
+  [
+    { c: "Spot the Error", t: 1, q: "Spot the error: which word is spelled incorrectly?", a: "truble", d: ["jigsaw", "meadow", "medal"] }, // trouble
+    { c: "Spot the Error", t: 2, q: "Which word is misspelled?", a: "valuble", d: ["sketch", "spirit", "stadium"] }, // valuable
+    { c: "Spot the Error", t: 3, q: "Only one of these is misspelled. Which is it?", a: "weild", d: ["simultaneous", "spacious", "sufficient"] }, // wield
+    { c: "Spot the Error", t: 4, q: "Which of these words is spelled wrong?", a: "pagent", d: ["bankruptcy", "beleaguer", "bequeath"] }, // pageant
+    { c: "Spot the Error", t: 5, q: "Which spelling would a copy editor flag?", a: "pyrhic", d: ["fastidious", "ineffable", "inchoate"] }, // pyrrhic
+  ],
+  // day 73
+  [
+    { c: "Spot the Error", t: 1, q: "Which of these words is spelled wrong?", a: "whisle", d: ["melon", "nugget", "pirate"] }, // whistle
+    { c: "Spot the Error", t: 2, q: "Which spelling would a copy editor flag?", a: "writting", d: ["tropical", "trumpet", "twilight"] }, // writing
+    { c: "Spot the Error", t: 3, q: "Three of these are spelled correctly. Which one is not?", a: "temperary", d: ["ultimately", "vacancy", "vigilant"] }, // temporary
+    { c: "Spot the Error", t: 4, q: "Which one has a spelling mistake?", a: "rhuematism", d: ["condescend", "embezzle", "hypotenuse"] }, // rheumatism
+    { c: "Spot the Error", t: 5, q: "Which of these is NOT spelled correctly?", a: "mezannine", d: ["obfuscate", "onerous", "peripatetic"] }, // mezzanine
+  ],
+  // day 74
+  [
+    { c: "Spot the Error", t: 1, q: "Which one has a spelling mistake?", a: "miten", d: ["pony", "shovel", "sparrow"] }, // mitten
+    { c: "Spot the Error", t: 2, q: "Which of these is NOT spelled correctly?", a: "yeild", d: ["welfare", "whisper", "wrinkle"] }, // yield
+    { c: "Spot the Error", t: 3, q: "Which of these words is misspelled?", a: "tarrif", d: ["advantageous", "aggravate", "benevolent"] }, // tariff
+    { c: "Spot the Error", t: 4, q: "Which word contains a spelling error?", a: "tyranosaurus", d: ["lethargic", "opulent", "plethora"] }, // tyrannosaurus
+    { c: "Spot the Error", t: 5, q: "Spot the error: which word is spelled incorrectly?", a: "obsolesence", d: ["perfunctory", "querulous", "truculent"] }, // obsolescence
   ],
 ];

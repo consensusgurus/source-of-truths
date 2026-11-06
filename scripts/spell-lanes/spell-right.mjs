@@ -8,7 +8,9 @@
 // out. A short meaning is given where the word could be confused with another.
 // Ramp: tier 1 everyday words, tier 3 the classic traps, tier 5 spelling-bee
 // words a specialist knows.
-export const LANE_DAYS = [
+// Days 1-36 (2026-10-19 to 2026-11-23), already in the bank. Kept for the record;
+// gen-english.mjs reads only LANE_DAYS below, which holds the newest segment.
+export const LANE_DAYS_D01_D36 = [
   // day 1
   [
     { c: 'Spelled Right', t: 1, q: "Which is spelled correctly?", a: "breakfast", d: ["brekfast", "breakfest", "brakefast"] },
@@ -296,5 +298,315 @@ export const LANE_DAYS = [
     { c: 'Spelled Right', t: 3, q: "Which spelling would a careful copy editor approve?", a: "dilemma", d: ["dilemna", "delemma", "dillema"] },
     { c: 'Spelled Right', t: 4, q: "Which of these words is spelled right?", a: "lackadaisical", d: ["lackadasical", "lackidaisical", "lacadaisical"] },
     { c: 'Spelled Right', t: 5, q: "Which spelling is correct for the word meaning 'the part of a newspaper given to light fiction and reviews'?", a: "feuilleton", d: ["fueilleton", "feuilliton", "feuileton"] },
+  ],
+];
+
+// Days 37-74 (2026-11-24 to 2026-12-31), appended 2026-11-06. Same rules as above:
+// every target new to this lane, every wrong version screened as a non-word against
+// en_US hunspell and the public/ word lists, no target with a second accepted US spelling.
+export const LANE_DAYS = [
+  // day 37
+  [
+    { c: 'Spelled Right', t: 1, q: "Which of these is spelled correctly?", a: "afraid", d: ["afriad", "affraid", "afrade"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling is correct in American English?", a: "absence", d: ["absense", "abscence", "absance"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling would a careful copy editor approve?", a: "accidentally", d: ["accidentaly", "acidentally", "accidentilly"] },
+    { c: 'Spelled Right', t: 4, q: "Which of these words is spelled right?", a: "adolescence", d: ["adolesence", "adolescense", "addolescence"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling is correct for the word meaning 'extremely old-fashioned'?", a: "antediluvian", d: ["antedeluvian", "antidiluvian", "antediluvean"] },
+  ],
+  // day 38
+  [
+    { c: 'Spelled Right', t: 1, q: "Which of these words is spelled right?", a: "almost", d: ["allmost", "almoast", "almosst"] },
+    { c: 'Spelled Right', t: 2, q: "Which one is the right spelling?", a: "across", d: ["accross", "acros", "acrross"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling would win a spelling bee?", a: "achievement", d: ["acheivement", "achievment", "acheivment"] },
+    { c: 'Spelled Right', t: 4, q: "Which is the correct spelling?", a: "anonymous", d: ["anonimous", "annonymous", "anonymus"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'the highest point or perfect example' is right?", a: "apotheosis", d: ["apotheosys", "apothiosis", "apotheossis"] },
+  ],
+  // day 39
+  [
+    { c: 'Spelled Right', t: 1, q: "Which is the correct spelling?", a: "among", d: ["amung", "amoung", "amonge"] },
+    { c: 'Spelled Right', t: 2, q: "Which is spelled correctly?", a: "cranberry", d: ["cranbery", "cranberrie", "cramberry"] },
+    { c: 'Spelled Right', t: 3, q: "Which of these is spelled correctly?", a: "amateur", d: ["amature", "ammateur", "amatuer"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling is correct in American English?", a: "apocalypse", d: ["apocalipse", "apokalypse", "appocalypse"] },
+    { c: 'Spelled Right', t: 5, q: "Which is the correct spelling of the word meaning 'marked by drunken revelry'?", a: "bacchanalian", d: ["bacchanalean", "bachanalian", "bacchannalian"] },
+  ],
+  // day 40
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling is correct in American English?", a: "bought", d: ["bougt", "baught", "bowght"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling would a careful copy editor approve?", a: "already", d: ["allready", "alredy", "allredy"] },
+    { c: 'Spelled Right', t: 3, q: "Which of these words is spelled right?", a: "appearance", d: ["appearence", "apperance", "appearanse"] },
+    { c: 'Spelled Right', t: 4, q: "Which one is the right spelling?", a: "asphalt", d: ["ashphalt", "asphault", "assphalt"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling is correct for the word meaning 'a clear seasoned broth'?", a: "bouillon", d: ["bouillion", "boullion", "bouyon"] },
+  ],
+  // day 41
+  [
+    { c: 'Spelled Right', t: 1, q: "Which one is the right spelling?", a: "bread", d: ["bredd", "braed", "breadd"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling would win a spelling bee?", a: "athlete", d: ["athelete", "athleet", "athlette"] },
+    { c: 'Spelled Right', t: 3, q: "Which is the correct spelling?", a: "boundary", d: ["boundry", "boundery", "boundarey"] },
+    { c: 'Spelled Right', t: 4, q: "Which is spelled correctly?", a: "asthma", d: ["asma", "asthmah", "astma"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'cooked with tomatoes, mushrooms and herbs' is right?", a: "cacciatore", d: ["cacciatori", "caciatore", "cacciatorre"] },
+  ],
+  // day 42
+  [
+    { c: 'Spelled Right', t: 1, q: "Which is spelled correctly?", a: "brother", d: ["bruther", "brothar", "brotherr"] },
+    { c: 'Spelled Right', t: 2, q: "Which of these is spelled correctly?", a: "balance", d: ["ballance", "balence", "balanse"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling is correct in American English?", a: "commitment", d: ["committment", "comitment", "commitmint"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling would a careful copy editor approve?", a: "bachelor", d: ["batchelor", "bacheler", "bachelore"] },
+    { c: 'Spelled Right', t: 5, q: "Which of these words is spelled right?", a: "catarrh", d: ["catarh", "cattarh", "catarrhe"] },
+  ],
+  // day 43
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling would a careful copy editor approve?", a: "build", d: ["bild", "biuld", "buld"] },
+    { c: 'Spelled Right', t: 2, q: "Which of these words is spelled right?", a: "beneficial", d: ["benificial", "benefitial", "beneficail"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling of the word meaning 'a sense of right and wrong' is right?", a: "conscience", d: ["concience", "conscence", "consciense"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling would win a spelling bee?", a: "belligerent", d: ["beligerent", "belligerant", "bellijerent"] },
+    { c: 'Spelled Right', t: 5, q: "Which is the correct spelling?", a: "Chihuahua", d: ["Chihauhau", "Chiuahua", "Chihuahau"] },
+  ],
+  // day 44
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling would win a spelling bee?", a: "busy", d: ["buzy", "buisy", "bisy"] },
+    { c: 'Spelled Right', t: 2, q: "Which is the correct spelling?", a: "career", d: ["carreer", "carear", "creer"] },
+    { c: 'Spelled Right', t: 3, q: "Which is the correct spelling of the word meaning 'awake and aware'?", a: "conscious", d: ["concious", "consious", "conscous"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling is correct for the word meaning 'able to float'?", a: "buoyant", d: ["bouyant", "buoyent", "boyant"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling is correct in American English?", a: "concupiscence", d: ["concupisence", "concupiscense", "conkupiscence"] },
+  ],
+  // day 45
+  [
+    { c: 'Spelled Right', t: 1, q: "Which of these is spelled correctly?", a: "circle", d: ["cirkle", "sircle", "circel"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling is correct in American English?", a: "certain", d: ["certian", "sertain", "certin"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling would a careful copy editor approve?", a: "deceive", d: ["decieve", "deceeve", "diceive"] },
+    { c: 'Spelled Right', t: 4, q: "Which of these words is spelled right?", a: "cacophony", d: ["cacaphony", "cacophany", "kakophony"] },
+    { c: 'Spelled Right', t: 5, q: "Which is the correct spelling of the word meaning 'an unpleasant smell or vapor'?", a: "effluvium", d: ["effluvim", "efluvium", "effluviam"] },
+  ],
+  // day 46
+  [
+    { c: 'Spelled Right', t: 1, q: "Which of these words is spelled right?", a: "clothes", d: ["clothse", "clothez", "cloathes"] },
+    { c: 'Spelled Right', t: 2, q: "Which one is the right spelling?", a: "character", d: ["charachter", "charactor", "caracter"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling would win a spelling bee?", a: "desperate", d: ["desparate", "desperite", "dessperate"] },
+    { c: 'Spelled Right', t: 4, q: "Which is the correct spelling?", a: "catastrophe", d: ["catastrophy", "catastrofe", "cattastrophe"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling is correct for the word meaning 'a brass instrument like a small tuba'?", a: "euphonium", d: ["eufonium", "euphoneum", "euphonnium"] },
+  ],
+  // day 47
+  [
+    { c: 'Spelled Right', t: 1, q: "Which is the correct spelling?", a: "couple", d: ["cuple", "coupel", "couppel"] },
+    { c: 'Spelled Right', t: 2, q: "Which is spelled correctly?", a: "chief", d: ["cheif", "cheef", "chieff"] },
+    { c: 'Spelled Right', t: 3, q: "Which of these is spelled correctly?", a: "disastrous", d: ["disasterous", "disastrus", "dissastrous"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling is correct in American English?", a: "cinnamon", d: ["cinamon", "cinnemon", "cinnamin"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'meat stewed and served in a white sauce' is right?", a: "fricassee", d: ["fricasee", "frickassee", "fricassie"] },
+  ],
+  // day 48
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling is correct in American English?", a: "dollar", d: ["doller", "dolar", "dollor"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling would a careful copy editor approve?", a: "cupboard", d: ["cubbord", "cupbord", "cubboard"] },
+    { c: 'Spelled Right', t: 3, q: "Which of these words is spelled right?", a: "discipline", d: ["disipline", "dicipline", "discipine"] },
+    { c: 'Spelled Right', t: 4, q: "Which one is the right spelling?", a: "consensus", d: ["concensus", "consencus", "consensous"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling would win a spelling bee?", a: "gesundheit", d: ["gesundhite", "gezundheit", "gesundheidt"] },
+  ],
+  // day 49
+  [
+    { c: 'Spelled Right', t: 1, q: "Which one is the right spelling?", a: "double", d: ["dubble", "doubel", "duble"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling would win a spelling bee?", a: "decision", d: ["decission", "desicion", "decisoin"] },
+    { c: 'Spelled Right', t: 3, q: "Which is the correct spelling?", a: "equipment", d: ["equiptment", "equipmint", "equippment"] },
+    { c: 'Spelled Right', t: 4, q: "Which is spelled correctly?", a: "diaphragm", d: ["diaphram", "diafragm", "diaphragme"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling is correct for the word meaning 'a biography that idealizes its subject'?", a: "hagiography", d: ["hagiografy", "hagography", "haggiography"] },
+  ],
+  // day 50
+  [
+    { c: 'Spelled Right', t: 1, q: "Which is spelled correctly?", a: "dozen", d: ["dozzen", "dozan", "duzen"] },
+    { c: 'Spelled Right', t: 2, q: "Which of these is spelled correctly?", a: "develop", d: ["devellop", "divelop", "develup"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling is correct in American English?", a: "excellent", d: ["excelent", "exellent", "excellant"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling would a careful copy editor approve?", a: "dichotomy", d: ["dicotomy", "dichotemy", "dychotomy"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'a severe, sudden allergic reaction' is right?", a: "anaphylaxis", d: ["anaphalaxis", "anafylaxis", "anaphylaxsis"] },
+  ],
+  // day 51
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling would a careful copy editor approve?", a: "early", d: ["erly", "earley", "urly"] },
+    { c: 'Spelled Right', t: 2, q: "Which of these words is spelled right?", a: "disease", d: ["desease", "diseise", "disese"] },
+    { c: 'Spelled Right', t: 3, q: "Which one is the right spelling?", a: "experience", d: ["experiance", "expirience", "experence"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling of the word meaning 'a skin condition that causes itchy patches' is right?", a: "eczema", d: ["exzema", "eczemma", "ekzema"] },
+    { c: 'Spelled Right', t: 5, q: "Which is the correct spelling of the word meaning 'a confused mixture'?", a: "farrago", d: ["farago", "farrogo", "farraggo"] },
+  ],
+  // day 52
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling would win a spelling bee?", a: "easy", d: ["easey", "eazy", "easie"] },
+    { c: 'Spelled Right', t: 2, q: "Which is the correct spelling?", a: "forward", d: ["foward", "forwerd", "forrward"] },
+    { c: 'Spelled Right', t: 3, q: "Which is spelled correctly?", a: "fiery", d: ["firey", "fierey", "fierry"] },
+    { c: 'Spelled Right', t: 4, q: "Which of these is spelled correctly?", a: "exorbitant", d: ["exhorbitant", "exorbitent", "exorbittant"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling is correct in American English?", a: "impresario", d: ["impressario", "impressarrio", "impresarrio"] },
+  ],
+  // day 53
+  [
+    { c: 'Spelled Right', t: 1, q: "Which of these is spelled correctly?", a: "eight", d: ["eaght", "eihgt", "eiht"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling is correct in American English?", a: "guard", d: ["gaurd", "guarde", "guaard"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling would a careful copy editor approve?", a: "gauge", d: ["guage", "gaige", "gaugue"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling is correct for the word meaning 'an exact copy'?", a: "facsimile", d: ["facsimilie", "facsimily", "facksimile"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'a casual lack of concern' is right?", a: "insouciance", d: ["insousiance", "insouciense", "insousciance"] },
+  ],
+  // day 54
+  [
+    { c: 'Spelled Right', t: 1, q: "Which of these words is spelled right?", a: "eleven", d: ["elevin", "eleaven", "elevan"] },
+    { c: 'Spelled Right', t: 2, q: "Which one is the right spelling?", a: "imagine", d: ["immagine", "imagin", "imajine"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling would win a spelling bee?", a: "grateful", d: ["greatful", "gratefull", "graitful"] },
+    { c: 'Spelled Right', t: 4, q: "Which is the correct spelling?", a: "flamboyant", d: ["flamboyent", "flambuoyant", "flamboyiant"] },
+    { c: 'Spelled Right', t: 5, q: "Which is the correct spelling of the word meaning 'very talkative'?", a: "loquacious", d: ["loquatious", "loquacius", "loquacous"] },
+  ],
+  // day 55
+  [
+    { c: 'Spelled Right', t: 1, q: "Which is the correct spelling?", a: "enemy", d: ["enimy", "enemey", "enemmy"] },
+    { c: 'Spelled Right', t: 2, q: "Which is spelled correctly?", a: "lonely", d: ["lonley", "lonly", "lonelly"] },
+    { c: 'Spelled Right', t: 3, q: "Which of these is spelled correctly?", a: "ignorance", d: ["ignorence", "ignorrance", "ignorannce"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling is correct in American English?", a: "genealogy", d: ["geneology", "genealagy", "geneaology"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling is correct for the word meaning 'a bright yellow-green color'?", a: "chartreuse", d: ["chartruese", "chartreus", "shartreuse"] },
+  ],
+  // day 56
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling is correct in American English?", a: "every", d: ["evry", "everey", "evrey"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling would a careful copy editor approve?", a: "actually", d: ["actualy", "acctually", "actully"] },
+    { c: 'Spelled Right', t: 3, q: "Which of these words is spelled right?", a: "incidentally", d: ["incidentaly", "insidentally", "incidentilly"] },
+    { c: 'Spelled Right', t: 4, q: "Which one is the right spelling?", a: "glockenspiel", d: ["glockenspeil", "glokenspiel", "glockenspeel"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling would win a spelling bee?", a: "ebullience", d: ["ebulience", "ebulliance", "ebullyence"] },
+  ],
+  // day 57
+  [
+    { c: 'Spelled Right', t: 1, q: "Which one is the right spelling?", a: "fruit", d: ["froot", "fruite", "frute"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling would win a spelling bee?", a: "beggar", d: ["begger", "beggur", "beggerr"] },
+    { c: 'Spelled Right', t: 3, q: "Which is the correct spelling?", a: "eligible", d: ["eligable", "elligible", "eligibel"] },
+    { c: 'Spelled Right', t: 4, q: "Which is spelled correctly?", a: "guillotine", d: ["guillotene", "guilotine", "gillotine"] },
+    { c: 'Spelled Right', t: 5, q: "Which is the correct spelling of the word meaning 'a Welsh festival of music and poetry'?", a: "eisteddfod", d: ["eistedfod", "eisteddfodd", "eistedfodd"] },
+  ],
+  // day 58
+  [
+    { c: 'Spelled Right', t: 1, q: "Which is spelled correctly?", a: "funny", d: ["funy", "funnie", "phunny"] },
+    { c: 'Spelled Right', t: 2, q: "Which of these is spelled correctly?", a: "brief", d: ["breif", "brieff", "breef"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling is correct in American English?", a: "intelligence", d: ["inteligence", "intelligance", "intellegence"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling would a careful copy editor approve?", a: "haphazard", d: ["haphasard", "hapazard", "haphazzard"] },
+    { c: 'Spelled Right', t: 5, q: "Which of these words is spelled right?", a: "harlequin", d: ["harlaquin", "harlequinn", "harliquin"] },
+  ],
+  // day 59
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling would a careful copy editor approve?", a: "giraffe", d: ["girafe", "jiraffe", "giraff"] },
+    { c: 'Spelled Right', t: 2, q: "Which of these words is spelled right?", a: "bruise", d: ["bruse", "brooise", "bruize"] },
+    { c: 'Spelled Right', t: 3, q: "Which one is the right spelling?", a: "irrelevant", d: ["irrelevent", "irelevant", "irrevelant"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling is correct for the word meaning 'shockingly evil'?", a: "heinous", d: ["heinus", "hienous", "heinious"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'small Italian dumplings' is right?", a: "gnocchi", d: ["gnochi", "nyocchi", "gnocci"] },
+  ],
+  // day 60
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling would win a spelling bee?", a: "guess", d: ["gess", "guese", "guss"] },
+    { c: 'Spelled Right', t: 2, q: "Which is the correct spelling?", a: "captain", d: ["captian", "capten", "captin"] },
+    { c: 'Spelled Right', t: 3, q: "Which is spelled correctly?", a: "knowledge", d: ["knowlege", "knowledg", "knolwedge"] },
+    { c: 'Spelled Right', t: 4, q: "Which of these is spelled correctly?", a: "impeccable", d: ["impecable", "impeccible", "impeckable"] },
+    { c: 'Spelled Right', t: 5, q: "Which is the correct spelling of the word meaning 'a heavy ribbed fabric used for ribbons'?", a: "grosgrain", d: ["grossgrain", "grograin", "grosgrane"] },
+  ],
+  // day 61
+  [
+    { c: 'Spelled Right', t: 1, q: "Which of these is spelled correctly?", a: "half", d: ["halff", "halph", "hallf"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling is correct in American English?", a: "daily", d: ["dayly", "dailey", "dailly"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling would a careful copy editor approve?", a: "accessible", d: ["accessable", "acessible", "accesible"] },
+    { c: 'Spelled Right', t: 4, q: "Which of these words is spelled right?", a: "inadvertent", d: ["inadvertant", "inadvertint", "innadvertent"] },
+    { c: 'Spelled Right', t: 5, q: "Which one is the right spelling?", a: "hirsute", d: ["hirsuit", "hersute", "hirsoot"] },
+  ],
+  // day 62
+  [
+    { c: 'Spelled Right', t: 1, q: "Which of these words is spelled right?", a: "happened", d: ["happend", "hapened", "happenned"] },
+    { c: 'Spelled Right', t: 2, q: "Which one is the right spelling?", a: "fierce", d: ["feirce", "fierse", "firce"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling would win a spelling bee?", a: "allegiance", d: ["allegience", "alegiance", "allegance"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling is correct for the word meaning 'a planned route for a trip'?", a: "itinerary", d: ["itinery", "itenerary", "itinerery"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'one who attacks cherished beliefs' is right?", a: "iconoclast", d: ["iconaclast", "ikonoclast", "iconoklast"] },
+  ],
+  // day 63
+  [
+    { c: 'Spelled Right', t: 1, q: "Which is the correct spelling?", a: "heard", d: ["heared", "haerd", "heerd"] },
+    { c: 'Spelled Right', t: 2, q: "Which is spelled correctly?", a: "fourteen", d: ["forteen", "fourtean", "fourtine"] },
+    { c: 'Spelled Right', t: 3, q: "Which of these is spelled correctly?", a: "arctic", d: ["arktic", "arctik", "arcttic"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling is correct in American English?", a: "labyrinth", d: ["labrynth", "labyrynth", "labirinth"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling would a careful copy editor approve?", a: "jacquard", d: ["jaquard", "jacquarde", "jacqard"] },
+  ],
+  // day 64
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling is correct in American English?", a: "hungry", d: ["hungrey", "hungery", "hungrie"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling would a careful copy editor approve?", a: "grief", d: ["greif", "grieff", "greaf"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling of the word meaning 'very strange or unusual' is right?", a: "bizarre", d: ["bizzare", "bizare", "bizzarre"] },
+    { c: 'Spelled Right', t: 4, q: "Which one is the right spelling?", a: "larynx", d: ["larnyx", "larynks", "larinx"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling is correct for the word meaning 'a collective community in Israel'?", a: "kibbutz", d: ["kibutz", "kibbuts", "kibbuz"] },
+  ],
+  // day 65
+  [
+    { c: 'Spelled Right', t: 1, q: "Which one is the right spelling?", a: "idea", d: ["idia", "ideah", "iddea"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling would win a spelling bee?", a: "handsome", d: ["hansome", "handsom", "handsum"] },
+    { c: 'Spelled Right', t: 3, q: "Which is the correct spelling?", a: "category", d: ["catagory", "categorey", "cattegory"] },
+    { c: 'Spelled Right', t: 4, q: "Which is spelled correctly?", a: "forfeit", d: ["forfiet", "forefeit", "forfit"] },
+    { c: 'Spelled Right', t: 5, q: "Which of these is spelled correctly?", a: "legionnaire", d: ["legionaire", "legionnair", "leggionaire"] },
+  ],
+  // day 66
+  [
+    { c: 'Spelled Right', t: 1, q: "Which is spelled correctly?", a: "instead", d: ["insted", "instaed", "insteed"] },
+    { c: 'Spelled Right', t: 2, q: "Which of these is spelled correctly?", a: "coming", d: ["comming", "comeing", "comeng"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling is correct in American English?", a: "curiosity", d: ["curiousity", "curiosety", "curiosaty"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling would a careful copy editor approve?", a: "annihilate", d: ["anihilate", "annialate", "annihalate"] },
+    { c: 'Spelled Right', t: 5, q: "Which is the correct spelling of the word meaning 'one who is learning the alphabet'?", a: "abecedarian", d: ["abecedarean", "abacedarian", "abecedarrian"] },
+  ],
+  // day 67
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling would a careful copy editor approve?", a: "jacket", d: ["jackit", "jaket", "jackett"] },
+    { c: 'Spelled Right', t: 2, q: "Which of these words is spelled right?", a: "careful", d: ["carefull", "carefle", "carefool"] },
+    { c: 'Spelled Right', t: 3, q: "Which one is the right spelling?", a: "dumbbell", d: ["dumbell", "dumbel", "dummbell"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling would win a spelling bee?", a: "commemorate", d: ["comemorate", "commemmorate", "comemmorate"] },
+    { c: 'Spelled Right', t: 5, q: "Which is the correct spelling?", a: "anemone", d: ["anemonie", "anenome", "annemone"] },
+  ],
+  // day 68
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling would win a spelling bee?", a: "Christmas", d: ["Chrismas", "Christmass", "Cristmas"] },
+    { c: 'Spelled Right', t: 2, q: "Which is the correct spelling?", a: "excitement", d: ["exitement", "excitment", "excitemint"] },
+    { c: 'Spelled Right', t: 3, q: "Which is spelled correctly?", a: "gorgeous", d: ["gorgous", "gorjeous", "gorgeus"] },
+    { c: 'Spelled Right', t: 4, q: "Which of these is spelled correctly?", a: "eccentric", d: ["eccentrick", "ecentric", "eccentryc"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'deep sky blue' is right?", a: "cerulean", d: ["cerulian", "ceruleun", "ceroolean"] },
+  ],
+  // day 69
+  [
+    { c: 'Spelled Right', t: 1, q: "Which of these is spelled correctly?", a: "juice", d: ["juise", "jooce", "juce"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling is correct in American English?", a: "January", d: ["Janury", "Januery", "Janurary"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling would a careful copy editor approve?", a: "guidance", d: ["guidence", "guidanse", "gidance"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling of the word meaning 'to make a problem worse' is right?", a: "exacerbate", d: ["exasperbate", "exaserbate", "exacerbait"] },
+    { c: 'Spelled Right', t: 5, q: "Which one is the right spelling?", a: "diphthong", d: ["dipthong", "difthong", "diphthonge"] },
+  ],
+  // day 70
+  [
+    { c: 'Spelled Right', t: 1, q: "Which of these words is spelled right?", a: "lemon", d: ["lemmon", "lemen", "lemin"] },
+    { c: 'Spelled Right', t: 2, q: "Which one is the right spelling?", a: "label", d: ["lable", "labell", "labal"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling would win a spelling bee?", a: "hypocrisy", d: ["hypocracy", "hipocrisy", "hypocrisey"] },
+    { c: 'Spelled Right', t: 4, q: "Which is the correct spelling?", a: "isthmus", d: ["ishmus", "isthmas", "ismus"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling is correct for the word meaning 'a full skirt with a tight waistband'?", a: "dirndl", d: ["dirndel", "dirndle", "durndl"] },
+  ],
+  // day 71
+  [
+    { c: 'Spelled Right', t: 1, q: "Which is the correct spelling?", a: "aunt", d: ["awnt", "ahnt", "aunte"] },
+    { c: 'Spelled Right', t: 2, q: "Which is spelled correctly?", a: "knock", d: ["knoc", "knok", "knnock"] },
+    { c: 'Spelled Right', t: 3, q: "Which of these is spelled correctly?", a: "kindergarten", d: ["kindergarden", "kindegarten", "kintergarten"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling is correct in American English?", a: "boulevard", d: ["boulevarde", "bulevard", "boulavard"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'a long, mournful complaint' is right?", a: "jeremiad", d: ["jerremiad", "jeramiad", "jeremiade"] },
+  ],
+  // day 72
+  [
+    { c: 'Spelled Right', t: 1, q: "Which spelling is correct in American English?", a: "glove", d: ["gluv", "glov", "glovve"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling would a careful copy editor approve?", a: "genuine", d: ["genuin", "jenuine", "genuwine"] },
+    { c: 'Spelled Right', t: 3, q: "Which of these words is spelled right?", a: "glamorous", d: ["glamorus", "glammorous", "glamerous"] },
+    { c: 'Spelled Right', t: 4, q: "Which one is the right spelling?", a: "crescendo", d: ["cresendo", "crecendo", "crescendoe"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling would win a spelling bee?", a: "dodecahedron", d: ["dodecahedren", "dodecaheadron", "dodekahedron"] },
+  ],
+  // day 73
+  [
+    { c: 'Spelled Right', t: 1, q: "Which one is the right spelling?", a: "hour", d: ["houre", "howr", "hourr"] },
+    { c: 'Spelled Right', t: 2, q: "Which spelling would win a spelling bee?", a: "awful", d: ["awfull", "awfal", "awfel"] },
+    { c: 'Spelled Right', t: 3, q: "Which is the correct spelling?", a: "acceptable", d: ["acceptible", "acceptabel", "aceptable"] },
+    { c: 'Spelled Right', t: 4, q: "Which is spelled correctly?", a: "chandelier", d: ["chandeleir", "shandelier", "chandelear"] },
+    { c: 'Spelled Right', t: 5, q: "Which of these is spelled correctly?", a: "Kilimanjaro", d: ["Kilimanjero", "Killimanjaro", "Kilamanjaro"] },
+  ],
+  // day 74
+  [
+    { c: 'Spelled Right', t: 1, q: "Which is spelled correctly?", a: "cough", d: ["cof", "cowgh", "coughe"] },
+    { c: 'Spelled Right', t: 2, q: "Which of these is spelled correctly?", a: "confetti", d: ["confeti", "conffetti", "confettie"] },
+    { c: 'Spelled Right', t: 3, q: "Which spelling is correct in American English?", a: "convenient", d: ["conveniant", "convinient", "convenent"] },
+    { c: 'Spelled Right', t: 4, q: "Which spelling would a careful copy editor approve?", a: "fuselage", d: ["fusilage", "fuselege", "fusellage"] },
+    { c: 'Spelled Right', t: 5, q: "Which spelling of the word meaning 'very small' is right?", a: "Lilliputian", d: ["Liliputian", "Lilliputtian", "Lillipution"] },
   ],
 ];
