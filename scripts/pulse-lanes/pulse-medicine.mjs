@@ -1,5 +1,7 @@
 // Pulse (The Human Body), lane: Health & Medicine. 36 days x 5 tiers.
-export const LANE_DAYS = [
+// Days 1-36 (2026-10-30 to 2026-12-04), frozen and already in the bank.
+// Kept for reference; the generator reads only LANE_DAYS below.
+export const DAYS_1_36 = [
   // day 1
   [
     { c: "Health & Medicine", t: 1, q: "In an ambulance crew, what does EMT stand for?", a: "Emergency medical technician", d: ["Emergency mobile therapist", "Expert medical transport", "Emergency monitoring team"] },
@@ -287,5 +289,226 @@ export const LANE_DAYS = [
     { c: "Health & Medicine", t: 3, q: "Which drug did Carl Koller introduce in 1884 as the first local anesthetic for eye surgery?", a: "Cocaine", d: ["Morphine", "Ether", "Procaine"] },
     { c: "Health & Medicine", t: 4, q: "In 1949 Australian psychiatrist John Cade reported that lithium calmed patients with which condition?", a: "Mania", d: ["Epilepsy", "Insomnia", "Migraine"] },
     { c: "Health & Medicine", t: 5, q: "A nosocomial infection is one caught where?", a: "In a hospital", d: ["Abroad", "From a pet", "In the soil"] },
+  ],
+];
+
+// Days 37-63 (2026-12-05 to 2026-12-31). gen-science.mjs appends LANE_DAYS
+// after the last day in the bank, so this array holds only the newest segment.
+export const LANE_DAYS = [
+  // day 37
+  [
+    { c: "Health & Medicine", t: 1, q: "Which small device measures sugar in a drop of blood from a fingertip?", a: "Glucose meter", d: ["Pulse oximeter","Thermometer","Peak flow meter"] },
+    { c: "Health & Medicine", t: 2, q: "In surgical words such as appendectomy, what does -ectomy mean?", a: "Removal", d: ["Repair","Opening","Viewing"] },
+    { c: "Health & Medicine", t: 3, q: "Cirrhosis is scarring of which organ?", a: "Liver", d: ["Lungs","Pancreas","Heart"] },
+    { c: "Health & Medicine", t: 4, q: "Carpal tunnel syndrome comes from pressure on which nerve at the wrist?", a: "Median nerve", d: ["Ulnar nerve","Radial nerve","Axillary nerve"] },
+    { c: "Health & Medicine", t: 5, q: "Which Latin word is the prescription symbol Rx traditionally said to abbreviate?", a: "Recipe", d: ["Remedium","Receptum","Regula"] },
+  ],
+  // day 38
+  [
+    { c: "Health & Medicine", t: 1, q: "In first aid, what do the letters CPR stand for?", a: "Cardiopulmonary resuscitation", d: ["Cardiac pressure release","Chest pump revival","Cardiopulmonary respiration"] },
+    { c: "Health & Medicine", t: 2, q: "Tetanus is also known by which name?", a: "Lockjaw", d: ["Whooping cough","Quinsy","Croup"] },
+    { c: "Health & Medicine", t: 3, q: "Anosmia is the loss of which sense?", a: "Smell", d: ["Taste","Hearing","Touch"] },
+    { c: "Health & Medicine", t: 4, q: "Home pregnancy tests detect which hormone?", a: "hCG", d: ["Estrogen","Progesterone","Prolactin"] },
+    { c: "Health & Medicine", t: 5, q: "Which Johns Hopkins surgeon brought rubber gloves into surgery around 1890?", a: "William Halsted", d: ["William Osler","Harvey Cushing","Howard Kelly"] },
+  ],
+  // day 39
+  [
+    { c: "Health & Medicine", t: 1, q: "What cloth support, tied around the neck, holds an injured arm still?", a: "Sling", d: ["Splint","Brace","Cast"] },
+    { c: "Health & Medicine", t: 2, q: "What does an electrocardiogram (ECG) record?", a: "The heart's electrical activity", d: ["Brain waves","Blood flow in the legs","Lung capacity"] },
+    { c: "Health & Medicine", t: 3, q: "Which disease damages the fatty myelin coating of nerves in the brain and spinal cord?", a: "Multiple sclerosis", d: ["Parkinson's disease","Muscular dystrophy","Alzheimer's disease"] },
+    { c: "Health & Medicine", t: 4, q: "Atropine, a drug that widens the pupils, comes from which poisonous plant?", a: "Deadly nightshade", d: ["Foxglove","Hemlock","Oleander"] },
+    { c: "Health & Medicine", t: 5, q: "Which Roman writer of the first century AD compiled the medical encyclopedia De Medicina?", a: "Celsus", d: ["Pliny the Elder","Dioscorides","Soranus"] },
+  ],
+  // day 40
+  [
+    { c: "Health & Medicine", t: 1, q: "Which kind of doctor specializes in the heart?", a: "Cardiologist", d: ["Neurologist","Urologist","Hepatologist"] },
+    { c: "Health & Medicine", t: 2, q: "What are itchy, raised red welts on the skin, often from an allergy, called?", a: "Hives", d: ["Boils","Warts","Cysts"] },
+    { c: "Health & Medicine", t: 3, q: "What is the medical name for a lazy eye?", a: "Amblyopia", d: ["Nystagmus","Myopia","Presbyopia"] },
+    { c: "Health & Medicine", t: 4, q: "What does a doctor mean by dysphagia?", a: "Difficulty swallowing", d: ["Difficulty speaking","Difficulty breathing","Difficulty sleeping"] },
+    { c: "Health & Medicine", t: 5, q: "In hospital orders, what does NPO mean?", a: "Nothing by mouth", d: ["No pain observed","Not per order","Night pills only"] },
+  ],
+  // day 41
+  [
+    { c: "Health & Medicine", t: 1, q: "What is the sticky film of bacteria that builds up on teeth called?", a: "Plaque", d: ["Tartar","Enamel","Saliva"] },
+    { c: "Health & Medicine", t: 2, q: "What is a carcinogen?", a: "A substance that can cause cancer", d: ["A cancer-fighting drug","A type of tumor","A cancer screening test"] },
+    { c: "Health & Medicine", t: 3, q: "Which illness is an inflammation of the membranes around the brain and spinal cord?", a: "Meningitis", d: ["Encephalitis","Myelitis","Neuritis"] },
+    { c: "Health & Medicine", t: 4, q: "Which injectable blood thinner takes its name from the Greek word for liver, where it was first found?", a: "Heparin", d: ["Warfarin","Dicoumarol","Hirudin"] },
+    { c: "Health & Medicine", t: 5, q: "Which surgeon of Muslim Spain wrote a famous illustrated guide to surgical instruments around AD 1000?", a: "Al-Zahrawi", d: ["Avicenna","Averroes","Maimonides"] },
+  ],
+  // day 42
+  [
+    { c: "Health & Medicine", t: 1, q: "What is the hollow needle with a plunger, used to give injections, called?", a: "Syringe", d: ["Catheter","Scalpel","Cannula"] },
+    { c: "Health & Medicine", t: 2, q: "What does the abbreviation BMI stand for?", a: "Body mass index", d: ["Basal metabolic index","Body muscle intake","Bone mass indicator"] },
+    { c: "Health & Medicine", t: 3, q: "What is the medical term for grinding or clenching the teeth?", a: "Bruxism", d: ["Malocclusion","Gingivitis","Trismus"] },
+    { c: "Health & Medicine", t: 4, q: "What is the medical term for sleepwalking?", a: "Somnambulism", d: ["Somniloquy","Narcolepsy","Cataplexy"] },
+    { c: "Health & Medicine", t: 5, q: "Which rare but serious syndrome is the reason aspirin is avoided for children with viral illnesses?", a: "Reye's syndrome", d: ["Kawasaki disease","Guillain-Barre syndrome","Stevens-Johnson syndrome"] },
+  ],
+  // day 43
+  [
+    { c: "Health & Medicine", t: 1, q: "What is the name for an inflamed appendix, which often needs surgery?", a: "Appendicitis", d: ["Gastritis","Colitis","Peritonitis"] },
+    { c: "Health & Medicine", t: 2, q: "Which childhood illness is known for a harsh cough that sounds like a seal's bark?", a: "Croup", d: ["Mumps","Tetanus","Rubella"] },
+    { c: "Health & Medicine", t: 3, q: "Which drugs, nicknamed water pills, make the kidneys release more urine?", a: "Diuretics", d: ["Antacids","Laxatives","Antihistamines"] },
+    { c: "Health & Medicine", t: 4, q: "Which antidepressant was sold under the brand name Prozac?", a: "Fluoxetine", d: ["Sertraline","Paroxetine","Citalopram"] },
+    { c: "Health & Medicine", t: 5, q: "Which Canadian surgeon became a hero in China after serving there with Communist forces in 1938 and 1939?", a: "Norman Bethune", d: ["Wilder Penfield","Frederick Banting","William Osler"] },
+  ],
+  // day 44
+  [
+    { c: "Health & Medicine", t: 1, q: "Laryngitis often causes the loss of what?", a: "Voice", d: ["Hearing","Taste","Balance"] },
+    { c: "Health & Medicine", t: 2, q: "Which lifelong condition is a reaction to gluten that damages the small intestine?", a: "Celiac disease", d: ["Crohn's disease","Lactose intolerance","Gastritis"] },
+    { c: "Health & Medicine", t: 3, q: "What is the medical term for an abnormally fast heartbeat?", a: "Tachycardia", d: ["Arrhythmia","Hypertension","Fibrillation"] },
+    { c: "Health & Medicine", t: 4, q: "What does a doctor mean by hematuria?", a: "Blood in the urine", d: ["Blood in the stool","Blood in the lungs","Blood in the eye"] },
+    { c: "Health & Medicine", t: 5, q: "Burke and Hare murdered people in 1828 to sell their bodies to anatomists in which city?", a: "Edinburgh", d: ["London","Glasgow","Dublin"] },
+  ],
+  // day 45
+  [
+    { c: "Health & Medicine", t: 1, q: "What is a routine doctor's visit to check your health, when you are not sick, commonly called?", a: "Checkup", d: ["Admission","Discharge","Triage"] },
+    { c: "Health & Medicine", t: 2, q: "Nitrous oxide, used by dentists, is better known by which nickname?", a: "Laughing gas", d: ["Tear gas","Sleeping gas","Marsh gas"] },
+    { c: "Health & Medicine", t: 3, q: "Which eye disease damages the optic nerve, often because of high pressure inside the eye?", a: "Glaucoma", d: ["Cataract","Macular degeneration","Conjunctivitis"] },
+    { c: "Health & Medicine", t: 4, q: "On a prescription, what does b.i.d. mean?", a: "Twice a day", d: ["Before meals","At bedtime","Every other day"] },
+    { c: "Health & Medicine", t: 5, q: "Which Arab physician of the 1200s first described blood's circuit through the lungs?", a: "Ibn al-Nafis", d: ["Avicenna","Rhazes","Al-Kindi"] },
+  ],
+  // day 46
+  [
+    { c: "Health & Medicine", t: 1, q: "What is a mild brain injury caused by a blow to the head called?", a: "Concussion", d: ["Stroke","Migraine","Seizure"] },
+    { c: "Health & Medicine", t: 2, q: "Which kind of specialist doctor treats the kidneys, bladder and urinary tract?", a: "Urologist", d: ["Gastroenterologist","Hepatologist","Dermatologist"] },
+    { c: "Health & Medicine", t: 3, q: "What is the medical term for a bruise?", a: "Contusion", d: ["Laceration","Abrasion","Lesion"] },
+    { c: "Health & Medicine", t: 4, q: "What is the medical term for a nosebleed?", a: "Epistaxis", d: ["Rhinitis","Hemoptysis","Sinusitis"] },
+    { c: "Health & Medicine", t: 5, q: "The Rinne test, done with a tuning fork, checks what?", a: "Hearing", d: ["Balance","Reflexes","Vision"] },
+  ],
+  // day 47
+  [
+    { c: "Health & Medicine", t: 1, q: "What is the injury called when skin and the tissue beneath it freeze in severe cold?", a: "Frostbite", d: ["Chilblains","Windburn","Trench foot"] },
+    { c: "Health & Medicine", t: 2, q: "What is a clouding of the eye's lens called?", a: "Cataract", d: ["Glaucoma","Astigmatism","Stye"] },
+    { c: "Health & Medicine", t: 3, q: "A disease that is always present at a steady level in a region is described as what?", a: "Endemic", d: ["Epidemic","Pandemic","Sporadic"] },
+    { c: "Health & Medicine", t: 4, q: "Which colonial figure co-founded Pennsylvania Hospital in Philadelphia in 1751?", a: "Benjamin Franklin", d: ["Thomas Jefferson","John Adams","Benjamin Rush"] },
+    { c: "Health & Medicine", t: 5, q: "The gout drug colchicine comes from which plant?", a: "Autumn crocus", d: ["Foxglove","White willow","Meadowsweet"] },
+  ],
+  // day 48
+  [
+    { c: "Health & Medicine", t: 1, q: "What is someone who gets care at a hospital without staying overnight called?", a: "Outpatient", d: ["Inpatient","Resident","Intern"] },
+    { c: "Health & Medicine", t: 2, q: "Which oath, named after an ancient Greek physician, has long been taken by new doctors?", a: "Hippocratic Oath", d: ["Galenic Oath","Socratic Oath","Asclepian Oath"] },
+    { c: "Health & Medicine", t: 3, q: "Which drug, sold as Narcan, reverses an opioid overdose?", a: "Naloxone", d: ["Methadone","Buprenorphine","Flumazenil"] },
+    { c: "Health & Medicine", t: 4, q: "What is the medical term for hair loss?", a: "Alopecia", d: ["Hirsutism","Psoriasis","Vitiligo"] },
+    { c: "Health & Medicine", t: 5, q: "What is the medical term for hiccups?", a: "Singultus", d: ["Eructation","Borborygmus","Sternutation"] },
+  ],
+  // day 49
+  [
+    { c: "Health & Medicine", t: 1, q: "What is an unwanted extra result of taking a medicine called?", a: "Side effect", d: ["Overdose","Allergy","Placebo"] },
+    { c: "Health & Medicine", t: 2, q: "In a hospital's NICU, what does the N stand for?", a: "Neonatal", d: ["Neurological","Nursing","Nutritional"] },
+    { c: "Health & Medicine", t: 3, q: "In medicine, what is an organism such as a mosquito that carries a disease between hosts called?", a: "Vector", d: ["Reservoir","Host","Pathogen"] },
+    { c: "Health & Medicine", t: 4, q: "Doctors Without Borders was founded in 1971 in which country?", a: "France", d: ["Switzerland","Belgium","Netherlands"] },
+    { c: "Health & Medicine", t: 5, q: "Which British nurse was executed in 1915 for helping Allied soldiers escape occupied Belgium?", a: "Edith Cavell", d: ["Mary Seacole","Elsie Inglis","Florence Nightingale"] },
+  ],
+  // day 50
+  [
+    { c: "Health & Medicine", t: 1, q: "What is the name for long-term trouble falling or staying asleep?", a: "Insomnia", d: ["Narcolepsy","Amnesia","Apnea"] },
+    { c: "Health & Medicine", t: 2, q: "When a doctor orders a test stat, how soon is it wanted?", a: "Immediately", d: ["Tomorrow","Within a week","At the next visit"] },
+    { c: "Health & Medicine", t: 3, q: "Consumption was a common old name for which disease?", a: "Tuberculosis", d: ["Cholera","Diabetes","Scurvy"] },
+    { c: "Health & Medicine", t: 4, q: "Paresthesia is the medical term for which feeling?", a: "Pins and needles", d: ["Ringing in the ears","Dizziness","Itching"] },
+    { c: "Health & Medicine", t: 5, q: "Fifth disease, which gives children a slapped-cheek rash, is caused by which virus?", a: "Parvovirus B19", d: ["Rubella virus","Coxsackievirus","Human herpesvirus 6"] },
+  ],
+  // day 51
+  [
+    { c: "Health & Medicine", t: 1, q: "In first aid, an ice pack on a fresh sprain mainly helps reduce what?", a: "Swelling", d: ["Bleeding","Fever","Itching"] },
+    { c: "Health & Medicine", t: 2, q: "Which machine helped many polio patients breathe in the mid-1900s?", a: "Iron lung", d: ["Heart-lung machine","Dialysis machine","Hyperbaric chamber"] },
+    { c: "Health & Medicine", t: 3, q: "What is the medical term for puffiness caused by fluid trapped in body tissues?", a: "Edema", d: ["Embolism","Abscess","Hematoma"] },
+    { c: "Health & Medicine", t: 4, q: "Which inflammatory bowel disease can strike any part of the gut, from the mouth to the anus?", a: "Crohn's disease", d: ["Ulcerative colitis","Celiac disease","Diverticulitis"] },
+    { c: "Health & Medicine", t: 5, q: "Who founded the Frontier Nursing Service in rural Kentucky in 1925?", a: "Mary Breckinridge", d: ["Lillian Wald","Clara Barton","Margaret Sanger"] },
+  ],
+  // day 52
+  [
+    { c: "Health & Medicine", t: 1, q: "Which thin, clear discs sit directly on the eye to correct vision?", a: "Contact lenses", d: ["Bifocals","Monocles","Goggles"] },
+    { c: "Health & Medicine", t: 2, q: "People with lactose intolerance have trouble digesting a sugar found in what?", a: "Milk", d: ["Bread","Fruit","Honey"] },
+    { c: "Health & Medicine", t: 3, q: "What is a broken bone that pierces through the skin called?", a: "Compound fracture", d: ["Greenstick fracture","Hairline fracture","Stress fracture"] },
+    { c: "Health & Medicine", t: 4, q: "What does a Snellen chart, with rows of shrinking letters, test?", a: "Sharpness of vision", d: ["Color vision","Hearing","Reading speed"] },
+    { c: "Health & Medicine", t: 5, q: "Which Indian woman earned a medical degree in Pennsylvania in 1886?", a: "Anandibai Joshi", d: ["Kadambini Ganguly","Savitribai Phule","Rukhmabai"] },
+  ],
+  // day 53
+  [
+    { c: "Health & Medicine", t: 1, q: "The flu is short for which illness?", a: "Influenza", d: ["Infection","Inflammation","Insufficiency"] },
+    { c: "Health & Medicine", t: 2, q: "What is the medical name for a sideways curve of the spine?", a: "Scoliosis", d: ["Kyphosis","Lordosis","Sciatica"] },
+    { c: "Health & Medicine", t: 3, q: "What is it called when cancer spreads from where it started to other parts of the body?", a: "Metastasis", d: ["Remission","Mutation","Hyperplasia"] },
+    { c: "Health & Medicine", t: 4, q: "What is the nocebo effect?", a: "Ill effects from expecting harm", d: ["Healing from a fake pill","Harm from an overdose","Relief from expecting help"] },
+    { c: "Health & Medicine", t: 5, q: "Hantavirus pulmonary syndrome in the Americas is spread mainly by which animals?", a: "Rodents", d: ["Bats","Ticks","Mosquitoes"] },
+  ],
+  // day 54
+  [
+    { c: "Health & Medicine", t: 1, q: "In the US, what is a shop that sells medicines, often with a pharmacy counter, commonly called?", a: "Drugstore", d: ["Dispensary","Infirmary","Clinic"] },
+    { c: "Health & Medicine", t: 2, q: "What is inflammation of the gums called?", a: "Gingivitis", d: ["Glossitis","Stomatitis","Tonsillitis"] },
+    { c: "Health & Medicine", t: 3, q: "In medical words such as neuralgia, what does -algia mean?", a: "Pain", d: ["Swelling","Weakness","Numbness"] },
+    { c: "Health & Medicine", t: 4, q: "What is the medical term for double vision?", a: "Diplopia", d: ["Myopia","Hyperopia","Nystagmus"] },
+    { c: "Health & Medicine", t: 5, q: "Which American reformer campaigned in the 1840s for state hospitals for the mentally ill?", a: "Dorothea Dix", d: ["Clara Barton","Lillian Wald","Jane Addams"] },
+  ],
+  // day 55
+  [
+    { c: "Health & Medicine", t: 1, q: "What are medicines you can buy without a prescription called?", a: "Over-the-counter", d: ["Generic","Controlled","Experimental"] },
+    { c: "Health & Medicine", t: 2, q: "Leukemia is a cancer that begins in which kind of cells?", a: "Blood-forming cells", d: ["Skin cells","Nerve cells","Liver cells"] },
+    { c: "Health & Medicine", t: 3, q: "What is a doctor who has finished medical school and is training in a specialty at a hospital called?", a: "Resident", d: ["Attending","Locum","Chief of staff"] },
+    { c: "Health & Medicine", t: 4, q: "Which lung disease destroys the walls of the air sacs, leaving fewer and larger ones?", a: "Emphysema", d: ["Asthma","Bronchitis","Pleurisy"] },
+    { c: "Health & Medicine", t: 5, q: "Which New York nurse founded the Henry Street Settlement and coined the term public health nurse?", a: "Lillian Wald", d: ["Mary Breckinridge","Dorothea Dix","Jane Addams"] },
+  ],
+  // day 56
+  [
+    { c: "Health & Medicine", t: 1, q: "Which kind of doctor tests for and treats allergies?", a: "Allergist", d: ["Audiologist","Oncologist","Podiatrist"] },
+    { c: "Health & Medicine", t: 2, q: "Which kind of specialist doctor treats disorders of the brain and nerves?", a: "Neurologist", d: ["Nephrologist","Urologist","Dermatologist"] },
+    { c: "Health & Medicine", t: 3, q: "Scabies is caused by which tiny creatures burrowing into the skin?", a: "Mites", d: ["Lice","Fleas","Ticks"] },
+    { c: "Health & Medicine", t: 4, q: "Cyanosis describes skin turning which color from a lack of oxygen?", a: "Blue", d: ["Yellow","Red","White"] },
+    { c: "Health & Medicine", t: 5, q: "Drug names ending in -mab, such as rituximab, mark which kind of medicine?", a: "Monoclonal antibodies", d: ["Beta blockers","Antivirals","Steroids"] },
+  ],
+  // day 57
+  [
+    { c: "Health & Medicine", t: 1, q: "Which kind of dental specialist straightens teeth with braces?", a: "Orthodontist", d: ["Periodontist","Endodontist","Oral surgeon"] },
+    { c: "Health & Medicine", t: 2, q: "What is a band tightened around a limb to stop heavy bleeding called?", a: "Tourniquet", d: ["Splint","Sling","Compress"] },
+    { c: "Health & Medicine", t: 3, q: "The red and white barber's pole recalls barbers' old sideline in which practice?", a: "Bloodletting", d: ["Tooth pulling","Bonesetting","Wig making"] },
+    { c: "Health & Medicine", t: 4, q: "What is the medical term for fainting?", a: "Syncope", d: ["Vertigo","Seizure","Apnea"] },
+    { c: "Health & Medicine", t: 5, q: "Christmas disease, named after a patient described in 1952, is a form of which disorder?", a: "Hemophilia", d: ["Leukemia","Thalassemia","Sickle cell disease"] },
+  ],
+  // day 58
+  [
+    { c: "Health & Medicine", t: 1, q: "In a hospital, in which room are surgeries performed?", a: "Operating room", d: ["Waiting room","Recovery room","Exam room"] },
+    { c: "Health & Medicine", t: 2, q: "What is the general term for any germ that causes disease?", a: "Pathogen", d: ["Antigen","Antibody","Allergen"] },
+    { c: "Health & Medicine", t: 3, q: "Gastroenteritis is often called by which everyday name?", a: "Stomach flu", d: ["Heartburn","Food allergy","Acid reflux"] },
+    { c: "Health & Medicine", t: 4, q: "Father Damien cared for leprosy patients on which Hawaiian island?", a: "Molokai", d: ["Maui","Kauai","Lanai"] },
+    { c: "Health & Medicine", t: 5, q: "On a prescription, what does p.r.n. mean?", a: "As needed", d: ["After meals","Every morning","By rectum"] },
+  ],
+  // day 59
+  [
+    { c: "Health & Medicine", t: 1, q: "Rabies is most often passed to people through what?", a: "Animal bites", d: ["Dirty water","Mosquito bites","Spoiled food"] },
+    { c: "Health & Medicine", t: 2, q: "What is a doctor's forecast of how an illness is likely to turn out called?", a: "Prognosis", d: ["Diagnosis","Symptom","Referral"] },
+    { c: "Health & Medicine", t: 3, q: "Which sleep disorder causes sudden, uncontrollable attacks of sleep during the day?", a: "Narcolepsy", d: ["Insomnia","Sleep apnea","Restless legs syndrome"] },
+    { c: "Health & Medicine", t: 4, q: "Coal workers' pneumoconiosis is better known by which name?", a: "Black lung", d: ["Brown lung","White lung","Miner's cough"] },
+    { c: "Health & Medicine", t: 5, q: "Which Italian educator, famous for her teaching method, was one of Italy's first women doctors?", a: "Maria Montessori", d: ["Grazia Deledda","Matilde Serao","Anna Kuliscioff"] },
+  ],
+  // day 60
+  [
+    { c: "Health & Medicine", t: 1, q: "What is a person receiving medical care called?", a: "Patient", d: ["Practitioner","Physician","Pharmacist"] },
+    { c: "Health & Medicine", t: 2, q: "Which doctor puts patients to sleep and manages their pain during surgery?", a: "Anesthesiologist", d: ["Radiologist","Pathologist","Cardiologist"] },
+    { c: "Health & Medicine", t: 3, q: "Pharyngitis is the medical term for what?", a: "Sore throat", d: ["Earache","Runny nose","Hoarse voice"] },
+    { c: "Health & Medicine", t: 4, q: "Which mosquito-borne virus caused a 2015 outbreak in Brazil linked to babies born with small heads?", a: "Zika virus", d: ["West Nile virus","Chikungunya virus","Dengue virus"] },
+    { c: "Health & Medicine", t: 5, q: "Drugs ending in -sartan, such as losartan, are mainly prescribed for what?", a: "High blood pressure", d: ["High cholesterol","Diabetes","Depression"] },
+  ],
+  // day 61
+  [
+    { c: "Health & Medicine", t: 1, q: "Which technique of upward abdominal thrusts is used to help a choking person?", a: "Heimlich maneuver", d: ["Valsalva maneuver","Recovery position","Epley maneuver"] },
+    { c: "Health & Medicine", t: 2, q: "Strep throat is caused by which kind of germ?", a: "Bacteria", d: ["Viruses","Fungi","Parasites"] },
+    { c: "Health & Medicine", t: 3, q: "Which kind of specialist doctor treats diseases of the lungs?", a: "Pulmonologist", d: ["Nephrologist","Hepatologist","Urologist"] },
+    { c: "Health & Medicine", t: 4, q: "Most cases of cervical cancer are caused by which virus?", a: "Human papillomavirus", d: ["Herpes simplex virus","Hepatitis C virus","Epstein-Barr virus"] },
+    { c: "Health & Medicine", t: 5, q: "Which chemical did Joseph Lister begin using in 1865 to keep wounds from becoming infected?", a: "Carbolic acid", d: ["Chlorine","Iodine","Boric acid"] },
+  ],
+  // day 62
+  [
+    { c: "Health & Medicine", t: 1, q: "Which flat carrier is used to move an injured person who is lying down?", a: "Stretcher", d: ["Wheelchair","Crutch","Walker"] },
+    { c: "Health & Medicine", t: 2, q: "What is the surgical delivery of a baby through a cut in the mother's abdomen called?", a: "Cesarean section", d: ["Episiotomy","Laparotomy","Amniocentesis"] },
+    { c: "Health & Medicine", t: 3, q: "A subcutaneous injection goes where?", a: "Under the skin", d: ["Into a vein","Into a muscle","Into a joint"] },
+    { c: "Health & Medicine", t: 4, q: "Tinea pedis is better known by which name?", a: "Athlete's foot", d: ["Jock itch","Ringworm of the scalp","Plantar wart"] },
+    { c: "Health & Medicine", t: 5, q: "Cholelithiasis is the medical term for what?", a: "Gallstones", d: ["Kidney stones","Bladder stones","Tonsil stones"] },
+  ],
+  // day 63
+  [
+    { c: "Health & Medicine", t: 1, q: "Which part of the body does an optometrist examine?", a: "Eyes", d: ["Ears","Teeth","Feet"] },
+    { c: "Health & Medicine", t: 2, q: "Melanoma is a cancer of which organ?", a: "Skin", d: ["Liver","Lungs","Bones"] },
+    { c: "Health & Medicine", t: 3, q: "Blood pressure is measured in millimeters of which substance?", a: "Mercury", d: ["Water","Alcohol","Oil"] },
+    { c: "Health & Medicine", t: 4, q: "Rubeola is another name for which disease?", a: "Measles", d: ["Rubella","Mumps","Chickenpox"] },
+    { c: "Health & Medicine", t: 5, q: "In 1775, Percivall Pott linked chimney sweeping to cancer of which part of the body?", a: "Scrotum", d: ["Lungs","Throat","Stomach"] },
   ],
 ];

@@ -2,7 +2,9 @@
 // Scope: bones, muscles, organs, body systems, the brain and nerves, senses,
 // blood and circulation, how the healthy body works, settled body numbers.
 // Not diseases, vaccines, drugs, treatments or medical history.
-export const LANE_DAYS = [
+// Days 1-36 (2026-10-30 to 2026-12-04), frozen and already in the bank.
+// Kept for reference; the generator reads only LANE_DAYS below.
+export const DAYS_1_36 = [
   // day 1
   [
     { c: "Anatomy", t: 1, q: "Which fleshy part at the bottom of the outer ear is often pierced?", a: "Earlobe", d: ["Tragus","Helix","Ear canal"] },
@@ -290,5 +292,226 @@ export const LANE_DAYS = [
     { c: "Anatomy", t: 3, q: "What is the double-layered sac that surrounds the heart called?", a: "Pericardium", d: ["Pleura","Peritoneum","Myocardium"] },
     { c: "Anatomy", t: 4, q: "Which valve separates the right atrium from the right ventricle?", a: "Tricuspid valve", d: ["Mitral valve","Aortic valve","Pulmonary valve"] },
     { c: "Anatomy", t: 5, q: "Which hormone from the duodenum makes the gallbladder contract in response to fat?", a: "Cholecystokinin", d: ["Secretin","Gastrin","Motilin"] },
+  ],
+];
+
+// Days 37-63 (2026-12-05 to 2026-12-31). gen-science.mjs appends LANE_DAYS
+// after the last day in the bank, so this array holds only the newest segment.
+export const LANE_DAYS = [
+  // day 37
+  [
+    { c: "Anatomy", t: 1, q: "What are the short hairs along the edge of each eyelid called?", a: "Eyelashes", d: ["Eyebrows","Sideburns","Nose hairs"] },
+    { c: "Anatomy", t: 2, q: "The word \"renal\" refers to which organs?", a: "Kidneys", d: ["Lungs","Intestines","Ovaries"] },
+    { c: "Anatomy", t: 3, q: "Which anatomical term means toward the front of the body?", a: "Anterior", d: ["Posterior","Superior","Lateral"] },
+    { c: "Anatomy", t: 4, q: "What is the small bony tip at the lower end of the breastbone called?", a: "Xiphoid process", d: ["Manubrium","Acromion","Coracoid process"] },
+    { c: "Anatomy", t: 5, q: "Which tiny muscles in the skin pull hairs upright to make goosebumps?", a: "Arrector pili", d: ["Erector spinae","Platysma","Dartos"] },
+  ],
+  // day 38
+  [
+    { c: "Anatomy", t: 1, q: "Which part of the body has a palm?", a: "Hand", d: ["Foot","Ear","Knee"] },
+    { c: "Anatomy", t: 2, q: "What is the anatomical name for the belly button?", a: "Umbilicus", d: ["Uvula","Sternum","Coccyx"] },
+    { c: "Anatomy", t: 3, q: "The outermost layer of the skin is made mostly of what?", a: "Dead cells", d: ["Fat cells","Muscle fibers","Blood vessels"] },
+    { c: "Anatomy", t: 4, q: "What is the pouch-like first section of the large intestine called?", a: "Cecum", d: ["Sigmoid colon","Rectum","Ileum"] },
+    { c: "Anatomy", t: 5, q: "Which white blood cells specialize in fighting parasitic worms?", a: "Eosinophils", d: ["Neutrophils","Basophils","Monocytes"] },
+  ],
+  // day 39
+  [
+    { c: "Anatomy", t: 1, q: "What is the hard white outer coating of a tooth's crown called?", a: "Enamel", d: ["Dentin","Pulp","Cementum"] },
+    { c: "Anatomy", t: 2, q: "Which of these is one of the three tiny bones of the middle ear?", a: "Stirrup", d: ["Cochlea","Eardrum","Tragus"] },
+    { c: "Anatomy", t: 3, q: "Which small paired bones form the bridge of the nose?", a: "Nasal bones", d: ["Zygomatic bones","Lacrimal bones","Palatine bones"] },
+    { c: "Anatomy", t: 4, q: "On the cerebral cortex, what are the ridges between the grooves called?", a: "Gyri", d: ["Fissures","Lobules","Ventricles"] },
+    { c: "Anatomy", t: 5, q: "Which broad, flat calf muscle lies beneath the gastrocnemius?", a: "Soleus", d: ["Plantaris","Tibialis anterior","Popliteus"] },
+  ],
+  // day 40
+  [
+    { c: "Anatomy", t: 1, q: "What is the bony point of the face below the mouth called?", a: "Chin", d: ["Cheek","Temple","Brow"] },
+    { c: "Anatomy", t: 2, q: "What is the roof of the mouth called?", a: "Palate", d: ["Uvula","Gums","Epiglottis"] },
+    { c: "Anatomy", t: 3, q: "What is the thick muscular middle layer of the heart wall called?", a: "Myocardium", d: ["Pericardium","Endocardium","Epicardium"] },
+    { c: "Anatomy", t: 4, q: "Which neck muscle, running from behind the ear to the collarbone and breastbone, turns the head?", a: "Sternocleidomastoid", d: ["Scalene","Platysma","Levator scapulae"] },
+    { c: "Anatomy", t: 5, q: "Which hollow spaces deep inside the brain are filled with cerebrospinal fluid?", a: "Ventricles", d: ["Sulci","Gyri","Fissures"] },
+  ],
+  // day 41
+  [
+    { c: "Anatomy", t: 1, q: "What is a sudden, painful tightening of a muscle, such as a charley horse, called?", a: "Cramp", d: ["Sprain","Bruise","Blister"] },
+    { c: "Anatomy", t: 2, q: "Which brain chemicals act as the body's natural painkillers?", a: "Endorphins", d: ["Enzymes","Antibodies","Histamines"] },
+    { c: "Anatomy", t: 3, q: "Rod cells in the retina work best in which conditions?", a: "Dim light", d: ["Bright sunlight","Fine color detail","Close-up reading"] },
+    { c: "Anatomy", t: 4, q: "Which membrane lines the abdominal cavity and covers most of its organs?", a: "Peritoneum", d: ["Pleura","Pericardium","Meninges"] },
+    { c: "Anatomy", t: 5, q: "Which pressure receptors deep in the skin respond best to vibration?", a: "Pacinian corpuscles", d: ["Meissner's corpuscles","Merkel cells","Ruffini endings"] },
+  ],
+  // day 42
+  [
+    { c: "Anatomy", t: 1, q: "Which two fleshy folds frame the opening of the mouth?", a: "Lips", d: ["Cheeks","Gums","Jowls"] },
+    { c: "Anatomy", t: 2, q: "The hip and the shoulder are both which kind of joint?", a: "Ball-and-socket joint", d: ["Hinge joint","Pivot joint","Saddle joint"] },
+    { c: "Anatomy", t: 3, q: "Which crescent-shaped cartilage pads cushion the knee between the thigh bone and shinbone?", a: "Menisci", d: ["Bursae","Ligaments","Condyles"] },
+    { c: "Anatomy", t: 4, q: "In anatomy, what does lateral mean?", a: "Away from the midline", d: ["Toward the midline","Toward the head","Toward the back"] },
+    { c: "Anatomy", t: 5, q: "What is the anatomical name for the hollow at the back of the knee?", a: "Popliteal fossa", d: ["Cubital fossa","Iliac fossa","Glenoid fossa"] },
+  ],
+  // day 43
+  [
+    { c: "Anatomy", t: 1, q: "Which flat, wide back teeth grind up food?", a: "Molars", d: ["Incisors","Canines","Fangs"] },
+    { c: "Anatomy", t: 2, q: "The word \"otic\" refers to which part of the body?", a: "Ears", d: ["Eyes","Nose","Mouth"] },
+    { c: "Anatomy", t: 3, q: "Which branch of the nervous system triggers the fight-or-flight response?", a: "Sympathetic nervous system", d: ["Parasympathetic nervous system","Somatic nervous system","Enteric nervous system"] },
+    { c: "Anatomy", t: 4, q: "Which band connects the kneecap to the shinbone?", a: "Patellar ligament", d: ["Anterior cruciate ligament","Iliotibial band","Medial collateral ligament"] },
+    { c: "Anatomy", t: 5, q: "In anatomy, which plane divides the body into left and right parts?", a: "Sagittal plane", d: ["Coronal plane","Transverse plane","Frontal plane"] },
+  ],
+  // day 44
+  [
+    { c: "Anatomy", t: 1, q: "What is another name for the spinal column?", a: "Backbone", d: ["Breastbone","Collarbone","Hip bone"] },
+    { c: "Anatomy", t: 2, q: "The \"lats\" are broad, flat muscles of which part of the body?", a: "Back", d: ["Chest","Thighs","Abdomen"] },
+    { c: "Anatomy", t: 3, q: "Through which tube does an egg travel from the ovary to the uterus?", a: "Fallopian tube", d: ["Ureter","Vas deferens","Urethra"] },
+    { c: "Anatomy", t: 4, q: "Which muscle fibers suit long, steady endurance work such as distance running?", a: "Slow-twitch fibers", d: ["Fast-twitch fibers","Smooth muscle fibers","Purkinje fibers"] },
+    { c: "Anatomy", t: 5, q: "Which cup-shaped sac surrounds the glomerulus and collects the fluid it filters?", a: "Bowman's capsule", d: ["Loop of Henle","Renal pyramid","Macula densa"] },
+  ],
+  // day 45
+  [
+    { c: "Anatomy", t: 1, q: "Which reflex blasts air out through the nose and mouth to clear an irritation?", a: "Sneeze", d: ["Hiccup","Yawn","Burp"] },
+    { c: "Anatomy", t: 2, q: "What does REM stand for, in the name of a stage of sleep?", a: "Rapid eye movement", d: ["Rest and eye motion","Rapid energy mode","Reflex eye muscle"] },
+    { c: "Anatomy", t: 3, q: "Which thin, clear membrane covers the white of the eye and lines the eyelids?", a: "Conjunctiva", d: ["Cornea","Sclera","Retina"] },
+    { c: "Anatomy", t: 4, q: "What are the sensory receptors that detect pain called?", a: "Nociceptors", d: ["Proprioceptors","Chemoreceptors","Baroreceptors"] },
+    { c: "Anatomy", t: 5, q: "Which fibers anchor each tooth in its bony socket?", a: "Periodontal ligament", d: ["Cementum","Dental pulp","Gingival sulcus"] },
+  ],
+  // day 46
+  [
+    { c: "Anatomy", t: 1, q: "What is it called when the face turns red from embarrassment?", a: "Blushing", d: ["Sweating","Shivering","Fainting"] },
+    { c: "Anatomy", t: 2, q: "The gluteal muscles shape which part of the body?", a: "Buttocks", d: ["Shoulders","Calves","Upper arms"] },
+    { c: "Anatomy", t: 3, q: "What are the lowest two pairs of ribs, which do not attach at the front, called?", a: "Floating ribs", d: ["True ribs","Cervical ribs","Sternal ribs"] },
+    { c: "Anatomy", t: 4, q: "What is the bony bump on the outer side of the ankle?", a: "Lateral malleolus", d: ["Medial malleolus","Calcaneus","Navicular"] },
+    { c: "Anatomy", t: 5, q: "Which cords, nicknamed the heart strings, tie the valve flaps to muscles in the ventricles?", a: "Chordae tendineae", d: ["Papillary muscles","Trabeculae carneae","Purkinje fibers"] },
+  ],
+  // day 47
+  [
+    { c: "Anatomy", t: 1, q: "What are small brown spots on the skin, often brought out by the sun?", a: "Freckles", d: ["Moles","Warts","Pimples"] },
+    { c: "Anatomy", t: 2, q: "What is the stage when a child's body matures and becomes able to reproduce?", a: "Puberty", d: ["Infancy","Menopause","Senescence"] },
+    { c: "Anatomy", t: 3, q: "Which gland at the front of the neck is shaped like a butterfly?", a: "Thyroid gland", d: ["Thymus","Parotid gland","Adrenal gland"] },
+    { c: "Anatomy", t: 4, q: "What is the large opening in the base of the skull where the spinal cord passes through?", a: "Foramen magnum", d: ["Foramen ovale","Sella turcica","Jugular foramen"] },
+    { c: "Anatomy", t: 5, q: "Which giant bone marrow cells shed the fragments that become platelets?", a: "Megakaryocytes", d: ["Myeloblasts","Reticulocytes","Osteoblasts"] },
+  ],
+  // day 48
+  [
+    { c: "Anatomy", t: 1, q: "Which organ does the skull protect?", a: "Brain", d: ["Heart","Lungs","Liver"] },
+    { c: "Anatomy", t: 2, q: "What is the anatomical name for the chest?", a: "Thorax", d: ["Abdomen","Pelvis","Cranium"] },
+    { c: "Anatomy", t: 3, q: "Which forearm bone is on the thumb side?", a: "Radius", d: ["Ulna","Humerus","Fibula"] },
+    { c: "Anatomy", t: 4, q: "Which bony bump can you feel just behind the ear?", a: "Mastoid process", d: ["Styloid process","Zygomatic arch","Coronoid process"] },
+    { c: "Anatomy", t: 5, q: "Which small muscle in the middle ear tightens the eardrum?", a: "Tensor tympani", d: ["Stapedius","Levator palpebrae","Platysma"] },
+  ],
+  // day 49
+  [
+    { c: "Anatomy", t: 1, q: "What is a patch of thick, hard skin formed by repeated rubbing called?", a: "Callus", d: ["Blister","Wart","Scar"] },
+    { c: "Anatomy", t: 2, q: "Which metal in hemoglobin binds the oxygen?", a: "Iron", d: ["Copper","Zinc","Calcium"] },
+    { c: "Anatomy", t: 3, q: "Which chamber of the heart receives oxygen-rich blood back from the lungs?", a: "Left atrium", d: ["Right atrium","Left ventricle","Right ventricle"] },
+    { c: "Anatomy", t: 4, q: "What is the bony point of the elbow called?", a: "Olecranon", d: ["Acromion","Coracoid process","Styloid process"] },
+    { c: "Anatomy", t: 5, q: "What is the cup-shaped socket of the hip bone that holds the head of the femur?", a: "Acetabulum", d: ["Glenoid cavity","Obturator foramen","Greater trochanter"] },
+  ],
+  // day 50
+  [
+    { c: "Anatomy", t: 1, q: "What is the smallest finger on the hand often called?", a: "Pinky", d: ["Thumb","Index finger","Ring finger"] },
+    { c: "Anatomy", t: 2, q: "The word \"cranial\" refers to which part of the body?", a: "Skull", d: ["Spine","Ribs","Pelvis"] },
+    { c: "Anatomy", t: 3, q: "Where on the face is the philtrum?", a: "Upper lip", d: ["Earlobe","Chin","Forehead"] },
+    { c: "Anatomy", t: 4, q: "Yellow bone marrow is mainly made of what?", a: "Fat", d: ["Cartilage","Blood clots","Calcium crystals"] },
+    { c: "Anatomy", t: 5, q: "What is the longest vein in the human body, running up the inside of the leg?", a: "Great saphenous vein", d: ["Femoral vein","Popliteal vein","Small saphenous vein"] },
+  ],
+  // day 51
+  [
+    { c: "Anatomy", t: 1, q: "Which arches of hair above the eyes help keep sweat out of them?", a: "Eyebrows", d: ["Eyelashes","Temples","Sideburns"] },
+    { c: "Anatomy", t: 2, q: "What are the tiny sensory organs on the tongue that detect flavor called?", a: "Taste buds", d: ["Nerve endings","Salivary glands","Tonsils"] },
+    { c: "Anatomy", t: 3, q: "What is the muscular wall dividing the left and right sides of the heart called?", a: "Septum", d: ["Pericardium","Apex","Myocardium"] },
+    { c: "Anatomy", t: 4, q: "What is the pale half-moon at the base of a fingernail called?", a: "Lunula", d: ["Cuticle","Nail bed","Nail plate"] },
+    { c: "Anatomy", t: 5, q: "Which stomach cells release pepsinogen?", a: "Chief cells", d: ["Parietal cells","Goblet cells","G cells"] },
+  ],
+  // day 52
+  [
+    { c: "Anatomy", t: 1, q: "What is the femur commonly called?", a: "Thigh bone", d: ["Shinbone","Hip bone","Kneecap"] },
+    { c: "Anatomy", t: 2, q: "Which nerve cells carry commands from the brain and spinal cord to the muscles?", a: "Motor neurons", d: ["Sensory neurons","Interneurons","Glial cells"] },
+    { c: "Anatomy", t: 3, q: "What is the sheet of connective tissue that wraps around muscles called?", a: "Fascia", d: ["Periosteum","Cartilage","Synovium"] },
+    { c: "Anatomy", t: 4, q: "What are the folds in the lining of an empty stomach called?", a: "Rugae", d: ["Villi","Haustra","Papillae"] },
+    { c: "Anatomy", t: 5, q: "Which small pea-shaped wrist bone sits on the little-finger side?", a: "Pisiform", d: ["Hamate","Trapezium","Lunate"] },
+  ],
+  // day 53
+  [
+    { c: "Anatomy", t: 1, q: "What pink tissue surrounds the base of the teeth?", a: "Gums", d: ["Palate","Tonsils","Enamel"] },
+    { c: "Anatomy", t: 2, q: "What fluid cushions a baby inside the womb?", a: "Amniotic fluid", d: ["Synovial fluid","Lymph","Plasma"] },
+    { c: "Anatomy", t: 3, q: "What are the cushions of cartilage between the bones of the spine called?", a: "Intervertebral discs", d: ["Menisci","Bursae","Facet joints"] },
+    { c: "Anatomy", t: 4, q: "Which kind of fat, plentiful in newborns, burns energy to make heat?", a: "Brown fat", d: ["White fat","Visceral fat","Subcutaneous fat"] },
+    { c: "Anatomy", t: 5, q: "What is an area of skin supplied by a single spinal nerve called?", a: "Dermatome", d: ["Myotome","Sclerotome","Dermis"] },
+  ],
+  // day 54
+  [
+    { c: "Anatomy", t: 1, q: "What is the back of the neck called?", a: "Nape", d: ["Brow","Crown","Collar"] },
+    { c: "Anatomy", t: 2, q: "What is the medical name for the throat behind the mouth and nose?", a: "Pharynx", d: ["Larynx","Trachea","Esophagus"] },
+    { c: "Anatomy", t: 3, q: "What is the medical name for body fat tissue?", a: "Adipose tissue", d: ["Areolar tissue","Connective tissue","Epithelial tissue"] },
+    { c: "Anatomy", t: 4, q: "What is the thick first milk a mother produces after giving birth called?", a: "Colostrum", d: ["Lactose","Casein","Whey"] },
+    { c: "Anatomy", t: 5, q: "Which light, spongy skull bone between the eyes forms the roof of the nasal cavity?", a: "Ethmoid bone", d: ["Vomer","Lacrimal bone","Sphenoid bone"] },
+  ],
+  // day 55
+  [
+    { c: "Anatomy", t: 1, q: "What is the dark opening in the center of the eye that lets light in?", a: "Pupil", d: ["Iris","Lens","Retina"] },
+    { c: "Anatomy", t: 2, q: "Which part of the body does the word \"brachial\" refer to?", a: "Arm", d: ["Leg","Neck","Hip"] },
+    { c: "Anatomy", t: 3, q: "What is the light, honeycomb-like bone tissue inside the ends of long bones called?", a: "Spongy bone", d: ["Compact bone","Cortical bone","Woven cartilage"] },
+    { c: "Anatomy", t: 4, q: "Which lining of a movable joint produces the fluid that lubricates it?", a: "Synovial membrane", d: ["Periosteum","Articular cartilage","Perichondrium"] },
+    { c: "Anatomy", t: 5, q: "Which first major branch of the abdominal aorta feeds the stomach, liver and spleen?", a: "Celiac trunk", d: ["Renal artery","Inferior mesenteric artery","Common iliac artery"] },
+  ],
+  // day 56
+  [
+    { c: "Anatomy", t: 1, q: "What is another word for the trunk of the body, without the head and limbs?", a: "Torso", d: ["Pelvis","Abdomen","Thorax"] },
+    { c: "Anatomy", t: 2, q: "What are the hollow air spaces in the skull bones around the nose called?", a: "Sinuses", d: ["Ventricles","Fontanels","Orbits"] },
+    { c: "Anatomy", t: 3, q: "When the biceps contracts to bend the elbow, what does the triceps do?", a: "Relaxes", d: ["Contracts too","Locks in place","Shortens"] },
+    { c: "Anatomy", t: 4, q: "Which is the largest of the three bones that fuse to form each hip bone?", a: "Ilium", d: ["Ischium","Pubis","Sacrum"] },
+    { c: "Anatomy", t: 5, q: "Which middle section of the small intestine lies between the duodenum and the ileum?", a: "Jejunum", d: ["Cecum","Pylorus","Sigmoid colon"] },
+  ],
+  // day 57
+  [
+    { c: "Anatomy", t: 1, q: "What is the wide-mouthed deep breath you often take when tired called?", a: "Yawn", d: ["Sigh","Hiccup","Gasp"] },
+    { c: "Anatomy", t: 2, q: "What is the medical name for the big toe?", a: "Hallux", d: ["Pollex","Talus","Digitus"] },
+    { c: "Anatomy", t: 3, q: "What are the immovable fibrous joints between the bones of the adult skull called?", a: "Sutures", d: ["Symphyses","Bursae","Condyles"] },
+    { c: "Anatomy", t: 4, q: "Which network of nerves in the shoulder and armpit supplies the arm?", a: "Brachial plexus", d: ["Cervical plexus","Lumbar plexus","Sacral plexus"] },
+    { c: "Anatomy", t: 5, q: "Which cheek muscle keeps food between the teeth and helps blow out air?", a: "Buccinator", d: ["Masseter","Zygomaticus","Orbicularis oris"] },
+  ],
+  // day 58
+  [
+    { c: "Anatomy", t: 1, q: "What is a bubble of fluid under the skin, often caused by rubbing shoes, called?", a: "Blister", d: ["Callus","Bruise","Rash"] },
+    { c: "Anatomy", t: 2, q: "Which organ does the word \"hepatic\" refer to?", a: "Liver", d: ["Heart","Spleen","Stomach"] },
+    { c: "Anatomy", t: 3, q: "In anatomy, which part of the body does \"palmar\" describe?", a: "Palm of the hand", d: ["Back of the hand","Fingertips","Sole of the foot"] },
+    { c: "Anatomy", t: 4, q: "Which pituitary hormone stimulates the breasts to produce milk?", a: "Prolactin", d: ["Oxytocin","Progesterone","Relaxin"] },
+    { c: "Anatomy", t: 5, q: "What is the fine, soft hair that covers a fetus called?", a: "Lanugo", d: ["Vellus hair","Vernix","Terminal hair"] },
+  ],
+  // day 59
+  [
+    { c: "Anatomy", t: 1, q: "Which of these is a muscle?", a: "Biceps", d: ["Femur","Aorta","Cornea"] },
+    { c: "Anatomy", t: 2, q: "What kind of muscle, which you cannot control at will, lines the gut and blood vessels?", a: "Smooth muscle", d: ["Skeletal muscle","Cardiac muscle","Striated muscle"] },
+    { c: "Anatomy", t: 3, q: "On which side of the body does most of the liver sit?", a: "Right", d: ["Left","Center","Back"] },
+    { c: "Anatomy", t: 4, q: "What shape are the cartilage rings that hold the windpipe open?", a: "C-shaped", d: ["Closed circles","Spirals","Diamonds"] },
+    { c: "Anatomy", t: 5, q: "Which large neurons of the cerebellum are named after a Czech anatomist?", a: "Purkinje cells", d: ["Betz cells","Pyramidal cells","Granule cells"] },
+  ],
+  // day 60
+  [
+    { c: "Anatomy", t: 1, q: "Which part of the face has a bridge and a tip?", a: "Nose", d: ["Chin","Ear","Forehead"] },
+    { c: "Anatomy", t: 2, q: "What is the skin covering the top of the head called?", a: "Scalp", d: ["Crown","Temple","Nape"] },
+    { c: "Anatomy", t: 3, q: "Which part of a tooth lies below the gum line, anchored in the jaw?", a: "Root", d: ["Crown","Enamel","Cusp"] },
+    { c: "Anatomy", t: 4, q: "What is the fixed end of a muscle, the attachment that stays still when it contracts, called?", a: "Origin", d: ["Insertion","Belly","Fascicle"] },
+    { c: "Anatomy", t: 5, q: "Which substance do the kidneys release first when blood pressure drops, starting a hormone cascade?", a: "Renin", d: ["Angiotensin II","Aldosterone","Vasopressin"] },
+  ],
+  // day 61
+  [
+    { c: "Anatomy", t: 1, q: "What crust forms over a healing cut or scrape?", a: "Scab", d: ["Scar","Callus","Wart"] },
+    { c: "Anatomy", t: 2, q: "What is the body's roughly 24-hour cycle of sleeping and waking called?", a: "Circadian rhythm", d: ["Biorhythm","Metabolic rate","Ultradian rhythm"] },
+    { c: "Anatomy", t: 3, q: "Which large artery runs down the thigh?", a: "Femoral artery", d: ["Popliteal artery","Tibial artery","Radial artery"] },
+    { c: "Anatomy", t: 4, q: "Which protein stores oxygen inside muscle cells?", a: "Myoglobin", d: ["Hemoglobin","Myosin","Albumin"] },
+    { c: "Anatomy", t: 5, q: "Which cranial nerve moves most of the eye's muscles and lifts the upper eyelid?", a: "Oculomotor nerve", d: ["Trochlear nerve","Abducens nerve","Optic nerve"] },
+  ],
+  // day 62
+  [
+    { c: "Anatomy", t: 1, q: "What are the small hollows that appear in some people's cheeks when they smile?", a: "Dimples", d: ["Freckles","Wrinkles","Pores"] },
+    { c: "Anatomy", t: 2, q: "What is the V-shaped point of the hairline in the middle of the forehead called?", a: "Widow's peak", d: ["Cowlick","Crown","Part"] },
+    { c: "Anatomy", t: 3, q: "Which cells in the lining of the airways and gut secrete mucus?", a: "Goblet cells", d: ["Parietal cells","Kupffer cells","Chief cells"] },
+    { c: "Anatomy", t: 4, q: "Which tiny bone of the middle ear is attached to the eardrum?", a: "Malleus", d: ["Incus","Stapes","Vomer"] },
+    { c: "Anatomy", t: 5, q: "Which hormone does the duodenum release when acid arrives, telling the pancreas to send bicarbonate?", a: "Secretin", d: ["Gastrin","Ghrelin","Insulin"] },
+  ],
+  // day 63
+  [
+    { c: "Anatomy", t: 1, q: "What are the two openings at the bottom of the nose called?", a: "Nostrils", d: ["Sinuses","Tear ducts","Pores"] },
+    { c: "Anatomy", t: 2, q: "Where do the tear ducts drain excess tears?", a: "Into the nose", d: ["Into the ears","Into the sinuses","Onto the cheeks"] },
+    { c: "Anatomy", t: 3, q: "Tommy John surgery repairs a ligament in which joint?", a: "Elbow", d: ["Shoulder","Knee","Wrist"] },
+    { c: "Anatomy", t: 4, q: "Which chamber of the heart has the thickest muscular wall?", a: "Left ventricle", d: ["Right ventricle","Left atrium","Right atrium"] },
+    { c: "Anatomy", t: 5, q: "Which is the smallest of the three major pairs of salivary glands?", a: "Sublingual gland", d: ["Parotid gland","Submandibular gland","Lacrimal gland"] },
   ],
 ];
