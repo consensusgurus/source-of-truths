@@ -1,7 +1,10 @@
 // Bond lane: Compounds & Reactions. 36 days, tiers 1-5 each day.
 // Molecules, formulas, acids and bases, states of matter, reactions, solutions,
 // materials, kitchen and household chemistry, lab vocabulary (2026-10-30).
-export const LANE_DAYS = [
+// Days 1-36 (2026-10-30 to 2026-12-04), already built into the bank and kept
+// here as their source. The generator appends whatever LANE_DAYS exports, so
+// LANE_DAYS now carries the next segment, from bond-reactions-dec.mjs.
+export const LANE_DAYS_OCT30 = [
   // day 1
   [
     { c: "Compounds & Reactions", t: 1, q: "Chemically, the flaky red-brown rust on an old nail is mostly what?", a: "Iron oxide", d: ["Copper sulfate","Calcium carbonate","Sodium chloride"] },
@@ -291,3 +294,4 @@ export const LANE_DAYS = [
     { c: "Compounds & Reactions", t: 5, q: "Henry Bessemer's 1856 process turns molten pig iron into steel by blowing what through it?", a: "Air", d: ["Steam","Hydrogen","Carbon dioxide"] },
   ],
 ];
+export { LANE_DAYS } from './bond-reactions-dec.mjs';

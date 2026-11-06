@@ -201,4 +201,8 @@ const T5 = [
   E(5, 'At normal pressure, liquid helium boils at about what temperature in kelvin?', '4', '20', '77', '90'),
 ];
 
-export const LANE_DAYS = T1.map((_, i) => [T1[i], T2[i], T3[i], T4[i], T5[i]]);
+// Days 1-36 (2026-10-30 to 2026-12-04), already built into the bank and kept
+// here as their source. The generator appends whatever LANE_DAYS exports, so
+// LANE_DAYS now carries the next segment, from bond-elements-dec.mjs.
+export const LANE_DAYS_OCT30 = T1.map((_, i) => [T1[i], T2[i], T3[i], T4[i], T5[i]]);
+export { LANE_DAYS } from './bond-elements-dec.mjs';
