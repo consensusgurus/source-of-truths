@@ -75,6 +75,7 @@ import HomeInvite from '../groups/HomeInvite';
 // ?signup=1 and nothing on this page ever read it, so they only reloaded the
 // home. This is the form they open. See app/ChooseNamePop.jsx.
 import ChooseNamePop, { openChooseName } from '../ChooseNamePop';
+import NameMenu from '../NameMenu';
 import { ChallengeBack, ChallengeRail, CapTickets } from '../ChallengeBack';
 import { useMyTickets } from '../TicketDoor';
 import { DRAWING, drawingIsLive, formatTickets } from '@/lib/drawing';
@@ -4045,8 +4046,9 @@ export default function StageToday() {
             <a className={'sty-keep' + (brandTone(paneOn) ? ' tone' : '')} style={brandTone(paneOn) || undefined} href="/?signup=1"
               onClick={(e) => { e.preventDefault(); openChooseName(); }}>Keep stats, play with friends</a>
           ) : null}
-          {/* THE NAME OPENS THE PLAYER'S PROFILE (owner, 2026-10-26), as the phone's name pill does. */}
-          {who ? <a className="sty-who" href={withTq('/player/' + encodeURIComponent(who))} title="Your stats and profile"><b>{who}</b><i>player</i></a> : null}
+          {/* THE NAME OPENS A MENU (owner, 2026-11-06): Stats (the profile, where it
+              went on its own since 2026-10-26) and Log out. Same on the phone pill. */}
+          {who ? <NameMenu name={who} className="sty-who" href={withTq('/player/' + encodeURIComponent(who))} title="Stats or log out"><b>{who}</b><i>player</i></NameMenu> : null}
           {/* THE DRAWING TICKETS (owner, 2026-10-15): the count, while the $100
               drawing runs, opening Your challenges. See app/ChallengeBack.jsx. */}
           {who ? <CapTickets /> : null}
@@ -4167,7 +4169,7 @@ export default function StageToday() {
               {mPane ? (
                 <button type="button" className="sty-mback" onClick={mBack}>&larr; {mBackTo}</button>
               ) : who ? (
-                <a className="sty-mpill" href={withTq('/player/' + encodeURIComponent(who))}>{who}</a>
+                <NameMenu name={who} className="sty-mpill" href={withTq('/player/' + encodeURIComponent(who))}>{who}</NameMenu>
               ) : (
                 <a className="sty-mpill" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Join</a>
               )}
