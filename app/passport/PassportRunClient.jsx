@@ -160,11 +160,14 @@ function bankedOf(sec) {
 // never pulled out from under a player mid-leg.
 const CHECK_MS = 4000;
 
-export default function PassportRunClient({ puzzles = [], puzzle, sections = [], calls = [], isTodays = true, trip = null }) {
+export default function PassportRunClient({ puzzles = [], puzzle, sections = [], calls = [], isTodays = true, trip = null, preview = false }) {
   const PUZZLE = puzzle;
   // The leg weights this day runs on (even legs from 2026-10-21).
   const LEGS = legsFor(PUZZLE && PUZZLE.live);
-  const STORE_KEY = `sot_${KEY}_${PUZZLE.num}`;
+  // THE PREVIEW (app/passport/preview, owner 2026-11-06): the real run on a
+  // demo trip that files nothing, keeps no stats and saves off the synced keys.
+  const PREVIEW = !!preview;
+  const STORE_KEY = PREVIEW ? `sotpv_${KEY}_${PUZZLE.num}` : `sot_${KEY}_${PUZZLE.num}`;
   const REC_KEY = `sot_${KEY}_rec_${PUZZLE.num}`;
   // THE TRIP (owner, 2026-11-06): one journey, run-only legs, one row.
   const TRIP = !!trip;
@@ -221,7 +224,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     } else doneAtLoad.current = false;
     try { const id = JSON.parse(localStorage.getItem('sot_quiz_identity')); if (id && id.email) setIdentity(id); } catch (e) {}
     setHydrated(true);
-    try { fetch('/api/quiz/view', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ quizId: PUZZLE.quizId }) }).catch(() => {}); } catch (e) {}
+    if (!PREVIEW) try { fetch('/api/quiz/view', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ quizId: PUZZLE.quizId }) }).catch(() => {}); } catch (e) {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -278,7 +281,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     return () => clearInterval(iv);
   }, [started]);
 
-  const cboard = useCircuitBoard(KEY, hydrated && done);
+  const cboard = useCircuitBoard(KEY, hydrated && done && !PREVIEW);
 
   function award(cur, i, score, patch) {
     const sc2 = cur.sc.slice(); sc2[i] = score;
@@ -347,6 +350,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
 
   const abandon = useAbandonFlush(() => {
     const cur = gRef.current;
+    if (PREVIEW) return null;
     if (TRIP) {
       // A trip left part way files the points so far, out of 50, once.
       if (cur.status !== 'playing' || !cur.sc.some((v) => v != null)) return null;
@@ -367,6 +371,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   // The sizes leg files the day's passport row: calls right, out of nine, on
   // the leg's own clock (each game filed its own row with its own clock).
   function postResult(g2) {
+    if (PREVIEW) return;
     const s = sumScores(g2.sc);
     recordStat(PUZZLE.num, { s, t: 50, won: s >= 30 });
     postRow(g2);
@@ -537,7 +542,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   // frame and the end table all read them.
   const stageSecs = ORD.map((li, step) => ({ key: LEGS[li].k, name: LEGS[li].n, slot: step, questions: [], li }));
   const dateShort = (PUZZLE.dateLabel || '').replace(/, \d{4}$/, '');
-  const dateLine = PUZZLE.sunday ? `Sunday Edition · ${dateShort}` : dateShort;
+  const dateLine = PREVIEW ? `Preview trip ${PUZZLE.num - 9000}` : PUZZLE.sunday ? `Sunday Edition · ${dateShort}` : dateShort;
 
   // The handover between legs: the leg just stamped, the next leg large, and
   // an automatic start with Hold (owner, 2026-10-25). It shows once a leg has
@@ -720,7 +725,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           unit="legs"
           startLabel={`Board Now: Start With ${stageSecs[0] ? stageSecs[0].name : 'Ping'}`}
           fieldLine={doneNames.length ? `Already played today: ${doneNames.join(', ')}. Your first ${doneNames.length === 1 ? 'result stands' : 'results stand'}.` : null}
-          banner={<ChallengeStrip gameKey="passport" num={PUZZLE.num} />}
+          banner={PREVIEW ? null : <ChallengeStrip gameKey="passport" num={PUZZLE.num} />}
           centerpiece={<Booklet num={PUZZLE.num} legs={stageSecs.map((s) => ({ n: s.name, max: LEGS[s.li].max }))} onOpen={start} />}
           onStart={start}
         />
@@ -812,12 +817,12 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           finale={doneAtLoad.current === false ? { key: 'passport', legWord: 'Leg', legMax: stageSecs.map((s) => (LEGS[s.li] && LEGS[s.li].max) || null) } : null}
           leaderScore={leaderScore}
           afterBoard={tripCard}
-          topNote={!isTodays ? `${PUZZLE.dateLabel} archive` : null}
-          challenge={<>
+          topNote={PREVIEW ? 'Preview trip: nothing here reaches the board.' : !isTodays ? `${PUZZLE.dateLabel} archive` : null}
+          challenge={PREVIEW ? null : <>
             <RunChallengeLine gameKey="passport" score={total} n={PUZZLE.num} style={{ margin: 0 }} />
             <RunChallengeButton gameKey="passport" score={total} total={50} n={PUZZLE.num} archive={!isTodays} t={runSecs} status={tier.name || ''} door />
           </>}
-          meme={isTodays ? <RunMeme gameKey="passport" score={total} total={50} n={PUZZLE.num} t={runSecs} status={tier.name || ''} cat="Geography" /> : null}
+          meme={isTodays && !PREVIEW ? <RunMeme gameKey="passport" score={total} total={50} n={PUZZLE.num} t={runSecs} status={tier.name || ''} cat="Geography" /> : null}
           similar={similar}
           more={<MoreRunsList self="passport" ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} />}
           onShare={copyShare}
@@ -825,8 +830,8 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
         />
       ) : null}
 
-      <MoreRunsPop self="passport" ready={nudgeReady} delay={10000} fireOnLeave />
-      <GauntletMorePop circuitId="passport" ready={hydrated && done} />
+      {PREVIEW ? null : <MoreRunsPop self="passport" ready={nudgeReady} delay={10000} fireOnLeave />}
+      {PREVIEW ? null : <GauntletMorePop circuitId="passport" ready={hydrated && done} />}
 
       {showHelp && (
         <HelpSheet onClose={() => setShowHelp(false)} self="passport" name="Passport">
