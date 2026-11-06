@@ -931,6 +931,12 @@ const CSS = `
 .gsx a{color:var(--gsx-ink)}
 .gsx-col{width:100%;max-width:600px;margin:0 auto;box-sizing:border-box;padding:18px 18px 26px;min-height:100%;display:flex;flex-direction:column;gap:18px}
 .gsx-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+/* THE BAR SPANS THE TOP (owner, 2026-11-06: "why aren't top elements centered?
+   or spread across top evenly"). StageTopBar is flex:none, so from 900px it
+   shrank to its content and sat left: home, title and the buttons bunched
+   together. Stretched, the home pill sits left, the buttons right, and the
+   title centres in the space between (StageTopBar's desktop rule). */
+.gsx-top > .stb{flex:1 1 auto;min-width:0}
 .gsx-logo{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:-.01em}
 .gsx-back{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--gsx-ink);text-decoration:none;font-weight:800;font-size:14px}
 .gsx-back:hover,.gsx-logo:hover span{text-decoration:underline;text-underline-offset:3px}

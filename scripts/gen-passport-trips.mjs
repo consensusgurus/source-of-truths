@@ -21,8 +21,8 @@
 //   - the city is in lib/ping-cities.js (so it is a valid Ping guess), in a
 //     country with land borders, never a city the Ping bank has used, and
 //     never repeated in this bank;
-//   - perfect = BFS-minimum hops on app/span/borders.js; weekday 3 to 5,
-//     Saturday 4 to 6, Sunday Edition 5 to 8;
+//   - perfect = BFS-minimum hops on app/span/borders.js; weekday 5 to 7,
+//     Saturday 6 to 8, Sunday Edition 8 to 11 (lengthened 2026-11-06);
 //   - the destination is a Flank subject (not noSubject) whose Flank neighbor
 //     set matches Span's graph exactly, so the country you arrive in and the
 //     ring you are asked to name agree; weekday and Saturday 2 to 7 neighbors,
@@ -49,30 +49,30 @@ const OUT = path.join(here, '..', 'app', 'passport', 'trips.js');
 
 // [date, city, city's country, destination, blurb shown once the city is found]
 export const SCHEDULE = [
-  ['2026-11-07', 'Lyon', 'France', 'Romania', 'The Lumière brothers shot one of the first films ever made here in 1895: workers leaving their factory.'],
-  ['2026-11-08', 'Samarkand', 'Uzbekistan', 'Austria', 'Its Registan square, framed by three madrasas, was the heart of Timur’s Silk Road capital.'],
-  ['2026-11-09', 'Calgary', 'Canada', 'Honduras', 'The Calgary Stampede draws more than a million visitors every July.'],
-  ['2026-11-10', 'Medellin', 'Colombia', 'Guatemala', 'Medellin runs cable cars as public transit, linking its hillside neighborhoods to the metro.'],
-  ['2026-11-11', 'Hamburg', 'Germany', 'Georgia', 'The Beatles honed their act in Hamburg’s clubs, playing hundreds of nights there before they were famous.'],
-  ['2026-11-12', 'Alexandria', 'Egypt', 'Nigeria', 'Founded by Alexander the Great, it once held the Great Library and the Pharos lighthouse, a wonder of the ancient world.'],
-  ['2026-11-13', 'Gdansk', 'Poland', 'Greece', 'The Solidarity movement was born in its shipyard in 1980.'],
-  ['2026-11-14', 'Shenzhen', 'China', 'Switzerland', 'A fishing town of about 30,000 people in 1979, Shenzhen is now home to more than 17 million.'],
-  ['2026-11-15', 'Timbuktu', 'Mali', 'South Africa', 'Its mud-brick Djinguereber Mosque has stood since the 1320s.'],
-  ['2026-11-16', 'Malaga', 'Spain', 'Czechia', 'Pablo Picasso was born here in 1881.'],
-  ['2026-11-17', 'Da Nang', 'Vietnam', 'Lithuania', 'The Golden Bridge in the hills nearby looks held up by two giant stone hands.'],
-  ['2026-11-18', 'Monterrey', 'Mexico', 'Panama', 'Cerro de la Silla, the saddle-shaped mountain over the city, is its symbol.'],
-  ['2026-11-19', 'Jeddah', 'Saudi Arabia', 'Bulgaria', 'Its old quarter, Al-Balad, is built of coral stone and is a UNESCO World Heritage Site.'],
-  ['2026-11-20', 'Turin', 'Italy', 'Albania', 'Turin was the first capital of a united Italy, from 1861 to 1865, and it is home to Fiat.'],
-  ['2026-11-21', 'Mombasa', 'Kenya', 'Ghana', 'Fort Jesus, built by the Portuguese in the 1590s, still guards the old harbor.'],
-  ['2026-11-22', 'Luang Prabang', 'Laos', 'Saudi Arabia', 'Every dawn, saffron-robed monks walk its streets collecting alms.'],
-  ['2026-11-23', 'Salzburg', 'Austria', 'Latvia', 'Mozart was born here in 1756, and The Sound of Music was filmed in and around the city.'],
-  ['2026-11-24', 'Lahore', 'Pakistan', 'Oman', 'The Badshahi Mosque, finished in 1673, was the largest mosque in the world for more than three centuries.'],
-  ['2026-11-25', 'Siem Reap', 'Cambodia', 'Kazakhstan', 'It is the gateway to Angkor Wat, the largest religious monument on Earth.'],
-  ['2026-11-26', 'Philadelphia', 'United States', 'Nicaragua', 'The Declaration of Independence and the Constitution were both signed here, in Independence Hall.'],
-  ['2026-11-27', 'Kazan', 'Russia', 'Belgium', 'Its kremlin holds a cathedral and a mosque side by side.'],
-  ['2026-11-28', 'Mendoza', 'Argentina', 'Costa Rica', 'Mendoza makes most of Argentina’s wine, in the shadow of Aconcagua, the highest peak outside Asia.'],
-  ['2026-11-29', 'Tabriz', 'Iran', 'Cameroon', 'Its covered bazaar is one of the oldest in the Middle East and a UNESCO World Heritage Site.'],
-  ['2026-11-30', 'Dubrovnik', 'Croatia', 'Belarus', 'Its medieval city walls run almost two kilometers around the old town.'],
+  ['2026-11-07', 'Lyon', 'France', 'Thailand', 'The Lumière brothers shot one of the first films ever made here in 1895: workers leaving their factory.'],
+  ['2026-11-08', 'Samarkand', 'Uzbekistan', 'Cameroon', 'Its Registan square, framed by three madrasas, was the heart of Timur’s Silk Road capital.'],
+  ['2026-11-09', 'Calgary', 'Canada', 'Panama', 'The Calgary Stampede draws more than a million visitors every July.'],
+  ['2026-11-10', 'Medellin', 'Colombia', 'Mexico', 'Medellin runs cable cars as public transit, linking its hillside neighborhoods to the metro.'],
+  ['2026-11-11', 'Hamburg', 'Germany', 'Iraq', 'The Beatles honed their act in Hamburg’s clubs, playing hundreds of nights there before they were famous.'],
+  ['2026-11-12', 'Alexandria', 'Egypt', 'Poland', 'Founded by Alexander the Great, it once held the Great Library and the Pharos lighthouse, a wonder of the ancient world.'],
+  ['2026-11-13', 'Gdansk', 'Poland', 'Sudan', 'The Solidarity movement was born in its shipyard in 1980.'],
+  ['2026-11-14', 'Shenzhen', 'China', 'Ethiopia', 'A fishing town of about 30,000 people in 1979, Shenzhen is now home to more than 17 million.'],
+  ['2026-11-15', 'Timbuktu', 'Mali', 'Austria', 'Its mud-brick Djinguereber Mosque has stood since the 1320s.'],
+  ['2026-11-16', 'Malaga', 'Spain', 'Georgia', 'Pablo Picasso was born here in 1881.'],
+  ['2026-11-17', 'Da Nang', 'Vietnam', 'Croatia', 'The Golden Bridge in the hills nearby looks held up by two giant stone hands.'],
+  ['2026-11-18', 'Monterrey', 'Mexico', 'Peru', 'Cerro de la Silla, the saddle-shaped mountain over the city, is its symbol.'],
+  ['2026-11-19', 'Jeddah', 'Saudi Arabia', 'Slovakia', 'Its old quarter, Al-Balad, is built of coral stone and is a UNESCO World Heritage Site.'],
+  ['2026-11-20', 'Turin', 'Italy', 'India', 'Turin was the first capital of a united Italy, from 1861 to 1865, and it is home to Fiat.'],
+  ['2026-11-21', 'Mombasa', 'Kenya', 'Iran', 'Fort Jesus, built by the Portuguese in the 1590s, still guards the old harbor.'],
+  ['2026-11-22', 'Luang Prabang', 'Laos', 'Niger', 'Every dawn, saffron-robed monks walk its streets collecting alms.'],
+  ['2026-11-23', 'Salzburg', 'Austria', 'Myanmar', 'Mozart was born here in 1756, and The Sound of Music was filmed in and around the city.'],
+  ['2026-11-24', 'Lahore', 'Pakistan', 'Libya', 'The Badshahi Mosque, finished in 1673, was the largest mosque in the world for more than three centuries.'],
+  ['2026-11-25', 'Siem Reap', 'Cambodia', 'Romania', 'It is the gateway to Angkor Wat, the largest religious monument on Earth.'],
+  ['2026-11-26', 'Philadelphia', 'United States', 'Colombia', 'The Declaration of Independence and the Constitution were both signed here, in Independence Hall.'],
+  ['2026-11-27', 'Kazan', 'Russia', 'Chad', 'Its kremlin holds a cathedral and a mosque side by side.'],
+  ['2026-11-28', 'Mendoza', 'Argentina', 'Guatemala', 'Mendoza makes most of Argentina’s wine, in the shadow of Aconcagua, the highest peak outside Asia.'],
+  ['2026-11-29', 'Tabriz', 'Iran', 'South Africa', 'Its covered bazaar is one of the oldest in the Middle East and a UNESCO World Heritage Site.'],
+  ['2026-11-30', 'Dubrovnik', 'Croatia', 'Afghanistan', 'Its medieval city walls run almost two kilometers around the old town.'],
 ];
 
 const ADJ = buildAdj();
@@ -113,7 +113,10 @@ for (const [iso, city, country, dest, blurb] of SCHEDULE) {
   if (fl !== sp) fail(`${iso}: ${dest}'s Flank ring (${fl}) differs from Span's (${sp})`);
   const sun = dow(iso) === 0, sat = dow(iso) === 6;
   const perfect = distancesFrom(ADJ, country)[dest];
-  const [hl, hh] = sun ? [5, 8] : sat ? [4, 6] : [3, 5];
+  // LONGER ROADS (owner, 2026-11-06: "the span itself needs to be farther, more
+  // countries in between", once the map showed the road): weekday 5 to 7,
+  // Saturday 6 to 8, Sunday Edition 8 to 11.
+  const [hl, hh] = sun ? [8, 11] : sat ? [6, 8] : [5, 7];
   if (!(perfect >= hl && perfect <= hh)) fail(`${iso}: ${country} to ${dest} is ${perfect} hops, outside ${hl}-${hh}`);
   const ring = BORDERS[code].n.length;
   if (sun ? ring < 6 : (ring < 2 || ring > 7)) fail(`${iso}: ${dest} has ${ring} neighbors, outside the ${sun ? 'Sunday' : 'weekday'} band`);

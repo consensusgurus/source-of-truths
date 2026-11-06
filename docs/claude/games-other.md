@@ -1157,8 +1157,8 @@ Rules that hold the trip together:
   and `scoreUntil: '2026-11-06'` turns the leg scorer off again (`circuitScorer`). Days 10-15 to
   11-06 keep the four rows and the scorer, untouched.
 - **Generator rules** (enforced, and re-derived by `verify-passport.mjs`): the city is in
-  `lib/ping-cities.js` and never a Ping bank answer; perfect hops weekday 3-5, Saturday 4-6, Sunday
-  5-8; the destination is a Flank subject whose Flank ring equals Span's graph exactly, 2-7
+  `lib/ping-cities.js` and never a Ping bank answer; perfect hops weekday 5-7, Saturday 6-8, Sunday
+  8-11 (lengthened 2026-11-06 once Span showed its map: "more countries in between"); the destination is a Flank subject whose Flank ring equals Span's graph exactly, 2-7
   neighbors (Sunday 6+), never the day's standalone Span endpoint or Flank country, never repeated;
   the start country does not repeat within 7 days. The light index (`puzzles.js`, v: 2) is unchanged;
   a trip day is decided by date.
