@@ -1,0 +1,25 @@
+// PICKS: the six calls in the middle of Price Check, one board a day from
+// 2026-11-07 (owner, 2026-11-06). Game logic and scoring: lib/picks.js.
+//
+// Every item is a row of the retired Dealer, Agent or Curator bank, named by
+// its quizId and resolved through lib/price-ship.js, so it carries that row's
+// photo, credit, price and "as of" date. Fields:
+//   start     the opening item, on top for pick 1
+//   chain     the four challengers for picks 1, 2, 4 and 6, in order
+//   ou        pick 3: { ref, line }, line in integer cents, a round number
+//   tags      pick 5: the three items; tagOrder is the order their price tags
+//             are dealt in (never the items' own order)
+//
+// What makes a board good, and what scripts/verify-picks.mjs fails:
+//   * an ab pair is never within 18% (a coin flip) or more than 8x apart (no call)
+//   * the last pair is a close call, 18% to 80% apart
+//   * the item on top keeps it at least once, and ends higher than it started
+//   * the day opens on something under $60,000; the opener and four challengers
+//     come from at least two of the three banks, with at most two auction lots
+//   * the three tags come from at least two banks
+//   * the over/under line is a round number 20% to 60% off the price
+//   * the three tags are each at least 1.5x apart and within 30x of each other
+//   * no item appears twice anywhere in the bank
+// No Sunday Edition: the run is the same shape every day.
+//
+// Dealt by scripts/build-picks-bank.mjs FROM TO, which keeps days before FROM.

@@ -79,7 +79,8 @@ export function itemsFor(sections, counted) {
       score: counted[i] ? counted[i].score : 0,
       quizId: s.quizId || '', first: counted[i] && typeof counted[i].first === 'number' ? counted[i].first : null,
     };
-  });
+  // Picks (2026-11-07) is six items revealed as they are played, not one tag.
+  }).filter((x) => x.key !== 'picks');
 }
 
 function readStamp() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; } }

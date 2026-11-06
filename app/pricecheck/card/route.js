@@ -2,7 +2,11 @@ import { createElement as h } from 'react';
 import { ImageResponse } from 'next/og';
 import { stageFonts } from '@/lib/og-stage-card';
 import { W, d, chip, cta, frame } from '@/lib/og-run-card';
-import { PRICE_KEYS, PRICE_GAMES, runRankOf, runTierOf, RUN_RANKS, RUN_RANKS_V2, RUN_RANKS_V3, ranksByTag } from '@/lib/price-games';
+import { PRICE_KEYS, PRICE_GAMES, runRankOf, runTierOf, RUN_RANKS, RUN_RANKS_V2, RUN_RANKS_V3, RUN_RANKS_V4, RUN_KEYS_V4, ranksByTag } from '@/lib/price-games';
+
+// The legs a card prints: five tags at 10, or from 2026-11-07 (r=4) the item,
+// the picks and the house at 15, 20 and 15.
+const LEGS_V4 = { pricer: ['The item', 15], picks: ['Six picks', 20], realtor: ['The house', 15] };
 
 // PRICE CHECK'S SHARE CARD (owner, 2026-10-01: "it needs a great share card").
 // A result card carries the player's payment card from the run's ending: the
@@ -49,13 +53,14 @@ function payCard(ti, rank, total, max) {
     d({ alignItems: 'baseline', fontSize: 24, fontWeight: 800 }, String(total), d({ fontSize: 15, fontWeight: 700, opacity: 0.7, marginLeft: 6 }, `/ ${max}`)));
 }
 
-function card(scores, ranks = RUN_RANKS_V3) {
+function card(scores, ranks = RUN_RANKS_V4, v4 = true) {
   const res = Array.isArray(scores);
   const total = res ? scores.reduce((a, b) => a + b, 0) : null;
-  const max = PRICE_KEYS.length * 10;
+  const keys = v4 ? RUN_KEYS_V4 : PRICE_KEYS;
+  const max = 50;
   const rank = res ? runRankOf(Math.round(total * 50 / max), ranks) : null;
-  const rows = PRICE_KEYS.map((k, i) => {
-    const g = PRICE_GAMES[k];
+  const rows = keys.map((k, i) => {
+    const g = v4 ? { ...PRICE_GAMES[k], word: LEGS_V4[k][0] } : PRICE_GAMES[k];
     const v = res ? String(scores[i] ?? 0).padStart(2, '0') : '??';
     return d({ alignItems: 'center', gap: 16, padding: '4px 0' },
       d({ width: 150, padding: '6px 12px 6px 20px', borderRadius: '7px 10px 10px 7px', background: g.tagDark, color: W.ink, fontWeight: 800, fontSize: 19, flexShrink: 0 }, g.name),
@@ -78,8 +83,8 @@ function card(scores, ranks = RUN_RANKS_V3) {
       res
         ? d({ marginTop: 16, marginBottom: 18, paddingLeft: 8 }, payCard(runTierOf(Math.round(total * 50 / max), ranks), rank, total, max))
         : d({ flexDirection: 'column', marginTop: 22 },
-          d({ fontSize: 26, fontWeight: 600, color: W.ink2, lineHeight: 1.3 }, 'Five real price tags, from pocket change to the auction block.'),
-          d({ marginTop: 10, fontSize: 21, fontWeight: 700, color: W.mute }, 'Three guesses each. The first one counts most.')),
+          d({ fontSize: 26, fontWeight: 600, color: W.ink2, lineHeight: 1.3 }, v4 ? 'One everyday price, six quick calls, one house.' : 'Five real price tags, from pocket change to the auction block.'),
+          d({ marginTop: 10, fontSize: 21, fontWeight: 700, color: W.mute }, v4 ? 'Which costs more? The pricier one stays on top.' : 'Three guesses each. The first one counts most.')),
       cta(),
     ],
     right: board,
@@ -93,9 +98,15 @@ export async function GET(req) {
     // A link shared under the five-guess rule carries no r; from 2026-10-11 the
     // share link carries r=2 and the card is graded on the recut ladder.
     // r=3 from 2026-10-17 (the wide-middle recut).
-    const ranks = ranksByTag(q.get('r') || '');
-    const scores = /^\d{1,2}(-\d{1,2}){1,4}$/.test(s) ? s.split('-').map((x) => Math.max(0, Math.min(10, Number(x)))) : null;
-    return new ImageResponse(card(scores, scores ? ranks : RUN_RANKS_V3), { width: 1200, height: 630, fonts: stageFonts(), headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });
+    const r = q.get('r') || '';
+    const ranks = ranksByTag(r);
+    let etDay = '';
+    try { etDay = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); } catch (e) {}
+    const v4 = r === '4' || (!s && etDay >= '2026-11-07');
+    const caps = v4 ? RUN_KEYS_V4.map((k) => LEGS_V4[k][1]) : PRICE_KEYS.map(() => 10);
+    const ok = v4 ? /^\d{1,2}-\d{1,2}-\d{1,2}$/.test(s) : /^\d{1,2}(-\d{1,2}){1,4}$/.test(s);
+    const scores = ok ? s.split('-').map((x, i) => Math.max(0, Math.min(caps[i] || 10, Number(x)))) : null;
+    return new ImageResponse(card(scores, scores ? ranks : RUN_RANKS_V4, v4), { width: 1200, height: 630, fonts: stageFonts(), headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });
   } catch (err) {
     console.error('pricecheck card failed', err);
     return new Response(null, { status: 302, headers: { Location: '/og/daily.png' } });

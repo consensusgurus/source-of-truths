@@ -29,7 +29,7 @@ function ord(n) {
 }
 
 // Passport (2026-10-03) reuses this page with its own circuit, name and path.
-export default function PriceCheckBoard({ dateLabel = '', circuit: CIRCUIT = 'pricecheck', name = 'Price Check', path = '/pricecheck', emptyLine = 'Nobody has run all five tags today yet. Yours would be the first.', rankedLine = 'Ranked on the five tag scores added up', max = 50 }) {
+export default function PriceCheckBoard({ dateLabel = '', circuit: CIRCUIT = 'pricecheck', name = 'Price Check', path = '/pricecheck', emptyLine = 'Nobody has finished today\'s run yet. Yours would be the first.', rankedLine = 'Ranked on the run\'s points', max = 50 }) {
   const [tab, setTab] = useState('today');
   const [myName, setMyName] = useState('');
   useEffect(() => { setMyName(savedIdentity().username || ''); }, []);

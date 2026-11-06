@@ -2,6 +2,11 @@
 
 // PRICE CHECK — the five price games as one run (owner, 2026-10-01).
 //
+// ITEM, PICKS, HOUSE (owner, 2026-11-06). From 2026-11-07 the run is three legs:
+// Pricer (the everyday item), Picks (six quick calls, app/picks/PicksGame.jsx)
+// and Realtor (the house), weighted 15/20/15 (lib/price-games legPts). The
+// sections the page deals decide which shape a day is; older days keep five tags.
+//
 // Pricer, Dealer, Realtor, Agent and Curator back to back, three guesses at
 // each, one score out of 50. Each game is played by its own engine
 // (app/price/PriceGame.jsx, `run` mode) and files its own solo row, so the run
@@ -28,6 +33,8 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PriceGame, { readDoneSave } from '../price/PriceGame';
+import PicksGame, { readPicksSave } from '../picks/PicksGame';
+import { gradePicks, PICKS_MAX } from '@/lib/picks';
 import MoreRunsPop, { MoreRunsList, otherRuns } from '../circuits/MoreRuns';
 import { RUN_DOORS, runDoneToday } from '../circuits/RunDoorPop';
 import PriceCrowd from '../price/PriceCrowd';
@@ -40,7 +47,7 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import ChallengeStrip from '../ChallengeStrip';
 import { RunChallengeButton, RunChallengeLine, RunChallengeCapture, runToken, RunMeme } from '../RunChallenge';
 import RunOtherDeviceBar from '../RunOtherDeviceBar';
-import { fmtCents, runRankOf, runTierOf, ranksFor, ranksTag, isV2, scoreGuesses } from '@/lib/price-games';
+import { fmtCents, runRankOf, runTierOf, ranksFor, ranksTag, isV2, scoreGuesses, isRunV4, legPts, legMax } from '@/lib/price-games';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
 import { rampFor } from '@/lib/circuits';
 import { softGround, RAMP_INK } from '@/lib/category-ramp';
@@ -63,6 +70,12 @@ const freshRun = () => ({ v: 1, rule: 2, phase: 'idle', si: 0, t0: null, results
 
 // The first (counted) play of a game today, read off its own solo save.
 function bankedOf(sec) {
+  if (sec.key === 'picks') {
+    const ps = readPicksSave(sec.num);
+    if (!ps || ps.status !== 'done') return null;
+    const g = gradePicks(sec.day, ps.answers);
+    return { score: g.score, best: g.best, picks: true, secs: ps.t0 && ps.tEnd ? Math.round((ps.tEnd - ps.t0) / 1000) : 0, banked: true };
+  }
   const s = readDoneSave(sec.key, sec.num, sec.quizId);
   if (!s || !s.guesses.length) return null;
   const sg = scoreGuesses(s.guesses, sec.day.price, sec.quizId);
@@ -75,16 +88,27 @@ function bankedOf(sec) {
 // scoring note sits under it and opens in the same box.
 const ODO = ['1234567890', '7391582640', '4086291537', ',', '9502738164', '2618407395', '5173094826'];
 const ODO_SPEED = [1.6, 1.1, 0.8, 0, 0.6, 0.45, 0.35];
-function Register({ v2, max, n, sections, howOpen, onHow }) {
+function Register({ v2, v4 = false, max, n, sections, howOpen, onHow }) {
   return (
     <div className="pcg">
       <div className="pcg-box">
         {howOpen ? (
           <div className="pcg-how">
-            <div className="pcg-facts">
-              <span><b>{n}</b>tags</span><span><b>{v2 ? 3 : 5}</b>guesses each</span><span><b>{max}</b>points</span><span><b>1%</b>bullseye</span>
-            </div>
-            {v2 ? <p>The first guess can earn the full 10, the second up to 6, the third up to 3. The best one counts.</p> : <p>Your closest guess counts, 0 to 10.</p>}
+            {v4 ? (
+              <>
+                <div className="pcg-facts">
+                  <span><b>15</b>the item</span><span><b>20</b>six picks</span><span><b>15</b>the house</span><span><b>{max}</b>points</span>
+                </div>
+                <p>Item and house: three guesses, the first counts most. Picks: 3 a call, 1 a tag, and a streak bonus at three and six right.</p>
+              </>
+            ) : (
+              <>
+                <div className="pcg-facts">
+                  <span><b>{n}</b>tags</span><span><b>{v2 ? 3 : 5}</b>guesses each</span><span><b>{max}</b>points</span><span><b>1%</b>bullseye</span>
+                </div>
+                {v2 ? <p>The first guess can earn the full 10, the second up to 6, the third up to 3. The best one counts.</p> : <p>Your closest guess counts, 0 to 10.</p>}
+              </>
+            )}
           </div>
         ) : (
           <>
@@ -117,7 +141,12 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
   // Each tag takes its ladder step (slot) for the stage colours.
   const sections = useMemo(() => rawSections.map((s, i) => ({ ...s, slot: i })), [rawSections]);
   const N = sections.length;
-  const MAX = N * 10;
+  const V4 = sections.some((x) => x.key === 'picks') || isRunV4(sections[0] && sections[0].quizId);
+  const MAX = V4 ? 50 : N * 10;
+  const STEP = V4 ? 'Leg' : 'Tag';
+  // A leg's points on the run's own scale (the typed legs x1.5 from 2026-11-07).
+  const legOf = (i, raw) => (sections[i] ? legPts(sections[i].key, raw, sections[i].quizId) : 0);
+  const maxOf = (i) => (sections[i] ? legMax(sections[i].key, sections[i].quizId) : 10);
   const V2 = isV2(sections[0] && sections[0].quizId);
   const RTAG = ranksTag(sections[0] && sections[0].quizId);
   const RANKS = ranksFor(sections[0] && sections[0].quizId);
@@ -184,7 +213,8 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
     return null;
   }), [sections, banked, r.results]);
   countedRef.current = counted;
-  const total = counted.reduce((a, c) => a + (c ? c.score : 0), 0);
+  const pts = counted.map((c, i) => (c ? legOf(i, c.score) : 0));
+  const total = pts.reduce((a, v) => a + v, 0);
   const scaled = (v) => Math.round(v * 50 / Math.max(1, MAX));
   const rank = runRankOf(scaled(total), RANKS);
   const tier = runTierOf(scaled(total), RANKS);
@@ -198,6 +228,13 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
     const cur = rRef.current;
     const sec = sections[cur.si];
     if (!sec || res.key !== sec.key) return;
+    if (sec.key === 'picks') {
+      const results = { ...cur.results, picks: { score: res.score, best: res.best, picks: true, secs: res.secs, practice: !!res.practice } };
+      commit({ ...cur, results });
+      setHold(false);
+      setBetween({ si: cur.si, last: cur.si >= N - 1 });
+      return;
+    }
     const sg = scoreGuesses(res.guesses, sec.day.price, sec.quizId);
     const best = sg.at >= 0 ? res.guesses[sg.at] : null;
     const results = { ...cur.results, [sec.key]: { score: res.score, at: sg.at, best, first: res.guesses[0] ?? null, guesses: res.guesses.length, secs: res.secs, practice: !!res.practice } };
@@ -261,25 +298,34 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
   }, [done]);
 
   function shareText() {
-    const per = sections.map((s, i) => `${s.name} ${counted[i] ? counted[i].score : '-'}`).join(' · ');
-    const code = sections.map((s, i) => (counted[i] ? counted[i].score : 0)).join('-');
+    const per = sections.map((s, i) => `${s.name} ${counted[i] ? pts[i] : '-'}`).join(' · ');
+    const code = sections.map((s, i) => (counted[i] ? pts[i] : 0)).join('-');
     return `Price Check · ${dateShort} · ${total}/${MAX}\nI paid with the ${rank[3]} card: ${rank[1]}.\n${per}\n${withRef(`mindloftdaily.com/pricecheck?s=${code}${RTAG ? `&r=${RTAG}` : ''}`)}`;
   }
   function copyShare() {
-    const text = done ? shareText() : `Price Check: five real prices, from Amazon to the auction block. Three guesses at each, and the first one counts most.\n${withRef('mindloftdaily.com/pricecheck')}`;
+    const text = done ? shareText() : (V4 ? `Price Check: one everyday price, six quick which-costs-more calls, and a house. One score out of 50.\n${withRef('mindloftdaily.com/pricecheck')}` : `Price Check: five real prices, from Amazon to the auction block. Three guesses at each, and the first one counts most.\n${withRef('mindloftdaily.com/pricecheck')}`);
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
 
   const sec = playing ? sections[r.si] : null;
   const secBanked = sec ? banked[sec.key] : null;
-  const runSoFar = sections.slice(0, r.si).reduce((a, s, i) => a + (counted[i] ? counted[i].score : 0), 0);
+  const runSoFar = sections.slice(0, r.si).reduce((a, s, i) => a + (counted[i] ? pts[i] : 0), 0);
 
   // What the card says about the tag just played.
   function tagBody(i) {
     const s = sections[i];
     const c = counted[i];
     if (!s) return null;
+    if (s.key === 'picks') {
+      return (
+        <>
+          <b>Picks: {c ? c.score : 0} of {PICKS_MAX}</b>
+          {c && c.best != null ? <span>Best streak {c.best} of 6</span> : null}
+          {c && c.banked ? <span>Your first play today counts</span> : null}
+        </>
+      );
+    }
     const guessLine = !c ? null
       : V2 && c.at >= 0 && c.best != null
         ? (c.at === 0 ? <span>First guess <b>{fmtCents(c.best)}</b> earned it</span> : <span>Earned on guess {c.at + 1} at <b>{fmtCents(c.best)}</b>{typeof c.first === 'number' ? <>, first guess {fmtCents(c.first)}</> : null}</span>)
@@ -290,6 +336,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
         {s.day.local ? <span>Listed at {s.day.local}, shown in US dollars</span> : null}
         {guessLine}
         {c && c.banked ? <span>Your first play today counts</span> : null}
+        {V4 && c ? <span>{c.score} of 10 on the guesses, worth {legOf(i, c.score)} of 15 in the run</span> : null}
       </>
     );
   }
@@ -311,11 +358,12 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
   const per = (data && data.priceField && data.priceField.games) || {};
   const rowsIn = sections.map((s, i) => {
     const g = per[s.key];
-    const bests = overall.map((L) => L.perGame && L.perGame[s.key] && !L.perGame[s.key].abandoned ? Number(L.perGame[s.key].score) : null).filter((v) => Number.isFinite(v));
+    const bests = overall.map((L) => L.perGame && L.perGame[s.key] && !L.perGame[s.key].abandoned ? legOf(i, Number(L.perGame[s.key].score)) : null).filter((v) => Number.isFinite(v));
+    const fw = V4 && s.key !== 'picks' ? 1.5 : 1;
     return {
       key: s.key, name: s.name, bg: rampFor(i),
-      you: counted[i] ? counted[i].score : '–',
-      field: g && g.avg != null ? (g.avg < 10 ? Number(g.avg).toFixed(1) : Math.round(g.avg)) : '–',
+      you: counted[i] ? pts[i] : '–',
+      field: g && g.avg != null ? (g.avg * fw < 10 ? Number(g.avg * fw).toFixed(1) : Math.round(g.avg * fw)) : '–',
       best: bests.length ? Math.max(...bests) : '–',
     };
   });
@@ -348,13 +396,13 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
           dateLabel={dateLabel}
           sections={sections}
           lineFor={(s) => s.word}
-          bandNote={(s) => (banked[s.key] ? `Played ${banked[s.key].score}` : '10 pts')}
-          headline={<>{NUMS[N] || N} Prices.<br />{V2 ? 'Three' : 'Five'} Guesses Each.</>}
-          rule={V2 ? 'The first guess counts most. Scored out of ' + MAX + '.' : 'Get warm, get close, then go big. Scored out of ' + MAX + '.'}
+          bandNote={(s) => { const i = sections.indexOf(s); return banked[s.key] ? `Played ${legOf(i, banked[s.key].score)}` : `${maxOf(i)} pts`; }}
+          headline={V4 ? <>One Item.<br />Six Picks.<br />One House.</> : <>{NUMS[N] || N} Prices.<br />{V2 ? 'Three' : 'Five'} Guesses Each.</>}
+          rule={V4 ? 'Guess an everyday price, make six quick calls, then price a home. Scored out of 50.' : V2 ? 'The first guess counts most. Scored out of ' + MAX + '.' : 'Get warm, get close, then go big. Scored out of ' + MAX + '.'}
           lineup={null}
           startLabel="Start the run"
           banner={<><RunOtherDeviceBar runId={RUN_ID} keys={sections.map((s) => s.key)} show={hydrated && r.phase === 'idle' && !r.t0 && !Object.keys(banked).length} /><ChallengeStrip gameKey="pricecheck" num={runToken()} run /></>}
-          centerpiece={<Register v2={V2} max={MAX} n={N} sections={sections} howOpen={howOpen} onHow={() => setHowOpen((v) => !v)} />}
+          centerpiece={<Register v2={V2} v4={V4} max={MAX} n={N} sections={sections} howOpen={howOpen} onHow={() => setHowOpen((v) => !v)} />}
           after={<GateLinks howOpen={howOpen} onHow={() => setHowOpen((v) => !v)} />}
           onStart={start}
         />
@@ -367,14 +415,14 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
           lastSec={sec}
           upNext={sections[r.si + 1]}
           upIdx={r.si + 1}
-          stepWord="Tag"
+          stepWord={STEP}
           doneCount={r.si + 1}
           lastBody={tagBody(r.si)}
-          lastExtra={V2 && counted[r.si] && typeof counted[r.si].first === 'number'
+          lastExtra={V2 && sec.key !== 'picks' && counted[r.si] && typeof counted[r.si].first === 'number'
             ? <PriceCrowd quizId={sec.quizId} price={sec.day.price} first={counted[r.si].first} compact /> : null}
-          lastFig={{ v: counted[r.si] ? counted[r.si].score : 0, unit: 'of 10' }}
+          lastFig={{ v: counted[r.si] ? pts[r.si] : 0, unit: `of ${maxOf(r.si)}` }}
           nextLine={`${sections[r.si + 1].word}${sections[r.si + 1].chip ? ` · ${sections[r.si + 1].chip}` : ''}`}
-          fine={`Run total ${runSoFar + (counted[r.si] ? counted[r.si].score : 0)} of ${MAX}`}
+          fine={`Run total ${runSoFar + (counted[r.si] ? pts[r.si] : 0)} of ${MAX}`}
           dwellMs={BETWEEN_MS}
           held={hold}
           resetKey={`${r.si}:${resumes}`}
@@ -385,14 +433,17 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
       )}
 
       {hydrated && playing && sec && !(between && !between.last) && (
-        <RunPlayFrame sections={sections} idx={r.si} title="Price Check" sub={`Tag ${r.si + 1} of ${N} · ${sec.name}`}
-          foot={<>Run total {runSoFar + (between ? (counted[r.si] ? counted[r.si].score : 0) : 0)} of {MAX} · {dateShort}</>}>
+        <RunPlayFrame sections={sections} idx={r.si} title="Price Check" sub={`${STEP} ${r.si + 1} of ${N} · ${sec.name}`}
+          foot={<>Run total {runSoFar + (between ? (counted[r.si] ? pts[r.si] : 0) : 0)} of {MAX} · {dateShort}</>}>
           <section className={`pc-play pc-k-${sec.key}`} style={accVars}>
             {!between ? <div className="pc-chs"><ChallengeStrip gameKey="pricecheck" num={runToken()} run /></div> : null}
             {secBanked && !between && (
-              <div className="pc-banked">You played {sec.name} today and scored <b>{secBanked.score}/10</b>. That score counts. Guess again for fun.</div>
+              <div className="pc-banked">You played {sec.name} today and scored <b>{secBanked.score}/{sec.key === 'picks' ? PICKS_MAX : 10}</b>. That score counts. {sec.key === 'picks' ? 'Play again for fun.' : 'Guess again for fun.'}</div>
             )}
-            {!between && (
+            {!between && sec.key === 'picks' && (
+              <PicksGame key={`picks-${r.si}`} day={sec.day} quizId={sec.quizId} num={sec.num} practice={!!secBanked} onDone={onSectionDone} />
+            )}
+            {!between && sec.key !== 'picks' && (
               <PriceGame key={`${sec.key}-${r.si}`} game={sec.key} puzzles={sec.puzzles} dayByNum={{ [sec.num]: sec.day }} forceNum={sec.num}
                 run={{ practice: !!secBanked, onDone: onSectionDone }} />
             )}
@@ -400,7 +451,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
               <div className="pc-last" role="status">
                 <div className="pc-lastc">
                   <span className="pc-lastt">{tagBody(r.si)}</span>
-                  <span className="pc-lastf">{counted[r.si] ? counted[r.si].score : 0}<i>of 10</i></span>
+                  <span className="pc-lastf">{counted[r.si] ? pts[r.si] : 0}<i>of {maxOf(r.si)}</i></span>
                 </div>
                 <div className="pc-rolling">Ringing up your card<span className="pc-dots" aria-hidden="true"><i /><i /><i /></span></div>
               </div>
@@ -415,10 +466,10 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
           circuitName="Price Check"
           dateLabel={dateLabel}
           sections={sections}
-          results={sections.map((s, i) => ({ key: s.key, score: counted[i] ? counted[i].score : '–' }))}
+          results={sections.map((s, i) => ({ key: s.key, score: counted[i] ? pts[i] : '–' }))}
           score={total}
           unitWord="points"
-          colLabel="Tag"
+          colLabel={STEP}
           title={{ name: earned.name, line: earned.line, colour: earned.colour }}
           ladder={ladder}
           ladderHeading="Which card are you paying with?"
@@ -427,7 +478,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
           fieldSize={fieldSize}
           board={boardRows}
           rowsIn={rowsIn}
-          avg={Object.keys(per).length ? Object.fromEntries(sections.map((s) => [s.key, per[s.key] && per[s.key].avg != null ? per[s.key].avg : 0])) : null}
+          avg={Object.keys(per).length ? Object.fromEntries(sections.map((s) => [s.key, per[s.key] && per[s.key].avg != null ? per[s.key].avg * (V4 && s.key !== 'picks' ? 1.5 : 1) : 0])) : null}
           leaderScore={overall[0] ? Math.round(Number(overall[0].total) || 0) : null}
           afterBoard={week ? <WeekStrip data={week} /> : null}
           extra={<button type="button" className="pc-items" onClick={openItems}>Today&rsquo;s tags <span aria-hidden="true">&rarr;</span></button>}
@@ -443,7 +494,7 @@ export default function PriceCheckClient({ dateLabel, dateShort, sections: rawSe
           onShare={copyShare}
           copied={copied}
           sweep={doneAtLoad.current === false}
-          finale={doneAtLoad.current === false ? { key: 'pricecheck', legWord: 'Tag', legMax: sections.map(() => 10) } : null}
+          finale={doneAtLoad.current === false ? { key: 'pricecheck', legWord: STEP, legMax: sections.map((s, i) => maxOf(i)) } : null}
         />
       )}
 

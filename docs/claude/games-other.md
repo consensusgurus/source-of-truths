@@ -1984,3 +1984,23 @@ set, Price tags (Pricer, Realtor).
 Planned next (not built): Price Check becomes everyday item (typed guess), a middle of
 which-costs-more picks (the pricier item stays on screen, crowd split, streak meter, gap
 shown on reveal), then the house (typed guess). No day theme.
+
+## Price Check from 2026-11-07: one item, six Picks, one house (owner, 2026-11-06)
+
+The run is three legs from 2026-11-07: Pricer (the everyday item), **Picks** (six quick calls) and
+Realtor (the house), scored 15/20/15 out of 50. Days before keep the five tags at 10 each.
+
+- **Roster:** `after: { from: '2026-11-07', keys: ['pricer', 'picks', 'realtor'] }` on the
+  `pricecheck` circuit (lib/circuits.js). **Board:** `scorer: 'price'` (SCORERS.price) weighs each row
+  with `legPts` (lib/price-games.js): the typed legs x1.5 rounded per leg, Picks as scored. The
+  client uses the same `legPts`/`legMax`, so the run, the board, the week and the share card agree.
+- **Picks** (`picks`, run-only like Passport; its route redirects to /pricecheck). Rules and
+  scoring in `lib/picks.js`: which costs more x4 (the pricier item stays on top), over or under x1,
+  tag match x1; 3 a call, 1 a tag, +1 at a streak of three and six. Bank `app/picks/puzzles.js` names
+  rows of the retired Dealer/Agent/Curator banks by quizId; dealt by `scripts/build-picks-bank.mjs`,
+  checked by `scripts/verify-picks.mjs`. The bank runs to 2026-11-14 with the Pricer and Realtor
+  banks: restock all three together. 55 of the 135 retired rows are still unused.
+- **Crowd split:** a Picks row files what its player got right in `first_guess` (crowd code, never
+  the score); `/api/quiz/picks-crowd` returns the share right per call. Shown only at 3+ players.
+- **Shopper cards:** `RUN_RANKS_V4` (43/35/27/20), modeled for the new scale. Re-cut after a week.
+- No abandon beacon on Picks: a player who leaves mid-leg resumes from `sot_picks_<num>`.

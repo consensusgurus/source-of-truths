@@ -108,8 +108,9 @@ for (const g of DAILY_GAMES) {
     if (!existsSync(join('public', 'og', `${g.key}.png`))) fail(`${label}: public/og/${g.key}.png missing`);
     continue;
   }
-  if (g.key === 'passport') {
-    // Run-only: its page is the run, checked below as a run page.
+  if (g.key === 'passport' || g.key === 'picks') {
+    // Run-only: its page is the run, checked below as a run page. Picks
+    // (2026-11-07) is the middle leg of Price Check and lives at /pricecheck.
     continue;
   }
   const title = str(/\n  title:\s*'([^']*)'/, src) || str(/\n  title:\s*"([^"]*)"/, src);

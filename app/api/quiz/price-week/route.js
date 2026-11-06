@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadDailyResultsCached } from '@/lib/daily-results-cache';
 import { resolvePlayerKeys } from '@/lib/quiz-identity';
-import { PRICE_KEYS } from '@/lib/price-games';
+import { runKeysFor, legPts } from '@/lib/price-games';
 
 // THE SHOPPING WEEK (owner, 2026-10-25): Price Check's weekly shopper rank.
 //
@@ -40,7 +40,7 @@ export async function GET(request) {
   const days = weekOf(want).filter((d) => d <= today);
   const ids = [];
   const dayOfQid = new Map();
-  for (const d of days) for (const k of PRICE_KEYS) { const q = qidOf(k, d); ids.push(q); dayOfQid.set(q, [d, k]); }
+  for (const d of days) for (const k of runKeysFor(d)) { const q = qidOf(k, d); ids.push(q); dayOfQid.set(q, [d, k]); }
   try {
     const [{ data, error }, me] = await Promise.all([
       loadDailyResultsCached(supabaseAdmin, ids),
@@ -65,7 +65,7 @@ export async function GET(request) {
     const rows = [];
     for (const [pk, p] of seen) {
       const runs = [];
-      for (const [d, dd] of p) if (PRICE_KEYS.every((k) => k in dd)) runs.push({ d, total: PRICE_KEYS.reduce((a, k) => a + dd[k], 0) });
+      for (const [d, dd] of p) { const ks = runKeysFor(d); if (ks.every((k) => k in dd)) runs.push({ d, total: ks.reduce((a, k) => a + legPts(k, dd[k], d), 0) }); }
       if (!runs.length) continue;
       const best = runs.map((x) => x.total).sort((a, b) => b - a).slice(0, BEST);
       const sum = best.reduce((a, b) => a + b, 0);
