@@ -459,6 +459,19 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
     }, reducedMotion() ? 600 : 1400);
   }
 
+  // GIVE UP ON STAMPS (owner, 2026-11-06, like every daily's Give up): two taps,
+  // then every country not yet asked counts as missed and the leg ends.
+  const [armGive, setArmGive] = useState(0);
+  function giveUpStamps() {
+    const cur = gRef.current;
+    if (!TRIP || ordOf(cur)[cur.round] !== 3 || cur.sc[3] != null || numShow != null) return;
+    const list = Array.isArray(cur.st) ? cur.st : [];
+    const res = list.map((_, k) => cur.sz.res[k] === true);
+    const right = res.filter(Boolean).length;
+    setArmGive(0);
+    award(cur, 3, legPoints('passport', right, list.length || 1, PUZZLE.live), { sz: { ...cur.sz, res, i: list.length, tEnd: Date.now(), gaveUp: true } });
+  }
+
   function finish() {
     const cur = gRef.current;
     if (cur.status !== 'playing') return;
@@ -631,11 +644,21 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
           })}
         </div>
         <div className="lg-say" role="status" aria-live="polite">
-          {doneR ? `${right} of ${STAMPS.length} stamped.` : (numShow === i ? (ok ? `Stamped. ${st.cap} it is.` : `Not this time: it is ${st.cap}.`) : '')}
+          {doneR ? `${right} of ${STAMPS.length} stamped${g.sz.gaveUp ? ', the rest given up' : ''}.` : (numShow === i ? (ok ? `Stamped. ${st.cap} it is.` : `Not this time: it is ${st.cap}.`) : '')}
         </div>
         <div className="lg-dots" aria-label={`${g.sz.res.length} of ${STAMPS.length} asked, ${right} right`}>
           {STAMPS.map((_, k) => <i key={k} className={g.sz.res[k] === true ? 'ok' : g.sz.res[k] === false ? 'ko' : (k === g.sz.i && !doneR ? 'cur' : '')} />)}
         </div>
+        {!doneR ? (
+          <div className="lg-foot">
+            <span>{right} of {STAMPS.length} stamped</span>
+            <button type="button" className={`lg-act${armGive ? ' arm' : ''}`} disabled={numShow != null}
+              onClick={() => { if (armGive) { if (Date.now() - armGive < 400) return; giveUpStamps(); } else { setArmGive(Date.now()); setTimeout(() => setArmGive(0), 4000); } }}
+              title="Give up: the countries left count as missed">
+              {armGive ? 'Tap again to give up' : 'Give up'}
+            </button>
+          </div>
+        ) : null}
       </LegShell>
     );
   };
