@@ -187,6 +187,7 @@ const GAMES = [
   { key: 'strata', href: '/strata', name: 'Strata', tag: 'Dig the words out', img: '/games/btn-strata.png' },
   { key: 'dario', href: '/dario', name: 'Dario', tag: 'Race to the frontier', img: '/games/btn-dario.png' },
   { key: 'snake', href: '/snake', name: 'Snake', tag: 'Same apples, same order', img: '/games/btn-snake.png' },
+  { key: 'simon', href: '/simon', name: 'Simon', tag: 'Same sequence, one more each round', img: '/games/btn-simon.png' },
   { key: 'squash', href: '/squash', name: 'Squash', tag: 'Same fruit, same board', img: '/games/btn-squash.png' },
   { key: 'blocks', href: '/blocks', name: 'Blocks', tag: 'Same shapes, same order', img: '/games/btn-blocks.png' },
   { key: 'ergo', href: '/ergo', name: 'Ergo', tag: 'Must, could or cannot', img: '/games/btn-ergo.png' },
@@ -232,7 +233,7 @@ const CATEGORIES = [
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'topple', 'roll', 'sudoclue', 'snug', 'jig', 'saw', 'swap', 'slide', 'spin', 'connect', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'ergo', 'docket', 'plot'] },
   { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
   { key: 'cards', label: 'Cards', keys: ['taire', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib'] },
-  { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'squash', 'dario', 'sweep'] },
+  { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'squash', 'simon', 'dario', 'sweep'] },
 ];
 
 /* The prize figure is the hook in the share teaser, so it is picked out of the

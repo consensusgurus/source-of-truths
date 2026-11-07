@@ -2070,3 +2070,31 @@ who was in the film is the game). Trivia, skills Memory and Planning, on the Sim
 - Group: Bacon joined Clade and Dossier in a new **Guessing games** set (`/trivia-games/guessing-games`),
   split off Single-topic trivia, which keeps Deep, Niche and Slot. Finish set **On screen** (Bacon,
   Script, Thread).
+
+## Simon (`/simon`): the Arcade memory sequence daily (launched 2026-11-07)
+
+Repeat the sequence, as a daily. Key/route `simon`, category **Arcade**, `miss: null`,
+`unit: 'steps'` (a tally game: the score is the longest sequence repeated in full, raw and
+uncapped, against par 10), legacy accent `#7c3aed` / `#c4b5fd`. Skills Memory then Focus and
+Speed. Arcade rules throughout: unlimited runs, the board and the local record keep the BEST
+run, `XP_DAILY_CAP.simon = 1`. Wired by `scripts/wire-simon.mjs` (anchored on the Squash rows).
+No new-game pop-up (NO_PREMIERE, as Dario and Squash). No Sunday Edition.
+
+- **Owner rulings (2026-11-07, off the mockup):** nine pads (after trying four and six), a
+  STEADY pace that never speeds up, and NO SOUND AT ALL. Named Simon (first called Echo).
+- **The day is generated, not banked.** `lib/simon-engine.js` `dayPlan(quizId)` is a seeded
+  list of 200 pads that never lights one pad three times running. The same file is the engine
+  the client plays and the verifier proves. `app/simon/puzzles.js` carries only the frame (par),
+  written by `scripts/gen-simon.mjs`.
+- **Pace:** every pad is lit `LIT_MS` 520ms with `GAP_MS` 180ms between, after a `LEAD_MS`
+  700ms beat, in every round.
+- **Ties break on total TAPPING time** (the clock runs only while it is your turn; watching is
+  free). `guessesUsed` is not posted. A hidden tab during the show replays the show from the top
+  when it comes back; the tapping clock is never paused.
+- **The look:** a 3x3 grid of pads wearing REGION_RAMP hues 0 to 8 through `regionStyle` /
+  `regionMix` (the site pastels), 1px ink outlines, an outline shape a pad (circle, triangle,
+  square, diamond, hexagon, star, plus, crescent, heart) so the sequence reads without colour.
+  A miss shakes the tapped pad and rings the wanted one.
+- **A run does not resume after a reload:** the abandon flush posts it as it stood.
+- **Give up** (tap twice) ends the run and posts the steps already earned.
+- `scripts/verify-simon.mjs` checks the bank and the engine.

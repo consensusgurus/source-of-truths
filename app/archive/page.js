@@ -130,6 +130,7 @@ import { PUZZLES as REDACT_FULL } from '../redact/puzzles';
 import { PUZZLES as STRATA_FULL } from '../strata/puzzles';
 import { PUZZLES as BLOCKS_FULL } from '../blocks/puzzles';
 import { PUZZLES as SQUASH_FULL } from '../squash/puzzles';
+import { PUZZLES as SIMON_FULL } from '../simon/puzzles';
 import { PUZZLES as SNAKE_FULL } from '../snake/puzzles';
 import { PUZZLES as DARIO_FULL } from '../dario/puzzles';
 import { PUZZLES as CHOMP_FULL } from '../chomp/puzzles';
@@ -269,6 +270,7 @@ const REDACT = REDACT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ 
 const STRATA = STRATA_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const BLOCKS = BLOCKS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SQUASH = SQUASH_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const SIMON = SIMON_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SNAKE = SNAKE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DARIO = DARIO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CHOMP = CHOMP_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -484,6 +486,7 @@ const GAMES = [
   { key: 'chomp', name: 'Chomp', path: '/chomp', tag: 'Eat them in order', accent: '#a8430f', bg: '#fbeadf', border: 'rgba(168,67,15,0.4)', src: CHOMP },
   { key: 'dario', name: 'Dario', path: '/dario', tag: 'Race to the frontier', accent: '#c2410c', bg: '#fff1e6', border: 'rgba(194,65,12,0.4)', src: DARIO },
   { key: 'snake', name: 'Snake', path: '/snake', tag: 'Same apples, same order', accent: '#65a30d', bg: '#eef7dc', border: 'rgba(101,163,13,0.4)', src: SNAKE },
+  { key: 'simon', name: 'Simon', path: '/simon', tag: 'Same sequence, one more each round', accent: '#7c3aed', bg: '#f3e8ff', border: 'rgba(124,58,237,0.4)', src: SIMON },
   { key: 'squash', name: 'Squash', path: '/squash', tag: 'Same fruit, same board', accent: '#db2777', bg: '#fce7f3', border: 'rgba(219,39,119,0.4)', src: SQUASH },
   { key: 'blocks', name: 'Blocks', path: '/blocks', tag: 'Same shapes, same order', accent: '#1d4ed8', bg: '#e8edfa', border: 'rgba(29,78,216,0.4)', src: BLOCKS },
   { key: 'sweep', name: 'Sweep', path: '/sweep', tag: 'No bottom edge', accent: '#0f766e', bg: '#e2f2f0', border: 'rgba(15,118,110,0.4)', src: SWEEP },
