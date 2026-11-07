@@ -398,6 +398,11 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
               title={endSolved(won)}
               detail={GAME.detail(PUZZLE, g.s, won, elapsed)}
               missLabel={GAME.miss ? GAME.miss[0].toUpperCase() + GAME.miss.slice(1) : null}
+              // The game's own figure (turns, moves, clues) is what a challenge
+              // and the GIF share lead with, not the clock: lib/challenge-metric.js
+              // says which games count it. Without this every stage-shell game fell
+              // back to its time (owner, 2026-11-06, on Tape).
+              challengeMetric={won && GAME.count ? GAME.count(g.s) : null}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready

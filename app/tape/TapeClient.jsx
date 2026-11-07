@@ -3,7 +3,7 @@
 // Tape: name the company from its stock chart. One company a day from the
 // Russell 3000; the board is its last five years of weekly closes with no price
 // axis, and six clues that open one at a time (sector free, then the year it
-// went public, the state or country it is based in (never the city), a dated headline pinned on the chart, what it does
+// went public, its size (a market value band in the Russell 3000), a dated headline pinned on the chart, what it does
 // and the first letter of the ticker). A wrong guess opens the next clue, and a
 // wrong guess with all six open ends the day. Fewer clues rank higher, then the
 // clock. Runs on the shared stage shell (app/SimpleDaily.jsx).
@@ -13,7 +13,7 @@ import SimpleDaily from '../SimpleDaily';
 import { UNIVERSE } from './universe';
 
 const MAX = 6;
-const LABELS = ['Sector', 'Went public', 'Based in', 'Headline at pin 4', 'What it does', 'Ticker starts with'];
+const LABELS = ['Sector', 'Went public', 'Size', 'Headline at pin 4', 'What it does', 'Ticker starts with'];
 
 function fold(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim(); }
 const LIST = UNIVERSE.map(([t, n]) => ({ t, n, ft: t.toLowerCase(), fn: fold(n) }));
@@ -47,21 +47,21 @@ function matches(query, skip, extra) {
   return tiers.flat().slice(0, 6);
 }
 
-// The headquarters clue names the state, or the province and country outside
-// the US, never the city: a city gives the answer away (owner, 2026-11-06).
-const CANADA = new Set(['British Columbia', 'Ontario', 'Quebec', 'Alberta', 'Manitoba', 'Nova Scotia', 'Saskatchewan', 'New Brunswick']);
-function hqRegion(hq) {
-  const region = String(hq || '').split(', ').slice(1).join(', ');
-  if (region === 'D.C.') return 'Washington, D.C.';
-  if (region === 'Washington') return 'Washington State';
-  if (CANADA.has(region)) return `${region}, Canada`;
-  return region;
+// Clue 3 is size, never headquarters (owner, 2026-11-06): a state or city was
+// either useless (20 of the first 45 are in California) or a giveaway
+// (Arkansas is Walmart). The band comes from the answer's rank by market value
+// in the Russell 3000 list the bank was built from.
+function sizeBand(rank) {
+  if (rank <= 50) return 'One of the 50 biggest US companies';
+  if (rank <= 200) return 'Ranked 51 to 200 by market value';
+  if (rank <= 500) return 'Ranked 201 to 500 by market value';
+  return 'Smaller than the top 500';
 }
 
 function clueValue(P, k) {
   if (k === 0) return P.sector;
   if (k === 1) return String(P.ipo);
-  if (k === 2) return hqRegion(P.hq);
+  if (k === 2) return sizeBand(P.rank);
   if (k === 3) return `${P.pin.label}: ${P.pin.text}`;
   if (k === 4) return P.does;
   return P.ticker[0];
@@ -274,7 +274,7 @@ const GAME = {
     lead: 'A stock chart with the prices taken off. Name the company.',
     steps: [
       <>The chart is the company&rsquo;s last <b>five years of weekly closes</b>, adjusted for splits. The answer is one of the <b>Russell 3000</b>, and you can guess any of them by name or ticker.</>,
-      <>You start with <b>one clue</b>, the sector. Open more whenever you like: the year it went public, the state it is based in, the headline behind <b>pin 4</b> on the chart, what it does, and the first letter of its ticker.</>,
+      <>You start with <b>one clue</b>, the sector. Open more whenever you like: the year it went public, its size by market value, the headline behind <b>pin 4</b> on the chart, what it does, and the first letter of its ticker.</>,
       <>A <b>wrong guess opens the next clue</b> for you. With all six open, one more miss ends the day.</>,
     ],
     knack: 'Read the shape before the clues. A crash and a full recovery, a single cliff on one day, a slow fade: most companies have a chart nobody else has.',
@@ -286,7 +286,7 @@ const GAME = {
   aboutTitle: 'About Tape',
   about: [
     'Tape is a free daily stock market guessing game from Mind Loft. Every day it shows five years of one company’s weekly stock chart with the prices taken off, and you name the company. Any of the roughly 2,600 stocks in the Russell 3000 index is a fair guess, by name or by ticker.',
-    'You start with the sector. Five more clues open one at a time when you ask for them, or when you guess wrong: the year the company went public, the state it is based in, a dated headline pinned on the chart, what it does, and the first letter of its ticker. Fewer clues rank higher and the clock breaks a tie. Weekdays are well-known companies; the Sunday Edition is a smaller one.',
+    'You start with the sector. Five more clues open one at a time when you ask for them, or when you guess wrong: the year the company went public, its size by market value, a dated headline pinned on the chart, what it does, and the first letter of its ticker. Fewer clues rank higher and the clock breaks a tie. Weekdays are well-known companies; the Sunday Edition is a smaller one.',
     <>More daily guessing: try <a href="/dossier" style={{ color: 'inherit', fontWeight: 800 }}>Dossier</a>, <a href="/pricer" style={{ color: 'inherit', fontWeight: 800 }}>Pricer</a> and <a href="/biz" style={{ color: 'inherit', fontWeight: 800 }}>Biz</a>.</>,
   ],
 };

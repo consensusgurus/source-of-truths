@@ -2014,14 +2014,17 @@ updated by hand), finish set "Guessing games".
 
 - **Board:** five years of weekly closes, split- and dividend-adjusted, drawn with no price axis
   and no dates until the day ends. One pin (always numbered 4) sits on the week of a dated event.
-- **Six clues** open one at a time: sector (free), year it went public, the state (or province and country) it is based in, never the
-  city (owner, 2026-11-06: the city gave it away), the pin's
+- **Six clues** open one at a time: sector (free), year it went public, SIZE (a market value band from the answer's
+  Russell 3000 rank: top 50, 51 to 200, 201 to 500, smaller), the pin's
   headline, what it does (our own words, never the name), the first letter of the ticker. A wrong
   guess opens the next clue; a wrong guess with all six open ends the day. Score 11 minus clues
   used (VERDICT, so it reads Solved), miss label `Clues`; ranks on clues, then time.
 - **Universe:** every common stock in the iShares IWV holdings file (about 2,600), largest first,
   in `app/tape/universe.js`. Guess by name or ticker. `accept` lists a second share class
   (GOOG for GOOGL) and `alt` lists other names (Facebook, Google, MicroStrategy).
+- **No headquarters clue (owner, 2026-11-06).** The city gave it away; the state was either useless
+  (20 of the first 45 boards are in California) or a giveaway (Arkansas is Walmart). `hq` stays in the
+  data but is never shown.
 - **Sunday Edition:** a smaller company, rank 300 or deeper by market value. Weekdays rank 1 to 700.
 - **Typeahead rows are SQUARE** (owner, 2026-11-06, on the mockup): the suggestion box has no
   rounded corners at all, so the highlighted row is never rounded. Tape-only override of `.pst-sug`.
