@@ -424,6 +424,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   const [zoom, setZoom] = useState(1);
   const [boxH, setBoxH] = useState(0);
   const boxRef = useRef(null);
+  const [boxAvailH, setBoxAvailH] = useState(0);   // the board frame's inner height in the play box
   const autoScroll = useRef(null);
   selRef.current = sel;
   const playRef = useRef(null);
@@ -1085,6 +1086,31 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     };
   }, [boxMode]);
   useEffect(() => () => stopEdge(), []);
+  // At zoom 1 the whole board fits in the frame (never cut off), and the frame
+  // is NOT a scroller, so a flick on the board scrolls the page (iOS Safari
+  // does not hand a flick from an inner scroller to the page). Only a zoomed
+  // board scrolls inside its frame.
+  useEffect(() => {
+    if (!boxMode) { setBoxAvailH(0); return undefined; }
+    const el = boxRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(() => setBoxAvailH(Math.floor(el.clientHeight)));
+    ro.observe(el);
+    setBoxAvailH(Math.floor(el.clientHeight));
+    return () => ro.disconnect();
+  }, [boxMode]);
+  // A phone always plays the snap way. A game begun on the loose table (on a
+  // computer, or on a phone before 2026-11-07) and opened on a phone carries
+  // over: a group that sits at its home is placed, the rest go back to the tray.
+  useEffect(() => {
+    if (!narrow || g.mode !== 'loose' || g.status !== 'playing') return;
+    setG((cur) => {
+      if (cur.mode !== 'loose' || cur.status !== 'playing') return cur;
+      const home = cur.cl.filter((x) => Math.abs(x.dx) < S * 0.33 && Math.abs(x.dy) < S * 0.33).flatMap((x) => x.m);
+      return { ...cur, mode: 'snap', placed: home, cl: [] };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [narrow, g.mode, g.status]);
   // A finished board leaves full screen so the end card can show.
   useEffect(() => { if (!playing && fullRef.current) exitFull(); }, [playing]);
 
@@ -1319,6 +1345,8 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           .jg-foot.inbox .jg-msg{display:none;}
           .jg-play.box{flex-direction:column;align-items:stretch;gap:8px;min-height:0;}
           .jg-play.box .jg-boardbox.scr{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;border-radius:12px;scrollbar-width:thin;}
+          .jg-play.box .jg-boardbox.fit{flex:1 1 auto;min-height:0;overflow:visible;display:flex;align-items:flex-start;}
+          .jg-play.box .jg-boardbox.fit .jg-zoom{flex:none;}
           .jg-play.box .jg-side{flex:none;gap:8px;}
           .jg-play.box .jg-tray.vs{max-height:42vh !important;max-height:42dvh !important;}
           .jg-play.box .jg-tray{padding:6px 8px;}
@@ -1430,8 +1458,8 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           </div>
 
           <div className={`jg-play${boxMode ? ' box' : ''}`} ref={playRef} style={boxMode && boxH ? { height: boxH } : undefined}>
-            <div className={`jg-boardbox${boxMode ? ' scr' : ''}`} ref={boxRef} style={full && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * BP) / (BH + 2 * BP)).toFixed(3)}))` })}>
-             <div className="jg-zoom" style={boxMode && zoom > 1 ? { width: `${zoom * 100}%` } : undefined}>
+            <div className={`jg-boardbox${boxMode ? (zoom > 1 ? ' scr' : ' fit') : ''}`} ref={boxRef} style={full && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * BP) / (BH + 2 * BP)).toFixed(3)}))` })}>
+             <div className="jg-zoom" style={boxMode ? (zoom > 1 ? { width: `${zoom * 100}%` } : (boxAvailH ? { width: `min(100%, ${Math.floor(boxAvailH * ((BW + 2 * BP) / (BH + 2 * BP)))}px)`, margin: '0 auto' } : undefined)) : undefined}>
               <svg ref={boardRef} className={`jg-board${flashMiss ? ' miss' : ''}${LOOSE && started ? ' lt' : ''}`} viewBox={`${-BP} ${-BP} ${BW + 2 * BP} ${BH + 2 * BP}`}
                 role="img" aria-label={LOOSE ? `Saw table, ${biggest} of ${NP} pieces joined in the biggest group` : `Saw board, ${placedCount} of ${NP} pieces placed`} onClick={boardTap}>
                 <defs>
