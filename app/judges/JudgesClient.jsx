@@ -1503,8 +1503,11 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
 // measured stage height (usePlayStageFit), so 8x8 to 12x12 fits a 390x844 phone.
 const STAGE_COURT_CSS = `
 .jsx{display:flex;flex-direction:column;gap:12px;width:100%;--jsx-rule:color-mix(in srgb, var(--pst-on-acc) 22%, transparent);}
-.jsx-bd{display:grid;grid-template-columns:repeat(var(--jsx-n), minmax(0,1fr));align-self:center;width:min(100%, var(--jsx-fit, 100%));border:3px solid var(--pst-ink);border-radius:12px;overflow:hidden;background:var(--pst-ink);container-type:inline-size;user-select:none;-webkit-user-select:none;flex:none;}
-.pst .jsx-c{aspect-ratio:1;min-width:0;padding:0;margin:0;border:0;border-radius:0;border-right:1px solid var(--jsx-rule);border-bottom:1px solid var(--jsx-rule);color:var(--pst-on-acc);display:flex;align-items:center;justify-content:center;box-sizing:border-box;touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;cursor:pointer;}
+/* Rows are explicit tracks on a square board (owner, 2026-11-07): with each
+   cell sizing itself by aspect-ratio, the fractional row heights summed a hair
+   short and the ink background showed through as a dark line across one row. */
+.jsx-bd{display:grid;grid-template-columns:repeat(var(--jsx-n), minmax(0,1fr));grid-template-rows:repeat(var(--jsx-n), minmax(0,1fr));aspect-ratio:1;align-self:center;width:min(100%, var(--jsx-fit, 100%));border:3px solid var(--pst-ink);border-radius:12px;overflow:hidden;background:var(--pst-ink);container-type:inline-size;user-select:none;-webkit-user-select:none;flex:none;}
+.pst .jsx-c{min-width:0;min-height:0;padding:0;margin:0;border:0;border-radius:0;border-right:1px solid var(--jsx-rule);border-bottom:1px solid var(--jsx-rule);color:var(--pst-on-acc);display:flex;align-items:center;justify-content:center;box-sizing:border-box;touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;cursor:pointer;}
 .pst .jsx-c.wr{border-right:3px solid var(--pst-ink);}
 .pst .jsx-c.wb{border-bottom:3px solid var(--pst-ink);}
 .pst .jsx-c.er{border-right:0;}
