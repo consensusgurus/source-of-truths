@@ -179,6 +179,11 @@ html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
 .gst-c.rv{animation:none;z-index:4;background:var(--gst-rv-bg);border-color:var(--gst-rv-bg);transform:scale(1.04);box-shadow:0 12px 32px rgba(0,0,0,.28);transition:background .3s ease .3s,border-color .3s ease .3s,transform .35s ease .3s,box-shadow .35s ease .3s;}
 .gst-c.rv, .gst-c.rv *{color:var(--gst-rv-ink);}
 .gst-c.pk{animation:gstShake .38s ease-in-out 0s both !important;}
+/* YOUR PICK STAYS FINDABLE (owner, 2026-11-07: "too hard to see 'your pick'").
+   It rises above the veil as a faint light outline, second to the lit answer. */
+.gst.miss .gst-c.pk{z-index:4;background:transparent;border:2px solid color-mix(in srgb, var(--gst-ondim) 55%, transparent);transition:background .3s ease .3s,border-color .3s ease .3s;}
+.gst.miss .gst-c.pk>span:first-child{color:var(--gst-ondim);opacity:.75;transition:color .3s ease .3s;}
+.gst.miss .gst-c.pk .gst-tag{color:var(--gst-ink);}
 .gst-tag{position:absolute;top:-10px;right:14px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.3;background:var(--gst-bg);border:1px solid var(--gst-ink);border-radius:999px;padding:2px 8px;animation:gstTag .25s ease-out .35s both;}
 @keyframes gstShake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
 @keyframes gstTag{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
