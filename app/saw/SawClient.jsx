@@ -1047,28 +1047,42 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     if (!boxMode) { setBoxH(0); return undefined; }
     const el = playRef.current;
     if (!el) return undefined;
-    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
     // Bring the box to the top of the screen, then size it to what is left
     // below its top edge, leaving room for the Peek / Hint row under it. The
     // page around it settles for a moment as play starts (the chrome folds
-    // away), so it is placed again a few times while that happens.
+    // away), so it is placed again once or twice while that happens, but never
+    // after the player has touched or scrolled the page (owner, 2026-11-07: a
+    // flick inside the box must move the page, and it froze when the page was
+    // pulled back). A flick on the board scrolls the board first and then the
+    // page (no overscroll containment), so the pieces are always reachable.
+    // Only a change of WIDTH (turning the phone) re-sizes it: a phone browser's
+    // address bar sliding away changes the height on every scroll, and
+    // re-sizing then makes the page jump under the finger.
+    let touched = false;
+    const mark = () => { touched = true; };
+    const sizeTo = () => {
+      const top = Math.max(0, el.getBoundingClientRect().top);
+      setBoxH(Math.max(320, Math.floor(window.innerHeight - top - 66)));
+    };
     const place = () => {
+      if (touched) return;
       const top0 = el.getBoundingClientRect().top + window.scrollY - 8;
       window.scrollTo(0, Math.max(0, top0));
-      const top = Math.max(0, el.getBoundingClientRect().top);
-      const h = vv ? vv.height : window.innerHeight;
-      setBoxH(Math.max(320, Math.floor(h - top - 66)));
-    };
-    const size = () => {
-      const top = Math.max(0, el.getBoundingClientRect().top);
-      const h = vv ? vv.height : window.innerHeight;
-      setBoxH(Math.max(320, Math.floor(h - top - 66)));
+      sizeTo();
     };
     place();
-    const ts = [60, 250, 600].map((ms) => setTimeout(place, ms));
-    const on = vv || window;
-    on.addEventListener('resize', size);
-    return () => { ts.forEach(clearTimeout); on.removeEventListener('resize', size); };
+    const ts = [80, 300].map((ms) => setTimeout(place, ms));
+    window.addEventListener('touchstart', mark, { passive: true });
+    window.addEventListener('wheel', mark, { passive: true });
+    let w0 = window.innerWidth;
+    const onResize = () => { if (window.innerWidth !== w0) { w0 = window.innerWidth; sizeTo(); } };
+    window.addEventListener('resize', onResize);
+    return () => {
+      ts.forEach(clearTimeout);
+      window.removeEventListener('touchstart', mark);
+      window.removeEventListener('wheel', mark);
+      window.removeEventListener('resize', onResize);
+    };
   }, [boxMode]);
   useEffect(() => () => stopEdge(), []);
   // A finished board leaves full screen so the end card can show.
@@ -1304,7 +1318,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           .jg-foot.inbox{margin-top:8px !important;padding-top:8px !important;}
           .jg-foot.inbox .jg-msg{display:none;}
           .jg-play.box{flex-direction:column;align-items:stretch;gap:8px;min-height:0;}
-          .jg-play.box .jg-boardbox.scr{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border-radius:12px;scrollbar-width:thin;}
+          .jg-play.box .jg-boardbox.scr{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;border-radius:12px;scrollbar-width:thin;}
           .jg-play.box .jg-side{flex:none;gap:8px;}
           .jg-play.box .jg-tray.vs{max-height:42vh !important;max-height:42dvh !important;}
           .jg-play.box .jg-tray{padding:6px 8px;}
