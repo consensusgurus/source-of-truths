@@ -9,23 +9,22 @@ import { categoryCrumb } from '@/lib/game-seo';
 
 // Saw launched 2026-11-06 as the second daily jigsaw, Jig's tall sibling: one
 // PORTRAIT Wikimedia Commons featured photograph a day, cut taller than wide,
-// built on a loose table with no frame (pieces lock to each other), raced on
-// the clock.
+// played exactly like Jig (from 2026-11-07), raced on the clock.
 //
 // /saw is the canonical, evergreen URL. This server page filters live<=today
 // before handing puzzles to the client, so a future day's photo title never
 // reaches a browser (and /api/saw/img refuses a day that is not live).
 
 const baseMetadata = {
-  title: 'Free Daily Jigsaw Puzzle, No Frame: Saw | Mind Loft',
+  title: 'Free Daily Portrait Jigsaw Puzzle Online: Saw | Mind Loft',
   description:
-    'A free daily online jigsaw with no frame: a new tall photo every day, about 80 pieces that lock together wherever they meet. Race the clock, no signup.',
+    'A free daily online jigsaw on a tall photo: a new portrait picture every day, cut into 77 or 80 pieces that snap into place. Race the clock, no signup.',
   alternates: { canonical: '/saw' },
   openGraph: {
     images: [{ url: '/og/saw.png', width: 1200, height: 630, alt: 'Saw, a daily jigsaw puzzle from Mind Loft' }],
     title: 'Saw: The Tall Daily Jigsaw',
     description:
-      'A new portrait photograph every day, cut into interlocking pieces, and no frame: build it anywhere on the table. A free daily jigsaw from Mind Loft.',
+      'A new portrait photograph every day, cut into interlocking pieces. Put it back together faster than everyone else. A free daily jigsaw from Mind Loft.',
     url: '/saw',
     type: 'website',
     siteName: 'Mind Loft',
@@ -34,7 +33,7 @@ const baseMetadata = {
     images: ['/og/saw.png'],
     card: 'summary_large_image',
     title: 'Saw: The Tall Daily Jigsaw',
-    description: 'One tall photo, cut the same way for everyone, no frame, against the clock. How fast can you put it together?',
+    description: 'One tall photo, cut the same way for everyone, against the clock. How fast can you put it together?',
   },
 };
 
@@ -57,7 +56,7 @@ export async function generateMetadata({ searchParams }) {
   const url = `/saw?p=${p.num}`;
   const img = `/api/saw/img?n=${p.num}&w=960`;
   const title = `Jigsaw Puzzle: ${p.name} | Saw No. ${p.num}, Mind Loft`;
-  const description = `${p.name}: a free ${pieces}-piece online jigsaw puzzle with no frame, Saw No. ${p.num} from ${p.dateLabel}. A Wikimedia Commons featured photo by ${p.by}. Play it free, no app or signup.`;
+  const description = `${p.name}: a free ${pieces}-piece online jigsaw puzzle on a portrait photo, Saw No. ${p.num} from ${p.dateLabel}. A Wikimedia Commons featured photo by ${p.by}. Play it free, no app or signup.`;
   const short = `${p.name}, cut into ${pieces} pieces. Play this past daily jigsaw free.`;
   return {
     title,
@@ -96,10 +95,10 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Saw',
-  alternateName: 'Saw: Daily Jigsaw Puzzle With No Frame',
+  alternateName: 'Saw: Daily Portrait Jigsaw Puzzle',
   url: `${SITE_URL}/saw`,
   description:
-    'A free daily online jigsaw puzzle: a new portrait photograph every day, cut into about 80 interlocking pieces, the same cut for everyone, assembled on a loose table with no frame. Join every piece into one picture for a perfect score; ties break on fastest time.',
+    'A free daily online jigsaw puzzle: a new portrait photograph every day, cut into 77 or 80 interlocking pieces, the same cut for everyone, dragged into place on the board. Finish the picture for a perfect score; ties break on fastest time.',
   genre: ['Jigsaw puzzle', 'Puzzle', 'Casual game'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
@@ -147,7 +146,7 @@ function ComingSoon({ first }) {
       <div style={{ textAlign: 'center', maxWidth: 420 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: '0 0 8px' }}>Saw launches {first ? first.dateLabel : 'soon'}.</h1>
         <p style={{ fontSize: 15, color: T.muted, fontWeight: 600, lineHeight: 1.5, margin: '0 0 18px' }}>
-          The tall daily jigsaw: a new portrait photograph every day, cut into interlocking pieces, built with no frame. Come back when the first picture drops.
+          The tall daily jigsaw: a new portrait photograph every day, cut into interlocking pieces. Come back when the first picture drops.
         </p>
         <a href="/" style={{ color: '#1d4ed8', fontWeight: 800, textDecoration: 'underline' }}>See the other daily puzzles &rarr;</a>
       </div>

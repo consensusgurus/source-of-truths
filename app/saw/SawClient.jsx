@@ -1,23 +1,14 @@
 'use client';
 
-// Saw, the second daily jigsaw: Jig's sibling, subtly different (owner,
-// 2026-11-06, chose two twists from four):
+// Saw, the tall daily jigsaw: Jig's sibling. GENERATED from app/jig/JigClient.jsx
+// by scripts/fork-saw-client.py; do not hand edit, change Jig and re-run.
 //
-//   TALL PHOTOS   every picture is a portrait Commons featured photo, cut taller
-//                 than wide (8x10 or 7x11), so it fills a phone screen and the
-//                 pieces come out larger than Jig's ten-across cut.
-//   LOOSE TABLE   there is no frame to snap to. A piece put down anywhere on the
-//                 table stays where it lands; two pieces that belong together
-//                 lock when they meet in the right place relative to each other,
-//                 and a locked group moves as one. The picture is done when
-//                 every piece is in one group, which then settles into place.
-//
-// Everything else is Jig's: the tray (Edges, Colors, All), Peek +15s, the one
-// free first-play hint, a flat 10 on a solve and the clock deciding the board
-// (`miss: null`). The photos are re-used later by Swap, Slide and Spin
-// (scripts/gen-photo-trio.mjs), never before Saw has shown them.
-//
-// Forked from app/jig/JigClient.jsx, which was forked from Snug for its chrome.
+// Saw plays exactly like Jig (owner, 2026-11-07): the loose table on a
+// computer, pieces snapping into place on a phone (the play box), the same tray,
+// Peek, hint and scoring. Only the picture differs: a PORTRAIT Wikimedia Commons featured
+// photo a day, cut 8x10 or 7x11 (scripts/gen-saw.mjs), so the pieces are larger
+// on a phone. Its photos are re-used later by Swap, Slide and Spin
+// (scripts/gen-photo-trio.mjs).
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -59,6 +50,7 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 
+
 const ACCENT = '#0e7490';
 const COLORS = {
   cream: T.surface,
@@ -81,9 +73,17 @@ const HELP_KEY = 'sot_saw_help_seen';
 const STATS_KEY = 'sot_saw_stats';
 const S = 100;           // one piece, in board units
 const KNOB = 30;         // room a tab can reach past its square, in board units
+// THE LOOSE TABLE (computers; owner, 2026-11-07, after playing Saw's launch:
+// "keep them on desktop, apply to jig too, make phone the easy old way as a
+// way to even the play ability"). On a computer there is no frame to snap to:
+// a piece stays where it is dropped, two picture-neighbours lock when they meet
+// in the right place, and a locked group moves as one. On a phone pieces snap
+// into their own spot as before. The way a game is played is fixed when its
+// clock starts (`mode` in the save), so resizing a window never changes it.
 const JOIN = 0.3 * S;    // how close two pieces have to sit, relative to each other, to lock
 const MARGIN = 0.4 * S;  // the table reaches this far past the picture on every side
-const PAD = MARGIN + KNOB; // the drawing's room past the picture: the table plus a tab
+const PAD = MARGIN + KNOB; // the drawing's room past the picture on the loose table
+const SNAP = 0.42 * S;   // how close a drop has to land to its own spot
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -344,9 +344,10 @@ function colorGroups(avgs) {
 function freshState() {
   return {
     v: 1,
-    cl: [],                // groups on the table, bottom to top: { id, dx, dy, m: [piece indices] }
-                           // a piece in a group sits at its home square shifted by (dx, dy)
-    nid: 1,                // the next group id
+    mode: null,            // 'snap' (phone: pieces snap into their spot) or 'loose' (computer: the loose table), fixed at Start
+    placed: [],            // snap: piece indices on the board, in the order they went in
+    cl: [],                // loose: groups on the table, bottom to top: { id, dx, dy, m: [piece indices] }
+    nid: 1,                // loose: the next group id
     pen: 0,                // milliseconds added by Peek
     peeks: 0,
     hintUsed: false,
@@ -376,8 +377,9 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   const [imgOk, setImgOk] = useState(true);
   const [sel, setSel] = useState(-1);           // a piece picked with a tap, waiting for a tap on the board
   const [drag, setDrag] = useState(null);       // { i, size } while a piece is being dragged
-  const [gdrag, setGdrag] = useState(null);     // { id, ddx, ddy } while a group on the table is being moved
+  const [gdrag, setGdrag] = useState(null);     // loose table: { id, ddx, ddy } while a group is being moved
   const selRef = useRef(-1);
+  const [flashMiss, setFlashMiss] = useState(false);
   const [peekUntil, setPeekUntil] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
@@ -413,6 +415,16 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   const [trayOpen, setTrayOpen] = useState(false);
   const vScroll = narrow && (full || trayOpen);   // the phone tray as an up-and-down grid
   const stripMode = narrow && !vScroll;            // the phone's two-row sideways strip
+  // THE PLAY BOX (owner, 2026-11-07: "on mobile, user should be able to scroll
+  // within the play box"). On a phone, once the clock runs, the board and the
+  // tray share one box the height of the screen: the tray stays pinned under
+  // the board and the board scrolls inside its own frame, so a piece never has
+  // to travel past the edge of the screen. Zoom makes the board bigger inside
+  // that frame (scroll both ways); a drag near the frame's edge scrolls it.
+  const [zoom, setZoom] = useState(1);
+  const [boxH, setBoxH] = useState(0);
+  const boxRef = useRef(null);
+  const autoScroll = useRef(null);
   selRef.current = sel;
   const playRef = useRef(null);
   const sideRef = useRef(null);
@@ -423,11 +435,13 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   const boardRef = useRef(null);
   const ghostRef = useRef(null);
   const press = useRef(null);
+  const missTimer = useRef(null);
 
   const [showChrome, setShowChrome] = useState(false);
   const playing = g.status === 'playing';
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
+  const boxMode = narrow && !full && started;   // the phone play box (see zoom above)
   const focusMode = playing && !showChrome;
   const won = g.status === 'won';
   const LOFT = isLoft('saw');
@@ -478,9 +492,12 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
       const raw = localStorage.getItem(STORE_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
-        const okGroup = (x) => x && Number.isInteger(x.id) && Number.isFinite(x.dx) && Number.isFinite(x.dy) && Array.isArray(x.m) && x.m.length && x.m.every((i) => Number.isInteger(i) && i >= 0 && i < NP);
+        const okIdx = (i) => Number.isInteger(i) && i >= 0 && i < NP;
+        const okGroup = (x) => x && Number.isInteger(x.id) && Number.isFinite(x.dx) && Number.isFinite(x.dy) && Array.isArray(x.m) && x.m.length && x.m.every(okIdx);
         if (saved && saved.v === 1 && Array.isArray(saved.cl) && saved.cl.every(okGroup)) {
-          setG({ ...freshState(), ...saved });
+          setG({ ...freshState(), ...saved, mode: 'loose', placed: [] });
+        } else if (saved && saved.v === 1 && Array.isArray(saved.placed) && saved.placed.every(okIdx)) {
+          setG({ ...freshState(), ...saved, mode: saved.mode === 'loose' ? 'snap' : (saved.mode || 'snap'), cl: [] });
         }
       }
       setGateRules(false);
@@ -605,16 +622,18 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   const isTodays = PUZZLE.num === pickPuzzle(puzzles, null).num;
   const prevPuzzle = puzzles.find((x) => x.num === PUZZLE.num - 1) || null;
   const myStats = deriveStats(stats, pickPuzzle(puzzles, null).num);
-  // on the table = put down anywhere; joined = the biggest locked group
-  const placedSet = useMemo(() => new Set(g.cl.flatMap((x) => x.m)), [g.cl]);
+  const LOOSE = g.mode === 'loose';
+  const BP = LOOSE ? PAD : KNOB;   // the drawing's room past the picture
+  const placedSet = useMemo(() => new Set(LOOSE ? g.cl.flatMap((x) => x.m) : g.placed), [LOOSE, g.cl, g.placed]);
   const placedCount = placedSet.size;
-  const biggest = g.cl.reduce((a, x) => Math.max(a, x.m.length), 0);
+  const biggest = LOOSE ? g.cl.reduce((a, x) => Math.max(a, x.m.length), 0) : placedCount;
   const hideSol = LOFT && g.status === 'revealed' && !revealed;
-  const shownGroups = hideSol ? (g.pre || []) : g.cl;
+  const shownOnBoard = hideSol ? new Set(g.pre || []) : placedSet;
+  const shownGroups = LOOSE ? (hideSol ? (g.pre || []) : g.cl) : [];
 
   const REC_KEY = `sot_saw_rec_${PUZZLE.num}`;
   const abandon = useAbandonFlush(() => {
-    const acted = g.cl.length > 0 || g.hintUsed || g.peeks > 0;
+    const acted = placedSet.size > 0 || g.hintUsed || g.peeks > 0;
     if (!acted || g.status !== 'playing') return null;
     try { if (localStorage.getItem(REC_KEY)) return null; } catch (e) {}
     const el = Math.min(36000, Math.max(1, Math.round((Date.now() - (g.t0 || Date.now()) + (g.pen || 0)) / 1000)));
@@ -642,7 +661,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   }
 
   function startGame() {
-    setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() }));
+    setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now(), mode: cur.mode || (narrow ? 'snap' : 'loose') }));
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
   }
 
@@ -650,6 +669,23 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   // the latest state through a ref rather than a closure that may be stale.
   const gRef = useRef(g);
   gRef.current = g;
+  function placePiece(i, extra) {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || cur.placed.includes(i)) return;
+    const g2 = { ...cur, ...(extra || null), placed: [...cur.placed, i] };
+    if (!g2.t0) g2.t0 = Date.now();
+    if (g2.placed.length === NP) {
+      g2.status = 'won';
+      g2.tEnd = Date.now();
+      vibrate(HAPT.win);
+      postResult(g2, 10);
+    } else {
+      vibrate(HAPT.ok);
+    }
+    gRef.current = g2;
+    setG(g2);
+    setSel(-1);
+  }
   // Apply a new table (after a put-down or a group move), lock what now meets,
   // and finish when one group holds every piece.
   function commitTable(cl2, movedId, extra, nid2) {
@@ -682,19 +718,30 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     commitTable([...cur.cl, { id, dx, dy, m: [i] }], id, extra, id + 1);
   }
 
+  function miss() {
+    setFlashMiss(true);
+    if (missTimer.current) clearTimeout(missTimer.current);
+    missTimer.current = setTimeout(() => setFlashMiss(false), 420);
+    vibrate(HAPT.bad);
+  }
+
   // where a client point lands on the board, in board units
   function boardPoint(clientX, clientY) {
     const el = boardRef.current;
     if (!el) return null;
     const rc = el.getBoundingClientRect();
-    const k = (BW + 2 * PAD) / rc.width;
-    return { x: (clientX - rc.left) * k - PAD, y: (clientY - rc.top) * k - PAD, over: clientX >= rc.left && clientX <= rc.right && clientY >= rc.top && clientY <= rc.bottom };
+    const k = (BW + 2 * BP) / rc.width;
+    return { x: (clientX - rc.left) * k - BP, y: (clientY - rc.top) * k - BP, over: clientX >= rc.left && clientX <= rc.right && clientY >= rc.top && clientY <= rc.bottom };
   }
-  // A tray piece dropped: anywhere on the table it stays where it lands.
   function tryDrop(i, cx, cy) {
+    const p = PIECES[i];
     const pt = boardPoint(cx, cy);
-    if (!pt || !pt.over) return;
-    putDown(i, pt.x, pt.y);
+    if (!pt) return;
+    // the loose table: anywhere on it, the piece stays where it lands
+    if (gRef.current.mode === 'loose') { if (pt.over) putDown(i, pt.x, pt.y); return; }
+    const hx = p.x + S / 2, hy = p.y + S / 2;
+    if (Math.hypot(pt.x - hx, pt.y - hy) <= SNAP) { placePiece(i); return; }
+    if (pt.over) miss();
   }
 
   // ---- drag from the tray ----
@@ -704,7 +751,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   function scaleNow() {
     const el = boardRef.current;
     if (!el) return 1;
-    return el.getBoundingClientRect().width / (BW + 2 * PAD);
+    return el.getBoundingClientRect().width / (BW + 2 * BP);
   }
   // On a touch screen the tray scrolls one way and a piece is dragged the other:
   // the phone's two-row strip scrolls sideways, so a piece lifts when the finger
@@ -791,10 +838,43 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     pr.cx = e.clientX; pr.cy = e.clientY;
     if (!pr.moved && Math.hypot(e.clientX - pr.x0, e.clientY - pr.y0) >= 7) pr.moved = true;
     ghostAt(e.clientX, e.clientY);
+    edgeScroll();
   };
+  // In the play box, a piece held near the board frame's edge scrolls the board
+  // that way, and keeps scrolling while it is held there.
+  function edgeScroll() {
+    const box = boxRef.current, pr = press.current;
+    if (!boxMode || !box || !pr || !pr.dragging) { stopEdge(); return; }
+    const r = box.getBoundingClientRect();
+    const lift = pr.touch && ghostRef.current ? ghostRef.current.offsetWidth * 0.62 : 0;
+    const x = pr.cx, y = pr.cy - lift;   // where the piece is, not the finger
+    const E = 44, V = 14;
+    const inX = x > r.left - 20 && x < r.right + 20;
+    let vx = 0, vy = 0;
+    if (inX && y < r.top + E && y > r.top - 60) vy = -V;
+    else if (inX && y > r.bottom - E && y < r.bottom + 10) vy = V;
+    if (y > r.top && y < r.bottom) { if (x < r.left + E) vx = -V; else if (x > r.right - E) vx = V; }
+    if (!vx && !vy) { stopEdge(); return; }
+    autoScroll.current = { vx, vy };
+    if (!autoScroll.current.t) {
+      const tick = () => {
+        const a = autoScroll.current, b = boxRef.current;
+        if (!a || !b) return;
+        b.scrollTop += a.vy; b.scrollLeft += a.vx;
+        a.t = requestAnimationFrame(tick);
+      };
+      autoScroll.current.t = requestAnimationFrame(tick);
+    }
+  }
+  function stopEdge() {
+    const a = autoScroll.current;
+    if (a && a.t) cancelAnimationFrame(a.t);
+    autoScroll.current = null;
+  }
   const onUp = (e) => {
     const pr = press.current;
     if (!pr || e.pointerId !== pr.id) return;
+    stopEdge();
     press.current = null;
     if (pr.group != null) { groupUp(pr, e.clientX, e.clientY); return; }
     clearTimeout(pr.hold);
@@ -817,6 +897,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   const onCancel = (e) => {
     const pr = press.current;
     if (!pr || e.pointerId !== pr.id) return;
+    stopEdge();
     press.current = null;
     if (pr.group != null) { setGdrag(null); return; }
     clearTimeout(pr.hold);
@@ -851,9 +932,12 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
 
   function boardTap(e) {
     if (!playing || sel < 0) return;
+    const p = PIECES[sel];
     const pt = boardPoint(e.clientX, e.clientY);
     if (!pt) return;
-    putDown(sel, pt.x, pt.y);
+    if (LOOSE) { putDown(sel, pt.x, pt.y); return; }
+    if (Math.hypot(pt.x - (p.x + S / 2), pt.y - (p.y + S / 2)) <= S * 0.5) placePiece(sel);
+    else miss();
   }
 
   // See more (phones): open the tray into a taller grid, and bring the board to
@@ -861,7 +945,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   function toggleTray() {
     const open = !trayOpen;
     setTrayOpen(open);
-    if (!open) return;
+    if (!open || boxMode) return;
     requestAnimationFrame(() => {
       const el = playRef.current;
       if (!el) return;
@@ -937,7 +1021,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     if (!full) return undefined;
     const el = playRef.current;
     if (!el) return undefined;
-    const ar = (BW + 2 * PAD) / (BH + 2 * PAD);
+    const ar = (BW + 2 * BP) / (BH + 2 * BP);
     const fit = () => {
       const r = el.getBoundingClientRect();
       let w;
@@ -955,14 +1039,52 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     if (ro) ro.observe(el);
     window.addEventListener('resize', fit);
     return () => { if (ro) ro.disconnect(); window.removeEventListener('resize', fit); };
-  }, [full, BW, BH, narrow]);
+  }, [full, BW, BH, narrow, BP]);
+  // The play box: on a phone, once play starts, bring the board to the top of
+  // the screen and make the box exactly the height that is left, so the board
+  // frame and the tray under it are both always in view.
+  useEffect(() => {
+    if (!boxMode) { setBoxH(0); return undefined; }
+    const el = playRef.current;
+    if (!el) return undefined;
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+    // Bring the box to the top of the screen, then size it to what is left
+    // below its top edge, leaving room for the Peek / Hint row under it. The
+    // page around it settles for a moment as play starts (the chrome folds
+    // away), so it is placed again a few times while that happens.
+    const place = () => {
+      const top0 = el.getBoundingClientRect().top + window.scrollY - 8;
+      window.scrollTo(0, Math.max(0, top0));
+      const top = Math.max(0, el.getBoundingClientRect().top);
+      const h = vv ? vv.height : window.innerHeight;
+      setBoxH(Math.max(320, Math.floor(h - top - 66)));
+    };
+    const size = () => {
+      const top = Math.max(0, el.getBoundingClientRect().top);
+      const h = vv ? vv.height : window.innerHeight;
+      setBoxH(Math.max(320, Math.floor(h - top - 66)));
+    };
+    place();
+    const ts = [60, 250, 600].map((ms) => setTimeout(place, ms));
+    const on = vv || window;
+    on.addEventListener('resize', size);
+    return () => { ts.forEach(clearTimeout); on.removeEventListener('resize', size); };
+  }, [boxMode]);
+  useEffect(() => () => stopEdge(), []);
   // A finished board leaves full screen so the end card can show.
   useEffect(() => { if (!playing && fullRef.current) exitFull(); }, [playing]);
 
-  // One free hint, first play only: a corner and its two neighbours go down on
-  // the table already locked together, in their place in the picture.
+  // One free hint, first play only: a corner (then an edge) drops into place.
   function useHint() {
     if (!hintOk || !playing || g.hintUsed || !g.t0) return;
+    if (LOOSE) { looseHint(); return; }
+    const pick = PIECES.find((p) => p.corner && !placedSet.has(p.i)) || PIECES.find((p) => p.edge && !placedSet.has(p.i)) || PIECES.find((p) => !placedSet.has(p.i));
+    if (!pick) return;
+    placePiece(pick.i, { hintUsed: true });
+    say('Hint placed, one piece is in.');
+  }
+
+  function looseHint() {
     const free = (i) => !placedSet.has(i);
     const corner = PIECES.find((p) => p.corner && free(p.i)) || PIECES.find((p) => free(p.i));
     if (!corner) return;
@@ -978,7 +1100,9 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   }
 
   function revealEnd() {
-    const g2 = { ...g, pre: g.cl.map((x) => ({ ...x, m: x.m.slice() })), preBig: biggest, cl: [{ id: 0, dx: 0, dy: 0, m: PIECES.map((p) => p.i) }], status: 'revealed', tEnd: Date.now() };
+    const g2 = LOOSE
+      ? { ...g, pre: g.cl.map((x) => ({ ...x, m: x.m.slice() })), preBig: biggest, cl: [{ id: 0, dx: 0, dy: 0, m: PIECES.map((p) => p.i) }], status: 'revealed', tEnd: Date.now() }
+      : { ...g, pre: g.placed.slice(), placed: PIECES.map((p) => p.i), status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);
@@ -1005,7 +1129,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     const streakBit = isTodays && myStats.cur >= 2 ? ` · streak ${myStats.cur}` : '';
     const head2 = won
       ? `Saw #${PUZZLE.num} · ${NP} pieces in ${elapsed}${peekBit}${streakBit}`
-      : `Saw #${PUZZLE.num} · gave up at ${g.preBig || 0}/${NP} joined`;
+      : `Saw #${PUZZLE.num} · gave up at ${LOOSE ? `${g.preBig || 0}/${NP} joined` : `${placedCount}/${NP}`}`;
     return `${head2}\n\u{1F9E9}\n${shareUrl()}`;
   }
   function shareUrl() {
@@ -1069,23 +1193,28 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     </button>
   );
 
-  const statusText = sel >= 0
-    ? 'Piece picked. Tap anywhere on the table to put it down.'
+  const statusText = LOOSE ? (sel >= 0
+    ? 'Piece picked. Click anywhere on the table to put it down.'
     : placedCount
       ? `${biggest} of ${NP} joined in your biggest group. Pieces lock when they meet in the right place.`
-      : `Put pieces down anywhere on the table. Two that belong together lock when they meet. ${NP} pieces today.`;
+      : `Put pieces down anywhere on the table. Two that belong together lock when they meet. ${NP} pieces today.`)
+    : sel >= 0
+    ? 'Piece picked. Tap where it goes on the board, or drag it there.'
+    : placedCount
+      ? `${placedCount} of ${NP} pieces in. Drag the next one onto the board.`
+      : `Drag a piece onto the board. It snaps in when it is near its own spot. ${NP} pieces today.`;
 
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="Jig's taller sibling, with no frame. Today's photo stands tall and is cut into interlocking pieces; put them down anywhere on the table and build the picture the way you would on a real one. Two pieces that belong together lock when they meet in the right place, and a locked group moves as one."
+      lead="Put the picture back together. Today's photo stands tall and is cut into pieces that interlock with tabs and blanks. On a computer you build it on a loose table, the way you would at home; on a phone each piece snaps into its own spot. Pieces never need turning."
       steps={[
-        <><b>Drag a piece</b> from the tray onto the table. It stays exactly where you drop it. You can also <b>tap a piece</b> to pick it, then tap the table. On a touch screen, <b>press and hold</b> a tray piece to lift it.</>,
-        <><b>Move pieces and groups</b> by dragging them on the table. Bring a piece up to its neighbour, side by side as they are in the picture, and they lock. Drag a lone piece back over the tray to put it away.</>,
-        <><b>The tray opens sorted</b> by Edges, or by one of the picture&rsquo;s Colors, or All. <b>Peek</b> shows the whole picture for a moment and adds 15 seconds to your clock.</>,
+        <><b>On a computer</b> there is no frame: drag a piece from the tray and it stays wherever you drop it. Bring two pieces together, side by side as they are in the picture, and they lock; a locked group moves as one, and a lone piece dragged back over the tray goes back in. <b>On a phone</b>, drop a piece near its own spot and it snaps in; anywhere else it slides back, at no cost. Tap a piece to pick it, then tap the board; press and hold to lift it.</>,
+        <><b>The tray opens sorted.</b> <b>Edges</b> splits the loose pieces into edge pieces and the middle, <b>Colors</b> into one of the picture&rsquo;s colors and the rest, and <b>All</b> shows every loose piece in one bin.</>,
+        <><b>Peek</b> shows the whole picture for a moment and adds 15 seconds to your clock. Edge pieces have a straight side; corners have two.</>,
       ]}
-      knack="There is no frame to lean on, so start a corner: the corner pieces have two straight sides. Build out from it along an edge, and grow small groups of one color on the side before bringing them in."
-      footer="When every piece is in one group, the picture settles into place and you score a perfect 10. Nothing is counted against you, so the daily leaderboard is a straight race on the clock, Peek seconds included. One free hint, on your first ever play, puts a corner down with its two neighbours."
+      knack="Do the edges first: the tray opens on Edges, so build the frame, then fill it a color at a time. A sky, a lake or a field falls fastest once its pieces are in one bin."
+      footer="Finish the picture and you score a perfect 10, and because nothing is counted against you, the daily leaderboard is a straight race on the clock, Peek seconds included. One free hint, on your first ever play, drops a corner in (on a computer, with its two neighbours). Every Saw photo stands tall and is cut into 77 or 80 pieces."
     />
   );
 
@@ -1108,10 +1237,10 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           tiles={playing ? null : upNext}
           dateLabel={PUZZLE.dateLabel}
           onHelp={() => setShowHelp(true)}
-          sunday={null}
+          sunday={PUZZLE.sunday ? `Sunday Edition · ${NP} pieces` : null}
           figures={[
             { v: elapsed, k: 'time' },
-            { v: `${biggest}/${NP}`, k: 'joined' },
+            LOOSE ? { v: `${biggest}/${NP}`, k: 'joined' } : { v: `${placedCount}/${NP}`, k: 'pieces' },
           ]}
         />
       )}
@@ -1128,11 +1257,6 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           .jg-boardbox{flex:999 1 560px;min-width:0;position:relative;}
           .jg-board{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
           .jg-board.miss .jg-ground{fill:color-mix(in srgb, var(--stg-bad, #be123c) 22%, var(--stg-cell, #f2f4f8));}
-          .jg-board.sw-live{touch-action:none;}
-          .sw-grp{cursor:grab;transition:transform .16s ease-out;}
-          .sw-grp.mv{cursor:grabbing;transition:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));}
-          .sw-grp.settle{transition:transform .6s cubic-bezier(.2,.8,.2,1);}
-          @media (prefers-reduced-motion: reduce){.sw-grp{transition:none !important;}}
           .jg-ground{fill:var(--stg-cell, #eef1f6);stroke:var(--stg-cell-line, rgba(11,15,26,0.3));stroke-width:2;transition:fill .15s;}
           .jg-peek{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .2s;}
           .jg-peek.on{opacity:1;}
@@ -1171,6 +1295,27 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           .jg-top{display:flex;align-items:flex-end;gap:12px;margin:0 0 12px;}
           .jg-top .jg-meter{flex:1 1 auto;margin:0;}
           .jg-fs{flex:none;min-height:38px;padding:0 12px;font-size:13px;border-radius:10px;}
+          .jg-zoom{position:relative;}
+          .jg-board.lt{touch-action:none;}
+          .lt-grp{cursor:grab;transition:transform .16s ease-out;}
+          .lt-grp.mv{cursor:grabbing;transition:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));}
+          .lt-grp.settle{transition:transform .6s cubic-bezier(.2,.8,.2,1);}
+          @media (prefers-reduced-motion: reduce){.lt-grp{transition:none !important;}}
+          .jg-foot.inbox{margin-top:8px !important;padding-top:8px !important;}
+          .jg-foot.inbox .jg-msg{display:none;}
+          .jg-play.box{flex-direction:column;align-items:stretch;gap:8px;min-height:0;}
+          .jg-play.box .jg-boardbox.scr{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border-radius:12px;scrollbar-width:thin;}
+          .jg-play.box .jg-side{flex:none;gap:8px;}
+          .jg-play.box .jg-tray.vs{max-height:42vh !important;max-height:42dvh !important;}
+          .jg-play.box .jg-tray{padding:6px 8px;}
+          .jg-play.box .jg-tray.bins:not(.vs) .jg-grid{grid-template-rows:58px;}
+          .jg-play.box .jg-bin + .jg-bin{margin-top:6px;padding-top:6px;}
+          .jg-play.box .jg-binlab{margin-bottom:4px;}
+          .jg-play.box .jg-more{min-height:36px;}
+          .jg-zm{display:inline-flex;border:1px solid var(--stg-line, rgba(11,15,26,0.16));border-radius:999px;overflow:hidden;margin-right:8px;flex:none;}
+          .jg-zm button{min-width:38px;height:32px;border:0;background:transparent;font:800 17px/1 inherit;color:inherit;cursor:pointer;}
+          .jg-zm button+button{border-left:1px solid var(--stg-line, rgba(11,15,26,0.16));}
+          .jg-zm button:disabled{opacity:.35;cursor:default;}
           .jg-isfull .jg-wrap{z-index:200 !important;}
           .jg-isfull .jg-ghost{z-index:210;}
           .jg-card.jg-full{position:fixed;inset:0;z-index:5;margin:0 !important;border:0 !important;border-radius:0 !important;box-shadow:none !important;background:var(--stg-ground, ${T.surface}) !important;padding:16px 24px 14px !important;display:flex;flex-direction:column;overflow:hidden;}
@@ -1217,7 +1362,8 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           helpTop={13}
           marginBottom={16}
           onHelp={() => setShowHelp(true)}
-          blocks={'SAW'.split('').map((ch, i) => (
+          sunday={PUZZLE.sunday && <span style={{ fontFamily: SANS, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; {NP} pieces</span>}
+          blocks={'JIG'.split('').map((ch, i) => (
               <div key={i} style={{ width: 40, height: 40, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 23, background: i === 1 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
             ))}
         />
@@ -1230,7 +1376,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>Today&rsquo;s tall photo is cut into {NP} pieces, and there is no frame: put pieces down anywhere on the table, and two that belong together lock when they meet. The picture stays a surprise until you start.</p>
+                <p style={{ margin: '0 0 6px' }}>Today&rsquo;s tall photo is cut into {NP} pieces{PUZZLE.sunday ? ', the Sunday Edition' : ''}. Drag each one to its place; it snaps in when it is close. The picture stays a surprise until you start.</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -1252,13 +1398,13 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           {!LOFT && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>joined <b style={{ color: biggest === NP ? COLORS.green : INK, fontWeight: 700 }}>{biggest}</b>/{NP}</span>
+            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>{LOOSE ? 'joined' : 'pieces'} <b style={{ color: placedCount === NP ? COLORS.green : INK, fontWeight: 700 }}>{LOOSE ? biggest : placedCount}</b>/{NP}</span>
           </div>
           )}
 
           <div className="jg-top">
-          <div className="jg-meter" role="meter" aria-valuemin={0} aria-valuemax={NP} aria-valuenow={biggest} aria-label={`Biggest group: ${biggest} of ${NP} pieces joined`}>
-            <span className="jg-mlab">Biggest group &middot; <b>{biggest}</b> of {NP} joined{g.peeks ? <> &middot; {g.peeks} peek{g.peeks > 1 ? 's' : ''} (+{g.peeks * 15}s)</> : null}</span>
+          <div className="jg-meter" role="meter" aria-valuemin={0} aria-valuemax={NP} aria-valuenow={biggest} aria-label={LOOSE ? `Biggest group: ${biggest} of ${NP} pieces joined` : `Pieces placed: ${placedCount} of ${NP}`}>
+            <span className="jg-mlab">{LOOSE ? 'Biggest group' : 'Pieces placed'} &middot; <b>{biggest}</b> of {NP}{LOOSE ? ' joined' : ''}{g.peeks ? <> &middot; {g.peeks} peek{g.peeks > 1 ? 's' : ''} (+{g.peeks * 15}s)</> : null}</span>
             <div className="jg-mbar" aria-hidden="true"><span style={{ width: `${(biggest / NP) * 100}%` }} /></div>
           </div>
           {started && (
@@ -1269,50 +1415,69 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           )}
           </div>
 
-          <div className="jg-play" ref={playRef}>
-            {/* a tall table: on a wide screen it is never taller than the window allows */}
-            <div className="jg-boardbox" style={full && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * PAD) / (BH + 2 * PAD)).toFixed(3)}))` })}>
-              <svg ref={boardRef} className={`jg-board${started ? ' sw-live' : ''}`} viewBox={`${-PAD} ${-PAD} ${BW + 2 * PAD} ${BH + 2 * PAD}`}
-                role="img" aria-label={`Saw table, ${biggest} of ${NP} pieces joined in the biggest group`} onClick={boardTap}>
+          <div className={`jg-play${boxMode ? ' box' : ''}`} ref={playRef} style={boxMode && boxH ? { height: boxH } : undefined}>
+            <div className={`jg-boardbox${boxMode ? ' scr' : ''}`} ref={boxRef} style={full && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * BP) / (BH + 2 * BP)).toFixed(3)}))` })}>
+             <div className="jg-zoom" style={boxMode && zoom > 1 ? { width: `${zoom * 100}%` } : undefined}>
+              <svg ref={boardRef} className={`jg-board${flashMiss ? ' miss' : ''}${LOOSE && started ? ' lt' : ''}`} viewBox={`${-BP} ${-BP} ${BW + 2 * BP} ${BH + 2 * BP}`}
+                role="img" aria-label={LOOSE ? `Saw table, ${biggest} of ${NP} pieces joined in the biggest group` : `Saw board, ${placedCount} of ${NP} pieces placed`} onClick={boardTap}>
                 <defs>
                   <pattern id={`swpic-${PUZZLE.num}`} patternUnits="userSpaceOnUse" x="0" y="0" width={BW} height={BH}>
                     <image href={IMG} x="0" y="0" width={BW} height={BH} preserveAspectRatio="xMidYMid slice" />
                   </pattern>
                 </defs>
-                <rect className="jg-ground" x={-MARGIN - KNOB / 2} y={-MARGIN - KNOB / 2} width={BW + 2 * MARGIN + KNOB} height={BH + 2 * MARGIN + KNOB} rx={14} />
-                {/* Bigger groups lie underneath smaller ones, so a loose piece is never
-                    lost under the picture taking shape; the group in hand is always on top. */}
-                {shownGroups
-                  .map((grp, k) => ({ grp, k }))
-                  .sort((a, b) => ((gdrag && a.grp.id === gdrag.id) - (gdrag && b.grp.id === gdrag.id)) || (b.grp.m.length - a.grp.m.length) || (a.k - b.k))
-                  .map(({ grp }) => {
-                  const mv = gdrag && gdrag.id === grp.id;
-                  const tx = grp.dx + (mv ? gdrag.ddx : 0), ty = grp.dy + (mv ? gdrag.ddy : 0);
-                  const done = won || (!playing && revealed);
-                  return (
-                    <g key={grp.id} className={`sw-grp${mv ? ' mv' : ''}${won ? ' settle' : ''}`} style={{ transform: `translate(${tx}px, ${ty}px)` }}
-                      onPointerDown={playing ? (e) => tableDown(e, grp.id) : undefined}>
-                      {grp.m.map((i) => (
-                        <path key={i} d={PIECES[i].d} fill={`url(#swpic-${PUZZLE.num})`}
-                          style={{ stroke: done ? 'rgba(255,255,255,0.10)' : (grp.m.length > 1 ? 'rgba(10,14,24,0.30)' : 'rgba(255,255,255,0.7)'), strokeWidth: 1.6 }} />
-                      ))}
-                    </g>
-                  );
-                })}
+                {LOOSE ? (
+                  <>
+                    {/* the table: no frame and no outlines, just somewhere to build */}
+                    <rect className="jg-ground" x={-MARGIN - KNOB / 2} y={-MARGIN - KNOB / 2} width={BW + 2 * MARGIN + KNOB} height={BH + 2 * MARGIN + KNOB} rx={14} />
+                    {/* Bigger groups lie underneath smaller ones, so a loose piece is never
+                        lost under the picture taking shape; the group in hand is always on top. */}
+                    {shownGroups
+                      .map((grp, k) => ({ grp, k }))
+                      .sort((x, y) => ((gdrag && x.grp.id === gdrag.id) - (gdrag && y.grp.id === gdrag.id)) || (y.grp.m.length - x.grp.m.length) || (x.k - y.k))
+                      .map(({ grp }) => {
+                        const mv = gdrag && gdrag.id === grp.id;
+                        const tx = grp.dx + (mv ? gdrag.ddx : 0), ty = grp.dy + (mv ? gdrag.ddy : 0);
+                        const done = won || (!playing && revealed);
+                        return (
+                          <g key={grp.id} className={`lt-grp${mv ? ' mv' : ''}${won ? ' settle' : ''}`} style={{ transform: `translate(${tx}px, ${ty}px)` }}
+                            onPointerDown={playing ? (e) => tableDown(e, grp.id) : undefined}>
+                            {grp.m.map((i) => (
+                              <path key={i} d={PIECES[i].d} fill={`url(#swpic-${PUZZLE.num})`}
+                                style={{ stroke: done ? 'rgba(255,255,255,0.10)' : (grp.m.length > 1 ? 'rgba(10,14,24,0.30)' : 'rgba(255,255,255,0.7)'), strokeWidth: 1.6 }} />
+                            ))}
+                          </g>
+                        );
+                      })}
+                  </>
+                ) : (
+                  <>
+                    <rect className="jg-ground" x={-6} y={-6} width={BW + 12} height={BH + 12} rx={10} />
+                    {PIECES.filter((p) => shownOnBoard.has(p.i)).map((p) => (
+                      <path key={p.i} className="jg-pc" d={p.d} fill={`url(#swpic-${PUZZLE.num})`} style={{ stroke: won || (!playing && revealed) ? 'rgba(255,255,255,0.10)' : 'rgba(10,14,24,0.45)', strokeWidth: 1.6 }} />
+                    ))}
+                  </>
+                )}
               </svg>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className={`jg-peek${peeking ? ' on' : ''}`} src={IMG} alt="" aria-hidden="true"
-                style={{ left: `${(PAD / (BW + 2 * PAD)) * 100}%`, top: `${(PAD / (BH + 2 * PAD)) * 100}%`, width: `${(BW / (BW + 2 * PAD)) * 100}%`, height: `${(BH / (BH + 2 * PAD)) * 100}%`, objectFit: 'cover', borderRadius: 4 }} />
+                style={{ left: `${(BP / (BW + 2 * BP)) * 100}%`, top: `${(BP / (BH + 2 * BP)) * 100}%`, width: `${(BW / (BW + 2 * BP)) * 100}%`, height: `${(BH / (BH + 2 * BP)) * 100}%`, objectFit: 'cover', borderRadius: 4 }} />
               {!imgOk && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: FADED, textAlign: 'center', padding: 20 }}>
                   Today&rsquo;s photo did not load. Refresh the page to try again.
                 </div>
               )}
+             </div>
             </div>
 
             {playing && (
               <div className="jg-side" ref={sideRef}>
                 <div className="jg-ctl">
+                  {boxMode && (
+                    <div className="jg-zm" role="group" aria-label="Board size">
+                      <button type="button" onClick={() => setZoom((z) => Math.max(1, Math.round((z - 0.5) * 2) / 2))} disabled={zoom <= 1} aria-label="Smaller board">&minus;</button>
+                      <button type="button" onClick={() => setZoom((z) => Math.min(2.5, Math.round((z + 0.5) * 2) / 2))} disabled={zoom >= 2.5} aria-label="Bigger board">+</button>
+                    </div>
+                  )}
                   <div className="jg-seg" role="group" aria-label="Sort the tray">
                     <button type="button" aria-pressed={view === 'edges'} onClick={() => setView('edges')}>Edges</button>
                     <button type="button" aria-pressed={view === 'color'} onClick={() => setView('color')} disabled={!haveColors}>Colors</button>
@@ -1328,7 +1493,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
                     ))}
                   </div>
                 )}
-                <div className={`jg-tray${vScroll ? ' vs' : ''}`} style={{ maxHeight: boardH ? Math.max(220, boardH - (view === 'color' && haveColors ? 110 : 60)) : 460, '--jg-bh': `${Math.round(boardH)}px` }}>
+                <div className={`jg-tray${vScroll ? ' vs' : ''}${bins ? ' bins' : ''}`} style={{ maxHeight: boardH ? Math.max(220, boardH - (view === 'color' && haveColors ? 110 : 60)) : 460, '--jg-bh': `${Math.round(boardH)}px` }}>
                   {bins ? bins.map((b) => (
                     <div key={b.key} className="jg-bin">
                       <div className="jg-binlab"><b>{b.label}</b> &middot; {b.items.length}</div>
@@ -1351,7 +1516,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           </div>
 
           {started && (
-            <div className="jg-foot">
+            <div className={`jg-foot${boxMode ? ' inbox' : ''}`}>
               <span className="jg-msg" aria-live="polite">{statusText}</span>
               <button type="button" className="jg-ob" onClick={peek} disabled={peeking} title="Show the whole picture for a moment (adds 15 seconds)">
                 <Eye size={15} aria-hidden="true" /> Peek +15s
@@ -1366,7 +1531,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
 
           {started && (
             <div className="jg-below">
-              <span className="jg-rule">Put pieces down anywhere. Neighbours lock when they meet; a locked group moves as one.</span>
+              <span className="jg-rule">{LOOSE ? 'Put pieces down anywhere. Neighbours lock when they meet; a locked group moves as one.' : 'Drop a piece near its own spot and it snaps in. A wrong drop costs nothing.'}</span>
               {started ? (
                 <button type="button" className={`jg-link${armReveal ? ' armed' : ''}`}
                   onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
@@ -1423,7 +1588,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
             catRank={catRank}
             outcome={won ? 'won' : 'lost'}
             title={endSolved(won)}
-            detail={`${won ? NP : (g.preBig || 0)}/${NP} joined · ${elapsed}`}
+            detail={LOOSE ? `${won ? NP : (g.preBig || 0)}/${NP} joined · ${elapsed}` : `${won ? NP : (g.pre || []).length}/${NP} pieces · ${elapsed}`}
             iq={iq}
             board={dailyBoard}
             gameRank={allTime && allTime.ready
@@ -1556,13 +1721,13 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Saw</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Saw is a free daily online jigsaw puzzle from Mind Loft, the tall sibling of <a href="/jig" style={{ color: INK, fontWeight: 800 }}>Jig</a>. Every day brings a new portrait photograph, a featured picture from Wikimedia Commons, cut taller than wide into about 80 interlocking pieces. Everyone gets the same picture and the same cut, so the daily leaderboard is a fair race.
+          Saw is a free daily online jigsaw puzzle from Mind Loft, the tall sibling of <a href="/jig" style={{ color: INK, fontWeight: 800 }}>Jig</a>. Every day brings a new portrait photograph, a featured picture from Wikimedia Commons, cut taller than wide into 77 or 80 classic interlocking pieces. Everyone gets the same picture and the same cut, so the daily leaderboard is a fair race.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          There is no frame to snap pieces into. Put them down anywhere on the table, the way you would at home; two pieces that belong side by side lock together when they meet, and a locked group moves as one. Sort the tray by edges or by one of the picture&rsquo;s colors, and Peek shows the whole picture for a moment for 15 seconds on the clock. Full screen gives the table and the tray the whole screen on a computer, a tablet or a phone.
+          On a computer you build it on a loose table: a piece stays where you drop it, and two that belong together lock when they meet. On a phone each piece snaps into its own spot. Pieces never need turning. Sort the tray into edge pieces and the middle, or one of the picture&rsquo;s colors and the rest. Peek shows the whole picture for a moment and adds 15 seconds to the clock. On a phone the board and the tray share one box: the board scrolls inside it and the plus button makes it bigger. Full screen gives the board and the tray the whole screen.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Join every piece into one picture for a perfect 10; the fastest time tops the board. No app, no signup, play free in your browser. Want the classic? <a href="/jig" style={{ color: INK, fontWeight: 800 }}>Jig</a> is the wide daily jigsaw with a frame to build into, and the photos from both come back later in <a href="/swap" style={{ color: INK, fontWeight: 800 }}>Swap</a>, <a href="/slide" style={{ color: INK, fontWeight: 800 }}>Slide</a> and <a href="/spin" style={{ color: INK, fontWeight: 800 }}>Spin</a>.
+          Finish the picture for a perfect 10; the fastest time tops the board. No app, no signup, play free in your browser. Want a wide picture? <a href="/jig" style={{ color: INK, fontWeight: 800 }}>Jig</a> is the same daily jigsaw on a landscape photo, and the photos from both come back later in <a href="/swap" style={{ color: INK, fontWeight: 800 }}>Swap</a>, <a href="/slide" style={{ color: INK, fontWeight: 800 }}>Slide</a> and <a href="/spin" style={{ color: INK, fontWeight: 800 }}>Spin</a>.
         </p>
       </section>
 

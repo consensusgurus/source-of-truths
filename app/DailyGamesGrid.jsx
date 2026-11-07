@@ -156,7 +156,7 @@ const GAMES = [
   { key: 'duet', href: '/duet', name: 'Duet', tag: 'Half dots, half rings', img: '/games/btn-duet.png' },
   { key: 'snug', href: '/snug', name: 'Snug', tag: 'Fit the pieces, one way only', img: '/games/btn-snug.png' },
   { key: 'jig', href: '/jig', name: 'Jig', tag: 'The daily jigsaw', img: '/games/btn-jig.png' },
-  { key: 'saw', href: '/saw', name: 'Saw', tag: 'The tall jigsaw, no frame', img: '/games/btn-saw.png' },
+  { key: 'saw', href: '/saw', name: 'Saw', tag: 'The tall daily jigsaw', img: '/games/btn-saw.png' },
   { key: 'check', href: '/check', name: 'Check', tag: 'Red to play and sweep', img: '/games/btn-check.png' },
   { key: 'rung', href: '/rung', name: 'Rung', tag: 'One letter at a time', img: '/games/btn-rung.png' },
   { key: 'hinge', href: '/hinge', name: 'Hinge', tag: 'Chain the compounds', img: '/games/btn-hinge.png' },

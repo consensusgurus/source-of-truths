@@ -134,7 +134,7 @@ const GAMES = [
   { key: 'duet', href: '/duet', name: 'Duet', img: '/games/btn-duet.png', store: 'sot_duet_day', tag: "Half dots, half rings" , cat: 'Logic' },
   { key: 'snug', href: '/snug', name: 'Snug', img: '/games/btn-snug.png', store: 'sot_snug_day', tag: "Fit the pieces, one way only" , cat: 'Logic' },
   { key: 'jig', href: '/jig', name: 'Jig', img: '/games/btn-jig.png', store: 'sot_jig_day', tag: "The daily jigsaw" , cat: 'Logic' },
-  { key: 'saw', href: '/saw', name: 'Saw', img: '/games/btn-saw.png', store: 'sot_saw_day', tag: "The tall jigsaw, no frame" , cat: 'Logic' },
+  { key: 'saw', href: '/saw', name: 'Saw', img: '/games/btn-saw.png', store: 'sot_saw_day', tag: "The tall daily jigsaw" , cat: 'Logic' },
   { key: 'check', href: '/check', name: 'Check', img: '/games/btn-check.png', store: 'sot_check_day', tag: "Red to play and sweep" , cat: 'End Game' },
   { key: 'rung', href: '/rung', name: 'Rung', img: '/games/btn-rung.png', store: 'sot_rung_day', tag: "One letter at a time" , cat: 'Word' },
   { key: 'hinge', href: '/hinge', name: 'Hinge', img: '/games/btn-hinge.png', store: 'sot_hinge_day', tag: "Chain the compounds" , cat: 'Word' },
