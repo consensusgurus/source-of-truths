@@ -1,0 +1,20 @@
+{"_note":"Corrections to the Wikipedia film data, applied by scripts/gen-bacon-graph.py. drop_films: TV movies, compilation documentaries, re-cuts and other rows that are not ordinary theatrical films. drop_cast: a name the source lists for a film the person is not in. add_cast: a principal player the source left out. add_films: a film the source left out entirely, [title, year, [cast in billing order]]. set_year: [title, source year, release year]. chain_avoid: a real but uncredited or cameo credit that may be played but is never shown in an ending chain (read by scripts/gen-bacon.py). Add a line when a player or reviewer reports one, then rebuild the graph and re-run scripts/verify-bacon.mjs.",
+"drop_films":[
+  ["High School Musical", 2006],
+  ["High School Musical 2", 2007],
+  ["Too Big to Fail", 2011],
+  ["Zack Snyder's Justice League", 2021],
+  ["That's Entertainment!", 1974],
+  ["That's Entertainment, Part II", 1976],
+  ["That's Entertainment! III", 1994],
+  ["Treasure Island", 1990]],
+"drop_cast":[
+  ["Tropic Thunder", 2008, "Sean Penn"],
+  ["New Year's Eve", 2011, "Allison Janney"]],
+"add_cast":[],
+"set_year":[
+  ["Knockaround Guys", 2001, 2002]],
+"chain_avoid":[
+  ["American Hustle", 2013, "Robert De Niro"]],
+"add_films":[
+  ["A Most Violent Year", 2014, ["Oscar Isaac", "Jessica Chastain", "David Oyelowo", "Alessandro Nivola", "Albert Brooks"]]]}

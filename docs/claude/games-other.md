@@ -2039,3 +2039,34 @@ updated by hand), finish set "Guessing games".
   clue names the company, pool variety, size bands). Bank runs to 2026-12-20. Headlines and IPO
   years were written from memory and fact-checked once; pins after mid-2026 are not possible
   until a later restock pulls fresh prices.
+
+## Bacon (`/bacon`): link two actors through their films (launched 2026-11-07)
+
+Six Degrees of Kevin Bacon as a daily (owner, 2026-11-07: chose mockup option A, build your own
+chain, and **every actor typed**: no cast list or co-star buttons are ever shown, because knowing
+who was in the film is the game). Trivia, skills Memory and Planning, on the SimpleDaily shell.
+
+- **Play.** A board is a start actor and a target. Name a film the current actor is in, then type
+  an actor in that film's cast; repeat until the target. Limit seven films. A film without the
+  current actor, or an actor not in the film, is a strike; three strikes end the day. Text that
+  matches nothing in the list costs nothing; Undo is free. Score `8 - films` (total 7), so fewer
+  films rank higher, then the clock (`challenge-metric` unit `films`, `miss: 'Films'`).
+- **The film graph** is `public/bacon/graph.json`, fetched by the browser at play time (a static
+  file, so webpack never parses it and a deploy does not rebuild it). Built by
+  `scripts/gen-bacon-graph.py` from github.com/prust/wikipedia-movie-data `movies.json`: American
+  films 1930 to 2022 with Wikipedia's principal cast. 2023 rows are dropped (scraped before release,
+  casts incomplete: Dune: Part Two had no Austin Butler), as are " 3D" re-releases. Names merge on a
+  folded key (Timothee / Timothée). Films are stored best known first so the type-ahead offers them
+  first. A player who names a real co-star missing from the listed principal cast gets a strike;
+  that is the known cost of the data, stated in the rules ("the main cast Wikipedia lists").
+- **Boards** (`app/bacon/puzzles.js`, `scripts/gen-bacon.py`, append-only) name actors BY NAME, so
+  a graph rebuild never breaks a board, and store `par` plus one shortest `chain` shown on the
+  ending. Starts and targets come only from `scripts/bacon-stars.json` (hand-kept household names):
+  weekdays modern to modern at par 2 or 3; the **Sunday Edition** starts from a classic star, par
+  3 or 4. No pair repeats; no actor twice in 21 days.
+- **`scripts/verify-bacon.mjs`** recomputes every par by its own BFS over the graph, walks every
+  chain film by film, and checks dates, star lists and variety. Bacon is in the content-review
+  ledger: the chains are facts a reviewer reads.
+- Group: Bacon joined Clade and Dossier in a new **Guessing games** set (`/trivia-games/guessing-games`),
+  split off Single-topic trivia, which keeps Deep, Niche and Slot. Finish set **On screen** (Bacon,
+  Script, Thread).
