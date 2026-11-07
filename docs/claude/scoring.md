@@ -965,3 +965,14 @@ view is unchanged: the first try still counts on ordinary dailies, the best run 
 the solving run on End Game. Totals keep counting every attempt: `plays`, `scoreDist` and
 `timeDist` in the board route are untouched. `playerPlacement` / `playerStanding` now rank a
 player among players, not among attempts.
+
+## Hidden finishes: lib/hidden-players.js (owner, 2026-11-07)
+
+A player caught cheating is not deleted. `HIDDEN_PLAYERS` lists a user id and a cutoff; every
+row they posted from that time on (plus guest rows on an anon_id they also used signed in) is
+dropped by `withoutHidden`, which `loadQuizResultsCached` and `loadDailyResultsCached` apply by
+default. So per-game boards, combined boards, points, IQ, archive champions and the drawing
+all leave those finishes out. Routes that only show a player their OWN record pass
+`{ includeHidden: true }` (daily-status, daily-unplayed, my-plays) so the player still sees
+what they played and is not offered the same day again. Admin views read their own cache and
+are unaffected. First entry: LoftyStandard from 2026-10-28.

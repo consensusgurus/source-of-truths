@@ -208,7 +208,7 @@ export async function GET(request) {
   const played = new Set();
   if (myKey) {
     try {
-      const { data } = await loadQuizResultsCached(supabaseAdmin);
+      const { data } = await loadQuizResultsCached(supabaseAdmin, { includeHidden: true }); // own record: see lib/hidden-players
       const prefix = game + '-';
       for (const r of (data || [])) {
         const qid = r && r.quiz_id;

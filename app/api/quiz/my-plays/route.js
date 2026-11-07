@@ -41,7 +41,7 @@ export async function GET(request) {
       try { myKeys = (await resolvePlayerKeys(supabaseAdmin, { email, anonId })).keys || new Set(); }
       catch (e) { if (anonId) myKeys = new Set([`a:${anonId}`]); }
     }
-    const { data, error } = await loadQuizResultsCached(supabaseAdmin);
+    const { data, error } = await loadQuizResultsCached(supabaseAdmin, { includeHidden: true }); // own record: see lib/hidden-players
     if (error) return NextResponse.json(empty, { headers: { 'Cache-Control': 'no-store' } });
 
     // The last 14 ET days, oldest first, as the suffixes the quiz ids carry.

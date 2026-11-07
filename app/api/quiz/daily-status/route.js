@@ -59,7 +59,7 @@ export async function GET(request) {
     const myKeys = who.keys;
     if (!myKey) return NextResponse.json({ played: [], completed: [], abandoned: [], unsolved: [], inProgress: [] }, { headers: CACHE_HEADERS });
 
-    const { data, error } = await loadQuizResultsCached(supabaseAdmin);
+    const { data, error } = await loadQuizResultsCached(supabaseAdmin, { includeHidden: true }); // own record: see lib/hidden-players
     if (error) {
       console.error('daily-status error', error);
       return NextResponse.json({ played: [], completed: [], abandoned: [], unsolved: [], inProgress: [] });
