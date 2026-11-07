@@ -448,16 +448,16 @@ function Calendar({ g, marks, today, hrefFor, missed }) {
 // Mono (data-stage-color=mono) folds all three to greys.
 const CSS = `
 .arc{--ln:1px solid var(--stg-ink);--pk:#0b0d12;display:flex;flex-direction:column;gap:26px;}
-.arc-shelf,.arc-g,.arc-chip{--pst:var(--cfull,var(--stg-surf2));--pst2:color-mix(in srgb,var(--cfull,var(--stg-surf2)) 32%,var(--stg-surf));--pb:color-mix(in srgb,var(--cfull,#c9ced8) 45%,#fff);--gi:var(--cfull,var(--stg-ink));}
+.arc-shelf,.arc-g,.arc-chip{--pst:var(--cfull,var(--stg-surf2));--pst2:color-mix(in srgb,var(--cfull,var(--stg-surf2)) 32%,var(--stg-surf));--pb:color-mix(in srgb,var(--cfull,#c9ced8) 45%,#fff);--pdp:color-mix(in srgb,var(--cfull,#c9ced8) 45%,#fff);--gi:var(--cfull,var(--stg-ink));}
 html:not([data-stage-boot='dark']) [data-stage-theme='light'] .arc-shelf,
 html:not([data-stage-boot='dark']) [data-stage-theme='light'] .arc-g,
 html:not([data-stage-boot='dark']) [data-stage-theme='light'] .arc-chip{
-  --pst:color-mix(in srgb,var(--cfull,#e6e9ef) 60%,#fff);--pst2:color-mix(in srgb,var(--cfull,#e6e9ef) 22%,#fff);--pb:var(--pst2);--gi:var(--cink,var(--stg-ink));}
+  --pst:color-mix(in srgb,var(--cfull,#e6e9ef) 60%,#fff);--pst2:color-mix(in srgb,var(--cfull,#e6e9ef) 22%,#fff);--pb:var(--pst2);--pdp:color-mix(in srgb,var(--cfull,#e6e9ef) 30%,#fff);--gi:var(--cink,var(--stg-ink));}
 html[data-stage-color='mono']:not(#arc-x) .arc-shelf,
 html[data-stage-color='mono']:not(#arc-x) .arc-g,
 html[data-stage-color='mono']:not(#arc-x) .arc-chip{
-  --pst:color-mix(in srgb,var(--stg-ink) 18%,var(--stg-surf));--pst2:color-mix(in srgb,var(--stg-ink) 7%,var(--stg-surf));--pb:var(--pst2);--pk:var(--stg-ink);--gi:var(--stg-ink);}
-.arc-key{--pst:color-mix(in srgb,var(--stg-acc) 60%,#fff);--pst2:color-mix(in srgb,var(--stg-acc) 22%,#fff);}
+  --pst:color-mix(in srgb,var(--stg-ink) 18%,var(--stg-surf));--pst2:color-mix(in srgb,var(--stg-ink) 7%,var(--stg-surf));--pb:var(--pst2);--pdp:var(--pst2);--pk:var(--stg-ink);--gi:var(--stg-ink);}
+.arc-key{--pst:#b1e5fd;--pdp:#e1f4fe;--pk:#0b0d12;}
 .arc-chip.ret,.arc-chip.all{--pst:color-mix(in srgb,var(--stg-ink) 16%,var(--stg-surf));}
 
 /* THE TOP: the ink card (the home's All Puzzles card) beside the lede */
@@ -528,16 +528,16 @@ html:not([data-stage-boot='dark']) [data-stage-theme='light'] .arc-chip::before{
 /* DAY SQUARES. No dashed or dotted marks (owner rule). */
 .arc-strip{display:flex;gap:4px;}
 .arc-d{position:relative;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;
-  color:var(--stg-ink2,var(--stg-ink));background:var(--stg-cell,var(--stg-surf2));border:1px solid transparent;border-radius:6px;box-sizing:border-box;}
+  color:var(--stg-ink2,var(--stg-ink));background:color-mix(in srgb,var(--stg-ink) 7%,var(--stg-surf));border:1px solid transparent;border-radius:5px;box-sizing:border-box;}
 .arc-strip .arc-d{flex:1 1 0;min-width:0;max-width:30px;aspect-ratio:1;}
 a.arc-d:hover{border-color:var(--stg-ink);color:var(--stg-ink);}
 .arc-d.solved{background:var(--pst);border-color:var(--stg-ink);color:var(--pk);font-weight:800;}
-.arc-d.played{background:var(--pst2);border-color:var(--stg-ink);color:var(--stg-ink);}
-html:not([data-stage-boot='dark']) [data-stage-theme='light'] .arc-d.played{color:var(--pk);}
-.arc-d.started{background:linear-gradient(135deg,var(--pst) 0 34%,var(--stg-surf) 34%);border-color:var(--stg-ink);color:var(--stg-ink);}
+.arc-d.played{background:var(--pdp);color:var(--pk);}
+.arc-d.started{background:linear-gradient(135deg,var(--pst) 0 42%,color-mix(in srgb,var(--stg-ink) 7%,var(--stg-surf)) 42%);}
 .arc-d.today{box-shadow:0 0 0 2px var(--stg-surf),0 0 0 3.5px var(--stg-ink);}
 .arc-key .arc-d.today{background:var(--stg-surf);}
-.arc-d.sun::after{content:'';position:absolute;right:2px;top:2px;width:4px;height:4px;border-radius:50%;background:var(--stg-ink);}
+.arc-key .arc-d.sun{background:var(--stg-surf);border-color:var(--stg-line,#d5d9e0);}
+.arc-d.sun::after{content:'';position:absolute;right:1.5px;top:1.5px;width:3.5px;height:3.5px;border-radius:50%;background:var(--stg-ink);}
 .arc-d.solved.sun::after{background:var(--pk);}
 .arc-d:focus-visible,.arc-gnm:focus-visible,.arc-go:focus-visible,.arc-all:focus-visible,.arc-chip:focus-visible,.arc-missed:focus-visible,.arc-calnav button:focus-visible,.arc-more a:focus-visible{outline:2px solid var(--stg-ink);outline-offset:2px;}
 
