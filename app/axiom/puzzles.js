@@ -1455,7 +1455,7 @@ export const PUZZLES = [
       { w: 'ALCOHOL', t: 0 }, { w: 'HARM', t: 1 }, { w: 'DEFENDER', t: 0 }, { w: 'CONDUCIVE', t: 0 },
       { w: 'REALIST', t: 0, g: 1 }, { w: 'PHYSICS', t: 0 }, { w: 'FARM', t: 1 }, { w: 'FLIP', t: 1, g: 1 },
       { w: 'WARM', t: 1, g: 1 }, { w: 'COWORKERS', t: 0 }, { w: 'COMMENTED', t: 0 }, { w: 'CHEATS', t: 0, g: 1 },
-      { w: 'ARMY', t: 1 }, { w: 'WISHING', t: 1 }, { w: 'SODIUM', t: 0 }, { w: 'STRAPS', t: 0 },
+      { w: 'ARMY', t: 1 }, { w: 'WISHING', t: 1 }, { w: 'SODIUM', t: 0 }, { w: 'STRESS', t: 0 },
       { w: 'RAIDER', t: 0 }, { w: 'WARMTH', t: 1 }, { w: 'KARAOKE', t: 0 }, { w: 'CHARM', t: 1, g: 1 },
       { w: 'WARMLY', t: 1 }, { w: 'MOOD', t: 0 }, { w: 'NUCLEAR', t: 1 }, { w: 'STRICTER', t: 0 },
     ],

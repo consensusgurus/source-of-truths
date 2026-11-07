@@ -250,7 +250,12 @@ const NEAR = {
 };
 const HIDDEN_NEAR_CORE = {
   animal: ['ASS','DOE','KID','CUB','PUP','COD','EEL','ROE','TIT','JAY','GNU','YAK','BOA','ASP','FLY','BUG','CRAB','FROG','TOAD','WORM','MOTH','WASP','SEAL','LION','BEAR','WOLF','DEER','GOAT','MULE','FOAL','LAMB','CALF','CROW','DOVE','DUCK','SWAN','HAWK','MOLE','HARE','LYNX','PUMA','GOOSE','SHEEP','HORSE','MOUSE'],
-  body: ['NAIL','HAIR','BACK','FACE','CHEEK','PALM','WAIST','BELLY','KIDNEY','MUSCLE'],
+  // Gym slang and the rest of the anatomy a player names unprompted. Added
+  // 2026-11-07 after a player report: #106 STRAPS hides TRAPS (trapezius),
+  // which HIDDEN.body leaves out, so the board scored it false.
+  body: ['NAIL','HAIR','BACK','FACE','CHEEK','PALM','WAIST','BELLY','KIDNEY','MUSCLE',
+    'TRAPS','LATS','PECS','ABS','QUADS','DELTS','GLUTE','BICEP','TRICEP','CALF','SOLE','BROW','LASH','NAPE','PORE','LOBE',
+    'GUT','BUM','BUTT','TUMMY','WOMB','VEIN','NERVE','SKULL','TORSO','PELVIS','COLON','BOWEL','PUPIL','IRIS','LIMB','FIST','NAVEL','JOINT'],
   number: ['THREE','SEVEN','EIGHT','ZERO','ELEVEN','TWELVE','TWENTY','HUNDRED','MILLION','BILLION','DOZEN','SCORE','ONCE','TWICE'],
 };
 // The 4+ letter animal tail is DERIVED, never typed. ERMINE inside DETERMINE
