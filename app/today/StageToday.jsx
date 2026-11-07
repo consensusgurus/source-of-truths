@@ -2630,6 +2630,8 @@ export default function StageToday() {
           : catLabel(cat), hueFor(cat))))}
       <span className="sty-ixsep sty-ixee" aria-hidden="true" />
       {ixBtn(CIRC_ID, 'Runs', 'var(--stg-mute)', 'sty-ixe1')}
+      {/* BUILD A RUN SITS RIGHT UNDER RUNS (owner, 2026-11-07). A door, not a pane. */}
+      <a className="sty-ixb sty-ixbr" href="/build-a-run" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('buildrun', null)}<span>Build a Run</span></a>
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)', 'sty-ixq')}
       {/* DESKTOP INDEX ORDER (owner, 2026-10-13): Circuits, Quizzes, Puzzle Archive
           and Leaderboards + Stats are one group; the tests, Kids and the lists
@@ -3804,22 +3806,63 @@ export default function StageToday() {
     }
     if (rest.length) {
       cells.push(
-        <button key="rdeck" type="button" className={'sty-g mx sty-gdeck' + (runsOpen ? ' on' : '')} aria-expanded={runsOpen} aria-controls="sty-runsu"
+        // THE DECK CARRIES BUILD A RUN (owner, 2026-11-07). A div, not a
+        // button, so the Build a Run link inside it is a real link; the card
+        // still folds and unfolds on a click anywhere else, and its foot strip
+        // is the keyboard's button.
+        <div key="rdeck" className={'sty-g mx sty-gdeck' + (runsOpen ? ' on' : '')}
           data-fk="rdeck" style={{ '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} onClick={() => setRunsOpen((v) => !v)}>
           <span className="sty-gn">{lead ? 'More Runs' : 'Runs'} <em>{rest.length}</em></span>
           {rest.slice(0, 2).map((c) => <span key={c.id} className="sty-gdl"><b>{c.name}</b><i>{runFull(c) ? 'Played' : c.n ? `${c.n} of ${c.games.length}` : fmtN((runStat[c.id] || {}).players)}</i></span>)}
-          <span className="sty-gpl sty-gcs"><span className="ld"><b>{runsOpen ? 'Fold runs' : 'Show all'}</b></span><span className="ct" aria-hidden="true">{runsOpen ? '\u25b4' : '\u25be'}</span></span>
-        </button>
+          <a className="sty-gdl sty-gdb" href="/build-a-run" onClick={(e) => e.stopPropagation()}><b>+ Build a Run</b><i>&rarr;</i></a>
+          <button type="button" className="sty-gpl sty-gcs sty-gdt" aria-expanded={runsOpen} aria-controls="sty-runsu"
+            onClick={(e) => { e.stopPropagation(); setRunsOpen((v) => !v); }}>
+            <span className="ld"><b>{runsOpen ? 'Fold runs' : 'Show all'}</b></span><span className="ct" aria-hidden="true">{runsOpen ? '\u25b4' : '\u25be'}</span>
+          </button>
+        </div>
       );
       if (runsOpen) {
         cells.push(
           <div key="runsu" id="sty-runsu" className="sty-runsu" data-fk="runsu">
-            <div className="sty-rt3s">{rest.map((c) => runTile(c, cat))}</div>
+            <div className="sty-rt3s">
+              {rest.map((c) => runTile(c, cat))}
+              <div key="rt-build" className="sty-rt3 sty-rt3b">
+                <span className="tx"><b>Build a Run</b><small>One link to share</small></span>
+                <a className="go play" href="/build-a-run">Build</a>
+              </div>
+            </div>
           </div>
         );
       }
     }
     return cells;
+  };
+  // THE RUNS PANE IN THE PUZZLE TILE'S SHAPE (owner, 2026-11-07: "the runs
+  // page has to be restyled to match the new site"). Every run is the same tile
+  // as a puzzle: name, what it is, the crowd strip in its category's colour,
+  // the star on hover. Build a Run closes the grid as the last tile.
+  const runPaneTile = (c) => {
+    const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+    const fin = runFull(c);
+    const rc = runCatOf(c);
+    const gtxt = runGroupText(c, st);
+    return (
+      <a key={'rp-' + c.id} className={'sty-g mx sty-grun sty-rpt' + (rc ? ' sty-grunc' : '') + (fin ? ' fin' : '')} href={withTq(circuitEntryHref(c.id))} data-fk={'rp:' + c.id}
+        style={rc ? { '--cfull': categoryColor(rc), '--cc': hueFor(rc) } : { '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} title={c.name}>
+        <span className="sty-gn">{c.name}</span>
+        <span className="sty-gt">{c.blurb || RUN_TAGS[c.id] || `Run \u00b7 ${c.games.length} games`}</span>
+        {gtxt ? <span className="sty-rpg">{gtxt}</span> : null}
+        <span className="sty-gpl sty-gcs">
+          <span className="ld">{fin
+            ? (st && st.rank ? <>You: <b>#{st.rank}</b> of {fmtN(st.players)}</> : <b>Finished</b>)
+            : st && st.lead ? <>#1 <b>{st.lead}</b></>
+            : c.n ? <b>{c.n} of {c.games.length} played</b>
+            : st && st.players ? 'No finish yet' : 'Open. Be first.'}</span>
+          <span className="ct" title="Players today">{fmtN(st && st.players)}</span>
+        </span>
+        <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />
+      </a>
+    );
   };
   const withRuns = (cat, nodes) => {
     const cells = runCells(cat);
@@ -4561,25 +4604,25 @@ export default function StageToday() {
              single hue that would be honest here. */
           <section className={'sty-cat sty-circsec sty-rev' + (ix && paneOn !== CIRC_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
             <div className="sty-cathead" onClick={headClick(CIRC_ID)}>
-              <h2>Runs</h2>
+              <div className="sty-cht"><h2>Runs</h2><span className="sty-csub">{circuits.filter((c) => c.n === c.games.length).length} of {circuits.length} Played</span></div>
               <b>{circuits.filter((c) => c.n === c.games.length).length}<i>/{circuits.length}</i></b>
               {cav(CIRC_ID)}
             </div>
-            {/* EVERY CIRCUIT IS A BIG CARD WITH ITS OWN PLAY BUTTON (owner,
-                2026-10-13), the same card that leads the phone's runs: what it
-                is, players today, and once finished your place on the site
-                board and in your group. */}
-            <div className={'sty-rcards' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
-              {(allCircs || circPane ? circuits : circLead).map((c) => runCard(c, null, null,
-                <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />, circPane))}
+            {/* EVERY RUN IS A PUZZLE-STYLE TILE (owner, 2026-11-07), replacing the
+                drawn cards with Play buttons; Build a Run is the last tile. */}
+            <div className={'sty-games sty-rpgrid' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
+              {(allCircs || circPane ? circuits : circLead).map((c) => runPaneTile(c))}
+              <a key="rp-build" className="sty-g mx sty-gbuild" href="/build-a-run" data-fk="rp:build">
+                <span className="sty-gn">+ Build a Run</span>
+                <span className="sty-gt">Pick your own games and share one link. Friends play the same set and race you.</span>
+                <span className="sty-gpl sty-gcs"><span className="ld"><b>Make your own</b></span><span className="ct" aria-hidden="true">&rarr;</span></span>
+              </a>
             </div>
             {isOpen(CIRC_ID) && !circPane && circuits.length > circLead.length ? (
               <button type="button" className="sty-more" onClick={() => setAllCircs((v) => !v)}>
                 {allCircs ? 'Show fewer' : `Show all ${circuits.length} circuits`}
               </button>
             ) : null}
-            {/* BUILD A RUN closes the Runs pane (owner, 2026-11-07). */}
-            <a className="sty-buildrun" href="/build-a-run">+ Build a Run</a>
           </section>
         ) : null}
 
@@ -5994,7 +6037,14 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
     padding:13px 14px 14px;border:1px solid var(--stg-ink);border-radius:14px;margin:0 0 8px;background:var(--stg-ink);color:var(--stg-ground);}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixq.on > span{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.25;white-space:normal;}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixq.on .sty-ixqc{display:block !important;font-size:13px;font-weight:700;}
+  /* Runs too (owner, 2026-11-07), so its pane does not repeat its name. */
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixe1.on{order:-2;display:flex;flex-direction:column;align-items:stretch;gap:5px;
+    padding:13px 14px 14px;border:1px solid var(--stg-ink);border-radius:14px;margin:0 0 8px;background:var(--stg-ink);color:var(--stg-ground);}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixe1.on > span{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.25;white-space:normal;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb.sty-ixe1.on .sty-ixct{font-size:13px;font-weight:700;color:inherit;}
 }
+/* The phone hub's own Everything Else list carries Build a Run already. */
+@media (max-width:900px){ .sty-ixn .sty-ixbr{display:none;} }
 @media (max-width:1180px){
   .sty-qxtiles{grid-template-columns:repeat(3,minmax(0,1fr));}
   .sty-qxcards{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -7502,6 +7552,23 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
     box-shadow:3px 3px 0 0 var(--stg-surf),3px 3px 0 1px var(--stg-ink),7px 7px 0 0 var(--stg-surf),7px 7px 0 1px var(--stg-ink);}
   .sty-gdeck.on{box-shadow:none;margin:0;}
   .sty-gdeck .sty-gn em{font-style:normal;font-size:12px;font-weight:700;margin-left:4px;}
+  /* The deck's Build a Run line and its foot button (owner, 2026-11-07). */
+  .sty-gdeck .sty-gdb{text-decoration:none;color:var(--stg-ink);margin-top:2px;}
+  .sty-gdeck .sty-gdb b{font-weight:800;}
+  .sty-gdeck .sty-gdb:hover b{text-decoration:underline;text-underline-offset:3px;}
+  .sty-gdeck .sty-gdt{font:inherit;font-size:12.5px;font-weight:600;border:0;text-align:left;cursor:pointer;}
+  .sty-rt3b{background:color-mix(in srgb, var(--stg-ink) 5%, var(--stg-surf));}
+  /* THE RUNS PANE (owner, 2026-11-07): puzzle tiles, then Build a Run. */
+  .sty-ix .sty-rpgrid{margin-top:4px;}
+  .sty-rpgrid.shut{display:none;}
+  .sty-rpt .sty-gt,.sty-gbuild .sty-gt{white-space:normal;text-overflow:clip;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .sty-rpt .sty-rpg{font-size:12px;font-weight:700;color:var(--stg-ink);}
+  .sty-rpt.fin{border-width:2px;}
+  .sty-gbuild{text-decoration:none;color:var(--stg-ink);background:color-mix(in srgb, var(--stg-ink) 5%, var(--stg-surf));}
+  .sty-gbuild .sty-gpl.sty-gcs,.sty:not([data-stage-theme=light]) .sty-gbuild .sty-gpl.sty-gcs{background:var(--stg-ink);color:var(--stg-ground);}
+  .sty-gbuild:hover .sty-gn{text-decoration:underline;text-underline-offset:3px;}
+  /* Build a Run in the index's Everything Else box, under Runs. */
+  .sty-ixn .sty-ixee ~ .sty-ixe1.on + .sty-ixbr{border-top:1px solid var(--stg-ink);border-radius:12px 12px 0 0;}
   .sty-gdl{display:flex;justify-content:space-between;gap:6px;font-size:12px;line-height:1.35;min-width:0;}
   .sty-gdl b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sty-gdl i{font-style:normal;font-weight:600;flex:none;}
