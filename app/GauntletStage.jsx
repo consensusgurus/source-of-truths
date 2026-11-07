@@ -34,6 +34,14 @@ import { useGauntletLook, stagePalette, useStageChrome, LookButton } from './Gau
 import { nextLook } from '@/lib/stage-look';
 
 export const MISS_MS = 1900;
+// THE RECAP REVEAL (owner, 2026-11-07, "implement, and use the full screen
+// reveal version"). Inside a run, a miss holds on the spotlight this long, then
+// the lit answer grows out of its own tile to fill the screen with the recap
+// (where the quiz ended, the question, the answer, the pick, the standing) and
+// an "On to <next>" button. The button shrinks the answer back into its tile and
+// hands off to the host, which starts the next quiz's first question.
+export const REVEAL_DELAY = 1400;
+export const SLOT_MS = 620;
 
 // THE HOLD FOR A DAILY. Watches the game's status and, on the render where it
 // goes from 'playing' to 'lost', opens a MISS_MS window (decided during render,
@@ -62,7 +70,7 @@ export function useMissReveal(status, pick, timedOut, started) {
   return live;
 }
 
-export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choices = [], onPick, lockIdx = null, disabled = false, frac = null, hot = false, footer = null, label = 'Question', kicker = null, missRight = null, missPick = null }) {
+export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choices = [], onPick, lockIdx = null, disabled = false, frac = null, hot = false, footer = null, label = 'Question', kicker = null, missRight = null, missPick = null, recap = null }) {
   // The stage's own look switch (owner, 2026-10-23): pastel by default, Plain
   // is white with black type. Separate from the site's light/dark setting.
   const [look, setLook] = useGauntletLook();
@@ -78,6 +86,32 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   const shortSet = choices.length === 4 && lens.every((n) => n <= 16);
   const tiny = shortSet && lens.every((n) => n <= 6);
   const miss = missRight != null;
+  // The recap reveal: measured off the lit tile so it grows from exactly there.
+  const btnRefs = React.useRef([]);
+  const recapRef = React.useRef(recap);
+  recapRef.current = recap;
+  const [big, setBig] = React.useState(null);
+  const recapOn = !!recap && miss;
+  React.useEffect(() => {
+    if (!recapOn) { setBig(null); return undefined; }
+    let raf = 0;
+    const t = setTimeout(() => {
+      const el = btnRefs.current[missRight];
+      if (!el) return;
+      const b = el.getBoundingClientRect();
+      setBig({ r: { top: b.top, left: b.left, width: b.width, height: b.height }, open: false });
+      raf = requestAnimationFrame(() => { raf = requestAnimationFrame(() => setBig((x) => (x ? { ...x, open: true } : x))); });
+    }, REVEAL_DELAY);
+    return () => { clearTimeout(t); cancelAnimationFrame(raf); };
+  }, [recapOn, missRight, qKey]);
+  const goingRef = React.useRef(false);
+  React.useEffect(() => { goingRef.current = false; }, [qKey]);
+  function recapGo() {
+    if (goingRef.current) return;
+    goingRef.current = true;
+    setBig((x) => (x ? { ...x, open: false } : x));
+    setTimeout(() => { const rc = recapRef.current; if (rc && rc.onGo) rc.onGo(); }, SLOT_MS);
+  }
   // Spotlight colours per look: a dark veil of the ink on the light looks, black
   // on the dark ones; the lit answer is the ground (or the tint tile) with ink on
   // the light looks, and inverted (ink fill, ground type) on the dark ones.
@@ -101,7 +135,7 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
         <div className="gst-q">{question}</div>
         <div className={`gst-ch${choices.length > 2 ? ' many' : ''}${shortSet ? ' grid' : ''}${tiny ? ' tiny' : ''}`}>
           {choices.map((c, k) => (
-            <button key={k} type="button"
+            <button key={k} type="button" ref={(el) => { btnRefs.current[k] = el; }}
               className={`gst-c${miss ? (k === missRight ? ' rv' : (k === missPick ? ' pk' : '')) : (lockIdx === k ? ' ok' : '')}`}
               style={{ animationDelay: `${120 + k * 60}ms` }}
               onClick={() => onPick && onPick(k)} disabled={disabled || miss}>
@@ -117,6 +151,25 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
           </div>
         )}
       </div>
+      {recapOn && big ? (
+        <div className={`gst-big${big.open ? ' open' : ''}`} role="group" aria-label="The answer"
+          style={big.open ? { top: 0, left: 0, width: '100vw', height: '100%' } : { top: big.r.top, left: big.r.left, width: big.r.width, height: big.r.height }}>
+          <div className="gst-bin">
+            <span className="gst-bx gst-blab">{recap.label}</span>
+            <span className="gst-bx gst-bq">{question}</span>
+            <span className="gst-bans">{choices[missRight]}</span>
+            {missPick != null && choices[missPick] != null
+              ? <span className="gst-bx gst-byou">You picked {choices[missPick]}</span>
+              : recap.timedOut ? <span className="gst-bx gst-byou">The clock ran out</span> : null}
+            <span className="gst-bx gst-bstand"><b>{recap.right}</b> right{recap.stand ? <> &middot; {recap.stand}</> : null}</span>
+            <button type="button" className="gst-bx gst-bgo" onClick={recapGo} disabled={!big.open}>
+              <span>{recap.goLabel}</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
+            {recap.leaveHref ? <a className="gst-bx gst-bleave" href={recap.leaveHref}>Leave the run</a> : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -185,9 +238,34 @@ html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
 .gst.miss .gst-c.pk>span:first-child{color:var(--gst-ondim);opacity:.75;transition:color .3s ease .3s;}
 .gst.miss .gst-c.pk .gst-tag{color:var(--gst-ink);}
 .gst-tag{position:absolute;top:-10px;right:14px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.3;background:var(--gst-bg);border:1px solid var(--gst-ink);border-radius:999px;padding:2px 8px;animation:gstTag .25s ease-out .35s both;}
+/* THE RECAP REVEAL: the lit answer's own colours, grown from its tile to the
+   whole screen (fixed, so it covers the stage at every width), and back. */
+.gst-big{position:fixed;z-index:7;box-sizing:border-box;background:var(--gst-rv-bg);border-radius:19px;overflow:hidden;display:flex;align-items:center;justify-content:center;transition:top .6s cubic-bezier(.2,.8,.2,1),left .6s cubic-bezier(.2,.8,.2,1),width .6s cubic-bezier(.2,.8,.2,1),height .6s cubic-bezier(.2,.8,.2,1),border-radius .6s;}
+.gst-big.open{border-radius:0;}
+.gst-big,.gst-big *{color:var(--gst-rv-ink);}
+.gst-bin{width:100%;max-width:640px;box-sizing:border-box;padding:0 16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:0;transition:gap .4s,padding .6s;}
+.gst-big.open .gst-bin{gap:14px;padding:max(24px, env(safe-area-inset-top)) 22px 24px;}
+.gst-bans{font-weight:800;font-size:22px;line-height:1.08;letter-spacing:-.02em;transition:font-size .6s cubic-bezier(.2,.8,.2,1);overflow-wrap:anywhere;}
+.gst-big.open .gst-bans{font-size:clamp(36px, 10vw, 68px);}
+.gst-bx{opacity:0;max-height:0;overflow:hidden;transition:opacity .2s,max-height .3s;}
+.gst-big.open .gst-bx{opacity:1;max-height:260px;transition:opacity .35s ease .45s,max-height .3s ease .3s;}
+.gst-blab{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;}
+.gst-big.open .gst-blab{opacity:.75;}
+.gst-bq{font-size:17px;font-weight:700;line-height:1.35;max-width:520px;}
+.gst-bq h2,.gst-bq blockquote{margin:0;font:inherit;letter-spacing:0;}
+.gst-bq blockquote{font-style:italic;margin-bottom:4px;}
+.gst-byou{font-size:15px;font-weight:700;}
+.gst-big.open .gst-byou{opacity:.7;}
+.gst-bstand{font-size:14px;font-weight:700;padding:8px 14px;border-radius:999px;border:1px solid var(--gst-rv-ink);}
+.gst-bstand b{font-size:16px;}
+.gst-bgo{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:440px;min-height:58px;border:0;border-radius:18px;background:var(--gst-rv-ink);font-family:inherit;font-size:20px;font-weight:800;cursor:pointer;margin-top:8px;}
+.gst-big .gst-bgo,.gst-big .gst-bgo *{color:var(--gst-rv-bg);}
+.gst-bgo:active{transform:scale(.98);}
+.gst-bleave{display:flex;align-items:center;justify-content:center;width:100%;max-width:440px;min-height:46px;box-sizing:border-box;border-radius:14px;border:1px solid var(--gst-rv-ink);font-size:15px;font-weight:800;text-decoration:none;}
+@media(min-width:900px){.gst-big.open .gst-bin{gap:18px;}.gst-bq{font-size:20px;}}
 @keyframes gstShake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
 @keyframes gstTag{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media(min-width:900px){.gst-col{max-width:820px;gap:40px;padding:48px 32px 28px;}.gst-q{font-size:44px;}.gst-q blockquote{font-size:26px;}.gst-q:has(blockquote){font-size:22px;}.gst-q:has(blockquote) blockquote{font-size:40px;}.gst-ch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}.gst-c{min-height:150px;font-size:26px;padding:22px;}.gst-ch.many .gst-c{min-height:120px;font-size:23px;}.gst-ch.tiny .gst-c{font-size:38px;}}
 @media(max-width:400px){.gst-q{font-size:25px;}.gst-q:has(blockquote){font-size:16px;}.gst-q:has(blockquote) blockquote{font-size:24px;}.gst-c{font-size:19px;min-height:64px;}.gst-ch.many .gst-c{font-size:17px;min-height:54px;}.gst-ch.grid .gst-c{font-size:18px;min-height:76px;}.gst-ch.tiny .gst-c{font-size:27px;}}
-@media (prefers-reduced-motion: reduce){.gst-q,.gst-c,.gst-c.ok,.gst-c.pk,.gst-tag{animation:none}.gst-dim,.gst-c.rv{transition:none}}
+@media (prefers-reduced-motion: reduce){.gst-q,.gst-c,.gst-c.ok,.gst-c.pk,.gst-tag{animation:none}.gst-dim,.gst-c.rv,.gst-big,.gst-bans,.gst-bx{transition:none}}
 `;

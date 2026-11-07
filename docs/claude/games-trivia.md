@@ -28,6 +28,15 @@ match background", "it needs to use the pastel colors", counter "clock and stand
   ending waits; the loss is saved and posted at once. Pass `missRight`/`missPick` to the stage. The run:
   `missHold()` in RunClient delays `finishSection('lost')` by `MISS_MS`, stamping the section time at the
   miss (`at`). A new gauntlet daily must carry the same three lines. Mockup: canvas "Gauntlet Miss Reveals".
+- **IN A RUN, THE MISS OPENS THE RECAP REVEAL (owner, 2026-11-07, "use the full screen reveal version").**
+  The section ends AT ONCE on the miss (saved and posted; a reload cannot replay the question) and RunClient
+  keeps the missed question in `reveal`, so the same GauntletStage stays up: spotlight for `REVEAL_DELAY`,
+  then the lit answer grows from its own tile to the full screen (`recap` prop): "<Quiz> ended on question N",
+  the question, the answer large, "You picked X" (or the clock ran out), "N right · You'd place #P of F",
+  an "On to <next>" button and Leave the run. The button shrinks the answer back into its tile (`SLOT_MS`)
+  and goes STRAIGHT into the next quiz's first question; after the last quiz it reads "See your run". The Up
+  next screen (GauntletBetween) now shows only after a clean finish, or on a reload mid-recap. Dailies keep the
+  plain spotlight into their ending.
 
 ## Atlas: the daily geography gauntlet (launched 2026-08-25)
 

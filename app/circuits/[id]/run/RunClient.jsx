@@ -73,7 +73,7 @@ import RunBackLink from '../../RunBackLink';
 // PolymathMeter and lib/polymath stay in the tree, unmounted.
 import McCard from '../../McCard';
 import { MC_IDS } from '@/lib/multiple-choice';
-import GauntletStage, { MISS_MS } from '../../../GauntletStage';
+import GauntletStage from '../../../GauntletStage';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover } from '../../../GauntletScreens';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -231,10 +231,12 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const [now, setNow] = useState(() => Date.now());
   const [qStart, setQStart] = useState(null);
   const [lock, setLock] = useState(false);
-  // THE SPOTLIGHT (owner, 2026-11-07): a miss holds the question up for MISS_MS
-  // with the right answer lit before the section's verdict. `miss` is the pick
-  // (null on a timeout) while that hold runs; the section is timed at the miss.
-  const [miss, setMiss] = useState(null);
+  // THE SPOTLIGHT AND THE RECAP REVEAL (owner, 2026-11-07). A miss ends the
+  // section AT ONCE (saved and posted, so a reload cannot replay the question),
+  // and `reveal` keeps the missed question on the stage: spotlight, then the
+  // full-screen recap with "On to <next>", which goes straight into the next
+  // quiz's first question. The Up next screen is now only for a clean finish.
+  const [reveal, setReveal] = useState(null);
   // Hover off until the pointer moves again: see lib/hover-armed.js. The key
   // is the section AND the question, since every section restarts at 0.
   const hovStale = useHoverStale(`${r.si}:${r.i}`);
@@ -489,22 +491,16 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
 
   // Everything a finished section owes: the four local writes the solo client
   // makes, then the ordinary result post. Called exactly once per section.
-  // A miss does not end the section on the spot: the stage holds with the right
-  // answer lit, then the section ends timed at the moment of the miss.
+  // A miss ends the section at once (timed at the miss) and hands the missed
+  // question to the stage's recap reveal; its "On to" button starts the next quiz.
   function missHold(pick, timedOut) {
     const cur = rRef.current;
     if (cur.phase !== 'playing' || lockRef.current) return;
-    const at = Date.now();
-    lockRef.current = true;
-    setLock(true);
-    setMiss({ pick, key: `${cur.si}:${cur.i}` });
-    vibrate(HAPT.wrong);
-    setTimeout(() => {
-      setMiss(null);
-      finishSection('lost', { pick, timedOut, at, quiet: true });
-      setLock(false);
-      lockRef.current = false;
-    }, MISS_MS);
+    const s = sections[cur.si];
+    const qq = s && s.questions[cur.i];
+    if (!s || !qq) return;
+    setReveal({ pick, timedOut, si: cur.si, i: cur.i, sec: s, q: qq, stand: !cur.practice && liveStand ? liveStand : null });
+    finishSection('lost', { pick, timedOut });
   }
 
   function finishSection(status, { pick = null, timedOut = false, at = null, quiet = false } = {}) {
@@ -575,6 +571,8 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     // writes one, but a save from before that did can still be restored into
     // this state, so it goes to the scorecard at once and Hold cannot stall it
     // there.
+    // The recap reveal is up: the player moves on with its button.
+    if (reveal) return;
     if (hydrated && !upNext) { nextSection(); return; }
     if (hold) return;
     const t = setTimeout(() => { if (!holdRef.current) nextSection(); }, VERDICT_MS);
@@ -585,7 +583,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     // (shipped 4064ba709, caught same day). `r.si` and `hydrated` are the
     // only two things it derives from, so they cover it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [r.phase, r.si, hold, hydrated]);
+  }, [r.phase, r.si, hold, hydrated, reveal]);
 
   function answer(k) {
     const cur = rRef.current;
@@ -646,6 +644,12 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     while (j < N && alreadyDone(sections[j].key, sections[j].num)) j += 1;
     return j < N ? sections[j] : null;
   })();
+  // What the stage draws: the live question, or the missed one while the recap
+  // reveal holds it after the section has already ended.
+  const stSec = reveal ? reveal.sec : sec;
+  const stQ = reveal ? reveal.q : question;
+  const stI = reveal ? reveal.i : r.i;
+  const stSi = reveal ? reveal.si : r.si;
 
   function shareRun() {
     const url = withRef(circuitShareUrl(circuitId));
@@ -1078,26 +1082,35 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           answers only, with the clock and standing in one quiet line below.
           The play blocks further down still render beneath it and keep every
           rule; this only draws over them. */}
-      {TOWERS && r.phase === 'playing' && question && sec ? (
+      {TOWERS && ((r.phase === 'playing' && question && sec) || reveal) ? (
         <GauntletStage
-          bg={rampFor(sec.slot != null ? sec.slot : r.si)}
-          qKey={`${r.si}:${r.i}`}
-          label={`${sec.name}, question ${r.i + 1} of ${sec.questions.length}`}
-          kicker={sec.key === 'deep' && sec.topic ? sec.topic : (question.sub || null)}
-          question={MATH_RUN_GAMES.includes(sec.key)
-            ? <h2>{String(question.q).split('?').map((p, i) => (i === 0 ? <React.Fragment key="h">{mathText(p)}</React.Fragment> : [<span key={i} style={{ borderBottom: '3px solid currentColor', padding: '0 .3em' }}>?</span>, <React.Fragment key={'p' + i}>{mathText(p)}</React.Fragment>]))}</h2>
-            : question.line
-              ? <><blockquote>&ldquo;{question.line}&rdquo;</blockquote><h2>{question.ask}</h2></>
-              : <h2>{mathText(question.q)}</h2>}
-          choices={question.choices.map((c) => (typeof c === 'number' ? c.toLocaleString('en-US') : mathText(c)))}
+          bg={rampFor(stSec.slot != null ? stSec.slot : stSi)}
+          qKey={`${stSi}:${stI}`}
+          label={`${stSec.name}, question ${stI + 1} of ${stSec.questions.length}`}
+          kicker={stSec.key === 'deep' && stSec.topic ? stSec.topic : (stQ.sub || null)}
+          question={MATH_RUN_GAMES.includes(stSec.key)
+            ? <h2>{String(stQ.q).split('?').map((p, i) => (i === 0 ? <React.Fragment key="h">{mathText(p)}</React.Fragment> : [<span key={i} style={{ borderBottom: '3px solid currentColor', padding: '0 .3em' }}>?</span>, <React.Fragment key={'p' + i}>{mathText(p)}</React.Fragment>]))}</h2>
+            : stQ.line
+              ? <><blockquote>&ldquo;{stQ.line}&rdquo;</blockquote><h2>{stQ.ask}</h2></>
+              : <h2>{mathText(stQ.q)}</h2>}
+          choices={stQ.choices.map((c) => (typeof c === 'number' ? c.toLocaleString('en-US') : mathText(c)))}
           onPick={(k) => answer(k)}
-          lockIdx={lock && !miss ? question.correct : null}
-          missRight={miss ? question.correct : null}
-          missPick={miss ? miss.pick : null}
+          lockIdx={lock && !reveal ? stQ.correct : null}
+          missRight={reveal ? stQ.correct : null}
+          missPick={reveal ? reveal.pick : null}
+          recap={reveal ? {
+            label: `${stSec.name} ended on question ${stI + 1}`,
+            right: stI,
+            stand: reveal.stand ? `You\u2019d place #${reveal.stand.pos} of ${Number(reveal.stand.field).toLocaleString()} if you stopped here` : null,
+            timedOut: reveal.timedOut,
+            goLabel: r.phase === 'verdict' && upNext ? `On to ${upNext.name}` : 'See your run',
+            leaveHref: r.phase === 'verdict' ? `/circuits/${circuitId}` : null,
+            onGo: () => { setReveal(null); setHold(false); if (rRef.current.phase === 'verdict') nextSection(); },
+          } : null}
           disabled={lock}
-          frac={remainFrac}
-          hot={remainFrac < 0.25}
-          footer={<>{Math.ceil(remainMs / 1000)}s &middot; {sec.name} {r.i + 1} of {sec.questions.length}{liveStand ? <> &middot; if you stopped here #{liveStand.pos} of {liveStand.field.toLocaleString()}</> : null}</>}
+          frac={reveal ? null : remainFrac}
+          hot={!reveal && remainFrac < 0.25}
+          footer={reveal ? null : <>{Math.ceil(remainMs / 1000)}s &middot; {sec.name} {r.i + 1} of {sec.questions.length}{liveStand ? <> &middot; if you stopped here #{liveStand.pos} of {liveStand.field.toLocaleString()}</> : null}</>}
         />
       ) : null}
       {/* ENTRY, BETWEEN AND END on the same stage (owner, 2026-10-23, from the
@@ -1123,7 +1136,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           banner={<>{otherDevice}{isChallengeableRun(circuitId) ? <ChallengeStrip gameKey={circuitId} num={runToken()} run /> : null}</>}
         />
       ) : null}
-      {TOWERS && hydrated && r.phase === 'verdict' && last && upNext ? (
+      {TOWERS && hydrated && r.phase === 'verdict' && last && upNext && !reveal ? (
         <GauntletBetween
           circuitName={circuitName}
           sections={sections}
@@ -1144,7 +1157,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           mathText={mathText}
         />
       ) : null}
-      {TOWERS && hydrated && done && !curtain && endOpen ? (
+      {TOWERS && hydrated && done && !curtain && endOpen && !reveal ? (
         <GauntletEndStage
           runId={!r.practice ? circuitId : null}
           circuitName={circuitName}
@@ -2162,7 +2175,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       </div>
 
       {isChallengeableRun(circuitId) ? <RunChallengeCapture gameKey={circuitId} /> : null}
-      {curtain ? (
+      {curtain && !reveal ? (
         <GauntletFinale
           sections={sections}
           results={r.results}
