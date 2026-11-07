@@ -6,6 +6,7 @@ import { Check, X, Eye, EyeOff, LogOut, Pencil, Trash2, MapPin, ShieldAlert } fr
 import Grain from '@/app/Grain';
 import { exportUsersCsv, exportGamesCsv, downloadCsvFile } from './csv-export';
 import PulsePanel from './PulsePanel';
+import IntegrityPanel from './IntegrityPanel';
 import { T } from '@/lib/theme';
 
 // Local theme palette: the live-site look (Manrope + soft blue) applied to the
@@ -2209,6 +2210,7 @@ function AnalyticsPanel({ an, pulse, view, setView, signups, anonPlayers, partia
   const A = an.data || {};
   const counts = A.counts || {};
   const pv = useAdminPart('pageviews', view === 'pageviews');
+  const integ = useAdminPart('integrity', view === 'integrity');
   const dailyByGame = A.dailyByGame || { games: [], totals: {} };
   const topPlayersToday = A.topPlayersToday || { day: null, players: [], totals: {} };
 
@@ -2261,6 +2263,7 @@ function AnalyticsPanel({ an, pulse, view, setView, signups, anonPlayers, partia
     ['pulse', 'Pulse', null],
     ['plays', 'Players', an.data ? regCount + anonCount : null],
     ['pageviews', 'Page Views (24h)', pv.data ? listCount + quizCount : null],
+    ['integrity', 'Cheat Watch', integ.data ? (integ.data.players || []).filter((p) => p.risk >= 50).length : null],
   ];
   const playsSub = [
     ['all', 'All', regCount + anonCount],
@@ -2322,6 +2325,16 @@ function AnalyticsPanel({ an, pulse, view, setView, signups, anonPlayers, partia
         {pulse.data ? <PulsePanel part={pulse} />
           : pulse.error ? <PartNote error onRetry={() => pulse.reload()}>Could not load the pulse ({pulse.error}).</PartNote>
           : <PartNote>Loading the pulse&hellip;</PartNote>}
+      </div>
+    );
+  }
+  if (view === 'integrity') {
+    return (
+      <div>
+        {tabRow}
+        {integ.data ? <IntegrityPanel part={integ} />
+          : integ.error ? <PartNote error onRetry={() => integ.reload()}>Could not load Cheat Watch ({integ.error}).</PartNote>
+          : <PartNote>Scoring recent daily boards&hellip;</PartNote>}
       </div>
     );
   }

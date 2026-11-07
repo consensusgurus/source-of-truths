@@ -7,6 +7,7 @@
 //   analytics  the player tables, cut to the most recent, plus the Daily Games figures
 //   players    the full player tables (on demand)
 //   pageviews  list and quiz page views (last 24h)
+//   integrity  Cheat Watch: players whose daily results look too good (lib/admin-integrity.js)
 //
 // Auth: the admin cookie, or the x-admin-token header (ADMIN_TASK_TOKEN), the
 // same pair every other read-only admin route accepts. Never cached anywhere
@@ -18,6 +19,7 @@ import { NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/admin-auth';
 import { loadEditorial, loadAnalyticsPart } from '@/lib/admin-data';
 import { loadPulse } from '@/lib/admin-pulse';
+import { loadIntegrity } from '@/lib/admin-integrity';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -45,6 +47,7 @@ export async function GET(request) {
     let data = null;
     if (part === 'editorial') data = await loadEditorial();
     else if (part === 'pulse') data = await loadPulse(mode);
+    else if (part === 'integrity') data = await loadIntegrity(mode);
     else if (ANALYTICS_PARTS.has(part)) data = await loadAnalyticsPart(part, mode);
     else return NextResponse.json({ error: 'unknown part' }, { status: 400, headers: NO_STORE });
     if (!data) return NextResponse.json({ error: 'unavailable' }, { status: 503, headers: NO_STORE });

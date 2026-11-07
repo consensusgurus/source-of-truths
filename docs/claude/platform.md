@@ -624,3 +624,14 @@ and rolling referrers (7 days vs the week before).
   history is stored in `stats_payloads` as `admin:viewdaily:v1` with a `done` day, so
   after a one-time backfill in 31-day slices from 2026-01-01 each build reads only
   yesterday and today. Do not replace that with a full-history read per build.
+
+## Cheat Watch: /admin > Analytics > Cheat Watch (owner, 2026-11-07)
+
+`lib/admin-integrity.js` scores players over the last 14 days of first-try results on
+non-Arcade dailies (boards of 5+ players; players with 10+ boards): win rate, blowouts (win in
+under 40% of the next best time at the same score), instant perfects (under 0.6s a point),
+alone-on-top scores, a jump in perfect rate between the first and second half of their history,
+and days with 3+ results on one daily. Composite 0-100 risk, plain-English flags, example boards.
+Served as `/api/admin/data?part=integrity` (5 minute memo), drawn by `app/admin/IntegrityPanel.jsx`.
+A queue, not a verdict: nothing acts on it. Hiding a player stays a manual line in
+`lib/hidden-players.js` (see scoring.md).
