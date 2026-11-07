@@ -56,6 +56,9 @@ function clueValue(P, k) {
   return P.ticker[0];
 }
 
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function monthYear(iso) { const [y, m] = iso.split('-').map(Number); return `${MON[m - 1]} ${y}`; }
+
 function money(v) {
   if (v >= 100) return `$${Math.round(v).toLocaleString('en-US')}`;
   if (v >= 10) return `$${v.toFixed(0)}`;
@@ -66,7 +69,7 @@ function money(v) {
 // the day is over; the pin's spot shows from the start and its headline opens
 // as clue 4.
 function Chart({ P, done, open }) {
-  const W = 600, H = 300, L = done ? 58 : 0, R = 8, T = 14, B = done ? 28 : 10;
+  const W = 600, H = 300, L = done ? 74 : 0, R = 8, T = 14, B = 34;
   const n = P.w.length;
   const x = (i) => L + (i / Math.max(1, n - 1)) * (W - L - R);
   const y = (v) => T + (1 - v / 1000) * (H - T - B);
@@ -79,6 +82,13 @@ function Chart({ P, done, open }) {
   const val = (f) => P.lo + f * (P.hi - P.lo);
   const fromY = P.from.slice(0, 4), toY = P.to.slice(0, 4);
   const grid = [0.25, 0.5, 0.75, 1];
+  // Year ticks: January 1 of each year between the first and last week.
+  const t0 = Date.parse(P.from + 'T12:00:00Z'), t1 = Date.parse(P.to + 'T12:00:00Z');
+  const years = [];
+  for (let yr = Number(fromY) + 1; yr <= Number(toY); yr++) {
+    const f = (Date.parse(`${yr}-01-01T12:00:00Z`) - t0) / (t1 - t0);
+    if (f > 0.02 && f < 0.97) years.push({ yr, xi: L + f * (W - L - R) });
+  }
   return (
     <svg className="tp-chart" viewBox={`0 0 ${W} ${H}`} role="img"
       aria-label={done
@@ -96,8 +106,13 @@ function Chart({ P, done, open }) {
         <text key={'v' + f} x={L - 8} y={y(f * 1000) + 4} textAnchor="end" className="tp-ax">{money(val(f))}</text>
       ))}
       {done && <text x={L - 8} y={H - B + 4} textAnchor="end" className="tp-ax">{money(P.lo)}</text>}
-      {done && <text x={L} y={H - 8} className="tp-ax">{fromY}</text>}
-      {done && <text x={W - R} y={H - 8} textAnchor="end" className="tp-ax">{toY}</text>}
+      {/* Date axis, always shown: a tick and the year at each January 1 inside the chart. */}
+      {years.map(({ yr, xi }) => (
+        <g key={yr}>
+          <line x1={xi} x2={xi} y1={H - B} y2={H - B + 6} className="tp-base" />
+          <text x={Math.min(Math.max(xi, 24), W - 24)} y={H - 6} textAnchor="middle" className="tp-ax">{yr}</text>
+        </g>
+      ))}
     </svg>
   );
 }
@@ -117,7 +132,7 @@ const CSS = `
 .tp-pin.on{fill:var(--pst-ink,#0b0f1a);}
 .tp-pint{font-family:'Manrope',system-ui,sans-serif;font-size:13px;font-weight:800;fill:var(--pst-ink,#0b0f1a);}
 .tp-pint.on{fill:var(--pst-bg,#fff);}
-.tp-ax{font-family:'Manrope',system-ui,sans-serif;font-size:13px;font-weight:700;fill:var(--pst-mute,#3b4656);}
+.tp-ax{font-family:'Manrope',system-ui,sans-serif;font-size:19px;font-weight:700;fill:var(--pst-mute,#3b4656);}
 .tp-cap{display:flex;justify-content:space-between;gap:8px;padding:4px 2px 0;font-size:12px;font-weight:700;color:var(--pst-mute,#3b4656);}
 .tp-ans{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:2px 4px 6px;}
 .tp-ans b{font-size:20px;font-weight:800;}
@@ -154,7 +169,7 @@ function Board({ P, s, done }) {
         ) : null}
         <Chart P={P} done={done} open={open} />
         <div className="tp-cap">
-          <span>{done ? `${P.from.slice(0, 4)} to ${P.to.slice(0, 4)}, weekly closes` : (P.w.length < 250 ? 'Weekly closes since it listed' : 'Five years, weekly closes')}</span>
+          <span>{`${monthYear(P.from)} to ${monthYear(P.to)}, weekly`}</span>
           <span>{done ? `Low ${money(P.lo)} · high ${money(P.hi)}` : 'Prices hidden'}</span>
         </div>
       </div>
@@ -259,7 +274,7 @@ const GAME = {
   detail: (P, s, won, el) => `${P.name} (${P.ticker}) · ${plural(won ? s.open : MAX)} · ${el}`,
   aboutTitle: 'About Tape',
   about: [
-    'Tape is a free daily stock market guessing game from Mind Loft. Every day it shows five years of one company’s weekly stock chart with the prices and dates taken off, and you name the company. Any of the roughly 2,600 stocks in the Russell 3000 index is a fair guess, by name or by ticker.',
+    'Tape is a free daily stock market guessing game from Mind Loft. Every day it shows five years of one company’s weekly stock chart with the prices taken off, and you name the company. Any of the roughly 2,600 stocks in the Russell 3000 index is a fair guess, by name or by ticker.',
     'You start with the sector. Five more clues open one at a time when you ask for them, or when you guess wrong: the year the company went public, its headquarters, a dated headline pinned on the chart, what it does, and the first letter of its ticker. Fewer clues rank higher and the clock breaks a tie. Weekdays are well-known companies; the Sunday Edition is a smaller one.',
     <>More daily guessing: try <a href="/dossier" style={{ color: 'inherit', fontWeight: 800 }}>Dossier</a>, <a href="/pricer" style={{ color: 'inherit', fontWeight: 800 }}>Pricer</a> and <a href="/biz" style={{ color: 'inherit', fontWeight: 800 }}>Biz</a>.</>,
   ],
