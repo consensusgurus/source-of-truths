@@ -73,7 +73,7 @@ import RunBackLink from '../../RunBackLink';
 // PolymathMeter and lib/polymath stay in the tree, unmounted.
 import McCard from '../../McCard';
 import { MC_IDS } from '@/lib/multiple-choice';
-import GauntletStage from '../../../GauntletStage';
+import GauntletStage, { MISS_MS } from '../../../GauntletStage';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover } from '../../../GauntletScreens';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -231,6 +231,10 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   const [now, setNow] = useState(() => Date.now());
   const [qStart, setQStart] = useState(null);
   const [lock, setLock] = useState(false);
+  // THE SPOTLIGHT (owner, 2026-11-07): a miss holds the question up for MISS_MS
+  // with the right answer lit before the section's verdict. `miss` is the pick
+  // (null on a timeout) while that hold runs; the section is timed at the miss.
+  const [miss, setMiss] = useState(null);
   // Hover off until the pointer moves again: see lib/hover-armed.js. The key
   // is the section AND the question, since every section restarts at 0.
   const hovStale = useHoverStale(`${r.si}:${r.i}`);
@@ -420,7 +424,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   useEffect(() => {
     if (r.phase !== 'playing' || !qStart || lock) return;
     if (remainMs > 0) return;
-    finishSection('lost', { pick: null, timedOut: true });
+    missHold(null, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remainMs, r.phase, qStart, lock]);
 
@@ -485,13 +489,31 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
 
   // Everything a finished section owes: the four local writes the solo client
   // makes, then the ordinary result post. Called exactly once per section.
-  function finishSection(status, { pick = null, timedOut = false } = {}) {
+  // A miss does not end the section on the spot: the stage holds with the right
+  // answer lit, then the section ends timed at the moment of the miss.
+  function missHold(pick, timedOut) {
+    const cur = rRef.current;
+    if (cur.phase !== 'playing' || lockRef.current) return;
+    const at = Date.now();
+    lockRef.current = true;
+    setLock(true);
+    setMiss({ pick, key: `${cur.si}:${cur.i}` });
+    vibrate(HAPT.wrong);
+    setTimeout(() => {
+      setMiss(null);
+      finishSection('lost', { pick, timedOut, at, quiet: true });
+      setLock(false);
+      lockRef.current = false;
+    }, MISS_MS);
+  }
+
+  function finishSection(status, { pick = null, timedOut = false, at = null, quiet = false } = {}) {
     const cur = rRef.current;
     const s = sections[cur.si];
     if (!s || cur.phase !== 'playing') return;
     const total = s.questions.length;
     const score = status === 'won' ? total : cur.i;
-    const end = Date.now();
+    const end = at || Date.now();
     const secs = Math.min(36000, Math.max(1, Math.round((end - (cur.sT0 || end)) / 1000)));
 
     abandon.markFlushed();
@@ -514,7 +536,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       } catch (e) {}
     }
 
-    vibrate(status === 'won' ? HAPT.win : HAPT.wrong);
+    if (!quiet) vibrate(status === 'won' ? HAPT.win : HAPT.wrong);
     const results = [...cur.results, { key: s.key, score, total, status, secs, pick, timedOut }];
     // THE LAST QUIZ ENDS THE RUN, IT DOES NOT HAND OVER (owner, 2026-09-06).
     // The handover card is a bridge to the next quiz, so after the last one it
@@ -571,7 +593,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     const s = sections[cur.si];
     const qq = s && s.questions[cur.i];
     if (!qq) return;
-    if (k !== qq.correct) { finishSection('lost', { pick: k, timedOut: false }); return; }
+    if (k !== qq.correct) { missHold(k, false); return; }
     vibrate(HAPT.ok);
     if (cur.i + 1 >= s.questions.length) { finishSection('won'); return; }
     setLock(true);
@@ -1069,7 +1091,9 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
               : <h2>{mathText(question.q)}</h2>}
           choices={question.choices.map((c) => (typeof c === 'number' ? c.toLocaleString('en-US') : mathText(c)))}
           onPick={(k) => answer(k)}
-          lockIdx={lock ? question.correct : null}
+          lockIdx={lock && !miss ? question.correct : null}
+          missRight={miss ? question.correct : null}
+          missPick={miss ? miss.pick : null}
           disabled={lock}
           frac={remainFrac}
           hot={remainFrac < 0.25}

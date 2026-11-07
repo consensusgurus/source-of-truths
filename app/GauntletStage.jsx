@@ -16,6 +16,14 @@
 //   does. This file only draws. `lockIdx` lights the right answer while the
 //   host holds between questions; `qKey` changes with every question so the
 //   entrance plays again.
+// - THE SPOTLIGHT (owner, 2026-11-07, "let's do spotlight on all of the
+//   gauntlets"): on a miss, wrong pick or clock out, the stage holds for
+//   MISS_MS. The pick shakes and is tagged "Your pick", then the stage dims and
+//   only the question and the right answer stay lit. `missRight` is the right
+//   answer's index while the hold runs (null otherwise), `missPick` the pick
+//   (null on a timeout). Dailies get the hold from useMissReveal below, which
+//   keeps the game's own state untouched (the loss is saved and posted at once);
+//   the run delays its section verdict by MISS_MS instead.
 //
 // Fixed to the viewport at the page root's stacking level, phone and desktop.
 
@@ -25,7 +33,36 @@ import StageTopBar from './StageTopBar';
 import { useGauntletLook, stagePalette, useStageChrome, LookButton } from './GauntletScreens';
 import { nextLook } from '@/lib/stage-look';
 
-export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choices = [], onPick, lockIdx = null, disabled = false, frac = null, hot = false, footer = null, label = 'Question', kicker = null }) {
+export const MISS_MS = 1900;
+
+// THE HOLD FOR A DAILY. Watches the game's status and, on the render where it
+// goes from 'playing' to 'lost', opens a MISS_MS window (decided during render,
+// so the ending never paints for a frame before the spotlight). The client
+// treats the window as still playing, so its ending waits. A page that loads
+// on a board already lost never sees the transition and gets no hold.
+// `started` is the game's own clock-started flag (g.t0): a client mounts on a
+// fresh unstarted board and loads the saved one after, so a saved loss arrives
+// as an unstarted 'playing' flipping to 'lost', which must NOT hold.
+export function useMissReveal(status, pick, timedOut, started) {
+  const prev = React.useRef({ status, started });
+  const hold = React.useRef(null);
+  const [, bump] = React.useState(0);
+  if (status === 'playing') hold.current = null;
+  else if (prev.current.status === 'playing' && prev.current.started && status === 'lost' && !hold.current) {
+    hold.current = { pick: timedOut ? null : (pick == null ? null : pick), until: Date.now() + MISS_MS };
+  }
+  prev.current = { status, started };
+  const live = hold.current && Date.now() < hold.current.until ? hold.current : null;
+  const until = live ? live.until : 0;
+  React.useEffect(() => {
+    if (!until) return undefined;
+    const t = setTimeout(() => bump((n) => n + 1), Math.max(0, until - Date.now()) + 20);
+    return () => clearTimeout(t);
+  }, [until]);
+  return live;
+}
+
+export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choices = [], onPick, lockIdx = null, disabled = false, frac = null, hot = false, footer = null, label = 'Question', kicker = null, missRight = null, missPick = null }) {
   // The stage's own look switch (owner, 2026-10-23): pastel by default, Plain
   // is white with black type. Separate from the site's light/dark setting.
   const [look, setLook] = useGauntletLook();
@@ -40,12 +77,21 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   const lens = choices.map((c) => (typeof c === 'string' || typeof c === 'number' ? String(c).length : 99));
   const shortSet = choices.length === 4 && lens.every((n) => n <= 16);
   const tiny = shortSet && lens.every((n) => n <= 6);
+  const miss = missRight != null;
+  // Spotlight colours per look: a dark veil of the ink on the light looks, black
+  // on the dark ones; the lit answer is the ground (or the tint tile) with ink on
+  // the light looks, and inverted (ink fill, ground type) on the dark ones.
+  const darkLook = look === 'dark' || look === 'darktint';
+  const spot = darkLook
+    ? { dim: 'rgba(0,0,0,.72)', on: pal.ink, rvBg: pal.ink, rvInk: pal.bg }
+    : { dim: 'color-mix(in srgb, ' + pal.ink + ' 74%, transparent)', on: '#ffffff', rvBg: look === 'tint' && pal.tile ? pal.tile : pal.bg, rvInk: pal.ink };
   return (
-    <div key={look} className="gst" role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink, '--gst-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)' }}>
+    <div key={look} className={`gst${miss ? ' miss' : ''}`} role="dialog" aria-label={label} style={{ '--gst-bg': pal.bg, '--gst-ink': pal.ink, '--gst-tile': pal.tile || 'color-mix(in srgb, ' + pal.ink + ' 8%, transparent)', '--gst-dimc': spot.dim, '--gst-ondim': spot.on, '--gst-rv-bg': spot.rvBg, '--gst-rv-ink': spot.rvInk }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {/* The site's header pill, back arrow + Mind Loft mark, and the look
           switch (owner, 2026-10-25), the same element every stage page uses. */}
       <div className="gst-top"><StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} href="/" allLooks /></div>
+      <div className="gst-dim" aria-hidden="true" />
       <div className="gst-col" key={qKey}>
         {/* THE KICKER (owner, 2026-10-26), now a TAG (owner, 2026-10-31: "Sport
             and maybe Deep need some indication of what the sub category is"):
@@ -56,10 +102,11 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
         <div className={`gst-ch${choices.length > 2 ? ' many' : ''}${shortSet ? ' grid' : ''}${tiny ? ' tiny' : ''}`}>
           {choices.map((c, k) => (
             <button key={k} type="button"
-              className={`gst-c${lockIdx === k ? ' ok' : ''}`}
+              className={`gst-c${miss ? (k === missRight ? ' rv' : (k === missPick ? ' pk' : '')) : (lockIdx === k ? ' ok' : '')}`}
               style={{ animationDelay: `${120 + k * 60}ms` }}
-              onClick={() => onPick && onPick(k)} disabled={disabled}>
+              onClick={() => onPick && onPick(k)} disabled={disabled || miss}>
               <span>{c}</span>
+              {miss && k === missPick ? <span className="gst-tag">Your pick</span> : null}
             </button>
           ))}
         </div>
@@ -120,7 +167,22 @@ html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
 @keyframes gstIn{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
 @keyframes gstGlow{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--gst-ink) 45%, transparent)}100%{box-shadow:0 0 0 14px transparent}}
 @keyframes gstPulse{from{opacity:1}to{opacity:.35}}
+/* THE SPOTLIGHT on a miss (owner, 2026-11-07). The veil is fixed to the
+   viewport inside the stage; the question, its kicker and the right answer
+   rise above it. The pick shakes first, then the veil comes down. */
+.gst-dim{position:fixed;inset:0;z-index:3;background:var(--gst-dimc);opacity:0;pointer-events:none;transition:opacity .35s ease .3s;}
+.gst.miss .gst-dim{opacity:1;}
+.gst.miss .gst-q,.gst.miss .gst-kick{position:relative;z-index:4;}
+.gst.miss .gst-q,.gst.miss .gst-q *,.gst.miss .gst-kick,.gst.miss .gst-kick *{color:var(--gst-ondim);transition:color .3s ease .3s;}
+.gst.miss .gst-kick{border-color:var(--gst-ondim);}
+.gst.miss .gst-kick::before{background:var(--gst-ondim);}
+.gst-c.rv{animation:none;z-index:4;background:var(--gst-rv-bg);border-color:var(--gst-rv-bg);transform:scale(1.04);box-shadow:0 12px 32px rgba(0,0,0,.28);transition:background .3s ease .3s,border-color .3s ease .3s,transform .35s ease .3s,box-shadow .35s ease .3s;}
+.gst-c.rv, .gst-c.rv *{color:var(--gst-rv-ink);}
+.gst-c.pk{animation:gstShake .38s ease-in-out 0s both !important;}
+.gst-tag{position:absolute;top:-10px;right:14px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.3;background:var(--gst-bg);border:1px solid var(--gst-ink);border-radius:999px;padding:2px 8px;animation:gstTag .25s ease-out .35s both;}
+@keyframes gstShake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@keyframes gstTag{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media(min-width:900px){.gst-col{max-width:820px;gap:40px;padding:48px 32px 28px;}.gst-q{font-size:44px;}.gst-q blockquote{font-size:26px;}.gst-q:has(blockquote){font-size:22px;}.gst-q:has(blockquote) blockquote{font-size:40px;}.gst-ch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}.gst-c{min-height:150px;font-size:26px;padding:22px;}.gst-ch.many .gst-c{min-height:120px;font-size:23px;}.gst-ch.tiny .gst-c{font-size:38px;}}
 @media(max-width:400px){.gst-q{font-size:25px;}.gst-q:has(blockquote){font-size:16px;}.gst-q:has(blockquote) blockquote{font-size:24px;}.gst-c{font-size:19px;min-height:64px;}.gst-ch.many .gst-c{font-size:17px;min-height:54px;}.gst-ch.grid .gst-c{font-size:18px;min-height:76px;}.gst-ch.tiny .gst-c{font-size:27px;}}
-@media (prefers-reduced-motion: reduce){.gst-q,.gst-c,.gst-c.ok{animation:none}}
+@media (prefers-reduced-motion: reduce){.gst-q,.gst-c,.gst-c.ok,.gst-c.pk,.gst-tag{animation:none}.gst-dim,.gst-c.rv{transition:none}}
 `;

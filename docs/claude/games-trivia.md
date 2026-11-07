@@ -20,6 +20,14 @@ match background", "it needs to use the pastel colors", counter "clock and stand
   Vocab, Spell, Origin, Idiom; Gap, Series, Back, Blitz, Blitzed) draw it from
   `rampFor(circuitSlotFor(<run>, <key>))`, with the clock and the question count below (no live standing
   on a daily yet). Wired by `scripts/wire-gauntlet-stage.mjs`; a new gauntlet daily gets the same block.
+- **A MISS GETS THE SPOTLIGHT (owner, 2026-11-07, "let's do spotlight on all of the gauntlets").** On a
+  wrong pick or a timeout the stage holds for `MISS_MS` (1.9s): the pick shakes and is tagged "Your pick",
+  then a veil dims the stage and only the question, its kicker and the RIGHT answer stay lit. No red, in
+  any look. Dailies: `useMissReveal(g.status, g.pick, g.timedOut)` (exported from `GauntletStage.jsx`)
+  opens the hold during render on the playing->lost flip, and the client ORs it into `playing` so the
+  ending waits; the loss is saved and posted at once. Pass `missRight`/`missPick` to the stage. The run:
+  `missHold()` in RunClient delays `finishSection('lost')` by `MISS_MS`, stamping the section time at the
+  miss (`at`). A new gauntlet daily must carry the same three lines. Mockup: canvas "Gauntlet Miss Reveals".
 
 ## Atlas: the daily geography gauntlet (launched 2026-08-25)
 

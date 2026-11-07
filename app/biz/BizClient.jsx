@@ -22,7 +22,7 @@
 // Ties on the daily board break by time, so a quick death at 12 beats a slow one.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import GauntletStage from '../GauntletStage';
+import GauntletStage, { useMissReveal } from '../GauntletStage';
 import { rampFor as gstRamp, circuitSlotFor as gstSlot } from '@/lib/circuits';
 import { useHoverStale } from '@/lib/hover-armed';
 import { useSearchParams } from 'next/navigation';
@@ -232,7 +232,11 @@ export default function BizClient({ puzzles = [], questionsByNum = {}, forceNum 
   const qStartRef = useRef(null);
   const lockRef = useRef(false);
 
-  const playing = g.status === 'playing';
+  // THE SPOTLIGHT HOLD (owner, 2026-11-07): for MISS_MS after a miss the stage
+  // stays up showing the right answer, so the page counts as still playing and
+  // the ending waits. The loss itself is already saved and posted.
+  const missShow = useMissReveal(g.status, g.pick, g.timedOut, !!g.t0);
+  const playing = g.status === 'playing' || !!missShow;
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
   const focusMode = playing && !showChrome;
@@ -569,7 +573,9 @@ export default function BizClient({ puzzles = [], questionsByNum = {}, forceNum 
           choices={question.choices.map((c) => (typeof c === 'number' ? c.toLocaleString('en-US') : c))}
           onPick={answer}
           lockIdx={lock && g.lastRight != null ? question.correct : null}
-          disabled={lock}
+          missRight={missShow ? question.correct : null}
+          missPick={missShow ? missShow.pick : null}
+          disabled={lock || !!missShow}
           frac={remainFrac}
           hot={remainFrac < 0.25}
           footer={<>{Math.ceil(remainMs / 1000)}s &middot; {g.i + 1} of {TOTAL_Q}</>}
