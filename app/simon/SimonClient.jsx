@@ -26,26 +26,18 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { RotateCcw } from 'lucide-react';
-import Grain from '../Grain';
-import Footer from '../Footer';
+import { Smartphone } from 'lucide-react';
 import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
-import DailyGamesGrid from '../DailyGamesGrid';
-import DailyEndCard from '../DailyEndCard';
-import DailyChrome from '../DailyChrome';
 import DailyRules from '../DailyRules';
-import DailyBoardPanel from '../quiz/[id]/DailyBoardPanel';
-import DailyMasthead from '../DailyMasthead';
-import { isLoft } from '@/lib/loft';
 import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
-import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
-import { isStage } from '@/lib/stage';
+import PlayStage from '../PlayStage';
+import usePlayStageFit from '@/lib/play-stage-fit';
 import { useStageTheme } from '@/lib/stage-theme';
-import { gameColor, gameColorLight, gameOnrampLight, gameAccentInkLight, regionStyle, regionMix, REGION_INK } from '@/lib/category-ramp';
-import GamePanel from '../GamePanel';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
+import { gameColor, gameColorLight, gameOnrampLight, gameAccentInkLight, sitePastel } from '@/lib/category-ramp';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
 import useDailyBoard from '../useDailyBoard';
@@ -53,14 +45,12 @@ import useGameAllTime from '../useGameAllTime';
 import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
-import AddToHome from '../AddToHome';
 import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isMobileDevice } from '@/lib/is-mobile';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
 import useEndHold, { HOLD_LONG } from '../useEndHold';
 import { notifyShareCredit } from '../ShareCreditPop';
 import { withRef } from '@/lib/referrals';
-import { T } from '@/lib/theme';
 import { arcadeRanksForKey } from '@/lib/daily-games';
 import { meRequest } from '@/app/quizMeClient';
 import { ARCADE_RUN } from '@/lib/end-verdict';
@@ -68,13 +58,14 @@ import { PADS, LIT_MS, GAP_MS, LEAD_MS, TAP_MS, dayPlan, newGame, press as press
 import HelpSheet from '../HelpSheet';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
-const COLORS = {
-  ink: T.ink, cream: '#f7f8fa', faded: '#3f4757', line: '#e5e7eb',
-  accent: '#8a5a00', accentSoft: '#fdf3d7',
-};
+const COLORS = { accent: '#8a5a00', accentSoft: '#fdf3d7' };
+// The pads wear the SITE pastels (owner, 2026-11-06/07: full pastels, never
+// washed tints), in the order Carve's blocks use, one per pad.
+const PAD_PASTELS = ['#7dd3fc', '#e8b43a', '#6ee7b7', '#fb7185', '#c084fc', '#bef264', '#e879f9', '#a5b4fc', '#fb923c'];
+const ARM_MIN_MS = 400;
+const isIosDevice = () => typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 const HELP_KEY = 'sot_simon_help_seen';
 const STATS_KEY = 'sot_simon_stats';
-const BOARD_MAX = 440;
 const NEXT_MS = 650;     // the beat after a round is repeated, before the next show
 const MISS_MS = 1500;    // the missed pad and the wanted pad stay up this long
 
@@ -204,13 +195,24 @@ export default function SimonClient({ puzzles = [], forceNum = null }) {
   const [hydrated, setHydrated] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
-  const [endClosed, setEndClosed] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [armGiveUp, setArmGiveUp] = useState(false);
   const [copied, setCopied] = useState(false);
   const [identity, setIdentity] = useState(null);
   const [stats, setStats] = useState(null);
   const [touchOnly, setTouchOnly] = useState(false);
+  const [installEvt, setInstallEvt] = useState(null);
+  const [showA2hsHelp, setShowA2hsHelp] = useState(false);
+  const [standalone, setStandalone] = useState(false);
+  useEffect(() => {
+    try { setStandalone(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true); } catch (e) {}
+    const onBip = (e) => { e.preventDefault(); setInstallEvt(e); };
+    const onInstalled = () => { setStandalone(true); setInstallEvt(null); };
+    window.addEventListener('beforeinstallprompt', onBip);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => { window.removeEventListener('beforeinstallprompt', onBip); window.removeEventListener('appinstalled', onInstalled); };
+  }, []);
+  const a2hsClick = () => { const e = installEvt; if (e) { setInstallEvt(null); e.prompt(); } else { setShowA2hsHelp(true); } };
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => { if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`); }, []);
   const timers = useRef([]);
@@ -233,31 +235,22 @@ export default function SimonClient({ puzzles = [], forceNum = null }) {
   const endHold = useEndHold();
   const holdEnd = endHold.hold;
   const releaseEnd = endHold.release;
-  const LOFT = isLoft('simon');
-  const STAGE = isStage('simon', searchParams);
-  const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('simon');
-  const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('simon');
-  const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('simon'), '--stg-acc-lt': gameColorLight('simon'), '--stg-onramp-lt': gameOnrampLight('simon'), '--stg-acc-ink-lt': gameAccentInkLight('simon') };
   const [stageTheme] = useStageTheme();
-  const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
-  const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
-  const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
-  const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
-  const ACC_INK = STAGE ? 'var(--stg-acc-ink)' : COLORS.accent;
-  const iq = useIqStanding({ game: 'simon', quizId: PUZZLE.quizId, active: LOFT && !playing });
+  const [stageLook] = useStageLook();
+  const padHue = (i) => sitePastel(PAD_PASTELS[i], isDarkLook(stageLook));
+  const INK = 'var(--stg-ink,#e9edf4)';
+  const MUTE = 'var(--stg-mute,#8b95a8)';
+  const iq = useIqStanding({ game: 'simon', quizId: PUZZLE.quizId, active: !playing });
   const prevPuzzle = puzzles.find((x) => x.num === PUZZLE.num - 1) || null;
-  const nextUp = useNextUnplayed({ self: 'simon', active: LOFT && !playing });
-  const upNext = useUnplayedSimilar({ self: 'simon', active: LOFT && !playing });
-  const dailyBoard = useDailyBoard({ quizId: PUZZLE.quizId, active: LOFT && !playing });
-  const allTime = useGameAllTime({ game: 'simon', active: LOFT && !playing });
+  const nextUp = useNextUnplayed({ self: 'simon', active: !playing });
+  const upNext = useUnplayedSimilar({ self: 'simon', active: !playing });
+  const dailyBoard = useDailyBoard({ quizId: PUZZLE.quizId, active: !playing });
+  const allTime = useGameAllTime({ game: 'simon', active: !playing });
   const dayStats = useDayStats();
-  const catRank = useCategoryRank({ self: 'simon', active: LOFT && !playing });
+  const catRank = useCategoryRank({ self: 'simon', active: !playing });
 
-  const [showChrome, setShowChrome] = useState(false);
-  const focusMode = playing && !showChrome;
   const preStart = playing && !armed;
-  const started = playing && !!g.t0;
   const over = g.status !== 'playing';
   const won = over && g.score >= PAR;
   const verdictTone = won ? 'won' : 'part';
@@ -394,7 +387,6 @@ export default function SimonClient({ puzzles = [], forceNum = null }) {
     inputStart.current = 0;
     setMiss(null); setLit(null); setTapped(null);
     setArmGiveUp(false);
-    setEndClosed(false);
     setRevealed(false);
     const cur = gRef.current;
     commit({ ...cur, status: 'playing', t0: Date.now(), tEnd: null, score: 0, inputMs: 0, gaveUp: false });
@@ -438,7 +430,7 @@ export default function SimonClient({ puzzles = [], forceNum = null }) {
   const giveUp = useCallback(() => {
     if (gRef.current.status !== 'playing' || !eRef.current) return;
     if (!armGiveUp) { setArmGiveUp(Date.now()); return; }
-    if (Date.now() - armGiveUp < 400) return;
+    if (Date.now() - armGiveUp < ARM_MIN_MS) return;
     finishRun(true);
   }, [armGiveUp, finishRun]);
   useEffect(() => {
@@ -515,250 +507,175 @@ export default function SimonClient({ puzzles = [], forceNum = null }) {
     : phase === 'input' ? 'Your turn'
       : phase === 'next' ? 'Got it'
         : phase === 'miss' ? 'Missed' : '';
-  const sayTone = phase === 'miss' ? 'bad' : (phase === 'input' || phase === 'next') ? 'go' : '';
-  const roundNow = playing ? fig.round : g.score + 1;
-  const statusLine = over
-    ? (g.score === 0
-      ? `No steps this run.${g.gaveUp ? ' You gave up.' : ''}`
-      : `${steps(g.score)} repeated, ${fmtTime(g.inputMs)} of tapping.${g.gaveUp ? ' You gave up.' : ''}${bestToday != null && bestToday > g.score ? ` Your best today is ${nf(bestToday)}.` : ''}`)
-    : phase === 'watch' ? `Round ${nf(fig.round)}: watch ${steps(fig.round)}.`
-      : phase === 'input' ? `Tap them back: ${nf(fig.pos)} of ${nf(fig.round)}.`
-        : phase === 'next' ? `${steps(fig.score)} repeated. One more is coming.`
-          : phase === 'miss' ? 'Wrong pad. The ringed pad was the one.' : '';
+  const statusLine = phase === 'watch' ? `Watch ${steps(fig.round)}.`
+    : phase === 'input' ? `Tap them back: ${nf(fig.pos)} of ${nf(fig.round)}.`
+      : phase === 'next' ? `${steps(fig.score)} repeated. One more is coming.`
+        : phase === 'miss' ? 'Wrong pad. The ringed pad was the one.' : '';
 
-  const btn = { fontFamily: SANS, fontWeight: 800, fontSize: 14, border: `2px solid var(--stg-line, ${COLORS.accent})`, background: STAGE ? SURF : '#fff', color: ACC_INK, borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
+  // The tapping clock for the foot: it runs only on your turn.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (phase !== 'input') return undefined;
+    const iv = setInterval(() => setTick((x) => x + 1), 500);
+    return () => clearInterval(iv);
+  }, [phase]);
+  const clockShown = fmtTime(playing ? tapMs() : (g.inputMs || 0));
+
+  // THE BOARD. Nine pads in the site pastels with a 1px ink rule; a lit pad
+  // turns ink and its shape takes the pad's pastel; the wanted pad after a
+  // miss is lit and ringed; the wrong pad shakes in the bad mark.
+  const padRef = useRef(null);
+  const onStage = !!g.t0 && (playing || !revealed);
+  const fit = usePlayStageFit(padRef, '.sm-bd', onStage);
+  const board = (live) => (
+    <div ref={live ? padRef : undefined} className="sm-wrap">
+      <div className={`sm-bd${live && phase === 'input' ? ' live' : ''}`} role="group" aria-label="Simon pads"
+        style={live && fit ? { width: `min(100%, ${fit}px)` } : undefined}>
+        {Array.from({ length: PADS }, (_, i) => {
+          const on = live && (lit === i || tapped === i);
+          const cls = ['sm-pad', on ? 'on' : '', live && miss && miss.pad === i ? 'miss' : '', live && miss && miss.want === i ? 'want' : ''].filter(Boolean).join(' ');
+          return (
+            <button key={i} type="button" className={cls}
+              style={{ '--hue': padHue(i) }}
+              aria-label={`${SHAPE_NAMES[i]} pad, key ${i + 1}`}
+              disabled={!live || !playing}
+              onPointerDown={live ? (ev) => { ev.preventDefault(); tap(i); } : undefined}
+              onContextMenu={(ev) => ev.preventDefault()}>
+              <svg viewBox="0 0 100 100" aria-hidden="true">{SHAPES[i]}</svg>
+            </button>
+          );
+        })}
+      </div>
+      {live && !touchOnly ? <div className="sm-keys">Keys 1 to 9, or Q W E, A S D, Z X C</div> : null}
+    </div>
+  );
+
+  // THE STAGE, at every width, from Start through the finish (the ending hides
+  // it when it arrives, app/StageHost.jsx), as every white-stage daily does.
+  const stage = onStage ? (
+    <PlayStage bg={gameColor('simon')} label="Simon"
+      eyebrow={playing ? `Round ${nf(fig.round)} · ${say}` : steps(g.score)}
+      top={board(true)}
+      foot={playing ? statusLine : null}
+      frac={playing && phase !== 'watch' && fig.round ? fig.pos / fig.round : null}
+      clock={clockShown}
+      done={!playing}
+      giveUp={playing ? { armed: !!armGiveUp, onPress: giveUp, armedLabel: 'Tap again to give up' } : null} />
+  ) : null;
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', fontFamily: SANS, background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {!STAGE && <Grain />}
-      {!STAGE && (
-        <DailyChrome slug="simon" name="Simon" collapsed={started} loft={LOFT} />
-      )}
-      {LOFT && (
-        <Cap gameKey="simon" quizId={PUZZLE.quizId}
-          name="Simon"
-          cat="Arcade"
-          outcome={playing ? null : verdictTone}
-          num={PUZZLE.num}
-          tiles={playing ? null : upNext}
-          dateLabel={PUZZLE.dateLabel}
-          onHelp={() => setShowHelp(true)}
-          sunday={null}
-          figures={[
-            { v: shownScore, k: 'steps' },
-            { v: bestToday != null ? bestToday : '–', k: 'best' },
-          ]}
-        />
-      )}
-
-      <div style={{ maxWidth: 780, margin: '0 auto', padding: '18px 18px 40px', position: 'relative', zIndex: 2 }}>
-        <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
-
-        {!LOFT && (
-          <DailyMasthead
-            slug="simon"
-            num={PUZZLE.num}
-            dateLabel={PUZZLE.dateLabel}
-            accent={COLORS.accent}
-            helpTop={13}
-            marginBottom={16}
-            onHelp={() => setShowHelp(true)}
-          />
-        )}
-
-        <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
-          <div className={LOFT && !STAGE && !playing && !endHold.held ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
-            <div className={LOFT && !STAGE && !playing && !endHold.held ? 'loft-flip-in' : undefined}>
-              <div className={LOFT && !STAGE && !playing && !endHold.held ? 'loft-face' : undefined}>
-                <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
-
-                  {preStart && (
-                    <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '22px', display: 'flex', flexDirection: 'column', maxWidth: 560, margin: '0 auto', width: '100%' }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
-                      {gateRules ? rulesBody : (
-                        <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                          <p style={{ margin: '0 0 6px' }}>Watch the pads light up, then tap them back in the same order. Every round adds one more. One wrong tap ends the run, the pace never speeds up, and your best run of the day is the one that counts.</p>
-                        </div>
-                      )}
-                      <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                        <button onClick={startGame} style={{ ...btn, background: STAGE ? STAGE_C : T.cta, borderColor: STAGE ? STAGE_C_INK : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
-                        <div>
-                          <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-                            {gateRules ? 'Back' : 'How to play'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {!preStart && (
-                    <div className={STAGE ? 'stg-board' : undefined} style={{ background: STAGE ? SURF : '#fff', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, borderRadius: 12, padding: 14, position: 'relative', maxWidth: BOARD_MAX + 60, margin: '0 auto' }}>
-                      {/* the round, the word for what to do now, and the taps of this round */}
-                      <div className="sm-head">
-                        <span className="sm-round">Round <b>{nf(roundNow)}</b></span>
-                        <span className={`sm-say${sayTone ? ' ' + sayTone : ''}`} data-sm-status="">{say}</span>
-                      </div>
-                      <div className="sm-track" aria-hidden="true">
-                        <i style={{ width: `${playing && phase !== 'watch' && fig.round ? Math.min(100, (fig.pos / fig.round) * 100) : 0}%` }} />
-                      </div>
-
-                      <div className={`sm-board${phase === 'input' ? ' live' : ''}`} role="group" aria-label="Simon pads">
-                        {Array.from({ length: PADS }, (_, i) => {
-                          const on = lit === i || tapped === i;
-                          const cls = ['sm-pad', on ? 'on' : '', miss && miss.pad === i ? 'miss' : '', miss && miss.want === i ? 'want' : ''].filter(Boolean).join(' ');
-                          return (
-                            <button key={i} type="button" className={cls}
-                              style={regionStyle(i)}
-                              aria-label={`${SHAPE_NAMES[i]} pad, key ${i + 1}`}
-                              disabled={!playing}
-                              onPointerDown={(ev) => { ev.preventDefault(); tap(i); }}
-                              onContextMenu={(ev) => ev.preventDefault()}>
-                              <svg viewBox="0 0 100 100" aria-hidden="true">{SHAPES[i]}</svg>
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <p className="sm-line" aria-live="polite">{statusLine}</p>
-
-                      {playing && armed && (
-                        <div className="sm-foot-row">
-                          <span className="sm-keys">{touchOnly ? 'Tap the pads in the order they lit.' : 'Keys 1 to 9, or Q W E, A S D, Z X C.'}</span>
-                          <button type="button" className={`sm-giveup${armGiveUp ? ' armed' : ''}`} onClick={giveUp} aria-label={armGiveUp ? 'Tap again to give up' : 'Give up'}>
-                            {armGiveUp ? 'Tap again to give up' : 'Give up'}
-                          </button>
-                        </div>
-                      )}
-
-                      {over && (
-                        <button
-                          onClick={armBoard}
-                          style={{
-                            marginTop: 14, width: '100%', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                            fontFamily: SANS, fontWeight: 800, fontSize: 15, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white,
-                            background: STAGE ? STAGE_C : T.cta, border: `2px solid ${STAGE ? STAGE_C_INK : T.cta}`, borderRadius: 12, padding: '13px 18px', cursor: 'pointer',
-                          }}
-                        >
-                          <RotateCcw size={16} /> Play again
-                        </button>
-                      )}
-                      <p className="sm-foot">Same sequence for everyone today. Play as often as you like; your best run counts.</p>
-                    </div>
-                  )}
-
+    <div className="stage-page" data-stage-theme={stageTheme}
+      style={{ ...STAGE_ACC, minHeight: '100vh', position: 'relative', background: 'var(--stg-ground)', color: INK, overflowX: 'hidden' }}>
+      {stage}
+      <StageChrome gameKey="simon" quizId={PUZZLE.quizId}
+        name="Simon"
+        cat="Arcade"
+        outcome={playing ? null : verdictTone}
+        num={PUZZLE.num}
+        tiles={playing ? null : upNext}
+        dateLabel={PUZZLE.dateLabel}
+        onHelp={() => setShowHelp(true)}
+        sunday={null}
+        figures={[
+          { v: String(shownScore), k: 'steps' },
+          { v: bestToday != null ? String(bestToday) : '–', k: 'best' },
+        ]}
+      />
+      <div className="sm-page" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 24px 80px', fontFamily: SANS }}>
+        <div>
+          {preStart && (
+            <div className="stg-gate" style={{ maxWidth: 640, margin: '0 auto 16px', background: 'var(--stg-surf,#fff)', border: '1px solid var(--stg-line,rgba(11,15,26,.14))', borderRadius: 12, padding: 22, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : `Simon No. ${PUZZLE.num}`}</div>
+              {gateRules ? rulesBody : (
+                <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
+                  <p style={{ margin: 0 }}>Watch the pads light up, then tap them back in the same order. Every round adds one more. One wrong tap ends the run, the pace never speeds up, and your best run of the day counts.</p>
                 </div>
-                {LOFT && !playing && !endHold.held && revealed && (
-                  <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
-                )}
-              </div>
-              {LOFT && !playing && !endHold.held && (
-                <LoftFinish
-                  name="Simon"
-                  catRank={catRank}
-                  outcome={verdictTone}
-                  challengeMetric={Number.isFinite(g.score) ? g.score : null}
-                  title={verdictWord}
-                  detail={steps(g.score)}
-                  iq={iq}
-                  board={dailyBoard}
-                  gameRank={allTime && allTime.ready
-                    ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '–',
-                        label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Simon all time` : 'all-time rank' }
-                    : null}
-                  day={dayStats}
-                  streak={isTodays ? myStats.cur : null}
-                  missLabel={null}
-                  archive={puzzles
-                    .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
-                    .sort((x, y) => y.num - x.num)
-                    .map((p) => ({
-                      num: p.num,
-                      dateLabel: p.dateLabel,
-                      sunday: false,
-                      href: `/simon?p=${p.num}`,
-                      done: !!(myStats.rec && myStats.rec[p.num]),
-                      score: (myStats.rec && myStats.rec[p.num]) ? myStats.rec[p.num].s : null,
-                    }))}
-                  options={[
-                    { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
-                    { tone: 'board', label: 'Return to board', sub: 'Your finished board', onClick: () => setRevealed(true) },
-                    prevPuzzle && { tone: 'another', label: 'Play another Simon', sub: `No. ${prevPuzzle.num}, yesterday’s sequence`, href: `/simon?p=${prevPuzzle.num}` },
-                    nextUp && { tone: 'similar', label: 'Play similar', sub: `${nextUp.name} · ${nextUp.tag}`, href: nextUp.href },
-                    { tone: 'replay', label: 'Play again', sub: 'Another run, your best one counts', onClick: armBoard },
-                    { label: 'Back to main', sub: 'The day’s full board', tone: 'main', href: '/' },
-                  ]}
-                />
               )}
-            </div>
-          </div>
-        </div>
-
-        {!STAGE && <GamePanel self="simon" name="Simon" onShow={() => setShowChrome(true)} />}
-        {!focusMode && !identity && (
-          <div id="daily-join" style={{ marginTop: 20 }}>
-            <JoinLeaderboardForm hideIcon heading="Put your name on today&rsquo;s board" identity={identity} onJoined={(u) => setIdentity(u)} />
-          </div>
-        )}
-
-        <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block' }}>
-          {LOFT && (
-            <div className={STAGE ? undefined : 'loft-report'}>
-              <ReportIssue self="simon" name="Simon" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
+              <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <button className="sm-btn" onClick={startGame}>Start</button>
+                <button type="button" className="sm-link" onClick={() => setGateRules((v) => !v)}>{gateRules ? 'Back' : 'How to play'}</button>
+              </div>
             </div>
           )}
-          {!focusMode && <AddToHome name="Simon" />}
-          <div id="stf-stats-slot" />
-          {!LOFT && (
-            <DailyGamesGrid
-              self="simon"
-              maxWidth={620}
-              challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
-              share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
-              light
-              divider
-              boardSlot={<DailyBoardPanel self="simon" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
+          {over && !endHold.held && revealed && (
+            <div className="stg-board" style={{ maxWidth: 640, margin: '0 auto 12px' }}>
+              {board(false)}
+              <p style={{ textAlign: 'center', fontSize: 14, fontWeight: 700, color: INK, margin: '12px 0 0' }}>
+                {g.score === 0 ? 'No steps this run.' : `${steps(g.score)} repeated, ${fmtTime(g.inputMs)} of tapping.`}{bestToday != null && bestToday > g.score ? ` Your best today is ${nf(bestToday)}.` : ''}
+              </p>
+            </div>
+          )}
+          {over && !endHold.held && revealed && (
+            <button className="stf-hideboard" onClick={() => setRevealed(false)}>&#8630; Hide the board</button>
+          )}
+          {over && !endHold.held && (
+            <LoftFinish
+              name="Simon"
+              catRank={catRank}
+              outcome={verdictTone}
+              challengeMetric={Number.isFinite(g.score) ? g.score : null}
+              title={verdictWord}
+              detail={steps(g.score)}
+              iq={iq}
+              board={dailyBoard}
+              gameRank={allTime && allTime.ready
+                ? { value: allTime.rank != null ? `#${Number(allTime.rank).toLocaleString()}` : '–',
+                    label: allTime.field != null ? `of ${Number(allTime.field).toLocaleString()} Simon all time` : 'all-time rank' }
+                : null}
+              day={dayStats}
+              streak={isTodays ? myStats.cur : null}
+              missLabel={null}
+              archive={puzzles
+                .filter((p) => p.live <= etToday() && p.num !== PUZZLE.num)
+                .sort((x, y) => y.num - x.num)
+                .map((p) => ({
+                  num: p.num,
+                  dateLabel: p.dateLabel,
+                  sunday: false,
+                  href: `/simon?p=${p.num}`,
+                  done: !!(myStats.rec && myStats.rec[p.num]),
+                  score: (myStats.rec && myStats.rec[p.num]) ? myStats.rec[p.num].s : null,
+                }))}
+              options={[
+                { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
+                { tone: 'board', label: 'See the board', sub: 'Where the run stopped', onClick: () => setRevealed(true) },
+                prevPuzzle && { tone: 'another', label: 'Play another Simon', sub: `No. ${prevPuzzle.num}, ${prevPuzzle.dateLabel}`, href: `/simon?p=${prevPuzzle.num}` },
+                nextUp && { tone: 'similar', label: 'Play similar', sub: `${nextUp.name} · ${nextUp.tag}`, href: nextUp.href },
+                { tone: 'replay', label: 'Play again', sub: 'Another run, your best one counts', onClick: armBoard },
+                { label: 'Back to main', sub: 'The day’s full board', tone: 'main', href: '/' },
+              ]}
             />
           )}
         </div>
 
-        <StageFold />
-        <section style={{ display: (focusMode && !STAGE) ? 'none' : 'block', maxWidth: 620, margin: '26px auto 0', fontSize: 13.5, lineHeight: 1.6, color: FADED }}>
-          <h2 style={{ fontSize: 15, fontWeight: 800, color: INK, margin: '0 0 8px' }}>About Simon</h2>
-          <p style={{ margin: '0 0 9px' }}>
-            Simon is a free daily memory game from Mind Loft. Nine pads light up one at a time; tap them back in the same
-            order, and every round the sequence grows by one. Everyone plays the same sequence on the same day, so the
-            leaderboard compares memory rather than luck.
-          </p>
-          <p style={{ margin: '0 0 9px' }}>
-            The pace never changes: every pad lights for the same beat from the first round to the last, and there is no
-            sound. Each pad carries its own shape as well as its colour. One wrong tap ends the run. Play as many runs as you
-            like; your best one takes the board, and ties go to the faster tapping.
-          </p>
-          <p style={{ margin: 0 }}>
-            More arcade games: <a href="/snake" style={{ color: ACC_INK }}>Snake</a>,{' '}
-            <a href="/blocks" style={{ color: ACC_INK }}>Blocks</a> and{' '}
-            <a href="/squash" style={{ color: ACC_INK }}>Squash</a>.
-          </p>
-        </section>
-      </div>
+        <div style={{ margin: '30px auto 0', maxWidth: 680 }}>
+          <ReportIssue self="simon" name="Simon" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
+          {over && touchOnly && !standalone && (
+            <div style={{ textAlign: 'center', marginTop: 16 }}>
+              <button className="sm-tool" onClick={a2hsClick}><Smartphone size={14} /> Add to Home Screen</button>
+            </div>
+          )}
+          <div id="stf-stats-slot" />
+        </div>
 
-      {!playing && !endClosed && !LOFT && (
-        <DailyEndCard
-          modal
-          self="simon"
-          won={won}
-          quizId={PUZZLE.quizId}
-          completed
-          score={<>{steps(g.score)}</>}
-          subline={<>{fmtTime(g.inputMs)} of tapping</>}
-          onShare={copyShare}
-          shareLabel={copied ? 'Copied' : 'Share Result'}
-          onReplay={armBoard}
-          onClose={() => setEndClosed(true)}
-        />
-      )}
+        {showA2hsHelp && (
+          <div onClick={() => setShowA2hsHelp(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--stg-raise,#fff)', border: '1px solid var(--stg-ink,#08222e)', borderRadius: 16, padding: 20, maxWidth: 380, fontFamily: SANS }}>
+              <div style={{ fontSize: 17, fontWeight: 800, color: INK, marginBottom: 8 }}>Add Simon to your home screen</div>
+              <p style={{ fontSize: 13.5, fontWeight: 600, color: INK, lineHeight: 1.55, margin: '0 0 14px' }}>
+                {isIosDevice() ? 'Tap the Share button in Safari, scroll down, and choose Add to Home Screen.' : 'Open your browser menu and choose Install app, or Add to Home screen.'}
+              </p>
+              <button className="sm-tool" onClick={() => setShowA2hsHelp(false)}>Got it</button>
+            </div>
+          </div>
+        )}
+        {over && !identity && (
+          <div id="daily-join" style={{ margin: '18px auto 0', maxWidth: 680 }}>
+            <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(u) => setIdentity(u)} />
+          </div>
+        )}
+      </div>
+      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
         <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="simon" name="Simon">
@@ -766,45 +683,49 @@ export default function SimonClient({ puzzles = [], forceNum = null }) {
         </HelpSheet>
       )}
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        .sm-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; max-width: ${BOARD_MAX}px; margin: 0 auto 10px; }
-        .sm-round { font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--stg-mute, #5f6774); }
-        .sm-round b { font-size: 20px; letter-spacing: 0; color: var(--stg-ink, #0b0d12); font-weight: 800; margin-left: 4px; font-variant-numeric: tabular-nums; }
-        .sm-say { font-size: 15px; font-weight: 800; color: var(--stg-mute, #5f6774); }
-        .sm-say.go { color: var(--stg-acc-ink, #8a5a00); }
-        .sm-say.bad { color: var(--stg-bad, #be123c); }
-        .sm-track { height: 6px; border-radius: 3px; background: var(--stg-line2, #c3cad6); overflow: hidden; max-width: ${BOARD_MAX}px; margin: 0 auto 14px; }
-        .sm-track > i { display: block; height: 100%; background: var(--stg-acc, #fbbf24); transition: width .12s; }
-        .sm-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; max-width: ${BOARD_MAX}px; margin: 0 auto; aspect-ratio: 1 / 1; }
-        .sm-pad { position: relative; border: 1px solid var(--stg-ink, #0b0d12); border-radius: 18px; padding: 0; margin: 0; cursor: default;
-          background: ${regionMix(1)}; display: flex; align-items: center; justify-content: center;
-          transition: background-color .08s linear, transform .08s ease-out; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; font: inherit; }
-        [data-stage-theme="dark"] .sm-pad:not(.on):not(.want) { background: ${regionMix(2)}; }
-        .sm-board.live .sm-pad { cursor: pointer; }
-        .sm-pad:disabled { cursor: default; }
-        .sm-pad svg { width: 42%; height: 42%; opacity: .5; transition: opacity .08s linear; }
-        .sm-pad svg * { fill: none; stroke: ${REGION_INK}; stroke-width: 7; stroke-linejoin: round; }
-        .sm-pad.on { background: color-mix(in srgb, var(--hue) 78%, var(--stg-cell, #ffffff)); box-shadow: inset 0 0 0 3px var(--stg-ink, #0b0d12); transform: scale(.965); }
-        .sm-pad.on svg { opacity: 1; }
-        .sm-pad.miss { animation: smShake .34s ease-out 1; }
-        .sm-pad.want { box-shadow: 0 0 0 3px var(--stg-ground, #f4f6f9), 0 0 0 5px var(--stg-ink, #0b0d12); background: color-mix(in srgb, var(--hue) 78%, var(--stg-cell, #ffffff)); }
-        .sm-pad.want svg { opacity: 1; }
-        .sm-line { max-width: ${BOARD_MAX}px; margin: 14px auto 0; min-height: 1.35em; font-size: 14.5px; font-weight: 700; line-height: 1.35; color: var(--stg-ink, #0b0d12); text-align: center; }
-        .sm-foot-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; max-width: ${BOARD_MAX}px; margin: 12px auto 0; }
-        .sm-keys { font-size: 12px; font-weight: 600; line-height: 1.35; color: var(--stg-mute, #5f6774); }
-        .sm-giveup { flex: none; font-family: ${SANS}; font-size: 13px; font-weight: 700; min-height: 36px; padding: 0 14px; border-radius: 10px; background: transparent; border: 1px solid var(--stg-line3, #78839a); color: var(--stg-ink2, #3f4757); cursor: pointer; }
-        .sm-giveup.armed { border-color: var(--stg-bad, #be123c); color: var(--stg-bad, #be123c); }
-        .sm-foot { margin: 14px auto 0; max-width: ${BOARD_MAX}px; font-size: 12px; font-weight: 600; line-height: 1.4; color: var(--stg-mute, #5f6774); text-align: center; }
-        @media (max-width: 560px) {
-          .sm-board { gap: 8px; }
-          .sm-pad { border-radius: 14px; }
-          .sm-line { font-size: 13.5px; }
-        }
-        @keyframes smShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
-        @media (prefers-reduced-motion: reduce) { .sm-pad.miss { animation: none; } .sm-pad, .sm-pad svg, .sm-track > i { transition: none; } }
-      ` }} />
+      <StageFold />
+      <section style={{ maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+        <h2 style={{ fontSize: 17, fontWeight: 800, color: INK, margin: '0 0 8px' }}>About Simon</h2>
+        <p style={{ fontSize: 13.5, fontWeight: 600, color: MUTE, lineHeight: 1.6, margin: '0 0 9px' }}>
+          Simon is a free daily memory game from Mind Loft. Nine pads light up one at a time; tap them back in the same
+          order, and every round the sequence grows by one. Everyone plays the same sequence on the same day, so the
+          leaderboard compares memory rather than luck.
+        </p>
+        <p style={{ fontSize: 13.5, fontWeight: 600, color: MUTE, lineHeight: 1.6, margin: '0 0 9px' }}>
+          The pace never changes: every pad lights for the same beat from the first round to the last, and there is no
+          sound. Each pad carries its own shape as well as its colour. One wrong tap ends the run. Play as many runs as you
+          like; your best one takes the board, and ties go to the faster tapping.
+        </p>
+        <p style={{ fontSize: 13.5, fontWeight: 600, color: MUTE, lineHeight: 1.6, margin: 0 }}>
+          More arcade games: <a href="/snake" style={{ color: INK }}>Snake</a>,{' '}
+          <a href="/blocks" style={{ color: INK }}>Blocks</a> and{' '}
+          <a href="/squash" style={{ color: INK }}>Squash</a>.
+        </p>
+      </section>
 
-      {!STAGE && <div style={{ display: focusMode ? 'none' : 'block' }}><Footer /></div>}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media(max-width:560px){.sm-page{padding-left:10px !important;padding-right:10px !important;}}
+        .sm-btn{font-family:${SANS};font-weight:800;font-size:15px;border:2px solid var(--stg-acc-ink, var(--stg-acc));background:var(--stg-acc);color:var(--stg-onramp, #08222e);border-radius:999px;padding:11px 24px;cursor:pointer;}
+        .sm-link{background:none;border:none;padding:0;cursor:pointer;font-family:${SANS};font-size:13px;font-weight:700;color:${MUTE};text-decoration:underline;}
+        .sm-tool{font-family:${SANS};font-weight:800;font-size:13.5px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,.35));background:transparent;color:${INK};border-radius:999px;padding:0 15px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+        .sm-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;--sm-ink:var(--pst-ink, var(--stg-ink, #0b0f1a));--sm-bg:var(--pst-bg, var(--stg-ground, #ffffff));}
+        .sm-bd{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%;max-width:480px;aspect-ratio:1/1;margin:0 auto;}
+        .sm-pad{position:relative;border:1px solid var(--sm-ink);border-radius:16px;padding:0;margin:0;cursor:default;background:var(--hue);display:flex;align-items:center;justify-content:center;transition:background-color .07s linear,transform .07s ease-out;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;font:inherit;}
+        .sm-bd.live .sm-pad{cursor:pointer;}
+        .sm-pad svg{width:44%;height:44%;}
+        .sm-pad svg *{fill:none;stroke:var(--sm-ink);stroke-width:7;stroke-linejoin:round;transition:stroke .07s linear;}
+        .sm-pad.on{background:var(--sm-ink);transform:scale(.96);}
+        .sm-pad.on svg *{stroke:var(--hue);}
+        .sm-pad.want{background:var(--sm-ink);box-shadow:0 0 0 3px var(--sm-bg),0 0 0 5px var(--sm-ink);}
+        .sm-pad.want svg *{stroke:var(--hue);}
+        .sm-pad.miss{background:var(--pst-bad-bg,#fee2e2);border-color:var(--pst-bad,#b91c1c);animation:smShake .34s ease-out 1;}
+        .sm-pad.miss svg *{stroke:var(--pst-bad,#b91c1c);}
+        .sm-keys{font-size:12px;font-weight:700;opacity:.7;text-align:center;}
+        @media (max-width:560px){.sm-bd{gap:8px;}.sm-pad{border-radius:14px;}}
+        @media (hover:none),(pointer:coarse){.sm-keys{display:none;}}
+        @keyframes smShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-5px);}40%{transform:translateX(5px);}60%{transform:translateX(-3px);}80%{transform:translateX(3px);}}
+        @media (prefers-reduced-motion:reduce){.sm-pad.miss{animation:none;}.sm-pad,.sm-pad svg *{transition:none;}}
+      ` }} />
     </div>
   );
 }
