@@ -12,6 +12,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import CircuitFrame from '../circuits/CircuitFrame';
 import GameGlyph from '../GameGlyph';
+import RunFinale from '../RunFinale';
 import { DAILY_GAME_MAP, scoreText, scoreView } from '@/lib/daily-games';
 import { categoryColor, sitePastelHex } from '@/lib/category-ramp';
 import { dailyRunHref, playedToday, builtRunHref, rememberRun, listMyRuns, cleanRunName, cleanMaker } from '@/lib/daily-run';
@@ -56,6 +57,28 @@ function resultText(key, p) {
   if (sv && sv.v === 'verdict' && t === 'Solved' && c) return `Solved ${c}`;
   return t;
 }
+// THE BUILT RUN'S TITLES (owner, 2026-11-07: "similar cool animations"). A
+// built run has no title ladder of its own, so it climbs one on its share of
+// the placement points it could have taken (15 a game), in the run ladder's
+// pastels. Shown only in the finale and on the band it glides into.
+const BUILT_LADDER = [
+  { f: 0, name: 'Warmed Up', colour: '#7dd3fc' },
+  { f: 0.25, name: 'In the Mix', colour: '#6ee7b7' },
+  { f: 0.45, name: 'Contender', colour: '#bef264' },
+  { f: 0.65, name: 'Front Runner', colour: '#fcd34d' },
+  { f: 0.85, name: 'Run Master', colour: '#fda4af' },
+];
+export function builtLadder(n) {
+  const max = 15 * Math.max(1, n);
+  return BUILT_LADDER.map((t) => ({ name: t.name, colour: t.colour, min: Math.round(t.f * max) }));
+}
+function titleFor(ladder, score) {
+  let t = ladder[0];
+  ladder.forEach((x) => { if (score >= x.min) t = x; });
+  return t;
+}
+const finKey = (keys, name, day) => `ml_runfin|${keys.join(',')}|${name}|${day}`;
+
 // Who took a game: more placement points wins; equal points is a tie.
 function winner(a, b) {
   const pa = a && !a.abandoned ? Number(a.points) || 0 : -1;
@@ -75,6 +98,10 @@ export default function RunPageClient({ keys = [], name = 'A Mind Loft Run', by 
   // Built in this browser (My Runs marks it), which is how a maker with no
   // name is still recognised as the maker.
   const [mine, setMine] = useState(false);
+  // The finale plays once per run per day, the first time this browser sees
+  // the run finished with its results landed: 'off' | 'play' | 'glide'.
+  const [fin, setFin] = useState('off');
+  const [finLook, setFinLook] = useState(null);
   const link = builtRunHref(keys, meta, true);
 
   useEffect(() => {
@@ -138,6 +165,28 @@ export default function RunPageClient({ keys = [], name = 'A Mind Loft Run', by 
   const myRank = board && board.me && board.me.rank ? board.me.rank : null;
   const field = board ? (board.overallField || 0) : 0;
 
+  const ladder = useMemo(() => builtLadder(keys.length), [keys.length]);
+  const landed = allDone && keys.every((k) => myPer[k]);
+  const ptsTotal = landed ? Math.round(keys.reduce((a, k) => a + (Number(myPer[k].points) || 0), 0)) : null;
+  const earned = ptsTotal != null ? titleFor(ladder, ptsTotal) : null;
+  // The finale's standing line lands where the page prints the same words: the
+  // head-to-head verdict when there is a maker to beat, else the run rank.
+  const vsLine = vsRow && vsDone ? `You Took ${wins} of ${keys.length}` : '';
+  const rankLine = myRank ? `#${myRank} of ${Math.max(field, myRank)} on this run today` : '';
+  const standLine = vsLine || rankLine;
+  useEffect(() => {
+    if (!landed || !day || fin !== 'off') return;
+    try {
+      if (localStorage.getItem(finKey(keys, name, day))) return;
+      localStorage.setItem(finKey(keys, name, day), '1');
+    } catch (e) { return; }
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const host = document.querySelector('.cfr') || document.body;
+    const cs = getComputedStyle(host);
+    setFinLook({ bg: cs.backgroundColor || '#ffffff', ink: cs.color || '#0b0d12' });
+    setFin('play');
+  }, [landed, day]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const share = async (kind) => {
     const text = kind === 'result'
       ? [`${name} · Mind Loft`, vsRow && vsDone ? `I took ${wins} of ${keys.length} against ${vsRow.username}.` : (myRank ? `#${myRank} on the run today.` : `I played all ${keys.length}.`), 'Can you beat it?', link].join('\n')
@@ -154,10 +203,29 @@ export default function RunPageClient({ keys = [], name = 'A Mind Loft Run', by 
   const editHref = `/build-a-run?g=${keys.join(',')}&n=${encodeURIComponent(name)}`;
   const progress = keys.length ? doneN / keys.length : 0;
 
+  const finaleNode = fin !== 'off' && fin !== 'done' && finLook && landed ? (
+    <RunFinale
+      runKey="built" circuitName={name} dateLabel={day ? dayLabel(day) : ''} unitWord="points"
+      heading="Your title" legWord="Game"
+      legs={keys.map((k) => {
+        const p = myPer[k] || {};
+        return {
+          name: DAILY_GAME_MAP[k].name, colour: categoryColor(DAILY_GAME_MAP[k].cat),
+          got: Number(p.points) || 0, shown: Math.round(Number(p.points) || 0), max: 15,
+          sub: resultText(k, p) || '', rank: Number.isFinite(p.rank) ? p.rank : null, plays: Number.isFinite(p.field) ? p.field : null,
+        };
+      })}
+      score={ptsTotal} ladder={ladder} rankText={standLine}
+      ink={finLook.ink} endBg={finLook.bg} colorGround
+      onGlide={() => setFin('glide')} onDone={() => setFin('done')}
+    />
+  ) : null;
+
   return (
     <CircuitFrame label="Runs" progress={progress}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="br">
+      {finaleNode}
+      <div className={'br' + (fin === 'play' || fin === 'glide' ? ' br-fly' : '')}>
         <div className="br-head">
           <span className="br-pill">{isMaker ? 'Your Run' : by ? `${by} Built You a Run` : 'A Built Run'}</span>
           <h1 className="br-h1">{name}</h1>
@@ -181,9 +249,12 @@ export default function RunPageClient({ keys = [], name = 'A Mind Loft Run', by 
         {allDone ? (
           <section className="br-band" aria-label="Your result">
             <span className="br-bl">{vsRow && vsDone ? `You vs ${vsRow.username}` : `All ${keys.length} Played`}</span>
-            <b className="br-bv">{vsRow && vsDone ? `You Took ${wins} of ${keys.length}` : 'Run Complete'}</b>
-            <span className="br-bs">
-              {myRank ? `#${myRank} of ${Math.max(field, myRank)} on this run today` : (state === 'loading' ? 'Reading the board' : (board && board.me ? 'Choose a name to take a rank on the board' : 'Your results are landing'))}
+            <b className="br-bv" data-rf={vsLine ? 'rank' : undefined}>{vsLine || 'Run Complete'}</b>
+            {earned ? (
+              <span className="br-bp"><b data-rf="score">{ptsTotal}</b> <span data-rf="unit">points</span> · <span data-rf="title">{earned.name}</span></span>
+            ) : null}
+            <span className="br-bs" data-rf={vsLine ? undefined : 'rank'}>
+              {rankLine || (state === 'loading' ? 'Reading the board' : (board && board.me ? 'Choose a name to take a rank on the board' : 'Your results are landing'))}
             </span>
           </section>
         ) : null}
@@ -298,6 +369,9 @@ ${LIGHT} .br-band{background:${sitePastelHex('#6ee7b7')};}
 .br-bl{font-size:12px;font-weight:700;}
 .br-bv{font-size:30px;font-weight:800;letter-spacing:-.01em;line-height:1.15;}
 .br-bs{font-size:13px;font-weight:600;}
+.br-bp{font-size:15px;font-weight:700;}
+.br-bp b{font-size:22px;font-weight:800;}
+.br-fly [data-rf]{visibility:hidden;}
 .br-hh,.br-hrow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center;padding:10px 14px;}
 .br-hh{border-bottom:1px solid var(--stg-ink);font-size:12px;font-weight:700;color:var(--stg-mute);}
 .br-hh span:not(:first-child),.br-hrow .br-v{text-align:right;}

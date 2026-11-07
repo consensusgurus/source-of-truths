@@ -733,3 +733,12 @@ only), not daily endings, never a pop-up.
   "Build Your Own Run" below Share Your Score.
 - Names are cleaned (`cleanRunName`, 28 chars, letters/digits/light punctuation); makers via
   `cleanMaker`. `/run` is noindex; `/build-a-run` is indexable. Share card: `/run/card`.
+- **The finale** (owner, 2026-11-07, "similar cool animations"): the run page mounts
+  `app/RunFinale.jsx` itself (no GauntletEndStage) once per run per day per browser
+  (localStorage `ml_runfin|<keys>|<name>|<day>`), the first time it sees every game played
+  with the player's rows landed; reduced motion skips it. Legs are the games (placement points
+  of 15, the result as the sub line, "#r of n today"), the total is summed points, and the
+  title climb is `builtLadder(n)` (Warmed Up, In the Mix, Contender, Front Runner, Run Master
+  at 0/25/45/65/85% of 15n) on the books piece (runKey `built`, unlisted in FINALE_PIECE).
+  It glides into the band: `data-rf` score/unit/title, and rank onto the head-to-head verdict
+  ("You Took 3 of 5") when there is a maker to beat, else the run-rank line.
