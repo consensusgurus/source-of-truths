@@ -955,3 +955,13 @@ round trip, the pre-switch dash, and the combine carry.
 
 Left as is, deliberately: Focus (frame = misses + 1, so misses IS the figure), Circa (an exact
 year is worth one guess; guesses still lead), the TIME_FIRST move games (time is its own column).
+
+## Every board shows ONE row per player (owner, 2026-11-07)
+
+The 'all' and 'mobile' boards used to list every attempt, so one player replaying a daily
+could hold four of the top five rows. `buildLeaderboard` in `lib/quiz-anon.js` now keeps each
+player's BEST attempt on those views (first row per player key in rank order). The 'first'
+view is unchanged: the first try still counts on ordinary dailies, the best run on Arcade,
+the solving run on End Game. Totals keep counting every attempt: `plays`, `scoreDist` and
+`timeDist` in the board route are untouched. `playerPlacement` / `playerStanding` now rank a
+player among players, not among attempts.
