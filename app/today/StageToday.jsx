@@ -4320,6 +4320,9 @@ export default function StageToday() {
                 <div className="mph-lab">Everything Else</div>
                 <div className="mph-list">
                   <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<span>&rarr;</span></button>
+                  {/* BUILD A RUN (owner, 2026-11-07: "I don't see the option to
+                      create a run on mobile"), right under Runs. */}
+                  <a href="/build-a-run">Build a Run<span>&rarr;</span></a>
                   <button type="button" onClick={() => goPane(QUIZ_ID)}>Quizzes<span>&rarr;</span></button>
                   <button type="button" onClick={() => goPane(BOARD_ID)}>Leaderboards + Stats<span>&rarr;</span></button>
                   <a href={withTq('/archive')}>Puzzle Archive<span>&rarr;</span></a>
@@ -4575,6 +4578,8 @@ export default function StageToday() {
                 {allCircs ? 'Show fewer' : `Show all ${circuits.length} circuits`}
               </button>
             ) : null}
+            {/* BUILD A RUN closes the Runs pane (owner, 2026-11-07). */}
+            <a className="sty-buildrun" href="/build-a-run">+ Build a Run</a>
           </section>
         ) : null}
 
@@ -6224,6 +6229,9 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-cat::before{display:none;}
 .sty-ixw{display:contents;}
 .sty-ixoff{display:none !important;}
+.sty-buildrun{display:flex;align-items:center;justify-content:center;height:48px;margin-top:14px;border:1px solid var(--stg-ink);border-radius:14px;
+  color:var(--stg-ink);font-size:15px;font-weight:800;text-decoration:none;box-sizing:border-box;}
+.sty-buildrun:hover{background:var(--stg-surf2);}
 .sty-ix{display:grid;grid-template-columns:212px minmax(0,1fr);column-gap:26px;row-gap:14px;align-items:start;}
 .sty-ix > .sty-ixn{grid-column:1;grid-row:1 / span 2;}
 .sty-ix > .sty-cat{grid-column:2;grid-row:1;min-width:0;}

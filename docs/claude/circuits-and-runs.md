@@ -742,3 +742,6 @@ only), not daily endings, never a pop-up.
   at 0/25/45/65/85% of 15n) on the books piece (runKey `built`, unlisted in FINALE_PIECE).
   It glides into the band: `data-rf` score/unit/title, and rank onto the head-to-head verdict
   ("You Took 3 of 5") when there is a maker to beat, else the run-rank line.
+- **Also on the home** (owner, 2026-11-07, "I don't see the option to create a run on
+  mobile"): a "Build a Run" row right under Runs in the phone home's Everything Else list,
+  and "+ Build a Run" closing the Runs pane (both screens).
