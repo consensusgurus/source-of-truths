@@ -939,8 +939,8 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
                   + (c === N - 1 ? ' er' : '') + (r === N - 1 ? ' eb' : '')
                   + (v === 2 ? ' s' : '') + (conflict ? ' bad' : '') + (locked ? ' lk' : '');
                 return (
-                  <button key={`${r}-${c}`} type="button" className={cls}
-                    style={v === 2 ? undefined : { background: courtHue(id) }}
+                  <button key={`${r}-${c}`} type="button" className={cls} data-court={id}
+                    style={v === 2 ? { '--court': courtHue(id) } : { background: courtHue(id), '--court': courtHue(id) }}
                     onClick={() => { if (longFired.current) { longFired.current = false; return; } tapCell(r, c); }}
                     onContextMenu={(e) => { e.preventDefault(); if (longFired.current) return; toggleJudge(r, c); }}
                     onTouchStart={() => startPress(r, c)}
