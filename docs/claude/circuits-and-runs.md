@@ -701,3 +701,35 @@ Stand". New runs: pass `runId` on GauntletEndStage.
   `onClaim` on GauntletEndStage.
 - One quick play next is a full-pastel card (the run's accent mixed 55% with white) naming the
   run's parts from RUN_DOORS tags, and it must stay above the fold under the tiles.
+
+## Built runs: Build a Run and the shared /run link (owner, 2026-11-07)
+
+A player picks 2 to 8 of today's dailies at **`/build-a-run`**, orders and names them, and
+shares **`/run?g=deep,strata,sums&n=Morning+Coffee&by=Gator85`**. Placement (owner, same
+day): run endings, the end of a built run, and My Puzzles. Not the Runs shelf (designed runs
+only), not daily endings, never a pop-up.
+
+- **The link IS the run.** No table, no row, nothing stored on the server, exactly like the
+  IQ finish's `?run=` queue it is built on (`lib/daily-run.js`). Every game is opened as
+  `/<game>?run=a,b,c&rn=<name>&rb=<maker>`; `app/DailyRunRail.jsx` (mounted once in
+  StageChrome) names the run, ticks what is played, hands off to the next game, and once
+  all are played sends a BUILT run (one carrying `rn`/`rb`) back to its `/run` page. A run
+  without meta is the IQ queue and still ends on IQ tests.
+- **"Every Day":** the link deals that day's boards for the same games, so it never goes
+  stale. There is no date-locked mode (the mockup's Today Only was not built).
+- **Scoring is untouched.** Each game posts its own ordinary first-try result. A game
+  already played today is BANKED on the run page and counts as it stands.
+- **The board** is `/api/quiz/daily-combined?keys=<run>&full=1`: the plain subset board, but
+  `full=1` gates rank to players who played every game (the circuit rule). It ranks on the
+  summed placement ladder, best-N = all.
+- **Head to head:** `&vs=<maker>` returns that named player's row (`vs`: username, total,
+  rank, perGame). The finish compares game by game on each game's placement `points`
+  (more wins, equal ties) and prints each game's own deciding stat via `scoreText`.
+- **Pricer is excluded** from building (`BUILT_EXCLUDE`, off the server slate); run-only legs
+  and retired/unlaunched games are out via `liveDailyKeys`.
+- **My Runs:** this browser's built and opened runs live in localStorage `ml_my_runs`
+  (max 12) and render at the top of My Puzzles (`app/today/MyRunsStrip.jsx`), followed by
+  "+ Build a Run". The run endings' shared foot (`MoreRunsList`) closes on a full-width
+  "Build Your Own Run" below Share Your Score.
+- Names are cleaned (`cleanRunName`, 28 chars, letters/digits/light punctuation); makers via
+  `cleanMaker`. `/run` is noindex; `/build-a-run` is indexable. Share card: `/run/card`.

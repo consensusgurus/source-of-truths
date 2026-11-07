@@ -91,12 +91,14 @@ export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = '
   const open = useOpenRuns(self);
   if (!open) return null;
   const ids = skip ? open.filter((id) => !(RUN_DOORS[id] && RUN_DOORS[id].href === skip)) : open;
-  if (open.length && !ids.length && !onShare) return null;   // the only open run is the one offered above
+  // The only open run is the one offered above: no list, but the builder
+  // button below still closes the ending (owner, 2026-11-07).
+  const onlyAbove = open.length > 0 && !ids.length;
   return (
     <div className="mr" style={{ '--mr-ink': ink, '--mr-mute': mute, '--mr-line': line, ...style }}>
       <style dangerouslySetInnerHTML={{ __html: LIST_CSS }} />
-      <div className="mr-cap">{ids.length ? 'More runs today' : 'Every run done today'}</div>
-      {ids.length ? (
+      {onlyAbove ? null : <div className="mr-cap">{ids.length ? 'More runs today' : 'Every run done today'}</div>}
+      {onlyAbove ? null : ids.length ? (
         <div className="mr-rows">{ids.map((id) => <Row key={id} id={id} />)}</div>
       ) : (
         <p className="mr-done">You have finished every one of today&rsquo;s runs. New ones open at midnight Eastern.</p>
@@ -104,6 +106,10 @@ export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = '
       {onShare ? (
         <button type="button" className="mr-share" onClick={onShare}>{copied ? 'Copied' : shareLabel}</button>
       ) : null}
+      {/* BUILD YOUR OWN RUN (owner, 2026-11-07): the last thing on every run
+          ending, below Share Your Score. Someone who just finished a run is
+          the likeliest person to build one. */}
+      <a className="mr-share mr-build" href="/build-a-run">Build Your Own Run</a>
     </div>
   );
 }
@@ -258,6 +264,8 @@ const LIST_CSS = `
 .mr-share{display:block;width:100%;margin-top:14px;padding:13px 18px;border-radius:10px;cursor:pointer;
           font-family:${SANS};font-size:14.5px;font-weight:800;background:transparent;color:var(--mr-ink);border:1.5px solid var(--mr-line);}
 .mr-share:hover{border-color:var(--mr-ink);}
+.mr-build{text-align:center;text-decoration:none;box-sizing:border-box;}
+.mr-share+.mr-build{margin-top:8px;}
 ${ROW_CSS('mr')}
 `;
 

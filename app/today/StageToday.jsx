@@ -94,6 +94,7 @@ import useFlip from '../useFlip';
 import StageFooter from '../StageFooter';
 import HomeAbout from './HomeAbout';
 import { saveHomeSnap, releaseHomeSnap } from '@/lib/home-snapshot';
+import MyRunsStrip from './MyRunsStrip';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = "Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif";
@@ -4443,7 +4444,8 @@ export default function StageToday() {
             {/* STARRED RUNS AS THE RUN BLOCK (owner, 2026-10-26), the same cards
                 every other pane leads with, not pills. */}
             {pinnedCircs.length ? runStrip(null, pinnedCircs) : null}
-            {null}
+            {/* MY RUNS (owner, 2026-11-07): built and shared runs, then Build a Run. */}
+            <MyRunsStrip />
             {grpBanners()}
             {grpLists('mineg')}
             {who && grpGames.some((x) => mineGrp.has(x.code)) && (pinned.length || pinnedCircs.length)

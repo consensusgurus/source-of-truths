@@ -465,6 +465,10 @@ export async function GET(request) {
     ? [...new Set((searchParams.get('keys') || '').split(',').map((k) => k.trim()).filter((k) => DAILY_KEYS.includes(k)))].slice(0, 40)
     : [];
   const keyOnly = !fiveOnly && keysParam.length > 0;
+  // A BUILT RUN'S BOARD (owner, 2026-11-07): ?keys=...&full=1 is the same
+  // subset ranked the way every run is, only players who played every game in
+  // it take a rank. Scoring is untouched: the placement ladder, best-N = all.
+  const fullOnly = keyOnly && searchParams.get('full') === '1';
   const games = gamesForSuffix(keyOnly ? keysParam : (fiveOnly ? fiveKeys : DAILY_KEYS), suffix, today);
   const wanted = new Set(games.map((g) => g.quizId));
   // FROZEN: the Eastern day is over, so this board is final. Rows that landed
@@ -783,7 +787,7 @@ export async function GET(request) {
     // a circuit and the rule is the rule: a combined placement across five
     // games means nothing from somebody who played two of them. So the gate is
     // now every run, marquee included, and only the full slate is ungated.
-    const memberKeys = fiveOnly ? games.map((g) => g.key) : null;
+    const memberKeys = (fiveOnly || fullOnly) ? games.map((g) => g.key) : null;
     const rankEligible = (r) => {
       if (!memberKeys) return true;
       const pg = r && r.perGame;
@@ -807,6 +811,15 @@ export async function GET(request) {
         if (prevT === null || t10 !== prevT) { dr = seenN; prevT = t10; }
         overallRankByKey.set(r.userKey, dr);
       }
+    }
+    // HEAD TO HEAD (owner, 2026-11-07): ?vs=<name> on a built run's board is
+    // the run's maker, so the finish can compare game by game. Names are
+    // already public on every board; a hidden player is not in these rows.
+    let vs = null;
+    const vsName = fullOnly ? (searchParams.get('vs') || '').trim().toLowerCase().slice(0, 40) : '';
+    if (vsName) {
+      const vr = overallFull.find((r) => r && r.username && String(r.username).toLowerCase() === vsName);
+      vs = vr ? { username: vr.username, total: vr.total, rank: overallRankByKey.get(vr.userKey) || null, perGame: vr.perGame } : { username: null };
     }
     // WHERE YOU STAND (owner, 2026-11-03): an ending's category and day rows.
     // ?less=a,b names the games just finished, so `stand.before` is where the
@@ -1125,7 +1138,7 @@ export async function GET(request) {
       // another when more than one is in flight.
       circuit: circuitOn ? circuitId : null,
       // Whether this board ranks only players who finished every game in it.
-      rankRequiresAll: fiveOnly,
+      rankRequiresAll: fiveOnly || fullOnly,
       // Named players who have STARTED the run but not finished it. The gate
       // makes an early-in-the-day circuit board legitimately empty, and an
       // empty board with no explanation reads as broken rather than as strict,
@@ -1164,6 +1177,7 @@ export async function GET(request) {
       meProvisional,
       rival,
       stand,
+      vs,
     }, { headers: (fresh || shadow) ? NO_STORE_HEADERS : CACHE_HEADERS });
   } catch (e) {
     console.error('daily-combined exception', e);

@@ -11,13 +11,15 @@
 // in StageChrome, which puts it on every daily.
 import React, { useEffect, useState } from 'react';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { readDailyRun, dailyRunHref, playedToday } from '@/lib/daily-run';
+import { readDailyRun, dailyRunHref, playedToday, readRunMeta, builtRunHref } from '@/lib/daily-run';
 
 export default function DailyRunRail({ gameKey }) {
   const [keys, setKeys] = useState([]);
   const [played, setPlayed] = useState({});
+  // A BUILT run (owner, 2026-11-07) carries its name and maker, &rn= and &rb=.
+  const [meta, setMeta] = useState(null);
 
-  useEffect(() => { setKeys(readDailyRun(window.location.search)); }, []);
+  useEffect(() => { setKeys(readDailyRun(window.location.search)); setMeta(readRunMeta(window.location.search)); }, []);
 
   useEffect(() => {
     if (!keys.length) return undefined;
@@ -42,19 +44,26 @@ export default function DailyRunRail({ gameKey }) {
     <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="drr" role="navigation" aria-label="Your run">
-        <span className="drr-eb">Your run · {at + 1} of {keys.length}</span>
+        <span className="drr-eb">{meta && meta.name ? meta.name : 'Your run'} · {at + 1} of {keys.length}</span>
         <span className="drr-chips">
           {keys.map((k) => (
-            <a key={k} href={dailyRunHref(k, keys)} className={'drr-c' + (k === gameKey ? ' now' : '') + (played[k] ? ' done' : '')}>
+            <a key={k} href={dailyRunHref(k, keys, meta)} className={'drr-c' + (k === gameKey ? ' now' : '') + (played[k] ? ' done' : '')}>
               {played[k] ? '✓ ' : ''}{(DAILY_GAME_MAP[k] || {}).name || k}
             </a>
           ))}
         </span>
-        <a className="drr-x" href={(DAILY_GAME_MAP[gameKey] || {}).href || '/'}>Leave run</a>
+        {meta ? <a className="drr-x" href={builtRunHref(keys, meta)}>Run page</a> : null}
+        <a className={meta ? 'drr-x drr-x2' : 'drr-x'} href={(DAILY_GAME_MAP[gameKey] || {}).href || '/'}>Leave run</a>
       </div>
       {thisDone ? (
         <div className="drr-bar" role="region" aria-label="Next in your run">
-          {allDone ? (
+          {allDone && meta ? (
+            /* A built run ends on its own page: the head-to-head and the board. */
+            <>
+              <span className="drr-bt"><b>Run complete</b><small>{meta.by ? `See how you did against ${meta.by}` : 'See how you did'}</small></span>
+              <a className="drr-go" href={builtRunHref(keys, meta)}>See Results</a>
+            </>
+          ) : allDone ? (
             <>
               <span className="drr-bt"><b>Run complete</b><small>{keys.length} games played</small></span>
               <a className="drr-go" href="/iq">IQ tests</a>
@@ -63,7 +72,7 @@ export default function DailyRunRail({ gameKey }) {
           ) : next ? (
             <>
               <span className="drr-bt"><b>Next in your run: {next.name}</b><small>{doneCount} of {keys.length} played</small></span>
-              <a className="drr-go" href={dailyRunHref(nextKey, keys)}>Play</a>
+              <a className="drr-go" href={dailyRunHref(nextKey, keys, meta)}>Play</a>
             </>
           ) : null}
         </div>
@@ -82,6 +91,7 @@ const CSS = `
 .drr-c.now{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink,var(--stg-acc));}
 .drr-c.done{color:var(--stg-mute,#8a93a6);}
 .drr-x{margin-left:auto;color:var(--stg-mute,#8a93a6);font-weight:700;text-decoration:none;}
+.drr-x2{margin-left:0;}
 .drr-bar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;width:min(520px,calc(100vw - 24px));
   display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--stg-ink,#0f172a);color:var(--stg-ground,#fff);
   box-shadow:0 14px 34px -10px rgba(0,0,0,.45);font-family:'Manrope',system-ui,sans-serif;animation:drrUp .45s cubic-bezier(.2,.9,.3,1.2) both;}
