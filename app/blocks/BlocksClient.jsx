@@ -941,9 +941,18 @@ export default function BlocksClient({ puzzles = [], forceNum = null }) {
         const used = row.getBoundingClientRect().height + bot.getBoundingClientRect().height + 14 /* well frame */ + 12 + 14 /* gaps */ + 14 /* breathing room */;
         fh = stableVH() - used;
       } else if (hd && bot) {
-        const top = hd.getBoundingClientRect().bottom + (window.scrollY || 0);
-        const used = top + bot.getBoundingClientRect().height + 14 /* well frame */ + 40 /* gaps and stage padding */;
-        if (used > 120 && used < 520) fh = stableVH() - used;
+        // DESKTOP (owner, 2026-11-07: "why did this shrink so much?"): the
+        // budget is the fixed top bar plus the HEIGHTS of the rows above and
+        // below the well. It used to read the leader row's on-screen bottom,
+        // but the stage centres its column, so every pixel the well lost moved
+        // that row down and took another pixel off the well: it settled at
+        // about two thirds of what fits.
+        const bar = document.querySelector('.pst .stb');
+        const lead = document.querySelector('.blk-lead');
+        const barBottom = bar ? bar.getBoundingClientRect().bottom : 60;
+        const rows = (row ? row.getBoundingClientRect().height : 0) + (lead && lead !== row ? lead.getBoundingClientRect().height : 0);
+        const used = barBottom + rows + bot.getBoundingClientRect().height + 14 /* well frame */ + 14 * 3 /* column gaps */ + 28 /* stage padding */;
+        if (used > 120 && used < 700) fh = stableVH() - used;
       }
     }
     const cell = Math.max(14, Math.min(stg ? 40 : 34, Math.floor(Math.min(fw / COLS, fh / ROWS))));
