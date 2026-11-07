@@ -68,7 +68,7 @@ import HelpSheet from '../HelpSheet';
 // THE WHITE STAGE (owner, 2026-11-06, the Judges mockup): see STAGE_COURT below.
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { useStageLook, isDarkLook } from '@/lib/stage-look';
-import { regionHue, REGION_RAMP } from '@/lib/category-ramp';
+import { regionHue, REGION_RAMP, sitePastel } from '@/lib/category-ramp';
 import usePlayStageFit from '@/lib/play-stage-fit';
 
 const COLORS = {
@@ -911,7 +911,8 @@ export default function JudgesClient({ puzzles = [], forceNum = null }) {
   const stageRef = useRef(null);
   const stageFit = usePlayStageFit(stageRef, '.jsx-bd', stageOn);
   const giveArmAt = useRef(0);
-  const courtHue = (id) => regionHue(COURT_SLOTS[COURTS[id] ?? 0]).dk;
+  // Courts wear the SITE pastel (owner, 2026-11-07), not the raw ramp step.
+  const courtHue = (id) => sitePastel(regionHue(COURT_SLOTS[COURTS[id] ?? 0]).dk, isDarkLook(stageLook));
   let stageNode = null;
   if (stageOn) {
     const dark = isDarkLook(stageLook);

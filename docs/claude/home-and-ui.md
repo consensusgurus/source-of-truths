@@ -2330,3 +2330,15 @@ white or `--pst-cell` grey.
 - **Finish beats:** `lib/finish-beats.js` gained `stage` blocks for park / impound / junkyard
   (`.jx-lot`, `.jx-blk`), jester / judges (`.jsx-bd`, `.jsx-c`, seat = class `s`) and etch
   (`.ets-grid`, filled = class `f`). Chomp has no beat def and plays the iris.
+
+## The site pastel is the 60/40 step, not the raw ramp (owner, 2026-11-07)
+
+"Why doesn't this use our pastels?" The pastel a reader sees on the home tiles is the ramp step mixed
+60/40 with white on the light page (sky #7dd3fc reads #b1e5fd, rose #fb7185 reads #fdaab6, mint
+#a8f1d4, periwinkle #c9d2fd); only the dark page wears the raw step. Boards that painted regions or
+pieces in the raw step on the white stage read too bright. Every multi-colour fill on the stage goes
+through `sitePastel(hex, dark)` (CSS color-mix) or `sitePastelHex(hex)` (canvas) in
+lib/category-ramp.js. Applied to Jesters and Judges courts, the Impound / Junkyard / Parker fleet,
+Carve's blocks and chips, and Blocks' light-look pieces (superseding its "same in both registers"
+rule). Shards and Sweep already used the soft step. Connect keeps the raw step on its route lines
+(its cells are already drawn at 42% opacity), and the stage's single accent (--pst-acc) is unchanged.

@@ -51,7 +51,7 @@ import StageChrome from '../StageChrome';
 import JamLot from '../JamLot';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { useStageLook, isDarkLook } from '@/lib/stage-look';
-import { regionHue } from '@/lib/category-ramp';
+import { regionHue, sitePastel } from '@/lib/category-ramp';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { regionStyle, REGION_INK } from '@/lib/category-ramp';
@@ -737,7 +737,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
                         const w = p.horiz ? p.len : 1, h = p.horiz ? 1 : p.len;
                         return (
                           <span key={`b${i}`} className={'jx-blk' + (me ? ' me' : '') + (sel === i && playing ? ' sel' : '')}
-                            style={{ ...box(r, c, w, h), ...(me ? null : { background: regionHue(JX_FLEET[(i - 1) % JX_FLEET.length]).dk }) }}>
+                            style={{ ...box(r, c, w, h), ...(me ? null : { background: sitePastel(regionHue(JX_FLEET[(i - 1) % JX_FLEET.length]).dk, dark) }) }}>
                             {me ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg> : null}
                           </span>
                         );

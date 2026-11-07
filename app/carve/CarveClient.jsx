@@ -39,7 +39,8 @@ import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
-import { regionStyle, regionMix, REGION_INK } from '@/lib/category-ramp';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
+import { regionStyle, regionMix, REGION_INK, sitePastel } from '@/lib/category-ramp';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import useIqStanding from '../useIqStanding';
@@ -81,8 +82,8 @@ const PAPER = '#fbf9f4';
 // THE CARVED BLOCKS ON THE STAGE (owner, 2026-11-01): each block wears its own
 // site pastel (the category ramp in the REGION_RAMP spread order, amber left
 // out so a nine-block Sunday never shows two near-golds). FULL PASTELS ONLY
-// (owner, 2026-11-06): a block wears its full pastel with dark ink from its
-// first square, growing or locked; the old pale mixes did not match the site.
+// (owner, 2026-11-06): a block wears its site pastel (sitePastel, 2026-11-07)
+// with dark ink from its first square, growing or locked; the old pale mixes did not match the site.
 // A locked block reads by its closed ink walls and the tick on its chip; the
 // block being grown wears the ink ring on its chip.
 const CARVE_PASTELS = ['#7dd3fc', '#e8b43a', '#6ee7b7', '#fb7185', '#c084fc', '#bef264', '#e879f9', '#a5b4fc', '#fb923c'];
@@ -297,6 +298,10 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('carve'), '--stg-acc-lt': gameColorLight('carve'), '--stg-onramp-lt': gameOnrampLight('carve'), '--stg-acc-ink-lt': gameAccentInkLight('carve') };
   const [stageTheme] = useStageTheme();
+  // The blocks wear the SITE pastel (owner, 2026-11-07): the ramp step mixed
+  // 60/40 with white on the light stage, the raw step only on the dark one.
+  const [stageLook] = useStageLook();
+  const cvHue = (k) => sitePastel(CARVE_PASTELS[k % CARVE_PASTELS.length], isDarkLook(stageLook));
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : THEME.white;
@@ -757,7 +762,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
                     const cls = ['cvs-c', reg >= 0 ? 'cut' : '', isLk ? 'lock' : '', isCur ? 'cur' : '', isSeed ? 'anc' : '', wrongFlash ? 'bad' : '', bounce === idx ? 'bnc' : '',
                       c < N - 1 && ed(idx, idx + 1) ? 'er' : '', r < N - 1 && ed(idx, idx + N) ? 'eb' : ''].filter(Boolean).join(' ');
                     return (
-                      <button key={idx} type="button" className={cls} style={reg >= 0 ? { '--cvh': CARVE_PASTELS[reg % CARVE_PASTELS.length] } : undefined} onClick={() => cellClick(idx)}
+                      <button key={idx} type="button" className={cls} style={reg >= 0 ? { '--cvh': cvHue(reg) } : undefined} onClick={() => cellClick(idx)}
                         aria-label={`${gridFlat[idx]}${reg >= 0 ? `, block ${reg + 1}${isLk ? ', locked' : ''}` : ', not carved'}${isSeed ? ', anchor' : ''}`}>
                         {isSeed ? <em>{seedOf[idx] + 1}</em> : null}{gridFlat[idx]}
                       </button>
@@ -771,7 +776,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
                       const on = cur === k && !done;
                       const pct = Math.min(100, Math.round((100 * (done ? TARGET : sums[k])) / TARGET));
                       return (
-                        <button key={k} type="button" className={'cvs-chip' + (on ? ' on' : '') + (done ? ' done' : '')} style={{ '--cvh': CARVE_PASTELS[k % CARVE_PASTELS.length] }} onClick={() => { if (!done) setCur(k); }}
+                        <button key={k} type="button" className={'cvs-chip' + (on ? ' on' : '') + (done ? ' done' : '')} style={{ '--cvh': cvHue(k) }} onClick={() => { if (!done) setCur(k); }}
                           aria-pressed={on} aria-label={`Block ${k + 1}${done ? ', locked' : `, ${sums[k]} of ${TARGET}`}${on ? ', growing now' : ''}`}>
                           <b>{k + 1}</b><span>{done ? <>{CVS_TICK}{TARGET}</> : `${sums[k]}/${TARGET}`}</span>
                         </button>

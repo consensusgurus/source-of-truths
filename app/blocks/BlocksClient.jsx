@@ -42,7 +42,7 @@ import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { useStageMode } from '../StageHost';
-import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
+import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight, sitePastelHex } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import useIqStanding from '../useIqStanding';
 import useNextUnplayed, { useUnplayedSimilar } from '../useNextUnplayed';
@@ -257,7 +257,10 @@ const KICKS = [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0], [0, -1], [-1, -1], [1, 
 // tile is: no sheen, no bevel, no shadow. The ink edge is what keeps a pastel
 // readable on a white cell, so the register no longer needs its own set.
 const PIECE_DARK = { I: '#7dd3fc', O: '#fbbf24', T: '#c084fc', S: '#6ee7b7', Z: '#fb7185', J: '#a5b4fc', L: '#fb923c', C: '#bef264', P: '#e879f9' };
-const PIECE_LIGHT = PIECE_DARK;
+// THE SITE PASTEL ON THE LIGHT PAGE (owner, 2026-11-07, supersedes "the same in
+// both registers"): the raw step read too bright on white; the light look takes
+// the step the home tiles wear (60/40 with white), the dark look keeps the raw step.
+const PIECE_LIGHT = Object.fromEntries(Object.entries(PIECE_DARK).map(([k, v]) => [k, sitePastelHex(v)]));
 const PIECE_HUE = PIECE_DARK;
 const PIECE_EDGE = '#08222e';
 function pieceFill(k, light) {
