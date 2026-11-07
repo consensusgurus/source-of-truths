@@ -301,7 +301,7 @@ export default function StageRoll({
                 </button>
               ) : null}
 
-              {passNode ? <div className="srl-land d1">{passNode}</div> : null}
+              {passNode ? <div className="srl-land d1">{typeof passNode === 'function' ? passNode(phase >= 2) : passNode}</div> : null}
               {playNode ? <div className="srl-land d1">{playNode}</div> : null}
               {passNode && chalNode ? <div className="srl-land d2">{chalNode}</div> : null}
 

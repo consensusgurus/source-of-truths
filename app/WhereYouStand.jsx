@@ -108,6 +108,8 @@ function pointsRow(d, { id, lab, name, word, plus = 0 }) {
     board: pointsBoard(st, rank, total, inRead ? st.nearRank : (plus > 0 ? st.nearPlus : st.nearRank)),
     next: nextOf(inRead ? st.nearRank : (plus > 0 ? st.nearPlus : st.nearRank), total, rank),
     picks: Array.isArray(st.picks) ? st.picks : [],
+    // For the retention ending's path and goal ring (owner, 2026-11-07).
+    total: r1(total), games, ladder: Array.isArray(st.above) ? st.above : null, ladderN: Number(st.aboveN) || 0,
   };
 }
 

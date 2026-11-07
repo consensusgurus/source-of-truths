@@ -106,12 +106,23 @@ export function memePicks(ctx, standing) {
   out.push({ key: lk, caption: null, foot: lk === 'luck' ? 'Wish them luck' : 'Your move' });
   return out;
 }
-export function MemeStack({ ctx, onOpen, standing = null }) {
+export function MemeStack({ ctx, onOpen, standing = null, limit = 0 }) {
   const picks = memePicks(ctx, standing);
+  // ONE GIF ON SHOW, the rest behind a button (owner, 2026-11-07, retention
+  // ending C): `limit` caps what shows until "N more GIFs" is tapped.
+  const [all, setAll] = useState(false);
   if (!picks.length) return null;
+  const shown = limit && !all ? picks.slice(0, limit) : picks;
+  const hidden = picks.length - shown.length;
   return (
     <div className="msh-stack" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {picks.map((p) => <MemePeek key={p.key} ctx={ctx} onOpen={onOpen} memeKey={p.key} caption={p.caption} foot={p.foot} />)}
+      {shown.map((p) => <MemePeek key={p.key} ctx={ctx} onOpen={onOpen} memeKey={p.key} caption={p.caption} foot={p.foot} />)}
+      {hidden > 0 ? (
+        <button type="button" className="msh-more" onClick={() => setAll(true)}
+          style={{ font: 'inherit', fontSize: 14, fontWeight: 800, padding: '11px 14px', borderRadius: 12, border: '1px solid currentColor', background: 'transparent', color: 'inherit', cursor: 'pointer' }}>
+          {hidden} more {hidden === 1 ? 'GIF' : 'GIFs'}
+        </button>
+      ) : null}
     </div>
   );
 }

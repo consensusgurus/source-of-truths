@@ -921,6 +921,13 @@ export async function GET(request) {
         if (!sibsShown.length || famNear(nearest.key) < Math.min(...sibsShown.map((y) => famNear(y.key)))) shown.push(nearest);
       }
       stand.picks = shown.map((x) => ({ key: x.key, pts: x.pts, mins: x.mins, finish: x.finish, plays: x.plays, after: at(baseNow + x.pts), ...(x.sib ? { sib: true } : {}) }));
+      // THE PATH'S RANKS (owner, 2026-11-07, retention ending C): the day totals
+      // of the named players above the reader, so the ending can price several
+      // stops in a row (#25 -> #23 -> #20 ...) without another read. Only the
+      // rows above matter for a climb; the nearest 300, with `aboveN` counting them all.
+      const aboveAll = named.map((r) => Math.round((Number(r.total) || 0) * 10) / 10).filter((t) => t > baseNow + 1e-9).sort((a, b) => a - b);
+      stand.aboveN = aboveAll.length;
+      stand.above = aboveAll.slice(0, 300);
     }
     // ?top=N asks for a longer board (the home's side column), capped at 30.
     const topN = Math.min(30, Math.max(DISPLAY, parseInt(searchParams.get('top') || '', 10) || DISPLAY));

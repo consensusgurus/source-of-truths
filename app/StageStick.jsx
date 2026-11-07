@@ -47,6 +47,8 @@ import { SKILL_TAGS, SKILL_MAP } from '@/lib/daily-skills';
 import { relativesOf } from '@/lib/daily-families';
 import { categoryColor, softGround } from '@/lib/category-ramp';
 import { usePuzzleStandings, StandBeat, StandCard, PassCard, PassPlay, beatDuration } from './WhereYouStand';
+import { EndNext, EndDay, StandChips, buildStops } from './EndNext';
+import { pageAge, BEAT_FRESH } from '@/lib/finish-beat';
 
 // RUNS, NOT THEIR PARTS (owner, 2026-10-26: "don't send users to individual
 // run components. show runs in place of those"). A game that is one question
@@ -243,6 +245,9 @@ export default function StageStick({
   const tk = useMyTickets();
   // THE GROUP READ, handed up by FinishGroupLine, for the phone's result bar.
   const [grp, setGrp] = useState(null);
+  // A finish that just happened on this page (not a reopened one): only then
+  // may Up next start by itself (owner, 2026-11-07, retention ending C).
+  const [freshEnd] = useState(() => { try { return pageAge() >= BEAT_FRESH; } catch (e) { return false; } });
   // KEEP PLAYING (owner, 2026-10-26, direction B): on desktop the bottom of
   // the ending offers the categories, more puzzles AND quizzes, in place of
   // the record card. The quizzes are the most-played one per department (the
@@ -725,7 +730,7 @@ export default function StageStick({
           {metric && metric.label ? <i className="sst-ml">{metric.label}</i> : null}
         </div>
       </section>
-      {standRows ? <div className={'sst-h2 sst-bandwys ' + on(2)}><PassCard rows={standRows} band /></div> : <div className="sst-hsp" />}
+      {standRows ? <div className={'sst-h2 sst-bandwys ' + on(2)}><StandChips rows={standRows} gameName={s.gameName} /></div> : <div className="sst-hsp" />}
       <section className={on(1) + ' sst-hl3'}>
         {replayNow ? (replayNow.href
           ? <a className="sst-tl" href={replayNow.href} onClick={replayNow.onClick || undefined}>Replay</a>
@@ -897,6 +902,10 @@ export default function StageStick({
   const sibBeside = sibPick && mainPick && mainPick.key !== sibPick.key ? sibPick : null;
   const ranked = [mainPick, sibBeside, ...byAff.filter((p) => p.key !== sibKey && p !== mainPick)].filter(Boolean);
   const catPick = ranked.find((p) => p !== mainPick && p.g.cat === curCat) || null;
+  // THE PATH (owner, 2026-11-07, retention ending C): the next play and the
+  // stops after it, priced on All Puzzles today. See app/EndNext.jsx.
+  const { stops } = buildStops({ curKey: s.gameKey, ranked, liveBy, dayRow });
+  const passName = dayRow && dayRow.next && stops[0] && stops[0].pts && stops[0].pts >= dayRow.next.gap ? dayRow.next.name : null;
   const otherPick = sibBeside || catPick || ranked.find((p) => p !== mainPick) || null;
   // A pick's `after` is a rank on the board it came from: All today, or the
   // category today for a pick only the category read offered.
@@ -1074,7 +1083,7 @@ export default function StageStick({
               <span className="ar" aria-hidden="true">{share.label === 'Copied' ? '✓' : '→'}</span>
             </button>
           ) : null}
-          {meme && meme.ctx ? <div className="sst-gif" id="sst-gifs"><MemeStack ctx={meme.ctx} onOpen={meme.onOpen} standing={standCaption} /></div> : null}
+          {meme && meme.ctx ? <div className="sst-gif" id="sst-gifs"><MemeStack ctx={meme.ctx} onOpen={meme.onOpen} standing={standCaption} limit={1} /></div> : null}
         </section>
       ) : null;
   // THE GIF RAIL (owner, 2026-11-03, desktop): with the side rail present the
@@ -1213,55 +1222,20 @@ export default function StageStick({
   // big next play with its Start, six more picks under it, and the run, the
   // challenge and the GIF beside it. The right rail folds away.
   const moveOf = (p) => { const fx = passInfo(p); return fx && fx.to ? `#${fx.from} \u2192 #${fx.to}` : (p.g.cat || ''); };
-  const nextC = mainPick ? (() => {
-    const fx = passInfo(mainPick);
-    const d = DAILY_GAME_MAP[mainPick.key] || {};
-    const head = fx && fx.passes ? `Pass ${fx.passes} in ${fx.where}` : fx && fx.to ? `Up to #${fx.to} in ${fx.where}` : mainPick.why;
-    const more = ranked.filter((p) => p !== mainPick && p !== sibBeside).slice(0, 6);
-    const sd = sibBeside ? DAILY_GAME_MAP[sibBeside.key] || {} : null;
-    return (
-      <section className={'sst-card sst-nc ' + on(3)}>
-        <div className="sst-ncm">
-          <div className="sst-sl">Who&rsquo;s Next to Pass</div>
-          <a className="sst-ncb" href={mainPick.g.href} style={{ '--nxp': softGround(categoryColor(mainPick.g.cat)) }}>
-            <span className="tx">
-              <small>{head}</small>
-              <b>Play {mainPick.g.name}</b>
-              <span className="ds">{[d.tagLong || d.tag, mainPick.mins ? `${mainPick.mins} min` : null, mainPick.finish != null ? `${mainPick.finish}% finish` : null].filter(Boolean).join(' \u00b7 ')}</span>
-            </span>
-            <span className="rt">
-              <b>+{mainPick.pts}</b>
-              {fx && fx.to ? <em>#{fx.from} &rarr; #{fx.to}</em> : null}
-              <span className="go">Start</span>
-            </span>
-          </a>
-          {sibBeside ? (
-            <a className="sst-ncsib" href={sibBeside.g.href} style={{ '--nxp': softGround(categoryColor(sibBeside.g.cat)) }}>
-              <span className="lk">Like {nm0}</span>
-              <span className="nm"><b>Play {sibBeside.g.name}</b><small>{[sd.tag, sibBeside.mins ? `${sibBeside.mins} min` : null].filter(Boolean).join(' \u00b7 ')}</small></span>
-              <span className="mv">{moveOf(sibBeside)}</span>
-              <b className="pt">+{sibBeside.pts}</b>
-              <span className="ar" aria-hidden="true">&rarr;</span>
-            </a>
-          ) : null}
-          {more.length ? (
-            <div className="sst-ncl">
-              {more.map((p) => (
-                <a key={p.key} href={p.g.href} className="sst-ncr">
-                  <span className="nm"><b>{p.g.name}</b>{p.mins ? <small> {p.mins} min</small> : null}</span>
-                  <span className="mv">{moveOf(p)}</span>
-                  <b className="pt">+{p.pts}</b>
-                </a>
-              ))}
-            </div>
-          ) : null}
-          {rankCard}
-          {pnNode(true)}
-        </div>
-        <div className="sst-ncs">{runLink}{chalCard}</div>
-      </section>
-    );
-  })() : null;
+  // UP NEXT LEADS THE SHEET (owner, 2026-11-07, retention ending C, which
+  // replaces direction C's six-pick grid): one next play that can start by
+  // itself, the path after it, today's board and Keep playing on the left;
+  // Your Day, the run and a one-GIF challenge on the right.
+  const nextC = stops.length ? (
+    <section className={'sst-card sst-nc sst-nx ' + on(3)}>
+      <div className="sst-ncm">
+        <EndNext stops={stops} from={dayRow ? dayRow.rank : null} passName={passName} armed={freshEnd && phase === 'inline'} />
+        {rankCard}
+        {pnNode(true)}
+      </div>
+      <div className="sst-ncs"><EndDay dayRow={dayRow} stops={stops} grp={grp} />{runLink}{chalCard}</div>
+    </section>
+  ) : null;
 
   const cards = (
     <div className={'sst-cards' + (nextC ? ' sst-cC' : '')}>
@@ -1312,7 +1286,8 @@ export default function StageStick({
           onShowBoard={back} showBoardLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show Board'}
           retry={retry} homeHref={allHref || '/'}
           standRows={standRows} beatRows={beatRows} standGo={standGo} noCount={noCount}
-          passNode={passNode} playNode={playNode}
+          passNode={stops.length ? (armed) => <EndNext phone stops={stops} from={dayRow ? dayRow.rank : null} passName={passName} armed={freshEnd && armed} /> : passNode}
+          playNode={stops.length ? <EndDay dayRow={dayRow} stops={stops} grp={grp} /> : playNode}
           {...replayProps}
         />
       </div>
@@ -1800,6 +1775,9 @@ html.lc-on:has(.lc-side > .sst-fold) .lc-host .stg-fg{padding-right:20px;}
 .sst-ncs{padding:18px 20px;border-left:2px solid var(--stg-line,#e2e5ea);display:flex;flex-direction:column;gap:12px;min-width:0;}
 .sst-page .sst-ncs > .sst-card{padding:0;border:0;display:block;animation:none;}
 .sst-page .sst-ncs .sst-gif{margin-top:12px;}
+.sst-page .sst-ncs .enx-day{border:0;padding:0;background:none;}
+.sst-page .sst-nx .sst-ncm > .enx{margin-bottom:4px;}
+.sst-page .sst-nx .sst-ncm{container-type:inline-size;}
 .sst-ncb{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;margin-top:10px;padding:18px 20px;border:2px solid var(--sst-ink);
   border-radius:16px;color:var(--sst-ink);text-decoration:none;background:var(--stg-raise,#fff);transition:background .15s;}
 .sst-ncb:hover{background:color-mix(in srgb,var(--nxp) 35%,var(--stg-raise,#fff));}

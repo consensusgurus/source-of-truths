@@ -2342,3 +2342,31 @@ lib/category-ramp.js. Applied to Jesters and Judges courts, the Impound / Junkya
 Carve's blocks and chips, and Blocks' light-look pieces (superseding its "same in both registers"
 rule). Shards and Sweep already used the soft step. Connect keeps the raw step on its route lines
 (its cells are already drawn at 42% opacity), and the stage's single accent (--pst-acc) is unchanged.
+
+## Retention ending C: Up next, the path and Your Day (owner, 2026-11-07)
+
+Approved on the "Retention Ending Mockups" canvas (Desktop C / Phone C, "a mix of the two"). Replaces
+direction C's Who's Next to Pass card, its sibling strip and six-pick grid, and the phone's PassCard +
+PassPlay. All of it is `app/EndNext.jsx` (`EndNext`, `EndDay`, `StandChips`, `buildStops`).
+
+- **Up next:** one big next play (the first stop) and a Start button. On a FRESH finish (`pageAge() >=
+  BEAT_FRESH`), once the ending has settled (desktop `phase === 'inline'`, phone StageRoll `phase >= 2`),
+  Start fills over 8 seconds and opens the game by itself. Any pointerdown, key, wheel, touch or tab
+  switch cancels it, as does "Stay here". Never on `?p=` archive replays or with reduced motion.
+- **Then:** the next stops (up to three more) with minutes, points and the rank in All Puzzles after
+  each, priced from `stand.above` / `stand.aboveN` (daily-combined: the nearest 300 day totals above the
+  reader, ascending, and the count of all of them). WYS `pointsRow` carries them as `ladder` / `ladderN`
+  plus `total` and `games`.
+- **Keep going after each** (a switch, on by default) stores the path in localStorage `sot_path`
+  (`{ d: ET day, keys, on }`). An ending whose game is on today's stored path continues it; any other
+  ending builds a fresh path from the easiest picks (`ranked`).
+- **Your Day:** goal ring (`played/(played + k)`, "k more for Top N in All", N the nearest of 500, 200,
+  100, 50, 20, 10, 5, 3, 1 above the reader that the path reaches), the site-wide streak from
+  daily-status, "New puzzles in h:mm" (ET midnight) with **Remind me**, which downloads `/remind`, a
+  static daily 8am calendar event (.ics), and a group nudge when members of the reader's lead group
+  have not played (share sheet on touch, else the group link copied).
+- **Band (desktop):** the three standings are chips (`StandChips`), not boxes with a pass line each.
+- **Challenge:** `MemeStack limit={1}` shows one GIF with "N more GIFs" behind a button, desktop and phone.
+- Desktop layout: left column Up next, Then, today's board + group, Keep playing; right column Your
+  Day, the run, the challenge. With no picks (archive replay, guest with no standings) the older layout
+  stands.
