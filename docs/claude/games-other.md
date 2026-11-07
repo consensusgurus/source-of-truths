@@ -2091,13 +2091,13 @@ No new-game pop-up (NO_PREMIERE, as Dario and Squash). No Sunday Edition.
 - **Ties break on total TAPPING time** (the clock runs only while it is your turn; watching is
   free). `guessesUsed` is not posted. A hidden tab during the show replays the show from the top
   when it comes back; the tapping clock is never paused.
-- **The look (white stage, 2026-11-07 rebuild):** the game plays on \`PlayStage\` at every width from
-  Start through the finish (the SimpleDaily shell: StageChrome cap, \`stg-gate\` start card, the
+- **The look (white stage, 2026-11-07 rebuild):** the game plays on `PlayStage` at every width from
+  Start through the finish (the SimpleDaily shell: StageChrome cap, `stg-gate` start card, the
   foot row Clock / How to play / two-tap Give up, LoftFinish). The 3x3 pads wear the site pastels
-  (\`PAD_PASTELS\`, Carve's order, through \`sitePastel\`) with a 1px ink rule and an outline shape
+  (`PAD_PASTELS`, Carve's order, through `sitePastel`) with a 1px ink rule and an outline shape
   each (circle, triangle, square, diamond, hexagon, star, plus, crescent, heart). A lit pad turns
   ink and its shape takes the pad's pastel; after a miss the wanted pad is lit and ringed and the
-  tapped pad shakes in \`--pst-bad\`. The board is capped by \`usePlayStageFit\` on \`.sm-bd\`.
+  tapped pad shakes in `--pst-bad`. The board is capped by `usePlayStageFit` on `.sm-bd`.
   The first build (c09fa0f) used Snake's old Loft/stage shell by mistake; the owner caught it.
 - **A run does not resume after a reload:** the abandon flush posts it as it stood.
 - **Give up** (tap twice) ends the run and posts the steps already earned.
