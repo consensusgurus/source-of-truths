@@ -2014,7 +2014,8 @@ updated by hand), finish set "Guessing games".
 
 - **Board:** five years of weekly closes, split- and dividend-adjusted, drawn with no price axis
   and no dates until the day ends. One pin (always numbered 4) sits on the week of a dated event.
-- **Six clues** open one at a time: sector (free), year it went public, headquarters, the pin's
+- **Six clues** open one at a time: sector (free), year it went public, the state (or province and country) it is based in, never the
+  city (owner, 2026-11-06: the city gave it away), the pin's
   headline, what it does (our own words, never the name), the first letter of the ticker. A wrong
   guess opens the next clue; a wrong guess with all six open ends the day. Score 11 minus clues
   used (VERDICT, so it reads Solved), miss label `Clues`; ranks on clues, then time.
