@@ -2874,6 +2874,17 @@ export default function StageToday() {
       <input type="search" value={findQ} onChange={(e) => setFindQ(e.target.value)} placeholder="Search puzzles and quizzes" aria-label="Search puzzles and quizzes" />
     </label>
   );
+  // THE CAP'S SEARCH (owner, 2026-11-07): the same box, living in the one-row
+  // desktop header. It fills whatever the row has spare; only when that is too
+  // little does it widen on focus (or while it holds a query), by hiding the sort.
+  const capFind = (
+    <label className={'sty-find sty-cfind' + (findQ ? ' q' : '')} onClick={(e) => e.stopPropagation()}>
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+      <input type="search" value={findQ} onChange={(e) => setFindQ(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Escape') { setFindQ(''); try { e.currentTarget.blur(); } catch (er) {} } }}
+        placeholder="Search puzzles and quizzes" aria-label="Search puzzles and quizzes" />
+    </label>
+  );
   const sortGames = (list0) => {
     const list = findIn(list0);
     if (sortBy === 'diff') {
@@ -4025,6 +4036,14 @@ export default function StageToday() {
               );
             })}
           </div>
+        </div>
+        {/* ONE ROW ON DESKTOP (owner, 2026-11-07): the status strip is gone, and
+            the open pane's controls (Tiles / List, the group, search, sort) sit in
+            the cap over the tiles instead of on a row of their own. */}
+        <div className="sty-captools">
+          {ix && (paneOn === ALL_ID || !!paneCat(paneOn) || isSkillId(paneOn)) ? (
+            <>{viewCtl(paneOn)}{paneOn === ALL_ID ? grpChips() : null}{capFind}{sortCtl(false)}</>
+          ) : null}
         </div>
         <div className="sty-rt">
         <div className="sty-figs">
@@ -7550,4 +7569,43 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-rail .cbr-ln{padding:0 12px 10px;margin-top:3px;}
   .sty-rail .cbr-row:last-child{padding-bottom:10px;}
 }
+/* ── ONE ROW (owner, 2026-11-07): the cap and the pane's control row merged.
+   Logo and date over the index, the pane's controls over the tiles, figures
+   and name at the right. The status strip is dropped. Desktop only. ── */
+.sty-captools{display:none;}
+@media (min-width:901px){
+  .sty-cap.v2{grid-template-columns:212px minmax(0,1fr) auto;column-gap:26px;padding:12px 22px 4px;}
+  .sty-cap.v2 .sty-capl{display:none;}
+  .sty-cap.v2 .sty-id{flex-direction:column;align-items:flex-start;gap:0;min-width:0;}
+  .sty-cap.v2 .sty-date{font-size:10.5px;line-height:1.3;padding-left:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;box-sizing:border-box;}
+  .sty-captools{display:flex;align-items:center;gap:18px;min-width:0;container-type:inline-size;}
+  .sty-captools > *{flex:none;}
+  .sty-captools .sty-sort{display:flex;margin:0;border:0;padding:0;gap:16px;border-radius:0;background:transparent;align-self:center;}
+  .sty-captools .sty-sort button{padding:6px 0 4px;border:0;border-radius:0;background:transparent;font-family:inherit;font-size:13px;font-weight:600;
+    letter-spacing:0;text-transform:none;white-space:nowrap;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+  .sty-captools .sty-sort button[aria-pressed="true"]{background:transparent;color:var(--stg-ink);font-weight:800;box-shadow:inset 0 -2px 0 var(--stg-ink);}
+  .sty-captools .sty-sort button:hover{color:var(--stg-ink);}
+  .sty-captools .sty-mgchips{display:flex;flex-wrap:nowrap;gap:16px;margin:0;}
+  .sty-captools .sty-mgc,.sty-captools .sty-mgc.on{border:0;border-radius:0;background:transparent;padding:6px 0 4px;font-family:inherit;font-size:13px;font-weight:600;
+    white-space:nowrap;cursor:pointer;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+  .sty-captools .sty-mgc.on{color:var(--stg-ink);font-weight:800;box-shadow:inset 0 -2px 0 var(--stg-ink);}
+  .sty-captools .sty-mgc i{display:none;}
+  .sty-captools .sty-find{display:flex;flex:1 1 auto;min-width:40px;max-width:none;margin:0;height:36px;}
+  .sty-captools .sty-find svg{flex:none;}
+  /* TOO SMALL, SO IT EXPANDS (owner, 2026-11-07): with room to spare the box
+     already fills it and stays put; on a tight row, focus (or a query) hides
+     the sort and the box takes its width. */
+  @container (max-width:680px){
+    .sty-captools .sty-find:focus-within ~ .sty-sort,.sty-captools .sty-find.q ~ .sty-sort{display:none;}
+  }
+  /* The pane's own control row is now the cap's. */
+  .sty-ix > .sty-az > .sty-cathead,.sty-ix > .sty-ixc > .sty-cathead{display:none;}
+}
+@media (min-width:901px) and (max-width:1279px){
+  .sty-captools{gap:12px;}
+  .sty-captools .sty-sort{gap:12px;}
+  .sty-captools .sty-sort .sty-sl{display:none;}
+  .sty-captools .sty-sort .sty-ss{display:inline;}
+}
 `;
+

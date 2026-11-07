@@ -2370,3 +2370,18 @@ PassPlay. All of it is `app/EndNext.jsx` (`EndNext`, `EndDay`, `StandChips`, `bu
 - Desktop layout: left column Up next, Then, today's board + group, Keep playing; right column Your
   Day, the run, the challenge. With no picks (archive replay, guest with no standings) the older layout
   stands.
+
+## The desktop home is ONE ROW at the top (owner, 2026-11-07)
+
+The cap's status strip (the per-category split strip) is gone on desktop, and the
+open pane's control row (Tiles / List, the group chips on All Puzzles, search,
+sort) moved up into the cap. The cap is a grid of the page's own columns:
+212px (logo, date under it) | 1fr (`.sty-captools`, over the tiles) | auto
+(figures, name, look switch). The pane's `.sty-cathead` is hidden on desktop for
+All Puzzles and the category / skill panes, since the cap now carries it.
+
+The search (`capFind`) FILLS whatever the row has spare (flex 1, 40px floor). It
+only expands when that is too little: `.sty-captools` is a size container, and
+under 680px wide, focus or a held query hides the sort so the box takes its
+width. Below 1280px the sort reads "Easy" for "Easy to Hard" and gaps tighten.
+Esc clears the box. Other panes (Runs, Quizzes, boards) leave the middle empty.
