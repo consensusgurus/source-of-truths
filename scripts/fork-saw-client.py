@@ -87,8 +87,8 @@ s = s[:a] + """        <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight:
 """ + s[b:]
 
 # A tall board on a wide screen is never taller than the window allows.
-R("""            <div className={`jg-boardbox${boxMode ? (zoom > 1 ? ' scr' : ' fit') : ''}`} ref={boxRef} style={full && fitW ? { width: fitW } : undefined}>""",
-  """            <div className={`jg-boardbox${boxMode ? (zoom > 1 ? ' scr' : ' fit') : ''}`} ref={boxRef} style={full && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * BP) / (BH + 2 * BP)).toFixed(3)}))` })}>""")
+R("""            <div className={`jg-boardbox${boxMode && zoom > 1 ? ' scr' : ''}`} ref={boxRef} style={full && fitW ? { width: fitW } : undefined}>""",
+  """            <div className={`jg-boardbox${boxMode && zoom > 1 ? ' scr' : ''}`} ref={boxRef} style={full && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * BP) / (BH + 2 * BP)).toFixed(3)}))` })}>""")
 
 left = [m.start() for m in re.finditer(r'\bJig\b', s)]
 open('app/saw/SawClient.jsx', 'w').write(s)

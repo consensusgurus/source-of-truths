@@ -415,16 +415,17 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   const [trayOpen, setTrayOpen] = useState(false);
   const vScroll = narrow && (full || trayOpen);   // the phone tray as an up-and-down grid
   const stripMode = narrow && !vScroll;            // the phone's two-row sideways strip
-  // THE PLAY BOX (owner, 2026-11-07: "on mobile, user should be able to scroll
-  // within the play box"). On a phone, once the clock runs, the board and the
-  // tray share one box the height of the screen: the tray stays pinned under
-  // the board and the board scrolls inside its own frame, so a piece never has
-  // to travel past the edge of the screen. Zoom makes the board bigger inside
-  // that frame (scroll both ways); a drag near the frame's edge scrolls it.
+  // THE PHONE DOCK (owner, 2026-11-07, after the full-screen play box proved
+  // unplayable: "i dont want the piece selection locked on screen unless it is
+  // just a smaller row or two"). On a phone, once the clock runs, the board is
+  // full width in the ordinary page, which scrolls with a normal flick, and the
+  // pieces ride in a compact strip docked to the bottom of the screen (one row
+  // per bin, smaller pieces; See more opens it taller). A piece held near the
+  // top of the screen or near the dock scrolls the page. Zoom (+/-) makes the
+  // board wider than the screen, scrolled sideways inside its frame.
   const [zoom, setZoom] = useState(1);
-  const [boxH, setBoxH] = useState(0);
   const boxRef = useRef(null);
-  const [boxAvailH, setBoxAvailH] = useState(0);   // the board frame's inner height in the play box
+  const [dockH, setDockH] = useState(0);   // the docked tray's height, kept clear under the board
   const autoScroll = useRef(null);
   selRef.current = sel;
   const playRef = useRef(null);
@@ -844,25 +845,32 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   // In the play box, a piece held near the board frame's edge scrolls the board
   // that way, and keeps scrolling while it is held there.
   function edgeScroll() {
-    const box = boxRef.current, pr = press.current;
-    if (!boxMode || !box || !pr || !pr.dragging) { stopEdge(); return; }
-    const r = box.getBoundingClientRect();
+    const pr = press.current;
+    if (!boxMode || !pr || !pr.dragging) { stopEdge(); return; }
     const lift = pr.touch && ghostRef.current ? ghostRef.current.offsetWidth * 0.62 : 0;
     const x = pr.cx, y = pr.cy - lift;   // where the piece is, not the finger
-    const E = 44, V = 14;
-    const inX = x > r.left - 20 && x < r.right + 20;
-    let vx = 0, vy = 0;
-    if (inX && y < r.top + E && y > r.top - 60) vy = -V;
-    else if (inX && y > r.bottom - E && y < r.bottom + 10) vy = V;
-    if (y > r.top && y < r.bottom) { if (x < r.left + E) vx = -V; else if (x > r.right - E) vx = V; }
+    const side = sideRef.current ? sideRef.current.getBoundingClientRect() : null;
+    const dockTop = side ? side.top : window.innerHeight;
+    const E = 48, V = 12;
+    let vy = 0, vx = 0;
+    if (y < E) vy = -V;
+    else if (pr.cy < dockTop && y > dockTop - E) vy = V;
+    const box = boxRef.current;
+    if (box && zoom > 1) {
+      const r = box.getBoundingClientRect();
+      if (y > r.top && y < r.bottom) { if (x < r.left + 36) vx = -V; else if (x > r.right - 36) vx = V; }
+    }
     if (!vx && !vy) { stopEdge(); return; }
-    autoScroll.current = { vx, vy };
+    autoScroll.current = { ...(autoScroll.current || {}), vx, vy };
     if (!autoScroll.current.t) {
       const tick = () => {
-        const a = autoScroll.current, b = boxRef.current;
-        if (!a || !b) return;
-        b.scrollTop += a.vy; b.scrollLeft += a.vx;
-        a.t = requestAnimationFrame(tick);
+        const a2 = autoScroll.current;
+        if (!a2) return;
+        if (a2.vy) window.scrollBy(0, a2.vy);
+        if (a2.vx && boxRef.current) boxRef.current.scrollLeft += a2.vx;
+        const p2 = press.current;
+        if (p2 && p2.dragging) ghostAt(p2.cx, p2.cy);
+        a2.t = requestAnimationFrame(tick);
       };
       autoScroll.current.t = requestAnimationFrame(tick);
     }
@@ -1041,62 +1049,22 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     window.addEventListener('resize', fit);
     return () => { if (ro) ro.disconnect(); window.removeEventListener('resize', fit); };
   }, [full, BW, BH, narrow, BP]);
-  // The play box: on a phone, once play starts, bring the board to the top of
-  // the screen and make the box exactly the height that is left, so the board
-  // frame and the tray under it are both always in view.
+  // The phone dock: when play starts, bring the top of the board into view
+  // once (never again, so the page is the player's to scroll).
   useEffect(() => {
-    if (!boxMode) { setBoxH(0); return undefined; }
+    if (!boxMode) return;
     const el = playRef.current;
-    if (!el) return undefined;
-    // Bring the box to the top of the screen, then size it to what is left
-    // below its top edge, leaving room for the Peek / Hint row under it. The
-    // page around it settles for a moment as play starts (the chrome folds
-    // away), so it is placed again once or twice while that happens, but never
-    // after the player has touched or scrolled the page (owner, 2026-11-07: a
-    // flick inside the box must move the page, and it froze when the page was
-    // pulled back). A flick on the board scrolls the board first and then the
-    // page (no overscroll containment), so the pieces are always reachable.
-    // Only a change of WIDTH (turning the phone) re-sizes it: a phone browser's
-    // address bar sliding away changes the height on every scroll, and
-    // re-sizing then makes the page jump under the finger.
-    let touched = false;
-    const mark = () => { touched = true; };
-    const sizeTo = () => {
-      const top = Math.max(0, el.getBoundingClientRect().top);
-      setBoxH(Math.max(320, Math.floor(window.innerHeight - top - 66)));
-    };
-    const place = () => {
-      if (touched) return;
-      const top0 = el.getBoundingClientRect().top + window.scrollY - 8;
-      window.scrollTo(0, Math.max(0, top0));
-      sizeTo();
-    };
-    place();
-    const ts = [80, 300].map((ms) => setTimeout(place, ms));
-    window.addEventListener('touchstart', mark, { passive: true });
-    window.addEventListener('wheel', mark, { passive: true });
-    let w0 = window.innerWidth;
-    const onResize = () => { if (window.innerWidth !== w0) { w0 = window.innerWidth; sizeTo(); } };
-    window.addEventListener('resize', onResize);
-    return () => {
-      ts.forEach(clearTimeout);
-      window.removeEventListener('touchstart', mark);
-      window.removeEventListener('wheel', mark);
-      window.removeEventListener('resize', onResize);
-    };
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 8;
+    if (Math.abs(window.scrollY - top) > 4) window.scrollTo(0, Math.max(0, top));
   }, [boxMode]);
   useEffect(() => () => stopEdge(), []);
-  // At zoom 1 the whole board fits in the frame (never cut off), and the frame
-  // is NOT a scroller, so a flick on the board scrolls the page (iOS Safari
-  // does not hand a flick from an inner scroller to the page). Only a zoomed
-  // board scrolls inside its frame.
   useEffect(() => {
-    if (!boxMode) { setBoxAvailH(0); return undefined; }
-    const el = boxRef.current;
+    if (!boxMode) { setDockH(0); return undefined; }
+    const el = sideRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
-    const ro = new ResizeObserver(() => setBoxAvailH(Math.floor(el.clientHeight)));
+    const ro = new ResizeObserver(() => setDockH(Math.ceil(el.getBoundingClientRect().height)));
     ro.observe(el);
-    setBoxAvailH(Math.floor(el.clientHeight));
     return () => ro.disconnect();
   }, [boxMode]);
   // A phone always plays the snap way. A game begun on the loose table (on a
@@ -1341,20 +1309,23 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           .lt-grp.mv{cursor:grabbing;transition:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));}
           .lt-grp.settle{transition:transform .6s cubic-bezier(.2,.8,.2,1);}
           @media (prefers-reduced-motion: reduce){.lt-grp{transition:none !important;}}
-          .jg-foot.inbox{margin-top:8px !important;padding-top:8px !important;}
           .jg-foot.inbox .jg-msg{display:none;}
-          .jg-play.box{flex-direction:column;align-items:stretch;gap:8px;min-height:0;}
-          .jg-play.box .jg-boardbox.scr{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;border-radius:12px;scrollbar-width:thin;}
-          .jg-play.box .jg-boardbox.fit{flex:1 1 auto;min-height:0;overflow:visible;display:flex;align-items:flex-start;}
-          .jg-play.box .jg-boardbox.fit .jg-zoom{flex:none;}
-          .jg-play.box .jg-side{flex:none;gap:8px;}
+          .jg-play.box{flex-direction:column;align-items:stretch;gap:0;}
+          .jg-play.box .jg-boardbox.scr{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;}
+          .jg-play.box .jg-side{position:fixed;left:0;right:0;bottom:0;z-index:60;gap:4px;margin:0;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--stg-b, #eef2f7);box-shadow:0 -8px 18px -10px rgba(10,14,24,.4);}
+          .jg-play.box .jg-ctl{min-height:0;gap:6px;flex-wrap:nowrap;}
+          .jg-play.box .jg-seg{padding:2px;}
+          .jg-play.box .jg-seg button{min-height:28px;padding:0 10px;font-size:12px;}
+          .jg-more2{display:inline-flex;align-items:center;gap:2px;height:30px;padding:0 10px;border-radius:999px;border:1px solid var(--stg-line, rgba(11,15,26,0.16));background:transparent;color:inherit;font:800 12px/1 inherit;cursor:pointer;flex:none;margin-left:auto;order:3;}
+          .jg-play.box .jg-ctl .jg-zm button{height:28px;min-width:34px;}
+          .jg-play.box .jg-tray{padding:4px 6px;border-radius:10px;}
+          .jg-play.box .jg-tray:not(.vs) .jg-grid{grid-template-rows:repeat(2, 46px);grid-auto-columns:46px;gap:3px;padding-bottom:2px;}
+          .jg-play.box .jg-tray.bins:not(.vs) .jg-grid{grid-template-rows:46px;}
+          .jg-play.box .jg-tray:not(.vs) .jg-binlab{display:none;}
+          .jg-play.box .jg-tray:not(.vs) .jg-bin + .jg-bin{margin-top:3px;padding-top:3px;}
           .jg-play.box .jg-tray.vs{max-height:42vh !important;max-height:42dvh !important;}
-          .jg-play.box .jg-tray{padding:6px 8px;}
-          .jg-play.box .jg-tray.bins:not(.vs) .jg-grid{grid-template-rows:58px;}
-          .jg-play.box .jg-bin + .jg-bin{margin-top:6px;padding-top:6px;}
-          .jg-play.box .jg-binlab{margin-bottom:4px;}
-          .jg-play.box .jg-more{min-height:36px;}
-          .jg-zm{display:inline-flex;border:1px solid var(--stg-line, rgba(11,15,26,0.16));border-radius:999px;overflow:hidden;margin-right:8px;flex:none;}
+          .jg-play.box .jg-more{min-height:30px;padding-top:4px;padding-bottom:4px;font-size:12.5px;}
+          .jg-zm{display:inline-flex;border:1px solid var(--stg-line, rgba(11,15,26,0.16));border-radius:999px;overflow:hidden;margin-right:2px;flex:none;}
           .jg-zm button{min-width:38px;height:32px;border:0;background:transparent;font:800 17px/1 inherit;color:inherit;cursor:pointer;}
           .jg-zm button+button{border-left:1px solid var(--stg-line, rgba(11,15,26,0.16));}
           .jg-zm button:disabled{opacity:.35;cursor:default;}
@@ -1457,9 +1428,9 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           )}
           </div>
 
-          <div className={`jg-play${boxMode ? ' box' : ''}`} ref={playRef} style={boxMode && boxH ? { height: boxH } : undefined}>
-            <div className={`jg-boardbox${boxMode ? (zoom > 1 ? ' scr' : ' fit') : ''}`} ref={boxRef} style={full && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * BP) / (BH + 2 * BP)).toFixed(3)}))` })}>
-             <div className="jg-zoom" style={boxMode ? (zoom > 1 ? { width: `${zoom * 100}%` } : (boxAvailH ? { width: `min(100%, ${Math.floor(boxAvailH * ((BW + 2 * BP) / (BH + 2 * BP)))}px)`, margin: '0 auto' } : undefined)) : undefined}>
+          <div className={`jg-play${boxMode ? ' box' : ''}`} ref={playRef} style={boxMode && dockH ? { paddingBottom: dockH + 8 } : undefined}>
+            <div className={`jg-boardbox${boxMode && zoom > 1 ? ' scr' : ''}`} ref={boxRef} style={full && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * BP) / (BH + 2 * BP)).toFixed(3)}))` })}>
+             <div className="jg-zoom" style={boxMode && zoom > 1 ? { width: `${zoom * 100}%` } : undefined}>
               <svg ref={boardRef} className={`jg-board${flashMiss ? ' miss' : ''}${LOOSE && started ? ' lt' : ''}`} viewBox={`${-BP} ${-BP} ${BW + 2 * BP} ${BH + 2 * BP}`}
                 role="img" aria-label={LOOSE ? `Saw table, ${biggest} of ${NP} pieces joined in the biggest group` : `Saw board, ${placedCount} of ${NP} pieces placed`} onClick={boardTap}>
                 <defs>
@@ -1515,6 +1486,11 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
               <div className="jg-side" ref={sideRef}>
                 <div className="jg-ctl">
                   {boxMode && (
+                    <button type="button" className="jg-more2" aria-expanded={trayOpen} onClick={toggleTray} aria-label={trayOpen ? 'Show fewer pieces' : `See more pieces, ${loose.length} left`}>
+                      {trayOpen ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronUp size={15} aria-hidden="true" />}{loose.length}
+                    </button>
+                  )}
+                  {boxMode && (
                     <div className="jg-zm" role="group" aria-label="Board size">
                       <button type="button" onClick={() => setZoom((z) => Math.max(1, Math.round((z - 0.5) * 2) / 2))} disabled={zoom <= 1} aria-label="Smaller board">&minus;</button>
                       <button type="button" onClick={() => setZoom((z) => Math.min(2.5, Math.round((z + 0.5) * 2) / 2))} disabled={zoom >= 2.5} aria-label="Bigger board">+</button>
@@ -1548,7 +1524,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
                     </div>
                   )}
                 </div>
-                {narrow && !full && (trayOpen || loose.length > 12) && (
+                {narrow && !full && !boxMode && (trayOpen || loose.length > 12) && (
                   <button type="button" className="jg-more" aria-expanded={trayOpen} onClick={toggleTray}>
                     {trayOpen ? <><ChevronUp size={16} aria-hidden="true" /> Show fewer</> : <><ChevronDown size={16} aria-hidden="true" /> See more pieces &middot; {loose.length} left</>}
                   </button>
