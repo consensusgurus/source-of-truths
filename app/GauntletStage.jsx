@@ -106,6 +106,24 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   }, [recapOn, missRight, qKey]);
   const goingRef = React.useRef(false);
   React.useEffect(() => { goingRef.current = false; }, [qKey]);
+  // THE SLOW TIMER (owner, 2026-11-07: "a slow timer to show for next category
+  // play"). Once the recap is open it counts recap.autoMs down on the button
+  // (seconds plus a bar draining along its foot) and moves on by itself at zero.
+  const autoMs = recap && recap.autoMs ? recap.autoMs : 0;
+  const [left, setLeft] = React.useState(0);
+  const open = !!(big && big.open);
+  React.useEffect(() => {
+    if (!open || !autoMs) return undefined;
+    const end = Date.now() + autoMs;
+    setLeft(autoMs);
+    const iv = setInterval(() => {
+      const l = Math.max(0, end - Date.now());
+      setLeft(l);
+      if (l <= 0) { clearInterval(iv); recapGo(); }
+    }, 250);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, autoMs, qKey]);
   function recapGo() {
     if (goingRef.current) return;
     goingRef.current = true;
@@ -162,12 +180,15 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
               ? <span className="gst-bx gst-byou">You picked {choices[missPick]}</span>
               : recap.timedOut ? <span className="gst-bx gst-byou">The clock ran out</span> : null}
             <span className="gst-bx gst-bstand"><b>{recap.right}</b> right{recap.stand ? <> &middot; {recap.stand}</> : null}</span>
-            <button type="button" className="gst-bx gst-bgo" onClick={recapGo} disabled={!big.open}>
+            <button type="button" className="gst-bx gst-bgo" onClick={recapGo} disabled={!big.open}
+              aria-label={autoMs ? `${recap.goLabel}, starts in ${Math.ceil(left / 1000)} seconds` : recap.goLabel}>
               <span>{recap.goLabel}</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              {autoMs ? <span className="gst-bsec">{Math.ceil(left / 1000)}</span>
+                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>}
+              {autoMs ? <span className="gst-bbar" aria-hidden="true"><span style={{ width: `${Math.max(0, Math.min(1, left / autoMs)) * 100}%` }} /></span> : null}
             </button>
-            {recap.leaveHref ? <a className="gst-bx gst-bleave" href={recap.leaveHref}>Leave the run</a> : null}
           </div>
+          {recap.leaveHref ? <a className="gst-bleave" href={recap.leaveHref}>Leave the run</a> : null}
         </div>
       ) : null}
     </div>
@@ -258,10 +279,15 @@ html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
 .gst-big.open .gst-byou{opacity:.7;}
 .gst-bstand{font-size:14px;font-weight:700;padding:8px 14px;border-radius:999px;border:1px solid var(--gst-rv-ink);}
 .gst-bstand b{font-size:16px;}
-.gst-bgo{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:440px;min-height:58px;border:0;border-radius:18px;background:var(--gst-rv-ink);font-family:inherit;font-size:20px;font-weight:800;cursor:pointer;margin-top:8px;}
+.gst-bgo{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:440px;min-height:58px;border:0;border-radius:18px;background:var(--gst-rv-ink);font-family:inherit;font-size:20px;font-weight:800;cursor:pointer;margin-top:8px;}
+.gst-bsec{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;border-radius:15px;border:2px solid var(--gst-rv-bg);box-sizing:border-box;font-size:14px;font-variant-numeric:tabular-nums;}
+.gst-bbar{position:absolute;left:0;right:0;bottom:0;height:5px;background:color-mix(in srgb, var(--gst-rv-bg) 22%, transparent);}
+.gst-bbar>span{display:block;height:100%;background:var(--gst-rv-bg);transition:width .25s linear;}
 .gst-big .gst-bgo,.gst-big .gst-bgo *{color:var(--gst-rv-bg);}
 .gst-bgo:active{transform:scale(.98);}
-.gst-bleave{display:flex;align-items:center;justify-content:center;width:100%;max-width:440px;min-height:46px;box-sizing:border-box;border-radius:14px;border:1px solid var(--gst-rv-ink);font-size:15px;font-weight:800;text-decoration:none;}
+/* Leave the run (owner, 2026-11-07): a small underlined link at the foot of the screen, not a button. */
+.gst-bleave{position:absolute;left:50%;bottom:max(22px, calc(env(safe-area-inset-bottom) + 14px));transform:translateX(-50%);font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;}
+.gst-big.open .gst-bleave{opacity:.75;pointer-events:auto;transition:opacity .35s ease .6s;}
 @media(min-width:900px){.gst-big.open .gst-bin{gap:18px;}.gst-bq{font-size:20px;}}
 @keyframes gstShake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
 @keyframes gstTag{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}

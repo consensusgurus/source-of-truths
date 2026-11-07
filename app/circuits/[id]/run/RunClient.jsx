@@ -1104,6 +1104,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
             stand: reveal.stand ? `You\u2019d place #${reveal.stand.pos} of ${Number(reveal.stand.field).toLocaleString()} if you stopped here` : null,
             timedOut: reveal.timedOut,
             goLabel: r.phase === 'verdict' && upNext ? `On to ${upNext.name}` : 'See your run',
+            autoMs: r.phase === 'verdict' && upNext ? VERDICT_MS : 0,
             leaveHref: r.phase === 'verdict' ? `/circuits/${circuitId}` : null,
             onGo: () => { setReveal(null); setHold(false); if (rRef.current.phase === 'verdict') nextSection(); },
           } : null}
