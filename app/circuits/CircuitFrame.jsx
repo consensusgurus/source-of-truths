@@ -26,7 +26,8 @@
 // picks one, exactly as every daily client does: an inline style beats a
 // stylesheet, so a root setting --stg-acc directly could never be re-themed.
 import { BrandFit } from '@/lib/use-brand-fit';
-import { cycleSiteLook } from '@/lib/stage-look';
+import { cycleSiteLook, useStageLook } from '@/lib/stage-look';
+import StageTopBar from '../StageTopBar';
 import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
 import ThemePop from '../ThemePop';
 import { categoryColor, categoryColorLight, categoryOnrampLight, categoryAccentInkLight } from '@/lib/category-ramp';
@@ -36,8 +37,12 @@ import StageFooter from '../StageFooter';
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = 'Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif';
 
-export default function CircuitFrame({ cat = null, label = 'Runs', progress = null, wide = false, children }) {
+// `bar` ({ title, sub }) swaps the cap for the one-line StageTopBar every
+// puzzle and run page wears (owner, 2026-11-07: "the header needs to match
+// other pages and not wrap to two lines"). Build a Run and /run use it.
+export default function CircuitFrame({ cat = null, label = 'Runs', progress = null, wide = false, bar = null, children }) {
   const [theme, setTheme] = useStageTheme();
+  const [look] = useStageLook();
   const tq = useThemeQs();
   const hint = useThemeHint();
   const intro = useThemeIntro();
@@ -72,7 +77,12 @@ export default function CircuitFrame({ cat = null, label = 'Runs', progress = nu
       {/* THE CAP. One line: the mark and the words, what this page is, and the
           ways out at the right edge. No masthead and no stat bar, which is the
           stage's first rule and the specific thing that was wrong here. */}
-      <div className="cfr-cap">
+      {bar ? (
+        <div className="cfr-stb">
+          <StageTopBar look={look} onFlip={() => cycleSiteLook()} ink="var(--stg-ink)" href={withTq('/')} title={bar.title || null} sub={bar.sub || null} dot={bar.dot || '#7dd3fc'} />
+        </div>
+      ) : null}
+      <div className="cfr-cap" style={bar ? { display: 'none' } : undefined}>
         <div className="cfr-id">
           <BrandFit><a className="cfr-brand" href={withTq('/')}>
             <MindLoftMark size={20} ink="var(--stg-ink)" accent="var(--stg-brand,#7dd3fc)" />
@@ -113,7 +123,7 @@ export default function CircuitFrame({ cat = null, label = 'Runs', progress = nu
       {/* The hairline reads the same as it does on the home: how much of this
           page's run is behind you. Drawn at zero as an empty track rather than
           hidden, so the cap does not change height when the fetch lands. */}
-      <div className="cfr-prog">
+      <div className="cfr-prog" style={bar ? { display: 'none' } : undefined}>
         <span style={{ width: `${Math.max(0, Math.min(1, progress || 0)) * 100}%` }} />
       </div>
 
@@ -126,6 +136,8 @@ export default function CircuitFrame({ cat = null, label = 'Runs', progress = nu
 
 // NOTE: this block is a JS template literal, so no backticks in the comments.
 const CSS = `
+.cfr-stb{max-width:720px;margin:0 auto;box-sizing:border-box;padding:max(12px, env(safe-area-inset-top)) 14px 6px;}
+
 .cfr{min-height:100vh;background:var(--stg-ground);color:var(--stg-ink);
   font-family:${SANS};-webkit-font-smoothing:antialiased;}
 .cfr *{box-sizing:border-box;}

@@ -52,11 +52,11 @@ export default function BuildRunClient({ games = [], start = [], startName = '' 
   };
 
   return (
-    <CircuitFrame label="Build a Run">
+    <CircuitFrame label="Build a Run" bar={{ title: 'Build a Run', sub: 'Runs' }}>
       <style dangerouslySetInnerHTML={{ __html: RUN_CSS + CSS }} />
       <div className="br">
         <div className="br-head">
-          <h1 className="br-h1">Build a Run</h1>
+          {/* The header carries the page's name; no second title under it. */}
           <p className="br-sub">Pick {BUILT_MIN} to {RUN_MAX} of today&rsquo;s puzzles, put them in order and send the link.</p>
         </div>
 

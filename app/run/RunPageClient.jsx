@@ -141,7 +141,7 @@ export default function RunPageClient({ keys = [], name = 'A Mind Loft Run', by 
 
   if (keys.length < 2) {
     return (
-      <CircuitFrame label="Runs">
+      <CircuitFrame label="Runs" bar={{ title: 'Runs' }}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
         <div className="br">
           <div className="br-head">
@@ -222,7 +222,7 @@ export default function RunPageClient({ keys = [], name = 'A Mind Loft Run', by 
   ) : null;
 
   return (
-    <CircuitFrame label="Runs" progress={progress}>
+    <CircuitFrame label="Runs" progress={progress} bar={{ title: 'Runs', sub: day ? dayLabel(day) : null }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {finaleNode}
       <div className={'br' + (fin === 'play' || fin === 'glide' ? ' br-fly' : '')}>
