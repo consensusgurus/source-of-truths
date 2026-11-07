@@ -592,6 +592,13 @@ then the rest), games A to Z, with a Retired shelf at the foot. `next.config.js`
 - Linked from the footer (Puzzle Archive, in `FOOTER_COLS`), the home's side index (a door beside
   Top 10 Lists), every game's end-of-game links ("Puzzle archive"), `DailyRoster`, the category
   pages, the game FAQ, and the sitemap. Page views post as `archive` (`TRACKED_PAGES`).
+- **Rebuilt in the home's look (owner, 2026-11-07: "it doesn't even use updated pastels").** 1px ink
+  outlines, 12px tiles, ink pills, Title Case headings, and the SITE PASTEL (`sitePastel`: raw step on
+  dark, 60/40 with white on light), never the deep light-ramp steps. An ink summary card leads; category
+  chips fill with the share played (the home index's fill; a 4px bar on dark, where ink text cannot sit
+  on half a pastel); each card wears its OWN category (retired included) and ends in a pastel band that
+  fills with that game's played share. Marks: solved = pastel, played = pale pastel, started = pastel
+  corner, not played = grey cell, today = ink ring. No dashed marks. Mono look folds the pastels to greys.
 
 ## The admin desk opens on PULSE (owner, 2026-10-12)
 
