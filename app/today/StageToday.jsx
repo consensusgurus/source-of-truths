@@ -2304,9 +2304,12 @@ export default function StageToday() {
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
           if (!circLive.current || !d) return;
+          // WHO LEADS THE RUN (owner, 2026-11-07: "i want the runs to show the
+          // leader just as the individual puzzles do"): site #1, never a score.
+          const top = Array.isArray(d.overall) ? d.overall.find((r) => r && r.rank === 1 && r.username) : null;
           const v = runGrp
-            ? { players: d.siteField || 0, rank: d.siteRank || null, gfield: d.field || 0, grank: d.me && d.me.rank ? d.me.rank : null }
-            : { players: d.overallField || (Array.isArray(d.overall) ? d.overall.length : 0), rank: d.me && d.me.rank ? d.me.rank : null };
+            ? { players: d.siteField || 0, rank: d.siteRank || null, gfield: d.field || 0, grank: d.me && d.me.rank ? d.me.rank : null, lead: d.siteLeader || null }
+            : { players: d.overallField || (Array.isArray(d.overall) ? d.overall.length : 0), rank: d.me && d.me.rank ? d.me.rank : null, lead: top ? top.username : null };
           setRunStat((m) => ({ ...m, [id]: v }));
         })
         .catch(() => {});
@@ -3711,6 +3714,7 @@ export default function StageToday() {
     }
     const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
     const line = fin ? (st && st.rank ? `You: #${st.rank} of ${fmtN(st.players)}` : 'Finished')
+      : st && st.lead ? `#1 ${st.lead}`
       : c.n ? `${c.n} of ${c.games.length} played`
         : st && st.players ? `${fmtN(st.players)} played today` : `${c.games.length} games`;
     return (
@@ -3780,7 +3784,7 @@ export default function StageToday() {
           <span className="sty-gn">{c.name}</span>
           <span className="sty-gt">{RUN_TAGS[c.id] || c.blurb || `Run \u00b7 ${c.games.length} games`}</span>
           <span className="sty-gpl sty-gcs">
-            <span className="ld"><b>{fin ? 'Finished' : c.n ? `${c.n} of ${c.games.length} played` : `${c.games.length} games`}</b></span>
+            <span className="ld">{st && st.lead ? <>#1 <b>{st.lead}</b></> : <b>{fin ? 'Finished' : c.n ? `${c.n} of ${c.games.length} played` : `${c.games.length} games`}</b>}</span>
             <span className="ct" title="Plays today">{fmtN(st && st.players)}</span>
           </span>
         </a>

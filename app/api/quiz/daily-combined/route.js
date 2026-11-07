@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadDailyResultsCached } from '@/lib/daily-results-cache';
 import { isHiddenViewer } from '@/lib/hidden-players';
 import { findQuizIdentity } from '@/lib/quiz-identity';
-import { sameFamily } from '@/lib/daily-families';
+import { sameFamily, relativesOf } from '@/lib/daily-families';
 import { ladderAt, scoreGame, combineDaily, guestProvisional, rankByCorrect, rankByTime, DAILY_KEYS, DAILY_MAX, GAME_MAX, bestNForSuffix, usesLadder, dayIsFrozen, etDayEndMs, isoOfSuffix, rowsWithinDay, rescoreField } from '@/lib/daily-combined';
 import { scoreOutwitGame } from '@/lib/outwit-score';
 import { scoreOutrankGame } from '@/lib/outrank-score';
@@ -902,7 +902,24 @@ export async function GET(request) {
       picks.sort((a, b) => b.v - a.v || a.mins - b.mins);
       const baseNow = base + (stand.have.length ? 0 : plusN);
       const shown = picks.slice(0, 8);
-      for (const x of picks.slice(8)) if (x.sib && shown.filter((y) => y.sib).length < 2) shown.push(x);
+      // The relatives past the top eight join NEAREST FIRST (owner, 2026-11-07:
+      // "how on earth isn't Judges the next suggestion" after Jesters). By
+      // points-per-minute alone, two farther family members (Plot, Duet) filled
+      // both slots and the closest relative never reached the ending.
+      const famNear = (key) => {
+        let best = 99;
+        for (const k of lessKeys) { const i = relativesOf(k).indexOf(key); if (i !== -1 && i < best) best = i; }
+        return best;
+      };
+      const extra = picks.slice(8).filter((x) => x.sib).sort((a, b) => famNear(a.key) - famNear(b.key));
+      const nearest = extra[0];
+      for (const x of extra) if (shown.filter((y) => y.sib).length < 2) shown.push(x);
+      // The single nearest relative always makes it, even past two farther ones
+      // already in the top eight.
+      if (nearest && !shown.includes(nearest)) {
+        const sibsShown = shown.filter((y) => y.sib);
+        if (!sibsShown.length || famNear(nearest.key) < Math.min(...sibsShown.map((y) => famNear(y.key)))) shown.push(nearest);
+      }
       stand.picks = shown.map((x) => ({ key: x.key, pts: x.pts, mins: x.mins, finish: x.finish, plays: x.plays, after: at(baseNow + x.pts), ...(x.sib ? { sib: true } : {}) }));
     }
     // ?top=N asks for a longer board (the home's side column), capped at 30.
@@ -1060,6 +1077,9 @@ export async function GET(request) {
         // The site board's own figures, as the plain circuit payload states them.
         siteField: overallFull.length,
         siteRank: me && me.rank ? me.rank : null,
+        // The site board's leader, so a run tile names #1 the way a game tile
+        // does even when the reader's group is the board in view (2026-11-07).
+        siteLeader: overallNamed[0] && overallRankByKey.get(overallNamed[0].userKey) === 1 ? overallNamed[0].username : null,
       }, { headers: frozen ? GROUP_FROZEN_HEADERS : GROUP_HEADERS });
     }
 
