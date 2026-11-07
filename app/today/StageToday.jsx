@@ -3774,6 +3774,21 @@ export default function StageToday() {
     return ks.size ? ks : null;
   })();
   useEffect(() => { setRunsOpen(false); }, [paneOn]);
+  // HOW MANY TILES ACROSS (owner, 2026-11-07): the top row of a pane is all
+  // runs, the deck last, so the row's width decides how many runs lead. Read
+  // off the open pane's own grid, re-read on resize.
+  const [tileCols, setTileCols] = useState(6);
+  useEffect(() => {
+    const read = () => {
+      const el = document.querySelector('.sty-ix > .sty-cat:not(.sty-ixoff) > .sty-games:not(.sty-vhid)');
+      if (!el) return;
+      const n = window.getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length;
+      if (n > 0) setTileCols((v) => (v === n ? v : n));
+    };
+    read();
+    window.addEventListener('resize', read);
+    return () => window.removeEventListener('resize', read);
+  }, [paneOn, mid]);
   const runCells = (cat) => {
     if (!mid || findOn) return null;
     const runs = deckRuns(cat);
@@ -3783,8 +3798,13 @@ export default function StageToday() {
     // Every folded run gets its own tile at the head of the grid, and the games
     // inside it leave the grid (foldKeys, below). Elsewhere one lead run.
     const folds = cat == null ? runs.filter((c) => FOLD_RUNS.includes(c.id)) : [];
-    const leads = folds.length ? folds
-      : [runs.filter((c) => !c.poly && !runFull(c)).sort((a, b) => pl(b) - pl(a))[0]].filter(Boolean);
+    // THE TOP ROW IS ALL RUNS (owner, 2026-11-07): the folded quiz runs, then
+    // the most played runs the reader has not finished, until one cell is left
+    // for the deck. Finished runs drop into the deck, so as runs are completed
+    // the row thins and puzzles take the spare cells.
+    const room = Math.max(1, tileCols - 1);
+    const open = runs.filter((c) => !c.poly && !runFull(c) && !folds.includes(c)).sort((a, b) => pl(b) - pl(a));
+    const leads = [...folds, ...open].slice(0, Math.max(room, folds.length));
     const lead = leads[0] || null;
     const rest = runs.filter((c) => !leads.includes(c));
     const cells = [];
@@ -3804,7 +3824,7 @@ export default function StageToday() {
         </a>
       );
     }
-    if (rest.length) {
+    {
       cells.push(
         // THE DECK CARRIES BUILD A RUN (owner, 2026-11-07). A div, not a
         // button, so the Build a Run link inside it is a real link; the card
@@ -3812,8 +3832,8 @@ export default function StageToday() {
         // is the keyboard's button.
         <div key="rdeck" className={'sty-g mx sty-gdeck' + (runsOpen ? ' on' : '')}
           data-fk="rdeck" style={{ '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} onClick={() => setRunsOpen((v) => !v)}>
-          <span className="sty-gn">{lead ? 'More Runs' : 'Runs'} <em>{rest.length}</em></span>
-          {rest.slice(0, 2).map((c) => <span key={c.id} className="sty-gdl"><b>{c.name}</b><i>{runFull(c) ? 'Played' : c.n ? `${c.n} of ${c.games.length}` : fmtN((runStat[c.id] || {}).players)}</i></span>)}
+          <span className="sty-gn">{rest.length ? <>{lead ? 'More Runs' : 'Runs'} <em>{rest.length}</em></> : 'Runs'}</span>
+          {rest.slice(0, 1).map((c) => <span key={c.id} className="sty-gdl"><b>{c.name}</b><i>{runFull(c) ? 'Played' : c.n ? `${c.n} of ${c.games.length}` : fmtN((runStat[c.id] || {}).players)}</i></span>)}
           <a className="sty-gdl sty-gdb" href="/build-a-run" onClick={(e) => e.stopPropagation()}><b>+ Build a Run</b><i>&rarr;</i></a>
           <button type="button" className="sty-gpl sty-gcs sty-gdt" aria-expanded={runsOpen} aria-controls="sty-runsu"
             onClick={(e) => { e.stopPropagation(); setRunsOpen((v) => !v); }}>
@@ -7548,7 +7568,9 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   @media (max-width:1279px){ .sty-ix > .sty-cat > .sty-cathead > .sty-find{display:flex;} }
   /* Runs in the tile grid: the lead run, the deck, and the unfurled cards. */
   .sty-grun .sty-gn::before,.sty-gdeck .sty-gn::before{border-radius:3px !important;background:var(--stg-ink) !important;}
-  .sty-gdeck{font:inherit;text-align:left;cursor:pointer;background:var(--stg-surf);color:var(--stg-ink);margin:0 7px 7px 0;
+  /* No bottom margin (owner, 2026-11-07: the top row must not be taller): the
+     stacked edges hang into the grid gap instead of adding to the row. */
+  .sty-gdeck{font:inherit;text-align:left;cursor:pointer;background:var(--stg-surf);color:var(--stg-ink);margin:0 7px 0 0;
     box-shadow:3px 3px 0 0 var(--stg-surf),3px 3px 0 1px var(--stg-ink),7px 7px 0 0 var(--stg-surf),7px 7px 0 1px var(--stg-ink);}
   .sty-gdeck.on{box-shadow:none;margin:0;}
   .sty-gdeck .sty-gn em{font-style:normal;font-size:12px;font-weight:700;margin-left:4px;}
