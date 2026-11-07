@@ -1505,9 +1505,13 @@ const STAGE_COURT_CSS = `
 .pst .jsx-c.er{border-right:0;}
 .pst .jsx-c.eb{border-bottom:0;}
 .pst .jsx-c svg{width:56%;height:56%;display:block;}
-.pst .jsx-c.s{background:var(--pst-ink);color:var(--pst-bg);}
-.pst .jsx-c.s svg{width:64%;height:64%;}
+/* A seat keeps its court's pastel (owner, 2026-11-07): the old solid ink
+   square read as a white tile in dark mode and hid which court it sat in.
+   Dark piece plus a dark inset ring sets it apart from a mark or a dot. */
+.pst .jsx-c.s{background:var(--court);color:var(--pst-on-acc);box-shadow:inset 0 0 0 3px var(--pst-on-acc);}
+.pst .jsx-c.s svg{width:68%;height:68%;}
 .pst .jsx-c.lk{box-shadow:inset 0 0 0 2px var(--pst-acc);}
+.pst .jsx-c.s.lk{box-shadow:inset 0 0 0 3px var(--pst-on-acc), inset 0 0 0 5px var(--pst-acc);}
 .pst .jsx-c.bad{background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--lg-bad) 34%, transparent) 0 3px, transparent 3px 8px), var(--lg-bad-bg);color:var(--lg-bad);}
 .jsx-dot{display:block;width:22%;height:22%;border-radius:50%;background:currentColor;opacity:.6;}
 .jsx-key{display:flex;justify-content:center;gap:16px;font-size:12px;font-weight:700;color:var(--pst-mute);align-items:center;flex-wrap:wrap;}
