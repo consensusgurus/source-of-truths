@@ -383,7 +383,7 @@ export function GauntletBetween({ circuitName, sections = [], results = [], last
               title and play button into one"). The next quiz's name sits in one
               big ink block that starts it; the countdown drains along its foot,
               and Hold / Leave stay below. */}
-          <button type="button" className="gsx-mid gsx-play gsx-rise" style={{ animationDelay: '.3s' }} onClick={onGo}
+          <button type="button" className="gsx-mid gsx-upgo gsx-rise" style={{ animationDelay: '.3s' }} onClick={onGo}
             aria-label={`${goLabel || `Start ${upNext ? upNext.name : ''}`}${auto ? (held ? ', held' : `, starts in ${secs} seconds`) : ''}`}>
             <span className="gsx-eye2">Up Next · {stepWord} {upIdx >= 0 ? upIdx + 1 : nDone + 1}</span>
             <span className="gsx-pop">{upNext ? upNext.name : ''}</span>
@@ -1005,11 +1005,11 @@ const CSS = `
 .gsx-pop{font-size:80px;line-height:1.14;padding-bottom:.04em;font-weight:800;letter-spacing:-.04em;animation:gsxPop .6s cubic-bezier(.2,.8,.2,1) .45s both;overflow-wrap:anywhere}
 .gsx-sub{font-size:17px;font-weight:700}
 /* The title-as-button. Ink block, ground type; the countdown drains along its foot. */
-.gsx-play{position:relative;overflow:hidden;width:100%;box-sizing:border-box;min-height:240px;border:0;border-radius:28px;background:var(--gsx-ink);padding:26px 20px 34px;font:inherit;cursor:pointer;transition:transform .1s,filter .15s}
-.gsx .gsx-play,.gsx .gsx-play *{color:var(--gsx-bg)}
-.gsx-play:hover{filter:brightness(.88)}.gsx-play:active{transform:scale(.99)}
-.gsx-play:focus-visible{outline:3px solid var(--gsx-ink);outline-offset:4px}
-.gsx-play .gsx-eye2{opacity:.8}
+.gsx-upgo{position:relative;overflow:hidden;width:100%;box-sizing:border-box;min-height:240px;border:0;border-radius:28px;background:var(--gsx-ink);padding:26px 20px 34px;font:inherit;cursor:pointer;transition:transform .1s,filter .15s}
+.gsx .gsx-upgo,.gsx .gsx-upgo *{color:var(--gsx-bg)}
+.gsx-upgo:hover{filter:brightness(.88)}.gsx-upgo:active{transform:scale(.99)}
+.gsx-upgo:focus-visible{outline:3px solid var(--gsx-ink);outline-offset:4px}
+.gsx-upgo .gsx-eye2{opacity:.8}
 .gsx-pgo{display:inline-flex;align-items:center;gap:8px;margin-top:8px;padding:8px 16px 8px 13px;border-radius:999px;border:1px solid var(--gsx-bg);font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
 .gsx-pbar{position:absolute;left:0;right:0;bottom:0;height:6px;background:color-mix(in srgb, var(--gsx-bg) 22%, transparent)}
 .gsx-pbar>span{display:block;height:100%;background:var(--gsx-bg);transition:width .25s linear}
@@ -1123,7 +1123,7 @@ const CSS = `
   .gsx-sn{font-size:13px}
   .gsx-pop{font-size:128px}
   .gsx-sub{font-size:21px}
-  .gsx-play{flex:0 0 auto;min-height:320px;padding:36px 32px 44px}
+  .gsx-upgo{flex:0 0 auto;min-height:320px;padding:36px 32px 44px}
   .gsx-pgo{font-size:18px}
   .gsx-low{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
   /* EVENLY DISTRIBUTED (owner, 2026-10-25, every run): the result cards share
