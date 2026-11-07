@@ -265,7 +265,7 @@ const GAME = {
   Board,
   tools: (props) => <Tools {...props} />,
   eyebrow: (P, s, { sundayLabel }) => `No. ${P.num}${sundayLabel ? ` · ${sundayLabel}` : ''} · Clue ${s.open} of ${MAX}`,
-  foot: (P, s) => `${plural(s.open)} open · ${(s.misses || []).length} ${(s.misses || []).length === 1 ? 'miss' : 'misses'} · any of ${UNIVERSE.length.toLocaleString('en-US')} Russell 3000 companies`,
+  foot: (P, s) => `${plural(s.open)} open · ${(s.misses || []).length} ${(s.misses || []).length === 1 ? 'miss' : 'misses'} · any Russell 3000 company`,
   frac: (P, s) => s.open / MAX,
   sundayLabel: () => 'Sunday Edition',
   gateTitle: (P) => (P.sunday ? 'Sunday Edition: a smaller company' : "Today's chart"),
@@ -285,7 +285,7 @@ const GAME = {
   detail: (P, s, won, el) => `${P.name} (${P.ticker}) · ${plural(won ? s.open : MAX)} · ${el}`,
   aboutTitle: 'About Tape',
   about: [
-    'Tape is a free daily stock market guessing game from Mind Loft. Every day it shows five years of one company’s weekly stock chart with the prices taken off, and you name the company. Any of the roughly 2,600 stocks in the Russell 3000 index is a fair guess, by name or by ticker.',
+    'Tape is a free daily stock market guessing game from Mind Loft. Every day it shows five years of one company’s weekly stock chart with the prices taken off, and you name the company. Any stock in the Russell 3000 index is a fair guess, by name or by ticker.',
     'You start with the sector. Five more clues open one at a time when you ask for them, or when you guess wrong: the year the company went public, its size by market value, a dated headline pinned on the chart, what it does, and the first letter of its ticker. Fewer clues rank higher and the clock breaks a tie. Weekdays are well-known companies; the Sunday Edition is a smaller one.',
     <>More daily guessing: try <a href="/dossier" style={{ color: 'inherit', fontWeight: 800 }}>Dossier</a>, <a href="/pricer" style={{ color: 'inherit', fontWeight: 800 }}>Pricer</a> and <a href="/biz" style={{ color: 'inherit', fontWeight: 800 }}>Biz</a>.</>,
   ],
