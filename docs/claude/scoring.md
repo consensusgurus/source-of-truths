@@ -976,3 +976,11 @@ all leave those finishes out. Routes that only show a player their OWN record pa
 `{ includeHidden: true }` (daily-status, daily-unplayed, my-plays) so the player still sees
 what they played and is not offered the same day again. Admin views read their own cache and
 are unaffected. First entry: LoftyStandard from 2026-10-28.
+
+**Shadow view (owner, same day).** The hidden player still sees their own finishes, leader spot
+included, wherever a board request names them: `/api/quiz/board` (end card, game-page board),
+`/api/quiz/daily-combined` and `/api/quiz/daily-me`. Each resolves the caller first and, when
+`isHiddenViewer(keys)` is true, loads with `includeHidden` and answers no-store (daily-combined
+also skips its shared core memo). Any request without their identity, and every other player,
+gets the hidden-free rows. Surfaces that never send identity (home tiles, IQ/XP leaderboards,
+archive) show the public version to everyone, the hidden player included.

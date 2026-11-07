@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadDailyResultsCached } from '@/lib/daily-results-cache';
 import { resolvePlayerKeys } from '@/lib/quiz-identity';
+import { isHiddenViewer } from '@/lib/hidden-players';
 import { scoreGame, DAILY_KEYS, GAME_MAX } from '@/lib/daily-combined';
 import { scoreOutwitGame } from '@/lib/outwit-score';
 import { scoreOutrankGame } from '@/lib/outrank-score';
@@ -134,7 +135,12 @@ export async function GET(request) {
 
   try {
     const ids = games.map((g) => g.quizId);
-    const { data, error } = await loadDailyResultsCached(supabaseAdmin, ids, { force: fresh });
+    // Identity first, so a hidden player (lib/hidden-players) gets their own
+    // finishes back. Everyone else gets them dropped.
+    let who0 = null;
+    try { who0 = await resolvePlayerKeys(supabaseAdmin, { email, anonId }); } catch (e) { who0 = null; }
+    const shadow = !!(who0 && isHiddenViewer(who0.keys));
+    const { data, error } = await loadDailyResultsCached(supabaseAdmin, ids, { force: fresh, includeHidden: shadow });
     if (error) {
       console.error('daily-me error', error);
       return NextResponse.json(empty);
@@ -151,7 +157,7 @@ export async function GET(request) {
     let myKey = null;
     let myKeys = new Set();
     try {
-      const who = await resolvePlayerKeys(supabaseAdmin, { email, anonId });
+      const who = who0 || await resolvePlayerKeys(supabaseAdmin, { email, anonId });
       myKey = who.primary;
       myKeys = who.keys;
     } catch (e) {
@@ -264,7 +270,7 @@ export async function GET(request) {
       perGame,
       games: gameCounts,
       slate: { done: Object.keys(perGame).length, total: gameCount },
-    }, { headers: fresh ? NO_STORE_HEADERS : CACHE_HEADERS });
+    }, { headers: (fresh || shadow) ? NO_STORE_HEADERS : CACHE_HEADERS });
   } catch (e) {
     console.error('daily-me exception', e);
     return NextResponse.json(empty);

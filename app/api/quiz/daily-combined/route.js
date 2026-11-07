@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadDailyResultsCached } from '@/lib/daily-results-cache';
+import { isHiddenViewer } from '@/lib/hidden-players';
 import { findQuizIdentity } from '@/lib/quiz-identity';
 import { sameFamily } from '@/lib/daily-families';
 import { ladderAt, scoreGame, combineDaily, guestProvisional, rankByCorrect, rankByTime, DAILY_KEYS, DAILY_MAX, GAME_MAX, bestNForSuffix, usesLadder, dayIsFrozen, etDayEndMs, isoOfSuffix, rowsWithinDay, rescoreField } from '@/lib/daily-combined';
@@ -517,14 +518,20 @@ export async function GET(request) {
     // 11.7s on live instances, and it sits directly on the end-of-game wait.
     // The viewer-independent half of the board, shared for CORE_TTL_MS. Group
     // boards re-score over their members and are left out of it.
+    // SHADOW VIEW (owner, 2026-11-07): a hidden player sees their own hidden
+    // finishes; everyone else does not. Their board skips the shared memo.
+    let shadow = false;
+    if (email || anonId) {
+      try { const id0 = await memoIdentity(email, anonId); shadow = !!(id0 && id0.id && isHiddenViewer(new Set([`u:${id0.id}`]))); } catch (e) { shadow = false; }
+    }
     let rowsByQuiz, uniquePlayers, gameResults, overallFull;
-    const coreKey = groupRef ? null : `${suffix}|${circuitOn ? circuitId : ''}|${keysParam.join(',')}|${frozen ? 1 : 0}`;
+    const coreKey = (groupRef || shadow) ? null : `${suffix}|${circuitOn ? circuitId : ''}|${keysParam.join(',')}|${frozen ? 1 : 0}`;
     const coreHit = coreKey && !fresh ? coreMemo.get(coreKey) : null;
     if (coreHit && Date.now() - coreHit.at < CORE_TTL_MS) {
       ({ rowsByQuiz, uniquePlayers, gameResults, overallFull } = coreHit.val);
       maxTotal = coreHit.val.maxTotal;
     } else {
-    const { data, error } = await loadDailyResultsCached(supabaseAdmin, [...wanted], { force: fresh });
+    const { data, error } = await loadDailyResultsCached(supabaseAdmin, [...wanted], { force: fresh, includeHidden: shadow });
     if (error) {
       console.error('daily-combined error', error);
       return NextResponse.json(empty);
@@ -1130,7 +1137,7 @@ export async function GET(request) {
       meProvisional,
       rival,
       stand,
-    }, { headers: fresh ? NO_STORE_HEADERS : CACHE_HEADERS });
+    }, { headers: (fresh || shadow) ? NO_STORE_HEADERS : CACHE_HEADERS });
   } catch (e) {
     console.error('daily-combined exception', e);
     return NextResponse.json(empty);

@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { buildLeaderboardMatrix, playerStanding } from '@/lib/quiz-anon';
 import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
 import { resolvePlayerKeys } from '@/lib/quiz-identity';
+import { isHiddenViewer } from '@/lib/hidden-players';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -105,14 +106,20 @@ export async function GET(request) {
     // earlier 0-point run).
     const wantFresh = searchParams.get('fresh') === '1'
       && !!((searchParams.get('anonId') || '').trim() || (searchParams.get('email') || '').trim());
-    const { data: all, error } = await loadQuizResultsCached(supabaseAdmin, { force: wantFresh });
+    const anonId = (searchParams.get('anonId') || '').trim() || null;
+    const email = (searchParams.get('email') || '').trim() || null;
+    // SHADOW VIEW (owner, 2026-11-07): resolve the caller first, so a hidden
+    // player (lib/hidden-players) sees their own finishes. Nobody else does,
+    // and the no-identity answer below is the shared, hidden-free one.
+    let who0 = null;
+    if (anonId || email) { try { who0 = await resolvePlayerKeys(supabaseAdmin, { anonId, email }); } catch (e) { who0 = null; } }
+    const shadow = !!(who0 && isHiddenViewer(who0.keys));
+    const { data: all, error } = await loadQuizResultsCached(supabaseAdmin, { force: wantFresh, includeHidden: shadow });
     if (error) {
       console.error('quiz board error', error);
       return NextResponse.json({ error: 'db error' }, { status: 500 });
     }
     const data = (all || []).filter((r) => r.quiz_id === quizId);
-    const anonId = (searchParams.get('anonId') || '').trim() || null;
-    const email = (searchParams.get('email') || '').trim() || null;
     // No identity means the old, shared-cacheable answer, byte for byte.
     if (!anonId && !email) return NextResponse.json(summarize(data), { headers: CACHE_HEADERS });
     const asked = searchParams.get('placeOn');
@@ -123,7 +130,7 @@ export async function GET(request) {
       // resolvePlayerKeys, not a username match: one person's rows carry BOTH
       // `u:<id>` and `a:<anon>` shapes, and matching on the display name is what
       // the row-index approach was already doing.
-      const who = await resolvePlayerKeys(supabaseAdmin, { anonId, email });
+      const who = who0 || await resolvePlayerKeys(supabaseAdmin, { anonId, email });
       const st = playerStanding(data, who.keys, { population, filter });
       me = { key: who.primary, axis, placement: st.placement, field: st.field, row: st.row };
       // WHERE A GUEST WOULD RANK (owner, 2026-09-01). A guest has no placement
