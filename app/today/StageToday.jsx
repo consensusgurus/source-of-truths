@@ -7645,6 +7645,16 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-gdx{display:none !important;}
   .sty-ix.sty-det .sty-gdx{display:flex !important;}
   .sty-ix.sty-det .sty-gdeck{box-shadow:none;margin:0;gap:9px;}
+  /* EVERY ROW THE SAME HEIGHT (owner, 2026-11-07: "they're still different
+     heights on different rows"). A card can carry an extra group line, so
+     content alone never evens the rows; 1fr auto rows size every row to the
+     tallest. Not while the runs are unfolded, whose full-width row would
+     stretch the whole grid to its height. */
+  .sty-ix.sty-det .sty-games:not(:has(> .sty-runsu)){grid-auto-rows:1fr;}
+  /* MORE RUNS STAYS IN THE FIRST ROW (owner, 2026-11-07): pinned to the last
+     column of row one, so a lead run that does not fit wraps below it
+     instead of pushing the deck down. */
+  .sty-ix.sty-det .sty-gdeck{grid-row:1;grid-column:-2 / -1;}
   .sty-ix.sty-det .sty-gdeck .sty-gdl{font-size:13.5px;line-height:1.5;}
   .sty-ix.sty-det .sty-gdeck .sty-gdb{margin-top:0;}
   .sty-find{flex:1 1 auto;max-width:none;margin-left:28px;display:flex;align-items:center;gap:8px;height:38px;box-sizing:border-box;
@@ -7740,7 +7750,10 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-gdeck .sty-gdb{text-decoration:none;color:var(--stg-ink);margin-top:2px;}
   .sty-gdeck .sty-gdb b{font-weight:800;}
   .sty-gdeck .sty-gdb:hover b{text-decoration:underline;text-underline-offset:3px;}
-  .sty-gdeck .sty-gdt{font:inherit;font-size:12.5px;font-weight:600;border:0;text-align:left;cursor:pointer;}
+  /* FLAT, LIKE EVERY OTHER TILE'S BAND (owner, 2026-11-07): the foot is a
+     button, and globals.css rounds every button 8px, so its top corners showed
+     round inside the card. Square it and give it the same top rule. */
+  .sty-gdeck .sty-gdt{font:inherit;font-size:12.5px;font-weight:600;border:0;border-top:1px solid var(--stg-ink);border-radius:0;text-align:left;cursor:pointer;}
   .sty-rt3b{background:color-mix(in srgb, var(--stg-ink) 5%, var(--stg-surf));}
   /* THE RUNS PANE (owner, 2026-11-07): puzzle tiles, then Build a Run. */
   .sty-ix .sty-rpgrid{margin-top:4px;}
