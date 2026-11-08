@@ -187,7 +187,7 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   // The globe takes what the column leaves, so the buttons below it stay on
   // screen (owner, 2026-11-06: the next-leg button must never fall off).
   const rootRef = useRef(null);
-  const fit = usePlayStageFit(rootRef, '.cmn-globe', !!onStage && !done);
+  const fit = usePlayStageFit(rootRef, '.cmn-globe', !!onStage && !done, false, 150);
   const [openTip, setOpenTip] = useState(-1);
 
   // The world loads once; the globe mounts on it.
@@ -350,6 +350,13 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
               })}
             </ul>
           )}
+          {/* THE NEXT TIP SITS WITH THE TIPS (owner, 2026-11-08: under the globe it
+              fell off short phones), so it is always on screen beside what it adds to. */}
+          {active && !done && s.phase === 'play' && s.tips < 3 ? (
+            <button type="button" className="cmn-more" onClick={() => setS((st) => (st.tips < 3 && st.phase === 'play' ? { ...st, tips: st.tips + 1 } : st))}>
+              + {TIP_TAGS[s.tips]} tip <small>&#8722;150 points</small>
+            </button>
+          ) : null}
         </div>
       ) : null}
 
@@ -361,7 +368,7 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
         </div>
       ) : null}
 
-      <div className="cmn-globe" style={fit ? { width: `min(100%, ${Math.max(220, fit)}px)` } : undefined}>
+      <div className="cmn-globe" style={fit ? { width: `min(100%, ${fit}px)` } : undefined}>
         <svg ref={svgRef} aria-label="Globe. Drag to spin, tap to drop your pin." role="img" />
         {failed ? <div className="cmn-fail">The globe did not load. Check your connection and reload.</div> : null}
         {active && !done ? (
@@ -409,10 +416,7 @@ export function CarmenTools({ P, s, setS, active }) {
     });
     return (
       <div className="cmn-tools">
-        <button type="button" className="cmn-btn" disabled={s.tips >= 3} onClick={() => setS((st) => (st.tips < 3 && st.phase === 'play' ? { ...st, tips: st.tips + 1 } : st))}>
-          {s.tips >= 3 ? 'No more tips' : <>{TIP_TAGS[s.tips]} tip <small>&#8722;150</small></>}
-        </button>
-        <button type="button" className="cmn-btn pri" disabled={!s.guess} onClick={lock}>Lock in pin</button>
+        <button type="button" className="cmn-btn pri" disabled={!s.guess} onClick={lock}>{s.guess ? 'Lock in pin' : 'Tap the globe to drop a pin'}</button>
       </div>
     );
   }
@@ -443,7 +447,7 @@ const CSS = `
 .cmn-seen span{color:var(--pst-acc-ink,#3f5a12);}
 .cmn-tips{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;}
 .cmn-tips li{font-size:14px;line-height:1.42;font-weight:500;animation:cmnIn .4s ease both;}
-.cmn-tips li.old{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;opacity:.8;}
+.cmn-tips li.old{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;opacity:.8;}
 .cmn-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-right:6px;vertical-align:1px;background:#d9edae;color:#16181d;}
 .cmn-tag.t1{background:#e8eaf0;}
 .cmn-tag.t2{background:#16181d;color:#d9edae;}
@@ -460,6 +464,9 @@ const CSS = `
 .cmn-zoom button{width:34px;height:34px;border-radius:50%;border:1px solid var(--pst-ink,#16181d);background:var(--pst-bg,#fff);color:var(--pst-ink,#16181d);font:800 18px 'Manrope',system-ui,sans-serif;cursor:pointer;}
 .cmn-hint{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);font-size:12px;font-weight:700;color:#16181d;background:rgba(255,255,255,.94);padding:5px 11px;border-radius:999px;pointer-events:none;white-space:nowrap;transition:opacity .3s;}
 .cmn-fail{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-size:14px;font-weight:700;padding:20px;}
+.cmn-more{display:block;width:100%;margin:10px 0 0;min-height:40px;border-radius:10px;border:1px solid var(--pst-ink,#16181d);background:var(--pst-bg,#fff);color:var(--pst-ink,#16181d);font-family:'Manrope',system-ui,sans-serif;font-size:14px !important;font-weight:800 !important;cursor:pointer;}
+.cmn-more small{font-weight:600;opacity:.65;}
+@media (max-height:700px){.cmn-strip{padding:5px 10px;}.cmn-legs i{width:22px;height:22px;}.cmn-card{padding:9px 11px;}.cmn-tips li{font-size:13.5px;line-height:1.36;}.cmn-tips{gap:6px;margin-top:6px;}}
 .cmn-donenote{text-align:center;font-size:14px;font-weight:700;}
 .cmn-tools{display:flex;gap:8px;width:100%;max-width:560px;margin:0 auto;}
 .cmn-btn{flex:1;min-height:48px;border-radius:12px;border:1px solid var(--pst-ink,#16181d);background:var(--pst-bg,#fff);color:var(--pst-ink,#16181d);font-family:'Manrope',system-ui,sans-serif;font-size:15px !important;font-weight:800 !important;cursor:pointer;}

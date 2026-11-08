@@ -40,7 +40,8 @@ const GAME = {
   metric: (P, s) => total(s),
   Board: CarmenBoard,
   tools: (props) => <CarmenTools {...props} />,
-  eyebrow: (P, s, { sundayLabel }) => `Case ${P.num}${sundayLabel ? ` · ${sundayLabel}` : ''} · ${P.title}`,
+  // Short, so it holds one line on a phone; the case title is on the gate.
+  eyebrow: (P, s, { sundayLabel }) => `Case ${P.num}${sundayLabel ? ` · ${sundayLabel}` : ''}`,
   foot: (P, s) => `${fmt(total(s))} points · catch her within ${fmt(CATCH_KM)} km on the last leg`,
   frac: (P, s) => s.res.length / P.legs.length,
   sundayLabel: () => 'Sunday Edition',
