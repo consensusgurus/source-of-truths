@@ -611,6 +611,7 @@ function MemberLadder({ cats, keys, hueFor, inkFor = hueFor }) {
 }
 
 const VIEW_KEY = 'sot_home_view2';
+const SORT_KEY = 'sot_home_sort2';
 const VIEWS = ['tile', 'det', 'list'];
 const RAIL_MQ = '(min-width: 1280px) and (hover: hover) and (pointer: fine)';
 
@@ -2592,9 +2593,12 @@ export default function StageToday() {
   // is the default; Popular orders by the whole site's plays over the trailing
   // seven ET days, which rides the same my-plays read the favorites block uses.
   // One choice for every pane, remembered per browser.
+  // A TO Z IS THE DEFAULT AGAIN (owner, 2026-11-08). The stored key moved to
+  // sot_home_sort2 so every earlier Popular / Easy to Hard pick starts over on
+  // A to Z; a pick made now holds.
   const [sortBy, setSortBy] = useState('az');
   useEffect(() => {
-    try { const v = localStorage.getItem('sot_home_sort'); if (v === 'pop' || v === 'diff') setSortBy(v); } catch (e) { /* storage off */ }
+    try { const v = localStorage.getItem(SORT_KEY); if (v === 'pop' || v === 'diff') setSortBy(v); } catch (e) { /* storage off */ }
   }, []);
   // EASY TO HARD (owner, 2026-10-18): each game's rating for the week, 1 to 5,
   // re-rated every Sunday night from the seven days before (lib/daily-difficulty.js).
@@ -2613,7 +2617,7 @@ export default function StageToday() {
   DIFF_NOW = diff;
   const pickSort = (v) => {
     setSortBy(v);
-    try { localStorage.setItem('sot_home_sort', v); } catch (e) { /* storage off */ }
+    try { localStorage.setItem(SORT_KEY, v); } catch (e) { /* storage off */ }
   };
   // TILES OR LIST (owner, 2026-10-16), set beside A to Z / Popular. Until the
   // reader picks, each pane keeps the layout it was ruled to have (All Puzzles
@@ -2650,15 +2654,17 @@ export default function StageToday() {
   // shows its puzzles as tiles, most played first, whatever the stored choice;
   // any other pane goes back to the reader's stored sort and view. Picking a
   // sort or view inside the skill still applies and is remembered as usual.
+  // A skill pane no longer forces Popular (owner, 2026-11-08: A to Z is the
+  // default page view): it takes the reader's stored sort like every pane.
   useEffect(() => {
     if (isSkillId(paneOn)) {
-      setSortBy('pop');
+      try { const sv = localStorage.getItem(SORT_KEY); setSortBy(sv === 'pop' || sv === 'diff' ? sv : 'az'); } catch (e) { /* storage off */ }
       let vv = null; try { vv = localStorage.getItem(VIEW_KEY); } catch (e) { /* storage off */ }
       setViewBy(vv === 'tile' ? 'tile' : 'det');
       return;
     }
     try {
-      const sv = localStorage.getItem('sot_home_sort');
+      const sv = localStorage.getItem(SORT_KEY);
       setSortBy(sv === 'pop' || sv === 'diff' ? sv : 'az');
       const vv = localStorage.getItem(VIEW_KEY);
       setViewBy(VIEWS.includes(vv) ? vv : null);
@@ -7455,6 +7461,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-gg.det .sty-gfm i.on{background:var(--gpd);}
   .stage-page:not([data-stage-theme=light]) .sty-mph .mph-gg.det .mph-g{--gpd:var(--mc);--gpw:#1a2130;--gpt:color-mix(in srgb, var(--mc) 24%, #1a2130);}
   .stage-page:not([data-stage-theme=light]) .sty-mph .mph-gg.det .mph-g .sty-gband{background:color-mix(in srgb, var(--mc) 16%, #1a2130);}
+  /* A PLAYED CARD FOLDS (owner, 2026-11-08: "played puzzles collapse to less
+     height when complete"). No board band, description or fact chips: the
+     name, skills and your result stay, and so does the played colouring. */
+  .sty-mph .mph-gg.det .mph-g.done{padding-top:12px;}
+  .sty-mph .mph-gg.det .mph-g.done :is(.sty-gband,em.mx,.sty-gfx){display:none;}
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */
   .sty-mph{--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
