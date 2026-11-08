@@ -1914,7 +1914,7 @@ function ComplaintsPanel({ complaints, busy, onDismiss, onRespond }) {
               <div style={{ fontFamily: 'Manrope, monospace', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: COLORS.faded, marginBottom: 4 }}>
                 {formatDate(c.createdAt)}
               </div>
-              <Link href={`${(c.listTitle || '').startsWith('[Quiz]') ? '/quiz/' : '/list/'}${c.listId}`} style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 18, color: COLORS.ink, textDecoration: 'none' }}>
+              <Link href={`${(c.listTitle || '').startsWith('[Quiz]') ? '/quiz/' : /^\[(Puzzle Submission|Sponsor a Day)\]/.test(c.listTitle || '') ? '/' : '/list/'}${c.listId}`} style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 18, color: COLORS.ink, textDecoration: 'none' }}>
                 {c.listTitle || c.listId}
               </Link>
               {c.message ? (

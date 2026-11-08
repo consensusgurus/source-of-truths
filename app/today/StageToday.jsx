@@ -484,6 +484,8 @@ const IX_GLYPHS = {
   kids: <><circle cx="12" cy="12" r="8.5" /><path d="M8.5 14a4 4 0 0 0 7 0M9 10h.01M15 10h.01" /></>,
   archive: <><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 10h17M8 3v4M16 3v4M7.5 14h2M11 14h2M14.5 14h2M7.5 17h2M11 17h2" /></>,
   lists: <><path d="M10 6h10M10 12h10M10 18h10" /><path d="M4 5.5l1.5-1v4M4 11h2.5l-2.5 2.5h2.5M4 16.5h2.5l-1.3 1.3a1.2 1.2 0 1 1-1.2 1.5" /></>,
+  submit: <><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M12 8v8M8 12h8" /></>,
+  sponsor: <path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 9.7l5.4-.8z" />,
   'sty-board': <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" />,
   'sty-comm': <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" />,
   // The ten skills.
@@ -2707,6 +2709,11 @@ export default function StageToday() {
       <a className={'sty-ixb sty-ixmv sty-ixm4' + fillFor('lists')} href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       {ixBtn(COMM_ID, 'Most Appreciated', 'var(--stg-mute)', 'wide sty-ixmv sty-ixma')}
+      {/* REACH-OUT DOORS (owner, 2026-11-08): two short forms that come to us,
+          last in the index. Each is a door to its own page. */}
+      <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
+      <a className="sty-ixb sty-ixmv sty-ixm5" href={withTq('/submit-a-puzzle')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('submit', null)}<span><span className="sty-ixl">Submit or List a Puzzle</span><span className="sty-ixs">Submit a Puzzle</span></span></a>
+      <a className="sty-ixb sty-ixmv sty-ixm5 sty-ixend" href={withTq('/sponsor-a-day')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('sponsor', null)}<span>Sponsor a Day</span></a>
       {ixLens === 'cat' || reorder ? <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
@@ -6839,6 +6846,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
   .sty-ixn:not(.re) .sty-ixar{order:1;grid-column:1 / -1;}
   .sty-ixn:not(.re) .sty-ixma{order:2;}
   .sty-ixn:not(.re) .sty-ixm4{order:3;}
+  .sty-ixn:not(.re) .sty-ixm5{order:4;}
   .sty-ixn:not(.re) .sty-ixsep.sty-ixmv{display:none;}
 }
 @media (max-width:900px) and (prefers-reduced-motion:reduce){
@@ -7602,7 +7610,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixe1{margin-top:0;border-top:1px solid var(--stg-ink);border-radius:12px 12px 0 0;}
   .sty-ixn .sty-ixee ~ .sty-ixsep{display:none;}
   .sty-ixn .sty-ixee ~ .sty-ixsep + .sty-ixb{border-top:1px solid var(--stg-ink);}
-  .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixma{border-bottom-width:1px;border-radius:0 0 12px 12px;}
+  .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixend{border-bottom-width:1px;border-radius:0 0 12px 12px;}
   .sty-ixn .sty-ixee ~ .sty-ixre{margin-top:8px;}
   /* The pane head: the title with its subtitle under it. */
   .sty-cht{display:flex;flex-direction:column;min-width:0;}
