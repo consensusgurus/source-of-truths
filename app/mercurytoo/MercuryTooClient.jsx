@@ -993,7 +993,7 @@ export default function MercuryTooClient({ puzzles = [], forceNum = null }) {
                     onPointerLeave={cancelLong}
                     onPointerCancel={cancelLong}>
                     {val ? (
-                      <span aria-label={rainbowName(val)} style={{ position: 'absolute', inset: given ? 0 : '12%', borderRadius: given ? 0 : '18%', background: PAL[val - 1], zIndex: 1 }} />
+                      <span aria-label={rainbowName(val)} style={{ position: 'absolute', inset: 0, background: PAL[val - 1], boxShadow: given ? `inset 0 0 0 4px ${PAL[val - 1]}, inset 0 0 0 6.5px rgba(11,18,32,0.5)` : undefined, zIndex: 1 }} />
                     ) : notes[idx] ? (
                       <div className="mc-notes" style={{ position: 'relative', zIndex: 2 }}>
                         {Array.from({ length: N }).map((__, k) => (

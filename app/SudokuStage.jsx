@@ -105,8 +105,10 @@ export function SudokuBoard({
   const fills = [];
   const paleRects = [];
   const uid = String(useId()).replace(/[^a-zA-Z0-9]/g, '');
-  // COLOUR MODE (lib/colour-sudoku.js): palette[d - 1] paints digit d. A printed
-  // clue fills its square, an entry is a rounded tile inside it, both drawn here
+  // COLOUR MODE (lib/colour-sudoku.js): palette[d - 1] paints digit d. Every
+  // colored square fills edge to edge; a printed clue is told apart by a darker
+  // inset outline (owner, 2026-11-08: entries fill fully, permanent fills get
+  // the outline instead of the old inset-tile split). Both are drawn here
   // under the marks so a line or thermometer still reads over the color. The
   // selected square keeps its color and gets an ink ring (CSS); the lit squares
   // are a neutral grey, and only when empty.
@@ -116,10 +118,13 @@ export function SudokuBoard({
     const x = i % n, y = Math.floor(i / n);
     if (pal) {
       const gv = given[i] || 0, v = gv || cells[i] || 0;
-      if (gv) { fills.push(<rect key={i} x={x} y={y} width="1" height="1" fill={pal[v - 1]} />); continue; }
-      const base = custom || (!v && i !== sel && isPeer(i) ? 'var(--sks-peer)' : null);
+      if (v) {
+        fills.push(<rect key={i} x={x} y={y} width="1" height="1" fill={pal[v - 1]} />);
+        if (gv) fills.push(<rect key={'g' + i} x={x + 0.09} y={y + 0.09} width="0.82" height="0.82" rx="0.1" fill="none" stroke="rgba(11,18,32,0.5)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />);
+        continue;
+      }
+      const base = custom || (i !== sel && isPeer(i) ? 'var(--sks-peer)' : null);
       if (base) fills.push(<rect key={i} x={x} y={y} width="1" height="1" fill={base} />);
-      if (v) fills.push(<rect key={'t' + i} x={x + 0.12} y={y + 0.12} width="0.76" height="0.76" rx="0.16" fill={pal[v - 1]} stroke="rgba(11,18,32,0.22)" strokeWidth="1" vectorEffect="non-scaling-stroke" />);
       continue;
     }
     const col = i === sel ? 'var(--pst-acc)' : (custom || (isPeer(i) ? 'var(--pst-pale)' : null));

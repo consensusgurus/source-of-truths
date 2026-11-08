@@ -457,7 +457,7 @@ Five (differences of 5 in 1 to 6), Giant, Quilt, Towers, Whittle (already 6x6).
   were converted by hand-checked regex), the small 2s from the Smalls. Rules / About prose was
   rewritten for 6x6, and for colour. After a give-up the legacy board paints colour swatches.
 - **Colour mode** (`palette` on SudokuBoard / SudokuPad, lib/colour-sudoku.js): printed clue = full
-  square, entry = rounded tile, notes = dots in a fixed spot, selected square = ink ring (not the
+  square, entry also fills its whole square and a clue gets a darker inset outline (owner 2026-11-08; entries were rounded tiles before), notes = dots in a fixed spot, selected square = ink ring (not the
   accent fill), lit squares = neutral grey only when empty (the periwinkle tint is one of the nine
   colours), Shapes (faint ink marks, `sot_colour_shapes`) for colour-blind players. Shapes is NOT a toolbar button (owner, 2026-11-08): it is a small, muted "Visually impaired?" text link under the tools (`.sks-a11y` in app/SudokuStage.jsx), reading "Hide the shapes" while on. Light looks
   use the site pastels (60/40 with white), dark looks the raw ramp steps. Approved mockups:
