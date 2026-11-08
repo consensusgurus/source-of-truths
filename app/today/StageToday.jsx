@@ -33,6 +33,7 @@
 import { cycleSiteLook, useStageLook, isColorLook } from '@/lib/stage-look';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys, dailyScoreText } from '@/lib/daily-games';
+import { gameBlurb } from '@/lib/game-blurbs';
 
 // THE LIVE ROSTER, not the whole registry. A retired game stays in DAILY_GAMES
 // so its archived days keep scoring, so listing from that array put Circa
@@ -612,7 +613,12 @@ const RAIL_MQ = '(min-width: 1280px) and (hover: hover) and (pointer: fine)';
 // DETAILS VIEW (owner, 2026-11-07): the bigger tile's fuller description is the
 // game's own How to play text, whole sentences only, up to about 240
 // characters, so no tile ever ends in "...". The skills ride under it.
+// ONE LENGTH (owner, 2026-11-07: "can't have every row a different size"):
+// the Details card reads lib/game-blurbs.js, every line 80 to 95 characters,
+// and only falls back to the How to play text for a game not yet listed.
 function fullDesc(g) {
+  const b = gameBlurb(g.key);
+  if (b) return b;
   const t = String(g.how || g.tagLong || g.tag || '').trim();
   const parts = t.split(/(?<=[.!?])\s+/);
   let out = parts[0] || '';
@@ -711,7 +717,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       )}
       {/* DETAILS VIEW (owner, 2026-11-07): shown only under .sty-det. */}
       <span className="sty-gx">{fullDesc(g)}</span>
-      {skillLine(g.key) ? <span className="sty-gk">{skillLine(g.key)}</span> : null}
+      <span className="sty-gk">{skillLine(g.key) || '\u00a0'}</span>
       {/* THE PLAY TOTAL (owner, 2026-10-26): today's plays at the foot of the
           tile, desktop only (shown by the desktop block). */}
       {/* WHO LEADS, NO SCORE (owner, 2026-10-26): "#1 schnabinator". */}
@@ -3918,7 +3924,7 @@ export default function StageToday() {
         <div key="rdeck" className={'sty-g mx sty-gdeck' + (runsOpen ? ' on' : '')}
           data-fk="rdeck" style={{ '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} onClick={() => setRunsOpen((v) => !v)}>
           <span className="sty-gn">{rest.length ? <>{lead ? 'More Runs' : 'Runs'} <em>{rest.length}</em></> : 'Runs'}</span>
-          {rest.slice(0, 1).map((c) => <span key={c.id} className="sty-gdl"><b>{c.name}</b><i>{runFull(c) ? 'Played' : c.n ? `${c.n} of ${c.games.length}` : fmtN((runStat[c.id] || {}).players)}</i></span>)}
+          {rest.slice(0, 3).map((c, ri) => <span key={c.id} className={'sty-gdl' + (ri ? ' sty-gdx' : '')}><b>{c.name}</b><i>{runFull(c) ? 'Played' : c.n ? `${c.n} of ${c.games.length}` : fmtN((runStat[c.id] || {}).players)}</i></span>)}
           <a className="sty-gdl sty-gdb" href="/build-a-run" onClick={(e) => e.stopPropagation()}><b>+ Build a Run</b><i>&rarr;</i></a>
           <button type="button" className="sty-gpl sty-gcs sty-gdt" aria-expanded={runsOpen} aria-controls="sty-runsu"
             onClick={(e) => { e.stopPropagation(); setRunsOpen((v) => !v); }}>
@@ -7628,6 +7634,19 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix.sty-det .sty-g .sty-gk{display:block;margin-top:2px;padding-bottom:12px;font-size:12px;font-weight:700;color:var(--stg-mute);}
   .sty-ix.sty-det .sty-g .sty-gpl.sty-gcs{margin:auto -14px 0 -16px;padding:7px 14px 7px 16px;font-size:13px;}
   .sty-ix.sty-det .sty-grun,.sty-ix.sty-det .sty-gdeck{padding-bottom:0;}
+  /* EVERY DETAILS CARD THE SAME HEIGHT (owner, 2026-11-07: "can't have every
+     row a different size"). The blurb box is always three lines and the skill
+     line always one, so a row is the same height whatever the text. */
+  .sty-ix.sty-det .sty-g .sty-gx{height:calc(13.5px * 1.5 * 3);overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;}
+  .sty-ix.sty-det .sty-g .sty-gk{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  /* THE RUNS DECK IN DETAILS (owner, 2026-11-07: "more runs wrapping below
+     and with a huge white space makes no sense"): no stacked edges hanging
+     below the card, and the room the card has is spent listing three runs. */
+  .sty-gdx{display:none !important;}
+  .sty-ix.sty-det .sty-gdx{display:flex !important;}
+  .sty-ix.sty-det .sty-gdeck{box-shadow:none;margin:0;gap:9px;}
+  .sty-ix.sty-det .sty-gdeck .sty-gdl{font-size:13.5px;line-height:1.5;}
+  .sty-ix.sty-det .sty-gdeck .sty-gdb{margin-top:0;}
   .sty-find{flex:1 1 auto;max-width:none;margin-left:28px;display:flex;align-items:center;gap:8px;height:38px;box-sizing:border-box;
     padding:0 14px;border:var(--dk);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);cursor:text;}
   .sty-find input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--stg-ink);}
