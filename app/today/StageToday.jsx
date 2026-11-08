@@ -3895,7 +3895,13 @@ export default function StageToday() {
     // the row thins and puzzles take the spare cells.
     const room = Math.max(1, tileCols - 1);
     const open = runs.filter((c) => !c.poly && !runFull(c) && !folds.includes(c)).sort((a, b) => pl(b) - pl(a));
-    const leads = [...folds, ...open].slice(0, Math.max(room, folds.length));
+    // NO DECK ON A CATEGORY PAGE (owner, 2026-11-07: "this runs box should not
+    // show here on category page"). A category's own runs are few, so they all
+    // sit in the grid as run tiles, finished ones last, and nothing folds.
+    const onCat = cat != null;
+    const leads = onCat
+      ? [...open, ...runs.filter((c) => !c.poly && !open.includes(c))]
+      : [...folds, ...open].slice(0, Math.max(room, folds.length));
     const lead = leads[0] || null;
     const rest = runs.filter((c) => !leads.includes(c));
     const cells = [];
@@ -3915,7 +3921,7 @@ export default function StageToday() {
         </a>
       );
     }
-    {
+    if (!onCat) {
       cells.push(
         // THE DECK CARRIES BUILD A RUN (owner, 2026-11-07). A div, not a
         // button, so the Build a Run link inside it is a real link; the card
