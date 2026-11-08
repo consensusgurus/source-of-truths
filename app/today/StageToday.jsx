@@ -3867,22 +3867,42 @@ export default function StageToday() {
   // HOW MANY TILES ACROSS (owner, 2026-11-07): the top row of a pane is all
   // runs, the deck last, so the row's width decides how many runs lead. Read
   // off the open pane's own grid, re-read on resize.
-  const [tileCols, setTileCols] = useState(6);
+  const [tileCols, setTileCols] = useState(4);
+  // Read off the grid that actually holds the run tiles (2026-11-08: the old
+  // selector missed the All Puzzles grid, so the count stuck at its default
+  // and runs wrapped). Re-read after every render, since Tiles and Details
+  // change the column count without a resize; it only sets state on a change.
+  const readCols = () => {
+    const run = document.querySelector('.sty-ix .sty-games:not(.sty-vhid) > .sty-gdeck, .sty-ix .sty-games:not(.sty-vhid) > .sty-grun');
+    const el = run ? run.parentElement : null;
+    if (!el || !el.offsetWidth) return;
+    const n = window.getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length;
+    if (n > 0) setTileCols((v) => (v === n ? v : n));
+  };
+  useEffect(readCols);
   useEffect(() => {
-    const read = () => {
-      const el = document.querySelector('.sty-ix > .sty-cat:not(.sty-ixoff) > .sty-games:not(.sty-vhid)');
-      if (!el) return;
-      const n = window.getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length;
-      if (n > 0) setTileCols((v) => (v === n ? v : n));
-    };
-    read();
-    window.addEventListener('resize', read);
-    return () => window.removeEventListener('resize', read);
-  }, [paneOn, mid]);
-  // THE FOLDED RUNS NEVER LEAVE THE TOP ROW (owner, 2026-11-08: "never leak
-  // beyond top row"). Only as many as fit beside the deck get a tile; the rest
-  // sit in More Runs and their games stay in the grid.
-  const shownFolds = (runs) => runs.filter((c) => FOLD_RUNS.includes(c.id)).slice(0, Math.max(1, tileCols - 1));
+    window.addEventListener('resize', readCols);
+    return () => window.removeEventListener('resize', readCols);
+  }, []);
+  // THE TOP ROW IS ALL RUNS AND NEVER WRAPS (owner, 2026-11-08: "the runs
+  // should never wrap below the first line. always fill first line as much as
+  // possible and end with the 'more runs' tile if more than one exists").
+  // Order: the folded quiz runs, the most played open runs, then finished
+  // ones. If every run fits across, they all show and there is no deck; else
+  // the row is full width less one cell, and More Runs takes the last cell.
+  const topRuns = (runs) => {
+    const pl = (c) => ((runStat[c.id] || {}).players || 0);
+    const folds = runs.filter((c) => FOLD_RUNS.includes(c.id));
+    const others = runs.filter((c) => !c.poly && !folds.includes(c));
+    const open = others.filter((c) => !runFull(c)).sort((a, b) => pl(b) - pl(a));
+    const done = others.filter((c) => runFull(c)).sort((a, b) => pl(b) - pl(a));
+    const all = [...folds, ...open, ...done];
+    const cols = Math.max(1, tileCols);
+    if (all.length <= cols) return { leads: all, rest: [], deck: false };
+    const leads = all.slice(0, Math.max(1, cols - 1));
+    return { leads, rest: runs.filter((c) => !leads.includes(c)), deck: true };
+  };
+  const shownFolds = (runs) => topRuns(runs).leads.filter((c) => FOLD_RUNS.includes(c.id));
   // Which games leave the All Puzzles grid because their run's tile is there.
   const foldKeys = (() => {
     if (!mid || findOn || viewOf(ALL_ID) === 'list' || (deckOn(ALL_ID) && paneOn === ALL_ID)) return null;
@@ -3895,26 +3915,15 @@ export default function StageToday() {
     if (!mid || findOn) return null;
     const runs = deckRuns(cat);
     if (!runs.length) return null;
-    const pl = (c) => ((runStat[c.id] || {}).players || 0);
-    // THE QUIZ RUNS STAND IN FOR THEIR GAMES ON ALL PUZZLES (owner, 2026-11-05).
-    // Every folded run gets its own tile at the head of the grid, and the games
-    // inside it leave the grid (foldKeys, below). Elsewhere one lead run.
-    const folds = cat == null ? shownFolds(runs) : [];
-    // THE TOP ROW IS ALL RUNS (owner, 2026-11-07): the folded quiz runs, then
-    // the most played runs the reader has not finished, until one cell is left
-    // for the deck. Finished runs drop into the deck, so as runs are completed
-    // the row thins and puzzles take the spare cells.
-    const room = Math.max(1, tileCols - 1);
-    const open = runs.filter((c) => !c.poly && !runFull(c) && !folds.includes(c)).sort((a, b) => pl(b) - pl(a));
-    // NO DECK ON A CATEGORY PAGE (owner, 2026-11-07: "this runs box should not
-    // show here on category page"). A category's own runs are few, so they all
-    // sit in the grid as run tiles, finished ones last, and nothing folds.
     const onCat = cat != null;
+    // A CATEGORY PAGE has no deck (owner, 2026-11-07): its few runs sit in the
+    // grid as run tiles, open first, finished last.
+    const top = onCat ? null : topRuns(runs);
     const leads = onCat
-      ? [...open, ...runs.filter((c) => !c.poly && !open.includes(c))]
-      : [...folds, ...open].slice(0, room);
+      ? [...runs.filter((c) => !c.poly && !runFull(c)), ...runs.filter((c) => !c.poly && runFull(c))]
+      : top.leads;
     const lead = leads[0] || null;
-    const rest = runs.filter((c) => !leads.includes(c));
+    const rest = onCat ? [] : top.rest;
     const cells = [];
     for (const c of leads) {
       const st = runStat[c.id];
@@ -3932,7 +3941,7 @@ export default function StageToday() {
         </a>
       );
     }
-    if (!onCat) {
+    if (!onCat && top.deck) {
       cells.push(
         // THE DECK CARRIES BUILD A RUN (owner, 2026-11-07). A div, not a
         // button, so the Build a Run link inside it is a real link; the card
