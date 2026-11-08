@@ -7725,6 +7725,9 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      height, so the deck shows two runs and Build a Run moves up beside its
      title to fit. */
   .sty-ix.sty-det .sty-games:has(> .sty-gdeck):not(:has(> .sty-runsu)){grid-template-rows:auto;}
+  /* A category page has no deck but leads with its runs too (2026-11-08:
+     Trivia's run tiles stood at puzzle-card height, mostly empty). */
+  .sty-ix.sty-det .sty-games:has(> .sty-grun:first-child):not(:has(> .sty-runsu)){grid-template-rows:auto;}
   .sty-ix.sty-det .sty-gdeck{position:relative;}
   .sty-ix.sty-det .sty-gdeck .sty-gd3{display:none !important;}
   .sty-ix.sty-det .sty-gdeck .sty-gdb{position:absolute;top:17px;right:14px;gap:8px;}

@@ -52,7 +52,7 @@ const Quiz = ({ label }) => (
     ))}
   </g>
 );
-function Grid({ n = 9, v = 'suds' }) {
+function Grid({ n = 9, v = 'suds', color = false }) {
   const S = n === 16 ? 72 : 70, sz = S / n, x = (W - S) / 2, y = (H - S) / 2;
   const box = n === 9 ? 3 : n === 6 ? [3, 2] : n === 16 ? 4 : 3;
   const [bw, bh] = Array.isArray(box) ? box : [box, box];
@@ -63,19 +63,21 @@ function Grid({ n = 9, v = 'suds' }) {
   }
   const dig = n === 16 ? [] : [[0, 0, 5], [2, 1, 3], [4, 4, 7], [7, 2, 1], [1, 6, 9], [6, 7, 4], [8, 8, 2], [3, 5, 8]].filter(([c, r]) => c < n && r < n);
   const deco = [];
-  const cx = (c) => x + c * sz + sz / 2, cy = (r) => y + r * sz + sz / 2;
+  // Positions are written for 9x9; on a 6x6 they wrap, so a twin keeps its
+  // parent's decoration inside its own smaller grid.
+  const cx = (c) => x + (c % n) * sz + sz / 2, cy = (r) => y + (r % n) * sz + sz / 2;
   if (v === 'cages') deco.push(<path key="c" className="sm" d={`M${x + 2} ${y + 2}h${sz * 2 - 4}v${sz - 4}h${-sz + 0}v${sz}h${-sz + 4}z M${x + sz * 4 + 2} ${y + sz * 3 + 2}h${sz * 3 - 4}v${sz - 4}h${-sz * 3 + 4}z`} />);
   if (v === 'sando') for (let r = 0; r < 9; r += 2) deco.push(<T key={r} x={x - 9} y={cy(r) + 3} s={8}>{[14, 9, 23, 0, 17][r / 2]}</T>);
   if (v === 'arrow') deco.push(<g key="a"><circle cx={cx(1)} cy={cy(1)} r={sz * .38} className="sm" /><path className="sm" d={`M${cx(1) + 3} ${cy(1) + 3}L${cx(4)} ${cy(4)}L${cx(6)} ${cy(4)}`} /></g>);
   if (v === 'knight') deco.push(<path key="k" className="sm" d={`M${cx(2)} ${cy(2)}L${cx(2)} ${cy(4)}L${cx(3)} ${cy(4)}`} />);
   if (v === 'diag') deco.push(<path key="d" className="sm" d={`M${x} ${y}L${x + S} ${y + S}M${x + S} ${y}L${x} ${y + S}`} />);
   if (v === 'window') [[1, 1], [5, 1], [1, 5], [5, 5]].forEach(([c, r], i) => deco.push(<rect key={i} x={x + c * sz} y={y + r * sz} width={sz * 3} height={sz * 3} className="m" opacity=".55" />));
-  if (v === 'sumo') [[1, 0], [4, 3], [6, 6], [2, 5]].forEach(([c, r], i) => deco.push(<T key={i} x={x + (c + 1) * sz} y={cy(r) + 3} s={8}>{'>'}</T>));
+  if (v === 'sumo') [[1, 0], [4, 3], [6, 6], [2, 5]].forEach(([c, r], i) => deco.push(<T key={i} x={x + ((c % (n - 1)) + 1) * sz} y={cy(r) + 3} s={8}>{'>'}</T>));
   if (v === 'five' || v === 'racecar') deco.push(<path key="f" className="sm3" d={`M${cx(0)} ${cy(7)}L${cx(2)} ${cy(5)}L${cx(3)} ${cy(6)}L${cx(5)} ${cy(3)}L${cx(7)} ${cy(4)}`} />);
   if (v === 'mercury') deco.push(<g key="m"><circle cx={cx(1)} cy={cy(6)} r={sz * .42} className="m" /><path className="sm3" d={`M${cx(1)} ${cy(6)}V${cy(2)}H${cx(3)}`} /></g>);
   if (v === 'towers' || v === 'rim' || v === 'frame') [0, 2, 4, 6, 8].forEach((c, i) => { deco.push(<T key={'t' + i} x={cx(c)} y={y - 2} s={7}>{[3, 1, 4, 2, 5][i]}</T>); deco.push(<T key={'b' + i} x={cx(c)} y={y + S + 7} s={7}>{[2, 4, 1, 3, 2][i]}</T>); });
   if (v === 'quilt') deco.push(<path key="q" className="m" opacity=".5" d={`M${x} ${y}h${sz * 4}v${sz * 2}h${-sz * 2}v${sz * 2}h${-sz * 2}z M${x + sz * 5} ${y + sz * 5}h${sz * 4}v${sz * 4}h${-sz * 2}v${-sz * 2}h${-sz * 2}z`} />);
-  if (v === 'polka') [[1, 1], [3, 2], [5, 6], [7, 3], [2, 7]].forEach(([c, r], i) => deco.push(<circle key={i} cx={x + (c + 1) * sz} cy={cy(r)} r={2} className="d" />));
+  if (v === 'polka') [[1, 1], [3, 2], [5, 6], [7, 3], [2, 7]].forEach(([c, r], i) => deco.push(<circle key={i} cx={x + ((c % (n - 1)) + 1) * sz} cy={cy(r)} r={2} className="d" />));
   if (v === 'whittle') [[2, 3], [6, 1], [5, 7]].forEach(([c, r], i) => deco.push(<path key={i} className="sm" d={`M${cx(c) - 3} ${cy(r) - 3}l6 6m0 -6l-6 6`} />));
   return (
     <g>
@@ -83,14 +85,17 @@ function Grid({ n = 9, v = 'suds' }) {
       <rect x={x} y={y} width={S} height={S} className="w" />
       <g className="gl1">{thin}</g><g className="gl2">{bold}</g>
       {deco.filter((e) => !(e && e.props && e.props.className === 'm'))}
-      {dig.map(([c, r, d], i) => <T key={i} x={cx(c)} y={cy(r) + sz * .3} s={sz * .78}>{d}</T>)}
+      {color
+        ? [[0, 0], [2, 1], [4, 4], [7, 2], [1, 6], [6, 7], [8, 8], [3, 5], [5, 3], [10, 12], [13, 9]].filter(([c, r]) => c < n && r < n)
+          .map(([c, r], i) => <rect key={i} x={x + c * sz + 1} y={y + r * sz + 1} width={sz - 2} height={sz - 2} rx={1.5} className={i % 2 ? 'd' : 'm'} />)
+        : dig.map(([c, r, d], i) => <T key={i} x={cx(c)} y={cy(r) + sz * .3} s={sz * .78}>{d}</T>)}
     </g>
   );
 }
 const Kakuro = () => (
   <g>{cells(94, 6, 6, 4, 18, (x, y, c, r, i) => {
     const clue = r === 0 || c === 0;
-    return <g key={i}><rect x={x} y={y} width={18} height={18} className={clue ? 'm' : 'w'} />{clue && (r + c) % 2 ? <path d={`M${x} ${y}l18 18`} className="sm" /> : null}</g>;
+    return <g key={i}><rect x={x} y={y} width={18} height={18} className={clue ? 'hm' : 'w'} />{clue && (r + c) % 2 ? <path d={`M${x} ${y}l18 18`} className="sm" /> : null}</g>;
   })}<T x={103} y={20} s={8}>{''}</T></g>
 );
 const Xword = () => {
@@ -130,8 +135,8 @@ const Othello = () => {
   ))}</g>;
 };
 const Four = () => (
-  <g><rect x={78} y={6} width={140} height={72} rx={8} className="m" />{cells(84, 10, 7, 4, 19, (x, y, c, r, i) => (
-    <circle key={i} cx={x + 9.5} cy={y + 9.5} r={7} className={[22, 23, 16, 24, 26, 18].includes(i) ? 'd' : [25, 17, 27, 11].includes(i) ? 'w' : 'g0'} />
+  <g><rect x={80} y={3} width={136} height={78} rx={8} className="m" />{cells(85, 7, 7, 4, 18, (x, y, c, r, i) => (
+    <circle key={i} cx={x + 9} cy={y + 9} r={6.5} className={[22, 23, 16, 24, 26, 18].includes(i) ? 'd' : [25, 17, 27, 11].includes(i) ? 'w' : 'g0'} />
   ))}</g>
 );
 const Quarto = () => (
@@ -179,7 +184,8 @@ const Taire = () => (
 );
 const LGrid = () => (
   <g>{cells(82, 6, 6, 4, 18, (x, y, c, r, i) => (
-    <g key={i}><rect x={x} y={y} width={18} height={18} className={r === 0 || c === 0 ? 'm' : 'w'} />
+    <g key={i}><rect x={x} y={y} width={18} height={18} className="w" />
+      {(r === 0) !== (c === 0) ? <rect x={x + 5} y={y + 7.5} width={8} height={3} rx={1.5} className="m" /> : null}
       {r && c && (i * 7) % 5 === 0 ? <circle cx={x + 9} cy={y + 9} r={4} className="d" /> : r && c && (i * 3) % 4 === 1 ? <path d={`M${x + 5} ${y + 5}l8 8m0 -8l-8 8`} className="s2" /> : null}</g>
   ))}</g>
 );
@@ -286,7 +292,7 @@ const Simon = () => (
 const Mines = () => (
   <g>{cells(94, 6, 6, 4, 18, (x, y, c, r, i) => {
     const open = [0, 1, 2, 6, 7, 12, 13, 18].includes(i), n = { 2: 1, 7: 2, 13: 1, 18: 1 }[i];
-    return <g key={i}><rect x={x} y={y} width={18} height={18} className={open ? 'w' : 'm'} />{n ? <T x={x + 9} y={y + 13} s={11}>{n}</T> : null}{i === 9 ? <path d={`M${x + 6} ${y + 14}v-10l7 3l-7 3`} className="d" /> : null}</g>;
+    return <g key={i}><rect x={x} y={y} width={18} height={18} className={open ? 'w' : 'hm'} />{n ? <T x={x + 9} y={y + 13} s={11}>{n}</T> : null}{i === 9 ? <path d={`M${x + 6} ${y + 14}v-10l7 3l-7 3`} className="d" /> : null}</g>;
   })}</g>
 );
 const Runner = () => (
@@ -335,7 +341,16 @@ function drawingFor(g) {
     case 'Trivia': return <Quiz label={g.tag} />;
     case 'Geography': return <Globe />;
     case 'Numbers': return <Quiz label={g.tag} />;
-    case 'Sudoku': return <Grid />;
+    case 'Sudoku': {
+      // THE 6x6 AND COLOR TWINS (2026-11-08) read their parent from the tag
+      // ("Cages at 6x6", "Mercury in rainbow color, 9x9").
+      const t = String(g.tag || '');
+      const m = t.match(/^(\w+) (?:in (?:rainbow )?color|at 6x6)/);
+      const ALIAS = { kayak: 'racecar', lip: 'rim', sixes: 'suds' };
+      const base = m ? (ALIAS[m[1].toLowerCase()] || m[1].toLowerCase()) : 'suds';
+      const n = /16x16/.test(t) ? 16 : /6x6/.test(t) ? 6 : 9;
+      return <Grid n={n} v={base} color={/color/.test(t)} />;
+    }
     case 'Crowd Psychology': return <Bars />;
     case 'Logic': return <LGrid />;
     case 'End Game': return <Chess />;
@@ -350,7 +365,10 @@ export default function GamePreview({ gameKey }) {
   if (!g) return null;
   return (
     <svg className="gp" viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
-      {drawingFor(g)}
+      {/* A margin all round (2026-11-08: "elements spilling out"): every
+          drawing is set at 84% about the band's centre, so nothing touches or
+          crosses the band's edges whatever it was drawn to. */}
+      <g transform={`translate(${W / 2} ${H / 2}) scale(0.84) translate(${-W / 2} ${-H / 2})`}>{drawingFor(g)}</g>
     </svg>
   );
 }
@@ -361,6 +379,7 @@ export const GP_CSS = `
 .gp .m{fill:var(--gpm);}
 .gp .w{fill:var(--gpw);stroke:var(--gpd);stroke-width:1.5;}
 .gp .w0{fill:var(--gpw);}
+.gp .hm{fill:var(--gpm);stroke:var(--gpd);stroke-width:1.5;}
 .gp .wf{fill:var(--gpw);}
 .gp .g0{fill:var(--gpt);}
 .gp .s2,.gp .s3,.gp .s5,.gp .sw,.gp .d6{fill:none;stroke-linecap:round;stroke-linejoin:round;}
