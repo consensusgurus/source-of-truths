@@ -170,7 +170,7 @@ const GAMES = [
   { key: 'hands', href: '/hands', name: 'Hands', img: '/games/btn-hands.png', store: 'sot_hands_day', tag: "The daily poker solitaire" , cat: 'Cards' },
   { key: 'finesse', href: '/finesse', name: 'Finesse', img: '/games/btn-finesse.png', store: 'sot_finesse_day', tag: "The daily double dummy" , cat: 'Cards' },
   { key: 'crib', href: '/crib', name: 'Crib', img: '/games/btn-crib.png', store: 'sot_crib_day', tag: "Six cards, throw two" , cat: 'Cards' },
-  { key: 'hold', href: '/hold', name: 'Hold', img: '/games/btn-hold.png', store: 'sot_hold_day', tag: "Video poker hold" , cat: 'Cards' },
+  { key: 'hold', href: '/hold', name: 'Hold', img: '/games/btn-hold.png', store: 'sot_hold_day', tag: "Poker showdown" , cat: 'Cards' },
   { key: 'mahj', href: '/mahj', name: 'Mahj', img: '/games/btn-mahj.png', store: 'sot_mahj_day', tag: "The daily mahjong solitaire" , cat: 'Cards' },
   { key: 'swap', href: '/swap', name: 'Swap', img: '/games/btn-swap.png', store: 'sot_swap_day', tag: "Swap the photo back together" , cat: 'Logic' },
   { key: 'slide', href: '/slide', name: 'Slide', img: '/games/btn-slide.png', store: 'sot_slide_day', tag: "The sliding photo puzzle" , cat: 'Logic' },

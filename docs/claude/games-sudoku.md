@@ -459,7 +459,7 @@ Five (differences of 5 in 1 to 6), Giant, Quilt, Towers, Whittle (already 6x6).
 - **Colour mode** (`palette` on SudokuBoard / SudokuPad, lib/colour-sudoku.js): printed clue = full
   square, entry = rounded tile, notes = dots in a fixed spot, selected square = ink ring (not the
   accent fill), lit squares = neutral grey only when empty (the periwinkle tint is one of the nine
-  colours), Shapes tool (faint ink marks, `sot_colour_shapes`) for colour-blind players. Light looks
+  colours), Shapes (faint ink marks, `sot_colour_shapes`) for colour-blind players. Shapes is NOT a toolbar button (owner, 2026-11-08): it is a small, muted "Visually impaired?" text link under the tools (`.sks-a11y` in app/SudokuStage.jsx), reading "Hide the shapes" while on. Light looks
   use the site pastels (60/40 with white), dark looks the raw ramp steps. Approved mockups:
   https://claude.ai/artifact/Bhi1ZCnfeLnYC73ogwjy83 and https://claude.ai/artifact/3vBrjihfCabNYYFZdKttYb
 - `verify-all` now discovers `verify-<key>.mjs` with DIGITS in the key (was `[a-z-]+`).

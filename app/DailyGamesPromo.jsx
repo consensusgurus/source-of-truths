@@ -95,7 +95,7 @@ export const DAILY_GAMES = [
   { key: 'babel', href: '/babel', name: 'Babel', tag: 'the bag is empty', store: 'sot_babel_day', accent: '#14532d', bg: '#e9f2ec', border: 'rgba(20,83,45,0.4)' },
   { key: 'finesse', href: '/finesse', name: 'Finesse', tag: 'the daily double dummy', store: 'sot_finesse_day', accent: '#4c1d95', bg: '#ede9fe', border: 'rgba(76,29,149,0.4)' },
   { key: 'crib', href: '/crib', name: 'Crib', tag: 'six cards, throw two', store: 'sot_crib_day', accent: '#a16207', bg: '#fbf3dd', border: 'rgba(161,98,7,0.4)' },
-  { key: 'hold', href: '/hold', name: 'Hold', tag: 'video poker hold', store: 'sot_hold_day', accent: '#b91c1c', bg: '#fdecec', border: 'rgba(185,28,28,0.4)' },
+  { key: 'hold', href: '/hold', name: 'Hold', tag: 'poker showdown', store: 'sot_hold_day', accent: '#b91c1c', bg: '#fdecec', border: 'rgba(185,28,28,0.4)' },
   { key: 'mahj', href: '/mahj', name: 'Mahj', tag: 'the daily mahjong solitaire', store: 'sot_mahj_day', accent: '#a21caf', bg: '#fbe8fd', border: 'rgba(162,28,175,0.4)' },
   { key: 'swap', href: '/swap', name: 'Swap', tag: 'swap the photo back together', store: 'sot_swap_day', accent: '#9a3412', bg: '#ffedd5', border: 'rgba(154,52,18,0.4)' },
   { key: 'slide', href: '/slide', name: 'Slide', tag: 'the sliding photo puzzle', store: 'sot_slide_day', accent: '#1e40af', bg: '#dbeafe', border: 'rgba(30,64,175,0.4)' },

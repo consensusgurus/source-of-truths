@@ -32,6 +32,13 @@
 //     suit pattern, suits relabelled) twice in a day or within 21 days; no
 //     one best-hold size above 60% of the bank, draw-five best on at most 15%
 //
+// SHOWDOWN days (2026-11-09 on, showdown: true): two rivals per hand, values
+// are chances to win. Recomputed with this file's own sort-based ranking over
+// a table of every five-card hand, walking every final hand once (see
+// winAll); also checks rivals and draw are disjoint, the vp hold against
+// evAll, trap, the gap (>= 0.002), no dull deal, and SD_RAMP. Days before
+// 2026-11-09 must not carry the flag.
+//
 // Mutation-tested by scripts/hold-mutation-test.mjs (VERIFY_HOLD_BANK points
 // this file at a mutated copy).
 const BANK = process.env.VERIFY_HOLD_BANK
@@ -116,6 +123,125 @@ function topOf(ev) {
   return { mx, best: tied[0], tied };
 }
 
+// ---- SHOWDOWN (days marked showdown: true, every day from 2026-11-09) ------
+// This file's own poker ranking, by sorting: a hand's score is its category
+// then its ranks ordered by (count, rank), ace 14, the wheel A2345 five high.
+// One table over all 2,598,960 hands, then every FINAL hand built from the
+// player's five plus the 37 unseen cards is walked once and credited to the
+// hold it implies, exactly as evAll does for the pay table.
+const SD_FROM = '2026-11-09';
+function rankHand(hand) {
+  const vs = hand.map((c) => { const r = c % 13; return r === 0 ? 14 : r + 1; });
+  const flush = hand.every((c) => Math.floor(c / 13) === Math.floor(hand[0] / 13));
+  const cnt = {};
+  for (const v of vs) cnt[v] = (cnt[v] || 0) + 1;
+  const order = Object.keys(cnt).map(Number).sort((a, b) => cnt[b] - cnt[a] || b - a);
+  const shapeStr = order.map((v) => cnt[v]).join('');
+  let straightHi = 0;
+  if (order.length === 5) {
+    const s = vs.slice().sort((a, b) => a - b);
+    if (s[4] - s[0] === 4) straightHi = s[4];
+    else if (s.join(',') === '2,3,4,5,14') straightHi = 5;
+  }
+  let cat;
+  if (straightHi && flush) cat = 8;
+  else if (shapeStr === '41') cat = 7;
+  else if (shapeStr === '32') cat = 6;
+  else if (flush) cat = 5;
+  else if (straightHi) cat = 4;
+  else if (shapeStr === '311') cat = 3;
+  else if (shapeStr === '221') cat = 2;
+  else if (shapeStr === '2111') cat = 1;
+  else cat = 0;
+  const ks = straightHi ? [straightHi] : order;
+  let sc = cat;
+  for (let i = 0; i < 5; i++) sc = sc * 15 + (ks[i] || 0);
+  return sc;
+}
+let RANKS = null;
+function rankTable() {
+  if (RANKS) return RANKS;
+  RANKS = new Int32Array(BIN[52][5]);
+  let ix = 0;
+  for (let e = 4; e < 52; e++) for (let d = 3; d < e; d++) for (let c = 2; c < d; c++) for (let b = 1; b < c; b++) for (let a = 0; a < b; a++) RANKS[ix++] = rankHand([a, b, c, d, e]);
+  return RANKS;
+}
+const colex = (a, b, c, d, e) => BIN[a][1] + BIN[b][2] + BIN[c][3] + BIN[d][4] + BIN[e][5];
+function winAll(cards, rivals) {
+  const T = rankTable();
+  const rk = rivals.map((h) => { const s = h.slice().sort((x, y) => x - y); return T[colex(...s)]; });
+  const top = Math.max(...rk), share = 1 / (rk.filter((x) => x === top).length + 1);
+  const gone = new Set(rivals.flat());
+  const pool = [];
+  for (let c = 0; c < 52; c++) if (!gone.has(c)) pool.push(c);    // ascending: player's five + 37 unseen
+  const bit = pool.map((c) => (cards.indexOf(c) >= 0 ? 1 << cards.indexOf(c) : 0));
+  const sum = new Float64Array(32), own = new Int32Array(32);
+  const n = pool.length;
+  for (let ie = 4; ie < n; ie++) for (let id = 3; id < ie; id++) for (let ic = 2; ic < id; ic++) for (let ib = 1; ib < ic; ib++) for (let ia = 0; ia < ib; ia++) {
+    const m = bit[ia] | bit[ib] | bit[ic] | bit[id] | bit[ie];
+    const r = T[colex(pool[ia], pool[ib], pool[ic], pool[id], pool[ie])];
+    own[m]++;
+    if (r > top) sum[m] += 1; else if (r === top) sum[m] += share;
+  }
+  const w = new Float64Array(32);
+  for (let m = 0; m < 32; m++) {
+    const draws = BIN[37][5 - bits(m)];
+    if (own[m] !== draws) fail(`showdown hold ${m} counted ${own[m]} final hands, expected C(37,${5 - bits(m)}) = ${draws}`);
+    w[m] = sum[m] / draws;
+  }
+  return w;
+}
+const SD_RAMP = {
+  1: { hands: 10, traps: [2, 2], g: [0.06, Infinity], t: [0.06, Infinity] },
+  2: { hands: 10, traps: [3, 3], g: [0.04, Infinity], t: [0.04, Infinity] },
+  3: { hands: 10, traps: [4, 4], g: [0.025, 0.30], t: [0.025, 0.30] },
+  4: { hands: 10, traps: [5, 5], g: [0.012, 0.20], t: [0.012, 0.20] },
+  5: { hands: 10, traps: [6, 6], g: [0.006, 0.12], t: [0.006, 0.12] },
+  6: { hands: 10, traps: [7, 8], g: [0.002, 0.06], t: [0.002, 0.08] },
+  0: { hands: 15, traps: [8, 10], g: [0.002, 0.08], t: [0.002, 0.10] },
+};
+const okCards = (a, n) => Array.isArray(a) && a.length === n && new Set(a).size === n && a.every((c) => Number.isInteger(c) && c >= 0 && c <= 51);
+// One showdown hand: returns 1 when it is a trap, else 0.
+function checkShowdown(h, ht, R, dow, full) {
+  const { cards, rivals, draw, win } = h;
+  if (!okCards(cards, 5)) { fail(`${ht}: bad cards`); return 0; }
+  if (!Array.isArray(rivals) || rivals.length !== 2 || !rivals.every((r) => okCards(r, 5))) { fail(`${ht}: rivals must be two hands of five`); return 0; }
+  const all = [...cards, ...rivals.flat()];
+  if (new Set(all).size !== 15) { fail(`${ht}: a card is dealt twice`); return 0; }
+  if (!okCards(draw, 5) || draw.some((c) => all.includes(c))) fail(`${ht}: draw must be five unseen cards`);
+  if (!Array.isArray(win) || win.length !== 32 || win.some((v) => typeof v !== 'number' || v < 0 || v > 1 || Math.abs(v * 1e5 - Math.round(v * 1e5)) > 1e-6)) { fail(`${ht}: win must be 32 chances at 5 places`); return 0; }
+  const exact = full ? winAll(cards, rivals) : null;
+  if (exact) {
+    recomputed++;
+    for (let k = 0; k < 32; k++) if (Math.abs(exact[k] - win[k]) > 2e-5) { fail(`${ht}: win[${k}] stored ${win[k]}, recomputed ${exact[k].toFixed(6)}`); break; }
+    // Identity: holding all five wins with certainty or never (no draw).
+    if (![0, 1, 0.5, 1 / 3].some((x) => Math.abs(exact[31] - x) < 1e-12)) fail(`${ht}: standing pat is not a whole result (${exact[31]})`);
+  }
+  const src = exact || Float64Array.from(win);
+  const { mx, best, tied } = topOf(src);
+  if (h.best !== best) fail(`${ht}: best ${h.best}, recomputed ${best}`);
+  let second = -Infinity;
+  for (let k = 0; k < 32; k++) if (src[k] < mx - 1e-9 && src[k] > second) second = src[k];
+  const gap = mx - second;
+  if (Math.abs(gap - h.gap) > 2e-5) fail(`${ht}: gap ${h.gap}, recomputed ${gap.toFixed(6)}`);
+  if (gap < 0.002 - 1e-9) fail(`${ht}: gap ${gap} under 0.002`);
+  for (let k = 0; k < 32; k++) {
+    const isTied = tied.includes(k);
+    if (isTied && Math.abs(win[k] - win[best]) > 1e-9) fail(`${ht}: tied hold ${k} stored differently from the best`);
+    if (!isTied && win[k] >= win[best] - 1e-9) fail(`${ht}: hold ${k} reads as tied after rounding`);
+  }
+  if (mx > 0.97 + 1e-9 || mx < 0.03 - 1e-9) fail(`${ht}: dull deal, best hold wins ${mx}`);
+  // The video poker hold, from this file's own pay table walk.
+  const vp = topOf(evAll(cards)).best;
+  if (h.vp !== vp) fail(`${ht}: vp ${h.vp}, recomputed ${vp}`);
+  const trap = src[best] - src[vp] > 1e-9;
+  if (!!h.trap !== trap) fail(`${ht}: trap ${h.trap}, recomputed ${trap}`);
+  const band = trap ? R.t : R.g;
+  if (h.gap < band[0] - 1e-9 || h.gap > band[1] + 1e-9) fail(`${ht}: gap ${h.gap} outside ${trap ? 'trap' : 'plain'} band [${band[0]}, ${band[1]}] for weekday ${dow}`);
+  sizeCount[bits(h.best)]++;
+  return trap ? 1 : 0;
+}
+
 // The naive rule, restated here from its words (not from the generator's code).
 function naiveRule(cards) {
   const all = 31;
@@ -192,13 +318,29 @@ PUZZLES.forEach((p, di) => {
   const dow = expect.getUTCDay();
   if (!!p.sunday !== (dow === 0)) fail(`${tag}: sunday flag ${p.sunday} on weekday ${dow}`);
   expect.setUTCDate(expect.getUTCDate() + 1);
-  const R = RAMP[dow];
+  const SD = iso >= SD_FROM;
+  if (!!p.showdown !== SD) fail(`${tag}: showdown flag ${p.showdown}, expected ${SD}`);
+  const R = SD ? SD_RAMP[dow] : RAMP[dow];
   if (!Array.isArray(p.hands) || p.hands.length !== R.hands) { fail(`${tag}: ${p.hands && p.hands.length} hands, expected ${R.hands}`); return; }
   let traps = 0;
   const dayShapes = new Set();
   p.hands.forEach((h, hi) => {
     const ht = `${tag} hand ${hi + 1}`;
     handsTotal++;
+    if (SD) {
+      if (okCards(h.cards, 5)) {
+        const key = h.cards.slice().sort((a, b) => a - b).join('.');
+        if (seenSet.has(key)) fail(`${ht}: five-card hand repeats ${seenSet.get(key)}`);
+        seenSet.set(key, ht);
+        const sh = shape(h.cards);
+        if (dayShapes.has(sh)) fail(`${ht}: shape repeats inside the day`);
+        dayShapes.add(sh);
+        if (shapeAt.has(sh) && di - shapeAt.get(sh) < 21) fail(`${ht}: shape last used ${di - shapeAt.get(sh)} days ago (window 21)`);
+        shapeAt.set(sh, di);
+      }
+      traps += checkShowdown(h, ht, R, dow, !QUICK || hi === 0);
+      return;
+    }
     const { cards, draw, ev } = h;
     if (!Array.isArray(cards) || cards.length !== 5 || new Set(cards).size !== 5 || cards.some((c) => !Number.isInteger(c) || c < 0 || c > 51)) { fail(`${ht}: bad cards ${JSON.stringify(cards)}`); return; }
     if (!Array.isArray(draw) || draw.length !== 5 || new Set(draw).size !== 5 || draw.some((c) => !Number.isInteger(c) || c < 0 || c > 51 || cards.includes(c))) fail(`${ht}: bad draw ${JSON.stringify(draw)}`);

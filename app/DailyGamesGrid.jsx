@@ -187,7 +187,7 @@ const GAMES = [
   { key: 'hands', href: '/hands', name: 'Hands', tag: 'The daily poker solitaire', img: '/games/btn-hands.png' },
   { key: 'finesse', href: '/finesse', name: 'Finesse', tag: 'The daily double dummy', img: '/games/btn-finesse.png' },
   { key: 'crib', href: '/crib', name: 'Crib', tag: 'Six cards, throw two', img: '/games/btn-crib.png' },
-  { key: 'hold', href: '/hold', name: 'Hold', tag: 'Video poker hold', img: '/games/btn-hold.png' },
+  { key: 'hold', href: '/hold', name: 'Hold', tag: 'Poker showdown', img: '/games/btn-hold.png' },
   { key: 'mahj', href: '/mahj', name: 'Mahj', tag: 'The daily mahjong solitaire', img: '/games/btn-mahj.png' },
   { key: 'swap', href: '/swap', name: 'Swap', tag: 'Swap the photo back together', img: '/games/btn-swap.png' },
   { key: 'slide', href: '/slide', name: 'Slide', tag: 'The sliding photo puzzle', img: '/games/btn-slide.png' },

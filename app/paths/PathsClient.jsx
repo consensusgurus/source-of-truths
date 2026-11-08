@@ -356,6 +356,10 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
   }, [showPar, MINE, SOL_SET, LANES, LOFT, g.status, revealed]);
 
   useEffect(() => { gRef.current = g; }, [g]);
+  // THE PERFECT NETWORK SHOWS WHEN THE ROUND ENDS (owner, 2026-11-08), solved
+  // or given up, marked against the player's own track. Never during play.
+  // The player can still hide it with the toggle under the board.
+  useEffect(() => { if (g.status === 'won' || g.status === 'revealed') setShowPar(true); }, [g.status]);
   useEffect(() => {
     if (!armReveal) return undefined;
     const t = setTimeout(() => setArmReveal(false), 3500);
@@ -1145,7 +1149,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <div style={{ maxWidth: 472, margin: '0 auto' }}>
               <button className="pt-tool" onClick={showParToggle} style={{ marginBottom: 4 }}>
-                {showPar ? 'Hide the cheapest network' : 'Show a cheapest network'}
+                {showPar ? 'Hide the perfect network' : 'Show the perfect network'}
               </button>
               <div style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '8px 0 0' }}>
                 One network that costs {perfect}, marked against your own track: <b style={{ color: `var(--stg-ink, ${COLORS.green})` }}>green</b> is a lane you laid that it also uses, <b style={{ color: `var(--stg-ink, ${COLORS.rust})` }}>red</b> is a lane you laid that it does not, and <b style={{ color: 'var(--stg-warn, #a97c12)' }}>gold</b> is a lane it uses that you never laid. Two staircases between the same dots always tie, so it is <i>a</i> cheapest network rather than the only one{tiedPerfect ? ', and because your own network costs the same, a red lane of yours is an equal-cost alternative rather than a mistake' : ''}, but every ridge lane and crossing in it is forced.{HAS_RAILS ? ' Notice where it runs along the old track.' : ''}
@@ -1217,8 +1221,8 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
                 }))}
               options={[
                 { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your result, no spoilers', kind: 'gold', onClick: copyShare },
-                { tone: won ? 'board' : 'reveal', label: won ? 'Return to board' : 'Reveal answer',
-                  sub: won ? 'Your finished board' : 'Show what you missed', onClick: () => setRevealed(true) },
+                { tone: won ? 'board' : 'reveal', label: won ? 'See the perfect network' : 'Reveal answer',
+                  sub: won ? 'Yours against the cheapest' : 'Show what you missed', onClick: () => { setShowPar(true); setRevealed(true); } },
               prevPuzzle && { tone: 'another', label: 'Play another Paths', sub: `No. ${prevPuzzle.num}, yesterday\u2019s puzzle`, href: `/paths?p=${prevPuzzle.num}` },
                 nextUp && { tone: 'similar', label: 'Play similar', sub: `${nextUp.name} \u00b7 ${nextUp.tag}`, href: nextUp.href },
                 { tone: 'replay', label: 'Replay', sub: 'This puzzle again, unscored', onClick: resetGame },

@@ -301,8 +301,11 @@ export default function SudokuStage({
   useEffect(() => { if (!pal) return; try { setShapes(localStorage.getItem(SHAPES_KEY) === '1'); } catch (e) {} }, [!!pal]);
   const flipShapes = () => setShapes((v) => { try { localStorage.setItem(SHAPES_KEY, v ? '0' : '1'); } catch (e) {} return !v; });
   // Shapes has one mark per color for nine colors; GiantToo's sixteen go without it.
+  // It is NOT a toolbar button (owner, 2026-11-08): it sits under the tools as a
+  // small, quiet "Visually impaired?" link, for players who cannot tell two
+  // colors apart.
   const canShape = !!pal && pal.length <= COLOUR_SHAPES.length;
-  const extra = canShape ? [...(extraTools || []), { key: 'shapes', label: 'Shapes', icon: SK_ICON.shapes, on: shapes, pressed: shapes, onPress: flipShapes, title: 'A faint mark on each color, for telling colors apart' }] : extraTools;
+  const extra = extraTools;
   return (
     <PlayStage bg={gameColor(gameKey)} label={label} eyebrow={eyebrow} nav={nav} look={look} wide={wide} inline={inline}
       top={(
@@ -313,6 +316,12 @@ export default function SudokuStage({
           {between}
           {playing && pad ? <SudokuPad {...pad} palette={pal} shapes={canShape && shapes} /> : null}
           {playing && (tools || extra) ? <SudokuTools tools={tools} extra={extra} /> : null}
+          {playing && canShape ? (
+            <button type="button" className="sks-a11y" onClick={flipShapes} aria-pressed={shapes}
+              title="Adds a faint shape to each color so colors can be told apart">
+              {shapes ? 'Hide the shapes' : 'Visually impaired?'}
+            </button>
+          ) : null}
           {below}
         </div>
       )}
@@ -400,5 +409,7 @@ export const SKS_CSS = `
 .sks-pad.pal.wide .sks-dk small{position:absolute;right:3px;bottom:3px;padding:1px 4px;font-size:10px;}
 .pst .sks-pad.pal .sks-dk.armed{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
 .pst .sks-pad.pal .sks-dk.done{opacity:.3;}
+.pst .sks-a11y{align-self:center;background:none;border:0;padding:6px 8px;margin:-4px 0 0;font:inherit;font-size:11.5px;font-weight:600;color:var(--pst-mute);text-decoration:underline;text-underline-offset:2px;cursor:pointer;opacity:.85;}
+.pst .sks-a11y:hover{opacity:1;color:var(--pst-ink);}
 .sks-dot{display:inline-block;width:1.15em;height:1.15em;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(11,18,32,.3);}
 `;

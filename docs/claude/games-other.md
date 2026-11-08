@@ -1455,6 +1455,23 @@ hand comes from a fixed per-day order and scores nothing. `lib/hold-core.js` val
 GAP between best and second-best hold plus a count of TRAPS (the best hold differs from a stated
 naive rule): Mon gap >= 0.30 no traps, rising to Sat 5 to 6 traps, Sunday 5 to 7 of 15.
 
+**Hold SHOWDOWN (owner, 2026-11-08; every board from 2026-11-09, `showdown: true`).** Every hand is
+dealt against TWO RIVAL hands, face up, standing pat; no pay table, ordinary poker ranking with full
+kickers. A hold's value (`win`, 32 numbers) is its exact chance to beat both rivals over every draw
+from the 37 cards nobody holds; a split pot scores 1/(k+1). One point for the best hold, as before.
+`vp` is the video poker hold (best 9/6 hold ignoring the rivals) and a TRAP is a hand where `vp` is
+not a best hold (about two in three usable deals). Engine: `holdWins`, `showScore`, `showName`,
+`showdownResult` in `lib/hold-core.js`. Bank: `scripts/gen-hold-showdown.mjs pool` (resumable, about
+33 deals/s on 2 workers; 6,000 deals is plenty) then `bank`, which copies every day before
+`SHOWDOWN_FROM` through untouched and deals the rest. Ramp, traps a day / gap band: Mon 2 / >= 0.06,
+Tue 3 / >= 0.04, Wed 4 / 0.025-0.30, Thu 5 / 0.012-0.20, Fri 6 / 0.006-0.12, Sat 7-8 / 0.002-0.08,
+Sun 8-10 of 15 / 0.002-0.10; MIN_GAP 0.002 (so one decimal of a percent never shows a false tie);
+no deal whose best hold wins over 97% or under 3%. `scripts/verify-hold.mjs` re-solves every showdown
+hand with its own sort-based ranking table (about 15 s for the whole bank) and
+`scripts/hold-mutation-test.mjs [word]` breaks it 28 ways (run in chunks with a word filter; the full
+set takes over three minutes). The client branches on `PUZZLE.showdown`; old boards render exactly as
+before. `gen-hold.mjs` runs its own command line on import, so never import it from another script.
+
 **Cell** (Cards, keepsAnswer, attempts 'graded', `miss: 'Tries'`, scored with lib/par.js like Taire):
 FreeCell on 32 cards (ace to eight) in six columns, free cells Mon/Tue 4, Wed/Thu 3, Fri/Sat 2;
 Sunday 40 cards in seven columns on two cells. Every player move counts one; safe autoplay is free
@@ -2145,3 +2162,11 @@ finish set Spatial puzzles. Third leg of the Space Cadet run.
   never while one is held (owner: tangles must not come apart just by moving pegs).
 - **Give up** (two taps) stops the clock, eases the ropes back to `solved` and posts 0. Replay is
   practice: unsaved, unposted.
+
+## Paths (`/paths`): what shows after the round
+
+While playing, nothing states perfect or par (owner, 2026-10-20). When the round ends, solved or
+given up, the perfect network is shown on the board automatically (owner, 2026-11-08): `showPar` turns
+on from an effect on `g.status`, and the lanes are marked against the player's own track (green laid
+and used, red laid and not used, gold used and never laid). The toggle under the board can hide it,
+and the win option on the end card reads "See the perfect network".

@@ -16,6 +16,14 @@
 // scores nothing. Nothing counts against you and the clock breaks ties, so the
 // registry row carries miss: null. A finished hand shows its numbers, so this
 // is a first-attempt daily like any other.
+//
+// SHOWDOWN BOARDS (owner, 2026-11-08; every board from 2026-11-09, marked
+// showdown: true): each hand is dealt against two RIVAL hands, face up,
+// standing pat. There is no pay table; a hold's value is its exact chance to
+// beat both rivals over every draw from the 37 cards nobody holds (a split
+// pot counts as a share). One point for the best hold, as before. The reveal
+// also names the video poker hold, which is the trap on most hands. Boards
+// before 2026-11-09 play exactly as they always did.
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -54,7 +62,7 @@ import DailyRules from '../DailyRules';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import {
   RANKS, SUITS, rankOf, suitOf, isRed, cardName, cardWords, PAYTABLE, HAND_LABEL,
-  classify, payOf, popcount, heldCards, holdLabel, drawFor,
+  classify, payOf, popcount, heldCards, holdLabel, drawFor, showName, showdownResult,
 } from '@/lib/hold-core';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
@@ -151,14 +159,26 @@ function getAnonId() {
 // Expected return, printed to three places with the bank's five behind it in
 // the title so two close holds can always be told apart.
 const fmtEV = (v) => v.toFixed(3);
-const topEV = (h) => Math.max(...h.ev);
+// A hand's 32 values: expected returns on a classic board, chances to win on
+// a showdown board (h.win). Everything that scores reads through valOf.
+const valOf = (h) => h.win || h.ev;
+const fmtPct = (v) => `${(v * 100).toFixed(1)}%`;
+const fmtV = (h, v) => (h.win ? fmtPct(v) : fmtEV(v));
+const topEV = (h) => Math.max(...valOf(h));
 // Points a hold earns, off the bank's own values: every hold tied with the
 // best scores.
-const pointsFor = (h, mask) => (mask != null && mask >= 0 && h.ev[mask] >= topEV(h) - 1e-9 ? 1 : 0);
+const pointsFor = (h, mask) => (mask != null && mask >= 0 && valOf(h)[mask] >= topEV(h) - 1e-9 ? 1 : 0);
 // Holds in value order, ties to the fewest cards then the lowest mask.
 function ranked(h) {
-  return h.ev.map((_, m) => m).sort((a, b) => (h.ev[b] - h.ev[a]) || (popcount(a) - popcount(b)) || (a - b));
+  const v = valOf(h);
+  return v.map((_, m) => m).sort((a, b) => (v[b] - v[a]) || (popcount(a) - popcount(b)) || (a - b));
 }
+// A showdown result in words.
+const RES_WORD = { win: 'beats both', split: 'splits the pot', lose: 'loses' };
+// One sentence on a hold that missed: how far behind, in the board's own unit.
+const missLine = (h, top, mine) => (h.win
+  ? `The best hold wins ${fmtPct(top)}, yours ${fmtPct(mine)}. No point.`
+  : `${fmtEV(top - mine)} behind the best. No point.`);
 
 const EMPTY_BOARD = { plays: 0, best: null, topTime: null, leaderboard: [], leaderboardAll: [], leaderboardMobile: [], leaderboardFirst: [], leaderboards: {} };
 
@@ -241,12 +261,33 @@ function MiniCard({ card, w = 28, h = 38 }) {
   );
 }
 
+// The two rival hands of a showdown board, face up. They stand pat, so their
+// hands are final; each is named so the player need not read it.
+function Rivals({ hand, w = 28, h = 38, ink, mute, line }) {
+  return (
+    <div role="group" aria-label="Rival hands" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {hand.rivals.map((r, i) => (
+        <div key={i} aria-label={`Rival ${i + 1}: ${showName(r)}, ${r.map(cardWords).join(', ')}`} style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '7px 9px', borderRadius: 10, background: CELL, border: `1px solid ${line}` }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, fontFamily: SANS }}>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase', color: mute }}>Rival {i + 1}</span>
+            <span style={{ fontSize: 12, fontWeight: 800, color: ink }}>{showName(r)}</span>
+          </div>
+          <div aria-hidden="true" style={{ display: 'flex', gap: 3 }}>
+            {r.map((c) => <MiniCard key={c} card={c} w={w} h={h} />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function HoldClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const STORE_KEY = `sot_hold_${PUZZLE.num}`;
   const HANDS = PUZZLE.hands;
   const NH = HANDS.length;
   const TOTAL = NH;
+  const SD = !!PUZZLE.showdown;
 
   const [g, setG] = useState(() => freshState());
   const gRef = useRef(g);
@@ -313,8 +354,9 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
   const draws = g.picks.map((m, i) => {
     const fin = drawFor(HANDS[i].cards, m, HANDS[i].draw);
     const k = classify(fin);
-    return { fin, k, pay: payOf(fin) };
+    return { fin, k, pay: payOf(fin), res: HANDS[i].rivals ? showdownResult(fin, HANDS[i].rivals) : null };
   });
+  const sdWon = draws.filter((d) => d.res === 'win').length;
   const madeCount = {};
   for (const d of draws) if (d.k !== 'nothing') madeCount[d.k] = (madeCount[d.k] || 0) + 1;
   const drawCredits = draws.reduce((s, d) => s + d.pay, 0);
@@ -600,7 +642,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
   }
   function copyShare() {
     const text = playing
-      ? `Hold #${PUZZLE.num}, the daily video poker hold from Mind Loft.\n${shareUrl()}`
+      ? `Hold #${PUZZLE.num}, ${SD ? 'the daily poker showdown' : 'the daily video poker hold'} from Mind Loft.\n${shareUrl()}`
       : shareText();
     if (notifyShareCredit(text)) return;
     try {
@@ -617,7 +659,24 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
     } catch (e) {}
   }
 
-  const rulesBody = (
+  const rulesBody = SD ? (
+    <DailyRules
+      accent={COLORS.accent} accentSoft={COLORS.accentSoft}
+      lead="Poker against the table, one decision at a time. You are dealt five cards and two rivals show theirs. Choose which cards to HOLD (keep); the DRAW replaces the rest from the 37 cards nobody holds. A hold is worth its CHANCE TO WIN: how often, over every possible draw, your final hand beats both rivals."
+      banner={<>{NH} hands today, each against two rival hands. Scoring rewards the best hold, not the luck of the draw.</>}
+      steps={[
+        <><b>The rivals stand pat.</b> Their hands are final, and every card they hold is out of your deck.</>,
+        <><b>Tap the cards</b> you want to keep (any of them, all of them, or none), then press <b>Draw</b>. Keys 1 to 5 and Enter work too.</>,
+        <><b>1 point</b> when your hold has the best chance to beat both rivals (a tie scores too), none otherwise. It is counted exactly over every draw, not simulated. A split pot counts as a share of a win.</>,
+        <>Ordinary poker ranking, full kickers: the pair of tens with an ace beats the pair of tens with a king. An ace plays high, or low in A 2 3 4 5.</>,
+        <>Then the cards come off a fixed shuffle and you see whether your draw won. That draw is <b>luck</b> and scores nothing.</>,
+        <>One free <b>hint</b>, on your first ever play, rings one card of the best hold.</>,
+        <><b>Give up</b> ends the deal now: hands already drawn keep their points, the rest score 0.</>,
+      ]}
+      knack="Look at the rivals before your own cards. You only need to beat the best rival hand, so a draw to a straight is worth little when a rival holds the card you need, and a lone high card can be worth more than a small pair that is already beaten."
+      footer={`Score out of ${TOTAL}. Nothing counts against you, and ties break on the clock. Sundays deal fifteen hands.`}
+    />
+  ) : (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead="Video poker, one decision at a time. You are dealt five cards and choose which to HOLD (keep); the DRAW then replaces the rest from the 47 cards left in the deck, and a hold's EXPECTED RETURN is what it pays on average over every possible draw."
@@ -647,9 +706,11 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
     const top = topEV(hand);
     const rows = order.slice(0, 4);
     if (!rows.includes(pickM)) rows.push(pickM);
+    if (hand.rivals && hand.vp != null && !rows.includes(hand.vp)) rows.push(hand.vp);
     const fin = drawFor(hand.cards, pickM, hand.draw);
     const k = classify(fin);
-    return { rows, top, pts: pointsFor(hand, pickM), gap: top - hand.ev[pickM], fin, k, pay: payOf(fin) };
+    const res = hand.rivals ? showdownResult(fin, hand.rivals) : null;
+    return { rows, top, pts: pointsFor(hand, pickM), mine: valOf(hand)[pickM], fin, k, pay: payOf(fin), res, name: hand.rivals ? showName(fin) : null };
   })() : null;
 
   // ── the phone stage (owner, 2026-10-25): the same hand drawn full screen.
@@ -659,13 +720,13 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
     const live = g.shown === null;
     const nHeld = popcount(g.sel);
     const q = reveal
-      ? (reveal.pts ? 'The best hold. 1 point.' : `${fmtEV(reveal.gap)} behind the best. No point.`)
-      : 'Which cards do you keep?';
+      ? (reveal.pts ? 'The best hold. 1 point.' : missLine(hand, reveal.top, reveal.mine))
+      : (SD ? 'Which cards beat both rivals?' : 'Which cards do you keep?');
     const line = reveal
-      ? `Drew ${reveal.k === 'nothing' ? 'no pay' : `${HAND_LABEL[reveal.k]}, pays ${reveal.pay}`} · score ${score} of ${TOTAL}`
+      ? (SD ? `Drew ${reveal.name}, ${RES_WORD[reveal.res]} · score ${score} of ${TOTAL}` : `Drew ${reveal.k === 'nothing' ? 'no pay' : `${HAND_LABEL[reveal.k]}, pays ${reveal.pay}`} · score ${score} of ${TOTAL}`)
       : `Hand ${Math.min(current + 1, NH)} of ${NH} · ${nHeld === 0 ? 'tap a card to keep it' : nHeld === 5 ? 'keeping all five' : `holding ${nHeld}`}`;
     return (
-      <PlayStage bg={gameColor('hold')} label="Hold" eyebrow="Jacks or Better · 9/6" topKey={current}
+      <PlayStage bg={gameColor('hold')} label="Hold" eyebrow={SD ? 'Showdown · beat both rivals' : 'Jacks or Better · 9/6'} topKey={current}
         top={(
           <>
             <style dangerouslySetInnerHTML={{ __html: `
@@ -690,9 +751,28 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
 .hol-mini span{width:24px;height:32px;border-radius:5px;background:#fff;border:1.5px solid var(--pst-ink);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;color:#16181d !important}
 .hol-mini span.red{color:${FACE_RED} !important}
 .hol-v{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;flex:none;padding-right:6px}
+.hol-rv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 4px}
+.hol-rv>div{display:flex;flex-direction:column;gap:5px;padding:7px 8px;border-radius:10px;border:1px solid var(--pst-ink)}
+.hol-rv b{font-size:12px;font-weight:800;line-height:1.2;color:var(--pst-ink)}
+.hol-rv i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;opacity:.75;color:var(--pst-ink)}
+.hol-rv .hol-mini{gap:2px;flex-wrap:nowrap}
+.hol-rv .hol-mini span{width:auto;flex:1 1 0;min-width:0;height:30px;font-size:10px}
 ` }} />
             <div className="ml-tally" aria-label={`Score ${score} of ${TOTAL}`}><i>Score</i><b>{score}</b><i>of {TOTAL}</i></div>
             <h2 className="pst-q">{q}</h2>
+            {SD ? (
+              <div className="hol-rv" role="group" aria-label="Rival hands">
+                {hand.rivals.map((r, i) => (
+                  <div key={i} aria-label={`Rival ${i + 1}: ${showName(r)}, ${r.map(cardWords).join(', ')}`}>
+                    <i>Rival {i + 1}</i>
+                    <b>{showName(r)}</b>
+                    <span className="hol-mini" aria-hidden="true">
+                      {r.map((cc) => <span key={cc} className={isRed(cc) ? 'red' : ''}>{RANKS[rankOf(cc)]}{SUITS[suitOf(cc)]}</span>)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
             <div className="hol-row" role="group" aria-label="Your five cards">
               {hand.cards.map((c0, k) => {
                 const held = !!((holdM >> k) & 1);
@@ -715,7 +795,8 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
               <div className="hol-ev">
                 {reveal.rows.map((m) => {
                   const mine = m === pickM;
-                  const best = hand.ev[m] >= reveal.top - 1e-9;
+                  const best = valOf(hand)[m] >= reveal.top - 1e-9;
+                  const vpRow = SD && m === hand.vp && !best;
                   const cs = heldCards(hand.cards, m);
                   return (
                     <div key={m} className={'pst-row' + (mine ? ' on' : '')}>
@@ -726,7 +807,8 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                       </span>
                       {best ? <span className="pst-tag f">Best</span> : null}
                       {mine ? <span className="pst-tag">Yours</span> : null}
-                      <span className="hol-v">{fmtEV(hand.ev[m])}</span>
+                      {vpRow ? <span className="pst-tag">Video poker</span> : null}
+                      <span className="hol-v">{fmtV(hand, valOf(hand)[m])}</span>
                     </div>
                   );
                 })}
@@ -819,7 +901,9 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
               <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
               {gateRules ? rulesBody : (
                 <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                  <p style={{ margin: '0 0 6px' }}>{NH} hands of Jacks or Better. For each, tap the cards to hold and press Draw. One point when your hold has the best expected return, worked out exactly over every draw. The draw itself is luck and scores nothing.</p>
+                  <p style={{ margin: '0 0 6px' }}>{SD
+                    ? `${NH} hands, each against two rival hands that stand pat. Tap the cards to hold and press Draw. One point when your hold has the best chance to beat both rivals, worked out exactly over every draw. The draw itself is luck and scores nothing.`
+                    : `${NH} hands of Jacks or Better. For each, tap the cards to hold and press Draw. One point when your hold has the best expected return, worked out exactly over every draw. The draw itself is luck and scores nothing.`}</p>
                 </div>
               )}
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -893,7 +977,16 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
             // The pay table on the felt: best hand first, ticking the hands
             // the day's flavor draws have made (Hands' table).
             const lit = reveal ? reveal.k : null;
-            const payTable = (
+            const rivalsPanel = SD ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <span style={{ ...K, fontSize: 10, fontWeight: 800 }}>Beat both &middot; they stand pat</span>
+                <Rivals hand={hand} w={narrow ? 26 : 28} h={narrow ? 34 : 38} ink={S_INK} mute={S_MUTE} line={CELL_LINE} />
+                {g.picks.length > 0 && (
+                  <span style={{ fontSize: 11, fontWeight: 600, color: S_MUTE, lineHeight: 1.35 }}>Your draws won {sdWon} of {g.picks.length}. Luck, not scored.</span>
+                )}
+              </div>
+            ) : null;
+            const payTable = SD ? rivalsPanel : (
               <div aria-label="Pay table" style={{ display: 'flex', flexDirection: 'column', gap: narrow ? 2 : 3 }}>
                 <span style={{ ...K, fontSize: 10, fontWeight: 800, marginBottom: 3 }}>Pay table &middot; one coin</span>
                 <div style={narrow ? { display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 14, rowGap: 2 } : { display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -977,27 +1070,28 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
             );
             const dealtChip = reveal ? (
               <span className="hl-chip" style={{ fontSize: narrow ? 11 : 12, padding: narrow ? '4px 10px' : '5px 11px', border: `1.5px solid ${CELL_LINE}`, color: S_INK }}>
-                Drew &middot; {reveal.k === 'nothing' ? 'no pay' : `${HAND_LABEL[reveal.k]} ${reveal.pay}`}
+                Drew &middot; {SD ? `${reveal.name}, ${RES_WORD[reveal.res]}` : (reveal.k === 'nothing' ? 'no pay' : `${HAND_LABEL[reveal.k]} ${reveal.pay}`)}
               </span>
             ) : (
               <span className="hl-chip" style={{ fontSize: narrow ? 11 : 12, padding: narrow ? '4px 10px' : '5px 11px', border: `1.5px solid ${CELL_LINE}`, color: S_INK }}>
-                Dealt &middot; {dealtKind === 'nothing' ? 'no pay' : `${HAND_LABEL[dealtKind]} ${PAYTABLE.find((r) => r.key === dealtKind).pay}`}
+                Dealt &middot; {SD ? showName(hand.cards) : (dealtKind === 'nothing' ? 'no pay' : `${HAND_LABEL[dealtKind]} ${PAYTABLE.find((r) => r.key === dealtKind).pay}`)}
               </span>
             );
 
             const revealPanel = playing && reveal && (
               <div className="hl-fade" style={{ marginTop: 14, borderTop: `1px solid ${SURF_B}`, paddingTop: 14 }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: reveal.pts ? GOOD : INK, marginBottom: 6 }}>
-                  {reveal.pts ? 'The best hold. 1 point.' : `${fmtEV(reveal.gap)} behind the best. No point.`}
+                  {reveal.pts ? 'The best hold. 1 point.' : missLine(hand, reveal.top, reveal.mine)}
                 </div>
                 <table className="hl-tab" style={{ color: INK }}>
                   <thead>
-                    <tr><th>Hold</th><th>Expected return</th></tr>
+                    <tr><th>Hold</th><th>{SD ? 'Chance to win' : 'Expected return'}</th></tr>
                   </thead>
                   <tbody>
                     {reveal.rows.map((m) => {
                       const mine = m === pickM;
-                      const top = hand.ev[m] >= reveal.top - 1e-9;
+                      const top = valOf(hand)[m] >= reveal.top - 1e-9;
+                      const vpRow = SD && m === hand.vp && !top;
                       const cs = heldCards(hand.cards, m);
                       return (
                         <tr key={m} style={{ background: mine ? SURF2 : 'transparent', fontWeight: top || mine ? 800 : 600 }}>
@@ -1006,9 +1100,9 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                               {cs.length ? cs.map((c) => <MiniCard key={c} card={c} w={narrow ? 26 : 28} h={narrow ? 34 : 38} />)
                                 : <span style={{ fontSize: 12, fontWeight: 800, color: INK, padding: '0 2px' }}>Draw five</span>}
                             </span>
-                            <span style={{ marginLeft: 8, fontSize: 11, color: FADED }}>{[top && 'best', mine && 'yours'].filter(Boolean).join(' · ')}</span>
+                            <span style={{ marginLeft: 8, fontSize: 11, color: FADED }}>{[top && 'best', mine && 'yours', vpRow && 'video poker hold'].filter(Boolean).join(' · ')}</span>
                           </td>
-                          <td title={hand.ev[m].toFixed(5)} style={{ color: top ? GOOD : INK, fontVariantNumeric: 'tabular-nums' }}>{fmtEV(hand.ev[m])}</td>
+                          <td title={valOf(hand)[m].toFixed(5)} style={{ color: top ? GOOD : INK, fontVariantNumeric: 'tabular-nums' }}>{fmtV(hand, valOf(hand)[m])}</td>
                         </tr>
                       );
                     })}
@@ -1023,7 +1117,9 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                   ))}
                 </div>
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, marginTop: 8, lineHeight: 1.55 }}>
-                  Your point comes from the hold, not the draw. The new cards above are luck off the day&rsquo;s fixed shuffle; the expected return is the average over every draw.
+                  {SD
+                    ? <>Your point comes from the hold, not the draw. The new cards above are luck off the day&rsquo;s fixed shuffle; the chance to win counts every draw from the 37 cards nobody holds.{hand.vp != null && !pointsFor(hand, hand.vp) ? ' The video poker hold, which ignores the rivals, is not the best one here.' : ''}</>
+                    : <>Your point comes from the hold, not the draw. The new cards above are luck off the day&rsquo;s fixed shuffle; the expected return is the average over every draw.</>}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
                   <button className="hl-btn" onClick={nextHand} style={{ background: STAGE_C, color: 'var(--stg-onramp, #ffffff)', borderColor: STAGE_C_INK, ...(narrow ? { width: '100%' } : null) }}>
@@ -1078,13 +1174,14 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                   narrow ? (
                     <>
                       <div className="hl-felt" style={{ marginTop: 12, borderRadius: 18, padding: '14px 12px', display: 'flex', flexDirection: 'column' }}>
+                        {SD && <div style={{ marginBottom: 12 }}>{rivalsPanel}</div>}
                         {headLine}
                         {row}
                         {g.shown === null && (
                           <span style={{ fontSize: 14, fontWeight: 700, color: S_INK, lineHeight: 1.4, paddingTop: 12 }}>{prompt}</span>
                         )}
                         {revealPanel}
-                        <div style={{ marginTop: 14, borderTop: `1px solid ${CELL_LINE}`, paddingTop: 10 }}>{payTable}</div>
+                        {!SD && <div style={{ marginTop: 14, borderTop: `1px solid ${CELL_LINE}`, paddingTop: 10 }}>{payTable}</div>}
                       </div>
                       {g.shown === null && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 12 }}>
@@ -1095,7 +1192,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
                     </>
                   ) : (
                     <div className="hl-felt" style={{ marginTop: 18, borderRadius: 22, padding: '18px 20px 16px', display: 'flex', gap: 20 }}>
-                      <div style={{ width: 168, flex: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>{payTable}</div>
+                      <div style={{ width: SD ? 176 : 168, flex: 'none', display: 'flex', flexDirection: 'column', justifyContent: SD ? 'flex-start' : 'flex-end' }}>{payTable}</div>
                       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
                         {headLine}
                         {row}
@@ -1274,13 +1371,13 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
       <section style={{ display: (focusMode && !STAGE) ? 'none' : 'block', maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ fontSize: 17, fontWeight: 800, color: INK, margin: '0 0 8px' }}>About Hold</h2>
         <p style={{ fontSize: 13.5, fontWeight: 600, color: FADED, lineHeight: 1.6, margin: '0 0 9px' }}>
-          Video poker deals you five cards and asks one question: which ones do you keep? The cards you hold stay, the rest are replaced from the 47 cards left in the deck, and the final hand pays off the table. Hold plays that question ten times a day, fifteen on Sundays, on Jacks or Better with the full-pay table.
+          Hold is poker against the table. You are dealt five cards, and two rival hands are dealt face up beside you. The rivals stand pat; you choose which of your cards to keep, and the rest are replaced from the 37 cards nobody holds. Hold plays that question ten times a day, fifteen on Sundays.
         </p>
         <p style={{ fontSize: 13.5, fontWeight: 600, color: FADED, lineHeight: 1.6, margin: '0 0 9px' }}>
-          There are 32 ways to hold any hand, from keeping nothing to keeping all five, and each one has an expected return: the average payout over every possible draw. That number is a count, not a guess, so the best hold is a fact. Most hands follow the rule of thumb, keep what pays, then a pair, then four to a flush or an open straight, then your high cards. The interesting ones are the traps, where the rule is wrong: four to a royal flush is worth more than a made flush, and a low pair can lose to four cards of one suit.
+          There are 32 ways to hold any hand, from keeping nothing to keeping all five, and each one has an exact chance to beat both rivals: a count over every possible draw, not a guess, so the best hold is a fact. This is where video poker instinct goes wrong. A draw to a straight is weak when a rival holds the card you need, and a small pair is worth little when a rival already has a bigger one. After each hand the reveal shows the video poker hold beside the best one.
         </p>
         <p style={{ fontSize: 13.5, fontWeight: 600, color: FADED, lineHeight: 1.6, margin: 0 }}>
-          Scoring rewards the mathematically best hold, not the luck of the draw: you earn a point for the right decision whether the cards come or not. Every value is counted over all the draws and checked by a second, separate engine before a deal ships. More card dailies: <a href="/hands" style={{ color: ACC_INK, fontWeight: 800 }}>Hands</a>, <a href="/shoe" style={{ color: ACC_INK, fontWeight: 800 }}>Shoe</a>, <a href="/crib" style={{ color: ACC_INK, fontWeight: 800 }}>Crib</a>, <a href="/finesse" style={{ color: ACC_INK, fontWeight: 800 }}>Finesse</a>.
+          Scoring rewards the best hold, not the luck of the draw: you earn a point for the right decision whether the cards come or not. Every value is counted over all the draws and checked by a second, separate engine before a deal ships. Boards before November 9, 2026 are the original Jacks or Better video poker deals and still play that way from the archive. More card dailies: <a href="/hands" style={{ color: ACC_INK, fontWeight: 800 }}>Hands</a>, <a href="/shoe" style={{ color: ACC_INK, fontWeight: 800 }}>Shoe</a>, <a href="/crib" style={{ color: ACC_INK, fontWeight: 800 }}>Crib</a>, <a href="/finesse" style={{ color: ACC_INK, fontWeight: 800 }}>Finesse</a>.
         </p>
       </section>
 

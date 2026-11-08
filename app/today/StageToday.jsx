@@ -4667,6 +4667,20 @@ export default function StageToday() {
                           {mDet ? <FactRow k={g.key} /> : null}
                           {mDet && skillLine(g.key) ? <span className="mk">{skillLine(g.key)}</span> : null}
                           <small>{isDone ? (r ? `You #${r.rank} of ${r.field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>
+                          {/* THE CROWD ON THE PHONE DETAILS CARD (owner, 2026-11-08):
+                              who leads and today's plays along the foot, as on the
+                              desktop card. Always both, even at zero. */}
+                          {mDet && board ? (() => {
+                            const d = boardBy[g.key] || { board: [], plays: 0 };
+                            const pl = Number(d.plays || d.field) || 0;
+                            const ld = Array.isArray(d.board) && d.board[0] ? d.board[0] : null;
+                            return (
+                              <span className="mcs">
+                                <span className="ld">{ld ? <>#1 <b>{ld.username}</b></> : pl ? 'No solve yet' : 'Open. Be first.'}</span>
+                                <span className="ct" title="Plays today">{pl.toLocaleString('en-US')} playing</span>
+                              </span>
+                            );
+                          })() : null}
                           {canPin ? (
                             <button type="button" className={'st' + (on ? ' on' : '')} aria-label={on ? `Unstar ${g.name}` : `Star ${g.name}`}
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(g.key); }}>
@@ -7465,6 +7479,12 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      height when complete"). No board band, description or fact chips: the
      name, skills and your result stay, and so does the played colouring. */
   .sty-mph .mph-gg.det .mph-g.done{padding-top:12px;}
+  .sty-mph .mph-gg.det .mph-g .mcs{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px -14px -12px;padding:7px 14px;
+    background:color-mix(in srgb, var(--mc) 30%, #fff);border-top:1px solid var(--mink);font-size:12.5px;font-weight:600;font-style:normal;}
+  .sty-mph .mph-gg.det .mph-g .mcs .ld{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sty-mph .mph-gg.det .mph-g .mcs .ld b{font-weight:800;font-size:inherit;line-height:inherit;padding-right:0;}
+  .sty-mph .mph-gg.det .mph-g .mcs .ct{flex:none;font-weight:800;}
+  .stage-page:not([data-stage-theme=light]) .sty-mph .mph-gg.det .mph-g .mcs{background:color-mix(in srgb, var(--mc) 22%, #1a2130);}
   .sty-mph .mph-gg.det .mph-g.done :is(.sty-gband,em.mx,.sty-gfx){display:none;}
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */

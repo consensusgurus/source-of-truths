@@ -1417,7 +1417,7 @@ From the "Best ideas, full roster" mockups (canvas https://claude.ai/artifact/6A
   share of a board solved and the median clock, ranked across games and cut into fifths. A game with
   under 20 plays that week keeps its previous rating; a game never rated lists last as "Not rated
   yet". `/api/quiz/difficulty` stores the week in `stats_payloads` (`difficulty:v1`) and rebuilds only
-  when a new week begins. The sort bands every pane into Gentle (1-2), Steady (3) and Tough (4-5),
+  when a new week begins. The sort bands every pane into Gentle (1-2), Moderate (3) and Tough (4-5),
   and turns the fitted tile layout off. `scripts/verify-difficulty.mjs` checks the method.
 - **The desktop Circuits pane's run cards list the run's games**, numbered in play order, the ones
   played lit (`.gms` inside `runCard`, shown only inside `.sty-rcards` at 901px and up). The phone
@@ -1426,7 +1426,7 @@ From the "Best ideas, full roster" mockups (canvas https://claude.ai/artifact/6A
 ## The entry door's level and puzzle steps, and the dark landing (owner, 2026-10-18)
 
 A skill tile on `app/EntryDoor.jsx` now opens two more steps instead of the home:
-**level** (Gentle, Steady, Tough from `TIERS` in lib/daily-difficulty.js, plus Surprise me)
+**level** (Gentle, Moderate, Tough from `TIERS` in lib/daily-difficulty.js, plus Surprise me; the middle tier's id is still `steady`, only its label changed, 2026-11-08)
 and **tiles** (today's runs whose games mostly share the skill's primary, then every game
 listing the skill at that level, ranked by the site's plays over 7 days from
 `/api/quiz/my-plays` `week`; 1 / 2 / 3 across). A tile goes straight to the game or run.
@@ -2387,6 +2387,11 @@ width. Below 1280px the sort reads "Easy" for "Easy to Hard" and gaps tighten.
 Esc clears the box. Other panes (Runs, Quizzes, boards) leave the middle empty.
 
 ## Details is the default view; the rail needs a real desk (owner, 2026-11-07)
+
+**The crowd on every Details card (owner, 2026-11-08).** The desktop Details card carries the usual
+crowd strip (#1 leader, plays today). The PHONE Details card (`.mph-gg.det .mph-g`) now carries the
+same strip along its foot (`.mcs`): the leader or "No solve yet" / "Open. Be first.", and "N playing"
+even at zero, read from the same `boardBy` the desktop uses.
 
 Approved on the "Mind Loft Home: Details Toggle and Rail Breakpoints" canvas.
 

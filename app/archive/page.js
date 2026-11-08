@@ -504,7 +504,7 @@ const GAMES = [
   { key: 'hands', name: 'Hands', path: '/hands', tag: 'The daily poker solitaire', accent: '#7f1d1d', bg: '#f6eaea', border: 'rgba(127,29,29,0.4)', src: HANDS },
   { key: 'finesse', name: 'Finesse', path: '/finesse', tag: 'The daily double dummy', accent: '#4c1d95', bg: '#ede9fe', border: 'rgba(76,29,149,0.4)', src: FINESSE },
   { key: 'crib', name: 'Crib', path: '/crib', tag: 'Six cards, throw two', accent: '#a16207', bg: '#fbf3dd', border: 'rgba(161,98,7,0.4)', src: CRIB },
-  { key: 'hold', name: 'Hold', path: '/hold', tag: 'Video poker hold', accent: '#b91c1c', bg: '#fdecec', border: 'rgba(185,28,28,0.4)', src: HOLD },
+  { key: 'hold', name: 'Hold', path: '/hold', tag: 'Poker showdown', accent: '#b91c1c', bg: '#fdecec', border: 'rgba(185,28,28,0.4)', src: HOLD },
   { key: 'mahj', name: 'Mahj', path: '/mahj', tag: 'The daily mahjong solitaire', accent: '#a21caf', bg: '#fbe8fd', border: 'rgba(162,28,175,0.4)', src: MAHJ },
   { key: 'swap', name: 'Swap', path: '/swap', tag: 'Swap the photo back together', accent: '#9a3412', bg: '#ffedd5', border: 'rgba(154,52,18,0.4)', src: SWAP },
   { key: 'slide', name: 'Slide', path: '/slide', tag: 'The sliding photo puzzle', accent: '#1e40af', bg: '#dbeafe', border: 'rgba(30,64,175,0.4)', src: SLIDE },
