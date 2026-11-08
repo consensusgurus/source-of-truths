@@ -5,9 +5,9 @@ import PageViewBeacon from '../PageViewBeacon';
 // Entries land in the admin Feedback tab (see app/reach/ReachForm.jsx).
 export const metadata = {
   title: 'Sponsor a Day | Mind Loft',
-  description: 'Put your name on a day of free daily puzzles at Mind Loft. Tell us about your brand and we will be in touch.',
+  description: 'Put your name on a day of free daily puzzles at Mind Loft. Weekdays $100, weekends $60, booked up to three months out.',
   alternates: { canonical: '/sponsor-a-day' },
-  openGraph: { title: 'Sponsor a Day · Mind Loft', description: 'Put your name on a day of free daily puzzles at Mind Loft. Tell us about your brand and we will be in touch.', url: '/sponsor-a-day', type: 'website', siteName: 'Mind Loft' },
+  openGraph: { title: 'Sponsor a Day · Mind Loft', description: 'Put your name on a day of free daily puzzles at Mind Loft. Weekdays $100, weekends $60, booked up to three months out.', url: '/sponsor-a-day', type: 'website', siteName: 'Mind Loft' },
 };
 
 export default function Page() {
