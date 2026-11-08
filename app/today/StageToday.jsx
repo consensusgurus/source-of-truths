@@ -3946,6 +3946,19 @@ export default function StageToday() {
     return ks.size ? ks : null;
   })();
   useEffect(() => { setRunsOpen(false); }, [paneOn]);
+  // RUN PUZZLES SIT AT THE BOTTOM OF ALL PUZZLES (owner, 2026-11-08: "move all
+  // of the puzzles that are run components to the bottom of the default view.
+  // they will sort the same way by most popular at that point"). Under Popular
+  // the grid is every puzzle in no run, then every puzzle that is in one, each
+  // half in its own popularity order with finished games last. They are no
+  // longer folded away behind the gauntlet tiles (foldKeys is unused since).
+  const runKeysAll = new Set(deckRuns(null).flatMap((c) => (c.games || []).map((g) => g.key)));
+  const allOrder = (list) => {
+    if (sortBy !== 'pop') return playedLast(list, done);
+    const solo = [], inRun = [];
+    for (const g of list) (runKeysAll.has(g.key) ? inRun : solo).push(g);
+    return [...playedLast(solo, done), ...playedLast(inRun, done)];
+  };
   const runCells = (cat) => {
     if (!mid || findOn) return null;
     const runs = deckRuns(cat);
@@ -4765,13 +4778,13 @@ export default function StageToday() {
             <div className="sty-led">
               {ledgerHead(null)}
               {runRows(null, false)}
-              {ledgerRun(playedLast(sortGames(alpha), done), 'azl', true)}
+              {ledgerRun(allOrder(sortGames(alpha)), 'azl', true)}
               {runRows(null, true)}
             </div>
           ) : null}
           <div className={'sty-games' + (mid && viewOf(ALL_ID) === 'list' ? ' sty-vhid' : '') + (runsOpen && sortBy !== 'diff' && paneOn === ALL_ID ? ' ropen' : '')} ref={deckOn(ALL_ID) && paneOn === ALL_ID ? deckGridRef : undefined}>
             {(() => {
-              const nodes = tileRun(playedLast(sortGames(foldKeys ? alpha.filter((g) => !foldKeys.has(g.key)) : alpha), done), (g, i) => (
+              const nodes = tileRun(allOrder(sortGames(alpha)), (g, i) => (
               // ALL GAMES MIXES CATEGORIES exactly as My games does, so each
               // card carries its own hue (owner, 2026-08-31).
               <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
