@@ -7736,7 +7736,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix.sty-det .sty-g{overflow:hidden;
     --gpd:var(--cci, var(--cc));--gpm:var(--cfull);--gpw:var(--stg-surf);
     --gpt:color-mix(in srgb, var(--cfull) 30%, var(--stg-surf));}
-  .sty-ix.sty-det .sty-gband{display:block;order:-1;flex:none;height:84px;margin:-15px -14px 4px -16px;
+  .sty-ix.sty-det .sty-gband{display:block;order:-1;flex:none;height:84px;margin:-15px -14px 4px -16px;width:calc(100% + 30px);max-width:none;box-sizing:border-box;align-self:flex-start;
     background:color-mix(in srgb, var(--cfull) 26%, var(--stg-surf));border-bottom:var(--dk);}
   .sty-ix.sty-det .sty-g.mx .sty-gn > .sty-gi{display:inline-block;}
   .sty-ix.sty-det .sty-g.mx .sty-gn::before{display:none;}
