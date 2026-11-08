@@ -44,6 +44,8 @@ const LIVE_KEYS = new Set(liveDailyKeys());
 const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => LIVE_KEYS.has(g.key));
 import { SUDOKU_POOL, DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
 import GameGlyph from '../GameGlyph';
+import GamePreview, { GP_CSS } from '../GamePreview';
+import { gameFacts, FACT_ICONS } from '@/lib/game-facts';
 import CircuitArt from '../CircuitArt';
 import { softGround, gameColor, RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
 // PolymathRunCard left the home on 2026-11-03 (Multiple Choice replaced Polymath); the file stays.
@@ -634,6 +636,34 @@ function skillLine(key) {
   return (SKILL_TAGS[key] || []).map((id) => SKILL_MAP[id] && SKILL_MAP[id].name).filter(Boolean).join(' \u00b7 ');
 }
 
+// THE WEEK'S DIFFICULTY RATINGS FOR THE DETAILS CARD (owner, 2026-11-08). Set
+// by the home on each render from its one cached read; a card reads it here so
+// the rating need not be threaded through every GameCard call site.
+let DIFF_NOW = null;
+// THE DETAILS CARD'S FACTS ROW (owner, 2026-11-08): up to three chips the game
+// states about itself (lib/game-facts.js) and the week's difficulty, five bars
+// and its tier word. Hidden outside Details.
+function FactRow({ k }) {
+  const facts = gameFacts(k);
+  const r = DIFF_NOW && Number(DIFF_NOW[k]);
+  const tier = r ? DIFF_TIERS.find((t) => r >= t.lo && r <= t.hi) : null;
+  if (!facts.length && !tier) return <span className="sty-gfx" aria-hidden="true">{'\u00a0'}</span>;
+  return (
+    <span className="sty-gfx">
+      {facts.map((f) => (
+        <span key={f.ic} className="sty-gfc">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={FACT_ICONS[f.ic]} /></svg>{f.tx}
+        </span>
+      ))}
+      {tier ? (
+        <span className="sty-gfc" title={`Difficulty ${r} of 5 this week: ${tier.sub}`}>
+          <span className="sty-gfm" aria-hidden="true">{[1, 2, 3, 4, 5].map((i) => <i key={i} className={i <= r ? 'on' : ''} style={{ height: 3 + i * 2 }} />)}</span>{tier.label}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
 function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null, light = true, day = null }) {
   const plays = day ? Number(day.plays || day.field) || 0 : null;
   const lead = day && Array.isArray(day.board) && day.board[0] ? day.board[0] : null;
@@ -718,7 +748,9 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
         <span className="sty-gt sty-gtg">{g.tag}</span>
       )}
       {/* DETAILS VIEW (owner, 2026-11-07): shown only under .sty-det. */}
+      <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} /></span>
       <span className="sty-gx">{fullDesc(g)}</span>
+      <FactRow k={g.key} />
       <span className="sty-gk">{skillLine(g.key) || '\u00a0'}</span>
       {/* THE PLAY TOTAL (owner, 2026-10-26): today's plays at the foot of the
           tile, desktop only (shown by the desktop block). */}
@@ -2570,12 +2602,15 @@ export default function StageToday() {
   const [diff, setDiff] = useState(null);
   const diffAsked = useRef(false);
   useEffect(() => {
-    if (sortBy !== 'diff' || diffAsked.current) return;
+    // Asked on load too since 2026-11-08: the Details card shows each game's
+    // rating, and Details is the default view.
+    if (diffAsked.current) return;
     diffAsked.current = true;
     fetch('/api/quiz/difficulty').then((r) => r.json())
       .then((d) => setDiff((d && d.ratings) || {}))
       .catch(() => setDiff({}));
-  }, [sortBy]);
+  }, []);
+  DIFF_NOW = diff;
   const pickSort = (v) => {
     setSortBy(v);
     try { localStorage.setItem('sot_home_sort', v); } catch (e) { /* storage off */ }
@@ -5232,6 +5267,7 @@ const CSS = `
 .sty-fc{position:relative;}
 .sty-fc.wait{min-width:54px;min-height:30px;}
 ${PATCH_CSS}
+${GP_CSS}
 .sty-figs b{display:block;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;}
 .sty-figs b i{font-style:normal;font-weight:600;color:var(--stg-mute);font-size:12px;}
 .sty-figs>div>i{font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;
@@ -5799,7 +5835,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-gi{flex:none;color:var(--cci, var(--cc));}
 .sty-next .sty-gi{color:currentColor;opacity:.85;}
 .sty-nm{display:flex;align-items:center;gap:11px;}
-.sty-gx,.sty-gk{display:none;}
+.sty-gx,.sty-gk,.sty-gband,.sty-gfx{display:none;}
 /* THE ONE-TIME NOTE ON THE VIEW TOGGLE (owner, 2026-11-07). */
 .sty-view{position:relative;}
 .sty-vhint{animation:sty-vpulse 1.6s ease-out 3;border-radius:8px;}
@@ -7693,6 +7729,25 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix.sty-det .sty-gdeck .sty-gd3{display:none !important;}
   .sty-ix.sty-det .sty-gdeck .sty-gdb{position:absolute;top:17px;right:14px;gap:8px;}
   .sty-ix.sty-det .sty-grun .sty-gt{margin-bottom:10px;}
+  /* THE BOARD BAND, THE GLYPH AND THE FACTS (owner, 2026-11-08: option E,
+     "D but more monotone ... ideally it takes the category color"). One
+     colour per card in three steps: deep (the category's ink), mid (its
+     pastel) and the surface. The band sits across the top of the card. */
+  .sty-ix.sty-det .sty-g{overflow:hidden;
+    --gpd:var(--cci, var(--cc));--gpm:var(--cfull);--gpw:var(--stg-surf);
+    --gpt:color-mix(in srgb, var(--cfull) 30%, var(--stg-surf));}
+  .sty-ix.sty-det .sty-gband{display:block;order:-1;flex:none;height:84px;margin:-15px -14px 4px -16px;
+    background:color-mix(in srgb, var(--cfull) 26%, var(--stg-surf));border-bottom:var(--dk);}
+  .sty-ix.sty-det .sty-g.mx .sty-gn > .sty-gi{display:inline-block;}
+  .sty-ix.sty-det .sty-g.mx .sty-gn::before{display:none;}
+  .sty-ix.sty-det .sty-g .sty-gn > .sty-gi{color:var(--gpd);}
+  .sty-ix.sty-det .sty-gfx{display:flex;gap:6px;height:24px;overflow:hidden;flex-wrap:wrap;align-content:flex-start;}
+  .sty-gfc{display:inline-flex;align-items:center;gap:5px;height:24px;box-sizing:border-box;padding:0 9px 0 7px;border-radius:999px;
+    background:var(--gpt);color:var(--stg-ink);font-size:12px;font-weight:700;white-space:nowrap;}
+  .sty-gfc svg{color:var(--gpd);flex:none;}
+  .sty-gfm{display:inline-flex;gap:2px;align-items:flex-end;}
+  .sty-gfm i{display:block;width:4px;border-radius:1px;background:color-mix(in srgb, var(--gpd) 28%, transparent);}
+  .sty-gfm i.on{background:var(--gpd);}
   .sty-find{flex:1 1 auto;max-width:none;margin-left:28px;display:flex;align-items:center;gap:8px;height:38px;box-sizing:border-box;
     padding:0 14px;border:var(--dk);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);cursor:text;}
   .sty-find input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--stg-ink);}
