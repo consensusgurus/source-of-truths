@@ -23,6 +23,7 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { RAMP_INK } from '@/lib/category-ramp';
 import { gameActive } from '@/lib/game-active';
+import { scrimClose } from './PremierePop';
 
 const STAMP = 'sot_pop_spacecadet';
 const BUSY = '.ent-door, .sty-vnote, .gpp-scrim, .stg-tpop, .prm-scrim, .etp-scrim, .cnp-scrim, .stf, .loft-back, .dec-backdrop';
@@ -59,7 +60,7 @@ export default function SpaceCadetPop() {
     const t = setInterval(() => {
       if (!alive) return;
       if (Date.now() - started > 30000) { clearInterval(t); return; }
-      if (document.querySelector(BUSY) || gameActive()) { quiet = 0; return; }
+      if (document.documentElement.hasAttribute('data-sot-snap') || document.querySelector(BUSY) || gameActive()) { quiet = 0; return; }
       quiet += 400;
       if (quiet < 1600) return;
       clearInterval(t);
@@ -79,7 +80,7 @@ export default function SpaceCadetPop() {
   if (!open) return null;
   const close = () => setOpen(false);
   return (
-    <div className="scp-scrim" onClick={close}>
+    <div className="scp-scrim" {...scrimClose(close)}>
       <style>{CSS}</style>
       <div className="scp" role="dialog" aria-modal="true" aria-labelledby="scp-t" onClick={(e) => e.stopPropagation()}>
         <div className="scp-top">

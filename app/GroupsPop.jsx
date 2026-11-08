@@ -23,6 +23,7 @@
 // Stage tokens only, so it follows the light switch.
 
 import { useEffect, useState } from 'react';
+import { scrimClose } from './PremierePop';
 import { X } from 'lucide-react';
 import { gameActive } from '@/lib/game-active';
 
@@ -36,6 +37,8 @@ function busy() {
   // (lib/stage-theme.js), so waiting on that key held this card back forever
   // for every browser that arrived after 2026-09-01. The theme bubble that
   // replaced it is read off the DOM instead, like everything else here.
+  // The home snapshot hides the live page this card lives in (see PremierePop).
+  try { if (document.documentElement.hasAttribute('data-sot-snap')) return true; } catch (e) {}
   return !!document.querySelector('.ent-door, .prm-scrim, .mlw-scrim, .stg-tpop');
 }
 
@@ -156,7 +159,7 @@ export default function GroupsPop() {
   const close = () => setOpen(false);
 
   return (
-    <div className="gpp-scrim" onClick={close}>
+    <div className="gpp-scrim" {...scrimClose(close)}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="gpp" role="dialog" aria-modal="true" aria-labelledby="gpp-t" onClick={(e) => e.stopPropagation()}>
         <button className="gpp-x" type="button" aria-label="Close" onClick={close}><X size={16} /></button>

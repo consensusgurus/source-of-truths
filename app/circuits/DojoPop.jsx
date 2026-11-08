@@ -76,7 +76,9 @@ export default function DojoPop({ ready = false, self = '' }) {
       } catch (e) {}
       const today = etToday();
       try { if (localStorage.getItem(DOJO_POP_STORE) === today) return; } catch (e) { return; }
-      const dojo = !runDoneToday('dojo');
+      // A COLOR sudoku offers the color Dojo (2026-11-08); every other sudoku the Dojo.
+      const rid = /too$/.test(self) ? 'dojocolor' : 'dojo';
+      const dojo = !runDoneToday(rid);
       let more = [];
       if (isNewerVisitor()) {
         const order = [...SUDOKU_POOL, ...Object.keys(DAILY_GAME_MAP).filter((k) => DAILY_GAME_MAP[k].cat === 'Sudoku' && !SUDOKU_POOL.includes(k))];
@@ -86,11 +88,11 @@ export default function DojoPop({ ready = false, self = '' }) {
       if (!dojo && !more.length) return;
       try { localStorage.setItem(DOJO_POP_STORE, today); } catch (e) {}
       fired.current = true;
-      const keys = circuitKeysFor('dojo', today);
+      const keys = circuitKeysFor(rid, today);
       const tags = keys.map((k) => { const x = DAILY_GAME_MAP[k] || {}; return [x.name || k, x.colorNavy || '#93c5fd']; });
       setView({
         // An archive replay (?p=) is unscored, so it never 'already counts'.
-        dojo, more, tags, mine: keys.includes(self) && !/[?&]p=/.test(window.location.search), name: g.name,
+        dojo, rid, more, tags, mine: keys.includes(self) && !/[?&]p=/.test(window.location.search), name: g.name,
         variant: tags.length > 2 ? tags[tags.length - 1][0] : 'a variant',
       });
     }), WAIT_MS);
@@ -123,14 +125,14 @@ export default function DojoPop({ ready = false, self = '' }) {
         <button type="button" className="rdp-x" onClick={close} aria-label="Close"><X size={14} strokeWidth={2.4} /></button>
         {view.dojo ? (
           <>
-            <i className="rdp-e">Daily run · Three sudokus</i>
-            <h2 className="rdp-h" id="djp-h">Enter the Dojo</h2>
+            <i className="rdp-e">{view.rid === 'dojocolor' ? 'Daily run · Three color sudokus' : 'Daily run · Three sudokus'}</i>
+            <h2 className="rdp-h" id="djp-h">{view.rid === 'dojocolor' ? 'Enter the Dojo: In Color' : 'Enter the Dojo'}</h2>
             <div className="rdp-tags">{view.tags.map(([t, c], i) => <span key={t} style={{ background: c, animationDelay: `${i * 70}ms` }}>{t}</span>)}</div>
             <p className="rdp-p">
-              Sixes, Suds and today&rsquo;s {view.variant} back to back on one page. Solve all three and the clock decides your belt, from white to black.
+              {view.rid === 'dojocolor' ? 'SixesToo, SudsToo' : 'Sixes, Suds'} and today&rsquo;s {view.variant} back to back on one page. Solve all three and the clock decides your belt, from white to black.
               {view.mine ? ` Your ${view.name} result already counts.` : ''}
             </p>
-            <a className="rdp-go" href="/dojo">Enter the Dojo</a>
+            <a className="rdp-go" href={view.rid === 'dojocolor' ? '/dojocolor' : '/dojo'}>{view.rid === 'dojocolor' ? 'Enter the Dojo: In Color' : 'Enter the Dojo'}</a>
           </>
         ) : (
           <>

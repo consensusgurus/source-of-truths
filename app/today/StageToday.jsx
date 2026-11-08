@@ -418,12 +418,12 @@ const TILES_KEY = 'sot_home_tiles';
 // Trivia). All Puzzles shows all five.
 // Math Gauntlet restored beside the Trivia Gauntlet (owner, 2026-10-13 evening).
 // Trivia Encore beside the Gauntlet (owner, 2026-10-14).
-const PILL_CIRCUITS = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'crossed', 'room', 'spacecadet'];
+const PILL_CIRCUITS = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'dojocolor', 'crossed', 'room', 'spacecadet'];   // dojocolor beside the Dojo (2026-11-08)
 // CIRCUITS-PANE ONLY: a circuit listed here is never offered on the main page
 // (pills, phone runs, the shelf peek), only when the reader opens Circuits.
 // Empty since the Valet Gauntlet was retired (owner, 2026-10-18).
 const SHELF_ONLY = new Set();
-const PILL_EXTRA = { passport: ['Trivia'], dojo: ['Logic'] };   // owner, 2026-10-13: Dojo also shows under Logic
+const PILL_EXTRA = { passport: ['Trivia'], dojo: ['Logic'], dojocolor: ['Logic'] };   // owner, 2026-10-13: Dojo also shows under Logic
 // The server has no layout pass; an isomorphic alias keeps it from warning.
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 const MINE_ID = 'sty-mine';
@@ -3416,7 +3416,7 @@ export default function StageToday() {
   // icon. Runs are one piece, so nothing here shows how far into one you are:
   // a run reads as players today until you finish it, then as your place on
   // the site board and in your group.
-  const RUN_SHORT = { gauntlet: 'Trivia', triviaencore: 'Encore', english: 'English', science: 'Science', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', crossed: 'Crossed Up', spacecadet: 'Space Cadet', room: 'Room' };
+  const RUN_SHORT = { gauntlet: 'Trivia', triviaencore: 'Encore', english: 'English', science: 'Science', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', dojocolor: 'Color Dojo', crossed: 'Crossed Up', spacecadet: 'Space Cadet', room: 'Room' };
   const runFull = (c) => c.games.length > 0 && c.n === c.games.length;
   const fmtN = (n) => Number(n || 0).toLocaleString('en-US');
   const runLook = (c, cat) => {
@@ -4467,7 +4467,7 @@ export default function StageToday() {
                   <span className="sty-pinn">{c.name}</span>
                   {/* WHAT IT TESTS, under the name, not how many games it holds
                       (owner, 2026-10-07). */}
-                  <span className="sty-pine">{{ pricecheck: 'Shopping test', gauntlet: 'Knowledge test', passport: 'Geography test', dojo: 'Sudoku test', crossed: 'Crossword test', room: 'Crowd test', spacecadet: 'Spatial test' }[c.id] || c.unit || `${c.games.length} games`}</span>
+                  <span className="sty-pine">{{ pricecheck: 'Shopping test', gauntlet: 'Knowledge test', passport: 'Geography test', dojo: 'Sudoku test', dojocolor: 'Color sudoku test', crossed: 'Crossword test', room: 'Crowd test', spacecadet: 'Spatial test' }[c.id] || c.unit || `${c.games.length} games`}</span>
                   {c.blurb ? <span className="sty-pinb">{c.blurb}</span> : null}
                 </span>
                 <span className="sty-pingo">Play</span>

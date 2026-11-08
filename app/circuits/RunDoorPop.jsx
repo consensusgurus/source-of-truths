@@ -87,6 +87,14 @@ export const RUN_DOORS = {
     go: 'Enter the Dojo', accent: '#e9cf7f',
     tags: [['Sixes', '#93c5fd'], ['Suds', '#a5b4fc'], ['A variant', '#e9cf7f']],
   },
+  // ENTER THE DOJO: IN COLOR (2026-11-08). Listed for MoreRuns; the color
+  // sudokus offer it through app/circuits/DojoPop.jsx like the Dojo.
+  dojocolor: {
+    href: '/dojocolor', name: 'Enter the Dojo: In Color', eyebrow: 'Daily run · Three color sudokus', once: 'game',
+    body: 'SixesToo, SudsToo, then a color variant, back to back on one page. The same Dojo with colors in place of digits: solve all three and the clock decides your belt.',
+    go: 'Enter the Dojo: In Color', accent: '#e9cf7f',
+    tags: [['SixesToo', '#93c5fd'], ['SudsToo', '#a5b4fc'], ['A color variant', '#e9cf7f']],
+  },
   // ONCE A DAY on the start gate of Herd, Outwit, Outrank or Feud (owner,
   // 2026-10-13; Herd from 2026-10-17): a player loading any crowd game is
   // offered the run that plays them all, unless it is already open or finished today.

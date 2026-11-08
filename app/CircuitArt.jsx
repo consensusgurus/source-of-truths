@@ -179,6 +179,9 @@ const ART = {
   ),
 };
 
+// Enter the Dojo: In Color wears the Dojo's grid (2026-11-08).
+ART.dojocolor = ART.dojo;
+
 export default function CircuitArt({ id }) {
   const art = ART[id];
   if (!art) return null;

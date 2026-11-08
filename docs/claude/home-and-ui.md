@@ -2434,3 +2434,19 @@ Option E from the Details card mockup. In the Details view every puzzle card car
 - **A facts row** from `lib/game-facts.js`: up to three chips the game states about itself (count from its tagLong/How to play, "Ns each", "1 life", Counts tries/errors, Sunday Edition; never a bare "Timed", since every daily is timed) plus the week's difficulty (five bars and the tier word from `/api/quiz/difficulty`). A chip never states a number the game's own text does not.
 
 **A new daily gets its own drawing:** add its key to `BY_KEY` in `app/GamePreview.jsx`. Without one it falls back to its category's shared shape (sudoku grid, quiz card, chess strip, tiles of its name...), which renders but says less.
+
+## Home pop-ups wait for the snapshot, and a scrim closes only on its own press (2026-11-08)
+
+Owner report: the sudoku launch card "showed, but only for one second". Cause: on a returning
+visit the home paints its last-known snapshot (`lib/home-snapshot.js`) over the live page, and the
+live page (where PremierePop, GroupsPop and SpaceCadetPop mount) sits at opacity 0 with
+pointer-events off until every read lands (up to 9s). PremierePop opened under it, stamped itself
+seen, and stayed invisible. The reader's first tap released the snapshot, the card appeared, and
+that same tap's click landed on the scrim and closed it.
+
+- **Any pop-up mounted inside the home waits while `html[data-sot-snap]` is set**, the same way it
+  waits for the entry door. PremierePop's `arrivalBusy`, GroupsPop's `busy` and SpaceCadetPop's poll
+  all check it.
+- **Scrims close through `scrimClose(close)`** (exported from `app/PremierePop.jsx`): it closes only
+  when the press STARTED on the scrim, so the tail of a tap that began before the card was on screen
+  can never dismiss it.

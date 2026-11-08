@@ -528,7 +528,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
       if (!games.length) return null;
       let color = catColor(games[0].cat);
       if (c.marquee) color = '#e8b43a';
-      else if (c.id === 'dojo') color = catBlue('sudoku');
+      else if (c.id === 'dojo' || c.id === 'dojocolor') color = catBlue('sudoku');
       else if (c.id === 'room') color = catBlue('crowd');
       else if (c.id === 'crossed') color = catBlue('word');
       return { kind: 'circuit', id: c.id, name: c.name, blurb: c.blurb || '', color, games };

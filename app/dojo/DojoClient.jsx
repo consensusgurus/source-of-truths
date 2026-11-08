@@ -38,7 +38,7 @@ import RunNextSlot from '../circuits/RunNextSlot';
 import { rampFor } from '@/lib/circuits';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { DOJO_RUN_ID, DOJO_BELTS, DOJO_CLOCK, DOJO_MAX, dojoTierOf, dojoGridPoints, dojoAcc, dojoSpeed, dojoWeight } from '@/lib/dojo';
+import { DOJO_RUNS, DOJO_BELTS, DOJO_CLOCK, DOJO_MAX, dojoTierOf, dojoGridPoints, dojoAcc, dojoSpeed, dojoWeight } from '@/lib/dojo';
 import RunBackLink from '../circuits/RunBackLink';
 import DyeCurtain from './DyeCurtain';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
@@ -58,6 +58,14 @@ const CLIENTS = {
   frame: dynamic(() => import('../frame/FrameClient'), { ssr: false, loading: () => null }),
   diag: dynamic(() => import('../diag/DiagClient'), { ssr: false, loading: () => null }),
   sumo: dynamic(() => import('../sumo/SumoClient'), { ssr: false, loading: () => null }),
+  // Enter the Dojo: In Color (2026-11-08): the color twins, same embed.
+  sixestoo: dynamic(() => import('../sixestoo/SixesTooClient'), { ssr: false, loading: () => null }),
+  sudstoo: dynamic(() => import('../sudstoo/SudsTooClient'), { ssr: false, loading: () => null }),
+  mercurytoo: dynamic(() => import('../mercurytoo/MercuryTooClient'), { ssr: false, loading: () => null }),
+  diagtoo: dynamic(() => import('../diagtoo/DiagTooClient'), { ssr: false, loading: () => null }),
+  knighttoo: dynamic(() => import('../knighttoo/KnightTooClient'), { ssr: false, loading: () => null }),
+  windowtoo: dynamic(() => import('../windowtoo/WindowTooClient'), { ssr: false, loading: () => null }),
+  racecartoo: dynamic(() => import('../racecartoo/RacecarTooClient'), { ssr: false, loading: () => null }),
 };
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -109,12 +117,18 @@ function Belt({ ti, tied = true, dye = false, small = false }) {
   );
 }
 
-export default function DojoClient({ dateLabel, dateShort, sections = [], clocks: clocksIn = null }) {
+// WHICH DOJO (2026-11-08). The same client plays Enter the Dojo (/dojo) and
+// Enter the Dojo: In Color (/dojocolor). One run per page, so the run is set
+// here once per render and read by the helpers below (Grading, DojoBoard).
+let RUN = DOJO_RUNS.dojo;
+
+export default function DojoClient({ dateLabel, dateShort, sections = [], clocks: clocksIn = null, runId = 'dojo' }) {
+  RUN = DOJO_RUNS[runId] || DOJO_RUNS.dojo;
   // The day's clocks come from the server (lib/dojo-clocks.js); the seed covers a
   // page served before they could be measured.
   const CLK = clocksIn || DOJO_CLOCK;
   const N = sections.length;
-  const STORE = `sot_run_dojo_${etToday()}`;
+  const STORE = `sot_run_${RUN.id}_${etToday()}`;
   const [r, setR] = useState(() => freshRun());
   const rRef = useRef(r);
   const [hydrated, setHydrated] = useState(false);
@@ -170,7 +184,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   useSudokuPastel(hydrated && playing, rampFor(r.si), look);
   // The stage ending counts as settled for the more-runs card that follows it.
   useEffect(() => { if (hydrated && done && endOpen) setSettled(true); }, [hydrated, done, endOpen]);
-  const board = useCircuitBoard(DOJO_RUN_ID, hydrated && done);
+  const board = useCircuitBoard(RUN.id, hydrated && done);
 
   const counted = useMemo(() => sections.map((sec) => r.results[sec.key] || banked[sec.key] || null), [sections, banked, r.results]);
   const parts = counted.map((c, i) => (c ? dojoGridPoints(sections[i].key, c.score, c.total, c.secs, CLK) : 0));
@@ -225,11 +239,11 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
   function shareText() {
     const per = sections.map((s, i) => `${s.name} ${counted[i] ? Math.round(parts[i]) : '-'}`).join(' · ');
     const code = sections.length === 3 ? sections.map((s, i) => Math.round(parts[i])).join('-') : '';
-    const link = `mindloftdaily.com/dojo${code ? `?s=${code}&t=${total}&d=${etToday()}` : ''}`;
-    return `Enter the Dojo · ${dateShort} · ${total}/${DOJO_MAX}\n${belt[1]}.${tier > 0 ? `\nNext up: ${B[tier - 1][1]}, ${Math.max(1, B[tier - 1][0] - total)} short.` : ''}\n${per}\n${withRef(link)}`;
+    const link = `mindloftdaily.com${RUN.path}${code ? `?s=${code}&t=${total}&d=${etToday()}` : ''}`;
+    return `${RUN.name} · ${dateShort} · ${total}/${DOJO_MAX}\n${belt[1]}.${tier > 0 ? `\nNext up: ${B[tier - 1][1]}, ${Math.max(1, B[tier - 1][0] - total)} short.` : ''}\n${per}\n${withRef(link)}`;
   }
   function copyShare() {
-    const text = done ? shareText() : `Enter the Dojo: three sudokus in one sitting, fast and clean. Your score ties on your belt, white to black.\n${withRef('mindloftdaily.com/dojo')}`;
+    const text = done ? shareText() : `${RUN.name}: three ${RUN.id === 'dojocolor' ? 'color ' : ''}sudokus in one sitting, fast and clean. Your score ties on your belt, white to black.\n${withRef('mindloftdaily.com' + RUN.path)}`;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
@@ -262,7 +276,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
       if (Number.isFinite(djMe.rank) && djMe.rank > 4) out.push({ gap: true });
       out.push({ rank: Number.isFinite(djMe.rank) ? djMe.rank : '\u2013', name: 'You', score: Math.round(Number(djMe.total)), me: true });
     }
-    return out.length ? { rows: out, field: djBd.overallField || djBd.uniquePlayers || null, href: '/dojo/leaderboard' } : null;
+    return out.length ? { rows: out, field: djBd.overallField || djBd.uniquePlayers || null, href: RUN.path + '/leaderboard' } : null;
   })();
   // The belts, white at the bottom to black at the top.
   const beltLadder = [...B].reverse().map((t, i) => ({ min: t[0], name: t[1], line: t[5], colour: rampFor(i), chip: t[3] }));
@@ -279,9 +293,9 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
         <div className="dj-cap vf">
           <RunBackLink />
           <Link href="/" className="dj-home">Mind Loft</Link>
-          <b>Enter the Dojo</b>
+          <b>{RUN.name}</b>
           <span className="dj-capd">{dateShort}</span>
-          <a className="dj-lb" href="/dojo/leaderboard">Leaderboard</a>
+          <a className="dj-lb" href={RUN.path + '/leaderboard'}>Leaderboard</a>
         </div>
       )}
 
@@ -290,8 +304,8 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           (paper doors over a wall of scrolls) is retired. */}
       {hydrated && r.phase === 'idle' && (
         <GauntletGate
-          circuitName="Enter the Dojo"
-          banner={<RunOtherDeviceBar runId={DOJO_RUN_ID} keys={sections.map((s) => s.key)} show={hydrated && r.phase === 'idle' && !r.t0 && !allBanked} />}
+          circuitName={RUN.name}
+          banner={<RunOtherDeviceBar runId={RUN.id} keys={sections.map((s) => s.key)} show={hydrated && r.phase === 'idle' && !r.t0 && !allBanked} />}
           dateLabel={dateShort}
           sections={gs}
           lineFor={(s) => (s.form && s.form !== s.name ? s.form : (s.chip || ''))}
@@ -305,7 +319,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
         />
       )}
       {hydrated && playing && sec && (
-        <RunPlayFrame sections={gs} idx={r.si} title="Enter the Dojo" sub={`Form ${NUMS[r.si] || r.si + 1} of ${NUMS[N - 1] || N} · ${sec.name}`}
+        <RunPlayFrame sections={gs} idx={r.si} title={RUN.name} sub={`Form ${NUMS[r.si] || r.si + 1} of ${NUMS[N - 1] || N} · ${sec.name}`}
           foot={<>
             Run total {Math.round(runSoFar + (between ? parts[r.si] : 0))} of {DOJO_MAX}
             {!between && Game && !banked[sec.key] ? <> · <button type="button" className="dj-lk" onClick={() => setHelpSeq((n) => n + 1)}>How to play {sec.name}</button></> : null}
@@ -327,7 +341,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
       {hydrated && playing && sec && between && (
         <div className={last ? 'dj-final' : ''}>
           <GauntletBetween
-            circuitName="Enter the Dojo"
+            circuitName={RUN.name}
             sections={gs}
             results={[]}
             doneCount={r.si + 1}
@@ -361,11 +375,11 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
         </div>
       )}
 
-      <RunChallengeCapture gameKey={DOJO_RUN_ID} />
+      <RunChallengeCapture gameKey={RUN.id} />
       {hydrated && done && endOpen && (
         <GauntletEndStage
-          runId='dojo'
-          circuitName="Enter the Dojo"
+          runId={RUN.id}
+          circuitName={RUN.name}
           dateLabel={dateShort}
           sections={sections.map((s, i) => ({ ...s, slot: i }))}
           results={sections.map((s, i) => ({ key: s.key, score: counted[i] ? Math.round(parts[i]) : '\u2013' }))}
@@ -377,17 +391,17 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           board={djBoard}
           rowsIn={formRows}
           leaderScore={djOverall[0] ? Math.round(Number(djOverall[0].total)) : null}
-          more={<MoreRunsList self="dojo" ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} />}
+          more={<MoreRunsList self={RUN.id} ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} />}
           title={{ name: belt[1], colour: '#a5b4fc', line: tier > 0 ? `${Math.max(1, B[tier - 1][0] - total)} points short of ${B[tier - 1][1]}` : 'Top of the ladder' }}
           rank={board.data && board.data.me && Number.isFinite(board.data.me.rank) ? board.data.me.rank : null}
           fieldSize={board.data ? (board.data.uniquePlayers || (Array.isArray(board.data.overall) ? board.data.overall.length : null)) : null}
-          challenge={<RunChallengeButton gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} status={belt[1]} door />}
-          meme={<RunMeme gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} status={belt[1]} cat="Sudoku" />}
+          challenge={<RunChallengeButton gameKey={RUN.id} score={total} total={DOJO_MAX} n={runToken()} status={belt[1]} door />}
+          meme={<RunMeme gameKey={RUN.id} score={total} total={DOJO_MAX} n={runToken()} status={belt[1]} cat="Sudoku" />}
           onShare={copyShare}
           copied={copied}
           onDetails={() => { setEndOpen(false); setSettled(true); }}
           sweep={doneAtLoad.current === false}
-          finale={doneAtLoad.current === false ? { key: 'dojo', legWord: 'Form', legMax: sections.map((s) => dojoWeight(s.key)) } : null}
+          finale={doneAtLoad.current === false ? { key: RUN.id, legWord: 'Form', legMax: sections.map((s) => dojoWeight(s.key)) } : null}
         />
       )}
       {hydrated && done && !endOpen && (
@@ -395,7 +409,7 @@ export default function DojoClient({ dateLabel, dateShort, sections = [], clocks
           animate={false} board={board} clocks={CLK} onShare={copyShare} copied={copied}
           onSettled={() => setSettled(true)} />
       )}
-      <MoreRunsPop self="dojo" ready={settled && doneAtLoad.current === false} delay={2500} fireOnLeave />
+      <MoreRunsPop self={RUN.id} ready={settled && doneAtLoad.current === false} delay={2500} fireOnLeave />
     </div>
   );
 }
@@ -549,19 +563,19 @@ function Grading({ sections, counted, parts, total, dateLabel, dateShort, animat
                   ladder: { kind: 'belts', label: 'The belts', value: total, steps: [...DOJO_BELTS].reverse().map((b) => ({ min: b[0], name: b[1], short: b[2], colour: b[3] })),
                     next: fti > 0 ? `${DOJO_BELTS[fti - 1][0] - total} more point${DOJO_BELTS[fti - 1][0] - total === 1 ? '' : 's'} and you tie on ${DOJO_BELTS[fti - 1][1].replace(' Belt', '')}.` : 'Black belt. Nothing above it.' } }}
                 field={built.field}
-                boardHref="/dojo/leaderboard"
+                boardHref={RUN.path + '/leaderboard'}
                 boardState={(board && board.state) || 'loading'}
                 aside={<>
-                  <RunChallengeLine gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} />
-                  <RunChallengeButton gameKey={DOJO_RUN_ID} score={total} total={DOJO_MAX} n={runToken()} t={runClock > 0 ? Math.round(runClock) : null} status={t[1]} door />
+                  <RunChallengeLine gameKey={RUN.id} score={total} total={DOJO_MAX} n={runToken()} />
+                  <RunChallengeButton gameKey={RUN.id} score={total} total={DOJO_MAX} n={runToken()} t={runClock > 0 ? Math.round(runClock) : null} status={t[1]} door />
                 </>}
-                next={<RunNextSlot circuitId={DOJO_RUN_ID} exclude={sections.map((s) => s.key)} cats={['Sudoku']} />}
+                next={<RunNextSlot circuitId={RUN.id} exclude={sections.map((s) => s.key)} cats={['Sudoku']} />}
               />
             );
           })()}
-          <NextDrop label="Tomorrow's forms" sub="A new six by six, a new classic and a new variant at midnight Eastern." href="/dojo"
+          <NextDrop label="Tomorrow's forms" sub="A new six by six, a new classic and a new variant at midnight Eastern." href={RUN.path}
             accent="var(--dj-cta)" ink="var(--dj-ink)" mute="var(--dj-mute)" style={{ margin: '14px 0 0' }} />
-          <MoreRunsList self="dojo" ink="var(--dj-ink)" mute="var(--dj-mute)" line="var(--dj-line)" onShare={onShare} copied={copied} />
+          <MoreRunsList self={RUN.id} ink="var(--dj-ink)" mute="var(--dj-mute)" line="var(--dj-line)" onShare={onShare} copied={copied} />
           <div className="gr-lad"><div className="eb">The belts</div><Ladder at={fti} /></div>
         </div>
       )}
@@ -616,7 +630,7 @@ function DojoBoard({ sections, parts, total, board, clocks }) {
     <div className="db">
       <div className="db-hd">
         <span>Today&rsquo;s board{fieldN ? ` · ${Number(fieldN).toLocaleString()} ${fieldN === 1 ? 'player' : 'players'}` : ''}</span>
-        <a href="/dojo/leaderboard">Full board</a>
+        <a href={RUN.path + '/leaderboard'}>Full board</a>
       </div>
       {out.length ? (
         <div className="db-rows">

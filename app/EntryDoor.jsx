@@ -88,6 +88,7 @@ const TIER_C = { gentle: CATEGORY_RAMP[1], steady: CATEGORY_RAMP[3], tough: CATE
 const RUN_TAG = {
   deduction: 'Five logic cases, one law school verdict',
   dojo: 'Three sudokus, one score, a belt',
+  dojocolor: 'Three color sudokus, one score, a belt',
   crossed: 'Four crosswords, speed decides your rank',
   room: 'The crowd games, one read of the room',
   spacecadet: 'Four spatial puzzles, one clock',

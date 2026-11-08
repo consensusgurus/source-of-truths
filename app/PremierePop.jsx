@@ -94,13 +94,36 @@ function playedLocally(key) {
   return false;
 }
 
+// THE HOME SNAPSHOT HIDES THE LIVE PAGE (owner report, 2026-11-08: the sudoku
+// launch card "showed, but only for one second"). On a returning visit the
+// home paints its last-known snapshot (lib/home-snapshot.js) over the live
+// page, which sits at opacity 0 with pointer-events off until every read has
+// landed (up to 9s). This card lives in the live page, so it opened, stamped
+// itself as seen, and stayed invisible under the snapshot. The reader's first
+// tap released the snapshot, the card appeared, and the same tap's click
+// landed on its scrim and shut it. So it now waits for the snapshot to go,
+// and the scrim only closes on a press that STARTED on the scrim.
+function snapUp() {
+  try { return document.documentElement.hasAttribute('data-sot-snap'); } catch (e) { return false; }
+}
+// Scrim props: close only on a press that began on the scrim itself, after it
+// was on screen, never on the tail of a tap that opened under it.
+// The flag is module-level so a re-render between press and release keeps it.
+let scrimDown = false;
+export function scrimClose(close) {
+  return {
+    onPointerDown: (e) => { scrimDown = e.target === e.currentTarget; },
+    onClick: (e) => { if (scrimDown && e.target === e.currentTarget) close(); scrimDown = false; },
+  };
+}
+
 function arrivalBusy() {
   // The first-load theme flip is RETIRED and no longer stamps sot_theme_intro2
   // (lib/stage-theme.js), so waiting on that key held this card back forever
   // for every browser that arrived after 2026-09-01. The theme bubble that
   // replaced it is read off the DOM instead, like everything else here.
   // .gpp-scrim: the Groups launch card (app/GroupsPop.jsx). Never two cards at once.
-  return !!document.querySelector('.ent-door, .gpp-scrim, .stg-tpop');
+  return snapUp() || !!document.querySelector('.ent-door, .gpp-scrim, .stg-tpop');
 }
 
 export default function PremierePop() {
@@ -196,7 +219,7 @@ export default function PremierePop() {
     const varsR = { '--prm-acci': lightR ? categoryAccentInkLight(catR) : accR, '--prm-acc': accR, '--prm-on': onR, '--prm-tint': `color-mix(in srgb, ${accR} 16%, transparent)` };
     const whenR = run.from === etToday() ? 'today' : dateLabel(run.from);
     return (
-      <div className="prm-scrim" onClick={() => setRun(null)}>
+      <div className="prm-scrim" {...scrimClose(() => setRun(null))}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
         <div className="prm" role="dialog" aria-labelledby="prm-t" style={varsR} onClick={(e) => e.stopPropagation()}>
           <div className="prm-in">
@@ -255,7 +278,7 @@ export default function PremierePop() {
   const vars = oneCat ? varsFor(cat) : { '--prm-acc': 'var(--stg-ink, #0b0d12)' };
 
   return (
-    <div className="prm-scrim" onClick={() => setGames(null)}>
+    <div className="prm-scrim" {...scrimClose(() => setGames(null))}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="prm" role="dialog" aria-labelledby="prm-t" style={vars} onClick={(e) => e.stopPropagation()}>
         <div className="prm-in">
@@ -322,7 +345,7 @@ function SudokuLaunch({ run, onClose }) {
   const color = run.keys.filter((k) => !SMALL_OF[k] && DAILY_GAME_MAP[k]);
   const when = run.from === etToday() ? 'New today' : 'New this week';
   return (
-    <div className="prm-scrim" onClick={onClose}>
+    <div className="prm-scrim" {...scrimClose(onClose)}>
       <style dangerouslySetInnerHTML={{ __html: CSS + LAUNCH_CSS }} />
       <div className="prm" role="dialog" aria-labelledby="prm-t" style={vars} onClick={(e) => e.stopPropagation()}>
         <div className="prm-in">

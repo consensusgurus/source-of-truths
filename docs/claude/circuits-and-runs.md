@@ -780,3 +780,24 @@ Roll, Parker, Tangled, then Topple (owner's order), back to back on one page. Ci
   LEAD_CIRCUITS, MoreRuns, RUN_PAGES (sitemap and FAQ tail), EntryDoor, CircuitArt, the
   DrawingPop / ThanksPop run-path regexes, challenge ENGINE_CAT (Logic). Redirects
   `/space-cadet` and `/spatial` land on it.
+
+## Enter the Dojo: In Color (`/dojocolor`): the Dojo on the color twins (owner, 2026-11-08)
+
+"Same as Enter the Dojo, just the color version." SixesToo, SudsToo, then ONE color variant dealt by
+the Eastern date from `DOJO_COLOR_POOL` in `lib/dojo.js`: MercuryToo, WindowToo, DiagToo, RacecarToo,
+KnightToo. That is the Dojo pool's three color twins (Mercury, Diag, Knight) plus Window and Racecar,
+the other 9x9 one-extra-rule sudokus with a color twin; Sando, Quilt, Arrow, Sumo and Frame have none,
+and Rim stays out as in the Dojo. Circuit id `dojocolor`, engine `dojo`, scorer `dojo`,
+`scoreFrom: '2026-11-08'`, trophy `circuit-dojocolor` "Three Colors" (gold, Medal). Not a `lead`
+circuit: it sits in SHOWN, PILL_CIRCUITS and MoreRuns beside the Dojo.
+
+- **One client, two runs.** `app/dojo/DojoClient.jsx` takes `runId` ('dojo' default) and reads name,
+  path, store key (`sot_run_<id>_<day>`), board, challenge and finale off `DOJO_RUNS[runId]`.
+  `app/dojocolor/{page.js,leaderboard/page.js,card/route.js}` are the Dojo's with the color banks,
+  name and address.
+- **Each slot deals from its own pool**: `circuitKeysFor` calls `dojoVariantFor(day, c.slot)`, which
+  walks that slot's own dated `before` chain (`slotPoolFor`). The Dojo deals exactly as before.
+- **Same weights, belts and adaptive clocks.** `DOJO_WEIGHT` carries sixestoo 25 and sudstoo 35; the
+  color keys are in `DOJO_CLOCK`, seeded at the number twin's clock plus a fifth (Window and Racecar
+  at Diag's), and `primeCircuitClocks` primes for both Dojo ids.
+- **DojoPop** offers the color Dojo after a color sudoku (any key ending `too`), the Dojo after any other.
