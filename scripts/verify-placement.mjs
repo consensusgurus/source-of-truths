@@ -38,7 +38,7 @@ const fail = (m) => fails.push(m);
 const grid = read('app/DailyGamesGrid.jsx');
 const catLists = {};
 for (const m of grid.matchAll(/\{ key: '([a-z-]+)', label: '([^']+)', keys: \[([^\]]*)\]/g)) {
-  catLists[m[2]] = new Set([...m[3].matchAll(/'([a-z]+)'/g)].map((x) => x[1]));
+  catLists[m[2]] = new Set([...m[3].matchAll(/'([a-z0-9]+)'/g)].map((x) => x[1]));
 }
 const archive = read('app/archive/page.js');
 const maps = ['lib/daily-slate.js', 'app/api/quiz/daily-game/route.js', 'app/api/quiz/daily-unplayed/route.js', 'app/api/quiz/sunday-slate/route.js'].map((f) => [f, read(f)]);

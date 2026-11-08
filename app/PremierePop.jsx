@@ -186,6 +186,7 @@ export default function PremierePop() {
     return () => window.removeEventListener('keydown', k);
   }, [games, run]);
 
+  if (run && run.special === 'sudoku') return <SudokuLaunch run={run} onClose={() => setRun(null)} />;
   if (run) {
     let lightR = true;
     try { const el = document.querySelector('.stage-page'); lightR = !el || el.getAttribute('data-stage-theme') !== 'dark'; } catch (e) {}
@@ -198,6 +199,7 @@ export default function PremierePop() {
       <div className="prm-scrim" onClick={() => setRun(null)}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
         <div className="prm" role="dialog" aria-labelledby="prm-t" style={varsR} onClick={(e) => e.stopPropagation()}>
+          <div className="prm-in">
           <div className="prm-top">
             <div className="prm-eye"><i /><span>{whenR === 'today' ? 'New today' : 'New this week'} · Daily run</span></div>
             <button className="prm-x" aria-label="Close" onClick={() => setRun(null)}><X size={16} strokeWidth={2.8} /></button>
@@ -214,6 +216,7 @@ export default function PremierePop() {
           </div>
           <a className="prm-go" href={run.href} onClick={() => setRun(null)}>Play {run.name}</a>
           {run.foot ? <div className="prm-foot">{run.foot}</div> : null}
+          </div>
         </div>
       </div>
     );
@@ -255,6 +258,7 @@ export default function PremierePop() {
     <div className="prm-scrim" onClick={() => setGames(null)}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="prm" role="dialog" aria-labelledby="prm-t" style={vars} onClick={(e) => e.stopPropagation()}>
+        <div className="prm-in">
         <div className="prm-top">
           <div className="prm-eye"><i /><span>{when === 'today' ? 'New today' : 'New this week'}{oneCat ? ` · ${cat}` : ''}</span></div>
           <button className="prm-x" aria-label="Close" onClick={() => setGames(null)}><X size={16} strokeWidth={2.8} /></button>
@@ -275,10 +279,124 @@ export default function PremierePop() {
         </div>
         {!many ? <a className="prm-go" style={varsFor(rows[0].cat || 'Trivia')} href={rows[0].href} onClick={() => setGames(null)}>Play {rows[0].name}</a> : null}
         <div className="prm-foot">{many ? `${allOf} are in ${shelves} every day.` : `It is in ${shelves} every day.`}</div>
+        </div>
       </div>
     </div>
   );
 }
+
+// THE SUDOKU LAUNCH CARD (owner, 2026-11-08). One card for the whole drop:
+// two sample boards (a 6x6 Kayak and a 9x9 color board), the 6x6 list, then the
+// color list, and one button to the Sudoku page. 6x6 leads (owner: "6x6 should
+// be the first emphasis"); American spelling throughout.
+const LAUNCH_P9 = ['#b1e5fd', '#f1d289', '#a8f1d4', '#fdaab6', '#d9b5fd', '#d8f7a2', '#f1b0fb', '#c9d2fd', '#fdbd92'];
+const LAUNCH_S9 = [[5,3,4,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],[8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],[9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]];
+const LAUNCH_M9 = '101001010010110001100010100001101000010000010000101100010001100011010010100100101';
+const LAUNCH_S6 = [[1,2,3,4,5,6],[4,5,6,1,2,3],[2,3,1,5,6,4],[5,6,4,2,3,1],[3,1,2,6,4,5],[6,4,5,3,1,2]];
+const LAUNCH_M6 = '100101010010001100100010010100101001';
+const LAUNCH_LINE = new Set(['1,1', '2,2', '2,3', '1,4']);
+const SMALL_OF = { kayak: 'Racecar', lip: 'Rim', fever: 'Mercury', snack: 'Sando', coop: 'Cages', dart: 'Arrow', trim: 'Frame', bout: 'Sumo', dot: 'Polka' };
+
+function MiniBoard({ n, bw, bh, cell, over }) {
+  const W = 90, pad = 2, c = (W - 2 * pad) / n, out = [];
+  for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) { const el = cell(r, k, pad + k * c, pad + r * c, c); if (el) out.push(el); }
+  const lines = [];
+  for (let k = 1; k < n; k++) {
+    const hc = k % bw === 0, hr = k % bh === 0;
+    lines.push(<line key={'v' + k} x1={pad + k * c} y1={pad} x2={pad + k * c} y2={W - pad} stroke={hc ? '#08222e' : '#c9d0db'} strokeWidth={hc ? 1.4 : 0.5} />);
+    lines.push(<line key={'h' + k} x1={pad} y1={pad + k * c} x2={W - pad} y2={pad + k * c} stroke={hr ? '#08222e' : '#c9d0db'} strokeWidth={hr ? 1.4 : 0.5} />);
+  }
+  return (
+    <svg viewBox="0 0 90 90" aria-hidden="true">
+      <rect x={pad} y={pad} width={W - 2 * pad} height={W - 2 * pad} rx="3" fill="#ffffff" />
+      {out}{over ? over(c, pad) : null}{lines}
+      <rect x={pad} y={pad} width={W - 2 * pad} height={W - 2 * pad} rx="3" fill="none" stroke="#08222e" strokeWidth="2" />
+    </svg>
+  );
+}
+
+function SudokuLaunch({ run, onClose }) {
+  const acc = categoryColor('Sudoku');
+  const vars = { '--prm-acc': acc, '--prm-on': RAMP_INK, '--prm-tint': `color-mix(in srgb, ${acc} 18%, transparent)` };
+  const small = run.keys.filter((k) => SMALL_OF[k] && DAILY_GAME_MAP[k]);
+  const color = run.keys.filter((k) => !SMALL_OF[k] && DAILY_GAME_MAP[k]);
+  const when = run.from === etToday() ? 'New today' : 'New this week';
+  return (
+    <div className="prm-scrim" onClick={onClose}>
+      <style dangerouslySetInnerHTML={{ __html: CSS + LAUNCH_CSS }} />
+      <div className="prm" role="dialog" aria-labelledby="prm-t" style={vars} onClick={(e) => e.stopPropagation()}>
+        <div className="prm-in">
+          <div className="prm-top">
+            <div className="prm-eye"><i /><span>{when} · Sudoku</span></div>
+            <button className="prm-x" aria-label="Close" onClick={onClose}><X size={16} strokeWidth={2.8} /></button>
+          </div>
+          <h2 id="prm-t">{run.name}</h2>
+          <p className="prm-lede">{run.lede}</p>
+          <div className="sl-feat">
+            <a className="sl-ft" href="/sudoku" onClick={onClose}>
+              <MiniBoard n={6} bw={3} bh={2}
+                cell={(r, k, x, y, c) => (LAUNCH_M6[r * 6 + k] === '1' && !LAUNCH_LINE.has(r + ',' + k)
+                  ? <text key={r + '-' + k} x={x + c / 2} y={y + c / 2 + 4} textAnchor="middle" fontFamily="Manrope, sans-serif" fontWeight="800" fontSize="11" fill="#0b1220">{LAUNCH_S6[r][k]}</text> : null)}
+                over={(c, pad) => { const p = (r, k) => `${pad + k * c + c / 2},${pad + r * c + c / 2}`; return <polyline points={`${p(1, 1)} ${p(2, 2)} ${p(2, 3)} ${p(1, 4)}`} fill="none" stroke="rgba(59,70,86,0.30)" strokeWidth={c * 0.38} strokeLinecap="round" strokeLinejoin="round" />; }} />
+              <b>In 6x6</b><span>{small.length} new variants, about two minutes each</span>
+            </a>
+            <a className="sl-ft" href="/sudoku" onClick={onClose}>
+              <MiniBoard n={9} bw={3} bh={3}
+                cell={(r, k, x, y, c) => (LAUNCH_M9[r * 9 + k] === '1' ? <rect key={r + '-' + k} x={x} y={y} width={c} height={c} fill={LAUNCH_P9[(LAUNCH_S9[r][k] + 2) % 9]} /> : null)} />
+              <b>In color</b><span>{color.length} games, a second daily for each</span>
+            </a>
+          </div>
+          <div className="sl-sec">
+            <div className="sl-h"><b>In 6x6</b><span>{small.length} new</span></div>
+            <div className="sl-chips">
+              {small.map((k) => (
+                <a key={k} className="sl-chip" href={'/' + k} onClick={onClose}><span className="sl-six">6x6</span>{DAILY_GAME_MAP[k].name} <small>{SMALL_OF[k]}</small></a>
+              ))}
+            </div>
+          </div>
+          <div className="sl-sec">
+            <div className="sl-h"><b>In color</b><span>{color.length} new</span></div>
+            <div className="sl-chips">
+              {color.map((k, j) => (
+                <a key={k} className="sl-chip" href={'/' + k} onClick={onClose}>
+                  <span className="sl-sw" aria-hidden="true">{[0, 1, 2, 3].map((q) => <i key={q} style={{ background: LAUNCH_P9[(j + q * 2) % 9] }} />)}</span>
+                  {DAILY_GAME_MAP[k].name}
+                </a>
+              ))}
+            </div>
+          </div>
+          <a className="prm-go" href={run.href} onClick={onClose}>See all 39 sudokus</a>
+          <div className="sl-alt"><a href="/mercurytoo" onClick={onClose}>Play MercuryToo</a><a href="/gianttoo" onClick={onClose}>Play GiantToo</a></div>
+          {run.foot ? <div className="prm-foot">{run.foot}</div> : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const LAUNCH_CSS = `
+.sl-feat{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sl-ft{display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:1px solid var(--stg-ink,#08222e);border-radius:14px;padding:10px 10px 12px;
+  background:var(--prm-tint);color:inherit;text-decoration:none;}
+.sl-ft svg{width:100%;height:auto;display:block;margin-bottom:6px;}
+.sl-ft b{font-size:16px;font-weight:800;line-height:1.2;}
+.sl-ft span{font-size:12px;font-weight:600;opacity:.78;line-height:1.3;}
+.sl-sec{margin-top:14px;}
+.sl-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:7px;}
+.sl-h b{font-size:15px;font-weight:800;}
+.sl-h span{font-size:12px;font-weight:700;opacity:.7;}
+.sl-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.sl-chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;padding:6px 11px 6px 7px;border-radius:999px;
+  border:1px solid var(--stg-ink,#08222e);background:var(--stg-surf,#ffffff);color:inherit;text-decoration:none;}
+.sl-chip small{font-size:11px;font-weight:700;opacity:.65;}
+.sl-six{font-size:10px;font-weight:800;padding:2px 5px;border-radius:999px;background:var(--prm-acc);color:var(--prm-on);}
+.sl-sw{display:inline-grid;grid-template-columns:repeat(2,7px);grid-template-rows:repeat(2,7px);gap:1px;border-radius:3px;overflow:hidden;}
+.sl-sw i{display:block;}
+.sl-alt{display:flex;gap:8px;margin-top:8px;}
+.sl-alt a{flex:1;display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:999px;border:1px solid var(--stg-ink,#08222e);
+  color:inherit;font-size:14px;font-weight:800;text-decoration:none;}
+.sl-ft:focus-visible,.sl-chip:focus-visible,.sl-alt a:focus-visible{outline:3px solid var(--stg-acc-ink,var(--stg-acc,#2563eb));outline-offset:2px;}
+`;
 
 function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
 
@@ -292,10 +410,15 @@ function dateLabel(iso) {
 const CSS = `
 .prm-scrim{position:fixed;inset:0;z-index:8000;display:flex;align-items:center;justify-content:center;padding:16px;
   background:rgba(6,10,18,.58);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
-.prm{width:min(460px,100%);max-height:88vh;overflow-y:auto;box-sizing:border-box;position:relative;
-  background:var(--stg-surf,#ffffff);color:var(--stg-ink,#08222e);border:1px solid var(--stg-ink,#08222e);border-radius:16px;
-  padding:18px 20px 18px;box-shadow:0 18px 50px rgba(0,0,0,.28);animation:prm-in .28s ease-out;
+.prm{width:min(460px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box;position:relative;
+  /* The dark look's --stg-surf is a 4.5% white wash, so on its own the card was
+     see-through over the home tiles; it now sits on the page ground. */
+  background:linear-gradient(var(--stg-surf,#ffffff),var(--stg-surf,#ffffff)),var(--stg-ground,#ffffff);color:var(--stg-ink,#08222e);border:1px solid var(--stg-ink,#08222e);border-radius:16px;
+  padding:0;box-shadow:0 18px 50px rgba(0,0,0,.28);animation:prm-in .28s ease-out;
   font-family:'Manrope',system-ui,-apple-system,sans-serif;}
+/* The scroller sits INSIDE the rounded frame (owner, 2026-11-08): a scrollbar on
+   the frame itself squared off its right corners. */
+.prm-in{overflow-y:auto;padding:18px 20px 18px;scrollbar-width:thin;}
 @keyframes prm-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.prm{animation:none}}
 .prm-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -324,7 +447,7 @@ const CSS = `
 .prm-foot{margin-top:12px;font-size:12.5px;font-weight:600;opacity:.7;line-height:1.4;text-align:center;}
 .prm-play:focus-visible,.prm-go:focus-visible,.prm-x:focus-visible{outline:3px solid var(--stg-acc-ink,var(--stg-acc,#2563eb));outline-offset:2px;}
 @media (max-width:420px){
-  .prm{padding:16px 14px 16px;}
+  .prm-in{padding:16px 14px 16px;}
   .prm-row{grid-template-columns:40px 1fr auto;gap:10px;}
   .prm-gl{width:40px;height:40px;}
   .prm-play{padding:0 13px;}

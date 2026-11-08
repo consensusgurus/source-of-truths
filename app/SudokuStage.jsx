@@ -16,11 +16,12 @@
 // Outside clues (Sando, Frame, Rim, Towers) sit in gutters measured in cells.
 // SOLID strokes only, anywhere (owner: no dotted or dashed lines).
 
-import React, { useRef, useId } from 'react';
+import React, { useRef, useId, useState, useEffect } from 'react';
 import PlayStage from './PlayStage';
 import { useStageLook, isDarkLook } from '@/lib/stage-look';
 import usePlayStageFit from '@/lib/play-stage-fit';
 import { gameColor } from '@/lib/category-ramp';
+import { COLOUR_SHAPES, colourName, SHAPES_KEY } from '@/lib/colour-sudoku';
 
 // The day line over the board: "Saturday · No. 110 · classic".
 export function sudokuEyebrow(puzzle, tag) {
@@ -44,6 +45,7 @@ export const SK_ICON = {
   hint: sv(<path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />),
   zoom: sv(<><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /><path d="M11 8.5v5M8.5 11h5" /></>),
   whole: sv(<><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M12 4v16M4 12h16" /></>),
+  shapes: sv(<><circle cx="7.5" cy="7.5" r="3.5" /><path d="M16.5 4l4 7h-8z" /><rect x="4" y="14" width="7" height="7" /><path d="M17 14l3.5 3.5L17 21l-3.5-3.5z" /></>),
 };
 
 // Board tokens per look. Light: white base, #8e9aab thin rules, ink walls,
@@ -51,8 +53,8 @@ export const SK_ICON = {
 // player digits the periwinkle itself (PlayStage's --pst-deep).
 function boardVars(dark) {
   return dark
-    ? { '--sks-base': '#0f1420', '--sks-thin': '#4b566a', '--sks-wall': 'var(--pst-ink)', '--sks-note': '#a9b3c4', '--sks-mark': '#5b6680', '--sks-mark2': '#8592a4', '--sks-off': '#1a2130', '--sks-off-line': '#3a4458', '--sks-off-ink': '#6b7588', '--sks-halo': '#0f1420', '--sks-good': '#4ade80', '--sks-hi-pale': '#b4bed0', '--sks-hi-acc': '#1a2130' }
-    : { '--sks-base': '#ffffff', '--sks-thin': '#8e9aab', '--sks-wall': 'var(--pst-ink)', '--sks-note': '#3b4656', '--sks-mark': '#c9d1dc', '--sks-mark2': '#8592a4', '--sks-off': '#f1f4f8', '--sks-off-line': '#c5cdd8', '--sks-off-ink': '#8e9aab', '--sks-halo': '#ffffff', '--sks-good': '#15803d', '--sks-hi-pale': '#7b879b', '--sks-hi-acc': '#3b4656' };
+    ? { '--sks-base': '#0f1420', '--sks-thin': '#4b566a', '--sks-wall': 'var(--pst-ink)', '--sks-note': '#a9b3c4', '--sks-mark': '#5b6680', '--sks-mark2': '#8592a4', '--sks-off': '#1a2130', '--sks-off-line': '#3a4458', '--sks-off-ink': '#6b7588', '--sks-halo': '#0f1420', '--sks-good': '#4ade80', '--sks-hi-pale': '#b4bed0', '--sks-hi-acc': '#1a2130', '--sks-peer': '#232b3c' }
+    : { '--sks-base': '#ffffff', '--sks-thin': '#8e9aab', '--sks-wall': 'var(--pst-ink)', '--sks-note': '#3b4656', '--sks-mark': '#c9d1dc', '--sks-mark2': '#8592a4', '--sks-off': '#f1f4f8', '--sks-off-line': '#c5cdd8', '--sks-off-ink': '#8e9aab', '--sks-halo': '#ffffff', '--sks-good': '#15803d', '--sks-hi-pale': '#7b879b', '--sks-hi-acc': '#3b4656', '--sks-peer': '#e9ecf1' };
 }
 
 /**
@@ -85,7 +87,7 @@ export function SudokuBoard({
   n = 9, region = null, given = [], cells = [], notes = [], noteCols = null, noteN = null,
   sel = -1, hl = 0, peer = null, fill = null, cellClass = null, cellProps = null, onCell = null,
   glyph = null, gutter = null, outside = null, under = null, over = null, thin = true,
-  cellLabel = null, hiMarks = false, disabled = false, digitScale = 0.56, noteScale = 0.26, className = '', style = null, boardRef = null,
+  cellLabel = null, hiMarks = false, disabled = false, palette = null, shapes = false, digitScale = 0.56, noteScale = 0.26, className = '', style = null, boardRef = null,
 }) {
   const reg = region || boxRegion(n === 6 ? 3 : Math.round(Math.sqrt(n)), n === 6 ? 2 : Math.round(Math.sqrt(n)), n);
   const gt = (gutter && gutter.t) || 0, gr = (gutter && gutter.r) || 0, gb = (gutter && gutter.b) || 0, gl = (gutter && gutter.l) || 0;
@@ -103,11 +105,26 @@ export function SudokuBoard({
   const fills = [];
   const paleRects = [];
   const uid = String(useId()).replace(/[^a-zA-Z0-9]/g, '');
+  // COLOUR MODE (lib/colour-sudoku.js): palette[d - 1] paints digit d. A printed
+  // clue fills its square, an entry is a rounded tile inside it, both drawn here
+  // under the marks so a line or thermometer still reads over the color. The
+  // selected square keeps its color and gets an ink ring (CSS); the lit squares
+  // are a neutral grey, and only when empty.
+  const pal = Array.isArray(palette) && palette.length ? palette : null;
   for (let i = 0; i < N; i++) {
     const custom = fill ? fill(i) : null;
+    const x = i % n, y = Math.floor(i / n);
+    if (pal) {
+      const gv = given[i] || 0, v = gv || cells[i] || 0;
+      if (gv) { fills.push(<rect key={i} x={x} y={y} width="1" height="1" fill={pal[v - 1]} />); continue; }
+      const base = custom || (!v && i !== sel && isPeer(i) ? 'var(--sks-peer)' : null);
+      if (base) fills.push(<rect key={i} x={x} y={y} width="1" height="1" fill={base} />);
+      if (v) fills.push(<rect key={'t' + i} x={x + 0.12} y={y + 0.12} width="0.76" height="0.76" rx="0.16" fill={pal[v - 1]} stroke="rgba(11,18,32,0.22)" strokeWidth="1" vectorEffect="non-scaling-stroke" />);
+      continue;
+    }
     const col = i === sel ? 'var(--pst-acc)' : (custom || (isPeer(i) ? 'var(--pst-pale)' : null));
-    if (col) fills.push(<rect key={i} x={i % n} y={Math.floor(i / n)} width="1" height="1" fill={col} />);
-    if (hiMarks && i !== sel && !custom && isPeer(i)) paleRects.push(<rect key={i} x={i % n} y={Math.floor(i / n)} width="1" height="1" />);
+    if (col) fills.push(<rect key={i} x={x} y={y} width="1" height="1" fill={col} />);
+    if (hiMarks && i !== sel && !custom && isPeer(i)) paleRects.push(<rect key={i} x={x} y={y} width="1" height="1" />);
   }
   const hiPale = hiMarks && typeof hiMarks === 'object' && hiMarks.pale ? hiMarks.pale : 'var(--sks-hi-pale)';
   const hiAcc = hiMarks && typeof hiMarks === 'object' && hiMarks.acc ? hiMarks.acc : 'var(--sks-hi-acc)';
@@ -122,10 +139,10 @@ export function SudokuBoard({
   const nd = noteN || n;
   const nc = noteCols || Math.ceil(Math.sqrt(nd));
   const nr = Math.ceil(nd / nc);
-  const g = glyph || ((d) => d);
+  const g = glyph || (pal ? colourName : ((d) => d));
   const kids = (x) => (typeof x === 'function' ? x(geom) : x);
   return (
-    <div className={'sks-bd ' + className} ref={boardRef} role="grid" aria-label={`Sudoku grid, ${n} by ${n}`}
+    <div className={'sks-bd ' + (pal ? 'pal ' : '') + (pal && shapes ? 'shp ' : '') + className} ref={boardRef} role="grid" aria-label={`Sudoku grid, ${n} by ${n}`}
       style={{ '--sks-w': W, '--sks-h': H, aspectRatio: `${W} / ${H}`, ...style }}>
       <svg className="sks-paint" viewBox={`${-gl} ${-gt} ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
         <rect x="0" y="0" width={n} height={n} fill="var(--sks-base)" />
@@ -158,7 +175,11 @@ export function SudokuBoard({
             <button key={i} type="button" className={cls} disabled={disabled}
               aria-label={cellLabel ? cellLabel(i) : `Row ${r + 1}, column ${c + 1}, ${gv ? `printed ${g(gv)}` : v ? g(v) : 'empty'}${i === sel ? ', selected' : ''}`}
               onClick={onCell ? () => onCell(i) : undefined} {...extra}>
-              {v ? <span className="d">{g(v)}</span> : nm ? (
+              {pal ? (v ? (shapes ? <ColourMark d={v} /> : null) : nm ? (
+                <span className="nt" style={{ gridTemplateColumns: `repeat(${nc}, 1fr)`, gridTemplateRows: `repeat(${nr}, 1fr)` }}>
+                  {Array.from({ length: nd }).map((__, k) => <i key={k} className={nm & (1 << (k + 1)) ? 'dot' : undefined} style={nm & (1 << (k + 1)) ? { background: pal[k] } : undefined} />)}
+                </span>
+              ) : null) : v ? <span className="d">{g(v)}</span> : nm ? (
                 <span className="nt" style={{ gridTemplateColumns: `repeat(${nc}, 1fr)`, gridTemplateRows: `repeat(${nr}, 1fr)` }}>
                   {Array.from({ length: nd }).map((__, k) => <i key={k}>{nm & (1 << (k + 1)) ? g(k + 1) : ''}</i>)}
                 </span>
@@ -184,22 +205,29 @@ export function SudokuBoard({
   );
 }
 
+// The faint ink mark a color wears when the Shapes tool is on.
+export function ColourMark({ d, className = 'sks-shp' }) {
+  return <svg className={className} viewBox="0 0 24 24" aria-hidden="true"><path d={COLOUR_SHAPES[(d - 1) % COLOUR_SHAPES.length]} /></svg>;
+}
+
 /**
  * SudokuPad: the digit pad. keys = [{ d, left, done, armed, label }], onDigit(d), cols (default keys.length).
  * Square keys, digit big, squares-left small: in the corner when there are 8 or
  * more keys across, "N left" under the digit when fewer. A finished digit greys
  * out and is struck. The armed digit is full periwinkle.
  */
-export function SudokuPad({ keys = [], onDigit, cols = null, note = false, glyph = null }) {
+export function SudokuPad({ keys = [], onDigit, cols = null, note = false, glyph = null, palette = null, shapes = false }) {
   const k = cols || keys.length;
-  const g = glyph || ((d) => d);
+  const pal = Array.isArray(palette) && palette.length ? palette : null;
+  const g = glyph || (pal ? colourName : ((d) => d));
   return (
-    <div className={'sks-pad' + (k >= 8 ? ' wide' : '')} style={{ gridTemplateColumns: `repeat(${k}, minmax(0, 1fr))` }} aria-label="Numbers, with squares left">
+    <div className={'sks-pad' + (k >= 8 ? ' wide' : '') + (pal ? ' pal' : '')} style={{ gridTemplateColumns: `repeat(${k}, minmax(0, 1fr))` }} aria-label="Numbers, with squares left">
       {keys.map((x) => (
         <button key={x.d} type="button" className={'sks-dk' + (x.done ? ' done' : '') + (x.armed ? ' armed' : '') + (note ? ' note' : '')}
           onClick={() => { if (!x.done && onDigit) onDigit(x.d); }} aria-disabled={x.done || undefined}
-          aria-label={x.label || `${note ? 'Pencil' : 'Enter'} ${g(x.d)}${x.left != null ? `, ${x.left} left` : ''}${x.done ? ', all placed' : ''}`}>
-          <b>{g(x.d)}</b>
+          aria-label={x.label || `${note ? 'Pencil' : 'Enter'} ${g(x.d)}${x.left != null ? `, ${x.left} left` : ''}${x.done ? ', all placed' : ''}`}
+          style={pal ? { background: pal[x.d - 1] } : undefined}>
+          {pal ? (shapes ? <ColourMark d={x.d} className="sks-shp k" /> : null) : <b>{g(x.d)}</b>}
           {x.left != null && !x.done ? <small>{k >= 8 ? x.left : `${x.left} left`}</small> : (k < 8 ? <small>{x.done ? 'done' : ''}</small> : null)}
         </button>
       ))}
@@ -254,6 +282,7 @@ export default function SudokuStage({
   gameKey, label, eyebrow = null, board = {}, pad = null, tools = null, extraTools = null,
   playing = true, line = null, giveUp = null, clock = null, done = null,
   above = null, between = null, below = null, wide = false, nav = null, look = null, inline = false,
+  palette = null, paletteDark = null,
 }) {
   const [storedLook] = useStageLook();
   const lk = look || storedLook;
@@ -266,16 +295,24 @@ export default function SudokuStage({
   const W = (board.gutter ? (board.gutter.l || 0) + (board.gutter.r || 0) : 0) + (board.n || 9);
   const H = (board.gutter ? (board.gutter.t || 0) + (board.gutter.b || 0) : 0) + (board.n || 9);
   const fitW = fit ? Math.floor(fit * W / H) : null;
+  // Color mode: the dark looks wear the raw ramp steps, the light looks the pastels.
+  const pal = palette ? (dark && paletteDark ? paletteDark : palette) : null;
+  const [shapes, setShapes] = useState(false);
+  useEffect(() => { if (!pal) return; try { setShapes(localStorage.getItem(SHAPES_KEY) === '1'); } catch (e) {} }, [!!pal]);
+  const flipShapes = () => setShapes((v) => { try { localStorage.setItem(SHAPES_KEY, v ? '0' : '1'); } catch (e) {} return !v; });
+  // Shapes has one mark per color for nine colors; GiantToo's sixteen go without it.
+  const canShape = !!pal && pal.length <= COLOUR_SHAPES.length;
+  const extra = canShape ? [...(extraTools || []), { key: 'shapes', label: 'Shapes', icon: SK_ICON.shapes, on: shapes, pressed: shapes, onPress: flipShapes, title: 'A faint mark on each color, for telling colors apart' }] : extraTools;
   return (
     <PlayStage bg={gameColor(gameKey)} label={label} eyebrow={eyebrow} nav={nav} look={look} wide={wide} inline={inline}
       top={(
         <div className="sks" ref={ref} style={{ ...boardVars(dark), '--sks-ent': mono ? 'var(--pst-mute)' : 'var(--pst-deep)', ...(fitW ? { '--sks-fit': `${fitW}px` } : null) }}>
           <style dangerouslySetInnerHTML={{ __html: SKS_CSS }} />
           {above}
-          <SudokuBoard {...board} disabled={board.disabled != null ? board.disabled : !playing} />
+          <SudokuBoard {...board} palette={pal} shapes={canShape && shapes} disabled={board.disabled != null ? board.disabled : !playing} />
           {between}
-          {playing && pad ? <SudokuPad {...pad} /> : null}
-          {playing && (tools || extraTools) ? <SudokuTools tools={tools} extra={extraTools} /> : null}
+          {playing && pad ? <SudokuPad {...pad} palette={pal} shapes={canShape && shapes} /> : null}
+          {playing && (tools || extra) ? <SudokuTools tools={tools} extra={extra} /> : null}
           {below}
         </div>
       )}
@@ -351,4 +388,17 @@ export const SKS_CSS = `
 .pst .sks-tb:disabled{opacity:.4;cursor:default;}
 @media (hover:hover) and (pointer:fine){.pst .sks-dk:not(.done):hover,.pst .sks-tb:not(:disabled):not(.on):not(.warn):hover{background:var(--pst-pale);}}
 @media (max-height:740px){.sks{gap:9px;}.pst .sks-tb{height:48px;}}
+/* COLOUR MODE (lib/colour-sudoku.js) */
+.sks-bd.pal .sks-cl.sel::before{content:'';position:absolute;inset:0;box-shadow:inset 0 0 0 3.5px var(--pst-ink);pointer-events:none;z-index:2;}
+.sks-bd.pal .sks-cl .nt{inset:8%;}
+.sks-bd.pal .sks-cl .nt i.dot{width:64%;aspect-ratio:1/1;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(11,18,32,.28);}
+.sks-bd.pal .sks-cl.bad::before{content:'';position:absolute;inset:8%;border:2.5px solid var(--pst-bad);border-radius:20%;pointer-events:none;}
+.sks-shp{width:36%;height:36%;fill:#0b1220;opacity:.58;pointer-events:none;}
+.sks-shp.k{position:absolute;inset:0;margin:auto;width:40%;height:40%;}
+.sks-pad.pal .sks-dk{justify-content:flex-end;padding-bottom:5px;}
+.sks-pad.pal .sks-dk small{color:#0b1220;background:rgba(255,255,255,.75);border-radius:999px;padding:2px 5px;position:relative;z-index:1;}
+.sks-pad.pal.wide .sks-dk small{position:absolute;right:3px;bottom:3px;padding:1px 4px;font-size:10px;}
+.pst .sks-pad.pal .sks-dk.armed{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.pst .sks-pad.pal .sks-dk.done{opacity:.3;}
+.sks-dot{display:inline-block;width:1.15em;height:1.15em;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(11,18,32,.3);}
 `;

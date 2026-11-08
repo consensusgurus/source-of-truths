@@ -37,6 +37,7 @@
 // NOTHING HERE MAY NAME AN ANSWER. These pages describe the games, never a
 // day's board.
 
+import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import CircuitFrame from '../circuits/CircuitFrame';
 import GameGlyph from '../GameGlyph';
@@ -47,6 +48,7 @@ import { useThemeQs } from '@/lib/stage-theme';
 import { PUZZLE_CATEGORIES, SUBSET_PARENT } from '@/lib/puzzle-categories';
 import { setsIn } from '@/lib/puzzle-sets';
 import { dailyScoreText } from '@/lib/daily-games';
+import { SUDOKU_SIZE, SUDOKU_COLOUR } from '@/lib/colour-sudoku';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 // The ledger takes over at this many games; below it, feature + row.
@@ -276,8 +278,17 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
   // A Gauntlet is already a run by name; the rest are named as circuits.
   const runCta = (id) => (id === 'room' ? 'Walk into Read the Room' : /^Enter /.test(circuitName(id)) ? circuitName(id) : /gauntlet|encore/i.test(circuitName(id)) ? `Run the ${circuitName(id)}` : `Play ${circuitName(id)}`);
   const circuitCta = circuit ? runCta(circuit) : '';
+  // THE SUDOKU FILTERS (owner, 2026-11-08): size and number/colour chips, on
+  // the whole-category Sudoku page only. Filtering only hides rows; it never
+  // reorders or regroups, and an emptied group drops out.
+  const facets = page.slug === 'sudoku' && !parent;
+  const [size, setSize] = useState('all');
+  const [ink, setInk] = useState('all');
+  const keep = (g) => !facets || ((size === 'all' || SUDOKU_SIZE[g.key] === Number(size)) && (ink === 'all' || (ink === 'color') === SUDOKU_COLOUR.has(g.key)));
+  const shown = games.filter(keep);
   const ledger = games.length >= LEDGER_AT;
-  const shelves = groups && groups.length > 1 ? groups : [[{ name: 'Pick a puzzle', href: null }, games]];
+  const shelves = (groups && groups.length > 1 ? groups : [[{ name: 'Pick a puzzle', href: null }, games]])
+    .map(([set, list]) => [set, list.filter(keep)]).filter(([, list]) => list.length);
   const h1 = page.eyebrow || page.h1;
 
   return (
@@ -319,9 +330,22 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
           </nav>
         ) : null}
 
+        {facets ? (
+          <div className="pcl-facets" role="group" aria-label="Filter the sudokus">
+            {[['size', size, setSize, [['all', 'All sizes'], ['6', '6x6'], ['9', '9x9']]], ['ink', ink, setInk, [['all', 'All'], ['number', 'Numbers'], ['color', 'Color']]]].map(([id, val, set, opts]) => (
+              <div key={id} className="pcl-facet">
+                {opts.map(([v, l]) => (
+                  <button key={v} type="button" className={val === v ? 'on' : ''} aria-pressed={val === v} onClick={() => set(v)}>{l}</button>
+                ))}
+              </div>
+            ))}
+            <span className="pcl-facet-n">{shown.length} of {games.length}</span>
+          </div>
+        ) : null}
+
         {ledger
-          ? <Ledger shelves={shelves} label={label} games={games} data={data} withTq={withTq} />
-          : <Feature games={games} data={data} withTq={withTq} />}
+          ? <Ledger shelves={shelves} label={label} games={shown} data={data} withTq={withTq} />
+          : <Feature games={shown} data={data} withTq={withTq} />}
 
         <section className="pcl-two">
           <div className="pcl-prose">
@@ -397,6 +421,12 @@ const CSS = `
 .pcl-sets a{font-family:${MONO};font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-ink2);text-decoration:none;
   border:1px solid var(--stg-line);border-radius:6px;padding:6px 10px;background:var(--stg-surf);}
 .pcl-sets a:hover{border-color:var(--stg-line2);color:var(--stg-ink);}
+.pcl-facets{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;}
+.pcl-facet{display:inline-flex;border:1px solid var(--stg-line2);border-radius:999px;overflow:hidden;}
+.pcl-facet button{font:inherit;font-size:12.5px;font-weight:800;padding:7px 13px;border:0;background:transparent;color:var(--stg-ink2);cursor:pointer;}
+.pcl-facet button+button{border-left:1px solid var(--stg-line2);}
+.pcl-facet button.on{background:var(--stg-ink);color:var(--stg-ground, #fff);}
+.pcl-facet-n{font-size:12px;font-weight:700;color:var(--stg-ink2);}
 .pcl-sets a.on{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
 
 /* SHARED BITS */

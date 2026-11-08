@@ -49,7 +49,7 @@ const banksSrc = readFileSync(join(here, 'verify-daily-banks.mjs'), 'utf8');
 const bankGames = [...banksSrc.matchAll(/if \(RUN\('([a-z]+)'\)\)/g)].map((m) => m[1]);
 // games with their own dedicated checker
 const solo = readdirSync(here)
-  .filter((f) => /^verify-[a-z-]+\.mjs$/.test(f) && f !== 'verify-all.mjs' && f !== 'verify-daily-banks.mjs')
+  .filter((f) => /^verify-[a-z0-9-]+\.mjs$/.test(f) && f !== 'verify-all.mjs' && f !== 'verify-daily-banks.mjs')
   .map((f) => ({ game: f.replace(/^verify-|\.mjs$/g, ''), file: f }));
 
 // every game that actually has a bank on disk

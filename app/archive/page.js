@@ -28,6 +28,25 @@ import { PUZZLES as MERCURY_FULL } from '../mercury/puzzles';
 import { PUZZLES as ARROW_FULL } from '../arrow/puzzles';
 import { PUZZLES as POLKA_FULL } from '../polka/puzzles';
 import { PUZZLES as KNIGHT_FULL } from '../knight/puzzles';
+const ARCH_SIXESTOO = SIXESTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_SUDSTOO = SUDSTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_DIAGTOO = DIAGTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_WINDOWTOO = WINDOWTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_KNIGHTTOO = KNIGHTTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_RACECARTOO = RACECARTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_KAYAK = KAYAK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_KAYAKTOO = KAYAKTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_RIMTOO = RIMTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_LIP = LIP_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_LIPTOO = LIPTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_MERCURYTOO = MERCURYTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_FEVER = FEVER_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_SNACK = SNACK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_COOP = COOP_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_DART = DART_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_TRIM = TRIM_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_BOUT = BOUT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const ARCH_DOT = DOT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const QUILT = QUILT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CAGES = CAGES_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SANDO = SANDO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -150,6 +169,7 @@ import { PUZZLES as DIAG_FULL } from '../diag/puzzles';
 import { PUZZLES as FRAME_FULL } from '../frame/puzzles';
 import { PUZZLES as RIM_FULL } from '../rim/puzzles';
 import { PUZZLES as GIANT_FULL } from '../giant/puzzles';
+import { PUZZLES as GIANTTOO_FULL } from '../gianttoo/puzzles';
 import { PUZZLES as SUMO_FULL } from '../sumo/puzzles';
 import { PUZZLES as WINDOW_FULL } from '../window/puzzles';
 import { PUZZLES as FIVE_FULL } from '../five/puzzles';
@@ -171,6 +191,25 @@ import { PUZZLES as MISHMASH_FULL } from '../mishmash/puzzles';
 import { PUZZLES as FOCUS_FULL } from '../focus/puzzles';
 import { PUZZLES as THREAD_FULL } from '../thread/puzzles';
 import { PUZZLES as SLOT_FULL } from '../slot/puzzles';
+import { PUZZLES as SIXESTOO_FULL } from '../sixestoo/puzzles';
+import { PUZZLES as SUDSTOO_FULL } from '../sudstoo/puzzles';
+import { PUZZLES as DIAGTOO_FULL } from '../diagtoo/puzzles';
+import { PUZZLES as WINDOWTOO_FULL } from '../windowtoo/puzzles';
+import { PUZZLES as KNIGHTTOO_FULL } from '../knighttoo/puzzles';
+import { PUZZLES as RACECARTOO_FULL } from '../racecartoo/puzzles';
+import { PUZZLES as KAYAK_FULL } from '../kayak/puzzles';
+import { PUZZLES as KAYAKTOO_FULL } from '../kayaktoo/puzzles';
+import { PUZZLES as RIMTOO_FULL } from '../rimtoo/puzzles';
+import { PUZZLES as LIP_FULL } from '../lip/puzzles';
+import { PUZZLES as LIPTOO_FULL } from '../liptoo/puzzles';
+import { PUZZLES as MERCURYTOO_FULL } from '../mercurytoo/puzzles';
+import { PUZZLES as FEVER_FULL } from '../fever/puzzles';
+import { PUZZLES as SNACK_FULL } from '../snack/puzzles';
+import { PUZZLES as COOP_FULL } from '../coop/puzzles';
+import { PUZZLES as DART_FULL } from '../dart/puzzles';
+import { PUZZLES as TRIM_FULL } from '../trim/puzzles';
+import { PUZZLES as BOUT_FULL } from '../bout/puzzles';
+import { PUZZLES as DOT_FULL } from '../dot/puzzles';
 import { T } from '@/lib/theme';
 import { SITE_URL } from '@/lib/site';
 
@@ -296,6 +335,7 @@ const FIVE = FIVE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const RACECAR = RACECAR_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SUMO = SUMO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const GIANT = GIANT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const GIANTTOO = GIANTTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const RIM = RIM_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SCRIPT = SCRIPT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const QUOTES = QUOTES_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -383,18 +423,27 @@ const GAMES = [
   { key: 'dating', name: 'Dating', path: '/dating', tag: 'Put five moments in order', accent: '#6d28d9', bg: '#f5f0ff', border: 'rgba(124,58,237,0.4)', src: DATING },
   { key: 'tally', name: 'Tally', path: '/tally', tag: 'Balance every row and column', accent: T.successDeep, bg: '#eefaf1', border: 'rgba(21,128,61,0.45)', src: TALLY },
   { key: 'suds', name: 'Suds', path: '/suds', tag: 'Fill the 9×9 grid, 1–9', accent: '#ea580c', bg: '#fff5ed', border: 'rgba(234,88,12,0.4)', src: SUDS },
+  { key: 'sudstoo', name: 'SudsToo', path: '/sudstoo', tag: "Suds in color, 9x9", accent: '#ea580c', bg: '#fff5ed', border: 'rgba(234,88,12,0.4)', src: ARCH_SUDSTOO },
   { key: 'quilt', name: 'Quilt', path: '/quilt', tag: 'Nine crooked regions, 1–9', accent: '#a21caf', bg: '#fdf4ff', border: 'rgba(162,28,175,0.4)', src: QUILT },
   { key: 'cages', name: 'Cages', path: '/cages', tag: 'Killer sudoku, no clues', accent: '#6b21a8', bg: '#f6f2fd', border: 'rgba(107,33,168,0.4)', src: CAGES },
+  { key: 'coop', name: 'Coop', path: '/coop', tag: "Cages at 6x6", accent: '#6b21a8', bg: '#f6f2fd', border: 'rgba(107,33,168,0.4)', src: ARCH_COOP },
   { key: 'towers', name: 'Towers', path: '/towers', tag: 'Skyscrapers, clues on the border', accent: '#075985', bg: '#eaf4fa', border: 'rgba(7,89,133,0.4)', src: TOWERS },
   { key: 'mercury', name: 'Mercury', path: '/mercury', tag: 'The daily thermo sudoku', accent: '#991b1b', bg: '#fdf1f1', border: 'rgba(153,27,27,0.4)', src: MERCURY },
+  { key: 'mercurytoo', name: 'MercuryToo', path: '/mercurytoo', tag: "Mercury in rainbow color, 9x9", accent: '#991b1b', bg: '#fdf1f1', border: 'rgba(153,27,27,0.4)', src: ARCH_MERCURYTOO },
+  { key: 'fever', name: 'Fever', path: '/fever', tag: "Mercury at 6x6", accent: '#991b1b', bg: '#fdf1f1', border: 'rgba(153,27,27,0.4)', src: ARCH_FEVER },
   { key: 'arrow', name: 'Arrow', path: '/arrow', tag: 'The daily arrow sudoku', accent: '#86198f', bg: '#fbf0fc', border: 'rgba(134,25,143,0.4)', src: ARROW },
+  { key: 'dart', name: 'Dart', path: '/dart', tag: "Arrow at 6x6", accent: '#86198f', bg: '#fbf0fc', border: 'rgba(134,25,143,0.4)', src: ARCH_DART },
   { key: 'polka', name: 'Polka', path: '/polka', tag: 'Kropki, no numbers at all', accent: '#16a34a', bg: '#ecf9f1', border: 'rgba(22,163,74,0.4)', src: POLKA },
+  { key: 'dot', name: 'Dot', path: '/dot', tag: "Polka at 6x6", accent: '#16a34a', bg: '#ecf9f1', border: 'rgba(22,163,74,0.4)', src: ARCH_DOT },
   { key: 'knight', name: 'Knight', path: '/knight', tag: 'Sudoku plus the knight rule', accent: '#3730a3', bg: '#f1f0fd', border: 'rgba(55,48,163,0.4)', src: KNIGHT },
+  { key: 'knighttoo', name: 'KnightToo', path: '/knighttoo', tag: "Knight in color, 9x9", accent: '#3730a3', bg: '#f1f0fd', border: 'rgba(55,48,163,0.4)', src: ARCH_KNIGHTTOO },
   { key: 'queen', name: 'Queen', path: '/queen', tag: 'White to play and promote', accent: '#a16207', bg: '#faf3e3', border: 'rgba(161,98,7,0.4)', src: QUEEN },
   { key: 'shoe', name: 'Shoe', path: '/shoe', tag: 'The daily blackjack shoe', accent: '#0c4a6e', bg: '#e8f3fa', border: 'rgba(12,74,110,0.4)', src: SHOE },
   { key: 'niche', name: 'Niche', path: '/niche', tag: 'One answer, two categories', accent: '#115e59', bg: '#ecfdf8', border: 'rgba(17,94,89,0.4)', src: NICHE },
   { key: 'sixes', name: 'Sixes', path: '/sixes', tag: 'Mini sudoku, 1 to 6', accent: '#1d4ed8', bg: '#eef3ff', border: 'rgba(29,78,216,0.4)', src: SIXES },
+  { key: 'sixestoo', name: 'SixesToo', path: '/sixestoo', tag: "Sixes in color, 6x6", accent: '#1d4ed8', bg: '#eef3ff', border: 'rgba(29,78,216,0.4)', src: ARCH_SIXESTOO },
   { key: 'sando', name: 'Sando', path: '/sando', tag: 'Sandwich sudoku, 1 to 9', accent: '#15616b', bg: '#eaf6f7', border: 'rgba(21,97,107,0.4)', src: SANDO },
+  { key: 'snack', name: 'Snack', path: '/snack', tag: "Sando at 6x6", accent: '#15616b', bg: '#eaf6f7', border: 'rgba(21,97,107,0.4)', src: ARCH_SNACK },
   { key: 'carve', name: 'Carve', path: '/carve', tag: 'Carve the grid into equal sums', accent: '#7c3aed', bg: '#f5f0ff', border: 'rgba(124,58,237,0.4)', src: CARVE },
   { key: 'circa', name: 'Circa', path: '/circa', tag: 'Pin the year of the moment', accent: '#0e7490', bg: '#e8f7fa', border: 'rgba(14,116,144,0.4)', src: CIRCA },
   { key: 'extra', name: 'Extra', path: '/extra', tag: 'Unredact the front page', accent: '#b91c1c', bg: '#fdeeee', border: 'rgba(185,28,28,0.4)', src: EXTRA },
@@ -501,13 +550,24 @@ const GAMES = [
   { key: 'flank', name: 'Flank', path: '/flank', tag: 'Name every neighbor', accent: '#3f6212', bg: '#f3f8ea', border: 'rgba(63,98,18,0.4)', src: FLANK },
   { key: 'whittle', name: 'Whittle', path: '/whittle', tag: 'The sudoku, backwards', accent: '#854d0e', bg: '#fdf6e9', border: 'rgba(133,77,14,0.4)', src: WHITTLE },
   { key: 'diag', name: 'Diag', path: '/diag', tag: 'Sudoku plus the two diagonals', accent: '#0e7490', bg: '#e8f6fa', border: 'rgba(14,116,144,0.4)', src: DIAG },
+  { key: 'diagtoo', name: 'DiagToo', path: '/diagtoo', tag: "Diag in color, 9x9", accent: '#0e7490', bg: '#e8f6fa', border: 'rgba(14,116,144,0.4)', src: ARCH_DIAGTOO },
   { key: 'frame', name: 'Frame', path: '/frame', tag: 'Sums at every edge', accent: '#b45309', bg: '#fdf3e3', border: 'rgba(180,83,9,0.4)', src: FRAME },
+  { key: 'trim', name: 'Trim', path: '/trim', tag: "Frame at 6x6", accent: '#b45309', bg: '#fdf3e3', border: 'rgba(180,83,9,0.4)', src: ARCH_TRIM },
   { key: 'window', name: 'Window', path: '/window', tag: 'The windoku', accent: '#be185d', bg: '#fdf2f8', border: 'rgba(190,24,93,0.4)', src: WINDOW },
+  { key: 'windowtoo', name: 'WindowToo', path: '/windowtoo', tag: "Window in color, 9x9", accent: '#be185d', bg: '#fdf2f8', border: 'rgba(190,24,93,0.4)', src: ARCH_WINDOWTOO },
   { key: 'five', name: 'Five', path: '/five', tag: 'The whispers sudoku', accent: '#15803d', bg: '#effaf2', border: 'rgba(21,128,61,0.4)', src: FIVE },
   { key: 'racecar', name: 'Racecar', path: '/racecar', tag: 'The palindrome sudoku', accent: '#475569', bg: '#f3f5f8', border: 'rgba(71,85,105,0.4)', src: RACECAR },
+  { key: 'racecartoo', name: 'RacecarToo', path: '/racecartoo', tag: "Racecar in color, 9x9", accent: '#475569', bg: '#f3f5f8', border: 'rgba(71,85,105,0.4)', src: ARCH_RACECARTOO },
+  { key: 'kayak', name: 'Kayak', path: '/kayak', tag: "Racecar at 6x6", accent: '#475569', bg: '#f3f5f8', border: 'rgba(71,85,105,0.4)', src: ARCH_KAYAK },
+  { key: 'kayaktoo', name: 'KayakToo', path: '/kayaktoo', tag: "Kayak in color, 6x6", accent: '#475569', bg: '#f3f5f8', border: 'rgba(71,85,105,0.4)', src: ARCH_KAYAKTOO },
   { key: 'sumo', name: 'Sumo', path: '/sumo', tag: 'The greater-than sudoku', accent: '#8a6d0b', bg: '#faf5e6', border: 'rgba(138,109,11,0.4)', src: SUMO },
+  { key: 'bout', name: 'Bout', path: '/bout', tag: "Sumo at 6x6", accent: '#8a6d0b', bg: '#faf5e6', border: 'rgba(138,109,11,0.4)', src: ARCH_BOUT },
   { key: 'giant', name: 'Giant', path: '/giant', tag: 'Sudoku at sixteen', accent: '#3949ab', bg: '#eceefa', border: 'rgba(57,73,171,0.4)', src: GIANT },
+  { key: 'gianttoo', name: 'GiantToo', path: '/gianttoo', tag: "Giant in color, 16x16", accent: '#6d28d9', bg: '#f5f0ff', border: 'rgba(109,40,217,0.4)', src: GIANTTOO },
   { key: 'rim', name: 'Rim', path: '/rim', tag: 'Nothing printed inside', accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)', src: RIM },
+  { key: 'rimtoo', name: 'RimToo', path: '/rimtoo', tag: "Rim in color, 9x9", accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)', src: ARCH_RIMTOO },
+  { key: 'lip', name: 'Lip', path: '/lip', tag: "Rim at 6x6", accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)', src: ARCH_LIP },
+  { key: 'liptoo', name: 'LipToo', path: '/liptoo', tag: "Lip in color, 6x6", accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)', src: ARCH_LIPTOO },
   { key: 'script', name: 'Script', path: '/script', tag: 'Movies and TV, one life', accent: '#4a1d6b', bg: '#f3ecf9', border: 'rgba(74,29,107,0.4)', src: SCRIPT },
   { key: 'sci', name: 'Sci', path: '/sci', tag: 'Science, one life', accent: '#0f766e', bg: '#e8f5f3', border: 'rgba(15,118,110,0.4)', src: SCI },
   { key: 'pulse', name: 'Pulse', path: '/pulse', tag: 'The human body, one life', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.4)', src: PULSE },

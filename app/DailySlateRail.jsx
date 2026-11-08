@@ -40,12 +40,12 @@ import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 
 const SLATE_KEYS = [
-  'crux', 'emcee', 'shards', 'garble', 'links', 'span', 'dating', 'tally', 'suds', 'quilt', 'cages', 'sando', 'carve',
+  'crux', 'emcee', 'shards', 'garble', 'links', 'span', 'dating', 'tally', 'suds', 'sudstoo', 'quilt', 'cages', 'coop', 'sando', 'snack', 'carve',
   'extra', 'stet', 'outwit', 'outrank', 'herd', 'tuck', 'alibi', 'cipher', 'ping', 'warmer', 'jester',
   'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'bracket', 'lode', 'etch', 'glyph', 'hedge',
   'listed', 'mate', 'four', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'sudoclue', 'snug', 'jig', 'saw', 'swap', 'slide', 'spin', 'connect', 'duet', 'lamps', 'clade', 'dossier', 'tape', 'bacon', 'judges', 'check', 'rung', 'crunch', 'taire', 'fib', 'streak',
   'feud', 'babel', 'hands', 'finesse', 'crib', 'hold', 'cell', 'mahj', 'pairs', 'swindle', 'gift', 'scram', 'arcos', 'fill', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'scour', 'chain', 'turn', 'yose', 'suffice', 'strata', 'redact', 'paths',
-  'deep', 'anon', 'blocks', 'snake', 'squash', 'simon', 'dario', 'chomp', 'sweep', 'ergo', 'docket', 'blitz', 'blitzed', 'gap', 'series', 'back', 'sums', 'hinge', 'defend', 'barter', 'plot', 'sixes', 'niche', 'shoe', 'queen', 'towers', 'mercury', 'arrow', 'polka', 'atlas', 'sport', 'calc', 'encore', 'biz', 'flank', 'knight', 'script', 'quotes', 'sci', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'focus', 'thread', 'slot', 'whittle', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'diag', 'frame', 'rim', 'giant', 'sumo', 'window', 'five', 'racecar',
+  'deep', 'anon', 'blocks', 'snake', 'squash', 'simon', 'dario', 'chomp', 'sweep', 'ergo', 'docket', 'blitz', 'blitzed', 'gap', 'series', 'back', 'sums', 'hinge', 'defend', 'barter', 'plot', 'sixes', 'sixestoo', 'niche', 'shoe', 'queen', 'towers', 'mercury', 'mercurytoo', 'fever', 'arrow', 'dart', 'polka', 'dot', 'atlas', 'sport', 'calc', 'encore', 'biz', 'flank', 'knight', 'knighttoo', 'script', 'quotes', 'sci', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'focus', 'thread', 'slot', 'whittle', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'diag', 'diagtoo', 'frame', 'trim', 'rim', 'rimtoo', 'lip', 'liptoo', 'giant', 'gianttoo', 'sumo', 'bout', 'window', 'windowtoo', 'five', 'racecar', 'racecartoo', 'kayak', 'kayaktoo',
 // A retired game leaves the rail on its own the morning after its bank's last
 // drop (RETIRED_DAILY in lib/daily-games). Its key stays listed above so the
 // home board's order is unbroken if the bank is ever extended.
