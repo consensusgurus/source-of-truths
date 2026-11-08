@@ -66,23 +66,29 @@ function Grid({ n = 9, v = 'suds', color = false }) {
   // Positions are written for 9x9; on a 6x6 they wrap, so a twin keeps its
   // parent's decoration inside its own smaller grid.
   const cx = (c) => x + (c % n) * sz + sz / 2, cy = (r) => y + (r % n) * sz + sz / 2;
-  if (v === 'cages') deco.push(<path key="c" className="sm" d={`M${x + 2} ${y + 2}h${sz * 2 - 4}v${sz - 4}h${-sz + 0}v${sz}h${-sz + 4}z M${x + sz * 4 + 2} ${y + sz * 3 + 2}h${sz * 3 - 4}v${sz - 4}h${-sz * 3 + 4}z`} />);
-  if (v === 'sando') for (let r = 0; r < 9; r += 2) deco.push(<T key={r} x={x - 9} y={cy(r) + 3} s={8}>{[14, 9, 23, 0, 17][r / 2]}</T>);
-  if (v === 'arrow') deco.push(<g key="a"><circle cx={cx(1)} cy={cy(1)} r={sz * .38} className="sm" /><path className="sm" d={`M${cx(1) + 3} ${cy(1) + 3}L${cx(4)} ${cy(4)}L${cx(6)} ${cy(4)}`} /></g>);
+  // EVERY MARK STAYS INSIDE ITS OWN GRID AND OFF THE PRINTED DIGITS (owner,
+  // 2026-11-08). The 6x6 twins get their own positions: wrapping the 9x9 ones
+  // made lines double back, clues stack and cages hang off the edge.
+  const six = n === 6;
+  if (v === 'cages') { const c2 = six ? 3 : 4, w2 = six ? 2 : 3; deco.push(<path key="c" className="sm" d={`M${x + 2} ${y + 2}h${sz * 2 - 4}v${sz - 4}h${-sz + 0}v${sz}h${-sz + 4}z M${x + sz * c2 + 2} ${y + sz * 3 + 2}h${sz * w2 - 4}v${sz - 4}h${-sz * w2 + 4}z`} />); }
+  if (v === 'sando') for (let r = 0; r < n; r += 2) deco.push(<T key={r} x={x - 9} y={cy(r) + 3} s={8}>{[14, 9, 23, 0, 17][r / 2]}</T>);
+  if (v === 'arrow') { const [a, b, e] = six ? [3, 3, 5] : [4, 4, 6]; deco.push(<g key="a"><circle cx={cx(1)} cy={cy(1)} r={sz * .38} className="sm" /><path className="sm" d={`M${cx(1) + 3} ${cy(1) + 3}L${cx(a)} ${cy(b)}L${cx(e)} ${cy(b)}`} /></g>); }
   if (v === 'knight') deco.push(<path key="k" className="sm" d={`M${cx(2)} ${cy(2)}L${cx(2)} ${cy(4)}L${cx(3)} ${cy(4)}`} />);
   if (v === 'diag') deco.push(<path key="d" className="sm" d={`M${x} ${y}L${x + S} ${y + S}M${x + S} ${y}L${x} ${y + S}`} />);
   if (v === 'window') [[1, 1], [5, 1], [1, 5], [5, 5]].forEach(([c, r], i) => deco.push(<rect key={i} x={x + c * sz} y={y + r * sz} width={sz * 3} height={sz * 3} className="m" opacity=".55" />));
-  if (v === 'sumo') [[1, 0], [4, 3], [6, 6], [2, 5]].forEach(([c, r], i) => deco.push(<T key={i} x={x + ((c % (n - 1)) + 1) * sz} y={cy(r) + 3} s={8}>{'>'}</T>));
-  if (v === 'five' || v === 'racecar') deco.push(<path key="f" className="sm3" d={`M${cx(0)} ${cy(7)}L${cx(2)} ${cy(5)}L${cx(3)} ${cy(6)}L${cx(5)} ${cy(3)}L${cx(7)} ${cy(4)}`} />);
-  if (v === 'mercury') deco.push(<g key="m"><circle cx={cx(1)} cy={cy(6)} r={sz * .42} className="m" /><path className="sm3" d={`M${cx(1)} ${cy(6)}V${cy(2)}H${cx(3)}`} /></g>);
-  if (v === 'towers' || v === 'rim' || v === 'frame') [0, 2, 4, 6, 8].forEach((c, i) => { deco.push(<T key={'t' + i} x={cx(c)} y={y - 2} s={7}>{[3, 1, 4, 2, 5][i]}</T>); deco.push(<T key={'b' + i} x={cx(c)} y={y + S + 7} s={7}>{[2, 4, 1, 3, 2][i]}</T>); });
+  // A '>' sits on the line between column c and c + 1.
+  if (v === 'sumo') (six ? [[1, 0], [3, 2], [0, 3], [4, 5]] : [[1, 0], [4, 3], [6, 6], [5, 5]]).forEach(([c, r], i) => deco.push(<T key={i} x={x + (c + 1) * sz} y={cy(r) + 3} s={8}>{'>'}</T>));
+  if (v === 'five' || v === 'racecar') { const pts = six ? [[0, 5], [1, 3], [2, 4], [4, 2], [5, 3]] : [[0, 7], [2, 5], [3, 6], [5, 3], [7, 4]]; deco.push(<path key="f" className="sm3" d={pts.map(([c, r], i) => `${i ? 'L' : 'M'}${cx(c)} ${cy(r)}`).join('')} />); }
+  if (v === 'mercury') { const [bc, br, tr, ec] = six ? [1, 4, 2, 3] : [2, 6, 2, 4]; deco.push(<g key="m"><circle cx={cx(bc)} cy={cy(br)} r={sz * .42} className="mb" /><path className="sm3" d={`M${cx(bc)} ${cy(br)}V${cy(tr)}H${cx(ec)}`} /></g>); }
+  if (v === 'towers' || v === 'rim' || v === 'frame') (six ? [0, 2, 3, 5] : [0, 2, 4, 6, 8]).forEach((c, i) => { deco.push(<T key={'t' + i} x={cx(c)} y={y - 2} s={7}>{[3, 1, 4, 2, 5][i]}</T>); deco.push(<T key={'b' + i} x={cx(c)} y={y + S + 7} s={7}>{[2, 4, 1, 3, 2][i]}</T>); });
   if (v === 'quilt') deco.push(<path key="q" className="m" opacity=".5" d={`M${x} ${y}h${sz * 4}v${sz * 2}h${-sz * 2}v${sz * 2}h${-sz * 2}z M${x + sz * 5} ${y + sz * 5}h${sz * 4}v${sz * 4}h${-sz * 2}v${-sz * 2}h${-sz * 2}z`} />);
-  if (v === 'polka') [[1, 1], [3, 2], [5, 6], [7, 3], [2, 7]].forEach(([c, r], i) => deco.push(<circle key={i} cx={x + ((c % (n - 1)) + 1) * sz} cy={cy(r)} r={2} className="d" />));
+  // A dot sits on the line between column c - 1 and c.
+  if (v === 'polka') (six ? [[1, 2], [4, 1], [3, 3], [5, 5]] : [[3, 0], [5, 2], [6, 6], [7, 4], [2, 7]]).forEach(([c, r], i) => deco.push(<circle key={i} cx={x + c * sz} cy={cy(r)} r={2} className="d" />));
   if (v === 'whittle') [[2, 3], [6, 1], [5, 7]].forEach(([c, r], i) => deco.push(<path key={i} className="sm" d={`M${cx(c) - 3} ${cy(r) - 3}l6 6m0 -6l-6 6`} />));
   return (
     <g>
-      {deco.filter((e) => e && e.props && e.props.className === 'm')}
       <rect x={x} y={y} width={S} height={S} className="w" />
+      {deco.filter((e) => e && e.props && e.props.className === 'm')}
       <g className="gl1">{thin}</g><g className="gl2">{bold}</g>
       {deco.filter((e) => !(e && e.props && e.props.className === 'm'))}
       {color
@@ -108,7 +114,7 @@ const Xword = () => {
 const Search = () => {
   const L = 'MINDLOFTQRAESCOURPWZEBTKAOVHYN';
   return <g>
-    <rect x={44} y={31} width={110} height={20} rx={10} className="m" />
+    <rect x={60} y={31} width={100} height={20} rx={10} className="m" />
     {cells(40, 12, 11, 3, 20, (x, y, c, r, i) => <T key={i} x={x + 10} y={y + 15} s={12}>{L[i % L.length]}</T>)}
   </g>;
 };
@@ -207,7 +213,7 @@ const Plot = () => (
 );
 const Track = () => (
   <g>{cells(94, 6, 6, 4, 18, (x, y, c, r, i) => <rect key={i} x={x} y={y} width={18} height={18} className="w" />)}
-    <path d="M94 33H139V69H175V15H202" className="s5" /></g>
+    <path d="M103 33H139V69H175V15H193" className="s5" /></g>
 );
 const Tangle = () => (
   <g><path d="M148 8 177.4 25v34L148 76 118.6 59V25z" className="w" />
@@ -217,7 +223,7 @@ const Tangle = () => (
 const Maze = () => (
   <g><rect x={84} y={6} width={128} height={72} rx={6} className="w" />
     <path d="M84 30h40M148 6v30M172 54h40M124 54v24M108 54h40" className="s2" />
-    {Array.from({ length: 9 }, (_, i) => <circle key={i} cx={100 + i * 12} cy={18} r={2} className="m" />)}
+    {Array.from({ length: 9 }, (_, i) => (i === 4 ? null : <circle key={i} cx={100 + i * 12} cy={18} r={2} className="m" />))}
     <circle cx={196} cy={42} r={8} className="d" /></g>
 );
 const Block = ({ die }) => (
@@ -280,8 +286,8 @@ const Snake = () => (
     <path d="M96 60H140V30H180" className="d6" /><circle cx={200} cy={30} r={5} className="m" /></g>
 );
 const Tetro = () => (
-  <g><rect x={108} y={4} width={80} height={76} rx={4} className="w" />
-    {[[112, 64, 'm'], [128, 64, 'm'], [144, 64, 'm'], [160, 64, 'd'], [176, 48, 'm'], [160, 48, 'd'], [176, 64, 'd'], [112, 48, 'm'], [144, 20, 'd'], [144, 4, 'd'], [160, 20, 'd']].map(([x, y, k], i) => <rect key={i} x={x} y={y} width={14} height={14} rx={2} className={k} />)}</g>
+  <g><rect x={104} y={2} width={88} height={80} rx={4} className="w" />
+    {[[108, 64, 'm'], [124, 64, 'm'], [140, 64, 'm'], [156, 64, 'd'], [172, 64, 'd'], [108, 48, 'm'], [156, 48, 'd'], [172, 48, 'm'], [124, 8, 'd'], [140, 8, 'd'], [140, 24, 'd']].map(([x, y, k], i) => <rect key={i} x={x} y={y} width={14} height={14} rx={2} className={k} />)}</g>
 );
 const Fruit = () => (
   <g>{cells(94, 6, 6, 4, 18, (x, y, c, r, i) => <circle key={i} cx={x + 9} cy={y + 9} r={6.5} className={[7, 8, 9].includes(i) ? 'd' : (i % 3) ? 'm' : 'w'} />)}</g>
@@ -376,7 +382,7 @@ export default function GamePreview({ gameKey }) {
 export const GP_CSS = `
 .gp{display:block;overflow:visible;}
 .gp .d{fill:var(--gpd);}
-.gp .m{fill:var(--gpm);}
+.gp .m,.gp .mb{fill:var(--gpm);}
 .gp .w{fill:var(--gpw);stroke:var(--gpd);stroke-width:1.5;}
 .gp .w0{fill:var(--gpw);}
 .gp .hm{fill:var(--gpm);stroke:var(--gpd);stroke-width:1.5;}
