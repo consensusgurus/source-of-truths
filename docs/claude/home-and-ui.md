@@ -2406,5 +2406,10 @@ Approved on the "Mind Loft Home: Details Toggle and Rail Breakpoints" canvas.
 - **The rail shows only at 1280px and up with a mouse or trackpad**
   (`RAIL_MQ` = `(min-width:1280px) and (hover:hover) and (pointer:fine)`, mirrored in the CSS
   rule that lays out `.sty-ix.rl`). Every iPad, landscape included, and every phone drops it; its
-  boards stay in Leaderboards + Stats. The phone layout (900px and down) is unchanged and has no
-  Details view yet.
+  boards stay in Leaderboards + Stats.
+- **The phone (900px and down) has it too (owner, same evening: "1 across").** Each phone pane
+  gets a "View: Tiles | Details" row under the sort (`.mph-vw`; List stays desktop-only, so a
+  stored List reads as Details there). Details tiles (`.mph-gg.det`) are one across on a portrait
+  phone and two across from 600px (iPad portrait, a phone turned sideways), with `fullDesc` and
+  the skills. The one-time note waits until a view toggle is actually on screen (the cap's on
+  desktop, a pane's on a phone), so a phone player sees it the first time they open a pane.

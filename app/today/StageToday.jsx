@@ -2596,6 +2596,7 @@ export default function StageToday() {
     const v = viewBy || 'det';
     return allTiles && pane === ALL_ID && v === 'list' ? 'det' : v;
   };
+  const mDet = viewOf(paneOn) !== 'tile';
   // THE ONE-TIME DETAILS NOTE (owner, 2026-11-07). A returning player (seen
   // before today) gets the cap's view toggle highlighted with a short note the
   // first time they land on the desktop home after the switch. It fades by
@@ -2733,14 +2734,19 @@ export default function StageToday() {
     return () => { a.removeEventListener('change', on); b.removeEventListener('change', on); };
   }, []);
   useEffect(() => {
-    if (!mid) return undefined;
     let shown = false;
     try { shown = localStorage.getItem('sot_det_hint') === '1'; } catch (e) { return undefined; }
     if (shown || !seenBeforeToday()) return undefined;
     // Waits out the entry door (like every pop-up) and lands 1.2s after it.
     let quiet = 0;
     const t1 = setInterval(() => {
-      if (document.querySelector('.ent-door') || gameActive()) { quiet = 0; return; }
+      // Only once a view toggle is actually on screen: the cap's on desktop,
+      // the pane's on a phone (which has none until a pane is open).
+      const vt = [...document.querySelectorAll('.sty-captools .sty-view, .mph-vw')].find((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.bottom > 0 && r.top < window.innerHeight;
+      });
+      if (!vt || document.querySelector('.ent-door') || gameActive()) { quiet = 0; return; }
       quiet += 400;
       if (quiet < 1200) return;
       clearInterval(t1);
@@ -2748,7 +2754,7 @@ export default function StageToday() {
       setDetHint(true);
     }, 400);
     return () => clearInterval(t1);
-  }, [mid]);
+  }, []);
   useEffect(() => {
     if (!detHint) return undefined;
     const t2 = setTimeout(() => setDetHint(false), 8000);
@@ -4536,11 +4542,27 @@ export default function StageToday() {
                       <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A to Z</button>
                     </div>
                   ) : null}
+                  {/* TILES OR DETAILS ON THE PHONE (owner, 2026-11-07): Details is
+                      the default, one across on a portrait phone, two across from
+                      600px. List stays a desktop layout, so a stored List reads as
+                      Details here. */}
+                  {games.length ? (
+                    <div className={'mph-srt mph-vw' + (detHint ? ' sty-vhint' : '')} role="group" aria-label="Show puzzles as">
+                      <span className="lb">View:</span>
+                      <button type="button" aria-pressed={!mDet} onClick={() => pickView('tile')}>Tiles</button>
+                      <button type="button" aria-pressed={mDet} onClick={() => pickView('det')}>Details</button>
+                      {detHint ? (
+                        <span className="sty-vnote" role="status">
+                          <b>New: Details.</b> Bigger tiles with the full description of every puzzle. Switch back to Tiles here anytime, and your pick stays.
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
                   {games.length ? <div className="mph-lab">Puzzles</div> : null}
                   {isMine && !games.length ? (
                     <p className="mph-note">{who ? 'Nothing starred yet. Tap the star on any puzzle and it shows up here.' : 'Pick a name, then star any puzzle and it shows up here.'}</p>
                   ) : null}
-                  <div className="mph-gg">
+                  <div className={'mph-gg' + (mDet ? ' det' : '')}>
                     {sorted.map((g) => {
                       const isDone = done.has(g.key);
                       const r = standBy[g.key];
@@ -4549,7 +4571,8 @@ export default function StageToday() {
                         <a key={g.key} className={'mph-g' + (isDone ? ' done' : '')} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`} style={mTone(g.cat)}
                           onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
                           <b>{pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
-                          <em>{g.tag}</em>
+                          {mDet ? <em className="mx">{fullDesc(g)}</em> : <em>{g.tag}</em>}
+                          {mDet && skillLine(g.key) ? <span className="mk">{skillLine(g.key)}</span> : null}
                           <small>{isDone ? (r ? `You #${r.rank} of ${r.field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>
                           {canPin ? (
                             <button type="button" className={'st' + (on ? ' on' : '')} aria-label={on ? `Unstar ${g.name}` : `Star ${g.name}`}
@@ -5742,6 +5765,21 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-next .sty-gi{color:currentColor;opacity:.85;}
 .sty-nm{display:flex;align-items:center;gap:11px;}
 .sty-gx,.sty-gk{display:none;}
+/* THE ONE-TIME NOTE ON THE VIEW TOGGLE (owner, 2026-11-07). */
+.sty-view{position:relative;}
+.sty-vhint{animation:sty-vpulse 1.6s ease-out 3;border-radius:8px;}
+.sty-vhint button[aria-pressed="true"]{animation:sty-vglow 1.6s ease-out 3;}
+@keyframes sty-vpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--stg-ink) 45%, transparent);}70%{box-shadow:0 0 0 10px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+@keyframes sty-vglow{0%,100%{background:transparent;}35%{background:color-mix(in srgb, var(--cfull, var(--cc, #c9d2fd)) 55%, transparent);}}
+.sty-vnote{position:absolute;top:calc(100% + 12px);left:-6px;z-index:60;width:270px;box-sizing:border-box;padding:11px 13px;
+  border:1px solid var(--stg-ink);border-radius:10px;background:var(--stg-surf, #fff);color:var(--stg-ink);
+  font-size:13px;font-weight:600;line-height:1.45;white-space:normal;text-align:left;pointer-events:none;
+  animation:sty-vnote 8s ease forwards;}
+.sty-vnote b{font-weight:800;}
+.sty-vnote::before{content:"";position:absolute;top:-7px;left:22px;width:12px;height:12px;background:inherit;
+  border-left:1px solid var(--stg-ink);border-top:1px solid var(--stg-ink);transform:rotate(45deg);}
+@keyframes sty-vnote{0%{opacity:0;transform:translateY(-4px);}6%{opacity:1;transform:none;}88%{opacity:1;}100%{opacity:0;}}
+@media (prefers-reduced-motion: reduce){ .sty-vhint,.sty-vhint button,.sty-vnote{animation:none;} }
 .sty-gt{display:block;font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:2px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 /* Played is DIM, not struck through: the day is a record, not a chore list. */
@@ -7300,6 +7338,17 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-srt{flex-wrap:nowrap;align-items:center;gap:6px;}
   .sty-mph .mph-srt .lb{flex:none;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-right:2px;}
   .sty-mph .mph-srt button{flex:1 1 0;min-width:0;padding:8px 6px 9px;font-size:12.5px;white-space:nowrap;}
+  /* DETAILS ON THE PHONE (owner, 2026-11-07): one across, two from 600px. */
+  .sty-mph .mph-vw{position:relative;}
+  .sty-mph .mph-vw.sty-vhint{border-radius:999px;}
+  .sty-mph .mph-vw.sty-vhint button{animation:none;}
+  .sty-mph .mph-vw .sty-vnote{left:0;right:0;width:auto;top:calc(100% + 10px);}
+  .sty-mph .mph-gg.det{grid-template-columns:1fr;gap:10px;}
+  .sty-mph .mph-gg.det .mph-g{gap:5px;padding:12px 14px 12px;}
+  .sty-mph .mph-gg.det .mph-g b{font-size:17px;}
+  .sty-mph .mph-gg.det .mph-g em.mx{white-space:normal;overflow:visible;font-size:13.5px;font-weight:500;line-height:1.48;}
+  .sty-mph .mph-gg.det .mph-g .mk{font-size:11.5px;font-weight:700;opacity:.75;}
+  @media (min-width:600px){ .sty-mph .mph-gg.det{grid-template-columns:1fr 1fr;} }
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */
   .sty-mph{--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
@@ -7576,21 +7625,6 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix.sty-det .sty-g .sty-gk{display:block;margin-top:2px;padding-bottom:12px;font-size:12px;font-weight:700;color:var(--stg-mute);}
   .sty-ix.sty-det .sty-g .sty-gpl.sty-gcs{margin:auto -14px 0 -16px;padding:7px 14px 7px 16px;font-size:13px;}
   .sty-ix.sty-det .sty-grun,.sty-ix.sty-det .sty-gdeck{padding-bottom:0;}
-  /* THE ONE-TIME NOTE ON THE VIEW TOGGLE (owner, 2026-11-07). */
-  .sty-view{position:relative;}
-  .sty-vhint{animation:sty-vpulse 1.6s ease-out 3;border-radius:8px;}
-  .sty-vhint button[aria-pressed="true"]{animation:sty-vglow 1.6s ease-out 3;}
-  @keyframes sty-vpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--stg-ink) 45%, transparent);}70%{box-shadow:0 0 0 10px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
-  @keyframes sty-vglow{0%,100%{background:transparent;}35%{background:color-mix(in srgb, var(--cfull, var(--cc, #c9d2fd)) 55%, transparent);}}
-  .sty-vnote{position:absolute;top:calc(100% + 12px);left:-6px;z-index:60;width:270px;box-sizing:border-box;padding:11px 13px;
-    border:1px solid var(--stg-ink);border-radius:10px;background:var(--stg-surf, #fff);color:var(--stg-ink);
-    font-size:13px;font-weight:600;line-height:1.45;white-space:normal;text-align:left;pointer-events:none;
-    animation:sty-vnote 8s ease forwards;}
-  .sty-vnote b{font-weight:800;}
-  .sty-vnote::before{content:"";position:absolute;top:-7px;left:22px;width:12px;height:12px;background:inherit;
-    border-left:1px solid var(--stg-ink);border-top:1px solid var(--stg-ink);transform:rotate(45deg);}
-  @keyframes sty-vnote{0%{opacity:0;transform:translateY(-4px);}6%{opacity:1;transform:none;}88%{opacity:1;}100%{opacity:0;}}
-  @media (prefers-reduced-motion: reduce){ .sty-vhint,.sty-vhint button,.sty-vnote{animation:none;} }
   .sty-find{flex:1 1 auto;max-width:none;margin-left:28px;display:flex;align-items:center;gap:8px;height:38px;box-sizing:border-box;
     padding:0 14px;border:var(--dk);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);cursor:text;}
   .sty-find input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--stg-ink);}
