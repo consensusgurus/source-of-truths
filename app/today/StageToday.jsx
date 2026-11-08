@@ -48,7 +48,9 @@ import { softGround, gameColor, RAMP_ORDER, categoryColor, categoryColorLight, c
 // PolymathRunCard left the home on 2026-11-03 (Multiple Choice replaced Polymath); the file stays.
 import { MC_RUNS, MC_IDS } from '@/lib/multiple-choice';
 import { POLY_LEGS, localPolymath } from '@/lib/polymath';
-import { SKILLS, SKILL_MAP, hasSkill } from '@/lib/daily-skills';
+import { SKILLS, SKILL_MAP, SKILL_TAGS, hasSkill } from '@/lib/daily-skills';
+import { seenBeforeToday } from '@/lib/visitor';
+import { gameActive } from '@/lib/game-active';
 import { TIERS as DIFF_TIERS } from '@/lib/daily-difficulty';
 // ONE READING OF A RESULT ROW, the same one the ending curtain and the tile
 // panel use. It prints the run in the GAME'S own units — 7/16 · 3 busts · 2:11
@@ -602,6 +604,27 @@ function MemberLadder({ cats, keys, hueFor, inkFor = hueFor }) {
   );
 }
 
+const VIEW_KEY = 'sot_home_view2';
+const VIEWS = ['tile', 'det', 'list'];
+const RAIL_MQ = '(min-width: 1280px) and (hover: hover) and (pointer: fine)';
+
+// DETAILS VIEW (owner, 2026-11-07): the bigger tile's fuller description is the
+// game's own How to play text, whole sentences only, up to about 240
+// characters, so no tile ever ends in "...". The skills ride under it.
+function fullDesc(g) {
+  const t = String(g.how || g.tagLong || g.tag || '').trim();
+  const parts = t.split(/(?<=[.!?])\s+/);
+  let out = parts[0] || '';
+  for (let i = 1; i < parts.length; i++) {
+    if ((out + ' ' + parts[i]).length > 240) break;
+    out += ' ' + parts[i];
+  }
+  return out;
+}
+function skillLine(key) {
+  return (SKILL_TAGS[key] || []).map((id) => SKILL_MAP[id] && SKILL_MAP[id].name).filter(Boolean).join(' \u00b7 ');
+}
+
 function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null, light = true, day = null }) {
   const plays = day ? Number(day.plays || day.field) || 0 : null;
   const lead = day && Array.isArray(day.board) && day.board[0] ? day.board[0] : null;
@@ -683,8 +706,11 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
           <span className="sty-grf">#{dots.lead.rank || 1} of {Math.max(dots.played.size, 1)}</span>
         </span>
       ) : (
-        <span className="sty-gt">{g.tag}</span>
+        <span className="sty-gt sty-gtg">{g.tag}</span>
       )}
+      {/* DETAILS VIEW (owner, 2026-11-07): shown only under .sty-det. */}
+      <span className="sty-gx">{fullDesc(g)}</span>
+      {skillLine(g.key) ? <span className="sty-gk">{skillLine(g.key)}</span> : null}
       {/* THE PLAY TOTAL (owner, 2026-10-26): today's plays at the foot of the
           tile, desktop only (shown by the desktop block). */}
       {/* WHO LEADS, NO SCORE (owner, 2026-10-26): "#1 schnabinator". */}
@@ -2553,32 +2579,57 @@ export default function StageToday() {
   // rule (owner, 2026-10-07), so the control is hidden with the sort's.
   const [viewBy, setViewBy] = useState(null);
   useEffect(() => {
-    try { const v = localStorage.getItem('sot_home_view'); if (v === 'tile' || v === 'list') setViewBy(v); } catch (e) { /* storage off */ }
+    try { const v = localStorage.getItem(VIEW_KEY); if (VIEWS.includes(v)) setViewBy(v); } catch (e) { /* storage off */ }
   }, []);
   const pickView = (v) => {
     setAllTiles(false);
     setViewBy(v);
-    try { localStorage.setItem('sot_home_view', v); } catch (e) { /* storage off */ }
+    setDetHint(false);
+    try { localStorage.setItem(VIEW_KEY, v); localStorage.setItem('sot_det_hint', '1'); } catch (e) { /* storage off */ }
   };
-  const viewOf = (pane) => (allTiles && pane === ALL_ID ? 'tile' : (viewBy || (pane === ALL_ID ? 'tile' : 'list')));
+  // DETAILS IS THE DEFAULT FOR EVERYONE (owner, 2026-11-07): bigger tiles with
+  // the fuller description, on every pane, until the reader picks. The stored
+  // key moved to sot_home_view2 so earlier Tiles / List picks start over on
+  // Details; a pick made now holds. allTiles (a door that lands on All
+  // Puzzles tiled) never forces the list.
+  const viewOf = (pane) => {
+    const v = viewBy || 'det';
+    return allTiles && pane === ALL_ID && v === 'list' ? 'det' : v;
+  };
+  // THE ONE-TIME DETAILS NOTE (owner, 2026-11-07). A returning player (seen
+  // before today) gets the cap's view toggle highlighted with a short note the
+  // first time they land on the desktop home after the switch. It fades by
+  // itself, never shows twice, and asks gameActive() like every pop-up.
+  const [detHint, setDetHint] = useState(false);
   // A SKILL OPENS TILED AND POPULAR (owner, 2026-10-26). Opening a skill pane
   // shows its puzzles as tiles, most played first, whatever the stored choice;
   // any other pane goes back to the reader's stored sort and view. Picking a
   // sort or view inside the skill still applies and is remembered as usual.
   useEffect(() => {
-    if (isSkillId(paneOn)) { setSortBy('pop'); setViewBy('tile'); return; }
+    if (isSkillId(paneOn)) {
+      setSortBy('pop');
+      let vv = null; try { vv = localStorage.getItem(VIEW_KEY); } catch (e) { /* storage off */ }
+      setViewBy(vv === 'tile' ? 'tile' : 'det');
+      return;
+    }
     try {
       const sv = localStorage.getItem('sot_home_sort');
       setSortBy(sv === 'pop' || sv === 'diff' ? sv : 'az');
-      const vv = localStorage.getItem('sot_home_view');
-      setViewBy(vv === 'tile' || vv === 'list' ? vv : null);
+      const vv = localStorage.getItem(VIEW_KEY);
+      setViewBy(VIEWS.includes(vv) ? vv : null);
     } catch (e) { /* storage off */ }
   }, [paneOn]);
-  const viewCtl = (pane) => (
-    <div className="sty-sort sty-view" role="group" aria-label="Show puzzles as"
+  const viewCtl = (pane, cap = false) => (
+    <div className={'sty-sort sty-view' + (cap && detHint ? ' sty-vhint' : '')} role="group" aria-label="Show puzzles as"
       onClick={(e) => e.stopPropagation()}>
       <button type="button" aria-pressed={viewOf(pane) === 'tile'} onClick={() => pickView('tile')}>Tiles</button>
+      <button type="button" aria-pressed={viewOf(pane) === 'det'} onClick={() => pickView('det')}>Details</button>
       <button type="button" aria-pressed={viewOf(pane) === 'list'} onClick={() => pickView('list')}>List</button>
+      {cap && detHint ? (
+        <span className="sty-vnote" role="status">
+          <b>New: Details.</b> Bigger tiles with the full description of every puzzle. Switch to Tiles or List here anytime, and your pick stays.
+        </span>
+      ) : null}
     </div>
   );
   // Declared ABOVE ixNav, which renders it: below it was a temporal dead zone
@@ -2671,13 +2722,38 @@ export default function StageToday() {
   // so a desktop asks in tile view as well as list view.
   useEffect(() => { setListRuns(mid); });
   useEffect(() => {
-    const a = window.matchMedia('(min-width: 1100px)');
+    // THE RAIL NEEDS A REAL DESK (owner, 2026-11-07): 1280px or wider AND a
+    // mouse or trackpad, so every iPad (even a 13" Pro in landscape) and every
+    // phone drops it. Keep RAIL_MQ and the CSS rule below in step.
+    const a = window.matchMedia(RAIL_MQ);
     const b = window.matchMedia('(min-width: 901px)');
     const on = () => { setWide(a.matches); setMid(b.matches); };
     on();
     a.addEventListener('change', on); b.addEventListener('change', on);
     return () => { a.removeEventListener('change', on); b.removeEventListener('change', on); };
   }, []);
+  useEffect(() => {
+    if (!mid) return undefined;
+    let shown = false;
+    try { shown = localStorage.getItem('sot_det_hint') === '1'; } catch (e) { return undefined; }
+    if (shown || !seenBeforeToday()) return undefined;
+    // Waits out the entry door (like every pop-up) and lands 1.2s after it.
+    let quiet = 0;
+    const t1 = setInterval(() => {
+      if (document.querySelector('.ent-door') || gameActive()) { quiet = 0; return; }
+      quiet += 400;
+      if (quiet < 1200) return;
+      clearInterval(t1);
+      try { localStorage.setItem('sot_det_hint', '1'); } catch (e) { /* storage off */ }
+      setDetHint(true);
+    }, 400);
+    return () => clearInterval(t1);
+  }, [mid]);
+  useEffect(() => {
+    if (!detHint) return undefined;
+    const t2 = setTimeout(() => setDetHint(false), 8000);
+    return () => clearTimeout(t2);
+  }, [detHint]);
   const gamePane = !INFO_PANES.includes(paneOn);
   // ── IQ TESTS AND THE COMMUNITY BOARD AS PANES (owner, 2026-10-07) ──────
   // Two more of the footer's links pulled into the index. The IQ tests draw
@@ -2799,6 +2875,8 @@ export default function StageToday() {
   // category that already reaches the line at the standard size is left alone.
   const fitFor = (n) => {
     if (!mid || narrow || reorder || !dim.navH || !dim.gw || n < 1) return null;
+    // Details tiles size to their text; no fitted rows (owner, 2026-11-07).
+    if (viewOf(paneOn) === 'det') return null;
     const W = dim.gw; const H = dim.navH - dim.gTop; const G = 7; const MINH = 58;
     if (H < 140) return null;
     const cMax = Math.max(1, Math.floor((W + G) / (184 + G)));
@@ -3768,7 +3846,7 @@ export default function StageToday() {
   };
   // Which games leave the All Puzzles grid because their run's tile is there.
   const foldKeys = (() => {
-    if (!mid || findOn || viewOf(ALL_ID) !== 'tile' || (deckOn(ALL_ID) && paneOn === ALL_ID)) return null;
+    if (!mid || findOn || viewOf(ALL_ID) === 'list' || (deckOn(ALL_ID) && paneOn === ALL_ID)) return null;
     const ks = new Set();
     for (const c of deckRuns(null)) if (FOLD_RUNS.includes(c.id)) for (const g of c.games) ks.add(g.key);
     return ks.size ? ks : null;
@@ -4106,7 +4184,7 @@ export default function StageToday() {
             the cap over the tiles instead of on a row of their own. */}
         <div className="sty-captools">
           {ix && (paneOn === ALL_ID || !!paneCat(paneOn) || isSkillId(paneOn)) ? (
-            <>{viewCtl(paneOn)}{paneOn === ALL_ID ? grpChips() : null}{capFind}{sortCtl(false)}</>
+            <>{viewCtl(paneOn, true)}{paneOn === ALL_ID ? grpChips() : null}{capFind}{sortCtl(false)}</>
           ) : null}
         </div>
         <div className="sty-rt">
@@ -4491,7 +4569,7 @@ export default function StageToday() {
           </div>
         ) : null}
         {!picked ? <div className="sty-rhome">{circPills(null, true)}</div> : null}
-        <div ref={ixRef} className={(ix ? 'sty-ix' : 'sty-ixw') + (picked ? ' mpk' : ' msel') + (ix && gamePane ? ' rl' : '')}>
+        <div ref={ixRef} className={(ix ? 'sty-ix' : 'sty-ixw') + (picked ? ' mpk' : ' msel') + (ix && gamePane ? ' rl' : '') + (ix && mid && gamePane && viewOf(paneOn) === 'det' ? ' sty-det' : '')}>
         {ixNav}
         {railEl}
         {/* ALWAYS RENDERED now that it is a pane rather than a row: an empty
@@ -5663,6 +5741,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-gi{flex:none;color:var(--cci, var(--cc));}
 .sty-next .sty-gi{color:currentColor;opacity:.85;}
 .sty-nm{display:flex;align-items:center;gap:11px;}
+.sty-gx,.sty-gk{display:none;}
 .sty-gt{display:block;font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:2px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 /* Played is DIM, not struck through: the day is a record, not a chore list. */
@@ -6475,7 +6554,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
   border:1px solid var(--cci, var(--cc));border-radius:4px;padding:2px 10px;line-height:16px;}
 .sty-favr.try:hover .go{border-style:solid;}
 @media (max-width:1240px){ .sty-fav.own{--cg:110px minmax(0,1fr) 120px 58px 58px 48px 44px 40px;} }
-@media (min-width:1100px){
+@media (min-width:1280px) and (hover:hover) and (pointer:fine){
   .sty-ix.rl{grid-template-columns:212px minmax(0,1fr) 264px;}
   .sty-ix > .sty-rail{display:flex;flex-direction:column;gap:16px;grid-column:3;grid-row:1 / span 5;min-width:0;}
 }
@@ -7485,6 +7564,33 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix .sty-pqs,.sty-ix .sty-fav{display:none !important;}
   /* AT MOST SIX ACROSS (owner, 2026-10-26). */
   .sty-ix .sty-games{gap:10px;grid-template-columns:repeat(auto-fill,minmax(max(184px,calc((100% - 50px) / 6)),1fr));}
+  /* DETAILS (owner, 2026-11-07): about twice the tile, three across at
+     1440 with the rail, more on a wider screen. The short tag gives way to the
+     game's own description and its skills; rows size to their text. */
+  .sty-ix.sty-det .sty-games{gap:14px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));grid-auto-rows:auto;}
+  .sty-ix.sty-det .sty-g{min-height:0;gap:7px;padding:15px 14px 0 16px;border-radius:12px;}
+  .sty-ix.sty-det .sty-g .sty-gn{font-size:20px;line-height:1.15;gap:10px;}
+  .sty-ix.sty-det .sty-g .sty-gn .sty-gi{transform:scale(1.25);transform-origin:left center;margin-right:3px;}
+  .sty-ix.sty-det .sty-g .sty-gtg{display:none;}
+  .sty-ix.sty-det .sty-g .sty-gx{display:block;font-size:13.5px;font-weight:500;line-height:1.5;color:var(--stg-ink);}
+  .sty-ix.sty-det .sty-g .sty-gk{display:block;margin-top:2px;padding-bottom:12px;font-size:12px;font-weight:700;color:var(--stg-mute);}
+  .sty-ix.sty-det .sty-g .sty-gpl.sty-gcs{margin:auto -14px 0 -16px;padding:7px 14px 7px 16px;font-size:13px;}
+  .sty-ix.sty-det .sty-grun,.sty-ix.sty-det .sty-gdeck{padding-bottom:0;}
+  /* THE ONE-TIME NOTE ON THE VIEW TOGGLE (owner, 2026-11-07). */
+  .sty-view{position:relative;}
+  .sty-vhint{animation:sty-vpulse 1.6s ease-out 3;border-radius:8px;}
+  .sty-vhint button[aria-pressed="true"]{animation:sty-vglow 1.6s ease-out 3;}
+  @keyframes sty-vpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--stg-ink) 45%, transparent);}70%{box-shadow:0 0 0 10px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+  @keyframes sty-vglow{0%,100%{background:transparent;}35%{background:color-mix(in srgb, var(--cfull, var(--cc, #c9d2fd)) 55%, transparent);}}
+  .sty-vnote{position:absolute;top:calc(100% + 12px);left:-6px;z-index:60;width:270px;box-sizing:border-box;padding:11px 13px;
+    border:1px solid var(--stg-ink);border-radius:10px;background:var(--stg-surf, #fff);color:var(--stg-ink);
+    font-size:13px;font-weight:600;line-height:1.45;white-space:normal;text-align:left;pointer-events:none;
+    animation:sty-vnote 8s ease forwards;}
+  .sty-vnote b{font-weight:800;}
+  .sty-vnote::before{content:"";position:absolute;top:-7px;left:22px;width:12px;height:12px;background:inherit;
+    border-left:1px solid var(--stg-ink);border-top:1px solid var(--stg-ink);transform:rotate(45deg);}
+  @keyframes sty-vnote{0%{opacity:0;transform:translateY(-4px);}6%{opacity:1;transform:none;}88%{opacity:1;}100%{opacity:0;}}
+  @media (prefers-reduced-motion: reduce){ .sty-vhint,.sty-vhint button,.sty-vnote{animation:none;} }
   .sty-find{flex:1 1 auto;max-width:none;margin-left:28px;display:flex;align-items:center;gap:8px;height:38px;box-sizing:border-box;
     padding:0 14px;border:var(--dk);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);cursor:text;}
   .sty-find input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--stg-ink);}

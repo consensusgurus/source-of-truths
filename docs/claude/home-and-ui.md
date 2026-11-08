@@ -2385,3 +2385,26 @@ only expands when that is too little: `.sty-captools` is a size container, and
 under 680px wide, focus or a held query hides the sort so the box takes its
 width. Below 1280px the sort reads "Easy" for "Easy to Hard" and gaps tighten.
 Esc clears the box. Other panes (Runs, Quizzes, boards) leave the middle empty.
+
+## Details is the default view; the rail needs a real desk (owner, 2026-11-07)
+
+Approved on the "Mind Loft Home: Details Toggle and Rail Breakpoints" canvas.
+
+- **Tiles · Details · List.** The desktop view toggle (cap and pane heads, `viewCtl`) has a third
+  setting, Details: bigger tiles (`.sty-ix.sty-det`, `minmax(270px,1fr)`, three across at 1440
+  with the rail) carrying `fullDesc(g)` (the game's `how` text, whole sentences up to ~240
+  characters, never an ellipsis) and its skills (`skillLine`, from `SKILL_TAGS`), above the
+  usual crowd strip. Fitted rows (`fitFor`) are off in Details; rows size to their text.
+- **Details is the default for every pane and every player.** The stored choice moved to
+  `sot_home_view2` (`VIEW_KEY`), so older Tiles / List picks start over on Details; any pick made
+  now holds. A skill pane opens in Tiles only if that is the stored pick, else Details.
+- **The one-time note.** A returning player (`seenBeforeToday()`) on the desktop home gets the
+  cap's toggle pulsed three times with a note under it ("New: Details. ..."), 1.2s after the
+  entry door is gone and only when `gameActive()` is false. It fades by itself after 8s, is
+  stamped `sot_det_hint` when shown (or on any view pick), and never shows again. Reduced motion
+  drops the animation, not the note.
+- **The rail shows only at 1280px and up with a mouse or trackpad**
+  (`RAIL_MQ` = `(min-width:1280px) and (hover:hover) and (pointer:fine)`, mirrored in the CSS
+  rule that lays out `.sty-ix.rl`). Every iPad, landscape included, and every phone drops it; its
+  boards stay in Leaderboards + Stats. The phone layout (900px and down) is unchanged and has no
+  Details view yet.
