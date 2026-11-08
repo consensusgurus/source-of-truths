@@ -11,7 +11,6 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import CarmenGlobe, { loadWorld } from '@/lib/carmen-globe';
-import usePlayStageFit from '@/lib/play-stage-fit';
 import { kmBetween, legPoints, grade, TIP_TAGS, maxPoints, caught, titleFor, CATCH_KM } from '@/lib/carmen-engine';
 
 const fmt = (n) => Number(n || 0).toLocaleString('en-US');
@@ -187,7 +186,9 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   // The globe takes what the column leaves, so the buttons below it stay on
   // screen (owner, 2026-11-06: the next-leg button must never fall off).
   const rootRef = useRef(null);
-  const fit = usePlayStageFit(rootRef, '.cmn-globe', !!onStage && !done, false, 150);
+  const regionRef = useRef(null);
+  const overRef = useRef(null);
+  const cardMax = useRef(0);
   const [openTip, setOpenTip] = useState(-1);
 
   // The world loads once; the globe mounts on it.
@@ -202,6 +203,31 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
     }).catch(() => { if (alive) setFailed(true); });
     return () => { alive = false; if (globe.current) globe.current.destroy(); globe.current = null; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Where the globe sits: as big as the region's width allows (the region
+  // fills the column's height), its foot on the region's foot, and its top
+  // tucked under the clue card by up to half the card.
+  useEffect(() => {
+    if (!ready) return undefined;
+    const place = () => {
+      const R = regionRef.current, O = overRef.current, G = globe.current;
+      if (!R || !G) return;
+      const w = R.clientWidth, h = R.clientHeight;
+      // The largest card this visit sized it, so the globe holds still as tips arrive.
+      const ch = Math.max(O ? O.offsetHeight : 0, cardMax.current);
+      cardMax.current = ch;
+      const tuck = Math.min(ch * 0.5, 120);
+      const foot = 30; // room for the hint line under the globe
+      let r = Math.min(w / 2 - 6, (h - ch + tuck - foot) / 2);
+      r = Math.max(r, Math.min(w / 2 - 6, (h - foot) / 2) * 0.55);
+      G.setFrame(w, h, w / 2, h - r - foot, r);
+    };
+    place();
+    let ro = null;
+    try { ro = new ResizeObserver(place); if (regionRef.current) ro.observe(regionRef.current); if (overRef.current) ro.observe(overRef.current); } catch (e) {}
+    window.addEventListener('resize', place);
+    return () => { if (ro) ro.disconnect(); window.removeEventListener('resize', place); };
+  }, [ready]);
 
   // What the globe shows, rebuilt from the state.
   const sync = useCallback((opts = {}) => {
@@ -326,51 +352,53 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   const LL = P.legs[legShown];
 
   return (
-    <div className="cmn" ref={rootRef}>
+    <div className={'cmn' + (onStage ? '' : ' off')} ref={rootRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="cmn-strip">
         <div className="cmn-legs">{P.legs.map((_, i) => <i key={i} className={(i < s.res.length ? 'd' : '') + (i === s.leg && !done && s.phase === 'play' ? ' c' : '')}>{i + 1}</i>)}</div>
         <div className="cmn-pts"><b>{fmt(total)}</b> points</div>
       </div>
 
-      {!done || !onStage ? (
-        <div className="cmn-card">
-          <div className="cmn-eb">{legShown === n - 1 ? 'Final leg' : `Leg ${legShown + 1} of ${n}`}</div>
-          <div className="cmn-seen">Last seen: <span>{lastSeen(P, legShown).name}</span></div>
-          {s.phase === 'reveal' && onStage && !done ? null : (
-            <ul className="cmn-tips">
-              {LL.tips.slice(0, done ? 3 : tipsShown).map((t, k, arr) => {
-                const typed = !(legShown < typedFrom.current.leg || (legShown === typedFrom.current.leg && k < typedFrom.current.tips));
-                const old = onStage && !done && k < arr.length - 1 && openTip !== k;
-                return (
-                  <li key={`${legShown}-${k}`} className={old ? 'old' : ''} onClick={old ? () => setOpenTip(k) : undefined}>
-                    <span className={'cmn-tag t' + k}>{TIP_TAGS[k]}</span><TypedTip text={t} animate={typed && !done} />
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          {/* THE NEXT TIP SITS WITH THE TIPS (owner, 2026-11-08: under the globe it
-              fell off short phones), so it is always on screen beside what it adds to. */}
-          {active && !done && s.phase === 'play' && s.tips < 3 ? (
-            <button type="button" className="cmn-more" onClick={() => setS((st) => (st.tips < 3 && st.phase === 'play' ? { ...st, tips: st.tips + 1 } : st))}>
-              + {TIP_TAGS[s.tips]} tip <small>&#8722;150 points</small>
-            </button>
+      {/* THE GLOBE RESTS UNDER THE CLUES (owner, 2026-11-08: "very small on
+          mobile ... maybe resting under the clues"). The region takes all the
+          height the column has; the globe sits at its foot as large as the
+          width allows, and the clue card floats over its top. */}
+      <div className="cmn-region" ref={regionRef}>
+        <svg ref={svgRef} className="cmn-svg" aria-label="Globe. Drag to spin, tap to drop your pin." role="img" />
+        {failed ? <div className="cmn-fail">The globe did not load. Check your connection and reload.</div> : null}
+        <div className="cmn-over" ref={overRef}>
+          {!done || !onStage ? (
+            <div className="cmn-card">
+              <div className="cmn-eb">{legShown === n - 1 ? 'Final leg' : `Leg ${legShown + 1} of ${n}`} · Last seen: <span>{lastSeen(P, legShown).name}</span></div>
+              {s.phase === 'reveal' && onStage && !done ? null : (
+                <ul className="cmn-tips">
+                  {LL.tips.slice(0, done ? 3 : tipsShown).map((t, k, arr) => {
+                    const typed = !(legShown < typedFrom.current.leg || (legShown === typedFrom.current.leg && k < typedFrom.current.tips));
+                    const old = onStage && !done && k < arr.length - 1 && openTip !== k;
+                    return (
+                      <li key={`${legShown}-${k}`} className={old ? 'old' : ''} onClick={old ? () => setOpenTip(k) : undefined}>
+                        <span className={'cmn-tag t' + k}>{TIP_TAGS[k]}</span><TypedTip text={t} animate={typed && !done} />
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {/* THE NEXT TIP SITS WITH THE TIPS (owner, 2026-11-08), so it is always on screen. */}
+              {active && !done && s.phase === 'play' && s.tips < 3 ? (
+                <button type="button" className="cmn-more" onClick={() => setS((st) => (st.tips < 3 && st.phase === 'play' ? { ...st, tips: st.tips + 1 } : st))}>
+                  + {TIP_TAGS[s.tips]} tip <small>&#8722;150 points</small>
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+          {res ? (
+            <div className="cmn-res" key={'r' + s.res.length}>
+              <div className="big">+{fmt(res.pts)}</div>
+              <div className="sub"><b>{LL.name}</b><br />{fmt(res.km)} km away{res.tips > 1 ? ` · ${res.tips} tips` : ''}</div>
+              <div className="grade">{grade(res.km)}</div>
+            </div>
           ) : null}
         </div>
-      ) : null}
-
-      {res ? (
-        <div className="cmn-res" key={'r' + s.res.length}>
-          <div className="big">+{fmt(res.pts)}</div>
-          <div className="sub"><b>{LL.name}</b><br />{fmt(res.km)} km away{res.tips > 1 ? ` · ${res.tips} tips` : ''}</div>
-          <div className="grade">{grade(res.km)}</div>
-        </div>
-      ) : null}
-
-      <div className="cmn-globe" style={fit ? { width: `min(100%, ${fit}px)` } : undefined}>
-        <svg ref={svgRef} aria-label="Globe. Drag to spin, tap to drop your pin." role="img" />
-        {failed ? <div className="cmn-fail">The globe did not load. Check your connection and reload.</div> : null}
         {active && !done ? (
           <div className="cmn-zoom">
             <button type="button" aria-label="Zoom in" onClick={() => globe.current && globe.current.zoomBy(1.6)}>+</button>
@@ -433,7 +461,7 @@ export function CarmenTools({ P, s, setS, active }) {
 }
 
 const CSS = `
-.cmn{display:flex;flex-direction:column;gap:10px;width:100%;max-width:560px;margin:0 auto;font-family:'Manrope',system-ui,sans-serif;color:var(--pst-ink,#16181d);}
+.cmn{display:flex;flex-direction:column;gap:10px;width:100%;max-width:560px;margin:0 auto;flex:1 1 auto;min-height:0;font-family:'Manrope',system-ui,sans-serif;color:var(--pst-ink,#16181d);}
 .cmn-strip{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border:1px solid var(--pst-ink,#16181d);border-radius:14px;}
 .cmn-legs{display:flex;gap:6px;}
 .cmn-legs i{font-style:normal;width:26px;height:26px;border-radius:50%;border:1px solid var(--pst-ink,#16181d);display:grid;place-items:center;font-size:11px;font-weight:800;transition:background .3s,transform .3s;}
@@ -441,8 +469,15 @@ const CSS = `
 .cmn-legs i.c{background:var(--pst-ink,#16181d);color:var(--pst-bg,#fff);transform:scale(1.1);}
 .cmn-pts{font-size:13px;font-weight:600;color:var(--pst-mute,#4a4f58);}
 .cmn-pts b{font-size:15px;font-weight:800;color:var(--pst-ink,#16181d);font-variant-numeric:tabular-nums;}
-.cmn-card{border:1px solid var(--pst-ink,#16181d);border-radius:14px;padding:11px 13px;}
-.cmn-eb{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--pst-mute,#8a909a);}
+.cmn-card{border:1px solid var(--pst-ink,#16181d);border-radius:14px;padding:10px 12px;background:color-mix(in srgb, var(--pst-bg,#fff) 90%, transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+.cmn-region{position:relative;flex:1 1 auto;min-height:340px;width:100%;}
+.pst.inl .cmn-region{flex:none;height:min(76vh,720px);}
+.cmn.off .cmn-region{flex:none;height:min(110vw,560px);}
+.cmn-svg{position:absolute;inset:0;width:100%;height:100%;display:block;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent);touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;}
+.cmn-over{position:absolute;left:0;right:0;top:0;z-index:2;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.cmn-over>*{pointer-events:auto;}
+.cmn-eb{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute,#8a909a);}
+.cmn-eb span{color:var(--pst-acc-ink,#3f5a12);text-transform:none;letter-spacing:0;font-size:12.5px;}
 .cmn-seen{font-size:14px;font-weight:700;margin-top:2px;}
 .cmn-seen span{color:var(--pst-acc-ink,#3f5a12);}
 .cmn-tips{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;}
@@ -458,11 +493,9 @@ const CSS = `
 .cmn-res .sub b{color:#d9edae;}
 .cmn-res .grade{border:2.5px solid currentColor;border-radius:8px;padding:3px 8px;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;transform:rotate(-7deg);animation:cmnStamp .4s .9s cubic-bezier(.2,1.6,.4,1) both;white-space:nowrap;}
 @keyframes cmnStamp{from{transform:scale(2.6) rotate(-7deg);opacity:0}to{transform:scale(1) rotate(-7deg);opacity:1}}
-.cmn-globe{position:relative;width:100%;aspect-ratio:1/1;margin:0 auto;}
-.cmn-globe svg{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;}
-.cmn-zoom{position:absolute;right:2px;top:2px;display:flex;flex-direction:column;gap:6px;}
+.cmn-zoom{position:absolute;right:2px;bottom:44px;z-index:3;display:flex;flex-direction:column;gap:6px;}
 .cmn-zoom button{width:34px;height:34px;border-radius:50%;border:1px solid var(--pst-ink,#16181d);background:var(--pst-bg,#fff);color:var(--pst-ink,#16181d);font:800 18px 'Manrope',system-ui,sans-serif;cursor:pointer;}
-.cmn-hint{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);font-size:12px;font-weight:700;color:#16181d;background:rgba(255,255,255,.94);padding:5px 11px;border-radius:999px;pointer-events:none;white-space:nowrap;transition:opacity .3s;}
+.cmn-hint{z-index:3;position:absolute;left:50%;bottom:4px;transform:translateX(-50%);font-size:12px;font-weight:700;color:#16181d;background:rgba(255,255,255,.94);padding:5px 11px;border-radius:999px;pointer-events:none;white-space:nowrap;transition:opacity .3s;}
 .cmn-fail{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-size:14px;font-weight:700;padding:20px;}
 .cmn-more{display:block;width:100%;margin:10px 0 0;min-height:40px;border-radius:10px;border:1px solid var(--pst-ink,#16181d);background:var(--pst-bg,#fff);color:var(--pst-ink,#16181d);font-family:'Manrope',system-ui,sans-serif;font-size:14px !important;font-weight:800 !important;cursor:pointer;}
 .cmn-more small{font-weight:600;opacity:.65;}

@@ -268,6 +268,6 @@
   "carmen": {
     "through": "2026-12-13",
     "on": "2026-11-08",
-    "note": "launch bank: the 113-city pool (339 tips) was authored in four regional passes and read tip by tip by two separate fact-checkers, who rewrote 31 tips (wrong superlatives, stale facts, giveaway nicknames, politics); scripts/verify-carmen.mjs checks name leaks, spelling and the route rules"
+    "note": "launch bank: the 113-city pool (339 tips) was authored in four regional passes and read tip by tip by two separate fact-checkers, who rewrote 31 tips (wrong superlatives, stale facts, giveaway nicknames, politics); scripts/verify-carmen.mjs checks name leaks, spelling and the route rules. 2026-11-08 restructure: all 339 tips rewritten for varied openings with currency moved later or dropped (owner: too many led with currency), checked old against new by a separate fact-checker, who found no drift and caught 8 older leaks and one false claim (Taipei), all fixed; boards from 2026-11-09 only, Nov 8 frozen"
   }
 }

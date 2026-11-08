@@ -92,6 +92,28 @@ PUZZLES.forEach((p, i) => {
     if (p.stolen === PUZZLES[i - 1].stolen) fail(p, 'same loot two days running');
   }
 });
+// VARIETY (owner, 2026-11-08: "they almost all seem to have the same structure
+// with currency first"). From 2026-11-09: no Evidence tip leads with money,
+// money shows up in at most ~40% of Evidence tips, and no opening (first two
+// words) starts more than 8% of the cities' tips in the same slot.
+const VARIETY_FROM = '2026-11-09';
+const MONEY = /\b(currency|coins?|notes?|banknotes?|bills?|cash|change|dollars?|euros?|pesos?|rupees?|rupiah|yen|yuan|won|baht|dong|ringgit|francs?|pounds?|lira|dinars?|dirhams?|riyals?|rials?|shillings?|naira|rand|kwacha|birr|leva|lev|lei|krona|kronor|krone|kroner|zloty|forint|koruna|soles?|reais|real|colones|quetzales|bolivianos|tenge|tugrik|ngultrum|kina|kip|taka|kyat|riel|rubles?|hryvnia|lari|dram|manat)\b/i;
+const seenCity = {};
+PUZZLES.filter((p) => p.live >= VARIETY_FROM).forEach((p) => p.legs.forEach((L) => { seenCity[L.id] = L; }));
+const cities = Object.values(seenCity);
+if (cities.length) {
+  let money = 0;
+  const opens = [{}, {}, {}];
+  cities.forEach((L) => {
+    const ev = L.tips[0];
+    const m = ev.match(MONEY);
+    if (m) { money++; if (m.index < 40) { bad++; console.log(`✗ carmen: ${L.name} Evidence tip leads with money ("${m[0]}")`); } }
+    L.tips.forEach((t, j) => { const o = t.toLowerCase().split(/\s+/).slice(0, 2).join(' '); opens[j][o] = (opens[j][o] || 0) + 1; });
+  });
+  if (money / cities.length > 0.4) { bad++; console.log(`✗ carmen: money in ${money} of ${cities.length} Evidence tips (ceiling 40%)`); }
+  const cap = Math.max(4, Math.ceil(cities.length * 0.08));
+  opens.forEach((o, j) => Object.entries(o).forEach(([w, n]) => { if (n > cap) { bad++; console.log(`✗ carmen: tip ${j + 1} opens "${w}" in ${n} of ${cities.length} cities (ceiling ${cap})`); } }));
+}
 for (const [k, n] of Object.entries(uses)) if (n > MAX_USES) { bad++; console.log(`✗ carmen: ${k} used ${n} times (ceiling ${MAX_USES})`); }
 
 if (bad) { console.log(`\ncarmen: ${bad} problem(s) in ${PUZZLES.length} cases`); process.exit(1); }

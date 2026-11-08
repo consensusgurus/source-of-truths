@@ -2199,3 +2199,11 @@ Wired by `scripts/wire-carmen.mjs` (beside Ping). Skills Memory, Deduction.
   standard ending. The shell holds the ending (SimpleDaily `GAME.holdMs`) and the board releases it.
 - **SimpleDaily gained four optional GAME hooks for it** (no other game changes): `holdMs`, `title`,
   `metric`, and boardProps `held` / `release` / `gaveUp`.
+
+**Layout and tip variety (2026-11-08, owner: "the globe is very small on mobile ... maybe resting under the clues" and "they almost all seem to have the same structure with currency first").**
+The globe now fills a `.cmn-region` that takes the column's spare height; the clue card floats over its top
+(`.cmn-over`, translucent) and the globe sits at the region's foot, sized by `CarmenGlobe.setFrame(w, h, cx, cy, r)`
+from a ResizeObserver (r tucks up to half the card under it, and uses the largest card seen so the globe holds still
+as tips arrive). All 339 tips were rewritten for varied openings; `verify-carmen.mjs` now enforces, from 2026-11-09:
+no Evidence tip names money in its first 40 characters, money in at most 40% of Evidence tips, and no two-word opening
+in more than 8% of cities per slot. New pool cities must pass these too.
