@@ -2413,3 +2413,14 @@ Approved on the "Mind Loft Home: Details Toggle and Rail Breakpoints" canvas.
   phone and two across from 600px (iPad portrait, a phone turned sideways), with `fullDesc` and
   the skills. The one-time note waits until a view toggle is actually on screen (the cap's on
   desktop, a pane's on a phone), so a phone player sees it the first time they open a pane.
+
+## The Space Cadet pop-up (owner, 2026-11-07)
+
+`app/SpaceCadetPop.jsx`, mounted in StageToday next to GroupsPop (home only). "Are you a Space
+Cadet? Take the new test!" with one line on the run, a full-width "Take the Test" to /spacecadet, a
+Close link and the X. No per-puzzle tiles (owner). Shown to EVERYONE, new players included, ONCE
+per browser: `sot_pop_spacecadet` is stamped when it renders; a browser with any
+`sot_run_spacecadet_*` save is stamped and skipped. Never while a puzzle is being played
+(`gameActive()`), and it waits while the entry door or any other card or the Details note is up;
+if the way is not clear within 30s it gives up for that visit without stamping.
+`?spacecadet=0` suppresses, `?spacecadet=1` previews without stamping.

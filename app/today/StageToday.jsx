@@ -66,6 +66,7 @@ import ThemePop, { LightOffer } from '../ThemePop';
 import StageLadder from '../StageLadder';
 import EntryDoor from '../EntryDoor';
 import PremierePop from '../PremierePop';
+import SpaceCadetPop from '../SpaceCadetPop';
 import GroupsPop from '../GroupsPop';
 // GROUP STANDINGS on the home (2026-09-17): the band, the Groups badge and the
 // member dots on the tiles all read one standing payload.
@@ -4142,6 +4143,8 @@ export default function StageToday() {
       <PremierePop />
       {/* GROUPS LAUNCH: once per browser, after everything above. See app/GroupsPop.jsx. */}
       <GroupsPop />
+      {/* SPACE CADET: once per browser, everyone, home only, never mid puzzle. See app/SpaceCadetPop.jsx. */}
+      <SpaceCadetPop />
       {/* The name form, opened by ?signup=1 or by either guest control below. */}
       <ChooseNamePop />
 
