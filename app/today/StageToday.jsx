@@ -7736,7 +7736,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix.sty-det .sty-g{overflow:hidden;
     --gpd:var(--cci, var(--cc));--gpm:var(--cfull);--gpw:var(--stg-surf);
     --gpt:color-mix(in srgb, var(--cfull) 30%, var(--stg-surf));}
-  .sty-ix.sty-det .sty-gband{display:block;order:-1;flex:none;height:84px;margin:-15px -14px 4px -16px;width:calc(100% + 30px);max-width:none;box-sizing:border-box;align-self:flex-start;
+  /* Pinned to the card's own edges (2026-11-08: "they don't fill the
+     tiles"): sized off the padding, it came up short wherever a card's
+     padding differed, so it sits absolutely and the card makes room above. */
+  .sty-ix.sty-det .sty-g:has(> .sty-gband){padding-top:99px;}
+  .sty-ix.sty-det .sty-gband{display:block;position:absolute;top:0;left:0;right:0;height:84px;margin:0;
     background:color-mix(in srgb, var(--cfull) 26%, var(--stg-surf));border-bottom:var(--dk);}
   .sty-ix.sty-det .sty-g.mx .sty-gn > .sty-gi{display:inline-block;}
   .sty-ix.sty-det .sty-g.mx .sty-gn::before{display:none;}
