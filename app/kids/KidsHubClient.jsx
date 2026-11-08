@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Footer from '../Footer';
 import { formatCount } from '../Count';
 import { T } from '@/lib/theme';
+import { LEARNING_MATCHES, LEARNING_MATCH_IDS, previewFor } from './learning-matches';
 import { KIDS_DAILIES, kidsDayNumber, kidsDateLabel } from '@/lib/kids-daily';
 import { KidsHeader, KIDS_CSS, useKidsDone, SHAPES } from './KidsShell';
 
@@ -82,6 +83,11 @@ const ACTIVITIES = [
   { id: 'fantasy-match', href: '/kids/fantasy-match', title: 'Fantasy Match', desc: 'Match unicorns, princesses, princes, castles, and dragons. Fifteen pairs.', tag: 'Game', ready: true, band: '#f1ecfb', preview: FANTASY_PREVIEW },
   { id: 'word-match', href: '/kids/word-match', title: 'Word Match', desc: 'Match each word to its picture. Twelve pairs.', tag: 'Learning', ready: true, band: '#e7f6ef', preview: WORD_PREVIEW },
   { id: 'number-match', href: '/kids/number-match', title: 'Number Match', desc: 'Match each number to its spelling, 0 to 15. Sixteen pairs.', tag: 'Learning', ready: true, band: '#eef3fe', preview: NUMBER_PREVIEW },
+  // The learning match sets (app/kids/learning-matches.js), 2026-11-07.
+  ...LEARNING_MATCH_IDS.map((id) => {
+    const m = LEARNING_MATCHES[id];
+    return { id, href: `/kids/${id}`, title: m.title, desc: m.desc, tag: 'Learning', ready: true, band: m.band, preview: previewFor(id) };
+  }),
 ];
 
 function Tile({ a }) {

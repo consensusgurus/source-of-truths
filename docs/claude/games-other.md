@@ -835,6 +835,24 @@ deliberate and none of them a gap to fill later:
   A new kids daily is: a `KIDS_DAILIES` row, `app/kids/<key>/page.js` + client, a bank or a
   generator, a `verify-kids` section, and a `DAILY_ART` glyph in `KidsHubClient.jsx`.
 
+## Kids learning match sets (`/kids/<id>-match`, launched 2026-11-07)
+
+Twelve learning matches on the shared `MatchGame` engine, all defined in ONE data module,
+`app/kids/learning-matches.js` (`LEARNING_MATCHES`): Shape, Counting, Subtraction, Times Table,
+Clock, Mama and Baby, Animal Sound, Opposites, Rhyme, Flag, Animal Home and Job Match. Each page is
+a three-line `page.js` rendering `app/kids/LearningMatch.jsx` with its id. The hub tiles, preview
+cards (`previewFor`), `lib/kids.js` rows and `lib/admin-quiz-titles.js` view keys (`kids-<id>`)
+all come from that module, so a new set is one `LEARNING_MATCHES` entry plus a page, a
+`lib/kids.js` row and an admin title.
+
+- **Every card has exactly ONE match on the board.** No rhyme, opposite, home, tool or answer that
+  could pair with two cards (Bear-Den, not Bear-Cave, because a bat also lives in a cave).
+- **Capital-to-lowercase letters is Letter Match**, which already exists; do not add an
+  Upper/Lower Case set.
+- `textFace()` fits words to the square; words of 9+ letters keep a readable size and are squeezed
+  to the card width with `textLength` rather than shrunk.
+- Like the other match games these are NOT dailies: no registry row, no scores, only a view count.
+
 ## Snug (`/snug`) and Fit It (`/kids/fitit`): fit the pieces, one way only (launched 2026-09-13)
 
 Key/route/folder `snug`, category **Logic**, registry `miss: null` (Sixes' manners: a solve is a
