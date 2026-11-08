@@ -3864,14 +3864,6 @@ export default function StageToday() {
     for (const g of c.games) t[g.cat] = (t[g.cat] || 0) + 1;
     return Object.keys(t).sort((a, b) => t[b] - t[a])[0] || null;
   };
-  // Which games leave the All Puzzles grid because their run's tile is there.
-  const foldKeys = (() => {
-    if (!mid || findOn || viewOf(ALL_ID) === 'list' || (deckOn(ALL_ID) && paneOn === ALL_ID)) return null;
-    const ks = new Set();
-    for (const c of deckRuns(null)) if (FOLD_RUNS.includes(c.id)) for (const g of c.games) ks.add(g.key);
-    return ks.size ? ks : null;
-  })();
-  useEffect(() => { setRunsOpen(false); }, [paneOn]);
   // HOW MANY TILES ACROSS (owner, 2026-11-07): the top row of a pane is all
   // runs, the deck last, so the row's width decides how many runs lead. Read
   // off the open pane's own grid, re-read on resize.
@@ -3887,6 +3879,18 @@ export default function StageToday() {
     window.addEventListener('resize', read);
     return () => window.removeEventListener('resize', read);
   }, [paneOn, mid]);
+  // THE FOLDED RUNS NEVER LEAVE THE TOP ROW (owner, 2026-11-08: "never leak
+  // beyond top row"). Only as many as fit beside the deck get a tile; the rest
+  // sit in More Runs and their games stay in the grid.
+  const shownFolds = (runs) => runs.filter((c) => FOLD_RUNS.includes(c.id)).slice(0, Math.max(1, tileCols - 1));
+  // Which games leave the All Puzzles grid because their run's tile is there.
+  const foldKeys = (() => {
+    if (!mid || findOn || viewOf(ALL_ID) === 'list' || (deckOn(ALL_ID) && paneOn === ALL_ID)) return null;
+    const ks = new Set();
+    for (const c of shownFolds(deckRuns(null))) for (const g of c.games) ks.add(g.key);
+    return ks.size ? ks : null;
+  })();
+  useEffect(() => { setRunsOpen(false); }, [paneOn]);
   const runCells = (cat) => {
     if (!mid || findOn) return null;
     const runs = deckRuns(cat);
@@ -3895,7 +3899,7 @@ export default function StageToday() {
     // THE QUIZ RUNS STAND IN FOR THEIR GAMES ON ALL PUZZLES (owner, 2026-11-05).
     // Every folded run gets its own tile at the head of the grid, and the games
     // inside it leave the grid (foldKeys, below). Elsewhere one lead run.
-    const folds = cat == null ? runs.filter((c) => FOLD_RUNS.includes(c.id)) : [];
+    const folds = cat == null ? shownFolds(runs) : [];
     // THE TOP ROW IS ALL RUNS (owner, 2026-11-07): the folded quiz runs, then
     // the most played runs the reader has not finished, until one cell is left
     // for the deck. Finished runs drop into the deck, so as runs are completed
@@ -3908,7 +3912,7 @@ export default function StageToday() {
     const onCat = cat != null;
     const leads = onCat
       ? [...open, ...runs.filter((c) => !c.poly && !open.includes(c))]
-      : [...folds, ...open].slice(0, Math.max(room, folds.length));
+      : [...folds, ...open].slice(0, room);
     const lead = leads[0] || null;
     const rest = runs.filter((c) => !leads.includes(c));
     const cells = [];
@@ -3937,7 +3941,7 @@ export default function StageToday() {
         <div key="rdeck" className={'sty-g mx sty-gdeck' + (runsOpen ? ' on' : '')}
           data-fk="rdeck" style={{ '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} onClick={() => setRunsOpen((v) => !v)}>
           <span className="sty-gn">{rest.length ? <>{lead ? 'More Runs' : 'Runs'} <em>{rest.length}</em></> : 'Runs'}</span>
-          {rest.slice(0, 3).map((c, ri) => <span key={c.id} className={'sty-gdl' + (ri ? ' sty-gdx' : '')}><b>{c.name}</b><i>{runFull(c) ? 'Played' : c.n ? `${c.n} of ${c.games.length}` : fmtN((runStat[c.id] || {}).players)}</i></span>)}
+          {rest.slice(0, 3).map((c, ri) => <span key={c.id} className={'sty-gdl' + (ri ? ' sty-gdx' : '') + (ri > 1 ? ' sty-gd3' : '')}><b>{c.name}</b><i>{runFull(c) ? 'Played' : c.n ? `${c.n} of ${c.games.length}` : fmtN((runStat[c.id] || {}).players)}</i></span>)}
           <a className="sty-gdl sty-gdb" href="/build-a-run" onClick={(e) => e.stopPropagation()}><b>+ Build a Run</b><i>&rarr;</i></a>
           <button type="button" className="sty-gpl sty-gcs sty-gdt" aria-expanded={runsOpen} aria-controls="sty-runsu"
             onClick={(e) => { e.stopPropagation(); setRunsOpen((v) => !v); }}>
@@ -7671,6 +7675,15 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix.sty-det .sty-gdeck{grid-row:1;grid-column:-2 / -1;}
   .sty-ix.sty-det .sty-gdeck .sty-gdl{font-size:13.5px;line-height:1.5;}
   .sty-ix.sty-det .sty-gdeck .sty-gdb{margin-top:0;}
+  /* THE RUNS ROW IS SLIM (owner, 2026-11-08: "the gauntlets can be slimmer
+     row"). Row one sizes to its own run tiles instead of the 1fr puzzle
+     height, so the deck shows two runs and Build a Run moves up beside its
+     title to fit. */
+  .sty-ix.sty-det .sty-games:has(> .sty-gdeck):not(:has(> .sty-runsu)){grid-template-rows:auto;}
+  .sty-ix.sty-det .sty-gdeck{position:relative;}
+  .sty-ix.sty-det .sty-gdeck .sty-gd3{display:none !important;}
+  .sty-ix.sty-det .sty-gdeck .sty-gdb{position:absolute;top:17px;right:14px;gap:8px;}
+  .sty-ix.sty-det .sty-grun .sty-gt{margin-bottom:10px;}
   .sty-find{flex:1 1 auto;max-width:none;margin-left:28px;display:flex;align-items:center;gap:8px;height:38px;box-sizing:border-box;
     padding:0 14px;border:var(--dk);border-radius:999px;background:var(--stg-surf);color:var(--stg-ink);cursor:text;}
   .sty-find input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--stg-ink);}
