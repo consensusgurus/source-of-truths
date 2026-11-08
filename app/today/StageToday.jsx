@@ -4569,7 +4569,7 @@ export default function StageToday() {
               const isRuns = paneOn === CIRC_ID;
               const pc = !isAll && !isMine && !isRuns ? paneCat(paneOn) : null;
               const games = isAll ? alpha : isMine ? pinned : pc ? pc.games : [];
-              const sorted = isMine ? [...games].sort((a, b) => a.name.localeCompare(b.name)) : sortGames(games);
+              const sorted = isMine ? [...games].sort((a, b) => a.name.localeCompare(b.name)) : isAll ? allOrder(sortGames(games)) : sortGames(games);
               const runs = isMine ? pinnedCircs : isRuns ? [...circuits].sort((a, b) => runFull(a) - runFull(b)) : mRunsFor(isAll ? null : paneOn);
               const nDone = games.filter((g) => done.has(g.key)).length;
               const s = pc ? skillOfId(paneOn) : null;
@@ -4653,8 +4653,12 @@ export default function StageToday() {
                       return (
                         <a key={g.key} className={'mph-g' + (isDone ? ' done' : '')} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`} style={mTone(g.cat)}
                           onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
-                          <b>{pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
+                          {/* THE PHONE DETAILS CARD MATCHES THE DESKTOP ONE (owner, 2026-11-08):
+                              board band, glyph by the name, facts row. */}
+                          {mDet ? <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} /></span> : null}
+                          <b>{mDet ? <Glyph k={g.key} size={17} /> : pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
                           {mDet ? <em className="mx">{fullDesc(g)}</em> : <em>{g.tag}</em>}
+                          {mDet ? <FactRow k={g.key} /> : null}
                           {mDet && skillLine(g.key) ? <span className="mk">{skillLine(g.key)}</span> : null}
                           <small>{isDone ? (r ? `You #${r.rank} of ${r.field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>
                           {canPin ? (
@@ -7434,6 +7438,23 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-gg.det .mph-g em.mx{white-space:normal;overflow:visible;font-size:13.5px;font-weight:500;line-height:1.48;}
   .sty-mph .mph-gg.det .mph-g .mk{font-size:11.5px;font-weight:700;opacity:.75;}
   @media (min-width:600px){ .sty-mph .mph-gg.det{grid-template-columns:1fr 1fr;} }
+  /* THE PHONE DETAILS CARD (owner, 2026-11-08: "'details' view on mobile
+     should show similar"): the desktop card's board band, glyph and facts,
+     in the card's own category colour. */
+  .sty-mph .mph-gg.det .mph-g{overflow:hidden;padding-top:96px;
+    --gpd:var(--md);--gpm:var(--mc);--gpw:#fff;--gpt:color-mix(in srgb, var(--mc) 40%, #fff);}
+  .sty-mph .mph-gg.det .mph-g .sty-gband{display:block;position:absolute;top:0;left:0;right:0;height:84px;
+    background:color-mix(in srgb, var(--mc) 22%, #fff);border-bottom:1px solid var(--mink);}
+  .sty-mph .mph-gg.det .mph-g b .sty-gi{color:var(--gpd);vertical-align:-3px;margin-right:7px;}
+  .sty-mph .mph-gg.det .mph-g .sty-gfx{display:flex;flex-wrap:wrap;gap:6px;margin:3px 0 1px;}
+  .sty-mph .mph-gg.det .sty-gfc{display:inline-flex;align-items:center;gap:5px;height:24px;box-sizing:border-box;padding:0 9px 0 7px;border-radius:999px;
+    background:var(--gpt);color:inherit;font-size:12px;font-weight:700;white-space:nowrap;}
+  .sty-mph .mph-gg.det .sty-gfc svg{color:var(--gpd);flex:none;}
+  .sty-mph .mph-gg.det .sty-gfm{display:inline-flex;gap:2px;align-items:flex-end;}
+  .sty-mph .mph-gg.det .sty-gfm i{display:block;width:4px;border-radius:1px;background:color-mix(in srgb, var(--gpd) 28%, transparent);}
+  .sty-mph .mph-gg.det .sty-gfm i.on{background:var(--gpd);}
+  .stage-page:not([data-stage-theme=light]) .sty-mph .mph-gg.det .mph-g{--gpd:var(--mc);--gpw:#1a2130;--gpt:color-mix(in srgb, var(--mc) 24%, #1a2130);}
+  .stage-page:not([data-stage-theme=light]) .sty-mph .mph-gg.det .mph-g .sty-gband{background:color-mix(in srgb, var(--mc) 16%, #1a2130);}
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */
   .sty-mph{--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
