@@ -49,6 +49,8 @@ const firstWord = (s) => String(s || '').split(/\s+/)[0];
 export const FINALE_PIECE = {
   gauntlet: 'shelf', triviaencore: 'shelf', science: 'flask', math: 'calc', english: 'dict',
   dojo: 'belt', room: 'tag', judged: 'letters', pricecheck: 'wallet', passport: 'passport', crossed: 'papers',
+  // Space Cadet (2026-11-07): the dictionary, each rank defined by its line.
+  spacecadet: 'dict',
 };
 
 // ── THE PIECES ─────────────────────────────────────────────────────────────

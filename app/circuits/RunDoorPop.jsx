@@ -96,6 +96,14 @@ export const RUN_DOORS = {
     go: 'Run all five', accent: '#93c5fd',
     tags: [['Emcee', '#e879f9'], ['Encore', '#86a9ff'], ['Arcos', '#93c5fd'], ['Glyph', '#94a3b8'], ['Anon', '#a5b4fc']],
   },
+  // SPACE CADET (owner, 2026-11-07): once per game, to everyone, on the start
+  // gate of Roll, Parker, Tangled or Topple.
+  spacecadet: {
+    href: '/spacecadet', name: 'Space Cadet', eyebrow: 'Daily run \u00b7 Four spatial puzzles', once: 'game', everyone: true, from: '2026-11-07',
+    body: 'Roll, Parker, Tangled and Topple back to back on one page: roll a die, free a car, untangle the ropes, land a block. One clock across all four ranks you, from Lost in Space up to Architect-Engineer.',
+    go: 'Run all four', accent: '#7dd3fc',
+    tags: [['Roll', '#fda4af'], ['Parker', '#fde68a'], ['Tangled', '#a7e8cf'], ['Topple', '#d8b4fe']],
+  },
   room: {
     href: '/room', name: 'Read the Room', eyebrow: 'Daily run · Four crowd games',
     body: 'Herd, Outwit, Outrank and Feud back to back on one page: run with the herd, dodge it, call its order, say what it said. Then a verdict on how well you read tonight\u2019s room.',

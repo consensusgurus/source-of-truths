@@ -118,6 +118,9 @@ const nextConfig = {
       { source: '/aorb', destination: '/crowd-psychology-games', permanent: true },
       // Crossed Up (owner, 2026-10-20) lives at /crossed; its name's spellings land there.
       { source: '/crossedup', destination: '/crossed', permanent: true },
+      // Space Cadet (owner, 2026-11-07) lives at /spacecadet.
+      { source: '/space-cadet', destination: '/spacecadet', permanent: true },
+      { source: '/spatial', destination: '/spacecadet', permanent: false },
       { source: '/crossed-up', destination: '/crossed', permanent: true },
       // 2026-10-20 (owner): the Daily Five and every circuit that was not a
       // designed run were retired. Each old address goes to its nearest home.

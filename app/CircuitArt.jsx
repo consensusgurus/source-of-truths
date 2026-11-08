@@ -142,6 +142,17 @@ const ART = {
       </g>
     </>
   ),
+  // Space Cadet: a die, two ropes crossing, and a ringed planet.
+  spacecadet: (
+    <>
+      <rect x="62" y="40" width="44" height="44" rx="7" fill="currentColor" fillOpacity=".15" strokeWidth="2.5" />
+      <g fill="currentColor" stroke="none"><circle cx="74" cy="52" r="4" /><circle cx="84" cy="62" r="4" /><circle cx="94" cy="72" r="4" /></g>
+      <path className="k" d="M112 96 C130 70 150 40 176 26 M112 26 C132 40 152 72 176 96" strokeWidth="5" strokeLinecap="round" />
+      <g fill="currentColor" stroke="none"><circle cx="112" cy="96" r="5" /><circle cx="176" cy="26" r="5" /><circle cx="112" cy="26" r="5" /><circle cx="176" cy="96" r="5" /></g>
+      <circle cx="160" cy="62" r="10" fill="currentColor" fillOpacity=".25" />
+      <ellipse cx="160" cy="62" rx="20" ry="6" strokeWidth="2" transform="rotate(-18 160 62)" />
+    </>
+  ),
   room: (
     <>
       <path d="M78 16 H128 a22 22 0 0 1 22 22 V44 a22 22 0 0 1 -22 22 H92 L78 78 V64 a22 22 0 0 1 -22 -20 V38 a22 22 0 0 1 22 -22 Z" fill="currentColor" fillOpacity=".2" />

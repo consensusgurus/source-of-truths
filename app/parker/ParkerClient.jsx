@@ -54,6 +54,9 @@ import { useStageLook, isDarkLook } from '@/lib/stage-look';
 import { regionHue, sitePastel } from '@/lib/category-ramp';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
+import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import RunDoorPop from '../circuits/RunDoorPop';
+import { embedLook } from '../LogicStage';
 import { regionStyle, REGION_INK } from '@/lib/category-ramp';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
@@ -346,6 +349,9 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('park');
   const STAGE = isStage('park', searchParams);
+  // SPACE CADET (2026-11-07): mounted in the run through app/RunEmbed.jsx, the
+  // game drops its cap, finish card and tail and reports its result upward.
+  const EMBED = useRunEmbed();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('park');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('park');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -545,6 +551,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
         .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
         .catch(() => {});
     } catch (e) {}
+    if (EMBED) EMBED.onResult({ key: 'park', score, total: 10, won: g2.status === 'won', t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
   }
 
   function commit(next) { gRef.current = next; setG(next); }
@@ -554,6 +561,8 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
     commit({ ...cur, t0: Date.now() });
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
   }
+  useRunHelp(EMBED, () => setShowHelp(true));
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function doMove(mv) {
     const cur = gRef.current;
@@ -687,8 +696,9 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
+      data-stage-pin={STAGE && EMBED ? '' : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: EMBED ? 0 : '100vh', background: STAGE ? (EMBED ? 'transparent' : 'var(--stg-ground)') : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {/* THE STAGE (owner, 2026-11-06): Parker plays on the shared white stage
           at every width, the one look Parker, Impound and Junkyard share. The lot
           is white with a 1px ink edge on grey squares; the exit is an open gap in
@@ -712,7 +722,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
           ? (won ? (used === perfect ? `Out in ${used}. That is perfect.` : `Out in ${used} moves.`) : 'You left it parked.')
           : (shown || `${used} move${used === 1 ? '' : 's'} · par ${par}`);
         return (
-          <PlayStage bg={gameColor('park')} label="Parker"
+          <PlayStage bg={gameColor('park')} label="Parker" inline={!!EMBED} look={embedLook(EMBED)}
             eyebrow={`${PUZZLE.sunday ? 'Sunday Edition' : 'Parker'} No. ${PUZZLE.num} · ${N} by ${N} lot · ${blocks.length} blocks`}
             top={(
               <div className="jx" style={{ '--jx-pad': N >= 8 ? '2px' : '3px', '--jx-r': N >= 8 ? '7px' : '9px', '--lg-bad': dark ? '#fb923c' : '#c2410c', '--lg-bad-bg': dark ? '#3a2312' : '#ffedd5' }}>
@@ -782,7 +792,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
       {/* LOFT: the cap replaces the title block AND the board's own stat
           strip. Parker grades a win from 10 down, so any solve is a win and
           a give-up is not: there is no partial state for the amber cap. */}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="park" quizId={PUZZLE.quizId}
           name="Parker"
           cat="Logic"
@@ -838,7 +848,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
 
-        {preStart && (
+        {preStart && !(EMBED && EMBED.autostart) && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
@@ -1046,7 +1056,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !EMBED && (
             <LoftFinish
               name="Parker"
               catRank={catRank}
@@ -1097,7 +1107,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
             "Show overview and more" control it replaces ever did. */}
         {/* The strip in the cap answers what this opens, without being pressed. */}
         {!STAGE && <GamePanel self="parker" name="Parker" onShow={() => setShowChrome(true)} />}
-        <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
+        <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', margin: '30px auto 0' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="parker" name="Parker" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
@@ -1135,7 +1145,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
         )}
-        {!focusMode && !identity && (
+        {!EMBED && !focusMode && !identity && (
           <div id="daily-join" style={{ margin: '18px auto 0' }}>
             <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => { setIdentity(id); if (id && id.username) setPlayer((p) => p || { name: id.username, rank: null }); }} />
           </div>
@@ -1166,8 +1176,9 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
       )}
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
-      <StageFold />
-      <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      <RunDoorPop id="spacecadet" game="park" ready={hydrated && preStart && PUZZLE.num === pickPuzzle(puzzles, null).num && !EMBED} self="Parker" />
+      {!EMBED && <StageFold />}
+      <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Parker</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Parker is a free daily sliding-block puzzle from Mind Loft. A jammed six by six lot, a dozen blocks that each slide on one axis only, and an arrow block that has to reach the gap in the wall. Tap a block, tap where you want it, and it goes if the lane is clear.

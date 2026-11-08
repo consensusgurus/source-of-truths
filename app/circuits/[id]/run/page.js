@@ -352,6 +352,8 @@ export default function CircuitRunPage({ params }) {
   // Enter the Dojo too (2026-10-12).
   if (runEngine(id) === 'dojo') redirect('/dojo');
   if (runEngine(id) === 'crossed') redirect('/crossed');
+  // Space Cadet too (2026-11-07).
+  if (runEngine(id) === 'spacecadet') redirect('/spacecadet');
   // Read the Room too (2026-10-13).
   if (runEngine(id) === 'room') redirect('/room');
 

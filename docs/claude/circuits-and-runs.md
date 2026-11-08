@@ -745,3 +745,38 @@ only), not daily endings, never a pop-up.
 - **Also on the home** (owner, 2026-11-07, "I don't see the option to create a run on
   mobile"): a "Build a Run" row right under Runs in the phone home's Everything Else list,
   and "+ Build a Run" closing the Runs pane (both screens).
+
+## Space Cadet (`/spacecadet`): the daily spatial run (owner, 2026-11-07)
+
+Roll, Parker, Tangled, then Topple (owner's order), back to back on one page. Circuit id
+`spacecadet`, engine `spacecadet`, scorer `spacecadet`, `scoreFrom: '2026-11-07'`, `ownerOrder`,
+`lead: 9`, trophy `circuit-spacecadet` "Architect-Engineer" (gold, Rocket). Files:
+`lib/space-cadet.js`, `app/spacecadet/{page.js,SpaceCadetClient.jsx,leaderboard/page.js,card/route.js}`.
+"Space Cadet" is the run's NAME only, never a ladder rung (owner, twice).
+
+- **Time decides** (the approved mockup: "one clock across all four puzzles"). Each SOLVED leg pays
+  up to 100 for speed alone: 100 at zero, one point lost every three seconds, 0 at `SPACE_CAP`
+  (5:00). Unsolved pays 0. With all four solved the total is 400 minus a third of the total time,
+  so the board ranks exactly on the clock. Each game's own move grading is not counted here.
+- **Ladder** (owner): Architect-Engineer (one combined rung, top), Air Traffic Controller (not
+  Pilot), Surveyor, Moving Day Pro, Flat-Pack Assembler, Lost in Space. NO ASTRONAUT. Time
+  cutoffs under 3:15 / 4:15 / 5:30 / 7:00 / 9:00 across all four, stored as points through
+  400 - T/3. Any leg unsolved lands on Lost in Space. THE CUTOFFS ARE PLACEHOLDERS: tune them
+  from a fortnight of real times.
+- **The games play exactly as on their own pages** (owner: "the existing play style for roll and
+  topple, they are great"). Roll, Parker, Topple and Tangled each read `useRunEmbed()`: the cap,
+  finish card, report row, join form and tail hide inside the run, the start gate is skipped
+  (`autostart`), Parker's PlayStage goes `inline` in the run's look, and the result goes up
+  through `EMBED.onResult` with `won`. A game already finished today on its own page is banked
+  off its own `sot_<key>_<num>` save, not replayed.
+- **Looks** (match the live runs): the gate wears sky `#7dd3fc` through GauntletGate's new
+  `ground` prop (the four games are all Logic, which would otherwise make it Judged's rose); each
+  leg's play frame wears its band colour (Roll rose, Parker gold, Tangled mint, Topple violet,
+  `SPACE_FORMS`). The entry centrepiece is the mockup's mission-control card. The finale piece
+  is the dictionary (each rank defined by its line).
+- **The door**: Roll, Parker, Tangled and Topple each mount `RunDoorPop id="spacecadet"` on
+  today's start gate (once per game, everyone, from 2026-11-07), gated `!EMBED`.
+- Placed in LEAD_ORDER and SHOWN (lib/circuits), the home's CIRC_LEAD / PILL_CIRCUITS /
+  LEAD_CIRCUITS, MoreRuns, RUN_PAGES (sitemap and FAQ tail), EntryDoor, CircuitArt, the
+  DrawingPop / ThanksPop run-path regexes, challenge ENGINE_CAT (Logic). Redirects
+  `/space-cadet` and `/spatial` land on it.

@@ -2102,3 +2102,28 @@ No new-game pop-up (NO_PREMIERE, as Dario and Squash). No Sunday Edition.
 - **A run does not resume after a reload:** the abandon flush posts it as it stood.
 - **Give up** (tap twice) ends the run and posts the steps already earned.
 - `scripts/verify-simon.mjs` checks the bank and the engine.
+
+## Tangled (`/tangled`): the daily rope untangling puzzle (launched 2026-11-07)
+
+From an ad the owner sent (2026-11-07): rope ends on pegs round a frame, move an end to an empty hole,
+solved when no ropes cross. Key/route `tangled`, category **Logic**, `miss: null` (ranked on TIME
+alone, as Snug: owner, "no one cares about par"), legacy accent `#0f766e` / `#5eead4`. Wired by
+`scripts/wire-tangled.mjs` (beside Roll). Skills Spatial and Planning, daily group Roll and route,
+finish set Spatial puzzles. Third leg of the Space Cadet run.
+
+- **Rules** (`lib/tangled-engine.js`, shared by client, generator and verifier): holes evenly round a
+  convex outline (polygon sides bowed out by BULGE so no three holes line up), R ropes and R*2+2 holes
+  (always two empty). Two ropes cross exactly when their ends INTERLEAVE round the edge; that test is
+  the only one used. Solved = no crossing pair; ANY such layout counts.
+- **Bank** (`scripts/gen-tangled.mjs`, deterministic off the date): a random non-crossing matching,
+  scrambled backward 60 times, keeping the tangle with the most spread-out crossings and the most cords.
+  Ropes Mon 4, Tue/Wed 5, Thu/Fri 6, Sat 7, Sun 8; frame shape cycles circle, hexagon, square,
+  triangle, rectangle, diamond, pentagon by day of year (octagon dropped: it read as the circle). No
+  Sunday Edition. `scripts/verify-tangled.mjs` checks every row and BFS-proves the weekday boards
+  solvable (2 to 4 moves). Bank 2026-11-07 to 2027-01-31.
+- **The board** (`app/tangled/TangledBoard.jsx`, ported from the approved mockup): verlet ropes, ONE
+  cream rope colour with coloured pegs (a rope's two pegs never match), no brown. Crossing pairs WIND
+  INTO TWO-STRAND CORDS fixed at the board's start; a tangle unwinds only once its ropes stop crossing,
+  never while one is held (owner: tangles must not come apart just by moving pegs).
+- **Give up** (two taps) stops the clock, eases the ropes back to `solved` and posts 0. Replay is
+  practice: unsaved, unposted.

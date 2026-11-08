@@ -273,9 +273,11 @@ export function GauntletCover({ sections = [], paper = false }) {
 // One line per quiz, name then subject (owner, 2026-10-24).
 // `bandColour` paints every lineup band in one colour (the run's category)
 // instead of each leg's ladder step; `paper` as in useStagePalette.
-export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes', headline = null, bandNote = null, lineup = null, startLabel = null, centerpiece = null, after = null, bandColour = null, paper = false }) {
+export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, onStart, fieldLine = null, banner = null, rule = 'A wrong answer ends that quiz and the next one starts.', unit = 'quizzes', headline = null, bandNote = null, lineup = null, startLabel = null, centerpiece = null, after = null, bandColour = null, paper = false, ground = null }) {
   const first = sections[0];
-  const pal = useStagePalette(gateColour(sections), undefined, paper);
+  // `ground` (Space Cadet, 2026-11-07): a run whose games share a category
+  // with another run's can wear its own colour instead of the category's.
+  const pal = useStagePalette(ground || gateColour(sections), undefined, paper);
   const word = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][sections.length] || String(sections.length);
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Enter' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); onStart && onStart(); } };
@@ -284,7 +286,7 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
   }, [onStart]);
   // THE START BUTTON WEARS THE RUN'S CATEGORY, as on every daily's start
   // screen; the two black-and-white looks keep the ink button.
-  const cat = gateColour(sections);
+  const cat = ground || gateColour(sections);
   const goStyle = pal.look === 'plain' || pal.look === 'dark' ? undefined : { background: cat, color: '#08222e', border: '1px solid #08222e' };
   const go = <button type="button" className="gsx-go gsx-startgo" style={goStyle} onClick={onStart}>{startLabel || `Start with ${first ? first.name : 'the run'}`}</button>;
   return (

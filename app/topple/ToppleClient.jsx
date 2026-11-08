@@ -47,6 +47,8 @@ import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
+import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import RunDoorPop from '../circuits/RunDoorPop';
 import { gameColor, gameColorLight, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import useIqStanding from '../useIqStanding';
@@ -246,6 +248,9 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('topple');
   const STAGE = isStage('topple', searchParams);
+  // SPACE CADET (2026-11-07): mounted in the run through app/RunEmbed.jsx, the
+  // game drops its cap, finish card and tail and reports its result upward.
+  const EMBED = useRunEmbed();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('topple');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('topple');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -425,6 +430,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
         .then((d) => { if (d && !d.error) setBoard({ ...EMPTY_BOARD, ...d }); })
         .catch(() => {});
     } catch (e) {}
+    if (EMBED) EMBED.onResult({ key: 'topple', score, total: 10, won: g2.status === 'won', t0: g2 && g2.t0, tEnd: (g2 && g2.tEnd) || Date.now() });
   }
 
   function commit(next) { gRef.current = next; setG(next); }
@@ -434,6 +440,8 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
     commit({ ...cur, t0: Date.now() });
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
   }
+  useRunHelp(EMBED, () => setShowHelp(true));
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // One roll. The move is recorded at once (so a closed tab mid-animation keeps
   // it) and the board plays it; a win is posted when it is recorded, not when
@@ -602,8 +610,9 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
 
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
+      data-stage-pin={STAGE && EMBED ? '' : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: EMBED ? 0 : '100vh', background: STAGE ? (EMBED ? 'transparent' : 'var(--stg-ground)') : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -614,7 +623,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
       {/* LOFT: the cap replaces the title block AND the board's own stat
           strip. Topple grades a win from 10 down, so any solve is a win and
           a give-up is not: there is no partial state for the amber cap. */}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="topple" quizId={PUZZLE.quizId}
           name="Topple"
           cat="Logic"
@@ -663,7 +672,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
 
-        {preStart && (
+        {preStart && !(EMBED && EMBED.autostart) && (
           <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
             {gateRules ? rulesBody : (
@@ -731,7 +740,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !playing && !EMBED && (
             <LoftFinish
               name="Topple"
               catRank={catRank}
@@ -782,7 +791,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
             "Show overview and more" control it replaces ever did. */}
         {/* The strip in the cap answers what this opens, without being pressed. */}
         {!STAGE && <GamePanel self="topple" name="Topple" onShow={() => setShowChrome(true)} />}
-        <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
+        <div style={{ display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', margin: '30px auto 0' }}>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="topple" name="Topple" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
@@ -820,7 +829,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
             </div>
           </div>
         )}
-        {!focusMode && !identity && (
+        {!EMBED && !focusMode && !identity && (
           <div id="daily-join" style={{ margin: '18px auto 0' }}>
             <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" identity={identity} onJoined={(id) => { setIdentity(id); if (id && id.username) setPlayer((p) => p || { name: id.username, rank: null }); }} />
           </div>
@@ -851,8 +860,9 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
       )}
 
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
-      <StageFold />
-      <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      <RunDoorPop id="spacecadet" game="topple" ready={hydrated && preStart && PUZZLE.num === pickPuzzle(puzzles, null).num && !EMBED} self="Topple" />
+      {!EMBED && <StageFold />}
+      <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Topple</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Topple is a free daily block rolling puzzle from Mind Loft. A tall block stands on a floor of tiles, and every move tips it over one edge: standing, it falls flat; flat, it rolls along or stands back up. Land it on the spring and it fires off the board: a one-tile spring takes the block standing, a two-tile spring takes it lying flat across both. Roll any part of it off the edge and it goes back to the start, and the fragile tiles, drawn with crack lines, give way if the block stands on one.

@@ -90,6 +90,7 @@ const RUN_TAG = {
   dojo: 'Three sudokus, one score, a belt',
   crossed: 'Four crosswords, speed decides your rank',
   room: 'The crowd games, one read of the room',
+  spacecadet: 'Four spatial puzzles, one clock',
   math: 'Five math quizzes back to back, one life each',
   english: 'Five English quizzes back to back, one life each',
   science: 'Five science quizzes back to back, one life each',
