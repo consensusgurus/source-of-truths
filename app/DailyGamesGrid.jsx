@@ -142,6 +142,7 @@ const GAMES = [
   { key: 'alibi', href: '/alibi', name: 'Alibi', tag: 'Solve the nightly whodunit', img: '/games/btn-alibi.png' },
   { key: 'cipher', href: '/cipher', name: 'Cipher', tag: 'Crack the letter math', img: '/games/btn-cipher.png' },
   { key: 'ping', href: '/ping', name: 'Ping', tag: 'Find the secret city', img: '/games/btn-ping.png' },
+  { key: 'carmen', href: '/carmen', name: 'Carmen', tag: 'Chase a thief across the globe', img: '/games/btn-carmen.png' },
   { key: 'warmer', href: '/warmer', name: 'Warmer', tag: 'Hotter or colder', img: '/games/btn-warmer.png' },
   { key: 'jester', href: '/jesters', name: 'Jesters', tag: 'Seat the court', img: '/games/btn-jester.png' },
   { key: 'sworn', href: '/sworn', name: 'Sworn', tag: 'Spot the liars', img: '/games/btn-sworn.png' },
@@ -243,14 +244,14 @@ const GAMES_BY_KEY = Object.fromEntries(GAMES.map((g) => [g.key, g]));
 // everywhere else.
 const CATEGORIES = [
   { key: 'word', label: 'Word', keys: ['crux', 'strata', 'lode', 'encore', 'emcee', 'shards', 'garble', 'scram', 'scour', 'arcos', 'fill', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'links', 'stet', 'tuck', 'warmer', 'glyph', 'anon', 'rung', 'hinge', 'babel', 'barter'] },
-  { key: 'geography', label: 'Geography', keys: ['atlas', 'flank', 'span', 'ping'] },
+  { key: 'geography', label: 'Geography', keys: ['atlas', 'flank', 'span', 'ping', 'carmen'] },
   { key: 'numbers', label: 'Numbers', keys: ['tally', 'calc', 'carve', 'cipher', 'crunch', 'blitz', 'blitzed', 'gap', 'series', 'back', 'sums', 'pricer', 'dealer', 'realtor', 'agent', 'curator'] },
   // Sudoku split out of Numbers on 2026-09-01. The nine keys are exactly the
   // Sudoku circuit's pool, so the shelf, the circuit and the category are one
   // list and cannot drift apart.
   { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sudstoo', 'sixes', 'sixestoo', 'towers', 'quilt', 'cages', 'coop', 'sando', 'snack', 'mercury', 'mercurytoo', 'fever', 'arrow', 'dart', 'polka', 'dot', 'knight', 'knighttoo', 'diag', 'diagtoo', 'frame', 'trim', 'rim', 'rimtoo', 'lip', 'liptoo', 'giant', 'gianttoo', 'sumo', 'bout', 'window', 'windowtoo', 'five', 'racecar', 'racecartoo', 'kayak', 'kayaktoo', 'whittle'] },
   { key: 'crowd', label: 'Crowd Psychology', keys: ['herd', 'outwit', 'outrank', 'feud'] },
-  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'redact', 'dating', 'extra'] },
+  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'redact', 'dating', 'extra', 'carmen'] },
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'sudoclue', 'snug', 'jig', 'saw', 'swap', 'slide', 'spin', 'connect', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'ergo', 'docket', 'plot'] },
   { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
   { key: 'cards', label: 'Cards', keys: ['taire', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib'] },

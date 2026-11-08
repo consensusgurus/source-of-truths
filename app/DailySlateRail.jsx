@@ -41,7 +41,7 @@ const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 
 const SLATE_KEYS = [
   'crux', 'emcee', 'shards', 'garble', 'links', 'span', 'dating', 'tally', 'suds', 'sudstoo', 'quilt', 'cages', 'coop', 'sando', 'snack', 'carve',
-  'extra', 'stet', 'outwit', 'outrank', 'herd', 'tuck', 'alibi', 'cipher', 'ping', 'warmer', 'jester',
+  'extra', 'stet', 'outwit', 'outrank', 'herd', 'tuck', 'alibi', 'cipher', 'ping', 'carmen', 'warmer', 'jester',
   'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'bracket', 'lode', 'etch', 'glyph', 'hedge',
   'listed', 'mate', 'four', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'sudoclue', 'snug', 'jig', 'saw', 'swap', 'slide', 'spin', 'connect', 'duet', 'lamps', 'clade', 'dossier', 'tape', 'bacon', 'judges', 'check', 'rung', 'crunch', 'taire', 'fib', 'streak',
   'feud', 'babel', 'hands', 'finesse', 'crib', 'hold', 'cell', 'mahj', 'pairs', 'swindle', 'gift', 'scram', 'arcos', 'fill', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'scour', 'chain', 'turn', 'yose', 'suffice', 'strata', 'redact', 'paths',

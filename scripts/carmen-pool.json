@@ -1,0 +1,1471 @@
+[
+ {
+  "id": "lisbon",
+  "name": "Lisbon",
+  "country": "Portugal",
+  "lat": 38.72,
+  "lon": -9.14,
+  "tier": 1,
+  "tips": [
+   "In her hotel room: a euro coin, a torn phrasebook page with \"obrigada\" circled, and a custard-tart receipt from a bakery in Belém. She's bound for a capital on the Atlantic.",
+   "The concierge says she asked about a hilly city of tiled facades and yellow trams, whose Moorish quarter, Alfama, survived the 1755 earthquake, and wanted the tram up to São Jorge Castle.",
+   "Her flight lands in mainland Europe's westernmost capital, where the Tagus meets the ocean under a red suspension bridge."
+  ]
+ },
+ {
+  "id": "marrakesh",
+  "name": "Marrakesh",
+  "country": "Morocco",
+  "lat": 31.63,
+  "lon": -7.99,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: euros changed into dirhams, and a booking for a riad deep inside an old walled medina of rose-pink earth. She has crossed into North Africa.",
+   "A guide says she wanted a rooftop riad in a walled red city on a dry plain, with the snowcapped Atlas Mountains to the south, and a morning in the cobalt-blue Majorelle Garden.",
+   "She asked the way to Jemaa el-Fnaa, the great square that fills with storytellers, musicians and food stalls after dark."
+  ]
+ },
+ {
+  "id": "addis-ababa",
+  "name": "Addis Ababa",
+  "country": "Ethiopia",
+  "lat": 9.03,
+  "lon": 38.74,
+  "tier": 2,
+  "tips": [
+   "Left at a cafe table: freshly roasted beans, change in birr, and a ticket for the city's light rail, the first in sub-Saharan Africa. She is in coffee's claimed birthplace.",
+   "A waiter says she joked about a 13-month calendar, asked for the museum that keeps Lucy, the 3.2-million-year-old skeleton, and wanted to haggle at Merkato, one of Africa's largest open-air markets.",
+   "She is in a highland capital about 2,350 meters up, home of the African Union's headquarters, whose Amharic name means \"new flower.\" Coffee ceremonies are everywhere."
+  ]
+ },
+ {
+  "id": "mumbai",
+  "name": "Mumbai",
+  "country": "India",
+  "lat": 19.08,
+  "lon": 72.88,
+  "tier": 1,
+  "tips": [
+   "A boarding pass stub shows a flight over the Arabian Sea, and a postcard of a curving seafront road lit up at night, nicknamed the Queen's Necklace. Her wallet now holds rupees.",
+   "A taxi driver says she wanted a tour of the Hindi film studios, a ride on the packed suburban trains, and to watch the dabbawalas carry home-cooked lunches across the city.",
+   "She wants a photo at the Gateway of India, the basalt arch on the harbor built to mark a 1911 royal visit, in the city known as Bombay until 1995."
+  ]
+ },
+ {
+  "id": "ulaanbaatar",
+  "name": "Ulaanbaatar",
+  "country": "Mongolia",
+  "lat": 47.89,
+  "lon": 106.91,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: tögrög spent on a fur hat and a felt-lined coat, and a train ticket to a capital where nearly half the country lives. The winters there are brutal.",
+   "A clerk says she asked about a valley city on the Tuul River ringed by bare steppe hills, wanted to see the towering gilded statue inside Gandan Monastery, and asked for Sükhbaatar Square.",
+   "She is in the world's coldest national capital, about an hour's drive from Tsonjin Boldog, where a 40-meter steel statue of Genghis Khan sits on horseback."
+  ]
+ },
+ {
+  "id": "prague",
+  "name": "Prague",
+  "country": "Czechia",
+  "lat": 50.08,
+  "lon": 14.42,
+  "tier": 1,
+  "tips": [
+   "Left in her hotel room: a handful of koruna coins, a beer mat from a brewery cellar, and a ticket for a medieval astronomical clock whose apostles parade on the hour.",
+   "A tram driver says she asked about a city of Gothic spires and baroque domes on the Vltava River, wanted the stone bridge lined with statues at dawn, and the castle complex high on the hill above it.",
+   "She is beneath the Orloj, the astronomical clock on the Old Town Hall, in the capital whose statue-lined Charles Bridge was begun in 1357."
+  ]
+ },
+ {
+  "id": "london",
+  "name": "London",
+  "country": "United Kingdom",
+  "lat": 51.51,
+  "lon": -0.13,
+  "tier": 1,
+  "tips": [
+   "Left in her hotel room: a ten-pound note, an Oyster card with its balance spent, and a receipt from a cheese stall at Borough Market. She's headed for a capital on a tidal river.",
+   "The doorman says she asked about a sprawling, drizzly city of red double-decker buses and black cabs, and wanted to see the Crown Jewels at the Tower and a play in the West End.",
+   "Her flight lands in the British capital, where Big Ben chimes beside the Houses of Parliament on the Thames and the Underground, the world's oldest metro, opened in 1863."
+  ]
+ },
+ {
+  "id": "paris",
+  "name": "Paris",
+  "country": "France",
+  "lat": 48.86,
+  "lon": 2.35,
+  "tier": 1,
+  "tips": [
+   "Tucked in her passport: a metro ticket, a euro coin, and a receipt for macarons from a patisserie on the Left Bank. A note in French reads \"rendez-vous à Montmartre.\"",
+   "The concierge says she asked about a city of cream stone boulevards laid out by Haussmann along a winding river, and wanted to see the Mona Lisa at the Louvre and Notre-Dame's towers.",
+   "Her train pulls into the City of Light, where the wrought-iron Eiffel Tower, built for the 1889 World's Fair, rises over the Seine and the Champ de Mars."
+  ]
+ },
+ {
+  "id": "rome",
+  "name": "Rome",
+  "country": "Italy",
+  "lat": 41.9,
+  "lon": 12.5,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: euros spent on supplì and a scoop of gelato near Campo de' Fiori, and a tram ticket stamped in Italian. She's chasing an ancient capital.",
+   "A taxi driver says she wanted a city of seven hills, umbrella pines and terracotta domes along the Tiber, and asked how to reach the Pantheon and the Trevi Fountain before dawn.",
+   "She's in the Eternal City, where gladiators once fought in the Colosseum and a whole independent country, Vatican City, sits inside the capital of Italy."
+  ]
+ },
+ {
+  "id": "berlin",
+  "name": "Berlin",
+  "country": "Germany",
+  "lat": 52.52,
+  "lon": 13.4,
+  "tier": 1,
+  "tips": [
+   "Left at a cafe table: a euro coin, a currywurst napkin, and a U-Bahn ticket for fare zones A and B, with \"danke schön\" scribbled on it. She's headed for a capital on the Spree.",
+   "The hotel porter says she asked about a flat, leafy city of lakes and wide avenues, and wanted to see the glass dome of the Reichstag and the art on Museum Island.",
+   "Her flight lands in Germany's capital, where the Brandenburg Gate, crowned by its four-horse Quadriga, stands at the end of the linden-lined boulevard Unter den Linden."
+  ]
+ },
+ {
+  "id": "madrid",
+  "name": "Madrid",
+  "country": "Spain",
+  "lat": 40.42,
+  "lon": -3.7,
+  "tier": 1,
+  "tips": [
+   "Tucked in her passport: euro coins, a metro card, and a receipt for chocolate con churros from San Ginés. A note in Spanish says \"nos vemos en la Plaza Mayor.\"",
+   "A bellhop says she asked about a high, dry inland capital of grand plazas and royal parks, and wanted the Prado's Velázquez paintings and a rowboat on the Retiro lake.",
+   "She's in the capital near the center of Spain, where Kilometer Zero is set in the pavement of the Puerta del Sol and the Santiago Bernabéu stadium draws huge crowds."
+  ]
+ },
+ {
+  "id": "amsterdam",
+  "name": "Amsterdam",
+  "country": "Netherlands",
+  "lat": 52.37,
+  "lon": 4.9,
+  "tier": 1,
+  "tips": [
+   "A ticket stub in her bag: a canal cruise paid in euros, a stroopwafel wrapper, and a phrase card with \"dank je wel\" circled. She's chasing a city built on wooden piles.",
+   "A bicycle mechanic says she wanted a flat city of narrow gabled houses and rings of canals, and asked about the Night Watch at the Rijksmuseum and the Van Gogh Museum.",
+   "She's in the Dutch capital, whose 17th-century canal ring is a UNESCO site, where houseboats line the Prinsengracht and the Royal Palace fronts Dam Square."
+  ]
+ },
+ {
+  "id": "vienna",
+  "name": "Vienna",
+  "country": "Austria",
+  "lat": 48.21,
+  "lon": 16.37,
+  "tier": 1,
+  "tips": [
+   "Left in her hotel room: euro coins, a cafe receipt for a slice of Sachertorte, and an opera program in German. She's headed for a former imperial capital on the Danube.",
+   "The concierge says she asked about an elegant city of baroque palaces and grand coffeehouses, and wanted to see the Lipizzaner horses of the Spanish Riding School and Schönbrunn Palace.",
+   "She's in the capital of Austria, city of Strauss waltzes, Klimt's The Kiss and the Ringstrasse, where the giant Riesenrad Ferris wheel turns over the Prater."
+  ]
+ },
+ {
+  "id": "athens",
+  "name": "Athens",
+  "country": "Greece",
+  "lat": 37.98,
+  "lon": 23.73,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: euros spent on souvlaki in Monastiraki, and a metro ticket with \"efcharistó\" written on the back. She's headed for an ancient capital by the sea.",
+   "A taxi driver says she asked about a sun-baked, white-walled city ringed by mountains, and wanted to climb Lycabettus Hill and watch the guards change at Syntagma Square.",
+   "Her flight lands in the cradle of democracy, the capital of Greece, where the marble Parthenon has crowned the Acropolis since the fifth century BC."
+  ]
+ },
+ {
+  "id": "istanbul",
+  "name": "Istanbul",
+  "country": "Turkey",
+  "lat": 41.01,
+  "lon": 28.98,
+  "tier": 1,
+  "tips": [
+   "Tucked in her passport: lira notes, a ferry token, and a receipt for baklava and tea near the Grand Bazaar. A note in her handwriting says \"teşekkürler.\" She's chasing a great port.",
+   "A ferry captain says she asked about a hilly city of minarets and domes split by a strait, and wanted to see the Blue Mosque and the jeweled treasury of Topkapı Palace.",
+   "She's in the great city that straddles Europe and Asia across the Bosphorus, known for centuries as Constantinople, where the vast dome of Hagia Sophia rises."
+  ]
+ },
+ {
+  "id": "moscow",
+  "name": "Moscow",
+  "country": "Russia",
+  "lat": 55.76,
+  "lon": 37.62,
+  "tier": 1,
+  "tips": [
+   "Left at a cafe table: ruble coins, a receipt for blini from the GUM arcade, and a metro card. A note in Cyrillic reads \"spasibo.\" She's headed for a capital on its namesake river.",
+   "A hotel porter says she wanted a vast capital of snowy winters, ring roads and grand boulevards, and asked about the chandeliered metro stations and the Bolshoi Theatre.",
+   "She's in the capital of Russia, where the onion domes of St. Basil's Cathedral rise at the end of Red Square beside the red walls of the Kremlin."
+  ]
+ },
+ {
+  "id": "venice",
+  "name": "Venice",
+  "country": "Italy",
+  "lat": 45.44,
+  "lon": 12.33,
+  "tier": 1,
+  "tips": [
+   "A ticket stub in her bag: a vaporetto pass paid in euros, a glass bead from Murano, and a phrasebook page with \"grazie\" circled. She's chasing a city with no cars at all.",
+   "A gondolier says she asked about a lagoon city of palaces on wooden piles and narrow canals that floods during acqua alta tides, and wanted to cross the Rialto Bridge and see the Doge's Palace.",
+   "She's in La Serenissima, the floating city on the Grand Canal, where pigeons and visitors crowd St. Mark's Square beneath the campanile and the basilica's golden mosaics."
+  ]
+ },
+ {
+  "id": "dublin",
+  "name": "Dublin",
+  "country": "Ireland",
+  "lat": 53.35,
+  "lon": -6.26,
+  "tier": 2,
+  "tips": [
+   "Left in her hotel room: euro coins, a Leap card for the buses, and a receipt for a pint from a pub in Temple Bar. She's headed for a capital on the Irish Sea.",
+   "A cab driver says she asked about a compact city of colorful Georgian doors and red brick along the River Liffey, and wanted to see the Book of Kells at Trinity College.",
+   "She's in the capital of Ireland, home of the Guinness Storehouse at St. James's Gate, and the city James Joyce chose as the setting of Ulysses."
+  ]
+ },
+ {
+  "id": "edinburgh",
+  "name": "Edinburgh",
+  "country": "United Kingdom",
+  "lat": 55.95,
+  "lon": -3.19,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: pounds paid for haggis, neeps and tatties on the Royal Mile, and a tram ticket to the airport. She's chasing a hilly northern capital.",
+   "A piper says she asked about a city of dark stone tenements built among volcanic crags, and wanted to climb Arthur's Seat and walk the Georgian streets of the New Town.",
+   "She's in the Scottish capital, home every August to the Fringe, the world's largest arts festival, with a castle perched on an extinct volcano above Princes Street."
+  ]
+ },
+ {
+  "id": "copenhagen",
+  "name": "Copenhagen",
+  "country": "Denmark",
+  "lat": 55.68,
+  "lon": 12.57,
+  "tier": 2,
+  "tips": [
+   "Tucked in her passport: krone coins, a smørrebrød receipt, and a ticket stub from Tivoli Gardens, with \"tak\" written in the margin. She's headed for a Nordic harbor capital.",
+   "A canal boatman says she asked about a flat, bike-filled city of copper spires and harborside townhouses, and wanted to see Amalienborg Palace and the crown jewels at Rosenborg Castle.",
+   "Her flight lands in the Danish capital, where the bronze Little Mermaid sits on a rock at Langelinie and painted houses line the Nyhavn canal."
+  ]
+ },
+ {
+  "id": "stockholm",
+  "name": "Stockholm",
+  "country": "Sweden",
+  "lat": 59.33,
+  "lon": 18.07,
+  "tier": 2,
+  "tips": [
+   "Left at a cafe table: krona coins, a cinnamon bun wrapper from a fika break, and a ferry ticket to Djurgården. A note says \"tack\" twice. She's chasing a capital built on islands.",
+   "A ferry hand says she asked about a city of ochre and rust facades spread over 14 islands, and wanted to see the Vasa warship museum and the cobbled lanes of Gamla Stan.",
+   "She's in the Swedish capital, where the Nobel Prize banquet is held each December in the Blue Hall of the City Hall on the shore of Lake Mälaren."
+  ]
+ },
+ {
+  "id": "krakow",
+  "name": "Kraków",
+  "country": "Poland",
+  "lat": 50.06,
+  "lon": 19.94,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: zloty spent on an obwarzanek bread ring from a street cart, and a tram ticket printed in Polish. She's headed for an old royal city on the Vistula.",
+   "A carriage driver says she asked about a medieval city of church spires and brick cellars, and wanted to see the fire-breathing dragon statue below Wawel Castle and the Cloth Hall.",
+   "She's in Poland's former royal capital, where a trumpeter plays the Hejnał every hour from St. Mary's Basilica over a vast medieval market square."
+  ]
+ },
+ {
+  "id": "saint-petersburg",
+  "name": "Saint Petersburg",
+  "country": "Russia",
+  "lat": 59.94,
+  "lon": 30.31,
+  "tier": 2,
+  "tips": [
+   "Tucked in her passport: ruble notes, a ticket for a night cruise to watch the bridges open over the river, and a note in Cyrillic reading \"spasibo.\" She's headed for a Baltic port.",
+   "A tour guide says she wanted a city of pastel palaces, canals and summer White Nights, and asked about the Peterhof fountains and the gilded dome of St. Isaac's Cathedral.",
+   "She's in the city Peter the Great founded in 1703, called Leningrad for much of the 20th century, home of the Hermitage museum in the Winter Palace."
+  ]
+ },
+ {
+  "id": "seville",
+  "name": "Seville",
+  "country": "Spain",
+  "lat": 37.39,
+  "lon": -5.98,
+  "tier": 2,
+  "tips": [
+   "Left in her hotel room: euro coins, a pair of castanets, and a ticket for a flamenco show in Triana. A note in Spanish reads \"hasta luego.\" She's chasing a hot inland river port.",
+   "A carriage driver says she asked about a sun-scorched city of orange trees and whitewashed lanes on the Guadalquivir, and wanted to see the Real Alcázar and the Plaza de España.",
+   "She's in the capital of Andalusia, where the Giralda bell tower, once a minaret, rises over the largest Gothic cathedral in the world."
+  ]
+ },
+ {
+  "id": "reykjavik",
+  "name": "Reykjavík",
+  "country": "Iceland",
+  "lat": 64.15,
+  "lon": -21.94,
+  "tier": 2,
+  "tips": [
+   "A ticket stub in her bag: a whale-watching tour paid in krónur, a hot dog receipt from Bæjarins Beztu, and a note with \"takk\" circled. She's headed for a capital near the Arctic.",
+   "A fisherman says she asked about a windswept harbor town of colorful tin-clad houses facing Mount Esja, and wanted to see the glass Harpa concert hall on the waterfront.",
+   "She's in the northernmost capital of a sovereign state, the capital of Iceland, crowned by the rocket-shaped tower of Hallgrímskirkja church."
+  ]
+ },
+ {
+  "id": "dubrovnik",
+  "name": "Dubrovnik",
+  "country": "Croatia",
+  "lat": 42.65,
+  "lon": 18.09,
+  "tier": 2,
+  "tips": [
+   "Left at a cafe table: euro coins, a cable car receipt, and a phrasebook page with \"hvala\" circled. She's headed for a walled port on the Adriatic.",
+   "A ferry captain says she asked about a city of polished limestone streets and orange roofs ringed by massive walls, and wanted to walk the Stradun and see Lovrijenac Fortress.",
+   "She's in the Pearl of the Adriatic, once the maritime republic of Ragusa, whose old city walls stood in for King's Landing in Game of Thrones."
+  ]
+ },
+ {
+  "id": "oslo",
+  "name": "Oslo",
+  "country": "Norway",
+  "lat": 59.91,
+  "lon": 10.75,
+  "tier": 2,
+  "tips": [
+   "Tucked in her passport: krone notes, a brown-cheese waffle receipt, and a ferry ticket to Bygdøy. A note says \"takk\" in neat print. She's headed for a capital at the head of a fjord.",
+   "A ski instructor says she wanted a green city ringed by forested hills, and asked about the Holmenkollen ski jump and the Vigeland sculptures in Frogner Park.",
+   "She's in the Norwegian capital, where visitors walk up the sloping white marble roof of the Opera House and Edvard Munch's The Scream hangs in the city's museums."
+  ]
+ },
+ {
+  "id": "helsinki",
+  "name": "Helsinki",
+  "country": "Finland",
+  "lat": 60.17,
+  "lon": 24.94,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: euros spent on salmon soup at the Old Market Hall, and a ferry ticket to the sea fortress of Suomenlinna. She's chasing a Nordic capital on a gulf.",
+   "A ferry hand says she asked about a seaside city of granite Art Nouveau buildings, and wanted to see the Rock Church carved into bedrock and the steel pipes of the Sibelius Monument.",
+   "She's in the Finnish capital, where the white, green-domed Lutheran Cathedral looms over Senate Square and Baltic ferries dock beside the Market Square."
+  ]
+ },
+ {
+  "id": "valletta",
+  "name": "Valletta",
+  "country": "Malta",
+  "lat": 35.9,
+  "lon": 14.51,
+  "tier": 3,
+  "tips": [
+   "Left in her hotel room: euro coins, a pastizzi receipt, and a phrasebook page with \"grazzi\" circled. She's headed for a tiny fortified capital on a Mediterranean island.",
+   "A harbor pilot says she asked about a honey-colored limestone city of steep stepped streets on a peninsula, and wanted to hear the noon cannon at the Upper Barrakka Gardens.",
+   "She's in Malta's capital, built by the Knights of St. John in the 1560s, whose St. John's Co-Cathedral holds Caravaggio's The Beheading of Saint John."
+  ]
+ },
+ {
+  "id": "riga",
+  "name": "Riga",
+  "country": "Latvia",
+  "lat": 56.95,
+  "lon": 24.11,
+  "tier": 3,
+  "tips": [
+   "Tucked in her passport: euro coins, a bottle of Black Balsam herbal liqueur, and a phrasebook page with \"paldies\" circled. She's headed for a Baltic port on the Daugava.",
+   "A tram driver says she asked about a city of medieval spires and wooden houses, and wanted to see the House of the Blackheads and the old zeppelin hangars of the Central Market.",
+   "She's in the Latvian capital, whose Old Town and Art Nouveau district are a UNESCO site, with one of the world's greatest concentrations of Art Nouveau buildings."
+  ]
+ },
+ {
+  "id": "kazan",
+  "name": "Kazan",
+  "country": "Russia",
+  "lat": 55.79,
+  "lon": 49.12,
+  "tier": 3,
+  "tips": [
+   "Left at a cafe table: ruble coins, a box of honeyed chak-chak, and a phrasebook with Tatar greetings circled. She's headed for a city where a smaller river meets the Volga.",
+   "A boatman says she asked about a riverside city of white walls and blue minarets, and wanted to stroll pedestrian Bauman Street and see the leaning Söyembikä Tower.",
+   "She's in the capital of Tatarstan, whose white-walled kremlin, a UNESCO site, holds both the Kul Sharif Mosque and an Orthodox cathedral."
+  ]
+ },
+ {
+  "id": "bergen",
+  "name": "Bergen",
+  "country": "Norway",
+  "lat": 60.39,
+  "lon": 5.32,
+  "tier": 3,
+  "tips": [
+   "A ticket stub in her bag: krone coins, a pass for the Fløibanen funicular, and a fish market receipt. Her umbrella is still wet. She's headed for a port ringed by seven mountains.",
+   "A fisherman says she asked about a famously rainy fjord city of steep hills and wooden houses, and wanted to visit Troldhaugen, Grieg's villa, and ride the cable car up Mount Ulriken.",
+   "She's in Norway's second city and gateway to the fjords, whose Bryggen wharf of gabled wooden warehouses from the Hanseatic League is a UNESCO site."
+  ]
+ },
+ {
+  "id": "thessaloniki",
+  "name": "Thessaloniki",
+  "country": "Greece",
+  "lat": 40.64,
+  "lon": 22.94,
+  "tier": 3,
+  "tips": [
+   "A receipt in her coat pocket: euros spent on bougatsa for breakfast, and a bus ticket with \"efcharistó\" scrawled on it. She's headed for a port on the Thermaic Gulf.",
+   "A fisherman says she asked about a seaside city of Byzantine churches and Ottoman bathhouses, and wanted to see the Rotunda and the carved Arch of Galerius.",
+   "She's in Greece's second city, named after a half-sister of Alexander the Great, where the White Tower guards the long seafront promenade."
+  ]
+ },
+ {
+  "id": "tromso",
+  "name": "Tromsø",
+  "country": "Norway",
+  "lat": 69.65,
+  "lon": 18.96,
+  "tier": 3,
+  "tips": [
+   "Left in her hotel room: krone notes, a pair of thermal mittens, and a ticket for a northern lights bus tour. A note says \"takk\" in pencil. She's headed far above the Arctic Circle.",
+   "A sled-dog musher says she asked about an island city ringed by snowy peaks with weeks of polar night, and wanted to ride the Fjellheisen cable car and visit the Polaria aquarium.",
+   "She's in Norway's gateway to the Arctic, a base for polar expeditions since the 1800s, where the white triangular Arctic Cathedral faces the island center across a long bridge."
+  ]
+ },
+ {
+  "id": "palma",
+  "name": "Palma",
+  "country": "Spain",
+  "lat": 39.57,
+  "lon": 2.65,
+  "tier": 3,
+  "tips": [
+   "A ticket stub in her bag: euros paid for a spiral ensaïmada pastry, and a ferry ticket from the mainland. A note in Catalan says \"gràcies.\" She's chasing a capital on a Balearic bay.",
+   "A yacht skipper says she asked about a sunny island port of palm-lined promenades and sandstone walls, and wanted to see the round Bellver Castle and the Arab baths in the old town.",
+   "She's in the capital of Mallorca, where the Gothic cathedral La Seu towers over the harbor, its interior reworked by Antoni Gaudí."
+  ]
+ },
+ {
+  "id": "bucharest",
+  "name": "Bucharest",
+  "country": "Romania",
+  "lat": 44.43,
+  "lon": 26.1,
+  "tier": 3,
+  "tips": [
+   "Left at a cafe table: lei notes, a receipt for covrigi pretzels, and a phrasebook page with \"mulțumesc\" circled. She's headed for a capital on the Danube plain.",
+   "A taxi driver says she asked about a city of belle époque mansions and wide boulevards, and wanted to see the domed Athenaeum concert hall and the old Lipscani quarter.",
+   "She's in Romania's capital, once called Little Paris, where the Palace of the Parliament is one of the largest administrative buildings in the world."
+  ]
+ },
+ {
+  "id": "cairo",
+  "name": "Cairo",
+  "country": "Egypt",
+  "lat": 30.04,
+  "lon": 31.24,
+  "tier": 1,
+  "tips": [
+   "Left on her hotel nightstand: crumpled pound notes printed in Arabic, a koshari receipt, and a brass lantern from the Khan el-Khalili bazaar. She's after a vast capital on a famous river.",
+   "A museum guard says she asked about a desert megacity split by the Nile, with minarets over its medieval quarter, and wanted to see the Citadel of Saladin and the alabaster Mosque of Muhammad Ali.",
+   "Her trail leads to Egypt's capital, whose skyline looks west across the Nile toward the Great Pyramid of Giza, the last surviving Wonder of the Ancient World."
+  ]
+ },
+ {
+  "id": "dubai",
+  "name": "Dubai",
+  "country": "United Arab Emirates",
+  "lat": 25.2,
+  "lon": 55.27,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: dirhams spent on gold bangles at the Deira Gold Souk, plus an abra water taxi ticket across the Creek. She's bound for a desert boomtown on the Gulf.",
+   "A hotel doorman says she asked about a glittering desert city of glass towers and man-made islands, and wanted to see the Palm Jumeirah and the sail-shaped Burj Al Arab hotel.",
+   "She'll be spotted atop the Burj Khalifa, which took the title of world's tallest building when it opened in 2010, in this city of the United Arab Emirates."
+  ]
+ },
+ {
+  "id": "cape-town",
+  "name": "Cape Town",
+  "country": "South Africa",
+  "lat": -33.92,
+  "lon": 18.42,
+  "tier": 1,
+  "tips": [
+   "Left at a cafe table: a rand coin, a postcard of the candy-colored houses of Bo-Kaap, and a ferry ticket to Robben Island. She's after a port city near the southern tip of a continent.",
+   "A tour guide says she asked about a harbor city wedged between mountains and the sea, with vineyards close by, and wanted to shop the V&A Waterfront and stroll Kirstenbosch's botanical gardens.",
+   "Her flight lands in South Africa's Mother City, where flat-topped Table Mountain looms over the harbor, often draped in a cloud that locals call the tablecloth."
+  ]
+ },
+ {
+  "id": "nairobi",
+  "name": "Nairobi",
+  "country": "Kenya",
+  "lat": -1.29,
+  "lon": 36.82,
+  "tier": 1,
+  "tips": [
+   "In her hotel room: shilling coins, a Swahili phrasebook with \"asante\" circled, and a ticket to the Giraffe Centre in Langata, where visitors feed giraffes by hand. She's bound for a highland capital.",
+   "A safari driver says she asked about a high-altitude capital with cool evenings and leafy suburbs, and wanted to tour the Karen Blixen Museum and shop the Maasai Market.",
+   "She's in Kenya's capital, once nicknamed the Green City in the Sun, where lions and rhinos roam a national park in full view of downtown skyscrapers."
+  ]
+ },
+ {
+  "id": "johannesburg",
+  "name": "Johannesburg",
+  "country": "South Africa",
+  "lat": -26.2,
+  "lon": 28.05,
+  "tier": 1,
+  "tips": [
+   "A ticket stub in her bag: a rand-priced pass to the Gold Reef City theme park, a Gautrain card, and a Zulu phrase card. She's heading for a big inland metropolis on a high plateau.",
+   "A taxi driver says she asked about a high, inland city of skyscrapers and old mine dumps, and wanted the fossil caves of the Cradle of Humankind and the street art of Maboneng.",
+   "She's in South Africa's largest city, founded in the 1886 gold rush on the Witwatersrand and nicknamed Egoli, the place of gold."
+  ]
+ },
+ {
+  "id": "casablanca",
+  "name": "Casablanca",
+  "country": "Morocco",
+  "lat": 33.57,
+  "lon": -7.59,
+  "tier": 1,
+  "tips": [
+   "Tucked in her passport: dirham coins, a French-language tram map, and a beach club receipt from the Ain Diab corniche. She's heading for a big Atlantic port in North Africa.",
+   "A dock worker says she asked about a whitewashed port of Art Deco boulevards, and wanted to wander the Habous Quarter and dine at Rick's Café, built to evoke a famous 1942 film.",
+   "Her flight lands in Morocco's largest city, home of the Hassan II Mosque, whose minaret towers over the Atlantic, and namesake of a 1942 Humphrey Bogart classic."
+  ]
+ },
+ {
+  "id": "lagos",
+  "name": "Lagos",
+  "country": "Nigeria",
+  "lat": 6.52,
+  "lon": 3.38,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: naira notes, a Yoruba phrase card, and a ticket for the long canopy walkway at the Lekki Conservation Centre. She's bound for a vast lagoon city on the Gulf of Guinea.",
+   "A danfo bus driver says she asked about a humid, sprawling city of islands, bridges and lagoons, and wanted to cross the Third Mainland Bridge and haggle in the crowded lanes of Balogun Market.",
+   "She's in Nigeria's largest city and its capital until the government moved to Abuja in 1991, the hub of the Nollywood film industry."
+  ]
+ },
+ {
+  "id": "accra",
+  "name": "Accra",
+  "country": "Ghana",
+  "lat": 5.6,
+  "lon": -0.19,
+  "tier": 2,
+  "tips": [
+   "Left at a cafe table: cedi notes, a strip of kente cloth, and a receipt from the stalls of Makola Market. She's bound for a coastal capital in West Africa on the Gulf of Guinea.",
+   "A tro-tro driver says she asked about a breezy seaside capital of fishing canoes, and wanted to climb Jamestown's old lighthouse and visit the Kwame Nkrumah Mausoleum.",
+   "Her trail leads to Ghana's capital, home of Black Star Square and its Independence Arch, built to mark the country's 1957 independence from Britain."
+  ]
+ },
+ {
+  "id": "dakar",
+  "name": "Dakar",
+  "country": "Senegal",
+  "lat": 14.72,
+  "lon": -17.47,
+  "tier": 2,
+  "tips": [
+   "Tucked in her passport: CFA franc notes, a Wolof phrase card with \"jërëjëf\" circled, and a ferry ticket to Gorée Island. She's bound for a windswept peninsula on the Atlantic.",
+   "A fisherman says she asked about a breezy coastal city of painted pirogues and baobab trees, and wanted to climb to the African Renaissance Monument and walk the Corniche at sunset.",
+   "She's in Senegal's capital on the Cap-Vert peninsula, the westernmost city of mainland Africa and for years the finish line of a famous desert rally from Paris."
+  ]
+ },
+ {
+  "id": "tunis",
+  "name": "Tunis",
+  "country": "Tunisia",
+  "lat": 36.81,
+  "lon": 10.18,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: dinars spent on a brik pastry, and a blue birdcage from the clifftop village of Sidi Bou Said. She's after an Arabic and French speaking Mediterranean capital.",
+   "A cafe owner says she asked about a whitewashed North African capital beside a shallow lake and the sea, and wanted to walk the medina's souks to the Zitouna Mosque and stroll Avenue Habib Bourguiba.",
+   "She's in the North African capital whose seaside suburbs hold the ruins of Carthage, ancient Rome's great rival, and which gave its own name to the whole country."
+  ]
+ },
+ {
+  "id": "doha",
+  "name": "Doha",
+  "country": "Qatar",
+  "lat": 25.29,
+  "lon": 51.53,
+  "tier": 2,
+  "tips": [
+   "Left in her hotel room: riyal notes, a falcon hood from the falcon market at Souq Waqif, and a dhow cruise ticket. She's bound for a Gulf capital curving around a crescent bay.",
+   "A dhow captain says she asked about a flat desert capital wrapped around a bay of towers, and wanted to see I. M. Pei's Museum of Islamic Art and the man-made island called The Pearl.",
+   "Her flight lands in Qatar's capital, the centerpiece of the 2022 FIFA World Cup, whose National Museum is shaped like a desert rose crystal."
+  ]
+ },
+ {
+  "id": "muscat",
+  "name": "Muscat",
+  "country": "Oman",
+  "lat": 23.59,
+  "lon": 58.41,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: baisa coins, a bottle of frankincense from the Mutrah Souq, and a silver khanjar dagger pin. She's after a capital on the rocky edge of the Arabian Peninsula.",
+   "A harbor guide says she asked about a low, whitewashed capital squeezed between jagged mountains and the sea, and wanted to see the Royal Opera House and the twin forts of Al Jalali and Al Mirani.",
+   "She's in Oman's capital, home of the Sultan Qaboos Grand Mosque, whose prayer hall holds one of the largest hand-woven carpets in the world."
+  ]
+ },
+ {
+  "id": "amman",
+  "name": "Amman",
+  "country": "Jordan",
+  "lat": 31.95,
+  "lon": 35.93,
+  "tier": 2,
+  "tips": [
+   "Tucked in her passport: dinar coins, a box of knafeh from Habibah sweets downtown, and a ticket to the Roman Theater. She's bound for a hilly Arabic-speaking capital in the Levant.",
+   "A taxi driver says she asked about a capital of pale limestone houses spread over many hills, and wanted to climb to the Citadel's Temple of Hercules and stroll the cafes of Rainbow Street.",
+   "Her flight lands in Jordan's capital, called Philadelphia in Roman times, a short drive from the Dead Sea and the usual starting point for trips to Petra."
+  ]
+ },
+ {
+  "id": "luxor",
+  "name": "Luxor",
+  "country": "Egypt",
+  "lat": 25.69,
+  "lon": 32.64,
+  "tier": 2,
+  "tips": [
+   "A ticket stub in her bag: a dawn hot air balloon voucher, a pound coin with Arabic script, and an entry pass for the Valley of the Kings. She's after a city on the upper Nile.",
+   "A felucca captain says she asked about a hot, dry river town of sugarcane fields and desert cliffs, and wanted to see the Colossi of Memnon and Hatshepsut's terraced temple.",
+   "She's in the Egyptian city built on ancient Thebes, often called the world's greatest open-air museum, home to the vast temple complex of Karnak."
+  ]
+ },
+ {
+  "id": "zanzibar-city",
+  "name": "Zanzibar City",
+  "country": "Tanzania",
+  "lat": -6.16,
+  "lon": 39.19,
+  "tier": 2,
+  "tips": [
+   "Left at a cafe table: shilling notes, a paper twist of cloves, and a receipt from the evening food market in Forodhani Gardens. She's bound for an island port in the Indian Ocean.",
+   "A dhow sailor says she asked about a maze of coral-stone lanes and carved wooden doors, and wanted to see the Old Fort and haggle for spices in the Darajani Market.",
+   "Her flight lands at the old Stone Town of a spice island off Tanzania, the birthplace of Queen singer Freddie Mercury and a UNESCO World Heritage Site."
+  ]
+ },
+ {
+  "id": "ankara",
+  "name": "Ankara",
+  "country": "Turkey",
+  "lat": 39.93,
+  "lon": 32.86,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: lira spent on a simit and a ticket to the Museum of Anatolian Civilizations. She's after an inland capital on a high, dry plateau far from the sea.",
+   "A cab driver says she asked about a planned modern capital of wide boulevards on the steppe, and wanted to climb to the old hilltop citadel and cross busy Kızılay Square.",
+   "She's in Turkey's capital since 1923, home of Anıtkabir, the mausoleum of Atatürk, and once known as Angora, as in the goat, the cat and the rabbit."
+  ]
+ },
+ {
+  "id": "shiraz",
+  "name": "Shiraz",
+  "country": "Iran",
+  "lat": 29.59,
+  "lon": 52.58,
+  "tier": 3,
+  "tips": [
+   "Tucked in her passport: rial notes, a Persian verse card quoting Hafez, and a box of sweets from the Vakil Bazaar. She's after an old city of gardens in a southern highland valley.",
+   "A gardener says she asked about a mild city of rose gardens and poets' tombs, and wanted to see the colored glass of the Pink Mosque, Nasir al-Molk, and walk the cypress paths of Eram Garden.",
+   "She's in the Iranian city of poets, resting place of Hafez and Saadi, and the big city travelers use as a base for day trips to the ancient ruins of Persepolis."
+  ]
+ },
+ {
+  "id": "windhoek",
+  "name": "Windhoek",
+  "country": "Namibia",
+  "lat": -22.56,
+  "lon": 17.08,
+  "tier": 3,
+  "tips": [
+   "Left in her hotel room: dollar coins, a German-language beer hall menu, and a bag of kapana grilled meat from a stall in Katutura. She's bound for a small capital in a dry highland basin.",
+   "A tour guide says she asked about a tidy capital ringed by low hills and savanna, and wanted to see the German-built Christuskirche and the Independence Memorial Museum beside it.",
+   "She's in Namibia's capital, a former German colonial town known for its yearly Oktoberfest, and the gateway to the red dunes of Sossusvlei."
+  ]
+ },
+ {
+  "id": "antananarivo",
+  "name": "Antananarivo",
+  "country": "Madagascar",
+  "lat": -18.88,
+  "lon": 47.51,
+  "tier": 3,
+  "tips": [
+   "A receipt in her coat pocket: ariary notes, a Malagasy phrase card, and a vanilla bundle bought at the Analakely market. She's after a hilltop capital on a giant island.",
+   "A taxi-be driver says she asked about a highland capital of red-brick houses on steep hills above rice paddies, and wanted to visit the Rova royal palace and Lake Anosy's jacaranda shores.",
+   "She's in Madagascar's capital, nicknamed Tana, whose full name means City of the Thousand, after the thousand warriors said to have guarded it."
+  ]
+ },
+ {
+  "id": "maputo",
+  "name": "Maputo",
+  "country": "Mozambique",
+  "lat": -25.97,
+  "lon": 32.57,
+  "tier": 3,
+  "tips": [
+   "Left at a cafe table: metical coins, a Portuguese phrase card, and a receipt for piri-piri prawns from the fish market on the bay. She's bound for a seaside capital on the Indian Ocean.",
+   "A ferry hand says she asked about a capital of wide avenues lined with jacarandas and colonial facades, and wanted to see the prefabricated Iron House and the railway station's grand dome.",
+   "She's in Mozambique's capital, known as Lourenço Marques until 1976, whose grand railway station is often listed among the most beautiful in the world."
+  ]
+ },
+ {
+  "id": "livingstone",
+  "name": "Livingstone",
+  "country": "Zambia",
+  "lat": -17.85,
+  "lon": 25.86,
+  "tier": 3,
+  "tips": [
+   "A ticket stub in her bag: kwacha notes, a rafting waiver for the Batoka Gorge, and a pass for Mosi-oa-Tunya National Park. She's bound for a small riverside town in southern Africa.",
+   "A rafting guide says she asked about a laid-back colonial town on a wide river, and wanted a sunset cruise on the upper Zambezi and a swim in Devil's Pool at the lip of a giant waterfall.",
+   "She's in the Zambian town named after the Scottish explorer who in 1855 became the first European to see Victoria Falls, which locals call The Smoke That Thunders."
+  ]
+ },
+ {
+  "id": "port-louis",
+  "name": "Port Louis",
+  "country": "Mauritius",
+  "lat": -20.16,
+  "lon": 57.5,
+  "tier": 3,
+  "tips": [
+   "Tucked in her passport: rupee coins, a Creole phrase card, and a dholl puri wrapper from the Central Market. She's after a harbor capital on a volcanic island in the Indian Ocean.",
+   "A dockhand says she asked about a hot harbor city backed by craggy peaks like Le Pouce, and wanted to see the Caudan Waterfront and the Champ de Mars racecourse.",
+   "She's in the capital of Mauritius, where the Blue Penny Museum shows the island's famously rare 1847 stamps and Aapravasi Ghat marks the arrival of indentured laborers."
+  ]
+ },
+ {
+  "id": "kigali",
+  "name": "Kigali",
+  "country": "Rwanda",
+  "lat": -1.95,
+  "lon": 30.06,
+  "tier": 3,
+  "tips": [
+   "Left in her hotel room: franc notes, a local phrase card with \"murakoze\" circled, and a woven agaseke basket from Kimironko Market. She's bound for a hilly capital in East Africa.",
+   "A moto-taxi driver says she asked about a clean, green capital spread over rolling hills, and wanted to see the domed convention center lit up at night and browse the Inema Arts Center.",
+   "She's in Rwanda's capital in the Land of a Thousand Hills, where streets fall quiet on the last Saturday of each month for Umuganda community work."
+  ]
+ },
+ {
+  "id": "tokyo",
+  "name": "Tokyo",
+  "country": "Japan",
+  "lat": 35.68,
+  "lon": 139.69,
+  "tier": 1,
+  "tips": [
+   "Tucked in her passport: a few yen coins, a pass for the green Yamanote loop line, and a receipt from a tuna stall at the old Tsukiji outer market. She wants the biggest city on the archipelago.",
+   "A hotel porter says she asked about a sprawling bayside metropolis of neon towers and quiet shrines, and wanted to cross the Shibuya scramble before visiting Sensō-ji temple in Asakusa.",
+   "Her flight lands in the capital once called Edo, where the Imperial Palace stands on the grounds of the shogun's castle and the Skytree rises over the eastern wards."
+  ]
+ },
+ {
+  "id": "kyoto",
+  "name": "Kyoto",
+  "country": "Japan",
+  "lat": 35.01,
+  "lon": 135.77,
+  "tier": 1,
+  "tips": [
+   "Left at a teahouse table: a yen note, a matcha receipt, and a paper fan from the Gion Matsuri, the festival of floats held every July. She's chasing a city of a thousand temples.",
+   "A rickshaw driver says she asked about a valley city ringed by forested hills and laid out on an old grid, and wanted to walk the Arashiyama bamboo grove and the vermilion gates of Fushimi Inari.",
+   "Her train pulls into the imperial capital of Japan for more than a thousand years, where the gold-leafed Kinkaku-ji pavilion glows over its pond."
+  ]
+ },
+ {
+  "id": "beijing",
+  "name": "Beijing",
+  "country": "China",
+  "lat": 39.9,
+  "lon": 116.41,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: yuan notes paid for roast duck, carved tableside at a restaurant off Wangfujing street. Her phrasebook has \"nǐ hǎo\" underlined twice.",
+   "A pedicab driver says she asked about a flat, dry northern capital of old hutong alleys and ring roads, and wanted to see the Temple of Heaven and the Summer Palace on Kunming Lake.",
+   "Her flight lands in the capital once spelled Peking, home of the Forbidden City and the first city to host both the Summer and the Winter Olympic Games."
+  ]
+ },
+ {
+  "id": "shanghai",
+  "name": "Shanghai",
+  "country": "China",
+  "lat": 31.23,
+  "lon": 121.47,
+  "tier": 1,
+  "tips": [
+   "A ticket stub in her bag: a maglev ride in from Pudong airport, plus yuan coins and a receipt for soup dumplings, the famous xiaolongbao of this coastal city.",
+   "A ferry hand says she asked about a flat, humid port on the Huangpu River, and wanted to stroll the colonial-era waterfront of the Bund and the rockeries of Yu Garden in the old town.",
+   "Her flight lands near the mouth of the Yangtze, in the port city once nicknamed the Paris of the East, whose Pudong skyline is marked by the pink-globed Oriental Pearl Tower."
+  ]
+ },
+ {
+  "id": "hong-kong",
+  "name": "Hong Kong",
+  "country": "China",
+  "lat": 22.32,
+  "lon": 114.17,
+  "tier": 1,
+  "tips": [
+   "Left in her hotel room: dollar coins stamped with a bauhinia flower, an Octopus transit card, and a dim sum receipt written in Cantonese. She's off to a crowded harbor.",
+   "A deckhand says she asked about a steep, skyscraper-packed island facing Kowloon across the water, and wanted to ride the Star Ferry and then the Peak Tram up Victoria Peak.",
+   "Her flight lands in the city whose Cantonese name means \"fragrant harbor,\" where the bronze Tian Tan Buddha sits on Lantau Island and double-decker \"ding ding\" trams rattle along the shore."
+  ]
+ },
+ {
+  "id": "singapore",
+  "name": "Singapore",
+  "country": "Singapore",
+  "lat": 1.29,
+  "lon": 103.85,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: a few dollars paid at a hawker center for chili crab and kaya toast, with a menu printed in English, Malay, Mandarin and Tamil.",
+   "A taxi driver says she asked about a hot, humid island off the tip of a peninsula, and wanted to see the giant Supertrees at Gardens by the Bay and the orchids at the Botanic Gardens.",
+   "She's bound for the Lion City, a tiny city-state whose Marina Bay Sands hotel balances a ship-shaped sky deck across the tops of three towers."
+  ]
+ },
+ {
+  "id": "bangkok",
+  "name": "Bangkok",
+  "country": "Thailand",
+  "lat": 13.76,
+  "lon": 100.5,
+  "tier": 1,
+  "tips": [
+   "Tucked in her passport: baht coins, a longtail boat ticket, and a mango sticky rice receipt from a stall on Khao San Road. She's heading for a river capital in the tropics.",
+   "A tuk-tuk driver says she asked about a hot, flat city laced with canals along the Chao Phraya, and wanted to see the Reclining Buddha at Wat Pho and Wat Arun, the Temple of Dawn.",
+   "Her flight lands in the Thai capital whose full ceremonial name is among the longest place names on Earth, home of the Grand Palace and the Emerald Buddha."
+  ]
+ },
+ {
+  "id": "sydney",
+  "name": "Sydney",
+  "country": "Australia",
+  "lat": -33.87,
+  "lon": 151.21,
+  "tier": 1,
+  "tips": [
+   "Left at a cafe table: a polymer dollar note, a flat white receipt, and an Opal transit card topped up for the ferry to Manly. She's heading for a big harbor city.",
+   "A lifeguard says she asked about a sunny harbor city of sandstone cliffs and surf beaches, and wanted to swim at Bondi Beach and wander the old convict-era lanes of The Rocks.",
+   "Her flight lands beside the sail-roofed Opera House and the steel arch bridge nicknamed the Coathanger, in Australia's oldest city, founded in 1788."
+  ]
+ },
+ {
+  "id": "seoul",
+  "name": "Seoul",
+  "country": "South Korea",
+  "lat": 37.57,
+  "lon": 126.98,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: won notes paid for mung bean pancakes at Gwangjang Market, and a T-money card used on the subway. Her notebook has hangul letters copied out.",
+   "A palace guard says she asked about a mountain-ringed capital split by the Han River, and wanted to tour Gyeongbokgung Palace and the hanok houses of Bukchon village.",
+   "Her flight lands in the South Korean capital topped by a tower on Namsan mountain, host of the 1988 Summer Olympics and home of the Gangnam district made famous in song."
+  ]
+ },
+ {
+  "id": "delhi",
+  "name": "Delhi",
+  "country": "India",
+  "lat": 28.61,
+  "lon": 77.21,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: rupee notes spent on stuffed paratha in a lane off Chandni Chowk, and a metro card. A Hindi phrase card reads \"kitna hai?\"",
+   "An auto-rickshaw driver says she asked about a hot, sprawling capital on the Yamuna River, with Mughal ruins among wide avenues, and wanted to see Qutub Minar and Humayun's Tomb.",
+   "She's headed to the Indian capital whose Red Fort hosts the Independence Day flag raising each August and whose India Gate arch honors fallen soldiers."
+  ]
+ },
+ {
+  "id": "kathmandu",
+  "name": "Kathmandu",
+  "country": "Nepal",
+  "lat": 27.72,
+  "lon": 85.32,
+  "tier": 2,
+  "tips": [
+   "Left in her guesthouse: rupee notes, a trekking permit stub, and a receipt for steamed momo dumplings from a shop in the Thamel backpacker district. She's after a high valley capital.",
+   "A trekking guide says she asked about a bowl-shaped valley city ringed by Himalayan foothills, and wanted to circle the white dome of Boudhanath stupa and see Durbar Square.",
+   "Her flight lands in the capital of Nepal, watched over by Swayambhunath, the hilltop Monkey Temple, and the usual gateway for climbers bound for Everest."
+  ]
+ },
+ {
+  "id": "hanoi",
+  "name": "Hanoi",
+  "country": "Vietnam",
+  "lat": 21.03,
+  "lon": 105.85,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: dong notes paid for a bowl of pho and a cup of egg coffee, the whipped drink created in this city in the 1940s. She's heading north.",
+   "A cyclo driver says she asked about a humid capital of lakes and narrow tube houses on the Red River, and wanted to see the Temple of Literature and the old trade streets of the Old Quarter.",
+   "Her flight lands in the capital of Vietnam, where Hoan Kiem, the Lake of the Returned Sword, keeps its turtle legend and water puppet theaters play by the shore."
+  ]
+ },
+ {
+  "id": "kuala-lumpur",
+  "name": "Kuala Lumpur",
+  "country": "Malaysia",
+  "lat": 3.14,
+  "lon": 101.69,
+  "tier": 2,
+  "tips": [
+   "Left at a cafe table: ringgit notes, a nasi lemak receipt from a stall on Jalan Alor, and a monorail ticket. Her phrasebook has \"terima kasih\" circled.",
+   "A taxi driver says she asked about a hot, rainy capital that grew where two rivers meet, and wanted to climb the 272 steps up to Batu Caves and see the Moorish-style old railway station.",
+   "Her flight lands beside the Petronas Twin Towers, once the tallest buildings in the world, in the Malaysian capital whose name means \"muddy confluence.\""
+  ]
+ },
+ {
+  "id": "manila",
+  "name": "Manila",
+  "country": "Philippines",
+  "lat": 14.6,
+  "lon": 120.98,
+  "tier": 2,
+  "tips": [
+   "Tucked in her passport: peso coins, a jeepney fare stub, and a halo-halo receipt from a cafe in Binondo, often called the oldest Chinatown in the world.",
+   "A tour guide says she asked about a hot bayside capital known for its sunsets, and wanted to walk the old walled city of Intramuros and see San Agustin Church.",
+   "Her flight lands in the capital of the Philippines, the Pearl of the Orient, where Fort Santiago guards the Pasig River and Rizal Park honors the national hero."
+  ]
+ },
+ {
+  "id": "taipei",
+  "name": "Taipei",
+  "country": "Taiwan",
+  "lat": 25.03,
+  "lon": 121.57,
+  "tier": 2,
+  "tips": [
+   "Left in her hotel room: a few dollar coins, an EasyCard for the metro, and a bubble tea receipt from a stall at Shilin Night Market. She's bound for a basin capital.",
+   "A temple keeper says she asked about a warm basin city ringed by green mountains, and wanted to soak in the Beitou hot springs and see the incense smoke at Longshan Temple.",
+   "Her flight lands below a bamboo-shaped skyscraper named for its 101 floors, the tallest building in the world from 2004 to 2010, in the biggest city of northern Taiwan."
+  ]
+ },
+ {
+  "id": "melbourne",
+  "name": "Melbourne",
+  "country": "Australia",
+  "lat": -37.81,
+  "lon": 144.96,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: a few dollars paid for a flat white in a graffiti laneway, and a myki card for the free tram zone in the city center.",
+   "A barista says she asked about a city of famously fickle weather on the Yarra River, with the world's largest tram network, and wanted to see Flinders Street Station and Hosier Lane.",
+   "Her flight lands in the Australian sports capital that hosts the Australian Open each January and a horse race that stops the nation every November."
+  ]
+ },
+ {
+  "id": "auckland",
+  "name": "Auckland",
+  "country": "New Zealand",
+  "lat": -36.85,
+  "lon": 174.76,
+  "tier": 2,
+  "tips": [
+   "Left at a cafe table: a dollar coin with a kiwi bird on it, a ferry ticket to Waiheke Island, and a receipt for pavlova. She's off to a harbor city in the South Pacific.",
+   "A sailor says she asked about a breezy isthmus city dotted with dozens of grassy old volcanic cones, and wanted to climb Maungawhau, Mount Eden, and sail across the Waitematā Harbour.",
+   "She's bound for the City of Sails, the largest city in New Zealand, where the needle of the Sky Tower rises over a harbor crowded with yachts."
+  ]
+ },
+ {
+  "id": "samarkand",
+  "name": "Samarkand",
+  "country": "Uzbekistan",
+  "lat": 39.65,
+  "lon": 66.96,
+  "tier": 2,
+  "tips": [
+   "Tucked in her passport: som notes, a round stamped loaf of the bread this city is famous for, and a phrasebook with Russian and Tajik phrases circled.",
+   "A carpet seller says she asked about a dry oasis city on the old Silk Road, and wanted to see Gur-e-Amir, the tomb of Tamerlane, and the Bibi-Khanym Mosque under turquoise domes.",
+   "Her trail ends at the Registan, a square framed by three tiled madrasas, in a Silk Road city of Uzbekistan more than 2,500 years old."
+  ]
+ },
+ {
+  "id": "xian",
+  "name": "Xi'an",
+  "country": "China",
+  "lat": 34.34,
+  "lon": 108.94,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: yuan coins spent on biangbiang noodles and a roujiamo bun in the Muslim Quarter, and a stub for a bike ride along the top of the city wall.",
+   "A tour guide says she asked about an ancient walled capital on a dry loess plain at the start of the Silk Road, and wanted to see the Big Wild Goose Pagoda and the Bell Tower.",
+   "She's bound for the old imperial capital once called Chang'an, where an army of terracotta warriors guards the tomb of the first emperor of China."
+  ]
+ },
+ {
+  "id": "colombo",
+  "name": "Colombo",
+  "country": "Sri Lanka",
+  "lat": 6.93,
+  "lon": 79.85,
+  "tier": 2,
+  "tips": [
+   "Left in her hotel room: rupee notes, a receipt for hoppers and kottu, and a tin of black tea. Her phrasebook has Sinhala and Tamil script side by side.",
+   "A tuk-tuk driver says she asked about a hot, palm-lined port on an island's west coast, and wanted to walk the seafront at Galle Face Green and see the red-and-white Jami Ul-Alfar Mosque in Pettah.",
+   "Her flight lands in the largest city and main port of Sri Lanka, the teardrop island once called Ceylon, where the old Dutch Hospital now holds shops and cafes."
+  ]
+ },
+ {
+  "id": "almaty",
+  "name": "Almaty",
+  "country": "Kazakhstan",
+  "lat": 43.24,
+  "lon": 76.89,
+  "tier": 3,
+  "tips": [
+   "Tucked in her passport: tenge notes, a receipt for beshbarmak, and a sticker of a big red apple, the fruit this city is said to be named for. She's heading into the steppe.",
+   "A ski instructor says she asked about a leafy city at the foot of the snowcapped Tian Shan, and wanted to skate at the high Medeu rink and see the TV tower atop Kok Tobe hill.",
+   "Her flight lands in Alma-Ata, the old capital of Kazakhstan and still its biggest city, which handed the capital role to a new city in the north in 1997."
+  ]
+ },
+ {
+  "id": "thimphu",
+  "name": "Thimphu",
+  "country": "Bhutan",
+  "lat": 27.47,
+  "lon": 89.64,
+  "tier": 3,
+  "tips": [
+   "Left at a guesthouse table: ngultrum notes, a receipt for ema datshi, chilies stewed in cheese, and a postcard written in Dzongkha. She's heading into the high Himalayas.",
+   "A monk says she asked about a quiet valley capital on a river among pine-covered mountains, and wanted to see Tashichho Dzong and the giant seated Buddha Dordenma on its hill.",
+   "Her trail ends in the capital of the Kingdom of Bhutan, where takins, the shaggy national animal, graze in a preserve above town and the white Memorial Chorten draws circling pilgrims."
+  ]
+ },
+ {
+  "id": "luang-prabang",
+  "name": "Luang Prabang",
+  "country": "Laos",
+  "lat": 19.89,
+  "lon": 102.14,
+  "tier": 3,
+  "tips": [
+   "A receipt in her coat pocket: kip notes paid at the night market for a woven scarf and a bowl of khao soi, plus a ticket for the slow boat on the Mekong.",
+   "A boatman says she asked about a small, sleepy peninsula town where two rivers meet, and wanted to climb Mount Phousi at sunset and see the sweeping roofs of Wat Xieng Thong.",
+   "Her trail ends in the UNESCO-listed former royal capital of Laos, where saffron-robed monks walk the silent alms procession at dawn each morning."
+  ]
+ },
+ {
+  "id": "wellington",
+  "name": "Wellington",
+  "country": "New Zealand",
+  "lat": -41.29,
+  "lon": 174.78,
+  "tier": 3,
+  "tips": [
+   "Left at a cafe table: a few dollar coins, a flat white receipt, and a ticket for the red cable car up to Kelburn. She's heading for a windy harbor in the far south.",
+   "A ferry worker says she asked about a famously windy city wrapped around a harbor at the foot of an island, and wanted to visit the Te Papa museum and the Mount Victoria lookout.",
+   "She's bound for the southernmost capital of any sovereign state, the windy city of New Zealand whose parliament meets in a building nicknamed the Beehive."
+  ]
+ },
+ {
+  "id": "suva",
+  "name": "Suva",
+  "country": "Fiji",
+  "lat": -18.14,
+  "lon": 178.44,
+  "tier": 3,
+  "tips": [
+   "Tucked in her passport: dollar notes, a bundle of kava root from the municipal market, and a bus ticket. Her phrasebook has \"bula\" and \"vinaka\" circled.",
+   "A market vendor says she asked about a rainy, green harbor capital on a peninsula of a big volcanic island, and wanted to see the colonial Grand Pacific Hotel and Thurston Gardens.",
+   "Her trail ends on Viti Levu, in the capital of Fiji, home of the Fiji Museum and the main campus of the University of the South Pacific."
+  ]
+ },
+ {
+  "id": "perth",
+  "name": "Perth",
+  "country": "Australia",
+  "lat": -31.95,
+  "lon": 115.86,
+  "tier": 3,
+  "tips": [
+   "Left at a cafe table: a dollar coin, a ferry ticket to Rottnest Island, and a postcard of a smiling quokka. She's bound for a sunny coast facing the Indian Ocean.",
+   "A surfer says she asked about a hot, dry, sunny city on the Swan River, and wanted to walk through Kings Park and visit the old port at Fremantle.",
+   "Her flight lands in one of the most isolated big cities on Earth, the capital of Western Australia, which sits closer to Bali than to Sydney."
+  ]
+ },
+ {
+  "id": "varanasi",
+  "name": "Varanasi",
+  "country": "India",
+  "lat": 25.32,
+  "lon": 83.01,
+  "tier": 3,
+  "tips": [
+   "Tucked in her passport: rupee notes, a receipt from a silk weaver's shop, and a small brass pot of holy river water. She's bound for the banks of a sacred river.",
+   "A boatman says she asked about an ancient city of stone steps stacked down to a holy river, and wanted to see the evening aarti fire ritual at Dashashwamedh Ghat and the ruins at Sarnath.",
+   "She's heading to the holy city on the Ganges also called Benares and Kashi, one of the oldest continuously inhabited cities in the world."
+  ]
+ },
+ {
+  "id": "yogyakarta",
+  "name": "Yogyakarta",
+  "country": "Indonesia",
+  "lat": -7.8,
+  "lon": 110.36,
+  "tier": 3,
+  "tips": [
+   "A receipt in her coat pocket: rupiah notes paid for batik cloth and a plate of gudeg, young jackfruit stewed in palm sugar. Her phrasebook is in Javanese.",
+   "A becak driver says she asked about a city on a volcanic plain in the shadow of Mount Merapi, and wanted to tour the Kraton palace and the shops along Malioboro Street.",
+   "Her trail ends in the sultan-ruled city also called Jogja, gateway to the great Buddhist temple of Borobudur and the Hindu temples of Prambanan."
+  ]
+ },
+ {
+  "id": "new-york",
+  "name": "New York",
+  "country": "United States",
+  "lat": 40.71,
+  "lon": -74.01,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: dollars paid for a bagel with lox at a Lower East Side deli, plus a folded subway map of the five boroughs. She's heading for the Atlantic coast.",
+   "A doorman says she asked about an island of steel and glass towers between two rivers, and wanted directions to the Metropolitan Museum of Art and a walk across the Brooklyn Bridge.",
+   "Her flight lands in the Big Apple, where the Statue of Liberty greets ships in the harbor and the billboards of Times Square glow all night."
+  ]
+ },
+ {
+  "id": "san-francisco",
+  "name": "San Francisco",
+  "country": "United States",
+  "lat": 37.77,
+  "lon": -122.42,
+  "tier": 1,
+  "tips": [
+   "Left at a cafe table: a dollar tip, a receipt for a sourdough bread bowl from Fisherman's Wharf, and a cable car ticket. She's bound for a foggy city on the Pacific coast.",
+   "A bellhop says she asked about a city of steep hills and painted Victorian houses on a peninsula by a bay, and wanted a ferry to Alcatraz and a stroll through Chinatown.",
+   "Her flight lands beside the Golden Gate Bridge, in the foggy city that boomed with the 1849 gold rush and named its football team the 49ers."
+  ]
+ },
+ {
+  "id": "chicago",
+  "name": "Chicago",
+  "country": "United States",
+  "lat": 41.88,
+  "lon": -87.63,
+  "tier": 1,
+  "tips": [
+   "Tucked in her passport: a dollar bill, a receipt for a deep-dish pizza, and a pass for the elevated L trains that circle the Loop. She's heading for a big city on a Great Lake.",
+   "A cab driver says she asked about a flat lakeside city of early skyscrapers on a river dyed green each March, and wanted to see Cloud Gate in Millennium Park and Wrigley Field.",
+   "Her flight lands in the Windy City on Lake Michigan, home of the Willis Tower, once called the Sears Tower, in the birthplace of the modern skyscraper."
+  ]
+ },
+ {
+  "id": "las-vegas",
+  "name": "Las Vegas",
+  "country": "United States",
+  "lat": 36.17,
+  "lon": -115.14,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: dollars spent at a buffet, casino chips from a Fremont Street hotel, and a wedding chapel brochure. She's headed into the Mojave Desert.",
+   "A valet says she asked about a desert city of neon signs and themed resorts, with dancing fountains outside the Bellagio, and wanted a day trip out to the Hoover Dam.",
+   "Her flight lands in Sin City, where the Strip glows all night beside a replica Eiffel Tower and the famous Welcome sign has greeted visitors since 1959."
+  ]
+ },
+ {
+  "id": "new-orleans",
+  "name": "New Orleans",
+  "country": "United States",
+  "lat": 29.95,
+  "lon": -90.07,
+  "tier": 2,
+  "tips": [
+   "Left in her hotel room: a dollar bill dusted with powdered sugar from a beignet at Café du Monde, and purple, green and gold Mardi Gras beads. She's bound for the Gulf Coast.",
+   "A street musician says she asked about a low, humid river city of iron balconies and above-ground tombs, and wanted a streetcar ride on St. Charles Avenue and a jazz club on Frenchmen Street.",
+   "Her flight lands in the Big Easy, the birthplace of jazz, where the Mississippi bends around the French Quarter and the bars of Bourbon Street."
+  ]
+ },
+ {
+  "id": "vancouver",
+  "name": "Vancouver",
+  "country": "Canada",
+  "lat": 49.28,
+  "lon": -123.12,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: dollars, a coin with a loon on it, a salmon purchase at the Granville Island Public Market, and a SeaBus ticket. She's heading for the Pacific coast.",
+   "A concierge says she asked about a rainy harbor city of glass towers ringed by snowy mountains, and wanted to cycle the seawall around Stanley Park and cross the Capilano Suspension Bridge.",
+   "Her flight lands in the British Columbia city that hosted the 2010 Winter Olympics, where the Gastown steam clock whistles near the harbor."
+  ]
+ },
+ {
+  "id": "montreal",
+  "name": "Montreal",
+  "country": "Canada",
+  "lat": 45.5,
+  "lon": -73.57,
+  "tier": 2,
+  "tips": [
+   "Tucked in her passport: a two-dollar coin, a note reading merci beaucoup, and a receipt for a wood-fired sesame bagel from Mile End. She's bound for an island in the St. Lawrence River.",
+   "A taxi driver says she asked about a French-speaking island city around a small mountain, laced with underground shopping tunnels, and wanted to tour Notre-Dame Basilica and the Old Port.",
+   "Her flight lands in the city named for Mount Royal, host of the 1976 Summer Olympics, where poutine and smoked meat rule the diners of Quebec."
+  ]
+ },
+ {
+  "id": "santa-fe",
+  "name": "Santa Fe",
+  "country": "United States",
+  "lat": 35.69,
+  "lon": -105.94,
+  "tier": 3,
+  "tips": [
+   "Left at a cafe table: a dollar tip, a menu asking red or green chile, and a receipt for turquoise jewelry bought under the portal on the old plaza. She's heading into the high desert.",
+   "A gallery owner says she asked about an adobe city about 7,000 feet up in the Sangre de Cristo foothills, and wanted to browse the galleries of Canyon Road and the Georgia O'Keeffe Museum.",
+   "Her flight lands in the oldest state capital in the United States, founded by the Spanish around 1610, where the Palace of the Governors faces the plaza."
+  ]
+ },
+ {
+  "id": "anchorage",
+  "name": "Anchorage",
+  "country": "United States",
+  "lat": 61.22,
+  "lon": -149.9,
+  "tier": 3,
+  "tips": [
+   "A receipt in her coat pocket: dollars spent on a reindeer sausage from a downtown cart, plus a flyer for the ceremonial start of the Iditarod sled dog race. She's bound for the far north.",
+   "A bush pilot says she asked about a city on Cook Inlet below the Chugach Mountains, where moose wander the bike trails, and wanted a floatplane tour from Lake Hood.",
+   "Her flight lands in Alaska's largest city, where midsummer daylight lasts more than nineteen hours and Denali can be seen on clear days."
+  ]
+ },
+ {
+  "id": "mexico-city",
+  "name": "Mexico City",
+  "country": "Mexico",
+  "lat": 19.43,
+  "lon": -99.13,
+  "tier": 1,
+  "tips": [
+   "Left in her hotel room: a peso coin, a napkin reading gracias, and a ticket for a trajinera boat ride on the canals of Xochimilco. She's heading for a capital high on a volcanic plateau.",
+   "A tour guide says she asked about a vast, sinking city built on a drained lake bed at 2,240 meters, and wanted to see Frida Kahlo's Blue House and Chapultepec Castle.",
+   "Her flight lands on the site of the Aztec capital Tenochtitlan, where the Zócalo, one of the world's largest squares, faces the Metropolitan Cathedral."
+  ]
+ },
+ {
+  "id": "havana",
+  "name": "Havana",
+  "country": "Cuba",
+  "lat": 23.11,
+  "lon": -82.37,
+  "tier": 1,
+  "tips": [
+   "Tucked in her passport: a peso bill, a napkin reading gracias, and a receipt for a daiquiri at El Floridita, the bar Hemingway loved. She's bound for a Caribbean capital.",
+   "A cab driver says she asked about a crumbling colonial port of pastel facades, and wanted a sunset walk along the seawall of the Malecón and a tour of La Cabaña fortress.",
+   "Her flight lands in Cuba's capital, where classic 1950s American cars cruise past the domed Capitolio and cigar factories still roll by hand."
+  ]
+ },
+ {
+  "id": "oaxaca",
+  "name": "Oaxaca",
+  "country": "Mexico",
+  "lat": 17.07,
+  "lon": -96.73,
+  "tier": 3,
+  "tips": [
+   "A receipt in her coat pocket: pesos spent on black mole, a bag of toasted grasshoppers, and a mezcal tasting near the Benito Juárez Market. She's heading for a southern highland valley.",
+   "A shopkeeper says she asked about a colonial city of green stone in a mountain valley, with Zapotec ruins on a hilltop above, and wanted to see Monte Albán and the gilded Santo Domingo church.",
+   "Her flight lands in the southern Mexican state capital famous for its seven moles, its Day of the Dead celebrations and the Guelaguetza dance festival each July."
+  ]
+ },
+ {
+  "id": "guadalajara",
+  "name": "Guadalajara",
+  "country": "Mexico",
+  "lat": 20.67,
+  "lon": -103.35,
+  "tier": 2,
+  "tips": [
+   "Left at a cafe table: a peso coin, a receipt for a torta ahogada from the San Juan de Dios market, and a flyer for a charreada rodeo. She's bound for a western highland city.",
+   "A hotel porter says she asked about a sprawling colonial city of plazas and jacaranda trees, and wanted to see the twin-spired cathedral and the Orozco murals in the Hospicio Cabañas.",
+   "Her flight lands in the capital of Jalisco, where mariachi bands play for diners in the Plaza de los Mariachis, a short drive from the town that gave tequila its name."
+  ]
+ },
+ {
+  "id": "panama-city",
+  "name": "Panama City",
+  "country": "Panama",
+  "lat": 8.98,
+  "lon": -79.52,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: US dollars and a balboa coin, spent on ceviche at the Mercado de Mariscos, plus a note reading gracias. She's heading for a Pacific port in the tropics.",
+   "A doorman says she asked about a skyline of tall towers beside a colonial old quarter called Casco Viejo, and wanted to walk the Cinta Costera and see the Biomuseo by Frank Gehry.",
+   "Her flight lands in the capital at the Pacific end of the Panama Canal, where container ships wait their turn at the Miraflores Locks."
+  ]
+ },
+ {
+  "id": "antigua-guatemala",
+  "name": "Antigua Guatemala",
+  "country": "Guatemala",
+  "lat": 14.56,
+  "lon": -90.73,
+  "tier": 3,
+  "tips": [
+   "Tucked in her passport: a quetzal bill, a note reading gracias, and a receipt from a jade workshop on a cobbled street. She's bound for a highland valley ringed by volcanoes.",
+   "A tour guide says she asked about a low colonial town of pastel houses and ruined churches below the cone of Volcán de Agua, and wanted a photo at the yellow Santa Catalina Arch.",
+   "Her flight lands near the old Spanish capital of Central America, abandoned after the 1773 earthquakes and famed for Holy Week carpets of colored sawdust."
+  ]
+ },
+ {
+  "id": "san-juan",
+  "name": "San Juan",
+  "country": "Puerto Rico",
+  "lat": 18.47,
+  "lon": -66.11,
+  "tier": 2,
+  "tips": [
+   "Left in her hotel room: a dollar bill, a note reading buen provecho, and a receipt for mofongo from a café on blue cobblestones in the old quarter. She's bound for a walled Caribbean port.",
+   "A cruise guide says she asked about a colonial harbor city of pastel houses on a small walled islet, and wanted to tour Castillo San Cristóbal and stroll down Calle del Cristo.",
+   "Her flight lands in Puerto Rico's capital, where Castillo San Felipe del Morro guards the bay and a hotel bar claims to have invented the piña colada."
+  ]
+ },
+ {
+  "id": "rio-de-janeiro",
+  "name": "Rio de Janeiro",
+  "country": "Brazil",
+  "lat": -22.91,
+  "lon": -43.17,
+  "tier": 1,
+  "tips": [
+   "A receipt in her coat pocket: reais spent on a caipirinha at a kiosk on Copacabana beach, and a note reading obrigada. She's heading for a coastal city on a bay of granite peaks.",
+   "A beach vendor says she asked about a city squeezed between jungle mountains and the Atlantic, and wanted a cable car up Sugarloaf Mountain and a samba night in Lapa.",
+   "Her flight lands in the city watched over by Christ the Redeemer atop Corcovado, home of the Carnival Sambadrome and the Maracanã stadium."
+  ]
+ },
+ {
+  "id": "buenos-aires",
+  "name": "Buenos Aires",
+  "country": "Argentina",
+  "lat": -34.6,
+  "lon": -58.38,
+  "tier": 1,
+  "tips": [
+   "Left at a cafe table: a peso note, a menu offering dulce de leche pastries, and a ticket for a tango show in San Telmo. She's bound for a capital on a wide, muddy estuary.",
+   "A waiter says she asked about a grand city of Parisian boulevards and cafes on the Río de la Plata, and wanted to see the colorful houses of La Boca and the tombs of Recoleta Cemetery.",
+   "Her flight lands in Argentina's capital, where the white Obelisk rises on Avenida 9 de Julio, one of the widest avenues in the world, near the Teatro Colón."
+  ]
+ },
+ {
+  "id": "lima",
+  "name": "Lima",
+  "country": "Peru",
+  "lat": -12.05,
+  "lon": -77.04,
+  "tier": 1,
+  "tips": [
+   "Tucked in her passport: a sol coin, a note reading gracias, and a receipt from a cevichería in Barranco, the bohemian seaside district. She's heading for a desert capital on the Pacific.",
+   "A taxi driver says she asked about a gray, misty coastal city on desert cliffs where it almost never rains, and wanted to see the Plaza Mayor and the catacombs under San Francisco Monastery.",
+   "Her flight lands in the City of Kings, Peru's capital, founded by Francisco Pizarro in 1535, where an adobe pyramid, Huaca Pucllana, rises among the apartment blocks of Miraflores."
+  ]
+ },
+ {
+  "id": "cusco",
+  "name": "Cusco",
+  "country": "Peru",
+  "lat": -13.53,
+  "lon": -71.97,
+  "tier": 2,
+  "tips": [
+   "Left in her hotel room: a sol coin, a coca tea bag, a phrasebook page of Quechua words, and a train ticket to Aguas Calientes. She's bound for a city high in the Andes.",
+   "A llama herder says she asked about a city at 3,400 meters with Inca stone walls under Spanish churches, and wanted to find the twelve-angled stone and tour Sacsayhuamán.",
+   "Her flight lands in the ancient capital of the Inca Empire, the base for trips to Machu Picchu, whose Plaza de Armas was once the great Inca square."
+  ]
+ },
+ {
+  "id": "santiago",
+  "name": "Santiago",
+  "country": "Chile",
+  "lat": -33.45,
+  "lon": -70.67,
+  "tier": 2,
+  "tips": [
+   "A receipt in her coat pocket: pesos spent on a completo hot dog and a glass of Carménère from the Maipo Valley, plus a metro card. She's heading for a capital in a basin below the Andes.",
+   "A ski instructor says she asked about a smoggy valley city with snowy peaks behind its towers, and wanted the funicular up Cerro San Cristóbal and a look at the Costanera Center tower.",
+   "Her flight lands in Chile's capital, founded by Pedro de Valdivia in 1541 at the foot of Santa Lucía Hill, a short drive from the port of Valparaíso."
+  ]
+ },
+ {
+  "id": "bogota",
+  "name": "Bogotá",
+  "country": "Colombia",
+  "lat": 4.71,
+  "lon": -74.07,
+  "tier": 2,
+  "tips": [
+   "Tucked in her passport: a peso bill, a receipt for a bowl of ajiaco soup, and a ticket to the Gold Museum and its hoard of pre-Columbian gold. She's bound for a high Andean plateau.",
+   "A street artist says she asked about a cool, rainy capital at 2,600 meters full of graffiti and red brick, and wanted to explore La Candelaria and see the Botero Museum.",
+   "Her flight lands in Colombia's capital, where a cable car and a funicular climb Monserrate to a white church high above the city."
+  ]
+ },
+ {
+  "id": "cartagena",
+  "name": "Cartagena",
+  "country": "Colombia",
+  "lat": 10.39,
+  "lon": -75.51,
+  "tier": 2,
+  "tips": [
+   "Left at a cafe table: a peso coin, a note reading gracias, and a bag of coconut cocadas from a palenquera balancing a fruit bowl on her head. She's heading for a Caribbean port.",
+   "A carriage driver says she asked about a hot, walled colonial port of bougainvillea balconies, and wanted to tour the San Felipe de Barajas Castle and the street art of Getsemaní.",
+   "Her flight lands in Colombia's walled Caribbean port, a stop for the Spanish treasure fleets, where Gabriel García Márquez kept a home and found the setting for Love in the Time of Cholera."
+  ]
+ },
+ {
+  "id": "salvador",
+  "name": "Salvador",
+  "country": "Brazil",
+  "lat": -12.97,
+  "lon": -38.5,
+  "tier": 3,
+  "tips": [
+   "A receipt in her coat pocket: reais spent on acarajé fried in palm oil, and a ribbon wish bracelet from the Bonfim church. She's bound for a hilly port on the Atlantic.",
+   "A capoeira teacher says she asked about a two-level city linked by a giant art deco elevator, and wanted to wander the pastel Pelourinho and ride the Elevador Lacerda.",
+   "Her flight lands in Brazil's first capital, founded in 1549 on the Bay of All Saints, the heart of Afro-Brazilian culture and Bahia's street Carnival."
+  ]
+ },
+ {
+  "id": "la-paz",
+  "name": "La Paz",
+  "country": "Bolivia",
+  "lat": -16.5,
+  "lon": -68.15,
+  "tier": 3,
+  "tips": [
+   "Left in her hotel room: a napkin reading gracias, a lucky charm from the Witches' Market, and a ticket for the red line of the city's cable cars. She's heading for a canyon city high in the Andes.",
+   "A cholita wrestler says she asked about a city in a deep canyon at about 3,600 meters under the triple peak of Illimani, and wanted to visit the eroded spires of the Valley of the Moon.",
+   "Her flight lands at El Alto, above the world's highest seat of national government, Bolivia's administrative capital, while Sucre keeps the constitutional title."
+  ]
+ },
+ {
+  "id": "manaus",
+  "name": "Manaus",
+  "country": "Brazil",
+  "lat": -3.12,
+  "lon": -60.02,
+  "tier": 3,
+  "tips": [
+   "Tucked in her passport: a few reais in coins, a note reading obrigada, and a receipt for tambaqui fish grilled at the riverside market. She's bound for a port deep in the rainforest.",
+   "A riverboat captain says she asked about a hot, humid jungle city built on rubber money, and wanted a boat trip to see pink river dolphins and a tour of the domed Amazon Theatre opera house.",
+   "Her flight lands in the Amazonas state capital, reached mostly by air or river, where the dark Rio Negro meets the sandy Solimões at the Meeting of the Waters."
+  ]
+ }
+]

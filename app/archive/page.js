@@ -69,6 +69,9 @@ import { PUZZLES as TUCK } from '../tuck/puzzles';
 import { PUZZLES as ALIBI_FULL } from '../alibi/puzzles';
 import { PUZZLES as CIPHER } from '../cipher/puzzles';
 import { PUZZLES as PING } from '../ping/puzzles';
+import { PUZZLES as CARMEN_FULL } from '../carmen/puzzles';
+// Carmen's rows carry whole case files; the archive needs only the frame.
+const CARMEN = CARMEN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 import { PUZZLES as WARMER } from '../warmer/puzzles';
 import { PUZZLES as JESTER_FULL } from '../jesters/puzzles';
 import { PUZZLES as SWORN_FULL } from '../sworn/puzzles';
@@ -454,6 +457,7 @@ const GAMES = [
   { key: 'alibi', name: 'Alibi', path: '/alibi', tag: 'Solve the nightly whodunit', accent: '#8b1e2d', bg: '#f6e3e5', border: 'rgba(139,30,45,0.35)', src: ALIBI },
   { key: 'cipher', name: 'Cipher', path: '/cipher', tag: 'Crack the letter math', accent: '#0f766e', bg: '#d9f0ee', border: 'rgba(15,118,110,0.35)', src: CIPHER },
   { key: 'ping', name: 'Ping', path: '/ping', tag: 'Find the secret city', accent: '#0284c7', bg: '#e0f2fe', border: 'rgba(2,132,199,0.35)', src: PING },
+  { key: 'carmen', name: 'Carmen', path: '/carmen', tag: 'Chase a thief across the globe', accent: '#4d7c0f', bg: '#ecfccb', border: 'rgba(77,124,15,0.35)', src: CARMEN },
   { key: 'warmer', name: 'Warmer', path: '/warmer', tag: 'Hotter or colder', accent: '#dc2626', bg: '#fef2f2', border: 'rgba(220,38,38,0.35)', src: WARMER },
   { key: 'jester', name: 'Jesters', path: '/jesters', tag: 'Seat the court', accent: '#7c3aed', bg: '#f3e8ff', border: 'rgba(124,58,237,0.35)', src: JESTER },
   { key: 'sworn', name: 'Sworn', path: '/sworn', tag: 'Spot the liars', accent: '#be185d', bg: '#fce7f3', border: 'rgba(190,24,93,0.35)', src: SWORN },

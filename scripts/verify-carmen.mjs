@@ -1,0 +1,98 @@
+// scripts/verify-carmen.mjs: checks app/carmen/puzzles.js, the Carmen bank,
+// recomputing every rule from the rows rather than trusting the generator.
+//
+//   node scripts/verify-carmen.mjs
+//
+// Per case:
+//   - num runs 1..N, live runs one day at a time, quizId and dateLabel match live;
+//   - `sunday` is true exactly on Sundays, and the leg count is LEGS_BY_DOW
+//     (six on a Sunday: the Sunday Edition proves its own scaling);
+//   - leg tiers match TIERS_BY_DOW within one step (the generator's fallback);
+//   - every city in the case is distinct, every hop is >= MIN_HOP_KM and
+//     crosses a border;
+//   - coordinates in range; three tips per leg, 110 to 240 characters;
+//   - no tip names its city; tips 1 and 2 never name the country;
+//   - no em or en dash, no British spelling in reader-facing text;
+//   - no leg is the same day's Ping city.
+// Across the bank (variety ceiling):
+//   - no city returns within GAP_DAYS days, as a start or a leg;
+//   - no city appears more than MAX_USES times in the whole bank;
+//   - the suspect and the stolen object never repeat on consecutive days.
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { LEGS_BY_DOW, TIERS_BY_DOW, kmBetween } from '../lib/carmen-engine.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const { PUZZLES } = await import('file://' + path.join(ROOT, 'app/carmen/puzzles.js'));
+const MIN_HOP_KM = 800, GAP_DAYS = 14, MAX_USES = 4;
+const BRIT = /\b(colour|harbour|centre|metre|kilometre|theatre|favourite|travell|practis|neighbour|flavour|labour|honour|grey|jewellery|organis|realis|recognis)/i;
+const PROPER_OK = /(Bolshoi Theatre|Giraffe Centre|Lekki Conservation Centre|[A-Z][a-z]+ Centre\b|[A-Z][a-z]+ Theatre\b|\S+ Harbour\b)/g;
+const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const fold = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const dow = (s) => new Date(s + 'T12:00:00Z').getUTCDay();
+const addDays = (s, n) => { const d = new Date(s + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+
+const ping = {};
+{
+  const src = fs.readFileSync(path.join(ROOT, 'app/ping/puzzles.js'), 'utf8');
+  const re = /live:\s*'(\d{4}-\d{2}-\d{2})'[\s\S]*?city:\s*'([^']+)'/g;
+  let m; while ((m = re.exec(src))) ping[m[1]] = fold(m[2]);
+}
+
+let bad = 0;
+const fail = (p, msg) => { bad++; console.log(`✗ carmen #${p.num} ${p.live}: ${msg}`); };
+const lastUse = {}, uses = {};
+PUZZLES.forEach((p, i) => {
+  if (p.num !== i + 1) fail(p, `num ${p.num}, expected ${i + 1}`);
+  if (i && p.live !== addDays(PUZZLES[i - 1].live, 1)) fail(p, 'live is not the day after the previous case');
+  const [y, m, d] = p.live.split('-').map(Number);
+  if (p.quizId !== `carmen-${m}-${d}-${String(y).slice(2)}`) fail(p, `quizId ${p.quizId}`);
+  if (p.dateLabel !== `${MON[m - 1]} ${d}, ${y}`) fail(p, `dateLabel ${p.dateLabel}`);
+  const wd = dow(p.live);
+  if (p.sunday !== (wd === 0)) fail(p, 'sunday flag does not match the weekday');
+  if (p.legs.length !== LEGS_BY_DOW[wd]) fail(p, `${p.legs.length} legs, want ${LEGS_BY_DOW[wd]}`);
+  if (p.sunday && p.legs.length <= LEGS_BY_DOW[1]) fail(p, 'Sunday Edition is not longer than a weekday');
+  if (!p.title || !p.suspect || !p.stolen) fail(p, 'case file incomplete');
+  for (const s of [p.title, p.suspect, p.stolen]) if (/[–—]/.test(s)) fail(p, 'dash in case file');
+  const all = [p.start, ...p.legs];
+  const names = new Set();
+  all.forEach((c, k) => {
+    const [lon, lat] = c.ll;
+    if (!(lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90)) fail(p, `${c.name} coordinates out of range`);
+    if (names.has(c.name)) fail(p, `${c.name} twice in one case`);
+    names.add(c.name);
+    if (k) {
+      const prev = all[k - 1];
+      const km = kmBetween(prev.ll, c.ll);
+      if (km < MIN_HOP_KM) fail(p, `${prev.name} to ${c.name} is ${Math.round(km)} km`);
+      if (prev.name.split(', ').pop() === c.name.split(', ').pop()) fail(p, `${prev.name} to ${c.name} stays in one country`);
+    }
+    const key = c.name;
+    if (lastUse[key] && (Date.parse(p.live) - Date.parse(lastUse[key])) / 864e5 < GAP_DAYS) fail(p, `${key} returns ${lastUse[key]} -> ${p.live}, inside ${GAP_DAYS} days`);
+    lastUse[key] = p.live;
+    uses[key] = (uses[key] || 0) + 1;
+  });
+  p.legs.forEach((L, k) => {
+    const want = TIERS_BY_DOW[wd][k];
+    if (want != null && Math.abs(L.tier - want) > 1) fail(p, `${L.name} tier ${L.tier}, want ${want}`);
+    if (ping[p.live] && fold(L.name.split(',')[0]) === ping[p.live]) fail(p, `${L.name} is the same day's Ping city`);
+    if (!Array.isArray(L.tips) || L.tips.length !== 3) { fail(p, `${L.name} needs three tips`); return; }
+    const [city, country] = L.name.split(', ');
+    L.tips.forEach((t, j) => {
+      if (t.length < 110 || t.length > 240) fail(p, `${city} tip ${j + 1} is ${t.length} chars`);
+      if (/[–—]/.test(t)) fail(p, `${city} tip ${j + 1} has a dash`);
+      if (fold(t).includes(fold(city))) fail(p, `${city} tip ${j + 1} names the city`);
+      if (j < 2 && fold(t).includes(fold(country))) fail(p, `${city} tip ${j + 1} names the country`);
+      if (BRIT.test(t.replace(PROPER_OK, ''))) fail(p, `${city} tip ${j + 1} British spelling`);
+    });
+  });
+  if (i) {
+    if (p.suspect === PUZZLES[i - 1].suspect) fail(p, 'same suspect two days running');
+    if (p.stolen === PUZZLES[i - 1].stolen) fail(p, 'same loot two days running');
+  }
+});
+for (const [k, n] of Object.entries(uses)) if (n > MAX_USES) { bad++; console.log(`✗ carmen: ${k} used ${n} times (ceiling ${MAX_USES})`); }
+
+if (bad) { console.log(`\ncarmen: ${bad} problem(s) in ${PUZZLES.length} cases`); process.exit(1); }
+console.log(`carmen: ${PUZZLES.length} cases OK (${PUZZLES[0].live} to ${PUZZLES[PUZZLES.length - 1].live}, ${PUZZLES.filter((p) => p.sunday).length} Sunday Editions)`);

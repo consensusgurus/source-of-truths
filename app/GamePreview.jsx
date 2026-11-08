@@ -324,7 +324,7 @@ const BY_KEY = {
   // Trivia
   tape: Chart, circa: Timeline, streak: Timeline, history: Timeline,
   // Geography
-  ping: Ping, span: () => <Globe />, atlas: () => <Globe />, flank: () => <Globe pin={false} />, passport: () => <Globe />,
+  ping: Ping, carmen: () => <Globe />, span: () => <Globe />, atlas: () => <Globe />, flank: () => <Globe pin={false} />, passport: () => <Globe />,
   // Logic
   venn: Venn, lamps: Lamps, plot: Plot, paths: Track, tangled: Tangle, chomp: Maze, hedge: Maze, topple: () => <Block />,
   roll: () => <Block die />, jig: Jig, saw: Jig, slide: () => <Slide />, swap: () => <Slide mode="swap" />, spin: () => <Slide mode="spin" />,

@@ -46,6 +46,7 @@ export const DAILY_GAMES = [
   { key: 'alibi', href: '/alibi', name: 'Alibi', tag: 'the nightly whodunit', store: 'sot_alibi_day', accent: '#8b1e2d', bg: '#f6e3e5', border: 'rgba(139,30,45,0.35)' },
   { key: 'cipher', href: '/cipher', name: 'Cipher', tag: 'crack the letter math', store: 'sot_cipher_day', accent: '#0f766e', bg: '#d9f0ee', border: 'rgba(15,118,110,0.35)' },
   { key: 'ping', href: '/ping', name: 'Ping', tag: 'find the secret city', store: 'sot_ping_day', accent: '#0284c7', bg: '#e0f2fe', border: 'rgba(2,132,199,0.35)' },
+  { key: 'carmen', href: '/carmen', name: 'Carmen', tag: 'chase a thief across the globe', store: 'sot_carmen_day', accent: '#4d7c0f', bg: '#ecfccb', border: 'rgba(77,124,15,0.35)' },
   { key: 'warmer', href: '/warmer', name: 'Warmer', tag: 'hotter or colder', store: 'sot_warmer_day', accent: '#dc2626', bg: '#fef2f2', border: 'rgba(220,38,38,0.35)' },
   { key: 'jester', href: '/jesters', name: 'Jesters', tag: 'seat the court', store: 'sot_jester_day', accent: '#7c3aed', bg: '#f3e8ff', border: 'rgba(124,58,237,0.35)' },
   { key: 'sworn', href: '/sworn', name: 'Sworn', tag: 'spot the liars', store: 'sot_sworn_day', accent: '#be185d', bg: '#fce7f3', border: 'rgba(190,24,93,0.35)' },

@@ -264,5 +264,10 @@
     "through": "2026-12-31",
     "on": "2026-11-06",
     "note": "Added 2026-11-06 at the owner's direction. 2026-12-01..12-31 restock read by a separate reviewer, then a cross-game same-day giveaway pass and a final check; earlier launch days predate the restock and were not re-read in this pass"
+  },
+  "carmen": {
+    "through": "2026-12-13",
+    "on": "2026-11-08",
+    "note": "launch bank: the 113-city pool (339 tips) was authored in four regional passes and read tip by tip by two separate fact-checkers, who rewrote 31 tips (wrong superlatives, stale facts, giveaway nicknames, politics); scripts/verify-carmen.mjs checks name leaks, spelling and the route rules"
   }
 }

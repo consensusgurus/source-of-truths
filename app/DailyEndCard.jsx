@@ -117,7 +117,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['mercurytoo', 'tangled', 'simon', 'bacon', 'tape', 'saw', 'swap', 'slide', 'spin', 'connect', 'fill', 'pairs', 'mixtape', 'mishmash', 'sudoclue', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'mahj', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'foodie', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
+const LAUNCH_PIN = { keys: ['carmen', 'mercurytoo', 'tangled', 'simon', 'bacon', 'tape', 'saw', 'swap', 'slide', 'spin', 'connect', 'fill', 'pairs', 'mixtape', 'mishmash', 'sudoclue', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'mahj', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'foodie', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -167,6 +167,7 @@ export const GAME_META = {
   alibi:  { accent: '#8b1e2d', badgeBg: '#8b1e2d', badgeInk: T.white, Fin: Fingerprint },
   cipher: { accent: '#0f766e', badgeBg: '#0f766e', badgeInk: T.white, Fin: KeyRound },
   ping:   { accent: '#0284c7', badgeBg: '#0284c7', badgeInk: T.white, Fin: Globe },
+  carmen: { accent: '#4d7c0f', badgeBg: '#4d7c0f', badgeInk: T.white, Fin: Globe },
   warmer: { accent: '#dc2626', badgeBg: '#dc2626', badgeInk: T.white, Fin: Thermometer },
   jester: { accent: '#7c3aed', badgeBg: '#7c3aed', badgeInk: T.white, Fin: Crown },
   sworn:  { accent: '#be185d', badgeBg: '#be185d', badgeInk: T.white, Fin: Scale },
@@ -378,6 +379,7 @@ const ALL_DAILY_GAMES = [
   { key: 'extra',  cat: 'trivia',     name: 'Extra',  tag: 'Name the redacted front page', blurb: 'A real front page with the key words blacked out. Work out the story it broke.', href: '/extra' },
   { key: 'span',   cat: 'geography', name: 'Span',   tag: 'Cross the map, border by border', blurb: 'Travel from one country to another over land, naming every border you cross on the way.', href: '/span' },
   { key: 'ping',   cat: 'geography', name: 'Ping',   tag: 'Find the secret city',        blurb: 'Name any city and get the distance back. Triangulate your way to the hidden one.', href: '/ping' },
+  { key: 'carmen', cat: 'geography', name: 'Carmen', tag: 'Chase a thief across the globe', blurb: 'A thief is loose. Read the evidence, pin each city she flees to on a spinning globe, and catch her on the final leg.', href: '/carmen' },
   { key: 'tally',  cat: 'numbers',   name: 'Tally',  tag: 'Balance every row and column', blurb: 'Place the numbers so every row and column lands exactly on its target total.', href: '/tally' },
   { key: 'suds',   cat: 'sudoku' ,   name: 'Suds',   tag: 'The daily 9x9 sudoku',      blurb: 'A fresh, hand-checked 9x9 sudoku with one clean solving path from start to finish.', href: '/suds' },
   { key: 'sudstoo',   cat: 'sudoku' ,   name: 'SudsToo',   tag: "Suds in color, 9x9",      blurb: "The 9x9 color twin of Suds: every row, column and box holds all nine colors once.", href: '/sudstoo' },

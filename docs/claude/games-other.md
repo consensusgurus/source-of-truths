@@ -2170,3 +2170,32 @@ given up, the perfect network is shown on the board automatically (owner, 2026-1
 on from an effect on `g.status`, and the lanes are marked against the player's own track (green laid
 and used, red laid and not used, gold used and never laid). The toggle under the board can hide it,
 and the win option on the end card reads "See the perfect network".
+
+## Carmen (`/carmen`): the daily globe chase (launched 2026-11-08)
+
+Owner idea (2026-11-08): an "amazing" geography trivia game about locating places on a globe, modeled on
+the Where in the World format, named Carmen. ORIGINAL IP ONLY: rotating original suspects (The Magpie, The
+Silver Fox, ...) and loot; never the Sandiego surname, the red coat and fedora look, or anything from the
+show, and keep "Sandiego" out of metadata. Key/route `carmen`, category **Geography** with
+`alsoCat: 'Trivia'` (owner: "place it in each", green by default), `miss: 'Tips'`, SCORE_VIEW points.
+Wired by `scripts/wire-carmen.mjs` (beside Ping). Skills Memory, Deduction.
+
+- **Rules** (`lib/carmen-engine.js`, shared by client, generator, verifier): five legs, six on the Sunday
+  Edition. A leg scores 1000 within 50 km, else round(1000 * exp(-km/2000)), minus 150 per extra tip, floor 0.
+  Caught if the last pin is within 500 km. Rank ladder Rookie, Beat Cop, Gumshoe, Inspector, Sherlock Holmes
+  (owner: Sherlock Holmes on top) at fifths of the day's maximum.
+- **Tips** (owner, 2026-11-08): Evidence (free), Witness, Informant, easiest last, detective voice plus geography,
+  and EVERY TIP POINTS TO THE CITY, not just its country: keep the country detail and add a city-only item.
+  Never the city's name; tips 1 and 2 never the country's.
+- **Pool** `scripts/carmen-pool.json`: 113 cities, three tips each, tier 1 to 3, authored in four regional
+  passes and fact-checked by a separate reviewer (the content-review gate; ledger entry `carmen`).
+- **Bank** `scripts/gen-carmen.mjs` (deterministic, append-only, frozen past): hops >= 800 km and across a
+  border, no city back within 14 days, never the same day's Ping city, suspect and loot never repeat on
+  consecutive days. `scripts/verify-carmen.mjs` rechecks every rule. Bank 2026-11-08 to 2026-12-13.
+- **Look** (owner pick of three mockups): Noir, black water and lime land (`lib/carmen-globe.js`, d3-geo
+  orthographic, land from `public/carmen/world-110m.json`). Run-style interstitials: the case file with an
+  OPEN stamp, a leg card per leg, the flight drawn with the camera following, ring bursts and a grade stamp,
+  then "Caught!" or "She got away" and a dark light show (stamp, leg bars, total, rank ladder) before the
+  standard ending. The shell holds the ending (SimpleDaily `GAME.holdMs`) and the board releases it.
+- **SimpleDaily gained four optional GAME hooks for it** (no other game changes): `holdMs`, `title`,
+  `metric`, and boardProps `held` / `release` / `gaveUp`.

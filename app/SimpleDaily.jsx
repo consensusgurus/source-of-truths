@@ -264,7 +264,9 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
     gRef.current = g2;
     setG(g2);
     setArmGive(false);
-    endHold.hold(HOLD_SHORT);
+    // A game with its own finish show (Carmen, 2026-11-08) holds longer and
+    // releases the ending itself through the board's `release`.
+    endHold.hold(GAME.holdMs ? GAME.holdMs(PUZZLE, g2.s, isWon) : HOLD_SHORT);
   }
   // The board's one door into the state. A move that solves the board ends the
   // game in the same update, so a solved board is never left in play.
@@ -322,7 +324,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
   const catRank = useCategoryRank({ self: KEY, active: ended });
 
   const rulesBody = <DailyRules {...GAME.rules(PUZZLE)} />;
-  const boardProps = { P: PUZZLE, s: g.s, setS, active: started, done: ended, onStage: true };
+  const boardProps = { P: PUZZLE, s: g.s, setS, active: started, done: ended, onStage: true, held: endHold.held, release: endHold.release, gaveUp: !!g.gaveUp };
   const Board = GAME.Board;
   const sundayLabel = PUZZLE.sunday ? (GAME.sundayLabel ? GAME.sundayLabel(PUZZLE) : 'Sunday Edition') : null;
   const count = GAME.count(g.s);
@@ -395,14 +397,14 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
               name={NAME}
               catRank={catRank}
               outcome={won ? 'won' : 'lost'}
-              title={endSolved(won)}
+              title={GAME.title ? GAME.title(PUZZLE, g.s, won) : endSolved(won)}
               detail={GAME.detail(PUZZLE, g.s, won, elapsed)}
               missLabel={GAME.miss ? GAME.miss[0].toUpperCase() + GAME.miss.slice(1) : null}
               // The game's own figure (turns, moves, clues) is what a challenge
               // and the GIF share lead with, not the clock: lib/challenge-metric.js
               // says which games count it. Without this every stage-shell game fell
               // back to its time (owner, 2026-11-06, on Tape).
-              challengeMetric={won && GAME.count ? GAME.count(g.s) : null}
+              challengeMetric={GAME.metric ? GAME.metric(PUZZLE, g.s, won) : (won && GAME.count ? GAME.count(g.s) : null)}
               iq={iq}
               board={dailyBoard}
               gameRank={allTime && allTime.ready

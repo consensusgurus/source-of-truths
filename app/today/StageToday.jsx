@@ -1632,10 +1632,16 @@ export default function StageToday() {
   // no games simply do not render, so the page cannot show an empty block.
   const cats = useMemo(() => RAMP_ORDER
     // Within a category the games run A to Z (owner, 2026-10-08).
-    .map((cat) => ({ cat, games: DAILY_GAMES.filter((g) => g.cat === cat).sort((a, b) => a.name.localeCompare(b.name)) }))
+    // A game with a second shelf (alsoCat, Carmen: Geography and Trivia, owner
+    // 2026-11-08) is listed in both panes, wearing each pane's colour; its own
+    // `cat` stays the registry one everywhere else.
+    .map((cat) => ({ cat, games: DAILY_GAMES.filter((g) => g.cat === cat || g.alsoCat === cat)
+      .map((g) => (g.cat === cat ? g : { ...g, cat }))
+      .sort((a, b) => a.name.localeCompare(b.name)) }))
     .filter((c) => c.games.length), []);
 
-  const total = useMemo(() => cats.reduce((n, c) => n + c.games.length, 0), [cats]);
+  // Counted once each, a two-shelf game included.
+  const total = useMemo(() => new Set(cats.flatMap((c) => c.games.map((g) => g.key))).size, [cats]);
 
   // THE ORDER OF THE CATEGORY ROWS. A hand order wins; otherwise they sort by
   // how much of each category this player has actually played, so the page
@@ -1659,7 +1665,7 @@ export default function StageToday() {
   // render, so reading `cats` from above its own declaration is a temporal dead
   // zone, and it took the homepage down rather than warning.
   const alpha = useMemo(
-    () => cats.flatMap((c) => c.games).slice().sort((a, b) => a.name.localeCompare(b.name)),
+    () => cats.flatMap((c) => c.games).filter((g) => g.cat === (DAILY_GAME_MAP[g.key] || g).cat).slice().sort((a, b) => a.name.localeCompare(b.name)),
     [cats],
   );
 
