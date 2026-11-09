@@ -166,7 +166,7 @@ const ARM_MIN_MS = 400;
 const JX_FLEET = [0, 1, 2, 3, 4, 6, 7, 8, 9];   // slot 5 holds rose since the 2026-10-30 Logic/Geography swap (the names in REGION_RAMP were not swapped)
 const JX_CSS = `
 .jx{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;}
-.jx-tip{margin:0;text-align:center;font-size:14px;font-weight:700;line-height:1.35;min-height:1.35em;}
+.jx-tip{margin:0;text-align:center;font-size:14px;font-weight:700;line-height:1.35;min-height:1.35em;}.jx-tip{display:grid;}.jx-tip>span{grid-area:1 / 1;}.jx-tip-ghost{visibility:hidden;}
 .jx-wrap{position:relative;width:min(calc(100% - 22px), 440px, calc(100dvh - 380px));min-width:240px;margin-right:18px;}
 .jx-lot{position:relative;width:100%;aspect-ratio:1 / 1;border:1px solid var(--pst-ink);border-radius:14px;background:var(--pst-bg);touch-action:manipulation;}
 .jx-lot.shake{animation:jxshake .34s ease;}
@@ -745,7 +745,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
             top={(
               <div className="jx" style={{ '--jx-pad': N >= 8 ? '2px' : '3px', '--jx-r': N >= 8 ? '7px' : '9px', '--lg-bad': dark ? '#fb923c' : '#c2410c', '--lg-bad-bg': dark ? '#3a2312' : '#ffedd5' }}>
                 <style dangerouslySetInnerHTML={{ __html: JX_CSS }} />
-                {tip ? <p className="jx-tip" aria-live="polite">{tip}</p> : null}
+                {tip ? <p className="jx-tip" aria-live="polite"><span className="jx-tip-ghost" aria-hidden="true">Get the arrow block out through the gap on the right. Flick a block or tap it.</span><span>{tip}</span></p> : null}
                 <div className="jx-wrap">
                   <div key={shake} className={'jx-lot' + (shake ? ' shake' : '')} role="grid" aria-label={`The lot, ${N} by ${N}`}>
                     <span className="jx-gap" style={{ top: `calc(${EXIT_ROW * cp}% + 1px)`, height: `calc(${cp}% - 2px)` }} aria-hidden="true" />
