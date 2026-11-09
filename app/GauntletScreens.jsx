@@ -29,6 +29,7 @@ import MindLoftMark from './MindLoftMark';
 import StageTopBar from './StageTopBar';
 import RunRoll from './RunRoll';
 import RunFinale from './RunFinale';
+import RunEndShelves from './RunEndShelves';
 import { useRunStandings, StandCard, StandTiles } from './WhereYouStand';
 import { mathText } from '@/app/MathText';
 import { holdRootPaint } from '@/lib/root-paint';
@@ -610,6 +611,14 @@ export function GauntletEndStage({
     if (mq.addEventListener) mq.addEventListener('change', on);
     return () => { if (mq.removeEventListener) mq.removeEventListener('change', on); };
   }, []);
+  const [standOpen, setStandOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  useEffect(() => {
+    if (!shareOpen) return undefined;
+    const k = (e) => { if (e.key === 'Escape') setShareOpen(false); };
+    window.addEventListener('keydown', k);
+    return () => window.removeEventListener('keydown', k);
+  }, [shareOpen]);
   const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const climb = !!(ladder && ladder.length);
   // The finale replaces this page's own sweep and count: while it plays the
@@ -786,146 +795,201 @@ export function GauntletEndStage({
           </div>
         </div>
         {misses && misses.some((m) => m && !m.cleared && m.q) ? <div className="gsx-fine">Tap a quiz to see the question that ended it.</div> : null}
-        {onPractice ? <button type="button" className="gsx-det" onClick={onPractice}>Practice replay</button> : null}
     </>
   );
-  if (phone) {
-    // The title the climb earned: the prop when a run passes one, else the
-    // highest rung the score reaches.
-    let titleName = title && title.name ? title.name : null;
-    if (!titleName && climb) {
-      ladder.forEach((t) => { if (score >= t.min) titleName = t.name; });
-    }
-    return (
-      <div key={pal.look} className={'gsx gsx-end gsx-roll' + finCls} role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
-        <style dangerouslySetInnerHTML={{ __html: CSS }} />
-        {finaleNode}
-        {anim ? (
-          <div className="gsx-show" aria-hidden="true">
-            {sections.map((s, i) => <span key={s.key} style={{ background: pal.fill(pastel || rampFor(slotOf(s, i))), animationDelay: `${i * 0.06}s` }} />)}
-          </div>
+  // THE SUMMARY ENDING (owner, 2026-11-09, "Run ending: summary up top, what
+  // to play next", direction B: "push to live for all run endings"). The
+  // result shrinks to ONE summary card: the score, the title, the rank, the
+  // way to the next title and the three standings. Tapping it opens the full
+  // detail in place (the climb, Where You Stand, the leg by leg table).
+  // Beside it (under it on a phone) Challenge a friend, whose button opens
+  // the share sheet holding the GIF: the GIF is not on the page until asked
+  // for. Under them the rest of the site, as the home's Details tiles
+  // (RunEndShelves). Phones and desktop share this one layout; the finale
+  // glides onto the card (data-rf="bar" on a phone, the parts on desktop).
+  let titleName = title && title.name ? title.name : null;
+  let earnedN = 0;
+  let nextRung = null;
+  if (climb) {
+    ladder.forEach((t) => { if (score >= t.min) { if (!titleName) titleName = t.name; earnedN += 1; } });
+    if (!(title && title.name)) { titleName = null; ladder.forEach((t) => { if (score >= t.min) titleName = t.name; }); }
+    nextRung = ladder.find((t) => Number(t.min) > score) || null;
+  }
+  const gap = nextRung ? Number(nextRung.min) - score : null;
+  const nextLine = nextRung && Number.isFinite(gap) && gap > 0 ? `${Number(gap).toLocaleString('en-US')} ${unitWord} to ${nextRung.name}` : null;
+  const canChallenge = !!(challenge || meme);
+  const flipStand = () => setStandOpen((v) => !v);
+  const chev = (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+  );
+  const summary = (
+    <section className={'gsx-rise rbe-sum' + (standOpen ? ' open' : '')} style={d('1.5s')}>
+      <button type="button" className="rbe-sumb" onClick={flipStand} aria-expanded={standOpen} data-rf={phone ? 'bar' : undefined}>
+        <span className="rbe-eye">{circuitName} &middot; {dateLabel}</span>
+        <span className="rbe-row">
+          <span className="rbe-score"><b data-rf={phone ? undefined : 'score'}>{shown}</b><i data-rf={phone ? undefined : 'unit'}>{unitWord}</i></span>
+          <span className="rbe-tt">
+            {titleName ? <b data-rf={phone ? undefined : 'title'}>{titleName}</b> : null}
+            {rankText ? <span data-rf={phone ? undefined : 'rank'}>{rankText}</span> : null}
+            {nextLine ? <span className="rbe-nx">{nextLine}</span> : null}
+          </span>
+          {standRows ? (
+            <span className="rbe-ranks">
+              {standRows.slice(0, 3).map((r) => (
+                <span key={r.id}><em>{r.name}</em><b>#{Number(r.rank).toLocaleString('en-US')}</b></span>
+              ))}
+            </span>
+          ) : null}
+          <span className="rbe-tog">{standOpen ? 'Hide standings' : 'See standings'}{chev}</span>
+        </span>
+        {climb ? (
+          <span className="rbe-segs" aria-hidden="true">
+            {ladder.map((t, i) => <i key={t.name + i} className={i < earnedN ? 'on' : i === earnedN ? 'nx' : undefined} />)}
+          </span>
         ) : null}
-        <div className="gsx-col">
-          <RunRoll
-            anim={anim}
-            arrived={finOn}
-            landed={landed}
-            shown={shown}
-            unitWord={unitWord}
-            eyebrow={`${circuitName} · ${dateLabel}`}
-            rank={rank}
-            fieldSize={fieldSize}
-            titleName={titleName}
-            climbHero={climb ? <Climb ladder={ladder} score={score} shown={shown} landed={landed} pal={pal} heading={ladderHeading} max={climbMax} /> : null}
-            climbDone={climb ? <Climb ladder={ladder} score={score} shown={score} landed pal={pal} heading={ladderHeading} max={climbMax} /> : title ? (
+      </button>
+      {standOpen ? (
+        <div className="rbe-panel">
+          <div className="rbe-pl">
+            {climb ? (
+              <Climb ladder={ladder} score={score} shown={score} landed pal={pal} heading={ladderHeading} max={climbMax}
+                onReplay={() => (finOn ? setFinPhase('play') : setReplays((k) => k + 1))} />
+            ) : title ? (
               <div className="gsx-title"><b style={{ color: bg }}>{title.name}</b>{title.line ? <span>{title.line}</span> : null}</div>
             ) : null}
-            prize={prize}
-            topNote={topNote}
-            board={standCard ? <div className="rrl-ddwys">{standCard}</div> : board && board.rows && board.rows.length ? (
-              <div className="gsx-card gsx-board">
-                <div className="gsx-ch"><span>Today&rsquo;s board{board.field ? ` · ${Number(board.field).toLocaleString()}` : ''}</span>{board.href ? <a href={board.href}>See all</a> : null}</div>
-                {board.rows.map((r, i) => (r.gap ? (
-                  <div key={'g' + i} className="gsx-br gsx-gap">&middot;&middot;&middot;</div>
-                ) : (
-                  <div key={(r.name || '') + i} className={'gsx-br' + (r.me ? ' me' : '')}>
-                    <span className="p">#{r.rank}</span><span className="n">{r.me ? 'You' : r.name}</span><span className="s">{r.score}</span>
-                  </div>
-                )))}
-              </div>
-            ) : null}
-            afterBoard={afterBoard}
-            stand={standTiles}
-            stats={<div className="rrl-stats">{statsNode}</div>}
-            extra={extra}
-            challenge={challenge}
-            polymath={polymath}
-            meme={meme}
-            onShare={onShare}
-            copied={copied}
-            onPractice={onPractice}
-            similar={similar}
-            more={more}
-          />
+            {prize ? <div className="gsx-prize in">{prize}</div> : null}
+            {topNote ? <div className="gsx-note">{topNote}</div> : null}
+          </div>
+          <div className="rbe-pr">
+            {standCard || boardCard}
+            {afterBoard}
+            {statsNode}
+          </div>
         </div>
-      </div>
-    );
-  }
-  const tail = [];
-  if (more) tail.push({ id: 'more', node: <div className="gsx-rise gsx-card gsx-more" style={d('2.55s')}>{more}</div> });
-  tail.push({ id: 'all', node: <a className="gsx-rise gsx-ob" href="/" style={d('2.6s')}>All Daily Puzzles</a> });
-  tail.push({ id: 'stats', node: statsNode });
-  const renderTail = (t) => (
-    <div key={t.id} className="gsx-tb" ref={(el) => { tailRefs.current[t.id] = el; }}>{t.node}</div>
+      ) : null}
+    </section>
   );
+  const chalCard = canChallenge ? (
+    <section className="gsx-rise rbe-ch" style={d('1.6s')} aria-label="Challenge a friend">
+      <div className="rbe-chh"><b>Challenge a friend</b><span className="rbe-win">Win $500</span></div>
+      <p>To beat: {titleName ? `${titleName} · ` : ''}{Number(score).toLocaleString('en-US')} {unitWord}. Friends who play enter you in the $500 drawing.</p>
+      <button type="button" className="rbe-chgo" onClick={() => setShareOpen(true)}>Send link + GIF <span aria-hidden="true">&rarr;</span></button>
+    </section>
+  ) : null;
+  const sheet = shareOpen ? (
+    <div className="rbe-ov" onClick={() => setShareOpen(false)}>
+      <div className="rbe-sh" role="dialog" aria-modal="true" aria-label="Challenge a friend" onClick={(e) => e.stopPropagation()}>
+        <div className="rbe-shh">
+          <b>Challenge a friend</b>
+          <button type="button" className="rbe-x" aria-label="Close" onClick={() => setShareOpen(false)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+        {meme ? <div className="rbe-meme">{meme}</div> : null}
+        {challenge ? <div className="gsx-tray">{challenge}</div> : null}
+      </div>
+    </div>
+  ) : null;
   return (
-    <div key={pal.look} className={'gsx gsx-end' + finCls} role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+    <div key={pal.look} className={'gsx gsx-end rbe' + finCls} role="dialog" aria-label={`${circuitName} finished`} style={pal.vars}>
+      <style dangerouslySetInnerHTML={{ __html: CSS + RBE_CSS }} />
       {finaleNode}
       {anim ? (
         <div className="gsx-show" aria-hidden="true">
           {sections.map((s, i) => <span key={s.key} style={{ background: pal.fill(pastel || rampFor(slotOf(s, i))), animationDelay: `${i * 0.06}s` }} />)}
         </div>
       ) : null}
-      <div className="gsx-col gsx-ecol">
+      <div className="gsx-col rbe-col">
         <div className="gsx-rise" style={d('1.4s')}><TopBar pal={pal} /></div>
-        <div className="gsx-egrid">
-          <div className="gsx-eleft" ref={leftRef}>
-            <div className="gsx-rise gsx-eye gsx-c" style={d('1.5s')}>{circuitName} · {dateLabel}</div>
-            <div className={(finOn ? '' : 'gsx-rise ') + 'gsx-score'} style={finOn ? undefined : d('1.6s')}>
-              <span data-rf="score">{shown}</span>
-              <i data-rf="unit">{unitWord}</i>
-            </div>
-            {rank ? (
-              <div className={(finOn ? '' : 'gsx-rise ') + 'gsx-rank'} style={finOn ? undefined : d('2.1s')} data-rf="rank">
-                {rankText}
-              </div>
-            ) : null}
-            {prize ? <div className={'gsx-prize' + (landed ? ' in' : '')} aria-hidden={landed ? undefined : 'true'}>{prize}</div> : null}
-            {topNote ? <div className="gsx-rise gsx-note" style={d('1.7s')}>{topNote}</div> : null}
-            {climb ? (
-              <div className={finOn ? undefined : 'gsx-rise'} style={finOn ? undefined : d0('1.65s')}>
-                <Climb ladder={ladder} score={score} shown={shown} landed={landed} pal={pal} heading={ladderHeading} max={climbMax} onReplay={() => (finOn ? setFinPhase('play') : setReplays((k) => k + 1))} />
-              </div>
-            ) : title ? (
-              <div className="gsx-title" style={d('1.9s')}>
-                <b data-rf="title" style={{ color: bg }}>{title.name}</b>
-                {title.line ? <span>{title.line}</span> : null}
-              </div>
-            ) : null}
-            {standCard ? <div className={'gsx-rise' + (meme ? ' gsx-bdl' : '')} style={d('2.2s')}>{standCard}</div>
-              : boardCard ? <div className={meme ? 'gsx-bdl' : undefined}>{boardCard}</div> : null}
-            {afterBoard}
-            {/* 3. CHALLENGE (+ Polymath), and sharing the score */}
-            <div className="gsx-rise gsx-tray" style={d('2.4s')}>
-              {extra}
-              {challenge}
-              {polymath ? <div className="gsx-poly">{polymath}</div> : null}
-            </div>
-            {onShare ? (
-              <button type="button" className="gsx-rise gsx-ib gsx-share" style={d('2.45s')} onClick={onShare}>{copied ? 'Copied' : 'Share Your Score'}</button>
-            ) : null}
-            {tail.slice(tail.length - moveN).map(renderTail)}
+        <div className="rbe-top">{summary}{phone ? null : chalCard}</div>
+        {phone && canChallenge ? (
+          <button type="button" className="gsx-rise rbe-chb" style={d('1.6s')} onClick={() => setShareOpen(true)}>
+            <span>Challenge a friend</span><span className="rbe-win">Win $500</span>
+          </button>
+        ) : null}
+        {extra || polymath ? (
+          <div className="gsx-rise gsx-tray" style={d('1.7s')}>
+            {extra}
+            {polymath ? <div className="gsx-poly">{polymath}</div> : null}
           </div>
-          <div className="gsx-eright" ref={rightRef}>
-            {meme ? <div className="gsx-rise gsx-meme" style={d('2.45s')}>{meme}</div> : null}
-            {/* With the GIF on show, today's board sits under it on the right,
-                so the two columns come out even (owner, 2026-10-25). */}
-            {meme && (standCard || boardCard) ? <div className="gsx-bdr">{standCard || boardCard}</div> : null}
-            {/* 4. PLAY NEXT */}
-            {similar && similar.href ? (
-              <a className="gsx-rise gsx-next" href={similar.href} style={{ ...d('2.5s'), background: pal.fill('#6ee7b7') }}>
-                <span><i>One Quick Play Next</i><b>{similar.name}</b></span>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-              </a>
-            ) : null}
-            {tail.slice(0, tail.length - moveN).map(renderTail)}
-          </div>
+        ) : null}
+        <div className="gsx-rise" style={d('1.8s')}>
+          <RunEndShelves selfId={standId} legKeys={sections.map((s) => s.key)} firstHref={similar && similar.href ? similar.href : null}
+            groundHue={pastel || (title && title.colour) || null} phone={phone} />
+        </div>
+        {phone ? chalCard : null}
+        <div className="gsx-rise rbe-foot" style={d('1.9s')}>
+          {onShare ? <button type="button" className="gsx-ib" onClick={onShare}>{copied ? 'Copied' : 'Share Your Score'}</button> : null}
+          <a className="gsx-ob" href="/build-a-run">Build Your Own Run</a>
+          {onPractice ? <button type="button" className="gsx-ob" onClick={onPractice}>Practice replay</button> : null}
         </div>
       </div>
+      {sheet}
     </div>
   );
 }
+
+const RBE_CSS = `
+.rbe .rbe-col{max-width:1200px;gap:18px}
+.rbe-top{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:stretch}
+.rbe-sum{border:1px solid var(--gsx-ink);border-radius:18px;overflow:hidden;min-width:0}
+.rbe-sumb{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;width:100%;padding:16px 20px;cursor:pointer;color:var(--gsx-ink);font-family:inherit}
+.rbe-sumb:focus-visible{outline:2px solid var(--gsx-ink);outline-offset:-5px;border-radius:16px}
+.rbe-eye{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;line-height:1.35}
+.rbe-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.rbe-score{display:flex;align-items:baseline;gap:8px}
+.rbe-score b{font-size:60px;font-weight:800;line-height:1.12;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.rbe-score i{font-style:normal;font-size:17px;font-weight:700}
+.rbe-tt{display:flex;flex-direction:column;gap:3px;flex:1 1 220px;min-width:0}
+.rbe-tt b{font-size:26px;font-weight:800;line-height:1.22}
+.rbe-tt span{font-size:14px;font-weight:700;line-height:1.4}
+.rbe-nx{opacity:.78}
+.rbe-ranks{display:flex;gap:8px}
+.rbe-ranks span{display:flex;flex-direction:column;border:1px solid var(--gsx-ink);border-radius:12px;padding:8px 12px;min-width:96px;box-sizing:border-box}
+.rbe-ranks em{font-style:normal;font-size:12px;font-weight:700;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rbe-ranks b{font-size:22px;font-weight:800;line-height:1.25;font-variant-numeric:tabular-nums}
+.rbe-tog{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;white-space:nowrap}
+.rbe-tog svg{transition:transform .2s ease}
+.rbe-sum.open .rbe-tog svg{transform:rotate(180deg)}
+.rbe-segs{display:flex;gap:4px}
+.rbe-segs i{flex:1;height:9px;border-radius:999px;border:1px solid var(--gsx-ink);box-sizing:border-box}
+.rbe-segs i.on{background:var(--gsx-ink)}
+.rbe-segs i.nx{background:#a9ecd0}
+.rbe-panel{border-top:1px solid var(--gsx-ink);padding:18px 20px 20px;display:grid;gap:22px;grid-template-columns:minmax(0,1fr)}
+.rbe-pl,.rbe-pr{display:flex;flex-direction:column;gap:14px;min-width:0}
+.rbe-ch{border:1px solid var(--gsx-ink);border-radius:18px;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:10px;background:var(--gsx-tray);color:#e9edf4;box-sizing:border-box}
+.rbe-chh{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.rbe-chh b{font-size:19px;font-weight:800;line-height:1.25}
+.rbe-win{font-size:12px;font-weight:800;background:#f6dd8a;color:#0b1b2b;border:1px solid #0b1b2b;border-radius:999px;padding:4px 10px;white-space:nowrap;line-height:1.35}
+.rbe-ch p{margin:0;font-size:13.5px;font-weight:600;line-height:1.45;color:#c9d3e0}
+.rbe-chgo{font:inherit;font-weight:800;font-size:15px;min-height:46px;border-radius:999px;border:0;background:#a9ecd0;color:#0b1b2b;cursor:pointer}
+.rbe-chb{display:flex;align-items:center;justify-content:space-between;font:inherit;font-weight:800;font-size:15px;min-height:50px;padding:0 10px 0 18px;border-radius:999px;border:1px solid var(--gsx-ink);background:#a9ecd0;color:#0b1b2b;cursor:pointer}
+.rbe-foot{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+.rbe-ov{position:fixed;inset:0;z-index:95;background:rgba(8,14,22,.55);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}
+.rbe-sh{width:100%;max-width:560px;max-height:calc(100dvh - 40px);overflow-y:auto;background:var(--gsx-bg);color:var(--gsx-ink);border:1px solid var(--gsx-ink);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box}
+.rbe-shh{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.rbe-shh b{font-size:20px;font-weight:800;line-height:1.25}
+.rbe-x{flex:none;width:40px;height:40px;border-radius:999px;border:1px solid var(--gsx-ink);background:transparent;color:var(--gsx-ink);display:flex;align-items:center;justify-content:center;cursor:pointer}
+@media(min-width:900px){
+  .rbe-top{grid-template-columns:minmax(0,1fr) 360px}
+  .rbe-panel{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}
+  .rbe-foot{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+}
+@media(max-width:899px){
+  .rbe-sumb{padding:14px 16px}
+  .rbe-row{gap:10px 14px}
+  .rbe-score b{font-size:46px}
+  .rbe-tt b{font-size:21px}
+  .rbe-tt span{font-size:13px}
+  .rbe-ranks{order:4;width:100%}
+  .rbe-ranks span{flex:1 1 0;min-width:0;padding:7px 10px}
+  .rbe-ranks b{font-size:19px}
+  .rbe-tog{order:5}
+  .rbe-panel{padding:14px 16px 16px}
+  .rbe-ov{align-items:flex-end;padding:0}
+  .rbe-sh{max-width:none;border-radius:20px 20px 0 0;max-height:92dvh;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+}
+`;
 
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
