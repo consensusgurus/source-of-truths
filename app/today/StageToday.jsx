@@ -3986,19 +3986,11 @@ export default function StageToday() {
     return ks.size ? ks : null;
   })();
   useEffect(() => { setRunsOpen(false); }, [paneOn]);
-  // RUN PUZZLES SIT AT THE BOTTOM OF ALL PUZZLES (owner, 2026-11-08: "move all
-  // of the puzzles that are run components to the bottom of the default view.
-  // they will sort the same way by most popular at that point"). Under Popular
-  // the grid is every puzzle in no run, then every puzzle that is in one, each
-  // half in its own popularity order with finished games last. They are no
-  // longer folded away behind the gauntlet tiles (foldKeys is unused since).
-  const runKeysAll = new Set(deckRuns(null).flatMap((c) => (c.games || []).map((g) => g.key)));
-  const allOrder = (list) => {
-    if (sortBy !== 'pop') return playedLast(list, done);
-    const solo = [], inRun = [];
-    for (const g of list) (runKeysAll.has(g.key) ? inRun : solo).push(g);
-    return [...playedLast(solo, done), ...playedLast(inRun, done)];
-  };
+  // ALL PUZZLES UNDER POPULAR IS ONE LIST AGAIN (owner, 2026-11-09: "restore
+  // the old popular filter, don't push the run puzzles to the bottom anymore").
+  // Run components sort with everything else by popularity, finished games
+  // last. Supersedes the 2026-11-08 run-puzzles-last split.
+  const allOrder = (list) => playedLast(list, done);
   // HOISTED (2026-11-08 hotfix): runCells and the run tiles read dTintCat during
   // render, so these must be defined before them or the home throws a TDZ error.
   const mph = !picked || paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID || !!paneCat(paneOn);
