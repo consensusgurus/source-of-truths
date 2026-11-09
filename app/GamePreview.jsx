@@ -7,7 +7,10 @@
 // their category shares (a sudoku grid, a quiz card, a chess strip...).
 // viewBox is 296 x 84; nothing here reads the board, so it never leaks a
 // day's answer.
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
+
+const useIso = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 const W = 296, H = 84;
 const T = ({ x, y, s = 14, a = 'middle', c = 't', children }) => (
@@ -307,6 +310,174 @@ const Runner = () => (
 );
 const Grid9 = (v) => () => <Grid v={v} />;
 
+
+// ---- THE SQUARE TILE (owner, 2026-11-08: option B, "board on the left") --
+// The Details card now carries the drawing in a small square tile beside the
+// name, not a band across the top. Shapes that are already squarish (every
+// sudoku, the globes, the logic grids) are reused and cropped to their own
+// bounds. Shapes drawn as a long strip (a quiz card, a row of letter tiles,
+// an equation, a chess strip...) would shrink to a sliver in a square, so
+// each has a square redraw here, drawn about the band's centre (148, 42)
+// inside an 84 x 84 box.
+const SX = 148, SY = 42;
+const QuizSq = () => (
+  <g><rect x={110} y={4} width={76} height={20} rx={5} className="w" />
+    <rect x={118} y={12.5} width={46} height={3} rx={1.5} className="m" />
+    {[0, 1, 2, 3].map((i) => (
+      <g key={i}><rect x={110} y={30 + i * 13} width={76} height={10} rx={5} className={i === 1 ? 'd' : 'w'} />
+        <rect x={118} y={33.5 + i * 13} width={i % 2 ? 30 : 40} height={3} rx={1.5} className={i === 1 ? 'wf' : 'm'} /></g>
+    ))}</g>
+);
+const TilesSq = ({ word, hit = 0 }) => {
+  const L = String(word).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6).split('');
+  const cols = L.length <= 4 ? 2 : 3, rows = Math.ceil(L.length / cols);
+  const sz = 22, gap = 5, w = cols * sz + (cols - 1) * gap, h = rows * sz + (rows - 1) * gap;
+  return <g>{L.map((ch, i) => {
+    const r = Math.floor(i / cols), inRow = Math.min(cols, L.length - r * cols);
+    const x0 = SX - (inRow * sz + (inRow - 1) * gap) / 2, x = x0 + (i % cols) * (sz + gap), y = SY - h / 2 + r * (sz + gap);
+    return <g key={i}><rect x={x} y={y} width={sz} height={sz} rx={5} className={i === hit ? 'd' : 'w'} />
+      <T x={x + sz / 2} y={y + 15.5} s={13} c={i === hit ? 'tw' : 't'}>{ch}</T></g>;
+  })}</g>;
+};
+const EqSq = ({ txt }) => (
+  <g><rect x={108} y={8} width={80} height={28} rx={6} className="w" /><T x={SX} y={27} s={String(txt).length > 9 ? 11 : 13}>{txt}</T>
+    <circle cx={SX} cy={60} r={15} className="sm5" /><path d="M148 45a15 15 0 1 1 -14.3 19.6" className="s5" /></g>
+);
+const SeqSq = ({ items }) => (
+  <g>{items.slice(0, 6).map((v, i) => {
+    const x = 112 + (i % 3) * 25, y = 18 + Math.floor(i / 3) * 26, last = i === Math.min(items.length, 6) - 1;
+    return <g key={i}><rect x={x} y={y} width={22} height={22} rx={5} className={last ? 'd' : 'w'} /><T x={x + 11} y={y + 15.5} s={11} c={last ? 'tw' : 't'}>{v}</T></g>;
+  })}</g>
+);
+const PriceSq = () => (
+  <g><path d="M116 8h44l14 15l-14 15h-44z" className="w" /><circle cx={164} cy={23} r={2.5} className="d" /><T x={138} y={29} s={15}>$?</T>
+    {[0, 1, 2].map((i) => <rect key={i} x={113 + i * 25} y={50} width={21} height={20} rx={5} className={i === 1 ? 'd' : 'w'} />)}</g>
+);
+const CipherSq = () => (
+  <g>{['Q', 'E', 'B'].map((ch, i) => (
+    <g key={i}><rect x={113 + i * 25} y={12} width={21} height={22} rx={5} className="w" /><T x={123.5 + i * 25} y={28} s={12}>{ch}</T>
+      <T x={123.5 + i * 25} y={58} s={14}>{'THE'[i]}</T><path d={`M${115 + i * 25} 64h17`} className="sm" /></g>
+  ))}</g>
+);
+const SearchSq = () => {
+  const L = 'MINDLESCOURTKAOVHYNPQRAEB';
+  return <g><rect x={112} y={SY - 7} width={72} height={14} rx={7} className="m" />
+    {cells(112, 6, 5, 5, 14.4, (x, y, c, r, i) => <T key={i} x={x + 7.2} y={y + 11} s={10}>{L[i]}</T>)}</g>;
+};
+const XwordSq = () => {
+  const blk = new Set([2, 7, 8, 13]);
+  const let_ = { 0: 'C', 1: 'L', 3: 'U', 4: 'E', 5: 'A', 9: 'S', 12: 'T', 14: 'O' };
+  return <g>{cells(112, 6, 4, 4, 18, (x, y, c, r, i) => (
+    <g key={i}><rect x={x} y={y} width={18} height={18} className={blk.has(i) ? 'd' : 'w'} />{let_[i] ? <T x={x + 9} y={y + 13} s={11}>{let_[i]}</T> : null}</g>
+  ))}</g>;
+};
+const Pawn = ({ x, y, k }) => <g><circle cx={x + 9} cy={y + 6.5} r={3.3} className={k} /><path d={`M${x + 4} ${y + 15}h10l-1.7 -6h-6.6z`} className={k} /></g>;
+const ChessSq = ({ target = 5 }) => (
+  <g>{cells(112, 6, 4, 4, 18, (x, y, c, r, i) => (
+    <g key={i}><rect x={x} y={y} width={18} height={18} className={(c + r) % 2 ? 'm' : 'w0'} />
+      {[1, 6, 11].includes(i) ? <Pawn x={x} y={y} k="d" /> : null}
+      {[4, 14].includes(i) ? <Pawn x={x} y={y} k="w" /> : null}
+      {i === target % 16 ? <rect x={x + 1.5} y={y + 1.5} width={15} height={15} rx={2} className="s3" /> : null}</g>
+  ))}<rect x={112} y={6} width={72} height={72} className="sm" /></g>
+);
+const OthelloSq = () => {
+  const blk = new Set([0, 5, 6, 10, 13]), wht = new Set([1, 4, 9, 11, 14]);
+  return <g>{cells(112, 6, 4, 4, 18, (x, y, c, r, i) => (
+    <g key={i}><rect x={x} y={y} width={18} height={18} className="w" />
+      {blk.has(i) ? <circle cx={x + 9} cy={y + 9} r={6.5} className="d" /> : wht.has(i) ? <circle cx={x + 9} cy={y + 9} r={6.5} className="m" /> : null}
+      {i === 15 ? <rect x={x + 2} y={y + 2} width={14} height={14} rx={3} className="s3" /> : null}</g>
+  ))}</g>;
+};
+const QuartoSq = () => (
+  <g>{[0, 1, 2, 3].map((i) => {
+    const x = 112 + (i % 2) * 40, base = i < 2 ? 38 : 78, tall = i % 2 === 0, h = tall ? 32 : 22, round = i === 0 || i === 3;
+    return <g key={i}><rect x={x} y={base - h} width={22} height={h} rx={round ? 11 : 3} className={i === 3 ? 'd' : 'w'} />
+      {i === 1 ? <circle cx={x + 11} cy={base - h + 7} r={3.5} className="m" /> : null}</g>;
+  })}</g>
+);
+const MahjSq = () => (
+  <g>{[[114, 40], [141, 40], [127, 14]].map(([x, y], i) => (
+    <g key={i}><rect x={x + 3} y={y + 3} width={26} height={34} rx={4} className="m" /><rect x={x} y={y} width={26} height={34} rx={4} className="w" />
+      <circle cx={x + 13} cy={y + 12} r={4} className={i === 2 ? 'd' : 'm'} /><path d={`M${x + 7} ${y + 25}h12`} className="s3" /></g>
+  ))}</g>
+);
+const PairsSq = () => (
+  <g>{cells(112, 6, 3, 3, 24, (x, y, c, r, i) => (
+    <g key={i}><rect x={x + 2} y={y + 2} width={20} height={20} rx={4} className={i === 1 || i === 6 ? 'w' : 'd'} />
+      {i === 1 || i === 6 ? <circle cx={x + 12} cy={y + 12} r={5} className="m" /> : null}</g>
+  ))}</g>
+);
+const TaireSq = () => (
+  <g>{[0, 1, 2].map((c) => (
+    <g key={c}>{Array.from({ length: c + 2 }, (_, r) => (
+      <rect key={r} x={113 + c * 25} y={8 + r * 12} width={21} height={30} rx={4} className={r === c + 1 ? 'w' : 'd'} />
+    ))}</g>
+  ))}</g>
+);
+const ShoeSq = () => (
+  <g><Cards ranks={['9', 'A', '']} /><circle cx={178} cy={66} r={10} className="m" /><circle cx={178} cy={66} r={5.5} className="w" /></g>
+);
+const TimelineSq = () => (
+  <g><path d="M110 54h76" className="s3" />{[0, 1, 2, 3].map((i) => <path key={i} d={`M${114 + i * 22.6} 49v10`} className="s2" />)}
+    <T x={116} y={74} s={9}>1900</T><T x={180} y={74} s={9}>2000</T>
+    <path d="M140 16h20v14h-6l-4 6l-4 -6h-6z" className="d" /><T x={150} y={27} s={9} c="tw">?</T></g>
+);
+const ChartSq = () => (
+  <g><path d="M108 76h80" className="sm" /><path d="M110 66L122 56L132 62L144 38L156 46L168 24L178 30L186 12" className="s3" /><circle cx={186} cy={12} r={4} className="d" /></g>
+);
+const RunnerSq = () => (
+  <g><path d="M108 72h80" className="s3" /><rect x={140} y={50} width={24} height={7} rx={2} className="m" /><rect x={162} y={30} width={24} height={7} rx={2} className="m" />
+    <circle cx={122} cy={60} r={8} className="d" /><path d="M116 54q6 -8 12 0" className="s2" /><circle cx={174} cy={18} r={4} className="d" /></g>
+);
+const JigSq = () => (
+  <g transform="translate(148 42) scale(0.82) translate(-148 -42)">{[[104, -2], [148, -2], [104, 42], [148, 42]].map(([x, y], i) => (
+    <path key={i} transform={`translate(${x} ${y})`} className={i === 3 ? 'd' : 'w'}
+      d="M0 0h16a6 6 0 1 0 12 0h16v18a6 6 0 1 1 0 12v18h-16a6 6 0 1 0 -12 0h-16v-18a6 6 0 1 1 0 -12z" />
+  ))}</g>
+);
+const BlockSq = ({ die }) => (
+  <g>{cells(112, 60, 4, 1, 20, (x, y, c, r, i) => <path key={i} d={`M${x} ${y + 8}l10 -8h20l-10 8z`} className={i === 3 ? 'd' : 'm'} />)}
+    {die
+      ? <g><rect x={130} y={20} width={32} height={32} rx={6} className="w" />{[[138, 28], [154, 44], [146, 36]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={2.8} className="d" />)}</g>
+      : <g><rect x={132} y={18} width={20} height={40} className="d" /><path d="M132 18l8 -6h20l-8 6zM152 18l8 -6v40l-8 6z" className="m" /></g>}</g>
+);
+const SlideSq = ({ mode }) => {
+  const hot = mode === 'swap' ? 2 : 5;
+  return <g>{cells(112, 6, 3, 3, 24, (x, y, c, r, i) => i === 8 ? null : (
+    <g key={i}><rect x={x + 1.5} y={y + 1.5} width={21} height={21} rx={5} className={i === hot ? 'd' : 'w'} />
+      {mode === 'spin'
+        ? <path d={`M${x + 7} ${y + 12}a5 5 0 1 1 5 5`} className={i === hot ? 'sw' : 's2'} />
+        : <T x={x + 12} y={y + 16.5} s={12} c={i === hot ? 'tw' : 't'}>{i + 1}</T>}</g>
+  ))}</g>;
+};
+const DotsSq = () => (
+  <g>{cells(112, 6, 4, 4, 18, (x, y, c, r, i) => <circle key={i} cx={x + 9} cy={y + 9} r={3.5} className={[0, 3, 9, 15].includes(i) ? 'd' : 'm'} />)}
+    <path d="M121 15H175M139 51V69H175" className="s3" /></g>
+);
+const SnakeSq = () => (
+  <g><rect x={110} y={6} width={76} height={72} rx={4} className="w" />
+    <path d="M122 64H148V34H170" className="d6" /><circle cx={172} cy={18} r={5} className="m" /></g>
+);
+const MazeSq = () => (
+  <g><rect x={110} y={6} width={76} height={72} rx={6} className="w" />
+    <path d="M110 30h26M154 6v28M160 54h26M136 54v24M124 54h28" className="s2" />
+    {Array.from({ length: 5 }, (_, i) => <circle key={i} cx={122 + i * 12} cy={18} r={2} className="m" />)}
+    <circle cx={172} cy={40} r={7} className="d" /></g>
+);
+const SQ_KEY = {
+  blitz: () => <EqSq txt={'7 × 8 = ?'} />, blitzed: () => <EqSq txt={'5 + 10 × 2'} />, gap: () => <EqSq txt={'7 × ? = 56'} />,
+  back: () => <EqSq txt={'? = 56'} />, calc: () => <EqSq txt={'48 ÷ 6 = ?'} />, crunch: () => <EqSq txt={'12% of 50'} />,
+  series: () => <SeqSq items={['3', '7', '11', '15', '19', '?']} />, tally: () => <TilesSq word="1234" hit={2} />, cipher: CipherSq,
+  emcee: XwordSq, encore: XwordSq, arcos: XwordSq, scour: SearchSq, garble: CipherSq, scram: () => <TilesSq word="MSARC" hit={1} />,
+  tape: ChartSq, circa: TimelineSq, streak: TimelineSq, history: TimelineSq,
+  topple: () => <BlockSq />, roll: () => <BlockSq die />, jig: JigSq, saw: JigSq,
+  turn: OthelloSq, gift: QuartoSq, mate: () => <ChessSq target={5} />, check: () => <ChessSq target={9} />,
+  chain: () => <ChessSq target={14} />, defend: () => <ChessSq target={2} />, swindle: () => <ChessSq target={7} />, queen: () => <ChessSq target={12} />,
+  slide: () => <SlideSq />, swap: () => <SlideSq mode="swap" />, spin: () => <SlideSq mode="spin" />,
+  connect: DotsSq, duet: DotsSq, etch: DotsSq, snake: SnakeSq, chomp: MazeSq, hedge: MazeSq,
+  mahj: MahjSq, pairs: PairsSq, shoe: ShoeSq, taire: TaireSq, cell: TaireSq, dario: RunnerSq,
+};
+
 // ---- which drawing each game wears ------------------------------------
 const BY_KEY = {
   // Numbers
@@ -339,14 +510,15 @@ const BY_KEY = {
   snake: Snake, blocks: Tetro, squash: Fruit, simon: Simon, sweep: Mines, dario: Runner,
 };
 const PRICE = new Set(['pricer', 'dealer', 'realtor', 'agent', 'curator', 'picks']);
-function drawingFor(g) {
+function drawingFor(g, sq) {
+  if (sq && SQ_KEY[g.key]) return SQ_KEY[g.key]();
   if (BY_KEY[g.key]) return BY_KEY[g.key]();
-  if (PRICE.has(g.key)) return <Price label={g.tag} />;
+  if (PRICE.has(g.key)) return sq ? <PriceSq /> : <Price label={g.tag} />;
   switch (g.cat) {
-    case 'Word': return <Tiles word={g.name} />;
-    case 'Trivia': return <Quiz label={g.tag} />;
+    case 'Word': return sq ? <TilesSq word={g.name} /> : <Tiles word={g.name} />;
+    case 'Trivia': return sq ? <QuizSq /> : <Quiz label={g.tag} />;
     case 'Geography': return <Globe />;
-    case 'Numbers': return <Quiz label={g.tag} />;
+    case 'Numbers': return sq ? <QuizSq /> : <Quiz label={g.tag} />;
     case 'Sudoku': {
       // THE 6x6 AND COLOR TWINS (2026-11-08) read their parent from the tag
       // ("Cages at 6x6", "Mercury in rainbow color, 9x9").
@@ -362,13 +534,44 @@ function drawingFor(g) {
     case 'End Game': return <Chess />;
     case 'Cards': return <Cards />;
     case 'Arcade': return <Tetro />;
-    default: return <Quiz label={g.tag} />;
+    default: return sq ? <QuizSq /> : <Quiz label={g.tag} />;
   }
 }
 
-export default function GamePreview({ gameKey }) {
+export default function GamePreview({ gameKey, square = false }) {
   const g = DAILY_GAME_MAP[gameKey];
+  const ref = useRef(null);
+  // The square tile crops to the drawing's own bounds, measured before paint,
+  // so a 70px sudoku grid and an 84px redraw both fill the tile the same way.
+  const [vb, setVb] = useState(`${SX - 42} 0 84 84`);
+  useIso(() => {
+    if (!square || !ref.current) return undefined;
+    // The card can mount hidden (another view, the snapshot cover), where
+    // getBBox reads zero, so it measures again once the tile has a size.
+    const measure = () => {
+      try {
+        const b = ref.current && ref.current.getBBox ? ref.current.getBBox() : null;
+        if (!b || !b.width || !b.height) return false;
+        const s = Math.max(b.width, b.height) * 1.1 + 4, cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+        setVb(`${(cx - s / 2).toFixed(1)} ${(cy - s / 2).toFixed(1)} ${s.toFixed(1)} ${s.toFixed(1)}`);
+        return true;
+      } catch (e) { return false; }
+    };
+    if (measure() || typeof ResizeObserver === 'undefined') return undefined;
+    const svg = ref.current.ownerSVGElement;
+    if (!svg) return undefined;
+    const ro = new ResizeObserver(() => { if (measure()) ro.disconnect(); });
+    ro.observe(svg);
+    return () => ro.disconnect();
+  }, [square, gameKey]);
   if (!g) return null;
+  if (square) {
+    return (
+      <svg className="gp" viewBox={vb} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+        <g ref={ref}>{drawingFor(g, true)}</g>
+      </svg>
+    );
+  }
   return (
     <svg className="gp" viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
       {/* A margin all round (2026-11-08: "elements spilling out"): every

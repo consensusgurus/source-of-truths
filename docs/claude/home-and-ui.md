@@ -2438,6 +2438,10 @@ Option E from the Details card mockup. In the Details view every puzzle card car
 - **The game's glyph beside its name**, in the deep step.
 - **A facts row** from `lib/game-facts.js`: up to three chips the game states about itself (count from its tagLong/How to play, "Ns each", "1 life", Counts tries/errors, Sunday Edition; never a bare "Timed", since every daily is timed) plus the week's difficulty (five bars and the tier word from `/api/quiz/difficulty`). A chip never states a number the game's own text does not.
 
+**Board on the left, not a band (owner, 2026-11-08: option B, "for here and desktop").** The band across the top left too much dead space. On both the desktop and phone Details cards the drawing is now a 74px square tile at the top left (`<GamePreview square />`), with the name, the facts and the skills beside it and the description full width below; the crowd strip stays along the foot. Both cards are CSS grids (areas `b n / b r / b f / b k / x x / y y / s s` on desktop, `g n / g f / g k / g p / x x / y y / s s` on the phone; only the spacer row `y` is `1fr`, since two fr rows inflate every card). A played phone card still folds. The phone Details card no longer prints a bare "Play" (the whole card is the way in); a result or Resume still shows.
+
+**Square mode crops each drawing to its own bounds** (measured with getBBox before paint, and again via ResizeObserver if the card mounted hidden). Drawings wider than about 2:1 (quiz cards, letter tiles, equations, chess strips, timelines...) would shrink to a sliver in a square, so they have square redraws in `SQ_KEY` / the `*Sq` components. **A new daily whose band drawing is a long strip needs a square version in `SQ_KEY` too**; check it in a 74px tile.
+
 **A new daily gets its own drawing:** add its key to `BY_KEY` in `app/GamePreview.jsx`. Without one it falls back to its category's shared shape (sudoku grid, quiz card, chess strip, tiles of its name...), which renders but says less.
 
 ## Home pop-ups wait for the snapshot, and a scrim closes only on its own press (2026-11-08)

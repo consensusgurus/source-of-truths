@@ -749,7 +749,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
         <span className="sty-gt sty-gtg">{g.tag}</span>
       )}
       {/* DETAILS VIEW (owner, 2026-11-07): shown only under .sty-det. */}
-      <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} /></span>
+      <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} square /></span>
       <span className="sty-gx">{fullDesc(g)}</span>
       <FactRow k={g.key} />
       <span className="sty-gk">{skillLine(g.key) || '\u00a0'}</span>
@@ -4667,12 +4667,14 @@ export default function StageToday() {
                           onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
                           {/* THE PHONE DETAILS CARD MATCHES THE DESKTOP ONE (owner, 2026-11-08):
                               board band, glyph by the name, facts row. */}
-                          {mDet ? <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} /></span> : null}
+                          {mDet ? <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} square /></span> : null}
                           <b>{mDet ? <Glyph k={g.key} size={17} /> : pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
                           {mDet ? <em className="mx">{fullDesc(g)}</em> : <em>{g.tag}</em>}
                           {mDet ? <FactRow k={g.key} /> : null}
                           {mDet && skillLine(g.key) ? <span className="mk">{skillLine(g.key)}</span> : null}
-                          <small>{isDone ? (r ? `You #${r.rank} of ${r.field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>
+                          {/* No bare "Play" on a Details card (2026-11-08): the whole card is the
+                              way in. A result or Resume still shows. */}
+                          {mDet && !isDone && !inprog.has(g.key) ? null : <small>{isDone ? (r ? `You #${r.rank} of ${r.field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>}
                           {/* THE CROWD ON THE PHONE DETAILS CARD (owner, 2026-11-08):
                               who leads and today's plays along the foot, as on the
                               desktop card. Always both, even at zero. */}
@@ -7492,6 +7494,20 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-gg.det .mph-g .mcs .ct{flex:none;font-weight:800;}
   .stage-page:not([data-stage-theme=light]) .sty-mph .mph-gg.det .mph-g .mcs{background:color-mix(in srgb, var(--mc) 22%, #1a2130);}
   .sty-mph .mph-gg.det .mph-g.done :is(.sty-gband,em.mx,.sty-gfx){display:none;}
+  /* BOARD ON THE LEFT (owner, 2026-11-08: option B, "for here and desktop").
+     The band across the top left a lot of dead space, so the drawing is a
+     74px square tile beside the name, the facts and the skills, and the
+     description runs full width under them. A played card still folds. */
+  .sty-mph .mph-gg.det .mph-g:not(.done){display:grid;grid-template-columns:74px minmax(0,1fr);column-gap:12px;row-gap:0;
+    grid-template-areas:"g n" "g f" "g k" "g p" "x x" "y y" "s s";grid-template-rows:auto auto auto auto auto 1fr auto;padding-top:12px;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gband{grid-area:g;position:static;width:74px;height:74px;box-sizing:border-box;align-self:start;
+    padding:6px;border:1px solid var(--mink);border-radius:10px;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) > b{grid-area:n;padding-right:22px;line-height:1.2;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gfx{grid-area:f;margin:6px 0 0;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .mk{grid-area:k;margin-top:6px;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) small{grid-area:p;margin-top:6px;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) em.mx{grid-area:x;margin-top:10px;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .mcs{grid-area:s;margin:10px -14px -12px;}
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */
   .sty-mph{--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
@@ -7819,6 +7835,19 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix.sty-det .sty-g.mx .sty-gn > .sty-gi{display:inline-block;}
   .sty-ix.sty-det .sty-g.mx .sty-gn::before{display:none;}
   .sty-ix.sty-det .sty-g .sty-gn > .sty-gi{color:var(--gpd);}
+  /* BOARD ON THE LEFT (owner, 2026-11-08: option B, "for here and desktop").
+     The 84px band across the top is now a 74px square tile beside the name,
+     the facts and the skills; the description runs full width below. */
+  .sty-ix.sty-det .sty-g:has(> .sty-gband){display:grid;grid-template-columns:74px minmax(0,1fr);column-gap:14px;row-gap:0;padding-top:14px;
+    grid-template-areas:"b n" "b r" "b f" "b k" "x x" "y y" "s s";grid-template-rows:auto auto auto auto auto 1fr auto;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) .sty-gband{grid-area:b;position:static;width:74px;height:74px;box-sizing:border-box;align-self:start;
+    padding:6px;border:var(--dk);border-radius:10px;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gn{grid-area:n;font-size:18px;padding-right:18px;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > :is(.sty-gres,.sty-ggrp,.sty-gt){grid-area:r;margin-top:4px;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx{grid-area:f;margin-top:7px;height:auto;max-height:54px;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gk{grid-area:k;margin-top:7px;padding-bottom:0;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gx{grid-area:x;margin:10px 0 12px;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gcs{grid-area:s;margin:0 -14px 0 -16px;}
   .sty-ix.sty-det .sty-gfx{display:flex;gap:6px;height:24px;overflow:hidden;flex-wrap:wrap;align-content:flex-start;}
   .sty-gfc{display:inline-flex;align-items:center;gap:5px;height:24px;box-sizing:border-box;padding:0 9px 0 7px;border-radius:999px;
     background:var(--gpt);color:var(--stg-ink);font-size:12px;font-weight:700;white-space:nowrap;}
