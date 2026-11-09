@@ -1150,6 +1150,11 @@ export async function GET(request) {
       // empty board with no explanation reads as broken rather than as strict,
       // so the client can say how many people are partway instead.
       partial: memberKeys ? overallFull.filter((r) => r.username && !rankEligible(r)).length : 0,
+      // FINISH TIMES OF EVERYONE WHO COMPLETED THE RUN (owner, 2026-11-08:
+      // "display the runs by completions the last 24 hours"). Epoch ms of each
+      // completer's last game, guests included; the home reads today's and
+      // yesterday's boards and counts the ones inside the last 24 hours.
+      doneAts: memberKeys ? overallFull.filter((r) => r.perGame && memberKeys.every((k) => r.perGame[k] && !r.perGame[k].abandoned)).map((r) => r.lastAt).filter(Boolean) : [],
       // The day is over and this board is final. Clients label it, and nothing
       // posted since Eastern midnight is in it.
       frozen,

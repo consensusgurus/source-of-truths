@@ -295,7 +295,8 @@ export default function JudgedClient({ dateLabel, dateShort, sections = [] }) {
               startLabel={leaving ? 'Order in the court…' : (allBanked ? 'Open your letter' : 'Begin the exam')}
               fieldLine={Object.keys(banked).length ? 'Argued one today? Your first result stands.' : null}
               centerpiece={<Gavel strike={leaving} allBanked={allBanked} top={L[0]} bottom={L[L.length - 1]} n={L.length} onStart={start} />}
-              bandColour={ROSE}
+              /* The lineup in its ladder colours, as the home's run tile shows it
+                 (owner, 2026-11-08); it was all rose. */
               paper
               onStart={start}
             />

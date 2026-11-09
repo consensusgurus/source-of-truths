@@ -29,7 +29,7 @@ export const GATE_TEXT = {
   spacecadet: ['spatial puzzles', (n) => `${n} Legs. One Launch.`, 'One clock across all four. Your time decides your rank.'],
 };
 
-export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done, className = '' }) {
+export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done, plain = false, className = '' }) {
   const n = c.games.length;
   const W = WORD[n] || String(n);
   const [unit, head, rule] = GATE_TEXT[c.id] || ['quizzes', (x) => `${x} Quizzes. One Life in Each.`, QUIZ_RULE];
@@ -37,7 +37,7 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
   const first = c.games[0];
   const go = fin ? 'See your results' : c.n ? 'Continue the run' : `Start with ${first ? first.name : 'the run'}`;
   return (
-    <a className={'rgt' + (fin ? ' fin' : '') + (className ? ' ' + className : '')} href={href}
+    <a className={'rgt' + (fin ? ' fin' : '') + (plain ? ' rgt-w' : '') + (className ? ' ' + className : '')} href={href}
       style={{ '--rgc': hue, '--rgg': softGround(hue) }} aria-label={`${c.name}: ${go}`}>
       <span className="rgt-body">
         <span className="rgt-eye">Daily Run · {W} {unit}</span>
@@ -90,6 +90,12 @@ export const RGT_CSS = `
 html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt{background:#fff;}
 html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt :is(.rgt-leg,.rgt-cs){background:#fff;}
 html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt-go{background:#111;color:#fff;}
+/* ON ITS OWN CATEGORY'S GROUND (owner, 2026-11-08: "the matching color
+   background should go"): a run whose colour is the page's own goes white,
+   like the puzzle cards, and keeps its button and legs in colour. */
+.rgt.rgt-w{background:#fff;}
+.rgt.rgt-w .rgt-cs{background:color-mix(in srgb, var(--rgc) 30%, #fff);}
+.stage-page:not([data-stage-theme=light]) .rgt.rgt-w{background:#1a2130;}
 /* THE PHONE: a sideways row of gate tiles in a pane, full cards in Runs. */
 .mph-rgts{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:12px;margin:0 -12px;padding:0 12px 4px;scrollbar-width:none;}
 .mph-rgts::-webkit-scrollbar{display:none;}

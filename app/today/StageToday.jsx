@@ -2356,6 +2356,15 @@ export default function StageToday() {
   // roster, and the Show all bar survives only where Circuits is one row of many.
   const circPane = ix && paneOn === CIRC_ID;
   const [runStat, setRunStat] = useState({});
+  // FINISH TIMES FOR EACH RUN, today's and yesterday's boards (owner,
+  // 2026-11-08: "display the runs by completions the last 24 hours").
+  const [runDone, setRunDone] = useState({});
+  const done24 = (c) => {
+    const d = runDone[c.id];
+    if (!d) return -1;
+    const cut = Date.now() - 864e5;
+    return [...(d.t || []), ...(d.y || [])].filter((t) => t >= cut).length;
+  };
   // Set by an effect below, once mid and viewOf exist: list view's run rows
   // want each run's players today.
   const [listRuns, setListRuns] = useState(false);
@@ -2380,6 +2389,19 @@ export default function StageToday() {
       const url = runGrp
         ? `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}&group=${encodeURIComponent(runGrp.code)}${qs ? '&' + qs : ''}`
         : `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}${full && qs ? '&' + qs : ''}`;
+      // Yesterday's board once per run: a finished day, so it caches long.
+      if (!runAsked.current.has('y|' + id)) {
+        runAsked.current.add('y|' + id);
+        try {
+          const [Y, M, D] = etToday().split('-').map(Number);
+          const yd = new Date(Date.UTC(Y, M - 1, D - 1));
+          const ysuf = `${yd.getUTCMonth() + 1}-${yd.getUTCDate()}-${yd.getUTCFullYear() % 100}`;
+          fetch(`/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}&date=${ysuf}`)
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => { if (circLive.current && d && Array.isArray(d.doneAts)) setRunDone((m) => ({ ...m, [id]: { ...(m[id] || {}), y: d.doneAts } })); })
+            .catch(() => {});
+        } catch (e) { /* no yesterday read */ }
+      }
       fetch(url)
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
@@ -2391,6 +2413,7 @@ export default function StageToday() {
             ? { players: d.siteField || 0, rank: d.siteRank || null, gfield: d.field || 0, grank: d.me && d.me.rank ? d.me.rank : null, lead: d.siteLeader || null }
             : { players: d.overallField || (Array.isArray(d.overall) ? d.overall.length : 0), rank: d.me && d.me.rank ? d.me.rank : null, lead: top ? top.username : null };
           setRunStat((m) => ({ ...m, [id]: v }));
+          if (Array.isArray(d.doneAts)) setRunDone((m) => ({ ...m, [id]: { ...(m[id] || {}), t: d.doneAts } }));
         })
         .catch(() => {});
     }
@@ -3692,7 +3715,7 @@ export default function StageToday() {
     const base = (a, b) => PILL_CIRCUITS.indexOf(a.id) - PILL_CIRCUITS.indexOf(b.id);
     const by = sortBy === 'az' ? (a, b) => a.name.localeCompare(b.name)
       : sortBy === 'diff' ? (a, b) => (diff ? df(a) - df(b) : 0) || base(a, b)
-        : (a, b) => (((runStat[b.id] || {}).players || 0) - ((runStat[a.id] || {}).players || 0)) || (w ? wk(b) - wk(a) : 0) || base(a, b);
+        : (a, b) => (done24(b) - done24(a)) || (((runStat[b.id] || {}).players || 0) - ((runStat[a.id] || {}).players || 0)) || (w ? wk(b) - wk(a) : 0) || base(a, b);
     if (polyRun && list.some((c) => polyRun.legs.some((l) => l.id === c.id))) list.push(polyRun);
     return list.sort((a, b) => ((runFull(a) ? 1 : 0) - (runFull(b) ? 1 : 0)) || by(a, b));
   };
@@ -3943,7 +3966,7 @@ export default function StageToday() {
   // ones. If every run fits across, they all show and there is no deck; else
   // the row is full width less one cell, and More Runs takes the last cell.
   const topRuns = (runs) => {
-    const pl = (c) => ((runStat[c.id] || {}).players || 0);
+    const pl = (c) => done24(c) * 1e6 + ((runStat[c.id] || {}).players || 0);
     const folds = runs.filter((c) => FOLD_RUNS.includes(c.id));
     const others = runs.filter((c) => !c.poly && !folds.includes(c));
     const open = others.filter((c) => !runFull(c)).sort((a, b) => pl(b) - pl(a));
@@ -3996,7 +4019,7 @@ export default function StageToday() {
       const fin = runFull(c);
       // DETAILS: THE RUN AS ITS OWN START SCREEN (owner, 2026-11-08, option B).
       if (viewOf(paneOn) === 'det') {
-        cells.push(<RunGateTile key={'rl-' + c.id} c={c} href={withTq(circuitEntryHref(c.id))} cat={rc} className="sty-grgt"
+        cells.push(<RunGateTile key={'rl-' + c.id} c={c} href={withTq(circuitEntryHref(c.id))} cat={rc} plain={!!dTintCat && !!rc && categoryColor(rc) === categoryColor(dTintCat)} className="sty-grgt"
           lead={st && st.lead} plays={st && st.players} fin={fin} rank={circStand[c.id] && circStand[c.id].rank} done={done} />);
         continue;
       }
@@ -4597,7 +4620,7 @@ export default function StageToday() {
               const pc = !isAll && !isMine && !isRuns ? paneCat(paneOn) : null;
               const games = isAll ? alpha : isMine ? pinned : pc ? pc.games : [];
               const sorted = isMine ? [...games].sort((a, b) => a.name.localeCompare(b.name)) : isAll ? allOrder(sortGames(games)) : sortGames(games);
-              const runs = isMine ? pinnedCircs : isRuns ? [...circuits].sort((a, b) => runFull(a) - runFull(b)) : mRunsFor(isAll ? null : paneOn);
+              const runs = (isMine ? pinnedCircs : isRuns ? [...circuits] : mRunsFor(isAll ? null : paneOn)).slice().sort((a, b) => (runFull(a) - runFull(b)) || (done24(b) - done24(a)) || (((runStat[b.id] || {}).players || 0) - ((runStat[a.id] || {}).players || 0)));
               const nDone = games.filter((g) => done.has(g.key)).length;
               const s = pc ? skillOfId(paneOn) : null;
               const title = isAll ? 'All puzzles' : isMine ? 'My puzzles' : isRuns ? 'Runs' : catLabel(paneOn);
@@ -4620,7 +4643,7 @@ export default function StageToday() {
                     <div className="mph-rgts">
                       {runs.filter((c) => !c.poly).map((c) => {
                         const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
-                        return <RunGateTile key={c.id} c={c} href={withTq(circuitEntryHref(c.id))} cat={runCatOf(c)}
+                        return <RunGateTile key={c.id} c={c} href={withTq(circuitEntryHref(c.id))} cat={runCatOf(c)} plain={!!mTintCat && !!runCatOf(c) && categoryColor(runCatOf(c)) === categoryColor(mTintCat)}
                           lead={st && st.lead} plays={st && st.players} fin={runFull(c)} rank={st && st.rank} done={done} />;
                       })}
                     </div>
@@ -4883,7 +4906,7 @@ export default function StageToday() {
             {/* EVERY RUN IS A PUZZLE-STYLE TILE (owner, 2026-11-07), replacing the
                 drawn cards with Play buttons; Build a Run is the last tile. */}
             <div className={'sty-games sty-rpgrid' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
-              {(allCircs || circPane ? circuits : circLead).map((c) => runPaneTile(c))}
+              {(allCircs || circPane ? [...circuits].sort((a, b) => (runFull(a) - runFull(b)) || (done24(b) - done24(a))) : circLead).map((c) => runPaneTile(c))}
               <a key="rp-build" className="sty-g mx sty-gbuild" href="/build-a-run" data-fk="rp:build">
                 <span className="sty-gn">+ Build a Run</span>
                 <span className="sty-gt">Pick your own games and share one link. Friends play the same set and race you.</span>

@@ -814,3 +814,17 @@ puzzles stay near the top; the Runs pane stacks them. Tiles and List keep the ol
 The headline and rule come from `GATE_TEXT`, copied from each gate; **a new run with its own gate
 headline adds its line there**, or it reads as a quiz gauntlet.
 
+**Same colour as the page goes white (owner, 2026-11-08).** When a run tile's category colour is the
+pane's own ground (a Deduction or Logic pane showing Judged), the tile body is white like the puzzle cards
+(`plain`, `.rgt-w`); the start button, the leg stripes and a tinted crowd strip keep the colour.
+
+**Runs are ordered by completions in the last 24 hours (owner, 2026-11-08).** `/api/quiz/daily-combined`
+with `circuit=` now returns `doneAts`, the epoch-ms finish time (latest game, `lastAt` from
+lib/daily-combined.js) of everyone who completed every game of the run. The home reads today's board and,
+once per run, yesterday's (`date=` suffix, a frozen day that caches) and counts finishes inside the last
+24 hours (`done24`). The Popular order, the top row's leads, the phone lists and the Runs pane sort on it,
+finished-by-you runs still last; ties fall back to today's players, then the fixed order.
+
+**Judged's start screen lineup wears the ladder colours** like every other gate and like its home tile;
+it was all rose (`bandColour={ROSE}` removed). Its white page and the rose play screens are unchanged.
+
