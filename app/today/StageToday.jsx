@@ -644,10 +644,14 @@ let DIFF_NOW = null;
 // THE DETAILS CARD'S FACTS ROW (owner, 2026-11-08): up to three chips the game
 // states about itself (lib/game-facts.js) and the week's difficulty, five bars
 // and its tier word. Hidden outside Details.
+// AT MOST TWO CHIPS (owner, 2026-11-08: "They should all be uniform height,
+// max two tags"): the game's first fact, then the week's difficulty, else its
+// second fact. The row is one chip tall in CSS, so a second chip that will
+// not fit the line drops out rather than adding a row.
 function FactRow({ k }) {
-  const facts = gameFacts(k);
   const r = DIFF_NOW && Number(DIFF_NOW[k]);
   const tier = r ? DIFF_TIERS.find((t) => r >= t.lo && r <= t.hi) : null;
+  const facts = gameFacts(k).slice(0, tier ? 1 : 2);
   if (!facts.length && !tier) return <span className="sty-gfx" aria-hidden="true">{'\u00a0'}</span>;
   return (
     <span className="sty-gfx">
@@ -7503,8 +7507,8 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gband{grid-area:g;position:static;width:74px;height:74px;box-sizing:border-box;align-self:start;
     padding:6px;border:1px solid var(--mink);border-radius:10px;}
   .sty-mph .mph-gg.det .mph-g:not(.done) > b{grid-area:n;padding-right:22px;line-height:1.2;}
-  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gfx{grid-area:f;margin:6px 0 0;}
-  .sty-mph .mph-gg.det .mph-g:not(.done) .mk{grid-area:k;margin-top:6px;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gfx{grid-area:f;margin:6px 0 0;height:24px;overflow:hidden;flex-wrap:wrap;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .mk{grid-area:k;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sty-mph .mph-gg.det .mph-g:not(.done) small{grid-area:p;margin-top:6px;}
   .sty-mph .mph-gg.det .mph-g:not(.done) em.mx{grid-area:x;margin-top:10px;}
   .sty-mph .mph-gg.det .mph-g:not(.done) .mcs{grid-area:s;margin:10px -14px -12px;}
@@ -7847,7 +7851,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gn > .sty-gi,.sty-ix.sty-det .sty-g.mx:has(> .sty-gband) > .sty-gn > .sty-gi{display:none;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gn::before{display:none;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > :is(.sty-gres,.sty-ggrp,.sty-gt){grid-area:r;margin-top:4px;}
-  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx{grid-area:f;margin-top:7px;height:auto;max-height:54px;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx{grid-area:f;margin-top:7px;height:24px;overflow:hidden;flex-wrap:wrap;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gk{grid-area:k;margin-top:7px;padding-bottom:0;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gx{grid-area:x;margin:10px 0 12px;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gcs{grid-area:s;margin:0 -14px 0 -16px;}
