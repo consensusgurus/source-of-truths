@@ -708,6 +708,22 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
       : `Duet #${PUZZLE.num} · gave up`;
     return `${head2}\n${row}\n${shareUrl()}`;
   }
+  // A TAP OFF THE BOARD CLEARS THE PICK (player feedback 2026-11-08: "could
+  // you unhighlight the square, row & column when you click outside the
+  // puzzle"). The tint along a row, column and room can hide the board, so a
+  // press on empty page clears it. Presses on the board itself, on any button
+  // or link (the hint reads the picked square), or inside a dialog keep it.
+  useEffect(() => {
+    if (sel < 0) return undefined;
+    const off = (e) => {
+      const t = e.target;
+      if (!t || !t.closest) return;
+      if (t.closest('[role="grid"], button, a, input, select, textarea, label, [role="button"], [role="dialog"]')) return;
+      setSel(-1);
+    };
+    document.addEventListener('pointerdown', off);
+    return () => document.removeEventListener('pointerdown', off);
+  }, [sel]);
   function shareUrl() {
     return withRef(`mindloftdaily.com/duet${isTodays ? '' : `?p=${PUZZLE.num}`}`);
   }

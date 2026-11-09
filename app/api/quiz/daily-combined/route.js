@@ -888,7 +888,14 @@ export async function GET(request) {
         if (!g || playedKeys.has(g.key) || !g.players) continue;
         const rowsG = [...g.players.values()];
         const plays = rowsG.length;
-        if (plays < 3) continue;
+        // A RELATIVE IS OFFERED ON LIGHTER PROOF (owner, 2026-11-08: "i just
+        // played jig and it didnt serve saw next"). The floors below exist to
+        // keep a stranger's two-hour puzzle off the ending; a relative is the
+        // same kind of puzzle the player has just finished, so it needs only
+        // one finisher today and no 10-minute cap (an 80-piece Saw typically
+        // runs past 10 minutes, as Jig does, and was being dropped).
+        const sib = lessKeys.some((k) => sameFamily(k, g.key));
+        if (plays < (sib ? 1 : 3)) continue;
         let solved = 0, named = 0;
         const clocks = [];
         for (const p of rowsG) {
@@ -902,12 +909,11 @@ export async function GET(request) {
           if (Number.isFinite(te) && te > 0) clocks.push(te);
         }
         const rate = solved / plays;
-        if (rate < 0.5 || clocks.length < 2) continue;
+        if (sib ? clocks.length < 1 : (rate < 0.5 || clocks.length < 2)) continue;
         clocks.sort((a, b) => a - b);
         const secs = clocks[Math.floor(clocks.length / 2)];
-        if (secs > 600) continue;
+        if (!sib && secs > 600) continue;
         const mins = Math.max(1, Math.round(secs / 60));
-        const sib = lessKeys.some((k) => sameFamily(k, g.key));
         const pos = sib && pr != null ? Math.min(named + 1, Math.max(1, Math.ceil(pr * named))) : Math.floor(named / 2) + 1;
         const pts = ladderAt(pos);
         picks.push({ key: g.key, pts, mins, finish: Math.round(rate * 100), plays, sib, v: (pts * rate) / Math.max(1, secs / 60) });

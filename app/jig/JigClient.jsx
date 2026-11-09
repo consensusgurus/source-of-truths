@@ -867,32 +867,46 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   };
   // In the play box, a piece held near the board frame's edge scrolls the board
   // that way, and keeps scrolling while it is held there.
+  // THE PAGE HOLDS STILL UNDER A HELD PIECE (player feedback 2026-11-08: "On
+  // phone, the puzzle keeps moving up and down as you manipulate the piece").
+  // A piece lifted from the dock starts inside the bottom edge zone, so the
+  // page used to run down at once and then back up as the piece neared the
+  // top. Now the page scrolls only while part of the board is out of sight
+  // that way (a Jig board that fits above the dock never moves), only after
+  // the piece has rested in the zone for a moment, and it stops the instant
+  // the board's edge comes into view.
   function edgeScroll() {
     const pr = press.current;
     if (!boxMode || !pr || !pr.dragging) { stopEdge(); return; }
     const lift = pr.touch && ghostRef.current ? ghostRef.current.offsetWidth * 0.62 : 0;
     const x = pr.cx, y = pr.cy - lift;   // where the piece is, not the finger
-    const side = sideRef.current ? sideRef.current.getBoundingClientRect() : null;
-    const dockTop = side ? side.top : window.innerHeight;
-    const E = 48, V = 12;
+    const dockTop = () => (sideRef.current ? sideRef.current.getBoundingClientRect().top : window.innerHeight);
+    const E = 44, V = 9, DWELL = 300;
+    const hidUp = () => { const b = boxRef.current; return !b || b.getBoundingClientRect().top < -2; };
+    const hidDown = () => { const b = boxRef.current; return !b || b.getBoundingClientRect().bottom > dockTop() + 2; };
+    const dt = dockTop();
     let vy = 0, vx = 0;
-    if (y < E) vy = -V;
-    else if (pr.cy < dockTop && y > dockTop - E) vy = V;
+    if (y < E && hidUp()) vy = -V;
+    else if (pr.cy < dt && y > dt - E && hidDown()) vy = V;
     const box = boxRef.current;
     if (box && zoom > 1) {
       const r = box.getBoundingClientRect();
       if (y > r.top && y < r.bottom) { if (x < r.left + 36) vx = -V; else if (x > r.right - 36) vx = V; }
     }
     if (!vx && !vy) { stopEdge(); return; }
-    autoScroll.current = { ...(autoScroll.current || {}), vx, vy };
+    const prev = autoScroll.current || {};
+    autoScroll.current = { ...prev, vx, vy, since: prev.since || performance.now() };
     if (!autoScroll.current.t) {
-      const tick = () => {
+      const tick = (now) => {
         const a2 = autoScroll.current;
         if (!a2) return;
-        if (a2.vy) window.scrollBy(0, a2.vy);
-        if (a2.vx && boxRef.current) boxRef.current.scrollLeft += a2.vx;
-        const p2 = press.current;
-        if (p2 && p2.dragging) ghostAt(p2.cx, p2.cy);
+        if (now - a2.since >= DWELL) {
+          if (a2.vy < 0 && hidUp()) window.scrollBy(0, a2.vy);
+          else if (a2.vy > 0 && hidDown()) window.scrollBy(0, a2.vy);
+          if (a2.vx && boxRef.current) boxRef.current.scrollLeft += a2.vx;
+          const p2 = press.current;
+          if (p2 && p2.dragging) ghostAt(p2.cx, p2.cy);
+        }
         a2.t = requestAnimationFrame(tick);
       };
       autoScroll.current.t = requestAnimationFrame(tick);
