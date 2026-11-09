@@ -128,8 +128,10 @@ export const RGT_CSS = `
 .rgt-eye{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 /* One line for every block above the legs, so tiles in a row stack the same
    heights and their legs and buttons land level (owner, 2026-11-08). */
-.rgt-name{font-size:26px;font-weight:900;line-height:1.1;letter-spacing:-.02em;margin:4px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rgt-hl{font-size:14px;font-weight:800;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* The clip box is grown by .2em and the margin hands it back, so the g in
+   Gauntlet and Judged keeps its tail and every line below stays level. */
+.rgt-name{font-size:26px;font-weight:900;line-height:1.1;letter-spacing:-.02em;margin:4px 0 calc(4px - .2em);padding-bottom:.2em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rgt-hl{font-size:14px;font-weight:800;line-height:1.25;padding-bottom:.2em;margin-bottom:-.2em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rgt-rule{font-size:12.5px;font-weight:600;line-height:1.35;margin-top:2px;margin-bottom:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rgt-legs{display:flex;height:28px;border:1px solid #0b1b2b;border-radius:8px;overflow:hidden;}
 .rgt-blank{border-color:transparent;}

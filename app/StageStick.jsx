@@ -1558,7 +1558,7 @@ const CSS = `
 .sst-tiles::-webkit-scrollbar{display:none;}
 .sst-tile{flex:none;width:84px;display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none;color:var(--sst-ink);text-align:center;}
 .sst-tile .gl{width:58px;height:58px;border-radius:16px;background:var(--sst-wash);display:flex;align-items:center;justify-content:center;}
-.sst-tile b{font-size:12.5px;font-weight:800;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sst-tile b{font-size:12.5px;font-weight:800;line-height:1.2;padding-bottom:.2em;margin-bottom:-.2em;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sst-tile small{font-size:11px;font-weight:700;opacity:.82;}
 .sst-tile.done .gl{opacity:.45;}
 .sst-tile:hover .gl{filter:brightness(1.06);}

@@ -959,7 +959,7 @@ const CSS = `
 .gsx-band{color:var(--gsx-ink);display:flex;align-items:center;gap:14px;min-height:54px;padding:4px 18px;border-top:1px solid var(--gsx-ink);animation:gsxSlide .55s cubic-bezier(.2,.8,.2,1) both}
 .gsx-band:first-child{border-top:0}
 .gsx-bn{width:20px;font-size:15px;font-weight:800;opacity:.6}
-.gsx-bt{flex:1;display:flex;align-items:baseline;gap:10px;line-height:1.15;min-width:0;white-space:nowrap;overflow:hidden}
+.gsx-bt{flex:1;display:flex;align-items:baseline;gap:10px;line-height:1.15;padding-bottom:.2em;margin-bottom:-.2em;min-width:0;white-space:nowrap;overflow:hidden}
 .gsx-bt b{font-size:19px;font-weight:800;flex:none}
 .gsx-bt i{font-style:normal;font-size:14px;font-weight:700;opacity:.75;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .gsx-bgo{cursor:pointer}

@@ -2470,3 +2470,15 @@ that same tap's click landed on the scrim and closed it.
 - **Scrims close through `scrimClose(close)`** (exported from `app/PremierePop.jsx`): it closes only
   when the press STARTED on the scrim, so the tail of a tap that began before the card was on screen
   can never dismiss it.
+
+
+## One-line clipped text must not cut off descenders (owner, 2026-11-09)
+
+Any text clipped to one line (`white-space:nowrap; overflow:hidden`, usually with an ellipsis)
+clips at its line box, and at a line-height under about 1.25 that box ends above the tail of
+g, j, p, q and y. The run tile names ("Gauntlet", "Judged") shipped that way. Two accepted fixes:
+raise the line-height to 1.35 (`.tdy-hd h2`), or, where the block height must not move, grow the
+clip box and hand the space back: `padding-bottom:.2em; margin-bottom:-.2em` (or fold the .2em
+into an existing margin with `calc()`). Before shipping a clipped line, check it with a word that
+has a descender. Swept 2026-11-09: `.rgt-name`, `.rgt-hl`, `.wys-n b`, `.gsx-bt`, `.sst-tile b`,
+`.nt-rel-t`.

@@ -640,7 +640,7 @@ export const BEAT_CSS = `
 .wys-t{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .wys-n{display:flex;flex-direction:column;gap:3px;min-width:0}
 .wys-n small{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wys-n b{font-size:18px;font-weight:800;letter-spacing:-.01em;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wys-n b{font-size:18px;font-weight:800;letter-spacing:-.01em;line-height:1.15;padding-bottom:.2em;margin-bottom:-.2em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wys-r{display:flex;align-items:baseline;gap:5px;flex:none}
 .wys-num{display:inline-grid;font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;text-align:right}
 .wys-num > span{grid-area:1/1;white-space:nowrap}
