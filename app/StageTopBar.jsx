@@ -93,8 +93,23 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
       const right = br.right - minL;
       const side = Math.ceil(Math.max(left, right) + 4);
       bar.style.setProperty('--stb-side', side + 'px');
-      // Shrink to fit before the ellipsis: 19px down to 13px, then truncate.
+      // THE DESKTOP TITLE IS CENTRED OVER THE BOARD (owner, 2026-11-09: "the
+      // puzzle title needs to be centered above the board, assuming all elements
+      // fit", seen on Carmen). The bar spans the board's column, so its true
+      // centre is the board's. When the name (and the line under it) fits
+      // between equal side margins, it sits there (.stb-mid); only when it does
+      // not does it fall back to the centre of the space between the buttons.
       const h1 = bar.querySelector('.stb-t h1');
+      const tx = bar.querySelector('.stb-tx');
+      const phone = window.matchMedia && window.matchMedia('(max-width: 899px)').matches;
+      if (!phone && tx && h1) {
+        const em = tx.querySelector('em');
+        const dot = bar.querySelector('.stb-dot');
+        const need = Math.max(h1.scrollWidth + (dot ? dot.offsetWidth + 7 : 0), em ? em.scrollWidth : 0);
+        const mid = need <= br.width - 2 * side;
+        if (bar.classList.contains('stb-mid') !== mid) bar.classList.toggle('stb-mid', mid);
+      } else if (bar.classList.contains('stb-mid')) bar.classList.remove('stb-mid');
+      // Shrink to fit before the ellipsis: 19px down to 13px, then truncate.
       if (!h1) return;
       h1.style.fontSize = '';
       if (!window.matchMedia || !window.matchMedia('(max-width: 899px)').matches) return;
@@ -174,6 +189,10 @@ const CSS = `
 @media (min-width:900px){
   .stb.has-t .stb-tx{align-items:center;text-align:center;}
   .stb.has-t .stb-t{justify-content:center;max-width:100%;}
+  .stb.has-t.stb-mid{position:relative;}
+  .stb.has-t.stb-mid .stb-tx{position:absolute;left:var(--stb-side,124px);right:var(--stb-side,124px);top:50%;transform:translateY(-50%);pointer-events:none;}
+  .stb.has-t.stb-mid .stb-tx > *{max-width:100%;pointer-events:auto;}
+  .stb.has-t.stb-mid .stb-tx + *{margin-left:auto;}
 }
 @media (max-width:899px){
   .stb.has-t{position:relative;flex:0 1 auto;width:100%;min-width:0;}

@@ -1745,6 +1745,13 @@ the screen (`clamp(15px, 4.9vw, 19px)`) and then ends in an ellipsis. Share is a
 draws this bar inherits it: PlayStage, WordStage, BracketStage, GauntletStage and the run
 screens, StageChrome's simple header, and Price Check's week.
 
+**Desktop, 2026-11-09 (owner: "the puzzle title needs to be centered above the board, assuming
+all elements fit", seen on Carmen):** the bar spans the board's column, so its true centre is the
+board's. At 900px and up the same measure adds `.stb-mid` when the dot + name (and the line under
+it) fit in `bar width - 2 * --stb-side`; the title block is then positioned exactly as on the
+phone. If it does not fit, the class comes off and the title falls back to the 2026-11-01 rule,
+centred in the space between the button groups.
+
 ## The desktop ending cover is left-aligned, not centred (owner, 2026-10-31)
 
 51ba941d4 (2026-10-30) centred the result on the desktop ending cover (`.sst-cover .sst-hero` in
