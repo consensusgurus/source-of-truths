@@ -3999,6 +3999,14 @@ export default function StageToday() {
     for (const g of list) (runKeysAll.has(g.key) ? inRun : solo).push(g);
     return [...playedLast(solo, done), ...playedLast(inRun, done)];
   };
+  // HOISTED (2026-11-08 hotfix): runCells and the run tiles read dTintCat during
+  // render, so these must be defined before them or the home throws a TDZ error.
+  const mph = !picked || paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID || !!paneCat(paneOn);
+  const mPane = runsMq && picked && mph;
+  const [siteLook] = useStageLook();
+  const qTintCat = paneOn === QUIZ_ID && qTopic && isColorLook(siteLook) ? (QZ_CAT[qTopic] || 'Trivia') : null;
+  const mTintCat = mPane && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : (mPane ? qTintCat : null);
+  const dTintCat = !runsMq && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : (!mPane ? qTintCat : null);
   const runCells = (cat) => {
     if (!mid || findOn) return null;
     const runs = deckRuns(cat);
@@ -4158,7 +4166,6 @@ export default function StageToday() {
   ];
 
   // THE PHONE HOME'S OWN PIECES (owner, 2026-10-24, option A in full).
-  const mph = !picked || paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID || !!paneCat(paneOn);
   const mTone = (cat) => ({ '--mc': categoryColor(cat), '--md': categoryAccentInkLight(cat) });
   // THE LOGO WEARS THE PANE'S COLOUR (owner, 2026-10-25): inside a category or
   // skill pane the Mind Loft mark and "Loft" take that pane's ramp step; on
@@ -4176,8 +4183,6 @@ export default function StageToday() {
   // A PANE ON THE PHONE IS ITS OWN PAGE (owner, 2026-10-24): nothing above the
   // back button but the logo, and a category or skill recolours the whole page:
   // its lighter step on the light register, a deep wash of it on the dark.
-  const mPane = runsMq && picked && mph;
-  const [siteLook] = useStageLook();
   const mBackTo = paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID ? 'Home' : ixLens === 'skill' ? 'All skills' : 'All categories';
   // A CATEGORY OR SKILL PANE WEARS ITS COLOUR (owner, 2026-10-25, reversing
   // the white pane of the same morning): the page takes the category's soft
@@ -4187,8 +4192,6 @@ export default function StageToday() {
   // (White, Black) keep a plain page.
   // A QUIZ TOPIC WEARS ITS COLOUR TOO (owner, 2026-10-27): the open topic's
   // category step, exactly as a category pane does, and only in the colour looks.
-  const qTintCat = paneOn === QUIZ_ID && qTopic && isColorLook(siteLook) ? (QZ_CAT[qTopic] || 'Trivia') : null;
-  const mTintCat = mPane && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : (mPane ? qTintCat : null);
   // A real hex, not color-mix: the browser bar colour (theme-color) takes only a plain colour.
   const paneGround = (cat) => (isColorLook(siteLook) ? (light ? softGround(categoryColor(cat)) : mixHex(categoryColor(cat), '#0b0f1a', 0.22)) : null);
   const mTintBg = mTintCat ? paneGround(mTintCat) : null;
@@ -4196,7 +4199,6 @@ export default function StageToday() {
   // pane recolours the desktop page too, in the colour looks, and the switch
   // between panes runs the phone's flood. The page stays put; only the ground
   // changes, so the flood lands on the colour the pane then keeps.
-  const dTintCat = !runsMq && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : (!mPane ? qTintCat : null);
   const dTintBg = dTintCat ? paneGround(dTintCat) : null;
   const baseGround = light ? '#eef1f6' : '#0b0f1a';
   const ixFlip = useRef(null);
