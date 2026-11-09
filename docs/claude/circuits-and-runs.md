@@ -828,3 +828,11 @@ finished-by-you runs still last; ties fall back to today's players, then the fix
 **Judged's start screen lineup wears the ladder colours** like every other gate and like its home tile;
 it was all rose (`bandColour={ROSE}` removed). Its white page and the rose play screens are unchanged.
 
+**More Runs in Details (owner, 2026-11-08).** The deck that ends the top row is `MoreRunsTile` (same
+build as a run tile, in ink: "Daily Runs · N more", the next three as coloured bands with today's
+players, a full-width "Show all N runs" button, Build a Run in the foot strip). Unfolded, the rest of the
+runs drop into the grid as run tiles (Polymath keeps its card), closed by `BuildRunTile`. Tiles and List
+keep the old deck and rows. Passport's tile shows its four legs (`GATE_TEXT` takes an optional legs
+list for a run that is one registry game). Details rows now size to their own tiles (`grid-auto-rows:auto`)
+so the tall run row no longer stretches every puzzle row.
+

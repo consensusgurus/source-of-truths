@@ -45,7 +45,7 @@ const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => LIVE_KEYS.has(g.key));
 import { SUDOKU_POOL, DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
 import GameGlyph from '../GameGlyph';
 import GamePreview, { GP_CSS } from '../GamePreview';
-import RunGateTile, { RGT_CSS } from './RunGateTile';
+import RunGateTile, { RGT_CSS, MoreRunsTile, BuildRunTile } from './RunGateTile';
 import { gameFacts, FACT_ICONS } from '@/lib/game-facts';
 import CircuitArt from '../CircuitArt';
 import { softGround, gameColor, RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
@@ -4043,7 +4043,24 @@ export default function StageToday() {
         </a>
       );
     }
-    if (!onCat && top.deck) {
+    if (!onCat && top.deck && viewOf(paneOn) === 'det') {
+      // DETAILS: the deck and the unfolded runs in the run tile's shape
+      // (owner, 2026-11-08: "clicking 'more runs' should show all the runs in
+      // the same format of large tiles").
+      cells.push(<MoreRunsTile key="rdeck" rest={rest.filter((c) => !c.poly)} open={runsOpen} onToggle={() => setRunsOpen((v) => !v)}
+        players={(c) => (runStat[c.id] || {}).players} colorOf={(c) => { const rc = runCatOf(c); return rc ? categoryColor(rc) : '#c7cdd6'; }} />);
+      if (runsOpen) {
+        for (const c of rest) {
+          if (c.poly) { cells.push(runPaneTile(c)); continue; }
+          const st = runStat[c.id];
+          const rc = runCatOf(c);
+          cells.push(<RunGateTile key={'ru-' + c.id} c={c} href={withTq(circuitEntryHref(c.id))} cat={rc} className="sty-grgt"
+            plain={!!dTintCat && !!rc && categoryColor(rc) === categoryColor(dTintCat)}
+            lead={st && st.lead} plays={st && st.players} fin={runFull(c)} rank={circStand[c.id] && circStand[c.id].rank} done={done} />);
+        }
+        cells.push(<BuildRunTile key="ru-build" />);
+      }
+    } else if (!onCat && top.deck) {
       cells.push(
         // THE DECK CARRIES BUILD A RUN (owner, 2026-11-07). A div, not a
         // button, so the Build a Run link inside it is a real link; the card
@@ -7862,7 +7879,9 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      content alone never evens the rows; 1fr auto rows size every row to the
      tallest. Not while the runs are unfolded, whose full-width row would
      stretch the whole grid to its height. */
-  .sty-ix.sty-det .sty-games:not(:has(> .sty-runsu)){grid-auto-rows:1fr;}
+  /* Rows size to their own tiles in Details (2026-11-08): with the run tiles
+     as tall as start screens, 1fr stretched every puzzle row to their height. */
+  .sty-ix.sty-det .sty-games:not(:has(> .sty-runsu)){grid-auto-rows:auto;}
   /* MORE RUNS STAYS IN THE FIRST ROW (owner, 2026-11-07): pinned to the last
      column of row one, so a lead run that does not fit wraps below it
      instead of pushing the deck down. */
