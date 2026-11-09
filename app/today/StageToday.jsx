@@ -45,6 +45,7 @@ const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => LIVE_KEYS.has(g.key));
 import { SUDOKU_POOL, DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
 import GameGlyph from '../GameGlyph';
 import GamePreview, { GP_CSS } from '../GamePreview';
+import RunGateTile, { RGT_CSS } from './RunGateTile';
 import { gameFacts, FACT_ICONS } from '@/lib/game-facts';
 import CircuitArt from '../CircuitArt';
 import { softGround, gameColor, RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
@@ -3924,7 +3925,7 @@ export default function StageToday() {
   // and runs wrapped). Re-read after every render, since Tiles and Details
   // change the column count without a resize; it only sets state on a change.
   const readCols = () => {
-    const run = document.querySelector('.sty-ix .sty-games:not(.sty-vhid) > .sty-gdeck, .sty-ix .sty-games:not(.sty-vhid) > .sty-grun');
+    const run = document.querySelector('.sty-ix .sty-games:not(.sty-vhid) > .sty-gdeck, .sty-ix .sty-games:not(.sty-vhid) > .sty-grun, .sty-ix .sty-games:not(.sty-vhid) > .sty-grgt');
     const el = run ? run.parentElement : null;
     if (!el || !el.offsetWidth) return;
     const n = window.getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length;
@@ -3993,6 +3994,12 @@ export default function StageToday() {
       const st = runStat[c.id];
       const rc = runCatOf(c);
       const fin = runFull(c);
+      // DETAILS: THE RUN AS ITS OWN START SCREEN (owner, 2026-11-08, option B).
+      if (viewOf(paneOn) === 'det') {
+        cells.push(<RunGateTile key={'rl-' + c.id} c={c} href={withTq(circuitEntryHref(c.id))} cat={rc} className="sty-grgt"
+          lead={st && st.lead} plays={st && st.players} fin={fin} rank={circStand[c.id] && circStand[c.id].rank} done={done} />);
+        continue;
+      }
       cells.push(
         <a key={'rl-' + c.id} className={'sty-g mx sty-grun' + (rc ? ' sty-grunc' : '')} href={withTq(circuitEntryHref(c.id))} data-fk={'rl:' + c.id}
           style={rc ? { '--cfull': categoryColor(rc), '--cc': hueFor(rc) } : { '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} title={c.blurb || c.name}>
@@ -4046,6 +4053,10 @@ export default function StageToday() {
     const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
     const fin = runFull(c);
     const rc = runCatOf(c);
+    if (!c.poly && viewOf(paneOn) === 'det') {
+      return <RunGateTile key={'rp-' + c.id} c={c} href={withTq(circuitEntryHref(c.id))} cat={rc} className="sty-grgt"
+        lead={st && st.lead} plays={st && st.players} fin={fin} rank={st && st.rank} done={done} />;
+    }
     const gtxt = runGroupText(c, st);
     return (
       <a key={'rp-' + c.id} className={'sty-g mx sty-grun sty-rpt' + (rc ? ' sty-grunc' : '') + (fin ? ' fin' : '')} href={withTq(circuitEntryHref(c.id))} data-fk={'rp:' + c.id}
@@ -4602,9 +4613,21 @@ export default function StageToday() {
                       skill, All or My pane the runs are small chips in at most two
                       rows that scroll sideways, not five full cards. The Runs pane
                       itself keeps the full cards. */}
-                  {runs.length && !isRuns ? (
+                  {/* DETAILS ON THE PHONE: each run as its own small start screen,
+                      in a sideways row so the puzzles stay near the top (owner,
+                      2026-11-08, option B). Tiles keeps the compact rows. */}
+                  {runs.length && !isRuns && mDet ? (
+                    <div className="mph-rgts">
+                      {runs.filter((c) => !c.poly).map((c) => {
+                        const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+                        return <RunGateTile key={c.id} c={c} href={withTq(circuitEntryHref(c.id))} cat={runCatOf(c)}
+                          lead={st && st.lead} plays={st && st.players} fin={runFull(c)} rank={st && st.rank} done={done} />;
+                      })}
+                    </div>
+                  ) : null}
+                  {!isRuns && (mDet ? runs.some((c) => c.poly) : runs.length) ? (
                     <div className="mph-runs">
-                      {runs.map((c) => {
+                      {(mDet ? runs.filter((c) => c.poly) : runs).map((c) => {
                         const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
                         const fin = runFull(c);
                         const line = fin ? (st && st.rank ? `Played · #${st.rank} of ${fmtN(st.players)}` : 'Played') : st ? `${fmtN(st.players)} played today` : null;
@@ -4617,7 +4640,16 @@ export default function StageToday() {
                       })}
                     </div>
                   ) : null}
-                  {isRuns ? runs.map((c) => {
+                  {isRuns && mDet ? (
+                    <div className="mph-rgtcol">
+                      {runs.filter((c) => !c.poly).map((c) => {
+                        const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+                        return <RunGateTile key={c.id} c={c} href={withTq(circuitEntryHref(c.id))} cat={runCatOf(c)}
+                          lead={st && st.lead} plays={st && st.players} fin={runFull(c)} rank={st && st.rank} done={done} />;
+                      })}
+                    </div>
+                  ) : null}
+                  {isRuns ? (mDet ? runs.filter((c) => c.poly) : runs).map((c) => {
                     const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
                     const fin = runFull(c);
                     const line = !st ? null : fin && st.rank ? `Played · #${st.rank} of ${fmtN(st.players)}` : `${fmtN(st.players)} played today`;
@@ -5317,6 +5349,7 @@ const CSS = `
 .sty-fc.wait{min-width:54px;min-height:30px;}
 ${PATCH_CSS}
 ${GP_CSS}
+${RGT_CSS}
 .sty-figs b{display:block;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;}
 .sty-figs b i{font-style:normal;font-weight:600;color:var(--stg-mute);font-size:12px;}
 .sty-figs>div>i{font-style:normal;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;

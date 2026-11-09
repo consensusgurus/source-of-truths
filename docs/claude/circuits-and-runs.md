@@ -801,3 +801,16 @@ circuit: it sits in SHOWN, PILL_CIRCUITS and MoreRuns beside the Dojo.
   color keys are in `DOJO_CLOCK`, seeded at the number twin's clock plus a fifth (Window and Racecar
   at Diag's), and `primeCircuitClocks` primes for both Dojo ids.
 - **DojoPop** offers the color Dojo after a color sudoku (any key ending `too`), the Dojo after any other.
+
+## In Details, a run tile is its own start screen, small (owner, 2026-11-08, option B)
+
+`app/today/RunGateTile.jsx`. In the Details view (desktop top row, a category pane's run tiles, the Runs
+pane, and the phone panes) every run except Polymath is drawn like its gate (GauntletGate): the run's
+category as the ground, "Daily Run · N <unit>", the name large, the bold headline and the rule, the legs
+as one striped bar in their ladder colours (a leg played today goes ink), a full-width start button in
+the category colour, and the crowd strip (leader or "Open. Be first.", N playing) along the foot. The
+whole tile links into the run. On the phone the runs sit in a sideways scroll row inside a pane so the
+puzzles stay near the top; the Runs pane stacks them. Tiles and List keep the old run cards and rows.
+The headline and rule come from `GATE_TEXT`, copied from each gate; **a new run with its own gate
+headline adds its line there**, or it reads as a quiz gauntlet.
+
