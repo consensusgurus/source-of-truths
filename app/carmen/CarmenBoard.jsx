@@ -20,6 +20,41 @@ const reduced = () => { try { return window.matchMedia('(prefers-reduced-motion:
 
 export function lastSeen(P, leg) { return leg === 0 ? P.start : P.legs[leg - 1]; }
 
+// THE DESK LAYOUT (owner, 2026-11-09, mockup B "Dossier"): from 1000px wide
+// the case runs as a dossier column on the left (suspect, legs, tips, result,
+// her trail, the lock-in button) beside a dark panel that gives the globe the
+// rest of the screen. Phones keep the stacked layout untouched (owner: "leave
+// mobile unchanged"). The stage passes GAME.full so the column is 1180 wide.
+const DESK_Q = '(min-width:1000px)';
+export function useDesk() {
+  const [d, setD] = useState(false);
+  useEffect(() => {
+    let mq = null;
+    try { mq = window.matchMedia(DESK_Q); } catch (e) { return undefined; }
+    const on = () => setD(!!mq.matches);
+    on();
+    try { mq.addEventListener('change', on); } catch (e) { mq.addListener(on); }
+    return () => { try { mq.removeEventListener('change', on); } catch (e) { mq.removeListener(on); } };
+  }, []);
+  return d;
+}
+function lockIn(P, setS) {
+  setS((st) => {
+    if (st.phase !== 'play' || !st.guess) return st;
+    const L = P.legs[st.leg];
+    const km = Math.round(kmBetween(st.guess, L.ll));
+    const pts = legPoints(km, st.tips);
+    return { ...st, phase: 'reveal', res: [...st.res, { km, pts, tips: st.tips, g: st.guess }] };
+  });
+}
+function nextLeg(P, setS) {
+  setS((st) => {
+    if (st.phase !== 'reveal') return st;
+    if (st.res.length >= P.legs.length) return { ...st, closed: true };
+    return { ...st, phase: 'play', leg: st.res.length, tips: 1, guess: null };
+  });
+}
+
 // ---- the typed tip ----------------------------------------------------------
 function TypedTip({ text, animate }) {
   const [n, setN] = useState(animate ? 0 : text.length);
@@ -175,6 +210,7 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   const [failed, setFailed] = useState(false);
   const [curtain, setCurtain] = useState(null);   // 'file' | 'leg' | 'finale' | 'show'
   const [busy, setBusy] = useState(false);         // a flight is playing
+  const busyRef = useRef(false); busyRef.current = busy;
   const [hint, setHint] = useState(false);
   const skipRef = useRef(null);
   const animatedRes = useRef(s.res.length);        // reveals already on screen
@@ -190,6 +226,8 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   const overRef = useRef(null);
   const cardMax = useRef(0);
   const [openTip, setOpenTip] = useState(-1);
+  const deskWide = useDesk();
+  const desk = deskWide && onStage;
 
   // The world loads once; the globe mounts on it.
   useEffect(() => {
@@ -213,6 +251,12 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
       const R = regionRef.current, O = overRef.current, G = globe.current;
       if (!R || !G) return;
       const w = R.clientWidth, h = R.clientHeight;
+      if (desk) {
+        // The desk panel is the globe's alone: centred, as large as it fits.
+        const r = Math.max(120, Math.min(w / 2 - 28, (h - 64) / 2));
+        G.setFrame(w, h, w / 2, h / 2 - 4, r);
+        return;
+      }
       // The largest card this visit sized it, so the globe holds still as tips arrive.
       const ch = Math.max(O ? O.offsetHeight : 0, cardMax.current);
       cardMax.current = ch;
@@ -227,7 +271,24 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
     try { ro = new ResizeObserver(place); if (regionRef.current) ro.observe(regionRef.current); if (overRef.current) ro.observe(overRef.current); } catch (e) {}
     window.addEventListener('resize', place);
     return () => { if (ro) ro.disconnect(); window.removeEventListener('resize', place); };
-  }, [ready]);
+  }, [ready, desk]);
+
+  // ENTER ON THE DESK (owner, 2026-10-29: desktop puzzles take the physical
+  // keyboard): Enter locks in the pin, then moves on to the next leg.
+  useEffect(() => {
+    if (!desk || !active || done) return undefined;
+    const onKey = (e) => {
+      if (e.key !== 'Enter' || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+      const a = document.activeElement;
+      if (a && /^(BUTTON|A|INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+      if (skipRef.current) return;
+      const st = sRef.current;
+      if (st.phase === 'play' && st.guess) { e.preventDefault(); lockIn(P, setS); }
+      else if (st.phase === 'reveal' && !busyRef.current) { e.preventDefault(); nextLeg(P, setS); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [desk, active, done, P, setS]);
 
   // What the globe shows, rebuilt from the state.
   const sync = useCallback((opts = {}) => {
@@ -351,54 +412,95 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   const legShown = s.phase === 'reveal' ? s.res.length - 1 : Math.min(s.leg, n - 1);
   const LL = P.legs[legShown];
 
-  return (
-    <div className={'cmn' + (onStage ? '' : ' off')} ref={rootRef}>
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+  const cardEl = (!done || !onStage) ? (
+    <div className="cmn-card">
+      <div className="cmn-eb">{legShown === n - 1 ? 'Final leg' : `Leg ${legShown + 1} of ${n}`} · Last seen: <span>{lastSeen(P, legShown).name}</span></div>
+      {s.phase === 'reveal' && onStage && !done && !desk ? null : (
+        <ul className="cmn-tips">
+          {LL.tips.slice(0, done ? 3 : tipsShown).map((t, k, arr) => {
+            const typed = !(legShown < typedFrom.current.leg || (legShown === typedFrom.current.leg && k < typedFrom.current.tips));
+            const old = onStage && !done && !desk && k < arr.length - 1 && openTip !== k;
+            return (
+              <li key={`${legShown}-${k}`} className={old ? 'old' : ''} onClick={old ? () => setOpenTip(k) : undefined}>
+                <span className={'cmn-tag t' + k}>{TIP_TAGS[k]}</span><TypedTip text={t} animate={typed && !done} />
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {/* THE NEXT TIP SITS WITH THE TIPS (owner, 2026-11-08), so it is always on screen. */}
+      {active && !done && s.phase === 'play' && s.tips < 3 ? (
+        <button type="button" className="cmn-more" onClick={() => setS((st) => (st.tips < 3 && st.phase === 'play' ? { ...st, tips: st.tips + 1 } : st))}>
+          + {TIP_TAGS[s.tips]} tip <small>&#8722;150 points</small>
+        </button>
+      ) : null}
+    </div>
+  ) : null;
+  const resEl = res ? (
+    <div className="cmn-res" key={'r' + s.res.length}>
+      <div className="big">+{fmt(res.pts)}</div>
+      <div className="sub"><b>{LL.name}</b><br />{fmt(res.km)} km away{res.tips > 1 ? ` · ${res.tips} tips` : ''}</div>
+      <div className="grade">{grade(res.km)}</div>
+    </div>
+  ) : null;
+  const doneNote = done && !held && onStage ? (
+    <div className="cmn-donenote">{s.res.length === n ? `Case closed: ${fmt(total)} points` : `${fmt(total)} points before the trail went cold`}</div>
+  ) : null;
+  const stolen = String(P.stolen || '');
+  const side = desk ? (
+    <div className="cmn-side" key="side">
+      <div className="cmn-who">
+        <div className="cmn-mug" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#c4e08a" strokeWidth="1.6" strokeLinecap="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4.5 4.5-7 8-7s7 2.5 8 7" /></svg></div>
+        <div>
+          <div className="cmn-who-eb">Case {String(P.num).padStart(3, '0')} · Suspect</div>
+          <div className="cmn-who-n">{P.suspect}</div>
+          <div className="cmn-who-s">Stole {stolen.charAt(0).toLowerCase() + stolen.slice(1)}</div>
+        </div>
+      </div>
       <div className="cmn-strip">
         <div className="cmn-legs">{P.legs.map((_, i) => <i key={i} className={(i < s.res.length ? 'd' : '') + (i === s.leg && !done && s.phase === 'play' ? ' c' : '')}>{i + 1}</i>)}</div>
-        <div className="cmn-pts"><b>{fmt(total)}</b> points</div>
+        <div className="cmn-pts"><b>{fmt(total)}</b> / {fmt(maxPoints(n))} points</div>
       </div>
+      {cardEl}
+      {resEl}
+      {doneNote}
+      <div className="cmn-trail">
+        <div className="cmn-trail-h">Her trail</div>
+        <div className="cmn-trow"><span><b>Start</b> · {P.start.name}</span><em>Case opened</em></div>
+        {s.res.map((r, i) => (
+          <div className="cmn-trow" key={i}><span><b>Leg {i + 1}</b> · {P.legs[i].name}</span><em>+{fmt(r.pts)}</em></div>
+        ))}
+        {!done && s.phase === 'play' ? <div className="cmn-trow dim"><span><b>Leg {s.leg + 1}</b> · ?</span><em>{s.guess ? 'Pin dropped' : 'Your pin'}</em></div> : null}
+      </div>
+      <CarmenTools P={P} s={s} setS={setS} active={active && !done} inSide />
+    </div>
+  ) : null;
+
+  return (
+    <div className={'cmn' + (onStage ? '' : ' off') + (desk ? ' dk' : '')} ref={rootRef}>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      {side}
+      {desk ? null : (
+        <div className="cmn-strip" key="strip">
+          <div className="cmn-legs">{P.legs.map((_, i) => <i key={i} className={(i < s.res.length ? 'd' : '') + (i === s.leg && !done && s.phase === 'play' ? ' c' : '')}>{i + 1}</i>)}</div>
+          <div className="cmn-pts"><b>{fmt(total)}</b> points</div>
+        </div>
+      )}
 
       {/* THE GLOBE RESTS UNDER THE CLUES (owner, 2026-11-08: "very small on
           mobile ... maybe resting under the clues"). The region takes all the
           height the column has; the globe sits at its foot as large as the
-          width allows, and the clue card floats over its top. */}
-      <div className="cmn-region" ref={regionRef}>
-        <svg ref={svgRef} className="cmn-svg" aria-label="Globe. Drag to spin, tap to drop your pin." role="img" />
+          width allows, and the clue card floats over its top. On the desk the
+          region is the dark panel and the clues live in the dossier. */}
+      <div className="cmn-region" ref={regionRef} key="region">
+        <svg ref={svgRef} className="cmn-svg" aria-label={desk ? 'Globe. Drag to spin, scroll to zoom, click to drop your pin.' : 'Globe. Drag to spin, tap to drop your pin.'} role="img" />
         {failed ? <div className="cmn-fail">The globe did not load. Check your connection and reload.</div> : null}
-        <div className="cmn-over" ref={overRef}>
-          {!done || !onStage ? (
-            <div className="cmn-card">
-              <div className="cmn-eb">{legShown === n - 1 ? 'Final leg' : `Leg ${legShown + 1} of ${n}`} · Last seen: <span>{lastSeen(P, legShown).name}</span></div>
-              {s.phase === 'reveal' && onStage && !done ? null : (
-                <ul className="cmn-tips">
-                  {LL.tips.slice(0, done ? 3 : tipsShown).map((t, k, arr) => {
-                    const typed = !(legShown < typedFrom.current.leg || (legShown === typedFrom.current.leg && k < typedFrom.current.tips));
-                    const old = onStage && !done && k < arr.length - 1 && openTip !== k;
-                    return (
-                      <li key={`${legShown}-${k}`} className={old ? 'old' : ''} onClick={old ? () => setOpenTip(k) : undefined}>
-                        <span className={'cmn-tag t' + k}>{TIP_TAGS[k]}</span><TypedTip text={t} animate={typed && !done} />
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-              {/* THE NEXT TIP SITS WITH THE TIPS (owner, 2026-11-08), so it is always on screen. */}
-              {active && !done && s.phase === 'play' && s.tips < 3 ? (
-                <button type="button" className="cmn-more" onClick={() => setS((st) => (st.tips < 3 && st.phase === 'play' ? { ...st, tips: st.tips + 1 } : st))}>
-                  + {TIP_TAGS[s.tips]} tip <small>&#8722;150 points</small>
-                </button>
-              ) : null}
-            </div>
-          ) : null}
-          {res ? (
-            <div className="cmn-res" key={'r' + s.res.length}>
-              <div className="big">+{fmt(res.pts)}</div>
-              <div className="sub"><b>{LL.name}</b><br />{fmt(res.km)} km away{res.tips > 1 ? ` · ${res.tips} tips` : ''}</div>
-              <div className="grade">{grade(res.km)}</div>
-            </div>
-          ) : null}
-        </div>
+        {desk ? null : (
+          <div className="cmn-over" ref={overRef}>
+            {cardEl}
+            {resEl}
+          </div>
+        )}
         {active && !done ? (
           <div className="cmn-zoom">
             <button type="button" aria-label="Zoom in" onClick={() => globe.current && globe.current.zoomBy(1.6)}>+</button>
@@ -406,13 +508,11 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
           </div>
         ) : null}
         <div className="cmn-hint" style={{ opacity: (hint && active && !done && s.phase === 'play' && !s.guess) || busy ? 1 : 0 }}>
-          {busy ? 'Tracking her flight' : 'Drag to spin · tap to drop your pin'}
+          {busy ? 'Tracking her flight' : desk ? 'Drag to spin · scroll to zoom · click to drop your pin' : 'Drag to spin · tap to drop your pin'}
         </div>
       </div>
 
-      {done && !held && onStage ? (
-        <div className="cmn-donenote">{s.res.length === n ? `Case closed: ${fmt(total)} points` : `${fmt(total)} points before the trail went cold`}</div>
-      ) : null}
+      {desk ? null : doneNote}
 
       <Curtain show={curtain === 'file'} onSkip={() => skipRef.current && skipRef.current()}><CaseFile P={P} /></Curtain>
       <Curtain show={curtain === 'leg'} onSkip={() => skipRef.current && skipRef.current()}><LegCard P={P} leg={s.leg} /></Curtain>
@@ -430,32 +530,25 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   );
 }
 
-// The buttons under the globe (PlayStage `bottom`).
-export function CarmenTools({ P, s, setS, active }) {
+// The buttons under the globe (PlayStage `bottom`). On the desk they sit at
+// the foot of the dossier instead (inSide), and the stage's copy steps aside.
+export function CarmenTools({ P, s, setS, active, inSide = false }) {
+  const desk = useDesk();
   if (!active) return null;
+  if (desk && !inSide) return null;
   const n = P.legs.length;
   if (s.phase === 'play') {
-    const L = P.legs[s.leg];
-    const lock = () => setS((st) => {
-      if (st.phase !== 'play' || !st.guess) return st;
-      const km = Math.round(kmBetween(st.guess, L.ll));
-      const pts = legPoints(km, st.tips);
-      return { ...st, phase: 'reveal', res: [...st.res, { km, pts, tips: st.tips, g: st.guess }] };
-    });
+    const label = s.guess ? (desk ? 'Lock in pin · Enter' : 'Lock in pin') : (desk ? 'Click the globe to drop a pin' : 'Tap the globe to drop a pin');
     return (
       <div className="cmn-tools">
-        <button type="button" className="cmn-btn pri" disabled={!s.guess} onClick={lock}>{s.guess ? 'Lock in pin' : 'Tap the globe to drop a pin'}</button>
+        <button type="button" className="cmn-btn pri" disabled={!s.guess} onClick={() => lockIn(P, setS)}>{label}</button>
       </div>
     );
   }
   const last = s.res.length >= n;
   return (
     <div className="cmn-tools">
-      <button type="button" className="cmn-btn pri wide" onClick={() => setS((st) => {
-        if (st.phase !== 'reveal') return st;
-        if (st.res.length >= n) return { ...st, closed: true };
-        return { ...st, phase: 'play', leg: st.res.length, tips: 1, guess: null };
-      })}>{last ? 'See how it ended' : 'Next leg'}</button>
+      <button type="button" className="cmn-btn pri wide" onClick={() => nextLeg(P, setS)}>{(last ? 'See how it ended' : 'Next leg') + (desk ? ' · Enter' : '')}</button>
     </div>
   );
 }
@@ -571,4 +664,33 @@ const CSS = `
 .cmn-title{text-align:center;font-size:17px;font-weight:800;margin:10px 0 4px;opacity:0;transition:opacity .4s;}
 .cmn-title.on{opacity:1;}
 @media (prefers-reduced-motion:reduce){.cmn *{animation:none !important;transition:none !important;}}
+
+/* THE DESK LAYOUT (owner, 2026-11-09, mockup B). Only .cmn.dk, set from 1000px
+   wide on the stage, so the phone layout above is untouched. */
+.cmn.dk{display:grid;grid-template-columns:minmax(340px,400px) minmax(0,1fr);gap:20px;max-width:none;min-height:min(640px, calc(100dvh - 240px));align-items:stretch;}
+.cmn.dk .cmn-side{display:flex;flex-direction:column;gap:12px;min-height:0;min-width:0;}
+.cmn-who{display:flex;gap:14px;align-items:center;border:1px solid var(--pst-ink,#16181d);border-radius:4px 16px 16px 16px;background:var(--pst-pale,#eef6dc);padding:14px 16px;color:var(--pst-ink,#16181d);}
+.cmn-mug{width:52px;height:52px;flex:none;border-radius:50%;background:#16181d;display:grid;place-items:center;}
+.cmn-who-eb{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.75;}
+.cmn-who-n{font-size:20px;font-weight:800;letter-spacing:-.01em;line-height:1.2;}
+.cmn-who-s{font-size:13px;font-weight:600;opacity:.8;}
+.cmn.dk .cmn-card{padding:14px 16px;-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--pst-bg,#fff);flex:1 1 auto;min-height:0;overflow-y:auto;}
+.cmn.dk .cmn-tips{gap:12px;margin-top:12px;}
+.cmn.dk .cmn-tips li{font-size:15.5px;line-height:1.55;}
+.cmn.dk .cmn-more{min-height:46px;margin-top:14px;}
+.cmn.dk .cmn-res{box-shadow:none;}
+.cmn-trail{display:flex;flex-direction:column;gap:5px;flex:none;}
+.cmn-trail-h{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pst-mute,#4a4f58);margin-bottom:2px;}
+.cmn-trow{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;line-height:1.35;}
+.cmn-trow span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cmn-trow em{font-style:normal;font-weight:700;color:var(--pst-mute,#4a4f58);flex:none;font-variant-numeric:tabular-nums;}
+.cmn-trow.dim{color:var(--pst-mute,#4a4f58);}
+.cmn.dk .cmn-tools{max-width:none;margin:0;}
+.cmn.dk .cmn-btn{min-height:54px;font-size:16px !important;}
+.cmn.dk .cmn-region{min-height:520px;border:1px solid var(--pst-ink,#16181d);border-radius:16px;overflow:hidden;background:radial-gradient(ellipse at 50% 46%,#262e38 0%,#12161b 62%,#0b0e12 100%);}
+.pst.inl .cmn.dk .cmn-region{height:auto;flex:1 1 auto;}
+.cmn.dk .cmn-svg{-webkit-mask-image:none;mask-image:none;}
+.cmn.dk .cmn-zoom{top:16px;right:16px;bottom:auto;gap:8px;}
+.cmn.dk .cmn-zoom button{width:40px;height:40px;border-color:rgba(255,255,255,.4);background:rgba(0,0,0,.3);color:#fff;}
+.cmn.dk .cmn-hint{left:18px;bottom:14px;transform:none;background:transparent;color:rgba(255,255,255,.72);padding:0;font-size:13px;}
 `;

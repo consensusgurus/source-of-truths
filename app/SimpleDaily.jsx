@@ -333,7 +333,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
   // it when it arrives, app/StageHost.jsx). See the board swaps it for the
   // board drawn in the page, as Mahj and Scour do.
   const stage = g.t0 && (playing || !revealed) ? (
-    <PlayStage wide={!!GAME.wide} bg={gameColor(KEY)} label={NAME}
+    <PlayStage wide={!!GAME.wide} full={!!GAME.full} bg={gameColor(KEY)} label={NAME}
       eyebrow={GAME.eyebrow(PUZZLE, g.s, { sundayLabel })}
       top={<Board {...boardProps} />}
       bottom={GAME.tools ? GAME.tools({ ...boardProps, active: started }) : null}

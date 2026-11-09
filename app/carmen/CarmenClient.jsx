@@ -24,7 +24,7 @@ const gotHer = (P, s) => s.res.length === P.legs.length && caught(s.res[s.res.le
 const square = (r) => (!r ? '⬜' : r.pts >= 800 ? '🟩' : r.pts >= 400 ? '🟨' : '🟥');
 
 const GAME = {
-  key: 'carmen', name: 'Carmen', cat: 'Geography', miss: 'tips', wide: true,
+  key: 'carmen', name: 'Carmen', cat: 'Geography', miss: 'tips', wide: true, full: true,
   fresh: () => ({ leg: 0, tips: 1, guess: null, phase: 'play', res: [], closed: false }),
   validSave: (P, s) => Array.isArray(s.res) && typeof s.leg === 'number' && s.res.length <= P.legs.length,
   touched: (s) => s.res.length > 0 || s.tips > 1 || !!s.guess,
