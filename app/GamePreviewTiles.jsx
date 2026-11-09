@@ -259,8 +259,8 @@ const Suffice = () => (
     <path d="M108 70h80" className="sm3" /><path d="M140 66l6 6l12 -12" className="s3" /></g>
 );
 const Ergo = () => (
-  <g>{['must', 'could', 'not'].map((t, i) => <g key={t}><rect x={108 + i * 27} y={30} width={24} height={48} rx={3} className={i === 0 ? 'm' : 'w'} />
-    <T x={120 + i * 27} y={74} s={8}>{t}</T>{[0, 1].map((j) => <rect key={j} x={112 + i * 27} y={36 + j * 12} width={16} height={8} rx={2} className="d" />)}</g>)}
+  <g>{['must', 'could', 'not'].map((t, i) => <g key={t}><rect x={106 + i * 29} y={30} width={26} height={48} rx={3} className={i === 0 ? 'm' : 'w'} />
+    <T x={119 + i * 29} y={72} s={6.5}>{t}</T>{[0, 1].map((j) => <rect key={j} x={111 + i * 29} y={36 + j * 12} width={16} height={8} rx={2} className="d" />)}</g>)}
     <rect x={130} y={6} width={36} height={14} rx={3} className="d" /><path d="M148 20v6" className="s2" /></g>
 );
 const Docket = () => (
@@ -277,7 +277,7 @@ const Lamps = () => (
     {[[121, 15], [157, 69]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={5} className="d" />)}</g>
 );
 const Plot = () => (
-  <g><rect x={112} y={6} width={72} height={72} className="w" /><path d="M136 6v48M112 54h72M160 6v48M136 30h24" className="s3" />
+  <g><rect x={112} y={6} width={72} height={72} className="w" /><path d="M136 7.5v46.5M113.5 54h69M160 7.5v46.5M136 30h24" className="s3" />
     {[[124, 34, 6], [148, 22, 2], [148, 46, 2], [172, 34, 6], [148, 70, 6]].map(([x, y, n], i) => <T key={i} x={x} y={y} s={12}>{n}</T>)}</g>
 );
 const Paths = () => (
@@ -323,7 +323,7 @@ const Chomp = () => (
     <path d="M166 51l-8 -6a9 9 0 1 0 0 12z" className="d" />{[[121, 15], [175, 15], [121, 69]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={4} className="m" />)}</g>
 );
 const Hedge = () => (
-  <g>{cells(112, 6, 5, 5, 18, (x, y, c, r, i) => <circle key={i} cx={x} cy={y} r={2} className="m" />)}
+  <g>{cells(112, 6, 5, 5, 18, (x, y, c, r, i) => (r === 4 && c > 2 ? null : <circle key={i} cx={x} cy={y} r={2} className="m" />))}
     <path d="M112 6h36v18h18v-18h18v54h-36v18h-36v-36h18v-18h-18z" className="s3" />
     {[[121, 18, 3], [157, 36, 2], [139, 54, 1], [175, 18, 3], [121, 72, 2]].map(([x, y, n], i) => <T key={i} x={x} y={y} s={11}>{n}</T>)}</g>
 );
@@ -350,7 +350,7 @@ const Roll = () => (
 );
 const PhotoTile = ({ x, y, sz, i, hot, rot = 0 }) => (
   <g transform={rot ? `rotate(${rot} ${x + sz / 2} ${y + sz / 2})` : undefined}><rect x={x + 1} y={y + 1} width={sz - 2} height={sz - 2} rx={3} className={hot ? 'd' : 'w'} />
-    <path d={`M${x + 4} ${y + sz - 5}l${sz * 0.3} ${-sz * 0.35}l${sz * 0.2} ${sz * 0.2}l${sz * 0.15} -${sz * 0.12}l${sz * 0.2} ${sz * 0.27}`} className={hot ? 'sw' : 'sm'} /></g>
+    <path d={`M${x + 4.5} ${y + sz - 5}l${sz * 0.27} ${-sz * 0.35}l${sz * 0.18} ${sz * 0.2}l${sz * 0.13} -${sz * 0.12}l${sz * 0.17} ${sz * 0.27}`} className={hot ? 'sw' : 'sm'} /></g>
 );
 const Swap = () => (
   <g>{cells(112, 6, 3, 3, 24, (x, y, c, r, i) => <PhotoTile key={i} x={x} y={y} sz={24} i={i} hot={i === 1 || i === 6} />)}
@@ -386,7 +386,7 @@ const Back = () => (
 const Calc = () => (
   <g>{cells(112, 6, 3, 3, 24, (x, y, c, r, i) => <g key={i}><rect x={x + 2} y={y + 2} width={20} height={20} rx={4} className={[0, 1, 4, 7, 8].includes(i) ? 'm' : 'w'} />
     <T x={x + 12} y={y + 16} s={11}>{['4', '+', '9', '×', '2', '−', '3', '6', '='][i]}</T></g>)}
-    <path d="M124 18h24v24v24h24" className="s3" /></g>
+    <path d="M135 18h2M148 29v2M148 53v2M159 66h2" className="s3" /></g>
 );
 const Series = () => (
   <g>{['3', '7', '11', '15', '19', '?'].map((v, i) => <Tile key={i} x={110 + (i % 3) * 27} y={14 + Math.floor(i / 3) * 30} ch={v} sz={24} s={11} on={i === 5} />)}</g>
@@ -515,12 +515,12 @@ const Babel = () => (
 );
 const Glyph = () => (
   <g>{cells(112, 6, 4, 4, 18, (x, y, c, r, i) => ([5, 10].includes(i) ? <rect key={i} x={x} y={y} width={18} height={18} className="d" />
-    : <g key={i}><rect x={x} y={y} width={18} height={18} className="w" /><T x={x + 4} y={y + 7} s={6} a="start">{(i * 7) % 26 + 1}</T>{i === 0 || i === 6 ? <T x={x + 10} y={y + 15} s={10}>{i ? 'E' : 'T'}</T> : null}</g>))}</g>
+    : <g key={i}><rect x={x} y={y} width={18} height={18} className="w" /><T x={x + 2.5} y={y + 6} s={5} a="start">{(i * 7) % 26 + 1}</T>{i === 0 || i === 6 ? <T x={x + 11} y={y + 15.5} s={9}>{i ? 'E' : 'T'}</T> : null}</g>))}</g>
 );
 const Origin = () => (
   <g><rect x={120} y={6} width={56} height={20} rx={5} className="d" /><Bar x={130} y={14} w={36} k="wf" />
     <path d="M148 26v12M148 38c-12 0 -24 4 -24 16M148 38c12 0 24 4 24 16" className="s2" />
-    <rect x={108} y={54} width={34} height={18} rx={4} className="m" /><T x={125} y={67} s={9}>Latin</T><rect x={154} y={54} width={34} height={18} rx={4} className="w" /><T x={171} y={67} s={9}>Norse</T></g>
+    <rect x={104} y={54} width={40} height={18} rx={4} className="m" /><T x={124} y={66.5} s={9}>Latin</T><rect x={152} y={54} width={40} height={18} rx={4} className="w" /><T x={172} y={66.5} s={9}>Norse</T></g>
 );
 const Warmer = () => (
   <g><path d="M140 10a8 8 0 0 1 16 0v40a14 14 0 1 1 -16 0z" className="w" /><path d="M144 30h8v22a10 10 0 1 1 -8 0z" className="d" />
@@ -625,7 +625,7 @@ const Swindle = () => (
   <g><Board /><King x={121} y={52} k="w" /><King x={175} y={34} /><rect x={140} y={56} width={36} height={20} rx={4} className="d" /><T x={158} y={71} s={13} c="tw">½</T></g>
 );
 const Queen = () => (
-  <g><Board /><Pawn x={130} y={60} /><path d="M130 46v-22" className="s3" /><path d="M124 30l6 -8l6 8" className="s3" /><Crown x={166} y={14} /><rect x={148} y={6} width={18} height={18} className="sm3" /></g>
+  <g><Board /><Pawn x={130} y={60} /><path d="M130 46v-22" className="s3" /><path d="M124 30l6 -8l6 8" className="s3" /><Crown x={157} y={16} /><rect x={149.5} y={7.5} width={15} height={15} rx={1} className="s2" /></g>
 );
 const Turn = () => {
   const blk = new Set([0, 5, 6, 10, 13]), wht = new Set([1, 4, 9, 11, 14]);
@@ -669,7 +669,7 @@ const Sweep = () => (
     const open = [0, 1, 4, 5, 8, 2].includes(i), n = { 1: 1, 5: 2, 8: 1, 2: 1 }[i];
     return <g key={i}><rect x={x} y={y} width={18} height={18} className={open ? 'w' : 'hm'} />{n ? <T x={x + 9} y={y + 13} s={11}>{n}</T> : null}
       {i === 9 ? <path d={`M${x + 6} ${y + 15}v-11l8 3.5l-8 3.5`} className="d" /> : null}</g>;
-  })}<path d="M148 80v4" className="s2" /></g>
+  })}</g>
 );
 const Dario = () => (
   <g><path d="M108 74h80" className="s3" /><rect x={140} y={52} width={24} height={7} rx={2} className="m" /><rect x={162} y={32} width={24} height={7} rx={2} className="m" />

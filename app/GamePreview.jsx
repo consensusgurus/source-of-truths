@@ -65,7 +65,14 @@ function Grid({ n = 9, v = 'suds', color = false }) {
     (i % bw ? thin : bold).push(<path key={'v' + i} d={`M${x + i * sz} ${y}v${S}`} />);
     (i % bh ? thin : bold).push(<path key={'h' + i} d={`M${x} ${y + i * sz}h${S}`} />);
   }
-  const dig = n === 16 || v === 'cages' || v === 'polka' || v === 'rim' ? [] : [[0, 0, 5], [2, 1, 3], [4, 4, 7], [7, 2, 1], [1, 6, 9], [6, 7, 4], [8, 8, 2], [3, 5, 8]].filter(([c, r]) => c < n && r < n);
+  const DIG = v === 'diag'
+    ? [[1, 0, 5], [3, 1, 3], [5, 4, 7], [7, 2, 1], [0, 6, 9], [6, 8, 4], [8, 7, 2], [2, 5, 8]]
+    : [[0, 0, 5], [2, 1, 3], [4, 4, 7], [7, 2, 1], [1, 6, 9], [6, 7, 4], [8, 8, 2], [3, 5, 8]];
+  // Cells a variant draws through (a line, a bulb, a cage label). Givens and
+  // colour squares skip them, so no mark ever sits on a printed digit.
+  const occ = new Set();
+  const take = (pts) => { for (let k = 1; k < pts.length; k++) { const [a, b] = pts[k - 1], [c2, d2] = pts[k]; const st = Math.max(Math.abs(c2 - a), Math.abs(d2 - b)) * 2 || 1; for (let t = 0; t <= st; t++) occ.add(Math.round(a + (c2 - a) * t / st) + ',' + Math.round(b + (d2 - b) * t / st)); } };
+  const dig0 = n === 16 || v === 'cages' || v === 'polka' || v === 'rim' ? [] : DIG.filter(([c, r]) => c < n && r < n);
   const deco = [];
   // Positions are written for 9x9; on a 6x6 they wrap, so a twin keeps its
   // parent's decoration inside its own smaller grid.
@@ -74,27 +81,31 @@ function Grid({ n = 9, v = 'suds', color = false }) {
   // 2026-11-08). The 6x6 twins get their own positions: wrapping the 9x9 ones
   // made lines double back, clues stack and cages hang off the edge.
   const six = n === 6;
-  if (v === 'cages') { const c2 = six ? 3 : 4, w2 = six ? 2 : 3; deco.push(<path key="c" className="s2" d={`M${x + 2} ${y + 2}h${sz * 2 - 4}v${sz - 4}h${-sz + 0}v${sz}h${-sz + 4}z M${x + sz * c2 + 2} ${y + sz * 3 + 2}h${sz * w2 - 4}v${sz - 4}h${-sz * w2 + 4}z`} />); deco.push(<T key="c1" x={x + 6} y={y + 8} s={6}>15</T>); deco.push(<T key="c2" x={x + sz * c2 + 6} y={y + sz * 3 + 8} s={6}>{six ? 7 : 12}</T>); }
+  if (v === 'cages') { const c2 = six ? 3 : 4, w2 = six ? 2 : 3, q = six ? 2 : 1.5; deco.push(<path key="c" className="s2" style={six ? undefined : { strokeWidth: 1.2 }} d={`M${x + q} ${y + q}h${sz * 2 - 2 * q}v${sz - 2 * q}h${-sz}v${sz}h${-sz + 2 * q}z M${x + sz * c2 + q} ${y + sz * 3 + q}h${sz * w2 - 2 * q}v${sz - 2 * q}h${-sz * w2 + 2 * q}z`} />); // Sums only where a cell is big enough to read them (the 6x6 twin).
+    if (six) { deco.push(<T key="c1" x={x + 3.4} y={y + 3.4 + sz * .42} s={sz * .5} a="start">15</T>); deco.push(<T key="c2" x={x + sz * c2 + 3.4} y={y + sz * 3 + 3.4 + sz * .42} s={sz * .5} a="start">7</T>); } }
   if (v === 'sando') for (let r = 0; r < n; r += 2) deco.push(<T key={r} x={x - 9} y={cy(r) + 3} s={8}>{[14, 9, 23, 0, 17][r / 2]}</T>);
-  if (v === 'arrow') { const [a, b, e] = six ? [3, 3, 5] : [4, 4, 6]; deco.push(<g key="a"><circle cx={cx(1)} cy={cy(1)} r={sz * .38} className="sm" /><path className="sm" d={`M${cx(1) + 3} ${cy(1) + 3}L${cx(a)} ${cy(b)}L${cx(e)} ${cy(b)}`} /></g>); }
+  if (v === 'arrow') { const pts = six ? [[4, 1], [4, 2], [5, 3]] : [[5, 1], [5, 3], [7, 5]]; take(pts); const [p0, ...rest] = pts; deco.push(<g key="a"><circle cx={cx(p0[0])} cy={cy(p0[1])} r={sz * .38} className="sm" /><path className="sm" d={`M${cx(p0[0])} ${cy(p0[1]) + sz * .38}` + rest.map(([c, r]) => `L${cx(c)} ${cy(r)}`).join('')} /></g>); }
+  if (v === 'knight') take([[2, 2], [2, 4], [3, 4]]);
   if (v === 'knight') deco.push(<path key="k" className="sm" d={`M${cx(2)} ${cy(2)}L${cx(2)} ${cy(4)}L${cx(3)} ${cy(4)}`} />);
+  if (v === 'diag') for (let k = 0; k < n; k++) { occ.add(k + ',' + k); occ.add((n - 1 - k) + ',' + k); }
   if (v === 'diag') deco.push(<path key="d" className="sm" d={`M${x} ${y}L${x + S} ${y + S}M${x + S} ${y}L${x} ${y + S}`} />);
   if (v === 'window') [[1, 1], [5, 1], [1, 5], [5, 5]].forEach(([c, r], i) => deco.push(<rect key={i} x={x + c * sz} y={y + r * sz} width={sz * 3} height={sz * 3} className="m" opacity=".55" />));
   // A '>' sits on the line between column c and c + 1.
   if (v === 'sumo') (six ? [[1, 0], [3, 2], [0, 3], [4, 5]] : [[1, 0], [4, 3], [6, 6], [5, 5]]).forEach(([c, r], i) => deco.push(<T key={i} x={x + (c + 1) * sz} y={cy(r) + 3} s={8}>{'>'}</T>));
-  if (v === 'five' || v === 'racecar') { const pts = six ? [[0, 5], [1, 3], [2, 4], [4, 2], [5, 3]] : [[0, 7], [2, 5], [3, 6], [5, 3], [7, 4]]; deco.push(<path key="f" className={v === 'five' ? 's2' : 'sm5'} d={pts.map(([c, r], i) => `${i ? 'L' : 'M'}${cx(c)} ${cy(r)}`).join('')} />); if (v === 'racecar') { const a = pts[0], b = pts[pts.length - 1]; deco.push(<rect key="ra" x={cx(a[0]) - sz * .35} y={cy(a[1]) - sz * .35} width={sz * .7} height={sz * .7} rx={1.5} className="d" />); deco.push(<rect key="rb" x={cx(b[0]) - sz * .35} y={cy(b[1]) - sz * .35} width={sz * .7} height={sz * .7} rx={1.5} className="d" />); } }
-  if (v === 'mercury') { const [bc, br, tr, ec] = six ? [1, 4, 2, 3] : [2, 6, 2, 4]; deco.push(<g key="m"><circle cx={cx(bc)} cy={cy(br)} r={sz * .42} className="mb" /><path className="sm3" d={`M${cx(bc)} ${cy(br)}V${cy(tr)}H${cx(ec)}`} /></g>); }
+  if (v === 'five' || v === 'racecar') { const pts = six ? [[0, 5], [1, 3], [2, 4], [4, 2], [5, 3]] : [[0, 4], [2, 2], [3, 3], [5, 1], [6, 3]]; take(pts); deco.push(<path key="f" className={v === 'five' ? 's2' : 'sm5'} d={pts.map(([c, r], i) => `${i ? 'L' : 'M'}${cx(c)} ${cy(r)}`).join('')} />); if (v === 'racecar') { const a = pts[0], b = pts[pts.length - 1]; deco.push(<rect key="ra" x={cx(a[0]) - sz * .35} y={cy(a[1]) - sz * .35} width={sz * .7} height={sz * .7} rx={1.5} className="d" />); deco.push(<rect key="rb" x={cx(b[0]) - sz * .35} y={cy(b[1]) - sz * .35} width={sz * .7} height={sz * .7} rx={1.5} className="d" />); } }
+  if (v === 'mercury') { const [bc, br, tr, ec] = six ? [1, 4, 2, 3] : [2, 6, 2, 4]; take([[bc, br], [bc, tr], [ec, tr]]); deco.push(<g key="m"><circle cx={cx(bc)} cy={cy(br)} r={sz * .42} className="mb" /><path className="sm3" d={`M${cx(bc)} ${cy(br)}V${cy(tr)}H${cx(ec)}`} /></g>); }
   // Three edge-clue sudokus told apart (2026-11-08: "reuses far too many"):
   // Towers draws little towers of the clue's height, Frame two-digit sums on
   // two sides, Rim a set of three digits stacked at each end.
   const cols = six ? [0, 2, 3, 5] : [0, 2, 4, 6, 8];
+  const wide = six ? [0, 2, 4] : [0, 2, 4, 6, 8];
   if (v === 'towers') cols.forEach((c, i) => { const h = [3, 1, 4, 2, 5][i] * 1.6; deco.push(<rect key={'t' + i} x={cx(c) - sz * 0.3} y={y - 1.5 - h} width={sz * 0.6} height={h} className="d" />); deco.push(<T key={'b' + i} x={cx(c)} y={y + S + 7} s={7}>{[2, 4, 1, 3, 2][i]}</T>); });
-  if (v === 'frame') cols.forEach((c, i) => { deco.push(<T key={'t' + i} x={cx(c)} y={y - 2} s={6}>{[15, 7, 22, 11, 18][i]}</T>); deco.push(<T key={'l' + i} x={x - 6} y={cy(c) + 2} s={6}>{[12, 24, 9, 16, 13][i]}</T>); });
-  if (v === 'rim') cols.slice(0, 3).forEach((c, i) => { [0, 1, 2].forEach((j) => deco.push(<T key={'t' + i + j} x={cx(c * 2 > n ? c : c)} y={y - 2 - (2 - j) * 6} s={5.5}>{['159', '268', '347'][i][j]}</T>)); });
+  if (v === 'frame') wide.forEach((c, i) => { deco.push(<T key={'t' + i} x={cx(c)} y={y - 2} s={6}>{[15, 7, 22, 11, 18][i]}</T>); deco.push(<T key={'l' + i} x={x - 6} y={cy(c) + 2} s={6}>{[12, 24, 9, 16, 13][i]}</T>); });
+  if (v === 'rim') (six ? [0, 3, 5] : [0, 4, 8]).forEach((c, i) => { [0, 1, 2].forEach((j) => deco.push(<T key={'t' + i + j} x={cx(c)} y={y - 2 - (2 - j) * 5.5} s={5.5}>{['159', '268', '347'][i][j]}</T>)); });
   if (v === 'quilt') deco.push(<path key="q" className="m" opacity=".5" d={`M${x} ${y}h${sz * 4}v${sz * 2}h${-sz * 2}v${sz * 2}h${-sz * 2}z M${x + sz * 5} ${y + sz * 5}h${sz * 4}v${sz * 4}h${-sz * 2}v${-sz * 2}h${-sz * 2}z`} />);
   // A dot sits on the line between column c - 1 and c.
   if (v === 'polka') (six ? [[1, 2], [4, 1], [3, 3], [5, 5]] : [[3, 0], [5, 2], [6, 6], [7, 4], [2, 7]]).forEach(([c, r], i) => deco.push(<circle key={i} cx={x + c * sz} cy={cy(r)} r={2} className="d" />));
-  if (v === 'whittle') [[2, 3], [6, 1], [5, 7]].forEach(([c, r], i) => deco.push(<path key={i} className="sm" d={`M${cx(c) - 3} ${cy(r) - 3}l6 6m0 -6l-6 6`} />));
+  if (v === 'whittle') [[2, 3], [5, 1], [4, 7]].forEach(([c, r], i) => deco.push(<path key={i} className="sm" d={`M${cx(c) - 2.2} ${cy(r) - 2.2}l4.4 4.4m0 -4.4l-4.4 4.4`} />));
   return (
     <g>
       <rect x={x} y={y} width={S} height={S} className="w" />
@@ -102,9 +113,9 @@ function Grid({ n = 9, v = 'suds', color = false }) {
       <g className="gl1">{thin}</g><g className="gl2">{bold}</g>
       {deco.filter((e) => !(e && e.props && e.props.className === 'm'))}
       {color
-        ? [[0, 0], [2, 1], [4, 4], [7, 2], [1, 6], [6, 7], [8, 8], [3, 5], [5, 3], [10, 12], [13, 9]].filter(([c, r]) => c < n && r < n)
+        ? (v === 'diag' ? [...DIG, [4, 6], [6, 1]] : [[0, 0], [2, 1], [4, 4], [7, 2], [1, 6], [6, 7], [8, 8], [3, 5], [5, 3], [10, 12], [13, 9]]).filter(([c, r]) => c < n && r < n && !occ.has(c + ',' + r))
           .map(([c, r], i) => <rect key={i} x={x + c * sz + 1} y={y + r * sz + 1} width={sz - 2} height={sz - 2} rx={1.5} className={i % 2 ? 'd' : 'm'} />)
-        : dig.map(([c, r, d], i) => <T key={i} x={cx(c)} y={cy(r) + sz * .3} s={sz * .78}>{d}</T>)}
+        : dig0.filter(([c, r]) => !occ.has(c + ',' + r)).map(([c, r, d], i) => <T key={i} x={cx(c)} y={cy(r) + sz * .3} s={sz * .78}>{d}</T>)}
     </g>
   );
 }
@@ -425,7 +436,7 @@ export default function GamePreview({ gameKey, square = false }) {
       try {
         const b = ref.current && ref.current.getBBox ? ref.current.getBBox() : null;
         if (!b || !b.width || !b.height) return false;
-        const s = Math.max(b.width, b.height) * 1.1 + 4, cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+        const s = Math.max(b.width, b.height) * 1.14 + 7, cx = b.x + b.width / 2, cy = b.y + b.height / 2;
         setVb(`${(cx - s / 2).toFixed(1)} ${(cy - s / 2).toFixed(1)} ${s.toFixed(1)} ${s.toFixed(1)}`);
         return true;
       } catch (e) { return false; }
