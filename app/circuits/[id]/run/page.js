@@ -2,8 +2,9 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import RunClient from './RunClient';
 import ValetRunClient from '../../ValetRunClient';
-import { circuitById, circuitGamesFor, circuitKeysFor, circuitSlotFor, isMarquee, isRunnableCircuit, runEngine, runHref, runGamesFor, RUN_GAMES, JAM_RUN_GAMES, MATH_RUN_GAMES } from '@/lib/circuits';
+import { circuitById, circuitGamesFor, circuitKeysFor, circuitSlotFor, daySpectrumSlots, isMarquee, isRunnableCircuit, runEngine, runHref, runGamesFor, RUN_GAMES, JAM_RUN_GAMES, MATH_RUN_GAMES } from '@/lib/circuits';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
+import { categoryColor, gameCategory } from '@/lib/category-ramp';
 import { SITE_URL } from '@/lib/site';
 import { T } from '@/lib/theme';
 
@@ -444,6 +445,17 @@ export default function CircuitRunPage({ params }) {
   }
 
   if (sections.length < 2) redirect(`/circuits/${encodeURIComponent(id)}`);
+  // A GOOD SPECTRUM EVERY DAY (owner, 2026-11-08): the lineup's colours run in
+  // rainbow order by today's position, skipping any too close to the page's
+  // own colour, instead of each bank keeping its roster colour. Every rampFor
+  // reader in the run (gate, ladder, play screen, scorecard) follows the slot.
+  {
+    const t = {};
+    for (const s of sections) { const c = gameCategory(s.key); if (c) t[c] = (t[c] || 0) + 1; }
+    const top = Object.keys(t).sort((a, b) => t[b] - t[a])[0];
+    const slots = daySpectrumSlots(sections.length, top ? categoryColor(top) : null);
+    sections.forEach((s, i) => { if (slots[i] >= 0) s.slot = slots[i]; });
+  }
 
   return (
     <Suspense fallback={null}>

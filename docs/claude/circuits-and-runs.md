@@ -836,3 +836,12 @@ keep the old deck and rows. Passport's tile shows its four legs (`GATE_TEXT` tak
 list for a run that is one registry game). Details rows now size to their own tiles (`grid-auto-rows:auto`)
 so the tall run row no longer stretches every puzzle row.
 
+**A good spectrum every day (owner, 2026-11-08: "each day we need a good spectrum. shouldn't change
+based on categories").** The quiz runs (gauntlet, triviaencore, english, science, math) no longer colour
+each bank by its roster slot. `daySpectrumSlots(n, ground)` in lib/circuits.js takes the ladder steps in
+rainbow order, drops any within 28 degrees of hue of the run's page colour, spreads n picks across what is
+left, and returns LADDER_RAMP indices; the run page sets each section's `slot` from it, so the gate,
+ladder, play screens and scorecard all follow, and the home's run tile uses the same call. The other
+runs keep plain order (slot = position). Run tile rules are one line, every block above the legs is one
+line, and More Runs drops its headline so its button sits level with the start buttons.
+

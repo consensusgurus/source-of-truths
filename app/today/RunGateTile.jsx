@@ -12,7 +12,7 @@
 // reads as a quiz gauntlet ("Five Quizzes. One Life in Each.").
 
 import { categoryColor, softGround } from '@/lib/category-ramp';
-import { rampFor } from '@/lib/circuits';
+import { rampFor, daySpectrumSlots } from '@/lib/circuits';
 
 const WORD = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
 // One line each (owner, 2026-11-08: "make the long description one row by
@@ -39,6 +39,10 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
   const W = WORD[n] || String(n);
   const hue = cat ? categoryColor(cat) : '#c7cdd6';
   const first = legs[0];
+  // The quiz runs colour their lineup by today's spectrum (lib/circuits
+  // daySpectrumSlots, set in the run page); every other run by plain order.
+  const SPECTRUM_RUNS = ['gauntlet', 'triviaencore', 'english', 'science', 'math'];
+  const slots = SPECTRUM_RUNS.includes(c.id) ? daySpectrumSlots(n, hue) : legs.map((_, i) => i);
   const go = fin ? 'See your results' : c.n ? 'Continue the run' : `Start with ${first ? first.name : 'the run'}`;
   return (
     <a className={'rgt' + (fin ? ' fin' : '') + (plain ? ' rgt-w' : '') + (className ? ' ' + className : '')} href={href}
@@ -48,17 +52,11 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
         <b className="rgt-name">{c.name}</b>
         <span className="rgt-hl">{head(W)}</span>
         <span className="rgt-rule">{rule}</span>
-        {/* More than five legs (the Trivia Gauntlet's seven) take two rows, so
-            every name reads at full size (owner, 2026-11-08). */}
-        <span className={'rgt-legs' + (legs.length > 5 ? ' two' : '')} aria-hidden="true">
-          {(legs.length > 5 ? [legs.slice(0, Math.ceil(legs.length / 2)), legs.slice(Math.ceil(legs.length / 2))] : [legs]).map((row, ri, rows) => (
-            <span key={ri} className="rgt-lrow">
-              {row.map((g) => {
-                const i = legs.indexOf(g);
-                return <span key={g.key} className={'rgt-leg' + (done && done.has(g.key) ? ' on' : '')} style={{ '--lc': softGround(rampFor(i), 0.45) }}>{g.name}</span>;
-              })}
-              {rows.length > 1 && row.length < rows[0].length ? <span className="rgt-leg rgt-lpad" /> : null}
-            </span>
+        {/* ONE ROW ALWAYS (owner, 2026-11-08: "go back to single line with text
+            smaller"): past five legs the names drop a size. */}
+        <span className={'rgt-legs' + (legs.length > 5 ? ' many' : '')} aria-hidden="true">
+          {legs.map((g, i) => (
+            <span key={g.key} className={'rgt-leg' + (done && done.has(g.key) ? ' on' : '')} style={{ '--lc': softGround(rampFor(slots[i]), 0.45) }}>{g.name}</span>
           ))}
         </span>
         <span className="rgt-go">{go}</span>
@@ -85,8 +83,6 @@ export function MoreRunsTile({ rest, open, onToggle, players, colorOf }) {
       <span className="rgt-body">
         <span className="rgt-eye">Daily Runs · {W} more</span>
         <b className="rgt-name">More Runs</b>
-        <span className="rgt-hl">{W} More Runs Today.</span>
-        <span className="rgt-rule">Puzzles back to back, one score.</span>
         <span className="rgt-bands">
           {rest.slice(0, 3).map((c) => (
             <span key={c.id} className="rgt-band" style={{ '--lc': softGround(colorOf(c), 0.45) }}>
@@ -113,6 +109,7 @@ export function BuildRunTile() {
         <b className="rgt-name">Build a Run</b>
         <span className="rgt-hl">Your Puzzles. One Link.</span>
         <span className="rgt-rule">Pick dailies, share one link.</span>
+        <span className="rgt-legs rgt-blank" aria-hidden="true" />
         <span className="rgt-go">Build a Run</span>
       </span>
       <span className="rgt-cs"><span className="ld">Shared with friends</span><span className="ct">One board</span></span>
@@ -129,15 +126,14 @@ export const RGT_CSS = `
 .rgt-body{display:flex;flex-direction:column;flex:1;padding:14px 14px 12px 16px;min-width:0;}
 .rgt-body > *{flex-shrink:0;}
 .rgt-eye{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rgt-name{font-size:26px;font-weight:900;line-height:1.02;letter-spacing:-.02em;margin:4px 0 6px;}
-.rgt-hl{font-size:14px;font-weight:800;line-height:1.25;}
+/* One line for every block above the legs, so tiles in a row stack the same
+   heights and their legs and buttons land level (owner, 2026-11-08). */
+.rgt-name{font-size:26px;font-weight:900;line-height:1.1;letter-spacing:-.02em;margin:4px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rgt-hl{font-size:14px;font-weight:800;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rgt-rule{font-size:12.5px;font-weight:600;line-height:1.35;margin-top:2px;margin-bottom:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rgt-legs{display:flex;flex-direction:column;margin-top:auto;border:1px solid #0b1b2b;border-radius:8px;overflow:hidden;}
-.rgt-lrow{display:flex;height:28px;}
-.rgt-lrow + .rgt-lrow{border-top:1px solid #0b1b2b;}
-.rgt-lpad{background:transparent;}
-/* THE START BUTTONS LINE UP (owner, 2026-11-08): the legs and the button sit
-   at the foot of the body (margin-top:auto), so a name on two lines pushes nothing down. */
+.rgt-legs{display:flex;height:28px;border:1px solid #0b1b2b;border-radius:8px;overflow:hidden;}
+.rgt-blank{border-color:transparent;}
+.rgt-legs.many .rgt-leg{font-size:9.5px;padding:0 1px;letter-spacing:-.01em;}
 .rgt-leg{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;padding:0 3px;background:var(--lc);border-left:1px solid #0b1b2b;
   font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:clip;}
 .rgt-leg:first-child{border-left:0;}
@@ -149,7 +145,7 @@ export const RGT_CSS = `
 .rgt-cs .ld{min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .rgt-cs b,.rgt-cs .ct{font-weight:800;}
 .stage-page:not([data-stage-theme=light]) .rgt{background:color-mix(in srgb, var(--rgc) 18%, #1a2130);color:#e9edf4;border-color:color-mix(in srgb, var(--rgc) 60%, #fff);}
-.stage-page:not([data-stage-theme=light]) .rgt :is(.rgt-legs,.rgt-leg,.rgt-lrow,.rgt-go,.rgt-cs){border-color:color-mix(in srgb, var(--rgc) 60%, #fff);}
+.stage-page:not([data-stage-theme=light]) .rgt :is(.rgt-legs,.rgt-leg,.rgt-go,.rgt-cs){border-color:color-mix(in srgb, var(--rgc) 60%, #fff);}
 .stage-page:not([data-stage-theme=light]) .rgt-leg{background:color-mix(in srgb, var(--lc) 30%, #1a2130);}
 .stage-page:not([data-stage-theme=light]) .rgt-leg.on{background:var(--rgc);color:#0b1b2b;}
 .stage-page:not([data-stage-theme=light]) .rgt-go{color:#0b1b2b;}
@@ -167,10 +163,11 @@ html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt-go{backgrou
 .rgt.rgt-more{--rgc:#0b1b2b;background:#fff;cursor:pointer;}
 .rgt-more .rgt-go{background:#0b1b2b;color:#fff;font:inherit;font-weight:900;font-size:15px;cursor:pointer;width:100%;}
 .rgt-more .rgt-cs{background:#eef1f6;text-decoration:none;color:inherit;}
+/* The list takes the room the headline and rule take on a run tile and sits
+   on the foot, so the More Runs button lands level with the start buttons. */
 .rgt-more .rgt-bands{margin-top:auto;}
-.rgt-more .rgt-body > span.rgt-go{margin-top:auto;}
 .rgt-bands{display:flex;flex-direction:column;border:1px solid #0b1b2b;border-radius:8px;overflow:hidden;}
-.rgt-band{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:4px 10px;background:var(--lc);border-top:1px solid #0b1b2b;font-size:12px;}
+.rgt-band{display:flex;align-items:center;justify-content:space-between;gap:8px;height:22px;box-sizing:border-box;padding:0 10px;background:var(--lc);border-top:1px solid #0b1b2b;font-size:12px;}
 .rgt-band:first-child{border-top:0;}
 .rgt-band b{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rgt-band i{font-style:normal;font-weight:800;display:inline-flex;align-items:center;gap:4px;flex:none;}
