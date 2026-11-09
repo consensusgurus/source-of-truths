@@ -2207,3 +2207,14 @@ from a ResizeObserver (r tucks up to half the card under it, and uses the larges
 as tips arrive). All 339 tips were rewritten for varied openings; `verify-carmen.mjs` now enforces, from 2026-11-09:
 no Evidence tip names money in its first 40 characters, money in at most 40% of Evidence tips, and no two-word opening
 in more than 8% of cities per slot. New pool cities must pass these too.
+
+## Parker, Impound and Junkyard: flick to move (owner, 2026-11-08)
+
+A swipe along a block's groove slides it as far as it will go that way: one move, the same as tapping
+the farthest landing spot. A swipe across the groove or on an empty square does nothing; a boxed-in
+block shakes. Shared as `useFlick(N, onFlick, playing)` in `app/JamLot.jsx`, spread on the element
+whose box is exactly the grid (`.jx-in` on the stage board, `.pk-lot` in JamLot); each client's
+`onFlick(cell, horiz, sign)` picks the longest legal slide from its own `slides`. 18px of travel makes
+a flick, the click after it is swallowed, and the grid takes `touch-action:none` while playing so a
+flick never scrolls the page. Taps work exactly as before.
+

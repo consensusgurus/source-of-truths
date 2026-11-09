@@ -72,7 +72,7 @@ import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
-import JamLot from '../JamLot';
+import JamLot, { useFlick } from '../JamLot';
 import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
 import { useStageLook, isDarkLook } from '@/lib/stage-look';
 import { regionHue, sitePastel } from '@/lib/category-ramp';
@@ -407,6 +407,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
   }, [START, g.moves]);
   const occ = useMemo(() => grid(blocks), [blocks]);
   const slides = useMemo(() => (playing ? legalSlides(blocks) : []), [blocks, playing]);
+  const { lotHandlers: jxFlick } = useFlick(N, onFlick, playing);
 
   // For the selected block, the cell you tap to send it there. Each legal
   // distance gets exactly one target: the leading edge of where it would land,
@@ -622,6 +623,23 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
     setSel(null);
   }
 
+  // FLICK TO MOVE (owner, 2026-11-08: "allow flick to move on phone"). A
+  // swipe along a block's groove slides it as far as it will go that way, one
+  // move, exactly as tapping that far landing spot would. A swipe across the
+  // groove, or one on an empty square, does nothing.
+  function onFlick(cell, horiz, sign) {
+    if (!playing) return;
+    if (!gRef.current.t0) { startGame(); return; }
+    const r = Math.floor(cell / N), c = cell % N;
+    const b = occ ? occ[r][c] : -1;
+    if (b < 0 || !blocks[b] || blocks[b].horiz !== horiz) return;
+    let best = null;
+    for (const [i, d] of slides) if (i === b && Math.sign(d) === sign && (!best || Math.abs(d) > Math.abs(best[1]))) best = [i, d];
+    if (best) { doMove(best); return; }
+    setSel(null);
+    setShake((k) => k + 1);
+  }
+
   function restart() {
     const cur = gRef.current;
     if (cur.status !== 'playing' || !cur.moves.length) return;
@@ -730,7 +748,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
         const holding = playing && sel != null;
         const tip = !playing ? null
           : holding ? (sel === 0 ? 'Tap a rose-edged square to slide your block there.' : 'Tap a rose-edged square to slide it there.')
-            : 'Get the arrow block out through the gap on the right.';
+            : 'Get the arrow block out through the gap on the right. Flick a block or tap it.';
         const shown = toast ? toast.replace('The block ringed in dashes moves next.', 'The ringed block moves next.') : null;
         const line = !playing
           ? (won ? (used === perfect ? `Out in ${used}. That is perfect.` : `Out in ${used} moves.`) : 'You left it in the Junkyard.')
@@ -748,7 +766,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
                     <span className="jx-exit" role="img" aria-label="Exit" style={{ top: `${EXIT_ROW * cp}%`, height: `${cp}%` }}>
                       <svg width="12" height="14" viewBox="0 0 12 14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 2l6 5-6 5" /></svg>
                     </span>
-                    <div className="jx-in">
+                    <div className="jx-in" {...jxFlick}>
                       {Array.from({ length: N * N }).map((_, cell) => (
                         <span key={`c${cell}`} className="jx-cell" style={box(Math.floor(cell / N), cell % N, 1, 1)} />
                       ))}
@@ -883,7 +901,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
 
         {!preStart && STAGE && (
           <JamLot N={N} exitRow={EXIT_ROW} blocks={blocks} tones={jamTones} sel={sel} targets={targets} hintBlock={hintBlock} shake={shake}
-            onCell={onCell} playing={playing} used={used} par={par} perfect={perfect} restarts={g.restarts}
+            onCell={onCell} onFlick={onFlick} playing={playing} used={used} par={par} perfect={perfect} restarts={g.restarts}
             onRestart={restart} hintAvail={hintOk && !g.hintUsed} onHint={useHint}
             armed={!!armReveal} onGiveUp={giveUpTap}
             doneLine={won ? (used === perfect ? `Out in ${used}. That is perfect.` : `Out in ${used} moves.`) : 'You left it in the junkyard.'} />

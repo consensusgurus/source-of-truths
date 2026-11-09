@@ -62,7 +62,9 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
 export const RGT_CSS = `
 .rgt{display:flex;flex-direction:column;text-decoration:none;color:#0b1b2b;background:var(--rgg);border:1px solid #0b1b2b;border-radius:12px;overflow:hidden;min-width:0;box-sizing:border-box;
   transition:transform .12s cubic-bezier(.2,.7,.3,1);}
-.rgt:hover{transform:translateY(-1px);}
+/* The lift is for a mouse only: on a phone a tap left the tile raised a pixel,
+   and inside the sideways row that pixel was clipped off its top edge. */
+@media (hover:hover){ .rgt:hover{transform:translateY(-1px);} }
 .rgt-body{display:flex;flex-direction:column;flex:1;padding:14px 14px 12px 16px;min-width:0;}
 .rgt-eye{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rgt-name{font-size:26px;font-weight:900;line-height:1.02;letter-spacing:-.02em;margin:4px 0 6px;}
@@ -97,7 +99,7 @@ html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt-go{backgrou
 .rgt.rgt-w .rgt-cs{background:color-mix(in srgb, var(--rgc) 30%, #fff);}
 .stage-page:not([data-stage-theme=light]) .rgt.rgt-w{background:#1a2130;}
 /* THE PHONE: a sideways row of gate tiles in a pane, full cards in Runs. */
-.mph-rgts{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:12px;margin:0 -12px;padding:0 12px 4px;scrollbar-width:none;}
+.mph-rgts{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:12px;margin:-2px -12px 0;padding:2px 12px 4px;scrollbar-width:none;}
 .mph-rgts::-webkit-scrollbar{display:none;}
 .mph-rgts > .rgt{flex:0 0 min(84%, 320px);scroll-snap-align:start;}
 .mph-rgtcol{display:flex;flex-direction:column;gap:10px;}

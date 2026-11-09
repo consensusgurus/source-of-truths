@@ -33,7 +33,7 @@
 // and amber (red's neighbours) are never in the fleet. With no `tones` the
 // lot falls back to the slate it shipped with.
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Lightbulb, RotateCcw, Eye } from 'lucide-react';
 import { regionStyle } from '@/lib/category-ramp';
 
@@ -98,6 +98,7 @@ html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .jl-boa
 .jl-board .pk-lot{position:relative;width:100%;aspect-ratio:1 / 1;border:0;background:var(--jl-lot);border-radius:calc(var(--jl-r) * .6);touch-action:manipulation;overflow:visible;}
 .jl-board .pk-lot.shake{animation:jlshake .34s ease;}
 @keyframes jlshake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}55%{transform:translateX(6px);}80%{transform:translateX(-3px);}}
+.pk-lot.jl-flick{touch-action:none;}
 .jl-cell{position:absolute;cursor:pointer;-webkit-tap-highlight-color:transparent;z-index:3;}
 .jl-board .pk-blk{position:absolute;box-sizing:border-box;border-radius:var(--jl-r);pointer-events:none;display:flex;align-items:center;justify-content:center;z-index:2;transition:left .18s cubic-bezier(.3,.7,.4,1), top .18s cubic-bezier(.3,.7,.4,1), box-shadow .12s;}
 .jl-board .jl-fleet{--jl-pc:46%;--jl-fill:color-mix(in srgb, var(--hue) var(--jl-pc), var(--stg-cell, #1a1d28));background:var(--jl-fill) !important;border-color:color-mix(in srgb, var(--hue) 80%, var(--stg-cell, #1a1d28)) !important;}
@@ -164,12 +165,48 @@ export function JamMeter({ used, par, perfect }) {
   );
 }
 
+// FLICK TO MOVE (owner, 2026-11-08: "allow flick to move on phone"), shared by
+// JamLot and the stage board each of Parker, Impound and Junkyard draws. Spread
+// `lotHandlers` on the element whose box is exactly the N x N grid. A press
+// that travels 18px or more is a flick: its start square and main direction go
+// to onFlick(cell, horizontal, sign), and the click the browser may still send
+// after it is swallowed. Anything shorter stays a tap. The grid takes
+// touch-action:none while it listens, so a flick never scrolls the page.
+export function useFlick(N, onFlick, playing) {
+  const flick = useRef(null);
+  const swallow = useRef(false);
+  const cellAt = (el, x, y) => {
+    const b = el.getBoundingClientRect();
+    const c = Math.floor(((x - b.left) / b.width) * N), r = Math.floor(((y - b.top) / b.height) * N);
+    return r >= 0 && r < N && c >= 0 && c < N ? r * N + c : -1;
+  };
+  const flickOn = !!onFlick && !!playing;
+  const lotHandlers = flickOn ? {
+    style: { touchAction: 'none' },
+    onPointerDown: (e) => { flick.current = { x: e.clientX, y: e.clientY, cell: cellAt(e.currentTarget, e.clientX, e.clientY) }; },
+    onPointerUp: (e) => {
+      const f = flick.current; flick.current = null;
+      if (!f || f.cell < 0) return;
+      const dx = e.clientX - f.x, dy = e.clientY - f.y;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+      swallow.current = true;
+      setTimeout(() => { swallow.current = false; }, 350);
+      const horiz = Math.abs(dx) >= Math.abs(dy);
+      onFlick(f.cell, horiz, horiz ? Math.sign(dx) : Math.sign(dy));
+    },
+    onPointerCancel: () => { flick.current = null; },
+    onClickCapture: (e) => { if (swallow.current) { e.stopPropagation(); e.preventDefault(); swallow.current = false; } },
+  } : {};
+  return { flickOn, lotHandlers };
+}
+
 export default function JamLot({
   N, exitRow, blocks, tones, sel, targets, hintBlock, shake,
-  onCell, playing, used, par, perfect, restarts,
+  onCell, onFlick, playing, used, par, perfect, restarts,
   onRestart, hintAvail, onHint, armed, onGiveUp, doneLine,
 }) {
   const [hot, setHot] = useState(null);
+  const { flickOn, lotHandlers } = useFlick(N, onFlick, playing);
   const sz = SIZE[N] || SIZE[6];
   const cp = 100 / N;
   const vars = {
@@ -195,7 +232,7 @@ export default function JamLot({
 
   const say1 = !playing ? doneLine
     : holding ? (sel === 0 ? 'Red block picked up. Tap an outlined space to slide it there.' : 'Block picked up. Tap an outlined space to slide it there.')
-      : 'Tap a block to pick it up.';
+      : onFlick ? 'Tap a block to pick it up, or flick it along its groove.' : 'Tap a block to pick it up.';
   const say2 = playing
     ? `The groove shows which way a block slides. One slide, any distance, is one move. No undo.${restarts > 0 ? ` Restarts so far: ${restarts}.` : ''}`
     : null;
@@ -208,7 +245,7 @@ export default function JamLot({
         <div className="jl-panel">
           <div className="jl-stage">
             <div className="jl-wall">
-              <div key={shake} className={`pk-lot${shake ? ' shake' : ''}`}>
+              <div key={shake} className={`pk-lot${shake ? ' shake' : ''}${flickOn ? ' jl-flick' : ''}`} {...lotHandlers}>
                 {Array.from({ length: N - 1 }).map((_, i) => (
                   <React.Fragment key={i}>
                     <span aria-hidden="true" style={{ position: 'absolute', left: `${(i + 1) * cp}%`, top: 0, bottom: 0, width: 1, background: 'var(--jl-grid)' }} />
