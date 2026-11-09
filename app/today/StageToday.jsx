@@ -4668,7 +4668,7 @@ export default function StageToday() {
                           {/* THE PHONE DETAILS CARD MATCHES THE DESKTOP ONE (owner, 2026-11-08):
                               board band, glyph by the name, facts row. */}
                           {mDet ? <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} square /></span> : null}
-                          <b>{mDet ? <Glyph k={g.key} size={17} /> : pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
+                          <b>{mDet ? null : pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
                           {mDet ? <em className="mx">{fullDesc(g)}</em> : <em>{g.tag}</em>}
                           {mDet ? <FactRow k={g.key} /> : null}
                           {mDet && skillLine(g.key) ? <span className="mk">{skillLine(g.key)}</span> : null}
@@ -7843,6 +7843,9 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix.sty-det .sty-g:has(> .sty-gband) .sty-gband{grid-area:b;position:static;width:74px;height:74px;box-sizing:border-box;align-self:start;
     padding:6px;border:var(--dk);border-radius:10px;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gn{grid-area:n;font-size:18px;padding-right:18px;}
+  /* No glyph by the name (owner, 2026-11-08: "the glyphs aren't needed if we have these"). */
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gn > .sty-gi,.sty-ix.sty-det .sty-g.mx:has(> .sty-gband) > .sty-gn > .sty-gi{display:none;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gn::before{display:none;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > :is(.sty-gres,.sty-ggrp,.sty-gt){grid-area:r;margin-top:4px;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx{grid-area:f;margin-top:7px;height:auto;max-height:54px;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gk{grid-area:k;margin-top:7px;padding-bottom:0;}
