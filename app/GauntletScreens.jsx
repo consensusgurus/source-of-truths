@@ -931,7 +931,8 @@ export function GauntletEndStage({
 
 const RBE_CSS = `
 .rbe .rbe-col{max-width:1200px;gap:18px}
-.rbe-top{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:stretch}
+.rbe-top{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.rbe-panel .gsx-rise{animation-delay:0s !important}
 .rbe-sum{border:1px solid var(--gsx-ink);border-radius:18px;overflow:hidden;min-width:0}
 .rbe-sumb{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;width:100%;padding:16px 20px;cursor:pointer;color:var(--gsx-ink);font-family:inherit}
 .rbe-sumb:focus-visible{outline:2px solid var(--gsx-ink);outline-offset:-5px;border-radius:16px}
