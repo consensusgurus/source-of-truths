@@ -15,19 +15,21 @@ import { categoryColor, softGround } from '@/lib/category-ramp';
 import { rampFor } from '@/lib/circuits';
 
 const WORD = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
-const QUIZ_RULE = 'A wrong answer ends that quiz and the next one starts.';
+// One line each (owner, 2026-11-08: "make the long description one row by
+// making it more concise"); the gates keep their full sentences.
+const QUIZ_RULE = 'One wrong answer ends each quiz.';
 // [eyebrow unit, headline(n), rule]
 export const GATE_TEXT = {
-  math: ['games', (n) => `${n} Games. One Life in Each.`, 'A wrong answer ends that game and the next one starts.'],
+  math: ['games', (n) => `${n} Games. One Life in Each.`, 'One wrong answer ends each game.'],
   pricecheck: ['prices', (n) => `${n} Prices. Three Guesses Each.`, 'The first guess counts most.'],
   // Passport is one registry game played as four legs; its tile shows the legs.
   passport: ['legs', () => 'One Trip. One Passport.', 'Each leg sets up the next.', ['Ping', 'Span', 'Flank', 'Stamps']],
   deduction: ['cases', (n) => `${n} Cases. One Letter.`, 'Half for right, half for fast.'],
-  dojo: ['sudokus', (n) => `${n} Forms. One Belt.`, 'Solving counts half, speed the other half.'],
-  dojocolor: ['color sudokus', (n) => `${n} Forms. One Belt.`, 'Solving counts half, speed the other half.'],
-  crossed: ['crosswords', (n) => `${n} Grids. One Week.`, 'Finishing counts a fifth, speed counts the rest.'],
-  room: ['crowd games', (n) => `${n} Rooms. No Answer Key.`, 'The key is whatever tonight’s crowd does.'],
-  spacecadet: ['spatial puzzles', (n) => `${n} Legs. One Launch.`, 'One clock across all four. Your time decides your rank.'],
+  dojo: ['sudokus', (n) => `${n} Forms. One Belt.`, 'Half for solving, half for speed.'],
+  dojocolor: ['color sudokus', (n) => `${n} Forms. One Belt.`, 'Half for solving, half for speed.'],
+  crossed: ['crosswords', (n) => `${n} Grids. One Week.`, 'Speed counts most.'],
+  room: ['crowd games', (n) => `${n} Rooms. No Answer Key.`, 'Tonight’s crowd is the key.'],
+  spacecadet: ['spatial puzzles', (n) => `${n} Legs. One Launch.`, 'One clock decides your rank.'],
 };
 
 export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done, plain = false, className = '' }) {
@@ -46,9 +48,17 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
         <b className="rgt-name">{c.name}</b>
         <span className="rgt-hl">{head(W)}</span>
         <span className="rgt-rule">{rule}</span>
-        <span className="rgt-legs" aria-hidden="true">
-          {legs.map((g, i) => (
-            <span key={g.key} className={'rgt-leg' + (done && done.has(g.key) ? ' on' : '')} style={{ '--lc': softGround(rampFor(i), 0.45) }}>{g.name}</span>
+        {/* More than five legs (the Trivia Gauntlet's seven) take two rows, so
+            every name reads at full size (owner, 2026-11-08). */}
+        <span className={'rgt-legs' + (legs.length > 5 ? ' two' : '')} aria-hidden="true">
+          {(legs.length > 5 ? [legs.slice(0, Math.ceil(legs.length / 2)), legs.slice(Math.ceil(legs.length / 2))] : [legs]).map((row, ri, rows) => (
+            <span key={ri} className="rgt-lrow">
+              {row.map((g) => {
+                const i = legs.indexOf(g);
+                return <span key={g.key} className={'rgt-leg' + (done && done.has(g.key) ? ' on' : '')} style={{ '--lc': softGround(rampFor(i), 0.45) }}>{g.name}</span>;
+              })}
+              {rows.length > 1 && row.length < rows[0].length ? <span className="rgt-leg rgt-lpad" /> : null}
+            </span>
           ))}
         </span>
         <span className="rgt-go">{go}</span>
@@ -76,11 +86,11 @@ export function MoreRunsTile({ rest, open, onToggle, players, colorOf }) {
         <span className="rgt-eye">Daily Runs · {W} more</span>
         <b className="rgt-name">More Runs</b>
         <span className="rgt-hl">{W} More Runs Today.</span>
-        <span className="rgt-rule">Each one is a few puzzles played back to back for one score.</span>
+        <span className="rgt-rule">Puzzles back to back, one score.</span>
         <span className="rgt-bands">
           {rest.slice(0, 3).map((c) => (
             <span key={c.id} className="rgt-band" style={{ '--lc': softGround(colorOf(c), 0.45) }}>
-              <b>{c.name}</b><i>{Number(players(c) || 0).toLocaleString('en-US')}</i>
+              <b>{c.name}</b><i title="Players today"><svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true"><circle cx="12" cy="7.5" r="4" /><path d="M4 21a8 7 0 0 1 16 0z" /></svg>{Number(players(c) || 0).toLocaleString('en-US')}</i>
             </span>
           ))}
         </span>
@@ -102,7 +112,7 @@ export function BuildRunTile() {
         <span className="rgt-eye">Your Run · Any puzzles</span>
         <b className="rgt-name">Build a Run</b>
         <span className="rgt-hl">Your Puzzles. One Link.</span>
-        <span className="rgt-rule">Pick any dailies, send the link, and everyone plays the same set.</span>
+        <span className="rgt-rule">Pick dailies, share one link.</span>
         <span className="rgt-go">Build a Run</span>
       </span>
       <span className="rgt-cs"><span className="ld">Shared with friends</span><span className="ct">One board</span></span>
@@ -117,14 +127,19 @@ export const RGT_CSS = `
    and inside the sideways row that pixel was clipped off its top edge. */
 @media (hover:hover){ .rgt:hover{transform:translateY(-1px);} }
 .rgt-body{display:flex;flex-direction:column;flex:1;padding:14px 14px 12px 16px;min-width:0;}
+.rgt-body > *{flex-shrink:0;}
 .rgt-eye{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rgt-name{font-size:26px;font-weight:900;line-height:1.02;letter-spacing:-.02em;margin:4px 0 6px;}
 .rgt-hl{font-size:14px;font-weight:800;line-height:1.25;}
-.rgt-rule{font-size:12.5px;font-weight:600;line-height:1.35;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.rgt-legs{display:flex;height:28px;margin-top:auto;border:1px solid #0b1b2b;border-radius:8px;overflow:hidden;}
-.rgt-body > .rgt-rule + .rgt-legs{margin-top:12px;}
+.rgt-rule{font-size:12.5px;font-weight:600;line-height:1.35;margin-top:2px;margin-bottom:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rgt-legs{display:flex;flex-direction:column;margin-top:auto;border:1px solid #0b1b2b;border-radius:8px;overflow:hidden;}
+.rgt-lrow{display:flex;height:28px;}
+.rgt-lrow + .rgt-lrow{border-top:1px solid #0b1b2b;}
+.rgt-lpad{background:transparent;}
+/* THE START BUTTONS LINE UP (owner, 2026-11-08): the legs and the button sit
+   at the foot of the body (margin-top:auto), so a name on two lines pushes nothing down. */
 .rgt-leg{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;padding:0 3px;background:var(--lc);border-left:1px solid #0b1b2b;
-  font-size:10.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:clip;}
+  font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:clip;}
 .rgt-leg:first-child{border-left:0;}
 .rgt-leg.on{background:#0b1b2b;color:#fff;}
 .rgt-go{display:block;margin-top:10px;padding:10px 8px;border:1px solid #0b1b2b;border-radius:10px;background:var(--rgc);text-align:center;font-weight:900;font-size:15px;
@@ -134,7 +149,7 @@ export const RGT_CSS = `
 .rgt-cs .ld{min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .rgt-cs b,.rgt-cs .ct{font-weight:800;}
 .stage-page:not([data-stage-theme=light]) .rgt{background:color-mix(in srgb, var(--rgc) 18%, #1a2130);color:#e9edf4;border-color:color-mix(in srgb, var(--rgc) 60%, #fff);}
-.stage-page:not([data-stage-theme=light]) .rgt :is(.rgt-legs,.rgt-leg,.rgt-go,.rgt-cs){border-color:color-mix(in srgb, var(--rgc) 60%, #fff);}
+.stage-page:not([data-stage-theme=light]) .rgt :is(.rgt-legs,.rgt-leg,.rgt-lrow,.rgt-go,.rgt-cs){border-color:color-mix(in srgb, var(--rgc) 60%, #fff);}
 .stage-page:not([data-stage-theme=light]) .rgt-leg{background:color-mix(in srgb, var(--lc) 30%, #1a2130);}
 .stage-page:not([data-stage-theme=light]) .rgt-leg.on{background:var(--rgc);color:#0b1b2b;}
 .stage-page:not([data-stage-theme=light]) .rgt-go{color:#0b1b2b;}
@@ -152,12 +167,14 @@ html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt-go{backgrou
 .rgt.rgt-more{--rgc:#0b1b2b;background:#fff;cursor:pointer;}
 .rgt-more .rgt-go{background:#0b1b2b;color:#fff;font:inherit;font-weight:900;font-size:15px;cursor:pointer;width:100%;}
 .rgt-more .rgt-cs{background:#eef1f6;text-decoration:none;color:inherit;}
-.rgt-more .rgt-body > .rgt-go:only-of-type{margin-top:auto;}
-.rgt-bands{display:flex;flex-direction:column;margin-top:12px;border:1px solid #0b1b2b;border-radius:8px;overflow:hidden;}
+.rgt-more .rgt-bands{margin-top:auto;}
+.rgt-more .rgt-body > span.rgt-go{margin-top:auto;}
+.rgt-bands{display:flex;flex-direction:column;border:1px solid #0b1b2b;border-radius:8px;overflow:hidden;}
 .rgt-band{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:4px 10px;background:var(--lc);border-top:1px solid #0b1b2b;font-size:12px;}
 .rgt-band:first-child{border-top:0;}
 .rgt-band b{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rgt-band i{font-style:normal;font-weight:800;}
+.rgt-band i{font-style:normal;font-weight:800;display:inline-flex;align-items:center;gap:4px;flex:none;}
+.rgt-band i svg{opacity:.7;}
 .stage-page:not([data-stage-theme=light]) .rgt.rgt-more{background:#1a2130;--rgc:#e9edf4;border-color:#5a6475;}
 .stage-page:not([data-stage-theme=light]) .rgt-more .rgt-go{background:#e9edf4;color:#0b1b2b;}
 .stage-page:not([data-stage-theme=light]) .rgt-more .rgt-cs{background:#11161f;}
