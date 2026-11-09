@@ -17,7 +17,7 @@
 // tile rule). Reads: the day board the home already caches (dailyBoardClient),
 // the week's difficulty, and one cached board per run shown.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import RunGateTile, { RGT_CSS, MoreRunsTile, BuildRunTile } from './today/RunGateTile';
 import GamePreview, { GP_CSS } from './GamePreview';
 import { RUN_DOORS, runDoneToday } from './circuits/RunDoorPop';
@@ -100,6 +100,25 @@ export default function RunEndShelves({ selfId = null, legKeys = [], firstHref =
   const [runStat, setRunStat] = useState({});
   const [runsOpen, setRunsOpen] = useState(false);
   const [cat, setCat] = useState('for');
+  // ONE ROW OF RUNS (owner, 2026-11-09: "as it narrows, other runs should
+  // disappear, don't let the page wrap ... with only one box on the second
+  // row"). The row's width decides how many tiles fit; More Runs takes the
+  // last slot, and the puzzles fill whole rows of the same count.
+  const wrapRef = useRef(null);
+  const [cols, setCols] = useState(4);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return undefined;
+    const read = () => {
+      const w = el.getBoundingClientRect().width;
+      const n = Math.max(1, Math.min(4, Math.floor((w + 14) / (240 + 14))));
+      setCols((v) => (v === n ? v : n));
+    };
+    read();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(read) : null;
+    if (ro) ro.observe(el);
+    return () => { if (ro) ro.disconnect(); };
+  }, []);
   useEffect(() => { setDay(etDay()); }, []);
   useEffect(() => {
     let alive = true;
@@ -131,7 +150,9 @@ export default function RunEndShelves({ selfId = null, legKeys = [], firstHref =
         || ((b.cat === selfCat) - (a.cat === selfCat))
         || (order(a.id) - order(b.id)));
   }, [day, selfId, firstHref, selfCat]);
-  const leadN = phone ? 2 : 3;
+  const one = phone || cols < 2;
+  const slots = one ? 3 : cols;
+  const leadN = runs.length > slots ? slots - 1 : runs.length;
   const leads = runs.slice(0, leadN);
   const rest = runs.slice(leadN);
   const shownRuns = runsOpen ? runs : leads;
@@ -188,11 +209,11 @@ export default function RunEndShelves({ selfId = null, legKeys = [], firstHref =
     const hard = (g) => { const r = diff && Number(diff[g.key]); return r && r >= 4 ? 1 : 0; };
     list.sort((a, b) => (cat === 'for' ? ((b.cat === selfCat) - (a.cat === selfCat)) || (hard(a) - hard(b)) : 0)
       || (plays(b) - plays(a)) || a.name.localeCompare(b.name));
-    return list.slice(0, phone ? 4 : 8);
-  }, [open, cat, diff, byKey, selfCat, phone]);   // eslint-disable-line react-hooks/exhaustive-deps
+    return list.slice(0, one ? 4 : cols * 2);
+  }, [open, cat, diff, byKey, selfCat, one, cols]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="rbs">
+    <div className="rbs" ref={wrapRef} style={{ '--rbs-cols': one ? 1 : cols }}>
       <style dangerouslySetInnerHTML={{ __html: RGT_CSS + GP_CSS + CSS }} />
       {runs.length ? (
         <section className="rbs-sec" aria-label="Runs you have not played today">
@@ -202,7 +223,7 @@ export default function RunEndShelves({ selfId = null, legKeys = [], firstHref =
             {rest.length && !runsOpen ? (
               <MoreRunsTile rest={rest} open={runsOpen} onToggle={() => setRunsOpen(true)}
                 players={(c) => (runStat[c.id] || {}).players} colorOf={(c) => (c.cat ? categoryColor(c.cat) : '#c7cdd6')} />
-            ) : <BuildRunTile />}
+            ) : runsOpen || runs.length < slots ? <BuildRunTile /> : null}
           </div>
         </section>
       ) : null}
@@ -236,7 +257,7 @@ const CSS = `
 .rbs-chips{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 auto}
 .rbs-chip{font:inherit;font-size:13px;font-weight:700;min-height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--gsx-ink);background:transparent;color:var(--gsx-ink);cursor:pointer}
 .rbs-chip.on{background:var(--gsx-ink);color:var(--gsx-bg)}
-.rbs-runs,.rbs-games{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rbs-runs,.rbs-games{display:grid;gap:14px;grid-template-columns:repeat(var(--rbs-cols, 4),minmax(0,1fr))}
 /* The run ending is always its own pastel ground, so the tiles keep the
    home's light drawing whatever the site register says. */
 .gsx .rbs .rgt.rgt{background:var(--rgg);color:#0b1b2b;border-color:#0b1b2b}

@@ -938,6 +938,16 @@ const RBE_CSS = `
 .rbe-sumb:focus-visible{outline:2px solid var(--gsx-ink);outline-offset:-5px;border-radius:16px}
 .rbe-eye{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;line-height:1.35}
 .rbe-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+/* WIDE: score, title and the three standings on one line (owner, 2026-11-09:
+   "too much wasted space here next to surveyor"); See standings under the boxes. */
+@media(min-width:1180px){
+  .rbe-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"s t r" "s t g";column-gap:26px;row-gap:8px}
+  .rbe-score{grid-area:s}
+  .rbe-tt{grid-area:t}
+  .rbe-ranks{grid-area:r}
+  .rbe-tog{grid-area:g;justify-self:end}
+  .rbe-row:not(:has(.rbe-ranks)){grid-template-areas:"s t g" "s t g"}
+}
 .rbe-score{display:flex;align-items:baseline;gap:8px}
 .rbe-score b{font-size:60px;font-weight:800;line-height:1.12;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .rbe-score i{font-style:normal;font-size:17px;font-weight:700}
