@@ -200,7 +200,7 @@ export default function DueDiligenceClient({ day = null, dateLabel, dateShort, s
     return `Due Diligence, ${dateShort}: ${rank[1]}, ${total}/${DD_MAX}.\n${per}\n${withRef(link)}`;
   }
   function copyShare() {
-    const text = done ? shareText() : `Due Diligence: a stock chart, an IPO filing and a resume. Name each in the fewest clues, ranked from Anon Fintwit Account up to Ken Griffin.\n${withRef('mindloftdaily.com/duediligence')}`;
+    const text = done ? shareText() : `Are you a Jim Cramer or a Ken Griffin? Due Diligence: name a stock from its chart, a company from its IPO filing and a person from their resume. Fewer clues rank higher: Anon Fintwit Account, Jim Cramer, Michael Burry, Stanley Druckenmiller, Ken Griffin.\n${withRef('mindloftdaily.com/duediligence')}`;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }

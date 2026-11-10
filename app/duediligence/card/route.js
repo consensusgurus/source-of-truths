@@ -45,8 +45,8 @@ function invite() {
     cat: CAT, url: URL_TXT, rightW: 500,
     left: [
       chip('Due Diligence · Daily Run', CAT),
-      d({ fontSize: 60, fontWeight: 800, lineHeight: 1.04, letterSpacing: -2, marginTop: 30 }, 'Did you do your homework?'),
-      d({ fontSize: 23, fontWeight: 600, color: W.ink2, marginTop: 16, lineHeight: 1.35 }, 'A stock chart, an IPO filing and a resume. Name each one in the fewest clues.'),
+      d({ fontSize: 56, fontWeight: 800, lineHeight: 1.04, letterSpacing: -2, marginTop: 30 }, 'Are you a Jim Cramer or a Ken Griffin?'),
+      d({ fontSize: 23, fontWeight: 600, color: W.ink2, marginTop: 16, lineHeight: 1.35 }, 'Name a stock from its chart, a company from its IPO filing and a person from their resume. Fintwit anon, Cramer, Burry, Druck or Griffin: the fewer clues, the higher you rank.'),
       cta(),
     ],
     right: d({ flexDirection: 'column', gap: 8 }, ...DD_RANKS.map((x, i) => rung(x, i, null))),
