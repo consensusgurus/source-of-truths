@@ -155,7 +155,7 @@ function makeBoard(bgEl, svgEl, opts) {
       const sg = ((iA.x - jA.x) * n.x + (iA.y - jA.y) * n.y) >= 0 ? 1 : -1;
       const half = Math.max(12 * N + 8, Math.min(100, F.room, 16 + 26 * N));
       // a cramped twist winds tighter rather than overrunning its pegs
-      const amp = Math.min(AMP, Math.max(8, ((2 * half) / N) * 0.3));
+      const amp = Math.min(AMP, Math.max(10.5, ((2 * half) / N) * 0.3));
       out.push({ i, j, key: k, N, M: F.M, d: F.d, n, sg, Lc: 2 * half, amp, amt: rec.amt, c: rec.c, a: rec.a });
     }
     return out;
@@ -287,8 +287,6 @@ function makeBoard(bgEl, svgEl, opts) {
   function ropeLayer() {
     const C = chords(), T = cordList();
     const A = R.map((_, r) => arcInfo(shapedRope(r, C, T)));
-    let s = '';
-    for (const r of zorder) s += ropePiece(A[r], 0, A[r].L, 'round');
     const held = dragging() ? drag.r : -1, patches = [];
     const test = (i, j, ra, rb) => {
       const Pi = A[i].P, Pj = A[j].P;
@@ -301,7 +299,7 @@ function makeBoard(bgEl, svgEl, opts) {
         const ti = at(A[i], si), tj = at(A[j], sj), sin = Math.abs(ti.tx * tj.ty - ti.ty * tj.tx), cos = Math.abs(ti.tx * tj.tx + ti.ty * tj.ty);
         let half = Math.min(90, (14 + 10 * cos) / Math.max(0.14, sin) + 6);
         if (tw) half = Math.min(half, (0.5 * tw.Lc) / tw.N + 2);
-        patches.push({ o, u: u2, so, su, half, top: o === held });
+        patches.push({ o, u: u2, so, su, half, hd: Math.min(half, 11 / Math.max(0.14, sin) + 3, tw ? (0.5 * tw.Lc) / tw.N - 2 : 1e9), top: o === held });
       }
     };
     const CH = 8;
@@ -319,14 +317,58 @@ function makeBoard(bgEl, svgEl, opts) {
         if (ba.x1 < bb.x0 - 1 || bb.x1 < ba.x0 - 1 || ba.y1 < bb.y0 - 1 || bb.y1 < ba.y0 - 1) continue;
         test(i, j, [ba.k, ba.e], [bb.k, bb.e]);
       }
-    patches.sort((p, q) => p.top - q.top);
+    // LAYERED, NOT PATCHED (owner, 2026-11-10: "the ropes run together ... seem
+    // to go transparent"). Every drawn point of every rope gets a height; at
+    // each crossing the top rope's stretch is lifted above the under rope's
+    // stretch there, so a pile of three or four ropes still stacks in one
+    // consistent order. The ropes are then drawn as runs of equal height,
+    // lowest first, each with its own shadow, so nothing is ever painted over
+    // a rope that should sit above it. Runs meet butt to butt on the same
+    // rope (the twist marks are laid by arc length, so the seam is invisible)
+    // and the rope ends are always under a peg.
+    const D = A.map((_, r) => new Array(M + 1).fill(zorder.indexOf(r)));
+    const span = (Ai, s0, s1) => { let a = 0, b = M; while (a < M && Ai.cum[a + 1] < s0) a++; while (b > 0 && Ai.cum[b - 1] > s1) b--; return [a, b]; };
+    const win = patches.map((p) => ({ p, o: span(A[p.o], p.so - p.hd, p.so + p.hd), u: span(A[p.u], p.su - p.hd, p.su + p.hd) }));
+    win.sort((x, y) => x.p.top - y.p.top);
+    for (let pass = 0; pass < 8; pass++) {
+      let changed = false;
+      for (const w of win) {
+        const Do = D[w.p.o], Du = D[w.p.u];
+        let need = -1e9;
+        for (let q = w.u[0]; q <= w.u[1]; q++) need = Math.max(need, Du[q]);
+        need += 1;
+        for (let q = w.o[0]; q <= w.o[1]; q++) if (Do[q] < need) { Do[q] = need; changed = true; }
+      }
+      if (!changed) break;
+    }
+    const runs = [];
+    A.forEach((Ai, r) => {
+      let q0 = 0;
+      for (let q = 1; q <= M + 1; q++) {
+        if (q <= M && D[r][q] === D[r][q0]) continue;
+        // the run covers points q0..q-1; it reaches half way to each neighbour
+        const s0 = q0 === 0 ? 0 : (Ai.cum[q0 - 1] + Ai.cum[q0]) / 2;
+        const s1 = q > M ? Ai.L : (Ai.cum[q - 1] + Ai.cum[q]) / 2;
+        runs.push({ r, s0, s1, h: D[r][q0], z: zorder.indexOf(r), first: q0 === 0, last: q > M });
+        q0 = q;
+      }
+    });
+    runs.sort((x, y) => x.h - y.h || x.z - y.z);
+    let s = '';
+    // a hair of overlap where a run meets a lower run of its own rope
+    for (const u of runs) s += ropePiece(A[u.r], u.first ? 0 : u.s0 - 0.8, u.last ? A[u.r].L : u.s1 + 0.8, 'butt');
+    // A pile no stacking can draw (three ropes over one another in a ring at
+    // one spot): lay just the top rope's crossing back over the under rope
+    // there, clipped to the under rope, so that one crossing still reads right.
     let n = 0;
-    for (const p of patches) {
-      const id = `${pid}mk${n}`, id2 = `${pid}mo${n++}`;
-      s += `<mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="400"><path d="${pieceD(A[p.u], p.su - p.half, p.su + p.half)}" fill="none" stroke="#fff" stroke-width="19"/></mask>`
-        + `<g mask="url(#${id})"><path d="${pieceD(A[p.o], p.so - p.half, p.so + p.half)}" fill="none" stroke="#14161a" stroke-opacity=".38" stroke-width="22" filter="url(#${pid}soft)" transform="translate(1.5,3)"/></g>`;
-      s += `<mask id="${id2}" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="400"><path d="${pieceD(A[p.u], p.su - p.half, p.su + p.half)}" fill="none" stroke="#fff" stroke-width="22.5"/></mask>`
-        + `<g mask="url(#${id2})">${ropePiece(A[p.o], p.so - p.half, p.so + p.half, 'butt', true)}</g>`;
+    for (const w of win) {
+      let mx = -1e9, mn = 1e9;
+      for (let q = w.u[0]; q <= w.u[1]; q++) mx = Math.max(mx, D[w.p.u][q]);
+      for (let q = w.o[0]; q <= w.o[1]; q++) mn = Math.min(mn, D[w.p.o][q]);
+      if (mn > mx) continue;
+      const p = w.p, id = `${pid}mk${n++}`;
+      s += `<mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="400"><path d="${pieceD(A[p.u], p.su - p.half, p.su + p.half)}" fill="none" stroke="#fff" stroke-width="22.5"/></mask>`
+        + `<g mask="url(#${id})">${ropePiece(A[p.o], p.so - p.hd, p.so + p.hd, 'butt', true)}</g>`;
     }
     return s;
   }
