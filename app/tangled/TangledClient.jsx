@@ -42,7 +42,7 @@ import { notifyShareCredit } from '../ShareCreditPop';
 import { withRef } from '@/lib/referrals';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
-import { crossPairs, SHAPE_NAME } from '@/lib/tangled-engine';
+import { crossingCount, isSolved, SHAPE_NAME } from '@/lib/tangled-engine';
 import { useRunEmbed, useRunHelp } from '../RunEmbed';
 import { embedLook } from '../LogicStage';
 import RunDoorPop from '../circuits/RunDoorPop';
@@ -120,7 +120,9 @@ function mergeServerStats(s, recent, puzzles) {
   return s2;
 }
 
-const freshG = () => ({ v: 1, status: 'playing', t0: null, tEnd: null, ropes: null, moves: 0 });
+// v2 (2026-11-09) saves the wraps with the ropes. A v1 save in progress was
+// made under the old rules, so it starts fresh; a finished v1 save is kept.
+const freshG = () => ({ v: 2, status: 'playing', t0: null, tEnd: null, ropes: null, wraps: null, moves: 0 });
 
 const HAPT = { move: [6], win: [20, 40, 20] };
 function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
@@ -200,10 +202,12 @@ export default function TangledClient({ puzzles = [], forceNum = null }) {
   useEffect(() => {
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) {}
-    if (saved && saved.v === 1) {
+    if (saved && saved.v === 1 && saved.status !== 'playing') saved = { ...saved, v: 2, ropes: null, wraps: null };
+    if (saved && saved.v === 2) {
       let s = { ...freshG(), ...saved };
+      if (s.status === 'playing' && Array.isArray(s.ropes) && !s.wraps) s = { ...s, ropes: null };
       // closed on the winning move: the move is saved, the status not yet turned
-      if (s.status === 'playing' && Array.isArray(s.ropes) && crossPairs(s.ropes).length === 0) s = { ...s, status: 'won', tEnd: s.tEnd || Date.now() };
+      if (s.status === 'playing' && Array.isArray(s.ropes) && isSolved(s.ropes, s.wraps)) s = { ...s, status: 'won', tEnd: s.tEnd || Date.now() };
       gRef.current = s; setG(s);
     }
     setStats(getStats());
@@ -288,10 +292,10 @@ export default function TangledClient({ puzzles = [], forceNum = null }) {
   useRunHelp(EMBED, () => setShowHelp(true));
   useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart, startGame]);
 
-  const onMove = useCallback((ropes, solved) => {
+  const onMove = useCallback((ropes, wraps, solved) => {
     const cur = gRef.current;
     if (cur.status !== 'playing') return;
-    const g2 = { ...cur, ropes, moves: (cur.moves || 0) + 1, t0: cur.t0 || Date.now() };
+    const g2 = { ...cur, ropes, wraps, moves: (cur.moves || 0) + 1, t0: cur.t0 || Date.now() };
     if (solved) {
       g2.status = 'won'; g2.tEnd = Date.now();
       vibrate(HAPT.win);
@@ -349,7 +353,7 @@ export default function TangledClient({ puzzles = [], forceNum = null }) {
   }, [playing, g.t0]);
   const clockMs = g.t0 ? ((g.tEnd || gRef.current.tEnd || Date.now()) - g.t0) : 0;
   const clockShown = fmtTime(clockMs);
-  const crossing = crossPairs(g.ropes || PUZZLE.ropes).length;
+  const crossing = crossingCount(g.ropes ? g.wraps : PUZZLE.wraps);
 
   // ---- share ---------------------------------------------------------------
   function shareUrl() {
@@ -381,10 +385,11 @@ export default function TangledClient({ puzzles = [], forceNum = null }) {
       steps={[
         <>Every rope runs between two <b>pegs</b> in holes round the frame, and there are always <b>two empty holes</b>.</>,
         <><b>Drag</b> a peg into an empty hole, or <b>tap</b> a peg and then tap an empty hole.</>,
-        <>Ropes that cross are <b>wound round each other</b>. They only come apart once their two ropes no longer cross.</>,
+        <>The ropes are <b>really wound</b> round each other. A peg you move is <b>lifted over</b> every rope in its way.</>,
+        <>Lift a peg back over a rope it lies <b>on top of</b> and that crossing slides off. Lift it over a rope it lies <b>under</b> and the two wind one turn tighter.</>,
         <>The board is solved the moment <b>no two ropes cross</b>. Any untangled layout counts.</>,
       ]}
-      knack="A rope between two neighbouring holes can never cross anything. Park the short ropes first and the long ones have room to move."
+      knack="Follow a twist to its end and look at which rope is on top there. The peg on top is the one to move, back the way it came."
       footer="Ranked on time alone, from Start to the last rope. Four ropes on Monday, five midweek, six on Thursday and Friday, seven on Saturday and eight on Sunday, and the frame changes shape every day."
     />
   );
@@ -395,7 +400,8 @@ export default function TangledClient({ puzzles = [], forceNum = null }) {
   const board = (live) => (
     <div ref={live ? boardRef : undefined} className="tg-wrap">
       <TangledBoard key={`${PUZZLE.quizId}-${boardKey}${live ? '' : '-done'}`} puzzle={PUZZLE}
-        ropes={live ? (g.ropes || null) : (g.ropes || PUZZLE.solved)}
+        ropes={live ? (g.ropes || null) : (won && g.ropes ? g.ropes : PUZZLE.solved)}
+        wraps={live ? (g.wraps || null) : (won && g.ropes ? g.wraps : {})}
         live={live && playing && !giving} dark={dark} giveUpSeq={live ? giveSeq : 0}
         width={live && fit ? fit : null}
         onTouch={() => { if (!gRef.current.t0) startGame(); }}
@@ -548,9 +554,10 @@ export default function TangledClient({ puzzles = [], forceNum = null }) {
         <section style={{ maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
           <h2 style={{ fontSize: 17, fontWeight: 800, color: INK, margin: '0 0 8px' }}>About Tangled</h2>
           <p style={{ fontSize: 13.5, fontWeight: 600, color: MUTE, lineHeight: 1.6, margin: '0 0 9px' }}>
-            Tangled is a free daily rope puzzle from Mind Loft. Ropes run between pegs set in holes round a frame, wound
-            round each other wherever they cross. Move the pegs into the empty holes until no two ropes cross, and the
-            fastest untangling of the day takes the board.
+            Tangled is a free daily rope puzzle from Mind Loft. Ropes run between pegs set in holes round a frame, really
+            wound round each other. A peg you move is lifted over the ropes in its way, so a twist has to be unwound the
+            way it went in. Move the pegs into the empty holes until no two ropes cross, and the fastest untangling of
+            the day takes the board.
           </p>
           <p style={{ fontSize: 13.5, fontWeight: 600, color: MUTE, lineHeight: 1.6, margin: '0 0 9px' }}>
             The frame changes shape every day: a circle, a hexagon, a square, a triangle, a rectangle, a diamond or a

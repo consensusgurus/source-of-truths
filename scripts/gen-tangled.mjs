@@ -22,7 +22,7 @@ while (d <= end) {
   const seed = seedFor(live, shape);
   const b = generate(seed, R, shape);
   const J = (a) => JSON.stringify(a);
-  rows.push(`  { num: ${num}, quizId: '${quizIdFor(live)}', live: '${live}', dateLabel: '${MONTHS[m - 1]} ${day}, ${y}', sunday: ${dow === 0}, shape: '${shape}', R: ${R}, H: ${b.H}, ropes: ${J(b.ropes)}, solved: ${J(b.solved)}, pegs: ${J(pegColours(seed, R))} },`);
+  rows.push(`  { num: ${num}, quizId: '${quizIdFor(live)}', live: '${live}', dateLabel: '${MONTHS[m - 1]} ${day}, ${y}', sunday: ${dow === 0}, shape: '${shape}', R: ${R}, H: ${b.H}, ropes: ${J(b.ropes)}, wraps: ${J(b.wraps)}, solved: ${J(b.solved)}, pegs: ${J(pegColours(seed, R))} },`);
   num++;
   d = new Date(d.getTime() + 86400000);
 }
@@ -36,8 +36,12 @@ process.stdout.write(`// Puzzle data for Tangled, the daily rope untangling puzz
 //   shape   the frame: circle, hexagon, square, triangle, rectangle, diamond, pentagon
 //   R, H    ropes, and holes round the edge (always R*2 + 2: two empty holes)
 //   ropes   the starting board, one [hole, hole] pair per rope
+//   wraps   how the ropes are wound: for each touching pair "i-j", c is the chain
+//           of crossings from side A to side B naming the rope on top, and a is
+//           which end of rope i and of rope j sits at side A (null for a single
+//           crossing). See lib/tangled-engine.js applyMove.
 //   solved  the untangled board it was scrambled from (Give up eases back to it;
-//           any board with no crossing ropes is a solve, not only this one)
+//           any board with no wraps left is a solve, not only this one)
 //   pegs    the two peg colours per rope (indices into PEG_PASTELS), never equal
 //   sunday  a real Sunday: the biggest board of the week (eight ropes), no
 //           separate Edition
