@@ -234,6 +234,11 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   // the page's back layer and everything else floats over it. Replaces the
   // desktop Dossier column. Off the stage (the board on the ending) is unchanged.
   const fs = !!onStage;
+  // BARE BY DEFAULT (owner, 2026-11-09: "globe even more prominent and the
+  // extra stuff besides clues and pin hidden"). Only the clue card and the pin
+  // button show; the top bar, leg strip, zoom, hint and the Clock / How to play
+  // / Give up row sit behind one small menu button (Give up stays reachable).
+  const [chrome, setChrome] = useState(false);
 
   // The world loads once; the globe mounts on it.
   useEffect(() => {
@@ -260,8 +265,8 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
       if (fs) {
         // Full screen: a big globe, a touch below centre, free to run under the
         // clue card and the buttons (they are glass) and past the phone's sides.
-        const r = Math.max(120, Math.min(w * 0.62, h * 0.44));
-        G.setFrame(w, h, w / 2, h * 0.53, r);
+        const r = Math.max(120, Math.min(w * 0.82, h * 0.46));
+        G.setFrame(w, h, w / 2, h * (w < 700 ? 0.6 : 0.55), r);
         return;
       }
       // The largest card this visit sized it, so the globe holds still as tips arrive.
@@ -474,14 +479,22 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   const failEl = failed ? <div className="cmn-fail">The globe did not load. Check your connection and reload.</div> : null;
 
   return (
-    <div className={'cmn' + (onStage ? '' : ' off') + (fs ? ' fs' : '')} ref={rootRef}>
+    <div className={'cmn' + (onStage ? '' : ' off') + (fs ? ' fs' : '') + (fs && !chrome ? ' bare' : '')} ref={rootRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {fs ? (
         <>
           {/* The globe fills the screen behind everything (z -1 in the stage). */}
           <div className="cmn-region" ref={regionRef} key="region">{svgEl}{failEl}</div>
           {stripEl}
-          <div className="cmn-fscard">{cardEl}{resEl}</div>
+          <div className="cmn-fscard">
+            {active && !done ? (
+              <button type="button" className="cmn-menu" aria-label={chrome ? 'Hide menu' : 'Show menu: home, clock, how to play, give up'} aria-expanded={chrome} onClick={() => setChrome((c) => !c)}>
+                {chrome ? <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                  : <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.6" fill="currentColor" /><circle cx="8" cy="8" r="1.6" fill="currentColor" /><circle cx="13" cy="8" r="1.6" fill="currentColor" /></svg>}
+              </button>
+            ) : null}
+            {cardEl}{resEl}
+          </div>
           <div className="cmn-fsgap" />
           <div className="cmn-fsfoot">{hintEl}{zoomEl}</div>
           {doneNote}
@@ -682,5 +695,11 @@ const CSS = `
 .cmn.fs .cmn-donenote{padding:8px 12px;border-radius:12px;background:color-mix(in srgb, var(--pst-bg,#fff) 70%, transparent);}
 .pst:has(.cmn.fs) .cmn-btn:disabled{opacity:1;background:color-mix(in srgb, var(--pst-bg,#fff) 66%, transparent);color:var(--pst-ink,#16181d);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
 .pst:has(.cmn.fs) .sft-b:not(.on),.pst:has(.cmn.fs) .stb-home,.pst:has(.cmn.fs) .stb-look,.pst:has(.cmn.fs) .stb-share,.pst:has(.cmn.fs) .stb-nav{background:color-mix(in srgb, var(--pst-bg,#fff) 70%, transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+/* Bare: everything but the clues and the pin button steps aside. */
+.pst:has(.cmn.bare) .stb,.pst:has(.cmn.bare) .sft,.cmn.bare>.cmn-strip,.cmn.bare .cmn-zoom,.cmn.bare .cmn-hint{display:none !important;}
+.cmn-fscard{position:relative;}
+.cmn-menu{position:absolute;top:8px;right:8px;z-index:2;width:32px;height:32px;border-radius:50%;border:1px solid var(--pst-ink,#16181d);background:color-mix(in srgb, var(--pst-bg,#fff) 70%, transparent);color:var(--pst-ink,#16181d);display:grid;place-items:center;padding:0;cursor:pointer;}
+.cmn.fs .cmn-card .cmn-eb{padding-right:36px;}
+.cmn.fs .cmn-card{background:color-mix(in srgb, var(--pst-bg,#fff) 56%, transparent);}
 @media (min-width:1000px){.cmn.fs .cmn-card{padding:14px 16px;}.cmn.fs .cmn-tips{gap:10px;}.cmn.fs .cmn-tips li{font-size:15.5px;line-height:1.5;}.cmn.fs .cmn-zoom button{width:40px;height:40px;}.pst:has(.cmn.fs) .cmn-btn{min-height:54px;font-size:16px !important;}}
 `;
