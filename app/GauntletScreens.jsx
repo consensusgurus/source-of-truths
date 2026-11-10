@@ -1012,7 +1012,7 @@ const CSS = `
 .gsx-held .gsx-rise,.gsx-held .rrl-r1,.gsx-held .rrl-r2,.gsx-held .rrl.sw{animation-play-state:paused}
 .gsx-fly [data-rf]{visibility:hidden}
 .gsx a{color:var(--gsx-ink)}
-.gsx-col{width:100%;max-width:600px;margin:0 auto;box-sizing:border-box;padding:18px 18px 26px;min-height:100%;display:flex;flex-direction:column;gap:18px}
+.gsx-col{width:100%;max-width:600px;margin:0 auto;box-sizing:border-box;padding:max(18px, calc(env(safe-area-inset-top) + 8px)) 18px max(26px, calc(env(safe-area-inset-bottom) + 12px));min-height:100%;display:flex;flex-direction:column;gap:18px}
 .gsx-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
 /* THE BAR SPANS THE TOP (owner, 2026-11-06: "why aren't top elements centered?
    or spread across top evenly"). StageTopBar is flex:none, so from 900px it
@@ -1042,7 +1042,7 @@ const CSS = `
 .gsx-bgo:focus-visible{outline:3px solid var(--gsx-ink);outline-offset:3px}
 .gsx-eye1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 @media(max-width:899px){
-  .gsx-gate .gsx-col{gap:12px;padding-top:14px;padding-bottom:18px}
+  .gsx-gate .gsx-col{gap:12px;padding-top:max(14px, calc(env(safe-area-inset-top) + 6px));padding-bottom:max(18px, calc(env(safe-area-inset-bottom) + 8px))}
   .gsx-gate .gsx-head{gap:8px}
   .gsx-gate .gsx-eye1{font-size:clamp(11px,3.3vw,13px);letter-spacing:.03em}
   .gsx-gate .gsx-h1{font-size:30px}
