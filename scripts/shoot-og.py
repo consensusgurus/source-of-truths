@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # Screenshot hand-built share cards at 1200x630 into public/og/<key>.png.
-#   python3 scripts/shoot-og.py resume tape carmen      (after node scripts/bake-trivia-og.mjs)
+#   python3 scripts/shoot-og.py resume tape carmen filing      (after node scripts/bake-trivia-og.mjs)
 # Needs Playwright for Python and a Chromium; pass CHROME=/path/to/chrome to use an installed one.
 import os, sys, tempfile
 from playwright.sync_api import sync_playwright
 
 src = os.path.join(tempfile.gettempdir(), 'trivia-og')
-keys = sys.argv[1:] or ['resume', 'tape', 'carmen']
+keys = sys.argv[1:] or ['resume', 'tape', 'carmen', 'filing']
 with sync_playwright() as p:
     kw = {'executable_path': os.environ['CHROME']} if os.environ.get('CHROME') else {}
     b = p.chromium.launch(**kw)

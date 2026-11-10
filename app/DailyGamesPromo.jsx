@@ -81,6 +81,7 @@ export const DAILY_GAMES = [
   { key: 'tape', href: '/tape', name: 'Tape', tag: 'name the company from its chart', store: 'sot_tape_day', accent: '#1e5a8a', bg: '#e2eef7', border: 'rgba(30,90,138,0.35)' },
   { key: 'bacon', href: '/bacon', name: 'Bacon', tag: 'link two actors through films', store: 'sot_bacon_day', accent: '#9a3412', bg: '#fdeee2', border: 'rgba(154,52,18,0.35)' },
   { key: 'resume', href: '/resume', name: 'Resume', tag: 'name the person from their resume', store: 'sot_resume_day', accent: '#0a5aa8', bg: '#e3eefa', border: 'rgba(10,90,168,0.35)' },
+  { key: 'filing', href: '/filing', name: 'Filing', tag: 'name the company from its IPO filing', store: 'sot_filing_day', accent: '#1f3a5f', bg: '#e6ebf2', border: 'rgba(31,58,95,0.35)' },
   { key: 'duet', href: '/duet', name: 'Duet', tag: 'half dots, half rings', store: 'sot_duet_day', accent: '#1a7f37', bg: '#e8f5ec', border: 'rgba(26,127,55,0.35)' },
   { key: 'snug', href: '/snug', name: 'Snug', tag: 'fit the pieces, one way only', store: 'sot_snug_day', accent: '#3b5bdb', bg: '#e8ecfb', border: 'rgba(59,91,219,0.35)' },
   { key: 'jig', href: '/jig', name: 'Jig', tag: 'the daily jigsaw', store: 'sot_jig_day', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.38)' },

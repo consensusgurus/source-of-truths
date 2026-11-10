@@ -1,10 +1,10 @@
-// scripts/bake-trivia-og.mjs: hand-built share cards for Resume, Tape and Carmen (owner, 2026-11-09: "I want
+// scripts/bake-trivia-og.mjs: hand-built share cards for Resume, Tape, Carmen and Filing (2026-11-10) (owner, 2026-11-09: "I want
 // cool share copy images for share links for this and for Carmen and for tape"). Same recipe as
 // bake-sudoclue-og.mjs: each card is an HTML page drawn from the game's own look, screenshotted at 1200x630.
 // Every board on a card is a DECOY (an invented profile, a made-up price walk, a pin trail no case uses), so a
 // card never leaks an answer. bake-og.mjs skips these keys (HAND_BAKED in lib/og-stage-cards.js).
 //
-//   node scripts/bake-trivia-og.mjs           writes <tmp>/trivia-og/{resume,tape,carmen}.html
+//   node scripts/bake-trivia-og.mjs           writes <tmp>/trivia-og/{resume,tape,carmen,filing}.html
 //   then screenshot each page at 1200x630 into public/og/<key>.png (scripts/shoot-og.py does all three)
 import fs from 'fs';
 import path from 'path';
@@ -122,4 +122,35 @@ const page = (css, body) => `<!doctype html><html><head><meta charset="utf-8"><s
     LEFT('Geography &middot; Daily Puzzle', 'Carmen', 'A thief on the run. Clues at every stop.', 'Follow the trail across the globe.', 'mindloftdaily.com/carmen');
   fs.writeFileSync(path.join(OUT, 'carmen.html'), page(css, body));
 }
-console.log('wrote', ['resume', 'tape', 'carmen'].map((k) => path.join(OUT, k + '.html')).join(' '));
+// ---- Filing: a tilted IPO prospectus cover, the name blacked out. An invented filing, no real company's.
+{
+  const A = '#a5b4fc';
+  const bar = (w, h = 15) => `<span class="rx" style="width:${w}px;height:${h}px"></span>`;
+  const ln = (w) => `<span class="ln" style="width:${w}px"></span>`;
+  const css = BASE(A) + `
+#c{background:radial-gradient(820px 520px at 86% 40%,rgba(165,180,252,.28),transparent 62%),radial-gradient(600px 420px at 0% 100%,rgba(125,211,252,.10),transparent 60%),#0b0f1a}
+.stage{position:absolute;left:640px;top:-10px;width:620px;height:680px;perspective:1600px}
+.doc{position:absolute;left:46px;top:34px;width:460px;height:600px;transform:rotateY(-16deg) rotateX(8deg) rotateZ(4deg);background:#fbfaf6;border-radius:6px;box-shadow:40px 50px 90px rgba(0,0,0,.6);color:#111;font-family:'Times New Roman',Times,serif;padding:30px 34px}
+.sec{font-size:15px;text-align:center;letter-spacing:.04em}
+.form{font-size:40px;font-weight:700;text-align:center;margin-top:10px;letter-spacing:.02em}
+.rs{font-size:16px;text-align:center;margin-top:2px;font-weight:700;letter-spacing:.06em}
+.rule{border-top:2px solid #111;margin:14px 0 12px}
+.nm{display:flex;justify-content:center;margin:6px 0 4px}
+.cap{font-size:13px;text-align:center;font-style:italic;color:#444}
+.grid{display:flex;justify-content:space-between;margin-top:18px;font-size:14px;text-align:center}
+.grid div{flex:1}
+.grid b{display:block;font-size:20px}
+.rf{margin-top:18px;font-size:16px;font-weight:700}
+.rx{display:inline-block;background:#111;vertical-align:middle;margin:0 3px}
+.ln{display:block;height:7px;border-radius:2px;background:#c9c6ba;margin:8px 0}
+.stamp{position:absolute;left:250px;top:470px;transform:rotate(-12deg);border:5px solid ${A};color:${A};font-family:M,sans-serif;font-weight:800;font-size:30px;letter-spacing:.12em;padding:6px 16px;border-radius:8px;background:rgba(11,15,26,.82)}
+`;
+  const doc = `<div class="doc"><div class="sec">UNITED STATES SECURITIES AND EXCHANGE COMMISSION</div><div class="form">FORM S-1</div><div class="rs">REGISTRATION STATEMENT</div><div class="rule"></div>
+    <div class="nm">${bar(250, 30)}<span style="font-size:26px;font-weight:700">, Inc.</span></div><div class="cap">(Exact name of registrant as specified in its charter)</div>
+    <div class="grid"><div><b>Delaware</b>State</div><div><b>7372</b>SIC Code</div><div><b>${bar(60, 16)}</b>Ticker</div></div>
+    <div class="rule"></div><div class="rf">Risk Factors</div>${ln(380)}${ln(340)}<div style="font-size:15px">We have a history of losses, and ${bar(120)} may never be profitable.</div>${ln(360)}${ln(300)}${ln(370)}${ln(250)}</div>`;
+  const body = `<div class="stage">${doc}<div class="stamp">REDACTED</div></div>` +
+    LEFT('Trivia &middot; Daily Puzzle', 'Filing', 'A famous IPO prospectus. Every name blacked out.', 'Name the company in the fewest clues.', 'mindloftdaily.com/filing');
+  fs.writeFileSync(path.join(OUT, 'filing.html'), page(css, body));
+}
+console.log('wrote', ['resume', 'tape', 'carmen', 'filing'].map((k) => path.join(OUT, k + '.html')).join(' '));

@@ -51,6 +51,8 @@ export const FINALE_PIECE = {
   dojo: 'belt', dojocolor: 'belt', room: 'tag', judged: 'letters', pricecheck: 'wallet', passport: 'passport', crossed: 'papers',
   // Space Cadet (2026-11-07): the dictionary, each rank defined by its line.
   spacecadet: 'dict',
+  // Due Diligence (2026-11-10): the wallet, a card per rank.
+  duediligence: 'wallet',
 };
 
 // ── THE PIECES ─────────────────────────────────────────────────────────────

@@ -30,6 +30,7 @@ export const GATE_TEXT = {
   crossed: ['crosswords', (n) => `${n} Grids. One Week.`, 'Speed counts most.'],
   room: ['crowd games', (n) => `${n} Rooms. No Answer Key.`, 'Tonight’s crowd is the key.'],
   spacecadet: ['spatial puzzles', (n) => `${n} Legs. One Launch.`, 'One clock decides your rank.'],
+  duediligence: ['business puzzles', (n) => `${n} Checks. One Deal.`, 'Fewer clues decide your rank.'],
 };
 
 export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done, plain = false, className = '' }) {

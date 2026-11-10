@@ -781,6 +781,33 @@ Roll, Parker, Tangled, then Topple (owner's order), back to back on one page. Ci
   DrawingPop / ThanksPop run-path regexes, challenge ENGINE_CAT (Logic). Redirects
   `/space-cadet` and `/spatial` land on it.
 
+## Due Diligence (`/duediligence`): the daily company run (owner, 2026-11-10)
+
+Tape, Filing, then Resume (owner: "chart first, filing second, bio third"), back to back on one page. Circuit id
+`duediligence`, engine `duediligence`, scorer `duediligence`, `scoreFrom: '2026-11-10'`, `ownerOrder`, `lead: 10`,
+trophy `circuit-duediligence` "Ken Griffin" (gold, TrendingUp). Files: `lib/due-diligence.js`,
+`app/duediligence/{page.js,DueDiligenceClient.jsx,leaderboard/page.js,card/route.js}`, forked from Space Cadet.
+"Due Diligence" is the run's NAME only, never a rung.
+
+- **Leg labels, in the run only** (owner): Tape is "The stock", Filing "The company", Resume "The background
+  check". The games keep their own names everywhere else on the site (`DD_FORMS`).
+- **Clues decide.** Each leg pays what its own page pays: 11 minus the clues opened (10 to 5), 0 unsolved. The run
+  is out of 30 and the board's scorer adds the three filed rows as they are.
+- **Ladder** (owner), low to high: Anon Fintwit Account 0, Jim Cramer 10, Michael Burry 18, Stanley Druckenmiller 23,
+  Ken Griffin 27. Placeholders: tune from a fortnight of runs.
+- **The games play exactly as on their own pages**: SimpleDaily reads `useRunEmbed()` (2026-11-10), so Tape, Resume
+  and Filing autostart inside the run, hide their own chrome, finish card, join form and tail, and report through
+  `EMBED.onResult`. A game already finished today is banked off its `sot_<key>_<num>` save (points from `s.open`).
+- **The ending** is GauntletEndStage's current layout (summary card, Challenge a friend, the run and puzzle
+  shelves, Share Your Score, Build Your Own Run), the wallet finale, and the share card `/duediligence/card?t=`.
+- **Pop-ups** (owner, 2026-11-10: "make the pop-up for the run and get rid of the individual puzzle pop-ups"): one
+  PREMIERE_RUNS card for the run (2026-11-10 to 2026-11-14), and the Tape and Resume premieres were removed. Tape,
+  Filing and Resume each mount `RunDoorPop id="duediligence"` (once per game, everyone, from 2026-11-10) through
+  SimpleDaily's `GAME.runDoor`, gated `!EMBED`.
+- Placed like Space Cadet: LEAD_ORDER and SHOWN, CIRC_LEAD / PILL_CIRCUITS / LEAD_CIRCUITS / RUN_SHORT / the pin
+  line ("Business test"), RunGateTile, MoreRuns, RUN_PAGES, EntryDoor, CircuitArt, the DrawingPop / ThanksPop
+  regexes, challenge ENGINE_CAT (Trivia). `/due-diligence` redirects to it. Wiring `scripts/wire-duediligence.mjs`.
+
 ## Enter the Dojo: In Color (`/dojocolor`): the Dojo on the color twins (owner, 2026-11-08)
 
 "Same as Enter the Dojo, just the color version." SixesToo, SudsToo, then ONE color variant dealt by

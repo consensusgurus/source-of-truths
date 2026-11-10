@@ -177,6 +177,7 @@ const GAMES = [
   { key: 'tape', href: '/tape', name: 'Tape', tag: 'Name the company from its chart', img: '/games/btn-tape.png' },
   { key: 'bacon', href: '/bacon', name: 'Bacon', tag: 'Link two actors through films', img: '/games/btn-bacon.png' },
   { key: 'resume', href: '/resume', name: 'Resume', tag: 'Name the person from their resume', img: '/games/btn-resume.png' },
+  { key: 'filing', href: '/filing', name: 'Filing', tag: 'Name the company from its IPO filing', img: '/games/btn-filing.png' },
   { key: 'duet', href: '/duet', name: 'Duet', tag: 'Half dots, half rings', img: '/games/btn-duet.png' },
   { key: 'snug', href: '/snug', name: 'Snug', tag: 'Fit the pieces, one way only', img: '/games/btn-snug.png' },
   { key: 'jig', href: '/jig', name: 'Jig', tag: 'The daily jigsaw', img: '/games/btn-jig.png' },
@@ -252,7 +253,7 @@ const CATEGORIES = [
   // list and cannot drift apart.
   { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sudstoo', 'sixes', 'sixestoo', 'towers', 'quilt', 'cages', 'coop', 'sando', 'snack', 'mercury', 'mercurytoo', 'fever', 'arrow', 'dart', 'polka', 'dot', 'knight', 'knighttoo', 'diag', 'diagtoo', 'frame', 'trim', 'rim', 'rimtoo', 'lip', 'liptoo', 'giant', 'gianttoo', 'sumo', 'bout', 'window', 'windowtoo', 'five', 'racecar', 'racecartoo', 'kayak', 'kayaktoo', 'whittle'] },
   { key: 'crowd', label: 'Crowd Psychology', keys: ['herd', 'outwit', 'outrank', 'feud'] },
-  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'resume', 'redact', 'dating', 'extra', 'carmen'] },
+  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'resume', 'filing', 'redact', 'dating', 'extra', 'carmen'] },
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'sudoclue', 'snug', 'jig', 'saw', 'swap', 'slide', 'spin', 'connect', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'ergo', 'docket', 'plot'] },
   { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
   { key: 'cards', label: 'Cards', keys: ['taire', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib'] },

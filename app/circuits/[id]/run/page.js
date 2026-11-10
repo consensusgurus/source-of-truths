@@ -355,6 +355,7 @@ export default function CircuitRunPage({ params }) {
   if (runEngine(id) === 'crossed') redirect('/crossed');
   // Space Cadet too (2026-11-07).
   if (runEngine(id) === 'spacecadet') redirect('/spacecadet');
+  if (runEngine(id) === 'duediligence') redirect('/duediligence');
   // Read the Room too (2026-10-13).
   if (runEngine(id) === 'room') redirect('/room');
 

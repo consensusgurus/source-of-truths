@@ -121,6 +121,8 @@ const nextConfig = {
       // Space Cadet (owner, 2026-11-07) lives at /spacecadet.
       { source: '/space-cadet', destination: '/spacecadet', permanent: true },
       { source: '/spatial', destination: '/spacecadet', permanent: false },
+      // Due Diligence (owner, 2026-11-10) lives at /duediligence.
+      { source: '/due-diligence', destination: '/duediligence', permanent: true },
       { source: '/crossed-up', destination: '/crossed', permanent: true },
       // 2026-10-20 (owner): the Daily Five and every circuit that was not a
       // designed run were retired. Each old address goes to its nearest home.

@@ -112,6 +112,14 @@ export const RUN_DOORS = {
     go: 'Run all four', accent: '#7dd3fc',
     tags: [['Roll', '#fda4af'], ['Parker', '#fde68a'], ['Tangled', '#a7e8cf'], ['Topple', '#d8b4fe']],
   },
+  // DUE DILIGENCE (owner, 2026-11-10): once per game, to everyone, on the start
+  // gate of Tape, Filing or Resume. It stands in for their premiere cards.
+  duediligence: {
+    href: '/duediligence', name: 'Due Diligence', eyebrow: 'Daily run \u00b7 Three clues to one deal', once: 'game', everyone: true, from: '2026-11-10',
+    body: 'Tape, Filing and Resume back to back on one page: name the company from its stock chart, then a company from its IPO filing, then a person from their resume. Fewer clues score more, ranked from Anon Fintwit Account up to Ken Griffin.',
+    go: 'Run all three', accent: '#a5b4fc',
+    tags: [['Tape', '#7dd3fc'], ['Filing', '#a5b4fc'], ['Resume', '#93c5fd']],
+  },
   room: {
     href: '/room', name: 'Read the Room', eyebrow: 'Daily run · Four crowd games',
     body: 'Herd, Outwit, Outrank and Feud back to back on one page: run with the herd, dodge it, call its order, say what it said. Then a verdict on how well you read tonight\u2019s room.',

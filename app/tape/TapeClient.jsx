@@ -254,6 +254,7 @@ const plural = (n) => `${n} clue${n === 1 ? '' : 's'}`;
 
 const GAME = {
   key: 'tape', name: 'Tape', cat: 'Trivia', miss: 'clues',
+  runDoor: 'duediligence',
   fresh: () => ({ open: 1, misses: [], hit: null, out: false }),
   validSave: (P, s) => typeof s.open === 'number' && Array.isArray(s.misses),
   touched: (s) => s.open > 1 || (s.misses || []).length > 0,

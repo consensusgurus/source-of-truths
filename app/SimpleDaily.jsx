@@ -42,6 +42,8 @@ import DailyRules from './DailyRules';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage from './PlayStage';
 import HelpSheet from './HelpSheet';
+import { useRunEmbed, useRunHelp } from './RunEmbed';
+import RunDoorPop from './circuits/RunDoorPop';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const ARM_MIN_MS = 400;
@@ -82,6 +84,11 @@ export function rng(seed) {
 
 export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME }) {
   const KEY = GAME.key, NAME = GAME.name;
+  // A RUN (Due Diligence, 2026-11-10): mounted inside a one-page run through
+  // app/RunEmbed.jsx, the shell drops its cap, finish card, about and join
+  // form, skips its gate when the run deals straight in, and reports the
+  // filed result upward. Outside a run EMBED is null and nothing changes.
+  const EMBED = useRunEmbed();
   const STORE_KEY_OF = (n) => `sot_${KEY}_${n}`;
   const STATS_KEY = `sot_${KEY}_stats`;
   const HELP_KEY = `sot_${KEY}_help_seen`;
@@ -261,6 +268,10 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
     const g2 = { ...cur, status: isWon ? 'won' : 'done', tEnd: Date.now(), gaveUp: !isWon };
     try { setStats(recordStat(PUZZLE.num, { s: isWon ? 1 : 0, won: isWon })); } catch (e) {}
     postResult(g2, isWon);
+    if (EMBED) {
+      const rr = GAME.result(PUZZLE, g2.s, isWon);
+      EMBED.onResult({ key: KEY, score: rr.score, total: rr.total || 10, won: isWon, t0: g2.t0, tEnd: g2.tEnd });
+    }
     gRef.current = g2;
     setG(g2);
     setArmGive(false);
@@ -298,6 +309,8 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
     setG((cur) => { const n = cur.t0 ? cur : { ...cur, t0: Date.now() }; gRef.current = n; return n; });
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
   }
+  useRunHelp(EMBED, () => setShowHelp(true));
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   function resetGame() {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
     const f = { ...fresh(), t0: Date.now() };
@@ -345,10 +358,10 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
   ) : null;
 
   return (
-    <div className="stage-page" data-stage-theme={stageTheme}
-      style={{ ...STAGE_ACC, minHeight: '100vh', position: 'relative', background: 'var(--stg-ground)', color: INK, overflowX: 'hidden' }}>
+    <div className="stage-page" data-stage-theme={EMBED ? (EMBED.theme || 'dark') : stageTheme} data-stage-pin={EMBED ? '' : undefined}
+      style={{ ...STAGE_ACC, minHeight: EMBED ? 0 : '100vh', position: 'relative', background: EMBED ? 'transparent' : 'var(--stg-ground)', color: INK, overflowX: 'hidden' }}>
       {stage}
-      <StageChrome gameKey={KEY} quizId={PUZZLE.quizId}
+      {!EMBED && <StageChrome gameKey={KEY} quizId={PUZZLE.quizId}
         name={NAME}
         cat={GAME.cat}
         outcome={playing ? null : (won ? 'won' : 'lost')}
@@ -361,7 +374,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
           ...(GAME.miss ? [{ v: String(count), k: count === 1 ? GAME.miss.replace(/s$/, '') : GAME.miss }] : []),
           { v: elapsed, k: 'time' },
         ]}
-      />
+      />}
       <div className="sd-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 24px 80px', fontFamily: SANS }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.sd-wrap{padding-left:10px !important;padding-right:10px !important;}}
@@ -370,7 +383,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
           .sd-tool{font-family:${SANS};font-weight:800;font-size:13.5px;border:1.5px solid var(--stg-cell-line, rgba(28,30,36,.35));background:transparent;color:${INK};border-radius:999px;padding:0 15px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
         ` }} />
         <div>
-          {preStart && (
+          {preStart && !(EMBED && EMBED.autostart) && (
             <div className="stg-gate" style={{ maxWidth: 640, margin: '0 auto 16px', background: 'var(--stg-surf,#fff)', border: '1px solid var(--stg-line,rgba(11,15,26,.14))', borderRadius: 12, padding: 22, display: 'flex', flexDirection: 'column' }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : GAME.gateTitle(PUZZLE)}</div>
               {gateRules ? rulesBody : (
@@ -392,7 +405,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
           {ended && !endHold.held && revealed && (
             <button className="stf-hideboard" onClick={() => setRevealed(false)}>&#8630; Hide the board</button>
           )}
-          {ended && !endHold.held && (
+          {ended && !endHold.held && !EMBED && (
             <LoftFinish
               name={NAME}
               catRank={catRank}
@@ -430,7 +443,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
           )}
         </div>
 
-        <div style={{ margin: '30px auto 0', maxWidth: 680 }}>
+        <div style={{ display: EMBED ? 'none' : 'block', margin: '30px auto 0', maxWidth: 680 }}>
           <ReportIssue self={KEY} name={NAME} accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />
           {ended && mobileUi && !standalone && (
             <div style={{ textAlign: 'center', marginTop: 16 }}>
@@ -451,7 +464,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
             </div>
           </div>
         )}
-        {ended && !identity && (
+        {ended && !identity && !EMBED && (
           <div id="daily-join" style={{ margin: '18px auto 0', maxWidth: 680 }}>
             <JoinLeaderboardForm hideIcon heading="See your stats and join the leaderboard" />
           </div>
@@ -465,8 +478,11 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
         </HelpSheet>
       )}
 
-      <StageFold />
-      <section style={{ maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      {/* A game in a run offers the run itself on its own start gate
+          (GAME.runDoor, app/circuits/RunDoorPop.jsx); never inside the run. */}
+      {GAME.runDoor ? <RunDoorPop id={GAME.runDoor} game={KEY} ready={hydrated && preStart && isTodays && !EMBED} self={NAME} /> : null}
+      {!EMBED && <StageFold />}
+      <section style={{ display: EMBED ? 'none' : 'block', maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ fontSize: 17, fontWeight: 800, color: INK, margin: '0 0 8px' }}>{GAME.aboutTitle || `About ${NAME}`}</h2>
         {GAME.about.map((para, i) => (
           <p key={i} style={{ fontSize: 13.5, fontWeight: 600, color: MUTE, lineHeight: 1.6, margin: i === GAME.about.length - 1 ? 0 : '0 0 9px' }}>{para}</p>

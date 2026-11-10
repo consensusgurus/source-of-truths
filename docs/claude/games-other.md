@@ -2255,3 +2255,30 @@ group), `miss: 'Clues'`, scored like Tape: a solve with c clues open is 11 - c, 
   leg "The background check".
 - **Tiles** `scripts/gen-resume-tile.py`; OG `public/og/resume.png` via `scripts/bake-og.mjs resume`; wiring
   `scripts/wire-resume.mjs`.
+
+## Filing (`/filing`): name the company from its IPO filing (launched 2026-11-10)
+
+Owner, 2026-11-10: the third puzzle for a run beside Tape and Resume, "name the company from its SEC filing,
+EDGAR style", then switched from the 10-K to the IPO prospectus (Form S-1). Key/route `filing`, category
+**Trivia** (Guessing games group, now five; finish set Due diligence), `miss: 'Clues'`, scored like Tape and
+Resume: a solve with c clues open is 11 - c, unsolved 0. Runs on `app/SimpleDaily.jsx`. No Sunday Edition.
+
+- **The board** is an EDGAR-style S-1 cover and its sections, Times inside the filing document only, Manrope
+  everywhere else. Every name of the company (and its signature products) is a black redaction bar written
+  `[[...]]` in the bank; the ending lifts every bar (shown as a highlight) and prints the ticker, the filed date,
+  the famous line and the EDGAR link.
+- **Clues, in order** (owner: risk factors instead of employee or location counts; the offering mechanics are
+  not useful; the competition section is good; the founders' letter gives it away too early, so it comes last):
+  1 one risk factor (free), 2 the cover page (SIC code and industry, exchange, date filed), 3 competition,
+  4 key business metrics, 5 the business overview with names blacked out, 6 "in their own words", a founders'
+  letter line or, where the S-1 has no letter, the Prospectus Summary, labelled by `words.src`. The famous line
+  (`famous`) shows only on the ending. Google's 2004 S-1 has no metrics section, so its clue 4 is a second risk factor.
+- **Guesses** use Tape's universe (`app/tape/universe.js`, the Russell 3000) and its type-ahead; `accept` lists
+  every ticker that counts (Alphabet: GOOGL and GOOG).
+- **Bank** `app/filing/puzzles.js` (append-only), 14 boards 2026-11-10 to 2026-11-23, quoted from the filing on
+  sec.gov (`src`). `scripts/verify-filing.mjs`: contiguous dates, tickers in the universe, no repeats, every
+  clue present, nothing outside `[[ ]]` names the company or shows its ticker, no em dash, and never the same
+  company as Tape on the same day. **Restock before 2026-11-23.**
+- **Inside Due Diligence** the leg is labelled "The company"; everywhere else the game is Filing.
+- **Tiles** `scripts/gen-filing-tile.py`; OG `public/og/filing.png` hand-baked by `scripts/bake-trivia-og.mjs`
+  (a decoy filing, no real company) and `scripts/shoot-og.py filing`; wiring `scripts/wire-filing.mjs`.
