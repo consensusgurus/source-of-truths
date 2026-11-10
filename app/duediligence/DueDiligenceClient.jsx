@@ -72,7 +72,9 @@ function bankedOf(sec) {
   } catch (e) { return null; }
 }
 
-// THE ENTRY CENTREPIECE: the deal memo. Pressing it starts the run.
+// THE ENTRY CENTREPIECE: the deal memo. Pressing it starts the run. It sits in
+// GauntletGate's fixed-height piece slot (140px, 170px wide), so it stays to
+// three rows: the header, the line, and the three checks side by side.
 function Memo({ go, allBanked, onStart, sections }) {
   return (
     <button type="button" className={`dd-memo${go ? ' go' : ''}`} onClick={onStart} aria-label={allBanked ? 'See your rank' : 'Open the file'}>
@@ -81,7 +83,6 @@ function Memo({ go, allBanked, onStart, sections }) {
       <span className="dd-ml">
         {sections.map((s, i) => <span key={s.key}><i>{i + 1}</i>{s.form}<em>{s.game}</em></span>)}
       </span>
-      <span className="dd-mf">Top rank: {B[0][1]} &middot; {B.length} ranks, down to {B[B.length - 1][1]}</span>
     </button>
   );
 }
@@ -378,19 +379,18 @@ const CSS = `
 .dd-final .gsx-eye2{font-size:0 !important}
 .dd-final .gsx-eye2::after{content:'Up Next \\00B7  Your Rank';font-size:15px}
 /* ENTRY CENTREPIECE: the deal memo, on paper in the stage ink. */
-.dd-memo{display:flex;flex-direction:column;gap:8px;width:100%;margin:0;padding:14px 16px 13px;border:1px solid var(--gsx-ink);border-radius:16px;background:#ffffff;color:#08222e;box-shadow:4px 4px 0 var(--gsx-ink);cursor:pointer;font:inherit;text-align:left;transition:transform .2s ease}
+.dd-memo{display:flex;flex-direction:column;justify-content:center;gap:7px;width:100%;height:100%;margin:0;padding:10px 16px;overflow:hidden;border:1px solid var(--gsx-ink);border-radius:16px;background:#ffffff;color:#08222e;box-shadow:4px 4px 0 var(--gsx-ink);cursor:pointer;font:inherit;text-align:left;transition:transform .2s ease}
 .dd-memo:focus-visible{outline:3px solid var(--gsx-ink);outline-offset:3px}
 .dd-memo:hover{background:#eef2ff}
 .dd-memo.go{transform:translateY(-3px)}
 .dd-mh{display:flex;justify-content:space-between;border-bottom:2px solid #08222e;padding-bottom:6px}
 .dd-mh small{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
 .dd-mh small:first-child{color:#b91c1c}
-.dd-memo b{font-size:20px;font-weight:800;letter-spacing:-.01em}
-.dd-ml{display:flex;flex-direction:column;gap:4px}
-.dd-ml > span{display:flex;align-items:baseline;gap:8px;font-size:14px;font-weight:800}
+.dd-memo b{font-size:19px;line-height:1.15;font-weight:800;letter-spacing:-.01em}
+.dd-ml{display:flex;flex-wrap:wrap;column-gap:16px;row-gap:4px}
+.dd-ml > span{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:800;white-space:nowrap}
 .dd-ml i{font-style:normal;width:20px;height:20px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid #08222e;border-radius:999px;font-size:11px}
-.dd-ml em{font-style:normal;font-weight:600;opacity:.7;font-size:13px}
-.dd-mf{font-size:12.5px;font-weight:700;opacity:.8}
+.dd-ml em{display:none}
 @media(min-width:900px){
   .dd-gate .gsx-split{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto;row-gap:18px}
   .dd-gate .gsx-split > .gsx-top{margin-bottom:0}
