@@ -228,6 +228,12 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   const [openTip, setOpenTip] = useState(-1);
   const deskWide = useDesk();
   const desk = deskWide && onStage;
+  // FULL SCREEN ON THE STAGE (owner, 2026-11-09: "make the Carmen globe full
+  // screen ... with a faint clue and pin button overlay at the top and bottom",
+  // then "the same on desktop too"). On the stage, at every width, the globe is
+  // the page's back layer and everything else floats over it. Replaces the
+  // desktop Dossier column. Off the stage (the board on the ending) is unchanged.
+  const fs = !!onStage;
 
   // The world loads once; the globe mounts on it.
   useEffect(() => {
@@ -251,10 +257,11 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
       const R = regionRef.current, O = overRef.current, G = globe.current;
       if (!R || !G) return;
       const w = R.clientWidth, h = R.clientHeight;
-      if (desk) {
-        // The desk panel is the globe's alone: centred, as large as it fits.
-        const r = Math.max(120, Math.min(w / 2 - 28, (h - 64) / 2));
-        G.setFrame(w, h, w / 2, h / 2 - 4, r);
+      if (fs) {
+        // Full screen: a big globe, a touch below centre, free to run under the
+        // clue card and the buttons (they are glass) and past the phone's sides.
+        const r = Math.max(120, Math.min(w * 0.62, h * 0.44));
+        G.setFrame(w, h, w / 2, h * 0.53, r);
         return;
       }
       // The largest card this visit sized it, so the globe holds still as tips arrive.
@@ -271,7 +278,7 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
     try { ro = new ResizeObserver(place); if (regionRef.current) ro.observe(regionRef.current); if (overRef.current) ro.observe(overRef.current); } catch (e) {}
     window.addEventListener('resize', place);
     return () => { if (ro) ro.disconnect(); window.removeEventListener('resize', place); };
-  }, [ready, desk]);
+  }, [ready, fs]);
 
   // ENTER ON THE DESK (owner, 2026-10-29: desktop puzzles take the physical
   // keyboard): Enter locks in the pin, then moves on to the next leg.
@@ -446,73 +453,53 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   const doneNote = done && !held && onStage ? (
     <div className="cmn-donenote">{s.res.length === n ? `Case closed: ${fmt(total)} points` : `${fmt(total)} points before the trail went cold`}</div>
   ) : null;
-  const stolen = String(P.stolen || '');
-  const side = desk ? (
-    <div className="cmn-side" key="side">
-      <div className="cmn-who">
-        <div className="cmn-mug" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#c4e08a" strokeWidth="1.6" strokeLinecap="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4.5 4.5-7 8-7s7 2.5 8 7" /></svg></div>
-        <div>
-          <div className="cmn-who-eb">Case {String(P.num).padStart(3, '0')} · Suspect</div>
-          <div className="cmn-who-n">{P.suspect}</div>
-          <div className="cmn-who-s">Stole {stolen.charAt(0).toLowerCase() + stolen.slice(1)}</div>
-        </div>
-      </div>
-      <div className="cmn-strip">
-        <div className="cmn-legs">{P.legs.map((_, i) => <i key={i} className={(i < s.res.length ? 'd' : '') + (i === s.leg && !done && s.phase === 'play' ? ' c' : '')}>{i + 1}</i>)}</div>
-        <div className="cmn-pts"><b>{fmt(total)}</b> / {fmt(maxPoints(n))} points</div>
-      </div>
-      {cardEl}
-      {resEl}
-      {doneNote}
-      <div className="cmn-trail">
-        <div className="cmn-trail-h">Her trail</div>
-        <div className="cmn-trow"><span><b>Start</b> · {P.start.name}</span><em>Case opened</em></div>
-        {s.res.map((r, i) => (
-          <div className="cmn-trow" key={i}><span><b>Leg {i + 1}</b> · {P.legs[i].name}</span><em>+{fmt(r.pts)}</em></div>
-        ))}
-        {!done && s.phase === 'play' ? <div className="cmn-trow dim"><span><b>Leg {s.leg + 1}</b> · ?</span><em>{s.guess ? 'Pin dropped' : 'Your pin'}</em></div> : null}
-      </div>
-      <CarmenTools P={P} s={s} setS={setS} active={active && !done} inSide />
+  const zoomEl = active && !done ? (
+    <div className="cmn-zoom">
+      <button type="button" aria-label="Zoom in" onClick={() => globe.current && globe.current.zoomBy(1.6)}>+</button>
+      <button type="button" aria-label="Zoom out" onClick={() => globe.current && globe.current.zoomBy(1 / 1.6)}>&#8722;</button>
     </div>
   ) : null;
+  const hintEl = (
+    <div className="cmn-hint" style={{ opacity: (hint && active && !done && s.phase === 'play' && !s.guess) || busy ? 1 : 0 }}>
+      {busy ? 'Tracking her flight' : desk ? 'Drag to spin · scroll to zoom · click to drop your pin' : 'Drag to spin · tap to drop your pin'}
+    </div>
+  );
+  const stripEl = (
+    <div className="cmn-strip" key="strip">
+      <div className="cmn-legs">{P.legs.map((_, i) => <i key={i} className={(i < s.res.length ? 'd' : '') + (i === s.leg && !done && s.phase === 'play' ? ' c' : '')}>{i + 1}</i>)}</div>
+      <div className="cmn-pts"><b>{fmt(total)}</b> points</div>
+    </div>
+  );
+  const svgEl = <svg ref={svgRef} className="cmn-svg" aria-label={desk ? 'Globe. Drag to spin, scroll to zoom, click to drop your pin.' : 'Globe. Drag to spin, tap to drop your pin.'} role="img" />;
+  const failEl = failed ? <div className="cmn-fail">The globe did not load. Check your connection and reload.</div> : null;
 
   return (
-    <div className={'cmn' + (onStage ? '' : ' off') + (desk ? ' dk' : '')} ref={rootRef}>
+    <div className={'cmn' + (onStage ? '' : ' off') + (fs ? ' fs' : '')} ref={rootRef}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      {side}
-      {desk ? null : (
-        <div className="cmn-strip" key="strip">
-          <div className="cmn-legs">{P.legs.map((_, i) => <i key={i} className={(i < s.res.length ? 'd' : '') + (i === s.leg && !done && s.phase === 'play' ? ' c' : '')}>{i + 1}</i>)}</div>
-          <div className="cmn-pts"><b>{fmt(total)}</b> points</div>
-        </div>
+      {fs ? (
+        <>
+          {/* The globe fills the screen behind everything (z -1 in the stage). */}
+          <div className="cmn-region" ref={regionRef} key="region">{svgEl}{failEl}</div>
+          {stripEl}
+          <div className="cmn-fscard">{cardEl}{resEl}</div>
+          <div className="cmn-fsgap" />
+          <div className="cmn-fsfoot">{hintEl}{zoomEl}</div>
+          {doneNote}
+        </>
+      ) : (
+        <>
+          {stripEl}
+          {/* THE GLOBE RESTS UNDER THE CLUES (owner, 2026-11-08). Off the stage
+              the clue card floats over the globe's top. */}
+          <div className="cmn-region" ref={regionRef} key="region">
+            {svgEl}{failEl}
+            <div className="cmn-over" ref={overRef}>{cardEl}{resEl}</div>
+            {zoomEl}
+            {hintEl}
+          </div>
+          {doneNote}
+        </>
       )}
-
-      {/* THE GLOBE RESTS UNDER THE CLUES (owner, 2026-11-08: "very small on
-          mobile ... maybe resting under the clues"). The region takes all the
-          height the column has; the globe sits at its foot as large as the
-          width allows, and the clue card floats over its top. On the desk the
-          region is the dark panel and the clues live in the dossier. */}
-      <div className="cmn-region" ref={regionRef} key="region">
-        <svg ref={svgRef} className="cmn-svg" aria-label={desk ? 'Globe. Drag to spin, scroll to zoom, click to drop your pin.' : 'Globe. Drag to spin, tap to drop your pin.'} role="img" />
-        {failed ? <div className="cmn-fail">The globe did not load. Check your connection and reload.</div> : null}
-        {desk ? null : (
-          <div className="cmn-over" ref={overRef}>
-            {cardEl}
-            {resEl}
-          </div>
-        )}
-        {active && !done ? (
-          <div className="cmn-zoom">
-            <button type="button" aria-label="Zoom in" onClick={() => globe.current && globe.current.zoomBy(1.6)}>+</button>
-            <button type="button" aria-label="Zoom out" onClick={() => globe.current && globe.current.zoomBy(1 / 1.6)}>&#8722;</button>
-          </div>
-        ) : null}
-        <div className="cmn-hint" style={{ opacity: (hint && active && !done && s.phase === 'play' && !s.guess) || busy ? 1 : 0 }}>
-          {busy ? 'Tracking her flight' : desk ? 'Drag to spin · scroll to zoom · click to drop your pin' : 'Drag to spin · tap to drop your pin'}
-        </div>
-      </div>
-
-      {desk ? null : doneNote}
 
       <Curtain show={curtain === 'file'} onSkip={() => skipRef.current && skipRef.current()}><CaseFile P={P} /></Curtain>
       <Curtain show={curtain === 'leg'} onSkip={() => skipRef.current && skipRef.current()}><LegCard P={P} leg={s.leg} /></Curtain>
@@ -530,12 +517,11 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
   );
 }
 
-// The buttons under the globe (PlayStage `bottom`). On the desk they sit at
-// the foot of the dossier instead (inSide), and the stage's copy steps aside.
+// The buttons under the globe (PlayStage `bottom`), floating over the
+// full-screen globe on the stage at every width.
 export function CarmenTools({ P, s, setS, active, inSide = false }) {
   const desk = useDesk();
   if (!active) return null;
-  if (desk && !inSide) return null;
   const n = P.legs.length;
   if (s.phase === 'play') {
     const label = s.guess ? (desk ? 'Lock in pin · Enter' : 'Lock in pin') : (desk ? 'Click the globe to drop a pin' : 'Tap the globe to drop a pin');
@@ -665,32 +651,36 @@ const CSS = `
 .cmn-title.on{opacity:1;}
 @media (prefers-reduced-motion:reduce){.cmn *{animation:none !important;transition:none !important;}}
 
-/* THE DESK LAYOUT (owner, 2026-11-09, mockup B). Only .cmn.dk, set from 1000px
-   wide on the stage, so the phone layout above is untouched. */
-.cmn.dk{display:grid;grid-template-columns:minmax(340px,400px) minmax(0,1fr);gap:20px;max-width:none;min-height:min(640px, calc(100dvh - 240px));align-items:stretch;}
-.cmn.dk .cmn-side{display:flex;flex-direction:column;gap:12px;min-height:0;min-width:0;}
-.cmn-who{display:flex;gap:14px;align-items:center;border:1px solid var(--pst-ink,#16181d);border-radius:4px 16px 16px 16px;background:var(--pst-pale,#eef6dc);padding:14px 16px;color:var(--pst-ink,#16181d);}
-.cmn-mug{width:52px;height:52px;flex:none;border-radius:50%;background:#16181d;display:grid;place-items:center;}
-.cmn-who-eb{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.75;}
-.cmn-who-n{font-size:20px;font-weight:800;letter-spacing:-.01em;line-height:1.2;}
-.cmn-who-s{font-size:13px;font-weight:600;opacity:.8;}
-.cmn.dk .cmn-card{padding:14px 16px;-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--pst-bg,#fff);flex:1 1 auto;min-height:0;overflow-y:auto;}
-.cmn.dk .cmn-tips{gap:12px;margin-top:12px;}
-.cmn.dk .cmn-tips li{font-size:15.5px;line-height:1.55;}
-.cmn.dk .cmn-more{min-height:46px;margin-top:14px;}
-.cmn.dk .cmn-res{box-shadow:none;}
-.cmn-trail{display:flex;flex-direction:column;gap:5px;flex:none;}
-.cmn-trail-h{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pst-mute,#4a4f58);margin-bottom:2px;}
-.cmn-trow{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;line-height:1.35;}
-.cmn-trow span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.cmn-trow em{font-style:normal;font-weight:700;color:var(--pst-mute,#4a4f58);flex:none;font-variant-numeric:tabular-nums;}
-.cmn-trow.dim{color:var(--pst-mute,#4a4f58);}
-.cmn.dk .cmn-tools{max-width:none;margin:0;}
-.cmn.dk .cmn-btn{min-height:54px;font-size:16px !important;}
-.cmn.dk .cmn-region{min-height:520px;border:1px solid var(--pst-ink,#16181d);border-radius:16px;overflow:hidden;background:radial-gradient(ellipse at 50% 46%,#262e38 0%,#12161b 62%,#0b0e12 100%);}
-.pst.inl .cmn.dk .cmn-region{height:auto;flex:1 1 auto;}
-.cmn.dk .cmn-svg{-webkit-mask-image:none;mask-image:none;}
-.cmn.dk .cmn-zoom{top:16px;right:16px;bottom:auto;gap:8px;}
-.cmn.dk .cmn-zoom button{width:40px;height:40px;border-color:rgba(255,255,255,.4);background:rgba(0,0,0,.3);color:#fff;}
-.cmn.dk .cmn-hint{left:18px;bottom:14px;transform:none;background:transparent;color:rgba(255,255,255,.72);padding:0;font-size:13px;}
+/* FULL SCREEN ON THE STAGE (owner, 2026-11-09, phone and desktop). The globe
+   region is the stage's back layer: fixed to the viewport in the full-screen
+   stage, filling the stage box when the stage sits inline under the site
+   header. The column above it lets taps through to the globe except on the
+   glass pieces: the strip and clue card at the top, the zoom, the pin button
+   and the foot row at the bottom. */
+.cmn.fs{max-width:none;gap:8px;}
+.cmn.fs .cmn-region{position:fixed;inset:0;z-index:-1;min-height:0;height:auto;flex:none;width:auto;pointer-events:auto;}
+.pst.inl .cmn.fs .cmn-region{position:absolute;inset:0;height:auto;flex:none;}
+.pst.inl:has(.cmn.fs){isolation:isolate;overflow:hidden;}
+.cmn.fs .cmn-svg{-webkit-mask-image:none;mask-image:none;}
+.pst:has(.cmn.fs){overflow:hidden;}
+.pst:has(.cmn.fs) .pst-col{pointer-events:none;height:100%;}
+.pst.inl:has(.cmn.fs) .pst-col{height:auto;}
+.pst:has(.cmn.fs) .pst-col>*:not(.pst-top){pointer-events:auto;}
+.pst:has(.cmn.fs) .pst-top{animation:none;justify-content:flex-start;flex:1 1 auto;min-height:0;}
+.pst:has(.cmn.fs) .pst-eb,.pst:has(.cmn.fs) .pst-foot{display:none;}
+.cmn.fs .cmn-strip,.cmn.fs .cmn-fscard,.cmn.fs .cmn-zoom,.cmn.fs .cmn-donenote{pointer-events:auto;}
+.cmn.fs>.cmn-strip,.cmn.fs .cmn-fscard{width:100%;max-width:640px;margin:0 auto;}
+.cmn-fscard{display:flex;flex-direction:column;gap:8px;}
+.cmn.fs .cmn-strip,.cmn.fs .cmn-card{background:color-mix(in srgb, var(--pst-bg,#fff) 66%, transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+.cmn.fs .cmn-card{max-height:42dvh;overflow-y:auto;}
+.cmn.fs .cmn-more{background:color-mix(in srgb, var(--pst-bg,#fff) 55%, transparent);}
+.cmn-fsgap{flex:1 1 auto;min-height:0;}
+.cmn-fsfoot{position:relative;display:flex;justify-content:flex-end;align-items:flex-end;min-height:40px;flex:none;}
+.cmn.fs .cmn-zoom{position:static;}
+.cmn.fs .cmn-zoom button{background:color-mix(in srgb, var(--pst-bg,#fff) 70%, transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+.cmn.fs .cmn-hint{bottom:6px;background:color-mix(in srgb, var(--pst-bg,#fff) 80%, transparent);color:var(--pst-ink,#16181d);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+.cmn.fs .cmn-donenote{padding:8px 12px;border-radius:12px;background:color-mix(in srgb, var(--pst-bg,#fff) 70%, transparent);}
+.pst:has(.cmn.fs) .cmn-btn:disabled{opacity:1;background:color-mix(in srgb, var(--pst-bg,#fff) 66%, transparent);color:var(--pst-ink,#16181d);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+.pst:has(.cmn.fs) .sft-b:not(.on),.pst:has(.cmn.fs) .stb-home,.pst:has(.cmn.fs) .stb-look,.pst:has(.cmn.fs) .stb-share,.pst:has(.cmn.fs) .stb-nav{background:color-mix(in srgb, var(--pst-bg,#fff) 70%, transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+@media (min-width:1000px){.cmn.fs .cmn-card{padding:14px 16px;}.cmn.fs .cmn-tips{gap:10px;}.cmn.fs .cmn-tips li{font-size:15.5px;line-height:1.5;}.cmn.fs .cmn-zoom button{width:40px;height:40px;}.pst:has(.cmn.fs) .cmn-btn{min-height:54px;font-size:16px !important;}}
 `;
