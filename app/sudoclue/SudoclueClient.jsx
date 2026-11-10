@@ -307,6 +307,8 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const CAST = PUZZLE.cast;
   const CAST_COLORS = useMemo(() => boardColours(CAST), [CAST]);
   const THREE = !!PUZZLE.three;
+  // Interrogation boards (No. 12, Nov 10, on): some Stage 2 notes are suspects' statements, and only the killer lies.
+  const ASK = PUZZLE.clues.filter((c) => c.k === 'says').length;
   const COUNTS = useMemo(() => (THREE ? { Victim: 1, Killer: 1, Accomplice: 1 } : roleCounts(N)), [N, THREE]);
   const IDX = useMemo(() => boardIndex(LAYOUT), [LAYOUT]);
   // The answer, derived from the clues on first need and kept.
@@ -833,13 +835,13 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
       lead={<>A murder at <b>{LAYOUT.title}</b>, solved in two stages. First <b>place</b> all {N} people, <b>one in every row and one in every column</b>. Then <b>accuse</b>: work out who played which part.</>}
-      banner={THREE ? <><b>Three people had a part:</b> the victim, the killer and the accomplice. Everyone else was a bystander, and only the detective&rsquo;s notes say who is who.</> : <><b>The killer was alone with the victim.</b> The victim&rsquo;s room holds exactly two people: the victim and the killer.</>}
+      banner={ASK ? <><b>Three people had a part:</b> the victim, the killer and the accomplice. You question {ASK === 2 ? 'two' : 'three'} suspects: <b>the killer is one of them and the only one who lies.</b></> : THREE ? <><b>Three people had a part:</b> the victim, the killer and the accomplice. Everyone else was a bystander, and only the detective&rsquo;s notes say who is who.</> : <><b>The killer was alone with the victim.</b> The victim&rsquo;s room holds exactly two people: the victim and the killer.</>}
       steps={[
         <><b>Stage 1, Place.</b> Each card is one person and what they said about where they stood. Tap a card, then a square. People stand on <b>open floor</b> or on a <b>seat</b> (a chair, a bench, a rug, a bed, a boat); water, trees, tables and statues are not places to stand. The Key sorts every picture into the two, and a white ring on the board marks each seat still free. Someone who <b>said nothing</b> is found by elimination. <b>Note</b> lets you outline the squares a person might be on in their colour: pick their card, tap Note, then tap squares (tap again to rub one out). Notes fade once a placed person&rsquo;s row or column, or a Mark, rules their square out, and a person&rsquo;s last note left lights up.</>,
         <>Every labelled area on the board is a <b>room</b>, indoors or out, and a clue that names one (&ldquo;in the Mall area&rdquo;) means any square inside it. <b>Beside</b> means a square that shares an edge with the thing, never a diagonal. <b>On</b> means on the thing itself. Every clue is true.</>,
-        <><b>Check board</b> when everyone is placed. Once it is right, <b>Stage 2, Accuse</b> opens the detective&rsquo;s notes: clues about the roles. {THREE ? <>Pick someone on the board, then tap their part: the <b>victim</b>, the <b>killer</b> or the <b>accomplice</b>. Name all three and accuse.</> : <>Tap a card and give that person a role: the <b>victim</b>, the <b>killer</b>, the <b>accomplice</b>, or one of the day&rsquo;s <b>guests</b>, <b>staff</b> or <b>family</b>.</>}</>,
+        <><b>Check board</b> when everyone is placed. Once it is right, <b>Stage 2, Accuse</b> opens {ASK ? <>the <b>interrogation</b>, {ASK === 2 ? 'two' : 'three'} suspects&rsquo; statements, and the detective&rsquo;s notes. The killer was questioned and is the only one lying; every other statement and every note is true, and the victim was not questioned. </> : <>the detective&rsquo;s notes: clues about the roles. </>}{THREE ? <>Pick someone on the board, then tap their part: the <b>victim</b>, the <b>killer</b> or the <b>accomplice</b>. Name all three and accuse.</> : <>Tap a card and give that person a role: the <b>victim</b>, the <b>killer</b>, the <b>accomplice</b>, or one of the day&rsquo;s <b>guests</b>, <b>staff</b> or <b>family</b>.</>}</>,
       ]}
-      knack={THREE ? <>Placed people shade their row and column, so the squares left open stand out. In Stage 2, no single note names anyone: cross people off one note at a time, and use what one note settles to read the next.</> : <>Placed people shade their row and column, so the squares left open stand out. In Stage 2, find the rooms that hold exactly two people first: the victim and the killer are one of those pairs.</>}
+      knack={ASK ? <>Placed people shade their row and column, so the squares left open stand out. In Stage 2, take each suspect in turn and ask: if they were the liar, do the notes and the other statements still hold together? Only one can be.</> : THREE ? <>Placed people shade their row and column, so the squares left open stand out. In Stage 2, no single note names anyone: cross people off one note at a time, and use what one note settles to read the next.</> : <>Placed people shade their row and column, so the squares left open stand out. In Stage 2, find the rooms that hold exactly two people first: the victim and the killer are one of those pairs.</>}
       note={<>A case scores points for placing, for accusing, and a Clean record bonus that each wrong check cuts. <b>Mark</b> crosses out squares you have ruled out, <b>Undo</b> takes back your last move, <b>Clear all</b> starts the stage over, and <b>Nudge</b> explains the next logical move in words (each one takes 10 off Clean record). Drag the board to look around it.</>}
       footer={<>Boards are 8 by 8 Monday to Wednesday, 9 by 9 on Thursday and Friday, and 10 by 10 on the weekend, with the Sunday Edition on Sunday. Every board can be solved by logic alone, no guessing: Monday is the gentlest and the weekend the longest. Names are famous first or last names, and the cast are original painted figures, not likenesses.</>}
     />
@@ -903,7 +905,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   // in the cap (hidden by default, the reveal preference), not here.
   const foot = playing && !preStart && (
     <div className="sc-foot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 14, padding: '10px 2px 0', borderTop: `1px solid ${SURF_B}`, fontFamily: SANS }}>
-      <span style={{ fontSize: 12.5, fontWeight: 650, color: FADED, lineHeight: 1.4 }}>{THREE ? 'One per row and column. The notes name the victim, the killer and the accomplice.' : 'One per row and column. The killer was alone with the victim.'}</span>
+      <span style={{ fontSize: 12.5, fontWeight: 650, color: FADED, lineHeight: 1.4 }}>{ASK ? 'One per row and column. Only the killer lies under questioning.' : THREE ? 'One per row and column. The notes name the victim, the killer and the accomplice.' : 'One per row and column. The killer was alone with the victim.'}</span>
       <button type="button" onClick={giveUpTap} style={{ minHeight: 44, flex: 'none', background: 'none', border: 'none', cursor: 'pointer', fontFamily: SANS, fontSize: 12.5, fontWeight: 700, color: armReveal ? BAD : FADED, textDecoration: 'underline', textUnderlineOffset: 3 }}>
         {armReveal ? 'Tap again to give up' : 'Give Up'}
       </button>
@@ -916,6 +918,8 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   // clues open as the detective's notes and each card takes a role. A tool bar sits under it all.
   const placeClues = clueList.filter((c) => !isRoleClue(c));
   const roleClueList = clueList.filter((c) => isRoleClue(c));
+  const saysList = roleClueList.filter((c) => c.k === 'says');
+  const noteList = roleClueList.filter((c) => c.k !== 'says');
   const said = (p) => placeClues.filter((c) => c.p === p);
   const iconBtn = (label, icon, onClick, opts = {}) => (
     <button type="button" onClick={onClick} className={opts.pulse ? 'sc-pulse' : undefined} aria-pressed={opts.pressed} disabled={opts.disabled}
@@ -941,16 +945,36 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
         <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: ACC_INK }}>{accuse ? 'Stage 2 · Accuse' : 'Stage 1 · Place'}</span>
         <span style={{ fontSize: 12.5, fontWeight: readyToCheck ? 800 : 650, color: readyToCheck ? ACC_INK : FADED }}>{accuse ? (THREE ? 'Pick someone, then their part' : 'Tap a card, then pick a role') : readyToCheck ? 'All placed: tap Check board' : mode === 'note' ? (sel && !g.place[sel] ? `Tap squares where ${sel} might be` : 'Pick someone still to place') : mode === 'mark' ? 'Tap squares to cross them out' : 'Tap a card, then a square'}</span>
       </div>
+      {/* THE INTERROGATION (owner, 2026-11-09: "Question two or three suspects, each gives a statement, and only the
+          killer lies"). From No. 12 a case questions 2 suspects Monday to Wednesday and 3 later in the week. The killer
+          is always one of them and the only one lying; the victim is never questioned. Tap a statement to strike it. */}
+      {accuse && saysList.length > 0 && (
+        <div aria-label="Interrogation" style={{ borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '9px 12px 4px', marginBottom: 8 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED, marginBottom: 2 }}>Interrogation</div>
+          <div style={{ fontSize: 13, fontWeight: 650, color: FADED, lineHeight: 1.35, padding: '2px 0 7px' }}>The board is right. You questioned {saysList.length === 2 ? 'two' : 'three'} suspects. <b style={{ color: INK }}>The killer is one of them, and the only one who lied.</b> Everyone else told the truth, and the victim was not questioned.</div>
+          {saysList.map((c) => (
+            <button key={c.i} type="button" onClick={() => toggleStruck(c.i)} aria-pressed={!!g.struck[c.i]} style={{ display: 'flex', alignItems: 'flex-start', gap: 9, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, padding: '8px 0', cursor: 'pointer', fontFamily: SANS }}>
+              <Portrait id={c.p} size={32} ring={CAST_COLORS[c.p]} src={use3d && thumbs ? thumbs[c.p] : null} />
+              <span style={{ minWidth: 0, flex: 1 }}>
+                <span style={{ display: 'block', fontSize: 13, fontWeight: 800, color: INK }}>{c.p}{g.roles[c.p] ? <span style={{ marginLeft: 6, fontSize: 10.5, fontWeight: 800, letterSpacing: '0.03em', textTransform: 'uppercase', color: '#fff', background: ROLE_COLORS[g.roles[c.p]], borderRadius: 999, padding: '1px 7px', verticalAlign: '0.1em' }}>{g.roles[c.p]}</span> : null}</span>
+                <span style={{ display: 'block', fontSize: 13.5, fontWeight: 650, lineHeight: 1.35, color: g.struck[c.i] ? FADED : INK, textDecoration: g.struck[c.i] ? 'line-through' : 'none' }}>&ldquo;<ClueText text={c.text} c={c.s} dims={DIMS} />&rdquo;</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
       {accuse && (
         <div style={{ borderRadius: 12, background: SURF, border: `1px solid ${SURF_B}`, padding: '9px 12px 4px', marginBottom: 8 }}>
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: FADED, marginBottom: 2 }}>Detective&rsquo;s notes</div>
-          {THREE ? <>
+          {THREE && ASK ? <>
+            <div style={{ fontSize: 13, fontWeight: 650, color: FADED, lineHeight: 1.35, padding: '2px 0 7px' }}>Every note is true. Weigh them against the statements, name the <b style={{ color: INK }}>victim</b>, the <b style={{ color: INK }}>killer</b> and the <b style={{ color: INK }}>accomplice</b>, then tap <b style={{ color: INK }}>Accuse</b>. Everyone else was a bystander.</div>
+          </> : THREE ? <>
             <div style={{ fontSize: 13, fontWeight: 650, color: FADED, lineHeight: 1.35, padding: '2px 0 7px' }}>The board is right. Only three people had a part: the <b style={{ color: INK }}>victim</b>, the <b style={{ color: INK }}>killer</b> and the <b style={{ color: INK }}>accomplice</b>. Everyone else was a bystander. Work them out from these notes, name all three, then tap <b style={{ color: INK }}>Accuse</b>.</div>
           </> : <>
             <div style={{ fontSize: 13, fontWeight: 650, color: FADED, lineHeight: 1.35, padding: '2px 0 7px' }}>The board is right. Now use these notes to give everyone a part: tap a person&rsquo;s card, then pick a role in the row above the buttons. When everyone has one, tap <b style={{ color: INK }}>Accuse</b>.</div>
             <div style={{ fontSize: 13.5, fontWeight: 750, color: INK, padding: '6px 0', borderTop: `1px solid ${SURF_B}` }}>The killer was the only person alone in a room with the victim.</div>
           </>}
-          {roleClueList.map((c) => (
+          {noteList.map((c) => (
             <button key={c.i} type="button" onClick={() => toggleStruck(c.i)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: `1px solid ${SURF_B}`, padding: '7px 0', cursor: 'pointer', fontFamily: SANS }}>
               <RoleTag size={20} />
               <span style={{ fontSize: 13.5, fontWeight: 650, lineHeight: 1.35, color: g.struck[c.i] ? FADED : INK, textDecoration: g.struck[c.i] ? 'line-through' : 'none' }}><ClueText text={c.text} c={c} dims={DIMS} /></span>
@@ -1214,7 +1238,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to Play' : `Murder ${LAYOUT.deathAt}`}</div>
             {gateRules ? rulesBody : (
               <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>{N} people, {LAYOUT.title}, {LAYOUT.place}. First place everyone, one in every row and every column, from what each person said. {THREE ? 'Then accuse: from the detective\u2019s notes, name the victim, the killer and the accomplice.' : <>Then accuse: name the victim, the killer, the accomplice and everyone else&rsquo;s role. The killer was the only person alone with the victim.</>}</p>
+                <p style={{ margin: '0 0 6px' }}>{N} people, {LAYOUT.title}, {LAYOUT.place}. First place everyone, one in every row and every column, from what each person said. {ASK ? 'Then accuse: question the suspects (only the killer lies) and read the detective\u2019s notes to name the victim, the killer and the accomplice.' : THREE ? 'Then accuse: from the detective\u2019s notes, name the victim, the killer and the accomplice.' : <>Then accuse: name the victim, the killer, the accomplice and everyone else&rsquo;s role. The killer was the only person alone with the victim.</>}</p>
               </div>
             )}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -1431,7 +1455,7 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Sudoclue</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Sudoclue is a free daily murder-mystery logic puzzle from Mind Loft. Each case is set in a real place drawn as a floor plan, north up, with its real landmarks on the squares: the Bow Bridge and the Bethesda fountain in Central Park, the Swan Boats in the Boston Public Garden, the Foucault pendulum at Griffith Observatory. Place every person so there is exactly one in each row and each column, as in a sudoku, then work out from the detective&rsquo;s notes who was the victim, who was the killer and who was the accomplice.
+          Sudoclue is a free daily murder-mystery logic puzzle from Mind Loft. Each case is set in a real place drawn as a floor plan, north up, with its real landmarks on the squares: the Bow Bridge and the Bethesda fountain in Central Park, the Swan Boats in the Boston Public Garden, the Foucault pendulum at Griffith Observatory. Place every person so there is exactly one in each row and each column, as in a sudoku, then question two or three suspects, knowing only the killer lies, and weigh their statements against the detective&rsquo;s notes to work out who was the victim, who was the killer and who was the accomplice.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Every case is machine generated and then proved by an independent solver to have exactly one answer, so pure deduction always cracks it. The board grows through the week: 8 by 8 Monday to Wednesday, 9 by 9 on Thursday and Friday, and 10 by 10 on Saturday and Sunday, the Sunday Edition.

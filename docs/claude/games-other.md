@@ -1921,6 +1921,17 @@ and `guessesUsed` is the wrong checks. Timer hidden by default.
 - **The key is the board (owner, 2026-11-03: "the key does not match the board").** Board3D photographs every
   modelled piece once (`kit.itemThumbs`, from `buildRoom`'s `foot`) and every icon, the Key and the inline clue
   pictures, shows that photo; a piece with no model keeps its drawing, which is also what its block shows.
+- **The interrogation (owner, 2026-11-09, from No. 12, Tue Nov 10).** "Interrogation for roles. Question two or three
+  suspects, each gives a statement, and only the killer lies. It is more involved than notes alone." Stage 2 of a
+  three-role board now opens an Interrogation card above the notes: `says` clues `{k: 'says', p, s, text}`, where `s`
+  is an ordinary role note in the suspect's words ("The victim was somewhere south of me"). Rules (engine `note3` case
+  `says`, `askedOf`, `askOk`): 2 suspects Monday to Wednesday, 3 Thursday to Sunday; the killer is always questioned
+  and is the only liar; the victim is never questioned; every note is true. `scripts/gen-sudoclue-interro.mjs . <from>
+  <to>` keeps the graded placement clues and searches: a statement is never true or false whoever plays which part
+  (no "not on the wardrobe"), no note flatly contradicts a statement (that names the liar on sight), the notes alone
+  must leave the case open, dropping any one statement must open it too, and gradeRoles still needs no guess and no
+  single-note pin, within NOTE_BAND. verify-sudoclue enforces the count, killer asked, victim not, and notes alone
+  not enough, from INTERRO_FROM = 12; Nos. 1 to 11 had gone live and keep notes only.
 ## Swap, Slide, Spin, Fill, Connect and Pairs: six simple dailies on one shell (launched 2026-11-01)
 
 Owner, 2026-11-01: Jig and Scour are the most popular dailies, so six more "simple puzzles that are easy to
@@ -2218,3 +2229,24 @@ whose box is exactly the grid (`.jx-in` on the stage board, `.pk-lot` in JamLot)
 a flick, the click after it is swallowed, and the grid takes `touch-action:none` while playing so a
 flick never scrolls the page. Taps work exactly as before.
 
+
+## Resume (`/resume`): name the famous person from their career profile (launched 2026-11-09)
+
+Owner, 2026-11-09: "roll out Resume and it is a business person or famous person LinkedIn. It needs to look a lot
+like LinkedIn. Will have college, past jobs, even fun facts." Key/route `resume`, category **Trivia** (Guessing games
+group), `miss: 'Clues'`, scored like Tape: a solve with c clues open is 11 - c, unsolved 0. Runs on
+`app/SimpleDaily.jsx`.
+
+- **The board** is a professional-networking profile with the name and photo hidden: banner and round silhouette,
+  a top card, then Experience (later career above early career, newest first), Education, Skills and Fun facts
+  cards with square logo tiles. It carries no other site's name, logo or marks; the brand is Mind Loft's Resume.
+- **Clues, in order** (owner, 2026-11-09: "education might even be too much"): the profile starts redacted. 1 degrees
+  and years with school names blacked out (free), 2 early job titles, 3 school names, 4 early employers, 5 skills
+  and fun facts (owner: "those skills give it away immediately"), 6 later career, headline and location. A wrong guess opens the next; a miss with all six open ends the day.
+- **Bank** `app/resume/puzzles.js` (append-only), guess list `app/resume/universe.js` (315 names, every answer plus
+  near neighbours). No field may name the answer (an org carrying the name is described instead); a role still
+  held is written "2014 on", never "present". `scripts/verify-resume.mjs` enforces both. Content game: ledger entry
+  in scripts/content-reviewed.json, reviewed through 2026-11-30 at launch.
+- **Sunday Edition:** a deeper cut, a chief executive whose company is better known than their face.
+- **Tiles** `scripts/gen-resume-tile.py`; OG `public/og/resume.png` via `scripts/bake-og.mjs resume`; wiring
+  `scripts/wire-resume.mjs`.

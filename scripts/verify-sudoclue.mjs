@@ -11,15 +11,19 @@
 //   node scripts/verify-sudoclue.mjs
 import { PUZZLES } from '../app/sudoclue/puzzles.js';
 import { PLACES } from '../lib/sudoclue-places.js';
-import { solve, solvePlacement, solveRoles, ROLESETS, gradePlacement, gradeRoles, isRoleClue, DAY_BAND } from '../lib/sudoclue-engine.js';
+import { solve, solvePlacement, solveRoles, ROLESETS, gradePlacement, gradeRoles, isRoleClue, DAY_BAND, ROLE_KINDS as ROLE_KINDS_SET } from '../lib/sudoclue-engine.js';
 import { CAST, OBJ } from '../lib/sudoclue-art.js';
 
 let fail = 0;
 const GRADED_FROM = 5;
 // THREE ROLES, NOTES ONLY (owner, 2026-11-03) from No. 6 (Wed Nov 4): victim, killer, accomplice, nobody else.
 const THREE_FROM = 6;
+// THE INTERROGATION (owner, 2026-11-09) from No. 12 (Tue Nov 10): 2 suspects questioned Monday to Wednesday, 3
+// Thursday to Sunday; the killer is one of them and the only liar, the victim never is; the notes alone must not settle it.
+const INTERRO_FROM = 12;
+const ASK = { 1: 2, 2: 2, 3: 2, 4: 3, 5: 3, 6: 3, 0: 3 };
 const bad = (m) => { fail++; console.log('✗ ' + m); };
-const KINDS = new Set(['at', 'with', 'notwith', 'north', 'east', 'col', 'isrole', 'notrole', 'same', 'some', 'every', 'none', 'rrel', 'prel', 'count']);
+const KINDS = new Set(['at', 'with', 'notwith', 'north', 'east', 'col', 'isrole', 'notrole', 'same', 'some', 'every', 'none', 'rrel', 'prel', 'count', 'says']);
 
 for (const [key, L] of Object.entries(PLACES)) {
   const N = L.rooms.length;
@@ -78,6 +82,18 @@ PUZZLES.forEach((p, i) => {
     const gro = gradeRoles(L, p.cast, sols[0].place, p.clues);
     if (!gro.solved) bad(`${tag}: the notes need a guess`);
     if (gro.firstPin) bad(`${tag}: one note alone names someone`);
+  }
+  const says = p.clues.filter((c) => c.k === 'says');
+  if (p.num < INTERRO_FROM && says.length) bad(`${tag}: went live before the interrogation, must stay as it was`);
+  if (p.num >= INTERRO_FROM) {
+    const sol = sols[0]; const killer = p.cast.find((q) => sol.roles[q] === 'Killer'); const victim = p.cast.find((q) => sol.roles[q] === 'Victim');
+    if (says.length !== ASK[d.getUTCDay()]) bad(`${tag}: ${says.length} suspects questioned, the day asks for ${ASK[d.getUTCDay()]}`);
+    if (new Set(says.map((c) => c.p)).size !== says.length) bad(`${tag}: a suspect is questioned twice`);
+    if (!says.some((c) => c.p === killer)) bad(`${tag}: the killer was not questioned`);
+    if (says.some((c) => c.p === victim)) bad(`${tag}: the victim was questioned`);
+    for (const c of says) if (!c.s || !ROLE_KINDS_SET.has(c.s.k) || c.s.k === 'says' || c.s.k === 'isrole') bad(`${tag}: ${c.p}'s statement is not a role note`);
+    const notesOnly = p.clues.filter((c) => c.k !== 'says');
+    if (solveRoles(L, p.cast, sol.place, notesOnly, 2, opt).length < 2) bad(`${tag}: the notes alone settle it, so the interrogation is idle`);
   }
   if (rl.length !== 1) bad(`${tag}: role clues allow ${rl.length} role sets on the board (need exactly 1)`);
   const per = {};

@@ -146,6 +146,12 @@ const Bacon = () => (
     <rect x={136} y={34} width={24} height={16} rx={2} className="w" /><path d="M140 34v16M156 34v16" className="sm" />
     <path d="M128 34l8 6M160 46l8 6" className="s3" /></g>
 );
+// a profile card: banner, a hidden face, a name bar and job lines with logo tiles
+const Resume = () => (
+  <g><rect x={110} y={4} width={76} height={76} rx={4} className="w" /><rect x={110} y={4} width={76} height={16} rx={4} className="m" />
+    <circle cx={126} cy={24} r={9} className="d" /><rect x={140} y={24} width={36} height={5} rx={2} className="d" />
+    {[0, 1, 2].map((i) => <g key={i}><rect x={118} y={40 + i * 13} width={9} height={9} rx={2} className="m" /><rect x={132} y={41 + i * 13} width={44 - i * 8} height={4} rx={2} className="sm" /></g>)}</g>
+);
 const Redact = () => (
   <g><rect x={110} y={4} width={76} height={76} rx={3} className="w" />
     {[0, 1, 2, 3, 4, 5].map((r) => [[116, 18], [138, 22], [164, 16]].map(([x, w], c) => (
@@ -684,7 +690,7 @@ export const TILE_BY_KEY = {
   // Trivia
   sport: Sport, biz: Biz, script: Script, quotes: Quotes, sci: Sci, pulse: Pulse, gene: Gene, orbit: Orbit, eureka: Eureka, bond: Bond,
   foodie: Foodie, art: Art, history: History, streak: Streak, deep: Deep, dating: Dating, extra: Extra, bracket: Bracket, listed: Listed,
-  clade: Clade, dossier: Dossier, bacon: Bacon, redact: Redact, niche: Niche, potluck: Potluck, mixtape: Mixtape, mishmash: Mishmash,
+  clade: Clade, dossier: Dossier, bacon: Bacon, resume: Resume, redact: Redact, niche: Niche, potluck: Potluck, mixtape: Mixtape, mishmash: Mishmash,
   focus: Focus, thread: Thread, slot: Slot, circa: Circa, tape: Tape,
   // Geography
   atlas: Atlas, carmen: Carmen, span: Span, passport: Passport, flank: Flank, ping: Ping,

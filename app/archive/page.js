@@ -109,6 +109,7 @@ import { PUZZLES as CLADE_FULL } from '../clade/puzzles';
 import { PUZZLES as DOSSIER_FULL } from '../dossier/puzzles';
 import { PUZZLES as TAPE_FULL } from '../tape/puzzles';
 import { PUZZLES as BACON_FULL } from '../bacon/puzzles';
+import { PUZZLES as RESUME_FULL } from '../resume/puzzles';
 import { PUZZLES as JUDGES_FULL } from '../judges/puzzles';
 import { PUZZLES as CHECK_FULL } from '../check/puzzles';
 import { PUZZLES as RUNG_FULL } from '../rung/puzzles';
@@ -260,6 +261,7 @@ const CLADE = CLADE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ nu
 const DOSSIER = DOSSIER_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const TAPE = TAPE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const BACON = BACON_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const RESUME = RESUME_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DUET = DUET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SNUG = SNUG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const JIG = JIG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -491,6 +493,7 @@ const GAMES = [
   { key: 'dossier', name: 'Dossier', path: '/dossier', tag: 'Five clues on every guess', accent: '#5b3a8c', bg: '#efe9f7', border: 'rgba(91,58,140,0.35)', src: DOSSIER },
   { key: 'tape', name: 'Tape', path: '/tape', tag: 'Name the company from its chart', accent: '#1e5a8a', bg: '#e2eef7', border: 'rgba(30,90,138,0.35)', src: TAPE },
   { key: 'bacon', name: 'Bacon', path: '/bacon', tag: 'Link two actors through films', accent: '#9a3412', bg: '#fdeee2', border: 'rgba(154,52,18,0.35)', src: BACON },
+  { key: 'resume', name: 'Resume', path: '/resume', tag: 'Name the person from their resume', accent: '#0a5aa8', bg: '#e3eefa', border: 'rgba(10,90,168,0.35)', src: RESUME },
   { key: 'duet', name: 'Duet', path: '/duet', tag: 'Half dots, half rings', accent: '#1a7f37', bg: '#e8f5ec', border: 'rgba(26,127,55,0.35)', src: DUET },
   { key: 'snug', name: 'Snug', path: '/snug', tag: 'Fit the pieces, one way only', accent: '#3b5bdb', bg: '#e8ecfb', border: 'rgba(59,91,219,0.35)', src: SNUG },
   { key: 'jig', name: 'Jig', path: '/jig', tag: 'The daily jigsaw', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.38)', src: JIG },

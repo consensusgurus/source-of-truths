@@ -1,5 +1,10 @@
 {
   "_doc": "Content review ledger. See scripts/CONTENT-REVIEW.md. 'through' is the last live date whose boards a separate reviewer has read item by item for truth, second right answers, clue fit and same-day spoilers. scripts/verify-content-reviewed.mjs fails when a board goes live within LEAD_DAYS of today past this date. Move 'through' forward ONLY after the review has been done and its fixes applied.",
+  "resume": {
+    "through": "2026-11-30",
+    "on": "2026-11-09",
+    "note": "bank rebuilt 2026-11-09 as a difficulty ladder (Tim Cook first); all 21 boards read by a separate reviewer, fixes applied (company names moved out of early clues for Burns, Chenault, Wolfe Herd; Chesky origin story hidden; Knight, Benioff, Powell, Hastings, Cook, Garten, Yellen corrected)"
+  },
   "bacon": {
     "through": "2026-11-30",
     "on": "2026-11-07",
