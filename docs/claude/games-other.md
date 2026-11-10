@@ -2248,5 +2248,10 @@ group), `miss: 'Clues'`, scored like Tape: a solve with c clues open is 11 - c, 
   held is written "2014 on", never "present". `scripts/verify-resume.mjs` enforces both. Content game: ledger entry
   in scripts/content-reviewed.json, reviewed through 2026-11-30 at launch.
 - **Sunday Edition:** a deeper cut, a chief executive whose company is better known than their face.
+- **Every answer carries a business clue** (owner, 2026-11-10): Resume is the background-check leg of the
+  Due Diligence run (Tape, Filing, Resume), so a famous person who is not a business person (athlete, actor,
+  musician) must still have at least one business entry on the profile: a company founded, a brand stake, a board
+  seat, a fund, an investment. The game keeps its name, Resume, everywhere on the site; only the run labels the
+  leg "The background check".
 - **Tiles** `scripts/gen-resume-tile.py`; OG `public/og/resume.png` via `scripts/bake-og.mjs resume`; wiring
   `scripts/wire-resume.mjs`.
