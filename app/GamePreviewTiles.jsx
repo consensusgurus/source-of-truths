@@ -146,18 +146,6 @@ const Bacon = () => (
     <rect x={136} y={34} width={24} height={16} rx={2} className="w" /><path d="M140 34v16M156 34v16" className="sm" />
     <path d="M128 34l8 6M160 46l8 6" className="s3" /></g>
 );
-// a profile card: banner, a hidden face, a name bar and job lines with logo tiles
-const Resume = () => (
-  <g><rect x={110} y={4} width={76} height={76} rx={4} className="w" /><rect x={110} y={4} width={76} height={16} rx={4} className="m" />
-    <circle cx={126} cy={24} r={9} className="d" /><rect x={140} y={24} width={36} height={5} rx={2} className="d" />
-    {[0, 1, 2].map((i) => <g key={i}><rect x={118} y={40 + i * 13} width={9} height={9} rx={2} className="m" /><rect x={132} y={41 + i * 13} width={44 - i * 8} height={4} rx={2} className="sm" /></g>)}</g>
-);
-// a filing cover: a header band, form lines and one blacked-out name
-const Filing = () => (
-  <g><rect x={112} y={4} width={72} height={76} rx={3} className="w" /><rect x={112} y={4} width={72} height={12} rx={3} className="m" />
-    <rect x={120} y={22} width={40} height={7} rx={1} className="d" />
-    {[0, 1, 2, 3].map((i) => <rect key={i} x={120} y={36 + i * 10} width={56 - (i % 2) * 14} height={4} rx={2} className="sm" />)}</g>
-);
 const Redact = () => (
   <g><rect x={110} y={4} width={76} height={76} rx={3} className="w" />
     {[0, 1, 2, 3, 4, 5].map((r) => [[116, 18], [138, 22], [164, 16]].map(([x, w], c) => (
@@ -620,7 +608,7 @@ const Shoe = () => (
 // ---- End Game ------------------------------------------------------------
 const King = ({ x, y, k = 'd' }) => <g><path d={`M${x - 7} ${y + 8}h14l-2 -10h-10z`} className={k} /><circle cx={x} cy={y - 6} r={5} className={k} /><path d={`M${x} ${y - 16}v-6M${x - 3} ${y - 19}h6`} className="s2" /></g>;
 const Mate = () => (
-  <g><Board /><King x={157} y={34} k="w" /><path d="M112 6l72 72" className="sm" /><Pawn x={121} y={68} /><rect x={149} y={25} width={18} height={18} className="s3" /></g>
+  <g><Board /><King x={157} y={34} k="w" /><path d="M115 9l31 31" className="sm" /><Pawn x={121} y={68} /><rect x={149.5} y={25.5} width={15} height={15} rx={1} className="s3" /></g>
 );
 const Check = () => (
   <g><Board /><circle cx={121} cy={69} r={7} className="d" /><circle cx={139} cy={51} r={7} className="w" /><circle cx={175} cy={15} r={7} className="w" /><circle cx={157} cy={33} r={7} className="w" />
@@ -637,7 +625,7 @@ const Swindle = () => (
   <g><Board /><King x={121} y={52} k="w" /><King x={175} y={34} /><rect x={140} y={56} width={36} height={20} rx={4} className="d" /><T x={158} y={71} s={13} c="tw">½</T></g>
 );
 const Queen = () => (
-  <g><Board /><Pawn x={130} y={60} /><path d="M130 46v-22" className="s3" /><path d="M124 30l6 -8l6 8" className="s3" /><Crown x={157} y={16} /><rect x={149.5} y={7.5} width={15} height={15} rx={1} className="s2" /></g>
+  <g><Board /><Pawn x={139} y={66} /><path d="M139 54v-24" className="s3" /><path d="M133 36l6 -8l6 8" className="s3" /><Crown x={139} y={16} /><rect x={131.5} y={7.5} width={15} height={15} rx={1} className="s2" /></g>
 );
 const Turn = () => {
   const blk = new Set([0, 5, 6, 10, 13]), wht = new Set([1, 4, 9, 11, 14]);
@@ -657,9 +645,9 @@ const Yose = () => (
     {[[0, 1, 'd'], [1, 2, 'w'], [2, 1, 'd'], [3, 3, 'w'], [2, 3, 'd'], [4, 2, 'w'], [1, 4, 'd'], [3, 0, 'w']].map(([c, r, k], i) => <circle key={i} cx={118 + c * 15} cy={12 + r * 15} r={6} className={k} />)}</g>
 );
 const Four = () => (
-  <g><rect x={108} y={10} width={80} height={70} rx={6} className="m" />{cells(112, 14, 5, 4, 15.5, (x, y, c, r, i) => (
+  <g><rect x={105.25} y={10} width={85.5} height={70} rx={6} className="m" />{cells(109.25, 14, 5, 4, 15.5, (x, y, c, r, i) => (
     <circle key={i} cx={x + 7.5} cy={y + 7.5} r={5.6} className={[10, 15, 16, 17, 11].includes(i) ? 'd' : [18, 12, 6].includes(i) ? 'w' : 'w0'} />))}
-    <path d="M151 2v8m-4 -4l4 4l4 -4" className="s2" /></g>
+    <path d="M147.75 -1v7m-4 -4l4 4l4 -4" className="s2" /></g>
 );
 // ---- Arcade --------------------------------------------------------------
 const Snake = () => (
@@ -696,7 +684,7 @@ export const TILE_BY_KEY = {
   // Trivia
   sport: Sport, biz: Biz, script: Script, quotes: Quotes, sci: Sci, pulse: Pulse, gene: Gene, orbit: Orbit, eureka: Eureka, bond: Bond,
   foodie: Foodie, art: Art, history: History, streak: Streak, deep: Deep, dating: Dating, extra: Extra, bracket: Bracket, listed: Listed,
-  clade: Clade, dossier: Dossier, bacon: Bacon, resume: Resume, filing: Filing, redact: Redact, niche: Niche, potluck: Potluck, mixtape: Mixtape, mishmash: Mishmash,
+  clade: Clade, dossier: Dossier, bacon: Bacon, redact: Redact, niche: Niche, potluck: Potluck, mixtape: Mixtape, mishmash: Mishmash,
   focus: Focus, thread: Thread, slot: Slot, circa: Circa, tape: Tape,
   // Geography
   atlas: Atlas, carmen: Carmen, span: Span, passport: Passport, flank: Flank, ping: Ping,
