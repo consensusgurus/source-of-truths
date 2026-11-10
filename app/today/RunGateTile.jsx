@@ -64,7 +64,7 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
       </span>
       <span className="rgt-cs">
         <span className="ld">{fin && rank ? <>You: <b>#{rank}</b></> : lead ? <>#1 <b>{lead}</b></> : plays ? 'No finish yet' : 'Open. Be first.'}</span>
-        <span className="ct">{Number(plays || 0).toLocaleString('en-US')} playing</span>
+        <span className="ct pc">{Number(plays || 0).toLocaleString('en-US')} playing</span>
       </span>
     </a>
   );
@@ -147,6 +147,10 @@ export const RGT_CSS = `
 .rgt-cs{display:flex;justify-content:space-between;gap:8px;padding:7px 14px 7px 16px;border-top:1px solid #0b1b2b;background:color-mix(in srgb, var(--rgc) 60%, #fff);font-size:12.5px;font-weight:600;white-space:nowrap;}
 .rgt-cs .ld{min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .rgt-cs b,.rgt-cs .ct{font-weight:800;}
+/* PERSON ICON BY THE PLAY COUNT (owner, 2026-11-10): any tile count span
+   carrying .pc. Global because RGT_CSS is part of the home stylesheet. */
+.pc{display:inline-flex;align-items:center;gap:4px;}
+.pc::before{content:'';width:11px;height:11px;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='4.6' r='3.1'/%3E%3Cpath d='M1.8 15.2c0-3.6 2.8-6 6.2-6s6.2 2.4 6.2 6z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='4.6' r='3.1'/%3E%3Cpath d='M1.8 15.2c0-3.6 2.8-6 6.2-6s6.2 2.4 6.2 6z'/%3E%3C/svg%3E") center/contain no-repeat;}
 .stage-page:not([data-stage-theme=light]) .rgt{background:color-mix(in srgb, var(--rgc) 18%, #1a2130);color:#e9edf4;border-color:color-mix(in srgb, var(--rgc) 60%, #fff);}
 .stage-page:not([data-stage-theme=light]) .rgt :is(.rgt-legs,.rgt-leg,.rgt-go,.rgt-cs){border-color:color-mix(in srgb, var(--rgc) 60%, #fff);}
 .stage-page:not([data-stage-theme=light]) .rgt-leg{background:color-mix(in srgb, var(--lc) 30%, #1a2130);}

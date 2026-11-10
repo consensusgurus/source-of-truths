@@ -767,7 +767,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       {day ? (
         <span className="sty-gpl sty-gcs">
           <span className="ld">{lead ? <>#1 <b>{lead.username}</b></> : plays ? 'No solve yet' : 'Open. Be first.'}</span>
-          <span className="ct" title="Plays today">{Number(plays).toLocaleString('en-US')}</span>
+          <span className="ct pc" title="Plays today">{Number(plays).toLocaleString('en-US')}</span>
         </span>
       ) : null}
       {canPin ? (
@@ -4030,7 +4030,7 @@ export default function StageToday() {
           <span className="sty-gt">{RUN_TAGS[c.id] || c.blurb || `Run \u00b7 ${c.games.length} games`}</span>
           <span className="sty-gpl sty-gcs">
             <span className="ld">{st && st.lead ? <>#1 <b>{st.lead}</b></> : <b>{fin ? 'Finished' : c.n ? `${c.n} of ${c.games.length} played` : `${c.games.length} games`}</b>}</span>
-            <span className="ct" title="Plays today">{fmtN(st && st.players)}</span>
+            <span className="ct pc" title="Plays today">{fmtN(st && st.players)}</span>
           </span>
         </a>
       );
@@ -4110,7 +4110,7 @@ export default function StageToday() {
             : st && st.lead ? <>#1 <b>{st.lead}</b></>
             : c.n ? <b>{c.n} of {c.games.length} played</b>
             : st && st.players ? 'No finish yet' : 'Open. Be first.'}</span>
-          <span className="ct" title="Players today">{fmtN(st && st.players)}</span>
+          <span className="ct pc" title="Players today">{fmtN(st && st.players)}</span>
         </span>
         <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />
       </a>
@@ -4755,7 +4755,7 @@ export default function StageToday() {
                             return (
                               <span className="mcs">
                                 <span className="ld">{ld ? <>#1 <b>{ld.username}</b></> : pl ? 'No solve yet' : 'Open. Be first.'}</span>
-                                <span className="ct" title="Plays today">{pl.toLocaleString('en-US')} playing</span>
+                                <span className="ct pc" title="Plays today">{pl.toLocaleString('en-US')} playing</span>
                               </span>
                             );
                           })() : null}
