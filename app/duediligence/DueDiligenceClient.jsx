@@ -72,16 +72,21 @@ function bankedOf(sec) {
   } catch (e) { return null; }
 }
 
-// THE ENTRY CENTREPIECE: the deal memo. Pressing it starts the run. It sits in
-// GauntletGate's fixed-height piece slot (140px, 170px wide), so it stays to
-// three rows: the header, the line, and the three checks side by side.
-function Memo({ go, allBanked, onStart, sections }) {
+// THE ENTRY CENTREPIECE: the deal memo, which asks who you are (owner,
+// 2026-11-10: not the lineup again, which the bands below already show; the
+// ranking low to high instead, and Jim Cramer named). Pressing it starts the
+// run. It sits in GauntletGate's fixed-height piece slot (140px, 170px wide).
+const SURNAME = (n) => (n === 'Anon Fintwit Account' ? 'Anon' : String(n).split(' ').pop());
+function Memo({ go, allBanked, onStart }) {
+  const up = [...B].reverse();
   return (
     <button type="button" className={`dd-memo${go ? ' go' : ''}`} onClick={onStart} aria-label={allBanked ? 'See your rank' : 'Open the file'}>
       <span className="dd-mh"><small>Confidential</small><small>Deal memo</small></span>
-      <b>{go ? 'Opening the file' : allBanked ? 'All three checked today' : 'Three checks before you sign'}</b>
-      <span className="dd-ml">
-        {sections.map((s, i) => <span key={s.key}><i>{i + 1}</i>{s.form}<em>{s.game}</em></span>)}
+      <b>{go ? 'Opening the file' : allBanked ? 'All three checked. So, who are you?' : <>Are you a Jim Cramer or a {B[0][1]}?</>}</b>
+      <span className="dd-ml" aria-label={`Ranks, low to high: ${up.map((t) => t[1]).join(', ')}`}>
+        <em>Low</em>
+        {up.map((t, k) => <span key={t[1]} className={k === up.length - 1 ? 'top' : ''} style={{ '--c': t[4] }}>{SURNAME(t[1])}</span>)}
+        <em>High</em>
       </span>
     </button>
   );
@@ -282,7 +287,7 @@ export default function DueDiligenceClient({ day = null, dateLabel, dateShort, s
               lineup={`From ${B[B.length - 1][1]} up to ${B[0][1]}.`}
               startLabel={leaving ? 'Opening the file…' : (allBanked ? 'See your rank' : 'Open the file')}
               fieldLine={Object.keys(banked).length ? 'Played one today already? Your first result stands.' : null}
-              centerpiece={<Memo go={leaving} allBanked={allBanked} onStart={start} sections={gs} />}
+              centerpiece={<Memo go={leaving} allBanked={allBanked} onStart={start} />}
               onStart={start}
             />
           </div>
@@ -387,10 +392,11 @@ const CSS = `
 .dd-mh small{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
 .dd-mh small:first-child{color:#b91c1c}
 .dd-memo b{font-size:19px;line-height:1.15;font-weight:800;letter-spacing:-.01em}
-.dd-ml{display:flex;flex-wrap:wrap;column-gap:16px;row-gap:4px}
-.dd-ml > span{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:800;white-space:nowrap}
-.dd-ml i{font-style:normal;width:20px;height:20px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid #08222e;border-radius:999px;font-size:11px}
-.dd-ml em{display:none}
+.dd-ml{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.dd-ml > span{display:inline-flex;align-items:center;padding:3px 9px;border:1.5px solid #08222e;border-radius:999px;background:var(--c);font-size:12.5px;font-weight:800;white-space:nowrap}
+.dd-ml > span.top{background:#08222e;color:#ffffff}
+.dd-ml em{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+@media(max-width:480px){.dd-memo{gap:6px}.dd-memo b{font-size:16px}.dd-ml{gap:4px}.dd-ml > span{padding:2px 7px;font-size:11.5px}}
 @media(min-width:900px){
   .dd-gate .gsx-split{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto;row-gap:18px}
   .dd-gate .gsx-split > .gsx-top{margin-bottom:0}
