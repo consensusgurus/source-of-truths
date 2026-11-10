@@ -34,12 +34,15 @@ import { useGauntletLook, stagePalette, useStageChrome, LookButton } from './Gau
 import { nextLook } from '@/lib/stage-look';
 
 export const MISS_MS = 1900;
-// THE RECAP REVEAL (owner, 2026-11-07, "implement, and use the full screen
-// reveal version"). Inside a run, a miss holds on the spotlight this long, then
-// the lit answer grows out of its own tile to fill the screen with the recap
-// (where the quiz ended, the question, the answer, the pick, the standing) and
-// an "On to <next>" button. The button shrinks the answer back into its tile and
-// hands off to the host, which starts the next quiz's first question.
+// THE HAND-OFF (owner, 2026-11-10, replacing the 2026-11-07 recap: "go straight
+// from the spotlight to a very clean and concise, large start button for the
+// next element"). Inside a run, a miss holds on the spotlight this long, then
+// the lit answer grows out of its own tile to fill the screen, turning into the
+// NEXT quiz's ground on the way, and holds one large start button for that quiz
+// (its name, one short line, the slow countdown). No question, answer, pick or
+// standing repeat: the spotlight already showed them. The button hands off to
+// the host straight away; the next question paints on the same ground, so the
+// hand-off has no seam. "Leave the run" stays a small underlined link.
 export const REVEAL_DELAY = 1400;
 export const SLOT_MS = 620;
 
@@ -75,7 +78,10 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   // is white with black type. Separate from the site's light/dark setting.
   const [look, setLook] = useGauntletLook();
   const pal = look === 'color' ? { bg: softGround(bg || '#7dd3fc'), ink } : stagePalette(bg || '#7dd3fc', look);
-  useStageChrome(pal.bg);
+  // The next quiz's ground in this look, for the hand-off screen (null on the
+  // run's last quiz, where the screen keeps the lit answer's colours).
+  const nextBg = recap && recap.nextBg ? recap.nextBg : null;
+  const npal = nextBg ? (look === 'color' ? { bg: softGround(nextBg), ink } : stagePalette(nextBg, look)) : null;
   // SHORT ANSWERS GO 2x2 ON A PHONE (2026-10-24, player report on Blitz): four
   // numbers stacked in one tall column made the eye travel down the screen to
   // compare them. When every choice is short the phone uses the same 2x2 grid
@@ -112,6 +118,8 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   const autoMs = recap && recap.autoMs ? recap.autoMs : 0;
   const [left, setLeft] = React.useState(0);
   const open = !!(big && big.open);
+  // The browser bars follow the hand-off into the next quiz's colour.
+  useStageChrome(open && npal ? npal.bg : pal.bg);
   React.useEffect(() => {
     if (!open || !autoMs) return undefined;
     const end = Date.now() + autoMs;
@@ -127,8 +135,10 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   function recapGo() {
     if (goingRef.current) return;
     goingRef.current = true;
-    setBig((x) => (x ? { ...x, open: false } : x));
-    setTimeout(() => { const rc = recapRef.current; if (rc && rc.onGo) rc.onGo(); }, SLOT_MS);
+    // Straight on: the next question renders on the ground this screen already
+    // shows, so nothing shrinks back into the old tile.
+    const rc = recapRef.current;
+    if (rc && rc.onGo) rc.onGo();
   }
   // Spotlight colours per look: a dark veil of the ink on the light looks, black
   // on the dark ones; the lit answer is the ground (or the tint tile) with ink on
@@ -170,21 +180,22 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
         )}
       </div>
       {recapOn && big ? (
-        <div className={`gst-big${big.open ? ' open' : ''}`} role="group" aria-label="The answer"
-          style={big.open ? { top: 0, left: 0, width: '100vw', height: '100%' } : { top: big.r.top, left: big.r.left, width: big.r.width, height: big.r.height }}>
+        <div className={`gst-big${big.open ? ' open' : ''}`} role="group" aria-label={recap.goName || recap.goLabel}
+          style={{
+            ...(big.open ? { top: 0, left: 0, width: '100vw', height: '100%' } : { top: big.r.top, left: big.r.left, width: big.r.width, height: big.r.height }),
+            ...(npal ? { '--gst-nx-bg': npal.bg, '--gst-nx-ink': npal.ink } : {}),
+          }}>
+          <span className="gst-bans" aria-hidden="true">{choices[missRight]}</span>
           <div className="gst-bin">
-            <span className="gst-bx gst-blab">{recap.label}</span>
-            <span className="gst-bx gst-bq">{question}</span>
-            <span className="gst-bans">{choices[missRight]}</span>
-            {missPick != null && choices[missPick] != null
-              ? <span className="gst-bx gst-byou">You picked {choices[missPick]}</span>
-              : recap.timedOut ? <span className="gst-bx gst-byou">The clock ran out</span> : null}
-            <span className="gst-bx gst-bstand"><b>{recap.right}</b> right{recap.stand ? <> &middot; {recap.stand}</> : null}</span>
+            {recap.eyebrow ? <span className="gst-bx gst-beye">{recap.eyebrow}</span> : null}
             <button type="button" className="gst-bx gst-bgo" onClick={recapGo} disabled={!big.open}
               aria-label={autoMs ? `${recap.goLabel}, starts in ${Math.ceil(left / 1000)} seconds` : recap.goLabel}>
-              <span>{recap.goLabel}</span>
-              {autoMs ? <span className="gst-bsec">{Math.ceil(left / 1000)}</span>
-                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>}
+              <span className="gst-bname">{recap.goName || recap.goLabel}</span>
+              {recap.sub ? <span className="gst-bsub">{recap.sub}</span> : null}
+              <span className="gst-bplay">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg>
+                <span>{autoMs ? `Start · ${Math.ceil(left / 1000)}` : 'Start'}</span>
+              </span>
               {autoMs ? <span className="gst-bbar" aria-hidden="true"><span style={{ width: `${Math.max(0, Math.min(1, left / autoMs)) * 100}%` }} /></span> : null}
             </button>
           </div>
@@ -259,39 +270,36 @@ html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
 .gst.miss .gst-c.pk>span:first-child{color:var(--gst-ondim);opacity:.75;transition:color .3s ease .3s;}
 .gst.miss .gst-c.pk .gst-tag{color:var(--gst-ink);}
 .gst-tag{position:absolute;top:-10px;right:14px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.3;background:var(--gst-bg);border:1px solid var(--gst-ink);border-radius:999px;padding:2px 8px;animation:gstTag .25s ease-out .35s both;}
-/* THE RECAP REVEAL: the lit answer's own colours, grown from its tile to the
-   whole screen (fixed, so it covers the stage at every width), and back. */
-.gst-big{position:fixed;z-index:7;box-sizing:border-box;background:var(--gst-rv-bg);border-radius:19px;overflow:hidden;display:flex;align-items:center;justify-content:center;transition:top .6s cubic-bezier(.2,.8,.2,1),left .6s cubic-bezier(.2,.8,.2,1),width .6s cubic-bezier(.2,.8,.2,1),height .6s cubic-bezier(.2,.8,.2,1),border-radius .6s;}
-.gst-big.open{border-radius:0;}
+/* THE HAND-OFF (owner, 2026-11-10): the lit answer grows from its tile to the
+   whole screen (fixed, so it covers the stage at every width), changing to the
+   next quiz's ground as it opens, and holds one big start button in ink. */
+.gst-big{position:fixed;z-index:7;box-sizing:border-box;--bbg:var(--gst-nx-bg, var(--gst-rv-bg));--bink:var(--gst-nx-ink, var(--gst-rv-ink));background:var(--gst-rv-bg);border-radius:19px;overflow:hidden;display:flex;align-items:center;justify-content:center;transition:top .6s cubic-bezier(.2,.8,.2,1),left .6s cubic-bezier(.2,.8,.2,1),width .6s cubic-bezier(.2,.8,.2,1),height .6s cubic-bezier(.2,.8,.2,1),border-radius .6s,background-color .55s ease .1s;}
+.gst-big.open{border-radius:0;background:var(--bbg);}
 .gst-big,.gst-big *{color:var(--gst-rv-ink);}
-.gst-bin{width:100%;max-width:640px;box-sizing:border-box;padding:0 16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:0;transition:gap .4s,padding .6s;}
-.gst-big.open .gst-bin{gap:14px;padding:max(24px, env(safe-area-inset-top)) 22px 24px;}
-.gst-bans{font-weight:800;font-size:22px;line-height:1.08;letter-spacing:-.02em;transition:font-size .6s cubic-bezier(.2,.8,.2,1);overflow-wrap:anywhere;}
-.gst-big.open .gst-bans{font-size:clamp(36px, 10vw, 68px);}
-.gst-bx{opacity:0;max-height:0;overflow:hidden;transition:opacity .2s,max-height .3s;}
-.gst-big.open .gst-bx{opacity:1;max-height:260px;transition:opacity .35s ease .45s,max-height .3s ease .3s;}
-.gst-blab{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;}
-.gst-big.open .gst-blab{opacity:.75;}
-.gst-bq{font-size:17px;font-weight:700;line-height:1.35;max-width:520px;}
-.gst-bq h2,.gst-bq blockquote{margin:0;font:inherit;letter-spacing:0;}
-.gst-bq blockquote{font-style:italic;margin-bottom:4px;}
-.gst-byou{font-size:15px;font-weight:700;}
-.gst-big.open .gst-byou{opacity:.7;}
-.gst-bstand{font-size:14px;font-weight:700;padding:8px 14px;border-radius:999px;border:1px solid var(--gst-rv-ink);}
-.gst-bstand b{font-size:16px;}
-.gst-bgo{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:440px;min-height:58px;border:0;border-radius:18px;background:var(--gst-rv-ink);font-family:inherit;font-size:20px;font-weight:800;cursor:pointer;margin-top:8px;}
-.gst-bsec{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;border-radius:15px;border:2px solid var(--gst-rv-bg);box-sizing:border-box;font-size:14px;font-variant-numeric:tabular-nums;}
-.gst-bbar{position:absolute;left:0;right:0;bottom:0;height:5px;background:color-mix(in srgb, var(--gst-rv-bg) 22%, transparent);}
-.gst-bbar>span{display:block;height:100%;background:var(--gst-rv-bg);transition:width .25s linear;}
-.gst-big .gst-bgo,.gst-big .gst-bgo *{color:var(--gst-rv-bg);}
-.gst-bgo:active{transform:scale(.98);}
+.gst-big.open,.gst-big.open *{color:var(--bink);}
+.gst-bans{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 16px;text-align:center;font-weight:800;font-size:22px;line-height:1.15;letter-spacing:-.02em;overflow-wrap:anywhere;transition:opacity .25s;}
+.gst-big.open .gst-bans{opacity:0;}
+.gst-bin{position:relative;width:100%;max-width:520px;box-sizing:border-box;padding:0 20px;display:flex;flex-direction:column;align-items:stretch;text-align:center;gap:14px;}
+.gst-bx{opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.gst-big.open .gst-bx{opacity:1;transform:none;pointer-events:auto;transition:opacity .35s ease .4s,transform .45s cubic-bezier(.2,.8,.2,1) .4s;}
+.gst-beye{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;line-height:1.4;}
+.gst-big.open .gst-beye{opacity:.75;}
+.gst-bgo{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;min-height:min(46vh,340px);box-sizing:border-box;padding:28px 22px 34px;border:0;border-radius:26px;background:var(--bink);font-family:inherit;cursor:pointer;}
+.gst-big .gst-bgo,.gst-big .gst-bgo *{color:var(--bbg);}
+.gst-bname{font-size:clamp(40px, 12vw, 72px);font-weight:800;letter-spacing:-.025em;line-height:1.12;padding-bottom:.06em;overflow-wrap:anywhere;}
+.gst-bsub{font-size:15px;font-weight:700;line-height:1.4;opacity:.8;}
+.gst-bplay{display:inline-flex;align-items:center;gap:9px;margin-top:10px;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;}
+.gst-bbar{position:absolute;left:0;right:0;bottom:0;height:6px;background:color-mix(in srgb, var(--bbg) 22%, transparent);}
+.gst-bbar>span{display:block;height:100%;background:var(--bbg);transition:width .25s linear;}
+.gst-bgo:active{transform:scale(.985);}
+@media(hover:hover){.gst-bgo:hover{filter:brightness(1.12);}}
 /* Leave the run (owner, 2026-11-07): a small underlined link at the foot of the screen, not a button. */
 .gst-bleave{position:absolute;left:50%;bottom:max(22px, calc(env(safe-area-inset-bottom) + 14px));transform:translateX(-50%);font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;}
 .gst-big.open .gst-bleave{opacity:.75;pointer-events:auto;transition:opacity .35s ease .6s;}
-@media(min-width:900px){.gst-big.open .gst-bin{gap:18px;}.gst-bq{font-size:20px;}}
+@media(min-width:900px){.gst-big.open .gst-bin{gap:18px;}.gst-bgo{min-height:360px;}}
 @keyframes gstShake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
 @keyframes gstTag{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media(min-width:900px){.gst-col{max-width:820px;gap:40px;padding:48px 32px 28px;}.gst-q{font-size:44px;}.gst-q blockquote{font-size:26px;}.gst-q:has(blockquote){font-size:22px;}.gst-q:has(blockquote) blockquote{font-size:40px;}.gst-ch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}.gst-c{min-height:150px;font-size:26px;padding:22px;}.gst-ch.many .gst-c{min-height:120px;font-size:23px;}.gst-ch.tiny .gst-c{font-size:38px;}}
 @media(max-width:400px){.gst-q{font-size:25px;}.gst-q:has(blockquote){font-size:16px;}.gst-q:has(blockquote) blockquote{font-size:24px;}.gst-c{font-size:19px;min-height:64px;}.gst-ch.many .gst-c{font-size:17px;min-height:54px;}.gst-ch.grid .gst-c{font-size:18px;min-height:76px;}.gst-ch.tiny .gst-c{font-size:27px;}}
-@media (prefers-reduced-motion: reduce){.gst-q,.gst-c,.gst-c.ok,.gst-c.pk,.gst-tag{animation:none}.gst-dim,.gst-c.rv,.gst-big,.gst-bans,.gst-bx{transition:none}}
+@media (prefers-reduced-motion: reduce){.gst-q,.gst-c,.gst-c.ok,.gst-c.pk,.gst-tag{animation:none}.gst-dim,.gst-c.rv,.gst-big,.gst-bans,.gst-bx,.gst-bbar>span{transition:none}}
 `;

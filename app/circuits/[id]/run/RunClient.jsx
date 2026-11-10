@@ -234,8 +234,8 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // THE SPOTLIGHT AND THE RECAP REVEAL (owner, 2026-11-07). A miss ends the
   // section AT ONCE (saved and posted, so a reload cannot replay the question),
   // and `reveal` keeps the missed question on the stage: spotlight, then the
-  // full-screen recap with "On to <next>", which goes straight into the next
-  // quiz's first question. The Up next screen is now only for a clean finish.
+  // full-screen hand-off, one big start button for the next quiz (owner,
+  // 2026-11-10), which goes straight into its first question. The Up next screen is now only for a clean finish.
   const [reveal, setReveal] = useState(null);
   // Hover off until the pointer moves again: see lib/hover-armed.js. The key
   // is the section AND the question, since every section restarts at 0.
@@ -1099,11 +1099,19 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           missRight={reveal ? stQ.correct : null}
           missPick={reveal ? reveal.pick : null}
           recap={reveal ? {
-            label: `${stSec.name} ended on question ${stI + 1}`,
-            right: stI,
-            stand: reveal.stand ? `You\u2019d place #${reveal.stand.pos} of ${Number(reveal.stand.field).toLocaleString()} if you stopped here` : null,
-            timedOut: reveal.timedOut,
-            goLabel: r.phase === 'verdict' && upNext ? `On to ${upNext.name}` : 'See your run',
+            // The hand-off (owner, 2026-11-10): one large start button for the
+            // next quiz on its own ground, nothing else. See GauntletStage.jsx.
+            eyebrow: r.phase === 'verdict' && upNext
+              ? `Up next · ${sections.findIndex((s) => s.key === upNext.key) + 1} of ${sections.length}`
+              : 'Run complete',
+            goName: r.phase === 'verdict' && upNext ? upNext.name : 'See your run',
+            sub: r.phase === 'verdict' && upNext
+              ? [lineFor(upNext), upNext.questions ? `${upNext.questions.length} questions, one life` : null].filter(Boolean).join(' · ')
+              : null,
+            nextBg: r.phase === 'verdict' && upNext
+              ? rampFor(upNext.slot != null ? upNext.slot : sections.findIndex((s) => s.key === upNext.key))
+              : null,
+            goLabel: r.phase === 'verdict' && upNext ? `Start ${upNext.name}` : 'See your run',
             autoMs: r.phase === 'verdict' && upNext ? VERDICT_MS : 0,
             leaveHref: r.phase === 'verdict' ? `/circuits/${circuitId}` : null,
             onGo: () => { setReveal(null); setHold(false); if (rRef.current.phase === 'verdict') nextSection(); },
