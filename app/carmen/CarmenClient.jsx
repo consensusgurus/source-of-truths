@@ -25,6 +25,9 @@ const square = (r) => (!r ? '⬜' : r.pts >= 800 ? '🟩' : r.pts >= 400 ? '🟨
 
 const GAME = {
   key: 'carmen', name: 'Carmen', cat: 'Geography', miss: 'tips', wide: true, full: true,
+  // IN SPACE (owner, 2026-11-10): play always sits on the black look, the
+  // true-colour Earth on a starfield, whichever look the site is on.
+  look: 'darktint',
   fresh: () => ({ leg: 0, tips: 1, guess: null, phase: 'play', res: [], closed: false }),
   validSave: (P, s) => Array.isArray(s.res) && typeof s.leg === 'number' && s.res.length <= P.legs.length,
   touched: (s) => s.res.length > 0 || s.tips > 1 || !!s.guess,
