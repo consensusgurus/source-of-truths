@@ -2,6 +2,8 @@
 
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
+import Script from 'next/script';
+
 import VisitorBeacon from './VisitorBeacon';
 import ResultQueue from './ResultQueue';
 import DailyStartPing from './DailyStartPing';
@@ -19,6 +21,12 @@ import { SITE_URL } from '@/lib/site';
 import { DAILY_GAMES } from '@/lib/daily-games';
 import { SUDOKU_POOL } from '@/lib/circuits';
 import { softGround, gameColor } from '@/lib/category-ramp';
+
+// Google Analytics 4 (property "Mind Loft", stream "Mind Loft Web").
+// Added 2026-11-11 for the Raptive ad network application, which reads
+// pageviews and country mix from GA4. Loads after hydration so it never
+// delays first paint.
+const GA4_ID = 'G-9HLHTKGGTK';
 
 // Every daily's route, for the Layout C reserve script below.
 const LC_ROUTES = JSON.stringify(Array.from(new Set(DAILY_GAMES.map((g) => g.href || '/' + g.key))));
@@ -220,6 +228,8 @@ export default function RootLayout({ children }) {
             app/VersionGuard.jsx and CLAUDE.md "No tab stays on an old deployment". */}
         <VersionGuard />
         <Analytics />
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`} strategy="afterInteractive" />
+        <Script id="ga4-init" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA4_ID}');`}</Script>
       </body>
     </html>
   );
