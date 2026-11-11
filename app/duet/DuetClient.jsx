@@ -961,11 +961,11 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
                   })}
                 </div>
                 {playing && (breaks.any ? (
-                  <p className="dus-need bad" aria-live="polite">{breakNote(cells, PUZZLE)}</p>
+                  <p className="dus-need bad" aria-live="polite"><span>{breakNote(cells, PUZZLE)}</span></p>
                 ) : showSel ? (
-                  <p className="dus-need" aria-live="polite">Row {selR + 1}{need(lineCount.rowD[selR], lineCount.rowR[selR], N)}. Column {selC + 1}{need(lineCount.colD[selC], lineCount.colR[selC], N)}. Its room{need(lineCount.roomD[selRoom] || 0, lineCount.roomR[selRoom] || 0, lineCount.roomN[selRoom])}.</p>
+                  <p className="dus-need" aria-live="polite"><span>Row {selR + 1}{need(lineCount.rowD[selR], lineCount.rowR[selR], N)}. Column {selC + 1}{need(lineCount.colD[selC], lineCount.colR[selC], N)}. Its room{need(lineCount.roomD[selRoom] || 0, lineCount.roomR[selRoom] || 0, lineCount.roomN[selRoom])}.</span></p>
                 ) : (
-                  <p className="dus-need">Tap a square to see what its row, column and room still need. Never three alike in a line; <b>=</b> match, <b>&times;</b> differ.</p>
+                  <p className="dus-need"><span>Tap a square to see what its row, column and room still need. Never three alike in a line; <b>=</b> match, <b>&times;</b> differ.</span></p>
                 ))}
                 {playing && (
                   <div className="dus-seg" role="group" aria-label="What a tap places">
@@ -1409,12 +1409,17 @@ const DUS_CSS = `
 .dus-mk{position:absolute;z-index:2;width:18px;height:18px;border-radius:9px;background:var(--pst-bg);border:1px solid var(--pst-ink);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;line-height:1;transform:translate(-50%,-50%);pointer-events:none;}
 .dus-mk.bad{border-color:var(--dus-warn);background:var(--dus-warn-bg);color:var(--dus-warn);}
 .dus-bd.n10 .dus-mk{width:16px;height:16px;font-size:11px;}
-.dus-need{margin:0;border-radius:14px;background:var(--pst-pale);padding:10px 12px;text-align:center;font-size:14px;font-weight:700;line-height:1.4;}
+/* The card keeps ONE height whatever it says (owner, 2026-11-11): the board is
+   sized from the height left after this card, so a note that wraps to a
+   different number of lines (a rule break replacing the row/column need)
+   made the whole board jump. Three lines reserved on a phone, two on desktop. */
+.dus-need{margin:0;box-sizing:border-box;min-height:calc(3 * 1.4em + 20px);display:flex;align-items:center;justify-content:center;border-radius:14px;background:var(--pst-pale);padding:10px 12px;text-align:center;font-size:14px;font-weight:700;line-height:1.4;}
+.dus-need>span{display:block;}
 .dus-need b{font-weight:800;}
 .dus-need.bad{background:var(--dus-warn-bg);color:var(--dus-warn);}
 .dus-seg{display:flex;border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
 .pst .dus-seg button{flex:1;min-width:0;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;}
 .pst .dus-seg button+button{border-left:1px solid var(--pst-ink);}
 .pst .dus-seg button.on{background:var(--pst-acc);color:var(--pst-on-acc);}
-@media (min-width:900px){.dus-need,.dus-seg{width:min(100%, 560px);align-self:center;}.dus-bd{width:min(100%, 520px, var(--dus-fit, 520px));}.dus-bd.n10{width:min(100%, 600px, var(--dus-fit, 600px));}.dus-mk{width:22px;height:22px;border-radius:11px;font-size:14px;}}
+@media (min-width:900px){.dus-need,.dus-seg{width:min(100%, 560px);align-self:center;}.dus-need{min-height:calc(2 * 1.4em + 20px);}.dus-bd{width:min(100%, 520px, var(--dus-fit, 520px));}.dus-bd.n10{width:min(100%, 600px, var(--dus-fit, 600px));}.dus-mk{width:22px;height:22px;border-radius:11px;font-size:14px;}}
 `;
