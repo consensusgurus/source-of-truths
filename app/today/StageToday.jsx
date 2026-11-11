@@ -3876,8 +3876,9 @@ export default function StageToday() {
         <span className="nm"><b>{c.name}</b><span className="tg">Run · {c.games.length} games{c.blurb ? ' · ' + c.blurb : ''}</span></span>
         <span className="td">
           {!st ? <span className="ph" aria-hidden="true" />
-            : st && st.players ? <><b>{fmtN(st.players)}</b> {st.players === 1 ? 'player' : 'players'} today</>
-            : <span className="mu">Open. Be first.</span>}
+            : st.lead ? <b>{st.lead}</b>
+            : <span className="mu">{st.players ? 'No finish yet' : 'Open. Be first.'}</span>}
+          {st ? <i>{fmtN(st.players || 0)} {st.players === 1 ? 'player' : 'players'} today</i> : null}
         </span>
         <span className="yu">{runFigs(c)}</span>
         <a className="ct" href={withTq(circuitEntryHref(c.id))} onClick={(e) => e.stopPropagation()}>{fin ? 'Results' : c.n ? 'Continue' : 'Play run'}</a>
@@ -3886,7 +3887,10 @@ export default function StageToday() {
       on ? <div key={'rrd-' + c.id} id={'rrd-' + c.id} className="sty-rrd">{deckDrawer(c, cat, 0, 0)}</div> : null,
     ];
   };
-  const runRows = () => null;
+  // RUNS IN THE LIST TABLE (owner, 2026-11-10): list view carries the runs as
+  // ledger rows, open runs above the puzzles and finished runs below, in place
+  // of the separate Runs block above the table.
+  const runRows = (cat, fin) => (mid && !findOn ? deckRuns(cat).filter((c) => runFull(c) === fin).flatMap((c) => runRow(c, cat)) : null);
   // THE RUNS BLOCK (owner, 2026-10-25, the desktop mockup): a labelled row of
   // run cards above the puzzles, three across, each with its one way in.
   const runTile = (c, cat) => {
@@ -4146,7 +4150,6 @@ export default function StageToday() {
         </div>
         {s ? <p className="sty-skw">{s.what}. {games.length} daily puzzles.</p> : null}
         {circPills(cat, true)}
-        {findOn || !(mid && viewOf(cat) === 'list') ? null : runStrip(cat)}
         {puzLab(findIn(games).length)}
         {mid && viewOf(cat) === 'list' ? catLedger(games, sk || findOn, cat) : null}
         {!(mid && viewOf(cat) === 'list') ? <>
@@ -4874,7 +4877,6 @@ export default function StageToday() {
           {circPills(null, true)}
           {grpBanners()}
           {grpLists('azg')}
-          {findOn || !(mid && viewOf(ALL_ID) === 'list') ? null : runStrip(null)}
           {who && grpGames.some((x) => mineGrp.has(x.code)) ? <div className="sty-mgl">All Puzzles</div> : puzLab(findIn(alpha).length)}
           {mid && viewOf(ALL_ID) === 'list' ? (
             <div className="sty-led">
