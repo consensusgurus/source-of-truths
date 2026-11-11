@@ -2922,7 +2922,9 @@ export default function StageToday() {
     const t1 = setInterval(() => {
       // Only once a view toggle is actually on screen: the cap's on desktop,
       // the pane's on a phone (which has none until a pane is open).
-      const vt = [...document.querySelectorAll('.sty-captools .sty-view, .mph-vw')].find((el) => {
+      // The desktop cap's toggle only: a phone shows no note (owner, 2026-11-11),
+      // so it must not spend the one-time flag either.
+      const vt = [...document.querySelectorAll('.sty-captools .sty-view')].find((el) => {
         const r = el.getBoundingClientRect();
         return r.width > 0 && r.bottom > 0 && r.top < window.innerHeight;
       });
@@ -4853,16 +4855,14 @@ export default function StageToday() {
                       </div>
                       <div className="mph-cg">
                         <span className="lb">View</span>
-                        <div className={'mph-sg mph-vw' + (detHint ? ' sty-vhint' : '')} role="group" aria-label="Show puzzles as">
+                        <div className="mph-sg mph-vw" role="group" aria-label="Show puzzles as">
                           <button type="button" aria-pressed={!mDet} onClick={() => pickView('tile')}>Tiles</button>
                           <button type="button" aria-pressed={mDet} onClick={() => pickView('det')}>Details</button>
                         </div>
                       </div>
-                      {detHint ? (
-                        <span className="sty-vnote" role="status">
-                          <b>New: Details.</b> Bigger tiles with the full description of every puzzle. Switch back to Tiles here anytime, and your pick stays.
-                        </span>
-                      ) : null}
+                      {/* NO DETAILS NOTE ON A PHONE (owner, 2026-11-11: "the 'detail'
+                          pop-up on mobile points to the wrong spot. let's get rid of
+                          that completely"). The desktop cap keeps its one-time note. */}
                     </div>
                   ) : null}
                   {/* JUMP TO A CATEGORY (N3), on All Puzzles only. */}
