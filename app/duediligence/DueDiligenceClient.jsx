@@ -266,7 +266,7 @@ export default function DueDiligenceClient({ day = null, dateLabel, dateShort, s
     return out.length ? { rows: out, field: bd.overallField || bd.uniquePlayers || null, href: '/duediligence/leaderboard' } : null;
   })();
   // Bottom to top: Lost in Space up to Architect-Engineer.
-  const ladder = [...B].reverse().map((t, i) => ({ min: t[0], name: t[1], line: t[5], colour: rampFor(i), chip: t[3] }));
+  const ladder = [...B].reverse().map((t, i) => ({ min: t[0], name: t[1], short: t[2], line: t[5], colour: rampFor(i), chip: t[3] }));
   const up = tier > 0 ? B[tier - 1] : null;
   const upGap = up ? Math.max(1, up[0] - total) : 0;
 

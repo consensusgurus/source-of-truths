@@ -18,7 +18,8 @@
 //      the Trivia Gauntlet and Encore, the flask for Science, a calculator for
 //      Math, the dictionary for English, a belt for the Dojo, a name tag for
 //      Read the Room, school letters for Judged, a wallet for Price Check, the
-//      passport for Passport, the morning papers for Crossed Up. The title and
+//      passport for Passport, the morning papers for Crossed Up, a stock
+//      chart for Due Diligence. The title and
 //      the standing land under it.
 //
 // Then THE GLIDE: the score, its unit, the title and the standing fly to their
@@ -51,8 +52,11 @@ export const FINALE_PIECE = {
   dojo: 'belt', dojocolor: 'belt', room: 'tag', judged: 'letters', pricecheck: 'wallet', passport: 'passport', crossed: 'papers',
   // Space Cadet (2026-11-07): the dictionary, each rank defined by its line.
   spacecadet: 'dict',
-  // Due Diligence (2026-11-10): the wallet, a card per rank.
-  duediligence: 'wallet',
+  // Due Diligence (owner, 2026-11-10 night: "why does due diligence use the
+  // price check credit cards for the reveal??", then chose option A of the
+  // reveal mockups): its own piece, the chart. Tape's unlabelled price line
+  // climbs through one band per rank and closes with a price flag.
+  duediligence: 'chart',
 };
 
 // ── THE PIECES ─────────────────────────────────────────────────────────────
@@ -137,6 +141,50 @@ const PIECES = {
     }).join('')}<div class="wal"></div></div>`,
     step: (q, L, k) => q(`#cd${k}`).classList.add('up'),
     land: (q, L, K) => { L.forEach((t, j) => { if (j !== K) q(`#cd${j}`).classList.remove('up'); }); const c = q(`#cd${K}`); c.style.transform = 'none'; c.classList.add('win'); },
+  },
+  // THE CHART (Due Diligence, option A of the 2026-11-10 mockups): bands low
+  // to high, one per rank, and a price line drawn from nothing up to the
+  // score. prog() draws the line as the count climbs, step() lights a band,
+  // land() dims the bands above, pulses the close and flags it on the axis.
+  chart: {
+    html: (L, X) => {
+      const W = 380, H = 270, cap = Math.max(1, X.cap);
+      const Y = (v) => H - 8 - (Math.min(cap, v) / cap) * (H - 24);
+      let sd = 7; const rnd = () => { sd = (sd * 9301 + 49297) % 233280; return sd / 233280; };
+      const n = 48, sc = Math.max(0, X.score);
+      const pts = [];
+      for (let i = 0; i <= n; i += 1) {
+        const x = 10 + (i / n) * (W - 132);
+        const base = sc * Math.pow(i / n, 1.15);
+        const j = i === 0 || i === n ? 0 : (rnd() - 0.45) * (cap / 9);
+        pts.push([x, Y(Math.max(0, base + j))]);
+      }
+      const e = pts[pts.length - 1];
+      const bands = L.map((t, i) => {
+        const top = i < L.length - 1 ? L[i + 1].min : cap;
+        const lab = String(t.short || String(t.name).split(/\s+/).slice(-1)[0]).toUpperCase();
+        return `<rect class="cbd" id="cbd${i}" x="0" y="${Y(top)}" width="${W}" height="${Math.max(0, Y(t.min) - Y(top))}" fill="${softGround(t.colour)}"/>`
+          + `<text class="cbl" id="cbl${i}" x="10" y="${Y(top) + 16}">${esc(lab)}</text>`
+          + `<line x1="0" x2="${W}" y1="${Y(t.min)}" y2="${Y(t.min)}" stroke="${DINK}" stroke-opacity=".15"/>`;
+      }).join('');
+      return `<div class="cht" style="--cfy:${e[1] - 16}px"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">${bands}`
+        + `<path id="cpth" d="M${pts.map((p) => p.map((v) => v.toFixed(1)).join(' ')).join(' L')}" pathLength="1" fill="none" stroke="${DINK}" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round" style="stroke-dasharray:1;stroke-dashoffset:1"/>`
+        + `<circle class="cdot" id="cdot" cx="${e[0]}" cy="${e[1]}" r="6.5" fill="${DINK}"/></svg>`
+        + `<div class="cflag" id="cflag"></div></div>`;
+    },
+    prog: (q, v, X) => {
+      const p = X.score > 0 ? Math.pow(Math.max(0, Math.min(1, v / X.score)), 1 / 1.15) : 1;
+      q('#cpth').style.strokeDashoffset = String(1 - p);
+    },
+    step: (q, L, k) => { q(`#cbd${k}`).classList.add('lit'); q(`#cbl${k}`).classList.add('lit'); },
+    land: (q, L, K, X) => {
+      q('#cpth').style.strokeDashoffset = '0';
+      L.forEach((t, j) => { if (j > K) { q(`#cbd${j}`).classList.add('dim'); q(`#cbl${j}`).classList.add('dim'); } });
+      q('#cdot').classList.add('go');
+      const f = q('#cflag');
+      f.textContent = `${String(L[K].short || String(L[K].name).split(/\s+/).slice(-1)[0]).toUpperCase()} \u25B2 ${X.score}`;
+      f.classList.add('on');
+    },
   },
   passport: {
     html: (L, X) => `<div class="ppk"><div class="ppg"><small>${X.earned.vf != null ? 'VISA-FREE TO' : 'WELCOME HOME'}</small><b>${X.earned.vf != null ? esc(X.earned.vf) : '&#9992;'}</b><span>${X.earned.vf != null ? 'destinations' : esc(X.earned.short || '')}</span><div class="stamp" id="stmp">ENTRY</div></div>
@@ -600,6 +648,18 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .cd.win{top:14px;transform:scale(1.14);z-index:30;box-shadow:0 20px 40px rgba(8,34,46,.3)}
 .rfx .cd.win::after{content:'';position:absolute;top:0;bottom:0;width:60px;left:-80px;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);animation:rfxShine 1s .3s ease-out both}
 @keyframes rfxShine{to{left:120%}}
+/* chart */
+.rfx .cht{position:absolute;left:20px;top:14px;width:380px;height:270px}
+.rfx .cht svg{overflow:visible;display:block}
+.rfx .cht .cbd{opacity:.28;transition:opacity .35s ease}
+.rfx .cht .cbd.lit{opacity:1}.rfx .cht .cbd.dim{opacity:.18}
+.rfx .cht .cbl{font-size:12px;font-weight:800;letter-spacing:.08em;fill:${DINK};opacity:.35;transition:opacity .3s ease}
+.rfx .cht .cbl.lit{opacity:1}.rfx .cht .cbl.dim{opacity:.2}
+.rfx .cht .cdot{opacity:0;transform-box:fill-box;transform-origin:center}
+.rfx .cht .cdot.go{opacity:1;animation:rfxPulse 1.2s ease-out 2}
+@keyframes rfxPulse{0%{transform:scale(1)}40%{transform:scale(1.9)}100%{transform:scale(1)}}
+.rfx .cht .cflag{position:absolute;right:-4px;top:var(--cfy);padding:7px 11px 7px 16px;background:${DINK};color:#fff;font-size:14px;font-weight:800;letter-spacing:.06em;line-height:1.2;white-space:nowrap;clip-path:polygon(11px 0,100% 0,100% 100%,11px 100%,0 50%);opacity:0;transform:translateX(18px);transition:opacity .35s ease,transform .45s cubic-bezier(.2,1.3,.4,1)}
+.rfx .cht .cflag.on{opacity:1;transform:none}
 /* passport */
 .rfx .ppk{position:absolute;left:150px;top:22px;width:180px;height:256px}
 .rfx .ppg{position:absolute;inset:0;background:#fff;border:3px solid ${DINK};border-radius:6px 14px 14px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:12px;color:${DINK}}
