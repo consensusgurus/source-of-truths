@@ -2534,3 +2534,29 @@ says a thing ONE way. Keep it that way when adding to any of them.
   dividers, like Everything Else (`.ixj1` / `.ixj2` from `ixBtn` round the first and last rows).
   The open block shows its count as a fill like the rows, not a separate bar (the Full color look
   keeps the bar). Categories / Skills and Reorder share one line as text toggles.
+
+## The phone's coherence pass (owner, 2026-11-11)
+
+Owner on the phone mockups: "i like m1b and m2", then "i like all of these". Built in
+`app/today/StageToday.jsx` (the `.sty-mph` block and the last CSS block).
+
+- **Home tiles (M1B, and Skills too):** every tile, All Puzzles and My Puzzles read "4 of 39" with a
+  small bar of today's plays (`em.pg`). No more "39 games" / "15 starred". Tiles keep full colour.
+- **Ranks:** plain figures with no box; the middle one is labelled with the group's own name; the
+  third reads "All-Time". **Everything Else:** ink dividers, no arrows, Runs carries "x of y".
+- **Pane controls (M2):** Sort and View share ONE row (`.mph-ctl`), each a joined switch (`.mph-sg`)
+  under a small label. The header count is "3 of 33" (no "played"). The card's crowd strip is the
+  person icon and a number, never "playing".
+- **Played sinks (N2):** in every pane the played cards sit at the foot under "Played · n"; the
+  Puzzles label counts what is left ("Puzzles · 30 left").
+- **All Puzzles is grouped by category on a phone (N3):** open puzzles run category by category
+  under counted labels (`.mph-jl`), the pane's sort applies INSIDE each group, and a "Jump To" row
+  of category chips scrolls to each label.
+- **THE PINNED PANE HEADER AND THE iPHONE BARS (N1).** `.mph-pane .sty-mtop` is `position:sticky`.
+  iOS Safari tints its top bar from the fixed or sticky element under the top edge, so this bar is
+  OPAQUE and ALWAYS the page's own ground: `background:var(--sot-root-paint, var(--stg-ground))`.
+  A pinned bar with its own colour, a translucent ground, or one that kept a stale colour while the
+  page recoloured is what broke the bands before. Nothing is pinned at the foot. If a pinned bar is
+  ever added elsewhere, give it the same background rule and test on an iPhone in a tinted pane,
+  an untinted pane, and through a flood into a game and back.
+- NOT BUILT YET: the start (ready-up) screen in the card's grammar (N5).

@@ -31,7 +31,7 @@
 // this surface adds no new endpoint and cannot disagree with the other one
 // about what has been played.
 import { cycleSiteLook, useStageLook, isColorLook } from '@/lib/stage-look';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { KINDS, KIND_OF_KEY, sudokuSizeN } from '@/lib/category-kinds';
 import { SUDOKU_COLOUR } from '@/lib/colour-sudoku';
 import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys, dailyScoreText } from '@/lib/daily-games';
@@ -4542,7 +4542,8 @@ export default function StageToday() {
           const games = isAll ? alpha : isMine ? pinned : pc ? pc.games : [];
           const nDone = games.filter((g) => done.has(g.key)).length;
           const title = isAll ? 'All Puzzles' : isMine ? 'My Puzzles' : isRuns ? 'Runs' : catLabel(paneOn);
-          const sub = isRuns ? `${circuits.filter(runFull).length} of ${circuits.length} finished` : `${nDone} of ${games.length} played`;
+          // "3 of 33", as every tile and the desktop index say it (owner, 2026-11-11).
+          const sub = isRuns ? `${circuits.filter(runFull).length} of ${circuits.length}` : `${nDone} of ${games.length}`;
           return (
             <div className="sty-mtb pane">
               <button type="button" className={'mph-hback' + (pc ? ' tone' : '')} style={pc ? mTone(rampCat(paneOn)) : undefined} onClick={mBack} aria-label="Back to Mind Loft home">
@@ -4693,13 +4694,16 @@ export default function StageToday() {
                     return (
                       <button key={cat} type="button" className={'mph-t' + (catShortLabel(cat) ? ' lw' + Math.min(200, Math.max(120, Math.ceil(catLabel(cat).length) * 10)) : '')} style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat), { label: 'b', target: '.mph-htx .t > span', toTop: true, color: paneGround(rc) })}>
                         <b>{catShortLabel(cat) ? <><span className="lf">{catLabel(cat)}</span><span className="sf">{catShortLabel(cat)}</span></> : catLabel(cat)}</b>
-                        <em>{ixLens === 'cat' ? `${games.length} ${games.length === 1 ? 'game' : 'games'}${nd ? ` \u00b7 ${nd} played` : ''}` : `${nd} of ${games.length}`}</em>
+                        {/* ONE COUNT, ONE BAR, EVERY TILE (owner, 2026-11-11, mockup M1B):
+                            "4 of 39" and a bar of today's plays, in Categories and in
+                            Skills alike. The tile keeps its full colour. */}
+                        <em className="pg"><span>{nd} of {games.length}</span><i aria-hidden="true"><u style={{ width: `${games.length ? Math.round((nd / games.length) * 100) : 0}%` }} /></i></em>
                       </button>
                     );
                   })}
                   {/* All Puzzles / My Puzzles close the grid, the same size as the tiles. */}
-                  <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}><b>All Puzzles</b><em>{alphaDone} of {alpha.length}</em></button>
-                  <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}><b>My Puzzles</b><em>{pinned.length ? `${pinned.length} starred` : 'Star any puzzle'}</em></button>
+                  <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}><b>All Puzzles</b><em className="pg"><span>{alphaDone} of {alpha.length}</span><i aria-hidden="true"><u style={{ width: `${alpha.length ? Math.round((alphaDone / alpha.length) * 100) : 0}%` }} /></i></em></button>
+                  <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}><b>My Puzzles</b>{pinned.length ? (() => { const pd = pinned.filter((g) => done.has(g.key)).length; return <em className="pg"><span>{pd} of {pinned.length}</span><i aria-hidden="true"><u style={{ width: `${Math.round((pd / pinned.length) * 100)}%` }} /></i></em>; })() : <em>Star any puzzle</em>}</button>
                 </div>
                 <div className="mph-seg" role="group" aria-label="Group puzzles by">
                   <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
@@ -4713,10 +4717,10 @@ export default function StageToday() {
                     <b>{who && stats.dayRank ? '#' + stats.dayRank : '\u2013'}</b><i>Today</i>
                   </a>
                   <a href={who && mGroup ? withTq('/groups/' + mGroup.code) : '/groups'} onClick={() => { if (who && mGroup) pickGroup(mGroup.code); }}>
-                    <b>{who && mGroup && mGroup.rank ? '#' + mGroup.rank : '\u2013'}</b><i>Group</i>
+                    <b>{who && mGroup && mGroup.rank ? '#' + mGroup.rank : '\u2013'}</b><i>{who && mGroup && mGroup.name ? mGroup.name : 'Group'}</i>
                   </a>
                   <a href={withTq('/quizzes/hub')}>
-                    <b>{who && rank ? '#' + rank : '\u2013'}</b><i>All Time</i>
+                    <b>{who && rank ? '#' + rank : '\u2013'}</b><i>All-Time</i>
                   </a>
                   {who ? null : (
                     <a className="join" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Pick a name to keep a rank and earn tickets</a>
@@ -4724,7 +4728,7 @@ export default function StageToday() {
                 </div>
                 <div className="mph-lab">Everything Else</div>
                 <div className="mph-list">
-                  <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<span>&rarr;</span></button>
+                  <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<em>{circuits.filter(runFull).length} of {circuits.length}</em><span>&rarr;</span></button>
                   {/* BUILD A RUN (owner, 2026-11-07: "I don't see the option to
                       create a run on mobile"), right under Runs. */}
                   <a href="/build-a-run">Build a Run<span>&rarr;</span></a>
@@ -4751,13 +4755,32 @@ export default function StageToday() {
               const title = isAll ? 'All puzzles' : isMine ? 'My puzzles' : isRuns ? 'Runs' : catLabel(paneOn);
               const backTo = mBackTo;
               const mainTone = pc ? mTone(rampCat(paneOn)) : null;
+              // PLAYED SINKS TO THE FOOT, UNDER ITS OWN LABEL (owner, 2026-11-11,
+              // N2), in every pane. ALL PUZZLES IS GROUPED BY CATEGORY on a phone
+              // (N3): 177 cards in one column needed places to jump to, so the
+              // open puzzles run category by category, each under a counted
+              // label, with the pane's sort applied inside each group.
+              const openG = sorted.filter((g) => !done.has(g.key));
+              const playedG = sorted.filter((g) => done.has(g.key));
+              const mGroups = [];
+              if (isAll) {
+                const seen = new Set();
+                for (const c of orderedCats) {
+                  const gs = openG.filter((g) => g.cat === c.cat);
+                  gs.forEach((g) => seen.add(g.key));
+                  if (gs.length) mGroups.push({ id: 'c:' + c.cat, cat: c.cat, games: gs });
+                }
+                const rest = openG.filter((g) => !seen.has(g.key));
+                if (rest.length) mGroups.push({ id: 'rest', cat: null, games: rest });
+              } else if (openG.length) mGroups.push({ id: 'open', cat: null, games: openG });
+              if (playedG.length) mGroups.push({ id: 'played', played: true, games: playedG });
               return (
                 <>
                   <button type="button" className="mph-back" onClick={mBack}>&larr; {backTo}</button>
                   {pc ? catChips(paneOn, 'mph-cf') : null}
                   {/* The title and count live in the header now (owner, 2026-10-25). */}
                   {s ? <p className="mph-note">{s.what}.</p> : null}
-                  {runs.length && !isRuns ? <div className="mph-lab">Runs</div> : null}
+                  {runs.length && !isRuns ? <div className="mph-lab">Runs{runs.length > 1 ? <> &middot; {runs.length}</> : null}</div> : null}
                   {/* RUNS AS A COMPACT STRIP (owner, 2026-10-25): inside a category,
                       skill, All or My pane the runs are small chips in at most two
                       rows that scroll sideways, not five full cards. The Runs pane
@@ -4814,23 +4837,27 @@ export default function StageToday() {
                       </a>
                     );
                   }) : null}
+                  {/* SORT AND VIEW SHARE ONE ROW (owner, 2026-11-11, mockup M2), each a
+                      joined switch in the shape of Categories / Skills on the home,
+                      under the small label the desktop cap uses. The Details note
+                      hangs off the row, so it keeps the full width. */}
                   {games.length ? (
-                    <div className="mph-srt" role="group" aria-label="Sort puzzles">
-                      <span className="lb">Sort:</span>
-                      <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}>Popular</button>
-                      <button type="button" aria-pressed={sortBy === 'diff'} onClick={() => pickSort('diff')}>Easy to hard</button>
-                      <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A to Z</button>
-                    </div>
-                  ) : null}
-                  {/* TILES OR DETAILS ON THE PHONE (owner, 2026-11-07): Details is
-                      the default, one across on a portrait phone, two across from
-                      600px. List stays a desktop layout, so a stored List reads as
-                      Details here. */}
-                  {games.length ? (
-                    <div className={'mph-srt mph-vw' + (detHint ? ' sty-vhint' : '')} role="group" aria-label="Show puzzles as">
-                      <span className="lb">View:</span>
-                      <button type="button" aria-pressed={!mDet} onClick={() => pickView('tile')}>Tiles</button>
-                      <button type="button" aria-pressed={mDet} onClick={() => pickView('det')}>Details</button>
+                    <div className="mph-ctl">
+                      <div className="mph-cg s">
+                        <span className="lb">Sort</span>
+                        <div className="mph-sg" role="group" aria-label="Sort puzzles">
+                          <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}>Popular</button>
+                          <button type="button" aria-pressed={sortBy === 'diff'} onClick={() => pickSort('diff')}><span className="sl">Easy to Hard</span><span className="ss">Easy</span></button>
+                          <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A to Z</button>
+                        </div>
+                      </div>
+                      <div className="mph-cg">
+                        <span className="lb">View</span>
+                        <div className={'mph-sg mph-vw' + (detHint ? ' sty-vhint' : '')} role="group" aria-label="Show puzzles as">
+                          <button type="button" aria-pressed={!mDet} onClick={() => pickView('tile')}>Tiles</button>
+                          <button type="button" aria-pressed={mDet} onClick={() => pickView('det')}>Details</button>
+                        </div>
+                      </div>
                       {detHint ? (
                         <span className="sty-vnote" role="status">
                           <b>New: Details.</b> Bigger tiles with the full description of every puzzle. Switch back to Tiles here anytime, and your pick stays.
@@ -4838,12 +4865,28 @@ export default function StageToday() {
                       ) : null}
                     </div>
                   ) : null}
-                  {games.length ? <div className="mph-lab">Puzzles</div> : null}
+                  {/* JUMP TO A CATEGORY (N3), on All Puzzles only. */}
+                  {isAll && mGroups.filter((x) => x.cat).length > 1 ? (
+                    <div className="mph-jump">
+                      <span className="lb">Jump To</span>
+                      <div className="mph-jrow" role="group" aria-label="Jump to a category">
+                        {mGroups.map((x, gi) => (x.cat ? (
+                          <button key={x.id} type="button" style={mTone(rampCat(x.cat))}
+                            onClick={() => { const el = document.getElementById('mj-' + gi); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>{catLabel(x.cat)}</button>
+                        ) : null))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {games.length ? <div className="mph-lab">Puzzles{openG.length && openG.length < games.length ? <> &middot; {openG.length} left</> : null}</div> : null}
                   {isMine && !games.length ? (
                     <p className="mph-note">{who ? 'Nothing starred yet. Tap the star on any puzzle and it shows up here.' : 'Pick a name, then star any puzzle and it shows up here.'}</p>
                   ) : null}
+                  {mGroups.map((grp, gi) => (
+                  <Fragment key={grp.id}>
+                  {grp.played ? <div className="mph-lab">Played &middot; {grp.games.length}</div>
+                    : grp.cat ? <div className="mph-lab mph-jl" id={'mj-' + gi} style={mTone(rampCat(grp.cat))}><i aria-hidden="true" />{catLabel(grp.cat)} &middot; {grp.games.length} left</div> : null}
                   <div className={'mph-gg' + (mDet ? ' det' : '')}>
-                    {sorted.map((g) => {
+                    {grp.games.map((g) => {
                       const isDone = done.has(g.key);
                       const r = standBy[g.key];
                       const on = !!(favorites && favorites.includes(g.key));
@@ -4870,7 +4913,7 @@ export default function StageToday() {
                             return (
                               <span className="mcs">
                                 <span className="ld">{ld ? <>#1 <b>{ld.username}</b></> : pl ? 'No solve yet' : 'Open. Be first.'}</span>
-                                <span className="ct pc" title="Plays today">{pl.toLocaleString('en-US')} playing</span>
+                                <span className="ct pc" title="Plays today">{pl.toLocaleString('en-US')}</span>
                               </span>
                             );
                           })() : null}
@@ -4886,6 +4929,8 @@ export default function StageToday() {
                       );
                     })}
                   </div>
+                  </Fragment>
+                  ))}
                 </>
               );
             })()}
@@ -8338,6 +8383,63 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix > .sty-ixn:not(.re) > .sty-ixre{flex:0 0 auto;align-self:flex-start;margin:8px 0 4px;border:0;border-radius:0;padding:6px 0 4px;background:transparent;
     line-height:1;font-size:13px;font-weight:600;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixre:hover{color:var(--stg-ink);}
+}
+/* ── THE PHONE'S COHERENCE PASS (owner, 2026-11-11: "i like m1b and m2", then
+   "i like all of these"). The phone home and the phone panes say things the
+   way the desktop now does. See docs/claude/home-and-ui.md. ── */
+@media (max-width:900px){
+  /* M1B: every home tile reads "4 of 39" with a bar of today's plays. */
+  .sty-mph .mph-grid em.pg{align-self:stretch;display:flex;align-items:center;gap:8px;min-width:0;}
+  .sty-mph .mph-grid em.pg > span{flex:none;white-space:nowrap;}
+  .sty-mph .mph-grid em.pg > i{flex:1 1 auto;min-width:16px;height:5px;border-radius:3px;overflow:hidden;background:color-mix(in srgb, currentColor 18%, transparent);}
+  .sty-mph .mph-grid em.pg > i > u{display:block;height:100%;background:currentColor;text-decoration:none;}
+  /* The ranks are plain figures, as in the desktop cap: no box, no dividers. */
+  .sty-mph .sty-mst{border:0;border-radius:0;}
+  .sty-mph .sty-mst > a{border-left:0;}
+  .sty-mph .sty-mst > a.join{border-top:0;}
+  /* Everything Else is the joined list of the desktop index: ink dividers,
+     no arrows, and Runs carries its count. */
+  .sty-mph .mph-list > *{border-top:1px solid var(--stg-ink);}
+  .sty-mph .mph-list > :first-child{border-top:0;}
+  .sty-mph .mph-list > * > span{display:none;}
+  .sty-mph .mph-list > * > em{font-style:normal;font-size:12px;font-weight:600;}
+  /* M2: Sort and View on one row, each a joined switch under its label. */
+  .sty-mph .mph-ctl{position:relative;display:flex;gap:10px;margin-top:4px;}
+  .sty-mph .mph-cg{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:4px;}
+  .sty-mph .mph-cg.s{flex:1.75 1 0;}
+  .sty-mph .mph-ctl .lb,.sty-mph .mph-jump .lb{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.3;}
+  .sty-mph .mph-sg{display:flex;border:1px solid var(--stg-ink);border-radius:999px;padding:3px;}
+  .sty-mph .mph-sg button{flex:1 1 auto;min-width:0;border:0;background:transparent;color:var(--stg-ink);border-radius:999px;padding:7px 4px 8px;
+    font-size:12px;font-weight:800;line-height:1.26;white-space:nowrap;}
+  .sty-mph .mph-sg button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground, #fff);}
+  .sty-mph .mph-sg .ss{display:none;}
+  .sty-mph .mph-ctl > .sty-vnote{left:0;right:0;width:auto;top:calc(100% + 10px);}
+  /* N3: the jump row on All Puzzles, and the label each group starts under.
+     The label clears the pinned header when it is jumped to. */
+  .sty-mph .mph-jump{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .sty-mph .mph-jrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-right:-16px;padding-right:16px;}
+  .sty-mph .mph-jrow::-webkit-scrollbar{display:none;}
+  .sty-mph .mph-jrow button{flex:none;border:1px solid #08222e;border-radius:999px;padding:6px 12px 7px;font-size:12.5px;font-weight:800;line-height:1.26;
+    white-space:nowrap;color:#08222e;background:color-mix(in srgb, var(--mc) 60%, #fff);}
+  html[data-stage-color=mono] .sty-mph .mph-jrow button{background:transparent;color:var(--stg-ink);border-color:var(--stg-ink);}
+  .sty-mph .mph-jl{display:flex;align-items:center;gap:7px;scroll-margin-top:84px;}
+  .sty-mph .mph-jl > i{flex:none;width:10px;height:10px;border-radius:50%;border:1px solid var(--stg-ink);background:color-mix(in srgb, var(--mc) 60%, #fff);}
+  html[data-stage-color=mono] .sty-mph .mph-jl > i{background:transparent;}
+  /* N1: THE PANE'S HEADER STAYS PINNED. iOS Safari tints its top bar from the
+     fixed or sticky element under the top edge (see paintChrome in
+     app/GauntletScreens.jsx), so a pinned bar in any colour but the page's own
+     would recolour the dome; a pinned bar that kept an old colour is how the
+     bands stopped following the page before (owner, 2026-11-11). This one is
+     OPAQUE AND ALWAYS THE PAGE'S OWN GROUND: the root paint while a pane tint
+     or a flood holds one (lib/root-paint.js), else the stage ground, which a
+     tinted pane sets to the same colour. Nothing is pinned at the foot, so the
+     bottom bar is read as it always was. Never give this bar a colour of its
+     own, a translucent ground or a shadow. */
+  .mph-pane .sty-mtop{position:sticky;top:0;z-index:40;padding-bottom:8px;background:var(--sot-root-paint, var(--stg-ground));}
+}
+@media (max-width:389px){
+  .sty-mph .mph-sg .sl{display:none;}
+  .sty-mph .mph-sg .ss{display:inline;}
 }
 `;
 
