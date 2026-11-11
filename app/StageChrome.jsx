@@ -544,7 +544,7 @@ export default function StageChrome({
           page was opened inside one. */}
       {gameKey ? <DailyRunRail gameKey={gameKey} /> : null}
       {gameKey ? <GateLanding /> : null}
-      {gameKey ? <GateScreen name={name} accent={colour} eye={[category, dateShort || dateLabel].filter(Boolean).join(' \u00b7 ')} /> : null}
+      {gameKey ? <GateScreen gameKey={gameKey} name={name} accent={colour} eye={[category, dateShort || dateLabel].filter(Boolean).join(' \u00b7 ')} /> : null}
       {gameKey ? <ChallengeStrip gameKey={gameKey} num={num} /> : null}
       {gameKey ? <OtherDeviceBar gameKey={gameKey} /> : null}
 

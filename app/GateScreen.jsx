@@ -34,13 +34,38 @@
 //
 // No backtick may appear in the CSS string below, comments included.
 
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
+import dynamic from 'next/dynamic';
+
+// THE CARD'S DRAWING, CHIPS AND BLURB UNDER THE NAME (owner, 2026-11-11, N5).
+// Lazy and client-only: see app/GateCard.jsx.
+const GateCard = dynamic(() => import('./GateCard'), { ssr: false });
 
 function cssString(s) {
   return '"' + String(s || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n]+/g, ' ') + '"';
 }
 
+const useIso = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
+// THE CARD'S SLOT. Made HERE, before the first paint, and given its height in
+// the CSS below, so the name and the rules do not move when the lazy GateCard
+// fills it. It sits BEFORE the gate's last child and is never first or last:
+// :first-child is the hidden title and :last-child the action row.
+function ensureSlot() {
+  try {
+    if (!document.documentElement.hasAttribute('data-gate-card')) return;
+    const gate = document.querySelector('.stage-page .stg-gate');
+    if (!gate || gate.querySelector(':scope > .stg-gx')) return;
+    const last = gate.lastElementChild;
+    if (!last || gate.children.length < 2) return;
+    const host = document.createElement('div');
+    host.className = 'stg-gx';
+    gate.insertBefore(host, last);
+  } catch (e) { /* no slot, no card */ }
+}
+
 function measure() {
+  ensureSlot();
   try {
     const gate = document.querySelector('.stage-page .stg-gate');
     const root = document.documentElement;
@@ -51,7 +76,13 @@ function measure() {
   } catch (e) { /* a missing measure leaves the estimate in place */ }
 }
 
-export default function GateScreen({ name, eye, accent = null }) {
+export default function GateScreen({ name, eye, accent = null, gameKey = null }) {
+  useIso(() => {
+    if (!gameKey || typeof document === 'undefined') return undefined;
+    document.documentElement.setAttribute('data-gate-card', '');
+    ensureSlot();
+    return () => { try { document.documentElement.removeAttribute('data-gate-card'); } catch (e) {} };
+  }, [gameKey]);
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
     let raf = 0;
@@ -80,7 +111,7 @@ export default function GateScreen({ name, eye, accent = null }) {
   const acc = /^#[0-9a-f]{3,8}$/i.test(String(accent || '')) ? accent : null;
   const vars = ':root{--stg-gate-name:' + cssString(name) + ';--stg-gate-eye:' + cssString(eye) + ';'
     + (acc ? '--stg-gate-acc:' + acc + ';' : '') + '}';
-  return <style dangerouslySetInnerHTML={{ __html: vars + CSS }} />;
+  return <><style dangerouslySetInnerHTML={{ __html: vars + CSS }} />{gameKey ? <GateCard gameKey={gameKey} /> : null}</>;
 }
 
 const CSS = `
@@ -90,13 +121,13 @@ html .stage-page .stg-gate{
   padding:6px 8px calc(var(--stg-gate-y, 120px) + 24px) !important;max-width:640px;margin-left:auto;margin-right:auto;
 }
 html .stage-page .stg-gate::before{
-  content:var(--stg-gate-eye, "");order:-2;
+  content:var(--stg-gate-eye, "");order:-3;
   font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   color:var(--stg-ink,#08222e);opacity:.7;
 }
 html .stage-page .stg-gate::after,
 html[style*="--stg-glyph"] .stage-page .stg-gate::after{
-  content:var(--stg-gate-name, "") !important;order:-1;display:block;
+  content:var(--stg-gate-name, "") !important;order:-2;display:block;
   position:static !important;width:auto !important;height:auto !important;
   background:none !important;-webkit-mask:none !important;mask:none !important;
   opacity:1 !important;animation:none !important;clip-path:none !important;
@@ -105,6 +136,11 @@ html[style*="--stg-glyph"] .stage-page .stg-gate::after{
   overflow-wrap:anywhere;
 }
 html .stage-page .stg-gate > div:first-child:empty{display:none !important;}
+/* The card's slot (app/GateCard.jsx): between the name and the rules, its
+   height held from the first paint. Not on a gate showing its long rules. */
+html .stage-page .stg-gate > .stg-gx{order:-1;display:block !important;min-height:76px;margin:0 0 18px !important;max-width:34em;
+  font-size:14px !important;line-height:1.4 !important;font-weight:500;}
+html .stage-page .stg-gate:has(> :first-child:not(:empty)) > .stg-gx{display:none !important;}
 html .stage-page .stg-gate > :first-child:not(:empty){
   font-size:22px !important;line-height:1.25;margin-bottom:12px !important;
 }

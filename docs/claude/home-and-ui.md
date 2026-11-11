@@ -2563,4 +2563,8 @@ Owner on the phone mockups: "i like m1b and m2", then "i like all of these". Bui
   page recoloured is what broke the bands before. Nothing is pinned at the foot. If a pinned bar is
   ever added elsewhere, give it the same background rule and test on an iPhone in a tinted pane,
   an untinted pane, and through a flood into a game and back.
-- NOT BUILT YET: the start (ready-up) screen in the card's grammar (N5).
+- **The start screen carries the card (N5, built 2026-11-11):** `app/GateCard.jsx`, lazy-loaded from
+  `app/GateScreen.jsx`, portals the card's board tile, two chips and blurb into every daily's
+  `.stg-gate`, between the name and the game's own short rules. Its host div sits BEFORE the gate's
+  last child and is never first or last, because GateScreen styles `:first-child` (the hidden title)
+  and `:last-child` (the action row). No crowd strip there: it would cost a board read per load.
