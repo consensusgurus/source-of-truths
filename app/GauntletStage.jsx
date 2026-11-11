@@ -73,6 +73,39 @@ export function useMissReveal(status, pick, timedOut, started) {
   return live;
 }
 
+// THE OUTLINE TRACE (owner, 2026-11-10, option C of the timer mockups: the
+// old bar along the button's foot "makes the shape lack symmetry"). A line
+// runs the whole rounded edge of the start button and retreats from top centre
+// down both sides at once, meeting at the bottom centre at zero. Measured off
+// the button so it follows its real size at every width.
+function TraceTimer({ frac }) {
+  const ref = React.useRef(null);
+  const [box, setBox] = React.useState(null);
+  React.useLayoutEffect(() => {
+    const host = ref.current && ref.current.parentElement;
+    if (!host) return undefined;
+    const read = () => setBox({ w: host.clientWidth, h: host.clientHeight });
+    read();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(read);
+    ro.observe(host);
+    return () => ro.disconnect();
+  }, []);
+  let paths = null;
+  if (box && box.w > 60 && box.h > 60) {
+    const i = 4, r = 22, L = i, T = i, R = box.w - i, B = box.h - i, cx = box.w / 2;
+    paths = [
+      `M${cx} ${T}H${R - r}A${r} ${r} 0 0 1 ${R} ${T + r}V${B - r}A${r} ${r} 0 0 1 ${R - r} ${B}H${cx}`,
+      `M${cx} ${T}H${L + r}A${r} ${r} 0 0 0 ${L} ${T + r}V${B - r}A${r} ${r} 0 0 0 ${L + r} ${B}H${cx}`,
+    ];
+  }
+  return (
+    <svg ref={ref} className="gst-trace" aria-hidden="true" viewBox={box ? `0 0 ${box.w} ${box.h}` : undefined} preserveAspectRatio="none">
+      {paths ? paths.map((d) => <path key={d.slice(-12)} d={d} pathLength="1" style={{ strokeDashoffset: -(1 - frac) }} />) : null}
+    </svg>
+  );
+}
+
 export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choices = [], onPick, lockIdx = null, disabled = false, frac = null, hot = false, footer = null, label = 'Question', kicker = null, missRight = null, missPick = null, recap = null }) {
   // The stage's own look switch (owner, 2026-10-23): pastel by default, Plain
   // is white with black type. Separate from the site's light/dark setting.
@@ -114,7 +147,7 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
   React.useEffect(() => { goingRef.current = false; }, [qKey]);
   // THE SLOW TIMER (owner, 2026-11-07: "a slow timer to show for next category
   // play"). Once the recap is open it counts recap.autoMs down on the button
-  // (seconds plus a bar draining along its foot) and moves on by itself at zero.
+  // (seconds plus the outline trace, TraceTimer) and moves on by itself at zero.
   const autoMs = recap && recap.autoMs ? recap.autoMs : 0;
   const [left, setLeft] = React.useState(0);
   const open = !!(big && big.open);
@@ -196,7 +229,7 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
                 <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg>
                 <span>{autoMs ? `Start · ${Math.ceil(left / 1000)}` : 'Start'}</span>
               </span>
-              {autoMs ? <span className="gst-bbar" aria-hidden="true"><span style={{ width: `${Math.max(0, Math.min(1, left / autoMs)) * 100}%` }} /></span> : null}
+              {autoMs ? <TraceTimer frac={Math.max(0, Math.min(1, left / autoMs))} /> : null}
             </button>
           </div>
           {recap.leaveHref ? <a className="gst-bleave" href={recap.leaveHref}>Leave the run</a> : null}
@@ -289,8 +322,8 @@ html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
 .gst-bname{font-size:clamp(40px, 12vw, 72px);font-weight:800;letter-spacing:-.025em;line-height:1.12;padding-bottom:.06em;overflow-wrap:anywhere;}
 .gst-bsub{font-size:15px;font-weight:700;line-height:1.4;opacity:.8;}
 .gst-bplay{display:inline-flex;align-items:center;gap:9px;margin-top:10px;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;}
-.gst-bbar{position:absolute;left:0;right:0;bottom:0;height:6px;background:color-mix(in srgb, var(--bbg) 22%, transparent);}
-.gst-bbar>span{display:block;height:100%;background:var(--bbg);transition:width .25s linear;}
+.gst-trace{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;}
+.gst-trace path{fill:none;stroke:var(--bbg);stroke-width:3;stroke-linecap:round;stroke-dasharray:1 1;transition:stroke-dashoffset .25s linear;}
 .gst-bgo:active{transform:scale(.985);}
 @media(hover:hover){.gst-bgo:hover{filter:brightness(1.12);}}
 /* Leave the run (owner, 2026-11-07): a small underlined link at the foot of the screen, not a button. */
@@ -301,5 +334,5 @@ html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
 @keyframes gstTag{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media(min-width:900px){.gst-col{max-width:820px;gap:40px;padding:48px 32px 28px;}.gst-q{font-size:44px;}.gst-q blockquote{font-size:26px;}.gst-q:has(blockquote){font-size:22px;}.gst-q:has(blockquote) blockquote{font-size:40px;}.gst-ch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}.gst-c{min-height:150px;font-size:26px;padding:22px;}.gst-ch.many .gst-c{min-height:120px;font-size:23px;}.gst-ch.tiny .gst-c{font-size:38px;}}
 @media(max-width:400px){.gst-q{font-size:25px;}.gst-q:has(blockquote){font-size:16px;}.gst-q:has(blockquote) blockquote{font-size:24px;}.gst-c{font-size:19px;min-height:64px;}.gst-ch.many .gst-c{font-size:17px;min-height:54px;}.gst-ch.grid .gst-c{font-size:18px;min-height:76px;}.gst-ch.tiny .gst-c{font-size:27px;}}
-@media (prefers-reduced-motion: reduce){.gst-q,.gst-c,.gst-c.ok,.gst-c.pk,.gst-tag{animation:none}.gst-dim,.gst-c.rv,.gst-big,.gst-bans,.gst-bx,.gst-bbar>span{transition:none}}
+@media (prefers-reduced-motion: reduce){.gst-q,.gst-c,.gst-c.ok,.gst-c.pk,.gst-tag{animation:none}.gst-dim,.gst-c.rv,.gst-big,.gst-bans,.gst-bx,.gst-trace path{transition:none}}
 `;

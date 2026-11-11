@@ -593,6 +593,9 @@ export function GauntletEndStage({
   // arrives already landed. { key, legMax: [per section], legSub?, legRanks?:
   // [{ rank, plays }], oneLife?, legWord? }.
   finale = null,
+  // Called once the finale has finished (or at once when none plays), so the
+  // host can hold its pop-ups until the score and title have landed.
+  onSettled = null,
   // WHERE YOU STAND (owner, 2026-11-03): the run's id. The finale's own key
   // stands in when it is not passed. The run, its category (MC Runs for the
   // five multiple choice runs) and the whole day, as a beat at the end of the
@@ -626,6 +629,13 @@ export function GauntletEndStage({
   // at the glide it is released and its blocks rise in around the standing.
   const finOn = !!(finale && sweep && !reduce && climb && sections.length);
   const [finPhase, setFinPhase] = useState(finOn ? 'play' : 'done');
+  const settledRef = React.useRef(false);
+  useEffect(() => {
+    if (finPhase !== 'done' || settledRef.current) return undefined;
+    // Without a finale the page's own count and climb still run (~3s).
+    const t = setTimeout(() => { settledRef.current = true; if (onSettled) onSettled(); }, finOn ? 0 : 3200);
+    return () => clearTimeout(t);
+  }, [finPhase]); // eslint-disable-line react-hooks/exhaustive-deps
   const anim = sweep && !reduce && !finOn;
   const [replays, setReplays] = useState(0);
   const [shown, landed] = useCountUp(score, anim ? 1500 : 200, !reduce && !finOn, climb ? 2800 : 900, climb, replays);
@@ -931,7 +941,10 @@ export function GauntletEndStage({
 
 const RBE_CSS = `
 .rbe .rbe-col{max-width:1200px;gap:18px}
-.rbe-top{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.rbe-top{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:stretch}
+/* Challenge a friend matches the summary's height (owner, 2026-11-10); when the
+   summary opens into the standings, it keeps its own height at the top. */
+.rbe-top:has(.rbe-sum.open){align-items:start}
 .rbe-panel .gsx-rise{animation-delay:0s !important}
 .rbe-sum{border:1px solid var(--gsx-ink);border-radius:18px;overflow:hidden;min-width:0}
 .rbe-sumb{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;width:100%;padding:16px 20px;cursor:pointer;color:var(--gsx-ink);font-family:inherit}

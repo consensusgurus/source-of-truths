@@ -73,7 +73,7 @@ import RunBackLink from '../../RunBackLink';
 // PolymathMeter and lib/polymath stay in the tree, unmounted.
 import McCard from '../../McCard';
 import { MC_IDS } from '@/lib/multiple-choice';
-import GauntletStage from '../../../GauntletStage';
+import GauntletStage, { MISS_MS } from '../../../GauntletStage';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover } from '../../../GauntletScreens';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -268,6 +268,11 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // The full-screen end stage (owner, 2026-10-23). "See full details" closes it
   // onto the done card underneath for the rest of this visit.
   const [endOpen, setEndOpen] = useState(true);
+  // THE ENDING HAS LANDED (owner, 2026-11-10: the Gauntlet pop-up came up
+  // "BEFORE user can see title / score. pause that longer"). The stage ending
+  // reports when its finale (score, then title) has finished; the run pop-ups
+  // start their own 10s wait from there, not from the run ending.
+  const [endSettled, setEndSettled] = useState(false);
   const doneAtLoad = useRef(null);
   // FIRST GAUNTLET EVER on this browser (owner, 2026-10-06): no earlier day's
   // run save finished, and the once-ever offer not yet shown. Read once, at
@@ -563,6 +568,15 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     setQStart(t);
     setNow(t);
   }
+
+  // THE LAST MISS GOES STRAIGHT TO THE ENDING (owner, 2026-11-10). The
+  // spotlight shows the right answer for MISS_MS, then the reveal lets go and
+  // the run ending plays. No "See your run" press in between.
+  useEffect(() => {
+    if (!reveal || r.phase !== 'done') return undefined;
+    const t = setTimeout(() => setReveal(null), MISS_MS + 400);
+    return () => clearTimeout(t);
+  }, [reveal, r.phase]);
 
   // The verdict advances itself. Hold stops the clock, Next now skips the wait.
   useEffect(() => {
@@ -917,6 +931,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // presentation only. Every other run (Judged, Price Check, Passport) renders
   // exactly as it did: the gutter ladder, the scorecard ladder, all of it.
   const TOWERS = circuitId === 'gauntlet' || circuitId === 'math' || ENCORE || ENGLISH || SCIENCE;
+  const endLanded = !TOWERS || endSettled || !endOpen;
   const MATHRUN = circuitId === 'math';
   // The two Gauntlets end on the board at the top of the card (owner, 2026-10-17).
   const BTOP = GAUNT || MATHRUN || ENCORE || ENGLISH || SCIENCE;
@@ -1098,7 +1113,11 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           lockIdx={lock && !reveal ? stQ.correct : null}
           missRight={reveal ? stQ.correct : null}
           missPick={reveal ? reveal.pick : null}
-          recap={reveal ? {
+          // NO "SEE YOUR RUN" (owner, 2026-11-10: "we don't need a button at the
+          // end that says 'see run'"). Only a hand-off to a next quiz opens the
+          // big button; after the last quiz the spotlight holds, then the
+          // ending plays on its own (the effect beside VERDICT_MS).
+          recap={reveal && r.phase === 'verdict' && upNext ? {
             // The hand-off (owner, 2026-11-10): one large start button for the
             // next quiz on its own ground, nothing else. See GauntletStage.jsx.
             eyebrow: r.phase === 'verdict' && upNext
@@ -1190,7 +1209,8 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           similar={similarRun}
           onShare={shareRun}
           copied={copied}
-          onDetails={() => setEndOpen(false)}
+          onDetails={() => { setEndSettled(true); setEndOpen(false); }}
+          onSettled={() => setEndSettled(true)}
           sweep
           ladder={!r.practice ? titleLadder(circuitId) : null}
           climbStyle={SCIENCE ? 'flask' : null}
@@ -1235,7 +1255,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           run not done today. It replaced the one-at-a-time RunNudgePop chain.
           Waits for the /trivia door card if it is up. See MoreRuns.jsx. */}
       {afterCards && (
-        <MoreRunsPop self={circuitId} ready={done && doneAtLoad.current === false && !curtain && !doorUp && !moreShown} delay={3500} />
+        <MoreRunsPop self={circuitId} ready={done && endLanded && doneAtLoad.current === false && !curtain && !doorUp && !moreShown} delay={3500} />
       )}
 
       {/* THE ONLY CHROME. Not LoftCap and not the site footer: the run is a
@@ -2216,7 +2236,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           furthest in. Replaced the /trivia door card. See GauntletMorePop. */}
       {encoreOn && !encoreDone ? (
         <EncorePop
-          ready={hydrated && done && !curtain && doneAtLoad.current === false && !r.practice}
+          ready={hydrated && done && !curtain && endLanded && doneAtLoad.current === false && !r.practice}
           games={encore.games}
           href={encore.href || '/triviaencore'}
           onOpenChange={(o) => { setEncoreUp(o); setDoorUp(o); }}
@@ -2225,7 +2245,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       ) : null}
       {backOn ? (
         <GauntletBackPop
-          ready={hydrated && done && !curtain && doneAtLoad.current === false && !r.practice}
+          ready={hydrated && done && !curtain && endLanded && doneAtLoad.current === false && !r.practice}
           games={gauntlet.games}
           href={gauntlet.href || '/trivia'}
           onOpenChange={setDoorUp}
@@ -2233,7 +2253,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
         />
       ) : null}
       {afterCards && (
-        <GauntletMorePop circuitId={ENCORE ? 'gauntlet' : circuitId} ready={hydrated && done && !curtain} results={r.results} sections={sections} boards={boards} onOpenChange={setDoorUp} onShown={() => setMoreShown(true)} />
+        <GauntletMorePop circuitId={ENCORE ? 'gauntlet' : circuitId} ready={hydrated && done && !curtain && endLanded} results={r.results} sections={sections} boards={boards} onOpenChange={setDoorUp} onShown={() => setMoreShown(true)} />
       )}
     </div>
   );
