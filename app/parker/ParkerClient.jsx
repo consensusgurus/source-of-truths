@@ -704,7 +704,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
       ]}
       knack={<>Work back from the exit lane: clear whatever stands in the arrow block&rsquo;s run first, then find what is pinning those.</>}
       note={<>There is <b>no undo</b>, only a <b>restart</b> that puts the board back and zeroes your moves, though the clock keeps running.</>}
-      footer={<>Any solve counts, and finishing always beats walking away. Your fastest solve of the day takes the board, with fewer moves breaking a tie. Sundays are a much longer jam.</>}
+      footer={<>Any solve counts, and finishing always beats walking away. Your solve in the fewest moves takes the board, with the clock breaking a tie. Sundays are a much longer jam.</>}
     />
   );
 

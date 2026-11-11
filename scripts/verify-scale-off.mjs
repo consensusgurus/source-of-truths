@@ -3,8 +3,9 @@
 // off the move-budget boards and off every display.
 //
 //   Barter                                    runs, then the clock
-//   Parker, Junkyard, Impound, Topple, Roll, Chomp   the clock, then moves
+//   Topple, Roll, Chomp                       the clock, then moves
 //   Taire, Cell, Rung                         moves, then the clock
+//   Parker, Junkyard, Impound                 clock first to 11/10/26, moves first from 11/11/26
 //
 // A solve always ranks above a run that never solved, and the unsolved fall
 // to depth exactly as before. Days before SCALE_OFF_CUTOVER keep their order.
@@ -41,7 +42,13 @@ const both = (label, rows, want) => { eq(label + ' (per-game board)', lbOrder(ro
 console.log('modes and the date gate');
 eq('barter today ranks on runs', attemptsModeForQuizId('barter-10-26-26'), 'tries');
 eq('barter before the cutover keeps trades', attemptsModeForQuizId('barter-10-25-26'), 'trades');
-eq('parker today is clock-first', attemptsModeForQuizId('park-10-26-26'), 'timed');
+eq('parker on 10/26 stays clock-first', attemptsModeForQuizId('park-10-26-26'), 'timed');
+eq('parker 11/10 stays clock-first', attemptsModeForQuizId('park-11-10-26'), 'timed');
+eq('parker from 11/11 is moves-first', attemptsModeForQuizId('park-11-11-26'), 'moves');
+eq('junkyard from 11/11 is moves-first', attemptsModeForQuizId('junkyard-11-11-26'), 'moves');
+eq('impound from 11/12 is moves-first', attemptsModeForQuizId('impound-11-12-26'), 'moves');
+eq('impound 11/10 stays clock-first', attemptsModeForQuizId('impound-11-10-26'), 'timed');
+eq('topple stays clock-first', attemptsModeForQuizId('topple-11-11-26'), 'timed');
 eq('chomp today is clock-first', attemptsModeForQuizId('chomp-11-2-26'), 'timed');
 eq('taire today is moves-first', attemptsModeForQuizId('taire-10-26-26'), 'moves');
 eq('rung yesterday keeps graded', attemptsModeForQuizId('rung-10-25-26'), 'graded');
@@ -62,7 +69,7 @@ console.log('\nbarter: runs, then the clock');
   both('an old scaled score still counts as a solve', [row(Q, 1, 6, { t: 50 }), row(Q, 2, 10, { t: 60 })], ['P1', 'P2']);
 }
 
-console.log('\nparker: the clock, then moves');
+console.log('\nparker before 11/11: the clock, then moves');
 {
   const Q = 'park-10-27-26';
   const rows = [
@@ -74,6 +81,20 @@ console.log('\nparker: the clock, then moves');
   both('fastest solve first, fewer moves break a tie, no solve last', rows, ['P3', 'P2', 'P1', 'P4']);
   // A replay that solved faster becomes the player's run.
   both('the fastest solve of the day represents the player', [row(Q, 1, 10, { t: 90, g: 12 }), row(Q, 1, 10, { t: 30, g: 14 }), row(Q, 2, 10, { t: 50, g: 12 })], ['P1', 'P2']);
+}
+
+console.log('\nparker, junkyard, impound from 11/11: moves, then the clock');
+for (const k of ['park', 'junkyard', 'impound']) {
+  const Q = k + '-11-11-26';
+  const rows = [
+    row(Q, 1, 10, { t: 80, g: 12 }),    // fewest moves, slow
+    row(Q, 2, 6, { t: 40, g: 20 }),     // most moves, fast
+    row(Q, 3, 8, { t: 30, g: 15 }),     // middle moves
+    row(Q, 5, 8, { t: 25, g: 15 }),     // same moves, faster
+    row(Q, 4, 0, { t: 5, g: 2 }),       // no solve
+  ];
+  both(k + ': fewest moves first, the clock breaks a tie, no solve last', rows, ['P1', 'P5', 'P3', 'P2', 'P4']);
+  both(k + ': the fewest-move solve represents the player', [row(Q, 1, 10, { t: 30, g: 18 }), row(Q, 1, 10, { t: 90, g: 12 }), row(Q, 2, 10, { t: 50, g: 14 })], ['P1', 'P2']);
 }
 
 console.log('\nchomp: only a full clear is a solve');
@@ -118,7 +139,8 @@ eq('a 25-question gauntlet keeps its count', scoreText('atlas', 17, 25), '17/25'
 eq('a Parker row shows moves and the clock', gameStats({ score: 8, total: 10, guessesUsed: 14, timeElapsed: 80, tries: 2 }, 'Moves', 'park'), '14 moves · 1:20');
 eq('a Barter row shows runs and the clock', gameStats({ score: 10, total: 10, guessesUsed: 2, timeElapsed: 35, tries: 3 }, 'Tries', 'barter'), '3 tries · 0:35');
 eq('chomp is solved only on a full clear', [rowSolved('chomp', 8, 10), rowSolved('chomp', 10, 10)], [false, true]);
-if (!/fastest solve/.test(dailyAttemptRule('park').board)) fail('parker copy does not state the clock-first rule'); else ok('parker copy states the clock-first rule');
+if (!/fewest moves/.test(dailyAttemptRule('park').board)) fail('parker copy does not state the moves-first rule'); else ok('parker copy states the moves-first rule');
+if (!/fastest solve/.test(dailyAttemptRule('topple').board)) fail('topple copy does not state the clock-first rule'); else ok('topple copy states the clock-first rule');
 if (!/fewest moves/.test(dailyAttemptRule('taire').board)) fail('taire copy does not state the moves-first rule'); else ok('taire copy states the moves-first rule');
 if (!/then on time/.test(dailyAttemptRule('barter').board)) fail('barter copy does not state runs then time'); else ok('barter copy states runs, then time');
 

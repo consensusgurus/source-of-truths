@@ -909,8 +909,12 @@ so a day already crowned keeps its order):
 | Games | Mode | Order among solvers |
 |---|---|---|
 | Barter | `tries` | runs, then the clock (any solve is a solve; Barter now posts 10 on every solve) |
-| Parker, Junkyard, Impound, Topple, Roll, Chomp | `timed` | the clock, then moves |
-| Taire, Cell, Rung | `moves` | moves, then the clock |
+| Topple, Roll, Chomp (and Parker, Junkyard, Impound before 11/11/26) | `timed` | the clock, then moves |
+| Taire, Cell, Rung, and Parker, Junkyard, Impound from 11/11/26 | `moves` | moves, then the clock |
+
+**Parker, Junkyard and Impound went moves-first (owner, 2026-11-10).** They moved from
+`TIME_FIRST` to `MOVES_FIRST`; `YARDS_MOVES_CUTOVER` (2026-11-11) hands any earlier board back
+`timed`, so no crowned day is reordered.
 
 A solve always ranks above a run that never solved; the unsolved fall to depth, never to attempts.
 The player's representative run is their best by that order. Moves are `guesses_used`. The nine
