@@ -622,7 +622,8 @@ const RAIL_MQ = '(min-width: 1280px) and (hover: hover) and (pointer: fine)';
 // game's own How to play text, whole sentences only, up to about 240
 // characters, so no tile ever ends in "...". The skills ride under it.
 // ONE LENGTH (owner, 2026-11-07: "can't have every row a different size"):
-// the Details card reads lib/game-blurbs.js, every line 80 to 95 characters,
+// the Details card reads lib/game-blurbs.js, every line 30 to 56 characters
+// (two lines at most since 2026-11-10; they ran 80 to 95 before),
 // and only falls back to the How to play text for a game not yet listed.
 function fullDesc(g) {
   const b = gameBlurb(g.key);
@@ -2608,12 +2609,17 @@ export default function StageToday() {
     const shown = picked ? run.filter((x) => x !== paneOn) : run;
     return shown.length % 2 === 1 && shown[shown.length - 1] === id ? ' sty-ixfill' : '';
   };
+  // THE INDEX IS ONE JOINED LIST (owner, 2026-11-10, option 5A). The category
+  // rows, All Puzzles and My Puzzles sit in one outlined box; the open one
+  // rides above it as the big block. CSS order places the rows, so the first
+  // and last of the box are named here for its rounded corners.
+  const ixJoin = [...ixPos.entries()].filter(([k]) => k !== paneOn).sort((a, b) => a[1] - b[1]).map(([k]) => k);
   const ixBtn = (id, label, hue, cls) => {
     const prog = ixProg(id);
     const rp = RAMP_ORDER.includes(id) || isSkillId(id);
     return (
       <button key={id} type="button" aria-pressed={paneOn === id}
-        className={'sty-ixb' + (rp ? ' ct' : '') + (isSkillId(id) ? ' sk' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
+        className={'sty-ixb' + (rp ? ' ct' : '') + (isSkillId(id) ? ' sk' : '') + (cls ? ' ' + cls : '') + fillFor(id) + (ixJoin[0] === id ? ' ixj1' : '') + (ixJoin[ixJoin.length - 1] === id ? ' ixj2' : '') + (paneOn === id ? ' on' : '') + (prog && prog[0] >= prog[1] ? ' cmp' : '')}
         style={{ '--cc': hue, '--cci': rp ? inkFor(id) : hue === 'var(--stg-acc)' ? 'var(--stg-acc-ink)' : hue, ...(rp && !light ? { '--ixp': categoryColor(rampCat(id)) } : null), ...(rp ? { '--cfull': categoryColor(rampCat(id)) } : null), '--ixo': ixPos.has(id) ? ixPos.get(id) : undefined, '--ixf': prog && prog[1] ? `${Math.min(100, (prog[0] / prog[1]) * 100).toFixed(1)}%` : '0%', '--i': ixSeq++ }}
         onClick={(e) => { if (!runsMq) { deskGo(e, id); return; } if (picked && paneOn === id) { setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} } else pickPane(id, e); }}>
         <i aria-hidden="true" />
@@ -2718,7 +2724,7 @@ export default function StageToday() {
     } catch (e) { /* storage off */ }
   }, [paneOn]);
   const viewCtl = (pane, cap = false) => (
-    <div className={'sty-sort sty-view' + (cap && detHint ? ' sty-vhint' : '')} role="group" aria-label="Show puzzles as"
+    <div className={'sty-sort sty-view' + (cap && detHint ? ' sty-vhint' : '')} role="group" aria-label="Show puzzles as" data-lab="View"
       onClick={(e) => e.stopPropagation()}>
       <button type="button" aria-pressed={viewOf(pane) === 'tile'} onClick={() => pickView('tile')}>Tiles</button>
       <button type="button" aria-pressed={viewOf(pane) === 'det'} onClick={() => pickView('det')}>Details</button>
@@ -2733,7 +2739,7 @@ export default function StageToday() {
   // Declared ABOVE ixNav, which renders it: below it was a temporal dead zone
   // and took the homepage down (2026-10-12).
   const sortCtl = (mobile) => (
-    <div className={mobile ? 'sty-sort sty-sortm' : 'sty-sort'} role="group" aria-label="Sort puzzles"
+    <div className={mobile ? 'sty-sort sty-sortm' : 'sty-sort'} role="group" aria-label="Sort puzzles" data-lab="Sort"
       onClick={(e) => e.stopPropagation()}>
       <button type="button" aria-pressed={sortBy === 'diff'} onClick={() => pickSort('diff')}
         title="Gentlest first, rated every Sunday night from the last 7 days of play"><span className="sty-sl">Easy to Hard</span><span className="sty-ss">Easy</span></button>
@@ -2756,7 +2762,7 @@ export default function StageToday() {
     const stop = (e) => e.stopPropagation();
     if (pane === 'Sudoku') {
       return (
-        <span className={cls} role="group" aria-label="Numbers or color" onClick={stop}>
+        <span className={cls} role="group" aria-label="Numbers or color" data-lab="Show" onClick={stop}>
           {[['all', 'Both'], ['number', 'Numbers'], ['color', 'Color']].map(([v, l]) => (
             <button key={v} type="button" className={'sty-mgc' + (catInk === v ? ' on' : '')} aria-pressed={catInk === v} onClick={() => setCatInk(v)}>{l}</button>
           ))}
@@ -2766,7 +2772,7 @@ export default function StageToday() {
     const kinds = KINDS[pane];
     if (!kinds) return null;
     return (
-      <span className={cls} role="group" aria-label="Kind" onClick={stop}>
+      <span className={cls} role="group" aria-label="Kind" data-lab="Kind" onClick={stop}>
         <button type="button" className={'sty-mgc' + (catKind.length ? '' : ' on')} aria-pressed={!catKind.length} onClick={() => setCatKind([])}>All <i>{pc.games.length}</i></button>
         {kinds.map(([k, l]) => {
           const on = catKind.includes(k);
@@ -3386,6 +3392,7 @@ export default function StageToday() {
       return (
         <>
         <div className="sty-rlb sty-mcr">
+          <div className="sty-eb">Everyone{me ? <span className="sty-ebr">You #{me.rank}{d.field && d.field.all ? ' of ' + Number(d.field.all).toLocaleString('en-US') : ''}</span> : null}</div>
           {tabs}
           <div className="sty-mcc">
             <span className="e">Combined Champion · Today</span>
@@ -3421,7 +3428,7 @@ export default function StageToday() {
         <ChallengeRail />
         {railGrp ? (
           <div className="sty-rlb">
-            <div className="sty-eb">{railGrp.name}<em>{' · '}{railLabel}</em>
+            <div className="sty-eb">{railGrp.name}
               {/* ONE PLACE FOR THE GROUP (owner, 2026-11-05): the cap's group
                   figure went; the reader's place in the group rides here. */}
               {railGrp.mine ? (railGrp.code
@@ -3439,8 +3446,13 @@ export default function StageToday() {
         ) : null}
         {railTab === 'mc' ? mcEl : (
           <div className="sty-rlb">
+            {/* ONE HEADER PATTERN IN THE RAIL (owner, 2026-11-10): the board's
+                name at the left, your standing on it at the right, as the
+                group's box above does. The tabs name the scope. */}
+            <div className="sty-eb">Everyone{rd && rd.me && rd.me.rank && rd.field
+              ? <span className="sty-ebr">You #{rd.me.rank} of {Number(rd.field).toLocaleString('en-US')}</span>
+              : rd && rd.field ? <span className="sty-ebr">{Number(rd.field).toLocaleString('en-US')} {rd.field === 1 ? 'player' : 'players'}</span> : null}</div>
             {tabs}
-            <div className="sty-eb">{railLabel} today{rd && rd.field ? <em>{' · '}{rd.field} {rd.field === 1 ? 'player' : 'players'}</em> : null}</div>
             <ol style={{ '--rh': rh.toFixed(2) + 'px' }}>{slots}</ol>
           </div>
         )}
@@ -3629,7 +3641,7 @@ export default function StageToday() {
   // the games that group played today once switched on. One state, so a group
   // shown in My Puzzles is shown in All Puzzles too.
   const grpChips = () => (who && grpGames.length ? (
-    <span className="sty-mgchips" onClick={(e) => e.stopPropagation()}>
+    <span className="sty-mgchips" data-lab="Group" onClick={(e) => e.stopPropagation()}>
       {grpGames.map((x) => (
         <button key={x.code} type="button" className={'sty-mgc' + (mineGrp.has(x.code) ? ' on' : '')}
           aria-pressed={mineGrp.has(x.code)} onClick={() => flipMineGrp(x.code)}>
@@ -4399,7 +4411,9 @@ export default function StageToday() {
             the cap over the tiles instead of on a row of their own. */}
         <div className="sty-captools">
           {ix && (paneOn === ALL_ID || !!paneCat(paneOn) || isSkillId(paneOn)) ? (
-            <>{viewCtl(paneOn, true)}{paneOn === ALL_ID ? grpChips() : catChips(paneOn, 'sty-mgchips')}{capFind}{sortCtl(false)}</>
+            <>{/* GROUPED BY JOB (owner, 2026-11-10): how it looks, how it is ordered,
+                   whose games, then search with all the spare width. */}
+              {viewCtl(paneOn, true)}{sortCtl(false)}{paneOn === ALL_ID ? grpChips() : catChips(paneOn, 'sty-mgchips')}{capFind}</>
           ) : null}
         </div>
         <div className="sty-rt">
@@ -8223,6 +8237,65 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-captools .sty-sort{gap:12px;}
   .sty-captools .sty-sort .sty-sl{display:none;}
   .sty-captools .sty-sort .sty-ss{display:inline;}
+}
+/* ── THE COHERENCE PASS (owner, 2026-11-10: "I like all of these, implement.
+   go with 5A"). Five places on the home each spoke in their own voice; each
+   now has ONE grammar: the Details card, the runs row (RunGateTile.jsx), the
+   cap's controls, the rail, and the index. See docs/claude/home-and-ui.md. ── */
+/* 1. THE DETAILS CARD. No skill line (it read "Memory" on nearly every trivia
+   card; the Skills index is the way in by skill). The blurb is two lines of
+   lib/game-blurbs.js, which no longer repeats the count or the one-life rule. */
+.sty-ix.sty-det .sty-g .sty-gk,.sty-mph .mph-gg.det .mph-g .mk{display:none;}
+@media (min-width:901px){
+  .sty-ix.sty-det .sty-g .sty-gx{height:calc(13.5px * 1.5 * 2);-webkit-line-clamp:2;}
+  /* BOTH CHIPS, ALWAYS. The chip row was one line with the overflow hidden, so
+     on a card where "25 questions" and "Moderate" did not fit side by side the
+     difficulty silently dropped (History, Streak, Deep and Pulse on a 1900px
+     screen). Every card in a grid is the same width, so the card is a
+     container: wide enough and the two chips share a line; narrower and every
+     card stacks them, so the row of cards still stands level. 323px of
+     content is the 74px board, the 14px gap and 235px, the widest pair as
+     measured live ("Bigger Sundays" 124 and "Moderate" 105, 6 between). */
+  .sty-ix.sty-det .sty-g:has(> .sty-gband){container-type:inline-size;}
+  @container (max-width:322px){
+    .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx{flex-direction:column;flex-wrap:nowrap;align-items:flex-start;gap:5px;height:53px;}
+  }
+  /* 3. THE CAP'S CONTROLS, GROUPED BY JOB, each under a small label: View,
+     Sort, then whose games (Group) or which kind. The label is drawn from
+     data-lab, and only in the cap. */
+  .sty-cap .sty-captools [data-lab]{position:relative;padding-top:12px;}
+  .sty-captools [data-lab]::before{content:attr(data-lab);position:absolute;top:0;left:0;font-size:9.5px;font-weight:800;line-height:1;
+    letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;pointer-events:none;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+  /* The sort now sits BEFORE the search box, so the tight-row rule that hides
+     it while the box is in use cannot be a sibling selector any more. */
+  @container (max-width:680px){
+    .sty-captools:has(.sty-find:focus-within) > .sty-sort:not(.sty-view),.sty-captools:has(.sty-find.q) > .sty-sort:not(.sty-view){display:none;}
+  }
+  /* 4. THE RAIL: ONE HEADER PATTERN. Your Challenges, the group and Everyone
+     each open with the name at the left in the page's own type (no small caps,
+     no italics) and the reader's standing or the way through at the right. */
+  .sty-ix .sty-rlb .sty-eb,.sty-rail .cbr-hd{padding:9px 12px;font-size:13.5px;font-weight:800;letter-spacing:0;text-transform:none;line-height:1.35;color:var(--stg-ink);}
+  .sty-ix .sty-rlb .sty-eb em{font-style:normal;font-weight:600;color:var(--stg-mute);}
+  .sty-ix .sty-rlb .sty-eb .sty-ebr,.sty-rail .cbr-hd a{font-size:12px;font-weight:700;color:color-mix(in srgb, var(--stg-ink) 72%, transparent);}
+  /* 5. THE INDEX IS ONE JOINED LIST (option 5A). The category rows, All
+     Puzzles and My Puzzles share one outlined box with ink dividers, the shape
+     Everything Else already had; .ixj1 and .ixj2 (set in ixBtn from the
+     visual order) round its first and last rows. Reorder mode is untouched. */
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop):not(.on){margin-top:-9px;border-radius:0;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop):not(.on).ixj1{margin-top:0;border-top-left-radius:12px;border-top-right-radius:12px;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop):not(.on).ixj2{border-bottom-left-radius:12px;border-bottom-right-radius:12px;}
+  .sty-ixn .sty-ixee ~ .sty-ixb{border-top-color:var(--stg-ink);}
+  /* ONE PROGRESS IDIOM: the open block shows its count as a fill, the way
+     every row under it does, in place of the separate bar. The Full color
+     look paints that block in the category's colour and keeps its bar. */
+  html:not([data-stage-color=full]) .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop).on::after{display:none;}
+  html:not([data-stage-color=full]) .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop).on{
+    background:linear-gradient(to right, color-mix(in srgb, var(--stg-ground) 30%, var(--stg-ink)) var(--ixf, 0%), var(--stg-ink) 0);}
+  /* Categories / Skills and Reorder share one line, both as text toggles. */
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixsw{flex:1 1 0;justify-content:flex-start;margin-top:8px;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixre{flex:0 0 auto;align-self:center;margin-top:8px;border:0;border-radius:0;padding:6px 0 4px;background:transparent;
+    font-size:13px;font-weight:600;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixre:hover{color:var(--stg-ink);}
 }
 `;
 

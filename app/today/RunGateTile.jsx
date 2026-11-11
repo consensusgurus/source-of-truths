@@ -49,10 +49,12 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
     <a className={'rgt' + (fin ? ' fin' : '') + (plain ? ' rgt-w' : '') + (className ? ' ' + className : '')} href={href}
       style={{ '--rgc': hue, '--rgg': softGround(hue) }} aria-label={`${c.name}: ${go}`}>
       <span className="rgt-body">
-        <span className="rgt-eye">Daily Run · {W} {unit}</span>
+        <span className="rgt-eye">Daily Run</span>
         <b className="rgt-name">{c.name}</b>
+        {/* SAID ONCE (owner, 2026-11-10, the coherence pass): the eyebrow no
+            longer counts the legs and the rule line is gone, because the
+            headline already says both ("Seven Quizzes. One Life in Each."). */}
         <span className="rgt-hl">{head(W)}</span>
-        <span className="rgt-rule">{rule}</span>
         {/* ONE ROW ALWAYS (owner, 2026-11-08: "go back to single line with text
             smaller"): past five legs the names drop a size. */}
         <span className={'rgt-legs' + (legs.length > 5 ? ' many' : '')} aria-hidden="true">
@@ -64,7 +66,7 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
       </span>
       <span className="rgt-cs">
         <span className="ld">{fin && rank ? <>You: <b>#{rank}</b></> : lead ? <>#1 <b>{lead}</b></> : plays ? 'No finish yet' : 'Open. Be first.'}</span>
-        <span className="ct pc">{Number(plays || 0).toLocaleString('en-US')} playing</span>
+        <span className="ct pc">{Number(plays || 0).toLocaleString('en-US')}</span>
       </span>
     </a>
   );
@@ -82,12 +84,17 @@ export function MoreRunsTile({ rest, open, onToggle, players, colorOf }) {
   return (
     <div className={'rgt rgt-more' + (open ? ' on' : '')} onClick={onToggle} role="group" aria-label="More runs">
       <span className="rgt-body">
-        <span className="rgt-eye">Daily Runs · {W} more</span>
+        {/* THE SAME SKELETON AS A RUN TILE (owner, 2026-11-10): eyebrow, name,
+            one line, a lineup, the button. The lineup is the three most
+            played of the rest, each with today's players. */}
+        <span className="rgt-eye">Daily Runs</span>
         <b className="rgt-name">More Runs</b>
-        <span className="rgt-bands">
+        <span className="rgt-hl">{W} More. Most Played Today:</span>
+        <span className="rgt-legs rgt-legn">
           {rest.slice(0, 3).map((c) => (
-            <span key={c.id} className="rgt-band" style={{ '--lc': softGround(colorOf(c), 0.45) }}>
-              <b>{c.name}</b><i title="Players today"><svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true"><circle cx="12" cy="7.5" r="4" /><path d="M4 21a8 7 0 0 1 16 0z" /></svg>{Number(players(c) || 0).toLocaleString('en-US')}</i>
+            <span key={c.id} className="rgt-leg" style={{ '--lc': softGround(colorOf(c), 0.45) }}
+              title={`${c.name}: ${Number(players(c) || 0).toLocaleString('en-US')} playing today`}>
+              {String(c.name).replace(/ Gauntlet$/, '').replace(/^Enter the /, '')}<i>{Number(players(c) || 0).toLocaleString('en-US')}</i>
             </span>
           ))}
         </span>
@@ -106,10 +113,9 @@ export function BuildRunTile() {
   return (
     <a className="rgt rgt-more" href="/build-a-run">
       <span className="rgt-body">
-        <span className="rgt-eye">Your Run · Any puzzles</span>
+        <span className="rgt-eye">Your Run</span>
         <b className="rgt-name">Build a Run</b>
         <span className="rgt-hl">Your Puzzles. One Link.</span>
-        <span className="rgt-rule">Pick dailies, share one link.</span>
         <span className="rgt-legs rgt-blank" aria-hidden="true" />
         <span className="rgt-go">Build a Run</span>
       </span>
@@ -132,7 +138,9 @@ export const RGT_CSS = `
 /* The clip box is grown by .2em and the margin hands it back, so the g in
    Gauntlet and Judged keeps its tail and every line below stays level. */
 .rgt-name{font-size:26px;font-weight:900;line-height:1.1;letter-spacing:-.02em;margin:4px 0 calc(4px - .2em);padding-bottom:.2em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rgt-hl{font-size:14px;font-weight:800;line-height:1.25;padding-bottom:.2em;margin-bottom:-.2em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rgt-hl{font-size:14px;font-weight:800;line-height:1.25;padding-bottom:.2em;margin-bottom:calc(12px - .2em);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rgt-legn .rgt-leg{gap:4px;}
+.rgt-legn .rgt-leg i{font-style:normal;font-weight:700;opacity:.75;}
 .rgt-rule{font-size:12.5px;font-weight:600;line-height:1.35;margin-top:2px;margin-bottom:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rgt-legs{display:flex;height:28px;border:1px solid #0b1b2b;border-radius:8px;overflow:hidden;}
 .rgt-blank{border-color:transparent;}

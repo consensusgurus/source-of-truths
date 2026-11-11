@@ -272,7 +272,7 @@ export function ChallengeRail() {
   return (
     <div className="cbr">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="cbr-hd">Your challenges<a href="/challenges">See all ›</a></div>
+      <div className="cbr-hd">Your Challenges<a href="/challenges">See all ›</a></div>
       {/* ONE LINE (owner, 2026-11-05): sent and played, the record at the right. */}
       <div className="cbr-row"><span>{t.sent} sent · {t.played} played</span><b title="Won and lost">{t.won}–{t.lost}</b></div>
       {pending ? <div className="cbr-ln">{pending.name} is playing your {gameName(pending.c.game)} link</div>

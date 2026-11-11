@@ -2508,3 +2508,29 @@ Owner cut the first mockup down: one or two controls per page, never a wall of c
   search in the desktop cap (`catChips`) and as a flick row under the phone header (`.mph-cf`).
   Sudoku adds Smallest First / Largest First to the home sort; those two are never stored, so the
   next pane returns to the reader's stored sort. Filters reset on every pane change.
+
+## The coherence pass: one grammar per surface on the desktop home (owner, 2026-11-10)
+
+Owner, on five mockups: "I like all of these, implement. go with 5A". Each surface of the home now
+says a thing ONE way. Keep it that way when adding to any of them.
+
+- **Details card** (`GameCard` in `app/today/StageToday.jsx`): board tile, name, at most two chips
+  (first fact, then the week's difficulty), a blurb of two lines at most, the crowd strip. NO skill
+  line on the card (desktop or phone). `lib/game-blurbs.js` entries are 30 to 56 characters and say
+  what the puzzle IS; they never repeat the question count or the one-life rule, which the chips
+  carry (`scripts/verify-game-blurbs.mjs` enforces the range). The card is a CSS container: when it
+  is too narrow for both chips on one line, EVERY card stacks them, so the difficulty chip is never
+  silently dropped and rows stay level.
+- **Run tiles** (`app/today/RunGateTile.jsx`): eyebrow "Daily Run", name, ONE headline line, legs,
+  button, crowd strip. No leg count in the eyebrow and no second rule line. The count in the strip
+  is the person icon and a number, never the word "playing". More Runs and Build a Run use the same
+  skeleton (More Runs lists its three most played as a legs strip).
+- **Cap controls**: View, then Sort, then Group (or Show / Kind on a category pane), then search
+  with the spare width. Each group carries a small label from `data-lab`, drawn only in the cap.
+- **Rail**: every box opens with its name at the left in plain type and the reader's standing (or
+  "See all") at the right: Your Challenges, the group's name, Everyone. The scope tabs sit under
+  the Everyone header.
+- **Index (5A)**: the category rows, All Puzzles and My Puzzles are ONE outlined box with ink
+  dividers, like Everything Else (`.ixj1` / `.ixj2` from `ixBtn` round the first and last rows).
+  The open block shows its count as a fill like the rows, not a separate bar (the Full color look
+  keeps the bar). Categories / Skills and Reorder share one line as text toggles.
