@@ -27,6 +27,7 @@ const LINE = { mau: '#93b4f0', wau: '#4d7fe0', dau: '#1e3a8a' };
 
 const WIN = [
   ['day', 'Last 24 hours', 'vs the 24h before'],
+  ['dayWow', 'Last 24 hours', 'vs the same 24h last week'],
   ['week', 'Last 7 days', 'vs the 7 days before'],
   ['month', 'Last 30 days', 'vs the 30 days before'],
 ];
@@ -263,19 +264,19 @@ export default function PulsePanel({ part }) {
     <div>
       <style>{`
         .pl-grid{border:1px solid ${C.line};border-radius:12px;background:${C.paper};overflow:hidden}
-        .pl-row,.pl-head{display:grid;grid-template-columns:minmax(170px,1.5fr) repeat(3,minmax(120px,1fr)) 150px;gap:14px;align-items:center;padding:11px 16px;border-top:1px solid ${C.grid}}
+        .pl-row,.pl-head{display:grid;grid-template-columns:minmax(170px,1.5fr) repeat(4,minmax(110px,1fr)) 150px;gap:14px;align-items:center;padding:11px 16px;border-top:1px solid ${C.grid}}
         .pl-head{border-top:none;background:${C.surface};padding:9px 16px}
         .pl-sec{padding:14px 16px 4px;font-family:${MONO};font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:${C.faded};font-weight:700;border-top:1px solid ${C.line}}
         .pl-grid>.pl-sec:nth-child(2){border-top:none}
         .pl-highs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
         .pl-high{border:1px solid ${C.line};border-radius:12px;background:${C.paper};padding:13px 15px 12px}
-        @media(max-width:900px){.pl-row,.pl-head{grid-template-columns:minmax(120px,1.2fr) repeat(3,minmax(80px,1fr))}.pl-spark,.pl-head .pl-spark{display:none}}
+        @media(max-width:900px){.pl-row,.pl-head{grid-template-columns:minmax(120px,1.2fr) repeat(4,minmax(72px,1fr))}.pl-spark,.pl-head .pl-spark{display:none}}
       `}</style>
 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
         <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, color: C.ink }}>Pulse</div>
         <div style={{ fontFamily: SANS, fontSize: 12, color: C.faded }}>
-          Rolling windows, each against the same span just before it. As of {built || 'just now'}
+          Rolling windows, each against the same span just before it; the second column sets the last 24 hours against the same 24 hours a week earlier. As of {built || 'just now'}
           {part.refreshing ? ' · refreshing…' : ''}
           {d.visitorsError ? ` · visitor figures held (${d.visitorsError})` : ''}
         </div>

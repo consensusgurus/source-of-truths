@@ -631,6 +631,20 @@ and rolling referrers (7 days vs the week before).
   history is stored in `stats_payloads` as `admin:viewdaily:v1` with a `done` day, so
   after a one-time backfill in 31-day slices from 2026-01-01 each build reads only
   yesterday and today. Do not replace that with a full-history read per build.
+- **Week-over-week 24 hours (owner, 2026-11-11).** A second column, `dayWow`, sets the
+  last 24h against the same 24h seven days earlier (age 7d to 8d), for every row: players,
+  new players, sign-ups, time, games, visitors, page views and the ratios. Built in the
+  same pass (`half()` in `buildPulse`); visitors read `viewers_dw` / `views_dw`.
+- **Visitors come from an hourly rollup (migration 64, 2026-11-11).** `site_view_trends()`
+  grouped 60 days of raw page views per call and started failing with "canceling
+  statement due to statement timeout" once traffic tripled. `view_visitor_hours` holds
+  one row per (hour, visitor_id) with that hour's page views (null visitor_id kept as
+  `''`: a page view, never a visitor). Each Pulse build calls
+  `refresh_view_visitor_hours(168)` (re-reads from the last stored hour, so normally one
+  hour of raw rows; up to four week-long catch-up calls after a gap) and then reads
+  `site_view_trends2()`. `site_view_trends()` is now a wrapper on it with its old columns,
+  so /sitestats is unchanged. Windows are whole UTC hours. Never point a trends read back
+  at the raw logs.
 
 ## Cheat Watch: /admin > Analytics > Cheat Watch (owner, 2026-11-07)
 
