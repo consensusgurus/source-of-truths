@@ -10,7 +10,8 @@
 
 import React, { useMemo, useState } from 'react';
 import SimpleDaily from '../SimpleDaily';
-import { makeList, readGuess } from '@/lib/company-guess';
+import { makeList } from '@/lib/company-guess';
+import CompanyGuess from '../CompanyGuess';
 import { UNIVERSE } from './universe';
 
 const MAX = 6;
@@ -179,39 +180,11 @@ function Board({ P, s, done }) {
 }
 
 function Tools({ P, s, setS, active }) {
-  const [q, setQ] = useState('');
-  const [note, setNote] = useState(null);
-  const extra = useMemo(() => new Map([[P.ticker, (P.alt || [])]]), [P]);
-  const skip = useMemo(() => new Set(s.misses || []), [s.misses]);
   if (!active) return null;
-  // NO SUGGESTION LIST (owner, 2026-11-10): the typed name or ticker is read
-  // as one company on Guess (lib/company-guess.js), exact first, then close.
-  const submit = () => {
-    const raw = q.trim();
-    if (!raw) return;
-    const r = readGuess(raw, GUESS_LIST, extra, null);
-    if (!r) { setNote({ k: 'none', t: 'No Russell 3000 company matches that. It has cost you nothing.' }); return; }
-    const t = r.it.t;
-    if (skip.has(t)) { setNote({ k: 'none', t: `You already tried ${r.it.n} (${t}). It has cost you nothing.` }); return; }
-    setQ('');
-    setNote(r.how === 'close' ? { k: 'read', t: `Read \u201c${raw}\u201d as ${r.it.n} (${t}).` } : null);
-    setS((st) => {
-      if ((st.misses || []).includes(t)) return st;
-      if ((P.accept || [P.ticker]).includes(t)) return { ...st, hit: t };
-      const misses = [...(st.misses || []), t];
-      if (st.open >= MAX) return { ...st, misses, out: true };
-      return { ...st, misses, open: st.open + 1 };
-    });
-  };
+  // The suggestion list is back (owner, 2026-11-11); see app/CompanyGuess.jsx.
   return (
     <div className="tp-tools">
-      {note ? <div className="pst-sug" aria-live="polite"><div className="none">{note.t}</div></div> : null}
-      <div className="pst-in">
-        <input type="text" value={q} onChange={(e) => { setQ(e.target.value); if (note) setNote(null); }}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
-          placeholder="Company name or ticker" aria-label="Guess a company by name or ticker" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} />
-        <button type="button" className="pst-go" disabled={!q.trim()} onClick={submit}>Guess</button>
-      </div>
+      <CompanyGuess P={P} s={s} setS={setS} max={MAX} list={GUESS_LIST} />
       {s.open < MAX ? (
         <button type="button" className="pst-tb wide" onClick={() => setS((st) => ({ ...st, open: Math.min(MAX, st.open + 1) }))}>Open clue {s.open + 1}</button>
       ) : (

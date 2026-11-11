@@ -872,3 +872,11 @@ ladder, play screens and scorecard all follow, and the home's run tile uses the 
 runs keep plain order (slot = position). Run tile rules are one line, every block above the legs is one
 line, and More Runs drops its headline so its button sits level with the start buttons.
 
+
+## Big run titles never break inside a word (owner, 2026-11-11)
+
+The between card's "Up next" name (`.gsx-pop`, 80px), the gate's run name (`.gsx-sname`) and the run
+stage hand-off name (`.gst-bname`) render through `app/FitWords.jsx`: the CSS size holds until the longest
+word would not fit, then the whole title shrinks until it does ("The company" read "compan / y" on a phone).
+Their CSS uses `overflow-wrap:break-word`, never `anywhere` (which would make min-content one letter and
+blind the measurement). Any new big run title goes through FitWords too.

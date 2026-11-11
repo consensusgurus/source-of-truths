@@ -30,6 +30,7 @@
 import React from 'react';
 import { RAMP_INK, softGround } from '@/lib/category-ramp';
 import StageTopBar from './StageTopBar';
+import FitWords from './FitWords';
 import { useGauntletLook, stagePalette, useStageChrome, LookButton } from './GauntletScreens';
 import { nextLook } from '@/lib/stage-look';
 
@@ -223,7 +224,7 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
             {recap.eyebrow ? <span className="gst-bx gst-beye">{recap.eyebrow}</span> : null}
             <button type="button" className="gst-bx gst-bgo" onClick={recapGo} disabled={!big.open}
               aria-label={autoMs ? `${recap.goLabel}, starts in ${Math.ceil(left / 1000)} seconds` : recap.goLabel}>
-              <span className="gst-bname">{recap.goName || recap.goLabel}</span>
+              <FitWords className="gst-bname">{recap.goName || recap.goLabel}</FitWords>
               {recap.sub ? <span className="gst-bsub">{recap.sub}</span> : null}
               <span className="gst-bplay">
                 <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg>
@@ -319,7 +320,7 @@ html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
 .gst-big.open .gst-beye{opacity:.75;}
 .gst-bgo{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;min-height:min(46vh,340px);box-sizing:border-box;padding:28px 22px 34px;border:0;border-radius:26px;background:var(--bink);font-family:inherit;cursor:pointer;}
 .gst-big .gst-bgo,.gst-big .gst-bgo *{color:var(--bbg);}
-.gst-bname{font-size:clamp(40px, 12vw, 72px);font-weight:800;letter-spacing:-.025em;line-height:1.12;padding-bottom:.06em;overflow-wrap:anywhere;}
+.gst-bname{font-size:clamp(40px, 12vw, 72px);font-weight:800;letter-spacing:-.025em;line-height:1.12;padding-bottom:.06em;overflow-wrap:break-word;max-width:100%;}
 .gst-bsub{font-size:15px;font-weight:700;line-height:1.4;opacity:.8;}
 .gst-bplay{display:inline-flex;align-items:center;gap:9px;margin-top:10px;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;}
 .gst-trace{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;}

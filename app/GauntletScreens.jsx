@@ -27,6 +27,7 @@ import { RAMP_INK, softGround, categoryColor, gameCategory } from '@/lib/categor
 import { rampFor, LADDER_RAMP } from '@/lib/circuits';
 import MindLoftMark from './MindLoftMark';
 import StageTopBar from './StageTopBar';
+import FitWords from './FitWords';
 import RunRoll from './RunRoll';
 import RunFinale from './RunFinale';
 import RunEndShelves from './RunEndShelves';
@@ -305,7 +306,7 @@ export function GauntletGate({ circuitName, dateLabel, sections = [], lineFor, o
           {banner ? <div className="gsx-banner">{banner}</div> : null}
           <div className="gsx-head gsx-rise">
             <div className="gsx-eye gsx-eye1">Daily Run · {dateLabel}</div>
-            <h1 className="gsx-h1 gsx-sname">{circuitName}</h1>
+            <FitWords as="h1" className="gsx-h1 gsx-sname">{circuitName}</FitWords>
             <p className="gsx-lede"><b className="gsx-tag">{headline || <>{word} {unit.charAt(0).toUpperCase() + unit.slice(1)}. One Life in Each.</>}</b> {rule}{lineup ? ` ${lineup}` : ''}</p>
           </div>
           {/* A run's own picture (the Dojo's doors, Judged's gavel), kept small. */}
@@ -389,7 +390,7 @@ export function GauntletBetween({ circuitName, sections = [], results = [], last
           <button type="button" className="gsx-mid gsx-upgo gsx-rise" style={{ animationDelay: '.3s' }} onClick={onGo}
             aria-label={`${goLabel || `Start ${upNext ? upNext.name : ''}`}${auto ? (held ? ', held' : `, starts in ${secs} seconds`) : ''}`}>
             <span className="gsx-eye2">Up Next · {stepWord} {upIdx >= 0 ? upIdx + 1 : nDone + 1}</span>
-            <span className="gsx-pop">{upNext ? upNext.name : ''}</span>
+            <FitWords className="gsx-pop">{upNext ? upNext.name : ''}</FitWords>
             {upNext && sub ? <span className="gsx-sub">{sub}</span> : null}
             <span className="gsx-pgo">
               <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg>
@@ -1092,7 +1093,7 @@ const CSS = `
 .gsx-sn{font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:.16em;margin-bottom:-.16em;}
 .gsx-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:0}
 .gsx-eye2{font-size:15px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
-.gsx-pop{font-size:80px;line-height:1.14;padding-bottom:.04em;font-weight:800;letter-spacing:-.04em;animation:gsxPop .6s cubic-bezier(.2,.8,.2,1) .45s both;overflow-wrap:anywhere}
+.gsx-pop{font-size:80px;line-height:1.14;padding-bottom:.04em;font-weight:800;letter-spacing:-.04em;animation:gsxPop .6s cubic-bezier(.2,.8,.2,1) .45s both;overflow-wrap:break-word;max-width:100%}
 .gsx-sub{font-size:17px;font-weight:700}
 /* The title-as-button. Ink block, ground type; the countdown drains along its foot. */
 .gsx-upgo{position:relative;overflow:hidden;width:100%;box-sizing:border-box;min-height:240px;border:0;border-radius:28px;background:var(--gsx-ink);padding:26px 20px 34px;font:inherit;cursor:pointer;transition:transform .1s,filter .15s}
@@ -1307,7 +1308,7 @@ const CSS = `
 .gsx-gs .gsx-sgrp{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:12px 0 8px}
 .gsx-gs .gsx-head{gap:6px !important}
 .gsx-gs .gsx-eye1{font-size:13px !important;font-weight:700;letter-spacing:.08em !important;text-transform:uppercase;opacity:.7}
-.gsx-gs .gsx-sname{font-size:clamp(46px,13.5vw,96px) !important;line-height:.95 !important;font-weight:800;letter-spacing:-.035em;overflow-wrap:anywhere;margin:4px 0 6px !important}
+.gsx-gs .gsx-sname{font-size:clamp(46px,13.5vw,96px) !important;line-height:.95 !important;font-weight:800;letter-spacing:-.035em;overflow-wrap:break-word;margin:4px 0 6px !important}
 .gsx-gs .gsx-lede{font-size:17px !important;line-height:1.42 !important;font-weight:600;max-width:34em !important}
 .gsx-gs .gsx-tag{display:block;font-weight:800;font-size:1.12em;margin-bottom:4px}
 .gsx-gs .gsx-piece{flex:0 0 auto !important;display:flex;height:140px;min-height:0;overflow:hidden;border-radius:18px}
