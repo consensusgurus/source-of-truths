@@ -652,13 +652,17 @@ let DIFF_NOW = null;
 // max two tags"): the game's first fact, then the week's difficulty, else its
 // second fact. The row is one chip tall in CSS, so a second chip that will
 // not fit the line drops out rather than adding a row.
-function FactRow({ k }) {
+// ONE CHIP WHEN THE CARD CARRIES A GROUP OR RESULT LINE (owner, 2026-11-10:
+// "we can't have an added line here in Carmen that makes the tiles bigger.
+// if a group is listed, just get rid of the non-difficulty label"). `one`
+// keeps the difficulty alone (or the first fact when the game is unrated).
+function FactRow({ k, one = false }) {
   const r = DIFF_NOW && Number(DIFF_NOW[k]);
   const tier = r ? DIFF_TIERS.find((t) => r >= t.lo && r <= t.hi) : null;
-  const facts = gameFacts(k).slice(0, tier ? 1 : 2);
+  const facts = gameFacts(k).slice(0, one ? (tier ? 0 : 1) : tier ? 1 : 2);
   if (!facts.length && !tier) return <span className="sty-gfx" aria-hidden="true">{'\u00a0'}</span>;
   return (
-    <span className="sty-gfx">
+    <span className={'sty-gfx' + (one ? ' sty-gf1' : '')}>
       {facts.map((f) => (
         <span key={f.ic} className="sty-gfc">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={FACT_ICONS[f.ic]} /></svg>{f.tx}
@@ -759,7 +763,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       {/* DETAILS VIEW (owner, 2026-11-07): shown only under .sty-det. */}
       <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} square /></span>
       <span className="sty-gx">{fullDesc(g)}</span>
-      <FactRow k={g.key} />
+      <FactRow k={g.key} one={!!(res || (dots && dots.lead))} />
       <span className="sty-gk">{skillLine(g.key) || '\u00a0'}</span>
       {/* THE PLAY TOTAL (owner, 2026-10-26): today's plays at the foot of the
           tile, desktop only (shown by the desktop block). */}
@@ -8259,6 +8263,9 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix.sty-det .sty-g:has(> .sty-gband){container-type:inline-size;}
   @container (max-width:322px){
     .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx{flex-direction:column;flex-wrap:nowrap;align-items:flex-start;gap:5px;height:53px;}
+    /* A card with a group or result line shows one chip, so that line takes
+       the second chip's room and the card stays the height of its row. */
+    .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx.sty-gf1{height:24px;}
   }
   /* 3. THE CAP'S CONTROLS, GROUPED BY JOB, each under a small label: View,
      Sort, then whose games (Group) or which kind. The label is drawn from
