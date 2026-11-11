@@ -4877,7 +4877,7 @@ export default function StageToday() {
                       </div>
                     </div>
                   ) : null}
-                  {games.length ? <div className="mph-lab">Puzzles{openG.length && openG.length < games.length ? <> &middot; {openG.length} left</> : null}</div> : null}
+                  {games.length && !(isAll && mGroups.some((x) => x.cat)) ? <div className="mph-lab">Puzzles{openG.length && openG.length < games.length ? <> &middot; {openG.length} left</> : null}</div> : null}
                   {isMine && !games.length ? (
                     <p className="mph-note">{who ? 'Nothing starred yet. Tap the star on any puzzle and it shows up here.' : 'Pick a name, then star any puzzle and it shows up here.'}</p>
                   ) : null}
@@ -8414,10 +8414,15 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-sg button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground, #fff);}
   .sty-mph .mph-sg .ss{display:none;}
   .sty-mph .mph-ctl > .sty-vnote{left:0;right:0;width:auto;top:calc(100% + 10px);}
+  /* BOTH CHIPS ON THE PHONE CARD TOO. Its chip row was one line with the
+     overflow hidden, so the widest pairs ("Bigger Sundays" and "Moderate",
+     235px) lost the difficulty on a 375px phone. A phone card is one across,
+     so the row simply wraps to a second line when it has to. */
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gfx{height:auto;overflow:visible;}
   /* N3: the jump row on All Puzzles, and the label each group starts under.
      The label clears the pinned header when it is jumped to. */
   .sty-mph .mph-jump{display:flex;flex-direction:column;gap:4px;min-width:0;}
-  .sty-mph .mph-jrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-right:-16px;padding-right:16px;}
+  .sty-mph .mph-jrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;min-width:0;max-width:100%;}
   .sty-mph .mph-jrow::-webkit-scrollbar{display:none;}
   .sty-mph .mph-jrow button{flex:none;border:1px solid #08222e;border-radius:999px;padding:6px 12px 7px;font-size:12.5px;font-weight:800;line-height:1.26;
     white-space:nowrap;color:#08222e;background:color-mix(in srgb, var(--mc) 60%, #fff);}
