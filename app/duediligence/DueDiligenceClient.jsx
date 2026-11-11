@@ -167,7 +167,10 @@ export default function DueDiligenceClient({ day = null, dateLabel, dateShort, s
     const cl = score > 0 ? 11 - score : MAXC;
     commit({ ...cur, results: { ...cur.results, [sec.key]: { score, total: res.total || 10, clues: cl } } });
     setHolding(sec.key);
-    setTimeout(() => setHolding((h) => (h === sec.key ? null : h)), Math.max(1700, (res.beatMs || 0) + 500));
+    // Owner, 2026-11-10: "need a longer pause after getting it right or wrong
+    // ... no time to read the answer". The revealed board now holds a good
+    // while, and the handover card repeats the answer.
+    setTimeout(() => setHolding((h) => (h === sec.key ? null : h)), Math.max(4500, (res.beatMs || 0) + 3000));
   }, [sections, commit]);
 
   const sec = playing ? sections[r.si] : null;
@@ -185,7 +188,7 @@ export default function DueDiligenceClient({ day = null, dateLabel, dateShort, s
   }
   useEffect(() => {
     if (!between || !last || peek) return undefined;
-    const t = setTimeout(() => advance(), 2600);
+    const t = setTimeout(() => advance(), 6000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [between, last, peek]);
@@ -221,10 +224,13 @@ export default function DueDiligenceClient({ day = null, dateLabel, dateShort, s
     if (!sec || !secDone) return null;
     const earlier = banked[sec.key] && !r.results[sec.key];
     const solved = secDone.score > 0;
+    const pz = sec.puzzle || {};
+    const ans = pz.name ? `${pz.name}${pz.ticker ? ` (${pz.ticker})` : ''}` : null;
     return (
       <>
         <b>Leg {r.si + 1} · {sec.form}{earlier ? ', played earlier today' : ''}</b>
         <span>{sec.name}: {solved ? (secDone.clues ? `named in ${secDone.clues} clue${secDone.clues === 1 ? '' : 's'}` : 'named') : 'not named'}</span>
+        {ans ? <span>The answer: {ans}</span> : null}
         <span className="dd-pips" aria-hidden="true">{Array.from({ length: MAXC }, (_, k) => <i key={k} className={solved && secDone.clues && k < secDone.clues ? 'on' : ''} />)}</span>
         <span>The first clue pays {DD_LEG_MAX}, each extra one a point less; a miss pays nothing.</span>
       </>

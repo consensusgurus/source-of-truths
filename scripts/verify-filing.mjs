@@ -52,6 +52,11 @@ PUZZLES.forEach((p, i) => {
   if (tapeOn.get(p.live) && p.accept.includes(tapeOn.get(p.live))) fail(`${tag}: Tape plays the same company that day`);
 
   if (!p.risk) fail(`${tag}: no risk factor`);
+  if (p.live >= '2026-11-11') {
+    const ids = ['cover', 'risk', 'comp', 'c4', 'biz', 'words'];
+    if (!Array.isArray(p.order) || p.order.length !== 6 || ids.some((x) => !p.order.includes(x))) fail(`${tag}: order must list all six clues once`);
+    else if (p.order[0] !== 'cover') fail(`${tag}: the cover page is always the first clue`);
+  }
   if (!p.exchange || !p.filed) fail(`${tag}: cover page lacks exchange or filed date`);
   if (!/^\d{4}$/.test(String(p.sic || '')) || !p.sicName) fail(`${tag}: cover page needs a four-digit SIC code and its name`);
   if (!p.comp) fail(`${tag}: no competition`);

@@ -33,6 +33,11 @@ export const GATE_TEXT = {
   duediligence: ['business puzzles', (n) => `${n} Checks. One Deal.`, 'Fewer clues decide your rank.'],
 };
 
+// A leg chip's short form, where the full name will not fit the strip
+// (owner, 2026-11-10: the seven-leg Trivia Gauntlet strip overflowed, "can
+// maybe shorten History to Hist.").
+const LEG_SHORT = { history: 'Hist.' };
+
 export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done, plain = false, className = '' }) {
   const [unit, head, rule, legNames] = GATE_TEXT[c.id] || ['quizzes', (x) => `${x} Quizzes. One Life in Each.`, QUIZ_RULE];
   const legs = legNames ? legNames.map((name, i) => ({ key: 'leg' + i, name })) : c.games;
@@ -59,7 +64,7 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
             smaller"): past five legs the names drop a size. */}
         <span className={'rgt-legs' + (legs.length > 5 ? ' many' : '')} aria-hidden="true">
           {legs.map((g, i) => (
-            <span key={g.key} className={'rgt-leg' + (done && done.has(g.key) ? ' on' : '')} style={{ '--lc': softGround(rampFor(slots[i]), 0.45) }}>{g.name}</span>
+            <span key={g.key} className={'rgt-leg' + (done && done.has(g.key) ? ' on' : '')} style={{ '--lc': softGround(rampFor(slots[i]), 0.45) }}>{LEG_SHORT[g.key] || g.name}</span>
           ))}
         </span>
         <span className="rgt-go">{go}</span>

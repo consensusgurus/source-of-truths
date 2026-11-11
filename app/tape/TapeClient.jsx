@@ -10,42 +10,16 @@
 
 import React, { useMemo, useState } from 'react';
 import SimpleDaily from '../SimpleDaily';
+import { makeList, readGuess } from '@/lib/company-guess';
 import { UNIVERSE } from './universe';
 
 const MAX = 6;
 const LABELS = ['Sector', 'Went public', 'Size', 'Headline at pin 4', 'What it does', 'Ticker starts with'];
 
 function fold(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim(); }
-const LIST = UNIVERSE.map(([t, n]) => ({ t, n, ft: t.toLowerCase(), fn: fold(n) }));
+const GUESS_LIST = makeList(UNIVERSE);
 const BY_T = new Map(UNIVERSE.map(([t, n]) => [t, n]));
 
-// The type-ahead: names that start with the text come first, then a ticker
-// typed exactly, tickers that start with it, names with a word that starts with
-// it, and names holding every typed word as a word prefix. Largest first within
-// a tier (the list is stored largest first). Typed in CAPITALS, the text is read
-// as a ticker first ("NET" is Cloudflare, "Net" is Netflix).
-function matches(query, skip, extra) {
-  const qf = fold(query);
-  if (!qf) return [];
-  const qt = String(query).trim().toLowerCase().replace(/\s+/g, '');
-  const qw = qf.split(' ');
-  const caps = /^[A-Z.]{1,6}$/.test(String(query).trim());
-  const tiers = [[], [], [], [], [], []];
-  for (const it of LIST) {
-    if (skip.has(it.t)) continue;
-    const forms = [it.fn, ...(extra.get(it.t) || [])];
-    let tier = 9;
-    const exact = it.ft === qt.replace(/\./g, '.');
-    if (exact && caps) tier = 0;
-    else if (forms.some((f) => f.startsWith(qf))) tier = 1;
-    else if (exact) tier = 2;
-    else if (it.ft.startsWith(qt)) tier = 3;
-    else if (forms.some((f) => f.split(' ').some((w) => w.startsWith(qf)))) tier = 4;
-    else if (forms.some((f) => { const w = f.split(' '); return qw.every((x) => w.some((y) => y.startsWith(x))); })) tier = 5;
-    if (tier < 9) tiers[tier].push(it);
-  }
-  return tiers.flat().slice(0, 6);
-}
 
 // Clue 3 is size, never headquarters (owner, 2026-11-06): a state or city was
 // either useless (20 of the first 45 are in California) or a giveaway
@@ -206,13 +180,21 @@ function Board({ P, s, done }) {
 
 function Tools({ P, s, setS, active }) {
   const [q, setQ] = useState('');
-  const extra = useMemo(() => new Map([[P.ticker, (P.alt || []).map(fold)]]), [P]);
+  const [note, setNote] = useState(null);
+  const extra = useMemo(() => new Map([[P.ticker, (P.alt || [])]]), [P]);
   const skip = useMemo(() => new Set(s.misses || []), [s.misses]);
-  const opts = useMemo(() => (active ? matches(q, skip, extra) : []), [q, skip, extra, active]);
   if (!active) return null;
-  const guess = (t) => {
-    if (!t) return;
+  // NO SUGGESTION LIST (owner, 2026-11-10): the typed name or ticker is read
+  // as one company on Guess (lib/company-guess.js), exact first, then close.
+  const submit = () => {
+    const raw = q.trim();
+    if (!raw) return;
+    const r = readGuess(raw, GUESS_LIST, extra, null);
+    if (!r) { setNote({ k: 'none', t: 'No Russell 3000 company matches that. It has cost you nothing.' }); return; }
+    const t = r.it.t;
+    if (skip.has(t)) { setNote({ k: 'none', t: `You already tried ${r.it.n} (${t}). It has cost you nothing.` }); return; }
     setQ('');
+    setNote(r.how === 'close' ? { k: 'read', t: `Read \u201c${raw}\u201d as ${r.it.n} (${t}).` } : null);
     setS((st) => {
       if ((st.misses || []).includes(t)) return st;
       if ((P.accept || [P.ticker]).includes(t)) return { ...st, hit: t };
@@ -221,25 +203,14 @@ function Tools({ P, s, setS, active }) {
       return { ...st, misses, open: st.open + 1 };
     });
   };
-  const noMatch = fold(q).length >= 2 && !opts.length;
   return (
     <div className="tp-tools">
-      {opts.length ? (
-        <div className="pst-sug" role="listbox" aria-label="Matching companies">
-          {opts.map((o, i) => (
-            <button key={o.t} type="button" role="option" aria-selected={i === 0} className={i === 0 ? 'on' : undefined} onClick={() => guess(o.t)}>
-              <span>{o.n}</span><small>{o.t}</small>
-            </button>
-          ))}
-        </div>
-      ) : noMatch ? (
-        <div className="pst-sug" aria-live="polite"><div className="none">No Russell 3000 company matches that. It has cost you nothing.</div></div>
-      ) : null}
+      {note ? <div className="pst-sug" aria-live="polite"><div className="none">{note.t}</div></div> : null}
       <div className="pst-in">
-        <input type="text" value={q} onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (opts.length) guess(opts[0].t); } }}
-          placeholder="Company or ticker" aria-label="Guess a company or ticker" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} />
-        <button type="button" className="pst-go" disabled={!opts.length} onClick={() => { if (opts.length) guess(opts[0].t); }}>Guess</button>
+        <input type="text" value={q} onChange={(e) => { setQ(e.target.value); if (note) setNote(null); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
+          placeholder="Company name or ticker" aria-label="Guess a company by name or ticker" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} />
+        <button type="button" className="pst-go" disabled={!q.trim()} onClick={submit}>Guess</button>
       </div>
       {s.open < MAX ? (
         <button type="button" className="pst-tb wide" onClick={() => setS((st) => ({ ...st, open: Math.min(MAX, st.open + 1) }))}>Open clue {s.open + 1}</button>

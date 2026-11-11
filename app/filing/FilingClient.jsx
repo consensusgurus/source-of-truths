@@ -4,7 +4,7 @@
 // puzzle beside Tape and Resume in the Due Diligence run, "use style from
 // existing EDGAR filings"). The board is the company's Form S-1 drawn like the
 // EDGAR document: the SEC cover page with the registrant's name blacked out,
-// then six sections that unseal one at a time (see LABELS). A wrong guess
+// then six sections that unseal one at a time (see ORDER). A wrong guess
 // opens the next clue, and a wrong guess with all six open ends the day.
 // Fewer clues rank higher, then the clock. Scored like Tape and Resume.
 // Runs on the shared stage shell (app/SimpleDaily.jsx); the guess list is
@@ -15,43 +15,30 @@
 
 import React, { useMemo, useState } from 'react';
 import SimpleDaily from '../SimpleDaily';
+import { makeList, readGuess } from '@/lib/company-guess';
 import { UNIVERSE } from '../tape/universe';
 
 const MAX = 6;
 // Owner, 2026-11-10: no employee or location counts ("do very little"), no
 // offering mechanics, and the founders' letter last, a less quotable line,
 // with the famous one kept for the ending.
-const LABELS = ['Risk factors', 'Cover page', 'Competition', 'Key metrics', 'Our business', 'In their own words'];
-const SECTION = ['Risk Factors', 'Cover Page: Industry and Date', 'Competition', 'Key Business Metrics', 'Our Business', 'In Their Own Words'];
+const LABEL = { risk: 'Risk factors', cover: 'Cover page', comp: 'Competition', c4: 'Key metrics', biz: 'Our business', words: 'In their own words' };
+const SECTION = { risk: 'Risk Factors', cover: 'Cover Page: Industry and Date', comp: 'Competition', c4: 'Key Business Metrics', biz: 'Our Business', words: 'In Their Own Words' };
+// CLUE ORDER (owner, 2026-11-10, after Airbnb's "Home sharing may not achieve
+// global acceptance" gave the day away as the free clue): the cover page is
+// always first; the rest is ordered per day in the bank (P.order, owner same
+// night: "maybe every day the order is different other than the cover page
+// being first"). Date-gated so the board already live under the old order
+// (11-10) keeps it.
+const ORDER_FROM = '2026-11-11';
+const ORDER_OLD = ['risk', 'cover', 'comp', 'c4', 'biz', 'words'];
+const ORDER = ['cover', 'comp', 'risk', 'c4', 'biz', 'words'];
+const orderOf = (P) => (P && P.live && P.live < ORDER_FROM ? ORDER_OLD : (P && Array.isArray(P.order) && P.order.length === 6 ? P.order : ORDER));
 
 function fold(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim(); }
-const LIST = UNIVERSE.map(([t, n]) => ({ t, n, ft: t.toLowerCase(), fn: fold(n) }));
+const GUESS_LIST = makeList(UNIVERSE);
 const BY_T = new Map(UNIVERSE.map(([t, n]) => [t, n]));
 
-// Tape's type-ahead, unchanged: a name that starts with the text, a ticker
-// typed in capitals, tickers that start with it, then word prefixes.
-function matches(query, skip, extra) {
-  const qf = fold(query);
-  if (!qf) return [];
-  const qt = String(query).trim().toLowerCase().replace(/\s+/g, '');
-  const qw = qf.split(' ');
-  const caps = /^[A-Z.]{1,6}$/.test(String(query).trim());
-  const tiers = [[], [], [], [], [], []];
-  for (const it of LIST) {
-    if (skip.has(it.t)) continue;
-    const forms = [it.fn, ...(extra.get(it.t) || [])];
-    let tier = 9;
-    const exact = it.ft === qt;
-    if (exact && caps) tier = 0;
-    else if (forms.some((f) => f.startsWith(qf))) tier = 1;
-    else if (exact) tier = 2;
-    else if (it.ft.startsWith(qt)) tier = 3;
-    else if (forms.some((f) => f.split(' ').some((w) => w.startsWith(qf)))) tier = 4;
-    else if (forms.some((f) => { const w = f.split(' '); return qw.every((x) => w.some((y) => y.startsWith(x))); })) tier = 5;
-    if (tier < 9) tiers[tier].push(it);
-  }
-  return tiers.flat().slice(0, 6);
-}
 
 // [[...]] in a quote is blacked out until the day ends, then shown on a pale
 // blue mark so the player sees what was hidden.
@@ -66,10 +53,10 @@ function Quote({ text, done }) {
   });
 }
 
-function Sealed({ n }) {
+function Sealed({ id, n }) {
   return (
-    <div className="fl-seal" aria-label={`${SECTION[n - 1]}: opens with clue ${n}`}>
-      <span>{SECTION[n - 1]}</span>
+    <div className="fl-seal" aria-label={`${SECTION[id]}: opens with clue ${n}`}>
+      <span>{SECTION[id]}</span>
       <em>Sealed · clue {n}</em>
     </div>
   );
@@ -115,6 +102,8 @@ const CSS = `
 function Board({ P, s, done }) {
   const open = done ? MAX : s.open;
   const at = (k) => open >= k;
+  const order = orderOf(P);
+  const coverAt = order.indexOf('cover') + 1;
   const misses = s.misses || [];
   return (
     <div className="fl">
@@ -123,7 +112,7 @@ function Board({ P, s, done }) {
       <div className="fl-steps" aria-hidden="true">{Array.from({ length: MAX }, (_, k) => <i key={k} className={k < open ? 'on' : undefined} />)}</div>
       <article className="fl-doc" aria-label="Form S-1">
         <section className="fl-cv">
-          <div className="sm" style={{ textAlign: 'left' }}>As filed with the Securities and Exchange Commission on {at(2) ? P.filed : <span className="fl-rx" style={{ width: '9em' }} aria-label="hidden until clue 2" />}</div>
+          <div className="sm" style={{ textAlign: 'left' }}>As filed with the Securities and Exchange Commission on {at(coverAt) ? P.filed : <span className="fl-rx" style={{ width: '9em' }} aria-label={`hidden until clue ${coverAt}`} />}</div>
           <div className="rule" style={{ width: '100%' }} />
           <div className="sec">UNITED STATES<br />SECURITIES AND EXCHANGE COMMISSION</div>
           <div>Washington, D.C. 20549</div>
@@ -137,7 +126,7 @@ function Board({ P, s, done }) {
             <tbody>
               <tr>
                 <td style={{ width: '33%', fontWeight: 'bold' }}>{P.state || 'Delaware'}</td>
-                <td style={{ width: '34%', fontWeight: 'bold' }}>{at(2) ? P.sic : <span className="fl-rx" style={{ width: '3em' }} />}</td>
+                <td style={{ width: '34%', fontWeight: 'bold' }}>{at(coverAt) ? P.sic : <span className="fl-rx" style={{ width: '3em' }} />}</td>
                 <td style={{ width: '33%' }}><span className="fl-rx" style={{ width: '6em' }} /></td>
               </tr>
               <tr className="lab">
@@ -150,51 +139,47 @@ function Board({ P, s, done }) {
         </section>
         <div className="fl-hr" />
 
-        <section>
-          <div className="fl-cl">Clue 1 · {LABELS[0]}</div>
-          <p className="fl-it">Risk Factors</p>
-          <p className="fl-risk"><Quote text={P.risk} done={done} /></p>
-        </section>
-
-        {at(2) ? (
-          <section>
-            <div className="fl-cl">Clue 2 · {LABELS[1]}</div>
-            <p className="fl-p"><b>SIC {P.sic}:</b> {P.sicName}</p>
-            <p className="fl-p" style={{ margin: 0 }}><b>Filed:</b> {P.filed}</p>
-          </section>
-        ) : <Sealed n={2} />}
-
-        {at(3) ? (
-          <section>
-            <div className="fl-cl">Clue 3 · {LABELS[2]}</div>
-            <p className="fl-it">Competition</p>
-            <p className="fl-p" style={{ margin: 0 }}><Quote text={P.comp} done={done} /></p>
-          </section>
-        ) : <Sealed n={3} />}
-
-        {at(4) ? (
-          <section>
-            <div className="fl-cl">Clue 4 · {LABELS[3]}</div>
-            <p className="fl-it">{P.c4.title}</p>
-            <ul className="fl-ul">{P.c4.items.map((x, i) => <li key={i}><Quote text={x} done={done} /></li>)}</ul>
-          </section>
-        ) : <Sealed n={4} />}
-
-        {at(5) ? (
-          <section>
-            <div className="fl-cl">Clue 5 · {LABELS[4]}</div>
-            <p className="fl-it">Prospectus Summary</p>
-            {P.biz.map((x, i) => <p key={i} className="fl-p"><Quote text={x} done={done} /></p>)}
-          </section>
-        ) : <Sealed n={5} />}
-
-        {at(6) ? (
-          <section>
-            <div className="fl-cl">Clue 6 · {LABELS[5]}</div>
-            <p className="fl-src">From the {P.words.src}</p>
-            <p className="fl-p" style={{ margin: 0 }}><span className="fl-hl"><Quote text={P.words.text} done={done} /></span></p>
-          </section>
-        ) : <Sealed n={6} />}
+        {order.map((id, i) => {
+          const n = i + 1;
+          if (!at(n)) return <Sealed key={id} id={id} n={n} />;
+          const cl = <div className="fl-cl">Clue {n} · {LABEL[id]}</div>;
+          if (id === 'risk') return (
+            <section key={id}>{cl}
+              <p className="fl-it">Risk Factors</p>
+              <p className="fl-risk"><Quote text={P.risk} done={done} /></p>
+            </section>
+          );
+          if (id === 'cover') return (
+            <section key={id}>{cl}
+              <p className="fl-p"><b>SIC {P.sic}:</b> {P.sicName}</p>
+              <p className="fl-p" style={{ margin: 0 }}><b>Filed:</b> {P.filed}</p>
+            </section>
+          );
+          if (id === 'comp') return (
+            <section key={id}>{cl}
+              <p className="fl-it">Competition</p>
+              <p className="fl-p" style={{ margin: 0 }}><Quote text={P.comp} done={done} /></p>
+            </section>
+          );
+          if (id === 'c4') return (
+            <section key={id}>{cl}
+              <p className="fl-it">{P.c4.title}</p>
+              <ul className="fl-ul">{P.c4.items.map((x, j) => <li key={j}><Quote text={x} done={done} /></li>)}</ul>
+            </section>
+          );
+          if (id === 'biz') return (
+            <section key={id}>{cl}
+              <p className="fl-it">Prospectus Summary</p>
+              {P.biz.map((x, j) => <p key={j} className="fl-p"><Quote text={x} done={done} /></p>)}
+            </section>
+          );
+          return (
+            <section key={id}>{cl}
+              <p className="fl-src">From the {P.words.src}</p>
+              <p className="fl-p" style={{ margin: 0 }}><span className="fl-hl"><Quote text={P.words.text} done={done} /></span></p>
+            </section>
+          );
+        })}
 
         {done ? (
           <div className="fl-end">
@@ -212,13 +197,21 @@ function Board({ P, s, done }) {
 
 function Tools({ P, s, setS, active }) {
   const [q, setQ] = useState('');
-  const extra = useMemo(() => new Map([[P.ticker, (P.alt || []).map(fold)]]), [P]);
+  const [note, setNote] = useState(null);
+  const extra = useMemo(() => new Map([[P.ticker, (P.alt || [])]]), [P]);
   const skip = useMemo(() => new Set(s.misses || []), [s.misses]);
-  const opts = useMemo(() => (active ? matches(q, skip, extra) : []), [q, skip, extra, active]);
   if (!active) return null;
-  const guess = (t) => {
-    if (!t) return;
+  // NO SUGGESTION LIST (owner, 2026-11-10): the typed name or ticker is read
+  // as one company on Guess (lib/company-guess.js), exact first, then close.
+  const submit = () => {
+    const raw = q.trim();
+    if (!raw) return;
+    const r = readGuess(raw, GUESS_LIST, extra, null);
+    if (!r) { setNote({ k: 'none', t: 'No Russell 3000 company matches that. It has cost you nothing.' }); return; }
+    const t = r.it.t;
+    if (skip.has(t)) { setNote({ k: 'none', t: `You already tried ${r.it.n} (${t}). It has cost you nothing.` }); return; }
     setQ('');
+    setNote(r.how === 'close' ? { k: 'read', t: `Read \u201c${raw}\u201d as ${r.it.n} (${t}).` } : null);
     setS((st) => {
       if ((st.misses || []).includes(t)) return st;
       if ((P.accept || [P.ticker]).includes(t)) return { ...st, hit: t };
@@ -227,28 +220,17 @@ function Tools({ P, s, setS, active }) {
       return { ...st, misses, open: st.open + 1 };
     });
   };
-  const noMatch = fold(q).length >= 2 && !opts.length;
   return (
     <div className="fl-tools">
-      {opts.length ? (
-        <div className="pst-sug" role="listbox" aria-label="Matching companies">
-          {opts.map((o, i) => (
-            <button key={o.t} type="button" role="option" aria-selected={i === 0} className={i === 0 ? 'on' : undefined} onClick={() => guess(o.t)}>
-              <span>{o.n}</span><small>{o.t}</small>
-            </button>
-          ))}
-        </div>
-      ) : noMatch ? (
-        <div className="pst-sug" aria-live="polite"><div className="none">No Russell 3000 company matches that. It has cost you nothing.</div></div>
-      ) : null}
+      {note ? <div className="pst-sug" aria-live="polite"><div className="none">{note.t}</div></div> : null}
       <div className="pst-in">
-        <input type="text" value={q} onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (opts.length) guess(opts[0].t); } }}
-          placeholder="Company or ticker" aria-label="Guess a company or ticker" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} />
-        <button type="button" className="pst-go" disabled={!opts.length} onClick={() => { if (opts.length) guess(opts[0].t); }}>Guess</button>
+        <input type="text" value={q} onChange={(e) => { setQ(e.target.value); if (note) setNote(null); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
+          placeholder="Company name or ticker" aria-label="Guess a company by name or ticker" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} />
+        <button type="button" className="pst-go" disabled={!q.trim()} onClick={submit}>Guess</button>
       </div>
       {s.open < MAX ? (
-        <button type="button" className="pst-tb wide" onClick={() => setS((st) => ({ ...st, open: Math.min(MAX, st.open + 1) }))}>Unseal clue {s.open + 1}: {LABELS[s.open]}</button>
+        <button type="button" className="pst-tb wide" onClick={() => setS((st) => ({ ...st, open: Math.min(MAX, st.open + 1) }))}>Unseal clue {s.open + 1}: {LABEL[orderOf(P)[s.open]]}</button>
       ) : (
         <div className="pst-note">Every section is open. One more miss ends the day.</div>
       )}
@@ -275,15 +257,17 @@ const GAME = {
   foot: (P, s) => `${plural(s.open)} open · ${(s.misses || []).length} ${(s.misses || []).length === 1 ? 'miss' : 'misses'} · any Russell 3000 company`,
   frac: (P, s) => s.open / MAX,
   gateTitle: () => "Today's filing",
-  gateLine: () => 'A company’s IPO filing, its Form S-1, with the name blacked out. The first risk factor is free; every extra clue or wrong guess unseals the next section. Name the company in the fewest clues.',
-  rules: () => ({
+  gateLine: (P) => `A company’s IPO filing, its Form S-1, with the name blacked out. ${orderOf(P)[0] === 'risk' ? 'The first risk factor is free' : 'The cover page, its industry and filing date, is free'}; every extra clue or wrong guess unseals the next section. Name the company in the fewest clues.`,
+  rules: (P) => ({
     lead: 'An IPO filing with the company’s name blacked out. Who filed it?',
     steps: [
       <>Every day is one public company&rsquo;s <b>Form S-1</b>, the registration statement it filed with the SEC to go public, laid out the way EDGAR prints it. Every quote is the filing&rsquo;s own words. The answer is in the <b>Russell 3000</b>, and you can guess any of them by name or ticker.</>,
-      <>You start with <b>one clue</b>, a risk factor. Unseal more whenever you like: the cover page (its industry code and the date it filed), the competition section, its key business metrics, the business overview with the names blacked out, and last, a line in the company&rsquo;s own words.</>,
+      orderOf(P)[0] === 'risk'
+        ? <>You start with <b>one clue</b>, a risk factor. Unseal more whenever you like: the cover page (its industry code and the date it filed), the competition section, its key business metrics, the business overview with the names blacked out, and last, a line in the company&rsquo;s own words.</>
+        : <>You start with <b>one clue</b>, the cover page: its industry code and the date it filed. Unseal more whenever you like, in an order that changes day to day: the competition section, a risk factor, its key business metrics, the business overview with the names blacked out, and a line in the company&rsquo;s own words.</>,
       <>A <b>wrong guess unseals the next section</b> for you. With all six open, one more miss ends the day.</>,
     ],
-    knack: 'Read it like an analyst. A risk factor about drivers or hosts, a metric only one business would count, a competitor list: each one narrows the field before the name ever shows.',
+    knack: 'Read it like an analyst. An industry code and a filing year, a competitor list, a risk only some businesses carry, a metric only one would count: each one narrows the field before the name ever shows.',
     footer: 'A solve ranks on clues used, then on the clock.',
   }),
   pitch: () => 'Name the company from its IPO filing.',
@@ -292,7 +276,7 @@ const GAME = {
   aboutTitle: 'About Filing',
   about: [
     'Filing is a free daily business guessing game from Mind Loft. Every day it shows one company’s Form S-1, the registration statement a company files with the SEC before its initial public offering, laid out like the EDGAR document, with the company’s name blacked out. You name the company. Any stock in the Russell 3000 is a fair guess, by name or by ticker.',
-    'You start with one risk factor, quoted word for word. Five more sections unseal one at a time when you ask, or when you guess wrong: the cover page with its industry code and filing date, the competition section, the key business metrics, the business overview with its names blacked out, and a line in the company’s own words. Fewer clues rank higher and the clock breaks a tie.',
+    'You start with the cover page: the industry code and the date the company filed. Five more sections unseal one at a time when you ask, or when you guess wrong, in an order that changes day to day: the competition section, a risk factor quoted word for word, the key business metrics, the business overview with its names blacked out, and a line in the company’s own words. Fewer clues rank higher and the clock breaks a tie. Type a company name or ticker to guess; close spellings count.',
     <>Filing is the middle leg of the <a href="/duediligence" style={{ color: 'inherit', fontWeight: 800 }}>Due Diligence</a> run, after <a href="/tape" style={{ color: 'inherit', fontWeight: 800 }}>Tape</a> and before <a href="/resume" style={{ color: 'inherit', fontWeight: 800 }}>Resume</a>.</>,
   ],
 };

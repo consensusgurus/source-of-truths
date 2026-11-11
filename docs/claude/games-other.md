@@ -2282,3 +2282,19 @@ Resume: a solve with c clues open is 11 - c, unsolved 0. Runs on `app/SimpleDail
 - **Inside Due Diligence** the leg is labelled "The company"; everywhere else the game is Filing.
 - **Tiles** `scripts/gen-filing-tile.py`; OG `public/og/filing.png` hand-baked by `scripts/bake-trivia-og.mjs`
   (a decoy filing, no real company) and `scripts/shoot-og.py filing`; wiring `scripts/wire-filing.mjs`.
+
+### Filing clue order and typed guesses (owner, 2026-11-10 evening)
+
+- **Cover page is always clue 1.** Airbnb's free risk factor ("Home sharing may not achieve global
+  acceptance") gave the day away. From 2026-11-11 every board carries `order`, a list of the six clue ids
+  (`cover`, `risk`, `comp`, `c4`, `biz`, `words`), cover first, the rest chosen per day: competition second
+  unless it names only one or two companies or the category outright; key metrics early only when they are
+  generic (not MAPCs, DAUq, GMS, Nights and Experiences Booked); business and own-words lines last.
+  `verify-filing.mjs` enforces it. The 11-10 board keeps the old order (`ORDER_OLD`, date-gated).
+- **No type-ahead on Tape or Filing.** No suggestion list, ever: "do not show pre-populated results". The
+  player types a name or ticker and presses Guess; `lib/company-guess.js` (`readGuess`) reads it as one
+  company, exact first (ticker, full name, alt), then close (leading words, every word, a typo or two). A
+  close read says "Read "x" as Name (TICK)" so a spent clue is never a surprise. Never list candidates.
+- **Due Diligence hand-off:** a finished leg's revealed board holds at least 4.5s, the between card names
+  the answer, and the last leg waits 6s before the rank: "no time to read the answer".
+
