@@ -85,6 +85,7 @@ const LINES = ['Sharpen Your Mind', 'Gain IQ Points', 'Elevate Your Thinking'];
 // The level tiles' colours: three steps of the ramp plus the first for Surprise me.
 const TIER_C = { gentle: CATEGORY_RAMP[1], steady: CATEGORY_RAMP[3], tough: CATEGORY_RAMP[5], any: CATEGORY_RAMP[0] };
 // A run's one-line pitch on its tile. Falls back to the circuit's blurb.
+const PICK_WAIT_MS = 1200;
 const RUN_TAG = {
   deduction: 'Five logic cases, one law school verdict',
   dojo: 'Three sudokus, one score, a belt',
@@ -154,6 +155,13 @@ export default function EntryDoor({ onPick }) {
   const asked = useRef(false);
   const fitRef = useRef(null);
   const [fit, setFit] = useState(null);   // { h, w } of the picks list area
+  // PICKS NEVER WAIT ON A SLOW SERVER (2026-11-10). The week's play counts come
+  // from /api/quiz/my-plays, which measured 10 to 20s on a freshly started
+  // server (0.4s warm), and the picks used to stay blank until it answered.
+  // 'wait' holds the list for at most PICK_WAIT_MS; 'plays' sorts by the week's
+  // plays; 'az' is the fallback when the counts are late. The order is fixed
+  // for the visit once shown, so cards never jump under a tap.
+  const [pkOrder, setPkOrder] = useState('wait');
 
   const today = useMemo(() => { try { return etToday(); } catch (e) { return null; } }, [phase]);
   const phaseRef = useRef(null);
@@ -377,10 +385,18 @@ export default function EntryDoor({ onPick }) {
     return () => { if (ro) ro.disconnect(); else window.removeEventListener('resize', read); };
   }, [phase, skill]);
 
-  const picksAll = useMemo(() => all.slice().sort(byPlays), [all, week]);   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (phase !== 'picks') { setPkOrder('wait'); return undefined; }
+    if (data) { setPkOrder((o) => (o === 'wait' ? 'plays' : o)); return undefined; }
+    const id = setTimeout(() => setPkOrder((o) => (o === 'wait' ? 'az' : o)), PICK_WAIT_MS);
+    return () => clearTimeout(id);
+  }, [phase, skill, data]);
+  const byName = (a, b) => String((DAILY_GAME_MAP[a] && DAILY_GAME_MAP[a].name) || a).localeCompare(String((DAILY_GAME_MAP[b] && DAILY_GAME_MAP[b].name) || b));
+  const picksAll = useMemo(() => (pkOrder === 'wait' ? all.slice() : all.slice().sort(pkOrder === 'plays' ? byPlays : byName)), [all, week, pkOrder]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const pkReady = pkOrder !== 'wait';
   const pickRuns = runs.slice(0, 2);
   let pickMode = 'long'; let pickN = 0;
-  if (fit && data) {
+  if (fit && pkReady) {
     const LONG = 84, SHORT = 92, GAP = 8;
     const cols = fit.w >= 640 ? 2 : 1;
     const longFit = Math.max(0, Math.floor((fit.h + GAP) / (LONG + GAP))) * cols;
@@ -390,7 +406,7 @@ export default function EntryDoor({ onPick }) {
     else { pickMode = 'short'; pickN = Math.min(gridFit, 8 * cols); }
   }
   const picks = picksAll.slice(0, pickN);
-  const pickAll = !!data && !!fit && pickN >= picksAll.length;
+  const pickAll = pkReady && !!fit && pickN >= picksAll.length;
 
   if (!phase) return null;
   const curtain = phase === 'cur' || phase === 'lift';
@@ -450,7 +466,9 @@ export default function EntryDoor({ onPick }) {
           <div className="ent-pk-hd">
             <h2 className="ent-pk-h" ref={headRef} tabIndex={-1}>{sk.name}</h2>
             <p className="ent-pk-sub">
-              {!data || !fit ? '\u00a0' : pickAll ? `All ${picksAll.length} Puzzles, Most Played First` : `The ${pickN} Most Played This Week`}
+              {!pkReady || !fit ? '\u00a0'
+                : pkOrder === 'az' ? (pickAll ? `All ${picksAll.length} Puzzles, A to Z` : `${pickN} of ${picksAll.length} Puzzles, A to Z`)
+                : pickAll ? `All ${picksAll.length} Puzzles, Most Played First` : `The ${pickN} Most Played This Week`}
             </p>
           </div>
           {pickRuns.length ? (
@@ -466,7 +484,7 @@ export default function EntryDoor({ onPick }) {
             </ul>
           ) : null}
           <div className="ent-pk-fit" ref={fitRef}>
-            {data && fit ? (
+            {pkReady && fit ? (
               <ul className={'ent-pk-list ' + pickMode}>
                 {picks.map((k, i) => {
                   const g = DAILY_GAME_MAP[k];
@@ -476,7 +494,7 @@ export default function EntryDoor({ onPick }) {
                       <button type="button" className="ent-pk-g" onClick={() => go(g.href)} aria-label={`${g.name}: play today's puzzle`}>
                         <span className="ent-pk-nm">
                           <b><i style={{ background: categoryColor(g.cat) }} aria-hidden="true" />{g.name}</b>
-                          <span className="ent-pk-rk">#{i + 1}</span>
+                          {pkOrder === 'plays' ? <span className="ent-pk-rk">#{i + 1}</span> : null}
                         </span>
                         <span className="ent-pk-ds">{pickMode === 'long' ? (g.tagLong || g.tag) : g.tag}</span>
                       </button>
@@ -539,7 +557,7 @@ const CSS2 = `
 .ent-pk-hd{flex:none;display:flex;flex-direction:column;gap:2px}
 .ent-pk-h{margin:0;font-size:clamp(30px,8.4vw,40px);font-weight:800;letter-spacing:-.03em;line-height:1.15;padding-bottom:.06em;outline:none}
 .ent-pk-sub{margin:0;font-size:15px;font-weight:700;color:#08222e}
-.ent-pk-runs{flex:none;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ent-pk-runs{flex:none;list-style:none;margin:0 auto;padding:0;display:flex;flex-direction:column;gap:8px}
 .ent-pk-runs li{display:flex}
 .ent-pk-fit{flex:1 1 auto;min-height:0;overflow:hidden}
 .ent-pk-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
