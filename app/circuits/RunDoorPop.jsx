@@ -32,8 +32,11 @@ import { X } from 'lucide-react';
 import { T } from '@/lib/theme';
 import { gameActive } from '@/lib/game-active';
 
-// 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
-const WAIT_MS = 10000;
+// NEAR-INSTANT (owner, 2026-11-10). This is a START-GATE offer, not an ending
+// pop-up, so the 10s after-the-game floor (2026-10-17) never applied to it: at
+// 10s the player had already pressed Start and the offer was moot. 400ms lets
+// the page settle; gameActive() still keeps it out of a game already under way.
+const WAIT_MS = 400;
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 
