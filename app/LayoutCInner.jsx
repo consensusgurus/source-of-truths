@@ -359,6 +359,10 @@ html.lc-on .lc-host .stg-gate > div:last-child > button:first-child:not([type=bu
 .lc-nav .lc-eebox > .lc-eecut + .sty-ixb.sty-ixb{border-top:1px solid var(--stg-ink);}
 .lc-nav .sty-ixsw{justify-content:flex-start;margin:8px 0 4px;}
 .lc-nav .sty-ixsw button{line-height:1;}
+/* NO STATUS STRIP IN THE CAP, as on the home since 2026-11-07 (owner,
+   2026-11-11: the puzzle pages "still have old main page"). Hidden, not
+   removed, so the cap's three columns keep their places. */
+.lc-cap .sty-capl{visibility:hidden;}
 `;
 
 export default function LayoutCInner({ gameKey }) {
