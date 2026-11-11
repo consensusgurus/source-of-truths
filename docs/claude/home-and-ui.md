@@ -1596,7 +1596,11 @@ The ending's Up next rail (`app/StageStick.jsx`, `RUN_OF` / `foldRuns`) never li
 gauntlet-style run (engines quiz, math, price, passport: the Trivia/English/Math Gauntlets, Price
 Check, Passport with Span/Flank/Ping); it offers the run instead, once. Standalone dailies a run also
 deals (Dojo sudokus, Judged cases, crosswords) stay themselves. The puzzle page's left nav (`LayoutCInner`)
-follows the home's index order: All Puzzles, the categories, My Puzzles, the switch, then an
+IS the home's index (owner, 2026-11-11): one joined box of rows (`.lc-ixbox`) in the home's order (the
+categories or skills, then All Puzzles and My Puzzles, or the reader's Reorder from `sot_cat_order` /
+`sot_skill_order`), each with its count and fill. EVERY ROW IS A LINK TO THE HOME with that pane open
+(`/#cat=<category or skill id>`, which the home's layout effect reads); nothing opens in place, so the
+old in-page game sublists are gone. The game's own category stays marked. Then the switch, then an
 "Everything Else" box (Runs, Quizzes, Puzzle Archive, Leaderboards + Stats / IQ Tests, School Tests,
 Kids, Top 10 Lists / Most Appreciated). Change both together.
 

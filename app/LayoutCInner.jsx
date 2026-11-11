@@ -345,6 +345,20 @@ html.lc-on .lc-host .stg-gate > div:last-child > button:first-child:not([type=bu
 .lc-tab{color:color-mix(in srgb, var(--stg-ink) 62%, transparent);font-weight:600;}
 .lc-tab.on{color:var(--stg-ink);font-weight:800;box-shadow:inset 0 -2px 0 var(--stg-ink);}
 
+/* ── THE HOME'S INDEX ON A PUZZLE PAGE (owner, 2026-11-11). One joined box with
+   ink dividers, a count and a fill on every row, the switch flush left: the
+   home's left bar (option 5A) exactly. Keep in step with StageToday. ── */
+.lc-nav .lc-ixbox{display:flex;flex-direction:column;border:var(--dk);border-radius:12px;overflow:hidden;background:var(--stg-surf);}
+.lc-nav .lc-ixbox > .sty-ixb.sty-ixb{border:0;border-top:1px solid var(--stg-ink);border-radius:0;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;text-decoration:none;}
+.lc-nav .lc-ixbox > .sty-ixb.sty-ixb:first-child{border-top:0;}
+.lc-nav .lc-ixbox > .sty-ixb.sty-ixb .lc-ixct{display:block;font-style:normal;font-size:12px;font-weight:600;white-space:nowrap;color:color-mix(in srgb, currentColor 72%, transparent);}
+.lc-nav .lc-ixbox > .sty-ixb.sty-ixb.on{background:var(--stg-ink);color:var(--stg-ground);}
+.lc-nav .lc-eebox > .sty-ixb.sty-ixb{border-top:1px solid var(--stg-ink);}
+.lc-nav .lc-eebox > .sty-ixb.sty-ixb:first-child{border-top:0;}
+.lc-nav .lc-eebox > .lc-eecut{display:none;}
+.lc-nav .lc-eebox > .lc-eecut + .sty-ixb.sty-ixb{border-top:1px solid var(--stg-ink);}
+.lc-nav .sty-ixsw{justify-content:flex-start;margin:8px 0 4px;}
+.lc-nav .sty-ixsw button{line-height:1;}
 `;
 
 export default function LayoutCInner({ gameKey }) {
@@ -368,6 +382,7 @@ export default function LayoutCInner({ gameKey }) {
   const [who, setWho] = useState('');
   const [day, setDay] = useState('');
   const [order, setOrder] = useState(null);
+  const [skillOrder, setSkillOrder] = useState(null);
   const [tick, setTick] = useState(0);
   const [flag, setFlag] = useState(true);
   const [openCat, setOpenCat] = useState(null);
@@ -550,6 +565,11 @@ export default function LayoutCInner({ gameKey }) {
       const raw = JSON.parse(localStorage.getItem('sot_cat_order') || 'null');
       if (Array.isArray(raw) && raw.length) setOrder(raw);
     } catch (e) {}
+    // The skills' own hand order (the home's Reorder in the Skills view, 2026-11-11).
+    try {
+      const raw = JSON.parse(localStorage.getItem('sot_skill_order') || 'null');
+      if (Array.isArray(raw) && raw.length) setSkillOrder(raw);
+    } catch (e) {}
   }, []);
   useIsoLayoutEffect(() => {
     try { if (localStorage.getItem(IX_KEY) === 'cat') setIxLens('cat'); } catch (e) {}
@@ -645,6 +665,9 @@ export default function LayoutCInner({ gameKey }) {
     try {
       if (localStorage.getItem(PANE_KEY) !== id) localStorage.removeItem(SNAP_KEY);
       localStorage.setItem(PANE_KEY, id);
+      // My Puzzles is the one pane the home reopens, and only when the reader
+      // did not last go back to the tiles by hand.
+      if (id === 'sty-mine') localStorage.removeItem('sot_home_tiles');
     } catch (err) {}
   };
   const ixLink = (id, label, hue, cls) => (
@@ -809,32 +832,41 @@ export default function LayoutCInner({ gameKey }) {
 
       <nav className={'lc-nav' + (isColorLook(siteLook) ? ' slc' : '') + (light ? ' lt' : '')} aria-label="Sections">
         <div className="sty-ixn">
-          {ixLink('all', 'All Puzzles', 'var(--stg-ink)')}
-          {lensCats.map(({ cat, games: gs }) => (
-            <React.Fragment key={cat}>
-              {(() => {
-                // COLOUR ARRIVES AS PUZZLES ARE PLAYED (owner, 2026-11-05), as on
-                // the home: a flat row that fills with its colour as games are done.
+          {/* THE HOME'S INDEX, AS IT IS NOW (owner, 2026-11-11: "we need to make the
+              individual puzzle pages so that they match the main page ... clicking a
+              category will take user to the category main page"). One joined box in
+              the home's order (the categories or skills, then All Puzzles and My
+              Puzzles, or the reader's own Reorder), every row with its count and its
+              fill. A row is a LINK to the home with that pane open (/#cat=<id> for a
+              category or a skill); nothing opens in place any more. The game's own
+              category stays marked. Change this and StageToday's ixNav together. */}
+          <div className="lc-ixbox">
+            {(() => {
+              const base = [...lensCats.map((c) => c.cat), 'all', 'sty-mine'];
+              const ord = ixLens === 'skill' ? skillOrder : order;
+              let ids = base;
+              if (ord && ord.length) {
+                const r = new Map(ord.map((c, i) => [c, i]));
+                const at = (c, i) => (r.has(c) ? r.get(c) : 99 + i);
+                ids = base.map((c, i) => [c, i]).sort((a, b) => at(a[0], a[1]) - at(b[0], b[1])).map(([c]) => c);
+              }
+              return ids.map((id) => {
+                const isAll = id === 'all';
+                const isMine = id === 'sty-mine';
+                const gs = isAll ? games : isMine ? mineGames : (lensCats.find((c) => c.cat === id) || { games: [] }).games;
                 const k = gs.filter((g) => done.has(g.key)).length;
+                const sw = isAll || isMine ? null : swatchCat(id);
                 return (
-                  <button type="button" className={'sty-ixb ct' + (cat === shownCat || cat === myCat ? ' on' : '')}
-                    style={{ '--cc': inkFor(swatchCat(cat)), '--cfull': categoryColor(swatchCat(cat)), '--ixf': (gs.length ? Math.round((100 * k) / gs.length) : 0) + '%' }}
-                    aria-expanded={cat === shownCat} onClick={() => toggleCat(cat)}>
-                    <i aria-hidden="true" /><span>{ixLabel(cat)}</span><em className="lc-ixct">{k} of {gs.length}</em>
-                  </button>
+                  <Link key={id} className={'sty-ixb ct' + (id === myCat ? ' on' : '')}
+                    href={isAll || isMine ? '/' : '/#cat=' + encodeURIComponent(id)}
+                    onClick={isAll || isMine ? setPane(id) : undefined} aria-current={id === myCat ? 'true' : undefined}
+                    style={{ '--cc': sw ? inkFor(sw) : 'var(--stg-ink)', '--cfull': sw ? categoryColor(sw) : '#c7cdd6', '--ixf': (gs.length ? Math.round((100 * k) / gs.length) : 0) + '%' }}>
+                    <i aria-hidden="true" /><span>{isAll ? 'All Puzzles' : isMine ? 'My Puzzles' : ixLabel(id)}</span>{gs.length ? <em className="lc-ixct">{k} of {gs.length}</em> : null}
+                  </Link>
                 );
-              })()}
-              {cat === shownCat ? subList(gs) : null}
-            </React.Fragment>
-          ))}
-          {/* MY PUZZLES UNDER THE CATEGORIES, as on the home (owner, 2026-10-26:
-              "make left navigation consistent with main page"). It opens in
-              place, the starred games under it like a category's. */}
-          <button type="button" className={'sty-ixb' + (shownCat === MINE ? ' on' : '')} style={{ '--cc': 'var(--stg-acc)' }}
-            aria-expanded={shownCat === MINE} onClick={() => toggleCat(MINE)}>
-            <i aria-hidden="true" /><span>My Puzzles</span>
-          </button>
-          {shownCat === MINE ? subList(mineGames, 'Star a puzzle on the home page and it shows up here.') : null}
+              });
+            })()}
+          </div>
           {/* THE SWITCH UNDER THE CATEGORIES (owner, 2026-10-26), as on the home. */}
           <div className="sty-ixsw" role="group" aria-label="Group puzzles by">
             <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
@@ -845,6 +877,7 @@ export default function LayoutCInner({ gameKey }) {
           <div className="lc-eeh">Everything Else</div>
           <div className="lc-eebox">
             {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
+            {ixDoor('/build-a-run', 'Build a Run')}
             {ixHash('sty-quizzes', 'Quizzes')}
             {ixDoor('/archive', 'Puzzle Archive')}
             {ixHash('sty-board', 'Leaderboards + Stats')}
@@ -855,6 +888,8 @@ export default function LayoutCInner({ gameKey }) {
             {ixDoor('/lists', 'Top 10 Lists')}
             <span className="lc-eecut" aria-hidden="true" />
             {ixHash('sty-comm', 'Most Appreciated')}
+            {ixDoor('/submit-a-puzzle', 'Submit or List a Puzzle')}
+            {ixDoor('/sponsor-a-day', 'Sponsor a Day')}
           </div>
         </div>
       </nav>

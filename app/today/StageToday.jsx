@@ -1262,8 +1262,10 @@ export default function StageToday() {
       const h = String(window.location.hash || '');
       if (h.startsWith('#cat=')) {
         const c = decodeURIComponent(h.slice(5));
-        if (RAMP_ORDER.includes(c)) {
-          setIxLens('cat'); setPane(c); setPicked(true);
+        // A SKILL OPENS THE SAME WAY (owner, 2026-11-11): the puzzle page's index
+        // links every row here, in whichever lens it is showing.
+        if (RAMP_ORDER.includes(c) || (isSkillId(c) && skillOfId(c))) {
+          setIxLens(RAMP_ORDER.includes(c) ? 'cat' : 'skill'); setPane(c); setPicked(true);
           setTimeout(() => { try { if (String(window.location.hash).startsWith('#cat=')) window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (er) {} }, 2500);
           try { window.scrollTo(0, 0); } catch (er) {}
         }
