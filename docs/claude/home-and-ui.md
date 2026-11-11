@@ -2484,3 +2484,21 @@ clip box and hand the space back: `padding-bottom:.2em; margin-bottom:-.2em` (or
 into an existing margin with `calc()`). Before shipping a clipped line, check it with a word that
 has a descender. Swept 2026-11-09: `.rgt-name`, `.rgt-hl`, `.wys-n b`, `.gsx-bt`, `.sst-tile b`,
 `.nt-rel-t`.
+
+## Category page sort and filter bar (owner, 2026-11-10)
+
+`app/puzzle-category/CategoryLanding.jsx`, whole-category pages only (not set or subset pages).
+Owner cut the first mockup down: one or two controls per page, never a wall of chips.
+
+- **Sudoku:** one Both / Numbers / Color toggle (no size chips). The grid size LEADS each row's
+  generic line (`9x9 Killer sudoku`), from `SUDOKU_SIZE` in `lib/colour-sudoku.js`; a trailing
+  size in the generic label is stripped so it never prints twice. Towers reads `5x5 and 7x7`.
+  Sort adds Smallest First / Largest First.
+- **Logic and Word:** one Kind row of four, multi-select, folded from the category sets
+  (`KIND_OF_SET` in the file). A NEW SET in `lib/daily-groups.js` for Logic or Word must be
+  added to `KIND_OF_SET`, or its games only show with the Kind row on All.
+- **Sort on all three:** Featured (default, the set shelves as before), Most Played Today
+  (today's play counts; reorders only when picked, so nothing moves on load), A to Z. Any sort
+  but Featured shows one flat list.
+- **Phone:** the Kind row is one line that flick-scrolls sideways with NO visible scroll bar
+  (owner, 2026-11-10).

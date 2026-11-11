@@ -91,19 +91,55 @@ function genericOf(g) {
   return g.generic && g.generic !== g.tag ? g.generic : null;
 }
 
+// THE CATEGORY SORT AND FILTER BAR (owner, 2026-11-10, from a player asking to
+// filter the sudokus by size or type). One or two controls per page, never a
+// wall of chips: Sudoku gets a Both / Numbers / Color toggle and sorts by grid
+// size, with the size leading each row; Logic and Word get one Kind row whose
+// kinds fold the category sets (lib/daily-groups.js) into four. A set not named
+// here falls under no kind and shows only with the Kind row cleared, so a new
+// set must be added to KIND_OF_SET. Every page gets the Sort menu.
+const KINDS = {
+  Logic: [['grid', 'Grid Puzzles'], ['move', 'Moving Pieces'], ['story', 'Deduction Stories'], ['test', 'Reasoning Tests']],
+  Word: [['cross', 'Crosswords'], ['letters', 'Letter Games'], ['meaning', 'Word Meanings'], ['gauntlet', 'Word Gauntlets']],
+};
+const KIND_OF_SET = {
+  'Grid drawing': 'grid', 'Grid filling': 'grid',
+  'Traffic jams': 'move', 'Roll and route': 'move', 'Photo puzzles': 'move',
+  Whodunits: 'story',
+  'Sorting puzzles': 'test', 'Rule finding': 'test',
+  Crosswords: 'cross', 'Clueless crosswords': 'cross',
+  'Letter tiles': 'letters', 'Letter shuffles': 'letters',
+  'Word meanings': 'meaning', 'Word gauntlets': 'gauntlet',
+};
+// Towers is the one sudoku that is not one fixed square (5x5 weekdays, 7x7 Sundays).
+const SIZE_EXTRA = { towers: ['5x5 and 7x7', 6] };
+function sudokuSizeLabel(key) {
+  const n = SUDOKU_SIZE[key];
+  return n ? `${n}x${n}` : SIZE_EXTRA[key] ? SIZE_EXTRA[key][0] : null;
+}
+function sudokuSizeN(key) {
+  return SUDOKU_SIZE[key] || (SIZE_EXTRA[key] ? SIZE_EXTRA[key][1] : 99);
+}
+// The generic label without a trailing size ("Mini sudoku, 6x6", "Racecar at
+// 6x6"), since the size now leads the line.
+function bareGeneric(s) {
+  return s ? s.replace(/,?\s*(?:at\s+)?\d+x\d+$/i, '').trim() : '';
+}
+
 // ---- A. THE LEDGER -------------------------------------------------------
 
-function LedgerRow({ g, href, data }) {
+function LedgerRow({ g, href, data, size = null }) {
   const day = dayOf(g, data);
   const lead = day.rows[0];
-  const generic = genericOf(g);
+  const generic = size ? (bareGeneric(g.generic) || null) : genericOf(g);
   return (
     <li>
       <a className={`pcl-row${day.state ? ' ' + day.state : ''}`} href={href} style={hue(g.cat)}>
         <span className="pcl-gi"><GameGlyph gameKey={g.key} size={20} /></span>
         <span className="pcl-id">
           <b className="pcl-nm">{g.name}</b>
-          {generic ? <span className="pcl-gen">{generic}</span> : null}
+          {size ? <span className="pcl-gen"><span className="pcl-sz">{size}</span>{generic ? ` ${generic}` : ''}</span>
+            : generic ? <span className="pcl-gen">{generic}</span> : null}
         </span>
         <span className="pcl-desc">
           <span className="pcl-tag">{g.tag}</span>
@@ -158,7 +194,7 @@ function DayBoard({ label, games, data }) {
   );
 }
 
-function Ledger({ shelves, label, games, data, withTq }) {
+function Ledger({ shelves, label, games, data, withTq, sizeOf = null }) {
   return (
     <div className="pcl-lw">
       <section className="pcl-ledger" aria-label={`The ${games.length} games`}>
@@ -170,7 +206,7 @@ function Ledger({ shelves, label, games, data, withTq }) {
               <span className="pcl-lcol">Today&apos;s leader</span>
             </div>
             <ul>
-              {list.map((g) => <LedgerRow key={g.key} g={g} href={withTq(g.href)} data={data} />)}
+              {list.map((g) => <LedgerRow key={g.key} g={g} href={withTq(g.href)} data={data} size={sizeOf ? sizeOf(g.key) : null} />)}
             </ul>
           </div>
         ))}
@@ -278,17 +314,35 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
   // A Gauntlet is already a run by name; the rest are named as circuits.
   const runCta = (id) => (id === 'room' ? 'Walk into Read the Room' : /^Enter /.test(circuitName(id)) ? circuitName(id) : /gauntlet|encore/i.test(circuitName(id)) ? `Run the ${circuitName(id)}` : `Play ${circuitName(id)}`);
   const circuitCta = circuit ? runCta(circuit) : '';
-  // THE SUDOKU FILTERS (owner, 2026-11-08): size and number/colour chips, on
-  // the whole-category Sudoku page only. Filtering only hides rows; it never
-  // reorders or regroups, and an emptied group drops out.
+  // THE SORT AND FILTER BAR (owner, 2026-11-10; see KINDS above). Whole
+  // category pages only. Filtering hides rows; Featured keeps the set shelves,
+  // any other sort lays the games out as one list. Most Played reads today's
+  // play counts, so it only reorders once the boards have arrived, and only
+  // when the reader picks it (the default never moves a row on load).
   const facets = page.slug === 'sudoku' && !parent;
-  const [size, setSize] = useState('all');
+  const kinds = !parent && KINDS[cat] ? KINDS[cat] : null;
+  const kindOf = new Map();
+  if (kinds && groups) groups.forEach(([set, list]) => list.forEach((g) => { if (KIND_OF_SET[set.name]) kindOf.set(g.key, KIND_OF_SET[set.name]); }));
   const [ink, setInk] = useState('all');
-  const keep = (g) => !facets || ((size === 'all' || SUDOKU_SIZE[g.key] === Number(size)) && (ink === 'all' || (ink === 'color') === SUDOKU_COLOUR.has(g.key)));
+  const [kindSel, setKindSel] = useState([]);
+  const [sort, setSort] = useState('featured');
+  const inkOk = (g) => !facets || ink === 'all' || (ink === 'color') === SUDOKU_COLOUR.has(g.key);
+  const kindOk = (g) => !kinds || !kindSel.length || kindSel.includes(kindOf.get(g.key));
+  const keep = (g) => inkOk(g) && kindOk(g);
   const shown = games.filter(keep);
+  const sortOpts = [['featured', 'Featured'], ['plays', 'Most Played Today'],
+    ...(facets ? [['small', 'Smallest First'], ['large', 'Largest First']] : []), ['az', 'A to Z']];
+  const sorted = sort === 'featured' ? shown : shown.slice().sort(
+    sort === 'az' ? (a, b) => a.name.localeCompare(b.name)
+      : sort === 'small' ? (a, b) => sudokuSizeN(a.key) - sudokuSizeN(b.key)
+      : sort === 'large' ? (a, b) => sudokuSizeN(b.key) - sudokuSizeN(a.key)
+      : (a, b) => (data.ready ? (dayOf(b, data).field || 0) - (dayOf(a, data).field || 0) : 0));
+  const toggleKind = (k) => setKindSel((cur) => (cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]));
   const ledger = games.length >= LEDGER_AT;
-  const shelves = (groups && groups.length > 1 ? groups : [[{ name: 'Pick a puzzle', href: null }, games]])
-    .map(([set, list]) => [set, list.filter(keep)]).filter(([, list]) => list.length);
+  const shelves = sort !== 'featured'
+    ? (sorted.length ? [[{ name: (sortOpts.find(([v]) => v === sort) || [, ''])[1], href: null }, sorted]] : [])
+    : (groups && groups.length > 1 ? groups : [[{ name: 'Pick a puzzle', href: null }, games]])
+      .map(([set, list]) => [set, list.filter(keep)]).filter(([, list]) => list.length);
   const h1 = page.eyebrow || page.h1;
 
   return (
@@ -330,22 +384,41 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
           </nav>
         ) : null}
 
-        {facets ? (
-          <div className="pcl-facets" role="group" aria-label="Filter the sudokus">
-            {[['size', size, setSize, [['all', 'All sizes'], ['6', '6x6'], ['9', '9x9']]], ['ink', ink, setInk, [['all', 'All'], ['number', 'Numbers'], ['color', 'Color']]]].map(([id, val, set, opts]) => (
-              <div key={id} className="pcl-facet">
-                {opts.map(([v, l]) => (
-                  <button key={v} type="button" className={val === v ? 'on' : ''} aria-pressed={val === v} onClick={() => set(v)}>{l}</button>
+        {facets || kinds ? (
+          <div className="pcl-facets" role="group" aria-label={`Sort and filter the ${label.toLowerCase()}`}>
+            {facets ? (
+              <div className="pcl-facet" role="group" aria-label="Numbers or color">
+                {[['all', 'Both'], ['number', 'Numbers'], ['color', 'Color']].map(([v, l]) => (
+                  <button key={v} type="button" className={ink === v ? 'on' : ''} aria-pressed={ink === v} onClick={() => setInk(v)}>{l}</button>
                 ))}
               </div>
-            ))}
+            ) : null}
+            {kinds ? (
+              <div className="pcl-kinds" role="group" aria-label="Kind">
+                <button type="button" className={kindSel.length ? '' : 'on'} aria-pressed={!kindSel.length} onClick={() => setKindSel([])}>All <i>{games.length}</i></button>
+                {kinds.map(([k, l]) => {
+                  const on = kindSel.includes(k);
+                  return (
+                    <button key={k} type="button" className={on ? 'on' : ''} aria-pressed={on} onClick={() => toggleKind(k)}>
+                      {l} <i>{games.filter((g) => kindOf.get(g.key) === k).length}</i>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
             <span className="pcl-facet-n">{shown.length} of {games.length}</span>
+            <label className="pcl-sort">
+              <span>Sort</span>
+              <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                {sortOpts.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </label>
           </div>
         ) : null}
 
         {ledger
-          ? <Ledger shelves={shelves} label={label} games={shown} data={data} withTq={withTq} />
-          : <Feature games={shown} data={data} withTq={withTq} />}
+          ? <Ledger shelves={shelves} label={label} games={sorted} data={data} withTq={withTq} sizeOf={facets ? sudokuSizeLabel : null} />
+          : <Feature games={sorted} data={data} withTq={withTq} />}
 
         <section className="pcl-two">
           <div className="pcl-prose">
@@ -427,6 +500,21 @@ const CSS = `
 .pcl-facet button+button{border-left:1px solid var(--stg-line2);}
 .pcl-facet button.on{background:var(--stg-ink);color:var(--stg-ground, #fff);}
 .pcl-facet-n{font-size:12px;font-weight:700;color:var(--stg-ink2);}
+.pcl-kinds{display:flex;flex-wrap:wrap;gap:6px;}
+.pcl-kinds button{flex:none;font:inherit;font-size:12.5px;font-weight:800;padding:7px 13px;border:1px solid var(--stg-line2);border-radius:999px;background:transparent;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;}
+.pcl-kinds button i{font-style:normal;font-weight:700;opacity:.7;margin-left:3px;}
+.pcl-kinds button.on{background:var(--stg-ink);border-color:var(--stg-ink);color:var(--stg-ground, #fff);}
+.pcl-sort{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:var(--stg-ink2);}
+.pcl-sort select{font:inherit;font-size:12.5px;font-weight:800;height:34px;padding:0 10px;border:1px solid var(--stg-line2);border-radius:8px;background:transparent;color:var(--stg-ink);cursor:pointer;}
+.pcl-sort select option{color:#14161a;background:#ffffff;}
+.pcl-sz{text-transform:none;letter-spacing:.03em;margin-right:1px;}
+.pcl-facets button:focus-visible,.pcl-sort select:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
+@media (max-width:720px){
+  /* One row that flicks sideways on a phone, with no visible scroll bar. */
+  .pcl-kinds{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;flex:1 1 100%;min-width:0;}
+  .pcl-kinds::-webkit-scrollbar{display:none;}
+  .pcl-sort{margin-left:auto;}
+}
 .pcl-sets a.on{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
 
 /* SHARED BITS */
