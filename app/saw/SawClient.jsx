@@ -49,6 +49,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import ShelfLink from '../jig/ShelfLink';
 
 
 const ACCENT = '#0e7490';
@@ -1647,6 +1648,9 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
 
         {!STAGE && <GamePanel self="saw" name="Saw" onShow={() => setShowChrome(true)} />}
         <div style={{ display: (focusMode && !STAGE) ? 'none' : 'block', margin: '30px auto 0' }}>
+          <div className={STAGE ? undefined : 'loft-report'} style={{ padding: '0 14px' }}>
+            <ShelfLink game="saw" puzzles={puzzles} todayNum={pickPuzzle(puzzles, null).num} />
+          </div>
           {LOFT && (
             <div className={STAGE ? undefined : 'loft-report'}>
               <ReportIssue self="saw" name="Saw" accent="#ffffff" align="center" onHelp={() => setShowHelp(true)} />

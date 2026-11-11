@@ -1,26 +1,28 @@
 'use client';
 
-// THE JIG PUZZLE SHELF (owner, 2026-10-16), the client half of /jig/shelf.
+// THE JIGSAW PUZZLE SHELF, the client half of /jig/shelf (owner, 2026-10-16;
+// Saw joined and the shelf was renamed and recoloured 2026-11-11).
 //
-// Every board is a small box: a lid band with its number (gold on a Sunday
-// Edition), the photograph, and a sticker with its piece count, standing on a
-// wooden plank, a week to a shelf, newest week first. Today's box is a
-// question mark. Picking a box opens it in the side panel (below the shelf on
+// Every board is a small box: a lid with its number, the photograph, and a
+// sticker with its piece count, standing on a wooden plank, a week to a shelf,
+// newest week first. Each week has a Jig plank and, from Saw's first week, a
+// Saw plank under it (Saw boxes are tall, like its photos). Today's boxes are
+// question marks. Picking a box opens it in the side panel (below the shelf on
 // a phone), which says what it is, who took the photo, and plays it.
 //
-// The boxes are real links to /jig?p=N in the server HTML, so a crawler walks
-// the whole archive. In the browser a click SELECTS instead, and the panel's
-// button plays: a shelf you can only browse by leaving it is no shelf.
+// The boxes are real links to /jig?p=N or /saw?p=N in the server HTML, so a
+// crawler walks the whole archive. In the browser a click SELECTS instead.
 //
-// Solved and played marks: this device's saves first (instant), then the
-// server's history merged in through the shared day-status client, exactly as
-// the puzzle archive does. Today's box shows its picture only once this device
-// holds a finished save for it; the server never sent its name.
+// Solved and played marks: this device's saves first (sot_jig_N, sot_saw_N),
+// then the server's history merged in through the shared day-status client.
+// A today box shows its picture only once this device has finished it.
 //
-// Colours: page ink and grounds are stage tokens, so the page follows the
-// reader's register like every stage surface. The plank, the lids and the
-// piece stickers are OBJECT colours and stay put in both registers, the same
-// way a chess board's squares do.
+// COLOUR (2026-11-11): everything that is not a photo or the wooden plank
+// reads the page's own tokens. The lids, the today box, the selected ring, the
+// Sunday mark and the filter chips all wear the Logic accent (--stg-acc with
+// --stg-onramp ink), the same as the call to action, so the shelf matches its
+// page in both registers. The old navy lids and gold Sunday lids were the
+// pre-ramp palette and are gone; do not bring back a literal hue here.
 import { useEffect, useMemo, useState } from 'react';
 import CircuitFrame from '../../circuits/CircuitFrame';
 import { fetchDayStatus } from '../../useDayStats';
@@ -29,103 +31,129 @@ import { migrateJigSaves } from '@/lib/jig-renum';
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const DAY_MS = 86400000;
+const GAMES = ['jig', 'saw'];
+const GNAME = { jig: 'Jig', saw: 'Saw' };
+const GBLURB = { jig: 'wide, 80 pieces', saw: 'tall, loose table' };
 
 const atNoon = (iso) => new Date(iso + 'T12:00:00Z');
 const isoOf = (d) => d.toISOString().slice(0, 10);
 const shortDate = (iso) => { const d = atNoon(iso); return `${DOW[d.getUTCDay()]}, ${MON[d.getUTCMonth()]} ${d.getUTCDate()}`; };
-const quizIdOf = (iso) => { const d = atNoon(iso); return `jig-${d.getUTCMonth() + 1}-${d.getUTCDate()}-${String(d.getUTCFullYear()).slice(2)}`; };
+const quizIdOf = (g, iso) => { const d = atNoon(iso); return `${g}-${d.getUTCMonth() + 1}-${d.getUTCDate()}-${String(d.getUTCFullYear()).slice(2)}`; };
 // The Monday of the week holding `iso`.
 const mondayOf = (iso) => { const d = atNoon(iso); return isoOf(new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * DAY_MS)); };
-const thumb = (n, w) => `/api/jig/img?n=${n}&w=${w}`;
+const thumb = (b, w) => `/api/${b.g}/img?n=${b.n}&w=${w}`;
+const hrefOf = (b) => (b.today ? `/${b.g}` : `/${b.g}?p=${b.n}`);
 
 export default function ShelfClient({ boards, today, crumb, faq }) {
-  const byDate = useMemo(() => new Map(boards.map((b) => [b.d, b])), [boards]);
-  const todays = boards.find((b) => b.today) || null;
-  const pastCount = boards.filter((b) => !b.today).length;
+  const byDay = useMemo(() => new Map(boards.map((b) => [`${b.g}|${b.d}`, b])), [boards]);
+  const firstOf = useMemo(() => {
+    const f = {};
+    for (const b of boards) if (!f[b.g] || b.d < f[b.g]) f[b.g] = b.d;
+    return f;
+  }, [boards]);
+  const todays = boards.filter((b) => b.today);
+  const total = boards.length;
+  const per = (g) => boards.filter((b) => b.g === g).length;
 
   // The shelves: one per Monday-to-Sunday week, from today's week back to the
-  // week of the first board. A day after today is a locked box (the week is not
-  // over yet); a day before the first board is an empty slot.
+  // week of the first board. Each week holds a plank per game that had begun
+  // by that week. A day after today is a locked box; a day before that game's
+  // first board is an empty slot.
   const weeks = useMemo(() => {
     if (!boards.length) return [];
-    const first = boards[boards.length - 1].d;
+    const first = boards.reduce((m, b) => (b.d < m ? b.d : m), boards[0].d);
     const out = [];
     const thisMon = mondayOf(today);
     for (let mon = thisMon; mon >= mondayOf(first); mon = isoOf(new Date(atNoon(mon).getTime() - 7 * DAY_MS))) {
-      const days = [];
-      for (let k = 0; k < 7; k++) {
-        const iso = isoOf(new Date(atNoon(mon).getTime() + k * DAY_MS));
-        const b = byDate.get(iso);
-        days.push(b ? { kind: 'box', b } : { kind: iso > today ? 'locked' : 'empty', iso });
+      const sun = isoOf(new Date(atNoon(mon).getTime() + 6 * DAY_MS));
+      const rows = [];
+      for (const g of GAMES) {
+        if (!firstOf[g] || firstOf[g] > sun) continue;
+        const days = [];
+        for (let k = 0; k < 7; k++) {
+          const iso = isoOf(new Date(atNoon(mon).getTime() + k * DAY_MS));
+          const b = byDay.get(`${g}|${iso}`);
+          days.push(b ? { kind: 'box', b } : { kind: iso > today ? 'locked' : 'empty', iso });
+        }
+        rows.push({ g, days });
       }
       const ago = Math.round((atNoon(thisMon) - atNoon(mon)) / (7 * DAY_MS));
       const label = ago === 0 ? 'This week' : ago === 1 ? 'Last week' : `Week of ${MON[atNoon(mon).getUTCMonth()]} ${atNoon(mon).getUTCDate()}`;
-      out.push({ mon, label, days });
+      out.push({ mon, label, rows });
     }
     return out;
-  }, [boards, byDate, today]);
+  }, [boards, byDay, firstOf, today]);
 
-  // Marks. `local` is read from this device's saves, then the server history
-  // is merged over it.
-  const [marks, setMarks] = useState({ solved: new Set(), played: new Set(), ready: false });
+  // Marks, keyed by board key ('jig-12'). This device's saves, then the
+  // server history merged over them.
+  const [marks, setMarks] = useState({ solved: new Set(), played: new Set(), open: new Set(), ready: false });
   useEffect(() => {
     migrateJigSaves();
     let alive = true;
     const solved = new Set();
     const played = new Set();
+    const open = new Set();
     for (const b of boards) {
       let sv = null;
-      try { sv = JSON.parse(localStorage.getItem(`sot_jig_${b.n}`) || 'null'); } catch (e) { sv = null; }
+      try { sv = JSON.parse(localStorage.getItem(`sot_${b.g}_${b.n}`) || 'null'); } catch (e) { sv = null; }
       if (!sv || typeof sv !== 'object') continue;
-      if (sv.status === 'won') { solved.add(b.n); played.add(b.n); }
-      else if (sv.status && sv.status !== 'playing') played.add(b.n);
+      if (sv.status === 'won') { solved.add(b.k); played.add(b.k); }
+      else if (sv.status && sv.status !== 'playing') played.add(b.k);
+      if (b.today && sv.status && sv.status !== 'playing') open.add(b.k);
     }
-    setMarks({ solved, played, ready: true });
-    const byQuiz = new Map(boards.map((b) => [quizIdOf(b.d), b.n]));
+    setMarks({ solved, played, open, ready: true });
+    const byQuiz = new Map(boards.map((b) => [quizIdOf(b.g, b.d), b.k]));
     fetchDayStatus().then((d) => {
       if (!alive || !d) return;
       const s2 = new Set(solved);
       const p2 = new Set(played);
-      const take = (list, set) => { for (const q of list || []) { const n = byQuiz.get(q); if (n) set.add(n); } };
+      const take = (list, set) => { for (const q of list || []) { const k = byQuiz.get(q); if (k) set.add(k); } };
       take(d.played, p2);
       take(d.completed, p2);
       take(d.completed, s2);
-      setMarks({ solved: s2, played: p2, ready: true });
+      setMarks({ solved: s2, played: p2, open, ready: true });
     }).catch(() => {});
     return () => { alive = false; };
   }, [boards]);
 
-  // Today's picture shows only once THIS device holds a finished save for it.
-  const [todayOpen, setTodayOpen] = useState(false);
-  useEffect(() => {
-    if (!todays) return;
-    try {
-      const sv = JSON.parse(localStorage.getItem(`sot_jig_${todays.n}`) || 'null');
-      if (sv && sv.status && sv.status !== 'playing') setTodayOpen(true);
-    } catch (e) {}
-  }, [todays]);
-
   const [filter, setFilter] = useState('all');
+  useEffect(() => {
+    // ?g=saw (the link under Saw's board) opens on Saw. Read after mount so
+    // the server HTML and the first client render agree.
+    try { const g = new URLSearchParams(window.location.search).get('g'); if (g === 'saw' || g === 'jig') setFilter(g); } catch (e) {}
+  }, []);
   const counts = {
-    all: boards.length,
-    solved: boards.filter((b) => marks.solved.has(b.n)).length,
-    unplayed: boards.filter((b) => !marks.played.has(b.n)).length,
+    all: total,
+    jig: per('jig'),
+    saw: per('saw'),
+    solved: boards.filter((b) => marks.solved.has(b.k)).length,
+    unplayed: boards.filter((b) => !marks.played.has(b.k)).length,
     sun: boards.filter((b) => b.s).length,
   };
-  const shows = (b) => (filter === 'all' ? true
-    : filter === 'solved' ? marks.solved.has(b.n)
-      : filter === 'unplayed' ? !marks.played.has(b.n)
-        : !!b.s);
+  // A game filter hides the other game's planks outright; the rest dim the
+  // boxes that do not match, so the week grid keeps its shape.
+  const rowShown = (g) => (filter === 'jig' || filter === 'saw' ? g === filter : true);
+  const shows = (b) => (filter === 'solved' ? marks.solved.has(b.k)
+    : filter === 'unplayed' ? !marks.played.has(b.k)
+      : filter === 'sun' ? !!b.s
+        : true);
 
   // The open box: the newest past board until the reader picks one.
   const [sel, setSel] = useState(() => {
     const p = boards.find((b) => !b.today);
-    return (p || boards[0] || {}).n || null;
+    return (p || boards[0] || {}).k || null;
   });
-  const cur = boards.find((b) => b.n === sel) || null;
+  useEffect(() => {
+    if (filter !== 'jig' && filter !== 'saw') return;
+    const curB = boards.find((b) => b.k === sel);
+    if (curB && curB.g === filter) return;
+    const p = boards.find((b) => b.g === filter && !b.today) || boards.find((b) => b.g === filter);
+    if (p) setSel(p.k);
+  }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  const cur = boards.find((b) => b.k === sel) || null;
   const pick = (e, b) => {
     e.preventDefault();
-    setSel(b.n);
+    setSel(b.k);
     if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
       const el = document.getElementById('jsh-panel');
       if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
@@ -133,35 +161,43 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
   };
 
   return (
-    <CircuitFrame cat="Logic" label="Puzzle shelf" wide>
+    <CircuitFrame cat="Logic" label="Jigsaw shelf" wide>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <nav className="jsh-crumb" aria-label="Breadcrumb">
         <a href="/">Home</a><span aria-hidden="true">/</span>
         {crumb ? <><a href={crumb.href}>{crumb.label}</a><span aria-hidden="true">/</span></> : null}
-        <a href="/jig">Jig</a><span aria-hidden="true">/</span>
-        <span aria-current="page">Puzzle shelf</span>
+        <span aria-current="page">Jigsaw Puzzle Shelf</span>
       </nav>
 
       <header className="jsh-head">
         <div>
-          <h1>Jig Puzzle Shelf: Every Daily Jigsaw</h1>
+          <h1>Jigsaw Puzzle Shelf</h1>
           <p className="jsh-lede">
-            Every Jig so far, newest week first. Each box is one day&apos;s photograph, cut into 80 pieces.
-            Pick any past box to play it free from the archive. Today&apos;s stays a question mark until you finish it.
+            Every daily jigsaw so far, newest week first: Jig on the top plank, the tall Saw below it.
+            Pick any past box to play it free from the archive. Today&apos;s boxes stay question marks until you finish them.
           </p>
         </div>
-        <a className="jsh-today" href="/jig">Play today&apos;s Jig</a>
+        <div className="jsh-todays">
+          {todays.map((b) => (
+            <a key={b.k} className="jsh-today" href={`/${b.g}`}>
+              <span>Today&apos;s {GNAME[b.g]}</span>
+              <small>{marks.solved.has(b.k) ? 'Solved ✓' : marks.played.has(b.k) ? 'Played' : 'Play now'}</small>
+            </a>
+          ))}
+        </div>
       </header>
 
       <div className="jsh-chips" role="group" aria-label="Show">
         {[
           ['all', 'All'],
+          ['jig', 'Jig'],
+          ['saw', 'Saw'],
           ['solved', 'Solved'],
           ['unplayed', 'Not played'],
           ['sun', 'Sundays'],
         ].map(([k, lab]) => (
           <button key={k} type="button" className={filter === k ? 'on' : ''} aria-pressed={filter === k} onClick={() => setFilter(k)}>
-            {lab} <b>{marks.ready || k === 'all' || k === 'sun' ? counts[k] : '–'}</b>
+            {lab} <b>{marks.ready || k === 'all' || k === 'sun' || k === 'jig' || k === 'saw' ? counts[k] : '–'}</b>
           </button>
         ))}
       </div>
@@ -172,39 +208,49 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
             <span />
             <div className="jsh-dowr">{['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => <span key={i}>{d}</span>)}</div>
           </div>
-          {weeks.map((w) => (
-            <div className="jsh-week" key={w.mon}>
-              <div className="jsh-wlab">{w.label}</div>
-              <div className="jsh-row">
-                <div className="jsh-plank" aria-hidden="true" />
-                {w.days.map((s, i) => {
-                  if (s.kind !== 'box') return <span key={i} className={`jsh-slot ${s.kind}`} aria-hidden="true" />;
-                  const b = s.b;
-                  const solved = marks.solved.has(b.n);
-                  const shut = b.today && !todayOpen;
-                  const cls = ['jsh-box', b.s ? 'sun' : '', b.today ? 'today' : '', solved ? 'solved' : '',
-                    sel === b.n ? 'sel' : '', shows(b) ? '' : 'off'].filter(Boolean).join(' ');
-                  return (
-                    <a key={i} className={cls} href={b.today ? '/jig' : `/jig?p=${b.n}`} onClick={(e) => pick(e, b)}
-                      aria-label={b.today ? `Today, No. ${b.n}, ${b.c * b.r} pieces` : `No. ${b.n}, ${shortDate(b.d)}: ${b.name}, ${b.c * b.r} pieces${solved ? ', solved' : ''}`}>
-                      <span className="jsh-lid"><span><span className="jsh-no">No. </span>{b.n}</span>{b.s ? <em>SUN</em> : null}</span>
-                      <span className="jsh-pic">
-                        {shut
-                          ? <span className="jsh-q">?</span>
-                          : <img src={thumb(b.n, 330)} alt={b.today ? '' : b.name} loading="lazy" decoding="async" />}
-                      </span>
-                      <span className="jsh-pc">{b.c * b.r}</span>
-                      {solved ? <span className="jsh-tick" aria-hidden="true">{'✓'}</span> : null}
-                    </a>
-                  );
-                })}
+          {weeks.map((w) => {
+            const rows = w.rows.filter((r) => rowShown(r.g));
+            if (!rows.length) return null;
+            return (
+              <div className="jsh-week" key={w.mon}>
+                <div className="jsh-wlab">{w.label}</div>
+                {rows.map((row) => (
+                  <div className={`jsh-line ${row.g}`} key={row.g}>
+                    <div className="jsh-glab"><b>{GNAME[row.g]}</b><span>{GBLURB[row.g]}</span></div>
+                    <div className="jsh-row">
+                      <div className="jsh-plank" aria-hidden="true" />
+                      {row.days.map((s, i) => {
+                        if (s.kind !== 'box') return <span key={i} className={`jsh-slot ${s.kind}`} aria-hidden="true" />;
+                        const b = s.b;
+                        const solved = marks.solved.has(b.k);
+                        const shut = b.today && !marks.open.has(b.k);
+                        const cls = ['jsh-box', b.s ? 'sun' : '', b.today ? 'today' : '', solved ? 'solved' : '',
+                          sel === b.k ? 'sel' : '', shows(b) ? '' : 'off'].filter(Boolean).join(' ');
+                        const nm = GNAME[b.g];
+                        return (
+                          <a key={i} className={cls} href={hrefOf(b)} onClick={(e) => pick(e, b)} title={b.today ? `Today's ${nm}` : b.name}
+                            aria-label={b.today ? `Today's ${nm}, No. ${b.n}, ${b.c * b.r} pieces` : `${nm} No. ${b.n}, ${shortDate(b.d)}: ${b.name}, ${b.c * b.r} pieces${solved ? ', solved' : ''}`}>
+                            <span className="jsh-lid"><span><span className="jsh-no">No. </span>{b.n}</span>{b.s ? <em>SUN</em> : null}</span>
+                            <span className="jsh-pic">
+                              {shut
+                                ? <span className="jsh-q">?</span>
+                                : <img src={thumb(b, 330)} alt={b.today ? '' : b.name} loading="lazy" decoding="async" />}
+                            </span>
+                            <span className="jsh-pc">{b.c * b.r}</span>
+                            {solved ? <span className="jsh-tick" aria-hidden="true">{'✓'}</span> : null}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </section>
 
         <aside className="jsh-panel" id="jsh-panel" aria-live="polite">
-          {cur ? <Panel b={cur} solved={marks.solved.has(cur.n)} played={marks.played.has(cur.n)} todayOpen={todayOpen} /> : null}
+          {cur ? <Panel b={cur} solved={marks.solved.has(cur.k)} played={marks.played.has(cur.k)} todayOpen={marks.open.has(cur.k)} /> : null}
         </aside>
       </div>
 
@@ -218,8 +264,9 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
       </section>
 
       <p className="jsh-foot">
-        {pastCount + (todays ? 1 : 0)} puzzles so far, one new photograph every day at midnight Eastern.
+        {total} puzzles so far ({counts.jig} Jig, {counts.saw} Saw), a new photograph for each every day at midnight Eastern.
         Every photo is a featured picture from <a href="https://commons.wikimedia.org/" rel="noopener">Wikimedia Commons</a>, credited on its box.
+        Playing with a kid? The same photos are on <a href="/kids/jigsaw">Mind Loft Kids</a> in 6 to 30 pieces.
         Looking for another game? The <a href="/archive">puzzle archive</a> has every past board of every daily.
       </p>
     </CircuitFrame>
@@ -228,14 +275,16 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
 
 function Panel({ b, solved, played, todayOpen }) {
   const pieces = b.c * b.r;
+  const nm = GNAME[b.g];
+  const tall = b.g === 'saw';
   if (b.today) {
     return (
       <div className="jsh-card">
         {todayOpen
-          ? <img className="jsh-big" src={thumb(b.n, 960)} alt="Today's Jig picture" />
-          : <div className="jsh-big jsh-bigq" aria-hidden="true">?</div>}
+          ? <img className={`jsh-big${tall ? ' tall' : ''}`} src={thumb(b, 960)} alt={`Today's ${nm} picture`} />
+          : <div className={`jsh-big jsh-bigq${tall ? ' tall' : ''}`} aria-hidden="true">?</div>}
         <div className="jsh-meta">
-          <div className="jsh-eye">No. {b.n} · Today{b.s ? ' · Sunday Edition' : ''}</div>
+          <div className="jsh-eye">{nm} No. {b.n} · Today{b.s ? ' · Sunday Edition' : ''}</div>
           <h2>{todayOpen ? 'Today’s picture' : 'Today’s picture is a surprise'}</h2>
           <p className="jsh-sub">{pieces} pieces · {b.c} × {b.r} cut</p>
           <p className="jsh-note">
@@ -243,16 +292,16 @@ function Panel({ b, solved, played, todayOpen }) {
               ? 'You finished it on this device, so its box shows the photo.'
               : 'The shelf keeps today covered. Finish it and the box shows the photograph.'}
           </p>
-          <a className="jsh-cta" href="/jig">{todayOpen ? 'Back to today’s Jig' : 'Play today’s Jig'}</a>
+          <a className="jsh-cta" href={`/${b.g}`}>{todayOpen ? `Back to today’s ${nm}` : `Play today’s ${nm}`}</a>
         </div>
       </div>
     );
   }
   return (
     <div className="jsh-card">
-      <img className="jsh-big" src={thumb(b.n, 960)} alt={b.name} />
+      <img className={`jsh-big${tall ? ' tall' : ''}`} src={thumb(b, 960)} alt={b.name} />
       <div className="jsh-meta">
-        <div className="jsh-eye">No. {b.n} · {shortDate(b.d)}{b.s ? ' · Sunday Edition' : ''}</div>
+        <div className="jsh-eye">{nm} No. {b.n} · {shortDate(b.d)}{b.s ? ' · Sunday Edition' : ''}</div>
         <h2>{b.name}</h2>
         <p className="jsh-credit">
           Photo: {b.by} · {b.lic} · <a href={b.src} rel="noopener" target="_blank">Wikimedia Commons</a>
@@ -262,7 +311,7 @@ function Panel({ b, solved, played, todayOpen }) {
           <div><dt>Cut</dt><dd>{b.c} × {b.r}</dd></div>
           <div><dt>You</dt><dd className={solved ? 'good' : ''}>{solved ? 'Solved' : played ? 'Played' : 'Not played'}</dd></div>
         </dl>
-        <a className="jsh-cta" href={`/jig?p=${b.n}`}>{solved || played ? 'Play it again' : 'Play from the archive'}</a>
+        <a className="jsh-cta" href={`/${b.g}?p=${b.n}`}>{solved || played ? 'Play it again' : 'Play from the archive'}</a>
       </div>
     </div>
   );
@@ -270,7 +319,8 @@ function Panel({ b, solved, played, todayOpen }) {
 
 // A JS template literal: no backticks inside, and no apostrophes either, since
 // a quote in a stylesheet rendered by a server page is the escaping trap
-// CircuitFrame describes.
+// CircuitFrame describes. Every colour below is a token or a mix of tokens,
+// except the photographs and the wooden plank (an object, like a chess board).
 const CSS = `
 .jsh-crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;font-weight:700;color:var(--stg-mute);margin-bottom:14px;}
 .jsh-crumb a{color:var(--stg-ink2);text-decoration:none;}
@@ -280,55 +330,68 @@ const CSS = `
 .jsh-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:16px;}
 .jsh-head h1{margin:0;font-size:32px;line-height:1.08;font-weight:800;letter-spacing:-0.02em;color:var(--stg-ink);}
 .jsh-lede{margin:8px 0 0;max-width:640px;font-size:15px;line-height:1.5;font-weight:600;color:var(--stg-ink2);}
-.jsh-today{flex:none;text-decoration:none;font-size:14px;font-weight:800;padding:12px 18px;border-radius:10px;
-  background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
+.jsh-todays{flex:none;display:flex;gap:10px;}
+.jsh-today{display:flex;flex-direction:column;align-items:center;gap:1px;text-decoration:none;font-size:14px;font-weight:800;padding:10px 18px;border-radius:10px;
+  background:var(--stg-acc);color:var(--stg-onramp,#08222e);line-height:1.2;}
+.jsh-today small{font-size:11px;font-weight:700;opacity:.85;}
 .jsh-today:hover{filter:brightness(1.06);}
 
 .jsh-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
 .jsh-chips button{font:inherit;font-size:13px;font-weight:800;padding:8px 13px;border-radius:999px;cursor:pointer;
   background:var(--stg-surf);color:var(--stg-ink2);border:1px solid var(--stg-line);}
+.jsh-chips button:hover{border-color:var(--stg-acc-ink,var(--stg-acc));color:var(--stg-ink);}
 .jsh-chips button b{font-weight:800;color:var(--stg-mute);margin-left:3px;}
-.jsh-chips button.on{background:var(--stg-ink);color:var(--stg-ground);border-color:var(--stg-ink);}
-.jsh-chips button.on b{color:var(--stg-ground);opacity:.75;}
+.jsh-chips button.on{background:var(--stg-acc);color:var(--stg-onramp,#08222e);border-color:var(--stg-acc);}
+.jsh-chips button.on b{color:var(--stg-onramp,#08222e);opacity:.75;}
 
 .jsh-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:26px;align-items:start;}
-.jsh-shelves{min-width:0;padding:14px 14px 4px;border-radius:14px;background:var(--stg-surf);border:1px solid var(--stg-line);}
-.jsh-dow,.jsh-week{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:end;}
+.jsh-shelves{min-width:0;padding:14px 16px 6px;border-radius:14px;background:var(--stg-surf);border:1px solid var(--stg-line);}
+.jsh-dow,.jsh-line{display:grid;grid-template-columns:88px minmax(0,1fr);gap:12px;align-items:end;}
 .jsh-dow{margin-bottom:6px;}
 .jsh-dowr{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;}
 .jsh-dowr span{text-align:center;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--stg-mute);}
-.jsh-week{margin-bottom:22px;}
-.jsh-wlab{font-size:12px;font-weight:800;color:var(--stg-ink2);padding-bottom:16px;line-height:1.2;}
-.jsh-row{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;align-items:end;padding-bottom:9px;}
-.jsh-plank{position:absolute;left:-8px;right:-8px;bottom:0;height:9px;border-radius:2px;
-  background:#8a6440;border-top:3px solid #a87d55;box-shadow:0 3px 0 #5c4029;}
+.jsh-week{margin-bottom:20px;padding-top:4px;}
+.jsh-week + .jsh-week{border-top:1px solid var(--stg-line);padding-top:12px;}
+.jsh-wlab{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-acc-ink,var(--stg-acc));margin:0 0 8px;}
+.jsh-line + .jsh-line{margin-top:16px;}
+.jsh-glab{display:flex;flex-direction:column;gap:1px;padding-bottom:16px;line-height:1.2;}
+.jsh-glab b{font-size:14px;font-weight:800;color:var(--stg-ink);}
+.jsh-glab span{font-size:11px;font-weight:700;color:var(--stg-mute);}
+.jsh-row{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;align-items:end;padding-bottom:10px;}
+.jsh-plank{position:absolute;left:-8px;right:-8px;bottom:0;height:10px;border-radius:3px;
+  background:linear-gradient(#b8875a,#8f633d);border-top:2px solid #cfa071;box-shadow:0 4px 6px -2px rgba(0,0,0,.35);}
 
-.jsh-slot{display:block;aspect-ratio:3/2.5;}
-.jsh-slot.locked{border:1.5px solid var(--stg-line);border-radius:4px;opacity:.9;}
-.jsh-box{position:relative;display:flex;flex-direction:column;text-decoration:none;border-radius:4px;overflow:hidden;
-  background:#1b2436;box-shadow:3px 3px 0 rgba(5,7,13,.55);transition:transform .15s ease, opacity .15s ease;}
-.jsh-box:hover{transform:translateY(-3px);}
-.jsh-box:focus-visible{outline:3px solid var(--stg-acc);outline-offset:3px;}
-.jsh-box.sel{outline:3px solid var(--stg-ink);outline-offset:2px;}
+.jsh-slot{display:block;aspect-ratio:3/2.5;border-radius:5px;}
+.jsh-line.saw .jsh-slot{aspect-ratio:4/5.7;}
+.jsh-slot.locked{border:1.5px dashed transparent;background:color-mix(in srgb, var(--stg-line) 45%, transparent);}
+.jsh-box{position:relative;display:flex;flex-direction:column;text-decoration:none;border-radius:5px;overflow:hidden;
+  background:var(--stg-surf2);box-shadow:0 2px 0 color-mix(in srgb, var(--stg-ink) 22%, transparent), 0 6px 12px -6px rgba(0,0,0,.45);
+  transition:transform .15s ease, opacity .15s ease, box-shadow .15s ease;}
+.jsh-box:hover{transform:translateY(-4px);box-shadow:0 2px 0 color-mix(in srgb, var(--stg-ink) 22%, transparent), 0 12px 18px -8px rgba(0,0,0,.5);}
+.jsh-box:focus-visible{outline:3px solid var(--stg-acc-ink,var(--stg-acc));outline-offset:3px;}
+.jsh-box.sel{outline:3px solid var(--stg-acc-ink,var(--stg-acc));outline-offset:2px;}
 .jsh-box.off{opacity:.22;}
-.jsh-lid{display:flex;align-items:center;justify-content:space-between;gap:4px;height:15px;padding:0 5px;
-  font-size:9.5px;font-weight:800;letter-spacing:.04em;background:#2b3a55;color:#ffffff;white-space:nowrap;overflow:hidden;}
-.jsh-lid em{font-style:normal;letter-spacing:.08em;}
-.jsh-box.sun .jsh-lid{background:#d9a441;color:#241703;}
-.jsh-pic{display:block;position:relative;aspect-ratio:3/2;background:#111827;}
+.jsh-lid{display:flex;align-items:center;justify-content:space-between;gap:4px;height:16px;padding:0 5px;
+  font-size:9.5px;font-weight:800;letter-spacing:.04em;background:var(--stg-acc);color:var(--stg-onramp,#08222e);white-space:nowrap;overflow:hidden;}
+.jsh-line.saw .jsh-lid{background:color-mix(in srgb, var(--stg-acc) 18%, var(--stg-surf2));color:var(--stg-acc-ink,var(--stg-acc));box-shadow:inset 0 -2px 0 var(--stg-acc);}
+.jsh-lid em{font-style:normal;letter-spacing:.08em;padding:0 4px;border-radius:3px;background:var(--stg-onramp,#08222e);color:var(--stg-acc);}
+.jsh-pic{display:block;position:relative;aspect-ratio:3/2;background:var(--stg-surf2);}
+.jsh-line.saw .jsh-pic{aspect-ratio:4/5;}
 .jsh-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
 .jsh-q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;
-  color:#ffffff;background:#1b2c52;}
-.jsh-box.today{box-shadow:0 0 0 2px var(--stg-acc), 3px 3px 0 rgba(5,7,13,.55);}
+  color:var(--stg-onramp,#08222e);background:var(--stg-acc);
+  background-image:radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--stg-onramp,#08222e) 14%, transparent), transparent 60%);}
+.jsh-box.today{box-shadow:0 0 0 2px var(--stg-acc), 0 6px 14px -6px color-mix(in srgb, var(--stg-acc) 70%, transparent);}
 .jsh-pc{position:absolute;right:4px;bottom:4px;font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:7px;
-  background:#f3efe4;color:#1a1f2b;}
+  background:rgba(10,12,18,.72);color:#ffffff;}
 .jsh-tick{position:absolute;left:4px;bottom:4px;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;font-size:9.5px;font-weight:800;background:#1f9d63;color:#ffffff;}
+  justify-content:center;font-size:9.5px;font-weight:800;background:var(--stg-good,#1f9d63);color:#ffffff;box-shadow:0 0 0 1.5px rgba(255,255,255,.85);}
 
 .jsh-panel{position:sticky;top:16px;}
 .jsh-card{border-radius:14px;overflow:hidden;background:var(--stg-surf);border:1px solid var(--stg-line);}
-.jsh-big{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;background:#111827;}
-.jsh-bigq{display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:800;color:#ffffff;background:#1b2c52;}
+.jsh-big{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;background:var(--stg-surf2);}
+.jsh-big.tall{aspect-ratio:4/5;max-height:440px;}
+.jsh-bigq{display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:800;color:var(--stg-onramp,#08222e);background:var(--stg-acc);}
 .jsh-meta{padding:14px 16px 16px;}
 .jsh-eye{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-acc-ink,var(--stg-acc));}
 .jsh-meta h2{margin:4px 0 0;font-size:20px;line-height:1.2;font-weight:800;color:var(--stg-ink);}
@@ -354,21 +417,23 @@ const CSS = `
   .jsh-grid{grid-template-columns:minmax(0,1fr);}
   .jsh-panel{position:static;scroll-margin-top:12px;}
   .jsh-faq{grid-template-columns:minmax(0,1fr);}
+  .jsh-big.tall{max-height:520px;}
 }
 @media (max-width:640px){
   .jsh-head{flex-direction:column;align-items:stretch;}
-  .jsh-head h1{font-size:25px;}
+  .jsh-head h1{font-size:26px;}
   .jsh-lede{font-size:14px;}
-  .jsh-today{text-align:center;}
+  .jsh-todays > a{flex:1;}
   .jsh-chips{gap:6px;}
   .jsh-chips button{padding:7px 10px;font-size:12px;}
   .jsh-shelves{padding:10px 8px 2px;}
-  .jsh-dow{grid-template-columns:minmax(0,1fr);}
+  .jsh-dow,.jsh-line{grid-template-columns:minmax(0,1fr);gap:4px;}
   .jsh-dow > span{display:none;}
   .jsh-dowr{gap:6px;}
-  .jsh-week{grid-template-columns:minmax(0,1fr);gap:4px;margin-bottom:16px;}
-  .jsh-wlab{padding-bottom:0;font-size:11px;color:var(--stg-mute);}
-  .jsh-row{gap:6px;padding-bottom:7px;}
+  .jsh-glab{flex-direction:row;gap:6px;align-items:baseline;padding-bottom:0;}
+  .jsh-glab b{font-size:12px;}
+  .jsh-glab span{font-size:10.5px;}
+  .jsh-row{gap:6px;padding-bottom:8px;}
   .jsh-plank{left:-4px;right:-4px;height:7px;border-top-width:2px;}
   .jsh-no{display:none;}
   .jsh-lid{height:12px;font-size:8.5px;padding:0 3px;justify-content:center;}

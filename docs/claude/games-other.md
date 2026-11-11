@@ -853,6 +853,47 @@ all come from that module, so a new set is one `LEARNING_MATCHES` entry plus a p
   to the card width with `textLength` rather than shrunk.
 - Like the other match games these are NOT dailies: no registry row, no scores, only a view count.
 
+## Kids jigsaws (`/kids/jigsaw`, `/kids/tall-jigsaw`, launched 2026-11-11)
+
+Owner, 2026-11-11: two kids DAILIES that serve the SAME photo as today's Jig and today's Saw,
+with a piece toggle (6, 12, 20, 30); no new photos for kids. One shared client,
+`app/kids/KidsJigsaw.jsx`; the boards come from `app/kids/kids-jigsaw-boards.js`, which reads
+the grown-up banks on the server (live <= today only, no Commons title `t` to the client).
+
+- **Registered in `lib/kids-daily.js`** (keys `jigsaw`, `tall-jigsaw`, with `adultHref`), so they
+  sit with the other dailies on the hub and in the strip, and `lib/kids.js` + `DAILY_ART` carry
+  them. They have NO bank of their own and no cycle: the day's board is the photo that game played
+  on that date (`kidsJigsawDaily`), falling back to its newest photo for a date before it existed.
+  Pages still resolve `?p` through `resolveKidsDay` like every kids daily (verify-kids checks it).
+- **Done today** writes the standard kids save (`sot_kids_<key>` = `{ day, state: { done } }`)
+  the moment the day's photo is finished at any count, so the hub tile ticks.
+- **The kids Jigsaw Puzzle Shelf** is the "All pictures" view inside both pages: every Jig and Saw
+  photo so far, All / Wide / Tall chips (Jigsaw opens on Wide, Tall Jigsaw on Tall). A shelf pick
+  is `?pic=<g>-<num>&n=<pieces>` (`?p` stays the kids day number). Finished photo/count pairs live
+  in `sot_kids_jigsaw_photos`; NOT `sot_kids_jigsaw_done`, which is the kids archive's done-days
+  key for the `jigsaw` daily.
+- **Cut:** square pieces, wide 3x2 / 4x3 / 5x4 / 6x5, tall 2x3 / 3x4 / 4x5 / 5x6, photo
+  `slice`-fitted. The cut is a COPY of Jig's `cutPieces`, kept separate on purpose.
+- **Play:** snap-into-place only. A drop within half a piece of its spot locks in, otherwise it
+  shakes back. Faint picture under the board (toggle), Help me, Start over. Desktop: tray beside
+  the board. Phones: a two-row strip that scrolls sideways (`touch-action: pan-x` on a piece).
+- **Snap maths read the letterboxed fit** (`fitOf`), and the board carries a CSS `aspect-ratio`;
+  do not go back to width-only scaling.
+
+## The Jigsaw Puzzle Shelf (`/jig/shelf`, Jig and Saw, 2026-11-11)
+
+Owner, 2026-11-11: the shelf holds every Jig AND Saw board and is called the Jigsaw Puzzle Shelf
+(the URL stayed `/jig/shelf` to keep its search standing). Each week is a Jig plank plus, from
+Saw's first week, a Saw plank of tall boxes. Boards are keyed `<g>-<num>`; links, thumbs, saves
+(`sot_jig_N`, `sot_saw_N`) and day-status quiz ids are per game. Chips: All, Jig, Saw, Solved,
+Not played, Sundays; `?g=saw` (the link under Saw's board) opens on Saw. `ShelfLink` takes
+`game` and now sits under BOTH boards, labelled "Jigsaw puzzle shelf".
+
+**Colour rule:** every non-photo colour on the shelf is a stage token (lids, today box, selected
+ring, Sunday mark, chips all wear `--stg-acc` / `--stg-onramp`, matching the CTA). The old navy
+lids, navy "?" box and gold Sunday lids were the pre-ramp palette and clashed with Logic's rose;
+the wooden plank is the only literal hue left, as an object colour.
+
 ## Snug (`/snug`) and Fit It (`/kids/fitit`): fit the pieces, one way only (launched 2026-09-13)
 
 Key/route/folder `snug`, category **Logic**, registry `miss: null` (Sixes' manners: a solve is a

@@ -88,7 +88,7 @@ function boardJsonLd(p) {
     creditText: `${p.by}, Wikimedia Commons`,
     creator: { '@type': 'Person', name: p.by },
     datePublished: p.live,
-    isPartOf: { '@type': 'CollectionPage', name: 'Jig Puzzle Shelf', url: `${SITE_URL}/jig/shelf` },
+    isPartOf: { '@type': 'CollectionPage', name: 'Jigsaw Puzzle Shelf', url: `${SITE_URL}/jig/shelf` },
   };
 }
 
