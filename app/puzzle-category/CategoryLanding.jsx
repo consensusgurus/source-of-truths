@@ -48,7 +48,8 @@ import { useThemeQs } from '@/lib/stage-theme';
 import { PUZZLE_CATEGORIES, SUBSET_PARENT } from '@/lib/puzzle-categories';
 import { setsIn } from '@/lib/puzzle-sets';
 import { dailyScoreText } from '@/lib/daily-games';
-import { SUDOKU_SIZE, SUDOKU_COLOUR } from '@/lib/colour-sudoku';
+import { SUDOKU_COLOUR } from '@/lib/colour-sudoku';
+import { KINDS, KIND_OF_KEY, sudokuSizeLabel, sudokuSizeN, bareGeneric } from '@/lib/category-kinds';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 // The ledger takes over at this many games; below it, feature + row.
@@ -91,40 +92,8 @@ function genericOf(g) {
   return g.generic && g.generic !== g.tag ? g.generic : null;
 }
 
-// THE CATEGORY SORT AND FILTER BAR (owner, 2026-11-10, from a player asking to
-// filter the sudokus by size or type). One or two controls per page, never a
-// wall of chips: Sudoku gets a Both / Numbers / Color toggle and sorts by grid
-// size, with the size leading each row; Logic and Word get one Kind row whose
-// kinds fold the category sets (lib/daily-groups.js) into four. A set not named
-// here falls under no kind and shows only with the Kind row cleared, so a new
-// set must be added to KIND_OF_SET. Every page gets the Sort menu.
-const KINDS = {
-  Logic: [['grid', 'Grid Puzzles'], ['move', 'Moving Pieces'], ['story', 'Deduction Stories'], ['test', 'Reasoning Tests']],
-  Word: [['cross', 'Crosswords'], ['letters', 'Letter Games'], ['meaning', 'Word Meanings'], ['gauntlet', 'Word Gauntlets']],
-};
-const KIND_OF_SET = {
-  'Grid drawing': 'grid', 'Grid filling': 'grid',
-  'Traffic jams': 'move', 'Roll and route': 'move', 'Photo puzzles': 'move',
-  Whodunits: 'story',
-  'Sorting puzzles': 'test', 'Rule finding': 'test',
-  Crosswords: 'cross', 'Clueless crosswords': 'cross',
-  'Letter tiles': 'letters', 'Letter shuffles': 'letters',
-  'Word meanings': 'meaning', 'Word gauntlets': 'gauntlet',
-};
-// Towers is the one sudoku that is not one fixed square (5x5 weekdays, 7x7 Sundays).
-const SIZE_EXTRA = { towers: ['5x5 and 7x7', 6] };
-function sudokuSizeLabel(key) {
-  const n = SUDOKU_SIZE[key];
-  return n ? `${n}x${n}` : SIZE_EXTRA[key] ? SIZE_EXTRA[key][0] : null;
-}
-function sudokuSizeN(key) {
-  return SUDOKU_SIZE[key] || (SIZE_EXTRA[key] ? SIZE_EXTRA[key][1] : 99);
-}
-// The generic label without a trailing size ("Mini sudoku, 6x6", "Racecar at
-// 6x6"), since the size now leads the line.
-function bareGeneric(s) {
-  return s ? s.replace(/,?\s*(?:at\s+)?\d+x\d+$/i, '').trim() : '';
-}
+// The sort and filter bar's kinds and sudoku sizes live in lib/category-kinds.js,
+// shared with the home panes.
 
 // ---- A. THE LEDGER -------------------------------------------------------
 
@@ -321,13 +290,11 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
   // when the reader picks it (the default never moves a row on load).
   const facets = page.slug === 'sudoku' && !parent;
   const kinds = !parent && KINDS[cat] ? KINDS[cat] : null;
-  const kindOf = new Map();
-  if (kinds && groups) groups.forEach(([set, list]) => list.forEach((g) => { if (KIND_OF_SET[set.name]) kindOf.set(g.key, KIND_OF_SET[set.name]); }));
   const [ink, setInk] = useState('all');
   const [kindSel, setKindSel] = useState([]);
   const [sort, setSort] = useState('featured');
   const inkOk = (g) => !facets || ink === 'all' || (ink === 'color') === SUDOKU_COLOUR.has(g.key);
-  const kindOk = (g) => !kinds || !kindSel.length || kindSel.includes(kindOf.get(g.key));
+  const kindOk = (g) => !kinds || !kindSel.length || kindSel.includes(KIND_OF_KEY[g.key]);
   const keep = (g) => inkOk(g) && kindOk(g);
   const shown = games.filter(keep);
   const sortOpts = [['featured', 'Featured'], ['plays', 'Most Played Today'],
@@ -400,7 +367,7 @@ export default function CategoryLanding({ page, games, parent = null, groups = n
                   const on = kindSel.includes(k);
                   return (
                     <button key={k} type="button" className={on ? 'on' : ''} aria-pressed={on} onClick={() => toggleKind(k)}>
-                      {l} <i>{games.filter((g) => kindOf.get(g.key) === k).length}</i>
+                      {l} <i>{games.filter((g) => KIND_OF_KEY[g.key] === k).length}</i>
                     </button>
                   );
                 })}

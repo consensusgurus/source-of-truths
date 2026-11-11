@@ -2487,7 +2487,9 @@ has a descender. Swept 2026-11-09: `.rgt-name`, `.rgt-hl`, `.wys-n b`, `.gsx-bt`
 
 ## Category page sort and filter bar (owner, 2026-11-10)
 
-`app/puzzle-category/CategoryLanding.jsx`, whole-category pages only (not set or subset pages).
+`app/puzzle-category/CategoryLanding.jsx`, whole-category pages only (not set or subset pages),
+and the matching home panes in `app/today/StageToday.jsx` (owner, 2026-11-10: "needs to be an option
+on main page too"). Both read `lib/category-kinds.js`.
 Owner cut the first mockup down: one or two controls per page, never a wall of chips.
 
 - **Sudoku:** one Both / Numbers / Color toggle (no size chips). The grid size LEADS each row's
@@ -2495,10 +2497,14 @@ Owner cut the first mockup down: one or two controls per page, never a wall of c
   size in the generic label is stripped so it never prints twice. Towers reads `5x5 and 7x7`.
   Sort adds Smallest First / Largest First.
 - **Logic and Word:** one Kind row of four, multi-select, folded from the category sets
-  (`KIND_OF_SET` in the file). A NEW SET in `lib/daily-groups.js` for Logic or Word must be
+  (`KIND_OF_SET` in `lib/category-kinds.js`). A NEW SET in `lib/daily-groups.js` for Logic or Word must be
   added to `KIND_OF_SET`, or its games only show with the Kind row on All.
 - **Sort on all three:** Featured (default, the set shelves as before), Most Played Today
   (today's play counts; reorders only when picked, so nothing moves on load), A to Z. Any sort
   but Featured shows one flat list.
 - **Phone:** the Kind row is one line that flick-scrolls sideways with NO visible scroll bar
   (owner, 2026-11-10).
+- **Home panes:** the Sudoku, Logic and Word panes get the same toggle / Kind chips beside the
+  search in the desktop cap (`catChips`) and as a flick row under the phone header (`.mph-cf`).
+  Sudoku adds Smallest First / Largest First to the home sort; those two are never stored, so the
+  next pane returns to the reader's stored sort. Filters reset on every pane change.

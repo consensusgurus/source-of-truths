@@ -32,6 +32,8 @@
 // about what has been played.
 import { cycleSiteLook, useStageLook, isColorLook } from '@/lib/stage-look';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { KINDS, KIND_OF_KEY, sudokuSizeN } from '@/lib/category-kinds';
+import { SUDOKU_COLOUR } from '@/lib/colour-sudoku';
 import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys, dailyScoreText } from '@/lib/daily-games';
 import { gameBlurb } from '@/lib/game-blurbs';
 
@@ -2651,8 +2653,19 @@ export default function StageToday() {
   DIFF_NOW = diff;
   const pickSort = (v) => {
     setSortBy(v);
+    // The size sorts belong to the Sudoku pane only, so they are never stored:
+    // the next pane comes back to the reader's stored sort.
+    if (v === 'small' || v === 'large') return;
     try { localStorage.setItem(SORT_KEY, v); } catch (e) { /* storage off */ }
   };
+  // THE CATEGORY FILTERS (owner, 2026-11-10, the same controls as the category
+  // pages; lib/category-kinds.js). Sudoku: Both / Numbers / Color plus the
+  // Smallest / Largest sorts. Logic and Word: one Kind row. Each pane starts
+  // clear; nothing is stored.
+  const [catInk, setCatInk] = useState('all');
+  const [catKind, setCatKind] = useState([]);
+  useEffect(() => { setCatInk('all'); setCatKind([]); }, [paneOn]);
+  const flipKind = (k) => setCatKind((cur) => (cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]));
   // TILES OR LIST (owner, 2026-10-16), set beside A to Z / Popular. Until the
   // reader picks, each pane keeps the layout it was ruled to have (All Puzzles
   // tiled, the categories and My Puzzles as the ledger); once they pick, that
@@ -2727,8 +2740,45 @@ export default function StageToday() {
       <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}
         title="Most played across the site today">Popular</button>
       <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A to Z</button>
+      {paneOn === 'Sudoku' ? (
+        <>
+          <button type="button" aria-pressed={sortBy === 'small'} onClick={() => pickSort('small')}
+            title="Smallest grid first"><span className="sty-sl">Smallest First</span><span className="sty-ss">Small</span></button>
+          <button type="button" aria-pressed={sortBy === 'large'} onClick={() => pickSort('large')}
+            title="Largest grid first"><span className="sty-sl">Largest First</span><span className="sty-ss">Large</span></button>
+        </>
+      ) : null}
     </div>
   );
+  const catChips = (pane, cls) => {
+    const pc = paneCat(pane);
+    if (!pc) return null;
+    const stop = (e) => e.stopPropagation();
+    if (pane === 'Sudoku') {
+      return (
+        <span className={cls} role="group" aria-label="Numbers or color" onClick={stop}>
+          {[['all', 'Both'], ['number', 'Numbers'], ['color', 'Color']].map(([v, l]) => (
+            <button key={v} type="button" className={'sty-mgc' + (catInk === v ? ' on' : '')} aria-pressed={catInk === v} onClick={() => setCatInk(v)}>{l}</button>
+          ))}
+        </span>
+      );
+    }
+    const kinds = KINDS[pane];
+    if (!kinds) return null;
+    return (
+      <span className={cls} role="group" aria-label="Kind" onClick={stop}>
+        <button type="button" className={'sty-mgc' + (catKind.length ? '' : ' on')} aria-pressed={!catKind.length} onClick={() => setCatKind([])}>All <i>{pc.games.length}</i></button>
+        {kinds.map(([k, l]) => {
+          const on = catKind.includes(k);
+          return (
+            <button key={k} type="button" className={'sty-mgc' + (on ? ' on' : '')} aria-pressed={on} onClick={() => flipKind(k)}>
+              {l} <i>{pc.games.filter((g) => KIND_OF_KEY[g.key] === k).length}</i>
+            </button>
+          );
+        })}
+      </span>
+    );
+  };
   const alphaDone = alpha.filter((g) => done.has(g.key)).length;
   const ixNav = (
     <nav className={'sty-ixn' + (reorder ? ' re' : '') + (picked ? ' pk' : '')} aria-label="Sections">
@@ -3061,8 +3111,20 @@ export default function StageToday() {
         placeholder="Search puzzles and quizzes" aria-label="Search puzzles and quizzes" />
     </label>
   );
+  const catFilter = (list) => {
+    const pc = paneCat(paneOn);
+    if (!pc) return list;
+    const own = new Set(pc.games.map((g) => g.key));
+    if (paneOn === 'Sudoku' && catInk !== 'all') return list.filter((g) => !own.has(g.key) || (catInk === 'color') === SUDOKU_COLOUR.has(g.key));
+    if (KINDS[paneOn] && catKind.length) return list.filter((g) => !own.has(g.key) || catKind.includes(KIND_OF_KEY[g.key]));
+    return list;
+  };
   const sortGames = (list0) => {
-    const list = findIn(list0);
+    const list = catFilter(findIn(list0));
+    if (sortBy === 'small' || sortBy === 'large') {
+      const dir = sortBy === 'small' ? 1 : -1;
+      return list.slice().sort((a, b) => (dir * (sudokuSizeN(a.key) - sudokuSizeN(b.key))) || a.name.localeCompare(b.name));
+    }
     if (sortBy === 'diff') {
       if (!diff) return list;
       const r = (g) => diff[g.key] || 9;
@@ -4337,7 +4399,7 @@ export default function StageToday() {
             the cap over the tiles instead of on a row of their own. */}
         <div className="sty-captools">
           {ix && (paneOn === ALL_ID || !!paneCat(paneOn) || isSkillId(paneOn)) ? (
-            <>{viewCtl(paneOn, true)}{paneOn === ALL_ID ? grpChips() : null}{capFind}{sortCtl(false)}</>
+            <>{viewCtl(paneOn, true)}{paneOn === ALL_ID ? grpChips() : catChips(paneOn, 'sty-mgchips')}{capFind}{sortCtl(false)}</>
           ) : null}
         </div>
         <div className="sty-rt">
@@ -4643,6 +4705,7 @@ export default function StageToday() {
               return (
                 <>
                   <button type="button" className="mph-back" onClick={mBack}>&larr; {backTo}</button>
+                  {pc ? catChips(paneOn, 'mph-cf') : null}
                   {/* The title and count live in the header now (owner, 2026-10-25). */}
                   {s ? <p className="mph-note">{s.what}.</p> : null}
                   {runs.length && !isRuns ? <div className="mph-lab">Runs</div> : null}
@@ -6832,6 +6895,10 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 /* Desktop: one chip per group beside the My Puzzles title; the phone gets the
    banners instead (owner, 2026-10-09). */
 .sty-mgchips{display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:12px;vertical-align:middle;}
+/* The phone category filters: one row that flicks sideways, no visible scroll bar (owner, 2026-11-10). */
+.mph-cf{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;min-width:0;max-width:100%;margin:2px 0 10px;}
+.mph-cf::-webkit-scrollbar{display:none;}
+.mph-cf .sty-mgc{flex:none;white-space:nowrap;font-size:13px;padding:7px 13px;}
 .sty-mgc{border:1px solid var(--stg-line);background:none;border-radius:999px;padding:4px 11px;font:inherit;font-size:12px;
   font-weight:700;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;}
 .sty-mgc i{font-style:normal;color:var(--stg-mute);margin-left:2px;}
