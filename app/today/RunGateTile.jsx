@@ -144,8 +144,13 @@ export const RGT_CSS = `
    Gauntlet and Judged keeps its tail and every line below stays level. */
 .rgt-name{font-size:26px;font-weight:900;line-height:1.1;letter-spacing:-.02em;margin:4px 0 calc(4px - .2em);padding-bottom:.2em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rgt-hl{font-size:14px;font-weight:800;line-height:1.25;padding-bottom:.2em;margin-bottom:calc(12px - .2em);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rgt-legn .rgt-leg{gap:4px;}
-.rgt-legn .rgt-leg i{font-style:normal;font-weight:700;opacity:.75;}
+/* MORE RUNS' LINEUP CARRIES A NAME AND A COUNT PER BAND, so a band is as wide
+   as its text (equal thirds cut "Due Diligence 124" short), and a tile too
+   narrow for three shows the top two. The body is the container. */
+.rgt-more .rgt-body{container-type:inline-size;}
+.rgt-legn .rgt-leg{flex:1 1 auto;gap:3px;padding:0 5px;font-size:10.5px;}
+.rgt-legn .rgt-leg i{flex:none;font-style:normal;font-weight:700;opacity:.75;}
+@container (max-width:300px){ .rgt-legn .rgt-leg:nth-child(n+3){display:none;} }
 .rgt-rule{font-size:12.5px;font-weight:600;line-height:1.35;margin-top:2px;margin-bottom:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rgt-legs{display:flex;height:28px;border:1px solid #0b1b2b;border-radius:8px;overflow:hidden;}
 .rgt-blank{border-color:transparent;}
