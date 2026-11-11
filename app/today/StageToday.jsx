@@ -1707,7 +1707,36 @@ export default function StageToday() {
       try { localStorage.setItem(PANE_KEY, ALL_ID); localStorage.setItem(TILES_KEY, '1'); } catch (e) { /* storage off */ }
     }
   }, [pane, orderedCats]);
-  const lensCats = ixLens === 'skill' ? skillCats : orderedCats;
+  // SKILLS REORDER TOO (owner, 2026-11-11: "why can't user reorder skills?").
+  // Their order is kept under its own key, sot_skill_order, beside the
+  // categories' sot_cat_order, and carries All Puzzles and My Puzzles the same
+  // way. Null means the order lib/daily-skills.js lists them in.
+  const [skillOrder, setSkillOrder] = useState(null);
+  useEffect(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('sot_skill_order') || 'null');
+      if (Array.isArray(raw) && raw.length) setSkillOrder(raw);
+    } catch (e) { /* storage off */ }
+  }, []);
+  const saveSkillOrder = (next) => {
+    setSkillOrder(next);
+    try {
+      if (next) localStorage.setItem('sot_skill_order', JSON.stringify(next));
+      else localStorage.removeItem('sot_skill_order');
+    } catch (e) { /* storage off */ }
+  };
+  const skOrd = useMemo(() => {
+    const base = [...skillCats.map((c) => c.cat), ALL_ID, MINE_ID];
+    if (!skillOrder || !skillOrder.length) return base;
+    const rank = new Map(skillOrder.map((c, i) => [c, i]));
+    const at = (c, i) => (rank.has(c) ? rank.get(c) : 99 + i);
+    return base.map((c, i) => [c, i]).sort((a, b) => at(a[0], a[1]) - at(b[0], b[1])).map(([c]) => c);
+  }, [skillCats, skillOrder]);
+  const skillCatsOrd = useMemo(() => {
+    const pos = new Map(skOrd.map((c, i) => [c, i]));
+    return skillCats.slice().sort((a, b) => pos.get(a.cat) - pos.get(b.cat));
+  }, [skillCats, skOrd]);
+  const lensCats = ixLens === 'skill' ? skillCatsOrd : orderedCats;
   const paneCat = (id) => orderedCats.find((c) => c.cat === id) || skillCats.find((c) => c.cat === id) || null;
 
   // ALL AND MY PUZZLES REORDER WITH THE CATEGORIES (owner, 2026-10-26): on
@@ -1723,17 +1752,19 @@ export default function StageToday() {
     return base.map((c, i) => [c, i]).sort((a, b) => at(a[0], a[1]) - at(b[0], b[1])).map(([c]) => c);
   }, [orderedCats, handOrder]);
   const ixPos = useMemo(() => {
-    const seq = ixLens === 'skill' ? [...skillCats.map((c) => c.cat), ALL_ID, MINE_ID] : ixOrd;
+    const seq = ixLens === 'skill' ? skOrd : ixOrd;
     return new Map(seq.map((c, i) => [c, i]));
-  }, [ixLens, skillCats, ixOrd]);
+  }, [ixLens, skOrd, ixOrd]);
+  // The list Reorder is moving: the skills' or the categories', by the lens.
+  const ordNow = ixLens === 'skill' ? skOrd : ixOrd;
   const moveCat = (cat, dir) => {
-    const cur = ixOrd;
+    const cur = ordNow;
     const i = cur.indexOf(cat);
     const j = i + dir;
     if (i < 0 || j < 0 || j >= cur.length) return;
     const next = [...cur];
     next[i] = cur[j]; next[j] = cur[i];
-    saveOrder(next);
+    if (ixLens === 'skill') saveSkillOrder(next); else saveOrder(next);
   };
 
   // MY GAMES: the starred set, in the order they were starred, PLUS anything
@@ -2809,14 +2840,14 @@ export default function StageToday() {
           <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
         </div>
       )}
-      {(reorder ? ixOrd.map((cat) => ({ cat })) : lensCats).map(({ cat }, ci) => (reorder ? (
+      {(reorder ? ordNow.map((cat) => ({ cat })) : lensCats).map(({ cat }, ci) => (reorder ? (
         <div key={cat} className={'sty-ixb sty-ixr' + (cat === ALL_ID || cat === MINE_ID ? ' sty-ixrt' : '') + (paneOn === cat ? ' on' : '')}
           style={cat === ALL_ID || cat === MINE_ID ? { '--cc': 'var(--stg-ink)', '--cci': 'var(--stg-ink)' } : { '--cc': hueFor(cat), '--cci': inkFor(cat) }}>
           <i aria-hidden="true" />
-          <span>{cat === ALL_ID ? 'All Puzzles' : cat === MINE_ID ? 'My Puzzles' : catLabel(cat)}</span>
+          <span>{cat === ALL_ID ? 'All Puzzles' : cat === MINE_ID ? 'My Puzzles' : skillOfId(cat) ? skillOfId(cat).name : catLabel(cat)}</span>
           <span className="sty-move">
             <button type="button" onClick={() => moveCat(cat, -1)} disabled={ci === 0} aria-label={`Move ${cat === ALL_ID ? 'All Puzzles' : cat === MINE_ID ? 'My Puzzles' : cat} up`}>&uarr;</button>
-            <button type="button" onClick={() => moveCat(cat, 1)} disabled={ci === ixOrd.length - 1} aria-label={`Move ${cat === ALL_ID ? 'All Puzzles' : cat === MINE_ID ? 'My Puzzles' : cat} down`}>&darr;</button>
+            <button type="button" onClick={() => moveCat(cat, 1)} disabled={ci === ordNow.length - 1} aria-label={`Move ${cat === ALL_ID ? 'All Puzzles' : cat === MINE_ID ? 'My Puzzles' : cat} down`}>&darr;</button>
           </span>
         </div>
       ) : ixBtn(cat, cat === 'Crowd Psychology'
@@ -2849,12 +2880,12 @@ export default function StageToday() {
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       <a className="sty-ixb sty-ixmv sty-ixm5" href={withTq('/submit-a-puzzle')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('submit', null)}<span><span className="sty-ixl">Submit or List a Puzzle</span><span className="sty-ixs">Submit a Puzzle</span></span></a>
       <a className="sty-ixb sty-ixmv sty-ixm5 sty-ixend" href={withTq('/sponsor-a-day')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('sponsor', null)}<span>Sponsor a Day</span></a>
-      {ixLens === 'cat' || reorder ? <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
+      <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
-      </button> : null}
-      {reorder && handOrder ? (
-        <button type="button" className="sty-ixre" onClick={() => saveOrder(null)}>Reset order</button>
+      </button>
+      {reorder && (ixLens === 'skill' ? skillOrder : handOrder) ? (
+        <button type="button" className="sty-ixre" onClick={() => (ixLens === 'skill' ? saveSkillOrder(null) : saveOrder(null))}>Reset order</button>
       ) : null}
     </nav>
   );
@@ -8299,9 +8330,13 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   html:not([data-stage-color=full]) .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop).on{
     background:linear-gradient(to right, color-mix(in srgb, var(--stg-ground) 30%, var(--stg-ink)) var(--ixf, 0%), var(--stg-ink) 0);}
   /* Categories / Skills and Reorder share one line, both as text toggles. */
-  .sty-ix > .sty-ixn:not(.re) > .sty-ixsw{flex:1 1 0;justify-content:flex-start;margin-top:8px;}
-  .sty-ix > .sty-ixn:not(.re) > .sty-ixre{flex:0 0 auto;align-self:center;margin-top:8px;border:0;border-radius:0;padding:6px 0 4px;background:transparent;
-    font-size:13px;font-weight:600;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+  /* ON ONE BASELINE (owner, 2026-11-11: "why isn't reorder in line here?").
+     Reorder inherited the page's line height while the switch's buttons set
+     their own, so it sat lower. Both now share margins, padding and leading. */
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixsw{flex:1 1 0;justify-content:flex-start;align-self:flex-start;margin:8px 0 4px;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixsw button{line-height:1;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixre{flex:0 0 auto;align-self:flex-start;margin:8px 0 4px;border:0;border-radius:0;padding:6px 0 4px;background:transparent;
+    line-height:1;font-size:13px;font-weight:600;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixre:hover{color:var(--stg-ink);}
 }
 `;
