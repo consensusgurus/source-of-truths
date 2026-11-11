@@ -104,6 +104,24 @@ the `game` prefix test is a fallback. `isLoft` is the one caller that is safe by
 carries a `ROUTE_TO_KEY` map built off the registry's `href` overrides. Do not rely on that map
 elsewhere, it is local to the Loft flag.
 
+## Every route that reads Supabase sets `fetchCache = 'force-no-store'` (owner bug, 2026-11-11)
+
+supabase-js reads are plain `fetch` GETs, and Next 14 stores them in Vercel's Data
+Cache unless the route opts out. **`export const dynamic = 'force-dynamic'` on its own
+did NOT opt out** in production: the `/api/cron/drawing-warm` route had only that, and
+its two `quiz_users` pages were served from the Data Cache at a 100% hit rate. The Data
+Cache survives deploys, so the drawing rebuilt every five minutes from the accounts table
+as it stood on 2026-11-06. 31 players who added an email after that got 0 tickets, and
+the board sat at 1000.75 while signups kept arriving. `/api/admin/data`, which also
+sets `revalidate = 0`, read fresh the whole time.
+
+Rule: any route (cron or API) whose answer depends on current rows sets
+`export const fetchCache = 'force-no-store';` next to `dynamic`. Check for this before
+blaming the data: Vercel > Observability > Runtime Cache > Data Cache lists every cached
+`supabase.co/rest/v1/...` URL with its hit rate. Fixed 2026-11-11 on drawing-warm,
+newsletter and stats-warm; 46 other `app/api` routes still carry `force-dynamic`
+without it and have not been audited.
+
 ## Quiz data reads: the three caching layers (built 2026-08-01)
 
 Every hot quiz route answers a question about ONE player or ONE day, but the

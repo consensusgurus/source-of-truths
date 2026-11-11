@@ -13,6 +13,12 @@ import { refreshDrawingShared, drawingSharedAge } from '@/lib/drawing-server';
 import { drawingIsLive } from '@/lib/drawing';
 
 export const dynamic = 'force-dynamic';
+// NEVER SERVE A CACHED DATABASE READ (2026-11-11). `dynamic = 'force-dynamic'`
+// alone did NOT stop Next 14 from storing this route's Supabase GETs in Vercel's
+// Data Cache, which outlives deploys. The drawing rebuilt every five minutes from
+// a copy of quiz_users frozen on 2026-11-06 (Data Cache hit rate 100%), so no
+// email added after that earned a ticket. force-no-store is what opts out.
+export const fetchCache = 'force-no-store';
 export const maxDuration = 120;
 
 const RECENT_MS = 3 * 60 * 1000;
