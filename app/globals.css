@@ -1640,3 +1640,42 @@ html[data-stage-tone^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-pag
   html:not([data-stage-pastel]) .stage-page.qz-stage .stg-top:has(.stg-sim) :is(.stg-strip, .stg-prog) { display: none !important; }
   html:not([data-stage-pastel]) .stage-page.qz-stage .stg-top:has(.stg-sim) .stg-fg { max-width: 1180px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 38px; padding-right: 38px; border: 0; }
 }
+/* GIVE UP IS THE DAILIES' FOOT PILL ON A QUIZ (owner report, 2026-11-12: "the
+   give-up button is miscolored"). The quiz button was a filled accent block,
+   which in the site looks is the near-black ink carrying the pastel as text
+   (black with orange letters), and on Logic grids a red block. The dailies
+   draw Give up as an outlined pill in the page's own ink (app/StageFoot.jsx);
+   every quiz Give up carries .qz-giveup and takes that look here. */
+.stage-page.qz-stage .qz-giveup {
+  height: 38px !important; padding: 0 18px !important; border-radius: 999px !important;
+  border: 1px solid var(--stg-ink, #08222e) !important; background: transparent !important;
+  color: var(--stg-ink, #08222e) !important; font-family: 'Manrope', system-ui, sans-serif !important;
+  font-size: 13px !important; font-weight: 800 !important; letter-spacing: 0 !important; text-transform: none !important;
+  box-shadow: none !important; gap: 6px !important;
+}
+.stage-page.qz-stage .qz-giveup:hover { background: var(--stg-surf2, rgba(8, 34, 46, 0.08)) !important; }
+/* NO SQUARE CHIPS ON A QUIZ (2026-11-12). The older quiz boards drew their
+   word-bank chips, placed rows and answer tiles with 0 to 4px corners, the
+   pre-stage look; the dailies use 10px. One rule here rather than twenty
+   board files, matched on the serialized inline style. */
+.stage-page.qz-stage :is([style*="border-radius: 0px"], [style*="border-radius: 1px"], [style*="border-radius: 2px"], [style*="border-radius: 3px"], [style*="border-radius: 4px"]):not(img):not(svg):not(canvas):not(.qz-map):not(.qz-map *):not(.leaflet-container *) {
+  border-radius: 10px !important;
+}
+/* NO NAVY BEFORE THE FIRST PAINT (owner report, 2026-11-12: "the navy shows
+   when i try to return to main page"). html and body are brand navy on purpose
+   (the iPhone dome, above), and a stage page covers them with its own ground.
+   But the home, /today, /quizzes and the quiz pages render their stage on the
+   client, so between the click and that render the browser showed bare navy.
+   The theme boot script in app/layout.js marks those routes data-stage-pre, and
+   until a .stage-page exists the page shows the ground it is about to paint. */
+html[data-stage-pre]:not(:has(.stage-page, .loft-page)),
+html[data-stage-pre]:not(:has(.stage-page, .loft-page)) body { background: #eef1f6 !important; }
+html[data-stage-pre][data-stage-boot='dark']:not(:has(.stage-page, .loft-page)),
+html[data-stage-pre][data-stage-boot='dark']:not(:has(.stage-page, .loft-page)) body { background: #0b0f1a !important; }
+html[data-stage-pre]:not(:has(.stage-page, .loft-page)) body::before { background: transparent; }
+/* THE "PLAYING" LABEL IS GONE ON A QUIZ (2026-11-12). When a board has no
+   typing box (maps, word banks, tile and order boards) the old Play button
+   stayed on screen as a full-width "Playing" bar, a leftover of the pre-stage
+   page. The slot stays, because the correct / wrong verdict pops up in it, but
+   the bar itself is no longer drawn. */
+.stage-page.qz-stage .qz-status.qz-solo > button:disabled { background: transparent !important; color: transparent !important; box-shadow: none !important; border: 0 !important; height: 30px !important; }

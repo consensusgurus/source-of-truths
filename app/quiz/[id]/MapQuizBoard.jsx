@@ -117,7 +117,7 @@ export default function MapQuizBoard({ region, started, ended, revealed, foundNa
 
   if (!geo) {
     return (
-      <div style={{ border: '1px solid rgba(138,130,118,0.25)', borderRadius: 2, background: SEA, height: 360, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5f7585', fontFamily: "'Manrope', system-ui, sans-serif", fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+      <div className="qz-map" style={{ border: '1px solid rgba(138,130,118,0.25)', borderRadius: 2, background: SEA, height: 360, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5f7585', fontFamily: "'Manrope', system-ui, sans-serif", fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
         Loading map…
       </div>
     );
@@ -239,7 +239,7 @@ export default function MapQuizBoard({ region, started, ended, revealed, foundNa
         })}
       </div>
       )}
-      <div style={{ ...wrapStyle, position: 'relative', border: '1px solid rgba(138,130,118,0.25)', borderRadius: 2, overflow: 'hidden', background: SEA }}>
+      <div className="qz-map" style={{ ...wrapStyle, position: 'relative', border: '1px solid rgba(138,130,118,0.25)', borderRadius: 2, overflow: 'hidden', background: SEA }}>
       {isMobile && (
         <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 5, fontFamily: "'Manrope', system-ui, sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: '#5f7585', background: 'rgba(255,255,255,0.82)', borderRadius: 6, padding: '4px 8px', pointerEvents: 'none' }}>
           {zoomed ? 'Drag to pan · pinch to zoom' : 'Pinch to zoom in'}

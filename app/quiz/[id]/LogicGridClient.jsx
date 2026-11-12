@@ -638,8 +638,8 @@ export default function LogicGridClient({ quizId, mobile = false }) {
                 {/* Give up */}
                 {phase === 'playing' && (
                   <div style={{ marginTop: 22, display: 'flex', gap: 10, justifyContent: 'center' }}>
-                    <button onClick={() => endGame(false)} style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, padding: '12px 26px', border: 'none', background: COLORS.ember, color: T.white, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                      <Flag size={14} strokeWidth={2.5} color={T.white} /> Give up
+                    <button className="qz-giveup" onClick={() => endGame(false)} style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, padding: '12px 26px', border: 'none', background: COLORS.ember, color: T.white, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <Flag size={14} strokeWidth={2.5} /> Give up
                     </button>
                     <button onClick={() => setTab('stats')} style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, padding: '12px 26px', border: `1.5px solid var(--stg-line2,${COLORS.ink})`, background: `var(--stg-surf,${COLORS.cream})`, color: INK, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                       <Trophy size={14} strokeWidth={2.5} /> Leaderboard

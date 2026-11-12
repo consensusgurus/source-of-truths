@@ -1954,7 +1954,7 @@ export default function QuizClient({ quizId }) {
                   style={{ flex: 1, minWidth: 0, fontFamily: SANS, fontSize: 17, height: 50, boxSizing: 'border-box', padding: '0 16px', border: `1.5px solid var(--stg-line,${COLORS.ink})`, borderRadius: 8, background: !started || ended ? `var(--stg-surf,${COLORS.paper})` : `var(--stg-surf,${T.paper})`, color: INK, opacity: !started || ended ? 0.5 : 1 }}
                 />
               )}
-              {(started || ended) && !bottomDock && (<div style={{ position: 'relative', display: 'flex', flex: (matched && !ordered) || mapMode || tileMode ? 1 : 'none' }}>
+              {(started || ended) && !bottomDock && (<div className={((matched && !ordered) || mapMode || tileMode) ? 'qz-status qz-solo' : 'qz-status'} style={{ position: 'relative', display: 'flex', flex: (matched && !ordered) || mapMode || tileMode ? 1 : 'none' }}>
               <button onClick={start} disabled={started || ended} style={{ flex: 1, fontFamily: MONO, fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '0 22px', height: 50, border: 'none', background: QSTAGE ? (started || ended ? 'var(--stg-surf2)' : QACC) : T.cta, color: QSTAGE ? (started || ended ? 'var(--stg-mute)' : ON_ACC) : T.ctaInk, cursor: started || ended ? 'default' : 'pointer', opacity: (started || ended) && !QSTAGE ? 0.5 : 1 }}>
                 {ended ? 'Done' : started ? 'Playing' : (matched && !ordered) ? (quiz.noun ? 'Play' : 'Play: name each year') : 'Play'}
               </button>
@@ -2285,8 +2285,8 @@ export default function QuizClient({ quizId }) {
 
             {started && !ended && (
               <div style={{ marginTop: 22, display: 'flex', justifyContent: 'center' }}>
-                <button onClick={() => endGame(false)} style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, padding: '12px 40px', border: 'none', background: QSTAGE ? QACC : T.cta, color: QSTAGE ? ON_ACC : T.ctaInk, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                  <Flag size={14} strokeWidth={2.5} color={T.ink} /> Give up
+                <button className="qz-giveup" onClick={() => endGame(false)} style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, padding: '12px 40px', border: 'none', background: QSTAGE ? QACC : T.cta, color: QSTAGE ? ON_ACC : T.ctaInk, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <Flag size={14} strokeWidth={2.5} /> Give up
                 </button>
               </div>
             )}

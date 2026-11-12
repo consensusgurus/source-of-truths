@@ -613,7 +613,7 @@ export default function GridFillBoard({ quizId, mobile = false }) {
 
                 {phase === 'playing' && (
                   <div style={{ marginTop: 18, display: 'flex', justifyContent: 'center' }}>
-                    <button onClick={giveUp} style={ghostBtn(false)}>
+                    <button className="qz-giveup" onClick={giveUp} style={ghostBtn(false)}>
                       <Flag size={12} strokeWidth={2.5} /> Give up
                     </button>
                     <button onClick={() => setTab('stats')} style={{ ...ghostBtn(false), marginLeft: 10 }}>
