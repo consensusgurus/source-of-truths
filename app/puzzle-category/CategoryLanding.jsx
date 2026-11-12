@@ -465,12 +465,16 @@ const CSS = `
 .pcl-facet{display:inline-flex;border:1px solid var(--stg-line2);border-radius:999px;overflow:hidden;}
 .pcl-facet button{font:inherit;font-size:12.5px;font-weight:800;padding:7px 13px;border:0;background:transparent;color:var(--stg-ink2);cursor:pointer;}
 .pcl-facet button+button{border-left:1px solid var(--stg-line2);}
-.pcl-facet button.on{background:var(--stg-ink);color:var(--stg-ground, #fff);}
+/* THE PICKED TOGGLE WEARS THE CATEGORY PASTEL (owner, 2026-11-12: the ink fill
+   read as the old dark blue on a phone). The raw step on the dark page, the
+   softened 60/40 step on the white one, dark ink on both, as on the home. */
+.pcl-facet button.on{background:var(--stg-acc-dk,#7dd3fc);color:#0b0f1a;}
+[data-stage-theme='light'] .pcl-facet button.on,[data-stage-theme='light'] .pcl-kinds button.on{background:color-mix(in srgb, var(--stg-acc-dk,#7dd3fc) 60%, #ffffff);}
 .pcl-facet-n{font-size:12px;font-weight:700;color:var(--stg-ink2);}
 .pcl-kinds{display:flex;flex-wrap:wrap;gap:6px;}
 .pcl-kinds button{flex:none;font:inherit;font-size:12.5px;font-weight:800;padding:7px 13px;border:1px solid var(--stg-line2);border-radius:999px;background:transparent;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;}
 .pcl-kinds button i{font-style:normal;font-weight:700;opacity:.7;margin-left:3px;}
-.pcl-kinds button.on{background:var(--stg-ink);border-color:var(--stg-ink);color:var(--stg-ground, #fff);}
+.pcl-kinds button.on{background:var(--stg-acc-dk,#7dd3fc);border-color:var(--stg-ink);color:#0b0f1a;}
 .pcl-sort{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:var(--stg-ink2);}
 .pcl-sort select{font:inherit;font-size:12.5px;font-weight:800;height:34px;padding:0 10px;border:1px solid var(--stg-line2);border-radius:8px;background:transparent;color:var(--stg-ink);cursor:pointer;}
 .pcl-sort select option{color:#14161a;background:#ffffff;}

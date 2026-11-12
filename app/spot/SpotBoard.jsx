@@ -52,9 +52,13 @@ export const SPOT_CSS = `
 @media (prefers-reduced-motion:reduce){.spt-mk{animation:none;}}
 .spt-bar{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;width:100%;}
 .spt-seg{display:inline-flex;border:1px solid var(--spt-ink,#0b0f1a);border-radius:999px;overflow:hidden;}
-.spt-seg button{border:0;background:transparent;color:inherit;padding:8px 14px;min-width:46px;font:inherit;font-size:13px;font-weight:800;line-height:1.3;cursor:pointer;}
-.spt-seg button + button{border-left:1px solid var(--spt-ink,#0b0f1a);}
-.spt-seg button[aria-pressed="true"]{background:var(--spt-on,#fda4af);color:#0b0f1a;}
+/* Square segments that fill the pill edge to edge (owner, 2026-11-12). The
+   stage rounds every button to 8px, which left the fill floating inside the
+   outline with a gap around it; the pill's own overflow does the rounding. */
+.spt .spt-seg{align-items:stretch;padding:0;gap:0;}
+.spt .spt-seg button{display:block;margin:0;border:0;border-radius:0 !important;background:transparent;color:inherit;padding:8px 14px;min-width:46px;font:inherit;font-size:13px;font-weight:800;line-height:1.3;cursor:pointer;-webkit-appearance:none;appearance:none;}
+.spt .spt-seg button + button{border-left:1px solid var(--spt-ink,#0b0f1a);}
+.spt .spt-seg button[aria-pressed="true"]{background:var(--spt-on,#fda4af);color:#0b0f1a;}
 .spt-say{min-height:21px;margin:0;text-align:center;font-size:14px;font-weight:700;line-height:1.5;}
 .spt-credit{margin:0;max-width:760px;text-align:center;font-size:11.5px;font-weight:600;line-height:1.5;opacity:.72;}
 `;
