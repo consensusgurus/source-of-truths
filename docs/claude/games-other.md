@@ -771,7 +771,7 @@ in the pick is jam-specific.
 
 ## Kids dailies (`/kids/<game>`): a SEPARATE track with NO stats (owner, 2026-09-11)
 
-Six daily puzzles for kids, each a gentle translation of a grown-up daily, live at `/kids/sixes`
+Daily puzzles for kids, each a gentle translation of a grown-up daily, live at `/kids/sixes`
 (Shape Sixes, from Sixes), `/kids/mixup` (Mix-Up, from
 Garble), `/kids/sortit` (Sort It, from Links), `/kids/ladder` (Ladder, from Rung), `/kids/unpark`
 (Unpark, from Parker) and `/kids/mathdash` (Math Dash, from Blitz). The hub at `/kids` lists them
@@ -893,6 +893,70 @@ Not played, Sundays; `?g=saw` (the link under Saw's board) opens on Saw. `ShelfL
 ring, Sunday mark, chips all wear `--stg-acc` / `--stg-onramp`, matching the CTA). The old navy
 lids, navy "?" box and gold Sunday lids were the pre-ramp palette and clashed with Logic's rose;
 the wooden plank is the only literal hue left, as an object colour.
+
+## Spot (`/spot`) and kids Spot (`/kids/spot`): spot the difference on Jig's photographs (launched 2026-11-12)
+
+Owner, 2026-11-12, approved from a one-board mockup ("love it"), then: "put this on the kids page
+too, same puzzles." Key/route/folder `spot`, category **Logic**, skill Focus and Speed, registry
+`miss: 'Misses'`. Runs on the shared shell (`app/SimpleDaily.jsx`).
+
+- **The game.** Two copies of one PAST Jig photograph; the second is altered in seven places. Tap
+  either copy where they differ. `app/spot/SpotBoard.jsx` is the pair (side by side from 900px,
+  stacked on a phone), the synced 1x/2x/3x zoom with drag-to-pan, the rings, and `spotHit`, the one
+  tap rule; `SpotClient.jsx` and `app/kids/KidsSpot.jsx` both import it. A diff is `{ x, y, rx, ry,
+  t }`: centre as a fraction of width and height, radii BOTH as a fraction of the width, `t` the
+  label printed once found. **Overlap is allowed, and the SMALLEST region under the tap wins** (a
+  plate on a car that changed color), with an unfound one beating a found one.
+- **Scoring: found, then misses, then the clock.** The score is the count found (a real count, so
+  Spot is NOT in `SCORE_VIEW` and keeps its fraction). `guessesUsed` is the miss figure: a wrong
+  tap is 1, a hint is 2. The board comparator already reads `score DESC -> guesses_used ASC ->
+  time`, so a clean run beats a fast mash and NOTHING is ever added to the clock. The mockup's
+  "+10 seconds" penalty was dropped for this reason: the shell's clock is wall time and the
+  misses rank ahead of it anyway. A wrong tap also locks the board for 0.6s.
+- **The hint is PAID, so it is open to everyone** (two misses; the first-play gate in
+  `lib/hint-gate.js` is for free hints only). It draws a loose circle that contains one unfound
+  difference, never centred on it, for 2.6 seconds on both copies.
+- **Photos are hidden until Start, but they load behind the gate** (`show={active}` keeps the
+  `<img>` in the page with `visibility:hidden`), so the clock never pays for the download.
+- **The bank is hand-made, per board.** `scripts/spot/` is the kit: `fetch.py` downloads Jig photos
+  from Commons into `scripts/spot/src/` (gitignored), `boards.py` holds one op list per board in
+  VIEW coordinates (the photo at 1200px wide), `spotkit.py` applies them (`grid <id>` draws the
+  gridded overview you pick coordinates from, `build <id>` writes the pair, the key, the changed-cell
+  grid and a review sheet into `scripts/spot/out/`), and `export.py` writes `app/spot/puzzles.js`,
+  `public/spot/<img>-a.jpg` / `-b.jpg` and `scripts/spot-grid.json`. Needs python3 with opencv and
+  numpy. **Look at every review sheet before exporting; a script cannot judge a seam.**
+- **What the ops are good and bad at** (learned building the first 14):
+  `recolor` is the reliable one (by hue for colored things, `by='lab'` for white, grey and black
+  ones; restrict with `shape=` when the hue is shared with a neighbour). `copy` (Poisson clone) is
+  the clean REMOVAL on textured ground (water, grass, paving): the patch must be BIGGER than the
+  object so its edge sits on background, or the object's tone bleeds back in. `hfill` removes
+  things standing against sky (set `vertical=True` when the sides are not sky). `remove` (Telea
+  inpaint) smears on anything but a plain wall. An object that straddles two textures (a chimney on
+  a roof slope, houses in a field) does not remove cleanly: change something else. A removal takes
+  its reflection with it.
+- **The file names are opaque** (12 hex of the altered file's hash) and the server page strips
+  future rows, so tomorrow's pair cannot be guessed. The pairs are static files in `public/spot`.
+- **A photo is used only AFTER its Jig day** (`jig.live < spot.live`, held by the verifier), so
+  Spot never shows a jigsaw before Jig does. Credit (`name`, `lic`, `by`) is copied from the Jig
+  row and printed under the board with "The second copy has been altered", which CC BY and CC BY-SA
+  require. Landscape photos only so far: two tall Saw photos stacked do not fit a phone.
+- **No Sunday Edition** (no `sunday` field): seven differences every day. The rules and About copy
+  say "seven"; `verify-spot` holds every board to 7 and checks the copy says so.
+- **`scripts/verify-spot.mjs` is the gate.** It checks the JPEGs' own hashes and sizes against the
+  key, that every changed cell of the grid lies inside a listed difference and every difference
+  holds changed cells, that each difference can actually be tapped under the smallest-wins rule, the
+  Jig credit and date rule, labels (US spelling, no dash) and that two all-recolor days never run
+  back to back. Shown to fail on a moved difference and on a future Jig photo.
+- **Bank: 14 boards, 2026-11-12 to 2026-11-25.** It is NOT a generated runway; restock by adding
+  boards to `boards.py` and re-running `export.py` (which keeps live rows byte for byte only if
+  their ops and source files are unchanged, so never touch a live board's ops). `grant` in
+  `boards.py` is a finished spare (Jig No. 67) that cannot run before 2026-11-26.
+- **Kids Spot** is a kids daily (`lib/kids-daily.js` key `spot`, `adultHref: '/spot'`) with no bank
+  of its own: `app/kids/kids-spot-boards.js` reads the grown-up bank on the server (live <= today)
+  and the day's board is the pair Spot played on that date, newest for a date before launch. No
+  clock, no misses, Show me one rings a difference, local save only (`sot_kids_spot`). **Because it
+  is the same board, the kids page is an answer key for the scored daily** (owner asked for the
+  same puzzles; if that ever matters, serve kids yesterday's pair in `kidsSpotDaily`).
 
 ## Snug (`/snug`) and Fit It (`/kids/fitit`): fit the pieces, one way only (launched 2026-09-13)
 

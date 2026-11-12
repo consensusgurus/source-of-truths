@@ -319,6 +319,12 @@ const Defuse = () => (
     {[124, 140, 172].map((x) => <rect key={x} x={x - 3} y={14} width={6} height={56} className="m" />)}
     <rect x={153} y={14} width={6} height={20} className="m" /><rect x={153} y={50} width={6} height={20} className="m" /><circle cx={156} cy={42} r={6} className="d" /></g>
 );
+// two copies of one small picture; the sun is gone from the second, and a dot marks it
+const Spot = () => (
+  <g><rect x={110} y={12} width={36} height={60} rx={4} className="w" /><rect x={150} y={12} width={36} height={60} rx={4} className="w" />
+    <circle cx={134} cy={28} r={6} className="m" /><rect x={116} y={50} width={24} height={14} className="sm" /><rect x={156} y={50} width={24} height={14} className="sm" />
+    <circle cx={174} cy={28} r={3.5} className="d" /></g>
+);
 const Connect = () => (
   <g><Grid x={112} y={6} n={4} sz={18} /><path d="M121 15H175V33M121 33V69H157" className="d6" />
     {[[121, 15], [175, 33], [121, 33], [157, 69]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={6} className={i < 2 ? 'd' : 'm'} />)}</g>
@@ -714,7 +720,7 @@ export const TILE_BY_KEY = {
   atlas: Atlas, carmen: Carmen, span: Span, passport: Passport, flank: Flank, ping: Ping,
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
-  suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse,
+  suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse, spot: Spot,
   connect: Connect, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers

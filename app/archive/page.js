@@ -101,6 +101,7 @@ import { PUZZLES as ROLL_FULL } from '../roll/puzzles';
 import { PUZZLES as TANGLED_FULL } from '../tangled/puzzles';
 import { PUZZLES as WITNESS_FULL } from '../witness/puzzles';
 import { PUZZLES as DEFUSE_FULL } from '../defuse/puzzles';
+import { PUZZLES as SPOT_FULL } from '../spot/puzzles';
 import { PUZZLES as SUDOCLUE_FULL } from '../sudoclue/puzzles';
 import { PUZZLES as SNUG_FULL } from '../snug/puzzles';
 import { PUZZLES as JIG_FULL } from '../jig/puzzles';
@@ -259,6 +260,7 @@ const ROLL = ROLL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const TANGLED = TANGLED_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const WITNESS = WITNESS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DEFUSE = DEFUSE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const SPOT = SPOT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SUDOCLUE = SUDOCLUE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const JUDGES = JUDGES_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const LAMPS = LAMPS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -494,6 +496,7 @@ const GAMES = [
   { key: 'tangled', name: 'Tangled', path: '/tangled', tag: 'Untangle the ropes', accent: '#0f766e', bg: '#ccfbf1', border: 'rgba(15,118,110,0.35)', src: TANGLED },
   { key: 'witness', name: 'Witness', path: '/witness', tag: 'What did you see?', accent: '#9f1239', bg: '#ffe4e6', border: 'rgba(159,18,57,0.35)', src: WITNESS },
   { key: 'defuse', name: 'Defuse', path: '/defuse', tag: 'Cut the wires in the safe order', accent: '#7c2d12', bg: '#ffedd5', border: 'rgba(124,45,18,0.35)', src: DEFUSE },
+  { key: 'spot', name: 'Spot', path: '/spot', tag: 'Find the seven differences', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: SPOT },
   { key: 'sudoclue', name: 'Sudoclue', path: '/sudoclue', tag: 'Find the killer, place the suspects', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: SUDOCLUE },
   { key: 'judges', name: 'Judges', path: '/judges', tag: 'Two per row', accent: '#7c2d12', bg: '#fde8dc', border: 'rgba(124,45,18,0.35)', src: JUDGES },
   { key: 'lamps', name: 'Lamps', path: '/lamps', tag: 'Light every square', accent: '#9a6700', bg: '#fdf3d7', border: 'rgba(154,103,0,0.35)', src: LAMPS },

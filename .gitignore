@@ -48,3 +48,7 @@ lib/_to_delete_claude/
 
 # generated locally by scripts/build-encore-bank.mjs, never committed
 scripts/.encore-progress.jsonl
+
+# Spot board builder scratch (downloaded photos, review sheets)
+scripts/spot/src/
+scripts/spot/out/

@@ -346,7 +346,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
   // it when it arrives, app/StageHost.jsx). See the board swaps it for the
   // board drawn in the page, as Mahj and Scour do.
   const stage = g.t0 && (playing || !revealed) ? (
-    <PlayStage wide={!!GAME.wide} full={!!GAME.full} look={GAME.look || null} bg={gameColor(KEY)} label={NAME}
+    <PlayStage wide={!!GAME.wide} full={!!GAME.full} big={!!GAME.big} look={GAME.look || null} bg={gameColor(KEY)} label={NAME}
       eyebrow={GAME.eyebrow(PUZZLE, g.s, { sundayLabel })}
       top={<Board {...boardProps} />}
       bottom={GAME.tools ? GAME.tools({ ...boardProps, active: started }) : null}
@@ -371,7 +371,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
         onHelp={() => setShowHelp(true)}
         sunday={sundayLabel}
         figures={[
-          ...(GAME.miss ? [{ v: String(count), k: count === 1 ? GAME.miss.replace(/s$/, '') : GAME.miss }] : []),
+          ...(GAME.miss ? [{ v: String(count), k: count === 1 ? (GAME.missOne || GAME.miss.replace(/s$/, '')) : GAME.miss }] : []),
           { v: elapsed, k: 'time' },
         ]}
       />}

@@ -126,6 +126,7 @@ const DAILY_ART = {
   fitit: '<svg viewBox="0 0 76 76"><rect x="4" y="4" width="68" height="68" rx="10" fill="#1b1f3b"/><g><rect x="9" y="9" width="18" height="18" rx="4" fill="#ff5a5f"/><rect x="29" y="9" width="18" height="18" rx="4" fill="#ff5a5f"/><rect x="29" y="29" width="18" height="18" rx="4" fill="#ff5a5f"/><rect x="49" y="9" width="18" height="18" rx="4" fill="#3bb273"/><rect x="49" y="29" width="18" height="18" rx="4" fill="#3bb273"/><rect x="49" y="49" width="18" height="18" rx="4" fill="#3bb273"/><rect x="9" y="29" width="18" height="18" rx="4" fill="#ffd23f"/><rect x="9" y="49" width="18" height="18" rx="4" fill="#ffd23f"/><rect x="29" y="49" width="18" height="18" rx="4" fill="#fffdf6"/></g></svg>',
   jigsaw: '<svg viewBox="0 0 100 100"><path d="M14 20h22c-6-14 22-14 16 0h22v22c14-6 14 22 0 16v22H52c6 14-22 14-16 0H14V58c-14 6-14-22 0-16z" fill="#3a86ff" stroke="#1b1f3b" stroke-width="3" stroke-linejoin="round"/><circle cx="40" cy="44" r="7" fill="#ffd23f"/></svg>',
   'tall-jigsaw': '<svg viewBox="0 0 70 100"><rect x="6" y="4" width="58" height="92" rx="8" fill="#fff" stroke="#1b1f3b" stroke-width="3"/><path d="M6 50h20c-5-11 19-11 14 0h24" fill="none" stroke="#1b1f3b" stroke-width="3" stroke-linejoin="round"/><path d="M12 44 l14 -22 l10 14 l6 -8 l16 16z" fill="#ff9f1c"/><circle cx="48" cy="20" r="6" fill="#ffd23f"/><path d="M12 90 l16 -24 l12 14 l18 -20 v30z" fill="#3bb273"/></svg>',
+  spot: '<svg viewBox="0 0 100 70"><g stroke="#1b1f3b" stroke-width="3" stroke-linejoin="round"><rect x="4" y="6" width="42" height="58" rx="8" fill="#bfe3ff"/><rect x="54" y="6" width="42" height="58" rx="8" fill="#bfe3ff"/></g><path d="M7 62 V46 l12 -12 l9 9 l6 -6 l9 9 V62z" fill="#3bb273"/><path d="M57 62 V46 l12 -12 l9 9 l6 -6 l9 9 V62z" fill="#3bb273"/><circle cx="34" cy="22" r="7" fill="#ffd23f" stroke="#1b1f3b" stroke-width="2"/><circle cx="84" cy="22" r="10" fill="none" stroke="#ff5a5f" stroke-width="4"/></svg>',
   mathdash: '<svg viewBox="0 0 110 50"><g font-family="Fredoka,sans-serif" font-weight="700" font-size="26" fill="#1b1f3b" text-anchor="middle"><text x="55" y="34">7 + 5 = <tspan fill="#3a86ff">?</tspan></text></g></svg>',
 };
 
@@ -208,7 +209,7 @@ export default function KidsHubClient() {
         <div className="kc-hero">
           <div>
             <h1>Puzzles and games, <em>every day.</em></h1>
-            <p>Nine little puzzles that change every day, two of them jigsaws, plus a shelf of matching games. No sign-up, no ads, nothing counts against you. Tap one to play.</p>
+            <p>Ten little puzzles that change every day, two of them jigsaws and one a spot the difference, plus a shelf of matching games. No sign-up, no ads, nothing counts against you. Tap one to play.</p>
           </div>
           <div className="kc-conf" aria-hidden="true">
             {[1, 2, 3, 4, 5, 6].map((n) => <span key={n} dangerouslySetInnerHTML={{ __html: SHAPES[n] }} />)}

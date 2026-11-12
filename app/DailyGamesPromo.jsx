@@ -75,6 +75,7 @@ export const DAILY_GAMES = [
   { key: 'tangled', href: '/tangled', name: 'Tangled', tag: 'untangle the ropes', store: 'sot_tangled_day', accent: '#0f766e', bg: '#ccfbf1', border: 'rgba(15,118,110,0.35)' },
   { key: 'witness', href: '/witness', name: 'Witness', tag: 'what did you see?', store: 'sot_witness_day', accent: '#9f1239', bg: '#ffe4e6', border: 'rgba(159,18,57,0.35)' },
   { key: 'defuse', href: '/defuse', name: 'Defuse', tag: 'cut the wires in the safe order', store: 'sot_defuse_day', accent: '#7c2d12', bg: '#ffedd5', border: 'rgba(124,45,18,0.35)' },
+  { key: 'spot', href: '/spot', name: 'Spot', tag: 'find the seven differences', store: 'sot_spot_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)' },
   { key: 'sudoclue', href: '/sudoclue', name: 'Sudoclue', tag: 'find the killer', store: 'sot_sudoclue_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)' },
   { key: 'judges', href: '/judges', name: 'Judges', tag: 'two per row', store: 'sot_judges_day', accent: '#7c2d12', bg: '#fde8dc', border: 'rgba(124,45,18,0.35)' },
   { key: 'lamps', href: '/lamps', name: 'Lamps', tag: 'light every square', store: 'sot_lamps_day', accent: '#9a6700', bg: '#fdf3d7', border: 'rgba(154,103,0,0.35)' },
