@@ -49,6 +49,7 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import ShelfLink from '../jig/ShelfLink';
 
 
@@ -361,6 +362,31 @@ function freshState() {
 const HAPT = { ok: [8], win: [10, 40, 20, 40, 20, 60], bad: [20] };
 function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
+// THE PLAY AREA ON THE WHITE STAGE: the page's own full screen layout, scoped
+// to the stage. On a desktop the stage is the window, the play row takes the
+// height left and the board is fitted into it beside the tray; the stage's foot
+// carries Give up, so the page's Reveal line and Full screen button step aside.
+const JG_ST_CSS = `
+.jg-st{width:100%;display:flex;flex-direction:column;}
+/* The stage's rise animation keeps a transform on its top block, which would
+   pin the phone's fixed tray dock to the column instead of the screen. */
+.pst-top:has(> .jg-st){animation:none;}
+.jg-st .jg-fs,.jg-st .jg-below{display:none !important;}
+.jg-st .jg-top{margin:0 0 10px;}
+@media (min-width:900px){
+  .pst:has(.jg-st) .pst-col{height:100%;min-height:0;}
+  .pst.inl:has(.jg-st) .pst-col{height:auto;}
+  .pst-top:has(> .jg-st){flex:1 1 auto;min-height:0;justify-content:flex-start;}
+  .jg-st{flex:1 1 auto;min-height:0;}
+  .jg-st .jg-play{flex:1 1 auto;min-height:0;align-items:stretch;justify-content:center;}
+  .pst.inl .jg-st .jg-play{flex:none;height:max(460px, calc(100vh - 300px));}
+  .jg-st .jg-boardbox{flex:none;align-self:center;}
+  .jg-st .jg-side{flex:0 0 380px;max-width:380px;min-height:0;}
+  .jg-st .jg-tray{max-height:none !important;flex:1 1 auto;min-height:0;}
+  .jg-st .jg-foot{margin-top:10px;padding-top:10px;}
+}
+`;
+
 export default function SawClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const C = PUZZLE.cols, R = PUZZLE.rows;
@@ -459,6 +485,15 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
   const [revealed, setRevealed] = useState(false);
+  // THE STAGE (owner, 2026-11-12): from Start until the ending's board view the
+  // puzzle plays on the shared white stage, with its own table, tray and play
+  // box unchanged. On a desktop the stage is the whole window, so the board is
+  // sized to the room it has (the full screen fit), and grows with the screen.
+  const phoneStage = usePhoneStage();
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const fitOn = full || (stageOn && !narrow);
+  // On the stage the page itself does not scroll; the stage does.
+  const scrollHost = () => (stageOn && playRef.current && playRef.current.closest('.pst')) || null;
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -867,7 +902,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
       const tick = () => {
         const a2 = autoScroll.current;
         if (!a2) return;
-        if (a2.vy) window.scrollBy(0, a2.vy);
+        if (a2.vy) (scrollHost() || window).scrollBy(0, a2.vy);
         if (a2.vx && boxRef.current) boxRef.current.scrollLeft += a2.vx;
         const p2 = press.current;
         if (p2 && p2.dragging) ghostAt(p2.cx, p2.cy);
@@ -1028,7 +1063,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   // taller than the window allows. The board box carries the width, so the peek
   // image (placed in percentages of it) stays on the picture.
   useEffect(() => {
-    if (!full) return undefined;
+    if (!fitOn) return undefined;
     const el = playRef.current;
     if (!el) return undefined;
     const ar = (BW + 2 * BP) / (BH + 2 * BP);
@@ -1049,13 +1084,15 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     if (ro) ro.observe(el);
     window.addEventListener('resize', fit);
     return () => { if (ro) ro.disconnect(); window.removeEventListener('resize', fit); };
-  }, [full, BW, BH, narrow, BP]);
+  }, [fitOn, BW, BH, narrow, BP]);
   // The phone dock: when play starts, bring the top of the board into view
   // once (never again, so the page is the player's to scroll).
   useEffect(() => {
     if (!boxMode) return;
     const el = playRef.current;
     if (!el) return;
+    const host = scrollHost();
+    if (host) { const t = el.getBoundingClientRect().top - host.getBoundingClientRect().top + host.scrollTop - 8; if (Math.abs(host.scrollTop - t) > 4) host.scrollTo(0, Math.max(0, t)); return; }
     const top = el.getBoundingClientRect().top + window.scrollY - 8;
     if (Math.abs(window.scrollY - top) > 4) window.scrollTo(0, Math.max(0, top));
   }, [boxMode]);
@@ -1229,10 +1266,173 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
 
   const peeking = peekUntil > Date.now();
 
+  // THE PLAY AREA, ONCE: drawn on the stage while it is up, else on the page.
+  // It carries the board, tray and play-box refs, so it is never drawn twice.
+  const jgPlay = (
+    <>
+    <div className="jg-top">
+    <div className="jg-meter" role="meter" aria-valuemin={0} aria-valuemax={NP} aria-valuenow={biggest} aria-label={LOOSE ? `Biggest group: ${biggest} of ${NP} pieces joined` : `Pieces placed: ${placedCount} of ${NP}`}>
+      <span className="jg-mlab">{LOOSE ? 'Biggest group' : 'Pieces placed'} &middot; <b>{biggest}</b> of {NP}{LOOSE ? ' joined' : ''}{g.peeks ? <> &middot; {g.peeks} peek{g.peeks > 1 ? 's' : ''} (+{g.peeks * 15}s)</> : null}</span>
+      <div className="jg-mbar" aria-hidden="true"><span style={{ width: `${(biggest / NP) * 100}%` }} /></div>
+    </div>
+    {started && (
+      <button type="button" className="jg-ob jg-fs" onClick={full ? exitFull : enterFull} aria-pressed={full}
+        title={full ? 'Leave full screen (Esc)' : 'Play on the whole screen'}>
+        {full ? <Minimize2 size={15} aria-hidden="true" /> : <Maximize2 size={15} aria-hidden="true" />} {full ? 'Exit full screen' : 'Full screen'}
+      </button>
+    )}
+    </div>
+
+    <div className={`jg-play${boxMode ? ' box' : ''}`} ref={playRef} style={boxMode && dockH ? { paddingBottom: dockH + 8 } : undefined}>
+      <div className={`jg-boardbox${boxMode && zoom > 1 ? ' scr' : ''}`} ref={boxRef} style={fitOn && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * BP) / (BH + 2 * BP)).toFixed(3)}))` })}>
+       <div className="jg-zoom" style={boxMode && zoom > 1 ? { width: `${zoom * 100}%` } : undefined}>
+        <svg ref={boardRef} className={`jg-board${flashMiss ? ' miss' : ''}${LOOSE && started ? ' lt' : ''}`} viewBox={`${-BP} ${-BP} ${BW + 2 * BP} ${BH + 2 * BP}`}
+          role="img" aria-label={LOOSE ? `Saw table, ${biggest} of ${NP} pieces joined in the biggest group` : `Saw board, ${placedCount} of ${NP} pieces placed`} onClick={boardTap}>
+          <defs>
+            <pattern id={`swpic-${PUZZLE.num}`} patternUnits="userSpaceOnUse" x="0" y="0" width={BW} height={BH}>
+              <image href={IMG} x="0" y="0" width={BW} height={BH} preserveAspectRatio="xMidYMid slice" />
+            </pattern>
+          </defs>
+          {LOOSE ? (
+            <>
+              {/* the table: no frame and no outlines, just somewhere to build */}
+              <rect className="jg-ground" x={-MARGIN - KNOB / 2} y={-MARGIN - KNOB / 2} width={BW + 2 * MARGIN + KNOB} height={BH + 2 * MARGIN + KNOB} rx={14} />
+              {/* Bigger groups lie underneath smaller ones, so a loose piece is never
+                  lost under the picture taking shape; the group in hand is always on top. */}
+              {shownGroups
+                .map((grp, k) => ({ grp, k }))
+                .sort((x, y) => ((gdrag && x.grp.id === gdrag.id) - (gdrag && y.grp.id === gdrag.id)) || (y.grp.m.length - x.grp.m.length) || (x.k - y.k))
+                .map(({ grp }) => {
+                  const mv = gdrag && gdrag.id === grp.id;
+                  const tx = grp.dx + (mv ? gdrag.ddx : 0), ty = grp.dy + (mv ? gdrag.ddy : 0);
+                  const done = won || (!playing && revealed);
+                  return (
+                    <g key={grp.id} className={`lt-grp${mv ? ' mv' : ''}${won ? ' settle' : ''}`} style={{ transform: `translate(${tx}px, ${ty}px)` }}
+                      onPointerDown={playing ? (e) => tableDown(e, grp.id) : undefined}>
+                      {grp.m.map((i) => (
+                        <path key={i} d={PIECES[i].d} fill={`url(#swpic-${PUZZLE.num})`}
+                          style={{ stroke: done ? 'rgba(255,255,255,0.10)' : (grp.m.length > 1 ? 'rgba(10,14,24,0.30)' : 'rgba(255,255,255,0.7)'), strokeWidth: 1.6 }} />
+                      ))}
+                    </g>
+                  );
+                })}
+            </>
+          ) : (
+            <>
+              <rect className="jg-ground" x={-6} y={-6} width={BW + 12} height={BH + 12} rx={10} />
+              {PIECES.filter((p) => shownOnBoard.has(p.i)).map((p) => (
+                <path key={p.i} className="jg-pc" d={p.d} fill={`url(#swpic-${PUZZLE.num})`} style={{ stroke: won || (!playing && revealed) ? 'rgba(255,255,255,0.10)' : 'rgba(10,14,24,0.45)', strokeWidth: 1.6 }} />
+              ))}
+            </>
+          )}
+        </svg>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className={`jg-peek${peeking ? ' on' : ''}`} src={IMG} alt="" aria-hidden="true"
+          style={{ left: `${(BP / (BW + 2 * BP)) * 100}%`, top: `${(BP / (BH + 2 * BP)) * 100}%`, width: `${(BW / (BW + 2 * BP)) * 100}%`, height: `${(BH / (BH + 2 * BP)) * 100}%`, objectFit: 'cover', borderRadius: 4 }} />
+        {!imgOk && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: FADED, textAlign: 'center', padding: 20 }}>
+            Today&rsquo;s photo did not load. Refresh the page to try again.
+          </div>
+        )}
+       </div>
+      </div>
+
+      {playing && (
+        <div className="jg-side" ref={sideRef}>
+          <div className="jg-ctl">
+            {boxMode && (
+              <button type="button" className="jg-more2" aria-expanded={trayOpen} onClick={toggleTray} aria-label={trayOpen ? 'Show fewer pieces' : `See more pieces, ${loose.length} left`}>
+                {trayOpen ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronUp size={15} aria-hidden="true" />}{loose.length}
+              </button>
+            )}
+            {boxMode && (
+              <div className="jg-zm" role="group" aria-label="Board size">
+                <button type="button" onClick={() => setZoom((z) => Math.max(1, Math.round((z - 0.5) * 2) / 2))} disabled={zoom <= 1} aria-label="Smaller board">&minus;</button>
+                <button type="button" onClick={() => setZoom((z) => Math.min(2.5, Math.round((z + 0.5) * 2) / 2))} disabled={zoom >= 2.5} aria-label="Bigger board">+</button>
+              </div>
+            )}
+            <div className="jg-seg" role="group" aria-label="Sort the tray">
+              <button type="button" aria-pressed={view === 'edges'} onClick={() => setView('edges')}>Edges</button>
+              <button type="button" aria-pressed={view === 'color'} onClick={() => setView('color')} disabled={!haveColors}>Colors</button>
+              <button type="button" aria-pressed={view === 'all'} onClick={() => setView('all')}>All</button>
+            </div>
+          </div>
+          {view === 'color' && haveColors && (
+            <div className="jg-sw" role="group" aria-label="Color for the first bin">
+              {groups.map((gr, k) => (
+                <button key={gr.name} type="button" className="jg-swb" aria-pressed={k === colIdx} onClick={() => setColPick(k)}>
+                  <i style={{ background: gr.hex }} />{gr.name}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className={`jg-tray${vScroll ? ' vs' : ''}${bins ? ' bins' : ''}`} style={{ maxHeight: boardH ? Math.max(220, boardH - (view === 'color' && haveColors ? 110 : 60)) : 460, '--jg-bh': `${Math.round(boardH)}px` }}>
+            {bins ? bins.map((b) => (
+              <div key={b.key} className="jg-bin">
+                <div className="jg-binlab"><b>{b.label}</b> &middot; {b.items.length}</div>
+                {b.items.length ? <div className="jg-grid">{b.items.map(trayPiece)}</div> : <div className="jg-empty">Nothing left in this bin.</div>}
+              </div>
+            )) : (
+              <div className="jg-bin">
+                <div className="jg-binlab"><b>Loose pieces</b> &middot; {loose.length}</div>
+                <div className="jg-grid">{loose.map(trayPiece)}</div>
+              </div>
+            )}
+          </div>
+          {narrow && !full && !boxMode && (trayOpen || loose.length > 12) && (
+            <button type="button" className="jg-more" aria-expanded={trayOpen} onClick={toggleTray}>
+              {trayOpen ? <><ChevronUp size={16} aria-hidden="true" /> Show fewer</> : <><ChevronDown size={16} aria-hidden="true" /> See more pieces &middot; {loose.length} left</>}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+
+    {started && (
+      <div className={`jg-foot${boxMode ? ' inbox' : ''}`}>
+        <span className="jg-msg" aria-live="polite">{statusText}</span>
+        <button type="button" className="jg-ob" onClick={peek} disabled={peeking} title="Show the whole picture for a moment (adds 15 seconds)">
+          <Eye size={15} aria-hidden="true" /> Peek +15s
+        </button>
+        {hintOk && !g.hintUsed && (
+          <button type="button" className="jg-ob" onClick={useHint} title="Drop a corner in (one hint, first play only)">
+            <Lightbulb size={15} aria-hidden="true" /> Hint
+          </button>
+        )}
+      </div>
+    )}
+
+    {started && (
+      <div className="jg-below">
+        <span className="jg-rule">{LOOSE ? 'Put pieces down anywhere. Neighbours lock when they meet; a locked group moves as one.' : 'Drop a piece near its own spot and it snaps in. A wrong drop costs nothing.'}</span>
+        {started ? (
+          <button type="button" className={`jg-link${armReveal ? ' armed' : ''}`}
+            onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+            {armReveal ? 'Tap again to reveal (ends the puzzle)' : 'Reveal'}
+          </button>
+        ) : <span />}
+      </div>
+    )}
+    </>
+  );
+
   return (
     <div className={[STAGE ? 'stage-page' : (LOFT ? 'loft-page' : ''), full ? 'jg-isfull' : ''].filter(Boolean).join(' ') || undefined}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('saw')} label="Saw" full big
+          eyebrow={`Saw No. ${PUZZLE.num} · ${PUZZLE.name}`}
+          top={(
+            <div className={'jg-st' + (LOOSE ? ' lt' : '')}>
+              <style dangerouslySetInnerHTML={{ __html: JG_ST_CSS }} />
+              {jgPlay}
+            </div>
+          )}
+          foot={playing ? (LOOSE ? `${biggest} of ${NP} joined` : `${placedCount} of ${NP} placed`) : (won ? 'Solved.' : 'Revealed.')}
+          giveUp={playing ? { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="saw" name="Saw" collapsed={started} loft={LOFT} />
@@ -1416,149 +1616,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
-          <div className="jg-top">
-          <div className="jg-meter" role="meter" aria-valuemin={0} aria-valuemax={NP} aria-valuenow={biggest} aria-label={LOOSE ? `Biggest group: ${biggest} of ${NP} pieces joined` : `Pieces placed: ${placedCount} of ${NP}`}>
-            <span className="jg-mlab">{LOOSE ? 'Biggest group' : 'Pieces placed'} &middot; <b>{biggest}</b> of {NP}{LOOSE ? ' joined' : ''}{g.peeks ? <> &middot; {g.peeks} peek{g.peeks > 1 ? 's' : ''} (+{g.peeks * 15}s)</> : null}</span>
-            <div className="jg-mbar" aria-hidden="true"><span style={{ width: `${(biggest / NP) * 100}%` }} /></div>
-          </div>
-          {started && (
-            <button type="button" className="jg-ob jg-fs" onClick={full ? exitFull : enterFull} aria-pressed={full}
-              title={full ? 'Leave full screen (Esc)' : 'Play on the whole screen'}>
-              {full ? <Minimize2 size={15} aria-hidden="true" /> : <Maximize2 size={15} aria-hidden="true" />} {full ? 'Exit full screen' : 'Full screen'}
-            </button>
-          )}
-          </div>
-
-          <div className={`jg-play${boxMode ? ' box' : ''}`} ref={playRef} style={boxMode && dockH ? { paddingBottom: dockH + 8 } : undefined}>
-            <div className={`jg-boardbox${boxMode && zoom > 1 ? ' scr' : ''}`} ref={boxRef} style={full && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * BP) / (BH + 2 * BP)).toFixed(3)}))` })}>
-             <div className="jg-zoom" style={boxMode && zoom > 1 ? { width: `${zoom * 100}%` } : undefined}>
-              <svg ref={boardRef} className={`jg-board${flashMiss ? ' miss' : ''}${LOOSE && started ? ' lt' : ''}`} viewBox={`${-BP} ${-BP} ${BW + 2 * BP} ${BH + 2 * BP}`}
-                role="img" aria-label={LOOSE ? `Saw table, ${biggest} of ${NP} pieces joined in the biggest group` : `Saw board, ${placedCount} of ${NP} pieces placed`} onClick={boardTap}>
-                <defs>
-                  <pattern id={`swpic-${PUZZLE.num}`} patternUnits="userSpaceOnUse" x="0" y="0" width={BW} height={BH}>
-                    <image href={IMG} x="0" y="0" width={BW} height={BH} preserveAspectRatio="xMidYMid slice" />
-                  </pattern>
-                </defs>
-                {LOOSE ? (
-                  <>
-                    {/* the table: no frame and no outlines, just somewhere to build */}
-                    <rect className="jg-ground" x={-MARGIN - KNOB / 2} y={-MARGIN - KNOB / 2} width={BW + 2 * MARGIN + KNOB} height={BH + 2 * MARGIN + KNOB} rx={14} />
-                    {/* Bigger groups lie underneath smaller ones, so a loose piece is never
-                        lost under the picture taking shape; the group in hand is always on top. */}
-                    {shownGroups
-                      .map((grp, k) => ({ grp, k }))
-                      .sort((x, y) => ((gdrag && x.grp.id === gdrag.id) - (gdrag && y.grp.id === gdrag.id)) || (y.grp.m.length - x.grp.m.length) || (x.k - y.k))
-                      .map(({ grp }) => {
-                        const mv = gdrag && gdrag.id === grp.id;
-                        const tx = grp.dx + (mv ? gdrag.ddx : 0), ty = grp.dy + (mv ? gdrag.ddy : 0);
-                        const done = won || (!playing && revealed);
-                        return (
-                          <g key={grp.id} className={`lt-grp${mv ? ' mv' : ''}${won ? ' settle' : ''}`} style={{ transform: `translate(${tx}px, ${ty}px)` }}
-                            onPointerDown={playing ? (e) => tableDown(e, grp.id) : undefined}>
-                            {grp.m.map((i) => (
-                              <path key={i} d={PIECES[i].d} fill={`url(#swpic-${PUZZLE.num})`}
-                                style={{ stroke: done ? 'rgba(255,255,255,0.10)' : (grp.m.length > 1 ? 'rgba(10,14,24,0.30)' : 'rgba(255,255,255,0.7)'), strokeWidth: 1.6 }} />
-                            ))}
-                          </g>
-                        );
-                      })}
-                  </>
-                ) : (
-                  <>
-                    <rect className="jg-ground" x={-6} y={-6} width={BW + 12} height={BH + 12} rx={10} />
-                    {PIECES.filter((p) => shownOnBoard.has(p.i)).map((p) => (
-                      <path key={p.i} className="jg-pc" d={p.d} fill={`url(#swpic-${PUZZLE.num})`} style={{ stroke: won || (!playing && revealed) ? 'rgba(255,255,255,0.10)' : 'rgba(10,14,24,0.45)', strokeWidth: 1.6 }} />
-                    ))}
-                  </>
-                )}
-              </svg>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className={`jg-peek${peeking ? ' on' : ''}`} src={IMG} alt="" aria-hidden="true"
-                style={{ left: `${(BP / (BW + 2 * BP)) * 100}%`, top: `${(BP / (BH + 2 * BP)) * 100}%`, width: `${(BW / (BW + 2 * BP)) * 100}%`, height: `${(BH / (BH + 2 * BP)) * 100}%`, objectFit: 'cover', borderRadius: 4 }} />
-              {!imgOk && (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: FADED, textAlign: 'center', padding: 20 }}>
-                  Today&rsquo;s photo did not load. Refresh the page to try again.
-                </div>
-              )}
-             </div>
-            </div>
-
-            {playing && (
-              <div className="jg-side" ref={sideRef}>
-                <div className="jg-ctl">
-                  {boxMode && (
-                    <button type="button" className="jg-more2" aria-expanded={trayOpen} onClick={toggleTray} aria-label={trayOpen ? 'Show fewer pieces' : `See more pieces, ${loose.length} left`}>
-                      {trayOpen ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronUp size={15} aria-hidden="true" />}{loose.length}
-                    </button>
-                  )}
-                  {boxMode && (
-                    <div className="jg-zm" role="group" aria-label="Board size">
-                      <button type="button" onClick={() => setZoom((z) => Math.max(1, Math.round((z - 0.5) * 2) / 2))} disabled={zoom <= 1} aria-label="Smaller board">&minus;</button>
-                      <button type="button" onClick={() => setZoom((z) => Math.min(2.5, Math.round((z + 0.5) * 2) / 2))} disabled={zoom >= 2.5} aria-label="Bigger board">+</button>
-                    </div>
-                  )}
-                  <div className="jg-seg" role="group" aria-label="Sort the tray">
-                    <button type="button" aria-pressed={view === 'edges'} onClick={() => setView('edges')}>Edges</button>
-                    <button type="button" aria-pressed={view === 'color'} onClick={() => setView('color')} disabled={!haveColors}>Colors</button>
-                    <button type="button" aria-pressed={view === 'all'} onClick={() => setView('all')}>All</button>
-                  </div>
-                </div>
-                {view === 'color' && haveColors && (
-                  <div className="jg-sw" role="group" aria-label="Color for the first bin">
-                    {groups.map((gr, k) => (
-                      <button key={gr.name} type="button" className="jg-swb" aria-pressed={k === colIdx} onClick={() => setColPick(k)}>
-                        <i style={{ background: gr.hex }} />{gr.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <div className={`jg-tray${vScroll ? ' vs' : ''}${bins ? ' bins' : ''}`} style={{ maxHeight: boardH ? Math.max(220, boardH - (view === 'color' && haveColors ? 110 : 60)) : 460, '--jg-bh': `${Math.round(boardH)}px` }}>
-                  {bins ? bins.map((b) => (
-                    <div key={b.key} className="jg-bin">
-                      <div className="jg-binlab"><b>{b.label}</b> &middot; {b.items.length}</div>
-                      {b.items.length ? <div className="jg-grid">{b.items.map(trayPiece)}</div> : <div className="jg-empty">Nothing left in this bin.</div>}
-                    </div>
-                  )) : (
-                    <div className="jg-bin">
-                      <div className="jg-binlab"><b>Loose pieces</b> &middot; {loose.length}</div>
-                      <div className="jg-grid">{loose.map(trayPiece)}</div>
-                    </div>
-                  )}
-                </div>
-                {narrow && !full && !boxMode && (trayOpen || loose.length > 12) && (
-                  <button type="button" className="jg-more" aria-expanded={trayOpen} onClick={toggleTray}>
-                    {trayOpen ? <><ChevronUp size={16} aria-hidden="true" /> Show fewer</> : <><ChevronDown size={16} aria-hidden="true" /> See more pieces &middot; {loose.length} left</>}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {started && (
-            <div className={`jg-foot${boxMode ? ' inbox' : ''}`}>
-              <span className="jg-msg" aria-live="polite">{statusText}</span>
-              <button type="button" className="jg-ob" onClick={peek} disabled={peeking} title="Show the whole picture for a moment (adds 15 seconds)">
-                <Eye size={15} aria-hidden="true" /> Peek +15s
-              </button>
-              {hintOk && !g.hintUsed && (
-                <button type="button" className="jg-ob" onClick={useHint} title="Drop a corner in (one hint, first play only)">
-                  <Lightbulb size={15} aria-hidden="true" /> Hint
-                </button>
-              )}
-            </div>
-          )}
-
-          {started && (
-            <div className="jg-below">
-              <span className="jg-rule">{LOOSE ? 'Put pieces down anywhere. Neighbours lock when they meet; a locked group moves as one.' : 'Drop a piece near its own spot and it snaps in. A wrong drop costs nothing.'}</span>
-              {started ? (
-                <button type="button" className={`jg-link${armReveal ? ' armed' : ''}`}
-                  onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
-                  {armReveal ? 'Tap again to reveal (ends the puzzle)' : 'Reveal'}
-                </button>
-              ) : <span />}
-            </div>
-          )}
+          {!stageOn && jgPlay}
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: 560, margin: '0 auto' }}>

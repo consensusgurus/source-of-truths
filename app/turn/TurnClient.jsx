@@ -358,7 +358,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
 
   const myTurn = playing && started && view.turn === 1 && !view.over;
   const tnsOn = STAGE && phoneStage && !!g.t0;
-  const tnsFit = usePlayStageFit(tnsRef, '.tns-bd', tnsOn, egDesk);
+  const tnsFit = usePlayStageFit(tnsRef, '.tns-bd', tnsOn, egDesk, 260, 680);
 
   // A hint marks three squares, one of which is the key. Deterministic from the
   // puzzle id so everyone who spends their one hint sees the same three.

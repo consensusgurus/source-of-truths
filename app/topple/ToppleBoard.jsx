@@ -31,6 +31,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { RotateCcw, Lightbulb, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { onSpring } from '@/lib/topple-engine';
+import usePlayStageFit from '@/lib/play-stage-fit';
 import { readPalette, slab, cracks, contact, face, roundQuad, quad, inset, css, mix, Fx, prefersReduced } from '@/lib/roll-toy-kit';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -101,6 +102,26 @@ const CSS = `
 }
 `;
 
+// THE WHITE STAGE (owner, 2026-11-12: "paths, roll and topple game play boards
+// should stay unchanged ... make sure that these can be larger to fit larger
+// screens"). On PlayStage the canvas is the same drawing as the page board;
+// only the furniture around it changes: the pad and Restart / Hint are the
+// stage's ink-outlined buttons, and the canvas is fitted to the height the
+// stage has, so it grows with a big desktop screen.
+const ST_CSS = `
+.tp-st{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;}
+.tp-cvbox{position:relative;max-width:100%;}
+.tp-st .tp-canvas{width:100%;max-width:none;}
+.tp-stctl{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+.tp-st .tp-pad{grid-template-columns:repeat(3,58px);grid-template-rows:repeat(3,48px);}
+.tp-st .tp-key{border:1px solid var(--pst-ink);color:var(--pst-ink);border-radius:12px;}
+.tp-st .tp-key:hover:not(:disabled){background:var(--pst-cell);}
+.tp-st .tp-key:active:not(:disabled){background:var(--pst-acc);color:var(--pst-on-acc);border:1px solid var(--pst-ink);}
+.tp-st .tp-key.hint{border:2px solid var(--pst-ink);background:var(--pst-acc);color:var(--pst-on-acc);box-shadow:none;}
+.tp-stacts{display:flex;flex-direction:column;gap:8px;}
+@media (min-width:900px) and (hover:hover) and (pointer:fine){.tp-stacts{flex-direction:row;}}
+`;
+
 function boxOf(b) {
   if (b.o === 'S') return [b.x, b.y, b.x + 1, b.y + 1, 2];
   if (b.o === 'H') return [b.x, b.y, b.x + 2, b.y + 1, 1];
@@ -140,8 +161,9 @@ const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
 export default function ToppleBoard({
   P, block, anim, onAnimEnd, playing, used, par, perfect, falls,
-  onMove, onRestart, hintAvail, onHint, hintDir, armed, onGiveUp, doneLine, shake, themeKey, launched,
+  onMove, onRestart, hintAvail, onHint, hintDir, armed, onGiveUp, doneLine, shake, themeKey, launched, stage = false,
 }) {
+  const stRef = useRef(null);
   const cvRef = useRef(null);
   const probeRef = useRef(null);
   const colors = useRef(null);
@@ -154,6 +176,8 @@ export default function ToppleBoard({
 
   const W = Math.round(P.w * TW + KX * 2.4 + SLAB * KX + PAD * 2 + 4);
   const H = Math.round(P.h * TH + TZ * 2.4 + SLAB * TZ + PAD * 2 + 6);
+  // Up to about 100px a square on a big screen (owner, 2026-11-12), never more.
+  const fit = usePlayStageFit(stRef, '.tp-cvbox', stage, true, 220, Math.round(H * 100 / TW));
   const OX = PAD + KX * 2.4 + 2;
   const OY = PAD + TZ * 2.4;
   const pr = useCallback((x, y, z) => [OX + x * TW - z * KX, OY + y * TH - z * TZ], [OX, OY]);
@@ -501,6 +525,42 @@ export default function ToppleBoard({
       <Icon size={22} strokeWidth={2.6} />
     </button>
   );
+
+  if (stage) {
+    return (
+      <div ref={stRef} className="tp tp-st">
+        <style dangerouslySetInnerHTML={{ __html: CSS + ST_CSS }} />
+        <span ref={probeRef} className="tp-probe" aria-hidden="true" />
+        <div className="stg-board tp-board tp-cvbox" style={{ width: fit ? `min(100%, ${Math.floor(fit * W / H)}px)` : '100%' }}>
+          <canvas key={shake} ref={cvRef} className={`tp-canvas${shake ? ' shake' : ''}`}
+            style={{ aspectRatio: `${W} / ${H}` }}
+            role="img" aria-label={`Topple board, ${P.w} by ${P.h}. The block is ${block.o === 'S' ? 'standing' : 'lying flat'}.`}
+            onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => { sw.current = null; }} />
+        </div>
+        {playing && (
+          <div className="tp-stctl">
+            <div className="tp-pad" style={{ gridTemplateAreas: '". u ." "l . r" ". d ."' }}>
+              {key('U', ArrowUp, 'u', 'Roll up')}
+              {key('L', ArrowLeft, 'l', 'Roll left')}
+              {key('R', ArrowRight, 'r', 'Roll right')}
+              {key('D', ArrowDown, 'd', 'Roll down')}
+            </div>
+            <div className="tp-stacts">
+              <button type="button" className="pst-tb" onClick={onRestart} disabled={!used} title="Put the block back on the start. Your rolls still count.">
+                <RotateCcw size={16} strokeWidth={2.4} />Restart
+              </button>
+              {hintAvail && (
+                <button type="button" className="pst-tb" onClick={onHint} title="Light the next roll on the best line (one hint, first play only)">
+                  <Lightbulb size={16} strokeWidth={2.4} />Hint
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+        <p className="pst-note" aria-live="polite" style={{ margin: 0 }}>{say1}{playing && falls ? ` Falls so far: ${falls}.` : ''}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="tp">

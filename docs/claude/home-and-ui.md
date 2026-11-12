@@ -2608,3 +2608,33 @@ Owner on the phone mockups: "i like m1b and m2", then "i like all of these". Bui
   `.stg-gate`, between the name and the game's own short rules. Its host div sits BEFORE the gate's
   last child and is never first or last, because GateScreen styles `:first-child` (the hidden title)
   and `:last-child` (the action row). No crowd strip there: it would cost a board read per load.
+
+## Lamps, Paths, Roll, Topple, Jig and Saw on the white stage; the board size ceiling (owner, 2026-11-12)
+
+- **All six play on PlayStage at every width**, from Start until the ending's board view
+  (`stageOn = STAGE && phoneStage && g.t0 && (playing || !revealed)`, the Parker rule). The page board
+  is not rendered while the stage is up, because each board carries refs and handlers that must
+  mount once (Roll/Topple canvases, the Paths map's svgRef, Lamps' gridBoxRef, Jig/Saw's play refs).
+- **Paths, Roll, Topple: the game play board is unchanged** (owner ruling). Roll and Topple take a
+  `stage` prop on RollBoard / ToppleBoard that draws the same canvas with stage furniture (ink-outlined
+  pad and buttons; the pad hides on a desktop with a mouse). Paths draws its key, map and marking
+  from shared consts (`ptKey`, `ptSvg`, `ptReview`) on either surface. The perfect cost never shows in play.
+- **Lamps keeps the live board's details** ("make lamps a bit more similar to current styling
+  details"): the Still dark meter, beams, pips under each number (underlined when met, struck when
+  over), hatched blocked walls, the ruled-out dot and the key. `LM_ST_VARS` repoints the board's own
+  variables at the stage tokens: lit squares the pale rose, lamps the full rose, walls ink slabs,
+  unlit squares white with a grey edge, the picked square an ink ring.
+- **Jig and Saw keep their table, tray and phone play box unchanged.** On a desktop the stage uses the
+  page's full screen fit (`fitOn = full || (stageOn && !narrow)`) and `JG_ST_CSS`; the page's Reveal
+  line and Full screen button step aside for the stage foot. The phone box scrolls the `.pst`, not the
+  window (`scrollHost()`), and the stage's rise animation is off there: a filling transform animation
+  makes `.pst-top` the containing block of the fixed tray dock.
+- **`big` on PlayStage** lets the column follow the screen past `wide`'s 1000px (to 1600px); the
+  board inside is still capped by the height it has.
+- **THE CEILING (owner, 2026-11-12: "Four got too big ... huge on desktop wide screen").**
+  `usePlayStageFit(ref, sel, on, beside, min, max)` takes a `max`: fitting to height alone grows a
+  small grid without end on a tall monitor (Four's discs reached ~145px at 2560x1440). End Game
+  boards stop near 80px a square (Four 540, Turn / Yose / the SlateStage chess boards 680, Gift
+  640); the six boards above stop near 100px a square (Roll and Topple `H * 100 / TW`, Lamps
+  `N * 100`, Paths from its CELL). The width-capped boards (Carve, Sums, Hedge, Duet) already stop
+  at 460 to 640px. A new board that fits to the height passes a `max` too.

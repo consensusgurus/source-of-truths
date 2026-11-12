@@ -69,6 +69,8 @@ import { meRequest } from '@/app/quizMeClient';
 import { endEfficiency, FAIL } from '@/lib/end-verdict';
 import { scoreText } from '@/lib/daily-games';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import usePlayStageFit from '@/lib/play-stage-fit';
 
 const COLORS = {
   cream: T.surface,
@@ -96,6 +98,18 @@ const COLORS = {
 // terrain's INK leans toward the register's ink, so a chip label always reads.
 // No attribute selectors, so nothing here can flash the wrong register on boot.
 // Set once on the board wrapper; everything inside reads var(--pt-*).
+// The board's frame on the white stage: the page board's own panel (the
+// terrain cell colour, rounded), the map inside it, the key chips under it.
+const PT_ST_CSS = `
+.pt-st{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;}
+.pt-stbd{max-width:100%;}
+.pt-stpanel{background:var(--pt-cell);border:1px solid var(--pst-cell-line);border-radius:18px;padding:10px;}
+.pt-st .pt-chips{display:flex;align-items:center;gap:6px;justify-content:center;flex-wrap:wrap;font-size:12px;font-weight:700;}
+.pt-st .pt-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:8px;line-height:1.2;white-space:nowrap;}
+.pt-st .pt-svg{touch-action:none;width:100%;height:auto;display:block;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+.pt-st .pt-hit{stroke:transparent;fill:none;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.pt-st .pst-tb:disabled{opacity:.4;}
+`;
 const TERRAIN_VARS = {
   '--pt-cell': 'var(--stg-cell, #ffffff)',
   '--pt-ridge': 'color-mix(in srgb, #c9a35b 30%, var(--stg-cell, #ffffff))',
@@ -317,6 +331,8 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('paths');
   const STAGE = isStage('paths', searchParams);
+  const phoneStage = usePhoneStage();
+  const ptStRef = useRef(null);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('paths');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('paths');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -816,10 +832,199 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // THE STAGE is up from Start until the ending's board view.
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const ptFit = usePlayStageFit(ptStRef, '.pt-stbd', stageOn, true, 240, Math.round((SIZE + 12) * 100 / CELL) + 22);
+  // THE BOARD, ONCE (owner, 2026-11-12: Paths moves onto the white stage with
+  // its game play board unchanged). The key, the map and the marking's key are
+  // built here and drawn either on the stage or on the page, never both (the
+  // map carries svgRef and the drag handlers).
+  const ptKey = (
+    <div className="pt-chips" style={{ display: 'flex', alignItems: 'center', gap: 7, justifyContent: 'center', flexWrap: 'wrap', fontFamily: SANS, fontSize: 12, fontWeight: 700 }}>
+      <span className="pt-chip" style={{ border: `1px solid ${SURF_B}`, color: INK }}><span style={{ width: 16, height: 3, borderRadius: 2, background: 'var(--pt-lane)' }} />Lane 1</span>
+      <span className="pt-chip" style={{ background: 'var(--pt-ridge)', color: 'var(--pt-ridge-ink)' }}>Ridge 2</span>
+      <span className="pt-chip" style={{ background: 'var(--pt-river)', color: 'var(--pt-river-ink)' }}>Crossing 3</span>
+      {HAS_CLIFFS && (
+        <span className="pt-chip" style={{ border: `1px solid ${SURF_B}`, color: INK }}><span style={{ width: 4, height: 13, borderRadius: 2, background: 'var(--pt-cliff)' }} />Cliff</span>
+      )}
+      {HAS_RAILS && (
+        <span className="pt-chip" style={{ background: 'var(--pt-rail-soft)', color: 'var(--pt-rail)' }}>Old track 0</span>
+      )}
+      {!REVIEW && <span className="pt-chip" style={{ border: '1px solid var(--pt-warn)', color: 'var(--pt-warn)' }}>Loose end</span>}
+    </div>
+  );
+  const ptSvg = (
+    <svg ref={svgRef} className="pt-svg" viewBox={`0 -6 ${SIZE} ${SIZE + 12}`} role="img"
+      aria-label={`Paths network puzzle, ${n} by ${n} lattice, ${TOWNS.length} towns, ${linked} linked, cost ${cost}`}
+      onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag}>
+      {/* ridge: painted on exactly the lanes that charge 2, plus the
+          cells those lanes enclose, so what you see is what you pay */}
+      {ridgeCells.map((a) => (
+        <rect key={`rc${a}`} x={X(a)} y={Y(a)} width={CELL} height={CELL} style={{ fill: 'var(--pt-ridge)', pointerEvents: 'none' }} />
+      ))}
+      {LANES.filter((l) => l.cost === 2).map((l) => (
+        <line key={`r${l.i}`} x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
+          strokeWidth={CELL * 0.44} strokeLinecap="round" style={{ stroke: 'var(--pt-ridge)', pointerEvents: 'none' }} />
+      ))}
+      {/* the river, one continuous barrier */}
+      <path d={riverPath} fill="none" strokeWidth={Math.max(11, CELL * 0.3)} strokeLinejoin="round" strokeLinecap="round" style={{ stroke: 'var(--pt-river)', pointerEvents: 'none' }} />
+      <path d={riverPath} fill="none" strokeWidth={2} opacity={0.7} strokeLinejoin="round" style={{ stroke: 'var(--pt-river-line)', pointerEvents: 'none' }} />
+      {/* bare lanes. A cliff lane is drawn faintly and then walled off
+          below, so the lattice still reads as a grid */}
+      {LANES.map((l) => (
+        <line key={`l${l.i}`} x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
+          strokeWidth={2} strokeLinecap="round" opacity={l.blocked ? 0.3 : 1} style={{ stroke: 'var(--pt-lane)', pointerEvents: 'none' }} />
+      ))}
+      {/* old track: already on the ground, free to run along */}
+      {LANES.filter((l) => l.rail).map((l) => (
+        <g key={`rl${l.i}`} style={{ pointerEvents: 'none' }}>
+          <line x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
+            strokeWidth={Math.max(6, CELL * 0.17)} strokeLinecap="round" style={{ stroke: 'var(--pt-rail-soft)' }} />
+          <line x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
+            strokeWidth={2.4} strokeDasharray="3 4" strokeLinecap="round" style={{ stroke: 'var(--pt-rail)' }} />
+        </g>
+      ))}
+      {/* The reveal is a MARKING, not just an answer key. A lane you
+          laid that a cheapest network also uses goes green, a lane you
+          laid that it does not use goes red, and a lane it uses that
+          you never laid stays gold, so the whole network is still on
+          the board AND every one of your own choices is answered.
+          The red lane carries a dash of the cell colour on top of the
+          fill, so it reads apart from the green without relying on hue.
+          Laid track keeps the stroke-width="6" attribute: the finish
+          beat (lib/finish-beats.js) finds the network by it. */}
+      {REVIEW ? (
+        <g style={{ pointerEvents: 'none' }}>
+          {REVIEW.missed.map((l) => (
+            <line key={`m${l.i}`} x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
+              strokeWidth={4.5} strokeLinecap="round" strokeDasharray="2 7" style={{ stroke: 'var(--stg-warn, #e8b43a)' }} />
+          ))}
+          {REVIEW.wrong.map((l) => (
+            <g key={`w${l.i}`}>
+              <line x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
+                strokeWidth={6} strokeLinecap="round" style={{ stroke: `var(--stg-bad, ${COLORS.rust})` }} />
+              <line x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
+                strokeWidth={2.2} strokeDasharray="1.5 4.5" style={{ stroke: 'var(--pt-cell)' }} />
+            </g>
+          ))}
+          {REVIEW.right.map((l) => (
+            <line key={`k${l.i}`} x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
+              strokeWidth={6} strokeLinecap="round" style={{ stroke: `var(--stg-good, ${COLORS.green})` }} />
+          ))}
+        </g>
+      ) : (
+        LANES.map((l) => (E[l.i] ? (
+          <line key={`t${l.i}`} x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
+            strokeWidth={6} strokeLinecap="round" style={{ stroke: ACC_INK, pointerEvents: 'none' }} />
+        ) : null))
+      )}
+      {/* what a crossing charges: a small "3" badge on every lane the
+          river cuts. The ridge says 2 with its shading */}
+      {LANES.filter((l) => l.cost === 3 && !l.blocked).map((l) => {
+        const B = Math.max(13, CELL * 0.31);
+        const cx = (X(l.a) + X(l.b)) / 2, cy = (Y(l.a) + Y(l.b)) / 2;
+        return (
+          <g key={`c${l.i}`} style={{ pointerEvents: 'none' }}>
+            <rect x={cx - B / 2} y={cy - B / 2} width={B} height={B} rx={B * 0.26} strokeWidth={1.2}
+              style={{ fill: 'var(--pt-cell)', stroke: 'var(--pt-river-ink)' }} />
+            <text x={cx} y={cy + 0.5} fill="currentColor" fontFamily={SANS} fontSize={B * 0.66} fontWeight="800"
+              textAnchor="middle" dominantBaseline="central" style={{ color: 'var(--pt-river-ink)', userSelect: 'none' }}>3</text>
+          </g>
+        );
+      })}
+      {/* the old track says 0, the same way a crossing says 3 */}
+      {LANES.filter((l) => l.rail).map((l) => (
+        <text key={`z${l.i}`} x={(X(l.a) + X(l.b)) / 2 + (l.horiz ? 0 : TOLL)} y={(Y(l.a) + Y(l.b)) / 2 - (l.horiz ? TOLL : 0)}
+          fill="currentColor" fontFamily={SANS} fontSize={10.5} fontWeight="800"
+          textAnchor="middle" dominantBaseline="central" style={{ color: 'var(--pt-rail)', pointerEvents: 'none', userSelect: 'none' }}>0</text>
+      ))}
+      {/* cliffs: a wall across the lane, drawn over everything so it is
+          never mistaken for track you could lay */}
+      {cliffBars.map((c) => (
+        <rect key={`x${c.i}`} x={c.x} y={c.y} width={c.w} height={c.h} rx={2}
+          strokeWidth={1} style={{ fill: 'var(--pt-cliff)', stroke: 'var(--pt-cell)', pointerEvents: 'none' }} />
+      ))}
+      {/* plain dots; a dot on your network takes the accent */}
+      {Array.from({ length: n * n }).map((_, k) => (PUZZLE.terms.includes(k) ? null : (
+        <circle key={`d${k}`} cx={X(k)} cy={Y(k)} r={Math.max(2.8, CELL * 0.072)}
+          style={{ fill: !REVIEW && DEG[k] ? ACC : 'var(--pt-node)', pointerEvents: 'none' }} />
+      )))}
+      {/* loose ends: a dashed warning ring on any point that ends one
+          lane of track and is neither a town nor the depot */}
+      {!REVIEW && LOOSE.map((k) => (
+        <circle key={`o${k}`} className="pt-loose" cx={X(k)} cy={Y(k)} r={Math.max(8, CELL * 0.23)} fill="none"
+          strokeWidth={2.4} strokeDasharray="3.2 2.6" style={{ stroke: 'var(--pt-warn)', pointerEvents: 'none' }} />
+      ))}
+      {/* depot: the one dark square */}
+      <g style={{ pointerEvents: 'none' }}>
+        <rect x={X(DEPOT) - DEPOT_R} y={Y(DEPOT) - DEPOT_R} width={DEPOT_R * 2} height={DEPOT_R * 2} rx={DEPOT_R * 0.3} style={{ fill: INK }} />
+        <rect x={X(DEPOT) - DEPOT_R * 0.4} y={Y(DEPOT) - DEPOT_R * 0.4} width={DEPOT_R * 0.8} height={DEPOT_R * 0.8} rx={3} style={{ fill: 'var(--pt-cell)' }} />
+      </g>
+      {/* towns, lettered: filled with the accent once linked */}
+      {TOWNS.map((t, k) => {
+        const on = reached.has(t);
+        return (
+          <g key={`t${t}`} style={{ pointerEvents: 'none' }}>
+            <circle cx={X(t)} cy={Y(t)} r={TOWN_R} strokeWidth={on ? 0 : 2.5} style={{ fill: on ? ACC : 'var(--pt-cell)', stroke: on ? ACC_INK : INK }} />
+            <text x={X(t)} y={Y(t) + 0.5} fill="currentColor" fontFamily={SANS} fontSize={Math.max(10, TOWN_R * 0.92)} fontWeight="800" textAnchor="middle" dominantBaseline="central"
+              style={{ color: on ? ON_ACC : INK }}>{townLetter(k)}</text>
+          </g>
+        );
+      })}
+      {/* hit targets last so they always take the drag */}
+      {playing && LANES.filter((l) => !l.blocked).map((l) => (
+        <line key={`h${l.i}`} className="pt-hit" data-lane={l.i}
+          x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)} strokeWidth={HIT} />
+      ))}
+    </svg>
+  );
+  const ptReview = REVIEW && (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 14, justifyContent: 'center', marginTop: 8, flexWrap: 'wrap', fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: FADED }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 16, height: 5, borderRadius: 3, background: `var(--stg-good, ${COLORS.green})` }} /> yours, and in the network</span>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 16, height: 5, borderRadius: 3, background: `var(--stg-bad, ${COLORS.rust})`, borderTop: '2px solid var(--pt-cell)' }} /> yours, not in it</span>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 16, height: 4, borderRadius: 3, background: 'repeating-linear-gradient(90deg, var(--stg-warn, #e8b43a) 0 2px, transparent 2px 6px)' }} /> in it, not yours</span>
+  </div>
+);
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), ...TERRAIN_VARS, minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-11-12): Paths plays on the shared white stage
+          at every width with its own board, unchanged: the same key, the same
+          map and the same marking. Only the furniture around it is the stage's:
+          the status line, Finish, Undo / Clear / Hint as ink-outlined buttons,
+          and the foot. The map is fitted to the height the stage has, so it
+          grows with a big desktop screen. The perfect cost never shows in play. */}
+      {stageOn && (
+        <PlayStage bg={gameColor('paths')} label="Paths" wide big
+          eyebrow={`${PUZZLE.sunday ? 'Sunday Edition' : 'Paths'} No. ${PUZZLE.num} · link ${TOWNS.length} towns for the least`}
+          top={(
+            <div ref={ptStRef} className="pt-st">
+              <style dangerouslySetInnerHTML={{ __html: PT_ST_CSS }} />
+              <div className="pt-stbd" style={{ width: ptFit ? `min(100%, ${Math.floor(ptFit * SIZE / (SIZE + 12))}px)` : '100%' }}>
+                <div className="pt-stpanel">{ptSvg}</div>
+              </div>
+              {ptKey}
+              {ptReview}
+              <p className="pst-note" aria-live="polite" style={{ margin: 0 }}>{playing ? statusMain : null}</p>
+              {playing && (
+                <div className="pst-tools">
+                  <button type="button" className="pst-tb" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)"><RotateCcw size={15} strokeWidth={2.4} />Undo</button>
+                  <button type="button" className="pst-tb" onClick={clearAll} disabled={cost <= 0} title="Lift all your track"><Trash2 size={15} strokeWidth={2.4} />Clear</button>
+                  {hintOk && !g.hintUsed && <button type="button" className="pst-tb" onClick={useHint} title="Lay one lane of a cheapest network (one hint, first play only)">{ICON.bulb}Hint</button>}
+                  <button type="button" className={'pst-tb' + (allLinked ? ' on' : '')} onClick={finish} disabled={!allLinked}
+                    aria-label={allLinked ? `Finish and lock in this network for ${cost}` : 'Finish, available once every town is linked'}>
+                    <Flag size={15} strokeWidth={2.4} />{allLinked ? `Finish for ${cost}` : 'Finish'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          foot={playing ? `Cost ${cost} · ${linked} of ${TOWNS.length} towns linked` : (won ? `Locked in for ${cost}.` : 'Round over.')}
+          giveUp={playing ? { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="paths" name="Paths" collapsed={started} loft={LOFT} />
@@ -915,7 +1120,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {!preStart && (
+        {!preStart && !stageOn && (
         <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {/* These figures move UP into the cap on a loft page; printing
               them twice is the one thing to avoid. */}
@@ -954,154 +1159,14 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           <div className="pt-panel" style={{ background: 'var(--pt-cell)', border: `1px solid ${SURF_B}`, borderRadius: 18, padding: '14px 16px 14px' }}>
           {/* The key, as chips. Cliff and old track only appear on a board
               that has them. */}
-          <div className="pt-chips" style={{ display: 'flex', alignItems: 'center', gap: 7, justifyContent: 'center', flexWrap: 'wrap', fontFamily: SANS, fontSize: 12, fontWeight: 700 }}>
-            <span className="pt-chip" style={{ border: `1px solid ${SURF_B}`, color: INK }}><span style={{ width: 16, height: 3, borderRadius: 2, background: 'var(--pt-lane)' }} />Lane 1</span>
-            <span className="pt-chip" style={{ background: 'var(--pt-ridge)', color: 'var(--pt-ridge-ink)' }}>Ridge 2</span>
-            <span className="pt-chip" style={{ background: 'var(--pt-river)', color: 'var(--pt-river-ink)' }}>Crossing 3</span>
-            {HAS_CLIFFS && (
-              <span className="pt-chip" style={{ border: `1px solid ${SURF_B}`, color: INK }}><span style={{ width: 4, height: 13, borderRadius: 2, background: 'var(--pt-cliff)' }} />Cliff</span>
-            )}
-            {HAS_RAILS && (
-              <span className="pt-chip" style={{ background: 'var(--pt-rail-soft)', color: 'var(--pt-rail)' }}>Old track 0</span>
-            )}
-            {!REVIEW && <span className="pt-chip" style={{ border: '1px solid var(--pt-warn)', color: 'var(--pt-warn)' }}>Loose end</span>}
-          </div>
-
+          {ptKey}
           <div style={{ maxWidth: 520, margin: '10px auto 0' }}>
-            <svg ref={svgRef} className="pt-svg" viewBox={`0 -6 ${SIZE} ${SIZE + 12}`} role="img"
-              aria-label={`Paths network puzzle, ${n} by ${n} lattice, ${TOWNS.length} towns, ${linked} linked, cost ${cost}`}
-              onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag}>
-              {/* ridge: painted on exactly the lanes that charge 2, plus the
-                  cells those lanes enclose, so what you see is what you pay */}
-              {ridgeCells.map((a) => (
-                <rect key={`rc${a}`} x={X(a)} y={Y(a)} width={CELL} height={CELL} style={{ fill: 'var(--pt-ridge)', pointerEvents: 'none' }} />
-              ))}
-              {LANES.filter((l) => l.cost === 2).map((l) => (
-                <line key={`r${l.i}`} x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
-                  strokeWidth={CELL * 0.44} strokeLinecap="round" style={{ stroke: 'var(--pt-ridge)', pointerEvents: 'none' }} />
-              ))}
-              {/* the river, one continuous barrier */}
-              <path d={riverPath} fill="none" strokeWidth={Math.max(11, CELL * 0.3)} strokeLinejoin="round" strokeLinecap="round" style={{ stroke: 'var(--pt-river)', pointerEvents: 'none' }} />
-              <path d={riverPath} fill="none" strokeWidth={2} opacity={0.7} strokeLinejoin="round" style={{ stroke: 'var(--pt-river-line)', pointerEvents: 'none' }} />
-              {/* bare lanes. A cliff lane is drawn faintly and then walled off
-                  below, so the lattice still reads as a grid */}
-              {LANES.map((l) => (
-                <line key={`l${l.i}`} x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
-                  strokeWidth={2} strokeLinecap="round" opacity={l.blocked ? 0.3 : 1} style={{ stroke: 'var(--pt-lane)', pointerEvents: 'none' }} />
-              ))}
-              {/* old track: already on the ground, free to run along */}
-              {LANES.filter((l) => l.rail).map((l) => (
-                <g key={`rl${l.i}`} style={{ pointerEvents: 'none' }}>
-                  <line x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
-                    strokeWidth={Math.max(6, CELL * 0.17)} strokeLinecap="round" style={{ stroke: 'var(--pt-rail-soft)' }} />
-                  <line x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
-                    strokeWidth={2.4} strokeDasharray="3 4" strokeLinecap="round" style={{ stroke: 'var(--pt-rail)' }} />
-                </g>
-              ))}
-              {/* The reveal is a MARKING, not just an answer key. A lane you
-                  laid that a cheapest network also uses goes green, a lane you
-                  laid that it does not use goes red, and a lane it uses that
-                  you never laid stays gold, so the whole network is still on
-                  the board AND every one of your own choices is answered.
-                  The red lane carries a dash of the cell colour on top of the
-                  fill, so it reads apart from the green without relying on hue.
-                  Laid track keeps the stroke-width="6" attribute: the finish
-                  beat (lib/finish-beats.js) finds the network by it. */}
-              {REVIEW ? (
-                <g style={{ pointerEvents: 'none' }}>
-                  {REVIEW.missed.map((l) => (
-                    <line key={`m${l.i}`} x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
-                      strokeWidth={4.5} strokeLinecap="round" strokeDasharray="2 7" style={{ stroke: 'var(--stg-warn, #e8b43a)' }} />
-                  ))}
-                  {REVIEW.wrong.map((l) => (
-                    <g key={`w${l.i}`}>
-                      <line x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
-                        strokeWidth={6} strokeLinecap="round" style={{ stroke: `var(--stg-bad, ${COLORS.rust})` }} />
-                      <line x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
-                        strokeWidth={2.2} strokeDasharray="1.5 4.5" style={{ stroke: 'var(--pt-cell)' }} />
-                    </g>
-                  ))}
-                  {REVIEW.right.map((l) => (
-                    <line key={`k${l.i}`} x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
-                      strokeWidth={6} strokeLinecap="round" style={{ stroke: `var(--stg-good, ${COLORS.green})` }} />
-                  ))}
-                </g>
-              ) : (
-                LANES.map((l) => (E[l.i] ? (
-                  <line key={`t${l.i}`} x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)}
-                    strokeWidth={6} strokeLinecap="round" style={{ stroke: ACC_INK, pointerEvents: 'none' }} />
-                ) : null))
-              )}
-              {/* what a crossing charges: a small "3" badge on every lane the
-                  river cuts. The ridge says 2 with its shading */}
-              {LANES.filter((l) => l.cost === 3 && !l.blocked).map((l) => {
-                const B = Math.max(13, CELL * 0.31);
-                const cx = (X(l.a) + X(l.b)) / 2, cy = (Y(l.a) + Y(l.b)) / 2;
-                return (
-                  <g key={`c${l.i}`} style={{ pointerEvents: 'none' }}>
-                    <rect x={cx - B / 2} y={cy - B / 2} width={B} height={B} rx={B * 0.26} strokeWidth={1.2}
-                      style={{ fill: 'var(--pt-cell)', stroke: 'var(--pt-river-ink)' }} />
-                    <text x={cx} y={cy + 0.5} fill="currentColor" fontFamily={SANS} fontSize={B * 0.66} fontWeight="800"
-                      textAnchor="middle" dominantBaseline="central" style={{ color: 'var(--pt-river-ink)', userSelect: 'none' }}>3</text>
-                  </g>
-                );
-              })}
-              {/* the old track says 0, the same way a crossing says 3 */}
-              {LANES.filter((l) => l.rail).map((l) => (
-                <text key={`z${l.i}`} x={(X(l.a) + X(l.b)) / 2 + (l.horiz ? 0 : TOLL)} y={(Y(l.a) + Y(l.b)) / 2 - (l.horiz ? TOLL : 0)}
-                  fill="currentColor" fontFamily={SANS} fontSize={10.5} fontWeight="800"
-                  textAnchor="middle" dominantBaseline="central" style={{ color: 'var(--pt-rail)', pointerEvents: 'none', userSelect: 'none' }}>0</text>
-              ))}
-              {/* cliffs: a wall across the lane, drawn over everything so it is
-                  never mistaken for track you could lay */}
-              {cliffBars.map((c) => (
-                <rect key={`x${c.i}`} x={c.x} y={c.y} width={c.w} height={c.h} rx={2}
-                  strokeWidth={1} style={{ fill: 'var(--pt-cliff)', stroke: 'var(--pt-cell)', pointerEvents: 'none' }} />
-              ))}
-              {/* plain dots; a dot on your network takes the accent */}
-              {Array.from({ length: n * n }).map((_, k) => (PUZZLE.terms.includes(k) ? null : (
-                <circle key={`d${k}`} cx={X(k)} cy={Y(k)} r={Math.max(2.8, CELL * 0.072)}
-                  style={{ fill: !REVIEW && DEG[k] ? ACC : 'var(--pt-node)', pointerEvents: 'none' }} />
-              )))}
-              {/* loose ends: a dashed warning ring on any point that ends one
-                  lane of track and is neither a town nor the depot */}
-              {!REVIEW && LOOSE.map((k) => (
-                <circle key={`o${k}`} className="pt-loose" cx={X(k)} cy={Y(k)} r={Math.max(8, CELL * 0.23)} fill="none"
-                  strokeWidth={2.4} strokeDasharray="3.2 2.6" style={{ stroke: 'var(--pt-warn)', pointerEvents: 'none' }} />
-              ))}
-              {/* depot: the one dark square */}
-              <g style={{ pointerEvents: 'none' }}>
-                <rect x={X(DEPOT) - DEPOT_R} y={Y(DEPOT) - DEPOT_R} width={DEPOT_R * 2} height={DEPOT_R * 2} rx={DEPOT_R * 0.3} style={{ fill: INK }} />
-                <rect x={X(DEPOT) - DEPOT_R * 0.4} y={Y(DEPOT) - DEPOT_R * 0.4} width={DEPOT_R * 0.8} height={DEPOT_R * 0.8} rx={3} style={{ fill: 'var(--pt-cell)' }} />
-              </g>
-              {/* towns, lettered: filled with the accent once linked */}
-              {TOWNS.map((t, k) => {
-                const on = reached.has(t);
-                return (
-                  <g key={`t${t}`} style={{ pointerEvents: 'none' }}>
-                    <circle cx={X(t)} cy={Y(t)} r={TOWN_R} strokeWidth={on ? 0 : 2.5} style={{ fill: on ? ACC : 'var(--pt-cell)', stroke: on ? ACC_INK : INK }} />
-                    <text x={X(t)} y={Y(t) + 0.5} fill="currentColor" fontFamily={SANS} fontSize={Math.max(10, TOWN_R * 0.92)} fontWeight="800" textAnchor="middle" dominantBaseline="central"
-                      style={{ color: on ? ON_ACC : INK }}>{townLetter(k)}</text>
-                  </g>
-                );
-              })}
-              {/* hit targets last so they always take the drag */}
-              {playing && LANES.filter((l) => !l.blocked).map((l) => (
-                <line key={`h${l.i}`} className="pt-hit" data-lane={l.i}
-                  x1={X(l.a)} y1={Y(l.a)} x2={X(l.b)} y2={Y(l.b)} strokeWidth={HIT} />
-              ))}
-            </svg>
+            {ptSvg}
           </div>
 
           {/* The marking's own key, printed only while the marking is up, so
               a red lane is never left for the reader to guess at. */}
-          {REVIEW && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, justifyContent: 'center', marginTop: 8, flexWrap: 'wrap', fontFamily: SANS, fontSize: 11.5, fontWeight: 700, color: FADED }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 16, height: 5, borderRadius: 3, background: `var(--stg-good, ${COLORS.green})` }} /> yours, and in the network</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 16, height: 5, borderRadius: 3, background: `var(--stg-bad, ${COLORS.rust})`, borderTop: '2px solid var(--pt-cell)' }} /> yours, not in it</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 16, height: 4, borderRadius: 3, background: 'repeating-linear-gradient(90deg, var(--stg-warn, #e8b43a) 0 2px, transparent 2px 6px)' }} /> in it, not yours</span>
-            </div>
-          )}
+          {ptReview}
 
           {/* The status line and Finish. Finish waits until every town is
               linked; hitting perfect ends the board on its own. */}

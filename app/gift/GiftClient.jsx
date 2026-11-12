@@ -418,7 +418,7 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
   const myTurn = playing && started && !awaitingReply;
   const pool = useMemo(() => poolOf(pos, hand), [pos, hand]);
   const gfsOn = STAGE && phoneStage && !!g.t0;
-  const gfsFit = usePlayStageFit(gfsRef, '.gfs-bd', gfsOn, egDesk);
+  const gfsFit = usePlayStageFit(gfsRef, '.gfs-bd', gfsOn, egDesk, 260, 640);
   useEffect(() => { setGfsStep(1); }, [moves.length, g.status]);
   useEffect(() => { if (selSq == null) setGfsStep(1); }, [selSq]);
   const lineCells = useMemo(() => {

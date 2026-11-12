@@ -338,7 +338,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
 
   const myTurn = playing && started && view.toMove === BLACK && !view.over;
   const yosOn = STAGE && phoneStage && !!g.t0;
-  const yosFit = usePlayStageFit(yosRef, '.yos-bd', yosOn, egDesk);
+  const yosFit = usePlayStageFit(yosRef, '.yos-bd', yosOn, egDesk, 260, 680);
 
   // Warm the value table while the player reads the board. The first search is
   // the expensive one (a Sunday board is a hundred thousand positions); every

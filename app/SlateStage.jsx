@@ -89,7 +89,7 @@ export const SLATE_CROWN = CROWN;
 const FILES = 'abcdefgh';
 export function SlateBoard({ cell, label = 'Board', flipped = false, coords = true, on = true, kind = 'chess', desk = false, rail = null, children = null }) {
   const ref = useRef(null);
-  const fit = usePlayStageFit(ref, '.slb-board', on, desk);
+  const fit = usePlayStageFit(ref, '.slb-board', on, desk, 260, 680);
   const { dark, mono } = useSlateLook();
   const out = [];
   for (let d = 0; d < 64; d++) {

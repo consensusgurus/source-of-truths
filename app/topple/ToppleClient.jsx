@@ -62,6 +62,8 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { parse, step, replay, solve } from '@/lib/topple-engine';
 import ToppleBoard from './ToppleBoard';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { embedLook } from '../LogicStage';
 import { hintAllowed, spendHint } from '@/lib/hint-gate';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
@@ -248,6 +250,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('topple');
   const STAGE = isStage('topple', searchParams);
+  const phoneStage = usePhoneStage();
   // SPACE CADET (2026-11-07): mounted in the run through app/RunEmbed.jsx, the
   // game drops its cap, finish card and tail and reports its result upward.
   const EMBED = useRunEmbed();
@@ -608,11 +611,29 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
   );
 
 
+  // THE STAGE is up from Start until the ending's board view (owner,
+  // 2026-11-12): the white stage around Topple's own board, drawn unchanged.
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const boardProps = {
+    P, block, anim, onAnimEnd, playing, used, par, perfect, falls,
+    onMove, onRestart: restart, hintAvail: hintOk && !g.hintUsed, onHint: useHint, hintDir,
+    armed: !!armReveal, onGiveUp: giveUpTap, shake, themeKey: stageTheme, launched: won,
+    doneLine: won ? (used === perfect ? `Launched in ${used}. That is perfect.` : `Launched in ${used} rolls.`) : 'You left it standing.',
+  };
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: EMBED ? 0 : '100vh', background: STAGE ? (EMBED ? 'transparent' : 'var(--stg-ground)') : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('topple')} label="Topple" inline={!!EMBED} look={embedLook(EMBED)} wide big
+          eyebrow={`${PUZZLE.sunday ? 'Sunday Edition' : 'Topple'} No. ${PUZZLE.num} · roll the block onto the spring`}
+          top={<ToppleBoard {...boardProps} stage />}
+          foot={!playing ? boardProps.doneLine : `${used} roll${used === 1 ? '' : 's'} · par ${par}`}
+          giveUp={playing ? { armed: !!armReveal, onPress: giveUpTap } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -691,13 +712,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {!preStart && (
-          <ToppleBoard P={P} block={block} anim={anim} onAnimEnd={onAnimEnd} playing={playing}
-            used={used} par={par} perfect={perfect} falls={falls}
-            onMove={onMove} onRestart={restart} hintAvail={hintOk && !g.hintUsed} onHint={useHint} hintDir={hintDir}
-            armed={!!armReveal} onGiveUp={giveUpTap} shake={shake} themeKey={stageTheme} launched={won}
-            doneLine={won ? (used === perfect ? `Launched in ${used}. That is perfect.` : `Launched in ${used} rolls.`) : 'You left it standing.'} />
-        )}
+        {!preStart && !stageOn && <ToppleBoard {...boardProps} />}
 
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (

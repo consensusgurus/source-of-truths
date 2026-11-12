@@ -413,7 +413,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
 
   useEffect(() => { gRef.current = g; }, [g]);
   const frsOn = STAGE && phoneStage && !!g.t0;
-  const frsFit = usePlayStageFit(frsRef, '.frs-bd', frsOn, egDesk);
+  const frsFit = usePlayStageFit(frsRef, '.frs-bd', frsOn, egDesk, 260, 540);
   useEffect(() => { setFrsPick(null); }, [moves.length, g.status]);
   useEffect(() => {
     if (!armReveal) return undefined;

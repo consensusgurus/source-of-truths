@@ -61,6 +61,8 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { isLoft } from '@/lib/loft';
 import { parse, step, replay, rollsOf } from '@/lib/roll-engine';
 import RollBoard from './RollBoard';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { embedLook } from '../LogicStage';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endEfficiency, FAIL } from '@/lib/end-verdict';
@@ -239,6 +241,7 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('roll');
   const STAGE = isStage('roll', searchParams);
+  const phoneStage = usePhoneStage();
   // SPACE CADET (2026-11-07): mounted in the run through app/RunEmbed.jsx, the
   // game drops its cap, finish card and tail and reports its result upward.
   const EMBED = useRunEmbed();
@@ -599,11 +602,29 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
   );
 
 
+  // THE STAGE is up from Start until the ending's board view (owner,
+  // 2026-11-12): the white stage around Roll's own board, drawn unchanged.
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const boardProps = {
+    P, state: die, anim, onAnimEnd, playing, used, par, perfect,
+    onMove, onUndo: undo, onRestart: restart, canUndo: !!rest.depth && !anim,
+    armed: !!armReveal, onGiveUp: giveUpTap, themeKey: stageTheme, won,
+    doneLine: won ? (used === perfect ? `All ${P.N} lit in ${used}. That is perfect.` : `All ${P.N} lit in ${used} rolls.`) : 'You left squares unlit.',
+  };
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: EMBED ? 0 : '100vh', background: STAGE ? (EMBED ? 'transparent' : 'var(--stg-ground)') : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('roll')} label="Roll" inline={!!EMBED} look={embedLook(EMBED)} wide big
+          eyebrow={`${PUZZLE.sunday ? 'Sunday Edition' : 'Roll'} No. ${PUZZLE.num} · light 1 to ${P.N} in order`}
+          top={<RollBoard {...boardProps} stage />}
+          foot={!playing ? boardProps.doneLine : `${used} roll${used === 1 ? '' : 's'} · par ${par}`}
+          giveUp={playing ? { armed: !!armReveal, onPress: giveUpTap } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -682,13 +703,7 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
 
-        {!preStart && (
-          <RollBoard P={P} state={die} anim={anim} onAnimEnd={onAnimEnd} playing={playing}
-            used={used} par={par} perfect={perfect}
-            onMove={onMove} onUndo={undo} onRestart={restart} canUndo={!!rest.depth && !anim}
-            armed={!!armReveal} onGiveUp={giveUpTap} themeKey={stageTheme} won={won}
-            doneLine={won ? (used === perfect ? `All ${P.N} lit in ${used}. That is perfect.` : `All ${P.N} lit in ${used} rolls.`) : 'You left squares unlit.'} />
-        )}
+        {!preStart && !stageOn && <RollBoard {...boardProps} />}
 
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (

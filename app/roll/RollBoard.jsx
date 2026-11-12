@@ -36,6 +36,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { RotateCcw, Undo2, Eye, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { step } from '@/lib/roll-engine';
 import { readPalette, slab, cracks, contact, face, roundQuad, inset, css, mix, Fx, prefersReduced } from '@/lib/roll-toy-kit';
+import usePlayStageFit from '@/lib/play-stage-fit';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const TW = 54;            // one square, left to right
@@ -104,6 +105,32 @@ const CSS = `
   .rl-rule{display:none;}
   .rl-foot{justify-content:flex-end;margin-top:4px;}
 }
+`;
+
+// THE WHITE STAGE (owner, 2026-11-12: "paths, roll and topple game play boards
+// should stay unchanged ... make sure that these can be larger to fit larger
+// screens"). On PlayStage the canvas is the same drawing as the page board; only
+// the furniture around it changes: the numbered chips stay above it, the pad and
+// Undo / Restart are the stage's ink-outlined buttons, and the canvas is fitted
+// to the height the stage has, so it grows with a big desktop screen.
+const ST_CSS = `
+.rl-st{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;}
+.rl-st .rl-seq{margin:0;}
+.rl-st .rl-sq{border:1px solid var(--pst-cell-line);color:var(--pst-mute);background:var(--pst-bg);}
+.rl-st .rl-sq.next{border:2px solid var(--pst-ink);color:var(--pst-ink);}
+.rl-st .rl-sq.lit{background:var(--pst-acc);border:1px solid var(--pst-ink);color:var(--pst-on-acc);}
+.rl-cvbox{position:relative;max-width:100%;}
+.rl-st .rl-canvas{width:100%;max-width:none;}
+.rl-stctl{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+.rl-st .rl-pad{grid-template-columns:repeat(3,58px);grid-template-rows:repeat(3,48px);}
+.rl-st .rl-key{border:1px solid var(--pst-ink);color:var(--pst-ink);border-radius:12px;}
+.rl-st .rl-key:hover:not(:disabled){background:var(--pst-cell);}
+.rl-st .rl-key:active:not(:disabled),.rl-st .rl-key.lights{background:var(--pst-acc);color:var(--pst-on-acc);border:1px solid var(--pst-ink);}
+.rl-st .rl-key.lock{opacity:.45;}
+.rl-stacts{display:flex;flex-direction:column;gap:8px;}
+/* Desktop rolls with the arrow keys (owner, 2026-10-30: no on-screen controls on
+   desktop), so the pad goes and Undo / Restart sit in one row. */
+@media (min-width:900px) and (hover:hover) and (pointer:fine){.rl-stacts{flex-direction:row;}.rl-st .rl-pad{display:none;}}
 `;
 
 // THE DIE IS A BODY. Each face value lives on a fixed axis of the die and its
@@ -196,8 +223,9 @@ const smooth = (t) => { const k = Math.max(0, Math.min(1, t)); return k * k * (3
 
 export default function RollBoard({
   P, state, anim, onAnimEnd, playing, used, par, perfect,
-  onMove, onUndo, onRestart, canUndo, armed, onGiveUp, doneLine, themeKey, won,
+  onMove, onUndo, onRestart, canUndo, armed, onGiveUp, doneLine, themeKey, won, stage = false,
 }) {
+  const stRef = useRef(null);
   const cvRef = useRef(null);
   const probeRef = useRef(null);
   const colors = useRef(null);
@@ -212,6 +240,8 @@ export default function RollBoard({
 
   const W = Math.round(P.w * TW + KX * 1.4 + PAD * 2 + SLAB * KX + 6);
   const H = Math.round(P.h * TH + TZ * 1.4 + SLAB * TZ + PAD * 2 + 8);
+  // Up to about 100px a square on a big screen (owner, 2026-11-12), never more.
+  const fit = usePlayStageFit(stRef, '.rl-cvbox', stage, true, 220, Math.round(H * 100 / TW));
   const OX = PAD + KX * 1.4 + 2;
   const OY = PAD + TZ * 1.4;
   const pr = useCallback((x, y, z) => [OX + x * TW - z * KX, OY + y * TH - z * TZ], [OX, OY]);
@@ -567,6 +597,53 @@ export default function RollBoard({
       </button>
     );
   };
+
+  const canvas = (
+    <canvas ref={cvRef} className="rl-canvas"
+      style={stage ? { aspectRatio: `${W} / ${H}` } : { maxWidth: W * 1.4, aspectRatio: `${W} / ${H}` }}
+      role="img" aria-label={`Roll board, ${P.w} by ${P.h}. The die shows ${state.t} on top. Square ${Math.min(nextNum, P.N)} is next.${peekSay}`}
+      data-top={state.t} data-peek={peekAttr}
+      onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => { sw.current = null; }} />
+  );
+  const seq = (
+    <div className="rl-seq" aria-label="Squares to light, in order">
+      {Array.from({ length: P.N }, (_, i) => i + 1).map((v) => (
+        <span key={v} className={`rl-sq${v < state.k ? ' lit' : v === state.k ? ' next' : ''}`}>{v < state.k ? '✓' : v}</span>
+      ))}
+    </div>
+  );
+  const pad = (
+    <div className="rl-pad" style={{ gridTemplateAreas: '". u ." "l . r" ". d ."' }}>
+      {key('U', ArrowUp, 'u', 'Roll up')}
+      {key('L', ArrowLeft, 'l', 'Roll left')}
+      {key('R', ArrowRight, 'r', 'Roll right')}
+      {key('D', ArrowDown, 'd', 'Roll down')}
+    </div>
+  );
+  if (stage) {
+    return (
+      <div ref={stRef} className="rl rl-st">
+        <style dangerouslySetInnerHTML={{ __html: CSS + ST_CSS }} />
+        <span ref={probeRef} className="rl-probe" aria-hidden="true" />
+        {seq}
+        <div className="stg-board rl-board rl-cvbox" style={{ width: fit ? `min(100%, ${Math.floor(fit * W / H)}px)` : '100%' }}>{canvas}</div>
+        {playing && (
+          <div className="rl-stctl">
+            {pad}
+            <div className="rl-stacts">
+              <button type="button" className="pst-tb" onClick={onUndo} disabled={!canUndo} title="Take back the last roll. It still counts.">
+                <Undo2 size={16} strokeWidth={2.4} />Undo
+              </button>
+              <button type="button" className="pst-tb" onClick={onRestart} disabled={!used} title="Put the die back on the start. Your rolls still count.">
+                <RotateCcw size={16} strokeWidth={2.4} />Restart
+              </button>
+            </div>
+          </div>
+        )}
+        <p className="pst-note" aria-live="polite" style={{ margin: 0 }}>{say1}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="rl">

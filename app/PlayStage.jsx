@@ -28,7 +28,7 @@ import { useHostedStage } from './StageHost';
 
 export { usePhoneStage } from './WordStage';
 
-export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null, done = null, inline = false, wide = false, full = false, look: lookIn = null }) {
+export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null, done = null, inline = false, wide = false, full = false, big = false, look: lookIn = null }) {
   const [storedLook, setLook] = useStageLook();
   // A RUN'S LOOK (owner, 2026-10-31, Judged): a board embedded in a run follows
   // the run's own look switch (five looks, its own key) rather than the site's
@@ -45,7 +45,7 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
   const host = useHostedStage(inline);
   useStageChrome(host.chrome ? pal.bg : null);
   return host.render(
-    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '') + (full ? ' full' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null), ...accentVars(mono ? null : bg, look) }}>
+    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '') + (full ? ' full' : '') + (big ? ' big' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null), ...accentVars(mono ? null : bg, look) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
         {host.inline ? null : <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav || host.nav} title={label} dot={bg} />}
@@ -184,6 +184,11 @@ const CSS = `
    (app/ClueView.js) takes the desktop's width, and the top bar, which sits in
    the column, stretches with it so its ends line up with the play area. */
 @media (min-width:1000px){.pst.full .pst-col{max-width:min(1180px, 96vw);padding-left:24px;padding-right:24px;}.pst.inl.full{max-width:min(1220px, 100%);}}
+/* BIG (owner, 2026-11-12: Paths, Roll, Topple, Lamps, Jig and Saw "can be larger
+   to fit larger screens"). The column follows the screen past wide's 1000px; the
+   board inside is still capped by the height it has (lib/play-stage-fit.js), so
+   a big monitor gets a big board and a laptop keeps every control on screen. */
+@media (min-width:900px){.pst.big .pst-col{max-width:min(1600px, 96vw);padding-left:24px;padding-right:24px;}.pst.inl.big{max-width:min(1640px, 100%);}}
 .pst.inl{position:relative;inset:auto;z-index:auto;overflow:visible;border-radius:22px;margin:0 auto;max-width:640px;}
 .pst.inl .pst-col{min-height:max(600px, calc(100vh - 150px));padding:18px 14px 18px;}
 @keyframes pstRise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}

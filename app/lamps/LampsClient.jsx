@@ -54,6 +54,8 @@ import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
+import PlayStage, { usePhoneStage, ICON } from '../PlayStage';
+import usePlayStageFit from '@/lib/play-stage-fit';
 
 // A new game gets no colour of its own: on the stage it wears the Logic step
 // of the category ramp. ACCENT is only the legacy (pre-stage) fallback.
@@ -101,6 +103,43 @@ const LIGHT_VARS = {
   '--lm-dot': dk('#8b95a8', '#1e2433'),
   '--lm-gap': 'color-mix(in srgb, var(--stg-ink, #0b0d12) 14%, var(--stg-cell, #ffffff))',
 };
+// THE BOARD ON THE WHITE STAGE: the live board's variables, re-pointed at the
+// stage's own tokens, so markFor and cellStyle draw it unchanged in rose and ink.
+const LM_ST_VARS = {
+  '--lm-glow': 'var(--pst-acc)',
+  '--lm-lit': 'var(--pst-pale)',
+  '--lm-dark': 'var(--pst-bg)',
+  '--lm-beam': 'var(--pst-deep)',
+  '--lm-slab': 'var(--pst-ink)',
+  '--lm-slab-ink': 'var(--pst-bg)',
+  '--lm-hatch': 'color-mix(in srgb, var(--pst-ink) 62%, var(--pst-bg))',
+  '--lm-pip': 'color-mix(in srgb, var(--pst-bg) 62%, var(--pst-ink))',
+  '--lm-pip-ok': 'var(--pst-acc)',
+  '--lm-dot': 'var(--pst-mute)',
+  '--lm-gap': 'var(--pst-bg)',
+  '--stg-bad': 'var(--pst-bad)',
+  '--stg-cell': 'var(--pst-bg)',
+};
+const LM_ST_CSS = `
+.lm-st{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;}
+.lm-stmeter{width:100%;max-width:520px;display:flex;flex-direction:column;gap:6px;}
+.lm-stcap{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);text-align:center;}
+.lm-stcap b{color:var(--pst-ink);font-size:15px;letter-spacing:0;}
+.lm-st .lm-meter{height:8px;border-radius:4px;background:var(--pst-cell);box-shadow:inset 0 0 0 1px var(--pst-cell-line);overflow:hidden;}
+.lm-st .lm-meter span{display:block;height:100%;background:var(--pst-acc);transition:width .2s ease-out;}
+.lm-stbd{max-width:100%;}
+.lm-st .lm-cell{border-radius:var(--lm-rad, 6px) !important;border:0;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;box-sizing:border-box;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-width:0;min-height:0;overflow:hidden;padding:0;font:inherit;}
+.lm-st .lm-cell:focus-visible{outline:3px solid var(--pst-ink);outline-offset:-3px;}
+.lm-st .lm-cell:disabled{opacity:1;}
+.lm-st .lm-beam{position:absolute;background:var(--lm-beam);opacity:.8;pointer-events:none;}
+.lm-st .lm-key{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:12px;font-weight:700;color:var(--pst-mute);}
+.lm-st .lm-key span{display:inline-flex;align-items:center;gap:6px;}
+.lm-st .lm-key i{width:14px;height:14px;border-radius:3px;display:inline-block;}
+.lm-st .lm-ststatus{font-weight:800;min-height:2.7em;max-width:520px;}
+.lm-st .pst-tb:disabled{opacity:.4;}
+.lm-stkb{display:none;}
+@media (min-width:900px) and (hover:hover) and (pointer:fine){.lm-stkb{display:inline;}}
+`;
 const NUM_WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
 const numWord = (k) => NUM_WORDS[k] || String(k);
 
@@ -311,6 +350,8 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('lamps');
   const STAGE = isStage('lamps', searchParams);
+  const phoneStage = usePhoneStage();
+  const lmStRef = useRef(null);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('lamps');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('lamps');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -642,11 +683,16 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
   // one is hatched, a numbered one carries its number and one pip per lamp it
   // wants, which fill as lamps touch it (outlined until touched, the number
   // underlined once exact, struck through when over).
+  // THE STAGE is up from Start until the ending's board view (owner,
+  // 2026-11-12). The board keeps the live board's details (pips, beams, the
+  // hatched blocked walls, the dark-squares meter) on the white stage.
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const lmFit = usePlayStageFit(lmStRef, '.lm-stbd', stageOn, true, 260, N * 100);
   const GRID_PAD = N >= 10 ? 2 : 3;
   const GRID_GAP = N >= 10 ? 2 : 3;
   const gridBoxRef = useRef(null);
   const gridW = useWidth(gridBoxRef);
-  const cellPx = gridW ? Math.max(18, (Math.min(gridW, GRID_MAX) - GRID_PAD * 2 - GRID_GAP * (N - 1)) / N) : (N >= 10 ? 40 : 56);
+  const cellPx = gridW ? Math.max(18, (Math.min(gridW, stageOn ? 4000 : GRID_MAX) - GRID_PAD * 2 - GRID_GAP * (N - 1)) / N) : (N >= 10 ? 40 : 56);
   const beamW = Math.max(2, Math.round(cellPx * 0.065));
   const beams = useMemo(() => {
     const h = new Set(), v = new Set();
@@ -694,9 +740,17 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
     } else if (breaks.badLamp.has(idx)) bg = 'color-mix(in srgb, var(--stg-bad, #be123c) 30%, var(--lm-lit))';
     else if (an.lit.has(idx)) bg = 'var(--lm-lit)';
     else bg = 'var(--lm-dark)';
+    const picked = idx === sel && playing && g.t0;
+    if (stageOn) {
+      // On the stage an unlit square is a white tile with a grey edge, and the
+      // picked square takes the ink ring the other stage boards use.
+      const edge = !isWall[idx] && !an.lit.has(idx) && !breaks.badLamp.has(idx) ? 'inset 0 0 0 1px var(--pst-cell-line)' : null;
+      const ring = picked ? `inset 0 0 0 ${N >= 10 ? 2 : 3}px var(--pst-ink)` : null;
+      return { background: bg, boxShadow: [ring, edge].filter(Boolean).join(',') || undefined, cursor: isWall[idx] || !playing ? 'default' : 'pointer' };
+    }
     return {
       background: bg,
-      boxShadow: idx === sel && playing && g.t0 ? `inset 0 0 0 ${N >= 10 ? 2 : 3}px var(--stg-acc, ${COLORS.accent})` : undefined,
+      boxShadow: picked ? `inset 0 0 0 ${N >= 10 ? 2 : 3}px var(--stg-acc, ${COLORS.accent})` : undefined,
       cursor: isWall[idx] || !playing ? 'default' : 'pointer',
     };
   }
@@ -768,6 +822,33 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
     </button>
   );
 
+  const lmGrid = (
+    <div role="grid" aria-label={`Lamps board, ${N} by ${N}`} style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))`, gap: GRID_GAP, padding: GRID_PAD, aspectRatio: '1', background: 'var(--lm-gap)', borderRadius: N >= 10 ? 8 : 10, position: 'relative', '--lm-rad': `${Math.max(3, Math.round(cellPx * 0.1))}px` }}>
+      {Array.from({ length: CELLS }).map((_, idx) => {
+        const v = cells[idx];
+        const r = Math.floor(idx / N), c = idx % N;
+        const ch = PUZZLE.grid[r][c];
+        const word = isWall[idx] ? (ch === '#' ? 'wall' : `wall, ${ch}, ${touching[idx] || 0} lamps touching`) : (v === LAMP ? 'lamp' : (an.lit.has(idx) ? 'lit' : 'dark'));
+        return (
+          <button key={idx} type="button" className="lm-cell" style={cellStyle(idx)}
+            onClick={() => cellClick(idx)}
+            disabled={!playing || isWall[idx]}
+            aria-label={`Row ${r + 1}, column ${c + 1}, ${word}${(breaks.badLamp.has(idx) || breaks.badWall.has(idx)) ? ', breaks a rule' : ''}`}>
+            {markFor(idx)}
+          </button>
+        );
+      })}
+    </div>
+  );
+  const lmKey = (
+    <div className="lm-key" aria-hidden="true">
+      <span><i style={{ borderRadius: '50%', background: 'var(--lm-glow)' }} />Lamp</span>
+      <span><i style={{ background: 'var(--lm-lit)' }} />Lit</span>
+      <span><i style={{ background: 'var(--lm-dark)', boxShadow: stageOn ? 'inset 0 0 0 1px var(--pst-cell-line)' : 'inset 0 0 0 1px var(--stg-line2, rgba(28,30,36,0.25))' }} />Dark</span>
+      <span><i style={{ background: 'repeating-linear-gradient(45deg, var(--lm-slab) 0 3px, var(--lm-hatch) 3px 6px)' }} />Blocked</span>
+    </div>
+  );
+
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
@@ -786,6 +867,48 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), ...LIGHT_VARS, minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {/* THE STAGE (owner, 2026-11-12: "make lamps a bit more similar to current
+          styling details"). Lamps plays on the shared white stage at every width
+          with the live board's own details kept: the dark-squares meter, a beam
+          through every lit square, pips under each number that fill as lamps
+          touch it (underlined when met, struck through when over), the hatched
+          blocked walls, the small ruled-out dot and the key. The stage gives it
+          its colour: lit squares the pale rose, lamps the full rose, walls ink
+          slabs, unlit squares white with a grey edge. Every tap goes through the
+          board's own cellClick, undo, clearBoard, useHint and revealEnd. The
+          board is fitted to the height the stage has, so it grows with the screen. */}
+      {stageOn && (
+        <PlayStage bg={gameColor('lamps')} label="Lamps" wide big
+          eyebrow={`${PUZZLE.sunday ? 'Sunday Edition' : 'Lamps'} No. ${PUZZLE.num} · light every white square`}
+          top={(
+            <div ref={lmStRef} className="lm-st" style={LM_ST_VARS}>
+              <style dangerouslySetInnerHTML={{ __html: LM_ST_CSS }} />
+              <div className="lm-stmeter">
+                <span className="lm-stcap">Still dark &middot; <b>{darkCount}</b> of {WHITES.length} squares</span>
+                <div className="lm-meter" role="meter" aria-label={`${darkCount} of ${WHITES.length} squares still dark`} aria-valuemin={0} aria-valuemax={WHITES.length} aria-valuenow={an.lit.size}>
+                  <span style={{ width: `${litPct}%` }} />
+                </div>
+              </div>
+              <div className="lm-stbd" style={{ width: lmFit ? `min(100%, ${lmFit}px)` : '100%' }}>
+                <div ref={gridBoxRef}>{lmGrid}</div>
+              </div>
+              {lmKey}
+              <p className="pst-note lm-ststatus" aria-live="polite" style={{ margin: 0, color: breaks.any ? 'var(--pst-bad)' : undefined }}>{playing ? statusMain : null}</p>
+              {playing && (
+                <div className="pst-tools">
+                  <button type="button" className="pst-tb" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)"><RotateCcw size={15} strokeWidth={2.4} />Undo</button>
+                  <button type="button" className={'pst-tb' + (hasEntries && armClear ? ' on' : '')} onClick={clearBoard} disabled={!hasEntries}
+                    aria-label={armClear ? 'Tap again to clear the board' : 'Clear the board'}><Trash2 size={15} strokeWidth={2.4} />{armClear ? 'Tap again to clear' : 'Clear'}</button>
+                  {hintOk && !g.hintUsed && <button type="button" className="pst-tb" onClick={useHint} title="Place one lamp that belongs (one hint, first play only)">{ICON.bulb}Hint</button>}
+                </div>
+              )}
+              {playing && <p className="pst-note lm-sthelp" style={{ margin: 0 }}>Tap a white square: lamp, then dot for empty, then blank.<span className="lm-stkb"> On a keyboard, L and X.</span></p>}
+            </div>
+          )}
+          foot={playing ? `${numWord(lampCount)} lamp${lampCount === 1 ? '' : 's'} · ${an.lit.size} of ${WHITES.length} lit` : (won ? 'Every square is lit. Solved.' : 'The board is ended.')}
+          giveUp={playing ? { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="lamps" name="Lamps" collapsed={started} loft={LOFT} />
@@ -902,6 +1025,7 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
           </div>
           )}
 
+          {!stageOn && (<>
           {/* THE METER: how much of the board is still dark, over a bar that
               fills with light, and the key beside it on a computer. */}
           <div className="lm-top">
@@ -921,22 +1045,7 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
 
           <div className="lm-panel">
           <div ref={gridBoxRef} style={{ maxWidth: GRID_MAX, margin: '0 auto' }}>
-            <div role="grid" aria-label={`Lamps board, ${N} by ${N}`} style={{ display: 'grid', gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))`, gap: GRID_GAP, padding: GRID_PAD, aspectRatio: '1', background: 'var(--lm-gap)', borderRadius: N >= 10 ? 8 : 10, position: 'relative', '--lm-rad': `${Math.max(3, Math.round(cellPx * 0.1))}px` }}>
-              {Array.from({ length: CELLS }).map((_, idx) => {
-                const v = cells[idx];
-                const r = Math.floor(idx / N), c = idx % N;
-                const ch = PUZZLE.grid[r][c];
-                const word = isWall[idx] ? (ch === '#' ? 'wall' : `wall, ${ch}, ${touching[idx] || 0} lamps touching`) : (v === LAMP ? 'lamp' : (an.lit.has(idx) ? 'lit' : 'dark'));
-                return (
-                  <button key={idx} type="button" className="lm-cell" style={cellStyle(idx)}
-                    onClick={() => cellClick(idx)}
-                    disabled={!playing || isWall[idx]}
-                    aria-label={`Row ${r + 1}, column ${c + 1}, ${word}${(breaks.badLamp.has(idx) || breaks.badWall.has(idx)) ? ', breaks a rule' : ''}`}>
-                    {markFor(idx)}
-                  </button>
-                );
-              })}
-            </div>
+            {lmGrid}
           </div>
 
           {/* the status line, the helper, and the outline buttons */}
@@ -973,6 +1082,7 @@ export default function LampsClient({ puzzles = [], forceNum = null }) {
               {revealBtn}
             </div>
           )}
+          </>)}
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: GRID_MAX + 76, margin: '0 auto' }}>
