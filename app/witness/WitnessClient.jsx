@@ -37,8 +37,8 @@ const CSS = `
 .wt-q{margin:0;font-size:clamp(22px,6.4vw,28px);font-weight:800;line-height:1.3;letter-spacing:-.01em;}
 .wt-gone{min-height:120px;border:1px solid var(--pst-ink,#0b0f1a);border-radius:12px;display:flex;align-items:center;justify-content:center;padding:16px 28px;text-align:center;font-size:14px;font-weight:600;line-height:1.5;opacity:.8;}
 .wt-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.wt-opt{min-height:64px;padding:8px 10px;background:transparent;color:inherit;border:1px solid var(--pst-ink,#0b0f1a);border-radius:14px;font-family:inherit;font-size:18px;font-weight:800;line-height:1.3;cursor:pointer;}
-.wt-opt:hover{background:var(--pst-tint,#fda4af);color:#0b0f1a;}
+.wt .wt-opt{min-height:64px;padding:8px 10px;background:transparent;color:inherit;border:1px solid var(--pst-ink,#0b0f1a);border-radius:14px;font-family:inherit;font-size:18px;font-weight:800;line-height:1.3;cursor:pointer;}
+.wt .wt-opt:hover{background:var(--pst-tint,#fda4af);color:#0b0f1a;}
 .wt-list{display:flex;flex-direction:column;}
 .wt-li{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(11,15,26,.18);font-size:14px;line-height:1.45;}
 .wt-li:last-child{border-bottom:none;}

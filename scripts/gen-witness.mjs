@@ -125,8 +125,15 @@ function buildScene(tier, r) {
 const others = (r, arr, not, n) => r.shuffle(arr.filter((x) => x !== not)).slice(0, n);
 const hhmm = (h, m) => `${h}:${String(m).padStart(2, '0')}`;
 
-function candidates(scene, tier, r) {
+// WORDING (2026-11-13 on): a shop whose sign is a plural or a thing rather than
+// a place reads "the Books shop", not "the Books". The first board (11-12) had
+// gone live with the bare name and is frozen as it was.
+const WORDING_FROM = '2026-11-13';
+const NEEDS_SHOP = new Set(['BOOKS', 'TOYS', 'BIKES', 'PETS', 'PIZZA', 'MUSIC']);
+
+function candidates(scene, tier, r, live) {
   const C = [], gentle = tier === 'gentle';
+  const nmOf = (s) => cap(s.name) + (live >= WORDING_FROM && NEEDS_SHOP.has(s.name) ? ' shop' : '');
   const col = (name) => cap(name), colorPool = COLOR_NAMES.map(cap);
   const shopC = (i) => { const b = shopBox(scene, i); return b.x + b.w / 2; };
   const shopNames = (correct) => { const present = scene.shops.map((s) => cap(s.name)).filter((n) => n !== correct); const absent = r.shuffle(SHOPS.map(cap).filter((n) => !scene.shops.some((s) => cap(s.name) === n))); return [...r.shuffle(present), ...absent].slice(0, 3); };
@@ -172,7 +179,7 @@ function candidates(scene, tier, r) {
   const st = scene.shops.filter((s) => s.awning && s.awning.striped);
   if (st.length === 1 && scene.shops.filter((s) => s.awning).length >= 2) { const i = scene.shops.indexOf(st[0]); C.push({ k: 'striped', g: 'awning', lvl: 2, t: 'Which shop had the striped awning?', c: cap(st[0].name), d: shopNames(cap(st[0].name)), ref: {}, at: [shopC(i), BASE - 58] }); }
   r.shuffle([...scene.shops.keys()]).forEach((i) => {
-    const s = scene.shops[i], nm = cap(s.name);
+    const s = scene.shops[i], nm = nmOf(s);
     if (s.awning && !s.awning.striped) C.push({ k: 'awningcolor', g: 'awning', lvl: gentle ? 1 : 2, t: `What color was the awning over the ${nm}?`, c: col(s.awning.color), d: others(r, colorPool.filter((x) => x !== 'White'), col(s.awning.color), 3), ref: { shop: s.name }, at: [shopC(i), BASE - 58] });
     C.push({ k: 'door', g: 'door', lvl: gentle ? 1 : 2, t: `What color was the door of the ${nm}?`, c: col(s.door), d: others(r, colorPool, col(s.door), 3), ref: { shop: s.name }, at: [shopC(i), BASE - 26] });
     if (!gentle) C.push({ k: 'windows', g: 'windows', lvl: 3, t: `How many upstairs windows did the ${nm} have?`, n: s.windows, fixed: [1, 2, 3, 4], ref: { shop: s.name }, at: [shopC(i), shopBox(scene, i).y + 18] });
@@ -180,7 +187,7 @@ function candidates(scene, tier, r) {
   });
   const end = r.pick(['left', 'right']), ei = end === 'left' ? 0 : n - 1;
   C.push({ k: 'far', g: 'side', lvl: 1, t: `Which shop stood at the far ${end} of the street?`, c: cap(scene.shops[ei].name), d: shopNames(cap(scene.shops[ei].name)), ref: { end }, at: [shopC(ei), BASE - 76] });
-  if (n >= 3) { const ni = ei === 0 ? 1 : n - 2; C.push({ k: 'nextto', g: 'side', lvl: 3, t: `Which shop stood right beside the ${cap(scene.shops[ei].name)}?`, c: cap(scene.shops[ni].name), d: shopNames(cap(scene.shops[ni].name)).filter((x) => x !== cap(scene.shops[ei].name)), ref: { shop: scene.shops[ei].name }, at: [shopC(ni), BASE - 76] }); }
+  if (n >= 3) { const ni = ei === 0 ? 1 : n - 2; C.push({ k: 'nextto', g: 'side', lvl: 3, t: `Which shop stood right beside the ${nmOf(scene.shops[ei])}?`, c: cap(scene.shops[ni].name), d: shopNames(cap(scene.shops[ni].name)).filter((x) => x !== cap(scene.shops[ei].name)), ref: { shop: scene.shops[ei].name }, at: [shopC(ni), BASE - 76] }); }
   const clk = scene.shops.findIndex((s) => s.clock);
   if (clk >= 0) { const { h, m } = scene.shops[clk].clock, a = hhmm(h, m); const sh = m / 5 === 0 ? 12 : m / 5, sm = (h % 12) * 5; const alts = [...new Set([hhmm(sh, sm), hhmm(h === 12 ? 1 : h + 1, m), hhmm(h === 1 ? 12 : h - 1, m), hhmm(h, (m + 15) % 60), hhmm(h, (m + 30) % 60)].filter((x) => x !== a))]; C.push({ k: 'clock', g: 'clock', lvl: 2, t: 'What time did the clock show?', c: a, d: [alts[0], ...r.shuffle(alts.slice(1)).slice(0, 2)], ref: {}, at: [shopC(clk), shopBox(scene, clk).y - 15] }); }
   return C.filter((q) => q.n != null || (q.d.length === 3 && new Set([q.c, ...q.d]).size === 4));
@@ -232,7 +239,7 @@ for (let d = new Date(`${START}T12:00:00Z`), num = 1; d <= new Date(`${END}T12:0
     const scene = buildScene(tier, r); if (!scene) continue;
     const names = scene.shops.map((s) => s.name).sort().join();
     if (names === prevNames) continue;
-    const qs = choose(candidates(scene, tier, r), tier, r); if (!qs) continue;
+    const qs = choose(candidates(scene, tier, r, live), tier, r); if (!qs) continue;
     done = { scene, qs: layOut(qs, r), names };
   }
   if (!done) throw new Error(`no scene for ${live}`);

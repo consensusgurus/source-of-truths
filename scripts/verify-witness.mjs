@@ -24,11 +24,15 @@
 //     question other than a count appears on more than 75% of days; no day
 //     asks two questions of the same kind except counts (two at most); no day
 //     shows the same set of shops as the day before.
-//   - US spellings and no em dash in any question or option.
+//   - US spellings and no em dash in any question or option. From 2026-11-13
+//     (WORDING_FROM; the first board is frozen) a question naming Books, Toys,
+//     Bikes, Pets, Pizza or Music says "the Books shop", not "the Books".
 import { PUZZLES } from '../app/witness/puzzles.js';
 import { COLOR_NAMES, WALK_NAMES, FLYER_NAMES, objectCount, WALK_SLOTS, ROAD_SLOTS, SKY_SLOTS } from '../lib/witness-scene.js';
 
 const START = '2026-11-12';
+const WORDING_FROM = '2026-11-13';
+const NEEDS_SHOP = new Set(['BOOKS', 'TOYS', 'BIKES', 'PETS', 'PIZZA', 'MUSIC']);
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const BANDS = { Gentle: [9, 13], Moderate: [15, 22], Tough: [23, 30], Sunday: [27, 40] };
 let fails = 0;
@@ -137,6 +141,7 @@ PUZZLES.forEach((p, i) => {
     if (q.o[q.a] !== ans) fail(`${qt}: stored answer "${q.o[q.a]}", the scene says "${ans}"`);
     if (q.o.filter((x) => x === ans).length !== 1) fail(`${qt}: the right answer must appear exactly once`);
     if (q.ref && q.ref.shop && !q.t.includes(title(q.ref.shop))) fail(`${qt}: the question does not name ${q.ref.shop}`);
+    if (p.live >= WORDING_FROM && q.ref && q.ref.shop && NEEDS_SHOP.has(q.ref.shop) && !q.t.includes(`${title(q.ref.shop)} shop`)) fail(`${qt}: should read "the ${title(q.ref.shop)} shop"`);
     for (const t of [q.t, ...q.o]) { if (/—/.test(t)) fail(`${qt}: em dash`); if (/colour|grey\b|neighbour/i.test(t)) fail(`${qt}: British spelling in "${t}"`); }
     if (q.at && !(q.at[0] >= 0 && q.at[0] <= 360 && q.at[1] >= 0 && q.at[1] <= 400)) fail(`${qt}: pin off the scene`);
   });

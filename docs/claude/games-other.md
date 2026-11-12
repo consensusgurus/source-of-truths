@@ -2372,6 +2372,10 @@ group and set page Close reading (Witness, Defuse, Sworn); finish set Liars and 
   re-derives every answer from the scene with its own lookups, holds each tier to its object-count band,
   and checks answer-slot spread (18 to 32% a slot, no day repeating the last day's pattern). Bank
   2026-11-12 to 2026-12-31. A new question kind needs a `derive` case in the verifier in the same push.
+  From 2026-11-13 (`WORDING_FROM`) a plural or thing-named shop reads "the Books shop"; board 1 is frozen
+  with the bare name.
+- **Board styles need `.wt .x` (two classes) to beat the stage's `.pst button{font:inherit}`**: a bare
+  `.wt-opt` lost its size and weight to it on launch day.
 - **One setting for now.** Every scene is the street. A second setting (a harbor, a kitchen) is a new
   drawing module plus its own facts in the generator and verifier.
 
