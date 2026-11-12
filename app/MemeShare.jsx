@@ -24,6 +24,12 @@ const CSS = `
 .msh{position:fixed;left:0;right:0;bottom:0;z-index:9101;max-width:520px;margin:0 auto;max-height:94vh;max-height:94dvh;overflow-y:auto;
   background:#ffffff;color:#0b0d12;border-radius:20px 20px 0 0;padding:16px 18px max(20px,env(safe-area-inset-bottom));
   box-shadow:0 -10px 40px rgba(0,0,0,.25);font-family:Manrope,system-ui,sans-serif;animation:msh-up .38s cubic-bezier(.2,.8,.2,1) both;}
+/* The desktop scrollbar painted square over the rounded top-right corner (owner report, 2026-11-11).
+   clip-path clips the native scrollbar to the radius too; the slim inset scrollbar keeps it clear of the corner. */
+.msh{clip-path:inset(0 round 20px 20px 0 0);scrollbar-width:thin;scrollbar-color:#c3c9d4 transparent;}
+.msh::-webkit-scrollbar{width:8px;}
+.msh::-webkit-scrollbar-track{background:transparent;margin:20px 0;}
+.msh::-webkit-scrollbar-thumb{background:#c3c9d4;border-radius:99px;border:2px solid #fff;}
 @keyframes msh-up{from{transform:translateY(100%)}to{transform:none}}
 @keyframes msh-in{from{opacity:0}to{opacity:1}}
 .msh-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
