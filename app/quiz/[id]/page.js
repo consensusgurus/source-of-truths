@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import QuizClient from './QuizClient';
 import QuizStageShell from './QuizStageShell';
+import { quizSubject } from '@/lib/quiz-stage';
 import { quizIntro, OWN_BOARD_FORMATS } from '@/lib/quiz-intro';
 import { quizDept, DEPT_LABEL } from '@/lib/quiz-departments';
 import CruxRedirect from './CruxRedirect';
@@ -151,6 +152,7 @@ export default function QuizPage({ params }) {
       quizId={quiz.id}
       title={quiz.title}
       cat={DEPT_LABEL[quizDept(quiz)] || quiz.category || 'Quiz'}
+      subject={quizSubject(quiz)}
       total={intro.total}
       clockMax={intro.clockMax}
       headline={intro.headline}

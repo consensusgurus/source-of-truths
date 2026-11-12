@@ -4,12 +4,8 @@
 //
 // Two jobs, and they fail for two different reasons.
 //
-// 1. THE ONE QUIZ ACCENT is measured, not asserted. lib/quiz-stage.js picks a
-//    single hue for the whole quiz half of the site, in two registers, and the
-//    header of that file states the numbers it was chosen on. A comment stating
-//    a contrast ratio is a claim; this is the check. Bands are the ones
-//    scripts/verify-category-ramp.mjs holds the nine daily steps to, so the
-//    quiz accent cannot be held to a lower standard than a category step.
+// 1. THE QUIZ ACCENTS are the ramp's Trivia and Geography steps, checked value
+//    for value against lib/category-ramp.js (owner, 2026-11-12).
 //
 // 2. A CONVERTED QUIZ CLIENT MUST IMPORT WHAT IT USES, and must not still be
 //    rendering the furniture the stage takes away. esbuild parses an undefined
@@ -28,146 +24,62 @@ let bad = 0;
 const fail = (m) => { console.log('✗ ' + m); bad++; };
 const note = (m) => console.log('… ' + m);
 
-// ── 1. THE ACCENT ───────────────────────────────────────────────────────────
+// ── 1. THE ACCENTS ARE THE RAMP'S TRIVIA AND GEOGRAPHY STEPS ───────────────
+//
+// Since 2026-11-12 (owner, "Quiz Stage Restyle", option 2) a quiz wears the
+// Trivia step, or the Geography step if it is a geography quiz, instead of the
+// old neutral slate. lib/quiz-stage.js writes those values literally (to keep
+// the daily registry out of the quiz bundle), so this checks every literal
+// against lib/category-ramp.js: the dark step, the light step, the ink on the
+// light step and the light text ink. A copy that drifts from the ramp is a
+// second colour system wearing the first one's names. The ramp's own contrast
+// is verify-category-ramp.mjs's job, so it is not re-measured here.
 const src = readFileSync('lib/quiz-stage.js', 'utf8');
-const pick = (name) => {
-  const m = new RegExp('export const ' + name + " = '(#[0-9a-fA-F]{6})';").exec(src);
-  if (!m) { fail(`lib/quiz-stage.js does not export ${name} as a six-digit hex`); return null; }
-  return m[1].toLowerCase();
+const ramp = readFileSync('lib/category-ramp.js', 'utf8');
+const arr = (name) => {
+  const at = ramp.indexOf('export const ' + name + ' = [');
+  if (at < 0) { fail(`lib/category-ramp.js has no ${name} array`); return []; }
+  const body = ramp.slice(at, ramp.indexOf('];', at));
+  return [...body.matchAll(/^\s*('(#[0-9a-fA-F]{6})'|RAMP_INK)\s*,/gm)].map((m) => (m[2] || '#08222e').toLowerCase());
 };
-const ACC = pick('QUIZ_ACC');
-const ACC_L = pick('QUIZ_ACC_LIGHT');
-const ON = pick('QUIZ_ON_ACC');
-const ON_L = pick('QUIZ_ON_ACC_LIGHT');
-
-// The two grounds, read from app/globals.css rather than restated here: a
-// checker that carries its own copy of the value it is checking against agrees
-// with itself the day the stylesheet moves.
-const css = readFileSync('app/globals.css', 'utf8');
-const groundOf = (block) => {
-  const at = css.indexOf(block);
-  if (at < 0) return null;
-  const m = /--stg-ground:\s*(#[0-9a-fA-F]{6})/.exec(css.slice(at, at + 900));
-  return m ? m[1].toLowerCase() : null;
+const alias = (name) => {
+  const m = new RegExp('export const ' + name + ' = (\\w+);').exec(ramp);
+  return m ? m[1] : name;
 };
-const GROUND = groundOf('.stage-page {');
-const GROUND_L = groundOf(".stage-page[data-stage-theme='light'] {");
-if (!GROUND || !GROUND_L) fail('could not read --stg-ground for one or both registers out of app/globals.css');
-
-const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-const lin = (c) => { const v = c / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
-const lum = (h) => { const [r, g, b] = rgb(h); return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b); };
-const contrast = (a, b) => {
-  const x = lum(a), y = lum(b);
-  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
-};
-const hue = (h) => {
-  const [r, g, b] = rgb(h).map((v) => v / 255);
-  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
-  if (!d) return 0;
-  let x;
-  if (mx === r) x = ((g - b) / d) % 6;
-  else if (mx === g) x = (b - r) / d + 2;
-  else x = (r - g) / d + 4;
-  return (x * 60 + 360) % 360;
-};
-const gap = (a, b) => { const d = Math.abs(a - b); return Math.min(d, 360 - d); };
-// HSL saturation, which is the second axis a colour can be told apart on. It
-// exists here because hue is meaningless on a near-neutral: a 19% slate and a
-// 96% sky are never confusable, and reading them 14 degrees apart says nothing.
-const sat = (h) => {
-  const [r, g, b] = rgb(h).map((v) => v / 255);
-  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
-  if (!d) return 0;
-  const l = (mx + mn) / 2;
-  return l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
-};
-
-const MIN_CR = 4.5;      // the floor every ramp step clears, in both registers
-const MAX_DRIFT = 25;    // a light step that drifts in hue is a second colour
-                         // system wearing the first one's names
-const MIN_RAMP_GAP = 25; // clear of every daily category step, IN HUE ...
-const MIN_SAT_GAP = 0.20;// ... OR in saturation, by this much, below the least
-                         // saturated step on the ramp. Either one is enough on
-                         // its own; see the check below for why.
-
-if (ACC && ON && GROUND) {
-  const ink = contrast(ACC, ON), gnd = contrast(ACC, GROUND);
-  note(`dark  ${ACC} on ${GROUND}: ink ${ink.toFixed(2)}:1, ground ${gnd.toFixed(2)}:1`);
-  if (ink < MIN_CR) fail(`the dark accent carries its ink at ${ink.toFixed(2)}:1, under ${MIN_CR}`);
-  if (gnd < MIN_CR) fail(`the dark accent sits on its ground at ${gnd.toFixed(2)}:1, under ${MIN_CR}`);
+const order = (() => {
+  const at = ramp.indexOf('export const RAMP_ORDER = [');
+  return [...ramp.slice(at, ramp.indexOf('];', at)).matchAll(/'([^']+)'/g)].map((m) => m[1]);
+})();
+const DARK = arr('CATEGORY_RAMP');
+const LIGHT = arr(alias('CATEGORY_RAMP_LIGHT'));
+const ON_LT = arr('RAMP_INK_LIGHT');
+const INK_LT = arr('CATEGORY_RAMP_INK_LIGHT');
+for (const [list, nm] of [[DARK, 'CATEGORY_RAMP'], [LIGHT, 'CATEGORY_RAMP_LIGHT'], [ON_LT, 'RAMP_INK_LIGHT'], [INK_LT, 'CATEGORY_RAMP_INK_LIGHT']]) {
+  if (list.length !== order.length) fail(`read ${list.length} entries of ${nm}, expected ${order.length} (one per RAMP_ORDER category)`);
 }
-if (ACC_L && ON_L && GROUND_L) {
-  const ink = contrast(ACC_L, ON_L), gnd = contrast(ACC_L, GROUND_L);
-  note(`light ${ACC_L} on ${GROUND_L}: ink ${ink.toFixed(2)}:1, ground ${gnd.toFixed(2)}:1`);
-  if (ink < MIN_CR) fail(`the light accent carries its ink at ${ink.toFixed(2)}:1, under ${MIN_CR}`);
-  if (gnd < MIN_CR) fail(`the light accent sits on its ground at ${gnd.toFixed(2)}:1, under ${MIN_CR}`);
-}
-if (ACC && ACC_L) {
-  const drift = gap(hue(ACC), hue(ACC_L));
-  note(`hue drift between registers: ${drift.toFixed(0)} degrees`);
-  if (drift > MAX_DRIFT) {
-    fail(`the two registers are ${drift.toFixed(0)} degrees apart, over ${MAX_DRIFT}: a reader who flips `
-      + 'the switch loses every association they built');
+const subj = (key) => {
+  const at = src.indexOf('  ' + key + ': {');
+  if (at < 0) { fail(`lib/quiz-stage.js QUIZ_SUBJECTS has no ${key}`); return null; }
+  const body = src.slice(at, src.indexOf('},', at));
+  const f = (k) => { const m = new RegExp(k + ": '(#[0-9a-fA-F]{6})'").exec(body); return m ? m[1].toLowerCase() : null; };
+  const lab = /label: '([^']+)'/.exec(body);
+  return { label: lab ? lab[1] : null, dk: f('dk'), lt: f('lt'), onLt: f('onLt'), inkLt: f('inkLt') };
+};
+for (const key of ['trivia', 'geography']) {
+  const v = subj(key);
+  if (!v) continue;
+  const i = order.indexOf(v.label);
+  if (i < 0) { fail(`QUIZ_SUBJECTS.${key} names category "${v.label}", which is not in RAMP_ORDER`); continue; }
+  const want = { dk: DARK[i], lt: LIGHT[i], onLt: ON_LT[i], inkLt: INK_LT[i] };
+  for (const k of Object.keys(want)) {
+    if (v[k] !== want[k]) fail(`QUIZ_SUBJECTS.${key}.${k} is ${v[k]}, but the ramp's ${v.label} step says ${want[k]}`);
   }
-}
-
-// CLEAR OF THE NINE DAILY STEPS. A quiz wearing Word's sky says it is a Word
-// game. Read out of lib/category-ramp.js, again so there is one copy.
-{
-  const ramp = readFileSync('lib/category-ramp.js', 'utf8');
-  const block = (name) => {
-    const at = ramp.indexOf('export const ' + name + ' = [');
-    if (at < 0) return [];
-    return [...ramp.slice(at, ramp.indexOf('];', at)).matchAll(/'(#[0-9a-fA-F]{6})'/g)].map((m) => m[1].toLowerCase());
-  };
-  const dark = block('CATEGORY_RAMP');
-  const light = block('CATEGORY_RAMP_LIGHT');
-  // Derived from RAMP_ORDER rather than hardcoded, because this file asserted
-  // "9" and the roster reached ten on 2026-09-01 when Sudoku split out of
-  // Numbers. A count that has to be edited by hand every time a category lands
-  // is a check that fails for the wrong reason.
-  const order = [...ramp.slice(ramp.indexOf('export const RAMP_ORDER = ['), ramp.indexOf('];', ramp.indexOf('export const RAMP_ORDER = ['))).matchAll(/'([^']+)'/g)].length;
-  if (dark.length !== order || light.length !== order) {
-    fail(`read ${dark.length} dark and ${light.length} light ramp steps out of lib/category-ramp.js, expected ${order} of each`);
-  }
-  const nearest = (c, steps) => steps.reduce((best, s) => Math.min(best, gap(hue(c), hue(s))), 999);
-  // TOLD APART ON EITHER AXIS, hue or saturation (2026-09-01). This was hue
-  // alone, and it was right while the accent was a hue. The accent is a neutral
-  // slate now, and on a near-neutral the hue angle is noise: #cbd5e1 reads 213
-  // degrees, 14 off Word's sky, and is nevertheless in no danger of being taken
-  // for it, because it carries a quarter of the chroma. So a colour passes by
-  // being far in HUE from every step, as a chromatic accent must be, or by
-  // being far enough BELOW every step in saturation, as a neutral one is. A
-  // colour close on both axes still fails, which is the case the check is for.
-  const leastSat = (steps) => steps.reduce((lo, s) => Math.min(lo, sat(s)), 1);
-  if (ACC && dark.length) {
-    const d = nearest(ACC, dark);
-    const sg = leastSat(dark) - sat(ACC);
-    note(`nearest DARK ramp step: ${d.toFixed(0)} degrees away, `
-      + `saturation ${(sat(ACC) * 100).toFixed(0)}% against a ramp floor of ${(leastSat(dark) * 100).toFixed(0)}%`);
-    if (d < MIN_RAMP_GAP && sg < MIN_SAT_GAP) {
-      fail(`the dark quiz accent is ${d.toFixed(0)} degrees from a daily category step, under ${MIN_RAMP_GAP}, `
-        + `and only ${(sg * 100).toFixed(0)} points less saturated than the least saturated one, under ${MIN_SAT_GAP * 100}. `
-        + 'It is not tellable from a daily category on either axis.');
-    }
-  }
-  if (ACC_L && light.length) {
-    const d = nearest(ACC_L, light);
-    note(`nearest LIGHT ramp step: ${d.toFixed(0)} degrees away`);
-    // A WARNING RATHER THAN A FAILURE, and the reason is on the record: the
-    // light ramp is deep mid-tones where the dark one is pastels, so its own
-    // steps already sit closer to each other than the dark set's (two pairs are
-    // 15 and 22 degrees apart). A quiz page and a daily page are never on
-    // screen together, so the association a reader builds is with the SURFACE,
-    // not with a swatch beside another swatch.
-    if (d < MIN_RAMP_GAP) note(`  (warning only: the light ramp's own steps are as close, and the two surfaces never share a screen)`);
-  }
+  note(`${key}: ${v.label} step, dark ${v.dk}, light ${v.lt} with ink ${v.onLt}, text ${v.inkLt}`);
 }
 
 // ── 2. CONVERTED QUIZ CLIENTS ───────────────────────────────────────────────
 const DIR = 'app/quiz/[id]';
-const NEEDED = ['isQuizStage', 'QUIZ_ACC_VARS', 'useStageTheme', 'StageChrome', 'StageLadder'];
+const NEEDED = ['isQuizStage', 'quizAccVars', 'quizTint', 'QUIZ_SUBJECTS', 'useStageTheme', 'StageChrome', 'StageLadder'];
 let checked = 0;
 for (const f of readdirSync(DIR)) {
   if (!/\.jsx$/.test(f)) continue;

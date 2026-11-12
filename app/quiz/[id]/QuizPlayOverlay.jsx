@@ -41,7 +41,7 @@ import { useStageTheme } from '@/lib/stage-theme';
 // changes no layout and inherits the register wholesale. The register itself
 // still has to be stamped here: data-stage-theme is what selects the light set,
 // and an ancestor's attribute cannot be seen from outside its subtree either.
-export default function QuizPlayOverlay({ open, background = T.surface, stage = false, children }) {
+export default function QuizPlayOverlay({ open, background = T.surface, stage = false, vars = null, children }) {
   const [vp, setVp] = useState(null); // { top, left, width, height } from visualViewport
   // Called unconditionally, above every early return: this component returns
   // its children untouched when it is closed, and a hook behind that branch
@@ -87,9 +87,10 @@ export default function QuizPlayOverlay({ open, background = T.surface, stage = 
 
   const overlay = (
     <div
-      className={stage ? 'stage-page' : undefined}
+      className={stage ? 'stage-page qz-stage' : undefined}
       data-stage-theme={stage ? stageTheme : undefined}
       style={{
+        ...(stage && vars ? vars : null),
         position: 'fixed',
         ...pos,
         zIndex: 60,

@@ -27,7 +27,7 @@ import Footer from '../../Footer';
 import QuizNavHeader from '../../quizzes/QuizNavHeader';
 import StageChrome from '../../StageChrome';
 import QuizLoftFinish from './QuizLoftFinish';
-import { isQuizStage, QUIZ_ACC_VARS } from '@/lib/quiz-stage';
+import { isQuizStage, quizAccVars, quizTint } from '@/lib/quiz-stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import QuizPlayOverlay from './QuizPlayOverlay';
 import QuizIdleActions from './QuizIdleActions';
@@ -160,9 +160,9 @@ export default function GridFillBoard({ quizId, mobile = false }) {
 
   if (!quiz) {
     return (
-      <div className={QSTAGE ? 'stage-page' : (undefined)}
+      <div className={QSTAGE ? 'stage-page qz-stage' : (undefined)}
         data-stage-theme={QSTAGE ? stageTheme : undefined}
-        style={{ ...(QSTAGE ? QUIZ_ACC_VARS : null), minHeight: '100vh', position: 'relative', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
+        style={{ ...(QSTAGE ? quizAccVars(quiz) : null), minHeight: '100vh', position: 'relative', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
         {!QSTAGE && <Grain />}
         <div style={{ position: 'relative', zIndex: 2, padding: 48, textAlign: 'center' }}>
           <p style={{ fontFamily: SERIF, fontStyle: 'italic', color: FADED }}>That quiz seems to have wandered off.</p>
@@ -478,9 +478,9 @@ export default function GridFillBoard({ quizId, mobile = false }) {
   const mPlayOverlay = mobile === true && phase === 'playing';
 
   return (
-    <div className={QSTAGE ? 'stage-page' : (undefined)}
+    <div className={QSTAGE ? 'stage-page qz-stage' : (undefined)}
       data-stage-theme={QSTAGE ? stageTheme : undefined}
-      style={{ ...(QSTAGE ? QUIZ_ACC_VARS : null), minHeight: '100vh', position: 'relative', overflow: 'clip', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
+      style={{ ...(QSTAGE ? quizAccVars(quiz) : null), minHeight: '100vh', position: 'relative', overflow: 'clip', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
       {!QSTAGE && <Grain />}
       <ChallengeRunOverlay run={chRun} />
       {!QSTAGE && <div style={{ position: 'relative', zIndex: 3 }}><style dangerouslySetInnerHTML={{ __html: `input:focus::placeholder{color:transparent}` }} /><QuizNavHeader /></div>}
@@ -491,6 +491,7 @@ export default function GridFillBoard({ quizId, mobile = false }) {
           card rather than inferred from the names of its variables. */}
       {QSTAGE && (
         <StageChrome
+          tint={quizTint(quiz)}
           name={quiz.title}
           cat={quiz.category || 'Quiz'}
           dateLabel={`${totalCells} ${totalCells === 1 ? 'cell' : 'cells'}`}
@@ -540,7 +541,7 @@ export default function GridFillBoard({ quizId, mobile = false }) {
 
         {/* ── PLAY ── */}
         {tab === 'play' && (
-          <QuizPlayOverlay open={mPlayOverlay} stage={QSTAGE}>
+          <QuizPlayOverlay open={mPlayOverlay} stage={QSTAGE} vars={quizAccVars(quiz)}>
             {/* Sticky top: the scoreboard + live input pin to the top of the viewport */}
             <div style={phase === 'done' ? { display: 'none' } : playBarStyle}>
             {/* Scoreboard */}

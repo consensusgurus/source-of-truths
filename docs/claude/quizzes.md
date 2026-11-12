@@ -1183,3 +1183,30 @@ no board** (nothing is posted, no IQ Points, the result is kept on the device in
   IQ Points: `computeXp` skips `iq-` ids, keeping the original standalone ruling. The Page Views
   row takes the larger of result rows and finish pings (`iq-<slug>-finished`, the only record
   before 2026-09-30), and the finish rows are folded in rather than listed (`app/admin/page.js`).
+
+## Quizzes wear Trivia or Geography, on the dailies' header and looks (owner, 2026-11-12)
+
+"Quiz Stage Restyle" (canvas of the same name): every quiz reformatted to the site's own styles,
+light and dark, and fitting inside the three quiz-mix dailies. Owner picked option 2 of three:
+
+- **Colour.** A quiz wears the ramp's **Trivia** step, and a geography quiz the **Geography** step
+  (`lib/quiz-stage.js`: `QUIZ_SUBJECTS`, `quizSubject(q)`, `quizTint(q)`, `quizAccVars(q)`).
+  Geography = `quizDept(q) === 'geography'` or a map board format (`map`, `place-map`,
+  `globe-place`, `street-map`). No other department gets a colour, on purpose: the ramp's ten
+  colours already mean a daily category. The values are literals copied from
+  `lib/category-ramp.js`; `scripts/verify-quiz-stage.mjs` checks each one against the ramp.
+  This replaces the 2026-09-01 neutral slate.
+- **Header and looks.** Every quiz client passes `tint={quizTint(quiz)}` to `StageChrome`, which
+  makes a quiz "pastel eligible" exactly like a daily: the StageTopBar header (back, name with
+  its colour dot, Share, look switch) and the two site looks (light with color / dark with color)
+  on phone and desktop. On desktop a quiz has no LayoutC (it needs a registry game), so
+  `app/globals.css` shows the simple top bar there too and hides the old cap and strip
+  (`.stage-page.qz-stage`). Long quiz names wrap to two lines on a phone rather than truncate.
+- **Found answers** take the subject's soft colour (`--stg-acc-tint` overridden on `.qz-stage` in
+  both looks). Every quiz root, and `QuizPlayOverlay`'s portal root, carries `qz-stage` plus the
+  accent vars; a new quiz client must do the same.
+- **Maps stay unchanged** (owner): only the chrome around a map board changed.
+- **Quiz mixes.** Between quizzes in Potluck, Mixtape and Mishmash, `app/quiz/[id]/PotHandoff.jsx`
+  covers the ending with one big start button for the next quiz on that quiz's own subject colour,
+  the outline countdown (run hand-off option C) and "Leave the run". It only draws: the countdown,
+  target and banked score stay in QuizClient. The final quiz still goes to the mix's end card.

@@ -20,19 +20,20 @@
 import React from 'react';
 import StageChrome from '../../StageChrome';
 import QuizIdleActions from './QuizIdleActions';
-import { QUIZ_ACC_VARS } from '@/lib/quiz-stage';
+import { QUIZ_SUBJECTS, quizAccVars } from '@/lib/quiz-stage';
 import { useStageTheme } from '@/lib/stage-theme';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 
-export default function QuizStageShell({ quizId, title, cat, total, clockMax, headline, body, blurb, ownBoard = false }) {
+export default function QuizStageShell({ quizId, title, cat, subject = 'trivia', total, clockMax, headline, body, blurb, ownBoard = false }) {
   const [stageTheme] = useStageTheme();
   return (
-    <div className="stage-page" data-stage-theme={stageTheme} aria-busy="true"
-      style={{ ...QUIZ_ACC_VARS, minHeight: '100vh', position: 'relative', overflowX: 'clip', background: 'var(--stg-ground)', color: 'var(--stg-ink,#e9edf4)' }}>
+    <div className="stage-page qz-stage" data-stage-theme={stageTheme} aria-busy="true"
+      style={{ ...quizAccVars({ format: subject === 'geography' ? 'map' : '' }), minHeight: '100vh', position: 'relative', overflowX: 'clip', background: 'var(--stg-ground)', color: 'var(--stg-ink,#e9edf4)' }}>
       {ownBoard ? null : (
         <>
           <StageChrome
+            tint={(QUIZ_SUBJECTS[subject] || QUIZ_SUBJECTS.trivia).dk}
             name={title}
             cat={cat}
             dateLabel={`${total} ${total === 1 ? 'answer' : 'answers'}`}

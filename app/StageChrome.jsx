@@ -298,6 +298,12 @@ export default function StageChrome({
   onHelp = null,
   // THE CALLER'S OWN END STATE (150 callers pass it): null while in play.
   outcome = null,
+  // A QUIZ'S SUBJECT COLOUR (owner, 2026-11-12, "Quiz Stage Restyle"): the
+  // Trivia or Geography ramp step from lib/quiz-stage.js quizTint(). A quiz has
+  // no registry row, so this is how it joins the dailies' header and looks: the
+  // same top bar, the same two looks, its colour softened into the dot and the
+  // tint. Null on every daily, which keeps reading its colour off the registry.
+  tint = null,
 }) {
   useRegisterStageHelp(onHelp);
   // The page's own clock for every finish freshness test (lib/finish-beat.js
@@ -310,8 +316,8 @@ export default function StageChrome({
   // ...and from 2026-10-24 every daily (owner: "all of the ready up pages need
   // to match this new style now too for mobile. simple."), each on its own
   // category's soft ground.
-  const pastelElig = !!gameKey;
-  const pastel = useSudokuPastel(pastelElig, SUDOKU_POOL.includes(gameKey) ? null : gameColor(gameKey));
+  const pastelElig = !!gameKey || !!tint;
+  const pastel = useSudokuPastel(pastelElig, gameKey ? (SUDOKU_POOL.includes(gameKey) ? null : gameColor(gameKey)) : tint);
   const started = useStarted(gameKey, num);
   const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
   // THE FOOT ROW (owner, 2026-10-28, "this is new standard"): Clock and How to

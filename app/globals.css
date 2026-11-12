@@ -1600,3 +1600,43 @@ html:is([data-stage-pastel^='dark'], [data-stage-tone^='dark']) :is(.stf-curtain
    board view (.stf-bv); that is not an ending on screen, so the stage stays and
    the answers are drawn on it instead of on the old page. */
 html:has(.loft-back, .stf:not(.stf-bv), .sst-page, .srl) :is(.pst, .wst, .bks){display:none !important;}
+
+/* A QUIZ'S HITS WEAR ITS SUBJECT COLOUR (owner, 2026-11-12, "Quiz Stage
+   Restyle", option 2). The two site looks paint --stg-acc-tint as a neutral
+   wash on every stage; on a quiz page (.qz-stage, set by every quiz client's
+   root) a found answer takes the quiz's own soft colour instead, Trivia orange
+   or Geography green (lib/quiz-stage.js quizTint, softened into --sp-g by
+   app/SudokuPastel.jsx). One extra class out-ranks the look's own !important.
+   Light: the soft colour, lifted a little toward white so ink reads at once.
+   Dark: the same colour sunk into the dark ground so light ink reads on it. */
+html[data-stage-pastel]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page.qz-stage,
+html[data-stage-tone]:not(:has(.stf, .stf-flood, .loft-back)) .stage-page.qz-stage {
+  --stg-acc-tint: color-mix(in srgb, var(--sp-g, #fdbe8a) 82%, #ffffff) !important;
+}
+html[data-stage-pastel^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page.qz-stage,
+html[data-stage-tone^='dark']:not(:has(.stf, .stf-flood, .loft-back)) .stage-page.qz-stage {
+  --stg-acc-tint: color-mix(in srgb, var(--sp-g, #fdbe8a) 40%, #0b0f1a) !important;
+}
+/* A QUIZ'S NAME WRAPS RATHER THAN TRUNCATES on a phone (2026-11-12). A daily's
+   name is one short word and the top bar shrinks it to fit; a quiz's is a
+   sentence ("Name the Nine Greek Muses"), which the same rule cut to "Name
+   the N...". Two centred lines, then the clamp; the padding keeps descenders. */
+@media (max-width: 899px) {
+  .stage-page.qz-stage .stb.has-t .stb-t h1 {
+    white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    text-align: center; line-height: 1.24; font-size: 15px !important; padding-bottom: 3px; margin-bottom: -3px;
+  }
+}
+/* A QUIZ TAKES THE DAILIES' TOP BAR ON DESKTOP TOO (2026-11-12). From 1100px a
+   daily's header is drawn by the desktop layout (app/LayoutCInner.jsx), which
+   needs a registry game and so never mounts on a quiz; without this the quiz
+   fell back to the old cap at that width. The quiz shows the same simple top
+   bar it shows on a phone: back, the name with its colour dot, Share, look. */
+@media (min-width: 1100px) {
+  html:not([data-stage-pastel]) .stage-page.qz-stage .stg-top:has(.stg-sim) .stg-sim { display: block; max-width: 1180px; margin: 0 auto; box-sizing: border-box; padding: 14px 38px 6px; }
+  html:not([data-stage-pastel]) .stage-page.qz-stage .stg-top:has(.stg-sim) .stg-cap { display: none !important; }
+}
+@media (min-width: 900px) {
+  html:not([data-stage-pastel]) .stage-page.qz-stage .stg-top:has(.stg-sim) :is(.stg-strip, .stg-prog) { display: none !important; }
+  html:not([data-stage-pastel]) .stage-page.qz-stage .stg-top:has(.stg-sim) .stg-fg { max-width: 1180px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 38px; padding-right: 38px; border: 0; }
+}

@@ -28,7 +28,7 @@ import Footer from '../../Footer';
 import QuizNavHeader from '../../quizzes/QuizNavHeader';
 import StageChrome from '../../StageChrome';
 import QuizLoftFinish from './QuizLoftFinish';
-import { isQuizStage, QUIZ_ACC_VARS } from '@/lib/quiz-stage';
+import { isQuizStage, quizAccVars, quizTint } from '@/lib/quiz-stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import QuizPlayOverlay from './QuizPlayOverlay';
 import QuizIdleActions from './QuizIdleActions';
@@ -135,9 +135,9 @@ export default function TimedMcqClient({ quizId, mobile = false }) {
 
   if (!quiz) {
     return (
-      <div className={QSTAGE ? 'stage-page' : (undefined)}
+      <div className={QSTAGE ? 'stage-page qz-stage' : (undefined)}
         data-stage-theme={QSTAGE ? stageTheme : undefined}
-        style={{ ...(QSTAGE ? QUIZ_ACC_VARS : null), minHeight: '100vh', position: 'relative', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
+        style={{ ...(QSTAGE ? quizAccVars(quiz) : null), minHeight: '100vh', position: 'relative', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
         {!QSTAGE && <Grain />}
         <div style={{ position: 'relative', zIndex: 2, padding: 48, textAlign: 'center' }}>
           <p style={{ fontFamily: SERIF, fontStyle: 'italic', color: FADED }}>That quiz seems to have wandered off.</p>
@@ -447,9 +447,9 @@ export default function TimedMcqClient({ quizId, mobile = false }) {
   const mPlayOverlay = mobile === true && (phase === 'playing' || phase === 'reveal');
 
   return (
-    <div className={QSTAGE ? 'stage-page' : (undefined)}
+    <div className={QSTAGE ? 'stage-page qz-stage' : (undefined)}
       data-stage-theme={QSTAGE ? stageTheme : undefined}
-      style={{ ...(QSTAGE ? QUIZ_ACC_VARS : null), minHeight: '100vh', position: 'relative', overflow: 'clip', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
+      style={{ ...(QSTAGE ? quizAccVars(quiz) : null), minHeight: '100vh', position: 'relative', overflow: 'clip', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
       <ChallengeRunOverlay run={chRun} />
       {!QSTAGE && <div style={{ position: 'relative', zIndex: 3 }}><QuizNavHeader /></div>}
       {/* THE CAP. Comments live above the element because a JSX comment
@@ -459,6 +459,7 @@ export default function TimedMcqClient({ quizId, mobile = false }) {
           card rather than inferred from the names of its variables. */}
       {QSTAGE && (
         <StageChrome
+          tint={quizTint(quiz)}
           name={quiz.title}
           cat={DEPT_LABEL[deptOf(quiz)] || quiz.category || 'Quiz'}
           dateLabel={`${total} ${total === 1 ? 'question' : 'questions'}`}
@@ -488,7 +489,7 @@ export default function TimedMcqClient({ quizId, mobile = false }) {
 
         {/* ── PLAY ── */}
         {tab === 'play' && (
-          <QuizPlayOverlay open={mPlayOverlay} stage={QSTAGE}>
+          <QuizPlayOverlay open={mPlayOverlay} stage={QSTAGE} vars={quizAccVars(quiz)}>
             {/* Freeze the score/timer bar at the top (44 = ribbon height), mirroring the
                 name-them-all board so the countdown and points stay visible as the
                 question and options scroll underneath. */}

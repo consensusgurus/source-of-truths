@@ -23,7 +23,7 @@ import Footer from '../../Footer';
 import Count from '../../Count';
 import QuizNavHeader from '../../quizzes/QuizNavHeader';
 import StageChrome from '../../StageChrome';
-import { isQuizStage, QUIZ_ACC_VARS } from '@/lib/quiz-stage';
+import { isQuizStage, quizAccVars, quizTint } from '@/lib/quiz-stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { isMobileDevice } from '@/lib/is-mobile';
 import useAbandonFlush from './useAbandonFlush';
@@ -54,6 +54,7 @@ import DailyChrome from '../../DailyChrome';
 import LoftCap from '../../LoftCap';
 import useQuizLoft from '../../useQuizLoft';
 import QuizLoftFinish from './QuizLoftFinish';
+import PotHandoff from './PotHandoff';
 
 const MapQuizBoard = dynamic(() => import('./MapQuizBoard'), { ssr: false, loading: () => null });
 const StreetMapBoard = dynamic(() => import('./StreetMapBoard'), { ssr: false, loading: () => null });
@@ -447,9 +448,9 @@ export default function QuizClient({ quizId }) {
 
   if (!quiz) {
     return (
-      <div className={QSTAGE ? 'stage-page' : (undefined)}
+      <div className={QSTAGE ? 'stage-page qz-stage' : (undefined)}
         data-stage-theme={QSTAGE ? stageTheme : undefined}
-        style={{ ...(QSTAGE ? QUIZ_ACC_VARS : null), minHeight: '100vh', position: 'relative', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
+        style={{ ...(QSTAGE ? quizAccVars(quiz) : null), minHeight: '100vh', position: 'relative', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
         {!QSTAGE && <Grain />}
         <div style={{ position: 'relative', zIndex: 2, padding: 48, textAlign: 'center' }}>
           <p style={{ fontFamily: SERIF, fontStyle: 'italic', color: FADED }}>That quiz seems to have wandered off.</p>
@@ -894,7 +895,7 @@ export default function QuizClient({ quizId }) {
       setPotCountdown(5);
     }
     setStats(recordResult(quizId, finalScore));
-    setHint(win ? `Perfect — all ${total} named in ${fmtTime(elapsed)}!` : (quiz.strike ? `Struck out — ${finalScore}/${total} before the miss.` : `Time! You got ${finalScore}/${total}.`));
+    setHint(win ? `Perfect, all ${total} named in ${fmtTime(elapsed)}!` : (quiz.strike ? `Struck out: ${finalScore}/${total} before the miss.` : `Time! You got ${finalScore}/${total}.`));
     setHintBad(!win);
     setGameOverDismissed(false);
     // Map games AND tile games (bank/type-it) keep the board on screen behind
@@ -978,10 +979,10 @@ export default function QuizClient({ quizId }) {
       setHint(mapCapitalPrompt
         ? `Erase the country whose capital is ${capOf(answers[ord[0]].t)}. Click it to wipe it off the map. One wrong click ends the run, and there is no skipping.`
         : quiz.erase
-        ? `Erase ${answers[ord[0]].t} — click it to wipe it off the map. One wrong click ends the run, and there is no skipping.`
+        ? `Erase ${answers[ord[0]].t}: click it to wipe it off the map. One wrong click ends the run, and there is no skipping.`
         : quiz.suddenDeath
-        ? `Find ${answers[ord[0]].t} — click it. One wrong click ends the game.`
-        : `Find ${answers[ord[0]].t} — click it. You get ${total} guesses, one per country.`);
+        ? `Find ${answers[ord[0]].t}: click it. One wrong click ends the game.`
+        : `Find ${answers[ord[0]].t}: click it. You get ${total} guesses, one per country.`);
     } else if (bankMode) {
       setHint('Match the prompt to a tile in the bank below.');
     } else if (orderBankMode) {
@@ -997,7 +998,7 @@ export default function QuizClient({ quizId }) {
     } else if (photoMatchMode) {
       setHint(`Tap the title tile that matches the ${quiz.noun || 'picture'} shown. Every tap spends a guess.`);
     } else {
-      setHint(ordered ? (quiz.strike ? 'Go — name them in order, from the top. One wrong answer ends it.' : 'Go — answer in order, from the top.') : matched ? (quiz.noun ? `Go — type each ${quiz.noun}.` : "Go — name each year's winner.") : (quiz.strike ? 'Go — one wrong answer ends the run. Name them all.' : 'Go — name them all.'));
+      setHint(ordered ? (quiz.strike ? 'Go: name them in order, from the top. One wrong answer ends it.' : 'Go: answer in order, from the top.') : matched ? (quiz.noun ? `Go: type each ${quiz.noun}.` : "Go: name each year's winner.") : (quiz.strike ? 'Go: one wrong answer ends the run. Name them all.' : 'Go, name them all.'));
     }
     setHintBad(false);
     timerRef.current = setInterval(() => {
@@ -1068,7 +1069,7 @@ export default function QuizClient({ quizId }) {
         const next = found.slice();
         next[i] = true;
         setFound(next);
-        setHint(`Correct — ${a.t}`);
+        setHint(`Correct: ${a.t}`);
         setHintBad(false);
         fireCue(true);
         if (next.every(Boolean)) endGame(true, next);
@@ -1077,13 +1078,13 @@ export default function QuizClient({ quizId }) {
     }
     if (quiz.strike) {
       const tried = (raw || '').trim();
-      setHint(`Struck out${tried ? ` — "${tried}"` : ''} is not in the top ${total}. Game over.`);
+      setHint(`Struck out${tried ? `: "${tried}"` : ''} is not in the top ${total}. Game over.`);
       setHintBad(true);
       fireCue(false);
       endGame(false);
       return;
     }
-    setHint('Not on the list — try another.');
+    setHint('Not on the list. Try another.');
     setHintBad(true);
     fireCue(false);
   }
@@ -1115,7 +1116,7 @@ export default function QuizClient({ quizId }) {
       const next = found.slice();
       next[i] = true;
       setFound(next);
-      setHint(`Correct — ${a.label != null ? a.label + ': ' : ''}${a.t}`);
+      setHint(`Correct: ${a.label != null ? a.label + ': ' : ''}${a.t}`);
       setHintBad(false);
       fireCue(true);
       if (next.every(Boolean)) endGame(true, next);
@@ -1123,7 +1124,7 @@ export default function QuizClient({ quizId }) {
     } else {
       setHintBad(true);
       fireCue(false);
-      if (slideshow && quiz.strike) { setHint(`Struck out — ${a.label != null ? a.label + ': ' : ''}${a.t} was the answer.`); endGame(false); }
+      if (slideshow && quiz.strike) { setHint(`Struck out: ${a.label != null ? a.label + ': ' : ''}${a.t} was the answer.`); endGame(false); }
       else setHint(quiz.noun ? "Not quite. Try again." : "Not that year's winner. Try again.");
     }
   }
@@ -1145,7 +1146,7 @@ export default function QuizClient({ quizId }) {
       const next = found.slice();
       next[j] = true;
       setFound(next);
-      setHint(`Correct — ${a.label != null ? a.label + ': ' : ''}${a.t}`);
+      setHint(`Correct: ${a.label != null ? a.label + ': ' : ''}${a.t}`);
       setHintBad(false);
       fireCue(true);
       if (next.every(Boolean)) endGame(true, next);
@@ -1156,7 +1157,7 @@ export default function QuizClient({ quizId }) {
       // the spot. The live keystroke handler (autoOrdered) never strikes, so a
       // player typing toward the correct answer is safe until they hit Enter.
       if (quiz.strike) {
-        setHint(`Struck out — ${a.label != null ? a.label + ': ' : ''}${a.t} was next.`);
+        setHint(`Struck out: ${a.label != null ? a.label + ': ' : ''}${a.t} was next.`);
         setHintBad(true);
         endGame(false);
         return;
@@ -1202,7 +1203,7 @@ export default function QuizClient({ quizId }) {
         const next = found.slice();
         next[i] = true;
         setFound(next);
-        setHint(`Correct — ${a.t}`);
+        setHint(`Correct: ${a.t}`);
         setHintBad(false);
         fireCue(true);
         if (next.every(Boolean)) endGame(true, next);
@@ -1222,7 +1223,7 @@ export default function QuizClient({ quizId }) {
       const next = found.slice();
       next[j] = true;
       setFound(next);
-      setHint(`Correct — ${a.label != null ? a.label + ': ' : ''}${a.t}`);
+      setHint(`Correct: ${a.label != null ? a.label + ': ' : ''}${a.t}`);
       setHintBad(false);
       fireCue(true);
       if (next.every(Boolean)) endGame(true, next);
@@ -1243,7 +1244,7 @@ export default function QuizClient({ quizId }) {
       }
       if (!couldReach(g, groupKeys)) {
         fireCue(false);
-        setHint(`Struck out — ${a.label != null ? a.label + ': ' : ''}${a.t} was next.`);
+        setHint(`Struck out: ${a.label != null ? a.label + ': ' : ''}${a.t} was next.`);
         setHintBad(true);
         endGame(false);
         return true;
@@ -1259,7 +1260,7 @@ export default function QuizClient({ quizId }) {
       const next = found.slice();
       next[i] = true;
       setFound(next);
-      setHint(`Correct — ${a.label != null ? a.label + ': ' : ''}${a.t}`);
+      setHint(`Correct: ${a.label != null ? a.label + ': ' : ''}${a.t}`);
       setHintBad(false);
       fireCue(true);
       if (next.every(Boolean)) endGame(true, next);
@@ -1292,28 +1293,28 @@ export default function QuizClient({ quizId }) {
       setTimeout(() => setFlash((f) => (f && f.name === name ? null : f)), 400);
       const ord = orderRef.current || [];
       const remaining = ord.filter((j) => !next[j]);
-      if (!remaining.length) { setHint(`Correct — ${name}. That's all of them.`); setHintBad(false); setCurName(null); endGame(true, next); return; }
-      if (left <= 0) { setHint(`Correct — ${name}. That was your last guess.`); setHintBad(false); setCurName(null); endGame(false, next); return; }
+      if (!remaining.length) { setHint(`Correct: ${name}. That's all of them.`); setHintBad(false); setCurName(null); endGame(true, next); return; }
+      if (left <= 0) { setHint(`Correct: ${name}. That was your last guess.`); setHintBad(false); setCurName(null); endGame(false, next); return; }
       const nn = answers[remaining[0]].t;
       setCurName(nn);
       setHint(mapImgPrompt
-        ? `Correct — ${name}. ${left} ${left === 1 ? 'guess' : 'guesses'} left. Next flag is up.`
+        ? `Correct: ${name}. ${left} ${left === 1 ? 'guess' : 'guesses'} left. Next flag is up.`
         : mapCapitalPrompt
         ? `Erased ${name}. ${left} to go. Next capital: ${capOf(nn)}.`
         : quiz.erase
         ? `Erased ${name}. ${left} to go. Now erase ${nn}.`
         : quiz.suddenDeath
-        ? `Correct — ${name}. ${left} to go. Now find ${nn}.`
-        : `Correct — ${name}. ${left} ${left === 1 ? 'guess' : 'guesses'} left. Now find ${nn}.`);
+        ? `Correct: ${name}. ${left} to go. Now find ${nn}.`
+        : `Correct: ${name}. ${left} ${left === 1 ? 'guess' : 'guesses'} left. Now find ${nn}.`);
       setHintBad(false);
     } else {
       setFlash({ name, ok: false });
       setTimeout(() => setFlash((f) => (f && f.name === name ? null : f)), 400);
       fireCue(false);
       // Sudden-death map: one wrong click ends the run on the spot.
-      if (quiz.suddenDeath) { setHint(mapImgPrompt ? `That was ${name} — not this flag's country. Game over.` : mapCapitalPrompt ? `That was ${name}, not the country whose capital is ${capOf(curName)}. Game over.` : `That was ${name}, not ${curName}. One wrong click ends it — game over.`); setHintBad(true); endGame(false); return; }
-      if (left <= 0) { setHint(mapImgPrompt ? `That was ${name} — not this flag's country. Out of guesses.` : `That was ${name}, not ${curName}. Out of guesses.`); setHintBad(true); endGame(false); return; }
-      setHint(mapImgPrompt ? `That was ${name} — not this flag's country. ${left} ${left === 1 ? 'guess' : 'guesses'} left.` : `Not ${curName} — try again. ${left} ${left === 1 ? 'guess' : 'guesses'} left.`);
+      if (quiz.suddenDeath) { setHint(mapImgPrompt ? `That was ${name}, not this flag's country. Game over.` : mapCapitalPrompt ? `That was ${name}, not the country whose capital is ${capOf(curName)}. Game over.` : `That was ${name}, not ${curName}. One wrong click ends it. Game over.`); setHintBad(true); endGame(false); return; }
+      if (left <= 0) { setHint(mapImgPrompt ? `That was ${name}, not this flag's country. Out of guesses.` : `That was ${name}, not ${curName}. Out of guesses.`); setHintBad(true); endGame(false); return; }
+      setHint(mapImgPrompt ? `That was ${name}, not this flag's country. ${left} ${left === 1 ? 'guess' : 'guesses'} left.` : `Not ${curName}. Try again. ${left} ${left === 1 ? 'guess' : 'guesses'} left.`);
       setHintBad(true);
     }
   }
@@ -1328,7 +1329,7 @@ export default function QuizClient({ quizId }) {
     const ord = orderRef.current || [];
     const remaining = ord.filter((j) => !found[j]);
     if (remaining.length <= 1) {
-      setHint(mapImgPrompt ? 'The last flag remains — find its country on the map.' : `${curName} is the last one — find it on the map.`);
+      setHint(mapImgPrompt ? 'The last flag remains. Find its country on the map.' : `${curName} is the last one. Find it on the map.`);
       setHintBad(false);
       return;
     }
@@ -1336,14 +1337,14 @@ export default function QuizClient({ quizId }) {
     orderRef.current = newOrd;
     const nn = answers[newOrd.filter((j) => !found[j])[0]].t;
     setCurName(nn);
-    setHint(mapImgPrompt ? `Flag skipped — it comes back around later.` : `Skipped ${curName} — you'll come back to it. Now find ${nn}.`);
+    setHint(mapImgPrompt ? `Flag skipped. It comes back around later.` : `Skipped ${curName}. You'll come back to it. Now find ${nn}.`);
     setHintBad(false);
   }
 
   function onPairMatch(companyIndex, matchedCount, company, slogan) {
     pairsMatchedRef.current = matchedCount;
     setPairsMatched(matchedCount);
-    setHint(`Match — ${company}: “${slogan}”.`);
+    setHint(`Match: ${company}: “${slogan}”.`);
     setHintBad(false);
   }
   function onPairError(errorCount, company) {
@@ -1667,9 +1668,9 @@ export default function QuizClient({ quizId }) {
     : { position: 'sticky', top: stickyTop, zIndex: 4, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, background: started && !ended ? `var(--stg-raise,${COLORS.ink})` : `var(--stg-raise,${COLORS.paper})`, color: started && !ended ? `var(--stg-ink,${COLORS.cream})` : `var(--stg-mute,${COLORS.faded})`, borderRadius: 10, border: `1px solid var(--stg-line,${COLORS.faded}33)`, padding: '7px 14px', marginBottom: 8, minHeight: 0 };
 
   return (
-    <div className={QSTAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+    <div className={QSTAGE ? 'stage-page qz-stage' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={QSTAGE ? stageTheme : undefined}
-      style={{ ...(QSTAGE ? QUIZ_ACC_VARS : null), minHeight: '100vh', position: 'relative', overflowX: 'clip', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
+      style={{ ...(QSTAGE ? quizAccVars(quiz) : null), minHeight: '100vh', position: 'relative', overflowX: 'clip', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
       <QuizCelebration kind={celebration} onDone={() => setCelebration(null)} />
       {duelBanner}
       <style dangerouslySetInnerHTML={{ __html: `input:focus::placeholder{color:transparent}` }} />
@@ -1698,6 +1699,7 @@ export default function QuizClient({ quizId }) {
           JSX comment inside an opening tag does not parse. */}
       {(LOFT || QSTAGE) && (
         <Cap
+          tint={quizTint(quiz)}
           name={quiz.title}
           cat={DEPT_LABEL[deptOf(quiz)] || quiz.category || 'Quiz'}
           dateLabel={`${total} ${total === 1 ? 'answer' : 'answers'}`}
@@ -1750,6 +1752,25 @@ export default function QuizClient({ quizId }) {
               </div>
             </div>
           )}
+          {potActive && ended && potNext != null && potCountdown != null && potCountdown > 0 && (() => {
+            // THE HAND-OFF (owner, 2026-11-12, "Quiz Stage Restyle"): the next
+            // quiz's name on one big start button, on that quiz's own subject
+            // colour, its countdown drawn around the edge. The timer, the target
+            // and the banked score are the ones below; a press just goes now.
+            const nq = getQuiz(potDay.quizzes[potNext]);
+            return (
+              <PotHandoff
+                pastel={quizTint(nq)}
+                label={`Quiz ${potNext + 1} of ${potDay.quizzes.length}`}
+                title={nq ? nq.title : `Quiz ${potNext + 1}`}
+                sub={nq ? (DEPT_LABEL[deptOf(nq)] || null) : null}
+                href={potTarget}
+                leaveHref={potHome}
+                seconds={5}
+                onGo={() => router.push(potTarget)}
+              />
+            );
+          })()}
           {potActive && (
             <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '9px 14px', borderRadius: 10, border: '1.5px solid var(--stg-acc-ink, var(--stg-acc,#c2410c))', background: 'var(--stg-surf,#fff7ed)' }}>
               <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 800, color: 'var(--stg-acc-ink,#c2410c)' }}>
@@ -1883,7 +1904,7 @@ export default function QuizClient({ quizId }) {
         <div className={LOFT ? 'loft-flip-in' : undefined}>
         <div className={LOFT ? 'loft-face' : undefined}>
         <div className={LOFT ? 'loft-sheet' : undefined}>
-          <QuizPlayOverlay open={mPlayOverlay} stage={QSTAGE}>
+          <QuizPlayOverlay open={mPlayOverlay} stage={QSTAGE} vars={quizAccVars(quiz)}>
             {/* Compact title row, shown only inside the mobile fullscreen popup
                 (the page title/header is covered by the overlay). */}
             {mPlayOverlay && (
@@ -1935,7 +1956,7 @@ export default function QuizClient({ quizId }) {
               )}
               {(started || ended) && !bottomDock && (<div style={{ position: 'relative', display: 'flex', flex: (matched && !ordered) || mapMode || tileMode ? 1 : 'none' }}>
               <button onClick={start} disabled={started || ended} style={{ flex: 1, fontFamily: MONO, fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '0 22px', height: 50, border: 'none', background: QSTAGE ? (started || ended ? 'var(--stg-surf2)' : QACC) : T.cta, color: QSTAGE ? (started || ended ? 'var(--stg-mute)' : ON_ACC) : T.ctaInk, cursor: started || ended ? 'default' : 'pointer', opacity: (started || ended) && !QSTAGE ? 0.5 : 1 }}>
-                {ended ? 'Done' : started ? 'Playing' : (matched && !ordered) ? (quiz.noun ? 'Play' : 'Play — name each year') : 'Play'}
+                {ended ? 'Done' : started ? 'Playing' : (matched && !ordered) ? (quiz.noun ? 'Play' : 'Play: name each year') : 'Play'}
               </button>
               {/* Correct/wrong verdict pops over the Play button (replaces the old
                   full-width banner, which forced a large gap below the input). */}
@@ -1980,7 +2001,7 @@ export default function QuizClient({ quizId }) {
                 />
               <div style={{ position: 'relative', display: 'flex', flex: (matched && !ordered) || mapMode || tileMode ? 1 : 'none' }}>
               <button onClick={start} disabled={started || ended} style={{ flex: 1, fontFamily: MONO, fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '0 22px', height: 50, border: 'none', background: QSTAGE ? (started || ended ? 'var(--stg-surf2)' : QACC) : T.cta, color: QSTAGE ? (started || ended ? 'var(--stg-mute)' : ON_ACC) : T.ctaInk, cursor: started || ended ? 'default' : 'pointer', opacity: (started || ended) && !QSTAGE ? 0.5 : 1 }}>
-                {ended ? 'Done' : started ? 'Playing' : (matched && !ordered) ? (quiz.noun ? 'Play' : 'Play — name each year') : 'Play'}
+                {ended ? 'Done' : started ? 'Playing' : (matched && !ordered) ? (quiz.noun ? 'Play' : 'Play: name each year') : 'Play'}
               </button>
               {/* Correct/wrong verdict pops over the Play button (replaces the old
                   full-width banner, which forced a large gap below the input). */}
