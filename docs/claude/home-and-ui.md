@@ -2749,3 +2749,10 @@ ten because the colour schemes are good. He picked "option A" from a mockup and 
 - **Not redone:** the static share cards in `public/og/` were baked in the old category colours
   (card games in magenta, the Visual games in rose). They are still correct cards; re-bake them when
   a network environment is available.
+
+## Stage wave six (2026-11-12): Crux, Shards, Span
+
+- Crux and Shards play on PlayStage (`wide`) with their own board drawn once (`cxBoard`, `shBoard`): on the stage or on the page, never both.
+- Site pastels, owner 2026-11-12 ("crux should use our pastels, as should shards"). Crux's four category colours are gold, mint, sky and rose: the 60/40 pastel on the light register, the raw ramp step on dark, always with ink #08222e. Shards pieces use `pcFill(id, dark)`: `sitePastelHex(regionHue(id).dk)` in the light looks, the raw step in the dark looks. On the white stage `--stg-dk` is forced to 100% in every look, so it cannot tell light from dark there; decide dark from `isDarkLook(useStageLook())` on the stage.
+- Span uses the true-colour Carmen globe ("span needs to use our new map"): `app/span/SpanGlobe.jsx` on `lib/carmen-globe.js`. `CarmenGlobe.setFills([{geo, fill, stroke, sw, op}])` shades whole countries, and `NE_NAME` maps Span's country names to Natural Earth's. Road countries are lime (pastel or raw), the destination is gold with a white edge, and a shortest road is sky after the round. On the stage the globe sits right under the input. Inside a run (EMBED) the flat SpanMap stays.
+- PlayStage adds `.dk` to `.pst` in the dark looks. StageLeg's `.pst.dk .lg-page` swaps the pastel tile for its dark mix, so leg text (Flank, Span) stays readable on dark.

@@ -48,6 +48,7 @@ import useDayStats from '../useDayStats';
 import useCategoryRank from '../useCategoryRank';
 import LoftFinish from '../LoftFinish';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { useStageRoom } from '@/lib/stage-fit';
@@ -91,13 +92,13 @@ const STAGE_BOARD_CSS = `
 .stage-page .cl-btn{background:transparent!important;color:var(--stg-ink,#e9edf4)!important;
   border:1.5px solid var(--stg-line2,rgba(255,255,255,0.17))!important;}
 .stage-page hr{border-color:var(--stg-line,rgba(255,255,255,0.11));}
-/* THE FOUR CATEGORY PASTELS (round seven, owner-approved mockup). Crux's own
-   colours, not the category ramp: yellow, green, blue, red, each a pale fill
-   carrying its own near-black ink. A pale fill with dark ink reads on either
+/* THE FOUR CATEGORY PASTELS (owner, 2026-11-12: "crux should use our
+   pastels"): gold, mint, sky and rose, the home tiles' pastel on the light
+   stage and the raw ramp step on the dark one, each with the one dark ink. A pale fill with dark ink reads on either
    ground, so the pair is the same in both registers; only the hairline that
    keeps a pastel off a pale page is register-specific. */
-.stage-page{--cx-c0:#f2cc5b;--cx-t0:#3d3104;--cx-c1:#86cf94;--cx-t1:#0f2e16;--cx-c2:#9cc3f0;--cx-t2:#0b2c4f;--cx-c3:#f09a9a;--cx-t3:#4a0e0e;--cx-pill:#ffffff;--cx-catbd:transparent;}
-.stage-page[data-stage-theme='light']{--cx-c0:#f2cc5b;--cx-t0:#3d3104;--cx-c1:#86cf94;--cx-t1:#0f2e16;--cx-c2:#9cc3f0;--cx-t2:#0b2c4f;--cx-c3:#f09a9a;--cx-t3:#4a0e0e;--cx-pill:#ffffff;--cx-catbd:var(--stg-line2);}
+.stage-page{--cx-c0:#e8b43a;--cx-t0:#08222e;--cx-c1:#6ee7b7;--cx-t1:#08222e;--cx-c2:#7dd3fc;--cx-t2:#08222e;--cx-c3:#fb7185;--cx-t3:#08222e;--cx-pill:#ffffff;--cx-catbd:transparent;}
+.stage-page[data-stage-theme='light']{--cx-c0:#f1d289;--cx-t0:#08222e;--cx-c1:#a8f1d4;--cx-t1:#08222e;--cx-c2:#b1e5fd;--cx-t2:#08222e;--cx-c3:#fdaab6;--cx-t3:#08222e;--cx-pill:#ffffff;--cx-catbd:var(--stg-line2);}
 /* A key at rest is a raised surface on dark and a white key on light; a
    spent mark is a solid grey mixed from the register's own ink and cell, so
    it is opaque, quieter than a key, and carries --stg-ink2 legibly in both. */
@@ -113,6 +114,20 @@ const STAGE_BOARD_CSS = `
 @media(max-width:640px){
   .stage-page .cx-panel{background:transparent;border:0;border-radius:0;padding:0;margin-top:8px;}
 }
+`;
+
+// THE BOARD ON THE WHITE STAGE (owner, 2026-11-12). The board keeps its own
+// furniture; the stage drops the meter its foot line already says.
+const CX_ST_CSS = `
+.cx-st{display:flex;flex-direction:column;gap:6px;text-align:left;}
+.cx-st .cx-meter{display:none;}
+.cx-st .cx-panel{margin-top:0;}
+.pst .cx-st .cx-ob{font-size:13px;font-weight:700;line-height:1.15;}
+.pst .cx-st .cx-go{font-size:14px;font-weight:800;}
+.pst .cx-st .cl-key{font-weight:800;}
+.pst .cx-st .cl-key.cx-k.cx-kent{font-size:12px;}
+.pst .cx-st .cx-pill{font-size:11px;}
+@media(min-width:900px){.cx-st{max-width:660px;margin:0 auto;}}
 `;
 
 // Round seven furniture, written once and read by both registers through the
@@ -751,6 +766,10 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
   // Still resolved in an effect: the server cannot know what is stored.
   const [stageTheme] = useStageTheme();
   const STAGE = isStage('crux', searchParams);
+  const phoneStage = usePhoneStage();
+  // THE STAGE (owner, 2026-11-12): Crux plays on the shared white stage from
+  // Start until the ending's board view.
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
   // THE ACCENT AS A VARIABLE. It is only ever used as a CSS colour, so
   // every call site below themes itself and none of them had to be found.
   // The literals are published on the root element instead.
@@ -1492,179 +1511,10 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
     />
   );
 
-  return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), ...(stageRoom ? { '--cx-room': stageRoom + 'px' } : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {!STAGE && <Grain />}
-      {/* Shared daily chrome: home's #233a63 masthead + #16307a stat bar +
-          the #eef3ff slate rail, collapsing to one line once the clock runs
-          (owner mockup, 2026-08-04). Outside cx-wrap so the bands run full
-          bleed; nothing here is pinned. */}
-      {!STAGE && (
-      <DailyChrome slug="crux" name="Crux" collapsed={started} loft={LOFT}
-        stats={[{ k: 'Guesses', v: g.left },
-                { k: 'Words', v: `${PUZZLE.slots.filter((s) => g.solved[s.id]).length}/${PUZZLE.slots.length}` }]} />
-      )}
-      {LOFT && !STAGE && (
-        <LoftCap
-          name="Crux"
-          cat="Word"
-          outcome={playing ? null : (won ? 'won' : (endScore > 0 ? 'part' : 'lost'))}
-          num={PUZZLE.num}
-          tiles={playing ? null : upNext}
-          dateLabel={PUZZLE.dateLabel}
-          onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
-          figures={playing ? [
-            { v: `${g.order.length}/${PUZZLE.slots.length}`, k: 'words' },
-            { v: g.left, k: 'guesses left' },
-            { v: elapsed, k: 'time' },
-          ] : [
-            { v: `${endScore}/${PUZZLE.slots.length * 2}`, k: 'score' },
-            { v: `${g.order.length}/${PUZZLE.slots.length}`, k: 'words' },
-            { v: guessesUsed, k: 'guesses' },
-            { v: elapsed, k: 'time' },
-          ]}
-        />
-      )}
-      {/* THE STRIP COMES DOWN WHILE THE CLOCK RUNS. A live figure about other
-          people does not belong over a board being worked, which is the run's
-          own rule about what may sit over a clock. */}
-      {STAGE && (
-        <StageChrome
-          gameKey="crux"
-          name="Crux"
-          dateLabel={PUZZLE.dateLabel}
-          sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
-          quizId={PUZZLE.quizId}
-          scoreWord={`of ${PUZZLE.slots.length * 2}`}
-          progress={PUZZLE.slots.length ? g.order.length / PUZZLE.slots.length : 0}
-          stripOn={!started || !playing}
-          figures={playing ? [
-            { v: `${g.order.length}/${PUZZLE.slots.length}`, k: 'words' },
-            { v: g.left, k: 'guesses left' },
-            { v: elapsed, k: 'time' },
-          ] : [
-            { v: `${endScore}/${PUZZLE.slots.length * 2}`, k: 'score' },
-            { v: `${g.order.length}/${PUZZLE.slots.length}`, k: 'words' },
-            { v: guessesUsed, k: 'guesses' },
-            { v: elapsed, k: 'time' },
-          ]}
-        />
-      )}
-      {STAGE && <style dangerouslySetInnerHTML={{ __html: STAGE_BOARD_CSS }} />}
-      <div className="cx-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: STAGE ? '10px 38px 40px' : '18px 38px 80px', fontFamily: SANS }}>
-        <style dangerouslySetInnerHTML={{ __html: `
-          .cx-a{margin:0 auto;}
-          /* FOUR ACROSS, not two by two. The card is 640 wide and the board
-             only ever needs about 510 of it, so the categories had spare width
-             and were spending height instead: two rows of chips cost 98px above
-             a board that was already running past the fold. One row of four,
-             each chip stacking its name over its two slots, costs 64. That is
-             34px of the fix bought without shrinking a single cell. */
-          .cl-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-          .cl-cat{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:5px;min-height:0;padding:9px 10px;}
-          .cl-cat-nm{margin-bottom:0 !important;}
-          @media (max-width:700px){.cl-cats{grid-template-columns:1fr 1fr;}}
-          /* CELL SIZE IS CLAMPED ON BOTH AXES. It used to be width only, via
-             CS_FILL, which is derived from the COLUMN count alone: the bank runs
-             from 6 to 13 rows, so a 12-row puzzle rendered 645px of grid and ran
-             250px past the bottom of an 813px window. The height term divides
-             what is left after the chrome, the cap, the categories and the row
-             under the board, so a tall board shrinks and a short one is
-             untouched. The floor stops a very tall board on a short window from
-             shrinking to something unreadable; past that point the page scrolls,
-             which is the better trade. At 1080 tall nothing changes at all. */
-          .cl-grid{--cs:min(${CS_FILL}px, calc((596px - ${(COLS - 1) * 3}px)/${COLS}), max(${CS_MIN}px, calc((100vh - var(--cx-room, ${VROOM}px) - ${GAPS}px)/${ROWS})));}
-          @media (max-width:900px){.cl-grid{--cs:min(${CS_FILL}px, calc((100vw - ${88 + (COLS - 1) * 3}px)/${COLS}), max(${CS_MIN}px, calc((100vh - var(--cx-room, ${VROOM}px) - ${GAPS}px)/${ROWS})));}}
-          @media (max-width:560px){.cx-wrap{padding-left:16px !important;padding-right:16px !important;}.cl-grid{--cs:min(46px, calc((100vw - ${52 + (COLS - 1) * 3}px)/${COLS}));}.cl-panel{padding:${STAGE ? '0' : '11px 11px 13px'} !important;}.cl-cat{flex-direction:column;align-items:stretch;gap:3px;padding:5px 7px !important;}}
-          .cx-htp-s{display:none;}
-          @media(max-width:520px){.cx-htp-f{display:none;}.cx-htp-s{display:inline;}}
-          @media(max-width:560px){.cx-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.cx-ttl h1{font-size:21px;letter-spacing:0.02em;}.cx-ttl .cx-ttl-dt{font-size:15px;}.cx-ttl-dot{display:none;}}
-          .cx-pip{position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:3px;border:1px solid rgba(0,0,0,0.4);box-shadow:0 1px 0 rgba(255,255,255,0.35);}
-          .cx-armed{box-shadow:inset 0 0 0 2px #dce9ff, 0 0 0 3px rgba(37,99,235,0.6) !important;z-index:2;}
-          .cx-unfiled::after{content:'';position:absolute;left:20%;right:20%;bottom:5px;height:2px;border-radius:2px;background:rgba(150,185,255,0.9);}
-          .cl-key{border:none;font-family:${SANS};font-weight:800;cursor:pointer;border-radius:6px;padding:0;touch-action:manipulation;}
-          .cl-grid > div{touch-action:manipulation;}
-          .cl-key:active{transform:scale(0.94);}
-          .cx-tries{display:flex;flex-direction:column;gap:4px;max-height:126px;overflow-y:auto;scrollbar-width:thin;}
-          @media(max-width:560px){.cx-tries{max-height:96px;}}
-          .cl-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid var(--blue-deep);background:${STAGE ? 'transparent' : 'var(--white)'};color:var(--blue-deep);border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
-          .cl-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
-          .cx-cur{position:relative;}
-          .cx-cur::after{content:'';position:absolute;bottom:14%;left:22%;right:22%;height:2.5px;background:var(--blue);animation:cxcaret 1.1s step-end infinite;}
-          @keyframes cxcaret{50%{opacity:0;}}
-          @keyframes cxfade{from{opacity:0;}}
-          @keyframes cxstamp{from{opacity:0;transform:scale(.94);}}
-          @keyframes cxflipA{from{transform:rotateX(90deg);background:${STAGE ? 'transparent' : 'var(--white)'};color:transparent;}}
-          @keyframes cxflipB{from{transform:rotateX(90deg);background:${STAGE ? 'transparent' : 'var(--white)'};color:transparent;}}
-          @keyframes cxpulseA{0%{box-shadow:0 0 0 0 rgba(37,99,235,0);}45%{transform:scale(1.18);box-shadow:0 0 0 5px rgba(37,99,235,0.4);}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,0);}}
-          @keyframes cxpulseB{0%{box-shadow:0 0 0 0 rgba(37,99,235,0);}45%{transform:scale(1.18);box-shadow:0 0 0 5px rgba(37,99,235,0.4);}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,0);}}
-          @keyframes cxcat{from{background:${STAGE ? 'transparent' : 'var(--white)'};color:transparent;transform:scale(.82);}}
-          ${CX_R7_CSS}
-        ` }} />
-
-        {/* puzzle content centered: the page column is 1180, the puzzle column
-            sizes to the board (Option A single-column layout) */}
-        <div style={{ maxWidth: COLW, margin: '0 auto' }}>
-
-
-        {/* masthead: pressed CRUX tiles with the issue no. + date on the same
-            line, a single rule beneath (they stack on mobile) */}
-        {!LOFT && (
-        <DailyMasthead
-          slug="crux"
-          num={PUZZLE.num}
-          dateLabel={PUZZLE.dateLabel}
-          accent={COLORS.ember}
-          blockGap={5}
-          helpTop={13}
-          marginBottom={16}
-          onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday && (
-              <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', color: T.white, background: COLORS.ink, borderRadius: 3, padding: '2px 7px' }}>Sunday Edition</span>
-            )}
-          blocks={'CRUX'.split('').map((ch, i) => (
-              <div key={i} style={{ width: 46, height: 46, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SERIF, fontWeight: 900, fontSize: 28, background: i === 2 ? COLORS.ember : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
-            ))}
-        />
-        )}
-
-        <div className="cx-a">
-        <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
-          {/* start tile — sits where the board goes; the puzzle stays sealed
-              (not rendered) until the player presses Start, which begins the clock. */}
-          {preStart && (
-            <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : COLORS.cream, border: STAGE ? '1px solid var(--stg-line)' : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '22px', display: 'flex', flexDirection: 'column', marginBottom: 12 }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
-              {gateRules ? rulesBody : (
-                <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                  <p style={{ margin: '0 0 6px' }}>Interlocking words, no clues: just four categories to guide you. Guess real words to reveal the letters.</p>
-                </div>
-              )}
-              <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="cl-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
-                <div>
-                  <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-                    {gateRules ? 'Back' : 'How to play'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* the puzzle, one card: guesses + category clues + the grid */}
-          {!preStart && (
-          <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
-          <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
-          <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
-          <div className={STAGE ? 'cl-panel stg-board' : (LOFT ? 'cl-panel loft-card' : 'cl-panel')} style={STAGE
-            // NO CARD. The board sits on the ground, which is the whole point
-            // of the stage: a white panel here reads as a cut-out, and a dark
-            // panel reads as a second ground nobody asked for.
-            ? { background: 'transparent', border: 'none', borderRadius: 0, padding: 0, boxShadow: 'none', marginBottom: 12 }
-            : { background: `var(--stg-surf, ${T.white})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: '14px 16px 16px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+  // THE BOARD, ONCE (owner, 2026-11-12: Crux moves onto the white stage). It is
+  // drawn either on the stage or on the page, never both (the grid carries
+  // gridRef and the key handlers).
+  const cxBoard = (
             <div className="cx-in">
             {/* THE METER (round seven). Words solved as eight segments, and the
                 shared guess budget as one pip per guess, so both of the
@@ -1853,7 +1703,7 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
                     ? <><span className="cx-dk">{solvedUnfiled.join(', ')} {solvedUnfiled.length === 1 ? 'is' : 'are'} solved but not filed (underlined). Tap {solvedUnfiled.length === 1 ? 'it' : 'one'} on the board, then a category.</span><span className="cx-ph">{solvedUnfiled.join(', ')} {solvedUnfiled.length === 1 ? 'is' : 'are'} solved, not filed: tap {solvedUnfiled.length === 1 ? 'it' : 'one'}, then a category.</span></>
                     : null}
               </span>
-              {!allWordsSolved && (
+              {!allWordsSolved && !stageOn && (
                 <button type="button" className={`cx-giveup${armGive ? ' armed' : ''}`} onClick={() => { if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; giveUp(); } else { setArmGive(Date.now()); setTimeout(() => setArmGive(false), 3500); } }}
                   title={armGive ? 'Ends the puzzle now' : 'End the puzzle now instead of spending the rest of your guesses'}>
                   {armGive ? 'Press again' : 'Give up'}
@@ -1862,6 +1712,190 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
             </div>
           )}
           </div>
+  );
+
+  return (
+    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+      data-stage-theme={STAGE ? stageTheme : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), ...(stageRoom ? { '--cx-room': stageRoom + 'px' } : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('crux')} label="Crux" wide
+          eyebrow={`Crux${PUZZLE.sunday ? ' · Sunday Edition' : ''} · no clues, four categories`}
+          top={<div className="cx-st" style={{ width: '100%' }}><style dangerouslySetInnerHTML={{ __html: CX_ST_CSS }} />{cxBoard}</div>}
+          foot={`${g.order.length} of ${PUZZLE.slots.length} words · ${g.left} guesses left`}
+          giveUp={playing && !allWordsSolved ? { armed: !!armGive, onPress: () => { if (armGive) { if (Date.now() - armGive < ARM_MIN_MS) return; giveUp(); } else { setArmGive(Date.now()); setTimeout(() => setArmGive(false), 3500); } } } : null}
+          clock={elapsed} done={!playing} />
+      )}
+      {!STAGE && <Grain />}
+      {/* Shared daily chrome: home's #233a63 masthead + #16307a stat bar +
+          the #eef3ff slate rail, collapsing to one line once the clock runs
+          (owner mockup, 2026-08-04). Outside cx-wrap so the bands run full
+          bleed; nothing here is pinned. */}
+      {!STAGE && (
+      <DailyChrome slug="crux" name="Crux" collapsed={started} loft={LOFT}
+        stats={[{ k: 'Guesses', v: g.left },
+                { k: 'Words', v: `${PUZZLE.slots.filter((s) => g.solved[s.id]).length}/${PUZZLE.slots.length}` }]} />
+      )}
+      {LOFT && !STAGE && (
+        <LoftCap
+          name="Crux"
+          cat="Word"
+          outcome={playing ? null : (won ? 'won' : (endScore > 0 ? 'part' : 'lost'))}
+          num={PUZZLE.num}
+          tiles={playing ? null : upNext}
+          dateLabel={PUZZLE.dateLabel}
+          onHelp={() => setShowHelp(true)}
+          sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
+          figures={playing ? [
+            { v: `${g.order.length}/${PUZZLE.slots.length}`, k: 'words' },
+            { v: g.left, k: 'guesses left' },
+            { v: elapsed, k: 'time' },
+          ] : [
+            { v: `${endScore}/${PUZZLE.slots.length * 2}`, k: 'score' },
+            { v: `${g.order.length}/${PUZZLE.slots.length}`, k: 'words' },
+            { v: guessesUsed, k: 'guesses' },
+            { v: elapsed, k: 'time' },
+          ]}
+        />
+      )}
+      {/* THE STRIP COMES DOWN WHILE THE CLOCK RUNS. A live figure about other
+          people does not belong over a board being worked, which is the run's
+          own rule about what may sit over a clock. */}
+      {STAGE && (
+        <StageChrome
+          gameKey="crux"
+          name="Crux"
+          dateLabel={PUZZLE.dateLabel}
+          sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
+          quizId={PUZZLE.quizId}
+          scoreWord={`of ${PUZZLE.slots.length * 2}`}
+          progress={PUZZLE.slots.length ? g.order.length / PUZZLE.slots.length : 0}
+          stripOn={!started || !playing}
+          figures={playing ? [
+            { v: `${g.order.length}/${PUZZLE.slots.length}`, k: 'words' },
+            { v: g.left, k: 'guesses left' },
+            { v: elapsed, k: 'time' },
+          ] : [
+            { v: `${endScore}/${PUZZLE.slots.length * 2}`, k: 'score' },
+            { v: `${g.order.length}/${PUZZLE.slots.length}`, k: 'words' },
+            { v: guessesUsed, k: 'guesses' },
+            { v: elapsed, k: 'time' },
+          ]}
+        />
+      )}
+      {STAGE && <style dangerouslySetInnerHTML={{ __html: STAGE_BOARD_CSS }} />}
+      <div className="cx-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: STAGE ? '10px 38px 40px' : '18px 38px 80px', fontFamily: SANS }}>
+        <style dangerouslySetInnerHTML={{ __html: `
+          .cx-a{margin:0 auto;}
+          /* FOUR ACROSS, not two by two. The card is 640 wide and the board
+             only ever needs about 510 of it, so the categories had spare width
+             and were spending height instead: two rows of chips cost 98px above
+             a board that was already running past the fold. One row of four,
+             each chip stacking its name over its two slots, costs 64. That is
+             34px of the fix bought without shrinking a single cell. */
+          .cl-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+          .cl-cat{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:5px;min-height:0;padding:9px 10px;}
+          .cl-cat-nm{margin-bottom:0 !important;}
+          @media (max-width:700px){.cl-cats{grid-template-columns:1fr 1fr;}}
+          /* CELL SIZE IS CLAMPED ON BOTH AXES. It used to be width only, via
+             CS_FILL, which is derived from the COLUMN count alone: the bank runs
+             from 6 to 13 rows, so a 12-row puzzle rendered 645px of grid and ran
+             250px past the bottom of an 813px window. The height term divides
+             what is left after the chrome, the cap, the categories and the row
+             under the board, so a tall board shrinks and a short one is
+             untouched. The floor stops a very tall board on a short window from
+             shrinking to something unreadable; past that point the page scrolls,
+             which is the better trade. At 1080 tall nothing changes at all. */
+          .cl-grid{--cs:min(${CS_FILL}px, calc((596px - ${(COLS - 1) * 3}px)/${COLS}), max(${CS_MIN}px, calc((100vh - var(--cx-room, ${VROOM}px) - ${GAPS}px)/${ROWS})));}
+          @media (max-width:900px){.cl-grid{--cs:min(${CS_FILL}px, calc((100vw - ${88 + (COLS - 1) * 3}px)/${COLS}), max(${CS_MIN}px, calc((100vh - var(--cx-room, ${VROOM}px) - ${GAPS}px)/${ROWS})));}}
+          @media (max-width:560px){.cx-wrap{padding-left:16px !important;padding-right:16px !important;}.cl-grid{--cs:min(46px, calc((100vw - ${52 + (COLS - 1) * 3}px)/${COLS}));}.cl-panel{padding:${STAGE ? '0' : '11px 11px 13px'} !important;}.cl-cat{flex-direction:column;align-items:stretch;gap:3px;padding:5px 7px !important;}}
+          .cx-htp-s{display:none;}
+          @media(max-width:520px){.cx-htp-f{display:none;}.cx-htp-s{display:inline;}}
+          @media(max-width:560px){.cx-ttl{flex-direction:column;align-items:flex-start;gap:1px;}.cx-ttl h1{font-size:21px;letter-spacing:0.02em;}.cx-ttl .cx-ttl-dt{font-size:15px;}.cx-ttl-dot{display:none;}}
+          .cx-pip{position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:3px;border:1px solid rgba(0,0,0,0.4);box-shadow:0 1px 0 rgba(255,255,255,0.35);}
+          .cx-armed{box-shadow:inset 0 0 0 2px #dce9ff, 0 0 0 3px rgba(37,99,235,0.6) !important;z-index:2;}
+          .cx-unfiled::after{content:'';position:absolute;left:20%;right:20%;bottom:5px;height:2px;border-radius:2px;background:rgba(150,185,255,0.9);}
+          .cl-key{border:none;font-family:${SANS};font-weight:800;cursor:pointer;border-radius:6px;padding:0;touch-action:manipulation;}
+          .cl-grid > div{touch-action:manipulation;}
+          .cl-key:active{transform:scale(0.94);}
+          .cx-tries{display:flex;flex-direction:column;gap:4px;max-height:126px;overflow-y:auto;scrollbar-width:thin;}
+          @media(max-width:560px){.cx-tries{max-height:96px;}}
+          .cl-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid var(--blue-deep);background:${STAGE ? 'transparent' : 'var(--white)'};color:var(--blue-deep);border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .cl-btn:hover{background:var(--stg-surf2, var(--accent-soft));}
+          .cx-cur{position:relative;}
+          .cx-cur::after{content:'';position:absolute;bottom:14%;left:22%;right:22%;height:2.5px;background:var(--blue);animation:cxcaret 1.1s step-end infinite;}
+          @keyframes cxcaret{50%{opacity:0;}}
+          @keyframes cxfade{from{opacity:0;}}
+          @keyframes cxstamp{from{opacity:0;transform:scale(.94);}}
+          @keyframes cxflipA{from{transform:rotateX(90deg);background:${STAGE ? 'transparent' : 'var(--white)'};color:transparent;}}
+          @keyframes cxflipB{from{transform:rotateX(90deg);background:${STAGE ? 'transparent' : 'var(--white)'};color:transparent;}}
+          @keyframes cxpulseA{0%{box-shadow:0 0 0 0 rgba(37,99,235,0);}45%{transform:scale(1.18);box-shadow:0 0 0 5px rgba(37,99,235,0.4);}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,0);}}
+          @keyframes cxpulseB{0%{box-shadow:0 0 0 0 rgba(37,99,235,0);}45%{transform:scale(1.18);box-shadow:0 0 0 5px rgba(37,99,235,0.4);}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,0);}}
+          @keyframes cxcat{from{background:${STAGE ? 'transparent' : 'var(--white)'};color:transparent;transform:scale(.82);}}
+          ${CX_R7_CSS}
+        ` }} />
+
+        {/* puzzle content centered: the page column is 1180, the puzzle column
+            sizes to the board (Option A single-column layout) */}
+        <div style={{ maxWidth: COLW, margin: '0 auto' }}>
+
+
+        {/* masthead: pressed CRUX tiles with the issue no. + date on the same
+            line, a single rule beneath (they stack on mobile) */}
+        {!LOFT && (
+        <DailyMasthead
+          slug="crux"
+          num={PUZZLE.num}
+          dateLabel={PUZZLE.dateLabel}
+          accent={COLORS.ember}
+          blockGap={5}
+          helpTop={13}
+          marginBottom={16}
+          onHelp={() => setShowHelp(true)}
+          sunday={PUZZLE.sunday && (
+              <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '0.12em', textTransform: 'uppercase', color: T.white, background: COLORS.ink, borderRadius: 3, padding: '2px 7px' }}>Sunday Edition</span>
+            )}
+          blocks={'CRUX'.split('').map((ch, i) => (
+              <div key={i} style={{ width: 46, height: 46, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SERIF, fontWeight: 900, fontSize: 28, background: i === 2 ? COLORS.ember : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
+            ))}
+        />
+        )}
+
+        <div className="cx-a">
+        <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
+          {/* start tile — sits where the board goes; the puzzle stays sealed
+              (not rendered) until the player presses Start, which begins the clock. */}
+          {preStart && (
+            <div className={STAGE ? 'stg-gate' : undefined} style={{ background: STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : COLORS.cream, border: STAGE ? '1px solid var(--stg-line)' : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '22px', display: 'flex', flexDirection: 'column', marginBottom: 12 }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
+              {gateRules ? rulesBody : (
+                <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
+                  <p style={{ margin: '0 0 6px' }}>Interlocking words, no clues: just four categories to guide you. Guess real words to reveal the letters.</p>
+                </div>
+              )}
+              <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <button className="cl-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <div>
+                  <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
+                    {gateRules ? 'Back' : 'How to play'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* the puzzle, one card: guesses + category clues + the grid */}
+          {!preStart && (
+          <div className={LOFT && !STAGE && !playing ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
+          <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
+          <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
+          <div className={STAGE ? 'cl-panel stg-board' : (LOFT ? 'cl-panel loft-card' : 'cl-panel')} style={STAGE
+            // NO CARD. The board sits on the ground, which is the whole point
+            // of the stage: a white panel here reads as a cut-out, and a dark
+            // panel reads as a second ground nobody asked for.
+            ? { background: 'transparent', border: 'none', borderRadius: 0, padding: 0, boxShadow: 'none', marginBottom: 12 }
+            : { background: `var(--stg-surf, ${T.white})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: '14px 16px 16px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+            {!stageOn && cxBoard}
 
           <div className={STAGE ? undefined : 'loft-sol'}>
             {/* result */}

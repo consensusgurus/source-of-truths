@@ -53,9 +53,11 @@ import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
-import { regionStyle, regionMix, regionHue, REGION_INK } from '@/lib/category-ramp';
+import { regionStyle, regionMix, regionHue, REGION_INK, sitePastelHex } from '@/lib/category-ramp';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
 import GamePanel from '../GamePanel';
 import useIqStanding from '../useIqStanding';
@@ -107,7 +109,25 @@ function pcInk(id) {
   const light = (1.05 / (L + 0.05)) >= ((L + 0.05) / 0.0574) ? '#ffffff' : '#0b0f1a';
   return `color-mix(in srgb, #0b0f1a var(--stg-dk, 100%), ${light})`;
 }
+// THE SITE PASTELS (owner, 2026-11-12: "shards should use our pastels"). A piece
+// wears its region's pastel, the home tiles' 60/40 step on the light stage and
+// the raw step on the dark one, always lettered in the one dark ink.
+function pcFill(id, dark) {
+  const h = regionHue(id).dk;
+  return dark ? h : sitePastelHex(h);
+}
+const PC_INK = '#08222e';
 const SHARD_TINTS = ['#0d9488', '#7c3aed', '#d97706', T.blue, T.danger, T.successDeep, '#c026d3', '#0e7490', '#b45309', '#4338ca'];
+
+// THE BOARD ON THE WHITE STAGE (owner, 2026-11-12). The board and tray keep
+// their own furniture; buttons restate their size over the stage's font reset.
+const SH_ST_CSS = `
+.sh-st{display:flex;flex-direction:column;gap:8px;text-align:left;}
+.sh-st .sh-status{text-align:center;}
+.pst .sh-st .sh-btn{font-size:13px;font-weight:800;}
+.pst .sh-st .sh-hint{font-size:12px;font-weight:700;}
+.sh-st .sh-board{box-shadow:none;}
+`;
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -279,11 +299,17 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
   const playing = g.status === 'playing';
   const LOFT = isLoft('shards');
   const STAGE = isStage('shards', searchParams);
+  const phoneStage = usePhoneStage();
+  // THE STAGE (owner, 2026-11-12): from Start until the ending's board view.
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('shards');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('shards');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('shards'), '--stg-acc-lt': gameColorLight('shards'), '--stg-onramp-lt': gameOnrampLight('shards'), '--stg-acc-ink-lt': gameAccentInkLight('shards') };
   const [stageTheme] = useStageTheme();
+  const [stageLook] = useStageLook();
+  // Dark looks wear the raw step, the light ones the pastel (see pcFill).
+  const PC_DARK = stageOn ? isDarkLook(stageLook) : stageTheme !== 'light';
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -904,10 +930,135 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
   const TRAYCELL = N === 5 ? 30 : N === 6 ? 28 : N === 7 ? 26 : 24;
   const TRAYMAX = N >= 8 ? 640 : N === 7 ? 580 : 520;
 
+  // THE BOARD, ONCE (owner, 2026-11-12: Shards moves onto the white stage):
+  // drawn on the stage or on the page, never both (gridRef, the drag).
+  const shBoard = (
+    <>
+            <div className="sh-status" style={{ marginBottom: 10 }}>
+              <span className={`sh-status ${statusLine.cls}`}>{statusLine.msg}</span>
+            </div>
+            <div className="sh-cols" style={{ display: 'flex', gap: 26, flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                {/* board */}
+                <div className="sh-board pastel-board" ref={gridRef} role="grid" aria-label="Shards grid">
+                  {Array.from({ length: N * N }, (_, i) => {
+                    const r = Math.floor(i / N), c = i % N, k = r * 100 + c;
+                    const isBlock = blockSet.has(k);
+                    const cell = occ.get(k);
+                    const isHome = homeCells && homeCells.has(k);
+                    const isArmedCell = cell && armed === cell.id;
+                    const isWrong = cell && wrongHint === cell.id;
+                    const isLocked = cell && g.locked.includes(cell.id);
+                    // drag hover preview
+                    let hoverCls = '';
+                    if (drag && hoverCell) {
+                      const s = SHARDS[drag.id];
+                      const covers = s.offs.some((o) => hoverCell.r + o.dr === r && hoverCell.c + o.dc === c);
+                      if (covers) hoverCls = canPlaceWith(g, s, hoverCell.r, hoverCell.c, drag.id) ? ' hover' : ' hoverbad';
+                    }
+                    const tint = cell ? SHARD_TINTS[cell.id % SHARD_TINTS.length] : null;
+                    return (
+                      <div
+                        key={i}
+                        data-cell="1" data-r={r} data-c={c} data-sid={cell ? cell.id : undefined}
+                        className={`sh-cell${isBlock ? ' block' : ''}${cell ? ' filled' : ''}${isArmedCell ? ' armed' : ''}${isWrong ? ' wrong' : ''}${isHome ? ' home' : ''}${isLocked ? ' locked' : ''}${cell && drag && drag.id === cell.id ? ' dragging' : ''}${hoverCls}`}
+                        style={tint
+                          // Stage: a placed piece is its ramp hue at twice the register's mix (a piece
+                          // is a mark you pick up, so it sits a step above a region), edged in the
+                          // hue's ink, lettered in page ink. Loft: the lightened tint, untouched.
+                          ? (STAGE
+                            ? { '--tint': COLORS.accentSoft, background: pcFill(cell.id, PC_DARK), color: PC_INK, borderColor: 'color-mix(in srgb, #08222e 35%, transparent)' }
+                            : { '--tint': COLORS.accentSoft, background: tintBg(tint), color: '#12312e' })
+                          : undefined}
+                        onClick={() => { if (!draggedRef.current) onCellTap(r, c); }}
+                        onPointerDown={(e) => { if (cell && !isBlock) { const grab = { dr: r - g.placements[cell.id].r, dc: c - g.placements[cell.id].c }; beginPointer(e, cell.id, grab, 'board'); } }}
+                        role="gridcell"
+                      >
+                        {isBlock ? '' : (cell ? cell.ch : '')}
+                        {tickCells.has(k) ? <span className="sh-tick"><CheckCircle2 size={Math.round(CELL * 0.24)} strokeWidth={3} /></span> : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* tray + controls */}
+              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 240, flex: '1 1 240px', maxWidth: 320 }}>
+                <div className="sh-trayhead">{trayShards.length ? `${trayShards.length} piece${trayShards.length === 1 ? '' : 's'} to place` : 'Every piece is down'}</div>
+                <div className={`sh-tray pastel-board${drag && drag.from === 'board' ? ' drop' : ''}`}>
+                  {drag && drag.from === 'board' && <div className="sh-trayback">Drop here to send it back</div>}
+                  {trayShards.map((id) => {
+                    const s = SHARDS[id];
+                    const tint = STAGE ? pcFill(id, PC_DARK) : SHARD_TINTS[id % SHARD_TINTS.length];
+                    return (
+                      <div
+                        key={id}
+                        className={`sh-piece${armed === id ? ' armed' : ''}${drag && drag.id === id ? ' dragging' : ''}`}
+                        style={{ ...(STAGE ? { '--sh-pc-ink': PC_INK } : null), gridTemplateColumns: `repeat(${s.w}, ${TRAYCELL}px)`, gridTemplateRows: `repeat(${s.h}, ${TRAYCELL}px)` }}
+                        onClick={() => { if (!draggedRef.current) onShardTap(id); }}
+                        onPointerDown={(e) => {
+                          // Grab the sub-cell actually pressed. Hardcoding {0,0}
+                          // made the piece leap so its bounding-box corner sat
+                          // under the finger, and on an L or S shape that corner
+                          // is empty space, so the drop landed nowhere near it.
+                          const pc = e.target && e.target.closest ? e.target.closest('[data-pc]') : null;
+                          const grab = pc
+                            ? { dr: Number(pc.getAttribute('data-pdr')) || 0, dc: Number(pc.getAttribute('data-pdc')) || 0 }
+                            : { dr: 0, dc: 0 };
+                          beginPointer(e, id, grab, 'tray');
+                        }}
+                        role="button" aria-label={`Shard ${id + 1}, ${s.size} cells`}
+                      >
+                        {Array.from({ length: s.w * s.h }, (_, i) => {
+                          const dr = Math.floor(i / s.w), dc = i % s.w;
+                          const o = s.offs.find((x) => x.dr === dr && x.dc === dc);
+                          return <div key={i} className={`sh-pc${o ? '' : ' empty'}`} data-pc="1" data-pdr={dr} data-pdc={dc} style={o ? { background: tint, gridColumn: dc + 1, gridRow: dr + 1 } : { gridColumn: dc + 1, gridRow: dr + 1 }}>{o ? o.ch : ''}</div>;
+                        })}
+                      </div>
+                    );
+                  })}
+                  {trayShards.length === 0 && !(drag && drag.from === 'board') && <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, padding: '8px 0' }}>All pieces are on the grid.</div>}
+                </div>
+
+                {playing && (
+                  <>
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
+                      <button type="button" className="sh-btn" onClick={undo} disabled={!histRef.current.length}><Undo2 size={14} /> Undo</button>
+                      <button type="button" className="sh-btn" onClick={clearBoard} disabled={placedCount === 0}><Trash2 size={14} /> Clear</button>
+                      {g.t0 && !stageOn && (
+                        <button type="button" className="sh-btn" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it records as unfinished'}><Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}</button>
+                      )}
+                      {armed != null && g.placements[armed] && !g.locked.includes(armed) && (
+                        <button type="button" className="sh-btn primary" onClick={() => { pickUp(armed); setArmed(null); }}>Send back</button>
+                      )}
+                    </div>
+                    <div className="sh-hintbar">
+                      <button type="button" className="sh-hint" disabled={g.hintsUsed >= 1 || placedCount === 0} title={placedCount === 0 ? 'Place a shard first' : undefined} onClick={() => useHint(1)}><Lightbulb size={13} /> Check placed</button>
+                      <button type="button" className="sh-hint" disabled={g.hintsUsed !== 1} onClick={() => useHint(2)}><Lightbulb size={13} /> Place one</button>
+                      <button type="button" className="sh-hint" disabled={g.hintsUsed !== 2} onClick={() => useHint(3)}><Lightbulb size={13} /> Show home</button>
+                    </div>
+                    <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, textAlign: 'center', marginTop: 10, lineHeight: 1.5 }}>
+                      Moves are free. Hints unlock in order and count against you. Drag a piece off the board to send it back.
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+    </>
+  );
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('shards')} label="Shards" wide
+          eyebrow={`Shards${PUZZLE.sunday ? ' · Sunday Edition' : ''} · fit every piece`}
+          top={<div className="sh-st" style={{ width: '100%' }}><style dangerouslySetInnerHTML={{ __html: SH_ST_CSS }} />{shBoard}</div>}
+          foot={`${placedCount} of ${SHARDS.length} placed · ${g.hintsUsed} of 3 hints`}
+          giveUp={playing ? { armed: !!armGive, onPress: giveTap } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1034,121 +1185,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
-          {!preStart && (
-            <div className="sh-status" style={{ marginBottom: 10 }}>
-              <span className={`sh-status ${statusLine.cls}`}>{statusLine.msg}</span>
-            </div>
-          )}
-
-          {!preStart && (
-            <div className="sh-cols" style={{ display: 'flex', gap: 26, flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                {/* board */}
-                <div className="sh-board pastel-board" ref={gridRef} role="grid" aria-label="Shards grid">
-                  {Array.from({ length: N * N }, (_, i) => {
-                    const r = Math.floor(i / N), c = i % N, k = r * 100 + c;
-                    const isBlock = blockSet.has(k);
-                    const cell = occ.get(k);
-                    const isHome = homeCells && homeCells.has(k);
-                    const isArmedCell = cell && armed === cell.id;
-                    const isWrong = cell && wrongHint === cell.id;
-                    const isLocked = cell && g.locked.includes(cell.id);
-                    // drag hover preview
-                    let hoverCls = '';
-                    if (drag && hoverCell) {
-                      const s = SHARDS[drag.id];
-                      const covers = s.offs.some((o) => hoverCell.r + o.dr === r && hoverCell.c + o.dc === c);
-                      if (covers) hoverCls = canPlaceWith(g, s, hoverCell.r, hoverCell.c, drag.id) ? ' hover' : ' hoverbad';
-                    }
-                    const tint = cell ? SHARD_TINTS[cell.id % SHARD_TINTS.length] : null;
-                    return (
-                      <div
-                        key={i}
-                        data-cell="1" data-r={r} data-c={c} data-sid={cell ? cell.id : undefined}
-                        className={`sh-cell${isBlock ? ' block' : ''}${cell ? ' filled' : ''}${isArmedCell ? ' armed' : ''}${isWrong ? ' wrong' : ''}${isHome ? ' home' : ''}${isLocked ? ' locked' : ''}${cell && drag && drag.id === cell.id ? ' dragging' : ''}${hoverCls}`}
-                        style={tint
-                          // Stage: a placed piece is its ramp hue at twice the register's mix (a piece
-                          // is a mark you pick up, so it sits a step above a region), edged in the
-                          // hue's ink, lettered in page ink. Loft: the lightened tint, untouched.
-                          ? (STAGE
-                            ? { ...regionStyle(cell.id), '--tint': COLORS.accentSoft, background: regionMix(2), color: 'var(--stg-ink)', borderColor: `color-mix(in srgb, ${REGION_INK} 55%, transparent)` }
-                            : { '--tint': COLORS.accentSoft, background: tintBg(tint), color: '#12312e' })
-                          : undefined}
-                        onClick={() => { if (!draggedRef.current) onCellTap(r, c); }}
-                        onPointerDown={(e) => { if (cell && !isBlock) { const grab = { dr: r - g.placements[cell.id].r, dc: c - g.placements[cell.id].c }; beginPointer(e, cell.id, grab, 'board'); } }}
-                        role="gridcell"
-                      >
-                        {isBlock ? '' : (cell ? cell.ch : '')}
-                        {tickCells.has(k) ? <span className="sh-tick"><CheckCircle2 size={Math.round(CELL * 0.24)} strokeWidth={3} /></span> : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* tray + controls */}
-              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 240, flex: '1 1 240px', maxWidth: 320 }}>
-                <div className="sh-trayhead">{trayShards.length ? `${trayShards.length} piece${trayShards.length === 1 ? '' : 's'} to place` : 'Every piece is down'}</div>
-                <div className={`sh-tray pastel-board${drag && drag.from === 'board' ? ' drop' : ''}`}>
-                  {drag && drag.from === 'board' && <div className="sh-trayback">Drop here to send it back</div>}
-                  {trayShards.map((id) => {
-                    const s = SHARDS[id];
-                    const tint = STAGE ? 'var(--hue)' : SHARD_TINTS[id % SHARD_TINTS.length];
-                    return (
-                      <div
-                        key={id}
-                        className={`sh-piece${armed === id ? ' armed' : ''}${drag && drag.id === id ? ' dragging' : ''}`}
-                        style={{ ...(STAGE ? { ...regionStyle(id), '--sh-pc-ink': pcInk(id) } : null), gridTemplateColumns: `repeat(${s.w}, ${TRAYCELL}px)`, gridTemplateRows: `repeat(${s.h}, ${TRAYCELL}px)` }}
-                        onClick={() => { if (!draggedRef.current) onShardTap(id); }}
-                        onPointerDown={(e) => {
-                          // Grab the sub-cell actually pressed. Hardcoding {0,0}
-                          // made the piece leap so its bounding-box corner sat
-                          // under the finger, and on an L or S shape that corner
-                          // is empty space, so the drop landed nowhere near it.
-                          const pc = e.target && e.target.closest ? e.target.closest('[data-pc]') : null;
-                          const grab = pc
-                            ? { dr: Number(pc.getAttribute('data-pdr')) || 0, dc: Number(pc.getAttribute('data-pdc')) || 0 }
-                            : { dr: 0, dc: 0 };
-                          beginPointer(e, id, grab, 'tray');
-                        }}
-                        role="button" aria-label={`Shard ${id + 1}, ${s.size} cells`}
-                      >
-                        {Array.from({ length: s.w * s.h }, (_, i) => {
-                          const dr = Math.floor(i / s.w), dc = i % s.w;
-                          const o = s.offs.find((x) => x.dr === dr && x.dc === dc);
-                          return <div key={i} className={`sh-pc${o ? '' : ' empty'}`} data-pc="1" data-pdr={dr} data-pdc={dc} style={o ? { background: tint, gridColumn: dc + 1, gridRow: dr + 1 } : { gridColumn: dc + 1, gridRow: dr + 1 }}>{o ? o.ch : ''}</div>;
-                        })}
-                      </div>
-                    );
-                  })}
-                  {trayShards.length === 0 && !(drag && drag.from === 'board') && <div style={{ fontSize: 12.5, fontWeight: 600, color: FADED, padding: '8px 0' }}>All pieces are on the grid.</div>}
-                </div>
-
-                {playing && (
-                  <>
-                    <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
-                      <button type="button" className="sh-btn" onClick={undo} disabled={!histRef.current.length}><Undo2 size={14} /> Undo</button>
-                      <button type="button" className="sh-btn" onClick={clearBoard} disabled={placedCount === 0}><Trash2 size={14} /> Clear</button>
-                      {g.t0 && (
-                        <button type="button" className="sh-btn" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it records as unfinished'}><Flag size={14} /> {armGive ? 'Tap again to give up' : 'Give up'}</button>
-                      )}
-                      {armed != null && g.placements[armed] && !g.locked.includes(armed) && (
-                        <button type="button" className="sh-btn primary" onClick={() => { pickUp(armed); setArmed(null); }}>Send back</button>
-                      )}
-                    </div>
-                    <div className="sh-hintbar">
-                      <button type="button" className="sh-hint" disabled={g.hintsUsed >= 1 || placedCount === 0} title={placedCount === 0 ? 'Place a shard first' : undefined} onClick={() => useHint(1)}><Lightbulb size={13} /> Check placed</button>
-                      <button type="button" className="sh-hint" disabled={g.hintsUsed !== 1} onClick={() => useHint(2)}><Lightbulb size={13} /> Place one</button>
-                      <button type="button" className="sh-hint" disabled={g.hintsUsed !== 2} onClick={() => useHint(3)}><Lightbulb size={13} /> Show home</button>
-                    </div>
-                    <div style={{ fontSize: 11.5, fontWeight: 600, color: FADED, textAlign: 'center', marginTop: 10, lineHeight: 1.5 }}>
-                      Moves are free. Hints unlock in order and count against you. Drag a piece off the board to send it back.
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
+          {!preStart && !stageOn && shBoard}
 
           {/* result line */}
 
@@ -1268,7 +1305,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
       {/* dragging ghost */}
       {drag && (() => {
         const s = SHARDS[drag.id];
-        const tint = STAGE ? 'var(--hue)' : SHARD_TINTS[drag.id % SHARD_TINTS.length];
+        const tint = STAGE ? pcFill(drag.id, PC_DARK) : SHARD_TINTS[drag.id % SHARD_TINTS.length];
         // Always board scale: the ghost has to be the size of the thing that is
         // about to land, and the old tray-scale branch made it balloon under the
         // pointer the instant the clock started.
@@ -1278,7 +1315,7 @@ export default function ShardsClient({ puzzles = [], forceNum = null }) {
             {Array.from({ length: s.w * s.h }, (_, i) => {
               const dr = Math.floor(i / s.w), dc = i % s.w;
               const o = s.offs.find((x) => x.dr === dr && x.dc === dc);
-              return <div key={i} style={{ gridColumn: dc + 1, gridRow: dr + 1, width: gcell, height: gcell, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: Math.round(gcell * 0.44), color: STAGE ? pcInk(drag.id) : T.white, background: o ? tint : 'transparent', borderRadius: 4, border: o ? '1px solid rgba(0,0,0,0.15)' : 'none' }}>{o ? o.ch : ''}</div>;
+              return <div key={i} style={{ gridColumn: dc + 1, gridRow: dr + 1, width: gcell, height: gcell, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: Math.round(gcell * 0.44), color: STAGE ? PC_INK : T.white, background: o ? tint : 'transparent', borderRadius: 4, border: o ? '1px solid rgba(0,0,0,0.15)' : 'none' }}>{o ? o.ch : ''}</div>;
             })}
           </div>
         );

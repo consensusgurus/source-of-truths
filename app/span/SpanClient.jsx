@@ -43,6 +43,9 @@ import { isMobileDevice } from '@/lib/is-mobile';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
 import { buildAdj, buildLookup, shortestRoute, viaRoute, distancesFrom, normName, COUNTRIES } from './borders';
 import { MAP } from './map-geo';
+import SpanGlobe from './SpanGlobe';
+import PlayStage, { usePhoneStage } from '../PlayStage';
+import { useStageLook, isDarkLook } from '@/lib/stage-look';
 import { withRef } from '@/lib/referrals';
 import { notifyShareCredit } from '../ShareCreditPop';
 import DailyMasthead from '../DailyMasthead';
@@ -414,11 +417,17 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   // The stage board (app/StageLeg.jsx, owner 2026-10-26): in the Passport run
   // and on Span's own page alike.
   const LEG = LEG_ON && STAGE;
+  const phoneStage = usePhoneStage();
+  // THE STAGE (owner, 2026-11-12): Span's own board on the shared white stage
+  // from Start to the ending's board view; inside a run the run's frame draws it.
+  const stageOn = LEG && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+  const [spLook] = useStageLook();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('span');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('span');
   const Cap = STAGE ? StageChrome : LoftCap;
   const STAGE_ACC = { '--stg-acc-dk': gameColor('span'), '--stg-acc-lt': gameColorLight('span'), '--stg-onramp-lt': gameOnrampLight('span'), '--stg-acc-ink-lt': gameAccentInkLight('span') };
   const [stageTheme] = useStageTheme();
+  const spDark = stageOn ? isDarkLook(spLook) : stageTheme !== 'light';
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
@@ -856,14 +865,26 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   // downward from the start, with the destination waiting at the foot (on a
   // wide screen the road runs across). Undo and the hint are full-width
   // buttons; giving up shows a shortest road, as before.
-  function renderLeg() {
+  function renderLeg(onStage = false) {
     const reached = won && chain[chain.length - 1] === PUZZLE.end;
     const stops = chain;
     const go = () => { if (suggestions.length === 1) addCountry(suggestions[0]); else addCountry(typed); };
+    // THE GLOBE (owner, 2026-11-12: "span needs to use our new map"): on Span's
+    // own page the road is drawn on Carmen's true-colour globe; inside a run the
+    // run frame keeps the flat map. On the stage it sits right under the input.
+    const mapEl = EMBED ? (
+          <div className="lg-map">
+            <SpanMap chain={chain} goal={reached ? null : PUZZLE.end} wide={playing}
+              best={playing || !showBest || (won && hops === PUZZLE.perfect) ? null : bestRoute} alts={!playing && showBest ? altRoads : null} />
+          </div>
+        ) : (
+          <SpanGlobe chain={chain} goal={reached ? null : PUZZLE.end} dark={spDark}
+            best={playing || !showBest || (won && hops === PUZZLE.perfect) ? null : bestRoute} height={onStage ? 'min(40dvh, 92vw)' : 'min(52vh, 560px)'} />
+    );
     const rule = VIA ? `Pass through ${VIA}${viaDone ? ' (done)' : ''}` : (AVOID ? `${AVOID} is closed today` : null);
     return (
       <LegShell embed={EMBED} game="span" boardRef={boardRef}>
-        <div className="lg-kick">Span · Cross the map by borders{isSundayEd ? ' · Sunday Edition' : ''}</div>
+        {onStage ? null : <div className="lg-kick">Span · Cross the map by borders{isSundayEd ? ' · Sunday Edition' : ''}</div>}
         <h2 className="lg-q">
           {PUZZLE.start} to {PUZZLE.end}
           <small>{won ? `Spanned in ${hops} hop${hops === 1 ? '' : 's'}${hops === PUZZLE.perfect ? ', the shortest road' : ''}` : `Shortest road: ${PUZZLE.perfect} hop${PUZZLE.perfect === 1 ? '' : 's'}`}</small>
@@ -895,6 +916,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
             <div className="lg-say" role="status" aria-live="polite">{toast || ''}</div>
           </>
         )}
+        {onStage ? mapEl : null}
         <div className={`lg-road${shake ? ' shake' : ''}`} role="list" aria-label="Your road">
           {stops.map((c, i) => {
             const isEnd = reached && i === stops.length - 1;
@@ -918,10 +940,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
         </div>
         {/* THE MAP DURING PLAY (owner, 2026-11-06): the road so far, the
             destination shaded; once it ends, a shortest road as on the result. */}
-        <div className="lg-map">
-          <SpanMap chain={chain} goal={reached ? null : PUZZLE.end} wide={playing}
-            best={playing || !showBest || (won && hops === PUZZLE.perfect) ? null : bestRoute} alts={!playing && showBest ? altRoads : null} />
-        </div>
+        {onStage ? null : mapEl}
         {started && (chain.length > 1 || (hintOk && !g.hintUsed)) && (
           <div className="lg-row2">
             {chain.length > 1 && <button type="button" className="lg-btn" onClick={undo}>Undo</button>}
@@ -929,8 +948,8 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
         <div className="lg-foot">
-          <span>{hops} hop{hops === 1 ? '' : 's'} so far · {g.misses} miss{g.misses === 1 ? '' : 'es'}</span>
-          {started && (
+          {onStage ? null : <span>{hops} hop{hops === 1 ? '' : 's'} so far · {g.misses} miss{g.misses === 1 ? '' : 'es'}</span>}
+          {started && !onStage && (
             <button type="button" className={`lg-act${armReveal ? ' arm' : ''}`}
               onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
               title="Give up: ends the puzzle and shows a shortest road">
@@ -965,6 +984,14 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'clip' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('span')} label="Span" wide
+          eyebrow={`Span${isSundayEd ? ' · Sunday Edition' : ''} · cross the map by borders`}
+          top={<div className="sp-st" style={{ width: '100%' }}><style dangerouslySetInnerHTML={{ __html: '.pst .sp-st .lg-go{background:var(--pst-ink);color:var(--pst-bg);font-weight:800;font-size:14px}.pst .sp-st .lg-btn{font-size:14px;font-weight:800}.pst .sp-st .lg-sug button{font-size:14px;font-weight:700}' }} />{renderLeg(true)}</div>}
+          foot={`${hops} hop${hops === 1 ? '' : 's'} so far · ${g.misses} miss${g.misses === 1 ? '' : 'es'}`}
+          giveUp={started ? { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {LEG && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
@@ -1132,7 +1159,7 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
         )}
 
         {/* the assignment */}
-        {!preStart && LEG && renderLeg()}
+        {!preStart && LEG && !stageOn && renderLeg()}
         {!preStart && !LEG && (
         <div ref={boardRef} className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {isSundayEd && (

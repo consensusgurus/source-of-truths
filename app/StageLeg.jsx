@@ -61,6 +61,7 @@ export function LegShell({ embed, game, boardRef, children }) {
 export const LEG_CSS = `
 .lg-wrap{container-type:inline-size;width:100%}
 [data-stage-theme="dark"] .lg-page{--lg-tile:var(--lg-tile-dk) !important}
+.pst.dk .lg-page{--lg-tile:var(--lg-tile-dk) !important}
 .lg{--lg-line:color-mix(in srgb,var(--lg-ink) 30%,transparent);display:flex;flex-direction:column;gap:18px;max-width:600px;margin:0 auto;padding:8px 0 12px;box-sizing:border-box;color:var(--lg-ink);font-family:'Manrope',system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}
 .lg-run{padding:4px 16px 12px}
 .lg *{box-sizing:border-box}

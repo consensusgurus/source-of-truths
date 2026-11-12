@@ -45,7 +45,7 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
   const host = useHostedStage(inline);
   useStageChrome(host.chrome ? pal.bg : null);
   return host.render(
-    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '') + (full ? ' full' : '') + (big ? ' big' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null), ...accentVars(mono ? null : bg, look) }}>
+    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '') + (full ? ' full' : '') + (big ? ' big' : '') + ((look === 'dark' || look === 'darktint') ? ' dk' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null), ...accentVars(mono ? null : bg, look) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
         {host.inline ? null : <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav || host.nav} title={label} dot={bg} />}
