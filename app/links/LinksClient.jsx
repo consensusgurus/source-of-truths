@@ -629,7 +629,13 @@ export default function LinksClient({ puzzles = [], forceNum = null }) {
                 .lks-band{border-radius:14px;background:var(--pst-ink);color:var(--pst-bg);padding:12px;text-align:center;}
                 .lks-band b{display:block;font-size:13px;letter-spacing:.08em;text-transform:uppercase;}
                 .lks-band span{display:block;font-size:16px;font-weight:800;margin-top:2px;line-height:1.25;}
-                .lks-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+                .lks-tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;}
+                /* THREE ACROSS, A SHORT LAST ROW CENTRED (owner, 2026-11-12): the grid is
+                   six half-columns and each tile spans two, so one tile left over sits
+                   in the middle and two sit side by side in the centre. */
+                .lks-tiles > *{grid-column:span 2;}
+                .lks-tiles > :last-child:nth-child(3n+1){grid-column:3 / span 2;}
+                .lks-tiles > :nth-last-child(2):nth-child(3n+1){grid-column:2 / span 2;}
                 .pst .lks-t{min-height:72px;border-radius:14px;border:1px solid var(--pst-ink);background:var(--pst-tint);font-weight:800;color:var(--pst-ink);padding:0 4px;line-height:1.15;letter-spacing:.02em;touch-action:manipulation;transition:transform .1s;}
                 .pst .lks-t:active{transform:scale(.97);}
                 .pst .lks-t.on{background:var(--pst-ink);color:var(--pst-bg);}
