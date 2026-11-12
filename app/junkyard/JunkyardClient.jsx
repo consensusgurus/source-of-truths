@@ -827,7 +827,7 @@ export default function JunkyardClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="junkyard" quizId={PUZZLE.quizId}
           name="Junkyard"
-          cat="Logic"
+          cat="Visual"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

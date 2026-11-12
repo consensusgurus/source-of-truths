@@ -943,7 +943,7 @@ export default function YoseClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="yose" quizId={PUZZLE.quizId}
           name="Yose"
-          cat="End Game"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

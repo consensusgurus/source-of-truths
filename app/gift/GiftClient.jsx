@@ -982,7 +982,7 @@ export default function GiftClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="gift" quizId={PUZZLE.quizId}
           name="Gift"
-          cat="End Game"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

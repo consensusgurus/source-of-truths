@@ -761,7 +761,7 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="check" quizId={PUZZLE.quizId}
           name="Check"
-          cat="End Game"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

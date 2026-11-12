@@ -880,7 +880,7 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="cell" quizId={PUZZLE.quizId}
           name="Cell"
-          cat="Cards"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

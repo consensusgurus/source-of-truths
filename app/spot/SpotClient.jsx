@@ -111,7 +111,7 @@ function Board({ P, s, setS, active, done }) {
 const marks = (P, s) => P.diffs.map((_, i) => ((s.found || []).includes(i) ? '\u{1F7E9}' : '⬜')).join('');
 
 const GAME = {
-  key: 'spot', name: 'Spot', cat: 'Logic', miss: 'misses', missOne: 'miss', wide: true, big: true,
+  key: 'spot', name: 'Spot', cat: 'Visual', miss: 'misses', missOne: 'miss', wide: true, big: true,
   fresh: () => ({ found: [], miss: 0, hints: 0 }),
   validSave: (P, s) => Array.isArray(s.found) && s.found.length <= P.diffs.length && s.found.every((i) => Number.isInteger(i) && i >= 0 && i < P.diffs.length),
   touched: (s) => (s.found || []).length > 0 || missFig(s) > 0,

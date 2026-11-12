@@ -256,10 +256,12 @@ const CATEGORIES = [
   // list and cannot drift apart.
   { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sudstoo', 'sixes', 'sixestoo', 'towers', 'quilt', 'cages', 'coop', 'sando', 'snack', 'mercury', 'mercurytoo', 'fever', 'arrow', 'dart', 'polka', 'dot', 'knight', 'knighttoo', 'diag', 'diagtoo', 'frame', 'trim', 'rim', 'rimtoo', 'lip', 'liptoo', 'giant', 'gianttoo', 'sumo', 'bout', 'window', 'windowtoo', 'five', 'racecar', 'racecartoo', 'kayak', 'kayaktoo', 'whittle'] },
   { key: 'crowd', label: 'Crowd Psychology', keys: ['herd', 'outwit', 'outrank', 'feud'] },
-  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'focus', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'resume', 'filing', 'redact', 'dating', 'extra', 'carmen'] },
-  { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'witness', 'defuse', 'spot', 'sudoclue', 'snug', 'jig', 'saw', 'swap', 'slide', 'spin', 'connect', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'paths', 'chomp', 'ergo', 'docket', 'plot'] },
-  { key: 'endgame', label: 'End Game', keys: ['mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
-  { key: 'cards', label: 'Cards', keys: ['taire', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib'] },
+  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'resume', 'filing', 'redact', 'dating', 'extra', 'carmen'] },
+  // Logic lost its photo, observation and moving-piece puzzles to Visual, and
+  // End Game and Cards merged into Table Games (owner, 2026-11-12).
+  { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'defuse', 'sudoclue', 'snug', 'connect', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'ergo', 'docket', 'plot'] },
+  { key: 'visual', label: 'Visual', keys: ['jig', 'saw', 'swap', 'slide', 'spin', 'spot', 'witness', 'focus', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'paths', 'chomp'] },
+  { key: 'endgame', label: 'Table Games', keys: ['taire', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib', 'mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
   { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'squash', 'simon', 'dario', 'sweep'] },
 ];
 

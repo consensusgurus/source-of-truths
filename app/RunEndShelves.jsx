@@ -31,7 +31,7 @@ import { SKILL_MAP, SKILL_TAGS } from '@/lib/daily-skills';
 import { TIERS as DIFF_TIERS } from '@/lib/daily-difficulty';
 import { fetchDailyBoard, dailyBoardQuery, dailyBoardIdentity } from './dailyBoardClient';
 
-const CAT_ORDER = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'Cards', 'Crowd Psychology', 'Arcade', 'End Game'];
+const CAT_ORDER = ['Word', 'Numbers', 'Logic', 'Visual', 'Sudoku', 'Trivia', 'Geography', 'Table Games', 'Crowd Psychology', 'Arcade'];
 
 function etDay() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }

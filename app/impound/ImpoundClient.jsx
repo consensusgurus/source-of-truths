@@ -813,7 +813,7 @@ export default function ImpoundClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="impound" quizId={PUZZLE.quizId}
           name="Impound"
-          cat="Logic"
+          cat="Visual"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

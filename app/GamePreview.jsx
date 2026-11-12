@@ -8,7 +8,7 @@
 // viewBox is 296 x 84; nothing here reads the board, so it never leaks a
 // day's answer.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { DAILY_GAME_MAP } from '@/lib/daily-games';
+import { DAILY_GAME_MAP, isEndGame } from '@/lib/daily-games';
 import { TILE_BY_KEY } from './GamePreviewTiles';
 
 const useIso = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -415,8 +415,8 @@ function drawingFor(g, sq) {
     }
     case 'Crowd Psychology': return <Bars />;
     case 'Logic': return <LGrid />;
-    case 'End Game': return <Chess />;
-    case 'Cards': return <Cards />;
+    case 'Visual': return <LGrid />;
+    case 'Table Games': return isEndGame(g.key) ? <Chess /> : <Cards />;
     case 'Arcade': return <Tetro />;
     default: return sq ? <QuizSq /> : <Quiz label={g.tag} />;
   }

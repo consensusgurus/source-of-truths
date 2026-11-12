@@ -994,7 +994,7 @@ export default function ChainClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="chain" quizId={PUZZLE.quizId}
           name="Chain"
-          cat="End Game"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

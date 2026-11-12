@@ -735,7 +735,7 @@ export default function CribClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="crib" quizId={PUZZLE.quizId}
           name="Crib"
-          cat="Cards"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : (score > 0 ? 'part' : 'lost'))}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

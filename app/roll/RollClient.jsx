@@ -638,7 +638,7 @@ export default function RollClient({ puzzles = [], forceNum = null }) {
       {LOFT && !EMBED && (
         <Cap gameKey="roll" quizId={PUZZLE.quizId}
           name="Roll"
-          cat="Logic"
+          cat="Visual"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

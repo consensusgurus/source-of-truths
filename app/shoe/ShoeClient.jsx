@@ -730,7 +730,7 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="shoe" quizId={PUZZLE.quizId}
           name="Shoe"
-          cat="Cards"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : (finalScore > 0 ? 'part' : 'lost'))}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

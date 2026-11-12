@@ -28,7 +28,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { DAILY_GAMES as ALL_GAMES, DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 import { SKILLS, SKILL_MAP, hasSkill, primarySkill } from '@/lib/daily-skills';
-import { RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight } from '@/lib/category-ramp';
+import { RAMP_ORDER, migrateCatOrder, categoryColor, categoryColorLight, categoryAccentInkLight } from '@/lib/category-ramp';
 import { gameStatsShort } from '@/lib/daily-row-stats';
 import { savedIdentity } from '@/lib/saved-identity';
 import { useStageTheme, openLook } from '@/lib/stage-theme';
@@ -47,7 +47,7 @@ import { meRequest } from './quizMeClient';
 import useMyGames from './useMyGames';
 
 const MIN_W = 1100;
-const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
+const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Visual', 'Sudoku', 'Trivia', 'Geography', 'Table Games', 'Arcade', 'Crowd Psychology'];
 const catLabel = (c) => (c === 'Word' ? 'Words' : c);
 const PANE_KEY = 'sot_home_pane';
 // SKILLS OR CATEGORIES (owner, 2026-10-20): the same switch the home's index
@@ -567,7 +567,7 @@ export default function LayoutCInner({ gameKey }) {
     setDay(etToday());
     try {
       const raw = JSON.parse(localStorage.getItem('sot_cat_order') || 'null');
-      if (Array.isArray(raw) && raw.length) setOrder(raw);
+      if (Array.isArray(raw) && raw.length) setOrder(migrateCatOrder(raw));
     } catch (e) {}
     // The skills' own hand order (the home's Reorder in the Skills view, 2026-11-11).
     try {

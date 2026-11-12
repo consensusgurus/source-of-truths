@@ -116,6 +116,11 @@ const nextConfig = {
       { source: '/circuits/sudoku/:path*', destination: '/dojo', permanent: true },
       // Aorb was deleted (owner, 2026-10-27).
       { source: '/aorb', destination: '/crowd-psychology-games', permanent: true },
+      // The 2026-11-12 category reorg: these sets moved from Logic to Visual.
+      { source: '/logic-puzzles/photo-puzzles', destination: '/visual-puzzles/photo-puzzles', permanent: true },
+      { source: '/logic-puzzles/traffic-jams', destination: '/visual-puzzles/traffic-jams', permanent: true },
+      { source: '/logic-puzzles/roll-and-route', destination: '/visual-puzzles/roll-and-route', permanent: true },
+      { source: '/logic-puzzles/close-reading', destination: '/visual-puzzles/observation-puzzles', permanent: true },
       // Crossed Up (owner, 2026-10-20) lives at /crossed; its name's spellings land there.
       { source: '/crossedup', destination: '/crossed', permanent: true },
       // Space Cadet (owner, 2026-11-07) lives at /spacecadet.

@@ -647,7 +647,7 @@ export default function ToppleClient({ puzzles = [], forceNum = null }) {
       {LOFT && !EMBED && (
         <Cap gameKey="topple" quizId={PUZZLE.quizId}
           name="Topple"
-          cat="Logic"
+          cat="Visual"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

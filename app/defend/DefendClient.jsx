@@ -939,7 +939,7 @@ export default function DefendClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="defend" quizId={PUZZLE.quizId}
           name="Defend"
-          cat="End Game"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

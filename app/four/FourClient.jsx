@@ -947,7 +947,7 @@ export default function FourClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="four" quizId={PUZZLE.quizId}
           name="Four"
-          cat="End Game"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : (drawn ? 'part' : 'lost'))}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

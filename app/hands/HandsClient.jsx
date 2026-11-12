@@ -820,7 +820,7 @@ export default function HandsClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="hands" quizId={PUZZLE.quizId}
           name="Hands"
-          cat="Cards"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : (finalScore > 0 ? 'part' : 'lost'))}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

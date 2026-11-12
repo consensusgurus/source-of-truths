@@ -36,7 +36,7 @@ import { categoryHref } from '@/lib/puzzle-categories';
 
 // Category order matches the home's shelf order (CAT_ORDER in
 // app/today/TodayClient.jsx); anything not named there trails, in roster order.
-const CAT_ORDER = ['Word', 'Numbers', 'Sudoku', 'Logic', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
+const CAT_ORDER = ['Word', 'Numbers', 'Sudoku', 'Logic', 'Visual', 'Trivia', 'Geography', 'Table Games', 'Arcade', 'Crowd Psychology'];
 
 export function dailyRosterGroups() {
   const live = new Set(liveDailyKeys());

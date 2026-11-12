@@ -948,7 +948,7 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="turn" quizId={PUZZLE.quizId}
           name="Turn"
-          cat="End Game"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

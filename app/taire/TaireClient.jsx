@@ -809,7 +809,7 @@ export default function TaireClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="taire" quizId={PUZZLE.quizId}
           name="Taire"
-          cat="Cards"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

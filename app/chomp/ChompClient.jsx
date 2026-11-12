@@ -902,7 +902,7 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="chomp" quizId={PUZZLE.quizId}
           name="Chomp"
-          cat="Logic"
+          cat="Visual"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

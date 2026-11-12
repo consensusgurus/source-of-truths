@@ -334,7 +334,7 @@ export default function DailyCombinedLeaderboard({ todayKey = null, identity = n
   // rule outright; the Overall board mixes every game of the day, so it states
   // the general shape instead of picking one.
   const attemptLine = active === 'overall'
-    ? 'Most games count only your first attempt. End Game titles rank on how many runs the solve took, and Arcade games take your best run of the day.'
+    ? 'Most games count only your first attempt. The chess and board endgames rank on how many runs the solve took, and Arcade games take your best run of the day.'
     : dailyAttemptRule(active).board;
   const gameView = active === 'overall'
     ? <OverallBoard data={data} myKey={myKey} maxTotal={maxTotal} gameCount={gc} th={th} />

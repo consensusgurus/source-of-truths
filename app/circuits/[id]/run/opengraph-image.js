@@ -41,7 +41,7 @@ async function renderCard({ params }) {
       id: 'circuits/' + id,
       // The Valet Gauntlet is a run with no question banks, so it takes its
       // own line and category here rather than the trivia one.
-      category: runEngine(id) === 'jam' ? 'Logic' : 'Trivia',
+      category: runEngine(id) === 'jam' ? 'Visual' : 'Trivia',
       title: `The ${(c && c.name) || 'Run'} circuit`,
       blurb: runEngine(id) === 'jam' && c && c.blurb ? c.blurb : 'Every quiz in the circuit, played back to back as one long run.',
     });

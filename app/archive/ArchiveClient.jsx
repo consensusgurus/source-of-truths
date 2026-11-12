@@ -45,7 +45,7 @@ import { DAILY_GAME_MAP, isRetiredDaily, isUnlaunchedDaily } from '@/lib/daily-g
 import { categoryColor, categoryAccentInkLight } from '@/lib/category-ramp';
 import { useThemeQs } from '@/lib/stage-theme';
 
-const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
+const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Visual', 'Sudoku', 'Trivia', 'Geography', 'Table Games', 'Arcade', 'Crowd Psychology'];
 const catLabel = (c) => (c === 'Word' ? 'Words' : c);
 const RETIRED = 'Retired';
 const STRIP = 14;

@@ -69,7 +69,7 @@ function Board({ P, s, setS, active, done }) {
 }
 
 const GAME = {
-  key: 'slide', name: 'Slide', cat: 'Logic', miss: 'moves',
+  key: 'slide', name: 'Slide', cat: 'Visual', miss: 'moves',
   fresh: (P) => ({ cur: P.tiles.slice(), moves: 0 }),
   validSave: (P, s) => Array.isArray(s.cur) && s.cur.length === P.tiles.length,
   touched: (s) => s.moves > 0,

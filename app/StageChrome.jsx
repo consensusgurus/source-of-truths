@@ -51,6 +51,7 @@ import ThemePop, { LightOffer } from './ThemePop';
 import { LoftSheet } from './LoftCap';
 import { dailyMeIdentity } from './dailyMeClient';
 import { gameColor, gameCategory, RAMP_INK, STAGE_GROUND } from '@/lib/category-ramp';
+import { isEndGame } from '@/lib/daily-games';
 
 // LOGIC WEARS ROSE (owner, 2026-10-30, the Logic and Geography swap), and rose
 // is also the stage's one "wrong" colour (--stg-bad / --stg-dn in globals.css),
@@ -312,7 +313,7 @@ export default function StageChrome({
   useState(() => { markPageEntry(); return 0; });
   // Sudokus play on the pastel stage on a phone (owner, 2026-10-24); see SudokuPastel.jsx.
   // ...and the End Game titles too, on their own gold (owner, 2026-10-24).
-  const endGame = !!gameKey && gameCategory(gameKey) === 'End Game';
+  const endGame = !!gameKey && isEndGame(gameKey);
   // ...and from 2026-10-24 every daily (owner: "all of the ready up pages need
   // to match this new style now too for mobile. simple."), each on its own
   // category's soft ground.

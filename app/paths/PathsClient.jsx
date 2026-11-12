@@ -1035,7 +1035,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="paths" quizId={PUZZLE.quizId}
           name="Paths"
-          cat="Logic"
+          cat="Visual"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

@@ -49,7 +49,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import StageToday from './StageToday';
 import { useStageTheme } from '@/lib/stage-theme';
-import { DAILY_GAMES, DAILY_GAME_MAP, scoreText, keyOfQuizId, hasProgressFig, progressFigCell } from '@/lib/daily-games';
+import { DAILY_GAMES, DAILY_GAME_MAP, scoreText, keyOfQuizId, hasProgressFig, progressFigCell, isEndGame } from '@/lib/daily-games';
+import { migrateCatOrder } from '@/lib/category-ramp';
 import { CIRCUITS, ALL_CIRCUITS, DISPLAY_CIRCUITS, CIRCUIT_BASE, SUDOKU_POOL, circuitById, circuitKeysFor, circuitPageHref, circuitEntryHref } from '@/lib/circuits';
 import { catBlue } from '@/lib/home-blues';
 import StageLadder from '../StageLadder';
@@ -60,7 +61,7 @@ import { fetchDayStatus, etToday, DAY_ROSTER } from '../useDayStats';
 import useMyGames from '../useMyGames';
 import GauntletPop from './GauntletPop';
 
-const CAT_ORDER = ['Word', 'Sudoku', 'End Game', 'Logic', 'Numbers', 'Trivia', 'Crowd Psychology', 'Geography', 'Cards', 'Arcade'];
+const CAT_ORDER = ['Word', 'Sudoku', 'Table Games', 'Logic', 'Visual', 'Numbers', 'Trivia', 'Crowd Psychology', 'Geography', 'Arcade'];
 
 // Sum a set of games' per-game boards into one standings list. Same known
 // limit as the Loft's category leaders: each per-game board carries only its
@@ -384,7 +385,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
     try {
       const raw = JSON.parse(localStorage.getItem(CAT_ORDER_KEY) || 'null');
       if (Array.isArray(raw) && raw.length) {
-        const clean = raw.filter((n) => CAT_ORDER.includes(n));
+        const clean = migrateCatOrder(raw).filter((n) => CAT_ORDER.includes(n));
         if (clean.length) setCatOrder(clean);
       }
     } catch (e) {}
@@ -1610,7 +1611,7 @@ export default function TodayClient({ onSignup = null, stageDefault = true } = {
                 const g = DAILY_GAME_MAP[pickGame];
                 const bg = bgFor(pickGame);
                 const rows = bg && Array.isArray(bg.board) ? bg.board : (bgames ? [] : null);
-                const eg = g && g.cat === 'End Game';
+                const eg = g && isEndGame(pickGame);
                 const missLabel = eg ? 'Tries' : (g && g.miss ? g.miss : null);
                 return (
                   <>

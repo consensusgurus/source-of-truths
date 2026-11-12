@@ -169,7 +169,7 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
   };
 
   return (
-    <CircuitFrame cat="Logic" label="Jigsaw shelf" wide bar={{ title: 'Jigsaw Shelf', sub: 'Every Jig and Saw', dot: JIG_HUE }}>
+    <CircuitFrame cat="Visual" label="Jigsaw shelf" wide bar={{ title: 'Jigsaw Shelf', sub: 'Every Jig and Saw', dot: JIG_HUE }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <nav className="jsh-crumb" aria-label="Breadcrumb">
         <a href="/">Home</a><span aria-hidden="true">/</span>

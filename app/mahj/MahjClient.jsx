@@ -823,7 +823,7 @@ export default function MahjClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey={KEY} quizId={PUZZLE.quizId}
           name={NAME}
-          cat="Cards"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : (score > 0 ? 'part' : 'lost'))}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

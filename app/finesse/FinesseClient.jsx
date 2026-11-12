@@ -951,7 +951,7 @@ export default function FinesseClient({ puzzles = [], forceNum = null }) {
       })()}
       <Grain />
       <Cap
-        game="finesse" gameKey="finesse" cat="Cards" quizId={PUZZLE.quizId} name="Finesse" num={PUZZLE.num}
+        game="finesse" gameKey="finesse" cat="Table Games" quizId={PUZZLE.quizId} name="Finesse" num={PUZZLE.num}
         dateLabel={PUZZLE.dateLabel} sunday={PUZZLE.sunday} accent={ACC}
         onHelp={() => setShowHelp(true)}
         figures={[

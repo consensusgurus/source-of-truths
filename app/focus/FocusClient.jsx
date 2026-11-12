@@ -702,7 +702,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
       {LOFT && (
         <Cap gameKey="focus" quizId={PUZZLE.quizId}
           name="Focus"
-          cat="Trivia"
+          cat="Visual"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

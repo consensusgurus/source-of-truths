@@ -94,7 +94,7 @@ const tile = (px, fill) => page(px, px,
 const LINES = [['Sharpen your mind.', RAMP[0]], ['Gain IQ points.', RAMP[1]], ['Elevate your thinking.', RAMP[2]]];
 // [name, ramp index] in the order the home shelves run.
 const CATS = [['Word', 0], ['Numbers', 1], ['Logic', 2], ['Sudoku', 9], ['Trivia', 4],
-  ['Geography', 5], ['End Game', 3], ['Cards', 6], ['Arcade', 8], ['Crowd', 7]];
+  ['Geography', 5], ['Table Games', 3], ['Visual', 6], ['Arcade', 8], ['Crowd', 7]];
 const lines = LINES.map(([t, c]) => `<div class="ln"><i style="background:${c}"></i>${t}</div>`).join('');
 const chip = ([n, i]) => `<span><i style="background:${RAMP[i]}"></i>${n}</span>`;
 // Three rows, 4/3/3, so no category is left on a line by itself.

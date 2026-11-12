@@ -9,7 +9,7 @@ import { SPACE_MAX, SPACE_RANKS, spaceTierOf } from '@/lib/space-cadet';
 // with your rank filled. It names no move, so a shared card spoils nothing.
 export const runtime = 'nodejs';
 
-const CAT = 'Logic';
+const CAT = 'Visual';
 const URL_TXT = 'mindloftdaily.com/spacecadet';
 const clock = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 const under = (t) => (t[6] ? `Under ${clock(t[6])}` : 'Any finish');

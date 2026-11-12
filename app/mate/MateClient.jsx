@@ -1073,7 +1073,7 @@ export default function MateClient({ puzzles = [], forceNum = null }) {
         <Cap gameKey="mate" quizId={PUZZLE.quizId}
           progress={moves.length / Math.max(1, PUZZLE.mateIn * 2 - 1)}
           name="Mate"
-          cat="End Game"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

@@ -1495,7 +1495,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="saw" quizId={PUZZLE.quizId}
           name="Saw"
-          cat="Logic"
+          cat="Visual"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

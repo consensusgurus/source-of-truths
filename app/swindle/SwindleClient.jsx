@@ -773,7 +773,7 @@ export default function SwindleClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="swindle" quizId={PUZZLE.quizId}
           name="Swindle"
-          cat="End Game"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

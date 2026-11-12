@@ -71,7 +71,7 @@ function Board({ P, s, setS, active, done }) {
 }
 
 const GAME = {
-  key: 'pairs', name: 'Pairs', cat: 'Cards', miss: 'turns',
+  key: 'pairs', name: 'Pairs', cat: 'Table Games', miss: 'turns',
   fresh: () => ({ up: [], got: [], turns: 0, miss: null }),
   validSave: (P, s) => Array.isArray(s.got) && Array.isArray(s.up),
   touched: (s) => s.turns > 0,

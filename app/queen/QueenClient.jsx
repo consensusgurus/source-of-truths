@@ -878,7 +878,7 @@ export default function QueenClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="queen" quizId={PUZZLE.quizId}
           name="Queen"
-          cat="End Game"
+          cat="Table Games"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

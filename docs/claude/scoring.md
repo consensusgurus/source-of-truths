@@ -507,6 +507,11 @@ carried by `progress` instead, which ranks without paying.
 
 ## END GAME BOARDS RANK ON ATTEMPTS TO SOLVE (owner rule, 2026-08-12)
 
+**End Game is a roster since 2026-11-12, not a category.** End Game and Cards merged into the Table
+Games category that day, so the registry `cat` no longer identifies these boards. `isEndGame(key)`
+reads `END_GAME_KEYS` in `lib/daily-games.js` (ten titles). **A new endgame daily must be added to
+that set**, or it ranks on first attempt like a card game. Nothing else about the rule changed.
+
 Every other daily keeps a player's **first attempt**, because a replay there is playing a puzzle
 whose answer you already know and letting it score would make the board a test of who replayed. The
 six End Game titles are the one family where that reasoning does not hold: they never hand over the

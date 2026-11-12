@@ -62,7 +62,7 @@ function Board({ P, s, setS, active, done }) {
 }
 
 const GAME = {
-  key: 'swap', name: 'Swap', cat: 'Logic', miss: 'swaps',
+  key: 'swap', name: 'Swap', cat: 'Visual', miss: 'swaps',
   fresh: (P) => ({ cur: P.perm.slice(), moves: 0 }),
   validSave: (P, s) => Array.isArray(s.cur) && s.cur.length === P.perm.length,
   touched: (s) => s.moves > 0,

@@ -352,7 +352,7 @@ export default function SpaceCadetClient({ day = null, dateLabel, dateShort, sec
             leaderScore={overall[0] ? Math.round(Number(overall[0].total)) : null}
             extra={<RunChallengeLine gameKey={SPACE_RUN_ID} score={total} total={SPACE_MAX} n={runToken()} style={{ margin: 0 }} />}
             challenge={<RunChallengeButton gameKey={SPACE_RUN_ID} score={total} total={SPACE_MAX} n={runToken()} t={runClock > 0 ? Math.round(runClock) : null} status={rank[1]} door />}
-            meme={<RunMeme gameKey={SPACE_RUN_ID} score={total} total={SPACE_MAX} n={runToken()} status={rank[1]} cat="Logic" />}
+            meme={<RunMeme gameKey={SPACE_RUN_ID} score={total} total={SPACE_MAX} n={runToken()} status={rank[1]} cat="Visual" />}
             more={<MoreRunsList self={SPACE_RUN_ID} ink="var(--gsx-ink)" mute="var(--gsx-ink)" line="color-mix(in srgb, var(--gsx-ink) 30%, transparent)" style={{ margin: 0 }} />}
             onShare={copyShare}
             copied={copied}

@@ -1531,7 +1531,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
       {LOFT && (
         <Cap gameKey="jig" quizId={PUZZLE.quizId}
           name="Jig"
-          cat="Logic"
+          cat="Visual"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

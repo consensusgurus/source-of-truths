@@ -813,7 +813,7 @@ export default function ParkerClient({ puzzles = [], forceNum = null }) {
       {LOFT && !EMBED && (
         <Cap gameKey="park" quizId={PUZZLE.quizId}
           name="Parker"
-          cat="Logic"
+          cat="Visual"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

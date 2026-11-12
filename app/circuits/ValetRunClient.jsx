@@ -629,7 +629,7 @@ export default function ValetRunClient({ circuitId, circuitName, dateLabel, sect
                     <RunChallengeLine gameKey={circuitId} score={parked} total={N} n={runToken()} t={parked === N ? Math.round(runSecs) : null} won={parked === N} style={{ display: 'block', textAlign: 'center' }} />
                     <RunChallengeButton gameKey={circuitId} score={parked} total={N} n={runToken()} t={Math.round(runSecs)} won={parked === N} status={`${parked} of ${N} parked`} door />
                   </>}
-                  next={<RunNextSlot circuitId={circuitId} exclude={sections.map((s) => s.key)} cats={['Logic']} />}
+                  next={<RunNextSlot circuitId={circuitId} exclude={sections.map((s) => s.key)} cats={['Visual']} />}
                 />
               );
             })()}

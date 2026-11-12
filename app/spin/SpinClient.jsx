@@ -79,7 +79,7 @@ function Board({ P, s, setS, active, done }) {
 
 const straight = (s) => s.rot.filter((v) => v % 4 === 0).length;
 const GAME = {
-  key: 'spin', name: 'Spin', cat: 'Logic', miss: 'taps',
+  key: 'spin', name: 'Spin', cat: 'Visual', miss: 'taps',
   fresh: (P) => ({ rot: P.rot.slice(), taps: 0, locked: null }),
   validSave: (P, s) => Array.isArray(s.rot) && s.rot.length === P.rot.length,
   touched: (s) => s.taps > 0,

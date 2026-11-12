@@ -88,7 +88,7 @@ import {
   Club, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, UserPlus, Gavel, Shield,
   Flame, Frame, Contrast, Layers, FileText, Waypoints, Anchor, PenLine, Gamepad2, Zap, Sigma, Sandwich,
   ArrowLeftRight, Gem, Map as MapIcon, Divide, TableProperties, TrendingUp, Milestone, Plane, CornerUpRight,
-  Palette, Landmark, UtensilsCrossed,
+  Palette, Landmark, UtensilsCrossed, Eye,
   Clapperboard, Quote, CookingPot, Disc3, Shuffle, ZoomIn, Axe, Truck, Rows3, Boxes, MoveDiagonal, Crop, Scan, MoveDownRight,
 } from 'lucide-react';
 import ReportIssue from './ReportIssue';
@@ -345,15 +345,18 @@ export const CAT_META = {
   // "more of today's games" grid below dropped them entirely (CAT_ORDER too).
   // The colour is the muted navy those tiles already fall back to, so the badges
   // are unchanged. (owner, 2026-08-03)
-  endgame:   { name: 'End Game',  color: T.muted,   Icon: Crown },
-  cards:     { name: 'Cards',     color: '#7f1d1d', Icon: Club },
+  // Table Games from 2026-11-12: End Game and Cards merged; the id stays
+  // `endgame` so nothing keyed on it moves. Visual split out of Logic that day.
+  endgame:   { name: 'Table Games', color: T.muted, Icon: Crown },
+  cards:     { name: 'Table Games', color: '#7f1d1d', Icon: Club },
+  visual:    { name: 'Visual',    color: '#a21caf', Icon: Eye },
   // Arcade split out for Blocks (owner, 2026-08-08): a reflex-free falling-shapes
   // game is neither Logic nor End Game, and the label leaves room for the rest of
   // the arcade shelf later.
   arcade:    { name: 'Arcade',    color: '#1d4ed8', Icon: Gamepad2 },
 };
 // Family render order for the "more games" grid.
-const CAT_ORDER = ['word', 'numbers', 'sudoku', 'trivia', 'crowd', 'logic', 'endgame', 'cards', 'arcade', 'geography'];
+const CAT_ORDER = ['word', 'numbers', 'sudoku', 'trivia', 'crowd', 'logic', 'visual', 'endgame', 'arcade', 'geography'];
 
 // ---- the daily slate (31 games) --------------------------------------------
 // Canonical order = the order the "still to play" tiles appear in.
@@ -437,8 +440,8 @@ const ALL_DAILY_GAMES = [
   { key: 'listed', cat: 'trivia',    name: 'Listed', tag: 'Rank the list, top to bottom', blurb: 'Eight real things, one true order. Rank them by the figures behind them, best to worst.', href: '/listed' },
   { key: 'mate',   cat: 'endgame',     name: 'Mate',   tag: 'White to play and mate',      blurb: 'A real chess position with a forced mate hiding in it. Find the move that ends it.', href: '/mate' },
   { key: 'four',   cat: 'endgame',     name: 'Four',   tag: 'One column wins',             blurb: 'A Connect Four board where exactly one drop wins. Pick the column and play it out.', href: '/four' },
-  { key: 'park',   cat: 'logic',     name: 'Parker', tag: 'Get the red one out',         blurb: 'A jammed parking lot. Slide the other cars aside and drive the red one free in as few moves as you can.', href: '/parker' },
-  { key: 'impound',   cat: 'logic',     name: 'Impound', tag: 'Parker on a bigger lot',         blurb: 'Parker on a seven by seven lot, with around twenty blocks in your way. Same one gap in the wall, a good deal more between you and it.', href: '/impound' },
+  { key: 'park',   cat: 'visual',     name: 'Parker', tag: 'Get the red one out',         blurb: 'A jammed parking lot. Slide the other cars aside and drive the red one free in as few moves as you can.', href: '/parker' },
+  { key: 'impound',   cat: 'visual',     name: 'Impound', tag: 'Parker on a bigger lot',         blurb: 'Parker on a seven by seven lot, with around twenty blocks in your way. Same one gap in the wall, a good deal more between you and it.', href: '/impound' },
   { key: 'judges', cat: 'logic',     name: 'Judges', tag: 'Two per row',   blurb: 'Two judges in every row, column and colored court, and no two ever touch. A 10x10 bench all week, a 12x12 on Sunday.', href: '/judges' },
   { key: 'lamps',   cat: 'logic',     name: 'Lamps', tag: 'Light every square',   blurb: 'Place lamps until every square is lit. No lamp may shine on another, and numbered walls say how many lamps touch them. Seven by seven early in the week, eight by eight from Thursday, ten by ten on Sundays.', href: '/lamps' },
   { key: 'clade',   cat: 'trivia',     name: 'Clade', tag: 'Guess the animal by its family tree',   blurb: 'One hidden animal and eight guesses. Every guess shows the closest branch of the family tree it shares with the answer. A rarer animal on Sundays.', href: '/clade' },
@@ -449,15 +452,15 @@ const ALL_DAILY_GAMES = [
   { key: 'filing',    cat: 'trivia',     name: 'Filing', tag: 'Name the company from its IPO filing',   blurb: 'A famous company’s IPO prospectus with every name blacked out. Risk factors, metrics, rivals. Name it in the fewest clues.', href: '/filing' },
   { key: 'duet',   cat: 'logic',     name: 'Duet', tag: 'Half dots, half rings',   blurb: 'Dots and rings, half and half in every row, column and walled room, never three alike in a line. Six by six early in the week, eight by eight from Thursday, ten by ten on Sundays.', href: '/duet' },
   { key: 'snug',   cat: 'logic',     name: 'Snug', tag: 'Fit the pieces, one way only',   blurb: 'A board with a few squares missing and pieces that fill it exactly. Turn them, flip them, find the one way they all fit. Six by six on weekdays, seven by seven with eight pieces on Sundays.', href: '/snug' },
-  { key: 'jig',    cat: 'logic',     name: 'Jig', tag: 'The daily jigsaw',   blurb: 'A new photograph every day, cut into interlocking pieces, the same cut for everyone. Drag them into place, sort the tray by edges or colors, and race the clock.', href: '/jig' },
-  { key: 'saw',    cat: 'logic',     name: 'Saw', tag: 'The tall daily jigsaw',   blurb: "Jig's tall sibling: a portrait photo in 77 or 80 interlocking pieces, raced on the clock.", href: '/saw' },
-  { key: 'junkyard',   cat: 'logic',     name: 'Junkyard', tag: 'Parker on the biggest lot',         blurb: 'Parker on an eight by eight lot, the biggest board in the family, with close to thirty blocks in your way. Same one gap in the wall, a great deal more between you and it.', href: '/junkyard' },
-  { key: 'topple',     cat: 'logic',     name: 'Topple', tag: 'Roll the block onto the spring',     blurb: 'A tall block on a floor of tiles. Tip it end over end and land it on the spring in as few rolls as you can, minding the tiles that crack.', href: '/topple' },
-  { key: 'roll',       cat: 'logic',     name: 'Roll', tag: 'Light the squares in order',     blurb: 'A die on a floor of tiles. Roll it to light the numbered squares in order, each with its own number on top, in as few rolls as you can.', href: '/roll' },
-  { key: 'tangled',    cat: 'logic',     name: 'Tangled', tag: 'Untangle the ropes',     blurb: 'Ropes wound round each other on a frame of pegs. Move the pegs into the empty holes until nothing crosses, against the clock.', href: '/tangled' },
-  { key: 'witness',    cat: 'logic',     name: 'Witness', tag: 'What did you see?',     blurb: 'Twenty seconds with a street scene, then six questions from memory. What color was the van? How many people were waiting?', href: '/witness' },
+  { key: 'jig',    cat: 'visual',     name: 'Jig', tag: 'The daily jigsaw',   blurb: 'A new photograph every day, cut into interlocking pieces, the same cut for everyone. Drag them into place, sort the tray by edges or colors, and race the clock.', href: '/jig' },
+  { key: 'saw',    cat: 'visual',     name: 'Saw', tag: 'The tall daily jigsaw',   blurb: "Jig's tall sibling: a portrait photo in 77 or 80 interlocking pieces, raced on the clock.", href: '/saw' },
+  { key: 'junkyard',   cat: 'visual',     name: 'Junkyard', tag: 'Parker on the biggest lot',         blurb: 'Parker on an eight by eight lot, the biggest board in the family, with close to thirty blocks in your way. Same one gap in the wall, a great deal more between you and it.', href: '/junkyard' },
+  { key: 'topple',     cat: 'visual',     name: 'Topple', tag: 'Roll the block onto the spring',     blurb: 'A tall block on a floor of tiles. Tip it end over end and land it on the spring in as few rolls as you can, minding the tiles that crack.', href: '/topple' },
+  { key: 'roll',       cat: 'visual',     name: 'Roll', tag: 'Light the squares in order',     blurb: 'A die on a floor of tiles. Roll it to light the numbered squares in order, each with its own number on top, in as few rolls as you can.', href: '/roll' },
+  { key: 'tangled',    cat: 'visual',     name: 'Tangled', tag: 'Untangle the ropes',     blurb: 'Ropes wound round each other on a frame of pegs. Move the pegs into the empty holes until nothing crosses, against the clock.', href: '/tangled' },
+  { key: 'witness',    cat: 'visual',     name: 'Witness', tag: 'What did you see?',     blurb: 'Twenty seconds with a street scene, then six questions from memory. What color was the van? How many people were waiting?', href: '/witness' },
   { key: 'defuse',    cat: 'logic',     name: 'Defuse', tag: 'Cut the wires in the safe order',     blurb: 'A row of colored wires and a manual of rules. Exactly one order of cuts is safe, and one wrong cut ends the day.', href: '/defuse' },
-  { key: 'spot',    cat: 'logic',     name: 'Spot', tag: 'Find the seven differences',     blurb: 'Two copies of one photograph, seven differences. A boat is gone, a roof turned blue. Tap what changed.', href: '/spot' },
+  { key: 'spot',    cat: 'visual',     name: 'Spot', tag: 'Find the seven differences',     blurb: 'Two copies of one photograph, seven differences. A boat is gone, a roof turned blue. Tap what changed.', href: '/spot' },
   { key: 'sudoclue',   cat: 'logic',     name: 'Sudoclue', tag: 'Find the killer, place the suspects',     blurb: 'A murder in a real place. Put one suspect in every row and column, then name the victim, the killer and the accomplice from the clues.', href: '/sudoclue' },
   { key: 'check',  cat: 'endgame',     name: 'Check',  tag: 'Red to play and sweep',       blurb: 'A checkers position where one move sets off a chain that clears the whole board.', href: '/check' },
   { key: 'chain',  cat: 'endgame',     name: 'Chain',  tag: 'Take them, or leave them',    blurb: 'A dots and boxes endgame you are already winning. One edge keeps it, and the free box is usually bait.', href: '/chain' },
@@ -475,9 +478,9 @@ const ALL_DAILY_GAMES = [
   { key: 'gift', cat: 'endgame',     name: 'Gift', tag: 'The daily Quarto endgame',   blurb: 'A Quarto endgame: place the piece you were handed, then choose the one your opponent must play. One first move forces the win.', href: '/gift' },
   { key: 'yose',   cat: 'endgame',     name: 'Yose',   tag: 'The last points on the board',            blurb: 'A Go endgame you are already winning. A handful of open points, a perfect opponent, and one move that keeps the win. Nine by nine on Sundays.', href: '/yose' },
   { key: 'turn',   cat: 'endgame',     name: 'Turn',   tag: 'Ten squares left',            blurb: 'An Othello endgame you are already winning. One square keeps it, and the careful little move is not always it.', href: '/turn' },
-  { key: 'paths', cat: 'logic',      name: 'Paths',  tag: 'Link every town, cheaply',  blurb: 'One depot, a scatter of towns, a river and two ridges. Link them all for as little as you can, against a proven cheapest network.', href: '/paths' },
+  { key: 'paths', cat: 'visual',      name: 'Paths',  tag: 'Link every town, cheaply',  blurb: 'One depot, a scatter of towns, a river and two ridges. Link them all for as little as you can, against a proven cheapest network.', href: '/paths' },
   { key: 'redact', cat: 'trivia',     name: 'Redact', tag: 'Uncover the blacked-out article', blurb: 'A whole article about one famous subject, every word behind a block. Guess words to uncover it and name the subject.', href: '/redact' },
-  { key: 'chomp', cat: 'logic',      name: 'Chomp', tag: 'Eat them in order',        blurb: 'Seven mascots, eaten in order, and a trail that never goes away. The only thing in your way is where you have already been.', href: '/chomp' },
+  { key: 'chomp', cat: 'visual',      name: 'Chomp', tag: 'Eat them in order',        blurb: 'Seven mascots, eaten in order, and a trail that never goes away. The only thing in your way is where you have already been.', href: '/chomp' },
   { key: 'sweep', cat: 'arcade',     name: 'Sweep', tag: 'No bottom edge',           blurb: 'Minesweeper that runs downward forever. The same field for everybody, never a guess, one life a run and as many runs as you like.', href: '/sweep' },
   { key: 'dario', cat: 'arcade',    name: 'Dario', tag: 'Race to the frontier',   blurb: 'A side-scrolling run through three levels of the AI race. The course is remixed every day for everybody, and your fastest full clear counts.', href: '/dario' },
   { key: 'snake', cat: 'arcade',    name: 'Snake', tag: 'Same apples, same order',   blurb: 'The classic snake game, with the same apples in the same order for everybody. The edges wrap, it never speeds up, and your best run counts. Every apple grows you by two on Sundays.', href: '/snake' },
@@ -488,7 +491,7 @@ const ALL_DAILY_GAMES = [
   { key: 'hinge',   cat: 'word',      name: 'Hinge',   tag: 'Chain the compounds',   blurb: 'First and last word given. Fill the chain so every pair of neighbours makes a compound word or a phrase everyone knows. Any chain that holds counts.', href: '/hinge' },
   { key: 'rung',   cat: 'word',      name: 'Rung',   tag: 'One letter at a time',       blurb: 'Climb from the first word to the last, changing a single letter on every rung.', href: '/rung' },
   { key: 'crunch', cat: 'numbers',   name: 'Crunch', tag: 'Six numbers, one target',    blurb: 'Six numbers, four operations, one target. Hit it exactly or get as close as you can.', href: '/crunch' },
-  { key: 'taire',  cat: 'cards',       name: 'Taire',  tag: 'The daily solitaire',        blurb: 'A trimmed solitaire deal that always has a finish in it. Clear the board in as few moves as you can.', href: '/taire' },
+  { key: 'taire',  cat: 'endgame',       name: 'Taire',  tag: 'The daily solitaire',        blurb: 'A trimmed solitaire deal that always has a finish in it. Clear the board in as few moves as you can.', href: '/taire' },
   { key: 'fib',    cat: 'logic',     name: 'Fib',    tag: 'One clue is lying',          blurb: 'A logic grid where exactly one clue is false. Find the lie, then solve the rest.', href: '/fib' },
   { key: 'streak', cat: 'trivia',    name: 'Streak', tag: 'Forty questions',  blurb: 'Forty trivia questions, sudden death. One wrong answer ends the run for the day.', href: '/streak' },
   { key: 'deep',   cat: 'trivia',    name: 'Deep',   tag: 'One topic, fifteen questions', blurb: 'One subject a day, fifteen questions on it, easy to expert. One wrong answer ends the dive.', href: '/deep' },
@@ -496,7 +499,7 @@ const ALL_DAILY_GAMES = [
   { key: 'script', cat: 'trivia',   name: 'Script', tag: 'Movies and TV', blurb: 'Twenty-five film and television questions, gimme to expert, five lanes a round from the movies themselves to the awards, the money and what happened behind the camera. One wrong answer ends the run.', href: '/script' },
   { key: 'thread', cat: 'trivia',   name: 'Thread', tag: 'Nine films described badly, one thread', blurb: 'Nine films described by someone who missed the point, and one thing they all share. Name the films, then call the thread, early if you dare.', href: '/thread' },
   { key: 'slot', cat: 'trivia',   name: 'Slot', tag: 'Ten things, one at a time', blurb: 'Ten things on one axis, dealt one at a time. Drop each into a slot before you see the next; nothing moves once it is down, and the reveal shows the true order beside yours.', href: '/slot' },
-  { key: 'focus', cat: 'trivia',   name: 'Focus', tag: 'Name the zoomed-in photo', blurb: 'One photo a day, zoomed in close. Name it before six frames pull the camera all the way back; the earlier the frame, the more it pays.', href: '/focus' },
+  { key: 'focus', cat: 'visual',   name: 'Focus', tag: 'Name the zoomed-in photo', blurb: 'One photo a day, zoomed in close. Name it before six frames pull the camera all the way back; the earlier the frame, the more it pays.', href: '/focus' },
   { key: 'sci', cat: 'trivia',   name: 'Sci', tag: 'Science', blurb: 'Twenty-five science questions, gimme to expert, five lanes a round from the human body and space to the lab bench, living things and the inventions that changed everything. One wrong answer ends the run.', href: '/sci' },
   { key: 'pulse', cat: 'trivia',   name: 'Pulse', tag: 'The human body', blurb: 'Ten questions on the human body, gimme to expert: anatomy, then health and medicine. One wrong answer ends the run.', href: '/pulse' },
   { key: 'gene', cat: 'trivia',   name: 'Gene', tag: 'Life science', blurb: 'Ten life science questions, gimme to expert: animals and plants, then cells and evolution. One wrong answer ends the run.', href: '/gene' },
@@ -518,19 +521,19 @@ const ALL_DAILY_GAMES = [
   { key: 'feud',   cat: 'crowd',     name: 'Feud',   tag: 'Match the crowd',            blurb: 'Name the answers real players gave most often. The most popular answers pay the most.', href: '/feud' },
   { key: 'herd',   cat: 'crowd',     name: 'Herd',   tag: 'Pick what most people pick',      blurb: 'Ten quick this-or-that calls. Pick what you think most players picked; every call with the herd scores.', href: '/herd' },
   { key: 'babel',  cat: 'word',      name: 'Babel',  tag: 'The bag is empty',           blurb: 'A word tile game picked up at the very end. Their rack is knowable, so race them out or block the lane they need.', href: '/babel' },
-  { key: 'hands',  cat: 'cards',     name: 'Hands',  tag: 'The daily poker solitaire', blurb: 'Cards come one at a time into a grid where every row and column scores as a poker hand. Same deal for everybody, so it is decisions and not luck.', href: '/hands' },
-  { key: 'crib',  cat: 'cards',     name: 'Crib',  tag: 'Six cards, throw two', blurb: 'Five cribbage hands, one choice each: which two cards go to the crib. Every throw is worked out exactly, so the best one is a fact. Seven hands on Sundays.', href: '/crib' },
-  { key: 'hold',  cat: 'cards',     name: 'Hold',  tag: 'Poker showdown', blurb: 'Ten poker hands a day against two rival hands dealt face up, and one question each: which cards do you keep? Every hold is valued exactly over every draw. Fifteen hands on Sundays.', href: '/hold' },
-  { key: 'mahj',  cat: 'cards',     name: 'Mahj',  tag: 'The daily mahjong solitaire', blurb: 'All 144 mahjong tiles, cleared two of a kind at a time, against the clock. A new layout each weekday and the Pyramid on Sunday.', href: '/mahj' },
-  { key: 'swap', cat: 'logic', name: 'Swap', tag: 'Swap the photo back together', blurb: 'A photograph cut into squares, every one out of place. Swap two at a time until the picture is whole, in as few swaps as you can.', href: '/swap' },
-  { key: 'slide', cat: 'logic', name: 'Slide', tag: 'The sliding photo puzzle', blurb: 'The classic sliding puzzle on a 5x5 photograph. Slide the squares through the one gap until the picture is whole.', href: '/slide' },
-  { key: 'spin', cat: 'logic', name: 'Spin', tag: 'Turn every square straight', blurb: 'A photograph cut into squares, nearly every one turned. Tap each round, a quarter at a time, until the picture is straight.', href: '/spin' },
+  { key: 'hands',  cat: 'endgame',     name: 'Hands',  tag: 'The daily poker solitaire', blurb: 'Cards come one at a time into a grid where every row and column scores as a poker hand. Same deal for everybody, so it is decisions and not luck.', href: '/hands' },
+  { key: 'crib',  cat: 'endgame',     name: 'Crib',  tag: 'Six cards, throw two', blurb: 'Five cribbage hands, one choice each: which two cards go to the crib. Every throw is worked out exactly, so the best one is a fact. Seven hands on Sundays.', href: '/crib' },
+  { key: 'hold',  cat: 'endgame',     name: 'Hold',  tag: 'Poker showdown', blurb: 'Ten poker hands a day against two rival hands dealt face up, and one question each: which cards do you keep? Every hold is valued exactly over every draw. Fifteen hands on Sundays.', href: '/hold' },
+  { key: 'mahj',  cat: 'endgame',     name: 'Mahj',  tag: 'The daily mahjong solitaire', blurb: 'All 144 mahjong tiles, cleared two of a kind at a time, against the clock. A new layout each weekday and the Pyramid on Sunday.', href: '/mahj' },
+  { key: 'swap', cat: 'visual', name: 'Swap', tag: 'Swap the photo back together', blurb: 'A photograph cut into squares, every one out of place. Swap two at a time until the picture is whole, in as few swaps as you can.', href: '/swap' },
+  { key: 'slide', cat: 'visual', name: 'Slide', tag: 'The sliding photo puzzle', blurb: 'The classic sliding puzzle on a 5x5 photograph. Slide the squares through the one gap until the picture is whole.', href: '/slide' },
+  { key: 'spin', cat: 'visual', name: 'Spin', tag: 'Turn every square straight', blurb: 'A photograph cut into squares, nearly every one turned. Tap each round, a quarter at a time, until the picture is straight.', href: '/spin' },
   { key: 'connect', cat: 'logic', name: 'Connect', tag: 'Join the dots, fill the board', blurb: 'Pairs of matching dots on a big board. Join each pair with one line, never crossing, until every square is used.', href: '/connect' },
   { key: 'fill', cat: 'word', name: 'Fill', tag: 'Fit every word in the grid', blurb: 'An empty crossword grid and a list of themed words. Fit every one in, with the lengths and crossings as your only clues.', href: '/fill' },
-  { key: 'pairs', cat: 'cards', name: 'Pairs', tag: 'Concentration with a real deck', blurb: 'Thirty-six cards face down. Turn two at a time and pair each card with its twin, same rank and colour, in the fewest turns.', href: '/pairs' },
-  { key: 'cell',  cat: 'cards',     name: 'Cell',  tag: 'The daily FreeCell', blurb: 'FreeCell on a small deck, every card face up, and a perfect line proven to be the fewest moves. Forty cards on Sundays.', href: '/cell' },
-  { key: 'finesse',  cat: 'cards',     name: 'Finesse',  tag: 'The daily double dummy', blurb: 'All four hands face up and a defence that never errs. Play South and the dummy, and take the tricks the contract asks for. Three rules, no bidding, no luck.', href: '/finesse' },
-  { key: 'shoe',  cat: 'cards',     name: 'Shoe',  tag: 'The daily blackjack shoe', blurb: 'Ten hands of blackjack off one fixed shoe, the same cards for everybody. Keep the count and play it better than the book.', href: '/shoe' },
+  { key: 'pairs', cat: 'endgame', name: 'Pairs', tag: 'Concentration with a real deck', blurb: 'Thirty-six cards face down. Turn two at a time and pair each card with its twin, same rank and colour, in the fewest turns.', href: '/pairs' },
+  { key: 'cell',  cat: 'endgame',     name: 'Cell',  tag: 'The daily FreeCell', blurb: 'FreeCell on a small deck, every card face up, and a perfect line proven to be the fewest moves. Forty cards on Sundays.', href: '/cell' },
+  { key: 'finesse',  cat: 'endgame',     name: 'Finesse',  tag: 'The daily double dummy', blurb: 'All four hands face up and a defence that never errs. Play South and the dummy, and take the tricks the contract asks for. Three rules, no bidding, no luck.', href: '/finesse' },
+  { key: 'shoe',  cat: 'endgame',     name: 'Shoe',  tag: 'The daily blackjack shoe', blurb: 'Ten hands of blackjack off one fixed shoe, the same cards for everybody. Keep the count and play it better than the book.', href: '/shoe' },
   { key: 'queen', cat: 'endgame',   name: 'Queen', tag: 'White to play and promote',   blurb: 'King and pawn against king, with a proven win. Walk the pawn to the eighth rank against a perfect defence, with every move exact.', href: '/queen' },
   { key: 'axiom',  cat: 'logic',     name: 'Axiom',  tag: 'Find the hidden rule',       blurb: 'Test examples against a secret rule and name the rule before your guesses run out.', href: '/axiom' },
   { key: 'hearsay', cat: 'logic',    name: 'Hearsay', tag: "Deduce what they don't know", blurb: 'Work out the answer purely from what each player admits they cannot yet tell.', href: '/hearsay' },

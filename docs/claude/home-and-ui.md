@@ -2568,7 +2568,8 @@ Owner cut the first mockup down: one or two controls per page, never a wall of c
   generic line (`9x9 Killer sudoku`), from `SUDOKU_SIZE` in `lib/colour-sudoku.js`; a trailing
   size in the generic label is stripped so it never prints twice. Towers reads `5x5 and 7x7`.
   Sort adds Smallest First / Largest First.
-- **Logic and Word:** one Kind row of four, multi-select, folded from the category sets
+- **Logic, Visual, Table Games and Word:** one Kind row of three or four (Visual and Table Games added
+  2026-11-12, when Logic dropped to three), multi-select, folded from the category sets
   (`KIND_OF_SET` in `lib/category-kinds.js`). A NEW SET in `lib/daily-groups.js` for Logic or Word must be
   added to `KIND_OF_SET`, or its games only show with the Kind row on All.
 - **Sort on all three:** Featured (default, the set shelves as before), Most Played Today
@@ -2711,3 +2712,40 @@ Owner on the phone mockups: "i like m1b and m2", then "i like all of these". Bui
 - Flank renders `renderLeg(onStage)`; the stage hides the kick line, figures and page give-up. `.pst button{font:inherit}` overrides the Add button, so it is restated as `.pst .fl-st .lg-go`.
 - Focus renders `fcBoard`; the view is sized by `calc(100dvh - 400px)` on the stage and its page buttons are hidden.
 - Potluck, Mixtape and Mishmash are NOT on PlayStage: their play runs inside `/quiz/<id>` (QuizClient), which the quiz session owns. Only their gate and end card live on the daily page. Do not restyle QuizClient from a daily-games session.
+
+## The category reorg: Visual and Table Games (owner, 2026-11-12)
+
+Owner asked how Spot made sense in Logic, wanted a comprehensive reorg, and ruled the TOTAL stays at
+ten because the colour schemes are good. He picked "option A" from a mockup and named both new ones.
+
+- **Visual** (16) is new: the photo puzzles (Jig, Saw, Swap, Slide, Spin), the observation puzzles
+  (Spot, Witness, and Focus, which came out of Trivia) and the moving pieces (Parker, Impound,
+  Junkyard, Topple, Roll, Chomp, Paths, Tangled). It took the magenta ramp step Cards had held.
+- **Table Games** (19) is Cards and End Game merged. It kept End Game's gold step.
+- **Logic** (21) is deduction only. Defuse and Sworn stayed.
+- Crowd Psychology was offered a merge with Price Check ("Hunch") and the owner kept it as it is.
+- **The ramp is positional**, so only two names changed in `RAMP_ORDER` (`lib/category-ramp.js`):
+  `End Game` became `Table Games` and `Cards` became `Visual`. Every keyed map followed the same
+  swap, which is why no colour moved off its step (the quiz topics in `QZ_CAT` included).
+- **End Game is now a ROSTER, not a category.** `isEndGame(key)` reads `END_GAME_KEYS` in
+  `lib/daily-games.js`. Anything that used to test `cat === 'End Game'` calls it instead. A new
+  endgame daily must be added to that set (see scoring.md).
+- **Saved category orders are migrated on read.** `migrateCatOrder` in `lib/category-ramp.js` maps
+  the two old names in `sot_cat_order`; every reader of that key passes through it.
+- **Kind rows** (`lib/category-kinds.js`): Visual has Photo Puzzles / Observation / Moving Pieces,
+  Table Games has Cards / Chess / Board Endgames, and Logic dropped Moving Pieces (three kinds now).
+- **Pages** (`lib/puzzle-categories.js`): `/visual-puzzles` and `/table-games` are new whole-category
+  pages. `/card-games` and `/end-game-puzzles` are now SUBSETS of `/table-games` and name their games
+  in `keys` by hand (nothing is appended to a subset), so a new card or endgame daily is added to
+  both its subset page and the parent. A card game's cap still links `/card-games`, an endgame's
+  `/end-game-puzzles`, a chess title's `/chess-puzzles`.
+- **Set pages**: the Photo puzzles, Traffic jams and Roll and route sets moved to
+  `/visual-puzzles/<set>` with permanent redirects from `/logic-puzzles/<set>` in `next.config.js`.
+  Close reading became Observation puzzles (`/visual-puzzles/observation-puzzles`, redirected). The
+  two endgame sets carry `under: 'end-game-puzzles'` in `lib/puzzle-sets.js` so their addresses stayed.
+- **Legacy lowercase ids** (`CAT_META` in `app/DailyEndCard.jsx`, `CATEGORIES` in
+  `app/DailyGamesGrid.jsx`, `CAT_BLUE` in `lib/home-blues.js`): the `endgame` id now prints Table
+  Games and holds the card games too; `visual` is a new id.
+- **Not redone:** the static share cards in `public/og/` were baked in the old category colours
+  (card games in magenta, the Visual games in rose). They are still correct cards; re-bake them when
+  a network environment is available.

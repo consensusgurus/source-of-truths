@@ -12,7 +12,7 @@ import { savedIdentity } from '@/lib/saved-identity';
 import { catWord, hueVars, CSS as RUN_CSS } from '../run/RunPageClient';
 
 // Category order as the home's index reads it.
-const CAT_ORDER = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'Cards', 'Crowd Psychology', 'Arcade', 'End Game'];
+const CAT_ORDER = ['Word', 'Numbers', 'Logic', 'Visual', 'Sudoku', 'Trivia', 'Geography', 'Table Games', 'Crowd Psychology', 'Arcade'];
 
 export default function BuildRunClient({ games = [], start = [], startName = '' }) {
   const byKey = useMemo(() => Object.fromEntries(games.map((g) => [g.key, g])), [games]);

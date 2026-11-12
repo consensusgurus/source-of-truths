@@ -432,7 +432,7 @@ export default function TangledClient({ puzzles = [], forceNum = null }) {
       {!EMBED && (
         <StageChrome gameKey="tangled" quizId={PUZZLE.quizId}
           name="Tangled"
-          cat="Logic"
+          cat="Visual"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
           tiles={playing ? null : upNext}

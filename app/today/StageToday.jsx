@@ -50,7 +50,7 @@ import GamePreview, { GP_CSS } from '../GamePreview';
 import RunGateTile, { RGT_CSS, MoreRunsTile, BuildRunTile } from './RunGateTile';
 import { gameFacts, FACT_ICONS } from '@/lib/game-facts';
 import CircuitArt from '../CircuitArt';
-import { softGround, gameColor, RAMP_ORDER, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
+import { softGround, gameColor, RAMP_ORDER, migrateCatOrder, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
 // PolymathRunCard left the home on 2026-11-03 (Multiple Choice replaced Polymath); the file stays.
 import { MC_RUNS, MC_IDS } from '@/lib/multiple-choice';
 import { POLY_LEGS, localPolymath } from '@/lib/polymath';
@@ -229,11 +229,11 @@ const NEWCOMER_PICKS = {
   Word: 'encore',
   Numbers: 'crunch',
   Logic: 'alibi',
-  'End Game': 'mate',
+  'Table Games': 'mate',
   // Trivia and Geography name their busiest NON-run game, measured 2026-09-04.
   Trivia: 'dating',
   Geography: 'span',
-  Cards: 'taire',
+  Visual: 'jig',
   'Crowd Psychology': 'feud',
   Arcade: 'sweep',
   Sudoku: 'suds',
@@ -357,8 +357,8 @@ const QZ_ICONS = {
 // pairs that share a step were picked for kinship (History and Literature,
 // Movies and Entertainment, Arts and Gaming). An unknown topic takes Trivia.
 const QZ_CAT = {
-  geography: 'Geography', movies: 'Cards', sports: 'Sudoku', history: 'End Game', business: 'Numbers',
-  food: 'Trivia', travel: 'Word', science: 'Logic', literature: 'End Game', entertainment: 'Cards',
+  geography: 'Geography', movies: 'Visual', sports: 'Sudoku', history: 'Table Games', business: 'Numbers',
+  food: 'Trivia', travel: 'Word', science: 'Logic', literature: 'Table Games', entertainment: 'Visual',
   music: 'Arcade', arts: 'Crowd Psychology', gaming: 'Crowd Psychology', school: 'Sudoku', word: 'Word', misc: 'Trivia',
 };
 const QZ_TILES = 12;
@@ -447,7 +447,7 @@ const catLabel = (c) => { const s = skillOfId(c); return s ? s.name : c === 'Wor
 // The phone tile's fallback when the full name will not fit on one line
 // (owner, 2026-11-01: "Crowd" when Crowd Psychology won't fit). Null: no short form.
 const catShortLabel = (c) => { const s = skillOfId(c); return s ? (s.short || null) : c === 'Crowd Psychology' ? 'Crowd' : null; };
-const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Sudoku', 'Trivia', 'Geography', 'End Game', 'Cards', 'Arcade', 'Crowd Psychology'];
+const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Visual', 'Sudoku', 'Trivia', 'Geography', 'Table Games', 'Arcade', 'Crowd Psychology'];
 // THE REST OF THE PAGE IS PANES TOO (owner, 2026-10-07). Each id is also the
 // section's DOM id, so a #hash that names one opens it.
 const FAV_GAP = 24; const FAV_HEAD = 50; const FAV_ROW = 24;
@@ -474,10 +474,10 @@ const IX_GLYPHS = {
   Word: <><rect x="3.5" y="3.5" width="17" height="17" rx="3" /><path d="M8.5 16.5l3.5-9 3.5 9M9.8 13.2h4.4" /></>,
   Logic: <><circle cx="6" cy="6" r="2.5" /><circle cx="18" cy="6" r="2.5" /><circle cx="12" cy="18" r="2.5" /><path d="M7.2 8.3l3.6 7.4M16.8 8.3l-3.6 7.4M8.5 6h7" /></>,
   Trivia: <><circle cx="12" cy="12" r="8.5" /><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .9-1 1.6v.7" /><path d="M12 17h.01" /></>,
-  'End Game': <><circle cx="12" cy="7" r="2.8" /><path d="M9.5 10.5h5l-1 5h-3z" /><path d="M7 20.5h10l-1-3.5H8z" /></>,
+  'Table Games': <><circle cx="12" cy="7" r="2.8" /><path d="M9.5 10.5h5l-1 5h-3z" /><path d="M7 20.5h10l-1-3.5H8z" /></>,
   Numbers: <path d="M9.5 4l-2 16M16.5 4l-2 16M4.5 9h15M3.5 15h15" />,
   Geography: <><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17" /><path d="M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5s1.2-6.1 3.8-8.5z" /></>,
-  Cards: <><rect x="4" y="6" width="10" height="14" rx="1.8" /><path d="M12.5 4l5.6 1.4a1.8 1.8 0 0 1 1.3 2.2l-2.6 10.2" /></>,
+  Visual: <><path d="M2.5 12c2.4-4.3 5.6-6.5 9.5-6.5s7.1 2.2 9.5 6.5c-2.4 4.3-5.6 6.5-9.5 6.5S4.9 16.3 2.5 12z" /><circle cx="12" cy="12" r="3" /></>,
   'Crowd Psychology': <><circle cx="12" cy="8" r="3" /><path d="M6.5 19a5.5 5.5 0 0 1 11 0" /><circle cx="5" cy="10" r="2" /><circle cx="19" cy="10" r="2" /><path d="M2.5 17a3.2 3.2 0 0 1 3.6-3M21.5 17a3.2 3.2 0 0 0-3.6-3" /></>,
   Arcade: <><rect x="3" y="8" width="18" height="10" rx="4" /><path d="M7.5 11v4M5.5 13h4" /><circle cx="15.5" cy="12" r="1" /><circle cx="18" cy="14.5" r="1" /></>,
   'sty-circs': <><circle cx="6" cy="6" r="2.2" /><circle cx="18" cy="18" r="2.2" /><path d="M8.2 6H15a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h6.8" /></>,
@@ -1362,7 +1362,7 @@ export default function StageToday() {
   useEffect(() => {
     try {
       const raw = JSON.parse(localStorage.getItem('sot_cat_order') || 'null');
-      if (Array.isArray(raw) && raw.length) setHandOrder(raw);
+      if (Array.isArray(raw) && raw.length) setHandOrder(migrateCatOrder(raw));
     } catch (e) {}
   }, []);
   const saveOrder = (next) => {
