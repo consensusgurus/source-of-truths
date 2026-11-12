@@ -191,7 +191,7 @@ export default function BankQuizBoard({ pairs, started, ended, revealed, onMatch
 
   return (
     <div>
-      <div style={barStyle}>
+      <div className="qz-livebar" style={barStyle}>
         <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.7, flex: 'none' }}>{promptLabel || 'Prompt'}</span>
         {(() => { const clueText = !started ? 'Press Play to start' : (ended ? 'Game over' : (cur != null ? pairs[cur][1] : 'All done')); return (<ClueBox current={clueText} clues={pairs.map((p) => p[1])} align="left" style={{ flex: '1 1 320px', minWidth: 0 }} textStyle={{ fontFamily: SERIF, fontWeight: 800, fontSize: 'clamp(20px, 3.4vw, 28px)', lineHeight: 1.15, overflowWrap: 'break-word' }} />); })()}
         {live && cur != null && (
@@ -209,7 +209,7 @@ export default function BankQuizBoard({ pairs, started, ended, revealed, onMatch
           const isFlash = flash && flash.key === k;
           let bg = `var(--stg-surf,#fffdf8)`;
           let fg = `var(--stg-ink,${COLORS.ink})`;
-          if (isMatched) { bg = COLORS.forest; fg = COLORS.cream; }
+          if (isMatched) { bg = `var(--stg-acc-tint,${COLORS.forest})`; fg = `var(--stg-ink,${COLORS.cream})`; }
           else if (isFlash) { bg = flash.ok ? COLORS.forest : COLORS.ember; fg = COLORS.cream; }
           return (
             <button

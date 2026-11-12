@@ -141,7 +141,7 @@ export default function PhotoMatchBoard({ items, started, ended, revealed, onMat
   return (
     <div>
       {/* Slideshow prompt: one picture at a time. */}
-      <div style={barStyle}>
+      <div className="qz-livebar" style={barStyle}>
         <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: live ? `var(--stg-ink,${COLORS.ink})` : `var(--stg-mute,${COLORS.faded})` }}>
           {live ? `Tap the title of this ${noun}.` : 'Press Play to start'}
         </span>
@@ -167,7 +167,7 @@ export default function PhotoMatchBoard({ items, started, ended, revealed, onMat
           const isMatched = matched.has(k);
           const isFlash = flash && flash.key === k;
           let bg = '#fffdf8'; let fg = COLORS.ink;
-          if (isMatched) { bg = COLORS.forest; fg = COLORS.cream; }
+          if (isMatched) { bg = `var(--stg-acc-tint,${COLORS.forest})`; fg = `var(--stg-ink,${COLORS.cream})`; }
           else if (isFlash) { bg = flash.ok ? COLORS.forest : COLORS.ember; fg = COLORS.cream; }
           return (
             <button key={k} type="button" disabled={!live || isMatched} onClick={() => clickTile(k)}

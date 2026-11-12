@@ -558,7 +558,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
                   </svg>
                 </div>
                 <div style={{ marginTop: 16, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <button onClick={giveUp} style={ghostBtn(false)}><Flag size={12} strokeWidth={2.5} /> End now</button>
+                  <button className="qz-giveup" onClick={giveUp} style={ghostBtn(false)}><Flag size={12} strokeWidth={2.5} /> Give up</button>
                 </div>
               </div>
             )}

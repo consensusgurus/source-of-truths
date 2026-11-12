@@ -496,7 +496,7 @@ export default function CloserBoard({ quizId, mobile = false }) {
                 </div>
 
                 <div style={{ marginTop: 18, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <button onClick={() => finishGame(score)} style={ghostBtn(false)}><Flag size={12} strokeWidth={2.5} /> End run</button>
+                  <button className="qz-giveup" onClick={() => finishGame(score)} style={ghostBtn(false)}><Flag size={12} strokeWidth={2.5} /> Give up</button>
                 </div>
               </div>
             )}

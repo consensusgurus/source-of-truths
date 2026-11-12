@@ -1684,3 +1684,32 @@ html[data-stage-pre]:not(:has(.stage-page, .loft-page)) body::before { backgroun
    own sticky scoreboard with points, clock and round, so the top bar's figures
    row under it said the same score twice. Those boards mark it .qz-sticky. */
 .stage-page.qz-stage:has(.qz-sticky) .stg-top .stg-fg { display: none !important; }
+/* QUIZ BOARDS IN THE SITE'S BUTTON AND CARD LANGUAGE (owner, 2026-11-12: "keep
+   updating", after the boards were still reading as the old style). The older
+   quiz boards share a handful of inline styles from before the stage; matched
+   here once instead of in twenty files, and only on a quiz page:
+   - shouted buttons: small uppercase letter-spaced labels become the dailies'
+     sentence-case 13px bold labels;
+   - heavy outlines: 1.5px and 2px borders become the sitewide 1px ink line;
+   - the full-page boards' scoreboard card was --stg-surf2, which IS the page
+     ground in the light look, so it read as an outline with nothing inside;
+     it is a raised white (or dark) card now, with its progress track sunk. */
+.stage-page.qz-stage :is(button, a)[style*="text-transform: uppercase"]:not(.stb *):not(.sft *) {
+  text-transform: none !important; letter-spacing: 0 !important; font-weight: 800 !important;
+  font-family: 'Manrope', system-ui, sans-serif !important;
+}
+.stage-page.qz-stage :is(button, a)[style*="font-size: 11px"][style*="text-transform: uppercase"],
+.stage-page.qz-stage :is(button, a)[style*="font-size: 12px"][style*="text-transform: uppercase"] { font-size: 13px !important; }
+.stage-page.qz-stage [style*="border: 1.5px solid"]:not(.qz-map):not(.qz-map *),
+.stage-page.qz-stage [style*="border: 2px solid"]:not(.qz-map):not(.qz-map *) { border-width: 1px !important; }
+.stage-page.qz-stage .qz-sticky > div:first-child { background: var(--stg-surf, #ffffff) !important; border-color: var(--stg-line, rgba(11,15,26,.14)) !important; }
+.stage-page.qz-stage .qz-sticky > div:first-child [style*="height: 8px"] { background: var(--stg-surf2, #eef1f6) !important; }
+/* THE PROMPT BAR IS A CARD, NOT A BLACK SLAB (2026-11-12). Bank, photo, order,
+   type-it and scramble quizzes drew the live prompt on a solid ink bar with
+   cream text, the old page's look; on a quiz page it is a raised card in the
+   page's ink, with its Back / Skip pills in the same ink. */
+.stage-page.qz-stage .qz-livebar {
+  background: var(--stg-surf, #ffffff) !important; color: var(--stg-ink, #08222e) !important;
+  border: 1px solid var(--stg-line, rgba(11,15,26,.14)) !important;
+}
+.stage-page.qz-stage .qz-livebar :is(button, a) { color: var(--stg-ink, #08222e) !important; border-color: var(--stg-line2, rgba(11,15,26,.28)) !important; }

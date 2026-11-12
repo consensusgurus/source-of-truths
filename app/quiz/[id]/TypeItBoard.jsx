@@ -150,7 +150,7 @@ export default function TypeItBoard({ items, started, ended, revealed, onMatch, 
           under the score/timer block. Next/Back use onMouseDown preventDefault +
           refocus so tapping them never blurs the input (keyboard stays open, no
           reflow that would slide the bar behind the stats on mobile). */}
-      <div style={barStyle}>
+      <div className="qz-livebar" style={barStyle}>
         {live && (
           <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
             <input
@@ -192,7 +192,7 @@ export default function TypeItBoard({ items, started, ended, revealed, onMatch, 
           )}
         </div>
         ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, background: live ? COLORS.ink : `var(--stg-surf2,${COLORS.paper})`, color: live ? COLORS.cream : `var(--stg-mute,${COLORS.faded})`, borderRadius: 10, border: `1px solid var(--stg-line,${COLORS.faded}33)`, padding: '14px 16px', minHeight: 30 }}>
+        <div className="qz-livebar" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, background: live ? COLORS.ink : `var(--stg-surf2,${COLORS.paper})`, color: live ? COLORS.cream : `var(--stg-mute,${COLORS.faded})`, borderRadius: 10, border: `1px solid var(--stg-line,${COLORS.faded}33)`, padding: '14px 16px', minHeight: 30 }}>
           <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.7, flex: 'none' }}>{promptLabel || 'Clue'}</span>
           <ClueBox current={promptText} clues={list.map((x) => x.label)} align="left" style={{ flex: '1 1 320px', minWidth: 'min(100%, 220px)' }} textStyle={{ fontFamily: SERIF, fontWeight: 800, fontSize: 'clamp(20px, 3.4vw, 28px)', lineHeight: 1.15, overflowWrap: 'break-word', wordBreak: 'normal', hyphens: 'none' }} />
         </div>

@@ -504,7 +504,7 @@ export default function ConnectionsBoard({ quizId, mobile = false }) {
                       <button
                         key={t}
                         onClick={() => toggleTile(t)}
-                        style={{ fontFamily: SANS, minHeight: 64, borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 'clamp(12px, 2.6vw, 15px)', fontWeight: 700, padding: 4, lineHeight: 1.15, background: sel ? `var(--stg-acc,${COLORS.ink})` : `var(--stg-surf2,${COLORS.paper})`, color: sel ? `var(--stg-onramp,${T.white})` : `var(--stg-ink,${COLORS.ink})`, transition: 'background .12s' }}
+                        style={{ fontFamily: SANS, minHeight: 64, borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 'clamp(12px, 2.6vw, 15px)', fontWeight: 700, padding: 4, lineHeight: 1.15, background: sel ? `var(--stg-acc,${COLORS.ink})` : `var(--stg-surf,${COLORS.paper})`, boxShadow: sel ? 'none' : `inset 0 0 0 1px var(--stg-line,${COLORS.faded}33)`, color: sel ? `var(--stg-onramp,${T.white})` : `var(--stg-ink,${COLORS.ink})`, transition: 'background .12s' }}
                       >
                         {t}
                       </button>

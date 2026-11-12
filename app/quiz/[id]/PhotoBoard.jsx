@@ -219,7 +219,7 @@ export default function PhotoBoard({ items, started, ended, revealed, onMatch, o
           the screen; the photo scrolls below. The input element is never remounted
           between photos, so it keeps focus after a correct answer or Next. */}
       {live && (
-        <div style={barStyle}>
+        <div className="qz-livebar" style={barStyle}>
           <div style={{ display: 'flex', gap: 10, marginBottom: 8, ...(portrait ? { maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' } : null) }}>
             <input
               ref={inputRef}

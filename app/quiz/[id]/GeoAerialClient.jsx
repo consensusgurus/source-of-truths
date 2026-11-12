@@ -604,7 +604,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
                   <div ref={mapElRef} style={{ height: 'clamp(440px, 66vh, 660px)', width: '100%', background: '#0b1a2b', cursor: 'crosshair', position: 'relative', zIndex: 0 }} />
                 </div>
                 <div style={{ marginTop: 16, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <button onClick={giveUp} style={ghostBtn(false)}><Flag size={12} strokeWidth={2.5} /> End now</button>
+                  <button className="qz-giveup" onClick={giveUp} style={ghostBtn(false)}><Flag size={12} strokeWidth={2.5} /> Give up</button>
                 </div>
               </div>
             )}

@@ -156,7 +156,7 @@ export default function OrderBankBoard({
 
   return (
     <div>
-      <div style={barStyle}>
+      <div className="qz-livebar" style={barStyle}>
         <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.7, flex: 'none' }}>{bankLabel || 'Release order'}</span>
         <span key={barText} style={{ fontFamily: SERIF, fontWeight: showDirections ? 700 : 800, fontSize: showDirections ? 'clamp(14px, 2.4vw, 18px)' : 'clamp(20px, 3.4vw, 28px)', lineHeight: 1.2, flex: '1 1 220px', minWidth: 0 }}>{barText}</span>
         {live && (

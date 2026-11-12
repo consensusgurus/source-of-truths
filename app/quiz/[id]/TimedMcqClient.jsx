@@ -581,7 +581,7 @@ export default function TimedMcqClient({ quizId, mobile = false }) {
 
                 {/* Reveal note */}
                 {phase === 'reveal' && (
-                  <div style={{ marginTop: 14, padding: '12px 16px', background: `var(--stg-surf2,${COLORS.paper})`, borderLeft: `3px solid ${results[results.length - 1]?.correct ? COLORS.forest : COLORS.ember}` }}>
+                  <div style={{ marginTop: 14, padding: '12px 16px', borderRadius: 10, background: `var(--stg-surf,${COLORS.paper})`, border: `1px solid ${results[results.length - 1]?.correct ? `var(--stg-good,${COLORS.forest})` : `var(--stg-bad,${COLORS.ember})`}` }}>
                     <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: results[results.length - 1]?.correct ? COLORS.forest : `var(--stg-acc-ink,${COLORS.ember})`, marginRight: 8 }}>
                       {results[results.length - 1]?.correct ? `Correct · +${results[results.length - 1]?.pts}` : (picked == null ? 'Time' : 'Wrong')}
                     </span>
@@ -601,8 +601,8 @@ export default function TimedMcqClient({ quizId, mobile = false }) {
                 </div>
 
                 <div style={{ marginTop: 18, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <button onClick={giveUp} style={ghostBtn(false)}>
-                    <Flag size={12} strokeWidth={2.5} /> End now
+                  <button className="qz-giveup" onClick={giveUp} style={ghostBtn(false)}>
+                    <Flag size={12} strokeWidth={2.5} /> Give up
                   </button>
                 </div>
               </div>

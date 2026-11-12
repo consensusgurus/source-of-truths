@@ -138,7 +138,7 @@ export default function WordScrambleBoard({ items, started, ended, revealed, onM
 
   return (
     <div>
-      <div style={barStyle}>
+      <div className="qz-livebar" style={barStyle}>
         {live && (
           <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
             <input
@@ -158,7 +158,7 @@ export default function WordScrambleBoard({ items, started, ended, revealed, onM
             )}
           </div>
         )}
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 14, background: live ? COLORS.ink : `var(--stg-surf2,${COLORS.paper})`, color: live ? COLORS.cream : `var(--stg-mute,${COLORS.faded})`, borderRadius: 10, border: `1px solid var(--stg-line,${COLORS.faded}33)`, padding: '16px 16px', minHeight: 30 }}>
+        <div className="qz-livebar" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 14, background: live ? COLORS.ink : `var(--stg-surf2,${COLORS.paper})`, color: live ? COLORS.cream : `var(--stg-mute,${COLORS.faded})`, borderRadius: 10, border: `1px solid var(--stg-line,${COLORS.faded}33)`, padding: '16px 16px', minHeight: 30 }}>
           <span style={{ fontFamily: SANS, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.7, flex: 'none' }}>{promptLabel || 'Scramble'}</span>
           {!started ? <span style={{ fontFamily: SANS, fontWeight: 800, fontSize: 20 }}>Press Play to start</span>
             : ended ? <span style={{ fontFamily: SANS, fontWeight: 800, fontSize: 20 }}>Game over</span>
