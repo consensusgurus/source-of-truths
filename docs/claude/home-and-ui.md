@@ -2659,3 +2659,15 @@ Owner on the phone mockups: "i like m1b and m2", then "i like all of these". Bui
   640); the six boards above stop near 100px a square (Roll and Topple `H * 100 / TW`, Lamps
   `N * 100`, Paths from its CELL). The width-capped boards (Carve, Sums, Hedge, Duet) already stop
   at 460 to 640px. A new board that fits to the height passes a `max` too.
+
+## The ending's way home and the jigsaw shelf link (owner, 2026-11-12)
+
+- **Every ending's first screen (`app/EndFirst.jsx`) carries the Mind Loft pill top left**, on desktop and
+  phone: back arrow, the mark in ink, "Mind Loft". It goes where All puzzles goes (`homeHref`), and the
+  owner is fine with the two doing the same thing.
+- **Jig and Saw only:** the top-right row starts with "Jigsaw puzzle shelf" (`shelfHref`, passed by
+  StageStick for gameKey jig / saw: `/jig/shelf`, `/jig/shelf?g=saw`).
+- **Jig and Saw on a phone (snap mode): a wrong drop stays on the board** where it landed (`g.st`, centre
+  in board units), on top, and can be picked up again; it still snaps in near its own spot. Let go off the
+  board, it goes back to the tray. On the stage the column ends with room for the fixed tray dock
+  (`--jg-dockh`), so the foot's Give up is never under it.

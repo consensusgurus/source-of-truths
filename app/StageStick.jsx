@@ -993,6 +993,7 @@ export default function StageStick({
           : { onClick: (e) => { if (onLeave) onLeave(); if (replayNow.onClick) replayNow.onClick(e); } }) : null}
       onBack={back} backLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show board'}
       archiveHref={archiveHref} archiveLabel={archiveLabel}
+      shelfHref={s.gameKey === 'jig' ? '/jig/shelf' : s.gameKey === 'saw' ? '/jig/shelf?g=saw' : null}
     />
   );
   // A pick's `after` is a rank on the board it came from: All today, or the

@@ -26,6 +26,7 @@
 
 import { useState } from 'react';
 import GameGlyph from './GameGlyph';
+import MindLoftMark from './MindLoftMark';
 
 // The reader's place among their group on this game, or null: the same read
 // the phone's result bar makes (app/StageRoll.jsx).
@@ -85,7 +86,7 @@ export default function EndFirst({
   gamePill = null, groupPill = null, dayPill = null, board = null,
   sim = null, run = null, gear = null, retry = null,
   chal = null, onFull, allHref = '/#all', homeHref = '/',
-  replay = null, onBack = null, backLabel = 'Show board', archiveHref = null, archiveLabel = 'Past puzzles',
+  replay = null, onBack = null, backLabel = 'Show board', archiveHref = null, archiveLabel = 'Past puzzles', shelfHref = null,
 }) {
   const [open, setOpen] = useState(false);
   const canOpen = !!(board && board.rows && board.rows.length);
@@ -97,8 +98,15 @@ export default function EndFirst({
     <div className={'ef' + (phone ? ' ef-ph' : ' ef-dk') + (on ? ' on' : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="ef-top">
-        {phone ? <a className="ef-tl ef-home" href={homeHref}><span aria-hidden="true">&lsaquo;</span> Mind Loft</a> : null}
+        {/* THE WAY HOME (owner, 2026-11-12): the Mind Loft pill, back arrow and
+            mark, top left on every width. It goes where All puzzles goes. */}
+        <a className="ef-home" href={homeHref} aria-label="Back to Mind Loft home">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          <MindLoftMark size={16} ink="var(--sst-ink)" accent="var(--sst-ink)" />
+          <span>Mind Loft</span>
+        </a>
         <span className="ef-tr">
+          {shelfHref ? <a className="ef-tl" href={shelfHref}>Jigsaw puzzle shelf</a> : null}
           {replayNode}
           {onBack ? <button type="button" className="ef-tl" onClick={onBack}>{backLabel}</button> : null}
           {archiveHref && !phone ? <a className="ef-tl" href={archiveHref}>{archiveLabel}</a> : null}
@@ -173,12 +181,13 @@ const CSS = `
 .ef.on{opacity:1;}
 .ef-dk{padding:64px 40px 40px;}
 .ef-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.ef-dk .ef-top{position:absolute;top:16px;right:24px;}
+.ef-dk .ef-top{position:absolute;top:16px;left:24px;right:24px;}
 .ef-tr{display:flex;align-items:center;gap:2px;margin-left:auto;}
 .ef-tl{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 10px;border:0;border-radius:8px;background:transparent;
   color:var(--sst-ink);font:inherit;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;white-space:nowrap;}
 .ef-tl:hover{background:var(--sst-wash);}
-.ef-home{font-size:15px;font-weight:800;padding-left:2px;}
+.ef-home{flex:none;display:inline-flex;align-items:center;gap:5px;height:36px;box-sizing:border-box;padding:0 12px 0 8px;border-radius:999px;border:1px solid var(--sst-ink);color:var(--sst-ink);text-decoration:none;font-size:13px;font-weight:800;line-height:1;white-space:nowrap;}
+.ef-home:hover{background:var(--sst-wash);}
 .ef-mid{display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;}
 .ef-eb{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;}
 .ef-vm{display:flex;align-items:baseline;justify-content:center;flex-wrap:wrap;gap:0 .26em;font-size:clamp(46px,6.2vw,88px);

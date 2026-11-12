@@ -370,6 +370,7 @@ function freshState() {
     v: 1,
     mode: null,            // 'snap' (phone: pieces snap into their spot) or 'loose' (computer: the loose table), fixed at Start
     placed: [],            // snap: piece indices on the board, in the order they went in
+    st: [],                // snap: pieces left on the board off their spot, { i, x, y } (centre, board units)
     cl: [],                // loose: groups on the table, bottom to top: { id, dx, dy, m: [piece indices] }
     nid: 1,                // loose: the next group id
     pen: 0,                // milliseconds added by Peek
@@ -397,6 +398,7 @@ const JG_ST_CSS = `
    stage (layer 85) is up it must ride above it, or a drag from the tray is hidden
    until the drop (owner report, 2026-11-12). */
 .jg-ghost{z-index:210 !important;}
+.pst:has(.jg-play.box) .pst-col::after{content:"";display:block;flex:none;height:var(--jg-dockh, 0px);}
 .jg-st .jg-fs,.jg-st .jg-below{display:none !important;}
 .jg-st .jg-top{margin:0 0 10px;}
 @media (min-width:900px){
@@ -520,6 +522,13 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   const fitOn = full || (stageOn && !narrow);
   // On the stage the page itself does not scroll; the stage does.
   const scrollHost = () => (stageOn && playRef.current && playRef.current.closest('.pst')) || null;
+  // The phone's tray dock is fixed over the bottom of the stage, so the stage's
+  // column ends with room for it, or the foot (Give up) sits under the dock.
+  useEffect(() => {
+    const host = scrollHost();
+    if (!host) return;
+    host.style.setProperty('--jg-dockh', `${boxMode ? dockH : 0}px`);
+  });
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
@@ -561,7 +570,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
         if (saved && saved.v === 1 && Array.isArray(saved.cl) && saved.cl.every(okGroup)) {
           setG({ ...freshState(), ...saved, mode: 'loose', placed: [] });
         } else if (saved && saved.v === 1 && Array.isArray(saved.placed) && saved.placed.every(okIdx)) {
-          setG({ ...freshState(), ...saved, mode: saved.mode === 'loose' ? 'snap' : (saved.mode || 'snap'), cl: [] });
+          setG({ ...freshState(), ...saved, mode: saved.mode === 'loose' ? 'snap' : (saved.mode || 'snap'), cl: [], st: Array.isArray(saved.st) ? saved.st.filter((x) => x && okIdx(x.i) && Number.isFinite(x.x) && Number.isFinite(x.y) && !saved.placed.includes(x.i)) : [] });
         }
       }
       setGateRules(false);
@@ -736,7 +745,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   function placePiece(i, extra) {
     const cur = gRef.current;
     if (cur.status !== 'playing' || cur.placed.includes(i)) return;
-    const g2 = { ...cur, ...(extra || null), placed: [...cur.placed, i] };
+    const g2 = { ...cur, ...(extra || null), placed: [...cur.placed, i], st: (cur.st || []).filter((x) => x.i !== i) };
     if (!g2.t0) g2.t0 = Date.now();
     if (g2.placed.length === NP) {
       g2.status = 'won';
@@ -782,6 +791,28 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     commitTable([...cur.cl, { id, dx, dy, m: [i] }], id, extra, id + 1);
   }
 
+  // A WRONG DROP STAYS ON THE BOARD (owner, 2026-11-12): in the snap way (phones)
+  // a piece let go away from its own spot is left where it landed, on top, and
+  // can be picked up again; it still snaps in once it is dropped near its spot.
+  // Let go off the board, a piece left there goes back to the tray.
+  function strayAt(i, x, y) {
+    const cur = gRef.current;
+    if (cur.status !== 'playing' || cur.placed.includes(i)) return;
+    const cx = Math.max(S / 2, Math.min(BW - S / 2, x)), cy = Math.max(S / 2, Math.min(BH - S / 2, y));
+    const g2 = { ...cur, st: [...(cur.st || []).filter((k) => k.i !== i), { i, x: cx, y: cy }] };
+    if (!g2.t0) g2.t0 = Date.now();
+    gRef.current = g2;
+    setG(g2);
+    setSel(-1);
+    vibrate(HAPT.ok);
+  }
+  function unstray(i) {
+    const cur = gRef.current;
+    if (!(cur.st || []).some((k) => k.i === i)) return;
+    const g2 = { ...cur, st: cur.st.filter((k) => k.i !== i) };
+    gRef.current = g2;
+    setG(g2);
+  }
   function miss() {
     setFlashMiss(true);
     if (missTimer.current) clearTimeout(missTimer.current);
@@ -805,7 +836,8 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     if (gRef.current.mode === 'loose') { if (pt.over) putDown(i, pt.x, pt.y); return; }
     const hx = p.x + S / 2, hy = p.y + S / 2;
     if (Math.hypot(pt.x - hx, pt.y - hy) <= SNAP) { placePiece(i); return; }
-    if (pt.over) miss();
+    if (pt.over) strayAt(i, pt.x, pt.y);
+    else unstray(i);
   }
 
   // ---- drag from the tray ----
@@ -823,10 +855,10 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   // tray) scroll up and down, so a piece lifts when the finger starts sideways.
   // Press and hold lifts a piece in any direction. A swipe that is a scroll
   // never picks or lifts anything.
-  function trayDown(e, i) {
+  function trayDown(e, i, onBoard = false) {
     if (!playing || !g.t0) return;
     const touch = e.pointerType !== 'mouse';
-    const pr = { i, x0: e.clientX, y0: e.clientY, touch, dragging: false, id: e.pointerId, el: e.currentTarget, axis: touch ? (stripMode ? 'y' : 'x') : null, hold: 0 };
+    const pr = { i, x0: e.clientX, y0: e.clientY, touch, dragging: false, id: e.pointerId, el: e.currentTarget, axis: touch && !onBoard ? (stripMode ? 'y' : 'x') : null, hold: 0 };
     press.current = pr;
     if (touch) {
       pr.hold = setTimeout(() => {
@@ -1022,7 +1054,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     if (!pt) return;
     if (LOOSE) { putDown(sel, pt.x, pt.y); return; }
     if (Math.hypot(pt.x - (p.x + S / 2), pt.y - (p.y + S / 2)) <= S * 0.5) placePiece(sel);
-    else miss();
+    else strayAt(sel, pt.x, pt.y);
   }
 
   // See more (phones): open the tray into a taller grid, and bring the board to
@@ -1153,7 +1185,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     setG((cur) => {
       if (cur.mode !== 'loose' || cur.status !== 'playing') return cur;
       const home = cur.cl.filter((x) => Math.abs(x.dx) < S * 0.33 && Math.abs(x.dy) < S * 0.33).flatMap((x) => x.m);
-      return { ...cur, mode: 'snap', placed: home, cl: [] };
+      return { ...cur, mode: 'snap', placed: home, cl: [], st: [] };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [narrow, g.mode, g.status]);
@@ -1188,7 +1220,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   function revealEnd() {
     const g2 = LOOSE
       ? { ...g, pre: g.cl.map((x) => ({ ...x, m: x.m.slice() })), preBig: biggest, cl: [{ id: 0, dx: 0, dy: 0, m: PIECES.map((p) => p.i) }], status: 'revealed', tEnd: Date.now() }
-      : { ...g, pre: g.placed.slice(), placed: PIECES.map((p) => p.i), status: 'revealed', tEnd: Date.now() };
+      : { ...g, pre: g.placed.slice(), placed: PIECES.map((p) => p.i), st: [], status: 'revealed', tEnd: Date.now() };
     if (!g2.t0) g2.t0 = Date.now();
     postResult(g2, 0);
     setSel(-1);
@@ -1241,7 +1273,8 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
   }
 
   // ---- the tray's contents ----
-  const loose = useMemo(() => ORDER.filter((i) => !placedSet.has(i)), [ORDER, placedSet]);
+  const straySet = useMemo(() => new Set((g.st || []).map((k) => k.i)), [g.st]);
+  const loose = useMemo(() => ORDER.filter((i) => !placedSet.has(i) && !straySet.has(i)), [ORDER, placedSet, straySet]);
   const haveColors = Array.isArray(groups) && groups.length >= 2;
   const colIdx = haveColors ? Math.min(colPick, groups.length - 1) : 0;
   const bins = useMemo(() => {
@@ -1323,7 +1356,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
     )}
     </div>
 
-    <div className={`jg-play${boxMode ? ' box' : ''}`} ref={playRef} style={boxMode && dockH ? { paddingBottom: dockH + 8 } : undefined}>
+    <div className={`jg-play${boxMode ? ' box' : ''}`} ref={playRef} style={boxMode && dockH && !stageOn ? { paddingBottom: dockH + 8 } : undefined}>
       <div className={`jg-boardbox${boxMode && zoom > 1 ? ' scr' : ''}`} ref={boxRef} style={fitOn && fitW ? { width: fitW } : undefined}>
        <div className="jg-zoom" style={boxMode && zoom > 1 ? { width: `${zoom * 100}%` } : undefined}>
         <svg ref={boardRef} className={`jg-board${flashMiss ? ' miss' : ''}${LOOSE && started ? ' lt' : ''}`} viewBox={`${-BP} ${-BP} ${BW + 2 * BP} ${BH + 2 * BP}`}
@@ -1363,6 +1396,16 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
               {PIECES.filter((p) => shownOnBoard.has(p.i)).map((p) => (
                 <path key={p.i} className="jg-pc" d={p.d} fill={`url(#jgpic-${PUZZLE.num})`} style={{ stroke: won || (!playing && revealed) ? 'rgba(255,255,255,0.10)' : 'rgba(10,14,24,0.45)', strokeWidth: 1.6 }} />
               ))}
+              {playing && !hideSol && (g.st || []).map((k) => {
+                if (drag && drag.i === k.i) return null;
+                const p = PIECES[k.i];
+                return (
+                  <g key={`st${k.i}`} className="jg-stray" style={{ transform: `translate(${k.x - (p.x + S / 2)}px, ${k.y - (p.y + S / 2)}px)`, touchAction: 'none', cursor: 'grab' }}
+                    onPointerDown={(e) => { e.stopPropagation(); trayDown(e, k.i, true); }} onClick={(e) => e.stopPropagation()}>
+                    <path d={p.d} fill={`url(#jgpic-${PUZZLE.num})`} style={{ stroke: sel === k.i ? 'var(--stg-acc-ink, #be123c)' : 'rgba(255,255,255,0.85)', strokeWidth: sel === k.i ? 3 : 2 }} />
+                  </g>
+                );
+              })}
             </>
           )}
         </svg>
@@ -1444,7 +1487,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
 
     {started && (
       <div className="jg-below">
-        <span className="jg-rule">{LOOSE ? 'Put pieces down anywhere. Neighbours lock when they meet; a locked group moves as one.' : 'Drop a piece near its own spot and it snaps in. A wrong drop costs nothing.'}</span>
+        <span className="jg-rule">{LOOSE ? 'Put pieces down anywhere. Neighbours lock when they meet; a locked group moves as one.' : 'Drop a piece near its own spot and it snaps in. Dropped anywhere else, it stays where you put it.'}</span>
         {started ? (
           <button type="button" className={`jg-link${armReveal ? ' armed' : ''}`}
             onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
@@ -1844,7 +1887,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           Jig is a free daily online jigsaw puzzle from Mind Loft. Every day brings a new photograph, a featured picture from Wikimedia Commons, cut into 80 classic interlocking pieces. Everyone gets the same picture and the same cut, so the daily leaderboard is a fair race.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Drag a piece from the tray onto the board and it snaps in when it is near its own spot; a wrong drop just sends it back, at no cost. Pieces never need turning. Sort the tray into two bins, edge pieces and the middle or one of the picture&rsquo;s colors and the rest, to build the frame first and then fill it a color at a time. Peek shows the whole picture for a moment and adds 15 seconds to the clock. Full screen gives the board and the tray the whole screen, on a computer, a tablet or a phone. On a phone the board and the tray share one box: the board scrolls inside it, the plus button makes the board bigger, and See more opens the tray into a taller grid.
+          Drag a piece from the tray onto the board and it snaps in when it is near its own spot; a piece dropped anywhere else stays where you put it, ready to be moved again. Pieces never need turning. Sort the tray into two bins, edge pieces and the middle or one of the picture&rsquo;s colors and the rest, to build the frame first and then fill it a color at a time. Peek shows the whole picture for a moment and adds 15 seconds to the clock. Full screen gives the board and the tray the whole screen, on a computer, a tablet or a phone. On a phone the board and the tray share one box: the board scrolls inside it, the plus button makes the board bigger, and See more opens the tray into a taller grid.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Finish the picture for a perfect 10; the fastest time tops the board. No app, no signup, play free in your browser on a phone or a computer, and keep a streak. Want a taller picture? <a href="/saw" style={{ color: INK, fontWeight: 800 }}>Saw</a> is Jig&rsquo;s sibling, the same daily jigsaw on a portrait photo. Like fitting things together? Try <a href="/snug" style={{ color: INK, fontWeight: 800 }}>Snug</a>, the daily shape-fitting puzzle, and <a href="/etch" style={{ color: INK, fontWeight: 800 }}>Etch</a>, which draws a picture from number clues.
