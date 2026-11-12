@@ -2489,6 +2489,46 @@ into an existing margin with `calc()`). Before shipping a clipped line, check it
 has a descender. Swept 2026-11-09: `.rgt-name`, `.rgt-hl`, `.wys-n b`, `.gsx-bt`, `.sst-tile b`,
 `.nt-rel-t`.
 
+## The ending's first screen: three big plays, Full Results behind a button (owner, 2026-11-11)
+
+Owner on Retention ending C four days after it shipped: "these end screens suck ... clean them up,
+keep people playing". Approved on the "Clean Ending Mockups" canvas (the combined B + A row). Every
+daily ending now LANDS on `app/EndFirst.jsx`, on the full category pastel, desktop and phone, and
+stays there until the reader chooses something:
+
+- **Result:** eyebrow, verdict and the key figure, centred.
+- **Three pills:** this puzzle's rank (a button: today's leaderboard opens in place on a desktop,
+  as a bottom sheet on a phone, from `sheet.allTop` plus the reader's own rows), the group standing
+  (`groupStandingOf`, the same read the phone result bar makes), and **Today's Puzzles: #N of M**
+  with its Up chip. NO streak anywhere on the ending ("i dont care about streak"); EndDay's streak
+  row is gone too.
+- **Three big plays, in this order:** Play Similar (the closest relative, else the nearest pick in
+  the category, else the `similar` prop), the RUN IN THE MIDDLE ("put the Run in the middle":
+  `run` from StageFinish reads Your Run / Finish the <run>; otherwise Start a Run offers a run from
+  DISPLAY_CIRCUITS not finished today, one that deals this category first), and Switch Gears (the
+  easiest pick from ANOTHER category, else the most played unplayed game outside it). Each says
+  category or size, typical minutes and "N played today" (`/api/quiz/pulse`, now read on a phone
+  too). No "passes <name>" lines here: the owner found them confusing.
+- **Three quiet buttons:** Challenge (Win $500; `chal.onSend`), **Full Results Page**, All puzzles.
+- Replay, Show board and the archive are plain buttons at the top. On a phone the replay games'
+  `retry` offer is a full-width Replay instantly above the plays.
+
+**Full Results Page is the ending as it was.** Desktop: the colour pulls back onto the band
+(`retract`) and the direction C sheet is the page; the band's "Close Full Results" puts the colour
+back (`setPhase('show')`). Phone: StageRoll mounts with `settled`, so it lands on its final view
+without replaying its beats. The colour NO LONGER pulls back by itself, and Escape or a background
+tap only finishes the reveal.
+
+**Nothing starts by itself any more.** EndNext's 8 second auto-start is off on both widths
+(`armed={false}`): the first screen is a choice, and a page opened on request must not leave.
+
+**The day board is called "Today's Puzzles"** on every ending surface (StandChips, the standings
+beat and card, PassCard, Up next, Your Day). This supersedes the 2026-11-03 "All, not Today" rule
+above. The desktop cover is centred again, superseding the 2026-10-31 left-aligned cover.
+
+Not built: the short hand-off beat between games from the same canvas (the owner did not rule on
+it), and a way back to the first screen from the phone's Full Results Page.
+
 ## Category page sort and filter bar (owner, 2026-11-10)
 
 `app/puzzle-category/CategoryLanding.jsx`, whole-category pages only (not set or subset pages),

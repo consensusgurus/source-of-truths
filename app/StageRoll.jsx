@@ -71,6 +71,9 @@ export default function StageRoll({
   standRows = null, beatRows = null, standGo = true, noCount = false,
   // WHO'S NEXT TO PASS and the next play (owner, 2026-11-03, B2).
   passNode = null, playNode = null,
+  // Opened from the ending's first screen (owner, 2026-11-11): the beats have
+  // been seen there, so this lands on the final view.
+  settled = false,
 }) {
   const [fresh] = useState(() => {
     try {
@@ -80,7 +83,7 @@ export default function StageRoll({
     return pageAge() >= BEAT_FRESH;
   });
   // A reopened finish (a refresh, an archive visit) lands on the final view.
-  const [phase, setPhase] = useState(fresh ? 0 : 2);
+  const [phase, setPhase] = useState(fresh && !settled ? 0 : 2);
   const [open, setOpen] = useState(false);
   const [cal, setCal] = useState(false);
   const [toast, setToast] = useState('');

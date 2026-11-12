@@ -186,7 +186,7 @@ export function usePuzzleStandings({ on, gameKey, gameName, cat, game, board, ne
         const r = pointsRow(c, { id: 'cat', lab: `${cat} Puzzles`, name: cat, word: 'puzzle', plus });
         if (r) out.push(r);
       }
-      const r3 = pointsRow(d, { id: 'day', lab: 'All Puzzles', name: 'All today', word: 'puzzle', plus });
+      const r3 = pointsRow(d, { id: 'day', lab: 'All Puzzles', name: 'Today\u2019s Puzzles', word: 'puzzle', plus });
       if (r3) out.push(r3);
       setRows2(out);
       setReady(true);
@@ -511,7 +511,8 @@ const ROWS_CSS = `
 // names its scope on an ink chip (owner, 2026-11-04: "add today", black with
 // white letters, flipped in dark mode), the rank in that scope, and the
 // player just above with the gap, with a bar for how close you are.
-const passScope = (r) => (r.id === 'day' ? 'All today' : `${r.name} today`);
+// The day board reads "Today's Puzzles" (owner, 2026-11-11; it was "All").
+const passScope = (r) => (r.id === 'day' ? 'Today\u2019s Puzzles' : `${r.name} today`);
 export function PassCard({ rows, wide = false, band = false }) {
   if (!rows || !rows.length) return null;
   const list = rows.slice().reverse();

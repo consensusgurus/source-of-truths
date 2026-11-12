@@ -26,6 +26,12 @@
 // and the cards land under it. The in-page copy is mounted from the start
 // (hidden) so the colour has a real rectangle to land on.
 //
+// THE FIRST SCREEN (owner, 2026-11-11): the colour no longer plays its beats
+// and pulls back by itself. It lands on app/EndFirst.jsx (the result, three
+// pills, three big plays) and STAYS until the reader presses Full Results
+// Page, which is everything described above: the sheet on a desktop (the
+// colour pulls back onto the band then), the rolling page on a phone.
+//
 // Every figure is computed by StageFinish and passed in, so this file renders
 // and animates and nothing else. Mock-up: the "One-page mobile ending" canvas.
 
@@ -42,13 +48,15 @@ import { dailyMeIdentity } from './dailyMeClient';
 import { sharedGet } from './sharedGet';
 import { useStageChrome } from './GauntletScreens';
 import { dailyDept, DAILY_GAME_MAP } from '@/lib/daily-games';
-import { CIRCUITS, runEngine, runGamesFor, circuitEntryHref, circuitKeysFor } from '@/lib/circuits';
+import { CIRCUITS, DISPLAY_CIRCUITS, runEngine, runGamesFor, runHref, circuitEntryHref, circuitKeysFor, circuitName } from '@/lib/circuits';
 import { SKILL_TAGS, SKILL_MAP } from '@/lib/daily-skills';
 import { relativesOf } from '@/lib/daily-families';
 import { categoryColor, softGround } from '@/lib/category-ramp';
 import { usePuzzleStandings, StandBeat, StandCard, PassCard, PassPlay, beatDuration } from './WhereYouStand';
 import { EndNext, EndDay, StandChips, buildStops } from './EndNext';
 import { pageAge, BEAT_FRESH } from '@/lib/finish-beat';
+import { typicalSeconds } from '@/lib/game-medians';
+import EndFirst, { groupStandingOf } from './EndFirst';
 
 // RUNS, NOT THEIR PARTS (owner, 2026-10-26: "don't send users to individual
 // run components. show runs in place of those"). A game that is one question
@@ -226,6 +234,8 @@ export default function StageStick({
   // 'show': the colour covers the screen. 'retract': desktop, pulling back.
   // 'inline': desktop, the colour has gone and the page copy is the ending.
   const [phase, setPhase] = useState('show');
+  // THE PHONE'S FULL RESULTS PAGE (owner, 2026-11-11): off until asked for.
+  const [full, setFull] = useState(false);
   const [desk, setDesk] = useState(() => { try { return typeof window !== 'undefined' && window.matchMedia(DESK_MQ).matches; } catch (e) { return false; } });
   const [clip, setClip] = useState(null);
   const [inkLight, setInkLight] = useState(false);
@@ -367,6 +377,16 @@ export default function StageStick({
     return () => { alive = false; if (mo) mo.disconnect(); clearInterval(poll); };
   }, [desk]);
 
+  // The first screen's plays say how many played each today, on a phone too.
+  useEffect(() => {
+    if (desk) return undefined;
+    let alive = true;
+    fetch('/api/quiz/pulse').then((r) => (r.ok ? r.json() : null)).then((d) => {
+      if (alive && d && d.gameToday) setPulse(d.gameToday);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, [desk]);
+
   const retract = () => {
     if (phase !== 'show') return;
     const hero = heroRef.current;
@@ -437,22 +457,9 @@ export default function StageStick({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [go]);
 
-  // DESKTOP: hold, then pull back. Reduced motion goes straight to the page.
-  // The hold counts from the mount as before, but the colour never pulls back
-  // before the figures under it have landed, so the page it reveals is whole.
-  useEffect(() => {
-    if (!desk) return undefined;
-    let reduced = false;
-    try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduced = false; }
-    if (reduced) { setPhase('inline'); return undefined; }
-    if (!go || !standGo) return undefined;
-    const since = Date.now() - (mountAt.current || Date.now());
-    // With the standings beat on the cover, the colour holds until it has played.
-    const beatEnd = beatRows ? Math.max(BEAT_AT_MS, (standGoAt.current || 0) - (mountAt.current || 0)) + beatDuration(beatRows.length) + 1100 : 0;
-    const t = setTimeout(() => retract(), Math.max(HOLD_MS - since, T.more - T.s2 + 600, beatEnd - since));
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [desk, go, standGo]);
+  // DESKTOP: the colour HOLDS (owner, 2026-11-11). It used to pull back onto
+  // the band by itself after the standings beat; now the first screen stays up
+  // and only Full Results Page pulls it back (retract, above).
 
   // The page under the colour does not scroll while the colour is up.
   const covering = phase !== 'inline';
@@ -467,7 +474,6 @@ export default function StageStick({
     const onKey = (e) => {
       if (e.key !== 'Escape') return;
       if (step < 6) skip();
-      else if (desk) retract();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -601,7 +607,6 @@ export default function StageStick({
   const bgTap = (e) => {
     if (e.target.closest && e.target.closest('a,button')) return;
     if (step < 6) skip();
-    else if (desk && phase === 'show') retract();
   };
 
   const tickets = chal && chal.draw
@@ -737,6 +742,8 @@ export default function StageStick({
           : <button type="button" className="sst-tl" onClick={(e) => { if (onLeave) onLeave(); if (replayNow.onClick) replayNow.onClick(e); }}>Replay</button>) : null}
         {back ? <button type="button" className="sst-tl" onClick={back}>{s.backLabel || 'Return to board'}</button> : null}
         {archiveHref ? <a className="sst-tl" href={archiveHref}>{archiveLabel}</a> : null}
+        {/* Back to the first screen (owner, 2026-11-11). */}
+        <button type="button" className="sst-tl" onClick={() => { setClip(null); setPhase('show'); }}>Close Full Results</button>
       </section>
     </div>
   );
@@ -907,12 +914,84 @@ export default function StageStick({
   const { stops } = buildStops({ curKey: s.gameKey, ranked, liveBy, dayRow });
   const passName = dayRow && dayRow.next && stops[0] && stops[0].pts && stops[0].pts >= dayRow.next.gap ? dayRow.next.name : null;
   const otherPick = sibBeside || catPick || ranked.find((p) => p !== mainPick) || null;
+  // THE FIRST SCREEN'S PLAYS AND PILLS (owner, 2026-11-11; app/EndFirst.jsx).
+  // Play Similar is the closest relative, else the nearest pick in this
+  // category. Switch Gears is the easiest pick from ANOTHER category. The run
+  // (in the middle) is the one this game belongs to when there is one, else a
+  // run the reader has not finished today, one that deals this category first.
+  const minsOf = (k) => { const t = typicalSeconds(k); return t ? `${Math.max(1, Math.round(t / 60))} min` : ''; };
+  const playedOf = (k) => { const n = plays(k); return n > 0 ? `${n.toLocaleString('en-US')} played today` : ''; };
+  const bigOf = (g, label) => (g ? { eyebrow: label, name: g.name, glyph: g.key, href: g.href,
+    sub: [g.cat, minsOf(g.key), playedOf(g.key)].filter(Boolean).join(' · ') } : null);
+  const simG = (sibPick && sibPick.g) || ((byAff.find((p) => p.g.cat === curCat) || {}).g) || null;
+  const simBig = simG ? bigOf(simG, 'Play Similar')
+    : similar ? { eyebrow: 'Play Similar', name: similar.name, glyph: similar.key || null, href: similar.href, onClick: similar.onClick || null,
+      sub: [curCat, similar.time || '', similar.key ? playedOf(similar.key) : ''].filter(Boolean).join(' · ') } : null;
+  const simKey = simG ? simG.key : (similar && similar.key) || null;
+  const gearP = pool.find((p) => p.g.cat !== curCat && p.key !== simKey);
+  const gearG = gearP ? gearP.g : ((allGames || [])
+    .filter((g) => !g.done && g.key !== s.gameKey && g.key !== simKey && g.cat !== curCat && !RUN_OF.has(g.key))
+    .sort((a, b) => plays(b.key) - plays(a.key))[0] || null);
+  const gearBig = bigOf(gearG, 'Switch Gears');
+  const runBig = run ? { eyebrow: 'Your Run', name: run.title, glyph: s.gameKey || null, href: run.href,
+    sub: [run.eyebrow, run.next ? `${run.next} next` : ''].filter(Boolean).join(' · ') }
+    : (() => {
+      let best = null;
+      for (const c of DISPLAY_CIRCUITS) {
+        if (!c.run) continue;
+        let keys = [];
+        try { keys = circuitKeysFor(c.id) || []; } catch (e) { keys = []; }
+        if (keys.length < 2 || keys.includes(s.gameKey)) continue;
+        if (!keys.some((k) => liveBy.has(k))) continue;
+        if (keys.every((k) => liveBy.has(k) && liveBy.get(k).done)) continue;
+        const near = keys.some((k) => liveBy.has(k) && liveBy.get(k).cat === curCat) ? 1 : 0;
+        if (!best || near > best.near) best = { c, keys, near };
+      }
+      if (!best) return null;
+      const mins = best.keys.reduce((t, k) => t + (typicalSeconds(k) || 0), 0);
+      return { eyebrow: 'Start a Run', name: circuitName(best.c.id) || best.c.name, glyph: best.keys.find((k) => liveBy.has(k)) || null, href: runHref(best.c.id),
+        sub: [best.c.unit || `${best.keys.length} puzzles`, mins ? `${Math.max(1, Math.round(mins / 60))} min` : ''].filter(Boolean).join(' · ') };
+    })();
+  const gameRow = standRows ? standRows.find((r) => r.id === 'game') : null;
+  const firstBoard = (() => {
+    const fig = (r) => ({ rank: r.rank, name: r.username, fig: gameStats(r, s.missLabel, s.gameKey), me: !!r.me });
+    const top = Array.isArray(s.allTop) && s.allTop.length ? s.allTop : sRows.filter((r) => r && !r.gap && !r.empty);
+    const rows = top.filter((r) => r && r.username).map(fig);
+    if (!rows.some((r) => r.me)) {
+      const last = rows.length ? Number(rows[rows.length - 1].rank) || 0 : 0;
+      const tail = sRows.filter((r) => r && !r.gap && !r.empty && r.username && (r.me || Number(r.rank) > last));
+      if (tail.some((r) => r.me)) { rows.push({ gap: true }); tail.forEach((r) => rows.push(fig(r))); }
+    }
+    return rows.length ? { title: `${s.gameName || 'This puzzle'} · Today’s leaderboard`, rows } : null;
+  })();
+  const firstScreen = (phone) => (
+    <EndFirst
+      phone={phone} on={step >= 1} ready={go && (standGo || !hasStanding)}
+      eyebrow={eyebrow} verdict={verdict}
+      metricNode={metric ? (!noCount ? <Count fig={metric} run={step >= 1} /> : metric.text) : null} metricLabel={metric ? metric.label : null}
+      gamePill={gameRow ? { name: s.gameName || 'This puzzle', rank: gameRow.rank, of: gameRow.of }
+        : typeof s.myRank === 'number' ? { name: s.gameName || 'This puzzle', rank: s.myRank, of: null } : null}
+      groupPill={groupStandingOf(grp, s.gameKey)}
+      dayPill={dayRow ? { rank: dayRow.rank, of: dayRow.of, up: dayRow.up } : null}
+      board={firstBoard}
+      sim={simBig} run={runBig} gear={gearBig} retry={phone ? retry : null}
+      chal={chal ? { label: chal.draw ? `Challenge · Win ${DRAWING.prizeLabel}` : 'Challenge a friend', onClick: chal.onSend }
+        : meme && meme.ctx && meme.onOpen ? { label: 'Challenge a friend', onClick: () => meme.onOpen() } : null}
+      onFull={phone ? () => setFull(true) : () => retract()}
+      allHref={allHref} homeHref={allHref || '/'}
+      replay={retry ? { onClick: retry.onReplay }
+        : replayNow ? (replayNow.href ? { href: replayNow.href, onClick: replayNow.onClick || null }
+          : { onClick: (e) => { if (onLeave) onLeave(); if (replayNow.onClick) replayNow.onClick(e); } }) : null}
+      onBack={back} backLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show board'}
+      archiveHref={archiveHref} archiveLabel={archiveLabel}
+    />
+  );
   // A pick's `after` is a rank on the board it came from: All today, or the
   // category today for a pick only the category read offered.
   const passLine = (p) => {
     const row = p && p.from === 'cat' ? catRow : dayRow;
     if (!p || !row) return '';
-    const where = p.from === 'cat' && curCat ? `${curCat} today` : 'All today';
+    const where = p.from === 'cat' && curCat ? `${curCat} today` : 'Today\u2019s Puzzles';
     const head = `A typical finish (~${p.pts} ${p.pts === 1 ? 'pt' : 'pts'})`;
     if (!p.after || p.after >= row.rank) return `${head} adds to your day in ${where}.`;
     if (row.next && p.pts >= row.next.gap) return `${head} passes ${row.next.name} and moves you to about #${p.after} in ${where}.`;
@@ -922,7 +1001,7 @@ export default function StageStick({
   const passInfo = (p) => {
     const row = p && p.from === 'cat' ? catRow : dayRow;
     if (!p || !row) return null;
-    const where = p.from === 'cat' && curCat ? `${curCat} today` : 'All today';
+    const where = p.from === 'cat' && curCat ? `${curCat} today` : 'Today\u2019s Puzzles';
     const moves = !!p.after && p.after < row.rank;
     const passes = moves && row.next && p.pts >= row.next.gap ? row.next.name : null;
     return { from: row.rank, to: moves ? p.after : null, where, passes };
@@ -1229,7 +1308,7 @@ export default function StageStick({
   const nextC = stops.length ? (
     <section className={'sst-card sst-nc sst-nx ' + on(3)}>
       <div className="sst-ncm">
-        <EndNext stops={stops} from={dayRow ? dayRow.rank : null} passName={passName} armed={freshEnd && phase === 'inline'} />
+        <EndNext stops={stops} from={dayRow ? dayRow.rank : null} passName={passName} armed={false} />
         {rankCard}
         {pnNode(true)}
       </div>
@@ -1277,7 +1356,12 @@ export default function StageStick({
     return createPortal((
       <div ref={rootRef} className={'sst' + (inkLight ? ' ink-l' : '')} role="dialog" aria-modal="true" aria-label={`${eyebrow}: ${verdict}`}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
+        {full ? null : firstScreen(true)}
+        {/* The group read for the first screen's pill; the rolling page mounts its own. */}
+        {!full && s.gameKey ? <div hidden><FinishGroupLine gameKey={s.gameKey} gameName={s.gameName} missLabel={s.missLabel} onData={setGrp} /></div> : null}
+        {full ? (
         <StageRoll
+          settled
           eyebrow={eyebrow} verdict={verdict} metric={metric} self={self} rankHead={rankHead} go={go}
           gameKey={s.gameKey} gameName={s.gameName} grp={grp}
           statsNode={resultStats(true)} rankNode={rankCard} recordNode={recordCard} chalNode={chalCard}
@@ -1286,10 +1370,11 @@ export default function StageStick({
           onShowBoard={back} showBoardLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show Board'}
           retry={retry} homeHref={allHref || '/'}
           standRows={standRows} beatRows={beatRows} standGo={standGo} noCount={noCount}
-          passNode={stops.length ? (armed) => <EndNext phone stops={stops} from={dayRow ? dayRow.rank : null} passName={passName} armed={freshEnd && armed} /> : passNode}
+          passNode={stops.length ? (armed) => <EndNext phone stops={stops} from={dayRow ? dayRow.rank : null} passName={passName} armed={false} /> : passNode}
           playNode={stops.length ? <EndDay dayRow={dayRow} stops={stops} grp={grp} /> : playNode}
           {...replayProps}
         />
+        ) : null}
       </div>
     ), host);
   }
@@ -1310,17 +1395,7 @@ export default function StageStick({
           style={clip ? { clipPath: clip, WebkitClipPath: clip } : undefined}
           onClick={bgTap} role="dialog" aria-modal="true" aria-label={`${eyebrow}: ${verdict}`}>
           <style dangerouslySetInnerHTML={{ __html: CSS }} />
-          <div className="sst-in sst-cin">
-            {result(true)}
-            {beatRows ? (
-              <div className="sst-wys">
-                <StandBeat rows={beatRows} wide noCount={noCount}
-                  delay={Math.max(0, BEAT_AT_MS - ((standGoAt.current || 0) - (mountAt.current || 0)))} />
-                {week ? <WeekCard week={week}
-                  delay={Math.max(0, BEAT_AT_MS - ((standGoAt.current || 0) - (mountAt.current || 0))) + beatDuration(beatRows.length)} /> : null}
-              </div>
-            ) : null}
-          </div>
+          <div className="sst-cin sst-cef">{firstScreen(false)}</div>
         </div>
       ), host) : null}
     </>
@@ -1598,6 +1673,9 @@ const CSS = `
    2026-10-31: reverted the 2026-10-30 centred cover from 51ba941d4). Do not
    centre the cover's hero again without asking. */
 .sst-cover.go .sst-cin{opacity:0;}
+/* THE FIRST SCREEN (app/EndFirst.jsx, owner 2026-11-11) fills the cover and
+   scrolls inside it on a short window; nothing on it is a tap-to-skip. */
+.sst-cover .sst-cin.sst-cef{max-width:none;min-height:100%;height:100%;padding:0;overflow-y:auto;cursor:default;}
 /* The in-page ending: hidden under the cover, revealed when it pulls back.
    DIRECTION B (owner, 2026-10-26: "too disjointed" with the page around it).
    One sheet made of the page's own materials: the raised surface with the 2px

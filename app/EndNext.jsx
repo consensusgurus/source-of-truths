@@ -7,7 +7,8 @@
 // All Puzzles the reader reaches after each. "Keep going after each" (on by
 // default) remembers the path, so every ending on the way points its Start at
 // the next stop. Beside it (under it on a phone) is Your Day: a goal ring
-// ("3 more for Top 20 in All"), the site-wide streak, the countdown to
+// ("3 more for Top 20 in Today's Puzzles"; the day board was "All" until the
+// owner renamed it 2026-11-11, the day he also dropped the streak row), the countdown to
 // tomorrow's puzzles with a calendar reminder, and a group nudge.
 //
 // The path is stored per ET day in localStorage `sot_path`:
@@ -80,7 +81,7 @@ export function buildStops({ curKey, ranked, liveBy, dayRow, max = 4 }) {
 // THE THREE STANDINGS AS CHIPS (the desktop band). rows: Where You Stand rows.
 export function StandChips({ rows, gameName }) {
   if (!rows || !rows.length) return null;
-  const lab = (r) => (r.id === 'game' ? (gameName || 'This puzzle') : r.id === 'day' ? 'All' : (r.name || r.lab));
+  const lab = (r) => (r.id === 'game' ? (gameName || 'This puzzle') : r.id === 'day' ? 'Today\u2019s Puzzles:' : (r.name || r.lab));
   return (
     <div className="enx-chips">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -152,8 +153,8 @@ export function EndNext({ stops, from = null, passName = null, armed = false, ph
   if (!first) return null;
   const rest = stops.slice(1);
   const d = DAILY_GAME_MAP[first.key] || {};
-  const head = passName ? `Up next · passes ${passName} in All`
-    : first.rank && from && first.rank < from ? `Up next · up to #${first.rank} in All` : 'Up next';
+  const head = passName ? `Up next · passes ${passName} in Today\u2019s Puzzles`
+    : first.rank && from && first.rank < from ? `Up next · up to #${first.rank} in Today\u2019s Puzzles` : 'Up next';
   const last = stops.filter((s) => s.rank).pop();
   const allMins = stops.reduce((t, s) => t + (s.mins || 0), 0);
   const onStart = (e) => { e.preventDefault(); stop(); go(first.href); };
@@ -278,18 +279,13 @@ export function EndDay({ dayRow, stops, grp }) {
             <text x="34" y="39" textAnchor="middle">{played}{goal ? `/${ringOf}` : ''}</text>
           </svg>
           <span className="tx">
-            {dayRow.rank === 1 ? <><b>You lead All today</b><i>{played} {played === 1 ? 'puzzle' : 'puzzles'} played</i></>
-              : goal ? <><b>{goal.k} more for {goal.target === 1 ? 'first place' : `Top ${goal.target}`} in All</b><i>{(stops || []).slice(0, goal.k).map((s) => s.name).join(', ')}{goal.mins ? `, about ${goal.mins} min` : ''}</i></>
-                : <><b>{played} {played === 1 ? 'puzzle' : 'puzzles'} today</b><i>#{dayRow.rank} of {dayRow.of} in All</i></>}
+            {dayRow.rank === 1 ? <><b>You lead Today&rsquo;s Puzzles</b><i>{played} {played === 1 ? 'puzzle' : 'puzzles'} played</i></>
+              : goal ? <><b>{goal.k} more for {goal.target === 1 ? 'first place' : `Top ${goal.target}`} in Today&rsquo;s Puzzles</b><i>{(stops || []).slice(0, goal.k).map((s) => s.name).join(', ')}{goal.mins ? `, about ${goal.mins} min` : ''}</i></>
+                : <><b>{played} {played === 1 ? 'puzzle' : 'puzzles'} today</b><i>#{dayRow.rank} of {dayRow.of} in Today&rsquo;s Puzzles</i></>}
           </span>
         </div>
       ) : null}
-      {streak != null && streak > 0 ? (
-        <div className="enx-row">
-          <svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 2c1 5 7 7 7 14a7 7 0 0 1-14 0c0-4 3-5 3-9 2 1 3 3 3 5 1-2 1-6 1-10z" className="fl" strokeWidth="1.5" /></svg>
-          <span className="tx"><b>{streak}-day streak</b><i>One puzzle tomorrow keeps it going</i></span>
-        </div>
-      ) : null}
+      {/* No streak row (owner, 2026-11-11: "i dont care about streak"). */}
       {left != null ? (
         <div className="enx-row">
           <svg width="24" height="24" viewBox="0 0 26 26" fill="none" strokeWidth="2" aria-hidden="true" className="ic"><circle cx="13" cy="13" r="10" /><path d="M13 7v6l4 3" /></svg>
