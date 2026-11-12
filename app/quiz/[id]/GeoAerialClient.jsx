@@ -138,9 +138,14 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
 
   // ── Aerial map setup (Leaflet loaded from CDN at runtime; no SVG projection) ──
   const BM = (quiz && quiz.basemap) || {};
-  const TILE_URL = BM.tileUrl || 'https://maps{s}.nyc.gov/xyz/1.0.0/photo/2018/{z}/{x}/{y}.png8';
-  const TILE_SUBDOMAINS = BM.subdomains != null ? BM.subdomains : '1234';
-  const TILE_ATTR = BM.attribution || '&copy; City of New York';
+  // THE NYC DEFAULT MOVED TO ESRI WORLD IMAGERY (2026-11-12). The city's own
+  // maps{1-4}.nyc.gov XYZ tiles were retired: every tile now returns a "Map Tile
+  // Service has moved" image pointing at api-portal.nyc.gov, which needs a
+  // subscription key. The other city aerials already play on Esri, keyless and
+  // cached to zoom 19, so the NYC quizzes join them.
+  const TILE_URL = BM.tileUrl || 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+  const TILE_SUBDOMAINS = BM.subdomains != null ? BM.subdomains : 'abc';
+  const TILE_ATTR = BM.attribution || 'Imagery &copy; Esri, Maxar, Earthstar Geographics';
   const TILE_MAXNATIVE = BM.maxNativeZoom || 19;
   const TILE_BOUNDS = BM.tileBounds || [[40.4888, -74.2759], [40.9279, -73.6896]];
   const MAP_MAXBOUNDS = BM.maxBounds || [[40.49, -74.27], [40.93, -73.69]];
@@ -545,7 +550,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
           <QuizPlayOverlay open={mPlayOverlay} stage={QSTAGE} vars={quizAccVars(quiz)}>
             {/* Scoreboard + timer (sticky) — hidden once the results popup takes over */}
             {phase !== 'done' && (
-            <div style={{ position: 'sticky', top: 0, zIndex: 1200, background: `var(--stg-surf,${COLORS.cream})`, paddingBottom: 4 }}>
+            <div className="qz-sticky" style={{ position: 'sticky', top: 0, zIndex: 1200, background: `var(--stg-ground,${COLORS.cream})`, paddingBottom: 4 }}>
               <div style={{ background: `var(--stg-surf2,${COLORS.paper})`, borderRadius: 12, border: `1px solid var(--stg-line,${COLORS.faded}33)`, padding: '12px clamp(12px, 3.5vw, 20px)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'clamp(10px, 2.5vw, 20px)' }}>
                   <div style={{ flex: 'none' }}>

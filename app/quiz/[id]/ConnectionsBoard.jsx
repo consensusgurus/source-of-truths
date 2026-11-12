@@ -447,7 +447,7 @@ export default function ConnectionsBoard({ quizId, mobile = false }) {
         {/* ── PLAY ── */}
         {tab === 'play' && (
           <QuizPlayOverlay open={mPlayOverlay} stage={QSTAGE} vars={quizAccVars(quiz)}>
-            <div style={{ position: 'sticky', top: 0, zIndex: 24, background: `var(--stg-surf,${COLORS.cream})`, paddingBottom: 4, display: phase === 'done' ? 'none' : undefined }}>
+            <div className="qz-sticky" style={{ position: 'sticky', top: 0, zIndex: 24, background: `var(--stg-ground,${COLORS.cream})`, paddingBottom: 4, display: phase === 'done' ? 'none' : undefined }}>
               {/* Scoreboard */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'clamp(6px, 2vw, 16px)', background: `var(--stg-surf2,${COLORS.paper})`, border: `1px solid var(--stg-line,${COLORS.faded}33)`, borderRadius: 12, padding: '14px clamp(12px, 3.5vw, 20px)', marginBottom: 0 }}>
                 <div style={{ minWidth: 0 }}>

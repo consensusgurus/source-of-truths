@@ -82,12 +82,21 @@ const CSS = `
    It follows the same boot stamp the stage does (app/layout.js writes it before first
    paint, lib/stage-theme.js re-stamps it on every toggle), so it never flashes either.
    Light needs nothing: the light stage ground and this band are already the same grey. */
-html[data-stage-boot='dark'] .sq-band.sq-stage{background:#0f1422;border-top-color:rgba(255,255,255,.08)}
-html[data-stage-boot='dark'] .sq-stage .sq-eyebrow,html[data-stage-boot='dark'] .sq-stage .sq-sub{color:#9fb6dc}
+/* THE ABOUT BAND TAKES THE SITE'S INK, not the old brand navy and link blue
+   (owner report, 2026-11-12: "the footer is mismatched too. including colors").
+   On a stage page the eyebrows are the muted ink, links are ink and underlined,
+   and the band shares the page's ground with a hairline above it. */
+.sq-band.sq-stage{background:#eef1f6;border-top:1px solid rgba(11,15,26,.12)}
+.sq-stage .sq-eyebrow,.sq-stage .sq-sub,.sq-stage .sq-num{color:#3f4757}
+.sq-stage .sq-src a,.sq-stage .sq-more a{color:#0b0d12;text-decoration:underline;text-underline-offset:2px}
+.sq-stage .sq-grid a{border-color:rgba(11,15,26,.14)}
+.sq-stage .sq-grid a:hover{background:#ffffff;border-color:#0b0d12}
+html[data-stage-boot='dark'] .sq-band.sq-stage{background:#0b0f1a;border-top-color:rgba(255,255,255,.12)}
+html[data-stage-boot='dark'] .sq-stage .sq-eyebrow,html[data-stage-boot='dark'] .sq-stage .sq-sub,html[data-stage-boot='dark'] .sq-stage .sq-num{color:#aab5c7}
 html[data-stage-boot='dark'] .sq-stage .sq-h2,html[data-stage-boot='dark'] .sq-stage .sq-facts b{color:#e9edf4}
 html[data-stage-boot='dark'] .sq-stage .sq-p,html[data-stage-boot='dark'] .sq-stage .sq-more{color:#b6bfce}
 html[data-stage-boot='dark'] .sq-stage .sq-facts,html[data-stage-boot='dark'] .sq-stage .sq-src{color:#8b95a8}
-html[data-stage-boot='dark'] .sq-stage .sq-src a,html[data-stage-boot='dark'] .sq-stage .sq-more a{color:#8db4ff}
+html[data-stage-boot='dark'] .sq-stage .sq-src a,html[data-stage-boot='dark'] .sq-stage .sq-more a{color:#e9edf4}
 html[data-stage-boot='dark'] .sq-stage .sq-grid a{color:#e9edf4;background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.11)}
 html[data-stage-boot='dark'] .sq-stage .sq-grid a:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.22)}
 `;

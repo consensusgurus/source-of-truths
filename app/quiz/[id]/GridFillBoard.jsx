@@ -204,7 +204,7 @@ export default function GridFillBoard({ quizId, mobile = false }) {
   const dock = mobile && phase === 'playing';
   const playBarStyle = dock
     ? { position: 'fixed', left: 0, right: 0, bottom: kbInset, zIndex: 40, background: `var(--stg-surf,${COLORS.cream})`, padding: '8px 12px', paddingBottom: kbInset > 0 ? 6 : 'calc(8px + env(safe-area-inset-bottom))', borderTop: `1px solid var(--stg-line,${COLORS.faded}22)`, boxShadow: '0 -7px 18px rgba(20,22,28,0.12)' }
-    : { position: 'sticky', top: 0, zIndex: 24, background: `var(--stg-surf,${COLORS.cream})`, paddingTop: 6, paddingBottom: 8, marginBottom: 8 };
+    : { position: 'sticky', top: 0, zIndex: 24, background: `var(--stg-ground,${COLORS.cream})`, paddingTop: 6, paddingBottom: 8, marginBottom: 8 };
   const [found, setFound] = useState(() => new Set()); // company ids
   const [guess, setGuess] = useState('');
   const [time, setTime] = useState(quiz.timeLimit);

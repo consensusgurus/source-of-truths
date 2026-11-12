@@ -73,7 +73,7 @@ export default function PhotoBoard({ items, started, ended, revealed, onMatch, o
   const dock = mobile && live;
   const barStyle = dock
     ? { position: 'fixed', left: 0, right: 0, bottom: kbInset, zIndex: 40, background: `var(--stg-surf,${COLORS.cream})`, padding: '8px 14px', paddingBottom: kbInset > 0 ? 8 : 'calc(8px + env(safe-area-inset-bottom))', borderTop: `1px solid var(--stg-line,${COLORS.faded}22)`, boxShadow: '0 -6px 18px rgba(20,22,28,0.10)' }
-    : { position: 'sticky', top: stickyTop, zIndex: 4, background: `var(--stg-surf,${COLORS.cream})`, paddingTop: 4, paddingBottom: 8 };
+    : { position: 'sticky', top: stickyTop, zIndex: 4, background: `var(--stg-ground,${COLORS.cream})`, paddingTop: 4, paddingBottom: 8 };
   // The input is docked at the bottom on mobile, so focusing it would otherwise
   // jump the page to the bottom and scroll the photo clue off-screen. Re-center
   // the photo in view on focus (and when the photo changes while still focused).

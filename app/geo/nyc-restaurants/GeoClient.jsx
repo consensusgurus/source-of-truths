@@ -35,7 +35,8 @@ const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 
 const ROUND_SECONDS = 45;
 const TICK_MS = 100;
-const TILE_URL = 'https://maps{s}.nyc.gov/xyz/1.0.0/photo/2018/{z}/{x}/{y}.png8';
+// maps.nyc.gov retired its keyless XYZ tiles (2026-11-12); Esri World Imagery instead.
+const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 const START_VIEW = [40.758, -73.978];
 const START_ZOOM = 12;
 
@@ -230,9 +231,9 @@ export default function GeoClient() {
     const map = L.map(mapElRef.current, { minZoom: 11, maxZoom: 19, zoomControl: true }).setView(START_VIEW, START_ZOOM);
     map.setMaxBounds(L.latLngBounds([40.49, -74.27], [40.93, -73.69]));
     L.tileLayer(TILE_URL, {
-      subdomains: '1234', minNativeZoom: 8, maxNativeZoom: 19, maxZoom: 19,
+      minNativeZoom: 8, maxNativeZoom: 19, maxZoom: 19,
       bounds: L.latLngBounds([40.4888, -74.2759], [40.9279, -73.6896]),
-      attribution: '&copy; City of New York',
+      attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics',
     }).addTo(map);
     map.on('click', (e) => { if (resolveRef.current) {
       if (phaseRef.current === 'playing' && !resolvedRef.current) resolveRef.current(e.latlng);
@@ -401,7 +402,7 @@ export default function GeoClient() {
 
         {/* Credit */}
         <div style={{ marginTop: 40, paddingTop: 18, borderTop: `1px solid ${COLORS.faded}33`, fontFamily: MONO, fontSize: 11, letterSpacing: '0.04em', color: COLORS.faded }}>
-          Imagery &copy; City of New York, <a href="https://maps.nyc.gov/tiles/" target="_blank" rel="noopener noreferrer" style={{ color: COLORS.ember }}>NYC Map Tiles</a> (CC BY 4.0). Restaurant coordinates are approximate.
+          Imagery &copy; Esri, Maxar, Earthstar Geographics. Restaurant coordinates are approximate.
         </div>
       </div>
 

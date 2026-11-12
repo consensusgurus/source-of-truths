@@ -401,7 +401,7 @@ export default function HigherLowerBoard({ quizId, mobile = false }) {
           <>
             {/* Scoreboard */}
             {phase !== 'done' && (
-            <div style={{ position: 'sticky', top: 0, zIndex: 24, background: `var(--stg-surf,${COLORS.cream})`, paddingBottom: 4 }}>
+            <div className="qz-sticky" style={{ position: 'sticky', top: 0, zIndex: 24, background: `var(--stg-ground,${COLORS.cream})`, paddingBottom: 4 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, background: `var(--stg-surf2,${COLORS.paper})`, border: `1px solid var(--stg-line,${COLORS.faded}33)`, borderRadius: 12, padding: '16px 20px' }}>
                 <div>
                   <div style={{ fontFamily: SERIF, fontWeight: 800, fontSize: 34, lineHeight: 1 }}>{score}</div>

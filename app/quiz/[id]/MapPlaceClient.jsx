@@ -505,7 +505,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
           <QuizPlayOverlay open={mPlayOverlay} stage={QSTAGE} vars={quizAccVars(quiz)}>
             {/* Scoreboard + timer (sticky) — hidden once the results popup takes over */}
             {phase !== 'done' && (
-            <div style={{ position: 'sticky', top: 0, zIndex: 24, background: `var(--stg-surf,${COLORS.cream})`, paddingBottom: 4 }}>
+            <div className="qz-sticky" style={{ position: 'sticky', top: 0, zIndex: 24, background: `var(--stg-ground,${COLORS.cream})`, paddingBottom: 4 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'clamp(6px, 2vw, 16px)', background: `var(--stg-surf2,${COLORS.paper})`, borderRadius: 12, border: `1px solid var(--stg-line,${COLORS.faded}33)`, padding: '14px clamp(12px, 3.5vw, 20px)' }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontFamily: SERIF, fontWeight: 800, fontSize: 'clamp(22px, 6.4vw, 34px)', lineHeight: 1 }}>{points}<span style={{ fontSize: 'clamp(14px, 4vw, 20px)', color: FADED }}>/{maxPoints}</span></div>

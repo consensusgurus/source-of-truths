@@ -1679,3 +1679,8 @@ html[data-stage-pre]:not(:has(.stage-page, .loft-page)) body::before { backgroun
    page. The slot stays, because the correct / wrong verdict pops up in it, but
    the bar itself is no longer drawn. */
 .stage-page.qz-stage .qz-status.qz-solo > button:disabled { background: transparent !important; color: transparent !important; box-shadow: none !important; border: 0 !important; height: 30px !important; }
+/* ONE SCOREBOARD ON A QUIZ (2026-11-12). The full-page quiz boards (geo
+   guessers, maps, globes, timed multiple choice, higher or lower...) carry their
+   own sticky scoreboard with points, clock and round, so the top bar's figures
+   row under it said the same score twice. Those boards mark it .qz-sticky. */
+.stage-page.qz-stage:has(.qz-sticky) .stg-top .stg-fg { display: none !important; }

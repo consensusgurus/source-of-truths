@@ -52,7 +52,7 @@ export default function PhotoMatchBoard({ items, started, ended, revealed, onMat
   const dock = mobile && live;
   const barStyle = dock
     ? { position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 40, background: `var(--stg-surf,${COLORS.cream})`, padding: '10px 14px', paddingBottom: 'calc(10px + env(safe-area-inset-bottom))', borderTop: `1px solid var(--stg-line,${COLORS.faded}22)`, boxShadow: '0 -6px 18px rgba(20,22,28,0.10)', display: 'flex', alignItems: 'center', gap: 10 }
-    : { position: 'sticky', top: stickyTop, zIndex: 4, background: `var(--stg-surf,${COLORS.cream})`, paddingTop: 4, paddingBottom: 8, display: 'flex', alignItems: 'center', gap: 10 };
+    : { position: 'sticky', top: stickyTop, zIndex: 4, background: `var(--stg-ground,${COLORS.cream})`, paddingTop: 4, paddingBottom: 8, display: 'flex', alignItems: 'center', gap: 10 };
 
   // Preconnect + warm the whole deck so cycling pictures never blanks.
   useEffect(() => {
