@@ -393,6 +393,10 @@ const JG_ST_CSS = `
 /* The stage's rise animation keeps a transform on its top block, which would
    pin the phone's fixed tray dock to the column instead of the screen. */
 .pst-top:has(> .jg-st){animation:none;}
+/* The piece in hand is drawn outside the stage (fixed, layer 80), so while the
+   stage (layer 85) is up it must ride above it, or a drag from the tray is hidden
+   until the drop (owner report, 2026-11-12). */
+.jg-ghost{z-index:210 !important;}
 .jg-st .jg-fs,.jg-st .jg-below{display:none !important;}
 .jg-st .jg-top{margin:0 0 10px;}
 @media (min-width:900px){
