@@ -8,6 +8,9 @@
 //   Text     room names, name tags and role tags are HTML, never drawn in 3D (owner: "that should still be
 //            flat"). A room name tries the left then the right end of its back wall, then one step lower, and
 //            takes the first spot clear of people and other names; it fades only if every spot is taken.
+//   Plan     (owner, 2026-11-12) column letters along the back edge and row numbers down the left, flat text; a
+//            placed person's letter and number take their colour. Squares nobody can stand on wear a pale wash.
+//            The cursor is the square the player picked: a white and rose frame.
 //   Overlay  per move: shaded taken rows and columns, Mark crosses, the selected person's named objects glow,
 //            the Nudge squares, the selection, clash and answer rings, and the cast as painted figures.
 // Anything that fails (no WebGL, the library will not load) calls onFail and the game shows the flat board.
@@ -18,10 +21,10 @@ import { createKit, placeData, buildRoom } from '@/lib/sudoclue-3d';
 const ANG = 68, DIST = 2.45, FOV = 26;
 const k2 = (r, c) => `${r},${c}`;
 
-export default function Board3D({ layout, cast, colors, place, sel, roles, cross, bad, glow, shade, spots, notes, noteState, noteSel, nudge, hl, interactive, isOpen, onTap, onThumbs, onItemThumbs, onFail, cellLabel }) {
+export default function Board3D({ layout, cast, colors, place, sel, roles, cross, bad, glow, shade, spots, notes, noteState, noteSel, nudge, hl, cursor, wash, coords, interactive, isOpen, onTap, onThumbs, onItemThumbs, onFail, cellLabel }) {
   const boxRef = useRef(null), labRef = useRef(null);
   const S = useRef({});                     // three.js state, outside React
-  const props = useRef({}); props.current = { place, sel, roles, cross, bad, glow, shade, spots, notes, noteState, noteSel, nudge, hl, interactive, onTap, cast, colors };
+  const props = useRef({}); props.current = { place, sel, roles, cross, bad, glow, shade, spots, notes, noteState, noteSel, nudge, hl, cursor, wash, coords, interactive, onTap, cast, colors };
 
   // ---- mount: renderer, camera, lights, the room
   useEffect(() => {
@@ -60,7 +63,10 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
       const lab = labRef.current; lab.innerHTML = '';
       const roomLabels = room.labels.map((l) => { const el = document.createElement('div'); el.className = 'b3-room' + (l.out ? ' out' : ''); el.textContent = l.name; lab.appendChild(el);
         return { el, k: l.k, a: new THREE.Vector3(...l.a), b: new THREE.Vector3(...l.b) }; });
-      Object.assign(s, { THREE, renderer, scene, cam, kit, P, N, room, overlay, people, roomLabels, tags: [], figs: {}, az: 0, el: ANG, raf: 0 });
+      const coLabels = [];
+      for (let i = 0; i < N; i++) for (const kind of ['c', 'r']) { const el = document.createElement('div'); el.className = 'b3-co'; el.textContent = kind === 'c' ? String.fromCharCode(65 + i) : String(i + 1); el.style.display = 'none'; lab.appendChild(el);
+        coLabels.push({ el, kind, i, at: kind === 'c' ? new THREE.Vector3(i - N / 2 + .5, .02, -N / 2 - .62) : new THREE.Vector3(-N / 2 - .36, .02, i - N / 2 + .5) }); }
+      Object.assign(s, { THREE, renderer, scene, cam, kit, P, N, room, overlay, people, roomLabels, coLabels, tags: [], figs: {}, az: 0, el: ANG, raf: 0 });
       // figures for the cast cards
       if (onItemThumbs) { try { onItemThumbs(await kit.itemThumbs(room.foot)); } catch (e) {} }
       if (dead) return;
@@ -91,8 +97,10 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
     const clear = (g) => { for (const o of [...g.children]) { g.remove(o); o.traverse((x) => { if (x.geometry) x.geometry.dispose(); if (x.material && !Array.isArray(x.material)) x.material.dispose(); }); } };
     clear(overlay); for (const o of [...people.children]) people.remove(o);
     const tile = (r, c, color, op) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(.94, .94), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(X(c), top(r, c) + .01, Z(r)); m.renderOrder = 2; overlay.add(m); };
-    const outline = (r, c, color, w) => { const m = new THREE.Mesh(new THREE.RingGeometry(.4, .4 + (w || .06), 4, 1, Math.PI / 4), new THREE.MeshBasicMaterial({ color, transparent: true, depthWrite: false, side: THREE.DoubleSide })); m.rotation.x = -Math.PI / 2; m.scale.set(1.41, 1.41, 1); m.position.set(X(c), top(r, c) + .016, Z(r)); m.renderOrder = 3; overlay.add(m); };
+    const outline = (r, c, color, w, ro, lift) => { const m = new THREE.Mesh(new THREE.RingGeometry(.4, .4 + (w || .06), 4, 1, Math.PI / 4), new THREE.MeshBasicMaterial({ color, transparent: true, depthWrite: false, side: THREE.DoubleSide })); m.rotation.x = -Math.PI / 2; m.scale.set(1.41, 1.41, 1); m.position.set(X(c), top(r, c) + .016 + (lift || 0), Z(r)); m.renderOrder = ro || 3; overlay.add(m); };
     const ring = (r, c, color, rad) => { const m = new THREE.Mesh(new THREE.TorusGeometry(rad, .028, 8, 40), new THREE.MeshBasicMaterial({ color })); m.rotation.x = -Math.PI / 2; m.position.set(X(c), top(r, c) + .03, Z(r) + .05); overlay.add(m); };
+    if (p.wash) p.wash.forEach((k) => { const [r, c] = k.split(',').map(Number); tile(r, c, 0xffffff, .42); });
+    for (const l of (s.coLabels || [])) { const tint = p.coords ? (l.kind === 'c' ? p.coords.cols[l.i] : p.coords.rows[l.i]) : null; l.el.style.display = p.coords ? '' : 'none'; l.el.style.background = tint || 'rgba(11,13,18,.78)'; l.el.style.color = tint ? '#0b0d12' : '#fff'; }
     if (p.shade) { p.shade.forEach((k) => { const [r, c] = k.split(',').map(Number); tile(r, c, 0x05070d, .55); });
       // each placed person's row and column also gets two solid light edges, so the strip reads at a glance
       const edgeM = new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: .85, depthWrite: false });
@@ -129,6 +137,7 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
     if (p.cross) Object.keys(p.cross).forEach((k) => { if (!p.cross[k]) return; const [r, c] = k.split(',').map(Number); const mat = new THREE.MeshStandardMaterial({ color: 0x1f2229, roughness: .6 });
       for (const a of [Math.PI / 4, -Math.PI / 4]) { const b = new THREE.Mesh(new THREE.BoxGeometry(.52, .03, .07), mat); b.position.set(X(c), top(r, c) + .02, Z(r)); b.rotation.y = a; b.castShadow = true; overlay.add(b); } });
     if (p.hl) p.hl.forEach(([r, c]) => ring(r, c, 0xfde047, .4));
+    if (p.cursor && p.interactive) { const [r, c] = p.cursor.split(',').map(Number); outline(r, c, 0xffffff, .13, 8, .012); outline(r, c, 0xbe123c, .085, 9, .014); }
     // people: painted figures, built once per person and moved
     const tags = []; const lab = labRef.current;
     s.tags.forEach((t) => t.el.remove());
@@ -149,6 +158,7 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
     const s = S.current; const box = boxRef.current; if (!s.cam || !box) return; const W = box.clientWidth, H = box.clientHeight;
     const proj = (v) => { const q = v.clone().project(s.cam); return [(q.x + 1) / 2 * W, (1 - q.y) / 2 * H]; };
     const taken = [];
+    for (const l of (s.coLabels || [])) { if (l.el.style.display === 'none') continue; let [x, y] = proj(l.at); x = Math.max(9, Math.min(W - 9, x)); y = Math.max(9, Math.min(H - 9, y)); l.el.style.left = x + 'px'; l.el.style.top = y + 'px'; taken.push({ x: x - 9, y: y - 9, w: 18, h: 18, person: 1 }); }
     for (const t of s.tags) { const [x, y] = proj(t.at); t.el.style.left = x + 'px'; t.el.style.top = y + 'px';
       if (t.base) { const [, yb] = proj(t.base), [, yt] = proj(t.top); const w = (yb - yt) * 1.2; taken.push({ x: x - w / 2, y: yt - 4, w, h: yb - yt + 24, person: 1 }); } }
     // a role tag that would cover someone else's name tag drops to just under its own name instead
@@ -220,6 +230,8 @@ export default function Board3D({ layout, cast, colors, place, sel, roles, cross
         .b3-room.out{background:#f1f7ee;} .b3-lab.sm .b3-room{padding:1px 4px;border-radius:4px;border-color:rgba(8,34,46,.25);letter-spacing:.02em;line-height:1.1;background:rgba(255,253,248,.82);box-shadow:0 1px 2px rgba(8,34,46,.25);} .b3-lab.sm .b3-room.out{background:rgba(241,247,238,.82);} .b3-lab.sm .b3-tag{font-size:10.5px;padding:0 6px;} .b3-room.wrap{white-space:normal;}
         .b3-tag{position:absolute;z-index:1;transform:translate(-50%,0);background:rgba(11,13,18,.88);color:#fff;border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:700;line-height:1.5;white-space:nowrap;}
         .b3-tag.on{background:#be123c;}
+        .b3-co{position:absolute;transform:translate(-50%,-50%);min-width:15px;height:15px;box-sizing:border-box;padding:0 3px;border-radius:5px;font-size:10px;font-weight:800;line-height:15px;text-align:center;}
+        .b3-lab.sm .b3-co{min-width:13px;height:13px;line-height:13px;font-size:9px;padding:0 2px;}
         .b3-role{position:absolute;z-index:1;transform:translate(-50%,-100%);color:#fff;border:1.5px solid #fff;border-radius:999px;padding:0 7px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;line-height:1.6;white-space:nowrap;}
         .b3-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
       ` }} />

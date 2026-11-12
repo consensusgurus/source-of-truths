@@ -2048,6 +2048,24 @@ and `guessesUsed` is the wrong checks. Timer hidden by default.
   must leave the case open, dropping any one statement must open it too, and gradeRoles still needs no guess and no
   single-note pin, within NOTE_BAND. verify-sudoclue enforces the count, killer asked, victim not, and notes alone
   not enough, from INTERRO_FROM = 12; Nos. 1 to 11 had gone live and keep notes only.
+- **Clear plan and square first (owner, 2026-11-12, mockups A and B: "implement A and B on today's existing
+  boards").** UI only, no board changed, and the save keeps its shape (place, cross, notes), so a game in progress
+  carries on. This SUPERSEDES the card-then-square step, the Mark and Note modes, the Stage 1 people cards and the
+  Placed strip described above.
+  - *Clear plan.* Columns carry letters and rows numbers (B3); a placed person's row number and column letter take
+    their colour; squares nobody can stand on wear a pale wash (Board3D `wash`, `coords`; gutters on the flat
+    board). This is general legality only. The clue-specific "where they can go" squares stay REJECTED.
+  - *Square first.* A tap moves a cursor (`cell`; Board3D `cursor`) onto ANY square and the readout names it:
+    code, room, what it is on, what it shares an edge with, and "nobody stands here" (`cellFacts`). A row of
+    faces (the pad, two rows on a 10 by 10) puts a person on the cursor square; the same face again lifts them
+    off; a face onto an occupied square replaces the occupant. **Pencil** makes a face toggle that person's note
+    on the square, **Rule out** toggles the cross, **Erase** clears the square. Notes keep the nested outlines of
+    2026-11-04 (the mockup's initialled dots were not built: two names can share an initial).
+  - *What they said* lists every statement, people still to place first, placed people faded with their square
+    code. A tap on a row or a face selects that person, which is what makes their named objects glow.
+  - Phones pin the readout, pad and tools to the bottom; Nudge and Clear all sit under the list. On a desktop the
+    same bar sits under the stage header, and keys work: arrows move the cursor, 1 to 9 and 0 are the faces, P
+    pencil, X rule out, Backspace erase. Stage 2 is unchanged.
 ## Swap, Slide, Spin, Fill, Connect and Pairs: six simple dailies on one shell (launched 2026-11-01)
 
 Owner, 2026-11-01: Jig and Scour are the most popular dailies, so six more "simple puzzles that are easy to
