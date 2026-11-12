@@ -34,6 +34,8 @@ const CSS = `
 .wt-segs i{flex:1;height:8px;border:1px solid var(--pst-ink,#0b0f1a);border-radius:5px;background:transparent;}
 .wt-segs i.on{background:color-mix(in srgb, var(--pst-ink,#0b0f1a) 45%, transparent);}
 .wt-segs i.now{background:var(--pst-ink,#0b0f1a);}
+.wt-qs{display:grid;}
+.wt-qs>*{grid-area:1/1;}
 .wt-q{margin:0;font-size:clamp(22px,6.4vw,28px);font-weight:800;line-height:1.3;letter-spacing:-.01em;}
 .wt-gone{min-height:120px;border:1px solid var(--pst-ink,#0b0f1a);border-radius:12px;display:flex;align-items:center;justify-content:center;padding:16px 28px;text-align:center;font-size:14px;font-weight:600;line-height:1.5;opacity:.8;}
 .wt-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -121,7 +123,13 @@ function Board({ P, s, setS, active, done }) {
     <div className="wt">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="wt-segs" aria-hidden="true">{P.qs.map((_, k) => <i key={k} className={k < i ? 'on' : k === i ? 'now' : undefined} />)}</div>
-      <h2 className="wt-q">{q.t}</h2>
+      {/* Every question of the day is laid in the same grid cell and only the
+          current one shows, so the space is always as tall as the longest
+          question and nothing below it moves between questions (owner,
+          2026-11-12: "the clues jitter too much"). */}
+      <div className="wt-qs">
+        {P.qs.map((x, k) => <h2 key={k} className="wt-q" aria-hidden={k === i ? undefined : true} style={k === i ? undefined : { visibility: 'hidden' }}>{x.t}</h2>)}
+      </div>
       <div className="wt-gone">The scene is gone. Answer from memory.</div>
       <div className="wt-opts">
         {q.o.map((o, k) => (

@@ -2374,6 +2374,9 @@ group and set page Close reading (Witness, Defuse, Sworn); finish set Liars and 
   2026-11-12 to 2026-12-31. A new question kind needs a `derive` case in the verifier in the same push.
   From 2026-11-13 (`WORDING_FROM`) a plural or thing-named shop reads "the Books shop"; board 1 is frozen
   with the bare name.
+- **The question space is as tall as the day's longest question** (owner, 2026-11-12: the questions
+  jittered as their line counts changed). All of the day's questions sit in one grid cell (`.wt-qs`),
+  only the current one visible. Keep it when touching the question screen.
 - **Board styles need `.wt .x` (two classes) to beat the stage's `.pst button{font:inherit}`**: a bare
   `.wt-opt` lost its size and weight to it on launch day.
 - **One setting for now.** Every scene is the street. A second setting (a harbor, a kitchen) is a new
