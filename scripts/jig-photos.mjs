@@ -77,7 +77,7 @@ export const PHOTOS = [
   { t: 'Heilbronn - Böckingen - Ziegeleipark - Ziegeleisee - Ansicht von Osten im Frühling (2.2, mit Schwan).jpg', name: 'A lake in spring, Heilbronn', lic: 'CC BY-SA 4.0', by: 'Roman Eisele' },
   { t: 'Calico cat, - Assisi, Italy.jpg', name: 'A calico cat in Assisi', lic: 'CC BY-SA 4.0', by: 'Terragio67' },
   { t: 'Utah Dunes Landscape - West Desert District.jpg', name: 'Dunes in Utah’s West Desert', lic: 'Public domain', by: 'Bureau of Land Management' },
-  { t: 'Jerusalem-2013(2)-Aerial-Temple Mount-(south exposure).jpg', name: 'The Temple Mount from the air, Jerusalem', lic: 'CC BY-SA 4.0', by: 'Godot13' },
+  { t: 'Jerusalem-2013(2)-Aerial-Temple Mount-(south exposure).jpg', name: 'The Temple Mount from the air, Jerusalem', lic: 'CC BY-SA 4.0', by: 'Andrew Shiva' },
   { t: 'New York Botanical Garden October 2016 010.jpg', name: 'A waterfall at the New York Botanical Garden', lic: 'CC BY-SA 4.0', by: 'King of Hearts' },
   { t: 'ScotRail 156 456 and 458 Corrour - Tulloch.jpg', name: 'A train near Corrour, Scotland', lic: 'CC BY-SA 4.0', by: 'Kabelleger' },
   { t: 'Mount Ida chain Messara plain from Phaistos Crete Greece.jpg', name: 'The Messara plain from Phaistos, Crete', lic: 'CC0', by: 'Jebulon' },

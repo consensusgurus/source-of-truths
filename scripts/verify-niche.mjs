@@ -17,9 +17,9 @@
 //
 // Usage: node scripts/verify-niche.mjs
 import { PUZZLES } from '../app/niche/puzzles.js';
-import { UNIVERSES, UNIVERSE_MAP, universeForDate, attrById, cellMembers, normAnswer } from '../app/niche/facts.js';
-import { COUNTRIES, G20, ARAB_LEAGUE, EURO, SPANISH, FRENCH, MONARCHY, OECD, OPEC, EQUATOR, BIGGEST, PORTUGUESE } from '../app/niche/facts-countries.js';
-import { MUSICIANS, HALFTIME, ROTY, BEST_NEW } from '../app/niche/facts-musicians.js';
+import { UNIVERSES, UNIVERSE_MAP, universeForDate, attrById, cellMembers, normAnswer, readingsOf } from '../app/niche/facts.js';
+import { COUNTRIES, G20, ARAB_LEAGUE, EURO, SPANISH, FRENCH, MONARCHY, OECD, OPEC, EQUATOR, BIGGEST, PORTUGUESE, SOVIET, MEDITERRANEAN, ASEAN, WINTER_OLY, LEFT_DRIVE, WC_HOSTS, SCHENGEN, G7 } from '../app/niche/facts-countries.js';
+import { MUSICIANS, HALFTIME, ROTY, BEST_NEW, CANADIAN } from '../app/niche/facts-musicians.js';
 
 const fails = [];
 const warns = [];
@@ -98,13 +98,39 @@ for (const p of PUZZLES) {
     for (const c of p.cols) {
       const names = cellMembers(u, r, c).map((m) => m.t);
       cellLists.push(names);
+      // ONE BORDER READING PER ANSWER (2026-11-12, dec-g review): when row and
+      // column are both border clues, every accepted country must satisfy BOTH on
+      // a single neighbor set (narrow Span graph, or the wide overseas/Palestine
+      // set). An answer that passes only by mixing readings fails the board.
+      const ra = attrById(u, r), ca = attrById(u, c);
+      if (ra.br && ca.br) {
+        for (const t of names) {
+          if (!readingsOf(t).some((nb) => ra.br(nb) && ca.br(nb))) F(`${tag}: cell "${ra.label}" x "${ca.label}" accepts ${t} only under mixed border readings`);
+        }
+      }
       if (names.length < MIN_CELL) F(`${tag}: cell "${attrById(u, r).label}" x "${attrById(u, c).label}" has only ${names.length} valid answers (floor ${MIN_CELL})`);
       if (names.length <= TIGHT) tight++;
     }
   }
+  // TWIN CELLS (2026-11-12): at most two pairs of identical cells sharing a row
+  // or a column, from 2026-12-01 (mirrors gen-niche MAX_TWINS).
+  if (p.live >= '2026-12-01') {
+    const key = (i) => cellLists[i].slice().sort().join('|');
+    let twins = 0;
+    for (let a = 0; a < cellLists.length; a++) for (let b = a + 1; b < cellLists.length; b++) {
+      const sameLine = Math.floor(a / p.cols.length) === Math.floor(b / p.cols.length) || a % p.cols.length === b % p.cols.length;
+      if (sameLine && key(a) === key(b)) twins++;
+    }
+    if (twins > 2) F(`${tag}: ${twins} pairs of identical cells share a row or column (at most 2)`);
+  }
   const wantTight = size === 4 ? 2 : 1;
   if (tight < wantTight) F(`${tag}: only ${tight} tight cell(s), wanted ${wantTight}`);
   if (!fullFillExists(cellLists)) F(`${tag}: no full set of DISTINCT answers exists for this board`);
+}
+
+// Every border clue carries a per-reading predicate, or the check above is blind.
+for (const a of UNIVERSE_MAP.countries.attrs) {
+  if (/^(Borders |Has no land border)/.test(a.label) && typeof a.br !== 'function') F(`countries: border attribute "${a.id}" has no per-reading predicate (br)`);
 }
 
 // ── 3. bank-wide variety: caps, echo, near-duplicates, letter fills ─────────
@@ -114,6 +140,11 @@ const MAX_OVERLAP = 4;
 // A letter attribute is any attribute about the first letter of the name: the
 // generated n-/cap- fills plus "Name starts with a vowel", added 2026-09-06,
 // which is the same gimmick and so counts against the same cap.
+// Name-shape attributes (letter counts, last letter, double letters; 2026-11-12):
+// with the letter fills, at most half of a board from GIMMICK_FROM, so a board
+// stays trivia rather than a word game.
+const NAME_SHAPE = new Set(['short5', 'mid67', 'long8', 'long9', 'long12', 'long14', 'short8', 'endvowel', 'dbl', 'dblw',
+  'the', 'one', 'multi', 'w2', 'w3', 'w4', 'colon', 'num', 'hasz', 'endsa']);
 const isLetter = (id) => /^(n|cap)-[a-z]$/.test(id) || id === 'vowel';
 // No board may pair two attributes that are exact complements over the
 // universe: together they only split the universe in half. Scoped from the
@@ -128,22 +159,62 @@ const complementary = (u, a, b) => {
   for (const n of A) if (B.has(n)) return false;
   return true;
 };
+// NESTED CELLS (added 2026-11-12, lane-d restock). A cell whose row attribute
+// implies its column attribute, or the reverse (Invertebrate x Cold-blooded,
+// Released in 2010 or later x Released in 2000 or later), is really one
+// attribute: the second label adds nothing. Growing the pool with broad
+// complements made these likely, so from NESTED_FROM no row x column pair may
+// have one member set contained in the other. Earlier boards are frozen.
+const NESTED_FROM = '2026-12-01';
+const nested = (u, a, b) => {
+  const A = memberSet(u, a), B = memberSet(u, b);
+  const [S, L] = A.size <= B.size ? [A, B] : [B, A];
+  // NEAR-NESTED (late review, same date): 90% or more of the smaller attribute
+  // inside the larger one is refused too (Mammal x Does not lay eggs: 77 of 78).
+  let hit = 0;
+  for (const n of S) if (L.has(n)) hit++;
+  return hit / S.size >= 0.85;
+};
 const usage = {};
 const history = {};
+// capKey: 'dblw' (word-by-word double letter, from 2026-12-01) and the retired
+// 'dbl' are one attribute for the cap, echo and overlap rules.
+const keyOf = (u, id) => (u.attrs.find((a) => a.id === id)?.capKey || id);
+// BROAD (2026-12-01, lane-d review): an attribute true of 70% or more of its
+// universe; at most one per board from NESTED_FROM.
+const BROAD = 0.7;
+const cellSeen = new Map();
 PUZZLES.forEach((p, i) => {
   const tag = `#${p.num} (${p.live})`;
   const all = [...p.rows, ...p.cols];
+  const U = UNIVERSE_MAP[p.universe];
+  const allK = all.map((id) => keyOf(U, id));
+  for (const id of all) { const a = U.attrs.find((x) => x.id === id); if (a?.retiredFrom && p.live >= a.retiredFrom) F(`${tag}: "${id}" is retired from ${a.retiredFrom}`); }
   const letters = all.filter(isLetter).length;
   const maxLetters = i < 7 ? 1 : 2;
   if (letters > maxLetters) F(`${tag}: ${letters} letter attributes, cap is ${maxLetters}${i < 7 ? ' in launch week' : ''}`);
+  if (p.live >= '2026-12-01') { const g = all.filter((id) => isLetter(id) || NAME_SHAPE.has(id)).length; if (g > all.length / 2) F(`${tag}: ${g} of ${all.length} attributes are letter or name-shape gimmicks (at most half)`); }
+  if (p.live >= '2026-12-01') {
+    for (let x = 0; x < all.length; x++) for (let y = x + 1; y < all.length; y++) {
+      const A = memberSet(U, all[x]), B = memberSet(U, all[y]);
+      let both = 0; for (const n of A) if (B.has(n)) both++;
+      if (both <= 0.1 * Math.min(A.size, B.size) && A.size + B.size - both >= 0.9 * U.members.length) F(`${tag}: "${all[x]}" and "${all[y]}" are near-complements`);
+    }
+    for (const r of p.rows) for (const c of p.cols) {
+      const k = `${p.universe}|${[r, c].sort().join('|')}`;
+      if (cellSeen.has(k) && (Date.parse(p.live) - Date.parse(cellSeen.get(k))) / 864e5 < 15) F(`${tag}: cell "${r}" x "${c}" repeats ${cellSeen.get(k)} within 15 days`);
+    }
+  }
+  for (const r of p.rows) for (const c of p.cols) { cellSeen.set(`${p.universe}|${[r, c].sort().join('|')}`, p.live); }
+  if (p.live >= '2026-12-01' && all.filter((id) => /^b[0-5]$/.test(id)).length > 1) F(`${tag}: more than one border-count attribute (a cell between two counts exists only through the overseas-border reading)`);
   const hist = history[p.universe] = history[p.universe] || [];
   if (hist.length) {
     const prev = hist[hist.length - 1];
-    const echo = all.filter((id) => prev.has(id)).length;
+    const echo = allK.filter((id) => prev.has(id)).length;
     if (echo > MAX_ECHO) F(`${tag}: ${echo} attributes echo the previous ${p.universe} board (cap ${MAX_ECHO})`);
   }
   for (const h of hist) {
-    const overlap = all.filter((id) => h.has(id)).length;
+    const overlap = allK.filter((id) => h.has(id)).length;
     if (overlap > MAX_OVERLAP) F(`${tag}: shares ${overlap} attributes with an earlier ${p.universe} board (cap ${MAX_OVERLAP})`);
   }
   if (p.live >= COMPLEMENT_FROM) {
@@ -154,8 +225,16 @@ PUZZLES.forEach((p, i) => {
       }
     }
   }
-  hist.push(new Set(all));
-  for (const id of all) {
+  if (p.live >= NESTED_FROM) {
+    const u = UNIVERSE_MAP[p.universe];
+    for (let x = 0; x < all.length; x++) for (let y = x + 1; y < all.length; y++) {
+      if (nested(u, all[x], all[y])) F(`${tag}: "${all[x]}" and "${all[y]}" are nested (one attribute implies the other, or nearly: 85% or more)`);
+    }
+    const broad = all.filter((id) => memberSet(u, id).size / u.members.length >= BROAD);
+    if (broad.length > 1) F(`${tag}: ${broad.length} broad attributes (${broad.join(', ')}), at most one`);
+  }
+  hist.push(new Set(allK));
+  for (const id of allK) {
     const k = `${p.universe}:${id}`;
     usage[k] = (usage[k] || 0) + 1;
     if (usage[k] > ATTR_CAP) F(`${tag}: "${id}" appears ${usage[k]} times in ${p.universe} boards (cap ${ATTR_CAP})`);
@@ -235,6 +314,28 @@ const FIXED = [
   ['countries', 'opec', 12, 'OPEC members'],
   ['countries', 'eq', 13, 'countries on the Equator'],
   ['countries', 'big10', 10, 'ten largest countries'],
+  // Added 2026-11-12 (lane-d restock pool growth).
+  ['countries', 'ussr', 15, 'former Soviet republics'],
+  ['countries', 'med', 21, 'Mediterranean coast countries in this table'],
+  ['countries', 'asean', 11, 'ASEAN members'],
+  ['countries', 'woly', 13, 'Winter Olympics hosts'],
+  ['countries', 'b-austria', 8, 'countries bordering Austria'],
+  ['countries', 'b-turkey', 8, 'countries bordering Turkey'],
+  ['countries', 'b-tanzania', 8, 'countries bordering Tanzania'],
+  ['countries', 'b-drc', 9, 'countries bordering DR Congo'],
+  ['countries', 'left', 54, 'left-driving countries'],
+  ['countries', 'wchost', 19, "men's World Cup hosts"],
+  ['countries', 'schengen', 32, 'Schengen members plus the three de facto microstates'],
+  ['countries', 'g7', 7, 'G7 members'],
+  ['musicians', 'ca', 9, 'Canadian acts'],
+  ['animals', 'bigcat', 6, 'big cats'],
+  ['animals', 'primate', 6, 'primates'],
+  ['animals', 'raptor', 5, 'birds of prey'],
+  ['animals', 'rodent', 8, 'rodents'],
+  ['animals', 'insect', 11, 'insects'],
+  ['animals', 'flightless', 4, 'flightless birds'],
+  ['states', 'nba', 21, 'states with an NBA team'],
+  ['states', 'nhl', 18, 'states with an NHL team'],
 ];
 for (const [uid, attrId, want, what] of FIXED) {
   const got = count(uid, attrId);
@@ -246,11 +347,11 @@ if (UNIVERSE_MAP.states.members.length !== 50) F(`states: ${UNIVERSE_MAP.states.
 // merely moved the total. Assert every name resolves.
 {
   const known = new Set(COUNTRIES.map((m) => m.t));
-  for (const [name, list] of [['G20', G20], ['ARAB_LEAGUE', ARAB_LEAGUE], ['EURO', EURO], ['SPANISH', SPANISH], ['FRENCH', FRENCH], ['PORTUGUESE', PORTUGUESE], ['MONARCHY', MONARCHY], ['OECD', OECD], ['OPEC', OPEC], ['EQUATOR', EQUATOR], ['BIGGEST', BIGGEST]]) {
+  for (const [name, list] of [['G20', G20], ['ARAB_LEAGUE', ARAB_LEAGUE], ['EURO', EURO], ['SPANISH', SPANISH], ['FRENCH', FRENCH], ['PORTUGUESE', PORTUGUESE], ['MONARCHY', MONARCHY], ['OECD', OECD], ['OPEC', OPEC], ['EQUATOR', EQUATOR], ['BIGGEST', BIGGEST], ['SOVIET', SOVIET], ['MEDITERRANEAN', MEDITERRANEAN], ['ASEAN', ASEAN], ['WINTER_OLY', WINTER_OLY], ['LEFT_DRIVE', LEFT_DRIVE], ['WC_HOSTS', WC_HOSTS], ['SCHENGEN', SCHENGEN], ['G7', G7]]) {
     for (const c of list) if (!known.has(c)) F(`countries: ${name} names "${c}", which is not a member`);
   }
   const acts = new Set(MUSICIANS.map((m) => m.t));
-  for (const [name, list] of [['HALFTIME', HALFTIME], ['ROTY', ROTY], ['BEST_NEW', BEST_NEW]]) {
+  for (const [name, list] of [['HALFTIME', HALFTIME], ['ROTY', ROTY], ['BEST_NEW', BEST_NEW], ['CANADIAN', CANADIAN]]) {
     for (const c of list) if (!acts.has(c)) F(`musicians: ${name} names "${c}", which is not a member`);
   }
 }

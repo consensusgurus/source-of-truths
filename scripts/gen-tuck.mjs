@@ -402,7 +402,7 @@ minge muff nads nookie nutsack piss poof poop porn prick pube puke queef queer q
 rimjob schlong scrote shag shat shit skank slut smegma sperm spunk testicle tit titty
 todger tosser turd twat wank wanker whore wog
 gook kike coon dago honky jap negro nigger paki raghead spic towelhead wetback
-retard spastic mong cripple midget tranny
+retard spastic mong cripple midget tranny imbecile moron idiot
 rape rapist molest incest paedo pedo pervert
 suicide murder manslaughter genocide jihad nazi lynch massacre
 abortion euthanasia anthrax cyanide corpse cadaver carcase carcass entrail feces faeces

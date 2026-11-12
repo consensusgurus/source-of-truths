@@ -21,6 +21,15 @@
 //   ... --write          splice the checkpoint's boards onto the bank
 //
 // Rungs are imported from bank-chomp-unique.mjs so the two cannot drift.
+//
+// THE OBSTACLE ERA (2026-11-07, owner 2026-11-06: "can we make chomp harder?
+// maybe some obstacles?"). Boards from OBST_FROM carry 3 bleachers on a 7x7
+// weekday and 4 on the 8x8 Sunday, with two fewer mascots than the open rung
+// and the same forks floor (O_RUNGS, copied from scripts/verify-chomp.mjs).
+// The 2026-11-07 to 11-30 boards were built by a script that was never
+// committed; this mode (added 2026-11-12 for the December restock) is the same
+// carve() with nWalls, the same gates, plus one more variety rule the verifier
+// already enforces: no bleacher layout repeats across the walled era.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -35,6 +44,16 @@ const RUNGS = [
   { w: 7, h: 7, cast: 9, forks: 21, red: 4 },
   { w: 7, h: 7, cast: 9, forks: 22, red: 4 },
   { w: 7, h: 7, cast: 8, forks: 23, red: 1 },
+];
+const OBST_FROM = '2026-11-07';
+const O_RUNGS = [
+  { w: 8, h: 8, cast: 9, forks: 28, red: 1, walls: 4 },   // Sun
+  { w: 7, h: 7, cast: 8, forks: 18, red: 4, walls: 3 },   // Mon
+  { w: 7, h: 7, cast: 8, forks: 19, red: 4, walls: 3 },
+  { w: 7, h: 7, cast: 7, forks: 20, red: 3, walls: 3 },
+  { w: 7, h: 7, cast: 7, forks: 21, red: 3, walls: 3 },
+  { w: 7, h: 7, cast: 7, forks: 22, red: 3, walls: 3 },
+  { w: 7, h: 7, cast: 7, forks: 23, red: 1, walls: 3 },   // Sat
 ];
 const MASCOTS = ['bulldog', 'ibis', 'gamecock', 'tiger', 'eagle', 'longhorn', 'wildcat', 'seminole', 'knight', 'smokey', 'bull'];
 const UNIQUE_FROM = '2026-09-01';
@@ -74,10 +93,12 @@ if (!WRITE) {
     if (live > TO) break;
     num += 1;
     if (done[live]) continue;
-    const rung = RUNGS[d.getUTCDay()];
+    const rung = (live >= OBST_FROM ? O_RUNGS : RUNGS)[d.getUTCDay()];
     const rows = era();
-    const startCount = {}, orders = new Set(), keys = new Set(), cells = {};
+    const startCount = {}, orders = new Set(), keys = new Set(), cells = {}, wallKeys = new Set();
+    const wallKey = (r) => (r.walls || []).map((c) => c[1] * r.w + c[0]).sort((a, b) => a - b).join(',');
     for (const r of rows) {
+      if (r.walls && r.walls.length) wallKeys.add(wallKey(r));
       startCount[String(r.start)] = (startCount[String(r.start)] || 0) + 1;
       orders.add(r.cast.join('|'));
       keys.add(JSON.stringify([r.start, r.pellets]));
@@ -88,11 +109,13 @@ if (!WRITE) {
     const t0 = Date.now();
     for (; att < ATTEMPTS[rung.w] && !got; att++) {
       const rnd = rng((num * 7919 + att * 104729 + 17) >>> 0);
-      const r = carve(rung.w, rung.h, 0, 0, rung.cast, rnd);
+      const r = carve(rung.w, rung.h, rung.walls || 0, 0, rung.cast, rnd);
       if (!r || r.tooTight || r.short) continue;
       if (r.forks < rung.forks) continue;
       if ((startCount[String(r.board.start)] || 0) >= START_CAP) continue;
       if (keys.has(JSON.stringify([r.board.start, r.board.pellets]))) continue;
+      if ((rung.walls || 0) !== r.board.walls.length) continue;
+      if (rung.walls && wallKeys.has(wallKey(r.board))) continue;
       if (r.board.pellets.some((c) => (cells[String(c)] || 0) + 1 > cellCap)) continue;
       if (redundantCount(r.board) > rung.red) continue;
       got = r;
@@ -114,7 +137,7 @@ if (!WRITE) {
       dateLabel: `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`,
       sunday: d.getUTCDay() === 0, w: rung.w, h: rung.h,
       start: got.board.start, floor: got.floor, min: got.min,
-      cast, pellets: got.board.pellets, forks: got.forks, attempts: att,
+      cast, pellets: got.board.pellets, ...(rung.walls ? { walls: got.board.walls } : {}), forks: got.forks, attempts: att,
     };
     fs.writeFileSync(CKPT, JSON.stringify(done, null, 1));
     console.log(`${live}  #${num} ${rung.w}x${rung.h} cast ${rung.cast} forks ${got.forks} min ${got.min} attempt ${att} ${((Date.now() - t0) / 1000).toFixed(1)}s`);
@@ -133,7 +156,7 @@ const js = (a) => `[${a.map((c) => `[${c[0]},${c[1]}]`).join(', ')}]`;
 const text = rows.map((r) =>
   `  { num: ${r.num}, quizId: '${r.quizId}', live: '${r.live}', dateLabel: '${r.dateLabel}', sunday: ${r.sunday}, w: ${r.w}, h: ${r.h}, start: [${r.start[0]},${r.start[1]}], floor: ${r.floor}, min: ${r.min},\n`
   + `    cast: [${r.cast.map((m) => `'${m}'`).join(', ')}],\n`
-  + `    pellets: ${js(r.pellets)} },\n`).join('');
+  + (r.walls ? `    pellets: ${js(r.pellets)},\n    walls: ${js(r.walls)} },\n` : `    pellets: ${js(r.pellets)} },\n`)).join('');
 const src = fs.readFileSync(FILE, 'utf8');
 const cut = src.lastIndexOf('];');
 fs.writeFileSync(FILE, src.slice(0, cut) + text + src.slice(cut));

@@ -33,7 +33,7 @@
 import fs from 'node:fs';
 import { PUZZLES } from '../app/venn/puzzles.js';
 import { ruleFn, HIDDEN, hides, LETTERS } from '../lib/venn-rules.js';
-import { DOMAINS } from '../lib/venn-facts.js';
+import { DOMAINS, CONTESTED, CONTESTED_FROM } from '../lib/venn-facts.js';
 import { REVIEWED } from './venn-hidden-review.mjs';
 import { scanUS } from './us-spellings.mjs';
 
@@ -211,6 +211,11 @@ PUZZLES.forEach((p, i) => {
   const seenItems = new Set(), seenTriples = new Set();
   PUZZLES.forEach((p, i) => {
     const tag = `#${p.num} (${p.live})`;
+    // CONTESTED items (lib/venn-facts.js): never on a board that rules on the
+    // property they are contested on (OHIO and borders Canada), from CONTESTED_FROM.
+    if (p.domain && p.live >= CONTESTED_FROM) for (const w of p.items) for (const prop of CONTESTED[p.domain]?.[w] || []) {
+      if (p.rules.some((r) => r.k === 'fact' && r.p === prop)) fail(`${tag}: ${w} is contested on "${prop}" and may not sit on a board that rules on it`);
+    }
     const triple = `${p.domain || '-'}|${p.rules.map((r) => JSON.stringify(r)).sort().join(',')}`;
     if (p.live >= FRESH_FROM) {
       for (const w of p.items) {

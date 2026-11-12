@@ -122,6 +122,39 @@ if (RUN('suds')) {
     dfs();
     return count;
   };
+  const SUDS_RULES_FROM = '2026-12-01';
+  const sudsGivens = new Map();
+  // Naked + hidden singles only; true when the grid is finished that way.
+  const singlesSolve = (given) => {
+    const g = given.map((r) => r.slice());
+    const units = [];
+    for (let i = 0; i < 9; i++) {
+      units.push([...Array(9)].map((_, j) => [i, j]), [...Array(9)].map((_, j) => [j, i]));
+      const br = 3 * ((i / 3) | 0), bc = 3 * (i % 3);
+      units.push([...Array(9)].map((_, j) => [br + ((j / 3) | 0), bc + (j % 3)]));
+    }
+    const cand = (r, c) => {
+      const s = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+      for (let i = 0; i < 9; i++) { s.delete(g[r][i]); s.delete(g[i][c]); }
+      const br = 3 * ((r / 3) | 0), bc = 3 * ((c / 3) | 0);
+      for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) s.delete(g[br + i][bc + j]);
+      return s;
+    };
+    for (let progress = true; progress;) {
+      progress = false;
+      for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+        if (g[r][c]) continue;
+        const s = cand(r, c);
+        if (s.size === 1) { g[r][c] = [...s][0]; progress = true; }
+      }
+      for (const u of units) for (let v = 1; v <= 9; v++) {
+        if (u.some(([r, c]) => g[r][c] === v)) continue;
+        const spots = u.filter(([r, c]) => !g[r][c] && cand(r, c).has(v));
+        if (spots.length === 1) { const [r, c] = spots[0]; g[r][c] = v; progress = true; }
+      }
+    }
+    return g.every((row) => row.every((v) => v));
+  };
   for (const p of PUZZLES) {
     const errs = [];
     let clueN = 0;
@@ -140,6 +173,20 @@ if (RUN('suds')) {
     }
     const n = countSolutions(p.given);
     if (n !== 1) errs.push(`solutions=${n}, need exactly 1`);
+    // SUDS_RULES_FROM (2026-12-01, the Dec restock): gen-suds.mjs's header
+    // rules, previously enforced only by the generator. Weekdays 32-34 clues
+    // and finished by naked + hidden singles alone; Sundays 25-28 and NOT
+    // finished by singles; no given grid repeats an earlier board.
+    const gk = JSON.stringify(p.given);
+    if (p.live >= SUDS_RULES_FROM) {
+      const [lo, hi] = p.sunday ? [25, 28] : [32, 34];
+      if (clueN < lo || clueN > hi) errs.push(`${clueN} clues outside ${lo}-${hi} for ${p.sunday ? 'a Sunday' : 'a weekday'}`);
+      const bySingles = singlesSolve(p.given);
+      if (!p.sunday && !bySingles) errs.push('weekday is not finished by naked + hidden singles');
+      if (p.sunday && bySingles) errs.push('Sunday Edition falls to plain singles');
+      if (sudsGivens.has(gk)) errs.push(`given grid repeats ${sudsGivens.get(gk)}`);
+    }
+    if (!sudsGivens.has(gk)) sudsGivens.set(gk, p.quizId);
     errs.length ? fail(p.quizId, errs.join('; ')) : ok(p.quizId, `${clueN} clues, valid sol, unique`);
   }
 }
@@ -367,9 +414,31 @@ if (RUN('garble')) {
     if (!anagramMap.has(k)) anagramMap.set(k, []);
     anagramMap.get(k).push(w);
   }
+  // GARBLE_RULES_FROM (2026-12-01, the Dec restock): gen-garble.mjs's own rules,
+  // now enforced here too. Earlier boards are frozen (some repeat a finale or an
+  // answer, and three carry an anagram twin, reported as REVIEW below).
+  const GARBLE_RULES_FROM = '2026-12-01';
+  const { scanUS: garbleScanUS } = await import('./us-spellings.mjs');
+  const garbleAnswers = new Map(), garbleFinals = new Map();
   for (const p of PUZZLES) {
     const errs = [], warns = [];
     let finalLetters = '';
+    if (p.live >= GARBLE_RULES_FROM) {
+      if (p.words.length !== 5) errs.push(`${p.words.length} words (want 5)`);
+      if (garbleFinals.has(p.final)) errs.push(`finale ${p.final} already banked ${garbleFinals.get(p.final)}`);
+      if (garbleScanUS(p.clue).length || /[\u2013\u2014]/.test(p.clue)) errs.push(`clue copy: ${p.clue}`);
+      for (const w of p.words) {
+        if (!p.sunday && w.answer.length !== 5) errs.push(`${w.answer}: weekday answers are 5 letters`);
+        if (garbleAnswers.has(w.answer)) errs.push(`${w.answer} already banked ${garbleAnswers.get(w.answer)}`);
+        if (w.marks.length < 1 || w.marks.length > 3 || new Set(w.marks).size !== w.marks.length) errs.push(`${w.answer}: marks ${w.marks} (want 1 to 3 distinct)`);
+        let fixed = 0; for (let i = 0; i < w.answer.length; i++) if (w.answer[i] === w.scramble[i]) fixed++;
+        if (fixed > 1) errs.push(`${w.answer}: scramble leaves ${fixed} letters in place`);
+        if (dict.has(w.scramble.toLowerCase())) errs.push(`${w.answer}: scramble ${w.scramble} is itself a word`);
+        if ((anagramMap.get(sortKey(w.answer)) || []).some((x) => x !== w.answer.toLowerCase())) errs.push(`${w.answer}: has an anagram twin (anagram-twin rule)`);
+      }
+    }
+    for (const w of p.words) if (!garbleAnswers.has(w.answer)) garbleAnswers.set(w.answer, p.live);
+    if (!garbleFinals.has(p.final)) garbleFinals.set(p.final, p.live);
     for (const w of p.words) {
       // Sunday Editions are SIX-letter answers; weekdays are five or six.
       if (p.sunday && w.answer.length !== 6) errs.push(`${w.answer}: Sunday Edition answers must be 6 letters`);
@@ -483,6 +552,13 @@ if (RUN('emcee')) {
       if (!dict.has(a.toLowerCase()) && !BANK.has(a)) review.push(`non-dict ${a}`);
     }
     if (new Set(words).size !== words.length) errs.push('an answer appears twice on the same board');
+    // SHARED STEMS (from 2026-12-01, lane-d review): an answer that is another
+    // answer plus an inflection (ITEM and ITEMS) clues itself. Same rule as
+    // scripts/gen-emcee.mjs; earlier boards are frozen history.
+    if (p.live >= '2026-12-01') {
+      const ws = new Set(words);
+      for (const w of words) for (const e of ['S', 'ES', 'D', 'ED', 'ING']) if (ws.has(w + e)) errs.push(`${w} and ${w + e} share a stem on one board`);
+    }
     if (live) for (const w of words) useCount.set(w, (useCount.get(w) || 0) + 1);
     const shape = G.map((row) => row.split('').map((ch) => (ch === '#' ? '#' : '.')).join('')).join('|');
     if (live && !p.sunday) shapeCount.set(shape, (shapeCount.get(shape) || 0) + 1);
@@ -851,13 +927,47 @@ if (RUN('crux')) {
     ok('crux variety', `${freshBoards.length} boards from ${CRUX_FRESH_FROM}: ${nCat.size} distinct categories (most used ${worstCat[0]} x${worstCat[1]}, ceiling ${cCeil}), `
       + `${nWord.size} distinct answers (most used ${worstWord[0]} x${worstWord[1]}, ceiling ${wCeil}), no category inside ${CAT_GAP} days, no answer inside ${WORD_GAP}`);
   }
+  // ── POOL READINGS (from 2026-12-01, lane-d review). A board's declared
+  // collisions are only the traps its author chose; the pool's READS map is
+  // every reading anybody has written down. Count filings against the pool's
+  // readings too, so a reading added after a board was built (TIEBREAK reads
+  // volleyball, POWERPLAY reads cricket) re-proves every future board. Also the
+  // pool hygiene rule: no self-naming word, no synonym pair, in one category.
+  {
+    const { readsOf: poolReads, catWordClash, HOME: POOL_HOME } = await import('./crux-pool.mjs');
+    const POOL_READS_FROM = '2026-12-01';
+    const count = (p) => {
+      const cats = p.categories.map((c) => c.name), size = p.categories.map((c) => c.words.length);
+      const words = p.categories.flatMap((c, i) => c.words.map((w) => ({ w, home: i })));
+      const opts = words.map(({ w, home }) => [home, cats.indexOf(POOL_HOME[w]), ...poolReads(w).map((r) => cats.indexOf(r)).filter((k) => k >= 0 && k !== home),
+        ...(p.collisions || []).filter((c) => c.word === w).map((c) => cats.indexOf(c.reads)).filter((k) => k >= 0 && k !== home)]);
+      const fill = new Array(cats.length).fill(0); let n = 0;
+      const go = (i) => { if (n > 1) return; if (i === words.length) { n++; return; }
+        for (const k of new Set(opts[i])) if (fill[k] < size[k]) { fill[k]++; go(i + 1); fill[k]--; } };
+      for (const o of opts) for (let k = o.length - 1; k >= 0; k--) if (o[k] < 0) o.splice(k, 1);
+      go(0); return n;
+    };
+    let bad = 0;
+    for (const p of PUZZLES) {
+      if (p.live < POOL_READS_FROM) continue;
+      const n = count(p);
+      if (n !== 1) { bad++; fail(p.quizId, `${n} filings once the pool's READS are counted (want exactly 1)`); }
+      for (const c of p.categories) for (const m of catWordClash(c.name, c.words)) { bad++; fail(p.quizId, `${c.name}: ${m}`); }
+      { const all = p.categories.flatMap((c) => c.words); for (const x of all) for (const y of all) if (x !== y && y.includes(x)) { bad++; fail(p.quizId, `${x} sits inside ${y} on the same board`); } }
+      for (const c of p.categories) for (const w of c.words) if (POOL_HOME[w] !== c.name) { bad++; fail(p.quizId, `${w} is filed under ${c.name}, but the pool files it under ${POOL_HOME[w] || 'nothing'}`); }
+    }
+    if (!bad) ok('crux pool readings', `every board from ${POOL_READS_FROM} files exactly one way under the pool's READS, no self-naming word or synonym pair`);
+  }
 }
 
 // ─── SPAN ───────────────────────────────────────────────────────────────────
 if (RUN('span')) {
   const { PUZZLES } = await import('../app/span/puzzles.js');
-  const { buildAdj, shortestHops } = await import('../app/span/borders.js');
+  const { buildAdj, shortestHops, viaRoute } = await import('../app/span/borders.js');
   const adj = buildAdj();
+  const SPAN_RULES_FROM = '2026-12-01';
+  const spanPairs = new Map(), spanTwists = new Map();
+  let spanLastSun = null;
   for (const p of PUZZLES) {
     const errs = [];
     let truePerfect;
@@ -874,6 +984,29 @@ if (RUN('span')) {
     }
     if (truePerfect == null) errs.push('no route exists');
     else if (truePerfect !== p.perfect) errs.push(`perfect ${p.perfect} != BFS ${truePerfect}`);
+    // SPAN_RULES_FROM (2026-12-01, the Dec restock): the header's Sunday and
+    // variety rules, previously enforced only inside gen-span.mjs. Frozen boards
+    // before it predate the check (three repeat an earlier twist country).
+    if (p.live >= SPAN_RULES_FROM) {
+      const isSun = new Date(p.live + 'T12:00:00Z').getUTCDay() === 0;
+      if (!!p.sunday !== isSun) errs.push(`sunday flag ${!!p.sunday} on a ${isSun ? 'Sunday' : 'weekday'}`);
+      if (!isSun && (p.via || p.avoid)) errs.push('weekday carries a twist');
+      if (isSun && !!p.via === !!p.avoid) errs.push('Sunday needs exactly one twist (via or avoid)');
+      if (p.via) {
+        const base = shortestHops(adj, p.start, p.end);
+        if (!(p.perfect > base)) errs.push(`via ${p.via} does not reroute (${p.perfect} vs free ${base})`);
+        const route = viaRoute(adj, p.start, p.via, p.end);
+        if (!route || route.length - 1 !== p.perfect || new Set(route).size !== route.length) errs.push(`via ${p.via} not composable as a simple path of ${p.perfect}`);
+      }
+      const pk = [p.start, p.end].sort().join('|');
+      if (spanPairs.has(pk)) errs.push(`start/end pair repeats ${spanPairs.get(pk)}`);
+      const tw = p.via || p.avoid;
+      if (tw && spanTwists.has(tw)) errs.push(`twist country ${tw} reused from ${spanTwists.get(tw)}`);
+      if (isSun && spanLastSun && !!spanLastSun.via === !!p.via) errs.push(`twist does not alternate (${spanLastSun.live} was also ${p.via ? 'via' : 'avoid'})`);
+    }
+    spanPairs.set([p.start, p.end].sort().join('|'), p.live);
+    if (p.via || p.avoid) spanTwists.set(p.via || p.avoid, p.live);
+    if (p.sunday) spanLastSun = p;
     errs.length ? fail(p.quizId, errs.join('; ')) : ok(p.quizId, `perfect ${p.perfect} = BFS${p.via ? ` (via ${p.via})` : p.avoid ? ` (avoid ${p.avoid})` : ''}`);
   }
 }
@@ -1009,6 +1142,23 @@ if (RUN('outwit')) {
   const OUTWIT_CROWD_FROM = '2026-09-30';
   const POOL = 48;                 // documented house size (file header, CLAUDE-QUIZZES 7)
   const VEC_CEIL = 12;             // max boards one count vector may shape, per slot
+  // SEGMENTS (2026-11-12, lane-f). VEC_CEIL was written for the 62-board
+  // segment from OUTWIT_CROWD_FROM. Each later extension is its own segment
+  // with the ceiling scaled to its board count as a rate, rounded up, the way
+  // OUTRANK_SEGMENTS does it (gen-outwit.mjs scales the same way). The option
+  // and favorite ceilings below stay BANK-WIDE from OUTWIT_CROWD_FROM.
+  const OUTWIT_SEGMENTS = ['2026-09-30', '2026-12-01'];
+  const owSegOf = (iso) => OUTWIT_SEGMENTS.filter((d) => d <= iso).pop();
+  const owSegBoards = new Map();
+  for (const p of PUZZLES) { const sg = owSegOf(p.live); if (sg) owSegBoards.set(sg, (owSegBoards.get(sg) || 0) + 1); }
+  const owVecCeil = (sg) => Math.max(1, Math.ceil(VEC_CEIL * (owSegBoards.get(sg) || 0) / 62));
+  // NEAR REPEATS (from OW_NEAR_FROM, the first segment authored with the
+  // screen): no prompt may say the same thing as an earlier prompt of its own
+  // type in other words (scripts/crowd-near-repeat.mjs). The Undercut is the
+  // same prompt daily by design and is exempt.
+  const OW_NEAR_FROM = '2026-12-01';
+  const { nearRepeat } = await import('./crowd-near-repeat.mjs');
+  const owEarlier = [];
   const MODAL_CEIL = 2;            // max boards one Meeting Point favorite may head
   const OPT_CEIL = 5;              // max prompts one option string may appear in
   const FRACS = new Map([[1 / 3, 'a third'], [1 / 3, 'one-third'], [2 / 5, 'two-fifths'], [1 / 2, 'half'],
@@ -1081,6 +1231,12 @@ if (RUN('outwit')) {
       // ── prompt text is never reused (the Undercut is the same prompt daily by
       //    design, with the day's fraction swapped in, so it is exempt)
       if (pr.type !== 'twothirds') {
+        const stem = pr.q.replace(/ Closest to the crowd.s MEDIAN guess wins.*$/, '');
+        if (p.live >= OW_NEAR_FROM) {
+          const nh = owEarlier.find((e) => e.type === pr.type && nearRepeat(stem, e.stem));
+          if (nh) errs.push(`prompt ${i} near-repeats ${nh.at}: "${nh.stem.slice(0, 48)}"`);
+        }
+        owEarlier.push({ type: pr.type, stem, at: p.quizId });
         const hit = seenQ.get(pr.q);
         if (hit) { if (editable) errs.push(`prompt repeats ${hit}: "${pr.q.slice(0, 48)}..."`); else grandfathered.dupQ++; }
         else seenQ.set(pr.q, p.quizId);
@@ -1129,7 +1285,7 @@ if (RUN('outwit')) {
         const fav = Math.max(...c);
         const SUN_CAP = { match: 20, least: 19, unique: 11 }[pr.type];
         if (p.sunday && SUN_CAP && fav > SUN_CAP) errs.push(`${pr.tag}: Sunday favorite ${fav} > ${SUN_CAP}; a Sunday crowd must be closer than a weekday's`);
-        const key = `${pr.type}:${[...c].sort((a, b) => b - a).join('-')}`;
+        const key = `${owSegOf(p.live)}|${pr.type}:${[...c].sort((a, b) => b - a).join('-')}`;
         vecUse.set(key, (vecUse.get(key) || 0) + 1);
         for (const o of pr.options) optUse.set(o, (optUse.get(o) || 0) + 1);
         if (pr.type === 'match') {
@@ -1182,7 +1338,10 @@ if (RUN('outwit')) {
   }
 
   // ── whole-bank variety ceilings, over the boards the rules apply to
-  for (const [k, n] of vecUse) if (n > VEC_CEIL) fail('outwit-variety', `house count vector ${k} shapes ${n} boards (ceiling ${VEC_CEIL})`);
+  for (const [k, n] of vecUse) {
+    const [sg, vk] = k.split('|');
+    if (n > owVecCeil(sg)) fail('outwit-variety', `segment ${sg}: house count vector ${vk} shapes ${n} boards (ceiling ${owVecCeil(sg)})`);
+  }
   for (const [k, n] of modalUse) if (n > MODAL_CEIL) fail('outwit-variety', `"${k}" is the Meeting Point favorite on ${n} boards (ceiling ${MODAL_CEIL})`);
   for (const [k, n] of optUse) if (n > OPT_CEIL) fail('outwit-variety', `option "${k}" appears in ${n} prompts (ceiling ${OPT_CEIL})`);
   if (grandfathered.thin) note('outwit', `${grandfathered.thin} FROZEN prompts carry a house crowd that is not ${POOL} votes (boards 17-75 ship 24 against a documented ~48); grandfathered`);
@@ -1282,6 +1441,18 @@ if (RUN('outrank')) {
   const CAT_CEIL = 8;                        // max editable boards one category may fill
   const ITEM_CEIL = 2;                       // max boards one item string may appear on, bank-wide
   const VEC_CEIL = 4;                        // max editable boards one house count vector may shape
+  // SEGMENTS (2026-11-12, lane-d restock). The category and shape ceilings were
+  // written for the 62-board segment from OUTRANK_CROWD_FROM (8 and 4 of 62).
+  // Each later extension is its own segment and is held to the same RATE,
+  // rounded up: ceil(8 * n / 62) and ceil(4 * n / 62) for a segment of n boards.
+  // Counting a second segment against the first's absolute 8 would let a
+  // 93-board stretch run one bucket at the first segment's whole allowance and
+  // then fail for nothing; counting it against nothing would drop the rule.
+  const OUTRANK_SEGMENTS = ['2026-09-30', '2026-12-01'];
+  const segOf = (iso) => OUTRANK_SEGMENTS.filter((d) => d <= iso).pop();
+  const segLen = new Map();
+  for (const q of PUZZLES) if (q.live >= OUTRANK_CROWD_FROM) segLen.set(segOf(q.live), (segLen.get(segOf(q.live)) || 0) + 1);
+  const ceilFor = (base, seg) => Math.ceil(base * segLen.get(seg) / 62);
   const MIX_MOVED = 3;                       // items that must sit >= 2 slots off their crowd rank
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   // The bands, written here from the rule rather than imported from the
@@ -1372,7 +1543,7 @@ if (RUN('outrank')) {
     if (editable && counts && new Set(counts).size === K) {
       const desc = [...counts].sort((a, b) => b - a);
       for (const m of shapeErrors(K, desc)) errs.push(m);
-      const key = `${K}:${desc.join('-')}`;
+      const key = `${segOf(p.live)}|${K}:${desc.join('-')}`;
       vecUse.set(key, (vecUse.get(key) || 0) + 1);
       // DISPLAY MIX: rank[j] is the crowd rank of the item shown in display slot j.
       const order = counts.map((c, i) => ({ c, i })).sort((a, b) => b.c - a.c || a.i - b.i).map((x) => x.i);
@@ -1386,7 +1557,7 @@ if (RUN('outrank')) {
       const cat = catOf.get(p.theme);
       if (!cat) errs.push(`theme "${p.theme}" is not in scripts/outrank-slates.mjs, so its category cannot be counted`);
       else {
-        catUse.set(cat, (catUse.get(cat) || 0) + 1);
+        catUse.set(`${segOf(p.live)}|${cat}`, (catUse.get(`${segOf(p.live)}|${cat}`) || 0) + 1);
         if (cat === prevCat) errs.push(`category ${cat} runs two days in a row`);
       }
       prevCat = cat || null;
@@ -1442,8 +1613,8 @@ if (RUN('outrank')) {
 
   // ── whole-bank variety ceilings
   for (const [k, n] of itemUse) if (n > ITEM_CEIL) fail('outrank-variety', `item "${k}" appears on ${n} boards bank-wide (ceiling ${ITEM_CEIL})`);
-  for (const [k, n] of vecUse) if (n > VEC_CEIL) fail('outrank-variety', `house count vector ${k} shapes ${n} editable boards (ceiling ${VEC_CEIL})`);
-  for (const [k, n] of catUse) if (n > CAT_CEIL) fail('outrank-variety', `category ${k} fills ${n} editable boards (ceiling ${CAT_CEIL})`);
+  for (const [k, n] of vecUse) { const [seg, v] = k.split('|'); const cap = ceilFor(VEC_CEIL, seg); if (n > cap) fail('outrank-variety', `house count vector ${v} shapes ${n} boards of the segment from ${seg} (ceiling ${cap})`); }
+  for (const [k, n] of catUse) { const [seg, c] = k.split('|'); const cap = ceilFor(CAT_CEIL, seg); if (n > cap) fail('outrank-variety', `category ${c} fills ${n} boards of the segment from ${seg} (ceiling ${cap})`); }
   if (catUse.size) note('outrank', `categories from ${OUTRANK_CROWD_FROM}: ${[...catUse].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(', ')} (ceiling ${CAT_CEIL})`);
   if (vecUse.size) note('outrank', `${vecUse.size} distinct count vectors over ${[...vecUse.values()].reduce((a, b) => a + b, 0)} editable boards, max reuse ${Math.max(...vecUse.values())} (ceiling ${VEC_CEIL})`);
   {
@@ -1496,6 +1667,38 @@ if (RUN('shards')) {
       const k = gridKey(p);
       if (seenGrid.has(k) && p.live >= GRID_FRESH_FROM) fail(p.quizId, `reprints the letter grid of ${seenGrid.get(k)}`);
       if (!seenGrid.has(k)) seenGrid.set(k, p.quizId);
+    }
+  }
+
+  // ─── NO NEAR-REPRINT (2026-11-12, the Dec restock) ──────────────────────
+  // The exact-grid check above cannot see a TRANSPOSED grid (same words, rows
+  // read as columns) or a fill that swaps one corner. From OVERLAP_FROM a board
+  // may share at most half of its 3+ letter runs with any earlier board. The
+  // November segment peaked at exactly half; October reprints are frozen.
+  // Must match OVERLAP_FROM / OVERLAP_MAX in scripts/gen-shards/build_ladder.py.
+  const OVERLAP_FROM = '2026-12-01', OVERLAP_MAX = 0.5;
+  {
+    const runSet = (p) => {
+      const n = p.rows, g = Array.from({ length: n }, () => Array(n).fill('#'));
+      for (const sh of p.shards) for (const [r, c, ch] of sh.cells) g[r][c] = ch;
+      const rows = g.map((r) => r.join(''));
+      const cols = g[0].map((_, c) => g.map((r) => r[c]).join(''));
+      return new Set([...rows, ...cols].flatMap((line) => line.split('#')).filter((w) => w.length >= 3));
+    };
+    const { scanUS: shardsScanUS } = await import('./us-spellings.mjs');
+    const prior = [];
+    for (const p of PUZZLES) {
+      const rs = runSet(p);
+      if (p.live >= OVERLAP_FROM) {
+        // US spellings in the grid, same dated floor (learnt reached a draw)
+        const brit = [...rs].flatMap((w) => shardsScanUS(w.toLowerCase()).map((h) => h.found));
+        if (brit.length) fail(p.quizId, `British spelling in the grid: ${brit.join(', ')}`);
+        for (const [q, os] of prior) {
+          const shared = [...rs].filter((w) => os.has(w)).length;
+          if (shared > OVERLAP_MAX * rs.size) { fail(p.quizId, `shares ${shared} of its ${rs.size} words with ${q} (ceiling ${OVERLAP_MAX})`); break; }
+        }
+      }
+      prior.push([p.quizId, rs]);
     }
   }
 

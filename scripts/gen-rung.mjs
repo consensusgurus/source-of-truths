@@ -3,12 +3,15 @@
 // reproduces the same output and never replays a frozen board.
 //
 //   node scripts/gen-rung.mjs --from 2026-11-01 --days 30 --startnum 95
+//   node scripts/gen-rung.mjs --from 2026-12-01 --days 31 --startnum 125 --scarce-first
 //
 // Prints board objects ready to splice before the closing `];` of PUZZLES in
 // app/rung/puzzles.js. The rules it builds to are the header of that file and
 // scripts/verify-rung.mjs:
 //   * par is the EXACT BFS shortest ladder over VOCAB; weekdays land 10 to 12
-//     (spread across all three, not parked on the floor), Sundays 15 or more;
+//     (spread across all three, not parked on the floor; a weekday whose drawn
+//     length has no fresh pair steps to the nearest other weekday length),
+//     Sundays 15 or more;
 //   * routes = number of distinct shortest ladders (cap 9999), kept small (<= 6)
 //     so matching perfect stays a real find;
 //   * start and target are familiar words (zipf >= MIN_ZIPF in the site's
@@ -115,17 +118,39 @@ const EX_FLOOR = 3.0;
 const addDays = (d, n) => { const t = new Date(d + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-const out = [];
+// --scarce-first (added 2026-11-12 for the December restock). Start and target
+// words are never reused, so a greedy deal in DATE order lets an early par-10
+// day spend the words a later par-12 day needed, and the end of a long segment
+// parks on the floor. With this flag the segment is planned first (each day's
+// drawn length and seed exactly as before) and then DEALT scarcest first:
+// Sundays, then par-12 weekdays, then 11, then 10, each group in date order.
+// Same rules, same seeds, a smarter allocation of the same fresh pool. Without
+// the flag the deal is in date order, so earlier segments reproduce unchanged.
+const SCARCE_FIRST = process.argv.includes('--scarce-first');
+const plan = [];
 let wk = 0; // weekday counter to rotate par targets 10/11/12
 for (let d = 0; d < DAYS; d++) {
   const live = addDays(FROM, d), num = STARTNUM + d;
   const sunday = new Date(live + 'T12:00:00Z').getUTCDay() === 0;
   const r = rng(num * 7907 + 3);
   const firstPar = sunday ? [15, 16, 17, 18][Math.floor(r() * 4)] : [11, 10, 12][wk++ % 3];
+  plan.push({ live, num, sunday, r, firstPar });
+}
+const scarcity = (p) => (p.sunday ? 0 : { 12: 1, 11: 2, 10: 3 }[p.firstPar]);
+const dealOrder = SCARCE_FIRST ? plan.slice().sort((a, b) => scarcity(a) - scarcity(b) || a.live.localeCompare(b.live)) : plan;
+const outBy = new Map();
+for (const { live, num, sunday, r, firstPar } of dealOrder) {
   // A long Sunday through familiar words is rare on the expanded list, so a
   // Sunday that cannot find its drawn length steps down toward 15 rather than
   // spinning forever.
-  const parOrder = sunday ? [firstPar, ...[17, 16, 15].filter((x) => x < firstPar)] : [firstPar];
+  // A WEEKDAY that cannot find its drawn length tries the other two weekday
+  // lengths, nearest first (added 2026-11-12 for the December restock: by
+  // 2026-12-24 every fresh familiar pair at par 12 either has more than six
+  // shortest ladders or can only be revealed through a word under EX_FLOOR).
+  // The band itself (10 to 12) does not move, and a day only steps when its
+  // drawn length is genuinely empty, so earlier segments reproduce unchanged.
+  const WEEK_STEP = { 10: [11, 12], 11: [12, 10], 12: [11, 10] };
+  const parOrder = sunday ? [firstPar, ...[17, 16, 15].filter((x) => x < firstPar)] : [firstPar, ...WEEK_STEP[firstPar]];
   let found = null;
   let wantPar = firstPar;
   for (const pp of parOrder) {
@@ -159,7 +184,7 @@ for (let d = 0; d < DAYS; d++) {
   if (!found) throw new Error(`no ladder for ${live} at par ${wantPar}`);
   used.add(found.s); used.add(found.tg); console.error(`${live} par ${wantPar} ${found.s}->${found.tg}`);
   const [y, m, dd] = live.split('-').map(Number);
-  out.push(`  {
+  outBy.set(live, `  {
     num: ${num},
     quizId: 'rung-${m}-${dd}-${String(y).slice(2)}',
     live: '${live}',
@@ -172,4 +197,4 @@ for (let d = 0; d < DAYS; d++) {
     example: ${JSON.stringify(found.ex)},
   },`);
 }
-process.stdout.write(out.join('\n') + '\n');
+process.stdout.write(plan.map((p) => outBy.get(p.live)).join('\n') + '\n');

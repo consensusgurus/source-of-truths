@@ -5,13 +5,16 @@
 //
 // FIELD RULES:
 //   y     debut year of the original run (drives the decade attributes).
+//   y2    a second debut year a player may fairly give (Jeopardy!'s 1984
+//         syndicated version); year attributes accept either.
 //   ani   animated.
 //   emmy  won the Emmy for Outstanding Comedy Series or Outstanding Drama
 //         Series at least once (through the 2025 ceremony).
 //   ten   ran ten or more seasons (Friends, at exactly ten, is in).
 //   str   a streaming original (Netflix, Prime Video, Hulu, Apple TV+,
 //         Disney+, Max). Generous where a show is famous AS a streaming
-//         series (Black Mirror counts); HBO cable series do not count.
+//         series (Black Mirror counts, and so does Peaky Blinders, a BBC show
+//         most players know from Netflix); HBO cable series do not count.
 //   nyc   set mainly in New York City (the Sopranos' New Jersey does not
 //         count).
 //   net   first aired on one of the four big broadcast networks, ABC, CBS,
@@ -28,11 +31,11 @@
 export const TVSHOWS = [
   // ── institutions ──
   { t: 'Saturday Night Live', a: ['snl'], y: 1975, ten: 1, net: 1 },
-  { t: 'Jeopardy!', a: ['jeopardy'], y: 1984, ten: 1 },
+  { t: 'Jeopardy!', a: ['jeopardy'], y: 1964, y2: 1984, ten: 1, net: 1 },
   { t: 'Survivor', y: 2000, ten: 1, net: 1 },
   { t: 'American Idol', y: 2002, ten: 1, net: 1 },
   { t: 'The Bachelor', y: 2002, ten: 1, net: 1 },
-  { t: 'Sesame Street', y: 1969, ten: 1 },
+  { t: 'Sesame Street', y: 1969, ten: 1, nyc: 1 },
   { t: 'Doctor Who', y: 1963, ten: 1 },
   // ── pre-1990 ──
   { t: 'I Love Lucy', y: 1951, emmy: 1, nyc: 1, net: 1 },
@@ -54,7 +57,7 @@ export const TVSHOWS = [
   { t: 'The Simpsons', y: 1989, ani: 1, ten: 1, net: 1 },
   // ── 1990s ──
   { t: 'Seinfeld', y: 1989, emmy: 1, nyc: 1, net: 1 },
-  { t: 'Fresh Prince of Bel-Air', a: ['fresh prince', 'the fresh prince of bel air'], y: 1990, net: 1 },
+  { t: 'The Fresh Prince of Bel-Air', a: ['fresh prince', 'fresh prince of bel air'], y: 1990, net: 1 },
   { t: 'Law & Order', a: ['law and order'], y: 1990, emmy: 1, ten: 1, nyc: 1, net: 1 },
   { t: 'Beverly Hills, 90210', a: ['90210', 'beverly hills 90210'], y: 1990, ten: 1, net: 1 },
   { t: 'Home Improvement', y: 1991, net: 1 },
@@ -104,7 +107,7 @@ export const TVSHOWS = [
   { t: 'Dexter', y: 2006, cable: 1, book: 1 },
   { t: '30 Rock', y: 2006, emmy: 1, nyc: 1, net: 1 },
   { t: 'Friday Night Lights', y: 2006, net: 1, book: 1 },
-  { t: 'Mad Men', y: 2007, emmy: 1, cable: 1 },
+  { t: 'Mad Men', y: 2007, emmy: 1, nyc: 1, cable: 1 },
   { t: 'The Big Bang Theory', a: ['big bang theory'], y: 2007, ten: 1, net: 1 },
   { t: 'Gossip Girl', y: 2007, nyc: 1, book: 1 },
   { t: 'Breaking Bad', y: 2008, emmy: 1, cable: 1 },
@@ -125,7 +128,7 @@ export const TVSHOWS = [
   { t: 'Scandal', y: 2012, net: 1 },
   { t: 'House of Cards', y: 2013, str: 1, book: 1 },
   { t: 'Orange Is the New Black', a: ['oitnb'], y: 2013, str: 1, book: 1 },
-  { t: 'Brooklyn Nine-Nine', a: ['brooklyn 99', 'brooklyn nine nine'], y: 2013, net: 1 },
+  { t: 'Brooklyn Nine-Nine', a: ['brooklyn 99', 'brooklyn nine nine'], y: 2013, nyc: 1, net: 1 },
   { t: 'Rick and Morty', y: 2013, ani: 1, cable: 1 },
   { t: 'Peaky Blinders', y: 2013, str: 1 },
   { t: 'True Detective', y: 2014, cable: 1 },

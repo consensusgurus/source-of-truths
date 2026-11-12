@@ -80,7 +80,10 @@ const usedPairs = new Set(PUZZLES.map((p) => key(p.start, p.end)));
 const endpointUse = new Map();
 const recent = []; // endpoints by board, for the 10-day window
 for (const p of PUZZLES.slice(-10)) recent.push([p.start, p.end]);
-const twistUsed = new Set();
+// A twist country is never reused anywhere in the bank (seeded from every banked
+// Sunday, 2026-11-12; before that only the new segment was checked, and three
+// frozen Sundays repeat an earlier twist).
+const twistUsed = new Set(PUZZLES.map((p) => p.via || p.avoid).filter(Boolean));
 // A shortest road through the Egypt/Israel land bridge is the graph's most
 // common bottleneck; cap any one common-country pair so the notes vary.
 const commonUse = new Map();
@@ -91,7 +94,10 @@ const last = PUZZLES[PUZZLES.length - 1];
 let num = last.num;
 let day = new Date(last.live + 'T00:00:00Z');
 const out = [];
-let twistToggle = 0;
+// Alternation continues from the last banked Sunday rather than restarting at
+// via, which put two vias back to back across a segment seam (2026-11-12).
+const lastSun = [...PUZZLES].reverse().find((p) => p.sunday);
+let twistToggle = lastSun && lastSun.via ? 1 : 0;
 while (true) {
   day = new Date(day.getTime() + 86400000);
   const live = day.toISOString().slice(0, 10);

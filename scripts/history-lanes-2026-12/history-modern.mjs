@@ -249,8 +249,8 @@ export const LANE_DAYS = [
   [
     e(1, "What was the computer date problem that worried the world as 1999 turned into 2000 called?", "Y2K", ["The Millennium Virus", "Leap Year Error", "Dot-com bug"]),
     e(2, "Which Russian president resigned on December 31, 1999?", "Boris Yeltsin", ["Mikhail Gorbachev", "Vladimir Putin", "Viktor Chernomyrdin"]),
-    e(3, "On the last day of 1999, the United States handed which canal over to its host country?", "The Panama Canal", ["The Suez Canal", "The Erie Canal", "The Kiel Canal"]),
-    e(4, "Which US-Panama treaties of 1977 set the canal handover for 1999?", "The Torrijos-Carter Treaties", ["The Hay-Bunau-Varilla Treaties", "The Clayton-Bulwer Treaties", "The Hay-Herran Treaties"]),
+    e(3, "Which country joined the European Union alongside Romania on January 1, 2007?", "Bulgaria", ["Croatia", "Serbia", "Albania"]),
+    e(4, "Which London attraction opened to the public on January 1, 2000, the morning after a New Year's Eve gala there attended by the Queen?", "The Millennium Dome", ["Tate Modern", "The Millennium Bridge", "The Gherkin"]),
     e(5, "Which Portuguese territory in China was handed back on December 20, 1999?", "Macau", ["Hong Kong", "Goa", "East Timor"]),
   ],
 ];

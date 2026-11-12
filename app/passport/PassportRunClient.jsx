@@ -44,7 +44,7 @@ import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
 import { isDarkLook } from '@/lib/stage-look';
 import { scoreText } from '@/lib/daily-games';
-import { KEY, legsFor, legOrderFor, legOrderBefore, legPoints, TIERS, tierIndex, HENLEY_EDITION, shareLinesRun } from '@/lib/passport';
+import { KEY, legsFor, legOrderFor, legOrderBefore, legPoints, TIERS, tierIndex, HENLEY_EDITION, shareLinesRun, theCountry } from '@/lib/passport';
 import { PP_CSS } from './PassportClient';
 import { LegShell } from '../StageLeg';
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover, RunPlayFrame, useGauntletLook } from '../GauntletScreens';
@@ -107,7 +107,9 @@ function dealStamps(trip, spanRes, num) {
     return { n, cap, opts: shuffled([cap, ...wrong], rnd), ring: !road.includes(n) };
   });
 }
-const theName = (n) => String(n || '').replace(/^The /, 'the ');
+// Every country in a sentence takes its article from lib/passport.js, the
+// same list the trip generator writes the Span note with (review, 2026-11-12).
+const theName = theCountry;
 const BETWEEN_MS = 15000;
 const HOLD_PING_MS = 10000;
 
@@ -804,7 +806,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
             lastBody={(
               <>
                 <b>{key === 'passport' ? (TRIP ? `Stamps: ${right} of ${NC} stamped` : `Sizes: ${right} of ${NC} called right`) : (r.unknown ? `${l.n}: result on file` : `${l.n}: ${scoreText(key, r.score, r.total)}`)}</b>
-                {key === 'ping' && sections[i] && sections[i].puzzle && sections[i].puzzle.city ? <span>{TRIP ? `You depart from ${sections[i].puzzle.city}, ${theName(sections[i].puzzle.country)}.` : `The city was ${sections[i].puzzle.city}${sections[i].puzzle.country ? `, ${sections[i].puzzle.country}` : ''}.`}</span> : null}
+                {key === 'ping' && sections[i] && sections[i].puzzle && sections[i].puzzle.city ? <span>{TRIP ? `You depart from ${sections[i].puzzle.city}, ${sections[i].puzzle.country}.` : `The city was ${sections[i].puzzle.city}${sections[i].puzzle.country ? `, ${sections[i].puzzle.country}` : ''}.`}</span> : null}
                 {TRIP && key === 'span' ? <span>{r.won && Array.isArray(r.chain) ? `You reached ${theName(trip.to)} by ${r.chain.slice(1, -1).map(theName).join(', ') || 'one border'}.` : `The shortest road to ${theName(trip.to)} ran ${trip.road.slice(1, -1).map(theName).join(', ')}.`}</span> : null}
                 <span>{wasBanked ? 'Played earlier today, so that first result stands. ' : ''}Worth {sc[i]} point{sc[i] === 1 ? '' : 's'} here.</span>
                 <span>Run total: {total} point{total === 1 ? '' : 's'}</span>

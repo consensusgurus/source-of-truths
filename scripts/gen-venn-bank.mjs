@@ -56,7 +56,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { ruleFn, HIDDEN, hides, LETTERS, VOW } from '../lib/venn-rules.js';
-import { DOMAINS } from '../lib/venn-facts.js';
+import { DOMAINS, CONTESTED } from '../lib/venn-facts.js';
 import { REVIEWED } from './venn-hidden-review.mjs';
 import { scanUS } from './us-spellings.mjs';
 
@@ -205,7 +205,8 @@ function buildBoard(t, kind, hidesSet, usedNew) {
     if (triplesSeen.has(tripleKey(rules0, domain))) continue;
     const vowelBoard = rules0.some((r) => VOWEL_RULES.has(r.k));
     const spaceBoard = rules0.some((r) => SPACE_RULES.has(r.k));
-    let pool = domain ? Object.keys(D.rows).filter((w) => w.length <= 9 && (itemUses.get(w) || 0) < ITEM_CEILING) : LETTER_POOL.filter((w) => !usedNew.has(w));
+    let pool = domain ? Object.keys(D.rows).filter((w) => w.length <= 9 && (itemUses.get(w) || 0) < ITEM_CEILING
+      && !(CONTESTED[domain]?.[w] || []).some((pr) => rules0.some((r) => r.k === 'fact' && r.p === pr))) : LETTER_POOL.filter((w) => !usedNew.has(w));
     if (vowelBoard) pool = pool.filter((w) => !w.includes('Y'));
     if (spaceBoard) pool = pool.filter((w) => !w.includes(' '));
     if (hidesSet) pool = pool.filter((w) => censusOk(w, hidesSet));

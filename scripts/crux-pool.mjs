@@ -57,13 +57,13 @@ export const CATEGORIES = [
   { name: 'Baking steps', words: ['BATTER', 'PROOF', 'KNEAD', 'CREAM', 'SIFT', 'CRIMP'] },
   { name: 'Kitchenware', words: ['SKILLET', 'KETTLE', 'LADLE', 'COLANDER', 'RAMEKIN', 'PITCHER'] },
   { name: 'Baseball roles', words: ['CATCHER', 'SLUGGER', 'UMPIRE', 'SHORTSTOP', 'RELIEVER'] },
-  { name: 'Hand tools', words: ['MALLET', 'RASP', 'BRADAWL', 'CHISEL', 'HANDSAW', 'SPOKESHAVE'] },
+  { name: 'Hand tools', words: ['HAMMER', 'MALLET', 'RASP', 'BRADAWL', 'CHISEL', 'SPOKESHAVE'] },
   { name: 'Fasteners', words: ['RIVET', 'GROMMET', 'DOWEL', 'WASHER', 'TOGGLE', 'STAPLE'] },
   { name: 'Sewing kit', words: ['BOBBIN', 'THIMBLE', 'PINKING', 'BODKIN', 'TACKING'] },
   { name: 'Knitting terms', words: ['PURL', 'SKEIN', 'GARTER', 'CASTOFF', 'YARN'] },
 
   { name: 'Plumbing fittings', words: ['ELBOW', 'UNION', 'COUPLING', 'GASKET', 'STOPCOCK', 'TRAP', 'VALVE'] },
-  { name: 'Body joints', words: ['KNUCKLE', 'WRIST', 'ANKLE', 'SHOULDER', 'JAWBONE'] },
+  { name: 'Body joints', words: ['KNUCKLE', 'WRIST', 'ANKLE', 'SHOULDER'] },
   { name: 'Drumming terms', words: ['SNARE', 'CYMBAL', 'CRASH', 'TIMBALE', 'RIMSHOT'] },
   { name: 'Trapping gear', words: ['DEADFALL', 'PITFALL', 'SPRINGE', 'NOOSE', 'BIRDLIME'] },
   { name: 'Fishing tackle', words: ['LURE', 'REEL', 'SINKER', 'GAFF', 'SPINNER', 'HOOK'] },
@@ -74,7 +74,7 @@ export const CATEGORIES = [
   { name: 'Tennis terms', words: ['DEUCE', 'FAULT', 'VOLLEY', 'TIEBREAK', 'ADVANTAGE'] },
   { name: 'Laundry appliances', words: ['DRYER', 'MANGLE', 'IRON', 'WRINGER', 'AIRER'] },
   { name: 'Glassware', words: ['TUMBLER', 'GOBLET', 'CARAFE', 'DECANTER', 'SNIFTER', 'FLUTE'] },
-  { name: 'Lock parts', words: ['HASP', 'LATCH', 'WARD', 'KEYHOLE', 'DEADBOLT', 'BOLT'] },
+  { name: 'Lock parts', words: ['HASP', 'LATCH', 'WARD', 'KEYHOLE', 'BOLT'] },
   { name: 'Woodwind instruments', words: ['OBOE', 'BASSOON', 'PICCOLO', 'CLARINET', 'RECORDER'] },
   { name: 'Court roles', words: ['BAILIFF', 'JUROR', 'USHER', 'ADVOCATE', 'MAGISTRATE'] },
   { name: 'Fabric lengths', words: ['REMNANT', 'SWATCH', 'SELVEDGE', 'YARDAGE', 'OFFCUT'] },
@@ -84,14 +84,14 @@ export const CATEGORIES = [
   { name: 'Cloud types', words: ['CIRRUS', 'STRATUS', 'NIMBUS', 'CUMULUS', 'ANVIL', 'MACKEREL'] },
   { name: 'Sailing gear', words: ['HALYARD', 'KEEL', 'CLEAT', 'TILLER', 'SPINNAKER', 'BOOM'] },
   { name: 'Film crew kit', words: ['CLAPPER', 'GAFFER', 'GRIP', 'DOLLY', 'SLATE'] },
-  { name: 'Farm implements', words: ['HARROW', 'SEEDER', 'BALER', 'SCYTHE', 'COULTER'] },
+  { name: 'Farm implements', words: ['HARROW', 'SEEDER', 'BALER', 'SCYTHE'] },
   { name: 'Sheep breeds', words: ['MERINO', 'CHEVIOT', 'KARAKUL', 'RAMBOUILLET', 'DORPER', 'HERDWICK'] },
 
-  { name: 'Ear bones', words: ['STIRRUP', 'MALLEUS', 'INCUS', 'STAPES', 'HAMMER'] },
-  { name: 'Horse tack', words: ['BRIDLE', 'GIRTH', 'HALTER', 'CRUPPER', 'SADDLE', 'BIT'] },
+  { name: 'Ear bones', words: ['MALLEUS', 'INCUS', 'STAPES'] },
+  { name: 'Horse tack', words: ['STIRRUP', 'BRIDLE', 'GIRTH', 'HALTER', 'CRUPPER', 'SADDLE', 'BIT'] },
   { name: 'Bicycle parts', words: ['SPROCKET', 'PEDAL', 'DERAILLEUR', 'CRANK', 'MUDGUARD', 'FREEWHEEL'] },
   { name: 'Organs', words: ['SPLEEN', 'PANCREAS', 'KIDNEY', 'THYMUS', 'GALLBLADDER', 'TONGUE'] },
-  { name: 'Shoe parts', words: ['INSTEP', 'WELT', 'EYELET', 'SHANK', 'VAMP', 'SOLE'] },
+  { name: 'Shoe parts', words: ['WELT', 'EYELET', 'SHANK', 'VAMP', 'SOLE'] },
   { name: 'Fish', words: ['BREAM', 'PLAICE', 'TENCH', 'GUDGEON', 'BARBEL', 'ROACH'] },
   { name: 'Boxing punches', words: ['JAB', 'UPPERCUT', 'HAYMAKER', 'CROSS', 'OVERHAND'] },
   { name: 'Mushroom parts', words: ['GILL', 'VOLVA', 'MYCELIUM', 'SPORE', 'CAP', 'STIPE'] },
@@ -100,7 +100,7 @@ export const CATEGORIES = [
   { name: 'Timber', words: ['JOIST', 'BATTEN', 'VENEER', 'PLANK', 'LINTEL', 'RAFTER'] },
   { name: 'Bar drinks', words: ['SPRITZ', 'HIGHBALL', 'NEGRONI', 'SIDECAR', 'SHANDY'] },
   { name: 'Spy trade', words: ['MOLE', 'HANDLER', 'SLEEPER', 'CUTOUT', 'LEGEND', 'PLANT'] },
-  { name: 'Rodents', words: ['VOLE', 'GERBIL', 'CAPYBARA', 'DORMOUSE', 'CHINCHILLA', 'MOUSE'] },
+  { name: 'Rodents', words: ['VOLE', 'GERBIL', 'CAPYBARA', 'CHINCHILLA', 'MOUSE'] },
   { name: 'Computer parts', words: ['MOTHERBOARD', 'PROCESSOR', 'KEYBOARD', 'TRACKPAD', 'CHIPSET'] },
   { name: 'Lizards', words: ['SKINK', 'GECKO', 'IGUANA', 'CHAMELEON', 'AGAMA', 'MONITOR'] },
 
@@ -113,7 +113,7 @@ export const CATEGORIES = [
   // hatch, MACE is a spice and a weapon, a PIKE is a fish and a polearm.
   { name: 'Butterflies', words: ['ADMIRAL', 'PEACOCK', 'COMMA', 'BRIMSTONE', 'FRITILLARY', 'RINGLET'] },
   { name: 'Naval ranks', words: ['COMMODORE', 'ENSIGN', 'MIDSHIPMAN', 'PURSER', 'BOSUN', 'YEOMAN'] },
-  { name: 'Typographic marks', words: ['COLON', 'SEMICOLON', 'CARET', 'PILCROW', 'ELLIPSIS', 'OBELUS'] },
+  { name: 'Typographic marks', words: ['COLON', 'CARET', 'PILCROW', 'ELLIPSIS', 'OBELUS'] },
   { name: 'Athletics events', words: ['HURDLES', 'JAVELIN', 'DECATHLON', 'STEEPLECHASE', 'RELAY', 'DISCUS'] },
   { name: 'Electrical parts', words: ['RESISTOR', 'CAPACITOR', 'DIODE', 'TRANSFORMER', 'SOLENOID', 'FUSE'] },
   { name: 'Knots', words: ['BOWLINE', 'CLOVE', 'SHEEPSHANK', 'HITCH', 'PRUSIK', 'SPLICE'] },
@@ -124,8 +124,8 @@ export const CATEGORIES = [
   { name: 'Fireplace tools', words: ['POKER', 'TONGS', 'BELLOWS', 'TRIVET', 'ANDIRON', 'FENDER'] },
   { name: 'Card games', words: ['WHIST', 'CRIBBAGE', 'CANASTA', 'EUCHRE', 'PIQUET', 'BEZIQUE'] },
   { name: 'Heraldry terms', words: ['CHEVRON', 'BEND', 'SALTIRE', 'ESCUTCHEON', 'RAMPANT', 'GULES'] },
-  { name: 'Military insignia', words: ['PIP', 'STRIPE', 'CROWN', 'EPAULETTE', 'BRAID', 'LANYARD'] },
-  { name: 'Tooth parts', words: ['ENAMEL', 'DENTINE', 'PULP', 'CUSP', 'MOLAR', 'INCISOR'] },
+  { name: 'Military insignia', words: ['PIP', 'STRIPE', 'CROWN', 'EPAULET', 'BRAID', 'LANYARD'] },
+  { name: 'Tooth parts', words: ['ENAMEL', 'DENTIN', 'PULP', 'CUSP'] },
   { name: 'Window parts', words: ['SASH', 'MULLION', 'TRANSOM', 'SILL', 'CASEMENT', 'LOUVRE'] },
   { name: 'Poker terms', words: ['FLOP', 'RIVER', 'BLIND', 'ANTE', 'KICKER', 'MUCK'] },
 
@@ -167,9 +167,39 @@ export const CATEGORIES = [
   { name: 'Basketball terms', words: ['DUNK', 'LAYUP', 'DRIBBLE', 'TRAVEL', 'SCREEN'] },
   { name: 'Volleyball terms', words: ['SPIKE', 'DIG', 'ACE', 'BLOCK', 'KILL', 'LIBERO'] },
   { name: 'Carpentry joints', words: ['DOVETAIL', 'MORTISE', 'TENON', 'RABBET', 'MITER', 'DADO'] },
-  { name: 'Eye parts', words: ['IRIS', 'PUPIL', 'LENS', 'RETINA', 'CORNEA', 'EYELID'] },
+  { name: 'Eye parts', words: ['IRIS', 'PUPIL', 'LENS', 'RETINA', 'CORNEA'] },
   { name: 'Flowers', words: ['TULIP', 'DAISY', 'POPPY', 'PEONY', 'ASTER', 'DAHLIA'] },
   { name: 'Camera parts', words: ['SHUTTER', 'APERTURE', 'FLASH', 'TRIPOD', 'VIEWFINDER'] },
+
+  // Added 2026-11-12 (lane-d restock) to bank December 2026. With November in,
+  // no seed could build the month: every attempt died on a Sunday or a late
+  // weekday for want of fresh collision pairs on four linked categories. Same
+  // test as the earlier widenings: every pair below is a reading an ordinary
+  // player would entertain (a tree TRUNK is a car's trunk, a BRANCH is a bank
+  // office, a LEAF is a page of a book, a ROOT is part of a tooth, CENTER is a
+  // circle part, NAIL is a fastener, PALM is a tree, a BEANIE is a hat), and
+  // overlaps with the old categories are annotated even where they make a
+  // board harder (KNUCKLE is a hand part as well as a joint, RIDGE and SADDLE
+  // are mountain features as well as their old homes).
+  { name: 'Car parts', words: ['HOOD', 'TRUNK', 'BUMPER', 'CLUTCH', 'AXLE', 'MUFFLER', 'DASHBOARD'] },
+  { name: 'Tree parts', words: ['BARK', 'ROOT', 'BRANCH', 'LEAF', 'TWIG', 'CANOPY', 'SAP'] },
+  { name: 'Dog sounds', words: ['WOOF', 'GROWL', 'HOWL', 'YAP', 'YELP', 'WHIMPER'] },
+  { name: 'Winter wear', words: ['MITTEN', 'EARMUFFS', 'BEANIE', 'PARKA', 'SCARF', 'BALACLAVA'] },
+  { name: 'Bags', words: ['TOTE', 'SATCHEL', 'DUFFEL', 'BACKPACK', 'POUCH', 'MESSENGER'] },
+  { name: 'Hand parts', words: ['PALM', 'NAIL', 'THUMB', 'PINKY', 'CUTICLE', 'FINGERTIP'] },
+  { name: 'Trees', words: ['OAK', 'ELM', 'YEW', 'BIRCH', 'MAPLE', 'CEDAR', 'WILLOW', 'SPRUCE'] },
+  { name: 'Football positions', words: ['TACKLE', 'CENTER', 'SAFETY', 'PUNTER', 'LINEBACKER', 'QUARTERBACK', 'CORNERBACK'] },
+  { name: 'Mountain features', words: ['PEAK', 'SUMMIT', 'CREST', 'SPUR', 'CRAG', 'SCREE', 'CIRQUE'] },
+  { name: 'Shirt parts', words: ['COLLAR', 'CUFF', 'PLACKET', 'SLEEVE', 'POCKET', 'BUTTON'] },
+  { name: 'Dog gear', words: ['LEASH', 'MUZZLE', 'KENNEL', 'CRATE', 'TAG'] },
+  { name: 'Bridge parts', words: ['TRUSS', 'PIER', 'SPAN', 'DECK', 'CABLE', 'ABUTMENT', 'GIRDER'] },
+  { name: 'Foot parts', words: ['HEEL', 'TOE', 'ARCH', 'BALL', 'INSTEP'] },
+  { name: 'Weightlifting lifts', words: ['CLEAN', 'JERK', 'PRESS', 'SQUAT', 'DEADLIFT'] },
+  // Added in the same review pass so a mid-month Sunday could be rebuilt against
+  // boards on both sides of it: a canopy bed, a bed frame, a piano's hammers and
+  // pedals, a guitar string, a key to a lock.
+  { name: 'Bed parts', words: ['HEADBOARD', 'FOOTBOARD', 'MATTRESS', 'SLAT'] },
+  { name: 'Piano parts', words: ['DAMPER', 'SOUNDBOARD', 'STRING', 'KEY', 'FALLBOARD'] },
 ];
 
 // word -> the other pool categories it plausibly reads as
@@ -206,16 +236,17 @@ export const READS = {
   PITCHER: ['Baseball roles'],
   KETTLE: ['Landforms'],
   MALLET: ['Ear bones'],
-  HAMMER: ['Hand tools'],
-  ANVIL: ['Hand tools'],
-  STIRRUP: ['Horse tack'],
-  SADDLE: ['Bicycle parts', 'Landforms'],
+  HAMMER: ['Ear bones', 'Piano parts'],
+  ANVIL: ['Hand tools', 'Ear bones'],
+  STIRRUP: ['Ear bones'],
+  SADDLE: ['Bicycle parts', 'Landforms', 'Mountain features'],
   CRANK: ['Bicycle parts'],
-  PEDAL: ['Bicycle parts'],
+  PEDAL: ['Bicycle parts', 'Piano parts'],
   WASHER: ['Laundry appliances'],
   TOGGLE: ['Fasteners'],
   ELBOW: ['Body joints', 'Plumbing fittings'],
-  SHOULDER: ['Body joints'],
+  SHOULDER: ['Body joints', 'Mountain features'],
+  PEAK: ['Roof parts'],
   SNARE: ['Trapping gear', 'Drumming terms'],
   NOOSE: ['Trapping gear'],
   LURE: ['Trapping gear'],
@@ -233,8 +264,8 @@ export const READS = {
   SCREW: ['Fasteners'],
   POT: ['Kitchenware'],
   CANNON: ['Snooker terms'],
-  FAULT: ['Geology features', 'Tennis terms'],
-  VOLLEY: ['Boxing punches'],
+  FAULT: ['Geology features', 'Tennis terms', 'Volleyball terms'],
+  VOLLEY: ['Boxing punches', 'Volleyball terms'],
   IRON: ['Golf clubs'],
   MANGLE: ['Laundry appliances'],
   TUMBLER: ['Lock parts', 'Glassware'],
@@ -258,7 +289,7 @@ export const READS = {
   HALTER: ['Horse tack'],
   GIRTH: ['Horse tack'],
   TONGUE: ['Shoe parts', 'Organs'],
-  SOLE: ['Fish', 'Shoe parts'],
+  SOLE: ['Fish', 'Shoe parts', 'Foot parts'],
   VAMP: ['Shoe parts'],
   SHANK: ['Golf scores', 'Shoe parts'],
   ROACH: ['Insects', 'Fish'],
@@ -308,11 +339,11 @@ export const READS = {
   VAULT: ['Gymnastics apparatus', 'Cathedral parts'],
 
   // the 2026-09-23 widening (see the categories above)
-  RIDGE: ['Landforms'],
+  RIDGE: ['Landforms', 'Mountain features'],
   VALLEY: ['Landforms'],
   HIP: ['Body joints'],
   GUTTER: ['Bowling terms'],
-  FRAME: ['Bicycle parts'],
+  FRAME: ['Bicycle parts', 'Bed parts'],
   STRIKE: ['Boxing punches'],
   FORK: ['Bicycle parts'],
   PIN: ['Fasteners'],
@@ -345,7 +376,7 @@ export const READS = {
   SEAM: ['Geology features'],
   YOKE: ['Farm implements'],
   TACKING: ['Tailoring terms'],
-  HARNESS: ['Horse tack'],
+  HARNESS: ['Horse tack', 'Dog gear'],
   BOWLER: ['Cricket terms'],
   RADIUS: ['Circle parts'],
   CHORD: ['Music notation'],
@@ -360,7 +391,65 @@ export const READS = {
   IRIS: ['Flowers'],
   LENS: ['Camera parts'],
   SHUTTER: ['Window parts'],
+  // the 2026-11-12 widening (see the categories above)
+  TRUNK: ['Tree parts'],
+  HOOD: ['Winter wear'],
+  MUFFLER: ['Winter wear'],
+  CLUTCH: ['Bags'],
+  BUMPER: ['Bowling terms'],
+  BARK: ['Dog sounds'],
+  BRANCH: ['Bank things'],
+  LEAF: ['Book parts'],
+  ROOT: ['Tooth parts'],
+  BEANIE: ['Hats'],
+  PALM: ['Trees'],
+  NAIL: ['Fasteners'],
+  KNUCKLE: ['Hand parts'],
+  CENTER: ['Circle parts'],
+  TACKLE: ['Fishing tackle'],
+  CREST: ['Heraldry terms', 'Roof parts'],
+  SPUR: ['Horse tack'],
+  BUTTON: ['Fasteners'],
+  POCKET: ['Snooker terms'],
+  COLLAR: ['Dog gear'],
+  // 2026-11-12 review fixes (lane-d): readings the December boards proved were
+  // missing, each a second filing a reviewer found. TIEBREAK and the FAULT and
+  // VOLLEY lines above are volleyball terms too; POWERPLAY is a cricket term;
+  // the war scythe was a polearm; INSTEP is first a foot part; the stirrup,
+  // hammer and anvil ARE the three ear bones (stapes, malleus, incus), so those
+  // English names now live in their tool and tack homes and read as ear bones.
+  TIEBREAK: ['Volleyball terms'],
+  POWERPLAY: ['Cricket terms'],
+  SCYTHE: ['Medieval weapons'],
+  INSTEP: ['Shoe parts'],
+  CANOPY: ['Bed parts'],
+  STRING: ['Guitar parts'],
+  KEY: ['Lock parts'],
+  DECK: ['Ship parts'],
+  ARCH: ['Bridge parts', 'Cathedral parts'],
+  HEEL: ['Shoe parts'],
+  PRESS: ['Printing terms'],
 };
+
+// SAME THING, TWO NAMES (2026-11-12, lane-d review). Two words for one object
+// may never share a category (STIRRUP and STAPES on one board gave the second
+// away). gen-crux asserts it over the pool and verify-daily-banks over every
+// board from 2026-12-01, together with the rule that no word may contain a
+// word of its own category's name (EYELID under Eye parts, HANDSAW under
+// Hand tools).
+export const SYNONYMS = [
+  ['STIRRUP', 'STAPES'], ['HAMMER', 'MALLEUS'], ['ANVIL', 'INCUS'],
+  ['PINKY', 'LITTLE FINGER'], ['SOFA', 'COUCH'], ['DENTIN', 'DENTINE'],
+];
+export function catWordClash(name, words) {
+  const out = [];
+  const toks = name.toUpperCase().split(/[^A-Z]+/).filter((t) => t.length >= 3 && !['THE', 'AND', 'PARTS', 'TERMS'].includes(t));
+  for (const w of words) for (const t of toks) if (w.startsWith(t.replace(/S$/, ''))) out.push(`${w} opens with "${t}" from its category name`);
+  for (const [a, b] of SYNONYMS) if (words.includes(a) && words.includes(b)) out.push(`${a} and ${b} name the same thing`);
+  // one word inside another (BOLT in DEADBOLT) gives the longer one away (late review, 2026-11-12)
+  for (const a of words) for (const b of words) if (a !== b && b.includes(a)) out.push(`${a} sits inside ${b}`);
+  return out;
+}
 
 // word -> the ONE category that owns it. Asserted unique by the generator.
 export const HOME = Object.fromEntries(

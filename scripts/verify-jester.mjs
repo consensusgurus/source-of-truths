@@ -14,6 +14,9 @@
 //     with the second day of each size pair grading harder than the first.
 //     The 2-per-unit boards moved to their own daily, Judges
 //     (scripts/verify-judges.mjs). 2026-08-21..10-03 boards keep their era.
+//   - from ONE_FROM, on an 11x11 the courts that share a stage hue (ids k and
+//     k+10) never touch (header rule; check added 2026-11-12).
+//   - new boards come from scripts/gen-jester.mjs (deterministic, append-only).
 // Run: node scripts/verify-jester.mjs
 import { PUZZLES } from '../app/jesters/puzzles.js';
 import { humanSolve2 } from './jester2-human.mjs';
@@ -232,6 +235,17 @@ PUZZLES.forEach((p, i) => {
   if (!idsOK) fail(`${tag}: bad region id`);
   if (sizes.some((s) => s < (stars === 2 ? 4 : 2))) fail(`${tag}: court too small to seat ${stars}`);
   for (let id = 0; id < n; id++) if (!contiguous(n, p.regions, id)) fail(`${tag}: court ${id} not contiguous`);
+  // Header rule: courts that share a stage hue (ids k and k+10) never touch.
+  // Added 2026-11-12 (every 11x11 from ONE_FROM already met it; proved by injection).
+  if (p.live >= ONE_FROM && n > 10) {
+    for (let k = 10; k < n; k++) {
+      let touch = false;
+      for (let r = 0; r < n && !touch; r++) for (let c = 0; c < n && !touch; c++) if (p.regions[r][c] === k)
+        for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = r + dr, b = c + dc;
+          if (a >= 0 && a < n && b >= 0 && b < n && p.regions[a][b] === k - 10) touch = true; }
+      if (touch) fail(`${tag}: courts ${k - 10} and ${k} share a stage hue and touch`);
+    }
+  }
   const key = JSON.stringify(p.regions);
   if (seenLayouts.has(key)) fail(`${tag}: duplicate layout`);
   seenLayouts.add(key);

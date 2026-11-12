@@ -27,6 +27,10 @@ import { scanUS } from './us-spellings.mjs';
 
 const COPY_FROM = '2026-10-14';
 const FAME_FROM = '2026-10-14';
+// Retired names (scripts/gen-bracket-pools.mjs RETIRED, 2026-11-12): allowed on
+// boards already played, refused from RETIRED_FROM (the first unplayed day).
+const RETIRED_FROM = '2026-11-13';
+const RETIRED_NAMES = new Map(POOLS.RETIRED.map(([n, why]) => [n, why]));
 const FAMOUS = new Set(Object.values(POOLS).flatMap((pool) => pool.map(([name]) => name)));
 const PROPER = ['Ping An Finance Centre', 'Lakhta Centre', 'CTF Finance Centre', 'Sydney Harbour Bridge'];
 
@@ -87,6 +91,9 @@ PUZZLES.forEach((p, i) => {
     if (rel(finalists[0], finalists[1]) > 0.22) fail(`${tag}: the final is not close enough to be a coin flip`);
   }
 
+  if (p.live >= RETIRED_FROM) {
+    for (const x of p.items) if (RETIRED_NAMES.has(x.name)) fail(`${tag}: "${x.name}" is retired from new boards (${RETIRED_NAMES.get(x.name)})`);
+  }
   if (p.live >= FAME_FROM) {
     for (const x of p.items) if (!FAMOUS.has(x.name)) fail(`${tag}: "${x.name}" is not in a curated pool (scripts/gen-bracket-pools.mjs), so nobody has vetted that players will recognize it`);
   }

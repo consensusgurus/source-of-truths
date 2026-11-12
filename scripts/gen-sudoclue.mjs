@@ -310,7 +310,7 @@ for (let i = 0; i < lines.length; i++) {
   while (cast.length < N) cast.push(fresh.shift());
   cast = cast.slice(0, N);
   const t0 = Date.now();
-  seed = 20261102 + d.num * 7919;
+  seed = 20261102 + d.num * 7919 + Number(process.env.SEED_OFFSET || 0) * 104723; // SEED_OFFSET: retry a board that finds no graded fill (2026-11-12)
   const g = generate(L, cast, DAY_BAND[dow]);
   if (!g) throw new Error(`#${d.num} no board`);
   const clues = [...g.pc, ...g.rc].map((c) => { const o = strip(c); return { text: clueText(L, o), ...o }; });

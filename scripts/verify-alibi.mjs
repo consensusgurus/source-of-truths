@@ -151,6 +151,19 @@ function propagate(d, clues, n) {
 // Alibi's Sunday Edition (five suspects) launched on this date.
 const SUNDAY_FROM = '2026-07-26';
 
+// SUSPECT GROUPS (owner rule, 2026-10-08, bank header), checked from that date
+// on: initials differ within a case, no name past 9 letters, and no group (the
+// set of names) is seated twice anywhere in the bank. Earlier cases keep their
+// invented names and are frozen. Added 2026-11-12 with the December restock.
+const SUSPECT_FROM = '2026-10-08';
+const seenGroup = new Map();
+// Venue and stolen item never repeat across the whole bank (the generator's
+// rule, now enforced here too).
+const seenVenue = new Map(), seenStolen = new Map();
+// No room on a case may sit inside another room's name ("Kitchen" beside "Old
+// Kitchen"): from the December 2026 restock on (content review 2026-11-12).
+const ROOM_CLASH_FROM = '2026-12-01';
+
 let bad = 0;
 PUZZLES.forEach((p, i) => {
   const errs = [];
@@ -185,6 +198,21 @@ PUZZLES.forEach((p, i) => {
       for (const h of scanUS(t)) errs.push(`British form "${h.found}" (US: ${h.us})`);
       if (/[\u2013\u2014]/.test(t)) errs.push(`dash in "${t}"`);
     }
+  }
+  if (p.live >= SUSPECT_FROM) {
+    if (new Set(p.suspects.map((x) => x[0])).size !== p.suspects.length) errs.push(`suspect initials repeat: ${p.suspects.join(', ')}`);
+    for (const x of p.suspects) if (x.length > 9) errs.push(`suspect name "${x}" over 9 letters`);
+    const gk = p.suspects.slice().sort().join('|');
+    if (seenGroup.has(gk)) errs.push(`suspect group repeats ${seenGroup.get(gk)}`);
+    seenGroup.set(gk, p.quizId);
+  }
+  if (p.live >= ROOM_CLASH_FROM) {
+    for (const a of p.rooms) for (const b of p.rooms) if (a !== b && ` ${a} `.includes(` ${b} `)) errs.push(`room "${b}" sits inside "${a}"`);
+  }
+  for (const [m, k] of [[seenVenue, p.venue], [seenStolen, p.stolen]]) {
+    const key = k.toLowerCase();
+    if (m.has(key)) errs.push(`"${k}" repeats ${m.get(key)}`);
+    m.set(key, p.quizId);
   }
   const sols = solutions(p.clues, N);
   const dom = propagate(fresh(N), p.clues, N);

@@ -12,6 +12,11 @@
 //   r    rated R by the MPAA (Psycho carries its 1984 re-rating).
 //   fr   part of a theatrical film franchise: it is a sequel or has at least
 //        one theatrical sequel/installment (a remake alone does not count).
+//   colon the full official title carries a colon the short name drops
+//        (Rogue One: A Star Wars Story, Borat: Cultural Learnings...).
+//        The Star Wars saga is flagged as one set: every episode's official title
+//        is "Star Wars: Episode N, <subtitle>", so A New Hope, The Empire Strikes
+//        Back and Return of the Jedi carry colon like The Phantom Menace (2026-11-12).
 //   a    typed aliases, lowercase.
 export const MOVIES = [
   // ── classics ──
@@ -42,14 +47,14 @@ export const MOVIES = [
   { t: "One Flew Over the Cuckoo's Nest", y: 1975, bp: 1, r: 1 },
   { t: 'Rocky', y: 1976, bp: 1, fr: 1 },
   { t: 'Taxi Driver', y: 1976, r: 1 },
-  { t: 'Star Wars', a: ['a new hope', 'star wars a new hope'], y: 1977, fr: 1 },
+  { t: 'Star Wars', a: ['a new hope', 'star wars a new hope'], y: 1977, fr: 1, colon: 1 },
   { t: 'Annie Hall', y: 1977, bp: 1 },
   { t: 'Grease', y: 1978, fr: 1 },
   { t: 'Superman', y: 1978, fr: 1 },
   { t: 'Alien', y: 1979, r: 1, fr: 1 },
   { t: 'Apocalypse Now', y: 1979, r: 1 },
   // ── 1980s ──
-  { t: 'The Empire Strikes Back', a: ['empire strikes back', 'star wars the empire strikes back'], y: 1980, fr: 1 },
+  { t: 'The Empire Strikes Back', a: ['empire strikes back', 'star wars the empire strikes back'], y: 1980, fr: 1, colon: 1 },
   { t: 'The Shining', y: 1980, r: 1, fr: 1 },
   { t: 'Airplane!', a: ['airplane'], y: 1980, fr: 1 },
   { t: 'Raiders of the Lost Ark', a: ['indiana jones raiders of the lost ark'], y: 1981, fr: 1 },
@@ -57,7 +62,7 @@ export const MOVIES = [
   { t: 'Blade Runner', y: 1982, r: 1, fr: 1 },
   { t: 'Gandhi', y: 1982, bp: 1 },
   { t: 'Scarface', y: 1983, r: 1 },
-  { t: 'Return of the Jedi', y: 1983, fr: 1 },
+  { t: 'Return of the Jedi', a: ['star wars return of the jedi'], y: 1983, fr: 1, colon: 1 },
   { t: 'The Terminator', y: 1984, r: 1, fr: 1 },
   { t: 'Ghostbusters', y: 1984, fr: 1 },
   { t: 'Amadeus', y: 1984, bp: 1 },
@@ -184,7 +189,7 @@ export const MOVIES = [
   { t: 'Cars', y: 2006, ani: 1, fr: 1 },
   { t: 'The Devil Wears Prada', y: 2006, fr: 1 },
   { t: 'Casino Royale', y: 2006, fr: 1 },
-  { t: 'Borat', y: 2006, r: 1, fr: 1 },
+  { t: 'Borat', y: 2006, r: 1, fr: 1, colon: 1 },
   { t: 'Ratatouille', y: 2007, ani: 1 },
   { t: 'No Country for Old Men', y: 2007, bp: 1, r: 1 },
   { t: 'Superbad', y: 2007, r: 1 },
@@ -255,7 +260,7 @@ export const MOVIES = [
   { t: 'La La Land', y: 2016 },
   { t: 'Moonlight', y: 2016, bp: 1, r: 1 },
   { t: 'Moana', y: 2016, ani: 1, fr: 1 },
-  { t: 'Rogue One', a: ['rogue one a star wars story'], y: 2016, bil: 1, fr: 1 },
+  { t: 'Rogue One', a: ['rogue one a star wars story'], y: 2016, bil: 1, fr: 1, colon: 1 },
   { t: 'Arrival', y: 2016 },
   { t: 'Hidden Figures', y: 2016 },
   { t: 'Get Out', y: 2017, r: 1 },

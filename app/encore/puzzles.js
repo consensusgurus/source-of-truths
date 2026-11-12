@@ -2550,7 +2550,7 @@ export const PUZZLES = [
       { n: 8, r: 2, c: 7, len: 6, clue: 'Long step' },
       { n: 9, r: 3, c: 0, len: 3, clue: 'Light touch' },
       { n: 11, r: 3, c: 8, len: 3, clue: 'Egg layer' },
-      { n: 13, r: 4, c: 3, len: 5, clue: 'Stick on design' },
+      { n: 13, r: 4, c: 3, len: 5, clue: 'Stick-on design' },
       { n: 16, r: 5, c: 4, len: 4, clue: 'Big brass' },
       { n: 19, r: 6, c: 5, len: 3, clue: 'Get free of' },
     ],

@@ -45,10 +45,16 @@
 //      matching the real day of the week, no duplicate boards.
 //   8. Pool variety on `motif` (the reader-facing line revealed after the
 //      game), with the usual dated grandfather floor, plus a US-spelling scan.
+//   9. From MOTIF_FAMILY_FROM, the motif is a line of the family the board's
+//      OWN solve implies (scripts/chain-motifs.mjs: the key declines with one
+//      or with two boxes on offer, takes a pair, takes one of more, or takes
+//      all there is), so a line can never describe a different board. Added
+//      2026-11-12 with the motif pool growth.
 //
 // Run: node scripts/verify-chain.mjs
 import { PUZZLES } from '../app/chain/puzzles.js';
 import { geometry, parsePosition, makeSolver, makeGame, engineMove, boxScore, completedBoxes } from '../app/chain/boxes.js';
+import { MOTIFS } from './chain-motifs.mjs';
 
 let BAD = 0;
 const fail = (id, msg) => { BAD++; console.error(`✗ ${id}: ${msg}`); };
@@ -58,6 +64,7 @@ const note = (id, msg) => console.log(`… ${id}  ${msg}`);
 // Boards before this date are frozen history: already published and played.
 const CHAIN_FLOOR_FROM = '2026-08-04';
 const MOTIF_CEILING = 4;      // an exact motif string may repeat at most this often
+const MOTIF_FAMILY_FROM = '2026-08-04'; // every board from launch carries a line of its own family
 const SOLVE_CAP_MS = 400;     // the browser solves once per turn
 const WEEKDAY = { rows: 3, cols: 5 };
 const SUNDAY = { rows: 5, cols: 5 };
@@ -194,6 +201,13 @@ PUZZLES.forEach((p, i) => {
       const bestGain = Math.max(...moves.map((mv) => mv.gain));
       if (bestGain === 0) errs.push('no capture is on offer, so there is nothing to decline');
       if (!moves.some((mv) => mv.gain === 0)) errs.push('no quiet edge is available, so the board answers itself');
+
+      // -- 9. the motif describes THIS board's key --
+      if (p.live >= MOTIF_FAMILY_FROM && p.motif) {
+        const fam = key.gain === 0 ? (bestGain >= 2 ? 'declineDouble' : 'declineSingle')
+          : key.gain === 2 ? 'takePair' : (bestGain > key.gain ? 'takeOne' : 'takePlain');
+        if (!MOTIFS[fam].includes(p.motif)) errs.push(`motif is not a ${fam} line (key takes ${key.gain} of ${bestGain} on offer): "${p.motif}"`);
+      }
 
       // -- the documented alternation --
       const wantDecline = !!p.sunday || (p.num - 1) % 2 === 0;

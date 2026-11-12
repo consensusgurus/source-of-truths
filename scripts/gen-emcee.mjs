@@ -371,6 +371,16 @@ for (const p of PUZZLES) {
   if (!p.sunday) { const k = patOf(p.grid).join('|'); shapeUse.set(k, (shapeUse.get(k) || 0) + 1); }
 }
 
+// SHARED STEMS (2026-11-12, lane-d review fix). A grid holding ITEM and ITEMS
+// clues the one with the other. No answer may be another answer plus an
+// inflection ending (S, ES, D, ED, ING). verify-daily-banks holds the same rule
+// from EMCEE_STEM_FROM.
+export const STEM_ENDINGS = ['S', 'ES', 'D', 'ED', 'ING'];
+function sharedStem(words) {
+  const set = new Set(words);
+  return words.some((w) => STEM_ENDINGS.some((e) => set.has(w + e)));
+}
+
 // ── build ──────────────────────────────────────────────────────────────────
 const threes = (g) => slotsOf(g).filter((s) => s.len === 3).length;
 const WEEK = weekdayShapes();
@@ -427,7 +437,7 @@ for (const p of calendar) {
       tries++;
       const cand = fill(pat, { banned, score, budget: p.sunday ? SUNDAY_BUDGET : WEEKDAY_BUDGET });
       if (!cand) break;
-      if (okOverlap(cand.words)) { made = cand; shape = pat; break outer; }
+      if (okOverlap(cand.words) && !sharedStem(cand.words)) { made = cand; shape = pat; break outer; }
     }
   }
   if (VERBOSE) console.error(`  ${p.quizId}${p.sunday ? ' (SUN)' : ''} ${made ? 'ok' : 'FAIL'} ${tries} fills ${Date.now() - t0}ms`);

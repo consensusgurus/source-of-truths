@@ -8,6 +8,7 @@
 //
 //   node scripts/gen-alibi.mjs --until 2026-11-30            # dry run, prints a summary
 //   node scripts/gen-alibi.mjs --until 2026-11-30 --write    # appends to the bank
+//   node scripts/gen-alibi.mjs --until 2026-12-31 --write    # December 2026 restock
 //
 // Method (the same one the bank header describes, plus the verifier's
 // no-guessing rule): pick a random solution, build the pool of every TRUE clue,
@@ -65,14 +66,109 @@ const CASES = [
   ['the Oakhurst piano works', "the piano maker's tuning fork"],
   ['the Penhallow tea blenders', 'a tin of first-flush Darjeeling'],
   ['the Quainton carriage works', "the coachbuilder's gilt crest"],
+  // December 2026 (restock of 2026-11-12): the alphabet runs on from R.
+  ['the Ravensworth glove works', 'a pair of kid opera gloves'],
+  ['the Stanmore bookbindery', 'a gilt-edged first edition'],
+  ['the Thackley clock tower', "the keeper's winding crank"],
+  ['the Ullswater boatyard', "the boatwright's brass plane"],
+  ['the Vellacott wax works', 'a wax bust of the founder'],
+  ['the Westbury cooperage', "the cooper's hoop driver"],
+  ['the Yarrow Lane apothecary', 'a jar of lavender salve'],
+  ['the Zouch Street confectioners', 'a box of sugared almonds'],
+  ['the Alderley weaving shed', 'a length of tartan twill'],
+  ['the Bramley orchard store', 'a crate of russet apples'],
+  ['the Coldridge glass works', 'a cut-glass punch bowl'],
+  ['the Dorrington brewery', "the brewmaster's copper ladle"],
+  ['the Ellesmere ropewalk', 'a coil of hemp hawser'],
+  ['the Fordham chocolate works', 'a tray of hand-dipped truffles'],
+  ['the Gilsland slate works', 'a carved slate sundial'],
+  ['the Harrowgate bakery', "the baker's gingerbread molds"],
+  ['the Inglewood skate works', 'a pair of silver-bladed skates'],
+  ['the Jessop Street ornament works', 'a box of blown-glass ornaments'],
+  ['the Kelmscott print works', 'a set of carved wood type'],
+  ['the Langdale wool mill', 'a hand-knit Fair Isle sweater'],
+  ['the Mossley pottery', 'a willow-pattern platter'],
+  ['the Northam candy kitchen', 'a crate of candy canes'],
+  ['the Overton tannery', 'a roll of tooled saddle leather'],
+  ['the Pendleton sleigh works', "the sleighmaker's silver bells"],
+  ['the Quantock holly farm', 'a wreath of silver-leaf holly'],
+  ['the Rothbury chestnut roasters', "the roaster's iron pan"],
+  ['the Skelton fudge shop', 'a slab of maple fudge'],
+  ['the Tarleton telescope works', "the optician's brass eyepiece"],
+  ['the Underhill music box works', 'a carved walnut music box'],
+  ['the Vernon Street gilders', 'a sheet of gold leaf'],
+  ['the Whitby jet works', 'a carved jet cameo'],
 ];
+
+// SUSPECT GROUPS (owner rule, 2026-10-08; bank header): every case seats a
+// famous, related group of real or iconic people by first name. Sundays seat a
+// five-member group. Initials differ within a case, no name runs past 9
+// letters, and no group repeats anywhere in the bank (verify-alibi checks all
+// three). Groups already in the bank are skipped, so the lists may be read
+// from the top on every run. These were added for the December 2026 restock;
+// November's groups were written straight into the bank.
+const WEEK_GROUPS = [
+  ['Fred', 'Daphne', 'Velma', 'Shaggy'],
+  ['Ralph', 'Alice', 'Ed', 'Trixie'],
+  ['Clark', 'Diana', 'Barry', 'Arthur'],
+  ['Charlie', 'Lucy', 'Snoopy', 'Woodstock'],
+  ['Chris', 'Martina', 'Steffi', 'Billie'],
+  ['Thomas', 'Nikola', 'Alexander', 'Henry'],
+  ['Jay', 'David', 'Stephen', 'Arsenio'],
+  ['Michael', 'Dwight', 'Jim', 'Pam'],
+  ['Sam', 'Diane', 'Norm', 'Cliff'],
+  ['Emily', 'Langston', 'Walt', 'Maya'],
+  ['Louis', 'Duke', 'Ella', 'Miles'],
+  ['Earvin', 'Isiah', 'Hakeem', 'Shaquille'],
+  ['Simone', 'Nadia', 'Olga', 'Kerri'],
+  ['Mia', 'Abby', 'Hope', 'Carli'],
+  ['Glenn', 'Don', 'Joe', 'Randy'],
+  ['Peter', 'Ray', 'Egon', 'Winston'],
+  ['Meg', 'Jo', 'Beth', 'Amy'],
+  ['Woody', 'Buzz', 'Jessie', 'Rex'],
+  ['Tigger', 'Eeyore', 'Piglet', 'Kanga'],
+  ['Jackie', 'Eleanor', 'Michelle', 'Nancy'],
+  ['Tony', 'Carmela', 'Paulie', 'Silvio'],
+  ['Walter', 'Jesse', 'Hank', 'Saul'],
+  ['Elmo', 'Bert', 'Oscar', 'Grover'],
+  ['Richie', 'Fonzie', 'Potsie', 'Joanie'],
+  ['Donner', 'Prancer', 'Vixen', 'Comet'],
+  ['Mike', 'Carol', 'Greg', 'Jan'],
+  ['Bugs', 'Daffy', 'Porky', 'Tweety'],
+];
+const SUN_GROUPS = [
+  ['Stevie', 'Lindsey', 'Christine', 'Mick', 'John'],
+  ['Frodo', 'Sam', 'Gandalf', 'Aragorn', 'Legolas'],
+  ['Logan', 'Charles', 'Jean', 'Scott', 'Ororo'],
+  ['Eleven', 'Mike', 'Dustin', 'Lucas', 'Will'],
+];
+// Pinned dates: a group that belongs to one day of the calendar.
+const PINNED = { '2026-12-25': ['Donner', 'Prancer', 'Vixen', 'Comet'] };
 
 // Name/room/object pools: the bank's own, minus British forms and the
 // duplicate spelling "Boat House".
 const pool = (k) => [...new Set(PUZZLES.flatMap((p) => p[k]))];
-const SUSPECTS = pool('suspects');
 const ROOMS = pool('rooms').filter((r) => !scanUS(r).length && r !== 'Boat House');
 const OBJECTS = pool('objects').filter((o) => !scanUS(o).length);
+// Two rooms where one name sits inside the other ("Kitchen" beside "Old
+// Kitchen") invite a misreading of "was never in the Kitchen", so from the
+// December 2026 restock on a case never seats both: the EARLIER of a clashing
+// pair is swapped for the first room further down the same shuffle that clashes
+// with nothing on the board. verify-alibi checks it from 2026-12-01.
+const roomClash = (a, b) => a !== b && (` ${a} `.includes(` ${b} `) || ` ${b} `.includes(` ${a} `));
+function drawRooms(R, n) {
+  const all = shuffle(ROOMS.slice(), R);
+  const rooms = all.slice(0, n);
+  let spare = n;
+  for (let i = 0; i < n; i++) {
+    while (rooms.some((r, j) => j !== i && roomClash(rooms[i], r))) {
+      while (spare < all.length && rooms.some((r) => roomClash(all[spare], r) || all[spare] === r)) spare++;
+      if (spare >= all.length) throw new Error('no clash-free room left');
+      rooms[i] = all[spare++];
+    }
+  }
+  return rooms;
+}
 const HOURS = ['5 pm', '6 pm', '7 pm', '8 pm', '9 pm', '10 pm', '11 pm', 'midnight'];
 
 // Clue-count distributions of the live bank, per day type.
@@ -224,16 +320,38 @@ for (let d = new Date(`${last.live}T12:00:00Z`); ;) {
   if (iso > UNTIL) break;
   dates.push(iso);
 }
-if (dates.length > CASES.length) throw new Error(`need ${dates.length} venues, have ${CASES.length}`);
-
+// Venue pairs the bank already carries are history, skipped; every other
+// pair must be new to the bank in BOTH halves.
+const bankPair = new Set(PUZZLES.map((p) => `${p.venue}|${p.stolen}`.toLowerCase()));
 const usedVenues = new Set(PUZZLES.map((p) => p.venue.toLowerCase()));
 const usedStolen = new Set(PUZZLES.map((p) => p.stolen.toLowerCase()));
+const FRESH = [];
 for (const [v, s] of CASES) {
+  if (bankPair.has(`${v}|${s}`.toLowerCase())) continue;
   if (usedVenues.has(v.toLowerCase()) || usedStolen.has(s.toLowerCase())) throw new Error(`repeat: ${v} / ${s}`);
   usedVenues.add(v.toLowerCase()); usedStolen.add(s.toLowerCase());
   for (const h of [...scanUS(v), ...scanUS(s)]) throw new Error(`British form ${h.found} in ${v} / ${s}`);
-  if (/[—–]/.test(v + s)) throw new Error('em dash');
+  if (/[\u2013\u2014]/.test(v + s)) throw new Error('em dash');
+  FRESH.push([v, s]);
 }
+if (dates.length > FRESH.length) throw new Error(`need ${dates.length} venues, have ${FRESH.length} unused`);
+
+// Suspect groups: skip any already seated in the bank, then hand them out in
+// order (weekday and Sunday lists separately), honoring PINNED dates.
+const gkey = (g) => g.slice().sort().join('|');
+const usedGroups = new Set(PUZZLES.filter((p) => p.live >= '2026-10-08').map((p) => gkey(p.suspects)));
+const groupOk = (g, n) => g.length === n && new Set(g.map((x) => x[0])).size === n && g.every((x) => x.length <= 9 && !scanUS(x).length && !/[\u2013\u2014]/.test(x));
+const pinnedKeys = new Set(Object.values(PINNED).map(gkey));
+const weekQ = WEEK_GROUPS.filter((g) => !usedGroups.has(gkey(g)) && !pinnedKeys.has(gkey(g)));
+const sunQ = SUN_GROUPS.filter((g) => !usedGroups.has(gkey(g)));
+const groupFor = (iso, sunday) => {
+  const g = PINNED[iso] || (sunday ? sunQ : weekQ).shift();
+  if (!g) throw new Error(`out of ${sunday ? 'Sunday' : 'weekday'} suspect groups at ${iso}`);
+  if (!groupOk(g, sunday ? 5 : 4)) throw new Error(`bad group for ${iso}: ${g.join(', ')}`);
+  if (usedGroups.has(gkey(g))) throw new Error(`group repeats: ${g.join(', ')}`);
+  usedGroups.add(gkey(g));
+  return g;
+};
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const rows = [];
@@ -246,12 +364,12 @@ dates.forEach((iso, i) => {
   const band = sunday ? [10, 14, SUN_COUNTS] : [8, 11, WEEK_COUNTS];
   const { sol, clues } = makeCase(n, R, band);
   const start = Math.floor(R() * (HOURS.length - n + 1));
-  const [venue, stolen] = CASES[i];
+  const [venue, stolen] = FRESH[i];
   const q = (a) => JSON.stringify(a);
   rows.push(`  {
     num: ${num}, quizId: "alibi-${m}-${dd}-${String(y).slice(2)}", live: "${iso}", dateLabel: "${MONTHS[m - 1]} ${dd}, ${y}", sunday: ${sunday},
-    suspects: ${q(shuffle(SUSPECTS.slice(), R).slice(0, n))},
-    rooms: ${q(shuffle(ROOMS.slice(), R).slice(0, n))},
+    suspects: ${q(shuffle(groupFor(iso, sunday).slice(), R))},
+    rooms: ${q(drawRooms(R, n))},
     objects: ${q(shuffle(OBJECTS.slice(), R).slice(0, n))},
     times: ${q(HOURS.slice(start, start + n))},
     stolen: ${q(stolen)},

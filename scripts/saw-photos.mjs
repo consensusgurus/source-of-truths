@@ -43,4 +43,39 @@ export const PHOTOS = [
   { t: "Blue-tailed bee-eater (Merops philippinus) Yala 2.jpg",  name: "A blue-tailed bee-eater, Sri Lanka",  lic: "CC BY-SA 4.0",  by: "Charles J. Sharp",  w: 2304,  h: 3456 },
   { t: "Catedral da Sé em São Paulo.jpg",  name: "São Paulo Cathedral",  lic: "CC0",  by: "Wilfredor",  w: 2674,  h: 3614 },
   { t: "Pholiota squarrosoides (Peck) Sacc 664568.jpg",  name: "Shaggy scalycap mushrooms",  lic: "CC BY-SA 3.0",  by: "Sava Krstic",  w: 3185,  h: 4203 },
+  // Added 2026-11-12 (the December restock, 2026-12-04 to 12-31), pulled through the Commons
+  // API from the Featured pictures subject categories and checked on a contact sheet; the
+  // order keeps the subject rotation (no subject two days running) and saves a Christmas
+  // picture for 2026-12-25. One pick was refused for custom licence terms on top of CC BY-SA.
+  // Content review (2026-11-12): four people photos (12-09, 12-20, 12-24, 12-31) were replaced
+  // with no-person featured pictures, Dynjandi and Victoria Falls swapped days (an Atlas
+  // Iceland answer on 12-10), and two captions and one credit corrected.
+  { t: "Multnomah Falls October 2019 stack.jpg",  name: "Multnomah Falls, Oregon",  lic: "CC BY-SA 4.0",  by: "King of Hearts",  w: 4016,  h: 6016 },
+  { t: "Lince ibérico (Lynx pardinus), Almuradiel, Ciudad Real, España, 2021-12-19, DD 02.jpg",  name: "An Iberian lynx, Spain",  lic: "CC BY-SA 4.0",  by: "Diego Delso",  w: 2573,  h: 3859 },
+  { t: "Látrabjarg Vestfirðir Iceland.jpg",  name: "The cliffs of Látrabjarg, Iceland",  lic: "CC BY-SA 3.0",  by: "Richard Bartz",  w: 3744,  h: 5616 },
+  { t: "Harlech Castle Gatehouse Tower, Merionethshire, Wales - 25-07-2017.jpg",  name: "The gatehouse tower of Harlech Castle, Wales",  lic: "CC BY-SA 4.0",  by: "Cmao20",  w: 3632,  h: 5456 },
+  { t: "Serra da Mantiqueira - Acauã Cabral (08).jpg",  name: "The Serra da Mantiqueira above the clouds, Brazil",  lic: "CC BY-SA 4.0",  by: "Acauã Heuruel Cabral",  w: 4000,  h: 6000 },
+  { t: "Cooper's hawk in Prospect Park (22513).jpg",  name: "A juvenile Cooper's hawk",  lic: "CC BY-SA 4.0",  by: "Rhododendrites",  w: 3179,  h: 4396 },
+  { t: "Cataratas Victoria, Zambia-Zimbabue, 2018-07-27, DD 04.jpg",  name: "Victoria Falls, Zambia and Zimbabwe",  lic: "CC BY-SA 4.0",  by: "Diego Delso",  w: 4203,  h: 6530 },
+  { t: "Inca jay (Cyanocorax yncas galeatus) Las Tangaras.jpg",  name: "An Inca jay, Colombia",  lic: "CC BY-SA 4.0",  by: "Charles J. Sharp",  w: 2578,  h: 3867 },
+  { t: "New snow on young oaks in Tuntorp.jpg",  name: "New snow on young oaks, Sweden",  lic: "CC BY-SA 4.0",  by: "W.carter",  w: 3456,  h: 5088 },
+  { t: "Abtei Seckau Basilika Innenraum 06.jpg",  name: "Inside the basilica of Seckau Abbey, Austria",  lic: "CC BY-SA 4.0",  by: "Uoaei1",  w: 7229,  h: 10844 },
+  { t: "Puente colgante sobre el cañón Lynn, Vancouver, Canadá, 2017-08-14, DD 10.jpg",  name: "The Lynn Canyon suspension bridge, British Columbia",  lic: "CC BY-SA 4.0",  by: "Diego Delso",  w: 5726,  h: 8589 },
+  { t: "Lilium martagon Tauerntal 01.jpg",  name: "A martagon lily, Austria",  lic: "CC BY-SA 4.0",  by: "Uoaei1",  w: 4000,  h: 6000 },
+  { t: "Cascada Dynjandi, Vestfirðir, Islandia, 2014-08-14, DD 136-138 HDR.JPG",  name: "Dynjandi waterfall, Iceland",  lic: "CC BY-SA 4.0",  by: "Diego Delso",  w: 3448,  h: 5306 },
+  { t: "Altenfelden Rothirsch Cervus elaphus-2100 (cropped).jpg",  name: "A red deer stag, Austria",  lic: "CC BY-SA 4.0",  by: "Isiwal",  w: 2203,  h: 3378 },
+  { t: "Old Tower night winter 2011 G1.jpg",  name: "The old water tower on a winter night, Vinnytsia, Ukraine",  lic: "CC BY-SA 4.0",  by: "George Chernilevsky",  w: 3200,  h: 4450 },
+  { t: "Ribeiro Frio (Madeira, Portugal), Levada zur Forellenzucht -- 2025 -- 1510.jpg",  name: "A levada at Ribeiro Frio, Madeira",  lic: "CC BY-SA 4.0",  by: "Dietmar Rabich",  w: 4480,  h: 6720 },
+  { t: "Geranium pratense Obervellach 01.jpg",  name: "A meadow cranesbill near Obervellach, Austria",  lic: "CC BY-SA 4.0",  by: "Uoaei1",  w: 4556,  h: 6082 },
+  { t: "Göltzschtalbrücke Bogen 0640-PSD.jpg",  name: "An arch of the Göltzsch Viaduct, Germany",  lic: "CC BY-SA 4.0",  by: "Ermell",  w: 3888,  h: 5184 },
+  { t: "Steinbock 14962940265 (cropped).jpg",  name: "An Alpine ibex",  lic: "CC BY-SA 3.0 at",  by: "Bernd Thaller",  w: 2760,  h: 3590 },
+  { t: "Graz - Uhrenturm6.jpg",  name: "The Clock Tower of Graz, Austria",  lic: "CC BY 3.0",  by: "Wladyslaw",  w: 3761,  h: 4995 },
+  { t: "Moon in clouds over snowy trees in Tuntorp.jpg",  name: "A waning moon over snowy trees at dawn, Sweden",  lic: "CC BY-SA 4.0",  by: "W.carter",  w: 3321,  h: 4909 },
+  { t: "Julemotiv tegnet av Jenny Nystrøm (24207693358).jpg",  name: "A Christmas scene by Jenny Nyström",  lic: "Public domain",  by: "Jenny Nyström / Adam Cuerden",  w: 5712,  h: 8350 },
+  { t: "Gütenbach, Teichschlucht -- 2025 -- 7668.jpg",  name: "The Teichschlucht gorge at Gütenbach, Germany",  lic: "CC BY-SA 4.0",  by: "Dietmar Rabich",  w: 4480,  h: 6720 },
+  { t: "Fallow Deer in the German wood.jpg",  name: "A fallow deer in a German wood",  lic: "CC BY 3.0",  by: "Michael Gäbler",  w: 2441,  h: 3728 },
+  { t: "Torre del Oro flag Seville Spain.jpg",  name: "The Torre del Oro, Seville",  lic: "CC0",  by: "Jebulon",  w: 2059,  h: 3094 },
+  { t: "Wahkeena Falls October 2019.jpg",  name: "Wahkeena Falls, Oregon",  lic: "CC BY-SA 4.0",  by: "King of Hearts",  w: 4016,  h: 6016 },
+  { t: "Magnolia liliiflora 2015 G1.jpg",  name: "A lily magnolia in bloom",  lic: "Public domain",  by: "George Chernilevsky",  w: 3330,  h: 5000 },
+  { t: "Petronas Towers at Night - from the base upwards.jpg",  name: "The Petronas Towers at night, Kuala Lumpur",  lic: "CC BY-SA 3.0",  by: "Dcubillas",  w: 2848,  h: 4288 },
 ];

@@ -76,7 +76,7 @@ const argv = process.argv.slice(2);
 const CHECK = argv.includes('--check');
 const thruIdx = argv.indexOf('--through');
 const THROUGH = thruIdx >= 0 ? argv[thruIdx + 1] : null;
-const laneArg = argv.find((a) => !a.startsWith('--') && a !== THROUGH);
+const laneArg = argv.find((a, i) => !a.startsWith('--') && a !== THROUGH && argv[i - 1] !== '--start');
 const LANE_DIR = path.resolve(laneArg || path.join(HERE, 'redact-lanes'));
 
 const LANE_FILES = ['redact-person.mjs', 'redact-place-event.mjs', 'redact-thing-work.mjs'];
@@ -152,12 +152,29 @@ const nDays = pool.length;
 
 const dup = pool.map((a) => a.answer.toLowerCase()).filter((v, i, arr) => arr.indexOf(v) !== i);
 if (dup.length) die(`the lanes repeat a subject: ${[...new Set(dup)].join(', ')}`);
+// An append must bring only new subjects: a lane set that is already in the
+// bank (run twice, or an old lane directory) is refused here rather than left
+// to the verifier's duplicate-answer check.
+if (!CHECK) {
+  const banked = new Set(PUZZLES.map((p) => p.answer.toLowerCase()));
+  const again = pool.filter((a) => banked.has(a.answer.toLowerCase())).map((a) => a.answer);
+  if (again.length) die(`refusing to append: ${again.length} of these subjects are already in the bank (${again.slice(0, 5).join(', ')}${again.length > 5 ? ', ...' : ''})`);
+}
 
 // ---- where the new segment starts -----------------------------------------
 // A real run appends after the last day in the bank; --check rewinds nDays and
 // rebuilds the segment already there.
 if (CHECK && PUZZLES.length < nDays) die(`--check needs a bank of at least ${nDays} days to rewind into; it has ${PUZZLES.length}`);
-const anchor = PUZZLES[PUZZLES.length - 1 - (CHECK ? nDays : 0)];
+// --start N (with --check) names the first day of the segment these lanes
+// built, for a lane set that is no longer the newest one in the bank: the
+// default rewind only finds the segment the bank ENDS with.
+const startIdx = argv.indexOf('--start');
+const START_NUM = startIdx >= 0 ? Number(argv[startIdx + 1]) : null;
+if (START_NUM !== null && !CHECK) die('--start is only for --check');
+const anchor = START_NUM !== null
+  ? PUZZLES.find((p) => p.num === START_NUM - 1)
+  : PUZZLES[PUZZLES.length - 1 - (CHECK ? nDays : 0)];
+if (!anchor) die(`no day ${START_NUM - 1} in the bank to anchor --start ${START_NUM}`);
 const startDay = anchor.num + 1;
 const startMs = Date.parse(`${anchor.live}T00:00:00Z`) + 86400000;
 
@@ -207,12 +224,40 @@ for (const k of ['b2', 'b3', 'b4', 'sun']) {
 const slotsOf = (band) => days.map((d, i) => (d.band === band ? i : -1)).filter((i) => i >= 0);
 const SLOTS = { b2: slotsOf('b2'), b3: slotsOf('b3'), b4: slotsOf('b4'), sun: slotsOf('sun') };
 
+// AVOID DATES (2026-11-12). A lane article may carry `avoid: ['YYYY-MM-DD', ...]`,
+// the dates on which another daily already prints its title words or its text
+// would hand away another daily's answer (same-day spoilers, found by reading
+// the other banks for that date). It is a constraint on placement, not a date
+// choice: the article may land on any other day of its band. When no article
+// in the pool carries `avoid`, placement is exactly the original shuffle, so
+// lane sets written before this rule still --check byte for byte.
+const USE_AVOID = pool.some((a) => Array.isArray(a.avoid) && a.avoid.length);
+for (const a of pool) for (const d of a.avoid || []) if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) die(`${a.answer}: bad avoid date ${d}`);
+function fillBand(order, slots) {
+  // depth-first over the shuffled order: slot k takes the first unused article
+  // that does not avoid that slot's date
+  const used = new Array(order.length).fill(false), pick = [];
+  const go = (k) => {
+    if (k === slots.length) return true;
+    for (let j = 0; j < order.length; j++) {
+      if (used[j] || (order[j].avoid || []).includes(days[slots[k]].live)) continue;
+      used[j] = true; pick.push(order[j]);
+      if (go(k + 1)) return true;
+      used[j] = false; pick.pop();
+    }
+    return false;
+  };
+  return go(0) ? pick : null;
+}
 function layout(attempt) {
   const out = new Array(nDays);
   for (const band of ['b2', 'b3', 'b4', 'sun']) {
     const rnd = rng(seedOf(`redact:place:${startDay}:${band}:${attempt}`));
     const order = shuffled(bandPool[band], rnd);
-    SLOTS[band].forEach((slot, i) => { out[slot] = order[i]; });
+    if (!USE_AVOID) { SLOTS[band].forEach((slot, i) => { out[slot] = order[i]; }); continue; }
+    const pick = fillBand(order, SLOTS[band]);
+    if (!pick) die(`band ${band}: no placement honors every article's avoid dates`);
+    SLOTS[band].forEach((slot, i) => { out[slot] = pick[i]; });
   }
   return out;
 }
@@ -235,6 +280,7 @@ for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
 }
 if (!placed) die(`no arrangement found in ${MAX_ATTEMPTS} shuffles that keeps every cat and every lane to at most ${MAX_RUN} days in a row; the pool is too concentrated in one category for this calendar`);
 
+for (let i = 0; i < nDays; i++) if ((placed[i].avoid || []).includes(days[i].live)) die(`internal: ${placed[i].answer} placed on its avoid date ${days[i].live}`);
 // Belt and braces: the ramp is re-derived from the placement, not trusted.
 for (let i = 0; i < nDays; i++) {
   const d = days[i], a = placed[i];
@@ -275,6 +321,12 @@ function splice(text, file, marker) {
   if (CHECK) {
     at = text.indexOf(marker);
     if (at < 0) die(`${file}: cannot find the start of day ${startDay} (${marker.trim()})`);
+    if (START_NUM !== null) {
+      // the segment sits in the middle of the bank: compare it in place
+      const endMarker = `\n  {\n    num: ${startDay + nDays}, `;
+      const end = text.indexOf(endMarker);
+      return { head: text.slice(0, at + 1), tail: end < 0 ? text.slice(close + 1) : text.slice(end + 1), mid: true };
+    }
   }
   return { head: text.slice(0, at + 1), tail: text.slice(close + 1) };
 }

@@ -77,6 +77,30 @@ function greedyLine(board, me0, opp0) {
 }
 
 let fail = 0, checked = 0;
+
+// Structure, cheap and bank-wide whatever --from/--to say (2026-11-12, the Dec
+// restock): from BABEL_RULES_FROM the player holds five tiles on a weekday and
+// six in the Sunday Edition (the header's rule), and no board repeats an
+// earlier board's grid or its rack pair (gen-babel.mjs --avoid's rule, until
+// now enforced only by the generator). Earlier boards are frozen.
+const BABEL_RULES_FROM = '2026-12-01';
+{
+  const grids = new Map(), racks = new Map();
+  for (const p of PUZZLES) {
+    const g = p.board.join('|'), r = `${p.rack.slice().sort().join('')}/${p.foe.slice().sort().join('')}`;
+    if (p.live >= BABEL_RULES_FROM) {
+      const problems = [];
+      const want = p.sunday ? 6 : 5;
+      if (p.rack.length !== want) problems.push(`rack of ${p.rack.length}, want ${want}${p.sunday ? ' (Sunday Edition)' : ''}`);
+      if (grids.has(g)) problems.push(`board repeats ${grids.get(g)}`);
+      if (racks.has(r)) problems.push(`rack pair repeats ${racks.get(r)}`);
+      if (problems.length) { fail++; console.error(`FAIL ${p.live} #${p.num}\n   ${problems.join('\n   ')}`); }
+    }
+    if (!grids.has(g)) grids.set(g, p.live);
+    if (!racks.has(r)) racks.set(r, p.live);
+  }
+}
+
 for (const p of PUZZLES) {
   if (FROM && p.live < FROM) continue;
   if (TO && p.live > TO) continue;

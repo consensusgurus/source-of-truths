@@ -103,7 +103,7 @@ export const LANE_DAYS = [
     { c: 'Countries & Peoples', t: 1, q: 'Which rice dish, cooked with saffron in a wide shallow pan, comes from Valencia in Spain?', a: 'Paella', d: ['Risotto', 'Biryani', 'Jambalaya'] },
     { c: 'Countries & Peoples', t: 2, q: 'Which beet soup is a traditional dish of Ukraine and its neighbors?', a: 'Borscht', d: ['Goulash', 'Shchi', 'Solyanka'] },
     { c: 'Countries & Peoples', t: 3, q: 'Which Swedish custom is a daily coffee break with something sweet?', a: 'Fika', d: ['Hygge', 'Lagom', 'Smorgasbord'] },
-    { c: 'Countries & Peoples', t: 4, q: 'Which country was formerly known as Zaire?', a: 'The Democratic Republic of the Congo', d: ['Angola', 'Zambia', 'The Central African Republic'], from: 'atlas:d06q20' },
+    { c: 'Countries & Peoples', t: 4, q: 'Which is the largest landlocked country in the world by area?', a: 'Kazakhstan', d: ['Mongolia', 'Chad', 'Niger'], from: 'atlas:d17q20' },
     { c: 'Countries & Peoples', t: 5, q: 'Which people of a small Andaman island have kept almost complete isolation from the outside world?', a: 'The Sentinelese', d: ['The Onge', 'The Jarawa', 'The Nicobarese'], from: 'atlas:d60q25' },
   ],
   // 2026-12-14
@@ -111,7 +111,7 @@ export const LANE_DAYS = [
     { c: 'Countries & Peoples', t: 1, q: 'Which small four-stringed guitar is closely linked with Hawaiian music?', a: 'The ukulele', d: ['The mandolin', 'The banjo', 'The lute'] },
     { c: 'Countries & Peoples', t: 2, q: 'Which Swedish word for a buffet of many cold and hot dishes has passed into English?', a: 'Smorgasbord', d: ['Fika', 'Lagom', 'Hygge'] },
     { c: 'Countries & Peoples', t: 3, q: 'Finnish, Estonian and Hungarian all belong to which language family?', a: 'Uralic', d: ['Semitic', 'Turkic', 'Indo-European'], from: 'atlas:d42q15' },
-    { c: 'Countries & Peoples', t: 4, q: 'Which is the largest landlocked country in the world by area?', a: 'Kazakhstan', d: ['Mongolia', 'Chad', 'Niger'], from: 'atlas:d17q20' },
+    { c: 'Countries & Peoples', t: 4, q: 'Which country was formerly known as Zaire?', a: 'The Democratic Republic of the Congo', d: ['Angola', 'Zambia', 'The Central African Republic'], from: 'atlas:d06q20' },
     { c: 'Countries & Peoples', t: 5, q: 'The extinct dodo appears on the coat of arms of which island country?', a: 'Mauritius', d: ['Seychelles', 'Comoros', 'The Maldives'], from: 'atlas:d02q25' },
   ],
   // 2026-12-15

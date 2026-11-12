@@ -160,8 +160,11 @@
 // SEEDING. --seed is offset by the starting board number before use, so a
 // segment banked at num 61 can never replay the stream that produced num 1.
 import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { PROMPTS } from './feud-prompts.mjs';
 import { promptMatcher } from '../lib/feud-match.js';
+import { nearRepeat, answerNearRepeat } from './crowd-near-repeat.mjs';
 
 // ─────────────────────────── args ────────────────────────────────────────────
 // Accepts both house spellings: --days=62 and --days 62 (scripts/_append.mjs
@@ -195,12 +198,16 @@ const shuffle = (a) => { const b = a.slice(); for (let i = b.length - 1; i > 0; 
 // ─────────────────────────── ceilings ────────────────────────────────────────
 const POOL = 40;               // house votes per prompt (the documented size)
 const PER_DAY = 5;             // prompts per board (no Sunday ramp — see header)
-const CAT_CEIL = 22;           // max new prompts one category may fill
-const LABEL_CEIL = 4;          // max new prompts one answer label may appear in
-const HOT_CEIL = 2;            // ...if the frozen bank already runs it HOT_FROZEN+ times
+// The ceilings below are written for a 310-prompt (62-day) segment, the one they
+// were calibrated on. A segment of another length scales them as a RATE (see
+// "SEGMENTS" below the frozen-bank read), the way lane-d scaled outrank's.
+const SEG_BASE = 310;
+let CAT_CEIL = 22;             // max new prompts one category may fill
+let LABEL_CEIL = 4;            // max new prompts one answer label may appear in
+let HOT_CEIL = 2;              // ...if the frozen bank already runs it HOT_FROZEN+ times
 const HOT_FROZEN = 10;
-const VEC_CEIL = 14;           // max prompts one house ladder may shape
-const RARE_CEIL = 4;           // ...but a runaway ladder (top >= RARE_TOP) only this many
+let VEC_CEIL = 14;             // max prompts one house ladder may shape
+let RARE_CEIL = 4;             // ...but a runaway ladder (top >= RARE_TOP) only this many
 const RARE_TOP = 15;
 const BUCKET_MODE_CEIL = 0.55; // max share of the segment on any one bucket count
 const BUCKET_MIN_SHARE = 0.05; // min share every count in the 6-9 band must hold
@@ -248,8 +255,12 @@ const LADDERS = {
     steep: [[12, 8, 6, 5, 3, 3, 2, 1], [13, 8, 6, 4, 3, 3, 2, 1], [14, 7, 6, 4, 3, 3, 2, 1], [12, 9, 5, 4, 4, 3, 2, 1], [11, 9, 6, 4, 4, 3, 2, 1], [13, 7, 6, 5, 3, 3, 2, 1], [17, 6, 5, 4, 3, 2, 2, 1], [19, 6, 4, 3, 3, 2, 2, 1]],
   },
   9: {
-    flat: [[8, 7, 6, 5, 4, 3, 3, 2, 2], [9, 7, 6, 5, 4, 3, 2, 2, 2]],
-    mid: [[10, 7, 6, 4, 4, 3, 2, 2, 2], [11, 7, 5, 4, 4, 3, 2, 2, 2], [9, 8, 6, 4, 4, 3, 2, 2, 2], [10, 8, 5, 4, 3, 3, 3, 2, 2]],
+    // The last two flat and last three mid ladders were added 2026-11-12 (lane-f
+    // fixes pass): review widened 34 December prompts to nine buckets, and nine
+    // is the band's top, so the family needed more distinct shapes rather than a
+    // higher per-ladder ceiling. Same family bands (flat tops 8-9, mid 9-11).
+    flat: [[8, 7, 6, 5, 4, 3, 3, 2, 2], [9, 7, 6, 5, 4, 3, 2, 2, 2], [8, 7, 6, 5, 4, 4, 2, 2, 2], [8, 6, 6, 5, 5, 4, 2, 2, 2]],
+    mid: [[10, 7, 6, 4, 4, 3, 2, 2, 2], [11, 7, 5, 4, 4, 3, 2, 2, 2], [9, 8, 6, 4, 4, 3, 2, 2, 2], [10, 8, 5, 4, 3, 3, 3, 2, 2], [10, 7, 5, 5, 4, 3, 2, 2, 2], [10, 6, 6, 5, 4, 3, 2, 2, 2], [11, 6, 5, 5, 4, 3, 2, 2, 2]],
     steep: [[12, 7, 5, 4, 3, 3, 2, 2, 2], [13, 7, 5, 4, 3, 3, 2, 2, 1], [14, 6, 5, 4, 3, 3, 2, 2, 1], [11, 8, 5, 4, 3, 3, 2, 2, 2], [16, 6, 4, 4, 3, 3, 2, 1, 1], [18, 5, 4, 3, 3, 3, 2, 1, 1]],
   },
 };
@@ -267,6 +278,8 @@ const addDays = (isoStr, n) => { const d = new Date(isoStr + 'T12:00:00Z'); d.se
 
 // ─────────────────────────── read the frozen bank ────────────────────────────
 let frozenQ = new Set();
+const frozenRaw = [];
+const frozenBoards = [];
 const frozenLabel = new Map();
 for (const f of AVOID) {
   let txt = '';
@@ -276,6 +289,37 @@ for (const f of AVOID) {
     const k = m[1].toLowerCase();
     frozenLabel.set(k, (frozenLabel.get(k) || 0) + 1);
   }
+  for (const m of txt.matchAll(/\n\s*q:\s*"((?:[^"\\]|\\.)*)"/g)) frozenRaw.push(m[1].replace(/\\"/g, '"'));
+  // answer boards of the frozen prompts, for the answer-overlap near-repeat check
+  try {
+    const mod = await import(pathToFileURL(path.resolve(f)).href);
+    for (const d of mod.PUZZLES || []) for (const pr of d.prompts || []) frozenBoards.push({ q: pr.q, labels: pr.answers.map((x) => x.c), bucketOf: promptMatcher(pr).bucketOf });
+  } catch (e) { die(`cannot load the answer boards of --avoid ${f}: ${e.message}`, []); }
+}
+
+// ─────────────────────────── SEGMENTS (2026-11-12, lane-f) ───────────────────
+// scripts/feud-prompts.mjs is APPEND-ONLY: a prompt that has been banked stays
+// in the file (it is the authored source of a live board) and is SPENT. The
+// corpus for a run is every prompt the --avoid bank does not already carry.
+// Before this, the file held exactly one segment and a second run had nothing
+// to draw; now each December-style segment appends its own prompts and the
+// banked ones are skipped rather than failing the run as repeats.
+//
+// The ceilings were written for SEG_BASE = 310 prompts, so a segment of another
+// size scales each one as a RATE, rounded up: 155 prompts give category 11,
+// label 2, hot label 1, ladder 7, runaway ladder 2. verify-feud.mjs applies the
+// same scaling per segment (FEUD_SEGMENTS).
+//
+// NEAR REPEATS. An exact repeat is spent by construction, so the check that now
+// matters is the near one: scripts/crowd-near-repeat.mjs compares content words
+// against every banked prompt and every other new one, and the run aborts on a
+// hit (auditCorpus, check 1b).
+const SPENT = PROMPTS.filter((p) => frozenQ.has(normQ(p.q)));
+const CORPUS = PROMPTS.filter((p) => !frozenQ.has(normQ(p.q)));
+{
+  const r = CORPUS.length / SEG_BASE;
+  const up = (n) => Math.max(1, Math.ceil(n * r));
+  CAT_CEIL = up(22); LABEL_CEIL = up(4); HOT_CEIL = up(2); VEC_CEIL = up(14); RARE_CEIL = up(4);
 }
 
 // ─────────────────────────── corpus audit ────────────────────────────────────
@@ -303,6 +347,18 @@ function auditCorpus(corpus) {
     if (frozenQ.has(nq)) errs.push(`${where}: repeats a prompt already in the bank`);
     if (seenQ.has(nq)) errs.push(`${where}: repeats another new prompt`);
     seenQ.add(nq);
+    // 1b. NEAR repeat: the same question in other words (crowd-near-repeat.mjs)
+    for (const old of frozenRaw) if (nearRepeat(p.q, old)) errs.push(`${where}: near-repeats banked prompt "${old}"`);
+    for (let j = 0; j < idx; j++) if (nearRepeat(p.q, corpus[j].q)) errs.push(`${where}: near-repeats new prompt "${corpus[j].q}"`);
+    // 1c. ANSWER near-repeat: the same board under another question
+    {
+      const self = { labels: p.a.map(([c]) => c), bucketOf: promptMatcher({ answers: p.a.map(([c, k]) => ({ c, k })) }).bucketOf };
+      for (const fb of frozenBoards) if (answerNearRepeat(self, fb)) errs.push(`${where}: its answers repeat banked prompt "${fb.q}"`);
+      for (let j = 0; j < idx; j++) {
+        const o = corpus[j];
+        if (answerNearRepeat(self, { labels: o.a.map(([c]) => c), bucketOf: promptMatcher({ answers: o.a.map(([c, k]) => ({ c, k })) }).bucketOf })) errs.push(`${where}: its answers repeat new prompt "${o.q}"`);
+      }
+    }
     for (const needle of FIXTURE_NEEDLES) {
       if (p.q.toLowerCase().includes(needle.toLowerCase())) {
         errs.push(`${where}: contains verify-feud fixture needle "${needle}"`);
@@ -608,18 +664,19 @@ function render(board, num, dISO) {
 }
 
 // ─────────────────────────── run ─────────────────────────────────────────────
-const { errs: rawErrs, misses: rawMisses, probes, widened, catCount, labelCount, bucketCount } = auditCorpus(PROMPTS);
+const { errs: rawErrs, misses: rawMisses, probes, widened, catCount, labelCount, bucketCount } = auditCorpus(CORPUS);
 const errs = [...new Set(rawErrs)];
 const misses = [...new Set(rawMisses)];
-const warns = softLint(PROMPTS);
+const warns = softLint(CORPUS);
 if (errs.length) die(`${errs.length} corpus problem(s) — nothing written`, errs);
 
 if (LINT_ONLY) {
-  console.log(`gen-feud lint: ${PROMPTS.length} prompts, ${PROMPTS.reduce((a, p) => a + p.a.length, 0)} buckets, ${PROMPTS.reduce((a, p) => a + p.a.reduce((x, b) => x + b[1].length, 0), 0)} aliases`);
+  console.log(`gen-feud lint: ${SPENT.length} spent prompt(s) already banked, skipped; ceilings for ${CORPUS.length}: category ${CAT_CEIL}, label ${LABEL_CEIL} (hot ${HOT_CEIL}), ladder ${VEC_CEIL} (runaway ${RARE_CEIL})`);
+  console.log(`gen-feud lint: ${CORPUS.length} prompts, ${CORPUS.reduce((a, p) => a + p.a.length, 0)} buckets, ${CORPUS.reduce((a, p) => a + p.a.reduce((x, b) => x + b[1].length, 0), 0)} aliases`);
   console.log(`  buckets/prompt: ${[...bucketCount].sort().map(([n, c]) => `${n}x${c}`).join('  ')}`);
   console.log(`  categories (${catCount.size}): ${[...catCount].sort((a, b) => b[1] - a[1]).map(([c, n]) => `${c} ${n}`).join(', ')}`);
-  const hot = [...labelCount].filter(([, n]) => n >= 3).sort((a, b) => b[1] - a[1]);
-  console.log(`  labels used 3+ times: ${hot.length ? hot.map(([l, n]) => `${l} ${n}`).join(', ') : '(none)'}`);
+  const hot = [...labelCount].filter(([, n]) => n >= 2).sort((a, b) => b[1] - a[1]);
+  console.log(`  labels used 2+ times: ${hot.length ? hot.map(([l, n]) => `${l} ${n}`).join(', ') : '(none)'}`);
   console.log(`  ${probes} coverage probes (articles, plural flips, one-key typos): 0 miscredited`);
   console.log(`  ${widened} plural/singular aliases added mechanically to close stemmer holes`);
   const hard = misses.filter((m) => !m.startsWith('[typo]'));
@@ -631,10 +688,10 @@ if (LINT_ONLY) {
   process.exit(0);
 }
 
-if (PROMPTS.length !== DAYS * PER_DAY) {
-  die(`corpus holds ${PROMPTS.length} prompts; ${DAYS} days x ${PER_DAY} needs ${DAYS * PER_DAY}`, []);
+if (CORPUS.length !== DAYS * PER_DAY) {
+  die(`corpus holds ${CORPUS.length} prompts; ${DAYS} days x ${PER_DAY} needs ${DAYS * PER_DAY}`, []);
 }
-const boards = assemble(PROMPTS, DAYS);
+const boards = assemble(CORPUS, DAYS);
 for (const board of boards) for (const p of board) { const h = houseFor(p); p._house = h.house; p._vec = h.vec; }
 
 const chunks = [];
@@ -645,11 +702,12 @@ if (OUT) fs.writeFileSync(OUT, body); else process.stdout.write(body);
 // ─────────────────────────── report ──────────────────────────────────────────
 const catSlot = new Map();
 boards.forEach((b) => b.forEach((p, i) => catSlot.set(`${p.cat}@${i}`, (catSlot.get(`${p.cat}@${i}`) || 0) + 1)));
+console.error(`gen-feud: ${SPENT.length} spent prompt(s) skipped`);
 console.error(`gen-feud: ${DAYS} boards, ${iso(addDays(FROM, 0))} -> ${iso(addDays(FROM, DAYS - 1))}, nums ${STARTNUM}-${STARTNUM + DAYS - 1}`);
-console.error(`  ${PROMPTS.length} prompts, ${PROMPTS.reduce((a, p) => a + p.a.length, 0)} buckets, ${PROMPTS.reduce((a, p) => a + p.a.reduce((x, b) => x + b[1].length, 0), 0)} aliases; 0 self-collisions`);
+console.error(`  ${CORPUS.length} prompts, ${CORPUS.reduce((a, p) => a + p.a.length, 0)} buckets, ${CORPUS.reduce((a, p) => a + p.a.reduce((x, b) => x + b[1].length, 0), 0)} aliases; 0 self-collisions`);
 console.error(`  ${probes} coverage probes miscredited 0 times; ${misses.length} form(s) match no bucket (see --lint)`);
 console.error(`  ${widened} plural/singular aliases added mechanically to close lib/feud-match.js stemmer holes`);
-console.error(`  buckets/prompt: ${[...bucketCount].sort().map(([n, c]) => `${n}: ${c} (${(100 * c / PROMPTS.length).toFixed(0)}%)`).join('  ')}`);
+console.error(`  buckets/prompt: ${[...bucketCount].sort().map(([n, c]) => `${n}: ${c} (${(100 * c / CORPUS.length).toFixed(0)}%)`).join('  ')}`);
 console.error(`  categories ${catCount.size}, biggest ${[...catCount].sort((a, b) => b[1] - a[1])[0].join(' ')} (ceiling ${CAT_CEIL})`);
 console.error(`  house ladders in use ${vecUse.size}, busiest ${[...vecUse].sort((a, b) => b[1] - a[1])[0].join(' ')} (ceiling ${VEC_CEIL})`);
 console.error(`  house: every prompt 40 votes, monotone, top 8-19, no zero-vote bucket (asserted)`);

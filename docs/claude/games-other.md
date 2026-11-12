@@ -88,8 +88,9 @@ day... the first puzzle in read the room... A or B, or A or B or C, or A or B or
 - **The bank**: `scripts/herd-pool.mjs` (566 two-way questions written 2026-10-16 in three topics, home / social / world,
   each with an ESTIMATED split) dealt by `scripts/gen-herd.mjs --until <date> --write` (append-only): at least two
   easy and two close calls a day, no topic over five, no two overlapping questions on one day, first question an
-  easy two-way, nothing dealt twice. Bank 2026-10-17 to 2026-11-30 leaves 116 pool questions: write more before
-  extending. `scripts/verify-herd.mjs` checks the bank and the scorer (mutation-tested on leave-one-out).
+  easy two-way, nothing dealt twice. Bank 2026-10-17 to 2026-11-30 left 116 pool questions; the 2026-11-12 restock added 222 (screened
+  against every earlier entry for near repeats) and dealt to 2026-12-31, which leaves 28: write more before
+  extending. `verify-herd`'s British screen matches `mum` as a prefix, so a word like "mumble" fails it. `scripts/verify-herd.mjs` checks the bank and the scorer (mutation-tested on leave-one-out).
 - **Read the Room is four rooms from 2026-10-17**: Herd, Outwit, Outrank, Feud, a quarter of 100 each.
   `lib/read-room.js` `HERD_FROM`, `roomKeysFor(iso)`, `roomPartFor(iso)`, `roomScorerFor(iso)`; the circuit carries
   `before: { until: '2026-10-16', keys: [the old three] }` and its scorer is per day, so settled three-room days
@@ -963,7 +964,9 @@ too, same puzzles." Key/route/folder `spot`, category **Logic**, skill Focus and
 Key/route/folder `snug`, category **Logic**, registry `miss: null` (Sixes' manners: a solve is a
 flat 10, nothing counts against you, the clock decides the day, one free first-play hint through
 `lib/hint-gate`), legacy accent `#3b5bdb` / navy `#91a7ff`. Day 1 is **2026-09-13**, a Sunday, so
-No. 1 is a Sunday Edition. Bank runs 78 days to **2026-11-29**. Wired by `scripts/wire-snug.mjs`
+No. 1 is a Sunday Edition. Bank ran 78 days to 2026-11-29; extended to **2026-12-31** on 2026-11-12 with
+`node scripts/gen-snug.mjs --append --until <date>` (the only safe way: a whole-bank rerun is not prefix-stable,
+because the climb re-pick draws from the rng after the main loop). Wired by `scripts/wire-snug.mjs`
 (anchored on the Junkyard rows, idempotent). No PNG tile; `lib/game-glyphs.js` has `snug`. Share
 card is the static `public/og/snug.png` from `scripts/bake-og.mjs snug`. Design study with the
 grown-up and kids boards: https://claude.ai/code/artifact/a9c7b827-5af7-4c1a-8fef-7db991b253dc.
@@ -1019,7 +1022,10 @@ every board with its own piece-driven solver.
 Wired by `scripts/wire-yose-crib.mjs` (anchored on the Turn and Finesse rows, idempotent). No PNG
 tiles; `lib/game-glyphs.js` has both. Share cards are static `public/og/<key>.png` from
 `scripts/bake-og.mjs yose crib`. Premiere window 2026-09-17 to 09-21. Banks run 78 days,
-2026-09-17 to 2026-12-03.
+2026-09-17 to 2026-12-03, both extended to 2026-12-31 on 2026-11-12: Yose by `gen-yose.mjs day <date> <num>` per
+new date (seeded off the date) spliced on with `_splice.mjs`; Crib by `gen-crib.mjs append <until> <pools...>`,
+which reserves every dealt six-card set and the last 21 days of rank patterns, from pools valued off new seeds
+(20261204..20261207).
 
 **Yose** — key/route `yose`, category **End Game** (the eighth), `keepsAnswer: true`,
 `miss: 'Tries'`, legacy accent `#44403c` / navy `#d6d3d1`, in DEFEAT_GAMES and the
@@ -1309,6 +1315,11 @@ score, a 12x12 Sunday Edition. Wired by `scripts/wire-judges.mjs`. No PNG tiles;
   minutes into its day (owner: everything live today). A save for the old board is discarded on load
   because the grid size no longer matches. Boards 2026-08-21 to 10-03 are frozen in their two-jester era,
   and `scripts/verify-jester.mjs` checks each era by its own rule (`ONE_FROM = '2026-10-04'`).
+- **Extending the Jesters bank: `node scripts/gen-jester.mjs --to <date>`** (2026-11-12). Same board pipeline as
+  jester1-produce, but seeded off the board number with an attempt cap (deterministic), the weekday's size, a
+  grade BAND per weekday measured from the 10-04..11-29 boards (Mon 8-22, Tue 42-58, Wed 15-28, Thu 38-64,
+  Fri 13-31, Sat 34-69, Sun 39-79), the 11x11 hue rule, append-only. verify-jester now checks the hue rule
+  (courts k and k+10 never touch) from ONE_FROM.
 - **Generators.** One-jester boards: `scripts/jester1-produce.mjs <size>` (seeded seating, uneven court
   growth, boundary repair, the graded human solver). Judges boards: `scripts/judges-produce.mjs <size>`.
   Even court growth almost never converges to a unique 12x12 two-star board; what works is UNEVEN
@@ -2149,8 +2160,16 @@ Realtor (the house), scored 15/20/15 out of 50. Days before keep the five tags a
   scoring in `lib/picks.js`: which costs more x4 (the pricier item stays on top), over or under x1,
   tag match x1; 3 a call, 1 a tag, +1 at a streak of three and six. Bank `app/picks/puzzles.js` names
   rows of the retired Dealer/Agent/Curator banks by quizId; dealt by `scripts/build-picks-bank.mjs`,
-  checked by `scripts/verify-picks.mjs`. The bank runs to 2026-11-14 with the Pricer and Realtor
-  banks: restock all three together. 55 of the 135 retired rows are still unused.
+  checked by `scripts/verify-picks.mjs`. **The Picks pool (owner, 2026-11-12):** the retired rows ran
+  out (the 63 left could not make one more legal day), so from 2026-11-15 boards also draw on
+  `app/picks/pool.js`, rows tied to no page and no date (`pick-d###` vehicles, `pick-c###` luxury
+  pieces, same fields as the Dealer and Curator banks, `key` names which). Dealer, Agent and Curator
+  stay retired and get NO new days. verify-picks checks every pool row's fields, Commons photo,
+  integer price and name uniqueness, and that a list price is dealt within 60 days of `gathered`
+  (auction results are settled and exempt); build-picks-bank prefers pool rows and respects the
+  same age. Restock by appending rows to the pool, read live; what runs short first is the middle of
+  the price range ($1,000 to $20,000 list prices and $100,000 to $3 million pieces), because the
+  opener must be under $60,000 and a chain allows at most two auction lots.
 - **Crowd split:** a Picks row files what its player got right in `first_guess` (crowd code, never
   the score); `/api/quiz/picks-crowd` returns the share right per call. Shown only at 3+ players.
 - **Shopper cards:** `RUN_RANKS_V4` (43/35/27/20), modeled for the new scale. Re-cut after a week.
@@ -2380,10 +2399,14 @@ Resume: a solve with c clues open is 11 - c, unsolved 0. Runs on `app/SimpleDail
   (`famous`) shows only on the ending. Google's 2004 S-1 has no metrics section, so its clue 4 is a second risk factor.
 - **Guesses** use Tape's universe (`app/tape/universe.js`, the Russell 3000) and its type-ahead; `accept` lists
   every ticker that counts (Alphabet: GOOGL and GOOG).
-- **Bank** `app/filing/puzzles.js` (append-only), 14 boards 2026-11-10 to 2026-11-23, quoted from the filing on
+- **Bank** `app/filing/puzzles.js` (append-only), 41 boards 2026-11-10 to 2026-12-20 (27 added 2026-11-12), quoted from the filing on
   sec.gov (`src`). `scripts/verify-filing.mjs`: contiguous dates, tickers in the universe, no repeats, every
   clue present, nothing outside `[[ ]]` names the company or shows its ticker, no em dash, and never the same
-  company as Tape on the same day. **Restock before 2026-11-23.**
+  company as Tape on the same day. **Restock before 2026-12-20.** The 2026-11-12 restock also kept every
+  answer off Tape's dates within a week either side, and old text-only filings (Netflix 2002, Intuitive 2000, eBay
+  1998) are quoted from their body sentences, never their ALL-CAPS headings; `src` is then the submission `.txt`.
+  **Filed date policy (2026-11-12):** `filed` is always EDGAR's Filing Date from the filing index, even where the
+  S-1 cover legend ("As filed ... on") shows an earlier day (Under Armour, Arista, Zoetis).
 - **Inside Due Diligence** the leg is labelled "The company"; everywhere else the game is Filing.
 - **Tiles** `scripts/gen-filing-tile.py`; OG `public/og/filing.png` hand-baked by `scripts/bake-trivia-og.mjs`
   (a decoy filing, no real company) and `scripts/shoot-og.py filing`; wiring `scripts/wire-filing.mjs`.
@@ -2471,3 +2494,18 @@ Same order as Witness. Key/route `defuse`, category **Logic**, skill Deduction, 
   stored one, every live rule needed, every decoy false, the player's walk matching `lookAhead`, and
   variety (opening wire, rule mix, the opening rule not always printed first). Bank 2026-11-12 to
   2026-12-31. A new rule type goes into the engine's `holds`, `breach` and `ruleText` together.
+
+## Taire and Chain restock tools (2026-11-12)
+
+- **Taire** had no committed generator. `node scripts/gen-taire.mjs --to <date>` deals append-only, seeded off
+  the board number, and proves every `par` exact with two solvers that share no code: an A* (sorted-column
+  states, consistent bound: one move per card not home, two for a column card resting on a lower card of its
+  own suit) that also returns the line, and a bounded DFS (raw states, weaker bound) that must find no win in
+  par - 1. The line is replayed through `app/taire/rules.js`. Both solvers reproduce all 126 frozen pars. Bands:
+  Mon 18-20, Tue 21-22, Wed 23-24 (the climb the frozen bank uses inside the header's 18-24), Thu-Sat 28-34,
+  Sunday 34-48 from a pool of eight proved deals at a rotating quantile (the first deal in band was always
+  34-36). verify-taire's own BFS still cannot finish the 20-card deals inside its budget, as before.
+- **Chain** motif lines moved to `scripts/chain-motifs.mjs` (shared content, no search code). The declineSingle
+  family was full (18 lines x 4) by 2026-12-07, so ten declineSingle and six takePlain lines were added, and the
+  generator now deals the LEAST-used line of a family. `verify-chain.mjs` check 9: every board's motif is a line
+  of the family its own solve implies (all 150 boards pass, so the floor is launch).

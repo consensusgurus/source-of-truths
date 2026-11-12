@@ -2,8 +2,12 @@
 // 2026-11-07 (owner, 2026-11-06). Game logic and scoring: lib/picks.js.
 //
 // Every item is a row of the retired Dealer, Agent or Curator bank, named by
-// its quizId and resolved through lib/price-ship.js, so it carries that row's
-// photo, credit, price and "as of" date. Fields:
+// its quizId, or (from 2026-11-15, owner 2026-11-12) a row of the Picks pool in
+// app/picks/pool.js, named by its id (pick-d### a vehicle, pick-c### a luxury
+// piece); Dealer, Agent and Curator stay retired and gain no new days. Each is
+// resolved through lib/price-ship.js, so it carries that row's photo, credit,
+// price and "as of" date. A pool list price is dealt within 60 days of being
+// read. Fields:
 //   start     the opening item, on top for pick 1
 //   chain     the four challengers for picks 1, 2, 4 and 6, in order
 //   ou        pick 3: { ref, line }, line in integer cents, a round number

@@ -79,7 +79,10 @@ ok('focal points, licences and credits present');
 // commons.wikimedia.org tab. This gate makes that audit unskippable: a row
 // above FRAMES_AUDITED_THROUGH has never been looked at, so extending the bank
 // fails until the audit is rerun and the constant raised.
-const FRAMES_AUDITED_THROUGH = 91;
+// #92-#122 (2026-12-01..12-31) audited 2026-11-12 by a Python port of
+// audit-focus-frames.js run against the same Special:FilePath thumbnails
+// (1280px bucket, original or 960px where Commons rate-limited); no BLANK row.
+const FRAMES_AUDITED_THROUGH = 122;
 for (const p of PUZZLES) {
   if (p.num > FRAMES_AUDITED_THROUGH) bad(`#${p.num} has not been through scripts/audit-focus-frames.js (audited through #${FRAMES_AUDITED_THROUGH}); run it, fix any BLANK row, then raise FRAMES_AUDITED_THROUGH`);
 }

@@ -46,6 +46,20 @@ import { renderSetup, renderRules, renderChoices, solutions as engineSolutions, 
 
 // US_COPY_FROM: boards from the 2026-09-24 restock on are screened by scripts/us-spellings.mjs
 const US_COPY_FROM = '2026-10-15';
+// QUALITY_FROM (content review of the December 2026 restock): from this date a
+// conditional stem never capitalizes mid-sentence ("If Both ..."), every choice
+// of a conditional question is left open by its premise over the free universe
+// (all arrangements, rules ignored), and no rule is implied by the others.
+// Earlier boards are frozen; 13 of them carry the old casing.
+const QUALITY_FROM = '2026-12-01';
+const FREE_U = new Map();
+const freeOf = (spec) => {
+  // a hybrid's attribute count (avc) is part of its shape, so it stays in
+  const sc = spec.cons.filter((c) => c[0] === 'avc');
+  const k = `${spec.k}|${spec.n}|${spec.pick || ''}|${spec.groups ? spec.groups.length : ''}|${JSON.stringify(sc)}`;
+  if (!FREE_U.has(k)) FREE_U.set(k, enumerate({ ...spec, cons: sc }));
+  return FREE_U.get(k);
+};
 let fails = 0;
 const fail = (m) => { console.error('✗', m); fails++; };
 const note = (m) => console.log('…', m);
@@ -268,6 +282,22 @@ PUZZLES.forEach((p, i) => {
     if (k === 0) fail(`${tag}: condition (${ci + 1}) is vacuous, the other rules make its antecedent impossible`);
     if (k === rest.length) fail(`${tag}: condition (${ci + 1}) is not conditional, the other rules force its antecedent`);
   });
+
+  if (p.live >= QUALITY_FROM) {
+    spec.cons.forEach((c, ci) => {
+      if (c[0] === 'avc') return;
+      if (enumerate({ ...spec, cons: spec.cons.filter((_, j) => j !== ci) }).length === mine.length) fail(`${tag}: condition (${ci + 1}) adds nothing, the other rules already imply it`);
+    });
+    p.questions.forEach((q, qi) => {
+      if (/^If (Both|Neither)\b/.test(q.q)) fail(`${tag} q${qi + 1}: stem capitalizes mid-sentence: "${q.q.slice(0, 40)}"`);
+      if (!q.chk.cond || !q.chk.preds) return;
+      const U = freeOf(spec).filter((s) => holds(q.chk.cond, s, spec));
+      q.chk.preds.forEach((pr, k) => {
+        const t = U.filter((s) => holds(pr, s, spec)).length;
+        if (t === 0 || t === U.length) fail(`${tag} q${qi + 1}: choice ${CHOICE_KEYS[k]} is settled by the premise alone`);
+      });
+    });
+  }
 
   const seenQ = new Set();
   p.questions.forEach((q, qi) => {

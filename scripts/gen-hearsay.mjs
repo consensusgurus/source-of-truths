@@ -34,8 +34,11 @@ const UNTIL = arg('--until', '2026-11-30');
 const WRITE = args.includes('--write');
 const BANK = new URL('../app/hearsay/puzzles.js', import.meta.url);
 
+// The 2026-10-31 to 2026-11-30 segment's domains, now banked; kept as the
+// record. DOMAINS below is always the segment AFTER the bank's last board, one
+// per day in date order.
 // [noun, listLabel, attrs, value pools]. Sundays need three attributes.
-const DOMAINS = [
+const DOMAINS_2026_10_31 = [
   ['stamp', 'the album page', ['country', 'year', 'perforation'], [['Iceland', 'Malta', 'Peru', 'Fiji', 'Chile', 'Ghana'], ['1921', '1934', '1948', '1952', '1967'], ['a line perf', 'a comb perf', 'an imperf edge']]],
   ['violin', 'the repair ticket', ['workshop', 'wood'], [['the Aldine shop', 'the Brook shop', 'the Cellini shop', 'the Dorn shop', 'the Ember shop', 'the Fisk shop'], ['maple', 'spruce', 'willow', 'poplar', 'cherry', 'walnut']]],
   ['canal barge', 'the wharf tally', ['basin', 'cargo'], [['Hollin Basin', 'Stoke Basin', 'Ferry Basin', 'Mill Basin', 'Gas Basin', 'Wey Basin'], ['coal', 'timber', 'grain', 'bricks', 'lime', 'salt']]],
@@ -66,6 +69,43 @@ const DOMAINS = [
   ['rowing eight', 'the regatta draw', ['club', 'lane'], [['the Blues', 'the Greens', 'the Cherwell crew', 'the Tideway crew', 'the Thames crew', 'the Cam crew'], ['lane one', 'lane two', 'lane three', 'lane four', 'lane five', 'lane six']]],
   ['mosaic panel', 'the chapel survey', ['wall', 'border', 'stone'], [['the north wall', 'the south wall', 'the east wall', 'the west wall', 'the apse', 'the porch'], ['a key border', 'a vine border', 'a wave border', 'a rope border'], ['marble', 'glass', 'slate']]],
   ['weather balloon', 'the launch sheet', ['site', 'payload'], [['Cold Point', 'High Moor', 'Long Reach', 'Dry Ridge', 'Wet Hollow', 'Far Crag'], ['a camera', 'a thermometer', 'a barometer', 'a radiosonde', 'a light meter']]],
+];
+
+// 2026-12-01 to 2026-12-31 (lane-d restock, written 2026-11-12). A winter run:
+// fairs, kitchens and the holiday stretch. Sundays (Dec 6, 13, 20, 27, indexes
+// 5, 12, 19, 26) carry three attributes.
+const DOMAINS = [
+  ['pumpkin', 'the harvest fair entry list', ['farm', 'weight'], [['Hollow Creek Farm', 'Maple Ridge Farm', 'Stony Brook Farm', 'Twin Oaks Farm', 'Red Barn Farm', 'Cedar Lane Farm'], ['ninety pounds', 'one hundred pounds', 'one hundred twenty pounds', 'one hundred fifty pounds', 'two hundred pounds']]],
+  ['library book', 'the returns cart', ['branch', 'genre'], [['the Main branch', 'the Elm branch', 'the Hilltop branch', 'the Riverside branch', 'the Northgate branch', 'the Parkview branch'], ['a mystery', 'a biography', 'a cookbook', 'a western', 'a romance', 'a travel guide']]],
+  ['pocketknife', 'the hardware counter', ['handle', 'blades'], [['a bone handle', 'a walnut handle', 'a pearl handle', 'a horn handle', 'a steel handle', 'a birch handle'], ['one blade', 'two blades', 'three blades', 'four blades', 'five blades']]],
+  ['telescope', 'the observatory log', ['spot', 'eyepiece'], [['the north dome', 'the south dome', 'the east dome', 'the west dome', 'the roof deck', 'the field pad'], ['a 10mm eyepiece', 'a 15mm eyepiece', 'a 20mm eyepiece', 'a 25mm eyepiece', 'a 32mm eyepiece']]],
+  ['baseball card', 'the collector binder', ['team', 'year'], [['the Foxes', 'the Herons', 'the Comets', 'the Pilots', 'the Owls', 'the Badgers'], ['1952', '1961', '1968', '1975', '1983']]],
+  ['wedding cake', 'the bakery order book', ['tiers', 'flavor', 'topper'], [['two tiers', 'three tiers', 'four tiers', 'five tiers', 'six tiers'], ['vanilla', 'lemon', 'chocolate', 'almond', 'carrot', 'red velvet'], ['fresh flowers', 'a sugar bird', 'a monogram']]],
+  ['campfire song', 'the camp songbook', ['cabin', 'instrument'], [['Cabin Birch', 'Cabin Pine', 'Cabin Aspen', 'Cabin Spruce', 'Cabin Willow', 'Cabin Larch'], ['a guitar', 'a ukulele', 'a banjo', 'a harmonica', 'a fiddle']]],
+  ['scarecrow', 'the county fair program', ['field', 'hat'], [['the corn field', 'the bean field', 'the squash field', 'the wheat field', 'the pea field', 'the oat field'], ['a straw hat', 'a top hat', 'a bowler', 'a cowboy hat', 'a sun bonnet']]],
+  ['robot', 'the science fair list', ['school', 'sensor'], [['Oak Hill School', 'Bayview School', 'Westbrook School', 'Fairmont School', 'Kingsley School', 'Lakeside School'], ['a light sensor', 'a sound sensor', 'a touch sensor', 'a heat sensor', 'a tilt sensor']]],
+  ['chili pot', 'the cook-off scorecard', ['booth', 'beans'], [['booth one', 'booth two', 'booth three', 'booth four', 'booth five', 'booth six'], ['pinto beans', 'black beans', 'kidney beans', 'navy beans', 'no beans']]],
+  ['surfboard', 'the rental rack', ['beach', 'fins'], [['North Beach', 'Shell Beach', 'Coral Beach', 'Sandy Point', 'Driftwood Cove', 'Seal Cove'], ['a single fin', 'a twin fin', 'a thruster', 'a quad fin', 'a five fin']]],
+  ['parade float', 'the parade lineup', ['club', 'theme'], [['the Rotary Club', 'the Lions Club', 'the garden club', 'the chess club', 'the rowing club', 'the drama club'], ['a dragon', 'a pirate ship', 'a castle', 'a rocket', 'a jungle']]],
+  ['gingerbread house', 'the holiday contest list', ['baker', 'roof', 'door'], [['Abbott', 'Barlow', 'Carver', 'Donnelly', 'Ellery', 'Fenwick'], ['a candy cane roof', 'a gumdrop roof', 'a wafer roof', 'a frosting roof', 'a pretzel roof'], ['a licorice door', 'a cookie door', 'a chocolate door']]],
+  ['sled dog', 'the kennel chart', ['team', 'harness'], [['the Aurora team', 'the Glacier team', 'the Tundra team', 'the Summit team', 'the Frost team', 'the Timber team'], ['a red harness', 'a blue harness', 'a green harness', 'an orange harness', 'a black harness']]],
+  ['birdhouse', 'the craft fair table', ['wood', 'roof'], [['cedar', 'pine', 'oak', 'birch', 'cherry', 'redwood'], ['a tin roof', 'a shingle roof', 'a moss roof', 'a copper roof', 'a thatched roof']]],
+  ['piano', 'the tuning schedule', ['room', 'finish'], [['the recital hall', 'the chapel', 'the library', 'the ballroom', 'the music room', 'the lobby'], ['a black finish', 'a walnut finish', 'a white finish', 'a mahogany finish', 'a cherry finish']]],
+  ['mailbox', 'the postal route card', ['road', 'post'], [['Elm Road', 'Fox Road', 'Mill Road', 'Pond Road', 'Ridge Road', 'Orchard Road'], ['a wooden post', 'a brick post', 'a steel post', 'a stone post', 'a fence post']]],
+  ['cookie tin', 'the bake sale table', ['family', 'cookie'], [['the Quinn family', 'the Ortiz family', 'the Patel family', 'the Novak family', 'the Hughes family', 'the Lindqvist family'], ['snickerdoodles', 'shortbread', 'gingersnaps', 'oatmeal raisin', 'sugar cookies', 'macaroons']]],
+  ['ice sculpture', 'the winter festival map', ['plaza', 'subject'], [['Town Plaza', 'River Plaza', 'Bell Plaza', 'Union Plaza', 'Harbor Plaza', 'Market Plaza'], ['a swan', 'a bear', 'an owl', 'a horse', 'a dolphin']]],
+  ['holiday wreath', 'the greenhouse order list', ['greens', 'bow', 'accent'], [['balsam fir', 'white pine', 'cedar', 'juniper', 'magnolia leaves', 'eucalyptus'], ['a red bow', 'a gold bow', 'a plaid bow', 'a velvet bow', 'a burlap bow'], ['holly berries', 'cranberries', 'pine cones']]],
+  ['ice skate', 'the rink rental desk', ['rink', 'blade'], [['the indoor rink', 'the pond rink', 'the park rink', 'the river rink', 'the arena rink', 'the school rink'], ['a figure blade', 'a hockey blade', 'a speed blade', 'a recreational blade', 'a touring blade']]],
+  ['mitten', 'the lost and found bin', ['color', 'pattern'], [['red', 'navy', 'green', 'gray', 'white', 'yellow'], ['snowflakes', 'stripes', 'reindeer', 'argyle', 'polka dots']]],
+  ['pie', 'the diner case', ['crust', 'filling'], [['a lattice crust', 'a crumb crust', 'a graham crust', 'a double crust', 'a pastry crust'], ['apple', 'cherry', 'pecan', 'pumpkin', 'blueberry', 'peach']]],
+  ['stocking', 'the mantel row', ['yarn', 'cuff'], [['red yarn', 'green yarn', 'white yarn', 'gold yarn', 'blue yarn', 'silver yarn'], ['a fur cuff', 'a lace cuff', 'a velvet cuff', 'a knit cuff', 'a plaid cuff']]],
+  ['gift', 'the gift table', ['paper', 'ribbon'], [['striped paper', 'plaid paper', 'starry paper', 'plain red paper', 'brown paper', 'snowflake paper'], ['a gold ribbon', 'a red ribbon', 'a green ribbon', 'a silver ribbon', 'a white ribbon']]],
+  ['board game', 'the game shelf', ['shelf', 'pieces'], [['the top shelf', 'the second shelf', 'the third shelf', 'the bottom shelf', 'the corner shelf', 'the window shelf'], ['wooden pieces', 'plastic pieces', 'metal pieces', 'glass pieces', 'cardboard pieces']]],
+  ['diorama', 'the museum workshop list', ['habitat', 'animal', 'scale'], [['a desert', 'a rainforest', 'a tundra', 'a coral reef', 'a savanna', 'a wetland'], ['a fox', 'a heron', 'a tortoise', 'a lynx', 'a bison'], ['a small scale', 'a medium scale', 'a large scale']]],
+  ['sweater', 'the knitting circle log', ['knitter', 'stitch'], [['Agnes', 'Beatrice', 'Clara', 'Dorothy', 'Edith', 'Florence'], ['a cable stitch', 'a seed stitch', 'a rib stitch', 'a basket stitch', 'a garter stitch']]],
+  ['calendar', 'the print shop order', ['photos', 'paper'], [['lighthouses', 'barns', 'dogs', 'waterfalls', 'trains', 'sunsets'], ['glossy paper', 'matte paper', 'linen paper', 'recycled paper', 'heavy card stock']]],
+  ['party hat', 'the party supply box', ['color', 'tassel'], [['gold', 'silver', 'red', 'blue', 'green', 'black'], ['a fringe tassel', 'a pom tassel', 'a star tassel', 'a ribbon tassel', 'a foil tassel']]],
+  ['firework', 'the launch order', ['barge', 'burst'], [['barge one', 'barge two', 'barge three', 'barge four', 'barge five', 'barge six'], ['a peony', 'a brocade', 'a chrysanthemum', 'a comet', 'a crossette']]],
 ];
 
 const KEYS = ['a', 'b', 'c'];

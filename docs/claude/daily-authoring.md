@@ -937,6 +937,139 @@ from 2026-10-12; Shards fails a board that reprints an earlier board's letter gr
 hearsay, docket, suffice, venn, encore and bracket verifiers, and new variety checks in
 verify-cipher (word ceiling, shared words, stems, weekly climb) and verify-venn.
 
+### The 2026-11-12 restock, lane-d: twelve content banks to Dec 31
+
+Bracket, crux, emcee, flank, hearsay, herd, niche, outrank, suffice and venn were extended to
+2026-12-31 append-only (encore and judges in the same lane; see its report). What each needed, so
+the next restock starts informed:
+
+- **Pools grown, never rules loosened.** Niche gained attributes in every universe (closed rosters
+  asserted by size in verify-niche: Soviet republics, Mediterranean coast, ASEAN, Winter Olympics
+  hosts, left-hand traffic, four border attributes, NBA/NHL states, Canadian acts; plus derived year
+  windows and complements). Crux gained twelve categories with annotated readings. Venn's president
+  table gained `house` and `ohio`. Outrank gained 22 slates, herd 222 questions, hearsay 31 domains.
+- **New check, niche `NESTED_FROM = '2026-12-01'`:** no row x column cell whose one attribute implies
+  the other (it is one attribute with two labels). Enforced in gen-niche and verify-niche; it caught
+  43 such cells in the first December draft.
+- **Outrank ceilings are per segment from 2026-12-01:** category 8 and shape 4 per 62 boards, as a
+  rate (`OUTRANK_SEGMENTS` in verify-daily-banks; the generator scales the same way), and spent slates
+  in outrank-slates.mjs are skipped rather than failing the run.
+- **Next-restock warnings:** suffice's MOD scenario 0 templates sit at the 4% cap (div10 51 of 51),
+  so MOD needs new scenarios in app/suffice/engine.js; Bracket's lake pool cannot field a board any
+  more (26 rows); niche's states and animals universes are near their attribute caps again; herd has
+  28 questions left; outrank 1 unbanked slate; hearsay and outrank need new authored domains/slates
+  every segment by design.
+
+### The 2026-11-12 restock, lane-f: feud and outwit to Dec 31
+
+Both crowd banks had banked every prompt in their pools, so both pools were GROWN by authoring:
+155 new Feud prompts (scripts/feud-prompts.mjs, 1,246 buckets, 4,005 aliases, every obvious US
+answer probed through lib/feud-match.js) and 40 Road Less Traveled, 43 Meeting Point, 43 Rare Bird
+and 42 Herd entries for Outwit (scripts/outwit-prompts.mjs; every Herd truth checked against a
+named source). What changed in the machinery, so the next restock starts informed:
+
+- **Both prompt pools are append-only and SPENT entries are skipped.** gen-feud and gen-outwit drop
+  any pool entry the --avoid bank already carries instead of failing on it as a repeat. A segment's
+  corpus is simply the unbanked entries; for Feud it must still be exactly days x 5.
+- **Ceilings are per segment, as a rate, from 2026-12-01.** Feud's (category, label, hot label,
+  house ladder, runaway ladder) scale to segment size from the 310-prompt base (`FEUD_SEGMENTS` in
+  verify-feud); Outwit's house-vector and per-slot category ceilings scale from 62 boards
+  (`OUTWIT_SEGMENTS` in verify-daily-banks). Outwit's option (5) and Meeting Point favorite (2)
+  ceilings stay BANK-WIDE from 2026-09-30, and gen-outwit now seeds them from the bank.
+- **New check, near repeats (from 2026-12-01):** scripts/crowd-near-repeat.mjs compares content
+  words, and both generators and both verifiers refuse a prompt that re-asks a banked one in other
+  words (Outwit compares within a prompt type). It caught a December draft re-asking "Name
+  something you'd find under a couch cushion." and "Name a kind of weather." It is a screen: still
+  read each new prompt against its nearest banked neighbors by eye.
+- **Withdrawn, never banked:** nine Outwit Herd entries whose truth was a range or an estimate
+  (blink rate, taste buds, cat sleep and the like). A Herd reveal prints a fact.
+- **Fixes pass after content review (same day).** The reviewer found 124 defects. All are fixed in
+  the source pools and December was regenerated; the deal (which prompt lands on which day) did not
+  move, except where a swap was made on purpose to clear a same-day spoiler.
+  - The near-repeat screen gained an ANSWER-overlap test for Feud (`answerNearRepeat`: at least 6
+    labels of each board land in the other through the real matcher, and at least 85% of the
+    smaller board). It catches the same board asked under another question ("glove compartment"
+    against "glovebox"). For both games, the prompt-hanging verbs (take, pick, choose, grab) are
+    now stop words. On the December draft the tightened screen flagged glove compartment,
+    messy-first-date food, burrito-vs-taco, fireplace drinks and the Outwit holiday cookie tin; all
+    were replaced.
+  - Feud's 9-bucket ladder family gained two flat and three mid shapes.
+- **No matcher-side rule for the shared-last-word class** ("dollar store" landing in Macy's, "pasta
+  maker" in Waffle maker, "Last Christmas" in White Christmas). lib/feud-match.js scores every live
+  board and the stored feud_picks, so changing its head-noun tier would re-bucket answers on frozen
+  boards. Fix it bank-side instead: drop the generic two-word alias ("department store"), or keep
+  the word in one bucket only. The known residuals are named in the lane-f fixes report.
+- **Next-restock warnings:** Feud label ceilings at 155 prompts are 2 (1 for a label the bank runs
+  10+ times: pizza, coffee, ice cream, snacks, popcorn, soup, cookies, chips, cheese, cereal, "check
+  their phone", "look at their phone"), so the obvious answer for some prompts is already spent;
+  pick prompts whose answers are new. Outwit has 13 unbanked Road Less Traveled, 16 Meeting Point, 16
+  Rare Bird and 20 Herd entries left over (a 31-day segment needs 31/31/35/31), and Feud has none,
+  so January needs a full Feud authoring pass and a top-up for Outwit.
+
+### The 2026-11-12 restock, lane-h: Listed, Redact, Stet and Judges to Dec 31
+
+All four extended append-only to 2026-12-31 (31 boards each). The authored content (Listed, Redact,
+Stet) needs the separate content review before its ledger entry moves; Judges is solver-proved.
+
+- **Stet: segments.** `scripts/gen-stet.mjs` now takes `--segment <first date>` (default the newest)
+  with `--check` (the bank carries the rendered segment byte for byte) and `--append` (refuses unless
+  the bank ends the day before the segment, with the number before it). The first segment stays in
+  gen-stet's own DAYS table; December is `scripts/stet-days-2026-12.mjs`. Same per-segment ceilings.
+  135 errors (41 grammar), 40 clean of 163 sentences, homophone 58.5%. One FORCED_PAIRS entry added
+  (`jam`/`jamb`, the silent-b homophone the phonetic key misses). Pair inventory after this run: 698
+  banked (see the pair inventory warning below). No agreement slip may turn on a collective noun
+  (British copy takes either number: the council are).
+- **Listed: `scripts/gen-listed.mjs <segment.mjs> [--check|--append]`**, a new appender for
+  hand-authored segments: derives num/quizId/live/dateLabel and the Sunday-only `sunday: true`
+  field, enforces 8 items (9 on Sundays), refuses to append twice. December is
+  `scripts/listed-boards-2026-12.mjs`, with its sources listed per board in the header. Boards whose
+  figures keep moving rank only RETIRED players or members (touchdowns, strikeouts, senators) or
+  name a dated source; the Nintendo board leaves out the Switch, still on sale.
+- **Redact: lane directories per run.** `gen-redact.mjs <laneDir>` already took a lane directory;
+  December is `scripts/redact-lanes-2026-12/` (the old `scripts/redact-lanes/` still checks with
+  `--check --start 61`, the new `--start N` for a lane set that is not the newest). gen-redact now
+  refuses an append whose subjects are already banked. verify-redact BANK_SIZE 117 -> 148.
+- **Redact `avoid` dates (content review, 2026-11-12).** A lane article may carry
+  `avoid: ['YYYY-MM-DD', ...]` (with a comment naming the colliding games): dates on which another
+  daily prints its title words, or keys an answer its text names (Montgomery on a Rosa Parks day,
+  the Parthenon on an Acropolis day, a Scram or Garble word the article prints). gen-redact then
+  fills each band by backtracking over the seeded shuffle so no article lands on an avoided date,
+  and dies if no placement exists; with no `avoid` anywhere in a pool it places exactly as before
+  (the old lanes still `--check --start 61`). The same review moved Listed's Christmas songs board
+  from 12-25 to 12-22 (Dating 12-25 keys White Christmas to 1942) rather than editing Dating.
+  Screen the other games by DATE with every bank resolved (gauntlets keep their text in
+  questions.js keyed by qid), not only the gauntlet answers: word games (Scram, Garble, Crux,
+  Arcos) spoil on a single printed word.
+- **Judges:** `judges-produce.mjs 10 60 900000 <j10.json> 20261202 8` (60 boards, 700 tries, 135s)
+  and `judges-produce.mjs 12 ... 8` with seeds 20261201 then 20261213 appending to one file (4 boards
+  in about 2.5 hours of contended CPU, one try in twenty succeeds), then `judges-append.mjs`. Every
+  December week climbs Mon < ... < Sat on the tier score (24 to 136); Sundays score 44 to 131, inside
+  the 43 to 147 range of the earlier Sundays. Start the 12x12 run first next time: it is the cliff.
+- **Pair inventory warning (Stet).** 698 wrong>fix pairs are now banked. Of the three-form irregular
+  verbs only bade/bidden, dived/dove, forsook/forsaken, got/gotten, proved/proven, showed/shown,
+  slew/slain, strewed/strewn, strode/stridden, struck/stricken, swelled/swollen and throve/thriven
+  are unspent, and most are US forms or listed as both-ways participles, so the next segment's
+  grammar slips should come from agreement, adverb and number forms.
+### The 2026-11-12 restock, lane-g: Links, Focus, Thread to Dec 31
+
+All three stay hand-authored (31 boards each, appended after 2026-11-30, no frozen board touched).
+
+- **Links:** every board has a wordplay group; Sundays carry 4 to 5 declared collisions; no category
+  name reaches the reuse cap ("Written in Roman numerals" is now at 2 of 2, so it is spent).
+- **Focus:** `FRAMES_AUDITED_THROUGH` is 122. The Commons frame audit was run with a Python port of
+  `scripts/audit-focus-frames.js` (same square crop, zooms and BLANK rule, checked against the Mount
+  Fuji #33 case) because the sandbox had no browser. Commons rate-limits the sandbox hard: allow an
+  hour for 31 photos, and expect 429s on uncached 1280px thumbnails.
+- **Thread:** 35 new threads (actors, directors, Las Vegas, Texas, Washington, D.C., dog films,
+  New Year's Eve). Films used in October and November cannot return before January (60-day rule),
+  so the next restock should lean on fresh filmographies rather than September's boards.
+- **Review round (2026-11-12):** same-day spoilers were fixed on the Thread side by moving whole
+  boards inside December (12-04 <-> 12-31, Sundays 12-20 <-> 12-27, 12-22 <-> 12-29) and by swapping
+  tiles; Focus rows were rotated within their weekday (num, quizId and live stay with the date).
+  Moving a board can break the 60-day film rule (The Poseidon Adventure, used 10-22, could not move
+  to 12-04), so rerun verify-thread after every move. Commons credits: use the Attribution line, not
+  the uploader account (Godot13 uploads are credited to Andrew Shiva).
+
 ### Sports trivia carries at most ONE basic-rules question a day (owner, 2026-09-23)
 
 A "rules-type" question asks how a sport works rather than about its history, people, teams,

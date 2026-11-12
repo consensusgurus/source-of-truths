@@ -41,6 +41,13 @@
 import { PUZZLES } from '../app/defend/puzzles.js';
 import { stubbornestReply, makeMateSearch } from '../app/defend/defense.js';
 import { parseFen as refParseFen, legalMoves as refLegalMoves, applyMove as refApplyMove } from '../app/mate/chess.js';
+import { scanUS } from './us-spellings.mjs';
+
+// The shared US-spelling screen (scripts/us-spellings.mjs) on the motif, from
+// the December 2026 restock on. BRITISH_RE below never carried "defence", and
+// gen-defend's quiet-defence template wrote it into 23 motifs before this date;
+// those boards are frozen history and are not re-gated here.
+const US_COPY_FROM = '2026-12-01';
 
 const sliceArg = (process.argv.find((a) => a.startsWith('--slice')) || '').split('=')[1]
   || (process.argv.includes('--slice') ? process.argv[process.argv.indexOf('--slice') + 1] : null);
@@ -450,6 +457,7 @@ PUZZLES.forEach((p, i) => {
   else {
     const bm2 = String(p.motif).match(BRITISH_RE);
     if (bm2) errs.push(`British spelling "${bm2[0]}" in motif`);
+    if (p.live >= US_COPY_FROM) for (const hit of scanUS(String(p.motif))) errs.push(`British form "${hit.found}" in motif (US: ${hit.us})`);
     if (p.keySan && p.motif.includes(p.keySan)) errs.push('motif names the key move in algebraic; it is shown to solvers only');
     const arr = motifPool.get(p.motif) || [];
     arr.push(p.quizId);

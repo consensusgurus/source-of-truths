@@ -4477,4 +4477,975 @@ export const PUZZLES = [
       },
     ],
   },
+  {
+    num: 138,
+    quizId: 'stet-12-1-26',
+    live: '2026-12-01',
+    dateLabel: 'December 1, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The head said pupils had pored over the old maps before the trip to the coast.",
+        errors: [],
+        cleanNote: "Clean copy: to pore over is to study closely; pour would tip a liquid.",
+      },
+      {
+        text: "The ranger said a young hair had been seen boxing in the field at dawn.",
+        errors: [{ wrong: "hair", fix: "hare", kind: 'wordchoice', note: "A hare is the animal that boxes in spring fields; hair grows on the head." }],
+      },
+      {
+        text: "The burrow council said bin collections would move to Thursdays from March.",
+        errors: [{ wrong: "burrow", fix: "borough", kind: 'wordchoice', note: "A borough is a town or district; a burrow is an animal's hole." }],
+      },
+      {
+        text: "The cost of the new floodlights are to be shared between the two clubs.",
+        errors: [{ wrong: "are", fix: "is", kind: 'grammar', note: "The subject is cost, which is singular, so the verb is is." }],
+      },
+      {
+        text: "The farm shop sold out of its slow gin a week before Christmas.",
+        errors: [{ wrong: "slow", fix: "sloe", kind: 'wordchoice', note: "Sloe gin is made from sloes, the fruit of the blackthorn." }],
+      },
+    ],
+  },
+  {
+    num: 139,
+    quizId: 'stet-12-2-26',
+    live: '2026-12-02',
+    dateLabel: 'December 2, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "A bolder the size of a car blocked the line below the cutting for six hours.",
+        errors: [{ wrong: "bolder", fix: "boulder", kind: 'wordchoice', note: "A boulder is a large rock; bolder means braver." }],
+      },
+      {
+        text: "The court heard that the money was split between his brother and he.",
+        errors: [{ wrong: "he", fix: "him", kind: 'grammar', note: "After the preposition between the pronoun takes the object form: him." }],
+      },
+      {
+        text: "Forecasters said lightning hit the church spire twice in an hour.",
+        errors: [],
+        cleanNote: "Clean copy: lightning is the flash in a storm; lightening means making lighter.",
+      },
+      {
+        text: "Analysts said the weak orders did not auger well for the spring.",
+        errors: [{ wrong: "auger", fix: "augur", kind: 'wordchoice', note: "To augur is to foretell; an auger is a tool for boring holes." }],
+      },
+      {
+        text: "The ward sister said staff had been run off their feet since the outbreak began.",
+        errors: [],
+        cleanNote: "Clean copy: had been run is the right participle, and run off their feet is plainly put.",
+      },
+    ],
+  },
+  {
+    num: 140,
+    quizId: 'stet-12-3-26',
+    live: '2026-12-03',
+    dateLabel: 'December 3, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The novel's heroin is a lighthouse keeper's daughter who rows out in a gale.",
+        errors: [{ wrong: "heroin", fix: "heroine", kind: 'wordchoice', note: "A heroine is the leading woman of a story; heroin is a drug." }],
+      },
+      {
+        text: "The two comets appears to have broken away from a single body.",
+        errors: [{ wrong: "appears", fix: "appear", kind: 'grammar', note: "Comets is plural, so the verb is appear." }],
+      },
+      {
+        text: "The first fairy to the island leaves the harbour at seven.",
+        errors: [{ wrong: "fairy", fix: "ferry", kind: 'wordchoice', note: "A ferry carries passengers across water; a fairy is a creature of folklore." }],
+      },
+      {
+        text: "The maze harvest was poor after a wet September on the clay.",
+        errors: [{ wrong: "maze", fix: "maize", kind: 'wordchoice', note: "Maize is the cereal crop; a maze is a puzzle of paths." }],
+      },
+      {
+        text: "The town's population increased rapid after the new estate opened.",
+        errors: [{ wrong: "rapid", fix: "rapidly", kind: 'grammar', note: "Increased is a verb, so it takes the adverb rapidly." }],
+      },
+    ],
+  },
+  {
+    num: 141,
+    quizId: 'stet-12-4-26',
+    live: '2026-12-04',
+    dateLabel: 'December 4, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "Police said they would not persecute the driver after viewing the footage.",
+        errors: [{ wrong: "persecute", fix: "prosecute", kind: 'wordchoice', note: "To prosecute is to bring a criminal charge; to persecute is to harass." }],
+      },
+      {
+        text: "The warden said the colony was holding its own despite a poor breeding season.",
+        errors: [],
+        cleanNote: "Clean copy: its is the possessive, with no apostrophe, and it is right here.",
+      },
+      {
+        text: "The boarders said the fire alarm had woke the whole house at three.",
+        errors: [{ wrong: "woke", fix: "woken", kind: 'grammar', note: "After had the verb takes its participle: had woken." }],
+      },
+      {
+        text: "The last train was more than an hour overdo when it pulled in.",
+        errors: [{ wrong: "overdo", fix: "overdue", kind: 'wordchoice', note: "Overdue means late; to overdo is to do too much." }],
+      },
+      {
+        text: "The fish counter had fresh place and dabs from the morning catch.",
+        errors: [{ wrong: "place", fix: "plaice", kind: 'wordchoice', note: "Plaice is a flatfish; a place is a location." }],
+      },
+    ],
+  },
+  {
+    num: 142,
+    quizId: 'stet-12-5-26',
+    live: '2026-12-05',
+    dateLabel: 'December 5, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The firm said the principal reason for the loss was the cost of energy.",
+        errors: [],
+        cleanNote: "Clean copy: principal means main, which is the sense wanted here.",
+      },
+      {
+        text: "Neither of the strikers seem fit enough to start on Saturday.",
+        errors: [{ wrong: "seem", fix: "seems", kind: 'grammar', note: "Neither is singular, so the verb is seems." }],
+      },
+      {
+        text: "The patient was sent home after a lumber puncture and a night's rest.",
+        errors: [{ wrong: "lumber", fix: "lumbar", kind: 'wordchoice', note: "Lumbar refers to the lower back; lumber is timber, or to move clumsily." }],
+      },
+      {
+        text: "The choir sang by candlelight while the bells were rung for midnight.",
+        errors: [],
+        cleanNote: "Clean copy: the bells were rung takes the participle, which is right after were.",
+      },
+      {
+        text: "By noon the rain was teaming down and the ford was closed.",
+        errors: [{ wrong: "teaming", fix: "teeming", kind: 'wordchoice', note: "Teeming means pouring heavily; teaming means forming a team." }],
+      },
+    ],
+  },
+  {
+    num: 143,
+    quizId: 'stet-12-6-26',
+    live: '2026-12-06',
+    dateLabel: 'December 6, 2026',
+    sunday: true,
+    items: [
+      {
+        text: "The coastguard said the yacht had sunk in calm water a mile off the point.",
+        errors: [],
+        cleanNote: "Clean copy: after had the participle sunk is right; sank would be the error.",
+      },
+      {
+        text: "Each of the three bridges require a full inspection before the road reopens.",
+        errors: [{ wrong: "require", fix: "requires", kind: 'grammar', note: "Each is singular, so the verb is requires." }],
+      },
+      {
+        text: "The pub's winter ail is brewed with honey, and its pickled beat comes from the next farm.",
+        errors: [{ wrong: "ail", fix: "ale", kind: 'wordchoice', note: "Ale is beer; to ail is to be ill." }, { wrong: "beat", fix: "beet", alts: ["beetroot"], kind: 'wordchoice', note: "Beet is the root vegetable; to beat is to strike or defeat." }],
+      },
+      {
+        text: "Prospectors in the 1850s followed a rich load of tin into the hillside.",
+        errors: [{ wrong: "load", fix: "lode", kind: 'wordchoice', note: "A lode is a vein of ore; a load is something carried." }],
+      },
+      {
+        text: "The defendant admitted he had became careless at the wheel, and detectives deducted from the tyre marks that he was speeding.",
+        errors: [{ wrong: "became", fix: "become", kind: 'grammar', note: "After had the verb takes its participle: had become." }, { wrong: "deducted", fix: "deduced", kind: 'wordchoice', note: "To deduce is to work something out by reasoning; to deduct is to subtract." }],
+      },
+      {
+        text: "The surgeon said the patient had borne the long operation remarkably well.",
+        errors: [],
+        cleanNote: "Clean copy: borne is the participle of bear, as in had borne the strain.",
+      },
+      {
+        text: "The curator said the frescoes had been cleaned careless in the 1950s, and that the statutory in the courtyard was next.",
+        errors: [{ wrong: "careless", fix: "carelessly", kind: 'grammar', note: "Cleaned is a verb, so it takes the adverb carelessly." }, { wrong: "statutory", fix: "statuary", kind: 'wordchoice', note: "Statuary means statues taken together; statutory means set by law." }],
+      },
+    ],
+  },
+  {
+    num: 144,
+    quizId: 'stet-12-7-26',
+    live: '2026-12-07',
+    dateLabel: 'December 7, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The quality of the fittings make all the difference to the price.",
+        errors: [{ wrong: "make", fix: "makes", kind: 'grammar', note: "The subject is quality, which is singular, so the verb is makes." }],
+      },
+      {
+        text: "A wail was seen breaching off the headland for the first time in a decade.",
+        errors: [{ wrong: "wail", fix: "whale", kind: 'wordchoice', note: "A whale is the sea mammal; a wail is a long cry." }],
+      },
+      {
+        text: "The replacement bus will follow the old root through the villages.",
+        errors: [{ wrong: "root", fix: "route", kind: 'wordchoice', note: "A route is a way taken; a root grows underground." }],
+      },
+      {
+        text: "The swans on the mill pond have raised five signets this year.",
+        errors: [{ wrong: "signets", fix: "cygnets", kind: 'wordchoice', note: "Cygnets are young swans; a signet is a ring or a seal." }],
+      },
+      {
+        text: "The college said fewer students had applied this year, and less money was spent on adverts.",
+        errors: [],
+        cleanNote: "Clean copy: fewer for students, who can be counted, and less for money.",
+      },
+    ],
+  },
+  {
+    num: 145,
+    quizId: 'stet-12-8-26',
+    live: '2026-12-08',
+    dateLabel: 'December 8, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The county agreed to seed control of the harbour to a local trust.",
+        errors: [{ wrong: "seed", fix: "cede", kind: 'wordchoice', note: "To cede is to hand over; to seed is to sow." }],
+      },
+      {
+        text: "The captain said the side had not been fazed by the noise of the away crowd.",
+        errors: [],
+        cleanNote: "Clean copy: fazed means unsettled; a phase is a stage.",
+      },
+      {
+        text: "The team said the samples had lain undisturbed in the freezer for thirty years.",
+        errors: [],
+        cleanNote: "Clean copy: had lain is right; lain is the participle of lie, to rest.",
+      },
+      {
+        text: "The box of old records contain the names of every nurse since 1920.",
+        errors: [{ wrong: "contain", fix: "contains", kind: 'grammar', note: "The subject is box, which is singular, so the verb is contains." }],
+      },
+      {
+        text: "Solicitors advice clients to keep every receipt until the claim is settled.",
+        errors: [{ wrong: "advice", fix: "advise", kind: 'wordchoice', note: "Advise is the verb; advice is the noun." }],
+      },
+    ],
+  },
+  {
+    num: 146,
+    quizId: 'stet-12-9-26',
+    live: '2026-12-09',
+    dateLabel: 'December 9, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "Staff acted swift when the signal box lost power.",
+        errors: [{ wrong: "swift", fix: "swiftly", kind: 'grammar', note: "Acted is a verb, so it takes the adverb swiftly." }],
+      },
+      {
+        text: "The menu offers a rib stake cooked over charcoal.",
+        errors: [{ wrong: "stake", fix: "steak", kind: 'wordchoice', note: "A steak is a cut of meat; a stake is a post or a bet." }],
+      },
+      {
+        text: "The inspectors judged each school against six criterion set out in the guidance.",
+        errors: [{ wrong: "criterion", fix: "criteria", kind: 'grammar', note: "Criteria is the plural; one criterion, six criteria." }],
+      },
+      {
+        text: "Visibility on the coast road was pour until well after ten.",
+        errors: [{ wrong: "pour", fix: "poor", kind: 'wordchoice', note: "Poor means bad or lacking; to pour is to tip out a liquid." }],
+      },
+      {
+        text: "The concert opened with a solo on the loot, an instrument older than the hall.",
+        errors: [{ wrong: "loot", fix: "lute", kind: 'wordchoice', note: "A lute is a stringed instrument; loot is stolen goods." }],
+      },
+    ],
+  },
+  {
+    num: 147,
+    quizId: 'stet-12-10-26',
+    live: '2026-12-10',
+    dateLabel: 'December 10, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "Round bails of hay were stacked three high along the hedge.",
+        errors: [{ wrong: "bails", fix: "bales", kind: 'wordchoice', note: "A bale is a bound bundle of hay; bail is money paid for a release." }],
+      },
+      {
+        text: "The firm said it had been trading in straightened circumstances for a year.",
+        errors: [{ wrong: "straightened", fix: "straitened", kind: 'wordchoice', note: "Straitened means restricted, from strait; straightened means made straight." }],
+      },
+      {
+        text: "Two questions remains for the committee before the budget is set.",
+        errors: [{ wrong: "remains", fix: "remain", kind: 'grammar', note: "Questions is plural, so the verb is remain." }],
+      },
+      {
+        text: "The harbour master said the quay would stay shut while the wall was repaired.",
+        errors: [],
+        cleanNote: "Clean copy: a quay is a landing place for boats, which is the word wanted.",
+      },
+      {
+        text: "Divers found that the choral had begun to bleach after the warm summer.",
+        errors: [{ wrong: "choral", fix: "coral", kind: 'wordchoice', note: "Coral is the reef-building animal; choral relates to a choir." }],
+      },
+    ],
+  },
+  {
+    num: 148,
+    quizId: 'stet-12-11-26',
+    live: '2026-12-11',
+    dateLabel: 'December 11, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The judge reminded counsel that the council's minutes were not in evidence.",
+        errors: [],
+        cleanNote: "Clean copy: counsel is the barrister, and the council keeps the minutes.",
+      },
+      {
+        text: "The new drug works gradual, so patients may not notice a change for weeks.",
+        errors: [{ wrong: "gradual", fix: "gradually", kind: 'grammar', note: "Works is a verb, so it takes the adverb gradually." }],
+      },
+      {
+        text: "She drove from the first tea straight into the lake.",
+        errors: [{ wrong: "tea", fix: "tee", kind: 'wordchoice', note: "A tee is where a golf hole begins; tea is a drink." }],
+      },
+      {
+        text: "The storm brought down a row of fur trees on the edge of the forest.",
+        errors: [{ wrong: "fur", fix: "fir", kind: 'wordchoice', note: "A fir is a conifer; fur is an animal's coat." }],
+      },
+      {
+        text: "The minister said the scheme would affect every household in the borough.",
+        errors: [],
+        cleanNote: "Clean copy: affect is the verb meaning to have an influence on.",
+      },
+    ],
+  },
+  {
+    num: 149,
+    quizId: 'stet-12-12-26',
+    live: '2026-12-12',
+    dateLabel: 'December 12, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The magician's slight of hand drew gasps from the front row.",
+        errors: [{ wrong: "slight", fix: "sleight", kind: 'wordchoice', note: "Sleight means skill or cunning, as in sleight of hand; slight means small." }],
+      },
+      {
+        text: "The balloon began its dissent over the moor shortly after noon.",
+        errors: [{ wrong: "dissent", fix: "descent", kind: 'wordchoice', note: "A descent is a downward movement; dissent is disagreement." }],
+      },
+      {
+        text: "The chef said the stock had been reduced slowly to concentrate its flavour.",
+        errors: [],
+        cleanNote: "Clean copy: reduced slowly takes the adverb, and its has no apostrophe.",
+      },
+      {
+        text: "The broken-down engine was toad back to the depot overnight.",
+        errors: [{ wrong: "toad", fix: "towed", kind: 'wordchoice', note: "Towed means pulled along; a toad is an amphibian." }],
+      },
+      {
+        text: "The judge said the duty fell on the directors, and the fine would be paid by they.",
+        errors: [{ wrong: "they", fix: "them", kind: 'grammar', note: "After the preposition by the pronoun takes the object form: them." }],
+      },
+    ],
+  },
+  {
+    num: 150,
+    quizId: 'stet-12-13-26',
+    live: '2026-12-13',
+    dateLabel: 'December 13, 2026',
+    sunday: true,
+    items: [
+      {
+        text: "The mare said the two draft budgets includes a freeze on parking charges.",
+        errors: [{ wrong: "mare", fix: "mayor", kind: 'wordchoice', note: "A mayor leads a council; a mare is a female horse." }, { wrong: "includes", fix: "include", kind: 'grammar', note: "Budgets is plural, so the verb is include." }],
+      },
+      {
+        text: "Forecasters warned of hail the size of marbles, though most of the county stayed dry.",
+        errors: [],
+        cleanNote: "Clean copy: hail is frozen rain; hale means healthy, as in hale and hearty.",
+      },
+      {
+        text: "The climbers began the final assent of the north face before dawn.",
+        errors: [{ wrong: "assent", fix: "ascent", kind: 'wordchoice', note: "An ascent is a climb; assent is agreement." }],
+      },
+      {
+        text: "There was not many interest in the shares, and the board said it would device a new plan in the spring.",
+        errors: [{ wrong: "many", fix: "much", kind: 'grammar', note: "Interest here cannot be counted, so it takes much, not many." }, { wrong: "device", fix: "devise", kind: 'wordchoice', note: "To devise is to plan or invent; a device is a gadget or a scheme." }],
+      },
+      {
+        text: "Two workers were serious hurt when the scaffold gave way.",
+        errors: [{ wrong: "serious", fix: "seriously", kind: 'grammar', note: "Hurt is a verb here, so it takes the adverb seriously." }],
+      },
+      {
+        text: "The head said pupils would learn their tables by wrote, and that the new textbook was a definite guide to the subject.",
+        errors: [{ wrong: "wrote", fix: "rote", kind: 'wordchoice', note: "Learning by rote is learning by repetition; wrote is the past of write." }, { wrong: "definite", fix: "definitive", kind: 'wordchoice', note: "Definitive means authoritative and final; definite means clear or certain." }],
+      },
+      {
+        text: "The orchestra's principal cellist said the new hall was a complement to the old one.",
+        errors: [],
+        cleanNote: "Clean copy: a complement completes something; a compliment is praise.",
+      },
+    ],
+  },
+  {
+    num: 151,
+    quizId: 'stet-12-14-26',
+    live: '2026-12-14',
+    dateLabel: 'December 14, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The hay meadow was moan in July and grazed by sheep in the autumn.",
+        errors: [{ wrong: "moan", fix: "mown", kind: 'wordchoice', note: "Mown is the participle of mow; a moan is a low sound." }],
+      },
+      {
+        text: "The old rails had laid under the tarmac for half a century.",
+        errors: [{ wrong: "laid", fix: "lain", kind: 'grammar', note: "Lain is the participle of lie, to rest; laid is the past of lay." }],
+      },
+      {
+        text: "The prisoner spent the night in a sell at the station.",
+        errors: [{ wrong: "sell", fix: "cell", kind: 'wordchoice', note: "A cell is a room for a prisoner; to sell is to exchange for money." }],
+      },
+      {
+        text: "The virus inflicted hundreds of pupils across the county last winter.",
+        errors: [{ wrong: "inflicted", fix: "afflicted", kind: 'wordchoice', note: "To afflict is to cause suffering to someone; to inflict is to impose something on them." }],
+      },
+      {
+        text: "The beach woods on the escarpment turn copper in October.",
+        errors: [{ wrong: "beach", fix: "beech", kind: 'wordchoice', note: "A beech is a tree; a beach is the shore." }],
+      },
+    ],
+  },
+  {
+    num: 152,
+    quizId: 'stet-12-15-26',
+    live: '2026-12-15',
+    dateLabel: 'December 15, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "Each of the lanes give swimmers a clear view of the clock.",
+        errors: [{ wrong: "give", fix: "gives", kind: 'grammar', note: "Each is singular, so the verb is gives." }],
+      },
+      {
+        text: "A crews ship carrying two thousand holidaymakers docked at the harbour for the first time since 2019.",
+        errors: [{ wrong: "crews", fix: "cruise", kind: 'wordchoice', note: "A cruise ship carries holidaymakers; crews are the people who work aboard." }],
+      },
+      {
+        text: "Support for the bypass began to wain after the costs were published.",
+        errors: [{ wrong: "wain", fix: "wane", kind: 'wordchoice', note: "To wane is to decline; a wain is a farm wagon." }],
+      },
+      {
+        text: "The bakery said its flour was milled from wheat grown within ten miles.",
+        errors: [],
+        cleanNote: "Clean copy: flour is milled from grain, and its has no apostrophe.",
+      },
+      {
+        text: "The firm went under with more than a million pounds ode to suppliers.",
+        errors: [{ wrong: "ode", fix: "owed", kind: 'wordchoice', note: "Owed is the past of owe; an ode is a poem." }],
+      },
+    ],
+  },
+  {
+    num: 153,
+    quizId: 'stet-12-16-26',
+    live: '2026-12-16',
+    dateLabel: 'December 16, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "A reverend silence fell over the hall as the first notes sounded.",
+        errors: [{ wrong: "reverend", fix: "reverent", alts: ["reverential"], kind: 'wordchoice', note: "Reverent means showing deep respect; a reverend is a member of the clergy." }],
+      },
+      {
+        text: "The Met Office said December had so far been drier than average across the south.",
+        errors: [],
+        cleanNote: "Clean copy: drier is the comparative of dry, and than is the right word.",
+      },
+      {
+        text: "The air ambulance flu the injured walker to hospital in twenty minutes.",
+        errors: [{ wrong: "flu", fix: "flew", kind: 'wordchoice', note: "Flew is the past of fly; flu is influenza." }],
+      },
+      {
+        text: "Results at the school have improved steady over five years.",
+        errors: [{ wrong: "steady", fix: "steadily", kind: 'grammar', note: "Improved is a verb, so it takes the adverb steadily." }],
+      },
+      {
+        text: "The probe's instruments had worked faultlessly for longer than its designers expected.",
+        errors: [],
+        cleanNote: "Clean copy: faultlessly is the adverb the verb needs, and its takes no apostrophe.",
+      },
+    ],
+  },
+  {
+    num: 154,
+    quizId: 'stet-12-17-26',
+    live: '2026-12-17',
+    dateLabel: 'December 17, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The minister said firms that flout the rules would face larger fines.",
+        errors: [],
+        cleanNote: "Clean copy: to flout a rule is to defy it; to flaunt is to show off.",
+      },
+      {
+        text: "The old pier was built to load iron oar onto ships bound for Wales.",
+        errors: [{ wrong: "oar", fix: "ore", kind: 'wordchoice', note: "Ore is rock containing metal; an oar is used to row." }],
+      },
+      {
+        text: "The orchard's oldest pair tree is thought to be two hundred years old.",
+        errors: [{ wrong: "pair", fix: "pear", kind: 'wordchoice', note: "A pear is the fruit and its tree; a pair is two of something." }],
+      },
+      {
+        text: "The judge said the defendant had been contemptible of the court's orders.",
+        errors: [{ wrong: "contemptible", fix: "contemptuous", kind: 'wordchoice', note: "Contemptuous means showing contempt; contemptible means deserving it." }],
+      },
+      {
+        text: "The leaders were beaten comprehensive at home, and their lead at the top is down to a single point.",
+        errors: [{ wrong: "comprehensive", fix: "comprehensively", kind: 'grammar', note: "Beaten is a verb here, so it takes the adverb comprehensively." }],
+      },
+    ],
+  },
+  {
+    num: 155,
+    quizId: 'stet-12-18-26',
+    live: '2026-12-18',
+    dateLabel: 'December 18, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The two phenomenon were first described by the same astronomer in 1610.",
+        errors: [{ wrong: "phenomenon", fix: "phenomena", kind: 'grammar', note: "Phenomena is the plural; one phenomenon, two phenomena." }],
+      },
+      {
+        text: "Roadworks will close one lain of the bypass until March.",
+        errors: [{ wrong: "lain", fix: "lane", kind: 'wordchoice', note: "A lane is a strip of road; lain is the participle of lie." }],
+      },
+      {
+        text: "The playwright said she was loath to cut a single scene.",
+        errors: [],
+        cleanNote: "Clean copy: loath means reluctant, which is the sense here; to loathe is to hate.",
+      },
+      {
+        text: "The trust said patients' records had been stored securely throughout the move.",
+        errors: [],
+        cleanNote: "Clean copy: patients' is the plural possessive, and securely is the adverb.",
+      },
+      {
+        text: "The harbour's see wall was breached in two places by the storm.",
+        errors: [{ wrong: "see", fix: "sea", kind: 'wordchoice', note: "The sea is the salt water; to see is to look." }],
+      },
+    ],
+  },
+  {
+    num: 156,
+    quizId: 'stet-12-19-26',
+    live: '2026-12-19',
+    dateLabel: 'December 19, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "Energy bills are expected to sore again in the spring.",
+        errors: [{ wrong: "sore", fix: "soar", kind: 'wordchoice', note: "To soar is to rise high; sore means painful." }],
+      },
+      {
+        text: "The badgers had dug a new sett beneath the old oak by the stream.",
+        errors: [],
+        cleanNote: "Clean copy: a sett is a badger's home, and had dug is the right form.",
+      },
+      {
+        text: "The factory makes the breakfast serial sold in most of the country's shops.",
+        errors: [{ wrong: "serial", fix: "cereal", kind: 'wordchoice', note: "Cereal is grain, or a breakfast food made from it; a serial is a story in parts." }],
+      },
+      {
+        text: "Each of the scans show that the striker's ankle has healed.",
+        errors: [{ wrong: "show", fix: "shows", kind: 'grammar', note: "Each is singular, so the verb is shows." }],
+      },
+      {
+        text: "The will settled the secession to the estate after years of dispute.",
+        errors: [{ wrong: "secession", fix: "succession", kind: 'wordchoice', note: "Succession is the passing of property or a title; secession is withdrawal from a union." }],
+      },
+    ],
+  },
+  {
+    num: 157,
+    quizId: 'stet-12-20-26',
+    live: '2026-12-20',
+    dateLabel: 'December 20, 2026',
+    sunday: true,
+    items: [
+      {
+        text: "A chilli north wind blue across the moor all afternoon.",
+        errors: [{ wrong: "chilli", fix: "chilly", kind: 'wordchoice', note: "Chilly means cold; a chilli is a hot pepper." }, { wrong: "blue", fix: "blew", kind: 'wordchoice', note: "Blew is the past of blow; blue is a colour." }],
+      },
+      {
+        text: "The guide for new parents explain the rules on uniform.",
+        errors: [{ wrong: "explain", fix: "explains", kind: 'grammar', note: "The subject is guide, which is singular, so the verb is explains." }],
+      },
+      {
+        text: "The board said its decision to sell had been a discreet one, kept from staff until Monday.",
+        errors: [],
+        cleanNote: "Clean copy: discreet means kept quiet, which is the sense; discrete means separate.",
+      },
+      {
+        text: "The heron stood stationary in the shallows for most of an hour.",
+        errors: [],
+        cleanNote: "Clean copy: stationary means not moving; stationery is paper and pens.",
+      },
+      {
+        text: "The quartet's base player has retired, and the group will hold auditions in the muse behind the hall.",
+        errors: [{ wrong: "base", fix: "bass", kind: 'wordchoice', note: "A bass is the low-pitched instrument; a base is a foundation." }, { wrong: "muse", fix: "mews", kind: 'wordchoice', note: "A mews is a row of former stables; a muse is a source of inspiration." }],
+      },
+      {
+        text: "A poll of residents suggest most want the library kept open.",
+        errors: [{ wrong: "suggest", fix: "suggests", kind: 'grammar', note: "The subject is poll, which is singular, so the verb is suggests." }],
+      },
+      {
+        text: "The court heard the driver had been forgave by the family, and both sides called the settlement equable.",
+        errors: [{ wrong: "forgave", fix: "forgiven", kind: 'grammar', note: "After had been the verb takes its participle: forgiven." }, { wrong: "equable", fix: "equitable", kind: 'wordchoice', note: "Equitable means fair and just; equable means calm and even-tempered." }],
+      },
+    ],
+  },
+  {
+    num: 158,
+    quizId: 'stet-12-21-26',
+    live: '2026-12-21',
+    dateLabel: 'December 21, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The operator said trains would run to a reduced timetable on Boxing Day.",
+        errors: [],
+        cleanNote: "Clean copy: run to a reduced timetable is plainly put, and Boxing Day takes capitals.",
+      },
+      {
+        text: "The ferry's skipper was praised for his metal in the storm.",
+        errors: [{ wrong: "metal", fix: "mettle", kind: 'wordchoice', note: "Mettle is courage and spirit; metal is a substance such as iron." }],
+      },
+      {
+        text: "The runner was treated for a bruised heal after the race.",
+        errors: [{ wrong: "heal", fix: "heel", kind: 'wordchoice', note: "The heel is the back of the foot; to heal is to get better." }],
+      },
+      {
+        text: "Each of the fossils date from the same layer of rock.",
+        errors: [{ wrong: "date", fix: "dates", kind: 'grammar', note: "Each is singular, so the verb is dates." }],
+      },
+      {
+        text: "The farmer said the flock had been brought down from the fell before the snow.",
+        errors: [],
+        cleanNote: "Clean copy: brought is the past of bring, and a fell is a hill.",
+      },
+    ],
+  },
+  {
+    num: 159,
+    quizId: 'stet-12-22-26',
+    live: '2026-12-22',
+    dateLabel: 'December 22, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The new warehouse runs efficient enough to handle the Christmas rush.",
+        errors: [{ wrong: "efficient", fix: "efficiently", kind: 'grammar', note: "Runs is a verb, so it takes the adverb efficiently." }],
+      },
+      {
+        text: "The actor was made a night in the New Year honours.",
+        errors: [{ wrong: "night", fix: "knight", kind: 'wordchoice', note: "A knight holds a title from the Crown; night is the dark hours." }],
+      },
+      {
+        text: "The court heard the burglar had forced the door jam with a crowbar.",
+        errors: [{ wrong: "jam", fix: "jamb", kind: 'wordchoice', note: "A jamb is the upright side of a door frame; jam is a preserve or a blockage." }],
+      },
+      {
+        text: "The town hall clock was installed during the rain of Queen Victoria.",
+        errors: [{ wrong: "rain", fix: "reign", kind: 'wordchoice', note: "A reign is a monarch's time on the throne; rain falls from the sky." }],
+      },
+      {
+        text: "The chicks were fully groan and left the nest within a fortnight.",
+        errors: [{ wrong: "groan", fix: "grown", kind: 'wordchoice', note: "Grown means fully developed; a groan is a low sound." }],
+      },
+    ],
+  },
+  {
+    num: 160,
+    quizId: 'stet-12-23-26',
+    live: '2026-12-23',
+    dateLabel: 'December 23, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The butcher said demand for turkeys had risen, and he had sold out of foul by Tuesday.",
+        errors: [{ wrong: "foul", fix: "fowl", kind: 'wordchoice', note: "Fowl are birds kept for meat or eggs; foul means dirty or unfair." }],
+      },
+      {
+        text: "The record for the event, set in 1968, still stand.",
+        errors: [{ wrong: "stand", fix: "stands", kind: 'grammar', note: "The subject is record, which is singular, so the verb is stands." }],
+      },
+      {
+        text: "The council said the parade would proceed as planned despite the weather.",
+        errors: [],
+        cleanNote: "Clean copy: to proceed is to go ahead; to precede is to come before.",
+      },
+      {
+        text: "The school has hired a councillor to support pupils after the fire.",
+        errors: [{ wrong: "councillor", fix: "counsellor", kind: 'wordchoice', note: "A counsellor gives advice and support; a councillor is an elected member of a council." }],
+      },
+      {
+        text: "The church's weather vein was blown off in the storm.",
+        errors: [{ wrong: "vein", fix: "vane", kind: 'wordchoice', note: "A weather vane shows which way the wind blows; a vein carries blood." }],
+      },
+    ],
+  },
+  {
+    num: 161,
+    quizId: 'stet-12-24-26',
+    live: '2026-12-24',
+    dateLabel: 'December 24, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The defendant spoke brief to confirm his name and address.",
+        errors: [{ wrong: "brief", fix: "briefly", kind: 'grammar', note: "Spoke is a verb, so it takes the adverb briefly." }],
+      },
+      {
+        text: "The carol service will be broadcast live from the cathedral, as it has been for decades.",
+        errors: [],
+        cleanNote: "Clean copy: broadcast is its own past participle, and as it has been is right.",
+      },
+      {
+        text: "The nurse said the callous on the patient's foot had been caused by tight boots.",
+        errors: [{ wrong: "callous", fix: "callus", kind: 'wordchoice', note: "A callus is hardened skin; callous means unfeeling." }],
+      },
+      {
+        text: "The last trains on Christmas Eve will leave earlier than usual.",
+        errors: [],
+        cleanNote: "Clean copy: earlier than is the right comparison, and usual is plainly put.",
+      },
+      {
+        text: "The glider came to rest on its knows in a ploughed field.",
+        errors: [{ wrong: "knows", fix: "nose", kind: 'wordchoice', note: "The nose is the front of an aircraft; knows is the present of know." }],
+      },
+    ],
+  },
+  {
+    num: 162,
+    quizId: 'stet-12-25-26',
+    live: '2026-12-25',
+    dateLabel: 'December 25, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The minister said the claim was holy without foundation.",
+        errors: [{ wrong: "holy", fix: "wholly", kind: 'wordchoice', note: "Wholly means entirely; holy means sacred." }],
+      },
+      {
+        text: "The leftovers were rapped in foil and kept for Boxing Day.",
+        errors: [{ wrong: "rapped", fix: "wrapped", kind: 'wordchoice', note: "Wrapped means covered or folded around; rapped means knocked." }],
+      },
+      {
+        text: "The lighthouse keeper's log records a gale that tore the lantern's pain out.",
+        errors: [{ wrong: "pain", fix: "pane", kind: 'wordchoice', note: "A pane is a sheet of glass; pain is hurt." }],
+      },
+      {
+        text: "Both of the finalists takes the same train to the venue.",
+        errors: [{ wrong: "takes", fix: "take", kind: 'grammar', note: "Both is plural, so the verb is take." }],
+      },
+      {
+        text: "Robins defend their territory fiercely, even in the depths of winter.",
+        errors: [],
+        cleanNote: "Clean copy: fiercely is the adverb the verb needs, and their is the possessive.",
+      },
+    ],
+  },
+  {
+    num: 163,
+    quizId: 'stet-12-26-26',
+    live: '2026-12-26',
+    dateLabel: 'December 26, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The Boxing Day fixtures drew the biggest crowds of the season so far.",
+        errors: [],
+        cleanNote: "Clean copy: drew is the right past tense of draw, and so far is plainly put.",
+      },
+      {
+        text: "Two of the wards needs extra staff over the holiday.",
+        errors: [{ wrong: "needs", fix: "need", kind: 'grammar', note: "Two of the wards is plural, so the verb is need." }],
+      },
+      {
+        text: "The retailer said its sales had risen for the third year running.",
+        errors: [],
+        cleanNote: "Clean copy: had risen takes the participle, and its takes no apostrophe.",
+      },
+      {
+        text: "The service across the boarder into Scotland resumes on Monday.",
+        errors: [{ wrong: "boarder", fix: "border", kind: 'wordchoice', note: "A border is a boundary; a boarder is a lodger, or a pupil who lives in." }],
+      },
+      {
+        text: "The pantomime villain was booed, and sweets were throne into the crowd.",
+        errors: [{ wrong: "throne", fix: "thrown", kind: 'wordchoice', note: "Thrown is the participle of throw; a throne is a royal seat." }],
+      },
+    ],
+  },
+  {
+    num: 164,
+    quizId: 'stet-12-27-26',
+    live: '2026-12-27',
+    dateLabel: 'December 27, 2026',
+    sunday: true,
+    items: [
+      {
+        text: "The new form asks each applicant for their martial status and date of birth.",
+        errors: [{ wrong: "martial", fix: "marital", kind: 'wordchoice', note: "Marital relates to marriage; martial relates to war." }],
+      },
+      {
+        text: "The village crew road across the estuary and came to the for in the final race.",
+        errors: [{ wrong: "road", fix: "rowed", kind: 'wordchoice', note: "Rowed is the past of row; a road is a way for traffic." }, { wrong: "for", fix: "fore", kind: 'wordchoice', note: "To come to the fore is to become prominent; for is a preposition." }],
+      },
+      {
+        text: "Her client had strove to repay the two victims, who were owed five and ten thousand pounds respectfully.",
+        errors: [{ wrong: "strove", fix: "striven", alts: ["strived"], kind: 'grammar', note: "After had the verb takes its participle: had striven." }, { wrong: "respectfully", fix: "respectively", kind: 'wordchoice', note: "Respectively means in the order given; respectfully means with respect." }],
+      },
+      {
+        text: "The cliff exposes several stratum of chalk and flint.",
+        errors: [{ wrong: "stratum", fix: "strata", kind: 'grammar', note: "Strata is the plural; one stratum, several strata." }],
+      },
+      {
+        text: "The farmer said the ewes were in lamb and would be housed after Christmas.",
+        errors: [],
+        cleanNote: "Clean copy: in lamb means carrying a lamb, and ewes are female sheep.",
+      },
+      {
+        text: "The east window has been complete restored, and the vale of scaffolding came down on Friday.",
+        errors: [{ wrong: "complete", fix: "completely", kind: 'grammar', note: "Restored is a verb here, so it takes the adverb completely." }, { wrong: "vale", fix: "veil", kind: 'wordchoice', note: "A veil is a covering; a vale is a valley." }],
+      },
+      {
+        text: "The hospital said the outbreak had been contained, and visiting would resume on Tuesday.",
+        errors: [],
+        cleanNote: "Clean copy: had been contained is the right form, and resume means start again.",
+      },
+    ],
+  },
+  {
+    num: 165,
+    quizId: 'stet-12-28-26',
+    live: '2026-12-28',
+    dateLabel: 'December 28, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The head said the inspection had been bought forward by a month.",
+        errors: [{ wrong: "bought", fix: "brought", kind: 'wordchoice', note: "Brought is the past of bring; bought is the past of buy." }],
+      },
+      {
+        text: "The shop, like the two cafes on the square, belong to the same family.",
+        errors: [{ wrong: "belong", fix: "belongs", kind: 'grammar', note: "The subject is shop, which is singular, so the verb is belongs." }],
+      },
+      {
+        text: "The storm is expected to peek on Tuesday night before easing.",
+        errors: [{ wrong: "peek", fix: "peak", kind: 'wordchoice', note: "To peak is to reach the highest point; to peek is to glance." }],
+      },
+      {
+        text: "The manager said morale in the squad was high despite the defeat.",
+        errors: [],
+        cleanNote: "Clean copy: morale is a group's spirit; a moral is a lesson.",
+      },
+      {
+        text: "The fox left clear prints of its pause in the fresh snow.",
+        errors: [{ wrong: "pause", fix: "paws", kind: 'wordchoice', note: "Paws are an animal's feet; a pause is a short stop." }],
+      },
+    ],
+  },
+  {
+    num: 166,
+    quizId: 'stet-12-29-26',
+    live: '2026-12-29',
+    dateLabel: 'December 29, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "Services on the coast line were cancelled because of averse weather.",
+        errors: [{ wrong: "averse", fix: "adverse", kind: 'wordchoice', note: "Adverse means unfavourable; averse means unwilling." }],
+      },
+      {
+        text: "The family went to court to rest control of the estate from a cousin.",
+        errors: [{ wrong: "rest", fix: "wrest", kind: 'wordchoice', note: "To wrest is to take by force or effort; to rest is to lie still." }],
+      },
+      {
+        text: "The trust's report, along with its two appendices, form the basis of the review.",
+        errors: [{ wrong: "form", fix: "forms", kind: 'grammar', note: "The subject is report, which is singular; along with does not make it plural." }],
+      },
+      {
+        text: "The orchestra mustard a full string section for the first time since the war.",
+        errors: [{ wrong: "mustard", fix: "mustered", kind: 'wordchoice', note: "Mustered means gathered together; mustard is a condiment." }],
+      },
+      {
+        text: "The champion won the single skull by four lengths.",
+        errors: [{ wrong: "skull", fix: "scull", alts: ["sculls"], kind: 'wordchoice', note: "A scull is an oar, or a light racing boat; a skull is the bone of the head." }],
+      },
+    ],
+  },
+  {
+    num: 167,
+    quizId: 'stet-12-30-26',
+    live: '2026-12-30',
+    dateLabel: 'December 30, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The council said the proposals would be put to a vote, and residents' views taken into account.",
+        errors: [],
+        cleanNote: "Clean copy: residents' is the plural possessive, and taken into account is plainly put.",
+      },
+      {
+        text: "Astronomers said the comet would be visible to the naked eye for a week in January.",
+        errors: [],
+        cleanNote: "Clean copy: visible to the naked eye is the set phrase, and would be is right.",
+      },
+      {
+        text: "The jam is made from wild buries picked on the common.",
+        errors: [{ wrong: "buries", fix: "berries", kind: 'wordchoice', note: "Berries are small fruits; buries is the present of bury." }],
+      },
+      {
+        text: "The smell from the factory's waste pits hang over the estate every summer, residents told the inquiry.",
+        errors: [{ wrong: "hang", fix: "hangs", kind: 'grammar', note: "The subject is smell, which is singular, so the verb is hangs." }],
+      },
+      {
+        text: "The patient was moved to intense care overnight.",
+        errors: [{ wrong: "intense", fix: "intensive", kind: 'wordchoice', note: "Intensive care is the hospital unit; intense means extreme or strong." }],
+      },
+    ],
+  },
+  {
+    num: 168,
+    quizId: 'stet-12-31-26',
+    live: '2026-12-31',
+    dateLabel: 'December 31, 2026',
+    sunday: false,
+    items: [
+      {
+        text: "The visitors eventual won on penalties after a goalless draw.",
+        errors: [{ wrong: "eventual", fix: "eventually", kind: 'grammar', note: "Won is a verb, so it takes the adverb eventually." }],
+      },
+      {
+        text: "The council said the fireworks display would last too hours and end at one.",
+        errors: [{ wrong: "too", fix: "two", kind: 'wordchoice', note: "Two is the number; too means also, or excessively." }],
+      },
+      {
+        text: "Forecasters said the new year would begin dry and cold, with a sharp frost.",
+        errors: [],
+        cleanNote: "Clean copy: begin dry and cold is plainly put, and a sharp frost is a hard one.",
+      },
+      {
+        text: "A wild bore was seen in the forest for the first time in decades.",
+        errors: [{ wrong: "bore", fix: "boar", kind: 'wordchoice', note: "A boar is a wild pig; a bore is a dull person, or a surge of tide up a river." }],
+      },
+      {
+        text: "The editor made a judicial selection of the poet's letters.",
+        errors: [{ wrong: "judicial", fix: "judicious", kind: 'wordchoice', note: "Judicious means showing good judgement; judicial relates to courts and judges." }],
+      },
+    ],
+  },
 ];

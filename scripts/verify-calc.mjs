@@ -46,8 +46,21 @@ if (src.endsWith('.json')) {
 let fails = 0, warns = 0;
 const fail = (p, m) => { console.error(`FAIL ${p.live} #${p.num}: ${m}`); fails++; };
 
+// VARIETY (added 2026-11-12 with the December restock): a target number appears
+// at most TARGET_CEILING times across the whole bank, and no grid repeats. The
+// bank through 2026-11-30 already sat at a maximum of 3, so this holds for every
+// board rather than being date-gated.
+const TARGET_CEILING = 3;
+const targetUse = new Map(), gridSeen = new Map();
 let prevDate = null, prevNum = null;
 for (const p of boards) {
+  for (const t of p.targets || []) {
+    const c = (targetUse.get(t.target) || 0) + 1; targetUse.set(t.target, c);
+    if (c > TARGET_CEILING) fail(p, `target ${t.target} is used ${c} times in the bank, ceiling ${TARGET_CEILING}`);
+  }
+  const g = (p.cells || []).join('');
+  if (gridSeen.has(g)) fail(p, `grid repeats #${gridSeen.get(g)}`);
+  gridSeen.set(g, p.num);
   const d = new Date(Date.UTC(+p.live.slice(0, 4), +p.live.slice(5, 7) - 1, +p.live.slice(8, 10)));
   const dow = d.getUTCDay(), spec = SPEC[dow];
 

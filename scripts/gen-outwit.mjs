@@ -129,7 +129,8 @@
 // SEEDING. --seed is offset by the starting board number before use, so a
 // segment banked at num 76 cannot replay the stream that produced num 1.
 import fs from 'node:fs';
-import { LEAST, MATCH, UNIQUE, HERD, CATS } from './outwit-prompts.mjs';
+import { LEAST as LEAST_ALL, MATCH as MATCH_ALL, UNIQUE as UNIQUE_ALL, HERD as HERD_ALL, CATS } from './outwit-prompts.mjs';
+import { nearRepeat } from './crowd-near-repeat.mjs';
 
 // ─────────────────────────── args ────────────────────────────────────────────
 // Accepts both house spellings: --days=62 and --days 62 (scripts/_append.mjs
@@ -162,10 +163,13 @@ const shuffle = (a) => { const b = a.slice(); for (let i = b.length - 1; i > 0; 
 // ─────────────────────────── constants ───────────────────────────────────────
 const POOL = 48;                       // house votes per prompt (the documented size)
 const SUNDAY_FROM = '2026-07-26';      // Outwit's Sunday Edition start (CLAUDE.md)
-const CAT_CEIL = 8;                    // max boards one category may fill in one slot
+// CAT_CEIL and VEC_CEIL were written for a 62-day segment; a segment of another
+// length scales them as a rate, rounded up (SEG_DAYS; see SEGMENTS below).
+const SEG_DAYS = 62;
+const CAT_CEIL = Math.max(1, Math.ceil(8 * DAYS / SEG_DAYS));   // max boards one category may fill in one slot
 const MODAL_CEIL = 2;                  // max boards one Meeting Point favorite may head
 const OPT_CEIL = 5;                    // max prompts one option string may appear in
-const VEC_CEIL = 12;                   // max boards one house count vector may shape, per slot
+const VEC_CEIL = Math.max(1, Math.ceil(12 * DAYS / SEG_DAYS)); // max boards one house count vector may shape, per slot
 const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const HERD_TAIL = " Closest to the crowd's MEDIAN guess wins, right or wrong.";
 const FRACS = [
@@ -360,6 +364,11 @@ function apportion(weights, total) {
 
 // ─────────────────────────── frozen bank ─────────────────────────────────────
 const frozenQ = new Set();
+const frozenByType = [];
+// Option strings are capped BANK-WIDE from OPT_FROM by verify-daily-banks.mjs
+// (OUTWIT_CROWD_FROM), so a new segment starts from what the bank already spent.
+const OPT_FROM = '2026-09-30';
+const frozenOpt = new Map();
 const frozenModal = new Map();
 let frozenLastFrac = null;
 for (const file of AVOID) {
@@ -367,7 +376,8 @@ for (const file of AVOID) {
   if (!mod.PUZZLES) throw new Error(`--avoid file ${file} exports no PUZZLES`);
   for (const p of mod.PUZZLES) {
     for (const pr of p.prompts) {
-      if (pr.type !== 'twothirds') frozenQ.add(pr.q.trim());
+      if (pr.type !== 'twothirds') { frozenQ.add(pr.q.trim()); frozenByType.push({ type: pr.type, q: pr.q.trim() }); }
+      if (pr.options && p.live >= OPT_FROM) for (const o of pr.options) frozenOpt.set(o, (frozenOpt.get(o) || 0) + 1);
       if (pr.type === 'match' && pr.options) {
         const c = new Array(pr.options.length).fill(0);
         for (const v of pr.house) c[v]++;
@@ -457,6 +467,33 @@ function assign(pool, need, perDay, extraOk) {
   return null;
 }
 
+// ─────────────────────────── SEGMENTS (2026-11-12, lane-f) ───────────────────
+// scripts/outwit-prompts.mjs is APPEND-ONLY: an entry the --avoid bank already
+// carries is SPENT (it is the authored source of a live board) and is skipped,
+// rather than failing the run as a repeat. Herd entries are matched on the
+// emitted text, stem plus the standard tail. A new entry must also not
+// NEAR-repeat any banked prompt of its own type, or another new entry
+// (scripts/crowd-near-repeat.mjs); the run aborts on a hit.
+const emittedQ = (e, type) => (type === 'herd' ? e.q + '?' + HERD_TAIL : e.q).trim();
+const fresh = (pool, type) => pool.filter((e) => !frozenQ.has(emittedQ(e, type)));
+const LEAST = fresh(LEAST_ALL, 'least');
+const MATCH = fresh(MATCH_ALL, 'match');
+const UNIQUE = fresh(UNIQUE_ALL, 'unique');
+const HERD = fresh(HERD_ALL, 'herd');
+{
+  const near = [];
+  for (const [pool, type] of [[LEAST, 'least'], [MATCH, 'match'], [UNIQUE, 'unique'], [HERD, 'herd']]) {
+    const stem = (q) => q.replace(HERD_TAIL, '').replace(/ Closest to the crowd.s MEDIAN guess wins.*$/, '');
+    const banked = frozenByType.filter((f) => f.type === type).map((f) => stem(f.q));
+    pool.forEach((e, i) => {
+      for (const b of banked) if (nearRepeat(e.q, b)) near.push(`${type} ${e.k}: near-repeats banked "${b}"`);
+      for (let j = 0; j < i; j++) if (nearRepeat(e.q, pool[j].q)) near.push(`${type} ${e.k}: near-repeats new "${pool[j].q}"`);
+    });
+  }
+  process.stderr.write(`gen-outwit: spent entries skipped: least ${LEAST_ALL.length - LEAST.length}, match ${MATCH_ALL.length - MATCH.length}, unique ${UNIQUE_ALL.length - UNIQUE.length}, herd ${HERD_ALL.length - HERD.length}; in play ${LEAST.length}/${MATCH.length}/${UNIQUE.length}/${HERD.length}; ceilings category ${CAT_CEIL}, vector ${VEC_CEIL}\n`);
+  if (near.length) { console.error(`gen-outwit: ${near.length} near-repeat(s), nothing written`); near.slice(0, 40).forEach((l) => console.error('  ' + l)); process.exit(1); }
+}
+
 const leastPick = assign(LEAST, DAYS, () => 1);
 const matchPick = assign(MATCH, DAYS, () => 1);
 const herdPick = assign(HERD, DAYS, () => 1);
@@ -483,7 +520,7 @@ const fracIdx = fracSchedule();
 const boards = [];
 const seenQ = new Set(frozenQ);
 const modalUse = new Map(frozenModal);
-const optUse = new Map();
+const optUse = new Map(frozenOpt);
 const errors = [];
 
 // Round-robin the variants WITHIN a family on a per-family cursor rather than on

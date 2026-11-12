@@ -2245,7 +2245,7 @@ export const DAYS = [
     { c: "Music", t: 1, q: "Which American singer and pianist broke through with the 2001 song Fallin'?", a: "Alicia Keys", d: ["India Arie", "Jill Scott", "Erykah Badu"] },
     { c: "Words & Books", t: 1, q: "Which novel series by George R. R. Martin follows the houses of Stark and Lannister?", a: "A Song of Ice and Fire", d: ["The First Law", "Malazan Book of the Fallen", "The Broken Empire"] },
     { c: "Grab Bag", t: 1, q: "What is a person who collects postage stamps called?", a: "A philatelist", d: ["A numismatist", "A cartophilist", "A deltiologist"] },
-    { c: "Geography", t: 2, q: "Sofia is the capital of which country?", a: "Bulgaria", d: ["Romania", "Serbia", "North Macedonia"] },
+    { c: "Geography", t: 2, q: "Canberra is the capital of which country?", a: "Australia", d: ["New Zealand", "Canada", "Papua New Guinea"] },
     { c: "Science", t: 2, q: "Which ore is refined to produce almost all the world's aluminum?", a: "Bauxite", d: ["Hematite", "Galena", "Cassiterite"] },
     { c: "History", t: 2, q: "Which three-day 1863 battle in Pennsylvania turned the American Civil War?", a: "Gettysburg", d: ["Shiloh", "Chancellorsville", "Fredericksburg"] },
     { c: "Sports", t: 2, q: "Which Olympic sport is contested with the foil, the epee and the saber?", a: "Fencing", d: ["Modern pentathlon", "Kendo", "Wushu"] },

@@ -35,16 +35,29 @@
 // and a piece set.
 //
 //   node scripts/gen-snug.mjs [--from 2026-09-13] [--days 78] [--seed 20260913] [--pool 8]
-import { writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+//   node scripts/gen-snug.mjs --append --until 2026-12-31 [--seed N] [--pool 8]
+//
+// --append (added 2026-11-12) is the ONLY way to extend a live bank. A whole
+// bank rerun is not prefix-stable (the climb re-pick pass draws from the rng
+// after the main loop, so a longer run re-deals earlier boards), so append mode
+// reads app/snug/puzzles.js, reserves every frozen board's region + piece set,
+// seeds the rng off the first new date (default seed = YYYYMMDD of that date,
+// never the launch seed 20260913, so the new segment cannot replay the frozen
+// stream), deals only the days after the last live board, numbers them on from
+// the last num, and splices them in before the closing `];` without touching
+// one byte of the frozen text. The climb re-pick runs on the new segment only,
+// and against the last frozen board if the segment starts mid-week.
+import { writeFileSync, readFileSync } from 'node:fs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
 const opt = (k, d) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : d; };
-const FROM = opt('--from', '2026-09-13');
-const DAYS = +opt('--days', 78);
-const SEED = +opt('--seed', 20260913);
+const APPEND = argv.includes('--append');
+let FROM = opt('--from', '2026-09-13');
+let DAYS = +opt('--days', 78);
+let SEED = +opt('--seed', 20260913);
 const POOL = +opt('--pool', 8);
 
 export const SPEC = {
@@ -63,6 +76,7 @@ function mulberry(seed) {
   return () => { s = (s + 0x6d2b79f5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 let rand = mulberry(SEED);
+const reseed = (n) => { rand = mulberry(n); };
 const rnd = (n) => Math.floor(rand() * n);
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
@@ -200,6 +214,26 @@ const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.arg
 if (isMain) {
   const seen = new Set();
   const out = [];
+  const BANK_FILE = join(here, '..', 'app', 'snug', 'puzzles.js');
+  let frozen = [], frozenSrc = '', NUM0 = 0;
+  if (APPEND) {
+    frozenSrc = readFileSync(BANK_FILE, 'utf8');
+    frozen = (await import(pathToFileURL(BANK_FILE).href)).PUZZLES;
+    const lastLive = frozen[frozen.length - 1].live;
+    const until = opt('--until', '2026-12-31');
+    FROM = isoAdd(lastLive, 1);
+    DAYS = Math.round((Date.parse(until + 'T12:00:00Z') - Date.parse(FROM + 'T12:00:00Z')) / 864e5) + 1;
+    if (DAYS <= 0) { console.log(`snug already runs to ${lastLive}`); process.exit(0); }
+    NUM0 = frozen[frozen.length - 1].num;
+    if (!argv.includes('--seed')) SEED = Number(FROM.replace(/-/g, ''));
+    if (SEED === 20260913) throw new Error('append mode must not reuse the launch seed');
+    reseed(SEED);
+    // reserve every frozen board's identity (region + piece set), same key as searchBoard
+    for (const p of frozen) {
+      const reg = []; p.mask.forEach((row, r) => [...row].forEach((ch, c) => { if (ch === '1') reg.push(K(r, c)); }));
+      seen.add(reg.sort((a, b) => a - b).join(',') + '|' + p.pieces.map(canon).sort().join(';'));
+    }
+  }
   // Pool a run of Mon..Sat candidates and hand them out by `nodes` so the week
   // climbs; Sundays are picked on their own.
   for (let i = 0; i < DAYS; i++) {
@@ -226,22 +260,32 @@ if (isMain) {
       const pick = pool[Math.min(pool.length - 1, Math.round(q * (pool.length - 1)))];
       seen.add(pick.rkey); entry = pick.board;
     }
-    out.push({ num: i + 1, quizId: quizId(live), live, dateLabel: label(live), sunday: d === 0 ? true : undefined, ...entry });
+    out.push({ num: NUM0 + i + 1, quizId: quizId(live), live, dateLabel: label(live), sunday: d === 0 ? true : undefined, ...entry });
     process.stderr.write(`${live} ${d === 0 ? 'SUN' : 'day' + d} nodes ${entry.nodes} pieces ${entry.pieces.length}\n`);
   }
   // The week climb is enforced by the verifier; enforce it here too by
   // re-picking any weekday whose nodes fall below the previous weekday's.
-  for (let i = 1; i < out.length; i++) {
+  const prevOf = (i) => (i > 0 ? out[i - 1] : frozen[frozen.length - 1]);
+  for (let i = APPEND ? 0 : 1; i < out.length; i++) {
     const d = dow(out[i].live);
     if (d === 0 || d === 1) continue;
     let guard = 0;
-    while (out[i].nodes < out[i - 1].nodes && guard++ < 80) {
+    while (out[i].nodes < prevOf(i).nodes && guard++ < 80) {
       const b = searchBoard(SPEC[d], seen); if (!b) continue;
-      if (b.board.nodes >= out[i - 1].nodes) { seen.add(b.rkey); out[i] = { ...out[i], ...b.board }; }
+      if (b.board.nodes >= prevOf(i).nodes) { seen.add(b.rkey); out[i] = { ...out[i], ...b.board }; }
     }
-    if (out[i].nodes < out[i - 1].nodes) throw new Error(`could not make ${out[i].live} climb past ${out[i - 1].live}`);
+    if (out[i].nodes < prevOf(i).nodes) throw new Error(`could not make ${out[i].live} climb past ${prevOf(i).live}`);
   }
   const lines = out.map((p) => `  ${JSON.stringify(p).replace(/"(\w+)":/g, '$1: ')},`).join('\n');
+  if (APPEND) {
+    const close = frozenSrc.lastIndexOf('];');
+    if (close < 0 || frozenSrc.slice(close).trim() !== '];') throw new Error('bank does not end with ];');
+    const head = frozenSrc.slice(0, close);
+    if (!/,\n$/.test(head)) throw new Error('unexpected bank tail');
+    writeFileSync(BANK_FILE, head + lines + '\n' + frozenSrc.slice(close));
+    console.log(`appended ${out.length} boards (${FROM}..${out[out.length - 1].live}, seed ${SEED})`);
+    process.exit(0);
+  }
   const src = `// Puzzle data for Snug, the daily fit-the-shapes puzzle. GENERATED by
 // scripts/gen-snug.mjs (seed ${SEED}); do not edit a board by hand. Imported
 // ONLY by the server page (app/snug/page.js), which filters live<=today before

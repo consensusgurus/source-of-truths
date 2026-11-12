@@ -32,6 +32,46 @@ const shuffle = (a) => { const b = a.slice(); for (let i = b.length - 1; i > 0; 
 const pickN = (a, n) => shuffle(a).slice(0, n);
 const eqP = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
+// ─────────────────────────── December 2026 quality gates ─────────────────────
+// From QUALITY_FROM (2026-12-01; boards before it are frozen and keep their text),
+// three things a content reviewer caught on the first December run:
+//   * a conditional stem printed its sentence-cased clause mid-sentence ("If Both
+//     K and M are picked, then ..."): the leading Both/Neither is lower-cased;
+//   * a conditional question whose choice is settled by its own premise ("If both
+//     K and M are picked, which must be true?" keyed "M is picked"): every choice
+//     of a conditional question must be left OPEN by the premise over the free
+//     universe (every arrangement, ignoring the rules), else the condition is
+//     redrawn;
+//   * a rule the others already imply ("K is picked" beside "At least one of N
+//     and K is picked"): dropping any one rule must change the arrangement count,
+//     else the day is resampled.
+// scripts/verify-docket.mjs asserts all three from the same date.
+export const QUALITY_FROM = '2026-12-01';
+let CUR_LIVE = '';
+const gated = () => CUR_LIVE >= QUALITY_FROM;
+const FREE = new Map();
+// The attribute count (avc) is part of a hybrid board's SHAPE, not a rule a
+// reader could do without, so the free universe keeps it and the redundancy
+// test never drops it.
+const shapeCons = (spec) => spec.cons.filter((c) => c[0] === 'avc');
+function freeUniverse(spec) {
+  const k = `${spec.k}|${spec.n}|${spec.pick || ''}|${spec.groups ? spec.groups.length : ''}|${JSON.stringify(shapeCons(spec))}`;
+  if (!FREE.has(k)) FREE.set(k, solutions({ ...spec, cons: shapeCons(spec) }));
+  return FREE.get(k);
+}
+function openUnderPremise(p, cond, spec) {
+  let t = 0, f = 0;
+  for (const s of freeUniverse(spec)) {
+    if (!testPred(cond, s, spec)) continue;
+    if (testPred(p, s, spec)) t++; else f++;
+    if (t && f) return true;
+  }
+  return false;
+}
+function hasRedundantRule(spec, nSols) {
+  return spec.cons.some((c, i) => c[0] !== 'avc' && solutions({ ...spec, cons: spec.cons.filter((_, j) => j !== i) }).length === nSols);
+}
+
 // ─────────────────────────── shape table ─────────────────────────────────────
 // weekday -> archetype, size, arrangement-count window, difficulty band.
 // Monday is the gentlest board of the week and Sunday the hardest; the bands
@@ -372,7 +412,10 @@ function qText(kind, spec, extra) {
 }
 
 // A condition rendered as a clause: "A is heard third" (no closing period).
-const condClause = (p, spec) => enPred(p, spec).replace(/\.$/, '');
+const condClause = (p, spec) => {
+  const t = enPred(p, spec).replace(/\.$/, '');
+  return gated() ? t.replace(/^(Both|Neither)\b/, (w) => w.toLowerCase()) : t;
+};
 
 // ─────────────────────────── explanatory note ────────────────────────────────
 // Machine-derived, never asserted. For an acceptability question it names the one
@@ -449,6 +492,7 @@ function buildDay(shape, theme, letters, menu, hard) {
   if (!conditionalsAreLive(spec)) return null;
   const diff = measure(spec, sols);
   if (diff < shape.diff[0] || diff > shape.diff[1]) return null;
+  if (gated() && hasRedundantRule(spec, sols.length)) return null;
 
   const questions = [];
   const pool = claimPool(spec);
@@ -474,6 +518,7 @@ function buildDay(shape, theme, letters, menu, hard) {
         if (sub.length < 2 || sub.length >= sols.length) continue;
         const ch = mintClaim(kind, spec, sols, pool, c);
         if (!ch) continue;
+        if (gated() && !ch.every((p) => openUnderPremise(p, c, spec))) continue;
         questions.push({ kind, q: qText(kind, spec, condClause(c, spec)), chk: { preds: ch, cond: c } });
         done = true; break;
       }
@@ -566,6 +611,7 @@ for (let d = firstDay; d < DAYS; d++) {
   let shape = SHAPES[dow];
   if (dow === 5 && Math.floor(d / 7) % 2 === 1) shape = FRI_ALT;
   const hard = dow === 0 || dow === 4 || dow === 5 || dow === 6;
+  CUR_LIVE = `${y}-${String(mo).padStart(2, '0')}-${String(da).padStart(2, '0')}`;
 
   let day = null, tries = 0;
   while (!day && tries++ < 60000) {

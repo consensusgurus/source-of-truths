@@ -47,7 +47,7 @@ import fs from 'node:fs';
 import * as P from './gen-bracket-pools.mjs';
 import { PUZZLES as FROZEN } from '../app/bracket/puzzles.js';
 
-const END = '2026-11-30';
+const END = '2026-12-31';
 const BANK = new URL('../app/bracket/puzzles.js', import.meta.url);
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -72,7 +72,10 @@ const TOPICS = {
 
 // One topic per day from 2026-10-14. Sundays (Oct 18, 25, Nov 1, 8, 15, 22, 29)
 // take a 32-item board, so they draw only on pools deep enough for one.
-const SCHEDULE = [
+// The 2026-10-14 to 2026-11-30 segment, now frozen in the bank; kept as the
+// record of what ran. SCHEDULE below is always the segment AFTER the bank's
+// last board.
+const SCHEDULE_2026_10_14 = [
   // from 2026-10-14 (regenerated 2026-10-12 on the recognizable-names pools)
   'river', 'k', 'box', 'taller',
   // from 2026-10-18
@@ -89,6 +92,23 @@ const SCHEDULE = [
   'country', 'yards', 'river', 'statePop', 'taller', 'hr', 'island',
   // from 2026-11-29
   'latS', 'stateArea',
+];
+
+// 2026-12-01 to 2026-12-31 (lane-d restock, 2026-11-12). Sundays Dec 6, 13, 20
+// and 27 take the 32-item pools that carried earlier Sundays (statePop,
+// country, taller, hr). No lake board: LAKE_AREA (26 rows, 3% margin) cannot
+// field sixteen while overlapping each earlier lake board by half or less.
+const SCHEDULE = [
+  // from 2026-12-01
+  'box', 'k', 'country', 'hr', 'river', 'statePop',
+  // from 2026-12-07
+  'island', 'yards', 'latN', 'box', 'taller', 'cityPop', 'country',
+  // from 2026-12-14
+  'k', 'latS', 'river', 'stateFew', 'hr', 'small', 'taller',
+  // from 2026-12-21
+  'box', 'statePop', 'stateArea', 'yards', 'latN', 'island', 'hr',
+  // from 2026-12-28
+  'river', 'cityPop', 'k', 'small',
 ];
 
 function mulberry32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }

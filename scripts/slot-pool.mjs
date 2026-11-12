@@ -848,4 +848,259 @@ export const POOL = [
       ['The Sopranos', 1999, '1999'], ['Lost', 2004, '2004'], ['Breaking Bad', 2008, '2008'], ['Game of Thrones', 2011, '2011'],
     ],
   },
+  // ── December 2026 restock (authored 2026-11-12). Every figure is frozen: a
+  //    year something happened, a definition, a regulation size, a retired
+  //    measurement, or a distance computed from lib/ping-cities.js. ────────
+  {
+    id: 'olympic-host-cities', exact: true, axis: 'Summer Olympic host cities by the year they first hosted', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'sport',
+    source: 'Year of each city\'s first Summer Games, International Olympic Committee',
+    items: [
+      ['Athens', 1896, '1896'], ['Paris', 1900, '1900'], ['St. Louis', 1904, '1904'], ['London', 1908, '1908'],
+      ['Stockholm', 1912, '1912'], ['Antwerp', 1920, '1920'], ['Amsterdam', 1928, '1928'], ['Los Angeles', 1932, '1932'],
+      ['Berlin', 1936, '1936'], ['Helsinki', 1952, '1952'], ['Melbourne', 1956, '1956'], ['Rome', 1960, '1960'],
+    ],
+  },
+  {
+    id: 'world-cup-hosts', exact: true, axis: "Men's World Cup hosts by the year they first hosted", top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'sport',
+    source: 'FIFA World Cup tournament records',
+    items: [
+      ['Uruguay', 1930, '1930'], ['Italy', 1934, '1934'], ['France', 1938, '1938'], ['Brazil', 1950, '1950'],
+      ['Switzerland', 1954, '1954'], ['Sweden', 1958, '1958'], ['Chile', 1962, '1962'], ['England', 1966, '1966'],
+      ['Mexico', 1970, '1970'], ['West Germany', 1974, '1974'], ['Argentina', 1978, '1978'], ['Spain', 1982, '1982'],
+    ],
+  },
+  {
+    id: 'ballparks-opened', exact: true, axis: 'MLB ballparks by the year they opened', top: 'Oldest', bottom: 'Newest', unit: 'year', dir: 'asc', fam: 'sport',
+    source: 'Opening season of each park, MLB club histories',
+    items: [
+      ['Fenway Park', 1912, '1912'], ['Wrigley Field', 1914, '1914'], ['Dodger Stadium', 1962, '1962'], ['Angel Stadium', 1966, '1966'],
+      ['Kauffman Stadium', 1973, '1973'], ['Oriole Park at Camden Yards', 1992, '1992'], ['Coors Field', 1995, '1995'], ['Oracle Park', 2000, '2000'],
+      ['PNC Park', 2001, '2001'], ['Nationals Park', 2008, '2008'], ['Citi Field', 2009, '2009'], ['Globe Life Field', 2020, '2020'],
+    ],
+  },
+  {
+    id: 'sports-balls-diameter', axis: 'Sports balls by diameter', top: 'Biggest', bottom: 'Smallest', unit: 'cm', dir: 'desc', fam: 'sport',
+    source: 'Regulation sizes from each sport\'s governing body, diameter worked out from circumference where that is the rule',
+    items: [
+      ['Basketball (men\'s size 7)', 24.3, '24.3 cm'], ['Soccer ball (size 5)', 22.0, '22.0 cm'], ['Volleyball', 21.0, '21.0 cm'], ['Softball (12-inch)', 9.7, '9.7 cm'],
+      ['Croquet ball', 9.2, '9.2 cm'], ['Baseball', 7.4, '7.4 cm'], ['Tennis ball', 6.7, '6.7 cm'], ['Lacrosse ball', 6.3, '6.3 cm'],
+      ['Pool ball', 5.7, '5.7 cm'], ['Golf ball', 4.27, '4.27 cm'], ['Table tennis ball', 4.0, '4.0 cm'],
+    ],
+  },
+  {
+    id: 'triple-crown-winners', exact: true, axis: 'Triple Crown winners by year', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'sport',
+    source: 'Year each horse won the Kentucky Derby, Preakness and Belmont Stakes',
+    items: [
+      ['Sir Barton', 1919, '1919'], ['Gallant Fox', 1930, '1930'], ['War Admiral', 1937, '1937'], ['Whirlaway', 1941, '1941'],
+      ['Count Fleet', 1943, '1943'], ['Assault', 1946, '1946'], ['Citation', 1948, '1948'], ['Secretariat', 1973, '1973'],
+      ['Seattle Slew', 1977, '1977'], ['Affirmed', 1978, '1978'], ['American Pharoah', 2015, '2015'], ['Justify', 2018, '2018'],
+    ],
+  },
+  {
+    id: 'canada-provinces-area', axis: 'Canadian provinces and territories by area', top: 'Largest', bottom: 'Smallest', unit: 'km²', dir: 'desc', fam: 'geo',
+    source: 'Total area including fresh water, Statistics Canada',
+    items: [
+      ['Nunavut', 2093190, '2.09 million km²'], ['Quebec', 1542056, '1.54 million km²'], ['Northwest Territories', 1346106, '1.35 million km²'], ['Ontario', 1076395, '1.08 million km²'],
+      ['British Columbia', 944735, '944,735 km²'], ['Alberta', 661848, '661,848 km²'], ['Saskatchewan', 651036, '651,036 km²'], ['Yukon', 482443, '482,443 km²'],
+      ['Newfoundland and Labrador', 405212, '405,212 km²'], ['New Brunswick', 72908, '72,908 km²'], ['Nova Scotia', 55284, '55,284 km²'], ['Prince Edward Island', 5660, '5,660 km²'],
+    ],
+  },
+  {
+    id: 'tunnels-length', axis: 'Tunnels by length', top: 'Longest', bottom: 'Shortest', unit: 'km', dir: 'desc', fam: 'geo',
+    source: 'Length of the main tunnel bore, operators\' figures',
+    items: [
+      ['Gotthard Base Tunnel, Switzerland', 57.1, '57.1 km'], ['Seikan Tunnel, Japan', 53.9, '53.9 km'], ['Channel Tunnel, England and France', 50.5, '50.5 km'], ['Lötschberg Base Tunnel, Switzerland', 34.6, '34.6 km'],
+      ['Guadarrama Tunnel, Spain', 28.4, '28.4 km'], ['Lærdal Tunnel, Norway', 24.5, '24.5 km'], ['Simplon Tunnel, Switzerland and Italy', 19.8, '19.8 km'], ['Gotthard Road Tunnel, Switzerland', 16.9, '16.9 km'],
+      ['Arlberg Road Tunnel, Austria', 14.0, '14.0 km'], ['Mont Blanc Tunnel, France and Italy', 11.6, '11.6 km'], ['Holland Tunnel, New York and New Jersey', 2.6, '2.6 km'],
+    ],
+  },
+  {
+    id: 'us-states-counties', exact: true, axis: 'US states by number of counties', top: 'Most counties', bottom: 'Fewest', unit: 'counties', dir: 'desc', fam: 'geo',
+    source: 'County counts, US Census Bureau (independent cities not counted)',
+    items: [
+      ['Texas', 254, '254'], ['Georgia', 159, '159'], ['Kentucky', 120, '120'], ['Missouri', 114, '114'],
+      ['Kansas', 105, '105'], ['Illinois', 102, '102'], ['North Carolina', 100, '100'], ['Iowa', 99, '99'],
+      ['Tennessee', 95, '95'], ['Nebraska', 93, '93'], ['Indiana', 92, '92'], ['Ohio', 88, '88'],
+    ],
+  },
+  {
+    id: 'distance-from-new-york', axis: 'World cities by distance from New York', top: 'Farthest', bottom: 'Nearest', unit: 'km', dir: 'desc', fam: 'geo',
+    source: 'Great-circle distance between city centers, from the coordinates in lib/ping-cities.js',
+    items: [
+      ['Sydney', 15989, '15,989 km'], ['Singapore', 15333, '15,333 km'], ['Johannesburg', 12840, '12,840 km'], ['Mumbai', 12538, '12,538 km'],
+      ['Tokyo', 10852, '10,852 km'], ['Cairo', 9022, '9,022 km'], ['Honolulu', 7982, '7,982 km'], ['Rome', 6890, '6,890 km'],
+      ['London', 5570, '5,570 km'], ['Reykjavik', 4203, '4,203 km'], ['Los Angeles', 3936, '3,936 km'], ['Chicago', 1144, '1,144 km'],
+    ],
+  },
+  {
+    id: 'us-states-coastline', axis: 'US states by length of coastline', top: 'Longest', bottom: 'Shortest', unit: 'miles', dir: 'desc', fam: 'geo',
+    source: 'General coastline, NOAA, The Coastline of the United States (1975)',
+    items: [
+      ['Alaska', 6640, '6,640 mi'], ['Florida', 1350, '1,350 mi'], ['California', 840, '840 mi'], ['Hawaii', 750, '750 mi'],
+      ['Louisiana', 397, '397 mi'], ['Texas', 367, '367 mi'], ['North Carolina', 301, '301 mi'], ['Oregon', 296, '296 mi'],
+      ['Maine', 228, '228 mi'], ['Massachusetts', 192, '192 mi'], ['South Carolina', 187, '187 mi'], ['Washington', 157, '157 mi'],
+    ],
+  },
+  {
+    id: 'si-prefixes', exact: true, axis: 'Metric prefixes by size', top: 'Biggest', bottom: 'Smallest', unit: 'power of ten', dir: 'desc', fam: 'science',
+    source: 'The International System of Units (SI)',
+    items: [
+      ['tera-', 12, '10¹²'], ['giga-', 9, '10⁹'], ['mega-', 6, '10⁶'], ['kilo-', 3, '10³'],
+      ['hecto-', 2, '10²'], ['deca-', 1, '10¹'], ['deci-', -1, '10⁻¹'], ['centi-', -2, '10⁻²'],
+      ['milli-', -3, '10⁻³'], ['micro-', -6, '10⁻⁶'], ['nano-', -9, '10⁻⁹'], ['pico-', -12, '10⁻¹²'],
+    ],
+  },
+  {
+    id: 'units-length', exact: true, axis: 'Units of length by size', top: 'Longest', bottom: 'Shortest', unit: 'meters', dir: 'desc', fam: 'science',
+    source: 'Definitions in meters, NIST Handbook 44 (league taken as three statute miles)',
+    items: [
+      ['League', 4828.032, '4,828 m'], ['Nautical mile', 1852, '1,852 m'], ['Mile', 1609.344, '1,609 m'], ['Kilometer', 1000, '1,000 m'],
+      ['Furlong', 201.168, '201 m'], ['Chain', 20.1168, '20.1 m'], ['Rod', 5.0292, '5.03 m'], ['Fathom', 1.8288, '1.83 m'],
+      ['Meter', 1, '1 m'], ['Yard', 0.9144, '0.914 m'], ['Foot', 0.3048, '0.305 m'], ['Inch', 0.0254, '2.54 cm'],
+    ],
+  },
+  {
+    id: 'units-volume', exact: true, axis: 'US units of volume by size', top: 'Biggest', bottom: 'Smallest', unit: 'liters', dir: 'desc', fam: 'science',
+    source: 'US customary definitions, NIST Handbook 44 (oil barrel of 42 gallons)',
+    items: [
+      ['Oil barrel', 158.987, '159 L'], ['Bushel', 35.239, '35.2 L'], ['Peck', 8.81, '8.81 L'], ['Gallon', 3.785, '3.79 L'],
+      ['Quart', 0.9464, '0.946 L'], ['Pint', 0.4732, '473 mL'], ['Cup', 0.2366, '237 mL'],
+      ['Fluid ounce', 0.02957, '29.6 mL'], ['Tablespoon', 0.01479, '14.8 mL'], ['Teaspoon', 0.00493, '4.93 mL'], ['Fluid dram', 0.003697, '3.70 mL'],
+    ],
+  },
+  {
+    id: 'number-names', exact: true, axis: 'Big numbers by how many zeros they have', top: 'Most zeros', bottom: 'Fewest', unit: 'zeros', dir: 'desc', fam: 'science',
+    source: 'US short-scale names',
+    items: [
+      ['Googol', 100, '100 zeros'], ['Vigintillion', 63, '63 zeros'], ['Decillion', 33, '33 zeros'], ['Nonillion', 30, '30 zeros'],
+      ['Octillion', 27, '27 zeros'], ['Septillion', 24, '24 zeros'], ['Sextillion', 21, '21 zeros'], ['Quintillion', 18, '18 zeros'],
+      ['Quadrillion', 15, '15 zeros'], ['Trillion', 12, '12 zeros'], ['Billion', 9, '9 zeros'], ['Million', 6, '6 zeros'],
+    ],
+  },
+  {
+    id: 'peppers-heat', axis: 'Peppers by heat', top: 'Hottest', bottom: 'Mildest', unit: 'Scoville units', dir: 'desc', fam: 'science',
+    source: 'Top of each pepper\'s published Scoville range',
+    items: [
+      ['Pure capsaicin', 16000000, '16,000,000 SHU'], ['Carolina Reaper', 2200000, '2,200,000 SHU'], ['Ghost pepper', 1041427, '1,041,427 SHU'], ['Habanero', 350000, '350,000 SHU'],
+      ["Thai bird's eye chili", 100000, '100,000 SHU'], ['Cayenne', 50000, '50,000 SHU'], ['Serrano', 23000, '23,000 SHU'], ['Jalapeño', 8000, '8,000 SHU'],
+      ['Poblano', 1500, '1,500 SHU'], ['Banana pepper', 500, '500 SHU'], ['Bell pepper', 0, '0 SHU'],
+    ],
+  },
+  {
+    id: 'liquids-density', axis: 'Liquids by density', top: 'Densest', bottom: 'Lightest', unit: 'g/cm³', dir: 'desc', fam: 'science',
+    source: 'Density near room temperature (liquid hydrogen at its boiling point)',
+    items: [
+      ['Mercury', 13.53, '13.53 g/cm³'], ['Bromine', 3.10, '3.10 g/cm³'], ['Sulfuric acid', 1.83, '1.83 g/cm³'], ['Honey', 1.42, 'about 1.42 g/cm³'],
+      ['Glycerol', 1.26, '1.26 g/cm³'], ['Seawater', 1.025, '1.025 g/cm³'], ['Water', 1.000, '1.000 g/cm³'], ['Olive oil', 0.91, '0.91 g/cm³'],
+      ['Ethanol', 0.789, '0.789 g/cm³'], ['Liquid hydrogen', 0.071, '0.071 g/cm³'],
+    ],
+  },
+  {
+    id: 'monarchs-reign', exact: true, axis: 'Monarchs by length of reign', top: 'Longest', bottom: 'Shortest', unit: 'years', dir: 'desc', fam: 'history',
+    source: 'Whole years on the throne, rounded down',
+    items: [
+      ['Louis XIV of France', 72, '72 years'], ['Elizabeth II', 70, '70 years'], ['Franz Joseph I of Austria', 67, '67 years'], ['Queen Victoria', 63, '63 years'],
+      ['Hirohito of Japan', 62, '62 years'], ['The Kangxi Emperor of China', 61, '61 years'], ['George III', 59, '59 years'], ['Henry III of England', 56, '56 years'],
+      ['Edward III of England', 50, '50 years'], ['Elizabeth I', 44, '44 years'], ['Augustus of Rome', 40, '40 years'], ['Henry VIII', 37, '37 years'],
+    ],
+  },
+  {
+    id: 'space-firsts', exact: true, axis: 'Space milestones by year', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'history',
+    source: 'Launch or landing year, NASA and Roscosmos histories',
+    items: [
+      ['Sputnik 1 reaches orbit', 1957, '1957'], ['Yuri Gagarin flies to space', 1961, '1961'], ['John Glenn orbits Earth', 1962, '1962'], ['First spacewalk', 1965, '1965'],
+      ['Apollo 11 lands on the Moon', 1969, '1969'], ['Skylab launches', 1973, '1973'], ['Voyager 1 launches', 1977, '1977'], ['Mir space station launches', 1986, '1986'],
+      ['Hubble Space Telescope launches', 1990, '1990'], ['First International Space Station module', 1998, '1998'], ['Curiosity rover lands on Mars', 2012, '2012'], ['James Webb Space Telescope launches', 2021, '2021'],
+    ],
+  },
+  {
+    id: 'aircraft-first-flight', exact: true, axis: 'Aircraft by year of first flight', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'history',
+    source: 'Year of the first flight of the type',
+    items: [
+      ['Wright Flyer', 1903, '1903'], ['Spirit of St. Louis', 1927, '1927'], ['Douglas DC-3', 1935, '1935'], ['Supermarine Spitfire', 1936, '1936'],
+      ['Boeing B-29 Superfortress', 1942, '1942'], ['Boeing 707', 1957, '1957'], ['Lockheed SR-71 Blackbird', 1964, '1964'], ['Boeing 747', 1969, '1969'],
+      ['Airbus A320', 1987, '1987'], ['Boeing 777', 1994, '1994'], ['Airbus A380', 2005, '2005'], ['Boeing 787 Dreamliner', 2009, '2009'],
+    ],
+  },
+  {
+    id: 'presidents-born', exact: true, axis: 'US presidents by year of birth', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'history',
+    source: 'Year of birth, National Archives',
+    items: [
+      ['George Washington', 1732, '1732'], ['Thomas Jefferson', 1743, '1743'], ['Abraham Lincoln', 1809, '1809'], ['Ulysses S. Grant', 1822, '1822'],
+      ['Theodore Roosevelt', 1858, '1858'], ['Franklin D. Roosevelt', 1882, '1882'], ['Dwight Eisenhower', 1890, '1890'], ['Ronald Reagan', 1911, '1911'],
+      ['John F. Kennedy', 1917, '1917'], ['Jimmy Carter', 1924, '1924'], ['Bill Clinton', 1946, '1946'], ['Barack Obama', 1961, '1961'],
+    ],
+  },
+  {
+    id: 'discoveries-year', exact: true, axis: 'Scientific discoveries by year', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'history',
+    source: 'Year of the discovery or its first publication',
+    items: [
+      ["Newton's laws of motion", 1687, '1687'], ['Oxygen', 1774, '1774'], ['Smallpox vaccine', 1796, '1796'], ['Evolution by natural selection', 1859, '1859'],
+      ['The periodic table', 1869, '1869'], ['X-rays', 1895, '1895'], ['The electron', 1897, '1897'], ['Special relativity', 1905, '1905'],
+      ['Penicillin', 1928, '1928'], ['The structure of DNA', 1953, '1953'], ['A planet around a sun-like star', 1995, '1995'], ['The Higgs boson', 2012, '2012'],
+    ],
+  },
+  {
+    id: 'speeches-year', exact: true, axis: 'Famous speeches by year', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'history',
+    source: 'Year each speech was delivered or published',
+    items: [
+      ['"Give me liberty, or give me death!" (Patrick Henry)', 1775, '1775'], ["Washington's Farewell Address", 1796, '1796'], ['"Ain\'t I a Woman?" (Sojourner Truth)', 1851, '1851'], ['The Gettysburg Address', 1863, '1863'],
+      ["Lincoln's second inaugural", 1865, '1865'], ['"We shall fight on the beaches" (Churchill)', 1940, '1940'], ['"A date which will live in infamy" (FDR)', 1941, '1941'], ['"Ask not what your country can do for you" (JFK)', 1961, '1961'],
+      ['"I Have a Dream" (Martin Luther King Jr.)', 1963, '1963'], ['"I am prepared to die" (Nelson Mandela)', 1964, '1964'], ['"Tear down this wall!" (Reagan)', 1987, '1987'],
+    ],
+  },
+  {
+    id: 'pixar-released', exact: true, axis: 'Pixar films by release year', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'US theatrical release year',
+    items: [
+      ['Toy Story', 1995, '1995'], ["A Bug's Life", 1998, '1998'], ['Toy Story 2', 1999, '1999'], ['Monsters, Inc.', 2001, '2001'],
+      ['Finding Nemo', 2003, '2003'], ['The Incredibles', 2004, '2004'], ['Cars', 2006, '2006'], ['Ratatouille', 2007, '2007'],
+      ['WALL-E', 2008, '2008'], ['Up', 2009, '2009'], ['Toy Story 3', 2010, '2010'], ['Brave', 2012, '2012'],
+    ],
+  },
+  {
+    id: 'star-wars-released', exact: true, axis: 'Star Wars films by release year', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'US theatrical release year',
+    items: [
+      ['A New Hope', 1977, '1977'], ['The Empire Strikes Back', 1980, '1980'], ['Return of the Jedi', 1983, '1983'], ['The Phantom Menace', 1999, '1999'],
+      ['Attack of the Clones', 2002, '2002'], ['Revenge of the Sith', 2005, '2005'], ['The Force Awakens', 2015, '2015'], ['Rogue One', 2016, '2016'],
+      ['The Last Jedi', 2017, '2017'], ['Solo', 2018, '2018'], ['The Rise of Skywalker', 2019, '2019'],
+    ],
+  },
+  {
+    id: 'musicals-opened', exact: true, axis: 'Broadway musicals by the year they opened', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'Year of the original Broadway opening, Internet Broadway Database',
+    items: [
+      ['Oklahoma!', 1943, '1943'], ['South Pacific', 1949, '1949'], ['West Side Story', 1957, '1957'], ['The Sound of Music', 1959, '1959'],
+      ['Fiddler on the Roof', 1964, '1964'], ['A Chorus Line', 1975, '1975'], ['Cats', 1982, '1982'], ['Les Misérables', 1987, '1987'],
+      ['The Phantom of the Opera', 1988, '1988'], ['Rent', 1996, '1996'], ['Wicked', 2003, '2003'], ['Hamilton', 2015, '2015'],
+    ],
+  },
+  {
+    id: 'consoles-released', exact: true, axis: 'Game consoles by North American release year', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'Year of the North American launch',
+    items: [
+      ['Atari 2600', 1977, '1977'], ['Nintendo Entertainment System', 1985, '1985'], ['Game Boy', 1989, '1989'], ['Super Nintendo', 1991, '1991'],
+      ['PlayStation', 1995, '1995'], ['Nintendo 64', 1996, '1996'], ['Dreamcast', 1999, '1999'], ['PlayStation 2', 2000, '2000'],
+      ['Xbox', 2001, '2001'], ['Xbox 360', 2005, '2005'], ['Wii', 2006, '2006'], ['Nintendo Switch', 2017, '2017'],
+    ],
+  },
+  {
+    id: 'songs-released', exact: true, axis: 'Hit songs by year released', top: 'Earliest', bottom: 'Latest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'Year the single was first released',
+    items: [
+      ['"Hound Dog" (Elvis Presley)', 1956, '1956'], ['"I Want to Hold Your Hand" (The Beatles)', 1963, '1963'], ['"Like a Rolling Stone" (Bob Dylan)', 1965, '1965'], ['"Respect" (Aretha Franklin)', 1967, '1967'],
+      ['"Bohemian Rhapsody" (Queen)', 1975, '1975'], ['"Stayin\' Alive" (Bee Gees)', 1977, '1977'], ['"Like a Prayer" (Madonna)', 1989, '1989'], ['"Smells Like Teen Spirit" (Nirvana)', 1991, '1991'],
+      ['"Wannabe" (Spice Girls)', 1996, '1996'], ['"Crazy in Love" (Beyoncé)', 2003, '2003'], ['"Rolling in the Deep" (Adele)', 2010, '2010'], ['"Uptown Funk" (Mark Ronson and Bruno Mars)', 2014, '2014'],
+    ],
+  },
+  {
+    id: 'magazines-founded', exact: true, axis: 'Magazines by year of first issue', top: 'Oldest', bottom: 'Newest', unit: 'year', dir: 'asc', fam: 'pop',
+    source: 'Year of the first issue',
+    items: [
+      ["Harper's", 1850, '1850'], ['The Atlantic', 1857, '1857'], ['National Geographic', 1888, '1888'], ['Vogue', 1892, '1892'],
+      ["Reader's Digest", 1922, '1922'], ['Time', 1923, '1923'], ['The New Yorker', 1925, '1925'], ['Newsweek', 1933, '1933'],
+      ['Sports Illustrated', 1954, '1954'], ['Rolling Stone', 1967, '1967'], ['People', 1974, '1974'], ['Wired', 1993, '1993'],
+    ],
+  },
 ];

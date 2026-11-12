@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-// Build the Stet extension (2026-09-30 .. 2026-11-30) and print it in the exact
-// textual shape app/stet/puzzles.js already uses.
+// Build a Stet extension segment and print it (or append it) in the exact
+// textual shape app/stet/puzzles.js already uses. The first segment
+// (2026-09-30 .. 2026-11-30) is the DAYS table below; later ones live in
+// scripts/stet-days-<YYYY-MM>.mjs (see SEGMENTS further down).
 //
 //   node scripts/gen-stet.mjs            # print the boards
 //   node scripts/gen-stet.mjs --audit    # print the variety ledger only
@@ -93,8 +95,25 @@
 // synonym-swap or dialect items to fill the gap — all three are already banned
 // above, and all three are what a tired author reaches for.
 
-const START = '2026-09-30';
-const END = '2026-11-30';
+// SEGMENTS (2026-11-12). The table below is the first segment the script built
+// (2026-09-30 .. 2026-11-30, #76 .. #137). Later segments live in their own
+// files, one per run, and are picked with --segment <first date>; the newest is
+// the default. Every ceiling below is applied per segment, the same way it was
+// applied to the first one, and verify-stet.mjs re-checks the whole bank.
+//
+//   node scripts/gen-stet.mjs [--segment 2026-12-01] [--audit | --check | --append]
+//
+//   --check   re-render the segment and confirm app/stet/puzzles.js already
+//             carries it byte for byte (nothing is written)
+//   --append  splice the segment onto the end of app/stet/puzzles.js. Refuses
+//             unless the bank ends on the day before the segment starts with
+//             the number before its first, so a frozen board can never be
+//             rewritten and a segment can never be appended twice.
+import fs from 'fs';
+import * as DEC from './stet-days-2026-12.mjs';
+const SEG_ARG = process.argv.includes('--segment') ? process.argv[process.argv.indexOf('--segment') + 1] : DEC.START;
+const START = SEG_ARG === '2026-09-30' ? '2026-09-30' : SEG_ARG === DEC.START ? DEC.START : (() => { throw new Error(`unknown --segment ${SEG_ARG}`); })();
+const END = START === DEC.START ? DEC.END : '2026-11-30';
 
 // ─────────────────────────── the authored boards ─────────────────────────────
 // One entry per day, in calendar order from START. `d` is the subject domain,
@@ -102,7 +121,7 @@ const END = '2026-11-30';
 // for grammar and 'w' for word choice/spelling, `c` the cleanNote when there
 // are no errors. Nothing here is generated: every sentence is written, and the
 // pair on the end of it was checked against the 287 already in the bank.
-export const DAYS = [
+const SEP_DAYS = [
   // ── #76 Wed 30 Sep ──────────────────────────────────────────────────────
   [
     { d: 'sci', t: "The survey found fewer than a dozen nests left on the whole cliff face.", c: 'Clean copy: fewer is right for things you can count, and nests can be counted.' },
@@ -623,7 +642,9 @@ export const DAYS = [
 // Nothing below is authored. num/quizId/dateLabel/sunday are computed from the
 // calendar, the ledger is counted, and a ceiling breach throws rather than
 // printing a bank nobody would notice was flat.
-const FIRST_NUM = 76;                 // the frozen bank ends at #75, 2026-09-29
+const DAYS = START === DEC.START ? DEC.DAYS : SEP_DAYS;
+export { DAYS };
+const FIRST_NUM = START === DEC.START ? DEC.FIRST_NUM : 76;   // #76 followed the frozen #75 (2026-09-29)
 const CEIL_TYPE = 0.15;               // share of segment errors, any one type but homophone
 const CEIL_HOMOPHONE = 0.60;          // homophone is the game's core move; the frozen bank ran 66%
 const CEIL_DOMAIN = 0.12;             // share of segment sentences, any one domain
@@ -661,7 +682,8 @@ ride rode ridden|ring rang rung|run ran run|see saw seen|shake shook shaken|show
 shrink shrank shrunk|sing sang sung|sink sank sunk|spring sprang sprung|steal stole stolen|
 stink stank stunk|swear swore sworn|swim swam swum|take took taken|tear tore torn|
 tread trod trodden|undertake undertook undertaken|weave wove woven|wear wore worn|
-withdraw withdrew withdrawn|write wrote written`
+withdraw withdrew withdrawn|write wrote written|become became become|wake woke woken|
+forgive forgave forgiven|strive strove striven`
   .split('|').map((g) => new Set(g.trim().split(/\s+/)));
 // The error TYPE for the variety ledger. Six buckets, chosen so that the two
 // axes the header cares about stay visible: what the reader must notice
@@ -827,5 +849,24 @@ const ledger = [
   ...posLines,
 ].join('\n');
 
+const BANK = new URL('../app/stet/puzzles.js', import.meta.url);
+const segText = boards.map(render).join('\n');
 if (process.argv.includes('--audit')) console.log(ledger);
-else { console.log(boards.map(render).join('\n')); console.error(ledger); }
+else if (process.argv.includes('--check')) {
+  const bank = fs.readFileSync(BANK, 'utf8');
+  if (!bank.includes(segText + '\n')) { console.error(`gen-stet --check: app/stet/puzzles.js does NOT carry segment ${START} as rendered`); process.exit(1); }
+  console.log(`gen-stet --check: segment ${START} .. ${END} (#${FIRST_NUM} .. #${FIRST_NUM + boards.length - 1}) is byte-identical in the bank`);
+} else if (process.argv.includes('--append')) {
+  const bank = fs.readFileSync(BANK, 'utf8');
+  const { PUZZLES } = await import(BANK.href);
+  const last = PUZZLES[PUZZLES.length - 1];
+  const dayBefore = new Date(`${START}T00:00:00Z`); dayBefore.setUTCDate(dayBefore.getUTCDate() - 1);
+  if (last.live !== iso(dayBefore) || last.num !== FIRST_NUM - 1) throw new Error(`refusing to append: the bank ends #${last.num} ${last.live}, the segment needs it to end #${FIRST_NUM - 1} ${iso(dayBefore)}`);
+  const close = bank.lastIndexOf('\n];');
+  if (close < 0) throw new Error('cannot find the closing bracket of PUZZLES');
+  const out = bank.slice(0, close + 1) + segText + '\n' + bank.slice(close + 1);
+  if (!out.startsWith(bank.slice(0, close + 1))) throw new Error('frozen prefix changed');
+  fs.writeFileSync(BANK, out);
+  console.log(`gen-stet --append: +${boards.length} boards #${FIRST_NUM} .. #${FIRST_NUM + boards.length - 1}, ${START} .. ${END}`);
+  console.error(ledger);
+} else { console.log(segText); console.error(ledger); }

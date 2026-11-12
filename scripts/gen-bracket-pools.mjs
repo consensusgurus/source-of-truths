@@ -22,6 +22,11 @@
 // would make a matchup unanswerable (the generator re-checks per board anyway).
 
 // ---- area, km2 --------------------------------------------------------------
+// 2026-11-12 review fixes (lane-d): Everest 8849 (2020 survey), Eiffel 330 (2022
+// antenna), Flatiron 87 (roof); removed Mauna Kea (taller than Everest base to
+// peak), Notre-Dame (towers 69 vs rebuilt spire 96), Mekong (4,350 vs 4,909 by
+// source, flips against the Congo), St. Lawrence (river vs Great Lakes system)
+// and Roy Campanella (MLB vs Negro League totals); River Congo -> Congo River.
 export const COUNTRY_AREA = [
   ['Russia', 17098246], ['Canada', 9984670], ['China', 9596961], ['Brazil', 8515767],
   ['India', 3287263], ['Argentina', 2780400], ['Kazakhstan', 2724900], ['Algeria', 2381741],
@@ -125,21 +130,21 @@ export const STATE_AREA = [
 // Brandenburg Gate) from Wikidata, 2026-10-12. Statue of Liberty and the Great
 // Pyramid are left out: both have two common heights.
 export const TALLER_BANK = [
-  ['Mount Everest', 8850], ['K2', 8611], ['Aconcagua', 6962], ['Denali', 6190],
+  ['Mount Everest', 8849], ['K2', 8611], ['Aconcagua', 6962], ['Denali', 6190],
   ['Kilimanjaro', 5895], ['Mount Elbrus', 5642], ['Mount Kenya', 5199], ['Mount Ararat', 5137],
   ['Mont Blanc', 4810], ['Matterhorn', 4478], ['Mount Whitney', 4421], ['Mount Rainier', 4392],
-  ['Pikes Peak', 4302], ['Mauna Kea', 4207], ['Grand Teton', 4199], ['Mount Fuji', 3776],
+  ['Pikes Peak', 4302], ['Grand Teton', 4199], ['Mount Fuji', 3776],
   ['Mount Hood', 3429], ['Mount Olympus', 2918], ['Half Dome', 2693], ['Mount St. Helens', 2549],
   ['Mount Kosciuszko', 2228], ['Mount Mitchell', 2037], ['Mount Washington', 1917],
   ['Ben Nevis', 1345], ['Mount Vesuvius', 1281], ['Table Mountain', 1085],
   ['Burj Khalifa', 830], ['Tokyo Skytree', 634], ['CN Tower', 553], ['One World Trade Center', 546],
   ['Taipei 101', 508], ['Petronas Towers', 452], ['Empire State Building', 443],
-  ['John Hancock Center', 344], ['Eiffel Tower', 324], ['Chrysler Building', 319],
+  ['John Hancock Center', 344], ['Eiffel Tower', 330], ['Chrysler Building', 319],
   ['Transamerica Pyramid', 260], ['Woolworth Building', 241], ['Golden Gate Bridge', 227],
   ['Trump Tower', 202], ['Gateway Arch', 192], ['Space Needle', 184], ['Sagrada Familia', 173],
   ['Washington Monument', 169], ['St. Peter\'s Basilica', 137], ['London Eye', 135],
-  ['Saturn V', 111], ['Atomium', 102], ['Big Ben', 96], ['Flatiron Building', 94],
-  ['Taj Mahal', 73], ['Notre-Dame de Paris', 69], ['Tower Bridge', 65],
+  ['Saturn V', 111], ['Atomium', 102], ['Big Ben', 96], ['Flatiron Building', 87],
+  ['Taj Mahal', 73], ['Tower Bridge', 65],
   ['Leaning Tower of Pisa', 58], ['Arc de Triomphe', 50], ['Colosseum', 48],
   ['Christ the Redeemer', 30], ['Brandenburg Gate', 26],
 ];
@@ -156,9 +161,9 @@ export const TALLER_BANK = [
 // Nile, Limpopo, Po. Added from Wikidata: Euphrates, Snake, Tennessee, Delaware,
 // Tiber, Jordan.
 export const RIVER = [
-  ['Nile', 6650], ['Yangtze River', 6300], ['Yellow River', 5464], ['River Congo', 4700],
-  ['Mekong River', 4350], ['Niger River', 4180], ['Volga', 3530], ['Yukon River', 3190],
-  ['Indus River', 3180], ['St. Lawrence River', 3058], ['Rio Grande', 3051], ['Danube', 2850],
+  ['Nile', 6650], ['Yangtze River', 6300], ['Yellow River', 5464], ['Congo River', 4700],
+  ['Niger River', 4180], ['Volga', 3530], ['Yukon River', 3190],
+  ['Indus River', 3180], ['Rio Grande', 3051], ['Danube', 2850],
   ['Euphrates', 2800], ['Zambezi', 2574], ['Ganges', 2525], ['Murray River', 2508],
   ['Arkansas River', 2364], ['Colorado River', 2330], ['Dnieper', 2285], ['Orinoco', 2140],
   ['Columbia River', 2000], ['Tigris', 1850], ['Snake River', 1735], ['Ohio River', 1579],
@@ -264,7 +269,7 @@ export const RETIRED_HR = [
   ['Joe DiMaggio', 361], ['Yogi Berra', 358], ['Tino Martinez', 339], ['George Brett', 317],
   ['Edgar Martinez', 309], ['Rickey Henderson', 297], ['Pat Burrell', 292], ['Craig Biggio', 291],
   ['Bobby Abreu', 288], ['Will Clark', 284], ['Paul O\'Neill', 281], ['Dante Bichette', 274],
-  ['Steve Garvey', 272], ['Joe Morgan', 268], ['Roy Campanella', 261], ['Derek Jeter', 260],
+  ['Steve Garvey', 272], ['Joe Morgan', 268], ['Derek Jeter', 260],
   ['Chase Utley', 259], ['Kirk Gibson', 255], ['Robin Yount', 251], ['Justin Morneau', 247],
   ['Hunter Pence', 244], ['Roberto Clemente', 240], ['Johnny Damon', 235], ['Paul Molitor', 234],
   ['Don Mattingly', 222], ['Kirby Puckett', 207], ['Pete Rose', 160], ['Joe Mauer', 143],
@@ -298,3 +303,18 @@ export const RETIRED_YARDS = [
   ['Randall Cunningham', 29979], ['Terry Bradshaw', 27989], ['Joe Namath', 27663], ['Bart Starr', 24718],
   ['Roger Staubach', 22700],
 ];
+
+// RETIRED (2026-11-12, lane-d review fixes): recognizable names that may no longer
+// be dealt because their figure depends on a definition or sources disagree, or
+// (River Congo) whose name moved to US word order. They stay listed so boards
+// already played keep passing the fame gate; verify-bracket fails any of them on
+// a board live from RETIRED_FROM. gen-bracket never reads this export.
+export const RETIRED = [
+  ['Mauna Kea', 'taller than Everest measured base to peak'],
+  ['Notre-Dame de Paris', 'towers 69 m against a rebuilt 96 m spire'],
+  ['Mekong River', '4,350 km or about 4,909 km by source, flips against the Congo'],
+  ['St. Lawrence River', '1,197 km river or 3,058 km Great Lakes system'],
+  ['Roy Campanella', 'MLB total 242 against Negro League inclusive totals'],
+  ['River Congo', 'renamed Congo River'],
+];
+

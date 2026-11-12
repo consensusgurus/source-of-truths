@@ -237,7 +237,18 @@ const AVOID = ['SUICID', 'RAPE', 'RAPIST', 'MOLEST', 'MURDER', 'CORPSE', 'SLAVE'
   'PARALYZ', 'ASYLUM', 'DEPORT', 'MIGRANT', 'REFUGEE',
   'HOMICID', 'APARTHEID', 'FASCIST', 'ANARCHIST', 'JUNTA', 'METH', 'UNBORN', 'VIRGIN', 'INDECENT',
   'SLAYER', 'GUNPOWDER', 'GUNNER', 'SMUGGL', 'TORTURE', 'HANGING', 'NOOSE',
-  'BEHEAD', 'MARTYR', 'RANSOM', 'ERECTION', 'CLEAVAGE', 'ONCOLOG', 'FETAL', 'FOETAL', 'AUTISM', 'AUTISTIC'];
+  'BEHEAD', 'MARTYR', 'RANSOM', 'ERECTION', 'CLEAVAGE', 'ONCOLOG', 'FETAL', 'FOETAL', 'AUTISM', 'AUTISTIC',
+  // December 2026 restock, read off the run's output
+  'ASSASSIN', 'KILLER', 'ABDUCT', 'RIFLE', 'REVOLVER', 'VODKA', 'OVARIAN', 'OPIOID', 'ADDICT',
+  'DEMENTIA', 'SCLEROSIS', 'SECTARIAN', 'REDSKIN', 'MENSTRU', 'BOMBING', 'DROWN',
+  'RACISM', 'GUNMEN', 'PISTOL', 'SMALLPOX', 'FETUS', 'WHISKEY', 'SEXISM', 'BULLET',
+  'ALCOHOLIC', 'CANNABIS', 'CRUCIF', 'OPIUM', 'STUPID', 'INSANE', 'CORONER',
+  'LESBIAN', 'ORIENTAL', 'KILLED', 'MARGARITA', 'SLAIN', 'FASCISM', 'UTERUS', 'COCKTAIL',
+  'GUNSHOT', 'HANDGUN', 'RACIST', 'INSANITY', 'HERPES', 'CHOLERA', 'PUBERT',
+  'LINGERIE', 'MALARIA', 'MALIGNAN', 'SHOTGUN', 'SNIPER', 'URINARY',
+  'CATHETER', 'PROSTATE', 'COFFIN', 'BIGOT', 'MILITIA', 'BLASPHEM', 'VICTIM', 'NARCOTIC', 'MEASLES', 'SATANIC', 'EXTREMIS', 'DEATH',
+  'ARSENIC', 'GANGSTER', 'CASTE', 'PELVIC', 'LESION', 'MORPHINE', 'SEXIEST', 'DRUGGED',
+  'ADULTER', 'BOMBS', 'LOOTING', 'MARTINI', 'TORTURING', 'HIJACK'];
 // Words the frequency floor calls common that are proper nouns, brands, bound
 // forms, foreign borrowings or plain not English. A Scrabble dictionary crossed
 // with a web-frequency table produces these steadily; there is no rule that
@@ -279,6 +290,23 @@ const NOTWORDS = new Set([
   'dammit', 'fart', 'gotcha', 'wannabe', 'junkie', 'cutie', 'kiddo', 'homie', 'weirdo',
   'badass', 'dunno', 'hubby', 'fella', 'google', 'caliphate', 'bloodshed', 'afghan', 'lunatic',
   'delusions', 'browns', 'godfather', 'ebook',
+  // sixth pass (December 2026 restock): a name, a brand, an apostrophe-less
+  // contraction and chat forms
+  'weiner', 'sanders', 'coke', 'theres', 'momma', 'blah', 'whoa', 'nope',
+  'brit', 'dell', 'democrat', 'psych', 'dodgers', 'vikings', 'overwatch', 'sawyer', 'monsieur', 'madame',
+  'screwed', 'forex', 'motorway', 'yeah', 'barney', 'johns', 'pascal', 'waterloo', 'wheeler', 'gore',
+  'smackdown', 'titans', 'graham', 'ford', 'thankyou', 'fellas', 'freaking',
+  'wellbeing', 'ripper', 'mommy', 'daddy', 'cricketer', 'wingers', 'slater', 'rand', 'laguna',
+  'backside', 'midland', 'whoops', 'muller', 'pence', 'pavement', 'socialist', 'unionist', 'admin',
+  'modi', 'whats', 'scum', 'woke', 'gays', 'babe', 'scooby', 'padres', 'petrol', 'mains', 'guineas',
+  'modelled', 'surrey', 'frankfurt', 'hooper', 'hawking', 'liberals', 'doggy', 'poly', 'boomers',
+  'barton', 'carter', 'spiderman', 'yorker', 'congrats', 'peeing', 'bourne', 'davenport', 'french',
+  'ness', 'vita', 'sizeable', 'bruins', 'holden', 'jedi', 'wales', 'sept', 'wont', 'lite', 'dope',
+  'warcraft', 'contra', 'cain', 'somerset', 'pharma', 'bloke', 'beck', 'android', 'feminists', 'franks', 'venetian',
+  'centenary', 'butts', 'burton', 'sears', 'semi', 'walker', 'barker', 'inter', 'alright', 'lads', 'scotch', 'brits', 'superman', 'catholic', 'ethnic', 'barrister', 'ageing', 'hurley', 'jess', 'pics', 'prof', 'socialism',
+  'haram', 'zack', 'stoner', 'centric', 'heller', 'winger',
+  'colourful', 'cutler', 'shaw', 'sims', 'stab', 'mistress', 'storey', 'railways', 'dodger',
+  'batsman', 'ebooks', 'kaiser', 'dumbest', 'smokey', 'atheists', 'reeves', 'rubbish', 'enquiries', 'kang', 'fulfil', 'democrats', 'mets', 'wicket',
 ]);
 // Given names and surnames that are also dictionary words. barter-core's NAMES
 // list is 700 entries built for a five- and seven-letter pool and this bank

@@ -14,11 +14,14 @@
 //     is at least MIN_HOP_KM and crosses a border (different country);
 //   - no city returns, as a start or a leg, within GAP_DAYS of its last use;
 //   - no leg is the same day's Ping city (same-day spoiler rule);
+//   - from TRIP_BLOCK_FROM no city in a case is the day's Passport trip city or
+//     in a country that trip can stamp (scripts/carmen-trip-block.mjs);
 //   - the suspect and the stolen object rotate so no two days in a row match.
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { LEGS_BY_DOW, TIERS_BY_DOW, kmBetween } from '../lib/carmen-engine.js';
+import { blockedOn } from './carmen-trip-block.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const POOL = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/carmen-pool.json'), 'utf8'));
@@ -80,7 +83,8 @@ export function buildDay(day, lastUsed, prev, ping) {
     const pick = (arr) => arr[Math.floor(r() * arr.length)];
     const free = (c) => !lastUsed[c.id] || (Date.parse(day) - Date.parse(lastUsed[c.id])) / 864e5 >= GAP_DAYS;
     const usedToday = new Set();
-    const startPool = POOL.filter((c) => free(c));
+    const tripOk = (c) => !blockedOn(day, `${c.name}, ${c.country}`);
+    const startPool = POOL.filter((c) => free(c) && tripOk(c));
     if (!startPool.length) continue;
     const start = pick(startPool);
     usedToday.add(start.id);
@@ -89,7 +93,7 @@ export function buildDay(day, lastUsed, prev, ping) {
     for (let i = 0; i < legsN; i++) {
       const want = tiers[i];
       const cand = POOL.filter((c) => !usedToday.has(c.id) && free(c) && c.country !== at.country
-        && kmBetween(ll(at), ll(c)) >= MIN_HOP_KM && (!ping || c.name.toLowerCase() !== ping));
+        && kmBetween(ll(at), ll(c)) >= MIN_HOP_KM && (!ping || c.name.toLowerCase() !== ping) && tripOk(c));
       let pool = cand.filter((c) => c.tier === want);
       if (!pool.length) pool = cand.filter((c) => Math.abs(c.tier - want) === 1);
       if (!pool.length) { ok = false; break; }
@@ -131,7 +135,68 @@ async function main() {
     prev = { suspect: p.suspect, stolenRaw: p.stolen.toLowerCase() };
   }
   let day = out.length ? addDays(out[out.length - 1].live, 1) : FIRST;
+  // KEEP A FUTURE CASE THAT STILL FITS (2026-11-12). A rule added later (the
+  // Passport trip block) should re-deal only the days it breaks, not every
+  // case after them: a kept case keeps the reviewed same-day checks it passed.
+  // An already-banked future case is kept when every city is still free under
+  // GAP_DAYS given the cases before it, none is the day's Ping city or on the
+  // day's Passport trip, and the cast does not repeat the day before.
+  const future = new Map(old.filter((p) => p.live > today).map((p) => [p.live, p]));
+  const fits = (p) => {
+    if (!p || p.legs.length !== LEGS_BY_DOW[dow(p.live)]) return false;
+    if (prev && (p.suspect === prev.suspect || p.stolen.toLowerCase() === prev.stolenRaw)) return false;
+    for (const x of [p.start, ...p.legs]) {
+      const id = byName.get(x.name);
+      if (!id) return false;
+      if (lastUsed[id] && (Date.parse(p.live) - Date.parse(lastUsed[id])) / 864e5 < GAP_DAYS) return false;
+      if (ping[p.live] && x.name.split(', ')[0].toLowerCase() === ping[p.live]) return false;
+      if (blockedOn(p.live, x.name)) return false;
+    }
+    return true;
+  };
+  // REPAIR IN PLACE: a kept case that breaks only the trip or same-day rule
+  // swaps just the offending city for a pool city of the same tier that fits
+  // its neighbours and is free of every other banked use within GAP_DAYS,
+  // past or future, so no other day has to move.
+  const futureUse = (id, iso) => [...future.values()].some((q) => q.live !== iso && [q.start, ...q.legs].some((x) => byName.get(x.name) === id) && Math.abs(Date.parse(q.live) - Date.parse(iso)) / 864e5 < GAP_DAYS);
+  const repair = (p) => {
+    if (!p) return null;
+    const all = [p.start, ...p.legs];
+    const bad = all.map((x, k) => (blockedOn(p.live, x.name) || (k && ping[p.live] && x.name.split(', ')[0].toLowerCase() === ping[p.live]) ? k : -1)).filter((k) => k >= 0);
+    if (!bad.length) return null;
+    const r = rng(seedOf(p.live) + 104729);
+    const out2 = all.map((x) => ({ ...x }));
+    for (const k of bad) {
+      const prevC = k ? out2[k - 1] : null, nextC = out2[k + 1] || null;
+      const want = k ? out2[k].tier : null;
+      const inCase = new Set(out2.map((x) => byName.get(x.name)));
+      const cand = POOL.filter((c) => {
+        const nm = `${c.name}, ${c.country}`;
+        if (inCase.has(c.id) || blockedOn(p.live, nm) || (ping[p.live] && c.name.toLowerCase() === ping[p.live])) return false;
+        if (k && c.tier !== want) return false;
+        if (lastUsed[c.id] && (Date.parse(p.live) - Date.parse(lastUsed[c.id])) / 864e5 < GAP_DAYS) return false;
+        if (futureUse(c.id, p.live)) return false;
+        for (const nb of [prevC, nextC]) if (nb && (nb.name.split(', ').pop() === c.country || kmBetween(nb.ll, ll(c)) < MIN_HOP_KM)) return false;
+        return true;
+      });
+      if (!cand.length) return null;
+      const c = cand[Math.floor(r() * cand.length)];
+      out2[k] = k ? { name: `${c.name}, ${c.country}`, ll: [c.lon, c.lat], id: c.id, tier: c.tier, tips: c.tips } : { name: `${c.name}, ${c.country}`, ll: [c.lon, c.lat] };
+    }
+    return { ...p, start: out2[0], legs: out2.slice(1) };
+  };
+  let kept = 0, repaired = 0;
   while (day <= TO) {
+    let keep = future.get(day);
+    if (keep && !fits(keep)) { const fixed = repair(keep); if (fixed && fits(fixed)) { keep = fixed; repaired++; future.set(day, fixed); } }
+    if (fits(keep)) {
+      const p = { ...keep, num: out.length + 1 };
+      out.push(p); kept++;
+      for (const x of [p.start, ...p.legs]) lastUsed[byName.get(x.name)] = day;
+      prev = { suspect: p.suspect, stolenRaw: p.stolen.toLowerCase() };
+      day = addDays(day, 1);
+      continue;
+    }
     const c = buildDay(day, lastUsed, prev, ping[day]);
     const p = row(out.length + 1, day, c);
     out.push(p);
@@ -156,7 +221,7 @@ async function main() {
 // Scoring and the catch radius live in lib/carmen-engine.js.
 `;
   fs.writeFileSync(OUT, head + 'export const PUZZLES = ' + JSON.stringify(out, null, 1) + ';\n');
-  console.log(`gen-carmen: ${out.length} cases (${frozen.length} frozen), ${out[0].live} to ${out[out.length - 1].live}`);
+  console.log(`gen-carmen: ${out.length} cases (${frozen.length} frozen, ${kept} future kept, ${repaired} of them repaired in place), ${out[0].live} to ${out[out.length - 1].live}`);
 }
 
 if (import.meta.url === 'file://' + process.argv[1]) main();

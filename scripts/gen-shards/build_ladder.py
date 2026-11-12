@@ -40,8 +40,8 @@ PUZZLES_JS = os.path.join(REPO, 'app', 'shards', 'puzzles.js')
 
 # 2026-08-20: rebuilt again to drop the two-letter slots (see gen.py's template
 # note). Boards through 2026-08-19 are played and frozen.
-FIRST_NEW = datetime.date(2026, 11, 1)
-LAST_NEW = datetime.date(2026, 11, 30)
+FIRST_NEW = datetime.date(2026, 12, 1)   # Dec 31 restock, 2026-11-12
+LAST_NEW = datetime.date(2026, 12, 31)
 
 # n, shard size range, piece count range, ambiguity floor, scoring budget
 # ambig = minimum geometric tilings; mindup = minimum repeated shard shapes, the
@@ -139,6 +139,26 @@ def try_cuts(pat, grid, n, t, rng, deadline, want_ambig):
     return best
 
 
+# NEAR-REPRINT CEILING (2026-11-12, the Dec restock). The exact-grid check below
+# missed a December draw that was a TRANSPOSE of 2026-11-23 (the same twelve words,
+# rows read as columns) and two more sharing 10 of 12 words with October boards.
+# From OVERLAP_FROM a new fill may share at most OVERLAP_MAX of its 3+ letter runs
+# with any board already banked or built; the November segment peaked at exactly
+# half, so the ceiling is a half. Re-proven by verify-daily-banks.mjs (shards).
+OVERLAP_FROM = datetime.date(2026, 12, 1)
+OVERLAP_MAX = 0.5
+RUNSETS = []   # run sets of every board banked or built, filled by main()
+
+
+def run_set(pat, grid, n):
+    return frozenset(''.join(grid[r][c] for r, c in slot) for slot in gen.slots(pat, n) if len(slot) >= 3)
+
+
+def too_close(pat, grid, n):
+    rs = run_set(pat, grid, n)
+    return any(len(rs & o) > OVERLAP_MAX * len(rs) for o in RUNSETS)
+
+
 def find_puzzle(t, rng, reuse_fills, used_fills, budget):
     """Search reused fills first, then fresh ones, for a cut meeting the floor."""
     n = t['n']
@@ -156,6 +176,8 @@ def find_puzzle(t, rng, reuse_fills, used_fills, budget):
     for key, (pat, grid) in list(reuse_fills.items()):
         if key in used_fills or time.time() > deadline:
             continue
+        if too_close(pat, grid, n):
+            continue
         if consider(pat, grid, key, budget * 0.35):
             return best
 
@@ -166,6 +188,8 @@ def find_puzzle(t, rng, reuse_fills, used_fills, budget):
             continue
         key = ''.join(''.join(ch or '#' for ch in row) for row in grid)
         if key in used_fills:
+            continue
+        if too_close(pat, grid, n):
             continue
         if consider(pat, grid, key, budget * 0.25):
             return best
@@ -247,6 +271,12 @@ def main():
         _pat, g = fill_of(p)
         used_fills.add(''.join(''.join(ch or '#' for ch in row) for row in g))
 
+    for p in frozen:
+        pat_, g_ = fill_of(p)
+        RUNSETS.append(run_set(pat_, g_, p['rows']))
+    for e in st['done']:
+        RUNSETS.append(run_set(*fill_of(e)[0:2], e['rows']))
+
     t0 = time.time()
     made = 0
     for i, d in enumerate(dates):
@@ -275,6 +305,7 @@ def main():
             st['seed_bump'] += 1
             continue
         used_fills.add(key)
+        RUNSETS.append(run_set(pat, grid, t['n']))
         st['done'].append(to_entry(num, d, t, shards, grid, pat, ambig))
         made += 1
         # checkpoint every day: a run that gets cut short must never lose work

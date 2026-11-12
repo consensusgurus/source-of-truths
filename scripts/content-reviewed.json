@@ -1,9 +1,9 @@
 {
   "_doc": "Content review ledger. See scripts/CONTENT-REVIEW.md. 'through' is the last live date whose boards a separate reviewer has read item by item for truth, second right answers, clue fit and same-day spoilers. scripts/verify-content-reviewed.mjs fails when a board goes live within LEAD_DAYS of today past this date. Move 'through' forward ONLY after the review has been done and its fixes applied.",
   "resume": {
-    "through": "2026-11-30",
-    "on": "2026-11-09",
-    "note": "bank rebuilt 2026-11-09 as a difficulty ladder (Tim Cook first); all 21 boards read by a separate reviewer, fixes applied (company names moved out of early clues for Burns, Chenault, Wolfe Herd; Chesky origin story hidden; Knight, Benioff, Powell, Hastings, Cook, Garten, Yellen corrected)"
+    "through": "2026-12-20",
+    "on": "2026-11-12",
+    "note": "12-01..12-20 (20 new boards) read by a separate reviewer: Fink WEF title, Blakely Spanx years and fax-machine giveaway, Whitman Albertsons executive chair (Sept 2026, checked), Magic Johnson and Dell early giveaways softened, Schultz now Miami, Dorsey dispatch detail moved off clue 2, Lagarde IMF \"first\" cut, Witherspoon \"left to act\" cut. Earlier: bank rebuilt 2026-11-09 as a difficulty ladder (Tim Cook first); all 21 boards read by a separate reviewer, fixes applied (company names moved out of early clues for Burns, Chenault, Wolfe Herd; Chesky origin story hidden; Knight, Benioff, Powell, Hastings, Cook, Garten, Yellen corrected)"
   },
   "bacon": {
     "through": "2026-11-30",
@@ -11,9 +11,9 @@
     "note": "launch bank: every chain link, year, name and par sanity read by a separate reviewer over three rounds; its fixes went into scripts/bacon-cast-fixes.json and the generator"
   },
   "stet": {
-    "through": "2026-11-30",
-    "on": "2026-10-08",
-    "note": "whole bank"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by separate reviewers (dec-h, late7): backwards keys re-cut, new accepted answers, spoiler wordings cleared. whole bank"
   },
   "streak": {
     "through": "2026-12-31",
@@ -21,21 +21,24 @@
     "note": "12-01..12-31 restock read by a separate reviewer (game-level), then a cross-game same-day giveaway pass over 11-24..12-31 and a final check of late replacements"
   },
   "feud": {
-    "through": "2026-11-30",
-    "on": "2026-10-08",
-    "note": "9/30 on, probed against lib/feud-match.js"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 (155 new prompts) read by a separate reviewer with ~4,200 matcher probes, 124 fixes, then two late-change reads (all clean but six aliases, added) Earlier: 9/30 on, probed against lib/feud-match.js"
   },
   "outwit": {
-    "through": "2026-11-30",
-    "on": "2026-10-08"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by a separate reviewer (herd truths sourced), 7 fixes and same-day spoilers, then two late-change reads, clean"
   },
   "outrank": {
-    "through": "2026-11-30",
-    "on": "2026-10-08"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by three separate reviewers by date with a cross-game pass, fixes applied in the sources, then late-replacement reads"
   },
   "emcee": {
-    "through": "2026-11-30",
-    "on": "2026-10-08"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by three separate reviewers by date with a cross-game pass, fixes applied in the sources, then late-replacement reads"
   },
   "encore": {
     "through": "2026-11-30",
@@ -68,9 +71,9 @@
     "note": "12-01..12-31 restock read by a separate reviewer (game-level), then a cross-game same-day giveaway pass over 11-24..12-31 and a final check of late replacements"
   },
   "quotes": {
-    "through": "2026-11-12",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "11-13..12-31 (1,225 items) read by three separate reviewers with a same-day cross-game pass; 17 fixed in scripts/quotes-source.mjs: Dossier spoilers (JFK 11-19, Eisenhower 11-23, Wilson 12-03, Nixon 12-17), six repeats of already-played quotes, two in-range duplicates, Plutarch wording, Wilson and Darwin misquotes, Hitchhiker opening premise, two future-PM stems. Not changed: Dickens \"honour\" (verify-quotes keeps a British speaker's spelling). Open: d162q22 (2027-02) repeats d82q22, outside this window"
   },
   "dating": {
     "through": "2027-01-31",
@@ -78,49 +81,49 @@
     "note": "whole bank, review rounds rv-a..rv-p"
   },
   "ping": {
-    "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by separate reviewers (dec-c2, late7): three row swaps, eight blurbs rewritten. whole bank, review rounds rv-a..rv-p"
   },
   "flank": {
-    "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by three separate reviewers by date with a cross-game pass, fixes applied in the sources, then late-replacement reads Earlier: whole bank, review rounds rv-a..rv-p"
   },
   "passport": {
-    "through": "2026-11-09",
-    "on": "2026-11-06",
-    "note": "11-03..11-14 read by a separate reviewer (four-leg run via passportRunDay); fixed 'The Bahamas' mid-sentence and a Span note; held at 11-09 because 11-10 shows Palestine at 5,860 km2 (West Bank only) and the lib/country-areas.js fix needs a no-drift check on past days"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 (31 trips) read by separate reviewers (passport-dec, late9, late10): seven trips swapped or replaced for same-day keyed answers (incl. Flank answers and neighbor lists), Bukhara and Izmir blurbs hedged, run client prints \"the\" before country names (lib/passport.js theCountry). 11-10..11-30 trips read by a separate reviewer (roads, rings, Ping blurbs, Stamps, same-day); Palestine area fixed to 6,220 km2 (played days keep their pairs), Kazan->Irkutsk 11-27, \"the United States\" in notes, Carmen now kept off each day's trip (scripts/carmen-trip-block.mjs); late replacements re-read. 11-03..11-14 read by a separate reviewer (four-leg run via passportRunDay); fixed 'The Bahamas' mid-sentence and a Span note; held at 11-09 because 11-10 shows Palestine at 5,860 km2 (West Bank only) and the lib/country-areas.js fix needs a no-drift check on past days"
   },
   "focus": {
-    "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by separate reviewers (dec-g, late7, late9): weekday rotations to clear same-day spoilers (Ireland, Sri Lanka, Space Shuttle, Delaware), 12-28 credit Andrew Shiva. whole bank, review rounds rv-a..rv-p"
   },
   "niche": {
-    "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by separate reviewers (dec-d, dec-g, late rounds): 12-20 rebuilt after a mixed border reading (one reading per cell now enforced by verify-niche), Star Wars colon flags, Ant flyp. whole bank, review rounds rv-a..rv-p"
   },
   "listed": {
-    "through": "2026-11-30",
-    "on": "2026-11-02",
-    "note": "whole bank, review rounds rv-a..rv-p; 2026-11-09..11-30 restock reviewed 2026-11-02 by a separate fact-check pass (4 fixes applied)"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by separate reviewers (dec-h, late7): Iapetus, HMS Dreadnought, The Christmas Song, Southeast Asia list, capitals board retitled with Montpelier, blurb fixes. whole bank, review rounds rv-a..rv-p; 2026-11-09..11-30 restock reviewed 2026-11-02 by a separate fact-check pass (4 fixes applied)"
   },
   "crux": {
-    "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by three separate reviewers by date with a cross-game pass, fixes applied in the sources, then late-replacement reads Earlier: whole bank, review rounds rv-a..rv-p"
   },
   "links": {
-    "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by separate reviewers (dec-g, late7, late9, late10): Lucky/FLUKY, tuxedo tails, LEVEL giveaway, 12-21 tails group rebuilt twice for second groupings. whole bank, review rounds rv-a..rv-p"
   },
   "garble": {
-    "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by separate reviewers (dec-c2, late7, late9): 12-24 clue twice rewritten (no answer letters), DOGGY blocked. whole bank, review rounds rv-a..rv-p"
   },
   "hinge": {
     "through": "2027-01-31",
@@ -128,29 +131,29 @@
     "note": "whole bank, review rounds rv-a..rv-p"
   },
   "venn": {
-    "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by three separate reviewers by date with a cross-game pass, fixes applied in the sources, then late-replacement reads Earlier: whole bank, review rounds rv-a..rv-p"
   },
   "suffice": {
-    "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by three separate reviewers by date with a cross-game pass, fixes applied in the sources, then late-replacement reads Earlier: whole bank, review rounds rv-a..rv-p"
   },
   "redact": {
-    "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by separate reviewers (dec-h, late7): 28 subjects moved off same-day spoiler dates (gen-redact avoid lists), fact fixes (Newton, Pasteur, Genghis Khan cities), rewording. whole bank, review rounds rv-a..rv-p"
   },
   "hearsay": {
-    "through": "2026-11-30",
-    "on": "2026-10-09",
-    "note": "whole bank, review rounds rv-a..rv-p"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by three separate reviewers by date with a cross-game pass, fixes applied in the sources, then late-replacement reads Earlier: whole bank, review rounds rv-a..rv-p"
   },
   "pricer": {
-    "through": "2026-11-14",
-    "on": "2026-11-06",
-    "note": "Nov 8-14 second city week read live on Amazon 2026-11-06; separate reviewer read names, copy and same-day spoilers"
+    "through": "2026-12-02",
+    "on": "2026-11-12",
+    "note": "11-15..12-02 (18 new rows) re-read live by a separate reviewer on 2026-11-12 (price, listing status, photos, broker, conversions): no changes. Nov 8-14 second city week read live on Amazon 2026-11-06; separate reviewer read names, copy and same-day spoilers"
   },
   "dealer": {
     "through": "2026-11-14",
@@ -158,9 +161,9 @@
     "note": "Nov 8-14 rows read separately for copy and spoilers; MSRPs as read 2026-10-03, not re-read live"
   },
   "realtor": {
-    "through": "2026-11-14",
-    "on": "2026-11-06",
-    "note": "Nov 8-14 second city week read live on Redfin 2026-11-06; separate reviewer read every row; Boston moved off Nov 8 (Dossier answer Massachusetts)"
+    "through": "2026-12-02",
+    "on": "2026-11-12",
+    "note": "11-15..12-02 (18 new rows) re-read live by a separate reviewer on 2026-11-12 (price, listing status, photos, broker, conversions): no changes. Nov 8-14 second city week read live on Redfin 2026-11-06; separate reviewer read every row; Boston moved off Nov 8 (Dossier answer Massachusetts)"
   },
   "agent": {
     "through": "2026-11-14",
@@ -178,9 +181,9 @@
     "note": "whole bank, review rounds rv-a..rv-p"
   },
   "thread": {
-    "through": "2026-11-30",
-    "on": "2026-11-02",
-    "note": "whole bank, review rounds rv-a..rv-p; 2026-11-13..11-30 restock reviewed 2026-11-02 by a separate fact-check pass (10 fixes applied)"
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "12-01..12-31 read by separate reviewers (dec-g, late7, late9, late10): spoiler tiles replaced or boards moved, loglines corrected (Bottle Rocket, Boogie Nights, Hustler, Parallel Mothers), decoy covers made exact, Spain keys on 12-20. whole bank, review rounds rv-a..rv-p; 2026-11-13..11-30 restock reviewed 2026-11-02 by a separate fact-check pass (10 fixes applied)"
   },
   "clade": {
     "through": "2026-12-20",
@@ -274,5 +277,40 @@
     "through": "2026-12-13",
     "on": "2026-11-08",
     "note": "launch bank: the 113-city pool (339 tips) was authored in four regional passes and read tip by tip by two separate fact-checkers, who rewrote 31 tips (wrong superlatives, stale facts, giveaway nicknames, politics); scripts/verify-carmen.mjs checks name leaks, spelling and the route rules. 2026-11-08 restructure: all 339 tips rewritten for varied openings with currency moved later or dropped (owner: too many led with currency), checked old against new by a separate fact-checker, who found no drift and caught 8 older leaks and one false claim (Taipei), all fixed; boards from 2026-11-09 only, Nov 8 frozen"
+  },
+  "tape": {
+    "through": "2026-12-20",
+    "on": "2026-11-12",
+    "note": "first ledger entry: 11-13..12-20 (38 boards) read by a separate reviewer; Tesla 11-18 pin moved off Twitter (same-day Biz), Chipotle 12-11 pin no longer repeats the Starbucks hire, alts Supermicro, Tesla Motors, Wal-Mart, Avago, Adobe Systems. Boards before 11-13 were already live and not re-read"
+  },
+  "filing": {
+    "through": "2026-12-20",
+    "on": "2026-11-12",
+    "note": "first ledger entry: 11-24..12-20 (27 new boards) read by a separate reviewer; clue orders changed where competition named the category (Roku, eBay, Instacart, CoreWeave, Ulta, Shake Shack), new verbatim clue 4 for Ulta and Zoetis, founder and CEO names put behind bars, Dutch Brothers alt. Every quote substring-checked against the S-1 on sec.gov. 11-10..11-23 launch boards were not re-read here"
+  },
+  "picks": {
+    "through": "2026-11-30",
+    "on": "2026-11-12",
+    "note": "pool rounds 2 and 3 (39 rows) also read by separate reviewers with live price re-reads: Burberry and Fender rows removed (photo), Omega moved to the photographed 007 Edition, Gibson name, Lexus GX and Nikon Z9 removed (price incl. destination / sale price), Lexus LX corrected to $107,500 before destination. first ledger entry, for the Picks pool (app/picks/pool.js): all 94 rows read by a separate reviewer (photos and credits on Commons, 41 prices re-read live, auction totals), 2 fixed (Codex Sassoon maker line, Hermes scarf name). Boards to 11-14 draw on retired rows reviewed under dealer/agent/curator"
+  },
+  "chain": {
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "first ledger entry: the 24 new boards 12-08..12-31 read by a separate reviewer (motif prose; the verifier proves each motif fits how its board is won); six lines fixed in scripts/chain-motifs.mjs. Earlier boards carry no new prose"
+  },
+  "bracket": {
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "first ledger entry: 12-01..12-31 read by separate reviewers; disputed figures fixed, played boards included (ranks and results unchanged)"
+  },
+  "herd": {
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "first ledger entry: 12-01..12-31 (222 new questions) read by separate reviewers, wording fixes applied"
+  },
+  "saw": {
+    "through": "2026-12-31",
+    "on": "2026-11-12",
+    "note": "first ledger entry: 12-04..12-31 photos, captions and credits read against Commons by separate reviewers; four people photos replaced and re-read"
   }
 }

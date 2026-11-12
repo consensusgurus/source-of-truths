@@ -150,7 +150,7 @@ for (let i = 0; i < lines.length; i++) {
   // a note that is true (or false) whoever plays which part says nothing; "not on the wardrobe" would only tell
   // the reader its speaker is honest. Those never become notes or statements.
   const ALL = allNotes(G, L, cast).filter((c) => { const t = T.map((h) => noteOn(G, c, h, place, cast)); c._t = t; return t.some(Boolean) && !t.every(Boolean); });
-  seed = 20261109 + d.num * 104729;
+  seed = 20261109 + d.num * 104729 + Number(process.env.SEED_OFFSET || 0) * 7919; // SEED_OFFSET: retry a board with no interrogation in band (2026-11-12)
   let best = null;
   for (let t = 0; t < Number(process.env.TRIES || 400); t++) {
     const [v, k, a] = shuffle(cast.slice());

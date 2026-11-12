@@ -14,7 +14,55 @@ const fails = [];
 const banks = {};
 for (const k of ['dealer', 'agent', 'curator']) banks[k] = (await import(pathToFileURL(path.join(root, `app/${k}/puzzles.js`)).href)).PUZZLES;
 const { PUZZLES } = await import(pathToFileURL(process.env.VERIFY_PICKS_BANK || path.join(root, 'app/picks/puzzles.js')).href);
-const rowOf = (ref) => { const k = String(ref).split('-')[0]; const b = banks[k]; const p = b && b.find((x) => x.quizId === ref); return p ? { k, p } : null; };
+// The Picks pool (owner, 2026-11-12): rows tied to no date, named by id.
+const { POOL } = await import(pathToFileURL(process.env.VERIFY_PICKS_POOL || path.join(root, 'app/picks/pool.js')).href);
+const poolById = new Map();
+const rowOf = (ref) => {
+  if (poolById.has(ref)) { const p = poolById.get(ref); return { k: p.key, p, pool: true }; }
+  const k = String(ref).split('-')[0]; const b = banks[k]; const p = b && b.find((x) => x.quizId === ref); return p ? { k, p } : null;
+};
+// Pool rows are checked here with the field, photo and price rules the
+// Dealer and Curator banks keep in verify-price-banks.mjs.
+{
+  const POOL_FIELDS = { dealer: ['name', 'cat', 'maker', 'href', 'img', 'credit', 'creditUrl'], curator: ['kind', 'name', 'href', 'img', 'credit', 'creditUrl'] };
+  const BANNED = /googleusercontent\.com|ggpht\.com|fbcdn\.net|cdninstagram\.com|fbsbx\.com/i;
+  const names = new Map();
+  for (const k of ['dealer', 'agent', 'curator']) for (const p of banks[k]) if (p.name) names.set(String(p.name).toLowerCase(), `${k} ${p.live}`);
+  if (!Array.isArray(POOL)) fails.push('pool: POOL is not an array');
+  for (const p of POOL || []) {
+    const id = `pool ${p.id}`;
+    const bad = (m) => fails.push(`${id}: ${m}`);
+    if (!/^pick-[dc]\d{3}$/.test(p.id || '')) bad('id must be pick-d### (dealer) or pick-c### (curator)');
+    if ((p.id || '').startsWith('pick-d') !== (p.key === 'dealer')) bad('id prefix does not match key');
+    if (poolById.has(p.id)) bad('id repeats');
+    poolById.set(p.id, p);
+    if (!POOL_FIELDS[p.key]) { bad(`key ${p.key} must be dealer or curator`); continue; }
+    for (const f of POOL_FIELDS[p.key]) if (p[f] == null || p[f] === '') bad(`missing ${f}`);
+    if (!Number.isInteger(p.price) || p.price <= 0) bad('price must be positive integer cents');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(p.gathered || '')) bad('gathered must be YYYY-MM-DD');
+    if (!/^https:\/\/commons\.wikimedia\.org\/wiki\/Special:FilePath\/.+/.test(p.img || '')) bad('img must be a Wikimedia Commons Special:FilePath URL');
+    if (!/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/.test(p.creditUrl || '')) bad('creditUrl must be the Commons File: page');
+    if (BANNED.test(p.img || '') || /\.(webp|avif)(\?|$)/i.test(p.img || '')) bad('img on a banned host or format');
+    if (!/^https:\/\//.test(p.href || '')) bad('href must be https');
+    if (p.key === 'curator') {
+      if (!['auction', 'retail'].includes(p.kind)) bad(`kind ${p.kind}`);
+      if (p.kind === 'auction') { for (const f of ['maker', 'year', 'house', 'place', 'sale']) if (!p[f]) bad(`an auction names its ${f}`); if (p.sale > p.gathered) bad('sale after gathered'); }
+      if (p.kind === 'retail') for (const f of ['brand', 'site']) if (!p[f]) bad(`a list price names its ${f}`);
+    }
+    if (/\u2014/.test(JSON.stringify(p))) bad('em dash in a field');
+    const nm = String(p.name || '').toLowerCase();
+    if (names.has(nm)) bad(`name repeats ${names.get(nm)}`); else names.set(nm, id);
+    const ship = shipFor(p.key, p);
+    if (!ship || !ship.name || !ship.asOf || !ship.imgs || !ship.imgs.length) bad('the item card does not build');
+    else {
+      const dollars = Math.floor(p.price / 100).toLocaleString('en-US');
+      if ([ship.name, ship.cat, ship.line, ...(ship.facts || [])].join(' ').includes(dollars) && p.price >= 10000) bad(`the card text shows the price (${dollars})`);
+    }
+  }
+}
+// A list price is played within 60 days of the day it was read (the rule the
+// banks keep); an auction result is a settled fact and has no such limit.
+const POOL_MAX_AGE = 60;
 const ratio = (a, b) => Math.max(a, b) / Math.min(a, b);
 const ROUND = new Set();
 for (let e = 0; e <= 8; e++) for (const m of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7.5, 8]) ROUND.add(Math.round(m * 10 ** e * 100));
@@ -40,11 +88,16 @@ for (const d of PUZZLES || []) {
   const items = {};
   for (const r of refs) {
     const hit = rowOf(r);
-    if (!hit) { bad(`ref ${r} is not a Dealer, Agent or Curator row`); continue; }
+    if (!hit) { bad(`ref ${r} is not a Dealer, Agent or Curator row or a Picks pool id`); continue; }
     const ship = shipFor(hit.k, hit.p);
     if (!ship || !ship.name || !(ship.imgs && ship.imgs[0] && ship.imgs[0].src)) bad(`ref ${r} ships no name or photo`);
     if (!Number.isInteger(hit.p.price) || hit.p.price <= 0) bad(`ref ${r} has no integer-cent price`);
     items[r] = { ...ship, price: hit.p.price, key: hit.k, lot: hit.p.kind === 'auction' };
+    if (hit.pool && hit.p.kind !== 'auction') {
+      const age = (Date.parse(d.live) - Date.parse(hit.p.gathered)) / 86400000;
+      if (age < 0) bad(`ref ${r} is played before its price was read`);
+      else if (age > POOL_MAX_AGE) bad(`ref ${r}'s price is ${age} days old on ${d.live}; re-read it`);
+    }
     if (seen.has(r)) bad(`ref ${r} already used on ${seen.get(r)}`); else seen.set(r, d.live);
   }
   if (fails.length && !items[d.start]) continue;

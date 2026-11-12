@@ -42,6 +42,7 @@
 // Run: node scripts/verify-feud.mjs
 import { PUZZLES } from '../app/feud/puzzles.js';
 import { normAnswer, promptMatcher } from '../lib/feud-match.js';
+import { nearRepeat, answerNearRepeat } from './crowd-near-repeat.mjs';
 
 // The audit runs the REAL matcher (lib/feud-match.js has no imports precisely
 // so it can be loaded here), never a copy — a mirror would drift.
@@ -173,6 +174,18 @@ fail += chainBad.length;
 
 // ---- 4. structure and pool variety, from FEUD_RULES_FROM ------------------
 const FEUD_RULES_FROM = '2026-09-30';
+// SEGMENTS (2026-11-12, lane-f). The variety ceilings below were written for the
+// 62-day, 310-prompt segment that starts FEUD_RULES_FROM. Each later extension is
+// its own segment, measured against EVERYTHING banked before it, with every
+// ceiling scaled to the segment's size as a rate and rounded up (SEG_BASE). The
+// first segment's ceilings are therefore unchanged; the 155-prompt December
+// segment runs label 2 (hot 1) and house shape 7. gen-feud.mjs scales the same way.
+const FEUD_SEGMENTS = ['2026-09-30', '2026-12-01'];
+const SEG_BASE = 310;
+// NEAR REPEATS (from NEAR_FROM, the first segment authored with the screen):
+// no prompt may say the same thing as any earlier prompt in other words, by
+// scripts/crowd-near-repeat.mjs. Earlier boards predate the screen; grandfathered.
+const NEAR_FROM = '2026-12-01';
 const LABEL_CEIL = 4;      // max prompts one answer label may fill in the segment
 const HOT_CEIL = 2;        // ...if the earlier bank already runs it HOT_FROZEN+ times
 const HOT_FROZEN = 10;
@@ -230,18 +243,34 @@ const varietyBad = [];
     }
   }
 
-  // 4b. no prompt text repeats, anywhere in the bank
+  // 4b. no prompt text repeats, anywhere in the bank; and from NEAR_FROM no
+  // prompt near-repeats any earlier one (crowd-near-repeat.mjs)
   const seenQ = new Map();
+  const earlier = [];
   for (const p of sorted) for (const pr of p.prompts || []) {
     const k = normQ(pr.q);
     if (seenQ.has(k)) varietyBad.push(`  prompt repeats ${seenQ.get(k)}: "${pr.q}" (#${p.num} ${p.live})`);
     else seenQ.set(k, `#${p.num} ${p.live}`);
+    const board = { labels: (pr.answers || []).map((x) => x.c), bucketOf: promptMatcher(pr).bucketOf };
+    if (p.live >= NEAR_FROM) {
+      const hit = earlier.find((e) => nearRepeat(pr.q, e.q));
+      if (hit) varietyBad.push(`  prompt near-repeats ${hit.at} "${hit.q}": "${pr.q}" (#${p.num} ${p.live})`);
+      const ahit = earlier.find((e) => answerNearRepeat(board, e.board));
+      if (ahit) varietyBad.push(`  prompt's answers repeat ${ahit.at} "${ahit.q}": "${pr.q}" (#${p.num} ${p.live})`);
+    }
+    earlier.push({ q: pr.q, at: `#${p.num} ${p.live}`, board });
   }
 
-  // 4c. pool variety over the boards from FEUD_RULES_FROM, measured against
-  // what the boards before it already spend.
-  const seg = sorted.filter((p) => p.live >= FEUD_RULES_FROM);
-  const pre = sorted.filter((p) => p.live < FEUD_RULES_FROM);
+  // 4c. pool variety over each segment from FEUD_RULES_FROM, measured against
+  // what the boards before that segment already spend.
+  FEUD_SEGMENTS.forEach((from, si) => {
+  const to = FEUD_SEGMENTS[si + 1] || '9999-12-31';
+  const seg = sorted.filter((p) => p.live >= from && p.live < to);
+  const pre = sorted.filter((p) => p.live < from);
+  const segN = seg.reduce((a, p) => a + (p.prompts || []).length, 0);
+  const up = (n) => Math.max(1, Math.ceil(n * segN / SEG_BASE));
+  const LABEL_C = up(LABEL_CEIL), HOT_C = up(HOT_CEIL), VEC_C = up(VEC_CEIL);
+  const tag = `segment ${from}`;
   if (seg.length) {
     const preLabel = new Map();
     for (const p of pre) for (const pr of p.prompts || []) for (const b of pr.answers || []) {
@@ -265,20 +294,21 @@ const varietyBad = [];
     }
     for (const [lab, n] of segLabel) {
       const before = preLabel.get(lab) || 0;
-      const ceil = before >= HOT_FROZEN ? HOT_CEIL : LABEL_CEIL;
-      if (n > ceil) varietyBad.push(`  answer label "${lab}" fills ${n} prompts of the segment (ceiling ${ceil}; the earlier bank runs it ${before}x)`);
+      const ceil = before >= HOT_FROZEN ? HOT_C : LABEL_C;
+      if (n > ceil) varietyBad.push(`  ${tag}: answer label "${lab}" fills ${n} prompts of the segment (ceiling ${ceil}; the earlier bank runs it ${before}x)`);
     }
     for (const [n, c] of bucketN) {
-      if (c / segPrompts > MODE_CEIL) varietyBad.push(`  ${c}/${segPrompts} segment prompts carry ${n} buckets (${(100 * c / segPrompts).toFixed(0)}%, ceiling ${100 * MODE_CEIL}%)`);
+      if (c / segPrompts > MODE_CEIL) varietyBad.push(`  ${tag}: ${c}/${segPrompts} segment prompts carry ${n} buckets (${(100 * c / segPrompts).toFixed(0)}%, ceiling ${100 * MODE_CEIL}%)`);
     }
     for (const n of [6, 7, 8, 9]) {
       const c = bucketN.get(n) || 0;
-      if (c / segPrompts < MIN_SHARE) varietyBad.push(`  only ${c}/${segPrompts} segment prompts carry ${n} buckets (${(100 * c / segPrompts).toFixed(1)}%, floor ${100 * MIN_SHARE}%) — the band is not being used`);
+      if (c / segPrompts < MIN_SHARE) varietyBad.push(`  ${tag}: only ${c}/${segPrompts} segment prompts carry ${n} buckets (${(100 * c / segPrompts).toFixed(1)}%, floor ${100 * MIN_SHARE}%) — the band is not being used`);
     }
     for (const [sig, c] of vec) {
-      if (c > VEC_CEIL) varietyBad.push(`  house shape ${sig} shapes ${c} segment prompts (ceiling ${VEC_CEIL})`);
+      if (c > VEC_C) varietyBad.push(`  ${tag}: house shape ${sig} shapes ${c} segment prompts (ceiling ${VEC_C})`);
     }
   }
+  });
 }
 fail += structBad.length + varietyBad.length;
 
@@ -286,6 +316,7 @@ fail += structBad.length + varietyBad.length;
 console.log(`Feud acceptance audit`);
 console.log(`  ${PUZZLES.length} days, ${prompts} prompts, ${probes} label/alias probes`);
 console.log(`  ${fx} fixtures`);
+console.log(`  variety by segment (${FEUD_SEGMENTS.join(', ')}); near repeats from ${NEAR_FROM}`);
 console.log(`  structure + variety checked from ${FEUD_RULES_FROM} (${PUZZLES.filter((p) => p.live >= FEUD_RULES_FROM).length} boards); earlier boards grandfathered`);
 if (bad.length) { console.log(`\nSELF-COLLISIONS (${bad.length}):`); bad.forEach((l) => console.log(l)); }
 if (fxBad.length) { console.log(`\nFIXTURE FAILURES (${fxBad.length}):`); fxBad.forEach((l) => console.log(l)); }

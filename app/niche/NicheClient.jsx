@@ -58,7 +58,7 @@ import useCategoryRank from '../useCategoryRank';
 import { isLoft } from '@/lib/loft';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
-import { UNIVERSE_MAP, attrById, cellMembers, searchMembers, normAnswer } from './facts';
+import { UNIVERSE_MAP, attrById, cellMembers, searchMembers, normAnswer, pairFits } from './facts';
 import { endGrade } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 
@@ -508,11 +508,13 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
     const ra = rowAttrs[r], ca = colAttrs[c];
     const okRow = ra.test(member);
     const okCol = ca.test(member);
+    // Both border clues must hold on one border reading (see pairFits in facts.js).
+    const mixed = okRow && okCol && !pairFits(ra, ca, member);
     const g2 = { ...g, picks: picks.slice() };
     if (!g2.t0) g2.t0 = Date.now();
     setQuery('');
     setHot(0);
-    if (okRow && okCol) {
+    if (okRow && okCol && !mixed) {
       g2.picks[sel] = member.t;
       vibrate(HAPT.ok);
       if (g2.picks.every(Boolean)) { finish(g2); return; }
@@ -526,7 +528,9 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
     g2.misses += 1;
     vibrate(HAPT.miss);
     const bad = [!okRow && ra.label, !okCol && ca.label].filter(Boolean).join('" or "');
-    say(`${member.t} doesn't fit "${bad}". That guess is spent.`);
+    say(mixed
+      ? `${member.t} fits "${ra.label}" and "${ca.label}" only by counting its borders two different ways. That guess is spent.`
+      : `${member.t} doesn't fit "${bad}". That guess is spent.`);
     if (filled + g2.misses >= GUESSES) { finish(g2); return; }
     setG(g2);
   }

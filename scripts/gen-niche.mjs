@@ -167,6 +167,54 @@ const setOf = (() => {
     return cache.get(k);
   };
 })();
+// A row x column cell where one attribute's members all carry the other is a
+// single attribute wearing two labels. Refused from NESTED_FROM (2026-11-12,
+// lane-d restock; verify-niche.mjs holds the same rule).
+const NESTED_FROM = '2026-12-01';
+// TWIN CELLS (2026-11-12, dec-g fix round): two cells in one row or one column
+// holding the very same answers make two clues behave as one there. Every board
+// carries a few by chance (the bank's worst before this was 2); more than two
+// reads as a repeated board.
+const MAX_TWINS = 2;
+function twinCells(universe, rows, cols) {
+  const k = (r, c) => cellMembers(universe, r, c).map((m) => m.t).sort().join('|');
+  let n = 0;
+  for (const r of rows) for (let i = 0; i < cols.length; i++) for (let j = i + 1; j < cols.length; j++) if (k(r, cols[i]) === k(r, cols[j])) n++;
+  for (const c of cols) for (let i = 0; i < rows.length; i++) for (let j = i + 1; j < rows.length; j++) if (k(rows[i], c) === k(rows[j], c)) n++;
+  return n;
+}
+// From the same date (review fix 2026-11-12): nested is checked over EVERY pair
+// on the board (two columns where one implies the other repeat each row's
+// cells), and at most one BROAD attribute (true of BROAD or more of the
+// universe, e.g. Not in NATO, Did not win Best Picture) may sit on a board,
+// since a cell against a near-universal attribute is just its other attribute.
+const BROAD = 0.7;
+const coverage = (universe, id) => setOf(universe, id).size / universe.members.length;
+const keyOf = (universe, id) => (universe.attrs.find((a) => a.id === id)?.capKey || id);
+function nestedPair(universe, idA, idB) {
+  const A = setOf(universe, idA), B = setOf(universe, idB);
+  const [S, L] = A.size <= B.size ? [A, B] : [B, A];
+  // near-nested counts too (late review): a cell holding 90% or more of the
+  // smaller attribute (Mammal x Does not lay eggs, 77 of 78) asks for nothing.
+  let hit = 0;
+  for (const n of S) if (L.has(n)) hit++;
+  return hit / S.size >= NEAR_NESTED;
+}
+const NEAR_NESTED = 0.85;
+// NEAR-COMPLEMENT (late review): two attributes that almost never overlap and
+// together cover almost the universe (Does not lay eggs / Not a mammal) split it
+// in two like an exact complement. Refused from NESTED_FROM.
+function nearComplement(universe, idA, idB) {
+  const A = setOf(universe, idA), B = setOf(universe, idB);
+  let both = 0; for (const n of A) if (B.has(n)) both++;
+  const union = A.size + B.size - both;
+  return both <= 0.1 * Math.min(A.size, B.size) && union >= 0.9 * universe.members.length;
+}
+// CELL REPEATS (late review): the same row x column pair may not come back
+// within CELL_GAP days in its universe (12-22 repeated four cells of 12-08,
+// two weeks earlier), so a weekly universe never repeats its last two boards.
+const CELL_GAP = 15;   // 22 was tried (late review) and left Friday teams and 12-29 animals unbuildable
+const recentCells = new Map();
 function complementary(universe, idA, idB) {
   const A = setOf(universe, idA);
   const B = setOf(universe, idB);
@@ -175,9 +223,9 @@ function complementary(universe, idA, idB) {
   return true;
 }
 
-function buildBoard(universe, size, prevAttrIds, history, usage, maxLetters, rand, banned) {
+function buildBoard(universe, size, prevAttrIds, history, usage, maxLetters, rand, banned, nestedOn, iso) {
   const used = (id) => (usage[id] || 0);
-  const pool = universe.attrs.filter((a) => used(a.id) < ATTR_CAP);
+  const pool = universe.attrs.filter((a) => used(a.capKey || a.id) < ATTR_CAP && !(a.retiredFrom && iso >= a.retiredFrom));
   // Rows are drawn at random; columns are then chosen GREEDILY so every cell
   // against every row clears the floor (a blind draw of six attrs almost never
   // makes all nine cells compatible — continent versus continent is empty).
@@ -192,21 +240,76 @@ function buildBoard(universe, size, prevAttrIds, history, usage, maxLetters, ran
       if (rows.every((r) => cellMembers(universe, r, a.id).length >= MIN_CELL)) cols.push(a.id);
     }
     if (cols.length < size) continue;
-    const isLetter = (id) => /^(n|cap)-[a-z]$/.test(id) || id === 'vowel';
+    // Name-shape attributes (letter counts, last letter, double letters; 2026-11-12):
+// with the letter fills, at most half of a board from GIMMICK_FROM, so a board
+// stays trivia rather than a word game.
+const NAME_SHAPE = new Set(['short5', 'mid67', 'long8', 'long9', 'long12', 'long14', 'short8', 'endvowel', 'dbl', 'dblw',
+  'the', 'one', 'multi', 'w2', 'w3', 'w4', 'colon', 'num', 'hasz', 'endsa']);
+const isLetter = (id) => /^(n|cap)-[a-z]$/.test(id) || id === 'vowel';
     const all = [...rows, ...cols];
     if (all.filter(isLetter).length > maxLetters) continue;
-    if (all.filter((id) => prevAttrIds.has(id)).length > MAX_ECHO) continue;
-    if (history.some((h) => all.filter((id) => h.has(id)).length > 4)) continue;
+    if (nestedOn && all.filter((id) => isLetter(id) || NAME_SHAPE.has(id)).length > size * 2 / 2) continue;
+    if (nestedOn && all.filter((id) => /^b[0-5]$/.test(id)).length > 1) continue; // one border count per board
+    if (nestedOn && all.some((x, i) => all.slice(i + 1).some((y) => nearComplement(universe, x, y)))) continue;
+    if (nestedOn && rows.some((r) => cols.some((c) => recentCells.has(`${universe.id}|${[r, c].sort().join('|')}`)))) continue;
+    const allK = all.map((id) => keyOf(universe, id));
+    if (allK.filter((id) => prevAttrIds.has(id)).length > MAX_ECHO) continue;
+    if (history.some((h) => allK.filter((id) => h.has(id)).length > 4)) continue;
     if (banned && all.some((a, i) => all.slice(i + 1).some((b) => complementary(universe, a, b)))) continue;
+    if (nestedOn && all.some((x, i) => all.slice(i + 1).some((y) => nestedPair(universe, x, y)))) continue;
+    if (nestedOn && all.filter((x) => coverage(universe, x) >= BROAD).length > 1) continue;
     let tight = 0;
     for (const r of rows) for (const c of cols) {
       if (cellMembers(universe, r, c).length <= TIGHT) tight++;
     }
     if (tight < (size === 4 ? 2 : 1)) continue;
+    if (nestedOn && twinCells(universe, rows, cols) > MAX_TWINS) continue;
     if (!boardMatchable(universe, rows, cols)) continue;
     return { rows, cols };
   }
   return null;
+}
+
+// --only DATE (2026-11-12, late review): rebuild ONE board in the middle of the
+// bank, leaving every other board byte for byte. Every bank-wide rule is held
+// against the boards on BOTH sides: the usage cap and the 4-attribute overlap
+// over all other boards of the universe, the echo rule against the previous and
+// the next board of the universe, and the cell-repeat rules within CELL_GAP days
+// either way. Use with --existing app/niche/puzzles.js.
+const ONLY = arg('--only', null);
+if (ONLY) {
+  const t = banked.findIndex((p) => p.live === ONLY);
+  if (t < 0) throw new Error(`--only ${ONLY}: no such board`);
+  const target = banked[t], universe = UNIVERSE_MAP[target.universe];
+  const others = banked.filter((_, i) => i !== t);
+  const key = (U, x) => keyOf(U, x);
+  const uUsage = {};
+  for (const p of others) if (p.universe === universe.id) for (const id of [...p.rows, ...p.cols].map((x) => key(universe, x))) uUsage[id] = (uUsage[id] || 0) + 1;
+  const same = others.filter((p) => p.universe === universe.id);
+  const before = same.filter((p) => p.live < ONLY), after = same.filter((p) => p.live > ONLY);
+  const prev = before.length ? new Set([...before.at(-1).rows, ...before.at(-1).cols].map((x) => key(universe, x))) : new Set();
+  const next = after.length ? new Set([...after[0].rows, ...after[0].cols].map((x) => key(universe, x))) : new Set();
+  const hist = same.map((p) => new Set([...p.rows, ...p.cols].map((x) => key(universe, x))));
+  for (const p of same) {
+    if (Math.abs(Date.parse(p.live) - Date.parse(ONLY)) / 864e5 >= CELL_GAP) continue;
+    for (const r of p.rows) for (const c of p.cols) {
+      recentCells.set(`${p.universe}|${[r, c].sort().join('|')}`, p.live);
+    }
+  }
+  let board = null;
+  for (let attempt = 0; attempt < 40 && !board; attempt++) {
+    const r2 = mulberry32(SEED + target.num * 7919 + attempt);
+    const b = buildBoard(universe, target.sunday ? 4 : 3, prev, hist, uUsage, 2, r2, ONLY >= COMPLEMENT_FROM, ONLY >= NESTED_FROM, ONLY);
+    if (b && [...b.rows, ...b.cols].map((x) => key(universe, x)).filter((id) => next.has(id)).length <= MAX_ECHO) board = b;
+  }
+  if (!board) throw new Error(`--only ${ONLY}: no board found`);
+  const fresh = { ...target, rows: board.rows, cols: board.cols };
+  const lines = bankedLines.slice(); lines[t] = `  ${JSON.stringify(fresh)},`;
+  const src = readFileSync(isAbsolute(EXISTING) ? EXISTING : join(ROOT, EXISTING), 'utf8');
+  const i0 = src.indexOf(bankedLines[t]);
+  writeFileSync(join(ROOT, 'app/niche/puzzles.js'), src.slice(0, i0) + lines[t] + src.slice(i0 + bankedLines[t].length));
+  console.log(`rebuilt ${ONLY} (${universe.id}): rows ${board.rows.join(',')} cols ${board.cols.join(',')}`);
+  process.exit(0);
 }
 
 const out = [];
@@ -217,8 +320,10 @@ const histByUniverse = {}; // universeId -> [Set of each board's attr ids]
 // held to the same caps, echo and overlap limits as a full generate.
 for (const p of banked) {
   const all = [...p.rows, ...p.cols];
-  for (const id of all) usage[`${p.universe}:${id}`] = (usage[`${p.universe}:${id}`] || 0) + 1;
-  prevByUniverse[p.universe] = new Set(all);
+  const U0 = UNIVERSE_MAP[p.universe];
+  for (const id of all.map((x) => keyOf(U0, x))) usage[`${p.universe}:${id}`] = (usage[`${p.universe}:${id}`] || 0) + 1;
+  prevByUniverse[p.universe] = new Set(all.map((x) => keyOf(U0, x)));
+  for (const r of p.rows) for (const c of p.cols) recentCells.set(`${p.universe}|${[r, c].sort().join('|')}`, p.live);
   (histByUniverse[p.universe] = histByUniverse[p.universe] || []).push(prevByUniverse[p.universe]);
 }
 for (let i = 0; i < DAYS; i++) {
@@ -232,12 +337,14 @@ for (let i = 0; i < DAYS; i++) {
     .map(([k, v]) => [k.split(':')[1], v]));
   const board = buildBoard(universe, size, prevByUniverse[universe.id] || new Set(),
     histByUniverse[universe.id] || [], uUsage, banked.length + i < 7 ? 1 : 2, rnd,
-    iso >= COMPLEMENT_FROM);
+    iso >= COMPLEMENT_FROM, iso >= NESTED_FROM, iso);
   if (!board) throw new Error(`no board found for ${iso} (${universe.id}); loosen constraints or grow the attribute pool`);
-  for (const id of [...board.rows, ...board.cols]) {
+  for (const id of [...board.rows, ...board.cols].map((x) => keyOf(universe, x))) {
     usage[`${universe.id}:${id}`] = (usage[`${universe.id}:${id}`] || 0) + 1;
   }
-  prevByUniverse[universe.id] = new Set([...board.rows, ...board.cols]);
+  prevByUniverse[universe.id] = new Set([...board.rows, ...board.cols].map((x) => keyOf(universe, x)));
+  for (const [k, d] of [...recentCells]) if ((Date.parse(iso) - Date.parse(d)) / 864e5 >= CELL_GAP) recentCells.delete(k);
+  for (const r of board.rows) for (const c of board.cols) recentCells.set(`${universe.id}|${[r, c].sort().join('|')}`, iso);
   (histByUniverse[universe.id] = histByUniverse[universe.id] || []).push(prevByUniverse[universe.id]);
   out.push({
     num: START_NUM + i,

@@ -120,6 +120,43 @@ const SCHEDULE = [
   ['2026-11-28', 'Chad'],
   ['2026-11-29', 'Austria'],
   ['2026-11-30', 'Eswatini'],
+  // 2026-11-12 restock (lane-d): December. Sundays reuse the four giants whose
+  // 63-day gap clears exactly (Tanzania, DR Congo, Zambia, Serbia). Review fix
+  // 2026-11-12: Dec 4, 5, 10 and 12 re-picked to dodge same-day spoilers in
+  // Atlas, Saw and Venn (Laos, Zimbabwe and Guinea were the first picks); Dec 4
+  // and 11 then swapped (Syria, Montenegro) so Venn's ALBANIA on Dec 4 names no
+  // ring member.
+  ['2026-12-01', 'Lebanon'],
+  ['2026-12-02', 'Honduras'],
+  ['2026-12-03', 'Lithuania'],
+  ['2026-12-04', 'Syria'],
+  ['2026-12-05', 'Central African Republic'],
+  ['2026-12-06', 'Tanzania'],
+  ['2026-12-07', 'United Arab Emirates'],
+  ['2026-12-08', 'Bhutan'],
+  ['2026-12-09', 'North Korea'],
+  ['2026-12-10', 'Benin'],
+  ['2026-12-11', 'Montenegro'],
+  ['2026-12-12', 'Mozambique'],
+  ['2026-12-13', 'DR Congo'],
+  ['2026-12-14', 'The Gambia'],
+  ['2026-12-15', 'Tunisia'],
+  ['2026-12-16', 'Oman'],
+  ['2026-12-17', 'Angola'],
+  ['2026-12-18', 'Uzbekistan'],
+  ['2026-12-19', 'Burkina Faso'],
+  ['2026-12-20', 'Zambia'],
+  ['2026-12-21', 'El Salvador'],
+  ['2026-12-22', 'Nicaragua'],
+  ['2026-12-23', 'Malawi'],
+  ['2026-12-24', 'Albania'],
+  ['2026-12-25', 'Azerbaijan'],
+  ['2026-12-26', 'South Sudan'],
+  ['2026-12-27', 'Serbia'],
+  ['2026-12-28', 'Yemen'],
+  ['2026-12-29', 'Kuwait'],
+  ['2026-12-30', 'Luxembourg'],
+  ['2026-12-31', 'Botswana'],
 ];
 
 const BAND = { 1: [1, 2], 2: [2, 3], 3: [3, 4], 4: [4, 5], 5: [5, 6], 6: [6, 7], 0: [8, 99] };

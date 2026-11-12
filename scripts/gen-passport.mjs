@@ -193,7 +193,7 @@ const days = [];
 // days.js holds only the five-round era. The run days are dated to the end of
 // the three games' banks, RUN_UNTIL; extend it when they are extended.
 const LEGS_FROM = '2026-10-15';
-const RUN_UNTIL = '2026-11-30';
+const RUN_UNTIL = '2026-12-31';
 SCHEDULE.filter(([iso]) => iso < LEGS_FROM).forEach(([iso, cc], i) => {
   const num = i + 1;
   const b = BORDERS[cc];

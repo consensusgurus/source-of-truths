@@ -27,6 +27,13 @@ import path from 'node:path';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const { PUZZLES } = await import(process.env.VERIFY_ARCOS_BANK || path.join(HERE, '../app/arcos/puzzles.js'));
 
+import { scanUS } from './us-spellings.mjs';
+// US spellings in clues and answers from ARCOS_US_FROM (2026-12-01, content
+// review dec-c2: "Grey matter" reached a board because nothing here screened it).
+// Whisky is listed by hand: the shared screen does not carry it. Earlier boards
+// are frozen.
+const ARCOS_US_FROM = '2026-12-01';
+const ARCOS_BRIT = /\bwhisky\b/i;
 const fails = [];
 const fail = (p, m) => fails.push(`${p ? p.live : '-'}: ${m}`);
 
@@ -121,6 +128,11 @@ PUZZLES.forEach((p, i) => {
       const cl = bank.get(a);
       if (!cl || !cl.has(row.c)) fail(p, `${a}: clue not in the banks`);
       if (/[—–]/.test(row.c)) fail(p, `${a}: dash in clue`);
+      if (p.live >= ARCOS_US_FROM) {
+        const hits = [...scanUS(row.c), ...scanUS(a.toLowerCase())].map((h) => h.found);
+        if (ARCOS_BRIT.test(row.c)) hits.push('whisky');
+        if (hits.length) fail(p, `${a}: British spelling in clue or answer (${hits.join(', ')})`);
+      }
     });
   }
   const dayWords = [...dayAns, ...hid, p.finale];

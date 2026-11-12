@@ -2,6 +2,15 @@
 //
 //   node scripts/gen-crib.mjs pool <seed> <count> <out.jsonl>   value random hands
 //   node scripts/gen-crib.mjs bank <from YYYY-MM-DD> <days> <pool.jsonl...>
+//   node scripts/gen-crib.mjs append <until YYYY-MM-DD> <pool.jsonl...>
+//
+// `append` (added 2026-11-12) is how a LIVE bank is extended: it reads
+// app/crib/puzzles.js, reserves every six-card set already dealt and the rank
+// patterns of the last 21 days, deals only the days after the last live board
+// (numbered on from the last num), and splices them in before the closing `];`
+// without touching a byte of the frozen text. Use pools valued from NEW seeds
+// (the 2026-11-12 restock used 20261204..20261207), never a launch pool's,
+// though a repeated six-card set is refused either way.
 //
 // Two phases because valuing a hand is the whole cost (about 0.3s: fifteen
 // throws, each averaged over 46 cuts and, for the crib, 45,540 cut-and-pair
@@ -91,7 +100,7 @@ function addDays(ymd, k) {
 const dow = (ymd) => new Date(`${ymd}T12:00:00Z`).getUTCDay();
 const rankSig = (h) => h.cards.map((c) => c % 13).sort((a, b) => a - b).join('.') + (h.yours ? 'y' : 't');
 
-function bank(from, days, files) {
+function bank(from, days, files, prior = null) {
   const hands = [];
   const seen = new Set();
   for (const f of files) {
@@ -107,6 +116,15 @@ function bank(from, days, files) {
   const used = new Set();           // six-card sets, whichever crib
   const sigDay = new Map();         // rank signature -> last day index used
   const out = [];
+  let num0 = 0;
+  if (prior) {
+    // frozen days sit at negative indices: the last live board is day -1
+    num0 = prior[prior.length - 1].num;
+    prior.forEach((p, i) => {
+      const d = i - prior.length;
+      for (const h of p.hands) { used.add(h.cards.join(',')); sigDay.set(rankSig(h), d); }
+    });
+  }
   for (let d = 0; d < days; d++) {
     const live = addDays(from, d);
     const wd = dow(live);
@@ -138,7 +156,7 @@ function bank(from, days, files) {
     for (let i = 0; i < need; i++) order.push(i % 2 === 0 ? mine.shift() : theirs.shift());
     const [y, m, dd] = live.split('-').map(Number);
     out.push({
-      num: d + 1,
+      num: num0 + d + 1,
       quizId: `crib-${m}-${dd}-${String(y).slice(2)}`,
       live,
       dateLabel: `${MONTHS[m - 1]} ${dd}, ${y}`,
@@ -184,8 +202,21 @@ if (isMain) {
     const b = bank(args[0], Number(args[1]), args.slice(2));
     const body = b.map((p) => '  ' + JSON.stringify(p)).join(',\n');
     process.stdout.write(`${HEADER}export const PUZZLES = [\n${body},\n];\n`);
+  } else if (mode === 'append') {
+    const FILE = new URL('../app/crib/puzzles.js', import.meta.url);
+    const src = fs.readFileSync(FILE, 'utf8');
+    const { PUZZLES: prior } = await import(FILE.href);
+    const last = prior[prior.length - 1].live;
+    const from = addDays(last, 1);
+    const days = Math.round((Date.parse(args[0] + 'T12:00:00Z') - Date.parse(from + 'T12:00:00Z')) / 864e5) + 1;
+    if (days <= 0) { console.log(`crib already runs to ${last}`); process.exit(0); }
+    const b = bank(from, days, args.slice(1), prior);
+    const close = src.lastIndexOf('];');
+    if (close < 0 || src.slice(close).trim() !== '];' || !/,\n$/.test(src.slice(0, close))) throw new Error('unexpected bank tail');
+    fs.writeFileSync(FILE, src.slice(0, close) + b.map((p) => '  ' + JSON.stringify(p)).join(',\n') + ',\n' + src.slice(close));
+    console.log(`appended ${b.length} days, ${from}..${b[b.length - 1].live}`);
   } else {
-    console.error('usage: gen-crib.mjs pool <seed> <count> <out> | bank <from> <days> <pool...>');
+    console.error('usage: gen-crib.mjs pool <seed> <count> <out> | bank <from> <days> <pool...> | append <until> <pool...>');
     process.exit(1);
   }
 }

@@ -14,6 +14,8 @@
 //   - no tip names its city; tips 1 and 2 never name the country;
 //   - no em or en dash, no British spelling in reader-facing text;
 //   - no leg is the same day's Ping city.
+//   - from TRIP_BLOCK_FROM no city (start or leg) is the day's Passport trip city
+//     or in a country that trip can stamp (scripts/carmen-trip-block.mjs).
 // Across the bank (variety ceiling):
 //   - no city returns within GAP_DAYS days, as a start or a leg;
 //   - no city appears more than MAX_USES times in the whole bank;
@@ -22,6 +24,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { LEGS_BY_DOW, TIERS_BY_DOW, kmBetween } from '../lib/carmen-engine.js';
+import { blockedOn } from './carmen-trip-block.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { PUZZLES } = await import('file://' + path.join(ROOT, 'app/carmen/puzzles.js'));
@@ -61,6 +64,7 @@ PUZZLES.forEach((p, i) => {
     const [lon, lat] = c.ll;
     if (!(lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90)) fail(p, `${c.name} coordinates out of range`);
     if (names.has(c.name)) fail(p, `${c.name} twice in one case`);
+    if (blockedOn(p.live, c.name)) fail(p, `${c.name} is on the day's Passport trip (city or a stampable country)`);
     names.add(c.name);
     if (k) {
       const prev = all[k - 1];

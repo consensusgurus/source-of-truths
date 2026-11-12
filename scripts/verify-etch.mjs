@@ -38,7 +38,8 @@
 //      uncounted), and no family may hold more than FAMILY_CAP boards or
 //      FAMILY_SHARE of the bank, whichever is smaller. The same ceiling is
 //      stated in the header of scripts/etch-art.mjs, where the pictures are
-//      authored. At 127 boards the largest family is animals & sea life at 19.
+//      authored. At 158 boards (2026-12-31) the largest family is animals &
+//      sea life at 22, household & furnishings 20.
 //   7. US spelling: reader-facing `subject` strings are scanned for obvious
 //      British word forms.
 //
@@ -119,17 +120,17 @@ const FAMILY_CAP = 24;
 const FAMILY_SHARE = 0.20;
 const FAMILY = {
   'animals & sea life': ['Fish', 'Owl', 'Butterfly', 'Duck', 'Penguin', 'Elephant', 'Turtle', 'Octopus', 'Whale', 'Cat', 'Giraffe', 'Lion', 'Snail', 'Ladybug', 'Toucan', 'Dinosaur', 'Mouse', 'Crab', 'Camel', 'Pig', 'Frog', 'Seahorse'],
-  'plants & produce': ['Mushroom', 'Cactus', 'Palm Tree', 'Apple', 'Cherries', 'Tulip', 'Pine Tree', 'Acorn', 'Strawberry', 'Pineapple', 'Sunflower', 'Carrot', 'Banana'],
-  'food & drink': ['Martini Glass', 'Teapot', 'Cupcake', 'Ice Cream Cone', 'Coffee Cup', 'Pizza Slice', 'Donut', 'Hamburger', 'Beer Mug'],
-  'nature, sky & weather': ['Snowflake', 'Crescent Moon', 'Star', 'Lightning Bolt', 'Raindrop', 'Saturn', 'Sun', 'Cloud'],
+  'plants & produce': ['Mushroom', 'Cactus', 'Palm Tree', 'Apple', 'Cherries', 'Tulip', 'Pine Tree', 'Acorn', 'Strawberry', 'Pineapple', 'Sunflower', 'Carrot', 'Banana', 'Christmas Tree'],
+  'food & drink': ['Martini Glass', 'Teapot', 'Cupcake', 'Ice Cream Cone', 'Coffee Cup', 'Pizza Slice', 'Donut', 'Hamburger', 'Beer Mug', 'Candy Cane', 'Gingerbread Man', 'Bottle', 'Gingerbread House'],
+  'nature, sky & weather': ['Snowflake', 'Crescent Moon', 'Star', 'Lightning Bolt', 'Raindrop', 'Saturn', 'Sun', 'Cloud', 'Snowman'],
   'transport & travel': ['Anchor', 'Sailboat', 'Rocket', 'Sailing Ship', 'Bicycle', 'Submarine', 'Hot Air Balloon', 'Airplane', 'Car', 'Steam Locomotive', 'Truck', 'Helicopter', 'Bus', 'Motorcycle', 'Fire Truck', 'Tractor'],
   'buildings & structures': ['Lighthouse', 'Castle', 'Windmill', 'Suspension Bridge', 'Cathedral', 'Tent', 'Barn', 'Igloo', 'Carousel', 'Ferris Wheel', 'Traffic Light', 'Water Tower'],
-  'tools & hardware': ['Key', 'Camera', 'Padlock', 'Hammer', 'Pencil', 'Battery', 'Ladder', 'Telescope', 'Horseshoe Magnet', 'Anvil', 'Watering Can'],
-  'household & furnishings': ['Umbrella', 'Lightbulb', 'Envelope', 'Bell', 'Candle', 'Typewriter', 'Alarm Clock', 'Hourglass', 'Gift Box', 'Table Lamp', 'Birdhouse', 'Broom', 'Mailbox', 'Chair', 'Chandelier', 'Book', 'Microphone', 'Grandfather Clock', 'Dog Bone'],
-  'clothing & accessories': ['Crown', 'Bowtie', 'Diamond', 'Top Hat', 'Boot', 'Ring', 'Wristwatch', 'T-Shirt'],
-  music: ['Guitar', 'Grand Piano', 'Violin', 'Gramophone', 'Music Note', 'Saxophone'],
-  'games, toys & sport': ['Chess Knight', 'Robot', 'Trophy', 'Dumbbell', 'Chess Pawn', 'Chess Rook', 'Bowling Pin', 'Kite', 'Dice', 'Balloon'],
-  'symbols & heraldry': ['Heart', 'Ghost', 'Sword', 'Shield', 'Arrow', 'Pennant Flag'],
+  'tools & hardware': ['Key', 'Camera', 'Padlock', 'Hammer', 'Pencil', 'Battery', 'Ladder', 'Telescope', 'Horseshoe Magnet', 'Anvil', 'Watering Can', 'Wrench', 'Shovel', 'Thumbtack', 'Screwdriver'],
+  'household & furnishings': ['Umbrella', 'Lightbulb', 'Envelope', 'Bell', 'Candle', 'Typewriter', 'Alarm Clock', 'Hourglass', 'Gift Box', 'Table Lamp', 'Birdhouse', 'Broom', 'Mailbox', 'Chair', 'Chandelier', 'Book', 'Microphone', 'Grandfather Clock', 'Ornament', 'Wreath'],
+  'clothing & accessories': ['Crown', 'Bowtie', 'Diamond', 'Top Hat', 'Boot', 'Ring', 'Wristwatch', 'T-Shirt', 'Winter Hat', 'Mitten', 'Stocking', 'Party Hat'],
+  music: ['Guitar', 'Grand Piano', 'Violin', 'Gramophone', 'Music Note', 'Saxophone', 'Trumpet'],
+  'games, toys & sport': ['Chess Knight', 'Robot', 'Trophy', 'Dumbbell', 'Chess Pawn', 'Chess Rook', 'Bowling Pin', 'Kite', 'Dice', 'Balloon', 'Teddy Bear'],
+  'symbols & heraldry': ['Heart', 'Ghost', 'Sword', 'Shield', 'Arrow', 'Pennant Flag', 'Spade'],
 };
 const familyOf = new Map();
 for (const [fam, subjects] of Object.entries(FAMILY)) for (const s of subjects) familyOf.set(s, fam);

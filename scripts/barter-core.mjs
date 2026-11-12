@@ -47,13 +47,28 @@ const NAMES = new Set(['venus','hurst','cowan','dolce','dolci','cohan','rowan','
   'sumatra','supra','swede','sweeney','swiss','taser','templar','terra','texas','tiffany','torah','trinity','tripoli','trump',
   'twain','twitter','wally','weber','webster','welch','welsh','wigan'
 ]);
-const NASTY = new Set(['pubic','bitch','whore','penis','vulva','fecal','rapes','raped','nazis','negro','moron','idiot','bimbo','queer','vagina','nipple','orgasm','rectum','erotic','sexual','faeces','feces','urine','vomit','crotch','panties','condom','aroused','shitty','pissed',
+const NASTY = new Set(['thong','pubic','bitch','whore','penis','vulva','fecal','rapes','raped','nazis','negro','moron','idiot','bimbo','queer','vagina','nipple','orgasm','rectum','erotic','sexual','faeces','feces','urine','vomit','crotch','panties','condom','aroused','shitty','pissed',
   // added 2026-08 during the Sep-Nov bank extension
   'jackass','pervert','pooping','redneck','scumbag','suicide'
 ]);
 
 // Fragments and bound forms that are not plain standalone English words.
-const NOTWORDS = new Set(['avant','takin']);
+const NOTWORDS = new Set(['avant','takin',
+  // Dec restock (2026-11-12): slang and a Britishism the December draw surfaced
+  'homie','dodgy','gonna','leafs','batsman','groin','bosom','dumbest','bigot','harem',
+  'lesbian','fetus','filth','latex','bling','patsy','droid','thong','rabbi','tonne','tramp',
+  // whole-pool read, 2026-11-12: names, slang, Britishisms, religion, drugs,
+  // bodily and violent words a breakfast-table word game should not deal
+  'bible','bloke','booty','booze','bowel','drunk','fella','gimme','gypsy','hijab','homer','jihad',
+  'junta','lynch','mafia','momma','mommy','mucus','naked','pagan','potty','sissy','slave','spank',
+  'sperm','swine','sorta','wanna','anglo','lupus','palsy','polio','chemo','papal','padre','shire',
+  'pence','hubby','felon','fiend','sheik','cocky','haute','cabal',
+  'abusing','abusive','alimony','anthrax','arousal','atheism','autopsy','bigoted','bigotry','bipolar',
+  'bladder','bologna','brothel','bullock','cocaine','cholera','cyanide','drugged','drunken','ecstasy',
+  'fascism','fascist','genital','heathen','killing','lunatic','measles','messiah','obscene','ovarian',
+  'puberty','satanic','seduced','sensual','sexiest','slavery','stabbed','steroid','syringe','uterine',
+  'urinary','warhead','pollock','griffin','marquis','sabbath','gentile','diocese','liturgy','googled',
+  'handgun','shotgun','gunshot','gunfire','firearm','carnage','torture','wannabe','bonkers','manhunt']);
 
 export async function loadPools() {
   const dict = readFileSync(join(BASE, 'public/crux-words.txt'), 'utf8').split('\n').map(w=>w.trim()).filter(Boolean);

@@ -8,6 +8,9 @@
 //   cls   mammal | bird | reptile | amphibian | fish | bug | invert
 //   fly   flies under its own power (a chicken's short burst counts, the
 //         generous reading).
+//   flyp  only some of the species flies: ant queens and males fly on the
+//         mating flight, the workers a player pictures never do. Both readings
+//         stand, so the ant passes "Can fly" AND "Cannot fly" (2026-11-12).
 //   aqua  lives mostly in the water (a penguin spends most of its life at sea,
 //         so it counts).
 //   afr   found in the wild in Africa (Madagascar counts; the African penguin
@@ -178,7 +181,7 @@ export const ANIMALS = [
   { t: 'Grasshopper', cls: 'bug', fly: 1, afr: 1, eggs: 1 },
   { t: 'Cricket', cls: 'bug', fly: 1, afr: 1, eggs: 1 },
   { t: 'Beetle', cls: 'bug', fly: 1, afr: 1, eggs: 1 },
-  { t: 'Ant', cls: 'bug', afr: 1, eggs: 1 },
+  { t: 'Ant', cls: 'bug', afr: 1, eggs: 1, flyp: 1 },
   { t: 'Spider', cls: 'bug', afr: 1, eggs: 1, hunt: 1 },
   { t: 'Scorpion', cls: 'bug', afr: 1, hunt: 1 },
   { t: 'Snail', cls: 'invert', afr: 1, eggs: 1 },

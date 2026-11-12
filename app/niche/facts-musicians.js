@@ -25,6 +25,8 @@
 //         Cowboy Carter and F-1 Trillion; southern rock is not).
 //   num   a number in the stage name the title does not show (2Pac, the
 //         One in OneRepublic).
+//   pr    a Puerto Rican act: American on one reading, not on another, so it
+//         answers both 'An American act' and 'Not an American act'.
 //   a     typed aliases, lowercase.
 export const MUSICIANS = [
   // ── legacy rock & pop ──
@@ -197,7 +199,7 @@ export const MUSICIANS = [
   { t: 'Post Malone', us: 1, rap: 1, ctry: 1 },
   { t: 'Kendrick Lamar', us: 1, rap: 1 },
   { t: 'Travis Scott', us: 1, rap: 1 },
-  { t: 'Bad Bunny', us: 1, aoty: 1, rap: 1 },
+  { t: 'Bad Bunny', us: 1, pr: 1, aoty: 1, rap: 1 },
   { t: 'Shakira', fem: 1 },
   { t: 'BTS', a: ['bts'], band: 1 },
   { t: 'Daft Punk', band: 1, aoty: 1 },
@@ -232,3 +234,7 @@ export const ROTY = new Set(['Frank Sinatra', 'Simon & Garfunkel', 'Carole King'
 
 // Grammy Best New Artist winners, through the 2025 ceremony.
 export const BEST_NEW = new Set(['The Beatles', 'Cyndi Lauper', 'Mariah Carey', 'Lauryn Hill', 'Christina Aguilera', 'Alicia Keys', 'Norah Jones', 'Maroon 5', 'John Legend', 'Carrie Underwood', 'Amy Winehouse', 'Adele', 'Sam Smith', 'Dua Lipa', 'Billie Eilish', 'Olivia Rodrigo', 'Chappell Roan']);
+
+// Canadian acts (added 2026-11-12, lane-d restock). Every member of the table
+// that is Canadian by origin; none of them carries us or uk.
+export const CANADIAN = new Set(['Rush', 'Bryan Adams', 'Alanis Morissette', 'Celine Dion', 'Shania Twain', 'Nickelback', 'Drake', 'The Weeknd', 'Justin Bieber']);

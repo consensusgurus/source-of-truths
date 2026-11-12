@@ -55,6 +55,16 @@ export const THEMES = {
     { id: 'dock', title: 'The Marina', verb: 'moored', singular: 'boat', plural: 'boats', slot: 'berth', slots: 'berths',
       befWord: 'somewhere to the west of', aftWord: 'somewhere to the east of', immWord: 'immediately to the west of',
       setupTpl: 'A harbor master moors exactly {N} boats ({L}) along a single pier of {N} berths numbered 1 through {n}, with berth 1 at the west end. Each boat is moored at exactly one berth. The mooring must meet all of the following conditions:' },
+    // grown 2026-11-12 so the bank reaches 2026-12-31 under the ceiling of 2 uses per theme
+    { id: 'setlist', title: 'The Set List', verb: 'played', singular: 'song', plural: 'songs', slot: 'slot', slots: 'slots',
+      setupTpl: 'A band plays exactly {N} songs ({L}) one at a time in {N} slots numbered 1 through {n}. Each song is played exactly once. The set list must meet all of the following conditions:' },
+    { id: 'bakeoff', title: 'The Bake-Off', verb: 'judged', singular: 'entry', plural: 'entries', slot: 'slot', slots: 'slots',
+      setupTpl: 'A panel judges exactly {N} entries ({L}) one at a time in {N} slots numbered 1 through {n}. Each entry is judged exactly once. The judging must meet all of the following conditions:' },
+    { id: 'launches', title: 'The Launch Manifest', verb: 'launched', singular: 'satellite', plural: 'satellites', slot: 'window', slots: 'windows',
+      setupTpl: 'A space agency launches exactly {N} satellites ({L}) in {N} consecutive launch windows numbered 1 through {n}, one satellite per window. Each satellite is launched in exactly one window. The manifest must meet all of the following conditions:' },
+    { id: 'trophies', title: 'The Trophy Case', verb: 'displayed', singular: 'trophy', plural: 'trophies', slot: 'position', slots: 'positions',
+      befWord: 'somewhere to the left of', aftWord: 'somewhere to the right of', immWord: 'immediately to the left of',
+      setupTpl: 'A club displays exactly {N} trophies ({L}) in a single row of {N} positions numbered 1 through {n}, with position 1 at the far left. Each trophy is displayed in exactly one position. The display must meet all of the following conditions:' },
   ],
 
   sel: [
@@ -89,6 +99,13 @@ export const THEMES = {
       setupTpl: 'A teacher assigns exactly {K} of {N} novels ({L}) for the term. The reading list must meet all of the following conditions:' },
     { id: 'regatta', title: 'The Regatta', verb: 'entered', singular: 'boat', plural: 'boats',
       setupTpl: 'A sailing club enters exactly {K} of {N} boats ({L}) in the regatta. The entry must meet all of the following conditions:' },
+    // grown 2026-11-12
+    { id: 'allstars', title: 'The All-Star Roster', verb: 'picked', singular: 'player', plural: 'players',
+      setupTpl: 'A manager picks exactly {K} of {N} players ({L}) for the all-star roster. The roster must meet all of the following conditions:' },
+    { id: 'bouquet', title: 'The Bouquet', verb: 'used', singular: 'flower', plural: 'flowers',
+      setupTpl: 'A florist uses exactly {K} of {N} flowers ({L}) in a bouquet. The bouquet must meet all of the following conditions:' },
+    { id: 'excursions', title: 'The Excursions', verb: 'scheduled', singular: 'excursion', plural: 'excursions',
+      setupTpl: 'A tour company schedules exactly {K} of {N} proposed excursions ({L}) for its winter season. The schedule must meet all of the following conditions:' },
   ],
 
   match: [
@@ -138,6 +155,16 @@ export const THEMES = {
     { id: 'cabins', title: 'The Summer Camp', verb: 'housed', prep: 'in', singular: 'camper', plural: 'campers',
       groupNoun: 'cabin', groupNouns: 'cabins', groups: ['Birch Cabin', 'Cedar Cabin', 'Maple Cabin'], groupsShort: ['Birch', 'Cedar', 'Maple'],
       setupTpl: 'A camp houses each of {N} campers ({L}) in exactly one of three cabins: {G}. More than one camper may be housed in the same cabin. The housing must meet all of the following conditions:' },
+    // grown 2026-11-12
+    { id: 'heats', title: 'The Swim Meet', verb: 'assigned', prep: 'to', singular: 'swimmer', plural: 'swimmers',
+      groupNoun: 'heat', groupNouns: 'heats', groups: ['the first heat', 'the second heat', 'the third heat'], groupsShort: ['first', 'second', 'third'],
+      setupTpl: 'A swim meet assigns each of {N} swimmers ({L}) to exactly one of three heats: {G}. More than one swimmer may be assigned to the same heat. The heats must meet all of the following conditions:' },
+    { id: 'skischool', title: 'The Ski School', verb: 'placed', prep: 'in', singular: 'skier', plural: 'skiers',
+      groupNoun: 'class', groupNouns: 'classes', groups: ['the beginner class', 'the intermediate class', 'the advanced class'], groupsShort: ['beginner', 'intermediate', 'advanced'],
+      setupTpl: 'A ski school places each of {N} skiers ({L}) in exactly one of three classes: {G}. More than one skier may be placed in the same class. The placement must meet all of the following conditions:' },
+    { id: 'trails', title: 'The Trailhead', verb: 'sent', prep: 'on', singular: 'hiker', plural: 'hikers',
+      groupNoun: 'trail', groupNouns: 'trails', groups: ['the lake trail', 'the summit trail', 'the canyon trail'], groupsShort: ['lake', 'summit', 'canyon'],
+      setupTpl: 'A ranger sends each of {N} hikers ({L}) on exactly one of three trails: {G}. More than one hiker may be sent on the same trail. The plan must meet all of the following conditions:' },
   ],
 
   hyb: [
@@ -200,6 +227,19 @@ export const THEMES = {
       befWord: 'somewhere to the west of', aftWord: 'somewhere to the east of', immWord: 'immediately to the west of',
       attrs: ['moored bow first', 'moored stern first'], attrShort: 'bow first',
       setupTpl: 'A harbor master moors exactly {N} boats ({L}) along a single pier of {N} berths numbered 1 through {n}, with berth 1 at the west end. Each boat is also either {A0} or {A1}. The mooring must meet all of the following conditions:' },
+    // grown 2026-11-12
+    { id: 'bakery', title: 'The Bake Schedule', verb: 'baked', singular: 'loaf', plural: 'loaves', slot: 'batch', slots: 'batches',
+      attrs: ['baked with seeds', 'baked plain'], attrShort: 'seeded',
+      setupTpl: 'A bakery bakes exactly {N} loaves ({L}) in {N} consecutive batches numbered 1 through {n}, one loaf per batch. Each loaf is also either {A0} or {A1}. The schedule must meet all of the following conditions:' },
+    { id: 'radiohour', title: 'The Radio Hour', verb: 'played', singular: 'record', plural: 'records', slot: 'slot', slots: 'slots',
+      attrs: ['played on vinyl', 'played from a file'], attrShort: 'on vinyl',
+      setupTpl: 'A radio host plays exactly {N} records ({L}) one at a time in {N} slots numbered 1 through {n}. Each record is also either {A0} or {A1}. The playlist must meet all of the following conditions:' },
+    { id: 'taproom', title: 'The Taproom Flight', verb: 'poured', singular: 'beer', plural: 'beers', slot: 'slot', slots: 'slots',
+      attrs: ['poured on draft', 'poured from a can'], attrShort: 'on draft',
+      setupTpl: 'A taproom pours exactly {N} beers ({L}) one at a time in {N} slots numbered 1 through {n}. Each beer is also either {A0} or {A1}. The flight must meet all of the following conditions:' },
+    { id: 'skilessons', title: 'The Ski Lessons', verb: 'taught', singular: 'lesson', plural: 'lessons', slot: 'hour', slots: 'hours',
+      attrs: ['taught on the bunny hill', 'taught on the main slope'], attrShort: 'bunny hill',
+      setupTpl: 'A ski school teaches exactly {N} lessons ({L}) over {N} consecutive hours numbered 1 through {n}, one lesson per hour. Each lesson is also either {A0} or {A1}. The day must meet all of the following conditions:' },
   ],
 };
 

@@ -11,6 +11,7 @@ import { PUZZLES as P_realtor } from '../realtor/puzzles';
 import { PUZZLES as P_agent } from '../agent/puzzles';
 import { PUZZLES as P_curator } from '../curator/puzzles';
 import { PUZZLES as P_picks } from '../picks/puzzles';
+import { POOL as PICKS_POOL } from '../picks/pool';
 
 // PRICE CHECK, the run (owner, 2026-10-01): mindloftdaily.com/pricecheck.
 // Every bank is resolved HERE and only today's five items ship, exactly as
@@ -19,9 +20,12 @@ import { PUZZLES as P_picks } from '../picks/puzzles';
 const BANKS = { pricer: P_pricer, dealer: P_dealer, realtor: P_realtor, agent: P_agent, curator: P_curator, picks: P_picks };
 
 // A Picks board names its items by quizId in the retired Dealer, Agent and
-// Curator banks; each ships the same whitelisted card those games drew.
+// Curator banks, or (from 2026-11-15) by id in app/picks/pool.js, whose rows
+// have the same fields as the bank their `key` names; each ships the same
+// whitelisted card those games drew.
 const ROWS = new Map();
 for (const k of ['dealer', 'agent', 'curator']) for (const p of BANKS[k]) ROWS.set(p.quizId, [k, p]);
+for (const it of PICKS_POOL) ROWS.set(it.id, [it.key, it]);
 function picksItem(ref) {
   const hit = ROWS.get(ref);
   if (!hit) return null;

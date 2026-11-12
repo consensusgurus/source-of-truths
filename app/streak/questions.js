@@ -4468,7 +4468,7 @@ export const QUESTIONS = [
   { id: 'd112q06', cat: 'Music', tier: 1, q: 'Which American singer and pianist broke through with the 2001 song Fallin\'?', choices: ['Erykah Badu', 'Jill Scott', 'Alicia Keys', 'India Arie'], correct: 2 },
   { id: 'd112q07', cat: 'Words & Books', tier: 1, q: 'Which novel series by George R. R. Martin follows the houses of Stark and Lannister?', choices: ['A Song of Ice and Fire', 'The Broken Empire', 'Malazan Book of the Fallen', 'The First Law'], correct: 0 },
   { id: 'd112q08', cat: 'Grab Bag', tier: 1, q: 'What is a person who collects postage stamps called?', choices: ['A cartophilist', 'A numismatist', 'A deltiologist', 'A philatelist'], correct: 3 },
-  { id: 'd112q09', cat: 'Geography', tier: 2, q: 'Sofia is the capital of which country?', choices: ['Bulgaria', 'Romania', 'North Macedonia', 'Serbia'], correct: 0 },
+  { id: 'd112q09', cat: 'Geography', tier: 2, q: 'Canberra is the capital of which country?', choices: ['Australia', 'New Zealand', 'Papua New Guinea', 'Canada'], correct: 0 },
   { id: 'd112q10', cat: 'Science', tier: 2, q: 'Which ore is refined to produce almost all the world\'s aluminum?', choices: ['Cassiterite', 'Galena', 'Hematite', 'Bauxite'], correct: 3 },
   { id: 'd112q11', cat: 'History', tier: 2, q: 'Which three-day 1863 battle in Pennsylvania turned the American Civil War?', choices: ['Shiloh', 'Chancellorsville', 'Fredericksburg', 'Gettysburg'], correct: 3 },
   { id: 'd112q12', cat: 'Sports', tier: 2, q: 'Which Olympic sport is contested with the foil, the epee and the saber?', choices: ['Kendo', 'Fencing', 'Wushu', 'Modern pentathlon'], correct: 1 },

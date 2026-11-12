@@ -42,7 +42,16 @@ const BLOCK = new Set(('gonna wanna gotta dixie shiva leone donna jenny welsh qu
   + 'mamma kappa roger molly cutie sigma delta alpha gamma omega betty larry '
   + 'sonny hogan butch dunno psych mafia women gotcha kinda sorta yeah nope '
   + 'benny burke cisco bobby brent romeo hindi texan paris milan dante bible '
-  + 'vodka whisky crypt hooker drunk stoned tumor cancer cardio cyber promo gonad').split(' '));
+  + 'vodka whisky crypt hooker drunk stoned tumor cancer cardio cyber promo gonad '
+  // added 2026-11-12 (Dec restock): names and Briticisms the December draw surfaced
+  + 'nelson brazil newton chevy brock bloke tammy fella harry bubba billy jerry jimmy maria doggy '
+  + 'gimme mecca daddy mommy yahoo rabbi vomit '
+  + 'afghan amazon apache august autism bailey barton berlin biopsy burton condom dammit crappy '
+  + 'dexter fetish french ghetto google graham guinea heroin hoover hurley johnny kaiser martin '
+  + 'mercer mickey morris murphy opioid oxford panama phoebe psycho racial sexism sexual sharia '
+  + 'sheila shelly surrey soviet stupid vulgar toilet sewage nausea coffin filthy victim felony '
+  + 'lethal gunman mosque church clergy sinful sheikh tucker wright miller viking ethnic trauma '
+  + 'plague voodoo bikini hippie hobbit madame zombie sweaty fiance').split(' '));
 
 // Authored finales and clues, keyed by live date. Sunday Editions (six-letter
 // answers) are the real Sundays: Nov 1, 8, 15, 22, 29.
@@ -77,6 +86,40 @@ const FINALS = {
   '2026-11-28': ['SHOWDOWN', 'The final scene where somebody has to blink.'],
   '2026-11-29': ['SNOWFLAKE', 'No two alike, and none of them last.'],
   '2026-11-30': ['TIGHTROPE', 'A walk where every step is a balancing act.'],
+  // December segment, authored 2026-11-12 for the Dec 31 restock:
+  //   node scripts/gen-garble.mjs --from 2026-12-01 --days 31 --startnum 146
+  // Sunday Editions are Dec 6, 13, 20, 27.
+  '2026-12-01': ['SNOWPLOW', 'First one out after a blizzard, and it pushes its luck.'],
+  '2026-12-02': ['FIRESIDE', 'Where every story gets a warm reception.'],
+  '2026-12-03': ['EARMUFFS', 'Headphones that only play silence.'],
+  '2026-12-04': ['BOOKMARK', 'Saves your place without ever reading ahead.'],
+  '2026-12-05': ['FRUITCAKE', 'The holiday gift that keeps getting regifted.'],
+  '2026-12-06': ['SNOWGLOBE', 'A blizzard you can hold in one hand.'],
+  '2026-12-07': ['OVERCOAT', 'Outerwear that goes above and beyond.'],
+  '2026-12-08': ['MOUSETRAP', 'A cheesy setup with a snappy ending.'],
+  '2026-12-09': ['BACKYARD', 'The great outdoors, fenced in.'],
+  '2026-12-10': ['NEWSPAPER', 'Black and white and read all over.'],
+  '2026-12-11': ['STARFISH', 'Neither a star nor a fish, and fine with that.'],
+  '2026-12-12': ['EVERGREEN', 'A tree that never goes out of style.'],
+  '2026-12-13': ['NUTCRACKER', 'A wooden soldier who handles the tough cases.'],
+  '2026-12-14': ['CHECKLIST', 'Ticks you off, one item at a time.'],
+  '2026-12-15': ['GOLDFISH', 'A pet with a famously short memory, or so they say.'],
+  '2026-12-16': ['SPOTLIGHT', 'Follows the star wherever she goes.'],
+  '2026-12-17': ['WISHLIST', 'Hope, written down and handed over.'],
+  '2026-12-18': ['DOGHOUSE', 'Where you end up after forgetting the anniversary.'],
+  '2026-12-19': ['WATERPROOF', 'Rain has no case against it.'],
+  '2026-12-20': ['SNOWDRIFT', "Winter's way of rearranging the driveway."],
+  '2026-12-21': ['HEARTBEAT', 'The rhythm section you were born with.'],
+  '2026-12-22': ['BOOKSHELF', 'Holds plenty of stories without reading a single one.'],
+  '2026-12-23': ['WORKSHOP', 'Where the elves clock in this time of year.'],
+  '2026-12-24': ['FIRELIGHT', 'What the hearth puts on after dark.'],
+  '2026-12-25': ['REINDEER', 'Flies one night a year, on a very tight schedule.'],
+  '2026-12-26': ['PATCHWORK', 'A quilt that makes the most of its scraps.'],
+  '2026-12-27': ['TOOTHPASTE', 'Squeezed every morning and never complains.'],
+  '2026-12-28': ['PINWHEEL', 'Always in a spin when the wind picks up.'],
+  '2026-12-29': ['BLINDFOLD', 'Puts a stop to sightseeing.'],
+  '2026-12-30': ['CALENDAR', 'Its days are numbered.'],
+  '2026-12-31': ['MIDNIGHT', 'When the old year finally clocks out.'],
 };
 
 // ── seeded rng ──────────────────────────────────────────────────────────────

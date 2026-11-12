@@ -1714,7 +1714,7 @@ SILLY|Goofy
 SILVERY|Like moonlight
 SIMPLER|Less complicated
 SIN|Wrongdoing
-SINCE|From then on
+SINCE|From that time
 SINGERS|Chorus members
 SINK|Kitchen basin
 SIP|Small drink
@@ -2370,7 +2370,7 @@ BOUNCE|What a ball does
 BOWLER|Cricket's pitcher, or a round hat
 BOXCAR|Freight train unit
 BRAIDS|Woven hair
-BRAINS|Grey matter
+BRAINS|Gray matter
 BRANCH|Tree limb, or a bank office
 BRANDS|Company names
 BREACH|Gap in the wall
@@ -2426,7 +2426,7 @@ CANOPY|Overhead cover
 CANVAS|Painter's surface
 CANYON|Deep river gorge
 CARBON|Element in diamonds
-CAREER|Your working life
+CAREER|Chosen profession
 CARPET|Wall-to-wall flooring
 CARROT|Rabbit's favorite
 CARTON|Egg holder
@@ -4374,7 +4374,7 @@ ETERNAL|Everlasting
 EVIDENT|Plain to see
 EXACTLY|Precisely
 EXAMINE|Look closely at
-EXCERPT|Passage taken from it
+EXCERPT|Passage taken from a book
 EXCLAIM|Cry out
 EXCLUDE|Leave out
 EXHAUST|Car's pipe, or wear out
@@ -5018,7 +5018,7 @@ SPECIFY|Say exactly which
 SPELLED|Set out the letters
 SPILLED|Knocked it over
 SPIRALS|Staircase shapes
-SPIRITS|Whisky and gin, or morale
+SPIRITS|Whiskey and gin, or morale
 SPOILED|Ruined, or indulged
 SPOTTED|Saw it
 SPRAYED|Misted it on
@@ -5104,7 +5104,7 @@ THINNER|Slimmer
 THISTLE|Prickly Scottish emblem
 TIGHTER|Snugger
 TIMIDLY|Shyly
-TOASTED|Browned under the grill
+TOASTED|Browned, as bread
 TOENAIL|Foot's clipping job
 TOOLBOX|Where the spanners are
 TOPICAL|Very much of the moment
@@ -5249,7 +5249,7 @@ ANVIL|Blacksmith's block
 APART|Separated
 APPLY|Put in for the job
 ARMOR|Knight's suit
-ARRAY|Whole display of them
+ARRAY|Impressive display
 ASSET|Something worth having
 AUDIT|Books check
 AVAIL|Be of use
@@ -5370,7 +5370,7 @@ CYNIC|Doubter of motives
 DAISY|White petals, yellow center
 DANDY|Just fine
 DEBUT|First appearance
-DECAL|Stick on design
+DECAL|Stick-on design
 DECAY|Rot
 DECOR|Room's look
 DECOY|Fake to draw them off
@@ -5768,7 +5768,7 @@ RENEW|Extend, as a lease
 REPEL|Drive back
 RESET|Start over
 RESIN|Tree's sticky sap
-RETRO|Old fashioned on purpose
+RETRO|Old-fashioned on purpose
 REVEL|Make merry
 RIFLE|Long gun
 RIGID|Won't bend

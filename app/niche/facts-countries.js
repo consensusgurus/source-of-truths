@@ -256,7 +256,9 @@ export const EURO = new Set(['Austria', 'Belgium', 'Bulgaria', 'Croatia', 'Cypru
 // Spanish as an official or co-official national language.
 export const SPANISH = new Set(['Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica', 'Cuba', 'Dominican Republic', 'Ecuador', 'El Salvador', 'Equatorial Guinea', 'Guatemala', 'Honduras', 'Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'Spain', 'Uruguay', 'Venezuela']);
 
-// French as an official or co-official national language.
+// French as an official or co-official national language. Mali (2023), Burkina
+// Faso (2023) and Niger (2025) demoted French to a working language; they stay on
+// the generous reading, since French is still used in their government.
 export const FRENCH = new Set(['Belgium', 'Benin', 'Burkina Faso', 'Burundi', 'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Comoros', 'Democratic Republic of the Congo', 'Djibouti', 'Equatorial Guinea', 'France', 'Gabon', 'Guinea', 'Haiti', 'Ivory Coast', 'Luxembourg', 'Madagascar', 'Mali', 'Monaco', 'Niger', 'Republic of the Congo', 'Rwanda', 'Senegal', 'Seychelles', 'Switzerland', 'Togo', 'Vanuatu']);
 
 // A monarchy: the head of state is a monarch. Elective monarchies count
@@ -278,3 +280,37 @@ export const BIGGEST = new Set(['Russia', 'Canada', 'China', 'United States', 'B
 
 // Portuguese as an official or co-official national language.
 export const PORTUGUESE = new Set(['Angola', 'Brazil', 'Cape Verde', 'Equatorial Guinea', 'Guinea-Bissau', 'Mozambique', 'Portugal', 'Sao Tome and Principe', 'Timor-Leste']);
+
+// ── added 2026-11-12 (lane-d restock): pool growth for the Sunday 4x4 ─────────
+// The fifteen former Soviet republics (the union republics of 1991).
+export const SOVIET = new Set(['Armenia', 'Azerbaijan', 'Belarus', 'Estonia', 'Georgia', 'Kazakhstan', 'Kyrgyzstan', 'Latvia', 'Lithuania', 'Moldova', 'Russia', 'Tajikistan', 'Turkmenistan', 'Ukraine', 'Uzbekistan']);
+
+// Countries with a Mediterranean Sea coastline (Palestine sits out of this
+// table). Bosnia and Herzegovina's short Neum coast counts, the standard reading.
+export const MEDITERRANEAN = new Set(['Spain', 'France', 'Monaco', 'Italy', 'Malta', 'Slovenia', 'Croatia', 'Bosnia and Herzegovina', 'Montenegro', 'Albania', 'Greece', 'Turkey', 'Cyprus', 'Syria', 'Lebanon', 'Israel', 'Egypt', 'Libya', 'Tunisia', 'Algeria', 'Morocco']);
+
+// ASEAN's eleven members (Timor-Leste admitted October 2025).
+export const ASEAN = new Set(['Brunei', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Myanmar', 'Philippines', 'Singapore', 'Thailand', 'Vietnam', 'Timor-Leste']);
+
+// Has hosted a Winter Olympics (through the awarded 2034 games). Sarajevo 1984
+// was held in Yugoslavia; Bosnia and Herzegovina is in on it, the generous
+// reading.
+export const WINTER_OLY = new Set(['United States', 'France', 'Switzerland', 'Germany', 'Norway', 'Italy', 'Austria', 'Japan', 'Canada', 'Bosnia and Herzegovina', 'Russia', 'South Korea', 'China']);
+
+// Traffic drives on the left (the sovereign states only; Samoa switched in
+// 2009 and is in).
+export const LEFT_DRIVE = new Set(['Antigua and Barbuda', 'Australia', 'Bahamas', 'Bangladesh', 'Barbados', 'Bhutan', 'Botswana', 'Brunei', 'Cyprus', 'Dominica', 'Eswatini', 'Fiji', 'Grenada', 'Guyana', 'India', 'Indonesia', 'Ireland', 'Jamaica', 'Japan', 'Kenya', 'Kiribati', 'Lesotho', 'Malawi', 'Malaysia', 'Maldives', 'Malta', 'Mauritius', 'Mozambique', 'Namibia', 'Nauru', 'Nepal', 'New Zealand', 'Pakistan', 'Papua New Guinea', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'Seychelles', 'Singapore', 'Solomon Islands', 'South Africa', 'Sri Lanka', 'Suriname', 'Tanzania', 'Thailand', 'Timor-Leste', 'Tonga', 'Trinidad and Tobago', 'Tuvalu', 'Uganda', 'United Kingdom', 'Zambia', 'Zimbabwe']);
+
+// Added 2026-11-12 (late review pass) so a Sunday 4x4 can be built under the
+// near-nested and broad guards. Closed rosters, asserted by size and name.
+// Hosted the men's World Cup, through the 2026 tournament (England's 1966 for
+// the United Kingdom, West Germany's 1974 for Germany, Canada, Mexico and the
+// United States co-hosting 2026).
+export const WC_HOSTS = new Set(['Uruguay', 'Italy', 'France', 'Brazil', 'Switzerland', 'Sweden', 'Chile', 'United Kingdom', 'Mexico', 'Germany', 'Argentina', 'Spain', 'United States', 'Japan', 'South Korea', 'South Africa', 'Russia', 'Qatar', 'Canada']);
+// The Schengen Area's 29 members (Bulgaria and Romania in full from 2025), plus
+// Monaco, San Marino and Vatican City, which sit inside it with open borders and
+// no controls (de facto members, the generous reading).
+export const SCHENGEN = new Set(['Monaco', 'San Marino', 'Vatican City', 'Austria', 'Belgium', 'Bulgaria', 'Croatia', 'Czechia', 'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary', 'Iceland', 'Italy', 'Latvia', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Malta', 'Netherlands', 'Norway', 'Poland', 'Portugal', 'Romania', 'Slovakia', 'Slovenia', 'Spain', 'Sweden', 'Switzerland']);
+// The G7.
+export const G7 = new Set(['Canada', 'France', 'Germany', 'Italy', 'Japan', 'United Kingdom', 'United States']);
+

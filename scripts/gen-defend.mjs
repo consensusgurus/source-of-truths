@@ -194,7 +194,7 @@ function motifFor(board, key, after) {
     return pick([
       `Take the attacker. The ${piece} captures the ${captured} on ${sq}, and every other parry leaves the net standing.`,
       `The net has one loose thread. The ${piece} takes the ${captured} on ${sq}, and nothing quieter holds.`,
-      `Remove the piece doing the work. The ${piece} takes on ${sq}, which is the only defence that changes the material on the board.`,
+      `Remove the piece doing the work. The ${piece} takes on ${sq}, which is the only defense that changes the material on the board.`,
     ]);
   }
   if (gives) {
@@ -219,7 +219,7 @@ function motifFor(board, key, after) {
     ]);
   }
   return pick([
-    `A quiet defence. The ${piece} to ${sq} covers the mating square, and nothing louder does.`,
+    `A quiet defense. The ${piece} to ${sq} covers the mating square, and nothing louder does.`,
     `No check, no capture, no escape. The ${piece} to ${sq} simply guards the square the mate needs.`,
     `The move that looks like nothing. The ${piece} to ${sq} takes the mating square away and there is no second way to do it.`,
   ]);

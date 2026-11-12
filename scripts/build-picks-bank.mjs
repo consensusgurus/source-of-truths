@@ -1,5 +1,6 @@
 // scripts/build-picks-bank.mjs: deals the Picks bank (app/picks/puzzles.js)
-// out of the retired Dealer, Agent and Curator banks.
+// out of the retired Dealer, Agent and Curator banks and, once those ran out,
+// the Picks pool in app/picks/pool.js (owner, 2026-11-12).
 //
 //   node scripts/build-picks-bank.mjs <from YYYY-MM-DD> <to YYYY-MM-DD>
 //
@@ -27,6 +28,14 @@ for (const key of ['dealer', 'agent', 'curator']) {
   const { PUZZLES } = await import(pathToFileURL(path.join(root, `app/${key}/puzzles.js`)).href);
   for (const p of PUZZLES) pool.push({ ref: p.quizId, key, price: Number(p.price), live: p.live, lot: p.kind === 'auction' });
 }
+// The Picks pool (app/picks/pool.js, owner 2026-11-12): rows tied to no date,
+// so they always count as fresh. `gathered` bounds how late a list price may
+// be dealt (60 days, the same rule the banks keep); an auction result is a
+// settled fact and has no such limit.
+const { POOL: PICKS_POOL } = await import(pathToFileURL(path.join(root, 'app/picks/pool.js')).href);
+const MAX_AGE = 60;
+for (const p of PICKS_POOL) pool.push({ ref: p.id, key: p.key, price: Number(p.price), live: '9999-12-31', lot: p.kind === 'auction', gathered: p.kind === 'auction' ? null : p.gathered });
+const ageOk = (x, iso) => !x.gathered || (Date.parse(iso) - Date.parse(x.gathered)) / 86400000 <= MAX_AGE;
 const bankFile = path.join(root, 'app/picks/puzzles.js');
 let kept = [];
 if (fs.existsSync(bankFile)) {
@@ -91,10 +100,10 @@ for (let d = new Date(`${FROM}T12:00:00Z`); d <= new Date(`${TO}T12:00:00Z`); d 
 const out = kept.slice();
 let num = kept.length ? Math.max(...kept.map((p) => p.num)) : 0;
 for (const iso of days) {
-  const fresh = avail.filter((x) => !x.taken && x.live >= iso);
+  const fresh = avail.filter((x) => !x.taken && x.live >= iso && ageOk(x, iso));
   const seed = Number(iso.replace(/-/g, ''));
   let deal = fresh.length >= 30 ? dealDay(seed, fresh) : null;
-  if (!deal) deal = dealDay(seed + 7, avail);
+  if (!deal) deal = dealDay(seed + 7, avail.filter((x) => ageOk(x, iso)));
   if (!deal) { console.error(`could not deal ${iso}`); process.exit(1); }
   num += 1;
   const [y, m, d] = iso.split('-').map(Number);

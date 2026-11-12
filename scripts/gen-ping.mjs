@@ -10,7 +10,7 @@
 // PICKS continue the bank one day at a time from the day after its last board.
 // Rules the script enforces before writing (the verifier enforces them again):
 // every city is in the atlas and not already banked, no country twice inside
-// the segment within 10 days, blurb 15-130 characters with no em or en dash.
+// 10 days (across the segment seam too), blurb 15-130 characters with no em or en dash.
 // Sundays are the out-of-the-way cities: order PICKS so they land there.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,38 +21,45 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FILE = path.join(ROOT, 'app/ping/puzzles.js');
 const WRITE = process.argv.includes('--write');
 
-// Segment authored 2026-09-23: 2026-11-01 (Sunday) through 2026-11-30.
+// Segment authored 2026-11-12: 2026-12-01 (Tuesday) through 2026-12-31.
+// (The 2026-11 segment is banked; its picks are in app/ping/puzzles.js.)
+// Sundays (12-06, 12-13, 12-20, 12-27) are Ushuaia, Thimphu, Nuuk and Apia.
+// Content review 2026-11-12 (dec-c2): rows swapped to clear same-day spoilers
+// (Sofia/Chennai, Harare/Rotterdam, Hyderabad/Abu Dhabi) and eight blurbs
+// rewritten so none names its own city or country.
+// None is a Passport trip city (scripts/gen-passport-trips.mjs SCHEDULE).
 const PICKS = [
-  ['Yerevan', 'Armenia', 'Mount Ararat, across the border in Turkey, fills the skyline on clear days. The city is older than Rome.'],
-  ['Karachi', 'Pakistan', "Pakistan's largest city and main seaport, and the country's capital until 1959."],
-  ['Geneva', 'Switzerland', 'Home to the United Nations in Europe and to the Red Cross, which was founded here in 1863.'],
-  ['Lagos', 'Nigeria', "Nigeria's largest city, spread across islands and lagoons, was the capital until Abuja took over in 1991."],
-  ['Brasilia', 'Brazil', 'Built from scratch in about four years and opened in 1960. From above, its plan looks like an airplane.'],
-  ['Kyiv', 'Ukraine', "St. Sophia's Cathedral dates to the 11th century, and Arsenalna is among the deepest metro stations anywhere."],
-  ['Chengdu', 'China', 'The giant panda breeding base on its northern edge draws visitors from all over the world.'],
-  ['Male', 'Maldives', 'One of the most densely packed capitals on Earth, squeezed onto a coral island about a mile long.'],
-  ['Guadalajara', 'Mexico', 'Capital of Jalisco, the state that gave the world mariachi music and tequila.'],
-  ['Addis Ababa', 'Ethiopia', 'Headquarters of the African Union, and at about 7,700 feet one of the highest capitals in the world.'],
-  ['Saint Petersburg', 'Russia', "Founded by Peter the Great in 1703, it was Russia's capital for about two centuries."],
-  ['Ho Chi Minh City', 'Vietnam', 'Renamed in 1976, it is still widely called Saigon, above all in its old central district.'],
-  ['Johannesburg', 'South Africa', 'It grew from an 1886 gold rush on the Witwatersrand, the richest gold field ever found.'],
-  ['Tehran', 'Iran', 'The Alborz Mountains rise over its north side, with ski slopes less than an hour from the city.'],
-  ['Kigali', 'Rwanda', 'Famously clean: Rwanda banned plastic bags in 2008 and holds a community cleanup day every month.'],
-  ['Frankfurt', 'Germany', 'Home to the European Central Bank, and its skyline earned it the nickname Mainhattan.'],
-  ['Dhaka', 'Bangladesh', 'Often called the rickshaw capital of the world, with hundreds of thousands pedaling its streets.'],
-  ['Wellington', 'New Zealand', 'Often called the windiest city in the world, it faces the gusty Cook Strait.'],
-  ['Panama City', 'Panama', "The Panama Canal's Pacific entrance lies just outside the city, where ships wait at anchor to cross."],
-  ['Colombo', 'Sri Lanka', "Sri Lanka's biggest city and main port, with the long Galle Face Green along its seafront."],
-  ['Belgrade', 'Serbia', 'Built where the Sava River flows into the Danube, beneath the walls of the Kalemegdan fortress.'],
-  ['Manama', 'Bahrain', 'Capital of an island kingdom tied to Saudi Arabia by a causeway about 15 miles long.'],
-  ['Guangzhou', 'China', 'Long known in the West as Canton, the trading port that gave Cantonese its name.'],
-  ['Accra', 'Ghana', 'Capital of Ghana, which in 1957 became one of the first African colonies to win independence.'],
-  ['Almaty', 'Kazakhstan', "Kazakhstan's biggest city and former capital, set beneath the snowy peaks of the Tian Shan."],
-  ['Kolkata', 'India', 'The capital of British India until 1911, and home of the Howrah Bridge over the Hooghly River.'],
-  ['Caracas', 'Venezuela', 'It sits in a mountain valley, walled off from the Caribbean coast by the peaks of El Avila.'],
-  ['Tunis', 'Tunisia', 'The ruins of ancient Carthage lie in its suburbs along the Gulf of Tunis.'],
-  ['Anchorage', 'United States', "Alaska's largest city, where moose regularly wander through neighborhoods and parks."],
-  ['Busan', 'South Korea', "South Korea's second city and biggest port, known for its beaches and a major film festival."],
+  ['Ottawa', 'Canada', 'Each winter the Rideau Canal freezes into one of the largest naturally frozen skating rinks in the world.'],
+  ['Riyadh', 'Saudi Arabia', 'This desert capital grew from a walled oasis town, and its mud-brick Masmak Fort, built around 1865, still stands.'],
+  ['Cologne', 'Germany', 'Its twin-spired Gothic cathedral took more than 600 years to finish, from 1248 to 1880.'],
+  ['Phnom Penh', 'Cambodia', 'It sits where the Mekong meets the Tonle Sap, a river that reverses its flow every year.'],
+  ['Kinshasa', 'DR Congo', "It looks across the Congo River at Brazzaville, the capital of a different country."],
+  ['Ushuaia', 'Argentina', 'Billed as the southernmost city in the world, it is the main port for ships sailing to Antarctica.'],
+  ['Doha', 'Qatar', 'The Museum of Islamic Art, designed by I. M. Pei, stands on its own island off the Corniche.'],
+  ['Sofia', 'Bulgaria', 'The gold-domed Alexander Nevsky Cathedral is one of the largest Orthodox cathedrals in the world.'],
+  ['Chennai', 'India', 'Marina Beach, along the Bay of Bengal, is one of the longest urban beaches in the world.'],
+  ['Brisbane', 'Australia', 'Capital of Queensland, built along a winding river of the same name, and host of the 2032 Summer Olympics.'],
+  ['Guatemala City', 'Guatemala', 'On clear days the volcanoes Agua, Fuego and Acatenango are visible from the city.'],
+  ['Ankara', 'Turkey', 'Chosen as the capital of a new republic in 1923, it holds the tomb of Ataturk.'],
+  ['Thimphu', 'Bhutan', 'One of the few capitals in the world with no traffic lights; police direct the cars by hand.'],
+  ['Harare', 'Zimbabwe', 'Known as Salisbury until 1982, two years after the country won its independence.'],
+  ['Tashkent', 'Uzbekistan', 'Its metro, opened in 1977, is famed for stations decorated like palaces.'],
+  ['Santo Domingo', 'Dominican Republic', 'Founded in the 1490s, it is the oldest continuously inhabited European settlement in the Americas.'],
+  ['Nagoya', 'Japan', 'Its castle roof is topped by two golden shachihoko, tiger-headed fish said to ward off fire.'],
+  ['Rotterdam', 'Netherlands', 'The busiest port in Europe, rebuilt after 1940 with a skyline of bold modern architecture.'],
+  ['Valparaiso', 'Chile', 'Its steep hillsides are linked to the port by funicular elevators, some more than a century old.'],
+  ['Nuuk', 'Greenland', "Home to about a third of the island's people, set on a fjord facing the Labrador Sea."],
+  ['Baku', 'Azerbaijan', 'At about 90 feet below sea level on the Caspian, it is the lowest-lying national capital.'],
+  ['Hyderabad', 'India', 'The Charminar, a four-arched monument built in 1591, stands at the heart of its old city.'],
+  ['Abu Dhabi', 'United Arab Emirates', 'A Gulf capital, home to the Sheikh Zayed Grand Mosque and its huge hand-knotted carpet.'],
+  ['Winnipeg', 'Canada', 'The black bear that inspired Winnie-the-Pooh was named after this city.'],
+  ['Rovaniemi', 'Finland', 'Sitting on the Arctic Circle, it bills itself as the official hometown of Santa Claus.'],
+  ['Kampala', 'Uganda', 'Built on a cluster of hills near the northern shore of Lake Victoria.'],
+  ['Apia', 'Samoa', 'Its country jumped across the International Date Line in 2011, skipping December 30 entirely.'],
+  ['Bratislava', 'Slovakia', 'The only national capital that borders two other countries, Austria and Hungary.'],
+  ['Arequipa', 'Peru', 'Called the White City for the pale volcanic stone of its buildings, with El Misti looming above.'],
+  ['Kuwait City', 'Kuwait', 'Three slender towers studded with blue and green steel discs, opened in 1979, rise from its seafront.'],
+  ['Kingston', 'Jamaica', 'Bob Marley lived and recorded here, and his home on Hope Road is now a museum.'],
 ];
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -74,7 +81,7 @@ PICKS.forEach(([city, country, blurb], i) => {
   banked.add(key);
   if (blurb.length < 15 || blurb.length > 130) errs.push(`${key} blurb length ${blurb.length}`);
   if (/[—–]/.test(blurb)) errs.push(`${key} dash in blurb`);
-  const near = out.slice(-10).find((p) => p.country === country);
+  const near = [...PUZZLES, ...out].slice(-10).find((p) => p.country === country); // across the seam too
   if (near) errs.push(`${country} twice within 10 days (${near.city}, ${city})`);
   out.push({ num: last.num + 1 + i, quizId: `ping-${m}-${d}-${String(y).slice(2)}`, live,
     dateLabel: `${MONTHS[m - 1]} ${d}, ${y}`, sunday: day.getUTCDay() === 0, city, country,

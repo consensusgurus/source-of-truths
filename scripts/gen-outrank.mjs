@@ -179,9 +179,9 @@ const shuffle = (a) => { const b = a.slice(); for (let i = b.length - 1; i > 0; 
 
 // ─────────────────────────── constants ───────────────────────────────────────
 const POOL = 40;                 // house favorite votes per board (documented size)
-const CAT_CEIL = 8;              // max new boards one category may fill
+const CAT_CEIL = Math.ceil(8 * DAYS / 62);   // max new boards one category may fill: 8 of 62, as a rate (lane-d, 2026-11-12)
 const ITEM_CEIL = 2;             // max boards one item string may appear on, BANK-WIDE
-const VEC_CEIL = 4;              // max new boards one house count vector may shape
+const VEC_CEIL = Math.ceil(4 * DAYS / 62);   // max new boards one house count vector may shape: 4 of 62, as a rate
 const MIX_MOVED = 3;             // items that must sit >= 2 slots off their crowd rank
 const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -276,11 +276,19 @@ const isSunday = (iso) => new Date(`${iso}T12:00:00Z`).getUTCDay() === 0;
 
 // ─────────────────────────── slate pool ──────────────────────────────────────
 const errors = [];
-const pool = SLATES.map((s, i) => ({ ...s, id: i, K: s.ranked.length, sun: !!s.sunday }));
+// SPENT SLATES (2026-11-12, lane-d restock). outrank-slates.mjs is the append-
+// only record of every slate ever written, so on a second extension most of it
+// is already banked. A slate whose theme is in the --avoid bank is SPENT and is
+// dropped here before anything is checked or scheduled; it can never be dealt
+// again. (Until this restock the pool held only unbanked slates, so a banked
+// theme in it was an authoring error and failed the run; that stays true for a
+// theme that repeats INSIDE the pool, checked below.)
+const spent = SLATES.filter((s) => usedThemes.has(s.theme)).length;
+const pool = SLATES.filter((s) => !usedThemes.has(s.theme)).map((s, i) => ({ ...s, id: i, K: s.ranked.length, sun: !!s.sunday }));
+if (spent) process.stderr.write(`gen-outrank: ${spent} spent slates skipped, ${pool.length} in play\n`);
 for (const s of pool) {
   if (s.K !== (s.sun ? 7 : 6)) errors.push(`${s.theme}: ${s.K} items on a ${s.sun ? 'Sunday' : 'weekday'} slate`);
   if (new Set(s.ranked.map((x) => x.toLowerCase())).size !== s.K) errors.push(`${s.theme}: duplicate item`);
-  if (usedThemes.has(s.theme)) errors.push(`${s.theme}: theme already in the bank`);
   if (!LADDERS[s.K][s.shape]) errors.push(`${s.theme}: unknown shape ${s.shape}`);
 }
 {

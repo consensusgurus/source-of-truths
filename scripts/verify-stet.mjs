@@ -219,6 +219,7 @@ const FORCED_PAIRS = [
   ['venal', 'venial', 'bribable vs pardonable'],
   ['appraise', 'apprise', 'to value vs to inform'],
   ['censor', 'censure', 'to suppress vs to condemn'],
+  ['jam', 'jamb', 'homophone the phonetic key misses on the silent b; a door frame can only have a jamb'],
 ];
 const stemOf = (w) => w.replace(/(ed|ing|es|s|d|n)$/, '').replace(/e$/, '');
 const PAIRS = new Set();

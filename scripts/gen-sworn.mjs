@@ -31,39 +31,41 @@ const UNTIL = arg('--until', '2026-11-30');
 const WRITE = args.includes('--write');
 const BANK = new URL('../app/sworn/puzzles.js', import.meta.url);
 
-// Venues continue the bank's alphabetical run (it reached S, Stourpaine, on
-// 2026-10-31), skipping X as the bank does.
+// Venues continue the bank's alphabetical run (the November segment ended on
+// Y, Yarcombe, 2026-11-30), skipping X as the bank does. December segment
+// authored 2026-11-12: Z, then A to Y, then Z and A to E again.
 const CASES = [
-  ['the Tidworth rope loft', "the ropewalker's brass gauge"],
-  ['the Ullswater boat sheds', 'a set of varnished oars'],
-  ['the Vauxhall fireworks shed', 'a crate of Catherine wheels'],
-  ['the Wendover clock shop', "the clockmaker's gilt pendulum"],
-  ['the Yelverton toy loft', 'a sack of painted spinning tops'],
-  ['the Zelah pilchard cellars', "the salter's copper scale"],
-  ['the Ashwell pottery', 'a crate of glazed milk jugs'],
-  ['the Blackmore harness shop', "the saddler's silver bit"],
-  ['the Cranmore cider barn', 'a keg of pressed perry'],
-  ['the Deverill hat shop', "the milliner's feather box"],
-  ['the Elmstead seed barn', 'a sack of prize runner beans'],
-  ['the Fairford organ loft', "the organist's music satchel"],
-  ['the Glenridding slate yard', 'a pallet of roofing slates'],
-  ['the Hartley map room', "the surveyor's brass chain"],
-  ['the Ivinghoe windmill', 'a sack of stone-ground flour'],
-  ['the Jaywick bathing huts', "the attendant's ticket punch"],
-  ['the Kettlewell dairy', 'a wheel of blue cheese'],
-  ['the Lynmouth lifeboat house', "the coxswain's brass lantern"],
-  ['the Middleham stables', 'a set of racing silks'],
-  ['the Northleach wool hall', "the merchant's seal ring"],
-  ['the Orford smokehouse', 'a side of oak-smoked salmon'],
-  ['the Painswick bell tower', "the ringer's handbell set"],
-  ['the Quorn candle shop', 'a box of beeswax tapers'],
-  ['the Ringmer brickfield', "the brickmaker's wooden mold"],
-  ['the Stanton glass studio', 'a pane of cobalt glass'],
-  ['the Tintern paper mill', "the papermaker's deckle"],
-  ['the Uffington chalk works', 'a cart of carving chalk'],
-  ['the Ventnor tea gardens', "the proprietor's silver teapot"],
-  ['the Wroxham boatyard', 'a coil of tarred rope'],
-  ['the Yarcombe honey farm', "the beekeeper's veil and gloves"],
+  ['the Zennor tin streams', "the streamer's tin ingot"],
+  ['the Alfriston bakehouse', 'a tray of saffron buns'],
+  ['the Bampton weaving shed', 'a bolt of herringbone tweed'],
+  ['the Corfe marble yard', "the mason's bronze chisel"],
+  ['the Dedham sail loft', 'a roll of tanned canvas'],
+  ['the Eyam lead works', "the assayer's balance weights"],
+  ['the Finchingfield bell foundry', 'a tray of brass sleigh bells'],
+  ['the Goathland jet workshop', 'a brooch of polished jet'],
+  ['the Haworth bookbindery', "the binder's book of gold leaf"],
+  ['the Ilmington cheese loft', 'a truckle of sage cheddar'],
+  ['the Jevington tea rooms', 'a dish of banoffee pie'],
+  ['the Kersey cloth hall', 'a bolt of blue kersey cloth'],
+  ['the Lacock photography studio', "the photographer's glass plates"],
+  ['the Mousehole net loft', 'a crate of glass fishing floats'],
+  ['the Nayland tannery', "the currier's shaving knife"],
+  ['the Ottery tar barrel store', 'a barrel of pine tar'],
+  ["the Polperro smugglers' cellar", 'a cask of French brandy'],
+  ['the Quarndon spa house', "the keeper's copper dipper"],
+  ['the Rye ship chandlery', "a crate of ship's biscuits"],
+  ['the Stamford brewhouse', 'a cask of winter ale'],
+  ['the Thaxted cutlery forge', 'a set of horn-handled knives'],
+  ['the Upton gingerbread shop', 'a tin of gingerbread men'],
+  ['the Veryan holly farm', 'a cart of berried holly'],
+  ['the Wiveton toffee kitchen', 'a tray of treacle toffee'],
+  ['the Youlgreave pudding kitchen', 'a basin of Christmas pudding'], // was figgy: Foodie asks it the same day (review 2026-11-12)
+  ['the Zeals cider house', "the wassailer's carved bowl"],
+  ['the Appleby horse fair stalls', "the dealer's leather purse"],
+  ['the Bibury trout farm', 'a creel of rainbow trout'],
+  ['the Clovelly donkey stables', 'a pair of donkey panniers'],
+  ['the Dent knitting loft', 'a basket of wool stockings'],
+  ['the Edale fell hut', "the guide's brass compass"],
 ];
 
 const NAMES = [...new Set(PUZZLES.flatMap((p) => p.suspects))];

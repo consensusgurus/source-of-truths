@@ -33,7 +33,10 @@
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CATEGORIES, HOME, readsOf } from './crux-pool.mjs';
+import { CATEGORIES, HOME, readsOf, catWordClash } from './crux-pool.mjs';
+// Pool hygiene (2026-11-12): no category may hold a self-naming word or a
+// synonym pair; see SYNONYMS in crux-pool.mjs.
+for (const c of CATEGORIES) { const bad = catWordClash(c.name, c.words); if (bad.length) { console.error(`crux pool: ${c.name}: ${bad.join('; ')}`); process.exit(1); } }
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -109,8 +112,19 @@ for (const c of CATEGORIES) if (!NBR.has(c.name)) NBR.set(c.name, new Set());
 // ── history: the frozen boards are part of the spacing calculation ─────────
 const { PUZZLES } = await import(join(here, '../app/crux/puzzles.js'));
 const history = [];   // { day, cats:[names], words:[...], sigs:Set }
+// --keep-later (2026-11-12, lane-d review fixes): regenerate a board in the
+// MIDDLE of the bank. Boards after the regenerated range stay, and the new board
+// must keep every spacing rule against them too (gaps measured both ways, no
+// repeated category+wordset). Without it, history stops at --from and a
+// mid-bank board can collide with what follows it.
+const KEEP_LATER = process.argv.includes('--keep-later');
+const later = [];
+const LAST_REGEN = TO || dstr(dnum(FROM) + DAYS - 1);
 for (const p of PUZZLES) {
-  if (p.live >= FROM) continue;   // regenerated boards do not count as history
+  if (p.live >= FROM) {             // regenerated boards do not count as history
+    if (KEEP_LATER && p.live > LAST_REGEN) later.push({ day: dnum(p.live), cats: p.categories.map((c) => c.name), words: p.categories.flatMap((c) => c.words), sigs: p.categories.map((c) => `${c.name}:${[...c.words].sort().join('/')}`), colls: (p.collisions ?? []).map((c) => `${c.word}|${c.reads}`) });
+    continue;
+  }
   history.push({
     day: dnum(p.live),
     live: p.live,
@@ -145,6 +159,8 @@ for (const h of history) {
   if (h.live >= VARIETY_FROM) for (const k of h.colls) pairCount.set(k, (pairCount.get(k) ?? 0) + 1);
   if (h.live >= VARIETY_FROM) trapSets.push(new Set(h.colls));
 }
+// a board kept after a mid-bank regeneration counts toward the pair ceiling too
+for (const l of later) for (const k of l.colls) pairCount.set(k, (pairCount.get(k) ?? 0) + 1);
 
 // ── semantic uniqueness: count the filings of words into categories ────────
 // A word may live in its home or in any category it reads as that is ON this
@@ -320,6 +336,7 @@ function build(date) {
   const maxCols = sunday ? MAX_COLS + 1 : MAX_COLS;
 
   const openCats = CATEGORIES.filter((c) => (day - (lastCat.get(c.name) ?? -1e9)) >= CAT_GAP
+    && later.every((l) => !l.cats.includes(c.name) || l.day - day >= CAT_GAP)
     && (catCount.get(c.name) || 0) < catCeil);
   // least recently used first, so the rotation spreads rather than clumps
   openCats.sort((a, b) => (lastCat.get(a.name) ?? -1e9) - (lastCat.get(b.name) ?? -1e9));
@@ -345,6 +362,7 @@ function build(date) {
 
     // words each category may still use
     const avail = four.map((c) => c.words.filter((w) => (day - (lastWord.get(w) ?? -1e9)) >= WORD_GAP
+      && later.every((l) => !l.words.includes(w) || l.day - day >= WORD_GAP)
       && (wordCount.get(w) || 0) < wordCeil));
     if (avail.some((a) => a.length < per)) continue;
 
@@ -359,7 +377,7 @@ function build(date) {
     const words = chosen.flat();
     if (new Set(words).size !== words.length) continue;
     const sigs = names.map((n, i) => `${n}:${[...chosen[i]].sort().join('/')}`);
-    if (sigs.some((s) => usedSig.has(s))) continue;
+    if (sigs.some((s) => usedSig.has(s) || later.some((l) => l.sigs.includes(s)))) continue;
 
     const collisions = words.flatMap((w) => collides(w).map((r) => ({ word: w, reads: r })));
     if (collisions.length < floor) continue;
@@ -376,6 +394,9 @@ function build(date) {
       if (trapSets.some((t) => mine.filter((k) => t.has(k)).length >= 2)) continue;
     }
     if (filingCount(names, words, Array(4).fill(per)) !== 1) continue;
+    // No answer may sit inside another answer anywhere on the board (KEY in
+    // KEYHOLE gives one away from the other; late review 2026-11-12).
+    { const flat = words.flat ? words.flat() : words; if (flat.some((x) => flat.some((y) => x !== y && y.includes(x)))) continue; }
 
     for (let t = 0; t < 300; t++) {
       const lat = tryLattice(words, maxCols);

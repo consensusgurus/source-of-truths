@@ -61,6 +61,16 @@ NAMES = set("""
 ann del ken lee mac sri ted tom
 batman gilbert logan sheila kyle stein shaw
 anna ariel brad leone sonny teddy otto trump
+john maria maya randy homer tesla lakers carter modi troy august germans lang canton noel
+monte grande milo roger ulster harry holt peter miller dell bing yahoo manila glen
+tony martin terry silva marc bach turner fiat wiki
+""".split())
+
+# Dec restock (2026-11-12): identity and nationality words, and chat spellings,
+# kept out of GRIDS (still valid for the uniqueness proof via DICT).
+BLOCK |= set("""
+afghan latino lesbian gay nah haha tho til autism fetish gov sec
+meth bong moron idiot idiots dope thru dunno dudes imam
 """.split())
 
 # US spellings only (the standing bank rule; an off-the-shelf word list carries both).
@@ -72,6 +82,7 @@ organise organised recognise apologise analyse analysed paralyse catalogue dialo
 programme plough draught kerb tyre pyjamas aluminium moustache jewellery travelling
 cancelled labelled modelled marvellous woollen enrol fulfil instil skilful wilful gaol
 cheque storey mould smoulder plait aeroplane
+learnt spelt dreamt leant spoilt smelt
 """.split())
 
 

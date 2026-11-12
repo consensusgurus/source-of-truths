@@ -13895,5 +13895,2239 @@ export const PUZZLES = [
         house: [27, 31, 36, 33, 47, 46, 32, 42, 28, 42, 26, 35, 44, 25, 48, 50, 40, 22, 26, 7, 37, 57, 29, 18, 25, 39, 75, 38, 33, 51, 56, 43, 53, 45, 54, 41, 34, 30, 100, 20, 52, 0, 42, 55, 49, 24, 58, 50]
       }
     ]
+  },
+  {
+    num: 138,
+    quizId: "outwit-12-1-26",
+    live: "2026-12-01",
+    dateLabel: "December 1, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Writing one letter by hand. Which will the FEWEST players write to?",
+        options: [
+          "Their future self",
+          "A grandparent",
+          "A friend far away",
+          "A newspaper"
+        ],
+        house: [0, 2, 0, 1, 3, 0, 2, 2, 0, 2, 1, 1, 1, 2, 2, 3, 2, 2, 0, 1, 0, 2, 0, 1, 3, 3, 1, 2, 2, 1, 0, 1, 1, 2, 0, 1, 2, 2, 2, 1, 1, 3, 2, 1, 0, 2, 2, 2]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many reindeer pull Santa's sleigh, Rudolph included? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 50,
+        truth: 9,
+        truthNote: "Nine: the eight named in the 1823 poem, plus Rudolph.",
+        house: [7, 9, 7, 10, 9, 10, 6, 13, 9, 9, 8, 8, 6, 9, 13, 10, 11, 11, 9, 9, 10, 8, 8, 8, 12, 7, 7, 11, 11, 9, 9, 10, 6, 12, 8, 9, 10, 8, 9, 8, 10, 7, 11, 10, 12, 6, 7, 11]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a holiday decoration. Match the MOST-picked answer.",
+        options: [
+          "Wreath",
+          "Lights",
+          "Stockings",
+          "Ornaments",
+          "Christmas tree"
+        ],
+        house: [1, 4, 1, 3, 0, 2, 3, 1, 4, 4, 4, 0, 4, 2, 0, 4, 4, 0, 3, 4, 1, 1, 1, 4, 4, 4, 4, 1, 4, 4, 0, 1, 0, 0, 1, 3, 3, 1, 3, 1, 4, 1, 4, 4, 4, 4, 2, 0]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone gets to live one day of the year twice. The RAREST pick wins.",
+        options: [
+          "The first day of summer",
+          "Christmas",
+          "Their birthday",
+          "New Year's Day",
+          "Leap Day",
+          "The Fourth of July",
+          "Thanksgiving",
+          "Groundhog Day"
+        ],
+        house: [2, 0, 5, 2, 1, 2, 1, 6, 2, 6, 2, 5, 1, 2, 2, 0, 0, 6, 6, 2, 0, 7, 1, 0, 5, 3, 1, 7, 4, 5, 7, 3, 3, 3, 5, 4, 5, 6, 6, 0, 0, 3, 3, 1, 1, 1, 3, 1]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to HALF of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.5,
+        fracLabel: "half",
+        house: [48, 0, 13, 32, 45, 33, 100, 56, 50, 22, 47, 42, 25, 7, 34, 15, 52, 55, 53, 25, 58, 19, 49, 23, 50, 24, 51, 30, 42, 21, 19, 31, 9, 29, 20, 33, 75, 26, 17, 46, 18, 11, 54, 44, 28, 17, 57, 27]
+      }
+    ]
+  },
+  {
+    num: 139,
+    quizId: "outwit-12-2-26",
+    live: "2026-12-02",
+    dateLabel: "December 2, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Hanging one print on a bare wall. Which will the FEWEST players choose?",
+        options: [
+          "A city skyline",
+          "A beach scene",
+          "A subway map",
+          "A famous painting"
+        ],
+        house: [1, 1, 0, 0, 1, 1, 3, 3, 2, 0, 2, 1, 0, 0, 1, 0, 3, 3, 2, 0, 3, 1, 0, 1, 1, 1, 1, 3, 1, 1, 3, 2, 0, 0, 1, 2, 3, 0, 0, 0, 1, 1, 1, 0, 3, 3, 0, 1]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many points does the maple leaf on the flag of Canada have? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 50,
+        truth: 11,
+        truthNote: "Eleven: the flag carries a stylized 11-point red maple leaf.",
+        house: [9, 6, 7, 6, 7, 8, 5, 7, 4, 4, 7, 7, 6, 8, 5, 5, 7, 10, 7, 10, 10, 9, 5, 9, 9, 11, 8, 6, 7, 9, 4, 6, 6, 7, 11, 13, 8, 9, 8, 5, 6, 8, 6, 5, 8, 8, 7, 7]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a famous river. Match the MOST-picked answer.",
+        options: [
+          "Mississippi",
+          "Colorado",
+          "Missouri",
+          "Nile",
+          "Amazon"
+        ],
+        house: [0, 1, 0, 0, 0, 4, 0, 0, 2, 3, 3, 0, 3, 0, 3, 4, 3, 0, 0, 4, 2, 3, 4, 0, 3, 0, 4, 0, 1, 4, 3, 0, 3, 2, 0, 4, 0, 0, 0, 2, 1, 0, 0, 3, 3, 2, 0, 0]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone borrows one tool from a neighbor. The RAREST pick wins.",
+        options: [
+          "A pressure washer",
+          "A hammer",
+          "A leaf blower",
+          "A ladder",
+          "A drill",
+          "A post hole digger",
+          "A saw",
+          "A lawn mower"
+        ],
+        house: [3, 1, 5, 4, 2, 2, 4, 3, 3, 1, 4, 6, 1, 6, 2, 5, 3, 7, 7, 3, 7, 6, 3, 0, 4, 3, 5, 3, 7, 6, 1, 1, 4, 2, 4, 6, 0, 1, 3, 0, 3, 4, 7, 7, 6, 2, 4, 7]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to TWO-FIFTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.4,
+        fracLabel: "two-fifths",
+        house: [33, 14, 52, 75, 50, 8, 19, 42, 4, 12, 26, 56, 15, 7, 53, 57, 23, 24, 45, 49, 54, 58, 21, 50, 42, 100, 18, 47, 51, 29, 6, 13, 17, 25, 0, 25, 12, 22, 55, 44, 46, 48, 10, 20, 14, 28, 16, 27]
+      }
+    ]
+  },
+  {
+    num: 140,
+    quizId: "outwit-12-3-26",
+    live: "2026-12-03",
+    dateLabel: "December 3, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A road trip to see one natural wonder. Which will the FEWEST players choose?",
+        options: [
+          "The Badlands",
+          "Niagara Falls",
+          "Yellowstone",
+          "The Grand Canyon"
+        ],
+        house: [2, 0, 1, 1, 1, 2, 1, 1, 3, 3, 0, 1, 2, 3, 3, 1, 1, 3, 3, 2, 2, 3, 3, 1, 3, 3, 3, 2, 3, 1, 3, 0, 2, 3, 2, 1, 3, 3, 2, 3, 1, 1, 1, 1, 3, 3, 0, 0]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many books are in The Chronicles of Narnia? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 30,
+        truth: 7,
+        truthNote: "Seven, written by C.S. Lewis.",
+        house: [7, 6, 11, 4, 4, 5, 6, 8, 4, 5, 9, 8, 8, 10, 7, 8, 7, 9, 9, 7, 10, 7, 9, 10, 6, 5, 7, 7, 8, 7, 6, 7, 5, 7, 9, 7, 8, 8, 9, 6, 5, 4, 11, 6, 8, 6, 5, 6]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a Thanksgiving side dish. Match the MOST-picked answer.",
+        options: [
+          "Mashed potatoes",
+          "Sweet potatoes",
+          "Green bean casserole",
+          "Cranberry sauce",
+          "Stuffing"
+        ],
+        house: [4, 0, 0, 4, 0, 0, 4, 4, 2, 0, 3, 0, 2, 1, 4, 3, 4, 0, 2, 4, 4, 0, 4, 1, 1, 1, 3, 0, 0, 2, 4, 2, 1, 2, 0, 1, 0, 0, 0, 0, 0, 2, 4, 4, 2, 2, 0, 0]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone drives one car brand. The RAREST pick wins.",
+        options: [
+          "Tesla",
+          "BMW",
+          "Toyota",
+          "Honda",
+          "Chevrolet",
+          "Ford",
+          "Saab",
+          "Subaru"
+        ],
+        house: [2, 3, 0, 0, 1, 6, 0, 4, 1, 5, 5, 5, 2, 1, 2, 4, 2, 1, 2, 5, 4, 3, 2, 5, 3, 0, 0, 4, 7, 5, 2, 0, 3, 4, 3, 4, 3, 1, 3, 0, 6, 1, 7, 2, 5, 3, 5, 2]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to FOUR-FIFTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.8,
+        fracLabel: "four-fifths",
+        house: [50, 49, 48, 44, 36, 46, 50, 25, 32, 45, 38, 57, 53, 49, 33, 51, 42, 42, 39, 47, 43, 42, 47, 100, 33, 41, 58, 44, 54, 34, 7, 56, 45, 32, 46, 34, 38, 75, 0, 55, 30, 36, 35, 40, 52, 28, 37, 48]
+      }
+    ]
+  },
+  {
+    num: 141,
+    quizId: "outwit-12-4-26",
+    live: "2026-12-04",
+    dateLabel: "December 4, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Hosting a holiday party. Which job will the FEWEST players volunteer for?",
+        options: [
+          "Cleaning up afterward",
+          "Cooking",
+          "Picking the music",
+          "Decorating"
+        ],
+        house: [1, 3, 0, 3, 2, 2, 0, 3, 1, 3, 1, 3, 1, 3, 3, 2, 3, 1, 3, 1, 2, 3, 3, 1, 3, 1, 0, 3, 2, 3, 2, 0, 2, 2, 3, 1, 3, 3, 3, 1, 2, 3, 3, 1, 1, 1, 1, 3]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many stars make up the Big Dipper? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 100,
+        truth: 7,
+        truthNote: "Seven bright stars in Ursa Major.",
+        house: [4, 5, 5, 6, 8, 4, 8, 5, 7, 7, 4, 11, 9, 7, 7, 7, 8, 8, 8, 6, 8, 9, 10, 7, 6, 8, 7, 6, 7, 6, 5, 8, 5, 7, 10, 7, 9, 4, 5, 7, 6, 10, 6, 6, 9, 9, 9, 11]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a famous spacecraft. Match the MOST-picked answer.",
+        options: [
+          "Sputnik",
+          "The International Space Station",
+          "A Mars rover",
+          "The Space Shuttle",
+          "The Hubble Space Telescope"
+        ],
+        house: [3, 1, 1, 0, 4, 3, 3, 1, 4, 1, 3, 3, 3, 3, 3, 1, 1, 1, 4, 1, 3, 2, 1, 4, 1, 1, 4, 4, 3, 3, 0, 2, 4, 3, 3, 0, 3, 3, 3, 3, 0, 3, 3, 0, 3, 2, 4, 3]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone picks one Beatles song. The RAREST pick wins.",
+        options: [
+          "Taxman",
+          "Come Together",
+          "Hey Jude",
+          "Dig a Pony",
+          "Yesterday",
+          "Help!",
+          "Let It Be",
+          "Here Comes the Sun"
+        ],
+        house: [0, 7, 1, 2, 0, 2, 6, 6, 5, 1, 3, 2, 6, 4, 6, 1, 2, 5, 7, 5, 5, 5, 4, 2, 2, 2, 7, 2, 6, 4, 4, 6, 4, 6, 7, 7, 1, 6, 7, 4, 2, 1, 1, 3, 4, 7, 6, 0]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to A THIRD of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.3333333333333333,
+        fracLabel: "a third",
+        house: [58, 42, 44, 75, 50, 25, 0, 10, 17, 26, 42, 47, 25, 12, 24, 4, 45, 56, 21, 16, 49, 7, 13, 33, 9, 11, 48, 10, 8, 46, 18, 54, 12, 23, 14, 15, 57, 22, 53, 51, 20, 55, 50, 52, 2, 19, 100, 6]
+      }
+    ]
+  },
+  {
+    num: 142,
+    quizId: "outwit-12-5-26",
+    live: "2026-12-05",
+    dateLabel: "December 5, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Ordering a pizza for the table. Which crust will the FEWEST players choose?",
+        options: [
+          "Regular",
+          "Deep dish",
+          "Cauliflower crust",
+          "Thin crust"
+        ],
+        house: [0, 1, 3, 3, 0, 3, 2, 1, 2, 0, 2, 3, 3, 0, 0, 0, 3, 0, 3, 1, 1, 1, 0, 0, 0, 3, 2, 0, 2, 0, 3, 0, 1, 0, 1, 0, 1, 3, 0, 0, 0, 0, 3, 3, 1, 1, 3, 3]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many voting members sit in the US House of Representatives? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 50,
+        max: 2000,
+        truth: 435,
+        truthNote: "Four hundred thirty-five voting members.",
+        house: [400, 400, 440, 440, 500, 200, 360, 320, 360, 600, 600, 260, 360, 320, 400, 500, 800, 800, 400, 440, 440, 320, 360, 400, 600, 400, 440, 320, 320, 360, 260, 400, 440, 360, 440, 260, 500, 360, 360, 400, 500, 440, 400, 400, 500, 320, 400, 200]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a US coin. Match the MOST-picked answer.",
+        options: [
+          "Penny",
+          "Half dollar",
+          "Dime",
+          "Quarter",
+          "Nickel"
+        ],
+        house: [3, 3, 3, 1, 0, 0, 3, 3, 2, 4, 3, 0, 1, 3, 3, 0, 0, 0, 1, 4, 0, 3, 0, 4, 4, 2, 4, 2, 3, 3, 0, 2, 0, 3, 3, 0, 3, 2, 3, 0, 3, 2, 3, 2, 3, 2, 3, 0]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone packs one thing in a first aid kit. The RAREST pick wins.",
+        options: [
+          "A cold pack",
+          "Scissors",
+          "Painkillers",
+          "A foil blanket",
+          "Tape",
+          "Bandages",
+          "Tweezers",
+          "Antiseptic"
+        ],
+        house: [2, 7, 2, 2, 2, 2, 7, 1, 0, 1, 4, 6, 6, 7, 5, 5, 5, 5, 7, 5, 5, 5, 4, 3, 4, 5, 0, 4, 6, 6, 5, 7, 1, 5, 5, 7, 2, 1, 7, 7, 2, 5, 1, 6, 4, 3, 7, 1]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to THREE-QUARTERS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.75,
+        fracLabel: "three-quarters",
+        house: [34, 100, 52, 50, 38, 42, 44, 36, 28, 46, 42, 34, 30, 25, 24, 39, 56, 57, 0, 53, 50, 32, 43, 33, 44, 40, 54, 41, 32, 55, 46, 45, 33, 51, 7, 47, 49, 31, 58, 37, 75, 48, 47, 30, 45, 35, 42, 26]
+      }
+    ]
+  },
+  {
+    num: 143,
+    quizId: "outwit-12-6-26",
+    live: "2026-12-06",
+    dateLabel: "December 6, 2026",
+    sunday: true,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A mug of hot cocoa. Which topping will the FEWEST players add?",
+        options: [
+          "Whipped cream",
+          "Marshmallows",
+          "Chili powder",
+          "A candy cane"
+        ],
+        house: [1, 1, 1, 3, 3, 3, 0, 1, 2, 0, 2, 0, 1, 0, 3, 1, 3, 1, 1, 0, 1, 0, 3, 1, 1, 0, 1, 2, 0, 0, 0, 2, 0, 1, 3, 1, 0, 1, 3, 1, 3, 0, 2, 0, 1, 3, 0, 1]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many baby teeth does a child have? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 60,
+        truth: 20,
+        truthNote: "Twenty, later replaced by 32 adult teeth.",
+        house: [23, 26, 17, 14, 26, 38, 17, 20, 17, 17, 23, 20, 20, 14, 14, 26, 11, 23, 11, 20, 26, 26, 20, 20, 26, 20, 14, 20, 29, 11, 23, 29, 32, 14, 23, 23, 17, 20, 23, 17, 20, 17, 17, 29, 20, 32, 14, 23]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name one of Santa's reindeer. Match the MOST-picked answer.",
+        options: [
+          "Rudolph",
+          "Blitzen",
+          "Dasher",
+          "Comet",
+          "Prancer"
+        ],
+        house: [0, 1, 3, 3, 3, 0, 0, 0, 2, 2, 3, 0, 0, 0, 4, 0, 0, 3, 2, 2, 2, 4, 4, 3, 2, 0, 2, 0, 0, 1, 1, 2, 0, 2, 0, 1, 0, 3, 1, 2, 0, 0, 0, 1, 0, 2, 2, 3]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone orders one bagel. The RAREST pick wins.",
+        options: [
+          "Salt",
+          "Poppy seed",
+          "Everything",
+          "Pumpernickel",
+          "Asiago",
+          "Plain",
+          "Sesame",
+          "Cinnamon raisin"
+        ],
+        house: [2, 2, 6, 6, 4, 2, 5, 5, 5, 7, 2, 5, 2, 6, 4, 5, 7, 1, 0, 7, 7, 5, 4, 2, 7, 2, 3, 4, 4, 6, 6, 3, 6, 2, 0, 4, 1, 2, 7, 5, 5, 6, 1, 1, 1, 3, 5, 5]
+      },
+      {
+        type: "unique",
+        tag: "Rarer Bird",
+        q: "Everyone plays one playground game. The RAREST pick wins.",
+        options: [
+          "Hopscotch",
+          "Marbles",
+          "Jacks",
+          "Tag",
+          "Red rover",
+          "Four square",
+          "Hide and seek",
+          "Kickball"
+        ],
+        house: [3, 0, 0, 0, 4, 6, 5, 7, 4, 4, 7, 6, 3, 5, 6, 7, 7, 1, 6, 6, 5, 2, 0, 1, 3, 5, 3, 5, 3, 3, 0, 5, 4, 2, 1, 4, 3, 5, 6, 7, 4, 0, 0, 6, 3, 6, 3, 7]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to TWO-THIRDS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.6666666666666666,
+        fracLabel: "two-thirds",
+        house: [47, 35, 50, 26, 45, 18, 39, 26, 25, 32, 30, 44, 25, 22, 52, 58, 57, 54, 31, 46, 36, 33, 49, 51, 33, 100, 42, 41, 0, 24, 42, 38, 20, 37, 28, 48, 42, 50, 53, 55, 29, 7, 40, 27, 56, 75, 43, 34]
+      }
+    ]
+  },
+  {
+    num: 144,
+    quizId: "outwit-12-7-26",
+    live: "2026-12-07",
+    dateLabel: "December 7, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "The movie ends and the credits roll. Which will the FEWEST players do?",
+        options: [
+          "Leave right away",
+          "Wait for a bonus scene",
+          "Read every name",
+          "Clap"
+        ],
+        house: [3, 0, 0, 3, 0, 2, 0, 0, 1, 0, 3, 1, 3, 0, 3, 0, 0, 3, 1, 0, 0, 0, 0, 0, 1, 0, 1, 3, 0, 0, 2, 1, 1, 1, 1, 0, 0, 2, 1, 1, 3, 0, 0, 1, 2, 0, 3, 1]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How far away is the Moon on average, in thousands of miles? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 100000,
+        truth: 239,
+        truthNote: "About 238,855 miles on average, so 239 thousand.",
+        house: [880, 250, 250, 180, 380, 880, 250, 300, 210, 130, 180, 90, 380, 250, 380, 130, 180, 550, 210, 380, 210, 1500, 210, 250, 250, 180, 380, 250, 210, 250, 250, 550, 180, 130, 300, 300, 50, 300, 550, 250, 210, 300, 210, 210, 250, 90, 300, 300]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a dessert. Match the MOST-picked answer.",
+        options: [
+          "Pudding",
+          "Cheesecake",
+          "Ice cream",
+          "Chocolate cake",
+          "Fruit salad"
+        ],
+        house: [0, 4, 2, 2, 1, 2, 3, 3, 0, 2, 2, 3, 4, 1, 4, 1, 3, 2, 2, 4, 2, 2, 2, 3, 3, 3, 3, 2, 4, 1, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 1, 2, 1]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone watches one Summer Olympics event. The RAREST pick wins.",
+        options: [
+          "Race walking",
+          "Sprinting",
+          "Swimming",
+          "Basketball",
+          "Diving",
+          "Dressage",
+          "Gymnastics",
+          "Beach volleyball"
+        ],
+        house: [4, 0, 7, 1, 6, 6, 2, 6, 1, 6, 2, 1, 5, 2, 2, 3, 1, 2, 2, 6, 5, 2, 6, 2, 7, 7, 4, 0, 7, 1, 4, 3, 2, 3, 4, 3, 1, 2, 1, 7, 6, 5, 0, 4, 2, 3, 6, 3]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to THREE-FIFTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.6,
+        fracLabel: "three-fifths",
+        house: [53, 56, 45, 27, 54, 23, 52, 18, 48, 39, 57, 29, 36, 100, 22, 33, 33, 51, 28, 26, 38, 42, 50, 24, 46, 44, 25, 0, 32, 20, 42, 37, 7, 30, 49, 35, 24, 47, 75, 55, 50, 34, 58, 25, 14, 31, 16, 22]
+      }
+    ]
+  },
+  {
+    num: 145,
+    quizId: "outwit-12-8-26",
+    live: "2026-12-08",
+    dateLabel: "December 8, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Choosing a new couch. Which color will the FEWEST players pick?",
+        options: [
+          "Beige",
+          "Bright orange",
+          "Navy blue",
+          "Gray"
+        ],
+        house: [3, 3, 3, 3, 3, 0, 3, 3, 0, 3, 3, 3, 0, 0, 3, 0, 1, 2, 3, 2, 2, 3, 0, 3, 0, 3, 0, 0, 0, 3, 3, 0, 2, 0, 2, 0, 0, 1, 3, 2, 0, 3, 2, 3, 3, 1, 1, 2]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many weeks after the start of the last period is a baby's due date? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 10,
+        max: 100,
+        truth: 40,
+        truthNote: "Forty weeks.",
+        house: [25, 50, 50, 50, 40, 55, 35, 45, 30, 40, 45, 50, 40, 30, 40, 45, 25, 40, 45, 30, 25, 30, 25, 40, 35, 55, 35, 35, 30, 30, 35, 35, 50, 35, 55, 60, 40, 45, 45, 40, 60, 50, 35, 45, 40, 40, 40, 45]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a cartoon character. Match the MOST-picked answer.",
+        options: [
+          "Homer Simpson",
+          "Bugs Bunny",
+          "Mickey Mouse",
+          "Scooby-Doo",
+          "SpongeBob"
+        ],
+        house: [1, 4, 2, 2, 3, 2, 4, 0, 0, 2, 0, 1, 4, 1, 2, 3, 1, 2, 2, 2, 4, 2, 4, 0, 2, 1, 1, 2, 2, 1, 1, 1, 3, 4, 2, 1, 2, 1, 2, 2, 2, 0, 2, 2, 4, 2, 2, 2]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone watches one space movie. The RAREST pick wins.",
+        options: [
+          "Star Wars",
+          "Alien",
+          "Moon",
+          "The Martian",
+          "Apollo 13",
+          "Sunshine",
+          "Gravity",
+          "Interstellar"
+        ],
+        house: [4, 3, 4, 0, 4, 7, 0, 7, 6, 1, 5, 2, 3, 3, 6, 6, 0, 5, 2, 4, 7, 3, 1, 6, 3, 6, 3, 0, 7, 4, 1, 7, 1, 7, 7, 0, 1, 0, 0, 0, 6, 0, 4, 4, 3, 4, 1, 7]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to SEVEN-TENTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.7,
+        fracLabel: "seven-tenths",
+        house: [39, 75, 48, 27, 50, 21, 31, 45, 29, 55, 38, 47, 25, 37, 42, 52, 31, 30, 100, 36, 58, 53, 23, 35, 44, 57, 43, 56, 33, 0, 32, 29, 27, 41, 49, 42, 42, 34, 50, 33, 46, 51, 54, 28, 40, 7, 44, 25]
+      }
+    ]
+  },
+  {
+    num: 146,
+    quizId: "outwit-12-9-26",
+    live: "2026-12-09",
+    dateLabel: "December 9, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A new phone, still in the box. Which will the FEWEST players do first?",
+        options: [
+          "Put a case on it",
+          "Move their photos over",
+          "Read the manual",
+          "Set it up"
+        ],
+        house: [1, 3, 3, 3, 3, 0, 1, 0, 0, 0, 3, 0, 3, 3, 0, 0, 3, 1, 2, 1, 3, 3, 0, 2, 1, 3, 3, 0, 3, 3, 0, 1, 3, 0, 3, 3, 3, 1, 3, 0, 0, 1, 1, 3, 3, 2, 0, 2]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many dots make up one braille cell? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 50,
+        truth: 6,
+        truthNote: "Six, in two columns of three.",
+        house: [7, 8, 5, 8, 3, 8, 6, 9, 8, 6, 9, 8, 6, 10, 6, 6, 4, 4, 7, 5, 6, 6, 7, 7, 4, 3, 5, 6, 5, 4, 6, 5, 9, 6, 7, 5, 8, 3, 7, 5, 7, 7, 6, 10, 3, 4, 5, 4]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a wedding tradition. Match the MOST-picked answer.",
+        options: [
+          "Something borrowed",
+          "Cutting the cake",
+          "First dance",
+          "Exchanging rings",
+          "Tossing the bouquet"
+        ],
+        house: [4, 3, 2, 1, 1, 1, 1, 2, 3, 4, 2, 3, 4, 2, 2, 3, 1, 2, 2, 1, 2, 3, 0, 3, 4, 1, 2, 1, 1, 1, 0, 4, 1, 4, 1, 2, 2, 1, 4, 4, 1, 0, 1, 4, 1, 1, 2, 1]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone visits one national park. The RAREST pick wins.",
+        options: [
+          "Acadia",
+          "Isle Royale",
+          "Yellowstone",
+          "Yosemite",
+          "Glacier",
+          "Gates of the Arctic",
+          "Grand Canyon",
+          "Zion"
+        ],
+        house: [2, 3, 2, 3, 4, 6, 7, 5, 4, 2, 2, 0, 6, 7, 7, 6, 4, 2, 6, 1, 7, 3, 4, 3, 6, 3, 2, 3, 7, 6, 2, 5, 7, 4, 2, 0, 0, 3, 1, 2, 6, 2, 2, 3, 2, 0, 4, 6]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to FOUR-FIFTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.8,
+        fracLabel: "four-fifths",
+        house: [50, 51, 41, 45, 55, 45, 43, 32, 46, 49, 36, 32, 53, 28, 56, 38, 33, 44, 39, 100, 33, 47, 42, 25, 57, 36, 47, 38, 7, 34, 42, 52, 49, 0, 44, 50, 40, 46, 35, 58, 30, 54, 48, 75, 34, 48, 42, 37]
+      }
+    ]
+  },
+  {
+    num: 147,
+    quizId: "outwit-12-10-26",
+    live: "2026-12-10",
+    dateLabel: "December 10, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A free afternoon in a new city. Which will the FEWEST players do?",
+        options: [
+          "Walk around",
+          "Find a good restaurant",
+          "Visit a museum",
+          "Take a bus tour"
+        ],
+        house: [2, 0, 0, 1, 0, 2, 1, 1, 3, 0, 1, 0, 0, 1, 2, 2, 3, 1, 2, 1, 0, 1, 3, 3, 0, 0, 1, 1, 2, 0, 0, 0, 0, 1, 3, 1, 3, 0, 2, 0, 1, 0, 2, 2, 0, 2, 1, 2]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many balls are on the table at the start of eight-ball, cue ball included? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 2,
+        max: 50,
+        truth: 16,
+        truthNote: "Sixteen: fifteen racked balls plus the cue ball.",
+        house: [16, 18, 18, 20, 14, 16, 22, 20, 12, 14, 16, 12, 10, 20, 18, 16, 16, 12, 14, 10, 16, 18, 12, 16, 20, 16, 14, 14, 16, 24, 20, 22, 12, 10, 14, 18, 24, 14, 18, 20, 16, 14, 16, 22, 12, 10, 18, 18]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a sport played on ice. Match the MOST-picked answer.",
+        options: [
+          "Curling",
+          "Speed skating",
+          "Hockey",
+          "Broomball",
+          "Figure skating"
+        ],
+        house: [1, 2, 2, 2, 2, 2, 2, 4, 4, 0, 0, 1, 2, 3, 4, 1, 2, 2, 4, 2, 4, 4, 4, 2, 3, 1, 2, 0, 1, 2, 2, 0, 2, 2, 2, 4, 4, 0, 2, 4, 4, 2, 0, 0, 2, 0, 3, 2]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone adds one topping to the pizza. The RAREST pick wins.",
+        options: [
+          "Onions",
+          "Green peppers",
+          "Black olives",
+          "Mushrooms",
+          "Artichokes",
+          "Sausage",
+          "Anchovies",
+          "Pepperoni"
+        ],
+        house: [7, 0, 7, 5, 1, 4, 0, 7, 0, 7, 7, 3, 1, 5, 7, 1, 1, 3, 3, 0, 5, 5, 6, 0, 1, 5, 7, 7, 5, 2, 4, 5, 0, 7, 2, 3, 2, 2, 5, 3, 7, 7, 3, 6, 7, 3, 5, 2]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to THREE-QUARTERS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.75,
+        fracLabel: "three-quarters",
+        house: [39, 30, 26, 50, 52, 45, 34, 58, 33, 75, 53, 32, 42, 47, 55, 33, 36, 50, 100, 47, 46, 7, 35, 25, 0, 30, 24, 44, 31, 56, 51, 46, 49, 41, 38, 43, 40, 57, 45, 42, 32, 48, 54, 44, 28, 34, 37, 42]
+      }
+    ]
+  },
+  {
+    num: 148,
+    quizId: "outwit-12-11-26",
+    live: "2026-12-11",
+    dateLabel: "December 11, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A holiday party tonight. Which will the FEWEST players wear?",
+        options: [
+          "Something sparkly",
+          "A full Santa suit",
+          "Something dressy",
+          "Jeans and a nice top"
+        ],
+        house: [0, 2, 3, 1, 2, 3, 2, 2, 2, 3, 3, 3, 2, 3, 3, 0, 2, 2, 2, 0, 2, 3, 2, 3, 3, 0, 2, 2, 2, 1, 3, 0, 2, 2, 1, 2, 3, 1, 2, 0, 0, 2, 0, 0, 2, 2, 2, 3]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many peanuts go into a 12-ounce jar of peanut butter? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 10,
+        max: 10000,
+        truth: 540,
+        truthNote: "About 540, says the National Peanut Board.",
+        house: [360, 450, 450, 300, 360, 360, 300, 660, 210, 60, 360, 300, 150, 260, 1100, 300, 150, 660, 660, 300, 300, 450, 360, 450, 360, 110, 1100, 660, 450, 210, 260, 1100, 300, 300, 300, 450, 360, 260, 1800, 660, 300, 300, 300, 210, 260, 260, 360, 210]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a kind of cookie. Match the MOST-picked answer.",
+        options: [
+          "Chocolate chip",
+          "Peanut butter",
+          "Oatmeal raisin",
+          "Sugar",
+          "Snickerdoodle"
+        ],
+        house: [2, 1, 2, 1, 3, 0, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 2, 2, 1, 2, 0, 0, 3, 2, 3, 0, 0, 4, 0, 2, 0, 0, 0, 0, 2, 3, 3, 0, 4, 3, 1, 0, 2, 0, 0, 0, 1, 2]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone picks one art supply. The RAREST pick wins.",
+        options: [
+          "Linocut tools",
+          "Paint",
+          "Gouache",
+          "Colored pencils",
+          "Charcoal",
+          "Markers",
+          "Crayons",
+          "Pastels"
+        ],
+        house: [6, 3, 5, 6, 7, 1, 3, 2, 1, 5, 2, 6, 6, 6, 3, 4, 6, 3, 1, 7, 7, 1, 3, 4, 4, 3, 6, 1, 0, 5, 4, 3, 5, 1, 5, 3, 3, 1, 7, 0, 5, 7, 4, 1, 2, 4, 1, 5]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to HALF of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.5,
+        fracLabel: "half",
+        house: [58, 56, 0, 30, 28, 42, 19, 51, 57, 20, 29, 17, 50, 34, 25, 7, 21, 31, 53, 75, 13, 45, 23, 17, 26, 44, 11, 19, 33, 46, 25, 54, 100, 18, 42, 32, 49, 27, 55, 50, 24, 48, 22, 33, 52, 9, 47, 15]
+      }
+    ]
+  },
+  {
+    num: 149,
+    quizId: "outwit-12-12-26",
+    live: "2026-12-12",
+    dateLabel: "December 12, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A trip to a science museum. Which exhibit will the FEWEST players head to first?",
+        options: [
+          "Dinosaurs",
+          "The human body",
+          "Rocks and minerals",
+          "Space"
+        ],
+        house: [0, 0, 3, 1, 3, 3, 0, 3, 0, 2, 3, 3, 0, 3, 2, 0, 1, 0, 2, 1, 3, 0, 3, 3, 2, 3, 1, 1, 1, 1, 1, 3, 0, 2, 0, 0, 2, 3, 1, 0, 3, 3, 0, 1, 3, 0, 0, 1]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many slots are in a standard Connect Four grid? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 4,
+        max: 200,
+        truth: 42,
+        truthNote: "Forty-two: seven columns of six.",
+        house: [36, 36, 36, 51, 41, 36, 36, 46, 21, 41, 31, 31, 36, 51, 41, 21, 46, 41, 46, 46, 46, 26, 46, 26, 36, 26, 31, 41, 31, 26, 51, 56, 31, 36, 26, 41, 56, 41, 36, 36, 36, 26, 31, 41, 21, 31, 31, 66]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a social media app. Match the MOST-picked answer.",
+        options: [
+          "YouTube",
+          "Snapchat",
+          "Instagram",
+          "TikTok",
+          "Facebook"
+        ],
+        house: [2, 4, 1, 4, 1, 4, 4, 0, 4, 4, 3, 4, 2, 4, 2, 3, 4, 2, 1, 4, 4, 4, 2, 3, 2, 4, 2, 2, 4, 4, 3, 3, 4, 4, 2, 2, 3, 3, 1, 2, 2, 4, 3, 2, 0, 0, 1, 4]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone cooks one pasta shape. The RAREST pick wins.",
+        options: [
+          "Orecchiette",
+          "Bucatini",
+          "Fettuccine",
+          "Farfalle",
+          "Spaghetti",
+          "Penne",
+          "Macaroni",
+          "Rigatoni"
+        ],
+        house: [4, 7, 5, 4, 5, 4, 0, 4, 6, 0, 2, 7, 2, 5, 5, 3, 1, 3, 4, 6, 6, 2, 6, 6, 3, 4, 2, 5, 4, 7, 6, 7, 4, 0, 4, 7, 2, 1, 3, 6, 3, 4, 1, 5, 2, 5, 5, 4]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to TWO-THIRDS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.6666666666666666,
+        fracLabel: "two-thirds",
+        house: [35, 42, 30, 26, 40, 47, 43, 42, 7, 33, 42, 44, 32, 34, 22, 46, 50, 75, 0, 37, 41, 33, 57, 48, 49, 18, 55, 100, 54, 36, 28, 50, 52, 58, 31, 29, 38, 39, 26, 51, 53, 20, 24, 45, 25, 56, 27, 25]
+      }
+    ]
+  },
+  {
+    num: 150,
+    quizId: "outwit-12-13-26",
+    live: "2026-12-13",
+    dateLabel: "December 13, 2026",
+    sunday: true,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Signing up for one class just for fun. Which will the FEWEST players take?",
+        options: [
+          "Photography",
+          "Pottery",
+          "Cooking",
+          "Accounting"
+        ],
+        house: [3, 2, 2, 1, 0, 1, 0, 1, 1, 0, 3, 0, 2, 0, 2, 2, 1, 2, 3, 0, 0, 0, 0, 2, 3, 3, 0, 2, 1, 0, 2, 0, 2, 2, 1, 0, 2, 0, 0, 2, 2, 1, 2, 2, 1, 2, 2, 2]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many people have walked on the Moon? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 1000,
+        truth: 12,
+        truthNote: "Twelve, all on Apollo missions from 1969 to 1972.",
+        house: [13, 7, 10, 9, 9, 10, 10, 10, 7, 12, 10, 11, 8, 11, 10, 13, 12, 12, 16, 13, 10, 10, 10, 8, 12, 10, 14, 14, 10, 8, 10, 12, 11, 10, 11, 11, 9, 9, 11, 9, 9, 12, 13, 11, 13, 11, 8, 12]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name something with wheels. Match the MOST-picked answer.",
+        options: [
+          "Bike",
+          "Skateboard",
+          "Car",
+          "Wagon",
+          "Bus"
+        ],
+        house: [2, 2, 0, 3, 1, 0, 4, 2, 2, 2, 1, 4, 2, 0, 0, 0, 4, 2, 2, 2, 0, 3, 0, 0, 1, 2, 2, 3, 2, 4, 1, 4, 2, 1, 0, 1, 2, 2, 4, 2, 2, 0, 2, 2, 0, 1, 1, 0]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone adopts one breed of dog. The RAREST pick wins.",
+        options: [
+          "Basenji",
+          "Golden retriever",
+          "Komondor",
+          "Poodle",
+          "Labrador",
+          "Beagle",
+          "German shepherd",
+          "Bulldog"
+        ],
+        house: [0, 0, 4, 0, 6, 6, 4, 4, 1, 7, 7, 1, 1, 4, 5, 6, 3, 5, 1, 3, 1, 4, 3, 4, 4, 1, 6, 4, 3, 4, 2, 6, 7, 6, 4, 1, 5, 3, 3, 2, 5, 7, 7, 1, 6, 5, 4, 5]
+      },
+      {
+        type: "unique",
+        tag: "Rarer Bird",
+        q: "Everyone puts on one holiday movie. The RAREST pick wins.",
+        options: [
+          "A Christmas Story",
+          "The Shop Around the Corner",
+          "The Polar Express",
+          "Die Hard",
+          "Elf",
+          "The Grinch",
+          "Home Alone",
+          "It's a Wonderful Life"
+        ],
+        house: [7, 2, 1, 2, 7, 4, 7, 6, 6, 0, 5, 3, 6, 3, 0, 0, 2, 0, 7, 5, 4, 2, 5, 4, 6, 4, 0, 0, 4, 3, 7, 5, 6, 4, 5, 6, 6, 6, 5, 2, 0, 7, 5, 4, 4, 6, 1, 2]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to SEVEN-TENTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.7,
+        fracLabel: "seven-tenths",
+        house: [50, 42, 50, 47, 55, 25, 25, 31, 39, 0, 46, 29, 100, 31, 45, 75, 41, 37, 52, 58, 29, 48, 57, 44, 36, 21, 44, 7, 23, 53, 51, 27, 35, 33, 30, 40, 54, 42, 32, 43, 28, 27, 33, 49, 42, 38, 34, 56]
+      }
+    ]
+  },
+  {
+    num: 151,
+    quizId: "outwit-12-14-26",
+    live: "2026-12-14",
+    dateLabel: "December 14, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A farm visit with one baby animal to hold. Which will the FEWEST players pick?",
+        options: [
+          "A piglet",
+          "A baby goat",
+          "A chick",
+          "A bunny"
+        ],
+        house: [3, 3, 1, 1, 0, 1, 1, 1, 1, 3, 1, 0, 1, 2, 0, 1, 3, 2, 2, 0, 2, 3, 1, 3, 1, 3, 2, 1, 0, 3, 1, 3, 1, 2, 3, 1, 3, 2, 2, 2, 1, 3, 3, 3, 1, 2, 0, 3]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many syllables are in a traditional haiku? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 3,
+        max: 100,
+        truth: 17,
+        truthNote: "Seventeen, in lines of five, seven and five.",
+        house: [19, 19, 19, 15, 17, 17, 15, 23, 19, 15, 21, 19, 17, 13, 19, 13, 21, 21, 13, 17, 15, 19, 15, 17, 15, 25, 13, 21, 17, 13, 17, 15, 17, 23, 17, 21, 11, 21, 25, 17, 15, 19, 11, 23, 11, 11, 17, 13]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a book people read in high school. Match the MOST-picked answer.",
+        options: [
+          "Of Mice and Men",
+          "Romeo and Juliet",
+          "The Great Gatsby",
+          "To Kill a Mockingbird",
+          "1984"
+        ],
+        house: [3, 3, 3, 3, 2, 2, 3, 2, 2, 3, 2, 4, 3, 0, 0, 4, 0, 1, 0, 2, 2, 3, 1, 3, 2, 3, 3, 2, 2, 1, 3, 4, 2, 3, 1, 0, 0, 1, 3, 0, 3, 0, 0, 2, 3, 3, 3, 1]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone retakes one school subject. The RAREST pick wins.",
+        options: [
+          "Music",
+          "Latin",
+          "English",
+          "Shop class",
+          "Science",
+          "History",
+          "Math",
+          "Art"
+        ],
+        house: [7, 5, 5, 4, 5, 4, 7, 1, 5, 6, 6, 6, 4, 5, 2, 7, 1, 7, 7, 4, 6, 2, 2, 4, 4, 1, 5, 0, 5, 6, 3, 2, 0, 3, 0, 6, 5, 5, 4, 0, 0, 6, 2, 7, 6, 4, 2, 6]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to A THIRD of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.3333333333333333,
+        fracLabel: "a third",
+        house: [13, 11, 75, 45, 50, 53, 24, 10, 58, 48, 54, 21, 20, 25, 42, 8, 100, 19, 46, 10, 47, 17, 12, 15, 2, 33, 0, 26, 12, 49, 44, 55, 4, 25, 42, 52, 57, 56, 23, 18, 16, 9, 50, 14, 51, 6, 22, 7]
+      }
+    ]
+  },
+  {
+    num: 152,
+    quizId: "outwit-12-15-26",
+    live: "2026-12-15",
+    dateLabel: "December 15, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A day at a living history village. Which job will the FEWEST players try?",
+        options: [
+          "Churning butter",
+          "Spinning wool",
+          "Blacksmithing",
+          "Candle making"
+        ],
+        house: [0, 3, 0, 0, 3, 3, 3, 0, 0, 3, 1, 0, 0, 2, 0, 3, 0, 3, 2, 2, 2, 3, 3, 0, 0, 0, 0, 1, 2, 3, 1, 2, 1, 0, 2, 0, 3, 1, 2, 3, 2, 0, 0, 0, 2, 3, 0, 3]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many gifts are given in all in The Twelve Days of Christmas, counting every repeat? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 5000,
+        truth: 364,
+        truthNote: "Three hundred sixty-four, one short of a gift for every day of the year.",
+        house: [70, 70, 150, 70, 350, 100, 220, 100, 600, 100, 100, 120, 150, 20, 85, 150, 85, 120, 100, 100, 150, 220, 220, 100, 100, 100, 85, 220, 85, 50, 120, 120, 120, 150, 120, 120, 85, 70, 120, 150, 35, 100, 350, 50, 100, 350, 220, 100]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a language. Match the MOST-picked answer.",
+        options: [
+          "German",
+          "Chinese",
+          "Spanish",
+          "English",
+          "French"
+        ],
+        house: [2, 0, 2, 2, 2, 3, 3, 3, 4, 3, 0, 4, 3, 2, 2, 2, 4, 4, 2, 1, 3, 0, 2, 1, 0, 1, 2, 4, 4, 3, 2, 3, 1, 1, 3, 2, 4, 2, 2, 1, 2, 4, 3, 2, 1, 3, 4, 4]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone orders one scoop of ice cream. The RAREST way to have it wins.",
+        options: [
+          "A cone with sprinkles",
+          "A pretzel cone",
+          "A plain cake cone",
+          "A brioche bun",
+          "A cup",
+          "A sugar cone",
+          "A cone dipped in chocolate",
+          "A waffle cone"
+        ],
+        house: [2, 7, 7, 2, 5, 6, 5, 5, 7, 7, 7, 0, 2, 5, 0, 4, 1, 4, 1, 7, 5, 3, 4, 2, 4, 4, 7, 6, 6, 6, 0, 2, 3, 2, 5, 0, 5, 0, 6, 2, 0, 6, 2, 7, 4, 5, 2, 4]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to THREE-FIFTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.6,
+        fracLabel: "three-fifths",
+        house: [33, 47, 51, 45, 38, 48, 75, 30, 7, 0, 24, 39, 28, 16, 27, 22, 29, 55, 23, 35, 25, 54, 32, 46, 34, 53, 42, 31, 25, 14, 36, 49, 37, 20, 52, 56, 33, 58, 100, 42, 50, 18, 50, 26, 57, 22, 24, 44]
+      }
+    ]
+  },
+  {
+    num: 153,
+    quizId: "outwit-12-16-26",
+    live: "2026-12-16",
+    dateLabel: "December 16, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A clock that runs five minutes fast. Which will the FEWEST players do?",
+        options: [
+          "Fix it right away",
+          "Take it apart",
+          "Leave it",
+          "Use it as a head start"
+        ],
+        house: [2, 3, 0, 1, 0, 0, 0, 2, 2, 2, 2, 1, 0, 1, 2, 2, 2, 2, 3, 3, 2, 0, 2, 0, 2, 3, 3, 3, 3, 1, 0, 0, 2, 0, 3, 1, 2, 2, 3, 0, 2, 0, 0, 0, 2, 3, 2, 0]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How long is a bowling lane from the foul line to the head pin, in feet? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 5,
+        max: 500,
+        truth: 60,
+        truthNote: "Sixty feet.",
+        house: [50, 32, 56, 38, 62, 62, 38, 32, 50, 44, 56, 44, 44, 32, 74, 62, 74, 50, 44, 38, 50, 56, 44, 56, 56, 50, 62, 50, 56, 44, 50, 68, 50, 68, 50, 38, 56, 38, 62, 44, 50, 56, 44, 50, 68, 86, 62, 38]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a candy bar. Match the MOST-picked answer.",
+        options: [
+          "Reese's",
+          "Kit Kat",
+          "Snickers",
+          "Hershey's",
+          "Twix"
+        ],
+        house: [0, 3, 2, 1, 2, 0, 2, 1, 1, 3, 0, 2, 2, 1, 0, 1, 1, 2, 3, 1, 2, 2, 2, 2, 4, 4, 2, 1, 1, 2, 2, 4, 1, 0, 0, 2, 2, 3, 1, 2, 2, 2, 0, 0, 2, 1, 3, 1]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone says goodbye one way. The RAREST pick wins.",
+        options: [
+          "See you later",
+          "Adios",
+          "Bye",
+          "Toodle-oo",
+          "Farewell",
+          "Take care",
+          "So long",
+          "Ta-ta for now"
+        ],
+        house: [0, 6, 1, 2, 3, 0, 0, 2, 5, 7, 0, 2, 6, 7, 1, 2, 4, 5, 0, 7, 3, 1, 2, 0, 5, 6, 6, 0, 1, 5, 4, 6, 7, 2, 7, 5, 2, 1, 0, 2, 6, 7, 5, 4, 5, 6, 0, 2]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to TWO-FIFTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.4,
+        fracLabel: "two-fifths",
+        house: [46, 49, 28, 42, 19, 75, 50, 14, 16, 4, 12, 53, 57, 27, 25, 50, 18, 48, 15, 29, 33, 22, 45, 55, 14, 24, 54, 26, 23, 100, 21, 51, 56, 44, 25, 10, 0, 47, 20, 7, 8, 52, 58, 42, 17, 13, 6, 12]
+      }
+    ]
+  },
+  {
+    num: 154,
+    quizId: "outwit-12-17-26",
+    live: "2026-12-17",
+    dateLabel: "December 17, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Picking up a rental car for a road trip. Which will the FEWEST players choose?",
+        options: [
+          "A convertible",
+          "A pickup truck",
+          "An SUV",
+          "A sedan"
+        ],
+        house: [2, 3, 0, 2, 2, 0, 3, 1, 0, 3, 3, 3, 1, 1, 2, 2, 2, 0, 2, 2, 2, 2, 3, 3, 1, 2, 2, 2, 3, 2, 3, 3, 0, 0, 0, 0, 0, 3, 2, 2, 2, 3, 3, 3, 2, 3, 2, 1]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many years did the Hundred Years War actually last? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 400,
+        truth: 116,
+        truthNote: "A hundred and sixteen years, on and off, from 1337 to 1453.",
+        house: [110, 90, 80, 200, 90, 100, 100, 65, 200, 130, 110, 90, 130, 100, 150, 80, 110, 50, 150, 130, 65, 130, 100, 90, 150, 100, 130, 90, 150, 100, 110, 80, 110, 100, 110, 100, 130, 100, 130, 80, 150, 110, 100, 110, 100, 90, 100, 110]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a famous scientist. Match the MOST-picked answer.",
+        options: [
+          "Albert Einstein",
+          "Charles Darwin",
+          "Thomas Edison",
+          "Marie Curie",
+          "Isaac Newton"
+        ],
+        house: [0, 0, 1, 1, 3, 2, 0, 0, 3, 0, 4, 0, 4, 0, 2, 4, 4, 0, 3, 4, 3, 4, 4, 0, 4, 0, 0, 1, 0, 3, 0, 2, 4, 4, 0, 0, 2, 2, 0, 0, 0, 3, 4, 3, 0, 0, 0, 0]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone brings one dish to a potluck. The RAREST pick wins.",
+        options: [
+          "Mac and cheese",
+          "A casserole",
+          "Meatballs",
+          "Pasta salad",
+          "Ambrosia",
+          "Aspic",
+          "Deviled eggs",
+          "Brownies"
+        ],
+        house: [2, 5, 2, 1, 1, 7, 1, 3, 6, 4, 4, 1, 6, 0, 7, 2, 7, 0, 1, 2, 6, 5, 1, 3, 1, 4, 6, 0, 3, 1, 0, 1, 0, 3, 7, 1, 7, 7, 3, 5, 2, 3, 6, 3, 3, 6, 7, 0]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to HALF of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.5,
+        fracLabel: "half",
+        house: [7, 9, 58, 57, 17, 45, 15, 75, 44, 51, 33, 100, 21, 17, 32, 42, 30, 11, 25, 47, 18, 26, 54, 20, 23, 22, 34, 19, 24, 13, 27, 48, 53, 56, 55, 29, 50, 19, 46, 0, 49, 42, 28, 33, 25, 52, 31, 50]
+      }
+    ]
+  },
+  {
+    num: 155,
+    quizId: "outwit-12-18-26",
+    live: "2026-12-18",
+    dateLabel: "December 18, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Naming a star after someone. Which will the FEWEST players pick?",
+        options: [
+          "A partner",
+          "Their pet",
+          "A parent",
+          "Their boss"
+        ],
+        house: [3, 2, 0, 2, 3, 2, 2, 3, 2, 2, 2, 0, 1, 2, 2, 2, 0, 0, 2, 2, 1, 0, 1, 0, 3, 1, 2, 2, 2, 0, 2, 0, 0, 0, 1, 1, 2, 0, 2, 1, 0, 0, 1, 0, 0, 2, 2, 2]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many main islands make up Hawaii? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 200,
+        truth: 8,
+        truthNote: "Eight main islands, from Niihau to the Big Island.",
+        house: [9, 7, 6, 7, 5, 7, 4, 10, 3, 6, 6, 5, 9, 10, 8, 4, 8, 3, 7, 8, 7, 5, 8, 6, 6, 4, 6, 5, 5, 6, 5, 4, 6, 6, 6, 8, 4, 4, 7, 3, 12, 9, 7, 6, 5, 8, 5, 7]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a kind of juice. Match the MOST-picked answer.",
+        options: [
+          "Apple juice",
+          "Grape juice",
+          "Orange juice",
+          "Cranberry juice",
+          "Pineapple juice"
+        ],
+        house: [0, 2, 2, 0, 0, 2, 2, 2, 0, 3, 2, 3, 3, 2, 2, 3, 2, 2, 1, 2, 2, 2, 0, 4, 2, 1, 2, 2, 0, 1, 2, 1, 0, 2, 4, 2, 0, 0, 2, 0, 1, 1, 3, 2, 4, 0, 1, 1]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone picks one rock off the beach. The RAREST pick wins.",
+        options: [
+          "One with a hole",
+          "A flat skimmer",
+          "A white one",
+          "A striped one",
+          "A fossil",
+          "A smooth gray one",
+          "A lump of coal",
+          "A piece of quartz"
+        ],
+        house: [2, 2, 5, 1, 3, 3, 0, 5, 2, 4, 1, 5, 2, 7, 1, 5, 5, 5, 2, 2, 1, 6, 3, 3, 7, 3, 7, 7, 4, 0, 1, 0, 0, 2, 7, 7, 1, 4, 5, 6, 2, 0, 0, 3, 5, 1, 3, 5]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to TWO-THIRDS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.6666666666666666,
+        fracLabel: "two-thirds",
+        house: [57, 33, 53, 75, 51, 41, 46, 55, 30, 56, 26, 50, 39, 54, 25, 44, 7, 29, 40, 33, 32, 25, 52, 58, 42, 31, 22, 18, 20, 24, 36, 38, 47, 28, 48, 27, 100, 26, 42, 43, 35, 45, 42, 50, 0, 49, 34, 37]
+      }
+    ]
+  },
+  {
+    num: 156,
+    quizId: "outwit-12-19-26",
+    live: "2026-12-19",
+    dateLabel: "December 19, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Buying a new winter coat. Which color will the FEWEST players choose?",
+        options: [
+          "Gray",
+          "Navy",
+          "Bright yellow",
+          "Black"
+        ],
+        house: [1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 3, 3, 2, 2, 2, 3, 3, 0, 3, 3, 3, 3, 3, 0, 3, 1, 3, 0, 3, 3, 1, 1, 1, 1, 0, 1, 3, 0, 2, 0, 1, 0, 3, 0, 1, 0, 3]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many states does the Mississippi River pass through or border? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 50,
+        truth: 10,
+        truthNote: "Ten, from Minnesota down to Louisiana.",
+        house: [6, 5, 8, 10, 8, 11, 10, 8, 8, 8, 9, 7, 10, 7, 9, 6, 11, 10, 9, 9, 6, 6, 11, 9, 6, 9, 6, 8, 5, 7, 7, 9, 9, 8, 8, 7, 7, 12, 5, 14, 8, 7, 8, 12, 7, 10, 10, 8]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a winter sport. Match the MOST-picked answer.",
+        options: [
+          "Snowboarding",
+          "Sledding",
+          "Ice skating",
+          "Hockey",
+          "Skiing"
+        ],
+        house: [2, 2, 0, 3, 4, 4, 4, 1, 4, 3, 4, 2, 4, 4, 4, 2, 3, 1, 2, 4, 0, 4, 2, 0, 3, 0, 3, 0, 4, 4, 2, 0, 2, 4, 1, 4, 2, 0, 3, 4, 4, 4, 2, 2, 4, 0, 2, 4]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone spends a weekend in one US city. The RAREST pick wins.",
+        options: [
+          "San Francisco",
+          "Boise",
+          "Chicago",
+          "New York",
+          "Nashville",
+          "Omaha",
+          "Las Vegas",
+          "New Orleans"
+        ],
+        house: [2, 4, 6, 1, 0, 7, 3, 4, 6, 2, 6, 7, 3, 4, 7, 7, 6, 3, 0, 2, 7, 3, 2, 4, 2, 6, 7, 6, 0, 3, 6, 3, 1, 4, 6, 3, 2, 2, 3, 0, 3, 2, 3, 5, 5, 3, 3, 4]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to FOUR-FIFTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.8,
+        fracLabel: "four-fifths",
+        house: [55, 50, 45, 75, 41, 33, 49, 53, 51, 45, 36, 48, 34, 40, 56, 52, 46, 47, 35, 25, 33, 46, 39, 54, 42, 44, 7, 57, 100, 38, 30, 28, 36, 34, 58, 48, 43, 32, 0, 47, 44, 49, 42, 37, 42, 32, 38, 50]
+      }
+    ]
+  },
+  {
+    num: 157,
+    quizId: "outwit-12-20-26",
+    live: "2026-12-20",
+    dateLabel: "December 20, 2026",
+    sunday: true,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A free day at the spa. Which treatment will the FEWEST players pick?",
+        options: [
+          "A massage",
+          "A mud wrap",
+          "A facial",
+          "A pedicure"
+        ],
+        house: [0, 0, 0, 2, 3, 3, 1, 3, 3, 0, 0, 1, 2, 0, 0, 2, 1, 2, 2, 0, 1, 1, 2, 0, 0, 2, 2, 0, 3, 3, 0, 2, 0, 0, 0, 2, 0, 0, 3, 3, 0, 3, 2, 2, 3, 2, 2, 0]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many sonnets are in Shakespeare's 1609 collection? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 2000,
+        truth: 154,
+        truthNote: "One hundred fifty-four.",
+        house: [85, 120, 35, 150, 350, 150, 100, 120, 220, 70, 150, 100, 100, 85, 100, 70, 70, 220, 85, 100, 100, 70, 100, 350, 85, 350, 120, 100, 120, 100, 220, 50, 120, 120, 120, 100, 220, 85, 600, 220, 120, 50, 150, 20, 100, 100, 150, 150]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name something in a city park. Match the MOST-picked answer.",
+        options: [
+          "Trees",
+          "A playground",
+          "A fountain",
+          "A statue",
+          "Benches"
+        ],
+        house: [4, 4, 1, 2, 2, 1, 3, 3, 4, 4, 0, 4, 4, 0, 1, 3, 4, 1, 4, 3, 1, 1, 4, 0, 1, 4, 0, 0, 2, 0, 4, 0, 1, 0, 2, 4, 4, 0, 2, 2, 4, 4, 0, 2, 0, 0, 4, 1]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone takes one scenic ride. The RAREST pick wins.",
+        options: [
+          "A helicopter",
+          "A ferry",
+          "A gondola",
+          "A funicular",
+          "A train",
+          "A cable car",
+          "A dog sled",
+          "A hot air balloon"
+        ],
+        house: [7, 2, 1, 1, 6, 4, 3, 5, 4, 1, 7, 0, 2, 4, 4, 2, 1, 6, 1, 1, 5, 2, 5, 4, 5, 5, 7, 4, 7, 0, 0, 4, 7, 0, 3, 5, 0, 5, 0, 7, 2, 4, 1, 4, 7, 2, 5, 1]
+      },
+      {
+        type: "unique",
+        tag: "Rarer Bird",
+        q: "Everyone lights one scented candle. The RAREST pick wins.",
+        options: [
+          "Lavender",
+          "Vanilla",
+          "Pine",
+          "Ocean breeze",
+          "Cinnamon",
+          "Tomato leaf",
+          "Sandalwood",
+          "Pumpkin spice"
+        ],
+        house: [7, 2, 6, 4, 0, 2, 0, 0, 2, 4, 6, 0, 1, 3, 4, 5, 0, 1, 2, 1, 4, 3, 1, 1, 1, 3, 6, 2, 4, 5, 3, 2, 0, 0, 1, 7, 1, 7, 7, 1, 4, 3, 2, 7, 2, 2, 7, 4]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to A THIRD of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.3333333333333333,
+        fracLabel: "a third",
+        house: [10, 12, 46, 45, 55, 24, 6, 75, 17, 2, 50, 47, 52, 33, 26, 4, 0, 13, 58, 44, 9, 15, 25, 10, 7, 20, 22, 42, 12, 50, 25, 19, 42, 21, 100, 48, 54, 8, 56, 53, 23, 57, 11, 51, 16, 49, 14, 18]
+      }
+    ]
+  },
+  {
+    num: 158,
+    quizId: "outwit-12-21-26",
+    live: "2026-12-21",
+    dateLabel: "December 21, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A surprise day off in the middle of the week. Which will the FEWEST players do?",
+        options: [
+          "See a movie",
+          "Check work email",
+          "Run errands",
+          "Sleep in"
+        ],
+        house: [1, 0, 2, 3, 3, 3, 3, 2, 0, 3, 0, 3, 0, 0, 1, 2, 3, 2, 1, 3, 3, 0, 3, 3, 3, 2, 0, 2, 2, 3, 0, 3, 2, 3, 2, 0, 2, 2, 1, 2, 2, 2, 1, 3, 0, 2, 3, 3]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many amendments have been added to the US Constitution? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 100,
+        truth: 27,
+        truthNote: "Twenty-seven; the most recent was ratified in 1992.",
+        house: [34, 25, 16, 25, 25, 31, 22, 22, 22, 34, 25, 22, 22, 25, 25, 28, 34, 19, 31, 16, 22, 28, 19, 28, 31, 28, 19, 25, 31, 19, 28, 28, 25, 19, 28, 43, 22, 25, 16, 22, 19, 31, 28, 25, 37, 25, 31, 37]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a famous painting. Match the MOST-picked answer.",
+        options: [
+          "The Last Supper",
+          "American Gothic",
+          "Mona Lisa",
+          "The Starry Night",
+          "The Scream"
+        ],
+        house: [4, 2, 2, 3, 2, 3, 2, 4, 4, 2, 2, 0, 4, 2, 1, 1, 3, 2, 2, 2, 2, 0, 2, 2, 3, 2, 1, 0, 2, 2, 0, 2, 2, 2, 4, 4, 3, 3, 2, 4, 3, 2, 2, 0, 3, 3, 3, 2]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone picks one sweater pattern. The RAREST pick wins.",
+        options: [
+          "Argyle",
+          "Fair Isle",
+          "Striped",
+          "Cable knit",
+          "Houndstooth",
+          "Plain",
+          "Snowflakes",
+          "Reindeer"
+        ],
+        house: [4, 3, 2, 2, 6, 7, 3, 3, 5, 0, 7, 1, 0, 6, 1, 1, 3, 2, 7, 7, 3, 5, 5, 3, 5, 2, 1, 4, 5, 2, 7, 2, 3, 5, 6, 6, 7, 2, 6, 5, 2, 6, 1, 1, 0, 5, 6, 5]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to TWO-FIFTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.4,
+        fracLabel: "two-fifths",
+        house: [33, 27, 57, 42, 6, 8, 18, 15, 45, 42, 17, 44, 28, 14, 25, 75, 100, 47, 24, 21, 55, 4, 48, 26, 16, 13, 12, 54, 19, 51, 49, 50, 58, 7, 22, 14, 23, 50, 20, 53, 29, 10, 0, 12, 56, 52, 46, 25]
+      }
+    ]
+  },
+  {
+    num: 159,
+    quizId: "outwit-12-22-26",
+    live: "2026-12-22",
+    dateLabel: "December 22, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A shelter visit, four dogs waiting. Which will the FEWEST players take home?",
+        options: [
+          "A big energetic one",
+          "A gentle old dog",
+          "A puppy",
+          "A very loud one"
+        ],
+        house: [1, 2, 1, 2, 1, 3, 2, 2, 0, 3, 0, 2, 2, 3, 3, 0, 0, 2, 2, 2, 1, 1, 0, 1, 1, 1, 2, 1, 2, 1, 0, 1, 2, 0, 0, 1, 2, 3, 0, 2, 1, 0, 0, 2, 2, 2, 1, 3]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many symphonies did Beethoven complete? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 100,
+        truth: 9,
+        truthNote: "Nine, the last with the Ode to Joy.",
+        house: [9, 8, 8, 12, 7, 7, 8, 11, 7, 10, 9, 6, 9, 9, 12, 11, 8, 9, 6, 11, 7, 10, 9, 12, 13, 9, 10, 10, 7, 6, 11, 7, 8, 9, 8, 10, 9, 8, 9, 15, 10, 10, 8, 11, 13, 11, 9, 10]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a kind of test question. Match the MOST-picked answer.",
+        options: [
+          "True or false",
+          "Fill in the blank",
+          "Multiple choice",
+          "Essay",
+          "Short answer"
+        ],
+        house: [0, 2, 2, 3, 2, 3, 2, 0, 3, 1, 2, 0, 3, 3, 1, 2, 4, 0, 2, 0, 0, 3, 1, 2, 1, 0, 4, 1, 2, 2, 2, 2, 0, 2, 2, 4, 2, 2, 0, 2, 2, 0, 2, 2, 3, 2, 2, 0]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone picks one element from the periodic table. The RAREST pick wins.",
+        options: [
+          "Carbon",
+          "Iron",
+          "Gold",
+          "Bismuth",
+          "Hydrogen",
+          "Tellurium",
+          "Helium",
+          "Oxygen"
+        ],
+        house: [6, 7, 0, 2, 4, 2, 2, 7, 4, 7, 2, 2, 0, 0, 4, 1, 4, 1, 4, 7, 2, 7, 2, 6, 0, 7, 0, 0, 2, 2, 3, 6, 7, 7, 4, 1, 7, 2, 6, 1, 2, 1, 4, 5, 2, 6, 5, 3]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to THREE-QUARTERS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.75,
+        fracLabel: "three-quarters",
+        house: [56, 42, 51, 36, 46, 34, 52, 37, 28, 24, 34, 58, 42, 47, 30, 50, 38, 7, 47, 50, 41, 33, 53, 54, 57, 48, 35, 39, 44, 33, 45, 42, 55, 31, 49, 32, 30, 100, 25, 45, 46, 75, 44, 43, 26, 0, 32, 40]
+      }
+    ]
+  },
+  {
+    num: 160,
+    quizId: "outwit-12-23-26",
+    live: "2026-12-23",
+    dateLabel: "December 23, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A $100 gift card. Which kind of place will the FEWEST players want it for?",
+        options: [
+          "A clothing store",
+          "A bookstore",
+          "A favorite restaurant",
+          "A hardware store"
+        ],
+        house: [0, 2, 2, 1, 0, 0, 1, 3, 1, 1, 2, 0, 2, 2, 1, 0, 2, 2, 2, 3, 2, 2, 1, 0, 1, 0, 2, 3, 3, 2, 2, 3, 0, 1, 1, 2, 0, 2, 2, 0, 0, 0, 0, 0, 2, 2, 2, 0]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How tall is the Burj Khalifa in Dubai, in meters? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 100,
+        max: 5000,
+        truth: 828,
+        truthNote: "Eight hundred twenty-eight meters, about 2,717 feet.",
+        house: [880, 800, 1000, 800, 640, 520, 720, 880, 1000, 720, 800, 880, 800, 800, 1600, 640, 720, 1000, 640, 720, 520, 640, 800, 720, 720, 880, 400, 880, 800, 880, 640, 520, 640, 800, 400, 800, 1000, 880, 720, 880, 800, 720, 1200, 1200, 800, 1000, 1600, 1200]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a holiday that falls in winter. Match the MOST-picked answer.",
+        options: [
+          "Valentine's Day",
+          "Kwanzaa",
+          "Hanukkah",
+          "Christmas",
+          "New Year's Day"
+        ],
+        house: [4, 4, 3, 2, 2, 3, 4, 3, 4, 3, 2, 3, 1, 3, 3, 0, 2, 4, 0, 0, 3, 4, 0, 4, 3, 2, 3, 4, 3, 4, 3, 3, 3, 3, 4, 3, 3, 3, 0, 1, 3, 2, 2, 4, 3, 2, 3, 1]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone plants one herb. The RAREST pick wins.",
+        options: [
+          "Thyme",
+          "Rosemary",
+          "Parsley",
+          "Basil",
+          "Lovage",
+          "Borage",
+          "Cilantro",
+          "Mint"
+        ],
+        house: [1, 7, 1, 1, 3, 2, 6, 3, 5, 3, 2, 0, 7, 4, 0, 7, 3, 3, 4, 7, 1, 6, 6, 3, 0, 3, 0, 2, 7, 2, 5, 3, 7, 3, 3, 6, 5, 4, 1, 7, 1, 2, 6, 1, 3, 2, 0, 7]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to THREE-FIFTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.6,
+        fracLabel: "three-fifths",
+        house: [24, 14, 35, 52, 29, 26, 53, 51, 50, 22, 47, 42, 31, 27, 54, 100, 20, 75, 50, 58, 25, 24, 38, 32, 36, 18, 42, 39, 33, 57, 49, 23, 56, 28, 46, 37, 22, 25, 7, 55, 45, 33, 16, 30, 34, 44, 0, 48]
+      }
+    ]
+  },
+  {
+    num: 161,
+    quizId: "outwit-12-24-26",
+    live: "2026-12-24",
+    dateLabel: "December 24, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Leaving the gift shop with one thing. Which will the FEWEST players buy?",
+        options: [
+          "A poster",
+          "A postcard",
+          "A fridge magnet",
+          "A paperweight"
+        ],
+        house: [2, 0, 3, 0, 1, 2, 2, 1, 1, 1, 2, 1, 0, 1, 3, 3, 3, 2, 3, 2, 1, 0, 1, 1, 1, 0, 2, 1, 1, 2, 0, 0, 1, 2, 2, 0, 2, 1, 1, 1, 1, 0, 1, 1, 2, 2, 0, 2]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many wings does a bee have? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 20,
+        truth: 4,
+        truthNote: "Four: two pairs that hook together in flight.",
+        house: [1, 5, 1, 5, 2, 2, 3, 1, 3, 4, 1, 2, 1, 2, 1, 3, 2, 2, 2, 1, 3, 5, 4, 4, 2, 1, 6, 3, 3, 4, 3, 1, 1, 2, 5, 1, 4, 6, 2, 1, 4, 5, 4, 3, 2, 2, 3, 1]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a Broadway musical. Match the MOST-picked answer.",
+        options: [
+          "The Phantom of the Opera",
+          "Wicked",
+          "The Lion King",
+          "Les Misérables",
+          "Hamilton"
+        ],
+        house: [4, 4, 1, 0, 3, 4, 2, 0, 1, 1, 4, 4, 4, 4, 4, 4, 0, 4, 0, 2, 2, 2, 1, 0, 1, 0, 0, 0, 4, 4, 4, 4, 1, 1, 0, 2, 4, 4, 4, 1, 0, 2, 0, 3, 0, 4, 1, 3]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone retells one fairy tale. The RAREST pick wins.",
+        options: [
+          "Rumpelstiltskin",
+          "Hansel and Gretel",
+          "The Elves and the Shoemaker",
+          "Snow White",
+          "Cinderella",
+          "Little Red Riding Hood",
+          "Sleeping Beauty",
+          "Rapunzel"
+        ],
+        house: [6, 3, 1, 1, 4, 7, 2, 7, 3, 3, 4, 1, 4, 7, 6, 7, 7, 0, 3, 4, 5, 6, 3, 5, 4, 1, 4, 0, 1, 5, 3, 3, 3, 7, 6, 2, 4, 6, 1, 4, 5, 5, 1, 5, 4, 5, 6, 5]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to SEVEN-TENTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.7,
+        fracLabel: "seven-tenths",
+        house: [40, 100, 53, 50, 29, 52, 27, 0, 56, 54, 23, 38, 27, 21, 55, 31, 7, 42, 31, 37, 45, 41, 75, 35, 58, 39, 43, 42, 49, 25, 29, 42, 47, 36, 57, 50, 33, 44, 32, 33, 46, 44, 25, 30, 28, 51, 48, 34]
+      }
+    ]
+  },
+  {
+    num: 162,
+    quizId: "outwit-12-25-26",
+    live: "2026-12-25",
+    dateLabel: "December 25, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Learning one tune on the piano. Which will the FEWEST players pick?",
+        options: [
+          "Happy Birthday",
+          "Chopsticks",
+          "A Bach fugue",
+          "Für Elise"
+        ],
+        house: [0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 2, 0, 1, 1, 0, 3, 0, 1, 0, 3, 0, 0, 1, 3, 1, 3, 1, 3, 3, 1, 2, 3, 1, 0, 0, 0, 2, 0, 1, 3, 3, 0, 2, 0, 0, 1]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many moons does Mars have? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 0,
+        max: 50,
+        truth: 2,
+        truthNote: "Two: Phobos and Deimos.",
+        house: [3, 2, 2, 4, 4, 2, 3, 5, 2, 1, 3, 4, 0, 2, 4, 1, 0, 2, 6, 2, 0, 3, 0, 0, 4, 2, 5, 1, 3, 2, 1, 5, 3, 2, 5, 3, 1, 5, 3, 4, 2, 2, 0, 3, 6, 4, 1, 2]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a Disney animated movie. Match the MOST-picked answer.",
+        options: [
+          "The Lion King",
+          "Frozen",
+          "The Little Mermaid",
+          "Aladdin",
+          "Beauty and the Beast"
+        ],
+        house: [3, 0, 1, 1, 4, 2, 3, 0, 2, 4, 3, 1, 1, 4, 1, 3, 0, 0, 0, 1, 3, 0, 1, 3, 1, 0, 0, 2, 1, 1, 0, 0, 3, 0, 0, 0, 0, 4, 4, 2, 4, 3, 0, 4, 3, 1, 4, 3]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone takes one kind of photo. The RAREST pick wins.",
+        options: [
+          "A panorama",
+          "A group shot",
+          "A silhouette",
+          "A close-up",
+          "A long exposure",
+          "A food photo",
+          "A landscape",
+          "A selfie"
+        ],
+        house: [0, 1, 4, 6, 3, 7, 0, 5, 7, 3, 5, 3, 6, 5, 7, 6, 7, 1, 5, 6, 0, 0, 4, 3, 2, 6, 2, 7, 1, 3, 4, 5, 0, 7, 1, 1, 7, 6, 7, 6, 7, 3, 1, 0, 6, 3, 1, 6]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to A THIRD of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.3333333333333333,
+        fracLabel: "a third",
+        house: [42, 12, 14, 8, 47, 46, 19, 18, 53, 21, 45, 7, 44, 26, 24, 50, 75, 50, 48, 17, 55, 13, 100, 51, 23, 54, 2, 12, 15, 57, 11, 20, 25, 4, 33, 52, 0, 49, 42, 10, 22, 56, 10, 16, 9, 58, 25, 6]
+      }
+    ]
+  },
+  {
+    num: 163,
+    quizId: "outwit-12-26-26",
+    live: "2026-12-26",
+    dateLabel: "December 26, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A long flight and room for one book. Which will the FEWEST players bring?",
+        options: [
+          "A memoir",
+          "A romance",
+          "A thriller",
+          "A book of poetry"
+        ],
+        house: [1, 3, 2, 3, 2, 2, 0, 1, 0, 2, 2, 0, 3, 1, 0, 1, 2, 2, 2, 1, 2, 2, 2, 1, 0, 1, 2, 1, 0, 1, 2, 0, 3, 1, 2, 1, 2, 0, 1, 2, 0, 0, 2, 1, 3, 2, 1, 1]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many standard time zones cover the lower 48 states? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 20,
+        truth: 4,
+        truthNote: "Four: Eastern, Central, Mountain and Pacific.",
+        house: [6, 7, 6, 3, 4, 4, 6, 3, 4, 4, 8, 5, 1, 2, 7, 1, 4, 5, 5, 3, 4, 6, 6, 8, 2, 7, 5, 6, 4, 7, 4, 2, 3, 3, 4, 3, 5, 4, 5, 5, 7, 2, 4, 5, 6, 5, 4, 4]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a card game. Match the MOST-picked answer.",
+        options: [
+          "Go Fish",
+          "Poker",
+          "Blackjack",
+          "Solitaire",
+          "Uno"
+        ],
+        house: [1, 1, 4, 1, 1, 0, 4, 0, 1, 1, 0, 4, 1, 1, 4, 0, 3, 1, 4, 1, 1, 2, 3, 4, 4, 4, 1, 0, 4, 1, 2, 0, 4, 3, 4, 1, 2, 4, 1, 1, 4, 3, 3, 0, 0, 1, 1, 1]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone hangs one ornament on the tree. The RAREST pick wins.",
+        options: [
+          "A snowflake",
+          "A star",
+          "A candy cane",
+          "A glass ball",
+          "A tiny lobster",
+          "A pickle",
+          "A bell",
+          "An angel"
+        ],
+        house: [3, 3, 3, 0, 2, 3, 3, 2, 6, 2, 7, 1, 3, 7, 0, 1, 4, 6, 7, 5, 0, 3, 6, 1, 7, 0, 0, 3, 4, 1, 2, 3, 7, 0, 3, 7, 1, 2, 5, 0, 0, 1, 1, 2, 6, 3, 1, 3]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to HALF of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.5,
+        fracLabel: "half",
+        house: [53, 11, 25, 0, 19, 24, 7, 26, 9, 31, 28, 27, 44, 50, 42, 55, 22, 15, 34, 45, 13, 49, 19, 17, 54, 33, 52, 17, 18, 42, 29, 50, 48, 25, 20, 56, 23, 57, 33, 46, 47, 58, 100, 75, 21, 30, 32, 51]
+      }
+    ]
+  },
+  {
+    num: 164,
+    quizId: "outwit-12-27-26",
+    live: "2026-12-27",
+    dateLabel: "December 27, 2026",
+    sunday: true,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A six-hour layover. Which will the FEWEST players do?",
+        options: [
+          "Find something to eat",
+          "Sit at the gate",
+          "Browse the shops",
+          "Leave the airport to see the city"
+        ],
+        house: [1, 2, 2, 1, 0, 1, 2, 0, 0, 3, 0, 0, 1, 2, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 2, 0, 2, 2, 3, 2, 3, 3, 0, 1, 1, 1, 0, 2, 0, 0, 1, 1, 0, 0, 1, 0, 3, 1]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many US states have a coastline on the Pacific Ocean? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 50,
+        truth: 5,
+        truthNote: "Five: Washington, Oregon, California, Alaska and Hawaii.",
+        house: [4, 2, 3, 3, 5, 6, 2, 4, 6, 2, 4, 4, 4, 6, 3, 7, 5, 3, 3, 4, 7, 6, 1, 6, 5, 7, 4, 5, 8, 2, 8, 4, 6, 7, 3, 6, 4, 1, 5, 5, 4, 5, 7, 4, 4, 5, 4, 5]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name an evergreen tree. Match the MOST-picked answer.",
+        options: [
+          "Pine",
+          "Cedar",
+          "Spruce",
+          "Redwood",
+          "Fir"
+        ],
+        house: [0, 3, 2, 0, 1, 0, 2, 2, 2, 0, 2, 0, 4, 0, 2, 4, 4, 0, 4, 4, 1, 1, 2, 0, 0, 4, 0, 2, 3, 2, 0, 1, 1, 3, 1, 0, 0, 0, 2, 0, 4, 0, 0, 2, 2, 0, 4, 0]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone swims with one sea animal. The RAREST pick wins.",
+        options: [
+          "Seals",
+          "Manta rays",
+          "Whales",
+          "An octopus",
+          "Sea turtles",
+          "Sharks",
+          "Dolphins",
+          "A jellyfish"
+        ],
+        house: [6, 1, 4, 4, 4, 6, 1, 6, 6, 4, 0, 0, 2, 0, 0, 2, 2, 6, 6, 0, 5, 3, 3, 1, 1, 2, 3, 4, 1, 6, 6, 2, 4, 6, 5, 4, 5, 7, 1, 4, 6, 4, 7, 2, 0, 5, 5, 2]
+      },
+      {
+        type: "unique",
+        tag: "Rarer Bird",
+        q: "Everyone wakes up to one kind of weather. The RAREST pick wins.",
+        options: [
+          "Cloudy",
+          "Rainy",
+          "Foggy",
+          "Sleet",
+          "Sunny",
+          "Hail",
+          "Snowy",
+          "Windy"
+        ],
+        house: [6, 6, 1, 6, 0, 4, 2, 3, 6, 7, 2, 4, 0, 6, 2, 7, 4, 7, 7, 1, 5, 0, 4, 5, 1, 4, 6, 1, 2, 4, 0, 1, 1, 0, 6, 4, 4, 4, 4, 5, 1, 2, 2, 4, 3, 7, 0, 6]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to THREE-FIFTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.6,
+        fracLabel: "three-fifths",
+        house: [29, 14, 42, 30, 33, 35, 58, 32, 45, 28, 56, 36, 25, 50, 38, 47, 18, 37, 39, 50, 22, 55, 26, 20, 27, 52, 34, 53, 25, 51, 42, 48, 46, 23, 31, 57, 49, 24, 54, 0, 16, 75, 100, 22, 24, 44, 33, 7]
+      }
+    ]
+  },
+  {
+    num: 165,
+    quizId: "outwit-12-28-26",
+    live: "2026-12-28",
+    dateLabel: "December 28, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Picking a holiday plant for the table. Which will the FEWEST players buy?",
+        options: [
+          "A poinsettia",
+          "A sprig of mistletoe",
+          "An amaryllis",
+          "A small potted pine"
+        ],
+        house: [0, 0, 2, 1, 3, 0, 2, 1, 2, 0, 2, 0, 2, 3, 0, 3, 0, 3, 2, 3, 1, 0, 2, 0, 1, 1, 3, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 3, 3, 3, 0, 2, 3, 3, 2, 3, 0, 2]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many words are in the Pledge of Allegiance? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 5,
+        max: 200,
+        truth: 31,
+        truthNote: "Thirty-one words.",
+        house: [19, 28, 22, 19, 25, 25, 22, 22, 37, 28, 31, 22, 25, 16, 28, 25, 25, 22, 28, 25, 43, 31, 22, 16, 28, 25, 25, 31, 31, 34, 37, 34, 19, 28, 31, 19, 25, 22, 28, 16, 19, 19, 34, 25, 22, 31, 28, 25]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a Christmas song. Match the MOST-picked answer.",
+        options: [
+          "Silent Night",
+          "Frosty the Snowman",
+          "Deck the Halls",
+          "Jingle Bells",
+          "Santa Claus Is Coming to Town"
+        ],
+        house: [3, 1, 3, 3, 3, 3, 4, 4, 0, 1, 1, 0, 1, 0, 3, 4, 3, 4, 3, 3, 3, 3, 3, 4, 0, 3, 3, 3, 3, 3, 3, 0, 3, 0, 3, 2, 3, 2, 4, 1, 0, 0, 3, 2, 0, 3, 4, 0]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone reads one book somewhere. The RAREST place wins.",
+        options: [
+          "On a balcony",
+          "In the bathtub",
+          "In bed",
+          "In a library reading room",
+          "On the couch",
+          "On a train",
+          "In a cafe",
+          "In a park"
+        ],
+        house: [7, 0, 7, 2, 3, 6, 1, 5, 2, 2, 5, 7, 7, 2, 2, 1, 0, 1, 4, 6, 4, 4, 5, 3, 4, 5, 1, 4, 5, 6, 2, 7, 2, 4, 5, 1, 4, 4, 6, 2, 6, 6, 5, 2, 2, 4, 2, 2]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to THREE-QUARTERS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.75,
+        fracLabel: "three-quarters",
+        house: [51, 32, 31, 54, 38, 32, 34, 46, 42, 45, 57, 41, 0, 33, 26, 7, 55, 42, 47, 28, 43, 34, 53, 45, 33, 44, 50, 50, 44, 48, 46, 36, 24, 35, 39, 30, 49, 37, 56, 52, 42, 25, 47, 75, 40, 58, 100, 30]
+      }
+    ]
+  },
+  {
+    num: 166,
+    quizId: "outwit-12-29-26",
+    live: "2026-12-29",
+    dateLabel: "December 29, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Choosing music for a dinner party. Which will the FEWEST players put on?",
+        options: [
+          "Classical",
+          "Jazz",
+          "Pop hits",
+          "Opera"
+        ],
+        house: [2, 2, 0, 1, 2, 0, 3, 2, 1, 1, 2, 2, 1, 0, 0, 2, 2, 0, 2, 2, 0, 3, 0, 2, 1, 1, 1, 1, 1, 1, 0, 1, 0, 3, 2, 3, 1, 1, 1, 2, 2, 2, 1, 0, 1, 3, 1, 1]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many legs does a ladybug have? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 40,
+        truth: 6,
+        truthNote: "Six, like every insect.",
+        house: [5, 6, 4, 6, 7, 10, 4, 5, 5, 5, 6, 9, 7, 7, 6, 4, 6, 6, 9, 8, 7, 7, 4, 7, 3, 8, 3, 7, 6, 5, 6, 8, 6, 7, 8, 8, 5, 5, 6, 8, 3, 10, 6, 4, 9, 3, 4, 5]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a US state. Match the MOST-picked answer.",
+        options: [
+          "California",
+          "Alaska",
+          "New York",
+          "Texas",
+          "Florida"
+        ],
+        house: [1, 4, 2, 2, 1, 0, 2, 0, 0, 3, 2, 4, 0, 0, 3, 4, 4, 0, 0, 3, 3, 4, 3, 2, 0, 4, 0, 3, 4, 3, 1, 1, 3, 0, 0, 3, 0, 0, 0, 2, 4, 0, 4, 3, 0, 3, 4, 2]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone picks one stone for a ring. The RAREST pick wins.",
+        options: [
+          "Amethyst",
+          "Peridot",
+          "Diamond",
+          "Alexandrite",
+          "Pearl",
+          "Ruby",
+          "Sapphire",
+          "Emerald"
+        ],
+        house: [0, 6, 4, 2, 5, 2, 6, 2, 6, 6, 2, 5, 5, 6, 2, 7, 5, 4, 5, 3, 5, 2, 7, 4, 6, 2, 1, 6, 7, 2, 7, 2, 2, 0, 1, 2, 0, 3, 7, 1, 4, 7, 0, 0, 5, 5, 3, 4]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to TWO-THIRDS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.6666666666666666,
+        fracLabel: "two-thirds",
+        house: [26, 51, 55, 50, 24, 18, 100, 38, 58, 37, 53, 48, 46, 57, 75, 22, 43, 54, 25, 47, 42, 33, 27, 28, 42, 41, 33, 40, 50, 39, 56, 49, 42, 7, 26, 36, 0, 35, 52, 32, 25, 30, 31, 20, 44, 34, 45, 29]
+      }
+    ]
+  },
+  {
+    num: 167,
+    quizId: "outwit-12-30-26",
+    live: "2026-12-30",
+    dateLabel: "December 30, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "Learning one phrase before a trip abroad. Which will the FEWEST players learn first?",
+        options: [
+          "Thank you",
+          "Where is the bathroom?",
+          "Hello",
+          "Happy birthday"
+        ],
+        house: [2, 0, 2, 3, 2, 0, 0, 2, 2, 2, 0, 0, 2, 2, 2, 0, 1, 2, 0, 1, 0, 2, 0, 2, 3, 1, 2, 1, 1, 2, 0, 0, 0, 1, 1, 3, 0, 3, 1, 0, 3, 1, 2, 2, 2, 2, 0, 2]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many ribs does a human have? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 2,
+        max: 100,
+        truth: 24,
+        truthNote: "Twenty-four: twelve pairs.",
+        house: [21, 24, 33, 36, 27, 27, 21, 24, 33, 24, 18, 27, 21, 27, 21, 21, 30, 42, 21, 24, 15, 30, 18, 24, 21, 15, 24, 33, 24, 27, 27, 24, 18, 36, 24, 27, 30, 24, 30, 18, 30, 18, 30, 27, 18, 21, 24, 15]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name a berry. Match the MOST-picked answer.",
+        options: [
+          "Cranberry",
+          "Raspberry",
+          "Strawberry",
+          "Blueberry",
+          "Blackberry"
+        ],
+        house: [2, 2, 3, 3, 4, 2, 3, 2, 3, 2, 4, 1, 1, 3, 3, 2, 2, 1, 2, 3, 1, 4, 3, 1, 2, 3, 0, 2, 4, 3, 1, 2, 3, 1, 2, 4, 1, 2, 0, 0, 2, 4, 2, 1, 2, 2, 2, 3]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone keeps one gadget. The RAREST pick wins.",
+        options: [
+          "Headphones",
+          "Pager",
+          "Fax machine",
+          "Smartwatch",
+          "TV",
+          "Phone",
+          "Tablet",
+          "Laptop"
+        ],
+        house: [0, 0, 3, 6, 3, 6, 0, 0, 6, 6, 4, 4, 5, 5, 7, 3, 5, 4, 6, 4, 5, 6, 0, 5, 6, 2, 2, 1, 7, 7, 5, 3, 5, 7, 7, 7, 3, 0, 1, 3, 5, 5, 7, 7, 5, 6, 5, 5]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to SEVEN-TENTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.7,
+        fracLabel: "seven-tenths",
+        house: [21, 29, 44, 45, 52, 42, 50, 100, 43, 46, 32, 40, 58, 49, 35, 41, 75, 48, 25, 54, 25, 47, 42, 39, 51, 42, 56, 23, 57, 27, 38, 31, 36, 53, 31, 7, 0, 33, 29, 44, 30, 28, 27, 37, 55, 33, 34, 50]
+      }
+    ]
+  },
+  {
+    num: 168,
+    quizId: "outwit-12-31-26",
+    live: "2026-12-31",
+    dateLabel: "December 31, 2026",
+    sunday: false,
+    prompts: [
+      {
+        type: "least",
+        tag: "Road Less Traveled",
+        q: "A day at the aquarium. Which tank will the FEWEST players visit first?",
+        options: [
+          "Sharks",
+          "Jellyfish",
+          "Sea cucumbers",
+          "Sea otters"
+        ],
+        house: [0, 1, 0, 3, 2, 1, 2, 1, 1, 1, 0, 1, 0, 3, 0, 0, 0, 3, 0, 0, 2, 1, 0, 0, 3, 0, 3, 1, 2, 0, 0, 0, 0, 0, 1, 3, 0, 0, 1, 1, 0, 1, 1, 1, 0, 3, 3, 1]
+      },
+      {
+        type: "herd",
+        tag: "Herd",
+        q: "How many countries are in the European Union? Closest to the crowd's MEDIAN guess wins, right or wrong.",
+        min: 1,
+        max: 100,
+        truth: 27,
+        truthNote: "Twenty-seven member states.",
+        house: [27, 39, 27, 27, 27, 21, 24, 30, 18, 33, 33, 21, 30, 27, 39, 30, 27, 27, 27, 27, 27, 36, 33, 36, 36, 24, 30, 30, 21, 45, 30, 27, 33, 27, 33, 36, 24, 33, 24, 30, 30, 18, 33, 24, 36, 24, 21, 27]
+      },
+      {
+        type: "match",
+        tag: "Meeting Point",
+        q: "Name something in an office. Match the MOST-picked answer.",
+        options: [
+          "Computer",
+          "Chair",
+          "Coffee maker",
+          "Printer",
+          "Desk"
+        ],
+        house: [4, 4, 4, 3, 4, 1, 4, 0, 0, 0, 1, 4, 3, 0, 4, 3, 0, 2, 1, 0, 4, 4, 0, 3, 3, 4, 4, 0, 0, 4, 0, 4, 3, 3, 0, 4, 2, 1, 4, 2, 0, 4, 4, 3, 1, 4, 4, 0]
+      },
+      {
+        type: "unique",
+        tag: "Rare Bird",
+        q: "Everyone moves to one US state. The RAREST pick wins.",
+        options: [
+          "Texas",
+          "North Dakota",
+          "Hawaii",
+          "Delaware",
+          "Florida",
+          "New York",
+          "Colorado",
+          "California"
+        ],
+        house: [7, 6, 6, 0, 2, 6, 4, 0, 5, 4, 5, 6, 2, 3, 6, 2, 7, 7, 0, 0, 2, 4, 1, 0, 5, 5, 1, 7, 5, 0, 6, 2, 4, 3, 7, 0, 5, 6, 1, 7, 7, 4, 7, 7, 4, 4, 2, 4]
+      },
+      {
+        type: "twothirds",
+        tag: "Undercut",
+        q: "Pick a number from 0 to 100. Closest to TWO-FIFTHS of the crowd's average pick wins.",
+        min: 0,
+        max: 100,
+        frac: 0.4,
+        fracLabel: "two-fifths",
+        house: [29, 75, 12, 47, 21, 8, 48, 13, 6, 28, 58, 14, 19, 26, 53, 25, 18, 50, 50, 17, 15, 33, 42, 56, 100, 7, 14, 0, 44, 52, 55, 42, 45, 46, 27, 51, 57, 25, 4, 22, 12, 23, 24, 20, 49, 10, 16, 54]
+      }
+    ]
   }
 ];
