@@ -1,20 +1,28 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Trophy, Play, Check, CheckCheck, Crown } from 'lucide-react';
-import Grain from '../Grain';
-import Footer from '../Footer';
-import { T } from '@/lib/theme';
+import { Trophy, Play, Check, CheckCheck, Crown } from 'lucide-react';
+import CircuitFrame from '../circuits/CircuitFrame';
 
-const MEDAL = ['#caa12e', '#9c968a', '#b1763f'];
+// THE QUIZ LEADERBOARD ON THE SITE'S OWN FRAME (owner, 2026-11-12: "update the
+// leaderboard page on main... none match new styling"). It was the old
+// magazine page: grain, a serif-weight title with an italic accent word, navy
+// rules and toggles, and the legacy footer. It now sits in CircuitFrame with the
+// dailies' top bar (back, name with the Trivia dot, Share, look switch), the
+// page's ink and hairlines in light and dark, and toggles that fill with the
+// Trivia pastel. The data and the five rankings are unchanged.
+const TRIVIA_SOFT = '#fdbe8a'; // softGround(CATEGORY_RAMP Trivia #fb923c), the home tile tone
+const MEDAL = ['#e8c45a', '#c3c7cf', '#d79a63'];
+const INK = 'var(--stg-ink,#0b0d12)';
+const MUTE = 'var(--stg-mute,#5f6774)';
+const LINE = 'var(--stg-line,rgba(11,15,26,.14))';
 
 function RankRow({ rank, name, value }) {
   const medal = rank <= 3 ? MEDAL[rank - 1] : null;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 3px', borderBottom: `1px solid rgba(26,22,17,0.12)` }}>
-      <span style={{ flex: 'none', width: 24, height: 24, borderRadius: '50%', background: medal || 'transparent', border: medal ? `1.5px solid ${T.ink}` : `1.5px solid rgba(26,22,17,0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Manrope, monospace', fontSize: 11, fontWeight: 500, color: medal ? T.ink : T.slate }}>{rank}</span>
-      <span style={{ flex: '1 1 auto', minWidth: 0, fontFamily: 'Manrope, monospace', fontSize: 12.5, fontWeight: 500, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{name}</span>
-      <span style={{ flex: 'none', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 700, fontSize: 15, color: T.ink }}>{value}</span>
+    <div className="lb-row">
+      <span className="lb-rank" style={medal ? { background: medal, color: '#0b0d12', borderColor: medal } : undefined}>{rank}</span>
+      <span className="lb-name">{name}</span>
+      <span className="lb-val">{value}</span>
     </div>
   );
 }
@@ -22,24 +30,54 @@ function RankRow({ rank, name, value }) {
 function Column({ icon: Icon, title, anon, note, rows, empty }) {
   return (
     <div>
-      <div className="lb-title" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 3 }}>
-        <Icon size={16} strokeWidth={2} aria-hidden="true" style={{ flex: 'none', marginTop: 2, color: T.accent }} />
-        <h2 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: 16, lineHeight: 1.1, letterSpacing: '-0.01em', margin: 0, color: T.ink }}>
-          {title}
-          {anon ? <span style={{ fontFamily: 'Manrope, monospace', fontSize: 9.5, fontWeight: 500, letterSpacing: '0.04em', color: T.slate, marginLeft: 6, whiteSpace: 'nowrap' }}>({anon})</span> : null}
-        </h2>
+      <div className="lb-colhead">
+        <Icon size={16} strokeWidth={2.2} aria-hidden="true" style={{ flex: 'none' }} />
+        <h2>{title}{anon ? <span>({anon})</span> : null}</h2>
       </div>
-      <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate, marginBottom: 10 }}>{note}</div>
-      <div style={{ borderTop: `2px solid ${T.accent}` }}>
+      <div className="lb-note">{note}</div>
+      <div className="lb-list">
         {rows.length > 0 ? rows.map((r, i) => (
           <RankRow key={`${r.name}-${i}`} rank={i + 1} name={r.name} value={r.value} />
         )) : (
-          <div style={{ padding: '20px 3px', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 13.5, color: T.slate }}>{empty}</div>
+          <div className="lb-empty">{empty}</div>
         )}
       </div>
     </div>
   );
 }
+
+const CSS = `
+.lbp{max-width:1040px;margin:0 auto;padding:18px 24px 72px;color:${INK};font-family:Manrope,system-ui,sans-serif;}
+.lbp h1{font-size:clamp(28px,5vw,40px);font-weight:800;line-height:1.2;margin:6px 0 10px;padding-bottom:2px;letter-spacing:-.01em;}
+.lbp .lb-intro{font-size:15px;line-height:1.55;color:${MUTE};margin:0 0 22px;max-width:680px;}
+.lb-metrics{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.lb-metric{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 15px;border-radius:999px;border:1px solid ${LINE};background:var(--stg-surf,#fff);color:${INK};font:800 13px Manrope,system-ui,sans-serif;cursor:pointer;}
+.lb-metric:hover{border-color:${INK};}
+.lb-metric.on{background:${TRIVIA_SOFT};border-color:${TRIVIA_SOFT};color:#0b0d12;}
+.lb-toggles{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.lb-seg{display:inline-flex;border:1px solid ${INK};border-radius:10px;overflow:hidden;}
+.lb-seg button{height:36px;padding:0 15px;border:0;background:transparent;color:${INK};font:800 13px Manrope,system-ui,sans-serif;cursor:pointer;}
+.lb-seg button + button{border-left:1px solid ${INK};}
+.lb-seg button.on{background:${TRIVIA_SOFT};color:#0b0d12;}
+.lb-sub{font-size:13px;line-height:1.5;color:${MUTE};margin:0 0 18px;max-width:680px;}
+.lb-colhead{display:flex;align-items:center;gap:8px;margin-bottom:2px;}
+.lb-colhead h2{font-size:17px;font-weight:800;margin:0;line-height:1.3;padding-bottom:2px;}
+.lb-colhead h2 span{font-size:12px;font-weight:600;color:${MUTE};margin-left:6px;}
+.lb-note{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${MUTE};margin-bottom:10px;}
+.lb-list{background:var(--stg-surf,#fff);border:1px solid ${LINE};border-radius:14px;padding:4px 14px;}
+.lb-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid ${LINE};}
+.lb-row:last-child{border-bottom:0;}
+.lb-rank{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid ${LINE};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:${INK};}
+.lb-name{flex:1 1 auto;min-width:0;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:2px;}
+.lb-val{flex:none;font-size:15px;font-weight:800;}
+.lb-empty{padding:20px 2px;font-size:14px;color:${MUTE};}
+.lb-daily-grid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(10,auto);gap:0 36px;}
+.lb-daily-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid ${LINE};min-width:0;}
+.lb-daily-date{flex:none;min-width:46px;font-size:12px;font-weight:800;color:${MUTE};}
+.lb-daily-name{flex:1 1 auto;min-width:0;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:2px;}
+.lb-loading{text-align:center;padding:60px 24px;font-size:15px;color:${MUTE};}
+@media(max-width:680px){.lb-daily-grid{grid-auto-flow:row;grid-template-rows:none;grid-template-columns:1fr;}.lbp{padding:10px 14px 56px;}}
+`;
 
 export default function LeaderboardClient() {
   const [data, setData] = useState({ totalPlays: [], completed: [], correctAnswers: [], perfectQuizzes: [], minQuizzes: 5, anonPlays: 0, anonCompleted: 0, anonPlayers: [], today: {}, dailyChampions: [] });
@@ -112,112 +150,71 @@ export default function LeaderboardClient() {
   const curAnon = view === 'registered' ? (metric === 'plays' ? anonPlaysStr : metric === 'unique' ? anonCompletedStr : null) : null;
 
   return (
-    <div style={{ minHeight: '100vh', background: T.surface, color: T.ink, position: 'relative', overflow: 'clip' }}>
-      <Grain />
-      <div style={{ position: 'relative', zIndex: 2 }}>
-        <header style={{ padding: '40px 24px 18px', maxWidth: 1300, margin: '0 auto' }}>
-          <Link href="/#sty-quizzes" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, color: T.slate, textDecoration: 'none', marginBottom: 22 }}>
-            <ArrowLeft size={15} strokeWidth={2.5} /> All Quizzes
-          </Link>
-          <div style={{ fontFamily: 'Manrope, monospace', fontSize: 11, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: T.accent, marginBottom: 10 }}>Quiz Champions</div>
-          <h1 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: 'clamp(34px, 7vw, 60px)', lineHeight: 0.95, letterSpacing: '-0.015em', margin: '0 0 14px', fontVariationSettings: '"SOFT" 100', color: T.ink }}>
-            The <span style={{ fontStyle: 'italic', fontWeight: 400, color: T.accent }}>Quiz</span> Leaderboard
-          </h1>
-          <p style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 17, lineHeight: 1.5, color: T.slate, margin: 0, maxWidth: 720 }}>
-            Every signed-up player, ranked five ways: total plays, correct answers banked, distinct quizzes finished, quizzes scored a perfect 100%, and the daily champion. Pick a category below. Sign Up before a quiz to put your name in the running.
-          </p>
-          <div style={{ borderBottom: `1px solid ${T.ink}`, marginTop: 22 }} />
-          <div style={{ borderBottom: `2px solid ${T.accent}` }} />
-        </header>
+    <CircuitFrame cat="Trivia" label="Quiz leaderboard" wide bar={{ title: 'Quiz Leaderboard', sub: 'Quiz champions', dot: TRIVIA_SOFT }}>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <div className="lbp">
+        <h1>The Quiz Leaderboard</h1>
+        <p className="lb-intro">Every signed-up player, ranked five ways: total plays, correct answers banked, distinct quizzes finished, quizzes scored a perfect 100%, and the daily champion. Pick a category below. Sign up before a quiz to put your name in the running.</p>
 
-        <section style={{ maxWidth: 1300, margin: '0 auto', padding: '24px 24px 72px' }}>
-          <div className="lb-metrics">
-            {METRICS.map((m) => {
-              const on = metric === m.id;
-              const MI = m.icon;
-              return (
-                <button key={m.id} onClick={() => setMetric(m.id)} className={`lb-metric${on ? ' on' : ''}`}>
-                  <MI size={15} strokeWidth={2.2} aria-hidden="true" style={{ flex: 'none' }} />
-                  <span>{m.label}</span>
-                </button>
-              );
-            })}
-          </div>
+        <div className="lb-metrics">
+          {METRICS.map((m) => {
+            const on = metric === m.id;
+            const MI = m.icon;
+            return (
+              <button key={m.id} type="button" onClick={() => setMetric(m.id)} className={`lb-metric${on ? ' on' : ''}`} aria-pressed={on}>
+                <MI size={15} strokeWidth={2.2} aria-hidden="true" style={{ flex: 'none' }} />
+                <span>{m.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
-          {metric !== 'daily' && (
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
-              <div style={{ display: 'inline-flex', border: `1.5px solid ${T.ink}` }}>
-                {[['registered', 'Registered'], ['anon', 'Anonymous'], ['combined', 'Combined']].map(([k, label], idx) => {
-                  const on = view === k;
-                  return (
-                    <button key={k} onClick={() => setView(k)} style={{ padding: '8px 15px', background: on ? T.ink : 'transparent', color: on ? T.surface : T.ink, border: 'none', borderLeft: idx === 0 ? 'none' : `1.5px solid ${T.ink}`, fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer' }}>{label}</button>
-                  );
-                })}
-              </div>
-              <div style={{ display: 'inline-flex', border: `1.5px solid ${T.ink}` }}>
-                {[['all', 'All Time'], ['today', 'Today']].map(([k, label], idx) => {
-                  const on = period === k;
-                  return (
-                    <button key={k} onClick={() => setPeriod(k)} style={{ padding: '8px 15px', background: on ? T.ink : 'transparent', color: on ? T.surface : T.ink, border: 'none', borderLeft: idx === 0 ? 'none' : `1.5px solid ${T.ink}`, fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer' }}>{label}</button>
-                  );
-                })}
-              </div>
+        {metric !== 'daily' && (
+          <div className="lb-toggles">
+            <div className="lb-seg" role="group" aria-label="Players">
+              {[['registered', 'Registered'], ['anon', 'Anonymous'], ['combined', 'Combined']].map(([k, label]) => (
+                <button key={k} type="button" className={view === k ? 'on' : ''} aria-pressed={view === k} onClick={() => setView(k)}>{label}</button>
+              ))}
             </div>
-          )}
-          <p style={{ fontFamily: 'Manrope, monospace', fontSize: 11, letterSpacing: '0.03em', color: T.slate, margin: '0 0 18px', maxWidth: 720 }}>
-            {metric === 'daily'
-              ? 'The signed-up player who banked the most correct answers each day. A fresh champion is crowned every day.'
-              : `${view === 'anon' ? 'Players who never signed up, batched by browser and shown under a stable Guest handle.' : view === 'combined' ? 'Registered and anonymous players merged into one combined ranking.' : 'Signed-up players only. Switch to Anonymous or Combined to see everyone else.'}${period === 'today' ? ' Showing today only.' : ''}`}
-          </p>
-          {loaded ? (
-            <div className="lb-single">
-              {metric === 'daily' ? (
-                <div>
-                  <div className="lb-title" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 3 }}>
-                    <Crown size={16} strokeWidth={2} aria-hidden="true" style={{ flex: 'none', marginTop: 2, color: T.accent }} />
-                    <h2 style={{ fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: 16, lineHeight: 1.1, letterSpacing: '-0.01em', margin: 0, color: T.ink }}>Daily Champions</h2>
-                  </div>
-                  <div style={{ fontFamily: 'Manrope, monospace', fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.slate, marginBottom: 10 }}>Most correct answers each day</div>
-                  <div style={{ borderTop: `2px solid ${T.accent}` }}>
-                    {dailyRows.length > 0 ? (
-                      <div className="lb-daily-grid">
-                        {dailyRows.map((r, i) => (
-                          <div key={`${r.date}-${i}`} className="lb-daily-row">
-                            <span className="lb-daily-date">{r.date}</span>
-                            <span className="lb-daily-name">{r.name}</span>
-                          </div>
-                        ))}
+            <div className="lb-seg" role="group" aria-label="Period">
+              {[['all', 'All Time'], ['today', 'Today']].map(([k, label]) => (
+                <button key={k} type="button" className={period === k ? 'on' : ''} aria-pressed={period === k} onClick={() => setPeriod(k)}>{label}</button>
+              ))}
+            </div>
+          </div>
+        )}
+        <p className="lb-sub">
+          {metric === 'daily'
+            ? 'The signed-up player who banked the most correct answers each day. A fresh champion is crowned every day.'
+            : (view === 'anon' ? 'Players who never signed up, batched by browser and shown under a stable Guest handle.' : view === 'combined' ? 'Registered and anonymous players merged into one combined ranking.' : 'Signed-up players only. Switch to Anonymous or Combined to see everyone else.')}
+        </p>
+        {loaded ? (
+          metric === 'daily' ? (
+            <div>
+              <div className="lb-colhead"><Crown size={16} strokeWidth={2.2} aria-hidden="true" style={{ flex: 'none' }} /><h2>Daily Champions</h2></div>
+              <div className="lb-note">Most correct answers each day</div>
+              <div className="lb-list">
+                {dailyRows.length > 0 ? (
+                  <div className="lb-daily-grid">
+                    {dailyRows.map((r, i) => (
+                      <div key={`${r.date}-${i}`} className="lb-daily-row">
+                        <span className="lb-daily-date">{r.date}</span>
+                        <span className="lb-daily-name">{r.name}</span>
                       </div>
-                    ) : (
-                      <div style={{ padding: '20px 3px', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 13.5, color: T.slate }}>The first champion is crowned once today is over.</div>
-                    )}
+                    ))}
                   </div>
-                </div>
-              ) : (
-                <Column icon={cur.icon} title={cur.label} anon={curAnon} note={cur.note} rows={rowsFor(metric)} empty={`No ${cur.label.toLowerCase()} recorded yet.`} />
-              )}
+                ) : (
+                  <div className="lb-empty">The first champion is crowned once today is over.</div>
+                )}
+              </div>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '60px 24px', fontFamily: 'Manrope, system-ui, -apple-system, sans-serif', fontStyle: 'italic', fontSize: 18, color: T.slate }}>Loading the standings...</div>
-          )}
-          <style dangerouslySetInnerHTML={{ __html: `
-            .lb-metrics{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
-            .lb-metric{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;background:${T.surfaceAlt};border:1.5px solid ${T.ink};font-family:'Manrope',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:${T.ink};cursor:pointer;}
-            .lb-metric:hover{background:#e4dbc8;}
-            .lb-metric.on{background:${T.accent};color:${T.surface};}
-            .lb-single{max-width:none;}
-            .lb-daily-grid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(10,auto);gap:0 36px;}
-            .lb-daily-row{display:flex;align-items:center;gap:12px;padding:8px 3px;border-bottom:1px solid rgba(26,22,17,0.12);min-width:0;}
-            .lb-daily-date{flex:none;min-width:46px;font-family:'Manrope',monospace;font-size:12px;font-weight:700;color:${T.accent};}
-            .lb-daily-name{flex:1 1 auto;min-width:0;font-family:'Manrope',serif;font-size:15px;font-weight:500;color:${T.ink};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-            @media(max-width:680px){.lb-daily-grid{grid-auto-flow:row;grid-template-rows:none;grid-template-columns:1fr;}}
-            .lb-title{min-height:46px;}
-            @media(max-width:900px){.lb-grid{grid-template-columns:1fr 1fr;gap:30px;}}
-            @media(max-width:520px){.lb-grid{grid-template-columns:1fr;gap:34px;}.lb-title{min-height:0;}}
-          ` }} />
-        </section>
+            <Column icon={cur.icon} title={cur.label} anon={curAnon} note={cur.note} rows={rowsFor(metric)} empty={`No ${cur.label.toLowerCase()} recorded yet.`} />
+          )
+        ) : (
+          <div className="lb-loading">Loading the standings...</div>
+        )}
       </div>
-      <Footer />
-    </div>
+    </CircuitFrame>
   );
 }

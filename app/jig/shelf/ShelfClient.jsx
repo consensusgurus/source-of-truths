@@ -27,6 +27,14 @@ import { useEffect, useMemo, useState } from 'react';
 import CircuitFrame from '../../circuits/CircuitFrame';
 import { fetchDayStatus } from '../../useDayStats';
 import { migrateJigSaves } from '@/lib/jig-renum';
+import { gameColor, softGround } from '@/lib/category-ramp';
+
+// THE SHELF WEARS THE SITE'S SOFT PASTEL (owner, 2026-11-12: "the colors on the
+// jigsaw shelf page... none match new styling"). Its accents used --stg-acc,
+// which on this CircuitFrame page is the raw deep Logic rose; the site's own
+// pastel is the category step softened 40% toward white (softGround), the tone
+// the home tiles wear, carrying near-black ink in light and dark alike.
+const JIG_HUE = softGround(gameColor('jig'));
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -161,7 +169,7 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
   };
 
   return (
-    <CircuitFrame cat="Logic" label="Jigsaw shelf" wide>
+    <CircuitFrame cat="Logic" label="Jigsaw shelf" wide bar={{ title: 'Jigsaw Shelf', sub: 'Every Jig and Saw', dot: JIG_HUE }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <nav className="jsh-crumb" aria-label="Breadcrumb">
         <a href="/">Home</a><span aria-hidden="true">/</span>
@@ -322,6 +330,7 @@ function Panel({ b, solved, played, todayOpen }) {
 // CircuitFrame describes. Every colour below is a token or a mix of tokens,
 // except the photographs and the wooden plank (an object, like a chess board).
 const CSS = `
+:root{--jsh-hue:${JIG_HUE};--jsh-ink:#0b0d12;}
 .jsh-crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;font-weight:700;color:var(--stg-mute);margin-bottom:14px;}
 .jsh-crumb a{color:var(--stg-ink2);text-decoration:none;}
 .jsh-crumb a:hover{color:var(--stg-ink);text-decoration:underline;}
@@ -332,17 +341,17 @@ const CSS = `
 .jsh-lede{margin:8px 0 0;max-width:640px;font-size:15px;line-height:1.5;font-weight:600;color:var(--stg-ink2);}
 .jsh-todays{flex:none;display:flex;gap:10px;}
 .jsh-today{display:flex;flex-direction:column;align-items:center;gap:1px;text-decoration:none;font-size:14px;font-weight:800;padding:10px 18px;border-radius:10px;
-  background:var(--stg-acc);color:var(--stg-onramp,#08222e);line-height:1.2;}
+  background:var(--jsh-hue);color:var(--jsh-ink);line-height:1.2;}
 .jsh-today small{font-size:11px;font-weight:700;opacity:.85;}
 .jsh-today:hover{filter:brightness(1.06);}
 
 .jsh-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
 .jsh-chips button{font:inherit;font-size:13px;font-weight:800;padding:8px 13px;border-radius:999px;cursor:pointer;
   background:var(--stg-surf);color:var(--stg-ink2);border:1px solid var(--stg-line);}
-.jsh-chips button:hover{border-color:var(--stg-acc-ink,var(--stg-acc));color:var(--stg-ink);}
+.jsh-chips button:hover{border-color:var(--stg-ink);color:var(--stg-ink);}
 .jsh-chips button b{font-weight:800;color:var(--stg-mute);margin-left:3px;}
-.jsh-chips button.on{background:var(--stg-acc);color:var(--stg-onramp,#08222e);border-color:var(--stg-acc);}
-.jsh-chips button.on b{color:var(--stg-onramp,#08222e);opacity:.75;}
+.jsh-chips button.on{background:var(--jsh-hue);color:var(--jsh-ink);border-color:var(--jsh-hue);}
+.jsh-chips button.on b{color:var(--jsh-ink);opacity:.75;}
 
 .jsh-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:26px;align-items:start;}
 .jsh-shelves{min-width:0;padding:14px 16px 6px;border-radius:14px;background:var(--stg-surf);border:1px solid var(--stg-line);}
@@ -352,7 +361,7 @@ const CSS = `
 .jsh-dowr span{text-align:center;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--stg-mute);}
 .jsh-week{margin-bottom:20px;padding-top:4px;}
 .jsh-week + .jsh-week{border-top:1px solid var(--stg-line);padding-top:12px;}
-.jsh-wlab{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-acc-ink,var(--stg-acc));margin:0 0 8px;}
+.jsh-wlab{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-ink);margin:0 0 8px;}
 .jsh-line + .jsh-line{margin-top:16px;}
 .jsh-glab{display:flex;flex-direction:column;gap:1px;padding-bottom:16px;line-height:1.2;}
 .jsh-glab b{font-size:14px;font-weight:800;color:var(--stg-ink);}
@@ -368,20 +377,20 @@ const CSS = `
   background:var(--stg-surf2);box-shadow:0 2px 0 color-mix(in srgb, var(--stg-ink) 22%, transparent), 0 6px 12px -6px rgba(0,0,0,.45);
   transition:transform .15s ease, opacity .15s ease, box-shadow .15s ease;}
 .jsh-box:hover{transform:translateY(-4px);box-shadow:0 2px 0 color-mix(in srgb, var(--stg-ink) 22%, transparent), 0 12px 18px -8px rgba(0,0,0,.5);}
-.jsh-box:focus-visible{outline:3px solid var(--stg-acc-ink,var(--stg-acc));outline-offset:3px;}
-.jsh-box.sel{outline:3px solid var(--stg-acc-ink,var(--stg-acc));outline-offset:2px;}
+.jsh-box:focus-visible{outline:3px solid var(--stg-ink);outline-offset:3px;}
+.jsh-box.sel{outline:3px solid var(--stg-ink);outline-offset:2px;}
 .jsh-box.off{opacity:.22;}
 .jsh-lid{display:flex;align-items:center;justify-content:space-between;gap:4px;height:16px;padding:0 5px;
-  font-size:9.5px;font-weight:800;letter-spacing:.04em;background:var(--stg-acc);color:var(--stg-onramp,#08222e);white-space:nowrap;overflow:hidden;}
-.jsh-line.saw .jsh-lid{background:color-mix(in srgb, var(--stg-acc) 18%, var(--stg-surf2));color:var(--stg-acc-ink,var(--stg-acc));box-shadow:inset 0 -2px 0 var(--stg-acc);}
-.jsh-lid em{font-style:normal;letter-spacing:.08em;padding:0 4px;border-radius:3px;background:var(--stg-onramp,#08222e);color:var(--stg-acc);}
+  font-size:9.5px;font-weight:800;letter-spacing:.04em;background:var(--jsh-hue);color:var(--jsh-ink);white-space:nowrap;overflow:hidden;}
+.jsh-line.saw .jsh-lid{background:color-mix(in srgb, var(--jsh-hue) 18%, var(--stg-surf2));color:var(--stg-ink);box-shadow:inset 0 -2px 0 var(--jsh-hue);}
+.jsh-lid em{font-style:normal;letter-spacing:.08em;padding:0 4px;border-radius:3px;background:var(--jsh-ink);color:var(--jsh-hue);}
 .jsh-pic{display:block;position:relative;aspect-ratio:3/2;background:var(--stg-surf2);}
 .jsh-line.saw .jsh-pic{aspect-ratio:4/5;}
 .jsh-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
 .jsh-q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;
-  color:var(--stg-onramp,#08222e);background:var(--stg-acc);
-  background-image:radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--stg-onramp,#08222e) 14%, transparent), transparent 60%);}
-.jsh-box.today{box-shadow:0 0 0 2px var(--stg-acc), 0 6px 14px -6px color-mix(in srgb, var(--stg-acc) 70%, transparent);}
+  color:var(--jsh-ink);background:var(--jsh-hue);
+  background-image:radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--jsh-ink) 14%, transparent), transparent 60%);}
+.jsh-box.today{box-shadow:0 0 0 2px var(--jsh-hue), 0 6px 14px -6px color-mix(in srgb, var(--jsh-hue) 70%, transparent);}
 .jsh-pc{position:absolute;right:4px;bottom:4px;font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:7px;
   background:rgba(10,12,18,.72);color:#ffffff;}
 .jsh-tick{position:absolute;left:4px;bottom:4px;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;
@@ -391,9 +400,9 @@ const CSS = `
 .jsh-card{border-radius:14px;overflow:hidden;background:var(--stg-surf);border:1px solid var(--stg-line);}
 .jsh-big{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;background:var(--stg-surf2);}
 .jsh-big.tall{aspect-ratio:4/5;max-height:440px;}
-.jsh-bigq{display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:800;color:var(--stg-onramp,#08222e);background:var(--stg-acc);}
+.jsh-bigq{display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:800;color:var(--jsh-ink);background:var(--jsh-hue);}
 .jsh-meta{padding:14px 16px 16px;}
-.jsh-eye{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-acc-ink,var(--stg-acc));}
+.jsh-eye{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-ink);}
 .jsh-meta h2{margin:4px 0 0;font-size:20px;line-height:1.2;font-weight:800;color:var(--stg-ink);}
 .jsh-credit,.jsh-sub,.jsh-note{margin:6px 0 0;font-size:13px;line-height:1.45;font-weight:600;color:var(--stg-ink2);}
 .jsh-credit a{color:var(--stg-ink2);}
@@ -403,7 +412,7 @@ const CSS = `
 .jsh-facts dd{margin:2px 0 0;font-size:15px;font-weight:800;color:var(--stg-ink);}
 .jsh-facts dd.good{color:var(--stg-good);}
 .jsh-cta{display:block;margin-top:14px;text-align:center;text-decoration:none;font-size:15px;font-weight:800;padding:13px;
-  border-radius:10px;background:var(--stg-acc);color:var(--stg-onramp,#08222e);}
+  border-radius:10px;background:var(--jsh-hue);color:var(--jsh-ink);}
 .jsh-cta:hover{filter:brightness(1.06);}
 
 .jsh-faq{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:30px;}

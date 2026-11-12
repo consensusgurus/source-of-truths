@@ -1733,3 +1733,7 @@ html[data-stage-pre]:not(:has(.stage-page, .loft-page)) body::before { backgroun
 /* Beside a typing box the old Play button stayed as a grey "Playing" block;
    on a quiz it is a small blank slot where the correct / wrong tick flashes. */
 .stage-page.qz-stage .qz-status:not(.qz-solo) > button:disabled { background: transparent !important; color: transparent !important; box-shadow: none !important; border: 0 !important; min-width: 0 !important; width: 44px !important; padding: 0 !important; }
+/* Small uppercase labels on quiz boards ("Find", "Map size", "Oldest to newest",
+   "Data as of") were letter-spaced to 0.12em to 0.22em in the old mono voice;
+   the dailies' eyebrows run at 0.06em in Manrope. */
+.stage-page.qz-stage :not(button):not(a)[style*="text-transform: uppercase"] { letter-spacing: 0.06em !important; font-family: 'Manrope', system-ui, sans-serif !important; }
