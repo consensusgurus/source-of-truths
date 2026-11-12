@@ -508,7 +508,8 @@ export default function GridFillBoard({ quizId, mobile = false }) {
 
         <style dangerouslySetInnerHTML={{ __html: `` }} />
 
-        {/* Header */}
+        {/* Header (the stage draws its own top bar, so the old title rules and ribbon go) */}
+        {!QSTAGE && (<>
         <div style={{ paddingBottom: 0, marginTop: 8, ...(phase === 'done' ? { maxWidth: 640, marginLeft: 'auto', marginRight: 'auto' } : null) }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 'clamp(16px, 4vw, 28px)' }}>
             {!QSTAGE && <h1 style={{ fontFamily: SERIF, fontWeight: 800, fontSize: 'clamp(30px, 5vw, 50px)', lineHeight: 1.02, letterSpacing: '-0.02em', margin: 0, color: INK, fontVariationSettings: '"SOFT" 100' }}>{quiz.title}</h1>}
@@ -536,14 +537,15 @@ export default function GridFillBoard({ quizId, mobile = false }) {
             </button>
           </div>
         </div>
+        </>)}
 
-        <div style={{ marginTop: 24 }} />
+        <div style={{ marginTop: QSTAGE ? 8 : 24 }} />
 
         {/* ── PLAY ── */}
         {tab === 'play' && (
           <QuizPlayOverlay open={mPlayOverlay} stage={QSTAGE} vars={quizAccVars(quiz)}>
             {/* Sticky top: the scoreboard + live input pin to the top of the viewport */}
-            <div style={phase === 'done' ? { display: 'none' } : playBarStyle}>
+            <div className="qz-sticky" style={phase === 'done' ? { display: 'none' } : playBarStyle}>
             {/* Scoreboard */}
             <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', alignItems: 'center', background: `var(--stg-surf2,${COLORS.paper})`, borderRadius: 10, border: `1px solid var(--stg-line,${COLORS.faded}33)`, padding: '16px 8px', marginBottom: 0 }}>
               <div style={{ textAlign: 'center', padding: '0 8px' }}>

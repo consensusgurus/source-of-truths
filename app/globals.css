@@ -1713,3 +1713,23 @@ html[data-stage-pre]:not(:has(.stage-page, .loft-page)) body::before { backgroun
   border: 1px solid var(--stg-line, rgba(11,15,26,.14)) !important;
 }
 .stage-page.qz-stage .qz-livebar :is(button, a) { color: var(--stg-ink, #08222e) !important; border-color: var(--stg-line2, rgba(11,15,26,.28)) !important; }
+/* THE QUIZ HEADER IS AS WIDE AS ITS BOARD (owner, 2026-11-12: "why doesn't the
+   header expand to match play area?"). The dailies hold their top bar at one
+   uniform 1040px on desktop; a quiz board fills its 1180px column (1104 inside
+   the 38px gutters), so the bar sat inset from the board on both sides. On a
+   quiz the bar takes the column's own width, so its back pill and look switch
+   line up with the board's edges. */
+@media (min-width: 900px) {
+  html:not([data-stage-pastel]) .stage-page.qz-stage .stg-top:has(.stg-sim) .stg-sim { display: block; max-width: 1180px; margin: 0 auto; box-sizing: border-box; padding: 14px 38px 6px; }
+  .stage-page.qz-stage .stg-sim .stb { --stb-w: 100%; width: 100%; margin-left: 0; }
+}
+/* THE QUIZ START GATE MATCHES A DAILY'S (2026-11-12). The intro was a bordered
+   card with a 104px uppercase START slab; on a quiz page it sits on the ground
+   like a daily's gate, with the same compact Start button. */
+.stage-page.qz-stage .qz-gate { border: 0 !important; background: transparent !important; padding: 18px 0 8px !important; }
+.stage-page.qz-stage .qz-gate h2 { font-family: 'Manrope', system-ui, sans-serif !important; font-size: 28px !important; line-height: 1.25 !important; padding-bottom: 2px; }
+.stage-page.qz-stage .qz-start { height: 52px !important; font-size: 16px !important; letter-spacing: 0 !important; text-transform: none !important; font-weight: 800 !important; }
+.stage-page.qz-stage .qz-gate > div:last-child { max-width: 320px !important; }
+/* Beside a typing box the old Play button stayed as a grey "Playing" block;
+   on a quiz it is a small blank slot where the correct / wrong tick flashes. */
+.stage-page.qz-stage .qz-status:not(.qz-solo) > button:disabled { background: transparent !important; color: transparent !important; box-shadow: none !important; border: 0 !important; min-width: 0 !important; width: 44px !important; padding: 0 !important; }

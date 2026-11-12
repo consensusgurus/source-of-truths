@@ -1210,3 +1210,12 @@ light and dark, and fitting inside the three quiz-mix dailies. Owner picked opti
   covers the ending with one big start button for the next quiz on that quiz's own subject colour,
   the outline countdown (run hand-off option C) and "Leave the run". It only draws: the countdown,
   target and banked score stay in QuizClient. The final quiz still goes to the mix's end card.
+
+### Board-level classes added in the same restyle (2026-11-12), all styled in app/globals.css on `.qz-stage`
+
+`qz-giveup` (every Give up, incl. the old End now / End run / Quit), `qz-status` + `qz-solo` (the old
+Play button slot, kept blank for the verdict flash), `qz-sticky` (a full-page board's own scoreboard;
+hides the top bar's duplicate figures), `qz-livebar` (the live prompt bar, a card not a black slab),
+`qz-gate` + `.qz-start` (the start gate, daily-sized), `qz-map` (map boards opt out of the corner
+rounding). On a quiz the header bar is the board column's width, not the dailies' 1040px. Empty answer
+slots draw nothing on the stage (no "— — —").

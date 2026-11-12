@@ -1910,10 +1910,10 @@ export default function QuizClient({ quizId }) {
             {mPlayOverlay && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 0 8px' }}>
                 <Logo size={18} />
-                <span style={{ fontFamily: SERIF, fontWeight: 800, fontSize: 15, lineHeight: 1.1, color: INK, flex: '1 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{quiz.title}</span>
+                <span style={{ fontFamily: SERIF, fontWeight: 800, fontSize: 15, lineHeight: 1.1, color: INK, flex: '1 1 auto', textAlign: 'center', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingBottom: '0.16em', marginBottom: '-0.16em' }}>{quiz.title}</span>
                 {started && !ended && (
-                  <button onClick={() => { endGame(false); setTab('stats'); }} aria-label="Quit this quiz and see results" style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: MONO, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, padding: '6px 11px', borderRadius: 8, border: `1px solid var(--stg-line,${COLORS.line})`, background: `var(--stg-surf,${T.white})`, color: FADED, cursor: 'pointer' }}>
-                    <X size={13} strokeWidth={2.5} /> Quit
+                  <button className="qz-giveup" onClick={() => { endGame(false); setTab('stats'); }} aria-label="Give up and see results" style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: MONO, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, padding: '6px 11px', borderRadius: 8, border: `1px solid var(--stg-line,${COLORS.line})`, background: `var(--stg-surf,${T.white})`, color: FADED, cursor: 'pointer' }}>
+                    <Flag size={13} strokeWidth={2.5} /> Give up
                   </button>
                 )}
               </div>
@@ -1999,7 +1999,7 @@ export default function QuizClient({ quizId }) {
                   spellCheck={false}
                   style={{ flex: 1, minWidth: 0, fontFamily: SANS, fontSize: 17, height: 50, boxSizing: 'border-box', padding: '0 16px', border: `1.5px solid var(--stg-line,${COLORS.ink})`, borderRadius: 8, background: !started || ended ? `var(--stg-surf,${COLORS.paper})` : `var(--stg-surf,${T.paper})`, color: INK, opacity: !started || ended ? 0.5 : 1 }}
                 />
-              <div style={{ position: 'relative', display: 'flex', flex: (matched && !ordered) || mapMode || tileMode ? 1 : 'none' }}>
+              <div className={((matched && !ordered) || mapMode || tileMode) ? 'qz-status qz-solo' : 'qz-status'} style={{ position: 'relative', display: 'flex', flex: (matched && !ordered) || mapMode || tileMode ? 1 : 'none' }}>
               <button onClick={start} disabled={started || ended} style={{ flex: 1, fontFamily: MONO, fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '0 22px', height: 50, border: 'none', background: QSTAGE ? (started || ended ? 'var(--stg-surf2)' : QACC) : T.cta, color: QSTAGE ? (started || ended ? 'var(--stg-mute)' : ON_ACC) : T.ctaInk, cursor: started || ended ? 'default' : 'pointer', opacity: (started || ended) && !QSTAGE ? 0.5 : 1 }}>
                 {ended ? 'Done' : started ? 'Playing' : (matched && !ordered) ? (quiz.noun ? 'Play' : 'Play: name each year') : 'Play'}
               </button>
@@ -2016,7 +2016,7 @@ export default function QuizClient({ quizId }) {
             )}
 
             {!started && !ended && (
-              <div style={{ textAlign: 'center', padding: '26px 24px 30px', borderRadius: 10, border: `1.5px solid var(--stg-line,${COLORS.ink})`, background: `var(--stg-surf,${COLORS.paper})`, marginTop: 4 }}>
+              <div className="qz-gate" style={{ textAlign: 'center', padding: '26px 24px 30px', borderRadius: 10, border: `1.5px solid var(--stg-line,${COLORS.ink})`, background: `var(--stg-surf,${COLORS.paper})`, marginTop: 4 }}>
                 <h2 style={{ fontFamily: SERIF, fontWeight: 800, fontSize: 26, margin: '2px 0 6px' }}>{introHeadline}</h2>
                 <p style={{ fontFamily: SANS, fontSize: 15, lineHeight: 1.5, color: `var(--stg-ink2,#4a4339)`, maxWidth: 470, margin: '0 auto 6px' }}>{introBody}</p>
                 <p style={{ fontFamily: SANS, fontSize: 15, lineHeight: 1.5, color: FADED, maxWidth: 460, margin: '0 auto 16px' }}>{quiz.blurb}</p>
@@ -2167,7 +2167,7 @@ export default function QuizClient({ quizId }) {
                     ) : isActive ? (
                       <span style={{ fontFamily: SANS, fontSize: 14, fontStyle: 'italic', color: `var(--stg-acc-ink,${COLORS.ember})`, flex: 1 }}>Type it in the box above</span>
                     ) : (
-                      <span style={{ fontFamily: MONO, fontSize: rz.dash, letterSpacing: '0.06em', color: FADED, opacity: 0.55, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden' }}>— — —</span>
+                      <span style={{ fontFamily: MONO, fontSize: rz.dash, letterSpacing: '0.06em', color: FADED, opacity: 0.55, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden' }}>{QSTAGE ? '' : '— — —'}</span>
                     )}
                     {reveal ? (
                       <span style={{ flex: 'none', fontFamily: MONO, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: COLORS.rust, fontWeight: 700 }}>Missed</span>
@@ -2195,7 +2195,7 @@ export default function QuizClient({ quizId }) {
                             {f || rev ? (
                               <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 500, lineHeight: 1.2, color: f ? COLORS.forest : COLORS.rust }}>{a.t}</span>
                             ) : (
-                              <span style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.04em', color: FADED, opacity: 0.5 }}>&mdash;&nbsp;&mdash;&nbsp;&mdash;</span>
+                              <span style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.04em', color: FADED, opacity: 0.5 }}>{QSTAGE ? '' : <>&mdash;&nbsp;&mdash;&nbsp;&mdash;</>}</span>
                             )}
                           </div>
                         </div>
