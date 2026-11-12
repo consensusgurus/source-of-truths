@@ -2529,6 +2529,27 @@ above. The desktop cover is centred again, superseding the 2026-10-31 left-align
 Not built: the short hand-off beat between games from the same canvas (the owner did not rule on
 it), and a way back to the first screen from the phone's Full Results Page.
 
+## Up next is one element of three boxes (owner, 2026-11-12)
+
+Owner on the Full Results Page's Up next card and Then strip: "I dont think that these '+12' #5 #4
+have much meaning to lay user. let's combine the elements in the picture into one 3 box element for
+the three puzzles. no need to say + or # in them, just the title, short descript. and tags (hard,
+gentle, etc), and time to finish". `EndNext` in `app/EndNext.jsx` is now an "Up next" label over ONE
+row of three equal boxes (the first three stops), desktop and phone (stacked on a phone and under a
+620px container):
+
+- Each box: the game glyph, the name, the short description (`tag` from `DAILY_GAME_MAP`, else the
+  category), then two tags: the week's difficulty band (Gentle / Moderate / Tough, `tierOf` over
+  `/api/quiz/difficulty`, one shared read) and the typical minutes.
+- NO points ("+12"), NO ranks or rank moves ("#5 to #4"), NO "passes <name>" line, NO "% finish".
+- Gone: the big Up next card, its Start button (and the dormant 8 second auto-start code), the Then
+  strip and the "Keep going after each" switch. Choosing a box always stores the path (`sot_path`),
+  so the next ending offers the same order.
+- `buildStops` still prices each stop (`pts`, `rank`) because Your Day's goal ring reads the ranks.
+  EndNext accepts and ignores the old `from`, `passName` and `armed` props.
+
+This supersedes the Up next, Then and Keep going bullets of "Retention ending C" (2026-11-07) above.
+
 ## Category page sort and filter bar (owner, 2026-11-10)
 
 `app/puzzle-category/CategoryLanding.jsx`, whole-category pages only (not set or subset pages),
