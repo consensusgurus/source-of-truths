@@ -232,7 +232,7 @@ export default function StageRoll({
             {standRows && phase >= 2 ? (
               <span className="srl-chips" aria-hidden="true">
                 {standRows.map((r) => (
-                  <span key={r.id} className="srl-chip2"><i>{r.name}</i><b>#{r.rank.toLocaleString('en-US')}{r.up ? <small> &uarr;{r.up}</small> : null}</b></span>
+                  <span key={r.id} className="srl-chip2"><i>{r.id === 'day' ? 'Puzzles' : r.name}</i><b>#{r.rank.toLocaleString('en-US')}{r.up ? <small> &uarr;{r.up}</small> : null}</b></span>
                 ))}
               </span>
             ) : null}

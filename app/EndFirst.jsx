@@ -112,7 +112,8 @@ export default function EndFirst({
           {metricNode ? <b>{metricNode}</b> : null}
           {metricNode && metricLabel ? <i>{metricLabel}</i> : null}
         </div>
-        {(gamePill || groupPill || dayPill) ? (
+        {/* The row holds its height from the start, so late pills move nothing. */}
+        {(
           <div className="ef-pills">
             {gamePill ? (canOpen
               ? (
@@ -126,7 +127,7 @@ export default function EndFirst({
               <span className="ef-pill">Today&rsquo;s Puzzles: <b>#{dayPill.rank}</b> of {dayPill.of}{dayPill.up ? <em>Up {dayPill.up}</em> : null}</span>
             ) : null}
           </div>
-        ) : null}
+        )}
         {!phone && open && canOpen ? (
           <div className="ef-lb">
             <div className="ef-lh">{board.title}</div>
@@ -185,7 +186,7 @@ const CSS = `
 .ef-vm .v{font-weight:800;}
 .ef-vm b{font-weight:600;font-variant-numeric:tabular-nums;}
 .ef-vm i{font-style:normal;font-size:.24em;font-weight:700;letter-spacing:0;}
-.ef-pills{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;}
+.ef-pills{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;min-height:44px;}
 .ef-pill{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-radius:99px;background:var(--sst-wash);
   color:var(--sst-ink);font-size:15px;font-weight:600;white-space:nowrap;}
 .ef-pill b{font-weight:800;}
@@ -244,7 +245,7 @@ const CSS = `
 .ef-ph .ef-bb .n{font-size:26px;}
 .ef-ph .ef-bb .s{font-size:13px;}
 .ef-ph .ef-sm{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
-.ef-ph .ef-sm .ef-sb{font-size:14px;}
+.ef-ph .ef-sm .ef-sb{padding:0 6px;font-size:13.5px;white-space:nowrap;}
 .ef-ph .ef-sm a.ef-sb{grid-column:1 / -1;}
 .ef-sheet{position:fixed;left:0;right:0;bottom:0;z-index:5;max-height:62vh;overflow-y:auto;padding:12px 12px max(22px,env(safe-area-inset-bottom));
   border-top:1px solid var(--sst-ink);border-radius:20px 20px 0 0;background:var(--sst-card);color:var(--sst-ink);text-align:left;

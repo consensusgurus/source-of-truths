@@ -236,6 +236,9 @@ export default function StageStick({
   const [phase, setPhase] = useState('show');
   // THE PHONE'S FULL RESULTS PAGE (owner, 2026-11-11): off until asked for.
   const [full, setFull] = useState(false);
+  // The first screen's plays, held from the moment they show: a standings read
+  // that lands late must not swap the buttons under the reader's cursor.
+  const firstPicks = useRef(null);
   const [desk, setDesk] = useState(() => { try { return typeof window !== 'undefined' && window.matchMedia(DESK_MQ).matches; } catch (e) { return false; } });
   const [clip, setClip] = useState(null);
   const [inkLight, setInkLight] = useState(false);
@@ -919,21 +922,20 @@ export default function StageStick({
   // category. Switch Gears is the easiest pick from ANOTHER category. The run
   // (in the middle) is the one this game belongs to when there is one, else a
   // run the reader has not finished today, one that deals this category first.
-  const minsOf = (k) => { const t = typicalSeconds(k); return t ? `${Math.max(1, Math.round(t / 60))} min` : ''; };
+  // Minutes: the measured typical solve, else today's median from the pulse.
+  const minsOf = (k) => { const t = typicalSeconds(k) || (pulse && pulse[k] && Number(pulse[k].med)) || 0; return t ? `${Math.max(1, Math.round(t / 60))} min` : ''; };
   const playedOf = (k) => { const n = plays(k); return n > 0 ? `${n.toLocaleString('en-US')} played today` : ''; };
   const bigOf = (g, label) => (g ? { eyebrow: label, name: g.name, glyph: g.key, href: g.href,
     sub: [g.cat, minsOf(g.key), playedOf(g.key)].filter(Boolean).join(' · ') } : null);
-  const simG = (sibPick && sibPick.g) || ((byAff.find((p) => p.g.cat === curCat) || {}).g) || null;
-  const simBig = simG ? bigOf(simG, 'Play Similar')
-    : similar ? { eyebrow: 'Play Similar', name: similar.name, glyph: similar.key || null, href: similar.href, onClick: similar.onClick || null,
-      sub: [curCat, similar.time || '', similar.key ? playedOf(similar.key) : ''].filter(Boolean).join(' · ') } : null;
-  const simKey = simG ? simG.key : (similar && similar.key) || null;
+  const openG = (k) => { const g = liveBy.get(k); return g && !g.done && k !== s.gameKey && !RUN_OF.has(k) ? g : null; };
+  const firstReady = go && (standGo || !hasStanding);
+  const simNow = (sibPick && sibPick.g) || relativesOf(s.gameKey).map(openG).find(Boolean) || ((byAff.find((p) => p.g.cat === curCat) || {}).g) || null;
+  const simKey = simNow ? simNow.key : (similar && similar.key) || null;
   const gearP = pool.find((p) => p.g.cat !== curCat && p.key !== simKey);
-  const gearG = gearP ? gearP.g : ((allGames || [])
+  const gearNow = gearP ? gearP.g : ((allGames || [])
     .filter((g) => !g.done && g.key !== s.gameKey && g.key !== simKey && g.cat !== curCat && !RUN_OF.has(g.key))
     .sort((a, b) => plays(b.key) - plays(a.key))[0] || null);
-  const gearBig = bigOf(gearG, 'Switch Gears');
-  const runBig = run ? { eyebrow: 'Your Run', name: run.title, glyph: s.gameKey || null, href: run.href,
+  const runNow = run ? { eyebrow: 'Your Run', name: run.title, glyph: s.gameKey || null, href: run.href,
     sub: [run.eyebrow, run.next ? `${run.next} next` : ''].filter(Boolean).join(' · ') }
     : (() => {
       let best = null;
@@ -952,6 +954,13 @@ export default function StageStick({
       return { eyebrow: 'Start a Run', name: circuitName(best.c.id) || best.c.name, glyph: best.keys.find((k) => liveBy.has(k)) || null, href: runHref(best.c.id),
         sub: [best.c.unit || `${best.keys.length} puzzles`, mins ? `${Math.max(1, Math.round(mins / 60))} min` : ''].filter(Boolean).join(' · ') };
     })();
+  if (firstReady && !firstPicks.current) firstPicks.current = { sim: simNow, gear: gearNow, run: runNow };
+  const held = firstPicks.current || { sim: simNow, gear: gearNow, run: runNow };
+  const simBig = held.sim ? bigOf(held.sim, 'Play Similar')
+    : similar ? { eyebrow: 'Play Similar', name: similar.name, glyph: similar.key || null, href: similar.href, onClick: similar.onClick || null,
+      sub: [curCat, similar.time || '', similar.key ? playedOf(similar.key) : ''].filter(Boolean).join(' · ') } : null;
+  const gearBig = bigOf(held.gear, 'Switch Gears');
+  const runBig = held.run;
   const gameRow = standRows ? standRows.find((r) => r.id === 'game') : null;
   const firstBoard = (() => {
     const fig = (r) => ({ rank: r.rank, name: r.username, fig: gameStats(r, s.missLabel, s.gameKey), me: !!r.me });
@@ -966,7 +975,7 @@ export default function StageStick({
   })();
   const firstScreen = (phone) => (
     <EndFirst
-      phone={phone} on={step >= 1} ready={go && (standGo || !hasStanding)}
+      phone={phone} on={step >= 1} ready={firstReady}
       eyebrow={eyebrow} verdict={verdict}
       metricNode={metric ? (!noCount ? <Count fig={metric} run={step >= 1} /> : metric.text) : null} metricLabel={metric ? metric.label : null}
       gamePill={gameRow ? { name: s.gameName || 'This puzzle', rank: gameRow.rank, of: gameRow.of }
