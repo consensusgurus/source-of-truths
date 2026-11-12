@@ -162,7 +162,10 @@ export const RGT_CSS = `
 .rgt-go{display:block;margin-top:10px;padding:10px 8px;border:1px solid #0b1b2b;border-radius:10px;background:var(--rgc);text-align:center;font-weight:900;font-size:15px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rgt.fin .rgt-go{background:transparent;}
-.rgt-cs{display:flex;justify-content:space-between;gap:8px;padding:7px 14px 7px 16px;border-top:1px solid #0b1b2b;background:color-mix(in srgb, var(--rgc) 60%, #fff);font-size:12.5px;font-weight:600;white-space:nowrap;}
+/* THE FOOT IS WHITE (owner, 2026-11-12: "make these inverse of the puzzle
+   tiles, where bottom section is white"): a run tile is coloured above and
+   white below, where a puzzle card is white above and coloured below. */
+.rgt-cs{display:flex;justify-content:space-between;gap:8px;padding:7px 14px 7px 16px;border-top:1px solid #0b1b2b;background:#fff;font-size:12.5px;font-weight:600;white-space:nowrap;}
 .rgt-cs .ld{min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .rgt-cs b,.rgt-cs .ct{font-weight:800;}
 /* PERSON ICON BY THE PLAY COUNT (owner, 2026-11-10): any tile count span
@@ -175,7 +178,7 @@ export const RGT_CSS = `
 .stage-page:not([data-stage-theme=light]) .rgt-leg.on{background:var(--rgc);color:#0b1b2b;}
 .stage-page:not([data-stage-theme=light]) .rgt-go{color:#0b1b2b;}
 .stage-page:not([data-stage-theme=light]) .rgt.fin .rgt-go{color:#e9edf4;}
-.stage-page:not([data-stage-theme=light]) .rgt-cs{background:color-mix(in srgb, var(--rgc) 30%, #1a2130);}
+.stage-page:not([data-stage-theme=light]) .rgt-cs{background:#1a2130;}
 html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt{background:#fff;}
 html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt :is(.rgt-leg,.rgt-cs){background:#fff;}
 html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt-go{background:#111;color:#fff;}
@@ -185,6 +188,7 @@ html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt-go{backgrou
 .rgt.rgt-w{background:#fff;}
 .rgt.rgt-w .rgt-cs{background:color-mix(in srgb, var(--rgc) 30%, #fff);}
 .stage-page:not([data-stage-theme=light]) .rgt.rgt-w{background:#1a2130;}
+.stage-page:not([data-stage-theme=light]) .rgt.rgt-w .rgt-cs{background:color-mix(in srgb, var(--rgc) 30%, #1a2130);}
 .rgt.rgt-more{--rgc:#0b1b2b;background:#fff;cursor:pointer;}
 .rgt-more .rgt-go{background:#0b1b2b;color:#fff;font:inherit;font-weight:900;font-size:15px;cursor:pointer;width:100%;}
 .rgt-more .rgt-cs{background:#eef1f6;text-decoration:none;color:inherit;}
