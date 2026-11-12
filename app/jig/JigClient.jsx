@@ -398,6 +398,14 @@ const JG_ST_CSS = `
    stage (layer 85) is up it must ride above it, or a drag from the tray is hidden
    until the drop (owner report, 2026-11-12). */
 .jg-ghost{z-index:210 !important;}
+/* The stage's own button reset (.pst button{font:inherit}) outranks the
+   jigsaw's single-class sizes, so the colour labels, Peek and Hint grew to the
+   stage's body size (owner report, 2026-11-12: the colour words "are huge").
+   Restated here: the colour labels match the Edges / Colors / All toggle. */
+.pst .jg-swb{font-size:13px;font-weight:700;line-height:1.2;}
+.pst .jg-swb[aria-pressed="true"]{font-weight:800;}
+.pst .jg-ob{font-size:14px;font-weight:700;}
+@media (max-width:820px){.pst .jg-play.box .jg-swb{font-size:12px;min-height:30px;}}
 .pst:has(.jg-play.box) .pst-col::after{content:"";display:block;flex:none;height:var(--jg-dockh, 0px);}
 .jg-st .jg-fs,.jg-st .jg-below{display:none !important;}
 .jg-st .jg-top{margin:0 0 10px;}

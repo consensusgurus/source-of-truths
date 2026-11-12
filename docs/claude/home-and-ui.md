@@ -2691,3 +2691,16 @@ Owner on the phone mockups: "i like m1b and m2", then "i like all of these". Bui
   (2026-10-31): the owner found narrow ones too bunched and the 1600px ones too spread.
 - Paths shows its perfect cost in the stage foot during play ("Cost N · perfect P · ..."), owner
   2026-11-12, replacing the old rule that the low score stays hidden until the round ends.
+
+## Soft pastel on the boards, the foot off a phone's screen (owner, 2026-11-12)
+
+- **The stage accent is the home tiles' soft pastel in the light looks.** `accentVars` (app/PlayStage.jsx)
+  sets `--pst-acc` to `sitePastelHex(hex)` (the category colour 60/40 with white) when the look is not
+  dark; the dark looks keep the full colour. One switch, every PlayStage board. The pale step, the deep
+  text colour and the ink on the fill are unchanged.
+- **On a phone the foot (Clock, How to play, Give up) sits just below the screen.** StageFoot's CSS makes
+  `.pst-col`, `.wst-col` and `.bks-col` one foot row plus a gap taller than the screen, and
+  `lib/play-stage-fit.js` leaves `.sft` out of the height a board must share under 900px. A short
+  scroll reaches the foot; the play gets the screen.
+- **Jigsaw buttons on the stage:** `.pst button{font:inherit}` outranks single-class sizes, so Jig / Saw
+  restate `.jg-swb` (13px, 12px in the phone box, matching the Edges / Colors / All toggle) and `.jg-ob`.

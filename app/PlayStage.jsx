@@ -19,7 +19,7 @@
 //   pst-arr     round arrow button                 pst-note  centred small note
 
 import React from 'react';
-import { RAMP_INK, softGround } from '@/lib/category-ramp';
+import { RAMP_INK, softGround, sitePastelHex } from '@/lib/category-ramp';
 import { useStageLook, stagePalette, useStageChrome } from './GauntletScreens';
 import { nextMainLook } from '@/lib/stage-look';
 import StageTopBar from './StageTopBar';
@@ -93,8 +93,14 @@ export function accentVars(pastel, look) {
   const acc = hex || 'var(--pst-ink)';
   const rose = !!hex && hex.toLowerCase() === ROSE;
   const peri = !!hex && hex.toLowerCase() === PERI;
+  // THE SITE'S SOFT PASTEL ON THE BOARD (owner, 2026-11-12: "make the switch on
+  // gameplay elements and accents on puzzle pages"): in the light looks the
+  // accent fill is the home tiles' tone (the category colour 60/40 with white,
+  // lib/category-ramp.js sitePastelHex), not the raw category colour. The dark
+  // looks keep the full colour, as the home does, so dark ink still reads on it.
+  const fill = hex && !dark ? sitePastelHex(hex) : acc;
   return {
-    '--pst-acc': acc,
+    '--pst-acc': fill,
     '--pst-on-acc': hex ? (rose && dark ? '#0b0f1a' : RAMP_INK) : 'var(--pst-bg)',
     '--pst-deep': rose ? (dark ? ROSE : '#be123c') : peri ? (dark ? PERI : '#3949ab') : 'var(--pst-ink)',
     // Type on an ink-filled card: the pale tint (the mockups' pale on ink).

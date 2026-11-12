@@ -67,6 +67,17 @@ export default function StageFoot({ clock = undefined, done = undefined, giveUp 
 
 const CSS = `
 .sft{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:nowrap;flex:none;}
+/* THE FOOT SITS JUST OFF A PHONE'S SCREEN (owner, 2026-11-12: "on mobile, do not
+   use play space for clock, how to play, give up. those can sit off screen").
+   The stage's column is made one foot row (34px) plus one gap taller than the
+   screen, so the play fills the screen and Clock / How to play / Give up are a
+   short scroll below it. lib/play-stage-fit.js leaves the foot out of the
+   height a board must share on a phone. */
+@media (max-width:899px){
+  .pst-col:has(> .sft){min-height:calc(100% + 48px);}
+  .wst-col:has(> .sft){min-height:calc(100% + 50px);}
+  .bks-col:has(> .sft){min-height:calc(100% + 48px);}
+}
 .sft .sft-give{min-width:86px;}
 .sft .sft-b.sft-back{display:none;}
 html:has(.stf-bv) .sft .sft-b.sft-back{display:inline-flex;}
