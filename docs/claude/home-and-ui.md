@@ -2671,3 +2671,7 @@ Owner on the phone mockups: "i like m1b and m2", then "i like all of these". Bui
   in board units), on top, and can be picked up again; it still snaps in near its own spot. Let go off the
   board, it goes back to the tray. On the stage the column ends with room for the fixed tray dock
   (`--jg-dockh`), so the foot's Give up is never under it.
+- **Order of the three plays (owner, 2026-11-12): Play Similar, Switch Gears, then the run** (Your Run /
+  Start a Run). The Full Results Page's Up next row shows these SAME three picks, in that order, each
+  under its label (`EndNext` `picks`, from StageStick's `firstPicksList`); the old path stops are only
+  the fallback when the first screen had no picks.

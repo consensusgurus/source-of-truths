@@ -961,6 +961,9 @@ export default function StageStick({
       sub: [curCat, similar.time || '', similar.key ? playedOf(similar.key) : ''].filter(Boolean).join(' · ') } : null;
   const gearBig = bigOf(held.gear, 'Switch Gears');
   const runBig = held.run;
+  // The Full Results Page's Up next row shows these same three, in the first
+  // screen's order: Play Similar, Switch Gears, the run (owner, 2026-11-12).
+  const firstPicksList = [simBig, gearBig, runBig].filter(Boolean);
   const gameRow = standRows ? standRows.find((r) => r.id === 'game') : null;
   const firstBoard = (() => {
     const fig = (r) => ({ rank: r.rank, name: r.username, fig: gameStats(r, s.missLabel, s.gameKey), me: !!r.me });
@@ -1315,10 +1318,10 @@ export default function StageStick({
   // replaces direction C's six-pick grid): one next play that can start by
   // itself, the path after it, today's board and Keep playing on the left;
   // Your Day, the run and a one-GIF challenge on the right.
-  const nextC = stops.length ? (
+  const nextC = (stops.length || firstPicksList.length) ? (
     <section className={'sst-card sst-nc sst-nx ' + on(3)}>
       <div className="sst-ncm">
-        <EndNext stops={stops} from={dayRow ? dayRow.rank : null} passName={passName} armed={false} />
+        <EndNext stops={stops} picks={firstPicksList} from={dayRow ? dayRow.rank : null} passName={passName} armed={false} />
         {rankCard}
         {pnNode(true)}
       </div>
@@ -1380,7 +1383,7 @@ export default function StageStick({
           onShowBoard={back} showBoardLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show Board'}
           retry={retry} homeHref={allHref || '/'}
           standRows={standRows} beatRows={beatRows} standGo={standGo} noCount={noCount}
-          passNode={stops.length ? (armed) => <EndNext phone stops={stops} from={dayRow ? dayRow.rank : null} passName={passName} armed={false} /> : passNode}
+          passNode={(stops.length || firstPicksList.length) ? (armed) => <EndNext phone stops={stops} picks={firstPicksList} from={dayRow ? dayRow.rank : null} passName={passName} armed={false} /> : passNode}
           playNode={stops.length ? <EndDay dayRow={dayRow} stops={stops} grp={grp} /> : playNode}
           {...replayProps}
         />

@@ -90,7 +90,8 @@ export default function EndFirst({
 }) {
   const [open, setOpen] = useState(false);
   const canOpen = !!(board && board.rows && board.rows.length);
-  const bigs = [sim ? ['a', sim] : null, run ? ['b', run] : null, gear ? ['c', gear] : null].filter(Boolean);
+  // Play Similar, Switch Gears, then the run (owner, 2026-11-12: "in that order").
+  const bigs = [sim ? ['a', sim] : null, gear ? ['c', gear] : null, run ? ['b', run] : null].filter(Boolean);
   const replayNode = replay ? (replay.href
     ? <a className="ef-tl" href={replay.href} onClick={replay.onClick || undefined}>Replay</a>
     : <button type="button" className="ef-tl" onClick={replay.onClick}>Replay</button>) : null;

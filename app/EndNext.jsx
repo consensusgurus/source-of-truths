@@ -119,14 +119,41 @@ function ratings() {
 // stores the path, so the next ending carries on down the same order.
 // `from`, `passName` and `armed` are accepted and ignored (nothing starts by
 // itself, and nothing here is priced).
-export function EndNext({ stops, phone = false }) {
+export function EndNext({ stops, phone = false, picks = null }) {
   const [diff, setDiff] = useState(null);
   useEffect(() => {
     let alive = true;
     ratings().then((r) => { if (alive) setDiff(r); });
     return () => { alive = false; };
   }, []);
-  const three = (stops || []).slice(0, 3);
+  // THE SAME THREE AS THE FIRST SCREEN (owner, 2026-11-12): when the ending
+  // passes its picks (Play Similar, Switch Gears, the run), the row shows
+  // exactly those, in that order, each under its own label.
+  const usePicks = Array.isArray(picks) && picks.length > 0;
+  const three = usePicks ? [] : (stops || []).slice(0, 3);
+  if (usePicks) {
+    return (
+      <div className={'enx' + (phone ? ' ph' : '')}>
+        <style dangerouslySetInnerHTML={{ __html: CSS }} />
+        <div className="enx-sl">Up next</div>
+        <div className={'enx-three n' + picks.length}>
+          {picks.map((p, i) => {
+            const g = p.glyph ? (DAILY_GAME_MAP[p.glyph] || {}) : {};
+            return (
+              <a key={p.eyebrow + p.name} className="enx-box" href={p.href} onClick={p.onClick || undefined} style={{ animationDelay: `${i * 110}ms` }}>
+                {p.glyph ? <Glyph k={p.glyph} cat={g.cat || g.category || ''} size={24} /> : null}
+                <span className="tx">
+                  <span className="eb">{p.eyebrow}</span>
+                  <b>{p.name}</b>
+                  {p.sub ? <span className="ds">{p.sub}</span> : null}
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
   if (!three.length) return null;
   const go = (e, href) => {
     e.preventDefault();
@@ -264,6 +291,7 @@ const CSS = `
 .enx-box .tx{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
 .enx-box b{font-size:18px;font-weight:800;letter-spacing:-.01em;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .enx-box .ds{font-size:13px;font-weight:600;opacity:.8;line-height:1.35;}
+.enx-box .eb{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.75;}
 .enx-box .tg{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
 .enx-box .tg:empty{display:none;}
 .enx-box .tg i{font-style:normal;font-size:11.5px;font-weight:800;line-height:1.3;border-radius:999px;padding:3px 9px;background:color-mix(in srgb,var(--ex-ink) 8%,transparent);white-space:nowrap;}
