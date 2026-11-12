@@ -55,8 +55,6 @@ import { softGround, gameColor, RAMP_ORDER, categoryColor, categoryColorLight, c
 import { MC_RUNS, MC_IDS } from '@/lib/multiple-choice';
 import { POLY_LEGS, localPolymath } from '@/lib/polymath';
 import { SKILLS, SKILL_MAP, SKILL_TAGS, hasSkill } from '@/lib/daily-skills';
-import { seenBeforeToday } from '@/lib/visitor';
-import { gameActive } from '@/lib/game-active';
 import { TIERS as DIFF_TIERS } from '@/lib/daily-difficulty';
 // ONE READING OF A RESULT ROW, the same one the ending curtain and the tile
 // panel use. It prints the run in the GAME'S own units — 7/16 · 3 busts · 2:11
@@ -2722,8 +2720,7 @@ export default function StageToday() {
   const pickView = (v) => {
     setAllTiles(false);
     setViewBy(v);
-    setDetHint(false);
-    try { localStorage.setItem(VIEW_KEY, v); localStorage.setItem('sot_det_hint', '1'); } catch (e) { /* storage off */ }
+    try { localStorage.setItem(VIEW_KEY, v); } catch (e) { /* storage off */ }
   };
   // DETAILS IS THE DEFAULT FOR EVERYONE (owner, 2026-11-07): bigger tiles with
   // the fuller description, on every pane, until the reader picks. The stored
@@ -2735,11 +2732,10 @@ export default function StageToday() {
     return allTiles && pane === ALL_ID && v === 'list' ? 'det' : v;
   };
   const mDet = viewOf(paneOn) !== 'tile';
-  // THE ONE-TIME DETAILS NOTE (owner, 2026-11-07). A returning player (seen
-  // before today) gets the cap's view toggle highlighted with a short note the
-  // first time they land on the desktop home after the switch. It fades by
-  // itself, never shows twice, and asks gameActive() like every pop-up.
-  const [detHint, setDetHint] = useState(false);
+  // THE ONE-TIME DETAILS NOTE IS RETIRED (owner, 2026-11-12). It was gated per
+  // browser, not by date, so any browser on its second day (or one that signed
+  // in and adopted an id) kept getting "New: Details" on its first desktop load,
+  // long after the switch. Details now leads the toggle and is the default.
   // A SKILL OPENS TILED AND POPULAR (owner, 2026-10-26). Opening a skill pane
   // shows its puzzles as tiles, most played first, whatever the stored choice;
   // any other pane goes back to the reader's stored sort and view. Picking a
@@ -2760,17 +2756,13 @@ export default function StageToday() {
       setViewBy(VIEWS.includes(vv) ? vv : null);
     } catch (e) { /* storage off */ }
   }, [paneOn]);
-  const viewCtl = (pane, cap = false) => (
-    <div className={'sty-sort sty-view' + (cap && detHint ? ' sty-vhint' : '')} role="group" aria-label="Show puzzles as" data-lab="View"
+  // DETAILS LEADS (owner, 2026-11-12): leftmost in the toggle, and the default.
+  const viewCtl = (pane) => (
+    <div className="sty-sort sty-view" role="group" aria-label="Show puzzles as" data-lab="View"
       onClick={(e) => e.stopPropagation()}>
-      <button type="button" aria-pressed={viewOf(pane) === 'tile'} onClick={() => pickView('tile')}>Tiles</button>
       <button type="button" aria-pressed={viewOf(pane) === 'det'} onClick={() => pickView('det')}>Details</button>
+      <button type="button" aria-pressed={viewOf(pane) === 'tile'} onClick={() => pickView('tile')}>Tiles</button>
       <button type="button" aria-pressed={viewOf(pane) === 'list'} onClick={() => pickView('list')}>List</button>
-      {cap && detHint ? (
-        <span className="sty-vnote" role="status">
-          <b>New: Details.</b> Bigger tiles with the full description of every puzzle. Switch to Tiles or List here anytime, and your pick stays.
-        </span>
-      ) : null}
     </div>
   );
   // Declared ABOVE ixNav, which renders it: below it was a temporal dead zone
@@ -2915,35 +2907,6 @@ export default function StageToday() {
     a.addEventListener('change', on); b.addEventListener('change', on);
     return () => { a.removeEventListener('change', on); b.removeEventListener('change', on); };
   }, []);
-  useEffect(() => {
-    let shown = false;
-    try { shown = localStorage.getItem('sot_det_hint') === '1'; } catch (e) { return undefined; }
-    if (shown || !seenBeforeToday()) return undefined;
-    // Waits out the entry door (like every pop-up) and lands 1.2s after it.
-    let quiet = 0;
-    const t1 = setInterval(() => {
-      // Only once a view toggle is actually on screen: the cap's on desktop,
-      // the pane's on a phone (which has none until a pane is open).
-      // The desktop cap's toggle only: a phone shows no note (owner, 2026-11-11),
-      // so it must not spend the one-time flag either.
-      const vt = [...document.querySelectorAll('.sty-captools .sty-view')].find((el) => {
-        const r = el.getBoundingClientRect();
-        return r.width > 0 && r.bottom > 0 && r.top < window.innerHeight;
-      });
-      if (!vt || document.querySelector('.ent-door') || gameActive()) { quiet = 0; return; }
-      quiet += 400;
-      if (quiet < 1200) return;
-      clearInterval(t1);
-      try { localStorage.setItem('sot_det_hint', '1'); } catch (e) { /* storage off */ }
-      setDetHint(true);
-    }, 400);
-    return () => clearInterval(t1);
-  }, []);
-  useEffect(() => {
-    if (!detHint) return undefined;
-    const t2 = setTimeout(() => setDetHint(false), 8000);
-    return () => clearTimeout(t2);
-  }, [detHint]);
   const gamePane = !INFO_PANES.includes(paneOn);
   // ── IQ TESTS AND THE COMMUNITY BOARD AS PANES (owner, 2026-10-07) ──────
   // Two more of the footer's links pulled into the index. The IQ tests draw
@@ -4452,7 +4415,7 @@ export default function StageToday() {
           {ix && (paneOn === ALL_ID || !!paneCat(paneOn) || isSkillId(paneOn)) ? (
             <>{/* GROUPED BY JOB (owner, 2026-11-10): how it looks, how it is ordered,
                    whose games, then search with all the spare width. */}
-              {viewCtl(paneOn, true)}{sortCtl(false)}{paneOn === ALL_ID ? grpChips() : catChips(paneOn, 'sty-mgchips')}{capFind}</>
+              {viewCtl(paneOn)}{sortCtl(false)}{paneOn === ALL_ID ? grpChips() : catChips(paneOn, 'sty-mgchips')}{capFind}</>
           ) : null}
         </div>
         <div className="sty-rt">
@@ -4858,13 +4821,13 @@ export default function StageToday() {
                       <div className="mph-cg">
                         <span className="lb">View</span>
                         <div className="mph-sg mph-vw" role="group" aria-label="Show puzzles as">
-                          <button type="button" aria-pressed={!mDet} onClick={() => pickView('tile')}>Tiles</button>
                           <button type="button" aria-pressed={mDet} onClick={() => pickView('det')}>Details</button>
+                          <button type="button" aria-pressed={!mDet} onClick={() => pickView('tile')}>Tiles</button>
                         </div>
                       </div>
                       {/* NO DETAILS NOTE ON A PHONE (owner, 2026-11-11: "the 'detail'
                           pop-up on mobile points to the wrong spot. let's get rid of
-                          that completely"). The desktop cap keeps its one-time note. */}
+                          that completely"). Retired on desktop too, 2026-11-12. */}
                     </div>
                   ) : null}
                   {/* JUMP TO A CATEGORY (N3), on All Puzzles only. */}
@@ -6113,21 +6076,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-next .sty-gi{color:currentColor;opacity:.85;}
 .sty-nm{display:flex;align-items:center;gap:11px;}
 .sty-gx,.sty-gk,.sty-gband,.sty-gfx{display:none;}
-/* THE ONE-TIME NOTE ON THE VIEW TOGGLE (owner, 2026-11-07). */
 .sty-view{position:relative;}
-.sty-vhint{animation:sty-vpulse 1.6s ease-out 3;border-radius:8px;}
-.sty-vhint button[aria-pressed="true"]{animation:sty-vglow 1.6s ease-out 3;}
-@keyframes sty-vpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--stg-ink) 45%, transparent);}70%{box-shadow:0 0 0 10px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
-@keyframes sty-vglow{0%,100%{background:transparent;}35%{background:color-mix(in srgb, var(--cfull, var(--cc, #c9d2fd)) 55%, transparent);}}
-.sty-vnote{position:absolute;top:calc(100% + 12px);left:-6px;z-index:60;width:270px;box-sizing:border-box;padding:11px 13px;
-  border:1px solid var(--stg-ink);border-radius:10px;background:var(--stg-surf, #fff);color:var(--stg-ink);
-  font-size:13px;font-weight:600;line-height:1.45;white-space:normal;text-align:left;pointer-events:none;
-  animation:sty-vnote 8s ease forwards;}
-.sty-vnote b{font-weight:800;}
-.sty-vnote::before{content:"";position:absolute;top:-7px;left:22px;width:12px;height:12px;background:inherit;
-  border-left:1px solid var(--stg-ink);border-top:1px solid var(--stg-ink);transform:rotate(45deg);}
-@keyframes sty-vnote{0%{opacity:0;transform:translateY(-4px);}6%{opacity:1;transform:none;}88%{opacity:1;}100%{opacity:0;}}
-@media (prefers-reduced-motion: reduce){ .sty-vhint,.sty-vhint button,.sty-vnote{animation:none;} }
 .sty-gt{display:block;font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:2px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 /* Played is DIM, not struck through: the day is a record, not a chore list. */
@@ -7693,9 +7642,6 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-srt button{flex:1 1 0;min-width:0;padding:8px 6px 9px;font-size:12.5px;white-space:nowrap;}
   /* DETAILS ON THE PHONE (owner, 2026-11-07): one across, two from 600px. */
   .sty-mph .mph-vw{position:relative;}
-  .sty-mph .mph-vw.sty-vhint{border-radius:999px;}
-  .sty-mph .mph-vw.sty-vhint button{animation:none;}
-  .sty-mph .mph-vw .sty-vnote{left:0;right:0;width:auto;top:calc(100% + 10px);}
   .sty-mph .mph-gg.det{grid-template-columns:1fr;gap:10px;}
   .sty-mph .mph-gg.det .mph-g{gap:5px;padding:12px 14px 12px;}
   .sty-mph .mph-gg.det .mph-g b{font-size:17px;}
@@ -8415,7 +8361,6 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
     font-size:12px;font-weight:800;line-height:1.26;white-space:nowrap;}
   .sty-mph .mph-sg button[aria-pressed="true"]{background:var(--stg-ink);color:var(--stg-ground, #fff);}
   .sty-mph .mph-sg .ss{display:none;}
-  .sty-mph .mph-ctl > .sty-vnote{left:0;right:0;width:auto;top:calc(100% + 10px);}
   /* BOTH CHIPS ON THE PHONE CARD TOO. Its chip row was one line with the
      overflow hidden, so the widest pairs ("Bigger Sundays" and "Moderate",
      235px) lost the difficulty on a 375px phone. A phone card is one across,

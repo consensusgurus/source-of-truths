@@ -2414,11 +2414,12 @@ Approved on the "Mind Loft Home: Details Toggle and Rail Breakpoints" canvas.
 - **Details is the default for every pane and every player.** The stored choice moved to
   `sot_home_view2` (`VIEW_KEY`), so older Tiles / List picks start over on Details; any pick made
   now holds. A skill pane opens in Tiles only if that is the stored pick, else Details.
-- **The one-time note.** A returning player (`seenBeforeToday()`) on the desktop home gets the
-  cap's toggle pulsed three times with a note under it ("New: Details. ..."), 1.2s after the
-  entry door is gone and only when `gameActive()` is false. It fades by itself after 8s, is
-  stamped `sot_det_hint` when shown (or on any view pick), and never shows again. Reduced motion
-  drops the animation, not the note.
+- **The one-time note is RETIRED (owner, 2026-11-12).** It was gated per browser
+  (`sot_det_hint` + `seenBeforeToday()`), not by date, so any browser on its second day, or one
+  that adopted an id at sign-in, kept getting "New: Details" on its first desktop load long after
+  the switch. The state, effect, markup and CSS are gone; do not bring it back.
+- **Details leads the toggle (owner, 2026-11-12).** Order is Details · Tiles · List on desktop and
+  Details | Tiles on the phone, and Details stays the default for every pane.
 - **The rail shows only at 1280px and up with a mouse or trackpad**
   (`RAIL_MQ` = `(min-width:1280px) and (hover:hover) and (pointer:fine)`, mirrored in the CSS
   rule that lays out `.sty-ix.rl`). Every iPad, landscape included, and every phone drops it; its
@@ -2427,8 +2428,7 @@ Approved on the "Mind Loft Home: Details Toggle and Rail Breakpoints" canvas.
   gets a "View: Tiles | Details" row under the sort (`.mph-vw`; List stays desktop-only, so a
   stored List reads as Details there). Details tiles (`.mph-gg.det`) are one across on a portrait
   phone and two across from 600px (iPad portrait, a phone turned sideways), with `fullDesc` and
-  the skills. The one-time note waits until a view toggle is actually on screen (the cap's on
-  desktop, a pane's on a phone), so a phone player sees it the first time they open a pane.
+  the skills.
 
 ## The Space Cadet pop-up (owner, 2026-11-07)
 
