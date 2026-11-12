@@ -187,6 +187,12 @@ const CSS = `
    blocks for instance, it is left aligned"). The phone keeps its true-centre
    rule below. */
 @media (min-width:900px){
+  /* ONE HEADER WIDTH ON EVERY PUZZLE (owner, 2026-11-12: "many are too bunched"
+     ... "a bit too spaced / wide, but make it wider than the ultra bunched ones
+     uniformly"). On a desktop the bar is the same width whatever the board's
+     column is: wider than a phone column, narrower than a big board's. It
+     centres on its column and may reach past a narrow one. */
+  .stb{--stb-w:min(1040px, calc(100vw - 48px));width:var(--stb-w);max-width:none;box-sizing:border-box;margin-left:calc((100% - var(--stb-w)) / 2);margin-right:0;}
   .stb.has-t .stb-tx{align-items:center;text-align:center;}
   .stb.has-t .stb-t{justify-content:center;max-width:100%;}
   .stb.has-t.stb-mid{position:relative;}

@@ -1021,7 +1021,7 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
               )}
             </div>
           )}
-          foot={playing ? `Cost ${cost} · ${linked} of ${TOWNS.length} towns linked` : (won ? `Locked in for ${cost}.` : 'Round over.')}
+          foot={playing ? `Cost ${cost} · perfect ${perfect} · ${linked} of ${TOWNS.length} towns linked` : (won ? `Locked in for ${cost}.` : 'Round over.')}
           giveUp={playing ? { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } } : null}
           clock={elapsed} done={!playing} />
       )}

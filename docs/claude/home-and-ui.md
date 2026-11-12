@@ -2682,3 +2682,12 @@ Owner on the phone mockups: "i like m1b and m2", then "i like all of these". Bui
   Start a Run). The Full Results Page's Up next row shows these SAME three picks, in that order, each
   under its label (`EndNext` `picks`, from StageStick's `firstPicksList`); the old path stops are only
   the fallback when the first screen had no picks.
+
+## One header width on every puzzle (owner, 2026-11-12)
+
+- On a desktop (>= 900px) the stage top bar (`app/StageTopBar.jsx`, `.stb`) is ONE width everywhere:
+  `min(1040px, 100vw - 48px)`, centred on its column, reaching past a narrow phone-width column and
+  stopping short of a big board's. This supersedes "the header matches the play area's width"
+  (2026-10-31): the owner found narrow ones too bunched and the 1600px ones too spread.
+- Paths shows its perfect cost in the stage foot during play ("Cost N · perfect P · ..."), owner
+  2026-11-12, replacing the old rule that the low score stays hidden until the round ends.
