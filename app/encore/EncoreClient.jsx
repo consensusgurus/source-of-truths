@@ -41,6 +41,7 @@ import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, FEED_STRONG, FEED_STRONG_INK, FEED_SOFT, FEED_SOFT_INK, gameAccentInkLight } from '@/lib/category-ramp';
@@ -280,6 +281,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('encore');
   const STAGE = isStage('encore', searchParams);
+  const phoneStage = usePhoneStage();
   const EMBED = useRunEmbed();
   useRunHelp(EMBED, () => setShowHelp(true));
   // A give-up writes the answers into letters; on the loft the grid keeps the
@@ -721,11 +723,145 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // THE BOARD, ONCE: on the stage while it is up, else on the page. The
+  // stage carries the clock and Give up, so the board's own figure strip and
+  // its small Reveal link step aside there (Give up ends it the same way).
+  const xwBoard = (
+    <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: `var(--stg-surf, ${THEME.white})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
+      {/* These three figures move UP into the cap on a loft page. Printing
+          them in both places is the one thing to avoid: the cap exists to
+          give the board this row back. */}
+      {!LOFT && (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+        <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
+        <span style={{ whiteSpace: 'nowrap' }}>checks <b style={{ color: checks > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 700 }}>{checks}</b></span>
+        <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>squares <b style={{ color: filledCount === whiteCount ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 700 }}>{filledCount}</b>/{whiteCount}</span>
+      </div>
+      )}
+
+      {/* The meter: squares filled and words filled. Filled, never
+          correct: nothing is judged until Check grid. */}
+      <div className="ec-meter">
+        <div className="ec-meter-row">
+          <span className="ec-k">The grid &middot; <b>{filledCount}</b> of {whiteCount} squares</span>
+          <span className="ec-k">{wordsFilled} of {TOTAL} words filled</span>
+        </div>
+        <div className="ec-bar" role="progressbar" aria-label="Squares filled" aria-valuemin={0} aria-valuemax={whiteCount} aria-valuenow={filledCount}>
+          <span style={{ width: `${whiteCount ? Math.round((100 * filledCount) / whiteCount) : 0}%` }} />
+        </div>
+      </div>
+
+      <div className="xw-host" style={{ '--xw-bcol': N >= 11 ? '620px' : '560px' }}>
+      <div className="ec-panel xw-play">
+      {/* the grid */}
+      <div className="xw-board">
+      <div className="ec-gridbox xw-gb" style={{ maxWidth: boardMax }}>
+        <div className="ec-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
+          {Array.from({ length: T }).map((_, idx) => {
+            if (isBlock(idx)) return <div key={idx} className="ec-cell ec-blk" />;
+            const inWord = playing && curWord.cells.includes(idx);
+            const sel = playing && idx === cur;
+            const wrongMark = g.wrong.includes(idx);
+            const revealMiss = g.status === 'revealed';
+            return (
+              <div key={idx}
+                className={`ec-cell${inWord && !sel ? ' ec-inword' : ''}${sel ? ' ec-sel' : ''}${wrongMark ? ' ec-wrongmark' : ''}`}
+                onClick={() => cellClick(idx)}>
+                {numAt[idx] != null && <span className="ec-num" style={{ fontSize: numPx }}>{numAt[idx]}</span>}
+                <span className="ec-l" style={{ fontSize: cellPx, color: revealMiss ? `var(--stg-mute, ${COLORS.faded})` : undefined }}>{viewLetters[idx]}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      </div>
+
+      {/* THE CLUES (owner, 2026-10-30, app/XwClues.jsx): on a phone or a
+          narrow window the active clue with Back and Skip and the crossing
+          clue under it; on a wide window the board on the left and the
+          active clue over the full Across and Down lists on the right. */}
+      <XwSide words={WORDS} curIdx={curWordIdx} crossIdx={crossWordIdx} playing={playing}
+        isFilled={filledWord} onPick={(i) => selectWord(i)}
+        onBack={() => stepWord(-1)} onSkip={() => stepWord(1)}
+        onSwitch={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}
+        maxWidth={boardMax} dense>
+
+      {/* on-screen keyboard (mobile) */}
+      {playing && mobileUi && (
+        <div className="ec-kb">
+          {kbRows.map((row, ri) => (
+            <div key={ri} className="ec-kb-row">
+              {ri === 2 && (
+                <button type="button" aria-label="Flip direction" className="ec-key wide" onClick={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}><ArrowLeftRight size={18} strokeWidth={2.5} /></button>
+              )}
+              {row.split('').map((ch) => (
+                <button type="button" key={ch} className="ec-key" onClick={() => typeLetter(ch)}>{ch}</button>
+              ))}
+              {ri === 2 && (
+                <button type="button" aria-label="Delete" className="ec-key wide" onClick={backspace}><Delete size={18} /></button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {playing && (
+        <div className="ec-acts">
+          <span className="ec-help">Filled clues are struck through. The tinted clue crosses your square.</span>
+          {hintOk && !g.hintUsed && (
+            <button type="button" className="ec-out" onClick={useHint} title="Reveal one letter (one hint, first play only)">
+              <Lightbulb size={15} /> <span className="ec-hint-long">Hint &middot; one letter</span><span className="ec-hint-short">Hint</span>
+            </button>
+          )}
+          {(() => {
+            const full = solFlat.every((ch, i) => ch === '#' || letters[i] !== '');
+            return (
+              <button type="button" className="ec-check" onClick={checkGrid} disabled={!full}
+                title={full ? 'Turn in the grid' : 'Fill every square to check the grid'}>
+                <Check size={15} strokeWidth={2.75} /> Check grid
+              </button>
+            );
+          })()}
+        </div>
+      )}
+      </XwSide>
+      </div>
+      </div>
+
+      {started && (
+        <div className="ec-under">
+          <span>
+            Check unlocks when every square is filled. A wrong check strikes the misses through and counts against you.
+            {!mobileUi && <> Space flips direction, Tab jumps to the next clue.</>}
+          </span>
+          {started && (
+            <button type="button" className={`ec-reveal${armReveal ? ' armed' : ''}`}
+              onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+              <Eye size={13} /> {armReveal ? 'Tap again to end the puzzle and show the answers' : 'Reveal'}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+  // THE STAGE is up from Start until the ending's board view (owner, 2026-11-12).
+  // Inside a run the run's own frame keeps drawing the board.
+  const stageOn = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+
   return (
     <div className={STAGE ? `stage-page${EMBED ? '' : ' lg-white'}` : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : THEME.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('encore')} label="Encore" wide
+          eyebrow={`Encore${PUZZLE.sunday ? ' · Sunday Edition' : ''} · the bigger crossword`}
+          top={<div className="xw-st"><style dangerouslySetInnerHTML={{ __html: '.xw-st{width:100%}.xw-st .mc-reveal{display:none}.xw-st .stg-board{margin:0 !important}' }} />{xwBoard}</div>}
+          foot={playing ? `${filledCount} of ${whiteCount} squares · ${checks} check${checks === 1 ? '' : 's'}` : (won ? 'Solved.' : 'Revealed.')}
+          giveUp={playing ? { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {STAGE && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
@@ -902,125 +1038,7 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
         {/* the board */}
-        {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: `var(--stg-surf, ${THEME.white})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
-          {/* These three figures move UP into the cap on a loft page. Printing
-              them in both places is the one thing to avoid: the cap exists to
-              give the board this row back. */}
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>checks <b style={{ color: checks > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 700 }}>{checks}</b></span>
-            <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>squares <b style={{ color: filledCount === whiteCount ? COLORS.green : `var(--stg-ink, ${COLORS.ink})`, fontWeight: 700 }}>{filledCount}</b>/{whiteCount}</span>
-          </div>
-          )}
-
-          {/* The meter: squares filled and words filled. Filled, never
-              correct: nothing is judged until Check grid. */}
-          <div className="ec-meter">
-            <div className="ec-meter-row">
-              <span className="ec-k">The grid &middot; <b>{filledCount}</b> of {whiteCount} squares</span>
-              <span className="ec-k">{wordsFilled} of {TOTAL} words filled</span>
-            </div>
-            <div className="ec-bar" role="progressbar" aria-label="Squares filled" aria-valuemin={0} aria-valuemax={whiteCount} aria-valuenow={filledCount}>
-              <span style={{ width: `${whiteCount ? Math.round((100 * filledCount) / whiteCount) : 0}%` }} />
-            </div>
-          </div>
-
-          <div className="xw-host" style={{ '--xw-bcol': N >= 11 ? '620px' : '560px' }}>
-          <div className="ec-panel xw-play">
-          {/* the grid */}
-          <div className="xw-board">
-          <div className="ec-gridbox xw-gb" style={{ maxWidth: boardMax }}>
-            <div className="ec-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
-              {Array.from({ length: T }).map((_, idx) => {
-                if (isBlock(idx)) return <div key={idx} className="ec-cell ec-blk" />;
-                const inWord = playing && curWord.cells.includes(idx);
-                const sel = playing && idx === cur;
-                const wrongMark = g.wrong.includes(idx);
-                const revealMiss = g.status === 'revealed';
-                return (
-                  <div key={idx}
-                    className={`ec-cell${inWord && !sel ? ' ec-inword' : ''}${sel ? ' ec-sel' : ''}${wrongMark ? ' ec-wrongmark' : ''}`}
-                    onClick={() => cellClick(idx)}>
-                    {numAt[idx] != null && <span className="ec-num" style={{ fontSize: numPx }}>{numAt[idx]}</span>}
-                    <span className="ec-l" style={{ fontSize: cellPx, color: revealMiss ? `var(--stg-mute, ${COLORS.faded})` : undefined }}>{viewLetters[idx]}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          </div>
-
-          {/* THE CLUES (owner, 2026-10-30, app/XwClues.jsx): on a phone or a
-              narrow window the active clue with Back and Skip and the crossing
-              clue under it; on a wide window the board on the left and the
-              active clue over the full Across and Down lists on the right. */}
-          <XwSide words={WORDS} curIdx={curWordIdx} crossIdx={crossWordIdx} playing={playing}
-            isFilled={filledWord} onPick={(i) => selectWord(i)}
-            onBack={() => stepWord(-1)} onSkip={() => stepWord(1)}
-            onSwitch={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}
-            maxWidth={boardMax} dense>
-
-          {/* on-screen keyboard (mobile) */}
-          {playing && mobileUi && (
-            <div className="ec-kb">
-              {kbRows.map((row, ri) => (
-                <div key={ri} className="ec-kb-row">
-                  {ri === 2 && (
-                    <button type="button" aria-label="Flip direction" className="ec-key wide" onClick={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}><ArrowLeftRight size={18} strokeWidth={2.5} /></button>
-                  )}
-                  {row.split('').map((ch) => (
-                    <button type="button" key={ch} className="ec-key" onClick={() => typeLetter(ch)}>{ch}</button>
-                  ))}
-                  {ri === 2 && (
-                    <button type="button" aria-label="Delete" className="ec-key wide" onClick={backspace}><Delete size={18} /></button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {playing && (
-            <div className="ec-acts">
-              <span className="ec-help">Filled clues are struck through. The tinted clue crosses your square.</span>
-              {hintOk && !g.hintUsed && (
-                <button type="button" className="ec-out" onClick={useHint} title="Reveal one letter (one hint, first play only)">
-                  <Lightbulb size={15} /> <span className="ec-hint-long">Hint &middot; one letter</span><span className="ec-hint-short">Hint</span>
-                </button>
-              )}
-              {(() => {
-                const full = solFlat.every((ch, i) => ch === '#' || letters[i] !== '');
-                return (
-                  <button type="button" className="ec-check" onClick={checkGrid} disabled={!full}
-                    title={full ? 'Turn in the grid' : 'Fill every square to check the grid'}>
-                    <Check size={15} strokeWidth={2.75} /> Check grid
-                  </button>
-                );
-              })()}
-            </div>
-          )}
-          </XwSide>
-          </div>
-          </div>
-
-          {started && (
-            <div className="ec-under">
-              <span>
-                Check unlocks when every square is filled. A wrong check strikes the misses through and counts against you.
-                {!mobileUi && <> Space flips direction, Tab jumps to the next clue.</>}
-              </span>
-              {started && (
-                <button type="button" className={`ec-reveal${armReveal ? ' armed' : ''}`}
-                  onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
-                  <Eye size={13} /> {armReveal ? 'Tap again to end the puzzle and show the answers' : 'Reveal'}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-        )}
+        {!preStart && !stageOn && xwBoard}
 
         {/* after the finish: the result line and the hide-board control */}
         {!preStart && (

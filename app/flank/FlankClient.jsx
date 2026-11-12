@@ -40,6 +40,7 @@ import { LEG_ON, LegShell, LEG_PAGE_CSS } from '../StageLeg';
 import RunDoorPop from '../circuits/RunDoorPop';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
@@ -268,9 +269,11 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
   const won = g.status === 'won';
   const LOFT = isLoft('flank');
   const STAGE = isStage('flank', searchParams);
+  const phoneStage = usePhoneStage();
   // The stage board (app/StageLeg.jsx, owner 2026-10-26): in the Passport run
   // and on Flank's own page alike.
   const LEG = LEG_ON && STAGE;
+  const stageOn = LEG && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
   // The register comes from the shared store the switch in the cap writes.
   // Resolved in an effect: the server cannot know what is stored.
   const [stageTheme] = useStageTheme();
@@ -588,11 +591,11 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
   // border (filled in the order found, so a slot says nothing about which
   // neighbor is missing), then the strikes. A missed border stays hidden
   // exactly when the old ring hid it.
-  function renderLeg() {
+  function renderLeg(onStage = false) {
     const strike = notice && notice.kind === 'strike';
     return (
       <LegShell embed={EMBED} game="flank">
-        <div className="lg-kick">Flank · Name every neighbor{PUZZLE.sunday ? ' · Sunday Edition' : ''}</div>
+        {onStage ? null : <div className="lg-kick">Flank · Name every neighbor{PUZZLE.sunday ? ' · Sunday Edition' : ''}</div>}
         <h2 className="lg-q">
           Which countries border {SUBJECT}?
           <small>{playing ? (TOTAL === 1 ? '1 land border' : `${TOTAL} land borders`) : (won ? `All ${TOTAL} named` : `${foundCount} of ${TOTAL} named`)}</small>
@@ -634,11 +637,11 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
           ))}
         </div>
         <div className="lg-foot">
-          <span>{foundCount} of {TOTAL} named · {strikes} of {STRIKES} strikes</span>
+          {onStage ? null : <span>{foundCount} of {TOTAL} named · {strikes} of {STRIKES} strikes</span>}
           {g.wrong.length > 0 && (
             <span>Misses: {g.wrong.map((code, i) => <React.Fragment key={code}>{i ? ', ' : ''}<span className="lg-struck">{nameOf(code)}</span></React.Fragment>)}</span>
           )}
-          {playing && started && (
+          {playing && started && !onStage && (
             <button type="button" className={`lg-act${armGive ? ' arm' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={giveUp}
               title={armGive ? 'Ends the run now' : 'End the run now. Borders you found keep their points.'}>
               {armGive ? 'Tap again to give up' : 'Give up'}
@@ -693,6 +696,17 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'clip' : undefined }}>
+      {/* THE STAGE (owner, 2026-11-12): Flank's own board on the shared white
+          stage from Start to the ending's board view; inside the Passport run
+          the run's frame keeps drawing it. */}
+      {stageOn && (
+        <PlayStage bg={gameColor('flank')} label="Flank" wide
+          eyebrow={`Flank${PUZZLE.sunday ? ' · Sunday Edition' : ''} · name every neighbor`}
+          top={<div className="fl-st" style={{ width: '100%' }}><style dangerouslySetInnerHTML={{ __html: '.pst .fl-st .lg-go{background:var(--pst-ink);color:var(--pst-bg);font-weight:800;font-size:14px}' }} />{renderLeg(true)}</div>}
+          foot={`${foundCount} of ${TOTAL} named · ${strikes} of ${STRIKES} strikes`}
+          giveUp={playing ? { armed: armGive, onPress: giveUp } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {LEG && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
       {!STAGE && (
@@ -794,7 +808,7 @@ export default function FlankClient({ puzzles = [], dayByNum = {}, forceNum = nu
           </div>
         )}
 
-        {!preStart && LEG && renderLeg()}
+        {!preStart && LEG && !stageOn && renderLeg()}
         {!preStart && !LEG && (
         <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '13px 15px 15px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {/* These figures move UP into the cap on a loft page. */}

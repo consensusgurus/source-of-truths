@@ -2704,3 +2704,10 @@ Owner on the phone mockups: "i like m1b and m2", then "i like all of these". Bui
   scroll reaches the foot; the play gets the screen.
 - **Jigsaw buttons on the stage:** `.pst button{font:inherit}` outranks single-class sizes, so Jig / Saw
   restate `.jg-swb` (13px, 12px in the phone box, matching the Edges / Colors / All toggle) and `.jg-ob`.
+
+## Stage wave five (2026-11-12): Emcee, Encore, Flank, Focus
+
+- Emcee and Encore share one board const (`xwBoard`) rendered either on the page or in PlayStage `wide`; never both. Emcee's `--mc-blk` black-square rules also target `.xw-st` so blocks stay black on the stage. The page Reveal button is hidden on the stage; give up is the stage's two-tap.
+- Flank renders `renderLeg(onStage)`; the stage hides the kick line, figures and page give-up. `.pst button{font:inherit}` overrides the Add button, so it is restated as `.pst .fl-st .lg-go`.
+- Focus renders `fcBoard`; the view is sized by `calc(100dvh - 400px)` on the stage and its page buttons are hidden.
+- Potluck, Mixtape and Mishmash are NOT on PlayStage: their play runs inside `/quiz/<id>` (QuizClient), which the quiz session owns. Only their gate and end card live on the daily page. Do not restyle QuizClient from a daily-games session.

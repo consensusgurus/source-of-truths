@@ -44,6 +44,7 @@ import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
@@ -245,6 +246,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
   const won = g.status === 'won';
   const LOFT = isLoft('focus');
   const STAGE = isStage('focus', searchParams);
+  const phoneStage = usePhoneStage();
   const [stageTheme] = useStageTheme();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('focus');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('focus');
@@ -532,10 +534,167 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
   );
 
 
+  // THE BOARD, ONCE: on the stage while it is up, else on the page.
+  const fcBoard = (
+    <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : T.white, border: STAGE ? 0 : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: STAGE ? 0 : '13px 15px 15px', marginBottom: 12 }}>
+      <div className="fc-in">
+      {/* THE METER. Six frames, each labelled with what naming it there
+          pays, so the cost of a miss is on screen before it is spent. */}
+      <div className="fc-meter">
+        <div className="fc-mhead">
+          <span>Frame <b>{playing ? frame : (won ? frame : FRAMES)}</b> of {FRAMES}</span>
+          <span>
+            {playing
+              ? (frame === FRAMES ? <>Last frame &middot; <b>one</b> guess left</> : <>Name it now &middot; each miss pulls back a frame</>)
+              : (won ? <>Named at frame <b>{frame}</b> &middot; Solved</> : <>{g.gaveUp ? 'Gave up' : 'Out of frames'} &middot; Unfinished</>)}
+          </span>
+        </div>
+        <div className="fc-segs" aria-label={`frame ${frame} of ${FRAMES}`}>
+          {Array.from({ length: FRAMES }, (_, i) => {
+            const f = i + 1;
+            const st = playing ? (f < frame ? 'miss' : f === frame ? 'cur' : 'next')
+              : won ? (f < frame ? 'miss' : f === frame ? 'won' : 'next') : 'miss';
+            return (
+              <div key={f} className={`fc-seg ${st}`}>
+                <i />
+                <span>{st === 'miss' ? 'Missed' : `Frame ${f}`}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="fc-panel">
+      <div className="fc-phead">
+        <span className="l"><span className="fc-dk">The photo &middot; </span>{SUBJECT.prompt}</span>
+        <span className="r">{playing ? (frame === FRAMES ? 'Last frame, the whole photo' : `${FRAMES - frame} more pull${FRAMES - frame === 1 ? '' : 's'} left`) : (won ? `Solved at frame ${frame}` : (g.gaveUp ? 'Gave up' : 'Out of frames'))}</span>
+      </div>
+
+      {/* The photo. A square window; the image is cover-fit and scaled
+          about the day's focal point, so every frame is a real crop of
+          the same picture and the last frame is the picture itself. */}
+      <div className="fc-view" aria-label={playing ? `Frame ${frame} of ${FRAMES}` : ((won || !LOFT || revealed) && DAY.a) || 'The photo'}>
+        {imgOk === false ? (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, textAlign: 'center', fontSize: 13.5, fontWeight: 700, color: FADED }}>
+            The photo did not load. Reload the page; if it keeps happening, report it below.
+          </div>
+        ) : (
+          <img
+            src={IMG} alt=""
+            draggable={false}
+            onLoad={() => setImgOk(true)}
+            onError={() => setImgOk(false)}
+            style={{ transformOrigin: `${Math.round((DAY.fx ?? 0.5) * 100)}% ${Math.round((DAY.fy ?? 0.5) * 100)}%`, transform: `scale(${ZOOM[viewFrame - 1]})`, filter: BLUR[viewFrame - 1] ? `blur(${BLUR[viewFrame - 1]}px)` : 'none', opacity: imgOk ? 1 : 0 }}
+          />
+        )}
+        {imgOk === null && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED }}>Developing…</div>
+        )}
+        <span className="fc-tag" style={{ left: 10 }}>Frame {viewFrame} of {FRAMES}</span>
+        <span className="fc-tag" style={{ right: 10 }}>{ZOOM[viewFrame - 1]}&times;<span className="fc-dk"> zoom</span></span>
+      </div>
+
+      {playing && started && (
+        <div ref={askRef} className="fc-ask">
+          <div className="fc-field">
+            <input
+              ref={inputRef}
+              className={`fc-input${notice && notice.kind === 'miss' ? ' shake' : ''}${fold(q).length >= 2 ? ' has-n' : ''}`}
+              value={q}
+              onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+              onFocus={() => setOpen(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { e.preventDefault(); onEnter(); }
+                else if (e.key === 'Escape') { setOpen(false); }
+              }}
+              placeholder={frame === FRAMES ? `Last guess. ${SUBJECT.prompt}` : SUBJECT.prompt}
+              autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false}
+              aria-label={SUBJECT.prompt}
+              aria-autocomplete="list" aria-expanded={open && suggestions.length > 0}
+            />
+            {fold(q).length >= 2 && (
+              <span className="fc-count" aria-live="polite">
+                {suggestions.length === 0 ? 'No match'
+                  : <>{suggestions.length === 6 ? 'Top 6' : suggestions.length}<span className="fc-dk">{suggestions.length === 6 ? ' names on today’s list' : ` name${suggestions.length === 1 ? '' : 's'} on today’s list match${suggestions.length === 1 ? 'es' : ''}`}</span><span className="fc-ph">{suggestions.length === 6 ? ' shown' : ` match${suggestions.length === 1 ? 'es' : ''}`}</span></>}
+              </span>
+            )}
+          </div>
+          {open && suggestions.length > 0 && (
+            <div className="fc-sugg" role="listbox">
+              {suggestions.map((s, i) => (
+                <button type="button" key={`${s}-${i}`} role="option" aria-selected={i === 0} className={i === 0 ? 'top' : undefined} onMouseDown={(e) => e.preventDefault()} onClick={() => guess(s)}>
+                  {s}{i === 0 && <small>Enter</small>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {!playing && (
+        <div style={{ marginTop: 14 }}>
+          {(won || !LOFT || revealed) && (
+          <div style={{ fontFamily: SANS, fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em', color: INK, lineHeight: 1.1 }}>{DAY.a}</div>
+          )}
+          <div style={{ marginTop: 5, fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>
+            Photo: {DAY.by || 'Wikimedia Commons'} · {DAY.lic || 'Wikimedia Commons'} · via Wikimedia Commons
+          </div>
+          <div style={{ fontFamily: SANS, fontSize: 14.5, fontWeight: 800, marginTop: 10, color: won ? `var(--stg-good, ${COLORS.green})` : `var(--stg-ink, ${COLORS.rust})` }}>
+            {won ? `Named at frame ${frame} in ${elapsed}.` : (g.gaveUp ? `Given up at frame ${frame}. The whole photo is above.` : `Six frames, no name. The whole photo is above.`)}
+          </div>
+        </div>
+      )}
+
+      {(g.wrong.length > 0) && (
+        <div className="fc-misses">
+          <span className="lbl">Not it</span>
+          {[...g.wrong].reverse().map((w, i) => (
+            <div key={`${w}-${i}`} className="fc-miss"><span className="x" aria-hidden="true">✗</span><span className="w">{w}</span><small>frame {g.wrong.length - i}</small></div>
+          ))}
+        </div>
+      )}
+
+      {/* THE STATUS LINE. One sentence on where the day stands and one
+          muted line on how to play it. A miss notice and the no-match
+          note take the sentence while they apply; neither costs a frame,
+          and the no-match note says so in as many words. */}
+      {playing && started && (
+        <div className="fc-foot">
+          <span className={`s${notice && notice.kind === 'miss' ? ' miss' : ''}`} aria-live="polite">
+            {notice ? notice.msg
+              : noMatch ? <>No name on today’s list matches that. It has cost you nothing.</>
+              : frame === FRAMES ? <>Last frame: the whole photo, and one guess left.</>
+              : misses === 0 ? <>Frame 1 is the tightest crop, and naming it here ranks highest.</>
+              : <>{['One miss', 'Two misses', 'Three misses', 'Four misses'][misses - 1]}: the camera has pulled back {['once', 'twice', 'three times', 'four times'][misses - 1]}.</>}
+          </span>
+          <span className="h">Type, then choose a name. Choosing one spends a frame.<span className="fc-dk"> Enter takes the top name.</span></span>
+          <button type="button" className="fc-btn" style={{ marginTop: 8, alignSelf: 'flex-start' }} onMouseDown={(e) => e.preventDefault()} onClick={giveUp} title={armGive ? 'Ends the day now, unfinished' : 'End the day now. A give-up records as unfinished.'}>
+            <Flag size={15} />{armGive ? 'Tap again to give up' : 'Give up'}
+          </button>
+        </div>
+      )}
+      </div>
+      {playing && started && (
+        <div className="fc-under">Frame {FRAMES} is the whole photo and one last guess. A typo never costs anything.</div>
+      )}
+      </div>
+    </div>
+  );
+  // THE STAGE is up from Start until the ending's board view (owner, 2026-11-12).
+  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+
   return (
     <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? stageTheme : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('focus')} label="Focus"
+          eyebrow={`Focus${PUZZLE.sunday ? ' · Sunday Edition' : ''} · name it in as few frames as you can`}
+          top={<div className="fc-st"><style dangerouslySetInnerHTML={{ __html: '.fc-st{width:100%}.fc-st .fc-btn{display:none}.fc-st .stg-board{margin:0 !important}.fc-st .fc-view{width:min(100%, max(260px, calc(100dvh - 400px)));margin-left:auto;margin-right:auto}' }} />{fcBoard}</div>}
+          foot={playing ? `Frame ${frame} of ${FRAMES} · ${misses} miss${misses === 1 ? '' : 'es'}` : (won ? `Named at frame ${frame}.` : 'Unfinished.')}
+          giveUp={playing ? { armed: armGive, onPress: giveUp } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {!STAGE && (
       <DailyChrome slug="focus" name="Focus" collapsed={started} loft={LOFT} />
@@ -691,151 +850,7 @@ export default function FocusClient({ puzzles = [], dayByNum = {}, forceNum = nu
           </div>
         )}
 
-        {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : T.white, border: STAGE ? 0 : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: STAGE ? 0 : '13px 15px 15px', marginBottom: 12 }}>
-          <div className="fc-in">
-          {/* THE METER. Six frames, each labelled with what naming it there
-              pays, so the cost of a miss is on screen before it is spent. */}
-          <div className="fc-meter">
-            <div className="fc-mhead">
-              <span>Frame <b>{playing ? frame : (won ? frame : FRAMES)}</b> of {FRAMES}</span>
-              <span>
-                {playing
-                  ? (frame === FRAMES ? <>Last frame &middot; <b>one</b> guess left</> : <>Name it now &middot; each miss pulls back a frame</>)
-                  : (won ? <>Named at frame <b>{frame}</b> &middot; Solved</> : <>{g.gaveUp ? 'Gave up' : 'Out of frames'} &middot; Unfinished</>)}
-              </span>
-            </div>
-            <div className="fc-segs" aria-label={`frame ${frame} of ${FRAMES}`}>
-              {Array.from({ length: FRAMES }, (_, i) => {
-                const f = i + 1;
-                const st = playing ? (f < frame ? 'miss' : f === frame ? 'cur' : 'next')
-                  : won ? (f < frame ? 'miss' : f === frame ? 'won' : 'next') : 'miss';
-                return (
-                  <div key={f} className={`fc-seg ${st}`}>
-                    <i />
-                    <span>{st === 'miss' ? 'Missed' : `Frame ${f}`}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="fc-panel">
-          <div className="fc-phead">
-            <span className="l"><span className="fc-dk">The photo &middot; </span>{SUBJECT.prompt}</span>
-            <span className="r">{playing ? (frame === FRAMES ? 'Last frame, the whole photo' : `${FRAMES - frame} more pull${FRAMES - frame === 1 ? '' : 's'} left`) : (won ? `Solved at frame ${frame}` : (g.gaveUp ? 'Gave up' : 'Out of frames'))}</span>
-          </div>
-
-          {/* The photo. A square window; the image is cover-fit and scaled
-              about the day's focal point, so every frame is a real crop of
-              the same picture and the last frame is the picture itself. */}
-          <div className="fc-view" aria-label={playing ? `Frame ${frame} of ${FRAMES}` : ((won || !LOFT || revealed) && DAY.a) || 'The photo'}>
-            {imgOk === false ? (
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, textAlign: 'center', fontSize: 13.5, fontWeight: 700, color: FADED }}>
-                The photo did not load. Reload the page; if it keeps happening, report it below.
-              </div>
-            ) : (
-              <img
-                src={IMG} alt=""
-                draggable={false}
-                onLoad={() => setImgOk(true)}
-                onError={() => setImgOk(false)}
-                style={{ transformOrigin: `${Math.round((DAY.fx ?? 0.5) * 100)}% ${Math.round((DAY.fy ?? 0.5) * 100)}%`, transform: `scale(${ZOOM[viewFrame - 1]})`, filter: BLUR[viewFrame - 1] ? `blur(${BLUR[viewFrame - 1]}px)` : 'none', opacity: imgOk ? 1 : 0 }}
-              />
-            )}
-            {imgOk === null && (
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED }}>Developing…</div>
-            )}
-            <span className="fc-tag" style={{ left: 10 }}>Frame {viewFrame} of {FRAMES}</span>
-            <span className="fc-tag" style={{ right: 10 }}>{ZOOM[viewFrame - 1]}&times;<span className="fc-dk"> zoom</span></span>
-          </div>
-
-          {playing && started && (
-            <div ref={askRef} className="fc-ask">
-              <div className="fc-field">
-                <input
-                  ref={inputRef}
-                  className={`fc-input${notice && notice.kind === 'miss' ? ' shake' : ''}${fold(q).length >= 2 ? ' has-n' : ''}`}
-                  value={q}
-                  onChange={(e) => { setQ(e.target.value); setOpen(true); }}
-                  onFocus={() => setOpen(true)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') { e.preventDefault(); onEnter(); }
-                    else if (e.key === 'Escape') { setOpen(false); }
-                  }}
-                  placeholder={frame === FRAMES ? `Last guess. ${SUBJECT.prompt}` : SUBJECT.prompt}
-                  autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false}
-                  aria-label={SUBJECT.prompt}
-                  aria-autocomplete="list" aria-expanded={open && suggestions.length > 0}
-                />
-                {fold(q).length >= 2 && (
-                  <span className="fc-count" aria-live="polite">
-                    {suggestions.length === 0 ? 'No match'
-                      : <>{suggestions.length === 6 ? 'Top 6' : suggestions.length}<span className="fc-dk">{suggestions.length === 6 ? ' names on today’s list' : ` name${suggestions.length === 1 ? '' : 's'} on today’s list match${suggestions.length === 1 ? 'es' : ''}`}</span><span className="fc-ph">{suggestions.length === 6 ? ' shown' : ` match${suggestions.length === 1 ? 'es' : ''}`}</span></>}
-                  </span>
-                )}
-              </div>
-              {open && suggestions.length > 0 && (
-                <div className="fc-sugg" role="listbox">
-                  {suggestions.map((s, i) => (
-                    <button type="button" key={`${s}-${i}`} role="option" aria-selected={i === 0} className={i === 0 ? 'top' : undefined} onMouseDown={(e) => e.preventDefault()} onClick={() => guess(s)}>
-                      {s}{i === 0 && <small>Enter</small>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {!playing && (
-            <div style={{ marginTop: 14 }}>
-              {(won || !LOFT || revealed) && (
-              <div style={{ fontFamily: SANS, fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em', color: INK, lineHeight: 1.1 }}>{DAY.a}</div>
-              )}
-              <div style={{ marginTop: 5, fontFamily: SANS, fontSize: 12, fontWeight: 600, color: FADED }}>
-                Photo: {DAY.by || 'Wikimedia Commons'} · {DAY.lic || 'Wikimedia Commons'} · via Wikimedia Commons
-              </div>
-              <div style={{ fontFamily: SANS, fontSize: 14.5, fontWeight: 800, marginTop: 10, color: won ? `var(--stg-good, ${COLORS.green})` : `var(--stg-ink, ${COLORS.rust})` }}>
-                {won ? `Named at frame ${frame} in ${elapsed}.` : (g.gaveUp ? `Given up at frame ${frame}. The whole photo is above.` : `Six frames, no name. The whole photo is above.`)}
-              </div>
-            </div>
-          )}
-
-          {(g.wrong.length > 0) && (
-            <div className="fc-misses">
-              <span className="lbl">Not it</span>
-              {[...g.wrong].reverse().map((w, i) => (
-                <div key={`${w}-${i}`} className="fc-miss"><span className="x" aria-hidden="true">✗</span><span className="w">{w}</span><small>frame {g.wrong.length - i}</small></div>
-              ))}
-            </div>
-          )}
-
-          {/* THE STATUS LINE. One sentence on where the day stands and one
-              muted line on how to play it. A miss notice and the no-match
-              note take the sentence while they apply; neither costs a frame,
-              and the no-match note says so in as many words. */}
-          {playing && started && (
-            <div className="fc-foot">
-              <span className={`s${notice && notice.kind === 'miss' ? ' miss' : ''}`} aria-live="polite">
-                {notice ? notice.msg
-                  : noMatch ? <>No name on today’s list matches that. It has cost you nothing.</>
-                  : frame === FRAMES ? <>Last frame: the whole photo, and one guess left.</>
-                  : misses === 0 ? <>Frame 1 is the tightest crop, and naming it here ranks highest.</>
-                  : <>{['One miss', 'Two misses', 'Three misses', 'Four misses'][misses - 1]}: the camera has pulled back {['once', 'twice', 'three times', 'four times'][misses - 1]}.</>}
-              </span>
-              <span className="h">Type, then choose a name. Choosing one spends a frame.<span className="fc-dk"> Enter takes the top name.</span></span>
-              <button type="button" className="fc-btn" style={{ marginTop: 8, alignSelf: 'flex-start' }} onMouseDown={(e) => e.preventDefault()} onClick={giveUp} title={armGive ? 'Ends the day now, unfinished' : 'End the day now. A give-up records as unfinished.'}>
-                <Flag size={15} />{armGive ? 'Tap again to give up' : 'Give up'}
-              </button>
-            </div>
-          )}
-          </div>
-          {playing && started && (
-            <div className="fc-under">Frame {FRAMES} is the whole photo and one last guess. A typo never costs anything.</div>
-          )}
-          </div>
-        </div>
-        )}
+        {!preStart && !stageOn && fcBoard}
 
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (

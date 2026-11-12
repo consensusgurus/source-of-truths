@@ -38,6 +38,7 @@ import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, FEED_STRONG, FEED_STRONG_INK, FEED_SOFT, FEED_SOFT_INK, gameAccentInkLight } from '@/lib/category-ramp';
@@ -277,6 +278,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
   const won = g.status === 'won';
   const LOFT = isLoft('emcee');
   const STAGE = isStage('emcee', searchParams);
+  const phoneStage = usePhoneStage();
   const EMBED = useRunEmbed();
   useRunHelp(EMBED, () => setShowHelp(true));
   // A give-up writes the answers into letters; on the loft the grid keeps the
@@ -714,11 +716,171 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
     />
   );
 
+  // THE BOARD, ONCE: on the stage while it is up, else on the page. The
+  // stage carries the clock and Give up, so the board's own figure strip and
+  // its small Reveal link step aside there (Give up ends it the same way).
+  const xwBoard = (
+    <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : `var(--stg-surf, ${THEME.white})`, border: STAGE ? 0 : `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: STAGE ? 0 : '13px 15px 15px', marginBottom: 12 }}>
+      {/* These three figures move UP into the cap on a loft page. Printing
+          them in both places is the one thing to avoid: the cap exists to
+          give the board this row back. */}
+      {!LOFT && (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+        <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
+        <span style={{ whiteSpace: 'nowrap' }}>checks <b style={{ color: checks > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})` }}>{checks}</b></span>
+      </div>
+      )}
+
+      {/* progress: squares filled, a segment per square, words filled */}
+      {playing && (
+        <div className="mc-prog">
+          <div className="mc-prog-row">
+            <span>{PUZZLE.sunday ? 'Sunday' : 'The mini'} &middot; <b>{filledCount}</b> of {whiteCount} squares</span>
+            <span>{wordsFilled} of {TOTAL} words filled</span>
+          </div>
+          <div className="mc-segs" aria-hidden="true">
+            {Array.from({ length: whiteCount }).map((_, i) => <span key={i} className={i < filledCount ? 'on' : undefined} />)}
+          </div>
+        </div>
+      )}
+
+      <div className="xw-host" style={{ '--xw-bcol': N === 7 ? '520px' : '480px' }}>
+      <div className="mc-panel xw-play">
+        {/* the grid */}
+        <div className="xw-board">
+        <div className="mc-gridbox xw-gb" style={{ maxWidth: N === 7 ? 476 : 420 }}>
+          <div className="mc-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
+            {Array.from({ length: T }).map((_, idx) => {
+              if (isBlock(idx)) return <div key={idx} className="mc-cell mc-blk" />;
+              const inWord = playing && curWord.cells.includes(idx);
+              const sel = playing && idx === cur;
+              const wrongMark = g.wrong.includes(idx);
+              const revealMiss = g.status === 'revealed';
+              return (
+                <div key={idx}
+                  className={`mc-cell${inWord && !sel ? ' mc-inword' : ''}${sel ? ' mc-sel' : ''}${wrongMark ? ' mc-wrongmark' : ''}${revealMiss ? ' mc-rev' : ''}`}
+                  onClick={() => cellClick(idx)}>
+                  {numAt[idx] != null && <span className="mc-num" style={{ fontSize: numPx }}>{numAt[idx]}</span>}
+                  <span className="mc-ch" style={{ fontSize: cellPx }}>{viewLetters[idx]}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        </div>
+
+        {/* THE CLUES (owner, 2026-10-30, app/XwClues.jsx): on a phone or a
+            narrow window the active clue with Back and Skip and the crossing
+            clue under it; on a wide window the board on the left and the
+            active clue over the full Across and Down lists on the right. */}
+        <XwSide words={WORDS} curIdx={curWordIdx} crossIdx={crossWordIdx} playing={playing}
+          isFilled={filledWord} onPick={(i) => selectWord(i)}
+          onBack={() => stepWord(-1)} onSkip={() => stepWord(1)}
+          onSwitch={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}
+          maxWidth={N === 7 ? 476 : 420}>
+
+        {/* on-screen keyboard (mobile): QWERTY, flip direction, delete */}
+        {playing && mobileUi && (
+          <div className="mc-kb">
+            {kbRows.map((row, ri) => (
+              <div key={ri} className="mc-kbrow">
+                {ri === 2 && (
+                  <button type="button" aria-label="Flip direction" className="mc-key wide" onClick={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}><ArrowLeftRight size={18} strokeWidth={2.5} /></button>
+                )}
+                {row.split('').map((ch) => (
+                  <button type="button" key={ch} className="mc-key" onClick={() => typeLetter(ch)}>{ch}</button>
+                ))}
+                {ri === 2 && (
+                  <button type="button" aria-label="Delete" className="mc-key wide" onClick={backspace}><Delete size={18} strokeWidth={2.5} /></button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {playing && (() => {
+          const full = solFlat.every((ch, i) => ch === '#' || letters[i] !== '');
+          return (
+            <div className="mc-acts">
+              {!mobileUi && <span className="mc-acts-note">Space flips direction. Tab jumps to the next clue.</span>}
+              {hintOk && !g.hintUsed && (
+                <button type="button" className="mc-act ghost" onClick={useHint} title="Reveal one letter (one hint, first play only)">
+                  {mobileUi ? 'Hint' : 'Hint · one letter'}
+                </button>
+              )}
+              <button type="button" className="mc-act go" onClick={checkGrid} disabled={!full}
+                title={full ? 'Turn in the grid' : 'Fill every square to check the grid'}>
+                Check grid
+              </button>
+            </div>
+          );
+        })()}
+        </XwSide>
+      </div>
+      </div>
+
+      {/* the foot: how Check works, and the small Reveal link */}
+      {started && (
+        <div className="mc-foot">
+          <span>Check unlocks when every square is filled. A wrong check marks the misses.</span>
+          {started && (
+            <button type="button" className={`mc-reveal${armReveal ? ' armed' : ''}`}
+              onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
+              {armReveal ? 'Tap again to end the puzzle and show the answers' : 'Reveal'}
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className={STAGE ? undefined : 'loft-sol'}>
+      {/* result */}
+      {!STAGE && !playing && (
+        <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0', padding: '0 4px' }}>
+          {isTodays ? (
+            <>
+              {countdown ? <>Next Emcee in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new grid drops at midnight Eastern.'}
+              {prevPuzzle && (
+                <>
+                  {' '}Meanwhile:{' '}
+                  <a href={`/emcee?p=${prevPuzzle.num}`} style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>
+                    play yesterday&rsquo;s Emcee &rarr;
+                  </a>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}
+              <a href="/emcee" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Emcee &rarr;</a>
+              {' · '}
+              <a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
+            </>
+          )}
+        </p>
+      )}
+      </div>
+      {LOFT && !playing && revealed && (
+        <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
+      )}
+    </div>
+  );
+  // THE STAGE is up from Start until the ending's board view (owner, 2026-11-12).
+  // Inside a run the run's own frame keeps drawing the board.
+  const stageOn = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
+
   return (
     <div className={STAGE ? `stage-page${EMBED ? '' : ' lg-white'}` : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : THEME.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('emcee')} label="Emcee" wide
+          eyebrow={`Emcee${PUZZLE.sunday ? ' · Sunday Edition' : ''} · the mini crossword`}
+          top={<div className="xw-st"><style dangerouslySetInnerHTML={{ __html: '.xw-st{width:100%}.xw-st .mc-reveal{display:none}.xw-st .stg-board{margin:0 !important}' }} />{xwBoard}</div>}
+          foot={playing ? `${filledCount} of ${whiteCount} squares · ${checks} check${checks === 1 ? '' : 's'}` : (won ? 'Solved.' : 'Revealed.')}
+          giveUp={playing ? { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {STAGE && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
@@ -765,8 +927,8 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
              with a paper fallback; the one value the tokens do not carry is
              the black square, which must be darker than the square in BOTH
              registers, so it is published here per register as --mc-blk. */
-          .mc-wrap{--mc-blk:#05070d;--mc-soft:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 30%, color-mix(in srgb, var(--stg-cell, #fff) 84%, #fff));}
-          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .mc-wrap{--mc-blk:#1e2433;--mc-soft:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 17%, var(--stg-cell, #fff));}
+          .mc-wrap,.xw-st{--mc-blk:#05070d;--mc-soft:color-mix(in srgb, var(--stg-acc, ${COLORS.accent}) 30%, color-mix(in srgb, var(--stg-cell, #fff) 84%, #fff));}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .mc-wrap,html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .xw-st{--mc-blk:#1e2433;--mc-soft:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent})) 17%, var(--stg-cell, #fff));}
           .mc-prog{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}
           .mc-prog-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--stg-mute, ${COLORS.faded});}
           .mc-prog-row b{color:var(--stg-acc-ink, ${COLORS.accent});font-weight:800;}
@@ -884,151 +1046,7 @@ export default function EmceeClient({ puzzles = [], forceNum = null }) {
           <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
           <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
         {/* the board: progress, one panel (grid, clue bar, clue lists, actions), foot */}
-        {!preStart && (
-        <div className={STAGE ? 'stg-board' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? 'transparent' : `var(--stg-surf, ${THEME.white})`, border: STAGE ? 0 : `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: STAGE ? 0 : '13px 15px 15px', marginBottom: 12 }}>
-          {/* These three figures move UP into the cap on a loft page. Printing
-              them in both places is the one thing to avoid: the cap exists to
-              give the board this row back. */}
-          {!LOFT && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: SANS, fontSize: 11.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ whiteSpace: 'nowrap' }}>time <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{elapsed}</b></span>
-            <span style={{ whiteSpace: 'nowrap' }}>checks <b style={{ color: checks > 0 ? `var(--stg-bad, ${COLORS.rust})` : `var(--stg-ink, ${COLORS.ink})` }}>{checks}</b></span>
-          </div>
-          )}
-
-          {/* progress: squares filled, a segment per square, words filled */}
-          {playing && (
-            <div className="mc-prog">
-              <div className="mc-prog-row">
-                <span>{PUZZLE.sunday ? 'Sunday' : 'The mini'} &middot; <b>{filledCount}</b> of {whiteCount} squares</span>
-                <span>{wordsFilled} of {TOTAL} words filled</span>
-              </div>
-              <div className="mc-segs" aria-hidden="true">
-                {Array.from({ length: whiteCount }).map((_, i) => <span key={i} className={i < filledCount ? 'on' : undefined} />)}
-              </div>
-            </div>
-          )}
-
-          <div className="xw-host" style={{ '--xw-bcol': N === 7 ? '520px' : '480px' }}>
-          <div className="mc-panel xw-play">
-            {/* the grid */}
-            <div className="xw-board">
-            <div className="mc-gridbox xw-gb" style={{ maxWidth: N === 7 ? 476 : 420 }}>
-              <div className="mc-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
-                {Array.from({ length: T }).map((_, idx) => {
-                  if (isBlock(idx)) return <div key={idx} className="mc-cell mc-blk" />;
-                  const inWord = playing && curWord.cells.includes(idx);
-                  const sel = playing && idx === cur;
-                  const wrongMark = g.wrong.includes(idx);
-                  const revealMiss = g.status === 'revealed';
-                  return (
-                    <div key={idx}
-                      className={`mc-cell${inWord && !sel ? ' mc-inword' : ''}${sel ? ' mc-sel' : ''}${wrongMark ? ' mc-wrongmark' : ''}${revealMiss ? ' mc-rev' : ''}`}
-                      onClick={() => cellClick(idx)}>
-                      {numAt[idx] != null && <span className="mc-num" style={{ fontSize: numPx }}>{numAt[idx]}</span>}
-                      <span className="mc-ch" style={{ fontSize: cellPx }}>{viewLetters[idx]}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            </div>
-
-            {/* THE CLUES (owner, 2026-10-30, app/XwClues.jsx): on a phone or a
-                narrow window the active clue with Back and Skip and the crossing
-                clue under it; on a wide window the board on the left and the
-                active clue over the full Across and Down lists on the right. */}
-            <XwSide words={WORDS} curIdx={curWordIdx} crossIdx={crossWordIdx} playing={playing}
-              isFilled={filledWord} onPick={(i) => selectWord(i)}
-              onBack={() => stepWord(-1)} onSkip={() => stepWord(1)}
-              onSwitch={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}
-              maxWidth={N === 7 ? 476 : 420}>
-
-            {/* on-screen keyboard (mobile): QWERTY, flip direction, delete */}
-            {playing && mobileUi && (
-              <div className="mc-kb">
-                {kbRows.map((row, ri) => (
-                  <div key={ri} className="mc-kbrow">
-                    {ri === 2 && (
-                      <button type="button" aria-label="Flip direction" className="mc-key wide" onClick={() => setDir((d) => (d === 'A' ? 'D' : 'A'))}><ArrowLeftRight size={18} strokeWidth={2.5} /></button>
-                    )}
-                    {row.split('').map((ch) => (
-                      <button type="button" key={ch} className="mc-key" onClick={() => typeLetter(ch)}>{ch}</button>
-                    ))}
-                    {ri === 2 && (
-                      <button type="button" aria-label="Delete" className="mc-key wide" onClick={backspace}><Delete size={18} strokeWidth={2.5} /></button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {playing && (() => {
-              const full = solFlat.every((ch, i) => ch === '#' || letters[i] !== '');
-              return (
-                <div className="mc-acts">
-                  {!mobileUi && <span className="mc-acts-note">Space flips direction. Tab jumps to the next clue.</span>}
-                  {hintOk && !g.hintUsed && (
-                    <button type="button" className="mc-act ghost" onClick={useHint} title="Reveal one letter (one hint, first play only)">
-                      {mobileUi ? 'Hint' : 'Hint · one letter'}
-                    </button>
-                  )}
-                  <button type="button" className="mc-act go" onClick={checkGrid} disabled={!full}
-                    title={full ? 'Turn in the grid' : 'Fill every square to check the grid'}>
-                    Check grid
-                  </button>
-                </div>
-              );
-            })()}
-            </XwSide>
-          </div>
-          </div>
-
-          {/* the foot: how Check works, and the small Reveal link */}
-          {started && (
-            <div className="mc-foot">
-              <span>Check unlocks when every square is filled. A wrong check marks the misses.</span>
-              {started && (
-                <button type="button" className={`mc-reveal${armReveal ? ' armed' : ''}`}
-                  onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}>
-                  {armReveal ? 'Tap again to end the puzzle and show the answers' : 'Reveal'}
-                </button>
-              )}
-            </div>
-          )}
-
-          <div className={STAGE ? undefined : 'loft-sol'}>
-          {/* result */}
-          {!STAGE && !playing && (
-            <p className={STAGE ? undefined : 'loft-tailnote'} style={{ fontSize: 12, color: FADED, fontWeight: 600, margin: '12px 0 0', padding: '0 4px' }}>
-              {isTodays ? (
-                <>
-                  {countdown ? <>Next Emcee in <b style={{ color: INK, fontVariantNumeric: 'tabular-nums' }}>{countdown}</b>.</> : 'A new grid drops at midnight Eastern.'}
-                  {prevPuzzle && (
-                    <>
-                      {' '}Meanwhile:{' '}
-                      <a href={`/emcee?p=${prevPuzzle.num}`} style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>
-                        play yesterday&rsquo;s Emcee &rarr;
-                      </a>
-                    </>
-                  )}
-                </>
-              ) : (
-                <>
-                  You&rsquo;re playing the {PUZZLE.dateLabel.replace(', 2026', '')} archive.{' '}
-                  <a href="/emcee" style={{ color: `var(--stg-ink, ${COLORS.ember})`, fontWeight: 800, textDecoration: 'underline' }}>Back to today&rsquo;s Emcee &rarr;</a>
-                  {' · '}
-                  <a href="/archive" style={{ color: FADED, fontWeight: 700, textDecoration: 'underline' }}>Puzzle archive</a>
-                </>
-              )}
-            </p>
-          )}
-          </div>
-          {LOFT && !playing && revealed && (
-            <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
-          )}
-        </div>
-        )}
+        {!preStart && !stageOn && xwBoard}
         </div>
         {LOFT && !playing && !EMBED && (
           <LoftFinish
