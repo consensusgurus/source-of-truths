@@ -5,37 +5,20 @@
 // difficulty band and the typical minutes. It replaced retention ending C's
 // big Up next card, Start button, Then strip and Keep going switch (owner,
 // 2026-11-07), whose points and rank moves "dont have much meaning to lay
-// user". Choosing a box remembers the path, so every ending on the way offers
-// the same order. Beside it (under it on a phone) is Your Day: a goal ring
+// user". The three are the puzzles MOST SIMILAR to the one just played.
+// Beside it (under it on a phone) is Your Day: a goal ring
 // ("3 more for Top 20 in Today's Puzzles"), the countdown to tomorrow's
 // puzzles with a calendar reminder, and a group nudge. No streak row (owner,
 // 2026-11-11).
 //
-// The path is stored per ET day in localStorage `sot_path`:
-//   { d: 'YYYY-MM-DD', keys: [k1, k2, ...], on: true|false }
-// An ending whose game is on today's stored path (and `on`) continues it;
-// any other ending builds a fresh one from the easiest picks.
-
 import { useEffect, useState } from 'react';
 import GameGlyph from './GameGlyph';
 import { categoryColor, softGround } from '@/lib/category-ramp';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { tierOf } from '@/lib/daily-difficulty';
-import { etToday, fetchDayStatus } from './useDayStats';
+import { fetchDayStatus } from './useDayStats';
 
-const PATH_KEY = 'sot_path';
 const MILESTONES = [500, 200, 100, 50, 20, 10, 5, 3, 1];
-
-export function readPath() {
-  try {
-    const p = JSON.parse(localStorage.getItem(PATH_KEY) || 'null');
-    if (p && p.d === etToday() && Array.isArray(p.keys)) return p;
-  } catch (e) { /* nothing stored */ }
-  return null;
-}
-function savePath(keys, on) {
-  try { localStorage.setItem(PATH_KEY, JSON.stringify({ d: etToday(), keys, on: !!on })); } catch (e) { /* private mode */ }
-}
 
 // Rank on the day board for a total, from the totals above the reader.
 // `ladder` holds the nearest totals above (ascending); `farN` counts the ones
@@ -46,19 +29,15 @@ function rankFor(ladder, farN, x) {
   return n;
 }
 
-// The stops: the stored path continued, else the picks in their ending order.
-// `ranked` is StageStick's ordered pick list (each { key, pts, mins, finish, g }).
+// The stops, in the order StageStick ranked them: MOST SIMILAR to the puzzle
+// just played first (owner, 2026-11-12). `ranked` holds { key, pts, mins,
+// finish } per open puzzle; pts is set only for the server's priced picks.
+// There is no stored path any more: every ending offers what is closest to
+// ITS game.
 export function buildStops({ curKey, ranked, liveBy, dayRow, max = 4 }) {
   const byKey = new Map((ranked || []).map((p) => [p.key, p]));
   const open = (k) => k !== curKey && liveBy.has(k) && !liveBy.get(k).done;
-  const stored = readPath();
-  let keys = null;
-  let cont = false;
-  if (stored && stored.on && stored.keys.includes(curKey)) {
-    const rest = stored.keys.slice(stored.keys.indexOf(curKey) + 1).filter(open);
-    if (rest.length) { keys = rest; cont = true; }
-  }
-  if (!keys) keys = (ranked || []).map((p) => p.key).filter(open);
+  const keys = (ranked || []).map((p) => p.key).filter(open);
   const seen = new Set();
   const out = [];
   let cum = 0;
@@ -74,7 +53,7 @@ export function buildStops({ curKey, ranked, liveBy, dayRow, max = 4 }) {
     const rank = ladder && total != null && pts ? rankFor(ladder, Math.max(0, (Number(dayRow.ladderN) || ladder.length) - ladder.length), total + cum) : null;
     out.push({ key: k, name: g.name, href: g.href, cat: g.cat, mins: p ? p.mins : null, finish: p ? p.finish : null, pts, rank, why: p ? p.why : null });
   }
-  return { stops: out, cont };
+  return { stops: out, cont: false };
 }
 
 // THE THREE STANDINGS AS CHIPS (the desktop band). rows: Where You Stand rows.
@@ -115,8 +94,8 @@ function ratings() {
 // element for the three puzzles ... just the title, short descript. and tags
 // (hard, gentle, etc), and time to finish"). The big Up next card, its Start
 // button, the Then strip and the Keep going switch are one row of three equal
-// boxes. No points, no ranks, no "passes <name>" line. Choosing a box still
-// stores the path, so the next ending carries on down the same order.
+// boxes. No points, no ranks, no "passes <name>" line. The boxes are plain
+// links, most similar first (see buildStops).
 // `from`, `passName` and `armed` are accepted and ignored (nothing starts by
 // itself, and nothing here is priced).
 export function EndNext({ stops, phone = false, picks = null }) {
@@ -155,11 +134,6 @@ export function EndNext({ stops, phone = false, picks = null }) {
     );
   }
   if (!three.length) return null;
-  const go = (e, href) => {
-    e.preventDefault();
-    savePath(stops.map((s) => s.key), true);
-    if (href) window.location.assign(href);
-  };
   return (
     <div className={'enx' + (phone ? ' ph' : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -170,7 +144,7 @@ export function EndNext({ stops, phone = false, picks = null }) {
           const tier = diff ? tierOf(Number(diff[s.key])) : null;
           const desc = d.tag || s.cat || '';
           return (
-            <a key={s.key} className="enx-box" href={s.href} onClick={(e) => go(e, s.href)} style={{ animationDelay: `${i * 110}ms` }}>
+            <a key={s.key} className="enx-box" href={s.href} style={{ animationDelay: `${i * 110}ms` }}>
               <Glyph k={s.key} cat={s.cat} size={24} />
               <span className="tx">
                 <b>{s.name}</b>

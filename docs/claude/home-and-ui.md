@@ -2543,8 +2543,15 @@ row of three equal boxes (the first three stops), desktop and phone (stacked on 
   `/api/quiz/difficulty`, one shared read) and the typical minutes.
 - NO points ("+12"), NO ranks or rank moves ("#5 to #4"), NO "passes <name>" line, NO "% finish".
 - Gone: the big Up next card, its Start button (and the dormant 8 second auto-start code), the Then
-  strip and the "Keep going after each" switch. Choosing a box always stores the path (`sot_path`),
-  so the next ending offers the same order.
+  strip, the "Keep going after each" switch and the stored path (`sot_path`). The boxes are plain links.
+- **The three are the MOST SIMILAR puzzles** (owner, same day, on Sworn offered after Blocks: "sworn
+  is NOTHING like blocks. that is terrible matching. this list should be most similar"). StageStick's
+  `simRanked` orders EVERY open puzzle today (not only the server's easiest-points picks): the game's
+  family first (`relativesOf`, family order), then its category, then shared skills; pick ease and
+  today's plays break ties. Run parts stay out, as does a non-family puzzle whose typical solve runs
+  past 15 minutes. It needs no standings, so Up next shows before they land and for a reader with none.
+- **The desktop sheet's top edge is level with the left navigation's** (`.stg-hosting .sst-page.sst-pc`
+  pulls up 14px over the stage slot's 24px of padding, landing on the nav's 10px).
 - `buildStops` still prices each stop (`pts`, `rank`) because Your Day's goal ring reads the ranks.
   EndNext accepts and ignores the old `from`, `passName` and `armed` props.
 

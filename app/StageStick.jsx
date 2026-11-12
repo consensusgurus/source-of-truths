@@ -914,7 +914,33 @@ export default function StageStick({
   const catPick = ranked.find((p) => p !== mainPick && p.g.cat === curCat) || null;
   // THE PATH (owner, 2026-11-07, retention ending C): the next play and the
   // stops after it, priced on All Puzzles today. See app/EndNext.jsx.
-  const { stops } = buildStops({ curKey: s.gameKey, ranked, liveBy, dayRow });
+  // UP NEXT IS THE MOST SIMILAR (owner, 2026-11-12, on Sworn offered after
+  // Blocks: "sworn is NOTHING like blocks. that is terrible matching. this
+  // list should be most similar"). The three boxes are drawn from EVERY open
+  // puzzle today, not only the server's easiest-points picks: the game's own
+  // family first (lib/daily-families, in family order), then its category,
+  // then shared skills; the picks' ease order and today's plays only break
+  // ties. It needs no standings, so it shows before they land and for a
+  // reader with none. Run parts stay out, and so does a long haul (typical
+  // solve past 15 minutes) that is not family.
+  const pickBy = new Map(pool.map((p) => [p.key, p]));
+  const famOf = relativesOf(s.gameKey);
+  const simRanked = (allGames || [])
+    .filter((g) => g && g.key !== s.gameKey && !g.done && !RUN_OF.has(g.key))
+    .map((g) => {
+      const t = SKILL_TAGS[g.key] || [];
+      const fi = famOf.indexOf(g.key);
+      const p = pickBy.get(g.key) || null;
+      const secs = typicalSeconds(g.key) || (pulse && pulse[g.key] && Number(pulse[g.key].med)) || 0;
+      return { key: g.key, g, pts: p ? p.pts : null, finish: p ? p.finish : null,
+        mins: p && p.mins ? p.mins : (secs ? Math.max(1, Math.round(secs / 60)) : null),
+        fam: fi === -1 ? 999 : fi, cat: curCat && g.cat === curCat ? 0 : 1,
+        sk: (t[0] && t[0] === curTags[0] ? 3 : 0) + 2 * t.filter((x) => curTags.includes(x)).length,
+        ease: p ? p.ease : 999, secs };
+    })
+    .filter((x) => x.fam !== 999 || !(x.secs > 900))
+    .sort((a, b) => a.fam - b.fam || a.cat - b.cat || b.sk - a.sk || a.ease - b.ease || plays(b.key) - plays(a.key));
+  const { stops } = buildStops({ curKey: s.gameKey, ranked: simRanked, liveBy, dayRow });
   const passName = dayRow && dayRow.next && stops[0] && stops[0].pts && stops[0].pts >= dayRow.next.gap ? dayRow.next.name : null;
   const otherPick = sibBeside || catPick || ranked.find((p) => p !== mainPick) || null;
   // THE FIRST SCREEN'S PLAYS AND PILLS (owner, 2026-11-11; app/EndFirst.jsx).
@@ -1861,6 +1887,12 @@ html.lc-on:has(.lc-side > .sst-fold) .lc-host .stg-fg{padding-right:20px;}
 .sst-page .sst-ncm > .sst-pn:has(.sst-acts:empty){padding-top:0;}
 .sst-page .sst-ncm .sst-acts:empty{display:none;}
 .sst-page.sst-pc{max-width:none;}
+/* THE SHEET'S TOP EDGE SITS LEVEL WITH THE LEFT NAVIGATION'S (owner,
+   2026-11-12: "the yellow box should be aligned with the navigation on the
+   left horizontally"). The stage slot above the sheet keeps its 24px of
+   padding through the ending, so the sheet pulls up 14px to land on the
+   nav's own 10px. */
+.stg-hosting .sst-page.sst-pc{margin-top:-14px;}
 .sst-page .sst-nc{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);padding:0;}
 .sst-ncm{padding:18px 20px;min-width:0;}
 .sst-ncs{padding:18px 20px;border-left:2px solid var(--stg-line,#e2e5ea);display:flex;flex-direction:column;gap:12px;min-width:0;}
