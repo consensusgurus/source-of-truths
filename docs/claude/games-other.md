@@ -2342,3 +2342,61 @@ Resume: a solve with c clues open is 11 - c, unsolved 0. Runs on `app/SimpleDail
 - **Due Diligence hand-off:** a finished leg's revealed board holds at least 4.5s, the between card names
   the answer, and the last leg waits 6s before the rank: "no time to read the answer".
 
+
+## Witness (`/witness`): the daily scene-memory game (launched 2026-11-12)
+
+Owner picked it from a list of immersive daily ideas, approved the mockup, then asked for the scene to
+get more detailed through the week. Key/route `witness`, category **Logic**, skill Memory, `miss: null`,
+legacy accent `#9f1239` / `#fda4af`. Wired by `scripts/wire-witness-defuse.mjs` (beside Tangled). Daily
+group and set page Close reading (Witness, Defuse, Sworn); finish set Liars and witnesses.
+
+- **Play** (`app/witness/WitnessClient.jsx`, on `app/SimpleDaily.jsx`): the scene shows for `P.study`
+  seconds (20, 30 on Sunday), disappears, then `P.qs` questions (6, 8 on Sunday), four options each.
+  NOTHING IS GRADED UNTIL THE LAST ANSWER; the ending board is the scene again with a numbered pin on
+  everything asked. The study start is stamped into the save (`s.t`), so a reload never buys a second
+  look. Score = answers right (a real count, so it keeps its "x/y" and is NOT in `SCORE_VIEW`), then
+  the clock. A give-up keeps what was right so far. The cap shows no running figure, because any count
+  shown in play would leak how the answers are going.
+- **The scene is data** drawn by `lib/witness-scene.js` (`sceneSvg`), the one module the client, the
+  generator and the verifier all read. One street: shops (name, awning, door, windows, clock, number),
+  a sky (sun, clouds, birds, a plane, balloon or kite), twelve sidewalk slots and three road slots. 1px
+  ink outlines, soft fills, nothing dashed. Sidewalk things stand clear of the shopfronts so no door or
+  number plate is ever hidden.
+- **THE WEEKLY RAMP** (owner, 2026-11-12; the clock never shortens, the street fills up): Mon/Tue Gentle
+  (2 shops, 9 to 13 things, plain recall), Wed/Thu Moderate (3 shops, a clock, a bus stop, birds; counts
+  and small text), Fri/Sat Tough (4 numbered shops, twin vehicles one with a roof rack; "what stood left
+  of", "which was NOT"), Sunday the fullest street. NO SUNDAY EDITION flag: Sunday is the week's biggest
+  board, as on Tangled.
+- **Bank** (`scripts/gen-witness.mjs`, deterministic off the date, header in
+  `scripts/witness-header.txt`): APPEND ONLY, never regenerate a live day. `scripts/verify-witness.mjs`
+  re-derives every answer from the scene with its own lookups, holds each tier to its object-count band,
+  and checks answer-slot spread (18 to 32% a slot, no day repeating the last day's pattern). Bank
+  2026-11-12 to 2026-12-31. A new question kind needs a `derive` case in the verifier in the same push.
+- **One setting for now.** Every scene is the street. A second setting (a harbor, a kitchen) is a new
+  drawing module plus its own facts in the generator and verifier.
+
+## Defuse (`/defuse`): the daily wire-cutting logic puzzle (launched 2026-11-12)
+
+Same order as Witness. Key/route `defuse`, category **Logic**, skill Deduction, `miss: 'Cuts'`,
+`VERDICT()` in `SCORE_VIEW` (a solve posts 10, anything else 0; ranked on the clock), legacy accent
+`#7c2d12` / `#fdba74`. Daily group Close reading; finish set Rule finding.
+
+- **Rules** (`lib/defuse-engine.js`, shared by client, generator and verifier): a row of colored wires,
+  a serial, 1 to 3 batteries, one indicator light, and a manual. Every wire is cut unless a live `keep`
+  rule protects it, and EXACTLY ONE order of cuts obeys every rule. A rule may carry a condition on the
+  device; a rule whose condition is false does nothing (a decoy). The manual's sentences come from
+  `ruleText`, so the words and the test cannot drift apart.
+- **ONE WRONG CUT ENDS THE DAY** (the approved design; do not add lives or an undo). The client ends on
+  the first cut that differs from `P.solution`; the ending marks the wire, highlights the rule that cut
+  broke (`breach`), or says the cut "left no safe way to finish" when it broke nothing outright, and
+  prints the safe order. The foot never says how many cuts the board needs: which wires stay whole is
+  part of the puzzle.
+- **THE WEEKLY RAMP**: Mon/Tue Gentle (4 wires, 3 live rules), Wed/Thu Moderate (5 wires, 4 live rules,
+  1 decoy), Fri/Sat Tough (6 wires, 5 live, 1 or 2 decoys), Sunday 7 wires. On Gentle and Moderate days
+  every wrong cut breaks a rule on the spot (`lookAhead: false`); on Tough days at least one wrong cut
+  breaks nothing outright, so the order has to be planned. No Sunday Edition flag.
+- **Bank** (`scripts/gen-defuse.mjs`, deterministic, header in `scripts/defuse-header.txt`): APPEND ONLY.
+  `scripts/verify-defuse.mjs` tries every ordering and requires exactly one safe order equal to the
+  stored one, every live rule needed, every decoy false, the player's walk matching `lookAhead`, and
+  variety (opening wire, rule mix, the opening rule not always printed first). Bank 2026-11-12 to
+  2026-12-31. A new rule type goes into the engine's `holds`, `breach` and `ruleText` together.

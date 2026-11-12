@@ -307,6 +307,18 @@ const Tangled = () => (
     <path d="M148 6C150 30 146 54 148 78M117 24C140 36 156 48 179 60M179 24C156 36 140 48 117 60" className="s3" />
     {[[148, 6], [179, 24], [179, 60], [148, 78], [117, 60], [117, 24]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={5} className="d" />)}</g>
 );
+// a street scene in a frame: a sun, two shopfronts and a car
+const Witness = () => (
+  <g><rect x={112} y={6} width={72} height={72} rx={4} className="w" /><circle cx={170} cy={20} r={6} className="m" />
+    <rect x={118} y={30} width={28} height={28} className="sm" /><rect x={150} y={36} width={28} height={22} className="sm" />
+    <rect x={126} y={62} width={34} height={9} rx={4} className="d" /><circle cx={133} cy={72} r={3.5} className="d" /><circle cx={153} cy={72} r={3.5} className="d" /></g>
+);
+// a device: terminal bars top and bottom, four wires, the third one cut
+const Defuse = () => (
+  <g><rect x={114} y={6} width={68} height={8} rx={2} className="d" /><rect x={114} y={70} width={68} height={8} rx={2} className="d" />
+    {[124, 140, 172].map((x) => <rect key={x} x={x - 3} y={14} width={6} height={56} className="m" />)}
+    <rect x={153} y={14} width={6} height={20} className="m" /><rect x={153} y={50} width={6} height={20} className="m" /><circle cx={156} cy={42} r={6} className="d" /></g>
+);
 const Connect = () => (
   <g><Grid x={112} y={6} n={4} sz={18} /><path d="M121 15H175V33M121 33V69H157" className="d6" />
     {[[121, 15], [175, 33], [121, 33], [157, 69]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={6} className={i < 2 ? 'd' : 'm'} />)}</g>
@@ -702,7 +714,7 @@ export const TILE_BY_KEY = {
   atlas: Atlas, carmen: Carmen, span: Span, passport: Passport, flank: Flank, ping: Ping,
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
-  suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled,
+  suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse,
   connect: Connect, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers
