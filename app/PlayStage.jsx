@@ -119,7 +119,9 @@ export function accentVars(pastel, look) {
 const CSS = `
 .pst{position:fixed;inset:0;z-index:85;background:var(--pst-bg);color:var(--pst-ink);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;--pst-tint:color-mix(in srgb, var(--pst-ink) 8%, transparent);--pst-rule:color-mix(in srgb, var(--pst-ink) 25%, transparent);}
 .pst *{color:inherit;box-sizing:border-box;}
-.pst button{font:inherit;color:var(--pst-ink);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+/* A board that brings its own button styles opts out with .pst-raw (owner,
+   2026-11-12, the Arcade on the stage); :where keeps the specificity unchanged. */
+.pst button:where(:not(.pst-raw *)){font:inherit;color:var(--pst-ink);cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .pst-col{width:100%;max-width:520px;padding:max(12px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;min-height:100%;}
 .pst-top{flex:1 0 auto;display:flex;flex-direction:column;justify-content:safe center;gap:12px;animation:pstRise .3s ease-out both;}
 .pst-eb{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;line-height:1.3;}

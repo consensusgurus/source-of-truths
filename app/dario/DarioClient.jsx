@@ -37,6 +37,7 @@ import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
@@ -181,6 +182,13 @@ function FastestList({ refreshKey, myName, ink, faded, surf, line, acc }) {
   );
 }
 
+// THE BOARD ON THE WHITE STAGE (owner, 2026-11-12): no card of its own on the
+// stage, and its buttons keep their own type over the stage's font reset.
+const AR_ST_CSS = `
+.ar-st{text-align:left;}
+.ar-st > .stg-board{background:transparent !important;border:0 !important;padding:0 !important;}
+`;
+
 export default function DarioClient({ puzzles = [], forceNum = null }) {
   const searchParams = useSearchParams();
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
@@ -230,6 +238,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   const releaseEnd = endHold.release;
   const LOFT = isLoft('dario');
   const STAGE = isStage('dario', searchParams);
+  const phoneStage = usePhoneStage();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('dario');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('dario');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -253,6 +262,10 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   const started = playing && !!g.t0;
   const focusMode = playing && !showChrome;
   const preStart = playing && !g.t0;
+  // THE STAGE (owner, 2026-11-12): Dario plays on the shared white stage from
+  // Start until the ending's board view. Keyed off the board mounting, not the
+  // first move, so the canvas never moves mid-run.
+  const stageOn = STAGE && phoneStage && !preStart && (playing || !revealed);
   const over = g.status !== 'playing';
   const res = g.result;
   const cleared = !!(res && res.cleared);
@@ -602,56 +615,9 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
                       </div>
   );
 
-  return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', fontFamily: SANS, background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" />
-      {!STAGE && <Grain />}
-      {!STAGE && <DailyChrome slug="dario" name="Dario" collapsed={started} loft={LOFT} />}
-      {LOFT && (
-        <Cap gameKey="dario" quizId={PUZZLE.quizId}
-          name="Dario"
-          cat="Arcade"
-          outcome={playing ? null : verdictTone}
-          num={PUZZLE.num}
-          tiles={playing ? null : upNext}
-          dateLabel={PUZZLE.dateLabel}
-          figures={[
-            { v: playing ? fmtRun(fig.tenths) : (res ? fmtRun(res.tenths) : '–'), k: 'run' },
-            { v: playing ? `1-${fig.level + 1}` : (res ? (res.cleared ? 'clear' : `1-${res.level + 1}`) : '–'), k: 'level' },
-            { v: bestToday != null ? fmtRun(bestToday) : '–', k: 'best' },
-          ]}
-        />
-      )}
-
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '18px 14px 40px', position: 'relative', zIndex: 2 }}>
-        <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
-
-        {!LOFT && (
-          <DailyMasthead slug="dario" num={PUZZLE.num} dateLabel={PUZZLE.dateLabel} accent={COLORS.accent} helpTop={13} marginBottom={16} onHelp={() => setShowHelp(true)} />
-        )}
-
-        <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
-          <div className={LOFT && !STAGE && !playing && !endHold.held ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
-            <div className={LOFT && !STAGE && !playing && !endHold.held ? 'loft-flip-in' : undefined}>
-              <div className={LOFT && !STAGE && !playing && !endHold.held ? 'loft-face' : undefined}>
-                <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
-
-                  {preStart && (
-                    <div className="dr-hero">
-                      <img src="/og/dario-v3.png" alt="Dario: race to the frontier. Dario jumps over SaaS bots past a ClosedAI billboard while a rocket launches." className="dr-hero-img" width={1200} height={630} />
-                      <div className="dr-hero-bar">
-                        <button onClick={startGame} className="dr-start">START</button>
-                        <div className="dr-hero-row">
-                          <span>{bestToday != null ? `Your best today ${fmtRun(bestToday)}` : 'Three levels · one clock · a new course every day'}</span>
-                          <button type="button" className="dr-hero-ic" onClick={toggleMusic} aria-label={music ? 'Sound off' : 'Sound on'}>{music ? <Volume2 size={16} /> : <VolumeX size={16} />}</button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {!preStart && (
+  // THE BOARD, ONCE (owner, 2026-11-12: Dario moves onto the white stage):
+  // drawn on the stage or on the page, never both (its canvas and refs).
+  const arBoard = (
                     <div className={STAGE ? 'stg-board' : undefined} style={{ background: STAGE ? SURF : '#fff', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, borderRadius: 12, padding: 12, position: 'relative', margin: '0 auto' }}>
                       {/* the meter: the course is three levels, each filled as far as Dario has got */}
                       <div className="dr-meter" data-dr-meter="">
@@ -714,7 +680,64 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
                       )}
                       <p className="dr-foot">{touchOnly ? 'Your fastest full clear counts.' : 'Same course for everyone today. Run it as often as you like; your fastest full clear counts.'}</p>
                     </div>
+  );
+
+  return (
+    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+      data-stage-theme={STAGE ? stageTheme : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', fontFamily: SANS, background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" />
+      {stageOn && (
+        <PlayStage bg={gameColor('dario')} label="Dario" wide
+          eyebrow={`Dario · the Arcade`}
+          top={<div className="ar-st pst-raw" style={{ width: '100%' }}><style dangerouslySetInnerHTML={{ __html: AR_ST_CSS }} />{arBoard}</div>}
+          done={!playing} />
+      )}
+      {!STAGE && <Grain />}
+      {!STAGE && <DailyChrome slug="dario" name="Dario" collapsed={started} loft={LOFT} />}
+      {LOFT && (
+        <Cap gameKey="dario" quizId={PUZZLE.quizId}
+          name="Dario"
+          cat="Arcade"
+          outcome={playing ? null : verdictTone}
+          num={PUZZLE.num}
+          tiles={playing ? null : upNext}
+          dateLabel={PUZZLE.dateLabel}
+          figures={[
+            { v: playing ? fmtRun(fig.tenths) : (res ? fmtRun(res.tenths) : '–'), k: 'run' },
+            { v: playing ? `1-${fig.level + 1}` : (res ? (res.cleared ? 'clear' : `1-${res.level + 1}`) : '–'), k: 'level' },
+            { v: bestToday != null ? fmtRun(bestToday) : '–', k: 'best' },
+          ]}
+        />
+      )}
+
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '18px 14px 40px', position: 'relative', zIndex: 2 }}>
+        <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
+
+        {!LOFT && (
+          <DailyMasthead slug="dario" num={PUZZLE.num} dateLabel={PUZZLE.dateLabel} accent={COLORS.accent} helpTop={13} marginBottom={16} onHelp={() => setShowHelp(true)} />
+        )}
+
+        <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
+          <div className={LOFT && !STAGE && !playing && !endHold.held ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
+            <div className={LOFT && !STAGE && !playing && !endHold.held ? 'loft-flip-in' : undefined}>
+              <div className={LOFT && !STAGE && !playing && !endHold.held ? 'loft-face' : undefined}>
+                <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
+
+                  {preStart && (
+                    <div className="dr-hero">
+                      <img src="/og/dario-v3.png" alt="Dario: race to the frontier. Dario jumps over SaaS bots past a ClosedAI billboard while a rocket launches." className="dr-hero-img" width={1200} height={630} />
+                      <div className="dr-hero-bar">
+                        <button onClick={startGame} className="dr-start">START</button>
+                        <div className="dr-hero-row">
+                          <span>{bestToday != null ? `Your best today ${fmtRun(bestToday)}` : 'Three levels · one clock · a new course every day'}</span>
+                          <button type="button" className="dr-hero-ic" onClick={toggleMusic} aria-label={music ? 'Sound off' : 'Sound on'}>{music ? <Volume2 size={16} /> : <VolumeX size={16} />}</button>
+                        </div>
+                      </div>
+                    </div>
                   )}
+
+                  {!preStart && !stageOn && arBoard}
 
                 </div>
                 {LOFT && !playing && !endHold.held && revealed && (

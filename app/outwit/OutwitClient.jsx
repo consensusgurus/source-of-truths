@@ -42,6 +42,7 @@ import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
@@ -78,6 +79,21 @@ const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
 const HELP_KEY = 'sot_outwit_help_seen';
 const STATS_KEY = 'sot_outwit_stats';
+
+// THE QUESTIONS ON THE WHITE STAGE (owner, 2026-11-12). The stage resets every
+// button's font to the page's, so the stepper's own sizes are restated here.
+const OW_ST_CSS = `
+.pst .ow-st .ow-sw{font-weight:800;font-size:20px;}
+.pst .ow-st .ow-grid-many .ow-sw{font-size:17px;}
+.pst .ow-st .ow-card{font-weight:800;font-size:17px;}
+.pst .ow-st .ow-back{font-weight:700;font-size:15px;}
+.pst .ow-st .ow-go{font-weight:800;font-size:15px;}
+.pst .ow-st .ow-face.ow-go{font-size:14px;}
+.pst .ow-st .ow-opt{font-weight:800;font-size:13.5px;}
+.pst .ow-st .ow-btn{font-weight:800;font-size:14px;}
+.pst .ow-st :is(.ow-eyebrow,.ow-seg-tag,.ow-pick){font-family:'Manrope',system-ui,sans-serif;letter-spacing:.06em;font-weight:800;}
+@media(max-width:640px){.pst .ow-st .ow-sw,.pst .ow-st .ow-grid-many .ow-sw{font-size:17px;}.pst .ow-st .ow-card{font-size:15.5px;}}
+`;
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -349,6 +365,10 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
   // start screen, so no second start screen sits between the legs (RunEmbed autostart).
   useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   const started = playing && !!g.t0;
+  const phoneStage = usePhoneStage();
+  // THE STAGE (owner, 2026-11-12): Outwit's questions on the shared white stage
+  // from Start to the ending's board view; inside a run the run's frame draws them.
+  const stageOn = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
   const focusMode = playing && !showChrome;
   const answered = Object.keys(g.ans).length;
   const result = g.result;
@@ -964,6 +984,13 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('outwit')} label="Outwit" wide
+          eyebrow={`Outwit${PUZZLE.sunday ? ' · Sunday Edition' : ''} · ${PROMPTS.length} calls against today's crowd`}
+          top={<div className="ow-st" style={{ width: '100%', textAlign: 'left' }}><style dangerouslySetInnerHTML={{ __html: OW_ST_CSS }} />{started ? renderStepper() : PROMPTS.map((_, i) => renderPrompt(i))}</div>}
+          foot={`${answered} of ${PROMPTS.length} answered`}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
           today's slate rail, collapsing to one line once the clock runs. Outside
@@ -1110,7 +1137,7 @@ export default function OutwitClient({ puzzles = [], forceNum = null }) {
         )}
 
         {/* the five prompts */}
-        {!preStart && (
+        {!preStart && !stageOn && (
         <div className={STAGE ? 'stg-board' : undefined} style={{ background: `var(--stg-surf, ${COLORS.accentSoft})`, border: `2px solid var(--stg-line, ${COLORS.ink})`, borderRadius: 10, padding: '15px 17px 12px', boxShadow: '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           <div style={{ display: LOFT ? 'none' : 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: FADED, borderBottom: '1px solid rgba(28,30,36,0.18)', paddingBottom: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}><Users size={12} /> five prompts vs. today&rsquo;s crowd</span>

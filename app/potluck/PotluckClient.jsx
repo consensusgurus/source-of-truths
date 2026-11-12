@@ -277,36 +277,38 @@ export default function PotluckClient({ puzzles = [], day, quizzes = [], forceNu
                     <div className="pl-grid">{quizzes.map(card)}</div>
                   </>
                 ) : (
-                  <div style={{ padding: '6px 4px 4px' }}>
-                    <div style={{ fontSize: 10.5, letterSpacing: '0.13em', textTransform: 'uppercase', fontWeight: 800, color: ACC_INK, marginBottom: 6 }}>
+                  <div className="pl-gate" style={{ textAlign: 'center', padding: '18px 0 8px' }}>
+                    {/* THE GATE MESHES WITH THE QUIZ PAGES (owner, 2026-11-12): the
+                        three quizzes play on quiz pages, so the door to them reads
+                        like a quiz's own start gate: centred, one heading, the
+                        same compact ink Start button. */}
+                    <div style={{ fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 800, color: FADED }}>
                       {started ? `Quiz ${Math.min(doneCount + 1, quizzes.length)} of ${quizzes.length} is next` : `${quizzes.length} quizzes, back to back`}
                     </div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: INK, lineHeight: 1.25, marginBottom: 8 }}>
-                      {started ? 'Your Potluck is under way.' : 'Three quizzes, three subjects, one run.'}
-                    </div>
-                    <p style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 600, color: FADED, lineHeight: 1.55, maxWidth: 560 }}>
+                    <h2 style={{ fontSize: 28, fontWeight: 800, color: INK, lineHeight: 1.25, margin: '6px 0 8px' }}>
+                      {started ? 'Your Potluck is under way.' : 'Three quizzes, three subjects.'}
+                    </h2>
+                    <p style={{ margin: '0 auto 16px', fontSize: 15, fontWeight: 500, color: 'var(--stg-ink2, #3b4656)', lineHeight: 1.5, maxWidth: 470 }}>
                       {started
                         ? `${score} point${score === 1 ? '' : 's'} banked so far. Pick up where you left off; the rest are served one after another.`
-                        : 'One to type, one to match, one to spot. You see each quiz when it opens, and the next one is served when it ends. Each is worth 10, scaled by how much of it you got.'}
+                        : 'One to type, one to match, one to spot, played back to back. You see each quiz when it opens. Each is worth 10, scaled by how much of it you got.'}
                     </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }} aria-label={`${doneCount} of ${quizzes.length} played`}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 18 }} aria-label={`${doneCount} of ${quizzes.length} played`}>
                       {quizzes.map((q, i) => {
                         const r = cur.done[i];
                         const pts = r && r.t ? Math.round((PER_QUIZ * r.s) / r.t) : null;
                         return (
-                          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 54, height: 30, padding: '0 10px', borderRadius: 8, fontSize: 12.5, fontWeight: 800, background: r ? GOOD : CELL, color: r ? ON_ACC : FADED, border: `1px solid ${r ? GOOD : LINE}` }}>
+                          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 64, height: 32, padding: '0 12px', borderRadius: 999, fontSize: 13, fontWeight: 800, background: r ? ACC : 'transparent', color: r ? ON_ACC : INK, border: `1px solid ${r ? 'var(--stg-ink, #08222e)' : 'var(--stg-line2, rgba(8,34,46,.3))'}` }}>
                             {r ? `${pts} pts` : `Quiz ${i + 1}`}
                           </span>
                         );
                       })}
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                      <button type="button" className="pl-btn" disabled={!hydrated} onClick={goRun} style={{ background: ACC, borderColor: ACC_INK, color: ON_ACC, padding: '10px 26px', fontSize: 15 }}>
+                    <div style={{ maxWidth: 320, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 10 }}>
+                      <button type="button" className="pl-start" disabled={!hydrated} onClick={goRun} style={{ height: 52, borderRadius: 12, border: 0, background: 'var(--stg-ink, #08222e)', color: stageTheme === 'dark' ? 'var(--stg-ground, #0b0f1a)' : gameColor('potluck'), fontFamily: SANS, fontSize: 16, fontWeight: 800, cursor: 'pointer', opacity: hydrated ? 1 : 0.5 }}>
                         {started ? `Continue to quiz ${Math.min(doneCount + 1, quizzes.length)}` : 'Start'}
                       </button>
-                      <div>
-                        <button type="button" onClick={() => setShowHelp(true)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>How it works</button>
-                      </div>
+                      <button type="button" onClick={() => setShowHelp(true)} style={{ background: 'none', border: 'none', padding: '4px 0', cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline', textUnderlineOffset: 3 }}>How it works</button>
                     </div>
                   </div>
                 )}

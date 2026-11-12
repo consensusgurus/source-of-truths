@@ -37,6 +37,7 @@ import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { regionHue } from '@/lib/category-ramp';
@@ -171,6 +172,13 @@ function freshState() {
   return { v: 1, open: [], flag: [], last: [], score: 0, digs: 0, boom: -1, status: 'playing', t0: null, tEnd: null, ms: 0 };
 }
 
+// THE BOARD ON THE WHITE STAGE (owner, 2026-11-12): no card of its own on the
+// stage, and its buttons keep their own type over the stage's font reset.
+const AR_ST_CSS = `
+.ar-st{text-align:left;}
+.ar-st > .stg-board{background:transparent !important;border:0 !important;padding:0 !important;}
+`;
+
 export default function SweepClient({ puzzles = [], forceNum = null }) {
   const searchParams = useSearchParams();
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
@@ -227,6 +235,7 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
   const releaseEnd = endHold.release;
   const LOFT = isLoft('sweep');  const iq = useIqStanding({ game: 'sweep', quizId: PUZZLE.quizId, active: LOFT && !playing });
   const STAGE = isStage('sweep', searchParams);
+  const phoneStage = usePhoneStage();
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('sweep');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('sweep');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -256,6 +265,10 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
 
   const started = playing && !!g.t0;
   const preStart = playing && !g.t0;
+  // THE STAGE (owner, 2026-11-12): Sweep plays on the shared white stage from
+  // Start until the ending's board view. Keyed off the board mounting, not the
+  // first move, so the canvas never moves mid-run.
+  const stageOn = STAGE && phoneStage && !preStart && (playing || !revealed);
   const over = g.status !== 'playing';
   const focusMode = playing && !showChrome;
   const won = over && g.score >= PAR;
@@ -747,80 +760,9 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
 
   const btn = { fontFamily: SANS, fontWeight: 800, fontSize: 14, border: `2px solid var(--stg-line, ${COLORS.accent})`, background: STAGE ? SURF : '#fff', color: ACC_INK, borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
 
-  return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', fontFamily: SANS, background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {!STAGE && <Grain />}
-      {!STAGE && (
-      <DailyChrome slug="sweep" name="Sweep" collapsed={started} loft={LOFT} />
-      )}
-      {LOFT && (
-        <Cap gameKey="sweep" quizId={PUZZLE.quizId}
-          name="Sweep"
-          cat="Arcade"
-          outcome={playing ? null : verdictTone}
-          num={PUZZLE.num}
-          tiles={playing ? null : upNext}
-          dateLabel={PUZZLE.dateLabel}
-          onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
-          figures={playing ? [
-            { v: g.score, k: 'cells' },
-          ] : [
-            { v: g.score, k: 'cells' },
-          ]}
-        />
-      )}
-
-      <div style={{ maxWidth: 780, margin: '0 auto', padding: '18px 18px 40px', position: 'relative', zIndex: 2 }}>
-        <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
-
-        {!LOFT && (
-        <DailyMasthead
-          slug="sweep"
-          num={PUZZLE.num}
-          dateLabel={PUZZLE.dateLabel}
-          accent={COLORS.accent}
-          helpTop={13}
-          marginBottom={16}
-          onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday && (
-            <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>
-              Sunday Edition &middot; denser field
-            </span>
-          )}
-        />
-        )}
-
-        {/* LOFT: the play area sits on the navy stage, which runs full bleed
-            and fills the first screen, so the board is the one lit object. */}
-        <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
-          <div className={LOFT && !STAGE && !playing && !endHold.held ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
-          <div className={LOFT && !STAGE && !playing && !endHold.held ? 'loft-flip-in' : undefined}>
-          <div className={LOFT && !STAGE && !playing && !endHold.held ? 'loft-face' : undefined}>
-          <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
-
-        {preStart && (
-          <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '22px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
-            {gateRules ? rulesBody : (
-              <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                <p style={{ margin: '0 0 6px' }}>Uncover as much of the field as you can without hitting a mine. It never needs a guess, it has no bottom, and you can play the day again as often as you want. Your best run is the one that counts.</p>
-              </div>
-            )}
-            <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <button onClick={startGame} style={{ ...btn, background: STAGE ? STAGE_C : T.cta, borderColor: STAGE ? STAGE_C_INK : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
-              <div>
-                <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-                  {gateRules ? 'Back' : 'How to play'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!preStart && (
+  // THE BOARD, ONCE (owner, 2026-11-12: Sweep moves onto the white stage):
+  // drawn on the stage or on the page, never both (its canvas and refs).
+  const arBoard = (
           <div className={STAGE ? 'stg-board' : undefined} style={{ '--sw-acc': STAGE ? 'var(--stg-acc)' : COLORS.accent, '--sw-flag': ACC_INK, '--sw-on': ON_ACC, background: STAGE ? SURF : '#fff', border: STAGE ? `1px solid ${SURF_B}` : `1px solid ${COLORS.line}`, borderRadius: 12, padding: 14 }}>
             {/* THE HEADLINE IS THE SCORE (owner, 2026-10-14): cells uncovered,
                 big, with depth, digs and the clock as quiet chips beside it. */}
@@ -943,7 +885,88 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
               </div>
             )}
           </div>
+  );
+
+  return (
+    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
+      data-stage-theme={STAGE ? stageTheme : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', fontFamily: SANS, background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('sweep')} label="Sweep" wide
+          eyebrow={`Sweep · the Arcade`}
+          top={<div className="ar-st pst-raw" style={{ width: '100%' }}><style dangerouslySetInnerHTML={{ __html: AR_ST_CSS }} />{arBoard}</div>}
+          done={!playing} />
+      )}
+      {!STAGE && <Grain />}
+      {!STAGE && (
+      <DailyChrome slug="sweep" name="Sweep" collapsed={started} loft={LOFT} />
+      )}
+      {LOFT && (
+        <Cap gameKey="sweep" quizId={PUZZLE.quizId}
+          name="Sweep"
+          cat="Arcade"
+          outcome={playing ? null : verdictTone}
+          num={PUZZLE.num}
+          tiles={playing ? null : upNext}
+          dateLabel={PUZZLE.dateLabel}
+          onHelp={() => setShowHelp(true)}
+          sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
+          figures={playing ? [
+            { v: g.score, k: 'cells' },
+          ] : [
+            { v: g.score, k: 'cells' },
+          ]}
+        />
+      )}
+
+      <div style={{ maxWidth: 780, margin: '0 auto', padding: '18px 18px 40px', position: 'relative', zIndex: 2 }}>
+        <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
+
+        {!LOFT && (
+        <DailyMasthead
+          slug="sweep"
+          num={PUZZLE.num}
+          dateLabel={PUZZLE.dateLabel}
+          accent={COLORS.accent}
+          helpTop={13}
+          marginBottom={16}
+          onHelp={() => setShowHelp(true)}
+          sunday={PUZZLE.sunday && (
+            <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>
+              Sunday Edition &middot; denser field
+            </span>
+          )}
+        />
         )}
+
+        {/* LOFT: the play area sits on the navy stage, which runs full bleed
+            and fills the first screen, so the board is the one lit object. */}
+        <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
+          <div className={LOFT && !STAGE && !playing && !endHold.held ? (revealed ? 'loft-flip' : 'loft-flip on') : undefined}>
+          <div className={LOFT && !STAGE && !playing && !endHold.held ? 'loft-flip-in' : undefined}>
+          <div className={LOFT && !STAGE && !playing && !endHold.held ? 'loft-face' : undefined}>
+          <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
+
+        {preStart && (
+          <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '22px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
+            {gateRules ? rulesBody : (
+              <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
+                <p style={{ margin: '0 0 6px' }}>Uncover as much of the field as you can without hitting a mine. It never needs a guess, it has no bottom, and you can play the day again as often as you want. Your best run is the one that counts.</p>
+              </div>
+            )}
+            <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+              <button onClick={startGame} style={{ ...btn, background: STAGE ? STAGE_C : T.cta, borderColor: STAGE ? STAGE_C_INK : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+              <div>
+                <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
+                  {gateRules ? 'Back' : 'How to play'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!preStart && !stageOn && arBoard}
 
 
           </div>

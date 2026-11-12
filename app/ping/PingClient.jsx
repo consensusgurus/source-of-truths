@@ -43,6 +43,7 @@ import { LEG_ON, LegShell, LEG_PAGE_CSS } from '../StageLeg';
 import RunDoorPop from '../circuits/RunDoorPop';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
@@ -401,6 +402,10 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
   // The stage board (app/StageLeg.jsx, owner 2026-10-26): in the Passport run
   // and on Ping's own page alike.
   const LEG = LEG_ON && STAGE;
+  const phoneStage = usePhoneStage();
+  // THE STAGE (owner, 2026-11-12): Ping's own board on the shared white stage
+  // from Start to the ending's board view; inside a run the run's frame draws it.
+  const stageOn = LEG && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
   const STAGE_C = STAGE ? 'var(--stg-acc)' : gameColor('ping');
   const STAGE_C_INK = STAGE ? 'var(--stg-acc-ink, var(--stg-acc))' : gameColor('ping');
   const Cap = STAGE ? StageChrome : LoftCap;
@@ -971,12 +976,12 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
       </figure>
     );
   }
-  function renderLeg() {
+  function renderLeg(onStage = false) {
     const order = guesses.map((x, i) => ({ x, i })).sort((a, b) => a.x.mi - b.x.mi || a.i - b.i);
     const lastI = guesses.length - 1;
     return (
       <LegShell embed={EMBED} game="ping">
-        <div className="lg-kick">Ping · Find the secret city{PUZZLE.sunday ? ' · Sunday Edition' : ''}</div>
+        {onStage ? null : <div className="lg-kick">Ping · Find the secret city{PUZZLE.sunday ? ' · Sunday Edition' : ''}</div>}
         <h2 className="lg-q">
           {playing ? <>Where is today&rsquo;s city?</> : (showAnswer ? <>{TARGET.name}, {TARGET.country}</> : <>You gave up</>)}
           {!playing ? <small>{won ? `Found in ${guesses.length} guess${guesses.length === 1 ? '' : 'es'}` : `${showAnswer ? 'You gave up. ' : ''}${closest ? `Your closest: ${closest.name}, ${fmtDist(closest.mi)} away` : 'No guesses made'}`}</small> : null}
@@ -1030,12 +1035,12 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           )}
         </div>
         <div className="lg-foot">
-          <span>{guesses.length} guess{guesses.length === 1 ? '' : 'es'}{playing ? ' · no limit' : ''}</span>
+          {onStage ? null : <span>{guesses.length} guess{guesses.length === 1 ? '' : 'es'}{playing ? ' · no limit' : ''}</span>}
           <button type="button" className="lg-act" onClick={() => changeUnit(unit === 'km' ? 'mi' : 'km')}>{unit === 'km' ? 'Show miles' : 'Show kilometers'}</button>
           {started && hintOk && !g.hintUsed && (
             <button type="button" className="lg-act" onClick={useHint} title="Reveal the continent (one hint, first play only)">Hint: the continent</button>
           )}
-          {started && guesses.length > 0 && (
+          {started && guesses.length > 0 && !onStage && (
             <button type="button" className={`lg-act${armReveal ? ' arm' : ''}`}
               onClick={() => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } }}
               title="Give up: your closest guess still counts">
@@ -1077,6 +1082,14 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('ping')} label="Ping" wide
+          eyebrow={`Ping${PUZZLE.sunday ? ' · Sunday Edition' : ''} · find the secret city`}
+          top={<div className="pg-st" style={{ width: '100%' }}><style dangerouslySetInnerHTML={{ __html: '.pst .pg-st .lg-go{background:var(--pst-ink);color:var(--pst-bg);font-weight:800;font-size:14px}.pst .pg-st .lg-act{font-size:13px;font-weight:800}.pst .pg-st .lg-sug button{font-size:16px;font-weight:700}' }} />{renderLeg(true)}</div>}
+          foot={`${guesses.length} guess${guesses.length === 1 ? '' : 'es'}${playing ? ' · no limit' : ''}`}
+          giveUp={started && guesses.length > 0 ? { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {LEG && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
       {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
@@ -1194,7 +1207,7 @@ export default function PingClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
         {/* the hunt */}
-        {!preStart && LEG && renderLeg()}
+        {!preStart && LEG && !stageOn && renderLeg()}
         {!preStart && !LEG && (
         <div className={STAGE ? 'stg-board pg-board' : (LOFT ? 'loft-card pg-board' : 'pg-board')} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, padding: '15px 17px 17px', boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
           {/* These figures move UP into the cap on a loft page; printing

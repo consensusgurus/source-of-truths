@@ -509,7 +509,9 @@ const CSS = `
    the full-strength ramp. --lbk is the outline, --ccp the pastel of whatever
    --cc a row carries. On the dark register the ramp is already a pastel, so
    --ccp is just --cc there. */
-.lbs{--lbk:2px solid var(--stg-ink);}
+/* ONE PIXEL (owner, 2026-11-12: "the outlines of the elements are too wide"):
+   the home's tiles and index draw in 1px ink since 2026-11-02, so this pane does too. */
+.lbs{--lbk:1px solid var(--stg-ink);}
 /* --ccp is declared on EVERY element, not on .lbs: a custom property that reads
    var(--cc) resolves where it is declared, and .lbs itself carries no --cc, so
    declaring it there left every row with an empty pastel. */
@@ -524,19 +526,19 @@ const CSS = `
 .lbs-tbl tr.me td{background:color-mix(in srgb, #a5b4fc 42%, var(--stg-surf));}
 .lbs-foot a,.lbs .sty-ixe a{color:var(--stg-ink);text-decoration:underline;text-underline-offset:3px;}
 .lbs-bar{height:10px;background:var(--stg-surf2);}
-.lbs-bar i{background:var(--ccp);box-shadow:inset 0 0 0 1.5px var(--stg-ink);}
+.lbs-bar i{background:var(--ccp);box-shadow:inset 0 0 0 1px var(--stg-ink);}
 .lbs-stack{height:18px;gap:0;border:var(--lbk);box-sizing:border-box;}
-.lbs-stack i{background:var(--ccp);box-shadow:inset -1.5px 0 0 var(--stg-ink);}
+.lbs-stack i{background:var(--ccp);box-shadow:inset -1px 0 0 var(--stg-ink);}
 .lbs-stack i:last-child{box-shadow:none;}
-.lbs-sw{background:var(--ccp);box-shadow:inset 0 0 0 1.5px var(--stg-ink);border-radius:50%;}
-.lbs-key i.t{background:#a5b4fc;box-shadow:inset 0 0 0 1.5px var(--stg-ink);}
-.lbs-hr i.t{background:#a5b4fc;box-shadow:inset 0 0 0 1.5px var(--stg-ink);}
+.lbs-sw{background:var(--ccp);box-shadow:inset 0 0 0 1px var(--stg-ink);border-radius:50%;}
+.lbs-key i.t{background:#a5b4fc;box-shadow:inset 0 0 0 1px var(--stg-ink);}
+.lbs-hr i.t{background:#a5b4fc;box-shadow:inset 0 0 0 1px var(--stg-ink);}
 .lbs-hr i.t.now{background:#6ee7b7;}
 .lbs-supc{border:var(--lbk);border-radius:12px;background:var(--ccp);}
 [data-stage-theme=light] .lbs-supc,[data-stage-theme=light] .lbs-supc i,[data-stage-theme=light] .lbs-supc b,[data-stage-theme=light] .lbs-supc span{color:#0b0d12;}
 .lbs-supc:hover{background:var(--ccp);filter:brightness(.96);}
 [data-stage-theme]:not([data-stage-theme=light]) .lbs-supc{background:color-mix(in srgb, var(--cc) 20%, transparent);}
-.lbs-hc{border:1.5px solid var(--stg-ink);border-radius:8px;}
+.lbs-hc{border:1px solid var(--stg-ink);border-radius:8px;}
 [data-stage-theme=light] .lbs-hc{background:color-mix(in srgb, var(--cc) calc(var(--hp) * 1.8), #fff);color:#0b0d12;}
 [data-stage-theme=light] .lbs-hc.zero{background:var(--stg-surf);color:var(--stg-ink2);}
 .lbs-hc.zero{border-color:var(--stg-line2);}
