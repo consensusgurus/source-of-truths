@@ -32,6 +32,15 @@ set -u
 
 build() { echo "IGNORE-STEP: building ($1)"; exit 1; }
 
+# Never build branch previews (owner rule, 2026-11-13 cost pass). Work ships
+# straight to production; nobody reviews preview URLs, and on 2026-11-13 the
+# dashboard listed seven branch previews building at full production cost
+# (Build CPU was $9.58, the third largest line). Production (main) is unaffected.
+if [ "${VERCEL_ENV:-}" = "preview" ]; then
+  echo "IGNORE-STEP: preview deployment, skipping build (production only)"
+  exit 0
+fi
+
 # No parent to diff against (first commit, or a clone too shallow to see one).
 git rev-parse --verify HEAD^ >/dev/null 2>&1 || build "no parent commit"
 

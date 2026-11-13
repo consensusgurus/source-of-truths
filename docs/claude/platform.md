@@ -158,7 +158,21 @@ and it drained the project's Disk IO budget (Supabase warning email). The
 snapshot now lives in the private bucket `results-snapshots` as
 `<name>.json.gz` plus a tiny `<name>.meta.json` (`lib/results-snapshot-store.js`,
 names `quiz-results` and `admin-results`), refreshed at 6 hours old or 10,000
-rows behind. Admin routes that rewrite rows call `dropStoredSnapshots`. **Never
+rows behind. Admin routes that rewrite rows call `dropStoredSnapshots`.
+
+**`SNAP_MAX_ROWS` is a ceiling, and passing it froze the snapshot (2026-11-13).**
+It was 400,000 in both caches. When quiz_results passed it, `writeSnapshot`
+returned early with no log while fullLoad still printed "snapshot rewritten", so
+the stored copy sat at 398,325 rows and every cold instance paged the ~124,000
+rows above it (75 to 90s each, several at once, once 561s). That was most of the
+Active CPU and Provisioned Memory on the bill and the "refresh timed out" 500s on
+`/api/quiz/board` (14.5% of calls). The ceiling is now 2,000,000, and a skip logs
+an error. **If a fullLoad log shows a "delta loaded" count in the tens of
+thousands, the snapshot is not being rewritten: find out why before anything
+else.** Watch the Storage per-file size limit as the table grows (a skipped
+upload logs "snapshot write skipped").
+
+**Never
 put a large or frequently rewritten blob in a Postgres row again**: every
 rewrite is a full TOAST copy plus WAL, and Disk IO is the scarcest resource on
 this project's compute tier.
@@ -204,14 +218,17 @@ and promises with no deadline. Four rules came out of it:
 2. **No cache refresh can wedge an instance.** `quiz-results-cache` and
    `daily-results-cache` race each refresh against a deadline and serve the rows
    they hold past it; a forced read queues at most 8s behind an older refresh.
-3. **The IQ field is built ONCE, by `/api/cron/iq-field` every 10 minutes**, and
+3. **The IQ field is built ONCE, by `/api/cron/iq-field` hourly at minute 1** (every 10 minutes until 2026-11-13; owner: standings need not refresh that often), and
    stored compressed in Supabase Storage (`results-snapshots/iq-field-v1.json.gz`,
    never a table row: a big row rewritten every 10 minutes is the Disk IO trap). Instances download it
    only when a newer copy exists, and build it locally only if it is missing,
-   older than 25 minutes or from an earlier ET day. It holds every player's
+   older than 75 minutes (`FIELD_MAX_AGE_MS`; keep it well above the cron
+   interval or request instances rebuild the field themselves) or from an
+   earlier ET day. Minute 1 of the hour is also one minute past ET midnight in
+   both EST and EDT, so the new day's copy lands before anyone would build it. It holds every player's
    TOTALS and per-category totals, trophies and today's gain, never a play list.
    The asker is still recomputed fresh from their own rows, so their own figures
-   are live and everyone else is at most ~10 minutes old.
+   are live and everyone else is at most ~1 hour old.
    `iqSnapshot` / `iqPlayersFresh` are **async** now. Routes on it: iq-standing,
    me (except `full=1`), daily-status, day-card, xp, xp-categories. Equivalence
    with the old per-instance snapshot was checked on synthetic data (ranking,
@@ -233,7 +250,7 @@ and promises with no deadline. Four rules came out of it:
    not Supabase, is what the 300s timeouts were. Put such work in a cron.
 7. **After a deploy, check that the field is fresh** (`/api/cron/iq-field`
    reports its age when it skips). A deploy that lands while the stored field is
-   older than 25 minutes makes every cold instance build its own, which is a
+   older than 75 minutes makes every cold instance build its own, which is a
    burst of 60s timeouts (seen twice on 2026-10-27 while the cron was failing).
 
 ---

@@ -40,7 +40,7 @@ export async function GET(request) {
       console.error('quiz xp error', error);
       return NextResponse.json({ scope, total: 0, players: [] });
     }
-    // The shared IQ field (up to ten minutes old) rather than a fresh pass over
+    // The shared IQ field (up to an hour old) rather than a fresh pass over
     // every row: this is a public board, cached at the CDN anyway (2026-10-27).
     const { players } = await iqSnapshot(data || []);
     let ranked = rankPlayers(players, scope);

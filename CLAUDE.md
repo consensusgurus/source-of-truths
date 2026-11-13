@@ -117,7 +117,9 @@ easily cost MORE by making builds run longer on fewer cores. The number of build
 the lever, not the machine.
 
 `vercel.json` sets `ignoreCommand: bash scripts/vercel-ignore-build.sh`, which skips
-the build when a commit touches ONLY markdown. That covers doc-only pushes (this
+EVERY preview (branch) deployment (owner rule, 2026-11-13: production only, previews
+were building at full cost and nobody reviews them) and skips a production build
+when a commit touches ONLY markdown. That covers doc-only pushes (this
 file included) and nothing else, on purpose: the script exits 1 (build) for merge
 commits, shallow clones, and any changed path that is not `*.md`. It is a backstop,
 not a substitute for batching.

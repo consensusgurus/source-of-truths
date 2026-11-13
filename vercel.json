@@ -38,7 +38,7 @@
     },
     {
       "path": "/api/cron/iq-field",
-      "schedule": "*/10 * * * *"
+      "schedule": "1 * * * *"
     }
   ],
   "ignoreCommand": "bash scripts/vercel-ignore-build.sh",
