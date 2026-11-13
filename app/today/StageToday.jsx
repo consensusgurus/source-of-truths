@@ -4747,7 +4747,6 @@ export default function StageToday() {
               return (
                 <>
                   <button type="button" className="mph-back" onClick={mBack}>&larr; {backTo}</button>
-                  {pc ? catChips(paneOn, 'mph-cf') : null}
                   {/* The title and count live in the header now (owner, 2026-10-25). */}
                   {s ? <p className="mph-note">{s.what}.</p> : null}
                   {runs.length && !isRuns ? <div className="mph-lab">Runs{runs.length > 1 ? <> &middot; {runs.length}</> : null}</div> : null}
@@ -4831,6 +4830,16 @@ export default function StageToday() {
                       {/* NO DETAILS NOTE ON A PHONE (owner, 2026-11-11: "the 'detail'
                           pop-up on mobile points to the wrong spot. let's get rid of
                           that completely"). Retired on desktop too, 2026-11-12. */}
+                    </div>
+                  ) : null}
+                  {/* THE KIND / SHOW CHIPS RIDE WITH THE TOGGLES (owner, 2026-11-13): moved down
+                      from the top of the pane to sit under Sort and View, labelled the
+                      same way and inked the same way (outline, ink fill when picked).
+                      The old accent fill was the retired blue. */}
+                  {pc && games.length && (KINDS[paneOn] || paneOn === 'Sudoku') ? (
+                    <div className="mph-kf">
+                      <span className="lb">{paneOn === 'Sudoku' ? 'Show' : 'Kind'}</span>
+                      {catChips(paneOn, 'mph-cf')}
                     </div>
                   ) : null}
                   {/* JUMP TO A CATEGORY (N3), on All Puzzles only. */}
@@ -6947,6 +6956,12 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .mph-cf{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;min-width:0;max-width:100%;margin:2px 0 10px;}
 .mph-cf::-webkit-scrollbar{display:none;}
 .mph-cf .sty-mgc{flex:none;white-space:nowrap;font-size:13px;padding:7px 13px;}
+/* Inked like the Sort / View switches beside them (owner, 2026-11-13): no accent fill. */
+.sty-mph .mph-kf{display:flex;flex-direction:column;gap:4px;min-width:0;margin-top:10px;}
+.sty-mph .mph-kf .mph-cf{margin:0;}
+.sty-mph .mph-kf .sty-mgc{border:1px solid var(--stg-ink);background:transparent;color:var(--stg-ink);font-size:12px;font-weight:800;line-height:1.26;padding:7px 13px 8px;}
+.sty-mph .mph-kf .sty-mgc i{color:inherit;opacity:.7;}
+.sty-mph .mph-kf .sty-mgc.on{background:var(--stg-ink);border-color:var(--stg-ink);color:var(--stg-ground, #fff);}
 .sty-mgc{border:1px solid var(--stg-line);background:none;border-radius:999px;padding:4px 11px;font:inherit;font-size:12px;
   font-weight:700;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;}
 .sty-mgc i{font-style:normal;color:var(--stg-mute);margin-left:2px;}
@@ -8358,7 +8373,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-ctl{position:relative;display:flex;gap:10px;margin-top:4px;}
   .sty-mph .mph-cg{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:4px;}
   .sty-mph .mph-cg.s{flex:1.75 1 0;}
-  .sty-mph .mph-ctl .lb,.sty-mph .mph-jump .lb{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.3;}
+  .sty-mph .mph-ctl .lb,.sty-mph .mph-jump .lb,.sty-mph .mph-kf .lb{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.3;}
   .sty-mph .mph-sg{display:flex;border:1px solid var(--stg-ink);border-radius:999px;padding:3px;}
   .sty-mph .mph-sg button{flex:1 1 auto;min-width:0;border:0;background:transparent;color:var(--stg-ink);border-radius:999px;padding:7px 4px 8px;
     font-size:12px;font-weight:800;line-height:1.26;white-space:nowrap;}
