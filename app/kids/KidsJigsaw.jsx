@@ -187,6 +187,27 @@ function Play({ board, n, setN, onBack, onDone }) {
   const boardRef = useRef(null);
   const dragRef = useRef(null);
   dragRef.current = drag;
+  // The live touch, set the instant a piece is touched (before React renders
+  // the drag), so the touchmove guard below can claim the gesture in time.
+  // iPad Safari (owner, 2026-11-13) treated a drag that began inside the
+  // scrolling tray as a scroll even with touch-action:none, fired
+  // pointercancel half way, and the piece bounced back to the tray.
+  const liveRef = useRef(null);
+  useEffect(() => {
+    const tm = (e) => {
+      const L = liveRef.current;
+      if (!L || !e.touches || !e.touches[0]) return;
+      if (!L.mode) {
+        // Phones only: a sideways swipe still scrolls the two-row strip.
+        const dx = e.touches[0].clientX - L.sx, dy = e.touches[0].clientY - L.sy;
+        if (Math.hypot(dx, dy) < 4) { if (e.cancelable) e.preventDefault(); return; }
+        L.mode = Math.abs(dx) > Math.abs(dy) ? 'scroll' : 'drag';
+      }
+      if (L.mode === 'drag' && e.cancelable) e.preventDefault();
+    };
+    window.addEventListener('touchmove', tm, { passive: false });
+    return () => window.removeEventListener('touchmove', tm);
+  }, []);
   const finished = placed.size === pieces.length;
 
   useEffect(() => {
@@ -222,10 +243,18 @@ function Play({ board, n, setN, onBack, onDone }) {
     const move = (e) => { setDrag((d) => (d ? { ...d, px: e.clientX, py: e.clientY } : d)); };
     const up = (e) => {
       const d = dragRef.current;
+      const L = liveRef.current;
+      liveRef.current = null;
       setDrag(null);
       if (!d || !boardRef.current) return;
+      const cancel = e.type === 'pointercancel';
+      // The strip scrolled instead: no drop, no shake.
+      if (cancel && L && L.mode === 'scroll') return;
+      // A cancel's own coordinates are unreliable on iOS; drop where the
+      // piece was last drawn.
+      const cx = cancel ? d.px : e.clientX, cy = cancel ? d.py : e.clientY;
       const fit = fitOf(boardRef.current, BW, BH);
-      const left = e.clientX - box / 2, top = e.clientY - box / 2 - d.lift;
+      const left = cx - box / 2, top = cy - box / 2 - d.lift;
       const ux = (left - fit.x) / fit.scale, uy = (top - fit.y) / fit.scale;
       const p = pieces[d.i];
       if (Math.abs(ux - p.x) < SNAP && Math.abs(uy - p.y) < SNAP) place(d.i);
@@ -247,6 +276,7 @@ function Play({ board, n, setN, onBack, onDone }) {
     if (finished || !scale) return;
     e.preventDefault();
     const touch = e.pointerType === 'touch';
+    liveRef.current = { sx: e.clientX, sy: e.clientY, mode: touch && narrow ? null : 'drag' };
     setDrag({ i, px: e.clientX, py: e.clientY, lift: touch ? Math.min(40, box * 0.3) : 0, moved: false, sx: e.clientX, sy: e.clientY });
   };
   useEffect(() => {
@@ -369,7 +399,7 @@ const JIG_CSS = `
 .kj-in{animation:kjin .35s ease-out}
 @keyframes kjin{from{opacity:.4}to{opacity:1}}
 .kj-whole{animation:kjin .8s ease-out}
-.kj-tray{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-content:flex-start;padding:14px;background:rgba(255,255,255,.6);border:2px dashed transparent;border-radius:22px}
+.kj-tray{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-content:flex-start;padding:14px;overscroll-behavior:contain;background:rgba(255,255,255,.6);border:2px dashed transparent;border-radius:22px}
 .kj-tp{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .kj-tp:active{cursor:grabbing}
 .kj-nosel,.kj-nosel *{user-select:none!important;-webkit-user-select:none!important;cursor:grabbing}
