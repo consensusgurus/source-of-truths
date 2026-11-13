@@ -8,7 +8,7 @@
 //
 // Deterministic, and it never renumbers: day 1 is FIRST.
 const FIRST = '2026-10-07';
-const LAST = '2027-01-31';
+const LAST = '2027-03-31';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const rows = [];
 let d = new Date(FIRST + 'T12:00:00Z');

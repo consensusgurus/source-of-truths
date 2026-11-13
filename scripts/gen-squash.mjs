@@ -23,7 +23,7 @@
 import { parFor } from './squash-par.mjs';
 
 const FIRST = '2026-10-17';
-const LAST = '2027-01-31';
+const LAST = '2027-03-31';
 const SECONDS = 300;
 const WEEKDAY = { size: 8 };
 const SUNDAY = { size: 9 };

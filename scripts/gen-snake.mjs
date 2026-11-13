@@ -10,7 +10,7 @@
 // it never renumbers: day 1 is FIRST and every later row follows by date.
 
 const FIRST = '2026-10-07';
-const LAST = '2027-01-31';
+const LAST = '2027-03-31';
 const SIZE = 15;
 const WEEKDAY = { grow: 1, par: 20 };
 const SUNDAY = { grow: 2, par: 15 };

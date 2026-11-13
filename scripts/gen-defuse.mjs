@@ -11,7 +11,7 @@
 import fs from 'fs';
 import { WIRE_NAMES, condTrue, cutSet, solutions, breach, pickWire, ruleText } from '../lib/defuse-engine.js';
 
-const START = '2026-11-12', END = '2026-12-31';
+const START = '2026-11-12', END = '2027-01-31';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const LIGHTS = ['FRK', 'CAR', 'SIG', 'MSA', 'BOB', 'TRN', 'CLR', 'IND'];
 const LETTERS = 'ABCDEFGHJKLMNPRSTVWXZ';

@@ -17,7 +17,7 @@
 import fs from 'fs';
 import { BASE, WALK, ROAD, walkX, roadX, skyX, shopBox, COLOR_NAMES, WALK_NAMES, FLYER_NAMES, cap, objectCount } from '../lib/witness-scene.js';
 
-const START = '2026-11-12', END = '2026-12-31';
+const START = '2026-11-12', END = '2027-02-24';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const SHOPS = ['BAKERY', 'BOOKS', 'CAFE', 'FLORIST', 'BANK', 'PHARMACY', 'TOYS', 'BARBER', 'HOTEL', 'CINEMA', 'GROCER', 'PIZZA', 'MUSIC', 'TAILOR', 'BIKES', 'PETS'];
 const EXTRAS = ['dog', 'cat', 'bike', 'bench', 'lamp', 'hydrant', 'mailbox', 'tree', 'bin'];

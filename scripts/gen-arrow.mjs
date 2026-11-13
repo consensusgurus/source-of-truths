@@ -25,7 +25,7 @@ import { randomSolution, buildArrows, gradeSolve, countSolutions, makeRng, shuff
 import { readFileSync, existsSync, appendFileSync, mkdirSync } from 'node:fs';
 
 const START = '2026-10-13';
-const END = '2027-01-31';
+const END = '2027-03-31';
 const TARGET = { 1: 28, 2: 25, 3: 22, 4: 19, 5: 16, 6: 13, 0: 8 };
 const ARROWS = {
   1: { count: 9, minShaft: 2, maxShaft: 3 }, 2: { count: 9, minShaft: 2, maxShaft: 3 },

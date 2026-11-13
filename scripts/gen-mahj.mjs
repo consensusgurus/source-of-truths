@@ -25,7 +25,7 @@ import {
 } from '../lib/mahj-core.js';
 
 const FIRST = '2026-10-25';
-const LAST = '2027-01-31';
+const LAST = '2027-03-31';
 const CANDIDATES = 16;
 // Quantile of the candidates sorted by ease, ascending (0 = the hardest).
 const QUANTILE = [0, 1, 0.8, 0.65, 0.5, 0.35, 0.2];   // Sun .. Sat

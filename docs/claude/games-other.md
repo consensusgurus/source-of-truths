@@ -854,25 +854,31 @@ all come from that module, so a new set is one `LEARNING_MATCHES` entry plus a p
   to the card width with `textLength` rather than shrunk.
 - Like the other match games these are NOT dailies: no registry row, no scores, only a view count.
 
-## Kids jigsaws (`/kids/jigsaw`, `/kids/tall-jigsaw`, launched 2026-11-11)
+## Kids Puzzle Shelf (`/kids/jigsaw`; launched 2026-11-11 as two tiles, merged 2026-11-13)
 
-Owner, 2026-11-11: two kids DAILIES that serve the SAME photo as today's Jig and today's Saw,
-with a piece toggle (6, 12, 20, 30); no new photos for kids. One shared client,
-`app/kids/KidsJigsaw.jsx`; the boards come from `app/kids/kids-jigsaw-boards.js`, which reads
-the grown-up banks on the server (live <= today only, no Commons title `t` to the client).
+Owner, 2026-11-11: kids jigsaws serve the SAME photos as the grown-up Jig and Saw, with a piece
+toggle (6, 12, 20, 30); no new photos for kids. Owner, 2026-11-13: "they should all show on one
+screen when selected. puzzle shelf needs to be the button not individual puzzle jig and saw
+buttons." So the hub has ONE tile, **Puzzle Shelf**, and the page opens on the shelf: every Jig and
+Saw photo so far on one screen, wide and tall side by side at a fixed row height (96px desktop,
+64px phone), the day's two photos on top and larger. Tapping a photo opens it to play; "Back to
+the shelf" returns. One client, `app/kids/KidsJigsaw.jsx`; the boards come from
+`app/kids/kids-jigsaw-boards.js`, which reads the grown-up banks on the server (live <= today
+only, no Commons title `t` to the client).
 
-- **Registered in `lib/kids-daily.js`** (keys `jigsaw`, `tall-jigsaw`, with `adultHref`), so they
-  sit with the other dailies on the hub and in the strip, and `lib/kids.js` + `DAILY_ART` carry
-  them. They have NO bank of their own and no cycle: the day's board is the photo that game played
-  on that date (`kidsJigsawDaily`), falling back to its newest photo for a date before it existed.
-  Pages still resolve `?p` through `resolveKidsDay` like every kids daily (verify-kids checks it).
-- **Done today** writes the standard kids save (`sot_kids_<key>` = `{ day, state: { done } }`)
-  the moment the day's photo is finished at any count, so the hub tile ticks.
-- **The kids Jigsaw Puzzle Shelf** is the "All pictures" view inside both pages: every Jig and Saw
-  photo so far, All / Wide / Tall chips (Jigsaw opens on Wide, Tall Jigsaw on Tall). A shelf pick
-  is `?pic=<g>-<num>&n=<pieces>` (`?p` stays the kids day number). Finished photo/count pairs live
-  in `sot_kids_jigsaw_photos`; NOT `sot_kids_jigsaw_done`, which is the kids archive's done-days
-  key for the `jigsaw` daily.
+- **Registered in `lib/kids-daily.js`** as ONE entry, key `jigsaw` (kept so old done flags still
+  count), title Puzzle Shelf, `adultHref` `/jig/shelf`. `lib/kids.js` + `DAILY_ART` carry it.
+  `/kids/tall-jigsaw` is a permanent redirect to `/kids/jigsaw` (carrying `pic`, `n`, `p`). The
+  admin title for the old `kids-tall-jigsaw` view counter stays, marked retired.
+- No bank of its own and no cycle: the day's pair is the photo each game played on that date
+  (`kidsJigsawDaily`), falling back to its newest photo for a date before it existed. Pages still
+  resolve `?p` through `resolveKidsDay` like every kids daily.
+- **Done today** writes the standard kids save (`sot_kids_jigsaw` = `{ day, state: { done } }`)
+  when EITHER of the day's two photos is finished at any count, so the hub tile ticks.
+- No All / Wide / Tall chips any more: everything is on the one screen. A pick is
+  `?pic=<g>-<num>&n=<pieces>` (`?p` stays the kids day number). Finished photo/count pairs live
+  in `sot_kids_jigsaw_photos` (a tick on the shelf); NOT `sot_kids_jigsaw_done`, which is the kids
+  archive's done-days key for the `jigsaw` daily.
 - **Cut:** square pieces, wide 3x2 / 4x3 / 5x4 / 6x5, tall 2x3 / 3x4 / 4x5 / 5x6, photo
   `slice`-fitted. The cut is a COPY of Jig's `cutPieces`, kept separate on purpose.
 - **Play:** snap-into-place only. A drop within half a piece of its spot locks in, otherwise it

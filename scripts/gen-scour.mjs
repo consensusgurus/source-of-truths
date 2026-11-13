@@ -27,7 +27,7 @@
 //      client can check a find from the letters alone. No list word sits inside
 //      another (or inside another's reverse).
 //   3. NO WORD COMES BACK INSIDE 35 DAYS, a theme waits at least 4 days, and a
-//      board never shares its theme with that day's Scram or a word with any
+//      board never shares its theme with that day's Scram (or Fill) or a word with any
 //      Scram board within three days of it.
 //   4. THE FILLER IS SCREENED: no profanity or slur reads anywhere in the grid,
 //      in any direction, except where it lies wholly inside a list word.
@@ -232,13 +232,17 @@ async function loadMod(file) {
   return mod.PUZZLES || [];
 }
 
-function deal(pools, kept, scram) {
+function deal(pools, kept, scram, fill = []) {
   const lastWord = new Map(), lastTheme = {}, uses = {};
   for (const p of kept) {
     for (const w of p.words) lastWord.set(w, p.live);
     lastTheme[p.themeId] = p.live; uses[p.themeId] = (uses[p.themeId] || 0) + 1;
   }
   const scramBy = new Map(scram.map((p) => [p.live, p]));
+  // Fill deals from the same pools and is checked against Scour's theme by
+  // verify-fill, so a new Scour day never takes the theme Fill already banked
+  // for that date (January 2027 restock: three such days).
+  const fillBy = new Map(fill.map((p) => [p.live, p.themeId]));
   const from = kept.length ? iso(new Date(new Date(kept[kept.length - 1].live + 'T12:00:00Z').getTime() + 864e5)) : START;
   const out = [];
   let num = kept.length ? kept[kept.length - 1].num + 1 : 1;
@@ -256,7 +260,7 @@ function deal(pools, kept, scram) {
       return (!lw || dayDiff(live, lw) >= WORD_GAP) && !nearScram.has(letters(w));
     };
     const cands = pools
-      .filter((t) => (dow !== 0 || t.sunday) && (!lastTheme[t.id] || dayDiff(live, lastTheme[t.id]) >= THEME_GAP) && (!scramToday || scramToday.themeId !== t.id))
+      .filter((t) => (dow !== 0 || t.sunday) && (!lastTheme[t.id] || dayDiff(live, lastTheme[t.id]) >= THEME_GAP) && (!scramToday || scramToday.themeId !== t.id) && fillBy.get(live) !== t.id)
       .map((t) => ({ t, avail: t.words.filter((w) => fresh(w) && letters(w).length >= spec.lens[0] && letters(w).length <= spec.lens[1]) }))
       .filter((c) => c.avail.length >= spec.words + 4)
       .map((c) => ({ ...c, score: (c.avail.length / ((uses[c.t.id] || 0) + 1)) * (0.6 + 0.8 * r()) }))
@@ -318,7 +322,8 @@ if (process.argv[1] && process.argv[1].endsWith('gen-scour.mjs')) {
   const scram = await loadMod(path.join(ROOT, 'app', 'scram', 'puzzles.js'));
   const all = await loadMod(OUT);
   const kept = args.includes('--rebuild') ? [] : all;
-  const fresh = deal(pools, kept, scram);
+  const fill = await loadMod(path.join(ROOT, 'app', 'fill', 'puzzles.js'));
+  const fresh = deal(pools, kept, scram, fill);
   const bank = [...kept, ...fresh];
   const body = 'export const PUZZLES = [\n' + bank.map((p) => '  ' + JSON.stringify(p)).join(',\n') + ',\n];\n';
   fs.mkdirSync(path.dirname(OUT), { recursive: true });

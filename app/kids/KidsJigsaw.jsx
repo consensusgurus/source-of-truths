@@ -5,15 +5,15 @@ import Link from 'next/link';
 import Footer from '../Footer';
 import { KidsHeader, KIDS_CSS, Confetti, KidsStrip } from './KidsShell';
 
-// Kids Jigsaw (/kids/jigsaw) and Kids Tall Jigsaw (/kids/tall-jigsaw): two
-// kids dailies that serve THE SAME PHOTO as today's Jig and today's Saw
-// (owner, 2026-11-11), with the kid choosing 6, 12, 20 or 30 pieces. Drag
-// each piece onto the board and it snaps home when it lands near its spot.
-// "All pictures" opens the kids Jigsaw Puzzle Shelf: every Jig and Saw photo
-// so far, wide and tall, from one shared list. Not scored; the only memory is
+// The kids Puzzle Shelf (/kids/jigsaw; owner, 2026-11-13). It was two
+// tiles, Jigsaw and Tall Jigsaw, from 2026-11-11; now one tile opens ONE
+// SCREEN holding every Jig and Saw photo so far, wide and tall together, the
+// day's two (the same photos as today's Jig and Saw) on top. Picking a photo
+// cuts it into 6, 12, 20 or 30 pieces; drag each piece onto the board and it
+// snaps home when it lands near its spot. Not scored; the only memory is
 // local (the kids done flag the hub reads, and which photos were finished).
 // Photos come through the grown-up routes (/api/jig/img, /api/saw/img), which
-// refuse a day not yet live.
+// refuse a day not yet live. /kids/tall-jigsaw redirects here.
 
 const S = 100;        // one piece, in board units
 const KNOB = 30;      // room a tab reaches past its square
@@ -118,11 +118,25 @@ function PieceSvg({ p, BW, BH, src, idp, size, lift }) {
   );
 }
 
-const SHAPES = [['all', 'All'], ['wide', 'Wide'], ['tall', 'Tall']];
+const kidsPieceWord = (c) => (c === 6 ? 'Easy' : c === 12 ? 'Medium' : c === 20 ? 'Hard' : 'Super');
 
-function Picker({ boards, done, n, setN, onPick, shape, setShape }) {
-  const shown = boards.filter((b) => shape === 'all' || (shape === 'tall') === !!b.tall);
-  const count = (k) => boards.filter((b) => k === 'all' || (k === 'tall') === !!b.tall).length;
+// One photo on the shelf. Height is fixed per row so wide and tall photos sit
+// side by side at their own shapes, the way boxes stand on a shelf.
+function ShelfPic({ b, got, onPick, big }) {
+  return (
+    <button type="button" className={`kj-pic${b.tall ? ' tall' : ''}${big ? ' big' : ''}${got.length ? ' done' : ''}`} onClick={() => onPick(b.key)}
+      title={got.length ? `${b.name} (done with ${got.join(', ')} pieces)` : b.name}>
+      <img src={`${b.img}?n=${b.num}&w=330`} alt={b.name} loading={big ? 'eager' : 'lazy'} decoding="async" />
+      {got.length ? <span className="kj-tick" aria-label="Done">✓</span> : null}
+      {big ? <span className="kj-nm">{b.name}</span> : null}
+    </button>
+  );
+}
+
+function Picker({ boards, dailyKeys, isToday, done, n, setN, onPick }) {
+  const daily = dailyKeys.map((k) => boards.find((b) => b.key === k)).filter(Boolean);
+  const rest = boards.filter((b) => !dailyKeys.includes(b.key));
+  const got = (b) => (Array.isArray(done[b.key]) ? done[b.key] : []);
   return (
     <>
       <div className="kj-count">
@@ -130,32 +144,28 @@ function Picker({ boards, done, n, setN, onPick, shape, setShape }) {
         <div className="kj-counts" role="radiogroup" aria-label="Number of pieces">
           {COUNTS.map((c) => (
             <button key={c} type="button" role="radio" aria-checked={n === c} className={n === c ? 'on' : ''} onClick={() => setN(c)}>
-              <b>{c}</b><span>{c === 6 ? 'Easy' : c === 12 ? 'Medium' : c === 20 ? 'Hard' : 'Super'}</span>
+              <b>{c}</b><span>{kidsPieceWord(c)}</span>
             </button>
           ))}
         </div>
       </div>
-      <div className="kj-count">
-        <span className="kd-lbl">Which pictures?</span>
-        <div className="kd-seg" role="radiogroup" aria-label="Picture shape">
-          {SHAPES.map(([k, lab]) => (
-            <button key={k} type="button" role="radio" aria-checked={shape === k} className={shape === k ? 'on' : ''} onClick={() => setShape(k)}>{lab} {count(k)}</button>
-          ))}
-        </div>
-      </div>
-      <div className="kj-shelf">
-        {shown.map((b) => {
-          const got = Array.isArray(done[b.key]) ? done[b.key] : [];
-          return (
-            <button key={b.key} type="button" className={`kj-pic${b.tall ? ' tall' : ''}${got.length ? ' done' : ''}`} onClick={() => onPick(b.key)}>
-              <span className="kj-thumb"><img src={`${b.img}?n=${b.num}&w=330`} alt={b.name} loading="lazy" /></span>
-              <span className="kj-nm">{b.name}</span>
-              <span className="kj-meta">{got.length ? `Done with ${got.join(', ')} pieces ✓` : (b.tall ? 'Tall picture' : 'Wide picture')}</span>
-            </button>
-          );
-        })}
-      </div>
-      {!shown.length ? <p className="kd-note">The first pictures arrive tomorrow. Check back soon!</p> : null}
+      {daily.length ? (
+        <>
+          <h2 className="kj-rowh">{isToday ? 'Today\u2019s pictures' : 'That day\u2019s pictures'}</h2>
+          <div className="kj-shelf kj-today">
+            {daily.map((b) => <ShelfPic key={b.key} b={b} got={got(b)} onPick={onPick} big />)}
+          </div>
+        </>
+      ) : null}
+      {rest.length ? (
+        <>
+          <h2 className="kj-rowh">Every picture so far <span>{rest.length}</span></h2>
+          <div className="kj-shelf">
+            {rest.map((b) => <ShelfPic key={b.key} b={b} got={got(b)} onPick={onPick} />)}
+          </div>
+        </>
+      ) : null}
+      {!boards.length ? <p className="kd-note">The first pictures arrive tomorrow. Check back soon!</p> : null}
     </>
   );
 }
@@ -256,7 +266,7 @@ function Play({ board, n, setN, onBack, onDone }) {
   return (
     <>
       <div className="kj-bar">
-        <button type="button" className="kd-btn" onClick={onBack}>All pictures</button>
+        <button type="button" className="kd-btn" onClick={onBack}>Back to the shelf</button>
         <div className="kd-seg" role="radiogroup" aria-label="Number of pieces">
           {COUNTS.map((c) => (
             <button key={c} type="button" role="radio" aria-checked={n === c} className={n === c ? 'on' : ''} onClick={() => setN(c)}>{c}</button>
@@ -336,20 +346,21 @@ const JIG_CSS = `
 .kj-counts button span{font-size:12px;font-weight:600;color:var(--kink2)}
 .kj-counts button.on{background:var(--kink);border-color:var(--kink);color:#fff;box-shadow:0 4px 0 #0c0f24}
 .kj-counts button.on span{color:#fff;opacity:.85}
-.kj-shelf{display:flex;flex-wrap:wrap;align-items:flex-end;gap:22px 16px;padding:6px 4px 0}
+.kj-rowh{font-size:17px;font-weight:700;margin:6px 0 10px;color:var(--kink)}
+.kj-rowh span{font-family:var(--kbody);font-size:13px;font-weight:700;color:var(--kink2);margin-left:6px}
+.kj-shelf{--h:96px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;padding:0 0 22px;margin:0 0 6px}
+.kj-shelf.kj-today{--h:190px;gap:16px}
 .kj-back{margin:0 0 12px}
 .kj-linkbtn{border:0;background:none;padding:0;font-family:var(--kdisp);font-weight:700;font-size:15px;color:var(--kblue);text-decoration:underline;cursor:pointer}
-.kj-pic{width:200px;display:flex;flex-direction:column;align-items:stretch;text-align:left;padding:0;border:2px solid var(--kline);border-radius:20px;background:#fff;overflow:hidden;box-shadow:var(--kshadow);transition:transform .15s,border-color .15s}
-.kj-pic:hover{transform:translateY(-3px);border-color:var(--kink)}
-.kj-thumb{display:block;aspect-ratio:4/3;background:#f3e3b5;overflow:hidden}
-.kj-pic.tall{width:150px}
-.kj-pic.tall .kj-thumb{aspect-ratio:4/5}
-@media (max-width:520px){.kj-shelf{gap:18px 10px}.kj-pic{width:calc(50% - 5px)}.kj-pic.tall{width:calc(50% - 5px)}}
-.kj-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.kj-nm{font-family:var(--kdisp);font-weight:600;font-size:16px;line-height:1.2;padding:10px 12px 2px}
-.kj-meta{font-family:var(--kbody);font-size:12.5px;font-weight:700;color:var(--kink2);padding:0 12px 12px}
-.kj-pic.done{border-color:#bfe7d1;background:#f0faf3}
-.kj-pic.done .kj-meta{color:var(--kgreen)}
+.kj-pic{position:relative;height:var(--h);aspect-ratio:4/3;padding:0;border:2.5px solid var(--kline);border-radius:12px;background:#f3e3b5;overflow:hidden;box-shadow:0 4px 0 #e2cf9c;cursor:pointer;transition:transform .15s,border-color .15s}
+.kj-pic.tall{aspect-ratio:4/5}
+.kj-pic:hover,.kj-pic:focus-visible{transform:translateY(-3px);border-color:var(--kink)}
+.kj-pic img{width:100%;height:100%;object-fit:cover;display:block}
+.kj-pic.big{border-width:3px;box-shadow:0 5px 0 #e2cf9c}
+.kj-nm{position:absolute;left:0;right:0;bottom:0;padding:16px 10px 7px;font-family:var(--kdisp);font-weight:600;font-size:14px;line-height:1.2;color:#fff;text-align:left;background:linear-gradient(transparent,rgba(27,31,59,.78))}
+.kj-tick{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--kgreen);color:#fff;font-size:14px;font-weight:800;box-shadow:0 0 0 2px #fff}
+.kj-pic.done{border-color:var(--kgreen)}
+@media (max-width:520px){.kj-shelf{--h:64px;gap:7px}.kj-shelf.kj-today{--h:140px;gap:10px}.kj-counts button{min-width:62px;padding:6px 10px}}
 .kj-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}
 .kj-left{font-family:var(--kdisp);font-weight:600;color:var(--kink2);margin-left:auto}
 .kj-play{display:flex;flex-direction:column;gap:18px}
@@ -391,25 +402,24 @@ function markDailyDone(gameKey, dayKey) {
   } catch (e) { /* ignore */ }
 }
 
-export default function KidsJigsaw({ game, dailyKey, dayKey, dayLabel, dayNum, isToday, boards, quizId, startShape = 'all' }) {
-  // `sel` is the board on screen: the day's photo (same as today's Jig or
-  // Saw) unless the kid picked another from the shelf. 'shelf' shows the shelf.
-  const [sel, setSel] = useState(dailyKey);
-  const [shape, setShape] = useState(startShape);
+export default function KidsJigsaw({ game, dailyKeys = [], dayKey, dayLabel, dayNum, isToday, boards, quizId }) {
+  // `sel` is the photo on screen, or 'shelf' for the shelf itself. The page
+  // opens on the shelf: every photo on one screen, the day's two on top.
+  const [sel, setSel] = useState('shelf');
   const [n, setNState] = useState(12);
   const [done, setDone] = useState({});
   const [ready, setReady] = useState(false);
 
-  // A shelf pick lives in the address (?pic=jig-12&n=20) so a grown-up can
-  // link a kid straight to one; ?p stays the kids day number, as on every
-  // other kids daily.
+  // A pick lives in the address (?pic=jig-12&n=20) so a grown-up can link a
+  // kid straight to one; ?p stays the kids day number, as on every other kids
+  // daily.
   useEffect(() => {
     let nn = 12;
     try { const s = Number(localStorage.getItem(N_KEY)); if (COUNTS.includes(s)) nn = s; } catch (e) { /* ignore */ }
     try {
       const q = new URLSearchParams(window.location.search);
       const qn = Number(q.get('n')); if (COUNTS.includes(qn)) nn = qn;
-      const qp = q.get('pic'); if (qp === 'shelf' || boards.some((b) => b.key === qp)) setSel(qp);
+      const qp = q.get('pic'); if (boards.some((b) => b.key === qp)) setSel(qp);
     } catch (e) { /* ignore */ }
     setNState(nn);
     setDone(readDone());
@@ -421,25 +431,26 @@ export default function KidsJigsaw({ game, dailyKey, dayKey, dayLabel, dayNum, i
     if (!ready) return;
     try {
       const u = new URL(window.location.href);
-      if (sel && sel !== dailyKey) u.searchParams.set('pic', sel); else u.searchParams.delete('pic');
-      if (sel !== 'shelf') u.searchParams.set('n', String(n)); else u.searchParams.delete('n');
+      if (sel !== 'shelf') { u.searchParams.set('pic', sel); u.searchParams.set('n', String(n)); }
+      else { u.searchParams.delete('pic'); u.searchParams.delete('n'); }
       window.history.replaceState(null, '', u.pathname + u.search);
     } catch (e) { /* ignore */ }
-  }, [sel, n, ready, dailyKey]);
+  }, [sel, n, ready]);
 
   const setN = (c) => { setNState(c); try { localStorage.setItem(N_KEY, String(c)); } catch (e) { /* ignore */ } };
   const pick = (key) => { setSel(key); try { window.scrollTo({ top: 0 }); } catch (e) { /* ignore */ } };
-  const board = sel && sel !== 'shelf' ? boards.find((b) => b.key === sel) : null;
-  const isDaily = !!board && board.key === dailyKey;
+  const board = sel !== 'shelf' ? boards.find((b) => b.key === sel) : null;
+  const isDaily = !!board && dailyKeys.includes(board.key);
+  // Finishing either of the day's two photos counts as the kids daily done.
   const onDone = useCallback((cnt) => {
     const o = markDone(sel, cnt);
     if (o) setDone({ ...o });
-    if (sel === dailyKey) markDailyDone(game.key, dayKey);
-  }, [sel, dailyKey, game.key, dayKey]);
+    if (dailyKeys.includes(sel)) markDailyDone(game.key, dayKey);
+  }, [sel, dailyKeys, game.key, dayKey]);
 
   const sub = board
-    ? (isDaily ? `${isToday ? 'Today' : dayLabel} · ${board.name}` : `From the shelf · ${board.name}`)
-    : `Every Jig and Saw photo so far · ${boards.length} pictures`;
+    ? `${isDaily ? (isToday ? 'Today' : dayLabel) : 'From the shelf'} · ${board.name}`
+    : `${isToday ? 'Today' : dayLabel} · ${boards.length} pictures to pick from`;
 
   return (
     <div className="kd">
@@ -447,25 +458,17 @@ export default function KidsJigsaw({ game, dailyKey, dayKey, dayLabel, dayNum, i
       <div className="kd-wrap">
         <KidsHeader active="today" />
         <div className="kd-title">
-          <h1>{board ? game.title : 'Jigsaw Puzzle Shelf'}</h1>
+          <h1>{board ? (board.tall ? 'Tall Jigsaw' : 'Jigsaw') : game.title}</h1>
           <span className="kd-sub">{sub}</span>
         </div>
         {board ? (
-          <>
-            {!isDaily ? (
-              <p className="kd-note kj-back">This is a shelf picture. <button type="button" className="kj-linkbtn" onClick={() => pick(dailyKey)}>Back to {isToday ? 'today' : 'the day'}&apos;s puzzle</button></p>
-            ) : null}
-            <Play key={`${board.key}-${n}`} board={board} n={n} setN={setN} onBack={() => pick('shelf')} onDone={onDone} />
-          </>
+          <Play key={`${board.key}-${n}`} board={board} n={n} setN={setN} onBack={() => pick('shelf')} onDone={onDone} />
         ) : (
-          <>
-            <p className="kd-note kj-back"><button type="button" className="kj-linkbtn" onClick={() => pick(dailyKey)}>← Back to {isToday ? 'today' : 'the day'}&apos;s {game.title}</button></p>
-            <Picker boards={boards} done={done} n={n} setN={setN} onPick={pick} shape={shape} setShape={setShape} />
-          </>
+          <Picker boards={boards} dailyKeys={dailyKeys} isToday={isToday} done={done} n={n} setN={setN} onPick={pick} />
         )}
         <KidsStrip selfKey={game.key} dayKey={dayKey} />
         <div className="kd-foot">
-          <span>Mind Loft Kids · free, no sign-up, no ads. Grown-ups: this is the same photo as today&apos;s <Link href={game.adultHref}>{game.from}</Link>, and every past one is on <Link href="/jig/shelf">the Jigsaw Puzzle Shelf</Link>.</span>
+          <span>Mind Loft Kids · free, no sign-up, no ads. Grown-ups: these are the same photos as the daily <Link href="/jig">Jig</Link> and <Link href="/saw">Saw</Link>, and every past one is on <Link href="/jig/shelf">the Jigsaw Puzzle Shelf</Link>.</span>
           <span>Puzzle #{dayNum} · {dayLabel}</span>
         </div>
       </div>

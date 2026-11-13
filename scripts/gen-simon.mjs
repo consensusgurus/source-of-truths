@@ -12,7 +12,7 @@
 // frame and no `sunday: true` row.
 
 const FIRST = '2026-11-07';
-const LAST = '2027-01-31';
+const LAST = '2027-03-31';
 const PAR = 10;
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
