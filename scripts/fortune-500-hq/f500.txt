@@ -1,0 +1,500 @@
+1|Amazon|Seattle|Washington
+2|Walmart|Bentonville|Arkansas
+3|UnitedHealth Group|Eden Prairie|Minnesota
+4|Apple|Cupertino|California
+5|Alphabet|Mountain View|California
+6|CVS Health|Woonsocket|Rhode Island
+7|Berkshire Hathaway|Omaha|Nebraska
+8|McKesson|Irving|Texas
+9|Exxon Mobil Holdings|Spring|Texas
+10|Cencora|Conshohocken|Pennsylvania
+11|Microsoft|Redmond|Washington
+12|JPMorgan Chase|New York|New York
+13|Costco Wholesale|Issaquah|Washington
+14|Cigna Group|Bloomfield|Connecticut
+15|Cardinal Health|Dublin|Ohio
+16|Nvidia|Santa Clara|California
+17|Meta Platforms|Menlo Park|California
+18|Elevance Health|Indianapolis|Indiana
+19|Centene|St. Louis|Missouri
+20|Bank of America|Charlotte|North Carolina
+21|Chevron|Houston|Texas
+22|Ford Motor|Dearborn|Michigan
+23|General Motors|Detroit|Michigan
+24|Citigroup|New York|New York
+25|Home Depot|Atlanta|Georgia
+26|Fannie Mae|Washington, D.C.|District Of Columbia
+27|Kroger|Cincinnati|Ohio
+28|Verizon Communications|New York|New York
+29|Phillips 66|Houston|Texas
+30|Marathon Petroleum|Findlay|Ohio
+31|StoneX Group|New York|New York
+32|State Farm Insurance|Bloomington|Illinois
+33|Freddie Mac|McLean|Virginia
+34|Humana|Louisville|Kentucky
+35|AT&T|Dallas|Texas
+36|Goldman Sachs Group|New York|New York
+37|Comcast|Philadelphia|Pennsylvania
+38|Wells Fargo|San Francisco|California
+39|Morgan Stanley|New York|New York
+40|Valero Energy|San Antonio|Texas
+41|Dell Technologies|Round Rock|Texas
+42|Target|Minneapolis|Minnesota
+43|Tesla|Austin|Texas
+44|Walt Disney|Burbank|California
+45|Johnson & Johnson|New Brunswick|New Jersey
+46|PepsiCo|Purchase|New York
+47|Boeing|Arlington|Virginia
+48|UPS|Atlanta|Georgia
+49|RTX|Arlington|Virginia
+50|FedEx|Memphis|Tennessee
+51|Progressive|Mayfield Village|Ohio
+52|Lowe's|Mooresville|North Carolina
+53|Energy Transfer|Dallas|Texas
+54|Procter & Gamble|Cincinnati|Ohio
+55|Sysco|Houston|Texas
+56|American Express|New York|New York
+57|Albertsons|Boise|Idaho
+58|Archer Daniels Midland|Chicago|Illinois
+59|MetLife|New York|New York
+60|HCA Healthcare|Nashville|Tennessee
+61|Lockheed Martin|Bethesda|Maryland
+62|New York Life Insurance|New York|New York
+63|Capital One Financial|McLean|Virginia
+64|Allstate|Northbrook|Illinois
+65|Caterpillar|Irving|Texas
+66|International Business Machines|Armonk|New York
+67|Eli Lilly|Indianapolis|Indiana
+68|MSD|Rahway|New Jersey
+69|Nationwide|Columbus|Ohio
+70|Broadcom|Palo Alto|California
+71|Delta Air Lines|Atlanta|Georgia
+72|Publix Super Markets|Lakeland|Florida
+73|Pfizer|New York|New York
+74|TD Synnex|Fremont|California
+75|ConocoPhillips|Houston|Texas
+76|Galaxy Digital|New York|New York
+77|AbbVie|North Chicago|Illinois
+78|Prudential Financial|Newark|New Jersey
+79|TJX|Framingham|Massachusetts
+80|Performance Food Group|Richmond|Virginia
+81|United Airlines Holdings|Chicago|Illinois
+82|Oracle|Austin|Texas
+83|Cisco Systems|San Jose|California
+84|HP|Palo Alto|California
+85|Charter Communications|Stamford|Connecticut
+86|American Airlines Group|Fort Worth|Texas
+87|Tyson Foods|Springdale|Arkansas
+88|Intel|Santa Clara|California
+89|Enterprise Products Partners|Houston|Texas
+90|Ingram Micro Holding|Irvine|California
+91|General Dynamics|Reston|Virginia
+92|Uber Technologies|San Francisco|California
+93|United Services Automobile Assn.|San Antonio|Texas
+94|TIAA|New York|New York
+95|Liberty Mutual Insurance Group|Boston|Massachusetts
+96|Travelers|New York|New York
+97|Bristol-Myers Squibb|Princeton|New Jersey
+98|Coca-Cola|Atlanta|Georgia
+99|Nike|Beaverton|Oregon
+100|Massachusetts Mutual Life Insurance|Springfield|Massachusetts
+101|GE Aerospace|Evendale|Ohio
+102|Deere|Moline|Illinois
+103|Plains GP Holdings|Houston|Texas
+104|Molina Healthcare|Long Beach|California
+105|Netflix|Los Gatos|California
+106|Thermo Fisher Scientific|Waltham|Massachusetts
+107|Abbott Laboratories|Abbott Park|Illinois
+108|Qualcomm|San Diego|California
+109|Northwestern Mutual|Milwaukee|Wisconsin
+110|U.S. Bancorp|Minneapolis|Minnesota
+111|Dollar General|Goodlettsville|Tennessee
+112|Northrop Grumman|Falls Church|Virginia
+113|Best Buy|Richfield|Minnesota
+114|Salesforce|San Francisco|California
+115|Bank of New York (BNY)|New York|New York
+116|Honeywell Technologies|Charlotte|North Carolina
+117|Philip Morris International|Stamford|Connecticut
+118|CBRE Group|Dallas|Texas
+119|Visa|San Francisco|California
+120|Dow|Midland|Michigan
+121|US Foods Holding|Rosemont|Illinois
+122|Mondelēz International|Chicago|Illinois
+123|Lithia Motors|Medford|Oregon
+124|GE Vernova|Cambridge|Massachusetts
+125|Micron Technology|Boise|Idaho
+126|Warner Bros. Discovery|New York|New York
+127|Starbucks|Seattle|Washington
+128|World Kinect|Miami|Florida
+129|Amgen|Thousand Oaks|California
+130|CHS|Inver Grove Heights|Minnesota
+131|Advanced Micro Devices|Santa Clara|California
+132|Coupang|Seattle|Washington
+133|Hewlett Packard Enterprise|Spring|Texas
+134|D.R. Horton|Arlington|Texas
+135|Lennar Corporation|Miami|Florida
+136|PNC Financial Services Group|Pittsburgh|Pennsylvania
+137|Cummins|Columbus|Indiana
+138|Oneok|Tulsa|Oklahoma
+139|PayPal Holdings|San Jose|California
+140|GuideWell Mutual Holding|Jacksonville|Florida
+141|Mastercard|Purchase|New York
+142|Nucor|Charlotte|North Carolina
+143|Apollo Global Management|New York|New York
+144|Penske Automotive Group|Bloomfield Hills|Michigan
+145|Duke Energy|Charlotte|North Carolina
+146|United Natural Foods|Providence|Rhode Island
+147|Ferguson Enterprises|Newport News|Virginia
+148|Arrow Electronics|Centennial|Colorado
+149|NRG Energy|Houston|Texas
+150|Truist Financial|Charlotte|North Carolina
+151|Jabil|St. Petersburg|Florida
+152|Southern|Atlanta|Georgia
+153|Gilead Sciences|Foster City|California
+154|PBF Energy|Parsippany|New Jersey
+155|Paramount Skydance|New York|New York
+156|KKR|New York|New York
+157|Quanta Services|Houston|Texas
+158|Paccar|Bellevue|Washington
+159|Medline|Northfield|Illinois
+160|Applied Materials|Santa Clara|California
+161|Hartford Insurance Group|Hartford|Connecticut
+162|CarMax|Richmond|Virginia
+163|Southwest Airlines|Dallas|Texas
+164|Baker Hughes|Houston|Texas
+165|Charles Schwab|Westlake|Texas
+166|AutoNation|Fort Lauderdale|Florida
+167|NextEra Energy|Juno Beach|Florida
+168|Marsh & McLennan|New York|New York
+169|Booking Holdings|Norwalk|Connecticut
+170|McDonald's|Chicago|Illinois
+171|HF Sinclair|Dallas|Texas
+172|AIG|New York|New York
+173|Occidental Petroleum|Houston|Texas
+174|Marriott International|Bethesda|Maryland
+175|Jones Lang LaSalle|Chicago|Illinois
+176|International Paper|Memphis|Tennessee
+177|Freeport-McMoRan|Phoenix|Arizona
+178|Constellation Energy|Baltimore|Maryland
+179|Waste Management|Houston|Texas
+180|Live Nation Entertainment|Beverly Hills|California
+181|Stryker|Portage|Michigan
+182|Dollar Tree|Chesapeake|Virginia
+183|3M|St. Paul|Minnesota
+184|Kraft Heinz|Chicago|Illinois
+185|PG&E|Oakland|California
+186|Danaher|Washington|District Of Columbia
+187|Union Pacific|Omaha|Nebraska
+188|Genuine Parts|Atlanta|Georgia
+189|Exelon|Chicago|Illinois
+190|BlackRock|New York|New York
+191|Block|Oakland|California
+192|Adobe|San Jose|California
+193|Reinsurance Group of America|Chesterfield|Missouri
+194|Sherwin-Williams|Cleveland|Ohio
+195|WESCO International|Pittsburgh|Pennsylvania
+196|Lear|Southfield|Michigan
+197|Synchrony Financial|Stamford|Connecticut
+198|Amphenol|Wallingford|Connecticut
+199|Ross Stores|Dublin|California
+200|Newmont|Denver|Colorado
+201|EOG Resources|Houston|Texas
+202|State Street|Boston|Massachusetts
+203|Macy's|New York|New York
+204|Group 1 Automotive|Houston|Texas
+205|CDW|Vernon Hills|Illinois
+206|Avnet|Phoenix|Arizona
+207|Halliburton|Houston|Texas
+208|Super Micro Computer|San Jose|California
+209|American Electric Power|Columbus|Ohio
+210|L3Harris Technologies|Melbourne|Florida
+211|Becton Dickinson|Franklin Lakes|New Jersey
+212|Carrier Global|Palm Beach Gardens|Florida
+213|BJ's Wholesale Club|Marlborough|Massachusetts
+214|Tenet Healthcare|Dallas|Texas
+215|Fiserv|Milwaukee|Wisconsin
+216|Cognizant Technology Solutions|Teaneck|New Jersey
+217|GE HealthCare|Chicago|Illinois
+218|Automatic Data Processing|Roseland|New Jersey
+219|Colgate-Palmolive|New York|New York
+220|Carvana|Tempe|Arizona
+221|Altria Group|Richmond|Virginia
+222|Boston Scientific|Marlborough|Massachusetts
+223|Cheniere Energy|Houston|Texas
+224|Parker-Hannifin|Cleveland|Ohio
+225|Kimberly-Clark|Irving|Texas
+226|American Family Insurance Group|Madison|Wisconsin
+227|General Mills|Minneapolis|Minnesota
+228|Edison International|Rosemead|California
+229|AutoZone|Memphis|Tennessee
+230|Ameriprise Financial|Minneapolis|Minnesota
+231|Intuit|Mountain View|California
+232|Guardian Life Ins. Co. of America|New York|New York
+233|Cleveland-Cliffs|Cleveland|Ohio
+234|Global Partners|Waltham|Massachusetts
+235|Aramark|Philadelphia|Pennsylvania
+236|Corebridge Financial|Houston|Texas
+237|Loews|New York|New York
+238|Lam Research|Fremont|California
+239|Goodyear Tire & Rubber|Akron|Ohio
+240|Pacific Life|Newport Beach|California
+241|Auto-Owners Insurance|Lansing|Michigan
+242|Peter Kiewit Sons'|Omaha|Nebraska
+243|Lincoln National|Radnor|Pennsylvania
+244|Steel Dynamics|Fort Wayne|Indiana
+245|Emerson Electric|St. Louis|Missouri
+246|Asbury Automotive Group|Atlanta|Georgia
+247|ManpowerGroup|Milwaukee|Wisconsin
+248|W.W. Grainger|Lake Forest|Illinois
+249|Jones Financial (Edward Jones)|Des Peres|Missouri
+250|O'Reilly Automotive|Springfield|Missouri
+251|Vistra|Irving|Texas
+252|Texas Instruments|Dallas|Texas
+253|MGM Resorts International|Las Vegas|Nevada
+254|Corteva|Indianapolis|Indiana
+255|Universal Health Services|King of Prussia|Pennsylvania
+256|PulteGroup|Atlanta|Georgia
+257|Omnicom Group|New York|New York
+258|Dick's Sporting Goods|Coraopolis|Pennsylvania
+259|Devon Energy|Oklahoma City|Oklahoma
+260|Leidos Holdings|Reston|Virginia
+261|Aflac|Columbus|Georgia
+262|Targa Resources|Houston|Texas
+263|Murphy USA|El Dorado|Arkansas
+264|LPL Financial Holdings|San Diego|California
+265|Emcor Group|Norwalk|Connecticut
+266|Kinder Morgan|Houston|Texas
+267|Consolidated Edison|New York|New York
+268|Keurig Dr Pepper|Frisco|Texas
+269|Republic Services|Phoenix|Arizona
+270|Markel Group|Glen Allen|Virginia
+271|Farmers Insurance Exchange|Woodland Hills|California
+272|Dominion Energy|Richmond|Virginia
+273|Land O'Lakes|Arden Hills|Minnesota
+274|IQVIA Holdings|Durham|North Carolina
+275|Fox|New York|New York
+276|AECOM|Dallas|Texas
+277|C.H. Robinson Worldwide|Eden Prairie|Minnesota
+278|Bitgo Holdings|Sioux Falls|South Dakota
+279|United Rentals|Stamford|Connecticut
+280|Ecolab|St. Paul|Minnesota
+281|Illinois Tool Works|Glenview|Illinois
+282|Casey's General Stores|Ankeny|Iowa
+283|Raymond James Financial|St. Petersburg|Florida
+284|PPG Industries|Pittsburgh|Pennsylvania
+285|DTE Energy|Detroit|Michigan
+286|Corning|Corning|New York
+287|Principal Financial|Des Moines|Iowa
+288|Mutual of Omaha|Omaha|Nebraska
+289|Kohl's|Menomonee Falls|Wisconsin
+290|Tractor Supply|Brentwood|Tennessee
+291|Whirlpool|Benton Harbor|Michigan
+292|Fluor|Irving|Texas
+293|Gap|San Francisco|California
+294|S&P Global|New York|New York
+295|Ally Financial|Detroit|Michigan
+296|Builders FirstSource|Irving|Texas
+297|Sonic Automotive|Charlotte|North Carolina
+298|Stanley Black & Decker|New Britain|Connecticut
+299|Kenvue|Summit|New Jersey
+300|Kyndryl Holdings|New York|New York
+301|Diamondback Energy|Midland|Texas
+302|EchoStar|Englewood|Colorado
+303|Textron|Providence|Rhode Island
+304|Expedia Group|Seattle|Washington
+305|W.R. Berkley|Greenwich|Connecticut
+306|Xcel Energy|Minneapolis|Minnesota
+307|FirstEnergy|Akron|Ohio
+308|Erie Insurance Group|Erie|Pennsylvania
+309|First Citizens BancShares|Raleigh|North Carolina
+310|Blackstone|New York|New York
+311|Fidelity National Financial|Jacksonville|Florida
+312|Otis Worldwide|Farmington|Connecticut
+313|Amentum Holdings|Chantilly|Virginia
+314|Regeneron Pharmaceuticals|Tarrytown|New York
+315|Estée Lauder|New York|New York
+316|BorgWarner|Auburn Hills|Michigan
+317|Northern Trust|Chicago|Illinois
+318|Viatris|Canonsburg|Pennsylvania
+319|MasTec|Coral Gables|Florida
+320|Reliance|Phoenix|Arizona
+321|Western & Southern Financial Group|Cincinnati|Ohio
+322|Alaska Air Group|Seattle|Washington
+323|BrightSpring Health Services|Louisville|Kentucky
+324|CSX|Jacksonville|Florida
+325|LKQ|Antioch|Tennessee
+326|Labcorp Holdings|Burlington|North Carolina
+327|Arthur J. Gallagher|Rolling Meadows|Illinois
+328|Venture Global|Arlington|Virginia
+329|DoorDash|San Francisco|California
+330|Sempra|San Diego|California
+331|DaVita|Denver|Colorado
+332|Eversource Energy|Springfield|Massachusetts
+333|ServiceNow|Santa Clara|California
+334|M&T Bank|Buffalo|New York
+335|Henry Schein|Melville|New York
+336|GXO Logistics|Greenwich|Connecticut
+337|Ball|Westminster|Colorado
+338|Unum Group|Chattanooga|Tennessee
+339|Las Vegas Sands|Las Vegas|Nevada
+340|Entergy|New Orleans|Louisiana
+341|Fifth Third Bancorp|Cincinnati|Ohio
+342|Graybar Electric|St. Louis|Missouri
+343|DXC Technology|Ashburn|Virginia
+344|Alcoa|Pittsburgh|Pennsylvania
+345|Assurant|Atlanta|Georgia
+346|Ryder System|Coral Gables|Florida
+347|Intercontinental Exchange|Atlanta|Georgia
+348|Cincinnati Financial|Fairfield|Ohio
+349|Chewy|Plantation|Florida
+350|Community Health Systems|Franklin|Tennessee
+351|Huntington Bancshares|Columbus|Ohio
+352|Huntington Ingalls Industries|Newport News|Virginia
+353|Wayfair|Boston|Massachusetts
+354|Lumen Technologies|Monroe|Louisiana
+355|Ulta Beauty|Bolingbrook|Illinois
+356|Crown Holdings|Tampa|Florida
+357|Airbnb|San Francisco|California
+358|AES|Arlington|Virginia
+359|Norfolk Southern|Atlanta|Georgia
+360|Public Service Enterprise Group|Newark|New Jersey
+361|KLA|Milpitas|California
+362|Expand Energy|Oklahoma City|Oklahoma
+363|Hormel Foods|Austin|Minnesota
+364|Darden Restaurants|Orlando|Florida
+365|Citizens Financial Group|Providence|Rhode Island
+366|Mosaic|Tampa|Florida
+367|Hilton Worldwide Holdings|McLean|Virginia
+368|Air Products & Chemicals|Allentown|Pennsylvania
+369|Jacobs Solutions|Dallas|Texas
+370|Vertex Pharmaceuticals|Boston|Massachusetts
+371|J.B. Hunt Transport Services|Lowell|Arkansas
+372|Booz Allen Hamilton Holding|McLean|Virginia
+373|Williams|Tulsa|Oklahoma
+374|Chipotle Mexican Grill|Newport Beach|California
+375|Yum China Holdings|Plano|Texas
+376|Oscar Health|New York|New York
+377|Hershey|Hershey|Pennsylvania
+378|Motorola Solutions|Chicago|Illinois
+379|Equitable Holdings|New York|New York
+380|Avis Budget Group|Parsippany|New Jersey
+381|Conagra Brands|Chicago|Illinois
+382|Baxter International|Deerfield|Illinois
+383|Burlington Stores|Burlington|New Jersey
+384|Caesars Entertainment|Reno|Nevada
+385|Owens Corning|Toledo|Ohio
+386|KeyCorp|Cleveland|Ohio
+387|Thrivent Financial|Minneapolis|Minnesota
+388|Westlake|Houston|Texas
+389|Westinghouse Air Brake|Pittsburgh|Pennsylvania
+390|Molson Coors Beverage|Chicago|Illinois
+391|Lululemon athletica|Groveport|Ohio
+392|FM|Johnston|Rhode Island
+393|Ebay|San Jose|California
+394|Expeditors Intl. of Washington|Bellevue|Washington
+395|Quest Diagnostics|Secaucus|New Jersey
+396|Analog Devices|Wilmington|Massachusetts
+397|Andersons|Maumee|Ohio
+398|Gold.com|Costa Mesa|California
+399|Toll Brothers|Fort Washington|Pennsylvania
+400|International Flavors & Fragrances|New York|New York
+401|Welltower|Toledo|Ohio
+402|Jefferies Financial Group|New York|New York
+403|Autoliv|Auburn Hills|Michigan
+404|Mohawk Industries|Calhoun|Georgia
+405|Delek US Holdings|Brentwood|Tennessee
+406|Fidelity National Information (FIS)|Jacksonville|Florida
+407|Accendra Health|Glen Allen|Virginia
+408|American Tower|Boston|Massachusetts
+409|NVR|Reston|Virginia
+410|Interactive Brokers Group|Greenwich|Connecticut
+411|Oshkosh|Oshkosh|Wisconsin
+412|Cintas|Cincinnati|Ohio
+413|Campbell's|Camden|New Jersey
+414|Vertiv Holdings|Westerville|Ohio
+415|Global Payments|Atlanta|Georgia
+416|Constellation Brands|Rochester|New York
+417|AGCO|Duluth|Georgia
+418|Intuitive Surgical|Sunnyvale|California
+419|Ace Hardware|Oak Brook|Illinois
+420|Dana|Maumee|Ohio
+421|Biogen|Cambridge|Massachusetts
+422|News Corp.|New York|New York
+423|Concentrix|Newark|California
+424|WEC Energy Group|Milwaukee|Wisconsin
+425|VF|Denver|Colorado
+426|Seaboard|Merriam|Kansas
+427|Icahn Enterprises|Sunny Isles Beach|Florida
+428|Regions Financial|Birmingham|Alabama
+429|Thor Industries|Elkhart|Indiana
+430|Workday|Pleasanton|California
+431|Celanese|Irving|Texas
+432|Western Digital|San Jose|California
+433|QVC Group|West Chester|Pennsylvania
+434|Zoetis|Parsippany|New Jersey
+435|CenterPoint Energy|Houston|Texas
+436|Equinix|Redwood City|California
+437|Palo Alto Networks|Santa Clara|California
+438|APA|Houston|Texas
+439|Old Republic International|Chicago|Illinois
+440|Comfort Systems USA|Houston|Texas
+441|JetBlue Airways|Long Island City|New York
+442|PPL|Allentown|Pennsylvania
+443|Xylem|Washington|District Of Columbia
+444|Arista Networks|Santa Clara|California
+445|Packaging Corp. of America|Lake Forest|Illinois
+446|PVH|New York|New York
+447|Ovintiv|Denver|Colorado
+448|Avery Dennison|Mentor|Ohio
+449|TransDigm Group|Cleveland|Ohio
+450|Sprouts Farmers Market|Phoenix|Arizona
+451|Prologis|San Francisco|California
+452|Franklin Templeton|San Mateo|California
+453|Eastman Chemical|Kingsport|Tennessee
+454|ABM Industries|New York|New York
+455|NOV|Houston|Texas
+456|J.M. Smucker|Orrville|Ohio
+457|Securian Financial Group|St. Paul|Minnesota
+458|EQT|Pittsburgh|Pennsylvania
+459|CACI International|Reston|Virginia
+460|Graphic Packaging Holding|Atlanta|Georgia
+461|Advance Auto Parts|Raleigh|North Carolina
+462|Optimum Communications|Long Island City|New York
+463|Sirius XM Holdings|New York|New York
+464|CMS Energy|Jackson|Michigan
+465|Hertz Global Holdings|Estero|Florida
+466|Ameren|St. Louis|Missouri
+467|Rockwell Automation|Milwaukee|Wisconsin
+468|Solventum|Eagan|Minnesota
+469|Monster Beverage|Corona|California
+470|Nasdaq|New York|New York
+471|Howmet Aerospace|Pittsburgh|Pennsylvania
+472|Insight Enterprises|Chandler|Arizona
+473|Zimmer Biomet Holdings|Warsaw|Indiana
+474|Yum Brands|Louisville|Kentucky
+475|Fastenal|Winona|Minnesota
+476|Marvell Technology|Wilmington|Delaware
+477|Voya Financial|New York|New York
+478|American Financial Group|Cincinnati|Ohio
+479|Post Holdings|St. Louis|Missouri
+480|XPO|Greenwich|Connecticut
+481|DuPont|Wilmington|Delaware
+482|Sanmina|San Jose|California
+483|Taylor Morrison Home|Scottsdale|Arizona
+484|Dover|Downers Grove|Illinois
+485|Vulcan Materials|Birmingham|Alabama
+486|APi Group|New Brighton|Minnesota
+487|Roper Technologies|Sarasota|Florida
+488|KBR|Houston|Texas
+489|Sonoco Products|Hartsville|South Carolina
+490|Williams-Sonoma|San Francisco|California
+491|Commercial Metals|Irving|Texas
+492|Moody's|New York|New York
+493|Continental Resources|Oklahoma City|Oklahoma
+494|Ingersoll Rand|Davidson|North Carolina
+495|Core & Main|St. Louis|Missouri
+496|Coterra Energy|Houston|Texas
+497|Primoris Services|Dallas|Texas
+498|Masco|Livonia|Michigan
+499|Somnigroup International|Dallas|Texas
+500|Resideo Technologies|Scottsdale|Arizona

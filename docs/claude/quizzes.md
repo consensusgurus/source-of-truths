@@ -1219,3 +1219,19 @@ hides the top bar's duplicate figures), `qz-livebar` (the live prompt bar, a car
 `qz-gate` + `.qz-start` (the start gate, daily-sized), `qz-map` (map boards opt out of the corner
 rounding). On a quiz the header bar is the board column's width, not the dailies' 1040px. Empty answer
 slots draw nothing on the stage (no "— — —").
+
+## Fortune 500 HQ Hunt (`fortune-500-hq-1` .. `-20`, place-map series, added 2026-11-13)
+
+All 500 companies of the 2026 Fortune 500 (Fortune's own ranking data, HQ city/state as Fortune lists it),
+seeded-shuffled into 20 parts of 25 on the `usa` place-map. 150s, 100 pts a company, full credit within
+15 miles (same city or suburb), zero at 300. Each city entry carries an `hq` label ("Bentonville, AR") that
+MapPlaceClient appends to the results recap. Coordinates are GeoNames city points (npm `all-the-cities`),
+cross-checked against Nominatim for all 234 HQ cities (every gap under 12 mi apart from county-name hits);
+Bloomfield CT, Washington DC, Abbott Park IL and Antioch TN were set from Nominatim directly.
+Everything to regenerate lives in `scripts/fortune-500-hq/` (f500.txt, geocode.cjs, gen.cjs).
+
+**Shared share card.** Quizzes with `series: 'fortune-500-hq'` 302 their `opengraph-image` (and so
+`twitter-image`) and `share-image` routes to one baked PNG, `public/og/fortune-500-hq.png`, which is
+also every part's hero. Re-bake with `node scripts/fortune-500-hq/bake-og.mjs` from the repo root. The
+card shows all 500 HQ dots unlabelled and a decoy click mark in the Great Basin, so it leaks no answer.
+No launch pop-up for this series (owner, 2026-11-13).

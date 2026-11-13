@@ -1,0 +1,3602 @@
+[
+  {
+    "id": "fortune-500-hq-1",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:01Z",
+    "title": "Fortune 500 HQ Hunt (Part 1)",
+    "navTitle": "Fortune 500 HQs (Part 1)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 1,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 1 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Deere",
+        "hq": "Moline, IL",
+        "lon": -90.515,
+        "lat": 41.507
+      },
+      {
+        "name": "Burlington Stores",
+        "hq": "Burlington, NJ",
+        "lon": -74.865,
+        "lat": 40.071
+      },
+      {
+        "name": "Land O'Lakes",
+        "hq": "Arden Hills, MN",
+        "lon": -93.157,
+        "lat": 45.05
+      },
+      {
+        "name": "Post Holdings",
+        "hq": "St. Louis, MO",
+        "lon": -90.198,
+        "lat": 38.627
+      },
+      {
+        "name": "Prologis",
+        "hq": "San Francisco, CA",
+        "lon": -122.419,
+        "lat": 37.775
+      },
+      {
+        "name": "Coupang",
+        "hq": "Seattle, WA",
+        "lon": -122.332,
+        "lat": 47.606
+      },
+      {
+        "name": "Prudential Financial",
+        "hq": "Newark, NJ",
+        "lon": -74.172,
+        "lat": 40.736
+      },
+      {
+        "name": "Charter Communications",
+        "hq": "Stamford, CT",
+        "lon": -73.539,
+        "lat": 41.053
+      },
+      {
+        "name": "Jabil",
+        "hq": "St. Petersburg, FL",
+        "lon": -82.679,
+        "lat": 27.771
+      },
+      {
+        "name": "PG&E",
+        "hq": "Oakland, CA",
+        "lon": -122.271,
+        "lat": 37.804
+      },
+      {
+        "name": "Gilead Sciences",
+        "hq": "Foster City, CA",
+        "lon": -122.271,
+        "lat": 37.559
+      },
+      {
+        "name": "Crown Holdings",
+        "hq": "Tampa, FL",
+        "lon": -82.458,
+        "lat": 27.948
+      },
+      {
+        "name": "Southwest Airlines",
+        "hq": "Dallas, TX",
+        "lon": -96.807,
+        "lat": 32.783
+      },
+      {
+        "name": "Charles Schwab",
+        "hq": "Westlake, TX",
+        "lon": -97.195,
+        "lat": 32.991
+      },
+      {
+        "name": "New York Life Insurance",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Ford Motor",
+        "hq": "Dearborn, MI",
+        "lon": -83.176,
+        "lat": 42.322
+      },
+      {
+        "name": "PulteGroup",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "eBay",
+        "hq": "San Jose, CA",
+        "lon": -121.895,
+        "lat": 37.339
+      },
+      {
+        "name": "Otis Worldwide",
+        "hq": "Farmington, CT",
+        "lon": -72.832,
+        "lat": 41.72
+      },
+      {
+        "name": "Monster Beverage",
+        "hq": "Corona, CA",
+        "lon": -117.566,
+        "lat": 33.875
+      },
+      {
+        "name": "Booking Holdings",
+        "hq": "Norwalk, CT",
+        "lon": -73.408,
+        "lat": 41.118
+      },
+      {
+        "name": "Nucor",
+        "hq": "Charlotte, NC",
+        "lon": -80.843,
+        "lat": 35.227
+      },
+      {
+        "name": "Performance Food Group",
+        "hq": "Richmond, VA",
+        "lon": -77.46,
+        "lat": 37.554
+      },
+      {
+        "name": "Norfolk Southern",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "Galaxy Digital",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-2",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:02Z",
+    "title": "Fortune 500 HQ Hunt (Part 2)",
+    "navTitle": "Fortune 500 HQs (Part 2)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 2,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 2 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Howmet Aerospace",
+        "hq": "Pittsburgh, PA",
+        "lon": -79.996,
+        "lat": 40.441
+      },
+      {
+        "name": "Chewy",
+        "hq": "Plantation, FL",
+        "lon": -80.232,
+        "lat": 26.134
+      },
+      {
+        "name": "Whirlpool",
+        "hq": "Benton Harbor, MI",
+        "lon": -86.454,
+        "lat": 42.117
+      },
+      {
+        "name": "Super Micro Computer",
+        "hq": "San Jose, CA",
+        "lon": -121.895,
+        "lat": 37.339
+      },
+      {
+        "name": "Fox Corp.",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Southern Company",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "American Express",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Exelon",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "Cummins",
+        "hq": "Columbus, IN",
+        "lon": -85.921,
+        "lat": 39.201
+      },
+      {
+        "name": "EOG Resources",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Tyson Foods",
+        "hq": "Springdale, AR",
+        "lon": -94.129,
+        "lat": 36.187
+      },
+      {
+        "name": "Airbnb",
+        "hq": "San Francisco, CA",
+        "lon": -122.419,
+        "lat": 37.775
+      },
+      {
+        "name": "Ovintiv",
+        "hq": "Denver, CO",
+        "lon": -104.985,
+        "lat": 39.739
+      },
+      {
+        "name": "Vistra",
+        "hq": "Irving, TX",
+        "lon": -96.949,
+        "lat": 32.814
+      },
+      {
+        "name": "S&P Global",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Rockwell Automation",
+        "hq": "Milwaukee, WI",
+        "lon": -87.906,
+        "lat": 43.039
+      },
+      {
+        "name": "CMS Energy",
+        "hq": "Jackson, MI",
+        "lon": -84.401,
+        "lat": 42.246
+      },
+      {
+        "name": "General Motors",
+        "hq": "Detroit, MI",
+        "lon": -83.046,
+        "lat": 42.331
+      },
+      {
+        "name": "Insight Enterprises",
+        "hq": "Chandler, AZ",
+        "lon": -111.841,
+        "lat": 33.306
+      },
+      {
+        "name": "Block (Square)",
+        "hq": "Oakland, CA",
+        "lon": -122.271,
+        "lat": 37.804
+      },
+      {
+        "name": "Paccar",
+        "hq": "Bellevue, WA",
+        "lon": -122.201,
+        "lat": 47.61
+      },
+      {
+        "name": "Huntington Ingalls Industries",
+        "hq": "Newport News, VA",
+        "lon": -76.47,
+        "lat": 37.083
+      },
+      {
+        "name": "Northrop Grumman",
+        "hq": "Falls Church, VA",
+        "lon": -77.171,
+        "lat": 38.882
+      },
+      {
+        "name": "Packaging Corp. of America",
+        "hq": "Lake Forest, IL",
+        "lon": -87.841,
+        "lat": 42.259
+      },
+      {
+        "name": "Marvell Technology",
+        "hq": "Wilmington, DE",
+        "lon": -75.547,
+        "lat": 39.746
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-3",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:03Z",
+    "title": "Fortune 500 HQ Hunt (Part 3)",
+    "navTitle": "Fortune 500 HQs (Part 3)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 3,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 3 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Duke Energy",
+        "hq": "Charlotte, NC",
+        "lon": -80.843,
+        "lat": 35.227
+      },
+      {
+        "name": "American Financial Group",
+        "hq": "Cincinnati, OH",
+        "lon": -84.514,
+        "lat": 39.127
+      },
+      {
+        "name": "RTX",
+        "hq": "Arlington, VA",
+        "lon": -77.104,
+        "lat": 38.881
+      },
+      {
+        "name": "Hartford Insurance Group",
+        "hq": "Hartford, CT",
+        "lon": -72.685,
+        "lat": 41.764
+      },
+      {
+        "name": "Vertex Pharmaceuticals",
+        "hq": "Boston, MA",
+        "lon": -71.06,
+        "lat": 42.358
+      },
+      {
+        "name": "Mondelēz International",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "Lincoln National",
+        "hq": "Radnor, PA",
+        "lon": -75.36,
+        "lat": 40.046
+      },
+      {
+        "name": "W.R. Berkley",
+        "hq": "Greenwich, CT",
+        "lon": -73.628,
+        "lat": 41.026
+      },
+      {
+        "name": "Salesforce",
+        "hq": "San Francisco, CA",
+        "lon": -122.419,
+        "lat": 37.775
+      },
+      {
+        "name": "Intuit",
+        "hq": "Mountain View, CA",
+        "lon": -122.084,
+        "lat": 37.386
+      },
+      {
+        "name": "Omnicom Group",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Lululemon",
+        "hq": "Groveport, OH",
+        "lon": -82.884,
+        "lat": 39.878
+      },
+      {
+        "name": "Honeywell Technologies",
+        "hq": "Charlotte, NC",
+        "lon": -80.843,
+        "lat": 35.227
+      },
+      {
+        "name": "Erie Insurance Group",
+        "hq": "Erie, PA",
+        "lon": -80.085,
+        "lat": 42.129
+      },
+      {
+        "name": "BNY",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Expedia Group",
+        "hq": "Seattle, WA",
+        "lon": -122.332,
+        "lat": 47.606
+      },
+      {
+        "name": "Sherwin-Williams",
+        "hq": "Cleveland, OH",
+        "lon": -81.695,
+        "lat": 41.499
+      },
+      {
+        "name": "Owens Corning",
+        "hq": "Toledo, OH",
+        "lon": -83.555,
+        "lat": 41.664
+      },
+      {
+        "name": "EQT",
+        "hq": "Pittsburgh, PA",
+        "lon": -79.996,
+        "lat": 40.441
+      },
+      {
+        "name": "Fidelity National Financial",
+        "hq": "Jacksonville, FL",
+        "lon": -81.656,
+        "lat": 30.332
+      },
+      {
+        "name": "Loews Corp.",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Dow",
+        "hq": "Midland, MI",
+        "lon": -84.247,
+        "lat": 43.616
+      },
+      {
+        "name": "Emerson Electric",
+        "hq": "St. Louis, MO",
+        "lon": -90.198,
+        "lat": 38.627
+      },
+      {
+        "name": "Broadcom",
+        "hq": "Palo Alto, CA",
+        "lon": -122.143,
+        "lat": 37.442
+      },
+      {
+        "name": "NOV",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-4",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:04Z",
+    "title": "Fortune 500 HQ Hunt (Part 4)",
+    "navTitle": "Fortune 500 HQs (Part 4)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 4,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 4 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Alcoa",
+        "hq": "Pittsburgh, PA",
+        "lon": -79.996,
+        "lat": 40.441
+      },
+      {
+        "name": "Humana",
+        "hq": "Louisville, KY",
+        "lon": -85.759,
+        "lat": 38.254
+      },
+      {
+        "name": "Arrow Electronics",
+        "hq": "Centennial, CO",
+        "lon": -104.877,
+        "lat": 39.579
+      },
+      {
+        "name": "JPMorgan Chase",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Vertiv Holdings",
+        "hq": "Westerville, OH",
+        "lon": -82.929,
+        "lat": 40.126
+      },
+      {
+        "name": "CVS Health",
+        "hq": "Woonsocket, RI",
+        "lon": -71.515,
+        "lat": 42.003
+      },
+      {
+        "name": "Molson Coors Beverage",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "Workday",
+        "hq": "Pleasanton, CA",
+        "lon": -121.875,
+        "lat": 37.662
+      },
+      {
+        "name": "Macy's",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Truist Financial",
+        "hq": "Charlotte, NC",
+        "lon": -80.843,
+        "lat": 35.227
+      },
+      {
+        "name": "Automatic Data Processing",
+        "hq": "Roseland, NJ",
+        "lon": -74.294,
+        "lat": 40.821
+      },
+      {
+        "name": "Reliance Inc.",
+        "hq": "Phoenix, AZ",
+        "lon": -112.074,
+        "lat": 33.448
+      },
+      {
+        "name": "Goldman Sachs Group",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "WEC Energy Group",
+        "hq": "Milwaukee, WI",
+        "lon": -87.906,
+        "lat": 43.039
+      },
+      {
+        "name": "Quest Diagnostics",
+        "hq": "Secaucus, NJ",
+        "lon": -74.057,
+        "lat": 40.79
+      },
+      {
+        "name": "Corebridge Financial",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Kiewit",
+        "hq": "Omaha, NE",
+        "lon": -95.94,
+        "lat": 41.256
+      },
+      {
+        "name": "Henry Schein",
+        "hq": "Melville, NY",
+        "lon": -73.415,
+        "lat": 40.793
+      },
+      {
+        "name": "FedEx",
+        "hq": "Memphis, TN",
+        "lon": -90.049,
+        "lat": 35.15
+      },
+      {
+        "name": "Comfort Systems USA",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "HCA Healthcare",
+        "hq": "Nashville, TN",
+        "lon": -86.784,
+        "lat": 36.166
+      },
+      {
+        "name": "Hershey",
+        "hq": "Hershey, PA",
+        "lon": -76.65,
+        "lat": 40.286
+      },
+      {
+        "name": "Parker-Hannifin",
+        "hq": "Cleveland, OH",
+        "lon": -81.695,
+        "lat": 41.499
+      },
+      {
+        "name": "Diamondback Energy",
+        "hq": "Midland, TX",
+        "lon": -102.078,
+        "lat": 31.997
+      },
+      {
+        "name": "Aramark",
+        "hq": "Philadelphia, PA",
+        "lon": -75.164,
+        "lat": 39.952
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-5",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:05Z",
+    "title": "Fortune 500 HQ Hunt (Part 5)",
+    "navTitle": "Fortune 500 HQs (Part 5)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 5,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 5 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Medline",
+        "hq": "Northfield, IL",
+        "lon": -87.781,
+        "lat": 42.1
+      },
+      {
+        "name": "LPL Financial Holdings",
+        "hq": "San Diego, CA",
+        "lon": -117.165,
+        "lat": 32.716
+      },
+      {
+        "name": "Carrier Global",
+        "hq": "Palm Beach Gardens, FL",
+        "lon": -80.139,
+        "lat": 26.823
+      },
+      {
+        "name": "NVR",
+        "hq": "Reston, VA",
+        "lon": -77.341,
+        "lat": 38.969
+      },
+      {
+        "name": "Marathon Petroleum",
+        "hq": "Findlay, OH",
+        "lon": -83.65,
+        "lat": 41.044
+      },
+      {
+        "name": "ManpowerGroup",
+        "hq": "Milwaukee, WI",
+        "lon": -87.906,
+        "lat": 43.039
+      },
+      {
+        "name": "MasTec",
+        "hq": "Coral Gables, FL",
+        "lon": -80.268,
+        "lat": 25.721
+      },
+      {
+        "name": "Corning",
+        "hq": "Corning, NY",
+        "lon": -77.055,
+        "lat": 42.143
+      },
+      {
+        "name": "Commercial Metals",
+        "hq": "Irving, TX",
+        "lon": -96.949,
+        "lat": 32.814
+      },
+      {
+        "name": "Dell Technologies",
+        "hq": "Round Rock, TX",
+        "lon": -97.679,
+        "lat": 30.508
+      },
+      {
+        "name": "Alaska Air Group",
+        "hq": "Seattle, WA",
+        "lon": -122.332,
+        "lat": 47.606
+      },
+      {
+        "name": "BorgWarner",
+        "hq": "Auburn Hills, MI",
+        "lon": -83.234,
+        "lat": 42.688
+      },
+      {
+        "name": "ConocoPhillips",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "TJX",
+        "hq": "Framingham, MA",
+        "lon": -71.416,
+        "lat": 42.279
+      },
+      {
+        "name": "United Natural Foods",
+        "hq": "Providence, RI",
+        "lon": -71.413,
+        "lat": 41.824
+      },
+      {
+        "name": "Lockheed Martin",
+        "hq": "Bethesda, MD",
+        "lon": -77.1,
+        "lat": 38.981
+      },
+      {
+        "name": "Coterra Energy",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Huntington Bancshares",
+        "hq": "Columbus, OH",
+        "lon": -82.999,
+        "lat": 39.961
+      },
+      {
+        "name": "ExxonMobil",
+        "hq": "Spring, TX",
+        "lon": -95.417,
+        "lat": 30.08
+      },
+      {
+        "name": "Amentum Holdings",
+        "hq": "Chantilly, VA",
+        "lon": -77.431,
+        "lat": 38.894
+      },
+      {
+        "name": "Consolidated Edison",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "TIAA",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Kroger",
+        "hq": "Cincinnati, OH",
+        "lon": -84.514,
+        "lat": 39.127
+      },
+      {
+        "name": "Thor Industries",
+        "hq": "Elkhart, IN",
+        "lon": -85.977,
+        "lat": 41.682
+      },
+      {
+        "name": "Core & Main",
+        "hq": "St. Louis, MO",
+        "lon": -90.198,
+        "lat": 38.627
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-6",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:06Z",
+    "title": "Fortune 500 HQ Hunt (Part 6)",
+    "navTitle": "Fortune 500 HQs (Part 6)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 6,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 6 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Verizon Communications",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Graybar Electric",
+        "hq": "St. Louis, MO",
+        "lon": -90.198,
+        "lat": 38.627
+      },
+      {
+        "name": "Universal Health Services",
+        "hq": "King of Prussia, PA",
+        "lon": -75.396,
+        "lat": 40.089
+      },
+      {
+        "name": "Marriott International",
+        "hq": "Bethesda, MD",
+        "lon": -77.1,
+        "lat": 38.981
+      },
+      {
+        "name": "Texas Instruments",
+        "hq": "Dallas, TX",
+        "lon": -96.807,
+        "lat": 32.783
+      },
+      {
+        "name": "Masco",
+        "hq": "Livonia, MI",
+        "lon": -83.353,
+        "lat": 42.368
+      },
+      {
+        "name": "Viatris",
+        "hq": "Canonsburg, PA",
+        "lon": -80.187,
+        "lat": 40.263
+      },
+      {
+        "name": "American Family Insurance Group",
+        "hq": "Madison, WI",
+        "lon": -89.401,
+        "lat": 43.073
+      },
+      {
+        "name": "Casey's General Stores",
+        "hq": "Ankeny, IA",
+        "lon": -93.606,
+        "lat": 41.73
+      },
+      {
+        "name": "Costco Wholesale",
+        "hq": "Issaquah, WA",
+        "lon": -122.033,
+        "lat": 47.53
+      },
+      {
+        "name": "Eversource Energy",
+        "hq": "Springfield, MA",
+        "lon": -72.59,
+        "lat": 42.101
+      },
+      {
+        "name": "Ulta Beauty",
+        "hq": "Bolingbrook, IL",
+        "lon": -88.068,
+        "lat": 41.699
+      },
+      {
+        "name": "Altria Group",
+        "hq": "Richmond, VA",
+        "lon": -77.46,
+        "lat": 37.554
+      },
+      {
+        "name": "Equinix",
+        "hq": "Redwood City, CA",
+        "lon": -122.236,
+        "lat": 37.485
+      },
+      {
+        "name": "American Electric Power",
+        "hq": "Columbus, OH",
+        "lon": -82.999,
+        "lat": 39.961
+      },
+      {
+        "name": "StoneX Group",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Delta Air Lines",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "ServiceNow",
+        "hq": "Santa Clara, CA",
+        "lon": -121.955,
+        "lat": 37.354
+      },
+      {
+        "name": "Wells Fargo",
+        "hq": "San Francisco, CA",
+        "lon": -122.419,
+        "lat": 37.775
+      },
+      {
+        "name": "First Citizens BancShares",
+        "hq": "Raleigh, NC",
+        "lon": -78.639,
+        "lat": 35.772
+      },
+      {
+        "name": "Kinder Morgan",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Warner Bros. Discovery",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Avnet",
+        "hq": "Phoenix, AZ",
+        "lon": -112.074,
+        "lat": 33.448
+      },
+      {
+        "name": "Oracle",
+        "hq": "Austin, TX",
+        "lon": -97.743,
+        "lat": 30.267
+      },
+      {
+        "name": "Chevron",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-7",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:07Z",
+    "title": "Fortune 500 HQ Hunt (Part 7)",
+    "navTitle": "Fortune 500 HQs (Part 7)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 7,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 7 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Ingersoll Rand",
+        "hq": "Davidson, NC",
+        "lon": -80.839,
+        "lat": 35.502
+      },
+      {
+        "name": "GE Aerospace",
+        "hq": "Evendale, OH",
+        "lon": -84.418,
+        "lat": 39.256
+      },
+      {
+        "name": "APA Corp.",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Mastercard",
+        "hq": "Purchase, NY",
+        "lon": -73.715,
+        "lat": 41.041
+      },
+      {
+        "name": "Becton Dickinson",
+        "hq": "Franklin Lakes, NJ",
+        "lon": -74.206,
+        "lat": 41.017
+      },
+      {
+        "name": "Mutual of Omaha",
+        "hq": "Omaha, NE",
+        "lon": -95.94,
+        "lat": 41.256
+      },
+      {
+        "name": "Procter & Gamble",
+        "hq": "Cincinnati, OH",
+        "lon": -84.514,
+        "lat": 39.127
+      },
+      {
+        "name": "Hormel Foods",
+        "hq": "Austin, MN",
+        "lon": -92.975,
+        "lat": 43.667
+      },
+      {
+        "name": "Valero Energy",
+        "hq": "San Antonio, TX",
+        "lon": -98.494,
+        "lat": 29.424
+      },
+      {
+        "name": "Regeneron Pharmaceuticals",
+        "hq": "Tarrytown, NY",
+        "lon": -73.859,
+        "lat": 41.076
+      },
+      {
+        "name": "Ace Hardware",
+        "hq": "Oak Brook, IL",
+        "lon": -87.929,
+        "lat": 41.833
+      },
+      {
+        "name": "Nvidia",
+        "hq": "Santa Clara, CA",
+        "lon": -121.955,
+        "lat": 37.354
+      },
+      {
+        "name": "USAA",
+        "hq": "San Antonio, TX",
+        "lon": -98.494,
+        "lat": 29.424
+      },
+      {
+        "name": "Live Nation Entertainment",
+        "hq": "Beverly Hills, CA",
+        "lon": -118.4,
+        "lat": 34.074
+      },
+      {
+        "name": "Wayfair",
+        "hq": "Boston, MA",
+        "lon": -71.06,
+        "lat": 42.358
+      },
+      {
+        "name": "Fannie Mae",
+        "hq": "Washington, DC",
+        "lon": -77.036,
+        "lat": 38.895
+      },
+      {
+        "name": "VF Corp.",
+        "hq": "Denver, CO",
+        "lon": -104.985,
+        "lat": 39.739
+      },
+      {
+        "name": "Ameren",
+        "hq": "St. Louis, MO",
+        "lon": -90.198,
+        "lat": 38.627
+      },
+      {
+        "name": "Las Vegas Sands",
+        "hq": "Las Vegas, NV",
+        "lon": -115.137,
+        "lat": 36.175
+      },
+      {
+        "name": "Boeing",
+        "hq": "Arlington, VA",
+        "lon": -77.104,
+        "lat": 38.881
+      },
+      {
+        "name": "Netflix",
+        "hq": "Los Gatos, CA",
+        "lon": -121.975,
+        "lat": 37.227
+      },
+      {
+        "name": "Advanced Micro Devices",
+        "hq": "Santa Clara, CA",
+        "lon": -121.955,
+        "lat": 37.354
+      },
+      {
+        "name": "Sprouts Farmers Market",
+        "hq": "Phoenix, AZ",
+        "lon": -112.074,
+        "lat": 33.448
+      },
+      {
+        "name": "KKR",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Cheniere Energy",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-8",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:08Z",
+    "title": "Fortune 500 HQ Hunt (Part 8)",
+    "navTitle": "Fortune 500 HQs (Part 8)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 8,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 8 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Comcast",
+        "hq": "Philadelphia, PA",
+        "lon": -75.164,
+        "lat": 39.952
+      },
+      {
+        "name": "Wabtec",
+        "hq": "Pittsburgh, PA",
+        "lon": -79.996,
+        "lat": 40.441
+      },
+      {
+        "name": "Progressive",
+        "hq": "Mayfield Village, OH",
+        "lon": -81.439,
+        "lat": 41.552
+      },
+      {
+        "name": "BrightSpring Health Services",
+        "hq": "Louisville, KY",
+        "lon": -85.759,
+        "lat": 38.254
+      },
+      {
+        "name": "Kimberly-Clark",
+        "hq": "Irving, TX",
+        "lon": -96.949,
+        "lat": 32.814
+      },
+      {
+        "name": "Cardinal Health",
+        "hq": "Dublin, OH",
+        "lon": -83.114,
+        "lat": 40.099
+      },
+      {
+        "name": "U.S. Bancorp",
+        "hq": "Minneapolis, MN",
+        "lon": -93.264,
+        "lat": 44.98
+      },
+      {
+        "name": "WESCO International",
+        "hq": "Pittsburgh, PA",
+        "lon": -79.996,
+        "lat": 40.441
+      },
+      {
+        "name": "Fiserv",
+        "hq": "Milwaukee, WI",
+        "lon": -87.906,
+        "lat": 43.039
+      },
+      {
+        "name": "Avery Dennison",
+        "hq": "Mentor, OH",
+        "lon": -81.34,
+        "lat": 41.666
+      },
+      {
+        "name": "MetLife",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Intuitive Surgical",
+        "hq": "Sunnyvale, CA",
+        "lon": -122.036,
+        "lat": 37.369
+      },
+      {
+        "name": "United Airlines Holdings",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "Edison International",
+        "hq": "Rosemead, CA",
+        "lon": -118.073,
+        "lat": 34.081
+      },
+      {
+        "name": "Bitgo Holdings",
+        "hq": "Sioux Falls, SD",
+        "lon": -96.7,
+        "lat": 43.55
+      },
+      {
+        "name": "Sanmina",
+        "hq": "San Jose, CA",
+        "lon": -121.895,
+        "lat": 37.339
+      },
+      {
+        "name": "Dominion Energy",
+        "hq": "Richmond, VA",
+        "lon": -77.46,
+        "lat": 37.554
+      },
+      {
+        "name": "UnitedHealth Group",
+        "hq": "Eden Prairie, MN",
+        "lon": -93.471,
+        "lat": 44.855
+      },
+      {
+        "name": "Ally Financial",
+        "hq": "Detroit, MI",
+        "lon": -83.046,
+        "lat": 42.331
+      },
+      {
+        "name": "Oshkosh",
+        "hq": "Oshkosh, WI",
+        "lon": -88.543,
+        "lat": 44.025
+      },
+      {
+        "name": "Raymond James Financial",
+        "hq": "St. Petersburg, FL",
+        "lon": -82.679,
+        "lat": 27.771
+      },
+      {
+        "name": "Motorola Solutions",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "Visa",
+        "hq": "San Francisco, CA",
+        "lon": -122.419,
+        "lat": 37.775
+      },
+      {
+        "name": "US Foods Holding",
+        "hq": "Rosemont, IL",
+        "lon": -87.885,
+        "lat": 41.995
+      },
+      {
+        "name": "J.M. Smucker",
+        "hq": "Orrville, OH",
+        "lon": -81.764,
+        "lat": 40.844
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-9",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:09Z",
+    "title": "Fortune 500 HQ Hunt (Part 9)",
+    "navTitle": "Fortune 500 HQs (Part 9)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 9,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 9 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Philip Morris International",
+        "hq": "Stamford, CT",
+        "lon": -73.539,
+        "lat": 41.053
+      },
+      {
+        "name": "State Street",
+        "hq": "Boston, MA",
+        "lon": -71.06,
+        "lat": 42.358
+      },
+      {
+        "name": "Genuine Parts",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "Quanta Services",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Jacobs Solutions",
+        "hq": "Dallas, TX",
+        "lon": -96.807,
+        "lat": 32.783
+      },
+      {
+        "name": "Icahn Enterprises",
+        "hq": "Sunny Isles Beach, FL",
+        "lon": -80.123,
+        "lat": 25.951
+      },
+      {
+        "name": "Kraft Heinz",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "Western & Southern Financial Group",
+        "hq": "Cincinnati, OH",
+        "lon": -84.514,
+        "lat": 39.127
+      },
+      {
+        "name": "AIG",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Travelers",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Northwestern Mutual",
+        "hq": "Milwaukee, WI",
+        "lon": -87.906,
+        "lat": 43.039
+      },
+      {
+        "name": "Seaboard",
+        "hq": "Merriam, KS",
+        "lon": -94.694,
+        "lat": 39.024
+      },
+      {
+        "name": "Gap",
+        "hq": "San Francisco, CA",
+        "lon": -122.419,
+        "lat": 37.775
+      },
+      {
+        "name": "Lear Corp.",
+        "hq": "Southfield, MI",
+        "lon": -83.222,
+        "lat": 42.473
+      },
+      {
+        "name": "Cleveland-Cliffs",
+        "hq": "Cleveland, OH",
+        "lon": -81.695,
+        "lat": 41.499
+      },
+      {
+        "name": "Enterprise Products Partners",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Conagra Brands",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "Community Health Systems",
+        "hq": "Franklin, TN",
+        "lon": -86.869,
+        "lat": 35.925
+      },
+      {
+        "name": "Unum Group",
+        "hq": "Chattanooga, TN",
+        "lon": -85.31,
+        "lat": 35.046
+      },
+      {
+        "name": "American Airlines Group",
+        "hq": "Fort Worth, TX",
+        "lon": -97.321,
+        "lat": 32.725
+      },
+      {
+        "name": "PVH",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "CACI International",
+        "hq": "Reston, VA",
+        "lon": -77.341,
+        "lat": 38.969
+      },
+      {
+        "name": "PPG Industries",
+        "hq": "Pittsburgh, PA",
+        "lon": -79.996,
+        "lat": 40.441
+      },
+      {
+        "name": "United Rentals",
+        "hq": "Stamford, CT",
+        "lon": -73.539,
+        "lat": 41.053
+      },
+      {
+        "name": "Cincinnati Financial",
+        "hq": "Fairfield, OH",
+        "lon": -84.561,
+        "lat": 39.346
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-10",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:10Z",
+    "title": "Fortune 500 HQ Hunt (Part 10)",
+    "navTitle": "Fortune 500 HQs (Part 10)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 10,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 10 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Marsh & McLennan",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Boston Scientific",
+        "hq": "Marlborough, MA",
+        "lon": -71.552,
+        "lat": 42.346
+      },
+      {
+        "name": "World Kinect",
+        "hq": "Miami, FL",
+        "lon": -80.194,
+        "lat": 25.774
+      },
+      {
+        "name": "Arthur J. Gallagher",
+        "hq": "Rolling Meadows, IL",
+        "lon": -88.013,
+        "lat": 42.084
+      },
+      {
+        "name": "Oscar Health",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Apollo Global Management",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "GE HealthCare",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "Westlake",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Chipotle Mexican Grill",
+        "hq": "Newport Beach, CA",
+        "lon": -117.929,
+        "lat": 33.619
+      },
+      {
+        "name": "Intercontinental Exchange",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "Dover Corp.",
+        "hq": "Downers Grove, IL",
+        "lon": -88.011,
+        "lat": 41.809
+      },
+      {
+        "name": "Amazon",
+        "hq": "Seattle, WA",
+        "lon": -122.332,
+        "lat": 47.606
+      },
+      {
+        "name": "McDonald's",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "AutoNation",
+        "hq": "Fort Lauderdale, FL",
+        "lon": -80.143,
+        "lat": 26.122
+      },
+      {
+        "name": "Mosaic",
+        "hq": "Tampa, FL",
+        "lon": -82.458,
+        "lat": 27.948
+      },
+      {
+        "name": "Solventum",
+        "hq": "Eagan, MN",
+        "lon": -93.167,
+        "lat": 44.804
+      },
+      {
+        "name": "FIS",
+        "hq": "Jacksonville, FL",
+        "lon": -81.656,
+        "lat": 30.332
+      },
+      {
+        "name": "Reinsurance Group of America",
+        "hq": "Chesterfield, MO",
+        "lon": -90.577,
+        "lat": 38.663
+      },
+      {
+        "name": "D.R. Horton",
+        "hq": "Arlington, TX",
+        "lon": -97.108,
+        "lat": 32.736
+      },
+      {
+        "name": "QVC Group",
+        "hq": "West Chester, PA",
+        "lon": -75.608,
+        "lat": 39.961
+      },
+      {
+        "name": "Eli Lilly",
+        "hq": "Indianapolis, IN",
+        "lon": -86.158,
+        "lat": 39.768
+      },
+      {
+        "name": "IQVIA Holdings",
+        "hq": "Durham, NC",
+        "lon": -78.899,
+        "lat": 35.994
+      },
+      {
+        "name": "KeyCorp",
+        "hq": "Cleveland, OH",
+        "lon": -81.695,
+        "lat": 41.499
+      },
+      {
+        "name": "Coca-Cola",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "Celanese",
+        "hq": "Irving, TX",
+        "lon": -96.949,
+        "lat": 32.814
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-11",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:11Z",
+    "title": "Fortune 500 HQ Hunt (Part 11)",
+    "navTitle": "Fortune 500 HQs (Part 11)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 11,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 11 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Citizens Financial Group",
+        "hq": "Providence, RI",
+        "lon": -71.413,
+        "lat": 41.824
+      },
+      {
+        "name": "Microsoft",
+        "hq": "Redmond, WA",
+        "lon": -122.122,
+        "lat": 47.674
+      },
+      {
+        "name": "Allstate",
+        "hq": "Northbrook, IL",
+        "lon": -87.829,
+        "lat": 42.128
+      },
+      {
+        "name": "Interactive Brokers Group",
+        "hq": "Greenwich, CT",
+        "lon": -73.628,
+        "lat": 41.026
+      },
+      {
+        "name": "Voya Financial",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Corteva",
+        "hq": "Indianapolis, IN",
+        "lon": -86.158,
+        "lat": 39.768
+      },
+      {
+        "name": "Cencora",
+        "hq": "Conshohocken, PA",
+        "lon": -75.302,
+        "lat": 40.079
+      },
+      {
+        "name": "Nike",
+        "hq": "Beaverton, OR",
+        "lon": -122.804,
+        "lat": 45.487
+      },
+      {
+        "name": "APi Group",
+        "hq": "New Brighton, MN",
+        "lon": -93.202,
+        "lat": 45.066
+      },
+      {
+        "name": "Western Digital",
+        "hq": "San Jose, CA",
+        "lon": -121.895,
+        "lat": 37.339
+      },
+      {
+        "name": "Analog Devices",
+        "hq": "Wilmington, MA",
+        "lon": -71.174,
+        "lat": 42.546
+      },
+      {
+        "name": "Archer Daniels Midland",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "News Corp.",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Tractor Supply",
+        "hq": "Brentwood, TN",
+        "lon": -86.783,
+        "lat": 36.033
+      },
+      {
+        "name": "Citigroup",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Gold.com",
+        "hq": "Costa Mesa, CA",
+        "lon": -117.919,
+        "lat": 33.641
+      },
+      {
+        "name": "Cintas",
+        "hq": "Cincinnati, OH",
+        "lon": -84.514,
+        "lat": 39.127
+      },
+      {
+        "name": "Freeport-McMoRan",
+        "hq": "Phoenix, AZ",
+        "lon": -112.074,
+        "lat": 33.448
+      },
+      {
+        "name": "International Paper",
+        "hq": "Memphis, TN",
+        "lon": -90.049,
+        "lat": 35.15
+      },
+      {
+        "name": "Yum Brands",
+        "hq": "Louisville, KY",
+        "lon": -85.759,
+        "lat": 38.254
+      },
+      {
+        "name": "Constellation Energy",
+        "hq": "Baltimore, MD",
+        "lon": -76.612,
+        "lat": 39.29
+      },
+      {
+        "name": "Stanley Black & Decker",
+        "hq": "New Britain, CT",
+        "lon": -72.78,
+        "lat": 41.661
+      },
+      {
+        "name": "Fifth Third Bancorp",
+        "hq": "Cincinnati, OH",
+        "lon": -84.514,
+        "lat": 39.127
+      },
+      {
+        "name": "Baxter International",
+        "hq": "Deerfield, IL",
+        "lon": -87.845,
+        "lat": 42.171
+      },
+      {
+        "name": "Yum China Holdings",
+        "hq": "Plano, TX",
+        "lon": -96.699,
+        "lat": 33.02
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-12",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:12Z",
+    "title": "Fortune 500 HQ Hunt (Part 12)",
+    "navTitle": "Fortune 500 HQs (Part 12)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 12,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 12 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Johnson & Johnson",
+        "hq": "New Brunswick, NJ",
+        "lon": -74.452,
+        "lat": 40.486
+      },
+      {
+        "name": "Bristol-Myers Squibb",
+        "hq": "Princeton, NJ",
+        "lon": -74.659,
+        "lat": 40.349
+      },
+      {
+        "name": "Targa Resources",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Caterpillar",
+        "hq": "Irving, TX",
+        "lon": -96.949,
+        "lat": 32.814
+      },
+      {
+        "name": "O'Reilly Automotive",
+        "hq": "Springfield, MO",
+        "lon": -93.298,
+        "lat": 37.215
+      },
+      {
+        "name": "GXO Logistics",
+        "hq": "Greenwich, CT",
+        "lon": -73.628,
+        "lat": 41.026
+      },
+      {
+        "name": "XPO",
+        "hq": "Greenwich, CT",
+        "lon": -73.628,
+        "lat": 41.026
+      },
+      {
+        "name": "Mohawk Industries",
+        "hq": "Calhoun, GA",
+        "lon": -84.951,
+        "lat": 34.503
+      },
+      {
+        "name": "Bank of America",
+        "hq": "Charlotte, NC",
+        "lon": -80.843,
+        "lat": 35.227
+      },
+      {
+        "name": "Danaher",
+        "hq": "Washington, DC",
+        "lon": -77.036,
+        "lat": 38.895
+      },
+      {
+        "name": "Edward Jones",
+        "hq": "Des Peres, MO",
+        "lon": -90.433,
+        "lat": 38.601
+      },
+      {
+        "name": "Air Products & Chemicals",
+        "hq": "Allentown, PA",
+        "lon": -75.49,
+        "lat": 40.608
+      },
+      {
+        "name": "Ross Stores",
+        "hq": "Dublin, CA",
+        "lon": -121.936,
+        "lat": 37.702
+      },
+      {
+        "name": "PayPal Holdings",
+        "hq": "San Jose, CA",
+        "lon": -121.895,
+        "lat": 37.339
+      },
+      {
+        "name": "Alphabet",
+        "hq": "Mountain View, CA",
+        "lon": -122.084,
+        "lat": 37.386
+      },
+      {
+        "name": "3M",
+        "hq": "St. Paul, MN",
+        "lon": -93.093,
+        "lat": 44.944
+      },
+      {
+        "name": "Energy Transfer",
+        "hq": "Dallas, TX",
+        "lon": -96.807,
+        "lat": 32.783
+      },
+      {
+        "name": "Blackstone",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "DaVita",
+        "hq": "Denver, CO",
+        "lon": -104.985,
+        "lat": 39.739
+      },
+      {
+        "name": "Walt Disney",
+        "hq": "Burbank, CA",
+        "lon": -118.309,
+        "lat": 34.181
+      },
+      {
+        "name": "Asbury Automotive Group",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "Somnigroup International",
+        "hq": "Dallas, TX",
+        "lon": -96.807,
+        "lat": 32.783
+      },
+      {
+        "name": "Toll Brothers",
+        "hq": "Fort Washington, PA",
+        "lon": -75.209,
+        "lat": 40.142
+      },
+      {
+        "name": "Fastenal",
+        "hq": "Winona, MN",
+        "lon": -91.639,
+        "lat": 44.05
+      },
+      {
+        "name": "Entergy",
+        "hq": "New Orleans, LA",
+        "lon": -90.075,
+        "lat": 29.955
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-13",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:13Z",
+    "title": "Fortune 500 HQ Hunt (Part 13)",
+    "navTitle": "Fortune 500 HQs (Part 13)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 13,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 13 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Autoliv",
+        "hq": "Auburn Hills, MI",
+        "lon": -83.234,
+        "lat": 42.688
+      },
+      {
+        "name": "Republic Services",
+        "hq": "Phoenix, AZ",
+        "lon": -112.074,
+        "lat": 33.448
+      },
+      {
+        "name": "Kyndryl Holdings",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "W.W. Grainger",
+        "hq": "Lake Forest, IL",
+        "lon": -87.841,
+        "lat": 42.259
+      },
+      {
+        "name": "Nationwide",
+        "hq": "Columbus, OH",
+        "lon": -82.999,
+        "lat": 39.961
+      },
+      {
+        "name": "ABM Industries",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Murphy USA",
+        "hq": "El Dorado, AR",
+        "lon": -92.666,
+        "lat": 33.208
+      },
+      {
+        "name": "AES",
+        "hq": "Arlington, VA",
+        "lon": -77.104,
+        "lat": 38.881
+      },
+      {
+        "name": "Sonoco Products",
+        "hq": "Hartsville, SC",
+        "lon": -80.073,
+        "lat": 34.374
+      },
+      {
+        "name": "AbbVie",
+        "hq": "North Chicago, IL",
+        "lon": -87.841,
+        "lat": 42.326
+      },
+      {
+        "name": "State Farm Insurance",
+        "hq": "Bloomington, IL",
+        "lon": -88.994,
+        "lat": 40.484
+      },
+      {
+        "name": "Illinois Tool Works",
+        "hq": "Glenview, IL",
+        "lon": -87.788,
+        "lat": 42.07
+      },
+      {
+        "name": "Markel Group",
+        "hq": "Glen Allen, VA",
+        "lon": -77.506,
+        "lat": 37.666
+      },
+      {
+        "name": "McKesson",
+        "hq": "Irving, TX",
+        "lon": -96.949,
+        "lat": 32.814
+      },
+      {
+        "name": "Target",
+        "hq": "Minneapolis, MN",
+        "lon": -93.264,
+        "lat": 44.98
+      },
+      {
+        "name": "Freddie Mac",
+        "hq": "McLean, VA",
+        "lon": -77.177,
+        "lat": 38.934
+      },
+      {
+        "name": "Applied Materials",
+        "hq": "Santa Clara, CA",
+        "lon": -121.955,
+        "lat": 37.354
+      },
+      {
+        "name": "Ecolab",
+        "hq": "St. Paul, MN",
+        "lon": -93.093,
+        "lat": 44.944
+      },
+      {
+        "name": "Concentrix",
+        "hq": "Newark, CA",
+        "lon": -122.04,
+        "lat": 37.53
+      },
+      {
+        "name": "Publix Super Markets",
+        "hq": "Lakeland, FL",
+        "lon": -81.95,
+        "lat": 28.039
+      },
+      {
+        "name": "AECOM",
+        "hq": "Dallas, TX",
+        "lon": -96.807,
+        "lat": 32.783
+      },
+      {
+        "name": "Securian Financial Group",
+        "hq": "St. Paul, MN",
+        "lon": -93.093,
+        "lat": 44.944
+      },
+      {
+        "name": "Group 1 Automotive",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Taylor Morrison Home",
+        "hq": "Scottsdale, AZ",
+        "lon": -111.899,
+        "lat": 33.509
+      },
+      {
+        "name": "Regions Financial",
+        "hq": "Birmingham, AL",
+        "lon": -86.802,
+        "lat": 33.521
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-14",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:14Z",
+    "title": "Fortune 500 HQ Hunt (Part 14)",
+    "navTitle": "Fortune 500 HQs (Part 14)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 14,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 14 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Campbell's",
+        "hq": "Camden, NJ",
+        "lon": -75.12,
+        "lat": 39.926
+      },
+      {
+        "name": "Berkshire Hathaway",
+        "hq": "Omaha, NE",
+        "lon": -95.94,
+        "lat": 41.256
+      },
+      {
+        "name": "IBM",
+        "hq": "Armonk, NY",
+        "lon": -73.714,
+        "lat": 41.126
+      },
+      {
+        "name": "Colgate-Palmolive",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "HP",
+        "hq": "Palo Alto, CA",
+        "lon": -122.143,
+        "lat": 37.442
+      },
+      {
+        "name": "Tenet Healthcare",
+        "hq": "Dallas, TX",
+        "lon": -96.807,
+        "lat": 32.783
+      },
+      {
+        "name": "Lowe's",
+        "hq": "Mooresville, NC",
+        "lon": -80.81,
+        "lat": 35.585
+      },
+      {
+        "name": "Fluor",
+        "hq": "Irving, TX",
+        "lon": -96.949,
+        "lat": 32.814
+      },
+      {
+        "name": "Union Pacific",
+        "hq": "Omaha, NE",
+        "lon": -95.94,
+        "lat": 41.256
+      },
+      {
+        "name": "Labcorp Holdings",
+        "hq": "Burlington, NC",
+        "lon": -79.438,
+        "lat": 36.096
+      },
+      {
+        "name": "International Flavors & Fragrances",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Morgan Stanley",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "FirstEnergy",
+        "hq": "Akron, OH",
+        "lon": -81.519,
+        "lat": 41.081
+      },
+      {
+        "name": "Halliburton",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Centene",
+        "hq": "St. Louis, MO",
+        "lon": -90.198,
+        "lat": 38.627
+      },
+      {
+        "name": "Global Payments",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "Williams Companies",
+        "hq": "Tulsa, OK",
+        "lon": -95.993,
+        "lat": 36.154
+      },
+      {
+        "name": "Ingram Micro Holding",
+        "hq": "Irvine, CA",
+        "lon": -117.823,
+        "lat": 33.669
+      },
+      {
+        "name": "Thrivent Financial",
+        "hq": "Minneapolis, MN",
+        "lon": -93.264,
+        "lat": 44.98
+      },
+      {
+        "name": "General Mills",
+        "hq": "Minneapolis, MN",
+        "lon": -93.264,
+        "lat": 44.98
+      },
+      {
+        "name": "Meta Platforms",
+        "hq": "Menlo Park, CA",
+        "lon": -122.182,
+        "lat": 37.454
+      },
+      {
+        "name": "MGM Resorts International",
+        "hq": "Las Vegas, NV",
+        "lon": -115.137,
+        "lat": 36.175
+      },
+      {
+        "name": "Ball Corporation",
+        "hq": "Westminster, CO",
+        "lon": -105.037,
+        "lat": 39.837
+      },
+      {
+        "name": "C.H. Robinson Worldwide",
+        "hq": "Eden Prairie, MN",
+        "lon": -93.471,
+        "lat": 44.855
+      },
+      {
+        "name": "Tesla",
+        "hq": "Austin, TX",
+        "lon": -97.743,
+        "lat": 30.267
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-15",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:15Z",
+    "title": "Fortune 500 HQ Hunt (Part 15)",
+    "navTitle": "Fortune 500 HQs (Part 15)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 15,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 15 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Molina Healthcare",
+        "hq": "Long Beach, CA",
+        "lon": -118.189,
+        "lat": 33.767
+      },
+      {
+        "name": "Penske Automotive Group",
+        "hq": "Bloomfield Hills, MI",
+        "lon": -83.245,
+        "lat": 42.584
+      },
+      {
+        "name": "DuPont",
+        "hq": "Wilmington, DE",
+        "lon": -75.547,
+        "lat": 39.746
+      },
+      {
+        "name": "PNC Financial Services Group",
+        "hq": "Pittsburgh, PA",
+        "lon": -79.996,
+        "lat": 40.441
+      },
+      {
+        "name": "Advance Auto Parts",
+        "hq": "Raleigh, NC",
+        "lon": -78.639,
+        "lat": 35.772
+      },
+      {
+        "name": "Moody's",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Sonic Automotive",
+        "hq": "Charlotte, NC",
+        "lon": -80.843,
+        "lat": 35.227
+      },
+      {
+        "name": "PBF Energy",
+        "hq": "Parsippany, NJ",
+        "lon": -74.426,
+        "lat": 40.858
+      },
+      {
+        "name": "Resideo Technologies",
+        "hq": "Scottsdale, AZ",
+        "lon": -111.899,
+        "lat": 33.509
+      },
+      {
+        "name": "Expeditors",
+        "hq": "Bellevue, WA",
+        "lon": -122.201,
+        "lat": 47.61
+      },
+      {
+        "name": "TD Synnex",
+        "hq": "Fremont, CA",
+        "lon": -121.989,
+        "lat": 37.548
+      },
+      {
+        "name": "Steel Dynamics",
+        "hq": "Fort Wayne, IN",
+        "lon": -85.129,
+        "lat": 41.131
+      },
+      {
+        "name": "Hertz Global Holdings",
+        "hq": "Estero, FL",
+        "lon": -81.807,
+        "lat": 26.438
+      },
+      {
+        "name": "Old Republic International",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "Best Buy",
+        "hq": "Richfield, MN",
+        "lon": -93.283,
+        "lat": 44.883
+      },
+      {
+        "name": "Goodyear Tire & Rubber",
+        "hq": "Akron, OH",
+        "lon": -81.519,
+        "lat": 41.081
+      },
+      {
+        "name": "Sirius XM Holdings",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Optimum Communications",
+        "hq": "Long Island City, NY",
+        "lon": -73.949,
+        "lat": 40.745
+      },
+      {
+        "name": "Jefferies Financial Group",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "TransDigm Group",
+        "hq": "Cleveland, OH",
+        "lon": -81.695,
+        "lat": 41.499
+      },
+      {
+        "name": "CSX",
+        "hq": "Jacksonville, FL",
+        "lon": -81.656,
+        "lat": 30.332
+      },
+      {
+        "name": "Arista Networks",
+        "hq": "Santa Clara, CA",
+        "lon": -121.955,
+        "lat": 37.354
+      },
+      {
+        "name": "Kohl's",
+        "hq": "Menomonee Falls, WI",
+        "lon": -88.117,
+        "lat": 43.179
+      },
+      {
+        "name": "Global Partners",
+        "hq": "Waltham, MA",
+        "lon": -71.236,
+        "lat": 42.376
+      },
+      {
+        "name": "PepsiCo",
+        "hq": "Purchase, NY",
+        "lon": -73.715,
+        "lat": 41.041
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-16",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:16Z",
+    "title": "Fortune 500 HQ Hunt (Part 16)",
+    "navTitle": "Fortune 500 HQs (Part 16)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 16,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 16 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Sempra",
+        "hq": "San Diego, CA",
+        "lon": -117.165,
+        "lat": 32.716
+      },
+      {
+        "name": "CenterPoint Energy",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Guardian Life",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "L3Harris Technologies",
+        "hq": "Melbourne, FL",
+        "lon": -80.608,
+        "lat": 28.084
+      },
+      {
+        "name": "Accendra Health",
+        "hq": "Glen Allen, VA",
+        "lon": -77.506,
+        "lat": 37.666
+      },
+      {
+        "name": "Micron Technology",
+        "hq": "Boise, ID",
+        "lon": -116.203,
+        "lat": 43.614
+      },
+      {
+        "name": "Northern Trust",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "Walmart",
+        "hq": "Bentonville, AR",
+        "lon": -94.209,
+        "lat": 36.373
+      },
+      {
+        "name": "Lennar Corporation",
+        "hq": "Miami, FL",
+        "lon": -80.194,
+        "lat": 25.774
+      },
+      {
+        "name": "GE Vernova",
+        "hq": "Cambridge, MA",
+        "lon": -71.106,
+        "lat": 42.375
+      },
+      {
+        "name": "Cisco Systems",
+        "hq": "San Jose, CA",
+        "lon": -121.895,
+        "lat": 37.339
+      },
+      {
+        "name": "HF Sinclair",
+        "hq": "Dallas, TX",
+        "lon": -96.807,
+        "lat": 32.783
+      },
+      {
+        "name": "Principal Financial",
+        "hq": "Des Moines, IA",
+        "lon": -93.609,
+        "lat": 41.601
+      },
+      {
+        "name": "Roper Technologies",
+        "hq": "Sarasota, FL",
+        "lon": -82.531,
+        "lat": 27.336
+      },
+      {
+        "name": "Palo Alto Networks",
+        "hq": "Santa Clara, CA",
+        "lon": -121.955,
+        "lat": 37.354
+      },
+      {
+        "name": "CDW",
+        "hq": "Vernon Hills, IL",
+        "lon": -87.98,
+        "lat": 42.219
+      },
+      {
+        "name": "Hewlett Packard Enterprise",
+        "hq": "Spring, TX",
+        "lon": -95.417,
+        "lat": 30.08
+      },
+      {
+        "name": "Cigna Group",
+        "hq": "Bloomfield, CT",
+        "lon": -72.737,
+        "lat": 41.831
+      },
+      {
+        "name": "Emcor Group",
+        "hq": "Norwalk, CT",
+        "lon": -73.408,
+        "lat": 41.118
+      },
+      {
+        "name": "Adobe",
+        "hq": "San Jose, CA",
+        "lon": -121.895,
+        "lat": 37.339
+      },
+      {
+        "name": "Zoetis",
+        "hq": "Parsippany, NJ",
+        "lon": -74.426,
+        "lat": 40.858
+      },
+      {
+        "name": "LKQ",
+        "hq": "Antioch, TN",
+        "lon": -86.672,
+        "lat": 36.06
+      },
+      {
+        "name": "Uber Technologies",
+        "hq": "San Francisco, CA",
+        "lon": -122.419,
+        "lat": 37.775
+      },
+      {
+        "name": "Lumen Technologies",
+        "hq": "Monroe, LA",
+        "lon": -92.119,
+        "lat": 32.509
+      },
+      {
+        "name": "Eastman Chemical",
+        "hq": "Kingsport, TN",
+        "lon": -82.562,
+        "lat": 36.548
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-17",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:17Z",
+    "title": "Fortune 500 HQ Hunt (Part 17)",
+    "navTitle": "Fortune 500 HQs (Part 17)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 17,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 17 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Dollar General",
+        "hq": "Goodlettsville, TN",
+        "lon": -86.713,
+        "lat": 36.323
+      },
+      {
+        "name": "Qualcomm",
+        "hq": "San Diego, CA",
+        "lon": -117.165,
+        "lat": 32.716
+      },
+      {
+        "name": "Cognizant Technology Solutions",
+        "hq": "Teaneck, NJ",
+        "lon": -74.016,
+        "lat": 40.898
+      },
+      {
+        "name": "KBR",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Vulcan Materials",
+        "hq": "Birmingham, AL",
+        "lon": -86.802,
+        "lat": 33.521
+      },
+      {
+        "name": "EchoStar",
+        "hq": "Englewood, CO",
+        "lon": -104.988,
+        "lat": 39.648
+      },
+      {
+        "name": "Aflac",
+        "hq": "Columbus, GA",
+        "lon": -84.988,
+        "lat": 32.461
+      },
+      {
+        "name": "General Dynamics",
+        "hq": "Reston, VA",
+        "lon": -77.341,
+        "lat": 38.969
+      },
+      {
+        "name": "Auto-Owners Insurance",
+        "hq": "Lansing, MI",
+        "lon": -84.556,
+        "lat": 42.733
+      },
+      {
+        "name": "FM (Factory Mutual)",
+        "hq": "Johnston, RI",
+        "lon": -71.507,
+        "lat": 41.822
+      },
+      {
+        "name": "Stryker",
+        "hq": "Portage, MI",
+        "lon": -85.58,
+        "lat": 42.201
+      },
+      {
+        "name": "Amgen",
+        "hq": "Thousand Oaks, CA",
+        "lon": -118.838,
+        "lat": 34.171
+      },
+      {
+        "name": "BJ's Wholesale Club",
+        "hq": "Marlborough, MA",
+        "lon": -71.552,
+        "lat": 42.346
+      },
+      {
+        "name": "NRG Energy",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Paramount Skydance",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Newmont",
+        "hq": "Denver, CO",
+        "lon": -104.985,
+        "lat": 39.739
+      },
+      {
+        "name": "Pfizer",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Equitable Holdings",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Williams-Sonoma",
+        "hq": "San Francisco, CA",
+        "lon": -122.419,
+        "lat": 37.775
+      },
+      {
+        "name": "CHS",
+        "hq": "Inver Grove Heights, MN",
+        "lon": -93.043,
+        "lat": 44.848
+      },
+      {
+        "name": "Intel",
+        "hq": "Santa Clara, CA",
+        "lon": -121.955,
+        "lat": 37.354
+      },
+      {
+        "name": "Home Depot",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "Assurant",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "GuideWell Mutual Holding",
+        "hq": "Jacksonville, FL",
+        "lon": -81.656,
+        "lat": 30.332
+      },
+      {
+        "name": "Biogen",
+        "hq": "Cambridge, MA",
+        "lon": -71.106,
+        "lat": 42.375
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-18",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:18Z",
+    "title": "Fortune 500 HQ Hunt (Part 18)",
+    "navTitle": "Fortune 500 HQs (Part 18)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 18,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 18 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Phillips 66",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Elevance Health",
+        "hq": "Indianapolis, IN",
+        "lon": -86.158,
+        "lat": 39.768
+      },
+      {
+        "name": "KLA",
+        "hq": "Milpitas, CA",
+        "lon": -121.907,
+        "lat": 37.428
+      },
+      {
+        "name": "AT&T",
+        "hq": "Dallas, TX",
+        "lon": -96.807,
+        "lat": 32.783
+      },
+      {
+        "name": "Nasdaq",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Zimmer Biomet Holdings",
+        "hq": "Warsaw, IN",
+        "lon": -85.853,
+        "lat": 41.238
+      },
+      {
+        "name": "Apple",
+        "hq": "Cupertino, CA",
+        "lon": -122.032,
+        "lat": 37.323
+      },
+      {
+        "name": "Graphic Packaging Holding",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "M&T Bank",
+        "hq": "Buffalo, NY",
+        "lon": -78.878,
+        "lat": 42.886
+      },
+      {
+        "name": "Venture Global",
+        "hq": "Arlington, VA",
+        "lon": -77.104,
+        "lat": 38.881
+      },
+      {
+        "name": "Dana Inc.",
+        "hq": "Maumee, OH",
+        "lon": -83.654,
+        "lat": 41.563
+      },
+      {
+        "name": "Waste Management",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "DoorDash",
+        "hq": "San Francisco, CA",
+        "lon": -122.419,
+        "lat": 37.775
+      },
+      {
+        "name": "Caesars Entertainment",
+        "hq": "Reno, NV",
+        "lon": -119.814,
+        "lat": 39.53
+      },
+      {
+        "name": "Public Service Enterprise Group",
+        "hq": "Newark, NJ",
+        "lon": -74.172,
+        "lat": 40.736
+      },
+      {
+        "name": "Pacific Life",
+        "hq": "Newport Beach, CA",
+        "lon": -117.929,
+        "lat": 33.619
+      },
+      {
+        "name": "Albertsons",
+        "hq": "Boise, ID",
+        "lon": -116.203,
+        "lat": 43.614
+      },
+      {
+        "name": "Delek US Holdings",
+        "hq": "Brentwood, TN",
+        "lon": -86.783,
+        "lat": 36.033
+      },
+      {
+        "name": "Welltower",
+        "hq": "Toledo, OH",
+        "lon": -83.555,
+        "lat": 41.664
+      },
+      {
+        "name": "Builders FirstSource",
+        "hq": "Irving, TX",
+        "lon": -96.949,
+        "lat": 32.814
+      },
+      {
+        "name": "Ameriprise Financial",
+        "hq": "Minneapolis, MN",
+        "lon": -93.264,
+        "lat": 44.98
+      },
+      {
+        "name": "Dick's Sporting Goods",
+        "hq": "Coraopolis, PA",
+        "lon": -80.167,
+        "lat": 40.518
+      },
+      {
+        "name": "Sysco",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "American Tower",
+        "hq": "Boston, MA",
+        "lon": -71.06,
+        "lat": 42.358
+      },
+      {
+        "name": "Merck",
+        "hq": "Rahway, NJ",
+        "lon": -74.278,
+        "lat": 40.608
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-19",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:19Z",
+    "title": "Fortune 500 HQ Hunt (Part 19)",
+    "navTitle": "Fortune 500 HQs (Part 19)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 19,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 19 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "Massachusetts Mutual Life Insurance",
+        "hq": "Springfield, MA",
+        "lon": -72.59,
+        "lat": 42.101
+      },
+      {
+        "name": "J.B. Hunt Transport Services",
+        "hq": "Lowell, AR",
+        "lon": -94.131,
+        "lat": 36.255
+      },
+      {
+        "name": "Booz Allen Hamilton Holding",
+        "hq": "McLean, VA",
+        "lon": -77.177,
+        "lat": 38.934
+      },
+      {
+        "name": "CBRE Group",
+        "hq": "Dallas, TX",
+        "lon": -96.807,
+        "lat": 32.783
+      },
+      {
+        "name": "BlackRock",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "UPS",
+        "hq": "Atlanta, GA",
+        "lon": -84.388,
+        "lat": 33.749
+      },
+      {
+        "name": "AutoZone",
+        "hq": "Memphis, TN",
+        "lon": -90.049,
+        "lat": 35.15
+      },
+      {
+        "name": "Expand Energy",
+        "hq": "Oklahoma City, OK",
+        "lon": -97.516,
+        "lat": 35.468
+      },
+      {
+        "name": "The Andersons",
+        "hq": "Maumee, OH",
+        "lon": -83.654,
+        "lat": 41.563
+      },
+      {
+        "name": "Devon Energy",
+        "hq": "Oklahoma City, OK",
+        "lon": -97.516,
+        "lat": 35.468
+      },
+      {
+        "name": "Textron",
+        "hq": "Providence, RI",
+        "lon": -71.413,
+        "lat": 41.824
+      },
+      {
+        "name": "Kenvue",
+        "hq": "Summit, NJ",
+        "lon": -74.365,
+        "lat": 40.716
+      },
+      {
+        "name": "DTE Energy",
+        "hq": "Detroit, MI",
+        "lon": -83.046,
+        "lat": 42.331
+      },
+      {
+        "name": "Avis Budget Group",
+        "hq": "Parsippany, NJ",
+        "lon": -74.426,
+        "lat": 40.858
+      },
+      {
+        "name": "CarMax",
+        "hq": "Richmond, VA",
+        "lon": -77.46,
+        "lat": 37.554
+      },
+      {
+        "name": "Plains GP Holdings",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Jones Lang LaSalle",
+        "hq": "Chicago, IL",
+        "lon": -87.65,
+        "lat": 41.85
+      },
+      {
+        "name": "Occidental Petroleum",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Ferguson Enterprises",
+        "hq": "Newport News, VA",
+        "lon": -76.47,
+        "lat": 37.083
+      },
+      {
+        "name": "Xylem",
+        "hq": "Washington, DC",
+        "lon": -77.036,
+        "lat": 38.895
+      },
+      {
+        "name": "Leidos Holdings",
+        "hq": "Reston, VA",
+        "lon": -77.341,
+        "lat": 38.969
+      },
+      {
+        "name": "Carvana",
+        "hq": "Tempe, AZ",
+        "lon": -111.909,
+        "lat": 33.415
+      },
+      {
+        "name": "Farmers Insurance Exchange",
+        "hq": "Woodland Hills, CA",
+        "lon": -118.606,
+        "lat": 34.168
+      },
+      {
+        "name": "NextEra Energy",
+        "hq": "Juno Beach, FL",
+        "lon": -80.053,
+        "lat": 26.88
+      },
+      {
+        "name": "Primoris Services",
+        "hq": "Dallas, TX",
+        "lon": -96.807,
+        "lat": 32.783
+      }
+    ]
+  },
+  {
+    "id": "fortune-500-hq-20",
+    "publishedDate": "2026-11-13",
+    "publishedAt": "2026-11-13T05:51:20Z",
+    "title": "Fortune 500 HQ Hunt (Part 20)",
+    "navTitle": "Fortune 500 HQs (Part 20)",
+    "category": "Business · Fortune 500",
+    "type": "other",
+    "tags": [
+      "other",
+      "business",
+      "geography"
+    ],
+    "format": "place-map",
+    "region": "usa",
+    "series": "fortune-500-hq",
+    "part": 20,
+    "parts": 20,
+    "timeLimit": 150,
+    "maxPerCity": 100,
+    "fullMiles": 15,
+    "zeroMiles": 300,
+    "blurb": "Twenty-five Fortune 500 companies, two and a half minutes, one blank map of the lower 48. A company appears and you click where it keeps its headquarters. Land in the same city or suburb for full credit, and the closer you land, the more points, up to 2,500. Part 20 of 20: all 500 companies on the 2026 Fortune 500, shuffled across the set.",
+    "source": {
+      "label": "2026 Fortune 500 · HQ coordinates GeoNames / OpenStreetMap",
+      "url": "https://fortune.com/ranking/fortune500/"
+    },
+    "cities": [
+      {
+        "name": "PPL",
+        "hq": "Allentown, PA",
+        "lon": -75.49,
+        "lat": 40.608
+      },
+      {
+        "name": "Lam Research",
+        "hq": "Fremont, CA",
+        "lon": -121.989,
+        "lat": 37.548
+      },
+      {
+        "name": "Capital One Financial",
+        "hq": "McLean, VA",
+        "lon": -77.177,
+        "lat": 38.934
+      },
+      {
+        "name": "Continental Resources",
+        "hq": "Oklahoma City, OK",
+        "lon": -97.516,
+        "lat": 35.468
+      },
+      {
+        "name": "Amphenol",
+        "hq": "Wallingford, CT",
+        "lon": -72.823,
+        "lat": 41.457
+      },
+      {
+        "name": "Dollar Tree",
+        "hq": "Chesapeake, VA",
+        "lon": -76.275,
+        "lat": 36.819
+      },
+      {
+        "name": "Baker Hughes",
+        "hq": "Houston, TX",
+        "lon": -95.363,
+        "lat": 29.763
+      },
+      {
+        "name": "Ryder System",
+        "hq": "Coral Gables, FL",
+        "lon": -80.268,
+        "lat": 25.721
+      },
+      {
+        "name": "Abbott Laboratories",
+        "hq": "Abbott Park, IL",
+        "lon": -87.896,
+        "lat": 42.301
+      },
+      {
+        "name": "Lithia Motors",
+        "hq": "Medford, OR",
+        "lon": -122.876,
+        "lat": 42.327
+      },
+      {
+        "name": "DXC Technology",
+        "hq": "Ashburn, VA",
+        "lon": -77.487,
+        "lat": 39.044
+      },
+      {
+        "name": "Starbucks",
+        "hq": "Seattle, WA",
+        "lon": -122.332,
+        "lat": 47.606
+      },
+      {
+        "name": "Franklin Templeton",
+        "hq": "San Mateo, CA",
+        "lon": -122.326,
+        "lat": 37.563
+      },
+      {
+        "name": "Keurig Dr Pepper",
+        "hq": "Frisco, TX",
+        "lon": -96.824,
+        "lat": 33.151
+      },
+      {
+        "name": "Oneok",
+        "hq": "Tulsa, OK",
+        "lon": -95.993,
+        "lat": 36.154
+      },
+      {
+        "name": "Constellation Brands",
+        "hq": "Rochester, NY",
+        "lon": -77.616,
+        "lat": 43.155
+      },
+      {
+        "name": "JetBlue Airways",
+        "hq": "Long Island City, NY",
+        "lon": -73.949,
+        "lat": 40.745
+      },
+      {
+        "name": "Estée Lauder",
+        "hq": "New York, NY",
+        "lon": -74.006,
+        "lat": 40.714
+      },
+      {
+        "name": "Darden Restaurants",
+        "hq": "Orlando, FL",
+        "lon": -81.379,
+        "lat": 28.538
+      },
+      {
+        "name": "Liberty Mutual Insurance Group",
+        "hq": "Boston, MA",
+        "lon": -71.06,
+        "lat": 42.358
+      },
+      {
+        "name": "Thermo Fisher Scientific",
+        "hq": "Waltham, MA",
+        "lon": -71.236,
+        "lat": 42.376
+      },
+      {
+        "name": "Synchrony Financial",
+        "hq": "Stamford, CT",
+        "lon": -73.539,
+        "lat": 41.053
+      },
+      {
+        "name": "Xcel Energy",
+        "hq": "Minneapolis, MN",
+        "lon": -93.264,
+        "lat": 44.98
+      },
+      {
+        "name": "Hilton Worldwide Holdings",
+        "hq": "McLean, VA",
+        "lon": -77.177,
+        "lat": 38.934
+      },
+      {
+        "name": "AGCO",
+        "hq": "Duluth, GA",
+        "lon": -84.145,
+        "lat": 34.003
+      }
+    ]
+  }
+]

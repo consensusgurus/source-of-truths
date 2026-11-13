@@ -455,7 +455,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
     return <g>{els}</g>;
   }
 
-  const recap = phase === 'done' ? placements.map((p) => ({ name: cities[p.cityIdx].name, miles: p.miles, pts: p.pts })).sort((a, b) => b.pts - a.pts) : [];
+  const recap = phase === 'done' ? placements.map((p) => ({ name: cities[p.cityIdx].hq ? `${cities[p.cityIdx].name} (${cities[p.cityIdx].hq})` : cities[p.cityIdx].name, miles: p.miles, pts: p.pts })).sort((a, b) => b.pts - a.pts) : [];
 
   // Mobile fullscreen play popup: open while the game is actively running.
   // On 'done' it closes and the QuizResultModal popup takes over; pre-game

@@ -15,6 +15,7 @@ export const runtime = 'nodejs';
 export async function GET(req, { params }) {
   const id = decodeURIComponent(params.id);
   const quiz = getQuiz(id);
+  if (quiz && quiz.series === 'fortune-500-hq') return new Response(null, { status: 302, headers: { Location: '/og/fortune-500-hq.png' } });
   return renderQuizPromoCard({
     id,
     title: quiz ? quiz.title : 'Mind Loft Quiz',
