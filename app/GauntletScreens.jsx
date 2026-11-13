@@ -1276,6 +1276,13 @@ const CSS = `
 @keyframes gsxWob{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.6)}}
 @media (prefers-reduced-motion: reduce){.gsx-bub,.gsx-fwob{animation:none}}
 .gsx .stb{width:100%}
+/* THE RUN SCREENS' BAR SITS ON THE COLUMN EDGE (owner, 2026-11-12: "why doesn't
+   mind loft align with the element below in the top left"). StageTopBar's
+   one-width desktop rule centres a 1040px bar with a margin-left, which on the
+   1200px run-end column pushed the home pill 48px in while the buttons stayed
+   flush right. Entry, transition and end screens span their own column; the
+   play page (gsx-pcol) keeps the shared puzzle width. */
+.gsx-col .gsx-top > .stb{margin-left:0}
 
 .gsx-play{min-height:100vh;min-height:100dvh;font-family:Manrope,system-ui,sans-serif;display:flex;flex-direction:column;--stg-ground:var(--gsx-bg);--stg-ink:var(--gsx-ink)}
 .gsx-play .gsx-pcol{width:100%;max-width:760px;margin:0 auto;box-sizing:border-box;padding:14px 16px 6px;display:flex;flex-direction:column;gap:12px}
