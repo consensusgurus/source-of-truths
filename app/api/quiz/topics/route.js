@@ -3,7 +3,7 @@ import { catalogQuizzes } from '@/lib/quiz-catalog';
 import { quizDept, DEPT_LABEL, DEPT_NAV } from '@/lib/quiz-departments';
 
 // GET /api/quiz/topics -> { topics: [{ id, label, count,
-//   quizzes: [{ id, title, n, t, mcq }] }] }
+//   quizzes: [{ id, title, n, t, mcq, d }] }] }
 //
 // `n` is how many things the quiz asks for and `t` its clock in seconds, both
 // omitted when they are zero so the payload only grows by what is real. They
@@ -92,6 +92,9 @@ export function GET() {
           if (n) row.n = n;
           if (t) row.t = t;
           if (mcq) row.mcq = true;
+          // d: the publish date, for the home's Newest sort.
+          const d = String(q.publishedAt || q.publishedDate || '').slice(0, 10);
+          if (d) row.d = d;
           return row;
         }),
       };

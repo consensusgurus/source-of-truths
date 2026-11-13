@@ -1418,7 +1418,7 @@ export default function StageToday() {
   useEffect(() => {
     try {
       const v = localStorage.getItem('sot_quiz_view'); if (v === 'tile' || v === 'list') setQView(v);
-      const o = localStorage.getItem('sot_quiz_sort'); if (o === 'plays' || o === 'az') setQSort(o);
+      const o = localStorage.getItem('sot_quiz_sort'); if (o === 'plays' || o === 'az' || o === 'new') setQSort(o);
     } catch (e) { /* storage off */ }
   }, []);
   const pickQView = (v) => { setQView(v); try { localStorage.setItem('sot_quiz_view', v); } catch (e) { /* storage off */ } };
@@ -3120,6 +3120,32 @@ export default function StageToday() {
         placeholder="Search puzzles and quizzes" aria-label="Search puzzles and quizzes" />
     </label>
   );
+  // THE QUIZZES PANE'S CONTROLS RIDE IN THE CAP TOO (owner, 2026-11-13): the
+  // search box sits in the same row, in the same place, as it does over the
+  // puzzles, so opening Quizzes does not drop it to a row of its own. The pane's
+  // in-page tool row stays for phones, where the cap carries no controls.
+  const qCapCur = qTopic ? topicList.find((t) => t.id === qTopic) || null : null;
+  const qCapFmt = (n) => Number(n || 0).toLocaleString();
+  const quizCapTools = (
+    <>
+      <div className="sty-sort sty-view" role="group" aria-label="Show quizzes as" data-lab="View" onClick={(e) => e.stopPropagation()}>
+        <button type="button" aria-pressed={qView === 'tile'} onClick={() => pickQView('tile')}>Tiles</button>
+        <button type="button" aria-pressed={qView !== 'tile'} onClick={() => pickQView('list')}>List</button>
+      </div>
+      <div className="sty-sort" role="group" aria-label="Sort quizzes" data-lab="Sort" onClick={(e) => e.stopPropagation()}>
+        <button type="button" aria-pressed={qSort === 'plays'} onClick={() => pickQSort('plays')}>Popular</button>
+        <button type="button" aria-pressed={qSort === 'new'} onClick={() => pickQSort('new')}>Newest</button>
+        <button type="button" aria-pressed={qSort === 'az'} onClick={() => pickQSort('az')}>A to Z</button>
+      </div>
+      <label className={'sty-find sty-cfind' + (qq ? ' q' : '')} onClick={(e) => e.stopPropagation()}>
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+        <input type="search" value={qq} onChange={(e) => setQq(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Escape') { setQq(''); try { e.currentTarget.blur(); } catch (er) {} } }}
+          aria-label="Search quizzes"
+          placeholder={qCapCur ? (qCapCur.count ? `Search ${qCapFmt(qCapCur.count)} ${qCapCur.label} quizzes` : `Search ${qCapCur.label} quizzes`) : quizTotal ? `Search ${qCapFmt(quizTotal)} quizzes` : 'Search quizzes'} />
+      </label>
+    </>
+  );
   const catFilter = (list) => {
     const pc = paneCat(paneOn);
     if (!pc) return list;
@@ -4419,7 +4445,7 @@ export default function StageToday() {
             <>{/* GROUPED BY JOB (owner, 2026-11-10): how it looks, how it is ordered,
                    whose games, then search with all the spare width. */}
               {viewCtl(paneOn)}{sortCtl(false)}{paneOn === ALL_ID ? grpChips() : catChips(paneOn, 'sty-mgchips')}{capFind}</>
-          ) : null}
+          ) : ix && paneOn === QUIZ_ID ? quizCapTools : null}
         </div>
         <div className="sty-rt">
         <div className="sty-figs">
@@ -5192,6 +5218,8 @@ export default function StageToday() {
               const t = topicList.find((x) => x.id === cur.id);
               const list = (t && t.quizzes) || [];
               if (qSort === 'az') return list.slice().sort((a, b) => String(a.title).localeCompare(String(b.title)));
+              // /api/quiz/topics already lists each topic newest first.
+              if (qSort === 'new') return list;
               return list.map((q, i) => [q, i]).sort((a, b) => ((pm[b[0].id] || 0) - (pm[a[0].id] || 0)) || (a[1] - b[1])).map((x) => x[0]);
             })();
             const needle = qq.trim().toLowerCase();
@@ -5234,6 +5262,24 @@ export default function StageToday() {
             );
             const playsLine = (n) => (n ? <><b>{fmt(n)}</b> {n === 1 ? 'play' : 'plays'}</> : 'Be the first');
             const top = qpane ? qpane.top : null;
+            // NEWEST (owner, 2026-11-13): the latest quizzes across every topic,
+            // by the date each was published, in place of Most Played.
+            const isNew = qSort === 'new';
+            const newest = (() => {
+              if (!isNew || !topics) return null;
+              const all = [];
+              for (const t of topicList) (t.quizzes || []).forEach((q, i) => all.push({ ...q, dept: t.id, label: t.label, i }));
+              return all.sort((a, b) => String(b.d || '').localeCompare(String(a.d || '')) || (a.i - b.i)).slice(0, QZ_TILES);
+            })();
+            const newIn = (id) => {
+              const t = topicList.find((x) => x.id === id);
+              return t && t.quizzes ? t.quizzes.slice(0, QZ_ROWS) : [];
+            };
+            const added = (d) => {
+              if (!d) return '';
+              const t = new Date(d + 'T12:00:00');
+              return Number.isNaN(t.getTime()) ? '' : t.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            };
             return (
               <>
                 <div className="sty-cathead">
@@ -5255,6 +5301,7 @@ export default function StageToday() {
                     <span className="sty-qxsl" aria-hidden="true">Sort:</span>
                     <div className="sty-sort sty-qxsort" role="group" aria-label="Sort quizzes">
                       <button type="button" aria-pressed={qSort === 'plays'} onClick={() => pickQSort('plays')}>Popular</button>
+                      <button type="button" aria-pressed={qSort === 'new'} onClick={() => pickQSort('new')}>Newest</button>
                       <button type="button" aria-pressed={qSort === 'az'} onClick={() => pickQSort('az')}>A to Z</button>
                     </div>
                   </div>
@@ -5322,10 +5369,20 @@ export default function StageToday() {
                       <>
                         <section className="sty-qxblk" aria-labelledby="sty-qxmp">
                           <div className="sty-qxh">
-                            <h3 id="sty-qxmp">Most Played</h3>
-                            <span>All-time plays &middot; at most two per topic</span>
+                            <h3 id="sty-qxmp">{isNew ? 'Newest' : 'Most Played'}</h3>
+                            <span>{isNew ? 'Latest added across every topic' : <>All-time plays &middot; at most two per topic</>}</span>
                           </div>
-                          {tiled ? (
+                          {isNew ? (tiled ? (
+                            <div className="sty-qxtiles">
+                              {newest ? newest.map((q) => tile(q, q.dept, q.d ? <>Added <b>{added(q.d)}</b></> : playsLine(pm[q.id] || 0), q.label)) : Array.from({ length: QZ_TILES }, (_, i) => tileHole(i))}
+                            </div>
+                          ) : (
+                            <div className="sty-qxled">
+                              <div className="sty-qxlh"><span>#</span><span>Quiz</span><span>Topic</span><span>Added</span></div>
+                              {newest ? newest.map((q, i) => row(q, i + 1, q.dept, <em>{q.label}</em>, added(q.d)))
+                                : Array.from({ length: QZ_TILES }, (_, i) => <span key={i} className="sty-qxl ph" aria-hidden="true" />)}
+                            </div>
+                          )) : tiled ? (
                             <div className="sty-qxtiles">
                               {top ? top.map((q) => tile(q, q.dept, playsLine(q.plays), q.label || labelOf[q.dept] || '')) : Array.from({ length: QZ_TILES }, (_, i) => tileHole(i))}
                             </div>
@@ -5352,8 +5409,9 @@ export default function StageToday() {
                                     <span className="pl"><b>{t.plays === null ? ' ' : fmt(t.plays)}</b><span>plays</span></span>
                                   </button>
                                   <ol>
-                                    {(t.top.length ? t.top.slice(0, QZ_ROWS) : Array.from({ length: QZ_ROWS }, () => null)).map((q, j) => (q ? (
-                                      <li key={q.id}><a href={`/quiz/${q.id}`}><i>{j + 1}</i><span>{q.title}</span><b>{fmt(q.plays)}</b></a></li>
+                                    {(isNew ? (newIn(t.id).length ? newIn(t.id) : Array.from({ length: QZ_ROWS }, () => null))
+                                      : t.top.length ? t.top.slice(0, QZ_ROWS) : Array.from({ length: QZ_ROWS }, () => null)).map((q, j) => (q ? (
+                                      <li key={q.id}><a href={`/quiz/${q.id}`}><i>{j + 1}</i><span>{q.title}</span><b>{isNew ? added(q.d) : fmt(q.plays)}</b></a></li>
                                     ) : <li key={j} className="ph" aria-hidden="true" />))}
                                   </ol>
                                   <button type="button" className="sty-qxall" onClick={(e) => openTopic(e, t.id)}>
@@ -5364,12 +5422,12 @@ export default function StageToday() {
                             </div>
                           ) : (
                             <div className="sty-qxled sty-qxtl">
-                              <div className="sty-qxlh"><span /><span>Topic</span><span>Most Played Quiz</span><span>Quizzes</span><span>Plays</span></div>
+                              <div className="sty-qxlh"><span /><span>Topic</span><span>{isNew ? 'Newest Quiz' : 'Most Played Quiz'}</span><span>Quizzes</span><span>Plays</span></div>
                               {rail.map((t) => (
                                 <button key={t.id} type="button" className="sty-qxl" style={qVars(t.id)} onClick={(e) => openTopic(e, t.id)}>
                                   <i className="dc">{glyph(t.id, 13)}</i>
                                   <span className="t"><span>{t.label}</span></span>
-                                  <span className="m">{t.top && t.top[0] ? t.top[0].title : ''}</span>
+                                  <span className="m">{isNew ? (newIn(t.id)[0] ? newIn(t.id)[0].title : '') : t.top && t.top[0] ? t.top[0].title : ''}</span>
                                   <span className="m n">{t.count ? fmt(t.count) : ''}</span>
                                   <b>{t.plays === null ? '' : fmt(t.plays)}</b>
                                 </button>
@@ -8277,6 +8335,8 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   }
   /* The pane's own control row is now the cap's. */
   .sty-ix > .sty-az > .sty-cathead,.sty-ix > .sty-ixc > .sty-cathead{display:none;}
+  /* The quizzes pane's tool row too: its View, Sort and search are the cap's. */
+  .sty-ix > .sty-qsec > .sty-cathead{display:none;}
 }
 @media (min-width:901px) and (max-width:1279px){
   .sty-captools{gap:12px;}
