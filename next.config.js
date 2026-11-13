@@ -128,6 +128,8 @@ const nextConfig = {
       { source: '/spatial', destination: '/spacecadet', permanent: false },
       // Due Diligence (owner, 2026-11-10) lives at /duediligence.
       { source: '/due-diligence', destination: '/duediligence', permanent: true },
+      // Eagle Eye (owner, 2026-11-13) lives at /eagleeye.
+      { source: '/eagle-eye', destination: '/eagleeye', permanent: true },
       { source: '/crossed-up', destination: '/crossed', permanent: true },
       // 2026-10-20 (owner): the Daily Five and every circuit that was not a
       // designed run were retired. Each old address goes to its nearest home.

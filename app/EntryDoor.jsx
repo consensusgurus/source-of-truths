@@ -94,6 +94,7 @@ const RUN_TAG = {
   room: 'The crowd games, one read of the room',
   spacecadet: 'Four spatial puzzles, one clock',
   duediligence: 'A chart, a filing and a resume, fewest clues',
+  eagleeye: 'Five visual puzzles, speed and accuracy',
   math: 'Five math quizzes back to back, one life each',
   english: 'Five English quizzes back to back, one life each',
   science: 'Five science quizzes back to back, one life each',

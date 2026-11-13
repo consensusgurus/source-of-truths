@@ -143,6 +143,15 @@ const ART = {
     </>
   ),
   // Space Cadet: a die, two ropes crossing, and a ringed planet.
+  eagleeye: (
+    <>
+      <path d="M58 44 H72 C70 36 82 36 80 44 H94 V58 C102 56 102 68 94 66 V80 H58 Z" fill="currentColor" fillOpacity=".15" strokeWidth="2.5" strokeLinejoin="round" />
+      <path className="k" d="M104 62 C116 42 148 42 160 62 C148 82 116 82 104 62 Z" strokeWidth="4.5" strokeLinejoin="round" fill="none" />
+      <circle cx="132" cy="62" r="9" fill="currentColor" stroke="none" />
+      <circle cx="176" cy="88" r="10" fill="currentColor" fillOpacity=".2" strokeWidth="2.5" />
+      <path d="M183 96 L192 106" strokeWidth="3.5" strokeLinecap="round" />
+    </>
+  ),
   duediligence: (
     <>
       <path className="k" d="M56 92 L74 70 L88 80 L106 46" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />

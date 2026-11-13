@@ -123,6 +123,14 @@ export const RUN_DOORS = {
     go: 'Run all three', accent: '#a5b4fc',
     tags: [['Tape', '#7dd3fc'], ['Filing', '#a5b4fc'], ['Resume', '#93c5fd']],
   },
+  // EAGLE EYE (owner, 2026-11-13): once per game, to everyone, on the start
+  // gate of Spot, Jig, Saw, Scour or Witness.
+  eagleeye: {
+    href: '/eagleeye', name: 'Eagle Eye', eyebrow: 'Daily run \u00b7 Five visual puzzles', once: 'game', everyone: true, from: '2026-11-13',
+    body: 'Spot, Jig, Saw, Scour and Witness back to back on one page: find the differences, build two jigsaws, sweep a word search, remember a scene. Speed and accuracy rank you, from Mole up to Eagle Eye.',
+    go: 'Run all five', accent: '#f0abfc',
+    tags: [['Spot', '#fda4af'], ['Jig', '#fde68a'], ['Saw', '#a7e8cf'], ['Scour', '#bae6fd'], ['Witness', '#d8b4fe']],
+  },
   room: {
     href: '/room', name: 'Read the Room', eyebrow: 'Daily run · Four crowd games',
     body: 'Herd, Outwit, Outrank and Feud back to back on one page: run with the herd, dodge it, call its order, say what it said. Then a verdict on how well you read tonight\u2019s room.',

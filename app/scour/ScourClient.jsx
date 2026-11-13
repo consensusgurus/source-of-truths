@@ -50,6 +50,9 @@ import { CONTEST, contestIsLive } from '@/lib/contest';
 import { T } from '@/lib/theme';
 import { meRequest } from '@/app/quizMeClient';
 import PlayStage, { usePhoneStage } from '../PlayStage';
+import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import { embedLook } from '../LogicStage';
+import RunDoorPop from '../circuits/RunDoorPop';
 import { FAIL } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 
@@ -177,6 +180,11 @@ function locate(grid, word) {
 
 export default function ScourClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
+  // INSIDE A RUN (Eagle Eye, owner 2026-11-13): mounted in app/RunEmbed.jsx the
+  // word search keeps its grid, list, save and result row, and drops its page.
+  // The grid plays on the stage drawn inline in the run's frame and stays up
+  // once finished. Outside a run EMBED is null and nothing changes.
+  const EMBED = useRunEmbed();
   const STORE_KEY = `sot_scour_${PUZZLE.num}`;
   const N = PUZZLE.words.length;
   const SIZE = PUZZLE.size || PUZZLE.grid.length;
@@ -339,6 +347,7 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
   function postResult(g2) {
     abandon.markFlushed();
     const n = Object.keys(g2.found).length;
+    if (EMBED) EMBED.onResult({ key: 'scour', score: n, total: N, won: n === N, t0: g2.t0, tEnd: g2.tEnd || Date.now() });
     const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
     try {
       fetch('/api/quiz/result', {
@@ -395,7 +404,7 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
 
   // ---- pointer -> squares -----------------------------------------------------
   function cellAt(x, y) {
-    const el = (phoneStage && stageBoardRef.current) || boardRef.current;
+    const el = ((phoneStage || EMBED) && stageBoardRef.current) || boardRef.current;
     if (!el) return null;
     const rect = el.getBoundingClientRect();
     const cw = rect.width / SIZE;
@@ -474,6 +483,8 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
     setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now() }));
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
   }
+  useRunHelp(EMBED, () => setShowHelp(true));
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   function resetGame() {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
     setG(freshState()); setEndClosed(false); setRevealed(false); setDrag(null); setAnchor(null);
@@ -501,13 +512,13 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
   // until the end card's Reveal answers tile is pressed.
   const ansOpen = ended && (won || !LOFT || revealed);
   const isTodays = PUZZLE.num === pickPuzzle(puzzles, null).num;
-  const iq = useIqStanding({ game: 'scour', quizId: PUZZLE.quizId, active: LOFT && !playing });
-  const nextUp = useNextUnplayed({ self: 'scour', active: LOFT && !playing });
-  const upNext = useUnplayedSimilar({ self: 'scour', active: LOFT && !playing });
-  const dailyBoard = useDailyBoard({ quizId: PUZZLE.quizId, active: LOFT && !playing });
-  const allTime = useGameAllTime({ game: 'scour', active: LOFT && !playing });
+  const iq = useIqStanding({ game: 'scour', quizId: PUZZLE.quizId, active: LOFT && !playing && !EMBED });
+  const nextUp = useNextUnplayed({ self: 'scour', active: LOFT && !playing && !EMBED });
+  const upNext = useUnplayedSimilar({ self: 'scour', active: LOFT && !playing && !EMBED });
+  const dailyBoard = useDailyBoard({ quizId: PUZZLE.quizId, active: LOFT && !playing && !EMBED });
+  const allTime = useGameAllTime({ game: 'scour', active: LOFT && !playing && !EMBED });
   const dayStats = useDayStats();
-  const catRank = useCategoryRank({ self: 'scour', active: LOFT && !playing });
+  const catRank = useCategoryRank({ self: 'scour', active: LOFT && !playing && !EMBED });
   const score = foundCount;
 
   // ---- the board ------------------------------------------------------------
@@ -598,10 +609,11 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
   );
 
   return (
-    <div className={STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {phoneStage && !!g.t0 && (playing || !revealed) && (() => {
+    <div className={EMBED ? 'stage-page lgs-hosted' : (STAGE ? 'stage-page' : (LOFT ? 'loft-page' : undefined))}
+      data-stage-theme={EMBED ? (EMBED.theme || 'dark') : (STAGE ? stageTheme : undefined)}
+      data-stage-pin={EMBED ? '' : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: EMBED ? 0 : '100vh', position: 'relative', background: EMBED ? 'transparent' : (STAGE ? 'var(--stg-ground)' : COLORS.cream), color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {(EMBED ? !!g.t0 : (phoneStage && !!g.t0 && (playing || !revealed))) && (() => {
         // The phone play stage: the same grid, list and Give up, drawn on the
         // shared full-screen frame. Every gesture runs through onDown / onMove /
         // onUp above, so checking, saving and scoring are the page's own.
@@ -677,14 +689,14 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
           </div>
         ) : null;
         return (
-          <PlayStage wide bg={gameColor('scour')} label="Scour"
+          <PlayStage wide bg={gameColor('scour')} label="Scour" inline={!!EMBED} look={EMBED ? embedLook(EMBED) : null}
             eyebrow={`Words run ${dirShort}`}
             top={top} bottom={bottom} foot={`${foundCount} of ${N} words`} frac={N ? foundCount / N : 0} />
         );
       })()}
       {!STAGE && <Grain />}
       {!STAGE && <DailyChrome slug="scour" name="Scour" collapsed={started} loft={LOFT} />}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="scour" quizId={PUZZLE.quizId}
           name="Scour"
           cat="Word"
@@ -703,7 +715,7 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
           ]}
         />
       )}
-      <div className="so-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
+      <div className="so-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS, display: EMBED ? 'none' : undefined }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <style dangerouslySetInnerHTML={{ __html: `
             .so-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
@@ -835,7 +847,7 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
             <button className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Hide game board</button>
           )}
           </div>
-          {LOFT && !playing && (
+          {LOFT && !EMBED && !playing && (
             <LoftFinish
               name="Scour"
               catRank={catRank}
@@ -950,8 +962,10 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
           </HelpSheet>
       )}
 
-      <StageFold />
-      <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      {/* The Eagle Eye door (owner, 2026-11-13): offered once per game on today's start gate; never inside the run. */}
+      <RunDoorPop id="eagleeye" game="scour" ready={hydrated && preStart && isTodays && !EMBED} self="Scour" />
+      {!EMBED && <StageFold />}
+      <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 640, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Scour</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Scour is a free daily word search from Mind Loft. Every day brings one theme, such as cities, countries, food, animals, jobs or first names, and a big fifteen by fifteen grid with fourteen to eighteen words from it hidden inside.

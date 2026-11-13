@@ -808,6 +808,46 @@ trophy `circuit-duediligence` "Ken Griffin" (gold, TrendingUp). Files: `lib/due-
   line ("Business test"), RunGateTile, MoreRuns, RUN_PAGES, EntryDoor, CircuitArt, the DrawingPop / ThanksPop
   regexes, challenge ENGINE_CAT (Trivia). `/due-diligence` redirects to it. Wiring `scripts/wire-duediligence.mjs`.
 
+## Eagle Eye (`/eagleeye`): the daily visual run (owner, 2026-11-13)
+
+Spot, Jig, Saw, Scour, then Witness (the approved "Eagle Eye Run Mockup" order; the owner kept Jig, Saw and Scour
+when offered a shorter lineup), back to back on one page. Circuit id `eagleeye`, engine `eagleeye`, scorer
+`eagleeye`, `scoreFrom: '2026-11-13'`, `ownerOrder`, `lead: 11`, trophy `circuit-eagleeye` "Eagle Eye" (gold, Star).
+Files: `lib/eagle-eye.js`, `app/eagleeye/{page.js,EagleEyeClient.jsx,leaderboard/page.js,card/route.js}`, forked
+from Space Cadet. Wiring `scripts/wire-eagleeye.mjs`.
+
+- **Time and accuracy, where each is relevant** (owner: "scored like other runs with time and accuracy factoring
+  in, where relevant"). Each leg pays up to 100 in Crossed Up's shape, `100 x accuracy x ((1 - share) + share x
+  speed)`. Accuracy is differences found (Spot), finished or not (Jig, Saw), words found (Scour), questions right
+  (Witness). Speed falls in a straight line to 0 at the leg's cap (Spot 4:00, Jig and Saw 20:00, Scour 10:00).
+  Share is how much rides on the clock: Jig and Saw 0.6, Scour 0.5, Spot 0.4, Witness 0 (a memory test, answers
+  alone). Out of 500. The board's scorer and the page use the same `eeLegPoints`.
+- **Ladder** (owner picked the animal ladder, option A), low to high: Mole 0, Bat 150, Pigeon 240, Magpie 300,
+  Owl 350, Hawk 390, Eagle Eye 430. Here the top rung IS the run's name, on purpose. PLACEHOLDERS: set so a
+  middling run lands on Magpie or Owl (owner found Read the Room's ladder too harsh); tune from a fortnight of runs.
+- **The article** (owner: "you are an owl", not "you are owl"): `eeSentence(name)` gives "You are an Owl", "You
+  are a Hawk", and "You have an Eagle Eye" for the top rung. The finale caption, the end page's top note, the
+  share text and the share card all read through it.
+- **Jig, Saw and Scour learned to play inside a run for this** (`useRunEmbed()`, 2026-11-13). Embedded, each
+  autostarts, hides its cap, wrap (gate, finish card, report row, join form) and about prose, draws its stage
+  `inline` in the run's look, KEEPS the stage up after the finish (so "See your finished board" works), and reports
+  through `EMBED.onResult`. Jig and Saw report their clock with Peek's seconds included. Spot and Witness already
+  embedded through SimpleDaily. A game already finished today is banked off its own save (three save shapes, see
+  `bankedOf` in the client); a result from another device carries no clock here, so it pays no speed on this
+  screen and the board reads the real row.
+- **The finale** is RunFinale's `lens` piece: seven rungs out of focus, a lens frame climbs from Mole and pulls
+  each rung sharp, the earned rung fills with ink and the caption reads the sentence.
+- **Looks**: the gate wears Visual's magenta `#e879f9` (`EE_GROUND`); the legs wear Spot rose, Jig gold, Saw mint,
+  Scour sky, Witness violet (`EE_FORMS`). The entry centrepiece is the eye test card. The jigsaw legs widen the
+  play frame to 1280px.
+- **The share card** `/eagleeye/card?t=<total>`: the eye over the ladder with your rung ringed, and the sentence
+  large on the left. No `?t` is the invite.
+- **Pop-ups**: `app/EagleEyePop.jsx` on the home (see home-and-ui.md), and Spot, Jig, Saw, Scour and Witness each
+  mount `RunDoorPop id="eagleeye"` (once per game, everyone, from 2026-11-13), gated `!EMBED`.
+- Placed like Due Diligence: LEAD_ORDER and SHOWN, CIRC_LEAD / PILL_CIRCUITS / LEAD_CIRCUITS / RUN_SHORT / the pin
+  line ("Eye test"), RunGateTile, MoreRuns, RUN_PAGES, EntryDoor, CircuitArt, the DrawingPop / ThanksPop regexes,
+  challenge ENGINE_CAT (Visual). `/eagle-eye` redirects to it.
+
 ## Enter the Dojo: In Color (`/dojocolor`): the Dojo on the color twins (owner, 2026-11-08)
 
 "Same as Enter the Dojo, just the color version." SixesToo, SudsToo, then ONE color variant dealt by

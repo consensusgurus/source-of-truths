@@ -142,6 +142,7 @@ function Board({ P, s, setS, active, done }) {
 
 const GAME = {
   key: 'witness', name: 'Witness', cat: 'Visual', miss: null,
+  runDoor: 'eagleeye',
   fresh: () => ({ phase: 'study', t: null, ans: [] }),
   validSave: (P, s) => (s.phase === 'study' || s.phase === 'ask') && Array.isArray(s.ans) && s.ans.length <= P.qs.length,
   touched: (s) => !!s.t,

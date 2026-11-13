@@ -2441,6 +2441,18 @@ per browser: `sot_pop_spacecadet` is stamped when it renders; a browser with any
 if the way is not clear within 30s it gives up for that visit without stamping.
 `?spacecadet=0` suppresses, `?spacecadet=1` previews without stamping.
 
+
+## The Eagle Eye pop-up (owner, 2026-11-13)
+
+`app/EagleEyePop.jsx`, mounted in StageToday after SpaceCadetPop (home only), forked from it. "Do you have an
+Eagle Eye? Take the new eye test!" with one line on the run, a full-width "Take the Test" to /eagleeye, a Close
+link and the X. Shown ONCE per browser to EVERYONE, new and returning (owner: "push to new users with a pop-up
+... new / returning users i mean"): `sot_pop_eagleeye` is stamped when it renders; a browser with any
+`sot_run_eagleeye_*` save is stamped and skipped. Never while a puzzle is being played (`gameActive()`), it waits
+for the entry door and every other card (Space Cadet's included), and a browser shown the Space Cadet card today
+is left alone until its next visit, unstamped: one run card a visit. `?eagleeye=0` suppresses, `?eagleeye=1`
+previews without stamping.
+
 ## The Details card: board band, glyph and fact chips (owner, 2026-11-08)
 
 Option E from the Details card mockup. In the Details view every puzzle card carries:

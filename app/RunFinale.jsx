@@ -39,6 +39,7 @@ import React, { useEffect, useRef } from 'react';
 import { softGround } from '@/lib/category-ramp';
 import { useStageChrome } from './GauntletScreens';
 import { beatHtml, playBeat, BEAT_CSS } from './WhereYouStand';
+import { eeSentence } from '@/lib/eagle-eye';
 
 const DINK = '#08222e';
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -57,6 +58,8 @@ export const FINALE_PIECE = {
   // reveal mockups): its own piece, the chart. Tape's unlabelled price line
   // climbs through one band per rank and closes with a price flag.
   duediligence: 'chart',
+  // Eagle Eye (2026-11-13): the lens, which pulls each rank into focus.
+  eagleeye: 'lens',
 };
 
 // ── THE PIECES ─────────────────────────────────────────────────────────────
@@ -131,6 +134,31 @@ const PIECES = {
       const ky = q(`#ky${(k * 7 + 3) % 16}`); ky.classList.remove('hit'); void ky.offsetWidth; ky.classList.add('hit');
     },
     land: (q) => { q('.lcd').classList.add('blink'); const e = q('#ky14'); e.classList.remove('hit'); void e.offsetWidth; e.classList.add('hit'); },
+  },
+  // THE LENS (owner, 2026-11-13, approved on the "Eagle Eye Run Mockup" canvas).
+  // Eagle Eye's piece. Seven rungs sit out of focus, Mole at the foot. A lens
+  // frame climbs from the bottom and each rung it reaches comes sharp while the
+  // ones below fall back; on the reveal the earned rung fills with ink and the
+  // caption reads the rank with its article ("You are an Owl", owner: not "you
+  // are owl"). Nothing leaves the 420 by 300 box.
+  lens: {
+    html: (L) => {
+      const n = L.length;
+      const top = (k) => 30 + (n - 1 - k) * 38;
+      return `<div class="lz"><div class="lz-cap" id="lzc">How sharp were you?</div>
+        <div class="lz-ring" id="lzr" style="top:${top(0) - 5}px"></div>
+        ${L.map((t, i) => `<div class="lz-r" id="lz${i}" style="top:${top(i)}px">${esc(t.name)}</div>`).join('')}</div>`;
+    },
+    step: (q, L, k) => {
+      const n = L.length;
+      for (let j = 0; j < k; j += 1) { const o = q(`#lz${j}`); if (o) { o.classList.remove('on'); o.classList.add('done'); } }
+      q(`#lz${k}`).classList.add('on');
+      const r = q('#lzr'); r.classList.add('in'); r.style.top = `${30 + (n - 1 - k) * 38 - 5}px`;
+    },
+    land: (q, L, K) => {
+      q(`#lz${K}`).classList.add('lock'); q('#lzr').classList.add('lock');
+      const c = q('#lzc'); c.textContent = eeSentence(L[K].name); c.classList.add('here');
+    },
   },
   dict: {
     html: (L) => `<div class="dict"><div class="dh"><span>${esc(firstWord(L[0].name))}</span><span>Mind Loft Dictionary</span><span>${esc(String(L[L.length - 1].name).split(/\s+/).slice(-1)[0])}</span></div>
@@ -623,6 +651,18 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .keys i{font-style:normal;height:36px;border-radius:8px;border:1px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800}
 .rfx .keys i.hit{animation:rfxKey .35s ease both}
 @keyframes rfxKey{40%{background:currentColor;transform:scale(.9)}100%{transform:none}}
+/* lens (Eagle Eye) */
+.rfx .lz{position:absolute;left:60px;right:60px;top:0;bottom:0;color:${DINK}}
+.rfx .lz-cap{position:absolute;left:-40px;right:-40px;top:0;height:24px;line-height:24px;text-align:center;font-size:15px;font-weight:800;letter-spacing:.02em;color:${DINK};transition:opacity .25s ease}
+.rfx .lz-cap.here{font-size:18px;animation:rfxLzCap .5s ease-out both}
+.rfx .lz-r{position:absolute;left:0;right:0;height:33px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px solid ${DINK};border-radius:10px;background:#ffffff;color:${DINK};font-size:16px;font-weight:700;line-height:1.3;filter:blur(4px);opacity:.5;transition:filter .28s ease,opacity .28s ease,background .35s ease,color .35s ease,transform .35s ease}
+.rfx .lz-r.on{filter:blur(0);opacity:1;font-weight:800}
+.rfx .lz-r.done{filter:blur(1.4px);opacity:.38}
+.rfx .lz-r.lock{background:${DINK};color:#ffffff;transform:scale(1.05)}
+.rfx .lz-ring{position:absolute;left:-7px;right:-7px;height:43px;box-sizing:border-box;border:3px solid ${DINK};border-radius:14px;opacity:0;transition:top .34s cubic-bezier(.3,.8,.3,1),opacity .25s ease,transform .35s ease}
+.rfx .lz-ring.in{opacity:1}
+.rfx .lz-ring.lock{transform:scale(1.05)}
+@keyframes rfxLzCap{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 /* dictionary */
 .rfx .dict{position:absolute;left:40px;right:40px;top:0;bottom:0;background:#fffdf6;border:3px solid ${DINK};border-radius:6px;padding:12px 16px;text-align:left;color:${DINK}}
 .rfx .dict *{color:${DINK}}

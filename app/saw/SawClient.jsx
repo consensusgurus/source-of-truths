@@ -50,6 +50,9 @@ import { meRequest } from '@/app/quizMeClient';
 import { endSolved } from '@/lib/end-verdict';
 import HelpSheet from '../HelpSheet';
 import PlayStage, { usePhoneStage } from '../PlayStage';
+import { useRunEmbed, useRunHelp } from '../RunEmbed';
+import { embedLook } from '../LogicStage';
+import RunDoorPop from '../circuits/RunDoorPop';
 import ShelfLink from '../jig/ShelfLink';
 
 
@@ -403,6 +406,12 @@ const JG_ST_CSS = `
 
 export default function SawClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
+  // INSIDE A RUN (Eagle Eye, owner 2026-11-13): mounted in app/RunEmbed.jsx the
+  // puzzle keeps its board, tray, save and result row, and drops its page: no
+  // cap, start gate, finish card, report row, join form or about prose. The
+  // board plays on the stage drawn inline in the run's frame, and stays up
+  // once finished so the run can show it. Outside a run EMBED is null.
+  const EMBED = useRunEmbed();
   const C = PUZZLE.cols, R = PUZZLE.rows;
   const NP = C * R;
   const BW = C * S, BH = R * S;
@@ -504,10 +513,12 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   // box unchanged. On a desktop the stage is the whole window, so the board is
   // sized to the room it has (the full screen fit), and grows with the screen.
   const phoneStage = usePhoneStage();
-  const stageOn = STAGE && phoneStage && !!g.t0 && (playing || !revealed);
+  const stageOn = EMBED ? !!g.t0 : (STAGE && phoneStage && !!g.t0 && (playing || !revealed));
+  useRunHelp(EMBED, () => setShowHelp(true));
+  useEffect(() => { if (EMBED && EMBED.autostart && hydrated && preStart) startGame(); }, [EMBED, hydrated, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   const fitOn = full || (stageOn && !narrow);
   // On the stage the page itself does not scroll; the stage does.
-  const scrollHost = () => (stageOn && playRef.current && playRef.current.closest('.pst')) || null;
+  const scrollHost = () => (stageOn && !EMBED && playRef.current && playRef.current.closest('.pst')) || null;
   // The phone's tray dock is fixed over the bottom of the stage, so the stage's
   // column ends with room for it, or the foot (Give up) sits under the dock.
   useEffect(() => {
@@ -519,13 +530,13 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   useEffect(() => {
     if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`);
   }, []);
-  const iq = useIqStanding({ game: 'saw', quizId: PUZZLE.quizId, active: LOFT && !playing });
-  const nextUp = useNextUnplayed({ self: 'saw', active: LOFT && !playing });
-  const upNext = useUnplayedSimilar({ self: 'saw', active: LOFT && !playing });
-  const dailyBoard = useDailyBoard({ quizId: PUZZLE.quizId, active: LOFT && !playing });
-  const allTime = useGameAllTime({ game: 'saw', active: LOFT && !playing });
+  const iq = useIqStanding({ game: 'saw', quizId: PUZZLE.quizId, active: LOFT && !playing && !EMBED });
+  const nextUp = useNextUnplayed({ self: 'saw', active: LOFT && !playing && !EMBED });
+  const upNext = useUnplayedSimilar({ self: 'saw', active: LOFT && !playing && !EMBED });
+  const dailyBoard = useDailyBoard({ quizId: PUZZLE.quizId, active: LOFT && !playing && !EMBED });
+  const allTime = useGameAllTime({ game: 'saw', active: LOFT && !playing && !EMBED });
   const dayStats = useDayStats();
-  const catRank = useCategoryRank({ self: 'saw', active: LOFT && !playing });
+  const catRank = useCategoryRank({ self: 'saw', active: LOFT && !playing && !EMBED });
 
   useEffect(() => {
     if (!armReveal) return undefined;
@@ -703,6 +714,8 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   function postResult(g2, score) {
     abandon.markFlushed();
     const el = g2.t0 ? Math.max(1, Math.round((((g2.tEnd || Date.now()) - g2.t0) + (g2.pen || 0)) / 1000)) : 1;
+    // The run's clock is this puzzle's own, Peek's seconds included.
+    if (EMBED) EMBED.onResult({ key: 'saw', score, total: 10, won: g2.status === 'won', t0: g2.t0, tEnd: (g2.tEnd || Date.now()) + (g2.pen || 0) });
     try { setStats(recordStat(PUZZLE.num, { s: score, t: 10, g: 0, won: g2.status === 'won' })); } catch (e) {}
     try {
       fetch('/api/quiz/result', {
@@ -1328,7 +1341,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     )}
     </div>
 
-    <div className={`jg-play${boxMode ? ' box' : ''}`} ref={playRef} style={boxMode && dockH && !stageOn ? { paddingBottom: dockH + 8 } : undefined}>
+    <div className={`jg-play${boxMode ? ' box' : ''}`} ref={playRef} style={boxMode && dockH && (!stageOn || EMBED) ? { paddingBottom: dockH + 8 } : undefined}>
       <div className={`jg-boardbox${boxMode && zoom > 1 ? ' scr' : ''}`} ref={boxRef} style={fitOn && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * BP) / (BH + 2 * BP)).toFixed(3)}))` })}>
        <div className="jg-zoom" style={boxMode && zoom > 1 ? { width: `${zoom * 100}%` } : undefined}>
         <svg ref={boardRef} className={`jg-board${flashMiss ? ' miss' : ''}${LOOSE && started ? ' lt' : ''}`} viewBox={`${-BP} ${-BP} ${BW + 2 * BP} ${BH + 2 * BP}`}
@@ -1472,11 +1485,12 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   );
 
   return (
-    <div className={[STAGE ? 'stage-page' : (LOFT ? 'loft-page' : ''), full ? 'jg-isfull' : ''].filter(Boolean).join(' ') || undefined}
-      data-stage-theme={STAGE ? stageTheme : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+    <div className={[STAGE ? 'stage-page' : (LOFT ? 'loft-page' : ''), full ? 'jg-isfull' : '', EMBED ? 'lgs-hosted' : ''].filter(Boolean).join(' ') || undefined}
+      data-stage-theme={EMBED ? (EMBED.theme || 'dark') : (STAGE ? stageTheme : undefined)}
+      data-stage-pin={EMBED ? '' : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: EMBED ? 0 : '100vh', position: 'relative', background: EMBED ? 'transparent' : (STAGE ? 'var(--stg-ground)' : T.surface), color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {stageOn && (
-        <PlayStage bg={gameColor('saw')} label="Saw" full big
+        <PlayStage bg={gameColor('saw')} label="Saw" full big inline={!!EMBED} look={EMBED ? embedLook(EMBED) : null}
           eyebrow={`Saw No. ${PUZZLE.num} · ${PUZZLE.name}`}
           top={(
             <div className={'jg-st' + (LOOSE ? ' lt' : '')}>
@@ -1492,7 +1506,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
       {!STAGE && (
       <DailyChrome slug="saw" name="Saw" collapsed={started} loft={LOFT} />
       )}
-      {LOFT && (
+      {LOFT && !EMBED && (
         <Cap gameKey="saw" quizId={PUZZLE.quizId}
           name="Saw"
           cat="Visual"
@@ -1508,7 +1522,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           ]}
         />
       )}
-      <div className="jg-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS }}>
+      <div className="jg-wrap" style={{ position: 'relative', zIndex: 2, maxWidth: 1180, margin: '0 auto', padding: '18px 38px 80px', fontFamily: SANS, display: EMBED ? 'none' : undefined }}>
         <style dangerouslySetInnerHTML={{ __html: `
           @media(max-width:560px){.jg-wrap{padding-left:10px !important;padding-right:10px !important;}}
           .jg-btn{font-family:${SANS};font-weight:800;font-size:14px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:8px;padding:9px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
@@ -1714,7 +1728,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           )}
         </div>
         </div>
-        {LOFT && !playing && (
+        {LOFT && !EMBED && !playing && (
           <LoftFinish
             name="Saw"
             catRank={catRank}
@@ -1838,7 +1852,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
+      {!EMBED && <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />}
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 220, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>
@@ -1852,8 +1866,10 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           </HelpSheet>
       )}
 
-      <StageFold />
-      <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
+      {/* The Eagle Eye door (owner, 2026-11-13): offered once per game on today's start gate; never inside the run. */}
+      <RunDoorPop id="eagleeye" game="saw" ready={hydrated && preStart && isTodays && !EMBED} self="Saw" />
+      {!EMBED && <StageFold />}
+      <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Saw</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Saw is a free daily online jigsaw puzzle from Mind Loft, the tall sibling of <a href="/jig" style={{ color: INK, fontWeight: 800 }}>Jig</a>. Every day brings a new portrait photograph, a featured picture from Wikimedia Commons, cut taller than wide into 77 or 80 classic interlocking pieces. Everyone gets the same picture and the same cut, so the daily leaderboard is a fair race.

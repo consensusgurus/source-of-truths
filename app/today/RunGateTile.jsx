@@ -31,6 +31,7 @@ export const GATE_TEXT = {
   room: ['crowd games', (n) => `${n} Rooms. No Answer Key.`, 'Tonight’s crowd is the key.'],
   spacecadet: ['spatial puzzles', (n) => `${n} Legs. One Launch.`, 'One clock decides your rank.'],
   duediligence: ['business puzzles', (n) => `${n} Checks. One Deal.`, 'Fewer clues decide your rank.'],
+  eagleeye: ['visual puzzles', (n) => `${n} Looks. One Sharp Eye.`, 'Speed and accuracy decide your rank.'],
 };
 
 // A leg chip's short form, where the full name will not fit the strip
