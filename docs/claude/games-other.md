@@ -954,10 +954,20 @@ too, same puzzles." Key/route/folder `spot`, category **Logic**, skill Focus and
   holds changed cells, that each difference can actually be tapped under the smallest-wins rule, the
   Jig credit and date rule, labels (US spelling, no dash) and that two all-recolor days never run
   back to back. Shown to fail on a moved difference and on a future Jig photo.
-- **Bank: 14 boards, 2026-11-12 to 2026-11-25.** It is NOT a generated runway; restock by adding
-  boards to `boards.py` and re-running `export.py` (which keeps live rows byte for byte only if
-  their ops and source files are unchanged, so never touch a live board's ops). `grant` in
-  `boards.py` is a finished spare (Jig No. 67) that cannot run before 2026-11-26.
+- **Bank: 50 boards, 2026-11-12 to 2026-12-31** (14 at launch, 36 added 2026-11-13). It is NOT a
+  generated runway. Restock by adding boards to `boards.py`, building each with `spotkit.py build`,
+  LOOKING at its review sheet, then listing it in `scripts/spot/append.py` (board id, Jig number) and
+  running that. `append.py` adds rows to the end of `app/spot/puzzles.js` and `scripts/spot-grid.json`
+  and never touches a live row, so it needs only the new boards' source photos. `export.py` rebuilds the
+  whole bank from its ORDER and needs every past source photo; do not use it for a restock.
+- **Sourcing photos when Commons rate-limits the cloud sandbox** (429): `fetch.py`'s requests work from
+  the device VM. Download into the connected repo's `scripts/spot/src/` there and stage the files across.
+- **Photos skipped on 2026-11-13, so a later restock does not retry them:** the Temple Mount aerial
+  (no altering a holy site), and Lukmanier, Eidi, Muzhappilangad, Sholur, Seljalandsfoss, Vang Vieng
+  karst, Chimney Rock, the zebras, the Dalmatian, the red pandas, the cardamom buns, the apple cake,
+  the daylilies and the torii (edits smeared or read badly at 1x). Square crops (spider, starfish) do
+  not fit the pair layout. Unused and still worth trying: Nos. 3, 15, 23, 30, 39, 42, 43, 59, 63, 75,
+  84, 89, 93, 97.
 - **Kids Spot** is a kids daily (`lib/kids-daily.js` key `spot`, `adultHref: '/spot'`) with no bank
   of its own: `app/kids/kids-spot-boards.js` reads the grown-up bank on the server (live <= today)
   and the day's board is the pair Spot played on that date, newest for a date before launch. No
