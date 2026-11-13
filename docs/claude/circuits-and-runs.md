@@ -578,19 +578,26 @@ replaced the end page's own sweep + count-up + climb, Crossed Up's ripple curtai
 (`curtainOn` is forced false) and, for the gauntlets, nothing else (they had no curtain since
 2026-10-25).
 
-- **Part one, the scoreboard** (owner, 2026-11-02; it replaced the recap ring, whose labels
-  crowded the circle on a phone). The total sits on top; under it one full-width row per leg:
-  name, subject, `got / max` (max from `finale.legMax[i]`: the gauntlets use the section's
-  question count; Dojo `dojoWeight`, Crossed `crossedWeight`, Judged `lawCaseMaxFor`, Room the
-  part, Price Check 10, Passport the leg's `max`), and a bar in the leg's colour. Rows light and
-  fill in turn while the total counts up; the ground takes each leg's colour in the Color look
-  only (`pal.look === 'color' && !paper`). `legRanks` (RunClient only) puts "#14 of 218 today"
-  under that leg's row. NO red miss marks (owner: "the bars themselves show length"). Same on
-  desktop and phone; seven legs on a phone under 740px tall tighten a step (`.tight`).
-  Its classes are all `rfr-*` on purpose: RunClient's global `.rn{color:#eef2fa}` (and Room's `.rr`)
-  leaked into the first build's short `.rn/.rr` names and printed the quiz names white on the light
-  looks (2026-11-02). Every class the finale adds must carry an `rfx`/`rfr` prefix. The empty track
-  is a mid grey (reads on light and dark looks), never dark ink at low alpha.
+- **Part one, the Stack** (owner, 2026-11-13: "the end of run scoring animation is so weak", then
+  "go with A for all runs" from the "Run Scoring: Bolder Full-Screen Animations" canvas; it replaced
+  the 2026-11-02 scoreboard, a total over thin bars in a 540px column, which had replaced the recap
+  ring). The total sits at the TOP of the screen (`.rfx.p1`, 128px, 112px on a phone) and every leg
+  rises from the foot as a band the full width of the screen: name, subject, "#14 of 218 today"
+  (`legRanks`, RunClient only) and `got / max` (max from `finale.legMax[i]`: the gauntlets use the
+  section's question count; Dojo `dojoWeight`, Crossed `crossedWeight`, Judged `lawCaseMaxFor`, Room
+  the part, Price Check 10, Passport the leg's `max`). First leg at the foot, later legs stack on it.
+  HEIGHTS ARE MEASURED, not fixed: the stack gets the room under the total; every band keeps a floor
+  (46px phone, 44 desktop, less when many legs) so a zero still names its leg, and the rest is dealt
+  by each leg's `got / max` share of the run's sum, so the stack ALWAYS fills the screen (a run of
+  all zeros splits evenly). Band colour is the leg's `softGround` pastel in the Color look
+  (`pal.look === 'color' && !paper`), where the ground also takes each leg's colour as it rises; the
+  plain and dark looks get two alternating tints of the look's own ink. Band text sits in a 980px
+  centred column on wide screens while the colour runs edge to edge. At the end the ground goes to
+  `endBg`, the total pops once, the stack holds 1.2s, then drops off the foot and part two begins
+  (`toPart2` swaps `p1` for `p2`). NO red miss marks. Its classes are all `rfr-*` on purpose:
+  RunClient's global `.rn{color:#eef2fa}` (and Room's `.rr`) leaked into the first build's short
+  `.rn/.rr` names and printed the quiz names white on the light looks (2026-11-02). Every class the
+  finale adds must carry an `rfx`/`rfr` prefix.
 - **Part two, the run's own title piece** (`FINALE_PIECE` in RunFinale): books (Trivia
   Gauntlet, Encore), prism (Science, see the prism section at the foot of this file), calculator (Math), dictionary (English), belt (Dojo, belt
   colours from the ladder `chip`), name tag (Room), school letters (Judged, `short` + `chip`),

@@ -7,12 +7,16 @@
 // One full-screen, centred sequence in two parts, played once over a freshly
 // finished run, then handed to the end page underneath (GauntletEndStage):
 //
-//   1. THE SCOREBOARD (owner, 2026-11-02, replacing the recap ring, which
-//      crowded its labels on a phone). The total sits on top and every leg is
-//      one full-width row under it: name, subject, score of what it could
-//      score, and a bar. Each row lights and its bar fills in turn while the
-//      ground takes that leg's colour and the total counts up; the leg's rank
-//      today lands under its row. No miss marks: the bar's length says it.
+//   1. THE STACK (owner, 2026-11-13: "the end of run scoring animation is so
+//      weak", then "go with A for all runs" from the "Run Scoring: Bolder
+//      Full-Screen Animations" canvas). It replaced the 2026-11-02 scoreboard
+//      (a total over thin bars in a 540px column). The total sits at the top
+//      of the screen and every leg rises from the foot as a band the full
+//      width of the screen in the leg's own pastel: name, subject, the leg's
+//      rank today and its score. A band's height is its share of the run, so
+//      the finished screen is the run as a stack of stripes that fills the
+//      room under the total. The ground takes each leg's colour as its band
+//      rises and the total counts up. No miss marks: the band's height says it.
 //   2. THE TITLE, IN THE RUN'S OWN PIECE. The rows clear, the score settles,
 //      and the run plays its own title climb (PIECES below): books for
 //      the Trivia Gauntlet and Encore, the prism for Science, a calculator for
@@ -306,14 +310,20 @@ export default function RunFinale({
     const paint = (c) => { root.style.background = c; groundRef.current = c; setGround(c); };
 
     // ── build ──
-    const rowsHtml = legs.map((g, i) => {
+    // A band's share of the stack: what the leg scored of what it could score.
+    const fr = legs.map((g) => {
       const max = Math.max(0.0001, Number(g.max) || 0);
-      const got = Math.max(0, Math.min(max, Number(g.got) || 0));
+      return Math.max(0, Math.min(max, Number(g.got) || 0)) / max;
+    });
+    // The plain and dark looks carry no pastel: their bands are two tints of the
+    // look's own ink, so every band reads on white and on near black alike.
+    const bandBg = (g, i) => (colorGround && g.colour ? softGround(g.colour) : `color-mix(in srgb, var(--rfx-ink) ${i % 2 ? 14 : 7}%, transparent)`);
+    const rowsHtml = legs.map((g, i) => {
       const shown = g.shown != null ? g.shown : Math.round(Number(g.got) || 0);
       const showMax = Number.isFinite(Number(g.max)) && Number(g.max) > 0 && Number(g.max) === Math.round(Number(g.max));
-      return `<div class="rfr" id="rfr${i}"><div class="rfr-t"><span class="rfr-n"><b>${esc(g.name)}</b>${g.sub ? `<small>${esc(g.sub)}</small>` : ''}</span><span class="rfr-v">${esc(shown)}${showMax ? `<em> / ${esc(g.max)}</em>` : ''}</span></div>
-        <div class="rfr-k"><div class="rfr-f" id="rfrf${i}" style="background:${g.colour}" data-f="${(got / max).toFixed(4)}"></div></div><div class="rfr-r" id="rfrr${i}"></div></div>`;
+      return `<div class="rfr" id="rfr${i}" style="background:${bandBg(g, i)}"><div class="rfr-in"><span class="rfr-n"><b>${esc(g.name)}</b>${g.sub ? `<small>${esc(g.sub)}</small>` : ''}</span><span class="rfr-r" id="rfrr${i}"></span><span class="rfr-v">${esc(shown)}${showMax ? `<em> / ${esc(g.max)}</em>` : ''}</span></div></div>`;
     }).join('');
+    root.classList.add('p1');
     root.innerHTML = `<div class="cap"><span>${esc(circuitName)}${dateLabel ? ` · ${esc(dateLabel)}` : ''}</span><span id="capR"></span></div>
       <div class="rcol">
         <div class="rhero" id="rhero"><span class="num" id="f-score">0</span><span class="unit" id="f-unit">${esc(unitWord)}</span></div>
@@ -323,6 +333,23 @@ export default function RunFinale({
         <div class="rfs" id="rfs"></div>
       </div>`;
     const q = (s) => root.querySelector(s);
+    // THE STACK IS MEASURED: it gets the room under the total, whatever the
+    // screen. Every band keeps a floor tall enough to name its leg (a zero still
+    // says which leg it was) and the rest of the room is dealt by score.
+    {
+      const hb = q('#rhero').getBoundingClientRect().bottom - root.getBoundingClientRect().top;
+      const avail = Math.max(120, root.clientHeight - hb - (phone ? 22 : 30));
+      const nL = Math.max(1, legs.length);
+      const minH = Math.max(28, Math.min(phone ? 46 : 44, Math.floor((avail * 0.72) / nL)));
+      const wsum = fr.reduce((a, b) => a + b, 0);
+      legs.forEach((g, i) => {
+        // A run that scored nothing still fills the room: its bands split it evenly.
+        const h = Math.round(minH + Math.max(0, avail - nL * minH) * (wsum > 0 ? fr[i] / wsum : 1 / nL));
+        const r = q(`#rfr${i}`);
+        r.style.setProperty('--bh', `${h}px`);
+        r.firstElementChild.style.height = `${h}px`;
+      });
+    }
     let alive = true;
     let skipped = false;
     const timers = [];
@@ -341,6 +368,7 @@ export default function RunFinale({
 
     const toPart2 = (animate) => {
       const hero = q('#rhero'); const r0 = hero.getBoundingClientRect();
+      root.classList.remove('p1');
       root.classList.add('p2');
       if (!animate) return;
       const r1 = hero.getBoundingClientRect();
@@ -450,7 +478,6 @@ export default function RunFinale({
           paint(gOf(g.colour));
           q('#capR').textContent = `${legWord} ${i + 1} of ${legs.length}`;
           q(`#rfr${i}`).classList.add('in');
-          const fl = q(`#rfrf${i}`); fl.style.width = `${Number(fl.dataset.f) * 100}%`;
           const add = Number(g.got) || 0;
           count(num, Math.round(sum), Math.round(sum + add), 620);
           sum += add;
@@ -459,9 +486,13 @@ export default function RunFinale({
           await wait(480);
         }
         num.textContent = String(score);
-        await wait(900);
+        // The whole run stands as one stack under the settled total, then the
+        // stack drops off the foot of the screen and the title piece takes over.
+        paint(endBg);
+        num.classList.add('rfx-pop');
+        await wait(1200);
         q('#rfrs').classList.add('gone');
-        await wait(300);
+        await wait(430);
         // part two
         q('#capR').textContent = heading || 'Your title';
         toPart2(true);
@@ -563,22 +594,23 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .cap{position:absolute;top:max(18px, env(safe-area-inset-top));left:24px;right:24px;display:flex;justify-content:space-between;gap:12px;white-space:nowrap;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
 .rfx .rcol{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:0 16px}
 .rfx .rhero{display:flex;flex-direction:column;align-items:center;gap:6px}
-.rfx .rfr-s{width:min(540px,100%);display:flex;flex-direction:column;gap:14px;text-align:left;transition:opacity .3s ease}
-.rfx .rfr-s.gone{opacity:0}
+.rfx.p1 .rcol{justify-content:flex-start;padding-top:calc(max(18px, env(safe-area-inset-top)) + 40px)}
+.rfx .rfr-s{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column-reverse;text-align:left;transition:transform .42s cubic-bezier(.5,0,.85,.5)}
+.rfx .rfr-s.gone{transform:translateY(102%)}
 .rfx.p2 .rfr-s{display:none}
 .rfx .rfr,.rfx .rfr *{color:inherit}
-.rfx .rfr{display:flex;flex-direction:column;gap:6px;opacity:.28;transition:opacity .3s ease}
-.rfx .rfr.in{opacity:1}
-.rfx .rfr-t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;white-space:nowrap}
-.rfx .rfr-n{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.rfx .rfr-n b{font-size:17px;font-weight:800}.rfx .rfr-n small{font-size:12.5px;font-weight:700;opacity:.78;margin-left:8px}
-.rfx .rfr-v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;flex:none}.rfx .rfr-v em{font-style:normal;font-size:14px;opacity:.7}
-.rfx .rfr-k{position:relative;height:12px;border-radius:6px;background:rgba(120,132,144,.24)}
-.rfx .rfr-f{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;box-shadow:inset 0 0 0 2px currentColor;transition:width .6s cubic-bezier(.2,.8,.2,1)}
-.rfx .rfr-r{font-size:12.5px;font-weight:700;opacity:0;text-align:right;min-height:15px;line-height:15px;margin-top:-2px;transition:opacity .3s ease;font-variant-numeric:tabular-nums}
+.rfx .rfr{height:0;overflow:hidden;box-shadow:inset 0 1px 0 currentColor;transition:height .55s cubic-bezier(.2,.9,.25,1)}
+.rfx .rfr.in{height:var(--bh)}
+.rfx .rfr-in{display:flex;align-items:center;gap:14px;white-space:nowrap;max-width:980px;margin:0 auto;padding:0 28px}
+.rfx .rfr-n{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
+.rfx .rfr-n b{font-size:24px;font-weight:800}.rfx .rfr-n small{font-size:14.5px;font-weight:700;opacity:.8;margin-left:10px}
+.rfx .rfr-v{font-size:32px;font-weight:800;line-height:1.3;font-variant-numeric:tabular-nums;flex:none}.rfx .rfr-v em{font-style:normal;font-size:16px;opacity:.72}
+.rfx .rfr-r{flex:none;font-size:13.5px;font-weight:700;line-height:1.3;opacity:0;transition:opacity .3s ease;font-variant-numeric:tabular-nums}
 .rfx .rfr-r.in{opacity:.82}
-.rfx .rhero .num{font-size:120px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;display:inline-block;transition:font-size .6s cubic-bezier(.2,.8,.2,1)}
-.rfx .rhero .unit{font-size:17px;font-weight:800;line-height:1;display:inline-block}
+.rfx .rhero .num{font-size:128px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;display:inline-block;transition:font-size .6s cubic-bezier(.2,.8,.2,1)}
+.rfx .rhero .unit{font-size:20px;font-weight:800;line-height:1.2;display:inline-block}
+.rfx .rhero .num.rfx-pop{animation:rfxPop .6s cubic-bezier(.2,.8,.2,1)}
+@keyframes rfxPop{40%{transform:scale(1.14)}}
 .rfx.p2 .rhero .num{font-size:78px}
 .rfx .pbox,.rfx .tblock{display:none}
 .rfx.p2 .pbox{display:block}.rfx.p2 .tblock{display:flex}
@@ -599,11 +631,14 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 @media (max-width:899px){
   .rfx .cap{left:16px;right:16px;font-size:11.5px;letter-spacing:.1em}
   .rfx .cap span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis}.rfx .cap span:last-child{flex:none}
-  .rfx .rhero .num{font-size:72px}.rfx .rhero .unit{font-size:16px}
-  .rfx .rfr-s{gap:11px}
-  .rfx .rfr-n b,.rfx .rfr-v{font-size:15px}.rfx .rfr-n small{font-size:11.5px;margin-left:6px}.rfx .rfr-v em{font-size:12.5px}
-  .rfx .rfr-k{height:10px}.rfx .rfr-r{font-size:11.5px;min-height:13px;line-height:13px}
-  .rfx.tight .rfr-s{gap:7px}.rfx.tight .rhero .num{font-size:60px}.rfx.tight .rfr{gap:4px}
+  .rfx.p1 .rcol{padding-top:calc(max(18px, env(safe-area-inset-top)) + 34px)}
+  .rfx .rhero .num{font-size:112px}.rfx .rhero .unit{font-size:18px}
+  .rfx .rfr-s{padding-bottom:env(safe-area-inset-bottom)}
+  .rfx .rfr-in{gap:10px;padding:0 16px}
+  .rfx .rfr-n b{font-size:20px}.rfx .rfr-n small{font-size:13px;margin-left:8px}
+  .rfx .rfr-v{font-size:26px}.rfx .rfr-v em{font-size:14px}
+  .rfx .rfr-r{font-size:12.5px}
+  .rfx.tight .rhero .num{font-size:88px}
   .rfx.p2 .rhero .num{font-size:68px}
   .rfx .rcol{gap:16px}
   .rfx .pbox{width:calc(420px * var(--ps,.85));height:calc(300px * var(--ps,.85))}
