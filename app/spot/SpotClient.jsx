@@ -37,6 +37,19 @@ const CSS = SPOT_CSS + `
 .spt-li{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:14px;font-weight:600;line-height:1.45;}
 .spt-dot{flex:none;width:12px;height:12px;border-radius:50%;border:1px solid var(--pst-ink,#0b0f1a);background:var(--pst-acc,#fda4af);}
 .spt-dot.lost{background:transparent;}
+/* PHONE ROOM (owner, 2026-11-13: "spot on mobile could allow more space for
+   the pictures themselves"). The stage column's side padding shrinks so the
+   stacked photos run nearly edge to edge, and the pair's height reserve in
+   SpotBoard.jsx drops from 320px to 210px. */
+@media (max-width:899px){.pst:has(.spt) .pst-col{padding-left:6px;padding-right:6px;gap:10px;}.pst:has(.spt) .pst-top{gap:8px;}.spt{gap:8px;}}
+/* THE FOUND LIST IN PLAY (owner, 2026-11-13: "need the descriptions below the
+   zoom and above the misses"). What has been found so far, in the order found,
+   sits at the bottom, under the zoom bar and the misses line.
+   Only found ones are listed, so nothing is given away. */
+.spt-tally{width:100%;}
+.spt-got{display:flex;flex-direction:column;gap:2px;width:100%;max-width:900px;}
+.spt-got .spt-li{padding:3px 4px;font-size:13.5px;}
+@media (min-width:900px){.spt-got{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:2px 20px;}}
 .spt-li em{margin-left:auto;padding-left:8px;font-style:normal;font-size:12.5px;font-weight:800;white-space:nowrap;}
 `;
 
@@ -79,7 +92,7 @@ function Board({ P, s, setS, active, done }) {
     }
     if (found.includes(i)) { setSay('Already found.'); return null; }
     const left = n - found.length - 1;
-    setSay(left ? `${P.diffs[i].t}. ${Word(left)} to go.` : `${P.diffs[i].t}.`);
+    setSay(left ? `Found one. ${Word(left)} to go.` : 'That is all of them.');
     setS((st) => ((st.found || []).includes(i) ? st : { ...st, found: [...(st.found || []), i] }));
     return 'hit';
   };
@@ -102,7 +115,23 @@ function Board({ P, s, setS, active, done }) {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <SpotPair P={P} found={found} onTap={onTap} show={active} live={active} hint={hint}
         tools={active ? <button type="button" className="spt-btn" onClick={giveHint}>Hint</button> : null} />
+      {active ? (
+        <div className="pst-foot spt-tally">
+          <span className="pst-bar"><span style={{ width: `${(found.length / n) * 100}%` }} /></span>
+          <span className="pst-line">{GAME.tally(P, s)}</span>
+        </div>
+      ) : null}
       <p className="spt-say" aria-live="polite">{active ? (say || 'Tap either photo where they differ.') : ''}</p>
+      {active && found.length ? (
+        <div className="spt-got">
+          {found.map((i) => (
+            <div className="spt-li" key={i}>
+              <span className="spt-dot" />
+              <span>{P.diffs[i] ? P.diffs[i].t : ''}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
       {active ? <SpotCredit P={P} /> : null}
     </div>
   );
@@ -124,8 +153,12 @@ const GAME = {
   metric: (P, s) => (s.found || []).length,
   Board,
   eyebrow: (P, s) => `No. ${P.num} · ${(s.found || []).length} of ${P.diffs.length} found`,
-  foot: (P, s) => { const m = missFig(s); return `${m} ${m === 1 ? 'miss' : 'misses'}${s.hints ? ` · ${s.hints} ${s.hints === 1 ? 'hint' : 'hints'}` : ''}`; },
-  frac: (P, s) => (s.found || []).length / P.diffs.length,
+  // The misses line is drawn by the board itself, straight under the zoom bar,
+  // so the found descriptions can sit below it at the bottom (owner,
+  // 2026-11-13: "the descriptions should sit at the bottom, below zoom and
+  // misses"). The stage's own foot and bar stay empty for Spot.
+  foot: () => null,
+  tally: (P, s) => { const m = missFig(s); return `${m} ${m === 1 ? 'miss' : 'misses'}${s.hints ? ` · ${s.hints} ${s.hints === 1 ? 'hint' : 'hints'}` : ''}`; },
   gateTitle: (P) => `Today: ${word(P.diffs.length)} differences`,
   gateLine: (P) => `Two copies of one photograph, and the second has been changed in ${word(P.diffs.length)} places. Tap either photo wherever they differ. A wrong tap is a miss, and misses count before the clock does. The photos appear the moment you press Start.`,
   rules: (P) => ({

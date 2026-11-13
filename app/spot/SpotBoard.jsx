@@ -32,7 +32,7 @@ export function spotHit(P, nx, ny, minR = 0, found = []) {
 
 export const SPOT_CSS = `
 .spt{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;}
-.spt-pair{display:grid;grid-template-columns:1fr;gap:8px;width:100%;min-width:220px;max-width:calc((100dvh - 320px) * var(--spt-ar) / 2);}
+.spt-pair{display:grid;grid-template-columns:1fr;gap:6px;width:100%;min-width:220px;max-width:calc((100dvh - 210px) * var(--spt-ar) / 2);}
 @media (min-width:900px){.spt-pair{grid-template-columns:1fr 1fr;gap:12px;max-width:calc((100dvh - 300px) * var(--spt-ar) * 2 + 12px);}}
 .spt-vp{position:relative;overflow:hidden;width:100%;border:1px solid var(--spt-ink,#0b0f1a);border-radius:10px;background:var(--spt-cell,#eef1f6);touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:crosshair;line-height:0;}
 .spt-vp.zoom{touch-action:none;cursor:grab;}
