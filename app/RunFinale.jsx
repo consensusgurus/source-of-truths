@@ -15,7 +15,7 @@
 //      today lands under its row. No miss marks: the bar's length says it.
 //   2. THE TITLE, IN THE RUN'S OWN PIECE. The rows clear, the score settles,
 //      and the run plays its own title climb (PIECES below): books for
-//      the Trivia Gauntlet and Encore, the flask for Science, a calculator for
+//      the Trivia Gauntlet and Encore, the prism for Science, a calculator for
 //      Math, the dictionary for English, a belt for the Dojo, a name tag for
 //      Read the Room, school letters for Judged, a wallet for Price Check, the
 //      passport for Passport, the morning papers for Crossed Up, a stock
@@ -48,7 +48,7 @@ const firstWord = (s) => String(s || '').split(/\s+/)[0];
 
 // Which piece each run plays. Anything unlisted gets the books.
 export const FINALE_PIECE = {
-  gauntlet: 'shelf', triviaencore: 'shelf', science: 'flask', math: 'calc', english: 'dict',
+  gauntlet: 'shelf', triviaencore: 'shelf', science: 'prism', math: 'calc', english: 'dict',
   dojo: 'belt', dojocolor: 'belt', room: 'tag', judged: 'letters', pricecheck: 'wallet', passport: 'passport', crossed: 'papers',
   // Space Cadet (2026-11-07): the dictionary, each rank defined by its line.
   spacecadet: 'dict',
@@ -98,6 +98,29 @@ const PIECES = {
       q(`#fm${K}`).classList.add('here'); q('#liqs').classList.add('fwob');
       const y = (398 - (Math.min(X.cap, X.score) / X.cap) * 300) * 300 / 410;
       [0, 1, 2, 3].forEach((i) => { const b = q(`#bb${i}`); b.style.top = `${y + 6}px`; setTimeout(() => b.classList.add('go'), i * 160); });
+    },
+  },
+  // THE PRISM (owner, 2026-11-12: "the science gauntlet end animation sucks",
+  // then "push prism" from the "Science Gauntlet: New Title Reveals" canvas).
+  // It replaced the flask as the Science Gauntlet's piece. A white beam meets
+  // a prism and leaves as one coloured beam per title, lowest title on the
+  // lowest beam, each name at its beam's end. A beam fires per title reached;
+  // on the reveal the earned beam thickens and the rest fall back. Nothing
+  // leaves the 420px box: the longest name at its landed size ends inside it.
+  prism: {
+    html: (L) => {
+      const n = L.length;
+      const ang = (i) => (n > 1 ? 30 - (60 * i) / (n - 1) : 0);
+      const rad = (d) => (d * Math.PI) / 180;
+      return `<div class="rfx-pz"><div class="rfx-pin"></div>
+        ${L.map((t, i) => `<div class="rfx-pbm" id="pzb${i}" style="background:${t.colour};transform:rotate(${ang(i).toFixed(2)}deg)"></div>`).join('')}
+        <svg class="rfx-ptri" width="110" height="110" viewBox="0 0 110 110" aria-hidden="true"><path d="M55 6 L104 104 L6 104 Z" fill="#ffffff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M55 22 L70 52" fill="none" stroke="${DINK}" stroke-width="2" stroke-linecap="round" opacity=".3"/></svg>
+        ${L.map((t, i) => `<div class="rfx-plb" id="pzl${i}" style="left:${Math.round(128 + 118 * Math.cos(rad(ang(i))))}px;top:${(150 + 120 * Math.sin(rad(ang(i)))).toFixed(1)}px">${esc(t.name)}</div>`).join('')}</div>`;
+    },
+    step: (q, L, k) => { q(`#pzb${k}`).classList.add('lit'); q(`#pzl${k}`).classList.add('lit'); },
+    land: (q, L, K) => {
+      L.forEach((t, j) => { if (j !== K) { q(`#pzb${j}`).classList.add('dim'); q(`#pzl${j}`).classList.add('dim'); } });
+      q(`#pzb${K}`).classList.add('here'); q(`#pzl${K}`).classList.add('here');
     },
   },
   calc: {
@@ -578,6 +601,18 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 .rfx .bub{position:absolute;width:10px;height:10px;border-radius:50%;border:1px solid currentColor;opacity:0}
 .rfx .bub.go{animation:rfxBub 1.1s ease-out both}
 @keyframes rfxBub{0%{opacity:0;transform:translateY(0)}20%{opacity:.8}100%{opacity:0;transform:translateY(-120px)}}
+/* prism */
+.rfx .rfx-pin{position:absolute;left:-12px;top:147px;width:92px;height:8px;background:#fff;box-shadow:0 0 0 1px currentColor;transform-origin:right center;transform:rotate(-14deg);overflow:hidden}
+.rfx .rfx-pin::after,.rfx .rfx-pbm.lit::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent) no-repeat;background-size:44px 100%;animation:rfxShim 1.1s linear infinite}
+.rfx .rfx-pin::after{background-image:linear-gradient(90deg,transparent,rgba(8,34,46,.28),transparent)}
+.rfx .rfx-ptri{position:absolute;left:40px;top:95px}
+.rfx .rfx-pbm{position:absolute;left:116px;top:146px;height:8px;width:0;opacity:0;transform-origin:left center;box-shadow:0 0 0 1px currentColor;border-radius:0 4px 4px 0;overflow:hidden;transition:width .42s cubic-bezier(.2,.8,.2,1),opacity .3s ease,height .3s ease,top .3s ease}
+.rfx .rfx-pbm.lit{width:112px;opacity:1}
+.rfx .rfx-pbm.lit.here{height:18px;top:141px;width:118px}
+.rfx .rfx-pbm.lit.dim{opacity:.22}
+.rfx .rfx-plb{position:absolute;font-size:14px;font-weight:800;line-height:1.3;white-space:nowrap;text-align:left;transform:translateY(-50%);opacity:.32;transition:opacity .25s ease,font-size .3s ease}
+.rfx .rfx-plb.lit{opacity:1}.rfx .rfx-plb.here{font-size:17px}.rfx .rfx-plb.dim{opacity:.22}
+@keyframes rfxShim{from{background-position:-44px 0}to{background-position:170px 0}}
 /* calculator */
 .rfx .calc{position:absolute;left:90px;top:6px;width:240px;height:288px;border:3px solid currentColor;border-radius:22px;padding:16px;background:rgba(8,34,46,.06)}
 .rfx .lcd{height:70px;border-radius:10px;background:#131c12;display:flex;align-items:center;justify-content:flex-end;padding:0 14px;overflow:hidden}

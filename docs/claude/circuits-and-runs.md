@@ -592,7 +592,7 @@ replaced the end page's own sweep + count-up + climb, Crossed Up's ripple curtai
   looks (2026-11-02). Every class the finale adds must carry an `rfx`/`rfr` prefix. The empty track
   is a mid grey (reads on light and dark looks), never dark ink at low alpha.
 - **Part two, the run's own title piece** (`FINALE_PIECE` in RunFinale): books (Trivia
-  Gauntlet, Encore), flask (Science), calculator (Math), dictionary (English), belt (Dojo, belt
+  Gauntlet, Encore), prism (Science, see the prism section at the foot of this file), calculator (Math), dictionary (English), belt (Dojo, belt
   colours from the ladder `chip`), name tag (Room), school letters (Judged, `short` + `chip`),
   wallet (Price Check, card colours), passport (Passport, `chip` cover + `vf` visa-free count),
   morning papers (Crossed Up). The rows clear, the score settles, the piece climbs the
@@ -880,3 +880,16 @@ stage hand-off name (`.gst-bname`) render through `app/FitWords.jsx`: the CSS si
 word would not fit, then the whole title shrinks until it does ("The company" read "compan / y" on a phone).
 Their CSS uses `overflow-wrap:break-word`, never `anywhere` (which would make min-content one letter and
 blind the measurement). Any new big run title goes through FitWords too.
+
+## The Science Gauntlet's finale piece is the prism (owner, 2026-11-12)
+
+Owner: "the science gauntlet end animation sucks", then "push prism" from the "Science Gauntlet: New
+Title Reveals" canvas (four mockups: atom shells, element tile, prism, double helix). `FINALE_PIECE.science`
+is `prism` in `app/RunFinale.jsx`: a white beam meets a prism and leaves as one coloured beam per title
+(lowest title, lowest beam), each name at its beam's end. One beam fires per title reached; on the reveal
+the earned beam thickens and its name grows, the rest fall to 22%. It has no `prog` (nothing shows the raw
+value), so it climbs one STEP per title like the books. Classes are `rfx-pz / rfx-pin / rfx-pbm / rfx-ptri /
+rfx-plb`. The longest name ("Science Fair Winner") at its landed 17px must end inside the 420px box: check
+375 and 390 wide if a title is renamed or lengthened. The `flask` piece stays in PIECES, unused. The end
+page's own ladder for Science is still `FlaskClimb` (`climbStyle: 'flask'` in RunClient), which was not
+changed in this push.
