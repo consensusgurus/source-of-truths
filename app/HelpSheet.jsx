@@ -18,12 +18,19 @@ import ReportIssue from './ReportIssue';
 
 export default function HelpSheet({ onClose, self = null, name = null, report = true, children }) {
   const closeRef = useRef(null);
+  // FOCUS ONCE, ON OPEN (player report 2026-11-13, Jig on a phone: "each time I
+  // click into the box it just flashes away"). Every game passes onClose as a
+  // fresh arrow, and a running clock re-renders the game every second, so an
+  // effect keyed on onClose re-ran each second and pulled focus to Close, out
+  // of the Report an issue box. The handler is read through a ref instead.
+  const closeFn = useRef(onClose);
+  closeFn.current = onClose;
   useEffect(() => {
     try { closeRef.current && closeRef.current.focus({ preventScroll: true }); } catch (e) {}
-    const onKey = (e) => { if (e.key === 'Escape') onClose && onClose(); };
+    const onKey = (e) => { if (e.key === 'Escape' && closeFn.current) closeFn.current(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
   return (
     <div className="hsh-scrim" onClick={onClose} role="presentation">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />

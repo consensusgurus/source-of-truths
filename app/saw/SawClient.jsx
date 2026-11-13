@@ -564,7 +564,12 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
         const saved = JSON.parse(raw);
         const okIdx = (i) => Number.isInteger(i) && i >= 0 && i < NP;
         const okGroup = (x) => x && Number.isInteger(x.id) && Number.isFinite(x.dx) && Number.isFinite(x.dy) && Array.isArray(x.m) && x.m.length && x.m.every(okIdx);
-        if (saved && saved.v === 1 && Array.isArray(saved.cl) && saved.cl.every(okGroup)) {
+        // A SNAP SAVE IS NOT A TABLE (player report 2026-11-13: on a phone a reload
+        // sent every placed piece back to the tray). A snap game saves cl: [] and
+        // [].every() is true, so it was restored as an empty loose table, which
+        // the phone then converted back with nothing at home. Only a save that
+        // was a table, or an old save with groups on it, restores as one.
+        if (saved && saved.v === 1 && Array.isArray(saved.cl) && saved.cl.every(okGroup) && (saved.mode === 'loose' || (saved.mode !== 'snap' && saved.cl.length > 0))) {
           setG({ ...freshState(), ...saved, mode: 'loose', placed: [] });
         } else if (saved && saved.v === 1 && Array.isArray(saved.placed) && saved.placed.every(okIdx)) {
           setG({ ...freshState(), ...saved, mode: saved.mode === 'loose' ? 'snap' : (saved.mode || 'snap'), cl: [], st: Array.isArray(saved.st) ? saved.st.filter((x) => x && okIdx(x.i) && Number.isFinite(x.x) && Number.isFinite(x.y) && !saved.placed.includes(x.i)) : [] });
@@ -857,7 +862,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   function trayDown(e, i, onBoard = false) {
     if (!playing || !g.t0) return;
     const touch = e.pointerType !== 'mouse';
-    const pr = { i, x0: e.clientX, y0: e.clientY, touch, dragging: false, id: e.pointerId, el: e.currentTarget, axis: touch && !onBoard ? (stripMode ? 'y' : 'x') : null, hold: 0 };
+    const pr = { i, onBoard, x0: e.clientX, y0: e.clientY, touch, dragging: false, id: e.pointerId, el: e.currentTarget, axis: touch && !onBoard ? (stripMode ? 'y' : 'x') : null, hold: 0 };
     press.current = pr;
     if (touch) {
       pr.hold = setTimeout(() => {
@@ -1004,6 +1009,14 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     if (pr.group != null) { setGdrag(null); return; }
     clearTimeout(pr.hold);
     setDrag(null);
+    // A cancel mid-drag (the phone took the gesture) drops the piece where it
+    // was last drawn rather than throwing it back; a cancel's own coordinates
+    // are unreliable on iOS.
+    if (pr.dragging && !(pr.held && !pr.moved) && pr.cx != null) {
+      const gh = ghostRef.current;
+      const lift = pr.touch && gh ? gh.offsetWidth * 0.62 : 0;
+      tryDrop(pr.i, pr.cx, pr.cy - lift);
+    }
   };
   // window listeners registered once, calling the latest handlers through a ref
   const handlers = useRef(null);
@@ -1018,7 +1031,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     // Once a piece is lifted the page must not scroll under the finger. Only a
     // non-passive touchmove can say so (a held piece in a tray that scrolls the
     // same way would otherwise be cancelled by the browser's own scroll).
-    const tm = (e) => { const pr = press.current; if (pr && (pr.dragging || pr.group != null) && pr.touch && e.cancelable) e.preventDefault(); };
+    const tm = (e) => { const pr = press.current; if (pr && (pr.dragging || pr.group != null || pr.onBoard) && pr.touch && e.cancelable) e.preventDefault(); };
     document.addEventListener('touchmove', tm, { passive: false });
     return () => {
       window.removeEventListener('pointermove', mv);
@@ -1382,10 +1395,15 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
                 <path key={p.i} className="jg-pc" d={p.d} fill={`url(#swpic-${PUZZLE.num})`} style={{ stroke: won || (!playing && revealed) ? 'rgba(255,255,255,0.10)' : 'rgba(10,14,24,0.45)', strokeWidth: 1.6 }} />
               ))}
               {playing && !hideSol && (g.st || []).map((k) => {
-                if (drag && drag.i === k.i) return null;
+                // A PIECE LEFT ON THE BOARD MUST STAY IN THE PAGE WHILE IT IS HELD
+                // (player report 2026-11-13: on a phone a wrong-spot piece could not
+                // be moved again). Unmounting it detached the touch's own target, so
+                // the page's touchmove guard never heard the drag, the browser took
+                // the gesture as a scroll and cancelled it. It is hidden instead.
+                const lifted = !!(drag && drag.i === k.i);
                 const p = PIECES[k.i];
                 return (
-                  <g key={`st${k.i}`} className="jg-stray" style={{ transform: `translate(${k.x - (p.x + S / 2)}px, ${k.y - (p.y + S / 2)}px)`, touchAction: 'none', cursor: 'grab' }}
+                  <g key={`st${k.i}`} className="jg-stray" style={{ transform: `translate(${k.x - (p.x + S / 2)}px, ${k.y - (p.y + S / 2)}px)`, touchAction: 'none', cursor: 'grab', opacity: lifted ? 0 : 1 }}
                     onPointerDown={(e) => { e.stopPropagation(); trayDown(e, k.i, true); }} onClick={(e) => e.stopPropagation()}>
                     <path d={p.d} fill={`url(#swpic-${PUZZLE.num})`} style={{ stroke: sel === k.i ? 'var(--stg-acc-ink, #be123c)' : 'rgba(255,255,255,0.85)', strokeWidth: sel === k.i ? 3 : 2 }} />
                   </g>
