@@ -190,7 +190,10 @@ async function main() {
     let keep = future.get(day);
     if (keep && !fits(keep)) { const fixed = repair(keep); if (fixed && fits(fixed)) { keep = fixed; repaired++; future.set(day, fixed); } }
     if (fits(keep)) {
-      const p = { ...keep, num: out.length + 1 };
+      // A kept case keeps its route but reads its tips from the pool as it
+      // stands now, so a reviewed tip edit reaches every board not yet live.
+      const tipsOf = (L) => (POOL.find((c) => c.id === L.id) || L).tips;
+      const p = { ...keep, num: out.length + 1, legs: keep.legs.map((L) => ({ ...L, tips: tipsOf(L) })) };
       out.push(p); kept++;
       for (const x of [p.start, ...p.legs]) lastUsed[byName.get(x.name)] = day;
       prev = { suspect: p.suspect, stolenRaw: p.stolen.toLowerCase() };

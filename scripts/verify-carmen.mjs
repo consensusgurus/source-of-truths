@@ -98,7 +98,7 @@ PUZZLES.forEach((p, i) => {
 });
 // VARIETY (owner, 2026-11-08: "they almost all seem to have the same structure
 // with currency first"). From 2026-11-09: no Evidence tip leads with money,
-// money shows up in at most ~40% of Evidence tips, and no opening (first two
+// money shows up in at most ~55% of Evidence tips, and no opening (first two
 // words) starts more than 8% of the cities' tips in the same slot.
 const VARIETY_FROM = '2026-11-09';
 const MONEY = /\b(currency|coins?|notes?|banknotes?|bills?|cash|change|dollars?|euros?|pesos?|rupees?|rupiah|yen|yuan|won|baht|dong|ringgit|francs?|pounds?|lira|dinars?|dirhams?|riyals?|rials?|shillings?|naira|rand|kwacha|birr|leva|lev|lei|krona|kronor|krone|kroner|zloty|forint|koruna|soles?|reais|real|colones|quetzales|bolivianos|tenge|tugrik|ngultrum|kina|kip|taka|kyat|riel|rubles?|hryvnia|lari|dram|manat)\b/i;
@@ -114,9 +114,24 @@ if (cities.length) {
     if (m) { money++; if (m.index < 40) { bad++; console.log(`✗ carmen: ${L.name} Evidence tip leads with money ("${m[0]}")`); } }
     L.tips.forEach((t, j) => { const o = t.toLowerCase().split(/\s+/).slice(0, 2).join(' '); opens[j][o] = (opens[j][o] || 0) + 1; });
   });
-  if (money / cities.length > 0.4) { bad++; console.log(`✗ carmen: money in ${money} of ${cities.length} Evidence tips (ceiling 40%)`); }
+  if (money / cities.length > 0.55) { bad++; console.log(`✗ carmen: money in ${money} of ${cities.length} Evidence tips (ceiling 55%)`); }
   const cap = Math.max(4, Math.ceil(cities.length * 0.08));
   opens.forEach((o, j) => Object.entries(o).forEach(([w, n]) => { if (n > cap) { bad++; console.log(`✗ carmen: tip ${j + 1} opens "${w}" in ${n} of ${cities.length} cities (ceiling ${cap})`); } }));
+}
+// CURRENCY MIX (owner, 2026-11-13: "more of the clues should reference a
+// currency. doesn't have to, but mix more in"). Across the pool, 55% to 80% of
+// cities name the local money somewhere in their three tips, and it is not
+// all in the Evidence slot: at least a third of those cities carry it in the
+// Witness or Informant tip. The lead rule above still holds.
+{
+  const POOL = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/carmen-pool.json'), 'utf8'));
+  const CUR = /\b(euros?|euro coins?|dollars?|pounds?|pesos?|rupees?|rupiah|yen|yuan|won|baht|dong|ringgit|francs?|lira|dinars?|dirhams?|riyals?|rials?|shillings?|naira|rand|kwacha|birr|lei|kronor|krone|kroner|kr\u00f3nur|zloty|korunas?|soles|reais|quetzal|balboa|bolivianos|tenge|t\u00f6gr\u00f6g|ngultrum|kip|rubles?|cedis|som|ariary|meticais|baisa|toonie)\b/i;
+  let any = 0, late = 0;
+  POOL.forEach((c) => { const hit = c.tips.map((t) => CUR.test(t)); if (hit.some(Boolean)) { any++; if (hit[1] || hit[2]) late++; } });
+  const share = any / POOL.length;
+  if (share < 0.55 || share > 0.8) { bad++; console.log(`✗ carmen: currency in ${any} of ${POOL.length} pool cities (want 55% to 80%)`); }
+  if (late / any < 1 / 3) { bad++; console.log(`✗ carmen: only ${late} of ${any} currency cities carry it in the Witness or Informant tip (want a third)`); }
+  console.log(`carmen: currency in ${any} of ${POOL.length} pool cities, ${late} in a later tip`);
 }
 for (const [k, n] of Object.entries(uses)) if (n > MAX_USES) { bad++; console.log(`✗ carmen: ${k} used ${n} times (ceiling ${MAX_USES})`); }
 

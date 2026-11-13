@@ -2361,6 +2361,16 @@ as tips arrive). All 339 tips were rewritten for varied openings; `verify-carmen
 no Evidence tip names money in its first 40 characters, money in at most 40% of Evidence tips, and no two-word opening
 in more than 8% of cities per slot. New pool cities must pass these too.
 
+**Currency mix (owner, 2026-11-13: "more of the clues in Carmen should reference a currency. doesn't have to, but mix more in").**
+34 pool cities gained a currency reference (75 of 113 now carry one, up from 41), spread across the slots: woven into
+the middle or end of an Evidence tip, paid to the Witness, or stated as a fact in the Informant tip (the rand named for
+the Witwatersrand). Some name a coin's design instead of the currency (the owl on a Greek euro, five kangaroos on an
+Australian dollar). The lead rule stays: no Evidence tip names money in its first 40 characters. `verify-carmen.mjs`
+now holds the Evidence ceiling at 55% (was 40%), wants currency in 55% to 80% of pool cities, and wants at least a third
+of those to carry it in the Witness or Informant tip. A tip 1 or 2 currency must not contain the country's name
+(bolivianos, "Jordanian dinar"). `gen-carmen.mjs`: a kept future case now reads its tips from the pool as it stands, so
+a reviewed tip edit reaches every board not yet live; live boards stay frozen. Boards from 2026-11-14 carry the new tips.
+
 ## Parker, Impound and Junkyard: flick to move (owner, 2026-11-08)
 
 A swipe along a block's groove slides it as far as it will go that way: one move, the same as tapping
