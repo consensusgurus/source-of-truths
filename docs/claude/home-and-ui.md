@@ -2763,3 +2763,8 @@ ten because the colour schemes are good. He picked "option A" from a mockup and 
 - Ping (StageLeg `renderLeg(onStage)`), Herd and Outwit (stepper in `PlayStage top`, `HD_ST_CSS` / `OW_ST_CSS` restating button type) play on PlayStage.
 - Snake, Squash, Dario and Sweep play on PlayStage, with their board drawn once (`arBoard`). Here `stageOn` keys off `!preStart`, not `g.t0`, so the canvas never remounts mid-run. Their boards wear `.pst-raw`: PlayStage's button reset is now `.pst button:where(:not(.pst-raw *))` (same specificity as before), so a board that styles its own buttons keeps them.
 - The home's Leaderboards + Stats pane (app/today/BoardsPane.jsx) draws 1px ink outlines (`--lbk`), matching the rest of the home (owner, 2026-11-12: "the outlines of the elements are too wide").
+
+## Stage wave eight (2026-11-12): Anon and Glyph
+
+- Anon (`anBoard`) and Glyph (`glBoard`, the stage IIFE hoisted) play on PlayStage `wide`, with their boards wearing `.pst-raw` so their own buttons keep their styles. Glyph's `stageOn` sits after its `const revealed` line (a TDZ trap if it moves above it).
+- Glyph on the white stage uses ink blocks and a 1px ink grid, as in the stage mockup. Its page block colour leans on `--stg-dk`, which the white stage forces to 100%, so the blocks used to come out grey. In the light looks the numbered cells take the stage pastel (`--pst-acc`, 45% wash, full on the cursor with an ink ring); in the dark looks the blocks are black.

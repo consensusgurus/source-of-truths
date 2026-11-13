@@ -49,6 +49,7 @@ import { isLoft } from '@/lib/loft';
 import ReportIssue from '../ReportIssue';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColorLight, gameColor, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
@@ -158,6 +159,13 @@ function deriveStats(stats, todayNum) {
   }
   return { played, wins, cur, max: Math.max(max, cur) };
 }
+
+// THE BOARD ON THE WHITE STAGE (owner, 2026-11-12): the board keeps its own
+// furniture; buttons restate their type over the stage's font reset.
+const AN_ST_CSS = `
+.pst .an-st .an-btn{font-size:14px;font-weight:800;}
+.pst .an-st .an-k{font-weight:800;}
+`;
 
 export default function AnonClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
@@ -310,6 +318,10 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   // is read off the rail; the fallbacks are only for the first paint.
   const rail = useRailClearance(railUp, narrow ? 250 : 168);
   const preStart = playing && !g.t0;
+  const phoneStage = usePhoneStage();
+  // THE STAGE (owner, 2026-11-12): Anon plays on the shared white stage from
+  // Start until the ending's board view; inside a run the run's frame draws it.
+  const stageOn = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
   const curAnswer = owner[cur];
 
   const solved = useMemo(
@@ -846,7 +858,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   const studyNote = won ? 'Here is the finished passage.' : 'Here is the full passage. Your misses are marked in red.';
   // GIVE UP SITS AT THE FOOT OF THE BOARD (owner, 2026-10-25), a quiet link
   // rather than a button competing with the board.
-  const giveUpBtn = playing ? <button type="button" className="an-quit" onClick={giveUp}><Flag size={13} />Give up</button> : null;
+  const giveUpBtn = playing && !stageOn ? <button type="button" className="an-quit" onClick={giveUp}><Flag size={13} />Give up</button> : null;
   const giveUpFoot = giveUpBtn ? <div className="an-foot">{giveUpBtn}</div> : null;
   const sideExtra = (
     <>
@@ -874,11 +886,87 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
     </div>
   );
 
+  // THE BOARD, ONCE (owner, 2026-11-12: Anon moves onto the white stage):
+  // drawn on the stage or on the page, never both.
+  const anBoard = (
+            <>
+              {!LOFT && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '2px 0 10px', flexWrap: 'wrap' }}>
+                  <div style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, color: FADED, fontVariantNumeric: 'tabular-nums' }}>
+                    {nSolved}/{TOTAL} answers &middot; {filledCount}/{N} letters &middot; {elapsed}
+                  </div>
+                </div>
+              )}
+
+              {/* On a narrow screen the signature rides above the halves, with
+                  Give up beside it, so the author's letters stay in view while
+                  the bank is the half showing. */}
+              {narrow && (
+                <div className="an-sigrow">
+                  <span className="an-siglab">Signed</span>
+                  {signature}
+                </div>
+              )}
+
+              {narrow && !railUp && (
+                <div className="an-seg">
+                  <button className={view === 'q' ? 'on' : ''} onClick={() => setView('q')}>Passage</button>
+                  <button className={view === 'b' ? 'on' : ''} onClick={() => setView('b')}>Bank</button>
+                </div>
+              )}
+              {narrow && !railUp && view === 'q' && <CurClue />}
+
+              {split ? (
+                /* THE PASSAGE IS ON THE LEFT because it is the object being read
+                   and it fits without scrolling; the bank is on the right because
+                   it is the long list you work down. Each pane scrolls inside its
+                   own measured frame, so the PAGE does not scroll during a solve
+                   and neither half can push the other off screen. The answer you
+                   are in and Give up sit under the quotation card. */
+                <div className="an-split" ref={splitRef} style={{ marginBottom: 16 }}>
+                  <div className="an-pane" ref={qPaneRef} style={{ ...panelStyle, padding: '18px 22px 16px', maxHeight: paneH || undefined }}>
+                    {passagePanel}
+                    {sideExtra}
+                  </div>
+                  <div className="an-pane" style={{ ...panelStyle, padding: '16px 14px', maxHeight: paneH || undefined }}>
+                    {banksPanel}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Stacked: the quotation card on top, the two banks under it. */}
+                  {(!narrow || view === 'q') && (
+                    <div style={{ ...panelStyle, padding: narrow ? '12px 12px 14px' : '18px 24px 18px', marginBottom: 16 }}>
+                      {passagePanel}
+                    </div>
+                  )}
+                  {(!narrow || view === 'b') && (
+                    <div style={{ padding: narrow ? '0' : '0 2px', marginBottom: 16 }}>
+                      {banksPanel}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {!split && giveUpFoot}
+              {(split || narrow) && <StudyBar hold={study} note={studyNote} />}
+
+            </>
+  );
+
   return (
     <div className={STAGE ? `stage-page${EMBED ? '' : ' lg-white'}` : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
       data-stage-pin={STAGE && EMBED ? '' : undefined}
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('anon')} label="Anon" wide
+          eyebrow={`Anon${PUZZLE.sunday ? ' · Sunday Edition' : ''} · solve the clues, read the quote`}
+          top={<div className="an-st pst-raw" style={{ width: '100%', textAlign: 'left' }}><style dangerouslySetInnerHTML={{ __html: AN_ST_CSS }} />{anBoard}</div>}
+          foot={`${nSolved} of ${TOTAL} answers · ${filledCount} of ${N} letters`}
+          giveUp={playing ? { armed: false, onPress: giveUp } : null}
+          clock={elapsed} done={!playing} />
+      )}
       {!STAGE && <Grain />}
       {STAGE && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
       {!STAGE && (
@@ -1063,71 +1151,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
 
-          {!preStart && (
-            <>
-              {!LOFT && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '2px 0 10px', flexWrap: 'wrap' }}>
-                  <div style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, color: FADED, fontVariantNumeric: 'tabular-nums' }}>
-                    {nSolved}/{TOTAL} answers &middot; {filledCount}/{N} letters &middot; {elapsed}
-                  </div>
-                </div>
-              )}
-
-              {/* On a narrow screen the signature rides above the halves, with
-                  Give up beside it, so the author's letters stay in view while
-                  the bank is the half showing. */}
-              {narrow && (
-                <div className="an-sigrow">
-                  <span className="an-siglab">Signed</span>
-                  {signature}
-                </div>
-              )}
-
-              {narrow && !railUp && (
-                <div className="an-seg">
-                  <button className={view === 'q' ? 'on' : ''} onClick={() => setView('q')}>Passage</button>
-                  <button className={view === 'b' ? 'on' : ''} onClick={() => setView('b')}>Bank</button>
-                </div>
-              )}
-              {narrow && !railUp && view === 'q' && <CurClue />}
-
-              {split ? (
-                /* THE PASSAGE IS ON THE LEFT because it is the object being read
-                   and it fits without scrolling; the bank is on the right because
-                   it is the long list you work down. Each pane scrolls inside its
-                   own measured frame, so the PAGE does not scroll during a solve
-                   and neither half can push the other off screen. The answer you
-                   are in and Give up sit under the quotation card. */
-                <div className="an-split" ref={splitRef} style={{ marginBottom: 16 }}>
-                  <div className="an-pane" ref={qPaneRef} style={{ ...panelStyle, padding: '18px 22px 16px', maxHeight: paneH || undefined }}>
-                    {passagePanel}
-                    {sideExtra}
-                  </div>
-                  <div className="an-pane" style={{ ...panelStyle, padding: '16px 14px', maxHeight: paneH || undefined }}>
-                    {banksPanel}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {/* Stacked: the quotation card on top, the two banks under it. */}
-                  {(!narrow || view === 'q') && (
-                    <div style={{ ...panelStyle, padding: narrow ? '12px 12px 14px' : '18px 24px 18px', marginBottom: 16 }}>
-                      {passagePanel}
-                    </div>
-                  )}
-                  {(!narrow || view === 'b') && (
-                    <div style={{ padding: narrow ? '0' : '0 2px', marginBottom: 16 }}>
-                      {banksPanel}
-                    </div>
-                  )}
-                </>
-              )}
-
-              {!split && giveUpFoot}
-              {(split || narrow) && <StudyBar hold={study} note={studyNote} />}
-
-            </>
-          )}
+          {!preStart && !stageOn && anBoard}
 
 
           </div>

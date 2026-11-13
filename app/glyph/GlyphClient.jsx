@@ -39,6 +39,7 @@ import ReportIssue from '../ReportIssue';
 import StageFold from '../StageFold';
 import LoftCap from '../LoftCap';
 import StageChrome from '../StageChrome';
+import PlayStage, { usePhoneStage } from '../PlayStage';
 import { isStage } from '@/lib/stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { gameColor, gameColorLight, RAMP_INK, STAGE_GROUND, gameOnrampLight, gameAccentInkLight } from '@/lib/category-ramp';
@@ -178,6 +179,21 @@ function freshState(given) {
   return { v: 1, assign, checks: 0, wrong: [], t0: null, tEnd: null, status: 'playing' };
 }
 
+// THE BOARD ON THE WHITE STAGE (owner, 2026-11-12): the board keeps its own
+// furniture; buttons restate their type over the stage's font reset.
+const GL_ST_CSS = `
+/* Ink blocks on the light stage, as approved in the stage mockup: the page's
+   own block colour leans on --stg-dk, which the white stage forces to 100%,
+   so it came out grey. Numbered cells take the stage pastel. */
+.pst .gl-st .gls{--gl-blk:#08222e;}
+.pst .gl-st .gls-grid{background:#08222e;}
+.pst.dk .gl-st .gls{--gl-blk:#000;}
+.pst.dk .gl-st .gls-grid{background:color-mix(in srgb, var(--stg-cell-line), var(--stg-ink) 25%);}
+.pst:not(.dk) .gl-st .gls .gl-cell.kin{background:color-mix(in srgb, var(--pst-acc) 45%, #fff);}
+.pst:not(.dk) .gl-st .gls .gl-cell.kin.cur{background:var(--pst-acc);box-shadow:inset 0 0 0 2px #08222e;}
+.pst:not(.dk) .gl-st .gls .gl-cell.kin.cur .gl-num,.pst:not(.dk) .gl-st .gls .gl-cell.kin.cur .gl-ltr{color:#08222e;}
+`;
+
 export default function GlyphClient({ puzzles, forceNum }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const W = PUZZLE.w, H = PUZZLE.h;
@@ -276,6 +292,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
   const catRank = useCategoryRank({ self: 'glyph', active: LOFT && !playing });
   const won = g.status === 'won';
   const preStart = playing && !g.t0;
+  const phoneStage = usePhoneStage();
   // Focus mode: while the puzzle is live the leaderboard / share / other-games
   // block is folded away behind one button, the same arrangement every other
   // daily uses (owner rule, 2026-08-08). setShowChrome unfolds it for good.
@@ -592,6 +609,9 @@ export default function GlyphClient({ puzzles, forceNum }) {
   // On a loss the loft keeps the player's own letters until the end card's
   // Reveal answer tile is pressed.
   const revealed = !playing && (won || !LOFT || loftRevealed);
+  // THE STAGE (owner, 2026-11-12): Glyph plays on the shared white stage from
+  // Start until the ending's board view; inside a run the run's frame draws it.
+  const stageOn = STAGE && !EMBED && phoneStage && !!g.t0 && (playing || !revealed);
 
   // The pre-stage board (?stage=0 only). Unchanged from before the 2026-10-14
   // rebuild; the stage board below has its own sheet.
@@ -757,94 +777,9 @@ export default function GlyphClient({ puzzles, forceNum }) {
     />
   );
 
-  return (
-    <div className={STAGE ? `stage-page${EMBED ? '' : ' lg-white'}` : (LOFT ? 'loft-page' : undefined)}
-      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
-      data-stage-pin={STAGE && EMBED ? '' : undefined}
-      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', fontFamily: SANS, background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
-      {!STAGE && <Grain />}
-      {STAGE && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
-      {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
-          today's slate rail, collapsing to one line once the clock runs. Outside
-          the page wrapper so the bands run full bleed; nothing here is pinned. */}
-      {!STAGE && (
-      <DailyChrome slug="glyph" name="Glyph" collapsed={playing && !!g.t0} loft={LOFT} />
-      )}
-      {LOFT && !EMBED && (
-        <Cap gameKey="glyph" quizId={PUZZLE.quizId}
-          name="Glyph"
-          cat="Word"
-          outcome={playing ? null : (won ? 'won' : 'lost')}
-          num={PUZZLE.num}
-          tiles={playing ? null : upNext}
-          dateLabel={PUZZLE.dateLabel}
-          onHelp={() => setShowHelp(true)}
-          sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
-          figures={playing ? [
-            { v: checks, k: 'checks' },
-            { v: elapsed, k: 'time' },
-          ] : [
-            { v: won ? 'Solved' : 'Unfinished', k: 'result' },
-            { v: checks, k: 'checks' },
-            { v: elapsed, k: 'time' },
-          ]}
-        />
-      )}
-      <div style={{ position: 'relative', zIndex: 2, padding: '14px 16px 8px' }}>
-        <style dangerouslySetInnerHTML={{ __html: `
-          .gl-btn{font-family:${SANS};font-weight:800;font-size:13.5px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
-          .gl-btn:disabled{opacity:0.4;cursor:default;}
-          ${STAGE ? STAGE_CSS : LEGACY_CSS}
-        ` }} />
-
-        <div style={{ maxWidth: 660, margin: '0 auto' }}>
-
-
-          {!LOFT && (
-          <DailyMasthead
-            slug="glyph"
-            num={PUZZLE.num}
-            dateLabel={PUZZLE.dateLabel}
-            accent={COLORS.accent}
-            blockGap={5}
-            helpTop={13}
-            marginBottom={16}
-            onHelp={() => setShowHelp(true)}
-            sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; 17&times;17</span>}
-            blocks={'GLYPH'.split('').map((ch, i) => (
-              <div key={i} style={{ width: 44, height: 44, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 26, background: i === 4 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
-            ))}
-          />
-          )}
-
-        {/* LOFT: the play area sits on the navy stage, which runs full bleed
-            and fills the first screen, so the board is the one lit object. */}
-        <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
-          <div className={LOFT && !STAGE && !playing ? (loftRevealed ? 'loft-flip' : 'loft-flip on') : undefined}>
-          <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
-          <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
-          <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
-
-          {preStart && !(EMBED && EMBED.autostart) && (
-            <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
-              {gateRules ? rulesBody : (
-                <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
-                  <p style={{ margin: '0 0 6px' }}>Crack the code: every number stands for a letter, the same one everywhere. {W}&times;{H} today, {PUZZLE.words} words.</p>
-                </div>
-              )}
-              <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <button className="gl-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
-                <div>
-                  <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
-                    {gateRules ? 'Back' : 'How to play'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!preStart && STAGE && (() => {
+  // THE BOARD, ONCE (owner, 2026-11-12: Glyph moves onto the white stage):
+  // drawn on the stage or on the page, never both.
+  const glBoard = (!preStart && STAGE) ? (() => {
             const givenCount = PRESENT.filter((n) => GIVEN[n]).length;
             const selCount = sel ? (countOf[sel] || 0) : 0;
             const checksLeft = MAX_CHECKS - checks;
@@ -947,7 +882,7 @@ export default function GlyphClient({ puzzles, forceNum }) {
 
                   <div className="gls-act">
                     <span className="gls-note">Struck letters are already in the key.</span>
-                    {g.t0 && <button type="button" className="gls-clear" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it records as unfinished'}><Flag size={14} /> {armGive ? 'Tap again' : 'Give up'}</button>}
+                    {g.t0 && !stageOn && <button type="button" className="gls-clear" onClick={giveTap} title={armGive ? 'Ends the puzzle now' : 'End the puzzle now; it records as unfinished'}><Flag size={14} /> {armGive ? 'Tap again' : 'Give up'}</button>}
                     <button type="button" className="gls-clear" onClick={clearLetter} disabled={!sel || !assign[sel] || !!GIVEN[sel]}>Clear{sel ? ` ${sel}` : ''}</button>
                     <button type="button" className="gls-check" onClick={runCheck} disabled={checks >= MAX_CHECKS}>
                       {checksLeft > 0
@@ -964,7 +899,103 @@ export default function GlyphClient({ puzzles, forceNum }) {
               )}
             </div>
             );
-          })()}
+  })() : null;
+
+  return (
+    <div className={STAGE ? `stage-page${EMBED ? '' : ' lg-white'}` : (LOFT ? 'loft-page' : undefined)}
+      data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
+      data-stage-pin={STAGE && EMBED ? '' : undefined}
+      style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', position: 'relative', fontFamily: SANS, background: STAGE ? 'var(--stg-ground)' : COLORS.cream, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
+      {stageOn && (
+        <PlayStage bg={gameColor('glyph')} label="Glyph" wide
+          eyebrow={`Glyph${PUZZLE.sunday ? ' · Sunday Edition' : ''} · crack the code`}
+          top={<div className="gl-st pst-raw" style={{ width: '100%', textAlign: 'left' }}><style dangerouslySetInnerHTML={{ __html: GL_ST_CSS }} />{glBoard}</div>}
+          giveUp={playing ? { armed: !!armGive, onPress: giveTap } : null}
+          clock={elapsed} done={!playing} />
+      )}
+      {!STAGE && <Grain />}
+      {STAGE && !EMBED ? <style dangerouslySetInnerHTML={{ __html: LEG_PAGE_CSS }} /> : null}
+      {/* Shared daily chrome (app/DailyChrome.jsx): home masthead + stat bar +
+          today's slate rail, collapsing to one line once the clock runs. Outside
+          the page wrapper so the bands run full bleed; nothing here is pinned. */}
+      {!STAGE && (
+      <DailyChrome slug="glyph" name="Glyph" collapsed={playing && !!g.t0} loft={LOFT} />
+      )}
+      {LOFT && !EMBED && (
+        <Cap gameKey="glyph" quizId={PUZZLE.quizId}
+          name="Glyph"
+          cat="Word"
+          outcome={playing ? null : (won ? 'won' : 'lost')}
+          num={PUZZLE.num}
+          tiles={playing ? null : upNext}
+          dateLabel={PUZZLE.dateLabel}
+          onHelp={() => setShowHelp(true)}
+          sunday={PUZZLE.sunday ? 'Sunday Edition' : null}
+          figures={playing ? [
+            { v: checks, k: 'checks' },
+            { v: elapsed, k: 'time' },
+          ] : [
+            { v: won ? 'Solved' : 'Unfinished', k: 'result' },
+            { v: checks, k: 'checks' },
+            { v: elapsed, k: 'time' },
+          ]}
+        />
+      )}
+      <div style={{ position: 'relative', zIndex: 2, padding: '14px 16px 8px' }}>
+        <style dangerouslySetInnerHTML={{ __html: `
+          .gl-btn{font-family:${SANS};font-weight:800;font-size:13.5px;border:2px solid ${STAGE ? 'var(--stg-line2)' : 'var(--blue-deep)'};background:${STAGE ? 'transparent' : 'var(--white)'};color:${STAGE ? 'var(--stg-ink)' : 'var(--blue-deep)'};border-radius:9px;padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+          .gl-btn:disabled{opacity:0.4;cursor:default;}
+          ${STAGE ? STAGE_CSS : LEGACY_CSS}
+        ` }} />
+
+        <div style={{ maxWidth: 660, margin: '0 auto' }}>
+
+
+          {!LOFT && (
+          <DailyMasthead
+            slug="glyph"
+            num={PUZZLE.num}
+            dateLabel={PUZZLE.dateLabel}
+            accent={COLORS.accent}
+            blockGap={5}
+            helpTop={13}
+            marginBottom={16}
+            onHelp={() => setShowHelp(true)}
+            sunday={PUZZLE.sunday && <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: `var(--stg-onramp, ${T.white})`, background: `var(--stg-acc, ${COLORS.accent})`, borderRadius: 4, padding: '2px 6px' }}>Sunday Edition &middot; 17&times;17</span>}
+            blocks={'GLYPH'.split('').map((ch, i) => (
+              <div key={i} style={{ width: 44, height: 44, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 900, fontSize: 26, background: i === 4 ? `var(--stg-acc, ${COLORS.accent})` : COLORS.ink, color: T.white, boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.65)' }}>{ch}</div>
+            ))}
+          />
+          )}
+
+        {/* LOFT: the play area sits on the navy stage, which runs full bleed
+            and fills the first screen, so the board is the one lit object. */}
+        <div className={LOFT && !STAGE ? 'loft-stage' : undefined}>
+          <div className={LOFT && !STAGE && !playing ? (loftRevealed ? 'loft-flip' : 'loft-flip on') : undefined}>
+          <div className={LOFT && !STAGE && !playing ? 'loft-flip-in' : undefined}>
+          <div className={LOFT && !STAGE && !playing ? 'loft-face' : undefined}>
+          <div className={LOFT && !STAGE ? 'loft-sheet' : undefined}>
+
+          {preStart && !(EMBED && EMBED.autostart) && (
+            <div className={STAGE ? 'stg-gate' : (LOFT ? 'loft-card' : undefined)} style={{ background: STAGE ? SURF : COLORS.cream, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 12, padding: '22px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 10 }}>{gateRules ? 'How to play' : null}</div>
+              {gateRules ? rulesBody : (
+                <div style={{ fontSize: 14, lineHeight: 1.55, color: INK, fontWeight: 600 }}>
+                  <p style={{ margin: '0 0 6px' }}>Crack the code: every number stands for a letter, the same one everywhere. {W}&times;{H} today, {PUZZLE.words} words.</p>
+                </div>
+              )}
+              <div style={{ marginTop: 18, display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <button className="gl-btn" onClick={startGame} style={{ borderColor: STAGE ? STAGE_C_INK : undefined, background: STAGE ? STAGE_C : T.cta, color: STAGE ? 'var(--stg-onramp, #08222e)' : T.white, fontSize: 15, padding: '11px 22px' }}>Start</button>
+                <div>
+                  <button type="button" onClick={() => setGateRules((v) => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: SANS, fontSize: 13, fontWeight: 700, color: FADED, textDecoration: 'underline' }}>
+                    {gateRules ? 'Back' : 'How to play'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!stageOn && glBoard}
 
           {!preStart && !STAGE && (
             <div className={STAGE ? 'gl-card stg-board' : 'gl-card'} style={{ background: STAGE ? SURF : T.white, border: STAGE ? `1px solid ${SURF_B}` : `2px solid ${COLORS.ink}`, borderRadius: 10, boxShadow: STAGE ? 'none' : '5px 5px 0 rgba(28,30,36,0.16)', marginBottom: 12 }}>
