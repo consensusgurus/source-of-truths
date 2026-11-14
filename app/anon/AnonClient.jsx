@@ -180,6 +180,10 @@ const AX_CSS = `
 .ax-spine button.f{background:var(--pst-acc);color:var(--pst-on-acc);}
 .ax-spine button.now{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 3px var(--pst-ink);}
 .ax-psg{display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px 9px;padding:10px;border:1px solid var(--pst-ink);border-radius:14px;max-height:clamp(84px, calc(100svh - 575px), 214px);overflow-y:auto;scrollbar-width:thin;box-sizing:border-box;}
+.ax.fit{gap:10px;box-sizing:border-box;}
+.pst .pst-top:has(.ax.fit){justify-content:flex-start;flex:0 0 auto;}
+.ax.fit .ax-psg{flex:1 1 0;min-height:72px;max-height:none;}
+.ax.fit .ax-kb{margin-top:auto;}
 .ax-list{position:relative;flex-direction:column;flex-wrap:nowrap;gap:2px;padding:6px;}
 .ax-row{display:flex;align-items:center;gap:8px;width:100%;min-height:28px;border:0;border-radius:8px;background:transparent;padding:1px 6px;text-align:left;flex:none;}
 .ax-row.on{background:var(--pst-pale);}
@@ -265,12 +269,19 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   // The stage board's middle pane (owner, 2026-11-14): the passage, or every answer as a list.
   const axPaneState = useState('q');
   const axListRefTop = useRef(null);
+  // PHONE PLAY VIEW (owner, 2026-11-14: "just play space + keyboard"): on a
+  // touch phone the board takes exactly the screen under the top bar, the
+  // passage / answers box grows into the spare height, and the stage foot sits
+  // below the fold. The height is measured, never summed.
+  const axRef = useRef(null);
+  const [axFitH, setAxFitH] = useState(0);
   // The list keeps the answer you are on in view.
   useEffect(() => {
     const box = axListRefTop.current;
     const row = box && box.querySelector('.ax-row.on');
-    if (row) box.scrollTop = Math.max(0, row.offsetTop - box.clientHeight / 2 + row.clientHeight / 2);
-  }, [axPaneState[0], cur]);          // narrow only: passage or bank
+    if (row) box.scrollTop += row.getBoundingClientRect().top - box.getBoundingClientRect().top - (box.clientHeight - row.clientHeight) / 2;
+  }, [axPaneState[0], cur, axFitH]);
+         // narrow only: passage or bank
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
@@ -1022,8 +1033,25 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   const axGo = (n, half) => { if (half) setView(half); focusCell(n, half); };
   const axStep = (d) => { setView('b'); stepAnswer(d); };
   const axMiss = (n) => !playing && fill[n] !== sol[n];
+  useEffect(() => {
+    const el = axRef.current;
+    if (!el || !(touchInput && narrow && playing && g.t0)) { setAxFitH(0); return undefined; }
+    const sheet = el.closest('.pst');
+    const fit = () => {
+      if (!sheet) return;
+      const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+      const top = el.getBoundingClientRect().top - sheet.getBoundingClientRect().top + sheet.scrollTop;
+      const pad = 10 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab')) || 0);
+      setAxFitH(Math.max(420, Math.floor(vh - top - pad)));
+    };
+    const raf = requestAnimationFrame(fit);
+    window.addEventListener('resize', fit);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', fit);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', fit); if (window.visualViewport) window.visualViewport.removeEventListener('resize', fit); };
+  }, [touchInput, narrow, playing, g.t0]);
+  const axFit = touchInput && narrow && playing && !!g.t0;
   const anStage = (
-    <div className="ax">
+    <div className={`ax${axFit ? ' fit' : ''}`} ref={axRef} style={axFit && axFitH ? { height: axFitH } : undefined}>
       <div className="ax-spine" aria-label="The author so far">
         {spineLetters.map((c, i) => (
           <button key={i} type="button" className={(c ? 'f' : '') + (curAnswer === i ? ' now' : '')}
