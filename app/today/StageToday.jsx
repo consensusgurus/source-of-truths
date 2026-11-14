@@ -4149,6 +4149,18 @@ export default function StageToday() {
   // render, so these must be defined before them or the home throws a TDZ error.
   const mph = !picked || paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID || !!paneCat(paneOn);
   const mPane = runsMq && picked && mph;
+  // The pinned controls sit right under the sticky phone header, whatever its
+  // height (safe area, landscape), so it is measured rather than guessed.
+  useEffect(() => {
+    if (!mPane) return undefined;
+    const el = document.querySelector('.sty-mtop');
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const set = () => { try { document.documentElement.style.setProperty('--mtop-h', el.offsetHeight + 'px'); } catch (e) {} };
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [mPane]);
   const [siteLook] = useStageLook();
   const qTintCat = paneOn === QUIZ_ID && qTopic && isColorLook(siteLook) ? (QZ_CAT[qTopic] || 'Trivia') : null;
   const mTintCat = mPane && paneCat(paneOn) && isColorLook(siteLook) ? rampCat(paneOn) : (mPane ? qTintCat : null);
@@ -4821,6 +4833,50 @@ export default function StageToday() {
                 if (rest.length) mGroups.push({ id: 'rest', cat: null, games: rest });
               } else if (openG.length) mGroups.push({ id: 'open', cat: null, games: openG });
               if (playedG.length) mGroups.push({ id: 'played', played: true, games: playedG });
+              // ONE PHONE CARD, used by every group and by the Featured row (owner,
+              // 2026-11-14: the featured tiles are full size, the same cards as the list).
+              const mCard = (g) => {
+                      const isDone = done.has(g.key);
+                      const r = standBy[g.key];
+                      const on = !!(favorites && favorites.includes(g.key));
+                      return (
+                        <a key={g.key} className={'mph-g' + (isDone ? ' done' : '')} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`} style={mTone(g.cat)}
+                          onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
+                          {/* THE PHONE DETAILS CARD MATCHES THE DESKTOP ONE (owner, 2026-11-08):
+                              board band, glyph by the name, facts row. */}
+                          {mDet ? <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} square /></span> : null}
+                          <b>{mDet ? null : pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
+                          {mDet ? <em className="mx">{fullDesc(g)}</em> : <em>{g.tag}</em>}
+                          {mDet ? <FactRow k={g.key} /> : null}
+                          {mDet && skillLine(g.key) ? <span className="mk">{skillLine(g.key)}</span> : null}
+                          {/* No bare "Play" on a Details card (2026-11-08): the whole card is the
+                              way in. A result or Resume still shows. */}
+                          {mDet && !isDone && !inprog.has(g.key) ? null : <small>{isDone ? (r ? `You #${r.rank} of ${r.field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>}
+                          {/* THE CROWD ON THE PHONE DETAILS CARD (owner, 2026-11-08):
+                              who leads and today's plays along the foot, as on the
+                              desktop card. Always both, even at zero. */}
+                          {mDet && board ? (() => {
+                            const d = boardBy[g.key] || { board: [], plays: 0 };
+                            const pl = Number(d.plays || d.field) || 0;
+                            const ld = Array.isArray(d.board) && d.board[0] ? d.board[0] : null;
+                            return (
+                              <span className="mcs">
+                                <span className="ld">{ld ? <>#1 <b>{ld.username}</b></> : pl ? 'No solve yet' : 'Open. Be first.'}</span>
+                                <span className="ct pc" title="Plays today">{pl.toLocaleString('en-US')}</span>
+                              </span>
+                            );
+                          })() : null}
+                          {canPin ? (
+                            <button type="button" className={'st' + (on ? ' on' : '')} aria-label={on ? `Unstar ${g.name}` : `Star ${g.name}`}
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(g.key); }}>
+                              <svg viewBox="0 0 24 24" width="13" height="13" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M12 4l2.4 5 5.6.8-4 3.9 1 5.5-5-2.7-5 2.7 1-5.5-4-3.9 5.6-.8z" />
+                              </svg>
+                            </button>
+                          ) : null}
+                        </a>
+                      );
+                    };
               return (
                 <>
                   <button type="button" className="mph-back" onClick={mBack}>&larr; {backTo}</button>
@@ -4887,22 +4943,16 @@ export default function StageToday() {
                   {isAll && featGames.length ? (
                     <>
                       <div className="mph-lab">Featured</div>
-                      <div className="mph-gg mph-feat">
-                        {featGames.map((g) => (
-                          <a key={'ft-' + g.key} className={'mph-g' + (done.has(g.key) ? ' done' : '')} href={mGoHref(g)} style={mTone(g.cat)}
-                            onClick={(e) => floodNav(e, mGoHref(g), SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
-                            <b><i className="dot" aria-hidden="true" />{g.name}</b>
-                            <em>{g.tag}</em>
-                            <small>{done.has(g.key) ? (standBy[g.key] ? `You #${standBy[g.key].rank} of ${standBy[g.key].field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>
-                          </a>
-                        ))}
-                      </div>
+                      <div className={'mph-gg' + (mDet ? ' det' : '')}>{featGames.map(mCard)}</div>
                     </>
                   ) : null}
                   {/* SORT AND VIEW SHARE ONE ROW (owner, 2026-11-11, mockup M2), each a
                       joined switch in the shape of Categories / Skills on the home,
                       under the small label the desktop cap uses. The Details note
                       hangs off the row, so it keeps the full width. */}
+                  {/* THE CONTROLS STICK UNDER THE HEADER on All Puzzles (owner, 2026-11-14):
+                      Sort, View and Jump To ride along so nobody scrolls 181 cards back up. */}
+                  <div className={isAll ? 'mph-pin' : 'mph-nopin'}>
                   {games.length ? (
                     <div className="mph-ctl">
                       <div className="mph-cg s">
@@ -4947,6 +4997,7 @@ export default function StageToday() {
                       </div>
                     </div>
                   ) : null}
+                  </div>
                   {games.length && !(isAll && mGroups.some((x) => x.cat)) ? <div className="mph-lab">Puzzles{openG.length && openG.length < games.length ? <> &middot; {openG.length} left</> : null}</div> : null}
                   {isMine && !games.length ? (
                     <p className="mph-note">{who ? 'Nothing starred yet. Tap the star on any puzzle and it shows up here.' : 'Pick a name, then star any puzzle and it shows up here.'}</p>
@@ -4956,48 +5007,7 @@ export default function StageToday() {
                   {grp.played ? <div className="mph-lab">Played &middot; {grp.games.length}</div>
                     : grp.cat ? <div className="mph-lab mph-jl" id={'mj-' + gi} style={mTone(rampCat(grp.cat))}><i aria-hidden="true" />{catLabel(grp.cat)} &middot; {grp.games.length} left</div> : null}
                   <div className={'mph-gg' + (mDet ? ' det' : '')}>
-                    {grp.games.map((g) => {
-                      const isDone = done.has(g.key);
-                      const r = standBy[g.key];
-                      const on = !!(favorites && favorites.includes(g.key));
-                      return (
-                        <a key={g.key} className={'mph-g' + (isDone ? ' done' : '')} href={`${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`} style={mTone(g.cat)}
-                          onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
-                          {/* THE PHONE DETAILS CARD MATCHES THE DESKTOP ONE (owner, 2026-11-08):
-                              board band, glyph by the name, facts row. */}
-                          {mDet ? <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} square /></span> : null}
-                          <b>{mDet ? null : pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
-                          {mDet ? <em className="mx">{fullDesc(g)}</em> : <em>{g.tag}</em>}
-                          {mDet ? <FactRow k={g.key} /> : null}
-                          {mDet && skillLine(g.key) ? <span className="mk">{skillLine(g.key)}</span> : null}
-                          {/* No bare "Play" on a Details card (2026-11-08): the whole card is the
-                              way in. A result or Resume still shows. */}
-                          {mDet && !isDone && !inprog.has(g.key) ? null : <small>{isDone ? (r ? `You #${r.rank} of ${r.field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>}
-                          {/* THE CROWD ON THE PHONE DETAILS CARD (owner, 2026-11-08):
-                              who leads and today's plays along the foot, as on the
-                              desktop card. Always both, even at zero. */}
-                          {mDet && board ? (() => {
-                            const d = boardBy[g.key] || { board: [], plays: 0 };
-                            const pl = Number(d.plays || d.field) || 0;
-                            const ld = Array.isArray(d.board) && d.board[0] ? d.board[0] : null;
-                            return (
-                              <span className="mcs">
-                                <span className="ld">{ld ? <>#1 <b>{ld.username}</b></> : pl ? 'No solve yet' : 'Open. Be first.'}</span>
-                                <span className="ct pc" title="Plays today">{pl.toLocaleString('en-US')}</span>
-                              </span>
-                            );
-                          })() : null}
-                          {canPin ? (
-                            <button type="button" className={'st' + (on ? ' on' : '')} aria-label={on ? `Unstar ${g.name}` : `Star ${g.name}`}
-                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(g.key); }}>
-                              <svg viewBox="0 0 24 24" width="13" height="13" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M12 4l2.4 5 5.6.8-4 3.9 1 5.5-5-2.7-5 2.7 1-5.5-4-3.9 5.6-.8z" />
-                              </svg>
-                            </button>
-                          ) : null}
-                        </a>
-                      );
-                    })}
+                    {grp.games.map(mCard)}
                   </div>
                   </Fragment>
                   ))}
@@ -7681,8 +7691,6 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mfres .sty-lnone{padding:8px 14px 10px;font-size:13px;}
   .sty-mfres .sty-findq{border-top:1px solid var(--stg-line, rgba(0,0,0,.08));margin-top:4px;padding:0 14px;}
   .sty-mtb.pane .sty-mfbtn{flex:none;width:40px;height:40px;}
-  .sty-mph .mph-feat .mph-g em{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35;}
-  .sty-mph .mph-feat .mph-g small{margin-top:auto;padding-top:4px;}
 }
 @media (max-width:900px){
   .sty-mtop{display:flex;flex-direction:column;gap:12px;padding:max(12px, env(safe-area-inset-top)) 16px 2px;--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
@@ -8557,12 +8565,14 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   /* N3: the jump row on All Puzzles, and the label each group starts under.
      The label clears the pinned header when it is jumped to. */
   .sty-mph .mph-jump{display:flex;flex-direction:column;gap:4px;min-width:0;}
-  .sty-mph .mph-jrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;min-width:0;max-width:100%;}
+  .sty-mph .mph-jrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;min-width:0;max-width:100%;padding:1px 1px 3px;margin:-1px -1px -3px;}
+  .sty-mph .mph-nopin{display:contents;}
+  .sty-mph .mph-pin{position:sticky;top:var(--mtop-h, 60px);z-index:30;display:flex;flex-direction:column;gap:10px;margin:0 -14px;padding:2px 14px 10px;background:var(--sot-root-paint, var(--stg-ground));}
   .sty-mph .mph-jrow::-webkit-scrollbar{display:none;}
-  .sty-mph .mph-jrow button{flex:none;border:1px solid #08222e;border-radius:999px;padding:6px 12px 7px;font-size:12.5px;font-weight:800;line-height:1.26;
+  .sty-mph .mph-jrow button{flex:none;border:1px solid #08222e;border-radius:999px;padding:7px 14px 8px;font-size:12.5px;font-weight:800;line-height:1.26;
     white-space:nowrap;color:#08222e;background:color-mix(in srgb, var(--mc) 60%, #fff);}
   html[data-stage-color=mono] .sty-mph .mph-jrow button{background:transparent;color:var(--stg-ink);border-color:var(--stg-ink);}
-  .sty-mph .mph-jl{display:flex;align-items:center;gap:7px;scroll-margin-top:84px;}
+  .sty-mph .mph-jl{display:flex;align-items:center;gap:7px;scroll-margin-top:calc(var(--mtop-h, 60px) + 150px);}
   .sty-mph .mph-jl > i{flex:none;width:10px;height:10px;border-radius:50%;border:1px solid var(--stg-ink);background:color-mix(in srgb, var(--mc) 60%, #fff);}
   html[data-stage-color=mono] .sty-mph .mph-jl > i{background:transparent;}
   /* N1: THE PANE'S HEADER STAYS PINNED. iOS Safari tints its top bar from the
