@@ -405,6 +405,7 @@ archive and hub chips use the short form `Sun`.
 | Slide | a 6x6 photo against the weekday 5x5 (from launch, 2026-11-01) |
 | Spin | an 8x8 photo against the weekday 6x6 (from launch, 2026-11-01) |
 | Connect | a 12x12 board with 10 blocked squares and 9 pairs, proved unique under the player's rules, the top of a ramp from 9x9 on Monday (12x12 with 12 to 14 pairs at launch, 2026-11-01; blocks from 2026-11-02) |
+| Mop | a house on three 6x6 floors (Upstairs, Ground Floor, Basement) joined by two staircases up and two down, against one floor of 6x6 to 8x8 on weekdays (from launch, 2026-11-13) |
 | Fill | 22 words on a board up to 17x17, against 16 to 18 on 15x15 (from launch, 2026-11-01) |
 | Pairs | 48 cards (24 pairs) on an 8x6 table, against 36 (from launch, 2026-11-01) |
 | Swindle | the deepest draw of the week, five White moves or more (from launch, 2026-10-18) |
