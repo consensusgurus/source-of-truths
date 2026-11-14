@@ -3140,7 +3140,7 @@ export default function StageToday() {
       {mFindHits.length ? (
         <ul>
           {mFindHits.map((g) => (
-            <li key={g.key}><a href={mGoHref(g)} style={{ '--cc': hueFor(g.cat), '--cci': inkFor(g.cat) }}>
+            <li key={g.key}><a href={mGoHref(g)} style={{ '--mc': categoryColor(g.cat) }}>
               <i aria-hidden="true" /><span><b>{g.name}</b><em>{catLabel(g.cat)}</em></span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
             </a></li>
@@ -7673,7 +7673,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mfl{padding:10px 14px 4px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8;line-height:1.4;}
   .sty-mfres ul{list-style:none;margin:0;padding:0;}
   .sty-mfres li a{display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 14px;color:var(--stg-ink);text-decoration:none;}
-  .sty-mfres li a i{flex:none;width:26px;height:26px;border-radius:7px;background:var(--cc);border:1px solid var(--cci);box-sizing:border-box;}
+  .sty-mfres li a i{flex:none;width:26px;height:26px;border-radius:7px;background:color-mix(in srgb, var(--mc) 60%, #fff);border:1px solid var(--stg-ink);box-sizing:border-box;}
   .sty-mfres li a span{flex:1;min-width:0;display:flex;flex-direction:column;}
   .sty-mfres li a b{font-size:15px;font-weight:800;line-height:1.3;}
   .sty-mfres li a em{font-style:normal;font-size:12px;font-weight:600;opacity:.75;line-height:1.35;}
