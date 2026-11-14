@@ -7857,8 +7857,12 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-gg.det .sty-gfm{display:inline-flex;gap:2px;align-items:flex-end;}
   .sty-mph .mph-gg.det .sty-gfm i{display:block;width:4px;border-radius:1px;background:color-mix(in srgb, var(--gpd) 28%, transparent);}
   .sty-mph .mph-gg.det .sty-gfm i.on{background:var(--gpd);}
-  .stage-page:not([data-stage-theme=light]) .sty-mph .mph-gg.det .mph-g{--gpd:var(--mc);--gpw:#1a2130;--gpt:color-mix(in srgb, var(--mc) 24%, #1a2130);}
-  .stage-page:not([data-stage-theme=light]) .sty-mph .mph-gg.det .mph-g .sty-gband{background:color-mix(in srgb, var(--mc) 16%, #1a2130);}
+  /* DARK LOOK (owner report, 2026-11-14: "everything broken on dark mode on
+     mobile"). An unplayed card keeps its light fill and dark ink in BOTH
+     registers (THE TONE above), so its chips, board tile and crowd strip keep
+     their light steps too. Only a PLAYED card goes dark, so only it takes the
+     dark steps; giving them to an unplayed card put dark ink on dark chips. */
+  .stage-page:not([data-stage-theme=light]) .sty-mph .mph-gg.det .mph-g.done{--gpd:var(--mc);--gpw:#1a2130;--gpt:color-mix(in srgb, var(--mc) 24%, #1a2130);}
   /* A PLAYED CARD FOLDS (owner, 2026-11-08: "played puzzles collapse to less
      height when complete"). No board band, description or fact chips: the
      name, skills and your result stay, and so does the played colouring. */
@@ -7868,7 +7872,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-gg.det .mph-g .mcs .ld{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .sty-mph .mph-gg.det .mph-g .mcs .ld b{font-weight:800;font-size:inherit;line-height:inherit;padding-right:0;}
   .sty-mph .mph-gg.det .mph-g .mcs .ct{flex:none;font-weight:800;}
-  .stage-page:not([data-stage-theme=light]) .sty-mph .mph-gg.det .mph-g .mcs{background:color-mix(in srgb, var(--mc) 22%, #1a2130);}
+  .stage-page:not([data-stage-theme=light]) .sty-mph .mph-gg.det .mph-g.done .mcs{background:color-mix(in srgb, var(--mc) 22%, #1a2130);}
   .sty-mph .mph-gg.det .mph-g.done :is(.sty-gband,em.mx,.sty-gfx){display:none;}
   /* BOARD ON THE LEFT (owner, 2026-11-08: option B, "for here and desktop").
      The band across the top left a lot of dead space, so the drawing is a
@@ -8233,6 +8237,14 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-gfc{display:inline-flex;align-items:center;gap:5px;height:24px;box-sizing:border-box;padding:0 9px 0 7px;border-radius:999px;
     background:var(--gpt);color:var(--stg-ink);font-size:12px;font-weight:700;white-space:nowrap;}
   .sty-gfc svg{color:var(--gpd);flex:none;}
+  /* FULL COLOR ON THE DARK PAGE (2026-11-14): an unplayed Details card is
+     filled with the soft category step and dark ink, so its board tile,
+     chips, description and skills take light steps and dark ink, not the
+     dark surface and light ink of the Balanced look. */
+  html[data-stage-color=full] .sty:not([data-stage-theme=light]) .sty-ix.sty-det .sty-g:not(.done){
+    --gpd:${RAMP_INK};--gpw:#fff;--gpt:color-mix(in srgb, var(--cfull) 45%, #fff);}
+  html[data-stage-color=full] .sty:not([data-stage-theme=light]) .sty-ix.sty-det .sty-g:not(.done) .sty-gband{background:color-mix(in srgb, var(--cfull) 35%, #fff);}
+  html[data-stage-color=full] .sty:not([data-stage-theme=light]) .sty-ix.sty-det .sty-g:not(.done) :is(.sty-gx,.sty-gk,.sty-gfc){color:${RAMP_INK};}
   .sty-gfm{display:inline-flex;gap:2px;align-items:flex-end;}
   .sty-gfm i{display:block;width:4px;border-radius:1px;background:color-mix(in srgb, var(--gpd) 28%, transparent);}
   .sty-gfm i.on{background:var(--gpd);}
