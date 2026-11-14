@@ -167,6 +167,48 @@ const AN_ST_CSS = `
 .pst .an-st .an-k{font-weight:800;}
 `;
 
+// THE STAGE BOARD (owner, 2026-11-14: "update Anon to the stage format", the
+// Anon artboard on the Stage Gameplay Candidates canvas). One answer at a time:
+// the author's letters as a strip, the passage as a compact card, the answer
+// you are in with its slots, and the keys inside the board on a touch screen.
+// White page, Word's sky on what is filled, ink outlines.
+const AX_CSS = `
+.ax{width:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:10px;color:var(--pst-ink);}
+.ax button{font-family:inherit;color:var(--pst-ink);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.ax-spine{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;}
+.ax-spine button{width:30px;height:30px;border-radius:8px;border:2px solid var(--pst-ink);background:var(--pst-cell,#fff);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;padding:0;box-sizing:border-box;}
+.ax-spine button.f{background:var(--pst-acc);color:var(--pst-on-acc);}
+.ax-spine button.now{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.ax-psg{display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px 9px;padding:10px;border:2px solid var(--pst-ink);border-radius:14px;max-height:clamp(84px, calc(100svh - 575px), 214px);overflow-y:auto;scrollbar-width:thin;box-sizing:border-box;}
+.ax-psg.open{max-height:none;}
+@media (hover:hover) and (pointer:fine){.ax-psg{max-height:320px;}}
+.ax-w{display:flex;gap:2px;align-items:flex-end;}
+.ax-w span{width:15px;height:20px;border-bottom:2px solid var(--pst-ink);display:flex;align-items:flex-end;justify-content:center;font-size:13px;font-weight:800;line-height:1;cursor:pointer;}
+.ax-w span.p{width:auto;border:0;cursor:default;padding:0 1px;}
+.ax-w span.now{background:var(--pst-pale);border-radius:3px 3px 0 0;}
+.ax-w span.cur{background:var(--pst-acc);color:var(--pst-on-acc);border-radius:3px 3px 0 0;}
+.ax-w span.miss{color:var(--pst-bad);}
+.ax-ans{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.ax-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;}
+.ax-arr{width:44px;height:44px;border-radius:22px;border:2px solid var(--pst-ink);background:transparent;display:flex;align-items:center;justify-content:center;padding:0;flex:none;}
+.ax-q{margin:0;text-align:center;font-size:21px;line-height:1.18;font-weight:800;letter-spacing:-.02em;}
+.ax-q small{display:block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);margin-bottom:4px;}
+.ax-slots{display:grid;gap:6px;justify-content:center;width:100%;}
+.ax-slots button{height:46px;border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-cell,#fff);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;box-sizing:border-box;padding:0;min-width:0;}
+.ax-slots button.f{background:var(--pst-acc);color:var(--pst-on-acc);}
+.ax-slots button.cur{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.ax-slots button.miss{background:var(--pst-bad-bg);color:var(--pst-bad);}
+.ax-ok{font-size:13px;font-weight:800;color:var(--pst-mute);}
+.ax-acts{display:flex;gap:8px;justify-content:center;}
+.ax-pill{min-height:36px;padding:0 18px;border-radius:999px;border:2px solid var(--pst-ink);background:transparent;font-size:14px;font-weight:800;}
+.ax-pill.on{background:var(--pst-ink);color:var(--pst-bg)!important;}
+.ax-kb{display:flex;flex-direction:column;gap:6px;user-select:none;-webkit-user-select:none;}
+.ax-kr{display:flex;justify-content:center;gap:5px;}
+.ax-k{flex:1;max-width:36px;height:46px;border-radius:9px;border:2px solid var(--pst-ink);background:color-mix(in srgb, var(--pst-ink) 6%, transparent);font-size:17px;font-weight:800;padding:0;-webkit-touch-callout:none;}
+.ax-k:active{background:var(--pst-acc);color:var(--pst-on-acc);}
+.ax-k.w{max-width:58px;flex:1.6;font-size:13px;display:flex;align-items:center;justify-content:center;}
+`;
+
 export default function AnonClient({ puzzles = [], forceNum = null }) {
   const PUZZLE = useMemo(() => pickPuzzle(puzzles, forceNum), [puzzles, forceNum]);
   const A = PUZZLE.a;
@@ -954,6 +996,72 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
             </>
   );
 
+  // THE STAGE BOARD (owner, 2026-11-14), see AX_CSS.
+  const axA = A[curAnswer] || A[0];
+  const axGo = (n, half) => { if (half) setView(half); focusCell(n, half); };
+  const axStep = (d) => { setView('b'); stepAnswer(d); };
+  const axMiss = (n) => !playing && fill[n] !== sol[n];
+  const anStage = (
+    <div className="ax">
+      <div className="ax-spine" aria-label="The author so far">
+        {spineLetters.map((c, i) => (
+          <button key={i} type="button" className={(c ? 'f' : '') + (curAnswer === i ? ' now' : '')}
+            aria-label={`Answer ${i + 1}`} onClick={() => axGo(A[i].c[0], 'b')}>{c}</button>
+        ))}
+      </div>
+      <div className={`ax-psg${view === 'q' ? ' open' : ''}`} aria-label="The passage">
+        {tokens.map((tk, i) => (
+          <span className="ax-w" key={i}>
+            {tk.map((t, j) => (t.p
+              ? <span className="p" key={j}>{t.p}</span>
+              : <span key={j} onClick={() => axGo(t.n, 'q')}
+                  className={(t.n === cur && playing ? 'cur' : (owner[t.n] === curAnswer && playing ? 'now' : '')) + (axMiss(t.n) ? ' miss' : '')}>
+                  {(playing ? fill[t.n] : (fill[t.n] || sol[t.n])) || ''}
+                </span>))}
+          </span>
+        ))}
+      </div>
+      <div className="ax-ans">
+        <div className="ax-nav">
+          <button type="button" className="ax-arr" aria-label="Previous answer" onClick={() => axStep(-1)}><ChevronLeft size={18} strokeWidth={3} /></button>
+          <h2 className="ax-q">
+            <small>{curAnswer < PUZZLE.spine ? `Spine ${curAnswer + 1} of ${PUZZLE.spine} · first letters name the author` : 'Free bank · no initial to obey'}</small>
+            {axA.w.length} letters &middot; {axA.cat || 'no category'}
+          </h2>
+          <button type="button" className="ax-arr" aria-label="Next answer" onClick={() => axStep(1)}><ChevronRight size={18} strokeWidth={3} /></button>
+        </div>
+        <div className="ax-slots" aria-label="Your answer" style={{ gridTemplateColumns: `repeat(${axA.c.length}, minmax(0, 44px))` }}>
+          {axA.c.map((n) => (
+            <button key={n} type="button" onClick={() => axGo(n, 'b')}
+              className={(fill[n] ? 'f' : '') + (n === cur && playing ? ' cur' : '') + (axMiss(n) ? ' miss' : '')}>
+              {(playing ? fill[n] : (fill[n] || sol[n])) || ''}
+            </button>
+          ))}
+        </div>
+        {solved[curAnswer] && <span className="ax-ok">Solved</span>}
+      </div>
+      <div className="ax-acts">
+        <button type="button" className={`ax-pill${view === 'q' ? ' on' : ''}`} onClick={() => setView(view === 'q' ? 'b' : 'q')}>Passage</button>
+      </div>
+      {touchInput && playing && (
+        <div className="ax-kb">
+          {ROWS.map((row, ri) => (
+            <div className="ax-kr" key={ri}>
+              {ri === 2 && <button type="button" className="ax-k w" aria-label="Next answer" onClick={() => axStep(1)}>Next</button>}
+              {[...row].map((c) => <button key={c} type="button" className="ax-k" onClick={() => type(c.toUpperCase())}>{c.toUpperCase()}</button>)}
+              {ri === 2 && (
+                <button type="button" className="ax-k w" aria-label="Delete"
+                  onPointerDown={(e) => { e.preventDefault(); holdDelete(); }}
+                  onPointerUp={stopDelete} onPointerLeave={stopDelete} onPointerCancel={stopDelete}
+                  onContextMenu={(e) => e.preventDefault()}><Delete size={17} /></button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className={STAGE ? `stage-page${EMBED ? '' : ' lg-white'}` : (LOFT ? 'loft-page' : undefined)}
       data-stage-theme={STAGE ? (EMBED ? (EMBED.theme || 'dark') : stageTheme) : undefined}
@@ -961,9 +1069,10 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
       style={{ ...(STAGE ? STAGE_ACC : null), minHeight: '100vh', background: STAGE ? 'var(--stg-ground)' : T.surface, color: STAGE ? 'var(--stg-ink,#e9edf4)' : undefined, position: 'relative', overflowX: (STAGE || LOFT) ? 'hidden' : undefined }}>
       {stageOn && (
         <PlayStage bg={gameColor('anon')} label="Anon" wide
-          eyebrow={`Anon${PUZZLE.sunday ? ' · Sunday Edition' : ''} · solve the clues, read the quote`}
-          top={<div className="an-st pst-raw" style={{ width: '100%', textAlign: 'left' }}><style dangerouslySetInnerHTML={{ __html: AN_ST_CSS }} />{anBoard}</div>}
-          foot={`${nSolved} of ${TOTAL} answers · ${filledCount} of ${N} letters`}
+          eyebrow={`Answer ${curAnswer + 1} of ${TOTAL}${PUZZLE.sunday ? ' · Sunday Edition' : ''}`}
+          top={<div className="pst-raw" style={{ width: '100%' }}><style dangerouslySetInnerHTML={{ __html: AX_CSS }} />{anStage}</div>}
+          frac={TOTAL ? nSolved / TOTAL : 0}
+          foot={`${nSolved} of ${TOTAL} answers`}
           giveUp={playing ? { armed: false, onPress: giveUp } : null}
           clock={elapsed} done={!playing} />
       )}
@@ -1251,7 +1360,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           !important, so the rail sat on top of the end of the passage and the
           last row of the bank. */}
       <RunDoorPop id="crossed" game="anon" ready={hydrated && playing && !g.t0 && isTodays && !EMBED} self="Anon" />
-      {railUp && (
+      {railUp && !stageOn && (
         <div className="an-input" ref={rail.ref}>
           <div className="an-inputin">
           {narrow && (
