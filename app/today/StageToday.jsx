@@ -3067,6 +3067,14 @@ export default function StageToday() {
   // the pane title and filters the pane's puzzles by name and description as
   // you type. Desktop only, and gone on a narrower window.
   const [findQ, setFindQ] = useState('');
+  // THE PHONE'S SEARCH (owner, 2026-11-13): a round button in the phone header,
+  // beside the look switch. Tapping it turns the header itself into the search
+  // field, with Cancel; matches drop down in a sheet over the dimmed page.
+  const [mFind, setMFind] = useState(false);
+  const closeMFind = () => { setMFind(false); setFindQ(''); };
+  // THE FEATURED ROW (owner, 2026-11-13): on All Puzzles, the first row under
+  // the runs. A key that is not live yet (Chef) is simply skipped until it is.
+  const FEATURED_KEYS = ['chef', 'mop', 'carmen', 'sudoclue'];
   // UNIVERSAL (owner, 2026-10-26): "if im on sudoku page, i should be able to
   // search all puzzles and quizzes." A query searches every live daily from
   // whatever pane it is typed in, and the quiz catalogue under them.
@@ -3103,6 +3111,45 @@ export default function StageToday() {
       </div>
     );
   })();
+  const featGames = FEATURED_KEYS.map((k) => alpha.find((g) => g.key === k)).filter(Boolean);
+  const mFindHits = findOn ? findIn(alpha).slice(0, 12) : [];
+  const mGoHref = (g) => `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`;
+  const mFindBtn = (
+    <button type="button" className="sty-mlook sty-mfbtn" onClick={() => setMFind(true)}
+      aria-label="Search puzzles and quizzes" title="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+    </button>
+  );
+  const mFindBar = (
+    <div className="sty-mtb sty-mfbar">
+      <label className="sty-mfin">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+        <input type="search" autoFocus value={findQ} onChange={(e) => setFindQ(e.target.value)} enterKeyHint="search"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') closeMFind();
+            if (e.key === 'Enter' && mFindHits[0]) { e.preventDefault(); window.location.href = mGoHref(mFindHits[0]); }
+          }}
+          placeholder="Search puzzles and quizzes" aria-label="Search puzzles and quizzes" />
+      </label>
+      <button type="button" className="sty-mfx" onClick={closeMFind}>Cancel</button>
+    </div>
+  );
+  const mFindSheet = mFind && findOn ? (
+    <div className="sty-mfres">
+      <div className="sty-mfl">Puzzles{mFindHits.length ? ' \u00b7 ' + mFindHits.length : ''}</div>
+      {mFindHits.length ? (
+        <ul>
+          {mFindHits.map((g) => (
+            <li key={g.key}><a href={mGoHref(g)} style={{ '--cc': hueFor(g.cat), '--cci': inkFor(g.cat) }}>
+              <i aria-hidden="true" /><span><b>{g.name}</b><em>{catLabel(g.cat)}</em></span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+            </a></li>
+          ))}
+        </ul>
+      ) : <div className="sty-lnone">No puzzles match &ldquo;{findQ.trim()}&rdquo;.</div>}
+      {findQuiz}
+    </div>
+  ) : null;
   const findBox = (
     <label className="sty-find" onClick={(e) => e.stopPropagation()}>
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
@@ -4525,12 +4572,13 @@ export default function StageToday() {
           tickets in one row, the drawing as one outlined line, and the date with
           today's progress as one status line. Every piece is a link. Phone only:
           above 900px it draws nothing and the cap above stays as it was. */}
-      <div className="sty-mtop">
+      {mFind ? <div className="sty-mfdim" onClick={closeMFind} aria-hidden="true" /> : null}
+      <div className={'sty-mtop' + (mFind ? ' mf' : '')}>
         {/* THE PANE HEADER (owner, 2026-10-25): inside a category, skill, All,
             My or Runs pane the top bar IS the pane's title. The back button
             carries the site name and goes home; the title and today's count sit
             beside it, so the big band below is gone. */}
-        {mPane ? (() => {
+        {mFind ? mFindBar : mPane ? (() => {
           const isAll = paneOn === ALL_ID;
           const isMine = paneOn === MINE_ID;
           const isRuns = paneOn === CIRC_ID;
@@ -4555,6 +4603,7 @@ export default function StageToday() {
                 <span className={'t' + (title.length > 14 ? ' xl' : title.length > 11 ? ' l' : '')}><span>{title}</span></span>
                 <em>{sub}</em>
               </span>
+          {mFindBtn}
           <button type="button" className="sty-mlook" data-look="" onClick={(e) => cycleSiteLook()}
             aria-label="Change the look" title="Change the look">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
@@ -4583,6 +4632,7 @@ export default function StageToday() {
               ) : (
                 <a className="sty-mpill" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Join</a>
               )}
+              {mFindBtn}
               <button type="button" className="sty-mlook" data-look="" onClick={(e) => cycleSiteLook()}
                 aria-label="Change the look" title="Change the look">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" /></svg>
@@ -4590,6 +4640,7 @@ export default function StageToday() {
             </span>
           </div>
         )}
+        {mFindSheet}
       </div>
 
       <div className="sty-wrap" ref={wrapRef}>
@@ -4832,6 +4883,22 @@ export default function StageToday() {
                       </a>
                     );
                   }) : null}
+                  {/* THE FEATURED ROW (owner, 2026-11-13): under the runs, two by two. */}
+                  {isAll && featGames.length ? (
+                    <>
+                      <div className="mph-lab">Featured</div>
+                      <div className="mph-gg mph-feat">
+                        {featGames.map((g) => (
+                          <a key={'ft-' + g.key} className={'mph-g' + (done.has(g.key) ? ' done' : '')} href={mGoHref(g)} style={mTone(g.cat)}
+                            onClick={(e) => floodNav(e, mGoHref(g), SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
+                            <b><i className="dot" aria-hidden="true" />{g.name}</b>
+                            <em>{g.tag}</em>
+                            <small>{done.has(g.key) ? (standBy[g.key] ? `You #${standBy[g.key].rank} of ${standBy[g.key].field}` : 'Played') : inprog.has(g.key) ? 'Resume' : 'Play'}</small>
+                          </a>
+                        ))}
+                      </div>
+                    </>
+                  ) : null}
                   {/* SORT AND VIEW SHARE ONE ROW (owner, 2026-11-11, mockup M2), each a
                       joined switch in the shape of Categories / Skills on the home,
                       under the small label the desktop cap uses. The Details note
@@ -5055,7 +5122,21 @@ export default function StageToday() {
                 canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                 hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'az:' + g.key} />
             ));
-              return deckOn(ALL_ID) && paneOn === ALL_ID ? deckGrid(null, nodes) : (mid && viewOf(ALL_ID) === 'list' ? nodes : withRuns(null, nodes));
+              // THE FEATURED ROW (owner, 2026-11-13): the first row under the runs,
+              // its cards on the grid's own columns (subgrid), then the full list.
+              const feat = mid && !findOn && featGames.length && viewOf(ALL_ID) !== 'list' ? (
+                <div key="bd-feat" className="sty-feat" data-fk="band:feat">
+                  <div className="sty-featl">Featured</div>
+                  {featGames.map((g, i) => (
+                    <GameCard key={'ft-' + g.key} g={g} done={done} inprog={inprog} tq={tq} day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
+                      canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
+                      hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'ft:' + g.key} />
+                  ))}
+                  {sortBy !== 'diff' ? <div className="sty-featl">All Puzzles</div> : null}
+                </div>
+              ) : null;
+              const nodes2 = feat ? [feat, ...nodes] : nodes;
+              return deckOn(ALL_ID) && paneOn === ALL_ID ? deckGrid(null, nodes2) : (mid && viewOf(ALL_ID) === 'list' ? nodes : withRuns(null, nodes2));
             })()}
           </div>
           {findQuiz}
@@ -7574,6 +7655,35 @@ html[data-stage-color=full] .sty-deck.on:not(.done){box-shadow:inset 0 0 0 2px $
 html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srgb, var(--phf) 22%, var(--stg-surf));}
 /* PHONE HOME, OPTION A IN FULL (owner, 2026-10-24). Desktop draws none of it. */
 .sty-mtop,.sty-mph{display:none;}
+/* THE FEATURED ROW (owner, 2026-11-13): one full-width cell whose cards sit on
+   the grid's own columns, so they line up with every row under them. */
+.sty-feat{grid-column:1 / -1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-columns:subgrid;row-gap:inherit;}
+.sty-featl{grid-column:1 / -1;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-ink);padding:4px 2px 0;line-height:1.4;}
+.sty-mfdim{display:none;}
+@media (max-width:900px){
+  .sty-mfdim{display:block;position:fixed;inset:0;z-index:59;background:rgba(8,12,20,.32);}
+  .sty-mtop.mf{position:relative;}
+  .stage-page .sty-mtop.mf{z-index:60;}
+  .sty-mfbar{gap:8px;}
+  .sty-mfin{flex:1;min-width:0;height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 14px;border:var(--mb);border-radius:999px;background:var(--stg-surf,#fff);color:var(--mi);}
+  .sty-mfin input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--mi);font:inherit;font-size:16px;font-weight:600;line-height:1.3;padding:0;-webkit-appearance:none;appearance:none;}
+  .sty-mfin input::-webkit-search-cancel-button{display:none;}
+  .sty-mfx{flex:none;height:40px;border:0;background:transparent;color:var(--mi);font:inherit;font-weight:800;font-size:14px;padding:0 4px;cursor:pointer;}
+  .sty-mfres{position:absolute;left:12px;right:12px;top:100%;margin-top:4px;max-height:70vh;overflow:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--stg-ink);border-radius:14px;background:var(--stg-surf,#fff);color:var(--stg-ink);padding-bottom:6px;}
+  .sty-mfl{padding:10px 14px 4px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8;line-height:1.4;}
+  .sty-mfres ul{list-style:none;margin:0;padding:0;}
+  .sty-mfres li a{display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 14px;color:var(--stg-ink);text-decoration:none;}
+  .sty-mfres li a i{flex:none;width:26px;height:26px;border-radius:7px;background:var(--cc);border:1px solid var(--cci);box-sizing:border-box;}
+  .sty-mfres li a span{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .sty-mfres li a b{font-size:15px;font-weight:800;line-height:1.3;}
+  .sty-mfres li a em{font-style:normal;font-size:12px;font-weight:600;opacity:.75;line-height:1.35;}
+  .sty-mfres li + li a{border-top:1px solid var(--stg-line, rgba(0,0,0,.08));}
+  .sty-mfres .sty-lnone{padding:8px 14px 10px;font-size:13px;}
+  .sty-mfres .sty-findq{border-top:1px solid var(--stg-line, rgba(0,0,0,.08));margin-top:4px;padding:0 14px;}
+  .sty-mtb.pane .sty-mfbtn{flex:none;width:40px;height:40px;}
+  .sty-mph .mph-feat .mph-g em{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35;}
+  .sty-mph .mph-feat .mph-g small{margin-top:auto;padding-top:4px;}
+}
 @media (max-width:900px){
   .sty-mtop{display:flex;flex-direction:column;gap:12px;padding:max(12px, env(safe-area-inset-top)) 16px 2px;--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
   .stage-page .sty-cap,.stage-page .sty-rhome,.stage-page .sty-pins{display:none !important;}
