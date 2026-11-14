@@ -1,8 +1,9 @@
 // verify-pack: the checker for Pack (app/pack/puzzles.js), discovered by
 // scripts/verify-all.mjs. Re-checks every rule in scripts/gen-pack.mjs:
 //   - one board a day from 2026-11-14, quizId / dateLabel / sunday from `live`
-//   - board 1 is the intro (a Hatchback); after it the vehicle, its size and its
-//     band follow the weekday (SPEC in the generator), Sunday the Moving Van
+//   - boards 1 and 2 are the intro (a Hatchback, then a Sedan, whatever day they
+//     fall on); after them the vehicle, its size and its band follow the weekday
+//     (SPEC in the generator), Sunday the Moving Van
 //   - every item is a kind lib/pack-art.js can draw, its `d` is the sorted box of
 //     the shape it builds, a shaped item carries a note, and no two share a name
 //   - the items fill the space exactly on the tough days and never overfill it
@@ -18,7 +19,7 @@ const { PUZZLES } = await import(new URL('../app/pack/puzzles.js', import.meta.u
 const { bad, done } = checker('pack');
 checkDays('pack', PUZZLES, bad, '2026-11-14');
 for (const p of PUZZLES) {
-  const spec = SPEC[p.num === 1 ? 1 : dowOf(p.live)], band = p.num === 1 ? 'intro' : spec[0];
+  const intro = p.num <= 2, spec = SPEC[intro ? p.num : dowOf(p.live)], band = intro ? 'intro' : spec[0];
   if (p.band !== band) bad(p.num, `band ${p.band}, expected ${band}`);
   if (p.vehicle !== spec[1] || p.W !== spec[2] || p.D !== spec[3] || p.H !== spec[4]) bad(p.num, `${p.vehicle} ${p.W}x${p.D}x${p.H}, expected ${spec[1]} ${spec[2]}x${spec[3]}x${spec[4]}`);
   const names = new Set(); let cells = 0, shaped = 0, ok = true;

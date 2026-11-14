@@ -1,5 +1,5 @@
 // scripts/gen-pack-spec.mjs: the week's ramp for Pack, read by the generator (gen-pack.mjs) and the
-// checker (verify-pack.mjs). Keyed by weekday (0 is Sunday); the intro board uses Monday's.
+// checker (verify-pack.mjs). Keyed by weekday (0 is Sunday); the two intro boards use Monday's and Tuesday's.
 //               band        vehicle          W  D  H  boxes spare shaped kind  biggest box
 export const SPEC = {
   1: ['gentle', 'Hatchback', 3, 3, 2, 6, 1, 0, 'car', 6],

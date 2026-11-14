@@ -2595,14 +2595,19 @@ key `pack`, category **Visual**, skills Spatial and Planning. On the shared stag
   one shaped), Wed Station Wagon 3x4x3 (8, one shaped), Thu Minivan 4x4x3 (9, one shaped), Fri
   Pickup 4x5x3 (11, two shaped, an EXACT fit), Sat Cargo Van 4x6x3 (13, two shaped, exact), Sunday
   Edition Moving Van 4x7x4 (16, four shaped). Mon to Thu and Sunday leave the smallest box on the
-  curb, so there is room to spare. Board 1 (2026-11-14) is an intro Hatchback.
+  curb, so there is room to spare. **Two intro boards open the bank** (owner, 2026-11-14: "Saturday
+  and Sunday are too hard as an intro"): a Hatchback on Sat 11-14 and a Sedan on Sun 11-15, both band
+  `intro`. 11-15 carries the `sunday` flag (the date check needs it) but is NOT a Sunday Edition: the
+  client only prints the Sunday label for band `sunday`. The moving van first dealt for 11-15 is dealt
+  again from the same seed as the Sunday Edition of 2027-01-03 (`SEED_AS` in the generator).
+  `--redeal <date>` re-deals one day that has not gone live and refuses one that has.
 - **Bank.** `scripts/gen-pack.mjs`, append only: the space is cut into boxes, some boxes two cells
   high are carved into a shaped item plus the box that fits against it, a loading order is found by
   peeling items off the top, and a deal is thrown away unless every item lands exactly where it was
   cut through the real drop. So every board has at least one packing; nothing proves it is the only
   one, and none needs to be. `sol` is that packing and is stripped in `app/pack/page.js` (and in
-  `app/spacecadet/page.js`). `scripts/verify-pack.mjs` reloads every stored packing. 48 boards to
-  2026-12-31: restock before then.
+  `app/spacecadet/page.js`). `scripts/verify-pack.mjs` reloads every stored packing. 51 boards to
+  2027-01-03: restock before then.
 - **Space Cadet** (owner, 2026-11-14: "Pack should be served to everyone who plays space cadet"):
   the fifth and last leg from 2026-11-15, see `docs/claude/circuits-and-runs.md`. Pack's start gate
   mounts the Space Cadet door (`runDoor`).

@@ -377,7 +377,8 @@ const GAME = {
   eyebrow: (P, s, { sundayLabel }) => `${sundayLabel || `${BAND[P.band]} · ${P.vehicle}`} · No. ${P.num}`,
   foot: (P, s) => `${s.placed.length} of ${P.items.length} loaded · ${rp(s.rp)}`,
   frac: (P, s) => s.placed.length / P.items.length,
-  sundayLabel: () => 'Sunday Edition · Moving Day',
+  // the second intro board falls on a Sunday and is not a Sunday Edition
+  sundayLabel: (P) => (P.band === 'sunday' ? 'Sunday Edition · Moving Day' : null),
   gateTitle: (P) => `Today: the ${P.vehicle}, ${P.items.length} things to load`,
   gateLine: (P) => `Everything on the curb has to go in the ${P.vehicle}. Pick an item, tap where it goes, and it drops straight down. Nothing may sit above the roof line.`,
   rules: (P) => {

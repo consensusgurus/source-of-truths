@@ -12,7 +12,12 @@
 //   Fri  tough     Pickup          4 x 5 x 3   11 items, two shaped, an exact fit
 //   Sat  tough     Cargo Van       4 x 6 x 3   13 items, two shaped, an exact fit
 //   Sun  sunday    Moving Van      4 x 7 x 4   16 items, four shaped (the Sunday Edition)
-// The bank opens 2026-11-14 with an INTRO board: a Hatchback, as on a Monday.
+// THE BANK OPENS WITH TWO INTRO BOARDS (owner, 2026-11-14: "Saturday and Sunday are too hard as an
+// intro ... put some early early week versions in place for today and tomorrow"): a Hatchback on
+// 2026-11-14 as on a Monday and a Sedan on 2026-11-15 as on a Tuesday, both band `intro`. The moving
+// van first dealt for 11-15 was not thrown away: it is dealt again, from the same seed, as the Sunday
+// Edition of 2027-01-03 (SEED_AS).
+//   node scripts/gen-pack.mjs --redeal 2026-11-15     re-deals ONE day that has not gone live yet
 //
 // HOW A BOARD IS MADE. The whole space is cut into boxes, biggest first and near
 // the middle. Some boxes two cells high are then carved into a SHAPED item and
@@ -32,7 +37,12 @@ import { MONTHS } from './six-verify-common.mjs';
 const FILE = new URL('../app/pack/puzzles.js', import.meta.url);
 const START = '2026-11-14';
 const arg = (n) => { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : null; };
-const UNTIL = arg('--until') || '2026-12-31';
+const UNTIL = arg('--until') || '2027-01-03';
+const REDEAL = arg('--redeal');
+// The intro days deal a weekday's board whatever day they fall on; a day in SEED_AS deals from another day's seed.
+const INTRO = { '2026-11-14': 1, '2026-11-15': 2 };
+const SEED_AS = { '2027-01-03': '2026-11-15' };
+const etToday = () => { try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); } catch (e) { return new Date().toISOString().slice(0, 10); } };
 export function rng(seed) { let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 export const hash = (str) => { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
 
@@ -174,20 +184,30 @@ if (fs.existsSync(FILE)) rows = (await import(FILE.href)).PUZZLES.slice();
 const kept = rows.length;
 const iso = (d) => d.toISOString().slice(0, 10);
 const day = new Date(`${START}T12:00:00Z`); day.setUTCDate(day.getUTCDate() + rows.length);
-while (iso(day) <= UNTIL) {
-  const live = iso(day), dow = day.getUTCDay(), [y, m, dd] = live.split('-').map(Number);
-  const first = live === START, spec = SPEC[first ? 1 : dow];
+function rowFor(live, num) {
+  const d = new Date(`${live}T12:00:00Z`), dow = d.getUTCDay(), [y, m, dd] = live.split('-').map(Number);
+  const intro = INTRO[live], spec = SPEC[intro || dow], seedDay = SEED_AS[live] || live;
   let got = null, salt = 0;
-  for (; !got && salt < 20000; salt++) got = deal(spec, rng(hash(`pack-${live}-${salt}`)));
+  for (; !got && salt < 20000; salt++) got = deal(spec, rng(hash(`pack-${seedDay}-${salt}`)));
   if (!got) throw new Error(`${live}: no board found`);
   const P = { W: spec[2], D: spec[3], H: spec[4] };
   if (!replay(P, got.items.map(shapeOf), got.sol)) throw new Error(`${live}: the stored packing does not replay`);
-  const row = { num: rows.length + 1, quizId: `pack-${m}-${dd}-${String(y).slice(2)}`, live, dateLabel: `${MONTHS[m - 1]} ${dd}, ${y}` };
+  const row = { num, quizId: `pack-${m}-${dd}-${String(y).slice(2)}`, live, dateLabel: `${MONTHS[m - 1]} ${dd}, ${y}` };
   if (dow === 0) row.sunday = true;
-  Object.assign(row, { band: first ? 'intro' : spec[0], vehicle: spec[1], ...P, items: got.items, sol: got.sol });
-  rows.push(row); save(rows);
+  Object.assign(row, { band: intro ? 'intro' : spec[0], vehicle: spec[1], ...P, items: got.items, sol: got.sol });
   const cells = got.items.reduce((a, it) => a + shapeOf(it).cells.length, 0);
   console.log(`${live} ${row.band.padEnd(8)} ${spec[1].padEnd(14)} ${String(got.items.length).padStart(2)} items  ${cells}/${P.W * P.D * P.H} cells  ${got.items.filter((it) => it.note).map((it) => it.n).join(', ')}  (deal ${salt})`);
+  return row;
+}
+if (REDEAL) {
+  // ONE day, in place, and only a day nobody has been dealt yet. Every other row is kept byte for byte.
+  const at = rows.findIndex((r) => r.live === REDEAL);
+  if (at < 0) throw new Error(`${REDEAL} is not in the bank`);
+  if (REDEAL <= etToday()) throw new Error(`${REDEAL} has gone live and is never re-dealt`);
+  rows[at] = rowFor(REDEAL, rows[at].num); save(rows);
+}
+while (iso(day) <= UNTIL) {
+  rows.push(rowFor(iso(day), rows.length + 1)); save(rows);
   day.setUTCDate(day.getUTCDate() + 1);
 }
 console.log(`pack: ${rows.length} boards (${kept} kept, ${rows.length - kept} new), ${rows[0].live} to ${rows[rows.length - 1].live}`);
