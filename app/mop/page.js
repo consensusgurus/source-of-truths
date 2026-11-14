@@ -40,7 +40,7 @@ const gameJsonLd = {
   alternateName: "Mop: The Daily Mop-Every-Tile Puzzle",
   url: `${SITE_URL}/mop`,
   description:
-    "A free daily route puzzle: push a mop through a house drawn from above, covering every tile exactly once without stepping on a tile already mopped, and finish at the door. Houses run six by six on Monday up to eight by eight on Saturday, with a three-floor house joined by staircases on Sunday; every board is solved before it is dealt and the clock decides the leaderboard.",
+    "A free daily route puzzle: push a mop through a house drawn from above, covering every tile exactly once without stepping on a tile already mopped, and finish at the door. Houses grow from a six by six cottage on Monday to two floors on Friday and Saturday and three floors on Sunday, joined by staircases; every board is solved before it is dealt and the clock decides the leaderboard.",
   genre: ["Logic puzzle", "Route puzzle", "Puzzle"],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

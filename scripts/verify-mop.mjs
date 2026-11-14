@@ -1,15 +1,19 @@
 // verify-mop: the checker for Mop (app/mop/puzzles.js), discovered by
 // scripts/verify-all.mjs. Re-checks every rule in scripts/gen-mop.mjs:
 //   - one board a day from 2026-11-13, quizId / dateLabel / sunday from `live`
-//   - the week: Mon, Tue gentle 6x6; Wed, Thu moderate 7x7; Fri, Sat tough 8x8,
-//     one floor each; Sunday three 6x6 floors (Upstairs, Ground Floor, Basement)
+//   - the week: Mon, Tue gentle 6x6; Wed, Thu moderate 7x7, one floor each;
+//     Fri, Sat tough: one 8x8 floor to 2026-11-14, and from 2026-11-20 two 6x6
+//     floors (Upstairs, Ground Floor); Sunday three 6x6 floors (Upstairs,
+//     Ground Floor, Basement)
 //   - every floor: rooms cover the floor, every room has a name, furniture stays
 //     on the floor, inside one room and off other furniture, and a doorway joins
 //     two squares that touch across a wall and are both open
 //   - the way in is on the bottom wall and the way out on the top wall, or both
 //     on the bottom wall side by side (the double front door); never furniture
 //   - Sunday: the ground floor has four staircases (two Up, two Down), the
-//     other floors the matching two each, on the same squares, all open
+//     other floors the matching two each, on the same squares, all open.
+//     A two-floor Friday or Saturday: two Up on the ground floor, the same two
+//     squares marked Down upstairs
 //   - the stored route is a real solution (lib/mop-engine.js checkRoute)
 //   - EXACTLY ONE route covers the house: counted on the whole board, every
 //     floor at once, with a cap of 2
@@ -21,10 +25,12 @@ checkDays('mop', PUZZLES, bad, '2026-11-13');
 const SPEC = { 1: ['gentle', 6], 2: ['gentle', 6], 3: ['moderate', 7], 4: ['moderate', 7], 5: ['tough', 8], 6: ['tough', 8], 0: ['sunday', 6] };
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 for (const p of PUZZLES) {
-  const [band, size] = SPEC[dowOf(p.live)];
+  let [band, size] = SPEC[dowOf(p.live)];
+  const two = band === 'tough' && p.live >= '2026-11-20';
+  if (two) size = 6;
   if (p.band !== band) bad(p.num, `band ${p.band}, should be ${band}`);
   if (!p.house) bad(p.num, 'no house name');
-  const want = band === 'sunday' ? ['Upstairs', 'Ground Floor', 'Basement'] : ['House'];
+  const want = band === 'sunday' ? ['Upstairs', 'Ground Floor', 'Basement'] : two ? ['Upstairs', 'Ground Floor'] : ['House'];
   if (!Array.isArray(p.floors) || !eq(p.floors.map((f) => f.name), want)) { bad(p.num, `floors should be ${want.join(', ')}`); continue; }
   let broken = false;
   p.floors.forEach((F) => {
@@ -50,7 +56,7 @@ for (const p of PUZZLES) {
     for (const c of F.stairs) if (taken.has(c) || c < 0 || c >= N) say('a staircase under furniture');
   });
   if (broken) continue;
-  const g = band === 'sunday' ? 1 : 0, G = p.floors[g], furn = furnOf(G);
+  const g = band === 'sunday' || two ? 1 : 0, G = p.floors[g], furn = furnOf(G);
   if (p.start[0] !== g || p.end[0] !== g) bad(p.num, 'the way in and the way out belong on the ground floor');
   const row = (c) => Math.floor(c / G.w);
   if (furn.has(p.start[1]) || furn.has(p.end[1])) bad(p.num, 'a door opens onto furniture');
@@ -63,7 +69,12 @@ for (const p of PUZZLES) {
     if (!eq(up.stairs, gr.stairs.slice(0, 2)) || !eq(up.labels, ['Down', 'Down'])) bad(p.num, 'upstairs staircases do not match the ground floor');
     if (!eq(dn.stairs, gr.stairs.slice(2)) || !eq(dn.labels, ['Up', 'Up'])) bad(p.num, 'basement staircases do not match the ground floor');
     if (gr.stairs.includes(p.start[1]) || gr.stairs.includes(p.end[1])) bad(p.num, 'a door opens onto a staircase');
-  } else if (G.stairs.length) bad(p.num, 'a weekday has no staircases');
+  } else if (two) {
+    const [up, gr] = p.floors;
+    if (gr.stairs.length !== 2 || !eq(gr.labels, ['Up', 'Up'])) bad(p.num, 'the ground floor needs two staircases up');
+    if (!eq(up.stairs, gr.stairs) || !eq(up.labels, ['Down', 'Down'])) bad(p.num, 'upstairs staircases do not match the ground floor');
+    if (gr.stairs.includes(p.start[1]) || gr.stairs.includes(p.end[1])) bad(p.num, 'a door opens onto a staircase');
+  } else if (G.stairs.length) bad(p.num, 'a one-floor day has no staircases');
   const err = checkRoute(p, p.sol);
   if (err) { bad(p.num, err); continue; }
   const M = mopModel(p);

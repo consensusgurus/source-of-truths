@@ -2570,7 +2570,11 @@ Connect. Tile art `scripts/gen-mop-tiles.py`; share card `scripts/bake-og.mjs mo
   tiles join inside a room or through a doorway (`doors`, pairs of squares). **A staircase is ONE node placed on
   the two floors it joins** (same square on both), so stepping on it changes floor and it can be used once: a
   floor above or below therefore needs two staircases, up one and down the other.
-- **The week.** Mon/Tue Gentle 6x6, Wed/Thu Moderate 7x7, Fri/Sat Tough 8x8, one floor each. About one weekday in
+- **The week.** Mon/Tue Gentle 6x6, Wed/Thu Moderate 7x7, one floor each. **Fri/Sat Tough is TWO 6x6 floors from
+  2026-11-20** (owner, 2026-11-13: "make friday saturday two stories starting next week"), Upstairs and Ground Floor
+  joined by two staircases; the two launch days, 2026-11-13 and 14, were one 8x8 floor and stay as dealt. The twelve
+  Fri/Sat rows from 11-20 were re-dealt before any went live (`gen-mop.mjs --redeal-from`, which refuses a day that
+  is not in the future); the other 37 rows came back byte for byte. About one weekday in
   three comes and goes by a front door two tiles wide (in on one tile, out on its neighbour); the rest come in the
   front (bottom wall) and leave by the back (top wall). **The Sunday Edition is three 6x6 floors**, Upstairs,
   Ground Floor and Basement, each its own full screen behind a tab row; the view follows the mop and a dot marks
@@ -2590,5 +2594,9 @@ Connect. Tile art `scripts/gen-mop-tiles.py`; share card `scripts/bake-og.mjs mo
 - **Checker** `scripts/verify-mop.mjs`: dates, the week's sizes, room and furniture sanity, door and staircase
   placement, the stored route walked on the model, and one-route uniqueness counted on the whole board (all
   three floors at once on a Sunday, cap 2).
+- **Share card** is hand-built (owner, 2026-11-13: "should be cool and not our standard ones"): a lawn with a decoy
+  house tilted on it, half mopped, and the mop leaning in. `scripts/bake-mop-og.mjs` writes the page, a headless
+  Chromium screenshots it at 1200x630 into `public/og/mop.png`; `mop` is in `HAND_BAKED` so `bake-og.mjs` skips it.
+  The drawing code is `lib/mop-art.js`, shared with the board.
 - **Open:** restock before 2026-12-31. A strict mode (touching a wet tile ends the day) was offered and not chosen.
 
