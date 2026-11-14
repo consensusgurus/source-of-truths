@@ -176,35 +176,45 @@ const AX_CSS = `
 .ax{width:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:10px;color:var(--pst-ink);}
 .ax button{font-family:inherit;color:var(--pst-ink);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 .ax-spine{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;}
-.ax-spine button{width:30px;height:30px;border-radius:8px;border:2px solid var(--pst-ink);background:var(--pst-cell,#fff);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;padding:0;box-sizing:border-box;}
+.ax-spine button{width:30px;height:30px;border-radius:8px;border:1px solid var(--pst-ink);background:var(--pst-cell,#fff);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;padding:0;box-sizing:border-box;}
 .ax-spine button.f{background:var(--pst-acc);color:var(--pst-on-acc);}
-.ax-spine button.now{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
-.ax-psg{display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px 9px;padding:10px;border:2px solid var(--pst-ink);border-radius:14px;max-height:clamp(84px, calc(100svh - 575px), 214px);overflow-y:auto;scrollbar-width:thin;box-sizing:border-box;}
-.ax-psg.open{max-height:none;}
+.ax-spine button.now{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 3px var(--pst-ink);}
+.ax-psg{display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px 9px;padding:10px;border:1px solid var(--pst-ink);border-radius:14px;max-height:clamp(84px, calc(100svh - 575px), 214px);overflow-y:auto;scrollbar-width:thin;box-sizing:border-box;}
+.ax-list{position:relative;flex-direction:column;flex-wrap:nowrap;gap:2px;padding:6px;}
+.ax-row{display:flex;align-items:center;gap:8px;width:100%;min-height:28px;border:0;border-radius:8px;background:transparent;padding:1px 6px;text-align:left;flex:none;}
+.ax-row.on{background:var(--pst-pale);}
+.ax-tag{width:20px;flex:none;font-size:14px;font-weight:800;text-align:center;}
+.ax-rl{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--pst-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ax-row.ok .ax-rl{text-decoration:line-through;}
+.ax-rb{display:flex;gap:2px;flex:none;}
+.ax-rb i{font-style:normal;width:15px;height:20px;border-bottom:1px solid var(--pst-ink);display:flex;align-items:flex-end;justify-content:center;font-size:13px;font-weight:800;line-height:1;}
+.ax-rb i.miss{color:var(--pst-bad);}
+.ax-seg{display:inline-flex;border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
+.ax-seg button{min-height:36px;padding:0 16px;border:0;background:transparent;font-size:14px;font-weight:800;}
+.ax-seg button+button{border-left:1px solid var(--pst-ink);}
+.ax-seg button.on{background:var(--pst-ink);color:var(--pst-bg)!important;}
 @media (hover:hover) and (pointer:fine){.ax-psg{max-height:320px;}}
 .ax-w{display:flex;gap:2px;align-items:flex-end;}
-.ax-w span{width:15px;height:20px;border-bottom:2px solid var(--pst-ink);display:flex;align-items:flex-end;justify-content:center;font-size:13px;font-weight:800;line-height:1;cursor:pointer;}
+.ax-w span{width:15px;height:20px;border-bottom:1px solid var(--pst-ink);display:flex;align-items:flex-end;justify-content:center;font-size:13px;font-weight:800;line-height:1;cursor:pointer;}
 .ax-w span.p{width:auto;border:0;cursor:default;padding:0 1px;}
 .ax-w span.now{background:var(--pst-pale);border-radius:3px 3px 0 0;}
 .ax-w span.cur{background:var(--pst-acc);color:var(--pst-on-acc);border-radius:3px 3px 0 0;}
 .ax-w span.miss{color:var(--pst-bad);}
 .ax-ans{display:flex;flex-direction:column;align-items:center;gap:10px;}
 .ax-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;}
-.ax-arr{width:44px;height:44px;border-radius:22px;border:2px solid var(--pst-ink);background:transparent;display:flex;align-items:center;justify-content:center;padding:0;flex:none;}
+.ax-arr{width:44px;height:44px;border-radius:22px;border:1px solid var(--pst-ink);background:transparent;display:flex;align-items:center;justify-content:center;padding:0;flex:none;}
 .ax-q{margin:0;text-align:center;font-size:21px;line-height:1.18;font-weight:800;letter-spacing:-.02em;}
 .ax-q small{display:block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-mute);margin-bottom:4px;}
 .ax-slots{display:grid;gap:6px;justify-content:center;width:100%;}
-.ax-slots button{height:46px;border-radius:11px;border:2px solid var(--pst-ink);background:var(--pst-cell,#fff);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;box-sizing:border-box;padding:0;min-width:0;}
+.ax-slots button{height:46px;border-radius:11px;border:1px solid var(--pst-ink);background:var(--pst-cell,#fff);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;box-sizing:border-box;padding:0;min-width:0;}
 .ax-slots button.f{background:var(--pst-acc);color:var(--pst-on-acc);}
-.ax-slots button.cur{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
+.ax-slots button.cur{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 3px var(--pst-ink);}
 .ax-slots button.miss{background:var(--pst-bad-bg);color:var(--pst-bad);}
 .ax-ok{font-size:13px;font-weight:800;color:var(--pst-mute);}
 .ax-acts{display:flex;gap:8px;justify-content:center;}
-.ax-pill{min-height:36px;padding:0 18px;border-radius:999px;border:2px solid var(--pst-ink);background:transparent;font-size:14px;font-weight:800;}
-.ax-pill.on{background:var(--pst-ink);color:var(--pst-bg)!important;}
 .ax-kb{display:flex;flex-direction:column;gap:6px;user-select:none;-webkit-user-select:none;}
 .ax-kr{display:flex;justify-content:center;gap:5px;}
-.ax-k{flex:1;max-width:36px;height:46px;border-radius:9px;border:2px solid var(--pst-ink);background:color-mix(in srgb, var(--pst-ink) 6%, transparent);font-size:17px;font-weight:800;padding:0;-webkit-touch-callout:none;}
+.ax-k{flex:1;max-width:36px;height:46px;border-radius:9px;border:1px solid var(--pst-ink);background:color-mix(in srgb, var(--pst-ink) 6%, transparent);font-size:17px;font-weight:800;padding:0;-webkit-touch-callout:none;}
 .ax-k:active{background:var(--pst-acc);color:var(--pst-on-acc);}
 .ax-k.w{max-width:58px;flex:1.6;font-size:13px;display:flex;align-items:center;justify-content:center;}
 `;
@@ -251,7 +261,16 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   // is where the categories are, so it is the half that explains itself and the
   // half the solve actually starts from. The rules copy says the same thing:
   // start with the sharpest category, not the passage.
-  const [view, setView] = useState('b');          // narrow only: passage or bank
+  const [view, setView] = useState('b');
+  // The stage board's middle pane (owner, 2026-11-14): the passage, or every answer as a list.
+  const axPaneState = useState('q');
+  const axListRefTop = useRef(null);
+  // The list keeps the answer you are on in view.
+  useEffect(() => {
+    const box = axListRefTop.current;
+    const row = box && box.querySelector('.ax-row.on');
+    if (row) box.scrollTop = Math.max(0, row.offsetTop - box.clientHeight / 2 + row.clientHeight / 2);
+  }, [axPaneState[0], cur]);          // narrow only: passage or bank
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
   const [endClosed, setEndClosed] = useState(false);
@@ -998,6 +1017,8 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
 
   // THE STAGE BOARD (owner, 2026-11-14), see AX_CSS.
   const axA = A[curAnswer] || A[0];
+  const [axPane, setAxPane] = axPaneState;
+  const axListRef = axListRefTop;
   const axGo = (n, half) => { if (half) setView(half); focusCell(n, half); };
   const axStep = (d) => { setView('b'); stepAnswer(d); };
   const axMiss = (n) => !playing && fill[n] !== sol[n];
@@ -1009,7 +1030,19 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
             aria-label={`Answer ${i + 1}`} onClick={() => axGo(A[i].c[0], 'b')}>{c}</button>
         ))}
       </div>
-      <div className={`ax-psg${view === 'q' ? ' open' : ''}`} aria-label="The passage">
+      {axPane === 'a' ? (
+        <div className="ax-psg ax-list" aria-label="All answers" ref={axListRef}>
+          {A.map((a, ai) => (
+            <button type="button" key={ai} className={`ax-row${ai === curAnswer ? ' on' : ''}${solved[ai] ? ' ok' : ''}`}
+              onClick={() => { setView('b'); focusCell(a.c[0], 'b'); }}>
+              <span className="ax-tag">{ai < PUZZLE.spine ? (spineLetters[ai] || '?') : ''}</span>
+              <span className="ax-rl">{a.cat || 'no category'} &middot; {a.w.length}</span>
+              <span className="ax-rb">{a.c.map((n) => <i key={n} className={axMiss(n) ? 'miss' : undefined}>{(playing ? fill[n] : (fill[n] || sol[n])) || ''}</i>)}</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+      <div className="ax-psg" aria-label="The passage">
         {tokens.map((tk, i) => (
           <span className="ax-w" key={i}>
             {tk.map((t, j) => (t.p
@@ -1021,6 +1054,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           </span>
         ))}
       </div>
+      )}
       <div className="ax-ans">
         <div className="ax-nav">
           <button type="button" className="ax-arr" aria-label="Previous answer" onClick={() => axStep(-1)}><ChevronLeft size={18} strokeWidth={3} /></button>
@@ -1041,7 +1075,10 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
         {solved[curAnswer] && <span className="ax-ok">Solved</span>}
       </div>
       <div className="ax-acts">
-        <button type="button" className={`ax-pill${view === 'q' ? ' on' : ''}`} onClick={() => setView(view === 'q' ? 'b' : 'q')}>Passage</button>
+        <span className="ax-seg" role="tablist">
+          <button type="button" role="tab" aria-selected={axPane === 'q'} className={axPane === 'q' ? 'on' : ''} onClick={() => setAxPane('q')}>Passage</button>
+          <button type="button" role="tab" aria-selected={axPane === 'a'} className={axPane === 'a' ? 'on' : ''} onClick={() => setAxPane('a')}>All answers</button>
+        </span>
       </div>
       {touchInput && playing && (
         <div className="ax-kb">
