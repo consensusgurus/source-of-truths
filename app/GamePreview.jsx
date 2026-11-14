@@ -270,6 +270,11 @@ const Dots = () => (
   <g>{cells(90, 8, 6, 3, 22, (x, y, c, r, i) => <circle key={i} cx={x + 11} cy={y + 11} r={4} className={[0, 5, 7, 16].includes(i) ? 'd' : 'm'} />)}
     <path d="M101 19H211M123 41V63H189" className="s3" /></g>
 );
+// Chef: three plates on the pass, the middle one still to come
+const Chef = () => (
+  <g>{[0, 1, 2].map((k) => <g key={k}><rect x={92 + k * 46} y={26} width={40} height={30} rx={15} className={k === 1 ? 'm' : 'w'} /><rect x={102 + k * 46} y={34} width={20} height={14} rx={7} className={k === 1 ? 'w' : 'm'} /></g>)}
+    <path d="M88 64H228" className="s5" /></g>
+);
 // Mop: a tiled floor, the left of it mopped, and the mop standing where it stopped
 const Mop = () => (
   <g>{cells(90, 8, 6, 3, 22, (x, y, c, r, i) => <rect key={i} x={x + 1} y={y + 1} width={20} height={20} rx={2} className={c < 3 ? 'w' : 'm'} />)}
@@ -388,7 +393,7 @@ const BY_KEY = {
   // Logic
   venn: Venn, lamps: Lamps, plot: Plot, paths: Track, tangled: Tangle, chomp: Maze, hedge: Maze, topple: () => <Block />,
   roll: () => <Block die />, jig: Jig, saw: Jig, slide: () => <Slide />, swap: () => <Slide mode="swap" />, spin: () => <Slide mode="spin" />,
-  connect: Dots, mop: Mop, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
+  connect: Dots, mop: Mop, chef: Chef, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
   // End Game
   turn: Othello, four: Four, gift: Quarto, yose: Go, mate: () => <Chess target={4} />, check: () => <Chess target={11} />,
   chain: () => <Chess target={14} />, defend: () => <Chess target={21} />, swindle: () => <Chess target={7} />, queen: () => <Chess target={18} />,

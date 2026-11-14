@@ -108,6 +108,7 @@ export const DAILY_GAMES = [
   { key: 'spin', href: '/spin', name: 'Spin', tag: 'turn every square straight', store: 'sot_spin_day', accent: '#6d28d9', bg: '#ede9fe', border: 'rgba(109,40,217,0.4)' },
   { key: 'connect', href: '/connect', name: 'Connect', tag: 'join the dots, fill the board', store: 'sot_connect_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'mop', href: '/mop', name: 'Mop', tag: 'mop every tile once, then get out', store: 'sot_mop_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
+  { key: 'chef', href: '/chef', name: 'Chef', tag: 'get every order out together, hot', store: 'sot_chef_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'fill', href: '/fill', name: 'Fill', tag: 'fit every word in the grid', store: 'sot_fill_day', accent: '#047857', bg: '#d1fae5', border: 'rgba(4,120,87,0.4)' },
   { key: 'pairs', href: '/pairs', name: 'Pairs', tag: 'concentration with a real deck', store: 'sot_pairs_day', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.4)' },
   { key: 'cell', href: '/cell', name: 'Cell', tag: 'the daily FreeCell', store: 'sot_cell_day', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.4)' },

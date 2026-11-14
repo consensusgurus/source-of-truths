@@ -4612,7 +4612,7 @@ export default function StageToday() {
                     the colour dot that led it vanished into the toned page and only
                     pushed the name right of the count below, so it is gone; a long
                     name steps its size down instead of trailing off in an ellipsis. */}
-                <span className={'t' + (title.length > 14 ? ' xl' : title.length > 11 ? ' l' : '')}><span>{title}</span></span>
+                <span className={'t' + (title.length > 15 ? ' xxl' : title.length > 14 ? ' xl' : title.length > 11 ? ' l' : '')}><span>{title}</span></span>
                 <em>{sub}</em>
               </span>
           {mFindBtn}
@@ -7827,6 +7827,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .mph-htx .t > span{min-width:0;line-height:1.2;}
   .mph-htx .t.l{font-size:17px;}
   .mph-htx .t.xl{font-size:15.5px;}
+  /* ONE ROW (owner, 2026-11-14): the search button took room from the header and
+     "Crowd Psychology" wrapped onto two rows. The longest names step down once more
+     and never wrap. */
+  .mph-htx .t.xxl{font-size:13.5px;letter-spacing:-.01em;}
+  .mph-htx .t.xxl > span{white-space:nowrap;}
   .mph-htx em{font-style:normal;font-size:12px;font-weight:600;line-height:1.3;opacity:.85;white-space:nowrap;}
   .sty-mtb.pane .sty-mlook{flex:none;width:40px;height:40px;}
   .mph-pane .sld-host{display:none !important;}

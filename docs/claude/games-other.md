@@ -2554,6 +2554,78 @@ Same order as Witness. Key/route `defuse`, category **Logic**, skill Deduction, 
   generator now deals the LEAST-used line of a family. `verify-chain.mjs` check 9: every board's motif is a line
   of the family its own solve implies (all 150 boards pass, so the floor is launch).
 
+## Chef: the daily kitchen puzzle (launched 2026-11-14)
+
+Owner's idea, 2026-11-13: "a new restaurant kitchen puzzle where different items take different times
+and require different limited cooking resources like stove oven etc. get the full orders out as
+efficiently as possible as they come in", and "all orders have to go out together". Mocked up the same
+night (project doc `claude/rush-kitchen-mockup-2026-11-13.md`; first titled Rush, named Chef by the
+owner), then "push to live". Registry key and route are both `chef`. Logic, rose.
+
+**The rules** (all in `lib/chef-engine.js`, shared by the client, the generator and the checker):
+
+- Turn based. The clock moves one minute per tap of Next Minute; nothing is against a real clock but
+  the leaderboard tiebreak.
+- Tap a dish on a check to fire it. It takes one slot on its station for its cook time (`MENU`). A dish
+  fired this minute can be pulled back; once the clock moves it is committed.
+- **Check to tray** (owner): a ticket is a paper check until every dish on it has been fired, then it is
+  a tray in the same spot that still lists the original check. A finished dish waits on the pass and is
+  put on its tray by hand (tap the plate or its line). The order goes out the moment the tray holds
+  every dish. A plate cannot be trayed while its check still has unfired dishes.
+- **Hot food** (owner: "food should sit for as least amount of time as possible. Having all dishes end
+  cooking and go out at the same time is optimal", and a sitting minute "should" cost more): penalty =
+  table wait minutes + `SIT_WEIGHT` (2) x minutes a finished dish sat, on the pass or the tray. After
+  `HOLD` (2) minutes a dish goes cold, returns to the check and is cooked again.
+- Tickets are hidden until they print. Everyone gets the same tickets.
+
+**Scoring.** Finishing the service is the solve (10, or 0 on a give-up), so Chef is in `SOLVE_ONLY`.
+The penalty is the miss column (`miss: 'Penalty minutes'`, singular in `MISS_ONE`, `guessesUsed`), lower first, then the clock: the
+same shape as Slide's moves.
+
+**The Kitchen Ladder** (owner: "a scored scale at the end, famous chefs at the top"). `rungs(P)` sets
+eight rungs against the row's stored `best`: Auguste Escoffier (best or under), Julia Child (within
+5%), Paul Bocuse (12%), Executive Chef (20%), Sous Chef (35%), Line Cook (50%), Prep Cook (75%),
+Dishwasher. The three names are late legends on purpose: a living chef's name on the site can read as
+an endorsement. The rung is the ending's title, and the finished board shows the whole ladder with the
+day's ranges.
+
+**The ending beat** runs on the board during the end hold (`GAME.holdMs`), all CSS: each station lights
+in its own pastel in turn, the pass glows, a full-screen rose fill opens from the pass, the rungs light
+from Dishwasher up to the one earned, and the title lands. A tap releases the hold. Then the shell's
+own ending takes over.
+
+**The look** (owner: "make it look like a kitchen", "what if the elements were our different
+pastels", and an element "doesn't need to add new rows of text when item is placed there"):
+`lib/chef-art.js`. The pass is a tiled wall with heat lamps and plates carrying two pips for the
+minutes they still keep; each station slot is a drawn appliance; the rail holds paper checks that turn
+into trays. Each station wears one site pastel (stove orange, oven gold, grill violet, fryer lime, cold
+sky) through the 60/40 site-pastel rule, and the colour follows the dish everywhere. Every equipment
+slot keeps the same three rows free or cooking, the pass has a fixed height, and a ticket keeps every
+original line as a check and as a tray.
+
+**The week** (`scripts/gen-chef.mjs`, append only, saved a row at a time so a stopped run resumes):
+
+| Days | Band | Service |
+|---|---|---|
+| 2026-11-14 only | Intro | Opening Night: three tickets, no station ever fought over (owner: an easier first day) |
+| Mon, Tue | Gentle | Lunch, 4 tickets of 2 to 3 dishes |
+| Wed, Thu | Moderate | Dinner, 6 tickets of 2 to 3 dishes |
+| Fri, Sat | Tough | Friday Night / Saturday Night, 8 tickets of 2 to 4 dishes |
+| Sunday | Sunday Edition | Sunday Brunch, 12 tickets of 3 to 4 dishes on the big line |
+
+`best` is the lowest penalty a beam search found seeing every ticket in advance (four passes with a
+different sitting weight, the best kept under the real weight). It is NOT a proven optimum, so the top
+rung reads "best or under". `sol` is that service and is stripped in `app/chef/page.js`; `best` is
+kept because the ladder needs it. `scripts/verify-chef.mjs` replays every stored service.
+
+**Share cards.** `public/og/chef.png` is hand-built (`scripts/bake-chef-og.mjs`, `chef` is in
+`HAND_BAKED`). The owner also liked a player-result version ("Gator85 made Sous Chef ... Can you beat
+that?") for challenges; that one is mocked only, not wired.
+
+**Open with the owner:** a second oven on weekdays (one oven is the bottleneck: a roast holds it six
+minutes), the sitting weight (2), which chefs sit on the ladder, and whether upcoming tickets should
+show.
+
 ## Mop: the daily mop-every-tile route puzzle (launched 2026-11-13)
 
 Owner, 2026-11-13: "user has to clean every tile in a house once and only once and get out without touching a
