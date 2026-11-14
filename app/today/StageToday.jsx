@@ -3074,7 +3074,7 @@ export default function StageToday() {
   const closeMFind = () => { setMFind(false); setFindQ(''); };
   // THE FEATURED ROW (owner, 2026-11-13): on All Puzzles, the first row under
   // the runs. A key that is not live yet (Chef) is simply skipped until it is.
-  const FEATURED_KEYS = ['chef', 'mop', 'carmen', 'sudoclue'];
+  const FEATURED_KEYS = ['pack', 'chef', 'mop', 'carmen'];   // Pack in, Sudoclue out (owner, 2026-11-14: five would wrap on desktop)
   // UNIVERSAL (owner, 2026-10-26): "if im on sudoku page, i should be able to
   // search all puzzles and quizzes." A query searches every live daily from
   // whatever pane it is typed in, and the quiz catalogue under them.

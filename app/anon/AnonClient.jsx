@@ -193,8 +193,11 @@ const AX_CSS = `
 .ax-rb{display:flex;gap:2px;flex:none;}
 .ax-rb i{font-style:normal;width:15px;height:20px;border-bottom:1px solid var(--pst-ink);display:flex;align-items:flex-end;justify-content:center;font-size:13px;font-weight:800;line-height:1;}
 .ax-rb i.miss{color:var(--pst-bad);}
-.ax-seg{display:inline-flex;border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
-.ax-seg button{min-height:36px;padding:0 16px;border:0;background:transparent;font-size:14px;font-weight:800;}
+/* TWO EQUAL HALVES, filled edge to edge (owner, 2026-11-14): the chosen side was drawing as an
+   oval inside the pill because the button kept a radius of its own, and the halves were as wide
+   as their words. The pill clips; the buttons are square and share the width evenly. */
+.ax-seg{display:inline-grid;grid-template-columns:1fr 1fr;border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
+.ax-seg button{min-height:36px;padding:0 16px;margin:0;border:0;border-radius:0!important;background:transparent;font-size:14px;font-weight:800;white-space:nowrap;}
 .ax-seg button+button{border-left:1px solid var(--pst-ink);}
 .ax-seg button.on{background:var(--pst-ink);color:var(--pst-bg)!important;}
 @media (hover:hover) and (pointer:fine){.ax-psg{max-height:320px;}}

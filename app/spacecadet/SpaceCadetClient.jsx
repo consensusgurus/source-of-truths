@@ -1,6 +1,7 @@
 'use client';
 
-// SPACE CADET: four spatial puzzles as one run (owner, 2026-11-07).
+// SPACE CADET: spatial puzzles as one run (owner, 2026-11-07). Four legs at launch;
+// Pack is the fifth and last from 2026-11-15 (owner, 2026-11-14).
 //
 // Roll, Parker, Tangled, then Topple (lib/space-cadet.js), back to back on one
 // page, then a rank from Lost in Space up to Architect-Engineer. "Space Cadet"
@@ -32,16 +33,16 @@ import { isDarkLook } from '@/lib/stage-look';
 import { rampFor } from '@/lib/circuits';
 import { withRef } from '@/lib/referrals';
 import { isMobileDevice } from '@/lib/is-mobile';
-import { SPACE_RUN_ID, SPACE_RANKS, SPACE_MAX, SPACE_LEG_MAX, SPACE_CAP, spaceTierOf, spaceLegPoints } from '@/lib/space-cadet';
+import { SPACE_RUN_ID, SPACE_LEG_MAX, SPACE_CAP, spaceRanksFor, spaceTierOf, spaceLegPoints } from '@/lib/space-cadet';
 
 const CLIENTS = {
   roll: dynamic(() => import('../roll/RollClient'), { ssr: false, loading: () => null }),
   park: dynamic(() => import('../parker/ParkerClient'), { ssr: false, loading: () => null }),
   tangled: dynamic(() => import('../tangled/TangledClient'), { ssr: false, loading: () => null }),
   topple: dynamic(() => import('../topple/ToppleClient'), { ssr: false, loading: () => null }),
+  pack: dynamic(() => import('../pack/PackClient'), { ssr: false, loading: () => null }),
 };
 const COUNT_WORD = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'];
-const B = SPACE_RANKS;
 const SKY = '#7dd3fc';
 
 function etToday() {
@@ -71,7 +72,7 @@ function bankedOf(sec) {
 
 // THE ENTRY CENTREPIECE: mission control, from the mockup. Pressing it is the
 // launch.
-function Launch({ go, allBanked, onStart }) {
+function Launch({ go, allBanked, onStart, B, NW }) {
   return (
     <button type="button" className={`sc-mc${go ? ' go' : ''}`} onClick={onStart} aria-label={allBanked ? 'See your rank' : 'Launch'}>
       <svg className="sc-orb" width="96" height="96" viewBox="0 0 120 120" aria-hidden="true">
@@ -83,7 +84,7 @@ function Launch({ go, allBanked, onStart }) {
       </svg>
       <span className="sc-fl">
         <small>Mission control</small>
-        <b>{go ? 'Lift off' : allBanked ? 'All four flown today' : 'Cleared for launch'}</b>
+        <b>{go ? 'Lift off' : allBanked ? `All ${NW.toLowerCase()} flown today` : 'Cleared for launch'}</b>
         <span>&#9679; Top rank: {B[0][1]}</span>
         <span>{B.length} ranks today, down to {B[B.length - 1][1]}</span>
       </span>
@@ -94,6 +95,10 @@ function Launch({ go, allBanked, onStart }) {
 export default function SpaceCadetClient({ day = null, dateLabel, dateShort, sections = [] }) {
   const N = sections.length;
   const NW = COUNT_WORD[N] || String(N);
+  // The roster is dated (Pack is the fifth leg from 2026-11-15), so the ladder and the
+  // total follow the number of legs dealt today.
+  const B = useMemo(() => spaceRanksFor(N), [N]);
+  const SPACE_MAX = N * SPACE_LEG_MAX;
   const STORE = `sot_run_${SPACE_RUN_ID}_${etToday()}`;
   const [r, setR] = useState(() => freshRun());
   const rRef = useRef(r);
@@ -188,7 +193,7 @@ export default function SpaceCadetClient({ day = null, dateLabel, dateShort, sec
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [between, last, peek]);
 
-  const tier = spaceTierOf(total, allSolved);
+  const tier = spaceTierOf(total, allSolved, N);
   const rank = B[tier];
 
   function shareText() {
@@ -197,7 +202,7 @@ export default function SpaceCadetClient({ day = null, dateLabel, dateShort, sec
     return `Space Cadet, ${dateShort}: ${rank[1]}${runClock ? ` in ${fmtClock(runClock)}` : ''}.\n${per}\n${withRef(link)}`;
   }
   function copyShare() {
-    const text = done ? shareText() : `Space Cadet: ${NW.toLowerCase()} spatial puzzles on one clock. Roll a die, free a car, untangle the ropes, land a block. Rank from Lost in Space up to Architect-Engineer.\n${withRef('mindloftdaily.com/spacecadet')}`;
+    const text = done ? shareText() : `Space Cadet: ${NW.toLowerCase()} spatial puzzles on one clock. Roll a die, free a car, untangle the ropes, land a block${N > 4 ? ', pack a trunk' : ''}. Rank from Lost in Space up to Architect-Engineer.\n${withRef('mindloftdaily.com/spacecadet')}`;
     try { if (navigator.share && isMobileDevice()) { navigator.share({ text }).catch(() => {}); return; } } catch (e) {}
     try { navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch (e) {}
   }
@@ -280,11 +285,11 @@ export default function SpaceCadetClient({ day = null, dateLabel, dateShort, sec
                 <span className="sc-bq">{banked[s.key] ? (banked[s.key].score > 0 ? `Done${banked[s.key].secs ? ` ${fmtClock(banked[s.key].secs)}` : ''}` : 'Played') : `Leg ${s.slot + 1}`}</span>
               )}
               headline={<>{NW} Legs.<br />One Launch.</>}
-              rule="One clock across all four puzzles. Your time decides your rank."
+              rule={`One clock across all ${NW.toLowerCase()} puzzles. Your time decides your rank.`}
               lineup={`From ${B[B.length - 1][1]} up to ${B[0][1]}.`}
               startLabel={leaving ? 'Lifting off…' : (allBanked ? 'See your rank' : 'Launch')}
               fieldLine={Object.keys(banked).length ? 'Played one today already? Your first result stands.' : null}
-              centerpiece={<Launch go={leaving} allBanked={allBanked} onStart={start} />}
+              centerpiece={<Launch go={leaving} allBanked={allBanked} onStart={start} B={B} NW={NW} />}
               onStart={start}
             />
           </div>
@@ -344,7 +349,7 @@ export default function SpaceCadetClient({ day = null, dateLabel, dateShort, sec
             ladder={ladder}
             ladderHeading="Where does your time rank you?"
             title={{ name: rank[1], line: rank[5], colour: rampFor(B.length - 1 - tier) }}
-            topNote={`${runClock > 0 ? `${fmtClock(runClock)} across all four` : 'Time on file'}${!allSolved ? ' · a leg left unsolved' : up ? ` · ${fmtClock(upGap)} from ${up[1]}` : tier === 0 ? ' · top rank' : ''}`}
+            topNote={`${runClock > 0 ? `${fmtClock(runClock)} across all ${NW.toLowerCase()}` : 'Time on file'}${!allSolved ? ' · a leg left unsolved' : up ? ` · ${fmtClock(upGap)} from ${up[1]}` : tier === 0 ? ' · top rank' : ''}`}
             rank={meB && Number.isFinite(Number(meB.rank)) ? Number(meB.rank) : null}
             fieldSize={bd ? (bd.overallField || bd.uniquePlayers || overall.length || null) : null}
             board={boardOut}

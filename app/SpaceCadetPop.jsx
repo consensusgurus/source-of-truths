@@ -89,7 +89,7 @@ export default function SpaceCadetPop() {
         </div>
         <h2 id="scp-t">Are you a Space Cadet?</h2>
         <p className="scp-sub">Take the new test!</p>
-        <p className="scp-lede">Four spatial puzzles on one page and one clock across all four. Finish fast enough and you rank as an Architect&#8209;Engineer.</p>
+        <p className="scp-lede">Five spatial puzzles on one page and one clock across all five. Finish fast enough and you rank as an Architect&#8209;Engineer.</p>
         <a className="scp-go" href="/spacecadet" onClick={close}>Take the Test</a>
         <button type="button" className="scp-close" onClick={close}>Close</button>
       </div>

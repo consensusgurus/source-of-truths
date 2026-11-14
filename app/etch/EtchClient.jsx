@@ -1726,7 +1726,10 @@ const ETS_CSS = `
 .ets-cell.p1{background:var(--pst-acc);box-shadow:inset 0 0 0 2px var(--pst-ink);}
 .ets-cell.p2{background:var(--pst-cell);box-shadow:inset 0 0 0 2px var(--pst-ink);}
 .ets-cell.p0{background:var(--pst-bg);box-shadow:inset 0 0 0 2px var(--pst-ink);}
-.ets-tools{display:flex;gap:8px;align-items:center;}
+/* On a computer the row ran the full width of the stage and the Fill / Mark switch stretched to
+   fill it (owner, 2026-11-14: "why does this look so bad with the huge bottom buttons"). The row is
+   capped at a phone's width and centred under the grid; a phone is narrower than the cap and is unchanged. */
+.ets-tools{display:flex;gap:8px;align-items:center;width:100%;max-width:440px;margin-left:auto;margin-right:auto;}
 .ets-seg{display:flex;flex:1;min-width:0;border:1px solid var(--pst-ink);border-radius:999px;overflow:hidden;}
 .pst .ets-seg button{flex:1;min-width:0;height:44px;border:0;border-radius:0;background:transparent;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;}
 .pst .ets-seg button+button{border-left:1px solid var(--pst-ink);}

@@ -761,6 +761,13 @@ Roll, Parker, Tangled, then Topple (owner's order), back to back on one page. Ci
 `lib/space-cadet.js`, `app/spacecadet/{page.js,SpaceCadetClient.jsx,leaderboard/page.js,card/route.js}`.
 "Space Cadet" is the run's NAME only, never a ladder rung (owner, twice).
 
+- **PACK IS THE FIFTH LEG FROM 2026-11-15** (owner, 2026-11-14: "Pack should be served to everyone who
+  plays space cadet"). It joins last, after Topple. The roster is dated the way Anon joined Crossed:
+  `before: { keys: SPACE_KEYS_BEFORE, until: '2026-11-14' }`, so the days already flown keep their
+  four legs and their 400. From 11-15 the run is out of 500 (`spaceMaxFor(iso)`, `spaceRanksFor(legs)`),
+  and the time cutoffs move out to 4:30 / 6:00 / 7:45 / 9:45 / 12:30 across all five. STILL
+  PLACEHOLDERS. The client takes its ladder and total from the number of legs dealt that day. The share
+  card route still assumes five legs, so a link shared from a four-leg day reads against 500.
 - **Time decides** (the approved mockup: "one clock across all four puzzles"). Each SOLVED leg pays
   up to 100 for speed alone: 100 at zero, one point lost every three seconds, 0 at `SPACE_CAP`
   (5:00). Unsolved pays 0. With all four solved the total is 400 minus a third of the total time,

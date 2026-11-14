@@ -48,7 +48,7 @@ function invite() {
     left: [
       chip('Space Cadet · Daily Run', CAT),
       d({ fontSize: 60, fontWeight: 800, lineHeight: 1.04, letterSpacing: -2, marginTop: 30 }, 'How well do you see space?'),
-      d({ fontSize: 23, fontWeight: 600, color: W.ink2, marginTop: 16, lineHeight: 1.35 }, 'Four spatial puzzles on one clock: roll a die, free a car, untangle the ropes, land a block.'),
+      d({ fontSize: 23, fontWeight: 600, color: W.ink2, marginTop: 16, lineHeight: 1.35 }, 'Five spatial puzzles on one clock: roll a die, free a car, untangle the ropes, land a block, pack a trunk.'),
       cta(),
     ],
     right: d({ flexDirection: 'column', gap: 6 }, ...SPACE_RANKS.map((x, i) => rung(x, i, null))),

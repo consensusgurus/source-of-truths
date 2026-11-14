@@ -138,6 +138,7 @@ import { PUZZLES as SPIN_FULL } from '../spin/puzzles';
 import { PUZZLES as CONNECT_FULL } from '../connect/puzzles';
 import { PUZZLES as MOP_FULL } from '../mop/puzzles';
 import { PUZZLES as CHEF_FULL } from '../chef/puzzles';
+import { PUZZLES as PACK_FULL } from '../pack/puzzles';
 import { PUZZLES as FILL_FULL } from '../fill/puzzles';
 import { PUZZLES as PAIRS_FULL } from '../pairs/puzzles';
 import { PUZZLES as CELL_FULL } from '../cell/puzzles';
@@ -298,6 +299,7 @@ const SPIN = SPIN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const CONNECT = CONNECT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const MOP = MOP_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CHEF = CHEF_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const PACK = PACK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const FILL = FILL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const PAIRS = PAIRS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CELL = CELL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -498,6 +500,7 @@ const GAMES = [
   { key: 'topple', name: 'Topple', path: '/topple', tag: 'Roll the block onto the spring', accent: '#3f6212', bg: '#ecfccb', border: 'rgba(63,98,18,0.35)', src: TOPPLE },
   { key: 'roll', name: 'Roll', path: '/roll', tag: 'Light the squares in order', accent: '#166534', bg: '#dcfce7', border: 'rgba(22,101,52,0.35)', src: ROLL },
   { key: 'tangled', name: 'Tangled', path: '/tangled', tag: 'Untangle the ropes', accent: '#0f766e', bg: '#ccfbf1', border: 'rgba(15,118,110,0.35)', src: TANGLED },
+  { key: 'pack', name: 'Pack', path: '/pack', tag: 'Fit it all in the trunk', accent: '#a21caf', bg: '#fae8ff', border: 'rgba(162,28,175,0.35)', src: PACK },
   { key: 'witness', name: 'Witness', path: '/witness', tag: 'What did you see?', accent: '#9f1239', bg: '#ffe4e6', border: 'rgba(159,18,57,0.35)', src: WITNESS },
   { key: 'defuse', name: 'Defuse', path: '/defuse', tag: 'Cut the wires in the safe order', accent: '#7c2d12', bg: '#ffedd5', border: 'rgba(124,45,18,0.35)', src: DEFUSE },
   { key: 'spot', name: 'Spot', path: '/spot', tag: 'Find the seven differences', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: SPOT },

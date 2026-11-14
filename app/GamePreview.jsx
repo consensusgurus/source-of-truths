@@ -270,6 +270,11 @@ const Dots = () => (
   <g>{cells(90, 8, 6, 3, 22, (x, y, c, r, i) => <circle key={i} cx={x + 11} cy={y + 11} r={4} className={[0, 5, 7, 16].includes(i) ? 'd' : 'm'} />)}
     <path d="M101 19H211M123 41V63H189" className="s3" /></g>
 );
+// Pack: four boxes fitted into one space, one of them the odd one out
+const Pack = () => (
+  <g><rect x={96} y={18} width={52} height={22} rx={4} className="w" /><rect x={152} y={18} width={68} height={22} rx={4} className="m" /><rect x={96} y={44} width={76} height={22} rx={4} className="m" /><rect x={176} y={44} width={44} height={22} rx={4} className="w" />
+    <path d="M90 72H226" className="s5" /></g>
+);
 // Chef: three plates on the pass, the middle one still to come
 const Chef = () => (
   <g>{[0, 1, 2].map((k) => <g key={k}><rect x={92 + k * 46} y={26} width={40} height={30} rx={15} className={k === 1 ? 'm' : 'w'} /><rect x={102 + k * 46} y={34} width={20} height={14} rx={7} className={k === 1 ? 'w' : 'm'} /></g>)}
@@ -393,7 +398,7 @@ const BY_KEY = {
   // Logic
   venn: Venn, lamps: Lamps, plot: Plot, paths: Track, tangled: Tangle, chomp: Maze, hedge: Maze, topple: () => <Block />,
   roll: () => <Block die />, jig: Jig, saw: Jig, slide: () => <Slide />, swap: () => <Slide mode="swap" />, spin: () => <Slide mode="spin" />,
-  connect: Dots, mop: Mop, chef: Chef, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
+  connect: Dots, mop: Mop, chef: Chef, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
   // End Game
   turn: Othello, four: Four, gift: Quarto, yose: Go, mate: () => <Chess target={4} />, check: () => <Chess target={11} />,
   chain: () => <Chess target={14} />, defend: () => <Chess target={21} />, swindle: () => <Chess target={7} />, queen: () => <Chess target={18} />,

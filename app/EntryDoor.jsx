@@ -92,7 +92,7 @@ const RUN_TAG = {
   dojocolor: 'Three color sudokus, one score, a belt',
   crossed: 'Four crosswords, speed decides your rank',
   room: 'The crowd games, one read of the room',
-  spacecadet: 'Four spatial puzzles, one clock',
+  spacecadet: 'Five spatial puzzles, one clock',
   duediligence: 'A chart, a filing and a resume, fewest clues',
   eagleeye: 'Five visual puzzles, speed and accuracy',
   math: 'Five math quizzes back to back, one life each',

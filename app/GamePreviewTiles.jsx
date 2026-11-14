@@ -325,6 +325,11 @@ const Spot = () => (
     <circle cx={134} cy={28} r={6} className="m" /><rect x={116} y={50} width={24} height={14} className="sm" /><rect x={156} y={50} width={24} height={14} className="sm" />
     <circle cx={174} cy={28} r={3.5} className="d" /></g>
 );
+// a trunk seen from the side: three boxes in, one still to drop
+const Pack = () => (
+  <g><path d="M92 70H228V18" className="d6" fill="none" /><rect x={100} y={44} width={34} height={26} rx={3} className="sm" /><rect x={138} y={32} width={30} height={38} rx={3} className="d6" fill="none" />
+    <rect x={172} y={50} width={48} height={20} rx={3} className="sm" /><rect x={178} y={12} width={30} height={22} rx={3} className="d6" fill="none" /></g>
+);
 // a pan on a burner, its handle out to the right, and two plates waiting
 const Chef = () => (
   <g><circle cx={134} cy={42} r={26} className="d6" fill="none" /><circle cx={134} cy={42} r={15} className="d6" fill="none" /><path d="M160 42H192" className="d6" />
@@ -732,7 +737,7 @@ export const TILE_BY_KEY = {
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
   suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse, spot: Spot,
-  connect: Connect, mop: Mop, chef: Chef, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
+  connect: Connect, mop: Mop, chef: Chef, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers
   crunch: Crunch, blitz: Blitz, blitzed: Blitzed, gap: Gap, back: Back, calc: Calc, series: Series, sums: Sums, carve: Carve, tally: Tally,

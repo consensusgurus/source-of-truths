@@ -10,12 +10,13 @@ import { PUZZLES as P_roll } from '../roll/puzzles';
 import { PUZZLES as P_park } from '../parker/puzzles';
 import { PUZZLES as P_tangled } from '../tangled/puzzles';
 import { PUZZLES as P_topple } from '../topple/puzzles';
+import { PUZZLES as P_pack } from '../pack/puzzles';
 
 // SPACE CADET, the run (owner, 2026-11-07): mindloftdaily.com/spacecadet.
 // Each bank is resolved HERE and only today's puzzle ships, exactly as each
 // game's own page ships it. The order is the owner's: Roll, Parker, Tangled,
 // Topple (lib/circuits circuitKeysFor('spacecadet', day)).
-const BANKS = { roll: P_roll, park: P_park, tangled: P_tangled, topple: P_topple };
+const BANKS = { roll: P_roll, park: P_park, tangled: P_tangled, topple: P_topple, pack: P_pack };
 
 export const dynamic = 'force-dynamic';
 
@@ -24,8 +25,8 @@ export async function generateMetadata({ searchParams }) {
   const c = String((searchParams && searchParams.c) || '');
   const f = String((searchParams && searchParams.f) || '');
   const img = /^\d{1,3}$/.test(t) ? `/spacecadet/card?t=${t}${/^\d{1,5}$/.test(c) ? `&c=${c}` : ''}${f === '1' ? '&f=1' : ''}` : '/spacecadet/card';
-  const title = 'Space Cadet: Four Daily Spatial Puzzles in One Run | Mind Loft';
-  const description = 'A free daily spatial reasoning run: roll a die, free a car, untangle the ropes, land a block. One clock ranks you from Lost in Space to Architect-Engineer.';
+  const title = 'Space Cadet: Five Daily Spatial Puzzles in One Run | Mind Loft';
+  const description = 'A free daily spatial run: roll a die, free a car, untangle ropes, land a block, pack a trunk. One clock ranks you from Lost in Space to Architect-Engineer.';
   return {
     title, description,
     alternates: { canonical: '/spacecadet' },
@@ -44,8 +45,9 @@ export default function SpaceCadetPage() {
   const sections = [];
   for (const key of circuitKeysFor(SPACE_RUN_ID, today)) {
     const bank = BANKS[key] || [];
-    const p = bank.filter((x) => x.live === today)[0];
-    if (!p) continue;
+    const p0 = bank.filter((x) => x.live === today)[0];
+    if (!p0) continue;
+    const p = key === 'pack' ? (({ sol, ...rest }) => rest)(p0) : p0;
     const g = DAILY_GAME_MAP[key] || {};
     const f = SPACE_FORMS[key] || {};
     sections.push({
@@ -59,7 +61,7 @@ export default function SpaceCadetPage() {
   const dateShort = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
   const jsonLd = {
     '@context': 'https://schema.org', '@type': 'Game', name: 'Space Cadet', url: `${SITE_URL}/spacecadet`,
-    description: `A free daily run of spatial puzzles from Mind Loft: Roll, Parker, Tangled and Topple on one clock, scored out of ${SPACE_MAX} and ranked from Lost in Space to Architect-Engineer.`,
+    description: `A free daily run of spatial puzzles from Mind Loft: Roll, Parker, Tangled, Topple and Pack on one clock, scored out of ${SPACE_MAX} and ranked from Lost in Space to Architect-Engineer.`,
     gamePlatform: 'Web browser', isAccessibleForFree: true, inLanguage: 'en',
     image: `${SITE_URL}/spacecadet/card`,
     publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },

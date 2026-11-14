@@ -2554,6 +2554,67 @@ Same order as Witness. Key/route `defuse`, category **Logic**, skill Deduction, 
   generator now deals the LEAST-used line of a family. `verify-chain.mjs` check 9: every board's motif is a line
   of the family its own solve implies (all 150 boards pass, so the floor is launch).
 
+## Pack: the daily 3D packing puzzle (launched 2026-11-14)
+
+Owner, 2026-11-14: "a 3D packing puzzle. Trunk of a car, by Sunday it's a moving van." Route `/pack`,
+key `pack`, category **Visual**, skills Spatial and Planning. On the shared stage shell
+(`app/SimpleDaily.jsx`). Model `lib/pack-engine.js`, drawing `lib/pack-art.js`, client
+`app/pack/PackClient.jsx`. Wired by `scripts/wire-pack.mjs` beside Chef.
+
+- **The play.** A pile on the curb and one vehicle, W wide, D deep, H high in whole cells. Pick an
+  item, tap where it goes: it DROPS STRAIGHT DOWN from above the roof and stops the moment any cell
+  of it would enter a filled cell or the floor (`dropAt`). Turn (a quarter turn on the floor), Tip
+  (onto another side: the 24 turns in `ROTS`), View (walk round the vehicle, four views). Nothing
+  may rest above the roof line; a spot where it would is tinted and refused. First tap shows a
+  see-through copy, the same spot again (or Place) loads it.
+- **Shaped items (owner: "maybe some dimensions are more complicated though like a couch? Or a
+  table?").** Most items are plain boxes. A sofa, loveseat, armchair or beach chair is a seat and a
+  back (an L), so a small thing rides on the seat. A dining, picnic or camp table or a desk is a top
+  on legs with real room underneath, and because everything drops straight down, what goes under it
+  is loaded first. A shaped item carries a `note` in its row.
+- **The look (owner: "make those items look like the items but carry the same dimensions", then
+  "color the items a little more").** Every item is drawn as itself on its cells: straps, lids,
+  drawers, a washer door, books on a shelf. A detail is a flat outline or fill on one face in the
+  item's own coordinates, so it turns and tips with the item. `drawPieces` paints back to front one
+  cell at a time and is the ONLY drawing code: the board, the item list and the share card call it.
+  Dark is read off the board's own colour flag (`--pk-dk`), set by both the stage theme and the
+  dark stage look, so the canvas never disagrees with the cards round it.
+- **Scoring.** Getting everything in is the solve (10, in SOLVE_ONLY; give-up 0). The miss column
+  is **Re-packs**: every item taken back out counts one (a take-out, each step of Undo that removes
+  a placement, each item Unload All removes). Lower first, then the clock. A perfect load is always
+  0, so there is no stored best.
+- **Packing Ladder** (modelled on Chef's, owner: "need similar titles and end sequence"): Santa
+  Claus (0), Harry Houdini (1), Master Mover (to 25% of the item count), Roadie (50%), Road Tripper
+  (75%), Weekend Mover (100%), Overpacker (150%), Left It on the Curb. The rung is the ending's
+  title. No living people, the same reasoning as Chef. THE NAMES AND CUT-OFFS ARE NOT RULED ON.
+- **Ending beat** during the end hold, on the board that is already there (it never moves): the
+  load lights item by item in the order it went in, the doors shut (the roof and open-side lines go
+  solid), the category fill opens as a circle, the rungs climb to the one earned, the title lands,
+  then the site's own ending takes over. Inside a run only the board beat plays.
+- **The week** (`scripts/gen-pack-spec.mjs`): Mon Hatchback 3x3x2 (5 items), Tue Sedan 3x4x2 (7,
+  one shaped), Wed Station Wagon 3x4x3 (8, one shaped), Thu Minivan 4x4x3 (9, one shaped), Fri
+  Pickup 4x5x3 (11, two shaped, an EXACT fit), Sat Cargo Van 4x6x3 (13, two shaped, exact), Sunday
+  Edition Moving Van 4x7x4 (16, four shaped). Mon to Thu and Sunday leave the smallest box on the
+  curb, so there is room to spare. Board 1 (2026-11-14) is an intro Hatchback.
+- **Bank.** `scripts/gen-pack.mjs`, append only: the space is cut into boxes, some boxes two cells
+  high are carved into a shaped item plus the box that fits against it, a loading order is found by
+  peeling items off the top, and a deal is thrown away unless every item lands exactly where it was
+  cut through the real drop. So every board has at least one packing; nothing proves it is the only
+  one, and none needs to be. `sol` is that packing and is stripped in `app/pack/page.js` (and in
+  `app/spacecadet/page.js`). `scripts/verify-pack.mjs` reloads every stored packing. 48 boards to
+  2026-12-31: restock before then.
+- **Space Cadet** (owner, 2026-11-14: "Pack should be served to everyone who plays space cadet"):
+  the fifth and last leg from 2026-11-15, see `docs/claude/circuits-and-runs.md`. Pack's start gate
+  mounts the Space Cadet door (`runDoor`).
+- **Placement.** Daily group and set page **Pack and untangle** (Pack, Tangled, Paths; Roll and
+  route went from five to three to make room), finish set Tight fits (Pack, Junkyard, Tangled),
+  family with Topple, Roll, Chomp and Tangled. In the home's Featured row (Sudoclue came out so the
+  row stays four across). Share card `public/og/pack.png`, hand-built by `scripts/bake-pack-og.mjs`
+  from a decoy load (in HAND_BAKED). Tiles `scripts/gen-pack-tiles.py`.
+- **Open:** Tip is allowed for everything (a fridge on its side, a sofa on end). The exact-fit days
+  have not been played by a person; if Friday and Saturday prove too hard, give them a spare box in
+  the spec for FUTURE days only.
+
 ## Chef: the daily kitchen puzzle (launched 2026-11-14)
 
 Owner's idea, 2026-11-13: "a new restaurant kitchen puzzle where different items take different times
