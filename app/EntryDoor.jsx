@@ -472,7 +472,7 @@ export default function EntryDoor({ onPick }) {
               Mind Loft
             </div>
             <p className="ent-m-h">{liveN ? `${liveN} free puzzles, new every day.` : 'Free puzzles, new every day.'}</p>
-            <p className="ent-m-sub">No sign-up. Start with what most people are playing.</p>
+            <p className="ent-m-sub">No sign-up. Start with the most popular.</p>
             <div className="ent-m-two">
               {start && start.run ? (
                 <button type="button" className="ent-m-t" style={{ '--c': categoryColor(start.run.cat) }} onClick={() => go(start.run.href)} aria-label={`${start.run.name}: start the run`}>
@@ -514,7 +514,7 @@ export default function EntryDoor({ onPick }) {
             })}
           </ul>
           <div className="ent-foot">
-            <button type="button" ref={btnRef} className="ent-go-all" onClick={close}>
+            <button type="button" ref={btnRef} className="ent-go-all" onClick={() => toHome('all')}>
               <span className="ent-ask-d">Proceed to all of today&apos;s puzzles</span><span className="ent-ask-m">{liveN ? `See All ${liveN} Puzzles` : 'See All Puzzles'}</span> <span aria-hidden="true">→</span>
             </button>
             <p className="ent-h">
@@ -853,6 +853,14 @@ const CSS = `
   .ent-pg .ent-foot .ent-h{display:none}
   .ent-pg .ent-go-all{background:#ffffff;color:#08222e;border:1px solid #08222e;font-weight:800}
   .ent-pg .ent-go-all:hover{background:#ffffff}
+}
+/* THE DOOR IS THE SCREEN YOU CAN SEE (owner report, 2026-11-15: the button slid
+   under the phone browser's bottom bar). inset:0 measures the tall screen with
+   the bars away; 100svh is the screen with them showing. */
+@supports (height:100svh){
+  @media (max-width:760px){
+    .ent-pg,.ent-pk{bottom:auto;height:100svh}
+  }
 }
 @media (max-width:760px) and (max-height:640px){
   .ent-m-h{margin-top:12px;font-size:24px}

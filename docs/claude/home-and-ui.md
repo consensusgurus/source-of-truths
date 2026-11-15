@@ -2864,3 +2864,8 @@ The home Details view draws each puzzle card the way its share image looks: the 
 - Games with a nicer share card show a cut of it in that square: `lib/share-tile.js` lists them and the cuts live in `public/og/tile/<key>.png` (224px square; the art half of a scene card, or the white board card of a board card). Re-cut a game's tile whenever its share card is re-baked. A key not listed falls back to its GamePreview drawing.
 - Run tiles (`app/today/RunGateTile.jsx`) draw their legs as the gauntlet share card does: separate numbered blocks in their ladder colours, still one row.
 - Desktop Details only; the phone home was being reworked the same night and was left alone.
+- **Later the same day:** the entry page's "See All N Puzzles" (and the desktop "Proceed" button) opens
+  the All Puzzles pane, not the tiles. A skill picked at the door no longer switches a phone's index to
+  Skills (desktop still does, since a skill pane needs the skill index there). The door is `100svh` tall
+  on a phone so its button clears the browser's bottom bar. The sky house never draws the deeper-blue
+  outline (`outlineFor` in lib/mindloft-mark.js); other pastels keep it. Static PNGs were not redrawn.

@@ -4485,7 +4485,7 @@ export default function StageToday() {
       {/* THE ENTRY DOOR: first visit then weekly, always dark, replaced the daily arrival. See app/EntryDoor.jsx. */}
       {/* A SKILL TILE OPENS THAT SKILL'S PANE (owner, 2026-10-18), and shows the
           skill index for this visit without changing what the reader stored. */}
-      <EntryDoor onPick={(id) => { if (isSkillId(id)) setIxLens('skill'); goPane(id); }} />
+      <EntryDoor onPick={(id) => { if (isSkillId(id) && !runsMq) setIxLens('skill'); goPane(id); }} />
       {/* NEW-GAME PREMIERES: once per launch, returning players who have not
           played it, after the arrival has finished. See app/PremierePop.jsx. */}
       <PremierePop />
@@ -8710,6 +8710,8 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      follows its old first tile sideways, so the row opened part scrolled.
      The tiles go three across upright to make the room. */
   .sty-mph .mph-fold > .mph-tops{flex:none;display:flex;flex-direction:column;gap:6px;min-width:0;}
+  /* The header's own spacing was sized for the ticket bar that used to sit here. */
+  .sty-mph .mph-fold > .mph-tops:first-child{margin-top:-12px;}
   .sty-mph .mph-fold .mph-lab{margin-top:0;}
   .sty-mph .mph-fold > .mph-clab{flex:none;margin-bottom:-4px;}
   .sty-mph .mph-flick{display:flex;gap:8px;min-height:104px;padding:1px 0 3px;overflow-x:auto;overflow-y:hidden;overflow-anchor:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
