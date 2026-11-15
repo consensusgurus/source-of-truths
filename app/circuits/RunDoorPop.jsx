@@ -199,8 +199,26 @@ function doorKey(id, game) {
   return D && D.once === 'game' ? `sot_${id}_door_${D.v ? `v${D.v}_` : ''}${game}` : `sot_${id}_door`;
 }
 
+// ONCE PER PLAYER, EVER (owner, 2026-11-15: "remove the pop-up notice about 'play
+// the run instead?' after the first instance for a player"). The first offer any
+// run makes stamps SEEN_KEY, and no run offers itself again on that browser. A
+// player who already saw one before this rule (any old per-run or per-game door
+// stamp) counts as having seen it.
+const SEEN_KEY = 'sot_rundoor_seen';
+function doorSeen() {
+  try {
+    if (localStorage.getItem(SEEN_KEY)) return true;
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const k = localStorage.key(i) || '';
+      if (k !== 'sot_trivia_door' && /^sot_[a-z0-9]+_door(_|$)/.test(k)) { localStorage.setItem(SEEN_KEY, '1'); return true; }
+    }
+  } catch (e) { return true; }
+  return false;
+}
+
 function shouldOffer(id, game) {
   const D = RUN_DOORS[id];
+  if (doorSeen()) return false;
   try {
     const q = new URLSearchParams(window.location.search);
     if (q.get('circuit') || q.get('five') === '1') return false;
@@ -228,7 +246,7 @@ export default function RunDoorPop({ id = 'pricecheck', ready = false, self = ''
     const t = setTimeout(() => {
       if (fired.current || gameActive() || !shouldOffer(id, game) || !claimPop('rundoor')) return;
       fired.current = true;
-      try { localStorage.setItem(doorKey(id, game), etToday()); } catch (e) {}
+      try { localStorage.setItem(doorKey(id, game), etToday()); localStorage.setItem(SEEN_KEY, '1'); } catch (e) {}
       setOpen(true);
     }, WAIT_MS);
     return () => clearTimeout(t);

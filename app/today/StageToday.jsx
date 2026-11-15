@@ -4819,15 +4819,15 @@ export default function StageToday() {
                   // first since 2026-11-15), Top Runs, Top Puzzles, Newest. Newest always shows.
                   const rowsOf = (list) => {
                     const n = list.length; if (!n) return [];
-                    const rows = Math.ceil(n / 3); const base = Math.floor(n / rows); const extra = n % rows;
+                    const rows = Math.ceil(n / 4); const base = Math.floor(n / rows); const extra = n % rows;
                     const out = []; let at = 0;
                     for (let r = 0; r < rows; r += 1) { const sz = base + (r < extra ? 1 : 0); out.push(list.slice(at, at + sz)); at += sz; }
                     return out;
                   };
-                  // My Puzzles rides beside All, and Quizzes closes the last row (owner, 2026-11-15).
+                  // My Puzzles rides beside All (owner, 2026-11-15); Quizzes was tried in the last row
+                  // and taken out the same morning so the chips make even rows of four.
                   const chips = [{ id: ALL_ID, all: true, label: `All ${alpha.length}` }, { id: MINE_ID, plain: true, label: 'My Puzzles', go: () => mOpen(MINE_ID) },
-                    ...orderedCats.map((c) => ({ id: c.cat, label: catShortLabel(c.cat) || catLabel(c.cat) })),
-                    { id: QUIZ_ID, plain: true, label: 'Quizzes', go: () => goPane(QUIZ_ID) }];
+                    ...orderedCats.map((c) => ({ id: c.cat, label: catShortLabel(c.cat) || catLabel(c.cat) }))];
                   const mine = [...pinned].sort((a, b) => (done.has(a.key) - done.has(b.key)) || a.name.localeCompare(b.name));
                   const newest = alpha.filter((g) => LAUNCHED[g.key] && !done.has(g.key))
                     .sort((a, b) => String(LAUNCHED[b.key]).localeCompare(String(LAUNCHED[a.key])) || a.name.localeCompare(b.name)).slice(0, NEWEST_ROW);
@@ -8768,13 +8768,15 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      deals 3,3,3,2), then sideways rows of full Details cards. The page
      scrolls; nothing is fitted to one screen any more. */
   .sty-mph .mph-fold.m2{min-height:0;gap:14px;}
-  .sty-mph .mph-chips{display:flex;flex-direction:column;gap:7px;margin-top:-12px;}
+  .sty-mph .mph-chips{display:flex;flex-direction:column;gap:6px;margin-top:-12px;}
   /* NO STRETCH (owner, 2026-11-15: "Categories shouldn't stretch. Just center
      them across at same width"): every chip is one third of the row, and a
      short last row sits centred under the others. */
-  .sty-mph .mph-crow{display:flex;gap:7px;justify-content:center;}
-  .sty-mph .mph-chip{flex:0 0 calc((100% - 14px) / 3);min-width:0;min-height:42px;box-sizing:border-box;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:0;padding:0 8px;border-radius:999px;font:inherit;text-align:center;}
-  .sty-mph .mph-chip b{font-size:14.5px;font-weight:800;line-height:1.2;letter-spacing:-0.01em;white-space:nowrap;padding-bottom:.06em;}
+  .sty-mph .mph-crow{display:flex;gap:6px;justify-content:center;}
+  /* FOUR ACROSS, SMALLER (owner, 2026-11-15: "make them smaller to condense and
+     distribute more evenly"): twelve chips in three even rows. */
+  .sty-mph .mph-chip{flex:0 0 calc((100% - 18px) / 4);min-width:0;min-height:34px;box-sizing:border-box;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:0;padding:0 3px;border-radius:999px;font:inherit;text-align:center;}
+  .sty-mph .mph-chip b{font-size:12.5px;font-weight:800;line-height:1.2;letter-spacing:-0.015em;white-space:nowrap;padding-bottom:.06em;}
   .sty-mph .mph-chip.all{border:1px solid var(--stg-ink);background:var(--stg-ink);color:var(--stg-ground, #fff);}
   .sty-mph .mph-chip.plain{border:1px solid var(--stg-ink);background:transparent;color:var(--stg-ink);}
   .sty-mph .mph-sec{display:flex;flex-direction:column;gap:7px;min-width:0;}
