@@ -4815,8 +4815,8 @@ export default function StageToday() {
                   const order = topOrder.current || (topOk && (fav || !topWait) ? rankTop(null) : []);
                   const topPz = order.filter((k) => !done.has(k)).slice(0, TOP_PUZZLES).map((k) => alpha.find((g) => g.key === k)).filter(Boolean);
                   // M2 (owner, 2026-11-15): the categories are chips that fill their rows,
-                  // then sideways rows of full cards: Top Runs, My Puzzles (when there
-                  // are any), Top Puzzles, Newest. Newest always shows.
+                  // then sideways rows of full cards: My Puzzles (when there are any,
+                  // first since 2026-11-15), Top Runs, Top Puzzles, Newest. Newest always shows.
                   const rowsOf = (list) => {
                     const n = list.length; if (!n) return [];
                     const rows = Math.ceil(n / 3); const base = Math.floor(n / rows); const extra = n % rows;
@@ -4824,7 +4824,10 @@ export default function StageToday() {
                     for (let r = 0; r < rows; r += 1) { const sz = base + (r < extra ? 1 : 0); out.push(list.slice(at, at + sz)); at += sz; }
                     return out;
                   };
-                  const chips = [{ id: ALL_ID, all: true, label: `All ${alpha.length}` }, ...orderedCats.map((c) => ({ id: c.cat, label: catShortLabel(c.cat) || catLabel(c.cat) }))];
+                  // My Puzzles rides beside All, and Quizzes closes the last row (owner, 2026-11-15).
+                  const chips = [{ id: ALL_ID, all: true, label: `All ${alpha.length}` }, { id: MINE_ID, plain: true, label: 'My Puzzles', go: () => mOpen(MINE_ID) },
+                    ...orderedCats.map((c) => ({ id: c.cat, label: catShortLabel(c.cat) || catLabel(c.cat) })),
+                    { id: QUIZ_ID, plain: true, label: 'Quizzes', go: () => goPane(QUIZ_ID) }];
                   const mine = [...pinned].sort((a, b) => (done.has(a.key) - done.has(b.key)) || a.name.localeCompare(b.name));
                   const newest = alpha.filter((g) => LAUNCHED[g.key] && !done.has(g.key))
                     .sort((a, b) => String(LAUNCHED[b.key]).localeCompare(String(LAUNCHED[a.key])) || a.name.localeCompare(b.name)).slice(0, NEWEST_ROW);
@@ -4877,6 +4880,8 @@ export default function StageToday() {
                           <div key={ri} className="mph-crow">
                             {row.map((c) => (c.all ? (
                               <button key={c.id} type="button" className="mph-chip all" onClick={() => mOpen(ALL_ID)}><b>{c.label}</b></button>
+                            ) : c.plain ? (
+                              <button key={c.id} type="button" className="mph-chip plain" onClick={c.go}><b>{c.label}</b></button>
                             ) : (
                               <button key={c.id} type="button" className="mph-t mph-chip" style={mTone(rampCat(c.id))}
                                 onClick={(e) => floodIn(e, () => mOpen(c.id), { label: 'b', target: '.mph-htx .t > span', toTop: true, color: paneGround(rampCat(c.id)) })}><b>{c.label}</b></button>
@@ -4884,6 +4889,8 @@ export default function StageToday() {
                           </div>
                         ))}
                       </div>
+                      {/* MY PUZZLES FIRST, right under the categories (owner, 2026-11-15). */}
+                      {mine.length ? sec('My Puzzles', `All ${mine.length}`, () => mOpen(MINE_ID), <div className="mph-gg det mph-hrow">{mine.map(hCard)}</div>) : null}
                       {topRuns.length ? sec('Top Runs', `All ${topRuns.length} Runs`, () => mOpen(CIRC_ID), (
                         <div className="mph-rgts">
                           {topRuns.filter((c) => !c.poly).map((c) => {
@@ -4893,7 +4900,6 @@ export default function StageToday() {
                           })}
                         </div>
                       )) : null}
-                      {mine.length ? sec('My Puzzles', `All ${mine.length}`, () => mOpen(MINE_ID), <div className="mph-gg det mph-hrow">{mine.map(hCard)}</div>) : null}
                       {sec('Top Puzzles', 'All Puzzles', () => mOpen(ALL_ID), <div className="mph-gg det mph-hrow">{topPz.map(hCard)}</div>)}
                       {newest.length ? sec('Newest', 'All by Newest', () => { pickSort('new'); mOpen(ALL_ID); }, <div className="mph-gg det mph-hrow">{newest.map(hCard)}</div>) : null}
                     </>
@@ -8770,6 +8776,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-chip{flex:0 0 calc((100% - 14px) / 3);min-width:0;min-height:42px;box-sizing:border-box;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:0;padding:0 8px;border-radius:999px;font:inherit;text-align:center;}
   .sty-mph .mph-chip b{font-size:14.5px;font-weight:800;line-height:1.2;letter-spacing:-0.01em;white-space:nowrap;padding-bottom:.06em;}
   .sty-mph .mph-chip.all{border:1px solid var(--stg-ink);background:var(--stg-ink);color:var(--stg-ground, #fff);}
+  .sty-mph .mph-chip.plain{border:1px solid var(--stg-ink);background:transparent;color:var(--stg-ink);}
   .sty-mph .mph-sec{display:flex;flex-direction:column;gap:7px;min-width:0;}
   .sty-mph .mph-sh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
   .sty-mph .mph-sh .mph-lab{margin:0;}
@@ -8833,7 +8840,14 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-ctl{position:relative;display:flex;gap:10px;margin-top:4px;}
   .sty-mph .mph-cg{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:4px;}
   .sty-mph .mph-cg.s{flex:1.75 1 0;}
-  .sty-mph .mph-ctl .lb,.sty-mph .mph-jump .lb,.sty-mph .mph-kf .lb{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.3;}
+  /* A PHONE IN LANDSCAPE BLEW SORT AND JUMP TO UP (owner, 2026-11-15: "the selectors are
+     not size right or aligned"): mobile font boosting inflated the labels sitting in the
+     wider boxes and left View alone, so View's switch rode higher than Sort's. One line,
+     a fixed height and an explicit text-size-adjust keep the autosizer off them, and
+     the two groups line up on their switches. */
+  .sty-mph .mph-ctl .lb,.sty-mph .mph-jump .lb,.sty-mph .mph-kf .lb{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:14px;height:14px;max-height:14px;white-space:nowrap;overflow:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  .sty-mph .mph-pin,.sty-mph .mph-ctl,.sty-mph .mph-jump,.sty-mph .mph-kf{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  .sty-mph .mph-ctl{align-items:flex-end;}
   .sty-mph .mph-sg{display:flex;border:1px solid var(--stg-ink);border-radius:999px;padding:3px;}
   .sty-mph .mph-sg button{flex:1 1 auto;min-width:0;border:0;background:transparent;color:var(--stg-ink);border-radius:999px;padding:7px 4px 8px;
     font-size:12px;font-weight:800;line-height:1.26;white-space:nowrap;}

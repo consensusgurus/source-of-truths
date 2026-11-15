@@ -680,7 +680,11 @@ const CSS = `
 .pst.inl:has(.cmn.fs){isolation:isolate;overflow:hidden;}
 .cmn.fs .cmn-svg{-webkit-mask-image:none;mask-image:none;}
 .pst:has(.cmn.fs){overflow:hidden;}
-.pst:has(.cmn.fs) .pst-col{pointer-events:none;height:100%;}
+/* min-height:0 (owner, 2026-11-15: "my lock in pin isn't visible"): the stage foot
+   rule (StageFoot.jsx) makes a phone column 48px taller than the screen so Clock /
+   How to play / Give up sit a scroll below. Carmen's screen cannot scroll, so that
+   extra height pushed the Lock in pin button off the bottom of the phone. */
+.pst:has(.cmn.fs) .pst-col{pointer-events:none;height:100%;min-height:0;}
 .pst.inl:has(.cmn.fs) .pst-col{height:auto;}
 .pst:has(.cmn.fs) .pst-col>*:not(.pst-top){pointer-events:auto;}
 .pst:has(.cmn.fs) .pst-top{animation:none;justify-content:flex-start;flex:1 1 auto;min-height:0;}
