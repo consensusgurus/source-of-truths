@@ -264,7 +264,7 @@ export default function CarmenBoard({ P, s, setS, active, done, onStage, held, r
       const w = R.clientWidth, h = R.clientHeight;
       if (fs) {
         // Full screen: a big globe, a touch below centre, free to run under the
-        // clue card and the buttons (they are glass) and past the phone's sides.
+        // clue card and the buttons (solid cards, no blur) and past the phone's sides.
         const r = Math.max(120, Math.min(w * 0.82, h * 0.46));
         G.setFrame(w, h, w / 2, h * (w < 700 ? 0.6 : 0.55), r);
         return;
@@ -561,7 +561,7 @@ const CSS = `
 .cmn-legs i.c{background:var(--pst-ink,#16181d);color:var(--pst-bg,#fff);transform:scale(1.1);}
 .cmn-pts{font-size:13px;font-weight:600;color:var(--pst-mute,#4a4f58);}
 .cmn-pts b{font-size:15px;font-weight:800;color:var(--pst-ink,#16181d);font-variant-numeric:tabular-nums;}
-.cmn-card{border:1px solid var(--pst-ink,#16181d);border-radius:14px;padding:10px 12px;background:color-mix(in srgb, var(--pst-bg,#fff) 90%, transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+.cmn-card{border:1px solid var(--pst-ink,#16181d);border-radius:14px;padding:10px 12px;background:color-mix(in srgb, var(--pst-bg,#fff) 90%, transparent);}
 .cmn-region{position:relative;flex:1 1 auto;min-height:340px;width:100%;}
 .pst.inl .cmn-region{flex:none;height:min(76vh,720px);}
 .cmn.off .cmn-region{flex:none;height:min(110vw,560px);}
@@ -671,7 +671,8 @@ const CSS = `
    region is the stage's back layer: fixed to the viewport in the full-screen
    stage, filling the stage box when the stage sits inline under the site
    header. The column above it lets taps through to the globe except on the
-   glass pieces: the strip and clue card at the top, the zoom, the pin button
+   solid pieces (no blur, owner 2026-11-14: re-blurring the moving globe
+   behind them every frame made Carmen lag): the strip and clue card at the top, the zoom, the pin button
    and the foot row at the bottom. */
 .cmn.fs{max-width:none;gap:8px;}
 .cmn.fs .cmn-region{position:fixed;inset:0;z-index:-1;min-height:0;height:auto;flex:none;width:auto;pointer-events:auto;}
@@ -687,24 +688,24 @@ const CSS = `
 .cmn.fs .cmn-strip,.cmn.fs .cmn-fscard,.cmn.fs .cmn-zoom,.cmn.fs .cmn-donenote{pointer-events:auto;}
 .cmn.fs>.cmn-strip,.cmn.fs .cmn-fscard{width:100%;max-width:640px;margin:0 auto;}
 .cmn-fscard{display:flex;flex-direction:column;gap:8px;}
-.cmn.fs .cmn-strip,.cmn.fs .cmn-card{background:color-mix(in srgb, var(--pst-bg,#fff) 66%, transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+.cmn.fs .cmn-strip,.cmn.fs .cmn-card{background:color-mix(in srgb, var(--pst-bg,#fff) 96%, transparent);}
 .cmn.fs .cmn-card{max-height:42dvh;overflow-y:auto;}
-.cmn.fs .cmn-more{background:color-mix(in srgb, var(--pst-bg,#fff) 55%, transparent);}
+.cmn.fs .cmn-more{background:color-mix(in srgb, var(--pst-bg,#fff) 92%, transparent);}
 .cmn-fsgap{flex:1 1 auto;min-height:0;}
 .cmn-fsfoot{position:relative;display:flex;justify-content:flex-end;align-items:flex-end;min-height:40px;flex:none;}
 .cmn.fs .cmn-zoom{position:static;}
-.cmn.fs .cmn-zoom button{background:color-mix(in srgb, var(--pst-bg,#fff) 70%, transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
-.cmn.fs .cmn-hint{bottom:6px;background:color-mix(in srgb, var(--pst-bg,#fff) 80%, transparent);color:var(--pst-ink,#16181d);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
-.cmn.fs .cmn-donenote{padding:8px 12px;border-radius:12px;background:color-mix(in srgb, var(--pst-bg,#fff) 70%, transparent);}
-.pst:has(.cmn.fs) .cmn-btn:disabled{opacity:1;background:color-mix(in srgb, var(--pst-bg,#fff) 66%, transparent);color:var(--pst-ink,#16181d);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
-.pst:has(.cmn.fs) .sft-b:not(.on),.pst:has(.cmn.fs) .stb-home,.pst:has(.cmn.fs) .stb-look,.pst:has(.cmn.fs) .stb-share,.pst:has(.cmn.fs) .stb-nav{background:color-mix(in srgb, var(--pst-bg,#fff) 70%, transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+.cmn.fs .cmn-zoom button{background:color-mix(in srgb, var(--pst-bg,#fff) 92%, transparent);}
+.cmn.fs .cmn-hint{bottom:6px;background:color-mix(in srgb, var(--pst-bg,#fff) 94%, transparent);color:var(--pst-ink,#16181d);}
+.cmn.fs .cmn-donenote{padding:8px 12px;border-radius:12px;background:color-mix(in srgb, var(--pst-bg,#fff) 92%, transparent);}
+.pst:has(.cmn.fs) .cmn-btn:disabled{opacity:1;background:color-mix(in srgb, var(--pst-bg,#fff) 96%, transparent);color:var(--pst-ink,#16181d);}
+.pst:has(.cmn.fs) .sft-b:not(.on),.pst:has(.cmn.fs) .stb-home,.pst:has(.cmn.fs) .stb-look,.pst:has(.cmn.fs) .stb-share,.pst:has(.cmn.fs) .stb-nav{background:color-mix(in srgb, var(--pst-bg,#fff) 92%, transparent);}
 /* Bare: everything but the clues and the pin button steps aside. */
 .pst:has(.cmn.bare) .stb,.pst:has(.cmn.bare) .sft,.cmn.bare>.cmn-strip,.cmn.bare .cmn-zoom,.cmn.bare .cmn-hint{display:none !important;}
 .cmn-fscard{position:relative;}
-.cmn-menu{position:absolute;top:8px;right:8px;z-index:2;width:32px;height:32px;border-radius:50%;border:1px solid var(--pst-ink,#16181d);background:color-mix(in srgb, var(--pst-bg,#fff) 70%, transparent);color:var(--pst-ink,#16181d);display:grid;place-items:center;padding:0;cursor:pointer;}
+.cmn-menu{position:absolute;top:8px;right:8px;z-index:2;width:32px;height:32px;border-radius:50%;border:1px solid var(--pst-ink,#16181d);background:color-mix(in srgb, var(--pst-bg,#fff) 92%, transparent);color:var(--pst-ink,#16181d);display:grid;place-items:center;padding:0;cursor:pointer;}
 .cmn.fs .cmn-card .cmn-eb{padding-right:36px;}
 /* The city name reads in the page's ink on the dark glass (the accent ink is a light-page colour). */
 .cmn.fs .cmn-eb span,.cmn.fs .cmn-seen span{color:var(--pst-ink,#f3f5f8);}
-.cmn.fs .cmn-card{background:color-mix(in srgb, var(--pst-bg,#fff) 84%, transparent);}
+.cmn.fs .cmn-card{background:color-mix(in srgb, var(--pst-bg,#fff) 96%, transparent);}
 @media (min-width:1000px){.cmn.fs .cmn-card{padding:14px 16px;}.cmn.fs .cmn-tips{gap:10px;}.cmn.fs .cmn-tips li{font-size:15.5px;line-height:1.5;}.cmn.fs .cmn-zoom button{width:40px;height:40px;}.pst:has(.cmn.fs) .cmn-btn{min-height:54px;font-size:16px !important;}}
 `;

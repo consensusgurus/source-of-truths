@@ -2387,6 +2387,18 @@ of those to carry it in the Witness or Informant tip. A tip 1 or 2 currency must
 (bolivianos, "Jordanian dinar"). `gen-carmen.mjs`: a kept future case now reads its tips from the pool as it stands, so
 a reviewed tip edit reaches every board not yet live; live boards stay frozen. Boards from 2026-11-14 carry the new tips.
 
+**The globe renders on the GPU (owner, 2026-11-14: "Carmen is super laggy"; wants a sharp globe on black space).**
+`lib/carmen-surface.js` was a JavaScript per-pixel inverse projection on the main thread (up to 1.4M pixels per crisp
+frame, ~300 ms of main thread per frame in a sandbox test). It is now a WebGL2 fragment shader with the same lighting,
+relief, water glint, clouds, rim haze and fixed stars, at full sharpness on every frame (device pixel ratio capped at
+2, about 8M pixels max), mipmapped with seam-safe `textureGrad`. GIBS zoom tiles are laid into one mosaic texture
+(rebuilt at most every 250 ms) and sampled over the base image. Main-thread cost per moving frame fell to ~3 ms. No
+WebGL2: the constructor throws and the globe falls back to the flat Noir look. In `lib/carmen-globe.js` the borders
+draw from the 110m mesh while the view moves and the 50m mesh ~140 ms after it settles (`loadWorld()` returns
+`bordersLo`), and a still view reuses the last fine path. The full-screen strip, clue card, zoom, hint and buttons are
+solid (no `backdrop-filter`): re-blurring the moving globe behind them every frame was the other lag source. Never
+put blur over the Carmen globe again, and never move the Earth painting back to the CPU.
+
 ## Parker, Impound and Junkyard: flick to move (owner, 2026-11-08)
 
 A swipe along a block's groove slides it as far as it will go that way: one move, the same as tapping
