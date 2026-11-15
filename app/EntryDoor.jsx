@@ -99,8 +99,8 @@ const RUN_TAG = {
   english: 'Five English quizzes back to back, one life each',
   science: 'Five science quizzes back to back, one life each',
   pricecheck: 'Five price guesses, one card',
-  gauntlet: 'Seven trivia categories, one life each',
-  triviaencore: 'The four trivia banks that sat out the Gauntlet',
+  gauntlet: 'Six trivia categories, one life each',
+  triviaencore: 'The five trivia banks that sat out the Gauntlet',
   passport: 'Ping, sizes, Flank, Span, a passport',
 };
 const RUN_GLYPH = 'M3 7h8v4H3zM13 13h8v4h-8zM11 9h4v6';

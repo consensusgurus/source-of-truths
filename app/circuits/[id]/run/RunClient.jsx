@@ -369,7 +369,28 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // finished today as banked so the run steps over it rather than serving a
   // second attempt the board would ignore.
   useEffect(() => {
-    const saved = readJson(STORE_KEY);
+    let saved = readJson(STORE_KEY);
+    // A ROSTER THAT CHANGED UNDER A SAVED RUN (owner, 2026-11-15: the trivia
+    // split went to Gauntlet six / Encore five mid-day). A run saved against
+    // the old lineup is re-laid onto today's sections by KEY: every result
+    // whose quiz is still in this run is kept, a quiz that left is dropped
+    // (its answers now count where its bank sits), and a quiz that joined is
+    // banked off its own save when it was already played. The board is built
+    // from each game's own rows, so the score always matches what was played.
+    if (saved && saved.v === 1 && Array.isArray(saved.results) && !saved.practice
+      && saved.results.some((x, idx) => !sections[idx] || !x || sections[idx].key !== x.key)) {
+      const byKey = {};
+      for (const x of saved.results) if (x && x.key) byKey[x.key] = x;
+      const results = [];
+      for (const s of sections) {
+        if (byKey[s.key]) results.push(byKey[s.key]);
+        else if (alreadyDone(s.key, s.num)) results.push({ key: s.key, score: bankedScore(s.key, s.num), total: s.questions.length, status: 'banked', secs: 0, ...bankedMiss(s.key, s.num) });
+        else break;
+      }
+      const all = results.length === sections.length;
+      saved = { ...freshRun(), t0: saved.t0 || null, si: results.length, results, phase: all ? 'done' : 'idle' };
+      writeJson(STORE_KEY, saved);
+    }
     if (saved && saved.v === 1 && Array.isArray(saved.results)) {
       const next = { ...freshRun(), ...saved };
       rRef.current = next;

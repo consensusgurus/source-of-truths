@@ -405,8 +405,8 @@ const ALL_ID = 'all';
 // THE QUIZ RUNS THAT FOLD THEIR GAMES ON ALL PUZZLES (owner, 2026-11-05).
 const FOLD_RUNS = ['gauntlet', 'triviaencore', 'science', 'english'];
 const RUN_TAGS = {
-  gauntlet: 'Seven trivia categories back to back',
-  triviaencore: 'The four that sat out the Gauntlet',
+  gauntlet: 'Six trivia categories back to back',
+  triviaencore: 'The five that sat out the Gauntlet',
   science: 'Body, life, space, chemistry, inventors',
   english: 'Spelling, vocab, idioms, origins, grammar',
 };

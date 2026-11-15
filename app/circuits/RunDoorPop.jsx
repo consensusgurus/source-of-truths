@@ -48,17 +48,17 @@ export const RUN_DOORS = {
     tags: [['Pricer', '#4ade80'], ['Dealer', '#fbbf24'], ['Realtor', '#7dd3fc'], ['Agent', '#f472b6'], ['Curator', '#c4b5fd']],
   },
   gauntlet: {
-    href: '/trivia', name: 'Trivia Gauntlet', eyebrow: 'Daily run · Seven categories',
-    body: 'Seven daily trivia quizzes back to back, one life in each: a topic in depth, a streak of anything at all, and five that rotate daily through food and drink, geography, science, sport, the arts, history, business, the screen and famous lines.',
-    go: 'Run all seven', accent: '#7dd3fc',
-    tags: [['Deep', '#7dd3fc'], ['Atlas', '#6ee7b7'], ['Sci', '#5eead4'], ['Art', '#fb7185'], ['History', '#e8b43a'], ['Sport', '#bef264'], ['Streak', '#e879f9']],
+    href: '/trivia', name: 'Trivia Gauntlet', eyebrow: 'Daily run · Six categories',
+    body: 'Six daily trivia quizzes back to back, one life in each: a topic in depth, a streak of anything at all, and four that rotate daily through food and drink, geography, science, sport, the arts, history, business, the screen and famous lines.',
+    go: 'Run all six', accent: '#7dd3fc',
+    tags: [['Deep', '#7dd3fc'], ['Atlas', '#6ee7b7'], ['Sci', '#5eead4'], ['Art', '#fb7185'], ['Sport', '#bef264'], ['Streak', '#e879f9']],
   },
   // THE TRIVIA ENCORE (owner, 2026-10-14). Listed so every run's end card
   // (MoreRuns) offers it while unplayed. Its quizzes change daily, so
   // MoreRuns reads them live from lib/circuits; these tags are a fallback.
   triviaencore: {
-    href: '/triviaencore', name: 'Trivia Encore', eyebrow: 'Daily run \u00b7 Four quizzes',
-    body: 'The four trivia quizzes that sat out today\u2019s Gauntlet, back to back, one life in each.',
+    href: '/triviaencore', name: 'Trivia Encore', eyebrow: 'Daily run \u00b7 Five quizzes',
+    body: 'The five trivia quizzes that sat out today\u2019s Gauntlet, back to back, one life in each.',
     go: 'Take the Encore', accent: '#e8b43a',
     tags: [['Encore', '#e8b43a']],
   },

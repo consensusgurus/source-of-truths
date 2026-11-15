@@ -261,6 +261,27 @@ one life, twenty seconds a question. Key `foodie`, Trivia, accent `#c2410c`, no 
 **Deep's topic on the stage (same push):** `GauntletStage` takes a `kicker`, a faint uppercase line
 above the question. Deep passes its day topic, on its own stage and inside the Gauntlet run.
 
+## The even split: Gauntlet six, Encore five (owner, 2026-11-15)
+
+Owner, 2026-11-15: "rework trivia gauntlet and trivia encore to more evenly split the categories.
+encore will be 5, gauntlet 6 maintaining deep and streak." Nine pool banks cannot split evenly, so
+from `TRIVIA_EVEN_FROM` (2026-11-15) `triviaInFor(day)` deals FOUR pool banks into the Gauntlet
+(plus Streak and Deep, six quizzes, 155 asked) and the other FIVE into the Encore (125 asked).
+Same window and anchor as the nine-bank era, so each day's first four stay put and the fifth moves
+to the Encore; every bank plays the Gauntlet four days in nine.
+
+- **Went live mid-day on 11-15 by owner order** ("fix it live for today, adjust scores to match
+  elements completed"). Both boards are built from each game's own rows through `circuitKeysFor`,
+  so nothing is rewritten: a player who had run seven keeps every answer, counted where its bank
+  now sits (that day Script moved to the Encore). RunClient re-lays a saved run whose results no
+  longer match today's sections by KEY (keeps what is still in the run, banks a joined quiz off
+  its own save), so a finished run stays finished.
+- **Copy says six / five everywhere:** circuit blurbs and share lines, run page metadata,
+  RunDoorPop, EntryDoor, StageToday, the Trivia category page. Share cards count the banks.
+- **Title ladders rescaled** in lib/run-titles.js: Gauntlet 17/30/43/60/82 (155/180 of the old
+  cutoffs), Encore 14/24/35/49/66 (125/180).
+- `scripts/verify-circuits.mjs` carries a third era (6 and 5, four days in nine).
+
 ## Atlas: a geography question needs a PLACE in it (owner, 2026-09-02)
 
 Reported as "why was there a question about precipitation in Atlas today?" Day 9 served

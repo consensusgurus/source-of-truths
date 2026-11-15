@@ -283,6 +283,9 @@ const SPLIT_POOL_V1 = ['atlas', 'sci', 'sport', 'art', 'script', 'history', 'biz
 const SPLIT_POOL = ['foodie', 'atlas', 'sci', 'sport', 'art', 'script', 'history', 'biz', 'quotes'];
 const SPLIT_FROM = '2026-10-15';
 const FOODIE_FROM_LOCAL = '2026-10-27';
+// THE EVEN SPLIT (owner, 2026-11-15): four pool banks in the Gauntlet (six
+// quizzes with Streak and Deep), five in the Encore. Same window and anchor.
+const EVEN_FROM_LOCAL = '2026-11-15';
 function splitLocal(c, iso) {
   if (c.split === 'out' && iso < SPLIT_FROM) return iso === '2026-10-14' ? ['sci', 'art', 'history'] : [];
   if (c.split === 'in' && iso < SPLIT_FROM) return c.before.keys.slice();
@@ -293,7 +296,7 @@ function splitLocal(c, iso) {
   const n = live.length;
   const at = ((days % n) + n) % n;
   const inn = [];
-  for (let i = 0; i < 5 && i < n; i += 1) inn.push(live[(at + i) % n]);
+  for (let i = 0; i < (iso >= EVEN_FROM_LOCAL ? 4 : 5) && i < n; i += 1) inn.push(live[(at + i) % n]);
   if (c.split === 'out') return live.filter((k) => !inn.includes(k));
   return c.keys.filter((k) => !SPLIT_POOL.includes(k) || inn.includes(k));
 }
@@ -305,21 +308,24 @@ function splitLocal(c, iso) {
   if (g && e) {
     // Two eras: eight banks from 2026-10-15 (Encore three), nine from
     // 2026-10-27 when Foodie joined (Encore four).
-    for (const [pool, start, ec] of [[SPLIT_POOL_V1, Date.UTC(2026, 9, 15), 3], [SPLIT_POOL, Date.UTC(2026, 9, 27), 4]]) {
+    // A third era from 2026-11-15, the even split: Gauntlet six, Encore five.
+    for (const [pool, start, ec, gc, inExp] of [[SPLIT_POOL_V1, Date.UTC(2026, 9, 15), 3, 7, 0], [SPLIT_POOL, Date.UTC(2026, 9, 27), 4, 7, 5], [SPLIT_POOL, Date.UTC(2026, 10, 15), 5, 6, 4]]) {
       const inCt = Object.fromEntries(pool.map((k) => [k, 0]));
       for (let i = 0; i < pool.length; i += 1) {
         const iso = new Date(start + i * 86400000).toISOString().slice(0, 10);
         if (pool === SPLIT_POOL_V1 && iso >= FOODIE_FROM_LOCAL) break;
         const gk = circuitKeysFor(g.id, iso);
         const ek = circuitKeysFor(e.id, iso);
-        if (gk.length !== 7) fails.push(`${g.id}: ${iso} plays ${gk.length}, expected 7`);
-        if (ek.length !== ec) fails.push(`${e.id}: ${iso} plays ${ek.length}, expected ${ec}`);
+        const gExp = iso >= EVEN_FROM_LOCAL ? 6 : gc;
+        const eExp = iso >= EVEN_FROM_LOCAL ? 5 : ec;
+        if (gk.length !== gExp) fails.push(`${g.id}: ${iso} plays ${gk.length}, expected ${gExp}`);
+        if (ek.length !== eExp) fails.push(`${e.id}: ${iso} plays ${ek.length}, expected ${eExp}`);
         if (ek.some((k) => gk.includes(k))) fails.push(`${iso}: a bank is in both the Gauntlet and the Encore`);
         const both = [...gk, ...ek].filter((k) => pool.includes(k)).sort().join();
         if (both !== [...pool].sort().join()) fails.push(`${iso}: Gauntlet + Encore do not cover the trivia pool`);
         for (const k of gk) if (k in inCt) inCt[k] += 1;
       }
-      if (pool === SPLIT_POOL) for (const [k, v] of Object.entries(inCt)) if (v !== 5) fails.push(`${k}: in the Gauntlet ${v} of ${pool.length} days, expected 5`);
+      if (inExp && start >= Date.UTC(2026, 10, 15)) for (const [k, v] of Object.entries(inCt)) if (v !== inExp) fails.push(`${k}: in the Gauntlet ${v} of ${pool.length} days, expected ${inExp}`);
     }
     if (circuitKeysFor(g.id, '2026-10-26').includes('foodie') || circuitKeysFor(e.id, '2026-10-26').includes('foodie')) fails.push('foodie: dealt before it launched');
     if (circuitKeysFor(e.id, '2026-10-13').length) fails.push(`${e.id}: plays before it launched`);
