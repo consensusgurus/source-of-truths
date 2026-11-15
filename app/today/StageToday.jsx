@@ -7216,12 +7216,16 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
    banners instead (owner, 2026-10-09). */
 .sty-mgchips{display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:12px;vertical-align:middle;}
 /* The phone category filters: one row that flicks sideways, no visible scroll bar (owner, 2026-11-10). */
-.mph-cf{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;min-width:0;max-width:100%;margin:2px 0 10px;}
+.mph-cf{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;min-width:0;max-width:100%;margin:2px 0 10px;padding:1px 1px 3px;}
+/* A ROW THAT SCROLLS SIDEWAYS CLIPS ITS OWN EDGES, and on an iPhone that shaves
+   the bottom outline of the pills inside it (owner report, 2026-11-15, the Kind
+   row; the same fault as Jump To on 11-14). Every such row carries padding for
+   its outlines and takes it back as margin. */
 .mph-cf::-webkit-scrollbar{display:none;}
 .mph-cf .sty-mgc{flex:none;white-space:nowrap;font-size:13px;padding:7px 13px;}
 /* Inked like the Sort / View switches beside them (owner, 2026-11-13): no accent fill. */
 .sty-mph .mph-kf{display:flex;flex-direction:column;gap:4px;min-width:0;margin-top:10px;}
-.sty-mph .mph-kf .mph-cf{margin:0;}
+.sty-mph .mph-kf .mph-cf{padding:1px 1px 4px;margin:-1px -1px -4px;}
 .sty-mph .mph-kf .sty-mgc{border:1px solid var(--stg-ink);background:transparent;color:var(--stg-ink);font-size:12px;font-weight:800;line-height:1.26;padding:7px 13px 8px;}
 .sty-mph .mph-kf .sty-mgc i{color:inherit;opacity:.7;}
 .sty-mph .mph-kf .sty-mgc.on{background:var(--stg-ink);border-color:var(--stg-ink);color:var(--stg-ground, #fff);}
