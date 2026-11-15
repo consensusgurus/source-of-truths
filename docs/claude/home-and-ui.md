@@ -2842,3 +2842,16 @@ Owner picked A from the entry mockups, with two tiles in place of one hero. Buil
 - **Top Run:** the run whose games average the most unique players (the door has no per-run board read).
 - The door now asks for the counts as soon as it is up, curtain included. The pick is made once when the
   page shows (after `START_WAIT_MS` without counts, in the pools' own order) and never changes.
+
+## Categories by default, Newest, and the phone's first screen (owner, 2026-11-15)
+
+- **Categories are the default index** on the home and on the puzzle pages' nav (`ixLens` starts `'cat'`;
+  Skills was the default from 2026-10-18). A reader who picked Skills keeps it (`sot_home_ix`).
+- **Newest is the fourth sort** (Easy to Hard, Popular, A to Z, Newest; "New" on a phone), stored like
+  Popular. Launch day is a game's first `PREMIERES` line or its `LAUNCH_DAILY` day (`LAUNCHED` in
+  StageToday.jsx). A game with neither predates the record and sorts after every dated one, A to Z.
+- **Runs never sort A to Z.** The top row's runs lead with what is being played (finishes in 24 hours,
+  then players today) whatever the puzzle sort; Easy to Hard still orders them by rating. A to Z had
+  made the row alphabetical for nearly everyone, so the most played run was not first.
+- **The phone's first screen is the two Top rows and the tiles.** Just off it, in order: the Categories
+  / Skills switch, the gold ticket bar, the ranks, Everything Else.

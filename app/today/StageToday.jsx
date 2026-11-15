@@ -34,7 +34,7 @@ import { cycleSiteLook, useStageLook, isColorLook } from '@/lib/stage-look';
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { KINDS, KIND_OF_KEY, sudokuSizeN } from '@/lib/category-kinds';
 import { SUDOKU_COLOUR } from '@/lib/colour-sudoku';
-import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys, dailyScoreText } from '@/lib/daily-games';
+import { DAILY_GAMES as ALL_DAILY_GAMES, DAILY_GAME_MAP, liveDailyKeys, dailyScoreText, PREMIERES, LAUNCH_DAILY } from '@/lib/daily-games';
 import { gameBlurb } from '@/lib/game-blurbs';
 
 // THE LIVE ROSTER, not the whole registry. A retired game stays in DAILY_GAMES
@@ -421,6 +421,19 @@ const TILES_KEY = 'sot_home_tiles';
 // Trivia). All Puzzles shows all five.
 // Math Gauntlet restored beside the Trivia Gauntlet (owner, 2026-10-13 evening).
 // Trivia Encore beside the Gauntlet (owner, 2026-10-14).
+// NEWEST (owner, 2026-11-15: "we also need a Newest sort on main page"). A
+// game's launch day is its first PREMIERES line or its LAUNCH_DAILY day. A game
+// with neither launched before launches were recorded: it sorts after every
+// dated one, A to Z.
+const LAUNCHED = (() => {
+  const m = {};
+  try {
+    for (const x of PREMIERES) if (x && x.key && x.from && (!m[x.key] || x.from < m[x.key])) m[x.key] = x.from;
+    for (const k of Object.keys(LAUNCH_DAILY || {})) if (!m[k]) m[k] = LAUNCH_DAILY[k];
+  } catch (e) { /* no dates: Newest reads A to Z */ }
+  return m;
+})();
+const SORTS_KEPT = new Set(['pop', 'diff', 'new']);
 const TOP_WAIT_MS = 1500;   // how long the phone's Top Puzzles row waits for the week's counts
 const TOP_PUZZLES = 25;
 const PILL_CIRCUITS = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'dojocolor', 'crossed', 'room', 'spacecadet', 'duediligence', 'eagleeye'];   // dojocolor beside the Dojo (2026-11-08)
@@ -1690,12 +1703,13 @@ export default function StageToday() {
   const skillCats = useMemo(() => SKILLS
     .map((s) => ({ cat: SK_PRE + s.id, games: DAILY_GAMES.filter((g) => hasSkill(g.key, s.id)).sort((a, b) => a.name.localeCompare(b.name)) }))
     .filter((c) => c.games.length), []);
-  // SKILLS ARE THE DEFAULT INDEX until the reader picks Categories, and the
-  // pick is remembered per browser. Read in a layout effect so a reader who
-  // chose Categories never sees the skills flash first.
-  const [ixLens, setIxLens] = useState('skill');
+  // CATEGORIES ARE THE DEFAULT INDEX (owner, 2026-11-15: "categories must be
+  // default"; Skills was the default from 2026-10-18). A reader who PICKED
+  // Skills keeps it: the pick is remembered per browser and read in a layout
+  // effect, so they never see the categories flash first.
+  const [ixLens, setIxLens] = useState('cat');
   useIsoLayoutEffect(() => {
-    try { if (localStorage.getItem(IX_KEY) === 'cat') setIxLens('cat'); } catch (e) { /* storage off */ }
+    try { if (localStorage.getItem(IX_KEY) === 'skill') setIxLens('skill'); } catch (e) { /* storage off */ }
   }, []);
   // SWITCHING THE LENS WITH A PANE OF THE OTHER LENS OPEN COLLAPSES THE INDEX
   // (owner, 2026-10-19). A category pane has no button in the skill index (and a
@@ -2679,7 +2693,7 @@ export default function StageToday() {
   // A to Z; a pick made now holds.
   const [sortBy, setSortBy] = useState('az');
   useEffect(() => {
-    try { const v = localStorage.getItem(SORT_KEY); if (v === 'pop' || v === 'diff') setSortBy(v); } catch (e) { /* storage off */ }
+    try { const v = localStorage.getItem(SORT_KEY); if (SORTS_KEPT.has(v)) setSortBy(v); } catch (e) { /* storage off */ }
   }, []);
   // EASY TO HARD (owner, 2026-10-18): each game's rating for the week, 1 to 5,
   // re-rated every Sunday night from the seven days before (lib/daily-difficulty.js).
@@ -2748,14 +2762,14 @@ export default function StageToday() {
   // default page view): it takes the reader's stored sort like every pane.
   useEffect(() => {
     if (isSkillId(paneOn)) {
-      try { const sv = localStorage.getItem(SORT_KEY); setSortBy(sv === 'pop' || sv === 'diff' ? sv : 'az'); } catch (e) { /* storage off */ }
+      try { const sv = localStorage.getItem(SORT_KEY); setSortBy(SORTS_KEPT.has(sv) ? sv : 'az'); } catch (e) { /* storage off */ }
       let vv = null; try { vv = localStorage.getItem(VIEW_KEY); } catch (e) { /* storage off */ }
       setViewBy(vv === 'tile' ? 'tile' : 'det');
       return;
     }
     try {
       const sv = localStorage.getItem(SORT_KEY);
-      setSortBy(sv === 'pop' || sv === 'diff' ? sv : 'az');
+      setSortBy(SORTS_KEPT.has(sv) ? sv : 'az');
       const vv = localStorage.getItem(VIEW_KEY);
       setViewBy(VIEWS.includes(vv) ? vv : null);
     } catch (e) { /* storage off */ }
@@ -2779,6 +2793,8 @@ export default function StageToday() {
       <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}
         title="Most played across the site today">Popular</button>
       <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A to Z</button>
+      <button type="button" aria-pressed={sortBy === 'new'} onClick={() => pickSort('new')}
+        title="The most recently launched puzzles first">Newest</button>
       {paneOn === 'Sudoku' ? (
         <>
           <button type="button" aria-pressed={sortBy === 'small'} onClick={() => pickSort('small')}
@@ -3222,6 +3238,9 @@ export default function StageToday() {
     if (sortBy === 'small' || sortBy === 'large') {
       const dir = sortBy === 'small' ? 1 : -1;
       return list.slice().sort((a, b) => (dir * (sudokuSizeN(a.key) - sudokuSizeN(b.key))) || a.name.localeCompare(b.name));
+    }
+    if (sortBy === 'new') {
+      return list.slice().sort((a, b) => String(LAUNCHED[b.key] || '').localeCompare(String(LAUNCHED[a.key] || '')) || a.name.localeCompare(b.name));
     }
     if (sortBy === 'diff') {
       if (!diff) return list;
@@ -3879,8 +3898,12 @@ export default function StageToday() {
     const wk = (c) => c.games.reduce((t, g) => t + ((w && w[g.key]) || 0), 0);
     const df = (c) => { const v = c.games.map((g) => (diff ? diff[g.key] : 0)).filter(Boolean); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 9; };
     const base = (a, b) => PILL_CIRCUITS.indexOf(a.id) - PILL_CIRCUITS.indexOf(b.id);
-    const by = sortBy === 'az' ? (a, b) => a.name.localeCompare(b.name)
-      : sortBy === 'diff' ? (a, b) => (diff ? df(a) - df(b) : 0) || base(a, b)
+    // RUNS NEVER SORT A TO Z (owner report, 2026-11-15: the Trivia Gauntlet was
+    // the most played run and was not first). A to Z is the default sort, so
+    // the top row was alphabetical for nearly everyone. The puzzle sort orders
+    // the puzzles; the runs lead with what is being played, as ruled 2026-11-08
+    // (finishes in 24 hours, then players today). Easy to Hard still applies.
+    const by = sortBy === 'diff' ? (a, b) => (diff ? df(a) - df(b) : 0) || base(a, b)
         : (a, b) => (done24(b) - done24(a)) || (((runStat[b.id] || {}).players || 0) - ((runStat[a.id] || {}).players || 0)) || (w ? wk(b) - wk(a) : 0) || base(a, b);
     if (polyRun && list.some((c) => polyRun.legs.some((l) => l.id === c.id))) list.push(polyRun);
     return list.sort((a, b) => ((runFull(a) ? 1 : 0) - (runFull(b) ? 1 : 0)) || by(a, b));
@@ -4842,11 +4865,20 @@ export default function StageToday() {
                   <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}><b>All Puzzles</b><em className="pg"><span>{alphaDone} of {alpha.length}</span><i aria-hidden="true"><u style={{ width: `${alpha.length ? Math.round((alphaDone / alpha.length) * 100) : 0}%` }} /></i></em></button>
                   <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}><b>My Puzzles</b>{pinned.length ? (() => { const pd = pinned.filter((g) => done.has(g.key)).length; return <em className="pg"><span>{pd} of {pinned.length}</span><i aria-hidden="true"><u style={{ width: `${Math.round((pd / pinned.length) * 100)}%` }} /></i></em>; })() : <em>Star any puzzle</em>}</button>
                 </div>
+                </div>
                 <div className="mph-seg" role="group" aria-label="Group puzzles by">
                   <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
                   <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
                 </div>
-                </div>
+                {/* JUST OFF THE FIRST SCREEN (owner, 2026-11-15): the Categories /
+                    Skills switch, the gold ticket bar, the ranks, then Everything
+                    Else. The first screen is the two Top rows and the tiles. */}
+                {mDraw ? (
+                  <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
+                    <span>{(() => { const n = who && mTix.count != null ? Number(mTix.count) || 0 : 0; return <><b>{who && mTix.count == null ? '\u2013' : formatTickets(n)} {n === 1 ? 'Ticket' : 'Tickets'}</b> for the {DRAWING.prizeLabel} Drawing</>; })()}</span>
+                    <u>Ways to Earn</u>
+                  </a>
+                ) : null}
                 {/* UNDER THE TILES (owner, 2026-10-25): the ranks, then the drawing
                     with the reader's tickets in it. The progress bar is retired. */}
                 <div className={'sty-mst' + (who ? '' : ' guest')}>
@@ -4863,15 +4895,6 @@ export default function StageToday() {
                     <a className="join" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Pick a name to keep a rank and earn tickets</a>
                   )}
                 </div>
-                {/* THE DRAWING SITS UNDER THE RANKS, off the first screen (owner,
-                    2026-11-15: "take back space by moving the gold ticket line
-                    down off screen"). The Top rows took its place. */}
-                {mDraw ? (
-                  <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
-                    <span>{(() => { const n = who && mTix.count != null ? Number(mTix.count) || 0 : 0; return <><b>{who && mTix.count == null ? '\u2013' : formatTickets(n)} {n === 1 ? 'Ticket' : 'Tickets'}</b> for the {DRAWING.prizeLabel} Drawing</>; })()}</span>
-                    <u>Ways to Earn</u>
-                  </a>
-                ) : null}
                 <div className="mph-lab">Everything Else</div>
                 <div className="mph-list">
                   <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<em>{circuits.filter(runFull).length} of {circuits.length}</em><span>&rarr;</span></button>
@@ -5048,6 +5071,7 @@ export default function StageToday() {
                           <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}>Popular</button>
                           <button type="button" aria-pressed={sortBy === 'diff'} onClick={() => pickSort('diff')}><span className="sl">Easy to Hard</span><span className="ss">Easy</span></button>
                           <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A to Z</button>
+                          <button type="button" aria-pressed={sortBy === 'new'} onClick={() => pickSort('new')}><span className="sl">Newest</span><span className="ss">New</span></button>
                         </div>
                       </div>
                       <div className="mph-cg">
@@ -8659,6 +8683,8 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-flick > .mph-tp b{font-size:18.5px;font-weight:800;line-height:1.18;letter-spacing:-0.01em;padding-bottom:.08em;}
   .sty-mph .mph-flick > .mph-tp em{font-size:13.5px;line-height:1.3;}
   .sty-mph > .sty-mdraw{margin-top:10px;}
+  .sty-mph > .mph-seg{margin-top:14px;}
+  .sty-mph > .mph-seg button{padding:9px 0 10px;font-size:13.5px;}
   .sty-mph .mph-flick > .mph-tp.done{background:transparent;border-color:var(--stg-ink);color:var(--stg-ink);}
 }
 @media (max-width:900px) and (orientation:landscape) and (max-height:600px){

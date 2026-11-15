@@ -390,7 +390,7 @@ export default function LayoutCInner({ gameKey }) {
   const [tick, setTick] = useState(0);
   const [flag, setFlag] = useState(true);
   const [openCat, setOpenCat] = useState(null);
-  const [ixLens, setIxLens] = useState('skill');
+  const [ixLens, setIxLens] = useState('cat');   // Categories are the default (owner, 2026-11-15)
   const capRef = useRef(null);
   const [theme, setTheme] = useStageTheme();
   const [siteLook] = useStageLook();
@@ -576,7 +576,7 @@ export default function LayoutCInner({ gameKey }) {
     } catch (e) {}
   }, []);
   useIsoLayoutEffect(() => {
-    try { if (localStorage.getItem(IX_KEY) === 'cat') setIxLens('cat'); } catch (e) {}
+    try { if (localStorage.getItem(IX_KEY) === 'skill') setIxLens('skill'); } catch (e) {}
   }, []);
 
   useEffect(() => {
