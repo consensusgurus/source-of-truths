@@ -224,6 +224,9 @@ const AX_CSS = `
 .ax-k{flex:1;max-width:36px;height:46px;border-radius:9px;border:1px solid var(--pst-ink);background:color-mix(in srgb, var(--pst-ink) 6%, transparent);font-size:17px;font-weight:800;padding:0;-webkit-touch-callout:none;}
 .ax-k:active{background:var(--pst-acc);color:var(--pst-on-acc);}
 .ax-k.w{max-width:58px;flex:1.6;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.ax.wide{max-width:980px;}
+.ax-two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;align-items:stretch;}
+.ax-two .ax-psg{height:clamp(220px, calc(100svh - 430px), 420px);max-height:none;}
 `;
 
 export default function AnonClient({ puzzles = [], forceNum = null }) {
@@ -278,6 +281,19 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   // below the fold. The height is measured, never summed.
   const axRef = useRef(null);
   const [axFitH, setAxFitH] = useState(0);
+  // PASSAGE AND ANSWERS SIDE BY SIDE (owner, 2026-11-15): on a desktop or any
+  // screen wide enough, the passage and the full answer list sit next to each
+  // other so neither hides the other; the Passage / All answers toggle is only
+  // for narrow screens.
+  const [axWide, setAxWide] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(min-width: 900px) and (min-height: 560px)');
+    const on = () => setAxWide(mq.matches);
+    on();
+    if (mq.addEventListener) mq.addEventListener('change', on); else mq.addListener(on);
+    return () => { if (mq.removeEventListener) mq.removeEventListener('change', on); else mq.removeListener(on); };
+  }, []);
   // The list keeps the answer you are on in view.
   useEffect(() => {
     const box = axListRefTop.current;
@@ -1054,14 +1070,39 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
   }, [touchInput, narrow, playing, g.t0]);
   const axFit = touchInput && narrow && playing && !!g.t0;
   const anStage = (
-    <div className={`ax${axFit ? ' fit' : ''}`} ref={axRef} style={axFit && axFitH ? { height: axFitH } : undefined}>
+    <div className={`ax${axFit ? ' fit' : ''}${axWide ? ' wide' : ''}`} ref={axRef} style={axFit && axFitH ? { height: axFitH } : undefined}>
       <div className="ax-spine" aria-label="The author so far">
         {spineLetters.map((c, i) => (
           <button key={i} type="button" className={(c ? 'f' : '') + (curAnswer === i ? ' now' : '')}
             aria-label={`Answer ${i + 1}`} onClick={() => axGo(A[i].c[0], 'b')}>{c}</button>
         ))}
       </div>
-      {axPane === 'a' ? (
+      {axWide ? (
+        <div className="ax-two">
+          <div className="ax-psg" aria-label="The passage">
+        {tokens.map((tk, i) => (
+          <span className="ax-w" key={i}>
+            {tk.map((t, j) => (t.p
+              ? <span className="p" key={j}>{t.p}</span>
+              : <span key={j} onClick={() => axGo(t.n, 'q')}
+                  className={(t.n === cur && playing ? 'cur' : (owner[t.n] === curAnswer && playing ? 'now' : '')) + (axMiss(t.n) ? ' miss' : '')}>
+                  {(playing ? fill[t.n] : (fill[t.n] || sol[t.n])) || ''}
+                </span>))}
+          </span>
+        ))}
+      </div>
+          <div className="ax-psg ax-list" aria-label="All answers" ref={axListRef}>
+          {A.map((a, ai) => (
+            <button type="button" key={ai} className={`ax-row${ai === curAnswer ? ' on' : ''}${solved[ai] ? ' ok' : ''}`}
+              onClick={() => { setView('b'); focusCell(a.c[0], 'b'); }}>
+              <span className="ax-tag">{ai < PUZZLE.spine ? (spineLetters[ai] || '?') : ''}</span>
+              <span className="ax-rl">{a.cat || 'no category'} &middot; {a.w.length}</span>
+              <span className="ax-rb">{a.c.map((n) => <i key={n} className={axMiss(n) ? 'miss' : undefined}>{(playing ? fill[n] : (fill[n] || sol[n])) || ''}</i>)}</span>
+            </button>
+          ))}
+        </div>
+        </div>
+      ) : axPane === 'a' ? (
         <div className="ax-psg ax-list" aria-label="All answers" ref={axListRef}>
           {A.map((a, ai) => (
             <button type="button" key={ai} className={`ax-row${ai === curAnswer ? ' on' : ''}${solved[ai] ? ' ok' : ''}`}
@@ -1105,12 +1146,12 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
         </div>
         {solved[curAnswer] && <span className="ax-ok">Solved</span>}
       </div>
-      <div className="ax-acts">
+      {!axWide && <div className="ax-acts">
         <span className="ax-seg" role="tablist">
           <button type="button" role="tab" aria-selected={axPane === 'q'} className={axPane === 'q' ? 'on' : ''} onClick={() => setAxPane('q')}>Passage</button>
           <button type="button" role="tab" aria-selected={axPane === 'a'} className={axPane === 'a' ? 'on' : ''} onClick={() => setAxPane('a')}>All answers</button>
         </span>
-      </div>
+      </div>}
       {touchInput && playing && (
         <div className="ax-kb">
           {ROWS.map((row, ri) => (
@@ -1270,7 +1311,7 @@ export default function AnonClient({ puzzles = [], forceNum = null }) {
           .an-kr button:active{background:${STAGE ? 'var(--stg-line2,rgba(255,255,255,0.17))' : '#cfd6e2'};}
         ` }} />
 
-        <div style={{ maxWidth: split ? 1180 : 900, margin: '0 auto' }}>
+        <div style={{ maxWidth: preStart && STAGE ? 640 : (split ? 1180 : 900), margin: '0 auto' }}>
           {!LOFT && (
           <DailyMasthead
             slug="anon"
