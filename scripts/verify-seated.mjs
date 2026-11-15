@@ -17,6 +17,7 @@
 import { checker, checkDays, dowOf } from './six-verify-common.mjs';
 import { ruleState, solved, solutions, bounds, rankOf, RUNGS, tagOf, ringKey, partKey } from '../lib/seated-engine.js';
 import { SPEC, TYPES } from './gen-seated-spec.mjs';
+import { GUESTS } from './gen-seated.mjs';
 const { PUZZLES } = await import(new URL('../app/seated/puzzles.js', import.meta.url));
 const { bad, done } = checker('seated');
 const DASH = String.fromCharCode(8212);
@@ -29,7 +30,9 @@ for (const p of PUZZLES) {
   if (N !== p.tables.reduce((a, t) => a + t.seats, 0)) { bad(p.num, `${N} guests and a different number of chairs`); continue; }
   const short = new Set();
   for (const g of p.guests) {
-    if (!g.n || g.n.length > 5) bad(p.num, `the chair name ${g.n} is longer than five letters`);
+    if (!g.n || g.n.length > 7) bad(p.num, `the chair name ${g.n} is longer than seven letters`);
+    // from board 3 on every guest is one of Sudoclue's cast, so the client has a portrait to draw
+    if (p.num > 2 && (!GUESTS.includes(g.n) || g.full !== g.n)) bad(p.num, `${g.n} is not one of Sudoclue's cast`);
     if (!g.full.includes(g.n)) bad(p.num, `${g.full} does not contain the chair name ${g.n}`);
     if (short.has(g.n)) bad(p.num, `two guests are called ${g.n}`); short.add(g.n);
     if (!Number.isInteger(g.hue) || g.hue < 0 || g.hue >= 360) bad(p.num, `${g.n} has no colour`);

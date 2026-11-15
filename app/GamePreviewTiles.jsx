@@ -330,11 +330,6 @@ const Errands = () => (
   <g><path d="M112 22H184M112 46H184M112 70H184M124 10V82M148 10V82M172 10V82" className="sm3" /><path d="M124 70H148V46H172V22" className="s3" />
     <rect x={116} y={62} width={16} height={16} rx={3} className="d" /><circle cx={148} cy={46} r={7.5} className="w" /><circle cx={172} cy={22} r={7.5} className="w" /></g>
 );
-// a route through town: home, three stops joined along the streets
-const Errands = () => (
-  <g><path d="M112 68h40V40h44V20" className="d6" fill="none" /><rect x={104} y={60} width={16} height={16} rx={4} className="sm" />
-    <circle cx={152} cy={68} r={8} className="sm" /><circle cx={152} cy={40} r={8} className="d6" fill="none" /><circle cx={196} cy={20} r={8} className="sm" /></g>
-);
 // three grocery bags side by side, filled to different heights
 const Bag = () => (
   <g><path d="M134 28v-8a14 14 0 0128 0v8" className="s2" /><path d="M118 28h60l-5 50h-50z" className="w" />

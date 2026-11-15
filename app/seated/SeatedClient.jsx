@@ -22,6 +22,9 @@ import React, { useState } from 'react';
 import SimpleDaily from '../SimpleDaily';
 import { endSolved } from '@/lib/end-verdict';
 import { seatOf, ruleState, seatedCount, tagOf, rankOf } from '@/lib/seated-engine';
+// the guests are Sudoclue's cast, with the same drawn portraits (owner, 2026-11-15: "re use the names we have
+// from sudoclue ... and use the same images ... people images")
+import { CAST, portrait } from '@/lib/sudoclue-art';
 
 const BAND = { intro: 'Intro', gentle: 'Gentle', moderate: 'Moderate', tough: 'Tough', sunday: 'Sunday Edition' };
 const STEP = 140, RUNG_H = 8;
@@ -53,20 +56,27 @@ const CSS = `
 .st-board{border:1px solid var(--st-ink);border-radius:10px;background:var(--st-bg);padding:6px;}
 .st-board svg{display:block;width:100%;height:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
 .st-board text{font-family:'Manrope',system-ui,sans-serif;pointer-events:none;}
-.st-top{fill:var(--st-grey);stroke:var(--st-ink);}
+.st-top{fill:#fffdf6;stroke:#141414;}
+.st-hem{fill:none;stroke:#e3ddcb;}
+.st-plate{fill:#ffffff;stroke:#b9b4a6;stroke-width:.8;}.st-plate.in{fill:none;stroke:#dedacd;}
+.st-cut{stroke:#b9b4a6;stroke-width:1.2;stroke-linecap:round;fill:none;}
 .st-chair{cursor:pointer;}
-.st-chair circle.c{fill:var(--st-bg);stroke:var(--st-ink);}
-.st-chair.has circle.c{fill:hsl(var(--h) var(--st-sat) var(--st-lit));}
-.st-chair.sel circle.c{fill:var(--st-ink);}
-.st-chair.sel text{fill:var(--st-bg);}
-.st-chair.open circle.c{fill:var(--st-acc);}
-.st-chair text{font-size:12px;font-weight:800;fill:#141414;}
+.st-seat{fill:#e2b77f;stroke:#141414;}.st-back{fill:#b9844a;stroke:#141414;}
+.st-chair.open .st-seat{fill:var(--st-acc);}
+.st-face{fill:hsl(var(--h) var(--st-sat) var(--st-lit));}
+.st-ini{font-weight:800;fill:#141414;dominant-baseline:middle;}
+.st-ring{fill:none;stroke:#141414;}
+.st-chair.sel .st-ring{stroke:var(--st-ink);stroke-width:3.5;}
+.st-tag{fill:#ffffff;stroke:#141414;stroke-width:.9;}
+.st-chair.sel .st-tag{fill:#141414;}.st-chair.sel .st-tagt{fill:#ffffff;}
+.st-tagt{font-weight:800;fill:#141414;}
+.st-pt{width:24px;height:24px;border-radius:999px;overflow:hidden;border:1px solid #141414;flex:none;display:block;background:#fff;}
 .st-flag{fill:var(--st-bad);stroke:var(--st-ink);}
 .st-h{font-size:12px;letter-spacing:.04em;color:var(--pst-mute,var(--st-mute));margin:2px 0 -4px;font-weight:700;text-transform:uppercase;}
 .st-bar{position:sticky;bottom:0;z-index:3;background:var(--pst-bg,var(--st-bg));padding:2px 0 2px;margin:-4px 0;}
-.st-msg{min-height:40px;font-size:13px;font-weight:700;text-align:center;color:var(--pst-ink,var(--st-ink));display:flex;align-items:center;justify-content:center;}
+.st-msg{min-height:30px;font-size:13px;font-weight:700;text-align:center;color:var(--pst-ink,var(--st-ink));display:flex;align-items:center;justify-content:center;}
 .st-tray{display:flex;flex-wrap:wrap;gap:6px;min-height:44px;}
-.seated button.st-chip{border:1px solid var(--st-ink);border-radius:999px;padding:9px 14px;font-weight:800;font-size:14px;line-height:1.3;color:#141414;background:hsl(var(--h) var(--st-sat) var(--st-lit));}
+.seated button.st-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--st-ink);border-radius:999px;padding:6px 12px 6px 6px;font-weight:800;font-size:14px;line-height:1.3;color:#141414;background:hsl(var(--h) var(--st-sat) var(--st-lit));}
 .seated button.st-chip.sel{background:var(--st-ink);color:var(--st-bg);}
 .st-none{font-size:13px;color:var(--pst-mute,var(--st-mute));align-self:center;}
 .st-card{border:1px solid var(--st-ink);border-radius:10px;background:var(--st-bg);overflow:hidden;}
@@ -87,6 +97,7 @@ const CSS = `
 .st-fin-on .st-top{animation:st-fill .3s ease-out both;}
 @keyframes st-pop{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
 @keyframes st-fill{to{fill:var(--st-acc)}}
+.stage-page[data-stage-theme='dark'] .seated .st-chair.sel .st-ring,.pst.dk .seated .st-chair.sel .st-ring{stroke:#ffffff;}
 .st-fin{position:fixed;inset:0;z-index:60;background:var(--st-acc);color:#141414;display:flex;align-items:center;justify-content:center;animation:st-open .5s ease-out backwards;}
 @keyframes st-open{from{clip-path:circle(0 at 50% 36%)}to{clip-path:circle(150% at 50% 36%)}}
 .st-fin-in{text-align:center;width:280px;}
@@ -109,13 +120,13 @@ const rankName = (P, s) => { const r = rankOf(P, s.rs); return r.rows[r.at].name
 // two to a row with an odd last one centred.
 function layout(P) {
   const T = P.tables.length;
-  if (T === 1) return { h: 236, tabs: [{ cx: 170, cy: 118, top: 50, orbit: 84, r: 25 }] };
+  if (T === 1) return { h: 262, tabs: [{ cx: 170, cy: 131, top: 58, orbit: 96, r: 26 }] };
   const rows = Math.ceil(T / 2), tabs = [];
   for (let i = 0; i < T; i++) {
     const row = Math.floor(i / 2), lone = i === T - 1 && T % 2 === 1;
-    tabs.push({ cx: lone ? 170 : 86 + (i % 2) * 168, cy: 84 + row * 166, top: 33, orbit: 55, r: 20.5 });
+    tabs.push({ cx: lone ? 170 : 86 + (i % 2) * 168, cy: 86 + row * 172, top: 36, orbit: 59, r: 20 });
   }
-  return { h: rows * 166 + 2, tabs };
+  return { h: rows * 172, tabs };
 }
 
 // What one request asks of one of its guests, short enough for the bar under the board.
@@ -141,6 +152,7 @@ function Board({ P, s, setS, active, done, held, release }) {
   const won = done && placed === N && broken === 0 && met === P.rules.length;
   const finale = won && held;
   const L = layout(P);
+  const cid = `st${P.num}`;
   const flagged = new Set();
   P.rules.forEach((r, i) => { if (st[i] === 'bad') { flagged.add(r.a); if (r.b != null) flagged.add(r.b); } });
   const mine = (g) => P.rules.filter((r) => r.a === g || r.b === g);
@@ -178,24 +190,51 @@ function Board({ P, s, setS, active, done, held, release }) {
   let k = 0;
   const svg = (
     <svg viewBox={`0 0 340 ${L.h}`} className={finale ? 'st-fin-on' : undefined} role="img" aria-label={`${roomLine(P)}, ${placed} of ${N} guests seated`}>
+      <defs><clipPath id={`${cid}-p`}><circle cx={50} cy={50} r={50} /></clipPath></defs>
       {P.tables.map((tb, t) => {
         const g = L.tabs[t], first = k;
         const chairs = seat[t].map((id, i) => {
-          const a = -Math.PI / 2 + (i * 2 * Math.PI) / tb.seats, x = g.cx + Math.cos(a) * g.orbit, y = g.cy + Math.sin(a) * g.orbit, n = k++;
+          const a = -Math.PI / 2 + (i * 2 * Math.PI) / tb.seats, x = g.cx + Math.cos(a) * g.orbit, y = g.cy + Math.sin(a) * g.orbit, n = k++, r = g.r;
+          const who = id != null ? P.guests[id] : null, art = who && CAST[who.n] ? portrait(who.n) : null, rp = r * 0.9;
           const cls = `st-chair${id != null ? ' has' : ''}${live && id != null && id === sel ? ' sel' : ''}${live && id == null && sel != null ? ' open' : ''}`;
+          const tagW = who ? who.n.length * (T === 1 ? 5.6 : 4.9) + 9 : 0, tagH = T === 1 ? 13 : 11.5, tagY = y + rp * 0.62;
           return (
             <g key={i} data-seat={`${t},${i}`} className={cls} onClick={() => tapSeat(t, i)}
-              style={{ '--h': id != null ? P.guests[id].hue : 0, ...(finale ? { animationDelay: `${150 + n * step}ms` } : null) }}>
-              <circle className="c" cx={x} cy={y} r={g.r} />
-              {id != null ? <text x={x} y={y + 4.3} textAnchor="middle" style={T > 1 && P.guests[id].n.length > 4 ? { fontSize: 10.5 } : undefined}>{P.guests[id].n}</text> : null}
-              {id != null && flagged.has(id) && !done ? <circle className="st-flag" cx={x + g.r * 0.72} cy={y - g.r * 0.72} r={5} /> : null}
+              style={{ '--h': who ? who.hue : 0, ...(finale ? { animationDelay: `${150 + n * step}ms` } : null) }}>
+              {/* the chair, turned to face the table: a seat and a curved back on the far side */}
+              <g transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI + 90})`}>
+                <rect className="st-back" x={-r * 0.92} y={-r * 1.04} width={r * 1.84} height={r * 0.5} rx={r * 0.22} />
+                <rect className="st-seat" x={-r * 0.8} y={-r * 0.74} width={r * 1.6} height={r * 1.5} rx={r * 0.3} />
+              </g>
+              {who ? (
+                <>
+                  {art
+                    ? <g transform={`translate(${x - rp} ${y - rp}) scale(${(rp * 2) / 100})`} clipPath={`url(#${cid}-p)`} dangerouslySetInnerHTML={html(art)} />
+                    : <><circle className="st-face" cx={x} cy={y} r={rp} /><text className="st-ini" x={x} y={y + rp * 0.1} textAnchor="middle" fontSize={rp * 0.95}>{who.n[0]}</text></>}
+                  <circle className="st-ring" cx={x} cy={y} r={rp} />
+                  <rect className="st-tag" x={x - tagW / 2} y={tagY} width={tagW} height={tagH} rx={tagH / 2} />
+                  <text className="st-tagt" x={x} y={tagY + tagH * 0.74} textAnchor="middle" fontSize={T === 1 ? 9.6 : 8.4}>{who.n}</text>
+                </>
+              ) : null}
+              {id != null && flagged.has(id) && !done ? <circle className="st-flag" cx={x + rp * 0.74} cy={y - rp * 0.74} r={5} /> : null}
+            </g>);
+        });
+        // a place setting in front of every chair: a plate, and on the big table a fork and a knife
+        const settings = seat[t].map((_, i) => {
+          const a = -Math.PI / 2 + (i * 2 * Math.PI) / tb.seats, pr = g.top - (T === 1 ? 13 : 8.5), x = g.cx + Math.cos(a) * pr, y = g.cy + Math.sin(a) * pr, q = T === 1 ? 7 : 4.4;
+          return (
+            <g key={`p${i}`} transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI + 90})`}>
+              <circle className="st-plate" r={q} /><circle className="st-plate in" r={q * 0.58} />
+              {T === 1 ? <path className="st-cut" d={`M${-q - 3.5} ${-q * 0.8}v${q * 1.6}M${q + 3.5} ${-q * 0.8}v${q * 1.6}`} /> : null}
             </g>);
         });
         return (
           <g key={t}>
             <circle className="st-top" cx={g.cx} cy={g.cy} r={g.top} style={finale ? { animationDelay: `${150 + (first + tb.seats) * step}ms` } : undefined} />
-            <text x={g.cx} y={g.cy - (T === 1 ? 2 : 3)} textAnchor="middle" fontSize={T === 1 ? 14 : 11.5} fontWeight="800" fill="var(--st-ink)">{tb.name}</text>
-            <text x={g.cx} y={g.cy + (T === 1 ? 15 : 10)} textAnchor="middle" fontSize={T === 1 ? 11 : 8.4} fontWeight="600" fill="var(--st-mute)">{tb.note}</text>
+            <circle className="st-hem" cx={g.cx} cy={g.cy} r={g.top - (T === 1 ? 4 : 2.6)} />
+            {settings}
+            <text x={g.cx} y={g.cy - (T === 1 ? 2 : 2)} textAnchor="middle" fontSize={T === 1 ? 14 : 10.5} fontWeight="800" fill="#141414">{tb.name}</text>
+            <text x={g.cx} y={g.cy + (T === 1 ? 14 : 8.5)} textAnchor="middle" fontSize={T === 1 ? 10.5 : 7.4} fontWeight="700" fill="#6b6b6b">{tb.note}</text>
             {chairs}
           </g>);
       })}
@@ -237,7 +276,8 @@ function Board({ P, s, setS, active, done, held, release }) {
               <div className="st-h">Still Standing</div>
               <div className="st-tray">
                 {standing.length ? standing.map((i) => (
-                  <button key={i} type="button" data-guest={i} className={`st-chip${live && sel === i ? ' sel' : ''}`} style={{ '--h': P.guests[i].hue }} onClick={() => pickGuest(i)} aria-pressed={live && sel === i}>{P.guests[i].n}</button>
+                  <button key={i} type="button" data-guest={i} className={`st-chip${live && sel === i ? ' sel' : ''}`} style={{ '--h': P.guests[i].hue }} onClick={() => pickGuest(i)} aria-pressed={live && sel === i}>
+                    {CAST[P.guests[i].n] ? <span className="st-pt"><svg viewBox="0 0 100 100" width="24" height="24" dangerouslySetInnerHTML={html(portrait(P.guests[i].n))} /></span> : <span style={{ width: 4 }} />}{P.guests[i].n}</button>
                 )) : <span className="st-none">Everyone has a chair. Tap a guest at a table to move them.</span>}
               </div>
             </>

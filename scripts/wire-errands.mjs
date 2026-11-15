@@ -96,10 +96,12 @@ afterLine('lib/daily-difficulty.js', '  bag: 2, // a starting estimate (2026-11-
 sub('lib/daily-skills.js', `bag: ['plan', 'ded'], `, `bag: ['plan', 'ded'], errands: ['plan', 'math'], `);
 afterLine('lib/game-glyphs.js', "  bag: 'M5.5 8.5h13l", [`  errands: 'M6 20V9h7a3 3 0 000-6H6M6 9h10a3 3 0 010 6h-3M6 20m-1.8 0a1.8 1.8 0 103.6 0 1.8 1.8 0 10-3.6 0M13 15m-1.6 0a1.6 1.6 0 103.2 0 1.6 1.6 0 10-3.2 0',  // a route doubling back through town to a stop`]);
 afterLine('lib/game-blurbs.js', '  bag: "', [`  ${g.key}: "${g.short}",`]);
-sub('app/GamePreviewTiles.jsx', `// three grocery bags side by side, filled to different heights`, `// a route through town: home, three stops joined along the streets
+// (the drawing is checked by NAME, not by its text: it was redrawn after the first run, and a text check then
+// inserted it a second time and broke the build)
+if (!/\nconst Errands = /.test(rd('app/GamePreviewTiles.jsx'))) sub('app/GamePreviewTiles.jsx', `// three grocery bags side by side, filled to different heights`, `// a route through town on a grid of streets: home, and two stops joined along them
 const Errands = () => (
-  <g><path d="M112 68h40V40h44V20" className="d6" fill="none" /><rect x={104} y={60} width={16} height={16} rx={4} className="sm" />
-    <circle cx={152} cy={68} r={8} className="sm" /><circle cx={152} cy={40} r={8} className="d6" fill="none" /><circle cx={196} cy={20} r={8} className="sm" /></g>
+  <g><path d="M112 22H184M112 46H184M112 70H184M124 10V82M148 10V82M172 10V82" className="sm3" /><path d="M124 70H148V46H172V22" className="s3" />
+    <rect x={116} y={62} width={16} height={16} rx={3} className="d" /><circle cx={148} cy={46} r={7.5} className="w" /><circle cx={172} cy={22} r={7.5} className="w" /></g>
 );
 // three grocery bags side by side, filled to different heights`);
 sub('app/GamePreviewTiles.jsx', `seated: Seated, bag: Bag, pack: Pack, duet: Duet,`, `seated: Seated, bag: Bag, errands: Errands, pack: Pack, duet: Duet,`);

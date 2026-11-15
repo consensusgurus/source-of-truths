@@ -2903,3 +2903,32 @@ outline, so they came out as blobs. They now use `w` / `m` / `d` fills and `s2` 
 two rooms from above with a doorway, mopped stripes and the mop. Check a new drawing on a page before pushing;
 the class names do not mean what they look like they mean.
 
+## Seated: real tables, real chairs and Sudoclue's people (owner, 2026-11-15)
+
+Owner: "can we improve the visuals for seated? real table, real seats. let's re use the names we have from
+sudoclue ... and use the same images ... people images."
+
+- **The room is drawn, not diagrammed.** Each table is a cream tablecloth with a hem line and a plate in front
+  of every chair (a fork and knife too on the one-table day). Each chair is a wooden seat with a back on the far
+  side, turned to face the table. A seated guest is their portrait on the chair with a name tag across the
+  bottom of it. An empty chair turns the category colour while a guest is picked up.
+- **The guests are Sudoclue's cast** (`CAST` and `portrait()` in `lib/sudoclue-art.js`): first names of seven
+  letters at most, no cat. The generator draws from that list (`GUESTS` in `scripts/gen-seated.mjs`) and the
+  checker requires it from board 3 on. The same portraits are on the Still Standing chips.
+- **Boards 1 and 2 keep their own names** (Grandma Rose, Uncle Bill ...): they were live before this, and a
+  live board is never rewritten. A guest with no portrait is drawn as a coloured disc with an initial.
+  Boards 3 to 51 were re-dealt on 2026-11-15, before any of them was live.
+- The event crowds (family, work, school, society) are gone; every event draws from the one cast.
+
+## A WIRING SCRIPT RE-RUN BROKE THE BUILD (2026-11-15, commit 230a812)
+
+`wire-errands.mjs` inserted a preview drawing, the drawing was then redrawn by hand, and a second run of the
+script (its "already present?" test compares the replacement TEXT) inserted the old drawing again: two
+`const Errands` in `app/GamePreviewTiles.jsx`, which fails the production build. The swc PARSE check used before
+pushing does not catch a duplicate declaration. Two rules from it:
+- **Before pushing, load at least one page that imports each changed file on the dev server** (a 200 from
+  `/errands`, `/archive` ...). A parse check is not a compile.
+- **Do not re-run an old wiring script after later scripts have run.** `wire-seated.mjs` and `wire-bag.mjs`
+  each add a line to `PREMIERES` before they reach an anchor that no longer exists, and stop half way. They are
+  records of what was done, not tools to run twice.
+

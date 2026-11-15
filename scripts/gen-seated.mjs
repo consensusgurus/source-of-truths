@@ -41,14 +41,12 @@ const INTRO = { '2026-11-14': 1, '2026-11-15': 2 };
 export const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
 export const rng = (a) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 
-// [short name on the chair, full name in the requests]. The short name is always part of the full one.
-const g = (s) => s.split('|').map((x) => { const [full, n] = x.split('='); return { n: n || full.split(' ').pop(), full }; });
-export const CROWD = {
-  family: g('Grandma Rose|Grandpa Joe|Uncle Bill|Uncle Ted|Aunt May|Aunt Vera|Cousin Zoe|Cousin Finn|Little Max|Little Ivy|Nana Pearl|Papa Gus|Dana|Mr. Hale|Father Tom|Dr. Ruiz|Coach Ray|Neighbor Lou|Cousin Kit|Uncle Ned|Aunt Flo|Great-Aunt Ida|Cousin Omar|Cousin Lena|Nephew Theo|Niece Mia|Godfather Sal|Roommate Jess'),
-  work: g('Priya in Payroll=Priya|Dev from IT=Dev|Marge the Boss=Marge|Intern Kai|Stan in Sales=Stan|Lucy in Legal=Lucy|Hugo in HR=Hugo|Nora the CFO=Nora|Omar in Ops=Omar|Beth at Reception=Beth|Raj in Research=Raj|Tess the Temp=Tess|Walt in Shipping=Walt|Gwen in Design=Gwen|Ivan in Audit=Ivan|Mona in Marketing=Mona'),
-  school: g('Class President Ava|Coach Burke|Prom Queen Deb|Quarterback Chad|Mr. Ortiz|Valedictorian Lin|Drummer Pete|Yearbook Editor Sue|Class Clown Benny|Nurse Joy|Mathlete Arun|Cheer Captain Kim|Goalie Marco|Librarian Fay|Bus Driver Earl|Lab Partner Nina|Skater Wes|Drama Kid Noel|Principal Shaw|Debater Cleo'),
-  society: g('The Mayor|Senator Pike|Lady Ashby|Sir Miles|Judge Reyes|Dr. Osei|Chef Remy|Madame Cho|Colonel Brand|Curator Bly|Countess Vale|Professor Nix|Maestro Rossi|Editor Quinn|Banker Holt|Heiress Coco|Captain Sato|Bishop Grey|Poet Amira|Tycoon Vance|Baroness Elke|Admiral Ford'),
-};
+// THE GUESTS ARE SUDOCLUE'S CAST (owner, 2026-11-15: "let's re use the names we have from sudoclue ... and use
+// the same images"): a first name of seven letters at most from lib/sudoclue-art.js, which the client draws
+// with that game's portrait. Boards 1 and 2 went live the day before with their own family names (Grandma
+// Rose, Uncle Bill ...) and are kept as they are; the client draws those guests as a coloured disc with an initial.
+import { CAST } from '../lib/sudoclue-art.js';
+export const GUESTS = Object.keys(CAST).filter((k) => !CAST[k].cat && k.length <= 7);
 // The reason printed before the tag ("Different tables." and so on, lib/seated-engine.js TAG).
 const WHY = {
   apart: ['{A} and {B} are not speaking.', '{A} still owes {B} money.', '{A} and {B} argue about everything.', '{A} beat {B} at cards and will not let it go.', '{A} and {B} fell out over a parking spot.', '{A} told the story about {B} again.', '{A} and {B} both want to give the toast.'],
@@ -77,11 +75,11 @@ const W = {
 };
 
 export function deal(spec, R) {
-  const [band, , sizes, crowd, most] = spec, T = sizes.length, N = sizes.reduce((a, b) => a + b, 0);
+  const [band, , sizes, , most] = spec, T = sizes.length, N = sizes.reduce((a, b) => a + b, 0);
   const pick = (a) => a[Math.floor(R() * a.length)];
   const shuf = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const hues = shuf(Array.from({ length: N }, (_, i) => Math.round((i * 360) / N + 8) % 360));
-  const guests = shuf(CROWD[crowd]).slice(0, N).map((p, i) => ({ n: p.n, full: p.full, hue: hues[i] }));
+  const guests = shuf(GUESTS).slice(0, N).map((n, i) => ({ n, full: n, hue: hues[i] }));
   const notes = shuf(NOTES);
   const tables = sizes.map((seats, i) => ({ name: T === 1 ? 'The Table' : `Table ${i + 1}`, note: T === 1 ? 'seats six' : notes[i], seats }));
   let k = 0; const sol = sizes.map((n) => Array.from({ length: n }, () => k++));
