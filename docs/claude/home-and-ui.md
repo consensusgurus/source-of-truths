@@ -1331,6 +1331,20 @@ card, a round 2px-ruled close button, the eyebrow as a pastel pill, each game a 
 the category pastel and a pastel Play pill in dark ink, and a single-game or run card ends in one full-width
 pastel pill. The 4px accent rail down each row is gone. Behaviour is unchanged; only markup classes and CSS.
 
+**ONE NEW-GAME POP-UP A DAY, FROM A BACKLOG (owner, 2026-11-14: "stagger our pop-ups. i want one per day, and
+use the backlog across users who haven't played it. so mop, chef, bag, seated should extend out that many days
+one at a time for players returning").** The card names ONE game. `lib/premiere-queue.js` orders the launches
+(oldest `from` first; within a day, the bottom line of that day's block in `PREMIERES` first) and a browser is
+shown one card per Eastern day (`sot_premiere_day`) until its queue is empty. Only the game on the card is stamped
+`sot_premiere_q_<key>` (a new name: the old `sot_premiere_<key>` was written for every open launch whenever any
+card showed, which is what threw the backlog away, so it is no longer read for games). A launch from 2026-11-13
+on stays in the queue for 30 days after it premiered whatever its `until` says; launches before that date are no
+longer announced. A game already played (locally or per the server archive) is skipped without
+using up the day. A run's launch card counts as the day's card and stamps only the run and its members. The
+"newest batch only, at most 2 days old" rule of 2026-09-17 is replaced by this. Checked by
+`scripts/verify-premiere-queue.mjs`. The other pop-ups (run doors, Space Cadet, Eagle Eye, groups) are NOT in this
+queue.
+
 ## THE DAILY CLOCK IS HIDDEN BY DEFAULT (owner rule, 2026-10-13)
 
 Players said the running clock made them nervous. On every DAILY puzzle page the

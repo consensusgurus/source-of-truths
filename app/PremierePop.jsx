@@ -8,11 +8,18 @@
 // only the Gauntlet nudge, so it says exactly three things: which games are
 // new, one line each on what they are, and Play. The X closes it.
 //
+// ONE GAME A DAY, FROM A BACKLOG (owner, 2026-11-14: "stagger our pop-ups. i
+// want one per day, and use the backlog across users who haven't played it").
+// The card names a single game. Launches wait in a queue (lib/premiere-queue.js),
+// oldest first, and a browser is shown one card per Eastern day until the queue
+// is empty: Mop, then Chef the next day, then Pack, then Seated. A run's launch
+// card counts as that day's card.
+//
 // FOUR CONDITIONS, all required:
 //
-//   OPEN. Today (ET) is inside a premiere's [from, until] window. A premiere
-//   past its `until` is silent forever; nobody back after a month is handed a
-//   stack of old launches.
+//   OPEN. The launch is from 2026-11-13 or later and today (ET) is inside its
+//   [from, until] window or within 30 days of `from`. Past that it is silent
+//   forever; nobody back after two months is handed old launches.
 //
 //   RETURNING. Seen on an earlier ET day (lib/visitor seenBeforeToday, since
 //   2026-10-12) AND a positive play signal: a stored identity, any
@@ -25,8 +32,9 @@
 //   their phone this morning. It waits for daily-status, which the page
 //   fetches anyway, so it costs no request.
 //
-//   ONCE. sot_premiere_<key> is stamped the moment it renders, per game, per
-//   browser, never per day. Seeing the card burns every game on it.
+//   ONCE. sot_premiere_q_<key> is stamped the moment it renders, for the game on
+//   the card and no other, so the rest of the queue keeps its turn.
+//   sot_premiere_day is stamped with today, and nothing more opens that day.
 //
 // IT WAITS ITS TURN. The theme intro and the entry door (app/EntryDoor.jsx,
 // first visit, then weekly) both own the arrival; this polls until neither is on
@@ -52,19 +60,19 @@ import GameGlyph from './GameGlyph';
 import { fetchDayStatus, etToday } from './useDayStats';
 import { seenBeforeToday } from '@/lib/visitor';
 import { gameActive } from '@/lib/game-active';
+import { premiereQueue, daysAgo } from '@/lib/premiere-queue';
 
-const KEY = (k) => `sot_premiere_${k}`;
+const KEY = (k) => `sot_premiere_${k}`;      // a run's launch card
+// A game's card. A new name on 2026-11-14: the old stamp was written for every open
+// launch whenever any card showed, so it cannot say this browser saw this game.
+const GKEY = (k) => `sot_premiere_q_${k}`;
 
-// FRESH ONLY (owner report, 2026-09-17: "it served a popup for old games").
-// A browser that had never been stamped was handed every open window at once:
-// Snug from 9/13 on the same card as that day's Yose and Crib, under Snug's
-// date and category. Now the card names only the NEWEST launch batch, and only
-// while that batch is at most MAX_AGE_DAYS old, whatever `until` says.
-const MAX_AGE_DAYS = 2;
-function daysAgo(iso, today) {
-  const a = Date.parse(`${iso}T12:00:00Z`), b = Date.parse(`${today}T12:00:00Z`);
-  return Number.isFinite(a) && Number.isFinite(b) ? Math.round((b - a) / 86400000) : 99;
-}
+// THE DAY'S ONE CARD. Stamped with the Eastern date when any premiere card
+// (a game's or a run's) opens; a browser carrying today's date is shown nothing more.
+const DAY_KEY = 'sot_premiere_day';
+// 2026-09-17 ("it served a popup for old games") was a browser handed every open
+// window on one card under the oldest game's date. The queue answers that
+// differently: one game to a card, each under its own date.
 const NUM = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
 
 function returning() {
@@ -144,8 +152,11 @@ export default function PremierePop() {
     // members, and every member stamped so no single-game card follows.
     const runOpen = PREMIERE_RUNS.filter((r) => r.lede && today >= r.from && today <= r.until && !r.keys.some((k) => NO_PREMIERE.has(k)) && !NO_PREMIERE.has(r.id));
     const runMembers = new Set(runOpen.flatMap((r) => r.keys));
-    const open = PREMIERES.filter((p) => today >= p.from && today <= p.until && DAILY_GAME_MAP[p.key] && !NO_PREMIERE.has(p.key) && !runMembers.has(p.key));
+    // the queue, in the order the cards are owed (lib/premiere-queue.js)
+    const open = premiereQueue(PREMIERES, today, (k) => DAILY_GAME_MAP[k] && !NO_PREMIERE.has(k) && !runMembers.has(k));
     if (!open.length && !runOpen.length) return;
+    // one card a day
+    if (!force && safeGet(DAY_KEY) === today) return;
     // NEW ARRIVALS GET NOTHING (owner, 2026-10-12, after a first-day visitor was
     // handed Ergo): the browser must have been here on an earlier ET day as
     // well as carry a play signal. A save written by today's first game proves
@@ -160,7 +171,8 @@ export default function PremierePop() {
         if (arrivalBusy() && Date.now() - started < 15000) { timers.push(setTimeout(tick, 300)); return; }
         if (Date.now() - started >= 15000 && arrivalBusy()) return;
         if (gameActive()) return;
-        if (!force) for (const k of [runCand.id, ...runCand.keys, ...open.map((p) => p.key)]) { try { localStorage.setItem(KEY(k), today); } catch (e) {} }
+        // the run and its members are stamped, and the day; the single-game queue keeps its turn
+        if (!force) { try { localStorage.setItem(KEY(runCand.id), today); for (const k of runCand.keys) localStorage.setItem(GKEY(k), today); } catch (e) {} try { localStorage.setItem(DAY_KEY, today); } catch (e) {} }
         setRun(runCand);
       };
       timers.push(setTimeout(tick, 600));
@@ -168,9 +180,8 @@ export default function PremierePop() {
     }
     if (!open.length) return;
 
-    let cands = open.map((p) => p.key).filter((k) => force || (!playedLocally(k) && !safeGet(KEY(k))));
+    let cands = open.filter((k) => force || (!playedLocally(k) && !safeGet(GKEY(k))));
     if (!cands.length) return;
-    const fromOf = (k) => (PREMIERES.find((p) => p.key === k) || {}).from || '';
 
     const timers = [];
     fetchDayStatus().then((d) => {
@@ -179,11 +190,9 @@ export default function PremierePop() {
         cands = cands.filter((k) => !(d.archive[k] && d.archive[k].played > 0));
       }
       if (!cands.length) return;
-      // The newest batch only, and only while it is fresh.
-      const newest = cands.map(fromOf).sort().pop();
-      if (!force && daysAgo(newest, today) > MAX_AGE_DAYS) return;
-      cands = cands.filter((k) => fromOf(k) === newest);
-      if (!cands.length) return;
+      // The head of the queue, alone. A game played on another device was dropped
+      // just above without using up the day, so the next in line takes its place.
+      const next = cands[0];
       // Wait out the arrival, then open. Give up after ~15s rather than open
       // onto a page the reader has already started using.
       const started = Date.now();
@@ -192,10 +201,9 @@ export default function PremierePop() {
         if (arrivalBusy() && Date.now() - started < 15000) { timers.push(setTimeout(tick, 300)); return; }
         if (Date.now() - started >= 15000 && arrivalBusy()) return;
         if (gameActive()) return;
-        // Stamp every open premiere, not just the ones on the card, so an
-        // older launch left off it never turns up on a later visit.
-        if (!force) for (const k of open.map((p) => p.key)) { try { localStorage.setItem(KEY(k), today); } catch (e) {} }
-        setGames(cands);
+        // Stamp the game on the card and the day. Every other launch keeps its turn.
+        if (!force) { try { localStorage.setItem(GKEY(next), today); localStorage.setItem(DAY_KEY, today); } catch (e) {} }
+        setGames([next]);
       };
       timers.push(setTimeout(tick, 600));
     });
@@ -283,7 +291,7 @@ export default function PremierePop() {
       <div className="prm" role="dialog" aria-labelledby="prm-t" style={vars} onClick={(e) => e.stopPropagation()}>
         <div className="prm-in">
         <div className="prm-top">
-          <div className="prm-eye"><i /><span>{when === 'today' ? 'New today' : 'New this week'}{oneCat ? ` · ${cat}` : ''}</span></div>
+          <div className="prm-eye"><i /><span>{when === 'today' ? 'New today' : since && daysAgo(since.from, etToday()) <= 6 ? 'New this week' : 'New this month'}{oneCat ? ` · ${cat}` : ''}</span></div>
           <button className="prm-x" aria-label="Close" onClick={() => setGames(null)}><X size={16} strokeWidth={2.8} /></button>
         </div>
         <h2 id="prm-t">{many ? `${NUM[rows.length] || rows.length} new dailies` : 'A new daily'}</h2>
