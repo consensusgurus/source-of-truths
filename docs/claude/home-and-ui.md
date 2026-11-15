@@ -2898,7 +2898,9 @@ screen (the two small Top rows over three-across tiles).
   Puzzles (the 25, same rule as before), Newest (always shown; the `NEWEST_ROW` most recently launched,
   unplayed). Then the ticket bar, the ranks, Everything Else. The page scrolls; nothing is fitted.
 - **Chips fill their rows and never leave one alone on the last line.** `rowsOf` deals the eleven (All N
-  plus ten categories) 3,3,3,2. "All N" opens All Puzzles. Featured is not a phone-home row any more
+  plus ten categories) 3,3,3,2. **Chips never stretch** (owner, 2026-11-15: "Categories shouldn't
+  stretch. Just center them across at same width"): each is a third of the row, a short last row is
+  centred. "All N" opens All Puzzles. Featured is not a phone-home row any more
   (it is still the first row of All Puzzles).
 - **No Skills / Categories switch anywhere:** not on the phone home, the desktop index or the puzzle
   pages' nav. `ixLens` is always `'cat'`; a stored `sot_home_ix = 'skill'` is not read. The skill panes'
@@ -2906,3 +2908,7 @@ screen (the two small Top rows over three-across tiles).
 - **The entry door shows categories** (`entryCats` in app/EntryDoor.jsx): ten chips on a phone dealt
   3,3,2,2 across a six-column grid, ten tiles on desktop. A chip opens that category on the home. The
   skill picks page is no longer reachable.
+- **Phone Details cards are short** (owner, 2026-11-15: "the puzzle tiles are unnecessarily tall ... put
+  the attribute highlights on a single row"): name and a two-line blurb beside the art, then the fact
+  chips full width on ONE line (`flex-wrap:nowrap`), then the crowd strip. Applies to every phone
+  `.mph-gg.det` card (home rows and panes).

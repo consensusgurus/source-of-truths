@@ -8056,6 +8056,14 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
     border:1.5px solid color-mix(in srgb, var(--mc) 55%, var(--mink));}
   .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gband.art{padding:0;overflow:hidden;}
   .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gband.art img{display:block;width:100%;height:100%;object-fit:cover;}
+  /* SHORTER CARDS (owner, 2026-11-15: "the puzzle tiles are unnecessarily
+     tall ... put the attribute highlights on a single row"): the name and a
+     two-line blurb sit beside the art, and the chips run full width under
+     both on ONE line (never wrapping to a second). */
+  .sty-mph .mph-gg.det .mph-g:not(.done){grid-template-areas:"e e" "n g" "x g" "f f" "p p" "y y" "s s";}
+  .sty-mph .mph-gg.det .mph-g:not(.done) em.mx{-webkit-line-clamp:2;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gfx{flex-wrap:nowrap;margin:9px 0 0;max-height:24px;overflow:hidden;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gfc{flex:none;white-space:nowrap;}
   .sty-mph .mph-gg.det .mph-g:not(.done) .mcs{background:color-mix(in srgb, var(--mc) 45%, #fff);}
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */
@@ -8755,8 +8763,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      scrolls; nothing is fitted to one screen any more. */
   .sty-mph .mph-fold.m2{min-height:0;gap:14px;}
   .sty-mph .mph-chips{display:flex;flex-direction:column;gap:7px;margin-top:-12px;}
-  .sty-mph .mph-crow{display:flex;gap:7px;}
-  .sty-mph .mph-chip{flex:1 1 0;min-width:0;min-height:42px;box-sizing:border-box;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:0;padding:0 8px;border-radius:999px;font:inherit;text-align:center;}
+  /* NO STRETCH (owner, 2026-11-15: "Categories shouldn't stretch. Just center
+     them across at same width"): every chip is one third of the row, and a
+     short last row sits centred under the others. */
+  .sty-mph .mph-crow{display:flex;gap:7px;justify-content:center;}
+  .sty-mph .mph-chip{flex:0 0 calc((100% - 14px) / 3);min-width:0;min-height:42px;box-sizing:border-box;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:0;padding:0 8px;border-radius:999px;font:inherit;text-align:center;}
   .sty-mph .mph-chip b{font-size:14.5px;font-weight:800;line-height:1.2;letter-spacing:-0.01em;white-space:nowrap;padding-bottom:.06em;}
   .sty-mph .mph-chip.all{border:1px solid var(--stg-ink);background:var(--stg-ink);color:var(--stg-ground, #fff);}
   .sty-mph .mph-sec{display:flex;flex-direction:column;gap:7px;min-width:0;}
