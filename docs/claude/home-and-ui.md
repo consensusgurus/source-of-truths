@@ -2855,3 +2855,12 @@ Owner picked A from the entry mockups, with two tiles in place of one hero. Buil
   made the row alphabetical for nearly everyone, so the most played run was not first.
 - **The phone's first screen is the two Top rows and the tiles.** Just off it, in order: the Categories
   / Skills switch, the gold ticket bar, the ranks, Everything Else.
+
+
+## Details cards are drawn like share cards (owner, 2026-11-15)
+
+The home Details view draws each puzzle card the way its share image looks: the category colour (`--cfull`) fills an unplayed card, a small "Category · Daily Puzzle" eyebrow (`.sty-geye`) sits above the name, and the board sits in a white 108px square on the RIGHT. Played and group-washed cards keep their own look. Every card is one height (three blurb lines, two stacked chips).
+
+- Games with a nicer share card show a cut of it in that square: `lib/share-tile.js` lists them and the cuts live in `public/og/tile/<key>.png` (224px square; the art half of a scene card, or the white board card of a board card). Re-cut a game's tile whenever its share card is re-baked. A key not listed falls back to its GamePreview drawing.
+- Run tiles (`app/today/RunGateTile.jsx`) draw their legs as the gauntlet share card does: separate numbered blocks in their ladder colours, still one row.
+- Desktop Details only; the phone home was being reworked the same night and was left alone.

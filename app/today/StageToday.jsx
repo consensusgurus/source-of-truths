@@ -48,6 +48,7 @@ import { SUDOKU_POOL, DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryH
 import { FEATURED_KEYS, FEATURED_RECENT } from '@/lib/featured';
 import GameGlyph from '../GameGlyph';
 import GamePreview, { GP_CSS } from '../GamePreview';
+import { SHARE_TILE } from '@/lib/share-tile';
 import RunGateTile, { RGT_CSS, MoreRunsTile, BuildRunTile } from './RunGateTile';
 import { gameFacts, FACT_ICONS } from '@/lib/game-facts';
 import CircuitArt from '../CircuitArt';
@@ -776,7 +777,9 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
         <span className="sty-gt sty-gtg">{g.tag}</span>
       )}
       {/* DETAILS VIEW (owner, 2026-11-07): shown only under .sty-det. */}
-      <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} square /></span>
+      <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{SHARE_TILE[g.key] ? <img src={SHARE_TILE[g.key]} alt="" width="108" height="108" decoding="async" /> : <GamePreview gameKey={g.key} square />}</span>
+      {/* THE SHARE CARD'S EYEBROW (owner, 2026-11-15), Details only. */}
+      <span className="sty-geye">{g.cat + ' \u00b7 Daily Puzzle'}</span>
       <span className="sty-gx">{fullDesc(g)}</span>
       <FactRow k={g.key} one={!!(res || (dots && dots.lead))} />
       <span className="sty-gk">{skillLine(g.key) || '\u00a0'}</span>
@@ -6347,7 +6350,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-gi{flex:none;color:var(--cci, var(--cc));}
 .sty-next .sty-gi{color:currentColor;opacity:.85;}
 .sty-nm{display:flex;align-items:center;gap:11px;}
-.sty-gx,.sty-gk,.sty-gband,.sty-gfx{display:none;}
+.sty-gx,.sty-gk,.sty-gband,.sty-gfx,.sty-geye{display:none;}
 .sty-view{position:relative;}
 .sty-gt{display:block;font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:2px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
@@ -8615,6 +8618,38 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
        the second chip's room and the card stays the height of its row. */
     .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx.sty-gf1{height:24px;}
   }
+  /* 2B. THE SHARE-CARD TILE (owner, 2026-11-15: "make the detail tiles on
+     main look as close to the share image links as possible", then "go ahead
+     with the update in A" and "the more detailed mock-ups need to lean more
+     heavily on category colors"). Each Details card reads like its share card:
+     the category colour fills the card, a small "Category · Daily Puzzle"
+     line, the name large, the board in a white square on the RIGHT (a share
+     card's own art where lib/share-tile.js has one). Played and group-washed
+     cards keep their own look, so the colour still says "not played yet".
+     One height for every card: three lines of blurb and two stacked chips,
+     always, whatever the card's width. */
+  .sty-ix.sty-det .sty-games{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband){grid-template-columns:minmax(0,1fr) 108px;column-gap:12px;padding-top:13px;
+    grid-template-areas:"e e" "n b" "r b" "x b" "f b" "y y" "s s";grid-template-rows:auto auto auto auto auto 1fr auto;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-geye{display:block;grid-area:e;padding-right:26px;font-size:9.5px;font-weight:800;line-height:1.3;
+    letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.74;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gn{grid-area:n;font-size:25px;letter-spacing:-.02em;line-height:1.18;padding:2px 0 1px;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gx{grid-area:x;margin:5px 0 0;font-size:13px;font-weight:600;line-height:1.4;
+    height:calc(13px * 1.4 * 3);-webkit-line-clamp:3;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx,
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx.sty-gf1{grid-area:f;margin:9px 0 13px;flex-direction:column;flex-wrap:nowrap;align-items:flex-start;gap:5px;height:53px;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) .sty-gband{grid-area:b;width:108px;height:108px;margin-top:5px;padding:9px;border-radius:12px;
+    background:#fff;border:1.5px solid color-mix(in srgb, var(--cfull) 50%, ${RAMP_INK});}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) .sty-gband.art{padding:0;overflow:hidden;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) .sty-gband.art img{display:block;width:100%;height:100%;object-fit:cover;}
+  /* The colour: the category's pastel as the card, dark ink on it, white
+     chips, and a deeper step of the same colour along the foot. */
+  .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband){background:var(--cfull);color:${RAMP_INK};
+    --gpd:${RAMP_INK};--gpw:#fff;--gpt:#fff;}
+  .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband) :is(.sty-gn,.sty-geye,.sty-gx,.sty-gres,.sty-ggrp),
+  .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband):hover .sty-gn{color:${RAMP_INK};}
+  .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband) .sty-gfc{background:#fff;color:${RAMP_INK};box-shadow:inset 0 0 0 1px ${RAMP_INK};}
+  .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband) .sty-gpl.sty-gcs{background:color-mix(in srgb, var(--cfull) 80%, #000);color:${RAMP_INK};}
   /* 3. THE CAP'S CONTROLS, GROUPED BY JOB, each under a small label: View,
      Sort, then whose games (Group) or which kind. The label is drawn from
      data-lab, and only in the cap. */

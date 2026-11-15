@@ -65,7 +65,7 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
             smaller"): past five legs the names drop a size. */}
         <span className={'rgt-legs' + (legs.length > 5 ? ' many' : '')} aria-hidden="true">
           {legs.map((g, i) => (
-            <span key={g.key} className={'rgt-leg' + (done && done.has(g.key) ? ' on' : '')} style={{ '--lc': softGround(rampFor(slots[i]), 0.45) }}>{LEG_SHORT[g.key] || g.name}</span>
+            <span key={g.key} className={'rgt-leg' + (done && done.has(g.key) ? ' on' : '')} style={{ '--lc': softGround(rampFor(slots[i]), 0.45) }}><b className="rgt-ln">{String(i + 1).padStart(2, '0')}</b>{LEG_SHORT[g.key] || g.name}</span>
           ))}
         </span>
         <span className="rgt-go">{go}</span>
@@ -205,6 +205,17 @@ html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt-go{backgrou
 .stage-page:not([data-stage-theme=light]) .rgt-more .rgt-cs{background:#11161f;}
 .stage-page:not([data-stage-theme=light]) .rgt-band{background:color-mix(in srgb, var(--lc) 30%, #1a2130);border-color:#5a6475;}
 .stage-page:not([data-stage-theme=light]) .rgt-bands{border-color:#5a6475;}
+/* THE LEGS AS THE SHARE CARD DRAWS THEM (owner, 2026-11-15: "update the run
+   cards at the same time" as the share-card Details tiles). The gauntlet share
+   card lists each leg as its own numbered block in its ladder colour; the tile
+   does the same, still ONE ROW (2026-11-08: never a two-row grid with an
+   empty cell), each block the leg's number over its name. */
+.rgt-legs{gap:4px;height:40px;border:0;border-radius:0;overflow:visible;}
+.rgt-leg,.rgt-leg:first-child{flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:0 6px;border:1px solid #0b1b2b;border-radius:7px;line-height:1.2;}
+.rgt-ln{display:block;font-size:9px;font-weight:800;opacity:.6;letter-spacing:.02em;}
+.rgt-legs.many .rgt-leg{padding:0 3px;}
+.rgt-legn .rgt-leg{gap:1px;}
+.rgt-blank{height:40px;}
 /* THE PHONE: a sideways row of gate tiles in a pane, full cards in Runs. */
 .mph-rgts{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:12px;margin:-2px -12px 0;padding:2px 12px 4px;scrollbar-width:none;}
 .mph-rgts::-webkit-scrollbar{display:none;}
