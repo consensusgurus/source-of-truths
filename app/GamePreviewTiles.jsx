@@ -325,33 +325,42 @@ const Spot = () => (
     <circle cx={134} cy={28} r={6} className="m" /><rect x={116} y={50} width={24} height={14} className="sm" /><rect x={156} y={50} width={24} height={14} className="sm" />
     <circle cx={174} cy={28} r={3.5} className="d" /></g>
 );
+// a route through town: home, three stops joined along the streets
+const Errands = () => (
+  <g><path d="M112 22H184M112 46H184M112 70H184M124 10V82M148 10V82M172 10V82" className="sm3" /><path d="M124 70H148V46H172V22" className="s3" />
+    <rect x={116} y={62} width={16} height={16} rx={3} className="d" /><circle cx={148} cy={46} r={7.5} className="w" /><circle cx={172} cy={22} r={7.5} className="w" /></g>
+);
+// a route through town: home, three stops joined along the streets
+const Errands = () => (
+  <g><path d="M112 68h40V40h44V20" className="d6" fill="none" /><rect x={104} y={60} width={16} height={16} rx={4} className="sm" />
+    <circle cx={152} cy={68} r={8} className="sm" /><circle cx={152} cy={40} r={8} className="d6" fill="none" /><circle cx={196} cy={20} r={8} className="sm" /></g>
+);
 // three grocery bags side by side, filled to different heights
 const Bag = () => (
-  <g><path d="M104 22h34l-3 50h-28z" className="d6" fill="none" /><rect x={110} y={46} width={22} height={22} rx={3} className="sm" />
-    <path d="M143 22h34l-3 50h-28z" className="d6" fill="none" /><rect x={149} y={32} width={22} height={36} rx={3} className="sm" />
-    <path d="M182 22h34l-3 50h-28z" className="d6" fill="none" /><rect x={188} y={56} width={22} height={12} rx={3} className="sm" /></g>
+  <g><path d="M134 28v-8a14 14 0 0128 0v8" className="s2" /><path d="M118 28h60l-5 50h-50z" className="w" />
+    <rect x={128} y={58} width={40} height={14} rx={3} className="d" /><rect x={128} y={42} width={40} height={14} rx={3} className="m" /><rect x={136} y={32} width={24} height={8} rx={3} className="w" /></g>
 );
 // a round table from above: five guests seated and one chair still empty
 const Seated = () => (
-  <g><circle cx={160} cy={44} r={15} className="d6" fill="none" />
-    <circle cx={160} cy={15} r={7} className="sm" /><circle cx={185} cy={29.5} r={7} className="sm" /><circle cx={185} cy={58.5} r={7} className="sm" />
-    <circle cx={160} cy={73} r={7} className="d6" fill="none" /><circle cx={135} cy={58.5} r={7} className="sm" /><circle cx={135} cy={29.5} r={7} className="sm" /></g>
+  <g><circle cx={148} cy={42} r={15} className="w" />
+    <circle cx={148} cy={13} r={8} className="m" /><circle cx={173} cy={27.5} r={8} className="m" /><circle cx={173} cy={56.5} r={8} className="m" />
+    <circle cx={148} cy={71} r={8} className="w" /><circle cx={123} cy={56.5} r={8} className="m" /><circle cx={123} cy={27.5} r={8} className="d" /></g>
 );
 // a trunk seen from the side: three boxes in, one still to drop
 const Pack = () => (
-  <g><path d="M92 70H228V18" className="d6" fill="none" /><rect x={100} y={44} width={34} height={26} rx={3} className="sm" /><rect x={138} y={32} width={30} height={38} rx={3} className="d6" fill="none" />
-    <rect x={172} y={50} width={48} height={20} rx={3} className="sm" /><rect x={178} y={12} width={30} height={22} rx={3} className="d6" fill="none" /></g>
+  <g><path d="M110 74H188V18" className="s3" /><rect x={114} y={46} width={32} height={26} rx={3} className="m" /><rect x={148} y={34} width={36} height={38} rx={3} className="w" />
+    <rect x={114} y={26} width={26} height={18} rx={3} className="w" /><rect x={152} y={6} width={24} height={18} rx={3} className="d" /></g>
 );
 // a pan on a burner, its handle out to the right, and two plates waiting
 const Chef = () => (
-  <g><circle cx={134} cy={42} r={26} className="d6" fill="none" /><circle cx={134} cy={42} r={15} className="d6" fill="none" /><path d="M160 42H192" className="d6" />
-    <rect x={168} y={10} width={18} height={10} rx={5} className="sm" /><rect x={168} y={64} width={18} height={10} rx={5} className="sm" /></g>
+  <g><path d="M170 48H192" className="s5" /><circle cx={146} cy={48} r={24} className="w" /><circle cx={146} cy={48} r={14} className="m" />
+    <path d="M136 16q5-5 0-10M148 16q5-5 0-10M160 16q5-5 0-10" className="s2" /></g>
 );
-// a floor of tiles half mopped (the dark ones still to do), a wall with a doorway, and the mop
+// two rooms from above joined by a doorway, the mopped stripes across the floor, and the mop where it stopped
 const Mop = () => (
-  <g><Grid x={112} y={6} n={4} sz={18} />
-    {cells(112, 6, 4, 4, 18, (x, y, c, r, i) => ([2, 3, 7, 10, 11, 14, 15].includes(i) ? <rect key={i} x={x + 1} y={y + 1} width={16} height={16} className="sm" /> : null))}
-    <path d="M148 6V24M148 42V78" className="d6" /><path d="M139 40L156 16" className="d6" /><path d="M130 40h18l3 12h-24z" className="d" /></g>
+  <g><rect x={110} y={8} width={76} height={68} rx={4} className="w" /><path d="M148 8V28M148 46V76" className="s3" />
+    <path d="M119 19H139M119 31H139M119 43H139M119 55H139M119 67H139M157 19H177" className="sm5" />
+    <rect x={152} y={56} width={28} height={9} rx={3} className="d" /><path d="M166 56L178 30" className="s3" /></g>
 );
 const Connect = () => (
   <g><Grid x={112} y={6} n={4} sz={18} /><path d="M121 15H175V33M121 33V69H157" className="d6" />
@@ -749,7 +758,7 @@ export const TILE_BY_KEY = {
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
   suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse, spot: Spot,
-  connect: Connect, mop: Mop, chef: Chef, seated: Seated, bag: Bag, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
+  connect: Connect, mop: Mop, chef: Chef, seated: Seated, bag: Bag, errands: Errands, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers
   crunch: Crunch, blitz: Blitz, blitzed: Blitzed, gap: Gap, back: Back, calc: Calc, series: Series, sums: Sums, carve: Carve, tally: Tally,

@@ -471,3 +471,21 @@ The "next most logical square" auto-move (`logicalNext`, 2026-10-26) was reverte
 player complaints that the cursor "jumps all over the place". Every grid calls its own `nextEmpty(...)`
 again, exactly as before that change. `logicalNext` is left exported in `lib/sudoku-auto-advance.js` and
 unused; do not wire it back in without the owner asking.
+
+## Auto-move is on for everyone and takes two taps to turn off (owner, 2026-11-15)
+
+Owner: "a setting that makes sure EVERY sudoku is Auto-move even after note taking unless specifically toggled
+off". Nothing in the code turned Auto-move off after notes; the likeliest cause is the tool itself, which sits
+beside Notes in the tools row and flipped ONE stored preference for every grid, silently and for good, on a
+single stray tap. So, in `lib/sudoku-auto-advance.js`:
+
+- The preference moved to a new key, `sot_sudoku_autoadvance2`. Every browser starts ON again whatever the old
+  key held. (Anyone who had turned it off on purpose has to do so once more.)
+- Turning it OFF is arm-then-confirm, like Clear: the first tap makes the tool read "Turn off?" (warn colours)
+  for four seconds, and only a second tap in that time turns it off. Turning it back ON is one tap.
+- It is still one preference for all 39 grids, and nothing but that tool changes it.
+
+`SudokuTools` in `app/SudokuStage.jsx` reads the armed state with `useAutoArming()`, so no grid client changed.
+The pre-stage toolbar button in each client (only drawn off the stage) has no "Turn off?" label; it simply
+needs the two taps.
+

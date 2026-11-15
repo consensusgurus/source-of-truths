@@ -16,6 +16,7 @@
 // Outside clues (Sando, Frame, Rim, Towers) sit in gutters measured in cells.
 // SOLID strokes only, anywhere (owner: no dotted or dashed lines).
 
+import { useAutoArming } from '@/lib/sudoku-auto-advance';
 import React, { useRef, useId, useState, useEffect } from 'react';
 import PlayStage from './PlayStage';
 import { useStageLook, isDarkLook } from '@/lib/stage-look';
@@ -247,10 +248,11 @@ export function SudokuPad({ keys = [], onDigit, cols = null, note = false, glyph
  * Any entry left out (or null) is not drawn. `extra` = [{ key, label, icon, onPress, on, disabled }] appended.
  */
 export function SudokuTools({ tools = {}, extra = null }) {
+  const autoArming = useAutoArming(); // turning Auto-move off takes a second tap (lib/sudoku-auto-advance.js)
   const row = [];
   const t = tools || {};
   if (t.notes) row.push({ key: 'notes', label: 'Notes', icon: SK_ICON.notes, on: !!t.notes.on, pressed: !!t.notes.on, onPress: t.notes.onPress, title: 'Pencil candidates (N)' });
-  if (t.auto) row.push({ key: 'auto', label: 'Auto-move', icon: SK_ICON.auto, on: !!t.auto.on, pressed: !!t.auto.on, onPress: t.auto.onPress, title: 'Move to the next empty square after each number you enter' });
+  if (t.auto) row.push({ key: 'auto', label: autoArming && t.auto.on ? 'Turn off?' : 'Auto-move', icon: SK_ICON.auto, on: !!t.auto.on && !autoArming, warn: autoArming && !!t.auto.on, pressed: !!t.auto.on, onPress: t.auto.onPress, title: autoArming && t.auto.on ? 'Tap again to stop moving to the next empty square' : 'Move to the next empty square after each number you enter (two taps to turn off)' });
   if (t.undo) row.push({ key: 'undo', label: 'Undo', icon: SK_ICON.undo, onPress: t.undo.onPress, disabled: !!t.undo.disabled, title: 'Undo (Ctrl+Z)' });
   if (t.erase) row.push({ key: 'erase', label: 'Erase', icon: SK_ICON.erase, onPress: t.erase.onPress, disabled: !!t.erase.disabled, title: 'Erase the selected square (Backspace)' });
   if (t.clear) row.push({ key: 'clear', label: t.clear.armed ? 'Sure?' : 'Clear', icon: SK_ICON.clear, onPress: t.clear.onPress, disabled: !!t.clear.disabled, warn: !!t.clear.armed, title: t.clear.armed ? 'Tap again to clear every number you entered' : 'Clear every number you entered (two taps)' });

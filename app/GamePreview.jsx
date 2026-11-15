@@ -270,6 +270,11 @@ const Dots = () => (
   <g>{cells(90, 8, 6, 3, 22, (x, y, c, r, i) => <circle key={i} cx={x + 11} cy={y + 11} r={4} className={[0, 5, 7, 16].includes(i) ? 'd' : 'm'} />)}
     <path d="M101 19H211M123 41V63H189" className="s3" /></g>
 );
+// Errands: a route from home round three stops on a grid of streets
+const Errands = () => (
+  <g><path d="M118 66h42V42h44V20" className="s5" fill="none" /><rect x={110} y={58} width={16} height={16} rx={4} className="w" />
+    <circle cx={160} cy={66} r={8} className="m" /><circle cx={160} cy={42} r={8} className="m" /><circle cx={204} cy={20} r={8} className="m" /></g>
+);
 // Bag: three items stacked in a bag, the lightest on top
 const Bag = () => (
   <g><path d="M126 14h68l-5 60h-58z" className="s5" fill="none" /><rect x={138} y={54} width={44} height={14} rx={3} className="m" /><rect x={138} y={37} width={44} height={14} rx={3} className="m" /><rect x={146} y={22} width={28} height={12} rx={3} className="w" /></g>
@@ -289,10 +294,13 @@ const Chef = () => (
   <g>{[0, 1, 2].map((k) => <g key={k}><rect x={92 + k * 46} y={26} width={40} height={30} rx={15} className={k === 1 ? 'm' : 'w'} /><rect x={102 + k * 46} y={34} width={20} height={14} rx={7} className={k === 1 ? 'w' : 'm'} /></g>)}
     <path d="M88 64H228" className="s5" /></g>
 );
-// Mop: a tiled floor, the left of it mopped, and the mop standing where it stopped
+// Mop: two rooms of a house from above joined by a doorway, the floor striped where it has been mopped, a sofa
+// in the way, and the mop where it stopped (owner, 2026-11-15: "i can't tell what that is")
 const Mop = () => (
-  <g>{cells(90, 8, 6, 3, 22, (x, y, c, r, i) => <rect key={i} x={x + 1} y={y + 1} width={20} height={20} rx={2} className={c < 3 ? 'w' : 'm'} />)}
-    <path d="M150 44L172 12" className="s5" /><path d="M138 44h24l4 16h-32z" className="d" /></g>
+  <g><rect x={92} y={8} width={112} height={68} rx={4} className="w" /><path d="M150 8V30M150 48V76" className="s3" />
+    <path d="M101 19H141M101 31H141M101 43H141M159 19H195M159 31H183" className="sm5" />
+    <rect x={160} y={58} width={34} height={12} rx={3} className="m" />
+    <rect x={104} y={58} width={30} height={9} rx={3} className="d" /><path d="M119 58L133 50" className="s3" /></g>
 );
 const Park = () => (
   <g><rect x={88} y={6} width={120} height={72} rx={4} className="w" />
@@ -407,7 +415,7 @@ const BY_KEY = {
   // Logic
   venn: Venn, lamps: Lamps, plot: Plot, paths: Track, tangled: Tangle, chomp: Maze, hedge: Maze, topple: () => <Block />,
   roll: () => <Block die />, jig: Jig, saw: Jig, slide: () => <Slide />, swap: () => <Slide mode="swap" />, spin: () => <Slide mode="spin" />,
-  connect: Dots, mop: Mop, chef: Chef, seated: Seated, bag: Bag, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
+  connect: Dots, mop: Mop, chef: Chef, seated: Seated, bag: Bag, errands: Errands, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
   // End Game
   turn: Othello, four: Four, gift: Quarto, yose: Go, mate: () => <Chess target={4} />, check: () => <Chess target={11} />,
   chain: () => <Chess target={14} />, defend: () => <Chess target={21} />, swindle: () => <Chess target={7} />, queen: () => <Chess target={18} />,

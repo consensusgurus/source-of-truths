@@ -2792,7 +2792,7 @@ and Bag mocked up, and picked this one ("Seated - it's great"). Logic. `/seated`
   Finish set: Who sits where (Seated, Alibi, Jesters).
 - **Files.** `app/seated/` (page, client, bank), `lib/seated-engine.js`, `scripts/gen-seated.mjs` (append
   only), `gen-seated-spec.mjs`, `verify-seated.mjs`, `wire-seated.mjs`, `gen-seated-tiles.py`,
-  `bake-seated-og.mjs` (the hand-built share card, a decoy room). The bank runs to 2027-01-03.
+  `bake-practical-og.mjs` (the hand-built share cards for Seated and Errands, decoy boards). The bank runs to 2027-01-03.
 - **Not done.** Not in Featured and not in a run. No challenge image with a player's rung on it.
 
 ## Bag: the daily grocery-bagging puzzle (launched 2026-11-14)
@@ -2837,4 +2837,49 @@ Owner, 2026-11-14: the third "practical puzzle" mockup, taken further with "bett
   ramp and the shelf of items), `verify-bag.mjs`, `wire-bag.mjs`, `gen-bag-tiles.py`, `bake-bag-og.mjs`.
   The bank runs to 2027-01-03.
 - **Not done.** Not in Featured and not in a run. No challenge image.
+
+## Errands: the daily route-planning puzzle (launched 2026-11-15)
+
+Owner, 2026-11-15: the last of the three "practical puzzle" mockups, "also do the same for errands. create and
+push including share link image". Logic. `/errands`.
+
+- **The game.** A town of streets from above (corners W by H), home, and four to eight stops. Tap the stops in
+  the order you will drive them. Leave at 9:00; a block is 4 minutes and a stop 10. The route draws itself
+  along the streets (breadth-first, so it goes round roadworks), the timetable fills in, and each rule goes
+  green or red.
+- **Four rules** (`lib/errands-engine.js`): `closes` (arrive by a time), `opens` (arrive early and you wait),
+  `fresh` (be home within m minutes of leaving that shop; goes red as soon as it can no longer be met),
+  `before` (one stop before another). Friday on adds blocks dug up for roadworks.
+- **TRYING AN ORDER IS FREE.** The last stop can always be tapped off, and Undo / Start Over cost nothing. Only
+  **Drive Home** commits, and it is enabled only when every stop is on the route and no rule is red. That is
+  the design: the puzzle is comparing orders, not guessing one.
+- **Scoring.** SOLVE_ONLY (10 or 0). The miss column is **minutes behind** the soonest possible trip (`best`
+  on the row; it reaches the browser, the order `sol` does not), stored on the state at commit. Lower first,
+  then the clock.
+- **The Errand Ladder** (fixed cut-offs in minutes: 0, 4, 8, 16, 24, 36, 52): Phileas Fogg, Mary Poppins,
+  Courier, Soccer Parent, Sunday Driver, Scenic Route, Forgot the List, Back for the Milk. Names are Claude's.
+- **The week** (`scripts/gen-errands-spec.mjs`): Mon 4 stops 2 rules, Tue 5/3, Wed 5/4, Thu 6/4, Fri 6/5 with
+  two roadworks, Sat 7/5 with two in a wider town, Sun The Big Day 8/6 with three in a 6 by 6 town.
+  THE BANK OPENS WITH AN INTRO BOARD: Sunday 11-15 is a Monday-size A Few Errands, band `intro`.
+- **How a board is judged.** Every order is tried. The number that keep every rule must sit in the day's
+  range, ONE order alone is soonest home, the slowest valid order is at least 12 minutes behind it, every
+  rule removes orders (an opening time must make somebody wait or change the best order), and from Wednesday
+  on "always the nearest stop" breaks a rule. `scripts/verify-errands.mjs` re-proves all of it.
+- **Places** are ten or eleven letters at most (printed under the stop) and no two sit side by side on one
+  street, so names never collide.
+- **Sets.** Fifth member of Everyday puzzles (full at five). Finish set: Out and about (Errands, Chef, Bag).
+- **Files.** `app/errands/`, `lib/errands-engine.js`, `scripts/gen-errands.mjs` (append only),
+  `gen-errands-spec.mjs`, `verify-errands.mjs`, `wire-errands.mjs`, `gen-errands-tiles.py`,
+  `bake-practical-og.mjs`. The bank runs to 2027-01-03.
+- **Not done.** The map is plain blocks and streets; the owner wants real-looking graphics on these puzzles.
+  Not in Featured or a run.
+
+## Board previews for the everyday puzzles were redrawn (2026-11-15)
+
+Owner: "need to fix the Mop gameboard preview on main page - i can't tell what that is?" The square tile
+drawings for Mop, Chef, Pack, Seated and Bag in `app/GamePreviewTiles.jsx` had been written with class `d6`,
+which is a TWELVE pixel stroke (see `GP_CSS` in `app/GamePreview.jsx`), and `sm`, which is a thin unfilled
+outline, so they came out as blobs. They now use `w` / `m` / `d` fills and `s2` / `s3` / `sm5` strokes. Mop is
+two rooms from above with a doorway, mopped stripes and the mop. Check a new drawing on a page before pushing;
+the class names do not mean what they look like they mean.
 
