@@ -8766,7 +8766,10 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-gg.det.mph-hrow{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;overflow-anchor:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:1px 1px 3px;margin:-1px -1px -3px;}
   .sty-mph .mph-gg.det.mph-hrow::-webkit-scrollbar{display:none;}
   .sty-mph .mph-gg.det.mph-hrow > .mph-g{flex:0 0 80%;min-width:0;box-sizing:border-box;}
-  .sty-mph .mph-fold.m2 .mph-rgts{padding-bottom:3px;}
+  /* No scroll snap on the home's runs row: the runs re-sort as their counts land
+     and a snapped row follows its old first tile, so it opened part scrolled. */
+  .sty-mph .mph-fold.m2 .mph-rgts{padding-bottom:3px;scroll-snap-type:none;overflow-anchor:none;}
+  .sty-mph .mph-fold.m2 .mph-rgts > *{scroll-snap-align:none;}
   /* TOP RUNS, TOP PUZZLES (owner, 2026-11-15, mockup 2B): two rows that flick
      sideways above the tiles, two big tiles and part of a third on show (owner,
      2026-11-15: "larger tiles, wider, maybe with more height"). The
