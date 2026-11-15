@@ -8633,13 +8633,15 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   /* TOP RUNS, TOP PUZZLES (owner, 2026-11-15, mockup 2B): two rows that flick
      sideways above the tiles, three tiles and the edge of a fourth on show. The
      row keeps its height while the counts are on their way, so nothing jumps.
+     NO SCROLL SNAP: the runs re-sort as their counts land, and a snapped row
+     follows its old first tile sideways, so the row opened part scrolled.
      The tiles go three across upright to make the room. */
   .sty-mph .mph-fold > .mph-tops{flex:none;display:flex;flex-direction:column;gap:6px;min-width:0;}
   .sty-mph .mph-fold .mph-lab{margin-top:0;}
   .sty-mph .mph-fold > .mph-clab{flex:none;margin-bottom:-4px;}
-  .sty-mph .mph-flick{display:flex;gap:8px;min-height:80px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .sty-mph .mph-flick{display:flex;gap:8px;min-height:80px;overflow-x:auto;overflow-y:hidden;overflow-anchor:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .sty-mph .mph-flick::-webkit-scrollbar{display:none;}
-  .sty-mph .mph-flick > .mph-tp{flex:0 0 31%;min-width:0;min-height:80px;box-sizing:border-box;scroll-snap-align:start;justify-content:space-between;gap:4px;padding:9px 10px 10px;text-decoration:none;}
+  .sty-mph .mph-flick > .mph-tp{flex:0 0 29.5%;min-width:0;min-height:80px;box-sizing:border-box;justify-content:space-between;gap:4px;padding:9px 10px 10px;text-decoration:none;}
   .sty-mph .mph-flick > .mph-tp b{font-size:15px;font-weight:800;line-height:1.2;letter-spacing:-0.01em;padding-bottom:.08em;}
   .sty-mph .mph-flick > .mph-tp em{font-size:12px;line-height:1.3;}
   .sty-mph .mph-flick > .mph-tp.done{background:transparent;border-color:var(--stg-ink);color:var(--stg-ink);}
