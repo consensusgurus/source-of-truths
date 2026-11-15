@@ -887,6 +887,26 @@ only, no Commons title `t` to the client).
 - **Snap maths read the letterboxed fit** (`fitOf`), and the board carries a CSS `aspect-ratio`;
   do not go back to width-only scaling.
 
+## Kids Mop and Kids Spin (`/kids/mop`, `/kids/spin`, launched 2026-11-15)
+
+Owner, 2026-11-15: "make a kids version of our mop game" and "a kids version of our game where you
+have to rotate puzzle pieces". Both are kids dailies (registry rows in `lib/kids-daily.js`, rows in
+`lib/kids.js`, `DAILY_ART` glyphs, no scores).
+
+- **Mop** (`app/kids/mop/`): the grown-up rule (every tile once, no wet tile twice, finish on the
+  tile inside Out) on ONE floor, 4x4 / 5x4 / 5x5 in turn, 2 to 4 rooms, 1 to 3 pieces of furniture.
+  Same drawing (`lib/mop-art.js`) and model (`lib/mop-engine.js`) as the real Mop. Its own CYCLING
+  bank, 60 boards, `scripts/gen-kids-mop.mjs` (seeded by board number, `isMain`-guarded). A board
+  may have several routes; any clean-out wins. **Show me** runs a small DFS from the mop's current
+  spot and takes the next step of a finishing route; if none exists it backs the mop up one step.
+  `verify-kids` re-walks every stored route with `checkRoute`.
+- **Spin** (`app/kids/spin/`): no bank. The page serves the photo grown-up Spin played on the day
+  shown (`live <= today` only; a kids day before Spin existed takes Spin's newest live photo), cut
+  into 9 squares or, on the toggle, 16. Every square turned 1 to 3 quarters, seeded by date and
+  size. Look-alike squares are locked straight with the same test as Spin. A small reference
+  picture shows by default (Hide / Peek toggle). **Show me** straightens one square. Done = either
+  size finished.
+
 ## The Jigsaw Puzzle Shelf (`/jig/shelf`, Jig and Saw, 2026-11-11)
 
 Owner, 2026-11-11: the shelf holds every Jig AND Saw board and is called the Jigsaw Puzzle Shelf

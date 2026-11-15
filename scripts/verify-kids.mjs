@@ -22,6 +22,10 @@
 //           areas summing to the region, sol tiling it exactly, and EXACTLY
 //           ONE fixed-orientation tiling (no rotation on the kids board) by a
 //           piece-driven solver; no two boards share a region
+//   mop     every kids house is one floor, 4x4 to 5x5, no staircases; the
+//           stored route walks legally over every tile once and ends at Out
+//           (lib/mop-engine.js checkRoute); no two houses repeat
+//   spin    the page reads the grown-up Spin bank and cuts it at today
 //   sixes / unpark  the grown-up banks carry their own verifiers; here only
 //           that the kid filters leave a non-empty pool as of today
 //   hub     lib/kids.js lists every daily exactly once, with the registry href
@@ -196,6 +200,32 @@ const load = async (rel) => import(pathToFileURL(join(root, rel)).href);
   ok(`fitit: ${PUZZLES.length} boards, every one unique as printed`);
 }
 
+// ---------------------------------------------------------------- mop
+{
+  const { PUZZLES } = await load('app/kids/mop/puzzles.js');
+  const { checkRoute } = await load('lib/mop-engine.js');
+  const seen = new Set();
+  for (const p of PUZZLES) {
+    const id = `mop #${p.num}`;
+    if (p.floors.length !== 1) { bad(`${id}: ${p.floors.length} floors`); continue; }
+    const F = p.floors[0];
+    if (F.w < 4 || F.w > 5 || F.h < 4 || F.h > 5) bad(`${id}: ${F.w}x${F.h} is not a kids house`);
+    if (F.stairs.length) bad(`${id}: has stairs`);
+    const err = checkRoute(p, p.sol);
+    if (err) bad(`${id}: ${err}`);
+    const sig = JSON.stringify([F.rooms, F.pieces, p.start, p.end]);
+    if (seen.has(sig)) bad(`${id}: repeats an earlier house`); seen.add(sig);
+  }
+  ok(`mop: ${PUZZLES.length} houses, every stored route a real clean-out`);
+}
+
+// ---------------------------------------------------------------- spin
+{
+  const src = readFileSync(join(root, 'app/kids/spin/page.js'), 'utf8');
+  if (!/p\.live <= today/.test(src)) bad('spin: page does not cut the grown-up Spin bank at today');
+  else ok('spin: reads only live grown-up Spin photos');
+}
+
 // ---------------------------------------------------------------- sixes / unpark pools
 {
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
@@ -226,7 +256,7 @@ const load = async (rel) => import(pathToFileURL(join(root, rel)).href);
   const { KIDS_EPOCH, kidsDayNumber, kidsDateForDay } = await load('lib/kids-daily.js');
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
   const n = kidsDayNumber(today);
-  for (const g of ['mixup', 'sortit', 'ladder', 'fitit']) {
+  for (const g of ['mixup', 'sortit', 'ladder', 'fitit', 'mop']) {
     const { PUZZLES } = await load(`app/kids/${g}/puzzles.js`);
     const src = readFileSync(join(root, `app/kids/${g}/page.js`), 'utf8');
     if (!/pickCycleAt\(PUZZLES, day\.n\)/.test(src)) { bad(`${g}: page does not cycle its bank with pickCycleAt`); continue; }
