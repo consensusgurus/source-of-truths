@@ -2750,3 +2750,48 @@ Connect. Tile art `scripts/gen-mop-tiles.py`; share card `scripts/bake-og.mjs mo
   The drawing code is `lib/mop-art.js`, shared with the board.
 - **Open:** restock before 2026-12-31. A strict mode (touching a wet tile ends the day) was offered and not chosen.
 
+## Seated: the daily seating-chart puzzle (launched 2026-11-14)
+
+Owner, 2026-11-14: asked for more "practical puzzles" in the vein of Mop, Chef and Pack, had Seated, Errands
+and Bag mocked up, and picked this one ("Seated - it's great"). Logic. `/seated`.
+
+- **The game.** Round tables, a guest list and a list of requests. Tap a guest, tap a chair. Every guest gets
+  a chair and every request has to be met. ANY seating that meets every request solves the board; the stored
+  one (`sol`) is stripped by the server page and never reaches a browser.
+- **Seven kinds of request** (`lib/seated-engine.js`): `next` (side by side), `notnext`, `across` (directly
+  opposite, even tables only), `same` (same table), `apart` (different tables), `table`, `nottable`. A row
+  stores the reason (`why`); the client prints the tag after it in bold ("Different tables.", "Table 2.").
+  A request is open until everyone it names has a chair, then green or red. A guest in a broken request
+  carries a red dot on the chair.
+- **Scoring.** Seating the room is the solve (SOLVE_ONLY: 10 or 0). The miss column is **re-seats**: a guest
+  who already had a chair is moved, swapped or stood back up, and each guest Clear the Tables removes.
+  Lower first, then the clock. There is no Undo.
+- **The Seating Ladder** (eight rungs, cut on the number of guests exactly as Pack's is cut on items):
+  Emily Post (none), Martha Stewart (1), Maitre d', Wedding Planner, Gracious Host, Best Man With a
+  Clipboard, Musical Chairs, Seated the Exes Together. The names and cut-offs are Claude's; the owner has
+  not ruled on them.
+- **The week** (`scripts/gen-seated-spec.mjs`): Mon Dinner Party (one table of six), Tue Birthday Dinner
+  (two of four), Wed Rehearsal Dinner (two of five), Thu Office Party (three of four), Fri Class Reunion
+  (three of five), Sat Charity Gala (three of six), Sun Wedding Reception (four of five, the Sunday
+  Edition, labelled "Sunday Edition · The Wedding"). Each event draws its guests from its own crowd
+  (family, work, school, society).
+- **THE BANK OPENS WITH TWO INTRO BOARDS** (owner, 2026-11-14: "Sunday this week needs to be early week
+  intro though"): a Dinner Party on Saturday 11-14 and a Birthday Dinner on Sunday 11-15, both band `intro`.
+  The 11-15 row carries `sunday: true` because the shared date check wants it on every Sunday row; the
+  client only calls a board a Sunday Edition when its band is `sunday`. The first Wedding is 11-22.
+- **Every room has one answer** to who shares a table with whom (on a one-table day: one order round the
+  table, mirror images aside). The generator adds requests one at a time, each chosen because it rules out
+  another split that still worked, and `scripts/verify-seated.mjs` re-proves it with the solver.
+- **The ending.** The board never moves: each guest pops in turn, table by table, and the tables take the
+  category colour; then the full-screen fill opens and the ladder climbs to the rung earned (the same shape
+  as Chef's and Pack's).
+- **The name on a chair is five letters at most** and is always part of the full name used in the requests
+  (the checker enforces both). The bar under the room shows what the selected guest has been asked for.
+- **Sets.** Every Logic group was full, so Chef left Sorting puzzles and Mop left Grid filling to join Seated
+  in a new group and set page, **Everyday puzzles** (`/everyday-puzzles` copy in `lib/puzzle-sets.js`).
+  Finish set: Who sits where (Seated, Alibi, Jesters).
+- **Files.** `app/seated/` (page, client, bank), `lib/seated-engine.js`, `scripts/gen-seated.mjs` (append
+  only), `gen-seated-spec.mjs`, `verify-seated.mjs`, `wire-seated.mjs`, `gen-seated-tiles.py`,
+  `bake-seated-og.mjs` (the hand-built share card, a decoy room). The bank runs to 2027-01-03.
+- **Not done.** Not in Featured and not in a run. No challenge image with a player's rung on it.
+

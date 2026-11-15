@@ -270,6 +270,11 @@ const Dots = () => (
   <g>{cells(90, 8, 6, 3, 22, (x, y, c, r, i) => <circle key={i} cx={x + 11} cy={y + 11} r={4} className={[0, 5, 7, 16].includes(i) ? 'd' : 'm'} />)}
     <path d="M101 19H211M123 41V63H189" className="s3" /></g>
 );
+// Seated: two round tables from above, one chair at the second still empty
+const Seated = () => (
+  <g><circle cx={128} cy={42} r={12} className="w" /><circle cx={128} cy={20} r={6} className="m" /><circle cx={150} cy={42} r={6} className="m" /><circle cx={128} cy={64} r={6} className="m" /><circle cx={106} cy={42} r={6} className="m" />
+    <circle cx={192} cy={42} r={12} className="w" /><circle cx={192} cy={20} r={6} className="m" /><circle cx={214} cy={42} r={6} className="w" /><circle cx={192} cy={64} r={6} className="m" /><circle cx={170} cy={42} r={6} className="m" /></g>
+);
 // Pack: four boxes fitted into one space, one of them the odd one out
 const Pack = () => (
   <g><rect x={96} y={18} width={52} height={22} rx={4} className="w" /><rect x={152} y={18} width={68} height={22} rx={4} className="m" /><rect x={96} y={44} width={76} height={22} rx={4} className="m" /><rect x={176} y={44} width={44} height={22} rx={4} className="w" />
@@ -398,7 +403,7 @@ const BY_KEY = {
   // Logic
   venn: Venn, lamps: Lamps, plot: Plot, paths: Track, tangled: Tangle, chomp: Maze, hedge: Maze, topple: () => <Block />,
   roll: () => <Block die />, jig: Jig, saw: Jig, slide: () => <Slide />, swap: () => <Slide mode="swap" />, spin: () => <Slide mode="spin" />,
-  connect: Dots, mop: Mop, chef: Chef, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
+  connect: Dots, mop: Mop, chef: Chef, seated: Seated, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
   // End Game
   turn: Othello, four: Four, gift: Quarto, yose: Go, mate: () => <Chess target={4} />, check: () => <Chess target={11} />,
   chain: () => <Chess target={14} />, defend: () => <Chess target={21} />, swindle: () => <Chess target={7} />, queen: () => <Chess target={18} />,
