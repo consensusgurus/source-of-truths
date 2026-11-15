@@ -202,6 +202,7 @@ const GAMES = [
   { key: 'mop', href: '/mop', name: 'Mop', tag: 'Mop every tile once, then get out', img: '/games/btn-mop.png' },
   { key: 'chef', href: '/chef', name: 'Chef', tag: 'Get every order out together, hot', img: '/games/btn-chef.png' },
   { key: 'seated', href: '/seated', name: 'Seated', tag: 'Seat the room, meet every request', img: '/games/btn-seated.png' },
+  { key: 'bag', href: '/bag', name: 'Bag', tag: 'Bag the groceries, crush nothing', img: '/games/btn-bag.png' },
   { key: 'pack', href: '/pack', name: 'Pack', tag: 'Fit it all in the trunk', img: '/games/btn-pack.png' },
   { key: 'fill', href: '/fill', name: 'Fill', tag: 'Fit every word in the grid', img: '/games/btn-fill.png' },
   { key: 'pairs', href: '/pairs', name: 'Pairs', tag: 'Concentration with a real deck', img: '/games/btn-pairs.png' },
@@ -263,7 +264,7 @@ const CATEGORIES = [
   { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'resume', 'filing', 'redact', 'dating', 'extra', 'carmen'] },
   // Logic lost its photo, observation and moving-piece puzzles to Visual, and
   // End Game and Cards merged into Table Games (owner, 2026-11-12).
-  { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'defuse', 'sudoclue', 'snug', 'connect', 'mop', 'chef', 'seated', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'ergo', 'docket', 'plot'] },
+  { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'defuse', 'sudoclue', 'snug', 'connect', 'mop', 'chef', 'seated', 'bag', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'ergo', 'docket', 'plot'] },
   { key: 'visual', label: 'Visual', keys: ['jig', 'saw', 'swap', 'slide', 'spin', 'spot', 'witness', 'focus', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'pack', 'paths', 'chomp'] },
   { key: 'endgame', label: 'Table Games', keys: ['taire', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib', 'mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
   { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'squash', 'simon', 'dario', 'sweep'] },

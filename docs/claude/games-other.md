@@ -2795,3 +2795,46 @@ and Bag mocked up, and picked this one ("Seated - it's great"). Logic. `/seated`
   `bake-seated-og.mjs` (the hand-built share card, a decoy room). The bank runs to 2027-01-03.
 - **Not done.** Not in Featured and not in a run. No challenge image with a player's rung on it.
 
+## Bag: the daily grocery-bagging puzzle (launched 2026-11-14)
+
+Owner, 2026-11-14: the third "practical puzzle" mockup, taken further with "better graphical help", then
+"ok i like it but start gentle" and "also need hot foods that cant sit by frozen or cold foods". Logic. `/bag`.
+
+- **The game.** Groceries come down a belt; only the first `reach` are in hand. Pick one, tap a bag, and it
+  goes on top. Bagging everything is the solve. The stored answer (`sol`) is stripped by the server page.
+- **The rules** (`lib/bag-engine.js`, reported in this order): a bag is full at its slots (4), tears over its
+  limit (9 lb), nothing under an item may carry more than it takes (`c`: 0 fragile, a number, 99 anything),
+  every cold thing shares ONE bag, hot food never shares a bag with cold food (owner), cleaning products never
+  share a bag with food, and a `solo` item (the melon) has a bag to itself.
+- **THE HELP IS DRAWN, NOT WRITTEN (owner: "better graphical help").** Every item carries pills: weight, what it
+  takes on top (red 0, yellow n, green any) and one mark for cold / hot / cleaning / alone. Every bag has a
+  weight bar (one cell a pound) and its slots. With an item picked up EVERY bag shows a verdict strip: green
+  "Fits here" with a see-through copy of the item in its slot, or red with the reason, and the item at fault
+  turns red. With nothing picked up the strip says what the bag's top still takes. The key under the belt lists
+  only the marks on today's board. Do not replace any of this with prose.
+- **Scoring.** SOLVE_ONLY (10 or 0). The miss column is **re-bags**: with nothing in hand, tapping a bag takes
+  its top item back to the head of the belt (one re-bag); Empty the Bags costs one per item. No Undo.
+- **The Bagging Ladder** (eight rungs, cut on the number of items): Bagger of the Year (none), Head Bagger (1),
+  Courtesy Clerk, Steady Hands, Weekend Shift, Trainee, Bread on the Bottom, Crushed the Eggs. Names are
+  Claude's; the owner has not ruled on them.
+- **The week** (`scripts/gen-bag-spec.mjs`): Mon Corner Shop (8 items, 3 bags, reach 3), Tue Quick Stop (9,
+  one hot item), Wed Midweek Shop (11 items, 4 bags, two cleaning products), Thu Stock Up (13), Fri Friday Rush
+  (13, reach 2), Sat Party Shop (13, reach 2, one small bag of 3 items and 6 lb), Sun The Big Shop (18 items,
+  6 bags in two rows, reach 3, two hot, three cleaning, the melon; "Sunday Edition · The Big Shop").
+  THREE BAGS CANNOT HOLD CLEANING PRODUCTS: they need a bag of their own, so the first deal of an 11-item
+  Wednesday in three bags had no answer at all. Count the slots left for food before changing the spec.
+- **THE BANK OPENS WITH TWO INTRO BOARDS** (owner: "start gentle"): a Corner Shop on Sat 11-14 and a Quick Stop
+  on Sun 11-15, both band `intro`. The first Big Shop is 11-22.
+- **How a board is judged.** It must be baggable with nothing coming back out (the solver), and as forgiving as
+  its band says: along the stored answer, the average share of the moves on offer that still leave everything
+  baggable (`easeOf` in the generator, re-run by `scripts/verify-bag.mjs`). Gentle is 68 percent and up, tough
+  30 to 50. Careless random play was tried as the measure first and was useless: it finishes clean about 1 time
+  in 100 on every band.
+- **Layout.** Three bags across; four bags across with everything a size smaller (`.four`); six bags as two
+  rows of three. Item names are nine letters at most (the checker enforces it) so they fit a four-across tile.
+- **Sets.** In Everyday puzzles with Seated, Chef and Mop. Finish set: Chores (Bag, Mop, Chef).
+- **Files.** `app/bag/`, `lib/bag-engine.js`, `scripts/gen-bag.mjs` (append only), `gen-bag-spec.mjs` (the
+  ramp and the shelf of items), `verify-bag.mjs`, `wire-bag.mjs`, `gen-bag-tiles.py`, `bake-bag-og.mjs`.
+  The bank runs to 2027-01-03.
+- **Not done.** Not in Featured and not in a run. No challenge image.
+

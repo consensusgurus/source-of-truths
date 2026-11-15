@@ -110,6 +110,7 @@ export const DAILY_GAMES = [
   { key: 'mop', href: '/mop', name: 'Mop', tag: 'mop every tile once, then get out', store: 'sot_mop_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'chef', href: '/chef', name: 'Chef', tag: 'get every order out together, hot', store: 'sot_chef_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'seated', href: '/seated', name: 'Seated', tag: 'seat the room, meet every request', store: 'sot_seated_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
+  { key: 'bag', href: '/bag', name: 'Bag', tag: 'bag the groceries, crush nothing', store: 'sot_bag_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'pack', href: '/pack', name: 'Pack', tag: 'fit it all in the trunk', store: 'sot_pack_day', accent: '#a21caf', bg: '#fae8ff', border: 'rgba(162,28,175,0.35)' },
   { key: 'fill', href: '/fill', name: 'Fill', tag: 'fit every word in the grid', store: 'sot_fill_day', accent: '#047857', bg: '#d1fae5', border: 'rgba(4,120,87,0.4)' },
   { key: 'pairs', href: '/pairs', name: 'Pairs', tag: 'concentration with a real deck', store: 'sot_pairs_day', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.4)' },

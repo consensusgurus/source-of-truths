@@ -409,6 +409,7 @@ archive and hub chips use the short form `Sun`.
 | Chef | a brunch rush of twelve tickets of three to four dishes on the big line (three burners, two ovens, two grills, two fryers, one cold board), against four to eight tickets on the small line Monday to Saturday (from launch, 2026-11-14) |
 | Pack | a moving van, 4 wide, 7 deep and 4 high, with sixteen pieces of a whole house to load, four of them shaped (a sofa, a loveseat or armchair, a dining table, a desk), against a car or small van of five to thirteen items on the other days |
 | Seated | a wedding reception: twenty guests at four tables of five and up to twenty requests, against six to eighteen guests at one to three tables on the other days |
+| Bag | the Big Shop: eighteen items into six bags with two hot items, three cleaning products and a melon that rides alone, against eight to thirteen items in three or four bags on the other days |
 | Fill | 22 words on a board up to 17x17, against 16 to 18 on 15x15 (from launch, 2026-11-01) |
 | Pairs | 48 cards (24 pairs) on an 8x6 table, against 36 (from launch, 2026-11-01) |
 | Swindle | the deepest draw of the week, five White moves or more (from launch, 2026-10-18) |

@@ -325,6 +325,12 @@ const Spot = () => (
     <circle cx={134} cy={28} r={6} className="m" /><rect x={116} y={50} width={24} height={14} className="sm" /><rect x={156} y={50} width={24} height={14} className="sm" />
     <circle cx={174} cy={28} r={3.5} className="d" /></g>
 );
+// three grocery bags side by side, filled to different heights
+const Bag = () => (
+  <g><path d="M104 22h34l-3 50h-28z" className="d6" fill="none" /><rect x={110} y={46} width={22} height={22} rx={3} className="sm" />
+    <path d="M143 22h34l-3 50h-28z" className="d6" fill="none" /><rect x={149} y={32} width={22} height={36} rx={3} className="sm" />
+    <path d="M182 22h34l-3 50h-28z" className="d6" fill="none" /><rect x={188} y={56} width={22} height={12} rx={3} className="sm" /></g>
+);
 // a round table from above: five guests seated and one chair still empty
 const Seated = () => (
   <g><circle cx={160} cy={44} r={15} className="d6" fill="none" />
@@ -743,7 +749,7 @@ export const TILE_BY_KEY = {
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
   suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse, spot: Spot,
-  connect: Connect, mop: Mop, chef: Chef, seated: Seated, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
+  connect: Connect, mop: Mop, chef: Chef, seated: Seated, bag: Bag, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers
   crunch: Crunch, blitz: Blitz, blitzed: Blitzed, gap: Gap, back: Back, calc: Calc, series: Series, sums: Sums, carve: Carve, tally: Tally,

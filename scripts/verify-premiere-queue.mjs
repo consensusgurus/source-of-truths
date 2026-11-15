@@ -22,7 +22,7 @@ function walk(start, played = new Set()) {
 }
 const day = '2026-11-15';
 const seen = walk(day);
-const want = ['mop', 'chef', 'pack', 'seated'].filter((k) => PREMIERES.some((p) => p.key === k));
+const want = ['mop', 'chef', 'pack', 'seated', 'bag'].filter((k) => PREMIERES.some((p) => p.key === k));
 const got = seen.map((x) => x[1]).filter((k) => want.includes(k));
 if (got.join() !== want.join()) bad(`from ${day} the cards run ${got.join(', ')}, expected ${want.join(', ')}`);
 if (new Set(seen.map((x) => x[0])).size !== seen.length) bad('two cards on one day');

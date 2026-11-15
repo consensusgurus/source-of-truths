@@ -139,6 +139,7 @@ import { PUZZLES as CONNECT_FULL } from '../connect/puzzles';
 import { PUZZLES as MOP_FULL } from '../mop/puzzles';
 import { PUZZLES as CHEF_FULL } from '../chef/puzzles';
 import { PUZZLES as SEATED_FULL } from '../seated/puzzles';
+import { PUZZLES as BAG_FULL } from '../bag/puzzles';
 import { PUZZLES as PACK_FULL } from '../pack/puzzles';
 import { PUZZLES as FILL_FULL } from '../fill/puzzles';
 import { PUZZLES as PAIRS_FULL } from '../pairs/puzzles';
@@ -301,6 +302,7 @@ const CONNECT = CONNECT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => (
 const MOP = MOP_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CHEF = CHEF_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SEATED = SEATED_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const BAG = BAG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const PACK = PACK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const FILL = FILL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const PAIRS = PAIRS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -541,6 +543,7 @@ const GAMES = [
   { key: 'mop', name: 'Mop', path: '/mop', tag: 'Mop every tile once, then get out', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: MOP },
   { key: 'chef', name: 'Chef', path: '/chef', tag: 'Get every order out together, hot', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: CHEF },
   { key: 'seated', name: 'Seated', path: '/seated', tag: 'Seat the room, meet every request', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: SEATED },
+  { key: 'bag', name: 'Bag', path: '/bag', tag: 'Bag the groceries, crush nothing', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: BAG },
   { key: 'fill', name: 'Fill', path: '/fill', tag: 'Fit every word in the grid', accent: '#047857', bg: '#d1fae5', border: 'rgba(4,120,87,0.4)', src: FILL },
   { key: 'pairs', name: 'Pairs', path: '/pairs', tag: 'Concentration with a real deck', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.4)', src: PAIRS },
   { key: 'cell', name: 'Cell', path: '/cell', tag: 'The daily FreeCell', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.4)', src: CELL },
