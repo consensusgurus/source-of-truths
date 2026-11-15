@@ -73,7 +73,9 @@ import RunBackLink from '../../RunBackLink';
 // PolymathMeter and lib/polymath stay in the tree, unmounted.
 import McCard from '../../McCard';
 import { MC_IDS } from '@/lib/multiple-choice';
-import GauntletStage, { MISS_MS } from '../../../GauntletStage';
+import GauntletStage, { MISS_MS, REVEAL_DELAY } from '../../../GauntletStage';
+// How long the last miss of a run holds its answer full screen before the ending.
+const FINAL_MS = 3200;
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover } from '../../../GauntletScreens';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -590,12 +592,15 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
     setNow(t);
   }
 
-  // THE LAST MISS GOES STRAIGHT TO THE ENDING (owner, 2026-11-10). The
-  // spotlight shows the right answer for MISS_MS, then the reveal lets go and
-  // the run ending plays. No "See your run" press in between.
+  // THE LAST MISS ENDS ON THE ANSWER (owner, 2026-11-15, replacing the
+  // 2026-11-10 cut straight to the ending: the last round "doesn't show you the
+  // answer like the other misses"). The spotlight, then the answer grows to the
+  // whole screen and holds FINAL_MS (GauntletStage's final recap, which lets go
+  // itself), then the run ending plays. Still no "See your run" button. This
+  // timer is only the backstop for a run drawn without the stage.
   useEffect(() => {
     if (!reveal || r.phase !== 'done') return undefined;
-    const t = setTimeout(() => setReveal(null), MISS_MS + 400);
+    const t = setTimeout(() => setReveal(null), TOWERS ? REVEAL_DELAY + 600 + FINAL_MS + 1500 : MISS_MS + 400);
     return () => clearTimeout(t);
   }, [reveal, r.phase]);
 
@@ -1138,7 +1143,10 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           // end that says 'see run'"). Only a hand-off to a next quiz opens the
           // big button; after the last quiz the spotlight holds, then the
           // ending plays on its own (the effect beside VERDICT_MS).
-          recap={reveal && r.phase === 'verdict' && upNext ? {
+          recap={reveal && r.phase === 'done' ? {
+            final: true, autoMs: FINAL_MS, eyebrow: 'The answer',
+            onGo: () => setReveal(null),
+          } : reveal && r.phase === 'verdict' && upNext ? {
             // The hand-off (owner, 2026-11-10): one large start button for the
             // next quiz on its own ground, nothing else. See GauntletStage.jsx.
             eyebrow: r.phase === 'verdict' && upNext

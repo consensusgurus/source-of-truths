@@ -213,7 +213,25 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
           </div>
         )}
       </div>
-      {recapOn && big ? (
+      {recapOn && big && recap.final ? (
+        // THE LAST MISS OF A RUN (owner, 2026-11-15: the last round "doesn't
+        // show you the answer like the other misses"). The lit answer grows to
+        // the whole screen like every other hand-off, but there is no next quiz
+        // and no "See your run" button (owner, 2026-11-10), so the screen IS
+        // the answer: printed large, with the pick or the clock under it. It
+        // moves on to the ending by itself; a tap anywhere moves on sooner.
+        <div className={`gst-big gst-fin${big.open ? ' open' : ''}`} role="status" aria-label={`The answer: ${typeof choices[missRight] === 'string' || typeof choices[missRight] === 'number' ? choices[missRight] : ''}`}
+          onClick={() => { if (big.open) recapGo(); }}
+          style={big.open ? { top: 0, left: 0, width: '100vw', height: '100%' } : { top: big.r.top, left: big.r.left, width: big.r.width, height: big.r.height }}>
+          <span className="gst-bans" aria-hidden="true">{choices[missRight]}</span>
+          <div className="gst-bin">
+            <span className="gst-bx gst-beye">{recap.eyebrow || 'The answer'}</span>
+            <FitWords className="gst-bx gst-bname gst-fans">{choices[missRight]}</FitWords>
+            <span className="gst-bx gst-bsub">{missPick == null ? 'The clock ran out' : <>Your pick: {choices[missPick]}</>}</span>
+            {autoMs ? <span className="gst-bx gst-fbar" aria-hidden="true"><span style={{ width: `${Math.max(0, Math.min(1, left / autoMs)) * 100}%` }} /></span> : null}
+          </div>
+        </div>
+      ) : recapOn && big ? (
         <div className={`gst-big${big.open ? ' open' : ''}`} role="group" aria-label={recap.goName || recap.goLabel}
           style={{
             ...(big.open ? { top: 0, left: 0, width: '100vw', height: '100%' } : { top: big.r.top, left: big.r.left, width: big.r.width, height: big.r.height }),
@@ -329,6 +347,14 @@ html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
 @media(hover:hover){.gst-bgo:hover{filter:brightness(1.12);}}
 /* Leave the run (owner, 2026-11-07): a small underlined link at the foot of the screen, not a button. */
 .gst-bleave{position:absolute;left:50%;bottom:max(22px, calc(env(safe-area-inset-bottom) + 14px));transform:translateX(-50%);font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;}
+/* The last miss of a run: the answer itself, large, then the ending. */
+.gst-fin{cursor:pointer;}
+.gst-fin .gst-bin{gap:16px;}
+.gst-fin:not(.open) .gst-bx{opacity:0;}
+.gst-fin.open .gst-bsub{opacity:.8;}
+.gst-fans{display:block;}
+.gst-fbar{display:block;align-self:center;width:min(220px,60%);height:4px;margin-top:10px;border-radius:999px;background:color-mix(in srgb, var(--bink) 18%, transparent);overflow:hidden;}
+.gst-fbar>span{display:block;height:100%;background:var(--bink);transition:width .25s linear;}
 .gst-big.open .gst-bleave{opacity:.75;pointer-events:auto;transition:opacity .35s ease .6s;}
 @media(min-width:900px){.gst-big.open .gst-bin{gap:18px;}.gst-bgo{min-height:360px;}}
 @keyframes gstShake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}

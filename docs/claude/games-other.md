@@ -2787,9 +2787,9 @@ and Bag mocked up, and picked this one ("Seated - it's great"). Logic. `/seated`
   who already had a chair is moved, swapped or stood back up, and each guest Clear the Tables removes.
   Lower first, then the clock. There is no Undo.
 - **The Seating Ladder** (eight rungs, cut on the number of guests exactly as Pack's is cut on items):
-  Emily Post (none), Martha Stewart (1), Maitre d', Wedding Planner, Gracious Host, Best Man With a
-  Clipboard, Musical Chairs, Seated the Exes Together. The names and cut-offs are Claude's; the owner has
-  not ruled on them.
+  Emily Post (none), Miss Manners (1), Head of Protocol, Wedding Planner, Maitre d', Gracious Host,
+  Musical Chairs, Seated the Exes Together. Reworked 2026-11-15 on the owner's ask ("rework the title
+  ranks for Seated"); the names are Claude's, the cut-offs unchanged.
 - **The week** (`scripts/gen-seated-spec.mjs`): Mon Dinner Party (one table of six), Tue Birthday Dinner
   (two of four), Wed Rehearsal Dinner (two of five), Thu Office Party (three of four), Fri Class Reunion
   (three of five), Sat Charity Gala (three of six), Sun Wedding Reception (four of five, the Sunday

@@ -947,3 +947,14 @@ rfx-plb`. The longest name ("Science Fair Winner") at its landed 17px must end i
 375 and 390 wide if a title is renamed or lengthened. The `flask` piece stays in PIECES, unused. The end
 page's own ladder for Science is still `FlaskClimb` (`climbStyle: 'flask'` in RunClient), which was not
 changed in this push.
+
+### The last miss of a gauntlet run ends on the answer (owner, 2026-11-15)
+
+Owner: missing in the last round of a gauntlet or the Encore "doesn't show you the answer like the other
+misses". Every other miss runs the spotlight, then grows the lit answer into the next quiz's start screen;
+the last one used to cut from the spotlight straight to the ending. Now the last miss runs the same
+spotlight, then the lit answer grows to the whole screen as a FINAL recap (`recap.final` in
+`app/GauntletStage.jsx`): eyebrow "The answer", the answer in large type, "Your pick: X" or "The clock ran
+out", and a thin bar counting `FINAL_MS` (3.2s, `RunClient.jsx`). It lets go by itself into the run ending;
+a tap anywhere lets go sooner. Still no "See your run" button (owner, 2026-11-10). The 2.3s timer beside
+`VERDICT_MS` is now only a backstop, lengthened to cover the hold.
