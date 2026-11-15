@@ -4957,7 +4957,9 @@ export default function StageToday() {
                           onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
                           {/* THE PHONE DETAILS CARD MATCHES THE DESKTOP ONE (owner, 2026-11-08):
                               board band, glyph by the name, facts row. */}
-                          {mDet ? <span className="sty-gband" aria-hidden="true"><GamePreview gameKey={g.key} square /></span> : null}
+                          {mDet ? <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{SHARE_TILE[g.key] ? <img src={SHARE_TILE[g.key]} alt="" width="92" height="92" decoding="async" /> : <GamePreview gameKey={g.key} square />}</span> : null}
+                          {/* THE SHARE CARD'S EYEBROW ON THE PHONE TOO (owner, 2026-11-15: "this should show on mobile too"). */}
+                          {mDet && !isDone ? <span className="mey">{g.cat + ' \u00b7 Daily Puzzle'}</span> : null}
                           <b>{mDet ? null : pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
                           {mDet ? <em className="mx">{fullDesc(g)}</em> : <em>{g.tag}</em>}
                           {mDet ? <FactRow k={g.key} /> : null}
@@ -6350,7 +6352,7 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-gi{flex:none;color:var(--cci, var(--cc));}
 .sty-next .sty-gi{color:currentColor;opacity:.85;}
 .sty-nm{display:flex;align-items:center;gap:11px;}
-.sty-gx,.sty-gk,.sty-gband,.sty-gfx,.sty-geye{display:none;}
+.sty-gx,.sty-gk,.sty-gband,.sty-gfx,.sty-geye,.mph-g .mey{display:none;}
 .sty-view{position:relative;}
 .sty-gt{display:block;font-size:11.5px;font-weight:600;color:var(--stg-mute);margin-top:2px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
@@ -8011,6 +8013,25 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-gg.det .mph-g:not(.done) small{grid-area:p;margin-top:6px;}
   .sty-mph .mph-gg.det .mph-g:not(.done) em.mx{grid-area:x;margin-top:10px;}
   .sty-mph .mph-gg.det .mph-g:not(.done) .mcs{grid-area:s;margin:10px -14px -12px;}
+  /* THE SHARE-CARD TILE ON THE PHONE (owner, 2026-11-15: "this should show
+     on mobile too", with "faint or white with category accents"): the same
+     card as the desktop Details card. White, a small
+     "Category · Daily Puzzle" line, the name larger, the blurb, the chips, and
+     the board (or the share card's art, lib/share-tile.js) in a white square
+     on the RIGHT. A played card still folds. */
+  .sty-mph .mph-gg.det .mph-g:not(.done){background:#fff;grid-template-columns:minmax(0,1fr) 92px;column-gap:12px;
+    grid-template-areas:"e e" "n g" "x g" "f g" "p g" "y y" "s s";grid-template-rows:auto auto auto auto auto 1fr auto;padding-top:11px;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .mey{grid-area:e;display:block;padding-right:24px;font-size:9.5px;font-weight:800;line-height:1.3;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) > b{font-size:22px;letter-spacing:-.02em;line-height:1.18;padding:2px 0 1px;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) em.mx{margin-top:4px;font-size:13px;font-weight:600;line-height:1.4;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gfx{margin:8px 0 2px;height:auto;max-height:53px;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gband{width:92px;height:92px;margin-top:4px;padding:8px;border-radius:12px;background:#fff;
+    border:1.5px solid color-mix(in srgb, var(--mc) 55%, var(--mink));}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gband.art{padding:0;overflow:hidden;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gband.art img{display:block;width:100%;height:100%;object-fit:cover;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .mcs{background:color-mix(in srgb, var(--mc) 45%, #fff);}
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */
   .sty-mph{--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
@@ -8636,24 +8657,23 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix.sty-det .sty-g:has(> .sty-gband){grid-template-columns:minmax(0,1fr) 108px;column-gap:12px;padding-top:13px;
     grid-template-areas:"e e" "n b" "r b" "x b" "f b" "y y" "s s";grid-template-rows:auto auto auto auto auto 1fr auto;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-geye{display:block;grid-area:e;padding-right:26px;font-size:9.5px;font-weight:800;line-height:1.3;
-    letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.74;}
+    letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gn{grid-area:n;font-size:25px;letter-spacing:-.02em;line-height:1.18;padding:2px 0 1px;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gx{grid-area:x;margin:5px 0 0;font-size:13px;font-weight:600;line-height:1.4;
     height:calc(13px * 1.4 * 3);-webkit-line-clamp:3;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx,
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx.sty-gf1{grid-area:f;margin:9px 0 13px;flex-direction:column;flex-wrap:nowrap;align-items:flex-start;gap:5px;height:53px;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) .sty-gband{grid-area:b;width:108px;height:108px;margin-top:5px;padding:9px;border-radius:12px;
-    background:#fff;border:1.5px solid color-mix(in srgb, var(--cfull) 50%, ${RAMP_INK});}
+    background:var(--gpw, #fff);border:1.5px solid color-mix(in srgb, var(--cfull) 50%, ${RAMP_INK});}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) .sty-gband.art{padding:0;overflow:hidden;}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) .sty-gband.art img{display:block;width:100%;height:100%;object-fit:cover;}
-  /* The colour: the category's pastel as the card, dark ink on it, white
-     chips, and a deeper step of the same colour along the foot. */
-  .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband){background:var(--cfull);color:${RAMP_INK};
-    --gpd:${RAMP_INK};--gpw:#fff;--gpt:#fff;}
-  .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband) :is(.sty-gn,.sty-geye,.sty-gx,.sty-gres,.sty-ggrp),
-  .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband):hover .sty-gn{color:${RAMP_INK};}
-  .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband) .sty-gfc{background:#fff;color:${RAMP_INK};box-shadow:inset 0 0 0 1px ${RAMP_INK};}
-  .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband) .sty-gpl.sty-gcs{background:color-mix(in srgb, var(--cfull) 80%, #000);color:${RAMP_INK};}
+  /* The colour (owner, 2026-11-15: "they shouldn't have the dark color fill.
+     faint or white with category accents", then "carmen is a good example"):
+     the card is the page's own white surface, and the category is kept for
+     the accents:
+     the eyebrow, the board square's edge, the chips and the crowd strip. */
+  .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband){background:var(--stg-surf);}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-geye{color:var(--cci, var(--cc));opacity:1;}
   /* 3. THE CAP'S CONTROLS, GROUPED BY JOB, each under a small label: View,
      Sort, then whose games (Group) or which kind. The label is drawn from
      data-lab, and only in the cap. */
